@@ -10,33 +10,12 @@
 // editor lets the user select words and toggle that emphasis; the chosen
 // preset decides how emphasized words render on the video overlay.
 //
-// Presets are inspired by Opus Clip's caption library — readable, repurposing-
-// oriented styles rather than heavy meme captions. Each preset is a CSS class
-// (.vc-cap--<id>); see styles/components/video-clips-modal.css.
-
-export const CAPTION_PRESETS = [
-  { id: "clean", name: "Clean" },
-  { id: "bold", name: "Bold" },
-  { id: "boxed", name: "Boxed" },
-  { id: "highlight", name: "Highlight" },
-  { id: "outline", name: "Outline" },
-  { id: "pop", name: "Pop" },
-];
+// Caption STYLES live in the rich model further down (PRESETS): a preset is a
+// bag of rendering values, applied by caption-editor.js, not a CSS class. An
+// earlier generation mapped each preset to a `.vc-cap--<id>` class; those classes
+// were never written and that generation is gone.
 
 export const DEFAULT_PRESET = "clean";
-
-const PRESET_IDS = new Set(CAPTION_PRESETS.map((p) => p.id));
-
-export function presetClass(id) {
-  return "vc-cap--" + (PRESET_IDS.has(id) ? id : DEFAULT_PRESET);
-}
-
-// Local escape — the modal builds caption markup via innerHTML, so we escape
-// each text slice ourselves and only ever emit the fixed <mark> wrapper. Keeps
-// this module independent of utils.js's version suffix.
-function esc(s) {
-  return String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
-}
 
 // Tokenise the clip's headline text into short on-screen caption lines and
 // distribute them evenly across the clip's duration. Deterministic: same clip
@@ -78,74 +57,6 @@ export function buildCaptions(clip) {
   });
 }
 
-// Build the safe inner HTML for one segment: escaped text with emphasized
-// ranges wrapped in <mark class="vc-cap-emph">. Sorted + clamped defensively.
-export function captionInnerHTML(seg) {
-  const text = (seg && seg.text) || "";
-  const emph = ((seg && seg.emph) || [])
-    .map((r) => [Math.max(0, Math.min(text.length, r[0])), Math.max(0, Math.min(text.length, r[1]))])
-    .filter((r) => r[1] > r[0])
-    .sort((a, b) => a[0] - b[0]);
-  if (!emph.length) return esc(text);
-
-  let out = "";
-  let cur = 0;
-  for (const [s, e] of emph) {
-    if (s < cur) continue; // skip overlaps already covered
-    if (s > cur) out += esc(text.slice(cur, s));
-    out += `<mark class="vc-cap-emph">${esc(text.slice(s, e))}</mark>`;
-    cur = e;
-  }
-  if (cur < text.length) out += esc(text.slice(cur));
-  return out;
-}
-
-// Serialise an edited contenteditable back into { text, emph }. The DOM is the
-// source of truth while editing: any descendant carrying .vc-cap-emph becomes
-// an emphasis range. &nbsp; (inserted by contenteditable) is normalised back
-// to a regular space.
-export function readSegmentFromDOM(el) {
-  let text = "";
-  const emph = [];
-  (function walk(node) {
-    for (const child of node.childNodes) {
-      if (child.nodeType === 3) {
-        text += child.nodeValue;
-      } else if (child.nodeType === 1) {
-        if (child.classList && child.classList.contains("vc-cap-emph")) {
-          const s = text.length;
-          walk(child);
-          if (text.length > s) emph.push([s, text.length]);
-        } else if (child.tagName === "BR") {
-          text += " ";
-        } else {
-          walk(child);
-        }
-      }
-    }
-  })(el);
-
-  text = text.replace(/ /g, " ");
-  emph.sort((a, b) => a[0] - b[0]);
-  const merged = [];
-  for (const r of emph) {
-    const last = merged[merged.length - 1];
-    if (last && r[0] <= last[1]) last[1] = Math.max(last[1], r[1]);
-    else merged.push([r[0], r[1]]);
-  }
-  return { text, emph: merged };
-}
-
-// Index of the segment covering time `t` (the playhead). Clamps to the first /
-// last segment when the playhead sits before / after the caption track.
-export function activeSegmentIndex(caps, t) {
-  if (!caps || !caps.length) return -1;
-  for (let i = 0; i < caps.length; i++) {
-    if (t >= caps[i].start && t < caps[i].end) return i;
-  }
-  return t < caps[0].start ? 0 : caps.length - 1;
-}
-
 /* ════════════════════════════════════════════════════════════════════
  *  RICH CAPTION MODEL — ported from platform-studio's video-editor
  *  (src/web/captions/{model,renderer,chunker}.ts), adapted to vanilla JS
@@ -157,7 +68,6 @@ export function activeSegmentIndex(caps, t) {
  * ════════════════════════════════════════════════════════════════════ */
 
 export const DESIGN_WIDTH = 1080;
-export const DESIGN_HEIGHT = 1920;
 
 // Demo footage served from the project's /video folder — used as the real
 // video behind every clip/caption preview. Assigned deterministically per clip

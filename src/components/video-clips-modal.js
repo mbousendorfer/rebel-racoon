@@ -21,9 +21,9 @@
 
 import { escapeHtml } from "../utils.js?v=21";
 import { requestOpen, notifyClose } from "../modal-coordinator.js?v=21";
-import { FORMATS, NETWORK_FORMATS, CLIP_RATIO_ORDER, ratioNetworksMeta, ratioValue } from "../clip-formats.js?v=14";
+import { FORMATS, NETWORK_FORMATS, CLIP_RATIO_ORDER, ratioNetworksMeta, ratioValue } from "../clip-formats.js?v=16";
 import { iconFor } from "../file-kinds.js?v=20";
-import { DEFAULT_PRESET, buildCaptions, videoForClip } from "../clip-captions.js?v=5";
+import { DEFAULT_PRESET, buildCaptions, videoForClip } from "../clip-captions.js?v=6";
 
 const MODAL_ID = "videoClips";
 const MIN_CLIP = 5;
@@ -615,7 +615,7 @@ function renderOptions() {
     b.setAttribute("aria-selected", String(on));
   });
   if (editorTab === "subtitles") {
-    import("../caption-editor.js?v=18").then(({ refreshControls }) => refreshControls());
+    import("../caption-editor.js?v=19").then(({ refreshControls }) => refreshControls());
   }
 }
 
@@ -625,7 +625,7 @@ function renderOptions() {
 // onChange folds edits into the draft so Save persists them and Cancel discards.
 function syncCaptionMount() {
   const want = !!editingId;
-  import("../caption-editor.js?v=18").then((mod) => {
+  import("../caption-editor.js?v=19").then((mod) => {
     capMod = mod;
     if (want) {
       const shell = bodyEl && bodyEl.querySelector("[data-vc-editor]");
@@ -1282,7 +1282,7 @@ function close() {
   if (!initialized || !modal?.classList.contains("open")) return;
   // Tear down the embedded caption editor if it's mounted.
   if (captionMounted) {
-    import("../caption-editor.js?v=18").then(({ unmount }) => unmount());
+    import("../caption-editor.js?v=19").then(({ unmount }) => unmount());
     captionMounted = false;
   }
   modal.classList.remove("open");

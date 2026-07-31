@@ -16,11 +16,11 @@
 
 import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=21";
 import { html, raw } from "../utils.js?v=21";
-import { getTopicById, markSeen, dismissTopic, topicWhen, subscribe as subscribeTopics } from "../topics-store.js?v=2";
+import { getTopicById, markSeen, dismissTopic, topicWhen, subscribe as subscribeTopics } from "../topics-store.js?v=3";
 import { findTopicSource } from "../topics-catalog.js?v=2";
-import { getContextById } from "../contexts-store.js?v=44";
-import { openTopicInChat } from "../topic-flow.js?v=4";
-import { renderSocialPostCard } from "./social-post-card.js?v=1";
+import { getContextById } from "../contexts-store.js?v=45";
+import { openTopicInChat } from "../topic-flow.js?v=6";
+import { renderSocialPostCard } from "./social-post-card.js?v=3";
 
 const MODAL_ID = "topic";
 
@@ -138,15 +138,6 @@ export function close() {
     unsubscribe = null;
   }
   notifyClose(MODAL_ID);
-}
-
-export function isOpen() {
-  return initialized && modal.classList.contains("open");
-}
-
-/** The topic currently being read, or null. */
-export function getOpenTopicId() {
-  return isOpen() ? topicId : null;
 }
 
 // ─── Render ────────────────────────────────────────────────────────────────

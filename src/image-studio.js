@@ -20,13 +20,13 @@
 // faithful results; Reprompt is an honest preview (reseed). The committed url
 // rides back to the draft via attachImageToDraft (see the modal component).
 
-import { FORMATS, formatsForNetwork, defaultFormatFor, NETWORK_FORMATS } from "./clip-formats.js?v=14";
+import { FORMATS, formatsForNetwork, defaultFormatFor, NETWORK_FORMATS } from "./clip-formats.js?v=16";
 // Layering note: the only import this engine takes from the view side, and a
 // deliberate one — canvas.js is pure, UI-agnostic (its own header says so) and
 // already shared by both studio versions. "Text in image" is mocked by baking the
 // words into the generated pixels with the very same flattener the Edit overlays
 // use, so there is nothing to duplicate here.
-import { compositeOverlays } from "./components/image-studio/canvas.js?v=2";
+import { compositeOverlays } from "./image-studio-canvas.js?v=5";
 
 const states = new Map(); // sessionId → state
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -43,12 +43,12 @@ export const VARIATION_CHOICES = [1, 2, 3, 4];
 // a date), as opposed to the Edit-mode text overlay, which is a movable layer on
 // top of a finished image. Short by design: a generated headline that runs long
 // stops being legible at thumbnail size.
-export const MAX_RENDER_TEXT = 90;
-export const RENDER_TEXT_MAX_LINES = 4;
+const MAX_RENDER_TEXT = 90;
+const RENDER_TEXT_MAX_LINES = 4;
 
 // Carousels — only some networks support a multi-slide post. Map is network →
 // max slides. LinkedIn (document/carousel) and Instagram are the ones we offer.
-export const CAROUSEL_MAX = { linkedin: 20, instagram: 10 };
+const CAROUSEL_MAX = { linkedin: 20, instagram: 10 };
 export const SLIDE_CHOICES = [3, 4, 5, 6, 8, 10];
 export function carouselMaxFor(network) {
   const net = network === "twitter" ? "x" : network || null;
@@ -79,7 +79,7 @@ export const IMAGE_TYPES = [
 // to three different readers and drift the moment they live apart.
 //
 // Every clause keeps the same sentence head so the brand-kit suffix still lands and
-// v1, which has no control and always runs `blend`, reads exactly as it did.
+// so anyone who ignores the control gets exactly what `match this image` meant.
 export const REF_MODES = [
   {
     key: "layout",
@@ -144,7 +144,7 @@ export const TEXT_COLORS = ["#FFFFFF", "#0A1B33", "#FF3C00", "#178DFE"];
 
 // Curated fonts for text overlays. `family: null` is the app default (Averta);
 // the rest are bundled locally via @font-face (styles/fonts.css) so the canvas
-// bake can flatten them offline. Users can also upload their own (customFonts).
+// bake can flatten them offline.
 export const FONT_OPTIONS = [
   { family: null, label: "Default" },
   { family: "Montserrat", label: "Montserrat" },
@@ -423,7 +423,6 @@ export function start(
     // logo: an image made for a brand should look like it unless someone says no.
     useBrandColors: brandColors.length > 0,
     customTextColors: [], // custom hex colours the user added to the text swatches
-    customFonts: [], // [{ family, label, url }] fonts the user uploaded (FontFace)
     playbookName: playbookName || "", // brand/playbook label for the toggle
     // Sections start COLLAPSED, with the exceptions below: every setting shows
     // its current value in its header and only opens if the user wants to change
@@ -487,7 +486,6 @@ export function exit(sessionId) {
   if (s._deriveTimer) clearTimeout(s._deriveTimer);
   for (const r of s.uploadedRefs || []) safeRevoke(r.url);
   for (const o of s.overlays) if (o.kind === "logo") safeRevoke(o.url);
-  for (const f of s.customFonts || []) safeRevoke(f.url);
   states.delete(sessionId);
   notify(sessionId);
 }
@@ -785,19 +783,14 @@ export function toggleGroupCollapsed(sessionId, id) {
 // Prompt composer size (small ↔ expanded) — expanded raises the textarea's
 // max-height so a long, structured prompt fits without scrolling. Set silently
 // (no re-render): the toggle mutates the composer in place so the max-height
-// CSS transition can animate on the persistent node (a full re-render would
-// swap the node and kill the animation) — state stays correct for later renders.
-export function setComposerExpandedSilent(sessionId, value) {
-  const s = states.get(sessionId);
-  if (s) s.composerExpanded = !!value;
-}
-
-// The notifying variant, for v2. There the toggle has to re-render — the button
-// swaps its icon and the console takes `.is-expanded` — and there is no in-place
-// transition to protect, because v2 re-renders its whole body on every change and
-// re-runs autosize afterwards anyway.
+// Notifies, because the toggle has to re-render: the button swaps its icon and
+// the console takes `.is-expanded`. Nothing animates in place that a re-render
+// would kill — the studio rebuilds its whole body on every change and re-runs
+// autosize afterwards anyway.
 export function setComposerExpanded(sessionId, value) {
-  setComposerExpandedSilent(sessionId, value);
+  const s = states.get(sessionId);
+  if (!s) return;
+  s.composerExpanded = !!value;
   notify(sessionId);
 }
 
@@ -1054,27 +1047,17 @@ export function removeVariation(sessionId, index) {
 
 // ── Edit surface ────────────────────────────────────────────────────────────
 
-// Produce the edited image. Crop is faithful (same-seed reframe); Reprompt reseeds.
-function computeEdit(s, tool, payload) {
+// Produce the edited image: an AI edit reseeds at the same dimensions (mock).
+// Crop does NOT come through here — it is a real pixel operation, drawn on the
+// canvas and committed by interactions.js#applyCropSelection → commitCrop.
+function computeEdit(s, tool) {
   const cur = s.currentImage;
-  const stamp = Date.now().toString(36);
-  if (tool === "crop") {
-    // Crop = reframe the SAME photo to a new aspect. Keeping the seed and only
-    // changing the requested dimensions makes picsum return the current image
-    // cropped to the ratio — a faithful reframe, not a fresh generation.
-    const fmt = payload.formatId || s.formatId;
-    s.formatId = fmt; // the frame genuinely changes shape
-    const dims = dimsFor(fmt);
-    const url = picsum(cur.seed, dims);
-    return { url, baseUrl: url, w: dims[0], h: dims[1], seed: cur.seed };
-  }
-  // prompt → reseed at the same dimensions (mock).
-  const seed = `${cur.seed}-${tool}-${stamp}`;
+  const seed = `${cur.seed}-${tool}-${Date.now().toString(36)}`;
   const url = picsum(seed, [cur.w, cur.h]);
   return { url, baseUrl: url, w: cur.w, h: cur.h, seed };
 }
 
-export function applyEdit(sessionId, tool, payload = {}) {
+export function applyEdit(sessionId, tool) {
   const s = states.get(sessionId);
   if (!s || !s.currentImage || s.editBusy) return;
   s.editBusy = true;
@@ -1083,7 +1066,7 @@ export function applyEdit(sessionId, tool, payload = {}) {
   s._editTimer = setTimeout(async () => {
     const cur = states.get(sessionId);
     if (!cur) return;
-    const next = computeEdit(cur, tool, payload);
+    const next = computeEdit(cur, tool);
     // A reframe or a redraw returns a fresh photo, so the requested text has to be
     // painted in again — otherwise one "Redraw" would silently erase it.
     const baked = await bakeRenderText(cur, next);
@@ -1283,19 +1266,6 @@ export function addCustomColor(sessionId, hex, applyKey = "color") {
   if (s.selectedOverlayId) {
     const o = s.overlays.find((x) => x.id === s.selectedOverlayId);
     if (o) o[applyKey] = h;
-  }
-  notify(sessionId);
-}
-
-// Register an uploaded font (already loaded via FontFace + document.fonts.add)
-// as a selectable option and apply it to the selected text overlay.
-export function addCustomFont(sessionId, { family, label, url } = {}) {
-  const s = states.get(sessionId);
-  if (!s || !family) return;
-  if (!s.customFonts.some((f) => f.family === family)) s.customFonts.push({ family, label, url });
-  if (s.selectedOverlayId) {
-    const o = s.overlays.find((x) => x.id === s.selectedOverlayId);
-    if (o) o.fontFamily = family;
   }
   notify(sessionId);
 }

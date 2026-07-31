@@ -1,11 +1,11 @@
 import { html, raw, escapeText, escapeAttr } from "../utils.js?v=21";
-import { getThread, subscribe as subscribeThread } from "../assistant.js?v=66";
-import { isFlagOn } from "../feature-flags.js?v=16";
+import { getThread, subscribe as subscribeThread } from "../assistant.js?v=68";
+import { isFlagOn } from "../feature-flags.js?v=18";
 import { ideas as MOCK_IDEAS } from "../mocks.js?v=62";
-import { isNewUser } from "../user-mode.js?v=22";
+import { isNewUser } from "../user-mode.js?v=23";
 import { getPath } from "../router.js?v=30";
 import { parseHashParams, setHashQuery } from "../url-state.js?v=21";
-import { LANGUAGE_OPTIONS } from "../languages.js?v=1";
+import { LANGUAGE_OPTIONS } from "../languages.js?v=2";
 import {
   getPosts,
   removePost,
@@ -13,38 +13,37 @@ import {
   updatePostContent,
   attachImageToDraft,
   subscribe as subscribePostsStore,
-} from "../posts-store.js?v=42";
-import { renderPostCard } from "./post-card.js?v=78";
-import { renderTopPostEcho } from "./top-post-card.js?v=74";
-import { renderClipCard } from "./clip-card.js?v=22";
-import { onFeedbackClick } from "./feedback-control.js?v=2";
+} from "../posts-store.js?v=43";
+import { renderPostCard } from "./post-card.js?v=80";
+import { renderTopPostEcho } from "./top-post-card.js?v=78";
+import { renderClipCard } from "./clip-card.js?v=24";
+import { onFeedbackClick } from "./feedback-control.js?v=3";
 // Shared compact idea card — same component the standalone Ideas page uses.
 import { renderCompactIdeaCard } from "./idea-card-compact.js?v=2";
-import { open as openVideoClipsModal } from "./video-clips-modal.js?v=62";
-import { isSidebarCollapsed, setSidebarCollapsed, isAutoCollapsed } from "./sidebar.js?v=263";
+import { open as openVideoClipsModal } from "./video-clips-modal.js?v=64";
+import { isSidebarCollapsed, setSidebarCollapsed, isAutoCollapsed } from "./sidebar.js?v=269";
 import {
   getSources as getStreamSources,
   subscribeSources,
   updateSourceClips,
   removeSources,
   renameSource,
-} from "../sources-stream.js?v=59";
-import { open as openAddSourceModal } from "./add-source-modal.js?v=69";
+} from "../sources-stream.js?v=61";
+import { open as openAddSourceModal } from "./add-source-modal.js?v=71";
 import { open as openRenameModal } from "./rename-modal.js?v=2";
 import { getConnectedConnectors } from "../connectors-store.js?v=34";
 import { askConnector } from "../connector-ask.js?v=14";
 import { renderConnectorLogo } from "../connectors-view.js?v=16";
 import { open as openConnectorsModal } from "./connectors-modal.js?v=17";
-import { addMention as addComposerMention } from "../composer-mentions.js?v=34";
+import { addMention as addComposerMention } from "../composer-mentions.js?v=36";
 import { iconFor } from "../file-kinds.js?v=20";
 
 // Lot 15 — empty in first-time mode so the right-panel Ideas surface lines
 // up with the rest of the chrome (sidebar Recent list = empty, dashboard
 // = first-run welcome). Returning user gets the full seed.
 const IDEAS = isNewUser() ? [] : MOCK_IDEAS;
-import { open as openScheduleModal } from "./schedule-modal.js?v=62";
-import { open as openImageStudioModal } from "./image-studio/index.js?v=85";
-import { open as openImageStudioV2Modal } from "./image-studio-v2/index.js?v=63";
+import { open as openScheduleModal } from "./schedule-modal.js?v=64";
+import { open as openImageStudio } from "./image-studio-v2/index.js?v=70";
 import { open as openConfirmModal } from "./confirm-modal.js?v=22";
 
 // Global Right Panel — slides in from the right edge of the viewport, overlays
@@ -664,7 +663,7 @@ export function init() {
           updateSourceClips(srcId, nextClips);
           const edited = (nextClips || []).find((c) => c.id === ref.clipId);
           if (!edited) return;
-          import("../posts-store.js?v=42").then(({ updatePostClip }) => {
+          import("../posts-store.js?v=43").then(({ updatePostClip }) => {
             updatePostClip(sid, pid, {
               start: edited.start,
               end: edited.end,
@@ -736,7 +735,7 @@ export function init() {
       openVideoClipsModal(src, {
         onSaveClips: (id, nextClips) => updateSourceClips(id, nextClips),
         onUseClips: (selectedClips, source) => {
-          import("../screens/session.js?v=515").then(({ startClipDraftFlow }) => {
+          import("../screens/session.js?v=521").then(({ startClipDraftFlow }) => {
             startClipDraftFlow(
               sid,
               selectedClips.map((clip) => ({ clip, sourceName: source.filename, sourceId: source.id })),
@@ -919,7 +918,7 @@ export function init() {
       const sid = activeSessionId();
       if (!sid || !entry) return;
       const { clip, sourceName, sourceId } = entry;
-      import("../screens/session.js?v=515").then(({ startClipDraftFlow }) => {
+      import("../screens/session.js?v=521").then(({ startClipDraftFlow }) => {
         startClipDraftFlow(sid, [{ clip, sourceName, sourceId }]);
       });
       return;
@@ -937,7 +936,7 @@ export function init() {
       if (picked.length === 0) return;
       clipSelection = new Set();
       renderPanel();
-      import("../screens/session.js?v=515").then(({ startClipDraftFlow }) => {
+      import("../screens/session.js?v=521").then(({ startClipDraftFlow }) => {
         startClipDraftFlow(sid, picked);
       });
       return;
@@ -1788,7 +1787,7 @@ function onPostRewrite(postId, intent = "fresh") {
   // streaming → commit. Loaded lazily so the rewrite code is only
   // pulled in when the user actually triggers a regen. `intent` biases
   // the rewrite (shorter / longer / warmer / formal / fresh).
-  import("../draft-rewrite.js?v=15").then(({ startRewrite }) => {
+  import("../draft-rewrite.js?v=16").then(({ startRewrite }) => {
     startRewrite(sid, postId, intent);
   });
 }
@@ -1933,7 +1932,7 @@ function onSectionSave(network) {
   if (snapshot.length === 0) return;
   const count = snapshot.length;
   const draftWord = count === 1 ? "draft" : "drafts";
-  Promise.all([import("./save-folder-modal.js?v=15"), import("../folders-store.js?v=10")]).then(
+  Promise.all([import("./save-folder-modal.js?v=16"), import("../folders-store.js?v=11")]).then(
     ([{ open: openSaveModal }, { addDraftsToFolder }]) => {
       openSaveModal({
         count,
@@ -2033,22 +2032,14 @@ function onPostDelete(postId) {
   });
 }
 
-// Which Image Studio the draft image actions open. v2 (prompt-at-the-bottom
-// redesign) is behind the `imageStudioV2` flag; both take the same
-// (postId, opts) contract, so every call site below is version-agnostic.
-function openStudio(postId, opts) {
-  const open = isFlagOn("imageStudioV2") ? openImageStudioV2Modal : openImageStudioModal;
-  open(postId, opts);
-}
-
 // "Generate an image" on a draft → open the near-fullscreen Image Studio modal.
 // The studio pulls the draft's network for its format defaults and, on "Use
 // this image", attaches the result straight back to this draft (see
-// image-studio/index.js#useImage).
+// image-studio-v2/index.js#useImage).
 function onPostImage(postId) {
   const sid = activeSessionId();
   if (!sid) return;
-  openStudio(postId, { sessionId: sid });
+  openImageStudio(postId, { sessionId: sid });
 }
 
 // "Edit" on a draft that already has an image → open the Image Studio straight
@@ -2062,9 +2053,9 @@ function onPostImageEdit(postId) {
   // A carousel reopens in the studio's carousel results (add / remove /
   // regenerate slides); a single image opens straight into Edit mode.
   if (Array.isArray(post.carousel) && post.carousel.length > 1) {
-    openStudio(postId, { sessionId: sid, carouselUrls: post.carousel });
+    openImageStudio(postId, { sessionId: sid, carouselUrls: post.carousel });
   } else if (post.imageUrl) {
-    openStudio(postId, { sessionId: sid, editImageUrl: post.imageUrl });
+    openImageStudio(postId, { sessionId: sid, editImageUrl: post.imageUrl });
   }
 }
 
@@ -2811,7 +2802,7 @@ function useIdea(ideaId) {
   if (!idea) return;
   const sid = activeSessionId();
   if (!sid) return;
-  import("../screens/session.js?v=515").then(({ askAngleQuestion }) => {
+  import("../screens/session.js?v=521").then(({ askAngleQuestion }) => {
     askAngleQuestion(sid, ideaId);
   });
 }
@@ -2820,12 +2811,6 @@ function useIdea(ideaId) {
 
 const COLOR_SWATCHES = ["orange", "blue", "green", "purple", "red", "yellow"];
 // LANGUAGE_OPTIONS now lives in src/languages.js (single source of truth).
-const TONE_FALLBACKS = [
-  "Conversational & approachable",
-  "Bold & opinionated",
-  "Neutral & informative",
-  "Playful & witty",
-];
 const STYLE_FALLBACKS = ["Educational with case studies", "Inspirational & aspirational", "Behind-the-scenes & human"];
 const OBJECTIVE_FALLBACKS = ["Drive traffic", "Community engagement", "Thought leadership", "Customer retention"];
 const ACTION_FALLBACKS = ["Visit the website", "Download a resource", "Join the community", "Contact sales"];

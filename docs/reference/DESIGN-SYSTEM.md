@@ -58,11 +58,14 @@ styles/
   layout.css        — app shell (sidebar / topbar / content / panel chrome)
   ds-patches.css    — la seule place légitime pour toucher .ap-*
   chat.css          — composer + thread chrome
-  screens/          — dashboard, session, ideas, contexts, connectors, settings,
-                      posts, analyse, playbook-editor, modals, sources, welcome
-  components/       — sidebar, right-panel, conversation-status-card,
-                      add-source-modal, connectors-modal, schedule-modal,
-                      video-clips-modal, clip-card, archie-loader
+  screens/          — analyse, batch-studio, caption-editor, clip-studio, connectors,
+                      contexts, dashboard, image-studio-canvas, image-studio-v2,
+                      modals, posts, session, topics, topics-settings, welcome
+  components/       — add-source-modal, archie-loader, clip-card, connectors-modal,
+                      conversation-status-card, feedback-control, right-panel,
+                      schedule-modal, sidebar, social-post-card, subtitle-style,
+                      top-post-card, topic-badge, topic-modal, video-clips-modal,
+                      workflow-flow
 ```
 
 ## Composants `.ap-*` les plus utilisés

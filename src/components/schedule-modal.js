@@ -7,9 +7,9 @@ import {
   dayKey,
   addToQueue,
   subscribe as subscribeQueue,
-} from "../schedule-store.js?v=11";
+} from "../schedule-store.js?v=12";
 import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=21";
-import { renderProfileTag, profileForNetwork } from "../social-profiles.js?v=34";
+import { renderProfileTag, profileForNetwork } from "../social-profiles.js?v=36";
 
 // Schedule modal (multi-draft).
 //   • 960px wide, two-column body
@@ -69,15 +69,6 @@ const NETWORK_ICON = {
   instagram: "ap-icon-instagram-official",
   facebook: "ap-icon-facebook-official",
   tiktok: "ap-icon-tiktok-official",
-};
-
-const NETWORK_NAME = {
-  linkedin: "LinkedIn",
-  twitter: "X",
-  x: "X",
-  instagram: "Instagram",
-  facebook: "Facebook",
-  tiktok: "TikTok",
 };
 
 // Per-network suggested publishing windows. Each entry lists

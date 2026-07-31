@@ -1,6 +1,6 @@
 import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr } from "../utils.js?v=21";
 import { navigate } from "../router.js?v=30";
-import { renderTopbar } from "../components/topbar.js?v=293";
+import { renderTopbar } from "../components/topbar.js?v=299";
 import { socialAccounts, chatStarters, connectorDocs } from "../mocks.js?v=62";
 import {
   getConnectedProfiles,
@@ -11,12 +11,12 @@ import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
   PROFILE_SEARCH_THRESHOLD,
-} from "../social-profiles.js?v=34";
-import { FORMATS, formatsForNetwork, defaultFormatFor, clipFormatItems } from "../clip-formats.js?v=14";
+} from "../social-profiles.js?v=36";
+import { FORMATS, formatsForNetwork, defaultFormatFor, clipFormatItems } from "../clip-formats.js?v=16";
 import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../clip-subtitles.js?v=1";
-import { getSessionById, getSessions, subscribe as subscribeSessions } from "../sessions-store.js?v=12";
-import { getContextById, getContexts, getDefaultContext, updateContext } from "../contexts-store.js?v=44";
-import { isNewUser } from "../user-mode.js?v=22";
+import { getSessionById, getSessions, subscribe as subscribeSessions } from "../sessions-store.js?v=13";
+import { getContextById, getContexts, getDefaultContext, updateContext } from "../contexts-store.js?v=45";
+import { isNewUser } from "../user-mode.js?v=23";
 import {
   getThread,
   sendMessage,
@@ -36,31 +36,31 @@ import {
   markConnectPromptResolved,
   toggleTopPostsWidgetPick,
   answerTopPostsWidget,
-} from "../assistant.js?v=66";
+} from "../assistant.js?v=68";
 import { iconFor as fileIconForKind } from "../file-kinds.js?v=20";
-import { getSources, getIdeas, extractVideoIdeas } from "../library.js?v=60";
-import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=49";
+import { getSources, getIdeas, extractVideoIdeas } from "../library.js?v=62";
+import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=51";
 import {
   renderInto as renderComposerMentions,
   removeMention as removeComposerMention,
   subscribe as subscribeComposerMentions,
   addMention as addComposerMention,
-} from "../composer-mentions.js?v=34";
-import { getPosts, addPostDraft, setSubtitleStyle, subscribe as subscribePostsStore } from "../posts-store.js?v=42";
-import { startDraftFlow, executeDraft, executeDraftBatch, getAnglesForIdea } from "../draft-flow.js?v=64";
-import { startActionPickerFlow, handleActionPick } from "../start-flow.js?v=46";
-import * as topPostsFlow from "../top-posts-flow.js?v=84";
+} from "../composer-mentions.js?v=36";
+import { getPosts, addPostDraft, setSubtitleStyle, subscribe as subscribePostsStore } from "../posts-store.js?v=43";
+import { startDraftFlow, executeDraft, executeDraftBatch, getAnglesForIdea } from "../draft-flow.js?v=66";
+import { startActionPickerFlow, handleActionPick } from "../start-flow.js?v=48";
+import * as topPostsFlow from "../top-posts-flow.js?v=86";
 import {
   renderTopPostsBoard,
   renderTopPostEcho,
   renderTopPostsWidget,
   TOP_POSTS_LIMIT,
-} from "../components/top-post-card.js?v=74";
-import { getTopPost } from "../top-posts-store.js?v=16";
-import { renderEmptyState } from "../components/empty-state.js?v=1";
+} from "../components/top-post-card.js?v=78";
+import { getTopPost } from "../top-posts-store.js?v=18";
+import { renderEmptyState } from "../components/empty-state.js?v=2";
 import * as sidebarWizard from "../sidebar-wizard.js?v=59";
 import * as inlineQuestion from "../inline-question.js?v=48";
-import * as clipStudio from "../clip-studio.js?v=31";
+import * as clipStudio from "../clip-studio.js?v=33";
 import * as batchStudio from "../batch-studio.js?v=4";
 import { askConnector } from "../connector-ask.js?v=14";
 import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=34";
@@ -70,8 +70,8 @@ import {
   clearActiveConnector,
   subscribe as subscribeComposerConnector,
 } from "../composer-connector.js?v=1";
-import { isFlagOn } from "../feature-flags.js?v=16";
-import * as contextBuilder from "../context-builder.js?v=263";
+import { isFlagOn } from "../feature-flags.js?v=18";
+import * as contextBuilder from "../context-builder.js?v=269";
 import { renderPicker } from "./_analyse-common.js?v=55";
 import { renderSourceCard } from "../components/source-card.js?v=33";
 import { renderIdeaCard } from "../components/idea-card.js?v=27";
@@ -81,10 +81,10 @@ import {
   renderContentWorkspace as renderSharedContentWorkspace,
   rerenderContentWorkspaceBody,
   renderContentEmptyState,
-} from "../components/content-workspace.js?v=25";
-import { open as openVideoClipsModal } from "../components/video-clips-modal.js?v=62";
-import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=68";
-import { open as openAddSourceModal } from "../components/add-source-modal.js?v=69";
+} from "../components/content-workspace.js?v=26";
+import { open as openVideoClipsModal } from "../components/video-clips-modal.js?v=64";
+import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=70";
+import { open as openAddSourceModal } from "../components/add-source-modal.js?v=71";
 import { open as openConnectorsModal } from "../components/connectors-modal.js?v=17";
 import { dropzoneHTML } from "../components/dropzone.js?v=1";
 import {
@@ -101,9 +101,9 @@ import {
   updateSourceClips,
   extractClipsForSource,
   setSourceIdeaCount,
-} from "../sources-stream.js?v=59";
-import { renderClipCard } from "../components/clip-card.js?v=22";
-import { onFeedbackClick } from "../components/feedback-control.js?v=2";
+} from "../sources-stream.js?v=61";
+import { renderClipCard } from "../components/clip-card.js?v=24";
+import { onFeedbackClick } from "../components/feedback-control.js?v=3";
 import { showToast } from "../components/toast.js?v=20";
 import {
   openDrafts as openDraftsPanel,
@@ -111,13 +111,13 @@ import {
   openClips as openClipsPanel,
   getMode as getRightPanelMode,
   subscribe as subscribeRightPanel,
-} from "../components/right-panel.js?v=430";
+} from "../components/right-panel.js?v=436";
 import { setHandoff, consumeHandoff, hasHandoff } from "../handoff.js?v=20";
-import { startTopicChat, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=4";
+import { startTopicChat, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=6";
 import { parseHashParams, setHashQuery } from "../url-state.js?v=21";
-import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=24";
-import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=32";
-import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=45";
+import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=26";
+import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=34";
+import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=47";
 // Pure thread-turn renderers — shared with the component handoff gallery so
 // the previews there never drift from the app (handoff/components.html).
 import {
@@ -415,22 +415,7 @@ function renderAssistantPanel(session, attachedContext) {
 // refreshAssistantAside node-swap keep working. See clip-studio.js for state.
 
 // Format a seconds count as a friendly "~2 min" / "45 sec" remaining label.
-function fmtEta(totalSec) {
-  if (totalSec >= 60) {
-    const m = Math.round(totalSec / 60);
-    return `${m} min`;
-  }
-  return `${Math.max(5, totalSec)} sec`;
-}
-
 // Config catalogs for the upload/config screen.
-const CLIP_DURATIONS = [
-  { value: "auto", label: "Auto" },
-  { value: "short", label: "Up to 30s" },
-  { value: "medium", label: "30–60s" },
-  { value: "long", label: "60–90s" },
-];
-const CLIP_OUTPUT_FORMATS = ["9:16", "16:9", "1:1"]; // keys into FORMATS
 const CLIP_CAPTION_STYLES = [
   { value: "none", label: "None" },
   { value: "bold", label: "Bold" },
@@ -2317,43 +2302,6 @@ function clipContext(clip, sourceName) {
   };
 }
 
-// Open the Video Clips modal with the standard "session" callback wiring:
-// save persists clip edits in sources-stream; use-clips drafts the picked
-// clips into THIS session (drafts pill increments + inline draft turn +
-// toast). Shared by every in-session entry point (dashboard starter, future
-// "Add video" composer path, completion-toast action, inline thread card).
-function openVideoClipsModalForSession(source, session) {
-  openVideoClipsModal(source, {
-    onSaveClips: (id, nextClips) => updateSourceClips(id, nextClips),
-    onUseClips: (selectedClips, src) => {
-      const drafts = selectedClips.map((clip) => {
-        const d = addPostDraft(session.id, {
-          network: clip.network,
-          text: [clip.title, clip.summary].filter(Boolean),
-          hashtags: (clip.tags || []).map((t) => `#${t}`),
-          clipRef: {
-            start: clip.start,
-            end: clip.end,
-            sourceName: src.filename,
-            hue: clip.hue,
-          },
-        });
-        d.generationContext = clipContext(clip, src.filename);
-        return d;
-      });
-      postDraftResult(session.id, {
-        ideaTitle: `From ${src.filename}`,
-        drafts,
-      });
-      if (isFlagOn("statusActionSnackbars")) {
-        showToast(`Drafted ${drafts.length} post${drafts.length === 1 ? "" : "s"} from ${src.filename}`, {
-          duration: 3200,
-        });
-      }
-    },
-  });
-}
-
 // Local copy of dashboard's defaultChatName — keeps session.js standalone
 // without a circular import for a 5-line helper.
 function defaultChatNameLocal() {
@@ -3711,25 +3659,9 @@ function rerenderContentWorkspace(root, session) {
 // Network → icon mapping — used both in the Drafts summary card network row
 // and (later) by the Drafts work-surface in Lot 4. Keep the slug list aligned
 // with mocks.socialAccounts so the visual surfaces never miss a network.
-const NETWORK_ICON = {
-  linkedin: "ap-icon-linkedin-official",
-  twitter: "ap-icon-twitter-official",
-  x: "ap-icon-twitter-official",
-  instagram: "ap-icon-instagram-official",
-  facebook: "ap-icon-facebook-official",
-  tiktok: "ap-icon-tiktok-official",
-  youtube: "ap-icon-youtube-official",
-};
-
-function networkLabel(network) {
-  if (network === "twitter") return "X";
-  if (!network) return "";
-  return network.charAt(0).toUpperCase() + network.slice(1);
-}
-
 // Pending → ready clip-extraction card. The turn carries only the sourceId
-// and filename; the renderer reads the live source from sources-stream so
-// the same turn naturally flips state when setClipExtractionStatus fires
+// and filename; the renderer reads the live source from sources-stream, so the
+// same turn naturally flips state when extractClipsForSource lands its result
 // (the session view subscribes to subscribeSources, repainting the thread).
 function renderClipExtractionTurn(message, sessionId) {
   const source = getStreamSources(sessionId).find((s) => s.id === message.sourceId);

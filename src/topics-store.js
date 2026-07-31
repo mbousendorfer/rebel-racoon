@@ -31,7 +31,7 @@
 // as the file ages read worse than a stable "3 days ago".
 
 import { topics as seed, topicScanPool as scanSeed } from "./mocks.js?v=62";
-import { isNewUser } from "./user-mode.js?v=22";
+import { isNewUser } from "./user-mode.js?v=23";
 import { createNotifier } from "./store-utils.js?v=2";
 
 // First-time user mode starts empty so /topics renders its empty state and the
@@ -91,11 +91,6 @@ export function getTopicById(id) {
 /** Unseen and not dismissed — what the sidebar badge counts. */
 export function getUnseenCount() {
   return topics.filter((t) => t.unseen && !t.dismissed).length;
-}
-
-/** How many visible topics a given source produced — the filter chip counts. */
-export function countBySource(sourceId) {
-  return topics.filter((t) => !t.dismissed && t.sourceId === sourceId).length;
 }
 
 /** Reading a topic clears its unseen badge. No-op if it was already read. */

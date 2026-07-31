@@ -12,7 +12,6 @@
 //   • getQueueOn(date)          — entries that fall on the given local day
 //   • subscribe(fn)             — shallow notify on every mutation
 //   • addToQueue(entries)       — push one or many {id, network, text, when}
-//   • removeFromQueue(id)       — drop a single entry (unschedule)
 //   • busyCountsByDay(start,end)— Map<dateKey, count> for calendar dots
 
 import { scheduledQueue as SEED } from "./mocks.js?v=62";
@@ -56,10 +55,4 @@ export function addToQueue(entries) {
   if (!Array.isArray(entries) || entries.length === 0) return;
   queue = queue.concat(entries.filter(Boolean));
   notify();
-}
-
-export function removeFromQueue(id) {
-  const before = queue.length;
-  queue = queue.filter((e) => e.id !== id);
-  if (queue.length !== before) notify();
 }

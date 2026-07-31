@@ -16,7 +16,7 @@
 //   subscribe(fn)                → unsubscribe
 
 import { recentSessions as seed } from "./mocks.js?v=62";
-import { isNewUser } from "./user-mode.js?v=22";
+import { isNewUser } from "./user-mode.js?v=23";
 import { createNotifier } from "./store-utils.js?v=2";
 
 // First-time user starts with an empty session list (matches every other

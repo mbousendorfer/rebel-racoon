@@ -1,24 +1,49 @@
-// Image Studio v2 — the chrome + the stage.
+// Image Studio — the modal's chrome, and the whole layout assembled.
 //
-// One vertical layout for both modes: a single-row header (title · mode tabs ·
-// view toggle), a full-width STAGE that owns all the height it can get, and the
-// bottom COMPOSER (delegated to composer-view). There is no left rail and no
-// separate footer — the composer is both, which is the whole point of the v2
-// layout: the prompt sits where the user's attention ends up, and in Edit mode
-// that same bar becomes the AI reprompt + tool bar.
+//   ┌────────────────────────────────────────────────────────┐
+//   │  Image Studio        Generate | Edit                 ✕ │  header
+//   ├────────────────────────────────────────────────────────┤
+//   │                  [ Image | In feed ]                   │
+//   │  ┌────────────┐                            ┌──┐        │
+//   │  │ References │                            │▪ │        │
+//   │  │ Text in …  │                            │▪ │        │
+//   │  │ Branding   │        [   IMAGE   ]       │+ │        │
+//   │  │ Type       │                            └──┘        │
+//   │  │ Style      │                          variations    │
+//   │  │ Format     │                                        │
+//   │  │ Output     │                                        │
+//   │  └────────────┘                                        │
+//   │   settings-view                                        │  stage
+//   ├────────────────────────────────────────────────────────┤
+//   │            ✨ [ the brief …        ] [Generate]         │  composer
+//   ├────────────────────────────────────────────────────────┤
+//   │                                    [ Use this image ]  │  footer
+//   └────────────────────────────────────────────────────────┘
 //
-// This module renders the shell and every stage state EXCEPT the edit canvas,
-// which edit-view owns (it carries the overlay/crop machinery).
+// The creative-tool three-zone arrangement: inputs left, canvas centre, output
+// right, prompt bottom. Two things fall out of it — the settings sit beside the
+// image they describe instead of underneath it, and the bottom bar shrinks back
+// to the one thing it should hold.
+//
+// EDIT swaps the settings panel for the tool palette on the SAME left edge, so
+// changing mode moves the controls in place rather than across the modal; the
+// variations rail keeps the right edge to itself.
+//
+// This module renders the shell, the header, the footer and every stage state
+// EXCEPT the edit canvas, which edit-view owns (it carries the overlay/crop
+// machinery that has to follow a precise pixel).
 
 import { html, raw, escapeHtml } from "../../utils.js?v=21";
-import { getPosts } from "../../posts-store.js?v=42";
-import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=34";
-import { renderPostCard } from "../post-card.js?v=78";
-import { KEY, ctx } from "./context.js?v=33";
-import { composer, settingsPanel, toolPalette, footerBar } from "./composer-view.js?v=65";
-import { editCanvas } from "./edit-view.js?v=33";
-import { compositeOverlays } from "../image-studio/canvas.js?v=2";
-import * as imageStudio from "../../image-studio.js?v=69";
+import { getPosts } from "../../posts-store.js?v=43";
+import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=36";
+import { renderPostCard } from "../post-card.js?v=80";
+import { KEY, ctx } from "./context.js?v=37";
+import { composer } from "./composer-view.js?v=68";
+import { settingsPanel } from "./settings-view.js?v=5";
+import { toolPalette } from "./tools-view.js?v=5";
+import { editCanvas } from "./edit-view.js?v=37";
+import { compositeOverlays } from "../../image-studio-canvas.js?v=5";
+import * as imageStudio from "../../image-studio.js?v=73";
 
 // In-feed preview — the edit canvas layers logo/text overlays as live DOM over
 // the image, but renderPostCard only takes a URL, so overlays wouldn't show. We
@@ -52,7 +77,7 @@ function compositedPreviewUrl(img, overlays) {
 
 export function renderStudio(st) {
   return html`
-    <div class="isv2 isv2--${st.mode}">
+    <div class="isv2">
       ${raw(header(st))}
       <section class="isv2-stage" aria-label="Preview">${raw(stageContent(st))}</section>
       ${raw(composer(st))} ${raw(footerBar(st))}
@@ -60,9 +85,37 @@ export function renderStudio(st) {
   `;
 }
 
+// ── The footer bar ─────────────────────────────────────────────────────────
+
+// One bar across the bottom of the modal, in BOTH modes, carrying the single
+// action that ends the flow. Having it there from the first frame — disabled
+// until there is something to commit — means the destination is visible the
+// whole way through instead of appearing only once results land.
+export function footerBar(st) {
+  const carousel = st.outputMode === "carousel";
+  let left = "";
+  let primary;
+  if (st.mode === "edit") {
+    left = `<button type="button" class="ap-button ghost grey" data-img-undo ${imageStudio.canUndo(KEY) ? "" : "disabled"}><i class="ap-icon-reset"></i><span>Undo</span></button>`;
+    // Editing a carousel slide commits back into that slide rather than to the
+    // draft — a different destination, so a different verb.
+    primary = carousel
+      ? `<button type="button" class="ap-button primary orange" data-img-apply-slide ${st.editBusy || !st.currentImage ? "disabled" : ""}><i class="ap-icon-check"></i><span>Apply to slide ${(st.selectedIndex ?? 0) + 1}</span></button>`
+      : `<button type="button" class="ap-button primary orange" data-img-use ${st.editBusy || !st.currentImage ? "disabled" : ""}><i class="ap-icon-check"></i><span>Use this image</span></button>`;
+  } else {
+    const label = carousel ? `Use carousel · ${st.variations.length} slides` : "Use this image";
+    const ready = carousel ? st.variations.length >= 2 : !!st.currentImage;
+    primary = `<button type="button" class="ap-button primary orange" data-img-use ${ready ? "" : "disabled"}><i class="ap-icon-check"></i><span>${escapeHtml(label)}</span></button>`;
+  }
+  return `<div class="ap-dialog-footer isv2-footer">
+    <div class="ap-dialog-footer-left">${left}</div>
+    <div class="ap-dialog-footer-right">${primary}</div>
+  </div>`;
+}
+
 // ── Header ──────────────────────────────────────────────────────────────────
 
-// One 48px row instead of v1's two (dialog header + a tab strip below it): the
+// ONE 48px row, not a dialog header with a tab strip below it: the
 // stage needs every pixel it can get now that the console owns the bottom. The
 // header carries only what scopes the WHOLE modal — its name and the two peer
 // modes; the × is the .ap-dialog-close in the shell, which the row's right

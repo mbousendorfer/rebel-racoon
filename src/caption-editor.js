@@ -36,7 +36,7 @@ import {
   detectFillers,
   detectPauses,
   videoForClip,
-} from "./clip-captions.js?v=5";
+} from "./clip-captions.js?v=6";
 
 const FONT_FAMILIES = [
   "Montserrat, Roboto, sans-serif",

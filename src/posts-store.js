@@ -8,7 +8,7 @@
 //   subscribe(sessionId, fn)    → unsubscribe fn
 
 import { postsBySession as seedPostsBySession, recentSessions as seedRecentSessions } from "./mocks.js?v=62";
-import { isNewUser } from "./user-mode.js?v=22";
+import { isNewUser } from "./user-mode.js?v=23";
 import { createSessionNotifier } from "./store-utils.js?v=2";
 
 // Demo session ids — only these get the seeded posts mock. Brand-new

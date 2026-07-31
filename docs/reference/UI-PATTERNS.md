@@ -107,7 +107,7 @@ Trois écarts assumés à la recette, appris en construisant cette page :
 
 ### Filter chips
 
-`.ap-filter-chip` piloté par `aria-pressed`, optionnels `-icon` / `-avatar` (img rond) / `-count`. Partout : connectors-view, playbook-view, ideas, generate-image-modal, right-panel, feedback-control, schedule-modal.
+`.ap-filter-chip` piloté par `aria-pressed`, optionnels `-icon` / `-avatar` (img rond) / `-count`. Partout : connectors-view, playbook-view, ideas, image-studio (bascule Image/In feed), right-panel, feedback-control, schedule-modal.
 
 ### Status pills
 
@@ -170,7 +170,7 @@ Glyphes webfont DS `<i class="ap-icon-*">` (quasi toujours `aria-hidden="true"`)
 Codifiée dans `tokens.css` (_« orange = primary/AI, blue = selected/info, red = destructive »_). Voir [`DESIGN-SYSTEM.md`](DESIGN-SYSTEM.md#convention-couleur--usage-app-wide).
 
 - **Exemple le plus net** — [`connectors-view.js`](../../src/connectors-view.js) : action AI « Try » = `ap-button primary orange`, action routine « Connect » = `ap-button primary blue`, côte à côte.
-- **Orange (AI / generate / commit)** : Send composer, Batch/Clip studio Generate, Regenerate, Save recap, Generate-image, add-source Import/Add-URL/Add-text, welcome « Save and continue », tuiles icône AI (`--ref-color-orange-10` + glyphe orange).
+- **Orange (AI / generate / commit)** : Send composer, Batch/Clip studio Generate, Regenerate, Save recap, Generate-image, add-source Import/Add-URL/Add-text, welcome « Save and continue », Image Studio « Use this image », tuiles icône AI (`--ref-color-orange-10` + glyphe orange).
 - **Bleu (routine / navigation / picker submit)** : Connect, « Create a Playbook », Ideas new, playbook Start, bulk-extract, top-post CTAs, **tous les submits Quickpicker**.
 - **Conversation navy** (`--app-convo-navy*`) : override l'electric-blue pour les accents du **thread** (bulle user, label « You », pill Ideas, chips source-intake, halos hover).
 
@@ -200,11 +200,11 @@ Détail complet des formules de taille : [`SHELL-LAYOUT.md`](SHELL-LAYOUT.md).
 
 **Le loader (source unique)** : [`archie-loader.js`](../../src/archie-loader.js) + `styles/components/archie-loader.css`. Toutes les classes spinner (`.archie-loader`, `.ap-loader` + tailles, ~10 `*-spinner`) rendent **le même mark** : `initArchieLoader()` sweep le DOM + `MutationObserver` injecte `LOADER_SVG` (7 carrés arrondis en scale, stagger 0→0.686s) avec un `__MASKID__` unique. CSS possède la box (`--archie-loader-size`, `aspect-ratio 227.15/170.03`, `color: --archie-loader-color` défaut `--ref-color-orange-100`, `currentColor` blanc sur CTAs pleins). Inline SVG obligatoire (SMIL gèle en background/mask).
 
-⚠️ **Toujours dimensionner par `--archie-loader-size`, jamais par `width` + `height`.** La variable est la **largeur** de la boîte ; la hauteur vient de l'`aspect-ratio` du viewBox. Fixer les deux neutralise l'`aspect-ratio` et écrase le glyphe en carré (c'était le cas du loader de prompt de l'Image Studio v1, à `28px × 28px`).
+⚠️ **Toujours dimensionner par `--archie-loader-size`, jamais par `width` + `height`.** La variable est la **largeur** de la boîte ; la hauteur vient de l'`aspect-ratio` du viewBox. Fixer les deux neutralise l'`aspect-ratio` et écrase le glyphe en carré (c'était le cas du loader de prompt de l'Image Studio, à `28px × 28px`).
 
 ⚠️ **Une barre d'outils flottante n'est pas une pill.** Les mini-toolbars de l'Image Studio (texte sélectionné, boîte de crop) étaient en `--app-radius-pill` : à 999px l'arc du coin passe **en travers** des contrôles des deux bouts — la pastille de couleur à gauche, l'`.ap-icon-button` à droite — et les rogne. Elles sont en `--app-radius-lg` (8px), qui vaut aussi `--comp-icon-button-border-radius` : le coin du conteneur est alors **concentrique** avec les boutons qu'il tient (4px de padding autour d'un coin de 4px = 8px). La pill reste juste pour ce qui n'a **pas** de contrôle sur ses bords : segmented view toggle, badge, pastille de position.
 
-⚠️ **`.gen-loading-mark` est le mark 88px du _stage_** (l'état vide du canvas), pas un « loader d'image » générique. Les deux composers d'Image Studio le portaient, ce qui mettait un glyphe de 88px dans un champ de 36px : il débordait de la carte et poussait le texte sur le côté. Un loader **inline** ne porte que `.gen-image-spinner` (20px par défaut). Et un loader qui remplace un champ doit prendre la **largeur du champ** (`flex: 1`) — centrer dans une boîte shrink-to-fit revient exactement à aligner à gauche.
+⚠️ **`.gen-loading-mark` est le mark 88px du _stage_** (l'état vide du canvas), pas un « loader d'image » générique. Le composer de l'Image Studio le portait, ce qui mettait un glyphe de 88px dans un champ de 36px : il débordait de la carte et poussait le texte sur le côté. Un loader **inline** ne porte que `.gen-image-spinner` (20px par défaut). Et un loader qui remplace un champ doit prendre la **largeur du champ** (`flex: 1`) — centrer dans une boîte shrink-to-fit revient exactement à aligner à gauche.
 
 ---
 

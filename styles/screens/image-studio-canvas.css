@@ -1,0 +1,860 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   Image Studio — the on-canvas editing layer.
+
+   Everything that has to sit ON the image and follow a precise pixel: the
+   movable/resizable/rotatable overlays, the freeform crop box and its handles,
+   the selected-text mini toolbar and its four flyouts (colour, font, outline,
+   shadow), the swatch and logo-preset grids, and the floating tool palette.
+
+   Split out of the studio's own stylesheet because it is a different subject on
+   a different clock: `.isv2-*` dresses the shell, the settings panel and the
+   composer — chrome that gets redesigned — while these rules answer "where
+   exactly on the image is this control, and how does it stay there".
+
+   The `.image-studio__*` prefix is deliberate, not leftover. Three of these
+   families are assembled by string concatenation in JS and a rename would break
+   them silently:
+     .image-studio__crop-handle--{nw,ne,se,sw}   edit-view.js  (cropRect)
+     .image-studio__popover--{kind}              inline-text.js (toggleTextEffect)
+     .image-studio__tt-{kind}                    inline-text.js (toggleTextEffect)
+
+   Loaded before image-studio-v2.css (index.html), which overrides a handful of
+   these at higher specificity — notably `.isv2-frame.is-gesturing
+   .image-studio__crop-toolbar`, the frame's own `container-type`, and the
+   palette flyout, all of which belong to the shell and stayed there.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Manual hand-tools — a compact icon-only palette floating at the canvas
+   top-left (Crop / Add text / Add image), the counterpart to the AI bar. */
+.image-studio__palette {
+  position: absolute;
+  left: var(--ref-spacing-lg);
+  top: var(--ref-spacing-lg);
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-xxs);
+  background: var(--ref-color-white);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
+  box-shadow: var(--app-shadow-popover-lg);
+}
+
+/* Labelled tools stack as a uniform-width, left-aligned rail (menu-like). */
+.image-studio__palette .ap-button {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.image-studio__palette-anchor {
+  position: relative;
+  width: 100%;
+}
+
+/* Active tool — Add image popover open (aria-expanded) or Crop mode on
+   (aria-pressed): tint the ghost button with the blue accent (bg + text). */
+.image-studio__palette .ap-button[aria-expanded="true"],
+.image-studio__palette .ap-button[aria-pressed="true"] {
+  background-color: var(--ref-color-electric-blue-05);
+  color: var(--ref-color-electric-blue-100);
+}
+
+/* Small popover anchored above its trigger (Crop ratios / logo presets / text
+   colour). Premium chrome: a hairline + layered soft shadow, 12px radius, and a
+   quick rise-in (globally neutralised under prefers-reduced-motion). */
+@keyframes image-studio-pop {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes image-studio-pop-center {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+.image-studio__popover {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 0;
+  z-index: 6;
+  min-width: 180px;
+  padding: var(--ref-spacing-sm);
+  background: var(--ref-color-white);
+  border-radius: var(--app-radius-card);
+  box-shadow:
+    0 0 0 1px rgba(33, 46, 68, 0.05),
+    0 2px 5px rgba(33, 46, 68, 0.06),
+    0 16px 32px -10px rgba(33, 46, 68, 0.24);
+  transform-origin: bottom center;
+  animation: image-studio-pop 150ms var(--app-ease-out);
+}
+
+/* The text-style popovers share one "titled panel" chrome: a header (title +
+   optional toggle) over a full-bleed hairline, then a padded body. Padding lives
+   on the head + body so the divider can bleed edge-to-edge. */
+.image-studio__popover--textcolor,
+.image-studio__popover--shadow,
+.image-studio__popover--font {
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 0;
+  padding: 0;
+  overflow: hidden; /* clip the full-bleed head divider + body to the radius */
+  animation-name: image-studio-pop-center; /* keep centred while rising in */
+}
+
+.image-studio__popover--textcolor {
+  width: max-content; /* sized by the swatch grid below */
+}
+
+.image-studio__popover--shadow {
+  width: 236px;
+}
+
+.image-studio__popover--font {
+  width: 220px;
+}
+
+/* Colour groups — Brand and More sit as two eyebrow-labelled rows, separated by
+   whitespace (no boxes). The swatches carry the colour; the labels stay quiet. */
+.image-studio__color-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+}
+
+/* Tier 2 — quiet uppercase eyebrow marking each swatch group. */
+.image-studio__color-label {
+  margin: 0;
+  font-size: 10.5px;
+  line-height: 1;
+  font-weight: var(--ref-font-weight-bold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ref-color-grey-60);
+}
+
+.image-studio__popover--textcolor .image-studio__swatches {
+  display: grid;
+  grid-template-columns: repeat(4, 28px); /* match the 28px swatch so cells don't clip */
+  gap: var(--ref-spacing-sm);
+}
+
+/* Titled-panel header — the title anchors the popover; the optional DS toggle
+   sits opposite. A full-bleed hairline separates it from the body. */
+.image-studio__popover-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-sm);
+  min-height: 40px;
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  border-bottom: 1px solid var(--app-border-soft);
+}
+
+/* Tier 1 — the popover title: dark, sentence-case, the clear anchor (was the
+   same tiny grey eyebrow as the group labels, which read as "one tone"). */
+.image-studio__popover-title {
+  margin: 0;
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.image-studio__popover-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-sm);
+}
+
+/* Mini toolbar attached to a selected TEXT element, above it.
+ *
+ * A DS radius, not a pill. At 999px the corner arc cut straight across the
+ * controls at both ends — the colour swatch on the left and the trash icon-button
+ * on the right — clipping them. 8px (`--app-radius-lg`, the DS `border-radius-lg`)
+ * is also `--comp-icon-button-border-radius`, so the container's corner is
+ * concentric with the icon buttons it holds: 4px of padding around a 4px button
+ * corner lands exactly on 8px. */
+.image-studio__text-toolbar {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  display: none;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  padding: 4px 6px;
+  white-space: nowrap;
+  background: var(--ref-color-white);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
+  box-shadow: var(--app-shadow-popover-lg);
+}
+
+.image-studio__overlay.is-selected .image-studio__text-toolbar {
+  display: inline-flex;
+}
+
+/* Hide the toolbar mid-drag so it doesn't trail the element. */
+.image-studio__overlay-layer.is-gesturing .image-studio__text-toolbar {
+  display: none;
+}
+
+.image-studio__tt-sep {
+  width: 1px;
+  height: 20px;
+  background: var(--sys-border-color-default);
+}
+
+/* Labelled toolbar buttons (Colour / Font / Bold / Outline / Shadow). No DS
+   toggle-button component exists, so these are composed from the DS button
+   tokens — same height / radius / text / grey-idle → grey-05-hover as .ap-button
+   ghost grey, with the DS electric-blue tint for the active (pressed / on)
+   state. The delete control uses the real .ap-icon-button. */
+.image-studio__tt-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  height: var(--comp-button-height);
+  padding: 0 var(--ref-spacing-sm);
+  border: none;
+  background: none;
+  border-radius: var(--comp-button-border-radius);
+  cursor: pointer;
+  color: var(--ref-color-grey-80);
+  font-size: var(--comp-button-text-size);
+  line-height: var(--comp-button-text-line-height);
+  font-weight: var(--comp-button-text-weight);
+}
+
+.image-studio__tt-btn:hover {
+  background: var(--ref-color-grey-05);
+}
+
+.image-studio__tt-btn:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: 1px;
+}
+
+/* Active — a pressed toggle (Bold) or an applied effect (Outline / Shadow, via
+   the .is-on class): the DS electric-blue tint, matching .ap-icon-button.blue. */
+.image-studio__tt-btn[aria-pressed="true"],
+.image-studio__tt-btn.is-on {
+  background: var(--ref-color-electric-blue-10);
+  color: var(--ref-color-electric-blue-100);
+}
+
+/* The colour button's leading dot previews the current text colour. */
+.image-studio__tt-swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: var(--app-radius-circle);
+  border: 1px solid var(--sys-border-color-default);
+  background: var(--sw, #fff);
+}
+
+/* Font trigger — a compact "Aa" glyph in place of an icon (no font glyph in DS). */
+.image-studio__tt-aa {
+  font-size: var(--comp-button-text-size);
+  font-weight: var(--ref-font-weight-bold);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+/* Shadow trigger — a dot that casts its own soft shadow, reading as the effect. */
+.image-studio__tt-shadowdot {
+  width: 13px;
+  height: 13px;
+  border-radius: var(--app-radius-circle);
+  background: var(--ref-color-grey-40);
+  box-shadow: 1.5px 2.5px 3px rgba(16, 24, 40, 0.5);
+}
+
+/* Six controls widen the pill — keep it a single row sized to its content (the
+   toolbar bleeds over the image edge harmlessly; the frame is overflow:visible)
+   and never wider than the viewport. */
+.image-studio__overlay.is-selected .image-studio__text-toolbar {
+  width: max-content;
+  max-width: 90vw;
+}
+
+/* Effect-popover header switch — the DS toggle, sized down for the compact head. */
+.image-studio__fx-toggle {
+  flex: 0 0 auto;
+  transform: scale(0.82);
+  transform-origin: right center;
+}
+
+/* Shadow intensity slider row. */
+.image-studio__slider-row {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+}
+
+.image-studio__slider-row .ap-slider {
+  flex: 1;
+}
+
+.image-studio__slider-val {
+  min-width: 2.5ch;
+  text-align: right;
+  font-size: var(--sys-text-style-caption-size);
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--ref-color-grey-80);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Dim (and lock) the sub-controls when an effect is switched off. */
+.image-studio__popover--outline.is-off .image-studio__color-group,
+.image-studio__popover--shadow.is-off .image-studio__slider-row {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* Font popover — a DS single-select dropdown: full-width option rows built from
+   the .ap-select-option tokens, plus a footer "Import" action. */
+.image-studio__font-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-height: 240px; /* ~6 rows; the popover opens upward inside the clipped canvas */
+  overflow-y: auto;
+}
+
+/* Mirrors .ap-select-option — the DS single-line select row. */
+.image-studio__font-row {
+  display: flex;
+  align-items: center;
+  gap: var(--comp-select-one-line-spacing);
+  width: 100%;
+  min-height: var(--comp-select-one-line-height);
+  padding: var(--ref-spacing-xxs) var(--comp-select-one-line-padding-horizontal);
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--comp-select-one-line-text-color);
+  font-size: var(--comp-select-one-line-text-size);
+  line-height: var(--comp-select-one-line-text-line-height);
+  font-weight: var(--comp-select-one-line-text-font-weight);
+  text-align: left;
+  transition: background-color 0.1s ease;
+}
+
+.image-studio__font-row:hover {
+  background: var(--ref-color-electric-blue-10);
+}
+
+.image-studio__font-row:active {
+  background: var(--ref-color-electric-blue-20);
+}
+
+.image-studio__font-name {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Selected — the DS select "selected" option: blue tint + darker-blue bold text. */
+.image-studio__font-row.is-selected {
+  background: var(--ref-color-electric-blue-10);
+  color: var(--ref-color-electric-blue-150);
+  font-weight: var(--comp-select-one-line-selected-text-font-weight);
+}
+
+.image-studio__font-check {
+  margin-left: auto;
+  color: var(--ref-color-electric-blue-150);
+}
+
+/* Font popover body follows the DS dropdown container: vertical padding only, so
+   the option rows span full width (their 16px padding lines the text up with the
+   header title). */
+.image-studio__popover--font .image-studio__popover-body {
+  padding: var(--ref-spacing-xxs) 0;
+  gap: var(--ref-spacing-xxs);
+}
+
+/* Inline text-edit state — text becomes typeable; the drag chrome steps aside. */
+.image-studio__overlay.is-editing {
+  cursor: default;
+}
+
+.image-studio__overlay.is-editing .image-studio__overlay-text {
+  pointer-events: auto;
+  cursor: text;
+  user-select: text;
+  outline: none;
+}
+
+.image-studio__overlay.is-editing .image-studio__overlay-rotate,
+.image-studio__overlay.is-editing .image-studio__overlay-rotate-reset,
+.image-studio__overlay.is-editing .image-studio__overlay-resize {
+  display: none;
+}
+
+/* Overlays are clipped to the image rect (WYSIWYG — matches the flattened bake).
+   While an element is selected or being dragged the layer un-clips, so a bleeding
+   element and its handles/toolbar stay fully visible and grabbable. */
+.image-studio__overlay-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.image-studio__overlay-layer.has-selection,
+.image-studio__overlay-layer.is-gesturing {
+  overflow: visible;
+}
+
+.image-studio__overlay {
+  position: absolute;
+  display: inline-flex;
+  cursor: move;
+  user-select: none;
+  touch-action: none;
+  line-height: 0;
+}
+
+.image-studio__overlay > img {
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+}
+
+.image-studio__overlay-text {
+  display: block;
+  white-space: nowrap;
+  line-height: 1.05;
+  pointer-events: none;
+}
+
+.image-studio__overlay.is-selected {
+  outline: 1px dashed var(--ref-color-electric-blue-100);
+  outline-offset: 3px;
+}
+
+.image-studio__overlay-delete,
+.image-studio__overlay-rotate,
+.image-studio__overlay-rotate-reset,
+.image-studio__overlay-resize {
+  position: absolute;
+  z-index: 2;
+  display: none;
+}
+
+.image-studio__overlay.is-selected .image-studio__overlay-delete,
+.image-studio__overlay.is-selected .image-studio__overlay-rotate,
+.image-studio__overlay.is-selected .image-studio__overlay-rotate-reset,
+.image-studio__overlay.is-selected .image-studio__overlay-resize {
+  display: inline-flex;
+}
+
+.image-studio__overlay-delete {
+  top: -10px;
+  right: -10px;
+  width: 20px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: var(--app-radius-circle);
+  background: rgba(10, 27, 51, 0.82);
+  color: var(--ref-color-white);
+  cursor: pointer;
+}
+
+.image-studio__overlay-delete > i {
+  font-size: 11px;
+}
+
+.image-studio__overlay-rotate {
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--app-radius-circle);
+  background: var(--ref-color-white);
+  border: 1px solid var(--ref-color-electric-blue-100);
+  color: var(--ref-color-electric-blue-100);
+  cursor: grab;
+}
+
+.image-studio__overlay-rotate > i {
+  font-size: 11px;
+}
+
+/* Text overlays carry the style toolbar directly above them, so the rotate
+   handle can't stay at the top — the toolbar (z-index 5) would cover it and
+   you couldn't grab it. Drop it below, centred, clear of both the toolbar
+   above and the bottom-right resize corner. */
+.image-studio__overlay.is-text .image-studio__overlay-rotate {
+  top: auto;
+  bottom: -30px;
+}
+
+/* "Reset rotation" — sits just to the right of the rotate handle, sharing its
+   vertical band (top for logos, bottom for text). Only rendered while rotated
+   (see edit-view). Same circular chip as the handle, but filled electric-blue
+   so it reads as an action, not another grab target. */
+.image-studio__overlay-rotate-reset {
+  top: -30px;
+  left: 50%;
+  transform: translateX(calc(-50% + 24px));
+  width: 20px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: var(--app-radius-circle);
+  background: var(--ref-color-electric-blue-100);
+  color: var(--ref-color-white);
+  cursor: pointer;
+}
+
+.image-studio__overlay-rotate-reset > i {
+  font-size: 11px;
+}
+
+.image-studio__overlay.is-text .image-studio__overlay-rotate-reset {
+  top: auto;
+  bottom: -30px;
+}
+
+.image-studio__overlay-resize {
+  bottom: -8px;
+  right: -8px;
+  width: 14px;
+  height: 14px;
+  border-radius: var(--app-radius-circle);
+  background: var(--ref-color-white);
+  border: 2px solid var(--ref-color-electric-blue-100);
+  cursor: nwse-resize;
+}
+
+/* ── Edit: freeform crop (draw a rectangle) ─────────────────────────────── */
+/* The frame is overflow:visible in edit mode; the crop layer clips itself so
+   the rect's dim-mask (a huge spread box-shadow) covers only the image. */
+.image-studio__crop-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 3; /* above overlays (2), below the busy overlay + action bar */
+  overflow: hidden;
+  border-radius: var(--app-radius-md);
+  touch-action: none;
+}
+
+.image-studio__croprect {
+  position: absolute;
+  box-sizing: border-box;
+  outline: 1px dashed var(--ref-color-electric-blue-100);
+  outline-offset: -1px;
+  box-shadow: 0 0 0 9999px rgba(10, 27, 51, 0.45); /* dims everything outside */
+  cursor: move;
+  touch-action: none;
+}
+
+/* Rule-of-thirds guides — subtle, purely visual. */
+.image-studio__croprect::before,
+.image-studio__croprect::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.image-studio__croprect::before {
+  border-left: 1px solid rgba(255, 255, 255, 0.35);
+  border-right: 1px solid rgba(255, 255, 255, 0.35);
+  margin: 0 33.33%;
+}
+
+.image-studio__croprect::after {
+  border-top: 1px solid rgba(255, 255, 255, 0.35);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.35);
+  margin: 33.33% 0;
+}
+
+.image-studio__crop-handle {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: var(--app-radius-circle);
+  background: var(--ref-color-white);
+  border: 2px solid var(--ref-color-electric-blue-100);
+  z-index: 1;
+}
+
+.image-studio__crop-handle--nw {
+  top: -7px;
+  left: -7px;
+  cursor: nwse-resize;
+}
+
+.image-studio__crop-handle--ne {
+  top: -7px;
+  right: -7px;
+  cursor: nesw-resize;
+}
+
+.image-studio__crop-handle--sw {
+  bottom: -7px;
+  left: -7px;
+  cursor: nesw-resize;
+}
+
+.image-studio__crop-handle--se {
+  bottom: -7px;
+  right: -7px;
+  cursor: nwse-resize;
+}
+
+/* Crop options float as a card attached just below the crop rectangle (same
+   on-canvas pattern as the text mini toolbar) — a frame child positioned from
+   the crop-rect fractions (inline left/top), centred under the box's bottom edge.
+   It sits outside the crop-layer so it isn't clipped and can't start a drag. */
+.image-studio__crop-toolbar {
+  position: absolute;
+  z-index: 6;
+  transform: translate(-50%, var(--ref-spacing-xs));
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  width: max-content;
+  max-width: 92vw;
+  padding: 4px 6px; /* match the text mini toolbar */
+  background: var(--ref-color-white);
+  border: 1px solid var(--app-border);
+  /* Same DS radius as the text mini toolbar, and for the same reason — it ends in
+     two `.ap-icon-button`s that a pill corner sliced through. */
+  border-radius: var(--app-radius-lg);
+  box-shadow: var(--app-shadow-popover-lg);
+}
+
+/* Thin vertical divider between clusters + options — matches the text toolbar. */
+.image-studio__crop-sep {
+  flex: 0 0 auto;
+  width: 1px;
+  height: 20px;
+  background: var(--sys-border-color-default);
+}
+
+.image-studio__crop-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+}
+
+/* Apply = confirm: tint the check with the studio's accent so it reads as the
+   primary action while staying a subtle icon button. */
+.image-studio__crop-apply > i {
+  color: var(--app-archie-mark);
+}
+
+.image-studio__crop-aspects {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+}
+
+/* "Best for <Network>" hint — the draft's network logo + label, marking which
+   ratios are the optimised set. */
+.image-studio__crop-bestfor {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  color: var(--ref-color-grey-60);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  white-space: nowrap;
+}
+
+.image-studio__crop-bestfor > i {
+  font-size: 14px;
+}
+
+/* Aspect options — borderless buttons (like the text toolbar): a proportional
+   glyph + ratio label; hover tints grey, the selected ratio tints blue. */
+.image-studio__crop-aspect {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  height: var(--comp-button-height);
+  padding: 0 var(--ref-spacing-sm);
+  border: none;
+  background: none;
+  border-radius: var(--comp-button-border-radius);
+  cursor: pointer;
+  color: var(--ref-color-grey-80);
+  font-size: var(--comp-button-text-size);
+  line-height: var(--comp-button-text-line-height);
+  font-weight: var(--ref-font-weight-regular);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  transition: background var(--ref-animation-short) var(--app-ease-out);
+}
+
+.image-studio__crop-aspect:hover {
+  background: var(--ref-color-grey-05);
+}
+
+/* Selected ratio — blue tint (no border), the active option in the row. */
+.image-studio__crop-aspect[aria-pressed="true"] {
+  background: var(--ref-color-electric-blue-10);
+  color: var(--ref-color-electric-blue-100);
+  font-weight: var(--ref-font-weight-bold);
+}
+
+.image-studio__crop-aspect-glyph {
+  display: inline-block;
+  height: 14px;
+  width: auto; /* presets: sized by inline aspect-ratio */
+  flex: 0 0 auto;
+  border: 1.5px solid var(--ref-color-grey-40);
+  border-radius: 2px;
+}
+
+/* Freeform has no aspect-ratio → a dashed square standing for "unconstrained". */
+.image-studio__crop-aspect--free .image-studio__crop-aspect-glyph {
+  width: 14px;
+  border-style: dashed;
+}
+
+.image-studio__crop-aspect[aria-pressed="true"] .image-studio__crop-aspect-glyph {
+  border-color: var(--ref-color-electric-blue-100);
+}
+
+/* Full-width upload action at the top of the popover — distinct from the presets
+   (was a dashed tile mixed into the grid). */
+.image-studio__logo-upload.ap-button {
+  width: 100%;
+  justify-content: center;
+}
+
+/* Stock-image tray — a uniform grid that scales: more images add rows and the
+   tray scrolls, rather than widening the popover. */
+.image-studio__presets {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--ref-spacing-xs);
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+/* Block tile — logos/stickers contained on a white tile with breathing room.
+   The square comes from the IMG's own aspect-ratio + the tile's symmetric
+   padding (which keeps the tile square), avoiding the aspect-ratio-in-a-flex-item
+   height cycle. */
+.image-studio__preset {
+  display: block;
+  padding: var(--ref-spacing-xs);
+  overflow: hidden;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-starter);
+  background: var(--ref-color-white);
+  cursor: pointer;
+  transition:
+    border-color 120ms var(--app-ease-out),
+    box-shadow 120ms var(--app-ease-out);
+}
+
+.image-studio__preset img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain; /* logos: contain, never crop */
+}
+
+.image-studio__preset:hover {
+  border-color: var(--ref-color-electric-blue-100);
+}
+
+.image-studio__swatches {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xs);
+}
+
+.image-studio__swatch {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: var(--app-radius-circle);
+  background: var(--sw, #fff);
+  cursor: pointer;
+  /* Inset hairline so light swatches (white/cream) keep a crisp edge. */
+  box-shadow: inset 0 0 0 1px rgba(16, 24, 40, 0.12);
+  transition:
+    transform 120ms var(--app-ease-out),
+    box-shadow 120ms var(--app-ease-out);
+}
+
+.image-studio__swatch:hover {
+  transform: scale(1.12);
+}
+
+/* Selected — a white gap then an accent ring (reads on any swatch colour). */
+.image-studio__swatch.is-selected {
+  box-shadow:
+    inset 0 0 0 1px rgba(16, 24, 40, 0.12),
+    0 0 0 2px var(--ref-color-white),
+    0 0 0 4px var(--ref-color-electric-blue-100);
+}
+
+/* "Add colour" swatch — a dashed circle wrapping a hidden native colour input. */
+.image-studio__swatch--add {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ref-color-white);
+  border-style: dashed;
+  color: var(--ref-color-grey-60);
+  overflow: hidden;
+}
+
+.image-studio__swatch--add:hover {
+  border-color: var(--ref-color-electric-blue-100);
+  color: var(--ref-color-electric-blue-100);
+}
+
+.image-studio__swatch--add > i {
+  font-size: 12px;
+  pointer-events: none;
+}
+
+.image-studio__swatch--add > input[type="color"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}

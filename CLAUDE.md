@@ -58,6 +58,8 @@ src/
   file-kinds.js         — source kind → DS icon class
   mocks.js              — ALL seed data (sessions, contexts, sources, ideas, posts,
                           connectors + connectorDocs, social accounts, threads, prefs)
+  image-studio.js       — Image Studio state engine (UI-agnostic) + all its mocks
+  image-studio-canvas.js — pure canvas helpers: bake / crop / text metrics
 
   # Stores (per-session Map + subscribers, seed from mocks unless new-alt mode)
   sessions-store.js     — chat sessions list (pin / rename / delete)
@@ -126,9 +128,14 @@ src/
     add-source-modal.js   Upload / URL / Connectors tabs
     connectors-modal.js   connectors gallery + detail overlay (from composer Add / Sources panel / page)
     topic-modal.js        one dossier read end to end — 720px, prose measure
-    generate-image-modal.js, video-clips-modal.js, schedule-modal.js,
+    video-clips-modal.js, schedule-modal.js,
     bug-report-modal.js, feedback-modal.js, chat-picker-modal.js,
     confirm-modal.js, rename-modal.js, search-modal.js
+    image-studio-v2/      the Image Studio, split by subject (see FEATURES §7):
+                          index (lifecycle) · events · commit · inline-text ·
+                          stage-view · composer-view · settings-view ·
+                          references-view · branding-view · tools-view ·
+                          edit-view · interactions · context
 
   modal-coordinator.js    one-overlay-at-a-time: requestOpen / notifyClose / bindOverlayDismissal
 ```
@@ -137,24 +144,51 @@ src/
 
 **No external store library.** Stores follow one pattern: a module-level `Map(sessionId → state)` (or a single array for catalogs) plus a `Set<fn>` of subscribers notified shallowly on each mutation, built with `createNotifier()` from `store-utils.js`. State seeds lazily from `mocks.js` on first read — **or stays empty in `new-alt` mode** (`isNewUser()`).
 
-| Store                  | Domain                                                                     | Key public API                                                                                                                                                                                                                                             |
-| ---------------------- | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sessions-store.js`    | chat sessions                                                              | `getSessions`, `getSessionById`, `updateSession`, `deleteSession`, `togglePin`, `subscribe`                                                                                                                                                                |
-| `contexts-store.js`    | Playbooks                                                                  | `getContexts`, `getContextById`, `getDefaultContext`, `addContext`, `updateContext`, `duplicateContext`, `deleteContext`, `subscribe`                                                                                                                      |
-| `connectors-store.js`  | connectors catalog + state                                                 | `getConnectors`, `findConnector`, `getConnectedConnectors`, `setConnectorStatus`, `subscribe`                                                                                                                                                              |
-| `library.js`           | per-session ideas (sources delegate to sources-stream)                     | `getSources(sid)`, `getIdeas(sid)`, `appendExtractedIdeas`, `injectIdeasForSource`, `extractVideoIdeas`, `removeIdeas`, `subscribe(sid, fn)`                                                                                                               |
-| `posts-store.js`       | per-session drafts                                                         | `getPosts(sid)`, `addPostDraft`, `updatePostContent`, `attachImageToDraft`, `removePost`, `subscribe(sid, fn)`                                                                                                                                             |
-| `assistant.js`         | per-session thread                                                         | `getThread`, `sendMessage`, `sendConnectorMessage`, `postAssistantMessage`, `postSystemNotice`/`markSystemNoticeReady`, `postSourceIntake`, `postExtractionResult`, `postAssistantChoice`/`submitAssistantChoice`, `postDraftResult`, `subscribe(sid, fn)` |
-| `sources-stream.js`    | **global** uploads + sources state machine (uploading → processing → done) | `getSources`, `getUploads`, `subscribeSources`, `subscribeUploads`, `startFileUpload`, `startUrlImport`, `startConnectorImport`, `extractClipsForSource`, `removeSources`, `renameSource`                                                                  |
-| `schedule-store.js`    | scheduled-post queue                                                       | `getQueue`, `getQueueOn`, `addToQueue`, `removeFromQueue`, `busyCountsByDay`, `subscribe`                                                                                                                                                                  |
-| `composer-mentions.js` | per-session composer mentions                                              | `addMention`, `removeMention`, `renderInto`, `subscribe(sid, fn)`                                                                                                                                                                                          |
-| `topics-store.js`      | **global** listening dossiers + the mock scan (flag `topics`)              | `getTopics`, `getTopicById`, `getUnseenCount`, `countBySource`, `markSeen`, `dismissTopic`, `restoreTopic`, `refreshTopics`, `hasMoreToScan`, `topicWhen`, `subscribe`                                                                                     |
+| Store                  | Domain                                                                     | Key public API                                                                                                                                                                                                 |
+| ---------------------- | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sessions-store.js`    | chat sessions                                                              | `getSessions`, `getSessionById`, `updateSession`, `deleteSession`, `togglePin`, `subscribe`                                                                                                                    |
+| `contexts-store.js`    | Playbooks                                                                  | `getContexts`, `getContextById`, `getDefaultContext`, `addContext`, `updateContext`, `duplicateContext`, `deleteContext`, `subscribe`                                                                          |
+| `connectors-store.js`  | connectors catalog + state                                                 | `getConnectors`, `findConnector`, `getConnectedConnectors`, `setConnectorStatus`, `subscribe`                                                                                                                  |
+| `library.js`           | per-session ideas (sources delegate to sources-stream)                     | `getSources(sid)`, `getIdeas(sid)`, `appendExtractedIdeas`, `injectIdeasForSource`, `extractVideoIdeas`, `removeIdeas`, `subscribe(sid, fn)`                                                                   |
+| `posts-store.js`       | per-session drafts                                                         | `getPosts(sid)`, `addPostDraft`, `updatePostContent`, `attachImageToDraft`, `attachCarouselToDraft`, `removePost`, `subscribe(sid, fn)`                                                                        |
+| `assistant.js`         | per-session thread                                                         | `getThread`, `sendMessage`, `sendConnectorMessage`, `postAssistantMessage`, `postSourceIntake`, `postExtractionResult`, `postAssistantChoice`/`submitAssistantChoice`, `postDraftResult`, `subscribe(sid, fn)` |
+| `sources-stream.js`    | **global** uploads + sources state machine (uploading → processing → done) | `getSources`, `getUploads`, `subscribeSources`, `subscribeUploads`, `startFileUpload`, `startUrlImport`, `startConnectorImport`, `extractClipsForSource`, `removeSources`, `renameSource`                      |
+| `schedule-store.js`    | scheduled-post queue                                                       | `getQueue`, `getQueueOn`, `addToQueue`, `busyCountsByDay`, `subscribe`                                                                                                                                         |
+| `composer-mentions.js` | per-session composer mentions                                              | `addMention`, `removeMention`, `renderInto`, `subscribe(sid, fn)`                                                                                                                                              |
+| `topics-store.js`      | **global** listening dossiers + the mock scan (flag `topics`)              | `getTopics`, `getTopicById`, `getUnseenCount`, `markSeen`, `dismissTopic`, `restoreTopic`, `refreshTopics`, `hasMoreToScan`, `topicWhen`, `subscribe`                                                          |
 
 `sources-stream` is the only **global** store. `library.js` subscribes to sources-stream and re-emits per-session so any session's content surfaces repaint when a source lands. **No localStorage persistence of app state** — only `archie-user-mode`, the feature-flag keys, sidebar collapse state, and the single-use `sessionStorage` handoff keys.
 
 ### A settings surface must not aggregate
 
 Three attempts at a general settings page were reverted here: the drawer (`2b0abcf`, the DS ships no side-drawer primitive), a Connectors section (`8cdd7e8`, it duplicated `/connectors`), then `/settings` itself (`6fca0b0`). Config belongs on the entity that owns it (a Playbook's fields live on `/playbook/:id`) or on a route scoped to one feature — never re-hosted in a global page.
+
+### The Image Studio is split by subject, and the engine holds no DOM
+
+`src/image-studio.js` is the state engine: a `Map(key → state)`, every mock, and **no DOM at all**.
+The views under `components/image-studio-v2/` hold no state of their own — a mutation notifies and the
+whole modal body is re-rendered. That one-way path is what makes the studio safe to change, so the
+exceptions are quarantined in **one** file, `inline-text.js`: typing in a text overlay, dragging a
+colour or a slider, and toggling outline/shadow all patch the DOM by hand, because a re-render would
+lose the caret, replace the input mid-drag, or remount an open popover so it replays its entrance
+animation. Nothing else in the studio may skip the render path.
+
+The modules split by **subject**, not by size: `index.js` is the lifecycle, `events.js` every
+delegated listener, `commit.js` the paths that write to the draft, then one view module per surface
+(`stage-view`, `composer-view`, `settings-view`, `references-view`, `branding-view`, `tools-view`,
+`edit-view`). Two stylesheets, for the same reason: `image-studio-v2.css` is the shell (`.isv2-*`),
+`image-studio-canvas.css` is everything that sits ON the image and must follow a precise pixel
+(`.image-studio__*`).
+
+Two naming legacies are deliberate, not oversights: the `image-studio-v2/` directory, the `.isv2-`
+prefix and `KEY = "studio-v2"` date from when a second studio was mounted beside this one behind the
+`imageStudioV2` flag (both removed). Renaming them would touch two stylesheets and thirteen modules
+for something no user can see. Likewise `isv2-sheet-label` / `-hint` / `-switch` were written for
+flyout sheets the settings panel replaced — `settings-view.js` carries the disclosure.
+
+⚠️ Three class families are assembled by string concatenation and a rename breaks them silently:
+`.image-studio__crop-handle--{nw,ne,se,sw}`, `.image-studio__popover--{kind}`,
+`.image-studio__tt-{kind}`.
 
 ### Connectors as live, MCP-queryable sources
 
@@ -193,7 +227,7 @@ A topic offers exactly two actions: **Start a chat** and **Dismiss**. Start-a-ch
 
 ### Admin / user mode (prototype controls)
 
-The **Admin** popover in the sidebar footer cog (`admin-menu.js`) is the prototype control panel: switch user mode and toggle feature flags (each change reloads so stores re-seed). `user-mode.js`: `getUserMode()` returns `"returning"` (populated mocks, default) or `"new-alt"` (empty stores + first-time onboarding); `isNewUser()`/`isNewUserAlt()` test for `new-alt`. Feature flags live in `ff-catalog.js` (`FLAGS`, each with a `default`) and are read via `isFlagOn()`. The 11 flags: `draftInlineEdit` (OFF), `playbookDefault` (OFF), `connectors` (OFF — gates the whole connectors feature), `conversationStatusCard` (OFF), `statusActionSnackbars` (OFF), `playbookColors` (OFF — colors hidden by default), `manyProfiles` (OFF — demo seed of ~40 connected profiles), `multilingualPlaybook` (OFF), `playbookCompetitors` (OFF — gates the Playbook's Competitors section), `imageStudioV2` (**ON** — the prompt-at-the-bottom redesign in `components/image-studio-v2/` is the Image Studio; OFF falls back to the previous one), `topics` (OFF — gates the whole Topics feature: the `/topics` feed, `/topics/settings`, the nav row, and the dossier dialog). Full table + gates: [`docs/reference/FEATURES.md`](docs/reference/FEATURES.md#14-admin-feature-flags--user-modes).
+The **Admin** popover in the sidebar footer cog (`admin-menu.js`) is the prototype control panel: switch user mode and toggle feature flags (each change reloads so stores re-seed). `user-mode.js`: `getUserMode()` returns `"returning"` (populated mocks, default) or `"new-alt"` (empty stores + first-time onboarding); `isNewUser()` tests for `new-alt`. Feature flags live in `ff-catalog.js` (`FLAGS`, each with a `default`) and are read via `isFlagOn()`. The 10 flags: `draftInlineEdit` (OFF), `playbookDefault` (OFF), `connectors` (OFF — gates the whole connectors feature), `conversationStatusCard` (OFF), `statusActionSnackbars` (OFF), `playbookColors` (OFF — colors hidden by default), `manyProfiles` (OFF — demo seed of ~40 connected profiles), `multilingualPlaybook` (OFF), `playbookCompetitors` (OFF — gates the Playbook's Competitors section), `topics` (OFF — gates the whole Topics feature: the `/topics` feed, `/topics/settings`, the nav row, and the dossier dialog). Full table + gates: [`docs/reference/FEATURES.md`](docs/reference/FEATURES.md#14-admin-feature-flags--user-modes).
 
 ### Module loading
 
@@ -240,12 +274,14 @@ styles/
   layout.css        — app shell (sidebar / topbar / content / panel chrome)
   ds-patches.css    — the only legitimate place to touch .ap-* selectors
   chat.css          — composer + thread chrome
-  screens/          — dashboard, session, ideas, contexts, connectors, topics,
-                      topics-settings, posts, analyse, modals, sources, welcome
-  components/       — sidebar, right-panel, conversation-status-card,
-                      add-source-modal, connectors-modal, schedule-modal,
-                      video-clips-modal, clip-card, archie-loader,
-                      topic-badge (shared by 3 surfaces), topic-modal, social-post-card
+  screens/          — analyse, batch-studio, caption-editor, clip-studio, connectors,
+                      contexts, dashboard, image-studio-canvas, image-studio-v2,
+                      modals, posts, session, topics, topics-settings, welcome
+  components/       — add-source-modal, archie-loader, clip-card, connectors-modal,
+                      conversation-status-card, feedback-control, right-panel,
+                      schedule-modal, sidebar, social-post-card, subtitle-style,
+                      top-post-card, topic-badge, topic-modal, video-clips-modal,
+                      workflow-flow
 ```
 
 ### Token tiers

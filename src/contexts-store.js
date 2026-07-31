@@ -18,7 +18,7 @@
 // when scope is "Update everywhere".
 
 import { contexts as seed } from "./mocks.js?v=62";
-import { isNewUser } from "./user-mode.js?v=22";
+import { isNewUser } from "./user-mode.js?v=23";
 import { createNotifier } from "./store-utils.js?v=2";
 import { DEFAULT_ENABLED_IDS, DEFAULT_CADENCE, findTopicSource, findCadence } from "./topics-catalog.js?v=2";
 import {
@@ -26,7 +26,7 @@ import {
   mirrorPrimaryToTopLevel,
   syncTopLevelToPrimary,
   cloneVoiceByLanguage,
-} from "./languages.js?v=1";
+} from "./languages.js?v=2";
 
 // Lot 15 — first-time user mode starts empty so the standalone /contexts
 // page renders its empty state. Returning user keeps the mock seed. Every

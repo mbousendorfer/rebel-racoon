@@ -33,7 +33,3 @@ export function setUserMode(mode) {
 export function isNewUser() {
   return getUserMode() === "new-alt";
 }
-
-export function isNewUserAlt() {
-  return getUserMode() === "new-alt";
-}

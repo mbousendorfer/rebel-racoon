@@ -33,7 +33,7 @@ Surface principale, sur `#/session/:id` ([`screens/session.js`](../../src/screen
 | **Hero « New chat »**        | Avant le 1er turn : wordmark Archie animé, sous-titre _« Drop a source — I'll turn it into a batch of ready-to-schedule posts, all from one chat. »_, composer **inline dans le hero**, puis _« Or jump into a workflow »_ + grille de **starter cards** (`mocks.chatStarters`). Cartes prompt-injection (préremplissent le composer) ou action (`open-video-clips`, `open-batch`, `open-top-posts`). Placeholders `{{source}}` / `{{video-source}}` résolus au render. |
 | **Greeting**                 | Thread frais : une bulle Archie. Avec Playbook : _« Hi. Want me to compare ideas, pick the strongest one, or draft a post?… »_ ; sans : _« Hi. I'll help you pick sources, sharpen ideas, and draft posts… »_. Sauté si un start-flow est en file, et pour les sessions `welcome-alt-*` / `clip-studio-*`.                                                                                                                                                              |
 | **Échange user → AI**        | 3 turns : bulle « You », notice **« Thinking »** (mermaid, collapsible, _« Analyzing your request and sources… »_), puis bulle AI révélée après ~6 s. Réponse scriptée par intention (`mockAiReply`). Les prompts « batch » produisent en plus un batch de 5 drafts.                                                                                                                                                                                                    |
-| **Notices collapsibles**     | `<details>` avec pill mermaid ou grise (`postSystemNotice` / `markSystemNoticeReady`, ex. « Extracting guidelines »).                                                                                                                                                                                                                                                                                                                                                   |
+| **Notices collapsibles**     | `<details>` avec pill mermaid ou grise (`postSystemNotice` / `markSystemNoticeReady`, ex. « Extracting guidelines »). ⚠️ **Aucun appelant aujourd'hui** — le producteur et les deux branches de rendu existent, rien ne les déclenche.                                                                                                                                                                                                                                  |
 | **Source-intake turn**       | Chip compact « Source intake » (icône kind + nom + slot d'état). Loading → spinner « Uploading » ; ready → pills tappables _« N ideas › »_ / _« M clips › »_ (vidéo) ou check vert. Piloté par [`intake-lifecycle.js`](../../src/screens/session/intake-lifecycle.js).                                                                                                                                                                                                  |
 | **Idea-extraction turn**     | Pill _« Extracted N idea(s) »_ + cartes idée compactes (feedback pouce, « Why this idea », Mention, Draft).                                                                                                                                                                                                                                                                                                                                                             |
 | **Draft-result turn**        | `postDraftResult` : anchor **non rendu inline**. Un nouveau draft ouvre le panneau Drafts sur le batch + status bar verte _« N drafts ready »_ + toast.                                                                                                                                                                                                                                                                                                                 |
@@ -159,7 +159,7 @@ Store **per-session** [`posts-store.js`](../../src/posts-store.js). Draft = auth
 
 ## 5. Scheduling
 
-Store [`schedule-store.js`](../../src/schedule-store.js) : file upcoming, `getQueue` (tri asc), `getQueueOn(day)`, `busyCountsByDay` (dots calendrier), `addToQueue`, `removeFromQueue`.
+Store [`schedule-store.js`](../../src/schedule-store.js) : file upcoming, `getQueue` (tri asc), `getQueueOn(day)`, `busyCountsByDay` (dots calendrier), `addToQueue`.
 
 ### Modal Schedule ([`schedule-modal.js`](../../src/components/schedule-modal.js)) — 960px, deux colonnes
 
@@ -191,301 +191,216 @@ Store [`schedule-store.js`](../../src/schedule-store.js) : file upcoming, `getQu
 
 ## 7. Images
 
-### Image Studio ([`components/image-studio/`](../../src/components/image-studio/))
+### Image Studio ([`components/image-studio-v2/`](../../src/components/image-studio-v2/))
 
-Modale near-fullscreen, deux modes pairs (**Generate** / **Edit**, tabs DS). Entrées : « Generate
-an image » d'un draft, ou l'action d'édition d'un draft qui a déjà une image (ouvre directement en
-Edit, ou en résultats carousel si le draft porte plusieurs slides). Tout l'état + les mocks vivent
-dans [`image-studio.js`](../../src/image-studio.js) (UI-agnostique) ; la vue est découpée en
-`shell-view` / `compose-view` / `edit-view` / `interactions`.
+Modale near-fullscreen, deux modes pairs (**Generate** / **Edit**, tabs DS). Un header d'une ligne
+(titre · les deux modes), un **stage pleine largeur**, un **composer en bas**, un footer qui porte
+l'unique action de sortie. Les réglages vivent dans un **panneau épinglé à gauche du stage** —
+à côté de l'image qu'ils décrivent, sur le bord que la palette d'outils d'Edit réutilise, si bien que
+changer de mode échange les contrôles sur place au lieu de les envoyer à l'autre bout de la modale.
+Le **chutier des variations** garde le bord droit.
 
-- **Generate** — rail de gauche : le prompt qu'Archie dérive du post à l'ouverture (**« Suggest from
-  this post »**, ~2 s) puis six réglages repliables portant chacun sa valeur courante :
-  **References** (une seule section, voir ci-dessous) · **Text in image** (optionnel, ≤ 90 car., ≤ 4 lignes — les mots qu'Archie écrit DANS
-  l'image, à ne pas confondre avec l'overlay texte déplaçable du mode Edit ; mocké en cuisant le
-  texte dans les pixels de la variation via `compositeOverlays`, donc il survit aux vignettes, à
-  l'aperçu in-feed, au recadrage, au « Redraw » et au draft final) · **Image type** (Visual hook /
-  Infographic / Illustration) · **Style preset** (6 vignettes,
-  désactivé dès qu'il y a une référence) · **Format** (ratios recommandés du network) · **Output**
-  (Single / Carousel + nombre de variations ou de slides ; carousel sur LinkedIn 20 / Instagram 10).
-  Canvas à droite : empty → generating (~4 s) → résultats (grande image + rail de variations
-  flottant) ; bascule **Image / In feed** (aperçu via `renderPostCard`).
-- **Edit** — canvas plein, palette d'outils flottante (**Crop** freeform avec ratios + poignées ·
-  **Add text** · **Add image** : upload ou 16 presets), barre IA flottante « Describe a change… »
-  (~2,6 s), overlays texte/logo déplaçables/redimensionnables/rotatifs avec mini-toolbar (couleur,
-  police, bold, italic, outline, shadow, delete) et undo.
-- **Commit** : **Use this image** aplatit les overlays sur l'image (`compositeOverlays`) puis
-  `attachImageToDraft` + toast ; en carousel, `attachCarouselToDraft` avec toutes les slides
-  (« Apply to slide N » rebake une slide éditée).
+**Entrées** (les seules — pas de route, pas de raccourci) :
 
-#### Image Studio v2 — prompt en bas (flag `imageStudioV2`, **défaut ON**)
+- _« Generate an image »_ sur un draft sans média (`data-post-image`) → le flow Generate.
+- _« Edit slides »_ sur un draft **carousel** (`data-post-image-edit`) → rouvre le set dans les
+  résultats (ajouter / retirer / régénérer une slide).
+- Un draft avec **une seule** image n'offre que _Change_ / _Remove_ : le studio sait s'ouvrir
+  directement en Edit sur une image existante (option `editImageUrl`), mais **aucune UI ne l'appelle
+  aujourd'hui**.
 
-Redesign complet de la même feature, monté en parallèle
-([`components/image-studio-v2/`](../../src/components/image-studio-v2/)) et servi **par défaut** ; le
-flag à OFF rebascule sur v1. **Mêmes options, même moteur d'état** (`image-studio.js`, clé `studio-v2`) —
-seule la surface change, ce qui permet de comparer les deux à comportement identique.
+Tout passe par `openStudio` dans [`right-panel.js`](../../src/components/right-panel.js).
+`data-post-image-upload` court-circuite le studio (simple file picker).
 
-- Un header d'une seule ligne (titre · tabs de mode · bascule Image/In feed), un **stage pleine
-  largeur**, et **un composer unique en bas**.
-- **Generate** : le composer est une **carte** centrée en bas (champ + bouton **Generate** côte à
-  côte, `secondary blue` — c'est une étape, pas la destination : l'unique primary de la modale est
-  « Use this image » dans le footer). Le champ est plafonné à **4 lignes** puis scrolle : un brief
-  dérivé en fait sept, et le laisser haut de sept lignes faisait du composer le plus gros objet de
-  la modale alors que c'est l'image qu'on juge. Le plafond vaut exactement `4 × line-height` — le
-  scrollport d'un textarea couvre son contenu ET son padding, et il n'y a pas de padding en haut.
-  Les réglages vivent dans un panneau de sections `.ap-accordion` à gauche du stage — **la classe
-  DS, pas le comportement** : une section ouverte le reste, et en ouvrir une seconde ne referme
-  pas la première. Un-à-la-fois gardait le panneau court mais interdisait de voir deux réglages
-  en même temps et refermait dans le dos de l'utilisateur ce qu'il avait ouvert. L'état vit dans
-  `collapsedGroups` — le Set que le composer de **v1 utilisait déjà**, si bien que les deux
-  studios suivent le même modèle et que `openPopover` retrouve son seul sens : les flyouts du
-  mode Edit, eux réellement exclusifs.
-  **Une seule section References, épinglée ouverte.** Brand kit était une ligne à part au-dessus,
-  et c'était une distinction sans différence : des deux côtés, une image dont la génération doit
-  s'inspirer. D'où elle **vient** est un label sur la tuile, pas une raison d'avoir deux sections —
-  et séparées, il fallait regarder à deux endroits pour répondre à une seule question (« ça va
-  ressembler à quoi ? »). Épinglée pour la même raison qu'avant : une section qu'on rouvre à chaque
-  visite ne devrait pas être une section à ouvrir. Son en-tête cesse alors d'être un contrôle — un
-  `<div>` et non un `<button>`, sans chevron ni hook de toggle — et n'entre jamais dans
-  `collapsedGroups` ; sa valeur est le **nom de l'image choisie** (`Product UI`), ou `None`.
-  Chaque groupe est **libellé par sa provenance** — `Brand book — Acme` et `Custom` — et le libellé
-  s'affiche même quand il n'y a qu'un groupe : les deux sections disparues, c'est la seule chose qui
-  dise encore que ces images viennent du brand book du Playbook, et nommer le book nomme le standard
-  auquel l'image générée est tenue. Tiret cadratin et pas point médian, un nom de Playbook en
-  contenant déjà. La **valeur de l'en-tête replié est cette provenance** (`Acme` / `Custom` /
-  `None`), pas le nom du fichier : « Product UI » redisait une vignette qu'on a sous les yeux, alors
-  que la provenance est ce qu'une vignette ne montre pas.
-  L'ajout est un **bouton** (`stroked grey`) avec sa ligne d'explication dessous, pas un panneau de
-  drop pointillé : le panneau faisait 64px de haut pour une action à un clic, et c'était l'objet le
-  plus gros d'une section dont le sujet est les vignettes au-dessus. Le drop marche toujours —
-  `data-img-dropzone` est sur le bouton, et le mode Generate accepte de toute façon un drop
-  n'importe où dans la modale.
-  **« How to use it » — comment le modèle doit se servir de la référence**, en bas de la section et
-  seulement quand une image est effectivement choisie : une sous-option qui survit à son sujet est un
-  contrôle qui ment. « Match this image » faisait beaucoup de travail non dit — reproduire une
-  composition et emprunter une palette sont deux métiers différents, et choisir une référence ne
-  donnait aucun moyen de dire lequel on voulait. Trois modes (`REF_MODES` dans `image-studio.js`,
-  `blend` par défaut, soit ce que « match » voulait dire implicitement, donc rien ne bouge pour qui
-  ignore le contrôle) : **Layout** (reproduire la composition et le cadrage, autre sujet), **Blend**
-  (le look, plus un écho léger d'un de ses éléments), **Style** (palette, texture et traitement
-  seulement, aucune composition).
-  Des **chips**, le vocabulaire que le panneau parle déjà pour « un parmi quelques-uns » (Type,
-  Format et Output sont tous des groupes de chips) — rien de neuf à apprendre, et une seule rangée
-  tient dans les 212px du corps. Libellés courts pour cette raison ; « Style only » ratait la rangée
-  de 2,4px quand les chips n'avaient que 212px ; le panneau n'a plus qu'une largeur et ils en ont 260,
-  donc **« Style only »** est revenu — le « only » EST le mode, c'est ce qui le sépare de Blend d'un
-  coup d'œil. Aucune ambiguïté
-  avec le RÉGLAGE Style deux rangées plus bas : cette rangée est désactivée (« From references »)
-  chaque fois que ces chips existent. Le hint est celui du mode ACTIF, la même forme libellé + hint
-  que `formatBody` utilise pour « Best for ».
-  L'en-tête épinglé ajoute le mode **seulement quand ce n'est pas Blend** (`Acme · Layout`) : un
-  résumé doit rapporter un choix que l'utilisateur a fait — c'est ce que `set` veut dire partout
-  ailleurs dans ce panneau — et « Acme · Blend » sur chaque draft ne dirait rien en coûtant la moitié
-  de la largeur.
-  **Ce n'est PAS un remplacement d'un autre réglage** : ça dit comment utiliser l'image choisie, et
-  ne touche à rien d'autre. En particulier `derivePrompt` continue d'émettre sa ligne
-  `Visual direction:` — qui retombe silencieusement sur Visual hook quand Type vaut « Any » — donc en
-  mode Layout deux instructions de composition cohabitent dans le brief. Les vrais prompts portent ce
-  genre de tension et le modèle la réconcilie.
-  Côté moteur, une seule fonction écrit la ligne `Look:` (`lookLine`) et **tous** les contrôles de
-  référence la resynchronisent en place via `syncSelectedRef` → `syncLookLine` → `spliceBriefLine`,
-  le mécanisme généralisé depuis `syncPaletteLine` (voir Branding : le brief n'est écrit qu'à
-  l'ouverture et Generate envoie le champ). Conséquence bonus : couper le switch **retire** la ligne,
-  là où elle restait avant à décrire une référence hors jeu.
-  **Le bouton d'ajout est seul** : plus de ligne « PNG, JPG or WebP · I'll match its look » en dessous.
-  Elle listait des formats qui ne surprennent personne et redisait la promesse de la section.
-  **Un ⓘ à côté du TITRE de section**, là où une annotation appartient — et là où il peut cohabiter
-  avec une valeur au lieu de la remplacer. Branding en a un aussi (« Your Playbook's logo, stamped
-  bottom-right, and its colors in the brief. Each switches on its own. ») — il porte la seule chose
-  que les contrôles ne peuvent plus dire, OÙ la marque atterrit, puisque ça a cessé d'être
-  choisissable ; et il reste utile sur une rangée désactivée, où un Playbook sans logo ni couleurs
-  apprend quand même ce que la section aurait fait. References en a un (« An image I'll use as a reference for
-  style, layout and composition. The mode below sets how closely I follow it. » — « match »
-  surpromettait et ne disait pas CE QUI est repris ; nommer les trois axes nomme aussi les trois
-  modes en dessous, qui sont exactement ceux-là)
-  tout en gardant son résumé `Acme · Style only` : les vignettes montrent QUELLE image, jamais
-  pourquoi la section existe. Titre et icône partagent un wrapper (`.isv2-acc-label`) qui prend
-  l'espace libre, donc la valeur et le chevron gardent le bord droit exactement comme avant — le DS
-  met `flex: 1` sur le titre lui-même, ce qui poussait tout ce qui le suit à l'autre bout.
-  **« Text in image » : un ⓘ à la place de la valeur d'en-tête.** La section est dépliée par défaut,
-  donc l'en-tête affichait une copie tronquée des mots posés juste en dessous. L'icône dépense cette
-  place sur ce que le corps ne peut pas dire — l'autre chose que l'utilisateur pourrait vouloir, le
-  bloc de texte déplaçable d'Edit — via le **vrai `.ap-tooltip`**
-  (`components/tooltip.js`). Le DS livre toute l'apparence — surface, radius, typo, la flèche et ses
-  huit classes de placement — mais aucun moyen de s'afficher : il est positionné par une directive
-  Angular, et CSS-UI n'a pas de déclencheur au survol. Ce module est cette directive. Il monte le
-  tooltip sur `<body>`, et c'est tout l'intérêt : la classe est en `position: absolute`, donc rendu
-  sur place il se ferait couper par le conteneur de scroll le plus proche — et le panneau est
-  justement une boîte `overflow-y: auto` (le piège que les commentaires de ce fichier ont noté avoir
-  rencontré trois fois). `position: fixed` ne sauve pas non plus : le panneau est `transform`é, ce
-  qui en fait le bloc conteneur des descendants fixes et rend le clipping. Délégué sur `document`
-  (`[data-tooltip]`), donc tout ce que n'importe quel écran rend ensuite est vivant sans rien
-  enregistrer ; un seul tooltip à la fois, et il ne survit jamais à son ancre — scroll (en capture,
-  car le scroll qui compte est celui d'un panneau et ne bulle pas), Échap, sortie du pointeur ou du
-  focus le retirent. Le focus qui atterrit sur un élément CONTENANT une ancre l'affiche, ce qu'un
-  `title` ne fait jamais. `aria-hidden`, parce
-  que l'en-tête de rangée est un `<button>` : un élément focusable dedans serait un contrôle dans un
-  contrôle. Prix payé : cette phrase portait un lien vivant vers l'onglet Edit ; un `title` ne peut
-  pas contenir de lien, donc le chemin est l'onglet Edit de l'en-tête de la modale. **Plus de compteur permanent** : le champ ne dit rien tant que le
-  texte tient, et lève un `.ap-form-message error` du DS quand il dépasse (« 14 characters over —
-  long text comes out small in the image. »). Un `54/90` permanent était une jauge pour une limite
-  qu'on touche une fois sur vingt drafts, dans un panneau à court de place. Le plafond était
-  d'ailleurs appliqué **trois fois** — `maxlength` sur le textarea plus un `slice` dans chacun des
-  deux setters — donc dépasser était impossible et le compteur était la seule façon de savoir que la
-  limite existait. C'est une limite de LISIBILITÉ, pas de données : 90 caractères est à peu près ce
-  qui reste lisible dans une image générée, et au-delà la typo sort juste plus petite. Le champ prend
-  donc ce qu'on écrit, le dit, et ce qu'on a écrit est ce qui est cuit dans l'image. Le nœud du
-  message est toujours dans le DOM, masqué en inline — taper ne doit pas re-rendre le panneau (la
-  rangée serait reconstruite sous le curseur), donc le handler d'input écrit dedans ; et `display`
-  inline plutôt que `[hidden]`, parce que `.ap-form-message` porte `display: flex`, qui bat
-  l'attribut. La copie vit dans `renderTextOverMessage` (moteur), pas dans une vue : le premier rendu
-  et chaque frappe la demandent depuis deux modules différents et ne doivent pas la formuler
-  autrement. **v1 garde son compteur** et son `maxlength` — seul le champ de v2 est permissif.
-  **Le corps d'une section a du padding en haut** (8px), pas seulement en bas : l'en-tête apporte 6px
-  des siens, donc 8 + 6 met 14px entre son texte et le premier contrôle, contre 12 jusqu'au filet du
-  dessous — le bloc est optiquement centré et l'en-tête est un poil plus loin de son contenu que ce
-  contenu ne l'est de la section suivante. Il n'y en avait aucun, ce qui laissait le premier contrôle
-  à 6px sous un en-tête dont il se lisait alors comme une partie. Ne coûte rien aux rangées repliées :
-  le DS met `display: none` sur un corps replié, donc le padding ne s'affiche jamais.
-  **Hiérarchie : la couleur sépare les rangs, la taille les tient tous sous le titre.** Tout le corps
-  d'une section était en 12px/400/gris — le libellé du switch, les libellés de groupe et les notes de
-  bas de bloc — donc quatre métiers portaient un seul costume et on ne pouvait pas voir ce qui
-  titrait quoi. Une seule binaire désormais : **sombre = ça nomme la chose en dessous**
-  (`.isv2-sheet-label`, `.isv2-sheet-switch-label`), **clair = c'est un aparté sur cette chose**
-  (`.isv2-sheet-hint`). Pas de seconde taille ni de gras : trois libellés gras empilés dans une
-  colonne de 212px crieraient par-dessus le titre de la section, et tout le brief du panneau est de
-  rester calme. La taille **caption** est porteuse — ce libellé de switch a été 14px sombre, et il
-  pesait alors plus lourd que la rangée d'en-tête au-dessus de lui.
-  **Trois pas d'espacement, un par tier de regroupement** : 4px libellé → ce qu'il titre
-  (`.isv2-block`), 8px entre blocs d'un même temps (`.isv2-group`, généralisé depuis
-  `.isv2-brandgroup` — Branding avait exactement le même besoin), 12px entre temps (le gap du corps
-  d'accordéon). Avant, les quatre morceaux étaient à 12px les uns des autres, donc le vivier, le
-  bouton d'ajout et le bloc de mode se lisaient comme quatre rangées en vrac.
-  **Le bouton d'ajout reste `stroked`.** Passé en `ghost` un instant pour cesser de crier par-dessus
-  les trois photos au-dessus de lui, il ne se lisait plus comme un objet du tout et flottait entre
-  les vignettes et les chips de mode. Le problème de hiérarchie qu'il réglait est mieux réglé par les
-  tiers de libellés et le regroupement autour de lui, et le DS n'a pas de bouton gris rempli
-  (`secondary` n'existe qu'en bleu et orange) : une bordure est la façon dont un bouton discret reste
-  un bouton.
-  **Une seule largeur de panneau, 284px, à toutes les tailles** (`--isv2-panel-w` sur
-  `.isv2-stage-body`, avec `--isv2-panel-inset` = décalage gauche + respiration). C'était deux nombres
-  codés en dur par breakpoint (284/356 et 236/276) qu'il fallait changer ensemble sous peine de voir
-  l'image glisser sous le panneau. 284 est le nombre dont `--isv2-tile: 80px` est dérivé (trois
-  vignettes plus deux gaps de 8px demandent 256 des 260 intérieurs), et la branche étroite à 236 le
-  cassait en silence : la troisième vignette était coupée en plein milieu, ce qui se lit comme un
-  défaut de rendu et non comme « fais défiler ». Sous 1100px, seul l'inset se resserre. Prix payé à
-  ces largeurs-là : la réservation étant symétrique, les 48px rendus au panneau en coûtent 96 à
-  l'image (440 → 344px à 1035px de viewport). Au-dessus de 1100px, rien ne change.
-  **Aucun séparateur à l'intérieur de la section** : un filet entre les vignettes et le bouton
-  redessinait exactement la frontière que la fusion venait d'enlever. Les libellés de groupe
-  séparent déjà les viviers, et le cadre de la section la sépare déjà de Text in image.
-  **Un switch « Use a reference image » possède l'état « aucune ».** Générer sans référence est un
-  vrai choix — c'est comme ça qu'on obtient une image qui n'est tenue à rien — mais il n'était
-  atteignable qu'en re-cliquant la tuile choisie, donc seulement en essayant. Essayé en **tuile
-  « None »** d'abord : 81px de carré pour du néant, alors qu'un choix à deux états est très
-  exactement ce qu'est un switch. **Off masque la grille** (le switch EST la disclosure) et
-  **mémorise le choix** (`lastRefId`), donc rallumer ne fait pas rechercher son image. Corollaire :
-  les tuiles redeviennent un **radio pur** — re-cliquer la tuile choisie ne fait rien, parce que
-  deux chemins vers le même néant, c'est un de trop. Ajouter une image rallume le switch.
-  **Branding** — une section à part, après Text in image : références / mots / marque, c'est le trio
-  « ce qui va DANS l'image », avant les réglages de traitement en dessous. Un switch « Show my logo
-  on the image » + un aperçu de la marque, parce qu'un logo qu'on ne voit pas est un réglage qu'on
-  doit croire sur parole. **ON par défaut** quand le Playbook a un logo (`ctx.brandLogo`) : une image
-  faite pour une marque la porte, sauf avis contraire. Sans logo la section est **désactivée, pas
-  masquée** — une section absente laisse se demander si la fonctionnalité existe, une section grisée
-  dit où aller la chercher. Le logo est cuit dans les pixels par le même `compositeOverlays` que
-  « Text in image » (overlay `kind: "logo"`, 26% de la largeur, **en bas à droite**), donc il survit aux
-  vignettes, à l'aperçu in-feed, au recadrage et au draft final. Comme tous les autres réglages, il
-  s'applique à la **génération suivante**, pas rétroactivement.
-  **Pas de réglage de placement — juste un aperçu du logo.** La marque atterrit en bas à droite,
-  point (`BRAND_MARK` dans `image-studio.js` : `xF 0.78 / yF 0.89 / wF 0.26`, le centre de l'overlay,
-  donc la même marge d'environ 9% à droite et en dessous). C'était choisissable — neuf ancres d'une
-  grille 3×3 — et le choix ne servait pas : signer un visuel en bas à droite est le défaut pour la
-  même raison que sur papier. La seule décision qui reste à l'utilisateur est **si** la marque
-  apparaît, donc tout ce que la section lui doit est « voici le logo que j'utiliserais » — celui du
-  Playbook, et le voir est ce qui permet d'attraper un logo faux ou périmé avant de générer.
-  L'aperçu est une **tuile encadrée** (bordure + fond blanc + padding) : un logo nu posé sur le
-  panneau se lit comme du mobilier, une tuile bordée se lit comme un fichier qu'on a fourni. Elle est
-  **dimensionnée par la hauteur** (44px), largeur libre : la tuile n'a pas de largeur propre, donc
-  une marque bornée par `max-width: 100%` n'avait rien dont être un pourcentage et se repliait à
-  18px — et laisser la largeur suivre est ce qui fait sortir correctement aussi bien un wordmark
-  qu'un monogramme.
-  **Une seule taille de vignette dans tout le panneau : 80px** (`--isv2-tile`, porté par
-  `.isv2-panel`) — les tuiles de References. Deux
-  tailles de vignette dans un même panneau se lisent comme deux natures de chose, alors que ce sont
-  toutes « une image que tu m'as donnée ». 80 et pas 88 par arithmétique : le corps du panneau fait
-  260px, et trois tuiles plus deux gaps de 8px font 256 — exactement trois visibles.
-  **La bande de References est un SCROLLER horizontal, pas une grille qui passe à la ligne.** Un pool
-  qui wrappe fait grandir le panneau d'une rangée à la fois — à dix images les réglages poussent le
-  composer hors de l'écran — alors qu'une bande a la même hauteur à trois images comme à trente. En
-  flex (`flex: 0 0 var(--isv2-tile)` sur le slot suffit à un scroller ; `grid-auto-flow: column`
-  aurait dû redire la taille de piste).
-  Conséquence à corriger : trois tuiles rentrent **exactement**, donc aucune quatrième ne dépasse pour
-  signaler qu'il y en a d'autres, et macOS cache sa scrollbar overlay tant qu'on n'a pas déjà
-  scrollé — dix images se liraient comme trois. Au-delà de `VISIBLE_REFS` (3), le groupe reçoit
-  `.is-scrollable`, qui allume un **fondu de bord piloté par la position de scroll** : plein du côté
-  atteint, fondu du côté où il reste des images. Le fondu anime deux **propriétés personnalisées
-  enregistrées** (`@property --isv2-fade-l/r`, typées `<length>`) et non `mask-image` directement —
-  un gradient non enregistré s'interpole de façon discrète dans Chrome, donc le masque basculait de
-  côté en une frame à mi-course. À 0px la paire de stops se réduit à une largeur nulle : pas de
-  fondu du tout, ce qui est exactement l'aspect attendu du bord qu'on a atteint.
-  **Deux interrupteurs, pas un** — « Show my logo » et « Use brand colors ». Le logo et la
-  palette sont deux impositions différentes sur une image : beaucoup de posts veulent les couleurs de
-  la marque sans son wordmark dans un coin, et un visuel de lancement peut vouloir la marque sur
-  l'artwork de quelqu'un d'autre. Un seul interrupteur prenait la moitié bon marché en otage de la
-  moitié chère. Chacun ouvre SA propre partie (le placeur au logo, les pastilles aux couleurs) — les pastilles **sans libellé à elles**, directement sous l'interrupteur : « Use brand
-  colors » suivi de cinq pastilles dit tout ce qu'une légende « Brand color » intercalée disait, et
-  cette légende faisait lire la paire comme deux rangées au lieu d'un seul énoncé, les
-  deux sont ON par défaut quand le Playbook a de quoi, et un interrupteur sans matière reste
-  **visible mais désactivé** avec la raison en dessous (« This Playbook has no logo yet. ») — un
-  contrôle qui disparaît laisse se demander si l'option existe. La valeur d'en-tête nomme la moitié
-  active (`Acme` / `Logo only` / `Colors only` / `Off` / `No brand kit`), parce qu'« On » cacherait
-  la différence entre un logo tamponné et un brief de couleurs.
-  Chaque paire interrupteur + contenu est **emballée** (`.isv2-brandgroup`) : le corps de
-  l'accordéon espace ses enfants uniformément, donc sans emballage l'écart entre un interrupteur et
-  ce qu'il commande valait celui entre les deux moitiés, et le placeur se lisait autant comme
-  appartenant à la rangée du dessous.
+### Moteur d'état ([`image-studio.js`](../../src/image-studio.js))
+
+UI-agnostique, `Map(key → state)` + subscribers, **tous les mocks dedans**. Les vues n'ont aucun état
+propre : chaque mutation notifie et le corps de la modale est **entièrement re-rendu**. Latences
+mockées : génération `~4,2 s`, édition IA `~2,6 s`, dérivation du brief `~2 s`.
+
+Les helpers canvas purs (bake / crop / métriques de texte) vivent à part dans
+[`image-studio-canvas.js`](../../src/image-studio-canvas.js) — c'est le seul import que le moteur
+prend côté rendu, et il est délibéré : « Text in image » est mocké en cuisant les mots dans les pixels
+avec **le même aplatisseur** (`compositeOverlays`) que les overlays du mode Edit.
+
+### Generate — le brief
+
+À l'ouverture, Archie **dérive le prompt du texte du draft** (`runDerive`, ~2 s) : le champ arrive
+rempli d'un brief structuré (`Subject:` / `Look:` / `Palette:` / `Visual direction:`). Le composer est
+une **carte centrée**, pas une barre pleine largeur : à 1440px un champ full-bleed fait ~180
+caractères par ligne, et ça faisait lire les réglages comme du mobilier échoué en bas d'une grande
+barre. Le champ plafonne à **4 lignes** puis scrolle (un brief dérivé en fait sept, et le laisser haut
+de sept faisait du composer le plus gros objet de la modale alors que c'est l'image qu'on juge) ; le
+plafond vaut exactement `4 × line-height`, parce que le scrollport d'un textarea couvre son contenu ET
+son padding et qu'il n'y a pas de padding en haut. Le toggle d'expansion double le plafond.
+
+**Generate est `secondary blue`** : c'est une étape, pas la destination. L'unique primary de la modale
+est _« Use this image »_ dans le footer, présent **dès la première frame** (désactivé jusqu'à ce qu'il
+y ait quelque chose à valider) — la destination est visible tout du long au lieu d'apparaître quand
+les résultats tombent.
+
+Stage : `empty → generating (~4,2 s) → résultats` (grande image + chutier), avec une bascule
+**Image / In feed** (aperçu réel via `renderPostCard`).
+
+### Generate — les sept réglages
+
+Chaque réglage est une section `.ap-accordion` — **la classe DS, pas le comportement**. Les sections
+sont **indépendantes** : une section ouverte le reste, et en ouvrir une seconde ne referme pas la
+première. Un-à-la-fois gardait le panneau court mais interdisait de voir deux réglages ensemble et
+refermait dans le dos de l'utilisateur. L'état est `collapsedGroups`, un Set de ce qui est **fermé** —
+ce qui rend à `openPopover` son seul sens : les flyouts du mode Edit, eux réellement exclusifs.
+
+L'ordre dit un raisonnement : **ce qui va DANS l'image**, puis son **traitement**.
+
+- **References** ([`references-view.js`](../../src/components/image-studio-v2/references-view.js)) —
+  épinglée ouverte, en-tête sans chevron (une section qu'on rouvre à chaque visite ne devrait pas
+  être une section à ouvrir ; son en-tête cesse alors d'être un contrôle). **Une seule image de
+  référence**, prise indifféremment dans le brand book du Playbook ou dans les uploads : le marqueur
+  de tuile est donc un **radio**, pas une coche — une coche promet qu'on peut cumuler. `aria-pressed`
+  et non `role="radio"`, parce que le contrat est single-select-avec-toggle-off et qu'un groupe radio
+  ne sait pas revenir à vide.
+  Côté état, `playbookRefs` et `uploadedRefs` sont deux **viviers**, `selectedRefId` est le choix, et
+  `referenceImages` reste un tableau de 0 ou 1 **dérivé** par `syncSelectedRef()` — parce que le
+  prompt, la seed de génération et le verrou du Style preset lisent tous « les références en jeu »
+  sans se soucier du nombre. `MAX_REFS` (6) borne le vivier d'**uploads**.
+  Un switch _« Use a reference image »_ possède l'état « aucune » : générer sans référence est un vrai
+  choix, et il n'était atteignable qu'en re-cliquant la tuile choisie. **Off masque la grille** (le
+  switch EST la disclosure) et **mémorise le choix** (`lastRefId`).
+  Chaque vivier est **libellé par sa provenance** (`Brand book — Acme` / `Custom`), même quand il n'y
+  en a qu'un : c'est la seule chose qui dise que ces images viennent du brand book, et nommer le book
+  nomme le standard auquel l'image générée est tenue. Tiret cadratin, pas point médian — un nom de
+  Playbook en contient déjà.
+  **« How to use it »**, en bas et seulement quand une image est choisie (une sous-option qui survit à
+  son sujet est un contrôle qui ment). Trois modes (`REF_MODES`, `blend` par défaut) : **Layout**
+  (reproduire composition et cadrage), **Blend** (le look, plus un écho léger d'un élément),
+  **Style only** (palette, texture, traitement — aucune composition). « Match this image » faisait
+  beaucoup de travail non dit : reproduire une composition et emprunter une palette sont deux métiers.
+  La bande de vignettes est un **scroller horizontal**, pas une grille qui wrappe : un vivier qui
+  wrappe grandit d'une rangée à la fois et pousse le composer hors de l'écran à dix images. Exactement
+  `VISIBLE_REFS` (3) tuiles rentrent, donc aucune quatrième ne dépasse pour signaler qu'il y en a
+  d'autres, et macOS cache sa scrollbar overlay ; au-delà de 3 le groupe reçoit `.is-scrollable`, qui
+  allume un **fondu de bord piloté par la position de scroll**. Le fondu anime deux **propriétés
+  personnalisées enregistrées** (`@property --isv2-fade-l/r`, typées `<length>`) et non `mask-image`
+  directement : un gradient non enregistré s'interpole de façon discrète dans Chrome, donc le masque
+  basculait de côté en une frame à mi-course.
+  Valeur d'en-tête : la **provenance**, plus le mode s'il n'est pas le défaut (`Acme · Layout`) — un
+  résumé doit rapporter un choix que l'utilisateur a fait.
+- **Text in image** — les mots qu'Archie écrit **DANS** l'image (à ne pas confondre avec le bloc de
+  texte déplaçable d'Edit ; un ⓘ dans l'en-tête porte cette distinction). Mocké en cuisant le texte
+  dans les pixels de la variation, donc il survit aux vignettes, à l'aperçu in-feed, au recadrage, au
+  « Redraw » et au draft final. **Pas de compteur permanent** : le champ ne dit rien tant que le texte
+  tient, et lève un `.ap-form-message error` du DS quand il dépasse (_« 14 characters over — long text
+  comes out small in the image. »_). C'est une limite de **lisibilité**, pas de données : ~90
+  caractères est ce qui reste lisible dans une image générée, et au-delà la typo sort juste plus
+  petite — le champ prend donc ce qu'on écrit, le dit, et ce qu'on a écrit est cuit. La copie vit dans
+  `renderTextOverMessage` (moteur) et non dans une vue, parce que le premier rendu et chaque frappe la
+  demandent depuis deux modules et ne doivent pas la formuler autrement.
+- **Branding** ([`branding-view.js`](../../src/components/image-studio-v2/branding-view.js)) — **deux
+  interrupteurs, pas un** : _« Show my logo on the image »_ et _« Use brand colors »_. Le logo et la
+  palette sont deux impositions différentes : beaucoup de posts veulent les couleurs de la marque sans
+  son wordmark dans un coin, et un visuel de lancement peut vouloir la marque sur l'artwork de
+  quelqu'un d'autre — un seul interrupteur prenait la moitié bon marché en otage de la moitié chère.
+  Les deux sont **ON par défaut** quand le Playbook a de quoi ; un interrupteur sans matière reste
+  **visible mais désactivé** avec la raison dessous (_« This Playbook has no logo yet. »_), parce
+  qu'un contrôle qui disparaît laisse se demander si l'option existe.
+  **Pas de réglage de placement, juste un aperçu du logo** : la marque atterrit en bas à droite, point
+  (`BRAND_MARK` : `xF 0.78 / yF 0.89 / wF 0.26`). C'était choisissable — neuf ancres d'une grille
+  3×3 — et le choix ne servait pas : signer un visuel en bas à droite est le défaut pour la même
+  raison que sur papier. La seule décision qui reste est **si** la marque apparaît, donc tout ce que la
+  section doit est « voici le logo que j'utiliserais » — et le voir est ce qui permet d'attraper un
+  logo faux ou périmé avant de générer. Le logo est cuit par le même `compositeOverlays` (overlay
+  `kind: "logo"`, 26% de la largeur).
+  Les couleurs sont les **mêmes pastilles rondes que la ligne « Brand color » du Playbook**
+  (`.recap__fact-dot`) et les mêmes mots — un récap doit ressembler à ce qu'il récapitule. Nom + hex en
+  tooltip ; l'hex imprimé sous chaque pastille transformait une rangée de cinq en deux lignes de petit
+  texte. `playbookColors` porte `{ name, hex }` et non des hex nus.
   Côté moteur, `useBrandColors` conditionne la ligne `Palette:` du brief. Comme le brief n'est écrit
   qu'à l'ouverture et que Generate envoie **le champ** et pas les réglages, l'interrupteur **édite
-  cette ligne en place** (`syncPaletteLine`) : re-dériver jetterait tout ce que l'utilisateur a tapé,
-  ne rien faire rendrait l'interrupteur inerte pour la génération qu'il s'apprête à lancer. La ligne
-  revient à sa position d'origine (après `Look:`), pas en fin de brief.
-  Un **libellé et ce qu'il titre forment UN bloc** (`.isv2-block`, 4px à l'intérieur, les 12px du
-  corps entre blocs) — partagé par les groupes de References et par « Brand color », sinon les deux
-  sections dérivent : le libellé de References collait à ses vignettes à 4px pendant que celui de
-  Branding flottait à 12px de ses pastilles, la même relation à deux espacements.
-  **Les couleurs ne font pas partie du logo** : elles ont leur propre interrupteur et leur propre
-  rangée — les glisser à côté de la marque disait qu'elles lui appartenaient. Un **récap des couleurs de marque** : les **mêmes pastilles rondes que la ligne
-  « Brand color » du Playbook** (`.recap__fact-dot`), et les mêmes mots — un récap doit ressembler à
-  ce qu'il récapitule. Nom + hex en tooltip ; l'hex imprimé sous chaque pastille transformait une
-  rangée de cinq en deux lignes de petit texte que personne ne lit dans un panneau. Les règles sont
-  redites côté studio plutôt qu'importées : `welcome.css` appartient à un écran sans rapport, et
-  coupler le studio à lui pour six lignes est le pire des deux échanges — au troisième consommateur,
-  promouvoir dans `styles/components/` comme `topic-badge`.
-  `playbookColors` porte `{ name, hex }` et non des hex nus : les quatre consommateurs qui veulent
-  l'hex le mappent, et deux tableaux parallèles pour une seule palette, c'est ce qui dérive.
+  cette ligne en place** (`syncPaletteLine`) : re-dériver jetterait ce que l'utilisateur a tapé, ne
+  rien faire rendrait l'interrupteur inerte pour la génération qu'il s'apprête à lancer. Même
+  mécanisme généralisé pour la ligne `Look:` (`lookLine` → `syncSelectedRef` → `syncLookLine` →
+  `spliceBriefLine`) : couper le switch References **retire** la ligne, là où elle restait avant à
+  décrire une référence hors jeu.
+  Valeur d'en-tête : la moitié active (`Acme` / `Logo only` / `Colors only` / `Off` / `No brand kit`),
+  parce qu'« On » cacherait la différence entre un logo tamponné et un brief de couleurs.
+- **Type** — à quoi sert l'image (`IMAGE_TYPES` : Visual hook / Infographic / Illustration). Dimension
+  distincte du style.
+- **Style** — 6 presets en vignettes. **Désactivé dès qu'une référence est en jeu**, et il dit alors
+  pourquoi (`From references`) : deux sources de look qui se contredisent, c'est une de trop.
+- **Format** — les ratios recommandés du network du draft, avec un glyphe dessiné à ses propres
+  proportions. La valeur dit la forme (`1:1 · Square`) ; le hint suit la convention app-wide
+  « **Best for** » + icône réseau.
+- **Output** — Single / Carousel, fusionné avec son compteur (variations, ou slides plafonnées par
+  réseau : LinkedIn 20, Instagram 10). L'option Carousel n'apparaît que sur un réseau qui en accepte.
 
-  **Une seule image de référence à la fois**, prise indifféremment dans le brand book du Playbook ou
-  dans les uploads de l'utilisateur — donc le marqueur de tuile est un **radio**, pas une coche :
-  une coche promet qu'on peut en cumuler. `aria-pressed` et non `role="radio"`, parce que cliquer
-  la tuile choisie la désélectionne et qu'un groupe radio ne sait pas revenir à vide — même contrat
-  single-select-avec-toggle-off qu'Image type et Style preset. Côté état : `playbookRefs` et
-  `uploadedRefs` sont deux **viviers**, `selectedRefId` est le choix, et `referenceImages` reste un
-  tableau de 0 ou 1 **dérivé** par `syncSelectedRef()` — parce que le prompt, la seed de génération
-  et le verrou du Style preset lisent tous « les références en jeu » sans se soucier du nombre. Les
-  deux studios partagent ce modèle, donc v1 est single-select aussi. `MAX_REFS` borne désormais le
-  **vivier d'uploads**, pas une multi-sélection.
-  Le titre de la modale est un `.ap-dialog-title` **à la taille du DS (24px), sans glyphe** : il
-  avait été descendu à 14px pour « tenir à côté » de la bande d'onglets, qui est en fait sur sa
-  propre ligne en dessous — il n'y avait donc rien à accompagner, et le studio portait juste le
-  plus petit titre de toutes les dialogs de l'app.
+Hiérarchie dans le corps d'une section : **une seule binaire**. Sombre = ça nomme la chose en dessous
+(`.isv2-sheet-label`, `.isv2-sheet-switch-label`), clair = c'est un aparté (`.isv2-sheet-hint`). Pas
+de seconde taille ni de gras — trois libellés gras empilés dans une colonne de 260px crieraient
+par-dessus le titre de la section. Trois pas d'espacement, un par tier de regroupement : 4px libellé →
+ce qu'il titre (`.isv2-block`), 8px entre blocs d'un même temps (`.isv2-group`), 12px entre temps.
 
-- **Edit** : le même composer devient la barre IA (rangée 1) et les chips d'outils Crop / Add text /
-  Add image (rangée 2). Le rail de gauche, le footer, la barre IA flottante et la palette flottante
-  de v1 disparaissent tous les quatre. Ne restent sur le canvas que la boîte de crop (avec son ✕/✓)
-  et la mini-toolbar du texte sélectionné — ce qui doit suivre un pixel précis.
-- Le drop d'une image est accepté **sur toute la modale** en mode Generate (la feuille References
-  est le plus souvent fermée) et ouvre la feuille pour montrer ce qui vient d'atterrir.
+**Une seule largeur de panneau, 284px, à toutes les tailles** (`--isv2-panel-w`). C'était deux nombres
+codés en dur par breakpoint qu'il fallait changer ensemble sous peine de voir l'image glisser sous le
+panneau. 284 est le nombre dont `--isv2-tile: 80px` est dérivé (trois vignettes plus deux gaps de 8px
+demandent 256 des 260 intérieurs), et la branche étroite à 236 le cassait en silence : la troisième
+vignette était coupée en plein milieu, ce qui se lit comme un défaut de rendu et non comme « fais
+défiler ». Sous 1100px, seul l'inset se resserre.
+
+> ⚠️ Les tooltips d'en-tête sont le **vrai `.ap-tooltip`**, monté sur `<body>` par
+> [`tooltip.js`](../../src/components/tooltip.js) : la classe DS est en `position: absolute`, donc
+> rendue sur place elle serait coupée par le conteneur de scroll le plus proche — et le panneau est
+> justement une boîte `overflow-y: auto`. `position: fixed` ne sauve pas non plus, le panneau étant
+> `transform`é (ce qui en fait le bloc conteneur des descendants fixes).
+
+### Edit
+
+Le même composer devient la **barre IA** (_« Describe a change… »_ → **Redraw**, ~2,6 s) et le panneau
+de réglages cède le bord gauche à la **palette d'outils** : Crop · Add text · Add image (upload ou 16
+presets). Ne restent **sur le canvas** que ce qui doit suivre un pixel précis :
+
+- Les **overlays** texte/logo — déplaçables, redimensionnables, rotatifs, avec une mini-toolbar
+  (couleur, police, bold, italic, outline + slider, shadow + slider, delete) et un bouton de reset de
+  rotation qui n'apparaît qu'une fois l'élément tourné.
+- La **boîte de crop** freeform : 4 poignées d'angle, masque assombri clippé à l'image, et une toolbar
+  ancrée **sous la boîte** portant « Best for », les ratios et la paire ✕ / ✓. Les ratios avaient été
+  mis dans un flyout de la palette : ça plaçait le ratio qu'on choisit à une largeur de canvas de la
+  boîte qu'il reshape, le seul endroit où il ne doit pas être.
+
+Le CSS de cette couche vit à part, dans
+[`image-studio-canvas.css`](../../styles/screens/image-studio-canvas.css) : elle répond à « où
+exactement sur l'image est ce contrôle, et comment il y reste » pendant que l'image est redimensionnée,
+recadrée et régénérée dessous, ce qui n'est pas la question à laquelle répond la coque.
+
+> ⚠️ Trois familles de classes y sont **assemblées par concaténation** en JS et un renommage les
+> casserait en silence : `.image-studio__crop-handle--{nw,ne,se,sw}`, `.image-studio__popover--{kind}`
+> et `.image-studio__tt-{kind}`.
+
+Un drop d'image est accepté **sur toute la modale** en mode Generate (la section References est à un
+scroll dans un panneau) et ouvre la section pour montrer ce qui vient d'atterrir.
+
+### Commit vers le draft
+
+Les overlays restent **vivants et éditables** jusqu'au commit — il n'y a pas d'« Apply » par édition.
+C'est donc le commit qui les aplatit dans les pixels (`compositeOverlays`), avec deux destinations :
+
+- _« Use this image »_ → `attachImageToDraft` + toast, puis fermeture.
+- _« Apply to slide N »_ (édition d'une slide de carousel) → recuit la slide et **reste ouvert**, le
+  set n'étant pas fini ; _« Use carousel · N slides »_ expédie ensuite l'ensemble via
+  `attachCarouselToDraft`.
+
+Chaque chemin resynchronise d'abord le texte en cours d'édition : un clic peut voler le focus d'un
+`contenteditable` avant son dernier événement `input`.
+
+### Ce que le mock ne fait pas
+
+Aucune API d'image. `generateImage` renvoie une URL Picsum **seedée sur les entrées** — donc
+déterministe : mêmes réglages, même image. Le recadrage est fidèle (reframe à seed constante) et les
+overlays cuits sont exacts ; **« Redraw » est un aveu honnête** (reseed), pas une édition dirigée par
+le prompt. Les réglages s'appliquent à la **génération suivante**, jamais rétroactivement.
+
+> ⚠️ `derivePrompt` continue d'émettre sa ligne `Visual direction:` — qui retombe silencieusement sur
+> Visual hook quand Type vaut « Any » — donc en mode **Layout** deux instructions de composition
+> cohabitent dans le brief. Les vrais prompts portent ce genre de tension et le modèle la réconcilie.
 
 ---
 
@@ -626,27 +541,26 @@ Détail dimensions/coexistence avec la status-card : [`SHELL-LAYOUT.md`](SHELL-L
 - **Feature flags** : une toggle par flag.
 - **Docs** : lien externe **« Conversation thread components »** → `/handoff/components.html`.
 
-### Feature flags ([`ff-catalog.js`](../../src/ff-catalog.js)) — les 11
+### Feature flags ([`ff-catalog.js`](../../src/ff-catalog.js)) — les 10
 
-| id                       | label                           | défaut  | Gate                                                                                                                                                                                                                                                          |
-| ------------------------ | ------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `draftInlineEdit`        | Inline edit on draft posts      | **OFF** | Édition inline des post cards.                                                                                                                                                                                                                                |
-| `playbookDefault`        | Default Playbook toggle         | **OFF** | Étoile ★ set/unset default sur `/playbook/:id`.                                                                                                                                                                                                               |
-| `connectors`             | Connectors (live MCP sources)   | **OFF** | Toute la feature connecteurs (gallery, modal, submenu, Live connectors, tab modal).                                                                                                                                                                           |
-| `conversationStatusCard` | Conversation status card        | **OFF** | Carte flottante + toggle « i ».                                                                                                                                                                                                                               |
-| `statusActionSnackbars`  | Action success snackbars        | **OFF** | Snackbars succès dupliquant la status bar.                                                                                                                                                                                                                    |
-| `playbookColors`         | Playbook colors                 | **OFF** | Quand OFF (défaut), masque les visuels couleur Playbook partout (classe `body.hide-playbook-colors`) ; ON = couleurs affichées.                                                                                                                               |
-| `multilingualPlaybook`   | Multilingual Playbooks          | **OFF** | Playbooks multi-langues (voice par langue, étape langue du draft flow).                                                                                                                                                                                       |
-| `manyProfiles`           | Many connected profiles (demo)  | **OFF** | Seed ~40 profils connectés variés → le quickpicker de profil affiche une recherche live (voir §draft flow).                                                                                                                                                   |
-| `playbookCompetitors`    | Playbook competitors            | **OFF** | Section **Competitors** du Playbook (panneau + entrée de rail + compteur `/contexts`). La donnée reste présente quand OFF (voir §9).                                                                                                                          |
-| `imageStudioV2`          | Image Studio v2 (prompt en bas) | **ON**  | Les actions image d'un draft ouvrent le redesign v2 (stage pleine largeur, composer en bas, réglages en sections indépendantes). OFF rebascule sur l'Image Studio précédent. Mêmes options, même moteur d'état (voir §7).                                     |
-| `topics`                 | Topics (listening dossiers)     | **OFF** | Toute la feature **Topics** (§17) : la route `/topics` + son entrée de nav et son compteur d'unseen, la dialog du dossier, et la page **/topics/settings**. La donnée (dossiers seedés + `ctx.topics`) reste présente quand OFF, comme `playbookCompetitors`. |
+| id                       | label                          | défaut  | Gate                                                                                                                                                                                                                                                          |
+| ------------------------ | ------------------------------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `draftInlineEdit`        | Inline edit on draft posts     | **OFF** | Édition inline des post cards.                                                                                                                                                                                                                                |
+| `playbookDefault`        | Default Playbook toggle        | **OFF** | Étoile ★ set/unset default sur `/playbook/:id`.                                                                                                                                                                                                               |
+| `connectors`             | Connectors (live MCP sources)  | **OFF** | Toute la feature connecteurs (gallery, modal, submenu, Live connectors, tab modal).                                                                                                                                                                           |
+| `conversationStatusCard` | Conversation status card       | **OFF** | Carte flottante + toggle « i ».                                                                                                                                                                                                                               |
+| `statusActionSnackbars`  | Action success snackbars       | **OFF** | Snackbars succès dupliquant la status bar.                                                                                                                                                                                                                    |
+| `playbookColors`         | Playbook colors                | **OFF** | Quand OFF (défaut), masque les visuels couleur Playbook partout (classe `body.hide-playbook-colors`) ; ON = couleurs affichées.                                                                                                                               |
+| `multilingualPlaybook`   | Multilingual Playbooks         | **OFF** | Playbooks multi-langues (voice par langue, étape langue du draft flow).                                                                                                                                                                                       |
+| `manyProfiles`           | Many connected profiles (demo) | **OFF** | Seed ~40 profils connectés variés → le quickpicker de profil affiche une recherche live (voir §draft flow).                                                                                                                                                   |
+| `playbookCompetitors`    | Playbook competitors           | **OFF** | Section **Competitors** du Playbook (panneau + entrée de rail + compteur `/contexts`). La donnée reste présente quand OFF (voir §9).                                                                                                                          |
+| `topics`                 | Topics (listening dossiers)    | **OFF** | Toute la feature **Topics** (§17) : la route `/topics` + son entrée de nav et son compteur d'unseen, la dialog du dossier, et la page **/topics/settings**. La donnée (dossiers seedés + `ctx.topics`) reste présente quand OFF, comme `playbookCompetitors`. |
 
 Persistés en `localStorage` (`archie-feature-flags`), lus via `isFlagOn()`. Voir aussi [`STORES.md`](STORES.md).
 
 ### User modes ([`user-mode.js`](../../src/user-mode.js))
 
-`localStorage` `archie-user-mode` : **returning** (mocks peuplés, défaut) / **new-alt** (stores vides + onboarding first-time). `isNewUser()` / `isNewUserAlt()`.
+`localStorage` `archie-user-mode` : **returning** (mocks peuplés, défaut) / **new-alt** (stores vides + onboarding first-time). `isNewUser()`.
 
 ---
 

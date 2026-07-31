@@ -35,10 +35,10 @@ Each issue has:
 | **Framework exists, needs completion**          |                                                                                                                                |                   |        |
 | 8                                               | Turn connectors on + add Airtable / Zoom / Fathom                                                                              | 🟡 flag OFF       | M      |
 | 9                                               | Bulk / folder-level ingest from a connector                                                                                    | 🟡 Partial        | M      |
-| 10                                              | Brand-color input in image generation                                                                                          | 🔴 Gap            | M      |
-| 11                                              | Reference-image / style-guide upload for image gen                                                                             | 🔴 Gap            | M      |
+| 10                                              | Brand-color input in image generation                                                                                          | ✅ Shipped        | M      |
+| 11                                              | Reference-image / style-guide upload for image gen                                                                             | ✅ Shipped        | M      |
 | 12                                              | First-comment defaults to a link to the source asset                                                                           | 🟡 stub           | M      |
-| 13                                              | Carousel output format (LinkedIn / Instagram)                                                                                  | 🔴 Gap            | M      |
+| 13                                              | Carousel output format (LinkedIn / Instagram)                                                                                  | 🟡 Partial        | M      |
 | 14                                              | Inline shorter / longer / warmer toggles on drafts                                                                             | 🟡 Partial        | M      |
 | 15                                              | Voice-crawl failure handling (expired token / no data)                                                                         | 🔴 Gap            | M      |
 | 18                                              | Native visual-asset library                                                                                                    | 🔴 Gap            | M      |
@@ -167,19 +167,16 @@ Copy quality and "no cheesy AI text" praised by **Bex, Brad, Kami, Brooke, Mari*
 ## 10 · Brand-color input in image generation
 
 - **Said by:** Anne/Reyna ("could not input all four of their brand colors"), Peg & Amanda Webb (imagery doesn't match brand aesthetic).
-- **Status:** 🔴 `generate-image-modal` offers only Visual Style + Mood chips; no color input, no read of the Playbook palette.
-- **Solution:**
-  - Add a brand-color picker to the modal — pre-filled from the Playbook's stored palette, allowing **4+** swatches (the old build capped them).
-  - Fold the chosen colors into the generated prompt string.
-  - Files: `src/components/generate-image-modal.js`, read palette from `contexts-store`.
+- **Status:** ✅ Shipped. The Image Studio's **Branding** section carries a _« Use brand colors »_ switch, ON by default when the Playbook has a palette, and the swatches are the Playbook's own `{ name, hex }` dots (no 4-colour cap).
+- **How:** `useBrandColors` conditions the brief's `Palette:` line, and the switch **edits that line in place** (`syncPaletteLine`) rather than re-deriving the brief — re-deriving would throw away whatever the user typed.
+  - Files: `src/components/image-studio-v2/branding-view.js`, `src/image-studio.js`, palette from `contexts-store`. See FEATURES §7.
 
 ## 11 · Reference-image / style-guide upload for image gen
 
 - **Said by:** Kami (uploaded an event banner as a style reference — worked on old build after iteration), Amanda Webb & Goldie (reference styles).
-- **Status:** 🔴 Current `generate-image-modal` is text-only — `generateImage()` takes `(prompt, seed)`, no image input. (Regression vs. what Kami used.)
-- **Solution:**
-  - Add a reference-image file input; thread it through `generateImage()` and reflect it in the result ("matched your reference layout, swapped header text").
-  - Files: `src/components/generate-image-modal.js`.
+- **Status:** ✅ Shipped. The Image Studio's **References** section takes an upload pool (`MAX_REFS` 6) alongside the Playbook's brand book, one image selected at a time, plus a **How to use it** control — `REF_MODES`: Layout / Blend / Style only — so "match this image" is no longer one undifferentiated promise.
+- **How:** the picked reference drives the brief's `Look:` line (`lookLine` → `syncLookLine`) and locks the Style preset row, which says `From references` instead.
+  - Files: `src/components/image-studio-v2/references-view.js`, `src/image-studio.js`. See FEATURES §7.
 
 ## 12 · First-comment defaults to a link to the source asset
 
@@ -192,10 +189,10 @@ Copy quality and "no cheesy AI text" praised by **Bex, Brad, Kami, Brooke, Mari*
 ## 13 · Carousel output format (LinkedIn / Instagram)
 
 - **Said by:** Brooke (LinkedIn carousel), Amanda Webb (Instagram carousels), Goldie (adjacent).
-- **Status:** 🔴 Output formats are video aspect ratios only (`clip-formats.js`); no carousel concept.
-- **Solution:**
-  - Add a **carousel** draft format in the draft-flow channel/format picker → produces a multi-slide draft (slide list + per-slide copy) rendered in `post-card.js`.
-  - Files: `src/draft-flow.js`, `src/mocks.js` (sample carousel), `src/components/post-card.js` (slide rendering), possibly `src/clip-formats.js` for the slide ratios.
+- **Status:** 🟡 Partial. **Image** carousels ship: the Image Studio's **Output** row offers Single / Carousel with a slide count capped per network (LinkedIn 20, Instagram 10), each slide is editable on its own (_« Apply to slide N »_), and `attachCarouselToDraft` renders the set on the post card with a badge and dots. What is still missing is the **copy** carousel — one slide, one text — in the draft-flow picker.
+- **Remaining:**
+  - Add a **carousel** draft format in the draft-flow channel/format picker → a multi-slide draft with per-slide copy.
+  - Files: `src/draft-flow.js`, `src/mocks.js` (sample carousel). The slide rendering in `post-card.js` already exists.
 
 ## 14 · Inline shorter / longer / warmer toggles
 

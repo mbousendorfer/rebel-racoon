@@ -17,7 +17,7 @@
 // video-clips-modal trimmer, the right-panel Clips/Drafts surfaces, and the
 // draft-creation flow all operate on one source with no divergence.
 
-import { buildClipsForSource, updateSourceClips, getSources } from "./sources-stream.js?v=59";
+import { buildClipsForSource, updateSourceClips, getSources } from "./sources-stream.js?v=61";
 
 const states = new Map(); // sessionId → state
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -34,12 +34,6 @@ const CLIP_STAGES = [
   { from: 0.65, label: "Cutting clips" },
   { from: 0.9, label: "Polishing" },
 ];
-
-function stageLabelFor(progress) {
-  let label = CLIP_STAGES[0].label;
-  for (const s of CLIP_STAGES) if (progress >= s.from) label = s.label;
-  return label;
-}
 
 function notify(sessionId) {
   const subs = subscribers.get(sessionId);

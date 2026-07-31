@@ -1,19 +1,28 @@
 /* ══════════════════════════════════════════════════════════════════════════
-   Image Studio v2 — the prompt-at-the-bottom redesign (flag: imageStudioV2).
-
-   Every selector is namespaced `.isv2-*` so this file can sit beside the 250+
-   `.image-studio*` selectors of v1 without a single collision — the two studios
-   are mounted at the same time and only the flag decides which one opens.
+   Image Studio — the modal's shell: chrome, settings panel, composer.
 
    Layout, top to bottom:
-     .isv2-header    one row: title · the two peer modes             (fixed)
-     .isv2-stage     the image, as big as the box allows             (flex: 1)
-     .isv2-console   brief | settings, over a CTA foot                (fixed)
+     .isv2-header       one row: title · the two peer modes          (fixed)
+     .isv2-stage        the image, as big as the box allows          (flex: 1)
+       .isv2-panel      the settings, pinned left  (Generate)
+       .isv2-rail       the variations, pinned right
+     .isv2-console      the prompt, as a card                        (fixed)
+     .isv2-footer       the one action that ends the flow            (fixed)
+
+   The `.isv2-` prefix is historical — it namespaced this file against the
+   previous studio's `.image-studio*` selectors while both were mounted at once.
+   That studio is gone; the prefix stayed because renaming ~1300 lines of CSS and
+   every emitter buys a reader nothing.
+
+   What is NOT here: everything that sits ON the image and has to follow a
+   precise pixel — overlays, the crop box, the text mini-toolbar and its flyouts,
+   the tool palette. That is screens/image-studio-canvas.css, loaded just before
+   this file, and a handful of rules below override it at higher specificity.
 
    Reused, not re-declared: the shared `.gen-*` image primitives from
    screens/modals.css (empty state, loading frame, style cards, spinners) and
-   the DS classes (.ap-dialog, .ap-tabs, .ap-button, .ap-icon-button,
-   .ap-filter-chip, .ap-toggle-container, .ap-slider, .ap-action-dropdown-item).
+   the DS classes (.ap-dialog, .ap-tabs, .ap-accordion, .ap-button,
+   .ap-icon-button, .ap-filter-chip, .ap-toggle-container, .ap-slider).
    ══════════════════════════════════════════════════════════════════════════ */
 
 /* ── Shell ───────────────────────────────────────────────────────────────── */
@@ -129,9 +138,10 @@
    The side panels are PINNED to the edges and the body reserves the SAME width
    on both sides for them. That symmetry is what keeps the three centred things
    agreeing; reserving only as much as each side needs (the rail is 72px, the
-   inspector 284px) pushed the image left of its own prompt.
-   overflow stays VISIBLE: the inspector's flyout sheets have to escape this box,
-   and `overflow: auto` on either axis would clip them (see .isv2-panel). */
+   panel 284px) pushed the image left of its own prompt.
+   overflow stays VISIBLE: the tool palette's flyout and the on-image toolbars
+   have to escape this box, and `overflow: auto` on either axis would clip
+   them. */
 .isv2-stage-body {
   /* The panel's width, and the space the stage reserves for it, in ONE place. They
      were two hard-coded numbers per breakpoint (284/356, 236/276) that had to be
@@ -171,8 +181,9 @@
   padding-inline: 212px;
 }
 
-/* A whole-modal drop target: the References sheet is usually closed, so an
-   image dragged anywhere in generate mode is accepted (see index.js#onDrop). */
+/* A whole-modal drop target: the References section is one scroll into a panel,
+   so an image dragged anywhere in generate mode is accepted (see events.js#onDrop),
+   and the drop opens the section to show what landed. */
 .isv2.is-dragover .isv2-stage {
   outline: 2px dashed var(--sys-color-accent-default-bg-default);
   outline-offset: -8px;
@@ -629,20 +640,19 @@
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   THE FLOATING ZONES — inspector right, palette top-left.
+   THE SETTINGS PANEL — pinned to the stage's left edge in Generate mode.
    ══════════════════════════════════════════════════════════════════════════ */
 
-/* Both are the same object: a white card lifted off the canvas, matching the
-   variations rail opposite. */
-/* `--isv2-tile` — ONE thumbnail size for the whole panel: the reference tiles,
-   the logo thumb and the placer grid. 80px so three tiles plus two 8px gaps fit
-   the body's 260px exactly. */
+/* A white card lifted off the canvas, matching the variations rail opposite.
+   The edit-mode tool palette is the same object on the same edge, but it takes
+   `.image-studio__palette` (image-studio-canvas.css) — the arrangement and the
+   compact look were already right, so there was nothing to redesign.
+
+   `--isv2-tile` — ONE thumbnail size for the whole panel: the reference tiles
+   and the logo thumb. 80px so three tiles plus two 8px gaps fit the body's
+   260px exactly. */
 .isv2-panel {
   --isv2-tile: 80px;
-}
-
-.isv2-panel,
-.isv2-palette {
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xxs);
@@ -826,7 +836,7 @@
   border-top-color: var(--sys-border-color-default);
 }
 
-/* ── Aspect-ratio glyph (used inside the sheets) ─────────────────────────── */
+/* ── Aspect-ratio glyph (the Format rows in the settings panel) ──────────── */
 
 .isv2-ratio-glyph {
   display: inline-block;
@@ -837,25 +847,20 @@
   opacity: 0.75;
 }
 
-.isv2-ratio-glyph--free {
-  width: 12px;
-  border-style: dashed;
-}
+/* ── The sheet — the tool palette's "Add an image" flyout ─────────────────── */
 
-/* ── The sheet — a flyout LEFT of its row ────────────────────────────────── */
+/* One sheet exists: the logo/stamp picker hanging off the Add-image tool. Not an
+   .ap-action-dropdown — that component is a fixed 250px column of action rows,
+   and this is a tile grid. It borrows the action-dropdown's own --comp-* tokens
+   so it reads as the same object in the same system, sized to its content.
 
-/* Not an .ap-action-dropdown — that component is a fixed 250px column of
-   action rows, and half these sheets are tile grids or slider panels. It
-   borrows the action-dropdown's own --comp-* tokens so it reads as the same
-   object in the same system, sized to its content instead.
-   It opens sideways, not upward: the settings column is 268px and these sheets
-   run up to 560px, so anchoring them under a row would push them off the
-   console. Bottom-aligned to the row so a tall sheet grows up over the stage
-   (empty space) rather than down past the modal edge. */
+   The palette sits at the stage's LEFT edge, so the sheet flies RIGHT — there is
+   nothing to its left but the modal edge — and centres on the button that opened
+   it, the same rule the text toolbar's popovers follow. */
 .isv2-sheet {
   position: absolute;
-  right: calc(100% + var(--ref-spacing-xxs));
-  bottom: calc(var(--ref-spacing-xxs) * -1);
+  left: calc(100% + var(--ref-spacing-xxs));
+  top: 50%;
   z-index: 20;
   width: max-content;
   min-width: 220px;
@@ -867,17 +872,14 @@
   border-radius: var(--comp-action-dropdown-border-radius, var(--ref-border-radius-md));
   background: var(--comp-action-dropdown-background-color, var(--ref-color-white));
   box-shadow: var(--app-shadow-low);
-  transform-origin: bottom right;
-  animation: isv2-fly-left 140ms var(--app-ease-out);
-}
-
-.isv2-sheet--wide {
-  max-width: min(560px, calc(100vw - 96px));
+  transform: translateY(-50%);
+  transform-origin: center left;
+  animation: isv2-fly-right 140ms var(--app-ease-out);
 }
 
 /* Logo stamps in the "Add an image" sheet. Main's grid is three 1fr columns, so
-   it sizes to whatever the sheet is — and v2's sheet is far wider than main's
-   flyout, which turned 16 small stamps into 168px slabs with two rows of them
+   it sizes to whatever the sheet is — and this sheet is wide enough that 16 small
+   stamps became 168px slabs, with two rows of them
    filling the canvas. Fixed 72px tracks instead: the sheet sizes to THEM (it is
    width: max-content), the stamps read at the scale they'll be stamped at, and
    three rows fit with the rest a scroll away. */
@@ -887,32 +889,18 @@
   max-height: 232px;
 }
 
-/* A 72px tile can't spare main's 12px of padding on every side. */
+/* A 72px tile can't spare 12px of padding on every side. */
 .isv2-sheet .image-studio__preset {
   padding: var(--ref-spacing-xxs);
 }
 
-/* The palette is main's component (v2 reuses it verbatim), pinned top-left there.
-   In v2 it takes the slot the generate inspector vacates, so it takes its
+/* The palette takes the slot the settings panel vacates, so it takes its
    alignment too: vertically centred on the same axis, so switching mode moves the
-   labels and nothing else. Restated here rather than changed in main's stylesheet,
-   which still wants its own palette at the top. */
+   labels and nothing else. Said here rather than in image-studio-canvas.css,
+   because it is the SHELL that decides where the palette sits. */
 .isv2-stage-body > .image-studio__palette {
   top: 50%;
   transform: translateY(-50%);
-}
-
-/* The tool palette sits at the stage's LEFT edge, so its sheets fly the other
-   way — there is nothing to their left but the modal edge. Centred on the button
-   that opened it, the same rule the text toolbar's popovers follow. */
-.image-studio__palette-anchor .isv2-sheet {
-  right: auto;
-  left: calc(100% + var(--ref-spacing-xxs));
-  bottom: auto;
-  top: 50%;
-  transform: translateY(-50%);
-  transform-origin: center left;
-  animation-name: isv2-fly-right;
 }
 
 @keyframes isv2-fly-right {
@@ -929,7 +917,7 @@
 /* ── On-element popovers, centred on their trigger ────────────────────────── */
 
 /* Each text-toolbar control gets its own positioning context so its panel opens
-   under the CONTROL. v1's popovers use `left: 0`, which resolves against the
+   under the CONTROL. The canvas layer's popovers use `left: 0`, which resolves against the
    nearest positioned ancestor — the whole text overlay — so the panel appeared
    wherever the element happened to start, sometimes half a canvas away from the
    button that opened it. */
@@ -943,17 +931,6 @@
   left: 50%;
   right: auto;
   transform: translateX(-50%);
-}
-
-@keyframes isv2-fly-left {
-  from {
-    opacity: 0;
-    transform: translateX(6px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
 }
 
 .isv2-sheet-title {
@@ -1009,14 +986,6 @@
 
 .isv2-sheet-hint {
   color: var(--sys-text-color-light);
-}
-
-/* `.ap-link` is inline-flex — a rigid box on the baseline that won't break with the
-   line it sits in. This one is a word inside a wrapping sentence, so it goes back to
-   inline. A co-class, never a redeclaration of `.ap-link` itself. */
-.isv2-hint-link {
-  display: inline;
-  vertical-align: baseline;
 }
 
 .isv2-sheet-hint > i {
@@ -1248,26 +1217,6 @@
   filter: grayscale(1);
 }
 
-.isv2-ref-box {
-  position: absolute;
-  left: 4px;
-  top: 4px;
-  display: grid;
-  place-items: center;
-  width: 16px;
-  height: 16px;
-  border: 1.5px solid var(--ref-color-white);
-  border-radius: 4px;
-  background: transparent;
-  color: var(--ref-color-white);
-  font-size: 10px;
-}
-
-.isv2-ref.is-used .isv2-ref-box {
-  background: var(--sys-color-accent-default-bg-default);
-  border-color: var(--sys-color-accent-default-bg-default);
-}
-
 /* SINGLE-SELECT, so the marker is a RADIO dot, not a tick — a tick promises you
    can have several, and here picking one drops the last. Same 16px box the tick
    sat in, made round and filled from the centre. */
@@ -1346,7 +1295,7 @@
   gap: var(--ref-spacing-xxxs);
 }
 
-/* The crop toolbar is main's, styled by main's stylesheet. Only one of its rules
+/* The crop toolbar is styled by image-studio-canvas.css. Only one of its rules
    is ancestor-coupled — the mid-gesture hide keys on `.image-studio__frame` —
    and v2's frame carries its own class, so that one is restated here. (A drag
    deliberately doesn't re-render, and the bar's position is only recomputed when
@@ -1380,9 +1329,5 @@
 
   .isv2-rail {
     right: var(--ref-spacing-sm);
-  }
-
-  .isv2-trigger-label {
-    flex-basis: 68px;
   }
 }

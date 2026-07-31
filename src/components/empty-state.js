@@ -13,13 +13,13 @@
 // chrome (the wrapping class), but the inner layout is shared.
 //
 // Usage:
-//   import { renderEmptyState } from "../components/empty-state.js?v=1";
+//   import { renderEmptyState } from "../components/empty-state.js?v=2";
 //   const html = renderEmptyState({
 //     icon: "ap-icon-feature-library",
 //     title: "No sources yet",
 //     body: "Drop a PDF, video, or URL to get started.",
 //     actionHtml: '<button class="ap-button primary orange">…</button>',
-//     wrapperClass: "sources-view__empty",  // optional; default "session__empty"
+//     wrapperClass: "posts__empty",  // optional; default "session__empty"
 //   });
 //
 // Pass `actionHtml` to surface a CTA underneath the body. Pass

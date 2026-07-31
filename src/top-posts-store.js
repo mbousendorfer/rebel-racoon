@@ -14,7 +14,7 @@
 // "Use top performing posts" flow shows an empty-state message instead.
 
 import { topPosts as seed } from "./mocks.js?v=62";
-import { isNewUser } from "./user-mode.js?v=22";
+import { isNewUser } from "./user-mode.js?v=23";
 
 let posts = null;
 

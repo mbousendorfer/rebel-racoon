@@ -13,8 +13,8 @@
 // picker state).
 
 import { html, raw } from "../utils.js?v=21";
-import { profileForNetwork, NETWORK_ICON_BY_PLATFORM, BRAND_INITIALS } from "../social-profiles.js?v=34";
-import { renderEmptyState } from "./empty-state.js?v=1";
+import { profileForNetwork, NETWORK_ICON_BY_PLATFORM, BRAND_INITIALS } from "../social-profiles.js?v=36";
+import { renderEmptyState } from "./empty-state.js?v=2";
 
 const NET_ICON = {
   linkedin: "ap-icon-linkedin-official",

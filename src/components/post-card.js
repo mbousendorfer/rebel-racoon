@@ -20,9 +20,9 @@
 // `?focusPost=<id>`.
 
 import { html, raw } from "../utils.js?v=21";
-import { isPortraitFormat } from "../clip-formats.js?v=14";
-import { presetById } from "../clip-captions.js?v=5";
-import { renderFeedbackControl } from "./feedback-control.js?v=2";
+import { isPortraitFormat } from "../clip-formats.js?v=16";
+import { presetById } from "../clip-captions.js?v=6";
+import { renderFeedbackControl } from "./feedback-control.js?v=3";
 
 export function renderPostCard(post, opts = {}) {
   const inlineEdit = opts.inlineEdit === true;

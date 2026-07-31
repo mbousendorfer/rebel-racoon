@@ -35,10 +35,6 @@ export const LANGUAGE_OPTIONS = LANGUAGES.map((l) => l.label);
 
 export const DEFAULT_LANGUAGE = "English";
 
-export function labelForCode(code) {
-  return LANGUAGES.find((l) => l.code === code)?.label || code;
-}
-
 // Build a per-language voice entry from a context's flat legacy fields.
 function voiceEntryFromLegacy(ctx) {
   const ctaLabels = {};

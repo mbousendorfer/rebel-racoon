@@ -19,8 +19,6 @@ import { createNotifier } from "./store-utils.js?v=2";
 const feedbackByTarget = new Map(); // targetId → { verdict, reasons, comment, ts }
 const notifier = createNotifier("feedback");
 
-export const subscribe = notifier.subscribe;
-
 // Read the current record for a target, or null if the user hasn't voted.
 export function getFeedback(targetId) {
   return feedbackByTarget.get(targetId) || null;

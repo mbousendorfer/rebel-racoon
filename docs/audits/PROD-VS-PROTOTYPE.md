@@ -382,17 +382,17 @@ Structure :
 └──────────────────────────────────────────────┘
 ```
 
-| Élément                                             | Prod                               | Proto                                                                            | Écart                                                                                                          |
-| --------------------------------------------------- | ---------------------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| Preview LinkedIn-style (avatar, reactions, comment) | ✔ très fidèle                      | ❌ — juste un titre+char-count                                                   | 🟠 **Majeur → Aligner le proto** — la preview prod aide l'utilisateur à valider le rendu social                |
-| Bouton "Generate an image" inline par draft         | ✔                                  | ❌ — il existe `generate-image-modal.js` mais pas exposé par draft dans le panel | 🟠 **Majeur → Aligner le proto**                                                                               |
-| Generation context (Voice X/10, Practices Y/10)     | ✔ — qualité signalée               | ❌                                                                               | 🟠 **Majeur → Aligner le proto** — feedback de qualité utile                                                   |
-| Filtre "Needs fixes" tab                            | ✔ — distingue les drafts en erreur | ❌                                                                               | 🟡 **Mineur → Aligner le proto**                                                                               |
-| Filtre par network                                  | ✔ dropdown                         | ✔ groupé par section (LinkedIn 1, X 1)                                           | OK — proto a une variante visuelle                                                                             |
-| Compteur char count par network                     | ❌ visible dans la prod ?          | ✔ `50/3000`, `50/280`                                                            | 🟡 **Mineur → Aligner la prod**                                                                                |
-| Re-generate all CTA                                 | ❌                                 | ✔ "↻ Regenerate"                                                                 | 🟡 **Mineur → Aligner la prod**                                                                                |
-| Bouton "Save as draft" top-level                    | ✔                                  | ❌ (le proto les sauvegarde implicitement)                                       | 🟡                                                                                                             |
-| Comment composer + comment list                     | ✔                                  | ❌                                                                               | 🟠 **Majeur → Aligner le proto** ou décision produit (les comments sont-ils du chat ou un mock pour preview ?) |
+| Élément                                             | Prod                               | Proto                                                            | Écart                                                                                                          |
+| --------------------------------------------------- | ---------------------------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Preview LinkedIn-style (avatar, reactions, comment) | ✔ très fidèle                      | ❌ — juste un titre+char-count                                   | 🟠 **Majeur → Aligner le proto** — la preview prod aide l'utilisateur à valider le rendu social                |
+| Bouton "Generate an image" inline par draft         | ✔                                  | ✔ — CTA `data-post-image` sur la post-card, ouvre l'Image Studio | ✅ **Résolu**                                                                                                  |
+| Generation context (Voice X/10, Practices Y/10)     | ✔ — qualité signalée               | ❌                                                               | 🟠 **Majeur → Aligner le proto** — feedback de qualité utile                                                   |
+| Filtre "Needs fixes" tab                            | ✔ — distingue les drafts en erreur | ❌                                                               | 🟡 **Mineur → Aligner le proto**                                                                               |
+| Filtre par network                                  | ✔ dropdown                         | ✔ groupé par section (LinkedIn 1, X 1)                           | OK — proto a une variante visuelle                                                                             |
+| Compteur char count par network                     | ❌ visible dans la prod ?          | ✔ `50/3000`, `50/280`                                            | 🟡 **Mineur → Aligner la prod**                                                                                |
+| Re-generate all CTA                                 | ❌                                 | ✔ "↻ Regenerate"                                                 | 🟡 **Mineur → Aligner la prod**                                                                                |
+| Bouton "Save as draft" top-level                    | ✔                                  | ❌ (le proto les sauvegarde implicitement)                       | 🟡                                                                                                             |
+| Comment composer + comment list                     | ✔                                  | ❌                                                               | 🟠 **Majeur → Aligner le proto** ou décision produit (les comments sont-ils du chat ou un mock pour preview ?) |
 
 🔴 **Bloquant → Aligner le proto** — Le draft panel prod est **dramatiquement plus mature**. Le proto a un panel de gestion de drafts (sélection + scheduling) mais pas de preview de rendu social.
 
@@ -898,7 +898,7 @@ Toutes les préférences (notifications, social accounts, profile, password…) 
 | 12  | Mentions @ dans le composer (proto only)                           | 🟠       | → Aligner la prod                        | §2.3        |
 | 13  | Handoff card "N drafts ready" (proto only)                         | 🟠       | → Aligner la prod                        | §4.3        |
 | 14  | Generation context (Voice/Practices ratings) (prod only)           | 🟠       | ← Aligner le proto                       | §4.4        |
-| 15  | Generate image inline par draft (prod only)                        | 🟠       | ← Aligner le proto                       | §4.4        |
+| 15  | Generate image inline par draft                                    | ✅       | Résolu — CTA sur la post-card            | §4.4        |
 | 16  | Sources sidebar nav globale (proto only)                           | 🟠       | → Aligner la prod                        | §2.1        |
 | 17  | Inconsistance "context" ↔ "Playbook" en prod                       | 🟠       | → Aligner la prod                        | §10.3       |
 | 18  | État processing live des sources (proto only)                      | 🟠       | → Aligner la prod                        | §4.6        |
@@ -977,7 +977,6 @@ Avant tout chantier d'alignement, **5 décisions stratégiques** :
 
 - Preview LinkedIn-style dans le proto (#4)
 - Generation context ratings dans le proto (#14)
-- Generate image inline dans le proto (#15)
 - "Needs fixes" tab dans le proto (#28)
 - Comment composer mockup (decision : keep or remove)
 

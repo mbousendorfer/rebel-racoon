@@ -9,10 +9,10 @@
 // continue in background after the user closes the modal.
 
 import { sourcesBySession as seedByCsesssion } from "./mocks.js?v=62";
-import { isNewUser } from "./user-mode.js?v=22";
+import { isNewUser } from "./user-mode.js?v=23";
 import { createNotifier } from "./store-utils.js?v=2";
 import { detectUrlService } from "./url-services.js?v=1";
-import { isFlagOn } from "./feature-flags.js?v=16";
+import { isFlagOn } from "./feature-flags.js?v=18";
 
 // Canned extraction output attached to every Processed Video source.
 // Generic enough to plausibly come from any keynote / talk / demo video.
@@ -738,17 +738,6 @@ export function updateSourceClips(sourceId, nextClips) {
   const source = sourcesBySession.get(sessionId).find((s) => s.id === sourceId);
   if (!source) return;
   source.clips = nextClips.map((c) => ({ ...c }));
-  notifySources(sessionId);
-}
-
-// Tracks the background clip-extraction phase on a video source. Status
-// is one of: undefined (never run) | "extracting" | "ready".
-export function setClipExtractionStatus(sourceId, status) {
-  const sessionId = findSourceOwner(sourceId);
-  if (!sessionId) return;
-  const source = sourcesBySession.get(sessionId).find((s) => s.id === sourceId);
-  if (!source) return;
-  source.clipExtractionStatus = status;
   notifySources(sessionId);
 }
 

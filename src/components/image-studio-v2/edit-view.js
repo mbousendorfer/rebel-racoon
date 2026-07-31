@@ -1,28 +1,31 @@
-// Image Studio v2 — the edit canvas.
+// Image Studio — the edit canvas.
 //
 // Everything that MUST live on the canvas, and nothing that doesn't: the working
 // image, the draggable overlay layer, the crop rectangle with its handles, and
 // the mini toolbar that follows a selected text element.
 //
-// These pieces DELIBERATELY REUSE v1's classes (`.image-studio__overlay*`,
-// `__text-toolbar`, `__tt-*`, `__popover*`, `__swatch*`, `__font-*`,
-// `__slider-*`, `__crop-*`) and therefore v1's stylesheet, which is already
-// loaded. v2 rewrote them once and it was a mistake: the on-canvas text
-// toolbar, its colour / font / outline / shadow popovers and the overlay handles
-// were never what was wrong with v1 — the rail + footer + floating-bar
-// ARRANGEMENT was. Sharing them keeps the two studios pixel-identical here and
-// means there is one place to fix a text-overlay bug, not two.
+// The classes here are `.image-studio__*` (overlays, `__text-toolbar`, `__tt-*`,
+// `__popover*`, `__swatch*`, `__font-*`, `__slider-*`, `__crop-*`) and they live
+// in styles/screens/image-studio-canvas.css — the stylesheet for this layer
+// specifically, kept apart from the modal's shell because the two answer
+// different questions. These rules answer "where exactly on the image is this
+// control, and how does it stay there" while the image is resized, cropped and
+// re-generated under it. The shell's stylesheet answers what the modal looks like.
 //
-// Only what v2 genuinely re-arranges carries an `.isv2-` class: the frame (it
-// has its own sizing) and the crop confirm pair (its ratio options moved to the
-// tool palette, so only ✕ / ✓ stay on the canvas).
+// Three of those families are assembled by string concatenation and a rename
+// would break them silently: `__crop-handle--{nw,ne,se,sw}` below, and
+// `__popover--{kind}` / `__tt-{kind}` in inline-text.js.
+//
+// `.isv2-*` appears only where the shell genuinely owns the geometry: the frame
+// (it has its own sizing and is the container the overlays measure against) and
+// the busy / slide-badge overlays.
 
 import { escapeHtml } from "../../utils.js?v=21";
-import { FORMATS, NETWORK_FORMATS } from "../../clip-formats.js?v=14";
-import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=34";
-import { KEY } from "./context.js?v=33";
-import { outlineMetrics, shadowMetrics, cssFamily } from "../image-studio/canvas.js?v=2";
-import * as imageStudio from "../../image-studio.js?v=69";
+import { FORMATS, NETWORK_FORMATS } from "../../clip-formats.js?v=16";
+import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=36";
+import { KEY } from "./context.js?v=37";
+import { outlineMetrics, shadowMetrics, cssFamily } from "../../image-studio-canvas.js?v=5";
+import * as imageStudio from "../../image-studio.js?v=73";
 
 // The working image is clipped inside .isv2-frame-clip while the frame itself is
 // overflow:visible, so on-element toolbars / popovers / handles can extend past
@@ -64,14 +67,13 @@ function cropRect(st) {
     </div>${cropToolbar(st)}`;
 }
 
-// Crop options as a floating toolbar attached just below the crop rectangle —
-// main's arrangement, main's classes, verbatim. It holds the "Best for" hint, the
-// divider-separated aspect options and the ✕ / ✓ pair in ONE bar, at the contact
-// point of the gesture.
+// Crop options as a floating toolbar attached just below the crop rectangle: the
+// "Best for" hint, the divider-separated aspect options and the ✕ / ✓ pair, all in
+// ONE bar at the contact point of the gesture.
 //
-// v2 had split this: the ratios into a tool-palette sheet, the ✕ / ✓ into their
-// own little pill. That put the ratio you were choosing a canvas-width away from
-// the box it reshapes, which is the one place it must not be.
+// These were once split — the ratios into a tool-palette flyout, the ✕ / ✓ into
+// their own little pill — which put the ratio you were choosing a canvas-width
+// away from the box it reshapes, the one place it must not be.
 //
 // Rendered as a frame child (outside the crop layer) so it isn't clipped and
 // can't start a drag; it hides while a crop gesture runs.
@@ -86,7 +88,7 @@ function cropToolbar(st) {
       ? `<span class="image-studio__crop-bestfor" aria-label="Best for ${netLabel}">Best for <i class="${NETWORK_ICON_BY_PLATFORM[net] || ""}" title="${netLabel}" aria-hidden="true"></i></span>`
       : "";
   const sep = `<span class="image-studio__crop-sep" aria-hidden="true"></span>`;
-  return `<div class="image-studio__crop-toolbar" data-img-crop-toolbar style="${style}" role="toolbar" aria-label="Crop">
+  return `<div class="image-studio__crop-toolbar" style="${style}" role="toolbar" aria-label="Crop">
     ${bestFor ? `${bestFor}${sep}` : ""}
     <div class="image-studio__crop-aspects">${cropAspectChips(st)}</div>
     ${sep}
@@ -178,7 +180,7 @@ function textToolbar(o, st, selected) {
   const outlineOpen = open("textOutline");
   const shadowOpen = open("textShadow");
   const fontLabel = o.fontFamily
-    ? (st.customFonts || []).find((f) => f.family === o.fontFamily)?.label || o.fontFamily
+    ? imageStudio.FONT_OPTIONS.find((f) => f.family === o.fontFamily)?.label || o.fontFamily
     : "Default";
   // Each trigger sits in its own `.isv2-tt-anchor`, which is what lets its
   // popover be centred on the BUTTON. Without the anchor, `left: 0` resolves
@@ -195,7 +197,7 @@ function textToolbar(o, st, selected) {
     ${sep}
     ${anchored(
       `<button type="button" class="image-studio__tt-btn image-studio__tt-font" data-img-popover-toggle="textFont" aria-haspopup="true" aria-expanded="${fontOpen}" title="Font — ${escapeHtml(fontLabel)}" aria-label="Font"><span class="image-studio__tt-aa" aria-hidden="true">Aa</span></button>`,
-      fontOpen ? textFontPopover(o, st) : "",
+      fontOpen ? textFontPopover(o) : "",
     )}
     <button type="button" class="image-studio__tt-btn image-studio__tt-bold" data-img-text-bold aria-pressed="${!!o.bold}">Bold</button>
     <button type="button" class="image-studio__tt-btn image-studio__tt-italic" data-img-text-italic aria-pressed="${!!o.italic}">Italic</button>
@@ -298,9 +300,8 @@ function textShadowPopover(o) {
   </div>`;
 }
 
-// A radio-style list of the bundled + uploaded fonts, each label previewed in
-// its own face.
-function textFontPopover(o, st) {
+// A radio-style list of the bundled fonts, each label previewed in its own face.
+function textFontPopover(o) {
   const cur = o.fontFamily || null;
   const row = (family, label) => {
     const on = (family || null) === cur;
@@ -310,12 +311,11 @@ function textFontPopover(o, st) {
       ${on ? `<i class="ap-icon-check image-studio__font-check" aria-hidden="true"></i>` : ""}
     </button>`;
   };
-  const builtins = imageStudio.FONT_OPTIONS.map((f) => row(f.family, f.label)).join("");
-  const custom = (st.customFonts || []).map((f) => row(f.family, f.label)).join("");
+  const rows = imageStudio.FONT_OPTIONS.map((f) => row(f.family, f.label)).join("");
   return `<div class="image-studio__popover image-studio__popover--font" data-img-popover role="menu" aria-label="Font">
     <div class="image-studio__popover-head"><p class="image-studio__popover-title">Font</p></div>
     <div class="image-studio__popover-body">
-      <div class="image-studio__font-list">${builtins}${custom}</div>
+      <div class="image-studio__font-list">${rows}</div>
     </div>
   </div>`;
 }
