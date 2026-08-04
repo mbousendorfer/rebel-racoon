@@ -32,8 +32,8 @@ import { getSessionById } from "../../sessions-store.js?v=13";
 import { getContextById } from "../../contexts-store.js?v=45";
 import { MODAL_ID, KEY, ctx, state, autosize } from "./context.js?v=37";
 import { loadImg } from "../../image-studio-canvas.js?v=5";
-import { renderStudio } from "./stage-view.js?v=72";
-import { bindStudioEvents } from "./events.js?v=6";
+import { renderStudio } from "./stage-view.js?v=74";
+import { bindStudioEvents } from "./events.js?v=9";
 import * as imageStudio from "../../image-studio.js?v=73";
 
 let backdrop;

@@ -97,6 +97,10 @@ const FIELD_HINTS = {
     q: "Call to action",
     a: "Archie surfaces these links when posts call for an action.",
   },
+  brandLogo: {
+    q: "Your brand mark",
+    a: "I stamp it on the images I generate — bottom-right by default, or wherever you place it yourself.",
+  },
 };
 
 const SECTION_HINTS = {
@@ -105,8 +109,11 @@ const SECTION_HINTS = {
     a: "Archie captured this voice from your connected profile's recent posts.",
   },
   brand: {
+    // "Your logo, plus…" because the logo is the one thing in this section Archie
+    // can't find for you — a banner claiming it picked everything up from the site
+    // would be contradicted by the very first row.
     q: "Visual identity",
-    a: "Archie picked these up from your site so visuals stay on-brand.",
+    a: "Your logo, plus the colours and type Archie picked up from your site — so visuals stay on-brand.",
   },
   competitors: {
     q: "Who you're up against",
@@ -342,6 +349,7 @@ export function snapshotEditable(d) {
       brandPersonality: d.brandPersonality || "",
       brandTypography: d.brandTypography || null,
       brandColors: d.brandColors || [],
+      brandLogo: d.brandLogo || "",
       referenceImages: d.referenceImages || [],
       competitors: d.competitors || [],
       dismissedCompetitors: d.dismissedCompetitors || [],
@@ -507,6 +515,46 @@ function renderTypeSpecimen(data) {
       </span>
     </div>`;
   return `<div class="recap__type-grid">${cell("Headings", headingFont)}${cell("Body", bodyFont)}</div>`;
+}
+
+// The brand mark — ONE optional image, so one tile, not the gallery the
+// reference images get: a Playbook has a single logo the way it has a single
+// name. Read mode shows the mark alone; a filename under it would name the file
+// rather than the brand.
+//
+// The tile is HEIGHT-driven (`width: auto` + `contain`), the same shape as the
+// studio's own preview: a wordmark is wide and a monogram is square, and both
+// have to sit in this tile without either being cropped or letterboxed.
+//
+// Upload is a button + a hidden input rather than the shared `.ap-dropzone`,
+// because the "Reference images" row one line below in this same section is
+// already a button + hidden input. Two different upload affordances that close
+// together would read as two different kinds of control.
+function renderBrandLogo(data, edit) {
+  const url = data.brandLogo || "";
+  const tile = url
+    ? `<span class="recap__logo"><img src="${esc(url)}" alt="${esc(data.name || "Brand")} logo" /></span>`
+    : "";
+  if (!edit) return tile || `<span class="recap__row-empty">Not set yet</span>`;
+  // One input serves Add and Replace — only the label differs. Remove appears
+  // only when there's something to remove.
+  return `
+    <div class="recap__logo-edit">
+      ${tile}
+      <div class="recap__logo-actions">
+        <button type="button" class="ap-button secondary blue" data-recap-logo-add>
+          <i class="ap-icon-upload" aria-hidden="true"></i><span>${url ? "Replace" : "Add a logo"}</span>
+        </button>
+        ${
+          url
+            ? `<button type="button" class="ap-button ghost grey" data-recap-logo-remove>
+                 <i class="ap-icon-trash" aria-hidden="true"></i><span>Remove</span>
+               </button>`
+            : ""
+        }
+      </div>
+      <input type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" hidden data-recap-logo-input />
+    </div>`;
 }
 
 // ── Edit-mode field renderers ──────────────────────────────────────────
@@ -1132,6 +1180,9 @@ function renderBrandPanel(data, edit) {
       .join("");
     body = [
       renderSectionHint(SECTION_HINTS.brand),
+      // Logo first: it's the most concrete piece of the visual identity, and the
+      // one thing the image generator stamps into the pixels.
+      renderRow("Logo", renderFieldHint(FIELD_HINTS.brandLogo) + renderBrandLogo(data, true)),
       renderRow(
         "Brand color",
         `<div class="recap__colors" data-recap-colors>${colorRows}</div>
@@ -1164,6 +1215,7 @@ function renderBrandPanel(data, edit) {
     ].join("");
   } else {
     body = [
+      renderRow("Logo", renderBrandLogo(data, false)),
       renderRow("Brand color", renderSwatches(colors)),
       renderRow("Typography", renderTypeSpecimen(data)),
       renderRow("Personality", renderText(data.brandPersonality)),
@@ -1581,6 +1633,23 @@ function renderCompetitorModal(data) {
 
 // ── Header + rail ──────────────────────────────────────────────────────
 
+// The Playbook's mark: its logo when it has one, the initials monogram
+// otherwise. A brand that HAS a logo is recognised by it, so a tinted "AC"
+// standing in front of one is a worse identity than the real thing.
+//
+// Both are rendered and one is hidden — the same image + monogram-twin pattern
+// renderCompetitorLogo uses, so a logo that can't load (a data URL from a file
+// the browser then rejected) falls back to the initials instead of an empty box.
+// The swap is wired by onLoadError().
+function renderHeaderMark(data, accent, primary) {
+  const tint = `--brand-accent:${esc(accent)}; --brand-primary:${esc(primary)};`;
+  const mono = `<span class="recap__monogram${data.brandLogo ? " is-hidden" : ""}" style="${tint}">${esc(initials(data.name))}</span>`;
+  if (!data.brandLogo) return mono;
+  return `<span class="recap__monogram recap__monogram--mark"><img src="${esc(data.brandLogo)}" alt="${esc(
+    data.name || "Brand",
+  )} logo" data-recap-brand-logo /></span>${mono}`;
+}
+
 function renderHeader(data) {
   const colors = visualColors(data);
   const accent = colors.find((c) => /accent/i.test(c.name))?.hex || colors[0]?.hex || "var(--ref-color-orange-100)";
@@ -1605,7 +1674,7 @@ function renderHeader(data) {
   return `
     <header class="recap__header">
       <div class="recap__id">
-        <span class="recap__monogram" style="--brand-accent:${esc(accent)}; --brand-primary:${esc(primary)};">${esc(initials(data.name))}</span>
+        ${renderHeaderMark(data, accent, primary)}
         <div class="recap__id-text">
           <div class="recap__id-titlerow">
             <h1 class="recap__name">${esc(data.name || "Untitled Playbook")}</h1>
@@ -1814,7 +1883,17 @@ function attachScrollSpy() {
 // the capture phase because `error` events don't bubble.
 function onLoadError(event) {
   const img = event.target;
-  if (!(img instanceof HTMLImageElement) || !img.hasAttribute("data-recap-cmp-logo")) return;
+  if (!(img instanceof HTMLImageElement)) return;
+  // Same twin swap for the header's brand mark, one level up: the image is
+  // wrapped in the tile, so it's the TILE that hides and the monogram after it
+  // that comes back.
+  if (img.hasAttribute("data-recap-brand-logo")) {
+    const tile = img.closest(".recap__monogram--mark");
+    tile?.classList.add("is-hidden");
+    tile?.nextElementSibling?.classList.remove("is-hidden");
+    return;
+  }
+  if (!img.hasAttribute("data-recap-cmp-logo")) return;
   img.classList.add("is-hidden");
   img.nextElementSibling?.classList.remove("is-hidden");
 }
@@ -2237,6 +2316,18 @@ function onClick(event) {
     return;
   }
 
+  // Brand logo — pick a file / drop the mark. Both are part of the Brand
+  // section's Save/Cancel flow, like every other field in it.
+  if (event.target.closest("[data-recap-logo-add]")) {
+    mountTarget?.querySelector("[data-recap-logo-input]")?.click();
+    return;
+  }
+  if (event.target.closest("[data-recap-logo-remove]")) {
+    data.brandLogo = "";
+    repaint();
+    return;
+  }
+
   // Reference images — open the file picker / open the detail modal / close it /
   // remove a thumbnail.
   if (event.target.closest("[data-recap-refimg-add]")) {
@@ -2373,6 +2464,20 @@ function onChange(event) {
   if (!editScope) return;
   const data = cfg.getData();
   if (!data) return;
+  // Brand-logo upload — one image, read as a data URL so it persists with the
+  // Playbook (an object URL is ephemeral and wouldn't survive the store).
+  if (event.target.matches("[data-recap-logo-input]")) {
+    const file = Array.from(event.target.files || []).find((f) => f.type.startsWith("image/"));
+    event.target.value = ""; // so re-picking the same file fires again
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      data.brandLogo = reader.result;
+      repaint();
+    };
+    reader.readAsDataURL(file);
+    return;
+  }
   // Reference-image upload — read each picked image as a data URL and append,
   // capped at MAX_REF_IMAGES. Part of the Brand section's Save flow.
   if (event.target.matches("[data-recap-refimg-input]")) {

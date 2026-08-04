@@ -135,6 +135,14 @@ function onClick(event, close) {
     imageStudio.setOpenPopover(KEY, null);
     return void openLogoPicker();
   }
+  // The Playbook's own mark — the url is read from state rather than an attribute
+  // because an uploaded logo is a data URL (see tools-view#playbookMark).
+  if (event.target.closest("[data-img-logo-playbook]")) {
+    const url = state()?.playbookLogo;
+    imageStudio.setOpenPopover(KEY, null);
+    if (url) imageStudio.addOverlay(KEY, { kind: "logo", url });
+    return;
+  }
   const preset = event.target.closest("[data-img-logo-preset]");
   if (preset) {
     imageStudio.setOpenPopover(KEY, null);

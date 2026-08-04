@@ -15,7 +15,7 @@
 
 import * as inlineQuestion from "./inline-question.js?v=48";
 import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=68";
-import * as rightPanel from "./components/right-panel.js?v=436";
+import * as rightPanel from "./components/right-panel.js?v=438";
 import { addContext, updateContext, getContextById } from "./contexts-store.js?v=45";
 import { analyzeWebsite } from "./context-mock-analysis.js?v=25";
 import { connectors as connectorMocks } from "./mocks.js?v=62";
@@ -64,6 +64,7 @@ function emptyDraft(overrides = {}) {
     brandPersonality: "",
     brandTypography: null, // { headingFont, bodyFont }
     brandColors: [], // Array<{ name, hex }>
+    brandLogo: "", // the brand mark, as a data URL once uploaded ("" = none)
     referenceImages: [], // Array<{ id, label, url, note?, networks? }> — note/networks = optional usage guidance
     // Competitors — Array<{ id, name, description, websiteUrl, socials:[{network,url}], logo?, suggested? }>.
     // Pre-filled from the website analysis, each flagged `suggested: true` =
@@ -808,6 +809,7 @@ export function save(sessionId) {
     brandPersonality: d.brandPersonality || "",
     brandTypography: d.brandTypography ? { ...d.brandTypography } : null,
     brandColors: Array.isArray(d.brandColors) ? d.brandColors.map((c) => ({ ...c })) : [],
+    brandLogo: d.brandLogo || "",
     referenceImages: Array.isArray(d.referenceImages)
       ? d.referenceImages.map((i) => ({ ...i, networks: Array.isArray(i.networks) ? [...i.networks] : [] }))
       : [],

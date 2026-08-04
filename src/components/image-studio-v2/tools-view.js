@@ -71,20 +71,43 @@ function editTools(st) {
       icon: "ap-icon-file--image",
       open: st.openPopover === "logo",
       disabled: busy,
-      sheet: () => logoSheet(),
+      sheet: () => logoSheet(st),
     }),
   ].join("");
 }
 
-function logoSheet() {
+function logoSheet(st) {
   const presets = imageStudio.IMAGE_PRESETS.map(
     (p) =>
       `<button type="button" class="image-studio__preset" data-img-logo-preset="${escapeHtml(p.url)}" title="${escapeHtml(p.label)}"><img src="${escapeHtml(p.url)}" alt="${escapeHtml(p.label)}" loading="lazy" /></button>`,
   ).join("");
   return sheet({
     title: "Add an image",
-    body: `<button type="button" class="ap-button stroked grey image-studio__logo-upload" data-img-logo-upload><i class="ap-icon-upload" aria-hidden="true"></i><span>Upload an image</span></button>
+    body: `${playbookMark(st)}<button type="button" class="ap-button stroked grey image-studio__logo-upload" data-img-logo-upload><i class="ap-icon-upload" aria-hidden="true"></i><span>Upload an image</span></button>
       ${sheetDivider}
       <div class="image-studio__presets">${presets}</div>`,
   });
+}
+
+// The Playbook's own logo, FIRST — ahead of Upload and ahead of the presets,
+// because "put my brand on this" is the likeliest reason to open this sheet, and
+// the mark is already in hand: nothing to upload, nothing to hunt for.
+//
+// The Branding switch already stamps this same logo bottom-right on generation.
+// This is the other half of that: the mark as a layer you place yourself, for the
+// visuals where the corner is the wrong corner. Absent entirely when the Playbook
+// has no logo — the switch's disabled row is where that gets explained, and a
+// second empty slot here would just repeat it.
+//
+// It carries its own hook rather than reusing `data-img-logo-preset="<url>"`: an
+// uploaded logo is a data URL, and putting that in an attribute would paste
+// hundreds of KB of base64 into the DOM on every render.
+function playbookMark(st) {
+  if (!st.playbookLogo) return "";
+  const who = st.playbookName || "Playbook";
+  return `<p class="isv2-sheet-label">From your Playbook</p>
+    <div class="image-studio__presets">
+      <button type="button" class="image-studio__preset" data-img-logo-playbook title="${escapeHtml(`${who} logo`)}"><img src="${escapeHtml(st.playbookLogo)}" alt="${escapeHtml(`${who} logo`)}" /></button>
+    </div>
+    ${sheetDivider}`;
 }

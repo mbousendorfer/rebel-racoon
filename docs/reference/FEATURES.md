@@ -310,6 +310,14 @@ L'ordre dit un raisonnement : **ce qui va DANS l'image**, puis son **traitement*
   section doit est « voici le logo que j'utiliserais » — et le voir est ce qui permet d'attraper un
   logo faux ou périmé avant de générer. Le logo est cuit par le même `compositeOverlays` (overlay
   `kind: "logo"`, 26% de la largeur).
+  Le logo vient de la **section Brand du Playbook** (`ctx.brandLogo`, §11) : ce switch ne l'invente pas
+  et ne permet pas de le changer — un Playbook sans logo se répare dans le Playbook, pas ici. Et pour
+  les visuels où le coin bas-droite est le mauvais coin, le **mode Edit** propose le même logo en tête
+  du flyout « Add an image » (groupe _« From your Playbook »_, avant Upload et avant les presets), posé
+  comme calque déplaçable : le switch est la signature automatique, la tuile est la pose à la main. La
+  tuile porte son propre hook (`data-img-logo-playbook`) plutôt que `data-img-logo-preset="<url>"`, sans
+  quoi un logo uploadé — donc une data URL — collerait des centaines de Ko de base64 dans le DOM à
+  chaque render.
   Les couleurs sont les **mêmes pastilles rondes que la ligne « Brand color » du Playbook**
   (`.recap__fact-dot`) et les mêmes mots — un récap doit ressembler à ce qu'il récapitule. Nom + hex en
   tooltip ; l'hex imprimé sous chaque pastille transformait une rangée de cinq en deux lignes de petit
@@ -434,8 +442,10 @@ Sections éditables inline (une à la fois, Save/Cancel avec snapshot) :
 
 1. **Audience & goals** — Language(s), Business, Primary audience, Content style, Primary goal, Content action, CTA links.
 2. **Voice & style** — toggle **Guided ⇄ Write it yourself**. Guided = Signature hooks + Closing patterns + Formatting + Visual style. Switcher **par langue** (2+ langues, flag `multilingualPlaybook`) — voice **écrite nativement par langue, jamais traduite** (voir mémoire _multilingual-playbook-model_). Dropdown « Learn from… ».
-3. **Brand** — Brand colors (hex swatches), Typography, Personality, Reference images.
+3. **Brand** — **Logo**, Brand colors (hex swatches), Typography, Personality, Reference images.
 4. **Competitors** (flag `playbookCompetitors`) — voir ci-dessous.
+
+**Le logo** (`brandLogo`, une data URL une fois uploadée) est la première ligne de Brand, parce que c'est la pièce la plus concrète de l'identité visuelle et la seule que le générateur d'images cuit dans les pixels. Upload = bouton + input caché (pas le `.ap-dropzone` partagé : la ligne « Reference images » juste dessous est déjà un bouton + input caché, et deux affordances d'upload à une ligne d'écart se liraient comme deux natures de contrôle). Lu en `FileReader.readAsDataURL` et non en `URL.createObjectURL` — un object URL est éphémère et ne survivrait pas au store. Une fois posé, le logo **remplace le monogramme d'initiales** dans le header du Playbook (pattern image + jumeau monogramme, swap sur `error`, comme les logos de compétiteurs) : une marque qui a un logo se reconnaît à lui. Il repart ensuite dans l'Image Studio — voir §7.
 
 Un Playbook est une **fiche** : chaque section répond à « qui êtes-vous ? ». La config opérationnelle (quelles sources d'écoute tournent, à quelle fréquence) vit sur la route qui possède la feature, pas ici — voir §17. Une section Topics a été essayée puis retirée : une grille d'interrupteurs se lisait comme un panneau de réglages coincé dans un profil.
 

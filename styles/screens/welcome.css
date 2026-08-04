@@ -186,6 +186,31 @@
   box-shadow: var(--app-shadow-low);
 }
 
+/* The real logo instead of initials: white ground and no brand tint, because the
+   mark carries its own colours. HEIGHT-driven like the Brand section's tile —
+   the monogram's 52px square becomes a 52px-tall box that WIDENS for a wordmark
+   (up to 148px) instead of shrinking it to a sliver to fit a square. */
+.recap__monogram--mark {
+  width: auto;
+  min-width: 52px;
+  max-width: 148px;
+  background: var(--ref-color-white);
+  border: 1px solid var(--app-border);
+  padding: var(--ref-spacing-xxs);
+}
+
+.recap__monogram--mark img {
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+/* Only one of the mark/monogram twins shows at a time (see renderHeaderMark). */
+.recap__monogram.is-hidden {
+  display: none;
+}
+
 .recap__id-text {
   display: flex;
   flex-direction: column;
@@ -610,6 +635,44 @@
   margin-top: 2px;
   font-size: var(--sys-icon-css-sm);
   color: var(--ref-color-mermaid-gradient-from);
+}
+
+/* ── Brand — the logo tile ────────────────────────────────────────────── */
+/* HEIGHT-driven (fixed height, `width: auto`, `contain`) so a wide wordmark and
+   a square monogram both sit in the same tile uncropped and unletterboxed —
+   same shape as the studio's own preview (.isv2-brandmark). White ground: a
+   logo is authored against white far more often than against the app's grey. */
+.recap__logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 56px;
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-sm);
+  background: var(--ref-color-white);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-md);
+}
+
+.recap__logo img {
+  height: 100%;
+  width: auto;
+  max-width: 220px;
+  object-fit: contain;
+}
+
+/* Column so the actions sit under the mark; flex-start so the DS buttons keep
+   their own width (a CTA is never stretched to fill its container). */
+.recap__logo-edit {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ref-spacing-sm);
+}
+
+.recap__logo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xs);
 }
 
 /* ── Brand — colour swatches ──────────────────────────────────────────── */
