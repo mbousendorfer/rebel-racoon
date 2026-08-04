@@ -15,10 +15,10 @@
 // is safe because only one route renders at a time.
 
 import { html, raw, escapeHtml as esc } from "./utils.js?v=21";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=25";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=26";
 import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2";
 import { isFlagOn } from "./feature-flags.js?v=18";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=36";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=37";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -98,8 +98,8 @@ const FIELD_HINTS = {
     a: "Archie surfaces these links when posts call for an action.",
   },
   brandLogo: {
-    q: "Your brand mark",
-    a: "I stamp it on the images I generate — bottom-right by default, or wherever you place it yourself.",
+    q: "Which mark should I default to?",
+    a: "I stamp the default bottom-right on the images I generate. The others stay available to place by hand.",
   },
 };
 
@@ -297,6 +297,31 @@ function deriveBrandColors(site) {
   ].filter((s) => s.hex);
 }
 
+// The marks Archie found on the site, in the order the Brand section offers
+// them. Mirrors deriveBrandColors: the scraped material is the default the user
+// then prunes and adds to.
+function deriveBrandLogos(site) {
+  const found = site?.images?.logos;
+  if (!Array.isArray(found)) return [];
+  return found
+    .filter((l) => l && l.url)
+    .map((l, i) => ({ id: `site-logo-${i}`, label: l.label || "Logo", url: l.url }));
+}
+
+// The Playbook's marks — authored `brandLogos` if present, else what the site
+// analysis turned up.
+function brandLogoList(data) {
+  if (Array.isArray(data.brandLogos) && data.brandLogos.length) return data.brandLogos;
+  return deriveBrandLogos(brandSite(data));
+}
+
+// Which mark is the default: `brandLogo` is the resolved url (see
+// contexts-store#normalizeBrandLogos), so an index is derived, never stored.
+function defaultLogoIndex(data, list) {
+  const i = list.findIndex((l) => l.url === data.brandLogo);
+  return i === -1 ? (list.length ? 0 : -1) : i;
+}
+
 // The authored brand palette — user-edited `brandColors` if present, else the
 // derived site palette (read-only view falls back to this).
 function visualColors(data) {
@@ -319,6 +344,12 @@ function ensureBrand(data) {
   if (!Array.isArray(data.brandColors) || !data.brandColors.length) {
     data.brandColors = deriveBrandColors(brandSite(data));
   }
+  // Promote the scraped marks so the gallery has entries to reorder / remove,
+  // and adopt the first as the default if nothing was chosen yet.
+  if (!Array.isArray(data.brandLogos) || !data.brandLogos.length) {
+    data.brandLogos = deriveBrandLogos(brandSite(data));
+  }
+  if (!data.brandLogo && data.brandLogos.length) data.brandLogo = data.brandLogos[0].url;
   if (!data.brandTypography || typeof data.brandTypography !== "object") {
     data.brandTypography = brandFonts(data);
   }
@@ -349,6 +380,7 @@ export function snapshotEditable(d) {
       brandPersonality: d.brandPersonality || "",
       brandTypography: d.brandTypography || null,
       brandColors: d.brandColors || [],
+      brandLogos: d.brandLogos || [],
       brandLogo: d.brandLogo || "",
       referenceImages: d.referenceImages || [],
       competitors: d.competitors || [],
@@ -517,43 +549,62 @@ function renderTypeSpecimen(data) {
   return `<div class="recap__type-grid">${cell("Headings", headingFont)}${cell("Body", bodyFont)}</div>`;
 }
 
-// The brand mark — ONE optional image, so one tile, not the gallery the
-// reference images get: a Playbook has a single logo the way it has a single
-// name. Read mode shows the mark alone; a filename under it would name the file
-// rather than the brand.
+// The brand marks — a GALLERY, because a site carries several and Archie brings
+// back all of them: the header lockup, the reversed one, the icon, the favicon.
+// One is the default (`brandLogo`), which is what the header shows and what the
+// image generator stamps; the rest stay available to place by hand in the studio.
 //
-// The tile is HEIGHT-driven (`width: auto` + `contain`), the same shape as the
-// studio's own preview: a wordmark is wide and a monogram is square, and both
-// have to sit in this tile without either being cropped or letterboxed.
+// Read mode shows the whole set with the default marked rather than the default
+// alone: seeing that four marks were found is the thing worth knowing, and it's
+// what tells you there's a choice here at all without entering edit mode.
+//
+// Tiles are SQUARE thumbnails with the label underneath — at 72px a wordmark and
+// its reversed twin are hard to tell apart, and "Reversed" vs "Icon" is not
+// something a thumbnail can say on its own.
 //
 // Upload is a button + a hidden input rather than the shared `.ap-dropzone`,
 // because the "Reference images" row one line below in this same section is
 // already a button + hidden input. Two different upload affordances that close
 // together would read as two different kinds of control.
+const MAX_BRAND_LOGOS = 8;
+
 function renderBrandLogo(data, edit) {
-  const url = data.brandLogo || "";
-  const tile = url
-    ? `<span class="recap__logo"><img src="${esc(url)}" alt="${esc(data.name || "Brand")} logo" /></span>`
-    : "";
-  if (!edit) return tile || `<span class="recap__row-empty">Not set yet</span>`;
-  // One input serves Add and Replace — only the label differs. Remove appears
-  // only when there's something to remove.
+  const list = brandLogoList(data);
+  if (!list.length && !edit) return `<span class="recap__row-empty">Not set yet</span>`;
+  const active = defaultLogoIndex(data, list);
+  const tiles = list
+    .map((logo, i) => {
+      const on = i === active;
+      const label = esc(logo.label || "Logo");
+      // Read mode is a recap — nothing is clickable, the badge just reports
+      // which mark is in use. Edit mode makes each tile the pick control.
+      const frame = edit
+        ? `<button type="button" class="recap__logotile${on ? " is-default" : ""}" aria-pressed="${on}" data-recap-logo-pick="${i}" title="${on ? "Default mark" : "Use as default"}">`
+        : `<span class="recap__logotile${on ? " is-default" : ""}">`;
+      return `
+      <div class="recap__logoslot">
+        ${frame}
+          <img src="${esc(logo.url)}" alt="${label}" loading="lazy" />
+          ${on ? `<span class="recap__logotile-badge" aria-hidden="true"><i class="ap-icon-check"></i></span>` : ""}
+        ${edit ? "</button>" : "</span>"}
+        ${edit ? `<button type="button" class="recap__logo-remove" data-recap-logo-remove="${i}" aria-label="Remove ${label}"><i class="ap-icon-close"></i></button>` : ""}
+        <span class="recap__logotile-label">${label}${on ? ` <span class="recap__logotile-tag">Default</span>` : ""}</span>
+      </div>`;
+    })
+    .join("");
+  const gallery = tiles ? `<div class="recap__logos">${tiles}</div>` : "";
+  if (!edit) return gallery;
   return `
     <div class="recap__logo-edit">
-      ${tile}
-      <div class="recap__logo-actions">
-        <button type="button" class="ap-button secondary blue" data-recap-logo-add>
-          <i class="ap-icon-upload" aria-hidden="true"></i><span>${url ? "Replace" : "Add a logo"}</span>
-        </button>
-        ${
-          url
-            ? `<button type="button" class="ap-button ghost grey" data-recap-logo-remove>
-                 <i class="ap-icon-trash" aria-hidden="true"></i><span>Remove</span>
-               </button>`
-            : ""
-        }
-      </div>
-      <input type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" hidden data-recap-logo-input />
+      ${gallery}
+      ${
+        list.length < MAX_BRAND_LOGOS
+          ? `<button type="button" class="ap-button secondary blue recap__logo-add" data-recap-logo-add>
+               <i class="ap-icon-upload" aria-hidden="true"></i><span>Add a logo</span>
+             </button>`
+          : ""
+      }
+      <input type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" multiple hidden data-recap-logo-input />
     </div>`;
 }
 
@@ -2316,14 +2367,30 @@ function onClick(event) {
     return;
   }
 
-  // Brand logo — pick a file / drop the mark. Both are part of the Brand
-  // section's Save/Cancel flow, like every other field in it.
+  // Brand logos — promote one to default / drop one / add more. All part of the
+  // Brand section's Save/Cancel flow, like every other field in it.
   if (event.target.closest("[data-recap-logo-add]")) {
     mountTarget?.querySelector("[data-recap-logo-input]")?.click();
     return;
   }
-  if (event.target.closest("[data-recap-logo-remove]")) {
-    data.brandLogo = "";
+  const logoPick = event.target.closest("[data-recap-logo-pick]");
+  if (logoPick) {
+    const logo = brandLogoList(data)[Number(logoPick.dataset.recapLogoPick)];
+    // The default is stored as the url, not an index — an index would silently
+    // point at a different mark as soon as one above it is removed.
+    if (logo) data.brandLogo = logo.url;
+    repaint();
+    return;
+  }
+  const logoRemove = event.target.closest("[data-recap-logo-remove]");
+  if (logoRemove) {
+    const idx = Number(logoRemove.dataset.recapLogoRemove);
+    const list = brandLogoList(data).slice();
+    const [gone] = list.splice(idx, 1);
+    data.brandLogos = list;
+    // Removing the default hands the job to whatever's left, so the header and
+    // the generator are never pointed at a mark that isn't in the set anymore.
+    if (gone && gone.url === data.brandLogo) data.brandLogo = list[0]?.url || "";
     repaint();
     return;
   }
@@ -2459,23 +2526,44 @@ function onInput(event) {
 }
 
 let refImgCounter = 0;
+let brandLogoCounter = 0;
 
 function onChange(event) {
   if (!editScope) return;
   const data = cfg.getData();
   if (!data) return;
-  // Brand-logo upload — one image, read as a data URL so it persists with the
-  // Playbook (an object URL is ephemeral and wouldn't survive the store).
+  // Brand-logo upload — appended to the set, read as data URLs so they persist
+  // with the Playbook (an object URL is ephemeral and wouldn't survive the store).
   if (event.target.matches("[data-recap-logo-input]")) {
-    const file = Array.from(event.target.files || []).find((f) => f.type.startsWith("image/"));
+    const picked = Array.from(event.target.files || []).filter((f) => f.type.startsWith("image/"));
     event.target.value = ""; // so re-picking the same file fires again
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      data.brandLogo = reader.result;
+    if (!picked.length) return;
+    const list = brandLogoList(data).slice();
+    const room = Math.max(0, MAX_BRAND_LOGOS - list.length);
+    Promise.all(
+      picked.slice(0, room).map(
+        (f) =>
+          new Promise((res) => {
+            const reader = new FileReader();
+            brandLogoCounter += 1;
+            const id = `logo-up-${brandLogoCounter}`;
+            // The filename, minus its extension, is the only label the user has
+            // given us — better than a generic "Logo" they'd have to tell apart.
+            const label = f.name.replace(/\.[^.]+$/, "") || "Logo";
+            reader.onload = () => res({ id, label, url: reader.result });
+            reader.onerror = () => res(null);
+            reader.readAsDataURL(f);
+          }),
+      ),
+    ).then((loaded) => {
+      loaded.filter(Boolean).forEach((logo) => list.push(logo));
+      data.brandLogos = list;
+      // First mark in an empty Playbook becomes the default on its own — there's
+      // nothing to choose between yet, and leaving it unset would show a gallery
+      // with no default while the generator still had nothing to stamp.
+      if (!data.brandLogo && list.length) data.brandLogo = list[0].url;
       repaint();
-    };
-    reader.readAsDataURL(file);
+    });
     return;
   }
   // Reference-image upload — read each picked image as a data URL and append,

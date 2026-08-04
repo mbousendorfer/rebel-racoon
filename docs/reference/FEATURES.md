@@ -311,13 +311,16 @@ L'ordre dit un raisonnement : **ce qui va DANS l'image**, puis son **traitement*
   logo faux ou périmé avant de générer. Le logo est cuit par le même `compositeOverlays` (overlay
   `kind: "logo"`, 26% de la largeur).
   Le logo vient de la **section Brand du Playbook** (`ctx.brandLogo`, §11) : ce switch ne l'invente pas
-  et ne permet pas de le changer — un Playbook sans logo se répare dans le Playbook, pas ici. Et pour
-  les visuels où le coin bas-droite est le mauvais coin, le **mode Edit** propose le même logo en tête
-  du flyout « Add an image » (groupe _« From your Playbook »_, avant Upload et avant les presets), posé
-  comme calque déplaçable : le switch est la signature automatique, la tuile est la pose à la main. La
-  tuile porte son propre hook (`data-img-logo-playbook`) plutôt que `data-img-logo-preset="<url>"`, sans
-  quoi un logo uploadé — donc une data URL — collerait des centaines de Ko de base64 dans le DOM à
-  chaque render.
+  et ne permet pas de le changer — un Playbook sans logo se répare dans le Playbook, pas ici. Le switch
+  tamponne **le défaut**, et rien d'autre.
+  Le **mode Edit** propose en revanche **tout le set** (`st.playbookLogos`) en tête du flyout « Add an
+  image » (groupe _« From your Playbook »_, avant Upload et avant les presets), chaque marque posée
+  comme calque déplaçable. Toutes les variantes et pas seulement le défaut, parce que la raison d'aller
+  la chercher à la main est justement qu'une autre convient mieux : le lockup inversé sur une photo
+  sombre, l'icône là où un wordmark ne se lit pas à cette taille. Le switch est la signature
+  automatique, les tuiles sont la pose à la main. Les tuiles portent un **index**
+  (`data-img-logo-playbook="<i>"`) plutôt que `data-img-logo-preset="<url>"`, sans quoi un logo
+  uploadé — donc une data URL — collerait des centaines de Ko de base64 dans le DOM à chaque render.
   Les couleurs sont les **mêmes pastilles rondes que la ligne « Brand color » du Playbook**
   (`.recap__fact-dot`) et les mêmes mots — un récap doit ressembler à ce qu'il récapitule. Nom + hex en
   tooltip ; l'hex imprimé sous chaque pastille transformait une rangée de cinq en deux lignes de petit
@@ -442,10 +445,22 @@ Sections éditables inline (une à la fois, Save/Cancel avec snapshot) :
 
 1. **Audience & goals** — Language(s), Business, Primary audience, Content style, Primary goal, Content action, CTA links.
 2. **Voice & style** — toggle **Guided ⇄ Write it yourself**. Guided = Signature hooks + Closing patterns + Formatting + Visual style. Switcher **par langue** (2+ langues, flag `multilingualPlaybook`) — voice **écrite nativement par langue, jamais traduite** (voir mémoire _multilingual-playbook-model_). Dropdown « Learn from… ».
-3. **Brand** — **Logo**, Brand colors (hex swatches), Typography, Personality, Reference images.
+3. **Brand** — **Logo** (galerie + un défaut), Brand colors (hex swatches), Typography, Personality, Reference images.
 4. **Competitors** (flag `playbookCompetitors`) — voir ci-dessous.
 
-**Le logo** (`brandLogo`, une data URL une fois uploadée) est la première ligne de Brand, parce que c'est la pièce la plus concrète de l'identité visuelle et la seule que le générateur d'images cuit dans les pixels. Upload = bouton + input caché (pas le `.ap-dropzone` partagé : la ligne « Reference images » juste dessous est déjà un bouton + input caché, et deux affordances d'upload à une ligne d'écart se liraient comme deux natures de contrôle). Lu en `FileReader.readAsDataURL` et non en `URL.createObjectURL` — un object URL est éphémère et ne survivrait pas au store. Une fois posé, le logo **remplace le monogramme d'initiales** dans le header du Playbook (pattern image + jumeau monogramme, swap sur `error`, comme les logos de compétiteurs) : une marque qui a un logo se reconnaît à lui. Il repart ensuite dans l'Image Studio — voir §7.
+**Les logos** sont la première ligne de Brand, parce que c'est la pièce la plus concrète de l'identité visuelle et la seule que le générateur d'images cuit dans les pixels.
+
+**Un SET, pas un logo.** Un site en porte plusieurs — le lockup d'en-tête, la version inversée du footer, l'icône carrée, le favicon — et ils sont tous légitimement « le logo » : n'en stocker qu'un obligerait à en jeter trois. Donc `brandLogos: Array<{ id, label, url }>` (le set) + `brandLogo` (**l'URL du défaut**, pas un id ni un getter : tout l'aval — header, tampon du studio, aperçu de `branding-view` — lit déjà `brandLogo` sans changement, et `snapshotEditable` fait un aller-retour JSON qui écraserait un getter). `normalizeBrandLogos()` dans [`contexts-store.js`](../../src/contexts-store.js) tient l'invariant : `brandLogo` est **toujours** une des URLs du set, ou `""` quand il est vide — un contexte qui ne portait que `brandLogo` devient un set d'une entrée plutôt que de perdre sa marque. Le compteur `brandLogoSeq` vit en haut du fichier parce que le seed appelle le normalizer à l'init du module, où un `let` déclaré à côté de sa fonction serait encore dans sa TDZ.
+
+**La galerie.** Vignettes carrées 72px + label dessous (à cette taille un wordmark et son jumeau inversé sont durs à distinguer, et « Reversed » vs « Icon » n'est pas quelque chose qu'une vignette dit toute seule). Le défaut porte un anneau bleu + un badge check. En **lecture** on montre tout le set, pas seulement le défaut : savoir que quatre marques ont été trouvées est l'information, et c'est ce qui signale qu'il y a un choix à faire sans entrer en édition — les vignettes sont alors des `<span>`, rien n'est cliquable. En **édition** chaque vignette devient le contrôle de sélection, avec une poignée de suppression à l'opposé du badge (même répartition que les tuiles de référence du studio).
+
+Retirer le défaut passe la main à ce qui reste ; vider le set fait retomber le header sur les initiales. Le défaut est stocké **par URL et jamais par index** — un index pointerait silencieusement sur une autre marque dès qu'on supprime celle du dessus.
+
+**D'où viennent les marques.** `imageVoice.websites[0].images.logos` : trois vraies marques Archie pour une analyse d'agorapulse.com, et pour n'importe quel autre domaine **le favicon résolu depuis ce domaine** (même service que les logos de compétiteurs) — inventer un wordmark pour « foo-bar.com » mettrait dans le Playbook un logo qui n'appartient à personne. `deriveBrandLogos()` lit ce champ, en miroir exact de `deriveBrandColors()`.
+
+Upload = bouton + input caché (pas le `.ap-dropzone` partagé : la ligne « Reference images » juste dessous est déjà un bouton + input caché, et deux affordances d'upload à une ligne d'écart se liraient comme deux natures de contrôle), multi-fichiers, `FileReader.readAsDataURL` et non `URL.createObjectURL` — un object URL est éphémère et ne survivrait pas au store. Le label est le nom du fichier sans son extension : c'est le seul que l'utilisateur ait donné. Plafond `MAX_BRAND_LOGOS = 8`.
+
+Le défaut **remplace le monogramme d'initiales** dans le header du Playbook (pattern image + jumeau monogramme, swap sur `error`, comme les logos de compétiteurs) : une marque qui a un logo se reconnaît à lui. Le set repart ensuite dans l'Image Studio — voir §7.
 
 Un Playbook est une **fiche** : chaque section répond à « qui êtes-vous ? ». La config opérationnelle (quelles sources d'écoute tournent, à quelle fréquence) vit sur la route qui possède la feature, pas ici — voir §17. Une section Topics a été essayée puis retirée : une grille d'interrupteurs se lisait comme un panneau de réglages coincé dans un profil.
 

@@ -633,13 +633,31 @@
   color: var(--ref-color-mermaid-gradient-from);
 }
 
-/* ── Brand — the logo tile ────────────────────────────────────────────── */
-/* A SQUARE thumbnail, like the header's mark and the studio's stamp tiles: one
-   fixed shape whatever the logo is, so the row doesn't resize around whichever
-   Playbook you opened. `contain` inside it, never `cover` — cropping a brand
+/* ── Brand — the logo gallery ─────────────────────────────────────────── */
+/* SQUARE thumbnails, like the header's mark and the studio's stamp tiles: one
+   fixed shape whatever the logo is, so the row doesn't reflow around whichever
+   Playbook you opened. `contain` inside them, never `cover` — cropping a brand
    mark is worse than letterboxing one. White ground: a logo is authored against
    white far more often than against the app's grey. */
-.recap__logo {
+.recap__logos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-sm);
+}
+
+/* Holds the tile, its label and the remove handle that sits outside the tile's
+   own <button> (a button can't live inside a button). */
+.recap__logoslot {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--app-spacing-micro);
+  width: 72px;
+}
+
+.recap__logotile {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -651,14 +669,88 @@
   border-radius: var(--app-radius-md);
 }
 
-.recap__logo img {
+.recap__logotile img {
   width: 100%;
   height: 100%;
   object-fit: contain;
 }
 
-/* Column so the actions sit under the mark; flex-start so the DS buttons keep
-   their own width (a CTA is never stretched to fill its container). */
+/* In edit mode the tile IS the pick control, so it gets the app's hover-border
+   convention (blue, never a coloured edge accent). */
+button.recap__logotile {
+  cursor: pointer;
+  transition: border-color 120ms var(--app-ease-out);
+}
+
+button.recap__logotile:hover {
+  border-color: var(--ref-color-electric-blue-100);
+}
+
+/* The default mark: a solid blue ring, so which one is in use survives being
+   glanced at from across the section. */
+.recap__logotile.is-default {
+  border-color: var(--ref-color-electric-blue-100);
+  box-shadow: 0 0 0 1px var(--ref-color-electric-blue-100) inset;
+}
+
+.recap__logotile-badge {
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--app-radius-circle);
+  background: var(--ref-color-electric-blue-100);
+  color: var(--ref-color-white);
+  font-size: var(--ref-font-size-xs);
+}
+
+/* Remove sits opposite the default badge — same split as the studio's reference
+   tiles, so the two handles never land on each other. */
+.recap__logo-remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  border-radius: var(--app-radius-circle);
+  background: rgb(0 0 0 / 55%);
+  color: var(--ref-color-white);
+  font-size: var(--ref-font-size-xs);
+  cursor: pointer;
+}
+
+.recap__logo-remove:hover {
+  background: rgb(0 0 0 / 75%);
+}
+
+.recap__logotile-label {
+  max-width: 100%;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-60);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+/* "Default" reads as a word, not a second badge — the ring already carries the
+   state, this just names it once for anyone meeting the gallery for the first
+   time. */
+.recap__logotile-tag {
+  color: var(--ref-color-electric-blue-100);
+  font-weight: var(--ref-font-weight-bold);
+}
+
+/* Column so the Add button sits under the gallery; flex-start so the DS button
+   keeps its own width (a CTA is never stretched to fill its container). */
 .recap__logo-edit {
   display: flex;
   flex-direction: column;
@@ -666,10 +758,8 @@
   gap: var(--ref-spacing-sm);
 }
 
-.recap__logo-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ref-spacing-xs);
+.recap__logo-add {
+  align-self: flex-start;
 }
 
 /* ── Brand — colour swatches ──────────────────────────────────────────── */

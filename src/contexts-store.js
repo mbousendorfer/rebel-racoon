@@ -17,7 +17,7 @@
 // chooses "Save as global". updateContext is used by the section-edit flow
 // when scope is "Update everywhere".
 
-import { contexts as seed } from "./mocks.js?v=62";
+import { contexts as seed } from "./mocks.js?v=63";
 import { isNewUser } from "./user-mode.js?v=23";
 import { createNotifier } from "./store-utils.js?v=2";
 import { DEFAULT_ENABLED_IDS, DEFAULT_CADENCE, findTopicSource, findCadence } from "./topics-catalog.js?v=2";
@@ -28,6 +28,11 @@ import {
   cloneVoiceByLanguage,
 } from "./languages.js?v=2";
 
+// Lives up here, away from normalizeBrandLogos where it belongs, because the
+// seed below calls that normalizer at module-init time — a `let` declared beside
+// the function would still be in its temporal dead zone when the seed runs.
+let brandLogoSeq = 0;
+
 // Lot 15 — first-time user mode starts empty so the standalone /contexts
 // page renders its empty state. Returning user keeps the mock seed. Every
 // seed is upgraded to the multilingual shape (languages/primaryLanguage/
@@ -36,7 +41,9 @@ import {
 // Seeds bypass addContext, so anything addContext normalises has to be applied
 // here too — `topics` included, or a seeded Playbook with no topics config at
 // all would render the section against `undefined`.
-const contexts = isNewUser() ? [] : seed.map((c) => normalizeLanguages({ ...c, topics: normalizeTopics(c.topics) }));
+const contexts = isNewUser()
+  ? []
+  : seed.map((c) => normalizeLanguages({ ...c, topics: normalizeTopics(c.topics), ...normalizeBrandLogos(c) }));
 const notifier = createNotifier("contexts-store");
 
 export const subscribe = notifier.subscribe;
@@ -62,6 +69,36 @@ function normalizeCompetitors(list) {
     logo: c.logo || "",
     socials: Array.isArray(c.socials) ? c.socials.map((s) => ({ ...s })) : [],
   }));
+}
+
+// Brand logos — a SET of marks with one resolved default.
+//
+// A site scrape finds several: the header lockup, the reversed one from the
+// footer, the square icon, the favicon. They're all legitimately "the logo", so
+// storing one string would mean throwing three away and asking the user to
+// re-upload the one they actually wanted.
+//
+// `brandLogos` is the set; `brandLogo` stays the DEFAULT'S URL rather than
+// becoming an id or a getter. Two reasons: everything downstream (the Playbook
+// header, the studio's stamp, `branding-view`'s preview) already reads
+// `brandLogo` and needs no change, and `snapshotEditable` JSON-round-trips the
+// data, which would flatten a getter. The invariant this enforces is that
+// `brandLogo` is always one of the set's urls, or "" when the set is empty.
+// (`brandLogoSeq` is declared at the top of the file — see the note there.)
+function normalizeBrandLogos(ctx) {
+  const list = (Array.isArray(ctx.brandLogos) ? ctx.brandLogos : [])
+    .filter((l) => l && l.url)
+    .map((l) => ({ id: l.id || `logo-${(brandLogoSeq += 1)}`, label: l.label || "Logo", url: l.url }));
+  // A context that only ever carried the single `brandLogo` (the mocks, an
+  // older payload) becomes a one-entry set rather than losing its mark.
+  if (!list.length && ctx.brandLogo) {
+    list.push({ id: `logo-${(brandLogoSeq += 1)}`, label: "Logo", url: ctx.brandLogo });
+  }
+  const urls = list.map((l) => l.url);
+  return {
+    brandLogos: list,
+    brandLogo: urls.includes(ctx.brandLogo) ? ctx.brandLogo : urls[0] || "",
+  };
 }
 
 // Topics config — which listening sources this Playbook has switched on, and
@@ -162,10 +199,11 @@ export function addContext(ctx = {}) {
     brandPersonality: ctx.brandPersonality || "",
     brandTypography: ctx.brandTypography && typeof ctx.brandTypography === "object" ? { ...ctx.brandTypography } : null,
     brandColors: Array.isArray(ctx.brandColors) ? ctx.brandColors.map((c) => ({ ...c })) : [],
-    // The brand mark, as a URL. Optional — a Playbook can have a voice and an
-    // audience without anyone having uploaded a logo, and the surfaces that use
-    // it have to say so rather than stamp a placeholder.
-    brandLogo: ctx.brandLogo || "",
+    // The brand marks + which one is the default (see normalizeBrandLogos).
+    // Optional — a Playbook can have a voice and an audience without anyone
+    // having supplied a logo, and the surfaces that use it have to say so rather
+    // than stamp a placeholder.
+    ...normalizeBrandLogos(ctx),
     referenceImages: Array.isArray(ctx.referenceImages)
       ? ctx.referenceImages.map((i) => ({ ...i, networks: Array.isArray(i.networks) ? [...i.networks] : [] }))
       : [],
@@ -248,7 +286,18 @@ export function updateContext(id, patch) {
   if (patch.brandPersonality !== undefined) c.brandPersonality = patch.brandPersonality;
   if (patch.brandTypography !== undefined) c.brandTypography = patch.brandTypography;
   if (patch.brandColors !== undefined) c.brandColors = patch.brandColors;
-  if (patch.brandLogo !== undefined) c.brandLogo = patch.brandLogo;
+  // The set and its default are one fact, so they re-normalize together even
+  // when only one of them is patched — otherwise a patch that drops the default
+  // logo from the set would leave `brandLogo` pointing at a mark that's gone.
+  if (patch.brandLogos !== undefined || patch.brandLogo !== undefined) {
+    Object.assign(
+      c,
+      normalizeBrandLogos({
+        brandLogos: patch.brandLogos !== undefined ? patch.brandLogos : c.brandLogos,
+        brandLogo: patch.brandLogo !== undefined ? patch.brandLogo : c.brandLogo,
+      }),
+    );
+  }
   if (patch.referenceImages !== undefined) c.referenceImages = patch.referenceImages;
   if (patch.competitors !== undefined) c.competitors = normalizeCompetitors(patch.competitors);
   if (patch.dismissedCompetitors !== undefined)
@@ -328,6 +377,7 @@ export function duplicateContext(id) {
     brandPersonality: src.brandPersonality || "",
     brandTypography: src.brandTypography ? { ...src.brandTypography } : null,
     brandColors: (src.brandColors || []).map((c) => ({ ...c })),
+    brandLogos: (src.brandLogos || []).map((l) => ({ ...l })),
     brandLogo: src.brandLogo || "",
     referenceImages: (src.referenceImages || []).map((i) => ({
       ...i,

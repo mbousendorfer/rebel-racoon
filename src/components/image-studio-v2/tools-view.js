@@ -12,8 +12,8 @@
 // popovers, which genuinely are one-at-a-time.
 
 import { escapeHtml } from "../../utils.js?v=21";
-import { sheetDivider } from "./settings-view.js?v=5";
-import * as imageStudio from "../../image-studio.js?v=73";
+import { sheetDivider } from "./settings-view.js?v=6";
+import * as imageStudio from "../../image-studio.js?v=74";
 
 // The floating palette — the manual tools, top-left over the canvas, where the
 // work is, in ghost-grey DS buttons. It sits at the stage's LEFT edge — the same
@@ -89,25 +89,39 @@ function logoSheet(st) {
   });
 }
 
-// The Playbook's own logo, FIRST — ahead of Upload and ahead of the presets,
+// The Playbook's own marks, FIRST — ahead of Upload and ahead of the presets,
 // because "put my brand on this" is the likeliest reason to open this sheet, and
-// the mark is already in hand: nothing to upload, nothing to hunt for.
+// they're already in hand: nothing to upload, nothing to hunt for.
 //
-// The Branding switch already stamps this same logo bottom-right on generation.
-// This is the other half of that: the mark as a layer you place yourself, for the
-// visuals where the corner is the wrong corner. Absent entirely when the Playbook
-// has no logo — the switch's disabled row is where that gets explained, and a
-// second empty slot here would just repeat it.
+// EVERY variant, not just the default. The Branding switch stamps the default
+// bottom-right; this is the other half of that, and the reason to reach for it is
+// usually that a different variant fits — the reversed lockup on a dark photo,
+// the icon where a wordmark won't read at that size. Offering only the default
+// would make the other three unreachable from the one place they're useful.
 //
-// It carries its own hook rather than reusing `data-img-logo-preset="<url>"`: an
-// uploaded logo is a data URL, and putting that in an attribute would paste
-// hundreds of KB of base64 into the DOM on every render.
+// Absent entirely when the Playbook has no marks — the switch's disabled row is
+// where that gets explained, and a second empty slot here would just repeat it.
+//
+// Tiles carry an INDEX rather than `data-img-logo-preset="<url>"`: an uploaded
+// logo is a data URL, and putting that in an attribute would paste hundreds of KB
+// of base64 into the DOM on every render.
 function playbookMark(st) {
-  if (!st.playbookLogo) return "";
+  // Fall back to the lone default for a Playbook whose set hasn't been
+  // normalized (a payload from before brandLogos existed).
+  const logos = st.playbookLogos?.length
+    ? st.playbookLogos
+    : st.playbookLogo
+      ? [{ label: "Logo", url: st.playbookLogo }]
+      : [];
+  if (!logos.length) return "";
   const who = st.playbookName || "Playbook";
+  const tiles = logos
+    .map((l, i) => {
+      const alt = `${who} — ${l.label || "Logo"}`;
+      return `<button type="button" class="image-studio__preset" data-img-logo-playbook="${i}" title="${escapeHtml(alt)}"><img src="${escapeHtml(l.url)}" alt="${escapeHtml(alt)}" /></button>`;
+    })
+    .join("");
   return `<p class="isv2-sheet-label">From your Playbook</p>
-    <div class="image-studio__presets">
-      <button type="button" class="image-studio__preset" data-img-logo-playbook title="${escapeHtml(`${who} logo`)}"><img src="${escapeHtml(st.playbookLogo)}" alt="${escapeHtml(`${who} logo`)}" /></button>
-    </div>
+    <div class="image-studio__presets">${tiles}</div>
     ${sheetDivider}`;
 }

@@ -27,14 +27,14 @@
 // inline-text.js.
 
 import { requestOpen, notifyClose, bindOverlayDismissal } from "../../modal-coordinator.js?v=21";
-import { getPosts } from "../../posts-store.js?v=43";
-import { getSessionById } from "../../sessions-store.js?v=13";
-import { getContextById } from "../../contexts-store.js?v=45";
-import { MODAL_ID, KEY, ctx, state, autosize } from "./context.js?v=37";
+import { getPosts } from "../../posts-store.js?v=44";
+import { getSessionById } from "../../sessions-store.js?v=14";
+import { getContextById } from "../../contexts-store.js?v=46";
+import { MODAL_ID, KEY, ctx, state, autosize } from "./context.js?v=38";
 import { loadImg } from "../../image-studio-canvas.js?v=5";
-import { renderStudio } from "./stage-view.js?v=74";
-import { bindStudioEvents } from "./events.js?v=9";
-import * as imageStudio from "../../image-studio.js?v=73";
+import { renderStudio } from "./stage-view.js?v=76";
+import { bindStudioEvents } from "./events.js?v=11";
+import * as imageStudio from "../../image-studio.js?v=74";
 
 let backdrop;
 let initialized = false;
@@ -109,7 +109,10 @@ export function open(postId, opts = {}) {
     formatId: post?.format || null,
     editImage: editImageUrl ? { url: editImageUrl } : null,
     carousel: carouselUrls ? { urls: carouselUrls } : null,
+    // The default mark (what the Branding switch stamps) and the full set (what
+    // Edit mode's "Add an image" offers) — see contexts-store#normalizeBrandLogos.
     playbookLogo: context?.brandLogo || "",
+    playbookLogos: Array.isArray(context?.brandLogos) ? context.brandLogos : [],
     playbookRefs: context?.referenceImages || [],
     playbookName: context?.brandName || context?.name || "",
     playbookColors: (Array.isArray(context?.brandColors) ? context.brandColors : []).filter((c) => c && c.hex),

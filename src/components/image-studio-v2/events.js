@@ -19,23 +19,23 @@
 // Anything that patches the DOM instead of re-rendering lives in inline-text.js;
 // anything that writes to the draft lives in commit.js.
 
-import { KEY, ctx, state, autosize } from "./context.js?v=37";
-import { useImage, commitSlideEdit, applyEditTool, runGenerate } from "./commit.js?v=4";
+import { KEY, ctx, state, autosize } from "./context.js?v=38";
+import { useImage, commitSlideEdit, applyEditTool, runGenerate } from "./commit.js?v=5";
 import {
   focusEditingText,
   syncEditingText,
   restoreEditingCaret,
   previewOverlayInput,
   toggleTextEffect,
-} from "./inline-text.js?v=4";
+} from "./inline-text.js?v=5";
 import {
   openFilePicker,
   openLogoPicker,
   startOverlayGesture,
   startCropGesture,
   applyCropSelection,
-} from "./interactions.js?v=37";
-import * as imageStudio from "../../image-studio.js?v=73";
+} from "./interactions.js?v=38";
+import * as imageStudio from "../../image-studio.js?v=74";
 
 function onClick(event, close) {
   const st = state();
@@ -135,10 +135,14 @@ function onClick(event, close) {
     imageStudio.setOpenPopover(KEY, null);
     return void openLogoPicker();
   }
-  // The Playbook's own mark — the url is read from state rather than an attribute
-  // because an uploaded logo is a data URL (see tools-view#playbookMark).
-  if (event.target.closest("[data-img-logo-playbook]")) {
-    const url = state()?.playbookLogo;
+  // One of the Playbook's marks — the tile carries its index and the url is read
+  // from state, because an uploaded logo is a data URL and would bloat the
+  // attribute (see tools-view#playbookMark).
+  const pbLogo = event.target.closest("[data-img-logo-playbook]");
+  if (pbLogo) {
+    const st = state();
+    const list = st?.playbookLogos?.length ? st.playbookLogos : st?.playbookLogo ? [{ url: st.playbookLogo }] : [];
+    const url = list[Number(pbLogo.dataset.imgLogoPlaybook)]?.url;
     imageStudio.setOpenPopover(KEY, null);
     if (url) imageStudio.addOverlay(KEY, { kind: "logo", url });
     return;

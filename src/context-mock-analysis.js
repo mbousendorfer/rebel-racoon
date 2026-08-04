@@ -181,9 +181,18 @@ const AGORAPULSE = {
             fontStack: ["Averta", "Arial", "Helvetica"],
           },
           images: {
-            logo: { label: "Logo", url: "" },
+            logo: { label: "Logo", url: "assets/logos/archie-wordmark.svg" },
             favicon: { label: "Favicon", url: "" },
             ogImage: { label: "OgImage", url: "" },
+            // EVERY mark the crawl turned up, not just one. A site carries
+            // several — the header lockup, a monochrome version, an alternate —
+            // and they're all legitimately "the logo", so the Brand section
+            // offers the set and the user promotes one to default.
+            logos: [
+              { label: "Logo", url: "assets/logos/archie-wordmark.svg" },
+              { label: "Monochrome", url: "assets/logos/archie-mono.svg" },
+              { label: "Alternate", url: "assets/logos/archie-alt-wordmark.svg" },
+            ],
           },
           buttons: {
             primary: { bg: "#FF6726", color: "#FFFFFF", label: "Primary" },
@@ -307,6 +316,11 @@ const GENERIC = {
             logo: { label: "Logo", url: "" },
             favicon: { label: "Favicon", url: "" },
             ogImage: { label: "OgImage", url: "" },
+            // Filled by analyzeWebsite() from the real domain. For a site we
+            // know nothing else about, the favicon is the one mark that can
+            // honestly be fetched — inventing a wordmark for "foo-bar.com"
+            // would put a logo in the Playbook that nobody's brand owns.
+            logos: [],
           },
           buttons: {
             primary: { bg: "#178DFE", color: "#FFFFFF", label: "Primary" },
@@ -369,9 +383,17 @@ export function analyzeWebsite(url) {
     if (generic.suggestions.ctaLinks[0]) {
       generic.suggestions.ctaLinks[0].url = domain;
     }
-    if (generic.suggestions.imageVoice?.websites?.[0]) {
-      generic.suggestions.imageVoice.websites[0].domain = domain;
-      generic.suggestions.imageVoice.websites[0].url = url.startsWith("http") ? url : `https://${domain}`;
+    const site = generic.suggestions.imageVoice?.websites?.[0];
+    if (site) {
+      site.domain = domain;
+      site.url = url.startsWith("http") ? url : `https://${domain}`;
+      // The favicon is the one mark a crawl of an unknown site really returns.
+      // Same service the Competitors section already resolves logos through.
+      const favicon = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=128`;
+      if (site.images) {
+        site.images.favicon = { label: "Favicon", url: favicon };
+        site.images.logos = [{ label: "Favicon", url: favicon }];
+      }
     }
   }
   return generic;

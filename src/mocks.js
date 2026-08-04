@@ -1326,6 +1326,28 @@ export const brandTheme = {
 // surfaces (Lot 8 Contexts page, drawer, ContextCard) read the flat
 // fields directly.
 
+// The logo variants Archie finds on a brand's site: the header lockup, the
+// reversed one from the footer, the square icon, the favicon. Shared between the
+// Playbooks of the same brand (Acme has two) so a variant added here shows up on
+// both, the way it would if both had been scraped from the same site.
+//
+// The reversed lockup carries its own dark plate INSIDE the SVG. That's how a
+// brand kit presents it, and it's also the only way it survives being shown on a
+// white thumbnail tile — a white-on-transparent mark would render as an empty box.
+const ACME_LOGOS = [
+  { id: "acme-logo", label: "Logo", url: "assets/logos/brands/acme.svg" },
+  { id: "acme-logo-reverse", label: "Reversed", url: "assets/logos/brands/acme-reverse.svg" },
+  { id: "acme-logo-icon", label: "Icon", url: "assets/logos/brands/acme-icon.svg" },
+  { id: "acme-logo-favicon", label: "Favicon", url: "assets/logos/brands/acme-favicon.svg" },
+];
+
+const PAWTRACK_LOGOS = [
+  { id: "pawtrack-logo", label: "Logo", url: "assets/logos/brands/pawtrack.svg" },
+  { id: "pawtrack-logo-reverse", label: "Reversed", url: "assets/logos/brands/pawtrack-reverse.svg" },
+  { id: "pawtrack-logo-icon", label: "Icon", url: "assets/logos/brands/pawtrack-icon.svg" },
+  { id: "pawtrack-logo-favicon", label: "Favicon", url: "assets/logos/brands/pawtrack-favicon.svg" },
+];
+
 export const contexts = [
   {
     id: "ctx-acme",
@@ -1333,6 +1355,7 @@ export const contexts = [
     color: "orange",
     isDefault: true,
     brandName: "Acme",
+    brandLogos: ACME_LOGOS.map((l) => ({ ...l })),
     brandLogo: "assets/logos/brands/acme.svg",
     websiteUrl: "https://acme.example.com",
     audience: ["Operators and marketing leads at 50–200-person B2B startups"],
@@ -1656,6 +1679,7 @@ export const contexts = [
     color: "green",
     isDefault: false,
     brandName: "Acme",
+    brandLogos: ACME_LOGOS.map((l) => ({ ...l })),
     brandLogo: "assets/logos/brands/acme.svg",
     websiteUrl: "https://acme.example.com/customers",
     audience: ["Prospects evaluating Acme who care about real outcomes from teams like theirs"],
@@ -1777,6 +1801,7 @@ export const contexts = [
     color: "purple",
     isDefault: false,
     brandName: "Pawtrack",
+    brandLogos: PAWTRACK_LOGOS.map((l) => ({ ...l })),
     brandLogo: "assets/logos/brands/pawtrack.svg",
     websiteUrl: "https://pawtrack.example.com",
     audience: ["Dog and cat owners who have already had one scare and never want another"],

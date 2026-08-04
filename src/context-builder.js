@@ -14,12 +14,12 @@
 // suggestions, editingId, onComplete }.
 
 import * as inlineQuestion from "./inline-question.js?v=48";
-import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=68";
-import * as rightPanel from "./components/right-panel.js?v=438";
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=45";
-import { analyzeWebsite } from "./context-mock-analysis.js?v=25";
-import { connectors as connectorMocks } from "./mocks.js?v=62";
-import { getConnectedProfiles, buildConnectedProfileItems, PROFILE_SEARCH_THRESHOLD } from "./social-profiles.js?v=36";
+import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=69";
+import * as rightPanel from "./components/right-panel.js?v=440";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=46";
+import { analyzeWebsite } from "./context-mock-analysis.js?v=26";
+import { connectors as connectorMocks } from "./mocks.js?v=63";
+import { getConnectedProfiles, buildConnectedProfileItems, PROFILE_SEARCH_THRESHOLD } from "./social-profiles.js?v=37";
 import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=2";
 import { isFlagOn } from "./feature-flags.js?v=18";
 
@@ -64,7 +64,8 @@ function emptyDraft(overrides = {}) {
     brandPersonality: "",
     brandTypography: null, // { headingFont, bodyFont }
     brandColors: [], // Array<{ name, hex }>
-    brandLogo: "", // the brand mark, as a data URL once uploaded ("" = none)
+    brandLogos: [], // Array<{ id, label, url }> — every mark found or uploaded
+    brandLogo: "", // the DEFAULT's url (one of brandLogos, "" = none)
     referenceImages: [], // Array<{ id, label, url, note?, networks? }> — note/networks = optional usage guidance
     // Competitors — Array<{ id, name, description, websiteUrl, socials:[{network,url}], logo?, suggested? }>.
     // Pre-filled from the website analysis, each flagged `suggested: true` =
@@ -115,6 +116,16 @@ export function getDraft(sessionId) {
 // touching identity (name) or chrome. Shared by the onboarding draft fill
 // (applyAnalysisToDraft) and the saved-Playbook "Auto-fill" overwrite on the
 // detail page (screens/playbook.js). Returns a plain patch object.
+// The scraped logo candidates → { brandLogos, brandLogo }. Kept beside the
+// analysis mapper rather than inside it so the shape stays one line up there.
+function logoPatchFromAnalysis(s) {
+  const found = s?.imageVoice?.websites?.[0]?.images?.logos;
+  const list = (Array.isArray(found) ? found : [])
+    .filter((l) => l && l.url)
+    .map((l, i) => ({ id: `site-logo-${i}`, label: l.label || "Logo", url: l.url }));
+  return { brandLogos: list, brandLogo: list[0]?.url || "" };
+}
+
 export function sectionPatchFromAnalysis(analysis) {
   const s = (analysis && analysis.suggestions) || {};
   return {
@@ -143,6 +154,9 @@ export function sectionPatchFromAnalysis(analysis) {
     brandPersonality: s.brandPersonality || "",
     brandTypography: s.brandTypography ? { ...s.brandTypography } : null,
     brandColors: (s.brandColors || []).map((c) => ({ ...c })),
+    // Marks the crawl turned up (imageVoice.websites[0].images.logos). The
+    // first becomes the default; the user re-picks in the Brand section.
+    ...logoPatchFromAnalysis(s),
     // Competitors Archie found on the brand's market. Flagged `suggested`, so
     // they arrive as PENDING proposals in the Competitors section rather than
     // as Playbook entries — the user accepts the ones that matter.
@@ -809,6 +823,7 @@ export function save(sessionId) {
     brandPersonality: d.brandPersonality || "",
     brandTypography: d.brandTypography ? { ...d.brandTypography } : null,
     brandColors: Array.isArray(d.brandColors) ? d.brandColors.map((c) => ({ ...c })) : [],
+    brandLogos: Array.isArray(d.brandLogos) ? d.brandLogos.map((l) => ({ ...l })) : [],
     brandLogo: d.brandLogo || "",
     referenceImages: Array.isArray(d.referenceImages)
       ? d.referenceImages.map((i) => ({ ...i, networks: Array.isArray(i.networks) ? [...i.networks] : [] }))

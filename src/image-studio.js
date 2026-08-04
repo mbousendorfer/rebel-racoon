@@ -20,7 +20,7 @@
 // faithful results; Reprompt is an honest preview (reseed). The committed url
 // rides back to the draft via attachImageToDraft (see the modal component).
 
-import { FORMATS, formatsForNetwork, defaultFormatFor, NETWORK_FORMATS } from "./clip-formats.js?v=16";
+import { FORMATS, formatsForNetwork, defaultFormatFor, NETWORK_FORMATS } from "./clip-formats.js?v=17";
 // Layering note: the only import this engine takes from the view side, and a
 // deliberate one — canvas.js is pure, UI-agnostic (its own header says so) and
 // already shared by both studio versions. "Text in image" is mocked by baking the
@@ -322,6 +322,7 @@ export function start(
     editImage = null,
     carousel = null,
     playbookLogo = "",
+    playbookLogos = [],
     playbookRefs = [],
     playbookName = "",
     playbookColors = [],
@@ -410,6 +411,13 @@ export function start(
     // carry it unless someone says otherwise. A Playbook without one can't brand
     // anything, so the switch has nothing to offer and the section says so.
     playbookLogo: playbookLogo || "",
+    // The whole SET of the Playbook's marks, not just the default. The switch
+    // above stamps the default; these are what Edit mode's "Add an image" offers,
+    // because the variant that suits a given visual (the reversed lockup on a dark
+    // photo, the icon where a wordmark won't read) is often not the default one.
+    playbookLogos: (Array.isArray(playbookLogos) ? playbookLogos : [])
+      .filter((l) => l && l.url)
+      .map((l, i) => ({ id: l.id || `pb-logo-${i}`, label: l.label || "Logo", url: l.url })),
     useBranding: !!playbookLogo,
     // [{ name, hex }] — NAMED, not bare hexes. Every consumer that wants the hex
     // maps for it; the Branding recap and nothing else wants the name, and two
