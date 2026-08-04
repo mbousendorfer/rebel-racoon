@@ -242,6 +242,49 @@ les résultats tombent.
 Stage : `empty → generating (~4,2 s) → résultats` (grande image + chutier), avec une bascule
 **Image / In feed** (aperçu réel via `renderPostCard`).
 
+### Le prompt édité à la main est protégé
+
+**Type** et **References** ne retouchent pas une ligne du brief, ils le **re-dérivent
+entièrement** (`~600 ms`, un loader court — un chip doit répondre tout de suite, pas au bout des
+2 s de l'ouverture). C'est légitime tant que le brief appartient à Archie. Dès que l'utilisateur a
+tapé dans le champ, le même clic jetterait ses mots — alors il demande d'abord.
+
+- **Le sale se mesure par rapport au dernier texte que le studio a écrit** (`derivedPrompt`), pas à
+  « une frappe a eu lieu » : taper un mot puis le supprimer laisse propre. Vider le champ compte
+  comme une édition.
+- **Prompt intact → aucun avertissement**, le brief est simplement réécrit. C'est ce qui répare la
+  divergence : avant, l'en-tête affichait « Infographic » pendant que le brief décrivait encore un
+  visual hook.
+- **Prompt édité → une confirmation** (`prompt-guard.js`), qui **nomme le réglage touché**
+  (_« Changing the image type rewrites it from your settings »_). Deux issues : **Rewrite prompt**
+  applique le réglage et réécrit, **Cancel** n'applique **rien** — le chip revient où il était. Une
+  case _« Don't ask again while this studio is open »_ coupe l'avertissement pour la durée de
+  l'ouverture (`exit(KEY)` la remet à zéro : silencier une action destructive ne survit pas à la
+  session).
+- **Un filet, même quand l'avertissement est coupé** : toute réécriture qui a remplacé du texte
+  écrit à la main propose un **Undo** dans un toast, qui restaure le brief précédent.
+- **Un upload n'est jamais jeté par une confirmation.** Le drop entre dans le vivier
+  inconditionnellement ; seule la **sélection** est gardée. Annuler laisse donc l'image disponible,
+  non choisie.
+- Les six chemins gardés : le Type, le switch _« Use a reference image »_, la tuile, l'ajout, le
+  retrait de l'image **en jeu**, et le mode `REF_MODES`. Retirer une image non sélectionnée ne
+  réécrit rien, donc ne demande rien.
+- **Les couleurs de marque restent hors périmètre** : elles éditent leur seule ligne `Palette:` en
+  place plutôt que de re-dériver, et **se retirent du jeu quand le prompt est édité**
+  (`syncPaletteLine`) au lieu d'écraser une ligne que l'utilisateur a peut-être écrite. Le switch
+  gouverne toujours la dérivation suivante.
+- Style, Format et Text in image, eux, **ne réécrivent toujours pas** le brief après l'ouverture :
+  leur ligne reste celle de la dérivation initiale. Divergence connue et assumée.
+
+> ⚠️ La confirmation n'est **pas** `confirm-modal.js`. Celui-ci s'enregistre auprès de
+> `modal-coordinator`, et `requestOpen` ferme l'overlay actif — ici le studio, dont le `close()`
+> exécute `exit(KEY)` et supprime toute la session. Un « tu vas perdre ton prompt ? » qui perd le
+> studio entier est pire que le problème qu'il signale. Elle est donc rendue **dans** le corps du
+> studio, depuis l'état, hors coordinateur — et par conséquent : ses touches sont écoutées sur
+> **`document` en capture** (Échap avec le focus hors de la modale ne passerait jamais par
+> l'élément), et `bindOverlayDismissal` reçoit un `isOpen` qui **se désarme** tant qu'une question
+> est en attente, pour qu'Échap ou un clic sur le scrim ne puissent pas fermer le studio par-dessous.
+
 ### Generate — les sept réglages
 
 Chaque réglage est une section `.ap-accordion` — **la classe DS, pas le comportement**. Les sections

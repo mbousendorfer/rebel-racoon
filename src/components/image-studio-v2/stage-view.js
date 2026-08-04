@@ -37,13 +37,14 @@ import { html, raw, escapeHtml } from "../../utils.js?v=21";
 import { getPosts } from "../../posts-store.js?v=44";
 import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=37";
 import { renderPostCard } from "../post-card.js?v=81";
-import { KEY, ctx } from "./context.js?v=38";
+import { KEY, ctx } from "./context.js?v=40";
 import { composer } from "./composer-view.js?v=68";
-import { settingsPanel } from "./settings-view.js?v=6";
-import { toolPalette } from "./tools-view.js?v=10";
-import { editCanvas } from "./edit-view.js?v=38";
+import { settingsPanel } from "./settings-view.js?v=7";
+import { toolPalette } from "./tools-view.js?v=11";
+import { promptGuardDialog } from "./prompt-guard.js?v=3";
+import { editCanvas } from "./edit-view.js?v=39";
 import { compositeOverlays } from "../../image-studio-canvas.js?v=5";
-import * as imageStudio from "../../image-studio.js?v=74";
+import * as imageStudio from "../../image-studio.js?v=76";
 
 // In-feed preview — the edit canvas layers logo/text overlays as live DOM over
 // the image, but renderPostCard only takes a URL, so overlays wouldn't show. We
@@ -80,7 +81,7 @@ export function renderStudio(st) {
     <div class="isv2">
       ${raw(header(st))}
       <section class="isv2-stage" aria-label="Preview">${raw(stageContent(st))}</section>
-      ${raw(composer(st))} ${raw(footerBar(st))}
+      ${raw(composer(st))} ${raw(footerBar(st))} ${raw(promptGuardDialog(st))}
     </div>
   `;
 }

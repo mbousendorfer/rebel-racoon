@@ -35,6 +35,10 @@ const subscribers = new Map(); // sessionId → Set<fn>
 const GEN_MS = 4200; // "generating N variations" loader
 const EDIT_MS = 2600; // per-edit loader
 const DERIVE_MS = 2000; // "writing your image prompt" loader on open / re-suggest
+// A chip click has to answer immediately, so a re-derive gets a much shorter beat
+// than the opening one — long enough that the user SEES the brief change under
+// them, short enough that adjusting three settings in a row isn't a wait.
+const REDERIVE_MS = 600;
 
 export const MAX_REFS = 6;
 export const VARIATION_CHOICES = [1, 2, 3, 4];
@@ -240,11 +244,6 @@ const BRAND_MARK = { xF: 0.78, yF: 0.89, wF: 0.26 };
 // as a duplicate line rather than as an error.
 const PALETTE_RE = /^Palette: /;
 
-// Same deal for the look line — written by derivePrompt, spliced by the reference
-// controls. It is the ONE line the whole References section produces: which image,
-// where it came from, and what to do with it.
-const LOOK_RE = /^Look: /;
-
 // Null when there is nothing to say about the look — no reference AND no style
 // preset — so the callers can use it to mean "this line shouldn't exist".
 function lookLine(s) {
@@ -392,7 +391,19 @@ export function start(
     network: net,
     formatId: resolvedFormat,
     promptText: "",
+    // The last text the STUDIO wrote into the field. The prompt counts as
+    // hand-edited when the field has drifted from this — not when a keystroke has
+    // happened, so typing a word and deleting it again leaves you clean.
+    derivedPrompt: "",
     promptLoading: false,
+    // A settings change parked behind the "you'll lose your edits" confirmation:
+    // { kind, payload }. Non-null means the dialog is up.
+    pendingSettingChange: null,
+    // The user's own opt-out, ticked in that dialog. Per studio-open: exit(KEY)
+    // drops it, so silencing a destructive action never outlives the session.
+    skipPromptWarning: false,
+    // One step of undo for a rewrite, offered in a toast.
+    promptUndo: null,
     renderText: "", // words to paint INTO the image (empty = none)
     styleKey: null, // selected Style preset (STYLE_PRESETS)
     imageTypeKey: null, // selected Image type (IMAGE_TYPES)
@@ -524,6 +535,23 @@ export function setPromptSilent(sessionId, text) {
   if (s) s.promptText = text;
 }
 
+// Writing the brief FROM the settings — the one place that moves both values, so
+// that what the studio wrote is never mistaken for what the user typed.
+function writeBrief(s, text) {
+  s.promptText = text;
+  s.derivedPrompt = text;
+}
+
+function isDirty(s) {
+  return (s.promptText || "").trim() !== (s.derivedPrompt || "").trim();
+}
+
+/** Has the user edited the brief the studio wrote? */
+export function isPromptDirty(sessionId) {
+  const s = states.get(sessionId);
+  return !!s && isDirty(s);
+}
+
 // Same deal for the text to render: typing must not re-render the settings (the
 // row would be rebuilt under the caret).
 //
@@ -567,11 +595,40 @@ export function setStyle(sessionId, key) {
   notify(sessionId);
 }
 
+// ── The guarded settings ────────────────────────────────────────────────────
+//
+// Type and References are the two settings that REWRITE the brief rather than
+// nudge a line of it, so touching either one throws away a hand-edited prompt.
+// Each of them is therefore split in two: an `apply*` mutator that only touches
+// state, and a public setter that first asks `defer()` whether the user has
+// edits worth protecting. `confirmSettingChange` replays the parked intent
+// through the same mutators, so the confirmed path and the clean path can't
+// drift.
+//
+// Everything else (Style, Format, Text in image, Output) leaves the brief alone
+// after the opening derive, and brand colours splices its own line — see
+// syncPaletteLine, which stands down on a hand-edited prompt rather than
+// clobbering it.
+
+// Park the change behind the confirmation instead of applying it. Returns true
+// when it parked, so the caller bails out.
+function defer(s, sessionId, kind, payload) {
+  if (!isDirty(s) || s.skipPromptWarning) return false;
+  s.pendingSettingChange = { kind, payload };
+  notify(sessionId);
+  return true;
+}
+
+function applyImageType(s, key) {
+  s.imageTypeKey = s.imageTypeKey === key ? null : key;
+}
+
 export function setImageType(sessionId, key) {
   const s = states.get(sessionId);
   if (!s) return;
-  s.imageTypeKey = s.imageTypeKey === key ? null : key;
-  notify(sessionId);
+  if (defer(s, sessionId, "imageType", key)) return;
+  applyImageType(s, key);
+  rederive(sessionId);
 }
 
 export function setFormat(sessionId, formatId) {
@@ -634,37 +691,49 @@ export function selectedReference(s) {
 function syncSelectedRef(s) {
   const picked = selectedReference(s);
   s.referenceImages = picked ? [picked] : [];
-  syncLookLine(s);
 }
 
 let refSeq = 0;
 // An upload joins the pool AND becomes the selection — you dropped it because
 // you want this image, so making you click it again would be ceremony. The cap
 // bounds the POOL, not a multi-selection: past it the grid stops being scannable.
+// An upload NEVER gets thrown away by a confirmation. The file lands in the pool
+// unconditionally; only SELECTING it (which is what rewrites the brief) is
+// guarded. So cancelling a drop onto a hand-edited prompt leaves the image sitting
+// there, unselected, instead of discarding what the user just dragged in.
 export function addReferenceImage(sessionId, url) {
   const s = states.get(sessionId);
   if (!s || s.uploadedRefs.length >= MAX_REFS) return;
   refSeq += 1;
   const ref = { id: `ref-${refSeq}`, url };
   s.uploadedRefs.push(ref);
-  s.selectedRefId = ref.id; // adding an image is also switching references on
-  s.lastRefId = ref.id;
-  syncSelectedRef(s);
-  notify(sessionId);
+  if (defer(s, sessionId, "selectRef", ref.id)) return; // in the pool, not picked
+  applySelectRef(s, ref.id);
+  rederive(sessionId);
 }
 
 // Drops an upload from the pool for good. Playbook images can't be removed —
 // they belong to the Playbook, and deselecting is what "not this one" means.
-export function removeReferenceImage(sessionId, id) {
-  const s = states.get(sessionId);
-  if (!s) return;
+function applyRemoveRef(s, id) {
   const ref = s.uploadedRefs.find((r) => r.id === id);
-  if (!ref) return;
+  if (!ref) return false;
   safeRevoke(ref.url); // only ever an uploaded object URL — never a Playbook URL
   s.uploadedRefs = s.uploadedRefs.filter((r) => r.id !== id);
   if (s.selectedRefId === id) s.selectedRefId = null;
   syncSelectedRef(s);
-  notify(sessionId);
+  return true;
+}
+
+export function removeReferenceImage(sessionId, id) {
+  const s = states.get(sessionId);
+  if (!s || !s.uploadedRefs.some((r) => r.id === id)) return;
+  // Removing the image the brief describes rewrites it; removing any other one
+  // doesn't, so it needs no confirmation.
+  const inPlay = s.selectedRefId === id;
+  if (inPlay && defer(s, sessionId, "removeRef", id)) return;
+  if (!applyRemoveRef(s, id)) return;
+  if (inPlay) rederive(sessionId);
+  else notify(sessionId);
 }
 
 // Stamp the Playbook's logo into what gets generated, or don't. A no-op without a
@@ -721,27 +790,32 @@ function spliceBriefLine(s, re, line, after) {
   s.promptText = lines.join("\n");
 }
 
+// Brand colours edit their own line in place rather than re-deriving, because the
+// switch is cheap and re-deriving would be a sledgehammer. The exception is a
+// hand-edited prompt: splicing into one would silently replace a line the user
+// may have written, and this setting is not worth a confirmation dialog. So it
+// stands down — the switch still governs the NEXT derive, it just stops rewriting
+// text it no longer owns.
 function syncPaletteLine(s) {
+  if (isDirty(s)) return;
   const on = s.useBrandColors && s.playbookColors.length > 0;
   spliceBriefLine(s, PALETTE_RE, on ? paletteLine(s) : null, ["Look:", "Visual direction:"]);
+  s.derivedPrompt = s.promptText; // the studio wrote this, so it stays "clean"
 }
 
 // Every reference control ends here: the switch, the tile you pick, and the mode.
 // All three change what that one line says, and none of them is allowed to leave a
 // line describing a reference that is no longer in play.
-function syncLookLine(s) {
-  spliceBriefLine(s, LOOK_RE, lookLine(s), ["Visual direction:"]);
-}
 
 // How the model should use the reference. Only ever one of the catalog's keys — a
 // bad value here would silently fall back to Blend and the chips would disagree
 // with the brief.
 export function setRefMode(sessionId, key) {
   const s = states.get(sessionId);
-  if (!s || !REF_MODES.some((m) => m.key === key)) return;
+  if (!s || !REF_MODES.some((m) => m.key === key) || s.refMode === key) return;
+  if (defer(s, sessionId, "refMode", key)) return;
   s.refMode = key;
-  syncLookLine(s);
-  notify(sessionId);
+  rederive(sessionId);
 }
 
 // Whether the generator gets a reference image AT ALL. This is the switch at the
@@ -751,9 +825,7 @@ export function setRefMode(sessionId, key) {
 //
 // Off remembers the pick so switching back doesn't make the user find it again;
 // on restores it, or falls back to the first image available.
-export function setUseReference(sessionId, on) {
-  const s = states.get(sessionId);
-  if (!s) return;
+function applyUseReference(s, on) {
   if (on) {
     const pool = referencePool(s);
     const back = pool.some((r) => r.id === s.lastRefId) ? s.lastRefId : pool[0]?.id || null;
@@ -763,19 +835,32 @@ export function setUseReference(sessionId, on) {
     s.selectedRefId = null;
   }
   syncSelectedRef(s);
-  notify(sessionId);
+}
+
+export function setUseReference(sessionId, on) {
+  const s = states.get(sessionId);
+  if (!s) return;
+  if (defer(s, sessionId, "useReference", !!on)) return;
+  applyUseReference(s, !!on);
+  rederive(sessionId);
 }
 
 // Pick THE reference image — single-select across both pools. Clicking the picked
 // one is a no-op, not a clear: the switch above is what turns references off, and
 // a radio group that can empty itself by re-click is a trap you fall into.
+function applySelectRef(s, id) {
+  s.selectedRefId = id;
+  s.lastRefId = id;
+  syncSelectedRef(s);
+}
+
 export function toggleReferenceImage(sessionId, id) {
   const s = states.get(sessionId);
   if (!s || s.selectedRefId === id) return;
   if (!referencePool(s).some((r) => r.id === id)) return;
-  s.selectedRefId = id;
-  syncSelectedRef(s);
-  notify(sessionId);
+  if (defer(s, sessionId, "selectRef", id)) return;
+  applySelectRef(s, id);
+  rederive(sessionId);
 }
 
 // Collapse / expand a generate-panel section (Reference images, Visual style,
@@ -891,8 +976,10 @@ function derivePrompt(s) {
   return lines.join("\n");
 }
 
-export function runDerive(sessionId) {
+export function runDerive(sessionId, { delay = DERIVE_MS } = {}) {
   const s = states.get(sessionId);
+  // Already writing: the pending timer reads state when it FIRES, so a second
+  // trigger during the window would produce the same text. Dropping it is right.
   if (!s || s.promptLoading) return;
   s.promptLoading = true;
   notify(sessionId);
@@ -903,11 +990,79 @@ export function runDerive(sessionId) {
     // line, so deriving it after would leave the brief and the field disagreeing.
     // Only when empty — a re-derive must never overwrite what the user typed.
     if (!cur.renderText) cur.renderText = deriveRenderText(cur);
-    cur.promptText = derivePrompt(cur);
+    writeBrief(cur, derivePrompt(cur));
     cur.promptLoading = false;
     cur._deriveTimer = null;
     notify(sessionId);
-  }, DERIVE_MS);
+  }, delay);
+}
+
+// A settings-driven rewrite: same derive, shorter beat, and it remembers the text
+// it is about to replace so the toast can offer one step back. Only worth an undo
+// when there was something of the user's to lose.
+function rederive(sessionId) {
+  const s = states.get(sessionId);
+  if (!s) return;
+  s.promptUndo = isDirty(s) ? { text: s.promptText, derived: s.derivedPrompt } : null;
+  runDerive(sessionId, { delay: REDERIVE_MS });
+}
+
+/** Did the last settings change overwrite something the user had typed? */
+export function tookOverPrompt(sessionId) {
+  return !!states.get(sessionId)?.promptUndo;
+}
+
+/** Put back the hand-edited brief the last settings change replaced. */
+export function undoPromptRewrite(sessionId) {
+  const s = states.get(sessionId);
+  if (!s || !s.promptUndo) return;
+  s.promptText = s.promptUndo.text;
+  s.derivedPrompt = s.promptUndo.derived;
+  s.promptUndo = null;
+  notify(sessionId);
+}
+
+// ── The confirmation ────────────────────────────────────────────────────────
+
+/** The parked settings change, or null when no dialog is up. */
+export function pendingSettingChange(sessionId) {
+  return states.get(sessionId)?.pendingSettingChange || null;
+}
+
+// Replaying the parked intent through the very same mutators the clean path uses,
+// so "confirmed" and "never asked" can't diverge.
+const APPLY = {
+  imageType: applyImageType,
+  selectRef: applySelectRef,
+  removeRef: applyRemoveRef,
+  refMode: (s, key) => {
+    s.refMode = key;
+  },
+  useReference: applyUseReference,
+};
+
+export function confirmSettingChange(sessionId) {
+  const s = states.get(sessionId);
+  const parked = s?.pendingSettingChange;
+  if (!parked) return;
+  s.pendingSettingChange = null;
+  APPLY[parked.kind]?.(s, parked.payload);
+  rederive(sessionId);
+}
+
+export function cancelSettingChange(sessionId) {
+  const s = states.get(sessionId);
+  if (!s || !s.pendingSettingChange) return;
+  s.pendingSettingChange = null;
+  notify(sessionId);
+}
+
+/** The user's "don't warn me again", ticked in the dialog. Lasts one studio open. */
+export function setSkipPromptWarning(sessionId, on) {
+  const s = states.get(sessionId);
+  if (!s) return;
+  s.skipPromptWarning = !!on;
+  notify(sessionId);
 }
 
 // ── Generation ──────────────────────────────────────────────────────────────

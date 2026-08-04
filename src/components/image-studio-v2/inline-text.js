@@ -21,9 +21,9 @@
 //   .image-studio__popover--{outline,shadow}   the dim state of an open popover
 //   .image-studio__tt-{outline,shadow}         the toolbar button's on state
 
-import { KEY, ctx, state } from "./context.js?v=38";
+import { KEY, ctx, state } from "./context.js?v=40";
 import { outlineMetrics, shadowMetrics } from "../../image-studio-canvas.js?v=5";
-import * as imageStudio from "../../image-studio.js?v=74";
+import * as imageStudio from "../../image-studio.js?v=76";
 
 // The live text node of the overlay currently being edited, if any.
 function editingTextNode() {

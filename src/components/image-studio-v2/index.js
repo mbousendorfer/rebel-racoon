@@ -30,11 +30,12 @@ import { requestOpen, notifyClose, bindOverlayDismissal } from "../../modal-coor
 import { getPosts } from "../../posts-store.js?v=44";
 import { getSessionById } from "../../sessions-store.js?v=14";
 import { getContextById } from "../../contexts-store.js?v=46";
-import { MODAL_ID, KEY, ctx, state, autosize } from "./context.js?v=38";
+import { MODAL_ID, KEY, ctx, state, autosize } from "./context.js?v=40";
 import { loadImg } from "../../image-studio-canvas.js?v=5";
-import { renderStudio } from "./stage-view.js?v=76";
-import { bindStudioEvents } from "./events.js?v=11";
-import * as imageStudio from "../../image-studio.js?v=74";
+import { renderStudio } from "./stage-view.js?v=78";
+import { offerUndoIfNeeded, resetUndoOffers } from "./prompt-guard.js?v=3";
+import { bindStudioEvents } from "./events.js?v=13";
+import * as imageStudio from "../../image-studio.js?v=76";
 
 let backdrop;
 let initialized = false;
@@ -64,6 +65,9 @@ function renderBody() {
   // brief on open, and anything typed before a re-render.
   autosize(ctx.body.querySelector("[data-img-prompt]"));
   autosize(ctx.body.querySelector("[data-img-edit-prompt]"));
+  // A rewrite that replaced hand-written text offers one step back. It has to be
+  // read off the render pass — see prompt-guard.js#offerUndoIfNeeded.
+  offerUndoIfNeeded(st);
 }
 
 // ── Public API ──────────────────────────────────────────────────────────────
@@ -76,7 +80,16 @@ export function init() {
   ctx.modal = document.getElementById("isv2Modal");
   ctx.body = document.getElementById("isv2Body");
   bindStudioEvents({ modal: ctx.modal, close });
-  bindOverlayDismissal({ modal: ctx.modal, backdrop, close });
+  // `isOpen` doubles as a veto: while the prompt guard is up, Escape and a
+  // backdrop click must NOT close the studio — that would answer "you'll lose your
+  // prompt" by throwing away the whole session. The guard has its own Escape (see
+  // events.js#onGuardKeydown) and swallows clicks (events.js#onClick).
+  bindOverlayDismissal({
+    modal: ctx.modal,
+    backdrop,
+    close,
+    isOpen: () => ctx.modal.classList.contains("open") && !state()?.pendingSettingChange,
+  });
 }
 
 export function open(postId, opts = {}) {
@@ -117,6 +130,7 @@ export function open(postId, opts = {}) {
     playbookName: context?.brandName || context?.name || "",
     playbookColors: (Array.isArray(context?.brandColors) ? context.brandColors : []).filter((c) => c && c.hex),
   });
+  resetUndoOffers();
   if (unsub) unsub();
   unsub = imageStudio.subscribe(KEY, renderBody);
 

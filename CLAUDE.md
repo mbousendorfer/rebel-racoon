@@ -132,7 +132,7 @@ src/
     bug-report-modal.js, feedback-modal.js, chat-picker-modal.js,
     confirm-modal.js, rename-modal.js, search-modal.js
     image-studio-v2/      the Image Studio, split by subject (see FEATURES §7):
-                          index (lifecycle) · events · commit · inline-text ·
+                          index (lifecycle) · events · commit · inline-text · prompt-guard ·
                           stage-view · composer-view · settings-view ·
                           references-view · branding-view · tools-view ·
                           edit-view · interactions · context
@@ -174,9 +174,15 @@ lose the caret, replace the input mid-drag, or remount an open popover so it rep
 animation. Nothing else in the studio may skip the render path.
 
 The modules split by **subject**, not by size: `index.js` is the lifecycle, `events.js` every
-delegated listener, `commit.js` the paths that write to the draft, then one view module per surface
+delegated listener, `commit.js` the paths that write to the draft, `prompt-guard.js` the
+confirmation that protects a hand-edited brief, then one view module per surface
 (`stage-view`, `composer-view`, `settings-view`, `references-view`, `branding-view`, `tools-view`,
-`edit-view`). Two stylesheets, for the same reason: `image-studio-v2.css` is the shell (`.isv2-*`),
+`edit-view`).
+
+⚠️ A confirmation inside the studio must NOT be `confirm-modal.js`: it registers with
+`modal-coordinator`, whose `requestOpen` closes the active overlay — the studio — running `exit(KEY)`
+and deleting the session. Render it in the studio body from state instead, listen for its keys on
+`document` in capture, and pass `bindOverlayDismissal` an `isOpen` that stands down while it's up. Two stylesheets, for the same reason: `image-studio-v2.css` is the shell (`.isv2-*`),
 `image-studio-canvas.css` is everything that sits ON the image and must follow a precise pixel
 (`.image-studio__*`).
 

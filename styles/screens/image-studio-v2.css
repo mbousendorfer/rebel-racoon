@@ -1331,3 +1331,70 @@
     right: var(--ref-spacing-sm);
   }
 }
+
+/* ── The prompt guard — a confirmation stacked inside the studio ───────────── */
+
+/* Type and References re-derive the whole brief, so touching either one after the
+   user has hand-edited the prompt asks first. The dialog lives INSIDE the studio
+   rather than being the app's `confirm-modal`, because that one registers with
+   modal-coordinator — and `requestOpen` closes the active overlay, which is the
+   studio, whose close() runs `exit(KEY)` and deletes the session. See
+   components/image-studio-v2/prompt-guard.js.
+
+   Absolutely positioned within `.isv2` (which is `overflow: hidden`), so the scrim
+   is clipped to the modal and needs no fixed positioning: it dims the studio, not
+   the page behind it. The z-index is the app's stacked-overlay token — declared
+   for exactly this case, a modal on top of a modal, and until now unused. */
+.isv2-guard {
+  position: absolute;
+  inset: 0;
+  z-index: var(--app-z-modal-stacked);
+  display: grid;
+  place-items: center;
+  padding: var(--ref-spacing-lg);
+  background: var(--app-modal-backdrop);
+  animation: app-modal-fade-in var(--ref-animation-normal) ease;
+}
+
+/* `.ap-dialog` carries the surface — white, `--ref-border-radius-md`, overflow —
+   so only the size and the lift are said here. 420px: the body is two lines of
+   prose at this measure, and a confirmation wider than its own sentence reads as
+   a form. */
+.isv2-guard-card {
+  width: min(420px, 100%);
+  box-shadow: var(--app-shadow-modal);
+}
+
+/* The DS header reserves 64px on the right for the absolute close button every
+   other dialog carries. This one has none — an unanswered question shouldn't be
+   dismissible by a glyph in the corner, only by Cancel or Escape — so the title
+   gets its padding back. */
+.isv2-guard-card .ap-dialog-header {
+  padding-right: var(--ref-spacing-lg);
+}
+
+.isv2-guard-card .ap-dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+}
+
+.isv2-guard-body {
+  margin: 0;
+  color: var(--sys-text-color-light);
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+}
+
+/* The opt-out sits with the body, not in the footer: it qualifies the question,
+   it doesn't answer it. Caption-sized so it reads as a footnote to the sentence
+   above rather than as a third choice competing with the two buttons. */
+.isv2-guard-skip {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  cursor: pointer;
+  color: var(--sys-text-color-light);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+}

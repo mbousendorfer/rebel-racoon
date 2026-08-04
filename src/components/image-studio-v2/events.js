@@ -19,27 +19,40 @@
 // Anything that patches the DOM instead of re-rendering lives in inline-text.js;
 // anything that writes to the draft lives in commit.js.
 
-import { KEY, ctx, state, autosize } from "./context.js?v=38";
-import { useImage, commitSlideEdit, applyEditTool, runGenerate } from "./commit.js?v=5";
+import { KEY, ctx, state, autosize } from "./context.js?v=40";
+import { useImage, commitSlideEdit, applyEditTool, runGenerate } from "./commit.js?v=6";
 import {
   focusEditingText,
   syncEditingText,
   restoreEditingCaret,
   previewOverlayInput,
   toggleTextEffect,
-} from "./inline-text.js?v=5";
+} from "./inline-text.js?v=6";
 import {
   openFilePicker,
   openLogoPicker,
   startOverlayGesture,
   startCropGesture,
   applyCropSelection,
-} from "./interactions.js?v=38";
-import * as imageStudio from "../../image-studio.js?v=74";
+} from "./interactions.js?v=39";
+import * as imageStudio from "../../image-studio.js?v=76";
 
 function onClick(event, close) {
   const st = state();
   if (!st) return;
+
+  // The prompt guard is modal WITHIN the studio: while it's up it takes the whole
+  // click surface, so nothing behind it can be operated by accident. Its own three
+  // controls are handled here and everything else is swallowed — including the ✕,
+  // because closing the studio out from under an unanswered question is exactly
+  // the kind of data loss the dialog exists to prevent.
+  if (st.pendingSettingChange) {
+    if (event.target.closest("[data-img-guard-confirm]")) return void imageStudio.confirmSettingChange(KEY);
+    if (event.target.closest("[data-img-guard-cancel]")) return void imageStudio.cancelSettingChange(KEY);
+    if (event.target.closest("[data-img-guard-skip]")) return; // the checkbox — see onChange
+    return; // clicks on the scrim, or anywhere behind it, do nothing
+  }
+
   if (event.target.closest("[data-img-close]")) return void close();
 
   // Sheet/popover lifecycle runs FIRST so every other action implicitly closes
@@ -243,6 +256,11 @@ function onInput(event) {
 // The native colour picker commits on "change" — persist it as a swatch then.
 function onChange(event) {
   const st = state();
+  // Ticking it doesn't answer the question — the user still has to press one of
+  // the two buttons. It just decides whether the NEXT one gets asked.
+  if (event.target.matches("[data-img-guard-skip]")) {
+    return void imageStudio.setSkipPromptWarning(KEY, event.target.checked);
+  }
   if (event.target.matches("[data-img-text-colorpick]")) {
     imageStudio.addCustomColor(KEY, event.target.value, "color");
     imageStudio.setOpenPopover(KEY, null);
@@ -353,6 +371,10 @@ function onDblClick(event) {
 function onKeydown(event) {
   const st = state();
   if (!st) return;
+  // The guard's own keys are handled on DOCUMENT capture instead — see
+  // onGuardKeydown. This listener sits on the modal element, so it only sees keys
+  // pressed while focus is inside it.
+  if (st.pendingSettingChange) return;
   // Both composer fields: Enter runs the bar's primary action, Shift+Enter
   // inserts a newline — the same contract as the main conversational composer.
   if (event.key === "Enter" && !event.shiftKey && event.target.matches("[data-img-edit-prompt]")) {
@@ -404,9 +426,25 @@ function onKeydown(event) {
   }
 }
 
+// The prompt guard's keys, on DOCUMENT capture. It has to be document-level: the
+// studio's Escape-to-close (bindOverlayDismissal) is a document listener too, and
+// Escape pressed while focus sits outside the modal — on <body>, after a click on
+// the scrim — never travels through the modal element at all. Bound on the modal,
+// this would miss those and the studio would close out from under an unanswered
+// question, losing far more than the prompt it was asking about.
+function onGuardKeydown(event) {
+  if (!state()?.pendingSettingChange) return;
+  if (event.key !== "Escape" && event.key !== "Enter") return;
+  event.preventDefault();
+  event.stopPropagation();
+  if (event.key === "Escape") imageStudio.cancelSettingChange(KEY);
+  else imageStudio.confirmSettingChange(KEY);
+}
+
 // ── Wiring ──────────────────────────────────────────────────────────────────
 
 export function bindStudioEvents({ modal, close }) {
+  document.addEventListener("keydown", onGuardKeydown, true);
   modal.addEventListener("click", (e) => onClick(e, close));
   modal.addEventListener("input", onInput);
   modal.addEventListener("change", onChange);

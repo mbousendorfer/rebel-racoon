@@ -31,10 +31,10 @@
 
 import { escapeHtml } from "../../utils.js?v=21";
 import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=37";
-import { KEY } from "./context.js?v=38";
-import { REFS_TIP, refSummary, refsBody } from "./references-view.js?v=6";
+import { KEY } from "./context.js?v=40";
+import { REFS_TIP, refSummary, refsBody } from "./references-view.js?v=7";
 import { BRANDING_TIP, brandingBody } from "./branding-view.js?v=3";
-import * as imageStudio from "../../image-studio.js?v=74";
+import * as imageStudio from "../../image-studio.js?v=76";
 
 // A thin rule between two clusters inside one row body. Shared with the
 // Add-image sheet (tools-view.js), which is where the class name comes from.

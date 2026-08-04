@@ -16,10 +16,10 @@
 
 import { showToast } from "../toast.js?v=20";
 import { attachImageToDraft, attachCarouselToDraft } from "../../posts-store.js?v=44";
-import { KEY, ctx, state } from "./context.js?v=38";
+import { KEY, ctx, state } from "./context.js?v=40";
 import { compositeOverlays } from "../../image-studio-canvas.js?v=5";
-import { syncEditingText } from "./inline-text.js?v=5";
-import * as imageStudio from "../../image-studio.js?v=74";
+import { syncEditingText } from "./inline-text.js?v=6";
+import * as imageStudio from "../../image-studio.js?v=76";
 
 // Commit the working image to the origin draft, then close.
 export function useImage(close) {
