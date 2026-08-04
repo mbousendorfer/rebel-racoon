@@ -187,22 +187,18 @@
 }
 
 /* The real logo instead of initials: white ground and no brand tint, because the
-   mark carries its own colours. HEIGHT-driven like the Brand section's tile —
-   the monogram's 52px square becomes a 52px-tall box that WIDENS for a wordmark
-   (up to 148px) instead of shrinking it to a sliver to fit a square. */
+   mark carries its own colours. Keeps the monogram's 52px SQUARE — a thumbnail
+   is a square, and a box that changed shape with each Playbook's logo made the
+   header jump around. `contain`, so a wide wordmark fits without being cropped. */
 .recap__monogram--mark {
-  width: auto;
-  min-width: 52px;
-  max-width: 148px;
   background: var(--ref-color-white);
   border: 1px solid var(--app-border);
   padding: var(--ref-spacing-xxs);
 }
 
 .recap__monogram--mark img {
+  width: 100%;
   height: 100%;
-  width: auto;
-  max-width: 100%;
   object-fit: contain;
 }
 
@@ -638,25 +634,26 @@
 }
 
 /* ── Brand — the logo tile ────────────────────────────────────────────── */
-/* HEIGHT-driven (fixed height, `width: auto`, `contain`) so a wide wordmark and
-   a square monogram both sit in the same tile uncropped and unletterboxed —
-   same shape as the studio's own preview (.isv2-brandmark). White ground: a
-   logo is authored against white far more often than against the app's grey. */
+/* A SQUARE thumbnail, like the header's mark and the studio's stamp tiles: one
+   fixed shape whatever the logo is, so the row doesn't resize around whichever
+   Playbook you opened. `contain` inside it, never `cover` — cropping a brand
+   mark is worse than letterboxing one. White ground: a logo is authored against
+   white far more often than against the app's grey. */
 .recap__logo {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 56px;
-  padding: var(--ref-spacing-xxs) var(--ref-spacing-sm);
+  width: 72px;
+  height: 72px;
+  padding: var(--ref-spacing-xs);
   background: var(--ref-color-white);
   border: 1px solid var(--app-border);
   border-radius: var(--app-radius-md);
 }
 
 .recap__logo img {
+  width: 100%;
   height: 100%;
-  width: auto;
-  max-width: 220px;
   object-fit: contain;
 }
 
