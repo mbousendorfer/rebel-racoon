@@ -2394,8 +2394,14 @@ export const topics = [
   },
 ];
 
-// What "Refresh now" still has to find. Drained two at a time, so a demo can
-// press the button twice and get a fresh batch each time before it runs dry.
+// What a scan still has to find. "Refresh now" drains two at a time; the
+// once-per-page-load auto-scan (maybeAutoScan) takes one. Deep enough that a
+// demo can reload the front page several times and press Refresh twice and
+// still be handed something new each time.
+//
+// `global-trends` lives here rather than in the seed on purpose: it's the one
+// source with no seeded dossier, so switching it on and scanning is the clearest
+// way to see a source come alive.
 export const topicScanPool = [
   {
     id: "topic-pool-1",
@@ -2527,6 +2533,162 @@ export const topicScanPool = [
         likes: 15600,
         comments: 1200,
         reposts: 2400,
+      },
+    ],
+    ageDays: 0,
+    unseen: true,
+    dismissed: false,
+  },
+  {
+    id: "topic-pool-5",
+    contextId: "ctx-pawtrack",
+    sourceId: "global-trends",
+    headline: 'Storm season has made "where is my dog" a national search term',
+    analysisTitle: "Fireworks and storms are the demand curve",
+    summary:
+      "Lost-pet searches spike in the 48 hours around a storm or a fireworks night, and the spike is currently being met by council notices, not by anyone selling a collar.",
+    analysis: [
+      "Search and social volume for lost-pet phrasing climbs sharply in the two days around a storm warning or a fireworks night, then falls back within a week. The pattern repeats every season and it is entirely predictable from a calendar.",
+      "What fills that spike right now is municipal advice and shelter appeals — practical, un-branded, and widely shared. No tracker brand is present in the moment when the fear is actually happening.",
+      "This is a scheduling insight more than a messaging one. The post that helps someone the night before a storm is a different post from the one that sells a collar, and only one of them earns the right to be there.",
+    ],
+    posts: [
+      {
+        id: "topic-pool-5-p1",
+        network: "facebook",
+        publishedOn: "2 days ago",
+        author: { name: "Ashford Council", handle: "Ashford Council", initials: "AC", accent: "electric-blue" },
+        text: "Storm warning tonight. More animals go missing in the next 48 hours than in the rest of the month. Walk them early, check the gate, keep them in.",
+        likes: 4200,
+        comments: 310,
+        reposts: 2600,
+      },
+      {
+        id: "topic-pool-5-p2",
+        network: "instagram",
+        publishedOn: "3 days ago",
+        author: { name: "Maja Lindqvist", handle: "@majaandroo", initials: "ML", accent: "orange" },
+        text: "Third year running I've spent the fireworks night on the street with a torch. Never again. Tell me what actually works.",
+        likes: 1800,
+        comments: 204,
+        reposts: 96,
+      },
+    ],
+    ageDays: 0,
+    unseen: true,
+    dismissed: false,
+  },
+  {
+    id: "topic-pool-6",
+    contextId: "ctx-pawtrack",
+    sourceId: "influencer-posts",
+    headline: "The vets people follow are recommending trackers on medical grounds",
+    analysisTitle: "A clinical argument we've never made",
+    summary:
+      "Vet creators have started framing trackers as an activity baseline that catches illness early. It's a reason to buy that has nothing to do with losing an animal.",
+    analysis: [
+      "Several of the veterinary creators with the largest followings in this category have begun recommending trackers for a reason we never use: a resting-activity baseline makes a sudden drop visible days before an owner would notice it.",
+      "Their audiences respond very differently to this than to a lost-pet story. The comments are questions about how to read the data, not relief — a buying conversation rather than an emotional one.",
+      "It also widens the market past owners who have already had a scare. Ours is a fear-led pitch to people who have been frightened once; this one reaches everyone else.",
+    ],
+    posts: [
+      {
+        id: "topic-pool-6-p1",
+        network: "tiktok",
+        publishedOn: "4 days ago",
+        author: { name: "Dr. Nadia Reyes", handle: "@drnadiavet", initials: "NR", accent: "menthol" },
+        text: "The most useful thing a tracker does isn't finding them. It's showing you the week they stopped moving as much — that's the week to call me.",
+        likes: 92000,
+        comments: 3100,
+        reposts: 12400,
+      },
+      {
+        id: "topic-pool-6-p2",
+        network: "youtube",
+        publishedOn: "1 week ago",
+        author: { name: "The Practice Room", handle: "The Practice Room", initials: "PR", accent: "soft-blue" },
+        text: "We asked four vets what they'd want every patient to have. Three said a scale. All four said an activity baseline.",
+        likes: 21000,
+        comments: 840,
+        reposts: 1600,
+      },
+    ],
+    ageDays: 0,
+    unseen: true,
+    dismissed: false,
+  },
+  {
+    id: "topic-pool-7",
+    contextId: "ctx-acme",
+    sourceId: "brand-feedback",
+    headline: "Everyone praising the product is describing the same first ten minutes",
+    analysisTitle: "The onboarding is the review",
+    summary:
+      "Unprompted positive mentions almost all describe setup, not the feature set. People are recommending Acme for how fast it started working.",
+    analysis: [
+      "Reading a month of unprompted mentions, the specific thing being praised is remarkably narrow: it is nearly always the first session. Imported, connected, useful before the meeting ended.",
+      "Almost nobody names a feature. That's a gap between what our marketing leads with — capability — and what the people who actually like us tell their colleagues.",
+      "It's also a claim we can make in someone else's words rather than our own, which is the only version of a speed claim anyone believes.",
+    ],
+    posts: [
+      {
+        id: "topic-pool-7-p1",
+        network: "linkedin",
+        publishedOn: "3 days ago",
+        author: { name: "Priya Raman", handle: "Priya Raman", initials: "PR", accent: "purple" },
+        text: "Signed up on the train in, had it running before standup. I've spent entire quarters onboarding tools that do less.",
+        likes: 2900,
+        comments: 148,
+        reposts: 210,
+      },
+      {
+        id: "topic-pool-7-p2",
+        network: "x",
+        publishedOn: "6 days ago",
+        author: { name: "Tom Hedley", handle: "@thedley", initials: "TH", accent: "grey" },
+        text: "ten minutes from signup to something my team actually used. that's the whole review.",
+        likes: 1400,
+        comments: 62,
+        reposts: 180,
+      },
+    ],
+    ageDays: 0,
+    unseen: true,
+    dismissed: false,
+  },
+  {
+    id: "topic-pool-8",
+    contextId: "ctx-acme",
+    sourceId: "industry-trends",
+    headline: "Buyers have started asking where the AI in a tool actually runs",
+    analysisTitle: '"Where does it run?" is the new first question',
+    summary:
+      "Procurement threads that used to open on price now open on data residency. Vendors answering plainly are being singled out for it.",
+    analysis: [
+      "In the operator communities we watch, the opening question on a tooling thread has shifted. It used to be pricing; this month it is where the model runs and what it retains.",
+      "The interesting detail is that a bad answer isn't disqualifying — an evasive one is. Vendors who state the arrangement plainly get named approvingly even when the arrangement is unremarkable.",
+      "We have a straightforward answer and it is currently three clicks into a trust page. Said out loud, it is a differentiator for as long as competitors keep hedging.",
+    ],
+    posts: [
+      {
+        id: "topic-pool-8-p1",
+        network: "linkedin",
+        publishedOn: "5 days ago",
+        author: { name: "Hannah Osei", handle: "Hannah Osei", initials: "HO", accent: "red" },
+        text: "New rule for tooling reviews: if I can't find out where the model runs in under a minute, it doesn't reach the shortlist. Not a security stance — a clarity one.",
+        likes: 5600,
+        comments: 402,
+        reposts: 890,
+      },
+      {
+        id: "topic-pool-8-p2",
+        network: "x",
+        publishedOn: "1 week ago",
+        author: { name: "Ops Weekly", handle: "@opsweekly", initials: "OW", accent: "green" },
+        text: "asked 12 vendors the same question about data retention. 4 answered in one sentence. those 4 are the shortlist.",
+        likes: 7300,
+        comments: 260,
+        reposts: 1100,
       },
     ],
     ageDays: 0,

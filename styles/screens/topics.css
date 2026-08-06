@@ -1,14 +1,13 @@
-/* Topics feed — the /topics page.
+/* Topics — the /topics section page, and the shell the front page at `/` reuses.
  *
- * A reading queue, not a dashboard: one column, generous line lengths, date
- * headings you can skim. Page chrome (max-width, padding scale) mirrors
- * /contexts and /connectors so the three standalone pages sit at the same
- * measure.
+ * A paper, not a dashboard: one lead story, then sections you can skim. The
+ * card itself lives in styles/components/topic-card.css — it renders here, on
+ * the front page and in the new-chat hero, so it stopped belonging to a screen.
  *
  * The `.topic-badge--<accent>` source pip is shared with the dialog and the settings
  * page — see styles/components/topic-badge.css.
  *
- * See src/screens/topics.js + src/components/topic-card.js. */
+ * See src/screens/topics.js + src/topics-feed.js. */
 
 .topics-view {
   display: flex;
@@ -21,9 +20,12 @@
   flex-direction: column;
   gap: var(--ref-spacing-md);
   padding: var(--ref-spacing-md) var(--ref-spacing-xl) var(--ref-spacing-xxl);
-  /* Narrower than /contexts' 1280: the cards are prose, and a single column
-     stretched to 1280 gives a headline nobody can scan. */
-  max-width: 960px;
+  /* Was 960 when the feed was a single column of prose. Two columns at 960 give
+     ~460px each, which is a list row wearing a card's border; at 1160 each column
+     is ~560 — a real card width. The prose inside stays capped in `ch`
+     independently (headline 62, deck 72), so widening the grid never widens a
+     line of text. Same split /topics/settings settled on. */
+  max-width: 1160px;
   width: 100%;
   margin: 0 auto;
 }
@@ -69,18 +71,47 @@
 }
 
 /* ── Filters ──────────────────────────────────────────────────────────────
-   Two `.ap-select` — Playbook · Source — not one "Filters" trigger. The DS does ship
-   a Filters dropdown (V2 Molecules › Filters dropdown: a 420px checkbox panel with
-   Clear / Apply), and it's right when the user composes a multi-value set and applies
-   it in one go. Here each facet takes one value and applies immediately, so two selects
-   show what's selected without being opened — a trigger reading "Filters (2)" can't.
-   Same toolbar shape as the top-posts board's Period / Sort. */
+   Two facets, deliberately two different components.
+ *
+ * SOURCE → a chip list. Six sources, fixed and known, and they're the paper's
+ * sections: always visible, one click, no lid to lift. That's the case the DS
+ * guidelines name for a filter-chip list, and it's what makes the page browsable
+ * rather than merely filterable.
+ *
+ * PLAYBOOK → a `.ap-select`. That set grows with the account, and a chip per
+ * Playbook is exactly the trap the settings page escaped: it can't survive
+ * twenty. A select can, and it shows its selection without being opened, which a
+ * trigger reading "Filters (2)" can't.
+ *
+ * (The DS's own Filters dropdown — V2 Molecules, a 420px checkbox panel with
+ * Clear / Apply — stays the right component when the user composes a multi-value
+ * set and applies it in one go. Here each facet takes one value and applies
+ * immediately.) */
 
+/* The masthead: the sections get this line to themselves, with a hairline under
+   it. The rule is what tells you the page below is a publication rather than a
+   list that happens to have controls over it.
+
+   The Playbook select is NOT here — it sits in the head beside Settings and
+   Refresh. Two tries put it on this row (pushed right with `space-between`, then
+   flowing after the last chip) and both ended the same way: seven chips already
+   fill a 1160px measure, so the select dropped to a line of its own and left a
+   band of dead space above the lead story. It also belongs up there on merit —
+   "which Playbook am I looking at" is a page control of the same kind as those
+   two, not a section of the paper. */
 .topics-view__filters {
+  display: flex;
+  padding-bottom: var(--ref-spacing-xs);
+  border-bottom: 1px solid var(--app-border-soft);
+}
+
+.topics-sections {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
+  flex: 1 1 auto;
   gap: var(--ref-spacing-xxs);
+  min-width: 0;
 }
 
 /* The trigger sizes to its content; cap it so a long Playbook name can't push the
@@ -131,191 +162,27 @@
   color: var(--sys-text-color-light);
 }
 
-.topics-group__list {
-  display: flex;
-  flex-direction: column;
+/* Auto-fill rather than a fixed 2, so the grid keeps its card width when the
+   sidebar collapses or the right panel overlays instead of stretching two cards
+   across the extra room. `1fr` rows make every card in a row the same height —
+   the rule that made the old single-column feed scannable, kept for the grid.
+   Only the lead breaks it, and it breaks it on purpose. */
+/* 380 rather than 320: at 320 the page fits three columns of ~365px, and a card
+   that narrow can't hold its own footer on one line — the avatar stack and the
+   two actions wrapped onto a second row on every card. At 380 the 1160 measure
+   takes two columns of ~570, which is both a comfortable prose width and enough
+   room for the footer. Auto-fill rather than a fixed 2 so the grid keeps that
+   card width when the sidebar collapses instead of stretching two cards across
+   the extra room.
+
+   `1fr` rows make every card in a row the same height — the rule that made the
+   old single-column feed scannable, kept for the grid. Only the lead breaks it,
+   and it breaks it on purpose. */
+.topics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  grid-auto-rows: 1fr;
   gap: var(--ref-spacing-xs);
-}
-
-/* ── Card ───────────────────────────────────────────────────────────────── */
-
-.topic-card {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--app-border);
-  border-radius: var(--app-radius-card);
-  background: var(--app-surface);
-  overflow: hidden;
-  transition: border-color var(--ref-animation-short);
-}
-
-/* Blue border on hover, no elevation — the project's convention for a clickable
-   card. Driven off :focus-within too so keyboard users get the same cue when the
-   body button takes focus. */
-.topic-card:hover,
-.topic-card:focus-within {
-  border-color: var(--sys-border-color-active);
-}
-
-/* Unseen carries NO frame treatment. A coloured left-edge accent bar lived here and
-   is banned outright — a card's state goes in its content, not on its edge. The
-   `• New` marker in the eyebrow (.topic-card__new) is what communicates unseen, and
-   it was already doing the job; the bar was decoration on top of a working cue.
-   `.is-unseen` stays on the element as the state hook. */
-
-/* The whole reading area is one button, so it has to shed every default the UA
-   gives a <button>: left-aligned text, inherited type, no chrome. */
-/* Explicit margins rather than one flex gap: a brief is kicker → 8 → headline → 4 →
-   deck, tighter under the headline than above it. A uniform gap spaces all three the
-   same and the headline stops reading as the thing the deck belongs to. */
-.topic-card__body {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  padding: var(--ref-spacing-sm) var(--ref-spacing-md) var(--ref-spacing-xs);
-  border: 0;
-  background: transparent;
-  font: inherit;
-  color: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.topic-card__body:focus-visible {
-  outline: 2px solid var(--sys-border-color-active);
-  outline-offset: -2px;
-}
-
-/* Kicker left, marks right. `margin-left: auto` on the marks keeps them right even
-   when a long Playbook name wraps them onto their own line. */
-.topic-card__eyebrow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--ref-spacing-xxs);
-  margin-bottom: var(--ref-spacing-xxs);
-  font-family: var(--sys-text-style-caption-font-family);
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--sys-text-color-light);
-}
-
-.topic-card__kicker {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
-  min-width: 0;
-}
-
-.topic-card__marks {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  flex-shrink: 0;
-  margin-left: auto;
-}
-
-.topic-card__source {
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--sys-text-color-default);
-}
-
-.topic-card__new {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-family: var(--sys-text-style-caption-bold-font-family);
-  font-size: var(--sys-text-style-caption-bold-size);
-  line-height: var(--sys-text-style-caption-bold-line-height);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-orange-100);
-}
-
-.topic-card__new::before {
-  content: "";
-  width: 6px;
-  height: 6px;
-  border-radius: var(--app-radius-circle);
-  background: var(--ref-color-orange-100);
-}
-
-/* The claim, and the only thing a scan should have to read. It was set at h4 — 14px,
-   the SAME size as the summary under it — so the card had no lead and every brief
-   read as one grey paragraph. h2 (18px/700) against the 14px deck is the whole fix.
-   Capped in characters rather than pixels so it stays scannable whatever the window
-   does; 62ch, not 52, so a headline of this length usually lands on one line at the
-   feed's measure. `balance` for the ones that don't — at 52ch this headline broke as
-   "…peace / of mind", and an orphan is the fastest way to lose a scan. Two lines
-   maximum: a third means the headline is doing the summary's job. */
-.topic-card__headline {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  max-width: 62ch;
-  margin-bottom: var(--ref-spacing-xxxs);
-  font-family: var(--sys-text-style-h2-font-family);
-  font-size: var(--sys-text-style-h2-size);
-  line-height: var(--sys-text-style-h2-line-height);
-  font-weight: var(--sys-text-style-h2-weight);
-  color: var(--sys-text-color-default);
-  text-wrap: balance;
-}
-
-/* Two lines: enough to decide whether to open it, not enough to make opening it
-   pointless. */
-.topic-card__summary {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  max-width: 72ch;
-  font-family: var(--sys-text-style-body-font-family);
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  color: var(--sys-text-color-light);
-}
-
-/* ── Card footer ────────────────────────────────────────────────────────── */
-
-/* Outside the body button on purpose — a button inside a button is invalid HTML
-   and browsers resolve the nesting unpredictably.
- *
- * A hairline above it, on the card's own border colour so it reads as structure and
- * not decoration: without it the brief and the actions were one continuous field, and
- * the tinted "Start a chat" ended up competing with the headline for the eye. Now
- * there's somewhere for a scan to stop. */
-.topic-card__foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ref-spacing-sm);
-  flex-wrap: wrap;
-  padding: var(--ref-spacing-xs) var(--ref-spacing-md);
-  border-top: 1px solid var(--app-border);
-}
-
-.topic-card__evidence {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  font-family: var(--sys-text-style-caption-font-family);
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--sys-text-color-light);
-}
-
-/* The stacked faces sit inside a card, where the group's default hover/active
-   affordances would suggest they're interactive. They aren't. */
-.topic-card__faces .ap-avatar-group-overflow {
-  pointer-events: none;
-}
-
-.topic-card__actions {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
 }
 
 /* ── Scanning ───────────────────────────────────────────────────────────── */

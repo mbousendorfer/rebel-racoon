@@ -4,9 +4,9 @@ import { open as openBugReportModal } from "./bug-report-modal.js?v=24";
 import { open as openFeedbackModal } from "./feedback-modal.js?v=26";
 import { open as openConfirmModal } from "./confirm-modal.js?v=22";
 import { open as openRenameModal } from "./rename-modal.js?v=2";
-import { open as openSearchModal } from "./search-modal.js?v=18";
+import { open as openSearchModal } from "./search-modal.js?v=19";
 import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=22";
-import { renderAdminMenu, applyUserMode, toggleFlag } from "../admin-menu.js?v=15";
+import { renderAdminMenu, applyUserMode, toggleFlag } from "../admin-menu.js?v=16";
 import {
   getSessions,
   getSessionById,
@@ -14,17 +14,17 @@ import {
   deleteSession,
   togglePin as togglePinSession,
   subscribe as subscribeSessions,
-} from "../sessions-store.js?v=14";
-import { isFlagOn } from "../feature-flags.js?v=18";
+} from "../sessions-store.js?v=15";
+import { isFlagOn } from "../feature-flags.js?v=19";
 import { isNewUser } from "../user-mode.js?v=23";
-import { clearSession as clearLibrarySession } from "../library.js?v=63";
-import { getContexts, getContextById, subscribe as subscribeContexts } from "../contexts-store.js?v=46";
-import { getConnectedConnectors, subscribe as subscribeConnectors } from "../connectors-store.js?v=35";
-import { getUnseenCount as getUnseenTopicCount, subscribe as subscribeTopics } from "../topics-store.js?v=4";
-import { closePanel as closeRightPanel } from "./right-panel.js?v=443";
-import { clearSession as clearAssistantSession } from "../assistant.js?v=69";
-import { clearSession as clearPostsSession } from "../posts-store.js?v=44";
-import { clearSession as clearSourcesSession } from "../sources-stream.js?v=62";
+import { clearSession as clearLibrarySession } from "../library.js?v=64";
+import { getContexts, getContextById, subscribe as subscribeContexts } from "../contexts-store.js?v=47";
+import { getConnectedConnectors, subscribe as subscribeConnectors } from "../connectors-store.js?v=36";
+import { getUnseenCount as getUnseenTopicCount, subscribe as subscribeTopics } from "../topics-store.js?v=5";
+import { closePanel as closeRightPanel } from "./right-panel.js?v=444";
+import { clearSession as clearAssistantSession } from "../assistant.js?v=70";
+import { clearSession as clearPostsSession } from "../posts-store.js?v=45";
+import { clearSession as clearSourcesSession } from "../sources-stream.js?v=63";
 
 // Global app sidebar — Brand / + New conversation / Recent chats / User footer.
 // Rendered once at boot into #sidebar; re-rendered on every route change so the
@@ -560,8 +560,27 @@ function renderFootMenu({ collapsed }) {
 // now live only inside a session + the right panel). Chats: the
 // recent-conversations list below is the canonical entry point for
 // session navigation.
-// `flag` gates the row declaratively (was a hardcoded `if` on /connectors).
+// `flag` gates the row declaratively (was a hardcoded `if` on /connectors). It
+// takes a list when a row needs several flags, because a row that survives one
+// of its dependencies is worse than no row: Home with `topics` off would point at
+// a `/` that has gone back to redirecting into the last chat.
 const NAV = [
+  // Only exists when `/` is a real page. Without it the front page would be
+  // reachable exactly once, on first load: the brand button and New chat both
+  // mint a `/session/new-<ts>` and deliberately avoid `/`, because `/` resolves
+  // to the most recent chat when the flag is off.
+  //
+  // Sparkles rather than a house: the DS ships no home glyph, and this route is
+  // not a dashboard — it's the page Archie writes. Sparkles is what marks his own
+  // contribution everywhere else in the app, and it stays distinct from the
+  // antenna on Topics (the listening) below.
+  {
+    path: "/",
+    icon: "ap-icon-sparkles",
+    label: "Home",
+    flag: ["frontPage", "topics"],
+    match: (p) => p === "/",
+  },
   {
     path: "/contexts",
     icon: "ap-icon-target",
@@ -625,7 +644,7 @@ function renderNav(path) {
     </button>
   `;
 
-  const routeItems = NAV.filter((item) => !item.flag || isFlagOn(item.flag))
+  const routeItems = NAV.filter((item) => !item.flag || [item.flag].flat().every(isFlagOn))
     .map((item) => {
       const count = item.count ? item.count() : 0;
       const counter = count > 0 ? `<span class="ap-counter normal grey">${count}</span>` : "";

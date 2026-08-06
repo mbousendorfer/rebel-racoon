@@ -21,11 +21,11 @@
 // the busy / slide-badge overlays.
 
 import { escapeHtml } from "../../utils.js?v=21";
-import { FORMATS, NETWORK_FORMATS } from "../../clip-formats.js?v=17";
-import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=37";
-import { KEY } from "./context.js?v=40";
+import { FORMATS, NETWORK_FORMATS } from "../../clip-formats.js?v=18";
+import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=38";
+import { KEY } from "./context.js?v=41";
 import { outlineMetrics, shadowMetrics, cssFamily } from "../../image-studio-canvas.js?v=5";
-import * as imageStudio from "../../image-studio.js?v=76";
+import * as imageStudio from "../../image-studio.js?v=77";
 
 // The working image is clipped inside .isv2-frame-clip while the frame itself is
 // overflow:visible, so on-element toolbars / popovers / handles can extend past

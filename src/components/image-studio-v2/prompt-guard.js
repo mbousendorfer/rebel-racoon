@@ -23,8 +23,8 @@
 
 import { escapeHtml } from "../../utils.js?v=21";
 import { showToast } from "../toast.js?v=20";
-import { KEY } from "./context.js?v=40";
-import * as imageStudio from "../../image-studio.js?v=76";
+import { KEY } from "./context.js?v=41";
+import * as imageStudio from "../../image-studio.js?v=77";
 
 // What each guarded setting is called in the sentence, so the dialog names the
 // thing the user just clicked rather than saying "a setting".

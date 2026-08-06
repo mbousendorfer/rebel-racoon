@@ -14,6 +14,7 @@
 //   dismissTopic(id)     mutates + notifies  — hidden, not deleted
 //   restoreTopic(id)     mutates + notifies  — the dismissal toast's Undo
 //   refreshTopics()      → Topic[]   (the mock scan; drains the seeded pool)
+//   maybeAutoScan()      → Topic[]   (the same scan, once per page load)
 //   subscribe(fn)        → unsubscribe
 //
 // A topic shape (see mocks.topics):
@@ -30,7 +31,7 @@
 // topicWhen(). A prototype has no clock worth trusting, and mock dates that drift
 // as the file ages read worse than a stable "3 days ago".
 
-import { topics as seed, topicScanPool as scanSeed } from "./mocks.js?v=63";
+import { topics as seed, topicScanPool as scanSeed } from "./mocks.js?v=64";
 import { isNewUser } from "./user-mode.js?v=23";
 import { createNotifier } from "./store-utils.js?v=2";
 
@@ -126,12 +127,11 @@ export function hasMoreToScan() {
   return scanPool.length > 0;
 }
 
-// The mock scan. Cadence is copy, not a timer, so the recurring feel comes from
-// this: the user presses "Refresh now", the page shows a scanning state, and a
-// batch lands as unseen. Ages every existing topic by a day so the new arrivals
-// really are the newest and the date groups shift the way they would in life.
-export function refreshTopics() {
-  const batch = scanPool.splice(0, 2).map((t) => ({ ...t, unseen: true, ageDays: 0 }));
+// The one scan primitive. Takes `n` dossiers off the pool, lands them as unseen
+// and brand new, and ages every existing topic by a day so the arrivals really
+// are the newest and the date groups shift the way they would in life.
+function drainPool(n) {
+  const batch = scanPool.splice(0, n).map((t) => ({ ...t, unseen: true, ageDays: 0 }));
   if (!batch.length) {
     notify();
     return [];
@@ -140,4 +140,29 @@ export function refreshTopics() {
   topics.unshift(...batch);
   notify();
   return batch.map((t) => ({ ...t }));
+}
+
+// The mock scan. Cadence is copy, not a timer, so the recurring feel comes from
+// this: the user presses "Refresh now", the page shows a scanning state, and a
+// batch lands as unseen.
+export function refreshTopics() {
+  return drainPool(2);
+}
+
+// The other half of "regularly updated": something new is already waiting when
+// you arrive, without anyone pressing anything. Archie scanned while you were
+// away.
+//
+// Once per PAGE LOAD, held in a module-level boolean rather than sessionStorage
+// — deliberately. A reload has to replay an arrival: that is what makes the
+// front page feel like a site you come back to, and it keeps the demo
+// re-triggerable. It also adds no persistence to a prototype that stores almost
+// nothing. One dossier, not two, so pressing "Refresh now" is still the bigger
+// gesture.
+let autoScanned = false;
+export function maybeAutoScan() {
+  if (autoScanned) return [];
+  autoScanned = true;
+  if (!scanPool.length) return [];
+  return drainPool(1);
 }

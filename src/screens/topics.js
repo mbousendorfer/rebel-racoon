@@ -1,9 +1,17 @@
-// Topics — the feed of dossiers Agorapulse listening produced, route /topics.
+// Topics — the section page for the dossiers Agorapulse listening produced,
+// route /topics.
 //
-// One chronological stream across every Playbook, newest first, each card carrying
-// the Playbook it came from. Not a right-panel mode: the panel is session-bound by
-// the shell rules, and a topic belongs to a Playbook and arrives on a cadence long
-// before any chat exists to hold it.
+// One stream across every Playbook, newest first, each card carrying the Playbook
+// it came from. Not a right-panel mode: the panel is session-bound by the shell
+// rules, and a topic belongs to a Playbook and arrives on a cadence long before
+// any chat exists to hold it.
+//
+// Laid out like a paper — a lead story, then sections — because a run of equal
+// cards has no answer to "what should I read first?" and that is the whole job
+// here. The layout itself lives in topics-feed.js, shared with the front page at
+// `/` (flag `frontPage`): this route is EVERYTHING, filtered and archived; the
+// front page is a short curated selection of the fresh. Two surfaces, one engine,
+// no duplicate.
 //
 // The config (Topics settings) is NOT here. It lived as a tab on this page and that
 // gave it equal billing with the feed, which is wrong for something you set once and
@@ -21,15 +29,15 @@
 import { html, raw, escapeAttr } from "../utils.js?v=21";
 import { navigate } from "../router.js?v=30";
 import { parseHashParams, setHashQuery } from "../url-state.js?v=21";
-import { renderTopbar } from "../components/topbar.js?v=306";
+import { renderTopbar } from "../components/topbar.js?v=307";
 import { showToast } from "../components/toast.js?v=20";
 import { renderEmptyState } from "../components/empty-state.js?v=2";
-import { renderTopicCard } from "../components/topic-card.js?v=5";
-import { open as openTopicModal } from "../components/topic-modal.js?v=8";
-import { isFlagOn } from "../feature-flags.js?v=18";
-import { getContexts, getContextById, subscribe as subscribeContexts } from "../contexts-store.js?v=46";
+import { open as openTopicModal } from "../components/topic-modal.js?v=9";
+import { renderMagazine, renderSourceChips } from "../topics-feed.js?v=2";
+import { isFlagOn } from "../feature-flags.js?v=19";
+import { getContexts, getContextById, subscribe as subscribeContexts } from "../contexts-store.js?v=47";
 import { TOPIC_SOURCES, findTopicSource, findCadence } from "../topics-catalog.js?v=2";
-import { openTopicInChat } from "../topic-flow.js?v=7";
+import { openTopicInChat } from "../topic-flow.js?v=8";
 import {
   getTopics,
   getUnseenCount,
@@ -38,7 +46,7 @@ import {
   refreshTopics,
   hasMoreToScan,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=4";
+} from "../topics-store.js?v=5";
 
 // How long the mock scan appears to run. Long enough to read the scanning line,
 // short enough that nobody waits for it in a demo.
@@ -139,23 +147,6 @@ function paint(target) {
 
 // ─── Render ────────────────────────────────────────────────────────────────
 
-// Date buckets, from `ageDays` rather than a real clock. Order matters — the
-// feed renders them in this sequence and drops the empty ones.
-const GROUPS = [
-  { id: "week", label: "This week", holds: (d) => d <= 7 },
-  { id: "month", label: "Earlier this month", holds: (d) => d <= 30 },
-  { id: "older", label: "Earlier", holds: () => true },
-];
-
-function groupByAge(topics) {
-  const out = GROUPS.map((g) => ({ ...g, items: [] }));
-  for (const t of topics) {
-    const bucket = out.find((g) => g.holds(t.ageDays ?? 0));
-    (bucket || out[out.length - 1]).items.push(t);
-  }
-  return out.filter((g) => g.items.length > 0);
-}
-
 /** Every source switched on by at least one Playbook — what I'm actually watching. */
 function watchedSourceIds() {
   const ids = new Set();
@@ -193,6 +184,8 @@ function renderPage() {
         .filter(Boolean)
         .join(" · ");
 
+  const filters = all.length ? renderFilterBar(all) : { sections: "", scope: "" };
+
   return html`
     <div class="topics-view__page">
       <header class="topics-view__head">
@@ -201,6 +194,7 @@ function renderPage() {
           <p class="topics-view__sub">${sub}</p>
         </div>
         <div class="topics-view__head-actions">
+          ${raw(filters.scope)}
           <!-- Config lives on its own route, not in a tab beside the feed: you set
                your sources once and then read topics for months, so it doesn't
                deserve equal billing. Labelled rather than a bare cog — it names the
@@ -213,7 +207,7 @@ function renderPage() {
         </div>
       </header>
 
-      ${raw(all.length ? renderFilterBar(all) : "")}
+      ${raw(filters.sections)}
       <div class="topics-view__body">
         ${raw(
           view.scanning
@@ -255,16 +249,23 @@ function renderRefresh() {
 
 // ─── Filters ───────────────────────────────────────────────────────────────
 //
-// TWO SELECTS — Playbook and Source — not one "Filters" trigger. The DS does ship a
-// Filters dropdown (V2 Molecules › Filters dropdown: a 420px panel of checkboxes with
-// Clear / Apply, i.e. <ap-filter-dropdown> with needApplyButton), and that's the right
-// component when the user is composing a multi-value filter set and applying it in one
-// go. Here each facet takes exactly ONE value and applies immediately, so two selects
-// say what's selected without being opened — which a trigger reading "Filters (2)"
-// cannot. Same toolbar shape as the top-posts board's Period / Sort.
+// TWO FACETS, TWO DIFFERENT COMPONENTS — and the difference is the point.
 //
-// A chip per Playbook was the other option, and it's the trap the config tab just
-// escaped: it can't survive twenty Playbooks. A select can.
+// SOURCE is a chip list. There are exactly six sources, the catalogue ships them,
+// and they are this page's SECTIONS: a reader browsing a paper clicks between
+// sections, they don't open a dropdown to pick one. That's also the DS's own rule
+// — always-visible toggles over a small flat set → filter-chip list. This facet
+// used to be a select alongside the Playbook one, and it was correct for a page
+// that was a filtered list; it's wrong for a page that's a publication.
+//
+// PLAYBOOK stays a `.ap-select`. That set grows with the account and a chip per
+// Playbook is exactly the trap the config page escaped: it cannot survive twenty.
+// A select can, and it shows its selection without being opened — which a trigger
+// reading "Filters (2)" cannot.
+//
+// (The DS's Filters dropdown — V2 Molecules, a 420px checkbox panel with Clear /
+// Apply — remains right when the user composes a multi-value set and applies it in
+// one go. Here each facet takes one value and applies immediately.)
 
 // Above this many options, the Playbook select earns a search field.
 const PB_FILTER_SEARCH_THRESHOLD = 8;
@@ -351,26 +352,6 @@ function renderFilterBar(all) {
     ),
   ].join("");
 
-  const srcOptions = [
-    renderFilterOption({
-      attr: "data-topics-source",
-      value: "all",
-      label: "All sources",
-      count: inPbScope.length,
-      active: src === "all",
-    }),
-    ...TOPIC_SOURCES.map((s) =>
-      renderFilterOption({
-        attr: "data-topics-source",
-        value: s.id,
-        label: s.name,
-        icon: s.icon,
-        count: srcCounts.get(s.id) || 0,
-        active: src === s.id,
-      }),
-    ),
-  ].join("");
-
   const pbSearch =
     feedPlaybooks.length > PB_FILTER_SEARCH_THRESHOLD
       ? html`<div class="ap-select-search">
@@ -385,57 +366,58 @@ function renderFilterBar(all) {
         </div>`
       : "";
 
-  return html`<div class="topics-view__filters">
-    ${raw(
-      renderFilterSelect({
-        label: "Playbook",
-        valueLabel: activePb ? activePb.name : "All",
-        options: pbOptions,
-        search: pbSearch,
-        extraClass: "topics-filter__select--pb",
-      }),
-    )}
-    ${raw(
-      renderFilterSelect({
-        label: "Source",
-        valueLabel: activeSrc ? activeSrc.name : "All",
-        options: srcOptions,
-        search: "",
-      }),
-    )}
-    <!-- Only offered when there's something to clear: each select already has its own
-         "All", so a permanent Clear would be a third way to do the same thing. -->
-    ${raw(
-      activePb || activeSrc
-        ? html`<button type="button" class="ap-button ghost grey" data-topics-filter-clear>
-            <span>Clear</span>
-          </button>`
-        : "",
-    )}
-  </div>`;
+  // Two pieces, rendered in two different places.
+  //
+  // The SECTIONS get the masthead line to themselves: seven chips already fill a
+  // 1160px measure, and squeezing the Playbook select onto the same row pushed it
+  // to a line of its own with a band of dead space above the lead story.
+  //
+  // The SCOPE goes up into the head, beside Settings and Refresh. That's where it
+  // belongs anyway — "which Playbook am I looking at" is a page-level control of
+  // the same kind as those two, not a section of the paper.
+  return {
+    sections: html`<div class="topics-view__filters">
+      ${raw(
+        renderSourceChips(TOPIC_SOURCES, {
+          active: src,
+          counts: Object.fromEntries(srcCounts),
+          total: inPbScope.length,
+        }),
+      )}
+    </div>`,
+    scope: html`${raw(
+        renderFilterSelect({
+          label: "Playbook",
+          valueLabel: activePb ? activePb.name : "All",
+          options: pbOptions,
+          search: pbSearch,
+          extraClass: "topics-filter__select--pb",
+        }),
+      )}
+      <!-- Only offered when there's something to clear: the chips have their own
+         "All" and the select its own, so a permanent Clear would be a third way
+         to do the same thing. -->
+      ${raw(
+        activePb || activeSrc
+          ? html`<button type="button" class="ap-button ghost grey" data-topics-filter-clear>
+              <span>Clear</span>
+            </button>`
+          : "",
+      )}`,
+  };
 }
 
+// The lead is simply the first of what you're looking at — getTopics() is already
+// sorted newest-first, and filtering preserves that order. It stays the lead under
+// a filter too: "the freshest thing in this section" is still the right answer to
+// what to read first, and pinning the lead to the unfiltered feed would show you a
+// story your own filter excludes.
 function renderFeed(topics) {
-  return groupByAge(topics)
-    .map(
-      (group) =>
-        html`<section class="topics-group">
-          <h2 class="topics-group__label">${group.label}</h2>
-          <div class="topics-group__list">
-            ${raw(
-              group.items
-                .map((t) =>
-                  renderTopicCard(t, {
-                    source: findTopicSource(t.sourceId),
-                    playbookName: getContextById(t.contextId)?.name || "",
-                  }),
-                )
-                .join(""),
-            )}
-          </div>
-        </section>`,
-    )
-    .join("");
+  return renderMagazine(topics, {
+    resolveSource: (t) => findTopicSource(t.sourceId),
+    resolvePlaybook: (t) => getContextById(t.contextId)?.name || "",
+    grouped: true,
+  });
 }
 
 // Skeletons rather than a spinner: the feed keeps its shape while I scan, so the

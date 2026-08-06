@@ -64,7 +64,7 @@ styles/
   components/       — add-source-modal, archie-loader, clip-card, connectors-modal,
                       conversation-status-card, feedback-control, right-panel,
                       schedule-modal, sidebar, social-post-card, subtitle-style,
-                      top-post-card, topic-badge, topic-modal, video-clips-modal,
+                      top-post-card, topic-badge, topic-card, topic-modal, video-clips-modal,
                       workflow-flow
 ```
 

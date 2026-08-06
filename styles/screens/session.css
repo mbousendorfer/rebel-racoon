@@ -680,6 +680,67 @@
   }
 }
 
+/* ── "What I'm hearing" — the topic rail ─────────────────────────────────
+   Archie's proposals, above the workflow starters. Same label grammar and the
+   same 3-column grid as the starters, so the hero reads as one thing with two
+   registers — here's what I found / or do one of these — rather than as two
+   competing card walls. See renderTopicRail in screens/session.js. */
+
+.empty-chat__rail-label {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  margin: var(--ref-spacing-sm) 0 0;
+  align-self: center;
+  width: 100%;
+  max-width: 1040px;
+  text-align: left;
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+/* The count of unread dossiers, in the orange that marks Archie's own
+   contribution everywhere else. A dot + word, never a badge on a frame. */
+.empty-chat__rail-new {
+  color: var(--ref-color-orange-100);
+}
+
+.empty-chat__rail-new::before {
+  content: "· ";
+  color: var(--sys-text-color-light);
+}
+
+/* Pushed to the far end of the label row: an escape hatch to the full section,
+   not a peer of the heading. */
+.empty-chat__rail-all {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  margin-left: auto;
+}
+
+.topic-rail {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--ref-spacing-xs);
+  width: 100%;
+  max-width: 1040px;
+  /* Left-aligned text inside a hero whose default is centred. */
+  text-align: left;
+}
+
+@media (max-width: 900px) {
+  .empty-chat__rail-label,
+  .topic-rail {
+    max-width: 651px;
+  }
+  .topic-rail {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .starter-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

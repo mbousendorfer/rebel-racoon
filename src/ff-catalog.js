@@ -112,4 +112,19 @@ export const FLAGS = Object.freeze([
       "profiles, auto-extracted favicon), Archie can discover more from the " +
       "brand's market, and each one is editable in its own modal.",
   },
+  {
+    id: "frontPage",
+    label: "Front page (vs. hero rail)",
+    default: false,
+    hides:
+      "Where Archie's feed of proposals lives. Requires `topics` — with that " +
+      "flag OFF neither variant renders. When OFF (default), the freshest " +
+      "topics ride as a rail inside the new-chat hero, above the workflow " +
+      "starters, and `/` keeps redirecting to the most recent chat. When ON, " +
+      "`/` stops redirecting and becomes a browsable front page (a lead story " +
+      "+ a short grid + source sections), a Home row appears in the sidebar " +
+      "nav, and the hero rail steps aside so the two never duplicate each " +
+      "other. `/topics` stays the full section either way — the front page is " +
+      "a selection, /topics is everything.",
+  },
 ]);
