@@ -27,6 +27,7 @@ import { FORMATS, formatsForNetwork, defaultFormatFor, NETWORK_FORMATS } from ".
 // words into the generated pixels with the very same flattener the Edit overlays
 // use, so there is nothing to duplicate here.
 import { compositeOverlays } from "./image-studio-canvas.js?v=5";
+import { isFlagOn } from "./feature-flags.js?v=19";
 
 const states = new Map(); // sessionId → state
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -404,6 +405,17 @@ export function start(
     skipPromptWarning: false,
     // One step of undo for a rewrite, offered in a toast.
     promptUndo: null,
+    // ── Auto-brief variant (flag imageStudioAutoBrief) ─────────────────────────
+    // When on, the brief is a read-only OUTPUT of the settings, always in sync:
+    // every setting rewrites it, Type never re-touches "Text in image" after the
+    // one-time seed, and the whole hand-edit guard (pendingSettingChange / skip /
+    // undo) stands down — see defer() and settingChanged(). The user can take the
+    // brief over to edit it by hand; settings then flag it stale and offer a
+    // rebuild rather than overwriting. Read once per open (a flag toggle reloads).
+    autoBrief: isFlagOn("imageStudioAutoBrief"),
+    renderTextSeeded: false, // "Text in image" pre-suggested once at open, never re-touched after
+    briefTakenOver: false, // user hit "Edit the brief" — the words are theirs now
+    briefStale: false, // a setting changed while taken over — brief no longer matches
     renderText: "", // words to paint INTO the image (empty = none)
     styleKey: null, // selected Style preset (STYLE_PRESETS)
     imageTypeKey: null, // selected Image type (IMAGE_TYPES)
@@ -571,7 +583,10 @@ export function commitRenderText(sessionId, text) {
   const s = states.get(sessionId);
   if (!s) return;
   s.renderText = String(text || "");
-  notify(sessionId);
+  // Auto-brief makes "Text in image" a first-class input: committing it rewrites
+  // the brief like any other setting (what the user asked for). Off, unchanged —
+  // it only refreshes the collapsed row's value.
+  afterLegacySetting(sessionId);
 }
 
 /** The over-limit line, or "" while the text fits. Here rather than in a view
@@ -592,7 +607,7 @@ export function setStyle(sessionId, key) {
   const s = states.get(sessionId);
   if (!s) return;
   s.styleKey = s.styleKey === key ? null : key;
-  notify(sessionId);
+  afterLegacySetting(sessionId);
 }
 
 // ── The guarded settings ────────────────────────────────────────────────────
@@ -613,6 +628,10 @@ export function setStyle(sessionId, key) {
 // Park the change behind the confirmation instead of applying it. Returns true
 // when it parked, so the caller bails out.
 function defer(s, sessionId, kind, payload) {
+  // Auto-brief retires the guard: the brief is read-only until the user explicitly
+  // takes it over, so a setting change can never silently discard typed words.
+  // Never park — settingChanged() handles the taken-over case without a dialog.
+  if (s.autoBrief) return false;
   if (!isDirty(s) || s.skipPromptWarning) return false;
   s.pendingSettingChange = { kind, payload };
   notify(sessionId);
@@ -628,21 +647,21 @@ export function setImageType(sessionId, key) {
   if (!s) return;
   if (defer(s, sessionId, "imageType", key)) return;
   applyImageType(s, key);
-  rederive(sessionId);
+  settingChanged(sessionId);
 }
 
 export function setFormat(sessionId, formatId) {
   const s = states.get(sessionId);
   if (!s) return;
   s.formatId = formatId;
-  notify(sessionId);
+  afterLegacySetting(sessionId);
 }
 
 export function setVariationCount(sessionId, n) {
   const s = states.get(sessionId);
   if (!s) return;
   s.variationCount = n;
-  notify(sessionId);
+  afterLegacySetting(sessionId);
 }
 
 // Single image vs multi-slide carousel (generate mode). Only meaningful when the
@@ -652,7 +671,7 @@ export function setOutputMode(sessionId, mode) {
   if (!s) return;
   s.outputMode = mode === "carousel" ? "carousel" : "single";
   if (s.outputMode === "carousel" && s.slideCount < 2) s.slideCount = 4;
-  notify(sessionId);
+  afterLegacySetting(sessionId);
 }
 
 export function setSlideCount(sessionId, n) {
@@ -660,7 +679,7 @@ export function setSlideCount(sessionId, n) {
   if (!s) return;
   const max = carouselMaxFor(s.network) || 10;
   s.slideCount = Math.max(2, Math.min(max, n));
-  notify(sessionId);
+  afterLegacySetting(sessionId);
 }
 
 // Every candidate the user can pick from, brand kit first — the one grid the
@@ -709,7 +728,7 @@ export function addReferenceImage(sessionId, url) {
   s.uploadedRefs.push(ref);
   if (defer(s, sessionId, "selectRef", ref.id)) return; // in the pool, not picked
   applySelectRef(s, ref.id);
-  rederive(sessionId);
+  settingChanged(sessionId);
 }
 
 // Drops an upload from the pool for good. Playbook images can't be removed —
@@ -732,7 +751,7 @@ export function removeReferenceImage(sessionId, id) {
   const inPlay = s.selectedRefId === id;
   if (inPlay && defer(s, sessionId, "removeRef", id)) return;
   if (!applyRemoveRef(s, id)) return;
-  if (inPlay) rederive(sessionId);
+  if (inPlay) settingChanged(sessionId);
   else notify(sessionId);
 }
 
@@ -742,7 +761,7 @@ export function setUseBranding(sessionId, on) {
   const s = states.get(sessionId);
   if (!s || !s.playbookLogo) return;
   s.useBranding = !!on;
-  notify(sessionId);
+  afterLegacySetting(sessionId);
 }
 
 // Send the Playbook's palette to the model, or don't. A no-op without colours —
@@ -753,7 +772,7 @@ export function setUseBrandColors(sessionId, on) {
   if (!s || !s.playbookColors.length) return;
   s.useBrandColors = !!on;
   syncPaletteLine(s);
-  notify(sessionId);
+  afterLegacySetting(sessionId);
 }
 
 // A setting reaches the model through exactly ONE line of the brief, and the brief
@@ -815,7 +834,7 @@ export function setRefMode(sessionId, key) {
   if (!s || !REF_MODES.some((m) => m.key === key) || s.refMode === key) return;
   if (defer(s, sessionId, "refMode", key)) return;
   s.refMode = key;
-  rederive(sessionId);
+  settingChanged(sessionId);
 }
 
 // Whether the generator gets a reference image AT ALL. This is the switch at the
@@ -842,7 +861,7 @@ export function setUseReference(sessionId, on) {
   if (!s) return;
   if (defer(s, sessionId, "useReference", !!on)) return;
   applyUseReference(s, !!on);
-  rederive(sessionId);
+  settingChanged(sessionId);
 }
 
 // Pick THE reference image — single-select across both pools. Clicking the picked
@@ -860,7 +879,7 @@ export function toggleReferenceImage(sessionId, id) {
   if (!referencePool(s).some((r) => r.id === id)) return;
   if (defer(s, sessionId, "selectRef", id)) return;
   applySelectRef(s, id);
-  rederive(sessionId);
+  settingChanged(sessionId);
 }
 
 // Collapse / expand a generate-panel section (Reference images, Visual style,
@@ -989,7 +1008,19 @@ export function runDerive(sessionId, { delay = DERIVE_MS } = {}) {
     // Headline first: derivePrompt reads renderText to write the "Text in image:"
     // line, so deriving it after would leave the brief and the field disagreeing.
     // Only when empty — a re-derive must never overwrite what the user typed.
-    if (!cur.renderText) cur.renderText = deriveRenderText(cur);
+    //
+    // Auto-brief decouples Type from the headline: the field is seeded ONCE (at
+    // open), then no setting ever rewrites it again, so touching Type stops moving
+    // two fields at once. Off, the legacy behaviour stands — backfill any time the
+    // field is empty, which is what coupled Type to the headline.
+    if (cur.autoBrief) {
+      if (!cur.renderTextSeeded) {
+        if (!cur.renderText) cur.renderText = deriveRenderText(cur);
+        cur.renderTextSeeded = true;
+      }
+    } else if (!cur.renderText) {
+      cur.renderText = deriveRenderText(cur);
+    }
     writeBrief(cur, derivePrompt(cur));
     cur.promptLoading = false;
     cur._deriveTimer = null;
@@ -1005,6 +1036,52 @@ function rederive(sessionId) {
   if (!s) return;
   s.promptUndo = isDirty(s) ? { text: s.promptText, derived: s.derivedPrompt } : null;
   runDerive(sessionId, { delay: REDERIVE_MS });
+}
+
+// ── Auto-brief: one rule for every setting ───────────────────────────────────
+//
+// The variant's whole point is that the brief is a faithful, always-in-sync
+// output of the settings — so ANY setting change rewrites it. The one exception
+// is a brief the user has taken over: we don't clobber their words, we flag that
+// the brief no longer matches the settings and let them rebuild on their terms.
+function settingChanged(sessionId) {
+  const s = states.get(sessionId);
+  if (!s) return;
+  if (s.autoBrief && s.briefTakenOver) {
+    s.briefStale = true;
+    notify(sessionId);
+    return;
+  }
+  rederive(sessionId);
+}
+
+// The tail for the settings that, in the legacy modal, only nudged their own line
+// or nothing (Style / Format / Output / Branding / Text in image): off, they keep
+// that behaviour and just notify; on, they rewrite the brief like everything else.
+function afterLegacySetting(sessionId) {
+  const s = states.get(sessionId);
+  if (!s) return;
+  if (s.autoBrief) settingChanged(sessionId);
+  else notify(sessionId);
+}
+
+// The brief is read-only until the user asks to edit it. Taking it over makes the
+// textarea live and stops settings from rewriting it (they flag briefStale
+// instead). Rebuilding hands it back to Archie and re-syncs from the settings.
+export function takeOverBrief(sessionId) {
+  const s = states.get(sessionId);
+  if (!s || s.briefTakenOver) return;
+  s.briefTakenOver = true;
+  s.briefStale = false;
+  notify(sessionId);
+}
+
+export function rebuildBrief(sessionId) {
+  const s = states.get(sessionId);
+  if (!s) return;
+  s.briefTakenOver = false;
+  s.briefStale = false;
+  rederive(sessionId);
 }
 
 /** Did the last settings change overwrite something the user had typed? */

@@ -18,7 +18,7 @@
 
 import { escapeHtml } from "../../utils.js?v=21";
 import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=38";
-import * as imageStudio from "../../image-studio.js?v=77";
+import * as imageStudio from "../../image-studio.js?v=78";
 
 // The two provenances a reference image can have. Shared by the group labels and
 // the collapsed header so the section can only ever call them the same thing.

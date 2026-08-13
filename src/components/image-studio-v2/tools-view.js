@@ -13,7 +13,7 @@
 
 import { escapeHtml } from "../../utils.js?v=21";
 import { sheetDivider } from "./settings-view.js?v=8";
-import * as imageStudio from "../../image-studio.js?v=77";
+import * as imageStudio from "../../image-studio.js?v=78";
 
 // The floating palette — the manual tools, top-left over the canvas, where the
 // work is, in ghost-grey DS buttons. It sits at the stage's LEFT edge — the same

@@ -127,4 +127,19 @@ export const FLAGS = Object.freeze([
       "other. `/topics` stays the full section either way — the front page is " +
       "a selection, /topics is everything.",
   },
+  {
+    id: "imageStudioAutoBrief",
+    label: "Image Studio: auto-written brief (read-only)",
+    default: false,
+    hides:
+      "Reshapes how the Image Studio's prompt relates to the settings. When OFF " +
+      "(default), the brief is a hand-editable field: Type and References rewrite " +
+      "it (behind the 'Rewrite your prompt?' guard), changing Type also backfills " +
+      "'Text in image', and Style/Format/Output leave it alone. When ON, the brief " +
+      "is a read-only OUTPUT of the settings, always in sync: EVERY setting rewrites " +
+      "it (Type, Style, Format, References, Branding, Output, and 'Text in image' on " +
+      "commit), Type never touches 'Text in image' after the one-time seed at open, " +
+      "and the whole hand-edit guard is retired. An explicit 'Edit the brief' takes " +
+      "it over (settings then offer a rebuild instead of overwriting).",
+  },
 ]);

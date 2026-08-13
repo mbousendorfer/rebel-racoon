@@ -34,8 +34,8 @@ import { MODAL_ID, KEY, ctx, state, autosize } from "./context.js?v=41";
 import { loadImg } from "../../image-studio-canvas.js?v=5";
 import { renderStudio } from "./stage-view.js?v=79";
 import { offerUndoIfNeeded, resetUndoOffers } from "./prompt-guard.js?v=4";
-import { bindStudioEvents } from "./events.js?v=14";
-import * as imageStudio from "../../image-studio.js?v=77";
+import { bindStudioEvents } from "./events.js?v=15";
+import * as imageStudio from "../../image-studio.js?v=78";
 
 let backdrop;
 let initialized = false;

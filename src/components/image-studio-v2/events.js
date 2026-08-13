@@ -35,7 +35,7 @@ import {
   startCropGesture,
   applyCropSelection,
 } from "./interactions.js?v=40";
-import * as imageStudio from "../../image-studio.js?v=77";
+import * as imageStudio from "../../image-studio.js?v=78";
 
 function onClick(event, close) {
   const st = state();
@@ -104,6 +104,11 @@ function onClick(event, close) {
   if (refRm) return void imageStudio.removeReferenceImage(KEY, refRm.dataset.imgRefRemove);
 
   // ── Prompt row ──
+  // Auto-brief takeover: hand the read-only brief to the user to edit, or rebuild
+  // it from the settings and hand it back to Archie. No-ops when the flag is off
+  // (the hooks are never rendered).
+  if (event.target.closest("[data-img-brief-edit]")) return void imageStudio.takeOverBrief(KEY);
+  if (event.target.closest("[data-img-brief-rebuild]")) return void imageStudio.rebuildBrief(KEY);
 
   // ── Chrome ──
   const modeBtn = event.target.closest("[data-img-mode]");
