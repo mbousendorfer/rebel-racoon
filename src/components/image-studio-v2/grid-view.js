@@ -16,7 +16,7 @@
 
 import { escapeHtml } from "../../utils.js?v=21";
 import { KEY } from "./context.js?v=41";
-import * as imageStudio from "../../image-studio.js?v=80";
+import * as imageStudio from "../../image-studio.js?v=81";
 import { imageTypeBody, styleBody, formatBody, outputBody } from "./settings-view.js?v=9";
 import { refsBody } from "./references-view.js?v=8";
 import { brandingBody } from "./branding-view.js?v=3";
@@ -56,9 +56,9 @@ function briefCard({ key, label }, st) {
 // A setting as a card: the same label rhythm as the content cards, with the existing
 // control body inline. `wide` gives the pickers that need room (References, Style)
 // the full grid width.
-function settingCard(label, body, { wide = false, full = false, disabled = false, note = "" } = {}) {
+function settingCard(label, body, { wide = false, full = false, split = false, disabled = false, note = "" } = {}) {
   const span = full ? " isv2-gcard--full" : wide ? " isv2-gcard--wide" : "";
-  return `<div class="isv2-gcard isv2-gcard--setting${span}${disabled ? " is-disabled" : ""}">
+  return `<div class="isv2-gcard isv2-gcard--setting${span}${split ? " isv2-gcard--split" : ""}${disabled ? " is-disabled" : ""}">
     <p class="isv2-gcard-label">${escapeHtml(label)}</p>
     ${note ? `<p class="isv2-gcard-hint">${escapeHtml(note)}</p>` : ""}
     <div class="isv2-gcard-body">${body}</div>
@@ -136,31 +136,40 @@ export function gridBriefView(st) {
         : `<p class="isv2-gcard-hint">No brand kit on this Playbook.</p>`,
       { disabled: !hasLogo && !hasColors },
     ),
-    settingCard("References", refsBody(st, picked), { full: true }),
+    // Full width, but its body splits in two (see .isv2-gcard--split) — stacked, the
+    // tiles and the "How to use it" chips left the right two-thirds of the card empty
+    // and made it the tallest thing on the screen.
+    settingCard("References", refsBody(st, picked), { full: true, split: true }),
 
     // The written brief below — a uniform block of equal-height cards.
     section("Brief"),
     ...BRIEF_FIELDS.map((f) => briefCard(f, st)),
   ].join("");
 
-  // A change reassembles the hidden prompt instantly, so this reports work that is
-  // already DONE rather than making the user wait on a spinner for something they
-  // never see. It confirms the dependency ("that setting fed the brief") at no cost
-  // in time — see image-studio.js#assembleGridNow.
-  const flash = st.briefFlash
-    ? `<span class="isv2-grid-flash" role="status"><i class="ap-icon-rounded-check" aria-hidden="true"></i>Brief updated</span>`
+  // Rewriting the brief BLOCKS. The prompt being rebuilt is never shown in this
+  // variant, so a passive indicator left the user unsure their change had landed;
+  // a scrim over the cards makes the dependency ("that setting feeds the brief")
+  // impossible to miss, and stops a second change arriving mid-flight. Only once
+  // the brief is seeded — before that, the opening loader owns the screen.
+  const busy = st.promptLoading && st.briefSeeded;
+  const scrim = busy
+    ? `<div class="isv2-grid-scrim" role="status" aria-live="polite">
+        <div class="isv2-grid-scrim-box">
+          <span class="gen-image-spinner gen-loading-mark"></span>
+          <p class="isv2-grid-scrim-label">Rewriting the brief…</p>
+        </div>
+      </div>`
     : "";
 
-  return `<div class="isv2-grid">
+  return `<div class="isv2-grid${busy ? " is-busy" : ""}">
     <div class="isv2-grid-head">
       <span class="isv2-grid-title">Image setup</span>
       <span class="isv2-grid-sub">Archie derived this from your post — tune the parameters and edit any line.</span>
     </div>
     <div class="isv2-grid-cards">${cards}</div>
     <div class="isv2-grid-actions">
-      <span class="isv2-grid-actions-side"></span>
-      <button type="button" class="ap-button primary blue isv2-grid-go" data-img-grid-generate><i class="ap-icon-sparkles-mermaid"></i><span>Generate</span></button>
-      <span class="isv2-grid-actions-side">${flash}</span>
+      <button type="button" class="ap-button primary blue isv2-grid-go" data-img-grid-generate ${busy ? "disabled" : ""}><i class="ap-icon-sparkles-mermaid"></i><span>Generate</span></button>
     </div>
+    ${scrim}
   </div>`;
 }

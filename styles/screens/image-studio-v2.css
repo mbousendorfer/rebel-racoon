@@ -291,15 +291,7 @@
   grid-column: 1 / -1;
 }
 
-/* The style presets are shared with the 284px settings panel, where two columns is
-   right. In a full-width card that same rule blew each thumbnail up to ~450px wide
-   at 4:3 — over 330px tall each, which was most of the scroll on this screen. Here
-   they pack small: pickable at a glance, one row instead of three. */
-.isv2-grid .isv2-style-grid {
-  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
-}
-
-/* Same story for the reference tiles, and worse: `.isv2-refs` is a flex scroller and
+/* The reference tiles, and worse: `.isv2-refs` is a flex scroller and
    the tile takes its width from the row, so three of them across a full-width card
    grew to 353px — and `aspect-ratio: 1` made that 353px TALL, on its own most of the
    remaining scroll. A fixed tile size is what the horizontal scroller wanted anyway. */
@@ -308,12 +300,28 @@
   width: 96px;
 }
 
-/* Rows size to their content here. The parameter cards are heterogeneous controls —
-   stretching three chips to match the tallest card in the row bought two blocks of
-   dead space per row. The BRIEF cards stay uniform without any help, because each is
-   a fixed-height field plus one label line. */
-.isv2-grid-cards {
+/* The style presets are shared with the 284px settings panel, where two columns is
+   right. In a full-width card that rule blew each thumbnail up to ~450px wide at 4:3
+   — over 330px tall each, which was most of the scroll on this screen. Here they pack
+   small, and auto-FIT (not auto-fill) collapses the empty tracks so the six stretch
+   across the card instead of huddling left with dead space beside them. */
+.isv2-grid .isv2-style-grid {
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+}
+
+/* A full-width card whose content is a narrow stack wastes the width AND pays for it
+   in height — References was the tallest thing on the screen with two-thirds of it
+   empty. Split the body into two columns: the switch spans, then the tiles and the
+   "how to use it" chips sit side by side. */
+.isv2-gcard--split > .isv2-gcard-body {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ref-spacing-xs) var(--ref-spacing-md);
   align-items: start;
+}
+
+.isv2-gcard--split > .isv2-gcard-body > .isv2-sheet-switch {
+  grid-column: 1 / -1;
 }
 
 .isv2-gcard.is-disabled {
@@ -412,61 +420,76 @@
 
 /* The sticky action bar under the grid: Generate, right-aligned, on the app ground
    so it reads as one with the scroll above it. */
-/* Generate is THE action of this screen, so it sits dead centre of the sticky bar.
-   A 1fr/auto/1fr track does that honestly: the button is centred on the measure and
-   the confirmation lands in the right-hand cell WITHOUT nudging it off centre. */
+/* Generate is THE action of this screen, so it sits dead centre of the sticky bar. */
 .isv2-grid-actions {
   position: sticky;
   bottom: 0;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  display: flex;
   align-items: center;
-  gap: var(--ref-spacing-sm);
+  justify-content: center;
   padding: var(--ref-spacing-sm) 0 var(--ref-spacing-xs);
   background: linear-gradient(to top, var(--app-bg) 70%, transparent);
 }
 
-.isv2-grid-actions-side {
-  display: flex;
-  align-items: center;
-  min-width: 0;
-}
-.isv2-grid-actions-side:last-child {
-  justify-content: flex-start;
-}
-
-/* Bigger than a default button: this is the one thing to do on this screen, and at
-   default size in a 1180px measure it read as a minor control. */
+/* Wider than a default button — this is the one thing to do on this screen, and at
+   default size in a 1180px measure it read as a minor control. Size and colour do
+   the work; no shadow, because the DS primary button doesn't wear one and a lone
+   floating CTA in a flat card layout looked bolted on. */
 .isv2-grid-go {
   padding: var(--ref-spacing-xs) var(--ref-spacing-lg);
   font-size: var(--sys-text-style-body-size);
+}
+
+/* ── Rewriting the brief: blocking, and visibly so ──────────────────────────
+   The prompt being rebuilt is never shown in this variant, so a passive indicator
+   left the user unsure their change had registered. This covers the cards, states
+   what is happening, and holds the screen until the brief matches the settings —
+   which also means a second change can't arrive mid-flight and get dropped.
+   `inset: 0` over the whole scrollable grid catches every click; the box is sticky
+   so it stays in view wherever the user had scrolled to. */
+.isv2-grid {
+  position: relative;
+}
+
+.isv2-grid-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  justify-content: center;
+  background: color-mix(in srgb, var(--app-bg) 72%, transparent);
+  cursor: progress;
+  animation: isv2-scrim-in var(--ref-animation-short) var(--app-ease-out);
+}
+
+.isv2-grid-scrim-box {
+  position: sticky;
+  top: 38%;
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-md) var(--ref-spacing-lg);
+  border-radius: var(--sys-settings-card-border-radius);
+  background: var(--ref-color-white);
+  border: 1px solid var(--sys-border-color-default);
   box-shadow: var(--app-shadow-low);
 }
 
-/* Confirmation, not a wait: the assembly is instant, so this reports what already
-   happened. Green + check reads as "done" at a glance where a grey spinner read as
-   "hold on" — and it never blocks or moves the button. */
-.isv2-grid-flash {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
-  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
-  border-radius: 999px; /* pill — the DS has no full-radius token (see posts.css) */
-  background: var(--ref-color-green-10);
-  color: var(--ref-color-green-150);
-  font-size: var(--sys-text-style-caption-size);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  animation: isv2-flash-in var(--ref-animation-short) var(--app-ease-out);
+.isv2-grid-scrim-label {
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--sys-text-color-default);
 }
 
-@keyframes isv2-flash-in {
+@keyframes isv2-scrim-in {
   from {
     opacity: 0;
-    transform: translateY(4px);
   }
   to {
     opacity: 1;
-    transform: none;
   }
 }
 
