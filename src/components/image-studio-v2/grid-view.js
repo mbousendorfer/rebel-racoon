@@ -229,8 +229,6 @@ export function gridBriefView(st) {
   const isCarousel = canCarousel && st.outputMode === "carousel";
 
   const cards = [
-    textOnImageCard(st),
-
     // The screen reads top to bottom as three questions: what should it LOOK like,
     // what should it SAY, and how does it SHIP. Format and Output answer the last one
     // — they don't describe the image at all, they decide its shape and how many of
@@ -263,6 +261,11 @@ export function gridBriefView(st) {
         : `<p class="isv2-gcard-hint">No brand kit on this Playbook.</p>`,
       { disabled: !hasLogo && !hasColors },
     ),
+    // LAST in Direction, not first on the screen. The words Archie sets into the
+    // artwork depend on the look they have to sit on — so this belongs after Type,
+    // References and Style are settled, not above them. Same cause-before-effect rule
+    // that moved References above Style.
+    textOnImageCard(st),
 
     // What it says — a uniform block of equal-height cards.
     section("Brief"),
