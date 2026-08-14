@@ -35,7 +35,7 @@ import {
   startCropGesture,
   applyCropSelection,
 } from "./interactions.js?v=41";
-import * as imageStudio from "../../image-studio.js?v=86";
+import * as imageStudio from "../../image-studio.js?v=87";
 
 function onClick(event, close) {
   const st = state();
@@ -245,6 +245,12 @@ function onClick(event, close) {
 function onInput(event) {
   // Grid-brief cards: store silently while typing (the grid must not rebuild under
   // the caret); the assemble happens on blur — see onChange.
+  // Auto-brief stage: each brief section is its own editable block. Silent while
+  // typing — a re-render would rebuild the block under the caret.
+  const briefLine = event.target.matches("[data-img-brief-line]") ? event.target : null;
+  if (briefLine) {
+    return void imageStudio.setBriefLineSilent(KEY, briefLine.dataset.imgBriefLine, briefLine.value);
+  }
   const briefField = event.target.matches("[data-img-brief-field]") ? event.target : null;
   if (briefField) {
     return void imageStudio.setBriefFieldSilent(KEY, briefField.dataset.imgBriefField, briefField.value);
@@ -310,6 +316,10 @@ function onChange(event) {
   } else if (event.target.matches("[data-img-render-text]")) {
     // Blur commits, which is what refreshes the collapsed row's value.
     imageStudio.commitRenderText(KEY, event.target.value);
+  } else if (event.target.matches("[data-img-brief-line]")) {
+    // Blur commits the section — and editing is what takes the brief over, so no
+    // separate "edit this" step exists.
+    imageStudio.commitBriefLine(KEY, event.target.dataset.imgBriefLine, event.target.value);
   } else if (event.target.matches("[data-img-brief-field]")) {
     // Grid-brief card blur: commit the field and reassemble the model prompt.
     imageStudio.commitBriefField(KEY, event.target.dataset.imgBriefField, event.target.value);

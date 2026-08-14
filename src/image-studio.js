@@ -1325,6 +1325,41 @@ export function setTextOnImage(sessionId, on) {
   settingChanged(sessionId);
 }
 
+// ── The brief, edited section by section (auto-brief stage) ─────────────────
+//
+// The brief is stored as one prose string, but it is READ as blocks — one per
+// "Label: value" line — and each block is directly editable. So an edit writes back
+// into its own line and leaves the label alone; nothing has to re-parse the whole
+// thing, and the sections keep their order.
+//
+// Editing IS the takeover. There is no "edit it yourself" link to press first: the
+// moment you change a word the brief is yours, which is what stops the next modifier
+// change from overwriting it (settingChanged flags it stale instead). `rebuildBrief`
+// is still the way back to Archie's version.
+function writeBriefLine(s, index, value) {
+  const lines = (s.promptText || "").split("\n");
+  if (index < 0 || index >= lines.length) return;
+  const at = lines[index].indexOf(":");
+  lines[index] = at > 0 ? `${lines[index].slice(0, at)}: ${value}` : value;
+  s.promptText = lines.join("\n");
+}
+
+export function setBriefLineSilent(sessionId, index, value) {
+  const s = states.get(sessionId);
+  if (!s) return;
+  writeBriefLine(s, Number(index), String(value || ""));
+}
+
+export function commitBriefLine(sessionId, index, value) {
+  const s = states.get(sessionId);
+  if (!s) return;
+  writeBriefLine(s, Number(index), String(value || ""));
+  // Typing is the takeover — see the note above.
+  s.briefTakenOver = true;
+  s.briefStale = false;
+  notify(sessionId);
+}
+
 // Back from the results stage to the configuration grid (grid-brief only). The
 // variations stay in state — Generate/Regenerate from the grid replaces them.
 export function editBrief(sessionId) {

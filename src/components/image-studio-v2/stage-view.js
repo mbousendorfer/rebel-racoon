@@ -41,12 +41,12 @@ import { KEY, ctx } from "./context.js?v=42";
 import { composer } from "./composer-view.js?v=72";
 import { settingsPanel } from "./settings-view.js?v=10";
 import { gridBriefView, gridAnalyzingView } from "./grid-view.js?v=15";
-import { briefStage, isBriefStage } from "./brief-stage.js?v=5";
+import { briefStage, isBriefStage } from "./brief-stage.js?v=8";
 import { toolPalette } from "./tools-view.js?v=13";
 import { promptGuardDialog } from "./prompt-guard.js?v=6";
 import { editCanvas } from "./edit-view.js?v=41";
 import { compositeOverlays } from "../../image-studio-canvas.js?v=6";
-import * as imageStudio from "../../image-studio.js?v=86";
+import * as imageStudio from "../../image-studio.js?v=87";
 
 // In-feed preview — the edit canvas layers logo/text overlays as live DOM over
 // the image, but renderPostCard only takes a URL, so overlays wouldn't show. We
@@ -105,6 +105,14 @@ export function footerBar(st) {
     primary = carousel
       ? `<button type="button" class="ap-button primary orange" data-img-apply-slide ${st.editBusy || !st.currentImage ? "disabled" : ""}><i class="ap-icon-check"></i><span>Apply to slide ${(st.selectedIndex ?? 0) + 1}</span></button>`
       : `<button type="button" class="ap-button primary orange" data-img-use ${st.editBusy || !st.currentImage ? "disabled" : ""}><i class="ap-icon-check"></i><span>Use this image</span></button>`;
+  } else if (isBriefStage(st)) {
+    // On the brief stage there is nothing to "use" yet, so the footer's primary slot
+    // carries the action that actually applies: Generate. Same slot, same weight — the
+    // one thing to do on this screen, bottom-right where the destination always sits.
+    // Kept blue (not the footer's usual orange) because it is the same Generate button
+    // that lived on the stage a moment ago; moving it shouldn't restyle it.
+    const ready = !st.promptLoading && !!(st.promptText || "").trim();
+    primary = `<button type="button" class="ap-button primary blue" data-img-generate ${ready ? "" : "disabled"}><i class="ap-icon-sparkles-mermaid"></i><span>Generate</span></button>`;
   } else {
     const label = carousel ? `Use carousel · ${st.variations.length} slides` : "Use this image";
     const ready = carousel ? st.variations.length >= 2 : !!st.currentImage;
