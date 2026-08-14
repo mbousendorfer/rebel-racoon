@@ -1,9 +1,6 @@
 // Per-session ideas state + the scripted "Add PDF / video / URL" flow
-// behind the session composer's inline `+` menu. Ideas are per-session here;
-// sources are NOT — sources-stream is global, and this module re-emits its
-// changes per session so every chat's surfaces repaint. That asymmetry is a
-// known gap, not the model: what a user brings into a chat belongs to that
-// chat (docs/reference/CONCEPTS.md §3).
+// behind the session composer's inline `+` menu. Sources are per-session
+// in sources-stream; ideas are also per-session here.
 //
 // Public API:
 //   getSources(sessionId) → Source[]   (delegates to sources-stream)

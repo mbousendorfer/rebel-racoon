@@ -11,7 +11,7 @@ Source  →  Idea  →  Draft  →  Schedule
    └── Topic  (optionnel, en amont — flag `topics`)
 ```
 
-1. **Source** — un input brut (PDF, URL, vidéo, audio, video clip, ou une réponse de connecteur). Stocké global cross-session dans `sources-stream.js`.
+1. **Source** — un input brut (PDF, URL, vidéo, audio, video clip, ou une réponse de connecteur). Stocké **par session** dans `sources-stream.js`.
 2. **Idea** — un insight extrait d'une source par Archie.
 3. **Draft** — un post généré depuis une (ou plusieurs) idea(s), pour un réseau spécifique (LinkedIn, X, …).
 4. **Schedule** — un draft posté dans le queue du calendrier.
@@ -86,7 +86,7 @@ Un **Source** est tout input brut qu'Archie peut ingérer :
 | Video Clip    | Extracted from video | extracting → done             |
 | Connector doc | Connector query      | querying → done               |
 
-Géré par [`src/sources-stream.js`](../../src/sources-stream.js), **global** aujourd'hui — un écart connu avec le modèle (ce qu'on apporte dans un chat lui appartient), pas un principe : [`CONCEPTS.md` §3](CONCEPTS.md#3-à-qui-appartient-quoi).
+Géré par [`src/sources-stream.js`](../../src/sources-stream.js) — **par session** (`Map(sessionId → Source[])`). Seuls les **uploads**, état transitoire d'avant-source, y sont globaux. Voir [`CONCEPTS.md` §3](CONCEPTS.md#3-à-qui-appartient-quoi).
 
 ### Idea (kind taxonomy)
 

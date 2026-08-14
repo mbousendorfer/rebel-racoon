@@ -116,7 +116,9 @@ Ce qui échappe à la règle, et pourquoi — trois familles seulement :
 | **Top posts**  | L'historique publié est un fait du compte, pas d'une conversation. Aucun chat ne peut le revendiquer.        |
 | **Connectors** | De l'infrastructure de compte : on connecte Notion une fois, ça sert partout.                                |
 
-> ⚠️ **État du code ≠ intention.** Deux écarts connus, à ne pas prendre pour des modèles quand vous ajoutez un store : `sources-stream.js` est **global** (une source importée dans un chat est visible depuis tous), et `library.js` tient un **pool global d'ideas** à côté de ses listes par session ([`STORES.md`](STORES.md)). Les Playbooks, eux, sont légitimement globaux : ce sont des fiches réutilisables, pas du travail en cours.
+Le code applique déjà la règle : `sources-stream.js` tient un `Map(sessionId → Source[])` avec des subscribers par session et un `clearSession()`, `library.js` et `posts-store.js` de même. Seuls les **uploads** y sont globaux — un état transitoire d'avant-source, que la modale d'ajout lit comme un pool. Les Playbooks sont légitimement globaux eux aussi : ce sont des fiches réutilisables, pas du travail en cours.
+
+> ⚠️ **Un écart subsiste : le pool global d'ideas.** `mocks.ideas` est une union plate des ideas de toutes les sessions, importée en direct par [`right-panel.js`](../../src/components/right-panel.js) (tout son mode Ideas), [`draft-flow.js`](../../src/draft-flow.js) (resolver de repli) et [`assistant.js`](../../src/assistant.js) ; `library.js` la tient synchronisée via `poolAdd`/`poolRemove` justement parce que ces trois-là court-circuitent le store. Conséquence visible : le panneau Ideas d'un chat liste les ideas des **autres** chats. C'est un écart connu, pas un modèle à imiter.
 
 ---
 
