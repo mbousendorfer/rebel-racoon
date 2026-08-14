@@ -667,33 +667,52 @@
   gap: var(--ref-spacing-xxs);
 }
 
+/* The resting pill was the visibility problem: a #EAECEF hairline on a white fill reads
+   as disabled chrome. It now carries the INPUT border, which is what the DS gives a
+   control you can operate, and the value keeps full text contrast. */
 .isv2-bs-mod {
   display: inline-flex;
   align-items: baseline;
   gap: var(--ref-spacing-xxxs);
-  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
-  border: 1px solid var(--sys-border-color-default);
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
+  border: 1px solid var(--comp-input-border-default-color);
   border-radius: 999px; /* pill — the DS has no full-radius token (see posts.css) */
   background: var(--ref-color-white);
   cursor: pointer;
   font-family: inherit;
   transition:
     border-color 120ms var(--app-ease-out),
-    background-color 120ms var(--app-ease-out);
+    background-color 120ms var(--app-ease-out),
+    color 120ms var(--app-ease-out);
 }
 
 .isv2-bs-mod:hover:not(:disabled) {
-  border-color: var(--ref-color-electric-blue-100);
+  border-color: var(--comp-input-border-hover-color);
 }
 
-.isv2-bs-mod.is-open {
-  border-color: var(--ref-color-electric-blue-100);
-  background: var(--ref-color-electric-blue-10);
+/* SET — this modifier carries a decision. Accent is the DS's meaning for a selected
+   state (foundations/color.md), so it earns the light accent surface and accent text
+   rather than a louder neutral. Not `main`/orange: that belongs to primary CTAs. */
+.isv2-bs-mod.is-set {
+  border-color: var(--ref-color-electric-blue-40);
+  background: var(--sys-color-accent-light-bg);
 }
 
-.isv2-bs-mod:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
+.isv2-bs-mod.is-set .isv2-bs-mod-value {
+  color: var(--sys-color-accent-light-text);
+}
+
+.isv2-bs-mod.is-set .isv2-bs-mod-label,
+.isv2-bs-mod.is-set .isv2-bs-mod-arrow {
+  color: var(--sys-color-accent-light-text);
+}
+
+/* OPEN — the active border the DS uses for focus/selected, so "I am the one you are
+   editing" outranks "I am set". */
+.isv2-bs-mod.is-open,
+.isv2-bs-mod.is-open:hover {
+  border-color: var(--sys-border-color-active);
+  background: var(--sys-color-accent-light-bg);
 }
 
 /* The name is the label, the value is the content — same rule as everywhere else. */
@@ -701,6 +720,13 @@
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   color: var(--sys-text-color-light);
+}
+
+/* Disabled reads as disabled — Style while a reference is driving the look. */
+.isv2-bs-mod:disabled {
+  cursor: not-allowed;
+  border-color: var(--sys-border-color-default);
+  background: transparent;
 }
 
 .isv2-bs-mod-value {
@@ -1500,18 +1526,17 @@
   line-height: var(--sys-text-style-body-line-height);
   font-weight: var(--sys-text-style-body-weight);
   color: var(--sys-text-color-default);
-  /* Cap the box at FOUR lines of text and scroll the rest. A derived brief runs
-     seven lines, and letting the field simply be seven lines tall made the
-     composer the biggest object in the modal — the image is what the user is
-     judging. Four is the compromise: the brief's first two facts (subject, key
-     message) are what you check before running it, and at three lines the second
-     one was landing right on the fold.
-     The cap is exactly `4 × line-height` because a textarea's scrollport spans
-     its content AND its padding: with no padding on top, four lines is what four
-     lines of box shows. (Add padding back to that edge and the cap has to grow by
-     the same amount, or the fourth line gets clipped in half.) */
+  /* Cap the box at EIGHT lines of text and scroll the rest. A derived brief runs
+     about seven, so the whole brief is readable where it stands. This used to cap
+     at four with a toggle beside it that doubled the cap — but the box would only
+     show what Archie had already written after you found and pressed a control,
+     which is a step charged for nothing.
+     The cap is exactly `8 × line-height` because a textarea's scrollport spans
+     its content AND its padding: with no padding on top, eight lines is what
+     eight lines of box shows. (Add padding back to that edge and the cap has to
+     grow by the same amount, or the last line gets clipped in half.) */
   min-height: calc(var(--ref-font-line-height-sm) * 2);
-  max-height: calc(var(--ref-font-line-height-sm) * 4);
+  max-height: calc(var(--ref-font-line-height-sm) * 8);
   overflow-y: auto;
   box-sizing: border-box;
 }
@@ -1589,24 +1614,12 @@
   padding: var(--ref-spacing-xxs);
 }
 
-/* The toolbar becomes a COLUMN so the expand toggle can hold the console's
-   top-right corner while the action stays down on the field's last line — one
-   control resizes the box, the other runs what's in it. `align-self: stretch`
-   because the row bottom-aligns its children, which would otherwise shrink this
-   column to its content and leave nothing for space-between to distribute. */
+/* One control lives here now — the action — so the toolbar is a plain shrink-wrap
+   beside the field, bottom-aligned by the row. It was a stretched COLUMN back when
+   the size toggle held the console's top-right corner above it. */
 .isv2-console--inline .isv2-console-toolbar {
   flex: 0 0 auto;
-  flex-direction: column;
-  align-items: flex-end;
-  justify-content: space-between;
-  align-self: stretch;
   gap: var(--ref-spacing-xxs);
-}
-
-/* Expanded doubles the cap, 4 lines → 8. A derived brief runs seven, so expanded
-   shows the whole thing without scrolling. */
-.isv2-console.is-expanded .isv2-prompt {
-  max-height: calc(var(--ref-font-line-height-sm) * 8);
 }
 
 /* The redraw note is a phrase, not a brief ("warmer light"), so this field starts

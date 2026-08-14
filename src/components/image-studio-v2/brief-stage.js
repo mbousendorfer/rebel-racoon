@@ -121,10 +121,14 @@ export function briefNote(st) {
 // Each modifier is one button: what it changes, and what it is currently set to.
 // The value is the point — it's the part of the brief this button owns — so it
 // carries the weight and the name recedes.
-function modifierChip({ name, label, value, disabled, note }, st) {
+// `set` means the modifier carries a real choice rather than a default left alone. It
+// drives the accent treatment, which is the DS's documented meaning for that colour
+// ("interaction, info, links, SELECTED" — foundations/color.md), so the bar shows at a
+// glance what has been decided and what Archie is still choosing for you.
+function modifierChip({ name, label, value, disabled, note, set }, st) {
   const open = st.openModifier === name;
   const title = note || `${label}: ${value}`;
-  return `<button type="button" class="isv2-bs-mod${open ? " is-open" : ""}" data-img-modifier="${escapeHtml(name)}"
+  return `<button type="button" class="isv2-bs-mod${set ? " is-set" : ""}${open ? " is-open" : ""}" data-img-modifier="${escapeHtml(name)}"
     aria-expanded="${open}" ${disabled ? "disabled" : ""} title="${escapeHtml(title)}">
     <span class="isv2-bs-mod-label">${escapeHtml(label)}</span>
     <span class="isv2-bs-mod-value">${escapeHtml(value)}</span>
@@ -324,21 +328,24 @@ export function briefStage(st) {
   else if (tinted) brandValue = "Colors";
 
   const mods = [
-    { name: "imageType", label: "Type", value: typeLabel },
+    { name: "imageType", label: "Type", value: typeLabel, set: !!st.imageTypeKey },
     {
       name: "style",
       label: "Style",
       value: hasRefs ? "From reference" : styleLabel,
       disabled: hasRefs,
       note: hasRefs ? "The reference image sets the look" : "",
+      set: !hasRefs && !!st.styleKey,
     },
-    { name: "refs", label: "Reference", value: refSummary(picked, st) },
-    { name: "branding", label: "Branding", value: brandValue, disabled: !hasKit },
+    { name: "refs", label: "Reference", value: refSummary(picked, st), set: !!picked },
+    { name: "branding", label: "Branding", value: brandValue, disabled: !hasKit, set: branded || tinted },
+    // Format always holds a value — there is no "unset" for it, so nothing to signal.
     { name: "format", label: "Format", value: fmt ? fmt.tag : "Ratio" },
     {
       name: "output",
       label: canCarousel ? "Output" : "Variations",
       value: isCarousel ? `Carousel · ${st.slideCount}` : String(st.variationCount),
+      set: isCarousel,
     },
   ];
 

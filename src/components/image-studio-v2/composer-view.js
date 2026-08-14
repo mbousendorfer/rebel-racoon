@@ -11,21 +11,22 @@
 // full-bleed prompt runs ~180 characters per line, which is unreadable, and it
 // made the settings look like chrome stranded at the bottom of a huge bar.
 //
-// The field caps at FOUR lines then scrolls. A derived brief runs about seven,
-// and leaving it seven lines tall made the composer the biggest object in the
-// modal when the image is the thing being judged. The cap is exactly
-// `4 × line-height` — a textarea's scrollport covers its content AND its padding,
-// and there is no padding on top. The expand toggle raises the cap to eight.
+// The field caps at EIGHT lines then scrolls — a derived brief runs about seven,
+// so the whole thing is readable without touching anything. It used to cap at four
+// with a toggle to double it, but the toggle was a control you had to find before
+// the box would show what was already in it. The cap is exactly `8 × line-height` —
+// a textarea's scrollport covers its content AND its padding, and there is no
+// padding on top.
 //
 // Generate is `secondary blue`: it is a step, not the destination. The modal's one
 // primary is "Use this image" in the footer (stage-view.js#footerBar).
 
 import { escapeHtml } from "../../utils.js?v=22";
-import { isBriefStage } from "./brief-stage.js?v=18";
+import { isBriefStage } from "./brief-stage.js?v=19";
 
 // Empty-state hint for the prompt field — a full structured brief, so the
 // placeholder itself shows the kind of rich prompt the box is built for (and why
-// the expand toggle exists). Shown only when the field is empty, which in
+// it stands eight lines tall). Shown only when the field is empty, which in
 // practice means the user cleared what Archie wrote.
 const PROMPT_PLACEHOLDER = `Campaign title: AI UX Safeguard
 Campaign objective: Raise awareness about the risks of unmediated AI in UX design and establish the line between acceleration and shortcuts.
@@ -63,17 +64,11 @@ function generateComposer(st) {
     const taken = !!st.briefTakenOver;
     return console_("Image brief", promptField(st), generateActions(st), "to generate", {
       inline: true,
-      aux: expandToggle(st),
-      expanded: !!st.composerExpanded,
       hint: briefHint(st),
       cls: `isv2-console--brief${taken ? " is-editing" : " is-readonly"}${taken && st.briefStale ? " is-stale" : ""}`,
     });
   }
-  return console_("Image prompt", promptField(st), generateActions(st), "to generate", {
-    inline: true,
-    aux: expandToggle(st),
-    expanded: !!st.composerExpanded,
-  });
+  return console_("Image prompt", promptField(st), generateActions(st), "to generate", { inline: true });
 }
 
 // The one line under the brief that carries the auto-brief model: what the brief
@@ -91,17 +86,6 @@ function briefHint(st) {
   return `This brief is yours — settings won't change it. <button type="button" class="ap-link standalone small" data-img-brief-rebuild>Back to auto</button>.`;
 }
 
-// Doubles the field's height cap, 4 lines → 8. It holds the console's TOP-RIGHT
-// corner while Generate stays on the field's last line, so the two controls read
-// as what they are: one resizes the box, one runs what's in it. Hidden while the
-// brief is being written — there is nothing to expand yet.
-function expandToggle(st) {
-  if (st.promptLoading) return "";
-  const on = !!st.composerExpanded;
-  const label = on ? "Collapse the prompt" : "Expand the prompt";
-  return `<button type="button" class="ap-icon-button isv2-console-expand" data-img-composer-expand aria-pressed="${on}" aria-label="${label}" title="${label}"><i class="ap-icon-${on ? "minimize" : "maximize"}" aria-hidden="true"></i></button>`;
-}
-
 // The frame both modes share, and it IS the app's own conversational composer:
 // a bordered card that lights up on focus, a borderless field, the action beside
 // it, and a keyboard hint below the card. Same recipe as
@@ -110,30 +94,25 @@ function expandToggle(st) {
 // brief for Archie) and it should not feel like a different product.
 //
 // What v2 grew instead and has now shed: an eyebrow, a "Suggest again" button
-// and an expand toggle. The eyebrow only gave the field an identity that the
-// composer's own frame already gives it; the expand solved a scrolling problem
-// the composer solves with a line cap; and re-deriving the prompt now happens
-// once, automatically, when the studio opens.
+// and a small/big size toggle. The eyebrow only gave the field an identity that
+// the composer's own frame already gives it; the toggle asked the user to click
+// before the box would show a brief that was already written, so the field simply
+// stands at its full height; and re-deriving the prompt now happens once,
+// automatically, when the studio opens.
 //
 // `inline` puts the action BESIDE the field rather than on a row of its own,
 // bottom-aligned so it stays on the field's last line. Both modes use it: a
 // toolbar row of its own was a full row of card whose left half was empty, and
 // the text would rather have that space. Kept as a flag, not baked in, because a
 // console with several actions would need the row back.
-function console_(
-  label,
-  field,
-  action,
-  hintVerb,
-  { inline = false, aux = "", expanded = false, hint = "", cls = "" } = {},
-) {
+function console_(label, field, action, hintVerb, { inline = false, aux = "", hint = "", cls = "" } = {}) {
   const toolbar = aux || action ? `<div class="isv2-console-toolbar">${aux}${action}</div>` : "";
   // `hint` overrides the default keyboard hint — the auto-brief variant explains
   // what the brief is instead of how to type in it.
   const hintHtml = hint || `<kbd>Enter</kbd> ${hintVerb} · <kbd>Shift</kbd>+<kbd>Enter</kbd> for new line`;
   return `<div class="isv2-dock">
     <div class="isv2-console-wrap">
-      <div class="isv2-console${inline ? " isv2-console--inline" : ""}${expanded ? " is-expanded" : ""}${cls ? " " + cls : ""}" role="group" aria-label="${escapeHtml(label)}">
+      <div class="isv2-console${inline ? " isv2-console--inline" : ""}${cls ? " " + cls : ""}" role="group" aria-label="${escapeHtml(label)}">
         ${field}
         ${toolbar}
       </div>

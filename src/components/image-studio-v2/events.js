@@ -80,9 +80,6 @@ function onClick(event, close) {
   // The settings panel's sections — independent, not an accordion. A section the
   // user opened stays open until they close it, and opening a second leaves the
   // first alone; the state is a Set of what's SHUT (`collapsedGroups`).
-  const expandBtn = event.target.closest("[data-img-composer-expand]");
-  if (expandBtn) return void imageStudio.setComposerExpanded(KEY, !state().composerExpanded);
-
   const grpToggle = event.target.closest("[data-img-group-toggle]");
   if (grpToggle && !grpToggle.disabled) {
     return void imageStudio.toggleGroupCollapsed(KEY, grpToggle.dataset.imgGroupToggle);

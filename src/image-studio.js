@@ -498,7 +498,6 @@ export function start(
     // the view and never collapses. Style preset has its own `disabled` state
     // (references guide the look), independent of this Set.
     collapsedGroups: new Set(["branding", "imageType", "style", "format", "output"]),
-    composerExpanded: false, // prompt composer size: small (default) vs expanded
     variationCount: 2, // single-image mode: how many alternatives to pick from
     slideCount, // carousel mode: how many slides to generate
     variations, // [{ seed, url, w, h }] — alternatives (single) or slides (carousel)
@@ -962,20 +961,6 @@ export function setOpenModifier(sessionId, name) {
   const s = states.get(sessionId);
   if (!s) return;
   s.openModifier = s.openModifier === name ? null : name || null;
-  notify(sessionId);
-}
-
-// Prompt composer size (small ↔ expanded) — expanded raises the textarea's
-// max-height so a long, structured prompt fits without scrolling. Set silently
-// (no re-render): the toggle mutates the composer in place so the max-height
-// Notifies, because the toggle has to re-render: the button swaps its icon and
-// the console takes `.is-expanded`. Nothing animates in place that a re-render
-// would kill — the studio rebuilds its whole body on every change and re-runs
-// autosize afterwards anyway.
-export function setComposerExpanded(sessionId, value) {
-  const s = states.get(sessionId);
-  if (!s) return;
-  s.composerExpanded = !!value;
   notify(sessionId);
 }
 
