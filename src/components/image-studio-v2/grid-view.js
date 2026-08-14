@@ -15,9 +15,10 @@
 // only the container differs.
 
 import { escapeHtml } from "../../utils.js?v=21";
+import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=38";
 import { KEY } from "./context.js?v=41";
 import * as imageStudio from "../../image-studio.js?v=82";
-import { imageTypeBody, styleBody, formatBody, outputBody } from "./settings-view.js?v=9";
+import { imageTypeBody, styleBody } from "./settings-view.js?v=9";
 import { refsBody } from "./references-view.js?v=8";
 import { brandingBody } from "./branding-view.js?v=3";
 
@@ -107,6 +108,72 @@ function textOnImageCard(st) {
   </div>`;
 }
 
+// How it ships, as ONE card instead of two.
+//
+// Format and Output were a pair, and the pair wasted the section twice over: Format
+// stretched to its neighbour's height with nothing to put there, while the neighbour
+// sat underfilled across two columns. Three small chip sets don't need two cards — so
+// they share one, laid out as columns divided by hairlines, which fills the width and
+// removes the height mismatch entirely (one card can't disagree with itself).
+//
+// The chips carry the exact same `data-*` hooks as the settings-panel bodies, so
+// events.js drives them unchanged.
+function outputCard(st, choices, canCarousel, isCarousel) {
+  const ratioChips = choices
+    .map((f) => {
+      const sel = st.formatId === f.id;
+      const full = `${f.tag} · ${f.label}`;
+      return `<button type="button" class="ap-filter-chip isv2-format-chip" data-img-format="${escapeHtml(f.id)}" aria-pressed="${sel}" title="${escapeHtml(full)}" aria-label="${escapeHtml(full)}"><span class="isv2-ratio-glyph" style="aspect-ratio:${f.ratio}" aria-hidden="true"></span>${escapeHtml(f.tag)}</button>`;
+    })
+    .join("");
+
+  // "Best for <icon>" — words then icon, network name in the title/aria-label only.
+  const netLabel = st.network ? NETWORK_LABEL[st.network] || st.network : "";
+  const netIcon = st.network ? NETWORK_ICON_BY_PLATFORM[st.network] : "";
+  const bestForNote =
+    st.network && netIcon
+      ? `<span class="isv2-osub-note" aria-label="Best for ${escapeHtml(netLabel)}">Best for <i class="${netIcon}" title="${escapeHtml(netLabel)}" aria-hidden="true"></i></span>`
+      : "";
+
+  const kindGroup = canCarousel
+    ? `<div class="isv2-ogroup">
+        <p class="isv2-sheet-label">Post type</p>
+        <div class="isv2-chip-group">
+          <button type="button" class="ap-filter-chip" data-img-output="single" aria-pressed="${!isCarousel}"><i class="ap-icon-image" aria-hidden="true"></i>Single image</button>
+          <button type="button" class="ap-filter-chip" data-img-output="carousel" aria-pressed="${isCarousel}"><i class="ap-icon-multiple-images" aria-hidden="true"></i>Carousel</button>
+        </div>
+      </div>`
+    : "";
+
+  const max = imageStudio.carouselMaxFor(st.network);
+  const countChips = isCarousel
+    ? imageStudio.SLIDE_CHOICES.filter((n) => n <= max)
+        .map(
+          (n) =>
+            `<button type="button" class="ap-filter-chip" data-img-slidecount="${n}" aria-pressed="${st.slideCount === n}">${n}</button>`,
+        )
+        .join("")
+    : imageStudio.VARIATION_CHOICES.map(
+        (n) =>
+          `<button type="button" class="ap-filter-chip" data-img-varcount="${n}" aria-pressed="${st.variationCount === n}">${n}</button>`,
+      ).join("");
+
+  return `<div class="isv2-gcard isv2-gcard--full isv2-gcard--output">
+    <p class="isv2-gcard-label">Output</p>
+    <div class="isv2-orow">
+      <div class="isv2-ogroup">
+        <p class="isv2-sheet-label">Aspect ratio${bestForNote}</p>
+        <div class="isv2-chip-group">${ratioChips}</div>
+      </div>
+      ${kindGroup}
+      <div class="isv2-ogroup">
+        <p class="isv2-sheet-label">${isCarousel ? `Slides${max ? ` · up to ${max}` : ""}` : "Variations"}</p>
+        <div class="isv2-chip-group">${countChips}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
 // The opening "Archie is reading your post" state — a full-stage brand loader
 // shown while the structured brief is seeded (runDerive, ~2s), BEFORE the grid
 // appears. Without it the cards would flash in empty and then fill under the user;
@@ -169,13 +236,10 @@ export function gridBriefView(st) {
     section("Brief"),
     ...BRIEF_FIELDS.map((f) => briefCard(f, st)),
 
-    // How it ships. Last, so the final decisions sit against the Generate button.
-    // The card keeps its own name rather than "Output" a second time.
-    section("Output"),
-    settingCard("Format", formatBody(st, choices)),
-    settingCard(canCarousel ? "Single or carousel" : "Variations", outputBody(st, canCarousel, isCarousel), {
-      wide: true,
-    }),
+    // How it ships. Last, so the final decisions sit against the Generate button. One
+    // card, so it needs no section heading of its own — its label does that job and
+    // "Output" stops appearing twice in a row.
+    outputCard(st, choices, canCarousel, isCarousel),
   ].join("");
 
   // Rewriting the brief BLOCKS. The prompt being rebuilt is never shown in this

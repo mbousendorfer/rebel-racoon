@@ -332,6 +332,43 @@
   grid-column: 1 / -1;
 }
 
+/* ── Output: one card, three chip sets across ───────────────────────────────
+   Equal columns whatever the group count (grid-auto-flow does that without the view
+   having to tell CSS how many there are), divided by hairlines so the row reads as
+   one control strip rather than three stranded clusters. Two rows tall — sub-label,
+   then chips — where two separate cards stacked to 162px for the same three choices. */
+.isv2-orow {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: var(--ref-spacing-md);
+}
+
+.isv2-ogroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  min-width: 0;
+}
+
+.isv2-ogroup + .isv2-ogroup {
+  padding-left: var(--ref-spacing-md);
+  border-left: 1px solid var(--sys-border-color-default);
+}
+
+/* The network hint rides on the sub-label's line instead of taking a row of its own
+   — the words, then the icon, name in the title/aria-label (app-wide convention).
+   It sits right AFTER the label it qualifies rather than pushed to the column edge:
+   flush right it was 245px from "Aspect ratio" and read as belonging to nothing. */
+.isv2-osub-note {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  margin-left: var(--ref-spacing-xxs);
+  color: var(--sys-text-color-light);
+  font-weight: var(--sys-text-style-caption-weight);
+}
+
 .isv2-gcard.is-disabled {
   opacity: 0.55;
   pointer-events: none;
