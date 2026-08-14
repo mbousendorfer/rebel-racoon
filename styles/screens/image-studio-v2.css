@@ -219,7 +219,7 @@
 }
 
 .isv2-grid {
-  max-width: 960px;
+  max-width: 1180px;
   margin: 0 auto;
   padding: var(--ref-spacing-md) var(--ref-spacing-md) var(--ref-spacing-xl);
   display: flex;
@@ -250,9 +250,12 @@
    a brief field and a style grid are not the same size and shouldn't be forced to. */
 /* align-items: stretch (grid default) so the two cards in a row match heights —
    a ragged pair of cards is the "visually poor" look we're fixing. */
+/* THREE columns, not two. Two columns in a 960px measure inside a 1380px modal was
+   spending vertical scroll to leave horizontal space empty; three across a wider
+   measure fits each run of cards on one row and roughly halves the page. */
 .isv2-grid-cards {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--ref-spacing-xs);
   align-items: stretch;
 }
@@ -281,7 +284,36 @@
 }
 
 .isv2-gcard--wide {
+  grid-column: span 2;
+}
+
+.isv2-gcard--full {
   grid-column: 1 / -1;
+}
+
+/* The style presets are shared with the 284px settings panel, where two columns is
+   right. In a full-width card that same rule blew each thumbnail up to ~450px wide
+   at 4:3 — over 330px tall each, which was most of the scroll on this screen. Here
+   they pack small: pickable at a glance, one row instead of three. */
+.isv2-grid .isv2-style-grid {
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+}
+
+/* Same story for the reference tiles, and worse: `.isv2-refs` is a flex scroller and
+   the tile takes its width from the row, so three of them across a full-width card
+   grew to 353px — and `aspect-ratio: 1` made that 353px TALL, on its own most of the
+   remaining scroll. A fixed tile size is what the horizontal scroller wanted anyway. */
+.isv2-grid .isv2-ref {
+  flex: 0 0 auto;
+  width: 96px;
+}
+
+/* Rows size to their content here. The parameter cards are heterogeneous controls —
+   stretching three chips to match the tallest card in the row bought two blocks of
+   dead space per row. The BRIEF cards stay uniform without any help, because each is
+   a fixed-height field plus one label line. */
+.isv2-grid-cards {
+  align-items: start;
 }
 
 .isv2-gcard.is-disabled {
@@ -380,30 +412,62 @@
 
 /* The sticky action bar under the grid: Generate, right-aligned, on the app ground
    so it reads as one with the scroll above it. */
+/* Generate is THE action of this screen, so it sits dead centre of the sticky bar.
+   A 1fr/auto/1fr track does that honestly: the button is centred on the measure and
+   the confirmation lands in the right-hand cell WITHOUT nudging it off centre. */
 .isv2-grid-actions {
   position: sticky;
   bottom: 0;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: flex-end;
   gap: var(--ref-spacing-sm);
-  padding: var(--ref-spacing-sm) 0;
+  padding: var(--ref-spacing-sm) 0 var(--ref-spacing-xs);
   background: linear-gradient(to top, var(--app-bg) 70%, transparent);
 }
 
-/* The recalculation feedback: in this variant the assembled prompt is hidden, so a
-   setting/card change would otherwise land silently. It sits at the left of the
-   sticky bar (always in view) while the brief reassembles. */
-.isv2-grid-updating {
+.isv2-grid-actions-side {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.isv2-grid-actions-side:last-child {
+  justify-content: flex-start;
+}
+
+/* Bigger than a default button: this is the one thing to do on this screen, and at
+   default size in a 1180px measure it read as a minor control. */
+.isv2-grid-go {
+  padding: var(--ref-spacing-xs) var(--ref-spacing-lg);
+  font-size: var(--sys-text-style-body-size);
+  box-shadow: var(--app-shadow-low);
+}
+
+/* Confirmation, not a wait: the assembly is instant, so this reports what already
+   happened. Green + check reads as "done" at a glance where a grey spinner read as
+   "hold on" — and it never blocks or moves the button. */
+.isv2-grid-flash {
   display: inline-flex;
   align-items: center;
-  gap: var(--ref-spacing-xs);
-  margin-right: auto;
+  gap: var(--ref-spacing-xxxs);
+  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
+  border-radius: 999px; /* pill — the DS has no full-radius token (see posts.css) */
+  background: var(--ref-color-green-10);
+  color: var(--ref-color-green-150);
   font-size: var(--sys-text-style-caption-size);
-  color: var(--sys-text-color-light);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  animation: isv2-flash-in var(--ref-animation-short) var(--app-ease-out);
 }
-.isv2-grid-updating .ap-loader {
-  --archie-loader-size: 16px;
+
+@keyframes isv2-flash-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 @media (max-width: 720px) {

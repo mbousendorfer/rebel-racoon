@@ -40,6 +40,9 @@ const DERIVE_MS = 2000; // "writing your image prompt" loader on open / re-sugge
 // than the opening one — long enough that the user SEES the brief change under
 // them, short enough that adjusting three settings in a row isn't a wait.
 const REDERIVE_MS = 600;
+// How long the grid variant's "Brief updated" confirmation stays up. It reports
+// work that ALREADY happened, so it costs the user nothing to wait on.
+const FLASH_MS = 1600;
 
 export const MAX_REFS = 6;
 export const VARIATION_CHOICES = [1, 2, 3, 4];
@@ -426,6 +429,7 @@ export function start(
     brief: { about: "", achieve: "", audience: "", tone: "", headline: "", oneThing: "" },
     textOnImage: true, // "Write text on the image" — on by default, mirrors renderText
     briefSeeded: false, // the structured brief was filled from the post once, at open
+    briefFlash: false, // "Brief updated" confirmation is up (grid variant)
     renderText: "", // words to paint INTO the image (empty = none)
     styleKey: null, // selected Style preset (STYLE_PRESETS)
     imageTypeKey: null, // selected Image type (IMAGE_TYPES)
@@ -505,6 +509,7 @@ export function start(
     _genRun: null, // id of the newest generation run (guards the async text bake)
     _editTimer: null,
     _deriveTimer: null,
+    _flashTimer: null,
   });
   notify(key);
 }
@@ -525,6 +530,7 @@ export function exit(sessionId) {
   if (s._genTimer) clearTimeout(s._genTimer);
   if (s._editTimer) clearTimeout(s._editTimer);
   if (s._deriveTimer) clearTimeout(s._deriveTimer);
+  if (s._flashTimer) clearTimeout(s._flashTimer);
   for (const r of s.uploadedRefs || []) safeRevoke(r.url);
   for (const o of s.overlays) if (o.kind === "logo") safeRevoke(o.url);
   states.delete(sessionId);
@@ -1126,6 +1132,33 @@ function rederive(sessionId) {
   runDerive(sessionId, { delay: REDERIVE_MS });
 }
 
+// ── Grid-brief: assemble instantly, then say so ───────────────────────────────
+//
+// The grid never SHOWS the assembled prompt, so making the user wait on a spinner
+// for an artifact they can't see was pure friction — and the mock delay had a real
+// cost: runDerive drops a trigger that arrives while one is in flight, so adjusting
+// two things quickly left the second one out of the brief.
+//
+// So the grid rewrites the prompt synchronously (it's string assembly, not a model
+// call) and reports it AFTER the fact with a confirmation that costs no time. The
+// dependency stays legible — which is the whole point of the variant — without the
+// user ever waiting on it.
+function assembleGridNow(sessionId) {
+  const s = states.get(sessionId);
+  if (!s) return;
+  writeBrief(s, derivePrompt(s));
+  s.briefFlash = true;
+  if (s._flashTimer) clearTimeout(s._flashTimer);
+  s._flashTimer = setTimeout(() => {
+    const cur = states.get(sessionId);
+    if (!cur) return;
+    cur.briefFlash = false;
+    cur._flashTimer = null;
+    notify(sessionId);
+  }, FLASH_MS);
+  notify(sessionId);
+}
+
 // ── Auto-brief: one rule for every setting ───────────────────────────────────
 //
 // The variant's whole point is that the brief is a faithful, always-in-sync
@@ -1135,6 +1168,7 @@ function rederive(sessionId) {
 function settingChanged(sessionId) {
   const s = states.get(sessionId);
   if (!s) return;
+  if (s.gridBrief) return void assembleGridNow(sessionId);
   if (s.autoBrief && s.briefTakenOver) {
     s.briefStale = true;
     notify(sessionId);
@@ -1189,7 +1223,7 @@ export function commitBriefField(sessionId, key, value) {
   if (!s || !(key in s.brief)) return;
   s.brief[key] = String(value || "");
   if (key === "headline" && s.textOnImage) s.renderText = s.brief[key];
-  rederive(sessionId);
+  settingChanged(sessionId);
 }
 
 // "Write text on the image": whether the artwork carries the headline. On mirrors
@@ -1199,7 +1233,7 @@ export function setTextOnImage(sessionId, on) {
   if (!s) return;
   s.textOnImage = !!on;
   s.renderText = s.textOnImage ? s.brief.headline || "" : "";
-  rederive(sessionId);
+  settingChanged(sessionId);
 }
 
 // Back from the results stage to the configuration grid (grid-brief only). The

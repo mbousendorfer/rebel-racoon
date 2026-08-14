@@ -16,7 +16,7 @@
 
 import { escapeHtml } from "../../utils.js?v=21";
 import { KEY } from "./context.js?v=41";
-import * as imageStudio from "../../image-studio.js?v=79";
+import * as imageStudio from "../../image-studio.js?v=80";
 import { imageTypeBody, styleBody, formatBody, outputBody } from "./settings-view.js?v=9";
 import { refsBody } from "./references-view.js?v=8";
 import { brandingBody } from "./branding-view.js?v=3";
@@ -56,8 +56,9 @@ function briefCard({ key, label }, st) {
 // A setting as a card: the same label rhythm as the content cards, with the existing
 // control body inline. `wide` gives the pickers that need room (References, Style)
 // the full grid width.
-function settingCard(label, body, { wide = false, disabled = false, note = "" } = {}) {
-  return `<div class="isv2-gcard isv2-gcard--setting${wide ? " isv2-gcard--wide" : ""}${disabled ? " is-disabled" : ""}">
+function settingCard(label, body, { wide = false, full = false, disabled = false, note = "" } = {}) {
+  const span = full ? " isv2-gcard--full" : wide ? " isv2-gcard--wide" : "";
+  return `<div class="isv2-gcard isv2-gcard--setting${span}${disabled ? " is-disabled" : ""}">
     <p class="isv2-gcard-label">${escapeHtml(label)}</p>
     ${note ? `<p class="isv2-gcard-hint">${escapeHtml(note)}</p>` : ""}
     <div class="isv2-gcard-body">${body}</div>
@@ -69,7 +70,7 @@ function settingCard(label, body, { wide = false, disabled = false, note = "" } 
 // words are refined on the blueprint (Edit mode).
 function textOnImageCard(st) {
   const on = !!st.textOnImage;
-  return `<div class="isv2-gcard isv2-gcard--toggle isv2-gcard--wide">
+  return `<div class="isv2-gcard isv2-gcard--toggle isv2-gcard--full">
     <div class="isv2-gcard-toggle-row">
       <div class="isv2-gcard-toggle-copy">
         <p class="isv2-gcard-label">Write text on the image</p>
@@ -113,9 +114,14 @@ export function gridBriefView(st) {
 
     // Parameters first: the quick, high-impact choices belong at the top, not below
     // six paragraphs of copy. Type leads — it's the biggest lever.
+    //
+    // Three columns, and the spans are chosen so each run fills a row exactly —
+    // the three chip cards, then Style beside Branding, then References — which is
+    // what keeps the whole setup roughly one screen instead of a long scroll.
     section("Parameters"),
     settingCard("Type", imageTypeBody(st)),
     settingCard("Format", formatBody(st, choices)),
+    settingCard(canCarousel ? "Output" : "Variations", outputBody(st, canCarousel, isCarousel)),
     // Style is locked when references guide the look — mirror the settings panel's
     // rule so the two variants don't disagree about when Style applies.
     settingCard("Style", styleBody(st), {
@@ -123,7 +129,6 @@ export function gridBriefView(st) {
       disabled: hasRefs,
       note: hasRefs ? "From references" : "",
     }),
-    settingCard("References", refsBody(st, picked), { wide: true }),
     settingCard(
       "Branding",
       hasLogo || hasColors
@@ -131,20 +136,20 @@ export function gridBriefView(st) {
         : `<p class="isv2-gcard-hint">No brand kit on this Playbook.</p>`,
       { disabled: !hasLogo && !hasColors },
     ),
-    settingCard(canCarousel ? "Output" : "Variations", outputBody(st, canCarousel, isCarousel)),
+    settingCard("References", refsBody(st, picked), { full: true }),
 
     // The written brief below — a uniform block of equal-height cards.
     section("Brief"),
     ...BRIEF_FIELDS.map((f) => briefCard(f, st)),
   ].join("");
 
-  // While a setting or card change reassembles the (hidden) model prompt, the sticky
-  // bar shows it — the recalculation is otherwise invisible in this variant. Only
-  // after the brief is seeded, so it never doubles the opening "analysing" loader.
-  const updating =
-    st.promptLoading && st.briefSeeded
-      ? `<span class="isv2-grid-updating" role="status"><span class="ap-loader size-16"></span>Updating the brief…</span>`
-      : "";
+  // A change reassembles the hidden prompt instantly, so this reports work that is
+  // already DONE rather than making the user wait on a spinner for something they
+  // never see. It confirms the dependency ("that setting fed the brief") at no cost
+  // in time — see image-studio.js#assembleGridNow.
+  const flash = st.briefFlash
+    ? `<span class="isv2-grid-flash" role="status"><i class="ap-icon-rounded-check" aria-hidden="true"></i>Brief updated</span>`
+    : "";
 
   return `<div class="isv2-grid">
     <div class="isv2-grid-head">
@@ -153,8 +158,9 @@ export function gridBriefView(st) {
     </div>
     <div class="isv2-grid-cards">${cards}</div>
     <div class="isv2-grid-actions">
-      ${updating}
-      <button type="button" class="ap-button secondary blue" data-img-grid-generate><i class="ap-icon-sparkles-mermaid"></i><span>Generate</span></button>
+      <span class="isv2-grid-actions-side"></span>
+      <button type="button" class="ap-button primary blue isv2-grid-go" data-img-grid-generate><i class="ap-icon-sparkles-mermaid"></i><span>Generate</span></button>
+      <span class="isv2-grid-actions-side">${flash}</span>
     </div>
   </div>`;
 }

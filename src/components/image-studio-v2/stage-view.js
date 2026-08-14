@@ -40,12 +40,12 @@ import { renderPostCard } from "../post-card.js?v=82";
 import { KEY, ctx } from "./context.js?v=41";
 import { composer } from "./composer-view.js?v=70";
 import { settingsPanel } from "./settings-view.js?v=9";
-import { gridBriefView, gridAnalyzingView } from "./grid-view.js?v=4";
+import { gridBriefView, gridAnalyzingView } from "./grid-view.js?v=5";
 import { toolPalette } from "./tools-view.js?v=12";
 import { promptGuardDialog } from "./prompt-guard.js?v=4";
 import { editCanvas } from "./edit-view.js?v=40";
 import { compositeOverlays } from "../../image-studio-canvas.js?v=5";
-import * as imageStudio from "../../image-studio.js?v=79";
+import * as imageStudio from "../../image-studio.js?v=80";
 
 // In-feed preview — the edit canvas layers logo/text overlays as live DOM over
 // the image, but renderPostCard only takes a URL, so overlays wouldn't show. We

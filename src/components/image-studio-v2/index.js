@@ -32,10 +32,10 @@ import { getSessionById } from "../../sessions-store.js?v=15";
 import { getContextById } from "../../contexts-store.js?v=47";
 import { MODAL_ID, KEY, ctx, state, autosize } from "./context.js?v=41";
 import { loadImg } from "../../image-studio-canvas.js?v=5";
-import { renderStudio } from "./stage-view.js?v=83";
+import { renderStudio } from "./stage-view.js?v=84";
 import { offerUndoIfNeeded, resetUndoOffers } from "./prompt-guard.js?v=4";
 import { bindStudioEvents } from "./events.js?v=16";
-import * as imageStudio from "../../image-studio.js?v=79";
+import * as imageStudio from "../../image-studio.js?v=80";
 
 let backdrop;
 let initialized = false;
