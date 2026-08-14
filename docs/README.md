@@ -12,7 +12,7 @@ Documentation qui décrit l'état actuel du code. À maintenir à jour quand le 
 
 | Document                                                                 | Sujet                                                                                    |
 | ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
-| [`reference/CONCEPTS.md`](reference/CONCEPTS.md)                         | **Modèle conceptuel** : ce qu'est un Playbook, ses frontières, la nature de chaque objet |
+| [`reference/CONCEPTS.md`](reference/CONCEPTS.md)                         | **Modèle conceptuel** : Playbook, session, contenu, Studios, frontière avec Agorapulse   |
 | [`reference/FEATURES.md`](reference/FEATURES.md)                         | **Catalogue fonctionnel** : toutes les features de l'app, leurs flows, états, entrées    |
 | [`reference/ARCHITECTURE.md`](reference/ARCHITECTURE.md)                 | Architecture du proto, lifecycle, source layout, patterns de fichiers                    |
 | [`reference/ROUTES.md`](reference/ROUTES.md)                             | Route table, handoffs cross-routes, URL state hash query                                 |

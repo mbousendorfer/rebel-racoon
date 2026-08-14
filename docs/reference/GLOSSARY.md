@@ -48,6 +48,8 @@ Une **session** est un fil de conversation avec Archie. Tous synonymes :
 
 Chaque session a son propre thread (`assistant.js`), ses ideas (`library.js`), ses drafts (`posts-store.js`), ses mentions composer (`composer-mentions.js`).
 
+C'est un **fil continu** — pas une tâche qui se clôture — et son **Playbook est fixé à l'ouverture**. Voir [`CONCEPTS.md` §2](CONCEPTS.md#2-la-session--le-lieu-où-le-travail-se-fait).
+
 ### Playbook = Context (vocabulary leak)
 
 > Ce qu'**est** un Playbook — sa définition, ses frontières, ce qui n'a jamais le droit d'y entrer : [`CONCEPTS.md` §1](CONCEPTS.md#1-le-playbook). Ci-dessous, uniquement le problème de nom.
@@ -100,7 +102,20 @@ Une idée est typée selon une de ces 5 kinds :
 
 Champ optionnel : `potential` (High / Medium / Low) — heuristique de priorité.
 
-### Draft
+### Draft, Post, Top post, Source post
+
+⚠️ **« Post » désigne trois objets distincts.** La ligne de partage est **la publication** — un post programmé reste un **draft**, la Schedule met en file, elle ne publie pas.
+
+| Terme           | Sens                                                      | Store / composant                                                 |
+| --------------- | --------------------------------------------------------- | ----------------------------------------------------------------- |
+| **Draft**       | Post **non publié**, programmé compris                    | [`posts-store.js`](../../src/posts-store.js), `post-card.js`      |
+| **Post**        | Post **publié**                                           | —                                                                 |
+| **Top post**    | **Mon** post publié qui a performé (historique de compte) | [`top-posts-store.js`](../../src/top-posts-store.js)              |
+| **Source post** | Le post **d'un tiers**, cité comme preuve dans un Topic   | [`social-post-card.js`](../../src/components/social-post-card.js) |
+
+Terme parapluie pour les quatre : **content**. Jamais « posts ».
+
+### Draft (détail)
 
 Un **Draft** est un post candidat pour un réseau social. Stocké dans [`posts-store.js`](../../src/posts-store.js).
 
@@ -131,6 +146,26 @@ Une **source live MCP-queryable** (Notion, Slite, Google Drive, Slack, …) que 
 
 **Feature flag `connectors`** : default OFF. Activable dans `/settings → Admin`.
 
+### Studio (⚠️ deux sens)
+
+**« Studio » seul = le produit en prod côté Agorapulse.** L'atelier, lui, se nomme toujours en entier : **Image Studio**, **Clip Studio**, **Batch Studio** — un plein écran dédié à **un artefact**, dont on ressort en le rattachant à un draft, et où rien ne survit qui ne soit commité. Ne jamais écrire « le Studio » pour un atelier. Voir [`CONCEPTS.md` §5](CONCEPTS.md#5-les-studios--un-atelier-plein-écran-pour-un-artefact).
+
+### Clip
+
+Un extrait vidéo découpé d'une source vidéo par le **Clip Studio**. Un clip est **une Source** à part entière (kind `Video Clip`, [`sources-stream.js`](../../src/sources-stream.js)) et peut ensuite devenir un draft — pas un objet d'une troisième nature.
+
+### Batch
+
+Un lot de drafts produits en une passe (**Batch Studio** : upload/analyse → review), par opposition au draft-à-draft du chat. Un batch n'est pas un objet stocké : c'est un mode de production.
+
+### Repurpose
+
+Repartir d'un **Top post** pour en produire un nouveau draft ([`top-posts-flow.js`](../../src/top-posts-flow.js)). Le post publié sert de matière ; il n'est jamais modifié.
+
+### Folder
+
+Un dossier de contenu **Agorapulse** dans lequel un draft sauvegardé est classé ([`folders-store.js`](../../src/folders-store.js)). C'est un point de contact avec la plateforme, pas un rangement propre à Archie — voir [`CONCEPTS.md` §6](CONCEPTS.md#6-la-frontière-archie--agorapulse). ⚠️ Ne pas dire « dossier » dans l'UI pour un Topic.
+
 ### User mode (proto control)
 
 `localStorage.getItem("archie-user-mode")` :
@@ -150,6 +185,8 @@ Switch UI : `/settings → Admin`. Un reload est forcé pour que les stores re-s
 | "Project"                         | "Session" / "Chat" / "Conversation" | "Project" est un terme historique probable-spoon, supprimé                              |
 | "Composer"                        | "Archie"                            | "Composer" était un nom interne pré-rebrand                                             |
 | "Studio"                          | "Archie" (proto) / "Studio" (prod)  | "Studio" est le label prod côté Agorapulse — le proto reste "Archie standalone"         |
+| "le Studio" pour un atelier       | "l'Image Studio", "le Clip Studio"  | Collision avec le nom du produit prod — toujours nommer l'atelier en entier             |
+| "posts" comme terme parapluie     | "content"                           | "post" veut dire trois choses (draft / publié / post d'un tiers) — voir plus haut       |
 
 ## Voir aussi
 

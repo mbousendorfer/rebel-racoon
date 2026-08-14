@@ -91,14 +91,92 @@ Le code, les stores et les IDs disent **`Context`** ; l'UI dit **`Playbook`**. C
 
 ---
 
-## 2. Les autres objets, et pourquoi ils ne sont pas dans le Playbook
+## 2. La session — le lieu où le travail se fait
+
+Une **session** (= chat = conversation) est un **fil continu avec Archie**. Pas une tâche, pas un livrable : une conversation qui dure, où l'on revient, et qui n'a pas de fin naturelle. C'est ce qui la distingue d'un dossier de campagne ou d'un ticket.
+
+Deux conséquences de conception :
+
+- **Rien n'y « expire ».** Ce qui est produit dans un chat reste dans ce chat. Une session ne se clôture pas, elle se retrouve — d'où le pin, le rename, le regroupement dans la sidebar.
+- **Son Playbook est fixé à l'ouverture.** Un chat naît avec un Playbook et n'en change plus : le contrôle est un dropdown sur un chat neuf, un indicateur statique dès qu'il est actif ([`FEATURES.md`](FEATURES.md) §1). La cohérence de ce qu'on y produit est ainsi vraie **par construction** — pas besoin de se demander sous quelle marque tel draft a été écrit. Changer d'avis, c'est ouvrir un chat.
+
+Un chat **peut** vivre sans Playbook (Archie travaille alors sans cadrage), mais il ne peut pas en avoir deux.
+
+---
+
+## 3. À qui appartient quoi
+
+**La règle : ce que l'utilisateur apporte ou produit dans un chat appartient à ce chat.** Sources, ideas, drafts. Le chat est le contenant du travail, pas une simple vue sur un stock commun.
+
+Ce qui échappe à la règle, et pourquoi — trois familles seulement :
+
+| Reste global   | Pourquoi                                                                                                     |
+| -------------- | ------------------------------------------------------------------------------------------------------------ |
+| **Topics**     | Un topic arrive sur une cadence, rattaché à un Playbook, **bien avant qu'un chat existe** pour l'accueillir. |
+| **Top posts**  | L'historique publié est un fait du compte, pas d'une conversation. Aucun chat ne peut le revendiquer.        |
+| **Connectors** | De l'infrastructure de compte : on connecte Notion une fois, ça sert partout.                                |
+
+> ⚠️ **État du code ≠ intention.** Aujourd'hui `sources-stream.js` est **global** : une source importée dans un chat est visible depuis tous. C'est un écart connu avec la règle ci-dessus, pas un principe — ne le prenez pas pour un modèle à imiter en ajoutant un store. Les Playbooks, eux, sont légitimement globaux : ce sont des fiches réutilisables, pas du travail en cours.
+
+---
+
+## 4. Le vocabulaire du contenu — quatre objets, un seul mot piégeux
+
+« Post » désigne trois choses différentes dans le code. La ligne de partage est **la publication** :
+
+| Terme           | Ce que c'est                                                      | Où                                                                |
+| --------------- | ----------------------------------------------------------------- | ----------------------------------------------------------------- |
+| **Draft**       | Un post **non publié**, y compris programmé                       | [`posts-store.js`](../../src/posts-store.js), `post-card.js`      |
+| **Post**        | Un post **publié**                                                | le terme général une fois que c'est parti                         |
+| **Top post**    | **Mon** post publié qui a bien marché                             | [`top-posts-store.js`](../../src/top-posts-store.js)              |
+| **Source post** | Le post **de quelqu'un d'autre**, cité comme preuve dans un Topic | [`social-post-card.js`](../../src/components/social-post-card.js) |
+
+Un post programmé **reste un draft** : la Schedule ne publie pas, elle met en file.
+Quand il faut parler des quatre à la fois, dire **« content »**, jamais « posts ».
+
+> **« Brief » n'est pas un terme défini.** Le mot est générique et sert à plusieurs échelles (le résumé business d'un Playbook, la consigne d'une image dans l'Image Studio). Ne cherchez pas l'objet « Brief » : il n'existe pas. Ne construisez rien qui suppose qu'il n'y en a qu'un.
+
+---
+
+## 5. Les Studios — un atelier plein écran, pour un artefact
+
+Un **Studio** (Image, Clip, Batch) est un **atelier plein écran dédié à UN artefact**. On y entre depuis un draft, on travaille une seule chose — une image, une vidéo — et on en ressort en la rattachant au draft.
+
+Ce que ça implique, et qui n'est pas négociable :
+
+- **Rien n'y survit qui ne soit commité.** Fermer sans valider ne laisse rien derrière. L'état du studio est de travail, pas de stockage — c'est pourquoi [`image-studio.js`](../../src/image-studio.js) est un `Map(key → state)` en mémoire, effacé à la sortie.
+- **Un artefact à la fois.** Un studio qui gérerait une collection serait un écran, pas un atelier.
+- **Il lit le Playbook, il ne l'écrit pas** : logos, couleurs et images de référence viennent de la fiche ; un Playbook sans logo se répare dans le Playbook, pas ici.
+
+⚠️ **Collision de noms à connaître.** En prod côté Agorapulse, le produit lui-même s'appelle **Studio**. Règle : **« Studio » seul = le produit prod** ; **« Image Studio » / « Clip Studio » / « Batch Studio » = l'atelier**. Ne jamais écrire « le Studio » pour désigner un atelier.
+
+---
+
+## 6. La frontière Archie ↔ Agorapulse
+
+**Archie est une surface DANS Agorapulse**, pas un outil autonome. Le proto tourne en standalone parce que c'est un proto — pas parce que le produit l'est.
+
+Ça se voit aux endroits où le proto touche déjà le reste de la plateforme, et il faut les traiter comme des **points de contact**, pas comme des features d'Archie :
+
+| Surface                 | Ce qu'elle est vraiment                                      |
+| ----------------------- | ------------------------------------------------------------ |
+| **Schedule / calendar** | La file de publication d'Agorapulse, vue depuis Archie       |
+| **Folders**             | Le classement de contenu d'Agorapulse, où un draft est rangé |
+| **Social accounts**     | Les comptes connectés du compte Agorapulse, pas d'Archie     |
+| **Top posts**           | L'historique de performance mesuré par Agorapulse            |
+
+Conséquence pratique : avant de construire une capacité de publication, de classement ou de mesure **dans** Archie, se demander si la plateforme ne la possède pas déjà. Le proto la simule pour rendre le flow lisible ; ce n'est pas une invitation à la posséder.
+
+---
+
+## 7. Les autres objets, et pourquoi ils ne sont pas dans le Playbook
 
 Le pipeline canonique et les champs sont dans [`GLOSSARY.md`](GLOSSARY.md). Ici, seulement la frontière.
 
 | Objet         | Ce que c'est                                                  | Pourquoi hors Playbook                                                                                               |
 | ------------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| **Session**   | Un fil de conversation avec Archie                            | C'est le lieu où un Playbook est **appliqué**. Une session cite un `contextId` ; elle ne le modifie pas.             |
-| **Source**    | Un input brut ingéré (PDF, URL, vidéo, réponse de connecteur) | Du contenu, daté, global cross-session. La fiche dit comment écrire, pas à partir de quoi.                           |
+| **Session**   | Un fil continu avec Archie (§2)                               | C'est le lieu où un Playbook est **appliqué**. Une session cite un `contextId` ; elle ne le modifie pas.             |
+| **Source**    | Un input brut ingéré (PDF, URL, vidéo, réponse de connecteur) | Du contenu apporté dans un chat (§3). La fiche dit comment écrire, pas à partir de quoi.                             |
 | **Idea**      | Un insight extrait d'une source                               | Du contenu produit, par session.                                                                                     |
 | **Draft**     | Un post candidat pour un réseau                               | Du contenu produit. Il **lit** le Playbook (voix, CTA, marque) et ne lui rend rien.                                  |
 | **Schedule**  | Un draft posé dans le calendrier                              | Du contenu daté.                                                                                                     |
@@ -115,7 +193,7 @@ Playbook ──lu par──▶ Session ──▶ Source ──▶ Idea ──▶
 
 ---
 
-## 3. Checklist avant d'ajouter quelque chose au Playbook
+## 8. Checklist avant d'ajouter quelque chose au Playbook
 
 1. Le **test d'inclusion** (§1) passe-t-il sur les trois questions ?
 2. Est-ce une réponse à « qui êtes-vous ? » qu'un rédacteur externe aurait besoin de lire avant d'écrire ?
