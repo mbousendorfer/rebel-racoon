@@ -51,7 +51,7 @@ function sessionIdeas() {
   return sid ? getIdeas(sid) : [];
 }
 import { open as openScheduleModal } from "./schedule-modal.js?v=66";
-import { open as openImageStudio } from "./image-studio-v2/index.js?v=78";
+import { open as openImageStudio } from "./image-studio-v2/index.js?v=91";
 import { open as openConfirmModal } from "./confirm-modal.js?v=22";
 
 // Global Right Panel — slides in from the right edge of the viewport, overlays
