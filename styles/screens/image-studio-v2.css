@@ -172,9 +172,11 @@
 }
 
 /* Reservations, always symmetric: the inspector is the widest thing pinned in
-   generate mode, the palette in edit mode. */
+   generate mode, the palette in edit mode. The inspector is now flush to the edge
+   rather than inset, so the reservation is its width alone — the image gains the old
+   inset back on both sides and stays on the modal's centre line. */
 .isv2-stage-body.has-panel {
-  padding-inline: calc(var(--isv2-panel-w) + var(--isv2-panel-inset));
+  padding-inline: var(--isv2-panel-w);
 }
 
 .isv2-stage-body.has-palette {
@@ -1424,15 +1426,26 @@
    this box. That was the whole hidden cost of the flyout version —
    `overflow-y: auto` silently computes overflow-x to `auto` too, so a scrollable
    panel and a flyout could never coexist. */
+/* A SIDEBAR, not a floating card. Vertically centred with a shadow and rounded corners
+   it read as a panel hovering over the canvas, and its `max-height` clipped its own
+   controls once a couple of sections were open. Flush to the stage's left edge, full
+   height, squared off and separated by a hairline instead of a shadow: the same seven
+   sections, now with the whole height to use. `overflow-y: auto` stays as the safety
+   valve for when every section is expanded at once — that is the sidebar scrolling
+   internally, not the modal. */
 .isv2-panel {
   position: absolute;
   z-index: 4;
-  left: var(--ref-spacing-lg);
-  top: 50%;
-  transform: translateY(-50%);
+  left: 0;
+  top: 0;
+  bottom: 0;
+  transform: none;
   width: var(--isv2-panel-w);
-  max-height: calc(100% - var(--ref-spacing-md) * 2);
+  max-height: none;
   overflow-y: auto;
+  border-radius: 0;
+  box-shadow: none;
+  border-right: 1px solid var(--sys-border-color-default);
   /* The sections carry their own padding and their own dividers. */
   gap: 0;
   padding: var(--ref-spacing-xxs) 0;
