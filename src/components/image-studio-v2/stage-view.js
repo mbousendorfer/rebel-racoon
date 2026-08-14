@@ -41,7 +41,7 @@ import { KEY, ctx } from "./context.js?v=42";
 import { composer } from "./composer-view.js?v=72";
 import { settingsPanel } from "./settings-view.js?v=10";
 import { gridBriefView, gridAnalyzingView } from "./grid-view.js?v=15";
-import { briefStage, isBriefStage } from "./brief-stage.js?v=17";
+import { briefStage, isBriefStage, briefNote } from "./brief-stage.js?v=18";
 import { toolPalette } from "./tools-view.js?v=13";
 import { promptGuardDialog } from "./prompt-guard.js?v=7";
 import { editCanvas } from "./edit-view.js?v=41";
@@ -131,12 +131,18 @@ export function footerBar(st) {
     const ready = !st.promptLoading && !!(st.promptText || "").trim();
     const busy = st.genPhase === "generating";
     const hasShot = st.variations.length > 0;
+    // The brief's status line lives here, to the RIGHT of Regenerate: it is a statement
+    // about the whole brief, which is what this footer is for.
+    const note = briefNote(st);
+    const noteHtml = note ? `<p class="isv2-footer-note">${note}</p>` : "";
     if (hasShot) {
-      left = `<button type="button" class="ap-button stroked grey" data-img-generate ${busy ? "disabled" : ""}><i class="ap-icon-refresh"></i><span>Regenerate</span></button>`;
+      left = `<button type="button" class="ap-button stroked grey" data-img-generate ${busy ? "disabled" : ""}><i class="ap-icon-refresh"></i><span>Regenerate</span></button>${noteHtml}`;
       primary = `<button type="button" class="ap-button primary orange" data-img-use ${st.currentImage ? "" : "disabled"}><i class="ap-icon-check"></i><span>${escapeHtml(carousel ? `Use carousel · ${st.variations.length} slides` : "Use this image")}</span></button>`;
     } else if (busy) {
+      left = noteHtml;
       primary = `<button type="button" class="ap-button primary blue loading" disabled><span class="ap-loading-bar"></span><span>Generating…</span></button>`;
     } else {
+      left = noteHtml;
       primary = `<button type="button" class="ap-button primary blue" data-img-generate ${ready ? "" : "disabled"}><i class="ap-icon-sparkles-mermaid"></i><span>Generate</span></button>`;
     }
   } else {

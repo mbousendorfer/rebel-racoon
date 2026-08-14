@@ -598,6 +598,15 @@
   border-color: var(--comp-input-border-focused-color);
 }
 
+/* The brief's status line, in the footer beside Regenerate. Caption-sized and muted so it
+   reads as a note about the action next to it rather than a second action. */
+.isv2-footer-note {
+  min-width: 0;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--sys-text-color-light);
+}
+
 .isv2-bs-note {
   flex: 0 0 auto;
   font-size: var(--sys-text-style-caption-size);
@@ -1839,6 +1848,13 @@
    DS dialog footer used natively; the only thing said here is that it sits on
    the white shell rather than the dock's canvas, so the modal closes on a solid
    edge instead of trailing off into the grey. */
+.isv2-footer .ap-dialog-footer-left {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  min-width: 0;
+}
+
 .isv2-footer {
   flex: 0 0 auto;
   background: var(--app-surface);

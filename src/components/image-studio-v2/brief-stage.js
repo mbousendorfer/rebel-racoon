@@ -100,12 +100,16 @@ function briefBody(st) {
   return `<div class="isv2-bs-doc">${blocks}</div>`;
 }
 
-// One line of status under the brief. No invitation to start editing — every block
-// already is a field — so this only reports where the brief stands, and offers the way
-// back to Archie's version once the user has changed something.
-function briefNote(st) {
+// Where the brief stands, rendered in the modal FOOTER beside Regenerate (stage-view.js#
+// footerBar) rather than under the blocks. It is a status line about the whole brief, and
+// the footer is where this modal already keeps the things that talk about the whole
+// modal — under the blocks it competed with the blocks for the same reading.
+//
+// No invitation to start editing, since every block already is a field: this only reports
+// the state, and offers the way back to Archie's version once something has changed.
+export function briefNote(st) {
   if (st.promptLoading) return "";
-  if (!st.briefTakenOver) return `Written from the modifiers below. Edit any block to make it yours.`;
+  if (!st.briefTakenOver) return `Written from the modifiers — edit any block to make it yours.`;
   if (st.briefStale) {
     return `<span class="isv2-brief-stale">Modifiers changed since your edit.</span> <button type="button" class="ap-link standalone small" data-img-brief-rebuild>Rebuild from them</button>, or keep your words.`;
   }
@@ -348,8 +352,6 @@ export function briefStage(st) {
       </div>`
     : "";
 
-  const note = briefNote(st);
-
   const preview = previewColumn(st);
   // Two halves, genuinely: the brief and the controls that write it on one side, the
   // picture on the other. The modifiers sit at the BOTTOM of their own half rather than
@@ -359,7 +361,6 @@ export function briefStage(st) {
       <div class="isv2-bs-brief${st.briefTakenOver ? " is-editing" : ""}">
         <p class="isv2-bs-eyebrow">Image brief</p>
         ${briefBody(st)}
-        ${note ? `<p class="isv2-bs-note">${note}</p>` : ""}
       </div>
       <div class="isv2-bs-foot">
         <div class="isv2-bs-mods" role="group" aria-label="Brief modifiers">
