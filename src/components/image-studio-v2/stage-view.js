@@ -172,12 +172,15 @@ function stageContent(st) {
   // "generating"/"results", where the normal stages take over (and "Edit the brief"
   // in the footer sends genPhase back to "idle" to return here).
   const gridConfig = st.gridBrief && st.mode === "generate" && !feedView && st.genPhase === "idle";
-  // The grid opens on an "analysing your post" loader while the structured brief is
-  // seeded (the first runDerive). Once seeded, the cards take over and never flash
-  // back to the loader — reassembles on edits keep briefSeeded true.
-  const gridReady = gridConfig && st.briefSeeded;
+  // The loader owns the stage whenever the brief is being written — on open, and on
+  // every reassemble after it. In this variant the brief IS the screen, so rewriting
+  // it has to read as the screen being rewritten; a badge inside the Generate button
+  // was too quiet for something that changes what every card says. `has-grid` stays
+  // keyed to the cards, which are the scroll surface (index.js carries its position
+  // across the swap).
+  const gridReady = gridConfig && st.briefSeeded && !st.promptLoading;
   let inner;
-  if (gridConfig) inner = gridReady ? gridBriefView(st) : gridAnalyzingView();
+  if (gridConfig) inner = gridReady ? gridBriefView(st) : gridAnalyzingView(st);
   else if (feedView) inner = feedPreview(st);
   else if (st.mode === "edit") inner = editCanvas(st);
   else if (st.genPhase === "generating") inner = generatingStage(st);

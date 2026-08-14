@@ -571,15 +571,11 @@
   position: relative;
 }
 
-/* Rewriting shows on the field being rewritten, and nowhere else. The scrim that
-   used to live here covered the grid, dimmed twelve cards and floated a white
-   shadowed box at 38% to announce a sub-second recompute of one line — and the
-   mark inside it was `.gen-loading-mark`, the 88px stage glyph, in a small box.
-   Going quiet says the same thing and costs the reader nothing. */
-.isv2-gtext.is-rewriting {
-  opacity: 0.4;
-  pointer-events: none;
-}
+/* Nothing here for the rewriting state: the loader takes the whole stage
+   (grid-view#gridAnalyzingView), so there is no grid left to dim. What used to sit
+   at this spot was a scrim over the cards with a white shadowed box floating at
+   38% — a second surface stacked on the first, which is the part that read as
+   cheap. Replacing beats covering. */
 
 @media (max-width: 720px) {
   .isv2-grid-cards {

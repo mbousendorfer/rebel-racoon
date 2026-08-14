@@ -39,6 +39,9 @@ import * as imageStudio from "../../image-studio.js?v=83";
 
 let backdrop;
 let initialized = false;
+// Where the card grid was scrolled to, kept across the renders where it isn't
+// mounted (see renderBody). Reset on open, so a new draft starts at the top.
+let lastGridScroll = 0;
 let unsub = null;
 
 const HTML = `
@@ -64,13 +67,16 @@ function renderBody() {
   // The grid-brief variant is a tall scroll surface, so clicking a card near the
   // bottom (which reassembles the prompt → re-render) would snap the view to the
   // top. Carry the grid's scroll position across the swap.
+  //
+  // Remembered in a module variable rather than read-then-restored in the same pass,
+  // because a reassemble puts the full-stage loader in between: the grid unmounts,
+  // and the render that brings it back has no previous grid to read a position from.
+  // Editing a card near the bottom would otherwise return you to the top.
   const scroller = ctx.body.querySelector(".isv2-stage-body.has-grid");
-  const keepScroll = scroller ? scroller.scrollTop : null;
+  if (scroller) lastGridScroll = scroller.scrollTop;
   ctx.body.innerHTML = renderStudio(st);
-  if (keepScroll != null) {
-    const next = ctx.body.querySelector(".isv2-stage-body.has-grid");
-    if (next) next.scrollTop = keepScroll;
-  }
+  const nextScroller = ctx.body.querySelector(".isv2-stage-body.has-grid");
+  if (nextScroller) nextScroller.scrollTop = lastGridScroll;
   // Both composer fields auto-grow to whatever text carried over: the derived
   // brief on open, and anything typed before a re-render.
   autosize(ctx.body.querySelector("[data-img-prompt]"));
@@ -105,6 +111,7 @@ export function init() {
 export function open(postId, opts = {}) {
   if (!initialized) init();
   requestOpen(MODAL_ID, close);
+  lastGridScroll = 0;
   ctx.postId = postId || null;
   ctx.sessionId = opts.sessionId || null;
 

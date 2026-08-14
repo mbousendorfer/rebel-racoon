@@ -84,9 +84,6 @@ function textOnImageCard(st) {
   const on = !!st.textOnImage;
   const text = st.renderText || "";
   const over = imageStudio.renderTextOverMessage(text);
-  // These are the words Archie is rewriting, so this field carries the wait — see
-  // the note on `busy` in gridBriefView.
-  const rewriting = st.promptLoading && st.briefSeeded;
   return `<div class="isv2-gcard isv2-gcard--full isv2-gcard--textonimage${on ? " is-on" : ""}">
     <div class="isv2-gcard-toggle-row">
       <p class="isv2-gcard-label">Write text on the image</p>
@@ -102,7 +99,7 @@ function textOnImageCard(st) {
     }</p>
     ${
       on
-        ? `<textarea class="isv2-gbrief isv2-gtext${rewriting ? " is-rewriting" : ""}"${rewriting ? ' aria-busy="true"' : ""} data-img-render-text rows="2" placeholder="${escapeHtml(TEXT_ON_IMAGE_PLACEHOLDER)}" aria-label="Text to write into the image">${escapeHtml(text)}</textarea>
+        ? `<textarea class="isv2-gbrief isv2-gtext" data-img-render-text rows="2" placeholder="${escapeHtml(TEXT_ON_IMAGE_PLACEHOLDER)}" aria-label="Text to write into the image">${escapeHtml(text)}</textarea>
            <p class="ap-form-message error" data-img-render-text-msg role="status"${over ? "" : ` style="display:none"`}>${escapeHtml(over)}</p>`
         : ""
     }
@@ -204,17 +201,25 @@ function outputCard(st, choices, canCarousel, isCarousel) {
   </div>`;
 }
 
-// The opening "Archie is reading your post" state — a full-stage brand loader
-// shown while the structured brief is seeded (runDerive, ~2s), BEFORE the grid
-// appears. Without it the cards would flash in empty and then fill under the user;
-// with it, the analysis reads as the deliberate step it is. Shown once per open
-// (gated on !briefSeeded) — later reassembles on edits never bring it back.
-// `.gen-image-spinner` auto-hosts the animated Archie mark (archie-loader.js).
-export function gridAnalyzingView() {
+// The full-stage brand loader, for both moments the brief is being written: the
+// first pass on open (before any card exists — without it they would flash in empty
+// and fill under the user), and every reassemble after an edit. The second used to
+// be a scrim with a shadowed box over the cards, then a spinner in the Generate
+// button; the first was too heavy, the second too quiet for a change that rewrites
+// what every card says. Same state, same loader — only the words differ, because
+// on open there is nothing yet and on a reassemble there is something being redone.
+// `.gen-image-spinner` auto-hosts the animated Archie mark (archie-loader.js), and
+// `.gen-loading-mark` is right HERE, at 88px, because this is genuinely the stage.
+export function gridAnalyzingView(st = {}) {
+  const seeded = !!st.briefSeeded;
+  const title = seeded ? "Rewriting your brief…" : "Reading your post…";
+  const sub = seeded
+    ? "I'm folding your change into the parameters and the words on the image."
+    : "I'm setting the best parameters and writing your image brief.";
   return `<div class="isv2-grid-analyzing" role="status" aria-live="polite">
     <span class="gen-image-spinner gen-loading-mark"></span>
-    <p class="isv2-grid-analyzing-title">Reading your post…</p>
-    <p class="isv2-grid-analyzing-sub">Archie is setting the best parameters and writing your image brief.</p>
+    <p class="isv2-grid-analyzing-title">${title}</p>
+    <p class="isv2-grid-analyzing-sub">${sub}</p>
   </div>`;
 }
 
@@ -278,17 +283,8 @@ export function gridBriefView(st) {
     outputCard(st, choices, canCarousel, isCarousel),
   ].join("");
 
-  // Reassembling is short and touches ONE visible thing — the words Archie writes
-  // onto the image. So the wait is shown where it is actually spent: Generate holds
-  // a spinner and stays disabled, and the text being rewritten goes quiet until it
-  // lands. What used to be here — a scrim over the whole grid plus a white,
-  // shadowed box floating at 38% — dimmed twelve cards to report a recompute of
-  // one, and carried `.gen-loading-mark`, the 88px STAGE mark, inside a small box
-  // (docs/reference/UI-PATTERNS.md §7 names that exact mistake). Blocking a second
-  // change mid-flight was its other job; disabling Generate keeps that, and
-  // `runDerive` already drops a re-entrant trigger on its own.
-  const busy = st.promptLoading && st.briefSeeded;
-
+  // No busy state to carry here: while the brief is being rewritten the loader owns
+  // the whole stage (stage-view#gridReady), so this view simply isn't on screen.
   return `<div class="isv2-grid">
     <div class="isv2-grid-head">
       <span class="isv2-grid-title">Image setup</span>
@@ -296,9 +292,7 @@ export function gridBriefView(st) {
     </div>
     <div class="isv2-grid-cards">${cards}</div>
     <div class="isv2-grid-actions">
-      <button type="button" class="ap-button primary blue isv2-grid-go" data-img-grid-generate ${busy ? "disabled" : ""}>${
-        busy ? `<span class="gen-image-spinner"></span>` : `<i class="ap-icon-sparkles-mermaid"></i>`
-      }<span>Generate</span></button>
+      <button type="button" class="ap-button primary blue isv2-grid-go" data-img-grid-generate><i class="ap-icon-sparkles-mermaid"></i><span>Generate</span></button>
     </div>
   </div>`;
 }
