@@ -18,7 +18,7 @@ import { escapeHtml } from "../../utils.js?v=21";
 import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=38";
 import { KEY } from "./context.js?v=41";
 import * as imageStudio from "../../image-studio.js?v=82";
-import { imageTypeBody, styleBody } from "./settings-view.js?v=9";
+import { styleBody } from "./settings-view.js?v=9";
 import { refsBody } from "./references-view.js?v=8";
 import { brandingBody } from "./branding-view.js?v=3";
 
@@ -105,6 +105,35 @@ function textOnImageCard(st) {
            <p class="ap-form-message error" data-img-render-text-msg role="status"${over ? "" : ` style="display:none"`}>${escapeHtml(over)}</p>`
         : ""
     }
+  </div>`;
+}
+
+// Type, as DS radio cards rather than a chip row.
+//
+// Sharing a row with References gives this card real height, and the honest way to
+// use it is information rather than padding: each option's description was only ever
+// in a `title` tooltip, so it was invisible to anyone who didn't hover. And "Any" —
+// the default — was reachable only by clicking the selected chip a second time to
+// toggle it off, the kind of hidden affordance the References tiles deliberately
+// refuse. Four explicit options, one of them Any, fix both.
+//
+// Radios are read on `change`, not click: a click on a label-wrapped input fires
+// twice (label, then the synthesised click on the input), and both would reach
+// setImageType's toggle and cancel each other out.
+function typeBody(st) {
+  const opts = [{ key: "", label: "Any", desc: "Let Archie choose" }, ...imageStudio.IMAGE_TYPES];
+  return `<div class="isv2-typelist" role="radiogroup" aria-label="Image type">
+    ${opts
+      .map(
+        (o) => `<label class="ap-radio-card card isv2-typeopt">
+          <input type="radio" name="isv2GridType" value="${escapeHtml(o.key)}" data-img-type-radio ${(st.imageTypeKey || "") === o.key ? "checked" : ""} />
+          <div>
+            <span class="ap-radio-card-title">${escapeHtml(o.label)}</span>
+            <span>${escapeHtml(o.desc)}</span>
+          </div>
+        </label>`,
+      )
+      .join("")}
   </div>`;
 }
 
@@ -212,18 +241,21 @@ export function gridBriefView(st) {
     // Output used to lead this section, and their two chip groups forced the whole
     // first row to their height, leaving Type sitting in a third of a card.
     section("Direction"),
-    settingCard("Type", imageTypeBody(st)),
-    // Style is locked when references guide the look — mirror the settings panel's
-    // rule so the two variants don't disagree about when Style applies.
+    settingCard("Type", typeBody(st)),
+    // References comes BEFORE Style, because it is what switches Style off: reading
+    // "From references" on a card that sits above the references themselves is being
+    // told the effect before you have seen the cause. Its body splits in two (see
+    // .isv2-gcard--split) — stacked, the tiles and the "How to use it" chips left most
+    // of the card empty and made it the tallest thing on the screen.
+    settingCard("References", refsBody(st, picked), { wide: true, split: true }),
+    // Locked when references guide the look — same rule as the settings panel, so the
+    // two variants don't disagree about when Style applies. The note can point back
+    // now that the references are above it.
     settingCard("Style", styleBody(st), {
       wide: true,
       disabled: hasRefs,
-      note: hasRefs ? "From references" : "",
+      note: hasRefs ? "Taken from your reference image above" : "",
     }),
-    // Its body splits in two (see .isv2-gcard--split) — stacked, the tiles and the
-    // "How to use it" chips left most of the card empty and made it the tallest thing
-    // on the screen.
-    settingCard("References", refsBody(st, picked), { wide: true, split: true }),
     settingCard(
       "Branding",
       hasLogo || hasColors

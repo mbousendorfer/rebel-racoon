@@ -332,6 +332,41 @@
   grid-column: 1 / -1;
 }
 
+/* Type as a stacked list of DS radio cards. It shares its row with References, so it
+   has the height for each option to carry the description that used to hide in a
+   tooltip — and for "Any" to be a real option instead of a second click on a chip. */
+.isv2-typelist {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+}
+
+/* Name and description on ONE line. Stacked, four options ran 66px each and made this
+   card drive its row 100px taller than References beside it — which is just the old
+   dead space moved to the other card. Side by side they come to the same height as
+   References, so both cards are full and the row costs nothing. The hierarchy is
+   still there, only horizontal: bold name, muted description. */
+.isv2-typeopt > div {
+  display: flex;
+  /* Explicit: the DS sets this container to `column`, and inheriting that while adding
+     a gap made the option TALLER instead of shorter. */
+  flex-direction: row;
+  align-items: baseline;
+  gap: var(--ref-spacing-xxs);
+  min-width: 0;
+}
+
+.isv2-typeopt .ap-radio-card-title {
+  flex: 0 0 auto;
+}
+
+.isv2-typeopt > div > span:last-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* ── Output: one card, three chip sets across ───────────────────────────────
    Equal columns whatever the group count (grid-auto-flow does that without the view
    having to tell CSS how many there are), divided by hairlines so the row reads as

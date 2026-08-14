@@ -309,6 +309,11 @@ function onChange(event) {
     imageStudio.commitBriefField(KEY, event.target.dataset.imgBriefField, event.target.value);
   } else if (event.target.matches("[data-img-grid-textonimage]")) {
     imageStudio.setTextOnImage(KEY, event.target.checked);
+  } else if (event.target.matches("[data-img-type-radio]")) {
+    // Grid-brief renders Type as DS radio cards. Read on change, not click: a
+    // label-wrapped input fires click twice and setImageType toggles, so the two
+    // would cancel out. An empty value is the explicit "Any".
+    imageStudio.setImageType(KEY, event.target.value);
   }
 }
 
