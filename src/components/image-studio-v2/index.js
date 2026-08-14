@@ -33,9 +33,9 @@ import { getContextById } from "../../contexts-store.js?v=48";
 import { MODAL_ID, KEY, ctx, state, autosize } from "./context.js?v=42";
 import { loadImg } from "../../image-studio-canvas.js?v=6";
 import { renderStudio } from "./stage-view.js?v=101";
-import { offerUndoIfNeeded, resetUndoOffers } from "./prompt-guard.js?v=6";
+import { offerUndoIfNeeded, resetUndoOffers } from "./prompt-guard.js?v=7";
 import { bindStudioEvents } from "./events.js?v=22";
-import * as imageStudio from "../../image-studio.js?v=88";
+import * as imageStudio from "../../image-studio.js?v=89";
 
 let backdrop;
 let initialized = false;

@@ -529,7 +529,11 @@
   background: var(--ref-color-white);
 }
 
-.isv2-bs-block:last-child:nth-child(odd) {
+/* A lone last block takes the full width instead of leaving a hole — but the parity is
+   counted WITH the hero, which spans row one. The pairs are children (2,3), (4,5)…, so a
+   block left on its own is an EVEN child, not an odd one. Reading it as odd made
+   Composition span while Palette sat alone beside a gap. */
+.isv2-bs-block:last-child:nth-child(even) {
   grid-column: 1 / -1;
 }
 

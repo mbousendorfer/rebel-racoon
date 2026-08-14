@@ -43,10 +43,10 @@ import { settingsPanel } from "./settings-view.js?v=10";
 import { gridBriefView, gridAnalyzingView } from "./grid-view.js?v=15";
 import { briefStage, isBriefStage } from "./brief-stage.js?v=17";
 import { toolPalette } from "./tools-view.js?v=13";
-import { promptGuardDialog } from "./prompt-guard.js?v=6";
+import { promptGuardDialog } from "./prompt-guard.js?v=7";
 import { editCanvas } from "./edit-view.js?v=41";
 import { compositeOverlays } from "../../image-studio-canvas.js?v=6";
-import * as imageStudio from "../../image-studio.js?v=88";
+import * as imageStudio from "../../image-studio.js?v=89";
 
 // In-feed preview — the edit canvas layers logo/text overlays as live DOM over
 // the image, but renderPostCard only takes a URL, so overlays wouldn't show. We

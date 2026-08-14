@@ -24,13 +24,16 @@
 import { escapeHtml } from "../../utils.js?v=22";
 import { showToast } from "../toast.js?v=21";
 import { KEY } from "./context.js?v=42";
-import * as imageStudio from "../../image-studio.js?v=88";
+import * as imageStudio from "../../image-studio.js?v=89";
 
 // What each guarded setting is called in the sentence, so the dialog names the
 // thing the user just clicked rather than saying "a setting".
 const WHAT = {
   imageType: "the image type",
   style: "the style",
+  format: "the format",
+  useBranding: "branding",
+  useBrandColors: "the brand colours",
   briefField: "the headline",
   selectRef: "the reference image",
   removeRef: "the reference image",
@@ -43,6 +46,16 @@ const WHAT = {
 // there is the text set INTO the image, because those words are shaped by the look
 // they sit on. Naming the wrong one would make the warning unreadable.
 function subject(st) {
+  // Auto-brief's brief is a set of editable BLOCKS, and every modifier rewrites all of
+  // them. Naming "the prompt" would point at something the user never sees there.
+  if (st.autoBrief && !st.gridBrief) {
+    return {
+      title: "Rewrite the brief?",
+      body: "You've edited the brief by hand. Changing",
+      tail: "makes Archie write every block again, so your edits will be lost.",
+      cta: "Rewrite brief",
+    };
+  }
   return st.gridBrief
     ? {
         title: "Rewrite the text on your image?",

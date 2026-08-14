@@ -29,7 +29,7 @@ import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.j
 import { getPosts } from "../../posts-store.js?v=46";
 import { renderPostCard } from "../post-card.js?v=83";
 import { KEY, ctx } from "./context.js?v=42";
-import * as imageStudio from "../../image-studio.js?v=88";
+import * as imageStudio from "../../image-studio.js?v=89";
 import { imageTypeBody, styleBody, formatBody, outputBody } from "./settings-view.js?v=10";
 import { refsBody, refSummary } from "./references-view.js?v=9";
 import { brandingBody } from "./branding-view.js?v=4";

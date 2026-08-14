@@ -669,11 +669,13 @@ export function setStyle(sessionId, key) {
 const GRID_GUARDED = new Set(["style", "briefField"]);
 
 function defer(s, sessionId, kind, payload) {
-  // Auto-brief retires the guard: the prose brief is read-only until the user
-  // explicitly takes it over, so a setting change can never discard typed words.
-  if (s.autoBrief) return false;
   if (s.gridBrief) {
     if (!GRID_GUARDED.has(kind) || !renderTextDirty(s) || s.skipPromptWarning) return false;
+  } else if (s.autoBrief) {
+    // The brief's blocks are edited in place, and editing one IS the takeover
+    // (commitBriefLine). Every modifier rewrites the whole brief, so once those words are
+    // the user's, changing one has to ask before throwing them away.
+    if (!s.briefTakenOver || s.skipPromptWarning) return false;
   } else if (!isDirty(s) || s.skipPromptWarning) {
     return false;
   }
@@ -694,9 +696,16 @@ export function setImageType(sessionId, key) {
   settingChanged(sessionId);
 }
 
+function applyFormat(s, formatId) {
+  s.formatId = formatId;
+}
+
 export function setFormat(sessionId, formatId) {
   const s = states.get(sessionId);
   if (!s) return;
+  // Format writes the brief's Composition line, so it is one of the rewrites the guard
+  // covers. Count/output are not: they change how many images, not what the brief says.
+  if (defer(s, sessionId, "format", formatId)) return;
   s.formatId = formatId;
   afterLegacySetting(sessionId);
 }
@@ -801,9 +810,14 @@ export function removeReferenceImage(sessionId, id) {
 
 // Stamp the Playbook's logo into what gets generated, or don't. A no-op without a
 // logo — there is nothing to turn on.
+function applyUseBranding(s, on) {
+  s.useBranding = !!on;
+}
+
 export function setUseBranding(sessionId, on) {
   const s = states.get(sessionId);
   if (!s || !s.playbookLogo) return;
+  if (defer(s, sessionId, "useBranding", !!on)) return;
   s.useBranding = !!on;
   afterLegacySetting(sessionId);
 }
@@ -811,9 +825,15 @@ export function setUseBranding(sessionId, on) {
 // Send the Playbook's palette to the model, or don't. A no-op without colours —
 // same contract as setUseBranding, and for the same reason: a switch that can't
 // change anything shouldn't pretend it did.
+function applyUseBrandColors(s, on) {
+  s.useBrandColors = !!on;
+  syncPaletteLine(s);
+}
+
 export function setUseBrandColors(sessionId, on) {
   const s = states.get(sessionId);
   if (!s || !s.playbookColors.length) return;
+  if (defer(s, sessionId, "useBrandColors", !!on)) return;
   s.useBrandColors = !!on;
   syncPaletteLine(s);
   afterLegacySetting(sessionId);
@@ -1397,6 +1417,9 @@ export function pendingSettingChange(sessionId) {
 const APPLY = {
   imageType: applyImageType,
   style: applyStyle,
+  format: applyFormat,
+  useBranding: applyUseBranding,
+  useBrandColors: applyUseBrandColors,
   briefField: (s, { key, value }) => {
     if (key in s.brief) s.brief[key] = String(value || "");
   },
