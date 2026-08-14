@@ -86,7 +86,7 @@ Un **Source** est tout input brut qu'Archie peut ingérer :
 | Video Clip    | Extracted from video | extracting → done             |
 | Connector doc | Connector query      | querying → done               |
 
-Géré par [`src/sources-stream.js`](../../src/sources-stream.js) — le seul store global.
+Géré par [`src/sources-stream.js`](../../src/sources-stream.js), **global** aujourd'hui — un écart connu avec le modèle (ce qu'on apporte dans un chat lui appartient), pas un principe : [`CONCEPTS.md` §3](CONCEPTS.md#3-à-qui-appartient-quoi).
 
 ### Idea (kind taxonomy)
 

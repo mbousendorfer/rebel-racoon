@@ -116,7 +116,7 @@ Ce qui échappe à la règle, et pourquoi — trois familles seulement :
 | **Top posts**  | L'historique publié est un fait du compte, pas d'une conversation. Aucun chat ne peut le revendiquer.        |
 | **Connectors** | De l'infrastructure de compte : on connecte Notion une fois, ça sert partout.                                |
 
-> ⚠️ **État du code ≠ intention.** Aujourd'hui `sources-stream.js` est **global** : une source importée dans un chat est visible depuis tous. C'est un écart connu avec la règle ci-dessus, pas un principe — ne le prenez pas pour un modèle à imiter en ajoutant un store. Les Playbooks, eux, sont légitimement globaux : ce sont des fiches réutilisables, pas du travail en cours.
+> ⚠️ **État du code ≠ intention.** Deux écarts connus, à ne pas prendre pour des modèles quand vous ajoutez un store : `sources-stream.js` est **global** (une source importée dans un chat est visible depuis tous), et `library.js` tient un **pool global d'ideas** à côté de ses listes par session ([`STORES.md`](STORES.md)). Les Playbooks, eux, sont légitimement globaux : ce sont des fiches réutilisables, pas du travail en cours.
 
 ---
 
