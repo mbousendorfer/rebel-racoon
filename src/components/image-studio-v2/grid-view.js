@@ -16,7 +16,7 @@
 
 import { escapeHtml } from "../../utils.js?v=21";
 import { KEY } from "./context.js?v=41";
-import * as imageStudio from "../../image-studio.js?v=81";
+import * as imageStudio from "../../image-studio.js?v=82";
 import { imageTypeBody, styleBody, formatBody, outputBody } from "./settings-view.js?v=9";
 import { refsBody } from "./references-view.js?v=8";
 import { brandingBody } from "./branding-view.js?v=3";
@@ -65,22 +65,45 @@ function settingCard(label, body, { wide = false, full = false, split = false, d
   </div>`;
 }
 
-// "Write text on the image" — the one toggle card, sitting first and full width the
-// way the attachment shows it. On paints the headline into the artwork; the literal
-// words are refined on the blueprint (Edit mode).
+// "Write text on the image" — first card, full width, because the words baked into
+// the artwork are the most visible thing the image will carry.
+//
+// The words are DERIVED from the post like every other line of the brief (Archie
+// picks the line that reads at a glance) and edited right here — not deferred to the
+// blueprint, and not a mirror of "Headline idea": mirroring meant editing one field
+// silently rewrote another, the same trap Type → headline used to be.
+//
+// The field only exists while the switch is on; a text box for text you have turned
+// off is an invitation to write something that will never appear. Turning it back on
+// restores what you wrote (see setTextOnImage).
+const TEXT_ON_IMAGE_PLACEHOLDER = `Black Friday
+−50% on everything`;
+
 function textOnImageCard(st) {
   const on = !!st.textOnImage;
-  return `<div class="isv2-gcard isv2-gcard--toggle isv2-gcard--full">
+  const text = st.renderText || "";
+  const over = imageStudio.renderTextOverMessage(text);
+  return `<div class="isv2-gcard isv2-gcard--full isv2-gcard--textonimage${on ? " is-on" : ""}">
     <div class="isv2-gcard-toggle-row">
       <div class="isv2-gcard-toggle-copy">
         <p class="isv2-gcard-label">Write text on the image</p>
-        <p class="isv2-gcard-hint">Edit it on the blueprint, where it will appear.</p>
+        <p class="isv2-gcard-hint">${
+          on
+            ? "Archie took this from your post. It gets set into the artwork itself."
+            : "No words baked into the artwork."
+        }</p>
       </div>
       <label class="ap-toggle-container" title="Write text on the image">
         <input type="checkbox" data-img-grid-textonimage ${on ? "checked" : ""} aria-label="Write text on the image" />
         <i aria-hidden="true"></i>
       </label>
     </div>
+    ${
+      on
+        ? `<textarea class="isv2-gbrief isv2-gtext" data-img-render-text rows="2" placeholder="${escapeHtml(TEXT_ON_IMAGE_PLACEHOLDER)}" aria-label="Text to write into the image">${escapeHtml(text)}</textarea>
+           <p class="ap-form-message error" data-img-render-text-msg role="status"${over ? "" : ` style="display:none"`}>${escapeHtml(over)}</p>`
+        : ""
+    }
   </div>`;
 }
 

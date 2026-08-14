@@ -35,7 +35,7 @@ import {
   startCropGesture,
   applyCropSelection,
 } from "./interactions.js?v=40";
-import * as imageStudio from "../../image-studio.js?v=81";
+import * as imageStudio from "../../image-studio.js?v=82";
 
 function onClick(event, close) {
   const st = state();

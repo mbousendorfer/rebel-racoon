@@ -412,6 +412,31 @@
   gap: var(--ref-spacing-md);
 }
 
+/* "Write text on the image" carries a switch AND a field, so the card can't simply
+   BE the field the way the brief cards are. A hairline under the toggle row does the
+   separating instead of a second bordered box — same reason the brief cards dropped
+   their inner frame. The card still lights up on focus, so it reads as editable. */
+.isv2-gcard--textonimage.is-on {
+  border-color: var(--comp-input-border-default-color);
+}
+
+.isv2-gcard--textonimage.is-on:focus-within {
+  border-color: var(--comp-input-border-focused-color);
+}
+
+.isv2-gtext {
+  /* Two lines of THIS type — the field is set a size up (below), so measuring it in
+     the brief fields' 18px line-height clipped the second line by 4px. */
+  height: calc(var(--sys-text-style-subtitle-line-height) * 2);
+  padding-top: var(--ref-spacing-xs);
+  border-top: 1px solid var(--sys-border-color-default);
+  /* The words land on the artwork as a headline, so they are set as one here too —
+     a size up from the brief fields, which hold prose about the image. */
+  font-size: var(--sys-text-style-subtitle-size);
+  line-height: var(--sys-text-style-subtitle-line-height);
+  font-weight: var(--sys-text-style-subtitle-weight);
+}
+
 .isv2-gcard-toggle-copy {
   display: flex;
   flex-direction: column;

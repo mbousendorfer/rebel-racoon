@@ -429,7 +429,8 @@ export function start(
     // open; every card/setting change reassembles through the same derive plumbing.
     gridBrief: isFlagOn("imageStudioGridBrief"),
     brief: { about: "", achieve: "", audience: "", tone: "", headline: "", oneThing: "" },
-    textOnImage: true, // "Write text on the image" — on by default, mirrors renderText
+    textOnImage: true, // "Write text on the image" — on by default
+    lastRenderText: "", // what the switch restores when turned back on
     briefSeeded: false, // the structured brief was filled from the post once, at open
     renderText: "", // words to paint INTO the image (empty = none)
     styleKey: null, // selected Style preset (STYLE_PRESETS)
@@ -1104,7 +1105,10 @@ export function runDerive(sessionId, { delay = DERIVE_MS } = {}) {
       if (!cur.briefSeeded) {
         cur.brief = deriveBrief(cur);
         cur.briefSeeded = true;
-        if (cur.textOnImage && !cur.renderText) cur.renderText = cur.brief.headline;
+        // The words painted into the image are derived from the post in their own
+        // right (deriveRenderText picks the shortest line that reads at a glance),
+        // NOT copied from brief.headline — see setTextOnImage.
+        if (cur.textOnImage && !cur.renderText) cur.renderText = deriveRenderText(cur);
       }
     } else if (cur.autoBrief) {
       if (!cur.renderTextSeeded) {
@@ -1195,17 +1199,27 @@ export function commitBriefField(sessionId, key, value) {
   const s = states.get(sessionId);
   if (!s || !(key in s.brief)) return;
   s.brief[key] = String(value || "");
-  if (key === "headline" && s.textOnImage) s.renderText = s.brief[key];
   settingChanged(sessionId);
 }
 
-// "Write text on the image": whether the artwork carries the headline. On mirrors
-// the headline into renderText (what the bake reads); off clears it.
+// "Write text on the image": whether the artwork carries words at all.
+//
+// The words themselves are their OWN field — derived from the post, then edited in
+// place — so this switch must never regenerate them from somewhere else. Off parks
+// them in `lastRenderText` and clears the live value (what the bake reads); on puts
+// them back, falling back to a fresh derive only when there is nothing to restore.
+// Same shape as the References switch and `lastRefId`, for the same reason: turning
+// something off and on again shouldn't cost you what you wrote.
 export function setTextOnImage(sessionId, on) {
   const s = states.get(sessionId);
   if (!s) return;
   s.textOnImage = !!on;
-  s.renderText = s.textOnImage ? s.brief.headline || "" : "";
+  if (s.textOnImage) {
+    s.renderText = s.renderText || s.lastRenderText || deriveRenderText(s);
+  } else {
+    if (s.renderText) s.lastRenderText = s.renderText;
+    s.renderText = "";
+  }
   settingChanged(sessionId);
 }
 
