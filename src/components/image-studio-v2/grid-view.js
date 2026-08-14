@@ -135,16 +135,17 @@ export function gridBriefView(st) {
   const cards = [
     textOnImageCard(st),
 
-    // Parameters first: the quick, high-impact choices belong at the top, not below
-    // six paragraphs of copy. Type leads — it's the biggest lever.
+    // The screen reads top to bottom as three questions: what should it LOOK like,
+    // what should it SAY, and how does it SHIP. Format and Output answer the last one
+    // — they don't describe the image at all, they decide its shape and how many of
+    // it — so they sit at the very bottom, next to the button that acts on them.
     //
-    // Three columns, and the spans are chosen so each run fills a row exactly —
-    // the three chip cards, then Style beside Branding, then References — which is
-    // what keeps the whole setup roughly one screen instead of a long scroll.
-    section("Parameters"),
+    // Cards are paired by height as well as by meaning, because a grid row is as tall
+    // as its tallest card: Type beside Style, References beside Branding. Format and
+    // Output used to lead this section, and their two chip groups forced the whole
+    // first row to their height, leaving Type sitting in a third of a card.
+    section("Direction"),
     settingCard("Type", imageTypeBody(st)),
-    settingCard("Format", formatBody(st, choices)),
-    settingCard(canCarousel ? "Output" : "Variations", outputBody(st, canCarousel, isCarousel)),
     // Style is locked when references guide the look — mirror the settings panel's
     // rule so the two variants don't disagree about when Style applies.
     settingCard("Style", styleBody(st), {
@@ -152,6 +153,10 @@ export function gridBriefView(st) {
       disabled: hasRefs,
       note: hasRefs ? "From references" : "",
     }),
+    // Its body splits in two (see .isv2-gcard--split) — stacked, the tiles and the
+    // "How to use it" chips left most of the card empty and made it the tallest thing
+    // on the screen.
+    settingCard("References", refsBody(st, picked), { wide: true, split: true }),
     settingCard(
       "Branding",
       hasLogo || hasColors
@@ -159,14 +164,18 @@ export function gridBriefView(st) {
         : `<p class="isv2-gcard-hint">No brand kit on this Playbook.</p>`,
       { disabled: !hasLogo && !hasColors },
     ),
-    // Full width, but its body splits in two (see .isv2-gcard--split) — stacked, the
-    // tiles and the "How to use it" chips left the right two-thirds of the card empty
-    // and made it the tallest thing on the screen.
-    settingCard("References", refsBody(st, picked), { full: true, split: true }),
 
-    // The written brief below — a uniform block of equal-height cards.
+    // What it says — a uniform block of equal-height cards.
     section("Brief"),
     ...BRIEF_FIELDS.map((f) => briefCard(f, st)),
+
+    // How it ships. Last, so the final decisions sit against the Generate button.
+    // The card keeps its own name rather than "Output" a second time.
+    section("Output"),
+    settingCard("Format", formatBody(st, choices)),
+    settingCard(canCarousel ? "Single or carousel" : "Variations", outputBody(st, canCarousel, isCarousel), {
+      wide: true,
+    }),
   ].join("");
 
   // Rewriting the brief BLOCKS. The prompt being rebuilt is never shown in this

@@ -218,8 +218,12 @@
   color: var(--sys-text-color-light);
 }
 
+/* Not the modal's full width. At 1180px the cards were wider than their contents —
+   three chips floating in a third of a metre — and a card whose control ends a long
+   way from its own edge reads as unfinished. 1040 keeps three columns comfortable
+   while the controls actually reach the card edges. */
 .isv2-grid {
-  max-width: 1180px;
+  max-width: 1040px;
   margin: 0 auto;
   padding: var(--ref-spacing-md) var(--ref-spacing-md) var(--ref-spacing-xl);
   display: flex;
@@ -305,8 +309,12 @@
    — over 330px tall each, which was most of the scroll on this screen. Here they pack
    small, and auto-FIT (not auto-fill) collapses the empty tracks so the six stretch
    across the card instead of huddling left with dead space beside them. */
+/* 80px, not 96: at the narrower measure a 96px floor only fitted five tracks in this
+   card, so the sixth preset wrapped to a second row and took the whole row's height
+   with it. Six is the catalogue, and they belong on one line. auto-FIT (not fill)
+   collapses any spare track so the six always stretch to the card's width. */
 .isv2-grid .isv2-style-grid {
-  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
 }
 
 /* A full-width card whose content is a narrow stack wastes the width AND pays for it
