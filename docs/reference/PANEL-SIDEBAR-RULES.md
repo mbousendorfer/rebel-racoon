@@ -30,7 +30,7 @@ overlays : `sidebar | contenu | right panel`.
    **Drafts**, **Ideas** (avec sous-onglet Clips) et **Sources**. Ouvrir un mode
    remplace le précédent.
 5. **Lié à la session** : le panel n'existe que sur une page de session. Quitter
-   la session (Playbooks, Settings, Dashboard, changement de chat…) le ferme.
+   la session (Playbooks, Connectors, Dashboard, changement de chat…) le ferme.
 6. **Deep-link & retour navigateur** : le mode ouvert est encodé dans l'URL
    (`?panel=drafts|ideas|sources`), donc partageable et restauré au
    précédent/suivant.

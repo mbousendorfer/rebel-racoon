@@ -41,7 +41,6 @@ body.has-modal {
 
 .bug-report-modal,
 .feedback-modal,
-.image-studio-modal,
 .isv2-modal,
 .chat-picker-modal,
 .add-source-modal,
@@ -465,7 +464,6 @@ body.has-modal {
 
 .bug-report-modal.open,
 .feedback-modal.open,
-.image-studio-modal.open,
 .isv2-modal.open,
 .chat-picker-modal.open,
 .add-source-modal.open,
@@ -750,14 +748,6 @@ body.has-modal {
 .feedback-modal__intro a {
   color: var(--ref-color-electric-blue-100);
   text-decoration: underline;
-}
-
-.feedback-modal__thank-you {
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  font-weight: var(--sys-text-style-body-weight);
-  color: var(--ref-color-grey-60);
-  margin: 0;
 }
 
 /* ── Success panels (shown when .success is set) ─────────── */

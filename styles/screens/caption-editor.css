@@ -51,40 +51,6 @@
   white-space: nowrap;
 }
 
-/* ── Body 3-pane layout ───────────────────────────────────────────── */
-
-.cap-ed__body {
-  flex: 1;
-  display: grid;
-  grid-template-columns: 320px minmax(0, 1fr) 332px;
-  min-height: 0;
-}
-
-.cap-ed__left,
-.cap-ed__right {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  background: var(--app-vc-surface);
-}
-
-/* VEED order: controls panel left · preview center · transcript right. */
-.cap-ed__left {
-  order: 3;
-  border-left: 1px solid var(--app-vc-border);
-  padding: var(--ref-spacing-sm);
-  gap: var(--ref-spacing-xs);
-}
-
-.cap-ed__center {
-  order: 2;
-}
-
-.cap-ed__right {
-  order: 1;
-  border-right: 1px solid var(--app-vc-border);
-}
-
 /* ── Left: transcript ─────────────────────────────────────────────── */
 
 .cap-ed__cleanup-btn {
@@ -288,37 +254,6 @@
   opacity: 0.5;
 }
 
-/* ── Center: stage + transport ────────────────────────────────────── */
-
-.cap-ed__center {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--ref-spacing-sm);
-  padding: var(--ref-spacing-md);
-  min-height: 0;
-}
-
-.cap-ed__stage-wrap {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 0;
-}
-
-.cap-ed__stage {
-  position: relative;
-  height: min(58vh, 520px);
-  aspect-ratio: 9 / 16;
-  border-radius: var(--ref-border-radius-md);
-  background-size: cover;
-  background-color: var(--app-vc-surface-sunken);
-  overflow: hidden;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
-}
-
 /* Real footage fills the stage, behind dead-zones / caption / play glyph. */
 .cap-ed__video {
   position: absolute;
@@ -412,7 +347,6 @@
   z-index: 5;
 }
 
-.cap-ed__stage:hover .cap-ed-frame,
 .cap-ed-frame.is-active {
   opacity: 1;
 }
@@ -866,12 +800,6 @@
   border-left: 1px solid var(--app-vc-border);
 }
 
-.cap-ed-divider {
-  height: 1px;
-  background: var(--app-vc-border);
-  margin: var(--ref-spacing-xxs) 0;
-}
-
 .cap-ed-select,
 .cap-ed-num {
   font-family: inherit;
@@ -897,12 +825,6 @@
 .cap-ed-num {
   width: 60px;
   text-align: center;
-}
-
-.cap-ed-suffix {
-  color: var(--app-vc-text-subtle);
-  font-size: var(--sys-text-style-caption-size);
-  margin-left: 4px;
 }
 
 .cap-ed-color {
@@ -1006,10 +928,4 @@
   height: 1px;
   background: var(--app-vc-border);
   margin: 4px 0;
-}
-
-@media (max-width: 1080px) {
-  .cap-ed__body {
-    grid-template-columns: 260px minmax(0, 1fr) 300px;
-  }
 }

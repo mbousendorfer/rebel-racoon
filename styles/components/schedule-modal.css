@@ -131,10 +131,6 @@
   padding-inline: var(--ref-spacing-xs);
 }
 
-.schedule-modal__strategy-note > textarea {
-  resize: vertical;
-}
-
 /* Foot row — start date on the left, Compute on the right. Wraps on a
    narrow modal so neither control gets crushed. */
 .schedule-modal__strategy-foot {

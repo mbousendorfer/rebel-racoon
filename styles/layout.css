@@ -51,9 +51,10 @@
    at 610px. Same formula for every mode (Ideas, Sources, Drafts,
    Context-form, Context-brief) so the panel reads as a stable surface
    instead of resizing aleatoirely between modes. The runtime override
-   (set by the resize handle, persisted via localStorage under
-   `archie-rpanel-width`) wins when present, letting the user keep
-   their preferred width across sessions. */
+   (set by the resize handle, `--app-right-panel-width-runtime`) wins
+   when present, but is NOT persisted across reloads — the legacy
+   `archie-rpanel-width` localStorage key from the pre-formula era is
+   wiped on init (right-panel.js). */
 .app-shell.is-right-panel-open {
   grid-template-columns:
     var(--app-sidebar-width)
@@ -211,37 +212,6 @@ button.app-topbar__title--rename:focus-visible .app-topbar__title-pen {
    The playbook/context pill moved into the composer (session.js) — the
    topbar no longer renders it. */
 
-.app-topbar__feedback {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  background: none;
-  border: 0;
-  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xxs);
-  border-radius: var(--app-radius-md);
-  font-family: inherit;
-  font-size: var(--sys-text-style-body-bold-size);
-  line-height: var(--sys-text-style-body-bold-line-height);
-  font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--ref-color-electric-blue-100);
-  cursor: pointer;
-}
-
-.app-topbar__feedback {
-  transition:
-    color var(--ref-animation-short) var(--app-ease-out),
-    background-color var(--ref-animation-short) var(--app-ease-out);
-}
-
-.app-topbar__feedback:hover {
-  background: var(--ref-color-electric-blue-05);
-  color: var(--ref-color-electric-blue-150);
-}
-
-.app-topbar__feedback:active {
-  background: var(--ref-color-electric-blue-10);
-}
-
 /* ---------- Generic screen scaffolding ---------- */
 
 .screen {
@@ -251,55 +221,6 @@ button.app-topbar__title--rename:focus-visible .app-topbar__title-pen {
   flex-direction: column;
   background: var(--app-bg);
   overflow: hidden;
-}
-
-.screen--split {
-  display: grid;
-  grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
-}
-
-.screen--centered {
-  align-items: center;
-  justify-content: center;
-  overflow-y: auto;
-}
-
-/* Placeholder screens for routes whose full implementation lands later. */
-.screen--placeholder {
-  align-items: center;
-  justify-content: center;
-  padding: var(--ref-spacing-xxxl) var(--ref-spacing-xl);
-}
-
-.screen__placeholder {
-  max-width: 480px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xs);
-}
-
-.screen__placeholder-eyebrow {
-  font-size: var(--sys-text-style-caption-bold-size);
-  line-height: var(--sys-text-style-caption-bold-line-height);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-grey-60);
-}
-
-.screen__placeholder-title {
-  margin: 0;
-  font-family: var(--sys-text-style-h1-font-family);
-  font-size: var(--sys-text-style-h1-size);
-  line-height: var(--sys-text-style-h1-line-height);
-  font-weight: var(--sys-text-style-h1-weight);
-  color: var(--ref-color-grey-100);
-}
-
-.screen__placeholder-sub {
-  margin: 0;
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  color: var(--ref-color-grey-80);
 }
 
 /* ---------- Utility layout helpers ---------- */
@@ -338,13 +259,6 @@ button.app-topbar__title--rename:focus-visible .app-topbar__title-pen {
   color: var(--sys-text-color-light);
 }
 
-.text-title {
-  font-size: var(--sys-text-style-marketing-size);
-  line-height: var(--sys-text-style-marketing-line-height);
-  font-weight: var(--sys-text-style-marketing-weight);
-  color: var(--ref-color-grey-100);
-}
-
 .text-subtitle {
   font-size: var(--sys-text-style-h2-size);
   line-height: var(--sys-text-style-h2-line-height);
@@ -357,11 +271,4 @@ button.app-topbar__title--rename:focus-visible .app-topbar__title-pen {
   line-height: var(--sys-text-style-h3-line-height);
   font-weight: var(--sys-text-style-h3-weight);
   color: var(--ref-color-grey-100);
-}
-
-.text-caption {
-  font-size: var(--sys-text-style-caption-bold-size);
-  line-height: var(--sys-text-style-caption-bold-line-height);
-  color: var(--sys-text-color-light);
-  font-weight: var(--sys-text-style-caption-bold-weight);
 }

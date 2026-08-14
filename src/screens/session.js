@@ -1,7 +1,7 @@
 import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr } from "../utils.js?v=22";
 import { navigate } from "../router.js?v=31";
 import { renderTopbar } from "../components/topbar.js?v=308";
-import { socialAccounts, chatStarters, connectorDocs } from "../mocks.js?v=65";
+import { socialAccounts, chatStarters, connectorDocs } from "../mocks.js?v=66";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
@@ -14,7 +14,7 @@ import {
 } from "../social-profiles.js?v=39";
 import { FORMATS, formatsForNetwork, defaultFormatFor, clipFormatItems } from "../clip-formats.js?v=19";
 import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../clip-subtitles.js?v=2";
-import { getSessionById, getSessions, subscribe as subscribeSessions } from "../sessions-store.js?v=16";
+import { getSessionById, getSessions, subscribe as subscribeSessions } from "../sessions-store.js?v=17";
 import { getContextById, getContexts, getDefaultContext, updateContext } from "../contexts-store.js?v=48";
 import { isNewUser } from "../user-mode.js?v=24";
 import {
@@ -36,9 +36,9 @@ import {
   markConnectPromptResolved,
   toggleTopPostsWidgetPick,
   answerTopPostsWidget,
-} from "../assistant.js?v=71";
+} from "../assistant.js?v=72";
 import { iconFor as fileIconForKind } from "../file-kinds.js?v=21";
-import { getSources, getIdeas, extractVideoIdeas } from "../library.js?v=65";
+import { getSources, getIdeas, extractVideoIdeas } from "../library.js?v=66";
 import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=54";
 import {
   renderInto as renderComposerMentions,
@@ -58,8 +58,8 @@ import {
 } from "../components/top-post-card.js?v=81";
 import { getTopPost } from "../top-posts-store.js?v=21";
 import { renderEmptyState } from "../components/empty-state.js?v=3";
-import * as sidebarWizard from "../sidebar-wizard.js?v=62";
-import * as inlineQuestion from "../inline-question.js?v=49";
+import * as sidebarWizard from "../sidebar-wizard.js?v=63";
+import * as inlineQuestion from "../inline-question.js?v=50";
 import * as clipStudio from "../clip-studio.js?v=36";
 import * as batchStudio from "../batch-studio.js?v=5";
 import { askConnector } from "../connector-ask.js?v=17";
@@ -71,7 +71,7 @@ import {
   subscribe as subscribeComposerConnector,
 } from "../composer-connector.js?v=2";
 import { isFlagOn } from "../feature-flags.js?v=20";
-import * as contextBuilder from "../context-builder.js?v=279";
+import * as contextBuilder from "../context-builder.js?v=280";
 import { renderPicker } from "./_analyse-common.js?v=56";
 import { renderSourceCard } from "../components/source-card.js?v=34";
 import { renderIdeaCard } from "../components/idea-card.js?v=28";
@@ -111,7 +111,7 @@ import {
   openClips as openClipsPanel,
   getMode as getRightPanelMode,
   subscribe as subscribeRightPanel,
-} from "../components/right-panel.js?v=445";
+} from "../components/right-panel.js?v=446";
 import { setHandoff, consumeHandoff, hasHandoff } from "../handoff.js?v=21";
 import { startTopicChat, openTopicInChat, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=9";
 import { getTopics, dismissTopic, restoreTopic, subscribe as subscribeTopics } from "../topics-store.js?v=6";

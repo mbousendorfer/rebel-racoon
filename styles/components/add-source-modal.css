@@ -227,14 +227,6 @@
   padding: var(--ref-spacing-sm);
 }
 
-.add-source__connector-logo {
-  width: 32px;
-  height: 32px;
-  flex-shrink: 0;
-  border-radius: var(--ref-border-radius-sm);
-  object-fit: contain;
-}
-
 .add-source__connector-body {
   flex: 1;
   min-width: 0;

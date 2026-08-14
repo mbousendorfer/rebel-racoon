@@ -12,10 +12,9 @@
 //   updateSession(id, patch)     → Session | null   (shallow merge)
 //   deleteSession(id)            → boolean
 //   togglePin(id)                → Session | null   (flips `pinned`)
-//   addSession(session)          → Session     (used by future "new chat" flows)
 //   subscribe(fn)                → unsubscribe
 
-import { recentSessions as seed } from "./mocks.js?v=65";
+import { recentSessions as seed } from "./mocks.js?v=66";
 import { isNewUser } from "./user-mode.js?v=24";
 import { createNotifier } from "./store-utils.js?v=3";
 
@@ -57,22 +56,4 @@ export function togglePin(id) {
   s.pinned = !s.pinned;
   notify();
   return s;
-}
-
-// Reserved for a future "new chat from sidebar" flow — the entry path
-// today is the dashboard redirect into /session/new. Kept un-exported
-// until a consumer needs it. Counts (sources / ideas / drafts) derive
-// from the per-session stores, not from fields on the session record.
-function addSession(session) {
-  const next = {
-    id: session.id || `s-${Date.now().toString(36)}`,
-    name: session.name || "New conversation",
-    lastActivity: session.lastActivity || "just now",
-    contextId: session.contextId || null,
-    pinned: session.pinned === true,
-    ...session,
-  };
-  sessions.unshift(next);
-  notify();
-  return next;
 }

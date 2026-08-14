@@ -1,5 +1,5 @@
 import { html, raw, escapeText, escapeAttr } from "../utils.js?v=22";
-import { getThread, subscribe as subscribeThread } from "../assistant.js?v=71";
+import { getThread, subscribe as subscribeThread } from "../assistant.js?v=72";
 import { isFlagOn } from "../feature-flags.js?v=20";
 import { getPath } from "../router.js?v=31";
 import { parseHashParams, setHashQuery } from "../url-state.js?v=22";
@@ -35,7 +35,7 @@ import { renderConnectorLogo } from "../connectors-view.js?v=19";
 import { open as openConnectorsModal } from "./connectors-modal.js?v=20";
 import { addMention as addComposerMention } from "../composer-mentions.js?v=39";
 import { iconFor } from "../file-kinds.js?v=21";
-import { getIdeas, removeIdeasForSources } from "../library.js?v=65";
+import { getIdeas, removeIdeasForSources } from "../library.js?v=66";
 
 // The ideas of the chat the panel is looking at.
 //
@@ -2823,28 +2823,10 @@ const STYLE_FALLBACKS = ["Educational with case studies", "Inspirational & aspir
 const OBJECTIVE_FALLBACKS = ["Drive traffic", "Community engagement", "Thought leadership", "Customer retention"];
 const ACTION_FALLBACKS = ["Visit the website", "Download a resource", "Join the community", "Contact sales"];
 
-// Public renderer for the brief panel's three section groups (Audience /
-// Voice profile / Branding) — extracted so surfaces outside the right
-// panel can show the same content without duplicating the layout.
-// Accepts a draft-shaped object
-// (or a persisted Context normalized by readBriefFromCtx) plus a tiny
-// options bag. Does NOT include the panel header, footer, or scroll
-// container — pure section HTML.
-export function renderBriefSections(d, { isRead = true } = {}) {
-  if (!d) return "";
-  const chipProps = (cfg) => ({ ...cfg, isRead });
-  // Persisted contexts may not have the suggestion arrays the chip
-  // helpers expect — normalize via readBriefFromCtx when the shape
-  // looks like a saved Context (no `suggestions` field).
-  const draft = d.suggestions ? d : readBriefFromCtx(d) || d;
-  return _renderBriefSectionsInner(draft, isRead, chipProps);
-}
-
-// Internal: composes the five editorial zones (Hero / Personality grid /
-// Voice feature / Essentials bar / Branding showcase) and joins them.
-// Pulled out of `renderContextBriefView` so the public
-// `renderBriefSections` can call the same code path.
-function _renderBriefSectionsInner(d, isRead, chipProps) {
+// Composes the five editorial zones (Hero / Personality grid / Voice feature /
+// Essentials bar / Branding showcase) and joins them. Pulled out of
+// `renderContextBriefView` so both read and edit mode share one code path.
+function renderBriefSections(d, isRead, chipProps) {
   return [
     renderBriefHero(d, isRead),
     renderBriefPersonalityGrid(d, isRead, chipProps),
@@ -3137,7 +3119,7 @@ function renderContextBriefView() {
   // the rest of the panel relies on. Hero owns name + color in both modes.
   const nonGroupedTop = [isRead ? "" : renderBriefIntro()].filter(Boolean);
 
-  const sections = [...nonGroupedTop, _renderBriefSectionsInner(d, isRead, chipProps)].filter(Boolean);
+  const sections = [...nonGroupedTop, renderBriefSections(d, isRead, chipProps)].filter(Boolean);
   // Callers can opt out of the read-mode footer (Close + Edit) via
   // `hideFooter: true` on the config — used by the playbook editor,
   // which has its own Cancel + Save controls and shouldn't show
@@ -3298,7 +3280,7 @@ function renderBriefChips({
       `
       : "";
   return `
-    <section class="context-brief__section" data-brief-field-section="${escapeAttr(field)}">
+    <section class="context-brief__section">
       <h3 class="context-brief__title">${escapeText(title)}</h3>
       ${hint ? `<p class="context-brief__hint">${escapeText(hint)}</p>` : ""}
       ${warning}

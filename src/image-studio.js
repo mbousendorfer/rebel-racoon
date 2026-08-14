@@ -584,12 +584,6 @@ function isDirty(s) {
   return (s.promptText || "").trim() !== (s.derivedPrompt || "").trim();
 }
 
-/** Has the user edited the brief the studio wrote? */
-export function isPromptDirty(sessionId) {
-  const s = states.get(sessionId);
-  return !!s && isDirty(s);
-}
-
 // Same deal for the text to render: typing must not re-render the settings (the
 // row would be rebuilt under the caret).
 //
@@ -1368,11 +1362,6 @@ export function editBrief(sessionId) {
   notify(sessionId);
 }
 
-/** Did the last settings change overwrite something the user had typed? */
-export function tookOverPrompt(sessionId) {
-  return !!states.get(sessionId)?.promptUndo;
-}
-
 /** Put back the hand-edited brief the last settings change replaced. */
 export function undoPromptRewrite(sessionId) {
   const s = states.get(sessionId);
@@ -1384,11 +1373,9 @@ export function undoPromptRewrite(sessionId) {
 }
 
 // ── The confirmation ────────────────────────────────────────────────────────
-
-/** The parked settings change, or null when no dialog is up. */
-export function pendingSettingChange(sessionId) {
-  return states.get(sessionId)?.pendingSettingChange || null;
-}
+//
+// Consumers (prompt-guard.js, events.js) read the parked change straight off
+// state (`st.pendingSettingChange`) rather than through a getter here.
 
 // Replaying the parked intent through the very same mutators the clean path uses,
 // so "confirmed" and "never asked" can't diverge.

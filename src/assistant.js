@@ -6,7 +6,7 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=65";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=66";
 import { findConnector } from "./connectors-store.js?v=37";
 import { createSessionNotifier } from "./store-utils.js?v=3";
 import { showToast } from "./components/toast.js?v=21";
@@ -228,39 +228,6 @@ export function postAssistantMessage(sessionId, text, { meta = "Archie" } = {}) 
     status: "ready",
     createdAt: Date.now(),
   });
-  notify(sessionId);
-}
-
-// Standalone mermaid system notice — same pill style as the "Drafting"
-// reasoning block, but pushed on its own (no surrounding user/AI turns).
-// Use for inline status indicators like "Extracting guidelines" while a
-// long-running, non-blocking task is in flight. Returns the id so callers
-// can flip the pill state to ready via markSystemNoticeReady.
-export function postSystemNotice(sessionId, { meta, text = "", variant = "mermaid", open = false } = {}) {
-  const thread = getThread(sessionId);
-  const id = newId();
-  thread.push({
-    id,
-    role: "system",
-    meta: meta || "Working…",
-    variant,
-    text,
-    open,
-    status: "loading",
-    createdAt: Date.now(),
-  });
-  notify(sessionId);
-  return id;
-}
-
-export function markSystemNoticeReady(sessionId, id, patch = {}) {
-  const thread = getThread(sessionId);
-  const msg = thread.find((m) => m.id === id);
-  if (!msg) return;
-  msg.status = "ready";
-  if (patch.meta) msg.meta = patch.meta;
-  if (patch.text != null) msg.text = patch.text;
-  if (patch.open != null) msg.open = patch.open;
   notify(sessionId);
 }
 

@@ -131,7 +131,7 @@ Le « pick one of N » réutilisable. État dans [`inline-question.js`](../../sr
 
 ### Panneau de droite
 
-`.app-right-panel` (blanc, `border-left`), `__resize` (strip 6px, electric-blue au hover, largeur → `localStorage` `archie-rpanel-width`), `__close`, `__body` (`container-type: inline-size`), `__empty*`.
+`.app-right-panel` (blanc, `border-left`), `__resize` (strip 6px, electric-blue au hover, largeur calculée par formule — non persistée, l'ancienne clé `archie-rpanel-width` est wipée au boot), `__close`, `__body` (`container-type: inline-size`), `__empty*`.
 
 ### Toasts
 

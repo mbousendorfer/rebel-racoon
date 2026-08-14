@@ -193,12 +193,6 @@
   padding-top: var(--ref-spacing-lg);
   border-top: 1px solid var(--app-border);
 }
-.batch-studio__field-label {
-  font-size: var(--sys-text-style-body-bold-size);
-  line-height: var(--sys-text-style-body-bold-line-height);
-  font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--ref-color-grey-100);
-}
 .batch-studio__field-hint,
 .studio-commit__hint {
   margin: var(--ref-spacing-xxs) 0 0;

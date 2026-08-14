@@ -14,7 +14,6 @@
 //                                                       the save/name prompts
 //                                                       (used by section edits).
 //   isActive(sessionId)                              → boolean
-//   getState(sessionId)                              → current state or null
 //   answer(sessionId, value, custom?)                → advance to next step
 //   exit(sessionId)                                  → cancel + clear state
 //   subscribe(sessionId, fn)                         → re-render hook
@@ -31,12 +30,13 @@
 // _analyse-common.js (items + handler + optional customPlaceholder).
 
 import { chatTurn, bulletsBlock, fieldsBlock } from "./screens/_analyse-common.js?v=56";
-import { voiceAnalysis, strategyBrief, brandTheme } from "./mocks.js?v=65";
+import { voiceAnalysis, strategyBrief, brandTheme } from "./mocks.js?v=66";
+import { createSessionNotifier } from "./store-utils.js?v=3";
 
 // ---- State -----------------------------------------------------------------
 
 const states = new Map(); // sessionId → { stages, stageIdx, step, history, ... }
-const subscribers = new Map(); // sessionId → Set<fn>
+const sessionNotifier = createSessionNotifier("sidebar-wizard");
 const completionHandlers = new Map(); // sessionId → fn (called once on memorize)
 
 // ---- Public API ------------------------------------------------------------
@@ -60,14 +60,8 @@ export function isActive(sessionId) {
   return states.has(sessionId);
 }
 
-export function getState(sessionId) {
-  return states.get(sessionId) || null;
-}
-
 export function subscribe(sessionId, fn) {
-  if (!subscribers.has(sessionId)) subscribers.set(sessionId, new Set());
-  subscribers.get(sessionId).add(fn);
-  return () => subscribers.get(sessionId)?.delete(fn);
+  return sessionNotifier.subscribe(sessionId, fn);
 }
 
 export function exit(sessionId) {
@@ -266,9 +260,7 @@ function analyzingNoticeHtml() {
 // ---- Internals -------------------------------------------------------------
 
 function notify(sessionId) {
-  const set = subscribers.get(sessionId);
-  if (!set) return;
-  set.forEach((fn) => fn(states.get(sessionId) || null));
+  sessionNotifier.notify(sessionId, states.get(sessionId) || null);
 }
 
 // ---- Pickers ---------------------------------------------------------------

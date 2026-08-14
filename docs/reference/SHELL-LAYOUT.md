@@ -40,7 +40,7 @@ Cellule de grille **ligne 2, colonne 3**. 5 modes mutuellement exclusifs
 - `renderPanel()` pose `el.hidden = !state.mode` et bascule `.is-right-panel-open`
   sur `#appShell`.
 - **Scoped session** : `syncFromUrl()` ferme le panel dès qu'on quitte une route
-  `/session/:id` (Playbooks, Settings, Dashboard…), avec `skipUrl` pour ne pas
+  `/session/:id` (Playbooks, Connectors, Dashboard…), avec `skipUrl` pour ne pas
   réécrire le hash de la nouvelle route.
 - **Persistance URL** : les 3 modes « utilisateur » (`drafts`/`ideas`/`sources`,
   cf. `VALID_URL_MODES`) sont encodés en `?panel=…`. Au boot et sur chaque

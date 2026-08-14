@@ -126,197 +126,6 @@
   min-height: 0;
 }
 
-.rpanel-drafts__head {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
-  background: linear-gradient(180deg, var(--ref-color-orange-10) 0%, var(--ref-color-white) 100%);
-  border-bottom: 1px solid var(--app-border-soft);
-}
-
-.rpanel-drafts__title-row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--ref-spacing-xs);
-}
-
-.rpanel-drafts__title {
-  font-size: var(--sys-text-style-h3-size);
-  font-weight: var(--sys-text-style-h3-weight);
-  line-height: var(--sys-text-style-h3-line-height);
-  color: var(--ref-color-grey-100);
-}
-
-.rpanel-drafts__sub {
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  font-weight: var(--sys-text-style-caption-weight);
-  color: var(--ref-color-grey-60);
-  margin-top: 2px;
-}
-
-/* Schedule N posts — full-width primary CTA inside the orange-tinted
-   sub-header. .ap-button is a 36px row by default; force the spread. */
-.ap-button.rpanel-drafts__schedule {
-  width: 100%;
-  justify-content: center;
-}
-
-/* All-scheduled confirmation pill — replaces the Schedule CTA when every
-   draft in the batch has been scheduled. */
-.rpanel-drafts__all-scheduled {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--ref-spacing-xxs);
-  width: 100%;
-  padding: 8px;
-  border-radius: var(--app-radius-pill);
-  background: var(--ref-color-green-10);
-  color: var(--ref-color-green-150);
-  font-size: var(--sys-text-style-body-bold-size);
-  line-height: var(--sys-text-style-body-bold-line-height);
-  font-weight: var(--sys-text-style-body-bold-weight);
-}
-
-.rpanel-drafts__all-scheduled i {
-  color: var(--ref-color-green-100);
-}
-
-/* Body: scrolling group stack. */
-.rpanel-drafts__body {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-md);
-}
-
-.rpanel-drafts__group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xs);
-}
-
-/* ── BatchCard ────────────────────────────────────────────────────── */
-
-.rpanel-batch-card {
-  background: var(--app-surface);
-  border: 1.5px solid var(--app-border-soft);
-  border-radius: var(--app-radius-card);
-  box-shadow: var(--app-shadow-low);
-  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxs);
-  transition: border-color var(--ref-animation-short) var(--app-ease-standard);
-}
-
-.rpanel-batch-card.is-selected {
-  border-color: var(--ref-color-orange-100);
-  box-shadow: 0 0 0 3px var(--ref-color-orange-10);
-}
-
-.rpanel-batch-card.is-over {
-  border-color: var(--ref-color-red-100);
-}
-
-.rpanel-batch-card__head {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-}
-
-/* Orange checkbox — handoff §2.5. Hand-rolled to match the orange-100
-   selected state since the DS .ap-checkbox-container renders blue. */
-.rpanel-batch-card__check {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
-  background: var(--app-surface);
-  border: 1.5px solid var(--app-border);
-  border-radius: var(--app-radius-sm);
-  cursor: pointer;
-  padding: 0;
-  transition:
-    background-color var(--ref-animation-short),
-    border-color var(--ref-animation-short);
-}
-
-.rpanel-batch-card__check.is-on {
-  background: var(--ref-color-orange-100);
-  border-color: var(--ref-color-orange-100);
-}
-
-.rpanel-batch-card__check.is-on i {
-  color: var(--ref-color-white);
-  font-size: var(--sys-icon-css-xs);
-}
-
-.rpanel-batch-card__network {
-  font-size: var(--sys-icon-css-sm);
-  color: var(--ref-color-grey-100);
-}
-
-.rpanel-batch-card__network-name {
-  font-size: var(--sys-text-style-caption-bold-size);
-  line-height: var(--sys-text-style-caption-bold-line-height);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-grey-100);
-}
-
-.rpanel-batch-card__count {
-  margin-left: auto;
-  font-size: var(--sys-text-style-caption-bold-size);
-  line-height: var(--sys-text-style-caption-bold-line-height);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-grey-60);
-}
-
-.rpanel-batch-card__count.is-over {
-  color: var(--ref-color-red-100);
-}
-
-.rpanel-batch-card__body {
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  font-weight: var(--sys-text-style-caption-weight);
-  color: var(--ref-color-grey-100);
-  white-space: pre-wrap;
-}
-
-/* Scheduled state — fades the card to 60% opacity and replaces the
-   network name area with a green "Scheduled" pill. Checkbox is disabled. */
-.rpanel-batch-card.is-scheduled {
-  opacity: 0.7;
-}
-
-.rpanel-batch-card__sched-pill {
-  margin-left: var(--ref-spacing-xxxs);
-  display: inline-flex;
-  align-items: center;
-  gap: var(--app-spacing-micro);
-  padding: var(--app-spacing-micro) 6px;
-  border-radius: var(--app-radius-pill);
-  background: var(--ref-color-green-10);
-  color: var(--ref-color-green-150);
-  font-size: var(--sys-text-style-caption-bold-size);
-  line-height: var(--sys-text-style-caption-bold-line-height);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-}
-
-.rpanel-batch-card__sched-pill i {
-  font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-green-100);
-}
-
 /* ── Ideas mode ──────────────────────────────────────────────────────
    Compact searchable Ideas library with kind filter chips. Each card
    is small (a fraction of the IdeasLibraryView card) — Use button
@@ -1225,10 +1034,6 @@
   color: var(--ref-color-electric-blue-100);
 }
 
-.rpanel-sources__row-detach {
-  flex-shrink: 0;
-}
-
 .rpanel-sources__empty {
   padding-top: var(--ref-spacing-xl);
 }
@@ -1236,8 +1041,7 @@
 /* ─── Brief panel ───────────────────────────────────────────────────────
    Editorial brief layout — five zones (Hero / Personality grid / Voice
    feature / Essentials bar / Branding showcase) replace the legacy
-   stack of identical cards. Shared with the welcome-recap screens via
-   the public `renderBriefSections` export. */
+   stack of identical cards. */
 
 .context-brief {
   display: flex;
@@ -1288,11 +1092,6 @@
   padding: var(--ref-spacing-sm) var(--ref-spacing-md);
   max-width: 640px;
   width: 100%;
-}
-
-/* Card chrome already separates sections — hide the divider noise. */
-.context-brief__body > hr.ap-divider {
-  display: none;
 }
 
 /* ── Editorial zones ──────────────────────────────────────────────────
@@ -1584,20 +1383,6 @@
   font-weight: var(--sys-text-style-body-weight);
 }
 
-.context-brief__from-web {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
-  color: var(--ref-color-menthol-150, #1c8a83);
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  font-weight: var(--sys-text-style-caption-weight);
-}
-
-.context-brief__from-web > i {
-  font-size: var(--sys-text-style-caption-size);
-}
-
 .context-brief__chips {
   display: flex;
   flex-wrap: wrap;
@@ -1606,26 +1391,6 @@
 
 .context-brief__other {
   max-width: 360px;
-}
-
-.context-brief__cta-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxs);
-}
-
-.context-brief__cta-card {
-  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
-  cursor: pointer;
-}
-
-.context-brief__cta-card small {
-  display: block;
-  color: var(--ref-color-grey-80);
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  font-weight: var(--sys-text-style-caption-weight);
-  margin-top: 2px;
 }
 
 /* ── New CTA editor (compact list + Manage sub-panel) ────────────────
@@ -1790,20 +1555,6 @@
   gap: var(--ref-spacing-xs);
 }
 
-/* Context name + color picker live in the same card — input on the left,
-   color swatches on the right, wrapping below the input on narrow widths. */
-.context-brief__name-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--ref-spacing-sm);
-}
-
-.context-brief__name-input {
-  flex: 1 1 220px;
-  min-width: 0;
-}
-
 .context-brief__name-section .context-brief__color-swatches {
   flex: 0 0 auto;
 }
@@ -1855,15 +1606,6 @@
 body.hide-playbook-colors .context-brief__color-swatches,
 body.hide-playbook-colors .context-brief__hero-color {
   display: none;
-}
-
-.context-brief__readonly-text {
-  margin: 0;
-  color: var(--ref-color-grey-100);
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  font-weight: var(--sys-text-style-body-weight);
-  white-space: pre-wrap;
 }
 
 .context-brief__cta-readonly-list {
@@ -2121,10 +1863,6 @@ body.hide-playbook-colors .context-brief__hero-color {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.context-brief__iv-site-delete {
-  flex-shrink: 0;
 }
 
 .context-brief__iv-block {

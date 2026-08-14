@@ -49,22 +49,6 @@
   color: var(--ref-color-grey-60);
 }
 
-.clip-studio__intro-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--ref-spacing-xxl);
-  height: var(--ref-spacing-xxl);
-  border-radius: var(--app-radius-card);
-  background: var(--ref-color-mermaid-gradient-background);
-  color: var(--ref-color-white);
-  box-shadow: var(--app-shadow-low);
-}
-.clip-studio__intro-icon i {
-  font-size: var(--sys-icon-css-md);
-  color: var(--ref-color-white);
-}
-
 .clip-studio__ai-badge {
   display: inline-flex;
   align-items: center;
@@ -230,11 +214,6 @@
   font-weight: var(--sys-text-style-caption-bold-weight);
   color: var(--ref-color-grey-100);
 }
-.clip-studio__field-hint {
-  margin: 0;
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-}
 /* DS select fills the field width. */
 .clip-studio__select {
   width: 100%;
@@ -277,11 +256,6 @@
   font-weight: var(--sys-text-style-caption-bold-weight);
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);
-}
-.clip-studio__seg-label {
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  font-weight: var(--sys-text-style-caption-weight);
 }
 .clip-studio__seg-rec {
   font-size: var(--sys-text-style-caption-bold-size);
@@ -672,7 +646,6 @@
     opacity: 0;
   }
 }
-.clip-studio__eta,
 .clip-studio__source {
   margin: 0;
   font-size: var(--sys-text-style-caption-size);

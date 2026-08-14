@@ -14,17 +14,17 @@ import {
   getMode as getRightPanelMode,
   getActiveBatchRef as getActiveDraftsBatchRef,
   subscribe as subscribeRightPanel,
-} from "./right-panel.js?v=445";
+} from "./right-panel.js?v=446";
 import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=64";
-import { getThread, subscribe as subscribeThread } from "../assistant.js?v=71";
-import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=65";
+import { getThread, subscribe as subscribeThread } from "../assistant.js?v=72";
+import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=66";
 import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=46";
 import {
   isEnabled as isStatusCardEnabled,
   toggle as toggleStatusCard,
   subscribeVisibility as subscribeStatusCardVisibility,
 } from "./conversation-status-card.js?v=238";
-import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=16";
+import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=17";
 import { open as openRenameModal } from "./rename-modal.js?v=3";
 import { subscribe as subscribeContexts } from "../contexts-store.js?v=48";
 import { isFlagOn } from "../feature-flags.js?v=20";

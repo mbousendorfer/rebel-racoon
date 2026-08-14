@@ -9,7 +9,7 @@
 //   appendExtractedIdeas(sessionId, sources)  bulk "extract more" flow
 //   removeIdeasForSources(sessionId, sourceIds)  cleanup after bulk-delete
 
-import { ideasBySession as seedIdeasBySession, recentSessions as seedRecentSessions } from "./mocks.js?v=65";
+import { ideasBySession as seedIdeasBySession, recentSessions as seedRecentSessions } from "./mocks.js?v=66";
 import { isNewUser } from "./user-mode.js?v=24";
 
 // Demo session ids — the recentSessions seed (s-acme-launch / s-riverside /
@@ -17,8 +17,8 @@ import { isNewUser } from "./user-mode.js?v=24";
 // conversations (created at runtime via "+ New conversation") start empty
 // to match the user's mental model. Anything else looked-up — same path.
 const DEMO_SESSION_IDS = new Set(seedRecentSessions.map((s) => s.id));
-import { postAssistantMessage, postExtractionResult, startPending, finishPending } from "./assistant.js?v=71";
-import { setIdeasReader } from "./assistant.js?v=71";
+import { postExtractionResult, startPending, finishPending } from "./assistant.js?v=72";
+import { setIdeasReader } from "./assistant.js?v=72";
 
 // Hand the assistant a way to read a session's ideas. The dependency only runs
 // this way — library imports assistant, never the reverse — so the mock replies
@@ -238,89 +238,6 @@ export function removeIdeasForSources(sessionId, sourceIds) {
   const removed = before - ideas.length;
   notify(sessionId);
   return removed;
-}
-
-export function addSource(sessionId, kind) {
-  const script = SCRIPTS[kind];
-  if (!script) return;
-
-  // Make sure ideas are seeded before we prepend to them.
-  getIdeas(sessionId);
-
-  // 1. Push the source through the global store in "Processing" state.
-  const sourceId = pushScriptedSource({
-    filename: script.filename,
-    kind: script.kindLabel,
-  });
-
-  // Video defers all extraction to the post-upload "what to do?" choice —
-  // the intake lifecycle posts it once the source flips Processed, and the
-  // choice handler in session.js drives idea OR clip generation. Here we
-  // just run the source through Processing → Processed (no inline ideas).
-  if (script.kindLabel === "Video") {
-    setTimeout(() => {
-      completeScriptedSource(sourceId, {
-        signal: script.signal,
-        signalColor: script.signalColor,
-        ideaCount: 0,
-      });
-    }, 6000);
-    return;
-  }
-
-  // Right-aligned "Source intake" turn is now posted by the centralized
-  // subscription in session.js (bindSession → subscribeInputs path),
-  // which fires for every new attach and flips to ready when the source
-  // hits Processed. The legacy call here would have double-posted.
-
-  // 2b. Flip the composer into "thinking" mode for the duration of the
-  // extraction — the composer status bar reads "Extracting ideas…".
-  const pendingId = startPending(sessionId, "Extracting ideas");
-
-  // 3. Simulate extraction — standardized 6s reasoning delay across the
-  // prototype so every "Archie is thinking" moment feels predictable.
-  const delay = 6000;
-  setTimeout(() => {
-    // Flip the source to Processed in the global store. notifySources()
-    // inside completeScriptedSource fans out to every session subscriber.
-    completeScriptedSource(sourceId, {
-      signal: script.signal,
-      signalColor: script.signalColor,
-      ideaCount: script.ideas.length,
-    });
-
-    // Prepend the extracted ideas (per-session).
-    const extracted = script.ideas.map((seed) => ({
-      id: newId("idea"),
-      title: seed.title,
-      body: seed.body,
-      rationale: seed.rationale,
-      relevance: seed.relevance,
-      relevanceColor: seed.relevanceColor,
-      confidence: seed.confidence,
-      channels: seed.channels || ["linkedin"],
-      state: "New",
-      pinned: false,
-      sourceIds: [sourceId],
-      sessionId,
-      extractedAt: "just now",
-    }));
-    ideasMap.get(sessionId).unshift(...extracted);
-
-    // Structured extraction turn — Drafting pill ("Extracted N ideas") +
-    // "Analyzed <filename>" + one idea card per extracted idea.
-    if (extracted.length > 0) {
-      postExtractionResult(sessionId, {
-        filename: script.filename,
-        ideas: extracted,
-      });
-    } else {
-      postAssistantMessage(sessionId, `Scanned ${script.filename} but didn't find a clear idea to pull.`);
-    }
-
-    finishPending(sessionId, pendingId);
-    notify(sessionId);
-  }, delay);
 }
 
 // --- Internals ----------------------------------------------------------

@@ -4,7 +4,7 @@ import { maybeAutoScan } from "./topics-store.js?v=6";
 import { initArchieLoader } from "./archie-loader.js?v=3";
 import { initTopbar, renderTopbar } from "./components/topbar.js?v=308";
 import { initSidebar, renderSidebar } from "./components/sidebar.js?v=279";
-import { init as initRightPanel } from "./components/right-panel.js?v=445";
+import { init as initRightPanel } from "./components/right-panel.js?v=446";
 import { init as initScheduleModal } from "./components/schedule-modal.js?v=67";
 import { init as initBugReportModal } from "./components/bug-report-modal.js?v=25";
 import { init as initFeedbackModal } from "./components/feedback-modal.js?v=27";
@@ -46,7 +46,7 @@ import {
   openIdeas as __capOpenIdeas,
   openSources as __capOpenSources,
   openContextBriefPanel as __capOpenContextPanel,
-} from "./components/right-panel.js?v=445";
+} from "./components/right-panel.js?v=446";
 
 // Route table.
 // Every screen is responsible for calling renderTopbar() itself so the crumb

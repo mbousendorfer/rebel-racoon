@@ -487,13 +487,6 @@
   color: var(--sys-text-color-light);
 }
 
-.top-post-card__actions {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-}
-
 /* "Open original" uses the DS .ap-icon-button (stroked) as-is — no overrides. */
 
 .top-post-card__cta {
@@ -599,7 +592,7 @@
 }
 
 /* The ×-vs-average keeps the green performance accent; the raw counts stay
-   neutral (see .top-post-card__submetrics b). */
+   neutral (see .top-post-echo__stats b above). */
 .top-post-echo__stats .top-post-echo__avg {
   color: var(--ref-color-green-150);
 }

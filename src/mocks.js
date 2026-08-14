@@ -1184,13 +1184,6 @@ export const ideasBySession = {
 // (assistant.js reasoning text, right-panel.js Ideas tab). Stays mutable
 // so library.js dual-write (`injectIdeasForSource` → seedIdeas.unshift)
 // continues to land here.
-export const ideas = [
-  ...ideasBySession["s-acme-launch"],
-  ...ideasBySession["s-riverside"],
-  ...ideasBySession["s-state-of-social"],
-  ...ideasBySession["s-weekly-recap"],
-];
-
 // ---- Contexts --------------------------------------------------------------
 //
 // A *context* is a named bundle that can hold Voice, Brief and Brand
@@ -3467,14 +3460,6 @@ function seedScheduledQueue() {
 export const scheduledQueue = seedScheduledQueue();
 
 // Lookup helpers ----------------------------------------------------------------
-
-export function getSessionById(id) {
-  return recentSessions.find((s) => s.id === id) || null;
-}
-
-export function getContextById(id) {
-  return contexts.find((c) => c.id === id) || null;
-}
 
 // ── Settings drawer mocks ─────────────────────────────────────────────────
 // All settings sections are mocked in-memory. Connect/disconnect, save, etc.

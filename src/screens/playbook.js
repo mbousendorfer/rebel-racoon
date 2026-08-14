@@ -27,7 +27,7 @@ import { open as openConfirmModal } from "../components/confirm-modal.js?v=23";
 import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=26";
 import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=6";
 import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=27";
-import { sectionPatchFromAnalysis } from "../context-builder.js?v=279";
+import { sectionPatchFromAnalysis } from "../context-builder.js?v=280";
 import { isFlagOn } from "../feature-flags.js?v=20";
 
 const AUTOFILL_MS = 1500;

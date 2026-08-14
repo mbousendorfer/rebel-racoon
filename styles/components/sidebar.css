@@ -323,13 +323,6 @@
   color: var(--ref-color-electric-blue-100);
 }
 
-.app-sidebar__row-meta {
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  font-weight: var(--sys-text-style-caption-weight);
-  color: var(--ref-color-grey-60);
-}
-
 /* Leading playbook-color dot — small 8px circle on the left edge of
    the row, just before the title. Resolves the bound playbook's color
    so the user can scan the sidebar for "which conversation belongs to

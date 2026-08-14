@@ -15,7 +15,6 @@
 //   skip(sessionId)          → call onSkip and exit
 //   exit(sessionId)          → just clear state (no callbacks)
 //   isActive(sessionId)      → boolean
-//   getState(sessionId)      → current state or null
 //   renderChrome(sessionId)  → { body, picker } for the current question
 //   subscribe(sessionId, fn) → re-render hook
 //
@@ -72,13 +71,13 @@
 //   onBack()          fn      — called when ← Back is clicked; if omitted, no back btn
 
 import { chatTurn } from "./screens/_analyse-common.js?v=56";
+import { createSessionNotifier } from "./store-utils.js?v=3";
 
 const states = new Map(); // sessionId → opts
-const subscribers = new Map(); // sessionId → Set<fn>
+const sessionNotifier = createSessionNotifier("inline-question");
 
 function notify(sessionId) {
-  const subs = subscribers.get(sessionId);
-  if (subs) for (const fn of subs) fn();
+  sessionNotifier.notify(sessionId);
 }
 
 export function ask(sessionId, opts) {
@@ -258,14 +257,8 @@ export function isActive(sessionId) {
   return states.has(sessionId);
 }
 
-export function getState(sessionId) {
-  return states.get(sessionId) || null;
-}
-
 export function subscribe(sessionId, fn) {
-  if (!subscribers.has(sessionId)) subscribers.set(sessionId, new Set());
-  subscribers.get(sessionId).add(fn);
-  return () => subscribers.get(sessionId)?.delete(fn);
+  return sessionNotifier.subscribe(sessionId, fn);
 }
 
 export function renderChrome(sessionId) {

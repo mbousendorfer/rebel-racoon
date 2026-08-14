@@ -1091,72 +1091,12 @@
   text-wrap: pretty;
 }
 
-.vc-editor__textarea--small {
-  min-height: 48px;
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  font-weight: var(--sys-text-style-caption-weight);
-  font-style: italic;
-  color: var(--app-vc-text-subtle);
-}
-
 .vc-editor__textarea:focus {
   border-color: var(--app-vc-accent);
 }
 
 .vc-editor .vc-edit:empty::before {
   color: var(--app-vc-text-subtle);
-}
-
-.vc-editor__nets {
-  display: flex;
-  gap: var(--ref-spacing-xxs);
-  flex-wrap: wrap;
-}
-
-.vc-editor__net {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  font-family: inherit;
-  font-size: var(--sys-text-style-caption-bold-size);
-  line-height: var(--sys-text-style-caption-bold-line-height);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
-  border-radius: var(--app-radius-button-sm);
-  background: var(--app-vc-field);
-  border: 1px solid var(--app-vc-border);
-  color: var(--app-vc-text-muted);
-  cursor: pointer;
-  transition: all var(--ref-animation-short);
-}
-
-.vc-editor__net:hover {
-  border-color: var(--app-vc-border-strong);
-  color: var(--app-vc-text);
-}
-
-.vc-editor__net.is-on {
-  background: var(--app-vc-accent-soft);
-  border-color: var(--app-vc-accent);
-  color: var(--app-vc-accent);
-}
-
-.vc-editor__net img {
-  width: 14px;
-  height: 14px;
-  border-radius: var(--app-radius-circle);
-}
-
-/* Aspect-ratio glyph on a format chip — a small outlined rectangle whose
-   shape mirrors the ratio (tall for 9:16, wide for 16:9). Inherits the
-   chip's text color so it tracks the muted / hover / selected states. */
-.vc-editor__ratio-glyph {
-  display: inline-block;
-  height: 13px;
-  border: 1.5px solid currentColor;
-  border-radius: 2px;
-  flex-shrink: 0;
 }
 
 /* ── Pro timeline (full-width, below preview/form) ────────────── */
@@ -1501,12 +1441,6 @@
 .vc-protrim.is-dragging--playhead .vc-protrim__playhead-knob {
   background: var(--app-vc-accent);
   border-color: var(--ref-color-white);
-}
-
-@media (max-width: 980px) {
-  .vc-editor__top {
-    grid-template-columns: 1fr;
-  }
 }
 
 @media (max-width: 720px) {

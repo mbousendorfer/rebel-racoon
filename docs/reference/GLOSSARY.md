@@ -144,7 +144,7 @@ Une **source live MCP-queryable** (Notion, Slite, Google Drive, Slack, …) que 
 - Une requête déclenche un round-trip MCP simulé (reasoning chip "Querying X via MCP" + réponse citée)
 - Géré par [`connectors-store.js`](../../src/connectors-store.js), state machine `connected / disconnected / syncing / error`
 
-**Feature flag `connectors`** : default OFF. Activable dans `/settings → Admin`.
+**Feature flag `connectors`** : default OFF. Activable dans le popover Admin (cog en pied de sidebar).
 
 ### Studio (⚠️ deux sens)
 
@@ -173,7 +173,7 @@ Un dossier de contenu **Agorapulse** dans lequel un draft sauvegardé est class�
 - `"returning"` (default) — stores seedent depuis `mocks.js`, expérience d'un utilisateur établi
 - `"new-alt"` — stores vides, force le redirect `/` → `/welcome-alt` (onboarding)
 
-Switch UI : `/settings → Admin`. Un reload est forcé pour que les stores re-seedent.
+Switch UI : popover Admin (cog en pied de sidebar). Un reload est forcé pour que les stores re-seedent.
 
 ## Vocabulaire UI à éviter
 

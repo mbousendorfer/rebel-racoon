@@ -31,7 +31,7 @@ import {
   postTopPostsWidget,
   postUserTurn,
   postUserProfilesTurn,
-} from "./assistant.js?v=71";
+} from "./assistant.js?v=72";
 import { getTopPosts, getTopPost } from "./top-posts-store.js?v=21";
 import { addPostDraft } from "./posts-store.js?v=46";
 import { addReadySource } from "./sources-stream.js?v=64";
@@ -43,7 +43,7 @@ import {
 } from "./social-profiles.js?v=39";
 import { SORTS, PERIODS } from "./components/top-post-card.js?v=81";
 import { showToast } from "./components/toast.js?v=21";
-import * as inlineQuestion from "./inline-question.js?v=49";
+import * as inlineQuestion from "./inline-question.js?v=50";
 import { getDefaultContext } from "./contexts-store.js?v=48";
 
 // Cap on drafts produced in one run — post × angle × channel can multiply fast

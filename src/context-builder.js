@@ -13,12 +13,12 @@
 // tones, contentStyle, objective, contentAction, ctaLinks, language, color,
 // suggestions, editingId, onComplete }.
 
-import * as inlineQuestion from "./inline-question.js?v=49";
-import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=71";
-import * as rightPanel from "./components/right-panel.js?v=445";
+import * as inlineQuestion from "./inline-question.js?v=50";
+import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=72";
+import * as rightPanel from "./components/right-panel.js?v=446";
 import { addContext, updateContext, getContextById } from "./contexts-store.js?v=48";
 import { analyzeWebsite } from "./context-mock-analysis.js?v=27";
-import { connectors as connectorMocks } from "./mocks.js?v=65";
+import { connectors as connectorMocks } from "./mocks.js?v=66";
 import { getConnectedProfiles, buildConnectedProfileItems, PROFILE_SEARCH_THRESHOLD } from "./social-profiles.js?v=39";
 import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=3";
 import { isFlagOn } from "./feature-flags.js?v=20";
@@ -102,10 +102,6 @@ function emptyDraft(overrides = {}) {
     onComplete: null,
     ...overrides,
   };
-}
-
-export function isActive(sessionId) {
-  return drafts.has(sessionId);
 }
 
 export function getDraft(sessionId) {
@@ -206,12 +202,6 @@ export function isAnalysisReady(sessionId) {
   const d = drafts.get(sessionId);
   if (!d) return false;
   return Boolean(d.businessSummary || (d.tones && d.tones.length));
-}
-
-export function subscribe(sessionId, fn) {
-  if (!subscribers.has(sessionId)) subscribers.set(sessionId, new Set());
-  subscribers.get(sessionId).add(fn);
-  return () => subscribers.get(sessionId)?.delete(fn);
 }
 
 // First Time User ALT — a 3-question onboarding (URL → profiles →
@@ -499,293 +489,6 @@ function maybeOpenAltBrief(sessionId) {
   // Use the hash router — context-builder doesn't import navigate()
   // directly to avoid a cycle with the router module.
   window.location.hash = "#/welcome-alt/recap";
-}
-
-// Open the right-panel brief panel in read mode for an existing context.
-// Same card-per-section layout as the brief builder — just read-only
-// (selected chips only, no Other inputs, footer = Close + Edit). Legacy
-// fields (briefSummary, plain-string audience, single cta) are normalized
-// inside readBriefFromCtx in right-panel.js.
-export function openRead(contextId) {
-  // The Edit button (panel footer) flips the same panel into edit mode in
-  // place via `openEdit` — no transient session, no confirm modal.
-  rightPanel.openContextBriefPanel({
-    mode: "read",
-    getCtx: () => getContextById(contextId),
-    onEnterEdit: () => openEdit(contextId),
-  });
-}
-
-// Open the right-panel brief panel directly in edit mode for an existing
-// context. The draft is a shallow copy of the saved Context — every chip
-// toggle / textarea input mutates it through the panel's existing
-// `data-brief-*` delegate (see right-panel.js click + input handlers).
-// Save persists the draft via `updateContext`; Cancel discards it and
-// flips back to read mode.
-export function openEdit(contextId) {
-  const saved = getContextById(contextId);
-  if (!saved) return;
-  // Shape the draft to match what the brief renderer expects (chip
-  // arrays, suggestions/customAdditions buckets). `readBriefFromCtx`
-  // lives in right-panel.js, but the same normalization is duplicated
-  // in `startEdit` above — re-use that fan-out here for consistency.
-  const draft = {
-    websiteUrl: saved.websiteUrl || "",
-    name: saved.name || "",
-    businessSummary: saved.businessSummary || saved.briefSummary || "",
-    audience: Array.isArray(saved.audience) ? saved.audience.slice() : saved.audience ? [saved.audience] : [],
-    audienceProblems: Array.isArray(saved.audienceProblems) ? saved.audienceProblems.slice() : [],
-    tones: Array.isArray(saved.tones) ? saved.tones.slice() : [],
-    contentStyle: Array.isArray(saved.contentStyle) ? saved.contentStyle.slice() : [],
-    objective: Array.isArray(saved.objective) ? saved.objective.slice() : [],
-    contentAction: Array.isArray(saved.contentAction) ? saved.contentAction.slice() : [],
-    ctaLinks: Array.isArray(saved.ctaLinks) ? saved.ctaLinks.map((l) => ({ ...l })) : [],
-    language: saved.language || saved.primaryLanguage || "English",
-    // Carry the multilingual model through so an edit here doesn't drop any
-    // secondary-language voice authored on the /playbook page (save() merges).
-    languages: Array.isArray(saved.languages) ? saved.languages.slice() : undefined,
-    primaryLanguage: saved.primaryLanguage || saved.language || "English",
-    voiceByLanguage: saved.voiceByLanguage ? cloneVoiceByLanguage(saved.voiceByLanguage) : undefined,
-    color: saved.color || "orange",
-    voiceProfile: saved.voiceProfile && typeof saved.voiceProfile === "object" ? { ...saved.voiceProfile } : null,
-    imageVoice:
-      saved.imageVoice && Array.isArray(saved.imageVoice.websites)
-        ? { websites: saved.imageVoice.websites.map((w) => ({ ...w })) }
-        : { websites: [] },
-    // Empty buckets — no AI suggestions surface in the direct-edit flow.
-    suggestions: {},
-    customAdditions: {},
-  };
-
-  const toggleInArray = (field, value) => {
-    if (!Array.isArray(draft[field])) draft[field] = [];
-    const idx = draft[field].indexOf(value);
-    if (idx === -1) draft[field].push(value);
-    else draft[field].splice(idx, 1);
-  };
-
-  rightPanel.openContextBriefPanel({
-    mode: "edit",
-    getDraft: () => draft,
-    getCtx: () => saved,
-    onName: (value) => {
-      draft.name = value;
-    },
-    onAnswer: (field, value) => {
-      draft[field] = value;
-      rightPanel.refreshContextBriefPanel();
-    },
-    onToggleChip: (field, value) => {
-      toggleInArray(field, value);
-      rightPanel.refreshContextBriefPanel();
-    },
-    onAddOther: (field, value) => {
-      if (!Array.isArray(draft[field])) draft[field] = [];
-      if (!draft[field].includes(value)) draft[field].push(value);
-      rightPanel.refreshContextBriefPanel();
-    },
-    onToggleCta: (url) => {
-      const cta = (draft.ctaLinks || []).find((l) => l.url === url);
-      if (cta) cta.checked = !cta.checked;
-    },
-    onCtaToggleAt: (i) => {
-      const cta = (draft.ctaLinks || [])[i];
-      if (cta) cta.checked = !cta.checked;
-    },
-    onCtaUpdate: (i, field, value) => {
-      const cta = (draft.ctaLinks || [])[i];
-      if (cta) cta[field] = value;
-    },
-    onCtaDelete: (i) => {
-      if (Array.isArray(draft.ctaLinks)) draft.ctaLinks.splice(i, 1);
-    },
-    onCtaAdd: () => {
-      if (!Array.isArray(draft.ctaLinks)) draft.ctaLinks = [];
-      draft.ctaLinks.push({ label: "", url: "", checked: true });
-    },
-    onCtaRestore: (snapshot) => {
-      draft.ctaLinks = Array.isArray(snapshot) ? snapshot.map((c) => ({ ...c })) : [];
-    },
-    onVoiceProfileChange: (key, value) => {
-      if (!draft.voiceProfile || typeof draft.voiceProfile !== "object") draft.voiceProfile = {};
-      draft.voiceProfile[key] = value;
-    },
-    onSave: () => {
-      updateContext(contextId, draft);
-      openRead(contextId);
-    },
-    onCancel: () => {
-      // Returning truthy tells the panel's cancel delegate not to
-      // tear itself down — we want to keep the panel open and flip
-      // straight into read mode.
-      openRead(contextId);
-      return true;
-    },
-  });
-}
-
-// Re-open an existing context for editing via the brief panel. Pre-fills
-// the draft from the persisted Context, jumping straight to phase 3.
-export function startEdit(contextId) {
-  const ctx = getContextById(contextId);
-  if (!ctx) return;
-  const sessionId = `context-edit-${contextId}-${Date.now()}`;
-  drafts.set(
-    sessionId,
-    emptyDraft({
-      editingId: contextId,
-      websiteUrl: ctx.websiteUrl || "",
-      name: ctx.name || "",
-      businessSummary: ctx.businessSummary || ctx.briefSummary || "",
-      audience: Array.isArray(ctx.audience) ? ctx.audience.slice() : ctx.audience ? [ctx.audience] : [],
-      audienceProblems: Array.isArray(ctx.audienceProblems) ? ctx.audienceProblems.slice() : [],
-      tones: Array.isArray(ctx.tones) ? ctx.tones.slice() : [],
-      contentStyle: Array.isArray(ctx.contentStyle) ? ctx.contentStyle.slice() : [],
-      objective: Array.isArray(ctx.objective) ? ctx.objective.slice() : [],
-      contentAction: Array.isArray(ctx.contentAction) ? ctx.contentAction.slice() : [],
-      ctaLinks: Array.isArray(ctx.ctaLinks) ? ctx.ctaLinks.map((l) => ({ ...l })) : [],
-      language: ctx.language || "English",
-      color: ctx.color || "orange",
-      voiceProfile: ctx.voiceProfile && typeof ctx.voiceProfile === "object" ? { ...ctx.voiceProfile } : null,
-      connectedSocials: Array.isArray(ctx.connectedSocials) ? ctx.connectedSocials.slice() : [],
-      selectedProfileId: ctx.selectedProfileId || null,
-      imageVoice:
-        ctx.imageVoice && Array.isArray(ctx.imageVoice.websites)
-          ? { websites: ctx.imageVoice.websites.map((w) => ({ ...w })) }
-          : { websites: [] },
-    }),
-  );
-  openBriefPanel(sessionId);
-}
-
-export function cancel(sessionId) {
-  drafts.delete(sessionId);
-  inlineQuestion.exit(sessionId);
-  notify(sessionId);
-}
-
-// --- Phase 3 — Brief panel -------------------------------------------------
-
-function openBriefPanel(sessionId) {
-  rightPanel.openContextBriefPanel({
-    getDraft: () => drafts.get(sessionId) || emptyDraft(),
-    onAnswer: (field, value) => setAnswer(sessionId, field, value),
-    onToggleChip: (field, value) => toggleChip(sessionId, field, value),
-    onAddOther: (field, value) => addCustomChip(sessionId, field, value),
-    onRemoveChip: (field, value) => toggleChip(sessionId, field, value),
-    onToggleCta: (url) => toggleCta(sessionId, url),
-    onCtaToggleAt: (i) => toggleCtaAt(sessionId, i),
-    onCtaUpdate: (i, field, value) => updateCta(sessionId, i, field, value),
-    onCtaDelete: (i) => deleteCta(sessionId, i),
-    onCtaAdd: () => addCta(sessionId),
-    onCtaRestore: (snapshot) => restoreCtas(sessionId, snapshot),
-    onName: (name) => setName(sessionId, name),
-    onVoiceProfileChange: (fieldId, value) => setVoiceProfileField(sessionId, fieldId, value),
-    onSave: () => save(sessionId),
-    onCancel: () => cancel(sessionId),
-  });
-}
-
-function setAnswer(sessionId, field, value) {
-  const d = drafts.get(sessionId);
-  if (!d) return;
-  d[field] = value;
-  notify(sessionId);
-  rightPanel.refreshContextBriefPanel?.();
-}
-
-function setVoiceProfileField(sessionId, fieldId, value) {
-  const d = drafts.get(sessionId);
-  if (!d) return;
-  if (!d.voiceProfile || typeof d.voiceProfile !== "object") d.voiceProfile = {};
-  d.voiceProfile[fieldId] = value;
-  notify(sessionId);
-  // No refresh — let the textarea keep its focus while typing.
-}
-
-function setName(sessionId, name) {
-  const d = drafts.get(sessionId);
-  if (!d) return;
-  d.name = name || "";
-  notify(sessionId);
-  // No refresh — let the input keep its focus.
-}
-
-function toggleChip(sessionId, field, value) {
-  const d = drafts.get(sessionId);
-  if (!d) return;
-  const arr = Array.isArray(d[field]) ? d[field].slice() : [];
-  const idx = arr.indexOf(value);
-  if (idx >= 0) arr.splice(idx, 1);
-  else arr.push(value);
-  d[field] = arr;
-  notify(sessionId);
-  rightPanel.refreshContextBriefPanel?.();
-}
-
-function addCustomChip(sessionId, field, value) {
-  const v = (value || "").trim();
-  if (!v) return;
-  const d = drafts.get(sessionId);
-  if (!d) return;
-  const arr = Array.isArray(d[field]) ? d[field].slice() : [];
-  if (!arr.includes(v)) arr.push(v);
-  d[field] = arr;
-  // Track that this is a user-added chip (not an AI suggestion).
-  const customs = d.customAdditions[field] || [];
-  if (!customs.includes(v)) customs.push(v);
-  d.customAdditions[field] = customs;
-  notify(sessionId);
-  rightPanel.refreshContextBriefPanel?.();
-}
-
-function toggleCta(sessionId, url) {
-  const d = drafts.get(sessionId);
-  if (!d) return;
-  d.ctaLinks = d.ctaLinks.map((l) => (l.url === url ? { ...l, checked: !l.checked } : l));
-  notify(sessionId);
-  rightPanel.refreshContextBriefPanel?.();
-}
-
-function toggleCtaAt(sessionId, i) {
-  const d = drafts.get(sessionId);
-  if (!d || !Array.isArray(d.ctaLinks) || !d.ctaLinks[i]) return;
-  d.ctaLinks = d.ctaLinks.map((l, idx) => (idx === i ? { ...l, checked: !l.checked } : l));
-  notify(sessionId);
-  rightPanel.refreshContextBriefPanel?.();
-}
-
-function updateCta(sessionId, i, field, value) {
-  const d = drafts.get(sessionId);
-  if (!d || !Array.isArray(d.ctaLinks) || !d.ctaLinks[i]) return;
-  // No refresh — let the input keep its focus while typing.
-  d.ctaLinks[i][field] = value;
-  notify(sessionId);
-}
-
-function deleteCta(sessionId, i) {
-  const d = drafts.get(sessionId);
-  if (!d || !Array.isArray(d.ctaLinks)) return;
-  d.ctaLinks.splice(i, 1);
-  notify(sessionId);
-  rightPanel.refreshContextBriefPanel?.();
-}
-
-function addCta(sessionId) {
-  const d = drafts.get(sessionId);
-  if (!d) return;
-  if (!Array.isArray(d.ctaLinks)) d.ctaLinks = [];
-  d.ctaLinks.push({ label: "", url: "", checked: true });
-  notify(sessionId);
-  rightPanel.refreshContextBriefPanel?.();
-}
-
-function restoreCtas(sessionId, snapshot) {
-  const d = drafts.get(sessionId);
-  if (!d) return;
-  d.ctaLinks = Array.isArray(snapshot) ? snapshot.map((c) => ({ ...c })) : [];
-  notify(sessionId);
-  rightPanel.refreshContextBriefPanel?.();
 }
 
 export function save(sessionId) {

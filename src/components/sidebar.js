@@ -14,15 +14,15 @@ import {
   deleteSession,
   togglePin as togglePinSession,
   subscribe as subscribeSessions,
-} from "../sessions-store.js?v=16";
+} from "../sessions-store.js?v=17";
 import { isFlagOn } from "../feature-flags.js?v=20";
 import { isNewUser } from "../user-mode.js?v=24";
-import { clearSession as clearLibrarySession } from "../library.js?v=65";
+import { clearSession as clearLibrarySession } from "../library.js?v=66";
 import { getContexts, getContextById, subscribe as subscribeContexts } from "../contexts-store.js?v=48";
 import { getConnectedConnectors, subscribe as subscribeConnectors } from "../connectors-store.js?v=37";
 import { getUnseenCount as getUnseenTopicCount, subscribe as subscribeTopics } from "../topics-store.js?v=6";
-import { closePanel as closeRightPanel } from "./right-panel.js?v=445";
-import { clearSession as clearAssistantSession } from "../assistant.js?v=71";
+import { closePanel as closeRightPanel } from "./right-panel.js?v=446";
+import { clearSession as clearAssistantSession } from "../assistant.js?v=72";
 import { clearSession as clearPostsSession } from "../posts-store.js?v=46";
 import { clearSession as clearSourcesSession } from "../sources-stream.js?v=64";
 

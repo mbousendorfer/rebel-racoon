@@ -28,14 +28,14 @@
 
 import { requestOpen, notifyClose, bindOverlayDismissal } from "../../modal-coordinator.js?v=22";
 import { getPosts } from "../../posts-store.js?v=46";
-import { getSessionById } from "../../sessions-store.js?v=16";
+import { getSessionById } from "../../sessions-store.js?v=17";
 import { getContextById } from "../../contexts-store.js?v=48";
 import { MODAL_ID, KEY, ctx, state, autosize } from "./context.js?v=42";
 import { loadImg } from "../../image-studio-canvas.js?v=6";
 import { renderStudio } from "./stage-view.js?v=103";
 import { offerUndoIfNeeded, resetUndoOffers } from "./prompt-guard.js?v=8";
 import { bindStudioEvents } from "./events.js?v=23";
-import * as imageStudio from "../../image-studio.js?v=90";
+import * as imageStudio from "../../image-studio.js?v=91";
 
 let backdrop;
 let initialized = false;

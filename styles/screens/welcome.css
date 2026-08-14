@@ -269,15 +269,6 @@
   color: var(--ref-color-grey-60);
 }
 
-.recap__meta-default {
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-grey-100);
-}
-
-.recap__meta-default i {
-  color: var(--ref-color-yellow-100);
-}
-
 .recap__header-actions {
   display: flex;
   align-items: center;
@@ -295,17 +286,6 @@
 
 .recap__menu-caret {
   font-size: var(--sys-icon-css-sm);
-}
-
-.recap__menu-pop {
-  position: absolute;
-  top: calc(100% + var(--ref-spacing-xxs));
-  left: 0;
-}
-
-.recap__menu-pop--right {
-  left: auto;
-  right: 0;
 }
 
 /* ── Two-column layout (sticky rail + sections) ───────────────────────── */

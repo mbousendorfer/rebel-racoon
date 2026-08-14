@@ -29,8 +29,6 @@
 .ap-loader,
 .ap-loader.size-16,
 .ap-loader.size-24,
-.ap-loader.size-30,
-.ap-loader.size-48,
 .chat-bubble-source-intake__spinner,
 .extracting-notice__spinner,
 .drafts-card__spinner,
@@ -100,12 +98,6 @@
 }
 .ap-loader.size-24 {
   --archie-loader-size: 26px;
-}
-.ap-loader.size-30 {
-  --archie-loader-size: 32px;
-}
-.ap-loader.size-48 {
-  --archie-loader-size: 50px;
 }
 
 /* These sit on filled CTA buttons (orange / coloured surfaces) where the

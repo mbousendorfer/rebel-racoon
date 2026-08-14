@@ -10,53 +10,6 @@
   flex-direction: column;
 }
 
-.dashboard__main {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  overflow-y: auto;
-  padding: var(--ref-spacing-md) var(--ref-spacing-xl);
-  gap: var(--ref-spacing-md);
-}
-
-/* New project form */
-
-.dashboard__field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxs);
-}
-
-.dashboard__field-label {
-  font-size: var(--sys-text-style-caption-bold-size);
-  line-height: var(--sys-text-style-caption-bold-line-height);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--sys-text-color-light);
-}
-
-.dashboard__form-hint {
-  margin: var(--ref-spacing-xxxs) 0 0;
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  font-weight: var(--sys-text-style-caption-weight);
-}
-
-.dashboard__subtabs {
-  margin-bottom: calc(-1 * var(--ref-spacing-xs));
-}
-
-.dashboard__panel {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-md);
-}
-
-.dashboard__section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xs);
-}
-
 /* ---- Unified Content workspace — shared by session + dashboard ------- */
 
 .content-workspace {
@@ -108,51 +61,6 @@
 
 .content-workspace__body {
   display: block;
-}
-
-/* Secondary "top potential" chip shown inside the source card sub line. */
-.source-card__top-potential {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  margin-left: var(--ref-spacing-xxs);
-}
-
-/* ---- Channel fit chips -------------------------------------------------
-   Compact icon-only row used inside source-card idea previews, and a richer
-   icon+label pill used on idea-card headers. Reuses DS social icons. */
-
-.channel-chips {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-}
-
-.channel-chips--compact {
-  gap: var(--ref-spacing-xxxs);
-}
-
-.channel-chips--compact .channel-chips__icon {
-  font-size: var(--sys-icon-css-sm);
-  color: var(--ref-color-grey-80);
-}
-
-.channel-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
-  padding: 2px var(--ref-spacing-xxs);
-  border-radius: var(--app-radius-sm);
-  background: var(--ref-color-grey-05);
-  color: var(--ref-color-grey-100);
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  font-weight: var(--sys-text-style-caption-weight);
-}
-
-.channel-chip i {
-  font-size: var(--sys-icon-css-sm);
-  color: var(--ref-color-grey-80);
 }
 
 /* Source card — Figma 42:5197. Compact one-row listing:
@@ -277,18 +185,6 @@
   display: flex;
   align-items: center;
   gap: var(--ref-spacing-xxs);
-}
-
-.source-card__primary {
-  text-decoration: none;
-}
-
-/* Processing-variant CTA — rendered as a disabled-looking pill instead of a
-   real link. We're using a <span> with aria-disabled so nothing dispatches. */
-.source-card__primary--processing {
-  opacity: 0.6;
-  pointer-events: none;
-  cursor: default;
 }
 
 /* Mermaid-tinted processing pill (Lot 14) — replaces the previous static
@@ -676,24 +572,6 @@
    action-dropdown items, so this is a legitimate extension. */
 .ap-action-dropdown.idea-card__more-menu .ap-action-dropdown-item[aria-pressed="true"] {
   color: var(--ref-color-electric-blue-100);
-}
-
-/* First-run empty state (shown in the Projects tab when user-mode is "new") */
-
-.dashboard__first-run {
-  flex-direction: row;
-  align-items: center;
-  gap: var(--ref-spacing-sm);
-}
-
-.dashboard__first-run-icon {
-  width: 40px;
-  height: 40px;
-  display: grid;
-  place-items: center;
-  background: var(--ref-color-electric-blue-10);
-  border-radius: var(--app-radius-md);
-  flex-shrink: 0;
 }
 
 /* All-ideas grid — strict 2-column layout per the Figma. minmax(0, 1fr)

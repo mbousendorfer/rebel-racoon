@@ -46,7 +46,7 @@ import { toolPalette } from "./tools-view.js?v=13";
 import { promptGuardDialog } from "./prompt-guard.js?v=8";
 import { editCanvas } from "./edit-view.js?v=41";
 import { compositeOverlays } from "../../image-studio-canvas.js?v=6";
-import * as imageStudio from "../../image-studio.js?v=90";
+import * as imageStudio from "../../image-studio.js?v=91";
 
 // In-feed preview — the edit canvas layers logo/text overlays as live DOM over
 // the image, but renderPostCard only takes a URL, so overlays wouldn't show. We
