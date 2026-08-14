@@ -107,6 +107,23 @@
 
 /* ── Stage ───────────────────────────────────────────────────────────────── */
 
+/* The modal body's middle row: the inspector column beside everything else. This is
+   what lets the sidebar run header-to-footer — inside the stage it could only be as
+   tall as the stage, and the composer ran underneath it. */
+.isv2-main {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+}
+
+.isv2-main-col {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 .isv2-stage {
   flex: 1 1 auto;
   min-height: 0;
@@ -155,6 +172,9 @@
      which reads as a rendering fault rather than as "scroll for more". */
   --isv2-panel-w: 284px;
   --isv2-panel-inset: 72px;
+  /* What the variations rail needs on the right — reserved on BOTH sides so the image
+     stays centred rather than sliding under it. */
+  --isv2-rail-reserve: 140px;
   position: relative; /* the pinned side panels anchor here */
   flex: 1 1 auto;
   min-width: 0;
@@ -171,12 +191,12 @@
   container-type: size;
 }
 
-/* Reservations, always symmetric: the inspector is the widest thing pinned in
-   generate mode, the palette in edit mode. The inspector is now flush to the edge
-   rather than inset, so the reservation is its width alone — the image gains the old
-   inset back on both sides and stays on the modal's centre line. */
-.isv2-stage-body.has-panel {
-  padding-inline: var(--isv2-panel-w);
+/* Reservations, always symmetric — that symmetry is what keeps the image on the centre
+   line of the space it has. The inspector is no longer one of them: it is a column of
+   the modal body now, so the stage's width already excludes it. What is still pinned
+   over the stage is the variations rail (generate) and the tool palette (edit). */
+.isv2-stage-body.has-rail {
+  padding-inline: var(--isv2-rail-reserve);
 }
 
 .isv2-stage-body.has-palette {
@@ -234,6 +254,95 @@
    to the stage (100% height, rows 1fr/auto) with `overflow: hidden` on the stage — so
    the brief takes the space that's left and the foot is always in view, without a
    scrollbar. The brief block grid is what absorbs the difference. */
+/* Once there is something to look at, the brief keeps its place and the picture joins
+   it on the right — the foot still spans both, so the modifiers never move. */
+.isv2-bs.is-split {
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  column-gap: var(--ref-spacing-lg);
+}
+
+.isv2-bs.is-split .isv2-bs-foot {
+  grid-column: 1 / -1;
+}
+
+/* One column of blocks once the preview is beside them: two columns inside a ~300px
+   track gave each block 145px, which broke every value across four lines. Full-width
+   blocks in a narrower column read; the doc scrolls if the set is taller than the
+   space, which is what the safety valve is for. */
+.isv2-bs.is-split .isv2-bs-doc {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.isv2-bs-preview {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+}
+
+/* The shot GROWS to the height the column leaves it, and takes its width from the
+   ratio — bounded by the column so a wide format can't overflow. `align-self: center`
+   was the bug: in a column flex container that content-sizes the width, so an
+   aspect-ratio box had nothing to size from and collapsed. */
+.isv2-bs-shot {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-width: 100%;
+  margin-inline: auto;
+  border-radius: var(--app-radius-card);
+  overflow: hidden;
+  background: var(--app-surface-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ref-spacing-xxs);
+}
+
+.isv2-bs-shot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.isv2-bs-shot.is-busy {
+  flex-direction: column;
+  border: 1px solid var(--sys-border-color-default);
+}
+
+.isv2-bs-shot-label {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--sys-text-color-light);
+}
+
+.isv2-bs-thumbs {
+  display: flex;
+  justify-content: center;
+  gap: var(--ref-spacing-xxs);
+  flex: 0 0 auto;
+}
+
+.isv2-bs-thumb {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: var(--app-radius-sm);
+  background: none;
+  cursor: pointer;
+  overflow: hidden;
+}
+.isv2-bs-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.isv2-bs-thumb.is-on {
+  border-color: var(--ref-color-electric-blue-100);
+}
+
 .isv2-bs {
   height: 100%;
   box-sizing: border-box;
@@ -277,8 +386,13 @@
    run: seven stacked sections don't fit the stage without scrolling, and paired they
    read as a spec sheet — which is what a brief is. A lone last block takes the full
    width instead of leaving a hole. */
+/* `overflow-y: auto` is the safety valve, not a design choice: seven editable sections
+   in whatever height is left can't promise to fit, and without it the grid overflowed
+   its track and painted straight over the note underneath. The note stays outside it,
+   so it is always readable. */
 .isv2-bs-doc {
   min-height: 0;
+  overflow-y: auto;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--ref-spacing-xs);
@@ -312,6 +426,21 @@
 
 .isv2-bs-block:last-child:nth-child(odd) {
   grid-column: 1 / -1;
+}
+
+/* "Text in image" leads and leads bigger. Those words are the only part of the brief
+   that ends up literally visible in the artwork — everything else only DESCRIBES the
+   image. Full width and a heading-sized value is the whole treatment: size and weight
+   say "first" on their own, and a tinted surface on top read as a callout. */
+.isv2-bs-block--hero {
+  grid-column: 1 / -1;
+}
+
+.isv2-bs-block--hero .isv2-bs-val {
+  height: calc(var(--sys-text-style-h3-line-height) * 2);
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
 }
 
 /* The label recedes to a caption and the VALUE carries the size — that inversion is
@@ -359,6 +488,7 @@
 }
 
 .isv2-bs-note {
+  flex: 0 0 auto;
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   color: var(--sys-text-color-light);
@@ -1434,14 +1564,11 @@
    valve for when every section is expanded at once — that is the sidebar scrolling
    internally, not the modal. */
 .isv2-panel {
-  position: absolute;
-  z-index: 4;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  transform: none;
+  position: static;
+  flex: 0 0 var(--isv2-panel-w);
   width: var(--isv2-panel-w);
   max-height: none;
+  min-height: 0;
   overflow-y: auto;
   border-radius: 0;
   box-shadow: none;
@@ -2081,10 +2208,6 @@
      symmetric, because that is what holds the centre line. */
   .isv2-dock {
     padding-inline: var(--ref-spacing-sm);
-  }
-
-  .isv2-panel {
-    left: var(--ref-spacing-sm);
   }
 
   /* The panel keeps its width; only the inset tightens — a narrower left offset and

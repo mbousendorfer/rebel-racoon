@@ -64,6 +64,13 @@ function onClick(event, close) {
   const insidePop = event.target.closest("[data-img-popover]");
   if (st.openPopover && !popToggle && !insidePop) imageStudio.setOpenPopover(KEY, null);
 
+  // Same lifecycle for the brief stage's modifier popover: a click anywhere that isn't
+  // its own button or inside the popover shuts it, then FALLS THROUGH so the click
+  // still does whatever it came to do.
+  const inModPop = !!event.target.closest(".isv2-bs-pop");
+  const modToggleHit = !!event.target.closest("[data-img-modifier]");
+  if (st.openModifier && !modToggleHit && !inModPop) imageStudio.setOpenModifier(KEY, null);
+
   const toggle = event.target.closest("[data-img-popover-toggle]");
   if (toggle && !toggle.disabled) {
     const name = toggle.dataset.imgPopoverToggle;
@@ -82,12 +89,32 @@ function onClick(event, close) {
   }
 
   // ── Composer settings ──
+  // Type / Style / Format are single-select: picking one is the whole errand, so a pick
+  // made inside a modifier popover shuts it. The panels that hold several decisions —
+  // References (pick + mode + add), Branding (two switches), Text (a field), Output
+  // (kind AND count) — deliberately stay open, because closing on the first click would
+  // stop you finishing.
+  const closePopAfterPick = () => {
+    if (inModPop) imageStudio.setOpenModifier(KEY, null);
+  };
   const typeBtn = event.target.closest("[data-img-image-type]");
-  if (typeBtn) return void imageStudio.setImageType(KEY, typeBtn.dataset.imgImageType);
+  if (typeBtn) {
+    const v = typeBtn.dataset.imgImageType;
+    closePopAfterPick();
+    return void imageStudio.setImageType(KEY, v);
+  }
   const styleBtn = event.target.closest("[data-img-style]");
-  if (styleBtn) return void imageStudio.setStyle(KEY, styleBtn.dataset.imgStyle);
+  if (styleBtn) {
+    const v = styleBtn.dataset.imgStyle;
+    closePopAfterPick();
+    return void imageStudio.setStyle(KEY, v);
+  }
   const fmtBtn = event.target.closest("[data-img-format]");
-  if (fmtBtn) return void imageStudio.setFormat(KEY, fmtBtn.dataset.imgFormat);
+  if (fmtBtn) {
+    const v = fmtBtn.dataset.imgFormat;
+    closePopAfterPick();
+    return void imageStudio.setFormat(KEY, v);
+  }
   const varBtn = event.target.closest("[data-img-varcount]");
   if (varBtn) return void imageStudio.setVariationCount(KEY, Number(varBtn.dataset.imgVarcount));
   const outBtn = event.target.closest("[data-img-output]");
@@ -455,6 +482,12 @@ function onKeydown(event) {
     if (st.openPopover) {
       event.stopPropagation();
       return void imageStudio.setOpenPopover(KEY, null);
+    }
+    // The modifier popover unwinds before the modal's Escape-to-close, same as the
+    // edit popovers above it.
+    if (st.openModifier) {
+      event.stopPropagation();
+      return void imageStudio.setOpenModifier(KEY, null);
     }
     if (st.cropDrawing && !st.editBusy) {
       event.stopPropagation();

@@ -41,7 +41,7 @@ import { KEY, ctx } from "./context.js?v=42";
 import { composer } from "./composer-view.js?v=72";
 import { settingsPanel } from "./settings-view.js?v=10";
 import { gridBriefView, gridAnalyzingView } from "./grid-view.js?v=15";
-import { briefStage, isBriefStage } from "./brief-stage.js?v=8";
+import { briefStage, isBriefStage } from "./brief-stage.js?v=10";
 import { toolPalette } from "./tools-view.js?v=13";
 import { promptGuardDialog } from "./prompt-guard.js?v=6";
 import { editCanvas } from "./edit-view.js?v=41";
@@ -79,13 +79,31 @@ function compositedPreviewUrl(img, overlays) {
 }
 
 export function renderStudio(st) {
+  // The inspector is a COLUMN of the modal body, not a box inside the stage: as a child
+  // of the stage it could only ever be as tall as the stage, which left the composer
+  // running underneath it and a band of empty canvas below the sidebar. Out here it runs
+  // the full height between header and footer, and the stage + composer share the rest
+  // of the width beside it.
+  const feedView = hasImage(st) && st.canvasView === "feed";
+  const showPanel = st.mode === "generate" && !feedView && !st.gridBrief && !isBriefStage(st);
   return html`
     <div class="isv2">
       ${raw(header(st))}
-      <section class="isv2-stage" aria-label="Preview">${raw(stageContent(st))}</section>
-      ${raw(composer(st))} ${raw(footerBar(st))} ${raw(promptGuardDialog(st))}
+      <div class="isv2-main">
+        ${raw(showPanel ? settingsPanel(st) : "")}
+        <div class="isv2-main-col">
+          <section class="isv2-stage" aria-label="Preview">${raw(stageContent(st))}</section>
+          ${raw(composer(st))}
+        </div>
+      </div>
+      ${raw(footerBar(st))} ${raw(promptGuardDialog(st))}
     </div>
   `;
+}
+
+/** Is there an image to preview yet? Used by both the shell and the stage. */
+function hasImage(st) {
+  return !!st.currentImage || (st.genPhase === "results" && st.variations.length > 0);
 }
 
 // ── The footer bar ─────────────────────────────────────────────────────────
@@ -106,13 +124,21 @@ export function footerBar(st) {
       ? `<button type="button" class="ap-button primary orange" data-img-apply-slide ${st.editBusy || !st.currentImage ? "disabled" : ""}><i class="ap-icon-check"></i><span>Apply to slide ${(st.selectedIndex ?? 0) + 1}</span></button>`
       : `<button type="button" class="ap-button primary orange" data-img-use ${st.editBusy || !st.currentImage ? "disabled" : ""}><i class="ap-icon-check"></i><span>Use this image</span></button>`;
   } else if (isBriefStage(st)) {
-    // On the brief stage there is nothing to "use" yet, so the footer's primary slot
-    // carries the action that actually applies: Generate. Same slot, same weight — the
-    // one thing to do on this screen, bottom-right where the destination always sits.
-    // Kept blue (not the footer's usual orange) because it is the same Generate button
-    // that lived on the stage a moment ago; moving it shouldn't restyle it.
+    // The brief stage now runs the whole loop, so the footer follows it: while there is
+    // nothing to use, the primary slot carries Generate; once an image exists it carries
+    // the destination ("Use this image") and Regenerate moves beside it. Same slot, same
+    // weight, no layout swap between the two.
     const ready = !st.promptLoading && !!(st.promptText || "").trim();
-    primary = `<button type="button" class="ap-button primary blue" data-img-generate ${ready ? "" : "disabled"}><i class="ap-icon-sparkles-mermaid"></i><span>Generate</span></button>`;
+    const busy = st.genPhase === "generating";
+    const hasShot = st.variations.length > 0;
+    if (hasShot) {
+      left = `<button type="button" class="ap-button stroked grey" data-img-generate ${busy ? "disabled" : ""}><i class="ap-icon-refresh"></i><span>Regenerate</span></button>`;
+      primary = `<button type="button" class="ap-button primary orange" data-img-use ${st.currentImage ? "" : "disabled"}><i class="ap-icon-check"></i><span>${escapeHtml(carousel ? `Use carousel · ${st.variations.length} slides` : "Use this image")}</span></button>`;
+    } else if (busy) {
+      primary = `<button type="button" class="ap-button primary blue loading" disabled><span class="ap-loading-bar"></span><span>Generating…</span></button>`;
+    } else {
+      primary = `<button type="button" class="ap-button primary blue" data-img-generate ${ready ? "" : "disabled"}><i class="ap-icon-sparkles-mermaid"></i><span>Generate</span></button>`;
+    }
   } else {
     const label = carousel ? `Use carousel · ${st.variations.length} slides` : "Use this image";
     const ready = carousel ? st.variations.length >= 2 : !!st.currentImage;
@@ -207,11 +233,8 @@ function stageContent(st) {
   // variations "chutier" RIGHT, where what you produced accumulates. The body
   // reserves room for whichever ones are up, so the image centres in what's left
   // over rather than sliding underneath them.
-  const showRail = st.mode === "generate" && !feedView && st.genPhase === "results" && st.variations.length > 0;
-  // Grid-brief replaces the floating settings panel with cards inside the grid, so
-  // the panel never pins to the edge in that variant.
-  // The floating inspector stands down while the settings hold the centre.
-  const showPanel = st.mode === "generate" && !feedView && !st.gridBrief && !autoSetup;
+  const showRail =
+    st.mode === "generate" && !feedView && st.genPhase === "results" && st.variations.length > 0 && !autoSetup;
   const showPalette = st.mode === "edit" && !feedView;
   // The inspector and the chutier are PINNED to the stage's edges, and the body
   // reserves the same width on BOTH sides for them. Symmetry is the whole point:
@@ -221,7 +244,7 @@ function stageContent(st) {
   // and left it visibly misaligned with its own prompt.
   const bodyCls =
     "isv2-stage-body" +
-    (showPanel ? " has-panel" : "") +
+    (showRail ? " has-rail" : "") +
     (showPalette ? " has-palette" : "") +
     (gridReady ? " has-grid" : "") +
     (autoSetup ? " has-setup" : "");
@@ -229,7 +252,6 @@ function stageContent(st) {
   return `${top}<div class="${bodyCls}">
     ${inner}
     ${showRail ? variationsRail(st) : ""}
-    ${showPanel ? settingsPanel(st) : ""}
     ${showPalette ? toolPalette(st) : ""}
   </div>`;
 }

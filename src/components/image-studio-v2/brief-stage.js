@@ -31,11 +31,11 @@ import { imageTypeBody, styleBody, formatBody, outputBody, renderTextBody } from
 import { refsBody, refSummary } from "./references-view.js?v=9";
 import { brandingBody } from "./branding-view.js?v=4";
 
-/** Is the brief holding the stage? True only before anything has been generated. */
+/** Is the brief holding the stage? For the WHOLE generate flow, image or not. */
 export function isBriefStage(st) {
   const hasImg = !!st.currentImage || (st.genPhase === "results" && st.variations.length > 0);
   const feedView = hasImg && st.canvasView === "feed";
-  return !!st.autoBrief && !st.gridBrief && st.mode === "generate" && !feedView && st.genPhase === "idle";
+  return !!st.autoBrief && !st.gridBrief && st.mode === "generate" && !feedView;
 }
 
 // ── The brief itself ────────────────────────────────────────────────────────
@@ -46,12 +46,12 @@ export function isBriefStage(st) {
 // recedes to a caption and the value carries the weight, so the block reads as an
 // answer under a question. Lines with no label (the fallback prompts are plain prose)
 // become a block with no caption.
-function briefBlock(line, index) {
+function briefBlock(line, index, hero) {
   const at = line.indexOf(":");
   const key = at > 0 ? line.slice(0, at) : "";
   const val = at > 0 ? line.slice(at + 1).trim() : line;
   const label = key || "Brief";
-  return `<label class="isv2-bs-block">
+  return `<label class="isv2-bs-block${hero ? " isv2-bs-block--hero" : ""}">
     ${key ? `<span class="isv2-bs-key">${escapeHtml(key)}</span>` : ""}
     <textarea class="isv2-bs-val" data-img-brief-line="${index}" aria-label="${escapeHtml(label)}">${escapeHtml(val)}</textarea>
   </label>`;
@@ -65,10 +65,18 @@ function briefBody(st) {
     </div>`;
   }
   // Every block is editable, always — no read-only mode and no link to press first.
-  // Indices are into the raw prompt lines, so an edit writes back to its own line
-  // (image-studio.js#writeBriefLine); blank lines are kept in the index for that.
+  //
+  // Indices stay pointed at the RAW prompt lines even though the blocks are reordered,
+  // because an edit writes back to its own line (image-studio.js#writeBriefLine). So the
+  // order on screen and the order in the text are allowed to differ.
+  //
+  // "Text in image" leads, and leads bigger: those words are the only part of the brief
+  // that ends up literally visible in the artwork, so they outrank a description of it.
   const lines = (st.promptText || "").split("\n");
-  const blocks = lines.map((l, i) => (l.trim() ? briefBlock(l, i) : "")).join("");
+  const entries = lines.map((l, i) => ({ l, i })).filter((e) => e.l.trim());
+  const isText = (e) => /^\s*text in image\s*:/i.test(e.l);
+  const ordered = [...entries.filter(isText), ...entries.filter((e) => !isText(e))];
+  const blocks = ordered.map((e) => briefBlock(e.l, e.i, isText(e))).join("");
   if (!blocks)
     return `<div class="isv2-bs-doc"><div class="isv2-bs-block"><span class="isv2-bs-key">Brief</span></div></div>`;
   return `<div class="isv2-bs-doc">${blocks}</div>`;
@@ -140,6 +148,49 @@ function bootLoader() {
   </div>`;
 }
 
+// The result joins the brief rather than replacing it. Generating used to swap the
+// entire screen for the classic canvas — a different layout, different controls, and
+// the modifiers you had just been using gone. Keeping the brief and adding the picture
+// beside it means one interface for the whole loop: read the brief, look at what it
+// produced, change a modifier, regenerate.
+function previewColumn(st) {
+  const ratio = imageStudio.activeRatio(KEY);
+  if (st.genPhase === "generating") {
+    const n = st.outputMode === "carousel" ? st.slideCount : st.variationCount;
+    const what = st.outputMode === "carousel" ? "slide" : "variation";
+    return `<div class="isv2-bs-preview">
+      <p class="isv2-bs-eyebrow">Preview</p>
+      <div class="isv2-bs-shot is-busy" style="aspect-ratio:${ratio}" role="status">
+        <span class="gen-image-spinner"></span>
+        <span class="isv2-bs-shot-label">Generating ${n} ${what}${n > 1 ? "s" : ""}…</span>
+      </div>
+    </div>`;
+  }
+  const i = st.selectedIndex ?? 0;
+  const shot = st.variations[i];
+  if (!shot) return "";
+  const thumbs =
+    st.variations.length > 1
+      ? `<div class="isv2-bs-thumbs" role="group" aria-label="Variations">
+          ${st.variations
+            .map(
+              (v, n) =>
+                `<button type="button" class="isv2-bs-thumb${n === i ? " is-on" : ""}" data-img-variation="${n}" aria-pressed="${n === i}" aria-label="Variation ${n + 1}">
+                  <img src="${escapeHtml(v.url)}" alt="" loading="lazy" />
+                </button>`,
+            )
+            .join("")}
+        </div>`
+      : "";
+  return `<div class="isv2-bs-preview">
+    <p class="isv2-bs-eyebrow">Preview</p>
+    <div class="isv2-bs-shot" style="aspect-ratio:${ratio}">
+      <img src="${escapeHtml(shot.url)}" alt="Generated image" />
+    </div>
+    ${thumbs}
+  </div>`;
+}
+
 export function briefStage(st) {
   // Nothing written yet → the centred loader IS the screen.
   if (st.promptLoading && !(st.promptText || "").trim()) return bootLoader();
@@ -199,12 +250,14 @@ export function briefStage(st) {
 
   const note = briefNote(st);
 
-  return `<div class="isv2-bs">
+  const preview = previewColumn(st);
+  return `<div class="isv2-bs${preview ? " is-split" : ""}">
     <div class="isv2-bs-brief${st.briefTakenOver ? " is-editing" : ""}">
       <p class="isv2-bs-eyebrow">Image brief</p>
       ${briefBody(st)}
       ${note ? `<p class="isv2-bs-note">${note}</p>` : ""}
     </div>
+    ${preview}
 
     <div class="isv2-bs-foot">
       <div class="isv2-bs-mods" role="group" aria-label="Brief modifiers">
