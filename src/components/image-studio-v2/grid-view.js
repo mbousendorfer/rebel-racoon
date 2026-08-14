@@ -94,7 +94,7 @@ function textOnImageCard(st) {
     </div>
     <p class="isv2-gcard-hint">${
       on
-        ? "Archie wrote this from your headline idea, shaped by the style you picked. It gets set into the artwork itself."
+        ? "I wrote this from your headline idea, shaped by the style you picked. It gets set into the artwork itself."
         : "No words baked into the artwork."
     }</p>
     ${
@@ -119,7 +119,7 @@ function textOnImageCard(st) {
 // twice (label, then the synthesised click on the input), and both would reach
 // setImageType's toggle and cancel each other out.
 function typeBody(st) {
-  const opts = [{ key: "", label: "Any", desc: "Let Archie choose" }, ...imageStudio.IMAGE_TYPES];
+  const opts = [{ key: "", label: "Any", desc: "Let me choose" }, ...imageStudio.IMAGE_TYPES];
   return `<div class="isv2-typelist" role="radiogroup" aria-label="Image type">
     ${opts
       .map(
@@ -288,7 +288,7 @@ export function gridBriefView(st) {
   return `<div class="isv2-grid">
     <div class="isv2-grid-head">
       <span class="isv2-grid-title">Image setup</span>
-      <span class="isv2-grid-sub">Archie derived this from your post — tune the parameters and edit any line.</span>
+      <span class="isv2-grid-sub">I wrote this from your post — tune the options and edit any line.</span>
     </div>
     <div class="isv2-grid-cards">${cards}</div>
     <div class="isv2-grid-actions">

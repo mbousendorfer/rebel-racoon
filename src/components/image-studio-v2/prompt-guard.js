@@ -52,14 +52,14 @@ function subject(st) {
     return {
       title: "Rewrite the brief?",
       body: "You've edited the brief by hand. Changing",
-      tail: "makes Archie write every block again, so your edits will be lost.",
+      tail: "makes me write the whole brief again, so your edits will be lost.",
       cta: "Rewrite brief",
     };
   }
   return st.gridBrief
     ? {
         title: "Rewrite the text on your image?",
-        body: "You've edited the text on the image by hand. Archie writes those words from your headline idea, shaped by the style they have to sit on, so changing",
+        body: "You've edited the text on the image by hand. I write those words from your headline idea, shaped by the style they have to sit on, so changing",
         tail: "rewrites them and your version will be lost.",
         cta: "Rewrite text",
       }

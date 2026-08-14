@@ -109,11 +109,12 @@ function briefBody(st) {
 // the state, and offers the way back to Archie's version once something has changed.
 export function briefNote(st) {
   if (st.promptLoading) return "";
-  if (!st.briefTakenOver) return `Written from the modifiers — edit any block to make it yours.`;
+  if (!st.briefTakenOver)
+    return `I write this brief from the options above. Change one and I rewrite it — or edit the text yourself.`;
   if (st.briefStale) {
-    return `<span class="isv2-brief-stale">Modifiers changed since your edit.</span> <button type="button" class="ap-link standalone small" data-img-brief-rebuild>Rebuild from them</button>, or keep your words.`;
+    return `<span class="isv2-brief-stale">You changed the options after editing this.</span> <button type="button" class="ap-link standalone small" data-img-brief-rebuild>Rewrite it from them</button>, or keep your words.`;
   }
-  return `Edited by you — the modifiers won't overwrite it. <button type="button" class="ap-link standalone small" data-img-brief-rebuild>Back to auto</button>`;
+  return `This is your text now, so I'll leave it alone. <button type="button" class="ap-link standalone small" data-img-brief-rebuild>Let me write it again</button>`;
 }
 
 // ── The modifier bar ────────────────────────────────────────────────────────
@@ -168,7 +169,7 @@ function bootLoader() {
   return `<div class="isv2-bs-boot" role="status" aria-live="polite">
     <span class="gen-image-spinner gen-loading-mark"></span>
     <p class="isv2-bs-boot-title">Writing your brief…</p>
-    <p class="isv2-bs-boot-sub">Archie is reading your post and setting the parameters.</p>
+    <p class="isv2-bs-boot-sub">I'm reading your post and setting the options for it.</p>
   </div>`;
 }
 
@@ -228,7 +229,7 @@ function previewColumn(st) {
       <div class="isv2-bs-shot is-empty" style="aspect-ratio:${ratio}">
         <i class="ap-icon-image" aria-hidden="true"></i>
         <p class="isv2-bs-empty-title">Your image appears here</p>
-        <p class="isv2-bs-empty-sub">Play with the brief and the modifiers on the left, then generate.</p>
+        <p class="isv2-bs-empty-sub">Set the options on the left, then generate.</p>
       </div>
       <div class="isv2-bs-thumbs" aria-hidden="true"></div>
     </div>`;
@@ -373,7 +374,7 @@ export function briefStage(st) {
         ${briefBody(st)}
       </div>
       <div class="isv2-bs-foot">
-        <div class="isv2-bs-mods" role="group" aria-label="Brief modifiers">
+        <div class="isv2-bs-mods" role="group" aria-label="Brief options">
           ${mods.map((m) => modifierChip(m, st)).join("")}
         </div>
         ${panel}
