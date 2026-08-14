@@ -329,6 +329,10 @@ export function briefStage(st) {
 
   const mods = [
     { name: "imageType", label: "Type", value: typeLabel, set: !!st.imageTypeKey },
+    // Reference BEFORE Style: a reference switches Style off, and "From reference" is the
+    // effect. Reading the effect before its cause is the same mistake the brief blocks
+    // made when Style sat above the References card.
+    { name: "refs", label: "Reference", value: refSummary(picked, st), set: !!picked },
     {
       name: "style",
       label: "Style",
@@ -337,7 +341,6 @@ export function briefStage(st) {
       note: hasRefs ? "The reference image sets the look" : "",
       set: !hasRefs && !!st.styleKey,
     },
-    { name: "refs", label: "Reference", value: refSummary(picked, st), set: !!picked },
     { name: "branding", label: "Branding", value: brandValue, disabled: !hasKit, set: branded || tinted },
     // Format always holds a value — there is no "unset" for it, so nothing to signal.
     { name: "format", label: "Format", value: fmt ? fmt.tag : "Ratio" },
