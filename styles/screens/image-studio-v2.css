@@ -518,15 +518,23 @@
 }
 
 .isv2-gtext {
-  height: calc(var(--sys-text-style-body-bold-line-height) * 2);
+  /* THREE lines, not two. Two was exactly what a two-line headline needs and not a
+     pixel more, so the commonest output — a break on the dash, "Black Friday /
+     –50% on everything" — filled the field to its edges and left a control that
+     looked like a caption slot rather than something you can write in. The brief
+     fields next to it carry four lines of 18px; three of 20px puts this one in the
+     same family instead of making it the runt of the grid. */
+  height: calc(var(--sys-text-style-subtitle-line-height) * 3);
   padding-top: var(--ref-spacing-xs);
   border-top: 1px solid var(--sys-border-color-default);
-  /* Bold body (14/700), not 16px: these words are a headline, so weight carries that
-     — but they are CONTENT and must not out-size the card title above them, which is
-     exactly what the 16px `subtitle` style was doing. */
-  font-size: var(--sys-text-style-body-bold-size);
-  line-height: var(--sys-text-style-body-bold-line-height);
-  font-weight: var(--sys-text-style-body-bold-weight);
+  /* Subtitle (16/400) — these words get set INTO the artwork, so they are the one
+     piece of content in the grid that deserves to be read at headline size. It was
+     briefly 14/700, to avoid out-sizing a card title that was then body-bold; the
+     title is h3 (16/700) now, so 16/400 sits under it the ordinary way — same size,
+     lighter weight — with none of that inversion. */
+  font-size: var(--sys-text-style-subtitle-size);
+  line-height: var(--sys-text-style-subtitle-line-height);
+  font-weight: var(--sys-text-style-subtitle-weight);
 }
 
 /* The sticky action bar under the grid: Generate, right-aligned, on the app ground

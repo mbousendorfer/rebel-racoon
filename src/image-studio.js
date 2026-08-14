@@ -656,7 +656,7 @@ export function setStyle(sessionId, key) {
 // protect there — but the words set into the IMAGE are, and Style rewrites them. Only
 // the settings that genuinely rewrite them may park, or the dialog would warn about
 // edits a click was never going to touch.
-const GRID_GUARDED = new Set(["style"]);
+const GRID_GUARDED = new Set(["style", "briefField"]);
 
 function defer(s, sessionId, kind, payload) {
   // Auto-brief retires the guard: the prose brief is read-only until the user
@@ -1077,8 +1077,21 @@ const STYLE_TEXT_SHAPE = {
   "hand-drawn": { maxWords: 6 },
 };
 
+// Where the words come from, before the style shapes them.
+//
+// The grid already has a card that means "the claim, in one line" — Headline idea
+// (`brief.headline`, seeded by deriveBrief from the same deriveRenderText). That
+// card is the source, so editing it rewrites what lands on the artwork; before, the
+// derive re-read the POST every time, and the one field visibly about the headline
+// changed nothing. Empty headline falls back to the post, so a brief the user has
+// cleared still produces words.
+function renderTextSource(s) {
+  const headline = (s.brief?.headline || "").trim();
+  return headline || deriveRenderText(s);
+}
+
 function deriveTextForStyle(s) {
-  const base = deriveRenderText(s);
+  const base = renderTextSource(s);
   const shape = STYLE_TEXT_SHAPE[s.styleKey];
   if (!base || !shape) return base;
   const words = base.replace(/\s+/g, " ").trim().split(" ").slice(0, shape.maxWords);
@@ -1259,7 +1272,14 @@ export function setBriefFieldSilent(sessionId, key, value) {
 export function commitBriefField(sessionId, key, value) {
   const s = states.get(sessionId);
   if (!s || !(key in s.brief)) return;
+  // Editing the Headline idea rewrites the words on the artwork, because that card
+  // IS their source (renderTextSource). Same contract as Style: it asks first when
+  // those words are the user's own. The other brief fields describe the picture, not
+  // its type, so they leave the text alone.
+  const rewritesImageText = s.gridBrief && key === "headline";
+  if (rewritesImageText && defer(s, sessionId, "briefField", { key, value })) return;
   s.brief[key] = String(value || "");
+  if (rewritesImageText) writeRenderText(s, deriveTextForStyle(s));
   settingChanged(sessionId);
 }
 
@@ -1323,6 +1343,9 @@ export function pendingSettingChange(sessionId) {
 const APPLY = {
   imageType: applyImageType,
   style: applyStyle,
+  briefField: (s, { key, value }) => {
+    if (key in s.brief) s.brief[key] = String(value || "");
+  },
   selectRef: applySelectRef,
   removeRef: applyRemoveRef,
   refMode: (s, key) => {
@@ -1337,8 +1360,9 @@ export function confirmSettingChange(sessionId) {
   if (!parked) return;
   s.pendingSettingChange = null;
   APPLY[parked.kind]?.(s, parked.payload);
-  // Confirmed: the words go back to Archie's, shaped for the style just picked.
-  if (s.gridBrief && parked.kind === "style") writeRenderText(s, deriveTextForStyle(s));
+  // Confirmed: the words go back to Archie's — re-derived from whichever of the two
+  // guarded inputs just changed, the headline or the style.
+  if (s.gridBrief && GRID_GUARDED.has(parked.kind)) writeRenderText(s, deriveTextForStyle(s));
   if (s.gridBrief) settingChanged(sessionId);
   else rederive(sessionId);
 }

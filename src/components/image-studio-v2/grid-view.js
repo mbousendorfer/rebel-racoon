@@ -94,7 +94,7 @@ function textOnImageCard(st) {
     </div>
     <p class="isv2-gcard-hint">${
       on
-        ? "Archie wrote this from your post, to suit the style you picked. It gets set into the artwork itself."
+        ? "Archie wrote this from your headline idea, shaped by the style you picked. It gets set into the artwork itself."
         : "No words baked into the artwork."
     }</p>
     ${
