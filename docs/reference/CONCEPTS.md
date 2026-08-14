@@ -118,7 +118,12 @@ Ce qui échappe à la règle, et pourquoi — trois familles seulement :
 
 Le code applique déjà la règle : `sources-stream.js` tient un `Map(sessionId → Source[])` avec des subscribers par session et un `clearSession()`, `library.js` et `posts-store.js` de même. Seuls les **uploads** y sont globaux — un état transitoire d'avant-source, que la modale d'ajout lit comme un pool. Les Playbooks sont légitimement globaux eux aussi : ce sont des fiches réutilisables, pas du travail en cours.
 
-> ⚠️ **Un écart subsiste : le pool global d'ideas.** `mocks.ideas` est une union plate des ideas de toutes les sessions, importée en direct par [`right-panel.js`](../../src/components/right-panel.js) (tout son mode Ideas), [`draft-flow.js`](../../src/draft-flow.js) (resolver de repli) et [`assistant.js`](../../src/assistant.js) ; `library.js` la tient synchronisée via `poolAdd`/`poolRemove` justement parce que ces trois-là court-circuitent le store. Conséquence visible : le panneau Ideas d'un chat liste les ideas des **autres** chats. C'est un écart connu, pas un modèle à imiter.
+**Le pool global d'ideas a été supprimé** (août 2026). `mocks.ideas` — une union plate des ideas de toutes les sessions — était importée en direct par le panneau de droite (tout son mode Ideas), par le resolver de repli de `draft-flow` et par les réponses mockées d'`assistant` ; `library.js` devait la tenir synchronisée par double écriture, précisément parce que ces trois-là court-circuitaient le store. Le panneau d'un chat listait donc les ideas des autres, et un chat neuf répondait sur du travail fait ailleurs.
+
+Deux points de méthode que ce nettoyage a fixés, et qui resserviront :
+
+- **`assistant.js` ne peut pas importer `library.js`** — `library` importe déjà `assistant`, l'inverse fermerait un cycle. La dépendance reste à sens unique : `library` **injecte** son lecteur (`setIdeasReader(getIdeas)`) au chargement.
+- **La cascade de suppression appartient au store.** Le panneau découpait la liste à la main et tuait une idea dès qu'**une** de ses sources partait ; `removeIdeasForSources()` ne supprime que celles qui n'ont plus aucune source.
 
 ---
 
