@@ -431,6 +431,7 @@ export function start(
     brief: { about: "", achieve: "", audience: "", tone: "", headline: "", oneThing: "" },
     textOnImage: true, // "Write text on the image" — on by default
     lastRenderText: "", // what the switch restores when turned back on
+    derivedRenderText: "", // the last image text the STUDIO wrote — the dirty check's baseline
     briefSeeded: false, // the structured brief was filled from the post once, at open
     renderText: "", // words to paint INTO the image (empty = none)
     styleKey: null, // selected Style preset (STYLE_PRESETS)
@@ -619,10 +620,18 @@ export function setEditPromptSilent(sessionId, text) {
   if (s) s.editPrompt = text;
 }
 
+function applyStyle(s, key) {
+  s.styleKey = s.styleKey === key ? null : key;
+}
+
 export function setStyle(sessionId, key) {
   const s = states.get(sessionId);
   if (!s) return;
-  s.styleKey = s.styleKey === key ? null : key;
+  // Grid: the style shapes the words on the image, so changing it rewrites them —
+  // which is exactly why it asks first when those words are the user's own.
+  if (defer(s, sessionId, "style", key)) return;
+  applyStyle(s, key);
+  if (s.gridBrief) writeRenderText(s, deriveTextForStyle(s));
   afterLegacySetting(sessionId);
 }
 
@@ -643,12 +652,21 @@ export function setStyle(sessionId, key) {
 
 // Park the change behind the confirmation instead of applying it. Returns true
 // when it parked, so the caller bails out.
+// In the grid variant the prose prompt is not editable, so there is nothing to
+// protect there — but the words set into the IMAGE are, and Style rewrites them. Only
+// the settings that genuinely rewrite them may park, or the dialog would warn about
+// edits a click was never going to touch.
+const GRID_GUARDED = new Set(["style"]);
+
 function defer(s, sessionId, kind, payload) {
-  // Auto-brief and grid-brief both retire the guard: the prose prompt is never a
-  // hand-editable surface (read-only, or replaced by the card grid), so a setting
-  // change can never silently discard typed words. Never park.
-  if (s.autoBrief || s.gridBrief) return false;
-  if (!isDirty(s) || s.skipPromptWarning) return false;
+  // Auto-brief retires the guard: the prose brief is read-only until the user
+  // explicitly takes it over, so a setting change can never discard typed words.
+  if (s.autoBrief) return false;
+  if (s.gridBrief) {
+    if (!GRID_GUARDED.has(kind) || !renderTextDirty(s) || s.skipPromptWarning) return false;
+  } else if (!isDirty(s) || s.skipPromptWarning) {
+    return false;
+  }
   s.pendingSettingChange = { kind, payload };
   notify(sessionId);
   return true;
@@ -1042,6 +1060,49 @@ function assembleGridPrompt(s) {
   return lines.join("\n");
 }
 
+// ── Grid-brief: the image text is shaped by the style it has to sit on ───────
+//
+// Words set into artwork are not style-agnostic: a bold editorial cover wants a short
+// line in caps over two lines, a tech-minimal frame wants three words. So the grid
+// re-derives the text when the style changes — and because that overwrites whatever
+// the user typed, setStyle asks first (see defer / GRID_GUARDED).
+//
+// Mocked like everything else here: one base headline from the post, then shaped.
+const STYLE_TEXT_SHAPE = {
+  "tech-minimal": { maxWords: 4 },
+  corporate: { maxWords: 9 },
+  "3d-render": { maxWords: 5 },
+  "bold-editorial": { maxWords: 6, upper: true, twoLines: true },
+  photoreal: { maxWords: 7 },
+  "hand-drawn": { maxWords: 6 },
+};
+
+function deriveTextForStyle(s) {
+  const base = deriveRenderText(s);
+  const shape = STYLE_TEXT_SHAPE[s.styleKey];
+  if (!base || !shape) return base;
+  const words = base.replace(/\s+/g, " ").trim().split(" ").slice(0, shape.maxWords);
+  if (shape.twoLines && words.length > 3) {
+    const mid = Math.ceil(words.length / 2);
+    const out = `${words.slice(0, mid).join(" ")}\n${words.slice(mid).join(" ")}`;
+    return shape.upper ? out.toUpperCase() : out;
+  }
+  const out = words.join(" ");
+  return shape.upper ? out.toUpperCase() : out;
+}
+
+// The one place that moves both values, so what the studio wrote is never mistaken
+// for what the user typed — same contract as writeBrief.
+function writeRenderText(s, text) {
+  s.renderText = text;
+  s.derivedRenderText = text;
+}
+
+/** Has the user edited the words Archie set into the image? */
+function renderTextDirty(s) {
+  return (s.renderText || "").trim() !== (s.derivedRenderText || "").trim();
+}
+
 // Compose a structured image brief FROM THE DRAFT — the hook becomes the
 // subject, the next line the key message, and the studio's own settings (image
 // type, style, brand, format) fill in the direction. Still a mock (no model
@@ -1108,7 +1169,7 @@ export function runDerive(sessionId, { delay = DERIVE_MS } = {}) {
         // The words painted into the image are derived from the post in their own
         // right (deriveRenderText picks the shortest line that reads at a glance),
         // NOT copied from brief.headline — see setTextOnImage.
-        if (cur.textOnImage && !cur.renderText) cur.renderText = deriveRenderText(cur);
+        if (cur.textOnImage && !cur.renderText) writeRenderText(cur, deriveTextForStyle(cur));
       }
     } else if (cur.autoBrief) {
       if (!cur.renderTextSeeded) {
@@ -1215,7 +1276,10 @@ export function setTextOnImage(sessionId, on) {
   if (!s) return;
   s.textOnImage = !!on;
   if (s.textOnImage) {
-    s.renderText = s.renderText || s.lastRenderText || deriveRenderText(s);
+    // Restoring the user's parked words leaves the dirty baseline alone — they are
+    // still theirs. Only a fresh derive resets it.
+    if (s.renderText || s.lastRenderText) s.renderText = s.renderText || s.lastRenderText;
+    else writeRenderText(s, deriveTextForStyle(s));
   } else {
     if (s.renderText) s.lastRenderText = s.renderText;
     s.renderText = "";
@@ -1258,6 +1322,7 @@ export function pendingSettingChange(sessionId) {
 // so "confirmed" and "never asked" can't diverge.
 const APPLY = {
   imageType: applyImageType,
+  style: applyStyle,
   selectRef: applySelectRef,
   removeRef: applyRemoveRef,
   refMode: (s, key) => {
@@ -1272,7 +1337,10 @@ export function confirmSettingChange(sessionId) {
   if (!parked) return;
   s.pendingSettingChange = null;
   APPLY[parked.kind]?.(s, parked.payload);
-  rederive(sessionId);
+  // Confirmed: the words go back to Archie's, shaped for the style just picked.
+  if (s.gridBrief && parked.kind === "style") writeRenderText(s, deriveTextForStyle(s));
+  if (s.gridBrief) settingChanged(sessionId);
+  else rederive(sessionId);
 }
 
 export function cancelSettingChange(sessionId) {

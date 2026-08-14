@@ -205,9 +205,9 @@
 }
 
 .isv2-grid-analyzing-title {
-  font-size: var(--sys-text-style-subtitle-size);
-  line-height: var(--sys-text-style-subtitle-line-height);
-  font-weight: var(--sys-text-style-subtitle-weight);
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
   color: var(--sys-text-color-default);
 }
 
@@ -237,10 +237,12 @@
   gap: var(--ref-spacing-xxxs);
 }
 
+/* The screen's title, above every card — h2 (18/700). `subtitle` is 16px at weight
+   400 in this DS, so it read LIGHTER than the card titles beneath it. */
 .isv2-grid-title {
-  font-size: var(--sys-text-style-subtitle-size);
-  line-height: var(--sys-text-style-subtitle-line-height);
-  font-weight: var(--sys-text-style-subtitle-weight);
+  font-size: var(--sys-text-style-h2-size);
+  line-height: var(--sys-text-style-h2-line-height);
+  font-weight: var(--sys-text-style-h2-weight);
   color: var(--sys-text-color-default);
 }
 
@@ -409,10 +411,14 @@
   pointer-events: none;
 }
 
+/* The card's TITLE, so it wears a heading style — h3 (16/700). It was body-bold
+   (14/700), which put it BELOW the 16px content inside the card: a title smaller than
+   the thing it titles. `subtitle` is not a heading in this DS (16px at weight 400), so
+   using it here is what caused that inversion. */
 .isv2-gcard-label {
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  font-weight: var(--sys-text-style-body-bold-weight);
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
   color: var(--sys-text-color-default);
 }
 
@@ -451,15 +457,10 @@
   border-color: var(--comp-input-border-focused-color);
 }
 
-/* The field NAME is chrome; the answer is the content. Dropping the label to a
-   muted caption lets the value dominate instead of being out-shouted by a navy
-   bold heading twice its weight. */
-.isv2-gcard--brief .isv2-gcard-label {
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--sys-text-color-light);
-}
+/* No override here any more: a brief card's first line names the card just as
+   "References" names its own, so all thirteen titles read at one level (h3). The
+   hierarchy against the value below comes from WEIGHT and SIZE — 16/700 title over
+   14/400 content — rather than from shrinking the title. */
 
 /* FOUR lines, borderless: the card already draws the frame and pads the edges, so
    every pixel in here goes to the text — where before, three lines inside a second
@@ -484,12 +485,24 @@
   box-sizing: border-box;
 }
 
-/* The toggle card: label + hint on the left, DS switch on the right. */
+/* ── Switches sit BESIDE what they control ──────────────────────────────────
+   The DS toggle keeps its own label inside `.ap-toggle-container` (an implicit
+   `span`, 8px from the switch) precisely so the two are never separated. These rows
+   are hand-built instead, and `space-between` in a 300–1000px card threw the switch
+   to the far edge — a control a whole card-width away from the words it governs.
+   Left-aligned and tight, they read as one control again.
+   Scoped to the grid: the 284px settings panel is narrow enough that its own
+   space-between rows still read as a pair. */
+.isv2-gcard .isv2-sheet-switch {
+  justify-content: flex-start;
+  gap: var(--ref-spacing-xs);
+}
+
 .isv2-gcard-toggle-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--ref-spacing-md);
+  justify-content: flex-start;
+  gap: var(--ref-spacing-xs);
 }
 
 /* "Write text on the image" carries a switch AND a field, so the card can't simply
@@ -505,22 +518,15 @@
 }
 
 .isv2-gtext {
-  /* Two lines of THIS type — the field is set a size up (below), so measuring it in
-     the brief fields' 18px line-height clipped the second line by 4px. */
-  height: calc(var(--sys-text-style-subtitle-line-height) * 2);
+  height: calc(var(--sys-text-style-body-bold-line-height) * 2);
   padding-top: var(--ref-spacing-xs);
   border-top: 1px solid var(--sys-border-color-default);
-  /* The words land on the artwork as a headline, so they are set as one here too —
-     a size up from the brief fields, which hold prose about the image. */
-  font-size: var(--sys-text-style-subtitle-size);
-  line-height: var(--sys-text-style-subtitle-line-height);
-  font-weight: var(--sys-text-style-subtitle-weight);
-}
-
-.isv2-gcard-toggle-copy {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxxs);
+  /* Bold body (14/700), not 16px: these words are a headline, so weight carries that
+     — but they are CONTENT and must not out-size the card title above them, which is
+     exactly what the 16px `subtitle` style was doing. */
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
 }
 
 /* The sticky action bar under the grid: Generate, right-aligned, on the app ground
@@ -583,9 +589,9 @@
 }
 
 .isv2-grid-scrim-label {
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  font-weight: var(--sys-text-style-body-bold-weight);
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
   color: var(--sys-text-color-default);
 }
 

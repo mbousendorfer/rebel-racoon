@@ -23,7 +23,7 @@
 
 import { KEY, ctx, state } from "./context.js?v=41";
 import { outlineMetrics, shadowMetrics } from "../../image-studio-canvas.js?v=5";
-import * as imageStudio from "../../image-studio.js?v=82";
+import * as imageStudio from "../../image-studio.js?v=83";
 
 // The live text node of the overlay currently being edited, if any.
 function editingTextNode() {

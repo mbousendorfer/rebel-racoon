@@ -24,31 +24,52 @@
 import { escapeHtml } from "../../utils.js?v=21";
 import { showToast } from "../toast.js?v=20";
 import { KEY } from "./context.js?v=41";
-import * as imageStudio from "../../image-studio.js?v=82";
+import * as imageStudio from "../../image-studio.js?v=83";
 
 // What each guarded setting is called in the sentence, so the dialog names the
 // thing the user just clicked rather than saying "a setting".
 const WHAT = {
   imageType: "the image type",
+  style: "the style",
   selectRef: "the reference image",
   removeRef: "the reference image",
   refMode: "how the reference is used",
   useReference: "the reference image",
 };
 
+// Same dialog, two subjects. The legacy modal is protecting the prose prompt the user
+// typed in; the grid variant has no editable prompt — what a Style change rewrites
+// there is the text set INTO the image, because those words are shaped by the look
+// they sit on. Naming the wrong one would make the warning unreadable.
+function subject(st) {
+  return st.gridBrief
+    ? {
+        title: "Rewrite the text on your image?",
+        body: "You've edited the text on the image by hand. Archie writes those words to suit the look they sit on, so changing",
+        tail: "rewrites them and your version will be lost.",
+        cta: "Rewrite text",
+      }
+    : {
+        title: "Rewrite your prompt?",
+        body: "You've edited the prompt by hand. Changing",
+        tail: "rewrites it from your settings, so your edits will be lost.",
+        cta: "Rewrite prompt",
+      };
+}
+
 export function promptGuardDialog(st) {
   const parked = st.pendingSettingChange;
   if (!parked) return "";
   const what = WHAT[parked.kind] || "this setting";
+  const copy = subject(st);
   return `<div class="isv2-guard" data-img-guard>
     <div class="ap-dialog isv2-guard-card" role="alertdialog" aria-modal="true" aria-labelledby="isv2GuardTitle" aria-describedby="isv2GuardBody">
       <div class="ap-dialog-header">
-        <span class="ap-dialog-title" id="isv2GuardTitle">Rewrite your prompt?</span>
+        <span class="ap-dialog-title" id="isv2GuardTitle">${escapeHtml(copy.title)}</span>
       </div>
       <div class="ap-dialog-content">
         <p class="isv2-guard-body" id="isv2GuardBody">
-          You've edited the prompt by hand. Changing ${escapeHtml(what)} rewrites it from
-          your settings, so your edits will be lost.
+          ${escapeHtml(copy.body)} ${escapeHtml(what)} ${escapeHtml(copy.tail)}
         </p>
         <label class="isv2-guard-skip">
           <span class="ap-checkbox-container">
@@ -66,7 +87,7 @@ export function promptGuardDialog(st) {
         </div>
         <div class="ap-dialog-footer-right">
           <button type="button" class="ap-button primary orange" data-img-guard-confirm>
-            <i class="ap-icon-sparkles-mermaid" aria-hidden="true"></i><span>Rewrite prompt</span>
+            <i class="ap-icon-sparkles-mermaid" aria-hidden="true"></i><span>${escapeHtml(copy.cta)}</span>
           </button>
         </div>
       </div>

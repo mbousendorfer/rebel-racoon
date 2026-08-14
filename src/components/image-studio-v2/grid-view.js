@@ -17,7 +17,7 @@
 import { escapeHtml } from "../../utils.js?v=21";
 import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=38";
 import { KEY } from "./context.js?v=41";
-import * as imageStudio from "../../image-studio.js?v=82";
+import * as imageStudio from "../../image-studio.js?v=83";
 import { styleBody } from "./settings-view.js?v=9";
 import { refsBody } from "./references-view.js?v=8";
 import { brandingBody } from "./branding-view.js?v=3";
@@ -86,19 +86,17 @@ function textOnImageCard(st) {
   const over = imageStudio.renderTextOverMessage(text);
   return `<div class="isv2-gcard isv2-gcard--full isv2-gcard--textonimage${on ? " is-on" : ""}">
     <div class="isv2-gcard-toggle-row">
-      <div class="isv2-gcard-toggle-copy">
-        <p class="isv2-gcard-label">Write text on the image</p>
-        <p class="isv2-gcard-hint">${
-          on
-            ? "Archie took this from your post. It gets set into the artwork itself."
-            : "No words baked into the artwork."
-        }</p>
-      </div>
+      <p class="isv2-gcard-label">Write text on the image</p>
       <label class="ap-toggle-container" title="Write text on the image">
         <input type="checkbox" data-img-grid-textonimage ${on ? "checked" : ""} aria-label="Write text on the image" />
         <i aria-hidden="true"></i>
       </label>
     </div>
+    <p class="isv2-gcard-hint">${
+      on
+        ? "Archie wrote this from your post, to suit the style you picked. It gets set into the artwork itself."
+        : "No words baked into the artwork."
+    }</p>
     ${
       on
         ? `<textarea class="isv2-gbrief isv2-gtext" data-img-render-text rows="2" placeholder="${escapeHtml(TEXT_ON_IMAGE_PLACEHOLDER)}" aria-label="Text to write into the image">${escapeHtml(text)}</textarea>
