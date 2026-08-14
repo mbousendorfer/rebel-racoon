@@ -21,6 +21,7 @@
 // primary is "Use this image" in the footer (stage-view.js#footerBar).
 
 import { escapeHtml } from "../../utils.js?v=22";
+import { isBriefStage } from "./brief-stage.js?v=4";
 
 // Empty-state hint for the prompt field — a full structured brief, so the
 // placeholder itself shows the kind of rich prompt the box is built for (and why
@@ -44,6 +45,10 @@ export function composer(st) {
   // Generate, so the bottom console goes away entirely in generate mode. Edit mode
   // keeps its "describe a change" composer.
   if (st.gridBrief) return "";
+  // Auto-brief before generating: the brief IS the stage, with its own modifiers and
+  // its own Generate, so a second copy of it down here would be the same text twice.
+  // Once results exist the stage belongs to the image and the composer comes back.
+  if (isBriefStage(st)) return "";
   return generateComposer(st);
 }
 

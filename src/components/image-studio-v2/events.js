@@ -35,7 +35,7 @@ import {
   startCropGesture,
   applyCropSelection,
 } from "./interactions.js?v=41";
-import * as imageStudio from "../../image-studio.js?v=84";
+import * as imageStudio from "../../image-studio.js?v=86";
 
 function onClick(event, close) {
   const st = state();
@@ -109,6 +109,12 @@ function onClick(event, close) {
   // (the hooks are never rendered).
   if (event.target.closest("[data-img-brief-edit]")) return void imageStudio.takeOverBrief(KEY);
   if (event.target.closest("[data-img-brief-rebuild]")) return void imageStudio.rebuildBrief(KEY);
+
+  // Auto-brief stage: a modifier opens its own control under the bar, one at a time.
+  // Checked BEFORE the settings hooks above would matter, but after them in source
+  // order it makes no difference — a modifier chip carries no setting hook of its own.
+  const modBtn = event.target.closest("[data-img-modifier]");
+  if (modBtn && !modBtn.disabled) return void imageStudio.setOpenModifier(KEY, modBtn.dataset.imgModifier);
 
   // ── Grid-brief variant ──
   // The card grid carries its own Generate; from results, "Edit the brief" returns

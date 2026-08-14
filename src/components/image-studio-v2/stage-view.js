@@ -38,14 +38,15 @@ import { getPosts } from "../../posts-store.js?v=46";
 import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=39";
 import { renderPostCard } from "../post-card.js?v=83";
 import { KEY, ctx } from "./context.js?v=42";
-import { composer } from "./composer-view.js?v=71";
+import { composer } from "./composer-view.js?v=72";
 import { settingsPanel } from "./settings-view.js?v=10";
 import { gridBriefView, gridAnalyzingView } from "./grid-view.js?v=15";
+import { briefStage, isBriefStage } from "./brief-stage.js?v=4";
 import { toolPalette } from "./tools-view.js?v=13";
 import { promptGuardDialog } from "./prompt-guard.js?v=6";
 import { editCanvas } from "./edit-view.js?v=41";
 import { compositeOverlays } from "../../image-studio-canvas.js?v=6";
-import * as imageStudio from "../../image-studio.js?v=84";
+import * as imageStudio from "../../image-studio.js?v=86";
 
 // In-feed preview — the edit canvas layers logo/text overlays as live DOM over
 // the image, but renderPostCard only takes a URL, so overlays wouldn't show. We
@@ -177,7 +178,7 @@ function stageContent(st) {
   // overflowed and clipped its own controls, while the biggest area on screen held a
   // placeholder saying an image would appear there later. So the settings take the
   // centre until there is an image to give it back to.
-  const autoSetup = st.autoBrief && !st.gridBrief && st.mode === "generate" && !feedView && st.genPhase === "idle";
+  const autoSetup = isBriefStage(st);
   // The loader owns the stage whenever the brief is being written — on open, and on
   // every reassemble after it. In this variant the brief IS the screen, so rewriting
   // it has to read as the screen being rewritten; a badge inside the Generate button
@@ -187,14 +188,7 @@ function stageContent(st) {
   const gridReady = gridConfig && st.briefSeeded && !st.promptLoading;
   let inner;
   if (gridConfig) inner = gridReady ? gridBriefView(st) : gridAnalyzingView(st);
-  else if (autoSetup)
-    inner = `<div class="isv2-setup">
-      <div class="isv2-grid-head">
-        <span class="isv2-grid-title">Set up your image</span>
-        <span class="isv2-grid-sub">Archie writes the brief below from these — change anything and it rewrites.</span>
-      </div>
-      ${settingsPanel(st)}
-    </div>`;
+  else if (autoSetup) inner = briefStage(st);
   else if (feedView) inner = feedPreview(st);
   else if (st.mode === "edit") inner = editCanvas(st);
   else if (st.genPhase === "generating") inner = generatingStage(st);

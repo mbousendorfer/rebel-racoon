@@ -425,6 +425,11 @@ export function start(
     renderTextSeeded: false, // "Text in image" pre-suggested once at open, never re-touched after
     briefTakenOver: false, // user hit "Edit the brief" — the words are theirs now
     briefStale: false, // a setting changed while taken over — brief no longer matches
+    // Which prompt modifier has its control open, or null. ONE at a time, unlike the
+    // panel's independent sections: here the brief is the hero, so the modifier
+    // surface has to stay small or it pushes the thing it modifies off the screen.
+    // Distinct from `openPopover`, which means edit-mode flyouts and nothing else.
+    openModifier: null,
     // ── Grid-brief variant (flag imageStudioGridBrief) ─────────────────────────
     // When on, the whole generate screen is a dashboard grid of editable cards and
     // the prompt is a STRUCTURED brief (named fields Archie fills from the post),
@@ -927,6 +932,15 @@ export function toggleGroupCollapsed(sessionId, id) {
   if (!s) return;
   if (s.collapsedGroups.has(id)) s.collapsedGroups.delete(id);
   else s.collapsedGroups.add(id);
+  notify(sessionId);
+}
+
+// Open one prompt modifier's control, or shut it. Same name again = shut, so the bar
+// can never end up with two panels fighting for the space under it.
+export function setOpenModifier(sessionId, name) {
+  const s = states.get(sessionId);
+  if (!s) return;
+  s.openModifier = s.openModifier === name ? null : name || null;
   notify(sessionId);
 }
 
