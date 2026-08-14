@@ -12,6 +12,7 @@ Documentation qui décrit l'état actuel du code. À maintenir à jour quand le 
 
 | Document                                                                 | Sujet                                                                                    |
 | ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
+| [`reference/CONCEPTS.md`](reference/CONCEPTS.md)                         | **Modèle conceptuel** : ce qu'est un Playbook, ses frontières, la nature de chaque objet |
 | [`reference/FEATURES.md`](reference/FEATURES.md)                         | **Catalogue fonctionnel** : toutes les features de l'app, leurs flows, états, entrées    |
 | [`reference/ARCHITECTURE.md`](reference/ARCHITECTURE.md)                 | Architecture du proto, lifecycle, source layout, patterns de fichiers                    |
 | [`reference/ROUTES.md`](reference/ROUTES.md)                             | Route table, handoffs cross-routes, URL state hash query                                 |
@@ -47,6 +48,7 @@ Documentation qui décrit l'état actuel du code. À maintenir à jour quand le 
 
 | Tu cherches…                                                        | Va voir                                                                  |
 | ------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Ce qu'est un Playbook, et ce qui n'a rien à y faire                 | [`reference/CONCEPTS.md`](reference/CONCEPTS.md)                         |
 | Ce que fait telle feature (flow, états, entrées)                    | [`reference/FEATURES.md`](reference/FEATURES.md)                         |
 | Comment fonctionne le proto en général                              | [`reference/ARCHITECTURE.md`](reference/ARCHITECTURE.md)                 |
 | Quelles classes/tokens DS l'app utilise en pratique                 | [`reference/UI-PATTERNS.md`](reference/UI-PATTERNS.md)                   |

@@ -50,6 +50,8 @@ Chaque session a son propre thread (`assistant.js`), ses ideas (`library.js`), s
 
 ### Playbook = Context (vocabulary leak)
 
+> Ce qu'**est** un Playbook — sa définition, ses frontières, ce qui n'a jamais le droit d'y entrer : [`CONCEPTS.md` §1](CONCEPTS.md#1-le-playbook). Ci-dessous, uniquement le problème de nom.
+
 ⚠️ **Le proto a un héritage** : le code, les stores, les IDs, les noms de fichier utilisent **`Context`** :
 
 - Store : `contexts-store.js` (`getContextById`, `addContext`, …)

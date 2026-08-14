@@ -472,7 +472,7 @@ Trois « studios » qui prennent tout le panneau assistant (states upload → an
 
 ## 9. Playbooks
 
-Un Playbook capture business summary, audience, goals, voice/style, brand identity. Stores/vues : [`contexts-store.js`](../../src/contexts-store.js), [`context-builder.js`](../../src/context-builder.js), [`playbook-view.js`](../../src/playbook-view.js), [`context-mock-analysis.js`](../../src/context-mock-analysis.js), [`languages.js`](../../src/languages.js).
+Un Playbook capture business summary, audience, goals, voice/style, brand identity — la **fiche d'identité d'un émetteur (marque ou voix) et de son cadrage éditorial**. Ce qu'il est et ce qui n'a jamais le droit d'y entrer : [`CONCEPTS.md` §1](CONCEPTS.md#1-le-playbook). Ci-dessous, ce qu'il fait. Stores/vues : [`contexts-store.js`](../../src/contexts-store.js), [`context-builder.js`](../../src/context-builder.js), [`playbook-view.js`](../../src/playbook-view.js), [`context-mock-analysis.js`](../../src/context-mock-analysis.js), [`languages.js`](../../src/languages.js).
 
 ### Library (`/contexts`, [`screens/contexts.js`](../../src/screens/contexts.js))
 
