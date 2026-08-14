@@ -6,11 +6,31 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { ideas, threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=64";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=64";
 import { findConnector } from "./connectors-store.js?v=36";
 import { createSessionNotifier } from "./store-utils.js?v=2";
 import { showToast } from "./components/toast.js?v=20";
 import { isFlagOn } from "./feature-flags.js?v=19";
+
+// How this module reads a session's ideas, injected rather than imported.
+//
+// The mock replies need to know what THIS chat has extracted, but `library.js`
+// already imports this module — importing it back would close a cycle. So the
+// dependency stays one-way and library hands its reader over at module init
+// (`setIdeasReader(getIdeas)`). Until it does, this answers "no ideas yet",
+// which is the honest reading of a chat whose library never loaded.
+let readIdeas = () => [];
+
+/** Called once by library.js so mock replies can see the session's ideas. */
+export function setIdeasReader(fn) {
+  if (typeof fn === "function") readIdeas = fn;
+}
+
+function readSessionIdeas(sessionId) {
+  if (!sessionId) return [];
+  const list = readIdeas(sessionId);
+  return Array.isArray(list) ? list : [];
+}
 
 const threads = new Map(); // sessionId → messages[]
 const notifier = createSessionNotifier("assistant");
@@ -101,7 +121,7 @@ export function sendMessage(sessionId, text, options = {}) {
 
   const delay = 6000;
   setTimeout(() => {
-    const reply = mockAiReply({ prompt: text });
+    const reply = mockAiReply({ prompt: text, sessionId });
     const reasoning = thread.find((m) => m.id === reasoningId);
     if (reasoning) {
       reasoning.text = reply.reasoning;
@@ -765,7 +785,11 @@ function mockConnectorReply(connector, prompt) {
 // Scripted mock replies. Ported from the old prototype (src/mock-generators.js),
 // extended to return a { text, reasoning } pair — `reasoning` is shown in the
 // mermaid-accented "Drafting" collapsible above the answer.
-function mockAiReply({ prompt }) {
+function mockAiReply({ prompt, sessionId }) {
+  // THIS chat's ideas, never the account's. It used to read mocks.ideas — a flat
+  // union of every session's — so a fresh chat with nothing in it would answer
+  // about ideas the user had extracted somewhere else entirely.
+  const ideas = readSessionIdeas(sessionId);
   const leadIdea = ideas.find((i) => i.pinned) || ideas[0] || null;
   const otherIdea = ideas.find((i) => i.id !== leadIdea?.id) || null;
   const ideaCount = ideas.length;

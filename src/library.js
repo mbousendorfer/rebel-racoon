@@ -9,11 +9,7 @@
 //   appendExtractedIdeas(sessionId, sources)  bulk "extract more" flow
 //   removeIdeasForSources(sessionId, sourceIds)  cleanup after bulk-delete
 
-import {
-  ideas as seedIdeas,
-  ideasBySession as seedIdeasBySession,
-  recentSessions as seedRecentSessions,
-} from "./mocks.js?v=64";
+import { ideasBySession as seedIdeasBySession, recentSessions as seedRecentSessions } from "./mocks.js?v=64";
 import { isNewUser } from "./user-mode.js?v=23";
 
 // Demo session ids — the recentSessions seed (s-acme-launch / s-riverside /
@@ -22,6 +18,12 @@ import { isNewUser } from "./user-mode.js?v=23";
 // to match the user's mental model. Anything else looked-up — same path.
 const DEMO_SESSION_IDS = new Set(seedRecentSessions.map((s) => s.id));
 import { postAssistantMessage, postExtractionResult, startPending, finishPending } from "./assistant.js?v=70";
+import { setIdeasReader } from "./assistant.js?v=70";
+
+// Hand the assistant a way to read a session's ideas. The dependency only runs
+// this way — library imports assistant, never the reverse — so the mock replies
+// get per-session ideas without closing an import cycle.
+setIdeasReader((sessionId) => getIdeas(sessionId));
 import {
   getSources as streamGetSources,
   subscribeSources,
@@ -38,36 +40,6 @@ const subscribers = new Map(); // sessionId → Set<fn>
 // re-emit to the library subscribers so consumers reading via library
 // (e.g. Content tab) stay in sync.
 const streamUnsubsBySession = new Map();
-
-// ── The global pool ───────────────────────────────────────────────────────
-//
-// `seedIdeas` IS mocks.ideas — a flat union of every demo session's ideas that
-// several surfaces read directly instead of going through this store (the
-// right-panel Ideas mode, draft-flow's fallback resolver, assistant's reasoning
-// copy).
-//
-// It used to be write-only from injectIdeasForSource and never pruned, so a
-// global surface showed ghosts (deleted ideas) and missed real ones (anything
-// from addSource / appendExtractedIdeas). Every write and every delete now goes
-// through these two helpers, so the pool and the per-session lists agree.
-//
-// Not the same objects: the pool holds shallow copies, so a per-session edit
-// doesn't silently mutate the global row and vice versa. Identity is the `id`.
-
-function poolAdd(ideas) {
-  if (!Array.isArray(ideas) || ideas.length === 0) return;
-  const known = new Set(seedIdeas.map((i) => i.id));
-  const fresh = ideas.filter((i) => !known.has(i.id)).map((i) => ({ ...i }));
-  if (fresh.length) seedIdeas.unshift(...fresh);
-}
-
-function poolRemove(ideaIds) {
-  if (!Array.isArray(ideaIds) || ideaIds.length === 0) return;
-  const set = new Set(ideaIds);
-  for (let i = seedIdeas.length - 1; i >= 0; i -= 1) {
-    if (set.has(seedIdeas[i].id)) seedIdeas.splice(i, 1);
-  }
-}
 
 let idCounter = 0;
 function newId(prefix) {
@@ -171,7 +143,6 @@ export function appendExtractedIdeas(sessionId, sources, onDone) {
     });
 
     ideasMap.get(sessionId).unshift(...created);
-    poolAdd(created);
 
     // Single extraction-turn summarising all of them. If only one source was
     // selected we use its filename; otherwise show "N sources".
@@ -191,11 +162,9 @@ export function appendExtractedIdeas(sessionId, sources, onDone) {
 // video → Extract ideas" branch). Each idea may omit secondary fields;
 // defaults are filled in to match the seed idea shape.
 //
-// We mutate BOTH the per-session ideasMap AND the shared mocks `seedIdeas`
-// array. The right-panel + /ideas + /sources surfaces read directly from
-// mocks (the prototype never wired them to the library store), so without
-// the dual-write the injected ideas would only show up via library APIs
-// and remain invisible in the Ideas panel.
+// Writes to the session's list only. This used to dual-write a global pool as
+// well, because the right panel and the draft flow read mocks.ideas directly
+// instead of this store; they now read the session, so there is one list.
 export function injectIdeasForSource(sessionId, sourceId, ideas) {
   if (!Array.isArray(ideas) || ideas.length === 0) return [];
   getIdeas(sessionId);
@@ -219,7 +188,6 @@ export function injectIdeasForSource(sessionId, sourceId, ideas) {
     extractedAt: "just now",
   }));
   ideasMap.get(sessionId).unshift(...created);
-  poolAdd(created);
   notify(sessionId);
   return created;
 }
@@ -244,12 +212,7 @@ export function removeIdeas(sessionId, ideaIds) {
     if (set.has(ideas[i].id)) ideas.splice(i, 1);
   }
   const removed = before - ideas.length;
-  // Prune the global pool too, or the idea lives on in every surface that
-  // reads it — which is what made a global library impossible before.
-  if (removed > 0) {
-    poolRemove(ideaIds);
-    notify(sessionId);
-  }
+  if (removed > 0) notify(sessionId);
   return removed;
 }
 
@@ -262,19 +225,16 @@ export function removeIdeasForSources(sessionId, sourceIds) {
   const ideas = ideasMap.get(sessionId);
   if (!ideas) return 0;
   const before = ideas.length;
-  const dropped = [];
   // Filter in place — same array reference so subscribers see the change.
   for (let i = ideas.length - 1; i >= 0; i -= 1) {
     const idea = ideas[i];
     const remaining = (idea.sourceIds || []).filter((sid) => !set.has(sid));
     if (remaining.length === 0) {
-      dropped.push(idea.id);
       ideas.splice(i, 1);
     } else if (remaining.length !== (idea.sourceIds || []).length) {
       idea.sourceIds = remaining;
     }
   }
-  poolRemove(dropped);
   const removed = before - ideas.length;
   notify(sessionId);
   return removed;
@@ -346,7 +306,6 @@ export function addSource(sessionId, kind) {
       extractedAt: "just now",
     }));
     ideasMap.get(sessionId).unshift(...extracted);
-    poolAdd(extracted);
 
     // Structured extraction turn — Drafting pill ("Extracted N ideas") +
     // "Analyzed <filename>" + one idea card per extracted idea.

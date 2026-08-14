@@ -1,8 +1,6 @@
 import { html, raw, escapeText, escapeAttr } from "../utils.js?v=21";
 import { getThread, subscribe as subscribeThread } from "../assistant.js?v=70";
 import { isFlagOn } from "../feature-flags.js?v=19";
-import { ideas as MOCK_IDEAS } from "../mocks.js?v=64";
-import { isNewUser } from "../user-mode.js?v=23";
 import { getPath } from "../router.js?v=30";
 import { parseHashParams, setHashQuery } from "../url-state.js?v=21";
 import { LANGUAGE_OPTIONS } from "../languages.js?v=2";
@@ -37,11 +35,21 @@ import { renderConnectorLogo } from "../connectors-view.js?v=18";
 import { open as openConnectorsModal } from "./connectors-modal.js?v=19";
 import { addMention as addComposerMention } from "../composer-mentions.js?v=38";
 import { iconFor } from "../file-kinds.js?v=20";
+import { getIdeas, removeIdeasForSources } from "../library.js?v=64";
 
-// Lot 15 — empty in first-time mode so the right-panel Ideas surface lines
-// up with the rest of the chrome (sidebar Recent list = empty, dashboard
-// = first-run welcome). Returning user gets the full seed.
-const IDEAS = isNewUser() ? [] : MOCK_IDEAS;
+// The ideas of the chat the panel is looking at.
+//
+// This used to be `mocks.ideas` — a flat union of EVERY session's ideas — so a
+// chat's Ideas tab listed other chats' ideas, and its counts were the account's,
+// not the conversation's. Ideas belong to the session that produced them
+// (docs/reference/CONCEPTS.md §3), so the panel reads them from that session.
+// Resolved per call rather than cached: the panel outlives any single route,
+// and `activeSessionId()` is what tells it which chat is on screen. First-time
+// mode needs no special case — library.js seeds empty there.
+function sessionIdeas() {
+  const sid = activeSessionId();
+  return sid ? getIdeas(sid) : [];
+}
 import { open as openScheduleModal } from "./schedule-modal.js?v=66";
 import { open as openImageStudio } from "./image-studio-v2/index.js?v=78";
 import { open as openConfirmModal } from "./confirm-modal.js?v=22";
@@ -785,7 +793,7 @@ export function init() {
       closeAllSourceMenus();
       const id = sourcesDetachBtn.dataset.rpanelSourcesDetach;
       const src = getStreamSources(sid).find((s) => s.id === id);
-      const ideaN = IDEAS.filter((i) => Array.isArray(i.sourceIds) && i.sourceIds.includes(id)).length;
+      const ideaN = sessionIdeas().filter((i) => Array.isArray(i.sourceIds) && i.sourceIds.includes(id)).length;
       const ideaWarning =
         ideaN > 0 ? ` Its ${ideaN} associated idea${ideaN === 1 ? "" : "s"} will be deleted too.` : "";
       openConfirmModal({
@@ -795,10 +803,10 @@ export function init() {
         danger: true,
         onConfirm: () => {
           // Cascade — drop the ideas derived from this source first, then the
-          // source itself (whose removal notifies + repaints the panel).
-          for (let i = IDEAS.length - 1; i >= 0; i -= 1) {
-            if (Array.isArray(IDEAS[i].sourceIds) && IDEAS[i].sourceIds.includes(id)) IDEAS.splice(i, 1);
-          }
+          // source itself (whose removal notifies + repaints the panel). The
+          // store owns the cascade: it keeps an idea that ALSO came from another
+          // source, which hand-splicing the list here did not.
+          removeIdeasForSources(sid, [id]);
           removeSources([id], sid);
         },
       });
@@ -998,7 +1006,7 @@ export function init() {
     if (mentionIdeaBtn) {
       const sid = activeSessionId();
       if (!sid) return;
-      const idea = IDEAS.find((i) => i.id === mentionIdeaBtn.dataset.rpanelMentionIdea);
+      const idea = sessionIdeas().find((i) => i.id === mentionIdeaBtn.dataset.rpanelMentionIdea);
       if (idea) addComposerMention(sid, idea.title);
       return;
     }
@@ -2354,10 +2362,10 @@ export function renderSourceRow(src) {
     : "";
 
   // Ideas this source produced — each title is a link into the Outputs ›
-  // Ideas tab (focuses + pulses that card). Resolved from the same IDEAS
-  // list the Ideas tab renders, so every link has a live target. Mirrors
+  // Ideas tab (focuses + pulses that card). Resolved from the same list the
+  // Ideas tab renders, so every link has a live target. Mirrors
   // the idea/clip card grammar (card content → footer actions).
-  const sourceIdeas = IDEAS.filter((i) => Array.isArray(i.sourceIds) && i.sourceIds.includes(src.id));
+  const sourceIdeas = sessionIdeas().filter((i) => Array.isArray(i.sourceIds) && i.sourceIds.includes(src.id));
   const ideasList =
     !isProcessing && sourceIdeas.length
       ? `<ul class="rpanel-sources__ideas">
@@ -2500,7 +2508,7 @@ export function renderSourceRow(src) {
 }
 
 function renderIdeasView() {
-  const ideaCount = IDEAS.length;
+  const ideaCount = sessionIdeas().length;
   const clips = collectAllClips();
   const clipCount = clips.length;
   const ideasActive = outputsView === "ideas";
@@ -2546,9 +2554,9 @@ function renderIdeasView() {
   }
 
   // Counts per kind for the filter chips — "All (12)" / "Stats (4)".
-  const totalCount = IDEAS.length;
+  const totalCount = sessionIdeas().length;
   const kindCounts = IDEA_KINDS.reduce((acc, k) => {
-    acc[k.id] = k.id === "all" ? totalCount : IDEAS.filter((i) => i.kind === k.id).length;
+    acc[k.id] = k.id === "all" ? totalCount : sessionIdeas().filter((i) => i.kind === k.id).length;
     return acc;
   }, {});
 
@@ -2689,7 +2697,7 @@ function renderClipsList(entries) {
 function renderIdeasList() {
   // Order matches the seed array (newest-first by convention in mocks);
   // the active kind filter narrows the list.
-  const sorted = IDEAS.filter((i) => ideasFilter === "all" || i.kind === ideasFilter);
+  const sorted = sessionIdeas().filter((i) => ideasFilter === "all" || i.kind === ideasFilter);
   if (sorted.length === 0) {
     return html`
       <div class="app-right-panel__empty rpanel-ideas__no-match">
@@ -2798,7 +2806,7 @@ function renderIdeaCompact(idea) {
 // usual draft-flow pipeline, so the user lands back on the chat surface
 // with the picker mounted and ready to answer.
 function useIdea(ideaId) {
-  const idea = IDEAS.find((i) => i.id === ideaId);
+  const idea = sessionIdeas().find((i) => i.id === ideaId);
   if (!idea) return;
   const sid = activeSessionId();
   if (!sid) return;

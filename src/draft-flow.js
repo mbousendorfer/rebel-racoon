@@ -16,7 +16,7 @@
 
 import { postAssistantChoice, startPending, finishPending, postDraftResult } from "./assistant.js?v=70";
 import { getIdeas } from "./library.js?v=64";
-import { ideas as GLOBAL_IDEAS, anglesByIdea } from "./mocks.js?v=64";
+import { anglesByIdea } from "./mocks.js?v=64";
 import { addPostDraft } from "./posts-store.js?v=45";
 import { showToast } from "./components/toast.js?v=20";
 
@@ -56,12 +56,12 @@ function draftError(err, retry) {
   });
 }
 
-// Per-session ideas live in library.js while the right-panel browses a
-// flat global list (mocks.ideas). Some entry points only have a global
-// id, so fall back to the mock list when the per-session store doesn't
-// know about it — keeps the draft flow universal.
+// An idea belongs to the session that produced it, so that session is the only
+// place worth looking. The fallback that used to follow — a flat lookup in
+// mocks.ideas — existed because the right panel browsed every session's ideas
+// at once and could hand this flow an id from another chat. It can't any more.
 function resolveIdea(sessionId, ideaId) {
-  return getIdeas(sessionId).find((i) => i.id === ideaId) || GLOBAL_IDEAS.find((i) => i.id === ideaId) || null;
+  return getIdeas(sessionId).find((i) => i.id === ideaId) || null;
 }
 
 // Generic angle fallback for ideas without a handcrafted set in
