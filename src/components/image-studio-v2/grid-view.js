@@ -72,6 +72,20 @@ function textOnImageCard(st) {
   </div>`;
 }
 
+// The opening "Archie is reading your post" state — a full-stage brand loader
+// shown while the structured brief is seeded (runDerive, ~2s), BEFORE the grid
+// appears. Without it the cards would flash in empty and then fill under the user;
+// with it, the analysis reads as the deliberate step it is. Shown once per open
+// (gated on !briefSeeded) — later reassembles on edits never bring it back.
+// `.gen-image-spinner` auto-hosts the animated Archie mark (archie-loader.js).
+export function gridAnalyzingView() {
+  return `<div class="isv2-grid-analyzing" role="status" aria-live="polite">
+    <span class="gen-image-spinner gen-loading-mark"></span>
+    <p class="isv2-grid-analyzing-title">Reading your post…</p>
+    <p class="isv2-grid-analyzing-sub">Archie is setting the best parameters and writing your image brief.</p>
+  </div>`;
+}
+
 export function gridBriefView(st) {
   const picked = imageStudio.selectedReference(st);
   const hasLogo = !!st.playbookLogo;

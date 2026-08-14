@@ -191,6 +191,33 @@
   padding: 0;
 }
 
+/* The opening analysis: the Archie brand mark centred in the whole stage while the
+   structured brief is written, before the grid appears. The stage-body keeps its
+   default flex-centre (has-grid isn't applied yet), so this centres for free. */
+.isv2-grid-analyzing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ref-spacing-sm);
+  text-align: center;
+  padding: var(--ref-spacing-xl);
+}
+
+.isv2-grid-analyzing-title {
+  font-size: var(--sys-text-style-subtitle-size);
+  line-height: var(--sys-text-style-subtitle-line-height);
+  font-weight: var(--sys-text-style-subtitle-weight);
+  color: var(--sys-text-color-default);
+}
+
+.isv2-grid-analyzing-sub {
+  max-width: 42ch;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--sys-text-color-light);
+}
+
 .isv2-grid {
   max-width: 960px;
   margin: 0 auto;
