@@ -13,15 +13,15 @@
 // tones, contentStyle, objective, contentAction, ctaLinks, language, color,
 // suggestions, editingId, onComplete }.
 
-import * as inlineQuestion from "./inline-question.js?v=48";
-import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=70";
-import * as rightPanel from "./components/right-panel.js?v=444";
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=47";
-import { analyzeWebsite } from "./context-mock-analysis.js?v=26";
-import { connectors as connectorMocks } from "./mocks.js?v=64";
-import { getConnectedProfiles, buildConnectedProfileItems, PROFILE_SEARCH_THRESHOLD } from "./social-profiles.js?v=38";
-import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=2";
-import { isFlagOn } from "./feature-flags.js?v=19";
+import * as inlineQuestion from "./inline-question.js?v=49";
+import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=71";
+import * as rightPanel from "./components/right-panel.js?v=445";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=48";
+import { analyzeWebsite } from "./context-mock-analysis.js?v=27";
+import { connectors as connectorMocks } from "./mocks.js?v=65";
+import { getConnectedProfiles, buildConnectedProfileItems, PROFILE_SEARCH_THRESHOLD } from "./social-profiles.js?v=39";
+import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=3";
+import { isFlagOn } from "./feature-flags.js?v=20";
 
 const drafts = new Map(); // sessionId → draft
 const subscribers = new Map(); // sessionId → Set<fn>

@@ -16,8 +16,8 @@
 // the old rule that made the feed scannable (every card the same height); only
 // the lead breaks it, and it breaks it on purpose.
 
-import { html, raw } from "./utils.js?v=21";
-import { renderTopicCard, renderTopicLeadCard } from "./components/topic-card.js?v=6";
+import { html, raw } from "./utils.js?v=22";
+import { renderTopicCard, renderTopicLeadCard } from "./components/topic-card.js?v=7";
 
 // Date buckets, from `ageDays` rather than a real clock. Order matters — a feed
 // renders them in this sequence and drops the empty ones. Moved here from

@@ -17,16 +17,16 @@
 // chooses "Save as global". updateContext is used by the section-edit flow
 // when scope is "Update everywhere".
 
-import { contexts as seed } from "./mocks.js?v=64";
-import { isNewUser } from "./user-mode.js?v=23";
-import { createNotifier } from "./store-utils.js?v=2";
-import { DEFAULT_ENABLED_IDS, DEFAULT_CADENCE, findTopicSource, findCadence } from "./topics-catalog.js?v=2";
+import { contexts as seed } from "./mocks.js?v=65";
+import { isNewUser } from "./user-mode.js?v=24";
+import { createNotifier } from "./store-utils.js?v=3";
+import { DEFAULT_ENABLED_IDS, DEFAULT_CADENCE, findTopicSource, findCadence } from "./topics-catalog.js?v=3";
 import {
   normalizeLanguages,
   mirrorPrimaryToTopLevel,
   syncTopLevelToPrimary,
   cloneVoiceByLanguage,
-} from "./languages.js?v=2";
+} from "./languages.js?v=3";
 
 // Lives up here, away from normalizeBrandLogos where it belongs, because the
 // seed below calls that normalizer at module-init time — a `let` declared beside

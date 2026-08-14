@@ -14,13 +14,13 @@
 // uses, so their data-* controls are already wired in events.js and work unchanged;
 // only the container differs.
 
-import { escapeHtml } from "../../utils.js?v=21";
-import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=38";
-import { KEY } from "./context.js?v=41";
-import * as imageStudio from "../../image-studio.js?v=83";
-import { styleBody } from "./settings-view.js?v=9";
-import { refsBody } from "./references-view.js?v=8";
-import { brandingBody } from "./branding-view.js?v=3";
+import { escapeHtml } from "../../utils.js?v=22";
+import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=39";
+import { KEY } from "./context.js?v=42";
+import * as imageStudio from "../../image-studio.js?v=84";
+import { styleBody } from "./settings-view.js?v=10";
+import { refsBody } from "./references-view.js?v=9";
+import { brandingBody } from "./branding-view.js?v=4";
 
 // The six content fields, in the order the attachment shows them. Each is one card:
 // a bold label over a bordered textarea bound to s.brief[key]. Heights are fixed in

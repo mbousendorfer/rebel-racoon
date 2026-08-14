@@ -20,7 +20,7 @@
 // Generate is `secondary blue`: it is a step, not the destination. The modal's one
 // primary is "Use this image" in the footer (stage-view.js#footerBar).
 
-import { escapeHtml } from "../../utils.js?v=21";
+import { escapeHtml } from "../../utils.js?v=22";
 
 // Empty-state hint for the prompt field — a full structured brief, so the
 // placeholder itself shows the kind of rich prompt the box is built for (and why

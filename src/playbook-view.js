@@ -14,11 +14,11 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=21";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=26";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2";
-import { isFlagOn } from "./feature-flags.js?v=19";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=38";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=22";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=27";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=3";
+import { isFlagOn } from "./feature-flags.js?v=20";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=39";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [

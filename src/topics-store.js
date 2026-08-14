@@ -31,9 +31,9 @@
 // topicWhen(). A prototype has no clock worth trusting, and mock dates that drift
 // as the file ages read worse than a stable "3 days ago".
 
-import { topics as seed, topicScanPool as scanSeed } from "./mocks.js?v=64";
-import { isNewUser } from "./user-mode.js?v=23";
-import { createNotifier } from "./store-utils.js?v=2";
+import { topics as seed, topicScanPool as scanSeed } from "./mocks.js?v=65";
+import { isNewUser } from "./user-mode.js?v=24";
+import { createNotifier } from "./store-utils.js?v=3";
 
 // First-time user mode starts empty so /topics renders its empty state and the
 // sidebar counter stays absent. Returning user keeps the mock seed. Same guard
