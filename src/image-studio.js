@@ -44,7 +44,10 @@ const REDERIVE_MS = 600;
 // cards): the prompt it rebuilds is never displayed, so a silent or passive update
 // left the user unsure whether their change had registered at all. Blocking also
 // means a second change can't arrive mid-flight and get dropped.
-const GRID_REASSEMBLE_MS = 800;
+// Short on purpose. At 800 the grid sat visibly waiting on a mock that computes in
+// no time, and editing two fields in a row paid it twice — the honest length of a
+// beat that only says "I heard you", not a length that simulates work.
+const GRID_REASSEMBLE_MS = 300;
 
 export const MAX_REFS = 6;
 export const VARIATION_CHOICES = [1, 2, 3, 4];

@@ -535,6 +535,7 @@
   font-size: var(--sys-text-style-subtitle-size);
   line-height: var(--sys-text-style-subtitle-line-height);
   font-weight: var(--sys-text-style-subtitle-weight);
+  transition: opacity var(--ref-animation-short) var(--app-ease-out);
 }
 
 /* The sticky action bar under the grid: Generate, right-aligned, on the app ground
@@ -570,46 +571,14 @@
   position: relative;
 }
 
-.isv2-grid-scrim {
-  position: absolute;
-  inset: 0;
-  z-index: 5;
-  display: flex;
-  justify-content: center;
-  background: color-mix(in srgb, var(--app-bg) 72%, transparent);
-  cursor: progress;
-  animation: isv2-scrim-in var(--ref-animation-short) var(--app-ease-out);
-}
-
-.isv2-grid-scrim-box {
-  position: sticky;
-  top: 38%;
-  align-self: flex-start;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-md) var(--ref-spacing-lg);
-  border-radius: var(--sys-settings-card-border-radius);
-  background: var(--ref-color-white);
-  border: 1px solid var(--sys-border-color-default);
-  box-shadow: var(--app-shadow-low);
-}
-
-.isv2-grid-scrim-label {
-  font-size: var(--sys-text-style-h3-size);
-  line-height: var(--sys-text-style-h3-line-height);
-  font-weight: var(--sys-text-style-h3-weight);
-  color: var(--sys-text-color-default);
-}
-
-@keyframes isv2-scrim-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+/* Rewriting shows on the field being rewritten, and nowhere else. The scrim that
+   used to live here covered the grid, dimmed twelve cards and floated a white
+   shadowed box at 38% to announce a sub-second recompute of one line — and the
+   mark inside it was `.gen-loading-mark`, the 88px stage glyph, in a small box.
+   Going quiet says the same thing and costs the reader nothing. */
+.isv2-gtext.is-rewriting {
+  opacity: 0.4;
+  pointer-events: none;
 }
 
 @media (max-width: 720px) {

@@ -84,6 +84,9 @@ function textOnImageCard(st) {
   const on = !!st.textOnImage;
   const text = st.renderText || "";
   const over = imageStudio.renderTextOverMessage(text);
+  // These are the words Archie is rewriting, so this field carries the wait — see
+  // the note on `busy` in gridBriefView.
+  const rewriting = st.promptLoading && st.briefSeeded;
   return `<div class="isv2-gcard isv2-gcard--full isv2-gcard--textonimage${on ? " is-on" : ""}">
     <div class="isv2-gcard-toggle-row">
       <p class="isv2-gcard-label">Write text on the image</p>
@@ -99,7 +102,7 @@ function textOnImageCard(st) {
     }</p>
     ${
       on
-        ? `<textarea class="isv2-gbrief isv2-gtext" data-img-render-text rows="2" placeholder="${escapeHtml(TEXT_ON_IMAGE_PLACEHOLDER)}" aria-label="Text to write into the image">${escapeHtml(text)}</textarea>
+        ? `<textarea class="isv2-gbrief isv2-gtext${rewriting ? " is-rewriting" : ""}"${rewriting ? ' aria-busy="true"' : ""} data-img-render-text rows="2" placeholder="${escapeHtml(TEXT_ON_IMAGE_PLACEHOLDER)}" aria-label="Text to write into the image">${escapeHtml(text)}</textarea>
            <p class="ap-form-message error" data-img-render-text-msg role="status"${over ? "" : ` style="display:none"`}>${escapeHtml(over)}</p>`
         : ""
     }
@@ -275,30 +278,27 @@ export function gridBriefView(st) {
     outputCard(st, choices, canCarousel, isCarousel),
   ].join("");
 
-  // Rewriting the brief BLOCKS. The prompt being rebuilt is never shown in this
-  // variant, so a passive indicator left the user unsure their change had landed;
-  // a scrim over the cards makes the dependency ("that setting feeds the brief")
-  // impossible to miss, and stops a second change arriving mid-flight. Only once
-  // the brief is seeded — before that, the opening loader owns the screen.
+  // Reassembling is short and touches ONE visible thing — the words Archie writes
+  // onto the image. So the wait is shown where it is actually spent: Generate holds
+  // a spinner and stays disabled, and the text being rewritten goes quiet until it
+  // lands. What used to be here — a scrim over the whole grid plus a white,
+  // shadowed box floating at 38% — dimmed twelve cards to report a recompute of
+  // one, and carried `.gen-loading-mark`, the 88px STAGE mark, inside a small box
+  // (docs/reference/UI-PATTERNS.md §7 names that exact mistake). Blocking a second
+  // change mid-flight was its other job; disabling Generate keeps that, and
+  // `runDerive` already drops a re-entrant trigger on its own.
   const busy = st.promptLoading && st.briefSeeded;
-  const scrim = busy
-    ? `<div class="isv2-grid-scrim" role="status" aria-live="polite">
-        <div class="isv2-grid-scrim-box">
-          <span class="gen-image-spinner gen-loading-mark"></span>
-          <p class="isv2-grid-scrim-label">Rewriting the brief…</p>
-        </div>
-      </div>`
-    : "";
 
-  return `<div class="isv2-grid${busy ? " is-busy" : ""}">
+  return `<div class="isv2-grid">
     <div class="isv2-grid-head">
       <span class="isv2-grid-title">Image setup</span>
       <span class="isv2-grid-sub">Archie derived this from your post — tune the parameters and edit any line.</span>
     </div>
     <div class="isv2-grid-cards">${cards}</div>
     <div class="isv2-grid-actions">
-      <button type="button" class="ap-button primary blue isv2-grid-go" data-img-grid-generate ${busy ? "disabled" : ""}><i class="ap-icon-sparkles-mermaid"></i><span>Generate</span></button>
+      <button type="button" class="ap-button primary blue isv2-grid-go" data-img-grid-generate ${busy ? "disabled" : ""}>${
+        busy ? `<span class="gen-image-spinner"></span>` : `<i class="ap-icon-sparkles-mermaid"></i>`
+      }<span>Generate</span></button>
     </div>
-    ${scrim}
   </div>`;
 }
