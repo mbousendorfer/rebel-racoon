@@ -4,7 +4,7 @@
 // This variant already has the engine for it: every setting rewrites the brief. So
 // the settings aren't a parallel form beside the prompt — they are literally the
 // controls that rewrite the text you are reading. Laying them out as a bar of
-// modifiers beside the brief says exactly that, where a 284px column of accordions
+// modifiers under the brief says exactly that, where a 284px column of accordions
 // next to an empty canvas said "two unrelated things".
 //
 // ── Two decisions worth defending ────────────────────────────────────────────
@@ -12,7 +12,7 @@
 // 1. Modifiers expand IN PLACE, never as a flyout. This studio already deleted a
 //    stack of `.ap-select` triggers that threw sheets over the canvas
 //    (settings-view.js documents the removal), and the DS has no nested-dropdown
-//    pattern. So a modifier opens its control directly beneath its own rail.
+//    pattern. So a modifier opens its control directly beneath the bar.
 //
 // 2. ONE modifier open at a time (`openModifier`), unlike the settings panel's
 //    independent sections. The panel could afford several open because the panel was
@@ -40,15 +40,20 @@ export function isBriefStage(st) {
 
 // ── The brief itself ────────────────────────────────────────────────────────
 
-// One "Label: value" line, with the label de-emphasised so the value reads first.
-// Lines without a label (the fallback prompts are plain prose) stay as they are.
-function briefLine(line) {
+// Each section of the brief is its own BLOCK — a named tile with its value — rather
+// than a line in a flowing list. `derivePrompt` emits one "Label: value" per line, so
+// the structure is already there in the text; this just stops hiding it. The label
+// recedes to a caption and the value carries the weight, so the block reads as an
+// answer under a question. Lines with no label (the fallback prompts are plain prose)
+// become a block with no caption.
+function briefBlock(line) {
   const at = line.indexOf(":");
-  if (at < 1) return `<p class="isv2-bs-line"><span class="isv2-bs-val">${escapeHtml(line)}</span></p>`;
-  return `<p class="isv2-bs-line">
-    <span class="isv2-bs-key">${escapeHtml(line.slice(0, at))}</span>
-    <span class="isv2-bs-val">${escapeHtml(line.slice(at + 1).trim())}</span>
-  </p>`;
+  const key = at > 0 ? line.slice(0, at) : "";
+  const val = at > 0 ? line.slice(at + 1).trim() : line;
+  return `<div class="isv2-bs-block">
+    ${key ? `<p class="isv2-bs-key">${escapeHtml(key)}</p>` : ""}
+    <p class="isv2-bs-val">${escapeHtml(val)}</p>
+  </div>`;
 }
 
 function briefBody(st) {
@@ -63,15 +68,15 @@ function briefBody(st) {
     return `<textarea id="isv2Prompt" class="isv2-bs-field" data-img-prompt rows="8" aria-label="Image brief">${escapeHtml(st.promptText)}</textarea>`;
   }
   const lines = (st.promptText || "").split("\n").filter((l) => l.trim());
-  if (!lines.length) return `<p class="isv2-bs-line"><span class="isv2-bs-val">No brief yet.</span></p>`;
-  return `<div class="isv2-bs-doc">${lines.map(briefLine).join("")}</div>`;
+  if (!lines.length) return `<div class="isv2-bs-block"><p class="isv2-bs-val">No brief yet.</p></div>`;
+  return `<div class="isv2-bs-doc">${lines.map(briefBlock).join("")}</div>`;
 }
 
 // The one line under the brief: what it is, and the single takeover action.
 function briefNote(st) {
   if (st.promptLoading) return "";
   if (!st.briefTakenOver) {
-    return `Written from the modifiers on the right. <button type="button" class="ap-link standalone small" data-img-brief-edit>Edit it yourself</button>`;
+    return `Written from the modifiers below. <button type="button" class="ap-link standalone small" data-img-brief-edit>Edit it yourself</button>`;
   }
   if (st.briefStale) {
     return `<span class="isv2-brief-stale">Modifiers changed since your edit.</span> <button type="button" class="ap-link standalone small" data-img-brief-rebuild>Rebuild from them</button>, or keep your words.`;
@@ -183,18 +188,16 @@ export function briefStage(st) {
       ${note ? `<p class="isv2-bs-note">${note}</p>` : ""}
     </div>
 
-    <div class="isv2-bs-rail">
-      <p class="isv2-bs-eyebrow">Modifiers</p>
+    <div class="isv2-bs-foot">
       <div class="isv2-bs-mods" role="group" aria-label="Brief modifiers">
         ${mods.map((m) => modifierChip(m, st)).join("")}
       </div>
       ${panel}
-    </div>
-
-    <div class="isv2-bs-actions">
-      <button type="button" class="ap-button primary blue isv2-bs-go" data-img-generate ${canGenerate ? "" : "disabled"}>
-        <i class="ap-icon-sparkles-mermaid"></i><span>Generate</span>
-      </button>
+      <div class="isv2-bs-actions">
+        <button type="button" class="ap-button primary blue isv2-bs-go" data-img-generate ${canGenerate ? "" : "disabled"}>
+          <i class="ap-icon-sparkles-mermaid"></i><span>Generate</span>
+        </button>
+      </div>
     </div>
   </div>`;
 }
