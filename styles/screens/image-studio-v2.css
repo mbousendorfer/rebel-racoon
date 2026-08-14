@@ -1550,15 +1550,6 @@
   outline: none;
 }
 
-/* Auto-brief variant: the brief is a read-only OUTPUT of the settings until the
-   user takes it over. Muted a touch and with a default cursor so it reads as
-   something written FOR you, not a box waiting for input — the "Edit the brief"
-   link in the hint is the way in. */
-.isv2-prompt--readonly {
-  color: var(--sys-text-color-light);
-  cursor: default;
-}
-
 /* The "your edits are out of date with the settings" nudge, sitting in the hint
    line. Weight, not colour: orange is the AI/spotlight signal here, and a plain
    emphasis is enough to make the clause read first without shouting. */

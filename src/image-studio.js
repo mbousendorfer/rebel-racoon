@@ -1262,17 +1262,10 @@ function afterLegacySetting(sessionId) {
   else notify(sessionId);
 }
 
-// The brief is read-only until the user asks to edit it. Taking it over makes the
-// textarea live and stops settings from rewriting it (they flag briefStale
-// instead). Rebuilding hands it back to Archie and re-syncs from the settings.
-export function takeOverBrief(sessionId) {
-  const s = states.get(sessionId);
-  if (!s || s.briefTakenOver) return;
-  s.briefTakenOver = true;
-  s.briefStale = false;
-  notify(sessionId);
-}
-
+// Rebuilding hands the brief back to Archie: settings drive it again, and the
+// next render re-syncs from them. Taking it over happens implicitly the moment
+// a block is edited (commitBriefLine below) — there's no separate "start editing"
+// action anymore.
 export function rebuildBrief(sessionId) {
   const s = states.get(sessionId);
   if (!s) return;

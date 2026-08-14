@@ -22,7 +22,7 @@
 // primary is "Use this image" in the footer (stage-view.js#footerBar).
 
 import { escapeHtml } from "../../utils.js?v=22";
-import { isBriefStage } from "./brief-stage.js?v=21";
+import { isBriefStage } from "./brief-stage.js?v=22";
 
 // Empty-state hint for the prompt field — a full structured brief, so the
 // placeholder itself shows the kind of rich prompt the box is built for (and why
@@ -57,33 +57,11 @@ export function composer(st) {
 // At 1440px a full-bleed prompt runs ~180 characters per line — unreadable, and
 // it made the six settings look like chrome stranded at the bottom of a huge
 // empty bar. Capped and centred, the card reads as one object you act in.
+// Auto-brief and grid-brief both own their whole stage (brief-stage.js /
+// grid-view.js) and never reach this composer — see composer() above. By the
+// time this runs, the brief is always the plain prompt field.
 function generateComposer(st) {
-  // Auto-brief variant: the brief is an OUTPUT of the settings, read-only until
-  // the user takes it over — framed and hinted as such, not as a field to fill.
-  if (st.autoBrief) {
-    const taken = !!st.briefTakenOver;
-    return console_("Image brief", promptField(st), generateActions(st), "to generate", {
-      inline: true,
-      hint: briefHint(st),
-      cls: `isv2-console--brief${taken ? " is-editing" : " is-readonly"}${taken && st.briefStale ? " is-stale" : ""}`,
-    });
-  }
   return console_("Image prompt", promptField(st), generateActions(st), "to generate", { inline: true });
-}
-
-// The one line under the brief that carries the auto-brief model: what the brief
-// is, and the single takeover action inline in the sentence (an `.ap-link`
-// button — the repo's idiom for a button that reads as a link). While the brief
-// is being written there's nothing to act on, so it stays quiet.
-function briefHint(st) {
-  if (st.promptLoading) return "Writing the brief from your settings…";
-  if (!st.briefTakenOver) {
-    return `Auto-written from your settings. <button type="button" class="ap-link standalone small" data-img-brief-edit>Edit the brief</button> to make it your own.`;
-  }
-  if (st.briefStale) {
-    return `<span class="isv2-brief-stale">Settings changed since your edit.</span> <button type="button" class="ap-link standalone small" data-img-brief-rebuild>Rebuild from settings</button>, or keep your words.`;
-  }
-  return `This brief is yours — settings won't change it. <button type="button" class="ap-link standalone small" data-img-brief-rebuild>Back to auto</button>.`;
 }
 
 // The frame both modes share, and it IS the app's own conversational composer:
@@ -105,28 +83,28 @@ function briefHint(st) {
 // toolbar row of its own was a full row of card whose left half was empty, and
 // the text would rather have that space. Kept as a flag, not baked in, because a
 // console with several actions would need the row back.
-function console_(label, field, action, hintVerb, { inline = false, aux = "", hint = "", cls = "" } = {}) {
-  const toolbar = aux || action ? `<div class="isv2-console-toolbar">${aux}${action}</div>` : "";
-  // `hint` overrides the default keyboard hint — the auto-brief variant explains
-  // what the brief is instead of how to type in it.
-  const hintHtml = hint || `<kbd>Enter</kbd> ${hintVerb} · <kbd>Shift</kbd>+<kbd>Enter</kbd> for new line`;
+function console_(label, field, action, hintVerb, { inline = false } = {}) {
+  const toolbar = `<div class="isv2-console-toolbar">${action}</div>`;
   return `<div class="isv2-dock">
     <div class="isv2-console-wrap">
-      <div class="isv2-console${inline ? " isv2-console--inline" : ""}${cls ? " " + cls : ""}" role="group" aria-label="${escapeHtml(label)}">
+      <div class="isv2-console${inline ? " isv2-console--inline" : ""}" role="group" aria-label="${escapeHtml(label)}">
         ${field}
         ${toolbar}
       </div>
       <div class="isv2-console-hint">
-        ${hintHtml}
+        <kbd>Enter</kbd> ${hintVerb} · <kbd>Shift</kbd>+<kbd>Enter</kbd> for new line
       </div>
     </div>
   </div>`;
 }
 
-// Archie drafts the brief from the post on open, so the field leads with what he
+// Archie drafts the prompt from the post on open, so the field leads with what he
 // wrote and the user's job is to review it. While he's writing, the field itself
 // holds the loader (the stage keeps its empty state) so the layout is legible
 // from the first frame.
+//
+// Only the classic prompt variant reaches this: auto-brief and grid-brief each
+// own their whole stage and return before the composer ever calls it.
 function promptField(st) {
   if (st.promptLoading) {
     // `.gen-image-spinner` alone — NOT `.gen-loading-mark`, which is the 88px
@@ -134,16 +112,10 @@ function promptField(st) {
     // in a 36px field, where it overflowed the card and shoved the text sideways.
     return `<div class="isv2-prompt-loading" role="status">
       <span class="gen-image-spinner"></span>
-      <span>${st.autoBrief ? "Writing the brief…" : "Writing your image prompt…"}</span>
+      <span>Writing your image prompt…</span>
     </div>`;
   }
-  // Auto-brief keeps the brief read-only until the user takes it over: you can't
-  // drift the field from its settings, so there's nothing for the guard to catch.
-  // It stays `data-img-prompt` (readonly blocks input; renderBody still autosizes
-  // it) and Generate reads state.promptText as before.
-  const readonly = st.autoBrief && !st.briefTakenOver;
-  const aria = st.autoBrief ? "Image brief, written from your settings" : "Describe your image";
-  return `<textarea id="isv2Prompt" class="isv2-prompt${readonly ? " isv2-prompt--readonly" : ""}" data-img-prompt rows="2" ${readonly ? "readonly " : ""}placeholder="${escapeHtml(PROMPT_PLACEHOLDER)}" aria-label="${escapeHtml(aria)}">${escapeHtml(st.promptText)}</textarea>`;
+  return `<textarea id="isv2Prompt" class="isv2-prompt" data-img-prompt rows="2" placeholder="${escapeHtml(PROMPT_PLACEHOLDER)}" aria-label="Describe your image">${escapeHtml(st.promptText)}</textarea>`;
 }
 
 // The prompt card's own action — running the prompt. `secondary blue`: it is a

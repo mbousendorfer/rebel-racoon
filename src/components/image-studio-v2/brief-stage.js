@@ -29,7 +29,7 @@ import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.j
 import { getPosts } from "../../posts-store.js?v=46";
 import { renderPostCard } from "../post-card.js?v=83";
 import { KEY, ctx } from "./context.js?v=42";
-import * as imageStudio from "../../image-studio.js?v=89";
+import * as imageStudio from "../../image-studio.js?v=90";
 import { imageTypeBody, styleBody, formatBody, outputBody } from "./settings-view.js?v=10";
 import { refsBody, refSummary } from "./references-view.js?v=9";
 import { brandingBody } from "./branding-view.js?v=4";
@@ -61,12 +61,12 @@ function textHeroBlock(st) {
   </label>`;
 }
 
-function briefBlock(line, index, hero) {
+function briefBlock(line, index) {
   const at = line.indexOf(":");
   const key = at > 0 ? line.slice(0, at) : "";
   const val = at > 0 ? line.slice(at + 1).trim() : line;
   const label = key || "Brief";
-  return `<label class="isv2-bs-block${hero ? " isv2-bs-block--hero" : ""}">
+  return `<label class="isv2-bs-block">
     ${key ? `<span class="isv2-bs-key">${escapeHtml(key)}</span>` : ""}
     <textarea class="isv2-bs-val" data-img-brief-line="${index}" aria-label="${escapeHtml(label)}">${escapeHtml(val)}</textarea>
   </label>`;
@@ -92,7 +92,7 @@ function briefBody(st) {
   const rest = lines
     .map((l, i) => ({ l, i }))
     .filter((e) => e.l.trim() && !isText(e.l))
-    .map((e) => briefBlock(e.l, e.i, false))
+    .map((e) => briefBlock(e.l, e.i))
     .join("");
   const blocks = textHeroBlock(st) + rest;
   if (!blocks)
