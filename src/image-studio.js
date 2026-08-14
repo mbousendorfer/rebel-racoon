@@ -416,6 +416,16 @@ export function start(
     renderTextSeeded: false, // "Text in image" pre-suggested once at open, never re-touched after
     briefTakenOver: false, // user hit "Edit the brief" — the words are theirs now
     briefStale: false, // a setting changed while taken over — brief no longer matches
+    // ── Grid-brief variant (flag imageStudioGridBrief) ─────────────────────────
+    // When on, the whole generate screen is a dashboard grid of editable cards and
+    // the prompt is a STRUCTURED brief (named fields Archie fills from the post),
+    // assembled into the model prompt by assembleGridPrompt(). Wins over autoBrief.
+    // The prose prompt is never shown — the cards are the editor. Seeded once at
+    // open; every card/setting change reassembles through the same derive plumbing.
+    gridBrief: isFlagOn("imageStudioGridBrief"),
+    brief: { about: "", achieve: "", audience: "", tone: "", headline: "", oneThing: "" },
+    textOnImage: true, // "Write text on the image" — on by default, mirrors renderText
+    briefSeeded: false, // the structured brief was filled from the post once, at open
     renderText: "", // words to paint INTO the image (empty = none)
     styleKey: null, // selected Style preset (STYLE_PRESETS)
     imageTypeKey: null, // selected Image type (IMAGE_TYPES)
@@ -628,10 +638,10 @@ export function setStyle(sessionId, key) {
 // Park the change behind the confirmation instead of applying it. Returns true
 // when it parked, so the caller bails out.
 function defer(s, sessionId, kind, payload) {
-  // Auto-brief retires the guard: the brief is read-only until the user explicitly
-  // takes it over, so a setting change can never silently discard typed words.
-  // Never park — settingChanged() handles the taken-over case without a dialog.
-  if (s.autoBrief) return false;
+  // Auto-brief and grid-brief both retire the guard: the prose prompt is never a
+  // hand-editable surface (read-only, or replaced by the card grid), so a setting
+  // change can never silently discard typed words. Never park.
+  if (s.autoBrief || s.gridBrief) return false;
   if (!isDirty(s) || s.skipPromptWarning) return false;
   s.pendingSettingChange = { kind, payload };
   notify(sessionId);
@@ -957,11 +967,81 @@ function deriveRenderText(s) {
   return pick;
 }
 
+// ── Grid-brief variant ───────────────────────────────────────────────────────
+//
+// The dashboard grid needs a STRUCTURED brief — named fields, not prose lines —
+// so each one can be its own editable card. deriveBrief fills them from the draft
+// the same way derivePrompt does (mock, no model), and assembleGridPrompt folds
+// the fields plus the settings BACK into the prose the generator is actually fed.
+// derivePrompt delegates to it when gridBrief is on, so all the existing derive
+// plumbing (open + every settings change) keeps promptText in sync for free.
+
+const NET_NAME = {
+  linkedin: "LinkedIn",
+  instagram: "Instagram",
+  facebook: "Facebook",
+  x: "X",
+  tiktok: "TikTok",
+  youtube: "YouTube",
+  pinterest: "Pinterest",
+};
+function netName(s) {
+  return NET_NAME[s.network] || "your feed";
+}
+
+function deriveBrief(s) {
+  const parts = sentencesOf(s.postText || "");
+  const stop = (t) => (/[.!?]$/.test(t) ? t : `${t}.`);
+  const net = netName(s);
+  const about = parts[0] ? stop(parts[0]) : FALLBACK_PROMPTS[0];
+  const oneThing = parts[1] ? stop(parts[1]) : about;
+  return {
+    about,
+    achieve: `Land the idea and drive engagement — comments, saves and shares on ${net}.`,
+    audience: `Professionals and decision-makers on ${net}`,
+    tone: "Professional, confident, and clear",
+    headline: deriveRenderText(s),
+    oneThing,
+  };
+}
+
+// Fold the structured brief + the setting cards back into the prose the generator
+// is fed. Same shape as derivePrompt so the mock reads consistently, but sourced
+// from s.brief rather than re-parsing the post.
+function assembleGridPrompt(s) {
+  const b = s.brief || {};
+  const type = IMAGE_TYPES.find((o) => o.key === s.imageTypeKey);
+  const fmt = FORMATS[s.formatId];
+  const lines = [];
+  if (b.about) lines.push(`Subject: ${b.about}`);
+  if (b.oneThing) lines.push(`Key message: ${b.oneThing}`);
+  if (b.achieve) lines.push(`Goal: ${b.achieve}`);
+  if (b.audience) lines.push(`Audience: ${b.audience}`);
+  if (b.tone) lines.push(`Tone: ${b.tone}`);
+  if (type) lines.push(`Image type: ${type.label} — ${type.desc.toLowerCase()}`);
+  lines.push(`Visual direction: ${TYPE_DIRECTION[s.imageTypeKey] || TYPE_DIRECTION["visual-hook"]}`);
+  const look = lookLine(s);
+  if (look) lines.push(look);
+  if (s.useBrandColors && s.playbookColors.length) lines.push(paletteLine(s));
+  const inImage = s.textOnImage ? (s.renderText || b.headline || "").trim() : "";
+  if (inImage) {
+    lines.push(
+      `Text in image: "${inImage.replace(/\n+/g, " / ")}" — set as part of the artwork, high contrast, legible.`,
+    );
+  }
+  if (fmt) {
+    const typeClause = inImage ? "room for the headline" : "no text baked in";
+    lines.push(`Composition: ${fmt.tag} ${fmt.label.toLowerCase()}, key subject off-centre, ${typeClause}.`);
+  }
+  return lines.join("\n");
+}
+
 // Compose a structured image brief FROM THE DRAFT — the hook becomes the
 // subject, the next line the key message, and the studio's own settings (image
 // type, style, brand, format) fill in the direction. Still a mock (no model
 // call), but every line traces back to something the user can see.
 function derivePrompt(s) {
+  if (s.gridBrief) return assembleGridPrompt(s);
   const parts = sentencesOf(s.postText || "");
   if (!parts.length) {
     const id = s.postId || "p";
@@ -1013,7 +1093,15 @@ export function runDerive(sessionId, { delay = DERIVE_MS } = {}) {
     // open), then no setting ever rewrites it again, so touching Type stops moving
     // two fields at once. Off, the legacy behaviour stands — backfill any time the
     // field is empty, which is what coupled Type to the headline.
-    if (cur.autoBrief) {
+    if (cur.gridBrief) {
+      // Fill the structured brief once, at open. After that the cards own their
+      // text; settings only reassemble the prose (derivePrompt → assembleGridPrompt).
+      if (!cur.briefSeeded) {
+        cur.brief = deriveBrief(cur);
+        cur.briefSeeded = true;
+        if (cur.textOnImage && !cur.renderText) cur.renderText = cur.brief.headline;
+      }
+    } else if (cur.autoBrief) {
       if (!cur.renderTextSeeded) {
         if (!cur.renderText) cur.renderText = deriveRenderText(cur);
         cur.renderTextSeeded = true;
@@ -1061,7 +1149,7 @@ function settingChanged(sessionId) {
 function afterLegacySetting(sessionId) {
   const s = states.get(sessionId);
   if (!s) return;
-  if (s.autoBrief) settingChanged(sessionId);
+  if (s.autoBrief || s.gridBrief) settingChanged(sessionId);
   else notify(sessionId);
 }
 
@@ -1082,6 +1170,45 @@ export function rebuildBrief(sessionId) {
   s.briefTakenOver = false;
   s.briefStale = false;
   rederive(sessionId);
+}
+
+// ── Grid-brief: the structured-field cards ───────────────────────────────────
+//
+// One card = one field of s.brief. Silent while typing (the grid must not rebuild
+// under the caret), committed on blur — where it reassembles the model prompt like
+// any other setting. The headline field doubles as the painted text when "Write
+// text on the image" is on, so committing it keeps renderText in step.
+export function setBriefFieldSilent(sessionId, key, value) {
+  const s = states.get(sessionId);
+  if (!s || !(key in s.brief)) return;
+  s.brief[key] = String(value || "");
+}
+
+export function commitBriefField(sessionId, key, value) {
+  const s = states.get(sessionId);
+  if (!s || !(key in s.brief)) return;
+  s.brief[key] = String(value || "");
+  if (key === "headline" && s.textOnImage) s.renderText = s.brief[key];
+  rederive(sessionId);
+}
+
+// "Write text on the image": whether the artwork carries the headline. On mirrors
+// the headline into renderText (what the bake reads); off clears it.
+export function setTextOnImage(sessionId, on) {
+  const s = states.get(sessionId);
+  if (!s) return;
+  s.textOnImage = !!on;
+  s.renderText = s.textOnImage ? s.brief.headline || "" : "";
+  rederive(sessionId);
+}
+
+// Back from the results stage to the configuration grid (grid-brief only). The
+// variations stay in state — Generate/Regenerate from the grid replaces them.
+export function editBrief(sessionId) {
+  const s = states.get(sessionId);
+  if (!s) return;
+  s.genPhase = "idle";
+  notify(sessionId);
 }
 
 /** Did the last settings change overwrite something the user had typed? */

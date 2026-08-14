@@ -181,6 +181,132 @@
   padding-inline: 212px;
 }
 
+/* ── Grid-brief variant ──────────────────────────────────────────────────────
+   The configuration screen becomes a full-bleed, scrollable dashboard of cards
+   instead of a centred image with a floating panel. The stage-body stops centring
+   and becomes a plain scroll container; the grid manages its own measure. */
+.isv2-stage-body.has-grid {
+  display: block;
+  overflow-y: auto;
+  padding: 0;
+}
+
+.isv2-grid {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: var(--ref-spacing-lg) var(--ref-spacing-lg) var(--ref-spacing-xxl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-md);
+}
+
+.isv2-grid-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.isv2-grid-title {
+  font-size: var(--sys-text-style-subtitle-size);
+  line-height: var(--sys-text-style-subtitle-line-height);
+  font-weight: var(--sys-text-style-subtitle-weight);
+  color: var(--sys-text-color-default);
+}
+
+.isv2-grid-sub {
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--sys-text-color-light);
+}
+
+/* Two columns; wide cards (pickers, the toggle) span both. Natural row heights —
+   a brief field and a style grid are not the same size and shouldn't be forced to. */
+.isv2-grid-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ref-spacing-md);
+  align-items: start;
+}
+
+.isv2-gcard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  padding: var(--sys-settings-card-internal-padding);
+  background: var(--sys-settings-card-background-color);
+  border: 1px solid var(--sys-settings-card-border-color);
+  border-radius: var(--sys-settings-card-border-radius);
+}
+
+.isv2-gcard--wide {
+  grid-column: 1 / -1;
+}
+
+.isv2-gcard.is-disabled {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.isv2-gcard-label {
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--sys-text-color-default);
+}
+
+.isv2-gcard-hint {
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--sys-text-color-light);
+}
+
+.isv2-gcard-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+}
+
+/* The brief textareas: fill the card, grow with content, DS field look. */
+.isv2-gfield {
+  width: 100%;
+}
+.isv2-gfield textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: calc(var(--ref-font-line-height-sm) * 1.5);
+}
+
+/* The toggle card: label + hint on the left, DS switch on the right. */
+.isv2-gcard-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-md);
+}
+
+.isv2-gcard-toggle-copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+}
+
+/* The sticky action bar under the grid: Generate, right-aligned, on the app ground
+   so it reads as one with the scroll above it. */
+.isv2-grid-actions {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: flex-end;
+  padding-top: var(--ref-spacing-sm);
+  background: linear-gradient(to top, var(--app-bg) 60%, transparent);
+}
+
+@media (max-width: 720px) {
+  .isv2-grid-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* A whole-modal drop target: the References section is one scroll into a panel,
    so an image dragged anywhere in generate mode is accepted (see events.js#onDrop),
    and the drop opens the section to show what landed. */

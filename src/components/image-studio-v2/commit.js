@@ -19,7 +19,7 @@ import { attachImageToDraft, attachCarouselToDraft } from "../../posts-store.js?
 import { KEY, ctx, state } from "./context.js?v=41";
 import { compositeOverlays } from "../../image-studio-canvas.js?v=5";
 import { syncEditingText } from "./inline-text.js?v=7";
-import * as imageStudio from "../../image-studio.js?v=78";
+import * as imageStudio from "../../image-studio.js?v=79";
 
 // Commit the working image to the origin draft, then close.
 export function useImage(close) {

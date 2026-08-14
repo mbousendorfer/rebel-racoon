@@ -39,7 +39,12 @@ Visual scene: A deep blue background. On the left, massive bold typography. On t
 Composition focus: The transition point of the arrow where order turns into digital chaos, aligned with the bold headline.`;
 
 export function composer(st) {
-  return st.mode === "edit" ? editComposer(st) : generateComposer(st);
+  if (st.mode === "edit") return editComposer(st);
+  // Grid-brief has no prose prompt: the card grid is the editor and carries its own
+  // Generate, so the bottom console goes away entirely in generate mode. Edit mode
+  // keeps its "describe a change" composer.
+  if (st.gridBrief) return "";
+  return generateComposer(st);
 }
 
 // The composer is a CARD centred on the stage, not a full-width footer strip.

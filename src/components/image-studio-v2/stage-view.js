@@ -38,13 +38,14 @@ import { getPosts } from "../../posts-store.js?v=45";
 import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=38";
 import { renderPostCard } from "../post-card.js?v=82";
 import { KEY, ctx } from "./context.js?v=41";
-import { composer } from "./composer-view.js?v=69";
-import { settingsPanel } from "./settings-view.js?v=8";
+import { composer } from "./composer-view.js?v=70";
+import { settingsPanel } from "./settings-view.js?v=9";
+import { gridBriefView } from "./grid-view.js?v=1";
 import { toolPalette } from "./tools-view.js?v=12";
 import { promptGuardDialog } from "./prompt-guard.js?v=4";
 import { editCanvas } from "./edit-view.js?v=40";
 import { compositeOverlays } from "../../image-studio-canvas.js?v=5";
-import * as imageStudio from "../../image-studio.js?v=78";
+import * as imageStudio from "../../image-studio.js?v=79";
 
 // In-feed preview — the edit canvas layers logo/text overlays as live DOM over
 // the image, but renderPostCard only takes a URL, so overlays wouldn't show. We
@@ -107,6 +108,14 @@ export function footerBar(st) {
     const label = carousel ? `Use carousel · ${st.variations.length} slides` : "Use this image";
     const ready = carousel ? st.variations.length >= 2 : !!st.currentImage;
     primary = `<button type="button" class="ap-button primary orange" data-img-use ${ready ? "" : "disabled"}><i class="ap-icon-check"></i><span>${escapeHtml(label)}</span></button>`;
+    // Grid-brief: once results are up, the way back to the card grid is "Edit the
+    // brief", and Regenerate re-runs it — both on the left, the destination stays
+    // on the right. The grid's own config screen carries its own Generate, so the
+    // footer only earns these once there is something to go back FROM.
+    if (st.gridBrief && st.genPhase === "results") {
+      left = `<button type="button" class="ap-button ghost grey" data-img-grid-edit><i class="ap-icon-reset"></i><span>Edit the brief</span></button>
+        <button type="button" class="ap-button stroked grey" data-img-generate><i class="ap-icon-refresh"></i><span>Regenerate</span></button>`;
+    }
   }
   return `<div class="ap-dialog-footer isv2-footer">
     <div class="ap-dialog-footer-left">${left}</div>
@@ -158,8 +167,14 @@ function viewToggle(st) {
 function stageContent(st) {
   const hasImg = !!st.currentImage || (st.genPhase === "results" && st.variations.length > 0);
   const feedView = hasImg && st.canvasView === "feed";
+  // Grid-brief: the configuration screen IS the card grid (full-bleed), shown in
+  // place of the empty stage + floating settings panel. Generate moves genPhase to
+  // "generating"/"results", where the normal stages take over (and "Edit the brief"
+  // in the footer sends genPhase back to "idle" to return here).
+  const gridConfig = st.gridBrief && st.mode === "generate" && !feedView && st.genPhase === "idle";
   let inner;
-  if (feedView) inner = feedPreview(st);
+  if (gridConfig) inner = gridBriefView(st);
+  else if (feedView) inner = feedPreview(st);
   else if (st.mode === "edit") inner = editCanvas(st);
   else if (st.genPhase === "generating") inner = generatingStage(st);
   else if (st.genPhase === "results") inner = resultsStage(st);
@@ -170,7 +185,9 @@ function stageContent(st) {
   // reserves room for whichever ones are up, so the image centres in what's left
   // over rather than sliding underneath them.
   const showRail = st.mode === "generate" && !feedView && st.genPhase === "results" && st.variations.length > 0;
-  const showPanel = st.mode === "generate" && !feedView;
+  // Grid-brief replaces the floating settings panel with cards inside the grid, so
+  // the panel never pins to the edge in that variant.
+  const showPanel = st.mode === "generate" && !feedView && !st.gridBrief;
   const showPalette = st.mode === "edit" && !feedView;
   // The inspector and the chutier are PINNED to the stage's edges, and the body
   // reserves the same width on BOTH sides for them. Symmetry is the whole point:
@@ -178,7 +195,11 @@ function stageContent(st) {
   // toggle above it and the prompt below it sit. Reserving asymmetrically (the
   // rail is narrower than the inspector) is what knocked the image off that line
   // and left it visibly misaligned with its own prompt.
-  const bodyCls = "isv2-stage-body" + (showPanel ? " has-panel" : "") + (showPalette ? " has-palette" : "");
+  const bodyCls =
+    "isv2-stage-body" +
+    (showPanel ? " has-panel" : "") +
+    (showPalette ? " has-palette" : "") +
+    (gridConfig ? " has-grid" : "");
   const top = hasImg ? `<div class="isv2-stage-top">${viewToggle(st)}</div>` : "";
   return `${top}<div class="${bodyCls}">
     ${inner}

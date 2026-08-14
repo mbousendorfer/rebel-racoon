@@ -34,7 +34,7 @@ import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.j
 import { KEY } from "./context.js?v=41";
 import { REFS_TIP, refSummary, refsBody } from "./references-view.js?v=8";
 import { BRANDING_TIP, brandingBody } from "./branding-view.js?v=3";
-import * as imageStudio from "../../image-studio.js?v=78";
+import * as imageStudio from "../../image-studio.js?v=79";
 
 // A thin rule between two clusters inside one row body. Shared with the
 // Add-image sheet (tools-view.js), which is where the class name comes from.
@@ -276,7 +276,7 @@ const RENDER_TEXT_TIP = "For a text box you can move, use Add text in Edit.";
 const RENDER_TEXT_PLACEHOLDER = `Black Friday
 −50% on everything`;
 
-function renderTextBody(st) {
+export function renderTextBody(st) {
   const text = st.renderText || "";
   return `<div class="ap-textarea-field narrow isv2-textfield">
       <textarea data-img-render-text rows="2" placeholder="${escapeHtml(RENDER_TEXT_PLACEHOLDER)}" aria-label="Text to write into the image">${escapeHtml(text)}</textarea>
@@ -284,7 +284,7 @@ function renderTextBody(st) {
     <p class="ap-form-message error" data-img-render-text-msg role="status"${imageStudio.renderTextOverMessage(text) ? "" : ` style="display:none"`}>${escapeHtml(imageStudio.renderTextOverMessage(text))}</p>`;
 }
 
-function imageTypeBody(st) {
+export function imageTypeBody(st) {
   const chips = imageStudio.IMAGE_TYPES.map((o) => {
     const sel = st.imageTypeKey === o.key;
     const tip = `${o.label} · ${o.desc}`;
@@ -293,7 +293,7 @@ function imageTypeBody(st) {
   return `<div class="isv2-chip-group">${chips}</div>`;
 }
 
-function styleBody(st) {
+export function styleBody(st) {
   const cards = imageStudio.STYLE_PRESETS.map((o) => {
     const sel = st.styleKey === o.key;
     return `<button type="button" class="gen-style-card${sel ? " is-selected" : ""}" data-img-style="${escapeHtml(o.key)}" aria-pressed="${sel}" title="${escapeHtml(o.label)}">
@@ -307,7 +307,7 @@ function styleBody(st) {
   return `<div class="gen-style-grid isv2-style-grid">${cards}</div>`;
 }
 
-function formatBody(st, choices) {
+export function formatBody(st, choices) {
   const chips = choices
     .map((f) => {
       const sel = st.formatId === f.id;
@@ -320,7 +320,7 @@ function formatBody(st, choices) {
 
 // Type + count in one flat sheet: two labelled sections separated by a divider,
 // never a nested dropdown.
-function outputBody(st, canCarousel, isCarousel) {
+export function outputBody(st, canCarousel, isCarousel) {
   const typeSection = canCarousel
     ? `<div class="isv2-chip-group">
         <button type="button" class="ap-filter-chip" data-img-output="single" aria-pressed="${!isCarousel}"><i class="ap-icon-image" aria-hidden="true"></i>Single image</button>

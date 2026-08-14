@@ -35,7 +35,7 @@ import {
   startCropGesture,
   applyCropSelection,
 } from "./interactions.js?v=40";
-import * as imageStudio from "../../image-studio.js?v=78";
+import * as imageStudio from "../../image-studio.js?v=79";
 
 function onClick(event, close) {
   const st = state();
@@ -109,6 +109,12 @@ function onClick(event, close) {
   // (the hooks are never rendered).
   if (event.target.closest("[data-img-brief-edit]")) return void imageStudio.takeOverBrief(KEY);
   if (event.target.closest("[data-img-brief-rebuild]")) return void imageStudio.rebuildBrief(KEY);
+
+  // ── Grid-brief variant ──
+  // The card grid carries its own Generate; from results, "Edit the brief" returns
+  // to the grid. No-ops when the flag is off (the hooks are never rendered).
+  if (event.target.closest("[data-img-grid-generate]")) return void runGenerate();
+  if (event.target.closest("[data-img-grid-edit]")) return void imageStudio.editBrief(KEY);
 
   // ── Chrome ──
   const modeBtn = event.target.closest("[data-img-mode]");
@@ -231,6 +237,12 @@ function onClick(event, close) {
 }
 
 function onInput(event) {
+  // Grid-brief cards: store silently while typing (the grid must not rebuild under
+  // the caret); the assemble happens on blur — see onChange.
+  const briefField = event.target.matches("[data-img-brief-field]") ? event.target : null;
+  if (briefField) {
+    return void imageStudio.setBriefFieldSilent(KEY, briefField.dataset.imgBriefField, briefField.value);
+  }
   if (event.target.matches("[data-img-render-text]")) {
     imageStudio.setRenderTextSilent(KEY, event.target.value);
     // Toggled inline, never via [hidden]: `.ap-form-message` is `display: flex`,
@@ -292,6 +304,11 @@ function onChange(event) {
   } else if (event.target.matches("[data-img-render-text]")) {
     // Blur commits, which is what refreshes the collapsed row's value.
     imageStudio.commitRenderText(KEY, event.target.value);
+  } else if (event.target.matches("[data-img-brief-field]")) {
+    // Grid-brief card blur: commit the field and reassemble the model prompt.
+    imageStudio.commitBriefField(KEY, event.target.dataset.imgBriefField, event.target.value);
+  } else if (event.target.matches("[data-img-grid-textonimage]")) {
+    imageStudio.setTextOnImage(KEY, event.target.checked);
   }
 }
 
