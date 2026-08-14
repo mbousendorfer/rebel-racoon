@@ -39,14 +39,18 @@ function section(label) {
   return `<p class="isv2-grid-section">${escapeHtml(label)}</p>`;
 }
 
+// The card IS the field. A bordered DS textarea nested inside a bordered card drew
+// two frames and paid two paddings for one input — which is what made the block
+// read as cramped and cheap. So the card takes the input's frame and focus states
+// and the textarea goes borderless inside it, the same recipe as the app's own
+// composer (.isv2-console + .isv2-prompt). A <label> wrapper means clicking
+// anywhere on the card puts the caret in the text.
 function briefCard({ key, label }, st) {
   const value = (st.brief && st.brief[key]) || "";
-  return `<div class="isv2-gcard isv2-gcard--brief">
-    <p class="isv2-gcard-label">${escapeHtml(label)}</p>
-    <div class="ap-textarea-field isv2-gfield">
-      <textarea data-img-brief-field="${escapeHtml(key)}" aria-label="${escapeHtml(label)}">${escapeHtml(value)}</textarea>
-    </div>
-  </div>`;
+  return `<label class="isv2-gcard isv2-gcard--brief">
+    <span class="isv2-gcard-label">${escapeHtml(label)}</span>
+    <textarea class="isv2-gbrief" data-img-brief-field="${escapeHtml(key)}" aria-label="${escapeHtml(label)}">${escapeHtml(value)}</textarea>
+  </label>`;
 }
 
 // A setting as a card: the same label rhythm as the content cards, with the existing

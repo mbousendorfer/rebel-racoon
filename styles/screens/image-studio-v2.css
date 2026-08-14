@@ -221,10 +221,10 @@
 .isv2-grid {
   max-width: 960px;
   margin: 0 auto;
-  padding: var(--ref-spacing-lg) var(--ref-spacing-lg) var(--ref-spacing-xxl);
+  padding: var(--ref-spacing-md) var(--ref-spacing-md) var(--ref-spacing-xl);
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-md);
+  gap: var(--ref-spacing-sm);
 }
 
 .isv2-grid-head {
@@ -253,7 +253,7 @@
 .isv2-grid-cards {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--ref-spacing-md);
+  gap: var(--ref-spacing-xs);
   align-items: stretch;
 }
 
@@ -308,21 +308,60 @@
   gap: var(--ref-spacing-xs);
 }
 
-/* The brief textareas: a FIXED height, no resize handle, so the six brief cards
-   are identical in size and read as one uniform block. Long values scroll inside
-   rather than stretching their card taller than its neighbours. */
-.isv2-gfield {
-  width: 100%;
-}
-.isv2-gfield textarea {
-  width: 100%;
-  height: calc(var(--ref-font-line-height-sm) * 3);
-  resize: none;
-}
-/* The brief cards fill their stretched row and pin the field to the bottom, so the
-   label sits on a common baseline across the block. */
+/* ── The brief cards: the card IS the field ─────────────────────────────────
+   A bordered DS textarea nested inside a bordered card drew two frames and paid
+   two paddings for one input — the block came out cramped, and the text got the
+   least room of anything on screen. So the CARD wears the input's frame and its
+   hover/focus states, and the textarea goes borderless inside it. Same recipe as
+   the app's own composer (.isv2-console + .isv2-prompt), so the two read as one
+   product. `cursor: text` + the <label> wrapper make the whole card the target. */
 .isv2-gcard--brief {
-  justify-content: space-between;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-xs);
+  border-color: var(--comp-input-border-default-color);
+  cursor: text;
+  transition: border-color 120ms ease;
+}
+
+.isv2-gcard--brief:hover {
+  border-color: var(--comp-input-border-hover-color);
+}
+
+.isv2-gcard--brief:focus-within {
+  border-color: var(--comp-input-border-focused-color);
+}
+
+/* The field NAME is chrome; the answer is the content. Dropping the label to a
+   muted caption lets the value dominate instead of being out-shouted by a navy
+   bold heading twice its weight. */
+.isv2-gcard--brief .isv2-gcard-label {
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--sys-text-color-light);
+}
+
+/* FOUR lines, borderless: the card already draws the frame and pads the edges, so
+   every pixel in here goes to the text — where before, three lines inside a second
+   box left barely two visible and clipped the longest value mid-word. Four shows
+   more text than the old three AND leaves the short fields (Tone, Headline) less
+   dead air than five did. Fixed height, no resize handle — the six cards stay one
+   uniform block and long values scroll in place instead of stretching one card
+   past its neighbours. */
+.isv2-gbrief {
+  width: 100%;
+  height: calc(var(--ref-font-line-height-sm) * 4);
+  resize: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--sys-text-color-default);
+  outline: none;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
 /* The toggle card: label + hint on the left, DS switch on the right. */
