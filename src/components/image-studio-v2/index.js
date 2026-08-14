@@ -32,7 +32,7 @@ import { getSessionById } from "../../sessions-store.js?v=15";
 import { getContextById } from "../../contexts-store.js?v=47";
 import { MODAL_ID, KEY, ctx, state, autosize } from "./context.js?v=41";
 import { loadImg } from "../../image-studio-canvas.js?v=5";
-import { renderStudio } from "./stage-view.js?v=81";
+import { renderStudio } from "./stage-view.js?v=82";
 import { offerUndoIfNeeded, resetUndoOffers } from "./prompt-guard.js?v=4";
 import { bindStudioEvents } from "./events.js?v=16";
 import * as imageStudio from "../../image-studio.js?v=79";
@@ -60,7 +60,17 @@ const HTML = `
 function renderBody() {
   const st = state();
   if (!st || !ctx.body) return;
+  // The whole body is rebuilt on every state change, which resets scrollTop to 0.
+  // The grid-brief variant is a tall scroll surface, so clicking a card near the
+  // bottom (which reassembles the prompt → re-render) would snap the view to the
+  // top. Carry the grid's scroll position across the swap.
+  const scroller = ctx.body.querySelector(".isv2-stage-body.has-grid");
+  const keepScroll = scroller ? scroller.scrollTop : null;
   ctx.body.innerHTML = renderStudio(st);
+  if (keepScroll != null) {
+    const next = ctx.body.querySelector(".isv2-stage-body.has-grid");
+    if (next) next.scrollTop = keepScroll;
+  }
   // Both composer fields auto-grow to whatever text carried over: the derived
   // brief on open, and anything typed before a re-render.
   autosize(ctx.body.querySelector("[data-img-prompt]"));

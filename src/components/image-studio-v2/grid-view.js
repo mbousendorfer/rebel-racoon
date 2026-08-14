@@ -22,22 +22,29 @@ import { refsBody } from "./references-view.js?v=8";
 import { brandingBody } from "./branding-view.js?v=3";
 
 // The six content fields, in the order the attachment shows them. Each is one card:
-// a bold label over a bordered textarea bound to s.brief[key].
+// a bold label over a bordered textarea bound to s.brief[key]. Heights are fixed in
+// CSS so the six read as one uniform block, not a ragged stack.
 const BRIEF_FIELDS = [
-  { key: "about", label: "What this is about", rows: 2 },
-  { key: "achieve", label: "What it should achieve", rows: 3 },
-  { key: "audience", label: "Who it is for", rows: 2 },
-  { key: "tone", label: "Tone", rows: 1 },
-  { key: "headline", label: "Headline idea", rows: 1 },
-  { key: "oneThing", label: "The one thing to get across", rows: 2 },
+  { key: "about", label: "What this is about" },
+  { key: "achieve", label: "What it should achieve" },
+  { key: "audience", label: "Who it is for" },
+  { key: "tone", label: "Tone" },
+  { key: "headline", label: "Headline idea" },
+  { key: "oneThing", label: "The one thing to get across" },
 ];
 
-function briefCard({ key, label, rows }, st) {
+// A full-width label that splits the grid into scannable groups — the parameters
+// (quick, high-impact choices) up top, the written brief below.
+function section(label) {
+  return `<p class="isv2-grid-section">${escapeHtml(label)}</p>`;
+}
+
+function briefCard({ key, label }, st) {
   const value = (st.brief && st.brief[key]) || "";
-  return `<div class="isv2-gcard">
+  return `<div class="isv2-gcard isv2-gcard--brief">
     <p class="isv2-gcard-label">${escapeHtml(label)}</p>
     <div class="ap-textarea-field isv2-gfield">
-      <textarea data-img-brief-field="${escapeHtml(key)}" rows="${rows}" aria-label="${escapeHtml(label)}">${escapeHtml(value)}</textarea>
+      <textarea data-img-brief-field="${escapeHtml(key)}" aria-label="${escapeHtml(label)}">${escapeHtml(value)}</textarea>
     </div>
   </div>`;
 }
@@ -99,9 +106,12 @@ export function gridBriefView(st) {
 
   const cards = [
     textOnImageCard(st),
-    ...BRIEF_FIELDS.map((f) => briefCard(f, st)),
-    settingCard("References", refsBody(st, picked), { wide: true }),
+
+    // Parameters first: the quick, high-impact choices belong at the top, not below
+    // six paragraphs of copy. Type leads — it's the biggest lever.
+    section("Parameters"),
     settingCard("Type", imageTypeBody(st)),
+    settingCard("Format", formatBody(st, choices)),
     // Style is locked when references guide the look — mirror the settings panel's
     // rule so the two variants don't disagree about when Style applies.
     settingCard("Style", styleBody(st), {
@@ -109,6 +119,7 @@ export function gridBriefView(st) {
       disabled: hasRefs,
       note: hasRefs ? "From references" : "",
     }),
+    settingCard("References", refsBody(st, picked), { wide: true }),
     settingCard(
       "Branding",
       hasLogo || hasColors
@@ -116,17 +127,29 @@ export function gridBriefView(st) {
         : `<p class="isv2-gcard-hint">No brand kit on this Playbook.</p>`,
       { disabled: !hasLogo && !hasColors },
     ),
-    settingCard("Format", formatBody(st, choices)),
     settingCard(canCarousel ? "Output" : "Variations", outputBody(st, canCarousel, isCarousel)),
+
+    // The written brief below — a uniform block of equal-height cards.
+    section("Brief"),
+    ...BRIEF_FIELDS.map((f) => briefCard(f, st)),
   ].join("");
+
+  // While a setting or card change reassembles the (hidden) model prompt, the sticky
+  // bar shows it — the recalculation is otherwise invisible in this variant. Only
+  // after the brief is seeded, so it never doubles the opening "analysing" loader.
+  const updating =
+    st.promptLoading && st.briefSeeded
+      ? `<span class="isv2-grid-updating" role="status"><span class="ap-loader size-16"></span>Updating the brief…</span>`
+      : "";
 
   return `<div class="isv2-grid">
     <div class="isv2-grid-head">
-      <span class="isv2-grid-title">Brief</span>
-      <span class="isv2-grid-sub">Archie derived this from your post. It is what the model is told — change any line.</span>
+      <span class="isv2-grid-title">Image setup</span>
+      <span class="isv2-grid-sub">Archie derived this from your post — tune the parameters and edit any line.</span>
     </div>
     <div class="isv2-grid-cards">${cards}</div>
     <div class="isv2-grid-actions">
+      ${updating}
       <button type="button" class="ap-button secondary blue" data-img-grid-generate><i class="ap-icon-sparkles-mermaid"></i><span>Generate</span></button>
     </div>
   </div>`;
