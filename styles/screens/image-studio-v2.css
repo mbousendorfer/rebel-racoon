@@ -185,10 +185,35 @@
    The configuration screen becomes a full-bleed, scrollable dashboard of cards
    instead of a centred image with a floating panel. The stage-body stops centring
    and becomes a plain scroll container; the grid manages its own measure. */
-.isv2-stage-body.has-grid {
+.isv2-stage-body.has-grid,
+.isv2-stage-body.has-setup {
   display: block;
   overflow-y: auto;
   padding: 0;
+}
+
+/* ── Auto-brief setup: the settings take the centre until an image exists ────
+   Pinned to the left edge, the inspector was a 284px column that ran out of height
+   and clipped its own controls — while the widest area on screen held a placeholder
+   promising an image later. Here it is a centred sheet at a comfortable measure, so
+   nothing scrolls inside a box and nothing overlaps the stage. Once there IS an
+   image, showPanel returns and the inspector goes back to the edge (stage-view). */
+.isv2-setup {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: var(--ref-spacing-md) var(--ref-spacing-md) var(--ref-spacing-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+}
+
+/* Undo the pinning: same panel, same rows, just placed in the flow. */
+.isv2-setup .isv2-panel {
+  position: static;
+  transform: none;
+  width: auto;
+  max-height: none;
+  overflow: visible;
 }
 
 /* The opening analysis: the Archie brand mark centred in the whole stage while the

@@ -172,6 +172,12 @@ function stageContent(st) {
   // "generating"/"results", where the normal stages take over (and "Edit the brief"
   // in the footer sends genPhase back to "idle" to return here).
   const gridConfig = st.gridBrief && st.mode === "generate" && !feedView && st.genPhase === "idle";
+  // Auto-brief, before anything has been generated: the stage's job is SETUP, not
+  // preview. Leaving the settings pinned to the left edge meant a 284px column that
+  // overflowed and clipped its own controls, while the biggest area on screen held a
+  // placeholder saying an image would appear there later. So the settings take the
+  // centre until there is an image to give it back to.
+  const autoSetup = st.autoBrief && !st.gridBrief && st.mode === "generate" && !feedView && st.genPhase === "idle";
   // The loader owns the stage whenever the brief is being written — on open, and on
   // every reassemble after it. In this variant the brief IS the screen, so rewriting
   // it has to read as the screen being rewritten; a badge inside the Generate button
@@ -181,6 +187,14 @@ function stageContent(st) {
   const gridReady = gridConfig && st.briefSeeded && !st.promptLoading;
   let inner;
   if (gridConfig) inner = gridReady ? gridBriefView(st) : gridAnalyzingView(st);
+  else if (autoSetup)
+    inner = `<div class="isv2-setup">
+      <div class="isv2-grid-head">
+        <span class="isv2-grid-title">Set up your image</span>
+        <span class="isv2-grid-sub">Archie writes the brief below from these — change anything and it rewrites.</span>
+      </div>
+      ${settingsPanel(st)}
+    </div>`;
   else if (feedView) inner = feedPreview(st);
   else if (st.mode === "edit") inner = editCanvas(st);
   else if (st.genPhase === "generating") inner = generatingStage(st);
@@ -194,7 +208,8 @@ function stageContent(st) {
   const showRail = st.mode === "generate" && !feedView && st.genPhase === "results" && st.variations.length > 0;
   // Grid-brief replaces the floating settings panel with cards inside the grid, so
   // the panel never pins to the edge in that variant.
-  const showPanel = st.mode === "generate" && !feedView && !st.gridBrief;
+  // The floating inspector stands down while the settings hold the centre.
+  const showPanel = st.mode === "generate" && !feedView && !st.gridBrief && !autoSetup;
   const showPalette = st.mode === "edit" && !feedView;
   // The inspector and the chutier are PINNED to the stage's edges, and the body
   // reserves the same width on BOTH sides for them. Symmetry is the whole point:
@@ -206,7 +221,8 @@ function stageContent(st) {
     "isv2-stage-body" +
     (showPanel ? " has-panel" : "") +
     (showPalette ? " has-palette" : "") +
-    (gridReady ? " has-grid" : "");
+    (gridReady ? " has-grid" : "") +
+    (autoSetup ? " has-setup" : "");
   const top = hasImg ? `<div class="isv2-stage-top">${viewToggle(st)}</div>` : "";
   return `${top}<div class="${bodyCls}">
     ${inner}
