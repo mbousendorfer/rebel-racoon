@@ -2,7 +2,7 @@
 
 Point d'entrée pour la documentation du proto Archie. **Toute la doc qui reste est à jour avec le code courant.** Les vieux audits, ux-audit, et autres docs obsolètes ont été supprimés (voir `git log` si besoin de les retrouver).
 
-> **Pour les agents (Claude Code, Codex, …)** : commencer par [`../CLAUDE.md`](../CLAUDE.md) à la racine. Il pointe vers les bonnes sections de ce dossier selon le besoin.
+> **Pour les agents (Claude Code, Codex, …)** : commencer par [`../CLAUDE.md`](../CLAUDE.md) à la racine. Sa section **« Before you build a feature »** dit quoi lire selon la tâche — et ce n'est pas optionnel : une bonne partie de cette doc existe parce que l'idée inverse a été essayée puis retirée.
 
 ---
 
