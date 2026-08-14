@@ -32,10 +32,10 @@ import { getSessionById } from "../../sessions-store.js?v=16";
 import { getContextById } from "../../contexts-store.js?v=48";
 import { MODAL_ID, KEY, ctx, state, autosize } from "./context.js?v=42";
 import { loadImg } from "../../image-studio-canvas.js?v=6";
-import { renderStudio } from "./stage-view.js?v=100";
+import { renderStudio } from "./stage-view.js?v=101";
 import { offerUndoIfNeeded, resetUndoOffers } from "./prompt-guard.js?v=6";
-import { bindStudioEvents } from "./events.js?v=21";
-import * as imageStudio from "../../image-studio.js?v=87";
+import { bindStudioEvents } from "./events.js?v=22";
+import * as imageStudio from "../../image-studio.js?v=88";
 
 let backdrop;
 let initialized = false;
@@ -81,6 +81,10 @@ function renderBody() {
   // brief on open, and anything typed before a re-render.
   autosize(ctx.body.querySelector("[data-img-prompt]"));
   autosize(ctx.body.querySelector("[data-img-edit-prompt]"));
+  // The brief blocks size to their own content, so a long section is never clipped and
+  // a short one never reserves space it doesn't need — which is what lets the whole
+  // brief fit beside the preview without scrolling.
+  ctx.body.querySelectorAll(".isv2-bs-val").forEach(autosize);
   // A rewrite that replaced hand-written text offers one step back. It has to be
   // read off the render pass — see prompt-guard.js#offerUndoIfNeeded.
   offerUndoIfNeeded(st);

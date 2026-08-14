@@ -256,21 +256,43 @@
    scrollbar. The brief block grid is what absorbs the difference. */
 /* Once there is something to look at, the brief keeps its place and the picture joins
    it on the right — the foot still spans both, so the modifiers never move. */
+/* Truly in two: equal halves, divided by a hairline so the split is stated rather than
+   implied by a gap. */
 .isv2-bs.is-split {
-  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
-  column-gap: var(--ref-spacing-lg);
+  max-width: none;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.isv2-bs.is-split .isv2-bs-foot {
-  grid-column: 1 / -1;
+.isv2-bs.is-split .isv2-bs-preview {
+  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
+  border-left: 1px solid var(--sys-border-color-default);
 }
 
-/* One column of blocks once the preview is beside them: two columns inside a ~300px
-   track gave each block 145px, which broke every value across four lines. Full-width
-   blocks in a narrower column read; the doc scrolls if the set is taller than the
-   space, which is what the safety valve is for. */
+/* Two across even when split: the brief holds the flexible track now, so there is room
+   for it — and seeing more of the brief at once is the whole reason the preview sits
+   beside it rather than replacing it. */
 .isv2-bs.is-split .isv2-bs-doc {
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* The toggle is centred on the COLUMN, which is where the image is centred too, so the
+   two line up. `space-between` pushed it to the column's right edge while the image sat
+   in the middle — the control drifted away from the thing it switches. A 1fr/auto/1fr
+   track centres it honestly, with the eyebrow riding the left track. */
+.isv2-bs-preview-head {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+}
+
+/* The in-feed card scrolls inside the preview half if the post is long — the card has
+   its own height and we are not going to crop a post to keep a promise about scroll. */
+.isv2-bs-feed {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .isv2-bs-preview {
@@ -290,6 +312,11 @@
   min-height: 0;
   max-width: 100%;
   margin-inline: auto;
+  /* Carried by every state, transparent when there is a picture: the empty state's dashed
+     border would otherwise make its box 2px wider than the image's, which the
+     aspect-ratio then amplified into an 8px jump when the image landed. */
+  border: 1px solid transparent;
+  box-sizing: border-box;
   border-radius: var(--app-radius-card);
   overflow: hidden;
   background: var(--app-surface-subtle);
@@ -299,6 +326,35 @@
   gap: var(--ref-spacing-xxs);
 }
 
+/* The image goes quiet under the overlay so the call to action is what you read. */
+.isv2-bs-shot {
+  position: relative;
+}
+
+.isv2-bs-shot.is-stale img {
+  filter: saturate(0.5);
+}
+
+.isv2-bs-stale {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-sm);
+  text-align: center;
+  background: color-mix(in srgb, var(--ref-color-grey-100) 45%, transparent);
+}
+
+.isv2-bs-stale-note {
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-white);
+}
+
 .isv2-bs-shot img {
   width: 100%;
   height: 100%;
@@ -306,9 +362,39 @@
   display: block;
 }
 
+/* The empty half: same box the picture will occupy, so nothing moves when it arrives. */
+.isv2-bs-shot.is-empty {
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-md);
+  text-align: center;
+  border-style: dashed;
+  border-color: var(--sys-border-color-default);
+  background: transparent;
+  color: var(--sys-text-color-light);
+}
+
+.isv2-bs-shot.is-empty > i {
+  font-size: 32px;
+  color: var(--ref-color-grey-40);
+}
+
+.isv2-bs-empty-title {
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--sys-text-color-default);
+}
+
+.isv2-bs-empty-sub {
+  max-width: 34ch;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+}
+
 .isv2-bs-shot.is-busy {
   flex-direction: column;
-  border: 1px solid var(--sys-border-color-default);
+  border-color: var(--sys-border-color-default);
 }
 
 .isv2-bs-shot-label {
@@ -316,11 +402,14 @@
   color: var(--sys-text-color-light);
 }
 
+/* Always present, so the shot box above it is the same size before and after the image
+   lands — an empty strip reserving its own height rather than one that appears. */
 .isv2-bs-thumbs {
   display: flex;
   justify-content: center;
   gap: var(--ref-spacing-xxs);
   flex: 0 0 auto;
+  min-height: 44px;
 }
 
 .isv2-bs-thumb {
@@ -346,17 +435,32 @@
 .isv2-bs {
   height: 100%;
   box-sizing: border-box;
-  max-width: 76ch;
+  max-width: 1120px;
   margin: 0 auto;
-  padding: var(--ref-spacing-md) var(--ref-spacing-md) var(--ref-spacing-sm);
+  padding: 0;
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
-  row-gap: var(--ref-spacing-sm);
+  grid-template-columns: minmax(0, 1fr);
+  column-gap: 0;
+}
+
+/* Each half is a complete column: the brief grows, its modifiers sit at the bottom. */
+/* Full height, flush to the stage's edges — a half of the modal, not a card sitting in
+   one. No surface of its own: it stays on the stage's canvas, and the FIELDS are what
+   come forward (white blocks on grey), which is the contrast that matters. Its own
+   padding, since the wrapper has none to give. */
+.isv2-bs-left {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
 }
 
 /* The brief's own card. No border while it's Archie's — a frame would make it look
    like a field to fill; it lights up only once the user has taken it over. */
 .isv2-bs-brief {
+  flex: 1 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -366,10 +470,11 @@
 /* The foot: modifiers, the one open control, then Generate. Grouped so the whole set
    sits together at the bottom rather than drifting apart as the brief grows. */
 .isv2-bs-foot {
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xs);
-  padding-top: var(--ref-spacing-xs);
+  gap: var(--ref-spacing-xxs);
+  padding-top: var(--ref-spacing-xxs);
   border-top: 1px solid var(--sys-border-color-default);
 }
 
@@ -395,7 +500,7 @@
   overflow-y: auto;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--ref-spacing-xs);
+  gap: var(--ref-spacing-xxs);
   align-content: start;
 }
 
@@ -407,10 +512,10 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: var(--ref-spacing-xs);
-  border: 1px solid transparent;
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
+  border: 1px solid var(--sys-border-color-default);
   border-radius: var(--sys-settings-card-border-radius);
-  background: var(--app-surface-subtle);
+  background: var(--ref-color-white);
   cursor: text;
   transition: border-color 120ms var(--app-ease-out);
 }
@@ -437,7 +542,7 @@
 }
 
 .isv2-bs-block--hero .isv2-bs-val {
-  height: calc(var(--sys-text-style-h3-line-height) * 2);
+  min-height: var(--sys-text-style-h3-line-height);
   font-size: var(--sys-text-style-h3-size);
   line-height: var(--sys-text-style-h3-line-height);
   font-weight: var(--sys-text-style-h3-weight);
@@ -454,7 +559,7 @@
 
 .isv2-bs-val {
   width: 100%;
-  height: calc(var(--sys-text-style-h4-line-height) * 3);
+  min-height: calc(var(--sys-text-style-h4-line-height) * 2);
   resize: none;
   border: 0;
   padding: 0;
@@ -464,7 +569,9 @@
   line-height: var(--sys-text-style-h4-line-height);
   color: var(--sys-text-color-default);
   outline: none;
-  overflow-y: auto;
+  /* autosize (index.js#renderBody) gives it exactly its content's height, so there is
+     never anything to scroll inside a block. */
+  overflow: hidden;
   box-sizing: border-box;
 }
 
@@ -521,13 +628,16 @@
 }
 
 /* A later reassemble keeps the layout, so this one centres inside the space the blocks
-   left behind rather than owning the stage. */
+   left behind rather than owning the stage — but it takes ALL of that space, so it is
+   centred both ways rather than pinned to the top of it. */
 .isv2-bs-loading {
+  flex: 1 1 auto;
+  min-height: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: var(--ref-spacing-xs);
-  min-height: calc(var(--sys-text-style-h3-line-height) * 4);
   color: var(--sys-text-color-light);
 }
 .isv2-bs-loading-label {

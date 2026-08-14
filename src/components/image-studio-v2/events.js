@@ -35,7 +35,7 @@ import {
   startCropGesture,
   applyCropSelection,
 } from "./interactions.js?v=41";
-import * as imageStudio from "../../image-studio.js?v=87";
+import * as imageStudio from "../../image-studio.js?v=88";
 
 function onClick(event, close) {
   const st = state();
@@ -276,7 +276,9 @@ function onInput(event) {
   // typing — a re-render would rebuild the block under the caret.
   const briefLine = event.target.matches("[data-img-brief-line]") ? event.target : null;
   if (briefLine) {
-    return void imageStudio.setBriefLineSilent(KEY, briefLine.dataset.imgBriefLine, briefLine.value);
+    imageStudio.setBriefLineSilent(KEY, briefLine.dataset.imgBriefLine, briefLine.value);
+    autosize(briefLine); // grow with what's typed, without a re-render
+    return;
   }
   const briefField = event.target.matches("[data-img-brief-field]") ? event.target : null;
   if (briefField) {

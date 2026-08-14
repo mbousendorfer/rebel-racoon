@@ -25,17 +25,18 @@
 // over swaps in the real textarea, so the editing path is untouched.
 
 import { escapeHtml } from "../../utils.js?v=22";
-import { KEY } from "./context.js?v=42";
-import * as imageStudio from "../../image-studio.js?v=87";
-import { imageTypeBody, styleBody, formatBody, outputBody, renderTextBody } from "./settings-view.js?v=10";
+import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=39";
+import { getPosts } from "../../posts-store.js?v=46";
+import { renderPostCard } from "../post-card.js?v=83";
+import { KEY, ctx } from "./context.js?v=42";
+import * as imageStudio from "../../image-studio.js?v=88";
+import { imageTypeBody, styleBody, formatBody, outputBody } from "./settings-view.js?v=10";
 import { refsBody, refSummary } from "./references-view.js?v=9";
 import { brandingBody } from "./branding-view.js?v=4";
 
 /** Is the brief holding the stage? For the WHOLE generate flow, image or not. */
 export function isBriefStage(st) {
-  const hasImg = !!st.currentImage || (st.genPhase === "results" && st.variations.length > 0);
-  const feedView = hasImg && st.canvasView === "feed";
-  return !!st.autoBrief && !st.gridBrief && st.mode === "generate" && !feedView;
+  return !!st.autoBrief && !st.gridBrief && st.mode === "generate";
 }
 
 // ── The brief itself ────────────────────────────────────────────────────────
@@ -46,6 +47,20 @@ export function isBriefStage(st) {
 // recedes to a caption and the value carries the weight, so the block reads as an
 // answer under a question. Lines with no label (the fallback prompts are plain prose)
 // become a block with no caption.
+// The words on the image, as the lead block. This one edits `renderText` — the text that
+// actually gets set into the artwork — not the prompt's sentence about it. They used to be
+// two fields that looked like one: a "Text on image" modifier holding the real value and a
+// brief line describing it. One field, the real one, and the prompt line follows from it.
+function textHeroBlock(st) {
+  const val = st.renderText || "";
+  const over = imageStudio.renderTextOverMessage(val);
+  return `<label class="isv2-bs-block isv2-bs-block--hero">
+    <span class="isv2-bs-key">Text on the image</span>
+    <textarea class="isv2-bs-val" data-img-render-text placeholder="No words on the image" aria-label="Text on the image">${escapeHtml(val)}</textarea>
+    <span class="ap-form-message error" data-img-render-text-msg role="status"${over ? "" : ` style="display:none"`}>${escapeHtml(over)}</span>
+  </label>`;
+}
+
 function briefBlock(line, index, hero) {
   const at = line.indexOf(":");
   const key = at > 0 ? line.slice(0, at) : "";
@@ -73,10 +88,13 @@ function briefBody(st) {
   // "Text in image" leads, and leads bigger: those words are the only part of the brief
   // that ends up literally visible in the artwork, so they outrank a description of it.
   const lines = (st.promptText || "").split("\n");
-  const entries = lines.map((l, i) => ({ l, i })).filter((e) => e.l.trim());
-  const isText = (e) => /^\s*text in image\s*:/i.test(e.l);
-  const ordered = [...entries.filter(isText), ...entries.filter((e) => !isText(e))];
-  const blocks = ordered.map((e) => briefBlock(e.l, e.i, isText(e))).join("");
+  const isText = (l) => /^\s*text in image\s*:/i.test(l);
+  const rest = lines
+    .map((l, i) => ({ l, i }))
+    .filter((e) => e.l.trim() && !isText(e.l))
+    .map((e) => briefBlock(e.l, e.i, false))
+    .join("");
+  const blocks = textHeroBlock(st) + rest;
   if (!blocks)
     return `<div class="isv2-bs-doc"><div class="isv2-bs-block"><span class="isv2-bs-key">Brief</span></div></div>`;
   return `<div class="isv2-bs-doc">${blocks}</div>`;
@@ -117,8 +135,6 @@ function modifierBody(name, st, ctxVals) {
   switch (name) {
     case "refs":
       return refsBody(st, picked);
-    case "renderText":
-      return renderTextBody(st);
     case "branding":
       return hasKit
         ? brandingBody(st, branded, tinted)
@@ -153,22 +169,92 @@ function bootLoader() {
 // the modifiers you had just been using gone. Keeping the brief and adding the picture
 // beside it means one interface for the whole loop: read the brief, look at what it
 // produced, change a modifier, regenerate.
+// Image ↔ in-feed. It lives in the preview's own header because it changes what the
+// PREVIEW shows and nothing else — centred over the whole stage it read as modal chrome
+// and sat a half-modal away from its effect. Switching it no longer leaves the split
+// either: the preview simply holds the post card instead of the bare image.
+function previewToggle(st, disabled) {
+  const feed = st.canvasView === "feed";
+  const off = disabled ? "disabled" : "";
+  const netIcon = st.network ? NETWORK_ICON_BY_PLATFORM[st.network] || "ap-icon-image" : "ap-icon-image";
+  const netLabel = st.network ? NETWORK_LABEL[st.network] || st.network : "your feed";
+  return `<div class="isv2-viewseg isv2-bs-viewseg" role="group" aria-label="Preview view">
+    <button type="button" class="ap-filter-chip" data-img-view="image" aria-pressed="${!feed}" ${off}><i class="ap-icon-image" aria-hidden="true"></i>Image</button>
+    <button type="button" class="ap-filter-chip" data-img-view="feed" aria-pressed="${feed}" title="Preview on ${escapeHtml(netLabel)}" ${off}><i class="${netIcon}" aria-hidden="true"></i>In feed</button>
+  </div>`;
+}
+
+// The in-feed take: the same post the studio was opened on, carrying this image.
+function feedCard(st) {
+  const post = ctx.sessionId && ctx.postId ? getPosts(ctx.sessionId).find((p) => p.id === ctx.postId) : null;
+  const base = post || {
+    id: ctx.postId || "preview",
+    author: { name: "You", title: "", initials: "YO", connection: "1st", visibility: "public" },
+    network: st.network || "linkedin",
+    status: "ready",
+    timeLabel: "now",
+    text: ["Your post text will appear here."],
+    hashtags: [],
+    cta: "",
+    stats: { likes: 0, comments: 0, reposts: 0 },
+  };
+  const urls = st.variations.map((v) => v.url);
+  const media =
+    st.outputMode === "carousel"
+      ? { imageUrl: urls[0] || null, carousel: urls }
+      : { imageUrl: urls[st.selectedIndex ?? 0] || null, carousel: null };
+  return `<div class="isv2-bs-feed">${renderPostCard({ ...base, clipRef: null, isRegenerating: false, ...media })}</div>`;
+}
+
 function previewColumn(st) {
   const ratio = imageStudio.activeRatio(KEY);
+  // The layout must not change when the first image lands, so this half is here from the
+  // first frame — an empty state that points at the half doing the work, rather than a
+  // column that appears out of nowhere and reflows everything the user was reading.
+  if (st.genPhase !== "generating" && !st.variations.length) {
+    return `<div class="isv2-bs-preview">
+      <div class="isv2-bs-preview-head">
+        <p class="isv2-bs-eyebrow">Preview</p>
+        ${previewToggle(st, true)}
+      </div>
+      <div class="isv2-bs-shot is-empty" style="aspect-ratio:${ratio}">
+        <i class="ap-icon-image" aria-hidden="true"></i>
+        <p class="isv2-bs-empty-title">Your image appears here</p>
+        <p class="isv2-bs-empty-sub">Play with the brief and the modifiers on the left, then generate.</p>
+      </div>
+      <div class="isv2-bs-thumbs" aria-hidden="true"></div>
+    </div>`;
+  }
   if (st.genPhase === "generating") {
     const n = st.outputMode === "carousel" ? st.slideCount : st.variationCount;
     const what = st.outputMode === "carousel" ? "slide" : "variation";
     return `<div class="isv2-bs-preview">
-      <p class="isv2-bs-eyebrow">Preview</p>
+      <div class="isv2-bs-preview-head">
+        <p class="isv2-bs-eyebrow">Preview</p>
+        ${previewToggle(st, true)}
+      </div>
       <div class="isv2-bs-shot is-busy" style="aspect-ratio:${ratio}" role="status">
         <span class="gen-image-spinner"></span>
         <span class="isv2-bs-shot-label">Generating ${n} ${what}${n > 1 ? "s" : ""}…</span>
       </div>
+      <div class="isv2-bs-thumbs" aria-hidden="true"></div>
     </div>`;
   }
   const i = st.selectedIndex ?? 0;
   const shot = st.variations[i];
   if (!shot) return "";
+  if (st.canvasView === "feed") {
+    return `<div class="isv2-bs-preview">
+      <div class="isv2-bs-preview-head">
+        <p class="isv2-bs-eyebrow">Preview</p>
+        ${previewToggle(st)}
+      </div>
+      ${feedCard(st)}
+    </div>`;
+  }
+  // Rendered even when there is nothing to put in it: the strip has a height, and letting
+  // it appear only with the second variation resized the shot box the moment the image
+  // arrived — a layout change by the back door.
   const thumbs =
     st.variations.length > 1
       ? `<div class="isv2-bs-thumbs" role="group" aria-label="Variations">
@@ -181,11 +267,27 @@ function previewColumn(st) {
             )
             .join("")}
         </div>`
-      : "";
+      : `<div class="isv2-bs-thumbs" aria-hidden="true"></div>`;
+  // Changed the brief or a modifier since this was made? Say so ON the image, with the
+  // fix attached: the picture is the thing that has gone out of date, so the prompt to
+  // redo it belongs there rather than in a footer the eye has already left.
+  const stale = imageStudio.previewStale(st);
+  const restale = stale
+    ? `<div class="isv2-bs-stale">
+        <p class="isv2-bs-stale-note">The brief changed since this image.</p>
+        <button type="button" class="ap-button primary blue" data-img-generate>
+          <i class="ap-icon-refresh"></i><span>Regenerate</span>
+        </button>
+      </div>`
+    : "";
   return `<div class="isv2-bs-preview">
-    <p class="isv2-bs-eyebrow">Preview</p>
-    <div class="isv2-bs-shot" style="aspect-ratio:${ratio}">
+    <div class="isv2-bs-preview-head">
+      <p class="isv2-bs-eyebrow">Preview</p>
+      ${previewToggle(st)}
+    </div>
+    <div class="isv2-bs-shot${stale ? " is-stale" : ""}" style="aspect-ratio:${ratio}">
       <img src="${escapeHtml(shot.url)}" alt="Generated image" />
+      ${restale}
     </div>
     ${thumbs}
   </div>`;
@@ -216,7 +318,6 @@ export function briefStage(st) {
   else if (branded && tinted) brandValue = st.playbookName || "On";
   else if (branded) brandValue = "Logo";
   else if (tinted) brandValue = "Colors";
-  const words = (st.renderText || "").trim();
 
   const mods = [
     { name: "imageType", label: "Type", value: typeLabel },
@@ -229,7 +330,6 @@ export function briefStage(st) {
     },
     { name: "refs", label: "Reference", value: refSummary(picked, st) },
     { name: "branding", label: "Branding", value: brandValue, disabled: !hasKit },
-    { name: "renderText", label: "Text on image", value: st.textOnImage && words ? "On" : "Off" },
     { name: "format", label: "Format", value: fmt ? fmt.tag : "Ratio" },
     {
       name: "output",
@@ -251,19 +351,23 @@ export function briefStage(st) {
   const note = briefNote(st);
 
   const preview = previewColumn(st);
+  // Two halves, genuinely: the brief and the controls that write it on one side, the
+  // picture on the other. The modifiers sit at the BOTTOM of their own half rather than
+  // spanning the width, so each side is a complete thing — read/edit here, judge there.
   return `<div class="isv2-bs${preview ? " is-split" : ""}">
-    <div class="isv2-bs-brief${st.briefTakenOver ? " is-editing" : ""}">
-      <p class="isv2-bs-eyebrow">Image brief</p>
-      ${briefBody(st)}
-      ${note ? `<p class="isv2-bs-note">${note}</p>` : ""}
+    <div class="isv2-bs-left">
+      <div class="isv2-bs-brief${st.briefTakenOver ? " is-editing" : ""}">
+        <p class="isv2-bs-eyebrow">Image brief</p>
+        ${briefBody(st)}
+        ${note ? `<p class="isv2-bs-note">${note}</p>` : ""}
+      </div>
+      <div class="isv2-bs-foot">
+        <div class="isv2-bs-mods" role="group" aria-label="Brief modifiers">
+          ${mods.map((m) => modifierChip(m, st)).join("")}
+        </div>
+        ${panel}
+      </div>
     </div>
     ${preview}
-
-    <div class="isv2-bs-foot">
-      <div class="isv2-bs-mods" role="group" aria-label="Brief modifiers">
-        ${mods.map((m) => modifierChip(m, st)).join("")}
-      </div>
-      ${panel}
-    </div>
   </div>`;
 }

@@ -442,6 +442,7 @@ export function start(
     lastRenderText: "", // what the switch restores when turned back on
     derivedRenderText: "", // the last image text the STUDIO wrote — the dirty check's baseline
     briefSeeded: false, // the structured brief was filled from the post once, at open
+    shotSig: null, // the inputs the shots on screen were made from (see previewStale)
     renderText: "", // words to paint INTO the image (empty = none)
     styleKey: null, // selected Style preset (STYLE_PRESETS)
     imageTypeKey: null, // selected Image type (IMAGE_TYPES)
@@ -1435,6 +1436,35 @@ export function setSkipPromptWarning(sessionId, on) {
   notify(sessionId);
 }
 
+// ── Is the picture still the picture these inputs describe? ─────────────────
+//
+// Everything that changes what the model would draw, in one string. Stamped onto the
+// state when results land, so the view can tell whether the image on screen still
+// answers the brief beside it — the brief is editable and the modifiers rewrite it, so
+// "generated a moment ago" is no guarantee.
+function genSignature(s) {
+  return JSON.stringify([
+    s.promptText,
+    s.renderText,
+    s.textOnImage,
+    s.imageTypeKey,
+    s.styleKey,
+    s.formatId,
+    s.outputMode,
+    s.variationCount,
+    s.slideCount,
+    s.selectedRefId,
+    s.refMode,
+    s.useBranding,
+    s.useBrandColors,
+  ]);
+}
+
+/** Has anything changed since the image on screen was made? */
+export function previewStale(s) {
+  return !!s && s.variations.length > 0 && !!s.shotSig && s.shotSig !== genSignature(s);
+}
+
 // ── Generation ──────────────────────────────────────────────────────────────
 
 // Snapshot a variation as the working image, resetting any edit history so the
@@ -1483,6 +1513,8 @@ export function runGeneration(sessionId) {
     if (!now || now._genRun !== runId) return;
     now.variations = baked;
     now.genPhase = "results";
+    // Stamp what these shots were made from — see previewStale.
+    now.shotSig = genSignature(now);
     // Auto-adopt the first variation as the working image so the Edit mode
     // unlocks immediately; the user can still pick another in the grid.
     adoptVariation(now, 0);

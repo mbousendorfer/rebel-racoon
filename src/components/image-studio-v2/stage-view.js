@@ -41,12 +41,12 @@ import { KEY, ctx } from "./context.js?v=42";
 import { composer } from "./composer-view.js?v=72";
 import { settingsPanel } from "./settings-view.js?v=10";
 import { gridBriefView, gridAnalyzingView } from "./grid-view.js?v=15";
-import { briefStage, isBriefStage } from "./brief-stage.js?v=10";
+import { briefStage, isBriefStage } from "./brief-stage.js?v=17";
 import { toolPalette } from "./tools-view.js?v=13";
 import { promptGuardDialog } from "./prompt-guard.js?v=6";
 import { editCanvas } from "./edit-view.js?v=41";
 import { compositeOverlays } from "../../image-studio-canvas.js?v=6";
-import * as imageStudio from "../../image-studio.js?v=87";
+import * as imageStudio from "../../image-studio.js?v=88";
 
 // In-feed preview — the edit canvas layers logo/text overlays as live DOM over
 // the image, but renderPostCard only takes a URL, so overlays wouldn't show. We
@@ -248,7 +248,10 @@ function stageContent(st) {
     (showPalette ? " has-palette" : "") +
     (gridReady ? " has-grid" : "") +
     (autoSetup ? " has-setup" : "");
-  const top = hasImg ? `<div class="isv2-stage-top">${viewToggle(st)}</div>` : "";
+  // The brief stage carries the view toggle in its own preview header — see
+  // brief-stage.js#previewToggle. Rendering it here too would put the same control in
+  // two places, one of them a half-modal from what it switches.
+  const top = hasImg && !autoSetup ? `<div class="isv2-stage-top">${viewToggle(st)}</div>` : "";
   return `${top}<div class="${bodyCls}">
     ${inner}
     ${showRail ? variationsRail(st) : ""}
