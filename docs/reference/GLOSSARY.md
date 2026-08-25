@@ -166,6 +166,21 @@ Repartir d'un **Top post** pour en produire un nouveau draft ([`top-posts-flow.j
 
 Un dossier de contenu **Agorapulse** dans lequel un draft sauvegardé est classé ([`folders-store.js`](../../src/folders-store.js)). C'est un point de contact avec la plateforme, pas un rangement propre à Archie — voir [`CONCEPTS.md` §6](CONCEPTS.md#6-la-frontière-archie--agorapulse). ⚠️ Ne pas dire « dossier » dans l'UI pour un Topic.
 
+### Owner, Shared with org, Manager (flag `playbookSharing`)
+
+Le vocabulaire de l'appartenance d'un Playbook. Le modèle est **binaire** : il n'y a pas de partage nommé, donc aucun mot pour « destinataire d'un partage ».
+
+| Terme UI                                              | Sens                                                                                 | En code                                         |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------ | ----------------------------------------------- |
+| **Owner**                                             | La seule personne qui peut éditer, supprimer, partager ou transférer                 | `ctx.ownerId`                                   |
+| **Just me**                                           | Le Playbook n'existe que pour son propriétaire (défaut à la création)                | `ctx.scope === "personal"`                      |
+| **Everyone at {org}** / badge **« Shared with org »** | Toute l'organisation peut le lire et l'utiliser ; seul le propriétaire l'édite       | `ctx.scope === "organization"`                  |
+| badge **« Shared by {nom} »**                         | Le même état, vu de l'autre côté                                                     | `!isMine(ctx) && isShared(ctx)`                 |
+| **Manager**                                           | Rôle qui donne les droits du propriétaire, **sur les Playbooks partagés uniquement** | `isManager()`, `localStorage` `archie-org-role` |
+| **Recent changes**                                    | Le journal du modal de partage — qui, quoi, quand ; **jamais** de diff               | `ctx.history`                                   |
+
+⛔️ À ne pas dire : **« invite »**, **« collaborator »**, **« co-editor »**, **« permissions »** — rien de tout ça n'existe dans le modèle. Et **« share with someone »** est faux : on partage avec l'organisation, pas avec une personne.
+
 ### User mode (proto control)
 
 `localStorage.getItem("archie-user-mode")` :

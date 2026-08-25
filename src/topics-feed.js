@@ -17,7 +17,7 @@
 // the lead breaks it, and it breaks it on purpose.
 
 import { html, raw } from "./utils.js?v=22";
-import { renderTopicCard, renderTopicLeadCard } from "./components/topic-card.js?v=7";
+import { renderTopicCard, renderTopicLeadCard } from "./components/topic-card.js?v=11";
 
 // Date buckets, from `ageDays` rather than a real clock. Order matters — a feed
 // renders them in this sequence and drops the empty ones. Moved here from

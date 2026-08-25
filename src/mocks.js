@@ -35,6 +35,30 @@ export const recentSessions = [
   },
 ];
 
+// The chat that lost its Playbook — appended by sessions-store only when the
+// `playbookSharing` flag is on, for the same reason as sharedContexts. Its
+// drafts and thread live in postsBySession / threadsBySession regardless; an
+// entry keyed by a session that doesn't exist is simply never read.
+export const sharedSessions = [
+  // The degraded chat: its Playbook (ctx-orphan-brightline) belongs to Jonas and
+  // is no longer shared, so this conversation can't generate anything new — only
+  // save or schedule the two drafts it already produced. Behind the
+  // `playbookSharing` flag this reads as a normal chat.
+  {
+    id: "s-brightline",
+    name: "Brightline launch → 2 posts",
+    lastActivity: "a week ago",
+    contextId: "ctx-orphan-brightline",
+    pinned: false,
+  },
+];
+
+// Every seeded chat, flag or no flag. Stores that ask "is this one of the demo
+// conversations, so should I seed its sources / ideas / drafts?" read THIS, not
+// recentSessions: an entry for a session that doesn't exist is simply never
+// looked up, whereas a missing one leaves a real chat with empty panels.
+export const allSeedSessions = [...recentSessions, ...sharedSessions];
+
 // Empty-state Chat starter cards — the workflow prompts shown when a
 // conversation has no user message yet. Surfaced as the big card grid under
 // the composer in the empty-chat hero (renderEmptyHero in screens/session.js).
@@ -1347,6 +1371,10 @@ export const contexts = [
     name: "Acme · Q2 marketing",
     color: "orange",
     isDefault: true,
+    ownerId: "u-me",
+    // Mine, and I put it in front of the whole org — the state a Playbook lands
+    // in after the Share modal says "My organisation".
+    scope: "organization",
     brandName: "Acme",
     brandLogos: ACME_LOGOS.map((l) => ({ ...l })),
     brandLogo: "assets/logos/brands/acme.svg",
@@ -1558,6 +1586,8 @@ export const contexts = [
     name: "Founder voice only",
     color: "blue",
     isDefault: false,
+    ownerId: "u-me",
+    scope: "personal",
     brandName: "Jamie Torres · Personal",
     websiteUrl: "",
     audience: ["B2B founders and product leaders thinking about how teams ship"],
@@ -1671,6 +1701,8 @@ export const contexts = [
     name: "Customer stories",
     color: "green",
     isDefault: false,
+    ownerId: "u-me",
+    scope: "personal",
     brandName: "Acme",
     brandLogos: ACME_LOGOS.map((l) => ({ ...l })),
     brandLogo: "assets/logos/brands/acme.svg",
@@ -1793,6 +1825,8 @@ export const contexts = [
     name: "Pawtrack · always-on",
     color: "purple",
     isDefault: false,
+    ownerId: "u-me",
+    scope: "personal",
     brandName: "Pawtrack",
     brandLogos: PAWTRACK_LOGOS.map((l) => ({ ...l })),
     brandLogo: "assets/logos/brands/pawtrack.svg",
@@ -1983,6 +2017,112 @@ export const contexts = [
       brief: null,
       brand: null,
     },
+  },
+];
+
+// ---- Playbooks that only exist under the `playbookSharing` flag ------------
+//
+// Kept out of `contexts` and appended by contexts-store when the flag is on —
+// the same split as demoManyProfiles. Unlike topics config, these two aren't
+// data riding along an existing object: they're whole Playbooks that only mean
+// something once ownership exists. With the flag off they'd be a stray
+// half-filled fiche and an extra library card nobody asked for.
+export const sharedContexts = [
+  // Sam's Playbook, shared with the whole org — the read-only case, and the
+  // problem the sharing feature exists for: two people building a Playbook for
+  // the SAME brand (Acme), each with their own editorial framing, neither aware
+  // of the other. Mine is "Acme · Q2 marketing" above.
+  {
+    id: "ctx-acme-devrel",
+    name: "Acme · Developer relations",
+    color: "blue",
+    isDefault: false,
+    ownerId: "u-sam",
+    scope: "organization",
+    brandName: "Acme",
+    brandLogos: ACME_LOGOS.map((l) => ({ ...l })),
+    brandLogo: "assets/logos/brands/acme.svg",
+    websiteUrl: "https://acme.example.com/developers",
+    audience: [
+      "Backend engineers who found us through the API docs",
+      "Platform teams deciding whether to build or buy",
+    ],
+    businessSummary:
+      "Acme's developer surface, written for people who read the changelog before the landing page. Ship notes, API design decisions, and honest trade-offs — no funnel language.",
+    briefSummary:
+      "Acme's developer surface, written for people who read the changelog before the landing page. Ship notes, API design decisions, and honest trade-offs — no funnel language.",
+    tones: ["Technical", "Direct"],
+    voiceProfile: {
+      headline: "Technical · direct · unmarketed",
+      writingStyle:
+        "Leads with the change and what it costs. Explains the trade-off rather than claiming there isn't one.",
+      vocabulary: "Precise API vocabulary, no abstraction. Says 'endpoint', 'rate limit', 'breaking change' plainly.",
+      sentenceStructure: "Short declaratives. One idea per line. Code or a payload where an example beats a sentence.",
+      formality: "Peer to peer. 'We' for the team that shipped it, 'you' for the person integrating.",
+      personality: "Straight, unhurried, willing to say what's still rough.",
+      rhetoricalDevices: "Before / after payloads. Named versions. Explicit migration notes.",
+      emotionalTone: "Level. Enthusiasm is carried by the change itself, never by adjectives.",
+      contentPatterns: "What changed → why → what it breaks → how to migrate.",
+      uniqueTraits: 'No "excited to announce". No emoji. Never ships a post without a link to the reference.',
+    },
+    contentStyle: ["Technical deep-dive"],
+    objective: ["Product adoption"],
+    contentAction: ["Read the changelog", "Try it in the sandbox"],
+    signatureHooks: ["We changed how [thing] works.", "This one breaks something. Here's what:"],
+    closingPatterns: ["Full reference →", "Migration notes in the changelog."],
+    formattingStyle:
+      "Short declarative lines, one idea each. A payload or snippet where it replaces a paragraph. Version numbers spelled out.",
+    visualStyle: "No emoji. No exclamation marks. Endpoint names in backticks. Versions as digits.",
+    brandPersonality: "Straight, unhurried, willing to name what's still rough. Talks to peers, not prospects.",
+    brandTypography: { headingFont: "Inter", bodyFont: "JetBrains Mono" },
+    brandColors: [
+      { name: "Primary", hex: "#212E44" },
+      { name: "Accent", hex: "#3D7DD6" },
+      { name: "Background", hex: "#FFFFFF" },
+      { name: "Text", hex: "#1A1F36" },
+    ],
+    ctaLinks: [
+      { label: "Read the changelog", url: "acme.example.com/changelog", checked: true, suggested: false },
+      { label: "Try it in the sandbox", url: "acme.example.com/sandbox", checked: true, suggested: false },
+    ],
+    language: "English",
+    topics: { enabledSourceIds: ["industry-trends", "competitor-posts"], cadence: "weekly" },
+    doRules: ["Name the version", "Say what breaks", "Link the reference"],
+    dontRules: ['No "excited to announce"', "No emoji", "Don't claim there's no trade-off"],
+    cta: "Full reference →",
+    usedIn: 2,
+    updatedAt: "yesterday",
+    // Pre-filled so "Recent changes" in the Share modal has something to show
+    // on a first run. No diffs, by design — who and when, never what.
+    history: [
+      { id: "h-seed-1", actorId: "u-sam", action: "created this Playbook", when: "3 weeks ago" },
+      { id: "h-seed-2", actorId: "u-sam", action: "shared it with the organisation", when: "3 weeks ago" },
+      { id: "h-seed-3", actorId: "u-lea", action: "edited the Voice & style section", when: "yesterday" },
+    ],
+    analysis: { voice: null, brief: null, brand: null },
+  },
+  // The tombstone. Deliberately thin: nothing ever renders this Playbook,
+  // because nobody but Jonas can see it. It exists so one seeded chat can point
+  // at a Playbook it lost access to and still say its name — which is what
+  // playbook-access's revokedContextFor() reads. See the note at the top of that
+  // file for why the store doesn't just hide it.
+  {
+    id: "ctx-orphan-brightline",
+    name: "Brightline · launch",
+    color: "grey",
+    isDefault: false,
+    ownerId: "u-jonas",
+    scope: "personal",
+    brandName: "Brightline",
+    websiteUrl: "https://brightline.example.com",
+    audience: ["Ops leads at mid-market logistics firms"],
+    businessSummary: "Launch narrative for Brightline, written while the positioning was still moving.",
+    briefSummary: "Launch narrative for Brightline, written while the positioning was still moving.",
+    tones: ["Professional"],
+    language: "English",
+    usedIn: 1,
+    updatedAt: "a week ago",
+    analysis: { voice: null, brief: null, brand: null },
   },
 ];
 
@@ -2724,6 +2864,41 @@ const seedIdeaGen = (angle, ideaTitle) => ({
 });
 
 export const postsBySession = {
+  // Written while the Playbook was still shared. They survive the loss of
+  // access: everything on these cards that SAVES or SCHEDULES keeps working,
+  // everything that GENERATES does not.
+  "s-brightline": [
+    {
+      id: "post-brightline-1",
+      author: AUTHOR_MC,
+      network: "linkedin",
+      status: "ready",
+      timeLabel: "1w",
+      text: [
+        "Brightline ships next month. The part we're proudest of isn't the routing engine — it's that ops leads can override it without calling us.",
+        "Every automation we shipped this year came with a manual escape hatch. That's the whole product philosophy in one sentence.",
+      ],
+      hashtags: ["Logistics", "Ops"],
+      cta: "",
+      stats: { likes: 0, comments: 0, reposts: 0 },
+      hasImage: false,
+    },
+    {
+      id: "post-brightline-2",
+      author: AUTHOR_MC,
+      network: "linkedin",
+      status: "ready",
+      timeLabel: "1w",
+      text: [
+        "We asked twelve ops leads what they'd automate last. Every single one said the exception queue — the thing most tools automate first.",
+        "So we didn't. Brightline routes the predictable 80% and hands you the rest with the context already attached.",
+      ],
+      hashtags: ["Logistics"],
+      cta: "",
+      stats: { likes: 0, comments: 0, reposts: 0 },
+      hasImage: false,
+    },
+  ],
   "s-acme-launch": [
     {
       id: "post-acme-1",
@@ -2974,6 +3149,35 @@ export const postsBySession = {
 // content on click.
 
 export const threadsBySession = {
+  "s-brightline": [
+    {
+      role: "user",
+      meta: "You",
+      text: "Draft two launch posts from the Brightline brief — lead with the escape hatch, not the routing engine.",
+    },
+    {
+      role: "assistant",
+      variant: "draft",
+      meta: "Archie",
+      ideaTitle: "The automation ops leads actually asked for",
+      drafts: [
+        {
+          id: "post-brightline-1",
+          network: "linkedin",
+          preview:
+            "Brightline ships next month. The part we're proudest of isn't the routing engine — it's that ops leads can override it without calling us.",
+        },
+        {
+          id: "post-brightline-2",
+          network: "linkedin",
+          preview:
+            "We asked twelve ops leads what they'd automate last. Every single one said the exception queue — the thing most tools automate first.",
+        },
+      ],
+      count: 2,
+      open: false,
+    },
+  ],
   "s-acme-launch": [
     {
       role: "assistant",

@@ -311,6 +311,23 @@
   color: var(--ref-color-grey-100);
 }
 
+/* The card's metadata corner: ownership then the brand palette, right-aligned
+   opposite the counters. Never a coloured border or an edge accent — a card's
+   state belongs in its content. Mine-and-private renders nothing at all. */
+.contexts-card__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  min-width: 0;
+}
+.contexts-card__owner {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+.contexts-card__owner > i {
+  color: var(--ref-color-grey-80);
+}
+
 .contexts-card__badge {
   display: inline-flex;
   align-items: center;

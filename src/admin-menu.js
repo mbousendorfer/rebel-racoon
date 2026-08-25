@@ -7,9 +7,17 @@
 // change reloads the app so the stores re-seed under the new mode / flag.
 
 import { html, raw, escapeHtml } from "./utils.js?v=22";
-import { FLAGS } from "./ff-catalog.js?v=25";
-import { getFlags, setFlag } from "./feature-flags.js?v=20";
+import { FLAGS } from "./ff-catalog.js?v=26";
+import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=21";
 import { getUserMode, setUserMode } from "./user-mode.js?v=24";
+import { getRole, setRole, ORG } from "./org.js?v=2";
+
+// Which hat I'm wearing inside my organisation. Only meaningful once Playbooks
+// have owners, so the section only exists behind that flag.
+const ADMIN_ROLE_OPTIONS = [
+  { value: "member", label: "Member", hint: "Own your Playbooks, read the shared ones" },
+  { value: "manager", label: "Manager", hint: "Edit, delete and hand over shared Playbooks" },
+];
 
 const ADMIN_MODE_OPTIONS = [
   { value: "returning", label: "Returning user", hint: "Populated mocks (default)" },
@@ -37,6 +45,14 @@ export function applyUserMode(target) {
   window.location.reload();
 }
 
+// Switch org role, then reload: access is read synchronously at render time
+// everywhere, so nothing subscribes to it — same contract as user mode.
+export function applyOrgRole(target) {
+  if (target === getRole()) return;
+  setRole(target);
+  window.location.reload();
+}
+
 // Flip a feature flag, then reload so every store / surface re-reads it.
 export function toggleFlag(id) {
   setFlag(id, !getFlags()[id]);
@@ -52,6 +68,20 @@ export function renderAdminMenu() {
     return `
       <label class="ap-radio-card card admin-menu__mode" data-admin-mode="${escapeHtml(opt.value)}">
         <input type="radio" name="sidebar-admin-user-mode" value="${escapeHtml(opt.value)}" ${active ? "checked" : ""} />
+        <span class="admin-menu__opt-text">
+          <span class="admin-menu__opt-label">${escapeHtml(opt.label)}</span>
+          <span class="admin-menu__opt-hint">${escapeHtml(opt.hint)}</span>
+        </span>
+      </label>
+    `;
+  }).join("");
+
+  const role = getRole();
+  const roleRows = ADMIN_ROLE_OPTIONS.map((opt) => {
+    const active = opt.value === role;
+    return `
+      <label class="ap-radio-card card admin-menu__mode" data-admin-role="${escapeHtml(opt.value)}">
+        <input type="radio" name="sidebar-admin-org-role" value="${escapeHtml(opt.value)}" ${active ? "checked" : ""} />
         <span class="admin-menu__opt-text">
           <span class="admin-menu__opt-label">${escapeHtml(opt.label)}</span>
           <span class="admin-menu__opt-hint">${escapeHtml(opt.hint)}</span>
@@ -79,6 +109,14 @@ export function renderAdminMenu() {
         <span class="admin-menu__section-title">User mode</span>
         <div class="admin-menu__cards" role="radiogroup" aria-label="User mode">${raw(modeRows)}</div>
       </div>
+      ${raw(
+        isFlagOn("playbookSharing")
+          ? `<div class="admin-menu__section">
+              <span class="admin-menu__section-title">Your role at ${escapeHtml(ORG.name)}</span>
+              <div class="admin-menu__cards" role="radiogroup" aria-label="Your role">${roleRows}</div>
+            </div>`
+          : "",
+      )}
       <div class="admin-menu__section">
         <span class="admin-menu__section-title">Feature flags</span>
         <div class="admin-menu__flags">${raw(flagRows)}</div>

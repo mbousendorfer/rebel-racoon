@@ -19,16 +19,34 @@
 
 import { navigate } from "../router.js?v=31";
 import { escapeHtml as esc } from "../utils.js?v=22";
-import { renderTopbar } from "../components/topbar.js?v=308";
-import { getContextById, getContexts, updateContext, deleteContext } from "../contexts-store.js?v=49";
-import { mount, snapshotEditable } from "../playbook-view.js?v=68";
+import { renderTopbar } from "../components/topbar.js?v=316";
+import {
+  getContextById,
+  getContexts,
+  updateContext,
+  deleteContext,
+  duplicateContext,
+  appendHistory,
+} from "../contexts-store.js?v=53";
+import { mount, snapshotEditable } from "../playbook-view.js?v=72";
 import { open as openRenameModal } from "../components/rename-modal.js?v=3";
 import { open as openConfirmModal } from "../components/confirm-modal.js?v=23";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=26";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=30";
 import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=6";
 import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=27";
-import { sectionPatchFromAnalysis } from "../context-builder.js?v=280";
-import { isFlagOn } from "../feature-flags.js?v=20";
+import { sectionPatchFromAnalysis } from "../context-builder.js?v=288";
+import { isFlagOn } from "../feature-flags.js?v=21";
+import {
+  canView,
+  canEdit,
+  canDelete,
+  canManageSharing,
+  accessLabel,
+  isMine,
+  ownerOf,
+  ownerName,
+} from "../playbook-access.js?v=5";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=6";
 
 const AUTOFILL_MS = 1500;
 
@@ -59,19 +77,69 @@ function prettyUrl(url) {
 // Playbook-wide action and lives in the header (a labelled stroked button — no
 // dropdown now that it's the only whole-Playbook source). Voice sources live in
 // the Voice & style "Learn from…" dropdown.
-function buildHeaderActions() {
-  return `
-    <button type="button" class="ap-button primary blue" data-playbook-start>
+function buildHeaderActions(ctx) {
+  // Using a Playbook is always on the table — that's what being shared one is
+  // for. Everything that WRITES depends on owning it (or managing the org).
+  // Duplicate is the recipient's real action: it turns reading into having.
+  const editable = canEdit(ctx);
+  return [
+    `<button type="button" class="ap-button primary blue" data-playbook-start>
       <i class="ap-icon-double-chat-bubbles"></i>
       <span>Start a chat</span>
-    </button>
-    <button type="button" class="ap-button stroked blue" data-fill-website>
-      <i class="ap-icon-refresh"></i>
-      <span>Re-analyze website</span>
-    </button>
-    <button type="button" class="ap-icon-button stroked grey" data-playbook-delete title="Delete" aria-label="Delete Playbook">
-      <i class="ap-icon-trash"></i>
-    </button>
+    </button>`,
+    !editable
+      ? `<button type="button" class="ap-button stroked blue" data-playbook-duplicate>
+          <i class="ap-icon-copy"></i>
+          <span>Duplicate</span>
+        </button>`
+      : "",
+    canManageSharing(ctx)
+      ? `<button type="button" class="ap-button stroked blue" data-playbook-share>
+          <i class="ap-icon-share"></i>
+          <span>Share</span>
+        </button>`
+      : "",
+    editable
+      ? `<button type="button" class="ap-button stroked blue" data-fill-website>
+          <i class="ap-icon-refresh"></i>
+          <span>Re-analyze website</span>
+        </button>`
+      : "",
+    canDelete(ctx)
+      ? `<button type="button" class="ap-icon-button stroked grey" data-playbook-delete title="Delete" aria-label="Delete Playbook">
+          <i class="ap-icon-trash"></i>
+        </button>`
+      : "",
+  ].join("");
+}
+
+// What playbook-view is allowed to say about ownership: a mark beside the name
+// and one quick fact in the rail. Nothing becomes a section.
+function buildOwnership(ctx) {
+  const tag = accessLabel(ctx);
+  if (!tag) return null;
+  const owner = ownerOf(ctx);
+  return {
+    tag,
+    owner: owner ? `${owner.name}${isMine(ctx) ? " (you)" : ""}` : ownerName(ctx),
+    initials: owner?.initials || "?",
+  };
+}
+
+// Say WHY the pencils are gone. Removing them silently reads as a broken page;
+// naming the owner and offering the way out (Duplicate) reads as a rule.
+function buildNotice(ctx) {
+  if (canEdit(ctx) || !accessLabel(ctx)) return "";
+  return `
+    <div class="ap-infobox info recap__notice">
+      <i class="ap-icon-info" aria-hidden="true"></i>
+      <div class="ap-infobox-content">
+        <div class="ap-infobox-texts">
+          <span class="ap-infobox-title">${esc(ownerName(ctx))} shares this Playbook with your organisation</span>
+          <span class="ap-infobox-message">You can read it and write with it. To change anything, duplicate it — the copy is yours.</span>
+        </div>
+      </div>
+    </div>
   `;
 }
 
@@ -79,7 +147,10 @@ export function renderPlaybook(params, target) {
   const id = params.id;
   renderTopbar();
 
-  if (!getContextById(id)) {
+  const guard = getContextById(id);
+  // A Playbook that isn't mine and isn't shared is not a 404 — it exists, I
+  // just can't be here. Same exit either way.
+  if (!guard || !canView(guard)) {
     navigate("/contexts");
     return () => {};
   }
@@ -89,6 +160,14 @@ export function renderPlaybook(params, target) {
   let analyzing = false;
   let analysisReady = false;
   let analysisLoader = null;
+
+  // Every write to this Playbook goes through here on its way: one log line,
+  // and — when it isn't mine — the notification its owner is owed (doc §6.4).
+  function note(ctx, action) {
+    if (!ctx) return;
+    appendHistory(ctx.id, action);
+    if (!isMine(ctx)) toast(`${ownerName(ctx)} will be notified.`);
+  }
 
   // ── Menus ──────────────────────────────────────────────────────────
   function closeMenus() {
@@ -109,16 +188,23 @@ export function renderPlaybook(params, target) {
       },
       commit: () => {
         const ctx = getContextById(id);
-        if (ctx) updateContext(id, { ...snapshotEditable(ctx), updatedAt: "just now" });
+        if (!ctx) return;
+        note(ctx, "edited this Playbook");
+        updateContext(id, { ...snapshotEditable(ctx), updatedAt: "just now" });
       },
       revert: (snapshot) => updateContext(id, snapshot),
       showTop: false,
-      headerActions: () => buildHeaderActions(),
-      onEditName,
+      canEdit: canEdit(getContextById(id)),
+      ownership: buildOwnership(getContextById(id)),
+      notice: () => buildNotice(getContextById(id)),
+      headerActions: () => buildHeaderActions(getContextById(id)),
+      // The rename pencil, the default star and the voice re-analysis are all
+      // writes: withhold the callback and playbook-view renders no affordance.
+      onEditName: canEdit(getContextById(id)) ? onEditName : undefined,
       // Gated behind the playbookDefault flag (default OFF): without the
       // callback, playbook-view renders no "set as default" star.
-      onToggleDefault: isFlagOn("playbookDefault") ? toggleDefault : undefined,
-      onAnalyzeVoice,
+      onToggleDefault: isFlagOn("playbookDefault") && canEdit(getContextById(id)) ? toggleDefault : undefined,
+      onAnalyzeVoice: canEdit(getContextById(id)) ? onAnalyzeVoice : undefined,
       onFooter,
     };
   }
@@ -183,13 +269,21 @@ export function renderPlaybook(params, target) {
       toast("Can't delete the last Playbook — every chat needs one.");
       return;
     }
+    const shared = ctx?.scope === "organization";
+    const n = ctx?.usedIn || 0;
+    const body = shared
+      ? `“${esc(ctx?.name || "This Playbook")}” is shared with your organisation${
+          n ? ` and ${n === 1 ? "1 chat runs" : `${n} chats run`} on it` : ""
+        }. Those chats keep the drafts already written — they can still be saved or scheduled — but they won’t generate anything new. This can’t be undone.`
+      : `“${esc(ctx?.name || "This Playbook")}” will be removed. Chats using it will need a new Playbook. This can’t be undone.`;
     openConfirmModal({
       title: "Delete Playbook?",
-      body: `“${esc(ctx?.name || "This Playbook")}” will be removed. Chats using it will need a new Playbook. This can’t be undone.`,
+      body,
       confirmLabel: "Delete Playbook",
       cancelLabel: "Keep",
       danger: true,
       onConfirm: () => {
+        if (ctx && !isMine(ctx)) toast(`${ownerName(ctx)} will be notified.`);
         deleteContext(id);
         toast("Playbook deleted");
         navigate("/contexts");
@@ -231,6 +325,7 @@ export function renderPlaybook(params, target) {
       placeholder: "Playbook name",
       confirmLabel: "Save name",
       onSubmit: (name) => {
+        note(ctx, "renamed this Playbook");
         updateContext(id, { name, updatedAt: "just now" });
         remount();
       },
@@ -255,6 +350,32 @@ export function renderPlaybook(params, target) {
     if (event.target.closest("[data-playbook-start]")) {
       closeMenus();
       navigate(`/session/new-${Date.now().toString(36)}?contextId=${id}`);
+      return true;
+    }
+
+    if (event.target.closest("[data-playbook-share]")) {
+      closeMenus();
+      openShareModal({
+        contextId: id,
+        // Handing a private Playbook to somebody else revokes my own access —
+        // so re-check rather than repaint blindly, and leave if I'm no longer
+        // allowed to be here.
+        onDone: () => {
+          const ctx = getContextById(id);
+          if (!ctx || !canView(ctx)) navigate("/contexts");
+          else remount();
+        },
+      });
+      return true;
+    }
+
+    if (event.target.closest("[data-playbook-duplicate]")) {
+      closeMenus();
+      const copy = duplicateContext(id);
+      if (copy) {
+        toast("Duplicated — this copy is yours to edit.");
+        navigate(`/playbook/${copy.id}`);
+      }
       return true;
     }
 

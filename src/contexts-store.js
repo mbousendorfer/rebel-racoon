@@ -11,14 +11,21 @@
 //   getContextById(id)           → Context | null
 //   addContext(ctx)              → Context     (assigns id if missing, notifies)
 //   updateContext(id, patch)     → Context | null   (deep-ish merge for voice/brief/brand subobjects)
+//   appendHistory(id, action)    → Context | null   (one line in the change log)
 //   subscribe(fn)                → unsubscribe
+//
+// Ownership (ownerId / scope / history) lives here, but WHO MAY DO WHAT does
+// not: that's playbook-access.js. This store keeps returning every Playbook to
+// every caller on purpose — see the note at the top of that file.
 //
 // Note: addContext is also used by the wizard memorize step when the user
 // chooses "Save as global". updateContext is used by the section-edit flow
 // when scope is "Update everywhere".
 
-import { contexts as seed } from "./mocks.js?v=66";
+import { contexts as seed, sharedContexts } from "./mocks.js?v=70";
 import { isNewUser } from "./user-mode.js?v=24";
+import { CURRENT_USER } from "./org.js?v=2";
+import { isFlagOn } from "./feature-flags.js?v=20";
 import { createNotifier } from "./store-utils.js?v=3";
 import { DEFAULT_ENABLED_IDS, DEFAULT_CADENCE, findTopicSource, findCadence } from "./topics-catalog.js?v=3";
 import {
@@ -32,6 +39,11 @@ import {
 // seed below calls that normalizer at module-init time — a `let` declared beside
 // the function would still be in its temporal dead zone when the seed runs.
 let brandLogoSeq = 0;
+// Up here for the same reason as brandLogoSeq: the seed calls normalizeOwnership
+// at module-init time, before a declaration sitting next to normalizeHistory
+// would have left its temporal dead zone.
+const MAX_HISTORY = 12;
+let historySeq = 0;
 
 // Lot 15 — first-time user mode starts empty so the standalone /contexts
 // page renders its empty state. Returning user keeps the mock seed. Every
@@ -41,9 +53,20 @@ let brandLogoSeq = 0;
 // Seeds bypass addContext, so anything addContext normalises has to be applied
 // here too — `topics` included, or a seeded Playbook with no topics config at
 // all would render the section against `undefined`.
+// The sharing seeds join the list only under their flag: with sharing off there
+// is one implicit user, so a Playbook owned by a colleague — let alone one
+// deliberately out of reach — would just be a stray card.
+const allSeeds = isFlagOn("playbookSharing") ? [...seed, ...sharedContexts] : seed;
 const contexts = isNewUser()
   ? []
-  : seed.map((c) => normalizeLanguages({ ...c, topics: normalizeTopics(c.topics), ...normalizeBrandLogos(c) }));
+  : allSeeds.map((c) =>
+      normalizeLanguages({
+        ...c,
+        ...normalizeOwnership(c),
+        topics: normalizeTopics(c.topics),
+        ...normalizeBrandLogos(c),
+      }),
+    );
 const notifier = createNotifier("contexts-store");
 
 export const subscribe = notifier.subscribe;
@@ -114,6 +137,59 @@ function normalizeTopics(t) {
     enabledSourceIds: enabled.filter((id) => !!findTopicSource(id)),
     cadence: findCadence(src.cadence) ? src.cadence : DEFAULT_CADENCE,
   };
+}
+
+// Ownership — who this Playbook belongs to and how far it reaches. Two scopes
+// only: "personal" (its owner alone) or "organization" (the whole org may use
+// it, the owner alone may edit it). There is no named sharing, so there is no
+// recipient list to keep in sync.
+//
+// `history` is a governance log, not versioning: who touched the fiche and when,
+// never what changed. Like `usedIn` it is stored ON the Context but is never a
+// section OF it — it's read in the Share modal (see CONCEPTS.md §1, "exceptions
+// de stockage").
+function normalizeHistory(h) {
+  if (!Array.isArray(h)) return [];
+  return h
+    .filter((e) => e && e.action)
+    .slice(-MAX_HISTORY)
+    .map((e) => ({
+      id: e.id || `h-${++historySeq}`,
+      actorId: e.actorId || CURRENT_USER.id,
+      action: e.action,
+      when: e.when || "just now",
+    }));
+}
+
+function normalizeOwnership(ctx) {
+  return {
+    ownerId: ctx.ownerId || CURRENT_USER.id,
+    scope: ctx.scope === "organization" ? "organization" : "personal",
+    history: normalizeHistory(ctx.history),
+  };
+}
+
+/**
+ * Append one line to a Playbook's change log. Callers pass the sentence they
+ * want read back ("shared it with the organisation", "edited the Voice & style
+ * section") — this store never infers it, because inferring would mean diffing,
+ * and there is deliberately no diff.
+ *
+ * @param {string} id
+ * @param {string} action
+ * @param {string} [actorId] — defaults to me
+ * @returns {Context | null}
+ */
+export function appendHistory(id, action, actorId = CURRENT_USER.id) {
+  const c = contexts.find((x) => x.id === id);
+  if (!c || !action) return null;
+  if (!Array.isArray(c.history)) c.history = [];
+  c.history.push({ id: `h-${++historySeq}`, actorId, action, when: "just now" });
+  // Keep the newest MAX_HISTORY: a prototype log that grows forever would push
+  // the modal off screen, and nobody reads the twentieth line.
+  if (c.history.length > MAX_HISTORY) c.history = c.history.slice(-MAX_HISTORY);
+  notify();
+  return c;
 }
 
 export function getContexts() {
@@ -217,6 +293,8 @@ export function addContext(ctx = {}) {
     //   Always present, even while the `topics` flag is OFF: the config rides
     //   along in the data like competitors do, only the surfaces are gated.
     topics: normalizeTopics(ctx.topics),
+    // — ownership (owner + scope + change log; see normalizeOwnership) —
+    ...normalizeOwnership(ctx),
     // — meta —
     usedIn: typeof ctx.usedIn === "number" ? ctx.usedIn : 0,
     updatedAt: ctx.updatedAt || "just now",
@@ -318,6 +396,9 @@ export function updateContext(id, patch) {
   if (patch.connectedSocials !== undefined) c.connectedSocials = patch.connectedSocials;
   if (patch.selectedProfileId !== undefined) c.selectedProfileId = patch.selectedProfileId;
   if (patch.usedIn !== undefined) c.usedIn = patch.usedIn;
+  if (patch.ownerId !== undefined) c.ownerId = patch.ownerId || CURRENT_USER.id;
+  if (patch.scope !== undefined) c.scope = patch.scope === "organization" ? "organization" : "personal";
+  if (patch.history !== undefined) c.history = normalizeHistory(patch.history);
   if (patch.updatedAt !== undefined) c.updatedAt = patch.updatedAt;
   // Legacy + analysis sub-object
   if (patch.analysis !== undefined) c.analysis = patch.analysis;
@@ -386,6 +467,13 @@ export function duplicateContext(id) {
     topics: src.topics ? { ...src.topics, enabledSourceIds: (src.topics.enabledSourceIds || []).slice() } : undefined,
     isDefault: false,
     usedIn: 0,
+    // A duplicate is MINE and starts private, whoever I copied it from — that's
+    // the whole point of the action for someone reading a shared Playbook they
+    // can't edit (doc §6.2). Its history starts empty: the original's log is the
+    // original's, and the copy is detached, with no "duplicated from" link.
+    ownerId: CURRENT_USER.id,
+    scope: "personal",
+    history: [],
     analysis: src.analysis ? { ...src.analysis } : { voice: null, brief: null, brand: null },
   });
 }

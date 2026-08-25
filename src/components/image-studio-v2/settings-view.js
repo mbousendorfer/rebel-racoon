@@ -30,11 +30,11 @@
 // stacked in a 260px column would shout over the section title.
 
 import { escapeHtml } from "../../utils.js?v=22";
-import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=39";
-import { KEY } from "./context.js?v=42";
-import { REFS_TIP, refSummary, refsBody } from "./references-view.js?v=9";
+import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=43";
+import { KEY } from "./context.js?v=46";
+import { REFS_TIP, refSummary, refsBody } from "./references-view.js?v=13";
 import { BRANDING_TIP, brandingBody } from "./branding-view.js?v=4";
-import * as imageStudio from "../../image-studio.js?v=92";
+import * as imageStudio from "../../image-studio.js?v=96";
 
 // A thin rule between two clusters inside one row body. Shared with the
 // Add-image sheet (tools-view.js), which is where the class name comes from.

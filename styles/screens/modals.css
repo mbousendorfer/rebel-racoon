@@ -49,6 +49,7 @@ body.has-modal {
 .confirm-modal,
 .rename-modal,
 .save-folder-modal,
+.share-playbook-modal,
 .analyze-profiles-modal,
 .fill-document-modal,
 .search-modal,
@@ -472,6 +473,7 @@ body.has-modal {
 .confirm-modal.open,
 .rename-modal.open,
 .save-folder-modal.open,
+.share-playbook-modal.open,
 .analyze-profiles-modal.open,
 .fill-document-modal.open,
 .search-modal.open,
@@ -1164,4 +1166,147 @@ body.has-modal {
   flex: 0 0 auto;
   color: var(--ref-color-grey-60);
   font-size: var(--sys-text-style-caption-size);
+}
+
+/* ── Share Playbook modal ──────────────────────────────────────────────
+   Two radio cards (just me / everyone at the org), then the two things that
+   only exist once a Playbook is shared: who owns it, and what changed.
+   Same "let the select escape the dialog" treatment as the save-drafts
+   modal — .ap-dialog clips by default and the owner dropdown must not be. */
+.share-playbook-modal {
+  width: 560px;
+  max-width: calc(100vw - 2 * var(--ref-spacing-lg));
+  overflow: visible;
+}
+.share-playbook-modal .ap-dialog-content {
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+}
+
+.share-playbook-modal__options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+}
+
+/* The icon sits on the card title's baseline, at the DS's own small icon
+   size — the card already carries the type scale. */
+.share-playbook-modal__option .ap-radio-card-title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+}
+.share-playbook-modal__option .ap-radio-card-title > i {
+  font-size: var(--sys-icon-css-sm);
+  color: var(--sys-text-color-light);
+}
+
+/* Owner row — information, above the rule that separates the scope decision
+   from the governance ones below it. */
+.share-playbook-modal__owner {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  flex-wrap: wrap;
+  padding-top: var(--ref-spacing-sm);
+  border-top: 1px solid var(--sys-border-color-default);
+}
+
+/* Hand-over and the change log are both collapsed disclosures: this dialog is
+   about one decision (who can use this Playbook), and the rarer governance
+   moves sit a click away instead of crowding it. */
+.share-playbook-modal__handover > summary,
+.share-playbook-modal__log > summary {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  cursor: pointer;
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--sys-text-color-default);
+  list-style: none;
+}
+.share-playbook-modal__handover > summary::-webkit-details-marker {
+  display: none;
+}
+.share-playbook-modal__handover > summary > i {
+  font-size: var(--sys-icon-css-sm);
+  color: var(--sys-text-color-light);
+  transition: transform var(--ref-animation-short) ease;
+}
+.share-playbook-modal__handover[open] > summary > i {
+  transform: rotate(180deg);
+}
+.share-playbook-modal__handover-row {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  margin-top: var(--ref-spacing-xs);
+}
+.share-playbook-modal__handover-note {
+  margin: var(--ref-spacing-xxs) 0 0;
+  font-size: var(--ref-font-size-sm);
+  line-height: var(--ref-font-line-height-sm);
+  color: var(--sys-text-color-light);
+}
+.share-playbook-modal__owner-label {
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--sys-text-color-default);
+}
+.share-playbook-modal__owner-who {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  font-size: var(--ref-font-size-sm);
+  color: var(--sys-text-color-default);
+  margin-right: auto;
+}
+.share-playbook-modal__ownerselect {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.share-playbook-modal__transfer {
+  flex: 0 0 auto;
+}
+
+/* The change log — no diffs by design, so each row is who / what / when. */
+.share-playbook-modal__log > summary::-webkit-details-marker {
+  display: none;
+}
+.share-playbook-modal__log > summary > i {
+  font-size: var(--sys-icon-css-sm);
+  color: var(--sys-text-color-light);
+  transition: transform var(--ref-animation-short) ease;
+}
+.share-playbook-modal__log[open] > summary > i {
+  transform: rotate(180deg);
+}
+.share-playbook-modal__log-list {
+  list-style: none;
+  margin: var(--ref-spacing-xs) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+}
+.share-playbook-modal__log-row {
+  display: flex;
+  gap: var(--ref-spacing-xxs);
+  font-size: var(--ref-font-size-sm);
+  line-height: var(--ref-font-line-height-sm);
+  color: var(--sys-text-color-default);
+}
+.share-playbook-modal__log-who {
+  font-weight: var(--ref-font-weight-bold);
+  white-space: nowrap;
+}
+.share-playbook-modal__log-what {
+  flex: 1 1 auto;
+}
+.share-playbook-modal__log-when {
+  color: var(--sys-text-color-light);
+  white-space: nowrap;
 }

@@ -269,6 +269,19 @@
   color: var(--ref-color-grey-60);
 }
 
+/* Ownership mark, inline after the Playbook's name — it qualifies the title,
+   the same placement as on the /contexts card. Nothing about ownership becomes
+   a section of the fiche. */
+.recap__owner-tag {
+  flex: 0 0 auto;
+}
+
+/* Read-only banner, between the header and the sections: it explains the whole
+   page, so it sits above the whole page rather than inside one panel. */
+.recap__notice {
+  margin-bottom: var(--ref-spacing-md);
+}
+
 .recap__header-actions {
   display: flex;
   align-items: center;
@@ -381,6 +394,14 @@
   line-height: var(--sys-text-style-body-bold-line-height);
   font-weight: var(--sys-text-style-body-bold-weight);
   color: var(--ref-color-grey-100);
+}
+
+/* Owner quick-fact: the avatar keeps the dd on one line with the name, so the
+   fact reads like the others rather than wrapping under its own picture. */
+.recap__fact-owner {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
 }
 
 .recap__fact-dots {

@@ -422,6 +422,29 @@
 /* Lot 13 — session screen lost the workspace tabs (Content + Context) so
    the assistant panel now spans the full main column. The right-panel
    overlay handles Drafts / Ideas. */
+/* ── A chat whose Playbook stopped being shared ─────────────────────────
+   Everything that PRODUCES reads as unavailable; everything that saves,
+   schedules or simply shows stays untouched. pointer-events stays on so the
+   click can still land and explain itself — the guard in session.js swallows
+   it and toasts the reason.
+   Scoped to <body> rather than the session root because the drafts panel is
+   app-shell chrome outside #app. */
+body.playbook-revoked [data-bulk-extract],
+body.playbook-revoked [data-source-extract-one],
+body.playbook-revoked [data-idea-generate],
+body.playbook-revoked [data-post-rewrite-menu],
+body.playbook-revoked [data-post-rewrite-intent],
+body.playbook-revoked [data-post-image],
+body.playbook-revoked [data-post-image-edit],
+body.playbook-revoked [data-clip-draft] {
+  opacity: 0.45;
+  filter: grayscale(1);
+}
+
+body.playbook-revoked .session__composer-card {
+  background: var(--app-surface-subtle);
+}
+
 .session.session--solo {
   display: flex;
   flex-direction: column;

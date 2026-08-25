@@ -40,7 +40,7 @@ Voir [`src/store-utils.js`](../../src/store-utils.js) pour `createNotifier()`.
 | Store                                                    | Domaine                                                                                                                                                                                                                                                                                                                                                                   | API publique principale                                                                                                                                                                                          |
 | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`sessions-store.js`](../../src/sessions-store.js)       | Sessions de chat                                                                                                                                                                                                                                                                                                                                                          | `getSessions`, `getSessionById`, `updateSession`, `deleteSession`, `togglePin`, `subscribe`                                                                                                                      |
-| [`contexts-store.js`](../../src/contexts-store.js)       | Playbooks (Contexts en code)                                                                                                                                                                                                                                                                                                                                              | `getContexts`, `getContextById`, `getDefaultContext`, `addContext`, `updateContext`, `duplicateContext`, `deleteContext`, `subscribe`                                                                            |
+| [`contexts-store.js`](../../src/contexts-store.js)       | Playbooks (Contexts en code). Porte aussi l'appartenance (`ownerId` / `scope` / `history`, flag `playbookSharing`) — mais **ne filtre jamais** : les droits vivent dans [`playbook-access.js`](../../src/playbook-access.js), voir le § ci-dessous.                                                                                                                       | `getContexts`, `getContextById`, `getDefaultContext`, `addContext`, `updateContext`, `duplicateContext`, `deleteContext`, `appendHistory`, `subscribe`                                                           |
 | [`connectors-store.js`](../../src/connectors-store.js)   | Catalogue + état de connection des connectors                                                                                                                                                                                                                                                                                                                             | `getConnectors`, `findConnector`, `getConnectedConnectors`, `setConnectorStatus`, `subscribe`                                                                                                                    |
 | [`library.js`](../../src/library.js)                     | Ideas **per-session**, une seule liste. Le pool global (`mocks.ideas`) que lisaient le panneau de droite, `draft-flow` et `assistant` a été supprimé — il faisait lister à un chat les ideas des autres. `assistant` lit les ideas via `setIdeasReader(getIdeas)`, injecté ici : `library` importe `assistant`, donc l'inverse fermerait un cycle.                        | `getSources(sid)`, `getIdeas(sid)`, `appendExtractedIdeas`, `injectIdeasForSource`, `extractVideoIdeas`, `removeIdeas`, `removeIdeasForSources`, `clearSession`, `subscribe(sid, fn)`                            |
 | [`posts-store.js`](../../src/posts-store.js)             | Drafts per-session                                                                                                                                                                                                                                                                                                                                                        | `getPosts(sid)`, `addPostDraft`, `updatePostContent`, `attachImageToDraft`, `attachCarouselToDraft`, `setSubtitleStyle`, `updatePostClip`, `insertPost`, `removePost`, `clearSession`, `subscribe(sid, fn)`      |
@@ -65,16 +65,27 @@ Les vrais globaux sont les **catalogues** — ils préexistent à tout chat : `c
 
 Conséquence : si tu ajoutes une source depuis la session A, la library de la session B verra aussi cette source (si elle est listée dans son periphery — selon la sélection).
 
+## Le store ne filtre pas : `playbook-access`
+
+[`playbook-access.js`](../../src/playbook-access.js) n'est pas un store — c'est une couche de prédicats **au-dessus** de `contexts-store`. Le partage aurait pu être implémenté en filtrant `getContexts()` ; ça a été écarté pour une raison précise.
+
+Un chat dont le Playbook a cessé d'être partagé doit encore pouvoir le **nommer** : _« ce chat tournait sur Brightline · launch, et Jonas Beck a arrêté de le partager »_. Écrire cette phrase demande de lire une fiche qu'on n'a plus le droit d'ouvrir. Un store filtré rendrait ce bandeau impossible — il faudrait dupliquer les noms ailleurs, ou renoncer à la phrase.
+
+Donc : **le store tient les faits, ce module tient les droits.** Les surfaces substituent `visibleContexts()` / `usableContexts()` / `editableContexts()` à `getContexts()`, et `revokedContextFor()` est le seul autorisé à regarder par-dessus la barrière. Le flag est court-circuité en un seul endroit (`on()`), donc flag OFF = tout permis, à l'identique d'avant.
+
+Corollaire pour les mocks : les stores de contenu (`posts-store`, `library`) construisent leur set « est-ce un chat de démo à seeder ? » depuis `mocks.allSeedSessions`, pas depuis `recentSessions` — sinon le chat seedé sous flag arrive avec des panneaux vides.
+
 ## Persistence
 
 **Rien n'est persisté côté app state.** Seuls survivent au reload :
 
-| Clé localStorage / sessionStorage | Domaine                                            |
-| --------------------------------- | -------------------------------------------------- |
-| `archie-user-mode`                | `"returning"` vs `"new-alt"` (cf. `user-mode.js`)  |
-| `ff-{flagName}`                   | Feature flags individuels (cf. `feature-flags.js`) |
-| Sidebar collapse state            | UI prefs                                           |
-| `pending*` keys                   | Handoffs sessionStorage (consommés une fois)       |
+| Clé localStorage / sessionStorage | Domaine                                                             |
+| --------------------------------- | ------------------------------------------------------------------- |
+| `archie-user-mode`                | `"returning"` vs `"new-alt"` (cf. `user-mode.js`)                   |
+| `archie-feature-flags`            | Tous les feature flags, un seul objet JSON (cf. `feature-flags.js`) |
+| `archie-org-role`                 | `"member"` vs `"manager"` (cf. `org.js`, flag `playbookSharing`)    |
+| Sidebar collapse state            | UI prefs                                                            |
+| `pending*` keys                   | Handoffs sessionStorage (consommés une fois)                        |
 
 → Refresh = retour aux mocks (sauf si en `new-alt` mode = state vide).
 

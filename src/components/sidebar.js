@@ -4,9 +4,9 @@ import { open as openBugReportModal } from "./bug-report-modal.js?v=25";
 import { open as openFeedbackModal } from "./feedback-modal.js?v=27";
 import { open as openConfirmModal } from "./confirm-modal.js?v=23";
 import { open as openRenameModal } from "./rename-modal.js?v=3";
-import { open as openSearchModal } from "./search-modal.js?v=20";
+import { open as openSearchModal } from "./search-modal.js?v=24";
 import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=23";
-import { renderAdminMenu, applyUserMode, toggleFlag } from "../admin-menu.js?v=17";
+import { renderAdminMenu, applyUserMode, applyOrgRole, toggleFlag } from "../admin-menu.js?v=18";
 import {
   getSessions,
   getSessionById,
@@ -14,17 +14,20 @@ import {
   deleteSession,
   togglePin as togglePinSession,
   subscribe as subscribeSessions,
-} from "../sessions-store.js?v=17";
-import { isFlagOn } from "../feature-flags.js?v=20";
+} from "../sessions-store.js?v=21";
+import { isFlagOn } from "../feature-flags.js?v=21";
 import { isNewUser } from "../user-mode.js?v=24";
-import { clearSession as clearLibrarySession } from "../library.js?v=66";
-import { getContexts, getContextById, subscribe as subscribeContexts } from "../contexts-store.js?v=49";
-import { getConnectedConnectors, subscribe as subscribeConnectors } from "../connectors-store.js?v=37";
-import { getUnseenCount as getUnseenTopicCount, subscribe as subscribeTopics } from "../topics-store.js?v=6";
-import { closePanel as closeRightPanel } from "./right-panel.js?v=446";
-import { clearSession as clearAssistantSession } from "../assistant.js?v=72";
-import { clearSession as clearPostsSession } from "../posts-store.js?v=46";
-import { clearSession as clearSourcesSession } from "../sources-stream.js?v=64";
+import { clearSession as clearLibrarySession } from "../library.js?v=70";
+import { getContextById, subscribe as subscribeContexts } from "../contexts-store.js?v=53";
+// A Playbook nobody shared with me must not surface here either — the store
+// still holds it (see playbook-access.js), the sidebar just doesn't name it.
+import { canView, visibleContexts } from "../playbook-access.js?v=5";
+import { getConnectedConnectors, subscribe as subscribeConnectors } from "../connectors-store.js?v=41";
+import { getUnseenCount as getUnseenTopicCount, subscribe as subscribeTopics } from "../topics-store.js?v=10";
+import { closePanel as closeRightPanel } from "./right-panel.js?v=454";
+import { clearSession as clearAssistantSession } from "../assistant.js?v=76";
+import { clearSession as clearPostsSession } from "../posts-store.js?v=50";
+import { clearSession as clearSourcesSession } from "../sources-stream.js?v=68";
 
 // Global app sidebar — Brand / + New conversation / Recent chats / User footer.
 // Rendered once at boot into #sidebar; re-rendered on every route change so the
@@ -284,10 +287,15 @@ export function initSidebar() {
     }
   });
 
-  // Admin (cog popover) — user-mode radio change applies the mode + reloads.
+  // Admin (cog popover) — user-mode and org-role radios both apply + reload.
   el.addEventListener("change", (event) => {
-    const radio = event.target.closest('[name="sidebar-admin-user-mode"]');
-    if (radio) applyUserMode(radio.value);
+    const mode = event.target.closest('[name="sidebar-admin-user-mode"]');
+    if (mode) {
+      applyUserMode(mode.value);
+      return;
+    }
+    const role = event.target.closest('[name="sidebar-admin-org-role"]');
+    if (role) applyOrgRole(role.value);
   });
 
   // Keyboard activation for the conversation row — it's a <div role="button">
@@ -586,7 +594,7 @@ const NAV = [
     icon: "ap-icon-target",
     label: "Playbooks",
     match: (p) => p === "/contexts",
-    count: () => getContexts().length,
+    count: () => visibleContexts().length,
   },
   {
     path: "/connectors",
@@ -835,7 +843,7 @@ function renderRecentLists(activeSessionId) {
     const buckets = new Map();
     const NONE = "__none__";
     for (const s of unpinned) {
-      const ctx = s.contextId ? getContextById(s.contextId) : null;
+      const ctx = visibleCtx(s.contextId);
       const key = ctx?.id || NONE;
       if (!buckets.has(key)) {
         buckets.set(key, { label: ctx?.name || "No playbook", rows: [] });
@@ -880,9 +888,18 @@ function renderRecentLists(activeSessionId) {
 // green / etc.); falls back to grey when the session has no playbook
 // attached. Pinned status is conveyed only by the PINNED section header
 // above the row (no extra glyph on the row itself).
+// The Playbook behind a chat, but only when I'm allowed to see it: a chat that
+// lost access falls back to the grey dot and the "No playbook" bucket rather
+// than advertising a name I can't open.
+function visibleCtx(contextId) {
+  if (!contextId) return null;
+  const ctx = getContextById(contextId);
+  return ctx && canView(ctx) ? ctx : null;
+}
+
 function renderSessionRow(session, activeSessionId) {
   const isActive = session.id === activeSessionId;
-  const ctx = session.contextId ? getContextById(session.contextId) : null;
+  const ctx = visibleCtx(session.contextId);
   const dotColor = ctx?.color || "grey";
   const isPinned = !!session.pinned;
   const safeName = escapeHtml(session.name);

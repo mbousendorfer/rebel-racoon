@@ -49,14 +49,17 @@ Avant d'ajouter un champ ou une section, trois questions. **Une seule réponse �
 
 Les **comptes sociaux connectés** (`connectedSocials`, `selectedProfileId`) restent, eux, admissibles : ils disent sous quelle identité cette marque publie, ce qui est encore une réponse à « qui êtes-vous ? ».
 
-### Deux exceptions de stockage, assumées
+### Trois exceptions de stockage, assumées
 
-La règle porte sur **ce que la fiche dit**, pas sur la forme de l'objet JS. Deux champs exclus de la fiche sont malgré tout stockés sur le Context :
+La règle porte sur **ce que la fiche dit**, pas sur la forme de l'objet JS. Trois champs exclus de la fiche sont malgré tout stockés sur le Context :
 
 - **`ctx.topics = { enabledSourceIds, cadence }`** — de la config opérationnelle pure. Elle est **par Playbook** (chaque marque écoute ses propres sources), donc la donnée est portée par l'entité ; mais elle est **éditée et lue ailleurs**, sur `/topics/settings`, et n'apparaît nulle part comme section de la fiche. Une section Topics a été essayée puis retirée : une grille d'interrupteurs se lit comme un panneau de réglages coincé dans un profil.
 - **`usedIn`** — un compteur de traçabilité (« appliqué dans N chats »), affiché sur la carte de la bibliothèque, jamais dans la fiche.
 
-**L'invariant** : ni l'un ni l'autre ne doit jamais devenir une section du Playbook. Si un champ opérationnel finit rendu dans la fiche, c'est un défaut de conception, pas une évolution.
+- **`ownerId` / `scope` / `history`** (flag `playbookSharing`) — l'appartenance. « À qui est cette fiche et jusqu'où elle porte » ne répond pas à « qui êtes-vous ? » : c'est la troisième question du test d'inclusion qui la rejette, pas la première ni la deuxième. Comme `usedIn`, la donnée est portée par l'entité et **lue ailleurs** — la marque de propriété dans le chrome de la carte et du header, le reste dans le modal de partage. Le journal `history` est de la traçabilité pure, sans versioning ni diff.
+  Corollaire : **le store ne filtre pas**. Qui peut faire quoi vit dans [`playbook-access.js`](../../src/playbook-access.js), pas dans `contexts-store`, parce qu'un chat qui a perdu l'accès doit encore pouvoir **nommer** la fiche qu'il a perdue.
+
+**L'invariant** : aucun des trois ne doit jamais devenir une section du Playbook. Si un champ opérationnel finit rendu dans la fiche, c'est un défaut de conception, pas une évolution. Une section « Partage » serait exactement la grille d'interrupteurs déjà retirée pour Topics.
 
 ### Granularité — un émetteur × un cadrage
 
@@ -84,6 +87,8 @@ Un Playbook naît d'une **analyse** (le site, des posts, des documents) puis ne 
 **Aucune écriture silencieuse.** Archie ne réécrit pas la fiche parce qu'il a « appris » quelque chose au fil des chats. Le seul motif de proposition existant l'illustre : un competitor découvert arrive avec `suggested: true`, hors du Playbook, dans un bac séparé — il n'en fait partie qu'après un clic. C'est le patron à reprendre pour toute future suggestion : **proposer à côté, jamais écrire dedans**.
 
 Conséquence pour qui code : une feature qui aurait besoin de patcher un Playbook en arrière-plan doit passer par une proposition visible, ou ne pas toucher au Playbook.
+
+Le partage ne fait pas exception : il change **qui peut lire la fiche**, jamais ce qu'elle dit. Un destinataire voit la fiche du propriétaire telle quelle, en lecture seule, et s'il veut la faire diverger il **duplique** — la copie est indépendante, sans lien « dupliqué depuis », exactement la granularité posée plus bas.
 
 ### Le nom dans le code
 

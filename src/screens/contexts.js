@@ -1,16 +1,18 @@
 import { html, raw, escapeText, escapeAttr } from "../utils.js?v=22";
-import { renderTopbar } from "../components/topbar.js?v=308";
+import { renderTopbar } from "../components/topbar.js?v=316";
 import {
   getContexts,
   subscribe as subscribeContexts,
   duplicateContext,
   deleteContext,
-} from "../contexts-store.js?v=49";
+} from "../contexts-store.js?v=53";
 import { navigate } from "../router.js?v=31";
 import { setHandoff } from "../handoff.js?v=21";
 import { open as openConfirmModal } from "../components/confirm-modal.js?v=23";
 import { renderEmptyState } from "../components/empty-state.js?v=3";
-import { isFlagOn } from "../feature-flags.js?v=20";
+import { isFlagOn } from "../feature-flags.js?v=21";
+import { visibleContexts, canEdit, canDelete, canManageSharing, accessLabel, isMine } from "../playbook-access.js?v=5";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=6";
 
 // Contexts library — standalone page (handoff §2.4).
 // Header → search → grid of ContextCards. Each card surfaces brand /
@@ -47,7 +49,9 @@ function paint(target) {
 }
 
 function renderPage() {
-  const all = getContexts();
+  // What I'm allowed to see, not what the store holds — a colleague's private
+  // Playbook is in the store and must not be in this grid.
+  const all = visibleContexts();
   const visible = filter(all, pageState);
   const totalChats = all.reduce((sum, c) => sum + (c.usedIn || 0), 0);
 
@@ -171,21 +175,45 @@ function renderContextCard(ctx) {
   const isDefaultBadge = ctx.isDefault
     ? `<span class="contexts-card__badge" title="Default Playbook"><i class="ap-icon-star_fill"></i></span>`
     : "";
+  // Who this Playbook belongs to, in the card's metadata corner next to the
+  // palette dots — never a coloured border, a card's state goes in its content.
+  // It tried living beside the title first and broke long names onto two lines;
+  // the foot is also where the Claude reference puts its people avatars.
+  // Mine-and-private says nothing, because that's the default nobody needs told.
+  const access = accessLabel(ctx);
+  const ownerTag = access
+    ? `<span class="ap-tag grey mini contexts-card__owner" title="${escapeAttr(access)}">
+        <i class="${isMine(ctx) ? "ap-icon-multiple-users" : "ap-icon-user"}" aria-hidden="true"></i>
+        <span>${escapeText(access)}</span>
+      </span>`
+    : "";
+  // Only the actions I can actually take. For a Playbook someone shared with
+  // me that's Duplicate alone — the one move that turns reading into having.
+  const actions = [
+    canManageSharing(ctx)
+      ? `<button type="button" class="ap-icon-button transparent" data-contexts-share="${ctx.id}" title="Share" aria-label="Share">
+          <i class="ap-icon-share"></i>
+        </button>`
+      : "",
+    canEdit(ctx)
+      ? `<button type="button" class="ap-icon-button transparent" data-contexts-edit="${ctx.id}" title="Edit" aria-label="Edit">
+          <i class="ap-icon-pen"></i>
+        </button>`
+      : "",
+    `<button type="button" class="ap-icon-button transparent" data-contexts-duplicate="${ctx.id}" title="Duplicate" aria-label="Duplicate">
+      <i class="ap-icon-copy"></i>
+    </button>`,
+    canDelete(ctx)
+      ? `<button type="button" class="ap-icon-button transparent" data-contexts-delete="${ctx.id}" title="Delete" aria-label="Delete">
+          <i class="ap-icon-trash"></i>
+        </button>`
+      : "",
+  ].join("");
   return `
     <article class="contexts-card contexts-card--${color}" data-contexts-card="${ctx.id}" role="button" tabindex="0">
       <span class="contexts-card__swatch" aria-hidden="true"></span>
 
-      <div class="contexts-card__actions" data-contexts-card-actions>
-        <button type="button" class="ap-icon-button transparent" data-contexts-edit="${ctx.id}" title="Edit" aria-label="Edit">
-          <i class="ap-icon-pen"></i>
-        </button>
-        <button type="button" class="ap-icon-button transparent" data-contexts-duplicate="${ctx.id}" title="Duplicate" aria-label="Duplicate">
-          <i class="ap-icon-copy"></i>
-        </button>
-        <button type="button" class="ap-icon-button transparent" data-contexts-delete="${ctx.id}" title="Delete" aria-label="Delete">
-          <i class="ap-icon-trash"></i>
-        </button>
-      </div>
+      <div class="contexts-card__actions" data-contexts-card-actions>${actions}</div>
 
       <header class="contexts-card__head">
         <h3 class="contexts-card__name">
@@ -232,7 +260,10 @@ function renderContextCard(ctx) {
               : ""
           }
         </div>
-        ${dotsHtml}
+        <div class="contexts-card__meta">
+          ${ownerTag}
+          ${dotsHtml}
+        </div>
       </footer>
 
       <div class="contexts-card__updated">Updated ${escapeText(ctx.updatedAt || "recently")}</div>
@@ -251,8 +282,29 @@ function filter(list, { query }) {
   );
 }
 
+// A shared Playbook takes other people's work down with it, so the confirm says
+// how many chats and what survives — not just "this will be removed".
+function deleteBody(ctx) {
+  if (ctx.scope !== "organization") {
+    return `"${ctx.name}" will be removed. Chats using it will need a new Playbook.`;
+  }
+  const n = ctx.usedIn || 0;
+  const who = n === 1 ? "1 chat" : `${n} chats`;
+  return n
+    ? `"${ctx.name}" is shared with your organisation and ${who} run on it. They keep the drafts already written — those can still be saved or scheduled — but they won't generate anything new.`
+    : `"${ctx.name}" is shared with your organisation. It disappears from everyone's list. Playbooks duplicated from it are their own and stay untouched.`;
+}
+
 function bind(root) {
   root.addEventListener("click", (event) => {
+    const shareBtn = event.target.closest("[data-contexts-share]");
+    if (shareBtn) {
+      event.stopPropagation();
+      // The store notifies on commit and this screen is subscribed, so the card's
+      // mark repaints on its own — no onDone needed here.
+      openShareModal({ contextId: shareBtn.dataset.contextsShare });
+      return;
+    }
     // Edit (pen icon) — opens the Playbook detail page, where the brief
     // panel handles in-place edits (rename, toggle chips, change brand
     // color, etc.).
@@ -307,7 +359,7 @@ function bind(root) {
       // accessible, themed, and consistent with the rest of the prototype.
       openConfirmModal({
         title: "Delete Playbook?",
-        body: `"${ctx.name}" will be removed. Chats using it will need a new Playbook.`,
+        body: deleteBody(ctx),
         confirmLabel: "Delete Playbook",
         cancelLabel: "Keep",
         danger: true,

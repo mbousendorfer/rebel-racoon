@@ -15,11 +15,11 @@
 // edit has to be folded into state before anything reads it.
 
 import { showToast } from "../toast.js?v=21";
-import { attachImageToDraft, attachCarouselToDraft } from "../../posts-store.js?v=46";
-import { KEY, ctx, state } from "./context.js?v=42";
+import { attachImageToDraft, attachCarouselToDraft } from "../../posts-store.js?v=50";
+import { KEY, ctx, state } from "./context.js?v=46";
 import { compositeOverlays } from "../../image-studio-canvas.js?v=6";
-import { syncEditingText } from "./inline-text.js?v=8";
-import * as imageStudio from "../../image-studio.js?v=92";
+import { syncEditingText } from "./inline-text.js?v=12";
+import * as imageStudio from "../../image-studio.js?v=96";
 
 // Commit the working image to the origin draft, then close.
 export function useImage(close) {

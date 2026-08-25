@@ -1,7 +1,7 @@
 import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr } from "../utils.js?v=22";
 import { navigate } from "../router.js?v=31";
-import { renderTopbar } from "../components/topbar.js?v=308";
-import { socialAccounts, chatStarters, connectorDocs } from "../mocks.js?v=66";
+import { renderTopbar } from "../components/topbar.js?v=316";
+import { socialAccounts, chatStarters, connectorDocs } from "../mocks.js?v=70";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
@@ -11,11 +11,12 @@ import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
   PROFILE_SEARCH_THRESHOLD,
-} from "../social-profiles.js?v=39";
-import { FORMATS, formatsForNetwork, defaultFormatFor, clipFormatItems } from "../clip-formats.js?v=19";
+} from "../social-profiles.js?v=43";
+import { FORMATS, formatsForNetwork, defaultFormatFor, clipFormatItems } from "../clip-formats.js?v=23";
 import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../clip-subtitles.js?v=2";
-import { getSessionById, getSessions, subscribe as subscribeSessions } from "../sessions-store.js?v=17";
-import { getContextById, getContexts, getDefaultContext, updateContext } from "../contexts-store.js?v=49";
+import { getSessionById, getSessions, subscribe as subscribeSessions } from "../sessions-store.js?v=21";
+import { getContextById, getContexts, getDefaultContext, updateContext } from "../contexts-store.js?v=53";
+import { revokedContextFor, usableContexts, canView } from "../playbook-access.js?v=5";
 import { isNewUser } from "../user-mode.js?v=24";
 import {
   getThread,
@@ -36,42 +37,42 @@ import {
   markConnectPromptResolved,
   toggleTopPostsWidgetPick,
   answerTopPostsWidget,
-} from "../assistant.js?v=72";
+} from "../assistant.js?v=76";
 import { iconFor as fileIconForKind } from "../file-kinds.js?v=21";
-import { getSources, getIdeas, extractVideoIdeas } from "../library.js?v=66";
-import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=54";
+import { getSources, getIdeas, extractVideoIdeas } from "../library.js?v=70";
+import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=58";
 import {
   renderInto as renderComposerMentions,
   removeMention as removeComposerMention,
   subscribe as subscribeComposerMentions,
   addMention as addComposerMention,
-} from "../composer-mentions.js?v=39";
-import { getPosts, addPostDraft, setSubtitleStyle, subscribe as subscribePostsStore } from "../posts-store.js?v=46";
-import { startDraftFlow, executeDraft, executeDraftBatch, getAnglesForIdea } from "../draft-flow.js?v=69";
-import { startActionPickerFlow, handleActionPick } from "../start-flow.js?v=51";
-import * as topPostsFlow from "../top-posts-flow.js?v=89";
+} from "../composer-mentions.js?v=43";
+import { getPosts, addPostDraft, setSubtitleStyle, subscribe as subscribePostsStore } from "../posts-store.js?v=50";
+import { startDraftFlow, executeDraft, executeDraftBatch, getAnglesForIdea } from "../draft-flow.js?v=73";
+import { startActionPickerFlow, handleActionPick } from "../start-flow.js?v=55";
+import * as topPostsFlow from "../top-posts-flow.js?v=93";
 import {
   renderTopPostsBoard,
   renderTopPostEcho,
   renderTopPostsWidget,
   TOP_POSTS_LIMIT,
-} from "../components/top-post-card.js?v=81";
-import { getTopPost } from "../top-posts-store.js?v=21";
+} from "../components/top-post-card.js?v=89";
+import { getTopPost } from "../top-posts-store.js?v=29";
 import { renderEmptyState } from "../components/empty-state.js?v=3";
-import * as sidebarWizard from "../sidebar-wizard.js?v=63";
+import * as sidebarWizard from "../sidebar-wizard.js?v=67";
 import * as inlineQuestion from "../inline-question.js?v=50";
-import * as clipStudio from "../clip-studio.js?v=36";
+import * as clipStudio from "../clip-studio.js?v=40";
 import * as batchStudio from "../batch-studio.js?v=5";
-import { askConnector } from "../connector-ask.js?v=17";
-import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=37";
-import { renderConnectorLogo } from "../connectors-view.js?v=19";
+import { askConnector } from "../connector-ask.js?v=21";
+import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=41";
+import { renderConnectorLogo } from "../connectors-view.js?v=23";
 import {
   getActiveConnector,
   clearActiveConnector,
   subscribe as subscribeComposerConnector,
 } from "../composer-connector.js?v=2";
-import { isFlagOn } from "../feature-flags.js?v=20";
-import * as contextBuilder from "../context-builder.js?v=280";
+import { isFlagOn } from "../feature-flags.js?v=21";
+import * as contextBuilder from "../context-builder.js?v=288";
 import { renderPicker } from "./_analyse-common.js?v=56";
 import { renderSourceCard } from "../components/source-card.js?v=34";
 import { renderIdeaCard } from "../components/idea-card.js?v=28";
@@ -82,10 +83,10 @@ import {
   rerenderContentWorkspaceBody,
   renderContentEmptyState,
 } from "../components/content-workspace.js?v=27";
-import { open as openVideoClipsModal } from "../components/video-clips-modal.js?v=67";
-import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=73";
-import { open as openAddSourceModal } from "../components/add-source-modal.js?v=74";
-import { open as openConnectorsModal } from "../components/connectors-modal.js?v=20";
+import { open as openVideoClipsModal } from "../components/video-clips-modal.js?v=71";
+import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=77";
+import { open as openAddSourceModal } from "../components/add-source-modal.js?v=78";
+import { open as openConnectorsModal } from "../components/connectors-modal.js?v=24";
 import { dropzoneHTML } from "../components/dropzone.js?v=2";
 import {
   classifyFile,
@@ -101,8 +102,8 @@ import {
   updateSourceClips,
   extractClipsForSource,
   setSourceIdeaCount,
-} from "../sources-stream.js?v=64";
-import { renderClipCard } from "../components/clip-card.js?v=27";
+} from "../sources-stream.js?v=68";
+import { renderClipCard } from "../components/clip-card.js?v=31";
 import { onFeedbackClick } from "../components/feedback-control.js?v=4";
 import { showToast } from "../components/toast.js?v=21";
 import {
@@ -111,17 +112,17 @@ import {
   openClips as openClipsPanel,
   getMode as getRightPanelMode,
   subscribe as subscribeRightPanel,
-} from "../components/right-panel.js?v=446";
+} from "../components/right-panel.js?v=454";
 import { setHandoff, consumeHandoff, hasHandoff } from "../handoff.js?v=21";
-import { startTopicChat, openTopicInChat, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=9";
-import { getTopics, dismissTopic, restoreTopic, subscribe as subscribeTopics } from "../topics-store.js?v=6";
+import { startTopicChat, openTopicInChat, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=13";
+import { getTopics, dismissTopic, restoreTopic, subscribe as subscribeTopics } from "../topics-store.js?v=10";
 import { findTopicSource } from "../topics-catalog.js?v=3";
-import { renderTopicRailCard } from "../components/topic-card.js?v=7";
-import { open as openTopicModal } from "../components/topic-modal.js?v=10";
+import { renderTopicRailCard } from "../components/topic-card.js?v=11";
+import { open as openTopicModal } from "../components/topic-modal.js?v=14";
 import { parseHashParams, setHashQuery } from "../url-state.js?v=22";
-import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=29";
-import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=37";
-import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=50";
+import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=33";
+import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=41";
+import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=54";
 // Pure thread-turn renderers — shared with the component handoff gallery so
 // the previews there never drift from the app (handoff/components.html).
 import {
@@ -263,13 +264,19 @@ export function renderSession(params, target) {
   //  3. URL populated=1     → first global (legacy demo flag)
   //  4. null                → transient creation phase (wizard active, no
   //                                            context yet)
-  const attachedContext = q.contextId
+  // Filtered through the access layer at the last step: a chat whose Playbook
+  // stopped being shared reads as a chat with NO Playbook attached — which is
+  // exactly what it now is — rather than naming one it can't open. The chat
+  // still knows the id (session.contextId is untouched), so revokedContextFor()
+  // can still say what it lost.
+  const resolvedContext = q.contextId
     ? getContextById(q.contextId)
     : session.contextId
       ? getContextById(session.contextId)
       : q.populated
         ? getContexts()[0]
         : null;
+  const attachedContext = resolvedContext && canView(resolvedContext) ? resolvedContext : null;
   const hasContext = !!attachedContext;
 
   // Lot 13 — handoff alignment. The session screen is now a chat-only body
@@ -278,6 +285,15 @@ export function renderSession(params, target) {
   // dropped here: Content is covered by the standalone /sources + /ideas
   // routes (Lots 6 + 7), Context is reachable through the ContextDrawer
   // (Lot 8) — both via the sidebar nav, not as inline session workspace.
+  // A chat whose Playbook stopped being shared can still be read, saved and
+  // scheduled — it just can't produce anything new. The class dims the
+  // generating affordances; the capture-phase guard in bindSession stops them.
+  //
+  // On <body>, not on the session root: the drafts panel is part of the app
+  // shell and lives OUTSIDE #app, so a class on the section would leave every
+  // "Generate an image" and "Rewrite" in the panel looking perfectly alive.
+  const revoked = revokedContextFor(session);
+  document.body.classList.toggle("playbook-revoked", !!revoked);
   target.innerHTML = html`
     <section class="screen session session--solo">${raw(renderAssistantPanel(session, attachedContext))}</section>
   `;
@@ -296,6 +312,7 @@ export function renderSession(params, target) {
   // navigating from /session/:id to /ideas left the assistant subscribers
   // wired against stale DOM nodes for the lifetime of the next route.
   return () => {
+    document.body.classList.remove("playbook-revoked");
     if (currentUnsubscribe) {
       currentUnsubscribe();
       currentUnsubscribe = null;
@@ -662,7 +679,7 @@ function renderBatchRest(session) {
 // through the `data-batch-playbook-pick` delegate (→ batchStudio.setContext)
 // instead of mutating session.contextId.
 function renderBatchPlaybookControl(ctx) {
-  const playbooks = getContexts();
+  const playbooks = usableContexts();
   const items = playbooks
     .map((c) => {
       const isSel = ctx && c.id === ctx.id;
@@ -744,7 +761,7 @@ function buildClipCaptionCards(cfg) {
 // voice/audience/CTAs of the drafts created from the clips. Mirrors the batch
 // playbook control; routes through the `data-clip-playbook-pick` delegate.
 function renderClipPlaybookControl(ctx) {
-  const playbooks = getContexts();
+  const playbooks = usableContexts();
   const items = playbooks
     .map((c) => {
       const isSel = ctx && c.id === ctx.id;
@@ -776,7 +793,7 @@ function renderClipPlaybookControl(ctx) {
 // Playbook governs the voice of the repurposed drafts. Mirrors the batch / clip
 // playbook controls; routes through the `data-topposts-playbook-pick` delegate.
 function renderTopPostsPlaybookControl(ctx) {
-  const playbooks = getContexts();
+  const playbooks = usableContexts();
   const items = playbooks
     .map((c) => {
       const isSel = ctx && c.id === ctx.id;
@@ -1191,7 +1208,7 @@ function renderPlaybookControl(ctx, selectable) {
   // Selectable (New Chat) — always shown, even with no playbooks yet (then
   // the value placeholder reads "Select a playbook" and the dropdown offers
   // to create one).
-  const playbooks = getContexts();
+  const playbooks = usableContexts();
   const items = playbooks
     .map((c) => {
       const cColor = c.color || "grey";
@@ -1377,6 +1394,25 @@ function computeComposerStatus(sessionId) {
 }
 
 function renderComposerStatus(sessionId) {
+  // Losing the Playbook outranks every other banner: it's the reason the
+  // composer below is dead, and it has to be the thing you read first.
+  const revoked = revokedContextFor(getSessionById(sessionId));
+  if (revoked) {
+    return html`
+      <div class="ap-status-card red session__composer-status" data-status-key="revoked" role="status">
+        <div class="upper">
+          <i class="ap-icon-lock-on" aria-hidden="true"></i>
+          <div class="flow">
+            <span
+              >I can't write anything new here — this chat runs on <strong>${revoked.name}</strong>, and
+              ${revoked.ownerName} stopped sharing it. The drafts already in this chat are still yours to save or
+              schedule.</span
+            >
+          </div>
+        </div>
+      </div>
+    `;
+  }
   const status = computeComposerStatus(sessionId);
   if (!status) return "";
   if (status.shape === "drafts") {
@@ -1479,6 +1515,9 @@ function renderComposer(attachedContext, session, selectable) {
   // extracted idea — disable the trigger so it doesn't open an empty picker.
   const hasMentionable =
     getSources(session.id).some((s) => s.status !== "Processing") || getIdeas(session.id).length > 0;
+  // No Playbook, no generation. The composer is the main affordance, so it says
+  // so plainly rather than swallowing the keystroke.
+  const revoked = revokedContextFor(session);
   return `
     <div class="session__composer">
       <div class="session__composer-inner">
@@ -1507,8 +1546,9 @@ function renderComposer(attachedContext, session, selectable) {
               class="session__composer-input-field"
               id="assistantInput"
               aria-label="Message Archie"
-              placeholder="${COMPOSER_DEFAULT_PLACEHOLDER}"
+              placeholder="${revoked ? "This chat can't generate any more" : COMPOSER_DEFAULT_PLACEHOLDER}"
               rows="2"
+              ${revoked ? "readonly" : ""}
             ></textarea>
           </div>
           <div class="session__composer-toolbar">
@@ -1586,13 +1626,18 @@ function renderComposer(attachedContext, session, selectable) {
               class="ap-button primary orange session__composer-send"
               aria-label="Send"
               data-assistant-send
+              ${revoked ? "disabled" : ""}
             >
               <i class="ap-icon-arrow-up"></i>
             </button>
           </div>
         </div>
         <div class="session__composer-hint">
-          <kbd>Enter</kbd> to send · <kbd>Shift</kbd>+<kbd>Enter</kbd> for new line · Drop a file to attach a source
+          ${
+            revoked
+              ? `Save or schedule the drafts above, or <a class="ap-link" href="#/contexts">pick a Playbook you have access to</a>.`
+              : `<kbd>Enter</kbd> to send · <kbd>Shift</kbd>+<kbd>Enter</kbd> for new line · Drop a file to attach a source`
+          }
         </div>
       </div>
     </div>
@@ -4048,12 +4093,49 @@ function finalizeClipStudio(session) {
   }, 1600);
 }
 
+// Everything in a chat that PRODUCES something. When the chat's Playbook is
+// gone these all have to stop — while saving, scheduling, reading and the panels
+// keep working, which is the whole promise of the degraded state (doc §6.3).
+//
+// Guarded in one capture-phase listener rather than threaded through five card
+// renderers: the cards stay ignorant of sharing, and the reason gets said out
+// loud at the click instead of being silently swallowed.
+const GENERATE_HOOKS = [
+  "[data-bulk-extract]",
+  "[data-source-extract-one]",
+  "[data-idea-generate]",
+  "[data-post-rewrite-menu]",
+  "[data-post-rewrite-intent]",
+  "[data-post-image]",
+  "[data-post-image-edit]",
+  "[data-clip-draft]",
+  "[data-rpanel-clips-draft]",
+  "[data-starter-prompt]",
+  "[data-starter-action]",
+].join(",");
+
 function bindSession(root, session) {
   // Abort any listeners attached by the previous render so they don't stack
   // on the stable #app element and fire N times per click.
   if (currentListenerController) currentListenerController.abort();
   currentListenerController = new AbortController();
   const { signal } = currentListenerController;
+
+  document.addEventListener(
+    "click",
+    (event) => {
+      const revoked = revokedContextFor(session);
+      if (!revoked) return;
+      const hook = event.target.closest(GENERATE_HOOKS);
+      if (!hook) return;
+      event.preventDefault();
+      event.stopPropagation();
+      // error, not success: this is a refusal, and a green snackbar reads like
+      // the click worked.
+      showToast(`I can't — ${revoked.ownerName} stopped sharing ${revoked.name}.`, { variant: "error" });
+    },
+    { capture: true, signal },
+  );
 
   // Library actions (selection toggles, bulk Extract/Delete, per-row "…"
   // menu) are wired through the shared library-actions module so the
@@ -4070,6 +4152,9 @@ function bindSession(root, session) {
   const getInput = () => root.querySelector("#assistantInput");
 
   function submitInput() {
+    // Second line of defence behind the disabled send button — Enter, the
+    // starter cards and the flows all land here.
+    if (revokedContextFor(session)) return;
     const input = getInput();
     if (!input) return;
     const text = input.value.trim();
@@ -4970,7 +5055,18 @@ function bindSession(root, session) {
       const pbPick = event.target.closest("[data-playbook-pick]");
       if (pbPick) {
         event.preventDefault();
+        // Was this chat locked out? Then picking an accessible Playbook is the
+        // way back in, and the whole screen has to come back with it — swapping
+        // the control alone would leave a dead composer under a live picker.
+        const wasRevoked = !!revokedContextFor(session);
         session.contextId = pbPick.dataset.playbookPick;
+        if (wasRevoked) {
+          // Through the URL, like startBatchChat does: the router re-runs the
+          // handler on a query-only change, so the whole screen comes back with
+          // a live composer instead of a dead one under a fresh picker.
+          setHashQuery(`/session/${session.id}`, { contextId: session.contextId });
+          return;
+        }
         const container = root.querySelector("[data-composer-playbook]");
         if (container) container.outerHTML = renderPlaybookControl(getContextById(session.contextId), true);
         return;

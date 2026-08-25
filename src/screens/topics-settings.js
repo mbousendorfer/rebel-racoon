@@ -29,16 +29,16 @@
 import { html, raw, escapeAttr } from "../utils.js?v=22";
 import { navigate } from "../router.js?v=31";
 import { parseHashParams } from "../url-state.js?v=22";
-import { renderTopbar } from "../components/topbar.js?v=308";
+import { renderTopbar } from "../components/topbar.js?v=316";
 import { renderEmptyState } from "../components/empty-state.js?v=3";
-import { isFlagOn } from "../feature-flags.js?v=20";
+import { isFlagOn } from "../feature-flags.js?v=21";
 import {
-  getContexts,
   getContextById,
   getDefaultContext,
   updateContext,
   subscribe as subscribeContexts,
-} from "../contexts-store.js?v=49";
+} from "../contexts-store.js?v=53";
+import { editableContexts, canEdit } from "../playbook-access.js?v=5";
 import {
   TOPIC_SOURCES,
   CADENCES,
@@ -65,8 +65,13 @@ let boundInput = null;
 // renders something real instead of an empty page.
 function activePlaybookId() {
   const wanted = parseHashParams().get("pb");
-  if (wanted && getContextById(wanted)) return wanted;
-  return getDefaultContext()?.id || getContexts()[0]?.id || null;
+  // A Playbook I can't edit can't be scoped to either — a stale `?pb=` pointing
+  // at someone else's shared Playbook falls back rather than showing switches
+  // that would refuse to commit.
+  if (wanted && canEdit(getContextById(wanted))) return wanted;
+  const fallback = getDefaultContext();
+  if (fallback && canEdit(fallback)) return fallback.id;
+  return editableContexts()[0]?.id || null;
 }
 
 export function renderTopicsSettings(_params, target) {
@@ -126,7 +131,9 @@ function watchKey(ctx) {
 }
 
 function renderPage() {
-  const playbooks = getContexts();
+  // Which sources run and how often is the OWNER's call: it's the job Archie
+  // runs for that brand, not something a reader of a shared Playbook decides.
+  const playbooks = editableContexts();
   if (!playbooks.length) {
     return html`<div class="topics-settings__content">
       ${raw(

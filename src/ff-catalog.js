@@ -113,6 +113,26 @@ export const FLAGS = Object.freeze([
       "brand's market, and each one is editable in its own modal.",
   },
   {
+    id: "playbookSharing",
+    label: "Playbook sharing (org-wide)",
+    default: false,
+    hides:
+      "Whether a Playbook belongs to somebody. When OFF (default), there is " +
+      "one implicit user: every Playbook is visible, editable and deletable, " +
+      "exactly as before. The ownership data (owner, scope, change log) still " +
+      "rides along in the seeds, like playbookCompetitors. When ON, a Playbook " +
+      "is either personal or shared with the whole organisation — there is no " +
+      "named sharing. Its owner is the only one who can edit, delete, share or " +
+      "hand it over; everyone else may open it READ-ONLY, use it in a chat, and " +
+      "duplicate it into a Playbook of their own. A manager (Admin \u2192 Your " +
+      "role) gets the owner's rights on shared Playbooks only, and every action " +
+      "they take on someone else's notifies the owner and lands in the change " +
+      "log. Losing access degrades the chats that used it: the drafts already " +
+      "written can still be saved or scheduled, nothing new can be generated. " +
+      "Also gates the Share modal, the ownership marks on /contexts cards, the " +
+      "owner row on a Playbook, and the Your-role control in Admin.",
+  },
+  {
     id: "frontPage",
     label: "Front page (vs. hero rail)",
     default: false,

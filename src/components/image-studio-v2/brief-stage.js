@@ -25,13 +25,13 @@
 // over swaps in the real textarea, so the editing path is untouched.
 
 import { escapeHtml } from "../../utils.js?v=22";
-import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=39";
-import { getPosts } from "../../posts-store.js?v=46";
-import { renderPostCard } from "../post-card.js?v=84";
-import { KEY, ctx } from "./context.js?v=42";
-import * as imageStudio from "../../image-studio.js?v=92";
-import { imageTypeBody, styleBody, formatBody, outputBody } from "./settings-view.js?v=10";
-import { refsBody, refSummary } from "./references-view.js?v=9";
+import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=43";
+import { getPosts } from "../../posts-store.js?v=50";
+import { renderPostCard } from "../post-card.js?v=88";
+import { KEY, ctx } from "./context.js?v=46";
+import * as imageStudio from "../../image-studio.js?v=96";
+import { imageTypeBody, styleBody, formatBody, outputBody } from "./settings-view.js?v=14";
+import { refsBody, refSummary } from "./references-view.js?v=13";
 import { brandingBody } from "./branding-view.js?v=4";
 
 /** Is the brief holding the stage? For the WHOLE generate flow, image or not. */

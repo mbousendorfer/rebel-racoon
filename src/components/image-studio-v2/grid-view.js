@@ -15,11 +15,11 @@
 // only the container differs.
 
 import { escapeHtml } from "../../utils.js?v=22";
-import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=39";
-import { KEY } from "./context.js?v=42";
-import * as imageStudio from "../../image-studio.js?v=92";
-import { styleBody } from "./settings-view.js?v=10";
-import { refsBody } from "./references-view.js?v=9";
+import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=43";
+import { KEY } from "./context.js?v=46";
+import * as imageStudio from "../../image-studio.js?v=96";
+import { styleBody } from "./settings-view.js?v=14";
+import { refsBody } from "./references-view.js?v=13";
 import { brandingBody } from "./branding-view.js?v=4";
 
 // The six content fields, in the order the attachment shows them. Each is one card:

@@ -17,8 +17,8 @@
 import { html, raw, escapeHtml as esc } from "./utils.js?v=22";
 import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=27";
 import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=3";
-import { isFlagOn } from "./feature-flags.js?v=20";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=39";
+import { isFlagOn } from "./feature-flags.js?v=21";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=43";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -153,6 +153,13 @@ let scrollSpy = null; // IntersectionObserver for the section-nav active state
 //   skipLoader: boolean,               // force straight to ready
 //   onIntroDone(): void,               // loader finished
 //   showTop: boolean,                  // render the Archie/BETA top strip
+//   canEdit: boolean,                  // default true; false = read-only fiche
+//                                      // (someone else's shared Playbook)
+//   ownership: {                       // null = don't say anything about it
+//     tag: string,                     //   mark beside the name ("Shared by Sam")
+//     owner: string, initials: string, //   the Owner quick-fact
+//   } | null,
+//   notice(): string,                  // html above the layout (read-only banner)
 //   headerActions(): string | null,    // html for the header action bar (library)
 //   onEditName(): void,                // header name pencil (rename)
 //   onToggleDefault(): void,           // header star → toggle default (library)
@@ -458,6 +465,13 @@ function editActionButtons() {
   `;
 }
 
+// Read-only mode. A Playbook shared with me is a fiche I can use, not one I can
+// change — so every affordance that WRITES has to disappear, not just refuse.
+// Default true: the onboarding recap and my own Playbooks never pass the flag.
+function canEditView() {
+  return cfg?.canEdit !== false;
+}
+
 function panelPen(scope) {
   return `<button type="button" class="ap-icon-button transparent recap__panel-edit" data-recap-edit-card="${scope}" title="Edit" aria-label="Edit section"><i class="ap-icon-pen"></i></button>`;
 }
@@ -471,7 +485,7 @@ function renderPanelHead(section, edit, extraAction = "") {
     <header class="recap__panel-head">
       <span class="recap__panel-icon"><i class="${section.icon}" aria-hidden="true"></i></span>
       <h2 class="recap__panel-title">${esc(section.title)}</h2>
-      ${edit ? panelEditActions() : `${extraAction}${panelPen(section.scope)}`}
+      ${edit ? panelEditActions() : `${extraAction}${canEditView() ? panelPen(section.scope) : ""}`}
     </header>
   `;
 }
@@ -1261,8 +1275,9 @@ function renderBrandPanel(data, edit) {
         ),
       ),
       // Reference images live under Brand. They're always-editable (per-image
-      // modal + remove + add) regardless of the Brand section's edit state.
-      renderRow("Reference images", renderRefImages(data, true)),
+      // modal + remove + add) regardless of the Brand section's edit state —
+      // but not when the fiche itself is read-only.
+      renderRow("Reference images", renderRefImages(data, canEditView())),
     ].join("");
   } else {
     body = [
@@ -1422,7 +1437,7 @@ function renderCompetitorCard(c, i, { edit = false, pending = false } = {}) {
         ${nets ? `<span class="recap__cmpcard-foot">${nets}</span>` : ""}
       </button>
       ${
-        pending
+        pending && canEditView()
           ? `<div class="recap__cmpcard-actions">
                <button type="button" class="ap-button secondary blue recap__cmpcard-act" data-recap-cmp-accept="${i}">
                  <i class="ap-icon-plus" aria-hidden="true"></i><span>Add</span>
@@ -1482,7 +1497,7 @@ function renderCompetitorsPanel(data, edit) {
              <span class="ap-tag grey mini recap__cmpgroup-count">${pending.length}</span>
            </span>
            ${
-             pending.length > 1
+             pending.length > 1 && canEditView()
                ? `<button type="button" class="ap-button ghost grey recap__cmpgroup-act" data-recap-cmp-accept-all>
                     <i class="ap-icon-check" aria-hidden="true"></i><span>Add all</span>
                   </button>`
@@ -1537,7 +1552,7 @@ function renderCompetitorsPanel(data, edit) {
   const body = `${hint}<div class="recap__cmpsec">${inner}</div>`;
 
   const discoverBtn =
-    !edit && !cmpScanning
+    !edit && !cmpScanning && canEditView()
       ? `<button type="button" class="ap-button ghost grey recap__panel-action" data-recap-cmp-discover>
            <i class="ap-icon-sparkles" aria-hidden="true"></i>
            <span>${list.length ? "Discover more" : "Discover competitors"}</span>
@@ -1669,7 +1684,7 @@ function renderCompetitorModal(data) {
         <div class="ap-dialog-footer-left">${c.suggested ? "" : removeBtn}</div>
         <div class="ap-dialog-footer-right">
           ${
-            c.suggested
+            c.suggested && canEditView()
               ? `<button type="button" class="ap-button ghost grey" data-recap-cmp-dismiss="${i}"><span>Dismiss</span></button>
                  <button type="button" class="ap-button primary orange" data-recap-cmp-accept="${i}">
                    <i class="ap-icon-plus" aria-hidden="true"></i><span>Add to Playbook</span>
@@ -1735,6 +1750,11 @@ function renderHeader(data) {
                 : ""
             }
             ${defaultStar}
+            ${
+              cfg.ownership?.tag
+                ? `<span class="ap-tag grey mini recap__owner-tag" title="${esc(cfg.ownership.tag)}"><span>${esc(cfg.ownership.tag)}</span></span>`
+                : ""
+            }
           </div>
           <div class="recap__meta">${meta}</div>
         </div>
@@ -1760,6 +1780,11 @@ function renderRail(data) {
   const domain = site?.domain || prettyUrl(data.websiteUrl);
 
   const facts = [
+    // Ownership sits with Updated and Used-in — traceability about the fiche,
+    // never a section OF the fiche (CONCEPTS.md §1).
+    cfg.ownership?.owner
+      ? `<div class="recap__fact"><dt>Owner</dt><dd><span class="recap__fact-owner"><span class="ap-avatar size-24" aria-hidden="true"><span class="ap-avatar-initials">${esc(cfg.ownership.initials || "?")}</span></span>${esc(cfg.ownership.owner)}</span></dd></div>`
+      : "",
     `<div class="recap__fact"><dt>${contextLanguages(data).length > 1 ? "Languages" : "Language"}</dt><dd>${esc(contextLanguages(data).join(", "))}</dd></div>`,
     usedIn !== null
       ? `<div class="recap__fact"><dt>Used in</dt><dd>${usedIn} ${usedIn === 1 ? "chat" : "chats"}</dd></div>`
@@ -1846,6 +1871,7 @@ function paint() {
   const scope = editScope;
   const body = `
     ${renderHeader(data)}
+    ${cfg.notice?.() || ""}
     <div class="recap__layout">
       ${renderRail(data)}
       <div class="recap__main">
@@ -2037,7 +2063,28 @@ function addLine(field) {
   inputs?.[inputs.length - 1]?.focus();
 }
 
+// Every hook that writes to the Playbook. In read-only mode they're not rendered
+// — this list is the second line of defence, so a stale DOM node or a hook added
+// later without thinking can't slip a write past the gate.
+const WRITE_HOOKS = [
+  "[data-recap-edit-card]",
+  "[data-recap-edit-name]",
+  "[data-recap-toggle-default]",
+  "[data-recap-save]",
+  "[data-recap-cmp-add]",
+  "[data-recap-cmp-remove]",
+  "[data-recap-cmp-accept]",
+  "[data-recap-cmp-accept-all]",
+  "[data-recap-cmp-dismiss]",
+  "[data-recap-cmp-discover]",
+  "[data-recap-refimg-add]",
+  "[data-recap-refimg-remove]",
+  "[data-recap-learn]",
+].join(",");
+
 function onClick(event) {
+  if (!canEditView() && event.target.closest(WRITE_HOOKS)) return;
+
   // Section-nav — scroll the panel into view (buttons, not anchors, so the
   // hash router is never triggered).
   const nav = event.target.closest("[data-recap-nav]");

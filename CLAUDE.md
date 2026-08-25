@@ -82,6 +82,8 @@ src/
   store-utils.js        — createNotifier() subscribe/notify primitive used by stores
   user-mode.js          — "returning" vs "new-alt" mode (localStorage: archie-user-mode)
   feature-flags.js      — flag get/set (localStorage); ff-catalog.js is the flag list
+  org.js                — CONFIG: who I am, my org, its members, my role (localStorage: archie-org-role)
+  playbook-access.js    — who may view/use/edit/share a Playbook; the store never filters
   file-kinds.js         — source kind → DS icon class
   mocks.js              — ALL seed data (sessions, contexts, sources, ideas, posts,
                           connectors + connectorDocs, social accounts, threads, prefs)
@@ -158,7 +160,8 @@ src/
     topic-modal.js        one dossier read end to end — 720px, prose measure
     video-clips-modal.js, schedule-modal.js,
     bug-report-modal.js, feedback-modal.js, chat-picker-modal.js,
-    confirm-modal.js, rename-modal.js, search-modal.js
+    confirm-modal.js, rename-modal.js, search-modal.js,
+    share-playbook-modal.js  personal ⇄ org scope + owner + change log (flag)
     image-studio-v2/      the Image Studio, split by subject (see FEATURES §7):
                           index (lifecycle) · events · commit · inline-text · prompt-guard ·
                           stage-view · composer-view · settings-view ·
@@ -175,7 +178,7 @@ src/
 | Store                  | Domain                                                                                 | Key public API                                                                                                                                                                                                 |
 | ---------------------- | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `sessions-store.js`    | chat sessions                                                                          | `getSessions`, `getSessionById`, `updateSession`, `deleteSession`, `togglePin`, `subscribe`                                                                                                                    |
-| `contexts-store.js`    | Playbooks                                                                              | `getContexts`, `getContextById`, `getDefaultContext`, `addContext`, `updateContext`, `duplicateContext`, `deleteContext`, `subscribe`                                                                          |
+| `contexts-store.js`    | Playbooks (+ `ownerId`/`scope`/`history` behind `playbookSharing`) — **never filters** | `getContexts`, `getContextById`, `getDefaultContext`, `addContext`, `updateContext`, `duplicateContext`, `deleteContext`, `appendHistory`, `subscribe`                                                         |
 | `connectors-store.js`  | connectors catalog + state                                                             | `getConnectors`, `findConnector`, `getConnectedConnectors`, `setConnectorStatus`, `subscribe`                                                                                                                  |
 | `library.js`           | per-session ideas (sources delegate to sources-stream)                                 | `getSources(sid)`, `getIdeas(sid)`, `appendExtractedIdeas`, `injectIdeasForSource`, `extractVideoIdeas`, `removeIdeas`, `subscribe(sid, fn)`                                                                   |
 | `posts-store.js`       | per-session drafts                                                                     | `getPosts(sid)`, `addPostDraft`, `updatePostContent`, `attachImageToDraft`, `attachCarouselToDraft`, `removePost`, `subscribe(sid, fn)`                                                                        |
@@ -190,6 +193,28 @@ src/
 ### A settings surface must not aggregate
 
 Three attempts at a general settings page were reverted here: the drawer (`2b0abcf`, the DS ships no side-drawer primitive), a Connectors section (`8cdd7e8`, it duplicated `/connectors`), then `/settings` itself (`6fca0b0`). Config belongs on the entity that owns it (a Playbook's fields live on `/playbook/:id`) or on a route scoped to one feature — never re-hosted in a global page.
+
+### Playbook sharing: the store holds the facts, `playbook-access` holds the rights
+
+Behind the `playbookSharing` flag a Playbook has an owner and one of **two** scopes — `personal` or
+`organization`. **There is no named sharing**: you don't hand a fiche to three colleagues, you keep it or
+you put it in front of the whole org. So there is no recipient list, no people-picker, and no word for
+"someone a Playbook was shared with" beyond "everyone".
+
+`contexts-store` carries `ownerId` / `scope` / `history` but **never filters** — `getContexts()` keeps
+returning everything to everyone. That is deliberate: a chat whose Playbook stopped being shared still has
+to _name_ it ("this chat runs on Brightline · launch, and Jonas Beck stopped sharing it"), which means
+reading a fiche you may no longer open. `src/playbook-access.js` is the only gate — `canView` / `canUse` /
+`canEdit` / `canManageSharing`, plus `visibleContexts()` / `usableContexts()` / `editableContexts()` that
+surfaces substitute for `getContexts()`, and `revokedContextFor()` as the one function allowed to look past
+it. The flag short-circuits in a single place, so flag OFF is byte-for-byte the pre-sharing behaviour.
+
+Ownership is **chrome, never a section**: a tag in the card's metadata corner and beside the fiche's name,
+an Owner quick-fact in the rail, and everything else in the Share modal. A "Sharing" section on the fiche
+would be the switch grid already removed for Topics ([`CONCEPTS.md`](docs/reference/CONCEPTS.md) §1, third
+storage exception). The degraded chat marks `body.playbook-revoked` — on `<body>`, because the drafts panel
+is shell chrome outside `#app` — and one capture-phase listener swallows the generating hooks and says why,
+so no card renderer needs to know sharing exists.
 
 ### The Image Studio is split by subject, and the engine holds no DOM
 
@@ -273,7 +298,7 @@ A topic offers exactly two actions: **Start a chat** and **Dismiss**. Start-a-ch
 
 ### Admin / user mode (prototype controls)
 
-The **Admin** popover in the sidebar footer cog (`admin-menu.js`) is the prototype control panel: switch user mode and toggle feature flags (each change reloads so stores re-seed). `user-mode.js`: `getUserMode()` returns `"returning"` (populated mocks, default) or `"new-alt"` (empty stores + first-time onboarding); `isNewUser()` tests for `new-alt`. Feature flags live in `ff-catalog.js` (`FLAGS`, each with a `default`) and are read via `isFlagOn()`. The 13 flags: `draftInlineEdit` (OFF), `playbookDefault` (OFF), `connectors` (OFF — gates the whole connectors feature), `conversationStatusCard` (OFF), `statusActionSnackbars` (OFF), `playbookColors` (OFF — colors hidden by default), `manyProfiles` (OFF — demo seed of ~40 connected profiles), `multilingualPlaybook` (OFF), `playbookCompetitors` (OFF — gates the Playbook's Competitors section), `topics` (OFF — gates the whole Topics feature: `/topics`, `/topics/settings`, the nav row, the dossier dialog, the hero rail and the front page), `frontPage` (OFF — where Archie's proposals live: OFF = a rail in the new-chat hero and `/` keeps redirecting; ON = `/` becomes a browsable front page and a **Home** nav row appears, while the rail steps aside. Requires `topics`; the Home row is the one nav entry gated on **two** flags, hence `flag: [...]` in sidebar.js's `NAV`), `imageStudioAutoBrief` (OFF — the auto-written, block-editable brief variant of the Image Studio), and `imageStudioGridBrief` (OFF — the card-grid brief variant; wins over `imageStudioAutoBrief` when both are on). Full table + gates: [`docs/reference/FEATURES.md`](docs/reference/FEATURES.md#14-admin-feature-flags--user-modes).
+The **Admin** popover in the sidebar footer cog (`admin-menu.js`) is the prototype control panel: switch user mode and toggle feature flags (each change reloads so stores re-seed). `user-mode.js`: `getUserMode()` returns `"returning"` (populated mocks, default) or `"new-alt"` (empty stores + first-time onboarding); `isNewUser()` tests for `new-alt`. Feature flags live in `ff-catalog.js` (`FLAGS`, each with a `default`) and are read via `isFlagOn()`. The 14 flags: `draftInlineEdit` (OFF), `playbookDefault` (OFF), `connectors` (OFF — gates the whole connectors feature), `conversationStatusCard` (OFF), `statusActionSnackbars` (OFF), `playbookColors` (OFF — colors hidden by default), `manyProfiles` (OFF — demo seed of ~40 connected profiles), `multilingualPlaybook` (OFF), `playbookCompetitors` (OFF — gates the Playbook's Competitors section), `topics` (OFF — gates the whole Topics feature: `/topics`, `/topics/settings`, the nav row, the dossier dialog, the hero rail and the front page), `frontPage` (OFF — where Archie's proposals live: OFF = a rail in the new-chat hero and `/` keeps redirecting; ON = `/` becomes a browsable front page and a **Home** nav row appears, while the rail steps aside. Requires `topics`; the Home row is the one nav entry gated on **two** flags, hence `flag: [...]` in sidebar.js's `NAV`), `playbookSharing` (OFF — gates Playbook ownership: a Playbook is personal or shared with the whole org, never named-shared; read-only fiche + Duplicate for recipients, manager rights, the degraded chat after access is lost, and the Admin **Your role** control. Unlike `topics`, its two demo Playbooks and its demo chat are seeded **only** under the flag), `imageStudioAutoBrief` (OFF — the auto-written, block-editable brief variant of the Image Studio), and `imageStudioGridBrief` (OFF — the card-grid brief variant; wins over `imageStudioAutoBrief` when both are on). Full table + gates: [`docs/reference/FEATURES.md`](docs/reference/FEATURES.md#14-admin-feature-flags--user-modes).
 
 ### Module loading
 

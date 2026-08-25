@@ -14,13 +14,17 @@
 //   togglePin(id)                → Session | null   (flips `pinned`)
 //   subscribe(fn)                → unsubscribe
 
-import { recentSessions as seed } from "./mocks.js?v=66";
+import { recentSessions as seed, sharedSessions } from "./mocks.js?v=70";
+import { isFlagOn } from "./feature-flags.js?v=20";
 import { isNewUser } from "./user-mode.js?v=24";
 import { createNotifier } from "./store-utils.js?v=3";
 
 // First-time user starts with an empty session list (matches every other
 // store's first-run mode); returning users get the seeded conversations.
-const sessions = isNewUser() ? [] : seed.map((s) => ({ ...s }));
+// The chat that lost its Playbook rides in only under `playbookSharing` — same
+// reason as sharedContexts in contexts-store: with sharing off it has no story.
+const allSeeds = isFlagOn("playbookSharing") ? [...seed, ...sharedSessions] : seed;
+const sessions = isNewUser() ? [] : allSeeds.map((s) => ({ ...s }));
 const notifier = createNotifier("sessions-store");
 
 export const subscribe = notifier.subscribe;
