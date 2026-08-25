@@ -158,9 +158,10 @@ export function attachCarouselToDraft(sessionId, postId, urls) {
 // Undefined keys are left unchanged.
 //
 // Also accepts the runtime regenerate flags driven by draft-rewrite.js
-// (`isRegenerating`, `regenerateStage`). These never appear in seeded
-// mocks — they're transient state set during the streaming flow. Pass
-// `null` or `false` to clear them.
+// (`isRegenerating`, `regenerateStage`) and the one-click image flag set by
+// the drafts panel (`isGeneratingImage`). These never appear in seeded
+// mocks — they're transient state set during a streaming / generating flow.
+// Pass `null` or `false` to clear them.
 export function updatePostContent(sessionId, postId, partial) {
   const posts = getPosts(sessionId);
   const post = posts.find((p) => p.id === postId);
@@ -170,6 +171,7 @@ export function updatePostContent(sessionId, postId, partial) {
   if (partial.cta !== undefined) post.cta = partial.cta;
   if (partial.isRegenerating !== undefined) post.isRegenerating = partial.isRegenerating;
   if (partial.regenerateStage !== undefined) post.regenerateStage = partial.regenerateStage;
+  if (partial.isGeneratingImage !== undefined) post.isGeneratingImage = partial.isGeneratingImage;
   notify(sessionId);
 }
 

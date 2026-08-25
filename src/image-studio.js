@@ -193,6 +193,28 @@ function hash(str) {
   return Math.abs(h).toString(36);
 }
 
+// One-click generation from a draft's empty media slot — no studio session.
+//
+// The studio is the place you go to *steer* an image (references, type, style,
+// format, branding). When all you want is "an image for this draft", booting a
+// whole modal to press one button is the long way round. This mints the same
+// seeded-Picsum mock the studio does, at the network's default ratio, and hands
+// it back for `attachImageToDraft`. Nothing is stored — there is no state to
+// exit and nothing to commit.
+//
+// The nonce is what makes a second press give a second picture: the seed is
+// otherwise a pure function of the draft, so Remove-then-Generate would hand
+// back the identical image and read as a broken button.
+let quickSeq = 0;
+export function quickGenerateUrl(post) {
+  if (!post) return null;
+  const formatId = post.format || (post.network ? defaultFormatFor(post.network) : null) || "1:1";
+  quickSeq += 1;
+  const text = (post.text || []).join(" ").trim();
+  const seed = `${post.id || "img"}-quick-${text ? hash(text) : "n"}-${quickSeq}`;
+  return picsum(seed, dimsFor(formatId));
+}
+
 // Seed captures the inputs so a Regenerate with the same options is stable while
 // a changed option (style / mood / format / variation index / the text to render)
 // reshuffles.

@@ -1,7 +1,7 @@
 import { html, raw, escapeText, escapeAttr } from "../utils.js?v=22";
 import { getThread, subscribe as subscribeThread } from "../assistant.js?v=72";
 import { isFlagOn } from "../feature-flags.js?v=20";
-import { getPath } from "../router.js?v=31";
+import { getPath, navigate } from "../router.js?v=31";
 import { parseHashParams, setHashQuery } from "../url-state.js?v=22";
 import { LANGUAGE_OPTIONS } from "../languages.js?v=3";
 import {
@@ -12,7 +12,7 @@ import {
   attachImageToDraft,
   subscribe as subscribePostsStore,
 } from "../posts-store.js?v=46";
-import { renderPostCard } from "./post-card.js?v=83";
+import { renderPostCard } from "./post-card.js?v=84";
 import { renderTopPostEcho } from "./top-post-card.js?v=81";
 import { renderClipCard } from "./clip-card.js?v=27";
 import { onFeedbackClick } from "./feedback-control.js?v=4";
@@ -30,6 +30,9 @@ import {
 import { open as openAddSourceModal } from "./add-source-modal.js?v=74";
 import { open as openRenameModal } from "./rename-modal.js?v=3";
 import { getConnectedConnectors } from "../connectors-store.js?v=37";
+import { getSessionById } from "../sessions-store.js?v=17";
+import { getContextById, getBrandKitGaps } from "../contexts-store.js?v=49";
+import { quickGenerateUrl } from "../image-studio.js?v=92";
 import { askConnector } from "../connector-ask.js?v=17";
 import { renderConnectorLogo } from "../connectors-view.js?v=19";
 import { open as openConnectorsModal } from "./connectors-modal.js?v=20";
@@ -642,6 +645,11 @@ export function init() {
     const imageUploadBtn = event.target.closest("[data-post-image-upload]");
     if (imageUploadBtn) {
       onPostImageUpload(imageUploadBtn.dataset.postImageUpload);
+      return;
+    }
+    const gapBtn = event.target.closest("[data-post-playbook-gap]");
+    if (gapBtn) {
+      navigate(`/playbook/${gapBtn.dataset.postPlaybookGap}`);
       return;
     }
     const imageRemoveBtn = event.target.closest("[data-post-image-remove]");
@@ -1586,6 +1594,19 @@ function renderDraftsView() {
     needs_fixes: allPosts.filter((p) => p.status === "needs_fixes").length,
   };
 
+  // The Playbook behind this chat, resolved ONCE for the whole feed: an
+  // image-less draft offers to go complete the brand kit, and the card must not
+  // resolve a Context itself (it stays a pure render of a post).
+  const ctx = sid ? getContextById(getSessionById(sid)?.contextId) : null;
+  const brandGaps = getBrandKitGaps(ctx);
+  const playbookId = ctx?.id || null;
+  // ONCE per feed, on the first image-less draft — not once per card. What the
+  // brand kit is missing is a fact about the Playbook, not about this draft, so
+  // repeating it down a column of four drafts is four copies of one sentence.
+  const firstGapPostId = brandGaps.length
+    ? allPosts.find((p) => !p.clipRef && !p.imageUrl && !(p.carousel || []).length)?.id || null
+    : null;
+
   // Apply both filter axes.
   const filtered = allPosts.filter((p) => {
     if (draftsFilter === "needs_fixes" && p.status !== "needs_fixes") return false;
@@ -1705,6 +1726,8 @@ function renderDraftsView() {
           inlineEdit,
           selectable: true,
           selected: selectedDraftIds.has(p.id),
+          brandGaps: p.id === firstGapPostId ? brandGaps : [],
+          playbookId,
         }),
       )
       .join("");
@@ -2040,19 +2063,36 @@ function onPostDelete(postId) {
   });
 }
 
-// "Generate an image" on a draft → open the near-fullscreen Image Studio modal.
-// The studio pulls the draft's network for its format defaults and, on "Use
-// this image", attaches the result straight back to this draft (see
-// image-studio-v2/index.js#useImage).
+// "Generate an image" on a draft's empty media slot → one image, in place, no
+// studio. This used to open the Image Studio; the studio is where you go to
+// STEER an image (references, type, style, format, branding), and paying a
+// full-screen modal to press one button was the long way round for "just give
+// me an image". The studio stays one click away on the result, via Edit.
+//
+// No toast: the image appearing in the slot IS the feedback, and Remove sits
+// right there on it if it's wrong.
 function onPostImage(postId) {
   const sid = activeSessionId();
   if (!sid) return;
-  openImageStudio(postId, { sessionId: sid });
+  const post = getPosts(sid).find((p) => p.id === postId);
+  if (!post || post.isGeneratingImage) return;
+  updatePostContent(sid, postId, { isGeneratingImage: true });
+  renderPanel();
+  setTimeout(() => {
+    // The draft can be deleted or given an image while we were "generating".
+    const still = getPosts(sid).find((p) => p.id === postId);
+    if (!still || !still.isGeneratingImage) return;
+    attachImageToDraft(sid, postId, quickGenerateUrl(still));
+    updatePostContent(sid, postId, { isGeneratingImage: false });
+    renderPanel();
+  }, 1800);
 }
 
 // "Edit" on a draft that already has an image → open the Image Studio straight
 // in Edit mode on that image (retouch / add logos + text / expand), then "Use
-// this image" re-attaches the result to the draft.
+// this image" re-attaches the result to the draft. Since "Generate an image"
+// now produces an image in place, this is the studio's only entry point for a
+// single image — and the Generate tab is right there once it's open.
 function onPostImageEdit(postId) {
   const sid = activeSessionId();
   if (!sid) return;

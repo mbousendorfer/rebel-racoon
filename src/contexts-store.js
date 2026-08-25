@@ -402,3 +402,23 @@ export function deleteContext(id) {
   notify();
   return true;
 }
+
+// Which brand inputs the image generator would have used, and doesn't have.
+//
+// DÉRIVÉ, jamais stocké. Un champ de complétude posé sur le Context échouerait
+// au test d'inclusion de CONCEPTS.md §1 — il bougerait sans que personne ne
+// touche à l'identité de la marque, donc ce n'est pas de l'identité.
+//
+// Les trois champs listés ici sont exactement ceux que `image-studio-v2/index.js`
+// lit sur le Context (playbookLogo / playbookColors / playbookRefs) : les seuls
+// dont l'absence change vraiment l'image produite. `brandName` retombe sur
+// `name` et `brandLogos` dérive de `brandLogo`, donc ni l'un ni l'autre ne
+// peut manquer.
+export function getBrandKitGaps(ctx) {
+  if (!ctx) return [];
+  const gaps = [];
+  if (!ctx.brandLogo) gaps.push({ id: "logo", label: "a logo" });
+  if (!(ctx.brandColors || []).some((c) => c && c.hex)) gaps.push({ id: "colors", label: "brand colors" });
+  if (!(ctx.referenceImages || []).length) gaps.push({ id: "refs", label: "reference images" });
+  return gaps;
+}

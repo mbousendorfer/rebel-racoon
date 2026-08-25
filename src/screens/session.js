@@ -15,7 +15,7 @@ import {
 import { FORMATS, formatsForNetwork, defaultFormatFor, clipFormatItems } from "../clip-formats.js?v=19";
 import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../clip-subtitles.js?v=2";
 import { getSessionById, getSessions, subscribe as subscribeSessions } from "../sessions-store.js?v=17";
-import { getContextById, getContexts, getDefaultContext, updateContext } from "../contexts-store.js?v=48";
+import { getContextById, getContexts, getDefaultContext, updateContext } from "../contexts-store.js?v=49";
 import { isNewUser } from "../user-mode.js?v=24";
 import {
   getThread,

@@ -143,7 +143,18 @@ Store **per-session** [`posts-store.js`](../../src/posts-store.js). Draft = auth
 
 - **Structure** : bloc auteur, provenance pill, corps + hashtags (liens `#tag`) + CTA, media, stats, footer déco « Like/Comment/Repost/Send » (non-interactif).
 - **Char counter** par network (LinkedIn 3000, X 280, IG 2200, FB 63206, TikTok 2200, YT 5000) → rouge si dépassé.
-- **Media** : clip (faux player, gradient, play, durée, scrubber 24%, badge sous-titres) / image (Change/Remove) / rien (« Generate an image » + « Upload an image »).
+- **Media** : clip (faux player, gradient, play, durée, scrubber 24%, badge sous-titres) / image
+  (_Edit_ → studio · _Change_ → file picker · _Remove_) / **fente vide** (`.posts__card-media-empty`) :
+  un cadre pointillé de 128px avec l'icône `ap-icon-image`, « Generate an image » (`.ap-button.mermaid`,
+  génère **en place**, sans studio) et un « Upload » ghost grey. La fente ne réserve **pas** le ratio 4/3
+  de l'image : tous les drafts seedés démarrent sans média, et un cadre pleine hauteur par carte
+  transformerait le feed en colonne de trous. Rien n'y est cliquable hors les deux boutons — pas de
+  hover, pas de drop-zone.
+- **Hint de brand kit** : si le Playbook du chat n'a ni logo, ni couleurs, ni images de référence
+  (`getBrandKitGaps` dans [`contexts-store.js`](../../src/contexts-store.js) — dérivé, jamais stocké),
+  une ligne `.muted` sous la fente **nomme ce qui manque** et propose `Open the Playbook` (`.ap-link`,
+  navigation → bleu, pas orange). Affichée **une seule fois par feed**, sur le premier draft sans
+  média : ce qui manque est un fait du Playbook, pas de ce draft-là.
 - **Actions** : Reference · Edit (flag `draftInlineEdit`) · **Regenerate** (menu _Shorter/Longer/Warmer/More formal/Regenerate_) · Save as draft · Schedule · Delete. Toutes désactivées pendant régénération.
 - **Inline edit** : corps → contenteditable, Save/Cancel, auto-commit outside-click, Esc annule, Cmd/Ctrl+Enter save.
 - **needs_fixes** : infobox rouge listant `post.errors`. Strip feedback « How's this draft? ».
@@ -202,12 +213,16 @@ Le **chutier des variations** garde le bord droit.
 
 **Entrées** (les seules — pas de route, pas de raccourci) :
 
-- _« Generate an image »_ sur un draft sans média (`data-post-image`) → le flow Generate.
-- _« Edit slides »_ sur un draft **carousel** (`data-post-image-edit`) → rouvre le set dans les
-  résultats (ajouter / retirer / régénérer une slide).
-- Un draft avec **une seule** image n'offre que _Change_ / _Remove_ : le studio sait s'ouvrir
-  directement en Edit sur une image existante (option `editImageUrl`), mais **aucune UI ne l'appelle
-  aujourd'hui**.
+- _« Edit »_ sur un draft avec **une seule** image (`data-post-image-edit`) → ouvre directement en
+  Edit sur cette image (option `editImageUrl`). C'est **l'entrée principale** depuis que
+  « Generate an image » génère en place.
+- _« Edit slides »_ sur un draft **carousel** (`data-post-image-edit`, même attribut) → rouvre le set
+  dans les résultats (ajouter / retirer / régénérer une slide).
+- ⚠️ _« Generate an image »_ (`data-post-image`) **n'ouvre plus le studio** : il génère une image en
+  place via `quickGenerateUrl` ([`image-studio.js`](../../src/image-studio.js)) — même mock Picsum
+  seedé, ratio par défaut du réseau, aucun état de studio créé. Le studio est là pour _piloter_ une
+  image ; payer un modal plein écran pour appuyer sur un bouton était le chemin long. Un nonce de
+  module fait qu'un second appui donne une autre image.
 
 Tout passe par `openStudio` dans [`right-panel.js`](../../src/components/right-panel.js).
 `data-post-image-upload` court-circuite le studio (simple file picker).

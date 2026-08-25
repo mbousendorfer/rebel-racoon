@@ -16,7 +16,7 @@
 import * as inlineQuestion from "./inline-question.js?v=50";
 import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=72";
 import * as rightPanel from "./components/right-panel.js?v=446";
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=48";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=49";
 import { analyzeWebsite } from "./context-mock-analysis.js?v=27";
 import { connectors as connectorMocks } from "./mocks.js?v=66";
 import { getConnectedProfiles, buildConnectedProfileItems, PROFILE_SEARCH_THRESHOLD } from "./social-profiles.js?v=39";

@@ -276,17 +276,71 @@
   }
 }
 
-/* Empty-state media row: the AI DS button (.ap-button.mermaid) "Generate"
-   sits beside a quiet stroked-grey "Upload an image". Layout only — the
-   DS button carries all visual styling. Both stretch to equal width and
-   inherit the DS 36px height. */
-.posts__card-image-actions {
+/* Empty media slot — where the image of an image-less draft will go.
+
+   A FRAME, not a dropzone: only the two buttons act, so the slot gets no
+   hover state and no drag affordance (an empty box that lights up on hover
+   promises a drop target we don't accept — and it would collide with the
+   blue-border-on-hover rule that belongs to the card).
+
+   No `aspect-ratio: 4/3` on purpose (see the note in post-card.js
+   renderEmptyMedia): every seeded draft starts image-less, and reserving the
+   full height of an absent image on each one turns the feed into a column of
+   holes. A short band says "the image goes here" without pretending one is
+   already there.
+
+   The DS buttons carry all their own styling. They stay auto-width — no
+   `flex: 1` stretch (buttons are never full-width). */
+.posts__card-media-empty {
   display: flex;
+  flex-direction: column;
   gap: var(--ref-spacing-xxs);
 }
 
-.posts__card-image-actions > * {
-  flex: 1;
+.posts__card-media-empty-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ref-spacing-xs);
+  min-height: 128px;
+  padding: var(--ref-spacing-sm);
+  border: 1.5px dashed var(--ref-color-grey-20);
+  border-radius: var(--app-radius-md);
+  background: var(--ref-color-grey-05);
+  text-align: center;
+}
+
+.posts__card-media-empty-icon {
+  font-size: var(--sys-icon-css-lg);
+  line-height: 1;
+  color: var(--ref-color-grey-80);
+}
+
+.posts__card-media-empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--ref-spacing-xxs);
+}
+
+/* Generating: the slot keeps its own height so the card doesn't jump when the
+   buttons are swapped for the Archie mark (auto-hosted by archie-loader.js). */
+.posts__card-media-empty-slot.is-generating {
+  --archie-loader-size: 32px;
+}
+
+.posts__card-media-empty-lead,
+.posts__card-media-empty-hint {
+  margin: 0;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+}
+
+/* The Playbook hint sits OUTSIDE the slot: it is about the Playbook, not about
+   this image, and inside the frame it read as a caption for the buttons. */
+.posts__card-media-empty-hint {
+  padding: 0 var(--ref-spacing-xxs);
 }
 
 /* Filled state: the image with hover-revealed Change / Remove DS buttons

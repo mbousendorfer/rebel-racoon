@@ -35,7 +35,7 @@ import { renderEmptyState } from "../components/empty-state.js?v=3";
 import { open as openTopicModal } from "../components/topic-modal.js?v=10";
 import { renderMagazine, renderSourceChips } from "../topics-feed.js?v=3";
 import { isFlagOn } from "../feature-flags.js?v=20";
-import { getContexts, getContextById, subscribe as subscribeContexts } from "../contexts-store.js?v=48";
+import { getContexts, getContextById, subscribe as subscribeContexts } from "../contexts-store.js?v=49";
 import { TOPIC_SOURCES, findTopicSource, findCadence } from "../topics-catalog.js?v=3";
 import { openTopicInChat } from "../topic-flow.js?v=9";
 import {

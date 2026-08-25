@@ -1459,13 +1459,20 @@
 
 /* The card is a live Drafts card — strip the app tooling it carries (select
    checkbox, action stack, feedback strip, generation-context panel, image
-   controls) so the preview shows the post, not the app around it. */
+   controls) so the preview shows the post, not the app around it.
+
+   `.posts__card-media-empty` is in the list because the preview can legitimately
+   render with no image (before the first generation) — and the empty slot's
+   "Generate an image" button inside the studio that is already generating one
+   would be a loop back to where you are. */
 .isv2-feed-card .posts__row-check,
 .isv2-feed-card .posts__row-actions,
 .isv2-feed-card .posts__card-footrow,
 .isv2-feed-card .posts__gencontext-panel,
 .isv2-feed-card .posts__gencontext-check,
 .isv2-feed-card .posts__card-image-controls,
+.isv2-feed-card .posts__card-media-empty,
+.isv2-bs-feed .posts__card-media-empty,
 .isv2-feed-card .ap-infobox {
   display: none !important;
 }

@@ -24,6 +24,71 @@ import { isPortraitFormat } from "../clip-formats.js?v=19";
 import { presetById } from "../clip-captions.js?v=7";
 import { renderFeedbackControl } from "./feedback-control.js?v=4";
 
+// The media slot of a draft that has no image yet.
+//
+// This used to be two bare DS buttons flush in the card column — no frame, no
+// icon, nothing saying "an image belongs here". Since every seeded draft starts
+// without media, that was the default look of the whole Drafts feed.
+//
+// It is a FRAME, not a dropzone: nothing in it is clickable except the two
+// buttons, so it gets no hover state and no drag affordance — an empty box that
+// lights up on hover promises a drop target we don't accept.
+//
+// Deliberately NOT `aspect-ratio: 4/3` like `.posts__card-image`. Reserving the
+// real height of an absent image on every card in the feed turns a list of
+// drafts into a column of holes; a short band says where the image goes without
+// pretending one is already there. The cost is a small layout shift when the
+// image lands, which is the right trade at this ratio of empty-to-filled cards.
+//
+// `opts.brandGaps` / `opts.playbookId` come from the host (the drafts panel) —
+// the card never resolves a Context itself. A host that passes neither, like the
+// studio's own in-feed preview, simply gets no hint.
+// The icon is ap-icon-image, NOT the semantically-nicer ap-icon-missing-image:
+// that one is the single icon in the DS whose SVG carries a clipPath with a
+// dimensionless <rect />, which clips the whole glyph away. It applies cleanly
+// and paints nothing at all. Don't "fix" this back.
+function renderEmptyMedia(post, opts) {
+  if (post.isGeneratingImage) {
+    return `<div class="posts__card-media-empty">
+      <div class="posts__card-media-empty-slot is-generating" aria-busy="true">
+        <span class="archie-loader" aria-hidden="true"></span>
+        <p class="posts__card-media-empty-lead muted">I'm making an image for this draft…</p>
+      </div>
+    </div>`;
+  }
+
+  const gaps = Array.isArray(opts.brandGaps) ? opts.brandGaps : [];
+  // "a logo, brand colors and reference images" — the list names what is
+  // missing, because "your brand kit is incomplete" sends you hunting.
+  const labels = gaps.map((g) => g.label);
+  const gapList =
+    labels.length > 1 ? `${labels.slice(0, -1).join(", ")} and ${labels[labels.length - 1]}` : labels[0] || "";
+  const hint =
+    gaps.length && opts.playbookId
+      ? `<p class="posts__card-media-empty-hint muted">
+          Add ${gapList} to the Playbook and I'll work them into every image I make.
+          <button type="button" class="ap-link small" data-post-playbook-gap="${opts.playbookId}">Open the Playbook</button>
+        </p>`
+      : "";
+
+  return `<div class="posts__card-media-empty">
+    <div class="posts__card-media-empty-slot">
+      <i class="ap-icon-image posts__card-media-empty-icon" aria-hidden="true"></i>
+      <div class="posts__card-media-empty-actions">
+        <button type="button" class="ap-button mermaid" data-post-image="${post.id}">
+          <i class="ap-icon-archie-official"></i>
+          <span>Generate an image</span>
+        </button>
+        <button type="button" class="ap-button ghost grey" data-post-image-upload="${post.id}">
+          <i class="ap-icon-upload"></i>
+          <span>Upload</span>
+        </button>
+      </div>
+    </div>
+    ${hint}
+  </div>`;
+}
+
 export function renderPostCard(post, opts = {}) {
   const inlineEdit = opts.inlineEdit === true;
   const editing = inlineEdit && opts.editing === true;
@@ -187,11 +252,18 @@ export function renderPostCard(post, opts = {}) {
       : post.imageUrl
         ? `<div class="posts__card-image-wrap">
           <img class="posts__card-image" src="${post.imageUrl}" alt="Image for this post" loading="lazy" />
-          <!-- Change / Remove only. The carousel keeps its "Edit slides" — it is the
-               only way into the studio for a multi-slide draft — but on a single
-               image the row read as three near-equal greys for two different jobs
-               (open a studio vs swap the file). -->
+          <!-- Edit / Change / Remove. Edit was left out while "Generate an image"
+               still opened the studio — back then it was a third near-equal grey
+               competing with Change for no gain. Now that Generate produces an
+               image in place, Edit is the ONLY way into the Image Studio for a
+               single image, so it earns its slot. It reads as one AI action next
+               to two greys (the archie glyph), exactly like the carousel's
+               "Edit slides" above. -->
           <div class="posts__card-image-controls">
+            <button type="button" class="ap-button ghost grey" data-post-image-edit="${post.id}">
+              <i class="ap-icon-archie-official"></i>
+              <span>Edit</span>
+            </button>
             <button type="button" class="ap-button ghost grey" data-post-image-upload="${post.id}">
               <i class="ap-icon-upload"></i>
               <span>Change</span>
@@ -202,16 +274,7 @@ export function renderPostCard(post, opts = {}) {
             </button>
           </div>
         </div>`
-        : `<div class="posts__card-image-actions">
-          <button type="button" class="ap-button mermaid" data-post-image="${post.id}">
-            <i class="ap-icon-archie-official"></i>
-            <span>Generate an image</span>
-          </button>
-          <button type="button" class="ap-button stroked grey" data-post-image-upload="${post.id}">
-            <i class="ap-icon-upload"></i>
-            <span>Upload an image</span>
-          </button>
-        </div>`;
+        : renderEmptyMedia(post, opts);
 
   return html`
     <article

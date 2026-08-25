@@ -141,6 +141,26 @@ Le « pick one of N » réutilisable. État dans [`inline-question.js`](../../sr
 
 `renderEmptyState()` ([`empty-state.js`](../../src/components/empty-state.js)) : `.session__empty` > icône `.lg` > `h3.text-subtitle` > `p.muted` > `.session__empty-action`. Variante panneau : `.app-right-panel__empty`.
 
+### Fente média vide (draft sans image)
+
+`.posts__card-media-empty` ([`post-card.js`](../../src/components/post-card.js) `renderEmptyMedia`,
+CSS dans [`posts.css`](../../styles/screens/posts.css)) : `-slot` (cadre `1.5px dashed --ref-color-grey-20`,
+fond `--ref-color-grey-05`, `min-height: 128px`) > `-icon` (`ap-icon-image` à `--sys-icon-css-lg`) +
+`-actions` (les deux DS buttons), puis `-hint` **hors** du cadre. État `.is-generating` → `.archie-loader`
+
+- `-lead`.
+
+* **Cadre, pas dropzone** : aucun hover, aucun drag — seuls les boutons agissent. Un cadre vide qui
+  s'allume au survol promet une cible de drop qu'on n'accepte pas, et entrerait en conflit avec la
+  bordure bleue au survol qui appartient à la carte.
+* **Pas de `aspect-ratio`** : réserver la hauteur réelle d'une image absente sur chaque carte du feed
+  en fait une colonne de trous. Le prix est un petit saut de layout quand l'image arrive.
+* **Un CTA de navigation vers le Playbook est un `.ap-link`** (bleu), jamais un bouton et jamais
+  orange : l'orange est pour l'IA, et les 11 empty states du repo ont tous un CTA bleu.
+* ⚠️ **`ap-icon-missing-image` est inutilisable** : c'est le seul icône du DS dont le SVG porte un
+  `clipPath` avec un `<rect />` sans dimensions, qui découpe tout le glyphe. Il s'applique proprement
+  et ne peint rien. Utiliser `ap-icon-image`.
+
 ### Modals / backdrop
 
 DS `.ap-dialog` centré par `modals.css` sur `.open`. `.app-modal-backdrop` patché (fade via `@keyframes app-modal-backdrop-fade`). Radius `--app-radius-modal` (16). Modals empilés → couches `--app-z-modal-stacked*`.
