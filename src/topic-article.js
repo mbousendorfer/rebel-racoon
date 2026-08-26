@@ -46,20 +46,12 @@ import { renderSocialPostCard } from "./components/social-post-card.js?v=8";
  */
 export function renderTopicHeader(topic, { source = null, withActions = false } = {}) {
   if (!topic) return "";
+  // No way out up here. A two-pane reader does not close a message, it opens the
+  // next one — the list is right there — so a Close button spent the header's
+  // best slot on the one action the layout already provides. Escape still closes
+  // the pane, wired by the host.
   return html`<div class="topic-article__head">
-    <div class="topic-article__head-top">
-      <h2 class="topic-article__title">${topicTitle(topic)}</h2>
-      <!-- The way out sits opposite the title rather than beside the verbs: it
-           does nothing TO the Topic, and reading it as a third decision is what
-           the old single-row strip invited. -->
-      ${raw(
-        withActions
-          ? html`<button type="button" class="ap-button ghost grey topic-article__close" data-topic-close>
-              Close
-            </button>`
-          : "",
-      )}
-    </div>
+    <h2 class="topic-article__title">${topicTitle(topic)}</h2>
     <div class="topic-article__head-meta">
       ${raw(renderProvenance(topic, source))} ${raw(withActions ? renderTopicActions(topic, { close: null }) : "")}
     </div>

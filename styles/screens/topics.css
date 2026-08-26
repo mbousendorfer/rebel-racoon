@@ -320,7 +320,10 @@
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
-  padding: var(--ref-spacing-md);
+  /* Top is `sm`, not `md`: the header already pads 16 under itself, so `md` here
+     put 40px of empty band around a 1px rule. The sides stay `md` — that is the
+     gutter the measure is derived from and the header shares. */
+  padding: var(--ref-spacing-sm) var(--ref-spacing-md) var(--ref-spacing-md);
 }
 
 /* Nothing open. Rendered rather than collapsed, so the columns keep their widths
@@ -450,14 +453,6 @@
   gap: var(--ref-spacing-xxs);
 }
 
-/* `flex-start`, not center: the title wraps to two lines at this measure and a
-   centred Close would drift down the second one. */
-.topic-article__head-top {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--ref-spacing-sm);
-}
-
 .topic-article__head-meta {
   display: flex;
   align-items: center;
@@ -472,10 +467,6 @@
 }
 
 .topic-article__title {
-  /* Takes the row so Close is pushed to the far edge, and shrinkable so a long
-     claim wraps instead of shouldering the button out. */
-  flex: 1 1 auto;
-  min-width: 0;
   margin: 0;
   font-size: var(--sys-text-style-h2-size);
   line-height: var(--sys-text-style-h2-line-height);
@@ -564,27 +555,21 @@
 
 /* ── Contributing posts ──────────────────────────────────────────────────── */
 
-/* The evidence sits on its own GROUND, not behind a hairline. The analysis is
-   Archie's prose; these are somebody else's posts, quoted — a different kind of
-   thing, and a rule between them only said "next section".
-   `--app-surface-subtle` on `--app-radius-card` with `sm` of padding is the
-   app's existing inset-panel recipe (see the gen-context panel in posts.css),
-   not a new one.
+/* NO BOX around the evidence. It had one for a commit — a grey panel holding the
+   white cards — and it cost a whole level of nesting: 24px of body padding, then
+   16 of panel, then 16 of card, so a quoted post's text started 32px deeper than
+   the prose it supports. The evidence was indented twice from the argument.
 
-   The hairline came OFF with it: the change of ground already draws the
-   boundary, and keeping both signals the same edge twice.
-
-   Nothing nests an elevation here — a card carrying a shadow inside a panel
-   carrying one is what the app forbids. This is a flat ground, and the post
-   cards keep their own explicit white fill, so they stay cards on it rather
-   than dissolving into one grey slab. */
+   The grey moved ONTO the cards instead (social-post-card.css). One level rather
+   than three, the posts sit on the prose's own left edge, and the separation
+   reads harder per pixel because no intermediate box dilutes it. */
 .topic-article__section {
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xxs);
-  padding: var(--ref-spacing-sm);
-  border-radius: var(--app-radius-card);
-  background: var(--app-surface-subtle);
+  /* On top of the article's own 12px gap: the evidence is a different KIND of
+     thing from the analysis, so it opens a little further out than a subhead. */
+  margin-top: var(--ref-spacing-xxs);
 }
 
 .topic-article__section-head {

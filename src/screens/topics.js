@@ -53,7 +53,7 @@ import {
   isLiveSource,
 } from "../topics-catalog.js?v=2";
 import { renderTopicCard } from "../components/topic-card.js?v=3";
-import { renderTopicArticle, renderTopicHeader } from "../topic-article.js?v=2";
+import { renderTopicArticle, renderTopicHeader } from "../topic-article.js?v=3";
 import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=1";
 import { useTopicInChat } from "../topic-flow.js?v=1";
 
@@ -68,6 +68,7 @@ let unsubscribeFeeds = null;
 let boundRoot = null;
 let boundChange = null;
 let boundClick = null;
+let boundKeydown = null;
 let observer = null;
 
 function freshView() {
@@ -167,9 +168,11 @@ function teardown() {
     if (boundChange) boundRoot.removeEventListener("change", boundChange);
     if (boundClick) boundRoot.removeEventListener("click", boundClick);
   }
+  if (boundKeydown) document.removeEventListener("keydown", boundKeydown);
   boundRoot = null;
   boundChange = null;
   boundClick = null;
+  boundKeydown = null;
   view = null;
 }
 
@@ -753,12 +756,6 @@ function bind(target) {
       return;
     }
 
-    if (event.target.closest("[data-topic-close]")) {
-      view.openTopicId = null;
-      paint(target, scopedPlaybook());
-      return;
-    }
-
     if (event.target.closest("[data-topic-more-page]")) {
       loadMore(target, scopedPlaybook());
       return;
@@ -795,4 +792,26 @@ function bind(target) {
     }
   };
   target.addEventListener("click", boundClick);
+
+  // Escape closes the article. It is the pane's ONLY way out now that the header
+  // spends no slot on a Close button — a two-pane reader closes a message by
+  // opening the next one, and the list is right there. On `document` because
+  // nothing in the pane holds focus, and held in a module-level binding so
+  // teardown can remove it: #app outlives this screen, so a listener left behind
+  // stacks up on every remount.
+  boundKeydown = (event) => {
+    if (event.key !== "Escape" || !view) return;
+    // A menu or the filter panel takes the key first: Escape shuts the thing
+    // that opened last, not the thing behind it.
+    if (view.menuTopicId || view.filtersOpen) {
+      view.menuTopicId = null;
+      view.filtersOpen = false;
+      paint(target, scopedPlaybook());
+      return;
+    }
+    if (!view.openTopicId) return;
+    view.openTopicId = null;
+    paint(target, scopedPlaybook());
+  };
+  document.addEventListener("keydown", boundKeydown);
 }

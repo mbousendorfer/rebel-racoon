@@ -5,14 +5,20 @@
 
    See src/components/social-post-card.js. */
 
+/* QUOTED content, so it carries the subtle ground rather than the page's white:
+   this is somebody else's post shown as evidence under Archie's own analysis, and
+   the change of fill is what separates the two. It used to be a white card inside
+   a grey panel, which said the same thing with one more box and 32px more indent.
+   Flat — a fill, a hairline and a radius, no shadow. */
 .social-post-card {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xs);
+  /* head / quote / metrics are one block; `xs` between them read as three. */
+  gap: var(--ref-spacing-xxs);
   padding: var(--ref-spacing-sm);
   border: 1px solid var(--app-border);
   border-radius: var(--app-radius-card);
-  background: var(--app-surface);
+  background: var(--app-surface-subtle);
 }
 
 /* ── Head: avatar · identity · network mark ─────────────────────────────── */
