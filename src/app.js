@@ -1,8 +1,8 @@
 import { route, setAfterRender, start } from "./router.js?v=31";
 import { isFlagOn } from "./feature-flags.js?v=21";
 import { initArchieLoader } from "./archie-loader.js?v=3";
-import { initTopbar, renderTopbar } from "./components/topbar.js?v=316";
-import { initSidebar, renderSidebar } from "./components/sidebar.js?v=287";
+import { initTopbar, renderTopbar } from "./components/topbar.js?v=317";
+import { initSidebar, renderSidebar } from "./components/sidebar.js?v=288";
 import { init as initRightPanel } from "./components/right-panel.js?v=454";
 import { init as initScheduleModal } from "./components/schedule-modal.js?v=71";
 import { init as initBugReportModal } from "./components/bug-report-modal.js?v=25";
@@ -12,6 +12,7 @@ import { init as initVideoClipsModal } from "./components/video-clips-modal.js?v
 import { init as initChatPickerModal } from "./components/chat-picker-modal.js?v=77";
 import { init as initAddSourceModal } from "./components/add-source-modal.js?v=78";
 import { init as initConnectorsModal } from "./components/connectors-modal.js?v=24";
+import { init as initTopicIgnoreModal } from "./components/topic-ignore-modal.js?v=1";
 import { init as initConfirmModal } from "./components/confirm-modal.js?v=23";
 import { init as initRenameModal } from "./components/rename-modal.js?v=3";
 import { init as initSaveFolderModal } from "./components/save-folder-modal.js?v=23";
@@ -24,9 +25,10 @@ import {
   init as initConversationStatusCard,
   render as renderConversationStatusCard,
 } from "./components/conversation-status-card.js?v=246";
-import { renderDashboard } from "./screens/dashboard.js?v=72";
-import { renderSession } from "./screens/session.js?v=539";
+import { renderDashboard } from "./screens/dashboard.js?v=73";
+import { renderSession } from "./screens/session.js?v=541";
 import { renderContexts } from "./screens/contexts.js?v=280";
+import { renderTopics } from "./screens/topics.js?v=3";
 import { renderConnectors } from "./screens/connectors.js?v=217";
 import { renderWelcomeAlt } from "./screens/welcome-alt.js?v=5";
 // Settings route removed — the prototype Admin controls moved to the sidebar
@@ -53,6 +55,9 @@ route("/session/:id", renderSession);
 route("/contexts", renderContexts);
 route("/playbook/:id", renderPlaybook);
 route("/connectors", renderConnectors);
+// The Topic Feed. Gated on `topicFeed` inside the screen rather than here, so a
+// stale deep link bounces to / instead of rendering a dead route.
+route("/topics", renderTopics);
 // First-time ALT — thin redirect that mints a transient
 // /session/welcome-alt-{ts} session. The conversational Playbook
 // builder (3-question chat: URL → profile → optional documents) runs
@@ -83,6 +88,7 @@ initVideoClipsModal();
 initChatPickerModal();
 initAddSourceModal();
 initConnectorsModal();
+initTopicIgnoreModal();
 initConfirmModal();
 initRenameModal();
 initSaveFolderModal();

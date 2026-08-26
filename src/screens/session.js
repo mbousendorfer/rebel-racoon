@@ -1,7 +1,7 @@
 import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr } from "../utils.js?v=22";
 import { navigate } from "../router.js?v=31";
-import { renderTopbar } from "../components/topbar.js?v=316";
-import { socialAccounts, chatStarters, connectorDocs } from "../mocks.js?v=70";
+import { renderTopbar } from "../components/topbar.js?v=317";
+import { socialAccounts, chatStarters, connectorDocs } from "../mocks.js?v=71";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
@@ -15,7 +15,7 @@ import {
 import { FORMATS, formatsForNetwork, defaultFormatFor, clipFormatItems } from "../clip-formats.js?v=23";
 import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../clip-subtitles.js?v=2";
 import { getSessionById, getSessions, subscribe as subscribeSessions } from "../sessions-store.js?v=21";
-import { getContextById, getContexts, getDefaultContext, updateContext } from "../contexts-store.js?v=53";
+import { getContextById, getContexts, getDefaultContext, updateContext } from "../contexts-store.js?v=54";
 import { revokedContextFor, usableContexts, canView } from "../playbook-access.js?v=5";
 import { isNewUser } from "../user-mode.js?v=24";
 import {
@@ -114,6 +114,7 @@ import {
   subscribe as subscribeRightPanel,
 } from "../components/right-panel.js?v=454";
 import { setHandoff, consumeHandoff, hasHandoff } from "../handoff.js?v=21";
+import { attachTopicToChat, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=1";
 import { parseHashParams, setHashQuery } from "../url-state.js?v=22";
 import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=33";
 import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=41";
@@ -3569,6 +3570,16 @@ function wireAssistantPanel(root, session, attachedContext) {
   const pendingIdeaId = consumeHandoff("pendingDraftIdeaId");
   if (pendingIdeaId) {
     setTimeout(() => startIdeaDraft(session.id, pendingIdeaId), 100);
+  }
+
+  // Hand-off from a Topic's "Use in chat", from any of the four surfaces that
+  // offer it. Attaching is all it does: intake-lifecycle turns the source into
+  // the source-intake card in the thread, so the Topic names itself and the
+  // composer is right there. No echoed message and no follow-up question — the
+  // card already says which Topic is in the chat.
+  const pendingTopic = consumeHandoff(TOPIC_CHAT_HANDOFF);
+  if (pendingTopic?.topicId) {
+    setTimeout(() => attachTopicToChat(session.id, pendingTopic.topicId), 100);
   }
 
   // Hand-off from a source card's "Ask" button on the dashboard or another

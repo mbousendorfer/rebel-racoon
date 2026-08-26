@@ -1,0 +1,431 @@
+/* /topics — the Topic Feed.
+ *
+ * Two things this file is responsible for: the master–detail split, and the head
+ * that sits above it and never moves when the article opens.
+ *
+ * Everything is a DS token. The version this was ported from carried 15px and
+ * 13px type, six invented line-heights and paddings of 6, 10, 11, 14, 18 and
+ * 22px — none of which is on the DS's 4-based spacing scale or its type ladder.
+ */
+
+.topics-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+  /* The screen root is the scroller, so paint() can restore its offset and a
+     triage halfway down the list does not throw the reader back to the top. */
+  height: 100%;
+  overflow-y: auto;
+  padding: var(--ref-spacing-md);
+}
+
+/* ── The head ──────────────────────────────────────────────────────────────
+   Above the split and outside it, deliberately. When the head lived inside the
+   split, opening the article narrowed the title and the segments too, so two
+   pieces of page furniture twitched on every open and close. */
+
+.topics-view__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--ref-spacing-sm);
+  flex-wrap: wrap;
+}
+
+.topics-view__head-lead {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+  flex-wrap: wrap;
+}
+
+.topics-view__title {
+  margin: 0;
+  font-size: var(--sys-text-style-h1-size);
+  line-height: var(--sys-text-style-h1-line-height);
+  font-weight: var(--sys-text-style-h1-weight);
+  color: var(--sys-text-color-default);
+}
+
+.topics-view__head-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--ref-spacing-xxs);
+}
+
+/* Wide enough for a real brand name, capped so it never competes with the title
+   for the row. */
+.topics-view__scope {
+  min-width: 200px;
+  max-width: 260px;
+}
+
+/* The Filters panel hangs off its own trigger — the DS anchors this through a
+   CDK overlay, which does not exist here, so the caller positions it. */
+.topics-view__filters {
+  position: relative;
+}
+
+.topics-view__filter-panel {
+  position: absolute;
+  top: calc(100% + var(--ref-spacing-xxxs));
+  right: 0;
+  z-index: 30;
+}
+
+/* ── The split ─────────────────────────────────────────────────────────────
+   THE LIST SHRINKS. That is the whole fix, and it is worth stating plainly
+   because the version this was ported from did the opposite and it broke the
+   feature on any laptop.
+
+   There, the list was pinned at a fixed 666px and the pane took the leftover
+   width, so below ~1180px of CONTENT width the article had nowhere to go and a
+   container query dropped it under the list. At 1440px of viewport — with a
+   sidebar, that is ~1100px of content — clicking a card rendered the article
+   1900px below the fold: the card lit up and nothing else appeared to happen.
+
+   Here the list is `flex: 1 1 auto` with a floor, the pane is `flex: 1 1 0` with
+   its own floor, and the two share whatever there is. Side by side survives down
+   to the sum of the two floors plus the gap; only below that does the column
+   query fire. */
+
+.topics-view__body {
+  /* The container the split is measured against. Named, so the query below can
+     only ever match THIS element — an unnamed container resolves to whichever
+     ancestor happens to be nearest. On the body rather than on the scroller:
+     this is the box whose width the two panes actually share. */
+  container-type: inline-size;
+  container-name: topics-feed;
+}
+
+.topics-view__split {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ref-spacing-md);
+  min-width: 0;
+}
+
+.topics-view__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-md);
+  flex: 1 1 auto;
+  min-width: 0;
+  /* Capped when the article is closed, so a lone list does not stretch to a
+     1100px measure. `.is-split` lifts the cap and lets the pane in. */
+  max-width: 720px;
+}
+
+.topics-view__split.is-split > .topics-view__list {
+  /* The floor. Below this the card's own two-line summary starts breaking into
+     four, which is when the list stops being scannable. */
+  min-width: 380px;
+  max-width: none;
+}
+
+/* ── Age groups ──────────────────────────────────────────────────────────── */
+
+.topics-view__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+}
+
+/* Sentence case, and hierarchy by weight rather than by capitals — the app has
+   no uppercase labels. The version this was ported from set ten families of them
+   in caps. */
+.topics-view__group-label {
+  margin: 0;
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--sys-text-color-light);
+}
+
+.topics-view__group-cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+}
+
+.topics-view__group-cards > .topic-card {
+  width: 100%;
+}
+
+/* ── Load more ───────────────────────────────────────────────────────────── */
+
+.topics-view__more {
+  display: flex;
+  justify-content: center;
+  padding-top: var(--ref-spacing-xxs);
+}
+
+/* ── Scanning ────────────────────────────────────────────────────────────── */
+
+.topics-view__scanning {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xxl) var(--ref-spacing-md);
+  text-align: center;
+}
+
+.topics-view__scanning-text {
+  margin: 0;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--sys-text-color-light);
+}
+
+.topics-view__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-xl) var(--ref-spacing-md);
+  text-align: center;
+}
+
+/* ── The article pane ─────────────────────────────────────────────────────
+   `align-self: flex-start` is load-bearing twice over: it stops the pane
+   stretching to the height of a long list, and a stretched flex item has no room
+   to stick inside, so `position: sticky` would silently do nothing.
+
+   The scroller is .topics-view, so `top: 0` pins the pane to the top of that
+   scrollport. Its max-height is arithmetic rather than 100% — 100% of this row is
+   as tall as the card list and would let the pane run off the bottom. */
+
+.topics-view__pane {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  /* The floor. Below this the article's prose stops holding a reading measure. */
+  min-width: 440px;
+  align-self: flex-start;
+  position: sticky;
+  top: 0;
+  max-height: calc(100vh - var(--app-topbar-height) - var(--ref-spacing-lg));
+  background: var(--app-surface);
+  border: 1px solid var(--app-border-soft);
+  border-radius: var(--app-radius-card);
+  overflow: hidden;
+}
+
+/* NO entrance animation, deliberately. The screen re-renders its whole body on
+   every mutation — a filter tick, a triage, a store notification — so an
+   animation on this element replays on each one, and the pane appears to flash
+   every time the reader touches anything. An entrance would need a "did it just
+   appear?" flag threaded through the render path to fire once, which is a lot of
+   machinery for decoration: the pane's position already says what happened. */
+
+.topics-view__pane-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: var(--ref-spacing-md);
+}
+
+/* The actions stay in view as the article scrolls: the verbs are what the
+   reading is FOR, and a reader who has scrolled down to the evidence should not
+   have to scroll back up to act on it.
+
+   A plain top hairline, NOT a coloured cap. The version this was ported from
+   drew an electric-blue rule across the top of this footer; electric blue is the
+   colour of the interactive in this app, and a decorative band is the one thing
+   it may not be. */
+.topics-view__pane-foot {
+  flex: 0 0 auto;
+  padding: var(--ref-spacing-xs) var(--ref-spacing-md);
+  border-top: 1px solid var(--app-border-soft);
+  background: var(--app-surface);
+}
+
+/* Below the sum of the two floors plus the gap, one column with the article
+   last. A @container query, NOT a media query: the sidebar collapses and the
+   right panel overlays, so viewport width never tells you content width. */
+@container topics-feed (max-width: 852px) {
+  .topics-view__split {
+    flex-direction: column;
+  }
+
+  .topics-view__split.is-split > .topics-view__list {
+    min-width: 0;
+  }
+
+  .topics-view__pane {
+    /* `flex: 1 1 0` side by side means "take the leftover width". Turning the
+       split into a column turns the same declaration into a zero-basis HEIGHT in
+       a container with no free space to distribute — the pane renders at 2px, its
+       own borders, and overflow: hidden clips the article and its footer out of
+       existence. auto basis, no grow: as tall as the article it holds. */
+    flex: 0 0 auto;
+    position: static;
+    min-width: 0;
+    width: 100%;
+    max-height: none;
+  }
+}
+
+/* ── The article ───────────────────────────────────────────────────────────
+   Lives here rather than in its own file for now: the pane and the dialog are
+   the only two hosts, and both are this feature. It moves to
+   styles/components/topic-article.css the day a third surface renders one. */
+
+.topic-article {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  /* A reading measure. The prose is the point of this pane, and a paragraph
+     running the full width of a 700px pane stops being readable. */
+  max-width: 62ch;
+}
+
+.topic-article__title {
+  margin: 0;
+  font-size: var(--sys-text-style-h2-size);
+  line-height: var(--sys-text-style-h2-line-height);
+  font-weight: var(--sys-text-style-h2-weight);
+  color: var(--sys-text-color-default);
+  text-wrap: balance;
+}
+
+.topic-article__provenance {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  margin: 0;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--sys-text-color-light);
+}
+
+.topic-article__source {
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--sys-text-color-default);
+}
+
+/* ── Relevance / Why now ─────────────────────────────────────────────────── */
+
+.topic-article__facts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+}
+
+.topic-article__fact {
+  margin: 0;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--sys-text-color-light);
+}
+
+.topic-article__fact-label {
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--sys-text-color-default);
+}
+
+/* Tinted ONLY when a signal is what the row is about, and each takes its own
+   signal's colour so the row and the card's mark read as one claim. The rule is a
+   left border, not a fill on the whole block: a tinted block at body size reads
+   as a warning, and neither of these is one. */
+.topic-article__fact--trending,
+.topic-article__fact--updated {
+  padding-left: var(--ref-spacing-xxs);
+  border-left: 2px solid var(--ref-color-orange-100);
+}
+
+.topic-article__fact--updated {
+  border-left-color: var(--ref-color-menthol-150);
+}
+
+/* ── The prose ───────────────────────────────────────────────────────────── */
+
+.topic-article__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+}
+
+/* Sentence case, and it outranks the paragraph under it by weight and size —
+   never by capitals. */
+.topic-article__subhead {
+  margin: var(--ref-spacing-xxs) 0 0;
+  font-size: var(--sys-text-style-h4-size);
+  line-height: var(--sys-text-style-h4-line-height);
+  font-weight: var(--sys-text-style-h4-weight);
+  color: var(--sys-text-color-default);
+}
+
+.topic-article__subhead:first-child {
+  margin-top: 0;
+}
+
+.topic-article__para {
+  margin: 0;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--sys-text-color-default);
+}
+
+/* ── Contributing posts ──────────────────────────────────────────────────── */
+
+.topic-article__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  padding-top: var(--ref-spacing-xs);
+  border-top: 1px solid var(--app-border-soft);
+}
+
+.topic-article__section-head {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  margin: 0;
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--sys-text-color-light);
+}
+
+.topic-article__posts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+}
+
+/* ── The footer's verbs ──────────────────────────────────────────────────── */
+
+.topic-article__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+}
+
+/* The way out sits last and to the right of the two verbs, so the two decisions
+   read together and the exit is not mistaken for one of them. Buttons never
+   stretch — margin-left on the close, not flex: 1 on the row. */
+.topic-article__close {
+  margin-left: auto;
+}
+
+/* ── The Filters panel's own additions ────────────────────────────────────
+   The DS's filter-leaf option is `justify-content: flex-start`, which is right
+   for a row that is only a checkbox and a label. Ours can carry a Coming-soon
+   tag, and a tag sitting flush against its label reads as part of it. */
+.topics-view__filter-panel .ap-filter-leaf__option > .ap-tag {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* The option row has to hold one line: the source names are short, and a wrapped
+   checkbox row breaks the column of ticks the panel is scanned by. */
+.topics-view__filter-panel .ap-checkbox-container {
+  min-width: 0;
+}
+
+.topics-view__filter-panel .ap-filter-leaf__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

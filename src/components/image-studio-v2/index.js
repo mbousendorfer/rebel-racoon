@@ -29,7 +29,7 @@
 import { requestOpen, notifyClose, bindOverlayDismissal } from "../../modal-coordinator.js?v=22";
 import { getPosts } from "../../posts-store.js?v=50";
 import { getSessionById } from "../../sessions-store.js?v=21";
-import { getContextById } from "../../contexts-store.js?v=53";
+import { getContextById } from "../../contexts-store.js?v=54";
 import { MODAL_ID, KEY, ctx, state, autosize } from "./context.js?v=46";
 import { loadImg } from "../../image-studio-canvas.js?v=6";
 import { renderStudio } from "./stage-view.js?v=107";

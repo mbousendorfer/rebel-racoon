@@ -18,10 +18,12 @@ import {
 import { isFlagOn } from "../feature-flags.js?v=21";
 import { isNewUser } from "../user-mode.js?v=24";
 import { clearSession as clearLibrarySession } from "../library.js?v=70";
-import { getContextById, subscribe as subscribeContexts } from "../contexts-store.js?v=53";
+import { getContextById, getDefaultContext, subscribe as subscribeContexts } from "../contexts-store.js?v=54";
 // A Playbook nobody shared with me must not surface here either — the store
 // still holds it (see playbook-access.js), the sidebar just doesn't name it.
 import { canView, visibleContexts } from "../playbook-access.js?v=5";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1";
+import { countToReview, subscribe as subscribeTopics } from "../topics-store.js?v=1";
 import { getConnectedConnectors, subscribe as subscribeConnectors } from "../connectors-store.js?v=41";
 import { closePanel as closeRightPanel } from "./right-panel.js?v=454";
 import { clearSession as clearAssistantSession } from "../assistant.js?v=76";
@@ -316,6 +318,9 @@ export function initSidebar() {
   subscribeContexts(() => renderSidebar());
   subscribeSessions(() => renderSidebar());
   subscribeConnectors(() => renderSidebar());
+  // A Topic used or ignored anywhere has to move the unread mark immediately —
+  // the reader may never leave the page it happened on.
+  subscribeTopics(() => renderSidebar());
 
   // Click outside the popmenu → close.
   document.addEventListener("click", (event) => {
@@ -582,6 +587,28 @@ const NAV = [
     flag: "connectors",
     match: (p) => p === "/connectors",
     count: () => getConnectedConnectors().length,
+  },
+  // The antenna is the listening glyph. The counter is Topics still TO REVIEW in
+  // the DEFAULT Playbook's feed — the row is a notification, so it counts what
+  // is waiting for an answer rather than everything the feed holds.
+  //
+  // Scoped to the default Playbook rather than summed across every one, because
+  // the feed itself is scoped: a count that spans four brands would send the
+  // reader to a screen showing one of them. There is no global scope to read
+  // from, deliberately — see the note at the top of screens/topics.js.
+  {
+    path: "/topics",
+    icon: "ap-icon-antenna",
+    label: "Topic Feed",
+    flag: "topicFeed",
+    // Prefix, not equality: the row stays lit on /topics/settings, which is
+    // still the Topic Feed rather than somewhere else.
+    match: (p) => p.startsWith("/topics"),
+    count: () => {
+      const pb = getDefaultContext() || visibleContexts()[0] || null;
+      const feed = pb ? getFeedForPlaybook(pb.id) : null;
+      return feed ? countToReview(feed.id) : 0;
+    },
   },
 ];
 

@@ -109,3 +109,24 @@ a {
     box-shadow: 0 0 0 4px var(--ref-color-electric-blue-20);
   }
 }
+
+/* ── Screen-reader-only text ───────────────────────────────────────────────
+   For a label whose sighted form is a glyph or a colour. It exists because
+   nothing may be signalled by colour or shape alone — the Topic Feed's status
+   glyphs and signal marks are the surfaces that need it most.
+
+   App-level rather than a `.ap-*` class: the DS ships no such utility, and
+   inventing one under its prefix would claim a component that does not exist.
+   social-post-card.css carries its own copy of this, from before there was a
+   shared one — it can move here the next time that file is touched. */
+.app-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

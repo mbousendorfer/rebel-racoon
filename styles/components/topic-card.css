@@ -1,0 +1,282 @@
+/* topic-card — one Topic, in the feed and in the picker, plus the compact row
+ * the in-chat list uses.
+ *
+ * NO width of its own: the card fills the column it sits in, and
+ * screens/topics.css owns that column's width. The version this was ported from
+ * capped the card at a hard 666px and the list at the same number, which is what
+ * made the master–detail unusable — with the list unable to shrink, the article
+ * had nowhere to go under ~1180px of content width and dropped below the fold.
+ *
+ * ── Everything here is a token ─────────────────────────────────────────────
+ * The version this was ported from carried a 14px radius, 15px and 13px type, a
+ * 1.55 line-height and 11px paddings — none of which exist on any DS scale. Type
+ * comes from --sys-text-style-*, spacing from --ref-spacing-* (4 / 8 / 12 / 16 /
+ * 24 / 32), radius from --app-radius-card, the same 12px every other card in the
+ * app takes. If a value here is not a token, it is a bug.
+ */
+
+.topic-card {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  /* No padding here — the body button carries it, so the whole padded text area
+     is clickable instead of a dead gutter. */
+  background: var(--app-surface);
+  border: 1px solid var(--app-border-soft);
+  border-radius: var(--app-radius-card);
+  /* The kebab is absolutely positioned into the top-right corner and is a
+     SIBLING of the body button (button-in-button is invalid), so this is its
+     containing block. */
+  position: relative;
+  transition:
+    border-color var(--ref-animation-short) var(--app-ease-standard),
+    background-color var(--ref-animation-short) var(--app-ease-standard);
+}
+
+/* ── Hover and selected are DIFFERENT states ───────────────────────────────
+   The app's card convention (chat.css states it outright): a soft blue fill and
+   a light blue border on hover/focus — never navy, never a hard outline, never
+   added elevation. The card the article is open on then FIRMS that border to
+   electric-blue-100 and keeps the wash, exactly as .drafts-card.is-active does.
+
+   The version this was ported from gave the feed card no hover at all, so a
+   whole-card button had nothing saying it was one, and its selected state was
+   border-only. Both are corrected here, and the two states stay distinguishable
+   — which they would not be if hover took the -100 border too.
+
+   Border colour and background only: the card already has a 1px border, so
+   nothing moves and no card below is nudged. NEVER a coloured edge-accent bar. */
+.topic-card:hover,
+.topic-card:focus-within {
+  background: var(--ref-color-electric-blue-05);
+  border-color: var(--ref-color-electric-blue-20);
+}
+
+.topic-card.is-reading {
+  background: var(--ref-color-electric-blue-05);
+  border-color: var(--ref-color-electric-blue-100);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .topic-card {
+    transition: none;
+  }
+}
+
+/* No frame treatment for a trending card, deliberately. The signal is carried
+   INSIDE the card by the Trending mark, which is how Updated already works, so
+   the two read as the same kind of thing. If a card-level accent ever comes
+   back it must be a border — never an absolutely-positioned rail. */
+
+/* ── The body: one button over the whole text area ─────────────────────────── */
+
+.topic-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  width: 100%;
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm) var(--ref-spacing-sm);
+  /* Room for the kebab, so a long headline never runs under it. */
+  padding-right: var(--ref-spacing-xl);
+  border: 0;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* Inset, so the ring does not sit outside the card's rounded corner. */
+.topic-card__body:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: -2px;
+  border-radius: var(--app-radius-card);
+}
+
+/* Block, so the spans a <button> forces on us lay out like the h3/p they stand
+   in for. No max-width: the column owns the measure, so the body stays the whole
+   clickable text area with no dead gutter to the right of the text. */
+.topic-card__meta,
+.topic-card__headline,
+.topic-card__summary,
+.topic-card__reason {
+  display: block;
+}
+
+.topic-card__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  /* The meta run is one left-aligned line. Nothing lives on the right — the
+     kebab occupies that corner. */
+  flex-wrap: wrap;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--sys-text-color-light);
+}
+
+.topic-card__source {
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--sys-text-color-default);
+}
+
+.topic-card__age {
+  white-space: nowrap;
+}
+
+/* The triage glyph. Neutral ink, not a colour: the three review states are told
+   apart by their symbol, and tinting one of three glyphs in a row would make the
+   set look like two sets. The tooltip carries the meaning. */
+.topic-card__status {
+  display: inline-flex;
+  align-items: center;
+  margin-left: var(--ref-spacing-xxxs);
+  color: var(--sys-text-color-light);
+}
+
+.topic-card__status > i {
+  font-size: var(--sys-icon-css-sm);
+}
+
+/* Headline — the claim. Hierarchy by size and weight, never by ink: this is the
+   thing a reader scans for, so it takes the h4 step and the default ink while
+   everything around it stays caption-sized. */
+.topic-card__headline {
+  font-size: var(--sys-text-style-h4-size);
+  line-height: var(--sys-text-style-h4-line-height);
+  font-weight: var(--sys-text-style-h4-weight);
+  color: var(--sys-text-color-default);
+  text-wrap: pretty;
+}
+
+/* Two lines, clamped. Three made the tallest cards a third taller than the
+   shortest and the list stopped reading as scannable. */
+.topic-card__summary {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--sys-text-color-light);
+}
+
+/* The sentence the reader typed when they ignored this. Set apart by a hairline
+   rather than a tint: it is their own note, not a system state, and a tinted
+   block would read as a warning. */
+.topic-card__reason {
+  margin-top: var(--ref-spacing-xxxs);
+  padding-top: var(--ref-spacing-xxs);
+  border-top: 1px solid var(--sys-border-color-default);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--sys-text-color-light);
+}
+
+.topic-card__reason-label {
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--sys-text-color-default);
+}
+
+/* ── The kebab ─────────────────────────────────────────────────────────────── */
+
+.topic-card__more {
+  position: absolute;
+  top: var(--ref-spacing-xxs);
+  right: var(--ref-spacing-xxs);
+  z-index: 1;
+}
+
+.topic-card__menu {
+  position: absolute;
+  top: calc(var(--ref-spacing-lg) + var(--ref-spacing-xxxs));
+  right: var(--ref-spacing-xxs);
+  z-index: 20;
+  min-width: 250px;
+}
+
+/* ── Picker variant ────────────────────────────────────────────────────────
+   The whole card is a control there, so it needs no separate hover rule — the
+   base hover above already is the app's card wash. What differs is that it has
+   no kebab, so the body reclaims the right gutter. */
+.topic-card--picker .topic-card__body {
+  padding-right: var(--ref-spacing-sm);
+}
+
+/* ── The in-chat row ───────────────────────────────────────────────────────
+   A line in a short list, not a card: the glyph anchors the left, the title and
+   summary stack to the right of it, and the row's own hairline separates it from
+   the next. Same hover convention, no frame of its own. */
+
+.topic-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xs);
+  width: 100%;
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  border: 0;
+  border-radius: var(--app-radius-sm);
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--ref-animation-short) var(--app-ease-standard);
+}
+
+.topic-row:hover,
+.topic-row:focus-visible {
+  background: var(--ref-color-electric-blue-05);
+}
+
+.topic-row:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: -2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .topic-row {
+    transition: none;
+  }
+}
+
+/* The badge is 24px and the title's first line is 18px, so left to itself the
+   pip hangs 6px below the sentence it belongs to. Centring it inside a box the
+   height of that line puts the two on one axis — derived from the line-height
+   token, not nudged by a magic 2px. */
+.topic-row__glyph {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  min-height: var(--sys-text-style-body-bold-line-height);
+}
+
+.topic-row__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  min-width: 0;
+}
+
+/* One line each. A row is a thing you skim before opening it, so neither the
+   title nor the summary may push the next row down. */
+.topic-row__title,
+.topic-row__summary {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.topic-row__title {
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--sys-text-color-default);
+}
+
+.topic-row__summary {
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--sys-text-color-light);
+}

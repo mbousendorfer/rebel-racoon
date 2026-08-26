@@ -46,6 +46,7 @@ body.has-modal {
 .add-source-modal,
 .connectors-modal,
 .topic-modal,
+.topic-ignore,
 .confirm-modal,
 .rename-modal,
 .save-folder-modal,
@@ -97,6 +98,35 @@ body.has-modal {
 
 .rename-modal {
   width: min(calc(100% - 32px), 440px);
+}
+
+/* Wider than Rename's 440 because it holds a textarea and an infobox, narrower
+   than the article dialog's 720 because it holds neither prose nor a list. */
+.topic-ignore {
+  width: min(calc(100% - 32px), 520px);
+  flex-direction: column;
+}
+
+/* The quoted headline under the question. It is the only thing telling the
+   reader WHICH row they are answering for, so it sits at body size rather than
+   as a caption — and italic, so it reads as the quotation it is. */
+.topic-ignore__sub {
+  margin: 0 0 var(--ref-spacing-xs);
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  font-style: italic;
+  color: var(--sys-text-color-light);
+}
+
+.topic-ignore .ap-dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+}
+
+.topic-ignore__input {
+  width: 100%;
+  resize: vertical;
 }
 
 /* ── Analyze social profiles modal ─────────────────────────── */
@@ -470,6 +500,7 @@ body.has-modal {
 .add-source-modal.open,
 .connectors-modal.open,
 .topic-modal.open,
+.topic-ignore.open,
 .confirm-modal.open,
 .rename-modal.open,
 .save-folder-modal.open,

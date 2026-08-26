@@ -26,7 +26,7 @@ import {
 } from "./conversation-status-card.js?v=246";
 import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=21";
 import { open as openRenameModal } from "./rename-modal.js?v=3";
-import { subscribe as subscribeContexts } from "../contexts-store.js?v=53";
+import { subscribe as subscribeContexts } from "../contexts-store.js?v=54";
 import { isFlagOn } from "../feature-flags.js?v=21";
 import {
   getPickerState as getTopPostsState,
@@ -479,7 +479,7 @@ function backTargetFor(path) {
   // has to be read from the hash here rather than taken from `path`.
   if (/^\/topics\/settings/.test(path)) {
     const pb = parseHashParams().get("pb");
-    return { to: pb ? `/topics?pb=${encodeURIComponent(pb)}` : "/topics", label: "Back to Topics" };
+    return { to: pb ? `/topics?pb=${encodeURIComponent(pb)}` : "/topics", label: "Back to the feed" };
   }
   return null;
 }
@@ -521,7 +521,7 @@ function currentTitle() {
   if (path === "/") return "Home";
   if (path === "/contexts") return "Playbooks";
   if (path === "/connectors") return "Connectors";
-  if (path === "/topics") return "Topics";
+  if (path === "/topics") return "Topic Feed";
   const sessionMatch = /^\/session\/([^/?]+)/.exec(path);
   if (sessionMatch) {
     const id = sessionMatch[1];
