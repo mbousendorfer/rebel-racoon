@@ -564,12 +564,27 @@
 
 /* ── Contributing posts ──────────────────────────────────────────────────── */
 
+/* The evidence sits on its own GROUND, not behind a hairline. The analysis is
+   Archie's prose; these are somebody else's posts, quoted — a different kind of
+   thing, and a rule between them only said "next section".
+   `--app-surface-subtle` on `--app-radius-card` with `sm` of padding is the
+   app's existing inset-panel recipe (see the gen-context panel in posts.css),
+   not a new one.
+
+   The hairline came OFF with it: the change of ground already draws the
+   boundary, and keeping both signals the same edge twice.
+
+   Nothing nests an elevation here — a card carrying a shadow inside a panel
+   carrying one is what the app forbids. This is a flat ground, and the post
+   cards keep their own explicit white fill, so they stay cards on it rather
+   than dissolving into one grey slab. */
 .topic-article__section {
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xxs);
-  padding-top: var(--ref-spacing-xs);
-  border-top: 1px solid var(--app-border-soft);
+  padding: var(--ref-spacing-sm);
+  border-radius: var(--app-radius-card);
+  background: var(--app-surface-subtle);
 }
 
 .topic-article__section-head {
