@@ -52,11 +52,17 @@
   gap: var(--ref-spacing-xs);
 }
 
-/* ── The maximum width ─────────────────────────────────────────────────────
-   1440 is derived rather than picked: the list at its 460px ceiling plus a
-   reading pane wide enough to hold the article's own measure with real gutters,
-   and no more. Past that the pane only grows its margins, which is how a reading
-   surface starts looking abandoned in the middle of a monitor.
+/* ── The maximum width, and why it is LEFT-aligned ─────────────────────────
+   Capped so the pane never grows past the measure (the arithmetic is on the rule
+   below), but the leftover goes to the RIGHT margin only — the rows start at this
+   screen's own left padding, where the topbar's title already sits.
+
+   ⚠️ Centred for several commits, and it read as broken: the shell prints
+   "Topic Feed" hard against the left edge while the toolbar, the tabs and the
+   reader floated ~240px in, so nothing on the screen shared a left edge with
+   the chrome above it. Note this is the ONE capped screen that does not centre —
+   /contexts, /connectors and /topics/settings all cap at 1280 and centre, which
+   is nearly the full content width, so their offset is small. 1132 is not.
 
    ⚠️ EVERY DIRECT CHILD, not an enumerated list of them. It WAS a list —
    `.topics-view__bar, .topics-view__body` — and the moment two more rows were
@@ -85,7 +91,6 @@
      was. A hand-picked number also drifts the moment the measure changes,
      which is the same class of bug as the enumerated child list above. */
   max-width: calc(var(--topic-list-max) + var(--ref-spacing-md) + var(--topic-measure) + 2 * var(--ref-spacing-md));
-  margin-inline: auto;
 }
 
 /* ── THE HOUSE HEADER PATTERN ──────────────────────────────────────────────

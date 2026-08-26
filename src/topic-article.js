@@ -176,10 +176,11 @@ function renderRelevance(topic) {
 export function renderTopicActions(topic, { close = "Close" } = {}) {
   if (!topic) return "";
   const ignored = topic.status === "ignored";
+  // Secondary FIRST, primary LAST — the affirmative action is the one you reach
+  // last, and in the pane this group is right-aligned so "last" also means
+  // closest to the edge the eye lands on. It was the other way round for a
+  // commit, which put Ignore in the position the primary should hold.
   return html`<div class="topic-article__actions">
-    <button type="button" class="ap-button primary orange" data-topic-use="${escapeAttr(topic.id)}">
-      <i class="ap-icon-single-chat-bubble"></i><span>Use in chat</span>
-    </button>
     ${raw(
       ignored
         ? html`<button type="button" class="ap-button stroked grey" data-topic-unignore="${escapeAttr(topic.id)}">
@@ -189,6 +190,9 @@ export function renderTopicActions(topic, { close = "Close" } = {}) {
             <i class="ap-icon-eye-off"></i><span>Ignore</span>
           </button>`,
     )}
+    <button type="button" class="ap-button primary orange" data-topic-use="${escapeAttr(topic.id)}">
+      <i class="ap-icon-single-chat-bubble"></i><span>Use in chat</span>
+    </button>
     ${raw(
       close
         ? html`<button type="button" class="ap-button ghost grey topic-article__close" data-topic-close>
