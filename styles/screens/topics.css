@@ -124,15 +124,31 @@
 .topics-view__toolbar {
   display: flex;
   align-items: center;
-  gap: var(--ref-spacing-xxs);
+  /* Between GROUPS. `sm` here against `xxxs` inside the scope cluster below —
+     spacing within a group has to be smaller than spacing between them, or the
+     grouping is a claim nothing backs up. */
+  gap: var(--ref-spacing-sm);
   flex: 0 0 auto;
   flex-wrap: wrap;
 }
 
-/* Pushed right by the free space rather than by a spacer, so anything added to
-   the left of it lands in the group it belongs to and the cog stays last. */
-.topics-view__settings {
-  margin-left: auto;
+/* ── The cog belongs to the SCOPE, not to the right edge ───────────────────
+   It was pinned far right with `margin-left: auto` for two commits, taken from
+   the product's header pattern where the cog is last on the right (5 surfaces
+   out of 5). That reading missed the CONDITION: in the product, the row carrying
+   the cog always has something anchoring it — a page title on the left, or
+   search and sort on the right of a toolbar. This toolbar has neither, so once
+   the page stopped centring the cog sat ~700px from the nearest control,
+   floating opposite nothing.
+
+   And it configures the SELECTED Playbook's listening, so it belongs beside the
+   select that names it: the select says which Playbook, the cog configures that
+   Playbook. Proximity is the only thing that can say that. Put it back on the
+   right edge the day this row grows a search or a sort to anchor that side. */
+.topics-view__scope-group {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
 }
 
 /* Capped so a long brand name cannot push Filters off the row. The DS's inline

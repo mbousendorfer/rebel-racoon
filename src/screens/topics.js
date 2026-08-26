@@ -350,17 +350,40 @@ function renderToolbar(pb, feed) {
          the composer's Playbook picker. It was a bare select for one commit,
          which said nothing about what it scopes, and a <label> stacked above it
          before that, which is form chrome in a toolbar. -->
-    <div class="topics-view__scope">
-      <details class="ap-select" id="topicScope" data-topic-scope>
-        <summary class="ap-select-trigger" title="Which Playbook this feed reads for">
-          <span class="ap-select-inline-label">Playbook</span>
-          <span class="ap-select-value">${raw(pb ? escapeAttr(pb.name) : "Choose a Playbook")}</span>
-          <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
-        </summary>
-        <div class="ap-select-dropdown" role="listbox" aria-label="Playbook">
-          <div class="ap-select-options">${raw(pbOptions)}</div>
-        </div>
-      </details>
+    <!-- The scope and its settings are ONE cluster: the select says which
+         Playbook, the cog configures that Playbook's listening. Proximity is
+         what says so — a tight gap inside, a wide one before Filters, which
+         answers a different question (which of these Topics to show). -->
+    <div class="topics-view__scope-group">
+      <div class="topics-view__scope">
+        <details class="ap-select" id="topicScope" data-topic-scope>
+          <summary class="ap-select-trigger" title="Which Playbook this feed reads for">
+            <span class="ap-select-inline-label">Playbook</span>
+            <span class="ap-select-value">${raw(pb ? escapeAttr(pb.name) : "Choose a Playbook")}</span>
+            <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
+          </summary>
+          <div class="ap-select-dropdown" role="listbox" aria-label="Playbook">
+            <div class="ap-select-options">${raw(pbOptions)}</div>
+          </div>
+        </details>
+      </div>
+
+      <!-- Icon-only, and that is the house treatment: the cog is the one glyph
+           nobody has to hover to recognise, and a labelled Settings would give a
+           rare action the same weight as the controls it sits beside. Its title
+           carries the cadence, which has nowhere else to live. -->
+      <a
+        class="ap-icon-button stroked grey topics-view__settings"
+        href="#/topics/settings${raw(pb ? `?pb=${encodeURIComponent(pb.id)}` : "")}"
+        aria-label="Feed settings"
+        title="${raw(
+          feed
+            ? `Feed settings · refreshed ${escapeAttr(findCadence(feed.cadence)?.adverb || "weekly")}`
+            : "Feed settings",
+        )}"
+      >
+        <i class="ap-icon-cog"></i>
+      </a>
     </div>
 
     <!-- LABELLED, with its count inline. The product never ships this as an icon
@@ -381,23 +404,6 @@ function renderToolbar(pb, feed) {
       </button>
       ${raw(view.filtersOpen ? renderFilters() : "")}
     </div>
-
-    <!-- Icon-only, and that is the house treatment: the cog is the one glyph
-         nobody has to hover to recognise, and a labelled Settings would give a
-         rare action the same weight as the controls it sits beside. Its title
-         carries the cadence, which has nowhere else to live. -->
-    <a
-      class="ap-icon-button stroked grey topics-view__settings"
-      href="#/topics/settings${raw(pb ? `?pb=${encodeURIComponent(pb.id)}` : "")}"
-      aria-label="Feed settings"
-      title="${raw(
-        feed
-          ? `Feed settings · refreshed ${escapeAttr(findCadence(feed.cadence)?.adverb || "weekly")}`
-          : "Feed settings",
-      )}"
-    >
-      <i class="ap-icon-cog"></i>
-    </a>
   </div>`;
 }
 

@@ -67,7 +67,12 @@ Relevé sur le produit réel (Inbox, Drafts, Analytics, Employee Advocacy ×2). 
 
 Les invariants, avec leur nombre d'occurrences sur cinq surfaces produit :
 
-- **Le cog est TOUJOURS le dernier élément, à droite** (5/5). Jamais dans un cluster à gauche, jamais avant un autre bouton. C'est un icon-button, pas un bouton libellé : une action rare ne prend pas le poids d'un contrôle qu'on utilise à chaque visite.
+- **Le cog va à droite, en dernier — À CONDITION que quelque chose ancre ce côté** (5/5 dans le produit). C'est un icon-button, pas un bouton libellé : une action rare ne prend pas le poids d'un contrôle qu'on utilise à chaque visite.
+
+  ⚠️ **La condition est la partie qu'on oublie.** Dans le produit, la rangée qui porte le cog a toujours un ancrage — un titre de page à gauche, ou search et sort à droite d'une toolbar. Sur une rangée qui n'a ni l'un ni l'autre, « poussé à droite » ne produit pas un alignement, ça produit un bouton seul dans du vide : sur `/topics`, une fois la page alignée à gauche, le cog s'est retrouvé à ~700px du contrôle le plus proche, en face de rien.
+
+  Dans ce cas, **le cog rejoint ce qu'il configure.** Celui de `/topics` règle l'écoute du Playbook sélectionné, donc il se colle au select qui le nomme (`gap` `xxxs` dedans contre `sm` entre groupes — l'espace dedans doit être plus petit que l'espace autour, sinon le groupe est une affirmation que rien ne soutient). Il repart à droite le jour où la rangée gagne un search ou un sort pour ancrer ce côté.
+
 - ⚠️ **LA RANGÉE 1 EST DÉJÀ PRISE : c'est la topbar du shell.** Le produit ouvre bien sur une rangée de titre (5/5) — mais dans cette app `topbar.js` imprime le nom de la route pour **toute** route de premier niveau. Une page qui redessine son titre ne suit pas le motif, elle le double : `/topics` a imprimé « Topic Feed » 40px sous une topbar imprimant « Topic Feed », sur une rangée qui ne portait rien d'autre que le cog. Un titre seul ne fait pas une rangée.
 
   La règle qui tient : **la topbar nomme la route, et un écran ne dessine son propre titre que si la topbar le lui a CÉDÉ** — `/playbook/:id` et `/topics/settings`, où elle prend un contrôle de retour à la place — **ou si la rangée porte plus qu'un titre**. `/contexts` est la fausse exception : son en-tête porte un sous-titre chargé de données (« N Playbooks · applied across M chats »), une recherche et un CTA primaire, donc son titre est un élément sur quatre.
