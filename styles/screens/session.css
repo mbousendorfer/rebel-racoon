@@ -1739,32 +1739,24 @@ body.hide-playbook-colors .composer-context__dot {
    out-weigh the three starters below and turn the hero into a wall. See
    renderFreshTopics in screens/session.js. */
 
+/* NO FRAME. It was a bordered panel wrapping the rows with a grey footer band —
+   a box around cards, which is the same nesting the reading pane just shed, and
+   it is what made the section read as a list. The starters above it are a bare
+   grid; this is one too, so the two sections look like siblings. */
 .empty-chat__topics {
   align-self: center;
   width: 100%;
   max-width: 1040px;
   text-align: left;
-  background: var(--app-surface);
-  border: 1px solid var(--app-border-soft);
-  border-radius: var(--app-radius-card);
-  overflow: hidden;
 }
 
-.empty-chat__topics-rows {
-  display: flex;
-  flex-direction: column;
-}
-
-/* The hairline between rows, and none above the first or below the last — the
-   panel's own border does those. */
-.empty-chat__topics-rows > .topic-row + .topic-row {
-  border-top: 1px solid var(--app-border-soft);
-}
-
-/* The panel's rows carry no radius of their own, so the hover wash must not
-   round inside a square frame. */
-.empty-chat__topics-rows > .topic-row {
-  border-radius: 0;
+/* The starter grid's geometry exactly — same columns, same gap, same cap — so
+   the Topic cards line up with the workflow cards above them instead of merely
+   sitting near them. */
+.empty-chat__topics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--ref-spacing-xs);
 }
 
 /* The scope, beside the section label rather than repeated on every row: all six
@@ -1774,14 +1766,14 @@ body.hide-playbook-colors .composer-context__dot {
   color: var(--sys-text-color-light);
 }
 
+/* A line under the grid, not a panel footer: there is no panel any more, so a
+   grey band and a rule would be drawing the bottom of a box that is gone. */
 .empty-chat__topics-foot {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--ref-spacing-xxs);
-  padding: var(--ref-spacing-xxs) var(--ref-spacing-sm);
-  border-top: 1px solid var(--app-border-soft);
-  background: var(--app-surface-subtle);
+  margin-top: var(--ref-spacing-xs);
 }
 
 /* N out of M, where M is every Topic under a week old whatever its status — so
@@ -1796,5 +1788,10 @@ body.hide-playbook-colors .composer-context__dot {
 @media (max-width: 900px) {
   .empty-chat__topics {
     max-width: 651px;
+  }
+
+  /* Two columns, matching .starter-grid at the same breakpoint. */
+  .empty-chat__topics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

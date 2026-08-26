@@ -293,80 +293,12 @@
   padding-right: var(--ref-spacing-sm);
 }
 
-/* ── The in-chat row ───────────────────────────────────────────────────────
-   A line in a short list, not a card: the glyph anchors the left, the title and
-   summary stack to the right of it, and the row's own hairline separates it from
-   the next. Same hover convention, no frame of its own. */
-
-.topic-row {
+/* ── The verb on the card face (the new chat's Fresh-topics grid) ──────────
+   Sides match the body's, so the button's left edge is the headline's. A
+   hairline above it, because the card is a reading surface and an action row
+   fused to the prose reads as part of it. Auto-width: a CTA never stretches. */
+.topic-card__act {
   display: flex;
-  align-items: flex-start;
-  gap: var(--ref-spacing-xs);
-  width: 100%;
-  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
-  border: 0;
-  border-radius: var(--app-radius-sm);
-  background: transparent;
-  font: inherit;
-  color: inherit;
-  text-align: left;
-  cursor: pointer;
-  transition: background-color var(--ref-animation-short) var(--app-ease-standard);
-}
-
-.topic-row:hover,
-.topic-row:focus-visible {
-  background: var(--ref-color-electric-blue-05);
-}
-
-.topic-row:focus-visible {
-  outline: 2px solid var(--ref-color-electric-blue-100);
-  outline-offset: -2px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .topic-row {
-    transition: none;
-  }
-}
-
-/* The badge is 24px and the title's first line is 18px, so left to itself the
-   pip hangs 6px below the sentence it belongs to. Centring it inside a box the
-   height of that line puts the two on one axis — derived from the line-height
-   token, not nudged by a magic 2px. */
-.topic-row__glyph {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  min-height: var(--sys-text-style-body-bold-line-height);
-}
-
-.topic-row__text {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxxs);
-  min-width: 0;
-}
-
-/* One line each. A row is a thing you skim before opening it, so neither the
-   title nor the summary may push the next row down. */
-.topic-row__title,
-.topic-row__summary {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.topic-row__title {
-  font-size: var(--sys-text-style-body-bold-size);
-  line-height: var(--sys-text-style-body-bold-line-height);
-  font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--sys-text-color-default);
-}
-
-.topic-row__summary {
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--sys-text-color-light);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm) var(--ref-spacing-sm);
+  border-top: 1px solid var(--app-border-soft);
 }

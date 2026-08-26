@@ -27,7 +27,7 @@ import {
   render as renderConversationStatusCard,
 } from "./components/conversation-status-card.js?v=246";
 import { renderDashboard } from "./screens/dashboard.js?v=73";
-import { renderSession } from "./screens/session.js?v=542";
+import { renderSession } from "./screens/session.js?v=543";
 import { renderContexts } from "./screens/contexts.js?v=280";
 import { renderTopics } from "./screens/topics.js?v=13";
 import { renderTopicsSettings } from "./screens/topics-settings.js?v=2";

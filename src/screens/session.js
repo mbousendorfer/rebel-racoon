@@ -114,11 +114,11 @@ import {
   subscribe as subscribeRightPanel,
 } from "../components/right-panel.js?v=454";
 import { setHandoff, consumeHandoff, hasHandoff } from "../handoff.js?v=21";
-import { attachTopicToChat, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=1";
+import { attachTopicToChat, useTopicInChat, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=1";
 import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1";
 import { getFreshTopics, countFresh, subscribe as subscribeTopics } from "../topics-store.js?v=1";
 import { findTopicSource } from "../topics-catalog.js?v=2";
-import { renderTopicRow } from "../components/topic-card.js?v=3";
+import { renderTopicCard } from "../components/topic-card.js?v=4";
 import { openTopicPicker, openTopicArticle } from "../components/topic-picker-modal.js?v=5";
 import { parseHashParams, setHashQuery } from "../url-state.js?v=22";
 import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=33";
@@ -1275,9 +1275,20 @@ function renderTopicPickerRow() {
 }
 
 // ── "Fresh topics to review" ───────────────────────────────────────────────
-// The freshest to-review Topics from THIS chat's Playbook, at most six, above the
-// workflow starters. A row opens the Topic's article; it does not choose it —
-// that decision comes after reading.
+// The freshest to-review Topics from THIS chat's Playbook, at most six, BELOW the
+// workflow starters and in the same 3-column grid.
+//
+// ⚠️ It was a stack of full-width rows ABOVE the starters, on the argument that
+// proposals should come before verbs. Both halves were wrong in practice: six
+// rows ran ~500px tall and pushed all three workflow cards off the fold, so the
+// "proposal" buried the things it was supposed to precede. As a 3x2 grid of the
+// SAME card the feed uses, it takes two rows instead of six and the starters stay
+// visible.
+//
+// The card's body opens the Topic's article — reading comes before deciding — and
+// `withUse` adds the verb on the card face for the reader who already knows,
+// because a card sitting beside three workflow cards you click to start
+// something has to be actionable the same way.
 //
 // NO Playbook chip per row. Every Topic here belongs to the chat's own Playbook,
 // so a chip repeated identically six times, under a composer that already names
@@ -1301,7 +1312,9 @@ function renderFreshTopics(session) {
   const pb = getContextById(pbId);
   const scopeHref = `#/topics?pb=${encodeURIComponent(pbId)}`;
 
-  const rows = topics.map((t) => renderTopicRow(t, { source: findTopicSource(t.sourceId) })).join("");
+  const cards = topics
+    .map((t) => renderTopicCard(t, { source: findTopicSource(t.sourceId), variant: "picker", withUse: true }))
+    .join("");
 
   return html`
     <h2 class="empty-chat__starter-label" id="freshTopicsLabel">
@@ -1309,7 +1322,7 @@ function renderFreshTopics(session) {
       ${raw(pb ? html`<span class="empty-chat__topics-scope">· ${pb.name}</span>` : "")}
     </h2>
     <div class="empty-chat__topics" role="group" aria-labelledby="freshTopicsLabel">
-      <div class="empty-chat__topics-rows">${raw(rows)}</div>
+      <div class="empty-chat__topics-grid">${raw(cards)}</div>
       <footer class="empty-chat__topics-foot">
         <span class="empty-chat__topics-count">${topics.length} out of ${total} shown</span>
         <a class="ap-link standalone small" href="${raw(scopeHref)}"
@@ -2034,14 +2047,15 @@ function renderEmptyHero(sessionId, composerMarkup = "", session = null) {
         Drop a source — I'll turn it into a batch of ready-to-schedule posts, all from one chat.
       </div>
       ${raw(composerMarkup)}
-      <!-- Proposals first, verbs second. The Topics list answers "what should I
-           post today?", which is the question someone opening a blank chat
-           actually has; the starters answer "I already know what I want to do".
-           Demoting the starters to a row of pills was the alternative and it
-           flattens three whole features into link text. -->
-      ${raw(renderFreshTopics(session))}
-      <h2 class="empty-chat__starter-label" id="starterGridLabel">Or jump into a workflow</h2>
+      <!-- Starters first, proposals second. The other way round was tried on the
+           argument that "what should I post today?" is the question someone
+           opening a blank chat actually has — true, but six full-width Topic rows
+           pushed all three workflow cards below the fold, so the proposal buried
+           the features it was meant to introduce. Both are card grids now, so the
+           Topics cost two rows instead of six and nothing is hidden. -->
+      <h2 class="empty-chat__starter-label" id="starterGridLabel">Jump into a workflow</h2>
       <div class="starter-grid" role="group" aria-labelledby="starterGridLabel">${raw(cards)}</div>
+      ${raw(renderFreshTopics(session))}
     </div>
   `;
 }
@@ -5136,6 +5150,15 @@ function bindSession(root, session) {
       // A row in the hero's "Fresh topics" list — opens the article, it does not
       // choose the Topic. Reading comes before deciding, and the dialog's own
       // footer is where the deciding happens.
+      // The verb ON a Fresh-topics card. Checked before the body's hook for
+      // reading order only — the button is a SIBLING of the body button, so
+      // closest() could never confuse the two.
+      const freshUse = event.target.closest("[data-topic-use]");
+      if (freshUse) {
+        useTopicInChat(freshUse.dataset.topicUse);
+        return;
+      }
+
       const freshRow = event.target.closest("[data-topic-read]");
       if (freshRow) {
         openTopicArticle(freshRow.dataset.topicRead);

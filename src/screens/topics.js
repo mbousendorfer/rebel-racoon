@@ -52,7 +52,7 @@ import {
   findCadence,
   isLiveSource,
 } from "../topics-catalog.js?v=2";
-import { renderTopicCard } from "../components/topic-card.js?v=3";
+import { renderTopicCard } from "../components/topic-card.js?v=4";
 import { renderTopicArticle, renderTopicHeader } from "../topic-article.js?v=4";
 import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=1";
 import { useTopicInChat } from "../topic-flow.js?v=1";

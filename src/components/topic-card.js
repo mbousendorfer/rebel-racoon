@@ -1,8 +1,14 @@
-// One Topic, in the three shapes it is read in.
+// One Topic, in the two shapes it is read in.
 //
 //   renderTopicCard(topic, { variant: "feed" })    the queue on /topics
-//   renderTopicCard(topic, { variant: "picker" })  inside the Pick-a-topic dialog
-//   renderTopicRow(topic)                          the in-chat "Fresh topics" list
+//   renderTopicCard(topic, { variant: "picker" })  the Pick-a-topic dialog, and
+//                                                  the new chat's Fresh-topics grid
+//
+// There WAS a third shape — renderTopicRow, a full-width row for the new chat's
+// hero. Six of them stacked ran ~500px tall and pushed the workflow starters off
+// the fold, and a row cannot carry an action without becoming a card anyway. The
+// hero now renders the picker's card in a grid, so a Topic looks the same
+// wherever it is read, and the shape count went down rather than up.
 //
 // The feed and the picker emit the SAME CARD, part for part — same frame, badge,
 // age, status glyph, signals, headline, summary. A reader who has just been
@@ -94,7 +100,7 @@ function renderMeta(topic, source) {
  */
 export function renderTopicCard(
   topic,
-  { source = null, variant = "feed", menuOpen = false, articleOpen = false } = {},
+  { source = null, variant = "feed", menuOpen = false, articleOpen = false, withUse = false } = {},
 ) {
   if (!topic) return "";
   const picker = variant === "picker";
@@ -134,6 +140,20 @@ export function renderTopicCard(
       )}
     </button>
     ${raw(picker ? "" : renderKebab(topic, menuOpen))}
+    <!-- The verb ON the card, for a host that has no kebab and sits beside other
+         cards you click to START something — the new chat's hero. A sibling of
+         the body button, never inside it: a button in a button is invalid HTML.
+         The body still opens the article, so "read before you choose" keeps its
+         door; this is the second one, for the reader who already knows. -->
+    ${raw(
+      withUse
+        ? html`<div class="topic-card__act">
+            <button type="button" class="ap-button stroked grey" data-topic-use="${escapeAttr(topic.id)}">
+              <i class="ap-icon-single-chat-bubble"></i><span>Use in chat</span>
+            </button>
+          </div>`
+        : "",
+    )}
   </article>`;
 }
 
@@ -196,38 +216,5 @@ function menuRow(topicId, attr, icon, label, description = "") {
       </div>
       ${raw(description ? html`<span class="ap-action-dropdown-item-description">${description}</span>` : "")}
     </div>
-  </button>`;
-}
-
-// ── The in-chat row ────────────────────────────────────────────────────────
-// A different shape for a different job: the feed's card is a thing you triage,
-// this is a line in a short list you skim before starting a chat. One button per
-// row, and it OPENS THE ARTICLE — it does not choose the Topic. That decision
-// comes after reading.
-//
-// No Playbook chip per row, unlike the fork. Every row in this list belongs to
-// the chat's own Playbook, so a chip repeated identically six times — under a
-// composer that already names the same Playbook — labels nothing. The section
-// header carries the scope once.
-//
-// The signal mark rides at the END OF THE TITLE, inline, so it reads as part of
-// the sentence it qualifies rather than as a second label on its own line.
-export function renderTopicRow(topic, { source = null } = {}) {
-  if (!topic) return "";
-  const mark = topic.isTrending ? renderTrendingMark() : topic.isUpdated ? renderUpdatedMark() : "";
-  return html`<button type="button" class="topic-row" data-topic-read="${escapeAttr(topic.id)}">
-    <span class="topic-row__glyph">
-      ${raw(
-        source
-          ? html`<span class="topic-badge topic-badge--${source.accent}" aria-hidden="true"
-              ><i class="${source.icon}"></i
-            ></span>`
-          : "",
-      )}
-    </span>
-    <span class="topic-row__text">
-      <span class="topic-row__title">${topicTitle(topic)}${raw(mark ? ` ${mark}` : "")}</span>
-      <span class="topic-row__summary">${topic.summary}</span>
-    </span>
   </button>`;
 }
