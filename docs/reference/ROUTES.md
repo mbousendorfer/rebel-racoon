@@ -4,17 +4,17 @@ Source de vérité : [`src/app.js`](../../src/app.js) (route table) + [`src/rout
 
 ## Route table
 
-| Route                | Handler                | Notes                                                                                                                                                                                                                                                                  |
-| -------------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/`                  | `dashboard.js`         | **Redirect** par défaut : first-time (`new-alt`) → `/welcome-alt` ; returning → most-recent session ou nouvelle session. Avec `frontPage` **+** `topics` : rend la **front page** d'Archie (une + grille de 6 + rubriques). La branche onboarding passe avant le flag. |
-| `/session/:id`       | `session.js`           | La surface chat principale (le plus gros fichier du projet). Héberge le thread assistant, le composer, les flows per-session (intake, draft, clips).                                                                                                                   |
-| `/contexts`          | `contexts.js`          | Library **Playbooks** : cards (DO/DON'T, brief, color tag) + edit en side panel.                                                                                                                                                                                       |
-| `/playbook/:id`      | `playbook.js`          | Page détail d'un Playbook. Topbar back → `/contexts`.                                                                                                                                                                                                                  |
-| `/connectors`        | `connectors.js`        | Gallery des connectors (feature flag `connectors`, default OFF). Détail dans un modal.                                                                                                                                                                                 |
-| `/topics`            | `topics.js`            | La **section** du listening : une + grille, rubriques (chips Source) + filtre Playbook (`?pb=`), archive groupée par date. Flag `topics`, default OFF ; deep-link périmé → `/`. Reste la vue exhaustive même quand `/` est une front page.                             |
-| `/topics/settings`   | `topics-settings.js`   | **Topics settings** — les six sources d'écoute + la cadence, scopées à un Playbook (`?pb=`). Une page, pas un onglet : on la règle une fois. Topbar back → `/topics`.                                                                                                  |
-| `/welcome-alt`       | `welcome-alt.js`       | Onboarding first-time. Redirige vers une session transitoire. Body en `.onboarding` (full-bleed).                                                                                                                                                                      |
-| `/welcome-alt/recap` | `welcome-alt-recap.js` | Recap final du Playbook construit pendant l'onboarding.                                                                                                                                                                                                                |
+| Route                | Handler                | Notes                                                                                                                                                                                                                                                                                                          |
+| -------------------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`                  | `dashboard.js`         | **Redirect**, et rien d'autre : first-time (`new-alt`) → `/welcome-alt` ; returning → most-recent session ou nouvelle session. Cette route a rendu une front page magazine derrière le flag `frontPage` ; c'est parti avec le magazine Topics (voir [`FEATURES.md`](FEATURES.md) §17).                         |
+| `/session/:id`       | `session.js`           | La surface chat principale (le plus gros fichier du projet). Héberge le thread assistant, le composer, les flows per-session (intake, draft, clips).                                                                                                                                                           |
+| `/contexts`          | `contexts.js`          | Library **Playbooks** : cards (DO/DON'T, brief, color tag) + edit en side panel.                                                                                                                                                                                                                               |
+| `/playbook/:id`      | `playbook.js`          | Page détail d'un Playbook. Topbar back → `/contexts`.                                                                                                                                                                                                                                                          |
+| `/connectors`        | `connectors.js`        | Gallery des connectors (feature flag `connectors`, default OFF). Détail dans un modal.                                                                                                                                                                                                                         |
+| `/topics`            | `topics.js`            | Le **Topic Feed** : deux segments (Ready to draft / Topics for later), un dropdown Filters, trois groupes d'âge, pagination par 10, et l'article en **master–detail** à côté de la liste. Scopé à **un** Playbook par `?pb=` — jamais un scope global. Flag `topicFeed`, default OFF ; deep-link périmé → `/`. |
+| `/topics/settings`   | `topics-settings.js`   | **Feed settings** — les huit sources d'écoute + la cadence + les sites de la source Brand website, scopés à un Playbook (`?pb=`). Une page, pas un onglet : on la règle une fois. Commit direct, aucune barre Save. Topbar back → `/topics`.                                                                   |
+| `/welcome-alt`       | `welcome-alt.js`       | Onboarding first-time. Redirige vers une session transitoire. Body en `.onboarding` (full-bleed).                                                                                                                                                                                                              |
+| `/welcome-alt/recap` | `welcome-alt-recap.js` | Recap final du Playbook construit pendant l'onboarding.                                                                                                                                                                                                                                                        |
 
 ## Matching & lifecycle
 
@@ -45,8 +45,9 @@ Exemples observés :
 
 - `/session/:id?tab=posts` — Posts tab actif (right panel mode `drafts`)
 - `/session/:id?focusIdea=…` — scroll-and-highlight d'une idée précise
-- `/topics?pb=ctx-…` — le feed **filtré** sur un Playbook
-- `/topics/settings?pb=ctx-…` — la page de réglages **scopée** au même Playbook. `?pb=` est une seule idée partagée par les deux surfaces ; seule la valeur absente diffère (feed → tous, réglages → le défaut ★). Obligatoire sur les réglages : sans lui, configurer B puis Retour montrerait A. Le back du topbar le remporte vers le feed.
+- `/topics?pb=ctx-…` — le feed **scopé** à un Playbook. Un `?pb=` pointant vers un Playbook disparu retombe sur le défaut plutôt que de vider l'écran sans explication
+- `/topics?topic=topic-…` — ouvre le feed avec **l'article de ce Topic déjà affiché**, et élargit le filtre de statut à **tous** les états pour cette visite : un Topic ignoré n'est pas dans la vue par défaut, donc l'article s'ouvrirait sinon sur une carte que la liste ne montre pas
+- `/topics/settings?pb=ctx-…` — la page de réglages **scopée** au même Playbook. `?pb=` est une seule idée partagée par les deux surfaces, donc le scope survit à l'aller comme au retour (la topbar renvoie « Back to the feed » avec le param). Obligatoire sur les réglages : sans lui, configurer B puis Retour montrerait A. Le back du topbar le remporte vers le feed.
 - (autres possibles : `?tab=ideas`, `?tab=sources`, `?tab=clips`, etc.)
 
 ## Handoffs entre routes
@@ -69,15 +70,15 @@ if (payload) {
 
 ### Handoffs actifs (consumés au mount de `session.js`)
 
-| Clé                          | Posé par                                 | Consommé par →                      |
-| ---------------------------- | ---------------------------------------- | ----------------------------------- |
-| `pendingStartFlow`           | dashboard / new chat with a Playbook     | `startActionPickerFlow`             |
-| `pendingDraftIdeaId`         | idea card "Draft post"                   | `askProfileQuestion` (`draft-flow`) |
-| `pendingAskSource`           | source card "Ask"                        | `askWhatToKnow`                     |
-| `pendingAskConnector`        | connectors gallery / modal "Try in chat" | `askConnector` (`connector-ask`)    |
-| `pendingTopicChat`           | topic card / dialog / rail du hero       | `startTopicChat` (`topic-flow`)     |
-| `pendingStartContextBuilder` | `/contexts` "New Playbook" + welcome-alt | `context-builder` (création)        |
-| `pendingStartPlaybookEditor` | `/contexts` card edit                    | `playbook-editor`                   |
+| Clé                          | Posé par                                              | Consommé par →                      |
+| ---------------------------- | ----------------------------------------------------- | ----------------------------------- |
+| `pendingStartFlow`           | dashboard / new chat with a Playbook                  | `startActionPickerFlow`             |
+| `pendingDraftIdeaId`         | idea card "Draft post"                                | `askProfileQuestion` (`draft-flow`) |
+| `pendingAskSource`           | source card "Ask"                                     | `askWhatToKnow`                     |
+| `pendingAskConnector`        | connectors gallery / modal "Try in chat"              | `askConnector` (`connector-ask`)    |
+| `pendingTopicChat`           | Use in chat, depuis les quatre surfaces qui l'offrent | `attachTopicToChat` (`topic-flow`)  |
+| `pendingStartContextBuilder` | `/contexts` "New Playbook" + welcome-alt              | `context-builder` (création)        |
+| `pendingStartPlaybookEditor` | `/contexts` card edit                                 | `playbook-editor`                   |
 
 ## Navigation interne — patterns
 

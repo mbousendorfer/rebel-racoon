@@ -19,6 +19,7 @@ Interactive prototype for exploring and validating Agorapulse UI redesigns — s
 | You're touching…                      | Read                                                                                                      |
 | ------------------------------------- | --------------------------------------------------------------------------------------------------------- |
 | a Playbook field or section           | [`CONCEPTS.md`](docs/reference/CONCEPTS.md) §1 + [`FEATURES.md`](docs/reference/FEATURES.md) §9           |
+| anything in the Topic Feed            | [`FEATURES.md`](docs/reference/FEATURES.md) §17 + [`specs/AC-TOPIC-FEED.md`](docs/specs/AC-TOPIC-FEED.md) |
 | any HTML/CSS                          | [`DESIGN-SYSTEM.md`](docs/reference/DESIGN-SYSTEM.md) + [`UI-PATTERNS.md`](docs/reference/UI-PATTERNS.md) |
 | a new route or screen                 | [`ROUTES.md`](docs/reference/ROUTES.md) + [`ARCHITECTURE.md`](docs/reference/ARCHITECTURE.md)             |
 | state that has to live somewhere      | [`STORES.md`](docs/reference/STORES.md)                                                                   |
@@ -52,23 +53,23 @@ With Claude Code the dev server auto-launches via `.claude/launch.json` (server 
 
 ### Routes (declared in `src/app.js`)
 
-| Route                | Screen                 | Notes                                                                                                                                    |
-| -------------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `/`                  | `dashboard.js`         | Redirect by default (first-time → `/welcome-alt`, returning → most-recent session); with `frontPage` + `topics`, Archie's **front page** |
-| `/session/:id`       | `session.js`           | The main chat surface (largest file); hosts the assistant thread, composer, and per-session flows                                        |
-| `/contexts`          | `contexts.js`          | Standalone **Playbooks** library (cards + edit)                                                                                          |
-| `/playbook/:id`      | `playbook.js`          | Playbook detail page (topbar back → `/contexts`)                                                                                         |
-| `/connectors`        | `connectors.js`        | Connectors gallery (marketplace); detail opens in a modal (gated by the `connectors` flag)                                               |
-| `/topics`            | `topics.js`            | **Topics** — the listening section: lead story + grid, across every Playbook (gated by `topics`)                                         |
-| `/topics/settings`   | `topics-settings.js`   | **Topics settings** — the six listening sources + cadence for one Playbook (`?pb=`); topbar back                                         |
-| `/welcome-alt`       | `welcome-alt.js`       | First-time onboarding kickoff (thin redirect into a transient session)                                                                   |
-| `/welcome-alt/recap` | `welcome-alt-recap.js` | Onboarding recap reveal of the built Playbook                                                                                            |
+| Route                | Screen                 | Notes                                                                                             |
+| -------------------- | ---------------------- | ------------------------------------------------------------------------------------------------- |
+| `/`                  | `dashboard.js`         | Redirect, and nothing else (first-time → `/welcome-alt`, returning → most-recent session)         |
+| `/session/:id`       | `session.js`           | The main chat surface (largest file); hosts the assistant thread, composer, and per-session flows |
+| `/contexts`          | `contexts.js`          | Standalone **Playbooks** library (cards + edit)                                                   |
+| `/playbook/:id`      | `playbook.js`          | Playbook detail page (topbar back → `/contexts`)                                                  |
+| `/connectors`        | `connectors.js`        | Connectors gallery (marketplace); detail opens in a modal (gated by the `connectors` flag)        |
+| `/topics`            | `topics.js`            | **Topics** — the listening section: lead story + grid, across every Playbook (gated by `topics`)  |
+| `/topics/settings`   | `topics-settings.js`   | **Topics settings** — the six listening sources + cadence for one Playbook (`?pb=`); topbar back  |
+| `/welcome-alt`       | `welcome-alt.js`       | First-time onboarding kickoff (thin redirect into a transient session)                            |
+| `/welcome-alt/recap` | `welcome-alt-recap.js` | Onboarding recap reveal of the built Playbook                                                     |
 
 There is **no `/settings` route** — it was removed. The prototype Admin controls (user mode + feature flags + docs link) now live in the sidebar footer cog popover (`admin-menu.js`, rendered by `sidebar.js`); the old Social-accounts page was dropped (`social-profiles.js` remains as a shared helper).
 
 `setAfterRender` (in `app.js`) re-renders the sidebar + conversation-status-card after every route change and toggles the `body.onboarding` full-bleed class for the welcome-alt flow.
 
-> **Vocabulary:** a saved AI context is a **Playbook** (UI label) but the code/store calls it a **Context** (`contexts-store`, `contextId`). Source → Idea → Draft (post) → Schedule is the content pipeline; a **Topic** (`topics-store`, flag `topics`) is an optional step upstream of it. `topic` stays banned as a synonym for **Idea** — a Topic is its own object.
+> **Vocabulary:** a saved AI context is a **Playbook** (UI label) but the code/store calls it a **Context** (`contexts-store`, `contextId`). Source → Idea → Draft (post) → Schedule is the content pipeline; a **Topic** (`topics-store`, flag `topicFeed`) is an optional step upstream of it. `topic` stays banned as a synonym for **Idea** — a Topic is its own object.
 
 ### Source layout
 
@@ -99,9 +100,10 @@ src/
   assistant.js          — per-session conversational thread (turns, reasoning chips, MCP query)
   sources-stream.js     — sources PER SESSION + global uploads + processing state machine
   schedule-store.js     — scheduled-post queue (calendar)
-  topics-store.js       — GLOBAL listening dossiers + the mock scan (flag `topics`)
-  topics-feed.js        — shared magazine render engine (lead + grid + section chips)
-  topics-catalog.js     — the six listening sources + cadences (CONFIG, like ff-catalog)
+  topic-feeds-store.js  — GLOBAL: one listening feed per Playbook (flag `topicFeed`)
+  topics-store.js       — GLOBAL: the Topics + the triage, in two separate structures
+  topics-catalog.js     — the eight listening sources, cadences, kinds, review
+                          statuses, signals (CONFIG, like ff-catalog)
   composer-mentions.js  — per-session @mention pills in the composer
   composer-connector.js — composer's "Connected sources" submenu (feature-flagged)
 
@@ -119,7 +121,8 @@ src/
   clip-formats.js        — video aspect-ratio catalog
   connectors-view.js    — shared pure render helpers for the connectors gallery + detail
   connector-ask.js      — launches the in-chat "Ask a connector" flow (gallery + right panel)
-  topic-flow.js         — a topic opens a chat with itself attached as a Source
+  topic-article.js      — ONE article renderer: the feed's pane, the picker, the in-chat dialog
+  topic-flow.js         — Use in chat: mark Used, then a new chat with the Topic as a Source
 
   # Studios (full-panel takeovers) + newer surfaces (not exhaustive — see docs/reference/FEATURES.md)
   batch-studio.js       — batch-of-posts studio (upload/analyse → review)
@@ -144,20 +147,21 @@ src/
   components/             — each exports init() (injects DOM once) + render/open()
     topbar.js             persistent header: route title (rename on session) +
                           Sources / Ideas / Drafts pills + status-card toggle; back on /playbook
-    sidebar.js            left rail: brand, New chat, Search, Playbooks / Connectors / Topics nav,
+    sidebar.js            left rail: brand, New chat, Search, Playbooks / Connectors / Topic Feed nav,
                           recent chats (pin/rename/delete + Sort & group), footer popmenu (feedback/bug/shortcuts + Admin menu)
     right-panel.js        sliding panel — modes: drafts / ideas / sources / clips / context-brief
     conversation-status-card.js  floating in-progress card (sources/ideas/drafts counts)
     content-workspace.js  shared Sources+Ideas library layout (search / sort / By Source / All Ideas)
     source-card.js, idea-card.js, idea-card-compact.js, post-card.js, clip-card.js, empty-state.js
-    topic-card.js         one listening dossier, in three sizes (grid / lead / hero rail)
+    topic-card.js         one Topic: the feed's card, the picker's card, the in-chat row
     social-post-card.js   someone ELSE's published post, as evidence (not top-post-card)
     toast.js              showToast() snackbar (DS .ap-snackbar)
     shortcut-legend.js    ? key dialog
     # Modals (init → open → close, coordinated by modal-coordinator.js):
     add-source-modal.js   Upload / URL / Connectors tabs
     connectors-modal.js   connectors gallery + detail overlay (from composer Add / Sources panel / page)
-    topic-modal.js        one dossier read end to end — 720px, prose measure
+    topic-picker-modal.js one dialog, two views — the picker's list, and the article
+    topic-ignore-modal.js "Why did this Topic miss the mark?" — the reason, kept
     video-clips-modal.js, schedule-modal.js,
     bug-report-modal.js, feedback-modal.js, chat-picker-modal.js,
     confirm-modal.js, rename-modal.js, search-modal.js,
@@ -175,20 +179,21 @@ src/
 
 **No external store library.** Stores follow one pattern: a module-level `Map(sessionId → state)` (or a single array for catalogs) plus a `Set<fn>` of subscribers notified shallowly on each mutation, built with `createNotifier()` from `store-utils.js`. State seeds lazily from `mocks.js` on first read — **or stays empty in `new-alt` mode** (`isNewUser()`).
 
-| Store                  | Domain                                                                                 | Key public API                                                                                                                                                                                                 |
-| ---------------------- | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sessions-store.js`    | chat sessions                                                                          | `getSessions`, `getSessionById`, `updateSession`, `deleteSession`, `togglePin`, `subscribe`                                                                                                                    |
-| `contexts-store.js`    | Playbooks (+ `ownerId`/`scope`/`history` behind `playbookSharing`) — **never filters** | `getContexts`, `getContextById`, `getDefaultContext`, `addContext`, `updateContext`, `duplicateContext`, `deleteContext`, `appendHistory`, `subscribe`                                                         |
-| `connectors-store.js`  | connectors catalog + state                                                             | `getConnectors`, `findConnector`, `getConnectedConnectors`, `setConnectorStatus`, `subscribe`                                                                                                                  |
-| `library.js`           | per-session ideas (sources delegate to sources-stream)                                 | `getSources(sid)`, `getIdeas(sid)`, `appendExtractedIdeas`, `injectIdeasForSource`, `extractVideoIdeas`, `removeIdeas`, `subscribe(sid, fn)`                                                                   |
-| `posts-store.js`       | per-session drafts                                                                     | `getPosts(sid)`, `addPostDraft`, `updatePostContent`, `attachImageToDraft`, `attachCarouselToDraft`, `removePost`, `subscribe(sid, fn)`                                                                        |
-| `assistant.js`         | per-session thread                                                                     | `getThread`, `sendMessage`, `sendConnectorMessage`, `postAssistantMessage`, `postSourceIntake`, `postExtractionResult`, `postAssistantChoice`/`submitAssistantChoice`, `postDraftResult`, `subscribe(sid, fn)` |
-| `sources-stream.js`    | sources **per session** + global uploads state machine (uploading → processing → done) | `getSources`, `getUploads`, `subscribeSources`, `subscribeUploads`, `startFileUpload`, `startUrlImport`, `startConnectorImport`, `extractClipsForSource`, `removeSources`, `renameSource`                      |
-| `schedule-store.js`    | scheduled-post queue                                                                   | `getQueue`, `getQueueOn`, `addToQueue`, `busyCountsByDay`, `subscribe`                                                                                                                                         |
-| `composer-mentions.js` | per-session composer mentions                                                          | `addMention`, `removeMention`, `renderInto`, `subscribe(sid, fn)`                                                                                                                                              |
-| `topics-store.js`      | **global** listening dossiers + the mock scan (flag `topics`)                          | `getTopics`, `getTopicById`, `getUnseenCount`, `markSeen`, `dismissTopic`, `restoreTopic`, `refreshTopics`, `maybeAutoScan`, `hasMoreToScan`, `topicWhen`, `subscribe`                                         |
+| Store                  | Domain                                                                                 | Key public API                                                                                                                                                                                                         |
+| ---------------------- | -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sessions-store.js`    | chat sessions                                                                          | `getSessions`, `getSessionById`, `updateSession`, `deleteSession`, `togglePin`, `subscribe`                                                                                                                            |
+| `contexts-store.js`    | Playbooks (+ `ownerId`/`scope`/`history` behind `playbookSharing`) — **never filters** | `getContexts`, `getContextById`, `getDefaultContext`, `addContext`, `updateContext`, `duplicateContext`, `deleteContext`, `appendHistory`, `subscribe`                                                                 |
+| `connectors-store.js`  | connectors catalog + state                                                             | `getConnectors`, `findConnector`, `getConnectedConnectors`, `setConnectorStatus`, `subscribe`                                                                                                                          |
+| `library.js`           | per-session ideas (sources delegate to sources-stream)                                 | `getSources(sid)`, `getIdeas(sid)`, `appendExtractedIdeas`, `injectIdeasForSource`, `extractVideoIdeas`, `removeIdeas`, `subscribe(sid, fn)`                                                                           |
+| `posts-store.js`       | per-session drafts                                                                     | `getPosts(sid)`, `addPostDraft`, `updatePostContent`, `attachImageToDraft`, `attachCarouselToDraft`, `removePost`, `subscribe(sid, fn)`                                                                                |
+| `assistant.js`         | per-session thread                                                                     | `getThread`, `sendMessage`, `sendConnectorMessage`, `postAssistantMessage`, `postSourceIntake`, `postExtractionResult`, `postAssistantChoice`/`submitAssistantChoice`, `postDraftResult`, `subscribe(sid, fn)`         |
+| `sources-stream.js`    | sources **per session** + global uploads state machine (uploading → processing → done) | `getSources`, `getUploads`, `subscribeSources`, `subscribeUploads`, `startFileUpload`, `startUrlImport`, `startConnectorImport`, `extractClipsForSource`, `removeSources`, `renameSource`                              |
+| `schedule-store.js`    | scheduled-post queue                                                                   | `getQueue`, `getQueueOn`, `addToQueue`, `busyCountsByDay`, `subscribe`                                                                                                                                                 |
+| `composer-mentions.js` | per-session composer mentions                                                          | `addMention`, `removeMention`, `renderInto`, `subscribe(sid, fn)`                                                                                                                                                      |
+| `topic-feeds-store.js` | **global** one listening feed per Playbook, provisioned on read (flag `topicFeed`)     | `getFeeds`, `getFeedById`, `getFeedForPlaybook`, `updateFeed`, `subscribe`                                                                                                                                             |
+| `topics-store.js`      | **global** the Topics + the triage, in two separate structures                         | `getTopicsForFeed`, `groupTopicsByAge`, `getTopicById`, `topicTitle`, `countToReview`, `countFresh`, `getFreshTopics`, `defaultFilters`, `narrowedGroupCount`, `markUsed`, `ignoreTopic`, `unignoreTopic`, `subscribe` |
 
-**Per-session** stores: `sources-stream` (sources — `Map(sessionId → Source[])`, per-session subscribers, `clearSession()`), `library`, `posts-store`, `assistant`, `composer-mentions`. That's the model: what a user brings into a chat belongs to that chat ([`docs/reference/CONCEPTS.md`](docs/reference/CONCEPTS.md) §3). **Global** are the catalogs, legitimately — they pre-exist any chat: `contexts`, `connectors`, `folders`, `sessions`, `schedule`, `top-posts`, `topics` — plus `sources-stream`'s **uploads**, a transient pre-source pool the Add-source modal reads as a whole. `library.js` subscribes to sources-stream and re-emits per-session so any session's content surfaces repaint when a source lands. **No localStorage persistence of app state** — only `archie-user-mode`, the feature-flag keys, sidebar collapse state, and the single-use `sessionStorage` handoff keys.
+**Per-session** stores: `sources-stream` (sources — `Map(sessionId → Source[])`, per-session subscribers, `clearSession()`), `library`, `posts-store`, `assistant`, `composer-mentions`. That's the model: what a user brings into a chat belongs to that chat ([`docs/reference/CONCEPTS.md`](docs/reference/CONCEPTS.md) §3). **Global** are the catalogs, legitimately — they pre-exist any chat: `contexts`, `connectors`, `folders`, `sessions`, `schedule`, `top-posts`, `topic-feeds`, `topics` — plus `sources-stream`'s **uploads**, a transient pre-source pool the Add-source modal reads as a whole. `library.js` subscribes to sources-stream and re-emits per-session so any session's content surfaces repaint when a source lands. **No localStorage persistence of app state** — only `archie-user-mode`, the feature-flag keys, sidebar collapse state, and the single-use `sessionStorage` handoff keys.
 
 ### A settings surface must not aggregate
 
@@ -211,7 +216,7 @@ it. The flag short-circuits in a single place, so flag OFF is byte-for-byte the 
 
 Ownership is **chrome, never a section**: a tag in the card's metadata corner and beside the fiche's name,
 an Owner quick-fact in the rail, and everything else in the Share modal. A "Sharing" section on the fiche
-would be the switch grid already removed for Topics ([`CONCEPTS.md`](docs/reference/CONCEPTS.md) §1, third
+would be the switch grid already removed for the listening config ([`CONCEPTS.md`](docs/reference/CONCEPTS.md) §1, third
 storage exception). The degraded chat marks `body.playbook-revoked` — on `<body>`, because the drafts panel
 is shell chrome outside `#app` — and one capture-phase listener swallows the generating hooks and says why,
 so no card renderer needs to know sharing exists.
@@ -255,29 +260,59 @@ flyout sheets the settings panel replaced — `settings-view.js` carries the dis
 
 Connectors (Notion, Slite, Google Drive, GitHub, …) are seeded in `mocks.js` (`connectors` + `connectorDocs`) with `category` / `featured` / `accent` / `capabilities`. Once **connected**, a connector becomes a **live source**: the user "asks" it in chat and `assistant.js` `sendConnectorMessage()` simulates an MCP round-trip — a "Querying … via MCP" reasoning chip listing tool calls, then a cited mock answer. Entry points: the `/connectors` gallery page (clicking a connector opens its detail in `connectors-modal.js`), the composer **Add** menu, and the right-panel **Sources** "Connect" / "Live connectors" surface. `connectors-view.js` holds the shared render helpers used by both the page and the modal; `connector-ask.js` launches the in-chat ask flow. All connect/disconnect goes through `connectors-store` so Settings, the gallery, and the modal stay in sync.
 
-### Topics — the one place Archie proposes instead of waiting
+### The Topic Feed — the one place Archie proposes instead of waiting
 
-**Gated behind the `topics` feature flag (default OFF)** — when off, the `/topics` route (a stale deep link bounces to `/`), its sidebar nav row + unseen counter, and the dossier dialog all disappear. The data (`mocks.topics`, `mocks.topicScanPool`, `ctx.topics`) rides along regardless, exactly like `playbookCompetitors`.
+**Gated behind the `topicFeed` feature flag (default OFF)** — when off, `/topics` and `/topics/settings` (a stale deep link bounces to `/`), the sidebar nav row and its unread count, the "Fresh topics to review" list on a new chat and the composer's "Pick from the Topic Feed" all disappear. The data (`mocks.topicFeeds`, `mocks.topics`) rides along regardless, exactly like `playbookCompetitors`.
 
-Agorapulse listening pulls social posts against **six sources** declared in `topics-catalog.js` — competitor posts, influencer posts, brand feedback, competitor monitoring, industry trends, global trends. That file is **CONFIG, not content**: it ships with the app and must exist in `new-alt` mode too, the same split as `ff-catalog.js` vs `mocks.js`. Which sources are on, plus **one cadence for the whole Playbook**, live on the Context as `ctx.topics = { enabledSourceIds, cadence }` (normalised by `normalizeTopics()` in `contexts-store.js` — in `addContext` **and** on the seed, which bypasses it). They are **edited on `/topics/settings`** — a settings PAGE, not a tab on the feed, because you set your sources once and then read topics for months; a tab gave it equal billing with the feed. It commits straight through `updateContext` with no Save button, shows **one Playbook at a time** scoped by `?pb=` (the same param the feed filters on, so the scope survives both directions), and uses the DS settings recipe (`--sys-settings-*`). Stacking a block per Playbook was tried and doesn't scale — twenty Playbooks meant 120 switches and every description repeated twenty times. Layout: the two page-level controls sit in a **labelled toolbar** (`.ap-form-field` × 2, the feed's two-select shape) and each of the six sources is **its own card** in a two-column grid — a card can carry that source's own options later, a row can't, and a card title over a single select was mostly padding.
+Agorapulse listening pulls social posts against **eight sources** declared in `topics-catalog.js`. That file is **CONFIG, not content**: it ships with the app and must exist in `new-alt` mode too, the same split as `ff-catalog.js` vs `mocks.js`. Only `competitor-posts` is `live`, and that is load-bearing — the feed's default source filter derives from `LIVE_SOURCE_IDS`, so a Topic seeded on a non-live source would be filtered out of its own feed on first paint.
 
-**Not on the Playbook — that was tried and reverted.** A Playbook is a fact sheet: every section answers "who are you?". Which feeds are live and how often they run answers "what job should Archie run?" — operational, not declarative, and as a grid of switches it read as a settings panel wedged into a profile. The "config lives on its entity" rule has a second clause that covers this: _or on a route scoped to one feature_. The data stays per Playbook; only the surface moved.
+Archie assembles those posts into a **Topic**: a headline (the claim), a written analysis in two sections, and the posts behind it. `/topics` is the **queue you triage it in**.
 
-Archie assembles those posts into a **Topic**: a headline (the claim), a written analysis, and the source posts behind it. `topics-store.js` is **global** — a topic belongs to a Playbook and arrives on a cadence, long before a chat exists to hold it, so the `/topics` feed spans every Playbook and the sidebar counter sums the whole account. `ageDays` is the single source of truth for age — the feed groups on it _and_ every "3 days ago" label derives from it via `topicWhen()`.
+**⚠️ This replaced a Topics MAGAZINE, which was deleted rather than flagged.** The proto had a cross-Playbook magazine — lead story + grid, `ctx.topics` on the Context, a front page on `/` behind `frontPage`, a three-headline rail in the new-chat hero, Start-a-chat / Dismiss. All of it is gone: 8 modules, 5 stylesheets, the `topics` and `frontPage` flags, the Home nav row. Keeping both meant two nav rows carrying the same antenna, two stores and two settings pages — which is what the fork this was ported from actually shipped. Deleting freed the canonical names (`/topics`, `topics-store.js`, `topic-card.js`, `topic-flow.js`), which the port took instead of installing a third vocabulary (`research` / `lane` / `brief`) beside the Playbook ⇄ Context legacy. **Do not propose bringing the magazine or the front page back behind a flag** — that arbitration is closed. A front page may return, but on the Topic Feed's own data.
 
-**Cadence is copy, never a timer** (a weekly tick would never fire in a demo). The recurring feel comes from one primitive, `drainPool(n)` — take `n` dossiers off the seeded pool, land them `unseen`/`ageDays: 0`, age everything else by a day — with two callers: `refreshTopics()` (2, the button) and **`maybeAutoScan()`** (1, called at boot from `app.js`). The auto-scan's once-guard is a **module boolean, deliberately not `sessionStorage`**: a reload has to replay an arrival, which is what makes the front page feel like a site you come back to, and it adds no persistence to a prototype that stores almost nothing.
+### THE INVARIANT: review status and attention signals are three separate things
 
-### Topics render on three surfaces through one engine
+`status` (`new` / `used` / `ignored`), `isTrending` and `isUpdated` are three fields in `topics-store`. Neither signal is a fourth status, so a Topic can be **Used and trending** at once — and a signal **never overrides the status filter**: an ignored Topic that starts trending stays hidden. As a collapsible "trending" section it had to override the filter, which made the filter lie.
 
-`/topics` is the **section** (everything: lead + grid, section chips, Playbook filter, dated archive). `/` behind the `frontPage` flag is the **front page** (a selection of the fresh: lead + 6 + a "See all N" way through). The new-chat hero carries a **rail** of three headlines — and only when `frontPage` is OFF, because two surfaces showing the same three headlines is how a home page stops meaning anything.
+**Triage lives in its own `Map`**, never written onto the Topic: a Topic is what the scan returned (server-owned), a triage row is what _this user_ did with it (user-owned). Keeping them apart is what lets a re-scan replace a Topic without clobbering the answer.
 
-`topics-feed.js` holds the shared render engine (`groupByAge` / `renderSourceChips` / `renderMagazine`), the same shape as `playbook-view.js` and `connectors-view.js`: pure functions, each host passes its own lookups. `topic-card.js` emits the same object in three sizes, **all three carrying the same `data-topic-open` / `-chat` / `-dismiss` hooks**, so a host wires them once. The card's CSS moved to `styles/components/topic-card.css` the day it stopped belonging to one screen.
+An **ignored Topic is never surfaced by a signal, anywhere.** Ticking Ignored in the filter is the only way back. The opposite rule — "a spike is never hidden by triage" — was tried and dropped: it made Ignore a suggestion rather than an answer.
 
-**The layout is a paper, not a list.** A run of equal cards has no answer to "what should I read first?", which is the one question this feature exists to answer — so one lead story (bigger headline, longer deck, one source post quoted in place, `primary orange` CTA because it's the only one on the page) sits above a grid. The grid keeps the old scannability rule (`grid-auto-rows: 1fr`, equal heights); only the lead breaks it, on purpose. The lead's two-column split is a **`@container` query on the card**, not a media query — with a collapsible sidebar and an overlaying panel, viewport width never tells you content width.
+`withTriage()` **clears both signals past the first age group**, because Trending and Updated are claims about _now_ and a card carrying either under a three-weeks-ago separator contradicts itself. Enforced on read, not in the seed, so every surface agrees for free.
 
-**The Source facet is a `.ap-filter-chip` row, the Playbook facet stays an `.ap-select`.** Six sources, fixed and shipped by the catalogue, are the paper's sections — the DS's own rule for always-visible toggles over a small flat set. Playbooks grow with the account and a chip each cannot survive twenty. Two selects was right when the page was a filtered list; it is wrong for a publication. The Playbook select lives **in the head**, beside Settings and Refresh: seven chips already fill the measure, so it dropped to a line of its own on that row.
+### The listening config left the Playbook
 
-A topic offers exactly two actions: **Start a chat** and **Dismiss**. Start-a-chat (`topic-flow.js`) hands the topic to a fresh chat as a **Source** via the existing `addReadySource()` — no new action surface, no change to `sources-stream.js`, and every affordance the app already has (Extract ideas, Draft, Ask, the Sources panel) lights up on its own. The hero rail calls the same `openTopicInChat()` unchanged: the empty session it leaves has no thread and no sources, so it's disposable and there is nothing to preserve. Dismiss hides rather than deletes so the toast can genuinely offer Undo.
+The magazine kept it as `ctx.topics`. It now lives in `topic-feeds-store.js`, keyed by Playbook: **one feed per Playbook**, provisioned lazily on read (`provisionMissingFeeds`), so a brand new to the app never meets a screen asking it to configure something first — and nothing can _delete_ a feed, since the next read would rebuild it.
+
+Which feeds listen and how often answers "what job should Archie run?", not "who are you?" ([`CONCEPTS.md`](docs/reference/CONCEPTS.md) §1). Data stays per Playbook; only its owner changed. It also buys `websites` — one feed's scan list, which has no place on a fiche whose `websiteUrl` is the brand's canonical address.
+
+### No global scope. `?pb=` and the session's own contextId
+
+The fork introduced `active-playbook.js`: a global, `localStorage`-persisted Playbook scope written to by a select sitting in the feed's own filter bar — so a control that promised a page filter silently re-scoped the sidebar, the next new chat and the composer's picker. **It is deliberately not ported.** The feed and its settings page read `?pb=` (the same param in both directions); the in-chat surfaces read the session's `contextId`, because a chat keeps the brand it was created in. Don't reintroduce a global scope without a permanently visible switcher — a scope that hides is only safe while it is legible.
+
+### One article, three hosts
+
+`topic-article.js` is the render engine — `renderTopicArticle` + `renderTopicActions`, pure functions, no DOM and no listeners, the same shape as `playbook-view.js` and `connectors-view.js`. The feed's pane, the picker's dialog and the in-chat dialog all call it, so there is exactly one article. A second copy for the dialog is how a card and the thing it opens end up saying different sentences about one Topic. `topicTitle()` is the matching rule for titles: the article's own title wins, `headline` is only the fallback for a Topic with no article yet.
+
+`topic-card.js` emits the same object in three shapes — the feed's card, the picker's card (identical, part for part) and the compact in-chat row — all carrying `data-topic-read`, so a host wires them once.
+
+### The master–detail: the list SHRINKS
+
+Non-negotiable, because getting it wrong is what broke this feature on the fork. There the list was pinned at 666px and the pane took the leftover, so under ~1180px of **content** width a container query dropped the article below the list — at 1440px of viewport (a 14" laptop, sidebar included) clicking a card rendered the article 1900px below the fold and nothing appeared to happen. Here the list is `flex: 1 1 auto` (380px floor), the pane `flex: 1 1 0` (440px floor), and side by side survives to 852px. Below that it stacks and opening an article **scrolls it into view** — arithmetic, not `scrollIntoView()`, whose `nearest` declines to move a pane taller than the scrollport and whose `smooth` loses the race against the next repaint.
+
+The split is measured with a **`@container` query on the row**, never a media query: the sidebar collapses and the right panel overlays, so viewport width never tells you content width.
+
+### Two verbs, and only two
+
+**Use in chat** (`topic-flow.js`) marks the Topic **Used**, then opens a **new** chat with it attached as a Source via `addReadySource` — so Extract ideas, Draft, Ask and the Sources panel all light up with no new plumbing and no special case. The mark lands _before_ the chat opens, in one place, so all four surfaces mean the same thing. No echo message and no question picker on arrival: the source-intake card already names the Topic.
+
+**Ignore** opens `topic-ignore-modal.js` and asks why. The reason is the only thing a reader ever _tells_ Archie about the listening, and it is what makes the Ignored state readable afterwards — the card prints it back. It is `stroked grey`, not red: ignoring hides a Topic that ticking Ignored brings straight back. Reversible via the toast's Undo, which also **clears the reason**. ⚠️ The fork's "Don't show this again" checkbox is not ported — it turned Ignore into a one-click action with no reason, contradicting the same feature's promise that the reason is kept.
+
+### The DS ports live in ds-patches.css
+
+`.ap-segmented-control` and `.ap-filter-dropdown` are **transcriptions of Angular-only DS components** from their own SCSS — neither exists in `ds/css-ui`, so this is the missing-primitive case `ds-patches.css` is for, and the day they land in the DS both blocks are a delete. Both are the components the DS's own tie-breaker prescribes: 2–4 co-visible views → segmented control (not `.ap-tabs`); grouped options behind a trigger → filter dropdown (not filter chips, which is right for a small flat always-visible set — what the magazine correctly used for its six sources).
+
+Every token substitution is commented with the value it stands in for, because the `--sys-color-*-interactive-*` family, `--sys-height-control` and `--sys-radius-inner` are **not in this repo's synced `ds/`** yet. Re-point them on the next `ds/` sync. ⚠️ The `--selected` double dash is the component's own — the DS wrote it that way against its own flat-modifier convention, and a port that "fixed" it would stop matching what it ports.
 
 ### Routing & screen lifecycle
 
@@ -287,18 +322,18 @@ A topic offers exactly two actions: **Start a chat** and **Dismiss**. Start-a-ch
 
 `handoff.js` exposes `setHandoff(key, payload)` / `consumeHandoff(key)` (atomic read+remove) / `hasHandoff(key)` over `sessionStorage`. Consumed at `session.js` mount:
 
-| Key                          | Set by                                         | Consumed by →                     |
-| ---------------------------- | ---------------------------------------------- | --------------------------------- |
-| `pendingStartFlow`           | dashboard / new chat with a Playbook           | `startActionPickerFlow`           |
-| `pendingDraftIdeaId`         | idea card "Draft post"                         | `askProfileQuestion` (draft-flow) |
-| `pendingAskSource`           | source card "Ask"                              | `askWhatToKnow`                   |
-| `pendingAskConnector`        | connectors gallery/modal "Try in chat"         | `askConnector`                    |
-| `pendingStartContextBuilder` | `/contexts` "New Playbook" + welcome-alt       | `context-builder` (create)        |
-| `pendingTopicChat`           | topic card / dialog / hero rail "Start a chat" | `startTopicChat` (topic-flow)     |
+| Key                          | Set by                                       | Consumed by →                     |
+| ---------------------------- | -------------------------------------------- | --------------------------------- |
+| `pendingStartFlow`           | dashboard / new chat with a Playbook         | `startActionPickerFlow`           |
+| `pendingDraftIdeaId`         | idea card "Draft post"                       | `askProfileQuestion` (draft-flow) |
+| `pendingAskSource`           | source card "Ask"                            | `askWhatToKnow`                   |
+| `pendingAskConnector`        | connectors gallery/modal "Try in chat"       | `askConnector`                    |
+| `pendingStartContextBuilder` | `/contexts` "New Playbook" + welcome-alt     | `context-builder` (create)        |
+| `pendingTopicChat`           | "Use in chat", from any of its four surfaces | `attachTopicToChat` (topic-flow)  |
 
 ### Admin / user mode (prototype controls)
 
-The **Admin** popover in the sidebar footer cog (`admin-menu.js`) is the prototype control panel: switch user mode and toggle feature flags (each change reloads so stores re-seed). `user-mode.js`: `getUserMode()` returns `"returning"` (populated mocks, default) or `"new-alt"` (empty stores + first-time onboarding); `isNewUser()` tests for `new-alt`. Feature flags live in `ff-catalog.js` (`FLAGS`, each with a `default`) and are read via `isFlagOn()`. The 14 flags: `draftInlineEdit` (OFF), `playbookDefault` (OFF), `connectors` (OFF — gates the whole connectors feature), `conversationStatusCard` (OFF), `statusActionSnackbars` (OFF), `playbookColors` (OFF — colors hidden by default), `manyProfiles` (OFF — demo seed of ~40 connected profiles), `multilingualPlaybook` (OFF), `playbookCompetitors` (OFF — gates the Playbook's Competitors section), `topics` (OFF — gates the whole Topics feature: `/topics`, `/topics/settings`, the nav row, the dossier dialog, the hero rail and the front page), `frontPage` (OFF — where Archie's proposals live: OFF = a rail in the new-chat hero and `/` keeps redirecting; ON = `/` becomes a browsable front page and a **Home** nav row appears, while the rail steps aside. Requires `topics`; the Home row is the one nav entry gated on **two** flags, hence `flag: [...]` in sidebar.js's `NAV`), `playbookSharing` (OFF — gates Playbook ownership: a Playbook is personal or shared with the whole org, never named-shared; read-only fiche + Duplicate for recipients, manager rights, the degraded chat after access is lost, and the Admin **Your role** control. Unlike `topics`, its two demo Playbooks and its demo chat are seeded **only** under the flag), `imageStudioAutoBrief` (OFF — the auto-written, block-editable brief variant of the Image Studio), and `imageStudioGridBrief` (OFF — the card-grid brief variant; wins over `imageStudioAutoBrief` when both are on). Full table + gates: [`docs/reference/FEATURES.md`](docs/reference/FEATURES.md#14-admin-feature-flags--user-modes).
+The **Admin** popover in the sidebar footer cog (`admin-menu.js`) is the prototype control panel: switch user mode and toggle feature flags (each change reloads so stores re-seed). `user-mode.js`: `getUserMode()` returns `"returning"` (populated mocks, default) or `"new-alt"` (empty stores + first-time onboarding); `isNewUser()` tests for `new-alt`. Feature flags live in `ff-catalog.js` (`FLAGS`, each with a `default`) and are read via `isFlagOn()`. The 13 flags: `draftInlineEdit` (OFF), `playbookDefault` (OFF), `connectors` (OFF — gates the whole connectors feature), `conversationStatusCard` (OFF), `statusActionSnackbars` (OFF), `playbookColors` (OFF — colors hidden by default), `manyProfiles` (OFF — demo seed of ~40 connected profiles), `multilingualPlaybook` (OFF), `playbookCompetitors` (OFF — gates the Playbook's Competitors section), `topicFeed` (OFF — gates the whole Topic Feed: `/topics`, `/topics/settings`, the nav row and its unread count, the new chat's "Fresh topics to review" list, and the composer's "Pick from the Topic Feed"), `playbookSharing` (OFF — gates Playbook ownership: a Playbook is personal or shared with the whole org, never named-shared; read-only fiche + Duplicate for recipients, manager rights, the degraded chat after access is lost, and the Admin **Your role** control. Unlike `topicFeed`, its two demo Playbooks and its demo chat are seeded **only** under the flag), `imageStudioAutoBrief` (OFF — the auto-written, block-editable brief variant of the Image Studio), and `imageStudioGridBrief` (OFF — the card-grid brief variant; wins over `imageStudioAutoBrief` when both are on). Full table + gates: [`docs/reference/FEATURES.md`](docs/reference/FEATURES.md#14-admin-feature-flags--user-modes).
 
 ### Module loading
 
@@ -351,7 +386,7 @@ styles/
   components/       — add-source-modal, archie-loader, clip-card, connectors-modal,
                       conversation-status-card, feedback-control, right-panel,
                       schedule-modal, sidebar, social-post-card, subtitle-style,
-                      top-post-card, topic-badge, topic-card, topic-modal, video-clips-modal,
+                      top-post-card, topic-badge, topic-card, trending-mark, video-clips-modal,
                       workflow-flow
 ```
 
@@ -382,6 +417,7 @@ All docs (except this file and `README.md`) live under [`docs/`](docs/). Start f
 - [`docs/reference/`](docs/reference/) — current truth about the proto (architecture, routes, stores, design system, glossary).
 - [`docs/audits/`](docs/audits/) — current audits (PROD-VS-PROTOTYPE, PROD-CHANGES).
 - [`docs/copy/`](docs/copy/) — UX copy principles (voice, tone, glossary).
+- [`docs/specs/`](docs/specs/) — acceptance criteria, written from the running app. [`AC-TOPIC-FEED.md`](docs/specs/AC-TOPIC-FEED.md) covers the Topic Feed; its §0 lists what this repo deliberately does differently from the spec it was ported from.
 
 ## MCP
 

@@ -8,7 +8,7 @@
 Source  →  Idea  →  Draft  →  Schedule
 (input)    (insight) (post)    (calendar slot)
    ▲
-   └── Topic  (optionnel, en amont — flag `topics`)
+   └── Topic  (optionnel, en amont — flag `topicFeed`)
 ```
 
 1. **Source** — un input brut (PDF, URL, vidéo, audio, video clip, ou une réponse de connecteur). Stocké **par session** dans `sources-stream.js`.
@@ -20,7 +20,7 @@ En amont, **optionnellement** : un **Topic**. Une Idea peut toujours venir direc
 
 ### Topic
 
-Un **Topic** est un dossier qu'Archie assemble à partir du listening Agorapulse : une **accroche** (le constat), une **analyse écrite**, et les **posts sources** qui la fondent. Il est rattaché à un Playbook (`contextId`) et à la source de listening qui l'a produit (`sourceId`, voir `topics-catalog.js`).
+Un **Topic** est ce qu'Archie assemble à partir du listening Agorapulse : une **accroche** (le constat), une **analyse écrite** en deux sections, et les **posts sources** qui la fondent. Il appartient au **feed** d'un Playbook (`feedId`) et à la source de listening qui l'a produit (`sourceId`, voir `topics-catalog.js`).
 
 | Champ                | Rôle                                                                       |
 | -------------------- | -------------------------------------------------------------------------- |
@@ -32,9 +32,15 @@ Un **Topic** est un dossier qu'Archie assemble à partir du listening Agorapulse
 | `ageDays`            | **La** source de vérité de l'âge : groupe le feed et dérive chaque libellé |
 | `unseen` `dismissed` | Badge de la sidebar / masqué du feed (jamais supprimé, pour l'Undo)        |
 
-Terme **UI et code identiques** : `topic`, `topics-store`, `topicId`. ⚠️ `topic` reste **banni comme synonyme d'Idea** (voir [`../copy/copy-principles.md`](../copy/copy-principles.md)) — un Topic est un objet distinct, en amont. Ne pas dire **dossier** dans l'UI (tournure française, et ça collisionne avec `folders-store`).
+Terme **UI et code identiques** : `topic`, `topics-store`, `topicId`, `topic-feeds-store` — et c'est pour ça que le magazine a été supprimé plutôt que gardé derrière un flag, ce qui a libéré ces noms au lieu de forcer un troisième vocabulaire (`research` / `lane` / `brief`) sur du code neuf. ⚠️ `topic` reste **banni comme synonyme d'Idea** (voir [`../copy/copy-principles.md`](../copy/copy-principles.md)) — un Topic est un objet distinct, en amont. Ne pas dire **dossier** dans l'UI (tournure française, et ça collisionne avec `folders-store`).
 
-Deux actions, pas plus : **Start a chat** (le topic entre dans le chat comme Source, donc tout le pipeline existant s'allume) et **Dismiss**. Voir [`FEATURES.md`](FEATURES.md) §17.
+Deux actions, pas plus : **Use in chat** (le Topic entre dans un chat **neuf** comme Source, donc tout le pipeline existant s'allume, et il est marqué **Used** avant que le chat s'ouvre) et **Ignore** (qui demande un motif, le conserve, et est réversible). Voir [`FEATURES.md`](FEATURES.md) §17.
+
+Trois mots qui vont avec, et qui ne sont pas interchangeables :
+
+- Un **feed** est la requête permanente d'un Playbook — ses sources et sa cadence. Il y en a exactement un par Playbook, il est implicite, il ne se crée ni ne se supprime.
+- Le **statut de revue** d'un Topic (`To review` / `Used` / `Ignored`) est ce que le **lecteur** en a fait.
+- Les **signaux d'attention** (`Trending` / `Updated`) sont ce que le **scan** en dit. Ce ne sont **pas** des statuts, ils ne remplacent jamais un statut et ne priment jamais sur le filtre de statut.
 
 ## Concepts clés
 

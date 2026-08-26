@@ -13,7 +13,7 @@ Source → Idea → Draft (post) → Schedule
    │                          ▲
    └── vidéo → Clips ─────────┘  (les clips deviennent aussi des drafts)
 
-Listening source → Topic ──→ (chat) ──┘   (flag `topics`, voir §17)
+Listening source → Topic ──→ (chat) ──┘   (flag `topicFeed`, voir §17)
 ```
 
 Le **Topic** est un embranchement amont **optionnel** : Archie n'attend plus qu'on lui donne une source, il en propose une. Une Idea peut toujours venir directement d'une Source.
@@ -521,7 +521,7 @@ Upload = bouton + input caché (pas le `.ap-dropzone` partagé : la ligne « Ref
 
 Le défaut **remplace le monogramme d'initiales** dans le header du Playbook (pattern image + jumeau monogramme, swap sur `error`, comme les logos de compétiteurs) : une marque qui a un logo se reconnaît à lui. Le set repart ensuite dans l'Image Studio — voir §7.
 
-Un Playbook est une **fiche** : chaque section répond à « qui êtes-vous ? ». La config opérationnelle (quelles sources d'écoute tournent, à quelle fréquence) vit sur la route qui possède la feature, pas ici — voir §17. Une section Topics a été essayée puis retirée : une grille d'interrupteurs se lisait comme un panneau de réglages coincé dans un profil.
+Un Playbook est une **fiche** : chaque section répond à « qui êtes-vous ? ». La config opérationnelle (quelles sources d'écoute tournent, à quelle fréquence) vit dans son propre store, clé par Playbook, et s'édite sur la route qui possède la feature — voir §17. Une section Topics a été essayée puis retirée : une grille d'interrupteurs se lisait comme un panneau de réglages coincé dans un profil. Le champ `ctx.topics` qui la portait est parti avec elle.
 
 ### Competitors (flag `playbookCompetitors`, défaut OFF)
 
@@ -616,18 +616,16 @@ Le flow « Create a Playbook » depuis `/contexts` réutilise ce flow en mode **
 
 ## 12. Navigation shell
 
-### `/` ([`screens/dashboard.js`](../../src/screens/dashboard.js)) — redirect, ou la front page
+### `/` ([`screens/dashboard.js`](../../src/screens/dashboard.js)) — un redirect, et rien d'autre
 
-**Par défaut, un redirect pur** : first-time sans Playbook → `/welcome-alt` ; sinon → session la plus récente (ou `/session/new`). C'est le bon défaut pour un outil qu'on ouvre avec une tâche déjà en tête.
+**Un redirect pur** : first-time sans Playbook → `/welcome-alt` ; sinon → session la plus récente (ou `/session/new`). C'est le bon défaut pour un outil qu'on ouvre avec une tâche déjà en tête, et c'est le seul comportement de cette route.
 
-**Avec le flag `frontPage` (+ `topics`)**, la route rend une **front page** — la page qu'Archie remplit pendant votre absence. Head à la 1ʳᵉ personne _« Here's what I found »_ + _« 3 new since yesterday · 10 topics · from 2 Playbooks »_, **Refresh now** (`secondary blue`) et **New chat** (`secondary orange`), la rangée de **rubriques**, puis la une + une grille **plafonnée à 6** et un pied **« See all N topics »** vers `/topics`. Détail et arbitrages : §17.
-
-La branche onboarding passe **avant** le flag — il n'y a rien à mettre en une avant qu'un Playbook existe.
+Elle a rendu quelque chose, une fois : derrière le flag `frontPage`, `/` devenait une **front page** magazine remplie par le listening — une une, une grille de six, des puces de rubrique. C'est parti avec le magazine Topics sur lequel elle était construite (voir §17). Si une front page revient, elle revient **sur la donnée du Topic Feed**, pas comme second lecteur d'un second store.
 
 ### Sidebar ([`sidebar.js`](../../src/components/sidebar.js))
 
 - **Head** : wordmark « Archie » + badge **BETA** (mint un chat), toggle collapse.
-- **Nav** : **New chat** (⇧⌘O), **Search…** (⌘K), puis **Home** (flags `frontPage` + `topics` ; icône `ap-icon-sparkles` — le DS ne ship pas de glyphe maison, et cette route n'est pas un dashboard mais la page qu'Archie écrit), **Playbooks**, **Connectors** (flag `connectors`) avec count badges. Sans la ligne Home la front page ne serait atteignable qu'au premier chargement : le brand et New chat mintent tous deux un `/session/new-<ts>` et évitent `/` volontairement.
+- **Nav** : **New chat** (⇧⌘O), **Search…** (⌘K), puis **Playbooks**, **Connectors** (flag `connectors`) et **Topic Feed** (flag `topicFeed`, `ap-icon-antenna`) avec count badges. Le count du Topic Feed est le nombre de Topics **à revoir** du feed du Playbook par défaut — c'est une notification, donc il compte ce qui attend une réponse (voir §17). Il n'y a **pas** de ligne Home : `/` est un redirect.
 - **Recent** : groupés Pinned / Recent. Un bouton filtre au-dessus de la liste ouvre **Group by** Aucun/Playbook/Date + **Sort by** Récence/Alphabétique — Pinned reste toujours en tête ; la préférence persiste (`archie-chat-organize`). Row = dot couleur playbook (masqué quand `playbookColors` est OFF) + titre + menu ⋮ (**Rename / Pin / Delete**). Delete → confirm + sweep de tous les stores per-session.
 - **Footer** : bloc user, **Send feedback**, ⚙️ popmenu → Send feedback / Report a bug / Keyboard shortcuts (`?`) / **Admin menu** (voir §14).
 - **Raccourcis globaux** : ⌘/Ctrl+B toggle sidebar, ⇧⌘O new chat, Esc ferme le menu. Collapse persisté (`archie-sidebar-collapsed`).
@@ -680,15 +678,14 @@ Détail dimensions/coexistence avec la status-card : [`SHELL-LAYOUT.md`](SHELL-L
 | `multilingualPlaybook`   | Multilingual Playbooks                           | **OFF** | Playbooks multi-langues (voice par langue, étape langue du draft flow).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | `manyProfiles`           | Many connected profiles (demo)                   | **OFF** | Seed ~40 profils connectés variés → le quickpicker de profil affiche une recherche live (voir §draft flow).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | `playbookCompetitors`    | Playbook competitors                             | **OFF** | Section **Competitors** du Playbook (panneau + entrée de rail + compteur `/contexts`). La donnée reste présente quand OFF (voir §9).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `topics`                 | Topics (listening dossiers)                      | **OFF** | Toute la feature **Topics** (§17) : la route `/topics` + son entrée de nav et son compteur d'unseen, la dialog du dossier, la page **/topics/settings**, le rail du hero et la front page. La donnée (dossiers seedés + `ctx.topics`) reste présente quand OFF, comme `playbookCompetitors`.                                                                                                                                                                                                                                                                                                                                           |
+| `topicFeed`              | Topic Feed (listening)                           | **OFF** | Toute la feature **Topic Feed** (§17) : la route `/topics` + sa page `/topics/settings`, l'entrée de nav et sa marque d'unread, la liste « Fresh topics to review » du chat neuf, et l'entrée « Pick from the Topic Feed » du menu Add. Un deep-link périmé rebondit sur `/`. La donnée (feeds + Topics seedés) reste présente quand OFF, comme `playbookCompetitors`.                                                                                                                                                                                                                                                                 |
 | `playbookSharing`        | Playbook sharing (org-wide)                      | **OFF** | **À qui appartient un Playbook** (§9bis). OFF (défaut) = un seul utilisateur implicite, tout est visible et éditable comme avant ; ON = chaque Playbook est **personnel** ou **partagé à toute l'org** (jamais nommément), lecture seule pour les autres, droits manager, chat dégradé après perte d'accès, section **Your role** dans l'Admin. Les deux Playbooks de démo (`ctx-acme-devrel`, `ctx-orphan-brightline`) et le chat `s-brightline` ne sont seedés **que** sous ce flag — contrairement à `topics`, ce ne sont pas des champs qui roulent avec la donnée mais des objets entiers qui n'ont aucun sens sans propriétaire. |
-| `frontPage`              | Front page (vs. hero rail)                       | **OFF** | **Où vivent les propositions d'Archie** (§17). Dépend de `topics` : les deux OFF, rien ne bouge. OFF (défaut) = **rail dans le hero du chat neuf** + `/` redirige comme toujours. ON = **`/` devient une front page** + entrée de nav **Home** ; le rail s'efface. Jamais les deux — voir §12.                                                                                                                                                                                                                                                                                                                                         |
 | `imageStudioAutoBrief`   | Image Studio: auto-written brief + centred setup | **OFF** | Variante Image Studio (§7) : le brief est un document éditable en blocs, écrit depuis les réglages, avec sa propre mise en page prompt+options / preview.                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | `imageStudioGridBrief`   | Image Studio: brief as an editable grid          | **OFF** | Troisième variante Image Studio (§7) : le brief devient une grille de cartes configurables (pas de prompt en prose). Gagne sur `imageStudioAutoBrief` si les deux sont ON.                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 
 Persistés en `localStorage` (`archie-feature-flags`), lus via `isFlagOn()`. Voir aussi [`STORES.md`](STORES.md).
 
-⚠️ Le seul flag **composé** : l'entrée de nav Home exige `frontPage` **et** `topics`, d'où `flag: [...]` dans le `NAV` de [`sidebar.js`](../../src/components/sidebar.js) (le filtre accepte une string ou une liste). Une ligne de nav qui survit à l'une de ses dépendances est pire qu'une ligne absente : elle pointerait vers un `/` redevenu redirect.
+⚠️ Le `NAV` de [`sidebar.js`](../../src/components/sidebar.js) accepte encore un `flag` en **liste** aussi bien qu'en string. Plus aucune ligne n'en a besoin — la seule qui en avait deux était Home (`frontPage` + `topics`), et les deux flags sont partis avec elle. La capacité reste : une ligne de nav qui survit à l'une de ses dépendances est pire qu'une ligne absente.
 
 ### User modes ([`user-mode.js`](../../src/user-mode.js))
 
@@ -728,161 +725,193 @@ Tous via [`modal-coordinator.js`](../../src/modal-coordinator.js) (un overlay à
 
 ---
 
-## 17. Topics — les dossiers du listening (flag `topics`, défaut OFF)
+## 17. Topic Feed — la file du listening (flag `topicFeed`, défaut OFF)
 
-Le seul endroit où **Archie propose** au lieu d'attendre. Le listening Agorapulse remonte des posts sociaux sur six sources rattachées à un Playbook ; Archie en assemble un **Topic** : une accroche (le constat), une analyse écrite, et les posts qui la fondent. Fichiers : [`topics-catalog.js`](../../src/topics-catalog.js), [`topics-store.js`](../../src/topics-store.js), [`topics-feed.js`](../../src/topics-feed.js), [`screens/topics.js`](../../src/screens/topics.js), [`screens/dashboard.js`](../../src/screens/dashboard.js), [`components/topic-card.js`](../../src/components/topic-card.js), [`components/topic-modal.js`](../../src/components/topic-modal.js), [`components/social-post-card.js`](../../src/components/social-post-card.js), [`topic-flow.js`](../../src/topic-flow.js).
+Le seul endroit où **Archie propose** au lieu d'attendre. Le listening Agorapulse remonte des posts sociaux sur huit sources rattachées à un Playbook ; Archie en assemble un **Topic** : une accroche (le constat), une analyse écrite en deux sections, et les posts qui la fondent. `/topics` est la **file où on la trie**.
 
-### Trois surfaces, un moteur
+Porté depuis le fork `axel-van/rebel-racoon` (@ `dbfd9d3c`), après l'audit UX qui a motivé les corrections signalées ci-dessous. Fichiers : [`topics-catalog.js`](../../src/topics-catalog.js), [`topic-feeds-store.js`](../../src/topic-feeds-store.js), [`topics-store.js`](../../src/topics-store.js), [`topic-article.js`](../../src/topic-article.js), [`topic-flow.js`](../../src/topic-flow.js), [`screens/topics.js`](../../src/screens/topics.js), [`screens/topics-settings.js`](../../src/screens/topics-settings.js), [`components/topic-card.js`](../../src/components/topic-card.js), [`components/topic-picker-modal.js`](../../src/components/topic-picker-modal.js), [`components/topic-ignore-modal.js`](../../src/components/topic-ignore-modal.js), [`components/social-post-card.js`](../../src/components/social-post-card.js).
 
-Un dossier se lit **là où l'utilisateur arrive**, pas seulement sur une route qu'il faut aller chercher :
+### ⚠️ Ce qui a été supprimé pour faire place
 
-| Surface                         | Ce qu'elle montre                                              | Gate                           |
-| ------------------------------- | -------------------------------------------------------------- | ------------------------------ |
-| **`/topics`** — la section      | Tout : une + grille, rubriques, filtre Playbook, archive datée | `topics`                       |
-| **`/`** — la front page         | Une sélection du frais : une + 6, rubriques, « See all N »     | `topics` + `frontPage`         |
-| **Le rail du hero** — chat neuf | Trois accroches au-dessus des starters                         | `topics` + **pas** `frontPage` |
+Le proto portait un **magazine** Topics : une une + une grille, transverse à tous les Playbooks, avec `ctx.topics` sur le Context, une front page sur `/` derrière `frontPage`, un rail de trois accroches dans le hero, et deux verbes (Start a chat / Dismiss). **Tout est parti** — 8 modules, 5 feuilles CSS, les flags `topics` et `frontPage`, la ligne de nav Home. Le fork avait laissé les deux features tourner côte à côte, deux entrées de nav avec la même antenne, deux stores, deux pages de réglages : intenable en démo.
 
-[`topics-feed.js`](../../src/topics-feed.js) est le **moteur de rendu partagé** (`groupByAge` · `renderSourceChips` · `renderMagazine`), sur le modèle de `playbook-view.js` (recap + détail) et `connectors-view.js` (page + modal) : fonctions pures, chaque hôte lui passe ses deux lookups. `topic-card.js` sort la même carte en **trois tailles** (`renderTopicCard` · `renderTopicLeadCard` · `renderTopicRailCard`) qui émettent **les mêmes trois hooks** `data-topic-open` / `-chat` / `-dismiss`, donc un écran les câble une fois quelle que soit la taille rendue. Le CSS a suivi : la carte a quitté `topics.css` pour [`components/topic-card.css`](../../styles/components/topic-card.css) le jour où elle a cessé d'appartenir à un écran.
+C'est ce qui a libéré les noms canoniques (`/topics`, `topics-store.js`, `topic-card.js`, `topic-flow.js`), que le port a repris — au lieu d'installer le troisième vocabulaire `research` / `lane` / `brief` que le fork trimballait dans son code pendant que son UI disait Topic Feed / feed / Topic.
 
-**Le rail et la front page s'excluent** (`frontPage`). Deux surfaces montrant les trois mêmes accroches, c'est le plus court chemin pour qu'aucune ne veuille plus rien dire. `/topics` reste la section dans les deux cas : la front page est une **sélection**, `/topics` est **tout** — donc pas de doublon de route.
+### L'invariant dont tout dépend
 
-### Les six sources ([`topics-catalog.js`](../../src/topics-catalog.js))
+> Le **statut de revue** d'un Topic et ses **deux signaux d'attention** sont trois choses séparées.
 
-**Config, pas contenu** — le catalogue ship avec l'app et existe aussi en mode `new-alt` (un utilisateur neuf voit les six cartes même s'il n'a aucun dossier). Même partage que `ff-catalog.js` (config) vs `mocks.js` (data). Descriptions écrites **à la 1ʳᵉ personne d'Archie**.
+`status` (`new` / `used` / `ignored`), `isTrending` et `isUpdated` sont trois champs. Ni signal n'est un quatrième statut, donc un Topic peut être **Used et trending** à la fois — et un signal ne **prime jamais** sur le filtre de statut : un Topic ignoré qui se met à monter reste caché. Comme section dépliable, « trending » devait outrepasser le filtre, ce qui faisait mentir le filtre.
 
-| Source                    | Accent        | `playbookAnchor` | Défaut |
-| ------------------------- | ------------- | ---------------- | ------ |
-| **Competitor sources**    | purple        | `competitors`    | **ON** |
-| **Influencer sources**    | red           | `competitors`    | **ON** |
-| **Brand feedback**        | menthol       | —                | OFF    |
-| **Competitor monitoring** | electric-blue | `competitors`    | OFF    |
-| **Industry trends**       | green         | —                | OFF    |
-| **Global trends**         | orange        | —                | OFF    |
+Le **triage vit dans sa propre map**, pas écrit sur le Topic : un Topic est ce que le scan a rendu (côté serveur), une ligne de triage est ce que **cet** utilisateur en a fait. Les garder séparés est ce qui permet à un re-scan de remplacer un Topic sans écraser la réponse.
 
-`accent` est une **clé sémantique, jamais un hex** → `.topic-badge--<accent>` ([`topic-badge.css`](../../styles/components/topic-badge.css), partagé par les trois surfaces). `playbookAnchor` — jamais l'id — dit quelle section du Playbook alimente la source, donc la vue offre un deep-link sans hardcoder d'id.
+Un Topic **ignoré n'est jamais remonté par un signal, nulle part**. Cocher **Ignored** dans le filtre est le seul chemin de retour. La règle inverse — « une pointe n'est jamais masquée par le triage » — a été essayée et retirée : elle faisait d'Ignore une suggestion au lieu d'une réponse.
 
-### Config par Playbook
+### Les deux stores
 
-`ctx.topics = { enabledSourceIds, cadence }` — **une seule cadence pour tout le Playbook** (daily / weekly / monthly), pas une par source. Normalisé par `normalizeTopics()` dans [`contexts-store.js`](../../src/contexts-store.js), appliqué dans `addContext` **et sur le seed** (qui bypasse `addContext`). Édité sur **`/topics/settings`** — voir ci-dessous. Le Playbook **ne porte rien** de tout ça.
+**`topic-feeds-store.js`** — un **feed par Playbook** : quelles sources écoutent, à quelle cadence, et quels sites la source Brand website lit. Global, comme `connectors-store` : un feed apparie un Playbook à des sources et tourne sur une cadence, bien avant qu'un chat existe pour tenir ce qu'il trouve.
 
-**La cadence est du copy, pas un timer** — un tick hebdo ne se déclencherait jamais dans une démo. Le côté récurrent vient de deux gestes qui partagent la même primitive : **Refresh now** (2 dossiers) et l'**auto-scan au chargement** (1 dossier) — voir « Scan » plus bas.
+**Pourquoi un store et pas un champ sur le Playbook** : le magazine gardait la même config en `ctx.topics`. Elle en sort pour la raison que donne [`CONCEPTS.md`](CONCEPTS.md) §1 — un Playbook est une **fiche**, chaque champ répond à « qui êtes-vous ? », alors que « quels feeds tournent et à quelle fréquence » répond à « quel job Archie doit-il lancer ». C'est opérationnel. Ça achète aussi `websites`, qui n'a nulle part où vivre sur un Context : le `websiteUrl` du Playbook est l'adresse canonique de la marque, ceci est la liste de scan d'**un** feed, qui peut ajouter un blog, un site de docs ou un domaine régional.
 
-### La section (`/topics`, [`screens/topics.js`](../../src/screens/topics.js))
+**Tout Playbook a un feed, et il écoute dès le premier jour.** `provisionMissingFeeds()` en crée un à la lecture, jamais au chargement du module (en mode `new-alt` les stores démarrent vides et les Playbooks arrivent plus tard). Une marque neuve ne tombe jamais sur un écran qui lui demande de configurer quelque chose avant que rien ne puisse arriver — et c'est aussi pourquoi rien ici ne peut **supprimer** un feed : la lecture suivante le reconstruirait.
 
-Header **« Topics »** + _« N new · N topics · from N Playbooks »_ (les Playbooks **représentés** dans le feed, pas ceux surveillés — « across 4 Playbooks » est un mensonge quand neuf dossiers viennent de deux), puis le picker **Playbook**, **⚙ Settings** et **Refresh now** (`secondary blue` : rafraîchir une liste est une action de page routinière ; l'orange est réservé au geste spotlight sur une carte).
+**`topics-store.js`** — les Topics + le triage. `getTopicsForFeed` · `groupTopicsByAge` · `countToReview` · `countFresh` · `getFreshTopics` · `getTopicById` · `topicTitle` · `defaultFilters` / `narrowedGroupCount` · `markUsed` / `ignoreTopic` / `unignoreTopic`.
 
-#### Mise en page : une une, puis une grille
+**Un signal ne vit que dans « Last 7 days ».** Trending et Updated sont des affirmations sur **maintenant**. Une carte portant l'une des deux sous un intertitre « il y a trois semaines » se contredit, et c'est l'intertitre qu'on croit. Les flags sont donc **effacés** au-delà du premier groupe d'âge dans `withTriage()`, pas laissés au seed : chaque lecture passe par cette fonction, donc le feed, la liste in-chat, le picker et tous les compteurs sont d'accord gratuitement, et aucun seed futur ne peut réintroduire la contradiction.
 
-Le feed était une **colonne chronologique de cartes à hauteur identique**, et c'était juste tant que la page était une file d'attente de lecture. Elle ne l'est plus : Archie doit répondre à « qu'est-ce que je poste aujourd'hui ? », et une suite de cartes égales n'a aucune réponse à « par quoi je commence ? ».
+### Les huit sources ([`topics-catalog.js`](../../src/topics-catalog.js))
 
-- **La une** = `visible[0]` (`getTopics()` trie déjà du plus frais au plus vieux, et filtrer préserve l'ordre). Elle reste la une **sous filtre** aussi : « le plus frais de cette rubrique » est encore la bonne réponse, alors qu'épingler la une au feed non filtré montrerait un dossier que le filtre exclut.
-- **La carte de une** (`renderTopicLeadCard`) : accroche en `--sys-text-style-h1` (24px, une marche au-dessus des 18 de la grille) clampée 3 lignes, chapô 3 lignes, et — la partie qui la fait lire comme du journalisme — **un des posts sources cité en place**, via `renderSocialPostCard(post, { compact: true })`. La preuve est ce à quoi sert un dossier, et en montrer un bout est la différence entre « Archie a trouvé un truc » et « voilà ce que les gens disent ». Elle passe en **deux colonnes** (argument à gauche, preuve à droite) au-delà de 720px — une **`@container` query** sur la carte elle-même, pas une media query : sidebar repliable + panneau de droite, la largeur du viewport ne dit pas la largeur du contenu. Empilée, la citation poussait le pied sous la ligne de flottaison sur un laptop. Son « Start a chat » passe **`primary orange`** : il n'y en a qu'un sur la page, exactement l'argument qui vaut déjà pour la dialog.
-- **La grille** — `repeat(auto-fill, minmax(380px, 1fr))` + `grid-auto-rows: 1fr`. **380 et pas 320** : à 320 la mesure de 1160 tient trois colonnes de ~365px, et une carte aussi étroite ne garde pas son pied sur une ligne (la pile d'avatars et les deux actions passaient à la ligne sur chaque carte). À 380 c'est deux colonnes de ~570 — une largeur de prose confortable **et** de la place pour le pied. `1fr` garde **la règle des hauteurs identiques dans la grille** : seule la une la casse, et elle la casse exprès.
-- **La page passe de 960 à 1160px.** Le 960 avait été choisi pour une colonne unique de prose. La prose reste plafonnée **séparément** en `ch` (accroche 62, chapô 72), donc élargir la grille n'élargit jamais une ligne de texte — la leçon déjà apprise sur `/topics/settings`.
-- **Les groupes de date restent, sous la une** : **This week** (`ageDays ≤ 7`) / **Earlier this month** (`≤ 30`) / **Earlier**, groupes vides masqués. Ils jouent maintenant le rôle des filets de section d'un journal.
+CONFIG, pas contenu : le fichier ship avec l'app et doit exister en mode `new-alt` aussi (une marque neuve voit les huit cartes sur la page de réglages). Même partage que `ff-catalog.js` vs `mocks.js`.
 
-#### Filtres : la source est devenue une rubrique
+| id                      | Nom                   | `live` | `playbookAnchor` |
+| ----------------------- | --------------------- | ------ | ---------------- |
+| `competitor-posts`      | Competitors           | ✅     | `competitors`    |
+| `influencer-posts`      | Influencers           | —      | `null`           |
+| `brand-website`         | Brand website         | —      | `null`           |
+| `brand-feedback`        | Brand feedbacks       | —      | `null`           |
+| `competitor-monitoring` | Competitor monitoring | —      | `competitors`    |
+| `industry-trends`       | Industry trends       | —      | `null`           |
+| `global-trends`         | Global trends         | —      | `null`           |
+| `internal-ideas`        | Internal team ideas   | —      | `null`           |
 
-**Deux facettes, deux composants différents, et c'est le sujet.**
+`accent` est une **clé sémantique, jamais un hex** → `.topic-badge--<accent>` ([`topic-badge.css`](../../styles/components/topic-badge.css), partagé par la carte, l'article et les cartes de réglages). `playbookAnchor` — jamais l'id — dit quelle section du Playbook alimente la source, donc la carte offre un deep-link sans hardcoder d'id ; `null` = le listening l'alimente directement.
 
-- **Source → `.ap-filter-chip`** (piloté par `aria-pressed`, avec `.ap-filter-chip-count`). Six sources, figées, livrées par le catalogue : ce sont **les rubriques du journal**, et on clique entre les rubriques d'un canard, on n'ouvre pas un menu pour en choisir une. C'est aussi la règle du DS — bascules toujours visibles sur un petit set plat → _filter chips list_. C'était un `.ap-select` avant, et c'était juste pour une page qui était une liste filtrée ; c'est faux pour une page qui est une publication. (Le composant Angular `<ap-filter-chips-list>` n'a **pas** de couche CSS-UI — `.ap-filter-chip` de [`ds-patches.css`](../../styles/ds-patches.css) reste l'équivalent prototype sanctionné.)
-- **Playbook → `.ap-select`**, inchangé. Ce set grandit avec le compte et une puce par Playbook est exactement le piège que la page de config a évité : ça ne survit pas à vingt. Un select oui, et il montre sa sélection fermé.
-- **Le select est monté dans le head**, à côté de Settings et Refresh. Deux tentatives l'ont laissé sur la ligne des rubriques (poussé à droite en `space-between`, puis flottant après la dernière puce) et les deux ont fini pareil : sept puces remplissent déjà une mesure de 1160, donc le select tombait sur une ligne à lui et laissait une bande vide au-dessus de la une. Il y est aussi **au mérite** — « quel Playbook je regarde » est un contrôle de page du même ordre que ces deux-là, pas une rubrique.
-- Inchangé : **compteurs croisés** (chaque facette comptée contre la sélection de l'AUTRE, donc un nombre ne promet jamais des lignes que les filtres excluraient) ; **un compteur à zéro _désactive_ la puce au lieu de la masquer** (la rangée ne se réorganise pas sous le curseur, et une combinaison morte reste inatteignable — sauf si c'est la sélection courante, sinon on ne pourrait plus en sortir) ; **seuls les Playbooks présents dans le feed ont une option** ; la dalle `.ap-select-search` au-delà de 8 ; **`Clear` seulement s'il y a quelque chose à effacer** ; **`?pb=` pour le Playbook, state module pour la source**.
-- **Sous-titre filtré** — _« 2 of 9 topics · Pawtrack · always-on · Competitor sources »_ : « 9 topics » au-dessus d'une liste de 2 se lit comme un bug.
+⚠️ **`competitor-posts` est la seule `live`, et c'est porteur** : le filtre de source par défaut est dérivé de `LIVE_SOURCE_IDS`, donc un Topic seedé sur une source non-live serait filtré hors de son propre feed dès le premier paint. Les sept autres sont déclarées pour la page de réglages, où leur switch est **désactivé** avec un tag « Coming soon » — un switch qui bascule et ne change rien est pire qu'un qui dit qu'il n'est pas prêt.
 
-#### La carte de grille ([`topic-card.js`](../../src/components/topic-card.js))
+**Le registre est neutre, pas la 1ʳᵉ personne d'Archie.** Archie dit « je » partout où il vous **parle** : le thread, les toasts, les empty states. Ceci est de la copy de réglages, et la copy de réglages explique ce que le système fait quand personne ne regarde. À la 1ʳᵉ personne les mêmes phrases se lisent comme des promesses de conversation, ce qui est le mauvais registre pour un interrupteur qu'on règle une fois.
 
-Un **brief éditorial** : kicker, accroche, chapô, ligne de signature. Inchangée dans ses arbitrages, seulement extraite dans son propre fichier CSS et posée sur une grille.
+**Cadences** : Weekly / Monthly / Quarterly. **De la copy, jamais un timer** — un tick hebdomadaire ne partirait jamais dans une démo.
 
-- **Kicker à gauche, marques à droite**, `space-between` : `[badge] Source · quand` d'un côté, `[chip Playbook] • New` de l'autre. En une seule file, seul le badge restait à sa place — tout le reste glissait selon la longueur du nom qui le précédait. Deux ancres fixes donnent deux colonnes à scanner. `margin-left: auto` sur les marques, pour qu'un nom de Playbook long qui les fait passer à la ligne les garde à droite.
-- **L'accroche mène** : `--sys-text-style-h2` (**18px/700**). Elle était en h4 — **14px, la taille du résumé** — donc la carte n'avait pas de tête et chaque brief se lisait comme un paragraphe gris. Plafond **62ch** (et non 52 : à 52 cette accroche cassait en « …peace / of mind ») + `text-wrap: balance` et clamp **2 lignes**.
-- **Rythme en marges explicites**, pas un gap uniforme : kicker → 8 → accroche → 4 → chapô.
-- **Filet au-dessus du pied**, sur la couleur de bordure de la carte. Pied : `.ap-avatar-group` des auteurs + « N posts », puis **Dismiss** (ghost grey) et **Start a chat** (`secondary orange` — neuf boutons pleins, aucun ne lit comme important).
-- Corps = un seul `<button>` qui ouvre la dialog ; les actions vivent dans un footer **frère** (un bouton dans un bouton est du HTML invalide). Hover = bordure bleue, sans élévation. Unseen se lit au **point orange « New »** dans l'eyebrow, jamais à un liseré de bord : l'état d'une carte est dans son **contenu**, pas sur son cadre.
+### Les deux `kind`, qui SONT les deux segments
 
-#### La front page (`/`, flag `frontPage`)
+Un Topic est soit draftable maintenant (`ready`), soit un thème à garder (`later`), et cet axe unique **est** le segmented control au-dessus de la liste. Un seul vocabulaire, pas deux : le fork portait un `researchType` valant `ready-to-post` / `content-strategy` et le mappait sur des ids de segment `ready` / `later` au rendu — une couche de traduction dont le seul métier était de traduire un ancien nom.
 
-Le même moteur, une autre intention. Head **« Here's what I found »** à la 1ʳᵉ personne (cette page est Archie qui rend compte, pas un dashboard qui s'étiquette) + _« 3 new since yesterday · 10 topics · from 2 Playbooks »_ — honnête, puisqu'un dossier est vraiment arrivé au chargement.
+**Deux corrections d'audit ici** :
 
-- **Les rubriques, pas le select Playbook.** Une une n'est pas une vue filtrée ; restreindre par marque est le métier de la section, et remettre la même toolbar à deux facettes ferait ressembler les deux routes alors que leurs métiers diffèrent.
-- **Une + 6, sans groupes de date.** Des intertitres de date sur six cartes seraient du mobilier ; l'archive est à un clic.
-- **Pied « See all N topics »** (`stroked grey`, centré, au-dessus d'un filet). Une front page doit **finir** et le dire, sinon une grille plafonnée ressemble juste à un feed tronqué.
-- **`New chat` est `secondary orange`, pas primary.** La page a déjà exactement un bouton plein — le « Start a chat » de la une. Deux primaires sur un écran est une violation DS, et ça se lit comme telle : le header concurrencerait l'histoire au-dessus de laquelle il est posé.
-- Deux culs-de-sac seulement (contre trois sur la section) : pas de facette Playbook ici, donc une rubrique vide est toujours le fait des puces.
+- Son prédicat de segment lisait aussi un **pilier de contenu** : un Topic `content-strategy` déjà rattaché à un pilier comptait comme ready-to-draft. Les piliers ne font pas partie du port, donc la clause est partie et la règle est celle qu'elle voulait être — la classification du scan décide, rien d'autre ne déplace un Topic.
+- Le **non-classé tombe dans `later`**, pas dans `ready`. C'est ce que dit la spec du fork (« Ready to draft revendiquerait une maturité que rien n'a gagnée ») et son code faisait l'inverse.
 
-#### Le rail du hero (chat neuf, quand `frontPage` est OFF)
+### La file (`/topics`, [`screens/topics.js`](../../src/screens/topics.js))
 
-_« What I'm hearing · N new »_ + trois `renderTopicRailCard`, **entre le composer et « Or jump into a workflow »**, plus un lien **See all N** vers `/topics`. Les trois starter cards sont **intactes** : le rail répond à « qu'est-ce que je poste aujourd'hui ? » (la question de quelqu'un qui ouvre un chat vide), les starters à « je sais déjà ce que je veux faire ». Les rétrograder en pills écrasait trois features en texte de lien.
+**Un Playbook à la fois, porté par `?pb=`.** Le fork avait introduit un scope global persisté (`active-playbook.js`) qui avait supprimé quatre pickers d'un coup — puis son switcher de rail a été garé et le module est resté source de vérité. Résultat : le select « Playbook » de l'entête du feed **ressemblait à un filtre de page et re-scopait l'app entière** (le compteur de la sidebar, le Playbook d'un chat neuf, le picker du composer) et le persistait en `localStorage`. `?pb=` dit la même chose, survit à un lien, et **s'arrête à cet écran**. La page de réglages lit le même param, donc le scope survit à l'aller comme au retour.
 
-- **Sélection** : le Playbook attaché au chat d'abord — « pertinent » est toute la promesse — puis la rangée est **complétée** depuis le reste du compte. Un Playbook à deux dossiers laissait un trou dans une grille de trois, à côté de trois starters pleins ; « voilà ce que j'ai trouvé » qui se lit comme un vide est pire qu'une troisième carte d'une autre marque.
-- **Le compteur « N new » est compté sur le rail**, pas sur le compte : le badge de la sidebar est la notification account-level, et un label promettant « 3 new » au-dessus de trois cartes sans marque New se lit comme un bug.
-- **La carte de rail** : accroche seule (clamp 3 lignes, `--sys-text-style-body-bold` — à 18px trois accroches criaient par-dessus le composer, qui reste l'objet principal de cet écran) + un CTA `ap-link standalone small` avec flèche, **le même idiome que les starters en dessous**, pour que les deux rangées se lisent comme un seul hero. Le CTA dit **« See what I found »** et pas « Start a chat » : la carte ouvre la **dialog**, comme une carte de feed, et la dialog porte déjà ce bouton — promettre le chat serait un mensonge. **Pas de Dismiss** : ranger son feed est le métier de `/topics`.
-- **L'animation ne bouge pas** : `empty-rise` échelonne déjà les enfants **1 à 7** du hero, qui passe de 5 à 7. Ça tombe pile.
-- **Le rail est vivant** : `session.js` s'abonne à `topics-store` et re-render l'aside **seulement si le rail est monté**, pour qu'une conversation démarrée ne repeigne jamais tout parce qu'un dossier a bougé.
-- **Rendu à zéro condition satisfaite = rien du tout**, donc un hero sans topics est octet pour octet le hero que l'app a toujours eu.
+**Le head ne bouge jamais.** Titre + les deux segments à gauche (ils disent **quelle** liste on regarde), le select Playbook + Filters + Settings à droite (ils la **rétrécissent**). Au-dessus du split et hors de lui : quand le head vivait dedans, ouvrir l'article rétrécissait aussi le titre et les segments.
 
-#### Scan — deux gestes, une primitive
+#### 🐛 Le master–detail : le bug que ce port existait pour corriger
 
-`drainPool(n)` est la seule mécanique : prendre `n` dossiers du puits, les poser en `unseen` / `ageDays: 0`, et **vieillir tout le reste d'un jour** pour que les arrivants soient vraiment les plus récents et que les groupes de date glissent comme dans la vie.
+**La liste se rétrécit maintenant.** Chez le fork elle était figée à 666px et le pane prenait le reste, donc sous ~1180px de largeur de **contenu** l'article n'avait nulle part où aller et une `@container` query le posait sous la liste. À **1440px de viewport** — un 14 pouces, sidebar comprise, soit ~1100px de contenu — cliquer une carte rendait l'article **1900px sous la ligne de flottaison** : la carte s'allumait et rien d'autre ne semblait se passer.
 
-- **`refreshTopics()` = `drainPool(2)`** — le bouton **Refresh now**, avec son état scanning (`.archie-loader` + skeletons ~2 s) et son toast.
-- **`maybeAutoScan()` = `drainPool(1)`**, appelé au boot dans [`app.js`](../../src/app.js) sous `isFlagOn("topics")`. C'est l'autre moitié de « ça se met à jour tout seul » : quelque chose attend déjà quand on arrive, sans que personne ait cliqué. **Une fois par chargement de page, dans un booléen de module — pas de `sessionStorage`, et c'est délibéré** : un reload doit rejouer un arrivage (c'est ce qui donne la sensation d'un site où l'on revient, et ça garde la démo re-déclenchable), et ça n'ajoute aucune persistance à un proto qui n'en stocke presque pas. **Un** dossier et pas deux, pour que Refresh reste le geste le plus fort.
-- Le puits (`mocks.topicScanPool`) est passé de **4 à 8** dossiers : à 4 il était sec après deux Refresh et la promesse ne tenait pas une démo. `global-trends` y vit exprès — c'est la seule source sans dossier seedé, donc l'allumer puis scanner est la façon la plus nette de voir une source prendre vie.
+Ici la liste est `flex: 1 1 auto` avec un plancher de 380px, le pane `flex: 1 1 0` avec le sien à 440px, et les deux se partagent ce qu'il y a. Côte à côte survit jusqu'à 852px de contenu. En dessous ça s'empile toujours (deux colonnes sous 440px sont illisibles), et alors **ouvrir un article l'amène dans le champ de vision** — arithmétique, pas `scrollIntoView()` : `nearest` refusait de bouger un pane 1700px plus bas (l'élément est presque aussi haut que le scrollport, donc le navigateur le lit comme déjà « nearest ») et `smooth` perdait la course contre le repaint suivant.
 
-#### Empty states
+**Une `@container` query, pas une media query** : la sidebar se replie et le panneau de droite recouvre, donc la largeur du viewport ne dit jamais la largeur du contenu.
 
-Trois culs-de-sac distincts sur la section : rien d'activé nulle part (**« Tell me what to watch »** → `/topics/settings`, l'endroit qui règle le problème), filtres sans résultat (**« Nothing matches those filters »**, qui nomme **les deux** facettes — « nothing from that source » est faux quand c'est le Playbook qui exclut), feed vidé à la main (**« Nothing new right now »** + la cadence la plus rapide). Précédence voulue : des dossiers avec zéro source active affichent quand même le feed — ils sont toujours là à lire.
+#### Les deux segments
+
+Le **DS Segmented control**, porté depuis son SCSS Angular dans [`ds-patches.css`](../../styles/ds-patches.css) — c'est le composant que le tie-breaker du DS prescrit pour 2–4 vues co-visibles (les Tabs, c'est jusqu'à 6 vues dont une seule visible). Chaque segment porte son compte, **après filtres**. Changer de segment ferme l'article et revient page 1.
+
+⚠️ **Trois états que le port du fork avait faux**, corrigés : le **hover est gris** (le SCSS du DS le dit en commentaire — « only selection is blue » —, et en bleu hover et sélection étaient indiscernables), `:active` existe, et `:disabled` **garde la surface blanche**. Le double tiret de `--selected` est celui du composant : c'est ce que le DS a écrit, un port qui le « corrigerait » cesserait de correspondre à ce qu'il porte.
+
+#### Les filtres
+
+Le **DS Filter dropdown**, porté de la même façon et pour la même raison : options **groupées derrière un déclencheur** → filter dropdown ; bascules toujours visibles sur un petit set plat → filter chips (ce que le magazine faisait, correctement, pour ses six sources).
+
+- **Deux groupes**, multi-sélection : **Topic status** (To review / Used / Ignored) et **Sources**.
+- **Défauts : To review + Used**, Ignored décoché, toutes les sources. Ignored est le seul laissé de côté et le seul qui le mérite : « Used » est un Topic qu'on a emmené dans un chat — le travail existe, il reste trouvable, et le cacher fait oublier au feed ce qu'on en a fait, ce qui est aussi comment on drafte deux fois le même. « Ignored » est la seule réponse qui veut dire « pas celui-là ».
+- **Le badge compte les GROUPES rétrécis**, pas les options cochées — « 2 » veut dire deux groupes qui filtrent. Compté contre le **défaut**, pas contre l'exhaustivité, sinon le badge serait épinglé à 1 dès l'ouverture du panneau.
+- **Des mots seulement**, pas de glyphe à côté d'une option : les glyphes de statut veulent dire quelque chose sur une carte, où ils tiennent lieu de phrase ; dans une liste de cases libellées ils sont une seconde lecture d'un mot déjà là.
+- Les sept sources non-live sont **désactivées avec un `.ap-tag grey mini` « Coming soon »** — jamais en bleu électrique, qui dans cette app est la couleur de ce sur quoi on peut agir, et une ligne désactivée est la seule chose du panneau sur laquelle on ne peut pas.
+
+#### Groupes d'âge, pagination
+
+Trois groupes, toujours dans cet ordre : **Last 7 days** (`≤ 7j`) / **Earlier this month** (`≤ 30j`) / **Earlier**, groupes vides masqués. Définis dans le store, à côté du parseur — le feed demande dans quel bucket tombe un Topic, il ne décide pas de ce que veut dire « 7 jours ».
+
+`ageLabel` (« 2d ago ») est **la seule entrée d'âge** : le « 2d ago » de la carte et le groupe où elle tombe en dérivent tous deux, donc les deux ne peuvent pas se contredire. `topics-store.ageMinutes` est la couture à remplacer par de vrais horodatages.
+
+**Dix par page.** La sentinelle de la dernière page charge la suivante à l'entrée dans le viewport, et il y a aussi un **Load more** explicite : les deux font exactement la même chose — une liste infinie sans bouton est inutilisable au clavier. `loadingMore` empêche un second chargement pendant qu'un est en vol.
+
+**La position de scroll survit à toute action** : trier un Topic à mi-liste ne doit pas renvoyer le lecteur en haut. `paint()` restaure l'offset du scroller autour du repaint.
+
+#### La carte ([`topic-card.js`](../../src/components/topic-card.js))
+
+Trois formes : `feed`, `picker`, et la **ligne compacte** de la liste in-chat. Le feed et le picker sortent **la même carte, partie pour partie** — même badge, âge, glyphe de statut, signaux, accroche, résumé. Un lecteur qui sortait du feed ne doit pas se voir tendre un objet d'allure différente dans le picker.
+
+- **La carte est une surface de lecture, pas un panneau de contrôle.** Le corps est **un seul bouton** couvrant toute la zone de texte, et il ouvre l'article. Les verbes vivent dans le footer de l'article, là où le lecteur vient de finir de lire ce qu'il décide — la forme précédente lui demandait de trancher sur deux lignes de résumé clampées.
+- Le kebab est un **frère** du bouton, jamais dedans (un bouton dans un bouton est du HTML invalide, ce qui est aussi pourquoi tout ce qui est dans le corps est un `<span>`). Deux rangs seulement : **Use in chat**, puis **Ignore** ou **Un-ignore** — un seul créneau, deux directions, jamais les deux, parce que c'est une décision lue par les deux bouts.
+- **Le glyphe de triage** est juste à droite de l'âge : la gauche de cette ligne, ce sont les faits du Topic, et son statut se lit comme l'un d'eux plutôt que comme une puce en concurrence avec les signaux. **`new` ne rend rien** — c'est l'absence de marque. Les deux autres enregistrent quelque chose que le lecteur **a fait** ; celui-là enregistre qu'il ne l'a pas fait, et une marque disant « rien n'est arrivé » est la seule chose qu'une marque ne peut pas dire. C'était aussi la valeur la plus fréquente : elle dépensait un glyphe sur presque chaque ligne pour ne rien transmettre.
+- **Hover et sélection sont deux états distincts** : hover prend le lavis de carte de l'app (fond bleu clair + bordure bleu clair, jamais du navy, jamais d'élévation, **jamais de barre d'accent latérale**), et la carte dont l'article est ouvert **raffermit** cette bordure en `electric-blue-100` en gardant le lavis. Le fork ne donnait **aucun** hover à la carte de feed, donc un bouton pleine carte n'avait rien qui dise qu'il en était un.
+- Aucun traitement de cadre pour une carte trending : le signal est porté **dans** la carte par la marque Trending, exactement comme Updated, donc les deux se lisent comme la même espèce de chose.
+
+#### L'article — un seul moteur, trois hôtes ([`topic-article.js`](../../src/topic-article.js))
+
+Le feed le montre à côté de la liste, le picker le montre dans sa dialog, la liste in-chat l'ouvre dans cette même dialog. Les trois appellent **les mêmes fonctions**, donc il y a exactement un article et aucun moyen que deux d'entre eux dérivent. Même forme que `playbook-view.js` et `connectors-view.js` : fonctions pures, aucun DOM, aucun listener.
+
+Contenu : le titre (**le titre de l'article**, jamais l'accroche du scan — `topicTitle()` traite `headline` comme le repli d'un Topic dont l'article n'est pas écrit ; c'étaient deux phrases différentes sur le même sujet, donc une carte disait une chose et l'article qu'elle ouvrait en disait une autre), la provenance, au plus deux faits (**Relevance** / **Why now**), la prose dans ses deux sections, puis les **Contributing posts**.
+
+- « Contributing posts », pas « Sources » : une Source dans cette app est quelque chose qu'on amène **dans** un chat, et ceux-là sont la preuve à partir de laquelle l'analyse a été écrite. Deux objets différents sous un mot sur le même écran.
+- **Relevance n'est jamais teintée**, sous aucun signal : à qui s'adresse un Topic ne change pas parce que la pile a grossi. **Why now** prend la teinte du signal quand il y en a un, parce que c'est la ligne dont le signal parle — un filet gauche, pas un aplat : un bloc teinté à taille de corps se lit comme un avertissement, et ni l'un ni l'autre n'en est un.
+- **Pas d'historique de version.** Un Topic mis à jour se lit comme sa version courante ; un lecteur qui décide quoi poster n'a pas besoin du brouillon qui précédait.
+- **Deux verbes, les mêmes partout** : **Use in chat** (`primary orange` — il tend le Topic à Archie, et l'orange est l'action IA / spotlight partout ailleurs) et **Ignore** (`stroked grey`, **pas** rouge : ignorer masque un Topic que cocher Ignored ramène, donc rien n'est détruit et le rouge signalerait un danger absent). Plus la sortie de l'hôte, poussée à droite.
+- Le footer **colle** au bas : les verbes sont ce à quoi la lecture sert, et un lecteur descendu jusqu'à la preuve ne doit pas remonter pour agir. ⚠️ Le fork y dessinait un **liseré bleu électrique** ; c'est un simple filet, parce que le bleu électrique est la couleur de l'interactif et une bande décorative est la seule chose qu'il ne peut pas être.
+
+#### Les deux verbes
+
+- **Use in chat** ([`topic-flow.js`](../../src/topic-flow.js)) — `useTopicInChat()` marque le Topic **Used**, arme le handoff `pendingTopicChat` et navigue vers `/session/new-<ts>?contextId=…&title=<titre>` (les query params, parce que `session.js` les résout en mintant la session, donc le chat est lié et nommé **au premier paint** plutôt que renommé une frame plus tard). La marque tombe **avant** que le chat s'ouvre, et **en un seul endroit**, pour que les quatre surfaces veuillent dire exactement la même chose.
+  **Pourquoi une source** : plutôt qu'inventer une surface d'aval, le Topic entre par le pipeline. Tout ce que l'app sait déjà faire — Extract ideas, Draft, Ask, le panneau Sources — s'allume tout seul, sans cas particulier nulle part. `attachTopicToChat()` est consommé au mount ; `intake-lifecycle` en fait la carte de source-intake du thread.
+  **Ni message d'écho, ni picker de questions** : la carte nomme déjà le Topic et le composer est juste là.
+- **Ignore** — ouvre [`topic-ignore-modal.js`](../../src/components/topic-ignore-modal.js) : « Why did this Topic miss the mark? », le titre cité, un champ **optionnel**, un infobox qui dit ce qu'ignorer implique. Le motif est la seule chose qu'un lecteur **dise** à Archie sur le listening, et c'est ce qui rend l'état Ignored lisible après coup — la carte le réimprime.
+  ⚠️ Le fork portait une case **« Don't show this again »**, retirée : elle faisait d'Ignore un clic sans motif, ce qui contredit la promesse de la même feature (le motif est conservé et affiché) et fabriquait des Topics ignorés sans rien à imprimer. Le champ est optionnel à la place — la façon honnête de garder le frottement bas.
+  Réversible : le toast offre **Undo** (`unignoreTopic`), qui repasse en `new` et **efface le motif** — la phrase tapée survivrait sinon sur un Topic qui n'est plus ignoré, invisible tant qu'elle dort et fausse dès que quelque chose la lit.
+
+#### États
+
+- **Scanning** — à la première arrivée seulement, jamais sur un lien vers un Topic (le lecteur venait pour une chose, un état de travail serait du théâtre entre lui et elle).
+- **Rien trouvé encore** — le feed écoute et doit se lire comme tel, avec la cadence nommée et un chemin vers les réglages. Ne doit **jamais** se lire comme cassé ou éteint.
+- **Filtres sans résultat** — c'est le fait du lecteur, donc la sortie est le chemin de retour (**Reset filters**), pas une réassurance. Deux phrases différentes, deux sorties différentes.
+- **Aucun Playbook** — il n'y a rien à écouter pour.
 
 ### La page de réglages (`/topics/settings`, [`screens/topics-settings.js`](../../src/screens/topics-settings.js))
 
-**Une page, pas un onglet.** Un onglet donnait à la config le même poids que le feed, ce qui est faux pour ce qu'elle est : on règle ses sources une fois puis on lit des topics pendant des mois. Le feed est la destination ; ceci est un endroit où l'on passe de temps en temps. Ce **n'est pas** un retour de la page Settings agrégée revertée trois fois : la règle du projet autorise la config sur l'entité qui la possède **ou sur une route scopée à une seule feature**, et c'est la seconde. `route()` ancre sa regex (`^…$`), donc `/topics/settings` est un frère distinct de `/topics`.
+**Une page, pas un onglet.** Un onglet donne à la config le même poids que le feed, ce qui est faux pour ce qu'elle est : on règle ses sources une fois puis on lit des Topics pendant des mois.
 
-- **Entrée** — un bouton **libellé** « ⚙ Settings » à côté de Refresh now (un cog nu obligerait à survoler un glyphe pour savoir ce qu'il ouvre), plus le CTA de l'empty state « Choose what I watch » (une **action**, pas le nom de la surface : « Tell me what to watch » → [Settings] serait un cul-de-sac plus faible). Le titre de la page est **« Topics settings »** et pas un « Settings » nu : sur une route où le projet interdit d'agréger la config, un titre qui dit seulement Settings se lit comme global — la même erreur que les trois pages revertées. **Sortie** — le back du topbar (`backTargetFor`, même mécanisme que `/playbook/:id`), qui **remporte `?pb=`** : un feed filtré survit à l'aller-retour. L'entrée de nav Topics reste allumée (`match` en préfixe).
-- **Chrome DS « settings »** — `--sys-settings-*` pour la coquille et les cartes (`content-background-color`, `-internal-margin`, `-vertical-spacing`, `-max-width-lg` **1200px** — voir la grille ci-dessous ; `card-background-color` / `-border-color` / `-border-radius` / `-internal-padding`), `.ap-card` + `.ap-card-title`, `h1.ap-h1` (**24px**, pas le `.ap-h2` de la recette : à 18px le titre de page n'est qu'à 2px des titres de carte et la hiérarchie se lit plate — et 24 est aussi la taille du titre du feed) + `p.ap-body`. Les guidelines interdisent les `--ref-*` génériques **pour la coquille et les cartes** ; les gaps intra-composant restent sur `--ref-spacing-*`, exactement comme l'exemple de la recette. Seul `--sys-settings-card-feature-lock-border-color` était utilisé dans l'app avant : c'est donc la **première utilisation de la moitié layout** de cette famille. **Pas de save bar** — tout commit immédiatement.
-- **Un seul Playbook à la fois**, scopé par `?pb=` (le même param que le filtre du feed). Le scope est **au-dessus** des cartes : c'est le sujet de la page, pas une de ses sections. « Playbook » le nomme en prose en plus d'offrir le contrôle — une page qui ressemble à des réglages se lit sinon comme globale, et `.ap-select` se réduit à une option quand il n'y a qu'un Playbook. Empiler un bloc par Playbook a été essayé : à vingt Playbooks c'est 120 switches et six descriptions répétées vingt fois — et ce sont les **descriptions** qui font exploser la page.
-- **Une barre de scope, puis une carte par source.** Les deux contrôles de niveau page — quel Playbook, quel rythme — sont **deux `.ap-form-field` côte à côte** (label au-dessus du `.ap-select`), pas une carte chacun : la même forme à deux selects que la barre de filtres du feed, donc les deux écrans se ressemblent. Puis un label de groupe _« Sources · 2 of 6 on »_ et **les six sources en cartes**, deux colonnes.
-  - **Pourquoi ce n'est plus une carte par contrôle + six lignes dans une septième** (la première version) : un titre de carte au-dessus d'un seul `.ap-select` est surtout du padding — la page se lisait comme deux boîtes presque vides — et **une ligne ne peut pas porter les options propres à une source**, ce qui est précisément la raison d'être des cartes. Le pied de carte est ce **slot** ; aujourd'hui il ne contient que la dépendance Playbook, pour les deux sources concernées.
-  - **`-max-width-lg` (1200) et deux colonnes**, pas les 700 de la recette « formulaire » : à 700 deux colonnes sont serrées et une colonne donne 900px de scroll de bandes larges et courtes… qui relisent comme des lignes. À 1200 chaque colonne fait ~570px — une largeur de carte. La prose au-dessus est plafonnée à 72ch séparément.
-  - **Le passage à une colonne est une `@container` query**, pas une media query : la sidebar se replie, donc la largeur du viewport ne dit pas la largeur du contenu.
-  - **OFF = la carte perd son fond** et laisse voir la page à travers (plus badge en grayscale et texte atténué), donc la grille dit d'un coup d'œil ce qui est vivant. **La bordure est identique dans les deux états** — l'état d'une carte est dans son contenu, pas sur son cadre.
-  - Les cartes d'une même rangée sont **à hauteur égale** et le pied est poussé en bas (`margin-top: auto`), pour que les notes s'alignent au lieu de flotter.
-- **Commit direct** — un switch écrit via `updateContext`, `contexts-store` notifie, `subscribeContexts` repaint, et le focus est **remis sur le switch** (sinon chaque bascule au clavier renvoie en haut de page). `change` et pas `click` (un clic sur le `<label>` se propage à l'input, ce qui doublerait ; et `change` attrape l'Espace). Ids stockés **dans l'ordre du catalogue**. Recherche dans le picker au-delà de 8 Playbooks.
-- **Dire que les autres diffèrent** — _« 3 other Playbooks watch different sources »_, parce qu'un-à-la-fois invite au « je croyais avoir réglé ça partout ».
-- **Empty state** — aucun Playbook (mode `new-alt`) : **« No Playbooks yet »** + lien vers `/contexts`.
+Ce n'est **pas** le retour de la page Settings agrégée retirée quatre fois ici : la règle du projet autorise la config sur l'entité qui la possède **ou** sur une route scopée à une feature, et c'est le second cas. La donnée vit dans `topic-feeds-store`, clé par Playbook ; seule la surface est ici.
 
-⚠️ **Deux pièges DS rencontrés ici**, valables ailleurs : `.ap-select-not-found` et `.ap-selection-dropdown-empty` portent un `display` qui bat `[hidden]` → masquer en `style.display` inline. Et **des backticks dans un commentaire HTML terminent le template `html``**.
+- **Chrome DS « settings »** — `--sys-settings-*` pour la coquille et les cartes, `-max-width-lg` (1200px) et deux colonnes. La prose reste plafonnée séparément, donc élargir la grille n'élargit jamais une ligne de texte. Passage à une colonne par **`@container` query**.
+- **Une barre de scope labellisée** (deux `.ap-form-field`, le vrai **DS Select** en `<details>` — jamais un `<select>` natif nu), **puis une carte par source**. Empiler un bloc par Playbook ne passe pas l'échelle : à vingt Playbooks, 160 interrupteurs avec chacune des huit descriptions répétée vingt fois — et ce sont les descriptions, pas les interrupteurs, qui font exploser une telle page.
+- **Une carte, pas une ligne**, parce qu'une carte peut porter les options de sa source. **Brand website** est la première à le prouver : elle porte sa **liste de sites éditable**. Une ligne neuve est DOM-only jusqu'à contenir une URL — `normalizeFeed` jette les entrées vides, donc un aller-retour par le store supprimerait la ligne que le lecteur vient de demander.
+- **Chaque source lie vers ce qu'elle lit** : les sources pilotées par les concurrents portent un `.ap-link` vers la section du Playbook. Seulement sur les cartes qui ont un endroit où envoyer — le fork mettait une rangée à flèche sur les huit, dont cinq qui ne lisent rien que le Playbook détient. **Influencers ne pointe nulle part exprès** : ce repo n'a pas de section Influencers, et envoyer vers Competitors ferait dire à la carte qu'elle lit vos concurrents, ce qu'elle ne fait pas.
+- **OFF = la carte perd son fond** et laisse voir la page à travers (badge en grayscale, texte atténué), donc la grille dit d'un coup d'œil ce qui est vivant. **La bordure est identique dans les deux états** : l'état d'une carte va dans son contenu, jamais sur son cadre.
+- **Commit direct**, aucune barre Save — un contrôle écrit via `updateFeed`, le store notifie, l'écran repaint, et le focus est **remis sur le switch** (sinon chaque bascule au clavier renvoie en haut de page). ⚠️ Le fork avait un footer **Cancel / Save changes** et des labels de section en **capitales** ; ni l'un ni l'autre ne revient.
+- **Dire que les autres diffèrent** — _« 3 other Playbooks listen to different sources »_, parce qu'un-à-la-fois invite au « je croyais avoir réglé ça partout ».
+- **Un seul Playbook à la fois**, scopé par `?pb=`, et seulement ceux qu'on peut **éditer** : quelles sources tournent est le job du propriétaire, pas la décision d'un lecteur d'un Playbook partagé.
 
-### La dialog du dossier ([`topic-modal.js`](../../src/components/topic-modal.js))
+⚠️ **Piège DS rencontré ici**, valable ailleurs : `.ap-select-not-found` porte un `display` qui bat `[hidden]` → masquer en `style.display` inline.
 
-`.ap-dialog` **720px** — c'est de la prose, le 920 des connecteurs dépasse une mesure confortable. Lifecycle standard via `modal-coordinator` (un overlay à la fois, focus restore, Esc / backdrop). L'ouvrir vaut lecture (`markSeen`).
+### Les deux surfaces in-chat
 
-Titre = **l'accroche** (le constat est ce qu'on vient lire ; un « Topic » générique au-dessus ne fait que le pousser vers le bas). La provenance est un **kicker AU-DESSUS** (badge + source · âge + chip Playbook), pas un sous-titre en dessous : même ordre que la carte du feed qu'on vient de cliquer, donc la dialog se lit comme cette carte ouverte. En `.ap-dialog-subtitle` elle était à **16px**, une seule marche sous un titre de 24 — l'en-tête se lisait comme deux titres ; elle est à 12px. Le Playbook reste un `.ap-tag` comme sur la carte : son nom contient lui-même un point médian (« Pawtrack · always-on ») et en texte dans une ligne à séparateurs, le kicker devenait quatre points d'affilée. Accroche plafonnée à **42ch** (34 forçait un retour que le conteneur ne demandait pas : 512px dans une colonne de 654) + `text-wrap: balance`. **Filet sous l'en-tête**, parce que le corps _scrolle_ : sans lui la prose glissait sous le titre sans rien pour dire que le titre est une couche fixe — le DS en met déjà un au-dessus du footer, la zone de lecture est donc bornée en haut et en bas.
+**« Fresh topics to review »** — dans le hero d'un chat neuf, au-dessus des starters. Les Topics **à revoir** les plus frais du feed de **ce chat**, six au plus. Ordre : le trending le plus récent, puis l'updated, puis le plus récent du reste — la ligne du haut est celle qui vaut le plus d'être traitée. Un panneau de **lignes à filets**, pas une grille de cartes : six propositions en cartes pèseraient plus que les trois starters en dessous.
 
-Corps : eyebrow orange **« What I found »** (`ap-icon-sparkles` à 14px, pas 16 — à 16 l'icône était plus grosse que le mot de 12px à côté), titre d'analyse, les paragraphes ; puis un filet, **« Source posts »** + compteur, et les cartes de posts. Footer : **Start a chat** (`primary orange` — il n'y en a qu'un ici) + **Not for me**.
+- **Aucune puce Playbook par ligne.** Le fork en mettait une sur chacune des six lignes **et** sur chacune des trois cartes de workflow — sept copies identiques d'un nom que le composer, 40px au-dessus, énonce déjà. L'entête de section porte le scope une fois.
+- **Aucun scroll imbriqué.** Le fork en faisait un scroller à hauteur fixe montrant 2,35 lignes dans une page qui scrolle déjà. Six lignes, toutes, et le pied mène au feed.
+- **Une ligne OUVRE l'article, elle ne choisit pas le Topic.** Lire vient avant décider, et décider se passe dans le footer de la dialog.
+- Le total du pied est **tout Topic de moins d'une semaine quel que soit son statut**, donc la phrase décrit la semaine et pas une to-do : trier une ligne fait baisser N et laisse M où il est.
+- Rendu à zéro condition satisfaite = **rien du tout**, donc un hero sans Topics est octet pour octet le hero que l'app a toujours eu. Vivant : `session.js` s'abonne au store et re-render l'aside **seulement si la liste est montée**. Changer le Playbook du composer **échange la liste** avec lui.
 
-**C'est la seule surface de l'app dont le métier est de lire**, donc la prose a un réglage de lecture et pas le réglage d'UI : **16px** (`--ref-font-size-md`, la taille que le DS emploie lui-même pour un sous-titre de dialog) et **la couleur de texte par défaut, pas `-light`** — trois paragraphes d'argumentation en 14px gris, c'était le plus petit texte de l'app pour le plus gros travail, et le gris clair rendait l'argument plus pâle que le mobilier autour. `line-height` 1.65 et **24px entre paragraphes** : à 16/1.65 une ligne fait 26px, donc l'ancien gap de 16 était inférieur à une ligne et les paragraphes se lisaient comme un seul mur. Mesure plafonnée en `ch` (68), pour tenir ~72 caractères quelle que soit la taille.
+**« Pick from the Topic Feed »** — une rangée **plate** du menu Add du composer, pas un sous-menu (ADS ne ship pas de dropdown imbriqué, et c'est une destination, pas un set). Ouvre [`topic-picker-modal.js`](../../src/components/topic-picker-modal.js), scopé au Playbook **du chat** : un chat garde la marque dans laquelle il a été créé, donc le picker ne demande jamais laquelle d'abord.
 
-🐛 **Corrigé au passage** : « Not for me » ne levait **jamais** son toast Undo. `onClick` appelait `close()` — qui remet `onDismiss` à `null` — _avant_ `onDismiss?.(id)`, donc l'appel était un no-op silencieux. Le callback est maintenant capturé avant la fermeture. Le Dismiss de la carte n'était pas touché, seulement celui de la dialog.
-
-**Social post card** ([`social-post-card.js`](../../src/components/social-post-card.js)) — le post publié par **quelqu'un d'autre**, comme preuve. Délibérément pas `top-post-card` : celui-là résout l'identité via tes propres profils connectés et présente ses chiffres comme une décision de perf. Ici l'auteur n'est pas toi et l'engagement fonde une affirmation. Avatar DS teinté (`data-accent`), handle, réseau · âge, la marque officielle du réseau en haut à droite (les glyphes `-official` du DS **portent leurs propres couleurs** — des SVG data-URI, donc aucun hex tiers en dur), texte, et les compteurs compactés (`1.4K`). `compact: true` retire l'engagement et clampe à 2 lignes.
-
-### Ce qu'on peut en faire
-
-Deux actions, pas plus : **Start a chat** et **Dismiss**.
-
-- **Start a chat** ([`topic-flow.js`](../../src/topic-flow.js)) — `openTopicInChat()` arme le handoff `pendingTopicChat` et navigue vers `/session/new-<ts>?contextId=…&title=<accroche>` (les query params pilotent déjà le nom et le Playbook d'une session `new-*`, donc le chat est correctement lié dès sa première frame). Au mount, `session.js` consomme le handoff → `startTopicChat()` : `markSeen`, puis **`addReadySource()`** (le hook existant, déjà utilisé par un top post repurposé), puis la lecture d'Archie, puis un Quickpicker de trois questions + custom + Skip.
-  **Pourquoi une source** : plutôt qu'inventer une surface d'action, le topic entre par le pipeline. Tout ce que l'app sait déjà faire (Extract ideas, Draft, Ask, le panneau Sources) s'allume tout seul — **zéro ligne dans `sources-stream.js`**. C'est aussi ce qui met le topic dans le thread comme **carte** : `intake-lifecycle` poste un turn source-intake pour toute source qui arrive après le mount, donc le pick est visible comme l'est une source choisie. Un `postSelectionEcho` par-dessus empilait deux fois la même accroche.
-  **Depuis le rail du hero aussi** : le handler appelle `openTopicInChat()` **tel quel**, qui mint une nouvelle session. La session vide qu'on quitte n'a ni thread ni source — elle est jetable — donc il n'y a rien à préserver et **zéro nouvelle plomberie** ; en prime le chat naît lié au Playbook du topic et déjà nommé.
-- **Dismiss** — masque, ne supprime pas, donc le toast peut vraiment offrir **Undo** (`restoreTopic`). Le même toast depuis la carte, la dialog et le hero (la dialog reçoit un `onDismiss` au lieu d'en posséder un second). Écarter un dossier doit vouloir dire la même chose partout.
+**Une dialog, deux vues.** Le picker ouvre sur la **liste** (ready-to-draft seulement, jamais un ignoré — même règle que le premier segment, et un picker n'a pas de filtre donc aucun moyen d'en montrer un) et le corps d'une carte ouvre l'article **dedans**, avec un retour qui **nomme** où il ramène. Une ligne du hero ouvre directement l'article et n'a **pas** de retour, parce qu'il n'y a pas de liste derrière. Sur la vue article la dialog n'imprime **aucun** header : l'article porte déjà le titre en h2, et un header au-dessus serait la même phrase deux fois — elle est **nommée** pour les lecteurs d'écran à la place.
 
 ### Le compteur de la sidebar
 
-Le badge de la ligne **Topics** compte les **unseen**, pas le total : la ligne est une notification. Il somme **tout le compte** — l'arrivée est un évènement account-level même si la config qui l'a produite est par Playbook. `subscribeTopics` re-render la sidebar, donc lire ou écarter un dossier bouge le badge sans changer de route.
+La ligne **Topic Feed** (`ap-icon-antenna`) compte les Topics **à revoir** du feed du Playbook par défaut. C'est une notification, donc elle compte ce qui attend une réponse, pas tout ce que le feed tient. Scopée à un Playbook plutôt que sommée sur tous, parce que **le feed lui-même est scopé** : un compte couvrant quatre marques enverrait le lecteur sur un écran qui en montre une. Il n'y a pas de scope global à lire — délibérément.
 
-### Une seule source de vérité pour l'âge
+### Le seed
 
-`ageDays` — pas d'horodatage réel : un proto n'a pas d'horloge fiable, et des dates mockées qui dérivent avec l'âge du fichier lisent moins bien qu'un « 3 days ago » stable. Le feed **groupe** dessus **et** chaque libellé en est **dérivé** via `topicWhen()`. Un `scannedOn` stocké a existé puis a sauté : chaque scan vieillit tout d'un jour, donc la chaîne écrite disait encore « yesterday » sur une carte que le feed avait déjà passée en semaine dernière. C'est aussi ce qui fait tenir l'auto-scan : le nouveau dossier arrive à `ageDays: 0` (« just now ») pendant que la une de la veille glisse à « yesterday », sans qu'aucune date n'ait été écrite nulle part.
+**2 feeds, 33 Topics.** 19 des 52 du fork sont tombés : leur contenu appartient à des Playbooks que ce repo n'a pas (une académie de jiu-jitsu, un multimarque de mode belge, un constructeur de maisons modulaires), et porter quatre marques de démo est une décision à part. Les deux autres Playbooks reçoivent un feed **provisionné vide**, ce qui est ce qui rend l'état « rien trouvé encore » démontrable.
+
+Deux corrections d'audit sur le seed :
+
+- **Le feed d'atterrissage a ses deux segments.** Celui du fork était 21 ready / 0 later, donc le premier écran affichait un segment à zéro. Six des vingt-et-un sont des thèmes de catégorie plutôt que des observations draftables, répartis sur les trois groupes d'âge.
+- **Il a un vrai étalement de statuts** — deux Used, deux Ignored avec la phrase qui explique pourquoi. Ignored est vide de sens sans son motif, et Used est ce qui prouve que le filtre par défaut garde votre propre travail trouvable.
 
 ---
 

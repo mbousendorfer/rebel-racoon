@@ -26,6 +26,16 @@ Documentation qui décrit l'état actuel du code. À maintenir à jour quand le 
 
 ---
 
+## 📐 Specs — acceptance criteria
+
+Critères d'acceptation écrits **depuis l'app tournante** : chacun dit ce que le lecteur fait et ce qu'il doit voir, donc n'importe qui avec un build peut les passer. Statut : proposés, pas encore validés avec l'engineering.
+
+| Document                                           | Sujet                                                                                                                                            |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [`specs/AC-TOPIC-FEED.md`](specs/AC-TOPIC-FEED.md) | **Topic Feed** — la file, l'article, et les deux surfaces in-chat. §0 liste ce qui a changé par rapport à la spec d'origine du fork, et pourquoi |
+
+---
+
 ## 🔍 Audits — current
 
 | Document                                                     | Date       | Sujet                                                                                                      |

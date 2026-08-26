@@ -41,11 +41,11 @@ Avant d'ajouter un champ ou une section, trois questions. **Une seule réponse �
 
 ### Ce qui n'y entre jamais
 
-| Exclu                          | Exemples                                                             | Vit à la place dans                                                                                  |
-| ------------------------------ | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| **Le contenu produit**         | Sources, Ideas, Drafts, posts programmés, Topics                     | `sources-stream.js` (global), `library.js`, `posts-store.js`, `schedule-store.js`, `topics-store.js` |
-| **Les métriques & historique** | performance des posts, top posts, ce qui a marché                    | `top-posts-store.js`, et la prod côté Agorapulse                                                     |
-| **La config opérationnelle**   | quelles sources d'écoute tournent, à quelle cadence, quoi surveiller | `/topics/settings` ([`FEATURES.md`](FEATURES.md) §17)                                                |
+| Exclu                          | Exemples                                                             | Vit à la place dans                                                                                           |
+| ------------------------------ | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| **Le contenu produit**         | Sources, Ideas, Drafts, posts programmés, Topics                     | `sources-stream.js` (global), `library.js`, `posts-store.js`, `schedule-store.js`, `topics-store.js` (global) |
+| **Les métriques & historique** | performance des posts, top posts, ce qui a marché                    | `top-posts-store.js`, et la prod côté Agorapulse                                                              |
+| **La config opérationnelle**   | quelles sources d'écoute tournent, à quelle cadence, quoi surveiller | `topic-feeds-store.js`, édité sur `/topics/settings` ([`FEATURES.md`](FEATURES.md) §17)                       |
 
 Les **comptes sociaux connectés** (`connectedSocials`, `selectedProfileId`) restent, eux, admissibles : ils disent sous quelle identité cette marque publie, ce qui est encore une réponse à « qui êtes-vous ? ».
 
@@ -53,8 +53,7 @@ Les **comptes sociaux connectés** (`connectedSocials`, `selectedProfileId`) res
 
 La règle porte sur **ce que la fiche dit**, pas sur la forme de l'objet JS. Trois champs exclus de la fiche sont malgré tout stockés sur le Context :
 
-- **`ctx.topics = { enabledSourceIds, cadence }`** — de la config opérationnelle pure. Elle est **par Playbook** (chaque marque écoute ses propres sources), donc la donnée est portée par l'entité ; mais elle est **éditée et lue ailleurs**, sur `/topics/settings`, et n'apparaît nulle part comme section de la fiche. Une section Topics a été essayée puis retirée : une grille d'interrupteurs se lit comme un panneau de réglages coincé dans un profil.
-- **`usedIn`** — un compteur de traçabilité (« appliqué dans N chats »), affiché sur la carte de la bibliothèque, jamais dans la fiche.
+- **La config du listening a QUITTÉ le Playbook.** Elle y a vécu, en `ctx.topics = { enabledSourceIds, cadence }`, avec l'argument que la donnée est **par Playbook** donc portée par l'entité. Elle est partie avec le magazine : « quelles sources écoutent et à quelle fréquence » répond à « quel job Archie doit-il lancer », pas à « qui êtes-vous ? ». Elle vit maintenant dans [`topic-feeds-store.js`](../../src/topic-feeds-store.js), clé par Playbook — la donnée reste par marque, seul son propriétaire a changé. C'est aussi ce qui a fait de la place à `websites` (la liste de scan d'un feed), qui n'a aucun sens sur une fiche : le `websiteUrl` du Playbook est l'adresse canonique de la marque.
 
 - **`ownerId` / `scope` / `history`** (flag `playbookSharing`) — l'appartenance. « À qui est cette fiche et jusqu'où elle porte » ne répond pas à « qui êtes-vous ? » : c'est la troisième question du test d'inclusion qui la rejette, pas la première ni la deuxième. Comme `usedIn`, la donnée est portée par l'entité et **lue ailleurs** — la marque de propriété dans le chrome de la carte et du header, le reste dans le modal de partage. Le journal `history` est de la traçabilité pure, sans versioning ni diff.
   Corollaire : **le store ne filtre pas**. Qui peut faire quoi vit dans [`playbook-access.js`](../../src/playbook-access.js), pas dans `contexts-store`, parce qu'un chat qui a perdu l'accès doit encore pouvoir **nommer** la fiche qu'il a perdue.
@@ -115,11 +114,11 @@ Un chat **peut** vivre sans Playbook (Archie travaille alors sans cadrage), mais
 
 Ce qui échappe à la règle, et pourquoi — trois familles seulement :
 
-| Reste global   | Pourquoi                                                                                                     |
-| -------------- | ------------------------------------------------------------------------------------------------------------ |
-| **Topics**     | Un topic arrive sur une cadence, rattaché à un Playbook, **bien avant qu'un chat existe** pour l'accueillir. |
-| **Top posts**  | L'historique publié est un fait du compte, pas d'une conversation. Aucun chat ne peut le revendiquer.        |
-| **Connectors** | De l'infrastructure de compte : on connecte Notion une fois, ça sert partout.                                |
+| Reste global   | Pourquoi                                                                                                                                                                                                                                                            |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Topics**     | Un Topic arrive sur une cadence, dans le feed d'un Playbook, **bien avant qu'un chat existe** pour l'accueillir. Son **triage** est global de la même façon : une réponse donnée sur le feed doit valoir dans le picker et dans la liste in-chat sans rechargement. |
+| **Top posts**  | L'historique publié est un fait du compte, pas d'une conversation. Aucun chat ne peut le revendiquer.                                                                                                                                                               |
+| **Connectors** | De l'infrastructure de compte : on connecte Notion une fois, ça sert partout.                                                                                                                                                                                       |
 
 Le code applique déjà la règle : `sources-stream.js` tient un `Map(sessionId → Source[])` avec des subscribers par session et un `clearSession()`, `library.js` et `posts-store.js` de même. Seuls les **uploads** y sont globaux — un état transitoire d'avant-source, que la modale d'ajout lit comme un pool. Les Playbooks sont légitimement globaux eux aussi : ce sont des fiches réutilisables, pas du travail en cours.
 
@@ -185,15 +184,15 @@ Conséquence pratique : avant de construire une capacité de publication, de cla
 
 Le pipeline canonique et les champs sont dans [`GLOSSARY.md`](GLOSSARY.md). Ici, seulement la frontière.
 
-| Objet         | Ce que c'est                                                  | Pourquoi hors Playbook                                                                                               |
-| ------------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| **Session**   | Un fil continu avec Archie (§2)                               | C'est le lieu où un Playbook est **appliqué**. Une session cite un `contextId` ; elle ne le modifie pas.             |
-| **Source**    | Un input brut ingéré (PDF, URL, vidéo, réponse de connecteur) | Du contenu apporté dans un chat (§3). La fiche dit comment écrire, pas à partir de quoi.                             |
-| **Idea**      | Un insight extrait d'une source                               | Du contenu produit, par session.                                                                                     |
-| **Draft**     | Un post candidat pour un réseau                               | Du contenu produit. Il **lit** le Playbook (voix, CTA, marque) et ne lui rend rien.                                  |
-| **Schedule**  | Un draft posé dans le calendrier                              | Du contenu daté.                                                                                                     |
-| **Topic**     | Un dossier assemblé depuis le listening                       | Arrive tout seul sur une cadence : dynamique par nature. Rattaché à un Playbook (`contextId`), jamais stocké dedans. |
-| **Connector** | Une source live interrogeable en MCP (Notion, Slite, …)       | De l'infrastructure de compte, partagée par tous les Playbooks. Se connecte une fois, sert partout.                  |
+| Objet         | Ce que c'est                                                  | Pourquoi hors Playbook                                                                                                                 |
+| ------------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| **Session**   | Un fil continu avec Archie (§2)                               | C'est le lieu où un Playbook est **appliqué**. Une session cite un `contextId` ; elle ne le modifie pas.                               |
+| **Source**    | Un input brut ingéré (PDF, URL, vidéo, réponse de connecteur) | Du contenu apporté dans un chat (§3). La fiche dit comment écrire, pas à partir de quoi.                                               |
+| **Idea**      | Un insight extrait d'une source                               | Du contenu produit, par session.                                                                                                       |
+| **Draft**     | Un post candidat pour un réseau                               | Du contenu produit. Il **lit** le Playbook (voix, CTA, marque) et ne lui rend rien.                                                    |
+| **Schedule**  | Un draft posé dans le calendrier                              | Du contenu daté.                                                                                                                       |
+| **Topic**     | Une analyse assemblée depuis le listening                     | Arrive tout seul sur une cadence : dynamique par nature. Appartient au **feed** d'un Playbook (`feedId`), jamais stocké dans la fiche. |
+| **Connector** | Une source live interrogeable en MCP (Notion, Slite, …)       | De l'infrastructure de compte, partagée par tous les Playbooks. Se connecte une fois, sert partout.                                    |
 
 **La règle de dépendance, dans un seul sens** : le contenu lit le Playbook, le Playbook n'apprend pas du contenu.
 

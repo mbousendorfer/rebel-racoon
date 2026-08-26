@@ -60,7 +60,7 @@ Règle universelle (`chat.css`) : _« a light-blue wash on hover/focus (never na
 - Radius carte = `--app-radius-card` (12). Tuiles icône AI/brand = fond `--ref-color-orange-10` + glyphe orange.
 - ⛔️ **Jamais de liseré d'accent coloré sur un bord de carte** (`border-left: 3px solid …`). Règle catégorique de Matt. **L'état d'une carte va dans son contenu, pas sur son cadre** — un marqueur explicite (point + mot, ex. « • New ») dit la même chose sans repeindre la bordure. Un seul cas existait dans l'app (unseen sur `.topic-card`) et il a été retiré ; les `border-left`/`border-right` restants sont des séparateurs de panneau 1px dans la ramp sombre video-clips, pas des accents.
 - Cartes in-bubble : `.chat-bubble-card` (grey-05, border grey-10) via `bulletsBlock()` (`_analyse-common.js`).
-- **Une carte qui vit sur plusieurs surfaces prend son propre fichier** — [`components/topic-card.css`](../../styles/components/topic-card.css) après que la carte topic soit sortie de `topics.css` pour rendre aussi la une, la front page et le rail du hero. Trois tailles, **les mêmes hooks `data-*`**, donc un écran les câble une fois.
+- **Une carte qui vit sur plusieurs surfaces prend son propre fichier** — [`components/topic-card.css`](../../styles/components/topic-card.css) : la carte Topic rend dans le feed, dans le picker et — en version ligne — dans la la front page et le rail du hero. Trois tailles, **les mêmes hooks `data-*`**, donc un écran les câble une fois.
 - **Dans une grille de cartes, `grid-auto-rows: 1fr`** (+ `flex: 1 1 auto` sur le corps) : les cartes d'une même rangée finissent à la même hauteur et leurs pieds s'alignent. Une grille de hauteurs inégales est la moitié de la scannabilité en moins. Une **une** peut casser la règle — mais alors elle est seule à le faire, et exprès.
 - **Une carte qui doit changer de mise en page selon la place qu'elle a reçue** se déclare `container-type: inline-size` et utilise une **`@container` query**, pas une media query : sidebar repliable + panneau de droite qui overlay, la largeur du viewport ne dit jamais la largeur du contenu. Cas en place : `.topic-card--lead` (une colonne → deux au-delà de 720px), et la grille de `/topics/settings`.
 
@@ -87,7 +87,7 @@ Le DS ship une **recette de page de réglages** et des tokens `--sys-settings-*`
 
 Markup : une colonne de `.ap-card` (+ classe locale portant les tokens ci-dessus — **ne jamais surcharger `.ap-card`**), titres en `.ap-card-title`, en-tête `h1` + `p.ap-body`. Save bar optionnelle et **inutile quand tout commit immédiatement**.
 
-Première utilisation de la moitié layout de cette famille : [`topics-settings.css`](../../styles/screens/topics-settings.css) (`/topics/settings`). Seul `--sys-settings-card-feature-lock-border-color` était déjà employé, dans `ds-patches` pour l'infobox feature-lock.
+Première utilisation de la moitié layout de cette famille : [`topics-settings.css`](../../styles/screens/topics-settings.css) (`/topics/settings`, les réglages du Topic Feed). Seul `--sys-settings-card-feature-lock-border-color` était déjà employé, dans `ds-patches` pour l'infobox feature-lock.
 
 Trois écarts assumés à la recette, appris en construisant cette page :
 
@@ -108,7 +108,7 @@ Trois écarts assumés à la recette, appris en construisant cette page :
 
 **Troisième cas :** quand chaque facette prend **une seule** valeur et s'applique **immédiatement**, ni l'un ni l'autre — **un `.ap-select` par facette**, avec `.ap-select-inline-label` pour nommer la facette dans le déclencheur et `.ap-select-option-badge` pour le compteur. Un select **montre sa sélection fermé** ; un déclencheur « Filters (2) » oblige à l'ouvrir pour savoir. Le _Filters dropdown_ du DS (V2 Molecules, panneau 420px checkboxes + Clear/Apply) reste le bon choix dès qu'on **compose un jeu multi-valeurs et qu'on l'applique en un coup**. Précédent en place : la toolbar Period / Sort du board top-posts.
 
-**Mais la taille du set tranche avant tout le reste — `/topics` porte les deux composants côte à côte** et c'est l'exemple à copier :
+**Mais la taille du set tranche avant tout le reste**, et le Topic Feed est passé d'un côté à l'autre de cette règle :
 
 | Facette      | Set                          | Composant                          | Pourquoi                                                                                                                                            |
 | ------------ | ---------------------------- | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -181,14 +181,14 @@ DS `.ap-dialog` centré par `modals.css` sur `.open`. `.app-modal-backdrop` patc
 
 Échelle de largeurs, toutes en `width: min(calc(100% - 32px), Npx)` :
 
-| Largeur | Modals                          | Pourquoi                                                       |
-| ------- | ------------------------------- | -------------------------------------------------------------- |
-| 440     | rename                          | un seul champ                                                  |
-| 560     | bug report, chat picker, search | une liste courte ou un formulaire                              |
-| 640     | feedback, add source            | formulaire + onglets                                           |
-| **720** | **topic** (le dossier)          | **lecture longue** — de la prose ; au-delà, la mesure décroche |
-| 920     | connectors                      | une gallery à parcourir                                        |
-| 960     | schedule                        | deux colonnes                                                  |
+| Largeur | Modals                            | Pourquoi                                                                                                                                                                                                |
+| ------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 440     | rename                            | un seul champ                                                                                                                                                                                           |
+| 560     | bug report, chat picker, search   | une liste courte ou un formulaire                                                                                                                                                                       |
+| 640     | feedback, add source              | formulaire + onglets                                                                                                                                                                                    |
+| **720** | **topic** (l'article + le picker) | **lecture longue** — de la prose ; au-delà, la mesure décroche. Même largeur dans les deux vues : une dialog qui se redimensionne entre choisir et lire fait passer les deux pour des écrans différents |
+| 920     | connectors                        | une gallery à parcourir                                                                                                                                                                                 |
+| 960     | schedule                          | deux colonnes                                                                                                                                                                                           |
 
 Les modals hauts plafonnent leur hauteur (`max-height: min(calc(100vh - 48px), 760px)`) et font défiler leur `.ap-dialog-content`, avec un footer d'actions collant : la décision doit rester atteignable quelle que soit la longueur du contenu.
 
