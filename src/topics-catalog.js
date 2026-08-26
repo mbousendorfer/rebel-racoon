@@ -179,9 +179,9 @@ export const CADENCES = Object.freeze([
 
 export const DEFAULT_CADENCE = "weekly";
 
-// ── The two kinds, which ARE the two segments ──────────────────────────────
+// ── The two kinds, which ARE the two tabs ─────────────────────────────────
 // A Topic is either something you can draft now or something worth keeping for
-// later, and that single axis is the segmented control above the list. One
+// later, and that single axis is the tab row above the list. One
 // vocabulary, not two: the fork carried a `researchType` of `ready-to-post` /
 // `content-strategy` and mapped it onto segment ids `ready` / `later` at render
 // time — a mapping layer whose only job was to translate an old name.

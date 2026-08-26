@@ -29,8 +29,8 @@ import {
 import { renderDashboard } from "./screens/dashboard.js?v=73";
 import { renderSession } from "./screens/session.js?v=542";
 import { renderContexts } from "./screens/contexts.js?v=280";
-import { renderTopics } from "./screens/topics.js?v=6";
-import { renderTopicsSettings } from "./screens/topics-settings.js?v=1";
+import { renderTopics } from "./screens/topics.js?v=7";
+import { renderTopicsSettings } from "./screens/topics-settings.js?v=2";
 import { renderConnectors } from "./screens/connectors.js?v=217";
 import { renderWelcomeAlt } from "./screens/welcome-alt.js?v=5";
 // Settings route removed — the prototype Admin controls moved to the sidebar

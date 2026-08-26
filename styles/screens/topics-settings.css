@@ -67,16 +67,15 @@
 
 /* ── Scope + cadence toolbar ─────────────────────────────────────────────── */
 
+/* align-items: center, not flex-end. The two controls carried a stacked <label>
+   and had to align on their bottom edges; their labels are inside them now, so
+   they are two controls of one height sitting on one line. */
 .topics-settings__bar {
   display: flex;
-  align-items: flex-end;
-  gap: var(--ref-spacing-xs);
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
   flex-wrap: wrap;
   margin-top: var(--ref-spacing-sm);
-}
-
-.topics-settings__field {
-  min-width: 0;
 }
 
 /* `.ap-select` is display:block, so both would take the whole row and push the second

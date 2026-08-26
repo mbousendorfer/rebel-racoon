@@ -310,7 +310,9 @@ The split is measured with a **`@container` query on the row**, never a media qu
 
 ### The DS ports live in ds-patches.css
 
-`.ap-segmented-control` and `.ap-filter-dropdown` are **transcriptions of Angular-only DS components** from their own SCSS — neither exists in `ds/css-ui`, so this is the missing-primitive case `ds-patches.css` is for, and the day they land in the DS both blocks are a delete. Both are the components the DS's own tie-breaker prescribes: 2–4 co-visible views → segmented control (not `.ap-tabs`); grouped options behind a trigger → filter dropdown (not filter chips, which is right for a small flat always-visible set — what the magazine correctly used for its six sources).
+`.ap-filter-dropdown` is a **transcription of an Angular-only DS component** from its own SCSS — it does not exist in `ds/css-ui`, so this is the missing-primitive case `ds-patches.css` is for, and the day it lands in the DS the block is a delete. It is the component the DS's own tie-breaker prescribes: grouped options behind a trigger → filter dropdown (not filter chips, which is right for a small flat always-visible set — what the magazine correctly used for its six sources).
+
+⚠️ `.ap-segmented-control` was ported here too, for `/topics`' two-view switch, and has been **deleted**. It was the wrong component: the product uses TABS for that shape everywhere it appears, and only one of the two lists is ever on screen — which is tabs, not co-visible views. `/topics` uses `.ap-tabs`, which ships in `ds/css-ui`. Don't re-port it without a genuine 2–4 co-visible-views case; `git log -S ap-segmented-control` has it.
 
 Every token substitution is commented with the value it stands in for, because the `--sys-color-*-interactive-*` family, `--sys-height-control` and `--sys-radius-inner` are **not in this repo's synced `ds/`** yet. Re-point them on the next `ds/` sync. ⚠️ The `--selected` double dash is the component's own — the DS wrote it that way against its own flat-modifier convention, and a port that "fixed" it would stop matching what it ports.
 

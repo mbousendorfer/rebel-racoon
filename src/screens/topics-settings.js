@@ -148,22 +148,19 @@ function renderPage() {
           Topic Feed.
         </p>
 
-        <!-- A labelled toolbar, not a card each. These two controls scope
-             everything below — which Playbook, what rhythm — and a card apiece is
-             what made this page read as two mostly-empty boxes, one of them a
-             title over a single select. Same two-select shape as the feed's own
-             head, so the pair of screens looks related. The wrapper is the DS
-             ap-form-field primitive: it styles its direct child label, so nothing
-             wraps that. -->
+        <!-- A toolbar, not a card each. These two controls scope everything
+             below — which Playbook, what rhythm — and a card apiece is what made
+             this page read as two mostly-empty boxes, one of them a title over a
+             single select.
+
+             Each label sits INSIDE its control, via the DS's own
+             .ap-select-inline-label: that is the "Creator | Select" shape the
+             product uses in every one of its toolbars, and stacking a <label>
+             above a select is form chrome that does not belong on one. Same
+             treatment as the feed's own toolbar, so the pair of screens reads as
+             related. -->
         <div class="topics-settings__bar">
-          <div class="ap-form-field topics-settings__field">
-            <label>Playbook</label>
-            ${raw(renderPlaybookSelect(playbooks, ctx))}
-          </div>
-          <div class="ap-form-field topics-settings__field">
-            <label>How often I check</label>
-            ${raw(renderCadenceSelect(feed, findCadence(feed?.cadence)))}
-          </div>
+          ${raw(renderPlaybookSelect(playbooks, ctx))} ${raw(renderCadenceSelect(feed, findCadence(feed?.cadence)))}
         </div>
 
         <p class="topics-settings__meta">
@@ -241,7 +238,8 @@ function renderPlaybookSelect(playbooks, active) {
       : "";
 
   return html`<details class="ap-select topics-settings__pbselect">
-    <summary class="ap-select-trigger">
+    <summary class="ap-select-trigger" title="Which Playbook these sources belong to">
+      <span class="ap-select-inline-label">Playbook</span>
       <span class="ap-select-value">${active.name}</span>
       <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
     </summary>
@@ -271,7 +269,8 @@ function renderCadenceSelect(feed, active) {
     </div>`;
   }).join("");
   return html`<details class="ap-select topics-settings__cadence">
-    <summary class="ap-select-trigger">
+    <summary class="ap-select-trigger" title="How often this feed runs">
+      <span class="ap-select-inline-label">Refresh</span>
       <span class="ap-select-value">${active ? active.label : "Weekly"}</span>
       <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
     </summary>

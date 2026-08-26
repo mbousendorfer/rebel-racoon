@@ -168,9 +168,8 @@ export function defaultFilters() {
 // its length UNLESS the reader swaps one option for another — still a deviation,
 // but not one worth a second data structure to catch in a prototype.
 //
-// The two KINDS are not a group here and never will be: the segmented control
-// above the list is a control you can see, and a control you can see needs no
-// badge.
+// The two KINDS are not a group here and never will be: the tab row above the
+// list is a control you can see, and a control you can see needs no badge.
 export function narrowedGroupCount(filters = defaultFilters()) {
   let n = 0;
   if ((filters.statuses || []).length !== DEFAULT_STATUS_IDS.length) n++;

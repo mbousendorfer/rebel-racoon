@@ -271,22 +271,21 @@ function renderPage(pb) {
   const openInList = open && shown.some((t) => t.id === open.id) ? open : null;
 
   // ── One shell, two shapes ───────────────────────────────────────────────
-  // With Topics to show, the reader: a list column beside a reading pane, both
-  // inside ONE framed surface divided by a hairline. Without any — still
-  // scanning, or nothing found, or the filter excluding everything — the split
-  // would be an empty column beside an empty pane, so the state takes the whole
-  // width instead. A reader with nothing in it is not a reader.
+  // With Topics to show, the reader: a list column beside a reading pane, each
+  // its own card. Without any — still scanning, or nothing found, or the filter
+  // excluding everything — the split would be an empty column beside an empty
+  // pane, so the state takes the whole width instead. A reader with nothing in
+  // it is not a reader.
   const empty = view.scanning || !shown.length;
 
   return html`
-    ${raw(renderBar(pb, feed))}
+    ${raw(renderBar(pb, feed))} ${raw(renderToolbar(pb))} ${raw(renderTabs(counts))}
     <div class="topics-view__body">
       ${raw(
         empty
           ? html`<div class="topics-view__blank">${raw(renderList(shown, more, total, view.scanning, feed))}</div>`
           : html`<div class="topics-view__split">
               <section class="topics-view__list-col" aria-label="Topics">
-                ${raw(renderListHead(counts))}
                 <div class="topics-view__list">${raw(renderList(shown, more, total, view.scanning, feed))}</div>
               </section>
               ${raw(openInList ? renderPane(openInList) : renderPanePlaceholder())}
@@ -296,17 +295,47 @@ function renderPage(pb) {
   `;
 }
 
-// ── The page bar ───────────────────────────────────────────────────────────
-// What the whole screen is about, and nothing that belongs to one column: the
-// name, the brand it is reading for, and the way to that brand's settings.
+// ── Row 1 · the page header ────────────────────────────────────────────────
+// The name, and the way to this brand's settings. Nothing else.
 //
-// The two segments and Filters are NOT here. They belong to the list — they say
-// which Topics it holds and which of them it shows — so they sit in the list
-// column's own header, above the rows they govern. Having them up here put a view
-// switch above a reading pane it had nothing to do with.
+// THE HOUSE PATTERN, taken from the product: the title anchors the left of the
+// header row, and the settings cog is ALWAYS the last thing on the right — Inbox,
+// Drafts, Analytics and Employee Advocacy all do it, without exception. A cluster
+// of "scope + cog" pinned to the left, which is what this was, exists nowhere in
+// the product.
 function renderBar(pb, feed) {
+  return html`<header class="topics-view__bar">
+    <h1 class="topics-view__title">Topic Feed</h1>
+
+    <!-- Icon-only, and that is the house treatment for it: the cog is the one
+         glyph nobody has to hover to recognise, and a labelled Settings would
+         give a rare action the same weight as the controls below. Its title
+         carries the cadence, which has nowhere else to live. -->
+    <a
+      class="ap-icon-button stroked grey"
+      href="#/topics/settings${raw(pb ? `?pb=${encodeURIComponent(pb.id)}` : "")}"
+      aria-label="Feed settings"
+      title="${raw(
+        feed
+          ? `Feed settings · refreshed ${escapeAttr(findCadence(feed.cadence)?.adverb || "weekly")}`
+          : "Feed settings",
+      )}"
+    >
+      <i class="ap-icon-cog"></i>
+    </a>
+  </header>`;
+}
+
+// ── Row 2 · the toolbar ───────────────────────────────────────────────────
+// What narrows the list, on the LEFT — the product's own arrangement in Drafts
+// ("Creator | Select", "Labels | Select", "Filters") and Analytics ("Filters",
+// then the date range). Search and sort would go on the right of this row; this
+// screen has neither yet, so the right side is empty on purpose.
+function renderToolbar(pb) {
+  const badge = narrowedGroupCount(view.filters);
+
   // The real DS Select — a <details>/<summary> dropdown, never a bare native
-  // <select>. Same component playbook-view uses for the audience picker.
+  // <select>.
   const pbOptions = getContexts()
     .map((c) => {
       const on = !!pb && c.id === pb.id;
@@ -322,99 +351,80 @@ function renderBar(pb, feed) {
     })
     .join("");
 
-  return html`<header class="topics-view__bar">
-    <!-- The heading is there for assistive tech and NOT drawn: the app topbar
-         already renders "Topic Feed" 40px above this, and two identical titles a
-         row apart is the plainest waste on the screen. Dropping it outright would
-         leave the page with no heading at all, so it is hidden rather than gone.
-
-         What takes the visual lead instead is the SCOPE. In a reader the brand
-         you are reading for IS the heading — same job a mail client's account
-         switcher does at the top-left — so the select leads the bar and the only
-         other thing here, settings, sits at the far end. -->
-    <h1 class="app-sr-only">Topic Feed</h1>
-
-    <div class="topics-view__bar-actions">
-      <!-- The scope. It writes ?pb= and nothing else — see the note at the top
-           of this file for why it is not a global scope.
-           UNLABELLED: "Acme · Q2 marketing" in a select on the Topic Feed does
-           not need the word "Playbook" written above it, and the labelled form
-           field made the heaviest control in the bar the one whose value changes
-           least often. -->
-      <div class="topics-view__scope">
-        <details class="ap-select" id="topicScope" data-topic-scope>
-          <summary class="ap-select-trigger">
-            <span class="ap-select-value">${raw(pb ? escapeAttr(pb.name) : "Choose a Playbook")}</span>
-            <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
-          </summary>
-          <div class="ap-select-dropdown" role="listbox" aria-label="Playbook">
-            <div class="ap-select-options">${raw(pbOptions)}</div>
-          </div>
-        </details>
-      </div>
-
-      <!-- An icon button, not a labelled one. A labelled Settings gave a rare
-           action the same weight as the scope beside it, and the cog is the one
-           glyph nobody has to hover to recognise. Its title carries what the
-           label used to say PLUS the cadence, which had nowhere else to live. -->
-      <a
-        class="ap-icon-button stroked grey"
-        href="#/topics/settings${raw(pb ? `?pb=${encodeURIComponent(pb.id)}` : "")}"
-        aria-label="Feed settings"
-        title="${raw(
-          feed
-            ? `Feed settings · refreshed ${escapeAttr(findCadence(feed.cadence)?.adverb || "weekly")}`
-            : "Feed settings",
-        )}"
-      >
-        <i class="ap-icon-cog"></i>
-      </a>
-    </div>
-  </header>`;
-}
-
-// ── The list column's own header ───────────────────────────────────────────
-// The view switch and the filter, above the rows they govern — the shape a mail
-// reader's message list has always had. Sticky is unnecessary: the header is a
-// sibling of the scroller, not inside it, so it cannot scroll away.
-function renderListHead(counts) {
-  const badge = narrowedGroupCount(view.filters);
-  return html`<header class="topics-view__list-head">
-    <div class="ap-segmented-control" role="group" aria-label="Which topics to show">
-      ${raw(
-        TOPIC_KINDS.map(
-          (k) =>
-            html`<button
-              type="button"
-              class="ap-segmented-control__segment${raw(
-                view.segment === k.id ? " ap-segmented-control__segment--selected" : "",
-              )}"
-              data-topic-segment="${escapeAttr(k.id)}"
-              aria-pressed="${view.segment === k.id ? "true" : "false"}"
-            >
-              <span class="ap-segmented-control__label">${k.label}</span>
-              <span class="ap-counter normal ${raw(view.segment === k.id ? "blue" : "grey")}">${counts[k.id]}</span>
-            </button>`,
-        ).join(""),
-      )}
+  return html`<div class="topics-view__toolbar">
+    <!-- The label goes INSIDE the control, via the DS's own
+         .ap-select-inline-label — the "Creator | Select" shape the product uses
+         in four of its five toolbars, and the one session.js already renders for
+         the composer's Playbook picker. It was a bare select for one commit,
+         which said nothing about what it scopes, and a <label> stacked above it
+         before that, which is form chrome in a toolbar. -->
+    <div class="topics-view__scope">
+      <details class="ap-select" id="topicScope" data-topic-scope>
+        <summary class="ap-select-trigger" title="Which Playbook this feed reads for">
+          <span class="ap-select-inline-label">Playbook</span>
+          <span class="ap-select-value">${raw(pb ? escapeAttr(pb.name) : "Choose a Playbook")}</span>
+          <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
+        </summary>
+        <div class="ap-select-dropdown" role="listbox" aria-label="Playbook">
+          <div class="ap-select-options">${raw(pbOptions)}</div>
+        </div>
+      </details>
     </div>
 
+    <!-- LABELLED, with its count inline. The product never ships this as an icon
+         button — Inbox, Drafts and Analytics all write the word and put the
+         number beside it. It was icon-only with an absolutely-positioned pip for
+         one commit, which made the one control that says how much of the list is
+         hidden the hardest one to find. -->
     <div class="topics-view__filters">
       <button
         type="button"
-        class="ap-icon-button stroked grey"
+        class="ap-button stroked grey"
         data-topic-filters-toggle
         aria-haspopup="true"
         aria-expanded="${view.filtersOpen ? "true" : "false"}"
-        aria-label="Filters"
-        title="Filters"
       >
-        <i class="ap-icon-filter"></i>
-        ${raw(badge ? html`<span class="ap-counter normal blue topics-view__filter-badge">${badge}</span>` : "")}
+        <i class="ap-icon-filter"></i><span>Filters</span>
+        ${raw(badge ? html`<span class="ap-counter normal blue">${badge}</span>` : "")}
       </button>
       ${raw(view.filtersOpen ? renderFilters() : "")}
     </div>
-  </header>`;
+  </div>`;
+}
+
+// ── Row 3 · the tabs ──────────────────────────────────────────────────────
+// TABS, not a segmented control. The product uses tabs for exactly this shape —
+// two named views of one list, each with a count: "Campaigns 11 | Topics",
+// "Advocates 4 | Diffusion Lists 3", "Audience | Posts insights | …". Nothing in
+// the product uses a segmented control for it, and only one list is ever on
+// screen, which is the definition of tabs rather than of co-visible views.
+//
+// The markup is the one content-workspace.js and right-panel.js already emit:
+// .ap-tabs > .ap-tabs-nav > .ap-tabs-tab.active, label plus an .ap-counter that
+// goes blue on the active tab and grey on the other.
+//
+// `data-topic-segment` is kept verbatim so the existing click handler needs no
+// change — the control changed, the behaviour did not.
+function renderTabs(counts) {
+  return html`<div class="ap-tabs topics-view__tabs">
+    <div class="ap-tabs-nav" role="tablist" aria-label="Which topics to show">
+      ${raw(
+        TOPIC_KINDS.map((k) => {
+          const on = view.segment === k.id;
+          return html`<button
+            type="button"
+            class="ap-tabs-tab${raw(on ? " active" : "")}"
+            data-topic-segment="${escapeAttr(k.id)}"
+            role="tab"
+            aria-selected="${on ? "true" : "false"}"
+          >
+            <span>${k.label}</span>
+            <span class="ap-counter normal ${raw(on ? "blue" : "grey")}">${counts[k.id]}</span>
+          </button>`;
+        }).join(""),
+      )}
+    </div>
+  </div>`;
 }
 
 // ── The Filters panel ──────────────────────────────────────────────────────

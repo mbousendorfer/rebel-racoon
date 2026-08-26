@@ -519,144 +519,19 @@ button.ap-link {
   min-width: 0;
 }
 
-/* ── .ap-segmented-control — a PORT of the DS component ────────────────────
-   `@agorapulse/ui-components/segmented-control` is Angular only: an
-   <ap-segmented-control> whose template and SCSS carry the whole design, and
-   NOTHING in the CSS-UI layer. This app has no Angular, so the classes below are
-   that SCSS transcribed — same names, same structure, same states — from
-   libs/ui-components/segmented-control/src/segmented-control.component.{html,scss}.
+/* ── .ap-segmented-control was here, and is deliberately gone ──────────────
+   A faithful CSS-UI port of the Angular-only DS component lived here for two
+   commits, for /topics' two-view switch. It was the wrong component: the product
+   uses TABS for that shape everywhere it appears — "Campaigns 11 | Topics",
+   "Advocates 4 | Diffusion Lists 3", "Audience | Posts insights | …" — and only
+   one of the two lists is ever on screen, which is tabs rather than co-visible
+   views. /topics now uses `.ap-tabs`, which ships in ds/css-ui and needs no port.
 
-   Not a redeclaration: .ap-segmented-control does not exist in ds/css-ui, so
-   this is the missing-primitive case ds-patches.css is for. The day the class
-   lands in the DS this block is a delete and the markup is already right.
-
-   ⚠️ The `--selected` double dash is the COMPONENT'S OWN. The DS wrote it that
-   way, against its own flat-modifier convention, and a port that "fixed" it
-   would stop matching the thing it ports.
-
-   ── Why a segmented control and not .ap-tabs ─────────────────────────────
-   Two co-visible views is the segmented control's documented job (the DS's own
-   tie-breaker: 2–4 short co-visible views → segmented; up to 6 same-level views,
-   one visible at a time → tabs). Ready-to-draft and Topics-for-later are two
-   halves of one queue with a count each, not two pages.
-
-   ── Token substitutions, and why they are not laziness ───────────────────
-   The component's SCSS uses --sys-color-border-interactive-*,
-   --sys-color-text-interactive-*, --sys-height-control and --sys-radius-inner.
-   NONE of that family exists in this repo's synced ds/desktop_variables.css —
-   it is behind the DS. Each line below therefore carries the closest value on
-   the ladder we do have, and every one is within a step of the real token:
-     border-interactive-default  #C0C8D1 → grey-20  #D6DAE0
-     border-interactive-hovered  #A6B1BE → grey-40  #AEB5C1
-     border-interactive-clicked  #8D9AAB → grey-60  #858FA1
-     border-interactive-active   #0B7EE7 → --sys-border-color-active #178DFE
-     text-interactive-default    #344563 → --sys-text-color-default (exact)
-     height-control              36px    → --comp-button-height (exact)
-     radius-inner                4px     → --app-radius-sm (exact)
-   Re-point them at the real names when ds/ is resynced.
-
-   ── Three states this port gets RIGHT that its predecessor did not ────────
-   The version this was taken from painted the HOVER border electric blue, which
-   made hover and selection indistinguishable — the component's own SCSS says so
-   in a comment: "the spec greys the hover and pressed borders; only selection is
-   blue". It also dropped :active entirely and gave :disabled a grey fill where
-   the spec "keeps the white surface here; only the border and the content pale
-   out". All three are as the DS wrote them below.
-
-   Not ported: --full-width (nothing here needs equal-width segments) and the
-   icon slot (no segment in this app has one). */
-.ap-segmented-control {
-  display: inline-flex;
-  align-items: center;
-}
-
-.ap-segmented-control__segment {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--ref-spacing-xxs);
-  box-sizing: border-box;
-  min-height: var(--comp-button-height);
-  margin: 0;
-  padding: var(--ref-spacing-xxs) var(--ref-spacing-sm);
-  border: 1px solid var(--ref-color-grey-20);
-  background-color: var(--ref-color-white);
-  color: var(--sys-text-color-default);
-  font-family: var(--sys-text-style-h4-font-family);
-  font-size: var(--sys-text-style-h4-size);
-  font-weight: var(--sys-text-style-h4-weight);
-  line-height: var(--sys-text-style-h4-line-height);
-  white-space: nowrap;
-  cursor: pointer;
-  transition:
-    color var(--ref-animation-short) ease,
-    border-color var(--ref-animation-short) ease,
-    background-color var(--ref-animation-short) ease;
-}
-
-/* The segments share one edge — the negative margin is what makes the group read
-   as a single control rather than as buttons in a row. */
-.ap-segmented-control__segment:not(:first-child) {
-  margin-left: -1px;
-}
-
-.ap-segmented-control__segment:first-child {
-  border-top-left-radius: var(--app-radius-sm);
-  border-bottom-left-radius: var(--app-radius-sm);
-}
-
-.ap-segmented-control__segment:last-child {
-  border-top-right-radius: var(--app-radius-sm);
-  border-bottom-right-radius: var(--app-radius-sm);
-}
-
-/* z-index on every lit state: the shared edge means one segment's border sits
-   under its neighbour's, and whichever is lit has to come up to be seen whole. */
-.ap-segmented-control__segment:hover:not(:disabled) {
-  z-index: 1;
-  border-color: var(--ref-color-grey-40);
-}
-
-.ap-segmented-control__segment:active:not(:disabled) {
-  z-index: 1;
-  border-color: var(--ref-color-grey-60);
-}
-
-.ap-segmented-control__segment:focus-visible {
-  z-index: 2;
-  outline: none;
-  border-color: var(--ref-color-electric-blue-100);
-  box-shadow:
-    0 0 0 1px var(--ref-color-white),
-    0 0 0 3px var(--ref-color-electric-blue-100);
-}
-
-/* Selected changes the border and the TEXT, never the fill. */
-.ap-segmented-control__segment--selected {
-  z-index: 1;
-  border-color: var(--sys-border-color-active);
-  color: var(--ref-color-electric-blue-100);
-}
-
-/* The surface stays white; only the border and the content pale out. */
-.ap-segmented-control__segment:disabled {
-  border-color: var(--sys-border-color-default);
-  color: var(--ref-color-grey-40);
-  cursor: not-allowed;
-}
-
-.ap-segmented-control__label {
-  font: inherit;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ap-segmented-control__segment {
-    transition: none;
-  }
-}
+   Deleted rather than kept "in case": it carried real debt — token substitutions
+   because the --sys-color-*-interactive-* family is not in this repo's synced
+   ds/, plus three states that had to be corrected by hand against the component's
+   own SCSS. `git log -S ap-segmented-control` brings it back the day a genuine
+   two-to-four co-visible-views case turns up. */
 
 /* ── .ap-filter-dropdown / .ap-filter-leaf — a PORT of the DS component ────
    `@agorapulse/ui-components/filter-dropdown` is Angular only too: an
@@ -670,9 +545,15 @@ button.ap-link {
    headers (Topic status, Sources) is the second case. The magazine this replaces
    used a chip row, correctly, because its sources were one flat set of six.
 
-   Same token substitutions as the segmented control above, for the same reason,
-   plus --sys-color-border-default #DFE3E8 → --sys-border-color-default #EAECEF
-   and --sys-color-text-interactive-disabled #C0C8D1 → grey-40.
+   ── Token substitutions, and why they are not laziness ───────────────────
+   The component's SCSS uses a --sys-color-* family that is NOT in this repo's
+   synced ds/desktop_variables.css — it is behind the DS. Each line below carries
+   the closest value on the ladder we do have:
+     color-border-default            #DFE3E8 → --sys-border-color-default #EAECEF
+     color-text-interactive-default  #344563 → --sys-text-color-default (exact)
+     color-text-interactive-disabled #C0C8D1 → grey-40  #AEB5C1
+     radius-inner                    4px     → --app-radius-sm (exact)
+   Re-point them at the real names when ds/ is resynced.
 
    Positioning is the CALLER'S: the DS anchors this through a CDK overlay, which
    does not exist here, so the host screen places it.

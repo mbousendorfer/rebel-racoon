@@ -11,7 +11,7 @@
 3. **Utiliser les tokens DS, pas des valeurs hardcodées** — `search_tokens` + `recommend_token` sur le MCP, ou grep `ds/desktop_variables.css` pour `--ref-*` / `--sys-*`. Jamais `padding: 20px` quand `var(--ref-spacing-sm)` existe. Jamais `#fff` quand `var(--ref-color-white)` existe.
 4. **Préférer `--sys-*` à `--ref-*`** quand un token sémantique existe (text-color, border-color, état de composant).
 5. **CSS custom uniquement si rien dans le DS ne convient** — choisir le bon fichier :
-   - `styles/ds-patches.css` — la **seule** place pour étendre une classe DS avec une variante manquante (ex. `.ap-filter-chip`, `.app-modal-backdrop`) ou ajouter une primitive que le DS a oubliée. Doit rétrécir au fil que le DS évolue.
+   - `styles/ds-patches.css` — la **seule** place pour étendre une classe DS avec une variante manquante (ex. `.ap-filter-chip`, `.app-modal-backdrop`) ou porter un composant que le DS ne ship qu'en Angular (ex. `.ap-filter-dropdown`). Doit rétrécir au fil que le DS évolue — et ça arrive : le port de `.ap-segmented-control` a été supprimé le jour où `/topics` est passé aux tabs, qui existent en CSS-UI.
    - `styles/screens/<screen>.css` — styling spécifique à un écran.
    - `styles/components/<component>.css` — styling partagé entre écrans.
    - **Jamais** redéclarer une classe `.ap-*` avec des overrides hors `ds-patches.css` — ça flippe la cascade silencieusement.

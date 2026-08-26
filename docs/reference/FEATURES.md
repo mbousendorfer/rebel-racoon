@@ -782,9 +782,9 @@ CONFIG, pas contenu : le fichier ship avec l'app et doit exister en mode `new-al
 
 **Cadences** : Weekly / Monthly / Quarterly. **De la copy, jamais un timer** — un tick hebdomadaire ne partirait jamais dans une démo.
 
-### Les deux `kind`, qui SONT les deux segments
+### Les deux `kind`, qui SONT les deux onglets
 
-Un Topic est soit draftable maintenant (`ready`), soit un thème à garder (`later`), et cet axe unique **est** le segmented control au-dessus de la liste. Un seul vocabulaire, pas deux : le fork portait un `researchType` valant `ready-to-post` / `content-strategy` et le mappait sur des ids de segment `ready` / `later` au rendu — une couche de traduction dont le seul métier était de traduire un ancien nom.
+Un Topic est soit draftable maintenant (`ready`), soit un thème à garder (`later`), et cet axe unique **est** la rangée d'onglets au-dessus de la liste. Un seul vocabulaire, pas deux : le fork portait un `researchType` valant `ready-to-post` / `content-strategy` et le mappait sur des ids de segment `ready` / `later` au rendu — une couche de traduction dont le seul métier était de traduire un ancien nom.
 
 **Deux corrections d'audit ici** :
 
@@ -828,11 +828,15 @@ Le volet **rend un placeholder** au lieu de disparaître, pour que les deux colo
 
 En revanche, quand il n'y a **rien à lire du tout** — scanning, feed vide, filtre qui exclut tout — l'état prend **tout le lecteur** au lieu d'une colonne vide à côté d'un volet vide. Un lecteur sans rien dedans n'est pas un lecteur.
 
-#### Les deux segments
+#### Les deux onglets
 
-Le **DS Segmented control**, porté depuis son SCSS Angular dans [`ds-patches.css`](../../styles/ds-patches.css) — c'est le composant que le tie-breaker du DS prescrit pour 2–4 vues co-visibles (les Tabs, c'est jusqu'à 6 vues dont une seule visible). Chaque segment porte son compte, **après filtres**. Changer de segment ferme l'article et revient page 1.
+Le **DS Tabs** (`.ap-tabs` > `.ap-tabs-nav` > `.ap-tabs-tab.active`), avec un `.ap-counter` bleu sur l'onglet actif et gris sur l'autre. Le markup est celui que [`content-workspace.js`](../../src/components/content-workspace.js) et [`right-panel.js`](../../src/components/right-panel.js) émettent déjà : rien d'inventé.
 
-⚠️ **Trois états que le port du fork avait faux**, corrigés : le **hover est gris** (le SCSS du DS le dit en commentaire — « only selection is blue » —, et en bleu hover et sélection étaient indiscernables), `:active` existe, et `:disabled` **garde la surface blanche**. Le double tiret de `--selected` est celui du composant : c'est ce que le DS a écrit, un port qui le « corrigerait » cesserait de correspondre à ce qu'il porte.
+⚠️ **C'était un segmented control, et c'était le mauvais composant.** Le raisonnement était le tie-breaker du DS — « 2 à 4 vues co-visibles → segmented control » — mais le produit emploie des **tabs** partout où cette forme apparaît : « Campaigns 11 │ Topics », « Advocates 4 │ Diffusion Lists 3 », « Audience │ Posts insights │ … ». Et on ne voit **qu'une** liste à la fois, ce qui est la définition des tabs et non de vues co-visibles. L'usage produit tranche contre une lecture ambiguë du tie-breaker.
+
+Le port du segmented control dans `ds-patches.css` a été **supprimé** avec ce changement : plus aucun consommateur, et il portait une dette réelle (des substitutions de tokens parce que la famille `--sys-color-*-interactive-*` n'est pas dans le `ds/` synchronisé, plus trois états à corriger à la main contre le SCSS du DS). `git log -S ap-segmented-control` le rend le jour où un vrai cas de vues co-visibles se présente.
+
+Changer d'onglet ferme l'article et revient page 1, et n'ouvre **rien** : le lecteur a demandé à voir une liste.
 
 #### Les filtres
 

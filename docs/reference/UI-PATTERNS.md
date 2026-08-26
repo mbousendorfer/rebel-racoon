@@ -51,6 +51,31 @@ Tous namespacés `--app-*`. Charte : _« prefer DS tokens first; fall back to th
 
 ## 3. Patterns récurrents (classes/markup exacts)
 
+### En-tête d'écran — LE MOTIF MAISON
+
+Relevé sur le produit réel (Inbox, Drafts, Analytics, Employee Advocacy ×2). Il est le même partout, et c'est la référence pour tout nouvel écran.
+
+```
+┌ RANGÉE 1 · en-tête ──────────────────────────────────────────────────────┐
+│ [avatar] Titre                          ⟶   [CTA] [secondaires] [⚙]     │
+├ RANGÉE 2 · toolbar ──────────────────────────────────────────────────────┤
+│ [Label│Valeur ▾] [Label│Valeur ▾] [⚲ Filters n]  ⟶  [🔍 Search] [Sort ▾] │
+├ RANGÉE 3 · tabs ─────────────────────────────────────────────────────────┤
+│  Vue A 11 │ Vue B                                                        │
+└──────────────────────────────────────────────────────────────────────────┘
+```
+
+Les invariants, avec leur nombre d'occurrences sur cinq surfaces produit :
+
+- **Le cog est TOUJOURS le dernier élément, à droite** (5/5). Jamais dans un cluster à gauche, jamais avant un autre bouton. C'est un icon-button, pas un bouton libellé : une action rare ne prend pas le poids d'un contrôle qu'on utilise à chaque visite.
+- **Le titre de page ancre la gauche de la rangée 1** (5/5), même quand la topbar du shell nomme déjà la route. Sans lui, les actions de droite flottent en face du vide.
+- **Filters est un bouton LIBELLÉ**, funnel + le mot + son compteur **inline** quand il filtre (3/3). ⛔️ Jamais un icon-button avec un badge flottant : c'est le contrôle qui dit combien de la liste est caché, il ne peut pas être le plus dur à trouver.
+- **Ce qui rétrécit la liste va à GAUCHE de la rangée 2** ; **search et sort vont à droite** (3/3). Si l'écran n'a pas encore de search, la droite reste vide — on ne la remplit pas pour équilibrer.
+- **Un select de toolbar porte son label DEDANS**, via `.ap-select-inline-label` (4/5) : `Creator │ Select`, `Status │ Active`, `Playbook │ Acme · Q2 marketing`. ⛔️ Jamais un `<label>` empilé au-dessus — c'est du chrome de formulaire, pas de toolbar — et jamais un select nu, qui ne dit pas ce qu'il scope.
+- **Deux vues nommées d'une même liste, avec compteurs → TABS** (3/3), pas un segmented control. On ne voit qu'une vue à la fois, ce qui est la définition des tabs. Markup : `.ap-tabs > .ap-tabs-nav > .ap-tabs-tab.active` + `.ap-counter normal blue|grey`.
+
+Exemples en place : [`screens/topics.js`](../../src/screens/topics.js) (les trois rangées), [`screens/contexts.js`](../../src/screens/contexts.js) (rangée 1 avec search + CTA à droite), [`content-workspace.js`](../../src/components/content-workspace.js) (les tabs et leur compteur).
+
 ### Cartes + hover
 
 Règle universelle (`chat.css`) : _« a light-blue wash on hover/focus (never navy/black) — soft blue fill + a light blue border, not a hard outline »_. Voir mémoire _card-hover-convention_.
@@ -74,7 +99,7 @@ DS `.ap-button` avec `primary|stroked|ghost` × `orange|blue`. Icon = `.ap-icon-
 
 ### Selects (`.ap-select`)
 
-`<details class="ap-select">` + `summary.ap-select-trigger` + `.ap-select-dropdown > .ap-select-options > .ap-select-option`. Options peuvent porter `.ap-select-option-caption` (2ᵉ ligne) et `.ap-select-option-check`. **Jamais un `<select>` natif** (mémoire _use-ds-dropdowns_). Depuis le picker de Playbook de `/topics`, la dalle de recherche du DS est aussi utilisée : `.ap-select-search` > `.ap-select-search-icon` + `.ap-select-search-input`, avec `.ap-select-not-found`. ⚠️ `.ap-select-not-found` porte `display: flex` → il bat `[hidden]` ; masquer en `style.display` inline.
+`<details class="ap-select">` + `summary.ap-select-trigger` + `.ap-select-dropdown > .ap-select-options > .ap-select-option`. **Dans une toolbar, le label va DEDANS** : `<span class="ap-select-inline-label">Playbook</span>` en tête du trigger, avant le `.ap-select-value` — le DS dessine le séparateur vertical. Voir § En-tête d'écran. Options peuvent porter `.ap-select-option-caption` (2ᵉ ligne) et `.ap-select-option-check`. **Jamais un `<select>` natif** (mémoire _use-ds-dropdowns_). Depuis le picker de Playbook de `/topics`, la dalle de recherche du DS est aussi utilisée : `.ap-select-search` > `.ap-select-search-icon` + `.ap-select-search-input`, avec `.ap-select-not-found`. ⚠️ `.ap-select-not-found` porte `display: flex` → il bat `[hidden]` ; masquer en `style.display` inline.
 
 ### Surfaces « settings »
 

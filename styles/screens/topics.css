@@ -51,37 +51,57 @@
   margin-inline: auto;
 }
 
-/* ── The scope bar ─────────────────────────────────────────────────────────
-   Page-level only: which brand this reads for, and the way to that brand's
-   settings. The view switch and the filter are NOT here — they belong to the
-   list, so they live in its own header.
+/* ── THE HOUSE HEADER PATTERN ──────────────────────────────────────────────
+   Three page-level rows, taken from the product rather than invented here:
 
-   No drawn title. The app topbar already names the route, and the scope select
-   leads instead: in a reader the brand you are reading for IS the heading. */
+     1. the header    title left  ·  CTA, secondaries, then the COG last, right
+     2. the toolbar   filters and scoping selects left  ·  search and sort right
+     3. the tabs      the named views of the list, with their counts
+
+   Inbox, Drafts, Analytics and Employee Advocacy all follow it. The two things
+   this screen got wrong were both inversions of it: a "scope + cog" cluster
+   pinned to the LEFT (the cog is always last on the right, 5 surfaces out of 5),
+   and Filters as an icon button (the product always writes the word, 3 out of 3).
+
+   Row 1. The title anchors the left. It was hidden for one commit because the
+   app topbar names the route too — but /contexts already draws both, so the
+   duplicate is the established convention here, and without it the row has no
+   left anchor and the cog floats opposite nothing. */
 
 .topics-view__bar {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: var(--ref-spacing-sm);
   flex: 0 0 auto;
 }
 
-/* ONE cluster, left. Not the scope at one end and the cog at the other: the two
-   controls here are "this brand" and "this brand's listening settings", and
-   proximity is what says they belong together. Pushed apart they read as two
-   orphans, and the cog ends up hovering over a reading pane it has nothing to do
-   with. Everything else in this bar is empty space, which is what a reader's top
-   strip should mostly be. */
-.topics-view__bar-actions {
+/* Row 2. Everything that narrows the list, on the left. Search and sort belong
+   on the right of this row when this screen grows them; until then the right
+   side stays empty rather than being filled to look balanced.
+
+   Wraps, because three controls fit a 1440 cap but must survive a narrow one. */
+.topics-view__toolbar {
   display: flex;
   align-items: center;
   gap: var(--ref-spacing-xxs);
+  flex: 0 0 auto;
+  flex-wrap: wrap;
 }
 
-/* Unlabelled, so it sizes to its own value — capped only so a long brand name
-   never competes with the title for the row. */
+/* Capped so a long brand name cannot push Filters off the row. The DS's inline
+   label sits inside the trigger, so this width covers both halves. */
 .topics-view__scope {
-  max-width: 280px;
+  max-width: 320px;
+}
+
+/* Row 3. .ap-tabs already carries `width: 100%` and .ap-tabs-nav its own bottom
+   border, so there is nothing to style — only to stop it stretching. It sits
+   tight under the toolbar rather than a full step away: the tabs are the last
+   part of the same control group, not a new section. */
+.topics-view__tabs {
+  flex: 0 0 auto;
+  margin-top: calc(var(--ref-spacing-xs) * -1 + var(--ref-spacing-xxxs));
 }
 
 /* ── The reader ────────────────────────────────────────────────────────────
@@ -135,57 +155,15 @@
   min-height: 0;
 }
 
-/* The list's own toolbar: which Topics it holds, and which of them it shows.
-   A sibling of the scroller rather than inside it, so it cannot scroll away and
-   needs no sticky.
-   No bottom hairline: with the shared frame gone it would be a rule floating on
-   the page background, separating nothing from nothing. The gap does it. */
-.topics-view__list-head {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  flex: 0 0 auto;
-  padding-bottom: var(--ref-spacing-xxs);
-}
-
-/* The segmented control takes the row and its two segments share it equally, so
-   the pair reads as one control filling its column rather than as two buttons
-   floating at one end. The DS ships a --full-width mode for exactly this; it is
-   not in the CSS-UI port, so the same effect is asked for here. */
-.topics-view__list-head > .ap-segmented-control {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.topics-view__list-head > .ap-segmented-control > .ap-segmented-control__segment {
-  flex: 1 1 0;
-  min-width: 0;
-}
-
-/* Icon-only, because a labelled Filters button plus two labelled segments cannot
-   both fit in a 320px column — and of the two, the segments are the ones whose
-   words carry meaning a glyph could not. The funnel is unambiguous, and it keeps
-   its name in `title` and `aria-label`. */
+/* The Filters trigger anchors its own panel — the DS anchors this through a CDK
+   overlay, which does not exist here. */
 .topics-view__filters {
   position: relative;
   flex: 0 0 auto;
 }
 
-/* The narrowed-groups count, on the trigger. Absolute so it does not stretch the
-   icon button, and translated out over its own corner the way a notification
-   count sits on the thing it counts. */
-.topics-view__filter-badge {
-  position: absolute;
-  top: 0;
-  right: 0;
-  transform: translate(35%, -35%);
-  pointer-events: none;
-}
-
-/* Hangs off its own trigger — the DS anchors this through a CDK overlay, which
-   does not exist here, so the caller positions it. Left-aligned rather than
-   right: the trigger sits at the right edge of a ~380px column and a 420px panel
-   anchored to that edge would run off the left of the screen on a narrow window. */
+/* Left-aligned to its trigger: the button now sits near the left of a page-wide
+   toolbar, so a 420px panel opens inward with room to spare. */
 .topics-view__filter-panel {
   position: absolute;
   top: calc(100% + var(--ref-spacing-xxxs));
