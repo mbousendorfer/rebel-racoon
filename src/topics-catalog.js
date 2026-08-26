@@ -53,7 +53,11 @@ export const TOPIC_SOURCES = Object.freeze([
     icon: "ap-icon-star",
     accent: "red",
     live: false,
-    playbookAnchor: "competitors",
+    // null, not "competitors". The fork pointed this at the Playbook's
+    // Influencers section; this repo's Playbook has no such section, and sending
+    // a reader to Competitors would have the card claim it reads your
+    // competitors, which is not what this source does.
+    playbookAnchor: null,
     defaultEnabled: true,
     howItWorks:
       "The creators your audience already listens to are followed, and what lands " +

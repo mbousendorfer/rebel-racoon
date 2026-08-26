@@ -42,7 +42,7 @@
 import { topics as seed } from "./mocks.js?v=71";
 import { isNewUser } from "./user-mode.js?v=24";
 import { createNotifier } from "./store-utils.js?v=3";
-import { DEFAULT_STATUS_IDS, LIVE_SOURCE_IDS, kindOf } from "./topics-catalog.js?v=1";
+import { DEFAULT_STATUS_IDS, LIVE_SOURCE_IDS, kindOf } from "./topics-catalog.js?v=2";
 
 const topics = isNewUser() ? [] : seed.map(cloneTopic);
 

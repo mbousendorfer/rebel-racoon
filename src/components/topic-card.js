@@ -25,7 +25,7 @@
 
 import { html, raw, escapeAttr } from "../utils.js?v=22";
 import { topicTitle } from "../topics-store.js?v=1";
-import { findReviewStatus } from "../topics-catalog.js?v=1";
+import { findReviewStatus } from "../topics-catalog.js?v=2";
 
 // ── The signal marks ───────────────────────────────────────────────────────
 // Trending and Updated, in words as well as colour: colour alone is never the

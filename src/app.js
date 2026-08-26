@@ -29,6 +29,7 @@ import { renderDashboard } from "./screens/dashboard.js?v=73";
 import { renderSession } from "./screens/session.js?v=541";
 import { renderContexts } from "./screens/contexts.js?v=280";
 import { renderTopics } from "./screens/topics.js?v=3";
+import { renderTopicsSettings } from "./screens/topics-settings.js?v=1";
 import { renderConnectors } from "./screens/connectors.js?v=217";
 import { renderWelcomeAlt } from "./screens/welcome-alt.js?v=5";
 // Settings route removed — the prototype Admin controls moved to the sidebar
@@ -58,6 +59,10 @@ route("/connectors", renderConnectors);
 // The Topic Feed. Gated on `topicFeed` inside the screen rather than here, so a
 // stale deep link bounces to / instead of rendering a dead route.
 route("/topics", renderTopics);
+// route() anchors its regex (^…$), so this is a distinct sibling of /topics — no
+// ordering concern. The config is a settings PAGE rather than a tab on the feed:
+// you set your listening sources once and then read Topics for months.
+route("/topics/settings", renderTopicsSettings);
 // First-time ALT — thin redirect that mints a transient
 // /session/welcome-alt-{ts} session. The conversational Playbook
 // builder (3-question chat: URL → profile → optional documents) runs

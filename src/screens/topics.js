@@ -27,7 +27,7 @@
 import { html, raw, escapeAttr } from "../utils.js?v=22";
 import { navigate, getPath } from "../router.js?v=31";
 import { isFlagOn } from "../feature-flags.js?v=21";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=6";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=22";
 import { renderTopbar } from "../components/topbar.js?v=317";
 import { showToast } from "../components/toast.js?v=21";
 import { renderEmptyState } from "../components/empty-state.js?v=3";
@@ -51,7 +51,7 @@ import {
   findTopicSource,
   findCadence,
   isLiveSource,
-} from "../topics-catalog.js?v=1";
+} from "../topics-catalog.js?v=2";
 import { renderTopicCard } from "../components/topic-card.js?v=1";
 import { renderTopicArticle, renderTopicActions } from "../topic-article.js?v=1";
 import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=1";
