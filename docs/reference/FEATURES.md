@@ -832,7 +832,11 @@ Le reste va dans la marge de **droite** uniquement : les rangées démarrent au 
 
 Le volet **rend un placeholder** au lieu de disparaître, pour que les deux colonnes gardent leurs largeurs et que la liste ne saute pas latéralement chaque fois qu'un article s'ouvre ou se ferme — la seule chose qu'un lecteur ne doit jamais faire.
 
-En revanche, quand il n'y a **rien à lire du tout** — scanning, feed vide, filtre qui exclut tout — l'état prend **tout le lecteur** au lieu d'une colonne vide à côté d'un volet vide. Un lecteur sans rien dedans n'est pas un lecteur.
+En revanche, quand il n'y a **rien à lire du tout** — feed vide, filtre qui exclut tout — l'état prend **tout le lecteur** au lieu d'une colonne vide à côté d'un volet vide. Un lecteur sans rien dedans n'est pas un lecteur.
+
+**L'attente, elle, GARDE le split et le dessine en fantômes.** Cinq cartes-fantômes dans la colonne, un article-fantôme à côté, tous dans les vrais cadres aux vraies largeurs (mesuré : 460 et 648, exactement ce que le contenu réel obtient) — donc rien ne saute quand le scan rend. La ligne de statut prend le créneau du séparateur d'âge (« Last 7 days »), le seul qui soit vraiment libre, et garde sa typo pour que le vrai séparateur ne redimensionne pas la rangée. Cinq cartes, pas « autant qu'il en arrive » : le compte est inconnu pendant le scan, et un squelette qui devine est un squelette qui ment.
+
+⚠️ **C'était un `.ap-loader` et une ligne centrés dans le bloc pleine largeur** — un spinner de 12px seul dans ~1100×700 de blanc, suivi d'un lecteur à deux colonnes qui apparaissait autour de lui. Un squelette existe précisément pour empêcher ce saut : s'il ne pré-dessine pas la mise en page, c'est un spinner avec des étapes en plus. La différence avec les impasses est là — elles n'ont rien à pré-dessiner.
 
 #### Les deux onglets
 

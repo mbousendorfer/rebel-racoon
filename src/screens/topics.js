@@ -275,11 +275,16 @@ function renderPage(pb) {
 
   // ── One shell, two shapes ───────────────────────────────────────────────
   // With Topics to show, the reader: a list column beside a reading pane, each
-  // its own card. Without any — still scanning, or nothing found, or the filter
-  // excluding everything — the split would be an empty column beside an empty
-  // pane, so the state takes the whole width instead. A reader with nothing in
-  // it is not a reader.
-  const empty = view.scanning || !shown.length;
+  // its own card. With nothing found, or the filter excluding everything, the
+  // split would be an empty column beside an empty pane, so the state takes the
+  // whole width instead. A reader with nothing in it is not a reader.
+  //
+  // ⚠️ SCANNING is NOT one of those. It used to be, and that is what put a 12px
+  // spinner alone in the middle of the full-width block. Something IS coming and
+  // its shape is known, so the wait keeps the split and draws it in ghosts — a
+  // skeleton that does not pre-draw the layout is just a spinner with extra
+  // steps. The dead ends have nothing to pre-draw, which is the difference.
+  const empty = !view.scanning && !shown.length;
 
   return html`
     ${raw(renderToolbar(pb, feed))} ${raw(renderTabs(counts))}
@@ -291,7 +296,9 @@ function renderPage(pb) {
               <section class="topics-view__list-col" aria-label="Topics">
                 <div class="topics-view__list">${raw(renderList(shown, more, total, view.scanning, feed))}</div>
               </section>
-              ${raw(openInList ? renderPane(openInList) : renderPanePlaceholder())}
+              ${raw(
+                view.scanning ? renderPaneSkeleton() : openInList ? renderPane(openInList) : renderPanePlaceholder(),
+              )}
             </div>`,
       )}
     </div>
@@ -504,15 +511,64 @@ function filterOption(group, id, label, checked, disabled = false) {
   </div>`;
 }
 
+// ── Waiting: GHOSTS, not a spinner ─────────────────────────────────────────
+// A skeleton's whole job is to pre-draw the layout that is arriving, so the
+// screen does not jump when it lands. This was an `.ap-loader` and one line of
+// text, centred in a block that took the WHOLE reader — a 12px spinner alone in
+// ~1100x700 of white, and then the two-column reader appeared around it.
+//
+// So the wait now renders the reader itself: ghost cards down the list column,
+// a ghost article beside them, both in the real frames at the real widths. The
+// status line goes where the first age separator will be ("Last 7 days"), which
+// is the one slot that is genuinely free.
+//
+// Five cards, not "as many as are coming": the count is unknown while the scan
+// runs, and a skeleton that guesses is a skeleton that lies.
+const GHOST_BARS = [
+  { w: "38%", cls: "topic-ghost__bar--meta" },
+  { w: "92%", cls: "topic-ghost__bar--head" },
+  { w: "64%", cls: "topic-ghost__bar--head" },
+  { w: "100%", cls: "" },
+  { w: "78%", cls: "" },
+];
+
+function renderGhostCard(i) {
+  const bars = GHOST_BARS.map(
+    (b) => html`<span class="topic-ghost__bar ${raw(b.cls)}" style="width:${raw(b.w)}"></span>`,
+  ).join("");
+  // The stagger is what stops five identical bars pulsing as one block.
+  return html`<div class="topic-ghost" style="--ghost-delay: ${raw(String(i * 0.09))}s">${raw(bars)}</div>`;
+}
+
+function renderListSkeleton() {
+  const cards = [0, 1, 2, 3, 4].map(renderGhostCard).join("");
+  return html`<section class="topics-view__group">
+    <h2 class="topics-view__group-label topics-view__scan-note">Reading what your competitors published…</h2>
+    <div class="topics-view__group-cards">${raw(cards)}</div>
+  </section>`;
+}
+
+// The pane's half of the wait. No action bar: there is nothing to act on yet, and
+// a header of live verbs over a ghost article would be offering to use a Topic
+// that does not exist.
+function renderPaneSkeleton() {
+  const bars = ["86%", "58%", "34%", "100%", "96%", "72%", "100%", "88%"]
+    .map((w, i) => {
+      const cls = i < 2 ? " topic-ghost__bar--title" : i === 2 ? " topic-ghost__bar--meta" : "";
+      return html`<span class="topic-ghost__bar${raw(cls)}" style="width:${raw(w)}"></span>`;
+    })
+    .join("");
+  return html`<section class="topics-view__pane topics-view__pane--waiting" aria-label="Loading topic">
+    <div class="topics-view__pane-body">
+      <div class="topic-ghost topic-ghost--article" style="--ghost-delay: 0.14s">${raw(bars)}</div>
+    </div>
+  </section>`;
+}
+
 // ── The list ───────────────────────────────────────────────────────────────
 
 function renderList(shown, more, total, scanning, feed) {
-  if (scanning) {
-    return html`<div class="topics-view__scanning">
-      <div class="ap-loader"></div>
-      <p class="topics-view__scanning-text">Reading what your competitors published…</p>
-    </div>`;
-  }
+  if (scanning) return renderListSkeleton();
 
   if (!shown.length) {
     return renderEmpty(total, feed);

@@ -387,7 +387,6 @@
   border-radius: var(--app-radius-card);
 }
 
-.topics-view__scanning,
 .topics-view__empty {
   display: flex;
   flex-direction: column;
@@ -397,11 +396,82 @@
   text-align: center;
 }
 
-.topics-view__scanning-text {
-  margin: 0;
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
+/* ── The waiting state: ghosts in the real frames ──────────────────────────
+   Replaces an `.ap-loader` plus one centred line, which sat as a 12px spinner in
+   the middle of a full-width white block and was then replaced by a two-column
+   reader — the layout jumping is exactly what a skeleton exists to prevent.
+
+   The shimmer is local to this screen, matching what the app already does:
+   `thread-skeleton-shimmer`, `clip-studio-shimmer` and `gen-shimmer` are each
+   defined by their own screen. (Fourth copy of one gradient — a shared primitive
+   in base.css is due, but it would mean touching three working consumers.) */
+.topic-ghost {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm) var(--ref-spacing-sm);
+  /* The REAL card's frame and radius, so nothing shifts when the Topic lands. */
+  background: var(--app-surface);
+  border: 1px solid var(--app-border-soft);
+  border-radius: var(--app-radius-card);
+}
+
+.topic-ghost--article {
+  gap: var(--ref-spacing-xs);
+  padding: 0;
+  background: none;
+  border: 0;
+}
+
+.topic-ghost__bar {
+  display: block;
+  height: 12px;
+  border-radius: var(--app-radius-sm);
+  background: linear-gradient(
+    100deg,
+    var(--ref-color-grey-05) 0%,
+    var(--ref-color-grey-10) 50%,
+    var(--ref-color-grey-05) 100%
+  );
+  background-size: 200% 100%;
+  animation: topics-ghost-shimmer 1.4s linear infinite;
+  animation-delay: var(--ghost-delay, 0s);
+}
+
+/* Taller bars for the things that are taller in the real card, so the ghost has
+   the real one's rhythm rather than a stack of identical lines. */
+.topic-ghost__bar--head {
+  height: 15px;
+}
+
+.topic-ghost__bar--title {
+  height: 22px;
+}
+
+.topic-ghost__bar--meta {
+  height: 10px;
+}
+
+/* The status line takes the age separator's slot — the one place in the list that
+   is genuinely free while the scan runs. It keeps the separator's own type so the
+   real "Last 7 days" replacing it does not resize the row. */
+.topics-view__scan-note {
   color: var(--sys-text-color-light);
+}
+
+/* No frame while waiting: the ghost article carries no card of its own, so the
+   pane's own border and background do the holding. */
+.topics-view__pane--waiting {
+  align-self: stretch;
+}
+
+@keyframes topics-ghost-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
 }
 
 .topics-view__empty p {
