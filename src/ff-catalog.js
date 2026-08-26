@@ -84,21 +84,6 @@ export const FLAGS = Object.freeze([
       "data is preserved either way — only the surfaces are gated.",
   },
   {
-    id: "topics",
-    label: "Topics (listening dossiers)",
-    default: false,
-    hides:
-      "When OFF (default), hides everything Topics-related: the /topics feed " +
-      "route + its sidebar nav row and unseen counter, the topic dossier " +
-      "dialog, and the Topics section (sources + refresh cadence) on a " +
-      "Playbook. The seeded dossiers and the per-Playbook config still ride " +
-      "along in the data, like playbookCompetitors. When ON, Agorapulse " +
-      "listening produces dossiers — a headline, a written analysis, and the " +
-      "social posts behind it — from six sources tied to the Playbook's " +
-      "competitors; each one can open a chat with itself attached, or be " +
-      "dismissed.",
-  },
-  {
     id: "playbookCompetitors",
     label: "Playbook competitors",
     default: false,
@@ -131,21 +116,6 @@ export const FLAGS = Object.freeze([
       "written can still be saved or scheduled, nothing new can be generated. " +
       "Also gates the Share modal, the ownership marks on /contexts cards, the " +
       "owner row on a Playbook, and the Your-role control in Admin.",
-  },
-  {
-    id: "frontPage",
-    label: "Front page (vs. hero rail)",
-    default: false,
-    hides:
-      "Where Archie's feed of proposals lives. Requires `topics` — with that " +
-      "flag OFF neither variant renders. When OFF (default), the freshest " +
-      "topics ride as a rail inside the new-chat hero, above the workflow " +
-      "starters, and `/` keeps redirecting to the most recent chat. When ON, " +
-      "`/` stops redirecting and becomes a browsable front page (a lead story " +
-      "+ a short grid + source sections), a Home row appears in the sidebar " +
-      "nav, and the hero rail steps aside so the two never duplicate each " +
-      "other. `/topics` stays the full section either way — the front page is " +
-      "a selection, /topics is everything.",
   },
   {
     id: "imageStudioAutoBrief",

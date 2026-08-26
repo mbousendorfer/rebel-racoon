@@ -1,9 +1,8 @@
 // Who I am, and who else is in my organisation.
 //
-// This is CONFIG, not content — the same split as ff-catalog.js vs mocks.js, or
-// topics-catalog.js vs the topics themselves. A brand-new user (`new-alt` mode)
-// still has an identity and still belongs to an org, so this file must ship with
-// the app and never be seeded away.
+// This is CONFIG, not content — the same split as ff-catalog.js vs mocks.js. A
+// brand-new user (`new-alt` mode) still has an identity and still belongs to an
+// org, so this file must ship with the app and never be seeded away.
 //
 // There are no avatar images anywhere in the prototype, so a person is drawn
 // from their initials (.ap-avatar-initials), the way social-post-card already

@@ -23,7 +23,6 @@ import { getContextById, subscribe as subscribeContexts } from "../contexts-stor
 // still holds it (see playbook-access.js), the sidebar just doesn't name it.
 import { canView, visibleContexts } from "../playbook-access.js?v=5";
 import { getConnectedConnectors, subscribe as subscribeConnectors } from "../connectors-store.js?v=41";
-import { getUnseenCount as getUnseenTopicCount, subscribe as subscribeTopics } from "../topics-store.js?v=10";
 import { closePanel as closeRightPanel } from "./right-panel.js?v=454";
 import { clearSession as clearAssistantSession } from "../assistant.js?v=76";
 import { clearSession as clearPostsSession } from "../posts-store.js?v=50";
@@ -317,9 +316,6 @@ export function initSidebar() {
   subscribeContexts(() => renderSidebar());
   subscribeSessions(() => renderSidebar());
   subscribeConnectors(() => renderSidebar());
-  // A topic read, dismissed or scanned in anywhere has to move the unseen badge
-  // immediately — the user may never leave the page it happened on.
-  subscribeTopics(() => renderSidebar());
 
   // Click outside the popmenu → close.
   document.addEventListener("click", (event) => {
@@ -570,25 +566,8 @@ function renderFootMenu({ collapsed }) {
 // session navigation.
 // `flag` gates the row declaratively (was a hardcoded `if` on /connectors). It
 // takes a list when a row needs several flags, because a row that survives one
-// of its dependencies is worse than no row: Home with `topics` off would point at
-// a `/` that has gone back to redirecting into the last chat.
+// of its dependencies is worse than no row.
 const NAV = [
-  // Only exists when `/` is a real page. Without it the front page would be
-  // reachable exactly once, on first load: the brand button and New chat both
-  // mint a `/session/new-<ts>` and deliberately avoid `/`, because `/` resolves
-  // to the most recent chat when the flag is off.
-  //
-  // Sparkles rather than a house: the DS ships no home glyph, and this route is
-  // not a dashboard — it's the page Archie writes. Sparkles is what marks his own
-  // contribution everywhere else in the app, and it stays distinct from the
-  // antenna on Topics (the listening) below.
-  {
-    path: "/",
-    icon: "ap-icon-sparkles",
-    label: "Home",
-    flag: ["frontPage", "topics"],
-    match: (p) => p === "/",
-  },
   {
     path: "/contexts",
     icon: "ap-icon-target",
@@ -603,19 +582,6 @@ const NAV = [
     flag: "connectors",
     match: (p) => p === "/connectors",
     count: () => getConnectedConnectors().length,
-  },
-  // The counter is UNSEEN topics, not the total — this row is a notification,
-  // and it sums across every Playbook because arrival is an account-level event
-  // even though the config that produced it is per Playbook.
-  {
-    path: "/topics",
-    icon: "ap-icon-antenna",
-    label: "Topics",
-    flag: "topics",
-    // Prefix, not equality: the row stays lit on /topics/settings, which is still
-    // Topics rather than somewhere else.
-    match: (p) => p.startsWith("/topics"),
-    count: () => getUnseenTopicCount(),
   },
 ];
 

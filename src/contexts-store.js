@@ -27,7 +27,6 @@ import { isNewUser } from "./user-mode.js?v=24";
 import { CURRENT_USER } from "./org.js?v=2";
 import { isFlagOn } from "./feature-flags.js?v=20";
 import { createNotifier } from "./store-utils.js?v=3";
-import { DEFAULT_ENABLED_IDS, DEFAULT_CADENCE, findTopicSource, findCadence } from "./topics-catalog.js?v=3";
 import {
   normalizeLanguages,
   mirrorPrimaryToTopLevel,
@@ -51,8 +50,7 @@ let historySeq = 0;
 // voiceByLanguage) lazily via normalizeLanguages — legacy single-language
 // mocks keep rendering identically.
 // Seeds bypass addContext, so anything addContext normalises has to be applied
-// here too — `topics` included, or a seeded Playbook with no topics config at
-// all would render the section against `undefined`.
+// here too, or a seeded Playbook would render a section against `undefined`.
 // The sharing seeds join the list only under their flag: with sharing off there
 // is one implicit user, so a Playbook owned by a colleague — let alone one
 // deliberately out of reach — would just be a stray card.
@@ -63,7 +61,6 @@ const contexts = isNewUser()
       normalizeLanguages({
         ...c,
         ...normalizeOwnership(c),
-        topics: normalizeTopics(c.topics),
         ...normalizeBrandLogos(c),
       }),
     );
@@ -121,21 +118,6 @@ function normalizeBrandLogos(ctx) {
   return {
     brandLogos: list,
     brandLogo: urls.includes(ctx.brandLogo) ? ctx.brandLogo : urls[0] || "",
-  };
-}
-
-// Topics config — which listening sources this Playbook has switched on, and
-// how often I refresh them. One cadence for the whole Playbook, not one per
-// source. The catalog (names, icons, descriptions) is config and lives in
-// topics-catalog.js; only the user's choices are stored here.
-function normalizeTopics(t) {
-  const src = t && typeof t === "object" ? t : {};
-  const enabled = Array.isArray(src.enabledSourceIds) ? src.enabledSourceIds.slice() : DEFAULT_ENABLED_IDS.slice();
-  return {
-    // Keep only ids the catalog still knows about, so a removed source can't
-    // linger in a seeded Playbook and count towards an enabled total.
-    enabledSourceIds: enabled.filter((id) => !!findTopicSource(id)),
-    cadence: findCadence(src.cadence) ? src.cadence : DEFAULT_CADENCE,
   };
 }
 
@@ -289,10 +271,6 @@ export function addContext(ctx = {}) {
     //   user rejected so discovery never re-proposes them.
     competitors: normalizeCompetitors(ctx.competitors),
     dismissedCompetitors: Array.isArray(ctx.dismissedCompetitors) ? ctx.dismissedCompetitors.slice() : [],
-    // — topics (which listening sources are on + how often I refresh them) —
-    //   Always present, even while the `topics` flag is OFF: the config rides
-    //   along in the data like competitors do, only the surfaces are gated.
-    topics: normalizeTopics(ctx.topics),
     // — ownership (owner + scope + change log; see normalizeOwnership) —
     ...normalizeOwnership(ctx),
     // — meta —
@@ -380,7 +358,6 @@ export function updateContext(id, patch) {
   if (patch.competitors !== undefined) c.competitors = normalizeCompetitors(patch.competitors);
   if (patch.dismissedCompetitors !== undefined)
     c.dismissedCompetitors = Array.isArray(patch.dismissedCompetitors) ? patch.dismissedCompetitors.slice() : [];
-  if (patch.topics !== undefined) c.topics = normalizeTopics(patch.topics);
   // — multilingual fields —
   if (patch.languages !== undefined)
     c.languages = Array.isArray(patch.languages) ? patch.languages.slice() : patch.languages;
@@ -464,7 +441,6 @@ export function duplicateContext(id) {
       ...i,
       networks: Array.isArray(i.networks) ? [...i.networks] : [],
     })),
-    topics: src.topics ? { ...src.topics, enabledSourceIds: (src.topics.enabledSourceIds || []).slice() } : undefined,
     isDefault: false,
     usedIn: 0,
     // A duplicate is MINE and starts private, whoever I copied it from — that's

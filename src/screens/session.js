@@ -114,11 +114,6 @@ import {
   subscribe as subscribeRightPanel,
 } from "../components/right-panel.js?v=454";
 import { setHandoff, consumeHandoff, hasHandoff } from "../handoff.js?v=21";
-import { startTopicChat, openTopicInChat, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=13";
-import { getTopics, dismissTopic, restoreTopic, subscribe as subscribeTopics } from "../topics-store.js?v=10";
-import { findTopicSource } from "../topics-catalog.js?v=3";
-import { renderTopicRailCard } from "../components/topic-card.js?v=11";
-import { open as openTopicModal } from "../components/topic-modal.js?v=14";
 import { parseHashParams, setHashQuery } from "../url-state.js?v=22";
 import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=33";
 import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=41";
@@ -1915,66 +1910,6 @@ function removeSlashToken(input) {
 // inline inside this hero). The previous inline AI question flow
 // ("Quick — which context?") was removed — the composer picker is now
 // the single, always-visible context affordance.
-// How many dossiers the hero shows. Three, to sit on the same 3-column grid as
-// the starter cards below and read as one hero rather than two stacked rows.
-const HERO_RAIL_SIZE = 3;
-
-// "What I'm hearing" — the freshest dossiers, above the workflow starters.
-//
-// This is the OTHER half of the front-page decision (see the `frontPage` flag):
-// either Archie's proposals meet you here, in the hero you already land on, or
-// `/` becomes a real front page and this rail steps aside. Never both — two
-// surfaces showing the same three headlines is how a home page stops meaning
-// anything.
-//
-// The chat's attached Playbook comes first, since "relevant" is the whole
-// promise — then the row is TOPPED UP from the rest of the account rather than
-// stopping short. A Playbook with two dossiers left a hole in a three-column grid
-// beside three full starter cards, and "here's what I found" reading as a gap is
-// worse than a third card from another brand: every card names its Playbook in
-// the dialog it opens, and the freshest thing in the account is rarely the wrong
-// thing to show.
-//
-// Renders nothing at all when there's nothing to say, so a hero with no topics is
-// byte-for-byte the hero this app has always had.
-function renderTopicRail(session) {
-  if (!isFlagOn("topics") || isFlagOn("frontPage")) return "";
-  const all = getTopics();
-  if (!all.length) return "";
-  const mine = session.contextId ? all.filter((t) => t.contextId === session.contextId) : [];
-  const picks = [...mine, ...all.filter((t) => !mine.includes(t))].slice(0, HERO_RAIL_SIZE);
-  if (!picks.length) return "";
-
-  // Counted over what's ON the rail, not over the account: the sidebar badge is
-  // the account-level notification, and a label promising "3 new" above three
-  // cards carrying no New mark reads as a bug.
-  const unseen = picks.filter((t) => t.unseen).length;
-  const cards = picks.map((t) => renderTopicRailCard(t, { source: findTopicSource(t.sourceId) })).join("");
-
-  return html`
-    <h2 class="empty-chat__rail-label" id="topicRailLabel">
-      <span>What I'm hearing</span>
-      ${raw(unseen ? html`<span class="empty-chat__rail-new">${unseen} new</span>` : "")}
-      <button type="button" class="ap-link standalone small empty-chat__rail-all" data-hero-topics-all>
-        See all${raw(all.length > HERO_RAIL_SIZE ? ` ${all.length}` : "")}<i
-          class="ap-icon-arrow-right"
-          aria-hidden="true"
-        ></i>
-      </button>
-    </h2>
-    <div class="topic-rail" role="group" aria-labelledby="topicRailLabel">${raw(cards)}</div>
-  `;
-}
-
-// Same wording and the same Undo as /topics uses — dismissing a dossier has to
-// mean the same thing wherever you do it, and it hides rather than deletes so
-// the Undo is real.
-function announceTopicDismissal(topicId) {
-  showToast("Dismissed — I won't bring it up again", {
-    action: { label: "Undo", onClick: () => restoreTopic(topicId) },
-  });
-}
-
 function renderEmptyHero(sessionId, composerMarkup = "", session = null) {
   const sources = getStreamSources(sessionId);
   const firstSource = sources.find((s) => s.status !== "Processing") || sources[0] || null;
@@ -2033,7 +1968,6 @@ function renderEmptyHero(sessionId, composerMarkup = "", session = null) {
            has; the starters answer "I already know what I want to do". Demoting
            the starters to a row of pills was the alternative and it flattens three
            whole features into link text. -->
-      ${raw(renderTopicRail(session || { contextId: null }))}
       <h2 class="empty-chat__starter-label" id="starterGridLabel">Or jump into a workflow</h2>
       <div class="starter-grid" role="group" aria-labelledby="starterGridLabel">${raw(cards)}</div>
     </div>
@@ -3548,13 +3482,6 @@ function wireAssistantPanel(root, session, attachedContext) {
   };
   const offWizard = sidebarWizard.subscribe(session.id, refreshAssistantAside);
   const offInlineQuestion = inlineQuestion.subscribe(session.id, refreshAssistantAside);
-  // The hero rail is a live view of a global store: a dossier dismissed from the
-  // dialog, or read (which clears its "New" dot), has to leave the rail without a
-  // route change. Guarded on the hero actually being mounted so a started
-  // conversation never re-renders its whole aside because a topic moved.
-  const offTopics = subscribeTopics(() => {
-    if (root.querySelector("[data-empty-chat] .topic-rail")) refreshAssistantAside();
-  });
   const offTopPosts = topPostsFlow.subscribePicker(session.id, refreshTopPostsBoard);
   // Clip Studio — every stage transition + analyzing ticker tick re-renders the
   // whole assistant aside (mirrors the wizard subscription).
@@ -3659,13 +3586,6 @@ function wireAssistantPanel(root, session, attachedContext) {
     setTimeout(() => askConnector(session.id, pendingAskConnector.connectorId), 200);
   }
 
-  // Hand-off from a topic card or the topic dialog's "Start a chat" — echo the
-  // topic, attach it as a source, and open on Archie's read of it.
-  const pendingTopic = consumeHandoff(TOPIC_CHAT_HANDOFF);
-  if (pendingTopic?.topicId) {
-    setTimeout(() => startTopicChat(session.id, pendingTopic.topicId), 150);
-  }
-
   // Pending start flow set by the dashboard's New chat button. Only the
   // action-picker variant remains — creating a context happens via the
   // inline wizard (contextBuilder.start) instead.
@@ -3725,7 +3645,6 @@ function wireAssistantPanel(root, session, attachedContext) {
     offPosts();
     offWizard();
     offInlineQuestion();
-    offTopics();
     offTopPosts();
     offClipStudio();
     offBatchStudio();
@@ -4588,38 +4507,6 @@ function bindSession(root, session) {
         const ctxId = readQuery().contextId || session.contextId || "";
         if (!ctxId) return;
         startEditConfirmPrompt(session, section, ctxId);
-        return;
-      }
-
-      // --- Hero topic rail ---
-      // The three data-topic-* hooks are the SAME ones /topics binds, because all
-      // three card variants emit them — so a card behaves identically wherever it
-      // is rendered. Dismiss is absent from the rail card, but the handler stays:
-      // the dossier dialog opens over this screen and its "Not for me" reports
-      // back through the same callback.
-      if (event.target.closest("[data-hero-topics-all]")) {
-        navigate("/topics");
-        return;
-      }
-      const heroTopicOpen = event.target.closest("[data-topic-open]");
-      if (heroTopicOpen) {
-        openTopicModal({ topicId: heroTopicOpen.dataset.topicOpen, onDismiss: announceTopicDismissal });
-        return;
-      }
-      const heroTopicChat = event.target.closest("[data-topic-chat]");
-      if (heroTopicChat) {
-        // Straight to topic-flow's existing entry point: it mints
-        // /session/new-<ts>?contextId=&title= and the handoff does the rest. The
-        // empty session we're leaving has no thread and no sources — it's
-        // disposable — so there's nothing to preserve and no new plumbing to add.
-        openTopicInChat(heroTopicChat.dataset.topicChat);
-        return;
-      }
-      const heroTopicDismiss = event.target.closest("[data-topic-dismiss]");
-      if (heroTopicDismiss) {
-        const topicId = heroTopicDismiss.dataset.topicDismiss;
-        dismissTopic(topicId);
-        announceTopicDismissal(topicId);
         return;
       }
 

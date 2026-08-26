@@ -1,6 +1,5 @@
 import { route, setAfterRender, start } from "./router.js?v=31";
 import { isFlagOn } from "./feature-flags.js?v=21";
-import { maybeAutoScan } from "./topics-store.js?v=10";
 import { initArchieLoader } from "./archie-loader.js?v=3";
 import { initTopbar, renderTopbar } from "./components/topbar.js?v=316";
 import { initSidebar, renderSidebar } from "./components/sidebar.js?v=287";
@@ -13,7 +12,6 @@ import { init as initVideoClipsModal } from "./components/video-clips-modal.js?v
 import { init as initChatPickerModal } from "./components/chat-picker-modal.js?v=77";
 import { init as initAddSourceModal } from "./components/add-source-modal.js?v=78";
 import { init as initConnectorsModal } from "./components/connectors-modal.js?v=24";
-import { init as initTopicModal } from "./components/topic-modal.js?v=14";
 import { init as initConfirmModal } from "./components/confirm-modal.js?v=23";
 import { init as initRenameModal } from "./components/rename-modal.js?v=3";
 import { init as initSaveFolderModal } from "./components/save-folder-modal.js?v=23";
@@ -30,8 +28,6 @@ import { renderDashboard } from "./screens/dashboard.js?v=72";
 import { renderSession } from "./screens/session.js?v=539";
 import { renderContexts } from "./screens/contexts.js?v=280";
 import { renderConnectors } from "./screens/connectors.js?v=217";
-import { renderTopics } from "./screens/topics.js?v=86";
-import { renderTopicsSettings } from "./screens/topics-settings.js?v=77";
 import { renderWelcomeAlt } from "./screens/welcome-alt.js?v=5";
 // Settings route removed — the prototype Admin controls moved to the sidebar
 // cog popover (see admin-menu.js + sidebar.js); Social accounts page dropped.
@@ -57,11 +53,6 @@ route("/session/:id", renderSession);
 route("/contexts", renderContexts);
 route("/playbook/:id", renderPlaybook);
 route("/connectors", renderConnectors);
-route("/topics", renderTopics);
-// route() anchors its regex (^…$), so this is a distinct sibling of /topics — no
-// ordering concern. The config is a settings PAGE rather than a tab on the feed:
-// you set your listening sources once and then read topics for months.
-route("/topics/settings", renderTopicsSettings);
 // First-time ALT — thin redirect that mints a transient
 // /session/welcome-alt-{ts} session. The conversational Playbook
 // builder (3-question chat: URL → profile → optional documents) runs
@@ -92,7 +83,6 @@ initVideoClipsModal();
 initChatPickerModal();
 initAddSourceModal();
 initConnectorsModal();
-initTopicModal();
 initConfirmModal();
 initRenameModal();
 initSaveFolderModal();
@@ -113,13 +103,6 @@ initConversationStatusCard();
 // Feature flag → body class. Driven once at boot (flag changes always
 // reload the page, so we don't need to re-evaluate on every route).
 document.body.classList.toggle("hide-playbook-colors", !isFlagOn("playbookColors"));
-
-// Archie scanned while you were away. One dossier lands before the first route
-// renders, so the front page (or the hero rail) already has something new on it
-// and the sidebar counter is already moving. Cadence is copy, not a timer — this
-// is what makes "regularly updated" true without one. Runs once per page load;
-// silently does nothing once the seeded pool is dry.
-if (isFlagOn("topics")) maybeAutoScan();
 
 setAfterRender((path) => {
   renderSidebar();

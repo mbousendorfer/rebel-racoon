@@ -705,29 +705,3 @@
 .idea-card--selected .idea-card__inner {
   background: transparent;
 }
-
-/* ---- Front page (`/` with the `frontPage` flag on) -----------------------
- *
- * Archie's own page, built on the /topics shell (`.topics-view`) rather than on
- * anything here: the two surfaces render the same cards through the same engine,
- * so they must sit at the same measure and use the same head grammar. Only what
- * differs from the section page lives below.
- *
- * See src/screens/dashboard.js + src/topics-feed.js. */
-
-/* No hairline under the sections here. On /topics the rule separates two facets
-   from an archive; the front page has one facet and ends after six cards, so the
-   line was drawing a boundary that had nothing on either side of it. */
-.home-view .topics-view__filters {
-  padding-bottom: 0;
-  border-bottom: 0;
-}
-
-/* The way through to the section page: centred and set apart, so the grid above
-   reads as having ENDED rather than as having been cut off. */
-.home-view__more {
-  display: flex;
-  justify-content: center;
-  padding-top: var(--ref-spacing-sm);
-  border-top: 1px solid var(--app-border-soft);
-}
