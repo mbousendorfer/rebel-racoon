@@ -84,6 +84,28 @@ export const FLAGS = Object.freeze([
       "data is preserved either way — only the surfaces are gated.",
   },
   {
+    id: "topicFeed",
+    label: "Topic Feed (listening)",
+    default: false,
+    hides:
+      "When OFF (default), hides everything the Topic Feed touches: the /topics " +
+      "route and its settings page, the sidebar nav row and its unread mark, the " +
+      '"Fresh topics to review" list on a new chat, and the composer Add menu\'s ' +
+      '"Pick from the Topic Feed". A stale deep link bounces to /. The seeded ' +
+      "feeds and Topics ride along in the data either way, like " +
+      "playbookCompetitors \u2014 only the surfaces are gated.\n\nWhen ON, " +
+      "Agorapulse listening assembles a TOPIC per feed \u2014 a headline, an " +
+      "article in two sections, and the posts behind it \u2014 and /topics is the " +
+      "queue you triage it in: two segments (Ready to draft / Topics for later), " +
+      "a Filters dropdown, three age groups, and the article opening beside the " +
+      "list. A Topic offers exactly two verbs, Use in chat (which marks it Used " +
+      "and opens a new chat with it attached as a Source) and Ignore (which asks " +
+      "why, and is reversible).\n\nTHE INVARIANT IT RESTS ON: a Topic's review " +
+      "status and its two attention signals are three separate things. Trending " +
+      "and Updated are never a status and never override the status filter \u2014 " +
+      "an ignored Topic that starts trending stays hidden.",
+  },
+  {
     id: "playbookCompetitors",
     label: "Playbook competitors",
     default: false,
