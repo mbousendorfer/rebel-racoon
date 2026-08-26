@@ -1,15 +1,26 @@
 // One Topic, in the three shapes it is read in.
 //
-//   renderTopicCard(topic, { variant: "feed" })    the queue on /topics
+//   renderTopicCard(topic, { variant: "row" })     the queue on /topics
 //   renderTopicCard(topic, { variant: "picker" })  inside the Pick-a-topic dialog
 //   renderTopicRow(topic)                          the in-chat "Fresh topics" list
 //
-// The feed and the picker emit the SAME card, part for part — same badge, age,
+// The feed and the picker emit the SAME CONTENT, part for part — same badge, age,
 // status glyph, signals, headline, summary. A reader who has just been reading
 // the feed must not be handed a different-looking object when they open the
-// picker. The only differences are behavioural: the picker's whole card is a
-// control (so it takes the app's card hover wash) and it has no kebab, because it
-// offers one verb and hosts it under the article.
+// picker. What differs is the FRAME, and only because the two lists are different
+// kinds of list:
+//
+//   `row`    — the feed. No frame of its own: the list is one continuous surface
+//              divided by hairlines, the way a mail reader's message list is. A
+//              per-row border plus a gap turns a queue into a wall of cards, and
+//              a wall of cards has no answer to "where am I in this list?".
+//   `picker` — the dialog. A short standalone list inside a modal, where each
+//              item IS a control, so it keeps a card's frame and hover wash.
+//
+// The row also carries the reader's own progress: an untriaged Topic is set in
+// the headline's full weight and a triaged one drops back a step. That is the
+// unread/read idiom every mail client uses, and it is the other half of why the
+// `new` status renders no glyph — the row's weight already says it.
 //
 // ── The card is a reading surface, not a control panel ─────────────────────
 // The body is ONE BUTTON covering the whole text area, and it opens the article.
@@ -81,16 +92,18 @@ function renderMeta(topic, source) {
  * `articleOpen` paints the reading state; the same fact is on the button as
  * aria-expanded, because the selected card must not be carried by colour alone.
  */
-export function renderTopicCard(
-  topic,
-  { source = null, variant = "feed", menuOpen = false, articleOpen = false } = {},
-) {
+export function renderTopicCard(topic, { source = null, variant = "row", menuOpen = false, articleOpen = false } = {}) {
   if (!topic) return "";
   const picker = variant === "picker";
   const ignored = topic.status === "ignored";
+  // Read/unread, in the mail-reader sense: `new` is the one status still waiting
+  // for an answer, so everything else has been dealt with and steps back.
+  const triaged = topic.status !== "new";
 
   return html`<article
-    class="topic-card${raw(picker ? " topic-card--picker" : "")}${raw(articleOpen ? " is-reading" : "")}"
+    class="topic-card topic-card--${raw(picker ? "picker" : "row")}${raw(triaged ? " is-triaged" : "")}${raw(
+      articleOpen ? " is-reading" : "",
+    )}"
     data-topic-id="${escapeAttr(topic.id)}"
   >
     <button

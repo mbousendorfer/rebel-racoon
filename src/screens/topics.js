@@ -52,7 +52,7 @@ import {
   findCadence,
   isLiveSource,
 } from "../topics-catalog.js?v=2";
-import { renderTopicCard } from "../components/topic-card.js?v=1";
+import { renderTopicCard } from "../components/topic-card.js?v=2";
 import { renderTopicArticle, renderTopicActions } from "../topic-article.js?v=1";
 import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=1";
 import { useTopicInChat } from "../topic-flow.js?v=1";
@@ -66,6 +66,8 @@ let view = null;
 let unsubscribe = null;
 let unsubscribeFeeds = null;
 let boundRoot = null;
+let boundChange = null;
+let boundClick = null;
 let observer = null;
 
 function freshView() {
@@ -79,6 +81,10 @@ function freshView() {
     autoOpened: false,
     menuTopicId: null,
     filtersOpen: false,
+    // Which article the last paint drew, so the pane's scroll offset is kept
+    // across a repaint of the same Topic and dropped when the reader opens
+    // another one.
+    paintedTopicId: null,
     scanning: true,
     loadingMore: false,
     // Set for exactly one paint, by the click that opened an article. When the
@@ -148,7 +154,22 @@ function teardown() {
   if (unsubscribe) (unsubscribe(), (unsubscribe = null));
   if (unsubscribeFeeds) (unsubscribeFeeds(), (unsubscribeFeeds = null));
   if (observer) (observer.disconnect(), (observer = null));
+  // ⚠️ The listeners have to come OFF, not just be forgotten.
+  //
+  // This used to null `boundRoot` and leave them attached, and #app outlives the
+  // screen — so every remount added a second pair on the same node. Two click
+  // handlers made every toggle cancel itself: the first set `menuTopicId` and
+  // repainted, the second ran on its own closure, read the value the first had
+  // just written and toggled it straight back. The kebab and the Filters panel
+  // both stopped opening, and only on the SECOND visit to the screen, which is
+  // why it survived the first pass. Same shape screens/topics-settings.js uses.
+  if (boundRoot) {
+    if (boundChange) boundRoot.removeEventListener("change", boundChange);
+    if (boundClick) boundRoot.removeEventListener("click", boundClick);
+  }
   boundRoot = null;
+  boundChange = null;
+  boundClick = null;
   view = null;
 }
 
@@ -157,19 +178,36 @@ function teardown() {
 function paint(target, pb) {
   if (!view) return;
   // Scroll position survives every action: using or ignoring a Topic halfway
-  // down the list must not throw the reader back to the top. The screen root is
-  // the scroller, so its offset is what has to be restored across the repaint.
-  const scroller = target.querySelector(".topics-view");
-  const scrollTop = scroller ? scroller.scrollTop : 0;
+  // down the list must not throw the reader back to the top.
+  //
+  // TWO offsets, because there are two possible scrollers. Side by side the list
+  // column and the reading pane each scroll on their own — that independence is
+  // most of what makes this read as a reader rather than as a page — and when the
+  // container query collapses the split to one column the screen root scrolls
+  // instead. Restoring both is cheaper than asking which is live: setting
+  // scrollTop on an element that is not scrolling is a no-op.
+  const prev = {
+    root: target.querySelector(".topics-view")?.scrollTop || 0,
+    list: target.querySelector(".topics-view__list")?.scrollTop || 0,
+    pane: target.querySelector(".topics-view__pane-body")?.scrollTop || 0,
+  };
+  // The pane's own offset is kept only while the SAME article stays open —
+  // opening another Topic has to start at the top of it.
+  const sameArticle = view.openTopicId && view.openTopicId === view.paintedTopicId;
+  view.paintedTopicId = view.openTopicId;
 
   target.innerHTML = html`<section class="screen topics-view">${raw(renderPage(pb))}</section>`;
 
-  const next = target.querySelector(".topics-view");
-  if (next && scrollTop) next.scrollTop = scrollTop;
+  const root = target.querySelector(".topics-view");
+  if (root && prev.root) root.scrollTop = prev.root;
+  const list = target.querySelector(".topics-view__list");
+  if (list && prev.list) list.scrollTop = prev.list;
+  const paneBody = target.querySelector(".topics-view__pane-body");
+  if (paneBody && sameArticle && prev.pane) paneBody.scrollTop = prev.pane;
 
   if (view.revealPane) {
     view.revealPane = false;
-    revealPane(next, target.querySelector(".topics-view__pane"));
+    revealPane(root, target.querySelector(".topics-view__pane"));
   }
 
   watchSentinel(target, pb);
@@ -183,9 +221,10 @@ function paint(target, pb) {
 // the next repaint — a store notification lands within the animation and the
 // scroll was silently abandoned. Setting scrollTop is deterministic.
 //
-// Side by side the pane is already on screen and this returns without touching
-// anything, which is why the check is on visibility rather than on the layout
-// mode: one rule, and it cannot disagree with what the container query decided.
+// Only ever does anything once the split has COLLAPSED. Side by side the pane is
+// its own scrollport, always on screen, and there is nothing to reveal — the
+// visibility test below is what establishes that, so one rule covers both layouts
+// and cannot disagree with what the container query decided.
 function revealPane(scroller, pane) {
   if (!scroller || !pane) return;
   const scRect = scroller.getBoundingClientRect();
@@ -231,23 +270,41 @@ function renderPage(pb) {
   // a list that no longer contains its card is the pane contradicting the list.
   const openInList = open && shown.some((t) => t.id === open.id) ? open : null;
 
+  // ── One shell, two shapes ───────────────────────────────────────────────
+  // With Topics to show, the reader: a list column beside a reading pane, both
+  // inside ONE framed surface divided by a hairline. Without any — still
+  // scanning, or nothing found, or the filter excluding everything — the split
+  // would be an empty column beside an empty pane, so the state takes the whole
+  // width instead. A reader with nothing in it is not a reader.
+  const empty = view.scanning || !shown.length;
+
   return html`
-    ${raw(renderHead(pb, feed, counts))}
+    ${raw(renderBar(pb, feed))}
     <div class="topics-view__body">
-      <div class="topics-view__split${raw(openInList ? " is-split" : "")}">
-        <div class="topics-view__list">${raw(renderList(shown, more, total, view.scanning, feed))}</div>
-        ${raw(openInList ? renderPane(openInList) : "")}
-      </div>
+      ${raw(
+        empty
+          ? html`<div class="topics-view__blank">${raw(renderList(shown, more, total, view.scanning, feed))}</div>`
+          : html`<div class="topics-view__split">
+              <section class="topics-view__list-col" aria-label="Topics">
+                ${raw(renderListHead(counts))}
+                <div class="topics-view__list">${raw(renderList(shown, more, total, view.scanning, feed))}</div>
+              </section>
+              ${raw(openInList ? renderPane(openInList) : renderPanePlaceholder())}
+            </div>`,
+      )}
     </div>
   `;
 }
 
-// ── The head ───────────────────────────────────────────────────────────────
-// Title, the two segments, then the scope and the two controls. The segments go
-// LEFT beside the title because they say WHICH list you are looking at; the
-// Playbook select, Filters and Settings go right because they narrow it.
-function renderHead(pb, feed, counts) {
-  const badge = narrowedGroupCount(view.filters);
+// ── The page bar ───────────────────────────────────────────────────────────
+// What the whole screen is about, and nothing that belongs to one column: the
+// name, the brand it is reading for, and the way to that brand's settings.
+//
+// The two segments and Filters are NOT here. They belong to the list — they say
+// which Topics it holds and which of them it shows — so they sit in the list
+// column's own header, above the rows they govern. Having them up here put a view
+// switch above a reading pane it had nothing to do with.
+function renderBar(pb, feed) {
   // The real DS Select — a <details>/<summary> dropdown, never a bare native
   // <select>. Same component playbook-view uses for the audience picker.
   const pbOptions = getContexts()
@@ -265,35 +322,26 @@ function renderHead(pb, feed, counts) {
     })
     .join("");
 
-  return html`<header class="topics-view__head">
-    <div class="topics-view__head-lead">
-      <h1 class="topics-view__title">Topic Feed</h1>
-      <div class="ap-segmented-control" role="group" aria-label="Which topics to show">
-        ${raw(
-          TOPIC_KINDS.map(
-            (k) =>
-              html`<button
-                type="button"
-                class="ap-segmented-control__segment${raw(
-                  view.segment === k.id ? " ap-segmented-control__segment--selected" : "",
-                )}"
-                data-topic-segment="${escapeAttr(k.id)}"
-                aria-pressed="${view.segment === k.id ? "true" : "false"}"
-              >
-                <span class="ap-segmented-control__label">${k.label}</span>
-                <span class="ap-counter normal ${raw(view.segment === k.id ? "blue" : "grey")}">${counts[k.id]}</span>
-              </button>`,
-          ).join(""),
-        )}
-      </div>
-    </div>
+  return html`<header class="topics-view__bar">
+    <!-- The heading is there for assistive tech and NOT drawn: the app topbar
+         already renders "Topic Feed" 40px above this, and two identical titles a
+         row apart is the plainest waste on the screen. Dropping it outright would
+         leave the page with no heading at all, so it is hidden rather than gone.
 
-    <div class="topics-view__head-actions">
+         What takes the visual lead instead is the SCOPE. In a reader the brand
+         you are reading for IS the heading — same job a mail client's account
+         switcher does at the top-left — so the select leads the bar and the only
+         other thing here, settings, sits at the far end. -->
+    <h1 class="app-sr-only">Topic Feed</h1>
+
+    <div class="topics-view__bar-actions">
       <!-- The scope. It writes ?pb= and nothing else — see the note at the top
-           of this file for why it is not a global scope. Labelled, because a
-           bare brand name in a filter bar does not say what it is scoping. -->
-      <div class="ap-form-field topics-view__scope">
-        <label for="topicScope">Playbook</label>
+           of this file for why it is not a global scope.
+           UNLABELLED: "Acme · Q2 marketing" in a select on the Topic Feed does
+           not need the word "Playbook" written above it, and the labelled form
+           field made the heaviest control in the bar the one whose value changes
+           least often. -->
+      <div class="topics-view__scope">
         <details class="ap-select" id="topicScope" data-topic-scope>
           <summary class="ap-select-trigger">
             <span class="ap-select-value">${raw(pb ? escapeAttr(pb.name) : "Choose a Playbook")}</span>
@@ -305,29 +353,66 @@ function renderHead(pb, feed, counts) {
         </details>
       </div>
 
-      <div class="topics-view__filters">
-        <button
-          type="button"
-          class="ap-button stroked grey"
-          data-topic-filters-toggle
-          aria-haspopup="true"
-          aria-expanded="${view.filtersOpen ? "true" : "false"}"
-        >
-          <i class="ap-icon-filter"></i><span>Filters</span>
-          ${raw(badge ? html`<span class="ap-counter normal blue">${badge}</span>` : "")}
-        </button>
-        ${raw(view.filtersOpen ? renderFilters() : "")}
-      </div>
-
+      <!-- An icon button, not a labelled one. A labelled Settings gave a rare
+           action the same weight as the scope beside it, and the cog is the one
+           glyph nobody has to hover to recognise. Its title carries what the
+           label used to say PLUS the cadence, which had nowhere else to live. -->
       <a
-        class="ap-button ghost grey"
+        class="ap-icon-button stroked grey"
         href="#/topics/settings${raw(pb ? `?pb=${encodeURIComponent(pb.id)}` : "")}"
+        aria-label="Feed settings"
         title="${raw(
-          feed ? `Refreshed ${escapeAttr(findCadence(feed.cadence)?.adverb || "weekly")}` : "Feed settings",
+          feed
+            ? `Feed settings · refreshed ${escapeAttr(findCadence(feed.cadence)?.adverb || "weekly")}`
+            : "Feed settings",
         )}"
       >
-        <i class="ap-icon-cog"></i><span>Settings</span>
+        <i class="ap-icon-cog"></i>
       </a>
+    </div>
+  </header>`;
+}
+
+// ── The list column's own header ───────────────────────────────────────────
+// The view switch and the filter, above the rows they govern — the shape a mail
+// reader's message list has always had. Sticky is unnecessary: the header is a
+// sibling of the scroller, not inside it, so it cannot scroll away.
+function renderListHead(counts) {
+  const badge = narrowedGroupCount(view.filters);
+  return html`<header class="topics-view__list-head">
+    <div class="ap-segmented-control" role="group" aria-label="Which topics to show">
+      ${raw(
+        TOPIC_KINDS.map(
+          (k) =>
+            html`<button
+              type="button"
+              class="ap-segmented-control__segment${raw(
+                view.segment === k.id ? " ap-segmented-control__segment--selected" : "",
+              )}"
+              data-topic-segment="${escapeAttr(k.id)}"
+              aria-pressed="${view.segment === k.id ? "true" : "false"}"
+            >
+              <span class="ap-segmented-control__label">${k.label}</span>
+              <span class="ap-counter normal ${raw(view.segment === k.id ? "blue" : "grey")}">${counts[k.id]}</span>
+            </button>`,
+        ).join(""),
+      )}
+    </div>
+
+    <div class="topics-view__filters">
+      <button
+        type="button"
+        class="ap-icon-button stroked grey"
+        data-topic-filters-toggle
+        aria-haspopup="true"
+        aria-expanded="${view.filtersOpen ? "true" : "false"}"
+        aria-label="Filters"
+        title="Filters"
+      >
+        <i class="ap-icon-filter"></i>
+        ${raw(badge ? html`<span class="ap-counter normal blue topics-view__filter-badge">${badge}</span>` : "")}
+      </button>
+      ${raw(view.filtersOpen ? renderFilters() : "")}
     </div>
   </header>`;
 }
@@ -474,17 +559,43 @@ function renderEmpty(total, feed) {
   });
 }
 
-// ── The article, beside the list ───────────────────────────────────────────
-// Sticky, so its actions stay in view as the page scrolls: the verbs are what the
-// reading is FOR, and a reader who has scrolled to the evidence should not have
-// to scroll back up to act.
+// ── The reading pane ──────────────────────────────────────────────────────
+// Its own scrollport, and the verbs in a toolbar at the TOP of it.
+//
+// They were in a sticky footer. A toolbar is better for the same reason a mail
+// reader puts Reply up there: the actions are then in view for a short article as
+// well as a long one, they never overlap the last line of prose, and the reader
+// always finds them in the same place instead of at the end of however much text
+// this Topic happened to have. The requirement was that they stay reachable while
+// the article scrolls, and being outside the scroller satisfies it absolutely
+// rather than approximately.
+//
+// The verbs themselves still come from topic-article.js — the picker's dialog
+// renders the same markup in a footer. Only the placement is the host's.
 function renderPane(topic) {
-  return html`<aside class="topics-view__pane" aria-label="Topic article">
+  return html`<section class="topics-view__pane" aria-label="Topic article">
+    <header class="topics-view__pane-bar">${raw(renderTopicActions(topic))}</header>
     <div class="topics-view__pane-body">
       ${raw(renderTopicArticle(topic, { source: findTopicSource(topic.sourceId) }))}
     </div>
-    <footer class="topics-view__pane-foot">${raw(renderTopicActions(topic))}</footer>
-  </aside>`;
+  </section>`;
+}
+
+// The pane with nothing in it. It renders rather than collapsing, so the two
+// columns keep their widths and the list does not jump sideways every time an
+// article opens or closes — the one thing a reader must never do. It is also
+// where a reader looks first, so it is worth a sentence.
+function renderPanePlaceholder() {
+  return html`<section class="topics-view__pane topics-view__pane--blank" aria-label="Topic article">
+    ${raw(
+      renderEmptyState({
+        icon: "ap-icon-note",
+        title: "Nothing open",
+        body: "Pick a topic on the left and I'll show you what I found, and the posts I found it in.",
+        wrapperClass: "topics-view__pane-blank",
+      }),
+    )}
+  </section>`;
 }
 
 // ── Paging on scroll ───────────────────────────────────────────────────────
@@ -518,10 +629,9 @@ function loadMore(target, pb) {
 // ── Events ─────────────────────────────────────────────────────────────────
 
 function bind(target) {
-  if (boundRoot === target) return;
   boundRoot = target;
 
-  target.addEventListener("change", (event) => {
+  boundChange = (event) => {
     if (!view) return;
     const filter = event.target.closest("[data-topic-filter]");
     if (filter) {
@@ -535,9 +645,10 @@ function bind(target) {
       view.page = 1;
       paint(target, scopedPlaybook());
     }
-  });
+  };
+  target.addEventListener("change", boundChange);
 
-  target.addEventListener("click", (event) => {
+  boundClick = (event) => {
     if (!view) return;
 
     // One card menu open at a time, and an outside click closes it. Checked
@@ -654,5 +765,6 @@ function bind(target) {
       showToast("Back on the list to review");
       return;
     }
-  });
+  };
+  target.addEventListener("click", boundClick);
 }

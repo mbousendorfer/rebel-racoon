@@ -795,15 +795,35 @@ Un Topic est soit draftable maintenant (`ready`), soit un thème à garder (`lat
 
 **Un Playbook à la fois, porté par `?pb=`.** Le fork avait introduit un scope global persisté (`active-playbook.js`) qui avait supprimé quatre pickers d'un coup — puis son switcher de rail a été garé et le module est resté source de vérité. Résultat : le select « Playbook » de l'entête du feed **ressemblait à un filtre de page et re-scopait l'app entière** (le compteur de la sidebar, le Playbook d'un chat neuf, le picker du composer) et le persistait en `localStorage`. `?pb=` dit la même chose, survit à un lien, et **s'arrête à cet écran**. La page de réglages lit le même param, donc le scope survit à l'aller comme au retour.
 
-**Le head ne bouge jamais.** Titre + les deux segments à gauche (ils disent **quelle** liste on regarde), le select Playbook + Filters + Settings à droite (ils la **rétrécissent**). Au-dessus du split et hors de lui : quand le head vivait dedans, ouvrir l'article rétrécissait aussi le titre et les segments.
+#### La page est un LECTEUR
 
-#### 🐛 Le master–detail : le bug que ce port existait pour corriger
+L'anatomie est celle d'un lecteur de mail, et délibérément : une barre de scope en haut, une liste de messages à gauche, un volet de lecture qui prend le reste, et **les deux colonnes défilent indépendamment dans une seule surface encadrée** divisée par un filet.
 
-**La liste se rétrécit maintenant.** Chez le fork elle était figée à 666px et le pane prenait le reste, donc sous ~1180px de largeur de **contenu** l'article n'avait nulle part où aller et une `@container` query le posait sous la liste. À **1440px de viewport** — un 14 pouces, sidebar comprise, soit ~1100px de contenu — cliquer une carte rendait l'article **1900px sous la ligne de flottaison** : la carte s'allumait et rien d'autre ne semblait se passer.
+Ce n'est pas cosmétique — c'est ce qui distingue un lecteur d'une page web à sidebar. Le premier jet était une page : un seul scroller, une colonne de cartes bordées avec des gaps, et l'article en carte flottante collée en haut. Trois défauts :
 
-Ici la liste est `flex: 1 1 auto` avec un plancher de 380px, le pane `flex: 1 1 0` avec le sien à 440px, et les deux se partagent ce qu'il y a. Côte à côte survit jusqu'à 852px de contenu. En dessous ça s'empile toujours (deux colonnes sous 440px sont illisibles), et alors **ouvrir un article l'amène dans le champ de vision** — arithmétique, pas `scrollIntoView()` : `nearest` refusait de bouger un pane 1700px plus bas (l'élément est presque aussi haut que le scrollport, donc le navigateur le lit comme déjà « nearest ») et `smooth` perdait la course contre le repaint suivant.
+- **Aucune largeur maximum.** Sur un écran large la liste s'étirait au-delà de 1500px pendant que le volet restait collé à son plancher de 440px. Exactement à l'envers.
+- **Un mur de cartes.** Une bordure et un rayon par ligne, plus un gap : une file devient un mur, et un mur de cartes n'a aucune réponse à « où j'en suis dans cette liste ? ».
+- **Un seul scroller**, donc lire l'article faisait défiler la liste sous lui.
+
+**Largeur maximum : 1440px, centré.** Dérivée, pas choisie : la liste à son plafond de 460 plus un volet assez large pour tenir la mesure de 68ch de l'article avec de vraies gouttières, et pas plus. Au-delà le volet ne fait que grossir ses marges, ce qui est la façon dont une surface de lecture se met à paraître abandonnée au milieu d'un moniteur.
+
+**La liste est la moitié FIXE, le volet celle qui grandit** — `flex: 0 0 clamp(340px, 36%, 460px)` contre `flex: 1 1 auto`. C'est l'inversion qui corrige le fork, où la liste prenait tout et l'article restait à son plancher : une fenêtre plus large achète maintenant de la place de **lecture**, pas une file plus large. Les trois nombres sont dérivés — le **plancher de 340** parce que l'en-tête de la liste doit tenir (deux segments portant « Ready to draft 13 » et « Topics for later 6 » plus le déclencheur de filtre mesurent ~394px, en dessous le DS ellipsise les libellés) ; le **plafond de 460** parce qu'au-delà trois lignes de texte cessent d'être une ligne et redeviennent une carte.
+
+**Deux barres, par portée.** La barre de page ne porte que ce qui gouverne les **deux** colonnes : le scope et ses réglages, groupés à gauche en un seul cluster — « cette marque » et « les réglages d'écoute de cette marque » se tiennent par la proximité. Les segments et Filters vivent dans l'en-tête de la **colonne de liste**, au-dessus des lignes qu'ils gouvernent : posés en haut de page ils surplombaient un volet de lecture qu'ils ne touchent pas.
+
+**Pas de titre dessiné.** La topbar de l'app nomme déjà la route, et deux titres identiques à 40px d'écart étaient le gaspillage le plus net de l'écran. Le `<h1>` reste pour les lecteurs d'écran (`.app-sr-only`) — le supprimer laisserait la page sans titre du tout — et c'est le **select de scope qui prend la tête visuelle** : dans un lecteur, la marque pour laquelle on lit _est_ le titre.
+
+**Le volet stacké se fait amener dans le champ de vision.** En dessous de 760px de contenu deux colonnes sont illisibles, donc le split s'empile et le scroll revient à la racine de l'écran. Ouvrir un article le fait alors défiler jusqu'à lui — arithmétique, pas `scrollIntoView()` : `nearest` refusait de bouger un volet presque aussi haut que le scrollport, et `smooth` perdait la course contre le repaint suivant.
+
+⚠️ **`overflow-y: auto` sur `.topics-view` est INCONDITIONNEL**, et pas posé dans la `@container` query. Une container query ne peut styler que les **descendants** de son conteneur, et le conteneur est `.topics-view__body` — un enfant de cet élément. Mise dans la query stacké, la règle avait l'air juste et ne faisait silencieusement rien : en dessous de 760px **rien ne défilait** et tout ce qui passait sous la ligne de flottaison était inatteignable.
 
 **Une `@container` query, pas une media query** : la sidebar se replie et le panneau de droite recouvre, donc la largeur du viewport ne dit jamais la largeur du contenu.
+
+#### Rien d'ouvert, et rien du tout
+
+Le volet **rend un placeholder** au lieu de disparaître, pour que les deux colonnes gardent leurs largeurs et que la liste ne saute pas latéralement chaque fois qu'un article s'ouvre ou se ferme — la seule chose qu'un lecteur ne doit jamais faire.
+
+En revanche, quand il n'y a **rien à lire du tout** — scanning, feed vide, filtre qui exclut tout — l'état prend **tout le lecteur** au lieu d'une colonne vide à côté d'un volet vide. Un lecteur sans rien dedans n'est pas un lecteur.
 
 #### Les deux segments
 
@@ -831,14 +851,18 @@ Trois groupes, toujours dans cet ordre : **Last 7 days** (`≤ 7j`) / **Earlier 
 
 **La position de scroll survit à toute action** : trier un Topic à mi-liste ne doit pas renvoyer le lecteur en haut. `paint()` restaure l'offset du scroller autour du repaint.
 
-#### La carte ([`topic-card.js`](../../src/components/topic-card.js))
+#### La ligne, la carte, et le lu / non-lu ([`topic-card.js`](../../src/components/topic-card.js))
 
-Trois formes : `feed`, `picker`, et la **ligne compacte** de la liste in-chat. Le feed et le picker sortent **la même carte, partie pour partie** — même badge, âge, glyphe de statut, signaux, accroche, résumé. Un lecteur qui sortait du feed ne doit pas se voir tendre un objet d'allure différente dans le picker.
+**Deux cadres pour un même contenu**, plus la **ligne compacte** de la liste in-chat. `--row` pour le feed : aucun cadre propre, un filet en bas, le cadre appartient à la colonne. `--picker` pour la dialog : une carte, chaque item y étant un contrôle. C'est pour ça que la règle de base du composant ne porte presque rien — chaque déclaration de cadre vit sur une variante, et une `border` partagée est exactement ce qui a fait fuir un cadre de carte dans le lecteur pendant la construction.
+
+Le feed et le picker sortent **le même contenu, partie pour partie** — même badge, âge, glyphe de statut, signaux, accroche, résumé. Un lecteur qui sortait du feed ne doit pas se voir tendre un objet d'allure différente dans le picker.
 
 - **La carte est une surface de lecture, pas un panneau de contrôle.** Le corps est **un seul bouton** couvrant toute la zone de texte, et il ouvre l'article. Les verbes vivent dans le footer de l'article, là où le lecteur vient de finir de lire ce qu'il décide — la forme précédente lui demandait de trancher sur deux lignes de résumé clampées.
 - Le kebab est un **frère** du bouton, jamais dedans (un bouton dans un bouton est du HTML invalide, ce qui est aussi pourquoi tout ce qui est dans le corps est un `<span>`). Deux rangs seulement : **Use in chat**, puis **Ignore** ou **Un-ignore** — un seul créneau, deux directions, jamais les deux, parce que c'est une décision lue par les deux bouts.
 - **Le glyphe de triage** est juste à droite de l'âge : la gauche de cette ligne, ce sont les faits du Topic, et son statut se lit comme l'un d'eux plutôt que comme une puce en concurrence avec les signaux. **`new` ne rend rien** — c'est l'absence de marque. Les deux autres enregistrent quelque chose que le lecteur **a fait** ; celui-là enregistre qu'il ne l'a pas fait, et une marque disant « rien n'est arrivé » est la seule chose qu'une marque ne peut pas dire. C'était aussi la valeur la plus fréquente : elle dépensait un glyphe sur presque chaque ligne pour ne rien transmettre.
-- **Hover et sélection sont deux états distincts** : hover prend le lavis de carte de l'app (fond bleu clair + bordure bleu clair, jamais du navy, jamais d'élévation, **jamais de barre d'accent latérale**), et la carte dont l'article est ouvert **raffermit** cette bordure en `electric-blue-100` en gardant le lavis. Le fork ne donnait **aucun** hover à la carte de feed, donc un bouton pleine carte n'avait rien qui dise qu'il en était un.
+- **Hover et sélection sont deux états distincts, et sur une LIGNE ce sont deux remplissages.** Une ligne n'a pas de cadre à teinter, donc l'état va dans le fond : survol en `electric-blue-05`, ligne dont l'article est ouvert un cran plus ferme en `electric-blue-10`. ⛔️ **Jamais** de bordure gauche colorée sur la ligne sélectionnée — règle catégorique, recalée plusieurs fois, et la raison pour laquelle l'état est un aplat et non un bord. Sur la **carte** du picker c'est le lavis de carte de l'app (fond bleu clair + bordure bleu clair, jamais du navy, jamais d'élévation). Le fork ne donnait **aucun** hover à la carte de feed, donc un bouton pleine carte n'avait rien qui dise qu'il en était un.
+- **Non-triée en gras, triée en poids normal.** `new` est le seul statut qui attend encore une réponse, donc tout le reste recule d'une graisse. C'est l'idiome lu/non-lu de n'importe quel client mail, et c'est l'autre moitié de la raison pour laquelle `new` ne rend **aucun** glyphe : la graisse de la ligne le dit déjà, et une marque disant « rien n'est arrivé » serait une seconde réponse à la même question. **La graisse seulement** — l'encre ne change pas, on ne hiérarchise jamais en descendant un texte dans un gris plus clair.
+- **Le signal part au bout de la ligne meta** sur la variante ligne, là où un client mail met la date et le drapeau : c'est la seule chose de cette ligne qu'un lecteur ne peut pas savoir sans qu'on lui dise, et au bout c'est ce sur quoi l'œil finit.
 - Aucun traitement de cadre pour une carte trending : le signal est porté **dans** la carte par la marque Trending, exactement comme Updated, donc les deux se lisent comme la même espèce de chose.
 
 #### L'article — un seul moteur, trois hôtes ([`topic-article.js`](../../src/topic-article.js))
@@ -851,7 +875,7 @@ Contenu : le titre (**le titre de l'article**, jamais l'accroche du scan — `to
 - **Relevance n'est jamais teintée**, sous aucun signal : à qui s'adresse un Topic ne change pas parce que la pile a grossi. **Why now** prend la teinte du signal quand il y en a un, parce que c'est la ligne dont le signal parle — un filet gauche, pas un aplat : un bloc teinté à taille de corps se lit comme un avertissement, et ni l'un ni l'autre n'en est un.
 - **Pas d'historique de version.** Un Topic mis à jour se lit comme sa version courante ; un lecteur qui décide quoi poster n'a pas besoin du brouillon qui précédait.
 - **Deux verbes, les mêmes partout** : **Use in chat** (`primary orange` — il tend le Topic à Archie, et l'orange est l'action IA / spotlight partout ailleurs) et **Ignore** (`stroked grey`, **pas** rouge : ignorer masque un Topic que cocher Ignored ramène, donc rien n'est détruit et le rouge signalerait un danger absent). Plus la sortie de l'hôte, poussée à droite.
-- Le footer **colle** au bas : les verbes sont ce à quoi la lecture sert, et un lecteur descendu jusqu'à la preuve ne doit pas remonter pour agir. ⚠️ Le fork y dessinait un **liseré bleu électrique** ; c'est un simple filet, parce que le bleu électrique est la couleur de l'interactif et une bande décorative est la seule chose qu'il ne peut pas être.
+- **Les verbes sont en HAUT du volet, pas en pied.** Ils étaient dans un pied collant. Une toolbar est meilleure pour la raison exacte qui met Reply en haut dans un client mail : les actions sont visibles pour un article court comme pour un long, elles ne chevauchent jamais la dernière ligne de prose, et le lecteur les retrouve **toujours au même endroit** au lieu d'à la fin de la quantité de texte que ce Topic avait. L'exigence était qu'elles restent atteignables pendant qu'on défile ; être **hors du scroller** la satisfait absolument plutôt qu'approximativement. Le markup reste celui de ce module — la dialog du picker rend exactement le même dans un pied, seul le placement appartient à l'hôte. ⚠️ Le fork dessinait un **liseré bleu électrique** sur ce bord ; c'est un simple filet, parce que le bleu électrique est la couleur de l'interactif et une bande décorative est la seule chose qu'il ne peut pas être.
 
 #### Les deux verbes
 

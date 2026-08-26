@@ -1,11 +1,22 @@
-/* topic-card — one Topic, in the feed and in the picker, plus the compact row
- * the in-chat list uses.
+/* topic-card — one Topic, in TWO FRAMES, plus the compact row the in-chat list
+ * uses.
  *
- * NO width of its own: the card fills the column it sits in, and
- * screens/topics.css owns that column's width. The version this was ported from
- * capped the card at a hard 666px and the list at the same number, which is what
- * made the master–detail unusable — with the list unable to shrink, the article
- * had nowhere to go under ~1180px of content width and dropped below the fold.
+ * The content is identical in both. What differs is the frame, and only because
+ * the two lists are different kinds of list:
+ *
+ *   --row     the feed. NO frame of its own. The list is one continuous surface
+ *             divided by hairlines — a mail reader's message list — and the frame
+ *             belongs to the column (.topics-view__split in screens/topics.css).
+ *             A per-row border plus a gap turns a queue into a wall of cards, and
+ *             a wall of cards has no answer to "where am I in this list?".
+ *   --picker  the dialog. A short standalone list inside a modal where each item
+ *             IS a control, so it keeps a card's frame and the app's hover wash.
+ *
+ * That split is why the base rule below carries almost nothing: every frame
+ * declaration lives on a variant. A shared `border` here is what silently leaked
+ * a card frame into the reader while this was being built.
+ *
+ * NO width of its own either — the column owns that.
  *
  * ── Everything here is a token ─────────────────────────────────────────────
  * The version this was ported from carried a 14px radius, 15px and 13px type, a
@@ -19,11 +30,9 @@
   display: flex;
   flex-direction: column;
   flex: 0 0 auto;
-  /* No padding here — the body button carries it, so the whole padded text area
-     is clickable instead of a dead gutter. */
-  background: var(--app-surface);
-  border: 1px solid var(--app-border-soft);
-  border-radius: var(--app-radius-card);
+  /* No padding and NO FRAME here — the body button carries the padding so the
+     whole padded text area is clickable, and each variant carries its own frame.
+     See the note at the top of this file. */
   /* The kebab is absolutely positioned into the top-right corner and is a
      SIBLING of the body button (button-in-button is invalid), so this is its
      containing block. */
@@ -33,40 +42,108 @@
     background-color var(--ref-animation-short) var(--app-ease-standard);
 }
 
-/* ── Hover and selected are DIFFERENT states ───────────────────────────────
-   The app's card convention (chat.css states it outright): a soft blue fill and
-   a light blue border on hover/focus — never navy, never a hard outline, never
-   added elevation. The card the article is open on then FIRMS that border to
-   electric-blue-100 and keeps the wash, exactly as .drafts-card.is-active does.
-
-   The version this was ported from gave the feed card no hover at all, so a
-   whole-card button had nothing saying it was one, and its selected state was
-   border-only. Both are corrected here, and the two states stay distinguishable
-   — which they would not be if hover took the -100 border too.
-
-   Border colour and background only: the card already has a 1px border, so
-   nothing moves and no card below is nudged. NEVER a coloured edge-accent bar. */
-.topic-card:hover,
-.topic-card:focus-within {
-  background: var(--ref-color-electric-blue-05);
-  border-color: var(--ref-color-electric-blue-20);
-}
-
-.topic-card.is-reading {
-  background: var(--ref-color-electric-blue-05);
-  border-color: var(--ref-color-electric-blue-100);
-}
-
 @media (prefers-reduced-motion: reduce) {
   .topic-card {
     transition: none;
   }
 }
 
-/* No frame treatment for a trending card, deliberately. The signal is carried
-   INSIDE the card by the Trending mark, which is how Updated already works, so
-   the two read as the same kind of thing. If a card-level accent ever comes
-   back it must be a border — never an absolutely-positioned rail. */
+/* No frame treatment for a trending Topic, on either variant. The signal is
+   carried INSIDE by the Trending mark, which is how Updated already works, so the
+   two read as the same kind of thing. If a frame-level accent ever comes back it
+   must be a border — never an absolutely-positioned rail. */
+
+/* ══ ROW — the feed ════════════════════════════════════════════════════════
+   One hairline under each row and nothing else. The last row's hairline is left
+   in place deliberately: the list scrolls, so there is no "last" row a reader can
+   rely on seeing, and the ruling has to look continuous wherever it is cut. */
+
+.topic-card--row {
+  border-bottom: 1px solid var(--app-border-soft);
+}
+
+/* ── Hover and selected are DIFFERENT states, and both are FILLS ───────────
+   A row has no frame to tint, so the state goes in the background — which is the
+   idiom a row wants anyway, and already what .topic-row does in the in-chat list.
+   Hover takes the app's light wash; the row whose article is open takes one step
+   firmer, so the two stay distinguishable.
+
+   ⛔️ NEVER a coloured left border on the selected row. Categorical house rule,
+   turned down repeatedly, and the reason the state is a fill rather than an edge.
+
+   Background only, so no row moves and nothing below is nudged. */
+.topic-card--row:hover,
+.topic-card--row:focus-within {
+  background: var(--ref-color-electric-blue-05);
+}
+
+.topic-card--row.is-reading {
+  background: var(--ref-color-electric-blue-10);
+}
+
+/* ── Read and unread ──────────────────────────────────────────────────────
+   `new` is the one status still waiting for an answer, so a triaged Topic steps
+   back a weight. That is every mail client's unread/read idiom, and it is the
+   other half of why the `new` status renders no glyph — the row's own weight
+   already says it, so a marker meaning "nothing has happened yet" would be a
+   second answer to the same question.
+
+   WEIGHT ONLY. The ink does not change: hierarchy comes from size and weight,
+   never from dropping text into a lighter grey. */
+.topic-card--row.is-triaged .topic-card__headline {
+  font-weight: var(--sys-text-style-body-weight);
+}
+
+/* ── Density ──────────────────────────────────────────────────────────────
+   A row is scanned, not read. Tighter padding, a hairline gap between the three
+   lines, and the right gutter reserved for the kebab. */
+.topic-card--row .topic-card__body {
+  gap: var(--ref-spacing-xxxs);
+  padding: var(--ref-spacing-xs);
+  padding-right: var(--ref-spacing-lg);
+}
+
+/* No radius on the ring: the row has no rounded corner for it to escape. */
+.topic-card--row .topic-card__body:focus-visible {
+  border-radius: 0;
+}
+
+/* One line, always. A meta run that wraps costs the row 16px and breaks the
+   even rhythm the list is scanned by — so the source name gives way first. */
+.topic-card--row .topic-card__meta {
+  flex-wrap: nowrap;
+}
+
+.topic-card--row .topic-card__source {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The signal goes to the FAR END of the meta line, where a mail client puts the
+   date and the flag: it is the one thing in that row a reader cannot know without
+   being told, and at the end it is what the eye lands on last and remembers. */
+.topic-card--row .trending-mark,
+.topic-card--row .updated-mark {
+  margin-left: auto;
+}
+
+/* ══ PICKER — the dialog ═══════════════════════════════════════════════════
+   The frame the base rule used to carry. Each item is a control here, so it takes
+   the app's card convention outright: a soft blue fill and a light blue border on
+   hover/focus — never navy, never a hard outline, never added elevation. */
+
+.topic-card--picker {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border-soft);
+  border-radius: var(--app-radius-card);
+}
+
+.topic-card--picker:hover,
+.topic-card--picker:focus-within {
+  background: var(--ref-color-electric-blue-05);
+  border-color: var(--ref-color-electric-blue-20);
+}
 
 /* ── The body: one button over the whole text area ─────────────────────────── */
 
@@ -187,6 +264,12 @@
   z-index: 1;
 }
 
+/* On a row the kebab sits on the meta line, which starts one step higher. */
+.topic-card--row .topic-card__more {
+  top: var(--ref-spacing-xxxs);
+  right: var(--ref-spacing-xxxs);
+}
+
 .topic-card__menu {
   position: absolute;
   top: calc(var(--ref-spacing-lg) + var(--ref-spacing-xxxs));
@@ -195,10 +278,14 @@
   min-width: 250px;
 }
 
-/* ── Picker variant ────────────────────────────────────────────────────────
-   The whole card is a control there, so it needs no separate hover rule — the
-   base hover above already is the app's card wash. What differs is that it has
-   no kebab, so the body reclaims the right gutter. */
+/* Anchored to the RIGHT EDGE of a ~380px column, a 250px menu would hang off it.
+   Pulled back inside instead. */
+.topic-card--row .topic-card__menu {
+  top: var(--ref-spacing-md);
+  right: var(--ref-spacing-xxxs);
+}
+
+/* No kebab in the picker, so the body reclaims the right gutter. */
 .topic-card--picker .topic-card__body {
   padding-right: var(--ref-spacing-sm);
 }

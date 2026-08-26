@@ -1,141 +1,227 @@
-/* /topics — the Topic Feed.
+/* /topics — the Topic Feed, as a reader.
  *
- * Two things this file is responsible for: the master–detail split, and the head
- * that sits above it and never moves when the article opens.
+ * The shape is a mail reader's, and deliberately: a scope bar across the top, a
+ * message list down the left, a reading pane filling the rest, and the two
+ * columns scrolling INDEPENDENTLY inside one framed surface. That independence is
+ * most of what makes this read as a reader rather than as a web page with a
+ * sidebar — the list keeps its place while you read, and reading does not move
+ * the list.
  *
- * Everything is a DS token. The version this was ported from carried 15px and
- * 13px type, six invented line-heights and paddings of 6, 10, 11, 14, 18 and
- * 22px — none of which is on the DS's 4-based spacing scale or its type ladder.
+ * ── What it replaced, and why ─────────────────────────────────────────────
+ * The first version was a page: one scroller, a column of bordered cards with
+ * gaps between them, and the article a floating card that stuck to the top. Three
+ * things were wrong with it. There was NO MAXIMUM WIDTH, so on a wide monitor the
+ * list grew past 1500px while the reading pane stayed pinned at its 440px floor —
+ * exactly backwards. A per-row frame plus a gap turns a queue into a wall of
+ * cards, and a wall of cards has no answer to "where am I in this list?". And a
+ * single page scroller meant scrolling the article scrolled the list out from
+ * under it.
+ *
+ * Everything is a DS token. If a value here is not one, it is a bug.
  */
 
 .topics-view {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-sm);
-  /* The screen root is the scroller, so paint() can restore its offset and a
-     triage halfway down the list does not throw the reader back to the top. */
   height: 100%;
+  /* ── `auto`, and NOT set from the container query ────────────────────────
+     Side by side this never scrolls: the bar and the reader add up to exactly
+     100% and the two columns scroll inside. Stacked, the split grows past this
+     box and this is what carries the page.
+     It has to be unconditional because a @container query can only style
+     DESCENDANTS of its container, and the container is .topics-view__body — a
+     child of this element. Putting `overflow-y: auto` in the stacked query looked
+     right and silently did nothing, so below 760px of content nothing scrolled at
+     all and everything past the fold was unreachable. */
   overflow-y: auto;
-  padding: var(--ref-spacing-md);
+  padding: var(--ref-spacing-sm) var(--ref-spacing-md) var(--ref-spacing-md);
+  gap: var(--ref-spacing-xs);
 }
 
-/* ── The head ──────────────────────────────────────────────────────────────
-   Above the split and outside it, deliberately. When the head lived inside the
-   split, opening the article narrowed the title and the segments too, so two
-   pieces of page furniture twitched on every open and close. */
-
-.topics-view__head {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--ref-spacing-sm);
-  flex-wrap: wrap;
+/* ── The maximum width ─────────────────────────────────────────────────────
+   One number, applied to the bar and to the reader below it so the two share an
+   edge. 1440 is derived rather than picked: the list at its 420px ceiling plus a
+   reading pane wide enough to hold the article's own 68ch measure with real
+   gutters, and no more. Past that the pane only grows its margins, which is how
+   a reading surface starts looking abandoned in the middle of a monitor. */
+.topics-view__bar,
+.topics-view__body {
+  width: 100%;
+  max-width: 1440px;
+  margin-inline: auto;
 }
 
-.topics-view__head-lead {
+/* ── The scope bar ─────────────────────────────────────────────────────────
+   Page-level only: which brand this reads for, and the way to that brand's
+   settings. The view switch and the filter are NOT here — they belong to the
+   list, so they live in its own header.
+
+   No drawn title. The app topbar already names the route, and the scope select
+   leads instead: in a reader the brand you are reading for IS the heading. */
+
+.topics-view__bar {
   display: flex;
   align-items: center;
   gap: var(--ref-spacing-sm);
-  flex-wrap: wrap;
+  flex: 0 0 auto;
 }
 
-.topics-view__title {
-  margin: 0;
-  font-size: var(--sys-text-style-h1-size);
-  line-height: var(--sys-text-style-h1-line-height);
-  font-weight: var(--sys-text-style-h1-weight);
-  color: var(--sys-text-color-default);
-}
-
-.topics-view__head-actions {
+/* ONE cluster, left. Not the scope at one end and the cog at the other: the two
+   controls here are "this brand" and "this brand's listening settings", and
+   proximity is what says they belong together. Pushed apart they read as two
+   orphans, and the cog ends up hovering over a reading pane it has nothing to do
+   with. Everything else in this bar is empty space, which is what a reader's top
+   strip should mostly be. */
+.topics-view__bar-actions {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   gap: var(--ref-spacing-xxs);
 }
 
-/* Wide enough for a real brand name, capped so it never competes with the title
-   for the row. */
+/* Unlabelled, so it sizes to its own value — capped only so a long brand name
+   never competes with the title for the row. */
 .topics-view__scope {
-  min-width: 200px;
-  max-width: 260px;
+  max-width: 280px;
 }
 
-/* The Filters panel hangs off its own trigger — the DS anchors this through a
-   CDK overlay, which does not exist here, so the caller positions it. */
-.topics-view__filters {
-  position: relative;
-}
-
-.topics-view__filter-panel {
-  position: absolute;
-  top: calc(100% + var(--ref-spacing-xxxs));
-  right: 0;
-  z-index: 30;
-}
-
-/* ── The split ─────────────────────────────────────────────────────────────
-   THE LIST SHRINKS. That is the whole fix, and it is worth stating plainly
-   because the version this was ported from did the opposite and it broke the
-   feature on any laptop.
-
-   There, the list was pinned at a fixed 666px and the pane took the leftover
-   width, so below ~1180px of CONTENT width the article had nowhere to go and a
-   container query dropped it under the list. At 1440px of viewport — with a
-   sidebar, that is ~1100px of content — clicking a card rendered the article
-   1900px below the fold: the card lit up and nothing else appeared to happen.
-
-   Here the list is `flex: 1 1 auto` with a floor, the pane is `flex: 1 1 0` with
-   its own floor, and the two share whatever there is. Side by side survives down
-   to the sum of the two floors plus the gap; only below that does the column
-   query fire. */
+/* ── The reader ────────────────────────────────────────────────────────────
+   `min-height: 0` on the flex child is what lets the columns inside it scroll:
+   without it the row grows to its content and the scrollports never resolve. */
 
 .topics-view__body {
+  flex: 1 1 auto;
+  min-height: 0;
   /* The container the split is measured against. Named, so the query below can
      only ever match THIS element — an unnamed container resolves to whichever
-     ancestor happens to be nearest. On the body rather than on the scroller:
-     this is the box whose width the two panes actually share. */
+     ancestor happens to be nearest. */
   container-type: inline-size;
   container-name: topics-feed;
 }
 
+/* ONE surface, divided. Not two floating cards: the hairline between the list and
+   the pane is what says they are two halves of one thing, and it is the single
+   most legible difference between a reader and a page. */
 .topics-view__split {
   display: flex;
-  align-items: flex-start;
-  gap: var(--ref-spacing-md);
+  align-items: stretch;
+  height: 100%;
   min-width: 0;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border-soft);
+  border-radius: var(--app-radius-card);
+  overflow: hidden;
 }
 
-.topics-view__list {
+/* ── The list column ───────────────────────────────────────────────────────
+   A PREFERRED width with a floor and a ceiling, and it does not grow. This is the
+   inversion that fixes the old layout: the list is the fixed half and the reading
+   pane takes whatever is left, so a wider window buys reading room rather than a
+   wider queue.
+
+   The three numbers are derived, not picked. The FLOOR is 340 because the list's
+   own header has to fit: two segments carrying "Ready to draft 13" and "Topics
+   for later 6" plus the filter trigger measure ~394px, and below that the DS
+   ellipsises the labels — which is a graceful fallback but not a resting state.
+   The CEILING is 460 because past it three lines of text stop being a row and
+   become a card again. 36% is what puts a 1250px reader comfortably over the
+   floor while still handing the reading pane the larger half. */
+.topics-view__list-col {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-md);
+  flex: 0 0 clamp(340px, 36%, 460px);
+  min-width: 0;
+  min-height: 0;
+  border-right: 1px solid var(--app-border-soft);
+}
+
+/* The list's own toolbar: which Topics it holds, and which of them it shows.
+   A sibling of the scroller rather than inside it, so it cannot scroll away and
+   needs no sticky. */
+.topics-view__list-head {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  flex: 0 0 auto;
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
+  border-bottom: 1px solid var(--app-border-soft);
+}
+
+/* The segmented control takes the row and its two segments share it equally, so
+   the pair reads as one control filling its column rather than as two buttons
+   floating at one end. The DS ships a --full-width mode for exactly this; it is
+   not in the CSS-UI port, so the same effect is asked for here. */
+.topics-view__list-head > .ap-segmented-control {
   flex: 1 1 auto;
   min-width: 0;
-  /* Capped when the article is closed, so a lone list does not stretch to a
-     1100px measure. `.is-split` lifts the cap and lets the pane in. */
-  max-width: 720px;
 }
 
-.topics-view__split.is-split > .topics-view__list {
-  /* The floor. Below this the card's own two-line summary starts breaking into
-     four, which is when the list stops being scannable. */
-  min-width: 380px;
-  max-width: none;
+.topics-view__list-head > .ap-segmented-control > .ap-segmented-control__segment {
+  flex: 1 1 0;
+  min-width: 0;
 }
 
-/* ── Age groups ──────────────────────────────────────────────────────────── */
+/* Icon-only, because a labelled Filters button plus two labelled segments cannot
+   both fit in a 320px column — and of the two, the segments are the ones whose
+   words carry meaning a glyph could not. The funnel is unambiguous, and it keeps
+   its name in `title` and `aria-label`. */
+.topics-view__filters {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+/* The narrowed-groups count, on the trigger. Absolute so it does not stretch the
+   icon button, and translated out over its own corner the way a notification
+   count sits on the thing it counts. */
+.topics-view__filter-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  transform: translate(35%, -35%);
+  pointer-events: none;
+}
+
+/* Hangs off its own trigger — the DS anchors this through a CDK overlay, which
+   does not exist here, so the caller positions it. Left-aligned rather than
+   right: the trigger sits at the right edge of a ~380px column and a 420px panel
+   anchored to that edge would run off the left of the screen on a narrow window. */
+.topics-view__filter-panel {
+  position: absolute;
+  top: calc(100% + var(--ref-spacing-xxxs));
+  left: 0;
+  z-index: 30;
+}
+
+/* The list itself — one of the two scrollports. */
+.topics-view__list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  /* Its own scrollbar is the only thing between the rows and the divider, so the
+     rows run edge to edge and the hairlines read as one continuous ruling. */
+  overscroll-behavior: contain;
+}
+
+/* ── Age groups, as list dividers ──────────────────────────────────────────
+   Sticky inside the scroller, the way a mail reader's Today / Yesterday bands
+   are: the label you are under stays legible while you scroll past twenty rows,
+   which is the whole reason to group at all.
+
+   A filled band rather than bare text, because a sticky transparent label
+   scrolls rows through itself. Sentence case, ranked by weight — no capitals. */
 
 .topics-view__group {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xxs);
 }
 
-/* Sentence case, and hierarchy by weight rather than by capitals — the app has
-   no uppercase labels. The version this was ported from set ten families of them
-   in caps. */
 .topics-view__group-label {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   margin: 0;
+  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
+  background: var(--app-surface-subtle);
+  border-bottom: 1px solid var(--app-border-soft);
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);
   font-weight: var(--sys-text-style-caption-bold-weight);
@@ -145,11 +231,6 @@
 .topics-view__group-cards {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xxs);
-}
-
-.topics-view__group-cards > .topic-card {
-  width: 100%;
 }
 
 /* ── Load more ───────────────────────────────────────────────────────────── */
@@ -157,17 +238,89 @@
 .topics-view__more {
   display: flex;
   justify-content: center;
-  padding-top: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-xs);
 }
 
-/* ── Scanning ────────────────────────────────────────────────────────────── */
+/* ── The reading pane ──────────────────────────────────────────────────────
+   The other scrollport, and the half that grows. */
 
-.topics-view__scanning {
+.topics-view__pane {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* The verbs, above the article rather than under it. Outside the scroller, so
+   "the actions stay in view" is absolute rather than approximate, and they are in
+   the same place whatever length this Topic's analysis happens to be.
+
+   A plain bottom hairline. NEVER a coloured cap: electric blue is the colour of
+   the interactive in this app, and a decorative band is the one thing it may not
+   be. */
+.topics-view__pane-bar {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-sm);
+  border-bottom: 1px solid var(--app-border-soft);
+}
+
+.topics-view__pane-bar > .topic-article__actions {
+  width: 100%;
+}
+
+.topics-view__pane-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--ref-spacing-md);
+}
+
+/* Nothing open. Rendered rather than collapsed, so the columns keep their widths
+   and the list never jumps sideways when an article opens — the one thing a
+   reader must not do. */
+.topics-view__pane--blank {
+  align-items: center;
+  justify-content: center;
+}
+
+.topics-view__pane-blank {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-xl);
+  text-align: center;
+}
+
+.topics-view__pane-blank p {
+  max-width: 38ch;
+}
+
+/* ── Scanning, and the three dead ends ─────────────────────────────────────
+   These take the whole reader instead of the list column: a reader with nothing
+   in it is not a reader, and an empty column beside an empty pane says the screen
+   is broken rather than that the feed is quiet. */
+
+.topics-view__blank {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border-soft);
+  border-radius: var(--app-radius-card);
+}
+
+.topics-view__scanning,
+.topics-view__empty {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-xxl) var(--ref-spacing-md);
+  padding: var(--ref-spacing-xl) var(--ref-spacing-md);
   text-align: center;
 }
 
@@ -178,13 +331,50 @@
   color: var(--sys-text-color-light);
 }
 
-.topics-view__empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  padding: var(--ref-spacing-xl) var(--ref-spacing-md);
-  text-align: center;
+.topics-view__empty p {
+  max-width: 52ch;
+}
+
+/* ── One column ────────────────────────────────────────────────────────────
+   Below the sum of the two floors plus the divider, the reader stops being one:
+   two columns under 300 and 440 are both unreadable. So the split becomes a
+   stack, the independent scrollports are handed back to the screen root, and
+   opening an article scrolls it into view (see revealPane in screens/topics.js) —
+   a click that renders something below the fold is indistinguishable from a click
+   that did nothing.
+
+   A @container query, NOT a media query: the sidebar collapses and the right
+   panel overlays, so viewport width never tells you content width. */
+@container topics-feed (max-width: 760px) {
+  .topics-view__split {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .topics-view__list-col {
+    /* `flex: 0 0 <width>` side by side means "this wide, and do not flex". In a
+       column that same basis becomes a HEIGHT, so the list would render 420px
+       tall with its own scrollbar inside a page that also scrolls. */
+    flex: 0 0 auto;
+    width: 100%;
+    border-right: 0;
+    border-bottom: 1px solid var(--app-border-soft);
+  }
+
+  .topics-view__list,
+  .topics-view__pane-body {
+    overflow-y: visible;
+  }
+
+  .topics-view__pane {
+    flex: 0 0 auto;
+  }
+
+  /* Sticky against a scrollport it no longer owns would pin these to the top of
+     the page instead of to the top of their own list. */
+  .topics-view__group-label {
+    position: static;
+  }
 }
 
 /* ── The article pane ─────────────────────────────────────────────────────
