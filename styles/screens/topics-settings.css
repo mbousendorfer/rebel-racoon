@@ -31,7 +31,15 @@
 /* max-width-lg (1200), not -md (700): the six source cards read as a set of things you
    pick from, and at 700 two columns are cramped while one column is a 900px scroll of
    wide short bands that look like rows again. At 1200 each column is ~570 — a card's
-   width, not a row's. The prose above is capped separately so it doesn't stretch. */
+   width, not a row's. The prose above is capped separately so it doesn't stretch.
+
+   LEFT-ALIGNED, like /topics: the leftover goes to the right margin only. Centred,
+   the topbar printed "Back to the feed" hard against the left edge while the title
+   and the cards floated ~470px in, so nothing shared a left edge with the chrome
+   above. The cap stays — only the spare space moves.
+
+   Note this drops the centring, not the `--sys-settings-*` recipe: the tokens still
+   supply the gap, the padding and the cap. `margin: 0 auto` was this screen's own. */
 .topics-settings__content {
   display: flex;
   flex-direction: column;
@@ -39,7 +47,6 @@
   padding: var(--sys-settings-content-internal-margin);
   max-width: var(--sys-settings-content-max-width-lg);
   width: 100%;
-  margin: 0 auto;
 }
 
 /* ── Head ───────────────────────────────────────────────────────────────── */
