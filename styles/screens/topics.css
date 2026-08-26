@@ -39,13 +39,21 @@
 }
 
 /* ── The maximum width ─────────────────────────────────────────────────────
-   One number, applied to the bar and to the reader below it so the two share an
-   edge. 1440 is derived rather than picked: the list at its 420px ceiling plus a
-   reading pane wide enough to hold the article's own 68ch measure with real
-   gutters, and no more. Past that the pane only grows its margins, which is how
-   a reading surface starts looking abandoned in the middle of a monitor. */
-.topics-view__bar,
-.topics-view__body {
+   1440 is derived rather than picked: the list at its 460px ceiling plus a
+   reading pane wide enough to hold the article's own measure with real gutters,
+   and no more. Past that the pane only grows its margins, which is how a reading
+   surface starts looking abandoned in the middle of a monitor.
+
+   ⚠️ EVERY DIRECT CHILD, not an enumerated list of them. It WAS a list —
+   `.topics-view__bar, .topics-view__body` — and the moment two more rows were
+   added (the toolbar and the tabs) they were not in it, so they spanned the full
+   width while the header and the reader stayed capped and centred: 86px of
+   misalignment at 1920, and nothing on the screen shared a left edge.
+
+   The child selector is the fix for the CAUSE. Every row of this screen is
+   page-level and belongs on the same measure, so a new one is capped by being
+   born rather than by someone remembering to add it here. */
+.topics-view > * {
   width: 100%;
   max-width: 1440px;
   margin-inline: auto;
