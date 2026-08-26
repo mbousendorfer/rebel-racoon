@@ -18,6 +18,20 @@
  * under it.
  *
  * Everything is a DS token. If a value here is not one, it is a bug.
+ *
+ * ── The two numbers this whole layout is built out of ─────────────────────
+ * At :root, not on .topics-view, because the article has TWO hosts — the pane
+ * here and the picker dialog — and neither may own a constant the other reads.
+ * Everything else on this screen is arithmetic on these:
+ *
+ *   .topics-view > *   cap  = list-max + gap + measure + 2x pane padding
+ *   .topics-view__pane      = measure + 2x pane padding   (fixed)
+ *   .topics-view__list-col  = whatever is left            (elastic, floor 340)
+ *   .topic-article          = measure
+ *
+ * Change the measure and the page follows. That is the point: the previous cap
+ * was a hand-picked 1440 while the measure rendered at 542px, and the 412px
+ * left over sat as dead white space inside the reading card.
  */
 
 .topics-view {
@@ -53,9 +67,24 @@
    The child selector is the fix for the CAUSE. Every row of this screen is
    page-level and belongs on the same measure, so a new one is capped by being
    born rather than by someone remembering to add it here. */
+:root {
+  /* ~68 characters at body size — the top of the comfortable reading range,
+     which is where analytical prose broken up by headings wants to sit. */
+  --topic-measure: 600px;
+  /* The list's ceiling: past this, three lines of headline stop reading as a
+     row in a queue and start reading as a card again. */
+  --topic-list-max: 460px;
+}
+
 .topics-view > * {
   width: 100%;
-  max-width: 1440px;
+  /* DERIVED, never picked. The reader is exactly as wide as the two things in
+     it need: the list at its ceiling, one gap, and a pane that is the prose
+     measure plus its own padding. 1440 was picked by hand and was 412px too
+     wide - 43% of the pane was empty, which is what "too much white space"
+     was. A hand-picked number also drifts the moment the measure changes,
+     which is the same class of bug as the enumerated child list above. */
+  max-width: calc(var(--topic-list-max) + var(--ref-spacing-md) + var(--topic-measure) + 2 * var(--ref-spacing-md));
   margin-inline: auto;
 }
 
@@ -136,31 +165,41 @@
    pane — and this row only spaces them. */
 .topics-view__split {
   display: flex;
-  align-items: stretch;
+  /* NOT stretch. A short analysis in a stretched pane left an empty card
+     running to the bottom of the window — the tall half of the white space
+     that was reported. The pane hugs its content and caps at the available
+     height; the list opts back into stretch below. */
+  align-items: flex-start;
   gap: var(--ref-spacing-md);
   height: 100%;
   min-width: 0;
 }
 
 /* ── The list column ───────────────────────────────────────────────────────
-   A PREFERRED width with a floor and a ceiling, and it does not grow. This is the
-   inversion that fixes the old layout: the list is the fixed half and the reading
-   pane takes whatever is left, so a wider window buys reading room rather than a
-   wider queue.
+   The list is now the ELASTIC half and the pane the fixed one — the inverse of
+   what was here. That flip follows from capping the page: once the reader stops
+   growing, "a wider window buys reading room" describes nothing, and the only
+   question left is what a NARROWER window should take from. It should take from
+   the queue, never from the prose.
 
-   The three numbers are derived, not picked. The FLOOR is 340 because the list's
-   own header has to fit: two segments carrying "Ready to draft 13" and "Topics
-   for later 6" plus the filter trigger measure ~394px, and below that the DS
-   ellipsises the labels — which is a graceful fallback but not a resting state.
-   The CEILING is 460 because past it three lines of text stop being a row and
-   become a card again. 36% is what puts a 1250px reader comfortably over the
-   floor while still handing the reading pane the larger half. */
+   So the pane holds the measure and this column absorbs the remainder. At the
+   cap that remainder is 460px — the old ceiling, arrived at by arithmetic
+   instead of by hand — and the floor is 340 because three lines of headline
+   below that stop being a row and start wrapping into a paragraph.
+
+   `align-self: stretch` against the split's `flex-start`: this column is a
+   scroller and owns the full height. The pane is the one that hugs. */
 .topics-view__list-col {
   display: flex;
   flex-direction: column;
-  flex: 0 0 clamp(340px, 36%, 460px);
-  min-width: 0;
+  /* Basis 0, NOT auto. On `auto` the basis is the cards' own content width, so
+     this column grew past the remainder and shrank the pane instead — list 729,
+     pane 379, the layout inverted. From 0 it grows into exactly what the pane
+     left, which at the cap is 460. */
+  flex: 1 1 0;
+  min-width: 340px;
   min-height: 0;
+  align-self: stretch;
 }
 
 /* The Filters trigger anchors its own panel — the DS anchors this through a CDK
@@ -235,12 +274,21 @@
    surface — which is what says the two columns belong to one screen now that no
    shared frame says it for them. `overflow: hidden` so the header's hairline and
    the scrolling body are both clipped by the rounded corner. */
+/* Exactly the measure plus its own padding, and no wider: every pixel past that
+   is white space inside a bordered card, which reads as a broken layout rather
+   than as a margin. It may SHRINK (0 1) so a narrow window can take from the
+   pane once the list has hit its floor.
+
+   `align-self: flex-start` + `max-height: 100%` is the vertical half: the card
+   is as tall as the article, up to the window, and pane-body scrolls past that. */
 .topics-view__pane {
   display: flex;
   flex-direction: column;
-  flex: 1 1 auto;
+  flex: 0 1 calc(var(--topic-measure) + 2 * var(--ref-spacing-md));
   min-width: 0;
   min-height: 0;
+  align-self: flex-start;
+  max-height: 100%;
   background: var(--app-surface);
   border: 1px solid var(--app-border-soft);
   border-radius: var(--app-radius-card);
@@ -280,6 +328,10 @@
 .topics-view__pane--blank {
   align-items: center;
   justify-content: center;
+  /* The one pane that DOES stretch. Its whole job is to hold the column open so
+     the list never jumps when an article opens, and a placeholder shrunk to its
+     own text would let the row collapse around it. */
+  align-self: stretch;
 }
 
 .topics-view__pane-blank {
@@ -345,6 +397,9 @@
   .topics-view__split {
     flex-direction: column;
     height: auto;
+    /* Cross axis is now HORIZONTAL, so the `flex-start` above would shrink both
+       children to their content width instead of filling the column. */
+    align-items: stretch;
   }
 
   .topics-view__list-col {
@@ -364,6 +419,10 @@
 
   .topics-view__pane {
     flex: 0 0 auto;
+    /* Stacked, the page is the scroller: a capped pane would scroll inside a
+       scrolling page, and the width cap is the column's now, not the pane's. */
+    max-height: none;
+    align-self: stretch;
   }
 }
 
@@ -376,9 +435,9 @@
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xs);
-  /* A reading measure. The prose is the point of this pane, and a paragraph
-     running the full width of a 700px pane stops being readable. */
-  max-width: 62ch;
+  /* The shared measure — the same custom property the page cap is derived
+     from, so the pane can never be wider than the prose it holds. */
+  max-width: var(--topic-measure);
 }
 
 .topic-article__title {
