@@ -473,7 +473,13 @@ function filterOption(group, id, label, checked, disabled = false) {
         ${raw(checked ? "checked" : "")}
         ${raw(disabled ? "disabled" : "")}
       />
-      <i class="ap-icon-check" aria-hidden="true"></i>
+      <!-- BARE. The DS draws the 16x16 box on this <i> itself, with the tick in
+           ::after revealed by :has(input:checked). An ap-icon-* class here does
+           not ADD a glyph, it applies a mask-image to the element and clips the
+           box down to the icon's shape - border, fill and tick all vanish at
+           once, and nothing in the DS resets mask-image so load order cannot
+           save it. Every other checkbox in this app writes it bare too. -->
+      <i aria-hidden="true"></i>
       <span class="ap-filter-leaf__label${raw(disabled ? " disabled" : "")}">${label}</span>
     </label>
     <!-- Not-yet-built sources say so in a grey tag, never in electric blue.
