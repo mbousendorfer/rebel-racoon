@@ -1,26 +1,26 @@
 // One Topic, in the three shapes it is read in.
 //
-//   renderTopicCard(topic, { variant: "row" })     the queue on /topics
+//   renderTopicCard(topic, { variant: "feed" })    the queue on /topics
 //   renderTopicCard(topic, { variant: "picker" })  inside the Pick-a-topic dialog
 //   renderTopicRow(topic)                          the in-chat "Fresh topics" list
 //
-// The feed and the picker emit the SAME CONTENT, part for part — same badge, age,
-// status glyph, signals, headline, summary. A reader who has just been reading
-// the feed must not be handed a different-looking object when they open the
-// picker. What differs is the FRAME, and only because the two lists are different
-// kinds of list:
+// The feed and the picker emit the SAME CARD, part for part — same frame, badge,
+// age, status glyph, signals, headline, summary. A reader who has just been
+// reading the feed must not be handed a different-looking object when they open
+// the picker. The only difference is that the feed's card can be the one
+// currently OPEN beside the list and the picker's cannot: one click there chooses
+// the Topic, so nothing stays selected long enough to need marking.
 //
-//   `row`    — the feed. No frame of its own: the list is one continuous surface
-//              divided by hairlines, the way a mail reader's message list is. A
-//              per-row border plus a gap turns a queue into a wall of cards, and
-//              a wall of cards has no answer to "where am I in this list?".
-//   `picker` — the dialog. A short standalone list inside a modal, where each
-//              item IS a control, so it keeps a card's frame and hover wash.
+// The feed variant was called `row` for one commit, when the list really was a
+// continuous surface ruled by hairlines instead of a column of cards. That went
+// too far — a wall of cards comes from the gaps and the weight, not from the
+// cards having edges — and it left the screen as one 1440px slab belonging to no
+// other surface in this app.
 //
-// The row also carries the reader's own progress: an untriaged Topic is set in
+// The card also carries the reader's own progress: an untriaged Topic is set in
 // the headline's full weight and a triaged one drops back a step. That is the
 // unread/read idiom every mail client uses, and it is the other half of why the
-// `new` status renders no glyph — the row's weight already says it.
+// `new` status renders no glyph — the card's weight already says it.
 //
 // ── The card is a reading surface, not a control panel ─────────────────────
 // The body is ONE BUTTON covering the whole text area, and it opens the article.
@@ -92,7 +92,10 @@ function renderMeta(topic, source) {
  * `articleOpen` paints the reading state; the same fact is on the button as
  * aria-expanded, because the selected card must not be carried by colour alone.
  */
-export function renderTopicCard(topic, { source = null, variant = "row", menuOpen = false, articleOpen = false } = {}) {
+export function renderTopicCard(
+  topic,
+  { source = null, variant = "feed", menuOpen = false, articleOpen = false } = {},
+) {
   if (!topic) return "";
   const picker = variant === "picker";
   const ignored = topic.status === "ignored";
@@ -101,7 +104,7 @@ export function renderTopicCard(topic, { source = null, variant = "row", menuOpe
   const triaged = topic.status !== "new";
 
   return html`<article
-    class="topic-card topic-card--${raw(picker ? "picker" : "row")}${raw(triaged ? " is-triaged" : "")}${raw(
+    class="topic-card topic-card--${raw(picker ? "picker" : "feed")}${raw(triaged ? " is-triaged" : "")}${raw(
       articleOpen ? " is-reading" : "",
     )}"
     data-topic-id="${escapeAttr(topic.id)}"

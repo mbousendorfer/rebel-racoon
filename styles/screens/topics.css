@@ -98,18 +98,20 @@
   container-name: topics-feed;
 }
 
-/* ONE surface, divided. Not two floating cards: the hairline between the list and
-   the pane is what says they are two halves of one thing, and it is the single
-   most legible difference between a reader and a page. */
+/* TWO OBJECTS SIDE BY SIDE, and no frame of its own.
+   This row carried the frame for one commit — a single bordered white surface
+   holding the list and the article, divided by a hairline. It was the wrong way
+   to fix a wall of cards: the wall came from the GAPS and the weight, not from
+   the cards having edges. Given the frame, a 1440px surface reads as one slab and
+   stops belonging to an app built out of cards everywhere else.
+   So the frame goes back to the objects — each card in the list, and the reading
+   pane — and this row only spaces them. */
 .topics-view__split {
   display: flex;
   align-items: stretch;
+  gap: var(--ref-spacing-md);
   height: 100%;
   min-width: 0;
-  background: var(--app-surface);
-  border: 1px solid var(--app-border-soft);
-  border-radius: var(--app-radius-card);
-  overflow: hidden;
 }
 
 /* ── The list column ───────────────────────────────────────────────────────
@@ -131,19 +133,19 @@
   flex: 0 0 clamp(340px, 36%, 460px);
   min-width: 0;
   min-height: 0;
-  border-right: 1px solid var(--app-border-soft);
 }
 
 /* The list's own toolbar: which Topics it holds, and which of them it shows.
    A sibling of the scroller rather than inside it, so it cannot scroll away and
-   needs no sticky. */
+   needs no sticky.
+   No bottom hairline: with the shared frame gone it would be a rule floating on
+   the page background, separating nothing from nothing. The gap does it. */
 .topics-view__list-head {
   display: flex;
   align-items: center;
   gap: var(--ref-spacing-xxs);
   flex: 0 0 auto;
-  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
-  border-bottom: 1px solid var(--app-border-soft);
+  padding-bottom: var(--ref-spacing-xxs);
 }
 
 /* The segmented control takes the row and its two segments share it equally, so
@@ -193,6 +195,9 @@
 
 /* The list itself — one of the two scrollports. */
 .topics-view__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
@@ -201,13 +206,12 @@
   overscroll-behavior: contain;
 }
 
-/* ── Age groups, as list dividers ──────────────────────────────────────────
-   Sticky inside the scroller, the way a mail reader's Today / Yesterday bands
-   are: the label you are under stays legible while you scroll past twenty rows,
-   which is the whole reason to group at all.
-
-   A filled band rather than bare text, because a sticky transparent label
-   scrolls rows through itself. Sentence case, ranked by weight — no capitals. */
+/* ── Age groups ────────────────────────────────────────────────────────────
+   A LABEL, not a band. It was a sticky filled band for one commit, which worked
+   while the list was a continuous surface for it to sit on. With cards there is
+   no such surface: a full-width band floating over separated cards reads as a
+   leftover of the slab, and a transparent sticky label would scroll cards
+   through itself. Sentence case, ranked by weight — no capitals. */
 
 .topics-view__group {
   display: flex;
@@ -215,22 +219,19 @@
 }
 
 .topics-view__group-label {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  margin: 0;
-  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
-  background: var(--app-surface-subtle);
-  border-bottom: 1px solid var(--app-border-soft);
+  margin: 0 0 var(--ref-spacing-xxxs);
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);
   font-weight: var(--sys-text-style-caption-bold-weight);
   color: var(--sys-text-color-light);
 }
 
+/* The gap is what makes these read as separate objects rather than a wall — one
+   step, not a card's worth: they are one list, not five unrelated panels. */
 .topics-view__group-cards {
   display: flex;
   flex-direction: column;
+  gap: var(--ref-spacing-xxs);
 }
 
 /* ── Load more ───────────────────────────────────────────────────────────── */
@@ -244,21 +245,30 @@
 /* ── The reading pane ──────────────────────────────────────────────────────
    The other scrollport, and the half that grows. */
 
+/* A CARD, like everything in the list beside it. Same border, same radius, same
+   surface — which is what says the two columns belong to one screen now that no
+   shared frame says it for them. `overflow: hidden` so the header's hairline and
+   the scrolling body are both clipped by the rounded corner. */
 .topics-view__pane {
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
   min-width: 0;
   min-height: 0;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border-soft);
+  border-radius: var(--app-radius-card);
+  overflow: hidden;
 }
 
 /* The verbs, above the article rather than under it. Outside the scroller, so
    "the actions stay in view" is absolute rather than approximate, and they are in
    the same place whatever length this Topic's analysis happens to be.
 
-   A plain bottom hairline. NEVER a coloured cap: electric blue is the colour of
-   the interactive in this app, and a decorative band is the one thing it may not
-   be. */
+   A plain bottom hairline, and it belongs here: inside a card, a rule under the
+   header is what separates the header from the body. NEVER a coloured cap —
+   electric blue is the colour of the interactive in this app, and a decorative
+   band is the one thing it may not be. */
 .topics-view__pane-bar {
   display: flex;
   align-items: center;
@@ -368,91 +378,6 @@
 
   .topics-view__pane {
     flex: 0 0 auto;
-  }
-
-  /* Sticky against a scrollport it no longer owns would pin these to the top of
-     the page instead of to the top of their own list. */
-  .topics-view__group-label {
-    position: static;
-  }
-}
-
-/* ── The article pane ─────────────────────────────────────────────────────
-   `align-self: flex-start` is load-bearing twice over: it stops the pane
-   stretching to the height of a long list, and a stretched flex item has no room
-   to stick inside, so `position: sticky` would silently do nothing.
-
-   The scroller is .topics-view, so `top: 0` pins the pane to the top of that
-   scrollport. Its max-height is arithmetic rather than 100% — 100% of this row is
-   as tall as the card list and would let the pane run off the bottom. */
-
-.topics-view__pane {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 0;
-  /* The floor. Below this the article's prose stops holding a reading measure. */
-  min-width: 440px;
-  align-self: flex-start;
-  position: sticky;
-  top: 0;
-  max-height: calc(100vh - var(--app-topbar-height) - var(--ref-spacing-lg));
-  background: var(--app-surface);
-  border: 1px solid var(--app-border-soft);
-  border-radius: var(--app-radius-card);
-  overflow: hidden;
-}
-
-/* NO entrance animation, deliberately. The screen re-renders its whole body on
-   every mutation — a filter tick, a triage, a store notification — so an
-   animation on this element replays on each one, and the pane appears to flash
-   every time the reader touches anything. An entrance would need a "did it just
-   appear?" flag threaded through the render path to fire once, which is a lot of
-   machinery for decoration: the pane's position already says what happened. */
-
-.topics-view__pane-body {
-  flex: 1 1 auto;
-  overflow-y: auto;
-  padding: var(--ref-spacing-md);
-}
-
-/* The actions stay in view as the article scrolls: the verbs are what the
-   reading is FOR, and a reader who has scrolled down to the evidence should not
-   have to scroll back up to act on it.
-
-   A plain top hairline, NOT a coloured cap. The version this was ported from
-   drew an electric-blue rule across the top of this footer; electric blue is the
-   colour of the interactive in this app, and a decorative band is the one thing
-   it may not be. */
-.topics-view__pane-foot {
-  flex: 0 0 auto;
-  padding: var(--ref-spacing-xs) var(--ref-spacing-md);
-  border-top: 1px solid var(--app-border-soft);
-  background: var(--app-surface);
-}
-
-/* Below the sum of the two floors plus the gap, one column with the article
-   last. A @container query, NOT a media query: the sidebar collapses and the
-   right panel overlays, so viewport width never tells you content width. */
-@container topics-feed (max-width: 852px) {
-  .topics-view__split {
-    flex-direction: column;
-  }
-
-  .topics-view__split.is-split > .topics-view__list {
-    min-width: 0;
-  }
-
-  .topics-view__pane {
-    /* `flex: 1 1 0` side by side means "take the leftover width". Turning the
-       split into a column turns the same declaration into a zero-basis HEIGHT in
-       a container with no free space to distribute — the pane renders at 2px, its
-       own borders, and overflow: hidden clips the article and its footer out of
-       existence. auto basis, no grow: as tall as the article it holds. */
-    flex: 0 0 auto;
-    position: static;
-    min-width: 0;
-    width: 100%;
-    max-height: none;
   }
 }
 
