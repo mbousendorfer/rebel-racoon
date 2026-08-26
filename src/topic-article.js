@@ -6,8 +6,21 @@
 // apart. Same shape as playbook-view.js and connectors-view.js: pure render
 // helpers, no store reads beyond the title resolver, no DOM, no listeners.
 //
-//   renderTopicArticle(topic, { source })  the header, the prose, the evidence
-//   renderTopicActions(topic, { close })   the footer's verbs
+//   renderTopicHeader(topic, { source, withActions })   the object's identity
+//   renderTopicArticle(topic, { source, withHeader })   the prose and the evidence
+//   renderTopicActions(topic, { close })                the two verbs
+//
+// ── Why the identity is its own renderer ───────────────────────────────────
+// The feed's pane keeps its header OUTSIDE the scroller, so the title and the
+// verbs stay put while the analysis scrolls. It used to keep only the verbs
+// there: a strip of "Use in chat / Ignore / Close" above a body whose title sat
+// below it, inside the scroller — so the actions had no subject, and scrolling
+// took away the one line naming what they act on.
+//
+// The dialog composes the same two pieces differently: identity inline at the
+// top of its scroller, verbs in a sticky footer against its bottom edge. That is
+// the host's business. What may NOT differ is what the identity and the verbs
+// SAY, which is why both are rendered from here and nowhere else.
 //
 // ── What the article is ────────────────────────────────────────────────────
 // The claim (its own title), the analysis in its two authored sections, and the
@@ -25,11 +38,40 @@ import { topicTitle } from "./topics-store.js?v=1";
 import { renderSocialPostCard } from "./components/social-post-card.js?v=8";
 
 /**
- * The article's body. `withTitle: false` for a host that already prints the
- * title in its own header — the dialog does, and printing it twice would be the
- * same sentence twice.
+ * The object's identity: the claim as an h2, and where it came from underneath.
+ *
+ * `withActions: true` also hangs the two verbs and the way out on it — for a host
+ * that puts its header outside the scroller and wants them to stay in view with
+ * the title they act on. The dialog leaves it false and keeps its own footer.
  */
-export function renderTopicArticle(topic, { source = null, withTitle = true } = {}) {
+export function renderTopicHeader(topic, { source = null, withActions = false } = {}) {
+  if (!topic) return "";
+  return html`<div class="topic-article__head">
+    <div class="topic-article__head-top">
+      <h2 class="topic-article__title">${topicTitle(topic)}</h2>
+      <!-- The way out sits opposite the title rather than beside the verbs: it
+           does nothing TO the Topic, and reading it as a third decision is what
+           the old single-row strip invited. -->
+      ${raw(
+        withActions
+          ? html`<button type="button" class="ap-button ghost grey topic-article__close" data-topic-close>
+              Close
+            </button>`
+          : "",
+      )}
+    </div>
+    <div class="topic-article__head-meta">
+      ${raw(renderProvenance(topic, source))} ${raw(withActions ? renderTopicActions(topic, { close: null }) : "")}
+    </div>
+  </div>`;
+}
+
+/**
+ * The prose and the evidence. `withHeader: false` for a host that renders the
+ * identity itself, outside the scroller — printing it twice would be the same
+ * sentence twice.
+ */
+export function renderTopicArticle(topic, { source = null, withHeader = true } = {}) {
   if (!topic) return "";
   const article = topic.article || {};
   const paragraphs = article.paragraphs || [];
@@ -53,13 +95,7 @@ export function renderTopicArticle(topic, { source = null, withTitle = true } = 
   const posts = topic.posts || [];
 
   return html`<div class="topic-article">
-    ${raw(
-      withTitle
-        ? html`<h2 class="topic-article__title">${topicTitle(topic)}</h2>
-            ${raw(renderProvenance(topic, source))}`
-        : raw(renderProvenance(topic, source)),
-    )}
-    ${raw(relevance)}
+    ${raw(withHeader ? renderTopicHeader(topic, { source }) : "")} ${raw(relevance)}
     <div class="topic-article__body">${raw(body)}</div>
     ${raw(
       posts.length
@@ -131,9 +167,10 @@ function renderRelevance(topic) {
 /**
  * The footer's verbs.
  *
- * Two, and the same two everywhere the article is shown — plus the host's own way
- * out. `close` names it: the feed's pane says "Close" because the list is still
- * there behind it, and the dialog says the same for the same reason.
+ * Two, and the same two everywhere the article is shown — plus, optionally, the
+ * host's own way out. `close` names it and the dialog's footer takes it; a falsy
+ * `close` omits it, for a host that already renders one (the pane puts it in the
+ * header, opposite the title).
  *
  * Use in chat is the PRIMARY and it is ORANGE: it hands the Topic to Archie, and
  * orange is the AI / spotlight action everywhere else in this app. Ignore is a
@@ -160,6 +197,12 @@ export function renderTopicActions(topic, { close = "Close" } = {}) {
             <i class="ap-icon-eye-off"></i><span>Ignore</span>
           </button>`,
     )}
-    <button type="button" class="ap-button ghost grey topic-article__close" data-topic-close>${close}</button>
+    ${raw(
+      close
+        ? html`<button type="button" class="ap-button ghost grey topic-article__close" data-topic-close>
+            ${close}
+          </button>`
+        : "",
+    )}
   </div>`;
 }

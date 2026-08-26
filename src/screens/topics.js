@@ -53,7 +53,7 @@ import {
   isLiveSource,
 } from "../topics-catalog.js?v=2";
 import { renderTopicCard } from "../components/topic-card.js?v=3";
-import { renderTopicArticle, renderTopicActions } from "../topic-article.js?v=1";
+import { renderTopicArticle, renderTopicHeader } from "../topic-article.js?v=2";
 import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=1";
 import { useTopicInChat } from "../topic-flow.js?v=1";
 
@@ -592,14 +592,20 @@ function renderEmpty(total, feed) {
 // the article scrolls, and being outside the scroller satisfies it absolutely
 // rather than approximately.
 //
-// The verbs themselves still come from topic-article.js — the picker's dialog
-// renders the same markup in a footer. Only the placement is the host's.
+// It carries the OBJECT'S HEADER, not a strip of verbs. It used to be the verbs
+// alone, above a body whose title sat below them inside the scroller — so the
+// actions had no subject on screen, and scrolling took away the one line naming
+// what they act on. The title and the source now sit in that same fixed header,
+// which is what a mail reader puts above its actions and for the same reason.
+//
+// Identity and verbs both come from topic-article.js — the dialog renders the
+// same two pieces, inline and in a sticky footer. Only the placement is the
+// host's.
 function renderPane(topic) {
+  const source = findTopicSource(topic.sourceId);
   return html`<section class="topics-view__pane" aria-label="Topic article">
-    <header class="topics-view__pane-bar">${raw(renderTopicActions(topic))}</header>
-    <div class="topics-view__pane-body">
-      ${raw(renderTopicArticle(topic, { source: findTopicSource(topic.sourceId) }))}
-    </div>
+    <header class="topics-view__pane-head">${raw(renderTopicHeader(topic, { source, withActions: true }))}</header>
+    <div class="topics-view__pane-body">${raw(renderTopicArticle(topic, { source, withHeader: false }))}</div>
   </section>`;
 }
 
