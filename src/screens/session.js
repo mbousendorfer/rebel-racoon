@@ -115,6 +115,11 @@ import {
 } from "../components/right-panel.js?v=454";
 import { setHandoff, consumeHandoff, hasHandoff } from "../handoff.js?v=21";
 import { attachTopicToChat, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=1";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1";
+import { getFreshTopics, countFresh, subscribe as subscribeTopics } from "../topics-store.js?v=1";
+import { findTopicSource } from "../topics-catalog.js?v=2";
+import { renderTopicRow } from "../components/topic-card.js?v=1";
+import { openTopicPicker, openTopicArticle } from "../components/topic-picker-modal.js?v=2";
 import { parseHashParams, setHashQuery } from "../url-state.js?v=22";
 import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=33";
 import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=41";
@@ -1251,6 +1256,70 @@ function renderPlaybookControl(ctx, selectable) {
 // connected connectors as live sources you can query in chat (logo + name →
 // ask), and the only place to connect new ones — "Browse connectors" — sits at
 // the very bottom of that flyout.
+// ── The composer's way into the Topic Feed ─────────────────────────────────
+// A flat row in the Add menu, above the connectors submenu. Not a submenu of its
+// own: ADS ships no nested dropdown, and this is one destination, not a set.
+function renderTopicPickerRow() {
+  if (!isFlagOn("topicFeed")) return "";
+  return `
+    <div class="ap-action-dropdown-divider" aria-hidden="true"></div>
+    <button type="button" class="ap-action-dropdown-item" data-add-source="topic" role="menuitem">
+      <i class="ap-icon-antenna"></i>
+      <div class="ap-action-dropdown-item-text">
+        <div class="ap-action-dropdown-item-label-container">
+          <span class="ap-action-dropdown-item-label">Pick from the Topic Feed</span>
+        </div>
+      </div>
+    </button>
+  `;
+}
+
+// ── "Fresh topics to review" ───────────────────────────────────────────────
+// The freshest to-review Topics from THIS chat's Playbook, at most six, above the
+// workflow starters. A row opens the Topic's article; it does not choose it —
+// that decision comes after reading.
+//
+// NO Playbook chip per row. Every Topic here belongs to the chat's own Playbook,
+// so a chip repeated identically six times, under a composer that already names
+// the same Playbook, labels nothing. The section header carries the scope once,
+// and only when the chat actually has a Playbook to name.
+//
+// The footer's total is every Topic under a week old WHATEVER its status, so it
+// describes the week rather than a to-do list: triaging a row moves N down and
+// leaves M where it was.
+//
+// Renders nothing at all when there is nothing to say, so a hero with no Topics
+// is byte-for-byte the hero this app has always had.
+function renderFreshTopics(session) {
+  if (!isFlagOn("topicFeed")) return "";
+  const pbId = session?.contextId || null;
+  const feed = pbId ? getFeedForPlaybook(pbId) : null;
+  if (!feed) return "";
+  const topics = getFreshTopics(feed.id);
+  if (!topics.length) return "";
+  const total = countFresh(feed.id);
+  const pb = getContextById(pbId);
+  const scopeHref = `#/topics?pb=${encodeURIComponent(pbId)}`;
+
+  const rows = topics.map((t) => renderTopicRow(t, { source: findTopicSource(t.sourceId) })).join("");
+
+  return html`
+    <h2 class="empty-chat__starter-label" id="freshTopicsLabel">
+      <span>Fresh topics to review</span>
+      ${raw(pb ? html`<span class="empty-chat__topics-scope">· ${pb.name}</span>` : "")}
+    </h2>
+    <div class="empty-chat__topics" role="group" aria-labelledby="freshTopicsLabel">
+      <div class="empty-chat__topics-rows">${raw(rows)}</div>
+      <footer class="empty-chat__topics-foot">
+        <span class="empty-chat__topics-count">${topics.length} out of ${total} shown</span>
+        <a class="ap-link standalone small" href="${raw(scopeHref)}"
+          >See more in your feed<i class="ap-icon-arrow-right" aria-hidden="true"></i
+        ></a>
+      </footer>
+    </div>
+  `;
+}
+
 function renderConnectorsSubmenu() {
   // Connectors are gated behind a feature flag (default OFF) — when off, the
   // composer Add menu is just the file/URL quick-actions.
@@ -1600,6 +1669,7 @@ function renderComposer(attachedContext, session, selectable) {
                     </div>
                   </div>
                 </button>
+                ${renderTopicPickerRow()}
                 ${renderConnectorsSubmenu()}
               </div>
             </div>
@@ -1964,11 +2034,12 @@ function renderEmptyHero(sessionId, composerMarkup = "", session = null) {
         Drop a source — I'll turn it into a batch of ready-to-schedule posts, all from one chat.
       </div>
       ${raw(composerMarkup)}
-      <!-- Proposals first, verbs second. The rail answers "what should I post
-           today?", which is the question someone opening a blank chat actually
-           has; the starters answer "I already know what I want to do". Demoting
-           the starters to a row of pills was the alternative and it flattens three
-           whole features into link text. -->
+      <!-- Proposals first, verbs second. The Topics list answers "what should I
+           post today?", which is the question someone opening a blank chat
+           actually has; the starters answer "I already know what I want to do".
+           Demoting the starters to a row of pills was the alternative and it
+           flattens three whole features into link text. -->
+      ${raw(renderFreshTopics(session))}
       <h2 class="empty-chat__starter-label" id="starterGridLabel">Or jump into a workflow</h2>
       <div class="starter-grid" role="group" aria-labelledby="starterGridLabel">${raw(cards)}</div>
     </div>
@@ -3483,6 +3554,12 @@ function wireAssistantPanel(root, session, attachedContext) {
   };
   const offWizard = sidebarWizard.subscribe(session.id, refreshAssistantAside);
   const offInlineQuestion = inlineQuestion.subscribe(session.id, refreshAssistantAside);
+  // Triaging a Topic anywhere — the feed, the dialog, this list — has to show up
+  // here without a reload. Guarded on the hero actually being mounted so a
+  // started conversation never re-renders its whole aside because a Topic moved.
+  const offTopics = subscribeTopics(() => {
+    if (root.querySelector("[data-empty-chat] .empty-chat__topics")) refreshAssistantAside();
+  });
   const offTopPosts = topPostsFlow.subscribePicker(session.id, refreshTopPostsBoard);
   // Clip Studio — every stage transition + analyzing ticker tick re-renders the
   // whole assistant aside (mirrors the wizard subscription).
@@ -3656,6 +3733,7 @@ function wireAssistantPanel(root, session, attachedContext) {
     offPosts();
     offWizard();
     offInlineQuestion();
+    offTopics();
     offTopPosts();
     offClipStudio();
     offBatchStudio();
@@ -4965,6 +5043,15 @@ function bindSession(root, session) {
           setHashQuery(`/session/${session.id}`, { contextId: session.contextId });
           return;
         }
+        // The hero's "Fresh topics" list is scoped to the chat's Playbook, so
+        // swapping the Playbook has to swap the list with it — otherwise the
+        // reader is looking at another brand's Topics under a control that now
+        // names this one. Only when the hero is actually mounted: a started
+        // conversation must not re-render its whole aside for a Playbook pick.
+        if (root.querySelector("[data-empty-chat] .empty-chat__topics")) {
+          refreshAssistantAside();
+          return;
+        }
         const container = root.querySelector("[data-composer-playbook]");
         if (container) container.outerHTML = renderPlaybookControl(getContextById(session.contextId), true);
         return;
@@ -5024,6 +5111,13 @@ function bindSession(root, session) {
           topPostsFlow.startTopPostsInline(session.id);
           return;
         }
+        // Neither is a Topic. The picker is scoped to the CHAT'S OWN Playbook —
+        // a chat keeps the brand it was created in, so the picker never asks
+        // which one first.
+        if (kind === "topic") {
+          openTopicPicker({ playbookId: session.contextId || null });
+          return;
+        }
         // URL + Paste text need the modal UI (a URL field / textarea) — open
         // the modal on the matching tab. The URL modal is where link-service
         // detection + the "connect this service first" prompt live, so adding
@@ -5036,6 +5130,15 @@ function bindSession(root, session) {
         } else {
           startPillFromKind(root, session, kind);
         }
+        return;
+      }
+
+      // A row in the hero's "Fresh topics" list — opens the article, it does not
+      // choose the Topic. Reading comes before deciding, and the dialog's own
+      // footer is where the deciding happens.
+      const freshRow = event.target.closest("[data-topic-read]");
+      if (freshRow) {
+        openTopicArticle(freshRow.dataset.topicRead);
         return;
       }
 

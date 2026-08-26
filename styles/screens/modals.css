@@ -47,6 +47,7 @@ body.has-modal {
 .connectors-modal,
 .topic-modal,
 .topic-ignore,
+.topic-picker,
 .confirm-modal,
 .rename-modal,
 .save-folder-modal,
@@ -501,6 +502,7 @@ body.has-modal {
 .connectors-modal.open,
 .topic-modal.open,
 .topic-ignore.open,
+.topic-picker.open,
 .confirm-modal.open,
 .rename-modal.open,
 .save-folder-modal.open,
@@ -1340,4 +1342,100 @@ body.has-modal {
 .share-playbook-modal__log-when {
   color: var(--sys-text-color-light);
   white-space: nowrap;
+}
+
+/* ── The Topic dialog (picker + article) ───────────────────────────────────
+   720, like the connectors dialog is 920: this one is PROSE. Past ~720 the
+   measure decouples from the column and the analysis stops being readable.
+
+   The width is the same in both views on purpose — the list shows the feed's own
+   cards, and a dialog that resized between picking and reading would make the
+   two feel like different screens. */
+.topic-picker {
+  width: min(calc(100% - 32px), 720px);
+  max-height: min(calc(100vh - 48px), 800px);
+  flex-direction: column;
+}
+
+/* The scroller. The dialog's × is absolutely positioned over it by .ap-dialog,
+   so the padding-right keeps a long title clear of the control. */
+.topic-picker__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+  overflow-y: auto;
+  padding: var(--ref-spacing-md);
+  padding-right: var(--ref-spacing-xl);
+}
+
+.topic-picker__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.topic-picker__title {
+  margin: 0;
+}
+
+/* States the scope; never a control. A chat keeps the brand it was created in. */
+.topic-picker__scope {
+  margin: 0;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--sys-text-color-light);
+}
+
+.topic-picker__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+}
+
+.topic-picker__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+}
+
+/* Sentence case, ranked by weight — the same group label the feed uses, because
+   it is the same grouping. */
+.topic-picker__group-label {
+  margin: 0;
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--sys-text-color-light);
+}
+
+.topic-picker__group > .topic-card {
+  width: 100%;
+}
+
+/* Names where it returns. "Back" on its own makes the reader guess, and this
+   dialog can be reached with no list behind it at all — in which case it is not
+   rendered. */
+.topic-picker__back {
+  align-self: flex-start;
+}
+
+/* The footer sticks to the dialog's bottom edge so the verbs stay reachable
+   while the article scrolls. Inside the scroller, sticky rather than a sibling:
+   the article's own measure keeps it aligned with the prose above it. */
+.topic-picker__foot {
+  position: sticky;
+  bottom: calc(var(--ref-spacing-md) * -1);
+  margin: 0 calc(var(--ref-spacing-xl) * -1) calc(var(--ref-spacing-md) * -1) calc(var(--ref-spacing-md) * -1);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-md);
+  border-top: 1px solid var(--app-border-soft);
+  background: var(--app-surface);
+}
+
+.topic-picker__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-lg) var(--ref-spacing-md);
+  text-align: center;
 }

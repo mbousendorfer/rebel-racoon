@@ -13,6 +13,7 @@ import { init as initChatPickerModal } from "./components/chat-picker-modal.js?v
 import { init as initAddSourceModal } from "./components/add-source-modal.js?v=78";
 import { init as initConnectorsModal } from "./components/connectors-modal.js?v=24";
 import { init as initTopicIgnoreModal } from "./components/topic-ignore-modal.js?v=1";
+import { init as initTopicPickerModal } from "./components/topic-picker-modal.js?v=2";
 import { init as initConfirmModal } from "./components/confirm-modal.js?v=23";
 import { init as initRenameModal } from "./components/rename-modal.js?v=3";
 import { init as initSaveFolderModal } from "./components/save-folder-modal.js?v=23";
@@ -26,7 +27,7 @@ import {
   render as renderConversationStatusCard,
 } from "./components/conversation-status-card.js?v=246";
 import { renderDashboard } from "./screens/dashboard.js?v=73";
-import { renderSession } from "./screens/session.js?v=541";
+import { renderSession } from "./screens/session.js?v=542";
 import { renderContexts } from "./screens/contexts.js?v=280";
 import { renderTopics } from "./screens/topics.js?v=3";
 import { renderTopicsSettings } from "./screens/topics-settings.js?v=1";
@@ -94,6 +95,7 @@ initChatPickerModal();
 initAddSourceModal();
 initConnectorsModal();
 initTopicIgnoreModal();
+initTopicPickerModal();
 initConfirmModal();
 initRenameModal();
 initSaveFolderModal();

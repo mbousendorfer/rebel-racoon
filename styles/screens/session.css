@@ -1729,3 +1729,72 @@ body.hide-playbook-colors .composer-context__dot {
     animation: none;
   }
 }
+
+/* ── "Fresh topics to review" ──────────────────────────────────────────────
+   Archie's proposals, above the workflow starters. Same label grammar and the
+   same measure as the starters, so the hero reads as one thing in two registers
+   — here's what I found / or do one of these — rather than two card walls.
+
+   A PANEL of hairline rows, not a grid of cards: six proposals as cards would
+   out-weigh the three starters below and turn the hero into a wall. See
+   renderFreshTopics in screens/session.js. */
+
+.empty-chat__topics {
+  align-self: center;
+  width: 100%;
+  max-width: 1040px;
+  text-align: left;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border-soft);
+  border-radius: var(--app-radius-card);
+  overflow: hidden;
+}
+
+.empty-chat__topics-rows {
+  display: flex;
+  flex-direction: column;
+}
+
+/* The hairline between rows, and none above the first or below the last — the
+   panel's own border does those. */
+.empty-chat__topics-rows > .topic-row + .topic-row {
+  border-top: 1px solid var(--app-border-soft);
+}
+
+/* The panel's rows carry no radius of their own, so the hover wash must not
+   round inside a square frame. */
+.empty-chat__topics-rows > .topic-row {
+  border-radius: 0;
+}
+
+/* The scope, beside the section label rather than repeated on every row: all six
+   Topics belong to the chat's Playbook, and the composer names it too. */
+.empty-chat__topics-scope {
+  font-weight: var(--sys-text-style-caption-weight);
+  color: var(--sys-text-color-light);
+}
+
+.empty-chat__topics-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-sm);
+  border-top: 1px solid var(--app-border-soft);
+  background: var(--app-surface-subtle);
+}
+
+/* N out of M, where M is every Topic under a week old whatever its status — so
+   the sentence describes the week rather than a to-do list, and the total does
+   not shrink as the reader works through it. */
+.empty-chat__topics-count {
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--sys-text-color-light);
+}
+
+@media (max-width: 900px) {
+  .empty-chat__topics {
+    max-width: 651px;
+  }
+}
