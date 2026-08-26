@@ -144,22 +144,34 @@ Le « pick one of N » réutilisable. État dans [`inline-question.js`](../../sr
 ### Fente média vide (draft sans image)
 
 `.posts__card-media-empty` ([`post-card.js`](../../src/components/post-card.js) `renderEmptyMedia`,
-CSS dans [`posts.css`](../../styles/screens/posts.css)) : `-slot` (cadre `1.5px dashed --ref-color-grey-20`,
-fond `--ref-color-grey-05`, `min-height: 128px`) > `-icon` (`ap-icon-image` à `--sys-icon-css-lg`) +
-`-actions` (les deux DS buttons), puis `-hint` **hors** du cadre. État `.is-generating` → `.archie-loader`
+CSS dans [`posts.css`](../../styles/screens/posts.css)) : `-slot` > `-title` + `-sub` + `-actions`,
+puis `-hint` **hors** du cadre. État `.is-generating` → `.archie-loader` + `-sub`.
 
-- `-lead`.
+La fente **porte le cadre que portera l'image** — mêmes 1px et même `--app-radius-md` que
+`.posts__card-image` — pour lire comme le cadre vide de la photo, pas comme un widget garé
+dans la carte.
 
-* **Cadre, pas dropzone** : aucun hover, aucun drag — seuls les boutons agissent. Un cadre vide qui
-  s'allume au survol promet une cible de drop qu'on n'accepte pas, et entrerait en conflit avec la
-  bordure bleue au survol qui appartient à la carte.
-* **Pas de `aspect-ratio`** : réserver la hauteur réelle d'une image absente sur chaque carte du feed
-  en fait une colonne de trous. Le prix est un petit saut de layout quand l'image arrive.
-* **Un CTA de navigation vers le Playbook est un `.ap-link`** (bleu), jamais un bouton et jamais
+- ⚠️ **Le fond doit rester `transparent`.** `.ap-button.mermaid` est une bordure dégradée en
+  trompe-l'œil : fond dégradé + un `::after` en retrait peint en `--ref-color-white`. Sur toute
+  surface teintée l'intérieur du bouton passe au blanc et il lit comme un rectangle mal collé.
+  C'était le bug d'origine — teinter ce fond le recasse.
+- **Pas de pointillés** : le pointillé est le signe universel de la drop-zone, et rien ici
+  n'accepte un drop (seuls les boutons agissent). D'où aussi : aucun hover, aucun état de drag.
+- **Aligné à gauche**, sur le bord de texte de la carte. Centrer un titre, une ligne de copy et
+  des actions dans une boîte haute est ce qui faisait lire un trou dans le feed.
+- **Titre = le nom, bouton = le verbe.** « Add an image » au-dessus d'un bouton « Generate an
+  image » disait deux fois la même chose → le bouton dit `Generate`, avec un `aria-label` complet.
+- **Un seul contenant, un lien.** Deux boutons outline à libellé complet lisent comme une paire
+  d'égaux ; l'action IA garde le contenant, l'upload descend en `.ap-link`. C'est ce qui rend la
+  hiérarchie lisible d'un coup d'œil.
+- **Une seule hauteur (108px) pour les deux états**, posée sur le `-slot` : le cadre ne se
+  redimensionne pas quand il bascule en génération. Pas d'`aspect-ratio` en revanche — réserver la
+  hauteur réelle d'une image absente sur chaque carte du feed en fait une colonne de trous.
+- **Un CTA de navigation vers le Playbook est un `.ap-link`** (bleu), jamais un bouton et jamais
   orange : l'orange est pour l'IA, et les 11 empty states du repo ont tous un CTA bleu.
-* ⚠️ **`ap-icon-missing-image` est inutilisable** : c'est le seul icône du DS dont le SVG porte un
-  `clipPath` avec un `<rect />` sans dimensions, qui découpe tout le glyphe. Il s'applique proprement
-  et ne peint rien. Utiliser `ap-icon-image`.
+- ⚠️ **`ap-icon-missing-image` est inutilisable** : c'est le seul icône du DS dont le SVG porte un
+  `clipPath` avec un `<rect />` sans dimensions, qui découpe tout le glyphe. Il s'applique
+  proprement et ne peint rien.
 
 ### Modals / backdrop
 

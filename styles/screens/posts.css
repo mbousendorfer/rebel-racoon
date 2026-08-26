@@ -276,21 +276,23 @@
   }
 }
 
-/* Empty media slot — where the image of an image-less draft will go.
+/* Empty media slot — the image's own empty frame.
 
-   A FRAME, not a dropzone: only the two buttons act, so the slot gets no
-   hover state and no drag affordance (an empty box that lights up on hover
-   promises a drop target we don't accept — and it would collide with the
-   blue-border-on-hover rule that belongs to the card).
+   It reuses `.posts__card-image`'s exact border and radius (1px
+   --app-border-soft, --app-radius-md) so it reads as the picture's frame with
+   nothing in it yet, not as a widget parked in the card.
 
-   No `aspect-ratio: 4/3` on purpose (see the note in post-card.js
-   renderEmptyMedia): every seeded draft starts image-less, and reserving the
-   full height of an absent image on each one turns the feed into a column of
-   holes. A short band says "the image goes here" without pretending one is
-   already there.
+   ⚠️ The background MUST stay transparent. `.ap-button.mermaid` is a
+   gradient-border trick — a gradient background with an ::after inset painted
+   `--ref-color-white` — so on any tinted surface the button's interior goes
+   white and it reads as a misplaced rectangle. This was the original bug.
 
-   The DS buttons carry all their own styling. They stay auto-width — no
-   `flex: 1` stretch (buttons are never full-width). */
+   No dashes: a dashed outline is the drop-zone sign and nothing here takes a
+   drop (only the two buttons act), so it also gets no hover and no drag state.
+
+   Left-aligned, on the card's own text edge. Centering a title, a line of copy
+   and two buttons in a tall box is what made this read as a hole in the feed;
+   the height now comes from the content (~100px) instead of a reserved ratio. */
 .posts__card-media-empty {
   display: flex;
   flex-direction: column;
@@ -300,45 +302,67 @@
 .posts__card-media-empty-slot {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--ref-spacing-xs);
-  min-height: 128px;
-  padding: var(--ref-spacing-sm);
-  border: 1.5px dashed var(--ref-color-grey-20);
+  align-items: flex-start;
+  /* 0 — the title and its line are one text block (18px over 16px), so they sit
+     flush; the breathing room goes between that block and the buttons. */
+  gap: 0;
+  /* One height for BOTH states — the resting content already reaches it, and
+     pinning it here means the frame doesn't resize when it flips to generating. */
+  min-height: 108px;
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-md);
-  background: var(--ref-color-grey-05);
-  text-align: center;
+  background: transparent;
 }
 
-.posts__card-media-empty-icon {
-  font-size: var(--sys-icon-css-lg);
-  line-height: 1;
-  color: var(--ref-color-grey-80);
+.posts__card-media-empty-title {
+  margin: 0;
+  font-size: var(--sys-text-style-body-bold-size);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  color: var(--ref-color-grey-100);
 }
 
-.posts__card-media-empty-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--ref-spacing-xxs);
-}
-
-/* Generating: the slot keeps its own height so the card doesn't jump when the
-   buttons are swapped for the Archie mark (auto-hosted by archie-loader.js). */
-.posts__card-media-empty-slot.is-generating {
-  --archie-loader-size: 32px;
-}
-
-.posts__card-media-empty-lead,
+/* One line of Archie saying what Generate will actually work from — the thing
+   the buttons can't tell you. It is what earns the slot its height. */
+.posts__card-media-empty-sub,
 .posts__card-media-empty-hint {
   margin: 0;
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
 }
 
-/* The Playbook hint sits OUTSIDE the slot: it is about the Playbook, not about
-   this image, and inside the frame it read as a caption for the buttons. */
+/* One container, one link. Two full-label outline buttons read as a pair of
+   equals, which is wrong: Generate is the action, upload is the escape hatch.
+   Giving only the AI button a container — and dropping upload to `.ap-link` —
+   is what makes the hierarchy legible at a glance. Auto-width (buttons are
+   never stretched); `align-items: center` puts the link on the button's optical
+   centre rather than its baseline. Wraps on a narrow panel. */
+.posts__card-media-empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  margin-top: var(--ref-spacing-xs);
+}
+
+/* Generating: the loader sits inline before the line, on the same left edge,
+   so the frame keeps its shape while the mark spins (archie-loader.js hosts
+   the animated SVG automatically). */
+.posts__card-media-empty-slot.is-generating {
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ref-spacing-xs);
+  --archie-loader-size: 28px;
+}
+
+.posts__card-media-empty-slot.is-generating .posts__card-media-empty-sub {
+  color: var(--ref-color-grey-80);
+}
+
+/* The Playbook hint sits OUTSIDE the frame: it is about the Playbook, not about
+   this image, and inside it read as a caption for the buttons. */
 .posts__card-media-empty-hint {
   padding: 0 var(--ref-spacing-xxs);
 }

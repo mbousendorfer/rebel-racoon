@@ -26,33 +26,38 @@ import { renderFeedbackControl } from "./feedback-control.js?v=4";
 
 // The media slot of a draft that has no image yet.
 //
-// This used to be two bare DS buttons flush in the card column — no frame, no
-// icon, nothing saying "an image belongs here". Since every seeded draft starts
-// without media, that was the default look of the whole Drafts feed.
+// It wears the FRAME THE IMAGE WILL WEAR — same 1px --app-border-soft, same
+// --app-radius-md as `.posts__card-image` — so the slot reads as the picture's
+// empty frame rather than as a separate widget parked in the card.
 //
-// It is a FRAME, not a dropzone: nothing in it is clickable except the two
-// buttons, so it gets no hover state and no drag affordance — an empty box that
-// lights up on hover promises a drop target we don't accept.
+// Three things this deliberately is not:
 //
-// Deliberately NOT `aspect-ratio: 4/3` like `.posts__card-image`. Reserving the
-// real height of an absent image on every card in the feed turns a list of
-// drafts into a column of holes; a short band says where the image goes without
-// pretending one is already there. The cost is a small layout shift when the
-// image lands, which is the right trade at this ratio of empty-to-filled cards.
+// 1. NOT dashed. A dashed outline is the universal drop-zone sign, and nothing
+//    here accepts a drop — only the two buttons act. It also stacked a second
+//    treatment on top of the fill, so two weak signals competed.
+// 2. NOT filled. `.ap-button.mermaid` is a gradient-BORDER trick: a gradient
+//    background with an ::after inset painted `--ref-color-white`. On any
+//    non-white surface its interior goes white and the button reads as a
+//    misplaced rectangle. The slot therefore stays transparent on the white
+//    card. Tinting this background will break that button again.
+// 3. NOT centered. Centering a title, a line of copy and two buttons in a tall
+//    box is what made this a hole in the feed. Left-aligned against the card's
+//    own text edge, it is a block of UI with a hierarchy.
+//
+// Height comes from the content (~100px), not from a reserved 4/3 ratio: every
+// seeded draft starts image-less, and reserving the real height of an absent
+// image on each card turns the feed into a column of voids. The cost is a small
+// layout shift when the image lands.
 //
 // `opts.brandGaps` / `opts.playbookId` come from the host (the drafts panel) —
 // the card never resolves a Context itself. A host that passes neither, like the
 // studio's own in-feed preview, simply gets no hint.
-// The icon is ap-icon-image, NOT the semantically-nicer ap-icon-missing-image:
-// that one is the single icon in the DS whose SVG carries a clipPath with a
-// dimensionless <rect />, which clips the whole glyph away. It applies cleanly
-// and paints nothing at all. Don't "fix" this back.
 function renderEmptyMedia(post, opts) {
   if (post.isGeneratingImage) {
     return `<div class="posts__card-media-empty">
       <div class="posts__card-media-empty-slot is-generating" aria-busy="true">
         <span class="archie-loader" aria-hidden="true"></span>
-        <p class="posts__card-media-empty-lead muted">I'm making an image for this draft…</p>
+        <p class="posts__card-media-empty-sub">I'm making an image for this draft…</p>
       </div>
     </div>`;
   }
@@ -71,17 +76,27 @@ function renderEmptyMedia(post, opts) {
         </p>`
       : "";
 
+  // The title carries the NOUN and the button carries the VERB — "Add an image"
+  // over a button reading "Generate an image" said the same thing twice, and the
+  // two full-label outline buttons it sat beside read as a pair of equals rather
+  // than a primary and an escape hatch. So: title names the job, the AI button is
+  // the one control with a container, and upload drops to a link.
   return `<div class="posts__card-media-empty">
     <div class="posts__card-media-empty-slot">
-      <i class="ap-icon-image posts__card-media-empty-icon" aria-hidden="true"></i>
+      <p class="posts__card-media-empty-title">Add an image</p>
+      <p class="posts__card-media-empty-sub muted">I'll write the brief from this draft.</p>
       <div class="posts__card-media-empty-actions">
-        <button type="button" class="ap-button mermaid" data-post-image="${post.id}">
+        <button
+          type="button"
+          class="ap-button mermaid"
+          data-post-image="${post.id}"
+          aria-label="Generate an image"
+        >
           <i class="ap-icon-archie-official"></i>
-          <span>Generate an image</span>
+          <span>Generate</span>
         </button>
-        <button type="button" class="ap-button ghost grey" data-post-image-upload="${post.id}">
-          <i class="ap-icon-upload"></i>
-          <span>Upload</span>
+        <button type="button" class="ap-link" data-post-image-upload="${post.id}" aria-label="Upload an image">
+          or upload a file
         </button>
       </div>
     </div>
