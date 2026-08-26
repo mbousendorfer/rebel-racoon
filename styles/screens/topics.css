@@ -89,41 +89,45 @@
 }
 
 /* ── THE HOUSE HEADER PATTERN ──────────────────────────────────────────────
-   Three page-level rows, taken from the product rather than invented here:
+   The product's header is three rows — title, toolbar, tabs — and in THIS app
+   the shell owns the first one: the topbar prints the route's name for every
+   top-level route. So this screen draws TWO:
 
-     1. the header    title left  ·  CTA, secondaries, then the COG last, right
-     2. the toolbar   filters and scoping selects left  ·  search and sort right
-     3. the tabs      the named views of the list, with their counts
+     1. the toolbar   filters and scoping selects left  ·  the COG last, right
+     2. the tabs      the named views of the list, with their counts
 
-   Inbox, Drafts, Analytics and Employee Advocacy all follow it. The two things
-   this screen got wrong were both inversions of it: a "scope + cog" cluster
-   pinned to the LEFT (the cog is always last on the right, 5 surfaces out of 5),
-   and Filters as an icon button (the product always writes the word, 3 out of 3).
+   There WAS a drawn title row, for one commit, and it printed "Topic Feed" 40px
+   below a topbar printing "Topic Feed" — the same words twice on a row that held
+   nothing else. The comment here defended it with "/contexts draws both, so the
+   duplicate is the convention"; that was rationalising rather than looking.
+   /contexts' head row carries a data-bearing subtitle, a search field and a
+   primary CTA, so its title is one element of four. A title alone is not a row.
 
-   Row 1. The title anchors the left. It was hidden for one commit because the
-   app topbar names the route too — but /contexts already draws both, so the
-   duplicate is the established convention here, and without it the row has no
-   left anchor and the cog floats opposite nothing. */
+   The rule that survives: the topbar names the route, and a screen draws its own
+   title only where the topbar has ceded it to a back control — /playbook/:id and
+   /topics/settings, which both do.
 
-.topics-view__bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ref-spacing-sm);
-  flex: 0 0 auto;
-}
+   What the product DOES pin, and this screen keeps: the cog is the last thing on
+   the right (5 surfaces out of 5), and Filters is a labelled button and never an
+   icon (3 out of 3). Both were inverted here before. */
 
-/* Row 2. Everything that narrows the list, on the left. Search and sort belong
-   on the right of this row when this screen grows them; until then the right
-   side stays empty rather than being filled to look balanced.
+/* Everything that narrows the list, on the left; the cog on the right. Search
+   and sort belong on the right of this row too when this screen grows them —
+   between Filters and the cog, which stays last.
 
-   Wraps, because three controls fit a 1440 cap but must survive a narrow one. */
+   Wraps, because the row must survive a narrow container. */
 .topics-view__toolbar {
   display: flex;
   align-items: center;
   gap: var(--ref-spacing-xxs);
   flex: 0 0 auto;
   flex-wrap: wrap;
+}
+
+/* Pushed right by the free space rather than by a spacer, so anything added to
+   the left of it lands in the group it belongs to and the cog stays last. */
+.topics-view__settings {
+  margin-left: auto;
 }
 
 /* Capped so a long brand name cannot push Filters off the row. The DS's inline

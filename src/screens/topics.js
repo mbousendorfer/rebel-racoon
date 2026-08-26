@@ -279,7 +279,7 @@ function renderPage(pb) {
   const empty = view.scanning || !shown.length;
 
   return html`
-    ${raw(renderBar(pb, feed))} ${raw(renderToolbar(pb))} ${raw(renderTabs(counts))}
+    ${raw(renderToolbar(pb, feed))} ${raw(renderTabs(counts))}
     <div class="topics-view__body">
       ${raw(
         empty
@@ -297,41 +297,30 @@ function renderPage(pb) {
 
 // ── Row 1 · the page header ────────────────────────────────────────────────
 // The name, and the way to this brand's settings. Nothing else.
-//
-// THE HOUSE PATTERN, taken from the product: the title anchors the left of the
-// header row, and the settings cog is ALWAYS the last thing on the right — Inbox,
-// Drafts, Analytics and Employee Advocacy all do it, without exception. A cluster
-// of "scope + cog" pinned to the left, which is what this was, exists nowhere in
-// the product.
-function renderBar(pb, feed) {
-  return html`<header class="topics-view__bar">
-    <h1 class="topics-view__title">Topic Feed</h1>
-
-    <!-- Icon-only, and that is the house treatment for it: the cog is the one
-         glyph nobody has to hover to recognise, and a labelled Settings would
-         give a rare action the same weight as the controls below. Its title
-         carries the cadence, which has nowhere else to live. -->
-    <a
-      class="ap-icon-button stroked grey"
-      href="#/topics/settings${raw(pb ? `?pb=${encodeURIComponent(pb.id)}` : "")}"
-      aria-label="Feed settings"
-      title="${raw(
-        feed
-          ? `Feed settings · refreshed ${escapeAttr(findCadence(feed.cadence)?.adverb || "weekly")}`
-          : "Feed settings",
-      )}"
-    >
-      <i class="ap-icon-cog"></i>
-    </a>
-  </header>`;
-}
-
-// ── Row 2 · the toolbar ───────────────────────────────────────────────────
+// ── The toolbar — and the only page-level row this screen draws ───────────
 // What narrows the list, on the LEFT — the product's own arrangement in Drafts
 // ("Creator | Select", "Labels | Select", "Filters") and Analytics ("Filters",
-// then the date range). Search and sort would go on the right of this row; this
-// screen has neither yet, so the right side is empty on purpose.
-function renderToolbar(pb) {
+// then the date range) — and the settings cog LAST on the right, which is the
+// one invariant every product header keeps without exception.
+//
+// ── Why there is no drawn <h1> ────────────────────────────────────────────
+// There was one, for one commit, on a row of its own above this. It printed
+// "Topic Feed" 40px under the app topbar, which prints "Topic Feed" for this
+// route already: the same words twice, on a row that held nothing else but the
+// cog. The product's header pattern does open with a title row — but in THIS
+// app the shell owns that row, so a page that draws its own is not following
+// the pattern, it is duplicating it.
+//
+// The rule the app actually keeps: the topbar names the route, and a screen
+// draws its own title only where the topbar has CEDED it to a back control
+// (/playbook/:id, /topics/settings). /contexts is the apparent exception and is
+// not one — its head row carries a data-bearing subtitle, a search field and a
+// primary CTA, so the title is one element of four rather than a row's whole
+// reason to exist.
+//
+// Dropping it costs nothing for screen readers either: the topbar's
+// .app-topbar__title IS an <h1>, so the document goes from two to one.
+function renderToolbar(pb, feed) {
   const badge = narrowedGroupCount(view.filters);
 
   // The real DS Select — a <details>/<summary> dropdown, never a bare native
@@ -389,6 +378,23 @@ function renderToolbar(pb) {
       </button>
       ${raw(view.filtersOpen ? renderFilters() : "")}
     </div>
+
+    <!-- Icon-only, and that is the house treatment: the cog is the one glyph
+         nobody has to hover to recognise, and a labelled Settings would give a
+         rare action the same weight as the controls it sits beside. Its title
+         carries the cadence, which has nowhere else to live. -->
+    <a
+      class="ap-icon-button stroked grey topics-view__settings"
+      href="#/topics/settings${raw(pb ? `?pb=${encodeURIComponent(pb.id)}` : "")}"
+      aria-label="Feed settings"
+      title="${raw(
+        feed
+          ? `Feed settings · refreshed ${escapeAttr(findCadence(feed.cadence)?.adverb || "weekly")}`
+          : "Feed settings",
+      )}"
+    >
+      <i class="ap-icon-cog"></i>
+    </a>
   </div>`;
 }
 

@@ -68,7 +68,12 @@ Relevé sur le produit réel (Inbox, Drafts, Analytics, Employee Advocacy ×2). 
 Les invariants, avec leur nombre d'occurrences sur cinq surfaces produit :
 
 - **Le cog est TOUJOURS le dernier élément, à droite** (5/5). Jamais dans un cluster à gauche, jamais avant un autre bouton. C'est un icon-button, pas un bouton libellé : une action rare ne prend pas le poids d'un contrôle qu'on utilise à chaque visite.
-- **Le titre de page ancre la gauche de la rangée 1** (5/5), même quand la topbar du shell nomme déjà la route. Sans lui, les actions de droite flottent en face du vide.
+- ⚠️ **LA RANGÉE 1 EST DÉJÀ PRISE : c'est la topbar du shell.** Le produit ouvre bien sur une rangée de titre (5/5) — mais dans cette app `topbar.js` imprime le nom de la route pour **toute** route de premier niveau. Une page qui redessine son titre ne suit pas le motif, elle le double : `/topics` a imprimé « Topic Feed » 40px sous une topbar imprimant « Topic Feed », sur une rangée qui ne portait rien d'autre que le cog. Un titre seul ne fait pas une rangée.
+
+  La règle qui tient : **la topbar nomme la route, et un écran ne dessine son propre titre que si la topbar le lui a CÉDÉ** — `/playbook/:id` et `/topics/settings`, où elle prend un contrôle de retour à la place — **ou si la rangée porte plus qu'un titre**. `/contexts` est la fausse exception : son en-tête porte un sous-titre chargé de données (« N Playbooks · applied across M chats »), une recherche et un CTA primaire, donc son titre est un élément sur quatre.
+
+  Quand la rangée 1 revient au shell, **le cog descend en fin de rangée 2** — l'invariant est « dernier à droite », pas « sur la rangée du titre ».
+
 - **Filters est un bouton LIBELLÉ**, funnel + le mot + son compteur **inline** quand il filtre (3/3). ⛔️ Jamais un icon-button avec un badge flottant : c'est le contrôle qui dit combien de la liste est caché, il ne peut pas être le plus dur à trouver.
 - **Ce qui rétrécit la liste va à GAUCHE de la rangée 2** ; **search et sort vont à droite** (3/3). Si l'écran n'a pas encore de search, la droite reste vide — on ne la remplit pas pour équilibrer.
 - **Un select de toolbar porte son label DEDANS**, via `.ap-select-inline-label` (4/5) : `Creator │ Select`, `Status │ Active`, `Playbook │ Acme · Q2 marketing`. ⛔️ Jamais un `<label>` empilé au-dessus — c'est du chrome de formulaire, pas de toolbar — et jamais un select nu, qui ne dit pas ce qu'il scope.
