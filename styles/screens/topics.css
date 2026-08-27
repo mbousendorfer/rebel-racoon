@@ -371,14 +371,21 @@
    in it is not a reader, and an empty column beside an empty pane says the screen
    is broken rather than that the feed is quiet. */
 
+/* ⚠️ NO CARD. It was a white ground on a hairline, filling the reader's whole
+   height — so an empty feed drew a ~1100x700 bordered box whose only content was
+   one centred icon and two lines. A frame that big is an object in its own right,
+   and it claimed to hold something when the whole point is that there is nothing.
+   The empty state sits on the page's own ground instead: the icon tile the shared
+   `renderEmptyState` draws is the only shape needed to say "here is where the
+   Topics would be".
+
+   The height stays, because that is what centres it in the space the reader
+   occupies — what goes is the fill, the border and the radius. */
 .topics-view__blank {
   display: flex;
   align-items: center;
   justify-content: center;
   height: 100%;
-  background: var(--app-surface);
-  border: 1px solid var(--app-border-soft);
-  border-radius: var(--app-radius-card);
 }
 
 .topics-view__empty {
