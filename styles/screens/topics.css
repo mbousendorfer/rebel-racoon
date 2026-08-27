@@ -581,7 +581,18 @@
   color: var(--sys-text-color-default);
 }
 
-/* ── Relevance / Why now ─────────────────────────────────────────────────── */
+/* ── The two quick facts ───────────────────────────────────────────────────
+   One shape, two instances: a glyph column and a text column, on the subtle
+   ground. A three-cell grid rather than a flex row, so the sentence aligns under
+   its LABEL instead of under the icon — an icon column that the prose then
+   indents past is the shape of a list item, and these are not a list.
+
+   `xxs` between the two blocks (they are a pair) against `xs` from the article's
+   own gap to the prose below: spacing within the group has to be smaller than
+   spacing around it.
+
+   No border, no left bar, no shadow. The fill is the whole separation, and a
+   coloured edge on a metadata block is what this article already removed twice. */
 
 .topic-article__facts {
   display: flex;
@@ -590,21 +601,44 @@
 }
 
 .topic-article__fact {
-  margin: 0;
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  border-radius: var(--app-radius-card);
+  background: var(--app-surface-subtle);
+}
+
+.topic-article__fact-icon {
+  grid-column: 1;
+  grid-row: 1;
+  font-size: var(--sys-icon-css-sm);
+  width: var(--sys-icon-css-sm);
+  height: var(--sys-icon-css-sm);
   color: var(--sys-text-color-light);
 }
 
+/* The label steps BACK: small and light, so the sentence beside it is the thing
+   being read. It used to be a bold dark "Relevance:" competing with its own
+   content. Sentence case — never capitals, which this project rules out for
+   labels outright. */
 .topic-article__fact-label {
-  font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--sys-text-color-default);
+  grid-column: 2;
+  grid-row: 1;
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--sys-text-color-light);
 }
 
-/* The DS infobox brings its own ground, bar, radius and padding — nothing to
-   style here beyond letting it use the full measure. */
-.topic-article__whynow {
-  width: 100%;
+.topic-article__fact-text {
+  grid-column: 2;
+  grid-row: 2;
+  margin: 0;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--sys-text-color-default);
 }
 
 /* ── The prose ───────────────────────────────────────────────────────────── */

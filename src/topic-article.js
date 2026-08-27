@@ -149,42 +149,39 @@ function renderProvenance(topic, source) {
 // there is one, because it is the row the signal is about — peach for a spike,
 // menthol for a rewrite, nothing at all otherwise. Tinting an ordinary Topic's
 // rows would spend the spike's colour on a Topic with no spike.
+// ONE SHAPE, TWO INSTANCES. These are the Topic's own two quick facts and they
+// are the same RANK, so they get the same block: an icon, a label, a sentence.
+//
+// ⚠️ They were two different species. Relevance was a paragraph with a bold
+// inline "Relevance:" and Why now was a DS infobox — so one read as leftover
+// prose and the other as a system alert, 8px apart. The infobox was doubly
+// wrong: it is the component for a message the APP is telling you, and these are
+// attributes of the Topic. A tinted alert also outranked the analysis it
+// introduces.
+//
+// The hierarchy is the label DOWN, not the sentence up: caption-bold in the light
+// ink for the label, body in the default ink for the sentence. The old markup had
+// it backwards — a bold dark "Relevance:" competing with its own content.
+//
+// Grayscale only. The label names the fact and the glyph shapes it; spending an
+// accent colour on metadata would leave nothing for the actions. And NOT
+// .topic-badge for the glyph, tempting as it is: that pip means "which listening
+// source produced this" and the article's header carries one 40px above. The same
+// square cannot mean two things on one surface.
+const FACTS = [
+  { key: "relevance", label: "Relevance", icon: "ap-icon-target" },
+  { key: "whyNow", label: "Why now", icon: "ap-icon-clock" },
+];
+
 function renderRelevance(topic) {
-  const rows = [];
-  if (topic.relevance) {
-    rows.push(
-      html`<p class="topic-article__fact">
-        <strong class="topic-article__fact-label">Relevance:</strong> ${topic.relevance}
-      </p>`,
-    );
-  }
-  // Why now is the DS INFOBOX, not a hand-rolled row. It used to be a paragraph
-  // with a 2px coloured border-left, tinted per signal - which is not a style
-  // this app invented so much as the DS's own infobox, reimplemented badly:
-  // .ap-infobox::before IS a 4px full-height coloured bar, and the component
-  // brings the tinted ground, the icon, the radius and the title/message pair
-  // with it. Same anatomy playbook.js already uses for its sharing notice.
-  //
-  // Tone is `info` whatever the signal. The DS tones are semantic - warning
-  // means caution, success means confirmation - and neither Trending nor Updated
-  // is either of those; painting a spike as a warning is the same mistake as
-  // painting Ignore red. ⚠️ Which means the ARTICLE no longer colour-codes the
-  // signal at all. The card still states it in words, and if the pane needs it
-  // too the mark belongs in the header beside the source, not smuggled into a
-  // tone that would misname it.
-  if (topic.whyNow) {
-    rows.push(
-      html`<div class="ap-infobox info topic-article__whynow">
-        <i class="ap-icon-info" aria-hidden="true"></i>
-        <div class="ap-infobox-content">
-          <div class="ap-infobox-texts">
-            <span class="ap-infobox-title">Why now</span>
-            <span class="ap-infobox-message">${topic.whyNow}</span>
-          </div>
-        </div>
+  const rows = FACTS.filter((f) => topic[f.key]).map(
+    (f) =>
+      html`<div class="topic-article__fact">
+        <i class="${f.icon} topic-article__fact-icon" aria-hidden="true"></i>
+        <span class="topic-article__fact-label">${f.label}</span>
+        <p class="topic-article__fact-text">${topic[f.key]}</p>
       </div>`,
-    );
-  }
+  );
   if (!rows.length) return "";
   return html`<div class="topic-article__facts">${raw(rows.join(""))}</div>`;
 }
