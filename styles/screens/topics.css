@@ -527,7 +527,7 @@
      2px   a fact's label to its own sentence
      8px   quoted cards; a section head to its cards
      12px  one paragraph of prose to the next
-     20px  above a subhead - a new section of the analysis STARTS
+     28px  above a subhead - a new section of the analysis STARTS
      32px  band to band
 
    32 is not arbitrary. In the pane, header to body already measures 16 (header
@@ -585,11 +585,19 @@
   min-width: 250px;
 }
 
+/* ── The claim takes h1's SIZE and keeps h2's ELEMENT ─────────────────────
+   24/32/700. It was h2 (18), and that was the root of a flat block: with the top
+   of the ladder at 18 the analysis subheads had nowhere to go but 14 — the same
+   SIZE as the prose they head, separated by weight alone. Raising the claim is
+   what buys the subhead its own step.
+
+   The element stays `<h2>`: exactly one `<h1>` lives in this document and it is
+   the topbar's. The DS text styles are named for the STEP, not for the tag. */
 .topic-article__title {
   margin: 0;
-  font-size: var(--sys-text-style-h2-size);
-  line-height: var(--sys-text-style-h2-line-height);
-  font-weight: var(--sys-text-style-h2-weight);
+  font-size: var(--sys-text-style-h1-size);
+  line-height: var(--sys-text-style-h1-line-height);
+  font-weight: var(--sys-text-style-h1-weight);
   color: var(--sys-text-color-default);
   text-wrap: balance;
 }
@@ -704,16 +712,19 @@
   text-wrap: pretty;
 }
 
-/* h4 (14/700), NOT h3 (16/700), against 14/400 prose. The claim above is 18/700,
-   so a 16px subhead comes within 2px of it and starts competing for the loudest
-   thing on the surface - which is exactly what the UA default was already doing. Weight separates it from the prose; the 20px above
-   it separates one section from the next. Size is not needed and costs the title
-   its rank. */
+/* h3 (16/700) against 14/400 prose, and 28px of air above it (16 of margin on
+   top of the body's 12px gap) against 12px between paragraphs.
+
+   ⚠️ It was h4 (14/700) — the same SIZE as the prose, told apart by weight alone
+   — on the argument that 16 would come within 2px of an 18px claim and compete
+   with it. True at the time, and the wrong conclusion: the fix was never to hold
+   the subhead down, it was to give the claim its own step. With the title at 24
+   the ladder is 24 / 16 / 14 / 12 and every rung is a real one. */
 .topic-article__subhead {
-  margin: var(--ref-spacing-xxs) 0 0;
-  font-size: var(--sys-text-style-h4-size);
-  line-height: var(--sys-text-style-h4-line-height);
-  font-weight: var(--sys-text-style-h4-weight);
+  margin: var(--ref-spacing-sm) 0 0;
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
   color: var(--sys-text-color-default);
 }
 
