@@ -698,6 +698,43 @@
   gap: var(--ref-spacing-xxs);
 }
 
+/* ── The evidence expander ─────────────────────────────────────────────────
+   Hidden until its checkbox is ticked, and the trigger hides with it: once the
+   rest is open there is nothing left to ask for, and a "2 more posts" label above
+   four visible posts contradicts itself. */
+.topic-article__more-check {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.topic-article__more {
+  align-self: flex-start;
+  cursor: pointer;
+}
+
+.topic-article__posts-rest {
+  display: none;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+}
+
+.topic-article__more-check:checked ~ .topic-article__posts-rest {
+  display: flex;
+}
+
+.topic-article__more-check:checked ~ .topic-article__more {
+  display: none;
+}
+
+.topic-article__more-check:focus-visible ~ .topic-article__more {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: 2px;
+  border-radius: var(--app-radius-sm);
+}
+
 /* ── The trail ─────────────────────────────────────────────────────────────
    The DS accordion, opened by a sibling checkbox. `.collapsed` stays on the
    element permanently and these two rules override what it hides — host-scoped,

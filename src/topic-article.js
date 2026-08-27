@@ -95,18 +95,28 @@ export function renderTopicArticle(topic, { source = null, withHeader = true } =
   //
   // No button of its own: the header's primary IS the action this copy names, and
   // a second Use-in-chat two inches above it would be the same verb asking twice.
-  // ⚠️ This was a full empty state — a boxed, centred block with a 24px title and
-  // a three-line body — which made ABSENCE the loudest thing on the card. It is
-  // now one muted line, sitting exactly where the prose would: an absence should
-  // read as an absence.
-  const laterBody = html`<p class="topic-article__thin">
-    I haven't found enough to write a detailed version yet. Use it in chat if you have assets that fill the gaps, or
-    leave it for a later scan.
-  </p>`;
+  // ── A "later" Topic HAS its analysis. It is not draftable YET ────────────
+  // ⚠️ This slot used to REPLACE the prose with "I haven't found enough to write
+  // a detailed version yet" — while the detailed version sat in the data. All 18
+  // `later` Topics carry a finished analysis: 136 words on average, min 64, max
+  // 216, with their own subheads and title. The panel was telling the reader
+  // something false and hiding real content to do it.
+  //
+  // The true distinction is DRAFTABILITY, which is what the original's own copy
+  // says ("not enough content or assets around this topic to create a draft").
+  // So the analysis shows, and the note below it says the true thing instead.
+  const laterNote =
+    topic.kind === "later"
+      ? html`<p class="topic-article__thin">
+          A theme worth keeping, not a draft yet — I don't have enough assets around it to write a post from. Use it in
+          chat if you can fill the gap.
+        </p>`
+      : "";
 
   return html`<div class="topic-article">
     ${raw(withHeader ? renderTopicHeader(topic, { source }) : "")} ${raw(relevance)}
-    <div class="topic-article__body">${raw(topic.kind === "later" ? laterBody : body)}</div>
+    <div class="topic-article__body">${raw(body)}</div>
+    ${raw(laterNote)}
     ${raw(
       posts.length
         ? html`<section class="topic-article__section">
@@ -117,11 +127,42 @@ export function renderTopicArticle(topic, { source = null, withHeader = true } =
             <h3 class="topic-article__section-head">
               Contributing posts <span class="ap-counter normal grey">${posts.length}</span>
             </h3>
-            <div class="topic-article__posts">${raw(posts.map((p) => renderSocialPostCard(p)).join(""))}</div>
+            ${raw(renderPosts(topic, posts))}
           </section>`
         : "",
     )}
     ${raw(renderHistory(topic))}
+  </div>`;
+}
+
+// ── The evidence, and why its CAP depends on the kind ─────────────────────
+// The posts play a different ROLE either side of the kind, so they get a
+// different treatment. On a `ready` Topic they SUPPORT an argument the reader has
+// just read, so past the first two they are diminishing returns: the first two
+// show and the rest sit behind "+N more" (fires on 9 of the 34 ready Topics; the
+// average is 2.0, so most never cap at all). On a `later` Topic there is no
+// draftable angle yet and the posts ARE the material — capping them would empty
+// the panel, and 6 of the 18 have none to begin with.
+//
+// The expander is a sibling checkbox, same reason as the trail: this renderer is
+// pure and has three hosts, none of which has anywhere to keep an open flag.
+const POST_CAP = 2;
+
+function renderPosts(topic, posts) {
+  const card = (p) => renderSocialPostCard(p);
+  if (topic.kind === "later" || posts.length <= POST_CAP) {
+    return html`<div class="topic-article__posts">${raw(posts.map(card).join(""))}</div>`;
+  }
+  const shown = posts.slice(0, POST_CAP);
+  const rest = posts.slice(POST_CAP);
+  const id = `topic-posts-${topic.id}`;
+  return html`<div class="topic-article__posts">
+    ${raw(shown.map(card).join(""))}
+    <input type="checkbox" class="topic-article__more-check" id="${escapeAttr(id)}" />
+    <label class="ap-link standalone small topic-article__more" for="${escapeAttr(id)}">
+      ${String(rest.length)} more ${rest.length === 1 ? "post" : "posts"}
+    </label>
+    <div class="topic-article__posts-rest">${raw(rest.map(card).join(""))}</div>
   </div>`;
 }
 
