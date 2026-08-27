@@ -25,6 +25,7 @@ Seul endroit légitime pour toucher `.ap-*`. Charte du fichier : _« the only le
 | `.ap-divider, .divider`                                 | La règle DS référence `--sys-color-border-color-default` mais les tokens du proto définissent `--sys-border-color-default` → fallback `--ref-color-grey-10`.                                                               |
 | `.ap-form-message[hidden]`                              | `.ap-form-message{display:flex}` bat `[hidden]{display:none}` → restaure le guard hidden.                                                                                                                                  |
 | `.ap-dropzone` (famille)                                | Le DS n'a pas de dropzone. Box partagée « drop / browse » ([`dropzone.js`](../../src/components/dropzone.js)), variantes `--compact` / `--lg`, highlight `is-drop-target`.                                                 |
+| `.ap-button.mermaid` (`--ap-mermaid-inner`)             | Le DS peint l'intérieur du bouton en dur `--ref-color-white`, donc il ne rend correctement que sur du blanc. Hook exposé pour qu'un hôte teinté lui passe son fond (défaut = valeur DS).                                   |
 
 Règle : **jamais** redéclarer une `.ap-*` hors ce fichier (ça flippe la cascade silencieusement).
 
@@ -180,37 +181,43 @@ Le « pick one of N » réutilisable. État dans [`inline-question.js`](../../sr
 
 `renderEmptyState()` ([`empty-state.js`](../../src/components/empty-state.js)) : `.session__empty` > icône `.lg` > `h3.text-subtitle` > `p.muted` > `.session__empty-action`. Variante panneau : `.app-right-panel__empty`.
 
-### Fente média vide (draft sans image)
+### Fente média vide (draft sans image) — une vraie dropzone
 
 `.posts__card-media-empty` ([`post-card.js`](../../src/components/post-card.js) `renderEmptyMedia`,
-CSS dans [`posts.css`](../../styles/screens/posts.css)) : `-slot` > `-title` + `-sub` + `-actions`,
-puis `-hint` **hors** du cadre. État `.is-generating` → `.archie-loader` + `-sub`.
+CSS dans [`posts.css`](../../styles/screens/posts.css)) : `-slot[data-post-drop]` > `-icon` +
+`-body` (`-title` + `-sub` + `-actions`), puis `-hint` **hors** du cadre.
+États : `.is-dragover`, `.is-generating`.
 
-La fente **porte le cadre que portera l'image** — mêmes 1px et même `--app-radius-md` que
-`.posts__card-image` — pour lire comme le cadre vide de la photo, pas comme un widget garé
-dans la carte.
+Pointillé + fond `grey-05` + glyphe `ap-icon-image` : ça ressemble à une dropzone média **et ça en
+est une**. Le drag/drop est câblé dans [`right-panel.js`](../../src/components/right-panel.js)
+(`attachImageToDraft` sur le premier fichier `image/*`), `.is-dragover` reprend le bleu électrique
+de `.ap-dropzone`. Une version antérieure avait le look sans le comportement — une promesse que
+l'UI ne tenait pas.
 
-- ⚠️ **Le fond doit rester `transparent`.** `.ap-button.mermaid` est une bordure dégradée en
-  trompe-l'œil : fond dégradé + un `::after` en retrait peint en `--ref-color-white`. Sur toute
-  surface teintée l'intérieur du bouton passe au blanc et il lit comme un rectangle mal collé.
-  C'était le bug d'origine — teinter ce fond le recasse.
-- **Pas de pointillés** : le pointillé est le signe universel de la drop-zone, et rien ici
-  n'accepte un drop (seuls les boutons agissent). D'où aussi : aucun hover, aucun état de drag.
-- **Aligné à gauche**, sur le bord de texte de la carte. Centrer un titre, une ligne de copy et
-  des actions dans une boîte haute est ce qui faisait lire un trou dans le feed.
+- ⚠️ **`bindDropzone` n'est PAS utilisable ici.** Son handler de clic déclenche l'input fichier
+  pour **tout** clic dans la zone : appuyer sur _Generate_ ouvrirait un file picker. On ne recâble
+  que les événements de drag ; les clics restent aux deux contrôles.
+- ⚠️ **Le fond teinté impose `--ap-mermaid-inner`.** `.ap-button.mermaid` est une bordure dégradée
+  en trompe-l'œil : fond dégradé + un `::after` en retrait peint en dur `--ref-color-white` par le
+  DS. Sur toute surface teintée l'intérieur du bouton reste blanc et il lit comme un rectangle mal
+  collé — c'était le bug d'origine. Le hook ajouté dans
+  [`ds-patches.css`](../../styles/ds-patches.css) permet à l'hôte de passer son propre fond au
+  bouton ; le défaut reste la valeur DS, donc les autres boutons mermaid sont inchangés.
+  **Si tu changes le `background` du slot, change `--ap-mermaid-inner` avec.**
+- **Aligné à gauche**, sur le bord de texte de la carte. Centrer titre, copy et actions dans une
+  boîte haute faisait lire un trou dans le feed.
 - **Titre = le nom, bouton = le verbe.** « Add an image » au-dessus d'un bouton « Generate an
-  image » disait deux fois la même chose → le bouton dit `Generate`, avec un `aria-label` complet.
+  image » disait deux fois la même chose → le bouton dit `Generate`, `aria-label` complet.
 - **Un seul contenant, un lien.** Deux boutons outline à libellé complet lisent comme une paire
-  d'égaux ; l'action IA garde le contenant, l'upload descend en `.ap-link`. C'est ce qui rend la
-  hiérarchie lisible d'un coup d'œil.
-- **Une seule hauteur (108px) pour les deux états**, posée sur le `-slot` : le cadre ne se
-  redimensionne pas quand il bascule en génération. Pas d'`aspect-ratio` en revanche — réserver la
-  hauteur réelle d'une image absente sur chaque carte du feed en fait une colonne de trous.
+  d'égaux ; l'action IA garde le contenant, l'upload descend en `.ap-link`.
+- **Une seule hauteur (108px) pour tous les états** : le cadre ne bouge pas entre repos, dragover
+  et génération. Pas d'`aspect-ratio` en revanche — réserver la hauteur réelle d'une image absente
+  sur chaque carte du feed en fait une colonne de trous.
 - **Un CTA de navigation vers le Playbook est un `.ap-link`** (bleu), jamais un bouton et jamais
   orange : l'orange est pour l'IA, et les 11 empty states du repo ont tous un CTA bleu.
-- ⚠️ **`ap-icon-missing-image` est inutilisable** : c'est le seul icône du DS dont le SVG porte un
-  `clipPath` avec un `<rect />` sans dimensions, qui découpe tout le glyphe. Il s'applique
-  proprement et ne peint rien.
+- ⚠️ **`ap-icon-missing-image` est inutilisable** : seul icône du DS dont le SVG porte un `clipPath`
+  avec un `<rect />` sans dimensions, qui découpe tout le glyphe. Il s'applique proprement et ne
+  peint rien. D'où `ap-icon-image`.
 
 ### Modals / backdrop
 

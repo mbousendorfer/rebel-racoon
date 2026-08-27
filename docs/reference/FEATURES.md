@@ -145,12 +145,13 @@ Store **per-session** [`posts-store.js`](../../src/posts-store.js). Draft = auth
 - **Char counter** par network (LinkedIn 3000, X 280, IG 2200, FB 63206, TikTok 2200, YT 5000) → rouge si dépassé.
 - **Media** : clip (faux player, gradient, play, durée, scrubber 24%, badge sous-titres) / image
   (_Edit_ → studio · _Change_ → file picker · _Remove_) / **fente vide** (`.posts__card-media-empty`) :
-  le cadre que portera l'image (mêmes 1px + `--app-radius-md` que `.posts__card-image`), fond
-  transparent, 108px, aligné à gauche — « Add an image » + « I'll write the brief from this draft. »
-  - un `.ap-button.mermaid` **Generate** (génère **en place**, sans studio) et « or upload a file »
-    en `.ap-link`. Ni pointillés ni fond teinté ni centrage : voir
-    [`UI-PATTERNS.md`](UI-PATTERNS.md) § Fente média vide pour le pourquoi de chacun (dont la
-    contrainte dure : le bouton mermaid ne rend correctement que sur du blanc).
+  une **vraie dropzone média** — pointillé, fond `grey-05`, glyphe image, 108px, aligné à gauche —
+  « Add an image » + « I'll write the brief from this draft — or drop an image here. » + un
+  `.ap-button.mermaid` **Generate** (génère **en place**, sans studio) et « or upload a file » en
+  `.ap-link`. Trois entrées donc : générer, glisser un fichier, ou en choisir un. Voir
+  [`UI-PATTERNS.md`](UI-PATTERNS.md) § Fente média vide pour les deux pièges (le bouton mermaid ne
+  rend correctement que sur du blanc — d'où `--ap-mermaid-inner` ; et `bindDropzone` détournerait
+  les clics des boutons).
 - **Hint de brand kit** : si le Playbook du chat n'a ni logo, ni couleurs, ni images de référence
   (`getBrandKitGaps` dans [`contexts-store.js`](../../src/contexts-store.js) — dérivé, jamais stocké),
   une ligne `.muted` sous la fente **nomme ce qui manque** et propose `Open the Playbook` (`.ap-link`,
