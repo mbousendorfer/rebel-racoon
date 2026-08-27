@@ -55,6 +55,14 @@ export function renderTopicHeader(topic, { source = null, withActions = false } 
     <div class="topic-article__head-meta">
       ${raw(renderProvenance(topic, source))} ${raw(withActions ? renderTopicActions(topic, { close: null }) : "")}
     </div>
+    <!-- The two quick facts live in the HEADER, not in the body. They are the
+         triage criteria - who this is for, and why it landed now - so they belong
+         with the identity and the verbs that act on it rather than with the
+         scrolling analysis. In the pane the header is fixed, so they also stay in
+         view while the prose scrolls. They render on a minority of Topics
+         (relevance 9 of 52, why now 13), which is why the header's height varies
+         with the Topic - see the note in topics.css. -->
+    ${raw(renderRelevance(topic))}
   </div>`;
 }
 
@@ -83,7 +91,6 @@ export function renderTopicArticle(topic, { source = null, withHeader = true } =
     })
     .join("");
 
-  const relevance = renderRelevance(topic);
   const posts = topic.posts || [];
 
   // ── A "later" Topic HAS no detailed version, by definition ────────────────
@@ -114,7 +121,7 @@ export function renderTopicArticle(topic, { source = null, withHeader = true } =
       : "";
 
   return html`<div class="topic-article">
-    ${raw(withHeader ? renderTopicHeader(topic, { source }) : "")} ${raw(relevance)}
+    ${raw(withHeader ? renderTopicHeader(topic, { source }) : "")}
     <div class="topic-article__body">${raw(body)}</div>
     ${raw(laterNote)}
     ${raw(

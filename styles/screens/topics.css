@@ -593,11 +593,25 @@
 .topic-article__facts {
   display: grid;
   grid-template-columns: max-content 1fr;
+  /* `start`, not the default stretch: a stretched <dt> is as tall as its row, and
+     its own inline-flex then centres the label inside that — so a label sat in
+     the middle of a four-line sentence. Content-height and top-aligned, with the
+     label carrying the BODY line-height so its box is exactly one line of the
+     text beside it: the two first lines then share a baseline. */
+  align-items: start;
   column-gap: var(--ref-spacing-sm);
   row-gap: var(--ref-spacing-xxs);
-  margin: 0;
-  padding-bottom: var(--ref-spacing-xs);
-  border-bottom: 1px solid var(--app-border-soft);
+  /* No rule and no bottom padding any more: these sit INSIDE the header, whose
+     own bottom border already closes the block. A second rule two lines above it
+     drew the same boundary twice.
+
+     WARNING their being here means the pane's FIXED header varies in height with
+     the Topic - 125px without them, about 230 with both. That is the price of
+     keeping the triage criteria in view while the prose scrolls, and it only
+     lands on the minority that carry them (relevance 9 of 52, why now 13). If the
+     jump between Topics proves worse than the persistence is worth, the fix is to
+     move this block back into the scroller, never to truncate the sentences. */
+  margin: var(--ref-spacing-xxs) 0 0;
 }
 
 .topic-article__fact-label {
