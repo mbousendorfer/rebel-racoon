@@ -8,6 +8,7 @@
     "postinstall": "node scripts/sync-ds.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "check:templates": "python3 scripts/check-template-comments.py",
     "prepare": "husky"
   },
   "keywords": [],

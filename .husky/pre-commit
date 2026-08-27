@@ -1,1 +1,7 @@
+# A backtick or a ${...} inside an HTML comment lives inside an html`` template,
+# so it ends the literal or interpolates: SyntaxError and a blank screen, with the
+# error pointing at a line that reads like prose. Cheap to check, expensive to
+# diagnose - so it blocks the commit rather than shipping.
+python3 scripts/check-template-comments.py
+
 npx lint-staged
