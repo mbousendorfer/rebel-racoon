@@ -42,21 +42,28 @@
 
 import { html, raw, escapeAttr } from "../utils.js?v=22";
 import { topicTitle } from "../topics-store.js?v=4";
-import { findReviewStatus } from "../topics-catalog.js?v=2";
+import { findReviewStatus, findAttentionSignal } from "../topics-catalog.js?v=2";
 
-// ── The signal marks ───────────────────────────────────────────────────────
-// Trending and Updated, in words as well as colour: colour alone is never the
-// signal (the label is what a screen reader gets, and what a colour-blind reader
-// gets). Updated is the deliberately quieter of the two — a rewrite is worth
-// knowing about, a spike is worth acting on today.
-function renderTrendingMark() {
-  return html`<span class="trending-mark"
-    ><i class="ap-icon-arrow-up" aria-hidden="true"></i><span>Trending</span></span
-  >`;
-}
-
-function renderUpdatedMark() {
-  return html`<span class="updated-mark"><i class="ap-icon-refresh" aria-hidden="true"></i><span>Updated</span></span>`;
+// ── The signal marks: the DS STATUS, not a lookalike ──────────────────────
+// `.ap-status` with the tone and the icon that topics-catalog ALREADY declared
+// per signal (orange for Trending, tagOrange for Updated) — the catalogue has
+// carried the right mapping all along and these were hand-rolled spans ignoring
+// it. `findAttentionSignal` had no reader at all until now.
+//
+// `no-dot` because the slot holds the signal's own glyph instead: an arrow-up
+// says RISING and a refresh says REWRITTEN, which the component's neutral dot
+// cannot. That is composition of a shipped component with a shipped modifier, and
+// it costs no CSS of its own — the pill's fill, height, radius and type all come
+// from --comp-status-*.
+//
+// Colour is still never the only signal: each carries its word. A colour-blind
+// reader and a screen reader both get "Trending" either way.
+function renderSignal(id) {
+  const sig = findAttentionSignal(id);
+  if (!sig) return "";
+  return html`<span class="ap-status ${sig.statusColor} no-dot topic-card__signal">
+    <i class="${sig.icon}" aria-hidden="true"></i><span>${sig.label}</span>
+  </span>`;
 }
 
 // The triage glyph, immediately right of the age — the left of the meta row is
@@ -87,7 +94,7 @@ function renderMeta(topic, source) {
     )}
     <span class="topic-card__age">· ${topic.ageLabel}</span>
     ${raw(renderStatusGlyph(topic.status))}
-    ${raw(topic.isTrending ? renderTrendingMark() : "")}${raw(topic.isUpdated ? renderUpdatedMark() : "")}
+    ${raw(topic.isTrending ? renderSignal("trending") : "")}${raw(topic.isUpdated ? renderSignal("updated") : "")}
   </span>`;
 }
 

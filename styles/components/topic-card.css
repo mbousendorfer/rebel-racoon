@@ -130,8 +130,7 @@
 /* The signal goes to the FAR END of the meta line: it is the one thing on that
    line a reader cannot know without being told, and at the end it is what the eye
    lands on last and remembers. */
-.topic-card--feed .trending-mark,
-.topic-card--feed .updated-mark {
+.topic-card--feed .topic-card__signal {
   margin-left: auto;
 }
 

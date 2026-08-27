@@ -28,7 +28,7 @@
 import { html, raw, escapeHtml } from "../utils.js?v=22";
 import { requestOpen, notifyClose } from "../modal-coordinator.js?v=22";
 import { renderEmptyState } from "./empty-state.js?v=3";
-import { renderTopicCard } from "./topic-card.js?v=9";
+import { renderTopicCard } from "./topic-card.js?v=10";
 import { renderTopicArticle, renderTopicActions } from "../topic-article.js?v=10";
 import { getFeedForPlaybook } from "../topic-feeds-store.js?v=3";
 import { getTopicsForFeed, groupTopicsByAge, getTopicById } from "../topics-store.js?v=4";

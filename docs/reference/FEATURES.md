@@ -746,6 +746,10 @@ C'est ce qui a libéré les noms canoniques (`/topics`, `topics-store.js`, `topi
 
 Le **triage vit dans sa propre map**, pas écrit sur le Topic : un Topic est ce que le scan a rendu (côté serveur), une ligne de triage est ce que **cet** utilisateur en a fait. Les garder séparés est ce qui permet à un re-scan de remplacer un Topic sans écraser la réponse.
 
+**Les deux signaux sont le composant STATUS du DS**, pas un sosie : `.ap-status` avec la tonalité et l'icône que [`topics-catalog.js`](../../src/topics-catalog.js) **déclarait déjà** par signal — `orange` pour Trending, `tagOrange` pour Updated. Le modificateur `no-dot` libère le slot de la pastille pour le glyphe du signal : une flèche vers le haut dit **qui monte** et un refresh dit **qui a été réécrit**, ce que la pastille neutre du composant ne peut pas dire. Fill, hauteur, rayon et typo viennent tous de `--comp-status-*` : zéro CSS propre pour la pilule.
+
+⚠️ **C'étaient deux `<span>` faits main** (`trending-mark` / `updated-mark`, plus une feuille CSS entière) qui ignoraient le catalogue — `findAttentionSignal()` n'avait **aucun lecteur** jusqu'ici. La feuille est supprimée. Effet de bord : l'encre du label passe de la teinte du signal à `--comp-status-color`, donc du texte foncé sur un aplat teinté au lieu d'un texte orange — c'est le traitement du DS, et il contraste mieux. La couleur n'est toujours pas le seul signal : chacun porte son mot.
+
 Un Topic **ignoré n'est jamais remonté par un signal, nulle part**. Cocher **Ignored** dans le filtre est le seul chemin de retour. La règle inverse — « une pointe n'est jamais masquée par le triage » — a été essayée et retirée : elle faisait d'Ignore une suggestion au lieu d'une réponse.
 
 ### Les deux stores

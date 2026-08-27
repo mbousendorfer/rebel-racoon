@@ -392,7 +392,7 @@ styles/
   components/       — add-source-modal, archie-loader, clip-card, connectors-modal,
                       conversation-status-card, feedback-control, right-panel,
                       schedule-modal, sidebar, social-post-card, subtitle-style,
-                      top-post-card, topic-badge, topic-card, trending-mark, video-clips-modal,
+                      top-post-card, topic-badge, topic-card, video-clips-modal,
                       workflow-flow
 ```
 
