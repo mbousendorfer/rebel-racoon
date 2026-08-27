@@ -36,7 +36,7 @@
 import { html, raw, escapeHtml } from "../../utils.js?v=22";
 import { getPosts } from "../../posts-store.js?v=52";
 import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=45";
-import { renderPostCard } from "../post-card.js?v=93";
+import { renderPostCard } from "../post-card.js?v=94";
 import { KEY, ctx } from "./context.js?v=48";
 import { composer } from "./composer-view.js?v=79";
 import { settingsPanel } from "./settings-view.js?v=16";

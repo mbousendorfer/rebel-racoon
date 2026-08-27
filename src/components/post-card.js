@@ -436,6 +436,22 @@ export function renderPostCard(post, opts = {}) {
             </button>
           </div>
         </div>
+        <!-- Image Studio. It lives in the rail rather than in the media block
+             because it is the ONE entry that has to work in every media state:
+             no image (steer a generation instead of the one-click Generate), a
+             single image (open it in Edit), or a carousel (reopen the set). The
+             media block's own controls are contextual and partly hover-only, so
+             on an image-less draft nothing reached the studio at all. -->
+        <button
+          type="button"
+          class="ap-icon-button stroked"
+          aria-label="Open the Image Studio"
+          title="Image Studio"
+          data-post-studio="${post.id}"
+          ${regenerating ? "disabled" : ""}
+        >
+          <i class="ap-icon-image"></i>
+        </button>
         <button
           type="button"
           class="ap-icon-button stroked"

@@ -12,7 +12,7 @@ import {
   attachImageToDraft,
   subscribe as subscribePostsStore,
 } from "../posts-store.js?v=52";
-import { renderPostCard } from "./post-card.js?v=93";
+import { renderPostCard } from "./post-card.js?v=94";
 import { renderTopPostEcho } from "./top-post-card.js?v=91";
 import { renderClipCard } from "./clip-card.js?v=33";
 import { onFeedbackClick } from "./feedback-control.js?v=4";
@@ -679,7 +679,12 @@ export function init() {
     }
     const imageEditBtn = event.target.closest("[data-post-image-edit]");
     if (imageEditBtn) {
-      onPostImageEdit(imageEditBtn.dataset.postImageEdit);
+      onPostStudio(imageEditBtn.dataset.postImageEdit);
+      return;
+    }
+    const studioBtn = event.target.closest("[data-post-studio]");
+    if (studioBtn) {
+      onPostStudio(studioBtn.dataset.postStudio);
       return;
     }
     const imageUploadBtn = event.target.closest("[data-post-image-upload]");
@@ -2128,22 +2133,28 @@ function onPostImage(postId) {
   }, 1800);
 }
 
-// "Edit" on a draft that already has an image → open the Image Studio straight
-// in Edit mode on that image (retouch / add logos + text / expand), then "Use
-// this image" re-attaches the result to the draft. Since "Generate an image"
-// now produces an image in place, this is the studio's only entry point for a
-// single image — and the Generate tab is right there once it's open.
-function onPostImageEdit(postId) {
+// Open the Image Studio on a draft, in whichever mode its media calls for. One
+// function behind two entry points: the rail's Image Studio button (any state)
+// and "Edit" / "Edit slides" on the media itself (contextual).
+//
+// The no-media branch is why the rail button exists. "Generate an image" in the
+// empty slot produces a picture in one click with no way to steer it, and the
+// media block's studio controls only exist once there IS media — so an
+// image-less draft had no route to the studio at all.
+function onPostStudio(postId) {
   const sid = activeSessionId();
   if (!sid) return;
   const post = getPosts(sid).find((p) => p.id === postId);
   if (!post) return;
   // A carousel reopens in the studio's carousel results (add / remove /
-  // regenerate slides); a single image opens straight into Edit mode.
+  // regenerate slides); a single image opens straight into Edit mode; no media
+  // opens the Generate flow, which is the studio's own default.
   if (Array.isArray(post.carousel) && post.carousel.length > 1) {
     openImageStudio(postId, { sessionId: sid, carouselUrls: post.carousel });
   } else if (post.imageUrl) {
     openImageStudio(postId, { sessionId: sid, editImageUrl: post.imageUrl });
+  } else {
+    openImageStudio(postId, { sessionId: sid });
   }
 }
 
