@@ -601,18 +601,10 @@
   color: var(--sys-text-color-default);
 }
 
-/* Tinted ONLY when a signal is what the row is about, and each takes its own
-   signal's colour so the row and the card's mark read as one claim. The rule is a
-   left border, not a fill on the whole block: a tinted block at body size reads
-   as a warning, and neither of these is one. */
-.topic-article__fact--trending,
-.topic-article__fact--updated {
-  padding-left: var(--ref-spacing-xxs);
-  border-left: 2px solid var(--ref-color-orange-100);
-}
-
-.topic-article__fact--updated {
-  border-left-color: var(--ref-color-menthol-150);
+/* The DS infobox brings its own ground, bar, radius and padding — nothing to
+   style here beyond letting it use the full measure. */
+.topic-article__whynow {
+  width: 100%;
 }
 
 /* ── The prose ───────────────────────────────────────────────────────────── */

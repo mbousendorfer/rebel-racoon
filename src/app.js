@@ -13,7 +13,7 @@ import { init as initChatPickerModal } from "./components/chat-picker-modal.js?v
 import { init as initAddSourceModal } from "./components/add-source-modal.js?v=79";
 import { init as initConnectorsModal } from "./components/connectors-modal.js?v=25";
 import { init as initTopicIgnoreModal } from "./components/topic-ignore-modal.js?v=2";
-import { init as initTopicPickerModal } from "./components/topic-picker-modal.js?v=8";
+import { init as initTopicPickerModal } from "./components/topic-picker-modal.js?v=9";
 import { init as initConfirmModal } from "./components/confirm-modal.js?v=23";
 import { init as initRenameModal } from "./components/rename-modal.js?v=3";
 import { init as initSaveFolderModal } from "./components/save-folder-modal.js?v=24";
@@ -27,9 +27,9 @@ import {
   render as renderConversationStatusCard,
 } from "./components/conversation-status-card.js?v=247";
 import { renderDashboard } from "./screens/dashboard.js?v=74";
-import { renderSession } from "./screens/session.js?v=546";
+import { renderSession } from "./screens/session.js?v=547";
 import { renderContexts } from "./screens/contexts.js?v=281";
-import { renderTopics } from "./screens/topics.js?v=19";
+import { renderTopics } from "./screens/topics.js?v=20";
 import { renderTopicsSettings } from "./screens/topics-settings.js?v=3";
 import { renderConnectors } from "./screens/connectors.js?v=218";
 import { renderWelcomeAlt } from "./screens/welcome-alt.js?v=5";

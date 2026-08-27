@@ -29,7 +29,7 @@ import { html, raw, escapeHtml } from "../utils.js?v=22";
 import { requestOpen, notifyClose } from "../modal-coordinator.js?v=22";
 import { renderEmptyState } from "./empty-state.js?v=3";
 import { renderTopicCard } from "./topic-card.js?v=7";
-import { renderTopicArticle, renderTopicActions } from "../topic-article.js?v=6";
+import { renderTopicArticle, renderTopicActions } from "../topic-article.js?v=7";
 import { getFeedForPlaybook } from "../topic-feeds-store.js?v=2";
 import { getTopicsForFeed, groupTopicsByAge, getTopicById } from "../topics-store.js?v=2";
 import { findTopicSource } from "../topics-catalog.js?v=2";
@@ -38,7 +38,7 @@ import { useTopicInChat } from "../topic-flow.js?v=2";
 
 const MODAL_ID = "topic-picker";
 
-let backdrop, modal, bodyEl;
+let backdrop, modal, bodyEl, footEl;
 let initialized = false;
 // { view: "list" | "article", playbookId, topicId, canGoBack }
 let state = null;
@@ -57,6 +57,11 @@ const HTML = `
     <i class="ap-icon-close"></i>
   </button>
   <div class="topic-picker__body" id="topicPickerBody"></div>
+  <!-- The DS dialog footer is a SIBLING of the scrolling body, never inside it:
+       that is what pins it to the dialog's bottom edge without position sticky
+       and without negative margins clawing back the scroller's padding.
+       NOTE no backticks in here - this string is a template literal. -->
+  <div id="topicPickerFoot"></div>
 </aside>`;
 
 function injectOnce() {
@@ -68,6 +73,7 @@ function injectOnce() {
   backdrop = document.getElementById("topicPickerBackdrop");
   modal = document.getElementById("topicPickerModal");
   bodyEl = document.getElementById("topicPickerBody");
+  footEl = document.getElementById("topicPickerFoot");
 
   backdrop.addEventListener("click", close);
 
@@ -162,6 +168,13 @@ export function close() {
 function paint() {
   if (!state) return;
   bodyEl.innerHTML = state.view === "article" ? renderArticleView() : renderListView();
+  // Only the article has verbs; the list's cards carry their own.
+  const openTopic = state.view === "article" && state.topicId ? getTopicById(state.topicId) : null;
+  footEl.innerHTML = openTopic
+    ? `<div class="ap-dialog-footer"><div class="ap-dialog-footer-right">${renderTopicActions(openTopic, {
+        close: "Close",
+      })}</div></div>`
+    : "";
   const topic = state.topicId ? getTopicById(state.topicId) : null;
   modal.setAttribute(
     "aria-label",
@@ -239,6 +252,5 @@ function renderArticleView() {
     )}
     <div class="topic-picker__article">
       ${raw(renderTopicArticle(topic, { source: findTopicSource(topic.sourceId) }))}
-    </div>
-    <footer class="topic-picker__foot">${raw(renderTopicActions(topic, { close: "Close" }))}</footer>`;
+    </div>`;
 }

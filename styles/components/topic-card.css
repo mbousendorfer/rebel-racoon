@@ -79,8 +79,7 @@
    nothing moves and no card below it is nudged. */
 .topic-card--feed:hover,
 .topic-card--feed:focus-within {
-  background: var(--ref-color-electric-blue-05);
-  border-color: var(--ref-color-electric-blue-20);
+  border-color: var(--ref-color-electric-blue-100);
 }
 
 .topic-card--feed.is-reading {
@@ -136,6 +135,12 @@
   margin-left: auto;
 }
 
+/* ⚠️ HOVER IS THE BORDER, NEVER THE GROUND. Both variants used to wash the card
+   in electric-blue-05 as well as move the border, which is the one thing this
+   app's card-hover convention rules out: a tinted ground on hover reads as a
+   selected state, and this card HAS a selected state (`is-reading`) that says so
+   with exactly that wash. Two states cannot share one signal. */
+
 /* ══ PICKER — the dialog ═══════════════════════════════════════════════════
    The same card, minus the open state: one click here chooses the Topic, so
    nothing stays selected long enough to need marking. */
@@ -148,8 +153,7 @@
 
 .topic-card--picker:hover,
 .topic-card--picker:focus-within {
-  background: var(--ref-color-electric-blue-05);
-  border-color: var(--ref-color-electric-blue-20);
+  border-color: var(--ref-color-electric-blue-100);
 }
 
 /* ── The body: one button over the whole text area ─────────────────────────── */

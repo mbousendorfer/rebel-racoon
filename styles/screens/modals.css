@@ -1363,6 +1363,11 @@ body.has-modal {
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-sm);
+  /* Takes the slack so the DS footer below it stays pinned to the dialog's
+     bottom edge, and `min-height: 0` is what lets this box actually scroll
+     instead of growing the dialog past its max-height. */
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
   padding: var(--ref-spacing-md);
   padding-right: var(--ref-spacing-xl);
@@ -1419,17 +1424,9 @@ body.has-modal {
   align-self: flex-start;
 }
 
-/* The footer sticks to the dialog's bottom edge so the verbs stay reachable
-   while the article scrolls. Inside the scroller, sticky rather than a sibling:
-   the article's own measure keeps it aligned with the prose above it. */
-.topic-picker__foot {
-  position: sticky;
-  bottom: calc(var(--ref-spacing-md) * -1);
-  margin: 0 calc(var(--ref-spacing-xl) * -1) calc(var(--ref-spacing-md) * -1) calc(var(--ref-spacing-md) * -1);
-  padding: var(--ref-spacing-xs) var(--ref-spacing-md);
-  border-top: 1px solid var(--app-border-soft);
-  background: var(--app-surface);
-}
+/* The DS .ap-dialog-footer does the pinning by structure now (it is a sibling of
+   the scroller), so the hand-rolled sticky footer with its four negative margins
+   is gone. Nothing left to style. */
 
 .topic-picker__empty {
   display: flex;

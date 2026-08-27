@@ -157,16 +157,31 @@ function renderRelevance(topic) {
       </p>`,
     );
   }
+  // Why now is the DS INFOBOX, not a hand-rolled row. It used to be a paragraph
+  // with a 2px coloured border-left, tinted per signal - which is not a style
+  // this app invented so much as the DS's own infobox, reimplemented badly:
+  // .ap-infobox::before IS a 4px full-height coloured bar, and the component
+  // brings the tinted ground, the icon, the radius and the title/message pair
+  // with it. Same anatomy playbook.js already uses for its sharing notice.
+  //
+  // Tone is `info` whatever the signal. The DS tones are semantic - warning
+  // means caution, success means confirmation - and neither Trending nor Updated
+  // is either of those; painting a spike as a warning is the same mistake as
+  // painting Ignore red. ⚠️ Which means the ARTICLE no longer colour-codes the
+  // signal at all. The card still states it in words, and if the pane needs it
+  // too the mark belongs in the header beside the source, not smuggled into a
+  // tone that would misname it.
   if (topic.whyNow) {
-    const tone = topic.isTrending
-      ? " topic-article__fact--trending"
-      : topic.isUpdated
-        ? " topic-article__fact--updated"
-        : "";
     rows.push(
-      html`<p class="topic-article__fact${raw(tone)}">
-        <strong class="topic-article__fact-label">Why now:</strong> ${topic.whyNow}
-      </p>`,
+      html`<div class="ap-infobox info topic-article__whynow">
+        <i class="ap-icon-info" aria-hidden="true"></i>
+        <div class="ap-infobox-content">
+          <div class="ap-infobox-texts">
+            <span class="ap-infobox-title">Why now</span>
+            <span class="ap-infobox-message">${topic.whyNow}</span>
+          </div>
+        </div>
+      </div>`,
     );
   }
   if (!rows.length) return "";
@@ -198,6 +213,18 @@ export function renderTopicActions(topic, { close = "Close" } = {}) {
   // closest to the edge the eye lands on. It was the other way round for a
   // commit, which put Ignore in the position the primary should hold.
   return html`<div class="topic-article__actions">
+    <!-- The way out comes FIRST and the primary LAST, which is the order the DS
+         dialog footer prescribes and the order topic-ignore-modal.js already uses
+         (Cancel, then the action). It used to be [Ignore][Use in chat][Close] with
+         Close shoved right by a margin - a hand-rolled footer layout inside a
+         component that ships one. -->
+    ${raw(
+      close
+        ? html`<button type="button" class="ap-button transparent grey topic-article__close" data-topic-close>
+            ${close}
+          </button>`
+        : "",
+    )}
     ${raw(
       ignored
         ? html`<button type="button" class="ap-button stroked grey" data-topic-unignore="${escapeAttr(topic.id)}">
@@ -210,12 +237,5 @@ export function renderTopicActions(topic, { close = "Close" } = {}) {
     <button type="button" class="ap-button primary orange" data-topic-use="${escapeAttr(topic.id)}">
       <i class="ap-icon-single-chat-bubble"></i><span>Use in chat</span>
     </button>
-    ${raw(
-      close
-        ? html`<button type="button" class="ap-button ghost grey topic-article__close" data-topic-close>
-            ${close}
-          </button>`
-        : "",
-    )}
   </div>`;
 }

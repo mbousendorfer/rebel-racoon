@@ -53,7 +53,7 @@ import {
   isLiveSource,
 } from "../topics-catalog.js?v=2";
 import { renderTopicCard } from "../components/topic-card.js?v=7";
-import { renderTopicArticle, renderTopicHeader } from "../topic-article.js?v=6";
+import { renderTopicArticle, renderTopicHeader } from "../topic-article.js?v=7";
 import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=2";
 import { useTopicInChat } from "../topic-flow.js?v=2";
 

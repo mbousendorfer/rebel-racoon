@@ -89,7 +89,9 @@ Exemples en place : [`screens/topics.js`](../../src/screens/topics.js) (les troi
 
 ### Cartes + hover
 
-Règle universelle (`chat.css`) : _« a light-blue wash on hover/focus (never navy/black) — soft blue fill + a light blue border, not a hard outline »_. Voir mémoire _card-hover-convention_.
+⚠️ **RÈGLE CORRIGÉE (2026-08-27) : un `:hover` ne porte JAMAIS de fond bleu — seulement la bordure.** `chat.css` documentait l'inverse (« soft blue fill + a light blue border ») et c'est ce qui a été recalé : un sol teinté au survol se lit comme un **état sélectionné**, et une carte qui a réellement un état sélectionné (`.topic-card--feed.is-reading`, qui utilise précisément ce lavis) ne peut pas partager un signal avec son survol. Le survol déplace `border-color` vers `--ref-color-electric-blue-100`, rien d'autre.
+
+Appliqué sur `.topic-card--feed` / `--picker`. ⚠️ **Pas encore balayé ailleurs** : `.drafts-card:hover` fait toujours fill + bordure, et la phrase de `chat.css` est toujours dans le CSS. À traiter quand la question reviendra, surface par surface.
 
 - `.drafts-card:hover` → `border-color: --ref-color-electric-blue-20` + `background: --ref-color-electric-blue-05`. Actif = `.is-active` (electric-blue-40).
 - `.top-post-card:hover`, `.clip-card` sélectionné → `border-color: --ref-color-electric-blue-100`.
