@@ -656,20 +656,47 @@
   margin: 0;
 }
 
-/* ── One block per fact ────────────────────────────────────────────────────
-   OUTLINE, not fill. The one-fill rule stands: the quoted posts are the only
-   thing on this surface wearing a ground, because they are the only thing that
-   is not Archie's voice. So the brief gets the OTHER device — a hairline box —
-   and the two treatments now mean two different things instead of five things
-   meaning nothing.
+/* ── One block per fact, and it is PEACH ───────────────────────────────────
+   ⚠️ THE ONE-FILL RULE BECOMES A TWO-FILL RULE, DISTINGUISHED BY HUE. It used to
+   say: exactly one kind of object wears a ground here, the quoted posts, because
+   they are the only thing that is not Archie's voice. That still holds — what
+   changes is that Archie's own framing now wears one too, and the two are told
+   apart by colour rather than by presence:
 
-   The box was free: the trail gave it up when it moved behind the kebab, so the
-   article still has exactly one framed species and one filled species. No
-   shadow — the pane is already a card, and nothing here nests elevation. */
+     peach  (--ref-color-orange-10)  Archie's read on the Topic — the brief
+     grey   (--app-surface-subtle)   somebody else's words, quoted as evidence
+
+   Orange is this app's AI colour, so it is the only hue that means "this is
+   Archie" — and it was the only one left: blue is the interactive colour and may
+   not tint static data, green is Already used, tagOrange is Trending, menthol is
+   Updated, grey is Ignored and the quoted posts, red is destructive.
+
+   ⚠️ It DOES widen the orange rule from "AI / spotlight ACTIONS" to "Archie's own
+   voice", which is a deliberate call, not an oversight. The Use-in-chat primary
+   40px above stays unmistakable: saturated fill, white text, 40px tall, against a
+   wash. Do not read this as licence to tint other static data orange.
+
+   No border, for the reason the post cards dropped theirs: where a fill is the
+   thing that marks a species, an outline on top of it is a second device saying
+   the same thing. No shadow either — the pane is already a card and nothing here
+   nests elevation.
+
+   The blocks were an outlined box for three commits, on the strength of the
+   one-fill rule; `git log -S app-border-soft -- styles/screens/topics.css` has it. */
 .topic-article__fact {
   padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
-  border: 1px solid var(--app-border-soft);
   border-radius: var(--app-radius-card);
+  background: var(--ref-color-orange-10);
+}
+
+/* The glyph is orange-150, not the brand's orange-100: #FF6726 on a #FFEFE9 ground
+   is a washed-out mark, and this one has to read at 16px. The LABEL stays
+   caption-bold in light ink — a de-emphasised label over an emphasised value is the
+   point of the pair, and colouring it too would make "Relevance" look like a
+   warning rather than a heading. Fill and glyph carry the colour; the sentence
+   keeps the prose's own ink. */
+.topic-article__fact-label > i {
+  color: var(--ref-color-orange-150);
 }
 
 .topic-article__fact-label {
