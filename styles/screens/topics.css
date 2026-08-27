@@ -526,10 +526,24 @@
    the only two hosts, and both are this feature. It moves to
    styles/components/topic-article.css the day a third surface renders one. */
 
+/* Four bands, in reading order: the two facts, the analysis, the evidence, the
+   trail. This gap is the distance BETWEEN bands, and it is the coarsest step of
+   the article's five:
+
+     2px   a fact's label to its own sentence
+     8px   quoted cards; a section head to its cards
+     12px  one paragraph of prose to the next
+     20px  above a subhead - a new section of the analysis STARTS
+     32px  band to band
+
+   32 is not arbitrary. In the pane, header to body already measures 16 (header
+   padding) + 1 (hairline) + 16 (body padding) = 32, so the dialog - which has no
+   hairline - gets the same separation from space alone. No new rule, no new fill:
+   one KIND of thing wears a ground on this surface and it is the quoted posts. */
 .topic-article {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xs);
+  gap: var(--ref-spacing-lg);
   /* The shared measure — the same custom property the page cap is derived
      from, so the pane can never be wider than the prose it holds. */
   max-width: var(--topic-measure);
@@ -601,7 +615,10 @@
   /* Between the two facts. Against 2px inside one — spacing within a group has to
      be smaller than the spacing around it, and a label belongs to its sentence. */
   gap: var(--ref-spacing-xxs);
-  margin: var(--ref-spacing-xxs) 0 0;
+  /* No margin of its own: this is the article's first band, so the band gap sets
+     the distance to the analysis. It used to be a child of the fixed header and
+     carried 8px of its own. */
+  margin: 0;
 }
 
 .topic-article__fact-label {
@@ -629,6 +646,50 @@
   color: var(--sys-text-color-default);
 }
 
+/* ── The analysis ──────────────────────────────────────────────────────────
+   ⚠️ RESTORED. `15284825` deleted this block and the Contributing-posts one below
+   it while fixing the fact labels, so six classes the renderer emits had no rule
+   at all. `base.css` zeroes the margin on every h* and p, so the analysis fell to
+   browser defaults: paragraphs touching, and subheads at the UA's own ~16px bold,
+   which put them at the same visual rank as "Contributing posts". Do not delete
+   again - nothing here is decoration, it is the only thing giving the article's
+   own content a shape.
+
+   12px between paragraphs, not the 8 this block carried before. 8px against an
+   18px line is 0.44em: it is what made a four-paragraph section read as one wall
+   even while the rule existed. */
+.topic-article__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+}
+
+.topic-article__para {
+  margin: 0;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--sys-text-color-default);
+  /* Kills the one-word last line. Degrades to `normal` where unsupported. */
+  text-wrap: pretty;
+}
+
+/* h4 (14/700), NOT h3 (16/700), against 14/400 prose. The claim above is 18/700,
+   so a 16px subhead comes within 2px of it and starts competing for the loudest
+   thing on the surface - which is exactly what the UA default was already doing. Weight separates it from the prose; the 20px above
+   it separates one section from the next. Size is not needed and costs the title
+   its rank. */
+.topic-article__subhead {
+  margin: var(--ref-spacing-xxs) 0 0;
+  font-size: var(--sys-text-style-h4-size);
+  line-height: var(--sys-text-style-h4-line-height);
+  font-weight: var(--sys-text-style-h4-weight);
+  color: var(--sys-text-color-default);
+}
+
+.topic-article__subhead:first-child {
+  margin-top: 0;
+}
+
 /* The "nothing draftable yet" line. Muted body prose in the prose's own slot —
    an absence reads as an absence, not as a boxed announcement. */
 .topic-article__thin {
@@ -636,6 +697,38 @@
   font-size: var(--sys-text-style-body-size);
   line-height: var(--sys-text-style-body-line-height);
   color: var(--sys-text-color-light);
+}
+
+/* ── The evidence ──────────────────────────────────────────────────────────
+   Also restored. No `margin-top` on the section: the band gap sets the distance
+   from the analysis, and the two together would double it.
+
+   The head is caption-bold in LIGHT ink - deliberately BELOW the analysis
+   subheads even though both are `h3` in the DOM. "Contributing posts" is
+   apparatus, not a third argument: it names what follows rather than claiming
+   something. And no hairline above it - that was tried and removed, because the
+   change of ground on the cards already draws the boundary. */
+.topic-article__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+}
+
+.topic-article__section-head {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  margin: 0;
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--sys-text-color-light);
+}
+
+.topic-article__posts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
 }
 
 /* ── The evidence expander ─────────────────────────────────────────────────
@@ -650,8 +743,13 @@
   pointer-events: none;
 }
 
+/* `align-self` only bites now that __posts is a flex column - on the block parent
+   it had been inert. The 4px lifts the control off the card above it: flush
+   against a quoted post it read as part of that post rather than as a thing to
+   click. */
 .topic-article__more {
   align-self: flex-start;
+  margin-top: var(--ref-spacing-xxxs);
   cursor: pointer;
 }
 
@@ -680,10 +778,6 @@
    element permanently and these two rules override what it hides — host-scoped,
    the same shape as the three other .ap-* overrides in this app. The DS's own
    chevron rotation is reused rather than re-declared. */
-.topic-article__history {
-  margin-top: var(--ref-spacing-xxs);
-}
-
 /* Visually gone, still focusable and still announced: the label is the header, so
    a keyboard reader tabs to the control and hears its checked state. */
 .topic-article__trail-check {
@@ -761,12 +855,13 @@
   gap: var(--ref-spacing-xxs);
 }
 
-/* The way out sits last and to the right of the two verbs, so the two decisions
-   read together and the exit is not mistaken for one of them. Buttons never
-   stretch — margin-left on the close, not flex: 1 on the row. */
-.topic-article__close {
-  margin-left: auto;
-}
+/* The way out comes FIRST in the group and stays there: [Close][Ignore][Use in
+   chat], right-aligned by the DS footer itself, which is the order nine other
+   modals in this app already use and the one the renderer's own comment
+   prescribes. It used to carry `margin-left: auto`, which shoved Close to the far
+   right of the footer and put the two decisions on the opposite side from the
+   edge the eye lands on. Only the dialog renders it - the pane passes
+   `close: null`. */
 
 /* ── The Filters panel's own additions ────────────────────────────────────
    The DS's filter-leaf option is `justify-content: flex-start`, which is right

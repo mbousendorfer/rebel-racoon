@@ -23,15 +23,28 @@
 // SAY, which is why both are rendered from here and nowhere else.
 //
 // ── What the article is ────────────────────────────────────────────────────
-// The claim (its own title), the analysis in its two authored sections, and the
-// posts the analysis was written from. Nothing else — and in particular no
+// The two triage facts, the analysis in its two authored sections, the posts the
+// analysis was written from, and the trail. Nothing else — and in particular no
 // version history: an updated Topic reads as its current version, because a
 // reader deciding what to post does not need the draft that preceded it.
 //
-// It carries no "Why now" block of its own beyond the relevance rows below. The
-// card used to repeat the reason a Topic was flagged while the mark above already
-// said THAT it was flagged, and it could only ever show two clamped lines of an
-// explanation whose whole value is the detail.
+// ── Why the two facts are in the ARTICLE and not in the header ────────────
+// They were in the header for one commit, on the argument that triage criteria
+// belong with the identity and the verbs that act on it. The measurement killed
+// it: the fixed header went from 125px to 291px — 32% of the pane — and, worse,
+// its height then varied with whichever fields a Topic happened to carry, so the
+// scrollport resized every time the reader opened the next Topic.
+//
+// They are the article's FIRST band instead, so nothing about the reading order
+// or the visual layout changes: facts, then the analysis, then the evidence, then
+// the trail. What it buys is a header of one fixed height, and parity between the
+// two hosts — in the dialog the facts already scrolled, because the dialog renders
+// the header inline. One placement, one behaviour.
+//
+// It carries no "Why now" block of its own beyond those rows. The card used to
+// repeat the reason a Topic was flagged while the mark above already said THAT it
+// was flagged, and it could only ever show two clamped lines of an explanation
+// whose whole value is the detail.
 
 import { html, raw, escapeAttr } from "./utils.js?v=22";
 import { topicTitle } from "./topics-store.js?v=4";
@@ -55,14 +68,11 @@ export function renderTopicHeader(topic, { source = null, withActions = false } 
     <div class="topic-article__head-meta">
       ${raw(renderProvenance(topic, source))} ${raw(withActions ? renderTopicActions(topic, { close: null }) : "")}
     </div>
-    <!-- The two quick facts live in the HEADER, not in the body. They are the
-         triage criteria - who this is for, and why it landed now - so they belong
-         with the identity and the verbs that act on it rather than with the
-         scrolling analysis. In the pane the header is fixed, so they also stay in
-         view while the prose scrolls. They render on a minority of Topics
-         (relevance 9 of 52, why now 13), which is why the header's height varies
-         with the Topic - see the note in topics.css. -->
-    ${raw(renderRelevance(topic))}
+    <!-- Two rows and no more: the claim, then where it came from with the verbs
+         opposite. The two quick facts used to sit here too and they render on a
+         minority of Topics (relevance 9 of 52, why now 13), so this header's
+         height changed from one Topic to the next. They are the article's first
+         band now - see the note at the top of this file. -->
   </div>`;
 }
 
@@ -122,8 +132,14 @@ export function renderTopicArticle(topic, { source = null, withHeader = true } =
 
   return html`<div class="topic-article">
     ${raw(withHeader ? renderTopicHeader(topic, { source }) : "")}
-    <div class="topic-article__body">${raw(body)}</div>
-    ${raw(laterNote)}
+    <!-- Band 1: what this Topic is for and why it landed. Renders nothing at all
+         on the 43 Topics of 52 that carry neither field. -->
+    ${raw(renderRelevance(topic))}
+    <!-- Band 2. The draftability note goes INSIDE the prose, as its last
+         paragraph: it is a statement ABOUT the analysis, so it takes the prose's
+         own 12px rhythm rather than the 32px that separates one band from the
+         next. Content first, its limits after - never in its place. -->
+    <div class="topic-article__body">${raw(body)}${raw(laterNote)}</div>
     ${raw(
       posts.length
         ? html`<section class="topic-article__section">
@@ -184,7 +200,9 @@ function renderProvenance(topic, source) {
             ><span class="topic-article__source">${source.name}</span>`
         : "",
     )}
-    <span>· ${topic.ageLabel}</span>
+    <!-- The separator belongs to the source, not to the age: with no source to
+         separate from, a leading "· 2h ago" is a dangling punctuation mark. -->
+    <span>${source ? `· ${topic.ageLabel}` : topic.ageLabel}</span>
   </p>`;
 }
 
@@ -193,11 +211,10 @@ function renderProvenance(topic, source) {
 // who the Topic is for and why it landed now, which is what a reader needs
 // before the analysis rather than after it.
 //
-// Relevance is NEVER tinted, under any signal: who a Topic is for does not change
-// because the pile grew or the story moved. Why now takes the signal's tint when
-// there is one, because it is the row the signal is about — peach for a spike,
-// menthol for a rewrite, nothing at all otherwise. Tinting an ordinary Topic's
-// rows would spend the spike's colour on a Topic with no spike.
+// NEITHER row is ever tinted, under any signal. Why now used to take the signal's
+// tint - peach for a spike, menthol for a rewrite - and it went with the rest of
+// the article's colour-coding: painting a spike as a warning tone is the same
+// mistake as painting Ignore red. The card still says the signal, in words.
 // ── The two quick facts: a definition list, NOT two filled boxes ──────────
 // A <dl> whose labels share one grid column, so both sentences start on the same
 // x and the pair reads as two ROWS rather than two objects.
