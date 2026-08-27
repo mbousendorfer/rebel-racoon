@@ -287,15 +287,7 @@ function renderPage(pb) {
   const empty = !view.scanning && !shown.length;
 
   return html`
-    <!-- ONE row, not two. The tabs and the controls used to be stacked, and with
-         real articles in the pane that second row was pure cost: every pixel above
-         the reader is a pixel of prose the reader has to scroll for. Tabs left,
-         scope and Filters right - the arrangement the product uses when a tab bar
-         shares its row. -->
-    <div class="topics-view__head">
-      ${raw(renderTabs(counts))}
-      <div class="topics-view__controls">${raw(renderToolbar(pb, feed))}</div>
-    </div>
+    ${raw(renderToolbar(pb, feed))} ${raw(renderTabs(counts))}
     <div class="topics-view__body">
       ${raw(
         empty
