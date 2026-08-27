@@ -16,6 +16,8 @@ reader would observe instead.
 ## 0. What changed against the original, and why
 
 Nine criteria in the original describe behaviour this repo deliberately does **not** have.
+§3.5 adds seven more, annotated in place rather than listed here: those are gaps in the post
+card, not decisions, and §6 is ported as a product spec this prototype does not instrument.
 They are listed rather than silently dropped, because each one is a decision somebody may
 want to reopen — and because the audit that produced them is why the port happened at all.
 
@@ -119,6 +121,14 @@ One control: a **Filters** dropdown above the list, with a badge.
 | `AC-PANE-6`  | Article shows title, prose, and the posts                   | The article shows its title, the prose in its two sections, and the contributing posts in place. No version history — an Updated Topic just reads as its current version.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | `AC-TITLE-1` | Every surface shows the article's own title                 | Every surface showing a Topic's title shows **the article's title**. The scan's original headline is only a fallback for a Topic with no article yet. A card and the article it opens must never show different sentences.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 
+#### The trail
+
+| ID           | Title                                      | Criterion                                                                                                                                                                                                                                                                                          |
+| ------------ | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AC-TRAIL-1` | The trail is two-sided and merges on read  | A Topic's history is the scan's entries (held on the Topic) plus **this reader's** (held in the triage row), concatenated seeded-first on read. **Verify: ignoring a Topic adds one entry; un-ignoring removes it and leaves the seeded entries untouched.** Neither half may overwrite the other. |
+| `AC-TRAIL-2` | The trail sits last and starts collapsed   | It renders after the evidence, collapsed, with its entry count on the header. 38 of the 50 Topics carrying a trail have a single entry, so open-by-default would spend a heading and a row on one line of provenance.                                                                              |
+| `AC-TRAIL-3` | A trail status is not only a review status | The trail carries `updated` and `trending` as well as the three review states, so its labels come from their own map. A trail that only knew the review states would print a raw `trending` at the reader.                                                                                         |
+
 ### 2.7 Card actions
 
 | ID         | Title                                        | Criterion                                                                                                                                                                                                                                                                                                                      |
@@ -206,6 +216,27 @@ Shared by the fresh-topics list, the picker, and the feed's full-article view.
 
 ---
 
+### 3.5 Evidence posts
+
+⚠️ **Ported annotated, because this repo renders these posts differently.** The original
+reaches them from a **See all N posts** dialog; here the article renders **all** of them
+inline, uncapped (the widest Topic has six, the average is under two), so the dialog has
+nothing to add and is deliberately absent. Everything below therefore applies to the cards
+**inside the article**, and the status column says what this proto actually does — an
+unmet criterion here is a gap in `social-post-card.js`, not a decision.
+
+| ID          | Criterion (abbreviated — the original's wording stands)         | Here                                                                                                                                            |
+| ----------- | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AC-POST-1` | Author, network, date, text, engagement, sentiment, source link | ⚠️ **Partial** — author, network, date, text and engagement render. No sentiment, no link.                                                      |
+| `AC-POST-2` | Date under the name; network beside the name                    | ⚠️ **Differs** — network and date share one line under the name (`LinkedIn · 2 days ago`).                                                      |
+| `AC-POST-3` | Engagement as labelled figures, zero counts omitted             | ❌ **Unmet** — icons plus counts, not labels. Zeroes are printed.                                                                               |
+| `AC-POST-4` | Sentiment and the View-on link share one row                    | ❌ **Unmet** — neither exists.                                                                                                                  |
+| `AC-POST-5` | Sentiment is an icon plus a coloured label                      | ❌ **Unmet** — no sentiment on the card, and **0 of 99 seeded posts carry one**, so this needs data before it needs UI.                         |
+| `AC-POST-6` | Clicking sentiment opens a three-value menu                     | ❌ **Unmet** — follows `AC-POST-5`.                                                                                                             |
+| `AC-POST-7` | View-on only shows when the link is real                        | ❌ **Unmet** — no link rendered. The data supports it: **32 of 99 posts have a `url`**, which is exactly why the "only when real" rule matters. |
+
+---
+
 ## 4. Cross-cutting
 
 | ID       | Title                                                | Criterion                                                                                                                                                                              |
@@ -234,3 +265,116 @@ Called out so nobody mistakes a demo trick for the real behaviour.
 | Seven of the eight sources cannot produce a Topic              | All eight live, or the ones that never will leave the page              |
 | Ideas extracted from a Topic run the generic mock              | Ideas drawn from that Topic's own analysis and its evidence             |
 | One feed per Playbook, and nothing says what a second would do | Defined behaviour, if a Playbook can ever have more than one            |
+
+## 6. Tracking
+
+⚠️ **This prototype fires nothing.** The section is ported because the names are the thing
+being agreed and because `AC-TRK-6` is this feature's core invariant expressed on the wire
+— status, trending and updated reported **independently**. Treat it as the spec the product
+implements, not as a claim about this repo.
+
+**This section names events, properties, and attributes on purpose.** Everywhere else in
+this doc a name would be an implementation detail. Here the names are the thing being
+agreed, so they're spelled out and have to match exactly.
+
+**One criterion per tracking update, with one exception:** the ten frontend controls
+share a single criterion. Attaching an attribute is the same mechanical check ten times
+over — the real decisions are all in §6.1 to §6.3, and ten criteria would give the
+mechanical part more weight than it deserves.
+
+**What the frontend criterion proves, and what it doesn't.** It checks that each element
+carries the right `data-track` value and fires it on click. It says nothing about the
+event reaching the warehouse, and nothing about the payload — that's verified once,
+downstream, not per control. A missing attribute is still a failure even if the click
+itself works fine.
+
+### 6.1 Updated — the workflow-start event
+
+Three additions to `started_an_archie_workflow`. Nothing existing changes.
+
+| ID         | Title                                | Criterion                                                                                                                                   |
+| ---------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AC-TRK-1` | source_type gains a topic value      | `source_type` accepts **`topic`**, and reports it whenever the workflow started from a Topic — from any of the four _Use in chat_ surfaces. |
+| `AC-TRK-2` | entry_point gains starter-topic_list | `entry_point` accepts **`starter-topic_list`**, reported when the workflow started from the Fresh topics list on a new chat.                |
+| `AC-TRK-3` | entry_point gains topic-feed-panel   | `entry_point` accepts **`topic-feed-panel`**, reported when the workflow started from the article beside the feed.                          |
+
+The values `source_type` and `entry_point` already carry keep firing unchanged. A test
+that only checks the new values would pass even if the old ones quietly broke.
+
+⚠️ Two entry points are named here, but four surfaces offer _Use in chat_ — the card's own
+menu and the picker have no value yet. Either they reuse one of these two, or they need
+their own. See §7.
+
+### 6.2 New event — a Topic was ignored
+
+| ID          | Title                                              | Criterion                                                                                                                                                                                                                                                                                               |
+| ----------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AC-TRK-4`  | Ignore event fires once, never on cancel           | Ignoring a Topic fires the event **once**, from either surface that offers it. Opening the reason dialog and cancelling fires nothing — the Topic wasn't ignored.                                                                                                                                       |
+| `AC-TRK-5`  | Ignore event carries all eight properties          | The event carries all eight properties: `Topic_status`, `Topic_trending`, `Topic_updated`, `Topic_title`, `Topic_summary`, `Topic_playbook`, `Topic_source`, `Topic_ignored_reason`. All eight, every time.                                                                                             |
+| `AC-TRK-5b` | Only the reason property may be empty              | `Topic_ignored_reason` is the only one allowed to be **empty** — the reason box is optional and the dialog submits with nothing typed. Present and empty, never absent: a missing property and an unanswered question are two different things, and we want to know how often people bother explaining. |
+| `AC-TRK-6`  | Status, trending, and updated report independently | `Topic_status`, `Topic_trending`, and `Topic_updated` are reported **independently**. Ignoring a trending Topic sends the ignored status _and_ trending true — that's `AC-CORE-1` on the wire, and a payload that collapses them fails this test.                                                       |
+
+Allowed values:
+
+| Property               | Values                                                                   |
+| ---------------------- | ------------------------------------------------------------------------ |
+| `Topic_status`         | `new` · `used` · `ignored` — `new` is labelled **To review** in the UI   |
+| `Topic_trending`       | `true` · `false`                                                         |
+| `Topic_updated`        | `true` · `false`                                                         |
+| `Topic_title`          | the article's title — the same sentence the reader saw, see `AC-TITLE-1` |
+| `Topic_summary`        | the Topic's summary                                                      |
+| `Topic_playbook`       | the Playbook the Topic belongs to                                        |
+| `Topic_source`         | the listening source it came from — competitor, influencer, website, …   |
+| `Topic_ignored_reason` | the text the reader typed, verbatim — empty if they typed nothing        |
+
+⚠️ **`Topic_status` needs a decision before this can be tested.** On an ignore event the
+status is always `ignored` once it lands, which makes the property constant and useless.
+It only means something as the status the Topic held **before** the ignore — that's how
+these criteria read it. See §7.
+
+**Two things about the reason text.** It's whatever the reader typed — any language, any
+length, possibly personal — so it needs the same care as any other free-text field we
+collect. And the same dialog also has a **Don't show this again** checkbox, which answers
+a related question but isn't in the property list above. See §7.
+
+### 6.3 New — Topic traces on AI calls
+
+| ID         | Title                                | Criterion                                                                                                                                                                                                                                                  |
+| ---------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AC-TRK-7` | AI traces on a Topic carry five tags | An AI call that takes a Topic as input records a trace of its input and output, tagged with `Topic_trending`, `Topic_title`, `Topic_summary`, `Topic_playbook`, and `Topic_source`. All five or none — a partially tagged trace can't be grouped by Topic. |
+
+Nothing here for a frontend test to check — no control involved, no attribute added.
+Verified on the trace itself.
+
+### 6.4 Frontend — ten controls, one criterion
+
+| ID         | Title                                      | Criterion                                                                                                                                                                                |
+| ---------- | ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AC-TRK-8` | Ten controls each carry a data-track value | Every control in the table below carries the `data-track` value listed against it, and fires it on click. A wrong or missing value on any one of the ten fails this — no partial credit. |
+
+The values below are proposals: `snake_case`, prefixed `topic_`, and each names the
+**surface** as well as the action, since the same action means something different
+depending on where it happens.
+
+| The control                      | Where                              | `data-track`                   |
+| -------------------------------- | ---------------------------------- | ------------------------------ |
+| **See more topics in your feed** | footer of the Fresh topics list    | `topic_feed_see_more`          |
+| **Pick from the Topic Feed**     | the composer's Add menu            | `topic_picker_open`            |
+| a Topic card's body              | the Pick a topic dialog            | `topic_card_open_picker`       |
+| a Topic card's body              | the Fresh topics list              | `topic_card_open_fresh_list`   |
+| **Use in chat**                  | a feed card's action menu          | `topic_use_in_chat_card_menu`  |
+| **Use in chat**                  | the article beside the feed        | `topic_use_in_chat_panel`      |
+| **Use in chat**                  | the Pick a topic dialog            | `topic_use_in_chat_picker`     |
+| **Use in chat**                  | reached from the Fresh topics list | `topic_use_in_chat_fresh_list` |
+| **Ignore**                       | a feed card's action menu          | `topic_ignore_card_menu`       |
+| **Ignore**                       | the article beside the feed        | `topic_ignore_panel`           |
+
+Two things that will bite whoever builds this:
+
+- **The picker's _Use in chat_ and the Fresh-list one are the same button.** One article
+  dialog serves both (`AC-DLG-1`), so a fixed attribute can't tell them apart. The value
+  has to be set based on where the dialog was opened from, or the two events become
+  indistinguishable — which defeats the point of splitting them.
+- **Cards open, they don't choose.** The two card-body values just record a card being
+  read, not a Topic being picked (`AC-FRESH-8`). They're the top of a funnel whose bottom
+  is the _Use in chat_ values — reading them as intent will overcount.
