@@ -94,21 +94,26 @@ export function renderSocialPostCard(post, { compact = false } = {}) {
   const stats = compact
     ? ""
     : html`<div class="social-post-card__stats">
-        <span class="social-post-card__stat">
-          <i class="ap-icon-heart" aria-hidden="true"></i>
-          <span>${formatCompact(post.likes)}</span>
-          <span class="social-post-card__sr">likes</span>
-        </span>
-        <span class="social-post-card__stat">
-          <i class="ap-icon-double-chat-bubbles" aria-hidden="true"></i>
-          <span>${formatCompact(post.comments)}</span>
-          <span class="social-post-card__sr">comments</span>
-        </span>
-        <span class="social-post-card__stat">
-          <i class="ap-icon-refresh" aria-hidden="true"></i>
-          <span>${formatCompact(post.reposts)}</span>
-          <span class="social-post-card__sr">reposts</span>
-        </span>
+        ${raw(
+          [
+            { n: post.likes, icon: "ap-icon-heart", sr: "likes" },
+            { n: post.comments, icon: "ap-icon-double-chat-bubbles", sr: "comments" },
+            { n: post.reposts, icon: "ap-icon-refresh", sr: "reposts" },
+          ]
+            // A zero is not a measurement, it is the absence of one - and three
+            // zeroes in a row on a quiet post read as a broken widget. Omitted
+            // rather than printed, so the row only ever shows what happened.
+            .filter((m) => Number(m.n) > 0)
+            .map(
+              (m) =>
+                html`<span class="social-post-card__stat">
+                  <i class="${m.icon}" aria-hidden="true"></i>
+                  <span>${formatCompact(m.n)}</span>
+                  <span class="social-post-card__sr">${m.sr}</span>
+                </span>`,
+            )
+            .join(""),
+        )}
       </div>`;
 
   return html`<article class="social-post-card${raw(compact ? " social-post-card--compact" : "")}">

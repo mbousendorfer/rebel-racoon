@@ -35,8 +35,7 @@
 
 import { html, raw, escapeAttr } from "./utils.js?v=22";
 import { topicTitle } from "./topics-store.js?v=4";
-import { renderSocialPostCard } from "./components/social-post-card.js?v=8";
-import { renderEmptyState } from "./components/empty-state.js?v=3";
+import { renderSocialPostCard } from "./components/social-post-card.js?v=9";
 
 /**
  * The object's identity: the claim as an h2, and where it came from underneath.
@@ -96,12 +95,14 @@ export function renderTopicArticle(topic, { source = null, withHeader = true } =
   //
   // No button of its own: the header's primary IS the action this copy names, and
   // a second Use-in-chat two inches above it would be the same verb asking twice.
-  const laterBody = renderEmptyState({
-    icon: "ap-icon-note",
-    title: "Not enough to write a detailed version yet",
-    body: "I haven't found enough content or assets around this topic to draft from. Use it in chat if you have assets that fill the gaps, or leave it here and let a later scan add to it.",
-    wrapperClass: "topic-article__empty",
-  });
+  // ⚠️ This was a full empty state — a boxed, centred block with a 24px title and
+  // a three-line body — which made ABSENCE the loudest thing on the card. It is
+  // now one muted line, sitting exactly where the prose would: an absence should
+  // read as an absence.
+  const laterBody = html`<p class="topic-article__thin">
+    I haven't found enough to write a detailed version yet. Use it in chat if you have assets that fill the gaps, or
+    leave it for a later scan.
+  </p>`;
 
   return html`<div class="topic-article">
     ${raw(withHeader ? renderTopicHeader(topic, { source }) : "")} ${raw(relevance)}
@@ -149,25 +150,19 @@ function renderProvenance(topic, source) {
 // there is one, because it is the row the signal is about — peach for a spike,
 // menthol for a rewrite, nothing at all otherwise. Tinting an ordinary Topic's
 // rows would spend the spike's colour on a Topic with no spike.
-// ONE SHAPE, TWO INSTANCES. These are the Topic's own two quick facts and they
-// are the same RANK, so they get the same block: an icon, a label, a sentence.
+// ── The two quick facts: a definition list, NOT two filled boxes ──────────
+// A <dl> whose labels share one grid column, so both sentences start on the same
+// x and the pair reads as two ROWS rather than two objects.
 //
-// ⚠️ They were two different species. Relevance was a paragraph with a bold
-// inline "Relevance:" and Why now was a DS infobox — so one read as leftover
-// prose and the other as a system alert, 8px apart. The infobox was doubly
-// wrong: it is the component for a message the APP is telling you, and these are
-// attributes of the Topic. A tinted alert also outranked the analysis it
-// introduces.
+// ⚠️ They were two grey blocks, and that was one of five things wearing the same
+// fill on this surface — the facts, the placeholder, the evidence cards and the
+// trail all on --app-surface-subtle. Five greys of equal weight is a column of
+// slabs: the blur test showed no hierarchy at all. A fill is the loudest thing a
+// block can wear, so exactly one KIND of thing gets one here (the quoted posts,
+// below), and everything else earns its separation from spacing and type.
 //
-// The hierarchy is the label DOWN, not the sentence up: caption-bold in the light
-// ink for the label, body in the default ink for the sentence. The old markup had
-// it backwards — a bold dark "Relevance:" competing with its own content.
-//
-// Grayscale only. The label names the fact and the glyph shapes it; spending an
-// accent colour on metadata would leave nothing for the actions. And NOT
-// .topic-badge for the glyph, tempting as it is: that pip means "which listening
-// source produced this" and the article's header carries one 40px above. The same
-// square cannot mean two things on one surface.
+// Two facts, two short sentences: they cost ~70px like this against ~130px as
+// boxes, and they stop competing with the analysis they introduce.
 const FACTS = [
   { key: "relevance", label: "Relevance", icon: "ap-icon-target" },
   { key: "whyNow", label: "Why now", icon: "ap-icon-clock" },
@@ -176,14 +171,13 @@ const FACTS = [
 function renderRelevance(topic) {
   const rows = FACTS.filter((f) => topic[f.key]).map(
     (f) =>
-      html`<div class="topic-article__fact">
-        <i class="${f.icon} topic-article__fact-icon" aria-hidden="true"></i>
-        <span class="topic-article__fact-label">${f.label}</span>
-        <p class="topic-article__fact-text">${topic[f.key]}</p>
-      </div>`,
+      html`<dt class="topic-article__fact-label">
+          <i class="${f.icon}" aria-hidden="true"></i><span>${f.label}</span>
+        </dt>
+        <dd class="topic-article__fact-text">${topic[f.key]}</dd>`,
   );
   if (!rows.length) return "";
-  return html`<div class="topic-article__facts">${raw(rows.join(""))}</div>`;
+  return html`<dl class="topic-article__facts">${raw(rows.join(""))}</dl>`;
 }
 
 // ── The trail ──────────────────────────────────────────────────────────────

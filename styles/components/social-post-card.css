@@ -16,7 +16,9 @@
   /* head / quote / metrics are one block; `xs` between them read as three. */
   gap: var(--ref-spacing-xxs);
   padding: var(--ref-spacing-sm);
-  border: 1px solid var(--app-border);
+  /* Fill only, no border. It carried both, and on a surface where the fill is
+     now the ONE thing that marks quoted content, an outline on top of it is a
+     second device saying the same thing. */
   border-radius: var(--app-radius-card);
   background: var(--app-surface-subtle);
 }
