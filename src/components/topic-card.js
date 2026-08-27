@@ -41,7 +41,7 @@
 // contain phrasing content, so no h3 and no p in there.
 
 import { html, raw, escapeAttr } from "../utils.js?v=22";
-import { topicTitle } from "../topics-store.js?v=1";
+import { topicTitle } from "../topics-store.js?v=2";
 import { findReviewStatus } from "../topics-catalog.js?v=2";
 
 // ── The signal marks ───────────────────────────────────────────────────────

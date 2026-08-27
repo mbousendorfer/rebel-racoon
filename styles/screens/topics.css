@@ -157,13 +157,51 @@
   max-width: 320px;
 }
 
-/* Row 3. .ap-tabs already carries `width: 100%` and .ap-tabs-nav its own bottom
-   border, so there is nothing to style — only to stop it stretching. It sits
-   tight under the toolbar rather than a full step away: the tabs are the last
-   part of the same control group, not a new section. */
-.topics-view__tabs {
+/* ── ONE head row: tabs left, controls right ───────────────────────────────
+   The tabs and the toolbar were two stacked rows. With real articles in the pane
+   that cost was not abstract — every pixel above the reader is a pixel of prose
+   somebody has to scroll for, and the fake articles were short enough to hide it.
+
+   The ROW carries the rule, not the tabs' own nav: a nav border that stopped at
+   the last tab would draw a line under half a row. Host-scoped, which is how the
+   three other tab hosts in this app do it (content-workspace, right-panel,
+   image-studio-v2) — never a bare .ap-* redeclaration.
+
+   `flex-end` so the tabs' active indicator lands ON the rule and the controls
+   share its baseline. Wraps, so a narrow container stacks them back. */
+.topics-view__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--ref-spacing-sm);
   flex: 0 0 auto;
-  margin-top: calc(var(--ref-spacing-xs) * -1 + var(--ref-spacing-xxxs));
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--sys-border-color-default);
+}
+
+/* DS .ap-tabs and .ap-tabs-nav are both `width: 100%`, so left alone the tabs
+   claim the whole row and the controls wrap to a second line — which is the row
+   this change existed to remove. Shrink-wrapped to their content, the same recipe
+   .rpanel-drafts__statustabs uses for the same shape. */
+.topics-view__tabs {
+  flex: 0 1 auto;
+  width: max-content;
+  max-width: 100%;
+}
+
+.topics-view__tabs .ap-tabs-nav {
+  width: auto;
+  border-bottom: 0;
+}
+
+/* Pushed right by the free space, and nudged off the rule so the controls are not
+   sitting on the line the tabs stand on. */
+.topics-view__controls {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  margin-left: auto;
+  padding-bottom: var(--ref-spacing-xxs);
 }
 
 /* ── The reader ────────────────────────────────────────────────────────────
@@ -678,6 +716,31 @@
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xxs);
+}
+
+/* ── The "later" placeholder ───────────────────────────────────────────────
+   Stands in for the prose, so it sits on the subtle ground the evidence cards
+   use: it is not the analysis, it is the app saying there is no analysis yet.
+   Centred, because it is a state rather than something to read left to right —
+   and no button, since the header's Use in chat is the action its copy names. */
+.topic-article__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-md) var(--ref-spacing-sm);
+  border-radius: var(--app-radius-card);
+  background: var(--app-surface-subtle);
+  text-align: center;
+}
+
+.topic-article__empty p {
+  margin: 0;
+  max-width: 46ch;
+}
+
+.topic-article__empty h3 {
+  margin: 0;
 }
 
 /* ── The footer's verbs ──────────────────────────────────────────────────── */

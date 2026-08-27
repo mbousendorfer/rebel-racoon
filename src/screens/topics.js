@@ -28,11 +28,11 @@ import { html, raw, escapeAttr } from "../utils.js?v=22";
 import { navigate, getPath } from "../router.js?v=31";
 import { isFlagOn } from "../feature-flags.js?v=21";
 import { parseHashParams, setHashQuery } from "../url-state.js?v=22";
-import { renderTopbar } from "../components/topbar.js?v=317";
+import { renderTopbar } from "../components/topbar.js?v=318";
 import { showToast } from "../components/toast.js?v=21";
 import { renderEmptyState } from "../components/empty-state.js?v=3";
-import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=54";
-import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1";
+import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=55";
+import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2";
 import {
   getTopicsForFeed,
   groupTopicsByAge,
@@ -43,7 +43,7 @@ import {
   ignoreTopic,
   unignoreTopic,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=1";
+} from "../topics-store.js?v=2";
 import {
   TOPIC_SOURCES,
   TOPIC_KINDS,
@@ -52,10 +52,10 @@ import {
   findCadence,
   isLiveSource,
 } from "../topics-catalog.js?v=2";
-import { renderTopicCard } from "../components/topic-card.js?v=6";
-import { renderTopicArticle, renderTopicHeader } from "../topic-article.js?v=4";
-import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=1";
-import { useTopicInChat } from "../topic-flow.js?v=1";
+import { renderTopicCard } from "../components/topic-card.js?v=7";
+import { renderTopicArticle, renderTopicHeader } from "../topic-article.js?v=6";
+import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=2";
+import { useTopicInChat } from "../topic-flow.js?v=2";
 
 const PAGE = 10;
 // Long enough to read the scanning line, short enough that nobody waits for it
@@ -287,7 +287,15 @@ function renderPage(pb) {
   const empty = !view.scanning && !shown.length;
 
   return html`
-    ${raw(renderToolbar(pb, feed))} ${raw(renderTabs(counts))}
+    <!-- ONE row, not two. The tabs and the controls used to be stacked, and with
+         real articles in the pane that second row was pure cost: every pixel above
+         the reader is a pixel of prose the reader has to scroll for. Tabs left,
+         scope and Filters right - the arrangement the product uses when a tab bar
+         shares its row. -->
+    <div class="topics-view__head">
+      ${raw(renderTabs(counts))}
+      <div class="topics-view__controls">${raw(renderToolbar(pb, feed))}</div>
+    </div>
     <div class="topics-view__body">
       ${raw(
         empty

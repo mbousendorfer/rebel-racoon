@@ -28,13 +28,13 @@
 import { html, raw, escapeHtml } from "../utils.js?v=22";
 import { requestOpen, notifyClose } from "../modal-coordinator.js?v=22";
 import { renderEmptyState } from "./empty-state.js?v=3";
-import { renderTopicCard } from "./topic-card.js?v=6";
-import { renderTopicArticle, renderTopicActions } from "../topic-article.js?v=4";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1";
-import { getTopicsForFeed, groupTopicsByAge, getTopicById } from "../topics-store.js?v=1";
+import { renderTopicCard } from "./topic-card.js?v=7";
+import { renderTopicArticle, renderTopicActions } from "../topic-article.js?v=6";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=2";
+import { getTopicsForFeed, groupTopicsByAge, getTopicById } from "../topics-store.js?v=2";
 import { findTopicSource } from "../topics-catalog.js?v=2";
-import { getContextById } from "../contexts-store.js?v=54";
-import { useTopicInChat } from "../topic-flow.js?v=1";
+import { getContextById } from "../contexts-store.js?v=55";
+import { useTopicInChat } from "../topic-flow.js?v=2";
 
 const MODAL_ID = "topic-picker";
 

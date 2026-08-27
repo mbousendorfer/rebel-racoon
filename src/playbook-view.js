@@ -18,7 +18,7 @@ import { html, raw, escapeHtml as esc } from "./utils.js?v=22";
 import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=27";
 import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=3";
 import { isFlagOn } from "./feature-flags.js?v=21";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=43";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=44";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [

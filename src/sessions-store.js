@@ -14,8 +14,8 @@
 //   togglePin(id)                → Session | null   (flips `pinned`)
 //   subscribe(fn)                → unsubscribe
 
-import { recentSessions as seed, sharedSessions } from "./mocks.js?v=71";
-import { isFlagOn } from "./feature-flags.js?v=20";
+import { recentSessions as seed, sharedSessions } from "./mocks.js?v=72";
+import { isFlagOn } from "./feature-flags.js?v=21";
 import { isNewUser } from "./user-mode.js?v=24";
 import { createNotifier } from "./store-utils.js?v=3";
 

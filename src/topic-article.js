@@ -34,8 +34,9 @@
 // explanation whose whole value is the detail.
 
 import { html, raw, escapeAttr } from "./utils.js?v=22";
-import { topicTitle } from "./topics-store.js?v=1";
+import { topicTitle } from "./topics-store.js?v=2";
 import { renderSocialPostCard } from "./components/social-post-card.js?v=8";
+import { renderEmptyState } from "./components/empty-state.js?v=3";
 
 /**
  * The object's identity: the claim as an h2, and where it came from underneath.
@@ -86,9 +87,25 @@ export function renderTopicArticle(topic, { source = null, withHeader = true } =
   const relevance = renderRelevance(topic);
   const posts = topic.posts || [];
 
+  // ── A "later" Topic HAS no detailed version, by definition ────────────────
+  // `later` is the scan saying it found a theme worth keeping but not enough
+  // material to write up. So the prose slot carries that fact instead of prose —
+  // keyed on the KIND, not on whether an article happens to exist, because the
+  // kind is the claim being made. Rendering three paragraphs under a "Topics for
+  // later" tab said the opposite of the tab.
+  //
+  // No button of its own: the header's primary IS the action this copy names, and
+  // a second Use-in-chat two inches above it would be the same verb asking twice.
+  const laterBody = renderEmptyState({
+    icon: "ap-icon-note",
+    title: "Not enough to write a detailed version yet",
+    body: "I haven't found enough content or assets around this topic to draft from. Use it in chat if you have assets that fill the gaps, or leave it here and let a later scan add to it.",
+    wrapperClass: "topic-article__empty",
+  });
+
   return html`<div class="topic-article">
     ${raw(withHeader ? renderTopicHeader(topic, { source }) : "")} ${raw(relevance)}
-    <div class="topic-article__body">${raw(body)}</div>
+    <div class="topic-article__body">${raw(topic.kind === "later" ? laterBody : body)}</div>
     ${raw(
       posts.length
         ? html`<section class="topic-article__section">

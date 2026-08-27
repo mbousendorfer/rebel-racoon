@@ -22,10 +22,10 @@
 // chooses "Save as global". updateContext is used by the section-edit flow
 // when scope is "Update everywhere".
 
-import { contexts as seed, sharedContexts } from "./mocks.js?v=71";
+import { contexts as seed, sharedContexts } from "./mocks.js?v=72";
 import { isNewUser } from "./user-mode.js?v=24";
 import { CURRENT_USER } from "./org.js?v=2";
-import { isFlagOn } from "./feature-flags.js?v=20";
+import { isFlagOn } from "./feature-flags.js?v=21";
 import { createNotifier } from "./store-utils.js?v=3";
 import {
   normalizeLanguages,

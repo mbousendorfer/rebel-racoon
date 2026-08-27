@@ -27,15 +27,15 @@
 // inline-text.js.
 
 import { requestOpen, notifyClose, bindOverlayDismissal } from "../../modal-coordinator.js?v=22";
-import { getPosts } from "../../posts-store.js?v=50";
-import { getSessionById } from "../../sessions-store.js?v=21";
-import { getContextById } from "../../contexts-store.js?v=54";
-import { MODAL_ID, KEY, ctx, state, autosize } from "./context.js?v=46";
+import { getPosts } from "../../posts-store.js?v=51";
+import { getSessionById } from "../../sessions-store.js?v=22";
+import { getContextById } from "../../contexts-store.js?v=55";
+import { MODAL_ID, KEY, ctx, state, autosize } from "./context.js?v=47";
 import { loadImg } from "../../image-studio-canvas.js?v=6";
-import { renderStudio } from "./stage-view.js?v=107";
-import { offerUndoIfNeeded, resetUndoOffers } from "./prompt-guard.js?v=12";
-import { bindStudioEvents } from "./events.js?v=27";
-import * as imageStudio from "../../image-studio.js?v=96";
+import { renderStudio } from "./stage-view.js?v=108";
+import { offerUndoIfNeeded, resetUndoOffers } from "./prompt-guard.js?v=13";
+import { bindStudioEvents } from "./events.js?v=28";
+import * as imageStudio from "../../image-studio.js?v=97";
 
 let backdrop;
 let initialized = false;

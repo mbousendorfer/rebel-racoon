@@ -39,7 +39,7 @@
 //   markUsed(id) / ignoreTopic(id, reason) / unignoreTopic(id)
 //   subscribe(fn)                      → unsubscribe
 
-import { topics as seed } from "./mocks.js?v=71";
+import { topics as seed } from "./mocks.js?v=72";
 import { isNewUser } from "./user-mode.js?v=24";
 import { createNotifier } from "./store-utils.js?v=3";
 import { DEFAULT_STATUS_IDS, LIVE_SOURCE_IDS, kindOf } from "./topics-catalog.js?v=2";
