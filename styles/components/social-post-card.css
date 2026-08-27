@@ -155,10 +155,23 @@
 
 /* ── Engagement ─────────────────────────────────────────────────────────── */
 
+/* `xxs`, not `sm`: the stats are one row separated by their own dots now, and 16px
+   between them made three readings look like three sections. `ap-post-engagement`
+   uses xxs. */
 .social-post-card__stats {
   display: flex;
   align-items: center;
-  gap: var(--ref-spacing-sm);
+  gap: var(--ref-spacing-xxs);
+}
+
+/* The same 4px dot the identity row uses, so "one thing, then another" reads the
+   same way twice on one card. */
+.social-post-card__stat-dot {
+  width: var(--ref-spacing-xxxs);
+  height: var(--ref-spacing-xxxs);
+  border-radius: var(--ref-border-radius-sm);
+  background: var(--ref-color-grey-20);
+  flex-shrink: 0;
 }
 
 .social-post-card__stat {

@@ -91,30 +91,43 @@ export function renderSocialPostCard(post, { compact = false } = {}) {
   // brand pages that post under a name rather than an @.
   const identity = author.handle || author.name || "Unknown";
 
-  const stats = compact
-    ? ""
-    : html`<div class="social-post-card__stats">
-        ${raw(
-          [
-            { n: post.likes, icon: "ap-icon-heart", sr: "likes" },
-            { n: post.comments, icon: "ap-icon-double-chat-bubbles", sr: "comments" },
-            { n: post.reposts, icon: "ap-icon-refresh", sr: "reposts" },
-          ]
-            // A zero is not a measurement, it is the absence of one - and three
-            // zeroes in a row on a quiet post read as a broken widget. Omitted
-            // rather than printed, so the row only ever shows what happened.
-            .filter((m) => Number(m.n) > 0)
-            .map(
-              (m) =>
-                html`<span class="social-post-card__stat">
-                  <i class="${m.icon}" aria-hidden="true"></i>
-                  <span>${formatCompact(m.n)}</span>
-                  <span class="social-post-card__sr">${m.sr}</span>
-                </span>`,
-            )
-            .join(""),
-        )}
-      </div>`;
+  // ── The engagement row, as `ap-post-engagement` writes it ────────────────
+  // ⚠️ NAMED metrics, separated by the same 4px dot as the identity. The real
+  // component renders each stat as its own LABEL — "3 likes" — and reserves an
+  // icon for exactly one of them, the comment count. This card had a heart, a
+  // speech bubble and a refresh glyph each followed by a bare number, which breaks
+  // the house rule outright: a metric has to be named in text, because an icon
+  // beside a figure never identifies the data. A repost glyph and a like glyph are
+  // a guess either way.
+  //
+  // A zero is not a measurement, it is the absence of one — and three zeroes in a
+  // row on a quiet post read as a broken widget. Omitted rather than printed, so
+  // the row only ever shows what happened.
+  const metrics = [
+    { n: post.likes, label: (v) => `${v} ${Number(post.likes) === 1 ? "like" : "likes"}` },
+    { n: post.comments, icon: "ap-icon-single-chat-bubble", sr: "comments" },
+    { n: post.reposts, label: (v) => `${v} ${Number(post.reposts) === 1 ? "repost" : "reposts"}` },
+  ].filter((m) => Number(m.n) > 0);
+
+  const stats =
+    compact || !metrics.length
+      ? ""
+      : html`<div class="social-post-card__stats">
+          ${raw(
+            metrics
+              .map((m, i) => {
+                const sep = i ? html`<span class="social-post-card__stat-dot" aria-hidden="true"></span>` : "";
+                const body = m.icon
+                  ? html`<span class="social-post-card__stat">
+                      <i class="${m.icon}" aria-hidden="true"></i><span>${formatCompact(m.n)}</span>
+                      <span class="social-post-card__sr">${m.sr}</span>
+                    </span>`
+                  : html`<span class="social-post-card__stat">${m.label(formatCompact(m.n))}</span>`;
+                return html`${raw(sep)}${raw(body)}`;
+              })
+              .join(""),
+          )}
+        </div>`;
 
   // ── The anatomy is the product's own listening card ──────────────────────
   // Modelled on `ap-mini-post` (conversation/commons/frontend/libs/ui) — the

@@ -89,7 +89,15 @@ Exemples en place : [`screens/topics.js`](../../src/screens/topics.js) (les troi
 
 ### Cartes + hover
 
-⚠️ **RÈGLE CORRIGÉE (2026-08-27) : un `:hover` ne porte JAMAIS de fond bleu — seulement la bordure.** `chat.css` documentait l'inverse (« soft blue fill + a light blue border ») et c'est ce qui a été recalé : un sol teinté au survol se lit comme un **état sélectionné**, et une carte qui a réellement un état sélectionné (`.topic-card--feed.is-reading`, qui utilise précisément ce lavis) ne peut pas partager un signal avec son survol. Le survol déplace `border-color` vers `--ref-color-electric-blue-100`, rien d'autre.
+⚠️ **RÈGLE CORRIGÉE (2026-08-27) : un `:hover` ne porte JAMAIS de fond bleu — seulement la bordure.** `chat.css` documentait l'inverse (« soft blue fill + a light blue border ») et c'est ce qui a été recalé : un sol teinté au survol se lit comme un **état sélectionné**.
+
+⚠️ **PRÉCISÉE DEPUIS, sur `.topic-card--feed`, en reprenant `ap-mini-post`** (la vraie carte du feed Listening, `conversation/commons/frontend/libs/ui`) : **le lavis bleu disparaît complètement**, et les deux états se distinguent par la **force de la bordure**, pas par un fond.
+
+- `:hover` → `border-color: --ref-color-electric-blue-40` (« tu pointes ceci »)
+- `.is-reading` → `border-color: --ref-color-electric-blue-100`, fond **blanc** (« celui-ci est ouvert »)
+- `.is-triaged` → fond `--ref-color-grey-05`, le traitement `seen` du produit — donc le SOL porte l'axe lu/non-lu, et la bordure porte l'axe pointé/ouvert. **Un dispositif par question.**
+- L'ordre compte : `.is-reading` passe après `.is-triaged`, donc une carte triée et ouverte revient au blanc, exactement comme `--selected` écrase `--seen` dans la source.
+- Avant : le survol ET l'ouvert partageaient `electric-blue-100`, et seul le lavis les séparait — or ce lavis serait devenu un troisième sol dans une liste qui a maintenant grey-05 pour les triées.
 
 Appliqué sur `.topic-card--feed` / `--picker`. ⚠️ **Pas encore balayé ailleurs** : `.drafts-card:hover` fait toujours fill + bordure, et la phrase de `chat.css` est toujours dans le CSS. À traiter quand la question reviendra, surface par surface.
 

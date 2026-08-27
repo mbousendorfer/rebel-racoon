@@ -66,24 +66,42 @@
   border-radius: var(--app-radius-card);
 }
 
-/* ── Hover and selected are DIFFERENT states ───────────────────────────────
-   The app's card convention, which chat.css states outright: a soft blue fill and
-   a LIGHT blue border on hover/focus — never navy, never a hard outline, never
-   added elevation. The card whose article is open keeps that wash and FIRMS the
-   border, exactly as .drafts-card.is-active does, so the two stay tellable apart.
+/* ── The three states are `ap-mini-post`'s ─────────────────────────────────
+   Taken from the real Listening card (conversation/commons/frontend/libs/ui), so a
+   reader who triages listening items recognises this queue:
 
-   ⛔️ NEVER a coloured left border on the open card. Categorical house rule,
-   turned down repeatedly.
+     default            white on a grey-10 hairline
+     :hover             border-color electric-blue-40
+     .is-triaged        grey-05 ground   (the product's `seen`)
+     .is-reading        border-color electric-blue-100, ground back to WHITE
 
-   Border colour and background only: the card already has a 1px border, so
-   nothing moves and no card below it is nudged. */
+   ⚠️ Hover was electric-blue-100 and `.is-reading` added a blue-05 WASH. Two
+   problems: hover and open shared a border colour, so the only thing telling them
+   apart was the wash; and a wash on the open card is a third ground in a list that
+   now also has grey-05 for triaged. The product separates them by border STRENGTH
+   — 40 for "you are pointing at this", 100 for "this one is open" — and keeps the
+   ground for the read/unread axis. One device per question.
+
+   ORDER MATTERS: `.is-reading` comes after `.is-triaged` so an open triaged card
+   goes back to white, exactly as `--selected` overrides `--seen` in the source.
+
+   ⛔️ Still never a coloured left border on the open card. Categorical house rule,
+   turned down repeatedly. Border colour and background only, so nothing moves and
+   no card below is nudged. */
 .topic-card--feed:hover,
 .topic-card--feed:focus-within {
-  border-color: var(--ref-color-electric-blue-100);
+  border-color: var(--ref-color-electric-blue-40);
 }
 
-.topic-card--feed.is-reading {
-  background: var(--ref-color-electric-blue-05);
+/* The product's `seen`: a triaged Topic steps back a GROUND as well as a weight.
+   Grey-05 is the same ground the real card uses for a seen item. */
+.topic-card--feed.is-triaged {
+  background: var(--ref-color-grey-05);
+}
+
+.topic-card--feed.is-reading,
+.topic-card--feed.is-triaged.is-reading {
+  background: var(--app-surface);
   border-color: var(--ref-color-electric-blue-100);
 }
 
@@ -94,8 +112,9 @@
    already says it, so a marker meaning "nothing has happened yet" would be a
    second answer to the same question.
 
-   WEIGHT ONLY. The ink does not change: hierarchy comes from size and weight,
-   never from dropping text into a lighter grey. */
+   The ink does not change: hierarchy comes from size and weight, never from
+   dropping text into a lighter grey. The GROUND changes too now — see the state
+   block above, which took the product's `seen` treatment. */
 .topic-card--feed.is-triaged .topic-card__headline {
   font-weight: var(--sys-text-style-body-weight);
 }
