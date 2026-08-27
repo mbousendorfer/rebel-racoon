@@ -148,15 +148,14 @@ export function renderTopicCard(
     ${raw(
       withUse
         ? html`<div class="topic-card__act">
-            <!-- A DS-shipped variant (secondary + orange): orange-10 fill,
-                 orange-100 ink. Orange because handing a Topic to Archie is an AI
-                 action, which is what orange means everywhere in this app - and
-                 because the workflow cards this grid sits under carry BLUE
-                 text-link CTAs, so the two sections' actions differ in colour and
-                 in shape at once: tinted button against link-with-arrow. It was
-                 stroked grey, which said "secondary" and nothing else.
+            <!-- secondary + blue, a DS-shipped variant: electric-blue-10 fill,
+                 electric-blue-100 ink. Blue because this is the SECONDARY door
+                 into a chat - blue is the interactive/navigation colour in this
+                 app, and orange is kept for the spotlight primary, which is the
+                 one in the article's own header. Was secondary orange for a
+                 commit; that spent the AI colour on a second-rank entry point.
                  NOTE no backticks in here - this is inside a template literal. -->
-            <button type="button" class="ap-button secondary orange" data-topic-use="${escapeAttr(topic.id)}">
+            <button type="button" class="ap-button secondary blue" data-topic-use="${escapeAttr(topic.id)}">
               <i class="ap-icon-single-chat-bubble"></i><span>Use in chat</span>
             </button>
           </div>`
