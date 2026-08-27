@@ -552,21 +552,33 @@
   gap: var(--ref-spacing-xxs);
 }
 
-.topic-article__head-meta {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-sm);
-  flex-wrap: wrap;
-}
+/* ── The verbs, on their own row ───────────────────────────────────────────
+   Right-aligned, tertiary → secondary → primary left to right, and `nowrap` so
+   the group can never break across two lines.
 
-/* Pushed right by the free space, so the source stays anchored to the left edge
-   the prose starts on. The kebab and the two verbs travel together as one group:
-   tertiary, secondary, primary, left to right. */
+   ⚠️ They shared the provenance line until now: two 40px buttons against a 12px
+   caption with 300px of dead space between them, so the row read as two unrelated
+   clusters on a baseline set by the buttons, and the kebab floated between them
+   attached to nothing. On a narrow pane it wrapped and the controls dropped below
+   the metadata, kebab first.
+
+   Their own row also decouples them from the TITLE: however many lines the claim
+   takes, the verbs sit the same distance above the header's bottom edge. A little
+   more air above them than the 8px inside the identity block, because they are a
+   different kind of thing from the two lines that name the Topic. */
 .topic-article__head-tools {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
+  flex-wrap: nowrap;
   gap: var(--ref-spacing-xxs);
-  margin-left: auto;
+  margin-top: var(--ref-spacing-xxxs);
+}
+
+/* The kebab is tertiary and belongs to neither verb, so it keeps its distance from
+   the pair rather than sitting one 8px gap away like a third button. */
+.topic-article__head-tools > .topic-article__tools {
+  margin-right: var(--ref-spacing-xxs);
 }
 
 /* The kebab's anchor. `relative` so the dropdown hangs off it rather than off
@@ -768,18 +780,33 @@
   border-top: 1px solid var(--app-border-soft);
 }
 
-/* `body-bold` (14/700) in DEFAULT ink, not caption-bold in light.
-   ⚠️ It was 12/700 light, as apparatus that "names what follows rather than
-   claiming something" — right while it was a label over visible cards, wrong now
-   that it is also the DOOR to them. The only interactive row in the article cannot
-   be its quietest text. One step below the 16px analysis subheads, one above the
-   12px captions: subordinate to the argument, legible as a control. */
+/* The <h3> carries no type of its own any more — `.ap-link standalone` on the
+   label inside it sets 14/700 and the link colour. The heading element is here for
+   the document outline, not for a treatment.
+   ⚠️ It was caption-bold 12/700 in light ink, as apparatus that "names what
+   follows rather than claiming something" — right while it was a label over
+   visible cards, wrong once it became the DOOR to them. The only interactive row
+   in the article cannot be its quietest text. */
 .topic-article__section-head {
   margin: 0;
-  font-size: var(--sys-text-style-body-bold-size);
-  line-height: var(--sys-text-style-body-bold-line-height);
-  font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--sys-text-color-default);
+  display: flex;
+}
+
+/* ── The rule runs the FULL WIDTH of the card ──────────────────────────────
+   Host-scoped, and it has to be: the article's box is the 600px measure, but this
+   divider belongs to the CARD's anatomy — like the header's hairline, which spans
+   edge to edge. Negative inline margins take it out to the pane-body's padding
+   box, and matching padding puts the content back on the measure's left edge, so
+   the one-left-edge rule survives: the rule moves, the text does not.
+
+   ⚠️ NOT in the shared article block. The dialog's gutter is asymmetric (md left,
+   xl right to clear its ×) AND its article is narrower than its content box, so no
+   single pair of negative margins reaches both of its edges. That is the same
+   arithmetic that killed the grey panel around the evidence cards. There the rule
+   stays at the measure, which is symmetric and correct for a dialog. */
+.topics-view__pane-body .topic-article__section {
+  margin-inline: calc(-1 * var(--ref-spacing-md));
+  padding-inline: var(--ref-spacing-md);
 }
 
 /* ── The section IS the disclosure ─────────────────────────────────────────
@@ -805,11 +832,18 @@
   transition: transform var(--ref-animation-short);
 }
 
-/* Hover goes ELECTRIC BLUE, which is what the colour is for in this app: links
-   and controls, never static data. One declaration covers the chevron too — an
-   `ap-icon-*` is a mask painted from `currentColor`. */
-.topic-article__section-label:hover {
-  color: var(--ref-color-electric-blue-100);
+/* ── The row IS a link ────────────────────────────────────────────────────
+   `.ap-link standalone` — the DS component, whose `standalone` step is already
+   14/700 with no underline, exactly the size this heading wanted. So the control
+   is BLUE at rest, not grey with a blue hover: it is the only interactive row in
+   the article and it should look like one before you touch it. Colour, weight and
+   the hover step all come from `--comp-link-*`, so there is nothing to keep in
+   sync here.
+
+   One consequence worth naming: the chevron turns blue with it for free, because
+   an `ap-icon-*` is a mask painted from `currentColor`. */
+.topic-article__section-label {
+  flex: 1;
 }
 
 /* Visually gone, still focusable and still announced: the label is the control,

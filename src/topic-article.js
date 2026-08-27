@@ -53,8 +53,8 @@
 // whose whole value is the detail.
 
 import { html, raw, escapeAttr } from "./utils.js?v=22";
-import { topicTitle } from "./topics-store.js?v=5";
-import { findTopicState } from "./topics-catalog.js?v=3";
+import { topicTitle } from "./topics-store.js?v=7";
+import { findTopicState } from "./topics-catalog.js?v=4";
 import { renderSocialPostCard } from "./components/social-post-card.js?v=9";
 
 /**
@@ -78,12 +78,18 @@ export function renderTopicHeader(topic, { source = null, withActions = false, m
   // on a card has already learned this one.
   return html`<div class="topic-article__head">
     <h2 class="topic-article__title">${topicTitle(topic)}</h2>
-    <div class="topic-article__head-meta">
-      ${raw(renderProvenance(topic, source))}
-      <div class="topic-article__head-tools">
-        ${raw(renderTopicMenu(topic, { open: menuOpen }))}
-        ${raw(withActions ? renderTopicActions(topic, { close: null }) : "")}
-      </div>
+    ${raw(renderProvenance(topic, source))}
+    <!-- The verbs get their OWN row, right-aligned. They used to share the
+         provenance line, which put two 40px buttons against a 12px caption with
+         300px of nothing between them — two unrelated clusters on one baseline set
+         by the buttons. And on a narrow pane that row wrapped, so the controls
+         dropped below and the kebab led the group.
+         Their own row also decouples them from the title completely: however many
+         lines the claim takes, the verbs are the same distance from the bottom of
+         the header. -->
+    <div class="topic-article__head-tools">
+      ${raw(renderTopicMenu(topic, { open: menuOpen }))}
+      ${raw(withActions ? renderTopicActions(topic, { close: null }) : "")}
     </div>
     <!-- Two rows and no more: the claim, then where it came from with the verbs
          opposite. The two quick facts used to sit here too and they render on a
@@ -211,7 +217,7 @@ function renderPosts(topic, posts) {
     <!-- The <h3> stays, so the document outline does not lose a section to a
          label. The label inside it is what makes the whole line the target. -->
     <h3 class="topic-article__section-head">
-      <label class="topic-article__section-label" for="${escapeAttr(id)}">
+      <label class="ap-link standalone topic-article__section-label" for="${escapeAttr(id)}">
         <!-- "Contributing posts", not "Sources": a Source in this app is
              something you bring INTO a chat, and these are the evidence the
              analysis was written from. Naming them Sources put two different

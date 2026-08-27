@@ -859,13 +859,15 @@ En revanche, quand il n'y a **rien à lire du tout** — feed vide, filtre qui e
 
 #### Les six états, à un seul niveau
 
-**Une seule espèce : la pastille `.ap-status <tone> no-dot` + glyphe + mot.**
+**Une seule espèce : le DS TAG** (`.ap-tag <tone>` + `> i` + `> span`), pas Status. ⚠️ Status était le mauvais frère : il n'a **pas** de créneau d'icône, donc le glyphe passait en fraude dans la place du point via `no-dot` — un modificateur dont le métier est de **retirer** le point, détourné pour le remplacer. Tag stylise `> i` et `> span` comme de vrais créneaux (glyphe 12px, libellé tronqué à 180px), porte une **bordure** en plus du fond donc une pastille a un bord, et livre les cinq teintes voulues. Toujours zéro CSS maison : hauteur, radius, padding et typo viennent de `--comp-tag-*`.
 
-| État         | Teinte      | Icône                   | Pastille |
+Conséquence, et c'est un correctif : **Tag n'a pas de modificateur `orange`**. Trending portait `orange` — la couleur d'action IA / spotlight que le primaire _Use in chat_ possède — sur une pastille **statique**. Il prend `tagOrange`, et Updated passe en `menthol`, froid contre le chaud de Trending, donc les deux signaux **diffèrent** au lieu de se lire comme deux nuances d'une même chose.
+
+| État         | Teinte Tag  | Icône                   | Pastille |
 | ------------ | ----------- | ----------------------- | -------- |
 | To review    | —           | —                       | **non**  |
-| Trending     | `orange`    | `ap-icon-arrow-up`      | oui      |
-| Updated      | `tagOrange` | `ap-icon-refresh`       | oui      |
+| Trending     | `tagOrange` | `ap-icon-arrow-up`      | oui      |
+| Updated      | `menthol`   | `ap-icon-refresh`       | oui      |
 | Already used | `green`     | `ap-icon-rounded-check` | oui      |
 | For later    | `blue`      | `ap-icon-bookmark`      | oui      |
 | Ignored      | `grey`      | `ap-icon-eye-off`       | oui      |
@@ -892,7 +894,9 @@ Le **DS Filter dropdown**, porté de la même façon et pour la même raison : o
 - **Le trigger nomme les EXCLUSIONS, pas un compte.** « All except For later, Ignored » au repos, « All states » quand tout est coché, « No states » quand rien ne l'est. Un contrôle replié coûte normalement la seule chose qu'on veut savoir d'un filtre rétréci — _qu'est-ce que je ne vois pas ?_ — et un « 4 sur 6 » ne le dit pas. Au-delà de deux exclusions il liste les états cochés ; dans les deux cas il ne tronque jamais.
 - **⚠️ L'ouverture du select est dans `view`, pas laissée à `<details>`.** Cocher une option déclenche `change`, qui repeint l'écran, qui reconstruit le panneau : un `<details>` nativement ouvert se refermerait à chaque clic, donc cocher quatre états voudrait dire l'ouvrir quatre fois. `view.statesOpen` survit au repaint comme `view.filtersOpen`, et le clic du `summary` est intercepté (`preventDefault`) pour que la bascule native ne se désynchronise pas du drapeau. Escape le ferme **seul** — il est la chose la plus intérieure ouverte — puis le panneau, puis le volet.
 - **⚠️ `.ap-select-dropdown` est `position: absolute` et le contenu du panneau est `overflow-y: auto`** : le menu est donc **rogné** par ce scroller. Il tient aujourd'hui — mesuré : bas du menu à 334 contre un bas de contenu à 681, sur un panneau plafonné à `min(90vh, 750px)` — parce que c'est le **premier** leaf et qu'il n'y a que six options. Le déplacer sous les huit sources le couperait.
-- **Les compteurs des onglets sont ici**, un `.ap-counter normal grey` par ligne, non filtrés : ils décrivent le feed, donc ils ne bougent pas pendant qu'on coche. Le panneau devient le seul endroit où la forme du feed est lisible.
+- **Chaque ligne porte le raccourci « Only » du DS**, révélé au survol, à son extrémité : un clic pour ne garder que cet état au lieu de décocher les cinq autres. ⚠️ C'est un **port** — `onlyEnabled` / `onlyText` n'existent que côté Angular (`grep only ds/css-ui/index.css` ne renvoie rien), donc le `button.standalone-link` est transcrit dans `ds-patches.css` depuis le template du composant et `_select.scss`, avec ses deux substitutions de tokens documentées.
+  - **⚠️ « Only » ne peut PAS s'exprimer comme un motif de cases**, donc il a son propre champ (`filters.only`). « Décocher pour masquer » ne masque que ce qui **porte** une étiquette : un Topic `later` porte toujours aussi un statut de triage, donc ne cocher que `later` masque **tout**, et `ready` n'a aucune étiquette, donc rien ne peut le masquer. La première version renvoyait une liste vide. `only` est donc une **exigence** : montre les Topics qui portent X, ignore les cases. Ça n'affaiblit pas la règle du Topic ignoré — « Only Ignored » est le lecteur qui demande explicitement les ignorés, ce que cocher Ignored fait déjà, en un clic. Toucher une case quitte le mode, et le trigger dit « Only Trending » quand une exigence est posée.
+- ⚠️ **Les compteurs par ligne sont partis.** Ils avaient récupéré les nombres des deux onglets, mais six chiffres le long du bord droit disputaient le même coup d'œil aux six libellés, et la forme du feed n'est pas ce qu'on ouvre un filtre pour lire.
 - **Le badge compte les GROUPES rétrécis**, pas les options cochées — « 2 » veut dire deux groupes qui filtrent. Compté contre le **défaut**, pas contre l'exhaustivité, sinon le badge serait épinglé à 1 dès l'ouverture du panneau.
 - **Des mots seulement**, pas de glyphe à côté d'une option : les glyphes de statut veulent dire quelque chose sur une carte, où ils tiennent lieu de phrase ; dans une liste de cases libellées ils sont une seconde lecture d'un mot déjà là.
 - Les sept sources non-live sont **désactivées avec un `.ap-tag grey mini` « Coming soon »** — jamais en bleu électrique, qui dans cette app est la couleur de ce sur quoi on peut agir, et une ligne désactivée est la seule chose du panneau sur laquelle on ne peut pas.

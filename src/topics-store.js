@@ -43,7 +43,6 @@
 //   getTopicById(id)                   → Topic | null
 //   topicTitle(topic)                  → string
 //   topicStates(topic)                 → string[]  (the six-state vocabulary)
-//   countByState(feedId)               → {id: n}   (the filter rows' counts)
 //   defaultFilters() / narrowedGroupCount(filters)
 //   getStatus(id) / getIgnoreReason(id)
 //   markUsed(id) / ignoreTopic(id, reason) / unignoreTopic(id)
@@ -52,7 +51,7 @@
 import { topics as seed } from "./mocks.js?v=74";
 import { isNewUser } from "./user-mode.js?v=24";
 import { createNotifier } from "./store-utils.js?v=3";
-import { DEFAULT_STATE_IDS, LIVE_SOURCE_IDS, TOPIC_STATES, findTopicState, kindOf } from "./topics-catalog.js?v=3";
+import { DEFAULT_STATE_IDS, LIVE_SOURCE_IDS, TOPIC_STATES, findTopicState, kindOf } from "./topics-catalog.js?v=4";
 
 const topics = isNewUser() ? [] : seed.map(cloneTopic);
 
@@ -176,7 +175,7 @@ const ALL_SOURCE_IDS = LIVE_SOURCE_IDS.slice();
 
 /** The filter state a feed opens with. Reset restores exactly this. */
 export function defaultFilters() {
-  return { states: DEFAULT_STATE_IDS.slice(), sources: ALL_SOURCE_IDS.slice() };
+  return { states: DEFAULT_STATE_IDS.slice(), sources: ALL_SOURCE_IDS.slice(), only: null };
 }
 
 // ── The one deriver: which of the six states a Topic carries ───────────────
@@ -200,17 +199,6 @@ export function topicStates(topic) {
   }).map((st) => st.id);
 }
 
-/** How many Topics in this feed carry each state — the filter rows' counts. */
-export function countByState(feedId) {
-  const out = {};
-  for (const st of TOPIC_STATES) out[st.id] = 0;
-  for (const t of topics) {
-    if (t.feedId !== feedId) continue;
-    for (const id of topicStates(withTriage(t))) out[id] += 1;
-  }
-  return out;
-}
-
 // How many of the two groups are narrowed below full breadth. The Filters badge
 // counts GROUPS, not ticked options — "2" means two groups are filtering, which
 // is what the reader needs to know. Counting options gave numbers like "5" that
@@ -231,7 +219,8 @@ export function countByState(feedId) {
 // the same comparison as everything else.
 export function narrowedGroupCount(filters = defaultFilters()) {
   let n = 0;
-  if ((filters.states || []).length !== DEFAULT_STATE_IDS.length) n++;
+  if (filters.only) n++;
+  else if ((filters.states || []).length !== DEFAULT_STATE_IDS.length) n++;
   if ((filters.sources || []).length !== ALL_SOURCE_IDS.length) n++;
   return n;
 }
@@ -253,9 +242,21 @@ export function narrowedGroupCount(filters = defaultFilters()) {
 // What it costs, plainly: a state can be HIDDEN but not ISOLATED — there is no
 // "show me only what is spiking". That would be a sort or a separate chip row,
 // not this list.
+// ── And ONE positive operator: `only` ─────────────────────────────────────
+// ⚠️ "Only X" CANNOT be expressed as a tick pattern, which is why it gets its own
+// field. Untick-to-hide can only ever hide Topics that CARRY a label, and a `later`
+// Topic always also carries a triage status — so ticking `later` alone hides every
+// Topic including the `later` ones, and `ready` has no label at all, so nothing can
+// hide it. Shipping "Only" as `states = [X]` returned an empty list.
+//
+// So `only` is a REQUIREMENT: show the Topics carrying X, ignore the ticks. It does
+// not weaken the ignored rule — "Only Ignored" is the reader explicitly asking for
+// ignored Topics, which is what ticking Ignored does, just in one click. A signal
+// never surfaces an ignored Topic on its own; the reader has to name it.
 function matchesFilters(t, filters) {
-  const { states = [], sources = [] } = filters;
+  const { states = [], sources = [], only = null } = filters;
   if (!sources.includes(t.sourceId)) return false;
+  if (only) return topicStates(t).includes(only);
   return topicStates(t).every((id) => states.includes(id));
 }
 

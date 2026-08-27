@@ -278,7 +278,12 @@ export const TOPIC_STATES = Object.freeze([
     id: "trending",
     label: "Trending",
     facet: "signal",
-    tone: "orange",
+    // `tagOrange`, not `orange`: the DS Tag ships no plain-orange modifier, and
+    // that is the right constraint — orange is the AI / spotlight ACTION colour in
+    // this app (the header's Use-in-chat primary owns it), so a static chip was
+    // never entitled to it. Warm and attention-seeking without spending the CTA's
+    // colour.
+    tone: "tagOrange",
     icon: "ap-icon-arrow-up",
     chip: true,
     defaultOn: true,
@@ -288,8 +293,10 @@ export const TOPIC_STATES = Object.freeze([
     id: "updated",
     label: "Updated",
     facet: "signal",
-    // Warm, adjacent to Trending and deliberately the quieter of the two.
-    tone: "tagOrange",
+    // `menthol` — cool against Trending's warm, so the two signals read as a pair
+    // that differs rather than as two shades of one thing. It took `tagOrange`
+    // until Trending needed it.
+    tone: "menthol",
     icon: "ap-icon-refresh",
     chip: true,
     defaultOn: true,

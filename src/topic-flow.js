@@ -34,9 +34,9 @@
 import { navigate } from "./router.js?v=31";
 import { setHandoff } from "./handoff.js?v=21";
 import { addReadySource } from "./sources-stream.js?v=70";
-import { getTopicById, topicTitle, markUsed } from "./topics-store.js?v=5";
+import { getTopicById, topicTitle, markUsed } from "./topics-store.js?v=7";
 import { getFeedById } from "./topic-feeds-store.js?v=3";
-import { findTopicSource } from "./topics-catalog.js?v=3";
+import { findTopicSource } from "./topics-catalog.js?v=4";
 
 export const TOPIC_CHAT_HANDOFF = "pendingTopicChat";
 

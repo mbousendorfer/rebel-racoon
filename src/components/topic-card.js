@@ -41,11 +41,11 @@
 // contain phrasing content, so no h3 and no p in there.
 
 import { html, raw, escapeAttr } from "../utils.js?v=22";
-import { topicTitle, topicStates } from "../topics-store.js?v=5";
-import { findTopicState } from "../topics-catalog.js?v=3";
+import { topicTitle, topicStates } from "../topics-store.js?v=7";
+import { findTopicState } from "../topics-catalog.js?v=4";
 
 // ── The state chips: ONE species, five tones ──────────────────────────────
-// Every state a Topic carries renders as `.ap-status <tone> no-dot` + glyph +
+// Every state a Topic carries renders as a DS Tag — `.ap-tag <tone>` + glyph +
 // word, from the tone and icon topics-catalog declares per state.
 //
 // ⚠️ This replaced TWO renderers that put one vocabulary at two levels: the two
@@ -53,11 +53,19 @@ import { findTopicState } from "../topics-catalog.js?v=3";
 // icons with a `title`, and For later was not on the card at all — it was a whole
 // tab. A pill, an icon and a tab for what a reader thinks of as one list.
 //
-// `no-dot` because the dot's slot holds the state's own glyph instead: an arrow-up
-// says RISING, a refresh says REWRITTEN, a bookmark says KEPT, which the
-// component's neutral dot cannot. Composition of a shipped component with a
-// shipped modifier — the fill, height, radius and type all resolve from
-// --comp-status-*, so this costs no CSS of its own.
+// ⚠️ IT WAS `.ap-status`, and that was the wrong sibling. Status has no icon slot,
+// so the glyph had to be smuggled into the dot's place with `no-dot` — a modifier
+// whose whole job is to REMOVE the dot, used to repurpose it. Tag styles `> i` and
+// `> span` as real slots (12px glyph, 180px truncating label), carries a border as
+// well as a fill so a chip has an edge, and ships the five tones this vocabulary
+// needs. Height, radius, padding and type all resolve from --comp-tag-*, so this
+// still costs no CSS of its own.
+//
+// One consequence, and it is a fix: Tag has no plain-`orange` modifier. Trending
+// wore `orange` — the AI / spotlight ACTION colour the header's Use-in-chat primary
+// owns — on a static chip. It takes `tagOrange` now, and Updated moves to
+// `menthol`, cool against Trending's warm so the two signals differ rather than
+// reading as two shades of one thing.
 //
 // `new` renders nothing, and that is the design: it is the absence of an answer,
 // the most common value in any feed, and a glyph meaning "nothing has happened
@@ -76,7 +84,7 @@ function renderStateChips(topic) {
     .filter((st) => st && st.chip)
     .map(
       (st) =>
-        html`<span class="ap-status ${st.tone} no-dot" title="${st.label} — ${st.hint}">
+        html`<span class="ap-tag ${st.tone}" title="${st.label} — ${st.hint}">
           <i class="${st.icon}" aria-hidden="true"></i><span>${st.label}</span>
         </span>`,
     )

@@ -40,21 +40,21 @@ import {
   topicTitle,
   defaultFilters,
   narrowedGroupCount,
-  countByState,
   ignoreTopic,
   unignoreTopic,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=5";
+} from "../topics-store.js?v=7";
 import {
   TOPIC_SOURCES,
   TOPIC_STATES,
   ALL_STATE_IDS,
+  findTopicState,
   findTopicSource,
   findCadence,
   isLiveSource,
-} from "../topics-catalog.js?v=3";
-import { renderTopicCard } from "../components/topic-card.js?v=11";
-import { renderTopicArticle, renderTopicHeader } from "../topic-article.js?v=18";
+} from "../topics-catalog.js?v=4";
+import { renderTopicCard } from "../components/topic-card.js?v=12";
+import { renderTopicArticle, renderTopicHeader } from "../topic-article.js?v=19";
 import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=4";
 import { openTopicHistory } from "../components/topic-history-modal.js?v=1";
 import { useTopicInChat } from "../topic-flow.js?v=3";
@@ -138,7 +138,7 @@ export function renderTopics(_params, target) {
     view.autoOpened = true;
     // Every state ticked, so a linked Topic opens whatever it carries — ignored,
     // for later, or both. There is no segment to force any more.
-    view.filters = { ...view.filters, states: ALL_STATE_IDS.slice() };
+    view.filters = { ...view.filters, states: ALL_STATE_IDS.slice(), only: null };
     // No scanning state on a Topic link: the reader came for one thing and a
     // working state would be theatre between them and it.
     view.scanning = false;
@@ -269,9 +269,6 @@ function renderPage(pb) {
   // "this feed has not found anything yet". Two different states, two different
   // ways out.
   const total = feed ? getTopicsForFeed(feed.id).length : 0;
-  // Also unfiltered — the filter rows' counts describe the feed, not the current
-  // selection, so they stay still while the reader ticks.
-  const stateCounts = feed ? countByState(feed.id) : {};
 
   const shown = all.slice(0, view.page * PAGE);
   const more = all.length - shown.length;
@@ -296,7 +293,7 @@ function renderPage(pb) {
   const empty = !view.scanning && !shown.length;
 
   return html`
-    ${raw(renderToolbar(pb, feed, stateCounts))}
+    ${raw(renderToolbar(pb, feed))}
     <div class="topics-view__body">
       ${raw(
         empty
@@ -339,7 +336,7 @@ function renderPage(pb) {
 //
 // Dropping it costs nothing for screen readers either: the topbar's
 // .app-topbar__title IS an <h1>, so the document goes from two to one.
-function renderToolbar(pb, feed, stateCounts) {
+function renderToolbar(pb, feed) {
   const badge = narrowedGroupCount(view.filters);
 
   // The real DS Select — a <details>/<summary> dropdown, never a bare native
@@ -418,7 +415,7 @@ function renderToolbar(pb, feed, stateCounts) {
         <i class="ap-icon-filter"></i><span>Filters</span>
         ${raw(badge ? html`<span class="ap-counter normal blue">${badge}</span>` : "")}
       </button>
-      ${raw(view.filtersOpen ? renderFilters(stateCounts) : "")}
+      ${raw(view.filtersOpen ? renderFilters() : "")}
     </div>
   </div>`;
 }
@@ -450,12 +447,15 @@ function renderToolbar(pb, feed, stateCounts) {
 // Trending was ticked, which is the group this feature rejected outright. The
 // predicate lives in topics-store's matchesFilters with the full argument.
 //
-// Each row carries the count of Topics in the feed carrying that state. That is
-// where the two tabs' counts went, and it makes this panel the one place the shape
-// of the feed is legible. Unfiltered on purpose: a count that moved with the other
-// rows would change as you ticked, which is not a number you can aim at.
-function renderFilters(stateCounts) {
-  const stateRows = renderStateSelect(stateCounts);
+// Each row carries the DS's "Only" shortcut at its end, revealed on hover: one
+// click to narrow to that single state rather than unticking the other five.
+//
+// ⚠️ The rows carried a COUNT of Topics per state for two commits — where the two
+// tabs' counts had gone. Removed: six numbers down the right edge competed with
+// the six labels for the same glance, and the shape of the feed is not what a
+// reader opens a filter to read. The trigger already says what is excluded.
+function renderFilters() {
+  const stateRows = renderStateSelect();
   const sourceRows = TOPIC_SOURCES.map((s) =>
     filterOption("source", s.id, s.name, view.filters.sources.includes(s.id), !isLiveSource(s.id)),
   );
@@ -505,6 +505,8 @@ function renderFilters(stateCounts) {
 // normally costs you: WHICH states are hidden. "All except For later, Ignored" is
 // the default reading, and it never truncates.
 function stateSummary(picked) {
+  // A requirement outranks the ticks, so it is what the trigger has to report.
+  if (view.filters.only) return `Only ${findTopicState(view.filters.only)?.label || view.filters.only}`;
   const all = TOPIC_STATES.map((st) => st.id);
   if (!picked.length) return "No states";
   if (picked.length === all.length) return "All states";
@@ -517,7 +519,7 @@ function stateSummary(picked) {
     .join(", ");
 }
 
-function renderStateSelect(stateCounts) {
+function renderStateSelect() {
   const picked = view.filters.states;
   const options = TOPIC_STATES.map((st) => {
     const on = picked.includes(st.id);
@@ -531,7 +533,12 @@ function renderStateSelect(stateCounts) {
       <!-- BARE, for the reason spelled out in filterOption below. -->
       <i aria-hidden="true"></i>
       <span class="ap-select-option-text">${st.label}</span>
-      <span class="ap-select-label-count">${String(stateCounts[st.id] || 0)}</span>
+      <!-- The DS's "Only" shortcut: narrow to this one state in a single click,
+           instead of unticking the other five. A <button> inside the <label>, so
+           it does NOT toggle the checkbox — the click is handled on its own hook
+           and the label's default is prevented. Hidden until the row is hovered,
+           as the source has it. -->
+      <button type="button" class="standalone-link" data-topic-filter-only="${escapeAttr(st.id)}">Only</button>
     </label>`;
   }).join("");
 
@@ -799,7 +806,9 @@ function bind(target) {
       const list = new Set(view.filters[group]);
       if (filter.checked) list.add(filter.value);
       else list.delete(filter.value);
-      view.filters = { ...view.filters, [group]: [...list] };
+      // Touching a checkbox leaves "only" mode: the reader is back to composing a
+      // set, and a stale requirement would silently outrank every tick.
+      view.filters = { ...view.filters, [group]: [...list], only: null };
       // Any filter change returns to page one. Narrowing must never leave the
       // reader three pages deep in a list that is now shorter than that.
       view.page = 1;
@@ -842,6 +851,21 @@ function bind(target) {
     // The select's own disclosure. preventDefault so <details> does not ALSO
     // toggle itself: the flag is the single source of truth, and letting both run
     // means the next repaint puts it back where the flag says.
+    // "Only" narrows to one state. It lives inside the option's <label>, so the
+    // default has to be prevented or the click would toggle that state's checkbox
+    // on the way past and leave it unticked.
+    const only = event.target.closest("[data-topic-filter-only]");
+    if (only) {
+      event.preventDefault();
+      const id = only.dataset.topicFilterOnly;
+      // `only` is the REQUIREMENT the store reads; `states` is set to match so the
+      // panel shows one row ticked rather than lying about what is on.
+      view.filters = { ...view.filters, states: [id], only: id };
+      view.page = 1;
+      paint(target, scopedPlaybook());
+      return;
+    }
+
     const statesBtn = event.target.closest("[data-topic-states-toggle]");
     if (statesBtn) {
       event.preventDefault();
