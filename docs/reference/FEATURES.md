@@ -215,18 +215,24 @@ Le **chutier des variations** garde le bord droit.
 
 **Entrées** (les seules — pas de route, pas de raccourci) :
 
-- _« Edit »_ sur un draft avec **une seule** image (`data-post-image-edit`) → ouvre directement en
-  Edit sur cette image (option `editImageUrl`). C'est **l'entrée principale** depuis que
-  « Generate an image » génère en place.
-- _« Edit slides »_ sur un draft **carousel** (`data-post-image-edit`, même attribut) → rouvre le set
-  dans les résultats (ajouter / retirer / régénérer une slide).
-- ⚠️ _« Generate an image »_ (`data-post-image`) **n'ouvre plus le studio** : il génère une image en
-  place via `quickGenerateUrl` ([`image-studio.js`](../../src/image-studio.js)) — même mock Picsum
-  seedé, ratio par défaut du réseau, aucun état de studio créé. Le studio est là pour _piloter_ une
-  image ; payer un modal plein écran pour appuyer sur un bouton était le chemin long. Un nonce de
-  module fait qu'un second appui donne une autre image.
+- **Le bouton du rail de la carte** (`data-post-studio`, entre _Regenerate_ et _Save_) → ouvre le
+  studio dans le mode qu'appelle le média du draft : carousel → le set, une image → Edit, **pas de
+  média → le flow Generate**. C'est l'entrée principale, et la seule qui marche dans les trois
+  états : le rail est le seul endroit toujours visible et indépendant du média.
+- _« Edit »_ / _« Edit slides »_ sur le média lui-même (`data-post-image-edit`) → même fonction
+  (`onPostStudio`), en contextuel. Révélé au survol de l'image.
+- ⚠️ _« Generate »_ dans la fente vide (`data-post-image`) **n'ouvre pas le studio** : il génère une
+  image en place via `quickGenerateUrl` ([`image-studio.js`](../../src/image-studio.js)) — même mock
+  Picsum seedé, ratio par défaut du réseau, aucun état de studio créé, un nonce de module pour
+  qu'un second appui donne une autre image. Le studio est là pour _piloter_ une génération ; payer
+  un modal plein écran pour appuyer sur un bouton était le chemin long.
 
-Tout passe par `openStudio` dans [`right-panel.js`](../../src/components/right-panel.js).
+⚠️ Historique à ne pas refaire : pendant un temps `data-post-image` était la seule entrée du flow
+Generate, puis la génération en place l'a prise **sans rien mettre à la place** — un draft sans
+image n'atteignait plus le studio du tout. D'où le bouton du rail. N'ajoute pas une troisième
+affordance dans la fente : c'est ce qui avait aplati sa hiérarchie.
+
+Tout passe par `onPostStudio` dans [`right-panel.js`](../../src/components/right-panel.js).
 `data-post-image-upload` court-circuite le studio (simple file picker).
 
 ### Moteur d'état ([`image-studio.js`](../../src/image-studio.js))
