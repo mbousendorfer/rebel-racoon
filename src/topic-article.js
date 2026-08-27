@@ -34,7 +34,7 @@
 // explanation whose whole value is the detail.
 
 import { html, raw, escapeAttr } from "./utils.js?v=22";
-import { topicTitle } from "./topics-store.js?v=2";
+import { topicTitle } from "./topics-store.js?v=4";
 import { renderSocialPostCard } from "./components/social-post-card.js?v=8";
 import { renderEmptyState } from "./components/empty-state.js?v=3";
 
@@ -120,6 +120,7 @@ export function renderTopicArticle(topic, { source = null, withHeader = true } =
           </section>`
         : "",
     )}
+    ${raw(renderHistory(topic))}
   </div>`;
 }
 
@@ -186,6 +187,65 @@ function renderRelevance(topic) {
   }
   if (!rows.length) return "";
   return html`<div class="topic-article__facts">${raw(rows.join(""))}</div>`;
+}
+
+// ── The trail ──────────────────────────────────────────────────────────────
+// LAST in the article, and COLLAPSED. Last because the reading order is facts,
+// then the analysis, then the evidence it was written from, then what happened to
+// the Topic - the trail is meta, not part of the argument. Collapsed because 38
+// of the 50 Topics that have one have a SINGLE entry: a permanently open section
+// would spend a heading and a row on one line of provenance.
+//
+// The disclosure is the DS accordion, driven by a sibling checkbox rather than by
+// a JS class toggle. `.ap-accordion.collapsed` is the DS's own mechanism and it
+// wants a class flipped in script - but this renderer is PURE and has three hosts,
+// none of which has anywhere to keep an open/closed flag. A checkbox keeps the
+// state in the DOM, stays keyboard-operable, and costs one host-scoped rule.
+//
+// Statuses here are not only review statuses: a trail carries `updated` and
+// `trending` too, which are signals. Hence a local label map rather than
+// findReviewStatus, which only knows the three review states.
+const TRAIL_LABEL = {
+  new: "To review",
+  used: "Used",
+  ignored: "Ignored",
+  updated: "Updated",
+  trending: "Trending",
+};
+
+function renderHistory(topic) {
+  const trail = topic.history || [];
+  if (!trail.length) return "";
+  const id = `topic-trail-${topic.id}`;
+  const rows = trail
+    .map(
+      (h) =>
+        html`<li class="topic-article__trail-row">
+          <span class="topic-article__trail-head">
+            <strong class="topic-article__trail-status">${TRAIL_LABEL[h.status] || h.status}</strong>
+            <span class="topic-article__trail-when">${h.when}</span>
+          </span>
+          ${raw(h.note ? html`<span class="topic-article__trail-note">${h.note}</span>` : "")}
+        </li>`,
+    )
+    .join("");
+
+  return html`<div class="topic-article__history">
+    <input type="checkbox" class="topic-article__trail-check" id="${escapeAttr(id)}" />
+    <div class="ap-accordion collapsed">
+      <label class="ap-accordion-header" for="${escapeAttr(id)}">
+        <span class="ap-accordion-title"
+          >Topic history <span class="ap-counter normal grey">${String(trail.length)}</span></span
+        >
+        <i class="ap-icon-chevron-down ap-accordion-toggle" aria-hidden="true"></i>
+      </label>
+      <div class="ap-accordion-content">
+        <ol class="topic-article__trail">
+          ${raw(rows)}
+        </ol>
+      </div>
+    </div>
+  </div>`;
 }
 
 /**

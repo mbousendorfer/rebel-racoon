@@ -3012,6 +3012,33 @@ export const topics = [
       },
     ],
     seedStatus: "new",
+    history: [
+      {
+        status: "new",
+        when: "3 weeks ago",
+        note: "Surfaced from the weekly competitor scan (4 matching posts).",
+      },
+      {
+        status: "updated",
+        when: "12 days ago",
+        note: "Rewritten — two more posts joined it and the engagement read changed.",
+      },
+      {
+        status: "used",
+        when: "9 days ago",
+        note: "Drafted into a chat — the roadmap-transparency post.",
+      },
+      {
+        status: "trending",
+        when: "4 days ago",
+        note: "Running 3.1x its own median. Flagged for a second look.",
+      },
+      {
+        status: "new",
+        when: "2h ago",
+        note: "Surfaced from the weekly competitor scan (9 matching posts). Ranked on engagement against Linear's own median.",
+      },
+    ],
   },
   {
     id: "topic-acme-2",
@@ -3054,6 +3081,13 @@ export const topics = [
       },
     ],
     seedStatus: "new",
+    history: [
+      {
+        status: "new",
+        when: "5h ago",
+        note: "Surfaced from the weekly competitor scan (6 matching posts).",
+      },
+    ],
   },
   {
     id: "topic-acme-3",
@@ -3097,6 +3131,18 @@ export const topics = [
       },
     ],
     seedStatus: "new",
+    history: [
+      {
+        status: "new",
+        when: "6 days ago",
+        note: "Surfaced from the weekly competitor scan (3 matching posts).",
+      },
+      {
+        status: "updated",
+        when: "1d ago",
+        note: "Rewritten — a fifth teardown landed and the pattern held.",
+      },
+    ],
   },
   {
     id: "topic-acme-4",
@@ -3139,6 +3185,13 @@ export const topics = [
       },
     ],
     seedStatus: "used",
+    history: [
+      {
+        status: "new",
+        when: "2d ago",
+        note: "Surfaced from the weekly competitor scan (7 matching posts).",
+      },
+    ],
   },
   {
     id: "topic-acme-5",
@@ -3181,6 +3234,13 @@ export const topics = [
       },
     ],
     seedStatus: "new",
+    history: [
+      {
+        status: "new",
+        when: "3d ago",
+        note: "Surfaced from the weekly competitor scan (14 matching posts).",
+      },
+    ],
   },
   {
     id: "topic-acme-6",
@@ -3223,6 +3283,13 @@ export const topics = [
       },
     ],
     seedStatus: "new",
+    history: [
+      {
+        status: "new",
+        when: "4d ago",
+        note: "Surfaced from the weekly competitor scan (8 matching posts).",
+      },
+    ],
   },
   {
     id: "topic-acme-7",
@@ -3265,6 +3332,13 @@ export const topics = [
       },
     ],
     seedStatus: "used",
+    history: [
+      {
+        status: "new",
+        when: "6d ago",
+        note: "Surfaced from the weekly competitor scan (11 matching posts).",
+      },
+    ],
   },
   {
     id: "topic-acme-8",
@@ -3307,6 +3381,13 @@ export const topics = [
       },
     ],
     seedStatus: "new",
+    history: [
+      {
+        status: "new",
+        when: "7d ago",
+        note: "Surfaced from the weekly competitor scan (9 matching posts).",
+      },
+    ],
   },
   {
     id: "topic-acme-9",
@@ -3349,6 +3430,13 @@ export const topics = [
       },
     ],
     seedStatus: "new",
+    history: [
+      {
+        status: "new",
+        when: "9d ago",
+        note: "Surfaced from the weekly competitor scan (4 matching posts).",
+      },
+    ],
   },
   {
     id: "topic-acme-10",
@@ -3391,6 +3479,13 @@ export const topics = [
       },
     ],
     seedStatus: "new",
+    history: [
+      {
+        status: "new",
+        when: "11d ago",
+        note: "Surfaced from the weekly competitor scan (3 matching threads).",
+      },
+    ],
   },
   {
     id: "topic-acme-11",
@@ -3433,6 +3528,13 @@ export const topics = [
       },
     ],
     seedStatus: "new",
+    history: [
+      {
+        status: "new",
+        when: "13d ago",
+        note: "Surfaced from the weekly competitor scan (5 matching posts).",
+      },
+    ],
   },
   {
     id: "topic-acme-12",
@@ -3475,6 +3577,13 @@ export const topics = [
       },
     ],
     seedStatus: "new",
+    history: [
+      {
+        status: "new",
+        when: "16d ago",
+        note: "Surfaced from the weekly competitor scan (12 matching posts).",
+      },
+    ],
   },
   {
     id: "topic-acme-13",
@@ -3518,6 +3627,13 @@ export const topics = [
     ],
     seedStatus: "ignored",
     seedReason: "We don't comment on other companies' hiring.",
+    history: [
+      {
+        status: "new",
+        when: "19d ago",
+        note: "Surfaced from the weekly competitor scan (6 matching posts).",
+      },
+    ],
   },
   {
     id: "topic-acme-14",
@@ -3560,6 +3676,13 @@ export const topics = [
       },
     ],
     seedStatus: "new",
+    history: [
+      {
+        status: "new",
+        when: "22d ago",
+        note: "Surfaced from the weekly competitor scan (4 matching posts).",
+      },
+    ],
   },
   {
     id: "topic-acme-15",
@@ -3602,6 +3725,13 @@ export const topics = [
       },
     ],
     seedStatus: "new",
+    history: [
+      {
+        status: "new",
+        when: "26d ago",
+        note: "Surfaced from the weekly competitor scan (8 matching posts).",
+      },
+    ],
   },
   {
     id: "topic-acme-16",
@@ -3644,6 +3774,13 @@ export const topics = [
       },
     ],
     seedStatus: "new",
+    history: [
+      {
+        status: "new",
+        when: "29d ago",
+        note: "Surfaced from the weekly competitor scan (16 matching posts).",
+      },
+    ],
   },
   {
     id: "topic-acme-17",
@@ -3686,6 +3823,13 @@ export const topics = [
       },
     ],
     seedStatus: "new",
+    history: [
+      {
+        status: "new",
+        when: "5w ago",
+        note: "Surfaced from the weekly competitor scan (3 matching posts).",
+      },
+    ],
   },
   {
     id: "topic-acme-18",
@@ -3728,6 +3872,13 @@ export const topics = [
       },
     ],
     seedStatus: "new",
+    history: [
+      {
+        status: "new",
+        when: "7w ago",
+        note: "Surfaced from the weekly competitor scan (11 matching accounts).",
+      },
+    ],
   },
   {
     id: "topic-acme-19",
@@ -3771,6 +3922,13 @@ export const topics = [
     ],
     seedStatus: "ignored",
     seedReason: "Too old to lead with, and we've made this point already.",
+    history: [
+      {
+        status: "new",
+        when: "2mo ago",
+        note: "Surfaced from the weekly competitor scan (2 matching posts).",
+      },
+    ],
   },
   {
     id: "topic-acme-20",
@@ -3813,6 +3971,13 @@ export const topics = [
       },
     ],
     seedStatus: "new",
+    history: [
+      {
+        status: "new",
+        when: "3mo ago",
+        note: "Surfaced from the weekly competitor scan (17 matching launches).",
+      },
+    ],
   },
   {
     id: "topic-acme-21",
@@ -3855,6 +4020,13 @@ export const topics = [
       },
     ],
     seedStatus: "new",
+    history: [
+      {
+        status: "new",
+        when: "4mo ago",
+        note: "Surfaced from the weekly competitor scan (6 matching posts).",
+      },
+    ],
   },
   // -- THE REAL TOPICS (31) --------------------------------------------------
   // From the same export. Mapping: laneId to feedId, research to article,
@@ -3885,6 +4057,13 @@ export const topics = [
     },
     posts: [],
     seedStatus: "new",
+    history: [
+      {
+        status: "new",
+        when: "1 day ago",
+        note: "Surfaced from the 16 Jun – 16 Jul Instagram scan (4 matching items).",
+      },
+    ],
   },
   {
     id: "br-41",
@@ -3908,6 +4087,18 @@ export const topics = [
     },
     posts: [],
     seedStatus: "new",
+    history: [
+      {
+        status: "new",
+        when: "2 weeks ago",
+        note: "Surfaced from the competitor scan (1 matching item).",
+      },
+      {
+        status: "new",
+        when: "3 days ago",
+        note: "Re-scanned — 4 matching items, and a second account joined it.",
+      },
+    ],
   },
   {
     id: "br-42",
@@ -3930,6 +4121,13 @@ export const topics = [
     },
     posts: [],
     seedStatus: "new",
+    history: [
+      {
+        status: "new",
+        when: "5 days ago",
+        note: "Surfaced from the competitor scan (3 matching items).",
+      },
+    ],
   },
   {
     id: "br-43",
@@ -3952,6 +4150,13 @@ export const topics = [
     },
     posts: [],
     seedStatus: "new",
+    history: [
+      {
+        status: "new",
+        when: "2 weeks ago",
+        note: "Surfaced from the competitor scan (4 matching items).",
+      },
+    ],
   },
   {
     id: "br-44",
@@ -3974,6 +4179,13 @@ export const topics = [
     },
     posts: [],
     seedStatus: "new",
+    history: [
+      {
+        status: "new",
+        when: "3 weeks ago",
+        note: "Surfaced from the competitor scan (3 matching items).",
+      },
+    ],
   },
   {
     id: "br-10",
@@ -3996,6 +4208,13 @@ export const topics = [
     },
     posts: [],
     seedStatus: "new",
+    history: [
+      {
+        status: "new",
+        when: "5h ago",
+        note: "Surfaced from the 1–31 July competitor scan (8 matching posts).",
+      },
+    ],
   },
   {
     id: "br-11",
@@ -4020,6 +4239,18 @@ export const topics = [
     },
     posts: [],
     seedStatus: "new",
+    history: [
+      {
+        status: "new",
+        when: "5h ago",
+        note: "Surfaced from the 1–31 July competitor scan (13 matching posts).",
+      },
+      {
+        status: "trending",
+        when: "5h ago",
+        note: "Flagged trending — highest-volume theme in the scan.",
+      },
+    ],
   },
   {
     id: "br-12",
@@ -4042,6 +4273,13 @@ export const topics = [
     },
     posts: [],
     seedStatus: "new",
+    history: [
+      {
+        status: "new",
+        when: "5h ago",
+        note: "Surfaced from the 1–31 July competitor scan (6 matching posts).",
+      },
+    ],
   },
   {
     id: "br-13",
@@ -4064,6 +4302,18 @@ export const topics = [
     },
     posts: [],
     seedStatus: "new",
+    history: [
+      {
+        status: "new",
+        when: "5h ago",
+        note: "Surfaced from the 1–31 July competitor scan (11 matching posts).",
+      },
+      {
+        status: "trending",
+        when: "5h ago",
+        note: "Flagged trending — second-highest-volume theme in the scan.",
+      },
+    ],
   },
   {
     id: "br-14",
@@ -4148,6 +4398,13 @@ export const topics = [
       },
     ],
     seedStatus: "new",
+    history: [
+      {
+        status: "new",
+        when: "2h ago",
+        note: "Surfaced from the 4 July – 3 August competitor scan (4 matching posts). Keywords: 30 graden, zomerlooks, vakantie, zee.",
+      },
+    ],
   },
   {
     id: "br-15",
@@ -4235,6 +4492,18 @@ export const topics = [
       },
     ],
     seedStatus: "new",
+    history: [
+      {
+        status: "new",
+        when: "2h ago",
+        note: "Surfaced from the 4 July – 3 August competitor scan (4 matching posts).",
+      },
+      {
+        status: "trending",
+        when: "2h ago",
+        note: "Flagged trending — discount messaging runs across three accounts at once.",
+      },
+    ],
   },
   {
     id: "br-16",
@@ -4334,6 +4603,13 @@ export const topics = [
       },
     ],
     seedStatus: "new",
+    history: [
+      {
+        status: "new",
+        when: "2h ago",
+        note: "Surfaced from the 4 July – 3 August competitor scan (5 matching posts). Keywords: collectie, print, kleuren, nieuwe collectie.",
+      },
+    ],
   },
   {
     id: "br-20",
@@ -4398,6 +4674,18 @@ export const topics = [
     },
     posts: [],
     seedStatus: "used",
+    history: [
+      {
+        status: "new",
+        when: "18 days ago",
+        note: "Surfaced from the 1–31 July competitor scan (11 matching posts).",
+      },
+      {
+        status: "used",
+        when: "9 days ago",
+        note: "Drafted into a chat — first-year expectations post.",
+      },
+    ],
   },
   {
     id: "br-23",
@@ -4423,6 +4711,18 @@ export const topics = [
     },
     posts: [],
     seedStatus: "saved",
+    history: [
+      {
+        status: "new",
+        when: "3 days ago",
+        note: "Surfaced from the 1–31 July competitor scan (10 matching posts).",
+      },
+      {
+        status: "trending",
+        when: "2 days ago",
+        note: "Flagged trending — engagement above the window baseline.",
+      },
+    ],
   },
   {
     id: "br-24",
@@ -4447,6 +4747,18 @@ export const topics = [
     seedStatus: "ignored",
     seedReason:
       "Real question, but one post from one account is thin. Revisit when more than a single post is driving it.",
+    history: [
+      {
+        status: "new",
+        when: "7 weeks ago",
+        note: "Surfaced from the 1–31 July competitor scan (1 matching post).",
+      },
+      {
+        status: "ignored",
+        when: "6 weeks ago",
+        note: "Ignored — single post, below the evidence floor.",
+      },
+    ],
   },
   {
     id: "br-25",
@@ -4470,6 +4782,13 @@ export const topics = [
     },
     posts: [],
     seedStatus: "new",
+    history: [
+      {
+        status: "new",
+        when: "27 days ago",
+        note: "Surfaced from the 1–31 July competitor scan (11 matching posts).",
+      },
+    ],
   },
   {
     id: "br-26",
@@ -4492,6 +4811,13 @@ export const topics = [
     },
     posts: [],
     seedStatus: "new",
+    history: [
+      {
+        status: "new",
+        when: "6 days ago",
+        note: "Surfaced from the 1–31 July competitor scan (aggregate noise flags).",
+      },
+    ],
   },
   {
     id: "br-27",
@@ -4616,6 +4942,14 @@ export const topics = [
       },
     ],
     seedStatus: "new",
+    volume: "high",
+    history: [
+      {
+        status: "new",
+        when: "2 hours ago",
+        note: "Surfaced from the Apr 2025 – Jul 2026 competitor scan (14 matching items).",
+      },
+    ],
   },
   {
     id: "br-28",
@@ -4708,6 +5042,19 @@ export const topics = [
       },
     ],
     seedStatus: "new",
+    volume: "medium",
+    history: [
+      {
+        status: "new",
+        when: "1 week ago",
+        note: "Surfaced from the competitor scan (1 matching item).",
+      },
+      {
+        status: "new",
+        when: "4 days ago",
+        note: "Re-scanned — 8 matching items, and the framing shifted.",
+      },
+    ],
   },
   {
     id: "br-45",
@@ -4815,6 +5162,14 @@ export const topics = [
       },
     ],
     seedStatus: "new",
+    volume: "high",
+    history: [
+      {
+        status: "new",
+        when: "1 day ago",
+        note: "Surfaced from the competitor scan (5 matching items).",
+      },
+    ],
   },
   {
     id: "br-29",
@@ -4905,6 +5260,14 @@ export const topics = [
       },
     ],
     seedStatus: "saved",
+    volume: "low",
+    history: [
+      {
+        status: "new",
+        when: "6 days ago",
+        note: "Surfaced from the competitor scan (4 matching items).",
+      },
+    ],
   },
   {
     id: "br-30",
@@ -4981,6 +5344,19 @@ export const topics = [
     seedStatus: "ignored",
     seedReason:
       "Two posts, both from one competitor. Real shift, but I'd rather write it when there's more than one account behind it.",
+    volume: "low",
+    history: [
+      {
+        status: "new",
+        when: "19 days ago",
+        note: "Surfaced from the competitor scan (2 matching items).",
+      },
+      {
+        status: "ignored",
+        when: "12 days ago",
+        note: "Ignored — below the evidence floor.",
+      },
+    ],
   },
   {
     id: "br-31",
@@ -5054,6 +5430,19 @@ export const topics = [
       },
     ],
     seedStatus: "used",
+    volume: "low",
+    history: [
+      {
+        status: "new",
+        when: "6 weeks ago",
+        note: "Surfaced from the competitor scan (2 matching items).",
+      },
+      {
+        status: "used",
+        when: "3 weeks ago",
+        note: "Drafted into a chat.",
+      },
+    ],
   },
   {
     id: "br-32",
@@ -5129,6 +5518,14 @@ export const topics = [
       },
     ],
     seedStatus: "new",
+    volume: "medium",
+    history: [
+      {
+        status: "new",
+        when: "3 days ago",
+        note: "Surfaced from the competitor scan (2 matching items).",
+      },
+    ],
   },
   {
     id: "br-33",
@@ -5203,6 +5600,14 @@ export const topics = [
       },
     ],
     seedStatus: "new",
+    volume: "high",
+    history: [
+      {
+        status: "new",
+        when: "5 days ago",
+        note: "Surfaced from the competitor scan (2 matching items).",
+      },
+    ],
   },
   {
     id: "br-34",
@@ -5271,6 +5676,13 @@ export const topics = [
       },
     ],
     seedStatus: "new",
+    history: [
+      {
+        status: "new",
+        when: "11 days ago",
+        note: "Surfaced from the competitor scan (3 matching items).",
+      },
+    ],
   },
   {
     id: "br-35",
@@ -5345,6 +5757,14 @@ export const topics = [
       },
     ],
     seedStatus: "new",
+    volume: "high",
+    history: [
+      {
+        status: "new",
+        when: "5 weeks ago",
+        note: "Surfaced from the competitor scan (3 matching items).",
+      },
+    ],
   },
   {
     id: "br-36",
@@ -5413,6 +5833,13 @@ export const topics = [
       },
     ],
     seedStatus: "new",
+    history: [
+      {
+        status: "new",
+        when: "6 months ago",
+        note: "Surfaced from the competitor scan (3 matching items).",
+      },
+    ],
   },
   {
     id: "br-37",
@@ -5496,6 +5923,13 @@ export const topics = [
       },
     ],
     seedStatus: "new",
+    history: [
+      {
+        status: "new",
+        when: "6 months ago",
+        note: "Surfaced from the competitor scan (4 matching items).",
+      },
+    ],
   },
 ];
 

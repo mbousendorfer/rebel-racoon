@@ -28,11 +28,11 @@ import { html, raw, escapeAttr } from "../utils.js?v=22";
 import { navigate, getPath } from "../router.js?v=31";
 import { isFlagOn } from "../feature-flags.js?v=21";
 import { parseHashParams, setHashQuery } from "../url-state.js?v=22";
-import { renderTopbar } from "../components/topbar.js?v=318";
+import { renderTopbar } from "../components/topbar.js?v=319";
 import { showToast } from "../components/toast.js?v=21";
 import { renderEmptyState } from "../components/empty-state.js?v=3";
-import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=55";
-import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2";
+import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=56";
+import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=3";
 import {
   getTopicsForFeed,
   groupTopicsByAge,
@@ -43,7 +43,7 @@ import {
   ignoreTopic,
   unignoreTopic,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=2";
+} from "../topics-store.js?v=4";
 import {
   TOPIC_SOURCES,
   TOPIC_KINDS,
@@ -52,10 +52,10 @@ import {
   findCadence,
   isLiveSource,
 } from "../topics-catalog.js?v=2";
-import { renderTopicCard } from "../components/topic-card.js?v=8";
-import { renderTopicArticle, renderTopicHeader } from "../topic-article.js?v=7";
-import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=2";
-import { useTopicInChat } from "../topic-flow.js?v=2";
+import { renderTopicCard } from "../components/topic-card.js?v=9";
+import { renderTopicArticle, renderTopicHeader } from "../topic-article.js?v=9";
+import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=3";
+import { useTopicInChat } from "../topic-flow.js?v=3";
 
 const PAGE = 10;
 // Long enough to read the scanning line, short enough that nobody waits for it

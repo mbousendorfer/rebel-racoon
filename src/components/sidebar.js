@@ -4,7 +4,7 @@ import { open as openBugReportModal } from "./bug-report-modal.js?v=25";
 import { open as openFeedbackModal } from "./feedback-modal.js?v=27";
 import { open as openConfirmModal } from "./confirm-modal.js?v=23";
 import { open as openRenameModal } from "./rename-modal.js?v=3";
-import { open as openSearchModal } from "./search-modal.js?v=25";
+import { open as openSearchModal } from "./search-modal.js?v=26";
 import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=23";
 import { renderAdminMenu, applyUserMode, applyOrgRole, toggleFlag } from "../admin-menu.js?v=18";
 import {
@@ -14,21 +14,21 @@ import {
   deleteSession,
   togglePin as togglePinSession,
   subscribe as subscribeSessions,
-} from "../sessions-store.js?v=22";
+} from "../sessions-store.js?v=23";
 import { isFlagOn } from "../feature-flags.js?v=21";
 import { isNewUser } from "../user-mode.js?v=24";
-import { clearSession as clearLibrarySession } from "../library.js?v=71";
-import { getContextById, getDefaultContext, subscribe as subscribeContexts } from "../contexts-store.js?v=55";
+import { clearSession as clearLibrarySession } from "../library.js?v=72";
+import { getContextById, getDefaultContext, subscribe as subscribeContexts } from "../contexts-store.js?v=56";
 // A Playbook nobody shared with me must not surface here either — the store
 // still holds it (see playbook-access.js), the sidebar just doesn't name it.
-import { canView, visibleContexts } from "../playbook-access.js?v=6";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=2";
-import { countToReview, subscribe as subscribeTopics } from "../topics-store.js?v=2";
-import { getConnectedConnectors, subscribe as subscribeConnectors } from "../connectors-store.js?v=42";
-import { closePanel as closeRightPanel } from "./right-panel.js?v=455";
-import { clearSession as clearAssistantSession } from "../assistant.js?v=77";
-import { clearSession as clearPostsSession } from "../posts-store.js?v=51";
-import { clearSession as clearSourcesSession } from "../sources-stream.js?v=69";
+import { canView, visibleContexts } from "../playbook-access.js?v=7";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=3";
+import { countToReview, subscribe as subscribeTopics } from "../topics-store.js?v=4";
+import { getConnectedConnectors, subscribe as subscribeConnectors } from "../connectors-store.js?v=43";
+import { closePanel as closeRightPanel } from "./right-panel.js?v=456";
+import { clearSession as clearAssistantSession } from "../assistant.js?v=78";
+import { clearSession as clearPostsSession } from "../posts-store.js?v=52";
+import { clearSession as clearSourcesSession } from "../sources-stream.js?v=70";
 
 // Global app sidebar — Brand / + New conversation / Recent chats / User footer.
 // Rendered once at boot into #sidebar; re-rendered on every route change so the

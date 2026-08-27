@@ -697,6 +697,84 @@
   margin: 0;
 }
 
+/* ── The trail ─────────────────────────────────────────────────────────────
+   The DS accordion, opened by a sibling checkbox. `.collapsed` stays on the
+   element permanently and these two rules override what it hides — host-scoped,
+   the same shape as the three other .ap-* overrides in this app. The DS's own
+   chevron rotation is reused rather than re-declared. */
+.topic-article__history {
+  margin-top: var(--ref-spacing-xxs);
+}
+
+/* Visually gone, still focusable and still announced: the label is the header, so
+   a keyboard reader tabs to the control and hears its checked state. */
+.topic-article__trail-check {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.topic-article__history .ap-accordion-header {
+  cursor: pointer;
+  user-select: none;
+}
+
+.topic-article__trail-check:checked ~ .ap-accordion .ap-accordion-content {
+  display: flex;
+}
+
+.topic-article__trail-check:checked ~ .ap-accordion .ap-accordion-toggle {
+  transform: rotate(180deg);
+}
+
+.topic-article__trail-check:focus-visible ~ .ap-accordion {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: 1px;
+}
+
+.topic-article__trail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.topic-article__trail-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.topic-article__trail-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--ref-spacing-xxs);
+  flex-wrap: wrap;
+}
+
+.topic-article__trail-status {
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--sys-text-color-default);
+}
+
+.topic-article__trail-when {
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--sys-text-color-light);
+}
+
+.topic-article__trail-note {
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--sys-text-color-light);
+}
+
 /* ── The footer's verbs ──────────────────────────────────────────────────── */
 
 .topic-article__actions {

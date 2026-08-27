@@ -39,7 +39,7 @@
 //   markUsed(id) / ignoreTopic(id, reason) / unignoreTopic(id)
 //   subscribe(fn)                      → unsubscribe
 
-import { topics as seed } from "./mocks.js?v=72";
+import { topics as seed } from "./mocks.js?v=73";
 import { isNewUser } from "./user-mode.js?v=24";
 import { createNotifier } from "./store-utils.js?v=3";
 import { DEFAULT_STATUS_IDS, LIVE_SOURCE_IDS, kindOf } from "./topics-catalog.js?v=2";
@@ -132,6 +132,13 @@ function withTriage(t) {
     kind: kindOf(t),
     status: row.status,
     ignoreReason: row.reason,
+    // THE TRAIL IS TWO-SIDED, and merging it on read is what keeps the invariant
+    // intact. What the scan recorded lives on the Topic (server-owned, replaced
+    // wholesale by the next scan); what THIS reader did lives in the triage row
+    // (user-owned). Writing the reader's entries onto the Topic would put them in
+    // the path of the next scan, which is exactly what the separate Map exists to
+    // prevent. Seeded first, so the trail reads oldest to newest.
+    history: [...(t.history || []), ...(row.entries || [])],
     isTrending: !!t.isTrending && fresh,
     isUpdated: !!t.isUpdated && fresh,
   };
@@ -288,7 +295,11 @@ export function markUsed(topicId) {
   const t = topics.find((x) => x.id === topicId);
   if (!t) return null;
   const prev = triage.get(topicId) || { reason: "" };
-  triage.set(topicId, { ...prev, status: "used" });
+  triage.set(topicId, {
+    ...prev,
+    status: "used",
+    entries: [...(prev.entries || []), { status: "used", when: "just now", note: "Used in a chat as a source." }],
+  });
   notify();
   return withTriage(t);
 }
@@ -296,7 +307,16 @@ export function markUsed(topicId) {
 export function ignoreTopic(topicId, reason = "") {
   const t = topics.find((x) => x.id === topicId);
   if (!t) return null;
-  triage.set(topicId, { status: "ignored", reason: String(reason || "").trim() });
+  const why = String(reason || "").trim();
+  const prev = triage.get(topicId) || {};
+  triage.set(topicId, {
+    status: "ignored",
+    reason: why,
+    entries: [
+      ...(prev.entries || []),
+      { status: "ignored", when: "just now", note: why ? `Ignored — ${why}` : "Ignored, without a reason given." },
+    ],
+  });
   notify();
   return withTriage(t);
 }
@@ -313,7 +333,11 @@ export function ignoreTopic(topicId, reason = "") {
 export function unignoreTopic(topicId) {
   const t = topics.find((x) => x.id === topicId);
   if (!t) return null;
-  triage.set(topicId, { status: "new", reason: "" });
+  // Wipes `entries` for the same reason it wipes `reason`: this is the path the
+  // toast's Undo takes, and an undo that leaves its own footprint in the trail
+  // has not undone anything. The Topic's seeded history is untouched — that half
+  // is the scan's, not the reader's.
+  triage.set(topicId, { status: "new", reason: "", entries: [] });
   notify();
   return withTriage(t);
 }

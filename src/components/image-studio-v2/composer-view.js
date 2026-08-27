@@ -22,7 +22,7 @@
 // primary is "Use this image" in the footer (stage-view.js#footerBar).
 
 import { escapeHtml } from "../../utils.js?v=22";
-import { isBriefStage } from "./brief-stage.js?v=27";
+import { isBriefStage } from "./brief-stage.js?v=28";
 
 // Empty-state hint for the prompt field — a full structured brief, so the
 // placeholder itself shows the kind of rich prompt the box is built for (and why

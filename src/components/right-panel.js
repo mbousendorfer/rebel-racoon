@@ -1,5 +1,5 @@
 import { html, raw, escapeText, escapeAttr } from "../utils.js?v=22";
-import { getThread, subscribe as subscribeThread } from "../assistant.js?v=77";
+import { getThread, subscribe as subscribeThread } from "../assistant.js?v=78";
 import { isFlagOn } from "../feature-flags.js?v=21";
 import { getPath, navigate } from "../router.js?v=31";
 import { parseHashParams, setHashQuery } from "../url-state.js?v=22";
@@ -11,34 +11,34 @@ import {
   updatePostContent,
   attachImageToDraft,
   subscribe as subscribePostsStore,
-} from "../posts-store.js?v=51";
-import { renderPostCard } from "./post-card.js?v=92";
-import { renderTopPostEcho } from "./top-post-card.js?v=90";
-import { renderClipCard } from "./clip-card.js?v=32";
+} from "../posts-store.js?v=52";
+import { renderPostCard } from "./post-card.js?v=93";
+import { renderTopPostEcho } from "./top-post-card.js?v=91";
+import { renderClipCard } from "./clip-card.js?v=33";
 import { onFeedbackClick } from "./feedback-control.js?v=4";
 // Shared compact idea card — same component the standalone Ideas page uses.
 import { renderCompactIdeaCard } from "./idea-card-compact.js?v=3";
-import { open as openVideoClipsModal } from "./video-clips-modal.js?v=72";
-import { isSidebarCollapsed, setSidebarCollapsed, isAutoCollapsed } from "./sidebar.js?v=289";
+import { open as openVideoClipsModal } from "./video-clips-modal.js?v=73";
+import { isSidebarCollapsed, setSidebarCollapsed, isAutoCollapsed } from "./sidebar.js?v=290";
 import {
   getSources as getStreamSources,
   subscribeSources,
   updateSourceClips,
   removeSources,
   renameSource,
-} from "../sources-stream.js?v=69";
-import { open as openAddSourceModal } from "./add-source-modal.js?v=79";
+} from "../sources-stream.js?v=70";
+import { open as openAddSourceModal } from "./add-source-modal.js?v=80";
 import { open as openRenameModal } from "./rename-modal.js?v=3";
-import { getConnectedConnectors } from "../connectors-store.js?v=42";
-import { getSessionById } from "../sessions-store.js?v=22";
-import { getContextById, getBrandKitGaps } from "../contexts-store.js?v=55";
-import { quickGenerateUrl } from "../image-studio.js?v=97";
-import { askConnector } from "../connector-ask.js?v=22";
-import { renderConnectorLogo } from "../connectors-view.js?v=24";
-import { open as openConnectorsModal } from "./connectors-modal.js?v=25";
-import { addMention as addComposerMention } from "../composer-mentions.js?v=44";
+import { getConnectedConnectors } from "../connectors-store.js?v=43";
+import { getSessionById } from "../sessions-store.js?v=23";
+import { getContextById, getBrandKitGaps } from "../contexts-store.js?v=56";
+import { quickGenerateUrl } from "../image-studio.js?v=98";
+import { askConnector } from "../connector-ask.js?v=23";
+import { renderConnectorLogo } from "../connectors-view.js?v=25";
+import { open as openConnectorsModal } from "./connectors-modal.js?v=26";
+import { addMention as addComposerMention } from "../composer-mentions.js?v=45";
 import { iconFor } from "../file-kinds.js?v=21";
-import { getIdeas, removeIdeasForSources } from "../library.js?v=71";
+import { getIdeas, removeIdeasForSources } from "../library.js?v=72";
 
 // The ideas of the chat the panel is looking at.
 //
@@ -53,8 +53,8 @@ function sessionIdeas() {
   const sid = activeSessionId();
   return sid ? getIdeas(sid) : [];
 }
-import { open as openScheduleModal } from "./schedule-modal.js?v=72";
-import { open as openImageStudio } from "./image-studio-v2/index.js?v=100";
+import { open as openScheduleModal } from "./schedule-modal.js?v=73";
+import { open as openImageStudio } from "./image-studio-v2/index.js?v=101";
 import { open as openConfirmModal } from "./confirm-modal.js?v=23";
 
 // Global Right Panel — slides in from the right edge of the viewport, overlays
@@ -719,7 +719,7 @@ export function init() {
           updateSourceClips(srcId, nextClips);
           const edited = (nextClips || []).find((c) => c.id === ref.clipId);
           if (!edited) return;
-          import("../posts-store.js?v=51").then(({ updatePostClip }) => {
+          import("../posts-store.js?v=52").then(({ updatePostClip }) => {
             updatePostClip(sid, pid, {
               start: edited.start,
               end: edited.end,
@@ -791,7 +791,7 @@ export function init() {
       openVideoClipsModal(src, {
         onSaveClips: (id, nextClips) => updateSourceClips(id, nextClips),
         onUseClips: (selectedClips, source) => {
-          import("../screens/session.js?v=548").then(({ startClipDraftFlow }) => {
+          import("../screens/session.js?v=549").then(({ startClipDraftFlow }) => {
             startClipDraftFlow(
               sid,
               selectedClips.map((clip) => ({ clip, sourceName: source.filename, sourceId: source.id })),
@@ -974,7 +974,7 @@ export function init() {
       const sid = activeSessionId();
       if (!sid || !entry) return;
       const { clip, sourceName, sourceId } = entry;
-      import("../screens/session.js?v=548").then(({ startClipDraftFlow }) => {
+      import("../screens/session.js?v=549").then(({ startClipDraftFlow }) => {
         startClipDraftFlow(sid, [{ clip, sourceName, sourceId }]);
       });
       return;
@@ -992,7 +992,7 @@ export function init() {
       if (picked.length === 0) return;
       clipSelection = new Set();
       renderPanel();
-      import("../screens/session.js?v=548").then(({ startClipDraftFlow }) => {
+      import("../screens/session.js?v=549").then(({ startClipDraftFlow }) => {
         startClipDraftFlow(sid, picked);
       });
       return;
@@ -1858,7 +1858,7 @@ function onPostRewrite(postId, intent = "fresh") {
   // streaming → commit. Loaded lazily so the rewrite code is only
   // pulled in when the user actually triggers a regen. `intent` biases
   // the rewrite (shorter / longer / warmer / formal / fresh).
-  import("../draft-rewrite.js?v=24").then(({ startRewrite }) => {
+  import("../draft-rewrite.js?v=25").then(({ startRewrite }) => {
     startRewrite(sid, postId, intent);
   });
 }
@@ -2003,7 +2003,7 @@ function onSectionSave(network) {
   if (snapshot.length === 0) return;
   const count = snapshot.length;
   const draftWord = count === 1 ? "draft" : "drafts";
-  Promise.all([import("./save-folder-modal.js?v=24"), import("../folders-store.js?v=19")]).then(
+  Promise.all([import("./save-folder-modal.js?v=25"), import("../folders-store.js?v=20")]).then(
     ([{ open: openSaveModal }, { addDraftsToFolder }]) => {
       openSaveModal({
         count,
@@ -2890,7 +2890,7 @@ function useIdea(ideaId) {
   if (!idea) return;
   const sid = activeSessionId();
   if (!sid) return;
-  import("../screens/session.js?v=548").then(({ askAngleQuestion }) => {
+  import("../screens/session.js?v=549").then(({ askAngleQuestion }) => {
     askAngleQuestion(sid, ideaId);
   });
 }
