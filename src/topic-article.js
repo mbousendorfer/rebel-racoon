@@ -186,12 +186,15 @@ export function renderTopicArticle(topic, { source = null, withHeader = true, me
 // has to operate both to see six posts. So `POST_CAP`, `__more` and
 // `__posts-rest` are gone — open the section and every post is there.
 //
-// ── The default follows the KIND, because the posts' role does ────────────
-// On a `ready` Topic they SUPPORT an argument the reader has just finished, so
-// closed is the right resting state. On a `later` Topic there is no draftable
-// angle yet and the posts ARE the material — closing them would empty the panel,
-// which is the mistake `8d8d0b4b` already made once by hiding a `later` Topic's
-// real content. So `later` opens expanded. One control, two resting states.
+// ── ALWAYS closed, whatever the kind ─────────────────────────────────────
+// ⚠️ `later` Topics opened expanded for one commit, on the argument that they
+// have no draftable angle so the posts ARE the material. It was the wrong trade:
+// a resting state that changes with a field the reader cannot see is a rule they
+// have to discover, and the panel it was protecting is not actually empty — a
+// `later` Topic still shows its title, its facts and its full analysis (136 words
+// on average) above this line. `8d8d0b4b` was about REPLACING prose with a false
+// placeholder, which is a different thing from folding supporting evidence behind
+// a labelled, counted disclosure. One resting state, no exception.
 //
 // The disclosure is a sibling checkbox, not <details> and not the DS accordion:
 //   • this renderer is PURE and has three hosts, none of which has anywhere to
@@ -204,13 +207,7 @@ export function renderTopicArticle(topic, { source = null, withHeader = true, me
 //     of the article uses.
 function renderPosts(topic, posts) {
   const id = `topic-posts-${topic.id}`;
-  const open = topic.kind === "later";
-  return html`<input
-      type="checkbox"
-      class="topic-article__section-check"
-      id="${escapeAttr(id)}"
-      ${raw(open ? "checked" : "")}
-    />
+  return html`<input type="checkbox" class="topic-article__section-check" id="${escapeAttr(id)}" />
     <!-- The <h3> stays, so the document outline does not lose a section to a
          label. The label inside it is what makes the whole line the target. -->
     <h3 class="topic-article__section-head">
