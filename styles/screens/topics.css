@@ -566,9 +566,29 @@
 }
 
 /* Pushed right by the free space, so the source stays anchored to the left edge
-   the prose starts on. */
-.topic-article__head-meta > .topic-article__actions {
+   the prose starts on. The kebab and the two verbs travel together as one group:
+   tertiary, secondary, primary, left to right. */
+.topic-article__head-tools {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
   margin-left: auto;
+}
+
+/* The kebab's anchor. `relative` so the dropdown hangs off it rather than off
+   the pane, which is the card menu's arrangement too. */
+.topic-article__tools {
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+}
+
+.topic-article__menu {
+  position: absolute;
+  top: calc(100% + var(--ref-spacing-xxxs));
+  right: 0;
+  z-index: 20;
+  min-width: 250px;
 }
 
 .topic-article__title {
@@ -612,13 +632,30 @@
 .topic-article__facts {
   display: flex;
   flex-direction: column;
-  /* Between the two facts. Against 2px inside one — spacing within a group has to
-     be smaller than the spacing around it, and a label belongs to its sentence. */
-  gap: var(--ref-spacing-xxs);
+  /* Between the two blocks. Against 2px inside one — spacing within a group has
+     to be smaller than the spacing around it, and a label belongs to its
+     sentence. */
+  gap: var(--ref-spacing-xs);
   /* No margin of its own: this is the article's first band, so the band gap sets
      the distance to the analysis. It used to be a child of the fixed header and
      carried 8px of its own. */
   margin: 0;
+}
+
+/* ── One block per fact ────────────────────────────────────────────────────
+   OUTLINE, not fill. The one-fill rule stands: the quoted posts are the only
+   thing on this surface wearing a ground, because they are the only thing that
+   is not Archie's voice. So the brief gets the OTHER device — a hairline box —
+   and the two treatments now mean two different things instead of five things
+   meaning nothing.
+
+   The box was free: the trail gave it up when it moved behind the kebab, so the
+   article still has exactly one framed species and one filled species. No
+   shadow — the pane is already a card, and nothing here nests elevation. */
+.topic-article__fact {
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  border: 1px solid var(--app-border-soft);
+  border-radius: var(--app-radius-card);
 }
 
 .topic-article__fact-label {
@@ -725,10 +762,13 @@
   color: var(--sys-text-color-light);
 }
 
+/* 12px, not 8. Two quoted cards are ~100px tall each and carry their own 16px of
+   padding, so 8px between them read as one long slab with a seam. A gap between
+   two filled blocks has to clear their padding to register at all. */
 .topic-article__posts {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xxs);
+  gap: var(--ref-spacing-xs);
 }
 
 /* ── The evidence expander ─────────────────────────────────────────────────
@@ -756,7 +796,7 @@
 .topic-article__posts-rest {
   display: none;
   flex-direction: column;
-  gap: var(--ref-spacing-xxs);
+  gap: var(--ref-spacing-xs);
 }
 
 .topic-article__more-check:checked ~ .topic-article__posts-rest {
@@ -774,38 +814,10 @@
 }
 
 /* ── The trail ─────────────────────────────────────────────────────────────
-   The DS accordion, opened by a sibling checkbox. `.collapsed` stays on the
-   element permanently and these two rules override what it hides — host-scoped,
-   the same shape as the three other .ap-* overrides in this app. The DS's own
-   chevron rotation is reused rather than re-declared. */
-/* Visually gone, still focusable and still announced: the label is the header, so
-   a keyboard reader tabs to the control and hears its checked state. */
-.topic-article__trail-check {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.topic-article__history .ap-accordion-header {
-  cursor: pointer;
-  user-select: none;
-}
-
-.topic-article__trail-check:checked ~ .ap-accordion .ap-accordion-content {
-  display: flex;
-}
-
-.topic-article__trail-check:checked ~ .ap-accordion .ap-accordion-toggle {
-  transform: rotate(180deg);
-}
-
-.topic-article__trail-check:focus-visible ~ .ap-accordion {
-  outline: 2px solid var(--ref-color-electric-blue-100);
-  outline-offset: 1px;
-}
-
+   No accordion and no sibling checkbox any more: the trail left the article, so
+   what is left here is the ROW styling, shared by its two hosts — the modal the
+   feed opens and the third view the picker dialog swaps to. `git log -S
+   ap-accordion` has the collapsed-box version if it is ever wanted back. */
 .topic-article__trail {
   display: flex;
   flex-direction: column;

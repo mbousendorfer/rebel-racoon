@@ -6,9 +6,11 @@
 // apart. Same shape as playbook-view.js and connectors-view.js: pure render
 // helpers, no store reads beyond the title resolver, no DOM, no listeners.
 //
-//   renderTopicHeader(topic, { source, withActions })   the object's identity
+//   renderTopicHeader(topic, { source, withActions, menuOpen })  the identity
 //   renderTopicArticle(topic, { source, withHeader })   the prose and the evidence
 //   renderTopicActions(topic, { close })                the two verbs
+//   renderTopicMenu(topic, { open })                    the header's kebab
+//   renderTopicTrail(topic) / trailLength(topic)        the trail, for its hosts
 //
 // ── Why the identity is its own renderer ───────────────────────────────────
 // The feed's pane keeps its header OUTSIDE the scroller, so the title and the
@@ -23,10 +25,14 @@
 // SAY, which is why both are rendered from here and nowhere else.
 //
 // ── What the article is ────────────────────────────────────────────────────
-// The two triage facts, the analysis in its two authored sections, the posts the
-// analysis was written from, and the trail. Nothing else — and in particular no
-// version history: an updated Topic reads as its current version, because a
-// reader deciding what to post does not need the draft that preceded it.
+// The two triage facts, the analysis in its two authored sections, and the posts
+// the analysis was written from. Nothing else — and in particular no version
+// history: an updated Topic reads as its current version, because a reader
+// deciding what to post does not need the draft that preceded it.
+//
+// The TRAIL is no longer part of it. It sat last, in a collapsed accordion, and
+// spent the reading surface's one framed box on something that is meta rather
+// than argument — see the note above renderTopicTrail.
 //
 // ── Why the two facts are in the ARTICLE and not in the header ────────────
 // They were in the header for one commit, on the argument that triage criteria
@@ -57,16 +63,26 @@ import { renderSocialPostCard } from "./components/social-post-card.js?v=9";
  * that puts its header outside the scroller and wants them to stay in view with
  * the title they act on. The dialog leaves it false and keeps its own footer.
  */
-export function renderTopicHeader(topic, { source = null, withActions = false } = {}) {
+export function renderTopicHeader(topic, { source = null, withActions = false, menuOpen = false } = {}) {
   if (!topic) return "";
   // No way out up here. A two-pane reader does not close a message, it opens the
   // next one — the list is right there — so a Close button spent the header's
   // best slot on the one action the layout already provides. Escape still closes
   // the pane, wired by the host.
+  // The kebab sits at the START of the right-hand group - tertiary, then
+  // secondary, then primary, the same escalation the dialog footer uses. In the
+  // dialog `withActions` is false, so the kebab is alone at the right end of the
+  // meta row: one call site, and the placement falls out of what the host asked
+  // for. It is the same control the cards carry, so a reader who learned `...`
+  // on a card has already learned this one.
   return html`<div class="topic-article__head">
     <h2 class="topic-article__title">${topicTitle(topic)}</h2>
     <div class="topic-article__head-meta">
-      ${raw(renderProvenance(topic, source))} ${raw(withActions ? renderTopicActions(topic, { close: null }) : "")}
+      ${raw(renderProvenance(topic, source))}
+      <div class="topic-article__head-tools">
+        ${raw(renderTopicMenu(topic, { open: menuOpen }))}
+        ${raw(withActions ? renderTopicActions(topic, { close: null }) : "")}
+      </div>
     </div>
     <!-- Two rows and no more: the claim, then where it came from with the verbs
          opposite. The two quick facts used to sit here too and they render on a
@@ -81,7 +97,7 @@ export function renderTopicHeader(topic, { source = null, withActions = false } 
  * identity itself, outside the scroller — printing it twice would be the same
  * sentence twice.
  */
-export function renderTopicArticle(topic, { source = null, withHeader = true } = {}) {
+export function renderTopicArticle(topic, { source = null, withHeader = true, menuOpen = false } = {}) {
   if (!topic) return "";
   const article = topic.article || {};
   const paragraphs = article.paragraphs || [];
@@ -131,7 +147,7 @@ export function renderTopicArticle(topic, { source = null, withHeader = true } =
       : "";
 
   return html`<div class="topic-article">
-    ${raw(withHeader ? renderTopicHeader(topic, { source }) : "")}
+    ${raw(withHeader ? renderTopicHeader(topic, { source, menuOpen }) : "")}
     <!-- Band 1: what this Topic is for and why it landed. Renders nothing at all
          on the 43 Topics of 52 that carry neither field. -->
     ${raw(renderRelevance(topic))}
@@ -154,7 +170,6 @@ export function renderTopicArticle(topic, { source = null, withHeader = true } =
           </section>`
         : "",
     )}
-    ${raw(renderHistory(topic))}
   </div>`;
 }
 
@@ -234,29 +249,31 @@ const FACTS = [
 ];
 
 function renderRelevance(topic) {
-  const rows = FACTS.filter((f) => topic[f.key]).map(
+  // A <div> per pair - which a <dl> is allowed to carry - is what lets each fact
+  // be its own BOUNDED block rather than two rows sharing one flow.
+  const blocks = FACTS.filter((f) => topic[f.key]).map(
     (f) =>
-      html`<dt class="topic-article__fact-label">
-          <i class="${f.icon}" aria-hidden="true"></i><span>${f.label}</span>
-        </dt>
-        <dd class="topic-article__fact-text">${topic[f.key]}</dd>`,
+      html`<div class="topic-article__fact">
+        <dt class="topic-article__fact-label"><i class="${f.icon}" aria-hidden="true"></i><span>${f.label}</span></dt>
+        <dd class="topic-article__fact-text">${topic[f.key]}</dd>
+      </div>`,
   );
-  if (!rows.length) return "";
-  return html`<dl class="topic-article__facts">${raw(rows.join(""))}</dl>`;
+  if (!blocks.length) return "";
+  return html`<dl class="topic-article__facts">${raw(blocks.join(""))}</dl>`;
 }
 
 // ── The trail ──────────────────────────────────────────────────────────────
-// LAST in the article, and COLLAPSED. Last because the reading order is facts,
-// then the analysis, then the evidence it was written from, then what happened to
-// the Topic - the trail is meta, not part of the argument. Collapsed because 38
-// of the 50 Topics that have one have a SINGLE entry: a permanently open section
-// would spend a heading and a row on one line of provenance.
+// It is no longer IN the article. It was the last band and a collapsed DS
+// accordion, which cost the reading surface its one framed box for something
+// that is meta - not part of the argument - and that has a SINGLE entry on 38 of
+// the 50 Topics carrying one. Behind the header's kebab it costs nothing until
+// asked for, and the box it gave up is what the two facts now wear.
 //
-// The disclosure is the DS accordion, driven by a sibling checkbox rather than by
-// a JS class toggle. `.ap-accordion.collapsed` is the DS's own mechanism and it
-// wants a class flipped in script - but this renderer is PURE and has three hosts,
-// none of which has anywhere to keep an open/closed flag. A checkbox keeps the
-// state in the DOM, stays keyboard-operable, and costs one host-scoped rule.
+// This exports the ROWS only, so the trail stays one renderer with two
+// placements: the feed opens it in a modal, the dialog swaps to it as a third
+// view rather than stacking an overlay on an overlay (modal-coordinator's
+// requestOpen closes the active overlay, so a modal from inside the picker would
+// close the picker). Placement is the host's; what the trail SAYS is not.
 //
 // Statuses here are not only review statuses: a trail carries `updated` and
 // `trending` too, which are signals. Hence a local label map rather than
@@ -269,10 +286,13 @@ const TRAIL_LABEL = {
   trending: "Trending",
 };
 
-function renderHistory(topic) {
-  const trail = topic.history || [];
+export function trailLength(topic) {
+  return (topic?.history || []).length;
+}
+
+export function renderTopicTrail(topic) {
+  const trail = topic?.history || [];
   if (!trail.length) return "";
-  const id = `topic-trail-${topic.id}`;
   const rows = trail
     .map(
       (h) =>
@@ -286,21 +306,55 @@ function renderHistory(topic) {
     )
     .join("");
 
-  return html`<div class="topic-article__history">
-    <input type="checkbox" class="topic-article__trail-check" id="${escapeAttr(id)}" />
-    <div class="ap-accordion collapsed">
-      <label class="ap-accordion-header" for="${escapeAttr(id)}">
-        <span class="ap-accordion-title"
-          >Topic history <span class="ap-counter normal grey">${String(trail.length)}</span></span
-        >
-        <i class="ap-icon-chevron-down ap-accordion-toggle" aria-hidden="true"></i>
-      </label>
-      <div class="ap-accordion-content">
-        <ol class="topic-article__trail">
-          ${raw(rows)}
-        </ol>
-      </div>
-    </div>
+  return html`<ol class="topic-article__trail">
+    ${raw(rows)}
+  </ol>`;
+}
+
+// ── The header's kebab ─────────────────────────────────────────────────────
+// One item today, and it is deliberately a MENU rather than a bare icon that
+// fires straight away: `...` is unlabelled until it opens, so the label has to
+// live somewhere, and the cards already teach this exact control. The open flag
+// belongs to the host - this renderer is pure - so each host passes it in.
+//
+// Nothing to show, no control: a Topic with no trail renders no kebab rather
+// than a menu whose only item is empty.
+export function renderTopicMenu(topic, { open = false } = {}) {
+  const count = trailLength(topic);
+  if (!count) return "";
+  return html`<div class="topic-article__tools">
+    <button
+      type="button"
+      class="ap-icon-button transparent topic-article__more"
+      data-topic-trail-menu="${escapeAttr(topic.id)}"
+      aria-haspopup="menu"
+      aria-expanded="${open ? "true" : "false"}"
+      aria-label="More about this Topic"
+    >
+      <i class="ap-icon-more"></i>
+    </button>
+    ${raw(
+      open
+        ? html`<div class="ap-action-dropdown topic-article__menu" role="menu">
+            <button
+              type="button"
+              role="menuitem"
+              class="ap-action-dropdown-item has-description"
+              data-topic-trail="${escapeAttr(topic.id)}"
+            >
+              <i class="ap-icon-history"></i>
+              <div class="ap-action-dropdown-item-text">
+                <div class="ap-action-dropdown-item-label-container">
+                  <span class="ap-action-dropdown-item-label">Topic history</span>
+                </div>
+                <span class="ap-action-dropdown-item-description"
+                  >${String(count)} ${count === 1 ? "entry" : "entries"}</span
+                >
+              </div>
+            </button>
+          </div>`
+        : "",
+    )}
   </div>`;
 }
 

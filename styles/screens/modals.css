@@ -47,6 +47,7 @@ body.has-modal {
 .connectors-modal,
 .topic-modal,
 .topic-ignore,
+.topic-history,
 .topic-picker,
 .confirm-modal,
 .rename-modal,
@@ -99,6 +100,35 @@ body.has-modal {
 
 .rename-modal {
   width: min(calc(100% - 32px), 440px);
+}
+
+/* ── Topic history ─────────────────────────────────────────────────────────
+   The trail, out of the article and behind the header's kebab. 520 like the
+   Ignore dialog it is a sibling of: it holds a short list of dated rows, not
+   prose, so the article's 720 would be dead width. Capped and scrolling, because
+   a long-lived Topic can accumulate entries. */
+.topic-history {
+  width: min(calc(100% - 32px), 520px);
+  max-height: min(calc(100vh - 48px), 640px);
+  flex-direction: column;
+}
+
+.topic-history .ap-dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* Which Topic's trail this is. Same treatment as the Ignore dialog's quoted
+   headline, for the same reason: it is the only line naming the subject. */
+.topic-history__sub {
+  margin: 0;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  font-style: italic;
+  color: var(--sys-text-color-light);
 }
 
 /* Wider than Rename's 440 because it holds a textarea and an infobox, narrower
@@ -502,6 +532,7 @@ body.has-modal {
 .connectors-modal.open,
 .topic-modal.open,
 .topic-ignore.open,
+.topic-history.open,
 .topic-picker.open,
 .confirm-modal.open,
 .rename-modal.open,
@@ -1420,6 +1451,32 @@ body.has-modal {
 /* Names where it returns. "Back" on its own makes the reader guess, and this
    dialog can be reached with no list behind it at all — in which case it is not
    rendered. */
+/* The picker's third view. The dialog cannot open the history MODAL — it is the
+   active overlay and requestOpen would close it — so the trail replaces the
+   body, with a Back to the article. */
+.topic-picker__history {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+  max-width: var(--topic-measure);
+}
+
+.topic-picker__history-title {
+  margin: 0;
+  font-size: var(--sys-text-style-h2-size);
+  line-height: var(--sys-text-style-h2-line-height);
+  font-weight: var(--sys-text-style-h2-weight);
+  color: var(--sys-text-color-default);
+}
+
+.topic-picker__history-sub {
+  margin: calc(-1 * var(--ref-spacing-xxs)) 0 0;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  font-style: italic;
+  color: var(--sys-text-color-light);
+}
+
 .topic-picker__back {
   align-self: flex-start;
 }

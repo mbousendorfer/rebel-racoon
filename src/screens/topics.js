@@ -53,8 +53,9 @@ import {
   isLiveSource,
 } from "../topics-catalog.js?v=2";
 import { renderTopicCard } from "../components/topic-card.js?v=10";
-import { renderTopicArticle, renderTopicHeader } from "../topic-article.js?v=14";
-import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=3";
+import { renderTopicArticle, renderTopicHeader } from "../topic-article.js?v=15";
+import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=4";
+import { openTopicHistory } from "../components/topic-history-modal.js?v=1";
 import { useTopicInChat } from "../topic-flow.js?v=3";
 
 const PAGE = 10;
@@ -81,6 +82,10 @@ function freshView() {
     // it, it must not reopen on its own — this is the latch that guarantees it.
     autoOpened: false,
     menuTopicId: null,
+    // The pane header's kebab. Its own flag rather than menuTopicId: that one is
+    // keyed by Topic id, so reusing it would open the open Topic's CARD menu in
+    // the list at the same time.
+    paneMenuOpen: false,
     filtersOpen: false,
     // Which article the last paint drew, so the pane's scroll offset is kept
     // across a repaint of the same Topic and dropped when the reader opens
@@ -669,7 +674,9 @@ function renderEmpty(total, feed) {
 function renderPane(topic) {
   const source = findTopicSource(topic.sourceId);
   return html`<section class="topics-view__pane" aria-label="Topic article">
-    <header class="topics-view__pane-head">${raw(renderTopicHeader(topic, { source, withActions: true }))}</header>
+    <header class="topics-view__pane-head">
+      ${raw(renderTopicHeader(topic, { source, withActions: true, menuOpen: view.paneMenuOpen }))}
+    </header>
     <div class="topics-view__pane-body">${raw(renderTopicArticle(topic, { source, withHeader: false }))}</div>
   </section>`;
 }
@@ -752,6 +759,12 @@ function bind(target) {
       view.menuTopicId = null;
       paint(target, scopedPlaybook());
     }
+    const trailBtn = event.target.closest("[data-topic-trail-menu]");
+    const insideTrailMenu = event.target.closest(".topic-article__menu");
+    if (!trailBtn && !insideTrailMenu && view.paneMenuOpen) {
+      view.paneMenuOpen = false;
+      paint(target, scopedPlaybook());
+    }
     const insidePanel = event.target.closest(".topics-view__filter-panel");
     const filtersBtn = event.target.closest("[data-topic-filters-toggle]");
     if (!filtersBtn && !insidePanel && view.filtersOpen) {
@@ -768,6 +781,22 @@ function bind(target) {
     if (filtersBtn) {
       view.filtersOpen = !view.filtersOpen;
       paint(target, scopedPlaybook());
+      return;
+    }
+
+    if (trailBtn) {
+      view.paneMenuOpen = !view.paneMenuOpen;
+      paint(target, scopedPlaybook());
+      return;
+    }
+
+    const trail = event.target.closest("[data-topic-trail]");
+    if (trail) {
+      // Close the menu before the overlay opens: it repaints the pane underneath,
+      // so a menu left open would still be there when the dialog closes.
+      view.paneMenuOpen = false;
+      paint(target, scopedPlaybook());
+      openTopicHistory(trail.dataset.topicTrail);
       return;
     }
 
@@ -863,11 +892,23 @@ function bind(target) {
   // stacks up on every remount.
   boundKeydown = (event) => {
     if (event.key !== "Escape" || !view) return;
-    // A menu or the filter panel takes the key first: Escape shuts the thing
+    // An OVERLAY takes it before any of this. `has-modal` is the class every modal
+    // here puts on <body> while it is up, and this catches the modals that do NOT
+    // consume Escape themselves — the Ignore dialog only listens on its textarea,
+    // so a press with focus anywhere else used to close the article underneath and
+    // leave the dialog stranded over a blank pane.
+    //
+    // It cannot catch a modal that DOES handle Escape and then bubbles: that
+    // handler runs first and clears the class before this one looks. Consuming the
+    // key in capture is the only fix there, which is what topic-history-modal
+    // does — see the note in it.
+    if (document.body.classList.contains("has-modal")) return;
+    // A menu or the filter panel takes the key next: Escape shuts the thing
     // that opened last, not the thing behind it.
-    if (view.menuTopicId || view.filtersOpen) {
+    if (view.menuTopicId || view.filtersOpen || view.paneMenuOpen) {
       view.menuTopicId = null;
       view.filtersOpen = false;
+      view.paneMenuOpen = false;
       paint(target, scopedPlaybook());
       return;
     }

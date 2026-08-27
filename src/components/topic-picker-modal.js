@@ -29,9 +29,9 @@ import { html, raw, escapeHtml } from "../utils.js?v=22";
 import { requestOpen, notifyClose } from "../modal-coordinator.js?v=22";
 import { renderEmptyState } from "./empty-state.js?v=3";
 import { renderTopicCard } from "./topic-card.js?v=10";
-import { renderTopicArticle, renderTopicActions } from "../topic-article.js?v=14";
+import { renderTopicArticle, renderTopicActions, renderTopicTrail } from "../topic-article.js?v=15";
 import { getFeedForPlaybook } from "../topic-feeds-store.js?v=3";
-import { getTopicsForFeed, groupTopicsByAge, getTopicById } from "../topics-store.js?v=4";
+import { getTopicsForFeed, groupTopicsByAge, getTopicById, topicTitle } from "../topics-store.js?v=4";
 import { findTopicSource } from "../topics-catalog.js?v=2";
 import { getContextById } from "../contexts-store.js?v=56";
 import { useTopicInChat } from "../topic-flow.js?v=3";
@@ -86,9 +86,36 @@ function injectOnce() {
       return;
     }
     if (event.target.closest("[data-topic-picker-back]")) {
-      state = { ...state, view: "list", topicId: null };
+      state = { ...state, view: "list", topicId: null, menuOpen: false };
       paint();
       return;
+    }
+    if (event.target.closest("[data-topic-history-back]")) {
+      state = { ...state, view: "article", menuOpen: false };
+      paint();
+      bodyEl.scrollTop = 0;
+      return;
+    }
+    // ⚠️ The trail opens as a VIEW here, never as a modal. This dialog is the
+    // active overlay, and modal-coordinator's requestOpen closes the active
+    // overlay — so topic-history-modal launched from in here would close the
+    // picker on its way up. Same trail, host's own placement.
+    const trailBtn = event.target.closest("[data-topic-trail-menu]");
+    if (trailBtn) {
+      state = { ...state, menuOpen: !state.menuOpen };
+      paint();
+      return;
+    }
+    if (event.target.closest("[data-topic-trail]")) {
+      state = { ...state, view: "history", menuOpen: false };
+      paint();
+      bodyEl.scrollTop = 0;
+      return;
+    }
+    // Anywhere else in the dialog closes an open kebab, the same as the feed.
+    if (state?.menuOpen && !event.target.closest(".topic-article__menu")) {
+      state = { ...state, menuOpen: false };
+      paint();
     }
     const read = event.target.closest("[data-topic-read]");
     if (read) {
@@ -127,7 +154,7 @@ export function init() {
 export function openTopicPicker({ playbookId = null } = {}) {
   injectOnce();
   requestOpen(MODAL_ID, close);
-  state = { view: "list", playbookId, topicId: null, canGoBack: false };
+  state = { view: "list", playbookId, topicId: null, canGoBack: false, menuOpen: false };
   show();
 }
 
@@ -138,7 +165,7 @@ export function openTopicArticle(topicId) {
   // A link to a Topic that no longer exists opens nothing and goes nowhere.
   if (!topic) return;
   requestOpen(MODAL_ID, close);
-  state = { view: "article", playbookId: null, topicId, canGoBack: false };
+  state = { view: "article", playbookId: null, topicId, canGoBack: false, menuOpen: false };
   show();
 }
 
@@ -167,8 +194,10 @@ export function close() {
 
 function paint() {
   if (!state) return;
-  bodyEl.innerHTML = state.view === "article" ? renderArticleView() : renderListView();
-  // Only the article has verbs; the list's cards carry their own.
+  bodyEl.innerHTML =
+    state.view === "article" ? renderArticleView() : state.view === "history" ? renderHistoryView() : renderListView();
+  // Only the article has verbs; the list's cards carry their own, and the trail
+  // is not a decision — its way back is the Back link.
   const openTopic = state.view === "article" && state.topicId ? getTopicById(state.topicId) : null;
   footEl.innerHTML = openTopic
     ? `<div class="ap-dialog-footer"><div class="ap-dialog-footer-right">${renderTopicActions(openTopic, {
@@ -251,6 +280,24 @@ function renderArticleView() {
         : "",
     )}
     <div class="topic-picker__article">
-      ${raw(renderTopicArticle(topic, { source: findTopicSource(topic.sourceId) }))}
+      ${raw(renderTopicArticle(topic, { source: findTopicSource(topic.sourceId), menuOpen: !!state.menuOpen }))}
+    </div>`;
+}
+
+// ── The trail, as this host's third view ───────────────────────────────────
+// The feed opens the same rows in a modal; here they replace the dialog's body,
+// with a Back that returns to the article rather than to the list. Reusing the
+// list→article shape the dialog already had means no second overlay and no
+// second trail renderer.
+function renderHistoryView() {
+  const topic = getTopicById(state.topicId);
+  if (!topic) return renderListView();
+  return html`<button type="button" class="ap-link standalone small topic-picker__back" data-topic-history-back>
+      <i class="ap-icon-arrow-left" aria-hidden="true"></i><span>Back to the topic</span>
+    </button>
+    <div class="topic-picker__history">
+      <h2 class="topic-picker__history-title">Topic history</h2>
+      <p class="topic-picker__history-sub">${topicTitle(topic)}</p>
+      ${raw(renderTopicTrail(topic))}
     </div>`;
 }

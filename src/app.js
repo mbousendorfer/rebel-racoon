@@ -12,8 +12,9 @@ import { init as initVideoClipsModal } from "./components/video-clips-modal.js?v
 import { init as initChatPickerModal } from "./components/chat-picker-modal.js?v=79";
 import { init as initAddSourceModal } from "./components/add-source-modal.js?v=80";
 import { init as initConnectorsModal } from "./components/connectors-modal.js?v=26";
-import { init as initTopicIgnoreModal } from "./components/topic-ignore-modal.js?v=3";
-import { init as initTopicPickerModal } from "./components/topic-picker-modal.js?v=15";
+import { init as initTopicIgnoreModal } from "./components/topic-ignore-modal.js?v=4";
+import { init as initTopicHistoryModal } from "./components/topic-history-modal.js?v=1";
+import { init as initTopicPickerModal } from "./components/topic-picker-modal.js?v=16";
 import { init as initConfirmModal } from "./components/confirm-modal.js?v=23";
 import { init as initRenameModal } from "./components/rename-modal.js?v=3";
 import { init as initSaveFolderModal } from "./components/save-folder-modal.js?v=25";
@@ -29,7 +30,7 @@ import {
 import { renderDashboard } from "./screens/dashboard.js?v=75";
 import { renderSession } from "./screens/session.js?v=554";
 import { renderContexts } from "./screens/contexts.js?v=282";
-import { renderTopics } from "./screens/topics.js?v=26";
+import { renderTopics } from "./screens/topics.js?v=28";
 import { renderTopicsSettings } from "./screens/topics-settings.js?v=5";
 import { renderConnectors } from "./screens/connectors.js?v=219";
 import { renderWelcomeAlt } from "./screens/welcome-alt.js?v=5";
@@ -95,6 +96,7 @@ initChatPickerModal();
 initAddSourceModal();
 initConnectorsModal();
 initTopicIgnoreModal();
+initTopicHistoryModal();
 initTopicPickerModal();
 initConfirmModal();
 initRenameModal();

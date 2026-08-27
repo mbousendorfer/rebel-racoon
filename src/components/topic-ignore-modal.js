@@ -109,6 +109,9 @@ function injectOnce() {
       submit();
     } else if (event.key === "Escape") {
       event.preventDefault();
+      // Kept from the surfaces underneath: the feed's own Escape closes the open
+      // article, and one press must not take both.
+      event.stopPropagation();
       close();
     }
   });
