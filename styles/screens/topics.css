@@ -582,53 +582,44 @@
 }
 
 /* ── The two quick facts ───────────────────────────────────────────────────
-   A <dl> on a two-column grid: `max-content` for the labels so BOTH share one
-   column width and the two sentences start on the same x. No fill, no radius —
-   see the note in topic-article.js on why exactly one kind of thing wears a fill
-   on this surface.
+   Label ABOVE its sentence, not beside it.
 
-   A rule underneath, not around: 1px of separation instead of 40px of visual
-   weight, and it says "the metadata ends here" without competing with the
-   analysis that follows. */
+   ⚠️ They were a two-column grid with the labels in a `max-content` column, and
+   that is a FORM-FIELD idiom: it works for a short value (a date, a status) and
+   falls apart on a paragraph. It produced a dead column — empty for three of
+   Relevance's four lines — and a SECOND text edge, with the fact sentences
+   starting at 115px while the prose below them started at 0. Two left edges in
+   one panel is the thing the eye notices first.
+
+   Stacked costs ~36px more height, and the label's tight line-height plus a 2px
+   gap to its own sentence claws most of that back. Both facts keep their icon and
+   read as their own block; what changes is that the sentence now has the full
+   measure and shares the prose's left edge. */
 .topic-article__facts {
-  display: grid;
-  grid-template-columns: max-content 1fr;
-  /* `start`, not the default stretch: a stretched <dt> is as tall as its row, and
-     its own inline-flex then centres the label inside that — so a label sat in
-     the middle of a four-line sentence. Content-height and top-aligned, with the
-     label carrying the BODY line-height so its box is exactly one line of the
-     text beside it: the two first lines then share a baseline. */
-  align-items: start;
-  column-gap: var(--ref-spacing-sm);
-  row-gap: var(--ref-spacing-xxs);
-  /* No rule and no bottom padding any more: these sit INSIDE the header, whose
-     own bottom border already closes the block. A second rule two lines above it
-     drew the same boundary twice.
-
-     WARNING their being here means the pane's FIXED header varies in height with
-     the Topic - 125px without them, about 230 with both. That is the price of
-     keeping the triage criteria in view while the prose scrolls, and it only
-     lands on the minority that carry them (relevance 9 of 52, why now 13). If the
-     jump between Topics proves worse than the persistence is worth, the fix is to
-     move this block back into the scroller, never to truncate the sentences. */
+  display: flex;
+  flex-direction: column;
+  /* Between the two facts. Against 2px inside one — spacing within a group has to
+     be smaller than the spacing around it, and a label belongs to its sentence. */
+  gap: var(--ref-spacing-xxs);
   margin: var(--ref-spacing-xxs) 0 0;
 }
 
 .topic-article__fact-label {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: var(--ref-spacing-xxxs);
+  margin-bottom: 2px;
   font-size: var(--sys-text-style-caption-bold-size);
-  line-height: var(--sys-text-style-body-line-height);
+  line-height: var(--sys-text-style-caption-bold-line-height);
   font-weight: var(--sys-text-style-caption-bold-weight);
   color: var(--sys-text-color-light);
-  white-space: nowrap;
 }
 
 .topic-article__fact-label > i {
   font-size: var(--sys-icon-css-sm);
   width: var(--sys-icon-css-sm);
   height: var(--sys-icon-css-sm);
+  flex-shrink: 0;
 }
 
 .topic-article__fact-text {
@@ -638,78 +629,13 @@
   color: var(--sys-text-color-default);
 }
 
-/* The "nothing written yet" line. Muted body prose in the prose's own slot —
+/* The "nothing draftable yet" line. Muted body prose in the prose's own slot —
    an absence reads as an absence, not as a boxed announcement. */
 .topic-article__thin {
   margin: 0;
   font-size: var(--sys-text-style-body-size);
   line-height: var(--sys-text-style-body-line-height);
   color: var(--sys-text-color-light);
-}
-
-/* ── The prose ───────────────────────────────────────────────────────────── */
-
-.topic-article__body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxs);
-}
-
-/* Sentence case, and it outranks the paragraph under it by weight and size —
-   never by capitals. */
-.topic-article__subhead {
-  margin: var(--ref-spacing-xxs) 0 0;
-  font-size: var(--sys-text-style-h4-size);
-  line-height: var(--sys-text-style-h4-line-height);
-  font-weight: var(--sys-text-style-h4-weight);
-  color: var(--sys-text-color-default);
-}
-
-.topic-article__subhead:first-child {
-  margin-top: 0;
-}
-
-.topic-article__para {
-  margin: 0;
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  color: var(--sys-text-color-default);
-}
-
-/* ── Contributing posts ──────────────────────────────────────────────────── */
-
-/* NO BOX around the evidence. It had one for a commit — a grey panel holding the
-   white cards — and it cost a whole level of nesting: 24px of body padding, then
-   16 of panel, then 16 of card, so a quoted post's text started 32px deeper than
-   the prose it supports. The evidence was indented twice from the argument.
-
-   The grey moved ONTO the cards instead (social-post-card.css). One level rather
-   than three, the posts sit on the prose's own left edge, and the separation
-   reads harder per pixel because no intermediate box dilutes it. */
-.topic-article__section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxs);
-  /* On top of the article's own 12px gap: the evidence is a different KIND of
-     thing from the analysis, so it opens a little further out than a subhead. */
-  margin-top: var(--ref-spacing-xxs);
-}
-
-.topic-article__section-head {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
-  margin: 0;
-  font-size: var(--sys-text-style-caption-bold-size);
-  line-height: var(--sys-text-style-caption-bold-line-height);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--sys-text-color-light);
-}
-
-.topic-article__posts {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxs);
 }
 
 /* ── The evidence expander ─────────────────────────────────────────────────
