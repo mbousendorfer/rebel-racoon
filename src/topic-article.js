@@ -55,7 +55,7 @@
 import { html, raw, escapeAttr } from "./utils.js?v=22";
 import { topicTitle } from "./topics-store.js?v=7";
 import { findTopicState } from "./topics-catalog.js?v=4";
-import { renderSocialPostCard } from "./components/social-post-card.js?v=9";
+import { renderSocialPostCard } from "./components/social-post-card.js?v=10";
 
 /**
  * The object's identity: the claim as an h2, and where it came from underneath.

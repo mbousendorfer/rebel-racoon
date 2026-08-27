@@ -116,16 +116,41 @@ export function renderSocialPostCard(post, { compact = false } = {}) {
         )}
       </div>`;
 
+  // ── The anatomy is the product's own listening card ──────────────────────
+  // Modelled on `ap-mini-post` (conversation/commons/frontend/libs/ui) — the
+  // component the real Listening feed renders every item with. Three parts, in its
+  // order: top (avatar · identity · date), content (the text), bottom (engagement).
+  //
+  // What changed to match it:
+  //   • the network mark is a BADGE ON THE AVATAR (`.ap-avatar-network`, a shipped
+  //     class this app was not using) instead of an icon floating at the card's top
+  //     right. That is where a reader of the real product looks for it, and it
+  //     couples the network to the author rather than to the card.
+  //   • the identity splits in two: `name · @handle` on one line with the DS's 4px
+  //     dot separator, then the date on its own line. It was `@handle` over
+  //     "Network · date", which spent the second line on a fact the avatar badge
+  //     now carries and hid the full name entirely.
+  //   • avatar 40px, not 32 — mini-post's size.
   return html`<article class="social-post-card${raw(compact ? " social-post-card--compact" : "")}">
     <header class="social-post-card__head">
-      <span class="ap-avatar ${raw(compact ? "size-24" : "size-32")} social-post-card__avatar" data-accent="${accent}">
+      <span class="ap-avatar ${raw(compact ? "size-32" : "size-40")} social-post-card__avatar" data-accent="${accent}">
         <span class="ap-avatar-initials">${author.initials || "?"}</span>
+        <span class="ap-avatar-network" aria-label="${network}" role="img">
+          <i class="${iconFor(post.network)}" aria-hidden="true"></i>
+        </span>
       </span>
       <span class="social-post-card__identity">
-        <span class="social-post-card__author">${identity}</span>
-        <span class="social-post-card__meta">${network} · ${post.publishedOn}</span>
+        <span class="social-post-card__title">
+          <span class="social-post-card__author">${identity}</span>
+          ${raw(
+            author.name && author.handle && author.name !== author.handle
+              ? html`<span class="social-post-card__dot" aria-hidden="true"></span>
+                  <span class="social-post-card__handle">${author.name}</span>`
+              : "",
+          )}
+        </span>
+        <time class="social-post-card__date">${post.publishedOn}</time>
       </span>
-      <i class="${iconFor(post.network)} social-post-card__net" aria-label="${network}" role="img"></i>
     </header>
     <p class="social-post-card__text">${post.text}</p>
     ${raw(stats)}

@@ -5,22 +5,27 @@
 
    See src/components/social-post-card.js. */
 
-/* QUOTED content, so it carries the subtle ground rather than the page's white:
-   this is somebody else's post shown as evidence under Archie's own analysis, and
-   the change of fill is what separates the two. It used to be a white card inside
-   a grey panel, which said the same thing with one more box and 32px more indent.
-   Flat — a fill, a hairline and a radius, no shadow. */
+/* ── The shell is `ap-mini-post`'s ────────────────────────────────────────
+   White on a grey-10 hairline, 12px of padding, 12px between the three parts,
+   `--ref-border-radius-md` — copied from the real component rather than
+   approximated. It reads as an item in a feed, which is what it is.
+
+   ⚠️ It was a grey-05 FILL with no border, on the one-fill rule: the ground was
+   what marked "somebody else's words". That rule changed when Archie's own brief
+   took the peach ground — the two are told apart by HUE now, so quoted content no
+   longer needs to own grey, and matching the product beats inventing a second
+   convention. In the real card grey-05 means something specific and different:
+   SEEN. The proto has no seen state, so it stays white.
+
+   Still no hover and no elevation: nothing here is clickable. */
 .social-post-card {
   display: flex;
   flex-direction: column;
-  /* head / quote / metrics are one block; `xs` between them read as three. */
-  gap: var(--ref-spacing-xxs);
-  padding: var(--ref-spacing-sm);
-  /* Fill only, no border. It carried both, and on a surface where the fill is
-     now the ONE thing that marks quoted content, an outline on top of it is a
-     second device saying the same thing. */
-  border-radius: var(--app-radius-card);
-  background: var(--app-surface-subtle);
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xs);
+  border: 1px solid var(--ref-color-grey-10);
+  border-radius: var(--ref-border-radius-md);
+  background: var(--ref-color-white);
 }
 
 /* ── Head: avatar · identity · network mark ─────────────────────────────── */
@@ -72,11 +77,27 @@
   color: var(--ref-color-white);
 }
 
+/* 2px between the two lines, straight from mini-post-top: the identity and its
+   date are one block, and a `xxs` between them read as two. */
 .social-post-card__identity {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
   min-width: 0;
-  flex: 1;
+  flex: 1 0 0;
+}
+
+/* mini-post-top's grid: `auto 4px 1fr`. The name takes what it needs and
+   ellipsises, the dot is exactly 4px, the second name gets the rest. A flex row
+   would let the separator shrink. */
+.social-post-card__title {
+  display: grid;
+  grid-template-columns: auto 4px 1fr;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  min-width: 0;
+  overflow: hidden;
 }
 
 .social-post-card__author {
@@ -90,21 +111,35 @@
   white-space: nowrap;
 }
 
-.social-post-card__meta {
-  font-family: var(--sys-text-style-caption-font-family);
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--sys-text-color-light);
+/* A 4px dot, not a "·" glyph: the real card draws it, and a rendered middot
+   inherits the font's own spacing and baseline, which drifts between the bold
+   name and the regular one either side of it. */
+.social-post-card__dot {
+  width: 4px;
+  height: 4px;
+  border-radius: var(--ref-border-radius-sm);
+  background: var(--ref-color-grey-20);
 }
 
-/* The DS `-official` glyphs paint their own brand colours (SVG data-URI
-   backgrounds), so this only has to size and place the mark. */
-.social-post-card__net {
-  flex-shrink: 0;
-  font-size: 20px;
-  width: 20px;
-  height: 20px;
-  align-self: flex-start;
+.social-post-card__handle {
+  font-family: var(--sys-text-style-body-font-family);
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--ref-color-grey-80);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The date on its own line, at BODY size in grey-80 — mini-post-top's
+   `--ref-font-size-sm`, which is 14px. It was 12px caption sharing a line with
+   the network name; the badge on the avatar carries the network now, so this line
+   says the one thing left. */
+.social-post-card__date {
+  font-family: var(--sys-text-style-body-font-family);
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--ref-color-grey-80);
 }
 
 /* ── Body ───────────────────────────────────────────────────────────────── */
@@ -172,8 +207,5 @@
   overflow: hidden;
 }
 
-.social-post-card--compact .social-post-card__net {
-  font-size: 16px;
-  width: 16px;
-  height: 16px;
-}
+/* `.social-post-card__net` is gone — the network is a badge on the avatar now, and
+   the DS sizes it from the avatar's own `--ap-avatar-network-size`. */
