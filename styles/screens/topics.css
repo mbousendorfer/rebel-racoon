@@ -746,9 +746,6 @@
 }
 
 .topic-article__section-head {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
   margin: 0;
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);
@@ -756,20 +753,32 @@
   color: var(--sys-text-color-light);
 }
 
-/* 12px, not 8. Two quoted cards are ~100px tall each and carry their own 16px of
-   padding, so 8px between them read as one long slab with a seam. A gap between
-   two filled blocks has to clear their padding to register at all. */
-.topic-article__posts {
+/* ── The section IS the disclosure ─────────────────────────────────────────
+   The whole line is the target — label, count and chevron — so there is no small
+   hit area to aim at. Full width and a chevron pushed to the far end: a control
+   whose affordance sits at the row's end is the shape the accordion, the select
+   and the kebab all use here.
+
+   No box and no fill. `.ap-accordion` would frame blocks that already wear a fill,
+   and the article keeps exactly one framed species (the two facts) and one filled
+   species (the cards). The chevron and the pointer are the whole affordance. */
+.topic-article__section-label {
   display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xs);
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  cursor: pointer;
+  user-select: none;
 }
 
-/* ── The evidence expander ─────────────────────────────────────────────────
-   Hidden until its checkbox is ticked, and the trigger hides with it: once the
-   rest is open there is nothing left to ask for, and a "2 more posts" label above
-   four visible posts contradicts itself. */
-.topic-article__more-check {
+.topic-article__section-toggle {
+  margin-left: auto;
+  font-size: var(--sys-icon-css-sm);
+  transition: transform var(--ref-animation-short);
+}
+
+/* Visually gone, still focusable and still announced: the label is the control,
+   so a keyboard reader tabs to the checkbox and hears its checked state. */
+.topic-article__section-check {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -777,31 +786,24 @@
   pointer-events: none;
 }
 
-/* `align-self` only bites now that __posts is a flex column - on the block parent
-   it had been inert. The 4px lifts the control off the card above it: flush
-   against a quoted post it read as part of that post rather than as a thing to
-   click. */
-.topic-article__more {
-  align-self: flex-start;
-  margin-top: var(--ref-spacing-xxxs);
-  cursor: pointer;
-}
-
-.topic-article__posts-rest {
+/* 12px between cards, not 8. Two quoted cards are ~100px tall each and carry their
+   own 16px of padding, so 8px between them read as one long slab with a seam. A
+   gap between two FILLED blocks has to clear their padding to register at all. */
+.topic-article__posts {
   display: none;
   flex-direction: column;
   gap: var(--ref-spacing-xs);
 }
 
-.topic-article__more-check:checked ~ .topic-article__posts-rest {
+.topic-article__section-check:checked ~ .topic-article__posts {
   display: flex;
 }
 
-.topic-article__more-check:checked ~ .topic-article__more {
-  display: none;
+.topic-article__section-check:checked ~ .topic-article__section-head .topic-article__section-toggle {
+  transform: rotate(180deg);
 }
 
-.topic-article__more-check:focus-visible ~ .topic-article__more {
+.topic-article__section-check:focus-visible ~ .topic-article__section-head {
   outline: 2px solid var(--ref-color-electric-blue-100);
   outline-offset: 2px;
   border-radius: var(--app-radius-sm);

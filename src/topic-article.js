@@ -164,9 +164,6 @@ export function renderTopicArticle(topic, { source = null, withHeader = true, me
                  something you bring INTO a chat, and these are the evidence the
                  analysis was written from. Naming them Sources put two different
                  objects under one word on the same screen. -->
-            <h3 class="topic-article__section-head">
-              Contributing posts <span class="ap-counter normal grey">${posts.length}</span>
-            </h3>
             ${raw(renderPosts(topic, posts))}
           </section>`
         : "",
@@ -174,35 +171,62 @@ export function renderTopicArticle(topic, { source = null, withHeader = true, me
   </div>`;
 }
 
-// ── The evidence, and why its CAP depends on the kind ─────────────────────
-// The posts play a different ROLE either side of the kind, so they get a
-// different treatment. On a `ready` Topic they SUPPORT an argument the reader has
-// just read, so past the first two they are diminishing returns: the first two
-// show and the rest sit behind "+N more" (fires on 9 of the 34 ready Topics; the
-// average is 2.0, so most never cap at all). On a `later` Topic there is no
-// draftable angle yet and the posts ARE the material — capping them would empty
-// the panel, and 6 of the 18 have none to begin with.
+// ── The evidence, behind ONE disclosure ───────────────────────────────────
+// Collapsed, the section is a single line: "Contributing posts 6" and a chevron.
+// The article is a reading surface and these cards are the heaviest thing on it —
+// the only blocks wearing a fill, ~100px each — so two of them stack 200px of grey
+// under the analysis that is the actual deliverable. Folded away, the reader gets
+// prose, then the apparatus stated in one line, then the evidence on demand. Same
+// judgement that moved the trail behind the kebab, one step short of it: the trail
+// is meta, this is the argument's own footing, so it stays in the article.
 //
-// The expander is a sibling checkbox, same reason as the trail: this renderer is
-// pure and has three hosts, none of which has anywhere to keep an open flag.
-const POST_CAP = 2;
-
+// ⚠️ THIS REPLACED A CAP, and deliberately: the section used to show the first two
+// posts and put the rest behind a second "N more posts" link. A collapsible
+// section plus that link is TWO nested disclosures for one list, and the reader
+// has to operate both to see six posts. So `POST_CAP`, `__more` and
+// `__posts-rest` are gone — open the section and every post is there.
+//
+// ── The default follows the KIND, because the posts' role does ────────────
+// On a `ready` Topic they SUPPORT an argument the reader has just finished, so
+// closed is the right resting state. On a `later` Topic there is no draftable
+// angle yet and the posts ARE the material — closing them would empty the panel,
+// which is the mistake `8d8d0b4b` already made once by hiding a `later` Topic's
+// real content. So `later` opens expanded. One control, two resting states.
+//
+// The disclosure is a sibling checkbox, not <details> and not the DS accordion:
+//   • this renderer is PURE and has three hosts, none of which has anywhere to
+//     keep an open flag — the same reason the trail used one;
+//   • `.ap-accordion` would put a FRAMED BOX around blocks that already wear a
+//     fill. The article has exactly one framed species (the two facts) and one
+//     filled species (these cards); a third device saying "section" is what the
+//     hairline above this heading was already removed for. It would also give the
+//     header 14/700 dark ink, outranking the 12/700 light apparatus label the rest
+//     of the article uses.
 function renderPosts(topic, posts) {
-  const card = (p) => renderSocialPostCard(p);
-  if (topic.kind === "later" || posts.length <= POST_CAP) {
-    return html`<div class="topic-article__posts">${raw(posts.map(card).join(""))}</div>`;
-  }
-  const shown = posts.slice(0, POST_CAP);
-  const rest = posts.slice(POST_CAP);
   const id = `topic-posts-${topic.id}`;
-  return html`<div class="topic-article__posts">
-    ${raw(shown.map(card).join(""))}
-    <input type="checkbox" class="topic-article__more-check" id="${escapeAttr(id)}" />
-    <label class="ap-link standalone small topic-article__more" for="${escapeAttr(id)}">
-      ${String(rest.length)} more ${rest.length === 1 ? "post" : "posts"}
-    </label>
-    <div class="topic-article__posts-rest">${raw(rest.map(card).join(""))}</div>
-  </div>`;
+  const open = topic.kind === "later";
+  return html`<input
+      type="checkbox"
+      class="topic-article__section-check"
+      id="${escapeAttr(id)}"
+      ${raw(open ? "checked" : "")}
+    />
+    <!-- The <h3> stays, so the document outline does not lose a section to a
+         label. The label inside it is what makes the whole line the target. -->
+    <h3 class="topic-article__section-head">
+      <label class="topic-article__section-label" for="${escapeAttr(id)}">
+        <!-- "Contributing posts", not "Sources": a Source in this app is
+             something you bring INTO a chat, and these are the evidence the
+             analysis was written from. Naming them Sources put two different
+             objects under one word on the same screen. -->
+        <span>Contributing posts</span>
+        <!-- The count is why folding these away costs nothing: it says how much
+             evidence exists, so the section defers it rather than hiding it. -->
+        <span class="ap-counter normal grey">${String(posts.length)}</span>
+        <i class="ap-icon-chevron-down topic-article__section-toggle" aria-hidden="true"></i>
+      </label>
+    </h3>
+    <div class="topic-article__posts">${raw(posts.map((pp) => renderSocialPostCard(pp)).join(""))}</div>`;
 }
 
 // Where it came from and how old it is, on one line under the title. Sentence
