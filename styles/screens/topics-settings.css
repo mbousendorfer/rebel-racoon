@@ -303,3 +303,12 @@
   align-items: flex-start;
   gap: var(--ref-spacing-xxs);
 }
+
+/* The Coming-soon tag and its one affordance travel together — the tag states the
+   fact, the link is the only thing a reader can do about it. */
+.topics-src__soon-group {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  flex-wrap: wrap;
+}

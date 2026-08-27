@@ -2,11 +2,11 @@ import { route, setAfterRender, start } from "./router.js?v=31";
 import { isFlagOn } from "./feature-flags.js?v=21";
 import { initArchieLoader } from "./archie-loader.js?v=3";
 import { initTopbar, renderTopbar } from "./components/topbar.js?v=319";
-import { initSidebar, renderSidebar } from "./components/sidebar.js?v=290";
+import { initSidebar, renderSidebar } from "./components/sidebar.js?v=291";
 import { init as initRightPanel } from "./components/right-panel.js?v=456";
 import { init as initScheduleModal } from "./components/schedule-modal.js?v=73";
 import { init as initBugReportModal } from "./components/bug-report-modal.js?v=25";
-import { init as initFeedbackModal } from "./components/feedback-modal.js?v=27";
+import { init as initFeedbackModal } from "./components/feedback-modal.js?v=28";
 import { init as initImageStudio } from "./components/image-studio-v2/index.js?v=101";
 import { init as initVideoClipsModal } from "./components/video-clips-modal.js?v=73";
 import { init as initChatPickerModal } from "./components/chat-picker-modal.js?v=79";
@@ -27,10 +27,10 @@ import {
   render as renderConversationStatusCard,
 } from "./components/conversation-status-card.js?v=248";
 import { renderDashboard } from "./screens/dashboard.js?v=75";
-import { renderSession } from "./screens/session.js?v=549";
+import { renderSession } from "./screens/session.js?v=550";
 import { renderContexts } from "./screens/contexts.js?v=282";
 import { renderTopics } from "./screens/topics.js?v=22";
-import { renderTopicsSettings } from "./screens/topics-settings.js?v=4";
+import { renderTopicsSettings } from "./screens/topics-settings.js?v=5";
 import { renderConnectors } from "./screens/connectors.js?v=219";
 import { renderWelcomeAlt } from "./screens/welcome-alt.js?v=5";
 // Settings route removed — the prototype Admin controls moved to the sidebar
@@ -39,7 +39,7 @@ import { renderWelcomeAltRecap } from "./screens/welcome-alt-recap.js?v=275";
 import { renderPlaybook } from "./screens/playbook.js?v=287";
 import * as __capAddSource from "./components/add-source-modal.js?v=80";
 import * as __capBug from "./components/bug-report-modal.js?v=25";
-import * as __capFeedback from "./components/feedback-modal.js?v=27";
+import * as __capFeedback from "./components/feedback-modal.js?v=28";
 import * as __capChatPicker from "./components/chat-picker-modal.js?v=79";
 import * as __capSearch from "./components/search-modal.js?v=26";
 import {

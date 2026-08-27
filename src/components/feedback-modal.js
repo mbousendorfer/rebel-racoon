@@ -9,6 +9,8 @@ const MODAL_ID = "feedback";
 
 let backdrop, modal, textArea, featureArea, submitBtn, textAreaError;
 let initialized = false;
+// Read off the markup at init, so the generic copy lives in exactly one place.
+const GENERIC = { title: "", intro: "", placeholder: "" };
 // Stays false until the user clicks Submit once. Avoids yelling at
 // people who haven't tried yet.
 let hasAttemptedSubmit = false;
@@ -95,8 +97,17 @@ function setTextAreaInvalid(invalid) {
   textAreaError.hidden = !invalid;
 }
 
-export function open() {
+/**
+ * @param {object}  [opts]
+ * @param {object}  [opts.subject]  When the caller already knows what the feedback
+ *   is ABOUT, it answers the "Feature area" question instead of asking it: the
+ *   field is hidden and its value set, and the title and intro name the subject.
+ *   `{ area, title, intro, placeholder }`. Omit it entirely for the generic
+ *   "Send feedback" dialog, which is byte-for-byte what it always was.
+ */
+export function open({ subject = null } = {}) {
   if (!initialized) init();
+  applySubject(subject);
   requestOpen(MODAL_ID, close);
   backdrop.hidden = false;
   backdrop.classList.add("open");
@@ -104,6 +115,28 @@ export function open() {
   modal.setAttribute("aria-hidden", "false");
   document.body.classList.add("has-modal");
   window.setTimeout(() => focusSafe(textArea), 50);
+}
+
+// One place that dresses the dialog for a subject, and one place that undresses
+// it. Anything that only ever sets the "on" half leaves the next generic open()
+// wearing the last subject's title.
+function applySubject(subject) {
+  const title = document.getElementById("feedbackTitle");
+  const intro = modal.querySelector(".feedback-modal__intro");
+  const areaField = featureArea ? featureArea.closest(".ap-form-field") : null;
+
+  if (!subject) {
+    title.textContent = GENERIC.title;
+    intro.innerHTML = GENERIC.intro;
+    if (areaField) areaField.hidden = false;
+    if (textArea) textArea.placeholder = GENERIC.placeholder;
+    return;
+  }
+  title.textContent = subject.title || GENERIC.title;
+  if (subject.intro) intro.textContent = subject.intro;
+  if (areaField) areaField.hidden = true;
+  if (featureArea && subject.area) featureArea.value = subject.area;
+  if (textArea && subject.placeholder) textArea.placeholder = subject.placeholder;
 }
 
 function close() {
@@ -127,6 +160,12 @@ export function init() {
   textAreaError = document.getElementById("feedbackTextError");
   featureArea = document.getElementById("feedbackFeatureArea");
   submitBtn = document.getElementById("submitFeedbackBtn");
+
+  // Snapshot the generic copy AFTER the markup is in and the refs resolved, so
+  // applySubject(null) can always put the dialog back the way it shipped.
+  GENERIC.title = document.getElementById("feedbackTitle").textContent;
+  GENERIC.intro = modal.querySelector(".feedback-modal__intro").innerHTML;
+  GENERIC.placeholder = textArea.placeholder;
 
   document.getElementById("closeFeedbackBtn").addEventListener("click", close);
   document.getElementById("cancelFeedbackBtn").addEventListener("click", close);

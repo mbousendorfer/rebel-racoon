@@ -1,7 +1,7 @@
 import { html, raw, escapeHtml } from "../utils.js?v=22";
 import { navigate, getPath } from "../router.js?v=31";
 import { open as openBugReportModal } from "./bug-report-modal.js?v=25";
-import { open as openFeedbackModal } from "./feedback-modal.js?v=27";
+import { open as openFeedbackModal } from "./feedback-modal.js?v=28";
 import { open as openConfirmModal } from "./confirm-modal.js?v=23";
 import { open as openRenameModal } from "./rename-modal.js?v=3";
 import { open as openSearchModal } from "./search-modal.js?v=26";

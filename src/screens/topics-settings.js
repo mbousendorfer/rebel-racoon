@@ -36,6 +36,7 @@ import { getContextById, getDefaultContext } from "../contexts-store.js?v=56";
 import { editableContexts, canEdit } from "../playbook-access.js?v=7";
 import { getFeedForPlaybook, updateFeed, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=3";
 import { TOPIC_SOURCES, CADENCES, findTopicSource, findCadence, isLiveSource } from "../topics-catalog.js?v=2";
+import { open as openFeedback } from "../components/feedback-modal.js?v=28";
 
 // Above this many Playbooks the picker earns a search field. Below it, a search
 // box over four rows is just noise.
@@ -317,7 +318,23 @@ function renderSourceCard(ctx, feed, source, on) {
         <i class="${source.icon}"></i>
       </span>
       <h3 class="ap-card-title topics-src__name">${source.name}</h3>
-      ${raw(live ? "" : html`<span class="ap-tag grey mini topics-src__soon">Coming soon</span>`)}
+      ${raw(
+        live
+          ? ""
+          : html`<span class="topics-src__soon-group">
+              <span class="ap-tag grey mini topics-src__soon">Coming soon</span>
+              <!-- The one thing a reader can do about a source that is not live yet:
+                   say how they would use it. Without this the card is a dead end
+                   wearing a tag. -->
+              <button
+                type="button"
+                class="ap-link standalone small topics-src__need"
+                data-topics-need="${escapeAttr(source.id)}"
+              >
+                Need this source?
+              </button>
+            </span>`,
+      )}
       <label class="ap-toggle-container topics-src__switch">
         <input
           type="checkbox"
@@ -380,6 +397,24 @@ function bind(target) {
   boundTarget = target;
 
   boundClick = (event) => {
+    // "Need this source?" on a source that is not live yet. Reuses the feedback
+    // dialog rather than adding a ninth near-identical shell: its "Feature area"
+    // select is a SUBJECT picker, and here the subject is known, so the dialog
+    // answers that question instead of asking it.
+    const need = event.target.closest("[data-topics-need]");
+    if (need) {
+      const src = findTopicSource(need.dataset.topicsNeed);
+      openFeedback({
+        subject: {
+          area: "other",
+          title: "Need this source?",
+          intro: `${src ? src.name : "This source"} isn't live yet. Tell me how you'd use it and it goes to the team building the next ones.`,
+          placeholder: "How would you use this source?",
+        },
+      });
+      return;
+    }
+
     // Playbook pick — rewrites `?pb=`, which the router turns into a repaint.
     const pbPick = event.target.closest("[data-settings-pb]");
     if (pbPick) {
