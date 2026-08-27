@@ -53,7 +53,7 @@
 // whose whole value is the detail.
 
 import { html, raw, escapeAttr } from "./utils.js?v=22";
-import { topicTitle } from "./topics-store.js?v=7";
+import { topicTitle } from "./topics-store.js?v=8";
 import { findTopicState } from "./topics-catalog.js?v=4";
 import { renderSocialPostCard } from "./components/social-post-card.js?v=11";
 

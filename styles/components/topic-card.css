@@ -93,14 +93,16 @@
   border-color: var(--ref-color-electric-blue-40);
 }
 
-/* The product's `seen`: a triaged Topic steps back a GROUND as well as a weight.
-   Grey-05 is the same ground the real card uses for a seen item. */
-.topic-card--feed.is-triaged {
+/* The product's `seen`, and now it is a real axis rather than borrowed: grey-05 is
+   the ground `--seen` uses in the source. ⚠️ It hung off `.is-triaged` for one
+   commit, before the read receipt existed — which conflated "you decided" with
+   "you looked", the two things the seen axis exists to separate. */
+.topic-card--feed.is-seen {
   background: var(--ref-color-grey-05);
 }
 
 .topic-card--feed.is-reading,
-.topic-card--feed.is-triaged.is-reading {
+.topic-card--feed.is-seen.is-reading {
   background: var(--app-surface);
   border-color: var(--ref-color-electric-blue-100);
 }
@@ -113,8 +115,8 @@
    second answer to the same question.
 
    The ink does not change: hierarchy comes from size and weight, never from
-   dropping text into a lighter grey. The GROUND changes too now — see the state
-   block above, which took the product's `seen` treatment. */
+   dropping text into a lighter grey. And WEIGHT ONLY: the ground belongs to
+   `.is-seen`, which is a different question — decided vs. read. */
 .topic-card--feed.is-triaged .topic-card__headline {
   font-weight: var(--sys-text-style-body-weight);
 }
@@ -122,11 +124,18 @@
 /* ── Density ──────────────────────────────────────────────────────────────
    A card in a queue is scanned, not read. Tight vertical padding and a hairline
    gap between the three lines; more horizontal air than a row would take, because
-   a card has edges to sit away from. The right gutter is the kebab's. */
+   a card has edges to sit away from.
+
+   ⚠️ THE RIGHT GUTTER IS NOW TWO CONTROLS WIDE. It was `xl` (40px) — the kebab
+   plus its inset — and the seen toggle beside it doubled that need. Left at 40px,
+   the state chip (in flow, `margin-left: auto`) ran straight under the absolutely
+   positioned toggle: on the four cards carrying a chip the check simply vanished
+   behind it. Derived from the button's own width so it tracks the DS rather than a
+   guess: two buttons, the gap between them, and the inset on each side. */
 .topic-card--feed .topic-card__body {
   gap: var(--ref-spacing-xxxs);
   padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
-  padding-right: var(--ref-spacing-xl);
+  padding-right: calc(2 * var(--comp-icon-button-width) + var(--ref-spacing-xxxs) + 2 * var(--ref-spacing-xxs));
 }
 
 /* Inset, so the ring does not sit outside the card's rounded corner. */
@@ -297,6 +306,17 @@
   position: absolute;
   top: var(--ref-spacing-xxs);
   right: var(--ref-spacing-xxs);
+  z-index: 1;
+}
+
+/* Immediately left of the kebab — one icon-button's width plus the gap, so the two
+   tertiary controls read as a pair and the kebab keeps the corner it owned. Both
+   are SIBLINGS of the body button rather than inside it (button-in-button is
+   invalid), which is why they are positioned rather than laid out. */
+.topic-card__seen {
+  position: absolute;
+  top: var(--ref-spacing-xxs);
+  right: calc(var(--ref-spacing-xxs) + var(--comp-icon-button-width) + var(--ref-spacing-xxxs));
   z-index: 1;
 }
 

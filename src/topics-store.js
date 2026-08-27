@@ -43,6 +43,8 @@
 //   getTopicById(id)                   → Topic | null
 //   topicTitle(topic)                  → string
 //   topicStates(topic)                 → string[]  (the six-state vocabulary)
+//   markSeen(id, seen) / markAllSeen(feedId)
+//   countUnseen(feedId) / countAll(feedId)
 //   defaultFilters() / narrowedGroupCount(filters)
 //   getStatus(id) / getIgnoreReason(id)
 //   markUsed(id) / ignoreTopic(id, reason) / unignoreTopic(id)
@@ -67,7 +69,10 @@ const topics = isNewUser() ? [] : seed.map(cloneTopic);
 const triage = new Map();
 for (const t of topics) {
   const seeded = findTopicState(t.seedStatus)?.facet === "status" ? t.seedStatus : "new";
-  triage.set(t.id, { status: seeded, reason: t.seedReason || "" });
+  // `seen` is seeded from the status: a Topic you took into a chat or pushed away
+  // is one you have obviously read. Everything still To review arrives unseen,
+  // which is what gives the feed something to count.
+  triage.set(t.id, { status: seeded, reason: t.seedReason || "", seen: seeded !== "new" });
 }
 
 const notifier = createNotifier("topics-store");
@@ -148,6 +153,7 @@ function withTriage(t) {
     ...t,
     kind: kindOf(t),
     status: row.status,
+    seen: !!row.seen,
     ignoreReason: row.reason,
     // THE TRAIL IS TWO-SIDED, and merging it on read is what keeps the invariant
     // intact. What the scan recorded lives on the Topic (server-owned, replaced
@@ -279,6 +285,54 @@ export function groupTopicsByAge(list) {
   );
 }
 
+// ── Seen / unseen: a READ RECEIPT, not a decision ─────────────────────────
+// A second axis, deliberately separate from `status`. The two answer different
+// questions and the product keeps them apart for the same reason:
+//
+//   status  what you DECIDED about this Topic — Already used, Ignored, To review
+//   seen    whether you have LOOKED at it
+//
+// So a Topic can be seen and still To review (you read it and moved on without
+// answering), which is the state the unseen count exists to distinguish from "not
+// dealt with". Deciding implies seeing — markUsed and ignoreTopic both set it — but
+// seeing never implies deciding.
+//
+// It lives in the triage Map because it is the reader's, not the scan's: the same
+// reason `status` does, and the reason a re-scan cannot clear it.
+export function markSeen(topicId, seen = true) {
+  const t = topics.find((x) => x.id === topicId);
+  if (!t) return null;
+  const prev = triage.get(topicId) || { status: "new", reason: "" };
+  triage.set(topicId, { ...prev, seen: !!seen });
+  notify();
+  return withTriage(t);
+}
+
+/** Everything in this feed, read. The header's one bulk action. */
+export function markAllSeen(feedId) {
+  let n = 0;
+  for (const t of topics) {
+    if (t.feedId !== feedId) continue;
+    const prev = triage.get(t.id) || { status: "new", reason: "" };
+    if (prev.seen) continue;
+    triage.set(t.id, { ...prev, seen: true });
+    n += 1;
+  }
+  if (n) notify();
+  return n;
+}
+
+/** The header's second number. Counts EVERY unseen Topic, whatever its state or
+    kind — an unread count that skipped some of the list would not be a count. */
+export function countUnseen(feedId) {
+  return topics.filter((t) => t.feedId === feedId && !(triage.get(t.id) || {}).seen).length;
+}
+
+/** The header's first number: everything the feed holds, before filters. */
+export function countAll(feedId) {
+  return topics.filter((t) => t.feedId === feedId).length;
+}
+
 // ── The sidebar's unread mark ──────────────────────────────────────────────
 // Topics still waiting for an answer AND draftable. The `kind` half is new: this
 // counted every `new` Topic, including the `later` ones parked behind the second
@@ -372,6 +426,9 @@ export function markUsed(topicId) {
   triage.set(topicId, {
     ...prev,
     status: "used",
+    // Deciding implies reading. There is no such thing as an Already-used Topic
+    // you have not seen, and letting one exist would make the unseen count lie.
+    seen: true,
     entries: [...(prev.entries || []), { status: "used", when: "just now", note: "Used in a chat as a source." }],
   });
   notify();
@@ -386,6 +443,7 @@ export function ignoreTopic(topicId, reason = "") {
   triage.set(topicId, {
     status: "ignored",
     reason: why,
+    seen: true,
     entries: [
       ...(prev.entries || []),
       { status: "ignored", when: "just now", note: why ? `Ignored — ${why}` : "Ignored, without a reason given." },
@@ -411,7 +469,11 @@ export function unignoreTopic(topicId) {
   // toast's Undo takes, and an undo that leaves its own footprint in the trail
   // has not undone anything. The Topic's seeded history is untouched — that half
   // is the scan's, not the reader's.
-  triage.set(topicId, { status: "new", reason: "", entries: [] });
+  // `seen` SURVIVES the undo, unlike the reason and the trail entries: un-ignoring
+  // takes back the decision, not the fact that you read it. Resetting it would put
+  // the Topic back in the unseen count, which is a claim about your eyes rather
+  // than about your answer.
+  triage.set(topicId, { status: "new", reason: "", entries: [], seen: true });
   notify();
   return withTriage(t);
 }

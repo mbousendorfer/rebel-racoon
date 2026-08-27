@@ -95,8 +95,8 @@ Exemples en place : [`screens/topics.js`](../../src/screens/topics.js) (les troi
 
 - `:hover` → `border-color: --ref-color-electric-blue-40` (« tu pointes ceci »)
 - `.is-reading` → `border-color: --ref-color-electric-blue-100`, fond **blanc** (« celui-ci est ouvert »)
-- `.is-triaged` → fond `--ref-color-grey-05`, le traitement `seen` du produit — donc le SOL porte l'axe lu/non-lu, et la bordure porte l'axe pointé/ouvert. **Un dispositif par question.**
-- L'ordre compte : `.is-reading` passe après `.is-triaged`, donc une carte triée et ouverte revient au blanc, exactement comme `--selected` écrase `--seen` dans la source.
+- `.is-seen` → fond `--ref-color-grey-05`, le traitement `--seen` du produit — donc le SOL porte l'axe lu/non-lu, et la bordure porte l'axe pointé/ouvert. **Un dispositif par question.** ⚠️ Ce fond a pendu à `.is-triaged` le temps d'un commit, avant que l'accusé de lecture existe : ça confondait « tu as décidé » et « tu as regardé ». `.is-triaged` ne porte plus que la graisse du titre.
+- L'ordre compte : `.is-reading` passe après `.is-seen`, donc une carte lue et ouverte revient au blanc, exactement comme `--selected` écrase `--seen` dans la source.
 - Avant : le survol ET l'ouvert partageaient `electric-blue-100`, et seul le lavis les séparait — or ce lavis serait devenu un troisième sol dans une liste qui a maintenant grey-05 pour les triées.
 
 Appliqué sur `.topic-card--feed` / `--picker`. ⚠️ **Pas encore balayé ailleurs** : `.drafts-card:hover` fait toujours fill + bordure, et la phrase de `chat.css` est toujours dans le CSS. À traiter quand la question reviendra, surface par surface.

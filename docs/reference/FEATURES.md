@@ -857,6 +857,26 @@ En revanche, quand il n'y a **rien à lire du tout** — feed vide, filtre qui e
 
 ⚠️ **C'était un `.ap-loader` et une ligne centrés dans le bloc pleine largeur** — un spinner de 12px seul dans ~1100×700 de blanc, suivi d'un lecteur à deux colonnes qui apparaissait autour de lui. Un squelette existe précisément pour empêcher ce saut : s'il ne pré-dessine pas la mise en page, c'est un spinner avec des étapes en plus. La différence avec les impasses est là — elles n'ont rien à pré-dessiner.
 
+#### Vu / non vu — un ACCUSÉ DE LECTURE, pas une décision
+
+Un **second axe**, volontairement séparé de `status`, repris du feed Listening. Les deux répondent à des questions différentes :
+
+|          |                                                                |
+| -------- | -------------------------------------------------------------- |
+| `status` | ce que vous avez **décidé** — Already used, Ignored, To review |
+| `seen`   | si vous l'avez **regardé**                                     |
+
+Un Topic peut donc être **vu et toujours To review** — lu, puis laissé sans réponse — ce qui est exactement l'état que le compteur de non-vus existe pour distinguer de « pas traité ». **Décider implique voir** (`markUsed` et `ignoreTopic` posent tous deux `seen`), mais voir n'implique jamais décider. Un-ignorer **conserve** `seen` : ça reprend la décision, pas le fait qu'on l'a lu.
+
+`seen` vit dans la Map de triage, pas sur le Topic : c'est au lecteur, pas au scan — la même raison que `status`, et la raison qu'un re-scan ne peut pas l'effacer. Seedé depuis le statut, donc un Topic déjà used/ignored arrive vu et tout ce qui est To review arrive non vu.
+
+- **Sur la carte** : un `ap-icon-button` avec `ap-icon-check`, à gauche du kebab, **vert** une fois vu — la place et la couleur qu'`ap-mini-post` donne à son bouton `acknowledge`. Le libellé bascule (`Mark as seen` / `Mark as unseen`) : une bascule dont le nom ne change pas fait deviner le sens. ⚠️ `ap-icon-check` et pas le double-check `acknowledge` du produit : ce glyphe n'est pas dans l'`ap-icons.css` synchronisé (241 icônes), et un `ap-icon-*` inventé **échoue en silence**.
+- **La gouttière droite de la carte fait DEUX boutons de large.** ⚠️ À `xl` (40px, le kebab seul) la pastille d'état — en flux, `margin-left: auto` — passait **sous** la bascule positionnée en absolu : sur les quatre cartes qui portent une pastille, la coche disparaissait derrière. Dérivée de `--comp-icon-button-width`.
+- **En-tête de liste** : `N topics` · le compteur de non-vus en `ap-counter big orange no-bg` (le traitement exact du produit), puis l'action de masse. Les deux nombres sont **non filtrés** — ils décrivent le feed, donc rétrécir le filtre ne donne pas l'impression que des Topics cessent d'exister.
+- **`Mark all as seen`** : `ap-icon-button stroked grey`, désactivé quand il n'y a rien à marquer, avec un toast qui **dit le nombre** — une action de masse sans reçu laisse le lecteur vérifier si elle a tiré.
+
+⚠️ **J'avais refusé ce portage** au commit précédent, au motif que le statut de revue du proto est une **décision** et pas un accusé de lecture, donc que deux axes répondraient à la même question. Arbitrage renversé par le décideur, et à raison : les deux axes ne répondent pas à la même question, et c'est précisément le compteur de non-vus qui manquait à une file d'attente.
+
 #### Les six états, à un seul niveau
 
 **Une seule espèce : le DS TAG** (`.ap-tag <tone>` + `> i` + `> span`), pas Status. ⚠️ Status était le mauvais frère : il n'a **pas** de créneau d'icône, donc le glyphe passait en fraude dans la place du point via `no-dot` — un modificateur dont le métier est de **retirer** le point, détourné pour le remplacer. Tag stylise `> i` et `> span` comme de vrais créneaux (glyphe 12px, libellé tronqué à 180px), porte une **bordure** en plus du fond donc une pastille a un bord, et livre les cinq teintes voulues. Toujours zéro CSS maison : hauteur, radius, padding et typo viennent de `--comp-tag-*`.
