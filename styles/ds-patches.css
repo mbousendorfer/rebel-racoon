@@ -655,3 +655,18 @@ button.ap-link {
 .ap-filter-leaf__option .disabled {
   color: var(--ref-color-grey-40);
 }
+
+/* .ap-button.mermaid draws its gradient "border" by painting an ::after inset
+   1px — and the DS hardcodes that inner surface to --ref-color-white. On any
+   tinted host the button's interior therefore stays white and the button reads
+   as a misplaced rectangle rather than an outlined control.
+
+   The DS ships no hook for it, so expose one: a host that sits on a tint hands
+   the button its own background via --ap-mermaid-inner, and the default is the
+   DS value, so every existing mermaid button is byte-for-byte unchanged.
+
+   Hover/active are NOT touched — their own selectors are more specific and keep
+   painting --ref-color-mermaid-10 / -20. */
+.ap-button.mermaid::after {
+  background: var(--ap-mermaid-inner, var(--ref-color-white));
+}

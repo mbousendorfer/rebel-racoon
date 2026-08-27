@@ -81,10 +81,17 @@ function renderEmptyMedia(post, opts) {
   // two full-label outline buttons it sat beside read as a pair of equals rather
   // than a primary and an escape hatch. So: title names the job, the AI button is
   // the one control with a container, and upload drops to a link.
+  // `data-post-drop` marks it as a real drop target — the dashed frame is the
+  // universal "drop a file here" sign, so the slot has to accept one. The drag
+  // wiring lives in right-panel.js (drag events only; the clicks belong to the
+  // two controls below, which is why `bindDropzone` is NOT used here — its
+  // click handler fires the file input for any click inside the zone).
   return `<div class="posts__card-media-empty">
-    <div class="posts__card-media-empty-slot">
+    <div class="posts__card-media-empty-slot" data-post-drop="${post.id}">
+      <i class="ap-icon-image posts__card-media-empty-icon" aria-hidden="true"></i>
+      <div class="posts__card-media-empty-body">
       <p class="posts__card-media-empty-title">Add an image</p>
-      <p class="posts__card-media-empty-sub muted">I'll write the brief from this draft.</p>
+      <p class="posts__card-media-empty-sub muted">I'll write the brief from this draft — or drop an image here.</p>
       <div class="posts__card-media-empty-actions">
         <button
           type="button"
@@ -98,6 +105,7 @@ function renderEmptyMedia(post, opts) {
         <button type="button" class="ap-link" data-post-image-upload="${post.id}" aria-label="Upload an image">
           or upload a file
         </button>
+      </div>
       </div>
     </div>
     ${hint}

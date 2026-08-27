@@ -898,7 +898,7 @@ Contenu : le titre (**le titre de l'article**, jamais l'accroche du scan — `to
 - **Relevance n'est jamais teintée**, sous aucun signal : à qui s'adresse un Topic ne change pas parce que la pile a grossi. **Why now** prend la teinte du signal quand il y en a un, parce que c'est la ligne dont le signal parle — un filet gauche, pas un aplat : un bloc teinté à taille de corps se lit comme un avertissement, et ni l'un ni l'autre n'en est un.
 - **Pas d'historique de version.** Un Topic mis à jour se lit comme sa version courante ; un lecteur qui décide quoi poster n'a pas besoin du brouillon qui précédait.
 - **Deux verbes, les mêmes partout, dans l'ordre secondaire → primaire.** Donc **Ignore**, puis **Use in chat**. L'action affirmative est celle qu'on atteint en dernier, et dans le volet ce groupe est aligné à droite, donc « en dernier » veut aussi dire le plus près du bord où l'œil arrive. ⚠️ C'était l'inverse pendant un commit, ce qui mettait Ignore à la place que le primaire doit tenir.
-  - **Use in chat** est `primary orange` : il tend le Topic à Archie, et l'orange est l'action IA / spotlight partout ailleurs dans l'app.
+  - **Use in chat** est `primary orange` dans l'article (volet et dialogue) et `secondary orange` sur la face d'une carte du hero : la teinte reste la même parce que le sens est le même — il tend le Topic à Archie, et l'orange est l'action IA / spotlight partout ailleurs dans l'app. Le poids change avec le contexte, pas la couleur.
   - **Ignore** est `stroked grey` et **pas** rouge : ignorer masque un Topic que cocher Ignored ramène, donc rien n'est détruit et le rouge signalerait un danger absent.
   - La sortie de l'hôte, quand il en a une, vient après et est poussée à droite. Le volet n'en a plus (voir ci-dessous) ; le pied du dialogue garde son `Close`.
 - **Le volet ouvre sur l'EN-TÊTE DE L'OBJET, hors du scroller** — le titre, puis la source et l'âge, avec les deux verbes en face du méta. **Pas de Close** : un lecteur à deux volets ne ferme pas un message, il ouvre le suivant, et la liste est juste là — un bouton dépensait le meilleur emplacement de l'en-tête pour ce que la mise en page fait déjà. `Escape` ferme le volet (et d'abord le menu ou le panneau de filtres s'ils sont ouverts : Escape ferme ce qui s'est ouvert en dernier). C'est la forme d'un client mail, pour sa raison : les actions sont visibles pour un article court comme pour un long, elles ne chevauchent jamais la dernière ligne de prose, et le lecteur les retrouve **toujours au même endroit** au lieu d'à la fin de la quantité de texte que ce Topic avait. Être **hors du scroller** satisfait « rester atteignable pendant qu'on défile » absolument plutôt qu'approximativement — et le titre y gagne la même propriété, ce qui est le vrai bénéfice.
@@ -948,7 +948,24 @@ Ce n'est **pas** le retour de la page Settings agrégée retirée quatre fois ic
 
 - **Aucune puce Playbook par ligne.** Le fork en mettait une sur chacune des six lignes **et** sur chacune des trois cartes de workflow — sept copies identiques d'un nom que le composer, 40px au-dessus, énonce déjà. L'entête de section porte le scope une fois.
 - **Aucun scroll imbriqué.** Le fork en faisait un scroller à hauteur fixe montrant 2,35 lignes dans une page qui scrolle déjà. Six lignes, toutes, et le pied mène au feed.
-- **Le corps de la carte OUVRE l'article**, il ne choisit pas le Topic : lire vient avant décider. Mais la carte porte aussi **Use in chat en clair** sur sa face (`withUse`), parce qu'une carte posée à côté de trois cartes de workflow qu'on clique pour **démarrer** quelque chose doit être actionnable de la même façon. Deux portes, pas une : l'article pour qui doit lire, le verbe pour qui sait déjà.
+- **Le corps de la carte OUVRE l'article**, il ne choisit pas le Topic : lire vient avant décider. Mais la carte porte aussi **Use in chat en clair** sur sa face (`withUse`), parce qu'une carte posée à côté de trois cartes de workflow qu'on clique pour **démarrer** quelque chose doit être actionnable de la même façon. Deux portes, pas une : l'article pour qui doit lire, le verbe pour qui sait déjà. Le bouton est `secondary orange` (variante shippée par le DS : fond `orange-10`, encre `orange-100`), pas `stroked grey` — voir ci-dessous.
+
+**LES DEUX SECTIONS DU HERO DOIVENT SE LIRE COMME DEUX TYPES.** Elles partagent la grille exprès, mais l'item diffère sur **cinq** leviers, aucun décoratif :
+
+|              | Carte de workflow                      | Carte de Topic                |
+| ------------ | -------------------------------------- | ----------------------------- |
+| Fond         | teinté par tonalité (lavis `::before`) | blanc, plat                   |
+| Titre        | `h2` (18px)                            | `h4` (14px)                   |
+| Illustration | watermark 104px                        | aucune                        |
+| Action       | lien **bleu** + flèche qui avance      | bouton **orange** teinté      |
+| Nature       | une porte vers une feature             | du contenu qu'Archie a trouvé |
+
+Le bleu contre l'orange n'est pas un choix esthétique : c'est la convention de l'app (orange = action IA / spotlight, bleu = CTA de navigation routinier), donc l'action dit **de quel genre** elle est avant d'être lue.
+
+⚠️ **Elles ne différaient que sur deux leviers, tous deux INVISIBLES AU REPOS.** `.starter-card::before` — le lavis teinté qui _est_ l'identité de ces cartes — était en `opacity: 0` et ne s'allumait qu'au hover, et le watermark était à `0.07`. Au repos : trois boîtes blanches au-dessus de six boîtes blanches, soit un mur de neuf. Le lavis est passé à `0.6` au repos (1 au hover) et le watermark à `0.10` (0.12 au hover) : c'est une **restauration** d'une intention déjà écrite, pas un ajout. Leçon réutilisable : une identité qui ne se voit qu'au survol n'est pas une identité.
+
+⚠️ Reste un écart assumé : la carte de Topic mesure **187px contre 158** pour la carte de workflow — donc le type « dense » est encore le plus haut des deux. La densité par ligne est bien resserrée (`gap xxxs`, padding `xs sm xxs`), mais la carte porte une ligne de plus (méta + titre + résumé + action). Le fermer demanderait de clamper le résumé à une ligne, ce qui coûterait de l'information sur la seule surface où le Topic doit se vendre.
+
 - Le total du pied est **tout Topic de moins d'une semaine quel que soit son statut**, donc la phrase décrit la semaine et pas une to-do : trier une ligne fait baisser N et laisse M où il est.
 - Rendu à zéro condition satisfaite = **rien du tout**, donc un hero sans Topics est octet pour octet le hero que l'app a toujours eu. Vivant : `session.js` s'abonne au store et re-render l'aside **seulement si la liste est montée**. Changer le Playbook du composer **échange la liste** avec lui.
 

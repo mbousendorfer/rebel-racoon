@@ -118,8 +118,8 @@ import { attachTopicToChat, useTopicInChat, TOPIC_CHAT_HANDOFF } from "../topic-
 import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1";
 import { getFreshTopics, countFresh, subscribe as subscribeTopics } from "../topics-store.js?v=1";
 import { findTopicSource } from "../topics-catalog.js?v=2";
-import { renderTopicCard } from "../components/topic-card.js?v=4";
-import { openTopicPicker, openTopicArticle } from "../components/topic-picker-modal.js?v=5";
+import { renderTopicCard } from "../components/topic-card.js?v=6";
+import { openTopicPicker, openTopicArticle } from "../components/topic-picker-modal.js?v=7";
 import { parseHashParams, setHashQuery } from "../url-state.js?v=22";
 import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=33";
 import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=41";

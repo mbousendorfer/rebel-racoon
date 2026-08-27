@@ -276,23 +276,23 @@
   }
 }
 
-/* Empty media slot — the image's own empty frame.
+/* Empty media slot — a real media dropzone for a draft with no image.
 
-   It reuses `.posts__card-image`'s exact border and radius (1px
-   --app-border-soft, --app-radius-md) so it reads as the picture's frame with
-   nothing in it yet, not as a widget parked in the card.
+   It is dashed, tinted and drop-capable on purpose: the dashed box is the
+   universal "drop a file here" sign, so the slot both LOOKS like a dropzone and
+   IS one (`[data-post-drop]`, wired in right-panel.js). An earlier pass had the
+   dashed look without the behaviour, which is a promise the UI can't keep.
 
-   ⚠️ The background MUST stay transparent. `.ap-button.mermaid` is a
-   gradient-border trick — a gradient background with an ::after inset painted
-   `--ref-color-white` — so on any tinted surface the button's interior goes
-   white and it reads as a misplaced rectangle. This was the original bug.
+   ⚠️ The tint is why `--ap-mermaid-inner` is set here. `.ap-button.mermaid`
+   paints its inner surface --ref-color-white in the DS, so on a tinted host the
+   button's interior stays white and it reads as a misplaced rectangle. The hook
+   in ds-patches.css lets this slot hand the button its own background — so if
+   you change the background below, change this variable with it.
 
-   No dashes: a dashed outline is the drop-zone sign and nothing here takes a
-   drop (only the two buttons act), so it also gets no hover and no drag state.
-
-   Left-aligned, on the card's own text edge. Centering a title, a line of copy
-   and two buttons in a tall box is what made this read as a hole in the feed;
-   the height now comes from the content (~100px) instead of a reserved ratio. */
+   Left-aligned, and the height (108px) is pinned for every state so the frame
+   never resizes between resting, dragover and generating. No `aspect-ratio`
+   though: every seeded draft starts image-less, and reserving the real height of
+   an absent image on each card turns the feed into a column of voids. */
 .posts__card-media-empty {
   display: flex;
   flex-direction: column;
@@ -301,18 +301,46 @@
 
 .posts__card-media-empty-slot {
   display: flex;
-  flex-direction: column;
   align-items: flex-start;
-  /* 0 — the title and its line are one text block (18px over 16px), so they sit
-     flush; the breathing room goes between that block and the buttons. */
-  gap: 0;
-  /* One height for BOTH states — the resting content already reaches it, and
-     pinning it here means the frame doesn't resize when it flips to generating. */
+  gap: var(--ref-spacing-xs);
   min-height: 108px;
   padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
-  border: 1px solid var(--ref-color-grey-20);
+  border: 1.5px dashed var(--ref-color-grey-20);
   border-radius: var(--app-radius-md);
-  background: transparent;
+  background: var(--ref-color-grey-05);
+  /* Hand the mermaid button this surface — see the warning above. */
+  --ap-mermaid-inner: var(--ref-color-grey-05);
+  transition:
+    border-color var(--ref-animation-short),
+    background var(--ref-animation-short);
+}
+
+/* Dragging a file over it. Same electric-blue language as `.ap-dropzone`'s own
+   is-dragover, so a drop target looks like a drop target everywhere in the app.
+   The mermaid inner surface follows the tint or the button would flash white. */
+.posts__card-media-empty-slot.is-dragover {
+  border-color: var(--ref-color-electric-blue-100);
+  background: var(--ref-color-electric-blue-05);
+  --ap-mermaid-inner: var(--ref-color-electric-blue-05);
+}
+
+/* The media glyph — what makes it read as a MEDIA dropzone rather than a
+   generic dashed box. Sized md, not lg: at 32px it dominated the block. */
+.posts__card-media-empty-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  font-size: var(--sys-icon-css-md);
+  line-height: 1;
+  color: var(--ref-color-grey-80);
+}
+
+.posts__card-media-empty-body {
+  display: flex;
+  flex-direction: column;
+  /* The title and its line are one text block (18px over 16px) so they sit
+     flush; the breathing room goes between that block and the buttons. */
+  gap: 0;
+  min-width: 0;
 }
 
 .posts__card-media-empty-title {
@@ -323,8 +351,8 @@
   color: var(--ref-color-grey-100);
 }
 
-/* One line of Archie saying what Generate will actually work from — the thing
-   the buttons can't tell you. It is what earns the slot its height. */
+/* One line of Archie saying what Generate works from, and that a file can be
+   dropped — the two things the buttons can't tell you. */
 .posts__card-media-empty-sub,
 .posts__card-media-empty-hint {
   margin: 0;
@@ -346,14 +374,12 @@
   margin-top: var(--ref-spacing-xs);
 }
 
-/* Generating: the loader sits inline before the line, on the same left edge,
-   so the frame keeps its shape while the mark spins (archie-loader.js hosts
-   the animated SVG automatically). */
+/* Generating: the loader replaces the whole media-object, centred, while the
+   frame keeps its 108px so nothing moves (archie-loader.js hosts the animated
+   SVG automatically). */
 .posts__card-media-empty-slot.is-generating {
-  flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: var(--ref-spacing-xs);
   --archie-loader-size: 28px;
 }
 

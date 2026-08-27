@@ -752,7 +752,11 @@ body.playbook-revoked .session__composer-card {
     color-mix(in srgb, var(--card-tint) 55%, var(--app-surface)) 0%,
     var(--app-surface) 60%
   );
-  opacity: 0;
+  /* VISIBLE AT REST. It was `0`, so the per-tone wash — the whole reason these
+     cards carry a tone — only appeared on hover, and at rest three plain white
+     boxes sat above a grid of plain white Topic cards. The two sections read as
+     one wall of nine. Hover still goes to 1, so the card still responds. */
+  opacity: 0.6;
   pointer-events: none;
   transition: opacity var(--ref-animation-short) var(--app-ease-standard);
 }
@@ -786,7 +790,9 @@ body.playbook-revoked .session__composer-card {
   font-size: 104px;
   line-height: 1;
   color: var(--card-accent);
-  opacity: 0.07;
+  /* Was 0.07 — under the wash it read as a smudge rather than as an illustration.
+     Hover still lifts it to 0.12. */
+  opacity: 0.1;
   pointer-events: none;
   transition: opacity var(--ref-animation-short) var(--app-ease-standard);
 }
@@ -1752,11 +1758,34 @@ body.hide-playbook-colors .composer-context__dot {
 
 /* The starter grid's geometry exactly — same columns, same gap, same cap — so
    the Topic cards line up with the workflow cards above them instead of merely
-   sitting near them. */
+   sitting near them.
+
+   ── The two item types, told apart ──────────────────────────────────────
+   Same grid, deliberately DIFFERENT items. A workflow card is a door: tinted
+   ground, a 104px watermark, an h2 title, a blue text CTA with a nudging arrow,
+   158px of minimum height. A Topic card is content Archie found: white and flat,
+   an h4 headline over a clamped summary, provenance and signals in its meta run,
+   and a tinted ORANGE button because handing it to Archie is an AI action.
+
+   So the levers are ground (tinted vs white), density (airy vs tight), type
+   (h2 vs h4), illustration (watermark vs none) and action (blue link vs orange
+   button) — five, none of them decorative. They used to differ on two, both
+   invisible at rest, which is why the sections read as one grid of nine. */
 .empty-chat__topics-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--ref-spacing-xs);
+}
+
+/* The feed's own density, which exists for the same reason: a card being SCANNED
+   wants tight lines, not the reading room a door's title needs. */
+.empty-chat__topics-grid .topic-card__body {
+  gap: var(--ref-spacing-xxxs);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm) var(--ref-spacing-xxs);
+}
+
+.empty-chat__topics-grid .topic-card__act {
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-sm) var(--ref-spacing-xs);
 }
 
 /* The scope, beside the section label rather than repeated on every row: all six

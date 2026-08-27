@@ -148,7 +148,15 @@ export function renderTopicCard(
     ${raw(
       withUse
         ? html`<div class="topic-card__act">
-            <button type="button" class="ap-button stroked grey" data-topic-use="${escapeAttr(topic.id)}">
+            <!-- A DS-shipped variant (secondary + orange): orange-10 fill,
+                 orange-100 ink. Orange because handing a Topic to Archie is an AI
+                 action, which is what orange means everywhere in this app - and
+                 because the workflow cards this grid sits under carry BLUE
+                 text-link CTAs, so the two sections' actions differ in colour and
+                 in shape at once: tinted button against link-with-arrow. It was
+                 stroked grey, which said "secondary" and nothing else.
+                 NOTE no backticks in here - this is inside a template literal. -->
+            <button type="button" class="ap-button secondary orange" data-topic-use="${escapeAttr(topic.id)}">
               <i class="ap-icon-single-chat-bubble"></i><span>Use in chat</span>
             </button>
           </div>`

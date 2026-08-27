@@ -12,7 +12,7 @@ import {
   attachImageToDraft,
   subscribe as subscribePostsStore,
 } from "../posts-store.js?v=50";
-import { renderPostCard } from "./post-card.js?v=90";
+import { renderPostCard } from "./post-card.js?v=91";
 import { renderTopPostEcho } from "./top-post-card.js?v=89";
 import { renderClipCard } from "./clip-card.js?v=31";
 import { onFeedbackClick } from "./feedback-control.js?v=4";
@@ -498,6 +498,46 @@ export function init() {
     }
   });
 
+  // Drag & drop an image straight onto a draft's empty media slot.
+  //
+  // Delegated on the panel root so it survives every re-render, and DRAG EVENTS
+  // ONLY — `bindDropzone` is deliberately not used here because its click
+  // handler fires the file input for any click inside the zone, which would make
+  // pressing Generate open a file picker.
+  //
+  // dragenter/dragover must both preventDefault or the browser refuses the drop
+  // and navigates to the file instead. `dragleave` fires when moving onto a
+  // CHILD, so it only clears the highlight once the pointer has actually left
+  // the slot's box (relatedTarget check).
+  const dropSlot = (event) => event.target.closest?.("[data-post-drop]");
+  const overDrag = (event) => {
+    const slot = dropSlot(event);
+    if (!slot) return;
+    event.preventDefault();
+    slot.classList.add("is-dragover");
+  };
+  el.addEventListener("dragenter", overDrag);
+  el.addEventListener("dragover", overDrag);
+  el.addEventListener("dragleave", (event) => {
+    const slot = dropSlot(event);
+    if (!slot) return;
+    if (event.relatedTarget && slot.contains(event.relatedTarget)) return;
+    slot.classList.remove("is-dragover");
+  });
+  el.addEventListener("drop", (event) => {
+    const slot = dropSlot(event);
+    if (!slot) return;
+    event.preventDefault();
+    slot.classList.remove("is-dragover");
+    const sid = activeSessionId();
+    const file = Array.from(event.dataTransfer?.files || []).find((f) => f.type.startsWith("image/"));
+    if (!sid || !file) return;
+    // Same throwaway object URL as the file-picker path (onPostImageUpload):
+    // never revoked, because the card keeps rendering it as its src.
+    attachImageToDraft(sid, slot.dataset.postDrop, URL.createObjectURL(file));
+    renderPanel();
+  });
+
   el.addEventListener("click", (event) => {
     // Auto-commit any in-progress edit when the click lands outside the
     // current editor + its Save/Cancel buttons. Falls through so a click
@@ -751,7 +791,7 @@ export function init() {
       openVideoClipsModal(src, {
         onSaveClips: (id, nextClips) => updateSourceClips(id, nextClips),
         onUseClips: (selectedClips, source) => {
-          import("../screens/session.js?v=543").then(({ startClipDraftFlow }) => {
+          import("../screens/session.js?v=545").then(({ startClipDraftFlow }) => {
             startClipDraftFlow(
               sid,
               selectedClips.map((clip) => ({ clip, sourceName: source.filename, sourceId: source.id })),
@@ -934,7 +974,7 @@ export function init() {
       const sid = activeSessionId();
       if (!sid || !entry) return;
       const { clip, sourceName, sourceId } = entry;
-      import("../screens/session.js?v=543").then(({ startClipDraftFlow }) => {
+      import("../screens/session.js?v=545").then(({ startClipDraftFlow }) => {
         startClipDraftFlow(sid, [{ clip, sourceName, sourceId }]);
       });
       return;
@@ -952,7 +992,7 @@ export function init() {
       if (picked.length === 0) return;
       clipSelection = new Set();
       renderPanel();
-      import("../screens/session.js?v=543").then(({ startClipDraftFlow }) => {
+      import("../screens/session.js?v=545").then(({ startClipDraftFlow }) => {
         startClipDraftFlow(sid, picked);
       });
       return;
@@ -2850,7 +2890,7 @@ function useIdea(ideaId) {
   if (!idea) return;
   const sid = activeSessionId();
   if (!sid) return;
-  import("../screens/session.js?v=543").then(({ askAngleQuestion }) => {
+  import("../screens/session.js?v=545").then(({ askAngleQuestion }) => {
     askAngleQuestion(sid, ideaId);
   });
 }
