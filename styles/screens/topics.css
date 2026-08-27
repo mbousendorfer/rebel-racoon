@@ -76,6 +76,9 @@
 :root {
   /* ~68 characters at body size — the top of the comfortable reading range,
      which is where analytical prose broken up by headings wants to sit. */
+  /* The age separator's own box — its line-height plus the gap to its first card.
+     The pane is inset by this so its card edge meets the list's card edges. */
+  --topic-group-offset: calc(var(--sys-text-style-caption-bold-line-height) + var(--ref-spacing-xxxs));
   --topic-measure: 600px;
   /* The list's ceiling: past this, three lines of headline stop reading as a
      row in a queue and start reading as a card again. */
@@ -300,6 +303,17 @@
 
    `align-self: flex-start` + `max-height: 100%` is the vertical half: the card
    is as tall as the article, up to the window, and pane-body scrolls past that. */
+/* ── The pane's card lines up with the LIST'S CARDS, not with the column ───
+   The two columns start on the same y, but the list's first card does not: the age
+   separator ("Last 7 days") sits above it, so the cards beside the pane began 20px
+   lower than the pane's own top edge. A separator is a caption over its group, like
+   a table's — the CARDS are what the eye lines up, and one card edge floating 20px
+   above a column of card edges is the first thing it notices.
+
+   Offset by exactly the separator's own box, derived from the two values the label
+   is built from rather than typed as 20px, so it cannot drift if either changes.
+   The cap comes down by the same amount, or the pane would overflow the row it is
+   inset into. */
 .topics-view__pane {
   display: flex;
   flex-direction: column;
@@ -307,7 +321,8 @@
   min-width: 0;
   min-height: 0;
   align-self: flex-start;
-  max-height: 100%;
+  margin-top: var(--topic-group-offset);
+  max-height: calc(100% - var(--topic-group-offset));
   background: var(--app-surface);
   border: 1px solid var(--app-border-soft);
   border-radius: var(--app-radius-card);
@@ -519,6 +534,9 @@
        scrolling page, and the width cap is the column's now, not the pane's. */
     max-height: none;
     align-self: stretch;
+    /* And no separator to clear: the pane follows the whole list rather than
+       sitting beside its first group. */
+    margin-top: 0;
   }
 }
 
