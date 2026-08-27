@@ -87,6 +87,9 @@ function freshView() {
     // the list at the same time.
     paneMenuOpen: false,
     filtersOpen: false,
+    // The state select inside the Filters panel. Held here because a pick
+    // repaints the panel — see renderStateSelect.
+    statesOpen: false,
     // Which article the last paint drew, so the pane's scroll offset is kept
     // across a repaint of the same Topic and dropped when the reader opens
     // another one.
@@ -452,9 +455,7 @@ function renderToolbar(pb, feed, stateCounts) {
 // of the feed is legible. Unfiltered on purpose: a count that moved with the other
 // rows would change as you ticked, which is not a number you can aim at.
 function renderFilters(stateCounts) {
-  const stateRows = TOPIC_STATES.map((st) =>
-    filterOption("state", st.id, st.label, view.filters.states.includes(st.id), false, stateCounts[st.id] || 0),
-  );
+  const stateRows = renderStateSelect(stateCounts);
   const sourceRows = TOPIC_SOURCES.map((s) =>
     filterOption("source", s.id, s.name, view.filters.sources.includes(s.id), !isLiveSource(s.id)),
   );
@@ -465,7 +466,7 @@ function renderFilters(stateCounts) {
         <div class="ap-filter-leaf__header ap-filter-leaf__expanded">
           <span class="ap-filter-leaf__title">Topic status</span>
         </div>
-        <div class="ap-filter-leaf__content">${raw(stateRows.join(""))}</div>
+        <div class="ap-filter-leaf__content">${raw(stateRows)}</div>
       </div>
       <div class="ap-filter-leaf">
         <div class="ap-filter-leaf__header ap-filter-leaf__expanded">
@@ -480,6 +481,69 @@ function renderFilters(stateCounts) {
       </div>
     </div>
   </div>`;
+}
+
+// ── The state group is a DS SELECT, not six checkboxes ────────────────────
+// A multi-select behind one trigger. `<details>` is the disclosure, which is what
+// the toolbar's Playbook picker already uses — no managed overlay, no second
+// z-index layer, nothing for modal-coordinator to arbitrate.
+//
+// ⚠️ THE OPEN FLAG IS IN `view`, not left to <details>. Ticking an option fires
+// `change`, which repaints the screen, which rebuilds this panel — so a natively
+// open <details> would collapse on every pick, and picking four states would mean
+// opening it four times. `view.statesOpen` survives the repaint the same way
+// `view.filtersOpen` does, and the summary's click is intercepted so the native
+// toggle cannot desync from it.
+//
+// ⚠️ `.ap-select-dropdown` is `position: absolute` and this panel's content is
+// `overflow-y: auto`, so the menu is CLIPPED by that scroller. It fits today —
+// measured: menu bottom 334 against a content bottom of 681, on a panel capped at
+// min(90vh, 750px) — because this is the FIRST leaf and there are only six
+// options. Move it below the eight sources and it will be cut off.
+//
+// What the trigger says is chosen to keep the one fact a collapsed control
+// normally costs you: WHICH states are hidden. "All except For later, Ignored" is
+// the default reading, and it never truncates.
+function stateSummary(picked) {
+  const all = TOPIC_STATES.map((st) => st.id);
+  if (!picked.length) return "No states";
+  if (picked.length === all.length) return "All states";
+  const missing = TOPIC_STATES.filter((st) => !picked.includes(st.id)).map((st) => st.label);
+  // Naming the exclusions is shorter AND more useful whenever there are few of
+  // them: "what am I not seeing?" is the question a narrowed filter raises.
+  if (missing.length <= 2) return `All except ${missing.join(", ")}`;
+  return TOPIC_STATES.filter((st) => picked.includes(st.id))
+    .map((st) => st.label)
+    .join(", ");
+}
+
+function renderStateSelect(stateCounts) {
+  const picked = view.filters.states;
+  const options = TOPIC_STATES.map((st) => {
+    const on = picked.includes(st.id);
+    // ONE element carrying both shipped classes: .ap-select-option gives the row
+    // its height, padding, type and selected fill; .ap-checkbox-container draws
+    // the box — and it only works on a DIRECT child <i>, which is why the two are
+    // composed here rather than nested. .ap-select-option-text is `flex: 1`, so it
+    // pushes the count to the right without a rule of my own.
+    return html`<label class="ap-select-option${raw(on ? " selected" : "")}${raw(" ap-checkbox-container")}">
+      <input type="checkbox" data-topic-filter="state" value="${escapeAttr(st.id)}" ${raw(on ? "checked" : "")} />
+      <!-- BARE, for the reason spelled out in filterOption below. -->
+      <i aria-hidden="true"></i>
+      <span class="ap-select-option-text">${st.label}</span>
+      <span class="ap-select-label-count">${String(stateCounts[st.id] || 0)}</span>
+    </label>`;
+  }).join("");
+
+  return html`<details class="ap-select" ${raw(view.statesOpen ? "open" : "")}>
+    <summary class="ap-select-trigger" data-topic-states-toggle title="Which states to show">
+      <span class="ap-select-value">${stateSummary(picked)}</span>
+      <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
+    </summary>
+    <div class="ap-select-dropdown" role="group" aria-label="Topic status">
+      <div class="ap-select-options">${raw(options)}</div>
+    </div>
+  </details>`;
 }
 
 function filterOption(group, id, label, checked, disabled = false, count = null) {
@@ -765,6 +829,7 @@ function bind(target) {
     const filtersBtn = event.target.closest("[data-topic-filters-toggle]");
     if (!filtersBtn && !insidePanel && view.filtersOpen) {
       view.filtersOpen = false;
+      view.statesOpen = false;
       paint(target, scopedPlaybook());
     }
 
@@ -774,8 +839,22 @@ function bind(target) {
       return;
     }
 
+    // The select's own disclosure. preventDefault so <details> does not ALSO
+    // toggle itself: the flag is the single source of truth, and letting both run
+    // means the next repaint puts it back where the flag says.
+    const statesBtn = event.target.closest("[data-topic-states-toggle]");
+    if (statesBtn) {
+      event.preventDefault();
+      view.statesOpen = !view.statesOpen;
+      paint(target, scopedPlaybook());
+      return;
+    }
+
     if (filtersBtn) {
+      // Closing the panel closes the select with it, so reopening Filters never
+      // starts with a menu already hanging open over the sources.
       view.filtersOpen = !view.filtersOpen;
+      if (!view.filtersOpen) view.statesOpen = false;
       paint(target, scopedPlaybook());
       return;
     }
@@ -886,6 +965,13 @@ function bind(target) {
     if (document.body.classList.contains("has-modal")) return;
     // A menu or the filter panel takes the key next: Escape shuts the thing
     // that opened last, not the thing behind it.
+    // The select is INSIDE the panel, so it is the innermost thing open: Escape
+    // takes it alone and leaves the panel up.
+    if (view.statesOpen) {
+      view.statesOpen = false;
+      paint(target, scopedPlaybook());
+      return;
+    }
     if (view.menuTopicId || view.filtersOpen || view.paneMenuOpen) {
       view.menuTopicId = null;
       view.filtersOpen = false;
