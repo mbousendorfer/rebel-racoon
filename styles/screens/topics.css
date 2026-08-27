@@ -750,18 +750,36 @@
    apparatus, not a third argument: it names what follows rather than claiming
    something. And no hairline above it - that was tried and removed, because the
    change of ground on the cards already draws the boundary. */
+/* ── The section opens with a RULE ────────────────────────────────────────
+   ⚠️ A hairline above "Contributing posts" was tried and REMOVED once, because
+   "the change of ground on the cards already draws the boundary". That reason died
+   the moment the section became collapsed by default: at rest there are no cards
+   on screen, so nothing draws it, and the row was left drifting under the last
+   paragraph looking like a caption rather than the edge of a region.
+
+   So the rule is back, and this time it is the only thing marking the boundary
+   rather than a second device saying what a fill already said. 32px of band gap
+   above it, 24 below — the space above belongs to the analysis that just ended. */
 .topic-article__section {
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xxs);
+  padding-top: var(--ref-spacing-md);
+  border-top: 1px solid var(--app-border-soft);
 }
 
+/* `body-bold` (14/700) in DEFAULT ink, not caption-bold in light.
+   ⚠️ It was 12/700 light, as apparatus that "names what follows rather than
+   claiming something" — right while it was a label over visible cards, wrong now
+   that it is also the DOOR to them. The only interactive row in the article cannot
+   be its quietest text. One step below the 16px analysis subheads, one above the
+   12px captions: subordinate to the argument, legible as a control. */
 .topic-article__section-head {
   margin: 0;
-  font-size: var(--sys-text-style-caption-bold-size);
-  line-height: var(--sys-text-style-caption-bold-line-height);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--sys-text-color-light);
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--sys-text-color-default);
 }
 
 /* ── The section IS the disclosure ─────────────────────────────────────────
@@ -785,6 +803,13 @@
   margin-left: auto;
   font-size: var(--sys-icon-css-sm);
   transition: transform var(--ref-animation-short);
+}
+
+/* Hover goes ELECTRIC BLUE, which is what the colour is for in this app: links
+   and controls, never static data. One declaration covers the chevron too — an
+   `ap-icon-*` is a mask painted from `currentColor`. */
+.topic-article__section-label:hover {
+  color: var(--ref-color-electric-blue-100);
 }
 
 /* Visually gone, still focusable and still announced: the label is the control,
