@@ -4,17 +4,25 @@
 // and belongs to a feed, not to a chat.
 //
 // ── The one invariant this store exists to protect ─────────────────────────
-// `status`, `isTrending` and `isUpdated` are SEPARATE FIELDS and must stay that
-// way. Neither signal is a fourth status; both are independent booleans. A Topic
-// can be Used AND trending, or Ignored AND updated, or all three at once. Every
-// consumer therefore reads three things, and no code path may write either
-// signal into `status`.
+// `status`, `isTrending`, `isUpdated` and `kind` are SEPARATE FIELDS and must stay
+// that way. No signal is a fourth status; both are independent booleans. A Topic
+// can be Already used AND trending, or Ignored AND updated, or several at once.
+// No code path may write a signal into `status`, and nothing a reader does may
+// write `kind`.
+//
+// ⚠️ The six STATES a reader sees are one flat vocabulary (topics-catalog's
+// TOPIC_STATES) derived from those four fields by `topicStates()`. That is a
+// presentation layer, not a merge: flattening the fields themselves would let a
+// re-scan overwrite the reader's own answer — the exact thing the separate triage
+// Map exists to prevent — and would break the wire contract that reports status,
+// trending and updated independently (AC-TRK-6). One vocabulary, four fields.
 //
 // The consequences the views depend on:
 //   • In the FEED, a trending Topic shows under its OWN status — a trending
 //     to-review Topic appears only while "To review" is ticked and vanishes when
 //     it isn't. Trending is not a feed-level override, because as an override it
-//     made the status filter lie.
+//     made the status filter lie. This is why the filter is "untick to hide" and
+//     not an OR over ticked rows; see matchesFilters.
 //   • An IGNORED Topic is never surfaced by a signal, anywhere. Ignore means
 //     ignore: ticking Ignored in the filter is the only way to see one. The
 //     opposite rule — "a spike is never hidden by triage" — was tried and
@@ -34,23 +42,33 @@
 //   getFreshTopics(feedId)             → Topic[]  (the in-chat list, capped)
 //   getTopicById(id)                   → Topic | null
 //   topicTitle(topic)                  → string
+//   topicStates(topic)                 → string[]  (the six-state vocabulary)
+//   countByState(feedId)               → {id: n}   (the filter rows' counts)
 //   defaultFilters() / narrowedGroupCount(filters)
 //   getStatus(id) / getIgnoreReason(id)
 //   markUsed(id) / ignoreTopic(id, reason) / unignoreTopic(id)
 //   subscribe(fn)                      → unsubscribe
 
-import { topics as seed } from "./mocks.js?v=73";
+import { topics as seed } from "./mocks.js?v=74";
 import { isNewUser } from "./user-mode.js?v=24";
 import { createNotifier } from "./store-utils.js?v=3";
-import { DEFAULT_STATUS_IDS, LIVE_SOURCE_IDS, kindOf } from "./topics-catalog.js?v=2";
+import { DEFAULT_STATE_IDS, LIVE_SOURCE_IDS, TOPIC_STATES, findTopicState, kindOf } from "./topics-catalog.js?v=3";
 
 const topics = isNewUser() ? [] : seed.map(cloneTopic);
 
 // topicId → { status, reason }. Seeded from the Topic's own `seedStatus` so the
 // feed shows a realistic spread instead of thirty identical To-review rows.
+//
+// ⚠️ The seeded value is NORMALISED against the vocabulary. Two Topics shipped
+// `seedStatus: "saved"`, which no state declares — so `matchesFilters` could never
+// satisfy it and both were invisible in the feed under EVERY filter state, while
+// `countFresh` still counted them (hence the in-chat "5 out of 6 shown" with an
+// unreachable 6th). The failure was silent because an unknown id also renders no
+// chip. An undeclared state must not be able to delete a Topic from the screen.
 const triage = new Map();
 for (const t of topics) {
-  triage.set(t.id, { status: t.seedStatus || "new", reason: t.seedReason || "" });
+  const seeded = findTopicState(t.seedStatus)?.facet === "status" ? t.seedStatus : "new";
+  triage.set(t.id, { status: seeded, reason: t.seedReason || "" });
 }
 
 const notifier = createNotifier("topics-store");
@@ -158,7 +176,39 @@ const ALL_SOURCE_IDS = LIVE_SOURCE_IDS.slice();
 
 /** The filter state a feed opens with. Reset restores exactly this. */
 export function defaultFilters() {
-  return { statuses: DEFAULT_STATUS_IDS.slice(), sources: ALL_SOURCE_IDS.slice() };
+  return { states: DEFAULT_STATE_IDS.slice(), sources: ALL_SOURCE_IDS.slice() };
+}
+
+// ── The one deriver: which of the six states a Topic carries ───────────────
+// Read by the card (one chip per id) and by the filter (one row per id), so the
+// two cannot disagree about what a Topic IS. Four fields in, one flat list out —
+// which is the whole shape of this change: the presentation flattened, the data
+// did not.
+//
+// Order follows TOPIC_STATES so a row of chips always reads in the same order,
+// whatever combination a Topic happens to carry.
+//
+// Signals come from the ALREADY-PURGED object: withTriage cleared them outside
+// the first age group before this ever sees them, so a Topic under an
+// "Earlier this month" separator cannot claim to be trending.
+export function topicStates(topic) {
+  if (!topic) return [];
+  return TOPIC_STATES.filter((st) => {
+    if (st.facet === "status") return topic.status === st.id;
+    if (st.facet === "kind") return kindOf(topic) === st.id;
+    return st.id === "trending" ? !!topic.isTrending : !!topic.isUpdated;
+  }).map((st) => st.id);
+}
+
+/** How many Topics in this feed carry each state — the filter rows' counts. */
+export function countByState(feedId) {
+  const out = {};
+  for (const st of TOPIC_STATES) out[st.id] = 0;
+  for (const t of topics) {
+    if (t.feedId !== feedId) continue;
+    for (const id of topicStates(withTriage(t))) out[id] += 1;
+  }
+  return out;
 }
 
 // How many of the two groups are narrowed below full breadth. The Filters badge
@@ -175,20 +225,38 @@ export function defaultFilters() {
 // its length UNLESS the reader swaps one option for another — still a deviation,
 // but not one worth a second data structure to catch in a prototype.
 //
-// The two KINDS are not a group here and never will be: the tab row above the
-// list is a control you can see, and a control you can see needs no badge.
+// The kind used to be excluded here because the tab row above the list was a
+// control you could see, and a control you can see needs no badge. The tabs are
+// gone and `later` is a row in the state group like the rest, so it is counted by
+// the same comparison as everything else.
 export function narrowedGroupCount(filters = defaultFilters()) {
   let n = 0;
-  if ((filters.statuses || []).length !== DEFAULT_STATUS_IDS.length) n++;
+  if ((filters.states || []).length !== DEFAULT_STATE_IDS.length) n++;
   if ((filters.sources || []).length !== ALL_SOURCE_IDS.length) n++;
   return n;
 }
 
 // The one filter predicate. Factored out so the list and any "what is the filter
 // hiding?" count can never disagree about what hidden means.
+//
+// ── One semantics, on every row: UNTICK A STATE TO HIDE WHAT CARRIES IT ────
+// A Topic shows only when EVERY state it carries is ticked. That is what lets six
+// rows behave identically while the four underlying fields stay separate.
+//
+// ⚠️ NOT an OR over ticked rows, and this is the load-bearing part. Under an OR,
+// an *ignored + trending* Topic would reappear the moment Trending was ticked —
+// which is the "Trending, normally hidden" group this feature explicitly rejected
+// (AC-PICK-2b: "Decided: no.") and a direct breach of the store's own rule that an
+// ignored Topic is never surfaced by a signal, anywhere. The rule was not up for
+// revision, so the semantics follows from it rather than being a taste call.
+//
+// What it costs, plainly: a state can be HIDDEN but not ISOLATED — there is no
+// "show me only what is spiking". That would be a sort or a separate chip row,
+// not this list.
 function matchesFilters(t, filters) {
-  const { statuses = [], sources = [] } = filters;
-  return statuses.includes(t.status) && sources.includes(t.sourceId);
+  const { states = [], sources = [] } = filters;
+  if (!sources.includes(t.sourceId)) return false;
+  return topicStates(t).every((id) => states.includes(id));
 }
 
 /**
@@ -210,9 +278,14 @@ export function groupTopicsByAge(list) {
   );
 }
 
-/** The sidebar's unread mark: Topics in this feed still waiting for an answer. */
+// ── The sidebar's unread mark ──────────────────────────────────────────────
+// Topics still waiting for an answer AND draftable. The `kind` half is new: this
+// counted every `new` Topic, including the `later` ones parked behind the second
+// tab, so the badge read 9 on a feed where a click showed 4. With the tabs gone
+// and For later off by default, a badge that does not count what a click shows is
+// a badge that lies.
 export function countToReview(feedId) {
-  return topics.filter((t) => t.feedId === feedId && getStatus(t.id) === "new").length;
+  return topics.filter((t) => t.feedId === feedId && getStatus(t.id) === "new" && kindOf(t) === "ready").length;
 }
 
 // ── The in-chat list ───────────────────────────────────────────────────────

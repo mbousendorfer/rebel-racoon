@@ -11,7 +11,7 @@
 
 import { html, raw, escapeHtml } from "../utils.js?v=22";
 import { iconFor } from "../file-kinds.js?v=21";
-import { connectorDocs } from "../mocks.js?v=73";
+import { connectorDocs } from "../mocks.js?v=74";
 import {
   getConnectors,
   findConnector,

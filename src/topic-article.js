@@ -53,7 +53,8 @@
 // whose whole value is the detail.
 
 import { html, raw, escapeAttr } from "./utils.js?v=22";
-import { topicTitle } from "./topics-store.js?v=4";
+import { topicTitle } from "./topics-store.js?v=5";
+import { findTopicState } from "./topics-catalog.js?v=3";
 import { renderSocialPostCard } from "./components/social-post-card.js?v=9";
 
 /**
@@ -275,16 +276,12 @@ function renderRelevance(topic) {
 // requestOpen closes the active overlay, so a modal from inside the picker would
 // close the picker). Placement is the host's; what the trail SAYS is not.
 //
-// Statuses here are not only review statuses: a trail carries `updated` and
-// `trending` too, which are signals. Hence a local label map rather than
-// findReviewStatus, which only knows the three review states.
-const TRAIL_LABEL = {
-  new: "To review",
-  used: "Used",
-  ignored: "Ignored",
-  updated: "Updated",
-  trending: "Trending",
-};
+// A trail entry's status is any of the six states — it carries `updated` and
+// `trending` as well as the three triage ones — which is exactly what the single
+// TOPIC_STATES vocabulary now covers. This used to be a hand-written map of five
+// words beside a `findReviewStatus` that only knew three; one vocabulary means one
+// place to change a label.
+const trailLabel = (id) => findTopicState(id)?.label || id;
 
 export function trailLength(topic) {
   return (topic?.history || []).length;
@@ -298,7 +295,7 @@ export function renderTopicTrail(topic) {
       (h) =>
         html`<li class="topic-article__trail-row">
           <span class="topic-article__trail-head">
-            <strong class="topic-article__trail-status">${TRAIL_LABEL[h.status] || h.status}</strong>
+            <strong class="topic-article__trail-status">${trailLabel(h.status)}</strong>
             <span class="topic-article__trail-when">${h.when}</span>
           </span>
           ${raw(h.note ? html`<span class="topic-article__trail-note">${h.note}</span>` : "")}

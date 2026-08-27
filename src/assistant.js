@@ -6,7 +6,7 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=73";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=74";
 import { findConnector } from "./connectors-store.js?v=43";
 import { createSessionNotifier } from "./store-utils.js?v=3";
 import { showToast } from "./components/toast.js?v=21";

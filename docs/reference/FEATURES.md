@@ -793,9 +793,9 @@ CONFIG, pas contenu : le fichier ship avec l'app et doit exister en mode `new-al
 
 **Cadences** : Weekly / Monthly / Quarterly. **De la copy, jamais un timer** — un tick hebdomadaire ne partirait jamais dans une démo.
 
-### Les deux `kind`, qui SONT les deux onglets
+### Les deux `kind`, qui sont un ÉTAT parmi six
 
-Un Topic est soit draftable maintenant (`ready`), soit un thème à garder (`later`), et cet axe unique **est** la rangée d'onglets au-dessus de la liste. Un seul vocabulaire, pas deux : le fork portait un `researchType` valant `ready-to-post` / `content-strategy` et le mappait sur des ids de segment `ready` / `later` au rendu — une couche de traduction dont le seul métier était de traduire un ancien nom.
+Un Topic est soit draftable maintenant (`ready`), soit un thème à garder (`later`). ⚠️ **Cet axe était la rangée d'onglets au-dessus de la liste ; il est maintenant l'état « For later »** — une ligne de filtre et une pastille, au même niveau que les cinq autres. Un `ready` ne porte rien : comme `To review`, il est l'absence de marque. Un seul vocabulaire, pas deux : le fork portait un `researchType` valant `ready-to-post` / `content-strategy` et le mappait sur des ids de segment `ready` / `later` au rendu — une couche de traduction dont le seul métier était de traduire un ancien nom.
 
 **Deux corrections d'audit ici** :
 
@@ -857,22 +857,39 @@ En revanche, quand il n'y a **rien à lire du tout** — feed vide, filtre qui e
 
 ⚠️ **C'était un `.ap-loader` et une ligne centrés dans le bloc pleine largeur** — un spinner de 12px seul dans ~1100×700 de blanc, suivi d'un lecteur à deux colonnes qui apparaissait autour de lui. Un squelette existe précisément pour empêcher ce saut : s'il ne pré-dessine pas la mise en page, c'est un spinner avec des étapes en plus. La différence avec les impasses est là — elles n'ont rien à pré-dessiner.
 
-#### Les deux onglets
+#### Les six états, à un seul niveau
 
-Le **DS Tabs** (`.ap-tabs` > `.ap-tabs-nav` > `.ap-tabs-tab.active`), avec un `.ap-counter` bleu sur l'onglet actif et gris sur l'autre. Le markup est celui que [`content-workspace.js`](../../src/components/content-workspace.js) et [`right-panel.js`](../../src/components/right-panel.js) émettent déjà : rien d'inventé.
+**Une seule espèce : la pastille `.ap-status <tone> no-dot` + glyphe + mot.**
 
-⚠️ **C'était un segmented control, et c'était le mauvais composant.** Le raisonnement était le tie-breaker du DS — « 2 à 4 vues co-visibles → segmented control » — mais le produit emploie des **tabs** partout où cette forme apparaît : « Campaigns 11 │ Topics », « Advocates 4 │ Diffusion Lists 3 », « Audience │ Posts insights │ … ». Et on ne voit **qu'une** liste à la fois, ce qui est la définition des tabs et non de vues co-visibles. L'usage produit tranche contre une lecture ambiguë du tie-breaker.
+| État         | Teinte      | Icône                   | Pastille |
+| ------------ | ----------- | ----------------------- | -------- |
+| To review    | —           | —                       | **non**  |
+| Trending     | `orange`    | `ap-icon-arrow-up`      | oui      |
+| Updated      | `tagOrange` | `ap-icon-refresh`       | oui      |
+| Already used | `green`     | `ap-icon-rounded-check` | oui      |
+| For later    | `blue`      | `ap-icon-bookmark`      | oui      |
+| Ignored      | `grey`      | `ap-icon-eye-off`       | oui      |
 
-Le port du segmented control dans `ds-patches.css` a été **supprimé** avec ce changement : plus aucun consommateur, et il portait une dette réelle (des substitutions de tokens parce que la famille `--sys-color-*-interactive-*` n'est pas dans le `ds/` synchronisé, plus trois états à corriger à la main contre le SCSS du DS). `git log -S ap-segmented-control` le rend le jour où un vrai cas de vues co-visibles se présente.
+⚠️ **C'était trois niveaux pour un vocabulaire.** Trending et Updated étaient déjà des pastilles DS ; Already used et Ignored étaient des **icônes nues** en encre neutre avec un `title` ; For later n'était pas sur la carte du tout — c'était un **onglet entier**. Une pastille, une icône et un onglet pour ce qu'un lecteur pense comme une seule liste.
 
-Changer d'onglet ferme l'article et revient page 1, et n'ouvre **rien** : le lecteur a demandé à voir une liste.
+**Le modèle de données n'a PAS été aplati, et ne doit pas l'être.** `status` (la réponse du lecteur, dans la Map de triage), `kind` et `isTrending` / `isUpdated` (le scan) restent quatre champs séparés ; `topicStates(topic)` les dérive en une liste plate. C'est exactement ce qui permet à un Topic d'être **Already used ET Trending** et d'afficher les deux. Les fusionner laisserait un fait masquer l'autre et un re-scan écraser le triage — plus le contrat de tracking `AC-TRK-6`, qui reporte les trois indépendamment, tomberait.
+
+**Trois teintes corrigées au passage** :
+
+- `ignored` était `red` dans la config. L'arbitrage fermé de la feature dit l'inverse — ignorer ne détruit rien, cocher Ignored le ramène. La contradiction a survécu parce que **rien ne lisait le champ** : la carte dessinait une icône neutre. La lire la rend visible.
+- `used` était `blue`, justifié par un « tag Ready-to-draft » vert dont le fond aurait collisionné. ⚠️ **Ce tag n'existe pas** — le seul `.ap-tag` d'une surface Topic est le « Coming soon » gris du panneau de filtres. Le motif était périmé, et le bleu était de toute façon la mauvaise couleur : c'est la couleur de **l'interactif** ici, donc une pastille bleue sur une carte cliquable se lit comme un contrôle.
+- `later` prend le bleu que `used` libère — info / neutre : garé, pas jugé.
+
+⚠️ **Les onglets `.ap-tabs` sont supprimés** — et avant eux un segmented control, qui était le mauvais composant (le produit emploie des tabs partout où cette forme apparaît, et on ne voyait **qu'une** liste à la fois). Le port du segmented control dans `ds-patches.css` était déjà parti ; `git log -S renderTabs` rend la version à onglets, `git log -S ap-segmented-control` celle d'avant. Les compteurs des onglets sont passés **sur les lignes du filtre**, donc rien n'est perdu.
 
 #### Les filtres
 
 Le **DS Filter dropdown**, porté de la même façon et pour la même raison : options **groupées derrière un déclencheur** → filter dropdown ; bascules toujours visibles sur un petit set plat → filter chips (ce que le magazine faisait, correctement, pour ses six sources).
 
-- **Deux groupes**, multi-sélection : **Topic status** (To review / Used / Ignored) et **Sources**.
-- **Défauts : To review + Used**, Ignored décoché, toutes les sources. Ignored est le seul laissé de côté et le seul qui le mérite : « Used » est un Topic qu'on a emmené dans un chat — le travail existe, il reste trouvable, et le cacher fait oublier au feed ce qu'on en a fait, ce qui est aussi comment on drafte deux fois le même. « Ignored » est la seule réponse qui veut dire « pas celui-là ».
+- **Deux groupes**, multi-sélection : **Topic status** (les six états, chacun avec son compteur) et **Sources**.
+- **Défauts cochés : To review, Trending, Updated, Already used.** For later et Ignored décochés, toutes les sources. Ce qui reproduit **exactement** l'atterrissage d'avant — l'onglet « Ready to draft » plus Ignored décoché — avec un seul contrôle au lieu de deux. Ignored veut dire « pas celui-là » ; For later veut dire que le scan n'a rien trouvé de draftable, et atterrir sur une liste qui mélange les deux enterre la raison d'être là. Already used reste DEDANS : le travail existe, il reste trouvable, et le masquer est la façon dont le même Topic se fait drafter deux fois.
+- **Une seule sémantique, sur chaque ligne : décocher un état masque ce qui le porte.** Un Topic s'affiche si **tous** ses états sont cochés. ⚠️ **Pas** un OU sur les lignes cochées : sous un OU, un Topic _ignored + trending_ réapparaîtrait dès que Trending est coché — c'est le groupe « Trending, normally hidden » recalé par `AC-PICK-2b` et une violation directe de la règle « un Topic ignoré n'est jamais remonté par un signal ». Ce que ça coûte, dit franchement : on peut **masquer** un état, pas **l'isoler** — il n'y a pas de « montre-moi uniquement ce qui monte ».
+- **Les compteurs des onglets sont ici**, un `.ap-counter normal grey` par ligne, non filtrés : ils décrivent le feed, donc ils ne bougent pas pendant qu'on coche. Le panneau devient le seul endroit où la forme du feed est lisible.
 - **Le badge compte les GROUPES rétrécis**, pas les options cochées — « 2 » veut dire deux groupes qui filtrent. Compté contre le **défaut**, pas contre l'exhaustivité, sinon le badge serait épinglé à 1 dès l'ouverture du panneau.
 - **Des mots seulement**, pas de glyphe à côté d'une option : les glyphes de statut veulent dire quelque chose sur une carte, où ils tiennent lieu de phrase ; dans une liste de cases libellées ils sont une seconde lecture d'un mot déjà là.
 - Les sept sources non-live sont **désactivées avec un `.ap-tag grey mini` « Coming soon »** — jamais en bleu électrique, qui dans cette app est la couleur de ce sur quoi on peut agir, et une ligne désactivée est la seule chose du panneau sur laquelle on ne peut pas.

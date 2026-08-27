@@ -4710,7 +4710,7 @@ export const topics = [
       ],
     },
     posts: [],
-    seedStatus: "saved",
+    seedStatus: "new",
     history: [
       {
         status: "new",
@@ -5259,7 +5259,7 @@ export const topics = [
         url: "https://www.instagram.com/p/Da25kKljGEX/",
       },
     ],
-    seedStatus: "saved",
+    seedStatus: "new",
     volume: "low",
     history: [
       {

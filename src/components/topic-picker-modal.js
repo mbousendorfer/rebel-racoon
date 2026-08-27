@@ -28,11 +28,11 @@
 import { html, raw, escapeHtml } from "../utils.js?v=22";
 import { requestOpen, notifyClose } from "../modal-coordinator.js?v=22";
 import { renderEmptyState } from "./empty-state.js?v=3";
-import { renderTopicCard } from "./topic-card.js?v=10";
-import { renderTopicArticle, renderTopicActions, renderTopicTrail } from "../topic-article.js?v=15";
+import { renderTopicCard } from "./topic-card.js?v=11";
+import { renderTopicArticle, renderTopicActions, renderTopicTrail } from "../topic-article.js?v=16";
 import { getFeedForPlaybook } from "../topic-feeds-store.js?v=3";
-import { getTopicsForFeed, groupTopicsByAge, getTopicById, topicTitle } from "../topics-store.js?v=4";
-import { findTopicSource } from "../topics-catalog.js?v=2";
+import { getTopicsForFeed, groupTopicsByAge, getTopicById, topicTitle, topicStates } from "../topics-store.js?v=5";
+import { findTopicSource } from "../topics-catalog.js?v=3";
 import { getContextById } from "../contexts-store.js?v=56";
 import { useTopicInChat } from "../topic-flow.js?v=3";
 
@@ -222,7 +222,14 @@ function paint() {
 function renderListView() {
   const pb = state.playbookId ? getContextById(state.playbookId) : null;
   const feed = pb ? getFeedForPlaybook(pb.id) : null;
-  const topics = feed ? getTopicsForFeed(feed.id).filter((t) => t.kind === "ready" && t.status !== "ignored") : [];
+  // Draftable and not dismissed. Expressed through the same deriver the feed's
+  // filter uses, so "what counts as pickable" cannot drift from the vocabulary.
+  // The picker has NO filter of its own, deliberately — see the note above.
+  const pickable = (t) => {
+    const st = topicStates(t);
+    return !st.includes("later") && !st.includes("ignored");
+  };
+  const topics = feed ? getTopicsForFeed(feed.id).filter(pickable) : [];
 
   if (!topics.length) {
     return html`<div class="topic-picker__head">

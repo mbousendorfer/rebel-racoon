@@ -157,14 +157,8 @@
   max-width: 320px;
 }
 
-/* Row 3. .ap-tabs already carries `width: 100%` and .ap-tabs-nav its own bottom
-   border, so there is nothing to style — only to stop it stretching. It sits
-   tight under the toolbar rather than a full step away: the tabs are the last
-   part of the same control group, not a new section. */
-.topics-view__tabs {
-  flex: 0 0 auto;
-  margin-top: calc(var(--ref-spacing-xs) * -1 + var(--ref-spacing-xxxs));
-}
+/* ⚠️ Row 3 — the two `.ap-tabs` — is gone; `later` is a state in the Filters
+   panel now. `git log -S topics-view__tabs` has the rule. */
 
 /* ── The reader ────────────────────────────────────────────────────────────
    `min-height: 0` on the flex child is what lets the columns inside it scroll:

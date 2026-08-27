@@ -127,10 +127,24 @@
   white-space: nowrap;
 }
 
-/* The signal goes to the FAR END of the meta line: it is the one thing on that
-   line a reader cannot know without being told, and at the end it is what the eye
-   lands on last and remembers. */
-.topic-card--feed .topic-card__signal {
+/* ── The state chips ───────────────────────────────────────────────────────
+   ONE group at the far end of the meta line: the states are the one thing on that
+   line a reader cannot know without being told, and at the end they are what the
+   eye lands on last and remembers.
+
+   `margin-left: auto` on the GROUP, never on each chip — a Topic can carry two
+   (Already used AND Trending is a real state) and per-chip auto-margins would
+   spread them across the row instead of keeping them together. `flex-wrap` so a
+   long source name plus two chips drops to a second line rather than overflowing
+   the card. */
+.topic-card__states {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  flex-wrap: wrap;
+}
+
+.topic-card--feed .topic-card__states {
   margin-left: auto;
 }
 
@@ -213,19 +227,10 @@
   white-space: nowrap;
 }
 
-/* The triage glyph. Neutral ink, not a colour: the three review states are told
-   apart by their symbol, and tinting one of three glyphs in a row would make the
-   set look like two sets. The tooltip carries the meaning. */
-.topic-card__status {
-  display: inline-flex;
-  align-items: center;
-  margin-left: var(--ref-spacing-xxxs);
-  color: var(--sys-text-color-light);
-}
-
-.topic-card__status > i {
-  font-size: var(--sys-icon-css-sm);
-}
+/* ⚠️ `.topic-card__status` is gone. It was the bare neutral glyph that stood for
+   Already used / Ignored while the two signals wore DS pills three elements to its
+   right — one vocabulary at two levels, which is what this change removed. All six
+   states are `.ap-status` now and need no CSS of their own. */
 
 /* Headline — the claim. Hierarchy by size and weight, never by ink: this is the
    thing a reader scans for, so it takes the h4 step and the default ink while

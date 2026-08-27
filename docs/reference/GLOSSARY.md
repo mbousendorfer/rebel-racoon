@@ -34,12 +34,12 @@ Un **Topic** est ce qu'Archie assemble à partir du listening Agorapulse : une *
 
 Terme **UI et code identiques** : `topic`, `topics-store`, `topicId`, `topic-feeds-store` — et c'est pour ça que le magazine a été supprimé plutôt que gardé derrière un flag, ce qui a libéré ces noms au lieu de forcer un troisième vocabulaire (`research` / `lane` / `brief`) sur du code neuf. ⚠️ `topic` reste **banni comme synonyme d'Idea** (voir [`../copy/copy-principles.md`](../copy/copy-principles.md)) — un Topic est un objet distinct, en amont. Ne pas dire **dossier** dans l'UI (tournure française, et ça collisionne avec `folders-store`).
 
-Deux actions, pas plus : **Use in chat** (le Topic entre dans un chat **neuf** comme Source, donc tout le pipeline existant s'allume, et il est marqué **Used** avant que le chat s'ouvre) et **Ignore** (qui demande un motif, le conserve, et est réversible). Voir [`FEATURES.md`](FEATURES.md) §17.
+Deux actions, pas plus : **Use in chat** (le Topic entre dans un chat **neuf** comme Source, donc tout le pipeline existant s'allume, et il est marqué **Already used** avant que le chat s'ouvre) et **Ignore** (qui demande un motif, le conserve, et est réversible). Voir [`FEATURES.md`](FEATURES.md) §17.
 
 Trois mots qui vont avec, et qui ne sont pas interchangeables :
 
 - Un **feed** est la requête permanente d'un Playbook — ses sources et sa cadence. Il y en a exactement un par Playbook, il est implicite, il ne se crée ni ne se supprime.
-- Le **statut de revue** d'un Topic (`To review` / `Used` / `Ignored`) est ce que le **lecteur** en a fait.
+- Les **six états** d'un Topic — `To review` · `Trending` · `Updated` · `Already used` · `For later` · `Ignored` — sont **un seul vocabulaire** à un seul niveau, dérivé de quatre champs séparés : le triage du lecteur (`To review` / `Already used` / `Ignored`), la classification du scan (`For later`) et ses deux signaux (`Trending` / `Updated`). Un Topic peut en porter plusieurs à la fois.
 - Les **signaux d'attention** (`Trending` / `Updated`) sont ce que le **scan** en dit. Ce ne sont **pas** des statuts, ils ne remplacent jamais un statut et ne priment jamais sur le filtre de statut.
 
 ## Concepts clés

@@ -191,55 +191,72 @@ export const DEFAULT_CADENCE = "weekly";
 // part of this port, so that clause is gone and the rule is the flat one it
 // always wanted to be — the scan's classification decides the segment, and
 // nothing else moves a Topic between them.
-export const TOPIC_KINDS = Object.freeze([
-  { id: "ready", label: "Ready to draft" },
-  { id: "later", label: "Topics for later" },
-]);
-
+// ⚠️ TOPIC_KINDS is gone with the two tabs it labelled. `ready` needs no label
+// now — a draftable Topic wears no chip and has no filter row, exactly like the
+// `new` state — and `later`'s label lives in TOPIC_STATES with the other five.
 /**
- * The segment a Topic sits in. UNCLASSIFIED FALLS TO `later`, on purpose:
+ * The kind a Topic sits in. UNCLASSIFIED FALLS TO `later`, on purpose:
  * "Ready to draft" would claim a readiness nothing earned. The fork's code did
  * the opposite of its own spec here (AC-SEG-6) and defaulted to ready.
+ *
+ * It used to decide which of two TABS a Topic appeared under. The tabs are gone —
+ * `later` is one of the six states now — but the rule is unchanged: the scan
+ * classifies, and nothing a reader does moves a Topic between kinds.
  */
 export function kindOf(topic) {
   return topic && topic.kind === "ready" ? "ready" : "later";
 }
 
-export const DEFAULT_KIND = "ready";
-
-// ── Review statuses ────────────────────────────────────────────────────────
-// `id` is what triage stores; `label` is what a reader sees.
+// ── ONE vocabulary ─────────────────────────────────────────────────────────
+// Six states, one level. This replaces three separate declarations — the two
+// TOPIC_KINDS labels, REVIEW_STATUSES and ATTENTION_SIGNALS — which is what put
+// the five things a reader thinks of as one list at three different levels of
+// prominence: a DS pill for the signals, a bare icon for the triage states, and
+// a whole tab for the kind. One pill species now, and one filter list.
 //
-// Trending and Updated are deliberately ABSENT: they are independent booleans on
-// the Topic, not a fourth and fifth status. A Topic can be Ignored AND trending,
-// so the two can never share one field — that is the invariant the whole feature
-// rests on, and topics-store is where it is enforced.
+// ⚠️ THE DATA MODEL DID NOT FLATTEN, and must not. `status` lives in the triage
+// Map (the reader owns it), `isTrending` / `isUpdated` live on the Topic and are
+// purged outside 7 days (the scan owns them), `kind` lives on the Topic. FOUR
+// fields, still separate — which is exactly what lets a Topic be Already used
+// AND Trending and show both. Collapsing them into one field would let a re-scan
+// overwrite the reader's answer, which is the whole reason the triage Map exists,
+// and would break the wire contract (AC-TRK-6) that reports the three
+// independently. `facet` below is how each row knows which field to read.
 //
-// THREE statuses, and only two carry an icon. `new` has none because it is the
-// ABSENCE of a marker: the other two record something the reader DID — used it,
-// ignored it — while this one records that they have not, and a glyph meaning
-// "nothing has happened" is the one thing a glyph cannot say. It was also the
-// most common value in a feed, so it spent a marker on almost every row to
-// convey nothing, competing with Trending and Updated — the two marks in that
-// row a reader genuinely cannot know without being told.
+//   facet: "status"  → compared against the triage status
+//   facet: "kind"    → compared against kindOf(topic)
+//   facet: "signal"  → an independent boolean on the Topic
 //
-// `icon` and `hint` live HERE rather than in the card because the Filters panel
-// shows the same pair, and two copies of "which icon means used" would drift the
-// first time one changed. Both are OUTLINE glyphs: the filled variants exist and
-// either would read as "more applied" on its own, but mixed weights in one set
-// make the set look like two sets.
+// `tone` is the DS `.ap-status` variant, `icon` its glyph. Every state carries
+// BOTH a word and a glyph, so colour is never the only signal (AC-X-4).
 //
-// `hint` is a sentence, not a restatement of the label — a tooltip that says
-// "Used" over an icon labelled Used has told you nothing.
+// `chip: false` on `new` is the one asymmetry, and it is deliberate: it is the
+// ABSENCE of an answer, the most common value in any feed, and a glyph meaning
+// "nothing has happened yet" is the one thing a glyph cannot say. It would have
+// spent a mark on nearly every row to convey nothing. It keeps its FILTER row —
+// narrowing to the untouched ones is a real thing to want.
 //
-// `statusColor` is the DS .ap-status variant, and it lives here for the same
-// reason. The three map 1:1 onto the DS's own variants, so nothing here invents
-// a colour. Used is BLUE, not green: green is taken by the Ready-to-draft tag
-// and .ap-tag green computes the identical fill, so two chips in one row would
-// share a colour meaning different things. The DS house rule also gives Status
-// blue as "info / neutral" — and Used records that the Topic went somewhere, not
-// that it went well, which is what green would claim.
-export const REVIEW_STATUSES = Object.freeze([
+// `hint` is a sentence, never a restatement of the label: a tooltip reading
+// "Used" over a chip labelled Used has told you nothing.
+//
+// ── The three tones that changed, and why ─────────────────────────────────
+// `ignored` was `red`. The feature's own closed arbitration says the opposite —
+// "Ignore is stroked grey and NOT red: ignoring hides a Topic that ticking
+// Ignored brings straight back, so nothing is destroyed and red would flag a
+// danger that is not there." The contradiction survived because nothing read the
+// field; the card drew a bare neutral icon instead. Reading it makes it visible,
+// so it gets fixed.
+//
+// `used` was `blue`, justified by a green "Ready-to-draft tag" whose fill would
+// have collided. ⚠️ That tag does not exist — the only `.ap-tag` on any Topic
+// surface is the grey "Coming soon" in the filter panel. The reason was stale, so
+// green is free, and blue was the wrong colour anyway: blue is the colour of the
+// INTERACTIVE in this app (card hover border, links), and a blue pill on a
+// clickable card reads as a control. Green is validated / done, which is what
+// Already used means.
+//
+// `later` takes the blue `used` vacated — info / neutral. Parked, not judged.
+export const TOPIC_STATES = Object.freeze([
   {
     id: "new",
     // "To review", not "New". The id stays `new` — it is data, written on every
@@ -249,41 +266,93 @@ export const REVIEW_STATUSES = Object.freeze([
     // The word changed because "New" describes the TOPIC and the reader needs it
     // to describe THEIR relationship to it. Every Topic in a feed is new; they
     // all arrived on the same scan. "To review" is the one thing that separates
-    // this state from Used and Ignored: those two are answers the reader gave,
-    // and this is the one still waiting for one. It also matches the in-chat
+    // this state from the answers a reader gave. It also matches the in-chat
     // list, which has said "Fresh topics to review" all along.
     label: "To review",
-    statusColor: "grey",
+    facet: "status",
+    chip: false,
+    defaultOn: true,
+    hint: "Nothing done with it yet.",
+  },
+  {
+    id: "trending",
+    label: "Trending",
+    facet: "signal",
+    tone: "orange",
+    icon: "ap-icon-arrow-up",
+    chip: true,
+    defaultOn: true,
+    hint: "Running well above its own median right now.",
+  },
+  {
+    id: "updated",
+    label: "Updated",
+    facet: "signal",
+    // Warm, adjacent to Trending and deliberately the quieter of the two.
+    tone: "tagOrange",
+    icon: "ap-icon-refresh",
+    chip: true,
+    defaultOn: true,
+    hint: "Rewritten since you last saw it.",
   },
   {
     id: "used",
-    label: "Used",
-    statusColor: "blue",
+    label: "Already used",
+    facet: "status",
+    tone: "green",
     icon: "ap-icon-rounded-check",
+    chip: true,
+    defaultOn: true,
     hint: "Taken into a chat to draft a post.",
+  },
+  {
+    id: "later",
+    label: "For later",
+    facet: "kind",
+    tone: "blue",
+    icon: "ap-icon-bookmark",
+    chip: true,
+    // OFF by default, which is what the "Ready to draft" tab did. Landing on a
+    // list that mixes draftable Topics with ones the scan says are not draftable
+    // yet would bury the reason to be here.
+    defaultOn: false,
+    hint: "A theme worth keeping — not enough around it to draft from yet.",
   },
   {
     id: "ignored",
     label: "Ignored",
-    statusColor: "red",
+    facet: "status",
+    tone: "grey",
     icon: "ap-icon-eye-off",
+    chip: true,
+    // The one answer that means "not this one", so it is the one state left out
+    // of the default. Already used stays IN: the work exists, it is findable, and
+    // hiding it is how the same Topic gets drafted twice.
+    defaultOn: false,
     hint: "Kept off this list, even if it starts trending or gets updated.",
   },
 ]);
 
-// ── Filter default: To review + Used ───────────────────────────────────────
-// Ignored is the one left out, and it is the only one that earns being left out.
-// "Used" is a Topic you took into a chat: the work exists, it is findable, and
-// hiding it makes the feed forget what you did with it — which is also how you
-// end up drafting the same Topic twice. "Ignored" is the one answer that means
-// "not this one", so showing it by default would put work the reader actively
-// pushed away in front of someone looking for what to do next.
+export function findTopicState(id) {
+  return TOPIC_STATES.find((s) => s.id === id) || null;
+}
+
+/** The ids a Topic can carry for one facet — the filter reads these. */
+export function stateIdsForFacet(facet) {
+  return TOPIC_STATES.filter((s) => s.facet === facet).map((s) => s.id);
+}
+
+// ── The filter's default ───────────────────────────────────────────────────
+// Derived from `defaultOn` rather than written out again, so a state cannot be
+// added to the vocabulary and forgotten in the default.
 //
 // The COUNT matters as much as the contents: narrowedGroupCount compares this
 // array's length against the live filter, so the Filters badge reads nothing at
-// rest and 1 the moment the reader changes the group. Adding an id here without
-// that being true would pin the badge on permanently.
-export const DEFAULT_STATUS_IDS = Object.freeze(["new", "used"]);
+// rest and 1 the moment the reader changes the group.
+export const DEFAULT_STATE_IDS = Object.freeze(TOPIC_STATES.filter((s) => s.defaultOn).map((s) => s.id));
+
+/** Every declared state id — what a deep link widens to. */
+export const ALL_STATE_IDS = Object.freeze(TOPIC_STATES.map((s) => s.id));
 
 export function findTopicSource(id) {
   return TOPIC_SOURCES.find((s) => s.id === id) || null;
@@ -293,31 +362,6 @@ export function findCadence(id) {
   return CADENCES.find((c) => c.id === id) || null;
 }
 
-export function findTopicKind(id) {
-  return TOPIC_KINDS.find((k) => k.id === id) || null;
-}
-
-export function findReviewStatus(id) {
-  return REVIEW_STATUSES.find((s) => s.id === id) || null;
-}
-
 export function isLiveSource(id) {
   return LIVE_SOURCE_IDS.includes(id);
-}
-
-// ── The two attention signals ──────────────────────────────────────────────
-// Not statuses, and never rendered as one. Colour, against the DS Status
-// palette: Trending takes `orange` — the same Archie orange the card's mark
-// uses, so the two read as one signal — and Updated takes `tagOrange`, warm,
-// adjacent to Trending and quieter than it. Updated is the deliberately quieter
-// of the two. Blue would be the closer semantic ("information"), but Used
-// already owns blue, and two blues meaning different things in one row is the
-// collision that put Used on blue rather than green in the first place.
-export const ATTENTION_SIGNALS = Object.freeze([
-  { id: "trending", label: "Trending", statusColor: "orange", icon: "ap-icon-arrow-up" },
-  { id: "updated", label: "Updated", statusColor: "tagOrange", icon: "ap-icon-refresh" },
-]);
-
-export function findAttentionSignal(id) {
-  return ATTENTION_SIGNALS.find((s) => s.id === id) || null;
 }

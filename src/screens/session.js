@@ -1,7 +1,7 @@
 import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr } from "../utils.js?v=22";
 import { navigate } from "../router.js?v=31";
 import { renderTopbar } from "../components/topbar.js?v=319";
-import { socialAccounts, chatStarters, connectorDocs } from "../mocks.js?v=73";
+import { socialAccounts, chatStarters, connectorDocs } from "../mocks.js?v=74";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
@@ -116,9 +116,9 @@ import {
 import { setHandoff, consumeHandoff, hasHandoff } from "../handoff.js?v=21";
 import { attachTopicToChat, useTopicInChat, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=3";
 import { getFeedForPlaybook } from "../topic-feeds-store.js?v=3";
-import { getFreshTopics, countFresh, subscribe as subscribeTopics } from "../topics-store.js?v=4";
-import { findTopicSource } from "../topics-catalog.js?v=2";
-import { renderTopicCard } from "../components/topic-card.js?v=10";
+import { getFreshTopics, countFresh, subscribe as subscribeTopics } from "../topics-store.js?v=5";
+import { findTopicSource } from "../topics-catalog.js?v=3";
+import { renderTopicCard } from "../components/topic-card.js?v=11";
 import { openTopicPicker, openTopicArticle } from "../components/topic-picker-modal.js?v=16";
 import { parseHashParams, setHashQuery } from "../url-state.js?v=22";
 import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=35";

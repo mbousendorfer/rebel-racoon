@@ -40,20 +40,21 @@ import {
   topicTitle,
   defaultFilters,
   narrowedGroupCount,
+  countByState,
   ignoreTopic,
   unignoreTopic,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=4";
+} from "../topics-store.js?v=5";
 import {
   TOPIC_SOURCES,
-  TOPIC_KINDS,
-  REVIEW_STATUSES,
+  TOPIC_STATES,
+  ALL_STATE_IDS,
   findTopicSource,
   findCadence,
   isLiveSource,
-} from "../topics-catalog.js?v=2";
-import { renderTopicCard } from "../components/topic-card.js?v=10";
-import { renderTopicArticle, renderTopicHeader } from "../topic-article.js?v=15";
+} from "../topics-catalog.js?v=3";
+import { renderTopicCard } from "../components/topic-card.js?v=11";
+import { renderTopicArticle, renderTopicHeader } from "../topic-article.js?v=16";
 import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=4";
 import { openTopicHistory } from "../components/topic-history-modal.js?v=1";
 import { useTopicInChat } from "../topic-flow.js?v=3";
@@ -74,7 +75,6 @@ let observer = null;
 
 function freshView() {
   return {
-    segment: "ready",
     filters: defaultFilters(),
     page: 1,
     openTopicId: null,
@@ -133,8 +133,9 @@ export function renderTopics(_params, target) {
   if (deepTopic) {
     view.openTopicId = deepTopic.id;
     view.autoOpened = true;
-    view.segment = deepTopic.kind;
-    view.filters = { ...view.filters, statuses: REVIEW_STATUSES.map((s) => s.id) };
+    // Every state ticked, so a linked Topic opens whatever it carries — ignored,
+    // for later, or both. There is no segment to force any more.
+    view.filters = { ...view.filters, states: ALL_STATE_IDS.slice() };
     // No scanning state on a Topic link: the reader came for one thing and a
     // working state would be theatre between them and it.
     view.scanning = false;
@@ -247,30 +248,30 @@ function revealPane(scroller, pane) {
 
 function renderPage(pb) {
   const feed = pb ? getFeedForPlaybook(pb.id) : null;
+  // One list. The two tabs are gone — `later` is a state in the filter now, so a
+  // second control that could disagree with the filter no longer exists.
   const all = feed ? getTopicsForFeed(feed.id, view.filters) : [];
-  const inSegment = all.filter((t) => t.kind === view.segment);
 
   // The first Topic's article opens by itself, ONCE per visit: the reader lands
   // on a master–detail screen and an empty right-hand half is a screen that
   // looks unfinished. The latch is what makes it once — closing it must not be
   // undone by the next repaint, and there are many (a filter change, a triage,
   // a store notification).
-  if (!view.scanning && !view.autoOpened && inSegment.length) {
+  if (!view.scanning && !view.autoOpened && all.length) {
     view.autoOpened = true;
-    view.openTopicId = inSegment[0].id;
+    view.openTopicId = all[0].id;
   }
 
-  const counts = {
-    ready: all.filter((t) => t.kind === "ready").length,
-    later: all.filter((t) => t.kind === "later").length,
-  };
   // Unfiltered, so "the filter is hiding everything" can be told apart from
   // "this feed has not found anything yet". Two different states, two different
   // ways out.
   const total = feed ? getTopicsForFeed(feed.id).length : 0;
+  // Also unfiltered — the filter rows' counts describe the feed, not the current
+  // selection, so they stay still while the reader ticks.
+  const stateCounts = feed ? countByState(feed.id) : {};
 
-  const shown = inSegment.slice(0, view.page * PAGE);
-  const more = inSegment.length - shown.length;
+  const shown = all.slice(0, view.page * PAGE);
+  const more = all.length - shown.length;
 
   const open = view.openTopicId ? getTopicById(view.openTopicId) : null;
   // The pane only renders for a Topic still in the list. Ignoring the one you
@@ -292,7 +293,7 @@ function renderPage(pb) {
   const empty = !view.scanning && !shown.length;
 
   return html`
-    ${raw(renderToolbar(pb, feed))} ${raw(renderTabs(counts))}
+    ${raw(renderToolbar(pb, feed, stateCounts))}
     <div class="topics-view__body">
       ${raw(
         empty
@@ -335,7 +336,7 @@ function renderPage(pb) {
 //
 // Dropping it costs nothing for screen readers either: the topbar's
 // .app-topbar__title IS an <h1>, so the document goes from two to one.
-function renderToolbar(pb, feed) {
+function renderToolbar(pb, feed, stateCounts) {
   const badge = narrowedGroupCount(view.filters);
 
   // The real DS Select — a <details>/<summary> dropdown, never a bare native
@@ -414,54 +415,45 @@ function renderToolbar(pb, feed) {
         <i class="ap-icon-filter"></i><span>Filters</span>
         ${raw(badge ? html`<span class="ap-counter normal blue">${badge}</span>` : "")}
       </button>
-      ${raw(view.filtersOpen ? renderFilters() : "")}
+      ${raw(view.filtersOpen ? renderFilters(stateCounts) : "")}
     </div>
   </div>`;
 }
 
-// ── Row 3 · the tabs ──────────────────────────────────────────────────────
-// TABS, not a segmented control. The product uses tabs for exactly this shape —
-// two named views of one list, each with a count: "Campaigns 11 | Topics",
-// "Advocates 4 | Diffusion Lists 3", "Audience | Posts insights | …". Nothing in
-// the product uses a segmented control for it, and only one list is ever on
-// screen, which is the definition of tabs rather than of co-visible views.
+// ⚠️ ROW 3, THE TWO TABS, IS GONE. `.ap-tabs` carried "Ready to draft" /
+// "Topics for later" here, and `later` is now one of the six states in the Filters
+// panel. Two controls for one fact is what AC-FILT-2 refused when it said "no
+// filter for the two segments — the segmented control already does that job, and a
+// second one could disagree with it"; the answer turned out to be keeping the
+// filter and dropping the tabs, not the other way round. The per-tab counts moved
+// onto the filter rows, so nothing was lost with them.
 //
-// The markup is the one content-workspace.js and right-panel.js already emit:
-// .ap-tabs > .ap-tabs-nav > .ap-tabs-tab.active, label plus an .ap-counter that
-// goes blue on the active tab and grey on the other.
-//
-// `data-topic-segment` is kept verbatim so the existing click handler needs no
-// change — the control changed, the behaviour did not.
-function renderTabs(counts) {
-  return html`<div class="ap-tabs topics-view__tabs">
-    <div class="ap-tabs-nav" role="tablist" aria-label="Which topics to show">
-      ${raw(
-        TOPIC_KINDS.map((k) => {
-          const on = view.segment === k.id;
-          return html`<button
-            type="button"
-            class="ap-tabs-tab${raw(on ? " active" : "")}"
-            data-topic-segment="${escapeAttr(k.id)}"
-            role="tab"
-            aria-selected="${on ? "true" : "false"}"
-          >
-            <span>${k.label}</span>
-            <span class="ap-counter normal ${raw(on ? "blue" : "grey")}">${counts[k.id]}</span>
-          </button>`;
-        }).join(""),
-      )}
-    </div>
-  </div>`;
-}
+// `git log -S renderTabs` has the version with tabs, and `git log -S
+// ap-segmented-control` the wrong-component one before that.
 
 // ── The Filters panel ──────────────────────────────────────────────────────
 // The DS Filter Dropdown: two groups, both multi-select, committed on change.
-// Words only — no glyph beside an option. The status glyphs mean something on a
-// card, where they stand in for a sentence; in a list of labelled checkboxes they
-// are a second reading of a word that is already there.
-function renderFilters() {
-  const statusRows = REVIEW_STATUSES.map((s) =>
-    filterOption("status", s.id, s.label, view.filters.statuses.includes(s.id)),
+// Words only — no glyph beside an option. A state's glyph means something on a
+// card, where it stands in for a sentence; in a list of labelled checkboxes it is
+// a second reading of a word that is already there.
+//
+// ── SIX rows now, at one level ────────────────────────────────────────────
+// To review · Trending · Updated · Already used are ticked at rest, For later and
+// Ignored are not — which reproduces the old landing exactly (the "Ready to draft"
+// tab plus Ignored unticked) without a second control.
+//
+// Every row behaves identically: UNTICK A STATE TO HIDE WHAT CARRIES IT. Not an OR
+// over ticked rows — that would resurface an ignored-but-trending Topic the moment
+// Trending was ticked, which is the group this feature rejected outright. The
+// predicate lives in topics-store's matchesFilters with the full argument.
+//
+// Each row carries the count of Topics in the feed carrying that state. That is
+// where the two tabs' counts went, and it makes this panel the one place the shape
+// of the feed is legible. Unfiltered on purpose: a count that moved with the other
+// rows would change as you ticked, which is not a number you can aim at.
+function renderFilters(stateCounts) {
+  const stateRows = TOPIC_STATES.map((st) =>
+    filterOption("state", st.id, st.label, view.filters.states.includes(st.id), false, stateCounts[st.id] || 0),
   );
   const sourceRows = TOPIC_SOURCES.map((s) =>
     filterOption("source", s.id, s.name, view.filters.sources.includes(s.id), !isLiveSource(s.id)),
@@ -473,7 +465,7 @@ function renderFilters() {
         <div class="ap-filter-leaf__header ap-filter-leaf__expanded">
           <span class="ap-filter-leaf__title">Topic status</span>
         </div>
-        <div class="ap-filter-leaf__content">${raw(statusRows.join(""))}</div>
+        <div class="ap-filter-leaf__content">${raw(stateRows.join(""))}</div>
       </div>
       <div class="ap-filter-leaf">
         <div class="ap-filter-leaf__header ap-filter-leaf__expanded">
@@ -490,7 +482,7 @@ function renderFilters() {
   </div>`;
 }
 
-function filterOption(group, id, label, checked, disabled = false) {
+function filterOption(group, id, label, checked, disabled = false, count = null) {
   return html`<div class="ap-filter-leaf__option">
     <label class="ap-checkbox-container">
       <input
@@ -513,6 +505,10 @@ function filterOption(group, id, label, checked, disabled = false) {
          Blue is the colour of the interactive in this app, and a disabled row is
          the one thing on the panel that cannot be interacted with. -->
     ${raw(disabled ? html`<span class="ap-tag grey mini">Coming soon</span>` : "")}
+    <!-- The state's count, in the slot the port already reserves at the end of a
+         row (margin-left: auto, same as the tag above). Grey, never blue: it is a
+         quantity, not something to click. -->
+    ${raw(count === null ? "" : html`<span class="ap-counter normal grey">${String(count)}</span>`)}
   </div>`;
 }
 
@@ -645,7 +641,7 @@ function renderEmpty(total, feed) {
   return renderEmptyState({
     icon: "ap-icon-filter",
     title: "Nothing matches these filters",
-    body: "Widen the filters, try the other segment, or switch Playbook.",
+    body: "Widen the filters or switch Playbook.",
     actionHtml: '<button type="button" class="ap-button stroked grey" data-topic-filters-reset>Reset filters</button>',
     wrapperClass: "topics-view__empty",
   });
@@ -735,7 +731,7 @@ function bind(target) {
     if (!view) return;
     const filter = event.target.closest("[data-topic-filter]");
     if (filter) {
-      const group = filter.dataset.topicFilter === "status" ? "statuses" : "sources";
+      const group = filter.dataset.topicFilter === "state" ? "states" : "sources";
       const list = new Set(view.filters[group]);
       if (filter.checked) list.add(filter.value);
       else list.delete(filter.value);
@@ -819,21 +815,6 @@ function bind(target) {
       // router re-runs this screen and every bit of view state resets with it,
       // which is what "swaps the feed under the reader" has to mean.
       setHashQuery(getPath(), { pb: scopePick.dataset.topicScopePick });
-      return;
-    }
-
-    const segment = event.target.closest("[data-topic-segment]");
-    if (segment) {
-      const id = segment.dataset.topicSegment;
-      if (id === view.segment) return;
-      // Switching segment closes the article and goes back to page one. It does
-      // NOT auto-open the new segment's first Topic: the reader asked to see a
-      // list, and opening something for them is an answer to a question they
-      // did not ask twice.
-      view.segment = id;
-      view.page = 1;
-      view.openTopicId = null;
-      paint(target, scopedPlaybook());
       return;
     }
 

@@ -41,46 +41,48 @@
 // contain phrasing content, so no h3 and no p in there.
 
 import { html, raw, escapeAttr } from "../utils.js?v=22";
-import { topicTitle } from "../topics-store.js?v=4";
-import { findReviewStatus, findAttentionSignal } from "../topics-catalog.js?v=2";
+import { topicTitle, topicStates } from "../topics-store.js?v=5";
+import { findTopicState } from "../topics-catalog.js?v=3";
 
-// ── The signal marks: the DS STATUS, not a lookalike ──────────────────────
-// `.ap-status` with the tone and the icon that topics-catalog ALREADY declared
-// per signal (orange for Trending, tagOrange for Updated) — the catalogue has
-// carried the right mapping all along and these were hand-rolled spans ignoring
-// it. `findAttentionSignal` had no reader at all until now.
+// ── The state chips: ONE species, five tones ──────────────────────────────
+// Every state a Topic carries renders as `.ap-status <tone> no-dot` + glyph +
+// word, from the tone and icon topics-catalog declares per state.
 //
-// `no-dot` because the slot holds the signal's own glyph instead: an arrow-up
-// says RISING and a refresh says REWRITTEN, which the component's neutral dot
-// cannot. That is composition of a shipped component with a shipped modifier, and
-// it costs no CSS of its own — the pill's fill, height, radius and type all come
-// from --comp-status-*.
+// ⚠️ This replaced TWO renderers that put one vocabulary at two levels: the two
+// signals were already DS pills, while Already used and Ignored were bare neutral
+// icons with a `title`, and For later was not on the card at all — it was a whole
+// tab. A pill, an icon and a tab for what a reader thinks of as one list.
 //
-// Colour is still never the only signal: each carries its word. A colour-blind
-// reader and a screen reader both get "Trending" either way.
-function renderSignal(id) {
-  const sig = findAttentionSignal(id);
-  if (!sig) return "";
-  return html`<span class="ap-status ${sig.statusColor} no-dot topic-card__signal">
-    <i class="${sig.icon}" aria-hidden="true"></i><span>${sig.label}</span>
-  </span>`;
-}
-
-// The triage glyph, immediately right of the age — the left of the meta row is
-// the Topic's own facts (where it came from, how old it is) and its review state
-// reads as one of them, rather than as a chip competing with the signals.
+// `no-dot` because the dot's slot holds the state's own glyph instead: an arrow-up
+// says RISING, a refresh says REWRITTEN, a bookmark says KEPT, which the
+// component's neutral dot cannot. Composition of a shipped component with a
+// shipped modifier — the fill, height, radius and type all resolve from
+// --comp-status-*, so this costs no CSS of its own.
 //
-// `new` renders NOTHING, and that is the design: it is the absence of a marker.
-// The other two record something the reader DID; this one records that they have
-// not, and a glyph meaning "nothing has happened" is the one thing a glyph cannot
-// say. It was also the most common value in a feed, so it would spend a marker on
-// almost every row to convey nothing.
-function renderStatusGlyph(status) {
-  const s = findReviewStatus(status);
-  if (!s || !s.icon) return "";
-  return html`<span class="topic-card__status" title="${s.label} — ${s.hint}"
-    ><i class="${s.icon}" aria-hidden="true"></i><span class="app-sr-only">${s.label}</span></span
-  >`;
+// `new` renders nothing, and that is the design: it is the absence of an answer,
+// the most common value in any feed, and a glyph meaning "nothing has happened
+// yet" is the one thing a glyph cannot say. It keeps its filter row.
+//
+// A Topic can wear more than one — Already used AND Trending is a real state, and
+// showing both is the point. They sit in one group at the end of the meta row so
+// the row wraps as a unit instead of one chip at a time.
+//
+// Colour is never the only signal: each chip carries its word, so a colour-blind
+// reader and a screen reader both get "Trending" either way. The `title` carries
+// the state's hint, which says what it MEANS rather than repeating the label.
+function renderStateChips(topic) {
+  const chips = topicStates(topic)
+    .map((id) => findTopicState(id))
+    .filter((st) => st && st.chip)
+    .map(
+      (st) =>
+        html`<span class="ap-status ${st.tone} no-dot" title="${st.label} — ${st.hint}">
+          <i class="${st.icon}" aria-hidden="true"></i><span>${st.label}</span>
+        </span>`,
+    )
+    .join("");
+  if (!chips) return "";
+  return html`<span class="topic-card__states">${raw(chips)}</span>`;
 }
 
 function renderMeta(topic, source) {
@@ -93,8 +95,7 @@ function renderMeta(topic, source) {
         : "",
     )}
     <span class="topic-card__age">· ${topic.ageLabel}</span>
-    ${raw(renderStatusGlyph(topic.status))}
-    ${raw(topic.isTrending ? renderSignal("trending") : "")}${raw(topic.isUpdated ? renderSignal("updated") : "")}
+    ${raw(renderStateChips(topic))}
   </span>`;
 }
 

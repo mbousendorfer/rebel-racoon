@@ -35,7 +35,7 @@ import { isFlagOn } from "../feature-flags.js?v=21";
 import { getContextById, getDefaultContext } from "../contexts-store.js?v=56";
 import { editableContexts, canEdit } from "../playbook-access.js?v=7";
 import { getFeedForPlaybook, updateFeed, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=3";
-import { TOPIC_SOURCES, CADENCES, findTopicSource, findCadence, isLiveSource } from "../topics-catalog.js?v=2";
+import { TOPIC_SOURCES, CADENCES, findTopicSource, findCadence, isLiveSource } from "../topics-catalog.js?v=3";
 import { open as openFeedback } from "../components/feedback-modal.js?v=28";
 
 // Above this many Playbooks the picker earns a search field. Below it, a search
