@@ -208,13 +208,23 @@ sous-titre `body` en encre light → **un** bouton plein. Le drag/drop est câbl
   d'égaux » revient quels que soient les libellés. **Le DS n'a aucun bouton IA plein** — les seuls
   contrôles pleins dominants sont `.ap-button.primary.orange` et `.primary.blue`. L'échelle maison
   est écrite dans [`_analyse-common.js:394`](../../src/screens/_analyse-common.js) :
-  `primary` → `stroked grey` → `ghost grey` (+ `.ap-link` en 4ᵉ). Ici : `primary orange`
-  (« primary AI CTA ») + `.ap-link`.
+  `primary` → `stroked grey` → `ghost grey` (+ `.ap-link` en 4ᵉ).
+- ⚠️ **Ici le primaire est `.ap-button.primary.blue`, PAS orange — et c'est voulu.**
+  [`DESIGN-SYSTEM.md`](DESIGN-SYSTEM.md) appelle l'orange le « primary AI CTA », mais Matt a
+  tranché le bleu sur cette fente. Même arbitrage que le primaire du Quickpicker.
+  **Ne pas le « restaurer » en orange.**
+- **Toute la zone est cliquable** (`right-panel.js` → file picker), d'où `cursor: pointer` et un
+  hover. Un bloc intitulé « Upload an image », en pointillé comme toutes les dropzones de l'app,
+  qui ne ferait rien au clic serait la même promesse cassée que le pointillé sans drop.
+  Le garde-fou : tout clic qui atterrit sur un vrai contrôle (Generate, Image Studio) est ignoré.
+  Pas de `role`/`tabindex` sur la zone en revanche — elle contient de vrais boutons, et un
+  interactif imbriqué doublerait un arrêt de tabulation ; **le clavier passe par le rail**.
 - **Un seul accent par bloc.** La pastille reste grise et ne reprend pas l'orange de
   `.drafts-card__icon` : un second orange diviserait la gravité que le bouton plein doit tenir.
 - **Pas de fond au repos.** Le pointillé seul dit « dépose un fichier ici » ; une teinte par-dessus
-  était un second signal faible en concurrence avec le premier. (`.is-dragover` remplit toujours —
-  c'est un retour transitoire, pas de la décoration.)
+  était un second signal faible en concurrence avec le premier. Hover et dragover remplissent
+  toujours, dans la gradation de `.ap-dropzone` (**05 au survol, 10 quand un fichier est dessus**) :
+  ce sont des retours transitoires, pas de la décoration au repos.
 - **Une hauteur unique (210px)** posée sur le `-slot`, pour que le cadre soit identique au repos, en
   dragover et en génération. C'est la hauteur naturelle de la composition au repos : si le contenu
   grandit, remonter la valeur ou le bloc resaute. Volontairement **pas** d'`aspect-ratio`.

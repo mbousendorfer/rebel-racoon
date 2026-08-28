@@ -145,11 +145,12 @@ Store **per-session** [`posts-store.js`](../../src/posts-store.js). Draft = auth
 - **Char counter** par network (LinkedIn 3000, X 280, IG 2200, FB 63206, TikTok 2200, YT 5000) → rouge si dépassé.
 - **Media** : clip (faux player, gradient, play, durée, scrubber 24%, badge sous-titres) / image
   (_Edit_ → studio · _Change_ → file picker · _Remove_) / **fente vide** (`.posts__card-media-empty`) :
-  une **vraie dropzone média** — pointillé, **sans fond**, 210px, centrée : pastille grise, titre
-  `h3` « Add an image », sous-titre `body` « I'll write the brief from this draft — or drop an
-  image here. », puis **un** `.ap-button.primary.orange` **Generate an image** (génère **en
-  place**, sans studio) et **Image Studio** en `.ap-link`. L'upload n'est pas là : il est dans le
-  rail (voir §7). Trois entrées donc : générer, glisser un fichier, ou passer par le rail.
+  une **vraie dropzone média** — pointillé, **sans fond**, 210px, centrée, **toute la zone est
+  cliquable** (hover bleu, clic → file picker) : pastille grise à glyphe upload, titre `h3`
+  « Upload an image », sous-titre `body` « Drop it here or browse — or I'll generate one from this
+  draft. », puis **un** `.ap-button.primary.blue` **Generate an image** (génère **en place**, sans
+  studio ; ⚠️ **bleu volontaire, pas orange** — cf. UI-PATTERNS) et **Image Studio** en `.ap-link`.
+  Quatre entrées : cliquer la zone, y glisser un fichier, générer, ou le rail (clavier).
   Voir [`UI-PATTERNS.md`](UI-PATTERNS.md) § Fente média vide — notamment **pourquoi un bouton
   contour ne peut pas être un primaire** (le DS n'a aucun bouton IA plein).
 - **Hint de brand kit** : si le Playbook du chat n'a ni logo, ni couleurs, ni images de référence
