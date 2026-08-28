@@ -28,8 +28,8 @@
 import { html, raw, escapeHtml } from "../utils.js?v=22";
 import { requestOpen, notifyClose } from "../modal-coordinator.js?v=22";
 import { renderEmptyState } from "./empty-state.js?v=3";
-import { renderTopicCard } from "./topic-card.js?v=16";
-import { renderTopicArticle, renderTopicActions, renderTopicTrail } from "../topic-article.js?v=22";
+import { renderTopicCard } from "./topic-card.js?v=17";
+import { renderTopicArticle, renderTopicActions, renderTopicTrail } from "../topic-article.js?v=23";
 import { getFeedForPlaybook } from "../topic-feeds-store.js?v=3";
 import { getTopicsForFeed, groupTopicsByAge, getTopicById, topicTitle, topicStates } from "../topics-store.js?v=9";
 import { findTopicSource } from "../topics-catalog.js?v=4";

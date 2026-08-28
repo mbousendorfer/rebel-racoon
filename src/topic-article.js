@@ -241,7 +241,10 @@ function renderPosts(topic, posts) {
   const id = `topic-posts-${topic.id}`;
   return html`<input type="checkbox" class="topic-article__section-check" id="${escapeAttr(id)}" />
     <!-- The <h3> stays, so the document outline does not lose a section to a
-         label. The label inside it is what makes the whole line the target. -->
+         label. The label inside it is what makes the whole ROW the target — the
+         count, the chevron and every pixel of air between them, edge to edge, at a
+         control's height. It was one 18px text line for a while: full width, so it
+         looked right in the CSS, and still something you had to aim at. -->
     <h3 class="topic-article__section-head">
       <label class="ap-link standalone topic-article__section-label" for="${escapeAttr(id)}">
         <!-- "Contributing posts", not "Sources": a Source in this app is

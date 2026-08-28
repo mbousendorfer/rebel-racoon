@@ -64,7 +64,7 @@
 
 import { html, raw, escapeAttr } from "../utils.js?v=22";
 import { topicTitle } from "../topics-store.js?v=9";
-import { renderTopicStates } from "../topic-article.js?v=22";
+import { renderTopicStates } from "../topic-article.js?v=23";
 
 // ── The state chips ───────────────────────────────────────────────────────
 // `renderTopicStates` comes from topic-article.js, which is where a Topic's

@@ -29,7 +29,7 @@
 import { html, raw, escapeAttr } from "../utils.js?v=22";
 import { navigate } from "../router.js?v=31";
 import { parseHashParams } from "../url-state.js?v=22";
-import { renderTopbar } from "../components/topbar.js?v=321";
+import { renderTopbar } from "../components/topbar.js?v=322";
 import { renderEmptyState } from "../components/empty-state.js?v=3";
 import { isFlagOn } from "../feature-flags.js?v=21";
 import { getContextById, getDefaultContext } from "../contexts-store.js?v=56";

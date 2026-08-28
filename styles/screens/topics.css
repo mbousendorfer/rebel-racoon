@@ -866,12 +866,18 @@
 
    So the rule is back, and this time it is the only thing marking the boundary
    rather than a second device saying what a fill already said. 32px of band gap
-   above it, 24 below — the space above belongs to the analysis that just ended. */
+   above it, 24 below — the space above belongs to the analysis that just ended.
+
+   ⚠️ Those 24px used to live HERE, as the section's own padding, and that made
+   them dead: the row's target was the 18px text line, so the band that reads as
+   the top of the row did nothing when clicked. It is split now — 12 here, 12 as
+   the label's own padding — so the space above the text is unchanged to the pixel
+   and belongs to the CONTROL instead of to the box around it. */
 .topic-article__section {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xxs);
-  padding-top: var(--ref-spacing-md);
+  gap: var(--ref-spacing-xxxs);
+  padding-top: var(--ref-spacing-xs);
   border-top: 1px solid var(--app-border-soft);
 }
 
@@ -904,19 +910,44 @@
   padding-inline: var(--ref-spacing-md);
 }
 
-/* ── The section IS the disclosure ─────────────────────────────────────────
-   The whole line is the target — label, count and chevron — so there is no small
-   hit area to aim at. Full width and a chevron pushed to the far end: a control
-   whose affordance sits at the row's end is the shape the accordion, the select
-   and the kebab all use here.
+/* And the ROW runs out to the same two edges, for the same reason and with the
+   same arithmetic: the divider is the card's anatomy, so the control under it is
+   too, and a target that stops 24px short of the edge the rule reaches leaves two
+   dead gutters on the row a reader is aiming at. The matching padding keeps the
+   text on the measure — the row grows, the words do not move.
 
-   No box and no fill. `.ap-accordion` would frame blocks that already wear a fill,
-   and the article keeps exactly one framed species (the two facts) and one filled
-   species (the cards). The chevron and the pointer are the whole affordance. */
+   ⚠️ Host-scoped, like the rule: the dialog's gutter is asymmetric (md left, xl
+   right to clear its ×), so no single pair of negative margins reaches both of its
+   edges. There the row stops at the measure, which is symmetric and correct for a
+   dialog. */
+.topics-view__pane-body .topic-article__section-label {
+  margin-inline: calc(-1 * var(--ref-spacing-md));
+  padding-inline: var(--ref-spacing-md);
+}
+
+/* ── The section IS the disclosure ─────────────────────────────────────────
+   The whole ROW is the target — label, count, chevron and every pixel of air
+   between them — so there is no small hit area to aim at. A chevron pushed to the
+   far end: a control whose affordance sits at the row's end is the shape the
+   accordion, the select and the kebab all use here.
+
+   ⚠️ THE WIDTH WAS NEVER THE PROBLEM. `flex: 1` already spanned the measure, so
+   this comment was true across and false down: the box was **18px tall**, one text
+   line, floating in a 43px section whose other 24px were the section's own padding.
+   Aiming at a full-width 18px sliver is aiming. `padding-block` gives the row a
+   40-ish-px height like any other control, and the section gave up the padding it
+   is made of, so nothing moved on screen — what changed is who owns the space.
+
+   No box and no fill, still. `.ap-accordion` would frame blocks that already wear
+   a fill, and the article keeps exactly one framed species (the two facts) and one
+   filled species (the cards). The pointer, the chevron and the DS link's own hover
+   step — which darkens the label AND the chevron, since an `ap-icon-*` is a mask
+   painted from `currentColor` — are the whole affordance. */
 .topic-article__section-label {
   display: flex;
   align-items: center;
   gap: var(--ref-spacing-xxxs);
+  padding-block: var(--ref-spacing-xs);
   cursor: pointer;
   user-select: none;
 }
@@ -968,9 +999,13 @@
   transform: rotate(180deg);
 }
 
-.topic-article__section-check:focus-visible ~ .topic-article__section-head {
+/* The ring goes on the LABEL, not on the <h3> around it: in the pane the label is
+   the wider of the two (it reaches the card's edges), so a ring on the heading
+   would draw a box narrower than the area a click actually hits. Inset rather than
+   offset, for the same reason — the row already touches both edges. */
+.topic-article__section-check:focus-visible ~ .topic-article__section-head .topic-article__section-label {
   outline: 2px solid var(--ref-color-electric-blue-100);
-  outline-offset: 2px;
+  outline-offset: -2px;
   border-radius: var(--app-radius-sm);
 }
 
