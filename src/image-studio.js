@@ -27,7 +27,7 @@ import { FORMATS, formatsForNetwork, defaultFormatFor, NETWORK_FORMATS } from ".
 // words into the generated pixels with the very same flattener the Edit overlays
 // use, so there is nothing to duplicate here.
 import { compositeOverlays } from "./image-studio-canvas.js?v=6";
-import { isFlagOn } from "./feature-flags.js?v=22";
+import { isFlagOn } from "./feature-flags.js?v=23";
 
 const states = new Map(); // sessionId → state
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -434,6 +434,18 @@ export function start(
     // brief over to edit it by hand; settings then flag it stale and offer a
     // rebuild rather than overwriting. Read once per open (a flag toggle reloads).
     autoBrief: isFlagOn("imageStudioAutoBrief"),
+    // ── V3 variant (flag imageStudioSetupFirst) ────────────────────────────────
+    // The options come FIRST and the brief comes last: nothing is derived at open,
+    // Generate writes the brief (deriveNow) and only then generates, and the brief
+    // itself lives behind the left half's Advanced tab. Brief SEMANTICS are shared
+    // with auto-brief — every option rewrites it, typing in a block is the takeover
+    // — via briefIsDerived(), so there is one rule and not two. Read once per open,
+    // like autoBrief: a flag toggle reloads, so it can't switch under a live session.
+    setupFirst: isFlagOn("imageStudioSetupFirst"),
+    // Which half-left pane is showing: "options" or "advanced" (the brief). Advanced
+    // is unreachable until an image exists, so this only ever leaves "options" after
+    // a generation — see setPane.
+    pane: "options",
     renderTextSeeded: false, // "Text in image" pre-suggested once at open, never re-touched after
     briefTakenOver: false, // user hit "Edit the brief" — the words are theirs now
     briefStale: false, // a setting changed while taken over — brief no longer matches
@@ -497,7 +509,17 @@ export function start(
     // Brand kit isn't in here either, for a different reason: it's pinned open in
     // the view and never collapses. Style preset has its own `disabled` state
     // (references guide the look), independent of this Set.
-    collapsedGroups: new Set(["branding", "imageType", "style", "format", "output"]),
+    //
+    // V3 adds `renderText` back, because the reason for the exception does not hold
+    // there: nothing is pre-filled at open — the headline is seeded at generate time
+    // (deriveNow) — so the section would arrive open and EMPTY, spending the ~60px
+    // that decides whether all seven rows fit the half without a scroll. It fills in
+    // and opens itself at that seed — see deriveNow.
+    collapsedGroups: new Set(
+      isFlagOn("imageStudioSetupFirst")
+        ? ["renderText", "branding", "imageType", "style", "format", "output"]
+        : ["branding", "imageType", "style", "format", "output"],
+    ),
     variationCount: 2, // single-image mode: how many alternatives to pick from
     slideCount, // carousel mode: how many slides to generate
     variations, // [{ seed, url, w, h }] — alternatives (single) or slides (carousel)
@@ -584,6 +606,18 @@ function isDirty(s) {
   return (s.promptText || "").trim() !== (s.derivedPrompt || "").trim();
 }
 
+// Is the brief an OUTPUT of the options rather than a field the user owns?
+//
+// True for both non-classic variants, and that sharing is the point: auto-brief and
+// V3 disagree about WHERE the brief sits and WHEN it is written, but not about what
+// it means. So every seam that used to read `s.autoBrief` — the guard (defer), the
+// rewrite rule (settingChanged), the tail for the quiet settings (afterLegacySetting)
+// and the one-time headline seed (runDerive) — reads this instead. Classic stays
+// byte-for-byte what it was.
+function briefIsDerived(s) {
+  return !!s.autoBrief || !!s.setupFirst;
+}
+
 // Same deal for the text to render: typing must not re-render the settings (the
 // row would be rebuilt under the caret).
 //
@@ -653,7 +687,7 @@ export function setStyle(sessionId, key) {
 // Park the change behind the confirmation instead of applying it. Returns true
 // when it parked, so the caller bails out.
 function defer(s, sessionId, kind, payload) {
-  if (s.autoBrief) {
+  if (briefIsDerived(s)) {
     // The brief's blocks are edited in place, and editing one IS the takeover
     // (commitBriefLine). Every modifier rewrites the whole brief, so once those words are
     // the user's, changing one has to ask before throwing them away.
@@ -947,6 +981,23 @@ export function setOpenModifier(sessionId, name) {
   notify(sessionId);
 }
 
+// V3's left half: which pane is showing. "advanced" (the brief) is only reachable
+// once there is an image, since the brief describes one — the chip is disabled
+// until then, and this refuses the switch as well so a stale click can't slip past
+// a re-render.
+export function setPane(sessionId, pane) {
+  const s = states.get(sessionId);
+  if (!s) return;
+  const next = pane === "advanced" ? "advanced" : "options";
+  if (next === "advanced" && !s.variations.length && !s.currentImage) return;
+  if (s.pane === next) return;
+  s.pane = next;
+  // Leaving the options behind takes their popover with them; it is anchored to a
+  // row that is no longer on screen.
+  s.openModifier = null;
+  notify(sessionId);
+}
+
 // ── "Suggest from this post" (mock) ─────────────────────────────────────────
 
 // Used when the draft has no copy to work from (studio opened on an empty post).
@@ -1054,7 +1105,7 @@ export function runDerive(sessionId, { delay = DERIVE_MS } = {}) {
     // open), then no setting ever rewrites it again, so touching Type stops moving
     // two fields at once. Off, the legacy behaviour stands — backfill any time the
     // field is empty, which is what coupled Type to the headline.
-    if (cur.autoBrief) {
+    if (briefIsDerived(cur)) {
       if (!cur.renderTextSeeded) {
         if (!cur.renderText) cur.renderText = deriveRenderText(cur);
         cur.renderTextSeeded = true;
@@ -1079,6 +1130,39 @@ function rederive(sessionId) {
   runDerive(sessionId, { delay: REDERIVE_MS });
 }
 
+// V3 writes the brief AT generate time instead of at open, and does it
+// SYNCHRONOUSLY: derivePrompt is a pure function — the DERIVE_MS beat is theatre —
+// so there is nothing to wait for, and a beat here would only leave the Generate
+// button dead for two seconds on a screen that never shows the brief anyway. The
+// 4200ms generating loader is where the work reads as work.
+//
+// This is also what makes the Advanced tab honest: the text it holds is the prompt
+// that produced the image on screen, not a draft of one.
+//
+// A brief the user took over is left exactly as they wrote it — Generate uses their
+// words. `briefStale` is cleared because regenerating from those words is precisely
+// the answer to "you changed the options after editing this".
+export function deriveNow(sessionId) {
+  const s = states.get(sessionId);
+  if (!s) return;
+  if (s.briefTakenOver) {
+    s.briefStale = false;
+    return;
+  }
+  if (!s.renderTextSeeded) {
+    if (!s.renderText) s.renderText = deriveRenderText(s);
+    s.renderTextSeeded = true;
+    // The seed is the one moment V3 puts words into the image without being asked, so
+    // the section holding them opens for it. Same rule the initial `collapsedGroups`
+    // follows — a section that has content in it arrives open, because the alternative
+    // is the studio quietly deciding to paint a headline and the only clue being a
+    // collapsed row. Once, at the seed: reopening it on every Regenerate would fight
+    // a user who deliberately closed it.
+    s.collapsedGroups.delete("renderText");
+  }
+  writeBrief(s, derivePrompt(s));
+}
+
 // ── Auto-brief: one rule for every setting ───────────────────────────────────
 //
 // The variant's whole point is that the brief is a faithful, always-in-sync
@@ -1088,7 +1172,7 @@ function rederive(sessionId) {
 function settingChanged(sessionId) {
   const s = states.get(sessionId);
   if (!s) return;
-  if (s.autoBrief && s.briefTakenOver) {
+  if (briefIsDerived(s) && s.briefTakenOver) {
     s.briefStale = true;
     notify(sessionId);
     return;
@@ -1102,7 +1186,7 @@ function settingChanged(sessionId) {
 function afterLegacySetting(sessionId) {
   const s = states.get(sessionId);
   if (!s) return;
-  if (s.autoBrief) settingChanged(sessionId);
+  if (briefIsDerived(s)) settingChanged(sessionId);
   else notify(sessionId);
 }
 

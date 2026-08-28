@@ -166,11 +166,14 @@ src/
     bug-report-modal.js, feedback-modal.js, chat-picker-modal.js,
     confirm-modal.js, rename-modal.js, search-modal.js,
     share-playbook-modal.js  personal ⇄ org scope + owner + change log (flag)
-    image-studio-v2/      the Image Studio, split by subject (see FEATURES §7):
+    image-studio-v2/      the Image Studio, split by subject (see FEATURES §7 / §7bis):
                           index (lifecycle) · events · commit · inline-text · prompt-guard ·
                           stage-view · composer-view · settings-view ·
                           references-view · branding-view · tools-view ·
-                          edit-view · interactions · context
+                          edit-view · interactions · context ·
+                          brief-stage (flag imageStudioAutoBrief) ·
+                          setup-stage (flag imageStudioSetupFirst) ·
+                          brief-blocks + preview-column (shared by those two)
 
   modal-coordinator.js    one-overlay-at-a-time: requestOpen / notifyClose / bindOverlayDismissal
 ```
@@ -236,6 +239,18 @@ delegated listener, `commit.js` the paths that write to the draft, `prompt-guard
 confirmation that protects a hand-edited brief, then one view module per surface
 (`stage-view`, `composer-view`, `settings-view`, `references-view`, `branding-view`, `tools-view`,
 `edit-view`).
+
+**Three variants, one engine.** Classic (no flag) lands on a prose brief in the bottom composer with
+the settings pinned to the stage's left edge. `imageStudioAutoBrief` makes the brief the stage's hero
+with the settings as chips under it. `imageStudioSetupFirst` (V3) inverts both: the **options** are
+the first step, Generate is the form's submit, and the brief lives behind an **Advanced** tab that
+stays disabled until an image exists — because what it holds is the prompt that produced the image on
+screen. V3 wins when both flags are on, and that precedence is declared in **one** place,
+`isBriefStage()`. What the brief MEANS is shared by the two non-classic variants through
+`briefIsDerived(s)` in the engine — every option rewrites it, typing in a block is the takeover — so
+there is one rule rather than two that can drift. The two split variants also share their renderers:
+`brief-blocks.js` (a brief block) and `preview-column.js` (the right half), extracted so a card and
+the thing it opens cannot end up saying different sentences about one brief.
 
 ⚠️ A confirmation inside the studio must NOT be `confirm-modal.js`: it registers with
 `modal-coordinator`, whose `requestOpen` closes the active overlay — the studio — running `exit(KEY)`
@@ -343,7 +358,7 @@ Every token substitution is commented with the value it stands in for, because t
 
 ### Admin / user mode (prototype controls)
 
-The **Admin** popover in the sidebar footer cog (`admin-menu.js`) is the prototype control panel: switch user mode and toggle feature flags (each change reloads so stores re-seed). `user-mode.js`: `getUserMode()` returns `"returning"` (populated mocks, default) or `"new-alt"` (empty stores + first-time onboarding); `isNewUser()` tests for `new-alt`. Feature flags live in `ff-catalog.js` (`FLAGS`, each with a `default`) and are read via `isFlagOn()`. The 12 flags: `draftInlineEdit` (OFF), `playbookDefault` (OFF), `connectors` (OFF — gates the whole connectors feature), `conversationStatusCard` (OFF), `statusActionSnackbars` (OFF), `playbookColors` (OFF — colors hidden by default), `manyProfiles` (OFF — demo seed of ~40 connected profiles), `multilingualPlaybook` (OFF), `playbookCompetitors` (OFF — gates the Playbook's Competitors section), `topicFeed` (OFF — gates the whole Topic Feed: `/topics`, `/topics/settings`, the nav row and its unread count, the new chat's "Fresh topics to review" list, and the composer's "Pick from the Topic Feed"), `playbookSharing` (OFF — gates Playbook ownership: a Playbook is personal or shared with the whole org, never named-shared; read-only fiche + Duplicate for recipients, manager rights, the degraded chat after access is lost, and the Admin **Your role** control. Unlike `topicFeed`, its two demo Playbooks and its demo chat are seeded **only** under the flag), and `imageStudioAutoBrief` (OFF — the auto-written, block-editable brief variant of the Image Studio). Full table + gates: [`docs/reference/FEATURES.md`](docs/reference/FEATURES.md#14-admin-feature-flags--user-modes).
+The **Admin** popover in the sidebar footer cog (`admin-menu.js`) is the prototype control panel: switch user mode and toggle feature flags (each change reloads so stores re-seed). `user-mode.js`: `getUserMode()` returns `"returning"` (populated mocks, default) or `"new-alt"` (empty stores + first-time onboarding); `isNewUser()` tests for `new-alt`. Feature flags live in `ff-catalog.js` (`FLAGS`, each with a `default`) and are read via `isFlagOn()`. The 13 flags: `draftInlineEdit` (OFF), `playbookDefault` (OFF), `connectors` (OFF — gates the whole connectors feature), `conversationStatusCard` (OFF), `statusActionSnackbars` (OFF), `playbookColors` (OFF — colors hidden by default), `manyProfiles` (OFF — demo seed of ~40 connected profiles), `multilingualPlaybook` (OFF), `playbookCompetitors` (OFF — gates the Playbook's Competitors section), `topicFeed` (OFF — gates the whole Topic Feed: `/topics`, `/topics/settings`, the nav row and its unread count, the new chat's "Fresh topics to review" list, and the composer's "Pick from the Topic Feed"), `playbookSharing` (OFF — gates Playbook ownership: a Playbook is personal or shared with the whole org, never named-shared; read-only fiche + Duplicate for recipients, manager rights, the degraded chat after access is lost, and the Admin **Your role** control. Unlike `topicFeed`, its two demo Playbooks and its demo chat are seeded **only** under the flag), `imageStudioAutoBrief` (OFF — the auto-written, block-editable brief variant of the Image Studio), and `imageStudioSetupFirst` (OFF — Image Studio V3: the options are the first step and Generate is the form's submit, with the brief behind an Advanced tab that stays disabled until an image exists; no prose prompt field at all. Wins over `imageStudioAutoBrief` when both are on). Full table + gates: [`docs/reference/FEATURES.md`](docs/reference/FEATURES.md#14-admin-feature-flags--user-modes).
 
 ### Module loading
 

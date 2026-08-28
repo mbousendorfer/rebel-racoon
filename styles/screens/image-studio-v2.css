@@ -212,30 +212,6 @@
   padding: 0;
 }
 
-/* ── Auto-brief setup: the settings take the centre until an image exists ────
-   Pinned to the left edge, the inspector was a 284px column that ran out of height
-   and clipped its own controls — while the widest area on screen held a placeholder
-   promising an image later. Here it is a centred sheet at a comfortable measure, so
-   nothing scrolls inside a box and nothing overlaps the stage. Once there IS an
-   image, showPanel returns and the inspector goes back to the edge (stage-view). */
-.isv2-setup {
-  max-width: 640px;
-  margin: 0 auto;
-  padding: var(--ref-spacing-md) var(--ref-spacing-md) var(--ref-spacing-xl);
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-sm);
-}
-
-/* Undo the pinning: same panel, same rows, just placed in the flow. */
-.isv2-setup .isv2-panel {
-  position: static;
-  transform: none;
-  width: auto;
-  max-height: none;
-  overflow: visible;
-}
-
 /* ── Auto-brief stage: the brief is the screen, the settings modify it ───────
    Measure first: the brief is prose, so it gets ~68ch and nothing else competes for
    the width. Everything below it — the modifier bar, its one open control, Generate —
@@ -797,6 +773,59 @@
 .isv2-bs-pop .isv2-style-grid {
   grid-template-columns: repeat(6, minmax(0, 1fr));
 }
+
+/* ── V3: options first (flag imageStudioSetupFirst) ─────────────────────────
+   The geometry is the auto-brief stage's, reused whole: `.isv2-bs.is-split` +
+   `.isv2-bs-left` + the preview half. Only what fills the left half differs, so only
+   that is declared here — a second split layout would have to be kept in step with the
+   first for no visible gain.
+
+   Two panes share one box: Options (the seven accordion rows) and Advanced (the brief's
+   blocks). The strip that switches them is `.ap-filter-chip`, not `.ap-tabs`, because
+   the modal header already owns the only tab strip on screen — see setup-stage.js. */
+.isv2-panetabs {
+  flex: 0 0 auto;
+  display: flex;
+  gap: var(--ref-spacing-xxs);
+}
+
+/* The pane SCROLLS, unlike the brief it sits opposite: seven accordion rows with two of
+   them open run past the stage's height, where prose does not. Safe here only because
+   the settings have no flyouts left to escape the box — `overflow-y: auto` computes
+   `overflow-x` to `auto` as well, which is the trap that bit this file three times
+   before the rows became accordions that expand in place. */
+.isv2-opts {
+  /* The rows read `--isv2-tile` for their reference tiles and the logo thumb, and it is
+     declared per HOST (80px on `.isv2-panel`, 72px in the auto-brief popover) — not
+     globally. Without it here `flex: 0 0 var(--isv2-tile)` has nothing to resolve and the
+     tiles collapse. 80px, the panel's value, since this half is wider than the panel and
+     the size was never the constraint. */
+  --isv2-tile: 80px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  /* `xxs`, the same gap `.isv2-panel` gives these rows — they were designed at that
+     rhythm, and the looser `xs` was enough on its own to push the seventh row past the
+     fold at 900px. */
+  gap: var(--ref-spacing-xxs);
+}
+
+/* The rows arrive from the pinned inspector, which sizes its reference tiles off
+   `--isv2-tile` — 80px inside the panel's 284px. This half is wider, so the tiles keep
+   their size and simply have room after them. Nothing to override.
+
+   The brief pane must NOT scroll: its blocks already do (`.isv2-bs-doc`), and a scroller
+   inside a scroller gives one list two scrollbars. */
+.isv2-opts--brief {
+  overflow: visible;
+}
+
+/* The brief's status line sits UNDER its own blocks here. The auto-brief stage keeps it
+   in the modal footer, which works while the brief IS the left half; in V3 it is one
+   pane of two and the footer would be talking about something the reader may not have
+   up. `.isv2-bs-note` already carries the type and the `flex` — nothing to add. */
 
 /* A whole-modal drop target: the References section is one scroll into a panel,
    so an image dragged anywhere in generate mode is accepted (see events.js#onDrop),

@@ -24,7 +24,7 @@
 import { escapeHtml } from "../../utils.js?v=22";
 import { showToast } from "../toast.js?v=21";
 import { KEY } from "./context.js?v=49";
-import * as imageStudio from "../../image-studio.js?v=99";
+import * as imageStudio from "../../image-studio.js?v=101";
 
 // What each guarded setting is called in the sentence, so the dialog names the
 // thing the user just clicked rather than saying "a setting".
@@ -40,13 +40,14 @@ const WHAT = {
   useReference: "the reference image",
 };
 
-// Same dialog, two subjects. The legacy modal is protecting the prose prompt the user
-// typed in; auto-brief protects the editable blocks of its brief. Naming the wrong
-// one would make the warning unreadable.
+// Same dialog, two subjects. The classic modal is protecting the prose prompt the user
+// typed in; the two split variants protect the editable blocks of their brief. Naming
+// the wrong one would make the warning unreadable.
 function subject(st) {
-  // Auto-brief's brief is a set of editable BLOCKS, and every modifier rewrites all of
-  // them. Naming "the prompt" would point at something the user never sees there.
-  if (st.autoBrief) {
+  // A brief is a set of editable BLOCKS, and every option rewrites all of them. Naming
+  // "the prompt" would point at something the user never sees in either variant — V3
+  // renders no prose field at all.
+  if (st.autoBrief || st.setupFirst) {
     return {
       title: "Rewrite the brief?",
       body: "You've edited the brief by hand. Changing",

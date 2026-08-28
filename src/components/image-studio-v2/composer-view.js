@@ -22,7 +22,8 @@
 // primary is "Use this image" in the footer (stage-view.js#footerBar).
 
 import { escapeHtml } from "../../utils.js?v=22";
-import { isBriefStage } from "./brief-stage.js?v=29";
+import { isBriefStage } from "./brief-stage.js?v=31";
+import { isSetupFirst } from "./setup-stage.js?v=2";
 
 // Empty-state hint for the prompt field — a full structured brief, so the
 // placeholder itself shows the kind of rich prompt the box is built for (and why
@@ -42,10 +43,12 @@ Composition focus: The transition point of the arrow where order turns into digi
 
 export function composer(st) {
   if (st.mode === "edit") return editComposer(st);
-  // Auto-brief before generating: the brief IS the stage, with its own modifiers and
-  // its own Generate, so a second copy of it down here would be the same text twice.
-  // Once results exist the stage belongs to the image and the composer comes back.
-  if (isBriefStage(st)) return "";
+  // Both split variants own their whole stage and their own Generate, so a prompt field
+  // down here would be a second copy of text they already show (auto-brief), or the one
+  // field V3 exists to remove. Asked as two predicates rather than one combined helper:
+  // the combined one would have to live in a module neither of these belongs to, or come
+  // back through stage-view and make the import graph a cycle.
+  if (isBriefStage(st) || isSetupFirst(st)) return "";
   return generateComposer(st);
 }
 
@@ -53,9 +56,8 @@ export function composer(st) {
 // At 1440px a full-bleed prompt runs ~180 characters per line — unreadable, and
 // it made the six settings look like chrome stranded at the bottom of a huge
 // empty bar. Capped and centred, the card reads as one object you act in.
-// Auto-brief owns its whole stage (brief-stage.js) and never reaches this
-// composer — see composer() above. By the time this runs, the brief is always
-// the plain prompt field.
+// The split stages own their whole stage and never reach this composer — see
+// composer() above. By the time this runs, the brief is always the plain prompt field.
 function generateComposer(st) {
   return console_("Image prompt", promptField(st), generateActions(st), "to generate", { inline: true });
 }

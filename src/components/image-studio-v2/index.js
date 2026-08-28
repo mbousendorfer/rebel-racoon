@@ -11,6 +11,10 @@
 //     settings-view.js  the settings panel: the seven rows beside the image
 //     references-view.js  ─┐ two of those rows, each with real internal structure
 //     branding-view.js    ─┘
+//     brief-stage.js    the auto-brief layout   (flag imageStudioAutoBrief)
+//     setup-stage.js    the options-first layout (flag imageStudioSetupFirst)
+//     brief-blocks.js   ─┐ shared by those two: one brief renderer, one preview
+//     preview-column.js ─┘ column, so both variants say the same thing
 //     tools-view.js     Edit mode's floating tool palette + its one flyout
 //     edit-view.js      the edit canvas: overlays, crop box, text mini-toolbar
 //     events.js         every delegated listener
@@ -32,10 +36,10 @@ import { getSessionById } from "../../sessions-store.js?v=24";
 import { getContextById } from "../../contexts-store.js?v=57";
 import { MODAL_ID, KEY, ctx, state, autosize } from "./context.js?v=49";
 import { loadImg } from "../../image-studio-canvas.js?v=6";
-import { renderStudio } from "./stage-view.js?v=110";
-import { offerUndoIfNeeded, resetUndoOffers } from "./prompt-guard.js?v=15";
-import { bindStudioEvents } from "./events.js?v=30";
-import * as imageStudio from "../../image-studio.js?v=99";
+import { renderStudio } from "./stage-view.js?v=113";
+import { offerUndoIfNeeded, resetUndoOffers } from "./prompt-guard.js?v=16";
+import { bindStudioEvents } from "./events.js?v=31";
+import * as imageStudio from "../../image-studio.js?v=101";
 
 let backdrop;
 let initialized = false;
@@ -151,7 +155,10 @@ export function open(postId, opts = {}) {
     loadImg(editImageUrl)
       .then((img) => imageStudio.setEditImageDims(KEY, img.naturalWidth, img.naturalHeight))
       .catch(() => {});
-  } else if (ctx.postId && !carouselUrls) {
+  } else if (ctx.postId && !carouselUrls && !state()?.setupFirst) {
+    // V3 writes the brief when you press Generate, not now: it shows no brief on the
+    // way in, so this derive would be invisible work whose only effect is a Generate
+    // button dead for two seconds. See image-studio.js#deriveNow.
     imageStudio.runDerive(KEY);
   }
 }

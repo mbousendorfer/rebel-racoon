@@ -71,7 +71,7 @@ import {
   clearActiveConnector,
   subscribe as subscribeComposerConnector,
 } from "../composer-connector.js?v=2";
-import { isFlagOn } from "../feature-flags.js?v=22";
+import { isFlagOn } from "../feature-flags.js?v=23";
 import * as contextBuilder from "../context-builder.js?v=294";
 import { renderPicker } from "./_analyse-common.js?v=56";
 import { renderSourceCard } from "../components/source-card.js?v=34";

@@ -7,8 +7,8 @@
 // change reloads the app so the stores re-seed under the new mode / flag.
 
 import { html, raw, escapeHtml } from "./utils.js?v=22";
-import { FLAGS } from "./ff-catalog.js?v=28";
-import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=22";
+import { FLAGS } from "./ff-catalog.js?v=29";
+import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=23";
 import { getUserMode, setUserMode } from "./user-mode.js?v=24";
 import { getRole, setRole, ORG } from "./org.js?v=2";
 

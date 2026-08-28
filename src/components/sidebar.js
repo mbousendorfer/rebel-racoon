@@ -15,7 +15,7 @@ import {
   togglePin as togglePinSession,
   subscribe as subscribeSessions,
 } from "../sessions-store.js?v=24";
-import { isFlagOn } from "../feature-flags.js?v=22";
+import { isFlagOn } from "../feature-flags.js?v=23";
 import { isNewUser } from "../user-mode.js?v=24";
 import { clearSession as clearLibrarySession } from "../library.js?v=73";
 import { getContextById, getDefaultContext, subscribe as subscribeContexts } from "../contexts-store.js?v=57";

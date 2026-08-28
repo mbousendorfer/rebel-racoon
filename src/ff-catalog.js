@@ -159,4 +159,26 @@ export const FLAGS = Object.freeze([
       "controls beside an empty 'your image appears here' placeholder. Once there is an " +
       "image to preview, the inspector returns to the left edge.",
   },
+  {
+    id: "imageStudioSetupFirst",
+    label: "Image Studio V3: options first, brief in an Advanced tab",
+    default: false,
+    hides:
+      "Reverses what the Image Studio asks first. When OFF (default), the brief is the " +
+      "surface you land on — a prose field in the bottom composer (classic) or the hero " +
+      "of the stage (imageStudioAutoBrief) — and the options are secondary. When ON, the " +
+      "stage is two halves for the WHOLE flow: the seven option rows on the left, the " +
+      "image (or its placeholder) on the right, and Generate in the footer as the form's " +
+      "submit. There is no prose prompt field anywhere. The brief is written AT generate " +
+      "time, not at open, and lives behind an Advanced tab beside Options — disabled " +
+      "until an image exists, because what it holds is the prompt that produced the " +
+      "image on screen rather than a draft of one. Once open it is the same editable " +
+      "blocks the auto-brief variant uses, with the same rules: typing in one IS the " +
+      "takeover, a later option change flags the brief stale instead of overwriting it, " +
+      "and the hand-edit guard names the option it is about to rewrite. NOT the retired " +
+      "imageStudioGridBrief: that replaced the prose prompt with invented named fields " +
+      "as the only, pre-generation editor. Here the labels are derivePrompt's own, the " +
+      "brief comes after generation, and it is an escape hatch rather than the primary " +
+      "surface. Wins over imageStudioAutoBrief when both are on.",
+  },
 ]);

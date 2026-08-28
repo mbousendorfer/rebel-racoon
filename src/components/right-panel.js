@@ -1,6 +1,6 @@
 import { html, raw, escapeText, escapeAttr } from "../utils.js?v=22";
 import { getThread, subscribe as subscribeThread } from "../assistant.js?v=79";
-import { isFlagOn } from "../feature-flags.js?v=22";
+import { isFlagOn } from "../feature-flags.js?v=23";
 import { getPath, navigate } from "../router.js?v=31";
 import { parseHashParams, setHashQuery } from "../url-state.js?v=22";
 import { LANGUAGE_OPTIONS } from "../languages.js?v=3";
@@ -32,7 +32,7 @@ import { open as openRenameModal } from "./rename-modal.js?v=3";
 import { getConnectedConnectors } from "../connectors-store.js?v=43";
 import { getSessionById } from "../sessions-store.js?v=24";
 import { getContextById, getBrandKitGaps } from "../contexts-store.js?v=57";
-import { quickGenerateUrl } from "../image-studio.js?v=99";
+import { quickGenerateUrl } from "../image-studio.js?v=101";
 import { askConnector } from "../connector-ask.js?v=23";
 import { renderConnectorLogo } from "../connectors-view.js?v=25";
 import { open as openConnectorsModal } from "./connectors-modal.js?v=26";
@@ -54,7 +54,7 @@ function sessionIdeas() {
   return sid ? getIdeas(sid) : [];
 }
 import { open as openScheduleModal } from "./schedule-modal.js?v=74";
-import { open as openImageStudio } from "./image-studio-v2/index.js?v=102";
+import { open as openImageStudio } from "./image-studio-v2/index.js?v=106";
 import { open as openConfirmModal } from "./confirm-modal.js?v=23";
 
 // Global Right Panel — slides in from the right edge of the viewport, overlays

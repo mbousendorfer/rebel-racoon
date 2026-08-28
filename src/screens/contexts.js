@@ -10,7 +10,7 @@ import { navigate } from "../router.js?v=31";
 import { setHandoff } from "../handoff.js?v=21";
 import { open as openConfirmModal } from "../components/confirm-modal.js?v=23";
 import { renderEmptyState } from "../components/empty-state.js?v=3";
-import { isFlagOn } from "../feature-flags.js?v=22";
+import { isFlagOn } from "../feature-flags.js?v=23";
 import { visibleContexts, canEdit, canDelete, canManageSharing, accessLabel, isMine } from "../playbook-access.js?v=8";
 import { open as openShareModal } from "../components/share-playbook-modal.js?v=9";
 

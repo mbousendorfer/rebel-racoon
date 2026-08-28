@@ -20,7 +20,7 @@
 // anything that writes to the draft lives in commit.js.
 
 import { KEY, ctx, state, autosize } from "./context.js?v=49";
-import { useImage, commitSlideEdit, applyEditTool, runGenerate } from "./commit.js?v=15";
+import { useImage, commitSlideEdit, applyEditTool, runGenerate } from "./commit.js?v=16";
 import {
   focusEditingText,
   syncEditingText,
@@ -35,7 +35,7 @@ import {
   startCropGesture,
   applyCropSelection,
 } from "./interactions.js?v=48";
-import * as imageStudio from "../../image-studio.js?v=99";
+import * as imageStudio from "../../image-studio.js?v=101";
 
 function onClick(event, close) {
   const st = state();
@@ -83,6 +83,14 @@ function onClick(event, close) {
   const grpToggle = event.target.closest("[data-img-group-toggle]");
   if (grpToggle && !grpToggle.disabled) {
     return void imageStudio.toggleGroupCollapsed(KEY, grpToggle.dataset.imgGroupToggle);
+  }
+
+  // V3's left half: Options ⇄ Advanced (the brief). setPane refuses "advanced" while
+  // there is no image, so the disabled chip and the state agree even if a click lands
+  // between a generation ending and the re-render.
+  const paneBtn = event.target.closest("[data-img-pane]");
+  if (paneBtn && !paneBtn.disabled) {
+    return void imageStudio.setPane(KEY, paneBtn.dataset.imgPane);
   }
 
   // ── Composer settings ──

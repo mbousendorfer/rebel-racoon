@@ -18,7 +18,7 @@
 // past the gate.
 
 import { getContexts, getContextById } from "./contexts-store.js?v=57";
-import { isFlagOn } from "./feature-flags.js?v=22";
+import { isFlagOn } from "./feature-flags.js?v=23";
 import { CURRENT_USER, isManager, memberName, getMember } from "./org.js?v=2";
 
 // Single choke point. Flag OFF ⇒ the app behaves exactly as it did before

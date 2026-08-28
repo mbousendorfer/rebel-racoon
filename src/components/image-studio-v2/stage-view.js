@@ -38,14 +38,16 @@ import { getPosts } from "../../posts-store.js?v=52";
 import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=46";
 import { renderPostCard } from "../post-card.js?v=99";
 import { KEY, ctx } from "./context.js?v=49";
-import { composer } from "./composer-view.js?v=80";
-import { settingsPanel } from "./settings-view.js?v=17";
-import { briefStage, isBriefStage, briefNote } from "./brief-stage.js?v=29";
+import { composer } from "./composer-view.js?v=82";
+import { settingsPanel } from "./settings-view.js?v=18";
+import { briefStage, isBriefStage } from "./brief-stage.js?v=31";
+import { setupStage, isSetupFirst } from "./setup-stage.js?v=2";
+import { briefNote } from "./brief-blocks.js?v=2";
 import { toolPalette } from "./tools-view.js?v=20";
-import { promptGuardDialog } from "./prompt-guard.js?v=15";
+import { promptGuardDialog } from "./prompt-guard.js?v=16";
 import { editCanvas } from "./edit-view.js?v=48";
 import { compositeOverlays } from "../../image-studio-canvas.js?v=6";
-import * as imageStudio from "../../image-studio.js?v=99";
+import * as imageStudio from "../../image-studio.js?v=101";
 
 // In-feed preview — the edit canvas layers logo/text overlays as live DOM over
 // the image, but renderPostCard only takes a URL, so overlays wouldn't show. We
@@ -84,7 +86,9 @@ export function renderStudio(st) {
   // the full height between header and footer, and the stage + composer share the rest
   // of the width beside it.
   const feedView = hasImage(st) && st.canvasView === "feed";
-  const showPanel = st.mode === "generate" && !feedView && !isBriefStage(st);
+  // Both split variants carry their own options inside the stage, so the pinned
+  // inspector would be a second copy of them.
+  const showPanel = st.mode === "generate" && !feedView && !isSplitStage(st);
   return html`
     <div class="isv2">
       ${raw(header(st))}
@@ -105,6 +109,18 @@ function hasImage(st) {
   return !!st.currentImage || (st.genPhase === "results" && st.variations.length > 0);
 }
 
+// Is the stage laid out as two halves — its own options on one side, the picture on the
+// other — rather than as one centred canvas with pinned chrome around it? True for the
+// auto-brief stage and for V3, which share that geometry and therefore share every
+// consequence of it: no pinned inspector, no variations rail, no bottom composer, no
+// stage-wide view toggle, and a footer that runs the whole loop.
+//
+// The two predicates are mutually exclusive on their own (isBriefStage stands down when
+// setupFirst is on), so the order they are read in never matters.
+function isSplitStage(st) {
+  return isBriefStage(st) || isSetupFirst(st);
+}
+
 // ── The footer bar ─────────────────────────────────────────────────────────
 
 // One bar across the bottom of the modal, in BOTH modes, carrying the single
@@ -122,17 +138,23 @@ export function footerBar(st) {
     primary = carousel
       ? `<button type="button" class="ap-button primary orange" data-img-apply-slide ${st.editBusy || !st.currentImage ? "disabled" : ""}><i class="ap-icon-check"></i><span>Apply to slide ${(st.selectedIndex ?? 0) + 1}</span></button>`
       : `<button type="button" class="ap-button primary orange" data-img-use ${st.editBusy || !st.currentImage ? "disabled" : ""}><i class="ap-icon-check"></i><span>Use this image</span></button>`;
-  } else if (isBriefStage(st)) {
-    // The brief stage now runs the whole loop, so the footer follows it: while there is
+  } else if (isSplitStage(st)) {
+    // The split stages run the whole loop, so the footer follows: while there is
     // nothing to use, the primary slot carries Generate; once an image exists it carries
     // the destination ("Use this image") and Regenerate moves beside it. Same slot, same
     // weight, no layout swap between the two.
-    const ready = !st.promptLoading && !!(st.promptText || "").trim();
+    // Auto-brief gates on the brief being written, because the brief is on screen and an
+    // empty one means Archie is still working. V3 has no brief yet by design — it is
+    // written when this button is pressed (commit.js#runGenerate → deriveNow) — so gating
+    // on it there would leave the form's only live control dead for no stated reason.
+    const ready = isSetupFirst(st) ? true : !st.promptLoading && !!(st.promptText || "").trim();
     const busy = st.genPhase === "generating";
     const hasShot = st.variations.length > 0;
     // The brief's status line lives here, to the RIGHT of Regenerate: it is a statement
-    // about the whole brief, which is what this footer is for.
-    const note = briefNote(st);
+    // about the whole brief, which is what this footer is for. V3 keeps it under the
+    // blocks instead — there the brief is one pane of two, and the footer would be
+    // talking about something the user may not even have on screen.
+    const note = isSetupFirst(st) ? "" : briefNote(st);
     const noteHtml = note ? `<p class="isv2-footer-note">${note}</p>` : "";
     if (hasShot) {
       left = `<button type="button" class="ap-button stroked grey" data-img-generate ${busy ? "disabled" : ""}><i class="ap-icon-refresh"></i><span>Regenerate</span></button>${noteHtml}`;
@@ -199,14 +221,14 @@ function viewToggle(st) {
 function stageContent(st) {
   const hasImg = !!st.currentImage || (st.genPhase === "results" && st.variations.length > 0);
   const feedView = hasImg && st.canvasView === "feed";
-  // Auto-brief, before anything has been generated: the stage's job is SETUP, not
-  // preview. Leaving the settings pinned to the left edge meant a 284px column that
-  // overflowed and clipped its own controls, while the biggest area on screen held a
-  // placeholder saying an image would appear there later. So the settings take the
-  // centre until there is an image to give it back to.
-  const autoSetup = isBriefStage(st);
+  // The split variants: the stage's job is SETUP as much as preview, so it holds both
+  // halves for the whole loop. Leaving the settings pinned to the left edge meant a
+  // 284px column that overflowed and clipped its own controls, while the biggest area
+  // on screen held a placeholder saying an image would appear there later.
+  const autoSetup = isSplitStage(st);
   let inner;
-  if (autoSetup) inner = briefStage(st);
+  if (isSetupFirst(st)) inner = setupStage(st);
+  else if (isBriefStage(st)) inner = briefStage(st);
   else if (feedView) inner = feedPreview(st);
   else if (st.mode === "edit") inner = editCanvas(st);
   else if (st.genPhase === "generating") inner = generatingStage(st);
@@ -231,9 +253,9 @@ function stageContent(st) {
     (showRail ? " has-rail" : "") +
     (showPalette ? " has-palette" : "") +
     (autoSetup ? " has-setup" : "");
-  // The brief stage carries the view toggle in its own preview header — see
-  // brief-stage.js#previewToggle. Rendering it here too would put the same control in
-  // two places, one of them a half-modal from what it switches.
+  // The split stages carry the view toggle in their own preview header — see
+  // preview-column.js. Rendering it here too would put the same control in two places,
+  // one of them a half-modal from what it switches.
   const top = hasImg && !autoSetup ? `<div class="isv2-stage-top">${viewToggle(st)}</div>` : "";
   return `${top}<div class="${bodyCls}">
     ${inner}

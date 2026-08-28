@@ -34,7 +34,7 @@ import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.j
 import { KEY } from "./context.js?v=49";
 import { REFS_TIP, refSummary, refsBody } from "./references-view.js?v=16";
 import { BRANDING_TIP, brandingBody } from "./branding-view.js?v=4";
-import * as imageStudio from "../../image-studio.js?v=99";
+import * as imageStudio from "../../image-studio.js?v=101";
 
 // A thin rule between two clusters inside one row body. Shared with the
 // Add-image sheet (tools-view.js), which is where the class name comes from.
@@ -42,6 +42,10 @@ export const sheetDivider = `<span class="isv2-sheet-divider" role="separator"><
 
 // The floating inspector — the settings, beside the image rather than under it,
 // on the stage's left edge (where edit mode also keeps its tools).
+//
+// The `<aside>` is the PLACEMENT, not the rows: V3 (setup-stage.js) hosts the very same
+// seven rows in the left half of a two-up stage, where a pinned inspector would make no
+// sense. So the rows are exported separately and this wrapper stays what it always was.
 export function settingsPanel(st) {
   return `<aside class="isv2-panel" role="group" aria-label="Generation settings">${settingRows(st)}</aside>`;
 }
@@ -116,7 +120,7 @@ function bestFor(network) {
   return `<p class="isv2-sheet-hint" aria-label="Best for ${escapeHtml(label)}">Best for ${glyph}</p>`;
 }
 
-function settingRows(st) {
+export function settingRows(st) {
   // Sections are independent: a Set of what's shut, not a single "which one is open".
   const isOpen = (id) => !st.collapsedGroups.has(id);
   const out = [];

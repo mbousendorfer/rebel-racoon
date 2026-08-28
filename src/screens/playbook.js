@@ -35,7 +35,7 @@ import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles
 import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=6";
 import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=27";
 import { sectionPatchFromAnalysis } from "../context-builder.js?v=294";
-import { isFlagOn } from "../feature-flags.js?v=22";
+import { isFlagOn } from "../feature-flags.js?v=23";
 import {
   canView,
   canEdit,
