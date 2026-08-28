@@ -28,24 +28,27 @@
 // unread/read idiom every mail client uses, and it is the other half of why the
 // `new` status renders no glyph — the card's weight already says it.
 //
-// ── The order is the ARTICLE's order ──────────────────────────────────────
-// Claim, then provenance, then the summary — and the article header renders
-// claim, then provenance, then its prose. One object, one reading order, whether
-// you are looking at the door or standing in the room.
+// ── The order is the CARD's order, and the ARTICLE follows it ─────────────
+// The meta run, then the claim, then the summary — and the article header renders
+// the meta run, then the claim, then its verbs. One object, one reading order,
+// whether you are looking at the door or standing in the room.
 //
-// ⚠️ The meta run LED the card until now, so the two disagreed: the card opened
-// with "Competitors · 2h ago" and the article opened with the headline. Two costs,
-// and the second is the real one. A reader scanning the queue had to cross a
-// caption line before every claim — and that line is IDENTICAL on every card in
-// the feed today, because `competitor-posts` is the only live source, so the eye
-// was being asked to re-read the same eleven characters twelve times to reach the
-// one line that differs. Leading with the claim also gives the read/unread weight
-// drop the card's first line instead of its second.
+// ⚠️ The two disagreed until now: the card opened with "Competitors · 2h ago" and
+// the article opened with the headline, so a reader crossing from one to the other
+// met the same Topic laid out two ways. The CARD is the shape that wins — it is
+// the one a reader meets first and meets twelve times over, and its meta run is
+// the editorial kicker: the small line saying where you are before the headline
+// says what it is. The article moved.
 //
-// The kebab stays in the top-right corner rather than following the meta run down:
-// it is the card's own affordance, in the place every card in this app keeps one,
-// and the headline reserves its gutter. What moved is the CONTENT order, which is
-// what a reader compares between the two surfaces.
+// ⚠️ It was built the other way round first — claim on top in both, `6777c2ad` —
+// on the argument that the claim is the identity and that the kicker is identical
+// on every card while `competitor-posts` is the only live source. Turned down.
+// Don't re-propose it.
+//
+// The kebab keeps the top-right corner, on the meta run's line, and the RUN pays
+// for its clearance rather than the whole body: the headline and the summary get
+// the full measure, which is what they lost to a gutter reserved for a control
+// they never sat beside.
 //
 // ── The card is a reading surface, not a control panel ─────────────────────
 // The body is ONE BUTTON covering the whole text area, and it opens the article.
@@ -61,7 +64,7 @@
 
 import { html, raw, escapeAttr } from "../utils.js?v=22";
 import { topicTitle } from "../topics-store.js?v=9";
-import { renderTopicStates } from "../topic-article.js?v=21";
+import { renderTopicStates } from "../topic-article.js?v=22";
 
 // ── The state chips ───────────────────────────────────────────────────────
 // `renderTopicStates` comes from topic-article.js, which is where a Topic's
@@ -70,8 +73,9 @@ import { renderTopicStates } from "../topic-article.js?v=21";
 // card marked Trending and the page you landed on never said the word. Same
 // argument as the article having one renderer for three hosts, one level down.
 
-// Where it came from, how old it is, what states it carries — the article
-// header's provenance line, part for part and in the same order.
+// Where it came from, how old it is, what states it carries — the article header's
+// provenance line, part for part, in the same order and in the same position: the
+// card's first line and the header's first row are one renderer's two hosts.
 function renderMeta(topic, source) {
   return html`<span class="topic-card__meta">
     ${raw(
@@ -116,12 +120,12 @@ export function renderTopicCard(
       data-topic-read="${escapeAttr(topic.id)}"
       ${raw(picker ? "" : `aria-expanded="${articleOpen ? "true" : "false"}"`)}
     >
-      <!-- THE CLAIM FIRST, then where it came from, then the summary — the same
-           three-step order the article header renders, because a card and the
-           article it opens are two views of one Topic and must not present it two
-           ways round. See the note at the top of this file. -->
-      <span class="topic-card__headline">${topicTitle(topic)}</span>
+      <!-- WHERE IT CAME FROM FIRST, then the claim, then the summary — and the
+           article header renders those same two rows in that same order. A card
+           and the article it opens are two views of one Topic and must not present
+           it two ways round. See the note at the top of this file. -->
       ${raw(renderMeta(topic, source))}
+      <span class="topic-card__headline">${topicTitle(topic)}</span>
       <!-- No "Summary:" label. Every card carried one, so it labelled nothing —
            a two-line block under a headline is self-evidently the summary, and
            the word ate a chunk of the first of only two visible lines. -->

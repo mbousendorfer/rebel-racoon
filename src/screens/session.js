@@ -1,6 +1,6 @@
 import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr } from "../utils.js?v=22";
 import { navigate } from "../router.js?v=31";
-import { renderTopbar } from "../components/topbar.js?v=320";
+import { renderTopbar } from "../components/topbar.js?v=321";
 import { socialAccounts, chatStarters, connectorDocs } from "../mocks.js?v=75";
 import {
   getConnectedProfiles,
@@ -72,7 +72,7 @@ import {
   subscribe as subscribeComposerConnector,
 } from "../composer-connector.js?v=2";
 import { isFlagOn } from "../feature-flags.js?v=21";
-import * as contextBuilder from "../context-builder.js?v=291";
+import * as contextBuilder from "../context-builder.js?v=292";
 import { renderPicker } from "./_analyse-common.js?v=56";
 import { renderSourceCard } from "../components/source-card.js?v=34";
 import { renderIdeaCard } from "../components/idea-card.js?v=28";
@@ -112,14 +112,14 @@ import {
   openClips as openClipsPanel,
   getMode as getRightPanelMode,
   subscribe as subscribeRightPanel,
-} from "../components/right-panel.js?v=457";
+} from "../components/right-panel.js?v=458";
 import { setHandoff, consumeHandoff, hasHandoff } from "../handoff.js?v=21";
 import { attachTopicToChat, useTopicInChat, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=3";
 import { getFeedForPlaybook } from "../topic-feeds-store.js?v=3";
 import { getFreshTopics, countFresh, subscribe as subscribeTopics } from "../topics-store.js?v=9";
 import { findTopicSource } from "../topics-catalog.js?v=4";
-import { renderTopicCard } from "../components/topic-card.js?v=15";
-import { openTopicPicker, openTopicArticle } from "../components/topic-picker-modal.js?v=17";
+import { renderTopicCard } from "../components/topic-card.js?v=16";
+import { openTopicPicker, openTopicArticle } from "../components/topic-picker-modal.js?v=18";
 import { parseHashParams, setHashQuery } from "../url-state.js?v=22";
 import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=35";
 import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=43";

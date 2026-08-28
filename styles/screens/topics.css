@@ -593,7 +593,7 @@
 }
 
 /* ── The object's header ───────────────────────────────────────────────────
-   Two rows: the claim, then where it came from — the same two, in the same order,
+   Two rows: where it came from, then the claim — the same two, in the same order,
    that the top of every Topic card carries. The pane hangs the verbs and the way
    out on a third; the dialog renders the same block without them. */
 .topic-article__head {
@@ -665,14 +665,15 @@
 }
 
 /* ── The provenance run: the card's meta run, part for part ───────────────
-   Badge, source, age, then the state chips — the same order `topic-card.js`
-   renders under its headline, because this line and that one describe the same
-   Topic and a reader crosses both.
+   Badge, source, age, then the state chips — the same parts in the same order and
+   in the same PLACE as `topic-card.js` puts them, at the top, above the claim. The
+   editorial kicker: the small line saying where you are before the headline says
+   what it is. This line and the card's first line describe the same Topic and a
+   reader crosses both.
 
    The chips are NOT pushed to the far edge here, unlike in the feed's card: the
-   pane is one column wide, and a lone chip flush right would sit directly above
-   the right-aligned button row and read as part of it. Next to the age it reads
-   as the last fact in a run of facts.
+   pane is one column wide, and a lone chip flush right at the very top would read
+   as a control rather than as the last fact in a run of facts.
 
    `min-height` holds a chip's height (--comp-tag-height, 24px) whether or not the
    Topic carries one, so this header measures the same on every Topic. That is the

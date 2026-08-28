@@ -13,18 +13,27 @@
 //   renderTopicTrail(topic) / trailLength(topic)        the trail, for its hosts
 //   renderTopicStates(topic)                            the state chips, for the card too
 //
-// ── The identity is ONE ORDER, and the card follows it ─────────────────────
-// Claim, then provenance, then the state chips: the article header renders that
-// order and `topic-card.js` renders the same one, because a card and the thing it
-// opens must not present one object two ways round. The card led with its meta
-// run until now — so the door said "Competitors · 2h ago" first and the room said
-// the headline first, and the eye had to cross a caption line that is IDENTICAL on
-// every card in the feed (only `competitor-posts` is live) before reaching the one
-// line that differs.
+// ── The identity is ONE ORDER, and the ARTICLE follows the CARD ───────────
+// Provenance, then the claim, then the verbs: the card has always led with its
+// meta run — badge, source, age, state chips — and the article header now leads
+// with the same one. A card and the thing it opens must not present one object two
+// ways round, and the card is the shape a reader meets first and meets twelve
+// times, so it is the article that moves.
 //
-// The chips are exported for the same reason: they were declared in the card and
-// nowhere else, so opening a Trending Topic dropped the word "Trending" — the card
-// and the article disagreed about what the Topic IS. One renderer, both hosts.
+// It is the editorial kicker: the small line that says WHERE you are before the
+// headline says WHAT it is. Which also puts the source and the age at the top of
+// the pane rather than tucked under a 24px title, and a reader triaging a
+// listening queue is asking "who, and how recently" as much as "what".
+//
+// ⚠️ The other direction was built first — claim on top in both — on the argument
+// that the claim is the identity and the caption line is identical on every card
+// while `competitor-posts` is the only live source. Turned down: the card's order
+// is the one that stays.
+//
+// The chips are exported for the same reason the order is shared: they were
+// declared in the card and nowhere else, so opening a Trending Topic dropped the
+// word "Trending" — the card and the article disagreed about what the Topic IS.
+// One renderer, both hosts.
 //
 // ── Why the identity is its own renderer ───────────────────────────────────
 // The feed's pane keeps its header OUTSIDE the scroller, so the title and the
@@ -72,7 +81,8 @@ import { findTopicState } from "./topics-catalog.js?v=4";
 import { renderSocialPostCard } from "./components/social-post-card.js?v=11";
 
 /**
- * The object's identity: the claim as an h2, and where it came from underneath.
+ * The object's identity: where it came from, then the claim as an h2 under it —
+ * the same order the cards carry.
  *
  * `withActions: true` also hangs the two verbs and the way out on it — for a host
  * that puts its header outside the scroller and wants them to stay in view with
@@ -90,11 +100,11 @@ export function renderTopicHeader(topic, { source = null, withActions = false, m
   // meta row: one call site, and the placement falls out of what the host asked
   // for. It is the same control the cards carry, so a reader who learned `...`
   // on a card has already learned this one.
-  // Claim first, provenance under it, verbs last — and the cards render that same
-  // order, so the door and the room agree. See the note at the top of this file.
+  // Provenance first, then the claim, then the verbs — the card's own order, so
+  // the door and the room agree. See the note at the top of this file.
   return html`<div class="topic-article__head">
-    <h2 class="topic-article__title">${topicTitle(topic)}</h2>
     ${raw(renderProvenance(topic, source))}
+    <h2 class="topic-article__title">${topicTitle(topic)}</h2>
     <!-- The verbs get their OWN row, right-aligned. They used to share the
          provenance line, which put two 40px buttons against a 12px caption with
          300px of nothing between them — two unrelated clusters on one baseline set
@@ -107,8 +117,8 @@ export function renderTopicHeader(topic, { source = null, withActions = false, m
       ${raw(renderTopicMenu(topic, { open: menuOpen }))}
       ${raw(withActions ? renderTopicActions(topic, { close: null }) : "")}
     </div>
-    <!-- Two rows and no more: the claim, then where it came from with the verbs
-         opposite. The two quick facts used to sit here too and they render on a
+    <!-- Two rows and no more: where it came from, then the claim, with the verbs
+         under them. The two quick facts used to sit here too and they render on a
          minority of Topics (relevance 9 of 52, why now 13), so this header's
          height changed from one Topic to the next. They are the article's first
          band now - see the note at the top of this file. -->
@@ -303,10 +313,11 @@ export function renderTopicStates(topic) {
   return html`<span class="topic-states">${raw(chips)}</span>`;
 }
 
-// Where it came from, how old it is and what states it carries, on one line under
-// the title. Sentence case and caption size — a run of facts, not a labelled
-// header block. Part for part the card's own meta run, in the same order, because
-// this line and that one describe the same Topic.
+// Where it came from, how old it is and what states it carries, on one line ABOVE
+// the title — the kicker. Sentence case and caption size, a run of facts rather
+// than a labelled header block. Part for part the card's own meta run, in the same
+// order and in the same position, because this line and that one describe the same
+// Topic and a reader crosses both.
 //
 // A <div>, not a <p>: the chips are spans inside spans, but the run as a whole is
 // now facts plus controls-adjacent marks rather than one sentence.
@@ -322,11 +333,11 @@ function renderProvenance(topic, source) {
     <!-- The separator belongs to the source, not to the age: with no source to
          separate from, a leading "· 2h ago" is a dangling punctuation mark. -->
     <span>${source ? `· ${topic.ageLabel}` : topic.ageLabel}</span>
-    <!-- The chips come last, exactly as they do on the card: the states are the
-         one thing on this line a reader cannot know without being told, so they
-         are what the eye lands on last. NOT pushed to the far edge here — the
-         pane is 600px wide and a lone chip against the right rail would read as
-         a control belonging to the button row below it. -->
+    <!-- The chips come last on the line, exactly as they do on the card: the
+         states are the one thing here a reader cannot know without being told.
+         NOT pushed to the far edge, unlike the feed's card — the pane is one
+         column wide, and a lone chip flush right at the very top would read as a
+         control rather than as the last fact in a run of facts. -->
     ${raw(renderTopicStates(topic))}
   </div>`;
 }
