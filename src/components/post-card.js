@@ -77,10 +77,18 @@ function renderEmptyMedia(post, opts) {
       : "";
 
   // The title carries the NOUN and the button carries the VERB — "Add an image"
-  // over a button reading "Generate an image" said the same thing twice, and the
-  // two full-label outline buttons it sat beside read as a pair of equals rather
-  // than a primary and an escape hatch. So: title names the job, the AI button is
-  // the one control with a container, and upload drops to a link.
+  // over a button reading "Generate an image" said the same thing twice.
+  //
+  // Three tiers, not three equals: the mermaid gradient (one click, no steering)
+  // outranks a stroked grey (open the studio and steer it) outranks a link
+  // (bring your own file). The earlier objection — "two outline buttons read as
+  // a pair" — was about two FULL-LABEL buttons at the SAME weight; a gradient
+  // over a grey over a link is a real ladder.
+  //
+  // The studio also has an icon button in the card's action rail, which is the
+  // entry that survives into the filled state. It is repeated here with a LABEL
+  // because icon-only in a rail of six is not findable: that rail button shipped
+  // first and was missed entirely.
   // `data-post-drop` marks it as a real drop target — the dashed frame is the
   // universal "drop a file here" sign, so the slot has to accept one. The drag
   // wiring lives in right-panel.js (drag events only; the clicks belong to the
@@ -101,6 +109,10 @@ function renderEmptyMedia(post, opts) {
         >
           <i class="ap-icon-archie-official"></i>
           <span>Generate</span>
+        </button>
+        <button type="button" class="ap-button stroked grey" data-post-studio="${post.id}">
+          <i class="ap-icon-image"></i>
+          <span>Image Studio</span>
         </button>
         <button type="button" class="ap-link" data-post-image-upload="${post.id}" aria-label="Upload an image">
           or upload a file
