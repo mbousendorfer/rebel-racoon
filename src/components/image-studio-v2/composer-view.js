@@ -22,7 +22,7 @@
 // primary is "Use this image" in the footer (stage-view.js#footerBar).
 
 import { escapeHtml } from "../../utils.js?v=22";
-import { isBriefStage } from "./brief-stage.js?v=28";
+import { isBriefStage } from "./brief-stage.js?v=29";
 
 // Empty-state hint for the prompt field — a full structured brief, so the
 // placeholder itself shows the kind of rich prompt the box is built for (and why
@@ -42,10 +42,6 @@ Composition focus: The transition point of the arrow where order turns into digi
 
 export function composer(st) {
   if (st.mode === "edit") return editComposer(st);
-  // Grid-brief has no prose prompt: the card grid is the editor and carries its own
-  // Generate, so the bottom console goes away entirely in generate mode. Edit mode
-  // keeps its "describe a change" composer.
-  if (st.gridBrief) return "";
   // Auto-brief before generating: the brief IS the stage, with its own modifiers and
   // its own Generate, so a second copy of it down here would be the same text twice.
   // Once results exist the stage belongs to the image and the composer comes back.
@@ -57,9 +53,9 @@ export function composer(st) {
 // At 1440px a full-bleed prompt runs ~180 characters per line — unreadable, and
 // it made the six settings look like chrome stranded at the bottom of a huge
 // empty bar. Capped and centred, the card reads as one object you act in.
-// Auto-brief and grid-brief both own their whole stage (brief-stage.js /
-// grid-view.js) and never reach this composer — see composer() above. By the
-// time this runs, the brief is always the plain prompt field.
+// Auto-brief owns its whole stage (brief-stage.js) and never reaches this
+// composer — see composer() above. By the time this runs, the brief is always
+// the plain prompt field.
 function generateComposer(st) {
   return console_("Image prompt", promptField(st), generateActions(st), "to generate", { inline: true });
 }
@@ -103,8 +99,8 @@ function console_(label, field, action, hintVerb, { inline = false } = {}) {
 // holds the loader (the stage keeps its empty state) so the layout is legible
 // from the first frame.
 //
-// Only the classic prompt variant reaches this: auto-brief and grid-brief each
-// own their whole stage and return before the composer ever calls it.
+// Only the classic prompt variant reaches this: auto-brief owns its whole stage
+// and returns before the composer ever calls it.
 function promptField(st) {
   if (st.promptLoading) {
     // `.gen-image-spinner` alone — NOT `.gen-loading-mark`, which is the 88px

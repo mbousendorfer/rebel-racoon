@@ -19,23 +19,23 @@
 // Anything that patches the DOM instead of re-rendering lives in inline-text.js;
 // anything that writes to the draft lives in commit.js.
 
-import { KEY, ctx, state, autosize } from "./context.js?v=48";
-import { useImage, commitSlideEdit, applyEditTool, runGenerate } from "./commit.js?v=14";
+import { KEY, ctx, state, autosize } from "./context.js?v=49";
+import { useImage, commitSlideEdit, applyEditTool, runGenerate } from "./commit.js?v=15";
 import {
   focusEditingText,
   syncEditingText,
   restoreEditingCaret,
   previewOverlayInput,
   toggleTextEffect,
-} from "./inline-text.js?v=14";
+} from "./inline-text.js?v=15";
 import {
   openFilePicker,
   openLogoPicker,
   startOverlayGesture,
   startCropGesture,
   applyCropSelection,
-} from "./interactions.js?v=47";
-import * as imageStudio from "../../image-studio.js?v=98";
+} from "./interactions.js?v=48";
+import * as imageStudio from "../../image-studio.js?v=99";
 
 function onClick(event, close) {
   const st = state();
@@ -136,12 +136,6 @@ function onClick(event, close) {
   // order it makes no difference — a modifier chip carries no setting hook of its own.
   const modBtn = event.target.closest("[data-img-modifier]");
   if (modBtn && !modBtn.disabled) return void imageStudio.setOpenModifier(KEY, modBtn.dataset.imgModifier);
-
-  // ── Grid-brief variant ──
-  // The card grid carries its own Generate; from results, "Edit the brief" returns
-  // to the grid. No-ops when the flag is off (the hooks are never rendered).
-  if (event.target.closest("[data-img-grid-generate]")) return void runGenerate();
-  if (event.target.closest("[data-img-grid-edit]")) return void imageStudio.editBrief(KEY);
 
   // ── Chrome ──
   const modeBtn = event.target.closest("[data-img-mode]");
@@ -264,8 +258,6 @@ function onClick(event, close) {
 }
 
 function onInput(event) {
-  // Grid-brief cards: store silently while typing (the grid must not rebuild under
-  // the caret); the assemble happens on blur — see onChange.
   // Auto-brief stage: each brief section is its own editable block. Silent while
   // typing — a re-render would rebuild the block under the caret.
   const briefLine = event.target.matches("[data-img-brief-line]") ? event.target : null;
@@ -273,10 +265,6 @@ function onInput(event) {
     imageStudio.setBriefLineSilent(KEY, briefLine.dataset.imgBriefLine, briefLine.value);
     autosize(briefLine); // grow with what's typed, without a re-render
     return;
-  }
-  const briefField = event.target.matches("[data-img-brief-field]") ? event.target : null;
-  if (briefField) {
-    return void imageStudio.setBriefFieldSilent(KEY, briefField.dataset.imgBriefField, briefField.value);
   }
   if (event.target.matches("[data-img-render-text]")) {
     imageStudio.setRenderTextSilent(KEY, event.target.value);
@@ -343,16 +331,6 @@ function onChange(event) {
     // Blur commits the section — and editing is what takes the brief over, so no
     // separate "edit this" step exists.
     imageStudio.commitBriefLine(KEY, event.target.dataset.imgBriefLine, event.target.value);
-  } else if (event.target.matches("[data-img-brief-field]")) {
-    // Grid-brief card blur: commit the field and reassemble the model prompt.
-    imageStudio.commitBriefField(KEY, event.target.dataset.imgBriefField, event.target.value);
-  } else if (event.target.matches("[data-img-grid-textonimage]")) {
-    imageStudio.setTextOnImage(KEY, event.target.checked);
-  } else if (event.target.matches("[data-img-type-radio]")) {
-    // Grid-brief renders Type as DS radio cards. Read on change, not click: a
-    // label-wrapped input fires click twice and setImageType toggles, so the two
-    // would cancel out. An empty value is the explicit "Any".
-    imageStudio.setImageType(KEY, event.target.value);
   }
 }
 

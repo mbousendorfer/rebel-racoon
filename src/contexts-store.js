@@ -25,7 +25,7 @@
 import { contexts as seed, sharedContexts } from "./mocks.js?v=75";
 import { isNewUser } from "./user-mode.js?v=24";
 import { CURRENT_USER } from "./org.js?v=2";
-import { isFlagOn } from "./feature-flags.js?v=21";
+import { isFlagOn } from "./feature-flags.js?v=22";
 import { createNotifier } from "./store-utils.js?v=3";
 import {
   normalizeLanguages,

@@ -10,7 +10,7 @@ import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks
 import { findConnector } from "./connectors-store.js?v=43";
 import { createSessionNotifier } from "./store-utils.js?v=3";
 import { showToast } from "./components/toast.js?v=21";
-import { isFlagOn } from "./feature-flags.js?v=21";
+import { isFlagOn } from "./feature-flags.js?v=22";
 
 // How this module reads a session's ideas, injected rather than imported.
 //

@@ -25,18 +25,18 @@
 // over swaps in the real textarea, so the editing path is untouched.
 
 import { escapeHtml } from "../../utils.js?v=22";
-import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=45";
+import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=46";
 import { getPosts } from "../../posts-store.js?v=52";
-import { renderPostCard } from "../post-card.js?v=98";
-import { KEY, ctx } from "./context.js?v=48";
-import * as imageStudio from "../../image-studio.js?v=98";
-import { imageTypeBody, styleBody, formatBody, outputBody } from "./settings-view.js?v=16";
-import { refsBody, refSummary } from "./references-view.js?v=15";
+import { renderPostCard } from "../post-card.js?v=99";
+import { KEY, ctx } from "./context.js?v=49";
+import * as imageStudio from "../../image-studio.js?v=99";
+import { imageTypeBody, styleBody, formatBody, outputBody } from "./settings-view.js?v=17";
+import { refsBody, refSummary } from "./references-view.js?v=16";
 import { brandingBody } from "./branding-view.js?v=4";
 
 /** Is the brief holding the stage? For the WHOLE generate flow, image or not. */
 export function isBriefStage(st) {
-  return !!st.autoBrief && !st.gridBrief && st.mode === "generate";
+  return !!st.autoBrief && st.mode === "generate";
 }
 
 // ── The brief itself ────────────────────────────────────────────────────────

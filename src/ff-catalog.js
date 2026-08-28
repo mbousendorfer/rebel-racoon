@@ -159,20 +159,4 @@ export const FLAGS = Object.freeze([
       "controls beside an empty 'your image appears here' placeholder. Once there is an " +
       "image to preview, the inspector returns to the left edge.",
   },
-  {
-    id: "imageStudioGridBrief",
-    label: "Image Studio: brief as an editable grid",
-    default: false,
-    hides:
-      "A third take on the Image Studio prompt. When OFF (default), unchanged. " +
-      "When ON, the whole generate screen becomes a full-bleed DASHBOARD GRID of " +
-      "editable cards — a structured brief editor. The prompt is decomposed into " +
-      "fixed named fields Archie fills from the post (What this is about / achieve " +
-      "/ who it is for / tone / headline / the one thing + a 'Write text on the " +
-      "image' toggle), and Type / Style / References / Branding / Format / Output " +
-      "are cards too, with their controls inline. No prose prompt is shown — the " +
-      "cards ARE the editor and Generate assembles them into the model prompt. " +
-      "Generate swaps to the existing results stage; 'Edit the brief' returns to " +
-      "the grid. Wins over imageStudioAutoBrief when both are on.",
-  },
 ]);

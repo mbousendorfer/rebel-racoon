@@ -35,18 +35,17 @@
 
 import { html, raw, escapeHtml } from "../../utils.js?v=22";
 import { getPosts } from "../../posts-store.js?v=52";
-import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=45";
-import { renderPostCard } from "../post-card.js?v=98";
-import { KEY, ctx } from "./context.js?v=48";
-import { composer } from "./composer-view.js?v=79";
-import { settingsPanel } from "./settings-view.js?v=16";
-import { gridBriefView, gridAnalyzingView } from "./grid-view.js?v=22";
-import { briefStage, isBriefStage, briefNote } from "./brief-stage.js?v=28";
-import { toolPalette } from "./tools-view.js?v=19";
-import { promptGuardDialog } from "./prompt-guard.js?v=14";
-import { editCanvas } from "./edit-view.js?v=47";
+import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=46";
+import { renderPostCard } from "../post-card.js?v=99";
+import { KEY, ctx } from "./context.js?v=49";
+import { composer } from "./composer-view.js?v=80";
+import { settingsPanel } from "./settings-view.js?v=17";
+import { briefStage, isBriefStage, briefNote } from "./brief-stage.js?v=29";
+import { toolPalette } from "./tools-view.js?v=20";
+import { promptGuardDialog } from "./prompt-guard.js?v=15";
+import { editCanvas } from "./edit-view.js?v=48";
 import { compositeOverlays } from "../../image-studio-canvas.js?v=6";
-import * as imageStudio from "../../image-studio.js?v=98";
+import * as imageStudio from "../../image-studio.js?v=99";
 
 // In-feed preview — the edit canvas layers logo/text overlays as live DOM over
 // the image, but renderPostCard only takes a URL, so overlays wouldn't show. We
@@ -85,7 +84,7 @@ export function renderStudio(st) {
   // the full height between header and footer, and the stage + composer share the rest
   // of the width beside it.
   const feedView = hasImage(st) && st.canvasView === "feed";
-  const showPanel = st.mode === "generate" && !feedView && !st.gridBrief && !isBriefStage(st);
+  const showPanel = st.mode === "generate" && !feedView && !isBriefStage(st);
   return html`
     <div class="isv2">
       ${raw(header(st))}
@@ -149,14 +148,6 @@ export function footerBar(st) {
     const label = carousel ? `Use carousel · ${st.variations.length} slides` : "Use this image";
     const ready = carousel ? st.variations.length >= 2 : !!st.currentImage;
     primary = `<button type="button" class="ap-button primary orange" data-img-use ${ready ? "" : "disabled"}><i class="ap-icon-check"></i><span>${escapeHtml(label)}</span></button>`;
-    // Grid-brief: once results are up, the way back to the card grid is "Edit the
-    // brief", and Regenerate re-runs it — both on the left, the destination stays
-    // on the right. The grid's own config screen carries its own Generate, so the
-    // footer only earns these once there is something to go back FROM.
-    if (st.gridBrief && st.genPhase === "results") {
-      left = `<button type="button" class="ap-button ghost grey" data-img-grid-edit><i class="ap-icon-reset"></i><span>Edit the brief</span></button>
-        <button type="button" class="ap-button stroked grey" data-img-generate><i class="ap-icon-refresh"></i><span>Regenerate</span></button>`;
-    }
   }
   return `<div class="ap-dialog-footer isv2-footer">
     <div class="ap-dialog-footer-left">${left}</div>
@@ -208,27 +199,14 @@ function viewToggle(st) {
 function stageContent(st) {
   const hasImg = !!st.currentImage || (st.genPhase === "results" && st.variations.length > 0);
   const feedView = hasImg && st.canvasView === "feed";
-  // Grid-brief: the configuration screen IS the card grid (full-bleed), shown in
-  // place of the empty stage + floating settings panel. Generate moves genPhase to
-  // "generating"/"results", where the normal stages take over (and "Edit the brief"
-  // in the footer sends genPhase back to "idle" to return here).
-  const gridConfig = st.gridBrief && st.mode === "generate" && !feedView && st.genPhase === "idle";
   // Auto-brief, before anything has been generated: the stage's job is SETUP, not
   // preview. Leaving the settings pinned to the left edge meant a 284px column that
   // overflowed and clipped its own controls, while the biggest area on screen held a
   // placeholder saying an image would appear there later. So the settings take the
   // centre until there is an image to give it back to.
   const autoSetup = isBriefStage(st);
-  // The loader owns the stage whenever the brief is being written — on open, and on
-  // every reassemble after it. In this variant the brief IS the screen, so rewriting
-  // it has to read as the screen being rewritten; a badge inside the Generate button
-  // was too quiet for something that changes what every card says. `has-grid` stays
-  // keyed to the cards, which are the scroll surface (index.js carries its position
-  // across the swap).
-  const gridReady = gridConfig && st.briefSeeded && !st.promptLoading;
   let inner;
-  if (gridConfig) inner = gridReady ? gridBriefView(st) : gridAnalyzingView(st);
-  else if (autoSetup) inner = briefStage(st);
+  if (autoSetup) inner = briefStage(st);
   else if (feedView) inner = feedPreview(st);
   else if (st.mode === "edit") inner = editCanvas(st);
   else if (st.genPhase === "generating") inner = generatingStage(st);
@@ -252,7 +230,6 @@ function stageContent(st) {
     "isv2-stage-body" +
     (showRail ? " has-rail" : "") +
     (showPalette ? " has-palette" : "") +
-    (gridReady ? " has-grid" : "") +
     (autoSetup ? " has-setup" : "");
   // The brief stage carries the view toggle in its own preview header — see
   // brief-stage.js#previewToggle. Rendering it here too would put the same control in

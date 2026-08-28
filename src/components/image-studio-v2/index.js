@@ -28,20 +28,17 @@
 
 import { requestOpen, notifyClose, bindOverlayDismissal } from "../../modal-coordinator.js?v=22";
 import { getPosts } from "../../posts-store.js?v=52";
-import { getSessionById } from "../../sessions-store.js?v=23";
-import { getContextById } from "../../contexts-store.js?v=56";
-import { MODAL_ID, KEY, ctx, state, autosize } from "./context.js?v=48";
+import { getSessionById } from "../../sessions-store.js?v=24";
+import { getContextById } from "../../contexts-store.js?v=57";
+import { MODAL_ID, KEY, ctx, state, autosize } from "./context.js?v=49";
 import { loadImg } from "../../image-studio-canvas.js?v=6";
-import { renderStudio } from "./stage-view.js?v=109";
-import { offerUndoIfNeeded, resetUndoOffers } from "./prompt-guard.js?v=14";
-import { bindStudioEvents } from "./events.js?v=29";
-import * as imageStudio from "../../image-studio.js?v=98";
+import { renderStudio } from "./stage-view.js?v=110";
+import { offerUndoIfNeeded, resetUndoOffers } from "./prompt-guard.js?v=15";
+import { bindStudioEvents } from "./events.js?v=30";
+import * as imageStudio from "../../image-studio.js?v=99";
 
 let backdrop;
 let initialized = false;
-// Where the card grid was scrolled to, kept across the renders where it isn't
-// mounted (see renderBody). Reset on open, so a new draft starts at the top.
-let lastGridScroll = 0;
 let unsub = null;
 
 const HTML = `
@@ -63,20 +60,7 @@ const HTML = `
 function renderBody() {
   const st = state();
   if (!st || !ctx.body) return;
-  // The whole body is rebuilt on every state change, which resets scrollTop to 0.
-  // The grid-brief variant is a tall scroll surface, so clicking a card near the
-  // bottom (which reassembles the prompt → re-render) would snap the view to the
-  // top. Carry the grid's scroll position across the swap.
-  //
-  // Remembered in a module variable rather than read-then-restored in the same pass,
-  // because a reassemble puts the full-stage loader in between: the grid unmounts,
-  // and the render that brings it back has no previous grid to read a position from.
-  // Editing a card near the bottom would otherwise return you to the top.
-  const scroller = ctx.body.querySelector(".isv2-stage-body.has-grid");
-  if (scroller) lastGridScroll = scroller.scrollTop;
   ctx.body.innerHTML = renderStudio(st);
-  const nextScroller = ctx.body.querySelector(".isv2-stage-body.has-grid");
-  if (nextScroller) nextScroller.scrollTop = lastGridScroll;
   // Both composer fields auto-grow to whatever text carried over: the derived
   // brief on open, and anything typed before a re-render.
   autosize(ctx.body.querySelector("[data-img-prompt]"));
@@ -115,7 +99,6 @@ export function init() {
 export function open(postId, opts = {}) {
   if (!initialized) init();
   requestOpen(MODAL_ID, close);
-  lastGridScroll = 0;
   ctx.postId = postId || null;
   ctx.sessionId = opts.sessionId || null;
 

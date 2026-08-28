@@ -18,8 +18,8 @@
 //       caller can repaint or bail out if it just handed away its own access.
 
 import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=22";
-import { getContextById, updateContext, appendHistory } from "../contexts-store.js?v=56";
-import { canTransfer, isMine, actingOnBehalf, ownerName } from "../playbook-access.js?v=7";
+import { getContextById, updateContext, appendHistory } from "../contexts-store.js?v=57";
+import { canTransfer, isMine, actingOnBehalf, ownerName } from "../playbook-access.js?v=8";
 import { MEMBERS, ORG, CURRENT_USER, getMember, memberName } from "../org.js?v=2";
 import { showToast } from "./toast.js?v=21";
 import { html, raw, escapeHtml } from "../utils.js?v=22";

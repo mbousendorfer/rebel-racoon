@@ -19,7 +19,7 @@
 
 import { navigate } from "../router.js?v=31";
 import { escapeHtml as esc } from "../utils.js?v=22";
-import { renderTopbar } from "../components/topbar.js?v=322";
+import { renderTopbar } from "../components/topbar.js?v=323";
 import {
   getContextById,
   getContexts,
@@ -27,15 +27,15 @@ import {
   deleteContext,
   duplicateContext,
   appendHistory,
-} from "../contexts-store.js?v=56";
-import { mount, snapshotEditable } from "../playbook-view.js?v=74";
+} from "../contexts-store.js?v=57";
+import { mount, snapshotEditable } from "../playbook-view.js?v=75";
 import { open as openRenameModal } from "../components/rename-modal.js?v=3";
 import { open as openConfirmModal } from "../components/confirm-modal.js?v=23";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=32";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=33";
 import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=6";
 import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=27";
-import { sectionPatchFromAnalysis } from "../context-builder.js?v=293";
-import { isFlagOn } from "../feature-flags.js?v=21";
+import { sectionPatchFromAnalysis } from "../context-builder.js?v=294";
+import { isFlagOn } from "../feature-flags.js?v=22";
 import {
   canView,
   canEdit,
@@ -45,8 +45,8 @@ import {
   isMine,
   ownerOf,
   ownerName,
-} from "../playbook-access.js?v=7";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=8";
+} from "../playbook-access.js?v=8";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=9";
 
 const AUTOFILL_MS = 1500;
 

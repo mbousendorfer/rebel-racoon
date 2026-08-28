@@ -17,8 +17,8 @@ import { isNewUser } from "./user-mode.js?v=24";
 // conversations (created at runtime via "+ New conversation") start empty
 // to match the user's mental model. Anything else looked-up — same path.
 const DEMO_SESSION_IDS = new Set(seedRecentSessions.map((s) => s.id));
-import { postExtractionResult, startPending, finishPending } from "./assistant.js?v=78";
-import { setIdeasReader } from "./assistant.js?v=78";
+import { postExtractionResult, startPending, finishPending } from "./assistant.js?v=79";
+import { setIdeasReader } from "./assistant.js?v=79";
 
 // Hand the assistant a way to read a session's ideas. The dependency only runs
 // this way — library imports assistant, never the reverse — so the mock replies
@@ -29,7 +29,7 @@ import {
   subscribeSources,
   pushScriptedSource,
   completeScriptedSource,
-} from "./sources-stream.js?v=70";
+} from "./sources-stream.js?v=71";
 
 // --- Module state -------------------------------------------------------
 

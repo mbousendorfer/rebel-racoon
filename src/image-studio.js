@@ -20,14 +20,14 @@
 // faithful results; Reprompt is an honest preview (reseed). The committed url
 // rides back to the draft via attachImageToDraft (see the modal component).
 
-import { FORMATS, formatsForNetwork, defaultFormatFor, NETWORK_FORMATS } from "./clip-formats.js?v=25";
+import { FORMATS, formatsForNetwork, defaultFormatFor, NETWORK_FORMATS } from "./clip-formats.js?v=26";
 // Layering note: the only import this engine takes from the view side, and a
 // deliberate one — canvas.js is pure, UI-agnostic (its own header says so) and
 // already shared by both studio versions. "Text in image" is mocked by baking the
 // words into the generated pixels with the very same flattener the Edit overlays
 // use, so there is nothing to duplicate here.
 import { compositeOverlays } from "./image-studio-canvas.js?v=6";
-import { isFlagOn } from "./feature-flags.js?v=21";
+import { isFlagOn } from "./feature-flags.js?v=22";
 
 const states = new Map(); // sessionId → state
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -40,16 +40,6 @@ const DERIVE_MS = 2000; // "writing your image prompt" loader on open / re-sugge
 // than the opening one — long enough that the user SEES the brief change under
 // them, short enough that adjusting three settings in a row isn't a wait.
 const REDERIVE_MS = 600;
-// The grid variant's reassembly is BLOCKING and shown as such (a scrim over the
-// cards): the prompt it rebuilds is never displayed, so a silent or passive update
-// left the user unsure whether their change had registered at all. Blocking also
-// means a second change can't arrive mid-flight and get dropped.
-// Long enough to read, short enough not to sit through. The loader takes the whole
-// stage now, so 300 would flash a full-screen state in and out — worse than none;
-// 800 was where the wait started being felt, and doubled when two fields were edited
-// back to back.
-const GRID_REASSEMBLE_MS = 700;
-
 export const MAX_REFS = 6;
 export const VARIATION_CHOICES = [1, 2, 3, 4];
 
@@ -452,18 +442,6 @@ export function start(
     // surface has to stay small or it pushes the thing it modifies off the screen.
     // Distinct from `openPopover`, which means edit-mode flyouts and nothing else.
     openModifier: null,
-    // ── Grid-brief variant (flag imageStudioGridBrief) ─────────────────────────
-    // When on, the whole generate screen is a dashboard grid of editable cards and
-    // the prompt is a STRUCTURED brief (named fields Archie fills from the post),
-    // assembled into the model prompt by assembleGridPrompt(). Wins over autoBrief.
-    // The prose prompt is never shown — the cards are the editor. Seeded once at
-    // open; every card/setting change reassembles through the same derive plumbing.
-    gridBrief: isFlagOn("imageStudioGridBrief"),
-    brief: { about: "", achieve: "", audience: "", tone: "", headline: "", oneThing: "" },
-    textOnImage: true, // "Write text on the image" — on by default
-    lastRenderText: "", // what the switch restores when turned back on
-    derivedRenderText: "", // the last image text the STUDIO wrote — the dirty check's baseline
-    briefSeeded: false, // the structured brief was filled from the post once, at open
     shotSig: null, // the inputs the shots on screen were made from (see previewStale)
     renderText: "", // words to paint INTO the image (empty = none)
     styleKey: null, // selected Style preset (STYLE_PRESETS)
@@ -652,11 +630,8 @@ function applyStyle(s, key) {
 export function setStyle(sessionId, key) {
   const s = states.get(sessionId);
   if (!s) return;
-  // Grid: the style shapes the words on the image, so changing it rewrites them —
-  // which is exactly why it asks first when those words are the user's own.
   if (defer(s, sessionId, "style", key)) return;
   applyStyle(s, key);
-  if (s.gridBrief) writeRenderText(s, deriveTextForStyle(s));
   afterLegacySetting(sessionId);
 }
 
@@ -677,16 +652,8 @@ export function setStyle(sessionId, key) {
 
 // Park the change behind the confirmation instead of applying it. Returns true
 // when it parked, so the caller bails out.
-// In the grid variant the prose prompt is not editable, so there is nothing to
-// protect there — but the words set into the IMAGE are, and Style rewrites them. Only
-// the settings that genuinely rewrite them may park, or the dialog would warn about
-// edits a click was never going to touch.
-const GRID_GUARDED = new Set(["style", "briefField"]);
-
 function defer(s, sessionId, kind, payload) {
-  if (s.gridBrief) {
-    if (!GRID_GUARDED.has(kind) || !renderTextDirty(s) || s.skipPromptWarning) return false;
-  } else if (s.autoBrief) {
+  if (s.autoBrief) {
     // The brief's blocks are edited in place, and editing one IS the takeover
     // (commitBriefLine). Every modifier rewrites the whole brief, so once those words are
     // the user's, changing one has to ask before throwing them away.
@@ -1031,137 +998,11 @@ function deriveRenderText(s) {
   return pick;
 }
 
-// ── Grid-brief variant ───────────────────────────────────────────────────────
-//
-// The dashboard grid needs a STRUCTURED brief — named fields, not prose lines —
-// so each one can be its own editable card. deriveBrief fills them from the draft
-// the same way derivePrompt does (mock, no model), and assembleGridPrompt folds
-// the fields plus the settings BACK into the prose the generator is actually fed.
-// derivePrompt delegates to it when gridBrief is on, so all the existing derive
-// plumbing (open + every settings change) keeps promptText in sync for free.
-
-const NET_NAME = {
-  linkedin: "LinkedIn",
-  instagram: "Instagram",
-  facebook: "Facebook",
-  x: "X",
-  tiktok: "TikTok",
-  youtube: "YouTube",
-  pinterest: "Pinterest",
-};
-function netName(s) {
-  return NET_NAME[s.network] || "your feed";
-}
-
-function deriveBrief(s) {
-  const parts = sentencesOf(s.postText || "");
-  const stop = (t) => (/[.!?]$/.test(t) ? t : `${t}.`);
-  const net = netName(s);
-  const about = parts[0] ? stop(parts[0]) : FALLBACK_PROMPTS[0];
-  const oneThing = parts[1] ? stop(parts[1]) : about;
-  return {
-    about,
-    achieve: `Land the idea and drive engagement — comments, saves and shares on ${net}.`,
-    audience: `Professionals and decision-makers on ${net}`,
-    tone: "Professional, confident, and clear",
-    headline: deriveRenderText(s),
-    oneThing,
-  };
-}
-
-// Fold the structured brief + the setting cards back into the prose the generator
-// is fed. Same shape as derivePrompt so the mock reads consistently, but sourced
-// from s.brief rather than re-parsing the post.
-function assembleGridPrompt(s) {
-  const b = s.brief || {};
-  const type = IMAGE_TYPES.find((o) => o.key === s.imageTypeKey);
-  const fmt = FORMATS[s.formatId];
-  const lines = [];
-  if (b.about) lines.push(`Subject: ${b.about}`);
-  if (b.oneThing) lines.push(`Key message: ${b.oneThing}`);
-  if (b.achieve) lines.push(`Goal: ${b.achieve}`);
-  if (b.audience) lines.push(`Audience: ${b.audience}`);
-  if (b.tone) lines.push(`Tone: ${b.tone}`);
-  if (type) lines.push(`Image type: ${type.label} — ${type.desc.toLowerCase()}`);
-  lines.push(`Visual direction: ${TYPE_DIRECTION[s.imageTypeKey] || TYPE_DIRECTION["visual-hook"]}`);
-  const look = lookLine(s);
-  if (look) lines.push(look);
-  if (s.useBrandColors && s.playbookColors.length) lines.push(paletteLine(s));
-  const inImage = s.textOnImage ? (s.renderText || b.headline || "").trim() : "";
-  if (inImage) {
-    lines.push(
-      `Text in image: "${inImage.replace(/\n+/g, " / ")}" — set as part of the artwork, high contrast, legible.`,
-    );
-  }
-  if (fmt) {
-    const typeClause = inImage ? "room for the headline" : "no text baked in";
-    lines.push(`Composition: ${fmt.tag} ${fmt.label.toLowerCase()}, key subject off-centre, ${typeClause}.`);
-  }
-  return lines.join("\n");
-}
-
-// ── Grid-brief: the image text is shaped by the style it has to sit on ───────
-//
-// Words set into artwork are not style-agnostic: a bold editorial cover wants a short
-// line in caps over two lines, a tech-minimal frame wants three words. So the grid
-// re-derives the text when the style changes — and because that overwrites whatever
-// the user typed, setStyle asks first (see defer / GRID_GUARDED).
-//
-// Mocked like everything else here: one base headline from the post, then shaped.
-const STYLE_TEXT_SHAPE = {
-  "tech-minimal": { maxWords: 4 },
-  corporate: { maxWords: 9 },
-  "3d-render": { maxWords: 5 },
-  "bold-editorial": { maxWords: 6, upper: true, twoLines: true },
-  photoreal: { maxWords: 7 },
-  "hand-drawn": { maxWords: 6 },
-};
-
-// Where the words come from, before the style shapes them.
-//
-// The grid already has a card that means "the claim, in one line" — Headline idea
-// (`brief.headline`, seeded by deriveBrief from the same deriveRenderText). That
-// card is the source, so editing it rewrites what lands on the artwork; before, the
-// derive re-read the POST every time, and the one field visibly about the headline
-// changed nothing. Empty headline falls back to the post, so a brief the user has
-// cleared still produces words.
-function renderTextSource(s) {
-  const headline = (s.brief?.headline || "").trim();
-  return headline || deriveRenderText(s);
-}
-
-function deriveTextForStyle(s) {
-  const base = renderTextSource(s);
-  const shape = STYLE_TEXT_SHAPE[s.styleKey];
-  if (!base || !shape) return base;
-  const words = base.replace(/\s+/g, " ").trim().split(" ").slice(0, shape.maxWords);
-  if (shape.twoLines && words.length > 3) {
-    const mid = Math.ceil(words.length / 2);
-    const out = `${words.slice(0, mid).join(" ")}\n${words.slice(mid).join(" ")}`;
-    return shape.upper ? out.toUpperCase() : out;
-  }
-  const out = words.join(" ");
-  return shape.upper ? out.toUpperCase() : out;
-}
-
-// The one place that moves both values, so what the studio wrote is never mistaken
-// for what the user typed — same contract as writeBrief.
-function writeRenderText(s, text) {
-  s.renderText = text;
-  s.derivedRenderText = text;
-}
-
-/** Has the user edited the words Archie set into the image? */
-function renderTextDirty(s) {
-  return (s.renderText || "").trim() !== (s.derivedRenderText || "").trim();
-}
-
 // Compose a structured image brief FROM THE DRAFT — the hook becomes the
 // subject, the next line the key message, and the studio's own settings (image
 // type, style, brand, format) fill in the direction. Still a mock (no model
 // call), but every line traces back to something the user can see.
 function derivePrompt(s) {
-  if (s.gridBrief) return assembleGridPrompt(s);
   const parts = sentencesOf(s.postText || "");
   if (!parts.length) {
     const id = s.postId || "p";
@@ -1213,18 +1054,7 @@ export function runDerive(sessionId, { delay = DERIVE_MS } = {}) {
     // open), then no setting ever rewrites it again, so touching Type stops moving
     // two fields at once. Off, the legacy behaviour stands — backfill any time the
     // field is empty, which is what coupled Type to the headline.
-    if (cur.gridBrief) {
-      // Fill the structured brief once, at open. After that the cards own their
-      // text; settings only reassemble the prose (derivePrompt → assembleGridPrompt).
-      if (!cur.briefSeeded) {
-        cur.brief = deriveBrief(cur);
-        cur.briefSeeded = true;
-        // The words painted into the image are derived from the post in their own
-        // right (deriveRenderText picks the shortest line that reads at a glance),
-        // NOT copied from brief.headline — see setTextOnImage.
-        if (cur.textOnImage && !cur.renderText) writeRenderText(cur, deriveTextForStyle(cur));
-      }
-    } else if (cur.autoBrief) {
+    if (cur.autoBrief) {
       if (!cur.renderTextSeeded) {
         if (!cur.renderText) cur.renderText = deriveRenderText(cur);
         cur.renderTextSeeded = true;
@@ -1258,8 +1088,6 @@ function rederive(sessionId) {
 function settingChanged(sessionId) {
   const s = states.get(sessionId);
   if (!s) return;
-  // Blocking on purpose — grid-view renders a scrim while promptLoading is up.
-  if (s.gridBrief) return void runDerive(sessionId, { delay: GRID_REASSEMBLE_MS });
   if (s.autoBrief && s.briefTakenOver) {
     s.briefStale = true;
     notify(sessionId);
@@ -1274,7 +1102,7 @@ function settingChanged(sessionId) {
 function afterLegacySetting(sessionId) {
   const s = states.get(sessionId);
   if (!s) return;
-  if (s.autoBrief || s.gridBrief) settingChanged(sessionId);
+  if (s.autoBrief) settingChanged(sessionId);
   else notify(sessionId);
 }
 
@@ -1288,56 +1116,6 @@ export function rebuildBrief(sessionId) {
   s.briefTakenOver = false;
   s.briefStale = false;
   rederive(sessionId);
-}
-
-// ── Grid-brief: the structured-field cards ───────────────────────────────────
-//
-// One card = one field of s.brief. Silent while typing (the grid must not rebuild
-// under the caret), committed on blur — where it reassembles the model prompt like
-// any other setting. The headline field doubles as the painted text when "Write
-// text on the image" is on, so committing it keeps renderText in step.
-export function setBriefFieldSilent(sessionId, key, value) {
-  const s = states.get(sessionId);
-  if (!s || !(key in s.brief)) return;
-  s.brief[key] = String(value || "");
-}
-
-export function commitBriefField(sessionId, key, value) {
-  const s = states.get(sessionId);
-  if (!s || !(key in s.brief)) return;
-  // Editing the Headline idea rewrites the words on the artwork, because that card
-  // IS their source (renderTextSource). Same contract as Style: it asks first when
-  // those words are the user's own. The other brief fields describe the picture, not
-  // its type, so they leave the text alone.
-  const rewritesImageText = s.gridBrief && key === "headline";
-  if (rewritesImageText && defer(s, sessionId, "briefField", { key, value })) return;
-  s.brief[key] = String(value || "");
-  if (rewritesImageText) writeRenderText(s, deriveTextForStyle(s));
-  settingChanged(sessionId);
-}
-
-// "Write text on the image": whether the artwork carries words at all.
-//
-// The words themselves are their OWN field — derived from the post, then edited in
-// place — so this switch must never regenerate them from somewhere else. Off parks
-// them in `lastRenderText` and clears the live value (what the bake reads); on puts
-// them back, falling back to a fresh derive only when there is nothing to restore.
-// Same shape as the References switch and `lastRefId`, for the same reason: turning
-// something off and on again shouldn't cost you what you wrote.
-export function setTextOnImage(sessionId, on) {
-  const s = states.get(sessionId);
-  if (!s) return;
-  s.textOnImage = !!on;
-  if (s.textOnImage) {
-    // Restoring the user's parked words leaves the dirty baseline alone — they are
-    // still theirs. Only a fresh derive resets it.
-    if (s.renderText || s.lastRenderText) s.renderText = s.renderText || s.lastRenderText;
-    else writeRenderText(s, deriveTextForStyle(s));
-  } else {
-    if (s.renderText) s.lastRenderText = s.renderText;
-    s.renderText = "";
-  }
-  settingChanged(sessionId);
 }
 
 // ── The brief, edited section by section (auto-brief stage) ─────────────────
@@ -1375,15 +1153,6 @@ export function commitBriefLine(sessionId, index, value) {
   notify(sessionId);
 }
 
-// Back from the results stage to the configuration grid (grid-brief only). The
-// variations stay in state — Generate/Regenerate from the grid replaces them.
-export function editBrief(sessionId) {
-  const s = states.get(sessionId);
-  if (!s) return;
-  s.genPhase = "idle";
-  notify(sessionId);
-}
-
 /** Put back the hand-edited brief the last settings change replaced. */
 export function undoPromptRewrite(sessionId) {
   const s = states.get(sessionId);
@@ -1407,9 +1176,6 @@ const APPLY = {
   format: applyFormat,
   useBranding: applyUseBranding,
   useBrandColors: applyUseBrandColors,
-  briefField: (s, { key, value }) => {
-    if (key in s.brief) s.brief[key] = String(value || "");
-  },
   selectRef: applySelectRef,
   removeRef: applyRemoveRef,
   refMode: (s, key) => {
@@ -1424,11 +1190,7 @@ export function confirmSettingChange(sessionId) {
   if (!parked) return;
   s.pendingSettingChange = null;
   APPLY[parked.kind]?.(s, parked.payload);
-  // Confirmed: the words go back to Archie's — re-derived from whichever of the two
-  // guarded inputs just changed, the headline or the style.
-  if (s.gridBrief && GRID_GUARDED.has(parked.kind)) writeRenderText(s, deriveTextForStyle(s));
-  if (s.gridBrief) settingChanged(sessionId);
-  else rederive(sessionId);
+  rederive(sessionId);
 }
 
 export function cancelSettingChange(sessionId) {
@@ -1456,7 +1218,6 @@ function genSignature(s) {
   return JSON.stringify([
     s.promptText,
     s.renderText,
-    s.textOnImage,
     s.imageTypeKey,
     s.styleKey,
     s.formatId,
