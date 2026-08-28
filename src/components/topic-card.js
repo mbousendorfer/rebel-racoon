@@ -28,6 +28,25 @@
 // unread/read idiom every mail client uses, and it is the other half of why the
 // `new` status renders no glyph — the card's weight already says it.
 //
+// ── The order is the ARTICLE's order ──────────────────────────────────────
+// Claim, then provenance, then the summary — and the article header renders
+// claim, then provenance, then its prose. One object, one reading order, whether
+// you are looking at the door or standing in the room.
+//
+// ⚠️ The meta run LED the card until now, so the two disagreed: the card opened
+// with "Competitors · 2h ago" and the article opened with the headline. Two costs,
+// and the second is the real one. A reader scanning the queue had to cross a
+// caption line before every claim — and that line is IDENTICAL on every card in
+// the feed today, because `competitor-posts` is the only live source, so the eye
+// was being asked to re-read the same eleven characters twelve times to reach the
+// one line that differs. Leading with the claim also gives the read/unread weight
+// drop the card's first line instead of its second.
+//
+// The kebab stays in the top-right corner rather than following the meta run down:
+// it is the card's own affordance, in the place every card in this app keeps one,
+// and the headline reserves its gutter. What moved is the CONTENT order, which is
+// what a reader compares between the two surfaces.
+//
 // ── The card is a reading surface, not a control panel ─────────────────────
 // The body is ONE BUTTON covering the whole text area, and it opens the article.
 // The verbs live in the article's own footer, where the reader has just finished
@@ -41,58 +60,18 @@
 // contain phrasing content, so no h3 and no p in there.
 
 import { html, raw, escapeAttr } from "../utils.js?v=22";
-import { topicTitle, topicStates } from "../topics-store.js?v=9";
-import { findTopicState } from "../topics-catalog.js?v=4";
+import { topicTitle } from "../topics-store.js?v=9";
+import { renderTopicStates } from "../topic-article.js?v=21";
 
-// ── The state chips: ONE species, five tones ──────────────────────────────
-// Every state a Topic carries renders as a DS Tag — `.ap-tag <tone>` + glyph +
-// word, from the tone and icon topics-catalog declares per state.
-//
-// ⚠️ This replaced TWO renderers that put one vocabulary at two levels: the two
-// signals were already DS pills, while Already used and Ignored were bare neutral
-// icons with a `title`, and For later was not on the card at all — it was a whole
-// tab. A pill, an icon and a tab for what a reader thinks of as one list.
-//
-// ⚠️ IT WAS `.ap-status`, and that was the wrong sibling. Status has no icon slot,
-// so the glyph had to be smuggled into the dot's place with `no-dot` — a modifier
-// whose whole job is to REMOVE the dot, used to repurpose it. Tag styles `> i` and
-// `> span` as real slots (12px glyph, 180px truncating label), carries a border as
-// well as a fill so a chip has an edge, and ships the five tones this vocabulary
-// needs. Height, radius, padding and type all resolve from --comp-tag-*, so this
-// still costs no CSS of its own.
-//
-// One consequence, and it is a fix: Tag has no plain-`orange` modifier. Trending
-// wore `orange` — the AI / spotlight ACTION colour the header's Use-in-chat primary
-// owns — on a static chip. It takes `tagOrange` now, and Updated moves to
-// `menthol`, cool against Trending's warm so the two signals differ rather than
-// reading as two shades of one thing.
-//
-// `new` renders nothing, and that is the design: it is the absence of an answer,
-// the most common value in any feed, and a glyph meaning "nothing has happened
-// yet" is the one thing a glyph cannot say. It keeps its filter row.
-//
-// A Topic can wear more than one — Already used AND Trending is a real state, and
-// showing both is the point. They sit in one group at the end of the meta row so
-// the row wraps as a unit instead of one chip at a time.
-//
-// Colour is never the only signal: each chip carries its word, so a colour-blind
-// reader and a screen reader both get "Trending" either way. The `title` carries
-// the state's hint, which says what it MEANS rather than repeating the label.
-function renderStateChips(topic) {
-  const chips = topicStates(topic)
-    .map((id) => findTopicState(id))
-    .filter((st) => st && st.chip)
-    .map(
-      (st) =>
-        html`<span class="ap-tag ${st.tone}" title="${st.label} — ${st.hint}">
-          <i class="${st.icon}" aria-hidden="true"></i><span>${st.label}</span>
-        </span>`,
-    )
-    .join("");
-  if (!chips) return "";
-  return html`<span class="topic-card__states">${raw(chips)}</span>`;
-}
+// ── The state chips ───────────────────────────────────────────────────────
+// `renderTopicStates` comes from topic-article.js, which is where a Topic's
+// identity is declared. It was written HERE and exported by nothing, which is why
+// the article header — the thing a card opens — carried no signal at all: click a
+// card marked Trending and the page you landed on never said the word. Same
+// argument as the article having one renderer for three hosts, one level down.
 
+// Where it came from, how old it is, what states it carries — the article
+// header's provenance line, part for part and in the same order.
 function renderMeta(topic, source) {
   return html`<span class="topic-card__meta">
     ${raw(
@@ -103,7 +82,7 @@ function renderMeta(topic, source) {
         : "",
     )}
     <span class="topic-card__age">· ${topic.ageLabel}</span>
-    ${raw(renderStateChips(topic))}
+    ${raw(renderTopicStates(topic))}
   </span>`;
 }
 
@@ -137,8 +116,12 @@ export function renderTopicCard(
       data-topic-read="${escapeAttr(topic.id)}"
       ${raw(picker ? "" : `aria-expanded="${articleOpen ? "true" : "false"}"`)}
     >
-      ${raw(renderMeta(topic, source))}
+      <!-- THE CLAIM FIRST, then where it came from, then the summary — the same
+           three-step order the article header renders, because a card and the
+           article it opens are two views of one Topic and must not present it two
+           ways round. See the note at the top of this file. -->
       <span class="topic-card__headline">${topicTitle(topic)}</span>
+      ${raw(renderMeta(topic, source))}
       <!-- No "Summary:" label. Every card carried one, so it labelled nothing —
            a two-line block under a headline is self-evidently the summary, and
            the word ate a chunk of the first of only two visible lines. -->

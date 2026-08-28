@@ -593,8 +593,9 @@
 }
 
 /* ── The object's header ───────────────────────────────────────────────────
-   Two rows: the claim, then where it came from. The pane hangs the verbs and the
-   way out on it; the dialog renders the same block without them. */
+   Two rows: the claim, then where it came from — the same two, in the same order,
+   that the top of every Topic card carries. The pane hangs the verbs and the way
+   out on a third; the dialog renders the same block without them. */
 .topic-article__head {
   display: flex;
   flex-direction: column;
@@ -663,10 +664,27 @@
   text-wrap: balance;
 }
 
+/* ── The provenance run: the card's meta run, part for part ───────────────
+   Badge, source, age, then the state chips — the same order `topic-card.js`
+   renders under its headline, because this line and that one describe the same
+   Topic and a reader crosses both.
+
+   The chips are NOT pushed to the far edge here, unlike in the feed's card: the
+   pane is one column wide, and a lone chip flush right would sit directly above
+   the right-aligned button row and read as part of it. Next to the age it reads
+   as the last fact in a run of facts.
+
+   `min-height` holds a chip's height (--comp-tag-height, 24px) whether or not the
+   Topic carries one, so this header measures the same on every Topic. That is the
+   whole reason the two quick facts were moved out of it — a header whose height
+   follows the fields a Topic happens to have resizes the scrollport every time the
+   reader opens the next one. 24 is --ref-spacing-md; app CSS does not reach into
+   the --comp-* tier. */
 .topic-article__provenance {
   display: flex;
   align-items: center;
   gap: var(--ref-spacing-xxxs);
+  min-height: var(--ref-spacing-md);
   margin: 0;
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);

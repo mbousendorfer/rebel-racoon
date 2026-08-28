@@ -19,7 +19,7 @@
 
 import { navigate } from "../router.js?v=31";
 import { escapeHtml as esc } from "../utils.js?v=22";
-import { renderTopbar } from "../components/topbar.js?v=319";
+import { renderTopbar } from "../components/topbar.js?v=320";
 import {
   getContextById,
   getContexts,
@@ -34,7 +34,7 @@ import { open as openConfirmModal } from "../components/confirm-modal.js?v=23";
 import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=32";
 import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=6";
 import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=27";
-import { sectionPatchFromAnalysis } from "../context-builder.js?v=290";
+import { sectionPatchFromAnalysis } from "../context-builder.js?v=291";
 import { isFlagOn } from "../feature-flags.js?v=21";
 import {
   canView,

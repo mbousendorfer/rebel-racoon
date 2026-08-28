@@ -126,14 +126,22 @@
    gap between the three lines; more horizontal air than a row would take, because
    a card has edges to sit away from.
 
-   The right gutter is the kebab's — one button plus its inset on each side.
-   ⚠️ Keep it wide enough for whatever sits up there: it briefly held two controls
-   and at the old 40px the state chip (in flow, `margin-left: auto`) ran straight
-   under the second one, which simply vanished behind it. */
+   ⚠️ The right gutter USED TO BE HERE, on the body, so all three lines were held
+   36px short of the card's edge to clear a control that only ever sits beside the
+   FIRST one. Now that the headline leads the card, only the headline pays: it
+   carries the gutter itself (below) and the meta run and the summary get the full
+   measure back. Which is also what lets the state chips sit at the true right edge
+   instead of stopping short of a button two lines above them. */
 .topic-card--feed .topic-card__body {
   gap: var(--ref-spacing-xxxs);
   padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
-  padding-right: calc(var(--comp-icon-button-width) + 2 * var(--ref-spacing-xxs));
+}
+
+/* The kebab's clearance, paid by the one line that sits next to it: the button's
+   own box, plus its inset on each side, less the body padding this is measured
+   from — the same 36px the body used to hold back from every line. */
+.topic-card--feed .topic-card__headline {
+  padding-right: calc(var(--comp-icon-button-width) + 2 * var(--ref-spacing-xxs) - var(--ref-spacing-sm));
 }
 
 /* Inset, so the ring does not sit outside the card's rounded corner. */
@@ -142,7 +150,11 @@
 }
 
 /* One line, always. A meta run that wraps costs the card 16px and breaks the
-   even rhythm the list is scanned by — so the source name gives way first. */
+   even rhythm the list is scanned by — so the source name gives way first.
+
+   It has the whole measure to do that in now: this run sits UNDER the headline,
+   so the kebab is no longer on its line and the chips are no longer squeezed by
+   a gutter reserved for a control they never sat beside. */
 .topic-card--feed .topic-card__meta {
   flex-wrap: nowrap;
 }
@@ -154,23 +166,33 @@
 }
 
 /* ── The state chips ───────────────────────────────────────────────────────
-   ONE group at the far end of the meta line: the states are the one thing on that
-   line a reader cannot know without being told, and at the end they are what the
-   eye lands on last and remembers.
+   ONE group at the end of the meta run: the states are the one thing on that line
+   a reader cannot know without being told, and at the end they are what the eye
+   lands on last and remembers.
+
+   ⚠️ `.topic-states`, not `.topic-card__states` — this group is rendered by
+   `topic-article.js` and hosted by BOTH the card and the article header, so a
+   card-owned name would have been a lie in one of the two. The rule stays in this
+   file because this file is always loaded while the article's CSS lives in a
+   screen; it moves alongside the article the day topic-article.css exists.
 
    `margin-left: auto` on the GROUP, never on each chip — a Topic can carry two
    (Already used AND Trending is a real state) and per-chip auto-margins would
    spread them across the row instead of keeping them together. `flex-wrap` so a
    long source name plus two chips drops to a second line rather than overflowing
    the card. */
-.topic-card__states {
+.topic-states {
   display: inline-flex;
   align-items: center;
   gap: var(--ref-spacing-xxxs);
   flex-wrap: wrap;
 }
 
-.topic-card--feed .topic-card__states {
+/* Pushed to the far edge only in the FEED, where the list is scanned down a
+   column and a flush right edge gives the signals their own one. The picker, the
+   hero grid and the article header keep them next to the age, where the run reads
+   as one sentence of facts. */
+.topic-card--feed .topic-states {
   margin-left: auto;
 }
 
@@ -203,8 +225,8 @@
   gap: var(--ref-spacing-xxs);
   width: 100%;
   padding: var(--ref-spacing-xs) var(--ref-spacing-sm) var(--ref-spacing-sm);
-  /* Room for the kebab, so a long headline never runs under it. */
-  padding-right: var(--ref-spacing-xl);
+  /* No kebab gutter here. The picker has no kebab at all, and in the feed the
+     headline pays for its own clearance — see the feed's density block. */
   border: 0;
   background: transparent;
   font: inherit;
@@ -234,6 +256,11 @@
   display: flex;
   align-items: center;
   gap: var(--ref-spacing-xxxs);
+  /* A chip's height (--comp-tag-height, 24px) even when there is no chip, so a
+     Trending card and a plain one are the same height and the column keeps the
+     even rhythm it is scanned by. 24 is --ref-spacing-md; the comp token is the
+     DS's own and app CSS does not reach for that tier. */
+  min-height: var(--ref-spacing-md);
   /* Wraps by default, for a variant with room to spare. The feed's card sets
      nowrap and pushes its signal to the far end of this line — see the note
      there; the kebab's corner is reserved by the body's right padding either
@@ -271,6 +298,15 @@
 
 /* Two lines, clamped. Three made the tallest cards a third taller than the
    shortest and the list stopped reading as scannable. */
+/* One step further from the meta run than the meta run is from the headline: the
+   claim and its provenance are the identity, the summary is the beginning of the
+   argument. The article separates the same two things by 32px; a scanned card
+   cannot spend that, so it spends 4. */
+.topic-card--feed .topic-card__summary,
+.topic-card--picker .topic-card__summary {
+  margin-top: var(--ref-spacing-xxxs);
+}
+
 .topic-card__summary {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -320,11 +356,6 @@
 .topic-card--feed .topic-card__menu {
   top: var(--ref-spacing-lg);
   right: var(--ref-spacing-xxs);
-}
-
-/* No kebab in the picker, so the body reclaims the right gutter. */
-.topic-card--picker .topic-card__body {
-  padding-right: var(--ref-spacing-sm);
 }
 
 /* ── The verb on the card face (the new chat's Fresh-topics grid) ──────────

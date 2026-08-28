@@ -11,6 +11,20 @@
 //   renderTopicActions(topic, { close })                the two verbs
 //   renderTopicMenu(topic, { open })                    the header's kebab
 //   renderTopicTrail(topic) / trailLength(topic)        the trail, for its hosts
+//   renderTopicStates(topic)                            the state chips, for the card too
+//
+// ── The identity is ONE ORDER, and the card follows it ─────────────────────
+// Claim, then provenance, then the state chips: the article header renders that
+// order and `topic-card.js` renders the same one, because a card and the thing it
+// opens must not present one object two ways round. The card led with its meta
+// run until now — so the door said "Competitors · 2h ago" first and the room said
+// the headline first, and the eye had to cross a caption line that is IDENTICAL on
+// every card in the feed (only `competitor-posts` is live) before reaching the one
+// line that differs.
+//
+// The chips are exported for the same reason: they were declared in the card and
+// nowhere else, so opening a Trending Topic dropped the word "Trending" — the card
+// and the article disagreed about what the Topic IS. One renderer, both hosts.
 //
 // ── Why the identity is its own renderer ───────────────────────────────────
 // The feed's pane keeps its header OUTSIDE the scroller, so the title and the
@@ -53,7 +67,7 @@
 // whose whole value is the detail.
 
 import { html, raw, escapeAttr } from "./utils.js?v=22";
-import { topicTitle } from "./topics-store.js?v=9";
+import { topicTitle, topicStates } from "./topics-store.js?v=9";
 import { findTopicState } from "./topics-catalog.js?v=4";
 import { renderSocialPostCard } from "./components/social-post-card.js?v=11";
 
@@ -76,6 +90,8 @@ export function renderTopicHeader(topic, { source = null, withActions = false, m
   // meta row: one call site, and the placement falls out of what the host asked
   // for. It is the same control the cards carry, so a reader who learned `...`
   // on a card has already learned this one.
+  // Claim first, provenance under it, verbs last — and the cards render that same
+  // order, so the door and the room agree. See the note at the top of this file.
   return html`<div class="topic-article__head">
     <h2 class="topic-article__title">${topicTitle(topic)}</h2>
     ${raw(renderProvenance(topic, source))}
@@ -232,10 +248,70 @@ function renderPosts(topic, posts) {
     <div class="topic-article__posts">${raw(posts.map((pp) => renderSocialPostCard(pp)).join(""))}</div>`;
 }
 
-// Where it came from and how old it is, on one line under the title. Sentence
-// case and caption size — a run of facts, not a labelled header block.
+// ── The state chips: ONE species, five tones, TWO hosts ───────────────────
+// Every state a Topic carries renders as a DS Tag — `.ap-tag <tone>` + glyph +
+// word, from the tone and icon topics-catalog declares per state.
+//
+// This lives HERE, beside the header it belongs to, and `topic-card.js` imports
+// it: the chips are part of a Topic's identity, and the identity has exactly one
+// declaration in this feature. It was private to the card, which is why the
+// article header carried no signal at all — a reader who clicked a card marked
+// Trending landed on a page that never mentioned it.
+//
+// ⚠️ This replaced TWO renderers that put one vocabulary at two levels: the two
+// signals were already DS pills, while Already used and Ignored were bare neutral
+// icons with a `title`, and For later was not on the card at all — it was a whole
+// tab. A pill, an icon and a tab for what a reader thinks of as one list.
+//
+// ⚠️ IT WAS `.ap-status`, and that was the wrong sibling. Status has no icon slot,
+// so the glyph had to be smuggled into the dot's place with `no-dot` — a modifier
+// whose whole job is to REMOVE the dot, used to repurpose it. Tag styles `> i` and
+// `> span` as real slots (12px glyph, 180px truncating label), carries a border as
+// well as a fill so a chip has an edge, and ships the five tones this vocabulary
+// needs. Height, radius, padding and type all resolve from --comp-tag-*, so this
+// still costs no CSS of its own.
+//
+// One consequence, and it is a fix: Tag has no plain-`orange` modifier. Trending
+// wore `orange` — the AI / spotlight ACTION colour the header's Use-in-chat primary
+// owns — on a static chip. It takes `tagOrange` now, and Updated moves to
+// `menthol`, cool against Trending's warm so the two signals differ rather than
+// reading as two shades of one thing.
+//
+// `new` renders nothing, and that is the design: it is the absence of an answer,
+// the most common value in any feed, and a glyph meaning "nothing has happened
+// yet" is the one thing a glyph cannot say. It keeps its filter row.
+//
+// A Topic can wear more than one — Already used AND Trending is a real state, and
+// showing both is the point. They sit in one group at the end of the meta run so
+// the run wraps as a unit instead of one chip at a time.
+//
+// Colour is never the only signal: each chip carries its word, so a colour-blind
+// reader and a screen reader both get "Trending" either way. The `title` carries
+// the state's hint, which says what it MEANS rather than repeating the label.
+export function renderTopicStates(topic) {
+  const chips = topicStates(topic)
+    .map((id) => findTopicState(id))
+    .filter((st) => st && st.chip)
+    .map(
+      (st) =>
+        html`<span class="ap-tag ${st.tone}" title="${st.label} — ${st.hint}">
+          <i class="${st.icon}" aria-hidden="true"></i><span>${st.label}</span>
+        </span>`,
+    )
+    .join("");
+  if (!chips) return "";
+  return html`<span class="topic-states">${raw(chips)}</span>`;
+}
+
+// Where it came from, how old it is and what states it carries, on one line under
+// the title. Sentence case and caption size — a run of facts, not a labelled
+// header block. Part for part the card's own meta run, in the same order, because
+// this line and that one describe the same Topic.
+//
+// A <div>, not a <p>: the chips are spans inside spans, but the run as a whole is
+// now facts plus controls-adjacent marks rather than one sentence.
 function renderProvenance(topic, source) {
-  return html`<p class="topic-article__provenance">
+  return html`<div class="topic-article__provenance">
     ${raw(
       source
         ? html`<span class="topic-badge topic-badge--${source.accent}" aria-hidden="true"
@@ -246,7 +322,13 @@ function renderProvenance(topic, source) {
     <!-- The separator belongs to the source, not to the age: with no source to
          separate from, a leading "· 2h ago" is a dangling punctuation mark. -->
     <span>${source ? `· ${topic.ageLabel}` : topic.ageLabel}</span>
-  </p>`;
+    <!-- The chips come last, exactly as they do on the card: the states are the
+         one thing on this line a reader cannot know without being told, so they
+         are what the eye lands on last. NOT pushed to the far edge here — the
+         pane is 600px wide and a lone chip against the right rail would read as
+         a control belonging to the button row below it. -->
+    ${raw(renderTopicStates(topic))}
+  </div>`;
 }
 
 // ── Relevance and Why now ──────────────────────────────────────────────────
