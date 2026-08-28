@@ -2979,6 +2979,10 @@ export const topics = [
     headline: "Linear's least-produced post of the quarter beat everything they shipped",
     summary:
       "A plain-text note about cutting their own roadmap outperformed three launch videos and a redesign announcement. The engagement is on the admission, not the news.",
+    relevance:
+      "Marketing leads at this size own both the launch calendar and the production budget, so evidence that the cheapest asset beat the expensive ones changes what they commission next. It lands hardest on a team about to spend a quarter's video budget.",
+    whyNow:
+      "The highest-engagement post in the whole window, and the gap over the launch assets beside it is not close.",
     isTrending: true,
     article: {
       title: "Linear's least-produced post of the quarter beat everything they shipped",
@@ -3049,6 +3053,9 @@ export const topics = [
     headline: "Notion is using templates as onboarding and calling it content",
     summary:
       "Every template launch this month ends in a setup flow rather than a download. The content team is doing activation work under a marketing label.",
+    relevance:
+      "Operators here usually run activation and content with the same two people, so a competitor collapsing both into one artefact is a staffing argument as much as a content one.",
+    whyNow: "Six template launches this month, every one ending in a setup flow rather than a download.",
     article: {
       title: "Notion is using templates as onboarding and calling it content",
       subheads: ["The pattern across six launches", "Why it matters for Q2"],
@@ -3098,6 +3105,9 @@ export const topics = [
     headline: "The homepage teardowns keep failing on the same three things",
     summary:
       "Anthony Pierri has published five teardowns this month. Every one flags a missing subject, a feature list where an outcome should be, and a headline that could belong to any competitor.",
+    relevance:
+      "Every marketing lead at this stage has a homepage they inherited and suspect is wrong. A named, repeated list of failures is the rare kind of feedback they can act on without hiring anyone.",
+    whyNow: "Five teardowns from one author this month, and all three failures appear in every single one.",
     isUpdated: true,
     article: {
       title: "The homepage teardowns keep failing on the same three things",
@@ -3153,6 +3163,9 @@ export const topics = [
     headline: "Basecamp is arguing against tools its buyers already pay for",
     summary:
       "Three posts in two weeks position their product as the thing you adopt instead of the stack you have. The argument is subtraction, and it is landing.",
+    relevance:
+      "A subtraction pitch is tempting for a small team with a narrow product and dangerous for one selling into an existing stack. Whoever owns Acme's positioning has to decide which of those it is.",
+    whyNow: "Three posts in two weeks from one account, with the engagement on the argument rather than the product.",
     article: {
       title: "Basecamp is arguing against tools its buyers already pay for",
       subheads: ["Subtraction as a pitch", "The risk in copying it"],
@@ -3202,6 +3215,9 @@ export const topics = [
     headline: "Launch copy swapped time saved for time to value this quarter",
     summary:
       "Across fourteen B2B launches this month, the headline metric moved from hours saved to days-until-working. The claim is easier to prove and harder to dismiss.",
+    relevance:
+      "The headline metric on a launch is the one thing a marketing lead cannot delegate, so a category-wide shift in which number gets used is a direct edit to copy already drafted.",
+    whyNow: "Fourteen B2B launches inside the month, and the wording moved on nearly all of them.",
     article: {
       title: "Launch copy swapped time saved for time to value this quarter",
       subheads: ["What changed in the wording", "Which one Acme can evidence"],
@@ -3251,6 +3267,9 @@ export const topics = [
     headline: "Elena Verna's growth posts have stopped mentioning funnels",
     summary:
       "Six weeks of posts, no funnel diagrams, no stage names. The framing is now a single question about whether the product gets used in week one.",
+    relevance:
+      "Operators at this size inherited the funnel vocabulary and still report against it. A widely-followed practitioner dropping it is a signal about which language now reads as dated.",
+    whyNow: "Six consecutive weeks of posts with no funnel diagram and no stage names.",
     article: {
       title: "Elena Verna's growth posts have stopped mentioning funnels",
       subheads: ["What replaced the funnel", "The version for Acme's audience"],
@@ -3300,6 +3319,9 @@ export const topics = [
     headline: "Linear ships its changelog as marketing and nobody files it as marketing",
     summary:
       "The changelog reads like a product diary, gets shared like an essay, and carries more reach than the paid campaign running beside it.",
+    relevance:
+      "A changelog is one of the few assets a 50–200-person team already produces for other reasons, so the only real question is whether it can carry reach without new headcount.",
+    whyNow: "Its reach beats the paid campaign running alongside it, on the same account in the same week.",
     article: {
       title: "Linear ships its changelog as marketing and nobody files it as marketing",
       subheads: ["Why it travels", "What it costs to run"],
@@ -3349,6 +3371,9 @@ export const topics = [
     headline: "Every launch this week led with a number and two named the task",
     summary:
       "Nine launches, nine headline metrics, and only two that said which job stops arriving. The gap between claim and task is the opening.",
+    relevance:
+      "The gap between a claim and a named task is the cheapest positioning fix available to a team with no research budget: it is a rewrite, not a repositioning.",
+    whyNow: "Nine launches in one week, and only two of the nine named the job that stops arriving.",
     article: {
       title: "Every launch this week led with a number and two named the task",
       subheads: ["The nine claims", "The two that landed"],
@@ -3398,6 +3423,9 @@ export const topics = [
     headline: "Notion's customer stories count hours and never mention headcount",
     summary:
       "Four stories this month, every one with a time figure and none with a team size. The claim is deliberately portable across company stages.",
+    relevance:
+      "Marketing leads writing their first customer stories have to choose which figure to lead on, and portability across company stages is exactly the constraint they are under.",
+    whyNow: "Four stories this month, a time figure in every one and a team size in none.",
     article: {
       title: "Notion's customer stories count hours and never mention headcount",
       subheads: ["The choice they made", "Where it leaves a gap"],
@@ -3447,6 +3475,9 @@ export const topics = [
     headline: "The same pricing-page question keeps coming back in Lenny's threads",
     summary:
       "Three threads in a month, all asking when to show pricing. The consensus is not a rule — it is that hiding it costs you the people who would have self-served.",
+    relevance:
+      "Whether to publish pricing is a decision an operator makes once and then lives with, usually without data. Three threads of practitioner consensus is the closest thing available.",
+    whyNow: "Three separate threads inside a month, all circling the same question.",
     article: {
       title: "The same pricing-page question keeps coming back in Lenny's threads",
       subheads: ["What the threads agree on", "What Acme's page does today"],
@@ -3496,6 +3527,10 @@ export const topics = [
     headline: "Basecamp's no-demo stance is positioning, not a support decision",
     summary:
       "They repeat it often enough that it now reads as a claim about the product: if it needed a demo, it would be the wrong product.",
+    relevance:
+      "Removing the demo reaches sales, onboarding and the homepage at once, which makes it a leadership call rather than a marketing one.",
+    whyNow:
+      "Repeated often enough across the window that it has stopped reading as a policy and started reading as a claim.",
     article: {
       title: "Basecamp's no-demo stance is positioning, not a support decision",
       subheads: ["The claim underneath", "Whether it is copyable"],
@@ -3545,6 +3580,10 @@ export const topics = [
     headline: "Launch weeks are getting shorter and considerably louder",
     summary:
       "The median B2B launch this quarter ran three days, down from a fortnight last year, with roughly the same volume of posts compressed into it.",
+    relevance:
+      "Launch cadence is one of the few things a marketing lead controls outright, so a compressed median gives them either a reason to match it or a reason to do the opposite.",
+    whyNow:
+      "The median launch this quarter ran three days against a fortnight a year ago, with the same volume of posts inside it.",
     article: {
       title: "Launch weeks are getting shorter and considerably louder",
       subheads: ["What the compression does", "The quieter option"],
@@ -3594,6 +3633,9 @@ export const topics = [
     headline: "Linear's hiring posts do more brand work than its advertising",
     summary:
       "Role descriptions written as opinions about how work should go, shared by people who are not job-hunting. The reach is several times the paid posts beside them.",
+    relevance:
+      "Hiring posts are written by people who do not report to marketing, which makes this a question about who is allowed to publish rather than about content.",
+    whyNow: "Reach several times the paid posts published beside them, on the same account.",
     article: {
       title: "Linear's hiring posts do more brand work than its advertising",
       subheads: ["Why a job post travels", "The transferable part"],
@@ -3644,6 +3686,9 @@ export const topics = [
     headline: "Dave Gerhardt's message-testing thread has become a template",
     summary:
       "A five-step way to test positioning on sales calls before it reaches a homepage. It is being reposted as a process rather than an opinion.",
+    relevance:
+      "Testing positioning on sales calls before it reaches a homepage is a process a two-person team can actually run, which is rare among positioning advice.",
+    whyNow: "Reposted as a process rather than as an opinion, which is what separates a template from a thread.",
     article: {
       title: "Dave Gerhardt's message-testing thread has become a template",
       subheads: ["The five steps", "Where Acme could run it"],
@@ -3693,6 +3738,9 @@ export const topics = [
     headline: "Notion is moving from workspace to system of record, quietly",
     summary:
       "The language shifted over about six weeks: fewer posts about flexibility, more about being the place a decision is written down. That is a different buyer.",
+    relevance:
+      "A competitor changing which buyer it addresses is the earliest warning a marketing lead gets that their own comparison pages are about to answer the wrong question.",
+    whyNow: "The wording moved over roughly six weeks, consistently enough to read as a decision rather than drift.",
     article: {
       title: "Notion is moving from workspace to system of record, quietly",
       subheads: ["The wording that changed", "What it opens up"],
@@ -3742,6 +3790,9 @@ export const topics = [
     headline: "The category language from Q1 has already been abandoned",
     summary:
       "Three phrases that were in every deck in January appear in almost nothing published this month. The half-life of category language is now about one quarter.",
+    relevance:
+      "Anyone maintaining a voice profile or a messaging doc is carrying phrases with a shelf life, and this puts a number on how long that is.",
+    whyNow: "Three phrases that were in every deck in January appear in almost nothing published this month.",
     article: {
       title: "The category language from Q1 has already been abandoned",
       subheads: ["The three phrases", "How to write around it"],
@@ -3791,6 +3842,9 @@ export const topics = [
     headline: "Linear's pricing page rewrite dropped the feature table entirely",
     summary:
       "Three plans, three sentences, no comparison grid. The table came back for two days and then went away again.",
+    relevance:
+      "A feature grid is the hardest thing to remove from a pricing page, because every team owns a row of it. Someone doing it, reverting, and doing it again is the useful part.",
+    whyNow: "The grid came back for two days and then went away again, inside the same window.",
     article: {
       title: "Linear's pricing page rewrite dropped the feature table entirely",
       subheads: ["What replaced the grid", "The two-day reversal"],
@@ -3840,6 +3894,9 @@ export const topics = [
     headline: "Operator-first is now everywhere and has stopped meaning anything",
     summary:
       "The phrase appears in eleven of the twenty accounts tracked, used to mean four different things. Acme's own voice profile leans on it.",
+    relevance:
+      "Acme's own voice profile leans on this phrase, so this is not an observation about competitors — it is a note about copy already published.",
+    whyNow: "Eleven of the twenty tracked accounts use it, for four different meanings.",
     article: {
       title: "Operator-first is now everywhere and has stopped meaning anything",
       subheads: ["The four meanings", "What to say instead"],
@@ -3889,6 +3946,9 @@ export const topics = [
     headline: "Basecamp's book still outperforms everything on its blog",
     summary:
       "A book published years ago drives more inbound conversation than any post this quarter. The asset compounds because it is quotable.",
+    relevance:
+      "A compounding quotable asset is the opposite of a content calendar, and choosing between the two is a real allocation decision at this size.",
+    whyNow: "A book published years ago still drives more inbound conversation than anything on the blog this quarter.",
     article: {
       title: "Basecamp's book still outperforms everything on its blog",
       subheads: ["Why it keeps working", "The smaller version"],
@@ -3939,6 +3999,10 @@ export const topics = [
     headline: "Bundled AI stopped being a differentiator in about six weeks",
     summary:
       "Between February and April every tracked competitor shipped an assistant, and the claim went from headline to footnote across the whole set.",
+    relevance:
+      "Any roadmap claim a marketing lead is planning a launch around carries the same half-life risk, which makes this a question about what to lead with next.",
+    whyNow:
+      "Every tracked competitor shipped an assistant between February and April, and the claim went from headline to footnote across the set.",
     article: {
       title: "Bundled AI stopped being a differentiator in about six weeks",
       subheads: ["How fast it flattened", "What differentiates now"],
@@ -3988,6 +4052,10 @@ export const topics = [
     headline: "Notion's community pages outrank its own product pages",
     summary:
       "Search results for the category are dominated by pages Notion did not write. The product pages sit below them.",
+    relevance:
+      "Losing category search to pages you did not write is an uncomfortable read for a team whose main lever is content, and it changes what that content is for.",
+    whyNow:
+      "Category search is dominated by pages Notion did not write, with its own product pages sitting below them.",
     article: {
       title: "Notion's community pages outrank its own product pages",
       subheads: ["What is ranking", "The uncomfortable read"],
@@ -4042,6 +4110,8 @@ export const topics = [
     headline: "Timber accounts own 'sustainable material'. Nobody owns 'cheaper to live in'",
     summary:
       "Four posts across Sibomat and Stabilame sell wood frame and CLT on carbon storage, local sourcing and thermal comfort. Every claim is about the material. None is about the bill that arrives after someone moves in.",
+    relevance:
+      "Cost-burdened renters choose on the bill that arrives after they move in, not on the material the building was made from. An entire competitive set selling carbon and comfort leaves the one claim this audience buys on unattended.",
     whyNow:
       "The densest cluster in the whole window — timber sustainability posts across multiple accounts through late June and July, and the single theme the scan ranked highest by volume.",
     isTrending: true,
@@ -4074,6 +4144,10 @@ export const topics = [
     headline: "A competitor argues AGAINST finishing in the factory. That argument has a number",
     summary:
       "Sibomat concedes modular is popular and faster, then explains why it deliberately assembles on the plot instead: standard modules cannot follow a family's brief or an awkward site. It is the clearest statement of the objection in the window.",
+    relevance:
+      "Municipalities and capital partners ask exactly this question before they commit, and the answer decides whether a site is a fit at all. A competitor making the objection out loud is the clearest version of it anyone will get.",
+    whyNow:
+      "The clearest statement of the objection in the whole window, and it comes from the competitor rather than from a sceptic.",
     isUpdated: true,
     article: {
       title: "Yes, modules are faster. The question is whether 90% costs you the floor plan",
@@ -4109,6 +4183,9 @@ export const topics = [
     headline: "Two competitors are filming the build. A factory line is a better episode than a muddy site",
     summary:
       "Maisons Blavier launched a bilingual behind-the-scenes site series and Thomas & Piron a site-manager memories series, both in the same fortnight. The format is proven and the subject is transparency.",
+    relevance:
+      "Eco-conscious buyers and public partners both want to see how a building was made, and a factory line films better than a muddy plot. The format is already proven by two competitors.",
+    whyNow: "Two accounts launched build-documentary series inside the same fortnight.",
     article: {
       title: "The format is available. The footage is the commitment",
       subheads: ["Three posts, one proven format", "What a credible series costs"],
@@ -4138,6 +4215,9 @@ export const topics = [
     headline: "Stabilame is winning civic work — a marina office built over water",
     summary:
       "Three project announcements clustered at the start of July: the Capitainerie at Ath standing largely on water, new visitor infrastructure at the Grottes de Han, and the Domaine de Chevetogne. Public amenities, won on short local supply chains.",
+    relevance:
+      "Municipalities and landowners read civic references as proof before they read a pitch, so a competitor accumulating them narrows what is left to claim.",
+    whyNow: "Three project announcements clustered at the start of July, all of them public amenities.",
     article: {
       title: "The buyer here is a municipality, and it is a different sale entirely",
       subheads: ["Civic work, won on short supply chains", "Why a residential reference won't do"],
@@ -4167,6 +4247,9 @@ export const topics = [
     headline: "Half the industry closed for July. A factory does not take a building holiday",
     summary:
       "Blavier, Naturhome and Stabilame all posted shutdown notices for the same three weeks — Belgium's statutory construction holiday. Sites stop; the model that assembles indoors does not have to.",
+    relevance:
+      "A three-week stoppage is felt by anyone waiting on a home, and it is the one moment when assembling indoors stops being a technical detail and becomes a delivery date.",
+    whyNow: "Three competitors posted shutdown notices for the same statutory three weeks.",
     article: {
       title: "The most revealing posts in the scan are the out-of-office ones",
       subheads: ["Three out-of-office notices, one fortnight", "The schedule argument, and its tone problem"],
@@ -4196,6 +4279,10 @@ export const topics = [
     headline: "Beyond the mats: how BJJ builds resilient, confident kids",
     summary:
       "Gracie Barra and Six Blades are both pushing youth programs on character building — 'raise boys who are kind, confident, and capable' — and taking students as young as four. The claim is everywhere; the mechanism behind it is explained nowhere.",
+    relevance:
+      "This is the claim that decides whether a Carlsbad parent books a trial, and they are being asked to take it on faith. Explaining the mechanism is the whole opening.",
+    whyNow:
+      "Two competitors are pushing it at once, both taking students as young as four, and neither explains how it works.",
     article: {
       title: "The parent's real question isn't 'will it work' — it's 'will it make my child aggressive'",
       subheads: ["Character is the category's pitch", "Why the safest room produces the least fighting"],
@@ -4225,6 +4312,8 @@ export const topics = [
     headline: "What do BJJ belt promotions really mean for your child's growth?",
     summary:
       "Gracie Barra, Freedom and Six Blades are all posting belt and stripe promotions, and it is the highest-engagement theme in the set. Everyone shows the milestone; nobody explains what earning it actually built.",
+    relevance:
+      "Parents weighing martial arts want to know what a promotion proves about their child, not that one happened. Everyone posts the milestone; the meaning is unclaimed.",
     whyNow: "Belt and stripe promotions are the highest-volume theme across all three tracked competitors this month.",
     isTrending: true,
     article: {
@@ -4261,6 +4350,10 @@ export const topics = [
     headline: "Returning to the mats: how to restart your BJJ journey safely",
     summary:
       "Six Blades welcomed back a student after a three-year hiatus, and it wasn't an isolated post. There is a local audience trying to come back, and nothing in the set speaks to what makes a comeback fail.",
+    relevance:
+      "Returning professionals are a named audience for this academy, and what ends a comeback is never technique — it is pacing an old injury around a full week. Nobody in the set addresses it.",
+    whyNow:
+      "A competitor's return-after-three-years post was not an isolated one; the audience is visibly local and visibly trying.",
     article: {
       title: "The comeback fails on ego long before it fails on cardio",
       subheads: ["The hesitations, and the real obstacle", "The ramp, and the room you pick"],
@@ -4290,6 +4383,10 @@ export const topics = [
     headline: "The family that rolls together: BJJ as a shared lifestyle",
     summary:
       "Competitors are running family classes and turning academy anniversaries into family community events. The angle is strong and the volume is high — but this one can't be written yet, because it needs assets nobody has shot.",
+    relevance:
+      "Family classes reach the parent and the child in a single decision, which is the shortest path this academy has to a second membership.",
+    whyNow:
+      "High volume across the window — family classes and anniversary events — but it needs footage nobody has shot yet.",
     article: {
       title: "Blocked on assets, not on the idea",
       subheads: ["Parents on the mat, not on the sideline", "One shoot, three formats"],
@@ -4324,6 +4421,10 @@ export const topics = [
     headline: "From Summer to Autumn: Smart Transitional Layering for the Belgian Climate",
     summary:
       "Advice on building a transitional wardrobe with light layering pieces and versatile essential tops without immediately packing away your summer wardrobe. Focuses on practical multi-brand solutions for unpredictable Belgian weather.",
+    relevance:
+      "Repeat buyers building a wardrobe around one linen or cashmere piece need to know what carries into the next season — that is the difference between a purchase and a collection.",
+    whyNow:
+      "The seasonal turn falls inside the window, and the layering advice is already running on competing accounts.",
     article: {
       title: "Belgian weather demands smart layers, not a sudden wardrobe swap",
       subheads: ["Why a wardrobe swap is the wrong move", "Combinations that carry summer into October"],
@@ -4415,6 +4516,8 @@ export const topics = [
     headline: "Less Impulse, More Value: Building a Sustainable Sale Capsule",
     summary:
       "Strategic styling advice on leveraging the final sale days to build a timeless capsule wardrobe rather than chasing impulsive discounts. Focuses on selecting high-quality basic pieces and multi-brand classics.",
+    relevance:
+      "This audience wants the look without the invoice, so a sale is the moment they either build a wardrobe or regret three purchases. Framing a discount as selection is the brand's own argument.",
     whyNow:
       "The final markdown weeks run straight through the 30-day scan, with discount messaging on three of the five tracked accounts at once.",
     isTrending: true,
@@ -4514,6 +4617,10 @@ export const topics = [
     headline: "Showing Your Colors: How to Wear Autumn's Plum & Warm Earth Tones Trend",
     summary:
       "Practical styling guide for integrating rich autumn colors like plum (brownish pink) and warm earth tones into an existing wardrobe. Demonstrates how to subtly balance this trend with neutral basic elements.",
+    relevance:
+      "Style-conscious professionals adopt a colour trend by fitting it to what they already own rather than replacing it, which is exactly what a quiet-luxury wardrobe is for.",
+    whyNow:
+      "Outside the current window — kept because the palette returns every autumn, not because the scan is fresh.",
     article: {
       title: "Add depth to your wardrobe with autumn's richest hues",
       subheads: ["This season's shift toward depth", "Texture is what makes earth tones work"],
@@ -4620,6 +4727,9 @@ export const topics = [
     headline: "The competing gym's kids programme now runs on the same nights as yours",
     summary:
       "Their schedule page changed this week. The Tuesday and Thursday kids classes that used to sit opposite yours now overlap them exactly, and their last three posts push that timetable.",
+    relevance:
+      "A direct timetable collision is the one competitive move that costs enrolments immediately, and it lands on exactly the families this academy is courting.",
+    whyNow: "Their schedule page changed this week, and their last three posts push the new timetable.",
     isUpdated: true,
     article: {
       title: "The timetable gap has closed",
@@ -4641,6 +4751,10 @@ export const topics = [
     headline: "The multibrand discount wave has stopped, three weeks early",
     summary:
       "Four of the five tracked accounts pulled their sale messaging this week and went back to full-price editorial. The markdown conversation you were planning to answer has already moved on.",
+    relevance:
+      "A brand about to answer the markdown conversation is publishing into a room that has already moved on, and full-price editorial is where the attention went.",
+    whyNow:
+      "Four of the five tracked accounts pulled sale messaging in the same week, three weeks ahead of the calendar.",
     isUpdated: true,
     article: {
       title: "The sale ended before the response could ship",
@@ -4662,6 +4776,9 @@ export const topics = [
     headline: "Consistency is the only thing every promotion in this town has in common",
     summary:
       "Eleven July posts frame progress the same way — show up, keep showing up, the rank follows. Nobody explains what consistency actually looks like in a first year, which is the part a beginner is trying to work out before they sign.",
+    relevance:
+      "A beginner is trying to work out what the first year actually asks of them before they sign, and being told to keep showing up does not answer it.",
+    whyNow: "Eleven July posts frame progress the same way, and none of them says what that looks like week to week.",
     article: {
       title: "Everyone says 'stay consistent'. Almost nobody says what that means in practice",
       subheads: ["Eleven posts, one word: consistency", "The number nobody publishes"],
@@ -4696,6 +4813,8 @@ export const topics = [
     headline: "The best coaching in the room happens between rounds",
     summary:
       "Gracie Barra ran a post asking students for the best advice they had been given on the mats, and it outperformed everything else they published in July. The subject — peer learning, not instruction — is barely covered by anyone else.",
+    relevance:
+      "Peer learning is what keeps a returning adult on the mats past the first month, and it is the part of the room a prospective member cannot see from outside.",
     whyNow:
       "Peer-learning posts drew the highest engagement of any theme in the window, on ten matching posts across two accounts.",
     isTrending: true,
@@ -4733,6 +4852,9 @@ export const topics = [
     headline: "Is grappling alone enough? The striking question parents keep asking",
     summary:
       "Six Blades has its 'Little Samurai' group training stand-up striking alongside grappling. One post, one account — but it puts a question in front of parents that is worth answering properly.",
+    relevance:
+      "Parents comparing programmes ask whether grappling alone is enough, and an academy that answers it honestly wins the ones who would otherwise hedge toward a striking gym.",
+    whyNow: "One post from one account — thin as evidence, but it puts a live parent question on the table.",
     article: {
       title: "Most of what a child actually faces isn't a punch",
       subheads: ["One post, one implied criticism", "What a playground confrontation actually is"],
@@ -4769,6 +4891,9 @@ export const topics = [
     headline: "Competitors sell confidence to girls and character to boys",
     summary:
       "Gracie Barra's youth copy splits cleanly by gender — empowerment and fun for girls, self-control and respect for boys. It is the most consistent pattern in the scan and nobody has questioned whether parents want the split.",
+    relevance:
+      "This academy runs a women-only programme, which puts it on the other side of the gendered split before the question is even asked.",
+    whyNow: "The most consistent pattern in the scan, and nobody has questioned whether parents want the split.",
     isUpdated: true,
     article: {
       title: "The same programme, described two different ways depending on the child",
@@ -4799,6 +4924,10 @@ export const topics = [
     headline: "Most of what the Carlsbad academies published in July was about themselves",
     summary:
       "Anniversaries, belt promotions, new-member welcomes and holiday greetings account for the bulk of the twenty-five posts in the window. Four self-promotional formats, three academies, almost no teaching.",
+    relevance:
+      "A parent researching academies is reading four self-promotional formats and learning nothing about the teaching, which is the gap any instructional post walks straight into.",
+    whyNow:
+      "Anniversaries, promotions, welcomes and holiday greetings account for the bulk of twenty-five posts across three academies.",
     article: {
       title: "Four formats, three academies, and a month with almost nothing to learn from",
       subheads: ["Four formats, all social proof", "Won on frequency, not on content"],
@@ -5618,6 +5747,9 @@ export const topics = [
     headline: "Buffer publishes head-to-head comparisons. We publish feature pages",
     summary:
       "Buffer vs Sprout, Buffer vs Hootsuite, Buffer vs Metricool — all on the blog, all pitched at people already deciding. The scan's own note calls it bottom-funnel search capture, and nobody in the set is doing it defensively.",
+    relevance:
+      "Comparison pages catch people already choosing between vendors, which is the last moment a social media manager's shortlist is still editable. Nobody in the set is defending that ground.",
+    whyNow: "Three head-to-head posts on one blog, and the scan's own note flags them as bottom-funnel search capture.",
     article: {
       title: "The comparison the buyer runs anyway, written by someone who knows the answer",
       subheads: ["Three comparisons, all conceding something", "The decision that comes before the draft"],
@@ -5775,6 +5907,9 @@ export const topics = [
     headline: "Everyone announced a pricing change in the same quarter",
     summary:
       "Per-channel, per-brand, per-seat — three competitors repriced within weeks of each other and each explained it as simplification. Nobody published what a team of five actually ends up paying.",
+    relevance:
+      "A social media manager justifying a renewal internally needs the number for a team of five, and every announcement explains the model instead of the bill.",
+    whyNow: "Three competitors repriced within weeks of each other, each calling it simplification.",
     article: {
       title: "Three repricings, no worked example",
       subheads: ["Three repricings, one quarter", "The worked example, and the decision behind it"],
@@ -5850,6 +5985,9 @@ export const topics = [
     headline: "The approval workflow is everyone's screenshot and nobody's argument",
     summary:
       "Four posts across two accounts show an approval queue in a product shot. None of them says what it prevents — the wrong logo, the unapproved claim, the post that went out during an outage.",
+    relevance:
+      "Approval is the feature a social media manager buys after something went out wrong, so the argument is the incident, not the queue.",
+    whyNow: "Four posts across two accounts show the queue; none of them says what it prevents.",
     article: {
       title: "They show the queue. The story is the thing that did not get published",
       subheads: ["Four screenshots, no consequence", "The near-miss nobody will describe"],

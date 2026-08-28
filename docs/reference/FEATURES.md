@@ -829,7 +829,9 @@ Le reste va dans la marge de **droite** uniquement : les rangées démarrent au 
 
 **LES DONNÉES DE SEED SONT RÉELLES.** Quatre Playbooks viennent de vrais exports d'écoute, portés du fork (`axel-van/rebel-racoon`) : **Agorapulse** (12 topics, le plus riche — 6 ready / 6 later, 9 avec `relevance`, tous avec des posts), **Alliance Jiu Jitsu Carlsbad** (10), **The Dwelling Company** (5) et **Noba Fashion** (4). `Acme · Q2 marketing` (21) reste écrit pour ce proto.
 
-⚠️ **Juger cette feature sur des topics inventés ne marche pas.** Mes 21 topics Acme n'avaient ni `relevance` ni `whyNow` — donc la section Relevance ne rendait rien sur le Playbook par défaut, et comme leurs articles sont courts, le coût vertical de l'en-tête restait invisible. Trois retours produit sur quatre venaient de là. **Évaluer sur `?pb=ctx-agorapulse`.**
+⚠️ **Juger cette feature sur des topics inventés ne marche pas — et c'est réparé.** Les 21 topics Acme n'avaient ni `relevance` ni `whyNow`, donc le bloc de faits ne rendait **rien** sur le Playbook par défaut, et comme leurs articles sont courts le coût vertical de l'en-tête restait invisible. Trois retours produit sur quatre venaient de là.
+
+**Les 52 topics des cinq feeds portent maintenant les deux faits** (43 `relevance` et 39 `whyNow` ajoutés), écrits depuis le contenu de chaque Topic et l'`audience` de son Playbook — pas du remplissage : `relevance` dit **à qui c'est destiné et pourquoi ça compte pour eux**, `whyNow` dit **ce que le scan a vu** (volume, fenêtre, regroupement). Un `whyNow` honnête peut dire que le Topic est hors fenêtre (`br-16` : « gardé parce que la palette revient chaque automne, pas parce que le scan est frais »). N'importe quel Playbook est donc évaluable ; `?pb=ctx-agorapulse` reste le plus dense en posts cités.
 
 ⚠️ Le port initial avait relabellisé 12 topics Agorapulse sous un Playbook inventé (« Founder voice only ») : des données réelles sous une marque qui n'est pas la leur, et un doublon exact des originaux une fois ceux-ci importés. Les copies sont supprimées ; ce feed reste seedé mais vide, ce qui donne l'état « feed configuré, rien trouvé encore » à démontrer.
 
