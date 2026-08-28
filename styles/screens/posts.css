@@ -276,23 +276,23 @@
   }
 }
 
-/* Empty media slot — a real media dropzone for a draft with no image.
+/* Empty media slot — a real media dropzone at the height of an image.
 
-   It is dashed, tinted and drop-capable on purpose: the dashed box is the
-   universal "drop a file here" sign, so the slot both LOOKS like a dropzone and
-   IS one (`[data-post-drop]`, wired in right-panel.js). An earlier pass had the
-   dashed look without the behaviour, which is a promise the UI can't keep.
+   Three strata, each clearly above the next: neutral tile -> h3 title -> body
+   sub in light ink -> ONE filled button. The rationale for each is in
+   post-card.js#renderEmptyMedia; the two that constrain this file:
 
-   ⚠️ The tint is why `--ap-mermaid-inner` is set here. `.ap-button.mermaid`
-   paints its inner surface --ref-color-white in the DS, so on a tinted host the
-   button's interior stays white and it reads as a misplaced rectangle. The hook
-   in ds-patches.css lets this slot hand the button its own background — so if
-   you change the background below, change this variable with it.
+   ⚠️ NO resting background. The dashed border alone is the "drop a file here"
+   sign; a tint on top of it was a second weak signal competing with the first.
+   (`.is-dragover` still fills — that is transient feedback, not decoration.)
 
-   Left-aligned, and the height (108px) is pinned for every state so the frame
-   never resizes between resting, dragover and generating. No `aspect-ratio`
-   though: every seeded draft starts image-less, and reserving the real height of
-   an absent image on each card turns the feed into a column of voids. */
+   ⚠️ ONE accent only. The tile is grey, not the orange Archie tile from
+   `.drafts-card__icon`: a second orange would split the gravity the filled
+   primary exists to hold.
+
+   The height is pinned on the slot so the frame is identical at rest, on
+   dragover and while generating — nothing moves between states. It is
+   deliberately NOT `aspect-ratio`, which would tie the height to the format. */
 .posts__card-media-empty {
   display: flex;
   flex-direction: column;
@@ -301,96 +301,99 @@
 
 .posts__card-media-empty-slot {
   display: flex;
-  align-items: flex-start;
-  gap: var(--ref-spacing-xs);
-  min-height: 108px;
-  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* The resting composition's own natural height, pinned so the dragover and
+     generating states match it exactly — the frame must not resize between the
+     three. Raise it if the resting content grows, or the slot will jump again. */
+  min-height: 210px;
+  padding: var(--ref-spacing-md);
   border: 1.5px dashed var(--ref-color-grey-20);
   border-radius: var(--app-radius-md);
-  background: var(--ref-color-grey-05);
-  /* Hand the mermaid button this surface — see the warning above. */
-  --ap-mermaid-inner: var(--ref-color-grey-05);
+  background: transparent;
+  text-align: center;
   transition:
     border-color var(--ref-animation-short),
     background var(--ref-animation-short);
 }
 
 /* Dragging a file over it. Same electric-blue language as `.ap-dropzone`'s own
-   is-dragover, so a drop target looks like a drop target everywhere in the app.
-   The mermaid inner surface follows the tint or the button would flash white. */
+   is-dragover, so a drop target looks like a drop target everywhere in the app. */
 .posts__card-media-empty-slot.is-dragover {
   border-color: var(--ref-color-electric-blue-100);
   background: var(--ref-color-electric-blue-05);
-  --ap-mermaid-inner: var(--ref-color-electric-blue-05);
 }
 
-/* The media glyph — what makes it read as a MEDIA dropzone rather than a
-   generic dashed box. Sized md, not lg: at 32px it dominated the block. */
-.posts__card-media-empty-icon {
-  flex-shrink: 0;
-  margin-top: 2px;
+/* Neutral tile. It anchors the column without competing with the orange CTA. */
+.posts__card-media-empty-tile {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: var(--ref-spacing-xs);
+  border-radius: var(--ref-border-radius-md);
+  background: var(--ref-color-grey-10);
+}
+
+.posts__card-media-empty-tile > i {
   font-size: var(--sys-icon-css-md);
-  line-height: 1;
-  color: var(--ref-color-grey-80);
+  background: var(--ref-color-grey-80);
 }
 
-.posts__card-media-empty-body {
-  display: flex;
-  flex-direction: column;
-  /* The title and its line are one text block (18px over 16px) so they sit
-     flush; the breathing room goes between that block and the buttons. */
-  gap: 0;
-  min-width: 0;
-}
-
+/* h3 over body — a real pair (16/700 over 14/400 plus an ink drop), where the
+   old body-bold over caption was a 2px step that separated nothing. Hierarchy
+   comes from size and weight, never from fading the second line to a lighter
+   grey than the ink scale allows. */
 .posts__card-media-empty-title {
   margin: 0;
-  font-size: var(--sys-text-style-body-bold-size);
-  font-weight: var(--sys-text-style-body-bold-weight);
-  line-height: var(--sys-text-style-body-bold-line-height);
+  font-size: var(--sys-text-style-h3-size);
+  font-weight: var(--sys-text-style-h3-weight);
+  line-height: var(--sys-text-style-h3-line-height);
   color: var(--ref-color-grey-100);
 }
 
-/* One line of Archie saying what Generate works from, and that a file can be
-   dropped — the two things the buttons can't tell you. */
-.posts__card-media-empty-sub,
-.posts__card-media-empty-hint {
-  margin: 0;
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
+.posts__card-media-empty-sub {
+  margin: var(--ref-spacing-xxxs) 0 0;
+  font-size: var(--sys-text-style-body-size);
+  font-weight: var(--sys-text-style-body-weight);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--sys-text-color-light);
 }
 
-/* One container, one link. Two full-label outline buttons read as a pair of
-   equals, which is wrong: Generate is the action, upload is the escape hatch.
-   Giving only the AI button a container — and dropping upload to `.ap-link` —
-   is what makes the hierarchy legible at a glance. Auto-width (buttons are
-   never stretched); `align-items: center` puts the link on the button's optical
-   centre rather than its baseline. Wraps on a narrow panel. */
+/* ONE filled primary, then a link. Two outlined buttons read as a pair of
+   equals however the labels are worded — which is exactly what went wrong
+   before — and the DS ships no filled AI button, so the primary is
+   `.ap-button.primary.orange` (the documented "primary AI CTA"). Auto-width;
+   buttons are never stretched. */
 .posts__card-media-empty-actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--ref-spacing-xs);
-  margin-top: var(--ref-spacing-xs);
+  justify-content: center;
+  gap: var(--ref-spacing-sm);
+  margin-top: var(--ref-spacing-sm);
 }
 
-/* Generating: the loader replaces the whole media-object, centred, while the
-   frame keeps its 108px so nothing moves (archie-loader.js hosts the animated
-   SVG automatically). */
+/* Generating: the loader and its line replace the column, still inside the same
+   200px frame (archie-loader.js hosts the animated SVG automatically). */
 .posts__card-media-empty-slot.is-generating {
-  align-items: center;
-  justify-content: center;
-  --archie-loader-size: 28px;
+  --archie-loader-size: 32px;
+  gap: var(--ref-spacing-xs);
 }
 
 .posts__card-media-empty-slot.is-generating .posts__card-media-empty-sub {
+  margin: 0;
   color: var(--ref-color-grey-80);
 }
 
 /* The Playbook hint sits OUTSIDE the frame: it is about the Playbook, not about
    this image, and inside it read as a caption for the buttons. */
 .posts__card-media-empty-hint {
+  margin: 0;
   padding: 0 var(--ref-spacing-xxs);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
 }
 
 /* Filled state: the image with hover-revealed Change / Remove DS buttons

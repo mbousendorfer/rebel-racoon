@@ -145,13 +145,13 @@ Store **per-session** [`posts-store.js`](../../src/posts-store.js). Draft = auth
 - **Char counter** par network (LinkedIn 3000, X 280, IG 2200, FB 63206, TikTok 2200, YT 5000) → rouge si dépassé.
 - **Media** : clip (faux player, gradient, play, durée, scrubber 24%, badge sous-titres) / image
   (_Edit_ → studio · _Change_ → file picker · _Remove_) / **fente vide** (`.posts__card-media-empty`) :
-  une **vraie dropzone média** — pointillé, fond `grey-05`, glyphe image, 108px, aligné à gauche —
-  « Add an image » + « I'll write the brief from this draft — or drop an image here. » + un
-  `.ap-button.mermaid` **Generate** (génère **en place**, sans studio) et « or upload a file » en
-  `.ap-link`. Trois entrées donc : générer, glisser un fichier, ou en choisir un. Voir
-  [`UI-PATTERNS.md`](UI-PATTERNS.md) § Fente média vide pour les deux pièges (le bouton mermaid ne
-  rend correctement que sur du blanc — d'où `--ap-mermaid-inner` ; et `bindDropzone` détournerait
-  les clics des boutons).
+  une **vraie dropzone média** — pointillé, **sans fond**, 210px, centrée : pastille grise, titre
+  `h3` « Add an image », sous-titre `body` « I'll write the brief from this draft — or drop an
+  image here. », puis **un** `.ap-button.primary.orange` **Generate an image** (génère **en
+  place**, sans studio) et **Image Studio** en `.ap-link`. L'upload n'est pas là : il est dans le
+  rail (voir §7). Trois entrées donc : générer, glisser un fichier, ou passer par le rail.
+  Voir [`UI-PATTERNS.md`](UI-PATTERNS.md) § Fente média vide — notamment **pourquoi un bouton
+  contour ne peut pas être un primaire** (le DS n'a aucun bouton IA plein).
 - **Hint de brand kit** : si le Playbook du chat n'a ni logo, ni couleurs, ni images de référence
   (`getBrandKitGaps` dans [`contexts-store.js`](../../src/contexts-store.js) — dérivé, jamais stocké),
   une ligne `.muted` sous la fente **nomme ce qui manque** et propose `Open the Playbook` (`.ap-link`,
@@ -215,10 +215,15 @@ Le **chutier des variations** garde le bord droit.
 
 **Entrées** (les seules — pas de route, pas de raccourci) :
 
-- **Le bouton du rail de la carte** (`data-post-studio`, entre _Regenerate_ et _Save_) → ouvre le
+- **Le bouton `Image Studio` de la fente vide** (`.ap-link`) → l'entrée que l'on trouve, parce
+  qu'elle est là où l'on regarde. Le rail avait shippé en premier, en icône seule, et avait été
+  manqué : une icône sans libellé, sixième d'une pile verticale, n'est pas trouvable.
+- **Le bouton du rail de la carte** (`data-post-studio`, entre _Regenerate_ et _Upload_) → ouvre le
   studio dans le mode qu'appelle le média du draft : carousel → le set, une image → Edit, **pas de
   média → le flow Generate**. C'est l'entrée principale, et la seule qui marche dans les trois
-  états : le rail est le seul endroit toujours visible et indépendant du média.
+  états : le rail est le seul endroit toujours visible et indépendant du média. Le rail porte
+  aussi **Upload** (`data-post-image-upload`) : seule route clavier vers un fichier, et seul endroit
+  où l'upload fonctionne encore quand le draft **a** une image.
 - _« Edit »_ / _« Edit slides »_ sur le média lui-même (`data-post-image-edit`) → même fonction
   (`onPostStudio`), en contextuel. Révélé au survol de l'image.
 - ⚠️ _« Generate »_ dans la fente vide (`data-post-image`) **n'ouvre pas le studio** : il génère une

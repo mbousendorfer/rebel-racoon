@@ -24,30 +24,31 @@ import { isPortraitFormat } from "../clip-formats.js?v=25";
 import { presetById } from "../clip-captions.js?v=7";
 import { renderFeedbackControl } from "./feedback-control.js?v=4";
 
-// The media slot of a draft that has no image yet.
+// The media slot of a draft that has no image yet — a real drop target
+// (`[data-post-drop]`, drag wiring in right-panel.js) at the height of an image.
 //
-// It wears the FRAME THE IMAGE WILL WEAR — same 1px --app-border-soft, same
-// --app-radius-md as `.posts__card-image` — so the slot reads as the picture's
-// empty frame rather than as a separate widget parked in the card.
+// The hierarchy here is load-bearing and was got wrong twice, so it is written
+// down. Three strata, each one clearly above the next:
 //
-// Three things this deliberately is not:
+//   tile (neutral) -> title (h3) -> sub (body, light ink) -> ONE filled button
 //
-// 1. NOT dashed. A dashed outline is the universal drop-zone sign, and nothing
-//    here accepts a drop — only the two buttons act. It also stacked a second
-//    treatment on top of the fill, so two weak signals competed.
-// 2. NOT filled. `.ap-button.mermaid` is a gradient-BORDER trick: a gradient
-//    background with an ::after inset painted `--ref-color-white`. On any
-//    non-white surface its interior goes white and the button reads as a
-//    misplaced rectangle. The slot therefore stays transparent on the white
-//    card. Tinting this background will break that button again.
-// 3. NOT centered. Centering a title, a line of copy and two buttons in a tall
-//    box is what made this a hole in the feed. Left-aligned against the card's
-//    own text edge, it is a block of UI with a hierarchy.
+// 1. The primary MUST be a filled button. `.ap-button.mermaid` is a gradient
+//    BORDER (gradient background + an ::after inset), so it carries the same
+//    visual weight as the `stroked grey` it used to sit beside — two outlined
+//    rectangles read as a pair of equals no matter what the labels say. The DS
+//    ships no filled AI button (the mermaid gradient exists only in that border
+//    form), and the house ladder is written down in _analyse-common.js:394 —
+//    primary -> stroked grey -> ghost grey. Orange is the documented "primary
+//    AI CTA" (DESIGN-SYSTEM.md), so Generate is `.ap-button.primary.orange`.
+// 2. Only ONE accent in the block. The tile stays grey rather than borrowing the
+//    orange Archie tile from drafts-card__icon: a second orange would split the
+//    gravity the filled button is there to hold.
+// 3. No resting background. The dashed border alone says "drop a file here";
+//    a tint on top of it was a second weak signal competing with the first.
 //
-// Height comes from the content (~100px), not from a reserved 4/3 ratio: every
-// seeded draft starts image-less, and reserving the real height of an absent
-// image on each card turns the feed into a column of voids. The cost is a small
-// layout shift when the image lands.
+// Upload is NOT here. It would be a third action fighting for the same row, so
+// it lives in the card's action rail — which is also the only place it can work
+// once the draft HAS an image. Dragging a file onto this slot does the same job.
 //
 // `opts.brandGaps` / `opts.playbookId` come from the host (the drafts panel) —
 // the card never resolves a Context itself. A host that passes neither, like the
@@ -76,48 +77,17 @@ function renderEmptyMedia(post, opts) {
         </p>`
       : "";
 
-  // The title carries the NOUN and the button carries the VERB — "Add an image"
-  // over a button reading "Generate an image" said the same thing twice.
-  //
-  // Three tiers, not three equals: the mermaid gradient (one click, no steering)
-  // outranks a stroked grey (open the studio and steer it) outranks a link
-  // (bring your own file). The earlier objection — "two outline buttons read as
-  // a pair" — was about two FULL-LABEL buttons at the SAME weight; a gradient
-  // over a grey over a link is a real ladder.
-  //
-  // The studio also has an icon button in the card's action rail, which is the
-  // entry that survives into the filled state. It is repeated here with a LABEL
-  // because icon-only in a rail of six is not findable: that rail button shipped
-  // first and was missed entirely.
-  // `data-post-drop` marks it as a real drop target — the dashed frame is the
-  // universal "drop a file here" sign, so the slot has to accept one. The drag
-  // wiring lives in right-panel.js (drag events only; the clicks belong to the
-  // two controls below, which is why `bindDropzone` is NOT used here — its
-  // click handler fires the file input for any click inside the zone).
   return `<div class="posts__card-media-empty">
     <div class="posts__card-media-empty-slot" data-post-drop="${post.id}">
-      <i class="ap-icon-image posts__card-media-empty-icon" aria-hidden="true"></i>
-      <div class="posts__card-media-empty-body">
+      <span class="posts__card-media-empty-tile" aria-hidden="true"><i class="ap-icon-image"></i></span>
       <p class="posts__card-media-empty-title">Add an image</p>
-      <p class="posts__card-media-empty-sub muted">I'll write the brief from this draft — or drop an image here.</p>
+      <p class="posts__card-media-empty-sub">I'll write the brief from this draft — or drop an image here.</p>
       <div class="posts__card-media-empty-actions">
-        <button
-          type="button"
-          class="ap-button mermaid"
-          data-post-image="${post.id}"
-          aria-label="Generate an image"
-        >
+        <button type="button" class="ap-button primary orange" data-post-image="${post.id}">
           <i class="ap-icon-archie-official"></i>
-          <span>Generate</span>
+          <span>Generate an image</span>
         </button>
-        <button type="button" class="ap-button stroked grey" data-post-studio="${post.id}">
-          <i class="ap-icon-image"></i>
-          <span>Image Studio</span>
-        </button>
-        <button type="button" class="ap-link" data-post-image-upload="${post.id}" aria-label="Upload an image">
-          or upload a file
-        </button>
-      </div>
+        <button type="button" class="ap-link" data-post-studio="${post.id}">Image Studio</button>
       </div>
     </div>
     ${hint}
@@ -463,6 +433,22 @@ export function renderPostCard(post, opts = {}) {
           ${regenerating ? "disabled" : ""}
         >
           <i class="ap-icon-image"></i>
+        </button>
+        <!-- Upload. It is in the rail and NOT in the empty slot because the slot
+             holds exactly one filled primary plus one link — a third action
+             there flattened the hierarchy every time it was tried. The rail is
+             also the only place it can work once the draft HAS an image, and it
+             is the keyboard route to a file: dragging onto the slot cannot be
+             the sole way in. Same handler as the slot's old link. -->
+        <button
+          type="button"
+          class="ap-icon-button stroked"
+          aria-label="Upload an image"
+          title="Upload"
+          data-post-image-upload="${post.id}"
+          ${regenerating ? "disabled" : ""}
+        >
+          <i class="ap-icon-upload"></i>
         </button>
         <button
           type="button"

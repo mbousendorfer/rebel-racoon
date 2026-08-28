@@ -12,20 +12,20 @@ Tokens DS = `--ref-*` / `--sys-*` / `--comp-*`. Tokens app = `--app-*`. Les temp
 
 Seul endroit légitime pour toucher `.ap-*`. Charte du fichier : _« the only legitimate place to extend `.ap-*` classes… should shrink as the DS evolves »_.
 
-| Sélecteur                                               | Raison                                                                                                                                                                                                                     |
-| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `.app-modal-backdrop`                                   | Le DS ne fournit pas de backdrop plein-viewport. `inset:0`, `--app-modal-backdrop`, `--app-z-modal-backdrop`.                                                                                                              |
-| `.ap-status.mermaid` (+ `::before`)                     | `.ap-status` DS n'a pas de variante mermaid. Pills de travail in-conversation (Drafting / Extracting / Extracted-N / Analyzing). Teinte `--app-butter`, dot olive `--app-butter-accent`.                                   |
-| `.ap-icon-archie-official`                              | Le glyphe logotype « A » d'Archie, mask-based (`-webkit-mask-image` data-URI). Hors liste d'icônes DS générée. Peint en `currentColor`. C'est **l'avatar AI**, distinct de `.ap-icon-sparkles`.                            |
-| `.ap-status-card` (+ variantes)                         | Le DS a les tokens `--comp-status-card-*` mais pas de classe CSS-UI. Recrée la primitive (miroir `libs/ui-components/status-card`). Container-query masque l'icône < 130px. Modifiers en `.tagOrange` (pas `.tag-orange`). |
-| `.ap-button.danger` (+ `.stroked.danger`)               | Le DS n'a pas de variante danger. Synthétisée depuis la palette rouge. Utilisée par `confirm-modal` en `danger=true`.                                                                                                      |
-| `.ap-infobox.feature-lock`                              | Intent violet « limit reached / upgrade » (les infobox DS n'ont que info/warning/error/success).                                                                                                                           |
-| `button.ap-link`                                        | `.ap-link` DS suppose un `<a>` ; reset le chrome UA d'un `<button>` stylé en lien.                                                                                                                                         |
-| `.ap-filter-chip` (+ états, `-icon`/`-avatar`/`-count`) | Primitive en route vers le DS (V2-Atoms › FilterChip). Pill 24px, `aria-pressed` → ramp electric-blue.                                                                                                                     |
-| `.ap-divider, .divider`                                 | La règle DS référence `--sys-color-border-color-default` mais les tokens du proto définissent `--sys-border-color-default` → fallback `--ref-color-grey-10`.                                                               |
-| `.ap-form-message[hidden]`                              | `.ap-form-message{display:flex}` bat `[hidden]{display:none}` → restaure le guard hidden.                                                                                                                                  |
-| `.ap-dropzone` (famille)                                | Le DS n'a pas de dropzone. Box partagée « drop / browse » ([`dropzone.js`](../../src/components/dropzone.js)), variantes `--compact` / `--lg`, highlight `is-drop-target`.                                                 |
-| `.ap-button.mermaid` (`--ap-mermaid-inner`)             | Le DS peint l'intérieur du bouton en dur `--ref-color-white`, donc il ne rend correctement que sur du blanc. Hook exposé pour qu'un hôte teinté lui passe son fond (défaut = valeur DS).                                   |
+| Sélecteur                                               | Raison                                                                                                                                                                                                                                                             |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `.app-modal-backdrop`                                   | Le DS ne fournit pas de backdrop plein-viewport. `inset:0`, `--app-modal-backdrop`, `--app-z-modal-backdrop`.                                                                                                                                                      |
+| `.ap-status.mermaid` (+ `::before`)                     | `.ap-status` DS n'a pas de variante mermaid. Pills de travail in-conversation (Drafting / Extracting / Extracted-N / Analyzing). Teinte `--app-butter`, dot olive `--app-butter-accent`.                                                                           |
+| `.ap-icon-archie-official`                              | Le glyphe logotype « A » d'Archie, mask-based (`-webkit-mask-image` data-URI). Hors liste d'icônes DS générée. Peint en `currentColor`. C'est **l'avatar AI**, distinct de `.ap-icon-sparkles`.                                                                    |
+| `.ap-status-card` (+ variantes)                         | Le DS a les tokens `--comp-status-card-*` mais pas de classe CSS-UI. Recrée la primitive (miroir `libs/ui-components/status-card`). Container-query masque l'icône < 130px. Modifiers en `.tagOrange` (pas `.tag-orange`).                                         |
+| `.ap-button.danger` (+ `.stroked.danger`)               | Le DS n'a pas de variante danger. Synthétisée depuis la palette rouge. Utilisée par `confirm-modal` en `danger=true`.                                                                                                                                              |
+| `.ap-infobox.feature-lock`                              | Intent violet « limit reached / upgrade » (les infobox DS n'ont que info/warning/error/success).                                                                                                                                                                   |
+| `button.ap-link`                                        | `.ap-link` DS suppose un `<a>` ; reset le chrome UA d'un `<button>` stylé en lien.                                                                                                                                                                                 |
+| `.ap-filter-chip` (+ états, `-icon`/`-avatar`/`-count`) | Primitive en route vers le DS (V2-Atoms › FilterChip). Pill 24px, `aria-pressed` → ramp electric-blue.                                                                                                                                                             |
+| `.ap-divider, .divider`                                 | La règle DS référence `--sys-color-border-color-default` mais les tokens du proto définissent `--sys-border-color-default` → fallback `--ref-color-grey-10`.                                                                                                       |
+| `.ap-form-message[hidden]`                              | `.ap-form-message{display:flex}` bat `[hidden]{display:none}` → restaure le guard hidden.                                                                                                                                                                          |
+| `.ap-dropzone` (famille)                                | Le DS n'a pas de dropzone. Box partagée « drop / browse » ([`dropzone.js`](../../src/components/dropzone.js)), variantes `--compact` / `--lg`, highlight `is-drop-target`.                                                                                         |
+| `.ap-button.mermaid` (`--ap-mermaid-inner`)             | Le DS peint l'intérieur du bouton en dur `--ref-color-white`, donc il ne rend correctement que sur du blanc. Hook exposé pour qu'un hôte teinté lui passe son fond (défaut = valeur DS). ⚠️ C'est une bordure dégradée : **poids de contour, jamais un primaire**. |
 
 Règle : **jamais** redéclarer une `.ap-*` hors ce fichier (ça flippe la cascade silencieusement).
 
@@ -194,40 +194,41 @@ Le « pick one of N » réutilisable. État dans [`inline-question.js`](../../sr
 ### Fente média vide (draft sans image) — une vraie dropzone
 
 `.posts__card-media-empty` ([`post-card.js`](../../src/components/post-card.js) `renderEmptyMedia`,
-CSS dans [`posts.css`](../../styles/screens/posts.css)) : `-slot[data-post-drop]` > `-icon` +
-`-body` (`-title` + `-sub` + `-actions`), puis `-hint` **hors** du cadre.
+CSS dans [`posts.css`](../../styles/screens/posts.css)) : `-slot[data-post-drop]` > `-tile` +
+`-title` + `-sub` + `-actions`, puis `-hint` **hors** du cadre.
 États : `.is-dragover`, `.is-generating`.
 
-Pointillé + fond `grey-05` + glyphe `ap-icon-image` : ça ressemble à une dropzone média **et ça en
-est une**. Le drag/drop est câblé dans [`right-panel.js`](../../src/components/right-panel.js)
-(`attachImageToDraft` sur le premier fichier `image/*`), `.is-dragover` reprend le bleu électrique
-de `.ap-dropzone`. Une version antérieure avait le look sans le comportement — une promesse que
-l'UI ne tenait pas.
+Trois strates, chacune nettement au-dessus de la suivante : pastille neutre → titre `h3` →
+sous-titre `body` en encre light → **un** bouton plein. Le drag/drop est câblé dans
+[`right-panel.js`](../../src/components/right-panel.js) ; `.is-dragover` reprend le bleu
+électrique de `.ap-dropzone`.
 
-- ⚠️ **`bindDropzone` n'est PAS utilisable ici.** Son handler de clic déclenche l'input fichier
-  pour **tout** clic dans la zone : appuyer sur _Generate_ ouvrirait un file picker. On ne recâble
-  que les événements de drag ; les clics restent aux deux contrôles.
-- ⚠️ **Le fond teinté impose `--ap-mermaid-inner`.** `.ap-button.mermaid` est une bordure dégradée
-  en trompe-l'œil : fond dégradé + un `::after` en retrait peint en dur `--ref-color-white` par le
-  DS. Sur toute surface teintée l'intérieur du bouton reste blanc et il lit comme un rectangle mal
-  collé — c'était le bug d'origine. Le hook ajouté dans
-  [`ds-patches.css`](../../styles/ds-patches.css) permet à l'hôte de passer son propre fond au
-  bouton ; le défaut reste la valeur DS, donc les autres boutons mermaid sont inchangés.
-  **Si tu changes le `background` du slot, change `--ap-mermaid-inner` avec.**
-- **Aligné à gauche**, sur le bord de texte de la carte. Centrer titre, copy et actions dans une
-  boîte haute faisait lire un trou dans le feed.
-- **Titre = le nom, bouton = le verbe.** « Add an image » au-dessus d'un bouton « Generate an
-  image » disait deux fois la même chose → le bouton dit `Generate`, `aria-label` complet.
-- **Un seul contenant, un lien.** Deux boutons outline à libellé complet lisent comme une paire
-  d'égaux ; l'action IA garde le contenant, l'upload descend en `.ap-link`.
-- **Une seule hauteur (108px) pour tous les états** : le cadre ne bouge pas entre repos, dragover
-  et génération. Pas d'`aspect-ratio` en revanche — réserver la hauteur réelle d'une image absente
-  sur chaque carte du feed en fait une colonne de trous.
-- **Un CTA de navigation vers le Playbook est un `.ap-link`** (bleu), jamais un bouton et jamais
-  orange : l'orange est pour l'IA, et les 11 empty states du repo ont tous un CTA bleu.
+- ⚠️ **Un bouton CONTOUR ne peut pas être un primaire.** `.ap-button.mermaid` est une bordure
+  dégradée, pas un bouton plein : posé à côté d'un `stroked grey` il pèse pareil, et la « paire
+  d'égaux » revient quels que soient les libellés. **Le DS n'a aucun bouton IA plein** — les seuls
+  contrôles pleins dominants sont `.ap-button.primary.orange` et `.primary.blue`. L'échelle maison
+  est écrite dans [`_analyse-common.js:394`](../../src/screens/_analyse-common.js) :
+  `primary` → `stroked grey` → `ghost grey` (+ `.ap-link` en 4ᵉ). Ici : `primary orange`
+  (« primary AI CTA ») + `.ap-link`.
+- **Un seul accent par bloc.** La pastille reste grise et ne reprend pas l'orange de
+  `.drafts-card__icon` : un second orange diviserait la gravité que le bouton plein doit tenir.
+- **Pas de fond au repos.** Le pointillé seul dit « dépose un fichier ici » ; une teinte par-dessus
+  était un second signal faible en concurrence avec le premier. (`.is-dragover` remplit toujours —
+  c'est un retour transitoire, pas de la décoration.)
+- **Une hauteur unique (210px)** posée sur le `-slot`, pour que le cadre soit identique au repos, en
+  dragover et en génération. C'est la hauteur naturelle de la composition au repos : si le contenu
+  grandit, remonter la valeur ou le bloc resaute. Volontairement **pas** d'`aspect-ratio`.
+- **L'upload n'est pas dans la fente** : ce serait une troisième action dans la même rangée, ce qui
+  a aplati la hiérarchie à chaque tentative. Il vit dans le rail de la carte — seul endroit où il
+  fonctionne aussi quand le draft **a** une image, et seule route clavier vers un fichier (le
+  glisser-déposer ne peut pas être l'unique entrée).
+- ⚠️ **`bindDropzone` est inutilisable ici** : son handler de clic déclenche l'input fichier pour
+  **tout** clic dans la zone — appuyer sur Generate ouvrirait un file picker.
 - ⚠️ **`ap-icon-missing-image` est inutilisable** : seul icône du DS dont le SVG porte un `clipPath`
-  avec un `<rect />` sans dimensions, qui découpe tout le glyphe. Il s'applique proprement et ne
-  peint rien. D'où `ap-icon-image`.
+  avec un `<rect />` sans dimensions, qui découpe tout le glyphe. D'où `ap-icon-image`.
+- ⚠️ Ne pas renommer la classe racine `.posts__card-media-empty` :
+  [`image-studio-v2.css`](../../styles/screens/image-studio-v2.css) la masque dans les previews du
+  studio. Et `[data-post-drop]` doit rester sur l'élément qui porte `-slot`.
 
 ### Modals / backdrop
 
