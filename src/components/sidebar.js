@@ -23,7 +23,7 @@ import { getContextById, getDefaultContext, subscribe as subscribeContexts } fro
 // still holds it (see playbook-access.js), the sidebar just doesn't name it.
 import { canView, visibleContexts } from "../playbook-access.js?v=7";
 import { getFeedForPlaybook } from "../topic-feeds-store.js?v=3";
-import { countToReview, subscribe as subscribeTopics } from "../topics-store.js?v=8";
+import { countToReview, subscribe as subscribeTopics } from "../topics-store.js?v=9";
 import { getConnectedConnectors, subscribe as subscribeConnectors } from "../connectors-store.js?v=43";
 import { closePanel as closeRightPanel } from "./right-panel.js?v=456";
 import { clearSession as clearAssistantSession } from "../assistant.js?v=78";

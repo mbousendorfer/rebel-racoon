@@ -116,9 +116,9 @@ import {
 import { setHandoff, consumeHandoff, hasHandoff } from "../handoff.js?v=21";
 import { attachTopicToChat, useTopicInChat, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=3";
 import { getFeedForPlaybook } from "../topic-feeds-store.js?v=3";
-import { getFreshTopics, countFresh, subscribe as subscribeTopics } from "../topics-store.js?v=8";
+import { getFreshTopics, countFresh, subscribe as subscribeTopics } from "../topics-store.js?v=9";
 import { findTopicSource } from "../topics-catalog.js?v=4";
-import { renderTopicCard } from "../components/topic-card.js?v=13";
+import { renderTopicCard } from "../components/topic-card.js?v=14";
 import { openTopicPicker, openTopicArticle } from "../components/topic-picker-modal.js?v=16";
 import { parseHashParams, setHashQuery } from "../url-state.js?v=22";
 import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=35";

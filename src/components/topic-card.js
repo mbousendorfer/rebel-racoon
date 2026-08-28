@@ -41,7 +41,7 @@
 // contain phrasing content, so no h3 and no p in there.
 
 import { html, raw, escapeAttr } from "../utils.js?v=22";
-import { topicTitle, topicStates } from "../topics-store.js?v=8";
+import { topicTitle, topicStates } from "../topics-store.js?v=9";
 import { findTopicState } from "../topics-catalog.js?v=4";
 
 // ── The state chips: ONE species, five tones ──────────────────────────────
@@ -127,8 +127,8 @@ export function renderTopicCard(
 
   return html`<article
     class="topic-card topic-card--${raw(picker ? "picker" : "feed")}${raw(triaged ? " is-triaged" : "")}${raw(
-      topic.seen ? " is-seen" : "",
-    )}${raw(articleOpen ? " is-reading" : "")}"
+      articleOpen ? " is-reading" : "",
+    )}"
     data-topic-id="${escapeAttr(topic.id)}"
   >
     <button
@@ -155,7 +155,7 @@ export function renderTopicCard(
           : "",
       )}
     </button>
-    ${raw(picker ? "" : renderSeenToggle(topic))} ${raw(picker ? "" : renderKebab(topic, menuOpen))}
+    ${raw(picker ? "" : renderKebab(topic, menuOpen))}
     <!-- The verb ON the card, for a host that has no kebab and sits beside other
          cards you click to START something — the new chat's hero. A sibling of
          the body button, never inside it: a button in a button is invalid HTML.
@@ -191,35 +191,6 @@ export function renderTopicCard(
 //
 // No red mode on Ignore. Ignoring hides a Topic that ticking Ignored brings back
 // — nothing is destroyed — so red would be flagging a danger that is not there.
-// ── The seen toggle ───────────────────────────────────────────────────────
-// `mini-post`'s acknowledge button: the product puts it top-right of the card's
-// own top row, and it turns GREEN once the item is read. Same here, immediately
-// left of the kebab — tertiary controls together, and the kebab keeps the corner
-// it already owned.
-//
-// ⚠️ `ap-icon-check`, not the product's `acknowledge` double-check: that glyph is
-// not in this repo's synced icon font (241 icons, no `acknowledge`), and an
-// invented `ap-icon-*` name fails SILENTLY here — it renders nothing at all. The
-// substitution is the single check.
-//
-// The label flips with the state, because a toggle whose name never changes makes
-// the reader guess which way it is about to go.
-function renderSeenToggle(topic) {
-  const seen = !!topic.seen;
-  const label = seen ? "Mark as unseen" : "Mark as seen";
-  return html`<button
-    type="button"
-    class="ap-icon-button transparent ${raw(seen ? "green" : "grey")} topic-card__seen"
-    data-topic-seen="${escapeAttr(topic.id)}"
-    data-topic-seen-next="${seen ? "0" : "1"}"
-    aria-pressed="${seen ? "true" : "false"}"
-    aria-label="${label}"
-    title="${label}"
-  >
-    <i class="ap-icon-check"></i>
-  </button>`;
-}
-
 function renderKebab(topic, menuOpen) {
   const ignored = topic.status === "ignored";
   return html`<button

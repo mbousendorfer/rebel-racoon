@@ -34,7 +34,7 @@
 import { navigate } from "./router.js?v=31";
 import { setHandoff } from "./handoff.js?v=21";
 import { addReadySource } from "./sources-stream.js?v=70";
-import { getTopicById, topicTitle, markUsed } from "./topics-store.js?v=8";
+import { getTopicById, topicTitle, markUsed } from "./topics-store.js?v=9";
 import { getFeedById } from "./topic-feeds-store.js?v=3";
 import { findTopicSource } from "./topics-catalog.js?v=4";
 

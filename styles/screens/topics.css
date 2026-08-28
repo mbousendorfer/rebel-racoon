@@ -164,10 +164,11 @@
    panel now. `git log -S topics-view__tabs` has the rule. */
 
 /* ── The list's header ─────────────────────────────────────────────────────
-   `listening-feed-search-list-header`'s shape: the total on the left, the unseen
-   count beside it, the bulk action pushed to the far end. It sits INSIDE the list
-   column, above the first age separator, because it counts that column's contents
-   — the pane has its own header and a different subject. */
+   `listening-feed-search-list-header`'s shape, reduced to the one number this feed
+   has. It sits INSIDE the list column, above the first age separator, because it
+   counts that column's contents — the pane has its own header and a different
+   subject. ⚠️ It briefly held an unseen counter and a bulk action; that axis is
+   out for now. */
 .topics-view__list-head {
   display: flex;
   align-items: center;
@@ -184,34 +185,6 @@
   line-height: var(--sys-text-style-h4-line-height);
   font-weight: var(--sys-text-style-h4-weight);
   color: var(--sys-text-color-default);
-}
-
-/* The same 4px dot the cards use between two readings, so "one fact, then another"
-   is one shape everywhere on this screen. */
-.topics-view__list-dot {
-  width: var(--ref-spacing-xxxs);
-  height: var(--ref-spacing-xxxs);
-  border-radius: var(--ref-border-radius-sm);
-  background: var(--ref-color-grey-20);
-  flex-shrink: 0;
-}
-
-/* Orange, big, no background — the product's exact treatment
-   (`<ap-counter color="orange" size="big" [background]="false">`). Orange is the
-   attention colour here and an unread count is the one number on this screen that
-   is asking for attention. */
-.topics-view__list-unseen {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  color: var(--sys-text-color-light);
-}
-
-.topics-view__mark-all {
-  margin-left: auto;
-  flex-shrink: 0;
 }
 
 /* ── The reader ────────────────────────────────────────────────────────────

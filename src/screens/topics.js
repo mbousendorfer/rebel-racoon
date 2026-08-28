@@ -37,9 +37,6 @@ import {
   getTopicsForFeed,
   groupTopicsByAge,
   countAll,
-  countUnseen,
-  markSeen,
-  markAllSeen,
   getTopicById,
   topicTitle,
   defaultFilters,
@@ -47,7 +44,7 @@ import {
   ignoreTopic,
   unignoreTopic,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=8";
+} from "../topics-store.js?v=9";
 import {
   TOPIC_SOURCES,
   TOPIC_STATES,
@@ -57,7 +54,7 @@ import {
   findCadence,
   isLiveSource,
 } from "../topics-catalog.js?v=4";
-import { renderTopicCard } from "../components/topic-card.js?v=13";
+import { renderTopicCard } from "../components/topic-card.js?v=14";
 import { renderTopicArticle, renderTopicHeader } from "../topic-article.js?v=19";
 import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=4";
 import { openTopicHistory } from "../components/topic-history-modal.js?v=1";
@@ -651,36 +648,16 @@ function renderList(shown, more, total, scanning, feed) {
   }
 
   // ── The list's own header ────────────────────────────────────────────────
-  // `listening-feed-search-list-header`'s shape: the total, then the unseen count
-  // in an ORANGE big counter with no background, then the bulk action pushed to the
-  // far end. The unseen number is the one thing a queue has to say before you have
-  // read a single card.
+  // `listening-feed-search-list-header`'s shape, reduced to the one number this
+  // feed has: the total. ⚠️ It briefly carried an unseen count and a
+  // `Mark all as seen` action — the whole seen/unseen axis is out for now, see
+  // `git log -S countUnseen`.
   //
-  // Both counts are UNFILTERED — they describe the feed, not the current selection,
-  // so narrowing the filter never looks like Topics ceasing to exist.
+  // The count is UNFILTERED — it describes the feed, not the current selection, so
+  // narrowing the filter never looks like Topics ceasing to exist.
   const totalAll = feed ? countAll(feed.id) : 0;
-  const unseen = feed ? countUnseen(feed.id) : 0;
   const head = html`<div class="topics-view__list-head">
     <h2 class="topics-view__list-count">${String(totalAll)} ${totalAll === 1 ? "topic" : "topics"}</h2>
-    ${raw(
-      unseen
-        ? html`<span class="topics-view__list-dot" aria-hidden="true"></span>
-            <span class="topics-view__list-unseen">
-              <span class="ap-counter big orange no-bg">${String(unseen)}</span>
-              <span>unseen</span>
-            </span>`
-        : "",
-    )}
-    <button
-      type="button"
-      class="ap-icon-button stroked grey topics-view__mark-all"
-      data-topic-mark-all-seen
-      ${raw(unseen ? "" : "disabled")}
-      aria-label="Mark all as seen"
-      title="${unseen ? "Mark all as seen" : "Everything here is seen"}"
-    >
-      <i class="ap-icon-check"></i>
-    </button>
   </div>`;
 
   const groups = groupTopicsByAge(shown);
@@ -970,26 +947,6 @@ function bind(target) {
 
     if (event.target.closest("[data-topic-more-page]")) {
       loadMore(target, scopedPlaybook());
-      return;
-    }
-
-    // The read receipt. Its own hook, and it must return BEFORE the card-open
-    // branch below: the toggle sits inside the card, so without this the click
-    // would also open (or close) the article on its way past.
-    const seenBtn = event.target.closest("[data-topic-seen]");
-    if (seenBtn) {
-      markSeen(seenBtn.dataset.topicSeen, seenBtn.dataset.topicSeenNext === "1");
-      return;
-    }
-
-    if (event.target.closest("[data-topic-mark-all-seen]")) {
-      const pb = scopedPlaybook();
-      const fd = pb ? getFeedForPlaybook(pb.id) : null;
-      const n = fd ? markAllSeen(fd.id) : 0;
-      // The store notifies, which repaints — the toast is the only thing this has
-      // to add, and it says the number because a bulk action with no receipt
-      // leaves the reader checking whether it fired.
-      if (n) showToast(`${n} ${n === 1 ? "Topic" : "Topics"} marked as seen`);
       return;
     }
 
