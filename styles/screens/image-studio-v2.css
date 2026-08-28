@@ -399,6 +399,9 @@
 }
 
 .isv2-bs {
+  /* V3's form measure — the width of the options list and of the pane switch above it,
+     in ONE place so the two can't drift apart. */
+  --isv2-form-measure: 520px;
   height: 100%;
   box-sizing: border-box;
   max-width: 1120px;
@@ -780,46 +783,164 @@
    that is declared here — a second split layout would have to be kept in step with the
    first for no visible gain.
 
-   Two panes share one box: Options (the seven accordion rows) and Advanced (the brief's
-   blocks). The strip that switches them is `.ap-filter-chip`, not `.ap-tabs`, because
-   the modal header already owns the only tab strip on screen — see setup-stage.js. */
+   Two panes share one box: Options (the seven rows in two groups) and Advanced (the
+   brief's blocks). The strip that switches them is `.ap-filter-chip`, not `.ap-tabs`,
+   because the modal header already owns the only tab strip on screen — see
+   setup-stage.js. It takes the form's measure so the two share a left edge: a control
+   floating over a narrower thing it controls reads as unrelated to it. */
 .isv2-panetabs {
   flex: 0 0 auto;
   display: flex;
   gap: var(--ref-spacing-xxs);
 }
 
-/* The pane SCROLLS, unlike the brief it sits opposite: seven accordion rows with two of
-   them open run past the stage's height, where prose does not. Safe here only because
-   the settings have no flyouts left to escape the box — `overflow-y: auto` computes
-   `overflow-x` to `auto` as well, which is the trap that bit this file three times
-   before the rows became accordions that expand in place. */
+/* The form is NARROWER than the half it sits in, and centred in it. At full width a row
+   put its label against one edge and its value against the other, 400px apart, and the
+   pair stopped reading as a pair — the classic "full-width is almost never right" for a
+   form. ~520px also keeps the three 80px reference tiles comfortable.
+
+   It SCROLLS when it has to, which is safe here only because the settings have no
+   flyouts left to escape the box — `overflow-y: auto` computes `overflow-x` to `auto`
+   too, the trap that bit this file three times before the rows became sections that
+   expand in place. */
 .isv2-opts {
   /* The rows read `--isv2-tile` for their reference tiles and the logo thumb, and it is
      declared per HOST (80px on `.isv2-panel`, 72px in the auto-brief popover) — not
-     globally. Without it here `flex: 0 0 var(--isv2-tile)` has nothing to resolve and the
-     tiles collapse. 80px, the panel's value, since this half is wider than the panel and
+     globally. Without it here `flex: 0 0 var(--isv2-tile)` has nothing to resolve and
+     the tiles collapse. 80px, the panel's value: this half is wider than the panel, so
      the size was never the constraint. */
   --isv2-tile: 80px;
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
+  /* Constrained, and LEFT-ALIGNED rather than centred: the pane switch above it, the
+     option groups and the brief's blocks all start on the same left edge, which is what
+     ties them together as one column. Centred, the form floated free of the chips that
+     switch it — alignment is the cheapest way to state a relationship. */
+  width: 100%;
+  max-width: var(--isv2-form-measure);
   display: flex;
   flex-direction: column;
-  /* `xxs`, the same gap `.isv2-panel` gives these rows — they were designed at that
-     rhythm, and the looser `xs` was enough on its own to push the seventh row past the
-     fold at 900px. */
+  /* BETWEEN groups — deliberately larger than the gap inside one (which is zero: the
+     rows are hairline-separated). That difference is the whole grouping. */
+  gap: var(--ref-spacing-md);
+  /* Room for the last group's border to not sit flush on the scroller's edge. */
+  padding-block-end: var(--ref-spacing-xxs);
+  /* A group card's bottom edge is a BORDER, so a clipped one looks broken rather than
+     cut off — and macOS hides overlay scrollbars, so there is no other signal. Same
+     answer as the reference strip: fade the edge you can still scroll towards, using a
+     scroll-progress timeline. It costs nothing when everything fits, because a
+     scroll timeline on a non-scrollable element is inactive and the fade lengths stay
+     at their 0px initial values. Vertical twin of .isv2-refs.is-scrollable. */
+  mask-image: linear-gradient(
+    to bottom,
+    rgb(0 0 0 / 0) 0,
+    rgb(0 0 0) var(--isv2-fade-t),
+    rgb(0 0 0) calc(100% - var(--isv2-fade-b)),
+    rgb(0 0 0 / 0) 100%
+  );
+  animation: isv2-opts-edges linear both;
+  animation-timeline: scroll(self block);
+}
+
+@property --isv2-fade-t {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --isv2-fade-b {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@keyframes isv2-opts-edges {
+  from {
+    --isv2-fade-t: 0px;
+    --isv2-fade-b: 24px;
+  }
+  to {
+    --isv2-fade-t: 24px;
+    --isv2-fade-b: 0px;
+  }
+}
+
+/* Sentence case for every label on THIS stage, the section eyebrows included.
+   `.isv2-bs-eyebrow` uppercases, which the house rules forbid outright — hierarchy comes
+   from size, weight and ink, never from shouting — and with the option groups captioned
+   in sentence case the two halves were labelling themselves in two different voices.
+   Scoped to V3 so the auto-brief stage keeps the treatment it shipped with. */
+.isv2-bs--setup .isv2-bs-eyebrow {
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* One group = a caption plus a bounded card. Same type, same ink, same case as the
+   preview's eyebrow opposite it. */
+.isv2-optgroup {
+  display: flex;
+  flex-direction: column;
   gap: var(--ref-spacing-xxs);
 }
 
-/* The rows arrive from the pinned inspector, which sizes its reference tiles off
-   `--isv2-tile` — 80px inside the panel's 284px. This half is wider, so the tiles keep
-   their size and simply have room after them. Nothing to override.
+/* The de-emphasised half of the pair: caption size, grey-80, sentence case. NOT
+   uppercase — the house rules ban uppercase labels, and hierarchy here comes from size
+   and ink, not from shouting. */
+.isv2-optgroup-label {
+  margin: 0;
+  padding-inline: var(--ref-spacing-xxxs);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--sys-text-color-light);
+}
 
-   The brief pane must NOT scroll: its blocks already do (`.isv2-bs-doc`), and a scroller
-   inside a scroller gives one list two scrollbars. */
+/* `.ap-card`'s recipe, value for value — white, 1px grey-10, a card radius — composed
+   from the tokens rather than by taking the class, because `.ap-card` brings
+   `padding: sm` + `gap: sm` and these rows need their hairlines edge to edge. No
+   shadow, so the card can hold rows without nesting elevation. `overflow: hidden` is
+   what makes the first and last rows respect the corner. */
+.isv2-optgroup-rows {
+  display: flex;
+  flex-direction: column;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border-soft);
+  border-radius: var(--app-radius-card);
+  overflow: hidden;
+}
+
+/* Inside a card the header can afford the DS accordion's own inline padding. */
+.isv2-opts .isv2-acc-head,
+.isv2-opts .isv2-acc-body {
+  padding-inline: var(--ref-spacing-sm);
+}
+
+/* `set` reads as INK AND WEIGHT, not as colour.
+   It was electric blue (`--sys-border-color-active`), which put the only colour on the
+   whole form on two brand names — the least important thing on screen — and tinted a
+   static datum with the colour this house reserves for the interactive. Weight is the
+   lever the house rules name for exactly this. */
+.isv2-opts .isv2-acc-value.is-set {
+  color: var(--sys-text-color-default);
+  font-weight: var(--sys-text-style-body-bold-weight);
+}
+
+/* The brief pane must NOT scroll: its blocks already do (`.isv2-bs-doc`), and a
+   scroller inside a scroller gives one list two scrollbars. It keeps the form's measure
+   so switching pane doesn't move the column. */
+/* The brief is PROSE, so it gets a prose measure, not the form's. At 520px its two
+   columns ran ~40 characters a line — under the 45-75 the eye wants — so it takes the
+   half's full width, where each column lands around 50. Same left edge as everything
+   else, so widening is felt as "more room for this", not as the column moving. */
 .isv2-opts--brief {
+  max-width: none;
   overflow: visible;
+  gap: var(--ref-spacing-xxs);
+  padding-block-end: 0;
+  /* No scroller here, so no fade — and a mask on a non-scrolling box would clip the
+     popovers the blocks' fields can raise. */
+  mask-image: none;
+  animation: none;
 }
 
 /* The brief's status line sits UNDER its own blocks here. The auto-brief stage keeps it
@@ -1435,11 +1556,14 @@
   color: var(--sys-border-color-active);
 }
 
+/* Disabled: grey-60, which is the ONE step the house rules reserve for it, and no
+   italic. It was grey-40 (#AEB5C1) — below the grey-80 ink floor, so the row read as
+   broken rather than as unavailable — plus an italic that exists nowhere in the DS type
+   ramp. The weight drop and the missing chevron already say "not now". */
 .isv2-acc.is-disabled .isv2-acc-title,
 .isv2-acc.is-disabled .isv2-acc-value {
-  color: var(--ref-color-grey-40);
+  color: var(--ref-color-grey-60);
   font-weight: var(--sys-text-style-body-weight);
-  font-style: italic;
 }
 
 /* Top padding is SMALLER than the bottom because the header contributes 6px of its

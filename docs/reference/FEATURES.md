@@ -505,10 +505,33 @@ correspondant, à droite la colonne de preview (vide → generating → in-feed 
 le voile « la brief a changé depuis cette image »). **La mise en page ne change jamais** — ni au
 changement de pane, ni à l'arrivée de la première image.
 
-- **Options** = les **sept mêmes lignes** que le panneau épinglé (`settingRows`, exporté pour ça),
-  au même rythme (`gap: xxs`) : les sept tiennent dans la moitié à 1440×900 sans scroll. Le pane
-  scrolle quand il faut — sans danger, puisque les réglages n'ont plus de flyout à faire sortir de
-  la boîte depuis qu'ils sont des accordéons qui s'ouvrent en place.
+- **Options** = les **sept mêmes lignes** que le panneau épinglé, mais en **deux groupes bornés**
+  au lieu d'une échelle plate : _« What's in the image »_ (References · Text in image · Branding) et
+  _« How it's made »_ (Type · Style · Format · Output). FEATURES disait depuis toujours que l'ordre
+  encode ce raisonnement ; dans une colonne de 284px il ne pouvait qu'être **impliqué par la
+  séquence**, ici il y a la place pour l'énoncer — et l'énoncer est ce qui transforme sept lignes de
+  poids égal en deux choses qu'on scanne. `settingRowEntries` étiquette chaque ligne de son `name`
+  pour que le groupage se fasse **par nom et pas par index** : ajouter une huitième ligne ne peut
+  pas déplacer en silence la frontière d'un groupe.
+  Le groupe est une **carte** construite sur la recette de `.ap-card` valeur pour valeur (blanc,
+  1px grey-10, le radius de carte de l'app) **plutôt qu'en prenant la classe** : `.ap-card` porte
+  `padding: sm` + `gap: sm`, et ces lignes ont besoin que leurs filets aillent d'un bord à l'autre.
+  Overrider une classe `.ap-*` hors de `ds-patches.css` retourne la cascade en silence, donc on
+  compose depuis les mêmes tokens. Pas d'ombre, donc une carte qui contient des lignes n'imbrique
+  aucune élévation.
+- **Une mesure, un bord gauche.** Le formulaire fait ~520px et n'occupe **pas** toute la moitié :
+  à pleine largeur une ligne posait son libellé contre un bord et sa valeur contre l'autre, 400px
+  plus loin, et la paire cessait de se lire comme une paire. Il est **aligné à gauche et non
+  centré** — la bande de chips, les captions de groupe et les blocs du brief partent tous du même
+  bord gauche, ce qui est ce qui en fait une seule colonne. Le pane **Advanced** prend la largeur
+  entière de la moitié parce que c'est de la **prose** : à 520px ses deux colonnes tombaient à ~40
+  caractères par ligne, sous les 45-75 que l'œil demande.
+- Le pane scrolle quand il faut — sans danger, puisque les réglages n'ont plus de flyout à faire
+  sortir de la boîte depuis qu'ils sont des sections qui s'ouvrent en place. Le bord bas **se fond**
+  (`mask-image` + `animation-timeline: scroll(self block)`, le jumeau vertical de
+  `.isv2-refs.is-scrollable`) : le bas d'une carte de groupe est une **bordure**, donc coupée net
+  elle a l'air cassée, et macOS masque les barres de défilement. Le fondu ne coûte rien quand tout
+  tient : une scroll-timeline sur un élément non scrollable est inactive.
 - **Advanced** = les **mêmes blocs éditables** que l'auto-brief, avec les mêmes règles : taper dans
   un bloc **EST** la reprise en main, un réglage changé ensuite marque le brief périmé au lieu de
   l'écraser, et le garde-fou nomme le réglage qu'il s'apprête à réécrire. Le chip est **désactivé
@@ -548,6 +571,25 @@ sont partagés par les deux variantes en split, le même motif que `topic-articl
 « above » dans le footer de l'auto-brief, un onglet plus loin dans V3, et une phrase qui dit « above »
 à propos d'un onglet est simplement fausse. Les deux états « repris en main » ne font aucune
 affirmation spatiale et sont partagés mot pour mot.
+
+### Trois écarts au DS corrigés dans la foulée
+
+- **`is-set` n'est plus bleu** (V3 seulement). La valeur d'une ligne décidée passait à
+  `--sys-border-color-active` (#178DFE) : cela mettait la **seule couleur du formulaire** sur deux
+  noms de marque — la chose la moins importante de l'écran — et teintait une **donnée statique** de
+  la couleur que la maison réserve à l'interactif. Elle se lit maintenant en **encre + graisse**
+  (grey-100 bold quand c'est décidé, grey-80 regular sinon), le levier que les règles maison
+  nomment pour exactement ça. Portée à `.isv2-opts` : le panneau épinglé garde sa décision
+  documentée (`12bec519`, contraste mesuré).
+- **La ligne désactivée** (le Style quand une référence pilote le look) était `--ref-color-grey-40`
+  (#AEB5C1) **plus un italique**. grey-40 est sous le plancher d'encre grey-80 — la ligne avait
+  l'air cassée, pas indisponible — et l'italique n'existe nulle part dans le ramp typo du DS.
+  C'est **grey-60**, le seul palier que les règles réservent au disabled, sans italique. Corrigé
+  **globalement** : c'était un bug, pas un arbitrage.
+- **Plus de labels en majuscules sur cet écran.** `.isv2-bs-eyebrow` passe en `text-transform:
+uppercase`, ce que les règles maison interdisent — on hiérarchise par taille, graisse et encre.
+  Neutralisé sous `.isv2-bs--setup`, si bien que _« The brief I sent »_ et _« Preview »_ parlent de
+  la même voix que les captions de groupe en face. Le stage auto-brief garde son traitement.
 
 > ⚠️ Le switch de pane est une **paire de `.ap-filter-chip`**, pas `.ap-tabs`. Le header de la modale
 > porte déjà la seule bande d'onglets de l'écran (Generate | Edit) ; une seconde à 300px de là

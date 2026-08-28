@@ -36,11 +36,16 @@
 //    auto-brief stage uses (`.isv2-bs`), so switching pane or landing an image reflows
 //    nothing. The options half scrolls internally; the preview half does not.
 //
+// 4. The form has a MEASURE (~520px, centred in its half) rather than filling it. At the
+//    half's full width a row put its label at one edge and its value at the other with
+//    400px of nothing between them — the pair stopped reading as a pair. A form is one
+//    of the few things that should be narrower than the space it has.
+//
 // The brief's blocks (brief-blocks.js) and the preview column (preview-column.js) are
 // shared with the auto-brief stage — one renderer each, two hosts, so a card and the
 // thing it opens can't end up saying different sentences about the same brief.
 
-import { settingRows } from "./settings-view.js?v=18";
+import { settingRowEntries } from "./settings-view.js?v=19";
 import { briefBody, briefNote } from "./brief-blocks.js?v=2";
 import { previewColumn } from "./preview-column.js?v=1";
 
@@ -65,10 +70,37 @@ function paneTabs(st) {
 }
 
 // The seven rows, verbatim from the settings panel — same sections, same state, same
-// data-* hooks. Only the container differs: here they sit in the flow of a half-stage
-// instead of a 284px column pinned to the stage's edge.
+// data-* hooks — but in TWO bounded groups instead of one flat ladder.
+//
+// FEATURES has always said the order encodes a reasoning: "ce qui va DANS l'image, puis
+// son traitement". In a 284px column that could only ever be implied by the sequence.
+// Here there is room to state it, and stating it is what turns seven equal-weight rows
+// into two things a reader can scan. The caption is the de-emphasised half of a
+// label/value pair — caption size, grey-80, sentence case (the house rule bans
+// uppercase labels) — so the group reads as an answer under a question.
+//
+// The group is a CARD, built to `.ap-card`'s recipe value for value (white,
+// 1px grey-10, the app's card radius) rather than by taking the class: `.ap-card`
+// carries `padding: sm` and `gap: sm`, and these rows need the hairlines to run
+// edge to edge with nothing between them. Overriding a `.ap-*` class outside
+// ds-patches.css flips the cascade silently, so this composes from the same tokens
+// instead — reuse, then compose, then invent.
+const GROUPS = [
+  { label: "What's in the image", rows: ["refs", "renderText", "branding"] },
+  { label: "How it's made", rows: ["imageType", "style", "format", "output"] },
+];
+
 function optionsPane(st) {
-  return `<div class="isv2-opts">${settingRows(st)}</div>`;
+  const entries = settingRowEntries(st);
+  const groups = GROUPS.map(({ label, rows }) => {
+    const html = rows.map((name) => entries.find((e) => e.name === name)?.html || "").join("");
+    if (!html) return "";
+    return `<div class="isv2-optgroup">
+      <p class="isv2-optgroup-label">${label}</p>
+      <div class="isv2-optgroup-rows">${html}</div>
+    </div>`;
+  }).join("");
+  return `<div class="isv2-opts">${groups}</div>`;
 }
 
 // The brief, and where it stands. The status line sits UNDER the blocks here rather
@@ -89,7 +121,7 @@ function advancedPane(st) {
 
 export function setupStage(st) {
   const advanced = st.pane === "advanced" && briefReady(st);
-  return `<div class="isv2-bs is-split">
+  return `<div class="isv2-bs is-split isv2-bs--setup">
     <div class="isv2-bs-left">
       ${paneTabs(st)}
       ${advanced ? advancedPane(st) : optionsPane(st)}

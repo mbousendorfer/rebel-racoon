@@ -120,10 +120,18 @@ function bestFor(network) {
   return `<p class="isv2-sheet-hint" aria-label="Best for ${escapeHtml(label)}">Best for ${glyph}</p>`;
 }
 
-export function settingRows(st) {
+// The seven rows, each tagged with its own name.
+//
+// Tagged rather than concatenated because V3 needs to GROUP them — References / Text /
+// Branding are what goes IN the image, Type / Style / Format / Output are how it is
+// made, and that reasoning was only ever implied by the vertical order. Grouping by
+// name and not by index, so inserting an eighth row can't silently move one group's
+// boundary (setup-stage.js#optionsPane).
+export function settingRowEntries(st) {
   // Sections are independent: a Set of what's shut, not a single "which one is open".
   const isOpen = (id) => !st.collapsedGroups.has(id);
   const out = [];
+  const row = (cfg) => out.push({ name: cfg.name, html: settingRow(cfg) });
 
   // ONE References section. Brand kit used to be its own row above this one, and
   // that was a distinction without a difference: both hold images the generator
@@ -134,30 +142,26 @@ export function settingRows(st) {
   // Pinned open, the way Brand kit was: it's that same question, and a section you
   // re-open on every visit shouldn't be a section you have to open.
   const picked = imageStudio.selectedReference(st);
-  out.push(
-    settingRow({
-      name: "refs",
-      label: "References",
-      tip: REFS_TIP,
-      value: refSummary(picked, st),
-      set: !!picked,
-      pinned: true,
-      body: () => refsBody(st, picked),
-    }),
-  );
+  row({
+    name: "refs",
+    label: "References",
+    tip: REFS_TIP,
+    value: refSummary(picked, st),
+    set: !!picked,
+    pinned: true,
+    body: () => refsBody(st, picked),
+  });
 
   // Text in image — words the model paints into the artwork. It sits with the
   // references because both answer "what goes IN the image"; type / style /
   // format / output below are all treatment.
-  out.push(
-    settingRow({
-      name: "renderText",
-      label: "Text in image",
-      tip: RENDER_TEXT_TIP,
-      open: isOpen("renderText"),
-      body: () => renderTextBody(st),
-    }),
-  );
+  row({
+    name: "renderText",
+    label: "Text in image",
+    tip: RENDER_TEXT_TIP,
+    open: isOpen("renderText"),
+    body: () => renderTextBody(st),
+  });
 
   // Branding — the Playbook's logo, stamped on the artwork. Third in the "what
   // goes IN the image" run (references / words / mark) before the treatment
@@ -177,82 +181,79 @@ export function settingRows(st) {
   else if (branded && tinted) brandValue = st.playbookName || "On";
   else if (branded) brandValue = "Logo only";
   else if (tinted) brandValue = "Colors only";
-  out.push(
-    settingRow({
-      name: "branding",
-      label: "Branding",
-      tip: BRANDING_TIP,
-      value: brandValue,
-      set: branded || tinted,
-      disabled: !hasLogo && !hasColors,
-      open: isOpen("branding"),
-      body: () => brandingBody(st, branded, tinted),
-    }),
-  );
+  row({
+    name: "branding",
+    label: "Branding",
+    tip: BRANDING_TIP,
+    value: brandValue,
+    set: branded || tinted,
+    disabled: !hasLogo && !hasColors,
+    open: isOpen("branding"),
+    body: () => brandingBody(st, branded, tinted),
+  });
 
   // Image type — what the image is FOR. A distinct dimension from the style.
   const typeLabel = st.imageTypeKey
     ? imageStudio.IMAGE_TYPES.find((o) => o.key === st.imageTypeKey)?.label || "Any"
     : "Any";
-  out.push(
-    settingRow({
-      name: "imageType",
-      label: "Type",
-      value: typeLabel,
-      set: !!st.imageTypeKey,
-      open: isOpen("imageType"),
-      body: () => imageTypeBody(st),
-    }),
-  );
+  row({
+    name: "imageType",
+    label: "Type",
+    value: typeLabel,
+    set: !!st.imageTypeKey,
+    open: isOpen("imageType"),
+    body: () => imageTypeBody(st),
+  });
 
   // Style preset — the aesthetic look. Mutually exclusive with references: when
   // refs guide the look, the row switches off and says why instead.
   const hasRefs = st.referenceImages.length > 0;
   const styleLabel = st.styleKey ? imageStudio.STYLE_PRESETS.find((o) => o.key === st.styleKey)?.label || "Any" : "Any";
-  out.push(
-    settingRow({
-      name: "style",
-      label: "Style",
-      value: hasRefs ? "From references" : styleLabel,
-      set: !hasRefs && !!st.styleKey,
-      disabled: hasRefs,
-      open: isOpen("style"),
-      body: () => styleBody(st),
-    }),
-  );
+  row({
+    name: "style",
+    label: "Style",
+    value: hasRefs ? "From references" : styleLabel,
+    set: !hasRefs && !!st.styleKey,
+    disabled: hasRefs,
+    open: isOpen("style"),
+    body: () => styleBody(st),
+  });
 
   // Format — the value says the shape ("1:1 · Square"); the ratio glyphs live in
   // the sheet, where they actually help you choose.
   const choices = imageStudio.formatChoices(KEY);
   const cur = choices.find((f) => f.id === st.formatId);
-  out.push(
-    settingRow({
-      name: "format",
-      label: "Format",
-      value: cur ? `${cur.tag} · ${cur.label}` : "Aspect ratio",
-      set: false, // format always has a value; "set" would be meaningless here
-      open: isOpen("format"),
-      body: () => formatBody(st, choices),
-    }),
-  );
+  row({
+    name: "format",
+    label: "Format",
+    value: cur ? `${cur.tag} · ${cur.label}` : "Aspect ratio",
+    set: false, // format always has a value; "set" would be meaningless here
+    open: isOpen("format"),
+    body: () => formatBody(st, choices),
+  });
 
   // Output — single vs carousel, merged with its count control.
   const canCarousel = imageStudio.supportsCarousel(st.network);
   const isCarousel = canCarousel && st.outputMode === "carousel";
-  out.push(
-    settingRow({
-      name: "output",
-      label: canCarousel ? "Output" : "Variations",
-      value: isCarousel
-        ? `Carousel · ${st.slideCount}`
-        : `${st.variationCount} variation${st.variationCount > 1 ? "s" : ""}`,
-      set: isCarousel,
-      open: isOpen("output"),
-      body: () => outputBody(st, canCarousel, isCarousel),
-    }),
-  );
+  row({
+    name: "output",
+    label: canCarousel ? "Output" : "Variations",
+    value: isCarousel
+      ? `Carousel · ${st.slideCount}`
+      : `${st.variationCount} variation${st.variationCount > 1 ? "s" : ""}`,
+    set: isCarousel,
+    open: isOpen("output"),
+    body: () => outputBody(st, canCarousel, isCarousel),
+  });
 
-  return out.join("");
+  return out;
+}
+
+/** All seven, in order, as one string — what the pinned inspector wants. */
+export function settingRows(st) {
+  return settingRowEntries(st)
+    .map((e) => e.html)
+    .join("");
 }
 
 // Text in image — a plain DS textarea field, and nothing under it until something
