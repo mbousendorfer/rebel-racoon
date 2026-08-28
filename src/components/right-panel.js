@@ -12,7 +12,7 @@ import {
   attachImageToDraft,
   subscribe as subscribePostsStore,
 } from "../posts-store.js?v=52";
-import { renderPostCard } from "./post-card.js?v=96";
+import { renderPostCard } from "./post-card.js?v=98";
 import { renderTopPostEcho } from "./top-post-card.js?v=91";
 import { renderClipCard } from "./clip-card.js?v=33";
 import { onFeedbackClick } from "./feedback-control.js?v=4";
@@ -524,6 +524,22 @@ export function init() {
     if (event.relatedTarget && slot.contains(event.relatedTarget)) return;
     slot.classList.remove("is-dragover");
   });
+  // Click anywhere in the empty slot = browse for a file. The slot is titled
+  // "Upload an image" and is dashed like every other drop target in the app, so
+  // it has to accept a click as well as a drop — a box that looks and reads like
+  // a dropzone and does nothing when clicked is a broken promise.
+  //
+  // The guard is what makes this safe: any click that lands on a real control
+  // inside the slot (Generate, Image Studio) is left alone. This is also why
+  // `bindDropzone` is not used — its own click handler has no such guard and
+  // would fire the picker for every click in the zone.
+  el.addEventListener("click", (event) => {
+    const slot = event.target.closest?.("[data-post-drop]");
+    if (!slot) return;
+    if (event.target.closest("button, a, input, [data-post-image], [data-post-studio]")) return;
+    onPostImageUpload(slot.dataset.postDrop);
+  });
+
   el.addEventListener("drop", (event) => {
     const slot = dropSlot(event);
     if (!slot) return;

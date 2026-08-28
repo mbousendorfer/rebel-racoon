@@ -38,8 +38,16 @@ import { renderFeedbackControl } from "./feedback-control.js?v=4";
 //    rectangles read as a pair of equals no matter what the labels say. The DS
 //    ships no filled AI button (the mermaid gradient exists only in that border
 //    form), and the house ladder is written down in _analyse-common.js:394 —
-//    primary -> stroked grey -> ghost grey. Orange is the documented "primary
-//    AI CTA" (DESIGN-SYSTEM.md), so Generate is `.ap-button.primary.orange`.
+//    primary -> stroked grey -> ghost grey.
+//    ⚠️ BLUE, not orange, and that is deliberate. DESIGN-SYSTEM.md calls orange
+//    the "primary AI CTA", but Matt chose blue here — the same call already made
+//    for the Quickpicker's primary. Do NOT "restore" it to orange.
+// 1b. The whole slot is clickable (browse), so the copy says so. A dashed box
+//    titled "Upload an image" that does nothing on click is the same broken
+//    promise the dashed border itself was. The zone gets no role/tabindex
+//    though: it contains real buttons, and a nested interactive would both
+//    duplicate a tab stop and put a fake button around real ones — the rail's
+//    Upload icon is the keyboard route.
 // 2. Only ONE accent in the block. The tile stays grey rather than borrowing the
 //    orange Archie tile from drafts-card__icon: a second orange would split the
 //    gravity the filled button is there to hold.
@@ -79,11 +87,11 @@ function renderEmptyMedia(post, opts) {
 
   return `<div class="posts__card-media-empty">
     <div class="posts__card-media-empty-slot" data-post-drop="${post.id}">
-      <span class="posts__card-media-empty-tile" aria-hidden="true"><i class="ap-icon-image"></i></span>
-      <p class="posts__card-media-empty-title">Add an image</p>
-      <p class="posts__card-media-empty-sub">I'll write the brief from this draft — or drop an image here.</p>
+      <span class="posts__card-media-empty-tile" aria-hidden="true"><i class="ap-icon-upload"></i></span>
+      <p class="posts__card-media-empty-title">Upload an image</p>
+      <p class="posts__card-media-empty-sub">Drop it here or browse — or I'll generate one from this draft.</p>
       <div class="posts__card-media-empty-actions">
-        <button type="button" class="ap-button primary orange" data-post-image="${post.id}">
+        <button type="button" class="ap-button primary blue" data-post-image="${post.id}">
           <i class="ap-icon-archie-official"></i>
           <span>Generate an image</span>
         </button>

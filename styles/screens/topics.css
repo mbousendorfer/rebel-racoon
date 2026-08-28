@@ -984,7 +984,15 @@
   display: flex;
   align-items: center;
   gap: var(--ref-spacing-xxxs);
-  padding-block: var(--ref-spacing-xs);
+  /* TOP ONLY when collapsed. ⚠️ It was `padding-block`, symmetric, and that
+     DOUBLE-COUNTED the card's own bottom gutter: collapsed, this section is the
+     article's last band, so the 24px of `__pane-body` padding is already the space
+     under this row. Symmetric padding put 36px below the text against 25 above, so
+     the band grew 12px AND the row read as sitting high in it. Measured, before:
+     79px of band, text 25/36. After: 67px, text 25/24.
+     The row's own padding comes back the moment the section OPENS — see below,
+     where posts follow it and there is no gutter to borrow. */
+  padding-top: var(--ref-spacing-xs);
   cursor: pointer;
   user-select: none;
 }
@@ -1030,6 +1038,15 @@
 
 .topic-article__section-check:checked ~ .topic-article__posts {
   display: flex;
+}
+
+/* Open, the row has posts under it instead of the card's bottom gutter, so it pays
+   for its own bottom padding again. Collapsed it borrows the gutter — see the note
+   on the label. One consequence, and it is the right one: the click target is 30px
+   tall at rest and 42 when open, and in both states it is the WHOLE row, edge to
+   edge, which is what a reader aims at. */
+.topic-article__section-check:checked ~ .topic-article__section-head .topic-article__section-label {
+  padding-bottom: var(--ref-spacing-xs);
 }
 
 .topic-article__section-check:checked ~ .topic-article__section-head .topic-article__section-toggle {

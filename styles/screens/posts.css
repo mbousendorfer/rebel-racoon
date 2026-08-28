@@ -313,16 +313,35 @@
   border-radius: var(--app-radius-md);
   background: transparent;
   text-align: center;
+  /* The whole zone browses for a file (right-panel.js), so it says so. */
+  cursor: pointer;
   transition:
     border-color var(--ref-animation-short),
     background var(--ref-animation-short);
 }
 
-/* Dragging a file over it. Same electric-blue language as `.ap-dropzone`'s own
-   is-dragover, so a drop target looks like a drop target everywhere in the app. */
-.posts__card-media-empty-slot.is-dragover {
+/* Hover and dragover, in the same electric-blue gradation `.ap-dropzone` uses —
+   05 on hover, 10 while a file is actually over it — so a drop target behaves
+   like every other drop target in the app. These fills are transient feedback,
+   which is why they survive while the RESTING fill was removed. */
+.posts__card-media-empty-slot:hover {
   border-color: var(--ref-color-electric-blue-100);
   background: var(--ref-color-electric-blue-05);
+}
+
+.posts__card-media-empty-slot.is-dragover {
+  border-color: var(--ref-color-electric-blue-100);
+  background: var(--ref-color-electric-blue-10);
+}
+
+/* The generating slot is not a drop target and not clickable. */
+.posts__card-media-empty-slot.is-generating {
+  cursor: default;
+}
+
+.posts__card-media-empty-slot.is-generating:hover {
+  border-color: var(--ref-color-grey-20);
+  background: transparent;
 }
 
 /* Neutral tile. It anchors the column without competing with the orange CTA. */

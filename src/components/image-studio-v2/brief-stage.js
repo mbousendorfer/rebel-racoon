@@ -27,7 +27,7 @@
 import { escapeHtml } from "../../utils.js?v=22";
 import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=45";
 import { getPosts } from "../../posts-store.js?v=52";
-import { renderPostCard } from "../post-card.js?v=96";
+import { renderPostCard } from "../post-card.js?v=98";
 import { KEY, ctx } from "./context.js?v=48";
 import * as imageStudio from "../../image-studio.js?v=98";
 import { imageTypeBody, styleBody, formatBody, outputBody } from "./settings-view.js?v=16";
