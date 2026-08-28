@@ -295,18 +295,22 @@ function renderPage(pb) {
 
   return html`
     ${raw(renderToolbar(pb, feed))}
+    <!-- The count is a PAGE ROW, above the reader — not a header inside the list
+         column. That is what lets the pane's card edge meet the list's FIRST CARD
+         edge: with the count out of the split, the only thing between the column's
+         top and its first card is the age separator, which is exactly what
+         --topic-group-offset is derived from. Inside the column it added 37px the
+         offset knew nothing about, so the pane floated 44px high.
+         It is capped and left-aligned for free: the .topics-view > * rule caps
+         every direct child of this screen.
+         NOTE no backticks in here - this is inside a template literal. -->
+    ${raw(empty || view.scanning ? "" : renderListHead(feed))}
     <div class="topics-view__body">
       ${raw(
         empty
           ? html`<div class="topics-view__blank">${raw(renderList(shown, more, total, view.scanning, feed))}</div>`
           : html`<div class="topics-view__split">
               <section class="topics-view__list-col" aria-label="Topics">
-                <!-- Suppressed while scanning: a total posted beside five ghost
-                     cards is a number about content that is not drawn yet. The
-                     alignment does not care either way — that is exactly what the
-                     shared top line buys, the pane no longer depends on what sits
-                     above the groups. -->
-                ${raw(view.scanning ? "" : renderListHead(feed))}
                 <div class="topics-view__list">${raw(renderList(shown, more, total, view.scanning, feed))}</div>
               </section>
               ${raw(
@@ -652,17 +656,23 @@ function renderPaneSkeleton() {
 // The count is UNFILTERED — it describes the feed, not the current selection, so
 // narrowing the filter never looks like Topics ceasing to exist.
 //
-// ── It is a SIBLING of the scroller, not its first child ──────────────────
-// It used to be emitted from inside renderList(), so it lived in the scrollport
-// and scrolled out of view — a count you cannot consult while scrolling counts
-// nothing, and it gave the two columns different anatomies: the pane's header is
-// fixed, this one was not.
+// ── It is a PAGE ROW, above the reader ────────────────────────────────────
+// Not inside the list column, and not inside the scroller. Three placements were
+// tried and each failed differently:
 //
-// Outside it, this is the list column's header the way `topics-view__pane-head` is
-// the pane's, and the two columns start on the same line because they are children
-// of the same flex row with nothing offsetting either. That is what replaced
-// `--topic-group-offset`: an arithmetic inset that had to be remembered, and was
-// not — see the note on `.topics-view__pane` in topics.css.
+//   in the scroller       it scrolled out of view, and a count you cannot consult
+//                         while scrolling counts nothing;
+//   in the list column    it put 37px between the column's top and its first card
+//                         that `--topic-group-offset` knew nothing about, so the
+//                         pane's edge floated 44px above the cards — the drift
+//                         this whole run was chasing;
+//   ⇒ a page row          the split holds only the two readers, so the age
+//                         separator is the ONLY thing above the first card and the
+//                         offset that clears it is exact again.
+//
+// It is still fixed (the page does not scroll side by side), still capped and
+// left-aligned (`.topics-view > *` caps every direct child), and still quiet.
+// Suppressed while scanning and on the dead ends, where there is nothing to count.
 function renderListHead(feed) {
   if (!feed) return "";
   const totalAll = countAll(feed.id);
