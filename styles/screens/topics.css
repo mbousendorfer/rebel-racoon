@@ -76,9 +76,6 @@
 :root {
   /* ~68 characters at body size — the top of the comfortable reading range,
      which is where analytical prose broken up by headings wants to sit. */
-  /* The age separator's own box — its line-height plus the gap to its first card.
-     The pane is inset by this so its card edge meets the list's card edges. */
-  --topic-group-offset: calc(var(--sys-text-style-caption-bold-line-height) + var(--ref-spacing-xxxs));
   --topic-measure: 600px;
   /* The list's ceiling: past this, three lines of headline stop reading as a
      row in a queue and start reading as a card again. */
@@ -163,28 +160,58 @@
 /* ⚠️ Row 3 — the two `.ap-tabs` — is gone; `later` is a state in the Filters
    panel now. `git log -S topics-view__tabs` has the rule. */
 
-/* ── The list's header ─────────────────────────────────────────────────────
+/* ── The list column's header ──────────────────────────────────────────────
    `listening-feed-search-list-header`'s shape, reduced to the one number this feed
-   has. It sits INSIDE the list column, above the first age separator, because it
-   counts that column's contents — the pane has its own header and a different
-   subject. ⚠️ It briefly held an unseen counter and a bulk action; that axis is
-   out for now. */
+   has. It counts THIS column's contents — the pane has its own header and a
+   different subject. ⚠️ It briefly held an unseen counter and a bulk action; that
+   axis is out for now.
+
+   ⚠️ It was the scrollport's FIRST CHILD and it scrolled out of view. Two costs: a
+   count you cannot consult while scrolling counts nothing, and it gave the two
+   columns different anatomies — the pane's header is fixed, this one was not. It is
+   a sibling of the scroller now, so the column reads header + scroller exactly as
+   the pane reads head + body.
+
+   ── Why it is inset from the top ─────────────────────────────────────────
+   The two columns start on the same y by construction (children of one flex row,
+   neither offsetting). This padding is what makes that line VISIBLE: it puts this
+   count's text on the same line as the pane's first line of text. That line is
+   three things down from the pane's top edge, and the calc is those three:
+
+     1px   the pane card's border
+     sm    `.topics-view__pane-head`'s own padding-top
+     xxxs  half the slack in `.topic-article__provenance`, whose 24px min-height
+           centres a 16px caption line — (md - caption line-height) / 2 = 4
+
+   ⚠️ A `min-height: md` here was tried first, on the idea that mirroring the
+   provenance run's box would centre the two lines identically. It does nothing:
+   17 + 16 = 33 already exceeds 24, so the box never had slack to centre in and the
+   count sat 4px high. The third term is that 4px, stated.
+
+   ⚠️ Not `padding-bottom` any more — the column's own `gap` carries the distance
+   to the scroller, so the space belongs to the layout rather than to the header. */
 .topics-view__list-head {
   display: flex;
   align-items: center;
   gap: var(--ref-spacing-xxs);
   flex: 0 0 auto;
-  /* The separator below it already carries 4px to its first card; this keeps the
-     header off the toolbar without doubling that. */
-  padding-bottom: var(--ref-spacing-xxs);
+  padding-top: calc(var(--ref-spacing-sm) + var(--ref-spacing-xxxs) + 1px);
 }
 
+/* ── A count is METADATA ───────────────────────────────────────────────────
+   ⚠️ It was `--sys-text-style-h4-*` in `--sys-text-color-default` — 16/700 dark,
+   the EXACT type `.topic-card__headline` wears two rows below it. So the number
+   describing the list competed with the content it describes, and the column's
+   loudest line was the one carrying the least. Caption weight and light ink put it
+   back where apparatus belongs. The ink is the only lever pulled that hard, and it
+   is the right one here: this is not a hierarchy step inside content, it is content
+   versus its label. */
 .topics-view__list-count {
   margin: 0;
-  font-size: var(--sys-text-style-h4-size);
-  line-height: var(--sys-text-style-h4-line-height);
-  font-weight: var(--sys-text-style-h4-weight);
-  color: var(--sys-text-color-default);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  font-weight: var(--sys-text-style-caption-weight);
+  color: var(--sys-text-color-light);
 }
 
 /* ── The reader ────────────────────────────────────────────────────────────
@@ -238,6 +265,10 @@
 .topics-view__list-col {
   display: flex;
   flex-direction: column;
+  /* Between the fixed header and the scroller. It replaces the header's own
+     `padding-bottom`, so the distance belongs to the column rather than to one of
+     the two things it separates. */
+  gap: var(--ref-spacing-xxs);
   /* Basis 0, NOT auto. On `auto` the basis is the cards' own content width, so
      this column grew past the remainder and shrank the pane instead — list 729,
      pane 379, the layout inverted. From 0 it grows into exactly what the pane
@@ -327,17 +358,25 @@
 
    `align-self: flex-start` + `max-height: 100%` is the vertical half: the card
    is as tall as the article, up to the window, and pane-body scrolls past that. */
-/* ── The pane's card lines up with the LIST'S CARDS, not with the column ───
-   The two columns start on the same y, but the list's first card does not: the age
-   separator ("Last 7 days") sits above it, so the cards beside the pane began 20px
-   lower than the pane's own top edge. A separator is a caption over its group, like
-   a table's — the CARDS are what the eye lines up, and one card edge floating 20px
-   above a column of card edges is the first thing it notices.
+/* ── The two columns share their TOP LINE, and nothing computes it ─────────
+   Both are children of this one flex row and neither offsets itself, so the line is
+   a consequence of the DOM. The list column's header and the pane's header start on
+   it; the first card sits below the age separator, inside the scroller, the way a
+   table's first row sits below its header.
 
-   Offset by exactly the separator's own box, derived from the two values the label
-   is built from rather than typed as 20px, so it cannot drift if either changes.
-   The cap comes down by the same amount, or the pane would overflow the row it is
-   inset into. */
+   ⚠️ THIS REPLACED AN ARITHMETIC INSET, and the inset had already drifted. The pane
+   carried `margin-top: var(--topic-group-offset)` — the age separator's own box,
+   20px — to make its card edge meet the list's FIRST CARD's edge. Then
+   `.topics-view__list-head` (28px) and the scroller's own `gap: sm` (16px) landed
+   above the groups, so the real distance became 64px while the offset stayed at 20:
+   the pane's top edge floated 44px above the first card and level with nothing at
+   all. An offset derived from one element cannot survive a second element being
+   inserted above it, and nothing warns you. So the offset is gone, along with the
+   `max-height` that had to compensate for it.
+
+   The cost, stated: the pane's top edge no longer meets a card edge. It meets the
+   other column's header, which is the line a reader actually reads across — and it
+   is the only one that cannot go stale. */
 .topics-view__pane {
   display: flex;
   flex-direction: column;
@@ -345,8 +384,7 @@
   min-width: 0;
   min-height: 0;
   align-self: flex-start;
-  margin-top: var(--topic-group-offset);
-  max-height: calc(100% - var(--topic-group-offset));
+  max-height: 100%;
   background: var(--app-surface);
   border: 1px solid var(--app-border-soft);
   border-radius: var(--app-radius-card);
@@ -558,9 +596,6 @@
        scrolling page, and the width cap is the column's now, not the pane's. */
     max-height: none;
     align-self: stretch;
-    /* And no separator to clear: the pane follows the whole list rather than
-       sitting beside its first group. */
-    margin-top: 0;
   }
 }
 

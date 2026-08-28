@@ -301,6 +301,12 @@ function renderPage(pb) {
           ? html`<div class="topics-view__blank">${raw(renderList(shown, more, total, view.scanning, feed))}</div>`
           : html`<div class="topics-view__split">
               <section class="topics-view__list-col" aria-label="Topics">
+                <!-- Suppressed while scanning: a total posted beside five ghost
+                     cards is a number about content that is not drawn yet. The
+                     alignment does not care either way — that is exactly what the
+                     shared top line buys, the pane no longer depends on what sits
+                     above the groups. -->
+                ${raw(view.scanning ? "" : renderListHead(feed))}
                 <div class="topics-view__list">${raw(renderList(shown, more, total, view.scanning, feed))}</div>
               </section>
               ${raw(
@@ -638,6 +644,33 @@ function renderPaneSkeleton() {
   </section>`;
 }
 
+// ── The list column's own header ───────────────────────────────────────────
+// `listening-feed-search-list-header`'s shape, reduced to the one number this feed
+// has: the total. ⚠️ It briefly carried an unseen count and a `Mark all as seen`
+// action — the whole seen/unseen axis is out for now, see `git log -S countUnseen`.
+//
+// The count is UNFILTERED — it describes the feed, not the current selection, so
+// narrowing the filter never looks like Topics ceasing to exist.
+//
+// ── It is a SIBLING of the scroller, not its first child ──────────────────
+// It used to be emitted from inside renderList(), so it lived in the scrollport
+// and scrolled out of view — a count you cannot consult while scrolling counts
+// nothing, and it gave the two columns different anatomies: the pane's header is
+// fixed, this one was not.
+//
+// Outside it, this is the list column's header the way `topics-view__pane-head` is
+// the pane's, and the two columns start on the same line because they are children
+// of the same flex row with nothing offsetting either. That is what replaced
+// `--topic-group-offset`: an arithmetic inset that had to be remembered, and was
+// not — see the note on `.topics-view__pane` in topics.css.
+function renderListHead(feed) {
+  if (!feed) return "";
+  const totalAll = countAll(feed.id);
+  return html`<div class="topics-view__list-head">
+    <h2 class="topics-view__list-count">${String(totalAll)} ${totalAll === 1 ? "topic" : "topics"}</h2>
+  </div>`;
+}
+
 // ── The list ───────────────────────────────────────────────────────────────
 
 function renderList(shown, more, total, scanning, feed) {
@@ -646,19 +679,6 @@ function renderList(shown, more, total, scanning, feed) {
   if (!shown.length) {
     return renderEmpty(total, feed);
   }
-
-  // ── The list's own header ────────────────────────────────────────────────
-  // `listening-feed-search-list-header`'s shape, reduced to the one number this
-  // feed has: the total. ⚠️ It briefly carried an unseen count and a
-  // `Mark all as seen` action — the whole seen/unseen axis is out for now, see
-  // `git log -S countUnseen`.
-  //
-  // The count is UNFILTERED — it describes the feed, not the current selection, so
-  // narrowing the filter never looks like Topics ceasing to exist.
-  const totalAll = feed ? countAll(feed.id) : 0;
-  const head = html`<div class="topics-view__list-head">
-    <h2 class="topics-view__list-count">${String(totalAll)} ${totalAll === 1 ? "topic" : "topics"}</h2>
-  </div>`;
 
   const groups = groupTopicsByAge(shown);
   const body = groups
@@ -683,7 +703,7 @@ function renderList(shown, more, total, scanning, feed) {
     )
     .join("");
 
-  return html`${raw(head)} ${raw(body)}
+  return html`${raw(body)}
   ${raw(
     more
       ? html`<div class="topics-view__more" data-topic-sentinel>
