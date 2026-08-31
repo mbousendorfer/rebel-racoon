@@ -49,7 +49,7 @@
 // shared with the auto-brief stage — one renderer each, two hosts, so a card and the
 // thing it opens can't end up saying different sentences about the same brief.
 
-import { optionsForm } from "./options-form.js?v=7";
+import { optionsForm } from "./options-form.js?v=9";
 import { briefBody, briefNote } from "./brief-blocks.js?v=3";
 import { previewColumn } from "./preview-column.js?v=2";
 

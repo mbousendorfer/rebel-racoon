@@ -524,9 +524,8 @@ changement de pane, ni à l'arrivée de la première image.
   filtre, et le tie-breaker DS route un **choix exclusif dans un formulaire** vers **Radio /
   Radio-button-card** — le guide de `segmented-control` l'écrit noir sur blanc (_« ❌ an in-form
   exclusive choice (that's a Radio group) »_) et `.ap-segmented-control` n'est de toute façon pas
-  dans le `ds/` synced. Donc : `.ap-radio-container` (Type, ref-mode, Variations, Slides),
-  `.ap-radio-card` (Format avec son glyphe, Output avec son icône, Style avec ses vignettes en
-  `.card`), `.ap-toggle-container` dans **la forme DS exacte** (`<label><input><i></i><span>`, le
+  dans le `ds/` synced. Donc : `.ap-radio-container` (Type, Format, ref-mode, Variations, Slides),
+  `.ap-radio-card` (Output avec son icône, Style avec ses vignettes en `.card`), `.ap-toggle-container` dans **la forme DS exacte** (`<label><input><i></i><span>`, le
   libellé en enfant direct), `.ap-textarea-field` pour Text in image.
   **Chaque groupe est un `<fieldset>` avec un `<legend>`** : c'est ce qui fait que ↑↓ navigue dans le
   groupe et que Tab le saute.
@@ -632,10 +631,22 @@ uppercase`, ce que les règles maison interdisent — on hiérarchise par taille
 > toggle Image / In feed utilise les chips. Le même primitif rend d'ailleurs cette bande symétrique
 > de celle qui lui fait face dans l'en-tête du preview.
 
+> ⚠️ **Un seul poids pour tous les libellés d'option de ce formulaire.** Le DS met
+> `.ap-radio-card-title` en bold et `.ap-radio-container > span` en regular — juste quand une carte
+> est un objet autonome à comparer, mais dans une même carte de groupe ça faisait peser « Single
+> image » et « 1:1 » plus que « Any » et « Infographic » sans qu'un lecteur puisse dire pourquoi.
+> Neutralisé sous `.isv2-opts`. Dans la même veine, Format a **perdu son glyphe de ratio** : trois
+> cartes à ~130px dans une demi-cellule faisaient retourner « glyphe + tag + mot » à la ligne, et le
+> champ devenait trois colonnes en deux lignes mal alignées. Le tag dit déjà le ratio, et sans glyphe
+> Format parle le même vocabulaire que Type et Variations à côté — un seul type de contrôle par
+> groupe.
+
 > ⚠️ Une **tuile de référence dont l'image n'arrive pas** — ce sont des URLs distantes — était un
 > carré grey-05 sur une carte blanche bordé de grey-10 : invisible, et ça lisait « la section est
 > cassée » plutôt que « l'image n'est pas arrivée ». La tuile porte maintenant son propre placeholder
-> **sous** l'`<img>` (fond grey-10 + un glyphe `ap-icon-image`), donc une image chargée le recouvre
+> **sous** l'`<img>` (fond grey-10 + un glyphe `ap-icon-image` **discret** — 24px en grey-40 : à 48px
+> en grey-60 il transformait trois emplacements de référence en trois icônes d'erreur, la chose la
+> plus voyante du formulaire, à sa place d'honneur), donc une image chargée le recouvre
 > entièrement et ça ne coûte rien quand tout va bien. Corrigé pour **les trois hôtes**.
 > `display: block` sur `.isv2-ref` est porteur : la tuile était un `<button>` (inline-block) et est un
 > `<label>` maintenant, donc `inline` — et une boîte inline ignore `aspect-ratio`, ce qui la faisait

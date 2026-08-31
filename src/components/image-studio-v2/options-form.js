@@ -163,7 +163,11 @@ function referenceField(st) {
       ).join(""),
     ),
   );
-  const modeHint = `<p class="isv2-fieldnote">${escapeHtml(imageStudio.REF_MODES.find((m) => m.key === active).hint)}</p>`;
+  // ONE note. The mode's sentence and the fact that this image also settles Style were
+  // two consecutive 12px grey lines, the second wearing an info icon nothing else in the
+  // form wears — a wall of small grey text under the control it explains. Same ink, same
+  // size, one paragraph.
+  const modeHint = `<p class="isv2-fieldnote">${escapeHtml(imageStudio.REF_MODES.find((m) => m.key === active).hint)} It also sets the style, so there's no Style to pick.</p>`;
 
   return `<div class="isv2-field isv2-field--wide">
     ${head}
@@ -174,7 +178,6 @@ function referenceField(st) {
     </div>
     ${modes}
     ${modeHint}
-    <p class="isv2-fieldnote"><i class="ap-icon-info" aria-hidden="true"></i>This image sets the style, so there's no Style to pick.</p>
   </div>`;
 }
 
@@ -235,12 +238,15 @@ function styleField(st) {
 
 function formatField(st) {
   const choices = imageStudio.formatChoices(KEY);
+  // Plain radios, "1:1 · Square" on one line, and no ratio glyph. The glyph is a nice
+  // idea that cost more than it gave here: three cards sharing a half-width cell had
+  // ~130px each, so glyph + tag + word wrapped, and the field became three ragged
+  // two-line columns. Dropping it also puts Format in the same vocabulary as Type and
+  // Variations beside it — one kind of control per group, not two.
   const cards = choices
     .map((f) =>
-      radioCard("data-img-pick-format", "isv2-format", f.id, f.tag, {
+      radio("data-img-pick-format", "isv2-format", f.id, `${f.tag} · ${f.label}`, {
         checked: st.formatId === f.id,
-        desc: f.label,
-        glyph: `<span class="isv2-ratio-glyph" style="aspect-ratio:${f.ratio}" aria-hidden="true"></span>`,
       }),
     )
     .join("");
