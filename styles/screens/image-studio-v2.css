@@ -936,28 +936,28 @@
 
 /* ONE OPTION = ONE CARD. The "What's in the image" / "How it's made" group headings and
    the two group-cards that held several rows each were dropped at the user's call; every
-   setting is now its own card in a stack. The card is `.ap-card`'s recipe value for value
-   (white, 1px grey-10, the app's card radius) rather than the class itself, because
-   `.ap-card` brings `padding: sm` + `gap: sm` and each row supplies its own header/body
-   padding — overriding a `.ap-*` class outside ds-patches.css flips the cascade silently.
+   setting is now its own card in a stack.
 
-   It LIFTS off the canvas with `--app-shadow-card` — the elevation the classic stage's
-   `.isv2-frame` and every source/idea/post card carry. NOT nested elevation: the stage
-   and the pane are both flat, so a card's shadow is the only one under it. `overflow:
-   hidden` keeps the header's hover tint and the first/last rows inside the corner. */
+   The card is the DS's OWN recipe, value for value — `.ap-card` / `.ap-accordion` are both
+   `background white · 1px grey-10 · border-radius --ref-border-radius-md (8px)` and carry
+   NO shadow. It is composed from those tokens rather than by taking `.ap-card` (which adds
+   `padding: sm` + `gap: sm` each row supplies itself). An earlier pass gave these
+   `--app-shadow-card` + a 12px radius — the app's handoff-card look, which is NOT the DS
+   card; the DS card is flat, and on the grey canvas a white 1px-bordered box already reads
+   as its own card without elevation. `overflow: hidden` keeps the header's hover tint and
+   the first/last rows inside the 8px corner. */
 .isv2-opts .isv2-acc {
-  background: var(--app-surface);
-  border: 1px solid var(--app-border-soft);
-  border-radius: var(--app-radius-card);
-  box-shadow: var(--app-shadow-card);
+  background: var(--ref-color-white);
+  border: 1px solid var(--ref-color-grey-10);
+  border-radius: var(--ref-border-radius-md);
   overflow: hidden;
 }
 
 /* Each card is separated by the gap now, so the base `.isv2-acc + .isv2-acc` hairline
    (the pinned panel's row divider) must not draw a second line at grey-20 between two
-   cards — restore the soft card border it would otherwise override. */
+   cards — restore the grey-10 card border it would otherwise override. */
 .isv2-opts .isv2-acc + .isv2-acc {
-  border-top: 1px solid var(--app-border-soft);
+  border-top: 1px solid var(--ref-color-grey-10);
 }
 
 /* Inside a card the header can afford the DS accordion's own inline padding — and, at
@@ -1987,6 +1987,14 @@
   /* Thin, and given its own couple of pixels, so the bar never lands on a tile. */
   scrollbar-width: thin;
   padding-bottom: 2px;
+  /* Floor the strip to one tile tall. The tiles are a fixed `--isv2-tile` square, so the
+     strip is normally that tall on its own — but a reference image that is still loading
+     (or blocked) briefly lays out at zero height, and because the whole studio body
+     re-renders on every setting toggle, that transient collapsed the References card by
+     ~62px on each expand and shoved everything below it UP: the "blocks jumping" on
+     expand. A min-height makes the card's height independent of image state, so a toggle
+     never resizes it. */
+  min-height: var(--isv2-tile);
 }
 
 .isv2-ref-slot {

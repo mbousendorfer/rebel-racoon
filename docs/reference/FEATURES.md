@@ -514,12 +514,13 @@ changement de pane, ni à l'arrivée de la première image.
   qu'un groupe de lignes étiqueté. L'ordre porte toujours le raisonnement comme dans le panneau
   épinglé — par la séquence, pas par une légende — et `settingRowEntries` les renvoie déjà dans cet
   ordre, donc le pane est juste leurs cartes à la suite.
-  Chaque carte est la recette de `.ap-card` valeur pour valeur (blanc, 1px grey-10, le radius de
-  carte de l'app) **plutôt que la classe** : `.ap-card` porte `padding: sm` + `gap: sm`, et chaque
-  ligne fournit déjà son propre padding d'en-tête/corps. Overrider une classe `.ap-*` hors de
-  `ds-patches.css` retourne la cascade en silence, donc on compose depuis les mêmes tokens. Elle se
-  **lève de la toile** avec `--app-shadow-card` — l'élévation de `.isv2-frame` et de toutes les
-  cartes source/idea/post ; **pas** imbriquée, puisque le stage et le pane sont sans ombre.
+  Chaque carte est la recette **du DS** valeur pour valeur : `.ap-card` / `.ap-accordion` sont tous
+  deux `blanc · 1px grey-10 · border-radius --ref-border-radius-md (8px)` et **sans ombre**. Composée
+  depuis ces tokens plutôt qu'en prenant `.ap-card` (qui ajoute `padding: sm` + `gap: sm` que chaque
+  ligne fournit elle-même). Une première passe leur avait mis `--app-shadow-card` + un radius 12px —
+  le look « carte handoff » de l'app, qui **n'est pas** la carte du DS ; l'utilisateur l'a signalé.
+  La carte DS est plate, et sur la toile grise un rectangle blanc bordé 1px se lit déjà comme sa
+  propre carte sans élévation.
 - **Une mesure, un bord gauche.** Le formulaire fait ~520px et n'occupe **pas** toute la moitié :
   à pleine largeur une ligne posait son libellé contre un bord et sa valeur contre l'autre, 400px
   plus loin, et la paire cessait de se lire comme une paire. Il est **aligné à gauche et non
@@ -559,25 +560,37 @@ réglage pour un rail :
 | Hauteur de ligne                    | 36px                 | **40px**, `xxs sm`      | `.ap-list-panel-item` — le composant DS des lignes dans une carte                              |
 | Corps de section                    | `8/16/12`            | **`xs/sm/sm`**          | `.ap-accordion-content` (`sm` partout), moins un cran en haut                                  |
 | Gap dans un corps                   | `xs`                 | **`sm`**                | idem — 12px est le gap _à l'intérieur_ d'un cluster, pas entre deux                            |
-| **Élévation des cartes d'option**   | aucune               | **`--app-shadow-card`** | `.isv2-frame` et toutes les cartes source/idea/post ; **pas** imbriquée (stage + pane à plat)  |
+| Carte d'option                      | (groupe ombré 12px)  | **carte DS plate, 8px** | `.ap-card` / `.ap-accordion` : 1px grey-10, `--ref-border-radius-md`, **sans ombre**           |
 | Eyebrows (`Preview` / `The brief…`) | caption / body-bold  | **h3 (16px) grey-100**  | les libellés qui nomment une moitié du stage → taille de titre de section                      |
-| Entre cartes                        | `md` (entre groupes) | **`sm`**                | l'ombre de chaque carte fait la séparation ; `lg` pousserait la 7ᵉ trop bas                    |
+| Entre cartes                        | `md` (entre groupes) | **`sm`**                | le bord + la toile grise séparent ; `lg` pousserait la 7ᵉ trop bas                             |
 | Padding vertical des deux moitiés   | `sm`                 | **`md`**, gutter `lg`   | de l'air en haut/bas ; le `lg` inline garde le bord gauche commun                              |
 | Blocs du brief (pane **Advanced**)  | `xxs xs`             | **`xs sm`**, gap `sm`   | le pane ne porte rien d'autre et s'arrêtait au tiers de la moitié                              |
 | Marque + titre du cadre vide        | 32px / 14            | **40px / h3**           | le cadre fait ~600px de côté ; 32/14 y était une légende perdue                                |
 
-L'élévation est ce qui a fait basculer l'écran de « moins compact » à « polished » : sur une toile
-grise plate, des cartes blanches avec l'ombre douce du DS **se lisent** comme des objets distincts,
-là où le même contenu à plat était une liste de lignes grises. Ce n'est **pas** de l'élévation
-imbriquée — le stage et le pane sont tous deux sans ombre, donc l'ombre d'une carte est la seule
-sous elle.
+Une passe intermédiaire avait donné aux cartes `--app-shadow-card` + un radius 12px — le look
+« carte handoff » de l'app — pour « lever » les options de la toile. **L'utilisateur a signalé que ce
+n'est pas la carte du DS** : `.ap-card` et `.ap-accordion` sont plates (1px grey-10, 8px, aucune
+ombre). Retour à la recette DS ; sur la toile grise un rectangle blanc bordé 1px se lit déjà comme sa
+propre carte, sans élévation.
 
 Chaque carte d'option **ne prend pas** le `padding-block` de `.ap-list-panel-items` (l'air aux coins
 était le moins cher à céder). Contre-intuitivement, passer aux cartes individuelles a **regagné** de
 la hauteur — les deux titres de groupe et leurs gaps supprimés font que les **sept cartes tiennent
 dans le pli** à 780px comme à 980px (mesuré : tous les en-têtes visibles, `over: 0`). Ouvrir
-plusieurs sections finit par scroller, et le **fondu de bord bas** est ce qui le dit —
-`padding-block-end` à `sm` pour que l'ombre de la dernière carte ne soit pas coupée net.
+plusieurs sections finit par scroller, et le **fondu de bord bas** est ce qui le dit.
+
+### Les blocs ne « sautent » plus à l'expand
+
+Deux causes, corrigées ensemble. **(1)** Chaque toggle de section re-rend **tout** le corps du modal
+(`ctx.body.innerHTML = …`, le chemin one-way) — donc le scroller des réglages était recréé à
+`scrollTop: 0`, et une carte ouverte après avoir scrollé rebalayait le pane en haut. `renderBody`
+sauve puis restaure le `scrollTop` de `.isv2-opts` / `.isv2-panel` autour du swap. **(2)** Le re-rendu
+recrée aussi les `<img>` de références ; une image encore en chargement (ou bloquée) se pose un
+instant à hauteur nulle, ce qui rétrécissait la carte References de ~62px **à chaque expand** et
+poussait tout ce qui suit vers le haut. `.isv2-refs` a maintenant `min-height: var(--isv2-tile)`, si
+bien que la hauteur de la carte ne dépend plus de l'état des images (mesuré : hauteur constante,
+delta 0, à travers expand/collapse). Correctif partagé par toutes les variantes (le strip de
+références est le même partout).
 
 ### Le cadre de preview ne mentait plus qu'ici
 

@@ -64,7 +64,18 @@ const HTML = `
 function renderBody() {
   const st = state();
   if (!st || !ctx.body) return;
+  // Toggling a setting section re-renders the WHOLE body (the one-way path), which
+  // replaces the settings scroller with a fresh node at scrollTop 0 — so a card you
+  // expanded after scrolling would snap the pane back to the top, reading as the blocks
+  // "jumping". Carry the scroll across the swap. Both scrollers are singletons in the
+  // body: `.isv2-opts` is V3's option cards, `.isv2-panel` the classic pinned panel.
+  const prevOptsScroll = ctx.body.querySelector(".isv2-opts")?.scrollTop ?? 0;
+  const prevPanelScroll = ctx.body.querySelector(".isv2-panel")?.scrollTop ?? 0;
   ctx.body.innerHTML = renderStudio(st);
+  const opts = ctx.body.querySelector(".isv2-opts");
+  if (opts) opts.scrollTop = prevOptsScroll;
+  const panel = ctx.body.querySelector(".isv2-panel");
+  if (panel) panel.scrollTop = prevPanelScroll;
   // Both composer fields auto-grow to whatever text carried over: the derived
   // brief on open, and anything typed before a re-render.
   autosize(ctx.body.querySelector("[data-img-prompt]"));
