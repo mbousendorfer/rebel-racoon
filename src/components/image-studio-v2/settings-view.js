@@ -122,11 +122,12 @@ function bestFor(network) {
 
 // The seven rows, each tagged with its own name.
 //
-// Tagged rather than concatenated because V3 needs to GROUP them — References / Text /
-// Branding are what goes IN the image, Type / Style / Format / Output are how it is
-// made, and that reasoning was only ever implied by the vertical order. Grouping by
-// name and not by index, so inserting an eighth row can't silently move one group's
-// boundary (setup-stage.js#optionsPane).
+// Still returned as tagged entries (not one concatenated string) so a host can address a
+// row by `name`: V3 renders each as its own card (setup-stage.js#optionsPane), and the
+// tag is also what let the short-lived two-group layout pick rows by name rather than by
+// index. The order is the meaning — References / Text / Branding is what goes IN the
+// image, Type / Style / Format / Output is how it's made — carried by the sequence, the
+// way the pinned panel always has.
 export function settingRowEntries(st) {
   // Sections are independent: a Set of what's shut, not a single "which one is open".
   const isOpen = (id) => !st.collapsedGroups.has(id);

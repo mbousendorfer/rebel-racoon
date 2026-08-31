@@ -505,30 +505,25 @@ correspondant, à droite la colonne de preview (vide → generating → in-feed 
 le voile « la brief a changé depuis cette image »). **La mise en page ne change jamais** — ni au
 changement de pane, ni à l'arrivée de la première image.
 
-- **Options** = les **sept mêmes lignes** que le panneau épinglé, mais en **deux groupes bornés**
-  au lieu d'une échelle plate : _« What's in the image »_ (References · Text in image · Branding) et
-  _« How it's made »_ (Type · Style · Format · Output). FEATURES disait depuis toujours que l'ordre
-  encode ce raisonnement ; dans une colonne de 284px il ne pouvait qu'être **impliqué par la
-  séquence**, ici il y a la place pour l'énoncer — et l'énoncer est ce qui transforme sept lignes de
-  poids égal en deux choses qu'on scanne. `settingRowEntries` étiquette chaque ligne de son `name`
-  pour que le groupage se fasse **par nom et pas par index** : ajouter une huitième ligne ne peut
-  pas déplacer en silence la frontière d'un groupe.
-  Le groupe est une **carte** construite sur la recette de `.ap-card` valeur pour valeur (blanc,
-  1px grey-10, le radius de carte de l'app) **plutôt qu'en prenant la classe** : `.ap-card` porte
-  `padding: sm` + `gap: sm`, et ces lignes ont besoin que leurs filets aillent d'un bord à l'autre.
-  Overrider une classe `.ap-*` hors de `ds-patches.css` retourne la cascade en silence, donc on
-  compose depuis les mêmes tokens. Pas d'ombre, donc une carte qui contient des lignes n'imbrique
-  aucune élévation.
-  Les deux libellés sont des **titres** — body 14px, bold, grey-100, en casse de phrase — et non
-  des captions grey-80. C'est le seul dispositif qui organise sept lignes, et au costume de
-  `.isv2-sheet-hint` (le tier d'un **aparté** sur une chose) ils se lisaient comme une note de bas
-  de page posée au-dessus d'une carte de 380px plutôt que comme la question à laquelle elle
-  répond. L'encre seule n'allait jamais porter un titre de section — c'est aussi ce qui les fait
-  parler de la même voix que le « Preview » qui leur fait face de l'autre côté du filet.
+- **Options** = les **sept mêmes lignes** que le panneau épinglé (References · Text in image ·
+  Branding · Type · Style · Format · Output), **une carte par option**. Elles ont d'abord vécu en
+  **deux groupes bornés** coiffés de titres _« What's in the image »_ / _« How it's made »_ — l'idée
+  était d'**énoncer** le raisonnement que l'ordre encode, là où le panneau de 284px ne pouvait que
+  l'**impliquer par la séquence**. **L'utilisateur a tranché contre** : les titres se lisaient comme
+  du chrome dont les options n'avaient pas besoin, et une carte par option les sépare plus proprement
+  qu'un groupe de lignes étiqueté. L'ordre porte toujours le raisonnement comme dans le panneau
+  épinglé — par la séquence, pas par une légende — et `settingRowEntries` les renvoie déjà dans cet
+  ordre, donc le pane est juste leurs cartes à la suite.
+  Chaque carte est la recette de `.ap-card` valeur pour valeur (blanc, 1px grey-10, le radius de
+  carte de l'app) **plutôt que la classe** : `.ap-card` porte `padding: sm` + `gap: sm`, et chaque
+  ligne fournit déjà son propre padding d'en-tête/corps. Overrider une classe `.ap-*` hors de
+  `ds-patches.css` retourne la cascade en silence, donc on compose depuis les mêmes tokens. Elle se
+  **lève de la toile** avec `--app-shadow-card` — l'élévation de `.isv2-frame` et de toutes les
+  cartes source/idea/post ; **pas** imbriquée, puisque le stage et le pane sont sans ombre.
 - **Une mesure, un bord gauche.** Le formulaire fait ~520px et n'occupe **pas** toute la moitié :
   à pleine largeur une ligne posait son libellé contre un bord et sa valeur contre l'autre, 400px
   plus loin, et la paire cessait de se lire comme une paire. Il est **aligné à gauche et non
-  centré** — la bande de chips, les titres de groupe et les blocs du brief partent tous du même
+  centré** — la bande de chips, les cartes d'option et les blocs du brief partent tous du même
   bord gauche, ce qui est ce qui en fait une seule colonne. Le pane **Advanced** prend la largeur
   entière de la moitié parce que c'est de la **prose** : à 520px ses deux colonnes tombaient à ~40
   caractères par ligne, sous les 45-75 que l'œil demande.
@@ -558,28 +553,31 @@ Les valeurs viennent maintenant des composants que le DS destine à cette forme-
 sous `.isv2-opts` / `.isv2-bs--setup`** — le panneau épinglé garde la sienne, qui est le bon
 réglage pour un rail :
 
-| Ce qui a changé (V3 seul)          | Avant               | Après                   | D'où ça vient                                                                                 |
-| ---------------------------------- | ------------------- | ----------------------- | --------------------------------------------------------------------------------------------- |
-| Hauteur de ligne                   | 36px                | **40px**, `xxs sm`      | `.ap-list-panel-item` — le composant DS des lignes dans une carte                             |
-| Corps de section                   | `8/16/12`           | **`xs/sm/sm`**          | `.ap-accordion-content` (`sm` partout), moins un cran en haut                                 |
-| Gap dans un corps                  | `xs`                | **`sm`**                | idem — 12px est le gap _à l'intérieur_ d'un cluster, pas entre deux                           |
-| **Élévation des cartes de groupe** | aucune              | **`--app-shadow-card`** | `.isv2-frame` et toutes les cartes source/idea/post ; **pas** imbriquée (stage + pane à plat) |
-| Titres de groupe + eyebrows        | caption / body-bold | **h3 (16px) grey-100**  | les seuls libellés qui organisent l'écran → taille de titre de section                        |
-| Entre groupes                      | `md`                | **`lg`**                | deux cartes qu'on regarde tour à tour, pas une pile                                           |
-| Padding vertical des deux moitiés  | `sm`                | **`md`**, gutter `lg`   | de l'air en haut/bas ; le `lg` inline garde le bord gauche commun                             |
-| Blocs du brief (pane **Advanced**) | `xxs xs`            | **`xs sm`**, gap `sm`   | le pane ne porte rien d'autre et s'arrêtait au tiers de la moitié                             |
-| Marque + titre du cadre vide       | 32px / 14           | **40px / h3**           | le cadre fait ~600px de côté ; 32/14 y était une légende perdue                               |
+| Ce qui a changé (V3 seul)           | Avant                | Après                   | D'où ça vient                                                                                  |
+| ----------------------------------- | -------------------- | ----------------------- | ---------------------------------------------------------------------------------------------- |
+| Structure                           | 2 groupes titrés     | **1 carte par option**  | choix utilisateur — les titres étaient du chrome, une carte sépare mieux qu'un groupe étiqueté |
+| Hauteur de ligne                    | 36px                 | **40px**, `xxs sm`      | `.ap-list-panel-item` — le composant DS des lignes dans une carte                              |
+| Corps de section                    | `8/16/12`            | **`xs/sm/sm`**          | `.ap-accordion-content` (`sm` partout), moins un cran en haut                                  |
+| Gap dans un corps                   | `xs`                 | **`sm`**                | idem — 12px est le gap _à l'intérieur_ d'un cluster, pas entre deux                            |
+| **Élévation des cartes d'option**   | aucune               | **`--app-shadow-card`** | `.isv2-frame` et toutes les cartes source/idea/post ; **pas** imbriquée (stage + pane à plat)  |
+| Eyebrows (`Preview` / `The brief…`) | caption / body-bold  | **h3 (16px) grey-100**  | les libellés qui nomment une moitié du stage → taille de titre de section                      |
+| Entre cartes                        | `md` (entre groupes) | **`sm`**                | l'ombre de chaque carte fait la séparation ; `lg` pousserait la 7ᵉ trop bas                    |
+| Padding vertical des deux moitiés   | `sm`                 | **`md`**, gutter `lg`   | de l'air en haut/bas ; le `lg` inline garde le bord gauche commun                              |
+| Blocs du brief (pane **Advanced**)  | `xxs xs`             | **`xs sm`**, gap `sm`   | le pane ne porte rien d'autre et s'arrêtait au tiers de la moitié                              |
+| Marque + titre du cadre vide        | 32px / 14            | **40px / h3**           | le cadre fait ~600px de côté ; 32/14 y était une légende perdue                                |
 
 L'élévation est ce qui a fait basculer l'écran de « moins compact » à « polished » : sur une toile
-grise plate, deux cartes blanches avec l'ombre douce du DS **se lisent** comme deux objets, là où le
-même contenu à plat était une liste de lignes grises. Ce n'est **pas** de l'élévation imbriquée — le
-stage et le pane sont tous deux sans ombre, donc c'est la première et seule ombre de la colonne.
+grise plate, des cartes blanches avec l'ombre douce du DS **se lisent** comme des objets distincts,
+là où le même contenu à plat était une liste de lignes grises. Ce n'est **pas** de l'élévation
+imbriquée — le stage et le pane sont tous deux sans ombre, donc l'ombre d'une carte est la seule
+sous elle.
 
-La carte de groupe **ne prend pas** le `padding-block` de `.ap-list-panel-items` (l'air aux coins
-était le moins cher à céder), et avec l'air assumé les sept lignes **ne tiennent plus** toutes dans
-le pli à ~980px : **Output** passe sous la ligne de flottaison et le pane scrolle. C'est le geste
-choisi (« moins compact, quitte à un léger scroll »), et le **fondu de bord bas** est ce qui le dit
-— `padding-block-end` monté à `sm` pour que l'ombre de la dernière carte ne soit pas coupée net.
+Chaque carte d'option **ne prend pas** le `padding-block` de `.ap-list-panel-items` (l'air aux coins
+était le moins cher à céder). Contre-intuitivement, passer aux cartes individuelles a **regagné** de
+la hauteur — les deux titres de groupe et leurs gaps supprimés font que les **sept cartes tiennent
+dans le pli** à 780px comme à 980px (mesuré : tous les en-têtes visibles, `over: 0`). Ouvrir
+plusieurs sections finit par scroller, et le **fondu de bord bas** est ce qui le dit —
+`padding-block-end` à `sm` pour que l'ombre de la dernière carte ne soit pas coupée net.
 
 ### Le cadre de preview ne mentait plus qu'ici
 
@@ -642,10 +640,9 @@ affirmation spatiale et sont partagés mot pour mot.
   **globalement** : c'était un bug, pas un arbitrage.
 - **Plus de labels en majuscules sur cet écran.** `.isv2-bs-eyebrow` passe en `text-transform:
 uppercase`, ce que les règles maison interdisent — on hiérarchise par taille, graisse et encre.
-  Neutralisé sous `.isv2-bs--setup`, si bien que _« The brief I sent »_ et _« Preview »_ parlent de
-  la même voix que les titres de groupe en face — **exactement** la même (body 14 bold grey-100),
-  parce qu'ils font le même travail au même niveau : nommer une moitié du stage. Le stage
-  auto-brief garde son traitement.
+  Neutralisé sous `.isv2-bs--setup`, et monté en **h3 (16px) grey-100** : _« The brief I sent »_ et
+  _« Preview »_ nomment chacun une moitié du stage, donc ils prennent une taille de titre de section.
+  Le stage auto-brief garde son traitement (uppercase 12px).
 
 > ⚠️ Le switch de pane est une **paire de `.ap-filter-chip`**, pas `.ap-tabs`. Le header de la modale
 > porte déjà la seule bande d'onglets de l'écran (Generate | Edit) ; une seconde à 300px de là

@@ -76,40 +76,21 @@ function paneTabs(st) {
 }
 
 // The seven rows, verbatim from the settings panel — same sections, same state, same
-// data-* hooks — but in TWO bounded groups instead of one flat ladder.
+// data-* hooks — each now its OWN card.
 //
-// FEATURES has always said the order encodes a reasoning: "ce qui va DANS l'image, puis
-// son traitement". In a 284px column that could only ever be implied by the sequence.
-// Here there is room to state it, and stating it is what turns seven equal-weight rows
-// into two things a reader can scan. The two labels are HEADINGS — body size, bold,
-// grey-100, sentence case (the house rule bans uppercase labels). They were captions at
-// grey-80, which is `.isv2-sheet-hint`'s costume: the tier for an ASIDE about a thing. At
-// that weight above a 380px card they read as a footnote floating over it rather than as
-// the question the card answers — and ink alone was never going to carry a section
-// heading. It also puts them at the level of the `Preview` heading across the hairline.
-//
-// The group is a CARD, built to `.ap-card`'s recipe value for value (white,
-// 1px grey-10, the app's card radius) rather than by taking the class: `.ap-card`
-// carries `padding: sm` and `gap: sm`, and these rows need the hairlines to run
-// edge to edge with nothing between them. Overriding a `.ap-*` class outside
-// ds-patches.css flips the cascade silently, so this composes from the same tokens
-// instead — reuse, then compose, then invent.
-const GROUPS = [
-  { label: "What's in the image", rows: ["refs", "renderText", "branding"] },
-  { label: "How it's made", rows: ["imageType", "style", "format", "output"] },
-];
-
+// This dropped the "What's in the image" / "How it's made" group headings and the two
+// bounded group-cards they sat over. FEATURES §7bis argued for those groups (the order
+// encodes "ce qui va DANS l'image, puis son traitement", stated rather than implied); the
+// user overruled it — the headings read as chrome the options didn't need, and one card
+// per option separates them more cleanly than a labelled group of rows did. The order
+// still carries the reasoning the way the pinned 284px panel always has: by sequence, not
+// by a caption. `settingRowEntries` already returns them in that order, so the pane is
+// just their cards in a row — the card recipe lives in CSS (`.isv2-opts .isv2-acc`).
 function optionsPane(st) {
-  const entries = settingRowEntries(st);
-  const groups = GROUPS.map(({ label, rows }) => {
-    const html = rows.map((name) => entries.find((e) => e.name === name)?.html || "").join("");
-    if (!html) return "";
-    return `<div class="isv2-optgroup">
-      <p class="isv2-optgroup-label">${label}</p>
-      <div class="isv2-optgroup-rows">${html}</div>
-    </div>`;
-  }).join("");
-  return `<div class="isv2-opts">${groups}</div>`;
+  const rows = settingRowEntries(st)
+    .map((e) => e.html)
+    .join("");
+  return `<div class="isv2-opts">${rows}</div>`;
 }
 
 // The brief, and where it stands. The status line sits UNDER the blocks here rather

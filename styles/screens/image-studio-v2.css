@@ -851,13 +851,12 @@
   max-width: var(--isv2-form-measure);
   display: flex;
   flex-direction: column;
-  /* BETWEEN groups — `lg`, and deliberately larger than any gap inside one (the heading
-     binds to its card at `xs`, the rows are hairline-separated). That difference is the
-     whole grouping; the group card's own shadow lifts the separation further. Went from
-     `md` to `lg` for the "more air" pass — the two cards read as two things you look at
-     in turn, not a stack. */
-  gap: var(--ref-spacing-lg);
-  /* Room for the last group's SHADOW, not just its border, so a soft edge isn't clipped
+  /* BETWEEN option cards — one card per option now (the two group headings and their
+     bounded group-cards were dropped at the user's call, see setup-stage.js). `sm` is
+     enough because each card carries its own shadow, which does the separating; `lg`
+     would push the seventh card too far down. */
+  gap: var(--ref-spacing-sm);
+  /* Room for the last card's SHADOW, not just its border, so a soft edge isn't clipped
      against the scroller's bottom. */
   padding-block-end: var(--ref-spacing-sm);
   /* A group card's bottom edge is a BORDER, so a clipped one looks broken rather than
@@ -935,54 +934,30 @@
   color: var(--sys-text-color-default);
 }
 
-/* One group = a heading plus a bounded card. Same type, same ink, same case as the
-   preview's eyebrow opposite it. The gap binds them: `xs` to its own card against `lg`
-   between groups, so which card a heading belongs to is never in question. */
-.isv2-optgroup {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xs);
-}
+/* ONE OPTION = ONE CARD. The "What's in the image" / "How it's made" group headings and
+   the two group-cards that held several rows each were dropped at the user's call; every
+   setting is now its own card in a stack. The card is `.ap-card`'s recipe value for value
+   (white, 1px grey-10, the app's card radius) rather than the class itself, because
+   `.ap-card` brings `padding: sm` + `gap: sm` and each row supplies its own header/body
+   padding — overriding a `.ap-*` class outside ds-patches.css flips the cascade silently.
 
-/* These two lines are the ONLY thing organising seven rows, so they read as headings:
-   body size, bold, grey-100 — the size-and-weight levers, sentence case, no uppercase.
-   They were caption/grey-80, the `.isv2-sheet-hint` costume, which is the tier for an
-   ASIDE about a thing; at caption weight above a 380px card they registered as a
-   footnote floating over it rather than as the question the card answers. Ink alone was
-   never going to carry a section heading — and this is also what keeps them speaking in
-   the same voice as the `Preview` heading facing them across the hairline. */
-.isv2-optgroup-label {
-  margin: 0;
-  padding-inline: var(--ref-spacing-xxxs);
-  font-size: var(--sys-text-style-h3-size);
-  line-height: var(--sys-text-style-h3-line-height);
-  font-weight: var(--sys-text-style-h3-weight);
-  color: var(--sys-text-color-default);
-}
-
-/* `.ap-card`'s recipe, value for value — white, 1px grey-10, a card radius — composed
-   from the tokens rather than by taking the class, because `.ap-card` brings
-   `padding: sm` + `gap: sm` and these rows need their hairlines edge to edge.
-   `overflow: hidden` is what makes the first and last rows respect the corner.
-
-   And it LIFTS off the canvas with `--app-shadow-card` — the same elevation the classic
-   stage's `.isv2-frame` and every source/idea/post card in the app carry. NOT nested
-   elevation: the stage and the pane it sits on are both flat, so this is the first and
-   only shadow in the column, the thing that makes a flat list of grey rows read as two
-   deliberate cards. */
-.isv2-optgroup-rows {
-  display: flex;
-  flex-direction: column;
-  /* NO block padding, unlike the DS's `.ap-list-panel-items`: the rows stay flush to the
-     card's edges the way `.ap-accordion` puts its own content, because the row heights and
-     the body padding below are already doing the un-cramping and 16px per card was the
-     difference between the seventh row being on screen at 980px of viewport and being
-     under the fold. Corner breathing room is the cheapest thing on this pane to give up. */
+   It LIFTS off the canvas with `--app-shadow-card` — the elevation the classic stage's
+   `.isv2-frame` and every source/idea/post card carry. NOT nested elevation: the stage
+   and the pane are both flat, so a card's shadow is the only one under it. `overflow:
+   hidden` keeps the header's hover tint and the first/last rows inside the corner. */
+.isv2-opts .isv2-acc {
   background: var(--app-surface);
   border: 1px solid var(--app-border-soft);
   border-radius: var(--app-radius-card);
   box-shadow: var(--app-shadow-card);
   overflow: hidden;
+}
+
+/* Each card is separated by the gap now, so the base `.isv2-acc + .isv2-acc` hairline
+   (the pinned panel's row divider) must not draw a second line at grey-20 between two
+   cards — restore the soft card border it would otherwise override. */
+.isv2-opts .isv2-acc + .isv2-acc {
+  border-top: 1px solid var(--app-border-soft);
 }
 
 /* Inside a card the header can afford the DS accordion's own inline padding — and, at
