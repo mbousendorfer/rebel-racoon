@@ -18,7 +18,7 @@
 
 import { escapeHtml } from "../../utils.js?v=22";
 import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=46";
-import * as imageStudio from "../../image-studio.js?v=101";
+import * as imageStudio from "../../image-studio.js?v=102";
 
 // The two provenances a reference image can have. Shared by the group labels and
 // the collapsed header so the section can only ever call them the same thing.
@@ -163,6 +163,9 @@ function refModeBlock(st) {
 // contract as Image type and Style preset. An upload also carries a remove
 // button: it belongs to the user, whereas a Playbook image belongs to the
 // Playbook and "not this one" is what deselecting already means.
+// The placeholder glyph sits UNDER the <img>, which covers it whole once it loads. These
+// are remote URLs: one that fails used to leave a grey-05 square on a white card, which
+// read as the section being broken rather than as a picture that didn't arrive.
 function refTile(r, on) {
   const note = (r.note || "").trim();
   const nets = Array.isArray(r.networks) ? r.networks.filter((n) => NETWORK_ICON_BY_PLATFORM[n]) : [];
@@ -174,6 +177,7 @@ function refTile(r, on) {
     : `<button type="button" class="isv2-ref-remove" data-img-ref-remove="${escapeHtml(r.id)}" aria-label="Remove this image"><i class="ap-icon-close" aria-hidden="true"></i></button>`;
   return `<div class="isv2-ref-slot">
     <button type="button" class="isv2-ref isv2-ref--pick${on ? " is-used" : " is-skipped"}" data-img-ref-toggle="${escapeHtml(r.id)}" aria-pressed="${on}" aria-label="${escapeHtml(info[0])}" title="${escapeHtml(info.join(" · "))}">
+      <i class="ap-icon-image isv2-ref-ph" aria-hidden="true"></i>
       <img src="${escapeHtml(r.url)}" alt="${escapeHtml(r.label || "Reference image")}" />
       <span class="isv2-ref-scrim" aria-hidden="true"></span>
       <span class="isv2-ref-radio" aria-hidden="true"></span>

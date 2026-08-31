@@ -16,8 +16,8 @@
 // overwriting it.
 
 import { escapeHtml } from "../../utils.js?v=22";
-import { KEY } from "./context.js?v=49";
-import * as imageStudio from "../../image-studio.js?v=101";
+import { KEY } from "./context.js?v=50";
+import * as imageStudio from "../../image-studio.js?v=102";
 
 // The words on the image, as the lead block. This one edits `renderText` — the text
 // that actually gets set into the artwork — not the prompt's sentence about it. They

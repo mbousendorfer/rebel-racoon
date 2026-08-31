@@ -505,33 +505,68 @@ correspondant, à droite la colonne de preview (vide → generating → in-feed 
 le voile « la brief a changé depuis cette image »). **La mise en page ne change jamais** — ni au
 changement de pane, ni à l'arrivée de la première image.
 
-- **Options** = les **sept mêmes lignes** que le panneau épinglé, mais en **deux groupes bornés**
-  au lieu d'une échelle plate : _« What's in the image »_ (References · Text in image · Branding) et
-  _« How it's made »_ (Type · Style · Format · Output). FEATURES disait depuis toujours que l'ordre
-  encode ce raisonnement ; dans une colonne de 284px il ne pouvait qu'être **impliqué par la
-  séquence**, ici il y a la place pour l'énoncer — et l'énoncer est ce qui transforme sept lignes de
-  poids égal en deux choses qu'on scanne. `settingRowEntries` étiquette chaque ligne de son `name`
-  pour que le groupage se fasse **par nom et pas par index** : ajouter une huitième ligne ne peut
-  pas déplacer en silence la frontière d'un groupe.
-  Le groupe est une **carte** construite sur la recette de `.ap-card` valeur pour valeur (blanc,
-  1px grey-10, le radius de carte de l'app) **plutôt qu'en prenant la classe** : `.ap-card` porte
-  `padding: sm` + `gap: sm`, et ces lignes ont besoin que leurs filets aillent d'un bord à l'autre.
-  Overrider une classe `.ap-*` hors de `ds-patches.css` retourne la cascade en silence, donc on
-  compose depuis les mêmes tokens. Pas d'ombre, donc une carte qui contient des lignes n'imbrique
-  aucune élévation.
-- **Une mesure, un bord gauche.** Le formulaire fait ~520px et n'occupe **pas** toute la moitié :
-  à pleine largeur une ligne posait son libellé contre un bord et sa valeur contre l'autre, 400px
-  plus loin, et la paire cessait de se lire comme une paire. Il est **aligné à gauche et non
-  centré** — la bande de chips, les captions de groupe et les blocs du brief partent tous du même
-  bord gauche, ce qui est ce qui en fait une seule colonne. Le pane **Advanced** prend la largeur
-  entière de la moitié parce que c'est de la **prose** : à 520px ses deux colonnes tombaient à ~40
-  caractères par ligne, sous les 45-75 que l'œil demande.
-- Le pane scrolle quand il faut — sans danger, puisque les réglages n'ont plus de flyout à faire
-  sortir de la boîte depuis qu'ils sont des sections qui s'ouvrent en place. Le bord bas **se fond**
-  (`mask-image` + `animation-timeline: scroll(self block)`, le jumeau vertical de
-  `.isv2-refs.is-scrollable`) : le bas d'une carte de groupe est une **bordure**, donc coupée net
-  elle a l'air cassée, et macOS masque les barres de défilement. Le fondu ne coûte rien quand tout
-  tient : une scroll-timeline sur un élément non scrollable est inactive.
+- **Options** = un **formulaire ouvert en permanence**, pas des lignes qu'on déplie. Les sept
+  réglages sont là, chacun dans un `.ap-form-field` (libellé au-dessus du contrôle, le gap de 8px du
+  DS), répartis en **deux groupes bornés** : _« What's in the image »_ (References · Text in image ·
+  Branding) et _« How it's made »_ (Type · Format · Style · Output · Variations).
+  ⚠️ **C'étaient sept `.ap-accordion`.** Avec trois ouverts le pane débordait de 198px et Output
+  tombait entièrement sous la ligne de flottaison, et les filets entre lignes rendaient impossible
+  de dire quelles chips appartenaient à quelle ligne. Le dépliage est la bonne réponse pour une
+  colonne de 284px ; pour le formulaire qui EST la première étape il cachait ce qu'on venait régler.
+  Le groupe est une **carte** bâtie sur la recette de `.ap-card` valeur pour valeur (blanc, 1px
+  grey-10, radius de carte) **plutôt qu'en prenant la classe** — `.ap-card` porte `padding: sm` +
+  `gap: sm` et cette grille a besoin des siens, et overrider une `.ap-*` hors de `ds-patches.css`
+  retourne la cascade en silence. Pas d'ombre, donc aucune élévation imbriquée.
+- **Les contrôles sont ceux que le DS prescrit, et V3 les écrit lui-même**
+  ([`options-form.js`](../../src/components/image-studio-v2/options-form.js)). `.ap-filter-chip`
+  n'est pas une classe DS : c'est un patch local qui tient lieu de `filter-chips-list`, un composant
+  défini comme _« cocher une chip affine la liste visible »_. Une valeur de formulaire n'est pas un
+  filtre, et le tie-breaker DS route un **choix exclusif dans un formulaire** vers **Radio /
+  Radio-button-card** — le guide de `segmented-control` l'écrit noir sur blanc (_« ❌ an in-form
+  exclusive choice (that's a Radio group) »_) et `.ap-segmented-control` n'est de toute façon pas
+  dans le `ds/` synced. Donc : `.ap-radio-container` (Type, ref-mode, Variations, Slides),
+  `.ap-radio-card` (Format avec son glyphe, Output avec son icône, Style avec ses vignettes en
+  `.card`), `.ap-toggle-container` dans **la forme DS exacte** (`<label><input><i></i><span>`, le
+  libellé en enfant direct), `.ap-textarea-field` pour Text in image.
+  **Chaque groupe est un `<fieldset>` avec un `<legend>`** : c'est ce qui fait que ↑↓ navigue dans le
+  groupe et que Tab le saute.
+  ⚠️ **Le panneau épinglé et le popover de l'auto-brief gardent leurs chips**, et c'est assumé : une
+  colonne de 284px et un popover qui s'ouvre vers le haut ne peuvent pas héberger des radio-cards.
+  L'argument est l'**espace dont dispose chaque hôte**, pas ce que le contrôle veut dire. C'est la
+  seule exception au « un rendu, plusieurs hôtes » de ce studio, et le jour où le panneau aura la
+  place, c'est vers ce fichier qu'il converge.
+- **« Any » est une option explicite** pour Type et Style. Un groupe de radios ne peut pas être vidé,
+  et c'est ce qui débloque le composant DS — mais surtout ça rend visible un comportement qui
+  existait déjà sans que rien ne l'annonce (recliquer la chip sélectionnée l'effaçait). Le moteur a
+  pour ça `setImageTypeExact` / `setStyleExact`, **séparés** des setters à toggle dont les hôtes à
+  chips dépendent encore, avec leurs propres kinds dans `APPLY` : partager `imageType` aurait rejoué
+  un **toggle** sur une valeur déjà résolue au replay du garde-fou.
+  Les radios commitent sur `change`, sous des hooks `data-img-pick-*` bien à eux — pas les hooks de
+  clic des chips : un clic sur un `<label>` qui entoure un radio déclenche **les deux**, donc un hook
+  partagé appliquerait chaque choix deux fois et retomberait à zéro.
+- **Le champ Style est ABSENT** quand une référence pilote le look, pas présent-et-grisé : un champ
+  qui ne peut rien faire n'est pas un champ. La raison est énoncée là où la cause se décide, sous les
+  modes de References (_« This image sets the style, so there's no Style to pick »_). Coupez la
+  référence et le champ réapparaît avec Any + ses six vignettes.
+- **Moitiés inégales** — les options ~58%, la preview ~42%. Un formulaire de sept champs a besoin de
+  plus de place qu'une image 1:1, et le plafonner dans une moitié égale laissait un **gouffre de
+  170px** entre lui et le séparateur. Le formulaire remplit sa colonne ; les trois bords gauches (la
+  bande de chips, les captions, les cartes) tombent au même pixel, ce qui est ce qui en fait une
+  colonne. Le pane **Advanced** garde la largeur entière parce que c'est de la **prose**.
+- **Cinq niveaux typographiques, pas deux** : caption de groupe 12/**700** grey-80 (une structure, donc
+  la graisse — mais pas l'encre d'un titre, sinon elle écrase les libellés dessous) · libellé de champ
+  14/400 grey-100 · description de libellé (`<small>` du `<legend>` : « Best for ⟨icône⟩ », le nom du
+  brand book) 12/400 grey-80 · contrôle 14/400 grey-100 · note 12/400 grey-80.
+  ⚠️ Avant, le libellé et sa valeur étaient **tous les deux** en 14/700 grey-100 — deux niveaux réels
+  pour cinq rôles, et une caption de groupe plus légère qu'un sous-libellé de ligne. Le `is-set` en
+  gras a disparu : sans accordéon il n'y a plus de valeur repliée à marquer.
+- **Le rythme vient de `patterns/layout.md`** : 8px dans un champ (le gap propre de
+  `.ap-form-field`), 16px entre champs, 16px entre les deux groupes. Un seul `gap` par conteneur,
+  aucune marge par enfant. À 1440×900 dans l'état par défaut le formulaire tient **exactement** sans
+  scroll ; au-delà le bord bas **se fond** (`mask-image` + `animation-timeline: scroll(self block)`,
+  jumeau vertical de `.isv2-refs.is-scrollable`), parce que le bas d'une carte est une **bordure** et
+  que coupée net elle a l'air cassée. Le fondu ne coûte rien quand tout tient : une scroll-timeline
+  sur un élément non scrollable est inactive.
 - **Advanced** = les **mêmes blocs éditables** que l'auto-brief, avec les mêmes règles : taper dans
   un bloc **EST** la reprise en main, un réglage changé ensuite marque le brief périmé au lieu de
   l'écraser, et le garde-fou nomme le réglage qu'il s'apprête à réécrire. Le chip est **désactivé
@@ -596,6 +631,15 @@ uppercase`, ce que les règles maison interdisent — on hiérarchise par taille
 > « se lirait comme un sélecteur de mode concurrent du vrai » — la raison même pour laquelle le
 > toggle Image / In feed utilise les chips. Le même primitif rend d'ailleurs cette bande symétrique
 > de celle qui lui fait face dans l'en-tête du preview.
+
+> ⚠️ Une **tuile de référence dont l'image n'arrive pas** — ce sont des URLs distantes — était un
+> carré grey-05 sur une carte blanche bordé de grey-10 : invisible, et ça lisait « la section est
+> cassée » plutôt que « l'image n'est pas arrivée ». La tuile porte maintenant son propre placeholder
+> **sous** l'`<img>` (fond grey-10 + un glyphe `ap-icon-image`), donc une image chargée le recouvre
+> entièrement et ça ne coûte rien quand tout va bien. Corrigé pour **les trois hôtes**.
+> `display: block` sur `.isv2-ref` est porteur : la tuile était un `<button>` (inline-block) et est un
+> `<label>` maintenant, donc `inline` — et une boîte inline ignore `aspect-ratio`, ce qui la faisait
+> retomber à un filet.
 
 > ⚠️ **Ce n'est pas le variant grille retiré** (`imageStudioGridBrief`, `6ea8de36` → `2ef212ff`).
 > Celui-là remplaçait le prompt en prose par des champs nommés **inventés**, comme **seul** éditeur et

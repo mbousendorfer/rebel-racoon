@@ -252,6 +252,16 @@ there is one rule rather than two that can drift. The two split variants also sh
 `brief-blocks.js` (a brief block) and `preview-column.js` (the right half), extracted so a card and
 the thing it opens cannot end up saying different sentences about one brief.
 
+⚠️ **V3's Options form is the one place that deliberately does NOT share** — `options-form.js`
+rebuilds all seven controls instead of reusing `settings-view.js`'s bodies. The DS routes an in-form
+exclusive choice to Radio / Radio-button-card (its own `segmented-control` guide says so, and
+`.ap-filter-chip` is a local stand-in for `filter-chips-list`, a control defined as "toggling a chip
+refines the visible list") — but radio cards do not fit a 284px pinned column or a popover opening
+upward, so the two narrow hosts keep their chips. The argument is the **space each host has**, not
+what the control means. That is also why the engine carries `setImageTypeExact` / `setStyleExact`
+beside the toggling setters: a radio group cannot be emptied, so V3 shows an explicit "Any", and one
+setter meaning two things by caller is how a contract starts drifting.
+
 ⚠️ A confirmation inside the studio must NOT be `confirm-modal.js`: it registers with
 `modal-coordinator`, whose `requestOpen` closes the active overlay — the studio — running `exit(KEY)`
 and deleting the session. Render it in the studio body from state instead, listen for its keys on
@@ -362,7 +372,7 @@ The **Admin** popover in the sidebar footer cog (`admin-menu.js`) is the prototy
 
 ### Module loading
 
-ES modules with `?v=N` cache-busting suffixes (`from "./assistant.js?v=40"`). **Bumping a module's version means updating every importer to the same version** — a singleton/store imported at two versions becomes two separate instances (separate state). All deps are local; no CDN/`esm.sh` imports. `package.json` exists only for the two DS npm packages + tooling (prettier/husky/lint-staged). A pre-commit hook runs `prettier --write` on staged files.
+ES modules with `?v=N` cache-busting suffixes (`from "./assistant.js?v=40"`). **Bumping a module's version means updating every importer to the same version** — a singleton/store imported at two versions becomes two separate instances (separate state). ⚠️ And the bump **cascades**: changing a module's import line changes that importer's own bytes, so its `?v=` has to rise too, recursively, all the way up to **`src/app.js?v=N` in `index.html`** — which is the root of the whole graph. Stop one level short and the browser keeps serving the cached `app.js`, which still asks for the old versions, and you debug a change that never loaded. Symptom to recognise: `performance.getEntriesByType("resource")` shows the SAME module at two `?v=` values. All deps are local; no CDN/`esm.sh` imports. `package.json` exists only for the two DS npm packages + tooling (prettier/husky/lint-staged). A pre-commit hook runs `prettier --write` on staged files.
 
 ## Design System — READ FIRST before UI/CSS work
 

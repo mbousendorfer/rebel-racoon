@@ -36,18 +36,22 @@
 //    auto-brief stage uses (`.isv2-bs`), so switching pane or landing an image reflows
 //    nothing. The options half scrolls internally; the preview half does not.
 //
-// 4. The form has a MEASURE (~520px, centred in its half) rather than filling it. At the
-//    half's full width a row put its label at one edge and its value at the other with
-//    400px of nothing between them — the pair stopped reading as a pair. A form is one
-//    of the few things that should be narrower than the space it has.
+// 4. The halves are UNEQUAL — the options take ~58%, the preview ~42%. A form needs more
+//    room than a 1:1 picture, and capping the form inside an equal half instead left a
+//    170px gutter between it and the divider. The form fills its column; the picture is
+//    still comfortable in what's left.
+//
+// 5. No disclosure. Every control is on screen, because every one of them is small — and
+//    the DS routes an in-form exclusive choice to Radio, not to the filter chips the
+//    narrow hosts use. options-form.js carries that argument.
 //
 // The brief's blocks (brief-blocks.js) and the preview column (preview-column.js) are
 // shared with the auto-brief stage — one renderer each, two hosts, so a card and the
 // thing it opens can't end up saying different sentences about the same brief.
 
-import { settingRowEntries } from "./settings-view.js?v=19";
-import { briefBody, briefNote } from "./brief-blocks.js?v=2";
-import { previewColumn } from "./preview-column.js?v=1";
+import { optionsForm } from "./options-form.js?v=7";
+import { briefBody, briefNote } from "./brief-blocks.js?v=3";
+import { previewColumn } from "./preview-column.js?v=2";
 
 /** Is V3 holding the stage? For the WHOLE generate flow, image or not. */
 export function isSetupFirst(st) {
@@ -69,38 +73,15 @@ function paneTabs(st) {
   </div>`;
 }
 
-// The seven rows, verbatim from the settings panel — same sections, same state, same
-// data-* hooks — but in TWO bounded groups instead of one flat ladder.
+// The options, as a permanently-open form — see options-form.js.
 //
-// FEATURES has always said the order encodes a reasoning: "ce qui va DANS l'image, puis
-// son traitement". In a 284px column that could only ever be implied by the sequence.
-// Here there is room to state it, and stating it is what turns seven equal-weight rows
-// into two things a reader can scan. The caption is the de-emphasised half of a
-// label/value pair — caption size, grey-80, sentence case (the house rule bans
-// uppercase labels) — so the group reads as an answer under a question.
-//
-// The group is a CARD, built to `.ap-card`'s recipe value for value (white,
-// 1px grey-10, the app's card radius) rather than by taking the class: `.ap-card`
-// carries `padding: sm` and `gap: sm`, and these rows need the hairlines to run
-// edge to edge with nothing between them. Overriding a `.ap-*` class outside
-// ds-patches.css flips the cascade silently, so this composes from the same tokens
-// instead — reuse, then compose, then invent.
-const GROUPS = [
-  { label: "What's in the image", rows: ["refs", "renderText", "branding"] },
-  { label: "How it's made", rows: ["imageType", "style", "format", "output"] },
-];
-
+// It used to be seven `.ap-accordion` rows. With three of them open the pane overflowed
+// by 198px and Output fell off the bottom entirely, and the hairlines between rows made
+// it impossible to tell which chips belonged to which row. Disclosure was the right
+// answer for a 284px pinned column; for the form that IS the first step it hid the
+// thing the user came to set.
 function optionsPane(st) {
-  const entries = settingRowEntries(st);
-  const groups = GROUPS.map(({ label, rows }) => {
-    const html = rows.map((name) => entries.find((e) => e.name === name)?.html || "").join("");
-    if (!html) return "";
-    return `<div class="isv2-optgroup">
-      <p class="isv2-optgroup-label">${label}</p>
-      <div class="isv2-optgroup-rows">${html}</div>
-    </div>`;
-  }).join("");
-  return `<div class="isv2-opts">${groups}</div>`;
+  return `<div class="isv2-opts">${optionsForm(st)}</div>`;
 }
 
 // The brief, and where it stands. The status line sits UNDER the blocks here rather

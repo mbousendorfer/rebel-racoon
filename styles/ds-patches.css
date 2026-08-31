@@ -712,3 +712,43 @@ button.ap-link {
 .ap-button.mermaid::after {
   background: var(--ap-mermaid-inner, var(--ref-color-white));
 }
+
+/* .ap-form-field — two slots the DS has in one component but forgot in the other.
+   Both are verbatim mirrors of rules that already exist in ds/css-ui/index.css, so the
+   day they land upstream these blocks are a delete.
+
+   1. The label DESCRIPTION slot. `.ap-textarea-field > label > small` styles it
+      (ds/css-ui/index.css:4631) and the `--comp-forms-label-description-*` tokens exist,
+      but `.ap-form-field` has no equivalent — so a per-field hint had nowhere to go and
+      ended up as a free-floating paragraph.
+   2. `<legend>`, so a radio group can be a real <fieldset> with its choice named. The DS
+      styles `.ap-form-field > label` only (ds/css-ui/index.css:2023); a <legend> got the
+      browser's default and read as a stray bold line. */
+.ap-form-field > legend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--comp-forms-label-spacing-vertical);
+  padding: 0;
+  font-family: var(--sys-text-style-body-font-family);
+  font-size: var(--sys-text-style-body-size);
+  font-weight: var(--sys-text-style-body-weight);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--ref-color-grey-100);
+}
+
+.ap-form-field > label > small,
+.ap-form-field > legend > small {
+  font-size: var(--comp-forms-label-description-text-size);
+  font-weight: var(--comp-forms-label-description-text-font-weight);
+  line-height: var(--comp-forms-label-description-text-line-height);
+  font-family: var(--comp-forms-label-description-text-font-family);
+  color: var(--comp-forms-label-description-text-color);
+}
+
+/* A description may carry a network glyph ("Best for <in>") — the app-wide convention is
+   the words then the icon, the name in the title. */
+.ap-form-field > legend > small {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+}
