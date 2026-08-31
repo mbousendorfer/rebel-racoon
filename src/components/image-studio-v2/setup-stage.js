@@ -32,26 +32,22 @@
 //    on screen; offered before there is one it would be a draft of a brief, which is
 //    the surface this variant exists to remove.
 //
-// 3. The stage is ONE column until there is something to preview, then two. Reserving
-//    half a modal for a placeholder is worse than one reflow — see setupStage for the
-//    measurements. Switching pane never reflows; only the first generation does, and it
-//    happens under the loader.
+// 3. The layout NEVER changes — two halves from open to commit, the same geometry the
+//    auto-brief stage uses (`.isv2-bs`), so switching pane or landing an image reflows
+//    nothing. The options half scrolls internally; the preview half does not.
 //
-// 4. The row list has a MEASURE (~440px) and is LEFT-ALIGNED, sharing its edge with the
-//    pane switch above it. A list of label-and-value rows stretched across a 700px half
-//    puts the two halves of every row at opposite ends of the screen; a panel that reads
-//    as a panel is narrower than the space it sits in.
-//
-// 5. The rows are the pinned inspector's, verbatim — same sections, same chips, same
-//    state, same data-* hooks. What differs is the room they get, not what they are.
+// 4. The form has a MEASURE (~520px, centred in its half) rather than filling it. At the
+//    half's full width a row put its label at one edge and its value at the other with
+//    400px of nothing between them — the pair stopped reading as a pair. A form is one
+//    of the few things that should be narrower than the space it has.
 //
 // The brief's blocks (brief-blocks.js) and the preview column (preview-column.js) are
 // shared with the auto-brief stage — one renderer each, two hosts, so a card and the
 // thing it opens can't end up saying different sentences about the same brief.
 
-import { settingRows } from "./settings-view.js?v=26";
-import { briefBody, briefNote } from "./brief-blocks.js?v=3";
-import { previewColumn } from "./preview-column.js?v=2";
+import { settingRowEntries } from "./settings-view.js?v=19";
+import { briefBody, briefNote } from "./brief-blocks.js?v=2";
+import { previewColumn } from "./preview-column.js?v=1";
 
 /** Is V3 holding the stage? For the WHOLE generate flow, image or not. */
 export function isSetupFirst(st) {
@@ -73,22 +69,38 @@ function paneTabs(st) {
   </div>`;
 }
 
-// The options: the SAME seven rows as the pinned inspector, and nothing wrapped around
-// them.
+// The seven rows, verbatim from the settings panel — same sections, same state, same
+// data-* hooks — but in TWO bounded groups instead of one flat ladder.
 //
-// ⚠️ This was briefly two bordered cards holding nineteen permanently-visible radio
-// buttons, on the theory that controls this small don't need disclosure. That was wrong,
-// and the reason is worth keeping: **a collapsed row IS the grouping.** One option, one
-// row, its current value in the header — so the pane at rest is a seven-line summary of
-// the whole configuration, which is exactly what the first step of a form wants. Opened
-// out, the same content becomes forty elements with no summary anywhere, and grouping
-// them under two headings just makes two catch-alls.
+// FEATURES has always said the order encodes a reasoning: "ce qui va DANS l'image, puis
+// son traitement". In a 284px column that could only ever be implied by the sequence.
+// Here there is room to state it, and stating it is what turns seven equal-weight rows
+// into two things a reader can scan. The caption is the de-emphasised half of a
+// label/value pair — caption size, grey-80, sentence case (the house rule bans
+// uppercase labels) — so the group reads as an answer under a question.
 //
-// The overflow that motivated the change (198px with three rows open) was measured with
-// three rows open at once, which is a test, not a use. One or two at a time fits, and the
-// pane fades its bottom edge when it doesn't.
+// The group is a CARD, built to `.ap-card`'s recipe value for value (white,
+// 1px grey-10, the app's card radius) rather than by taking the class: `.ap-card`
+// carries `padding: sm` and `gap: sm`, and these rows need the hairlines to run
+// edge to edge with nothing between them. Overriding a `.ap-*` class outside
+// ds-patches.css flips the cascade silently, so this composes from the same tokens
+// instead — reuse, then compose, then invent.
+const GROUPS = [
+  { label: "What's in the image", rows: ["refs", "renderText", "branding"] },
+  { label: "How it's made", rows: ["imageType", "style", "format", "output"] },
+];
+
 function optionsPane(st) {
-  return `<div class="isv2-opts">${settingRows(st)}</div>`;
+  const entries = settingRowEntries(st);
+  const groups = GROUPS.map(({ label, rows }) => {
+    const html = rows.map((name) => entries.find((e) => e.name === name)?.html || "").join("");
+    if (!html) return "";
+    return `<div class="isv2-optgroup">
+      <p class="isv2-optgroup-label">${label}</p>
+      <div class="isv2-optgroup-rows">${html}</div>
+    </div>`;
+  }).join("");
+  return `<div class="isv2-opts">${groups}</div>`;
 }
 
 // The brief, and where it stands. The status line sits UNDER the blocks here rather
@@ -109,29 +121,11 @@ function advancedPane(st) {
 
 export function setupStage(st) {
   const advanced = st.pane === "advanced" && briefReady(st);
-  // Before anything has been asked for, there is no second half to fill — so there is no
-  // second half. The options take the centre of the stage on their own, and the split
-  // arrives with the picture.
-  //
-  // Measured, at 1440×900: the split-from-the-first-frame version put the seven rows at
-  // 12.5% of the stage and a 521×521 "your image appears here" box at 272k px² beside
-  // them — two and a half times the area of every option put together — with 245px of
-  // dead gutter between the two. The biggest object on screen was a placeholder for
-  // something that did not exist, at exactly the moment the user was doing the work.
-  //
-  // The cost, stated: the layout DOES change when the first image lands, which the split
-  // was chosen to avoid. That was the right instinct for a picture joining a brief already
-  // on screen (brief-stage.js) — the brief stays put and the picture arrives beside it.
-  // Here the left half is a 431px list of rows, and reserving half a modal for a promise
-  // is a worse trade than one reflow. Generation is the moment the split appears, so the
-  // reflow happens under the loader rather than out of nowhere.
-  const split = st.genPhase === "generating" || st.variations.length > 0 || !!st.currentImage;
-  const pane = advanced ? advancedPane(st) : optionsPane(st);
-  return `<div class="isv2-bs isv2-bs--setup${split ? " is-split" : " is-solo"}">
+  return `<div class="isv2-bs is-split isv2-bs--setup">
     <div class="isv2-bs-left">
       ${paneTabs(st)}
-      ${pane}
+      ${advanced ? advancedPane(st) : optionsPane(st)}
     </div>
-    ${split ? previewColumn(st) : ""}
+    ${previewColumn(st)}
   </div>`;
 }

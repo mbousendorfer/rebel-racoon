@@ -33,24 +33,6 @@
   max-height: 940px;
   padding: 0;
   overflow: hidden;
-  transition:
-    width 220ms var(--app-ease-out),
-    height 220ms var(--app-ease-out);
-}
-
-/* V3, before its first image (index.js#renderBody). The full shell is sized for the
-   RESULTS view — a big picture with a rail beside it. Asking for the image happens in a
-   list of seven rows, and in a 1355×811 modal that list came to 16% of the stage with the
-   rest left white. So the shell is smaller for that step and grows at the first
-   generation — under the loader, so the change is attached to something happening.
-
-   Still a FIXED size, not `height: auto`. The studio's whole height chain is
-   `height: 100%` / `flex: 1 1 auto` from `.isv2-body` down to `.isv2-stage`, built to
-   fill a known box; content-sizing the shell resolves that chain to zero and then the
-   grid's `minmax(0, 1fr)` collapses the widths too. A smaller box needs none of that. */
-.isv2-modal--compact {
-  width: min(94vw, 760px);
-  height: min(86vh, 560px);
 }
 
 .isv2-close {
@@ -417,11 +399,9 @@
 }
 
 .isv2-bs {
-  /* V3's options measure — the width of the row list and of the pane switch above it, in
-     ONE place so the two can't drift apart. */
-  --isv2-opts-measure: 440px;
-  /* And the width it takes when it is alone on the stage — see .is-solo. */
-  --isv2-solo-measure: 620px;
+  /* V3's form measure — the width of the options list and of the pane switch above it,
+     in ONE place so the two can't drift apart. */
+  --isv2-form-measure: 520px;
   height: 100%;
   box-sizing: border-box;
   max-width: 1120px;
@@ -798,76 +778,60 @@
 }
 
 /* ── V3: options first (flag imageStudioSetupFirst) ─────────────────────────
-   The split geometry is the auto-brief stage's, reused whole (`.isv2-bs.is-split`) —
-   EQUAL halves, because the left one holds a narrow list of rows and not a wide form, so
-   it has no claim on more than half. */
+   The geometry is the auto-brief stage's, reused whole: `.isv2-bs.is-split` +
+   `.isv2-bs-left` + the preview half. Only what fills the left half differs, so only
+   that is declared here — a second split layout would have to be kept in step with the
+   first for no visible gain.
 
-/* Solo — no image yet, so no second half. The column takes the centre of the stage at a
-   comfortable measure instead of hugging the left edge of a half it shares with a
-   placeholder. Wider than the 431px it gets in the split, because here it is the only
-   thing on screen and has no divider to sit away from. */
-.isv2-bs--setup.is-solo {
-  max-width: none;
-  grid-template-columns: minmax(0, 1fr);
-  justify-items: center;
-}
-
-.isv2-bs--setup.is-solo .isv2-bs-left {
-  width: 100%;
-  max-width: var(--isv2-solo-measure);
-}
-
-/* Solo, the list has the column's whole width — the measure is on the column itself. */
-.isv2-bs--setup.is-solo .isv2-opts,
-.isv2-bs--setup.is-solo .isv2-panetabs {
-  max-width: none;
-}
-
-/* Sentence case for every label on this stage, eyebrows included. `.isv2-bs-eyebrow`
-   uppercases, which the house rules forbid — hierarchy comes from size, weight and ink.
-   Scoped to V3 so the auto-brief stage keeps the treatment it shipped with. */
-.isv2-bs--setup .isv2-bs-eyebrow {
-  text-transform: none;
-  letter-spacing: normal;
-}
-
-/* The pane switch. `.ap-filter-chip` is right here — choosing which pane you look at IS a
-   filter over what's visible, the one job that component is defined for. It takes the
-   list's measure so the two share a left edge: a control floating over a narrower thing
-   it controls reads as unrelated to it. */
+   Two panes share one box: Options (the seven rows in two groups) and Advanced (the
+   brief's blocks). The strip that switches them is `.ap-filter-chip`, not `.ap-tabs`,
+   because the modal header already owns the only tab strip on screen — see
+   setup-stage.js. It takes the form's measure so the two share a left edge: a control
+   floating over a narrower thing it controls reads as unrelated to it. */
 .isv2-panetabs {
   flex: 0 0 auto;
   display: flex;
   gap: var(--ref-spacing-xxs);
-  width: 100%;
-  max-width: var(--isv2-opts-measure);
 }
 
-/* The seven rows, hairline-separated, and NOTHING wrapped around them.
-   ⚠️ Two bordered cards with a heading over each was tried and read as two catch-alls: a
-   collapsed row is already its own group — one option, its value in the header — so
-   grouping the groups only added furniture, and opening them all at once replaced a
-   seven-line summary with forty elements and no summary anywhere.
+/* The form is NARROWER than the half it sits in, and centred in it. At full width a row
+   put its label against one edge and its value against the other, 400px apart, and the
+   pair stopped reading as a pair — the classic "full-width is almost never right" for a
+   form. ~520px also keeps the three 80px reference tiles comfortable.
 
-   LEFT-ALIGNED at a measure, not stretched across the half: a label-and-value row spread
-   over 700px puts its two halves at opposite ends of the screen. Wider than the 284px
-   inspector, because there is room for the reference tiles to breathe; narrow enough to
-   still read as a panel.
-
-   It scrolls when several rows are open — safe because the rows have no flyouts left to
-   escape the box (`overflow-y: auto` computes `overflow-x` to `auto` too, the trap that
-   bit this file three times). The bottom edge FADES while there is more to reach, since
-   macOS hides overlay scrollbars; it costs nothing when everything fits, because a scroll
-   timeline on a non-scrollable element is inactive. */
+   It SCROLLS when it has to, which is safe here only because the settings have no
+   flyouts left to escape the box — `overflow-y: auto` computes `overflow-x` to `auto`
+   too, the trap that bit this file three times before the rows became sections that
+   expand in place. */
 .isv2-opts {
+  /* The rows read `--isv2-tile` for their reference tiles and the logo thumb, and it is
+     declared per HOST (80px on `.isv2-panel`, 72px in the auto-brief popover) — not
+     globally. Without it here `flex: 0 0 var(--isv2-tile)` has nothing to resolve and
+     the tiles collapse. 80px, the panel's value: this half is wider than the panel, so
+     the size was never the constraint. */
   --isv2-tile: 80px;
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
+  /* Constrained, and LEFT-ALIGNED rather than centred: the pane switch above it, the
+     option groups and the brief's blocks all start on the same left edge, which is what
+     ties them together as one column. Centred, the form floated free of the chips that
+     switch it — alignment is the cheapest way to state a relationship. */
   width: 100%;
-  max-width: var(--isv2-opts-measure);
+  max-width: var(--isv2-form-measure);
   display: flex;
   flex-direction: column;
+  /* BETWEEN groups — deliberately larger than the gap inside one (which is zero: the
+     rows are hairline-separated). That difference is the whole grouping. */
+  gap: var(--ref-spacing-md);
+  /* Room for the last group's border to not sit flush on the scroller's edge. */
+  padding-block-end: var(--ref-spacing-xxs);
+  /* A group card's bottom edge is a BORDER, so a clipped one looks broken rather than
+     cut off — and macOS hides overlay scrollbars, so there is no other signal. Same
+     answer as the reference strip: fade the edge you can still scroll towards, using a
+     scroll-progress timeline. It costs nothing when everything fits, because a
+     scroll timeline on a non-scrollable element is inactive and the fade lengths stay
+     at their 0px initial values. Vertical twin of .isv2-refs.is-scrollable. */
   mask-image: linear-gradient(
     to bottom,
     rgb(0 0 0 / 0) 0,
@@ -902,57 +866,87 @@
   }
 }
 
-/* A row has room here, so it can afford the DS accordion's own inline padding. */
+/* Sentence case for every label on THIS stage, the section eyebrows included.
+   `.isv2-bs-eyebrow` uppercases, which the house rules forbid outright — hierarchy comes
+   from size, weight and ink, never from shouting — and with the option groups captioned
+   in sentence case the two halves were labelling themselves in two different voices.
+   Scoped to V3 so the auto-brief stage keeps the treatment it shipped with. */
+.isv2-bs--setup .isv2-bs-eyebrow {
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* One group = a caption plus a bounded card. Same type, same ink, same case as the
+   preview's eyebrow opposite it. */
+.isv2-optgroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+}
+
+/* The de-emphasised half of the pair: caption size, grey-80, sentence case. NOT
+   uppercase — the house rules ban uppercase labels, and hierarchy here comes from size
+   and ink, not from shouting. */
+.isv2-optgroup-label {
+  margin: 0;
+  padding-inline: var(--ref-spacing-xxxs);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--sys-text-color-light);
+}
+
+/* `.ap-card`'s recipe, value for value — white, 1px grey-10, a card radius — composed
+   from the tokens rather than by taking the class, because `.ap-card` brings
+   `padding: sm` + `gap: sm` and these rows need their hairlines edge to edge. No
+   shadow, so the card can hold rows without nesting elevation. `overflow: hidden` is
+   what makes the first and last rows respect the corner. */
+.isv2-optgroup-rows {
+  display: flex;
+  flex-direction: column;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border-soft);
+  border-radius: var(--app-radius-card);
+  overflow: hidden;
+}
+
+/* Inside a card the header can afford the DS accordion's own inline padding. */
 .isv2-opts .isv2-acc-head,
 .isv2-opts .isv2-acc-body {
-  padding-inline: var(--ref-spacing-xs);
+  padding-inline: var(--ref-spacing-sm);
 }
 
-/* A row's LABEL is what you scan to find the setting, so it keeps the DS accordion's
-   bold. Its VALUE is what you read once you've found it: regular weight, and only the INK
-   changes — grey-100 once a choice has been made, grey-80 while Archie is still choosing
-   for you.
-   It was electric blue first, which put the panel's only colour on two brand names — the
-   least important thing on screen — and tinted a static datum with the colour this house
-   reserves for the interactive. Then it was bold, which made the value weigh exactly as
-   much as the label above it. Ink alone says it and leaves the pair legible. */
+/* `set` reads as INK AND WEIGHT, not as colour.
+   It was electric blue (`--sys-border-color-active`), which put the only colour on the
+   whole form on two brand names — the least important thing on screen — and tinted a
+   static datum with the colour this house reserves for the interactive. Weight is the
+   lever the house rules name for exactly this. */
 .isv2-opts .isv2-acc-value.is-set {
   color: var(--sys-text-color-default);
+  font-weight: var(--sys-text-style-body-bold-weight);
 }
 
-/* Disabled, inside V3 only: grey-60 — the one step the house rules reserve for it — and
-   no italic. Globally it is grey-40 (#AEB5C1, below the grey-80 ink floor, so the row
-   reads as broken rather than as unavailable) plus an italic that exists nowhere in the
-   DS type ramp. That is a real DS gap, but fixing it for every host would change two
-   variants nobody asked me to touch, so it lives behind the flag until it is asked for. */
-.isv2-opts .isv2-acc.is-disabled .isv2-acc-title,
-.isv2-opts .isv2-acc.is-disabled .isv2-acc-value {
-  color: var(--ref-color-grey-60);
-  font-style: normal;
-}
-
-/* A row's answer, as a picture. Only V3 renders it (settings-view#settingRow gates it on
-   the flag) — it is what lets References close without the row going vague. */
-.isv2-opts .isv2-acc-thumb {
-  flex: 0 0 auto;
-  width: 24px;
-  height: 24px;
-  border-radius: var(--app-radius-sm);
-  border: 1px solid var(--sys-border-color-default);
-  background: var(--app-surface-subtle);
-  object-fit: cover;
-}
-
-/* The brief pane takes the whole half — it is PROSE, and at 440px its two columns would
-   run ~30 characters a line. It does not scroll: its blocks already do (`.isv2-bs-doc`),
-   and a scroller inside a scroller gives one list two scrollbars. */
+/* The brief pane must NOT scroll: its blocks already do (`.isv2-bs-doc`), and a
+   scroller inside a scroller gives one list two scrollbars. It keeps the form's measure
+   so switching pane doesn't move the column. */
+/* The brief is PROSE, so it gets a prose measure, not the form's. At 520px its two
+   columns ran ~40 characters a line — under the 45-75 the eye wants — so it takes the
+   half's full width, where each column lands around 50. Same left edge as everything
+   else, so widening is felt as "more room for this", not as the column moving. */
 .isv2-opts--brief {
   max-width: none;
   overflow: visible;
   gap: var(--ref-spacing-xxs);
+  padding-block-end: 0;
+  /* No scroller here, so no fade — and a mask on a non-scrolling box would clip the
+     popovers the blocks' fields can raise. */
   mask-image: none;
   animation: none;
 }
+
+/* The brief's status line sits UNDER its own blocks here. The auto-brief stage keeps it
+   in the modal footer, which works while the brief IS the left half; in V3 it is one
+   pane of two and the footer would be talking about something the reader may not have
+   up. `.isv2-bs-note` already carries the type and the `flex` — nothing to add. */
 
 /* A whole-modal drop target: the References section is one scroll into a panel,
    so an image dragged anywhere in generate mode is accepted (see events.js#onDrop),
@@ -1562,11 +1556,14 @@
   color: var(--sys-border-color-active);
 }
 
+/* Disabled: grey-60, which is the ONE step the house rules reserve for it, and no
+   italic. It was grey-40 (#AEB5C1) — below the grey-80 ink floor, so the row read as
+   broken rather than as unavailable — plus an italic that exists nowhere in the DS type
+   ramp. The weight drop and the missing chevron already say "not now". */
 .isv2-acc.is-disabled .isv2-acc-title,
 .isv2-acc.is-disabled .isv2-acc-value {
-  color: var(--ref-color-grey-40);
+  color: var(--ref-color-grey-60);
   font-weight: var(--sys-text-style-body-weight);
-  font-style: italic;
 }
 
 /* Top padding is SMALLER than the bottom because the header contributes 6px of its
@@ -1959,18 +1956,8 @@
   animation-timeline: scroll(self inline);
 }
 
-/* A reference tile had no size of its OWN. It is a <button>, so `inline-block`, and its
-   only in-flow child is an `<img width: 100%>` — so shrink-to-fit resolved the whole tile
-   from the image's INTRINSIC width, which is 0 while it loads and 0 forever if it fails.
-   The three tiles then collapse to 2px and the section reads as broken. The slot already
-   knows the right width; the tile just has to fill it.
-   Fixed for every host, deliberately outside the V3 flag: with a loaded image the computed
-   size is byte-for-byte what it was, so this changes nothing anyone can see — it only
-   stops the tiles vanishing when an image doesn't arrive. */
 .isv2-ref {
   position: relative;
-  display: block;
-  width: 100%;
   aspect-ratio: 1;
   padding: 0;
   border: 1px solid var(--sys-border-color-default);

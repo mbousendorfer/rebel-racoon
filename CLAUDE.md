@@ -243,10 +243,8 @@ confirmation that protects a hand-edited brief, then one view module per surface
 **Three variants, one engine.** Classic (no flag) lands on a prose brief in the bottom composer with
 the settings pinned to the stage's left edge. `imageStudioAutoBrief` makes the brief the stage's hero
 with the settings as chips under it. `imageStudioSetupFirst` (V3) inverts both: the **options** are
-the first step (the pinned panel's own seven rows, at a wider measure — a collapsed row IS the
-grouping, and exploding them into a permanently-open form of nineteen radios was tried and reverted),
-Generate is the form's submit, and the brief lives behind an **Advanced** tab that stays disabled
-until an image exists — because what it holds is the prompt that produced the image on
+the first step, Generate is the form's submit, and the brief lives behind an **Advanced** tab that
+stays disabled until an image exists — because what it holds is the prompt that produced the image on
 screen. V3 wins when both flags are on, and that precedence is declared in **one** place,
 `isBriefStage()`. What the brief MEANS is shared by the two non-classic variants through
 `briefIsDerived(s)` in the engine — every option rewrites it, typing in a block is the takeover — so
@@ -364,7 +362,7 @@ The **Admin** popover in the sidebar footer cog (`admin-menu.js`) is the prototy
 
 ### Module loading
 
-ES modules with `?v=N` cache-busting suffixes (`from "./assistant.js?v=40"`). **Bumping a module's version means updating every importer to the same version** — a singleton/store imported at two versions becomes two separate instances (separate state). ⚠️ And the bump **cascades**: changing a module's import line changes that importer's own bytes, so its `?v=` has to rise too, recursively, all the way up to **`src/app.js?v=N` in `index.html`** — which is the root of the whole graph. Stop one level short and the browser keeps serving the cached `app.js`, which still asks for the old versions, and you debug a change that never loaded. Symptom to recognise: `performance.getEntriesByType("resource")` shows the SAME module at two `?v=` values. All deps are local; no CDN/`esm.sh` imports. `package.json` exists only for the two DS npm packages + tooling (prettier/husky/lint-staged). A pre-commit hook runs `prettier --write` on staged files.
+ES modules with `?v=N` cache-busting suffixes (`from "./assistant.js?v=40"`). **Bumping a module's version means updating every importer to the same version** — a singleton/store imported at two versions becomes two separate instances (separate state). All deps are local; no CDN/`esm.sh` imports. `package.json` exists only for the two DS npm packages + tooling (prettier/husky/lint-staged). A pre-commit hook runs `prettier --write` on staged files.
 
 ## Design System — READ FIRST before UI/CSS work
 

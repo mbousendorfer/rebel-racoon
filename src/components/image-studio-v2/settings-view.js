@@ -31,10 +31,10 @@
 
 import { escapeHtml } from "../../utils.js?v=22";
 import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=46";
-import { KEY } from "./context.js?v=50";
-import { REFS_TIP, refSummary, refsBody } from "./references-view.js?v=20";
+import { KEY } from "./context.js?v=49";
+import { REFS_TIP, refSummary, refsBody } from "./references-view.js?v=16";
 import { BRANDING_TIP, brandingBody } from "./branding-view.js?v=4";
-import * as imageStudio from "../../image-studio.js?v=104";
+import * as imageStudio from "../../image-studio.js?v=101";
 
 // A thin rule between two clusters inside one row body. Shared with the
 // Add-image sheet (tools-view.js), which is where the class name comes from.
@@ -42,6 +42,10 @@ export const sheetDivider = `<span class="isv2-sheet-divider" role="separator"><
 
 // The floating inspector — the settings, beside the image rather than under it,
 // on the stage's left edge (where edit mode also keeps its tools).
+//
+// The `<aside>` is the PLACEMENT, not the rows: V3 (setup-stage.js) hosts the very same
+// seven rows in the left half of a two-up stage, where a pinned inspector would make no
+// sense. So the rows are exported separately and this wrapper stays what it always was.
 export function settingsPanel(st) {
   return `<aside class="isv2-panel" role="group" aria-label="Generation settings">${settingRows(st)}</aside>`;
 }
@@ -71,18 +75,7 @@ export function settingsPanel(st) {
 // it never enters `collapsedGroups` at all. The value still rides in the header:
 // with the body open it is a summary of what's below ("Acme · 3") rather than a
 // stand-in for it.
-function settingRow({
-  name,
-  label,
-  value,
-  tip = "",
-  body,
-  open,
-  set = false,
-  disabled = false,
-  pinned = false,
-  thumb = "",
-}) {
+function settingRow({ name, label, value, tip = "", body, open, set = false, disabled = false, pinned = false }) {
   const expanded = pinned || (open && !disabled);
   // `tip` is an info icon beside the TITLE — where an annotation belongs, and where
   // it can sit next to a value rather than instead of one (References has both: a
@@ -103,7 +96,6 @@ function settingRow({
         <span class="ap-accordion-title isv2-acc-title">${escapeHtml(label)}</span>
         ${tip ? `<i class="ap-icon-info isv2-acc-info" data-tooltip="${escapeHtml(tip)}" aria-hidden="true"></i>` : ""}
       </span>
-      ${thumb ? `<img class="isv2-acc-thumb" src="${escapeHtml(thumb)}" alt="" />` : ""}
       ${value ? `<span class="isv2-acc-value${set ? " is-set" : ""}">${escapeHtml(value)}</span>` : ""}`;
   return `<div class="ap-accordion isv2-acc${expanded ? "" : " collapsed"}${disabled ? " is-disabled" : ""}${pinned ? " isv2-acc--pinned" : ""}">
     ${
@@ -128,12 +120,18 @@ function bestFor(network) {
   return `<p class="isv2-sheet-hint" aria-label="Best for ${escapeHtml(label)}">Best for ${glyph}</p>`;
 }
 
-// Exported for V3 (setup-stage.js), which hosts these same rows in the left half of a
-// two-up stage instead of a pinned column. Visibility only — the rows are untouched.
-export function settingRows(st) {
+// The seven rows, each tagged with its own name.
+//
+// Tagged rather than concatenated because V3 needs to GROUP them — References / Text /
+// Branding are what goes IN the image, Type / Style / Format / Output are how it is
+// made, and that reasoning was only ever implied by the vertical order. Grouping by
+// name and not by index, so inserting an eighth row can't silently move one group's
+// boundary (setup-stage.js#optionsPane).
+export function settingRowEntries(st) {
   // Sections are independent: a Set of what's shut, not a single "which one is open".
   const isOpen = (id) => !st.collapsedGroups.has(id);
   const out = [];
+  const row = (cfg) => out.push({ name: cfg.name, html: settingRow(cfg) });
 
   // ONE References section. Brand kit used to be its own row above this one, and
   // that was a distinction without a difference: both hold images the generator
@@ -144,40 +142,26 @@ export function settingRows(st) {
   // Pinned open, the way Brand kit was: it's that same question, and a section you
   // re-open on every visit shouldn't be a section you have to open.
   const picked = imageStudio.selectedReference(st);
-  out.push(
-    settingRow({
-      name: "refs",
-      label: "References",
-      tip: REFS_TIP,
-      value: refSummary(picked, st),
-      set: !!picked,
-      // Pinned open everywhere EXCEPT V3. In a 284px column the header had room for a
-      // word and nothing else, so a collapsed References row said "Acme" and left you to
-      // open it to find out which image that meant — hence pinning. V3's pane is wider:
-      // the header can carry the picked image itself, so the row answers its own question
-      // closed, and the pane gets to be seven uniform rows instead of one open section
-      // beside six lines.
-      pinned: !st.setupFirst,
-      // It never needed `open` while it was always pinned; un-pinned it does, or the row
-      // renders its toggle and then refuses to answer it.
-      open: isOpen("refs"),
-      thumb: st.setupFirst && picked ? picked.url : "",
-      body: () => refsBody(st, picked),
-    }),
-  );
+  row({
+    name: "refs",
+    label: "References",
+    tip: REFS_TIP,
+    value: refSummary(picked, st),
+    set: !!picked,
+    pinned: true,
+    body: () => refsBody(st, picked),
+  });
 
   // Text in image — words the model paints into the artwork. It sits with the
   // references because both answer "what goes IN the image"; type / style /
   // format / output below are all treatment.
-  out.push(
-    settingRow({
-      name: "renderText",
-      label: "Text in image",
-      tip: RENDER_TEXT_TIP,
-      open: isOpen("renderText"),
-      body: () => renderTextBody(st),
-    }),
-  );
+  row({
+    name: "renderText",
+    label: "Text in image",
+    tip: RENDER_TEXT_TIP,
+    open: isOpen("renderText"),
+    body: () => renderTextBody(st),
+  });
 
   // Branding — the Playbook's logo, stamped on the artwork. Third in the "what
   // goes IN the image" run (references / words / mark) before the treatment
@@ -197,82 +181,79 @@ export function settingRows(st) {
   else if (branded && tinted) brandValue = st.playbookName || "On";
   else if (branded) brandValue = "Logo only";
   else if (tinted) brandValue = "Colors only";
-  out.push(
-    settingRow({
-      name: "branding",
-      label: "Branding",
-      tip: BRANDING_TIP,
-      value: brandValue,
-      set: branded || tinted,
-      disabled: !hasLogo && !hasColors,
-      open: isOpen("branding"),
-      body: () => brandingBody(st, branded, tinted),
-    }),
-  );
+  row({
+    name: "branding",
+    label: "Branding",
+    tip: BRANDING_TIP,
+    value: brandValue,
+    set: branded || tinted,
+    disabled: !hasLogo && !hasColors,
+    open: isOpen("branding"),
+    body: () => brandingBody(st, branded, tinted),
+  });
 
   // Image type — what the image is FOR. A distinct dimension from the style.
   const typeLabel = st.imageTypeKey
     ? imageStudio.IMAGE_TYPES.find((o) => o.key === st.imageTypeKey)?.label || "Any"
     : "Any";
-  out.push(
-    settingRow({
-      name: "imageType",
-      label: "Type",
-      value: typeLabel,
-      set: !!st.imageTypeKey,
-      open: isOpen("imageType"),
-      body: () => imageTypeBody(st),
-    }),
-  );
+  row({
+    name: "imageType",
+    label: "Type",
+    value: typeLabel,
+    set: !!st.imageTypeKey,
+    open: isOpen("imageType"),
+    body: () => imageTypeBody(st),
+  });
 
   // Style preset — the aesthetic look. Mutually exclusive with references: when
   // refs guide the look, the row switches off and says why instead.
   const hasRefs = st.referenceImages.length > 0;
   const styleLabel = st.styleKey ? imageStudio.STYLE_PRESETS.find((o) => o.key === st.styleKey)?.label || "Any" : "Any";
-  out.push(
-    settingRow({
-      name: "style",
-      label: "Style",
-      value: hasRefs ? "From references" : styleLabel,
-      set: !hasRefs && !!st.styleKey,
-      disabled: hasRefs,
-      open: isOpen("style"),
-      body: () => styleBody(st),
-    }),
-  );
+  row({
+    name: "style",
+    label: "Style",
+    value: hasRefs ? "From references" : styleLabel,
+    set: !hasRefs && !!st.styleKey,
+    disabled: hasRefs,
+    open: isOpen("style"),
+    body: () => styleBody(st),
+  });
 
   // Format — the value says the shape ("1:1 · Square"); the ratio glyphs live in
   // the sheet, where they actually help you choose.
   const choices = imageStudio.formatChoices(KEY);
   const cur = choices.find((f) => f.id === st.formatId);
-  out.push(
-    settingRow({
-      name: "format",
-      label: "Format",
-      value: cur ? `${cur.tag} · ${cur.label}` : "Aspect ratio",
-      set: false, // format always has a value; "set" would be meaningless here
-      open: isOpen("format"),
-      body: () => formatBody(st, choices),
-    }),
-  );
+  row({
+    name: "format",
+    label: "Format",
+    value: cur ? `${cur.tag} · ${cur.label}` : "Aspect ratio",
+    set: false, // format always has a value; "set" would be meaningless here
+    open: isOpen("format"),
+    body: () => formatBody(st, choices),
+  });
 
   // Output — single vs carousel, merged with its count control.
   const canCarousel = imageStudio.supportsCarousel(st.network);
   const isCarousel = canCarousel && st.outputMode === "carousel";
-  out.push(
-    settingRow({
-      name: "output",
-      label: canCarousel ? "Output" : "Variations",
-      value: isCarousel
-        ? `Carousel · ${st.slideCount}`
-        : `${st.variationCount} variation${st.variationCount > 1 ? "s" : ""}`,
-      set: isCarousel,
-      open: isOpen("output"),
-      body: () => outputBody(st, canCarousel, isCarousel),
-    }),
-  );
+  row({
+    name: "output",
+    label: canCarousel ? "Output" : "Variations",
+    value: isCarousel
+      ? `Carousel · ${st.slideCount}`
+      : `${st.variationCount} variation${st.variationCount > 1 ? "s" : ""}`,
+    set: isCarousel,
+    open: isOpen("output"),
+    body: () => outputBody(st, canCarousel, isCarousel),
+  });
 
-  return out.join("");
+  return out;
+}
+
+/** All seven, in order, as one string — what the pinned inspector wants. */
+export function settingRows(st) {
+  return settingRowEntries(st)
+    .map((e) => e.html)
+    .join("");
 }
 
 // Text in image — a plain DS textarea field, and nothing under it until something

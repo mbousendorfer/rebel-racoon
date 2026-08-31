@@ -499,65 +499,39 @@ V3 inverse : **les réglages sont le formulaire, Generate en est le submit, et l
 à « qu'est-ce que tu as envoyé ? »** plutôt que la chose à remplir d'abord. Il n'y a **aucun champ de
 prompt en prose** dans cette variante.
 
-Le stage est **une colonne tant qu'il n'y a rien à prévisualiser, deux ensuite**, et le **shell
-lui-même est plus petit** pendant cette première étape.
+Le stage est **deux moitiés pour toute la boucle**, la géométrie de l'auto-brief réutilisée telle
+quelle (`.isv2-bs.is-split`) : à gauche une bande de deux chips **Options / Advanced** puis le pane
+correspondant, à droite la colonne de preview (vide → generating → in-feed → résultats + vignettes +
+le voile « la brief a changé depuis cette image »). **La mise en page ne change jamais** — ni au
+changement de pane, ni à l'arrivée de la première image.
 
-⚠️ La version « deux moitiés dès la première frame » a été mesurée à 1440×900 : les sept lignes
-faisaient **12,5 % du stage**, à côté d'un carré « Your image appears here » de 521×521 — soit
-**272 k px², deux fois et demie la surface de toutes les options réunies** — avec 245px de gouffre
-mort entre les deux. Le plus gros objet de l'écran était le placeholder d'une chose qui n'existait
-pas, exactement au moment où l'utilisateur travaille. Et le shell fait 1355×811 parce qu'il est
-dimensionné pour la vue RÉSULTATS (une grande image et son chutier) : demander l'image se fait dans
-une liste de sept lignes, donc l'écran était blanc à 84 %.
-
-Donc : `.is-solo` tant qu'aucune image n'existe (la colonne au centre, à ~620px, pas de moitié
-droite, pas de carré vide, pas de libellé « Preview »), `.isv2-modal--compact` sur le shell
-(760×560), et les deux tombent au **premier Generate** — sous le loader, donc le changement est
-attaché à quelque chose qui se passe. Résultat mesuré : **50,2 % du stage occupé** au lieu de 12,5 %.
-
-Le prix, assumé : **la mise en page change** à l'arrivée de la première image, ce que le split
-permanent voulait éviter. C'était le bon réflexe pour une image qui rejoint un brief déjà à l'écran
-(`brief-stage.js`) ; ici la moitié gauche est une liste de lignes, et réserver la moitié d'un modal
-pour une promesse est un pire marché qu'un seul reflow. Changer de pane, lui, ne reflow jamais.
-
-⚠️ Le shell compact reste une taille **FIXE**. Toute la chaîne de hauteur du studio est
-`height: 100%` / `flex: 1 1 auto` de `.isv2-body` jusqu'à `.isv2-stage`, bâtie pour remplir une boîte
-connue : passer le shell en `height: auto` résout cette chaîne à zéro, puis le `minmax(0, 1fr)` de la
-grille effondre aussi les largeurs. Une boîte plus petite n'a besoin d'aucun de ces contournements.
-
-- **Options** = les **sept mêmes lignes** que le panneau épinglé (`settingRows`), sans rien enroulé
-  autour : chacune est un groupe — une option, sa valeur dans l'en-tête — séparées par des filets.
-  Au repos le pane est un **résumé de sept lignes** de toute la configuration, ce qui est exactement
-  ce que la première étape d'un formulaire demande : on voit tout, on ouvre celle qu'on veut changer.
-  **Les sept arrivent repliées**, References comprise — 7 lignes, 7 éléments interactifs. Épinglée
-  ouverte comme dans le panneau, elle occupait sept morceaux empilés à côté de six lignes, soit 60%
-  du pane pour une option : le pane cessait d'être le résumé de quoi que ce soit. Repliée, sa ligne
-  garde sa réponse dans l'en-tête — le nom de la marque **et la vignette de l'image choisie** — ce
-  que la colonne de 284px n'avait pas la place de faire, et qui est précisément pourquoi elle devait
-  y rester ouverte.
-  ⚠️ **Ce fut brièvement deux cartes bordées portant dix-neuf radios en permanence**, sur la théorie
-  que des contrôles aussi petits n'ont pas besoin d'être repliés. C'était faux, et la raison mérite
-  d'être gardée : **une ligne repliée EST le groupement.** Ouvert, le même contenu devient une
-  quarantaine d'éléments sans résumé nulle part, et les coiffer de deux titres ne fait que deux
-  fourre-tout. Le débordement qui avait motivé le changement (198px) avait été mesuré avec **trois
-  lignes ouvertes en même temps**, ce qui est un test et pas un usage : au repos et à deux lignes
-  ouvertes, ça tient. `git log -S optionsForm` a la version en formulaire.
-- **Une mesure, un bord gauche.** La liste fait ~440px et est **alignée à gauche**, partageant son
-  bord avec la bande de chips au-dessus. Une ligne libellé-et-valeur étalée sur 700px met ses deux
-  moitiés aux deux bouts de l'écran ; un panneau qui se lit comme un panneau est plus étroit que
-  l'espace où il est posé. Plus large que les 284px du panneau épinglé, parce qu'il y a la place pour
-  que les tuiles de référence respirent. Les moitiés sont **égales** : la gauche porte une liste
-  étroite, elle n'a aucun droit sur plus de la moitié. Le pane **Advanced** prend la largeur entière
-  parce que c'est de la **prose**.
-- La valeur d'une ligne décidée se lit en **encre**, pas en couleur ni en graisse : grey-100 quand un
-  choix est fait, grey-80 quand Archie choisit encore pour vous. Elle a été électrique (la seule
-  couleur du panneau, posée sur deux noms de marque — et une donnée statique teintée de la couleur
-  réservée à l'interactif), puis en gras (la valeur pesait alors exactement autant que son libellé).
-  Le libellé garde le bold de l'accordéon DS : c'est lui qu'on scanne pour trouver le réglage.
-- Le pane scrolle quand plusieurs lignes sont ouvertes, et le bord bas **se fond** (`mask-image` +
-  `animation-timeline: scroll(self block)`, jumeau vertical de `.isv2-refs.is-scrollable`) parce que
-  macOS masque les barres de défilement. Zéro coût quand tout tient : une scroll-timeline sur un
-  élément non scrollable est inactive.
+- **Options** = les **sept mêmes lignes** que le panneau épinglé, mais en **deux groupes bornés**
+  au lieu d'une échelle plate : _« What's in the image »_ (References · Text in image · Branding) et
+  _« How it's made »_ (Type · Style · Format · Output). FEATURES disait depuis toujours que l'ordre
+  encode ce raisonnement ; dans une colonne de 284px il ne pouvait qu'être **impliqué par la
+  séquence**, ici il y a la place pour l'énoncer — et l'énoncer est ce qui transforme sept lignes de
+  poids égal en deux choses qu'on scanne. `settingRowEntries` étiquette chaque ligne de son `name`
+  pour que le groupage se fasse **par nom et pas par index** : ajouter une huitième ligne ne peut
+  pas déplacer en silence la frontière d'un groupe.
+  Le groupe est une **carte** construite sur la recette de `.ap-card` valeur pour valeur (blanc,
+  1px grey-10, le radius de carte de l'app) **plutôt qu'en prenant la classe** : `.ap-card` porte
+  `padding: sm` + `gap: sm`, et ces lignes ont besoin que leurs filets aillent d'un bord à l'autre.
+  Overrider une classe `.ap-*` hors de `ds-patches.css` retourne la cascade en silence, donc on
+  compose depuis les mêmes tokens. Pas d'ombre, donc une carte qui contient des lignes n'imbrique
+  aucune élévation.
+- **Une mesure, un bord gauche.** Le formulaire fait ~520px et n'occupe **pas** toute la moitié :
+  à pleine largeur une ligne posait son libellé contre un bord et sa valeur contre l'autre, 400px
+  plus loin, et la paire cessait de se lire comme une paire. Il est **aligné à gauche et non
+  centré** — la bande de chips, les captions de groupe et les blocs du brief partent tous du même
+  bord gauche, ce qui est ce qui en fait une seule colonne. Le pane **Advanced** prend la largeur
+  entière de la moitié parce que c'est de la **prose** : à 520px ses deux colonnes tombaient à ~40
+  caractères par ligne, sous les 45-75 que l'œil demande.
+- Le pane scrolle quand il faut — sans danger, puisque les réglages n'ont plus de flyout à faire
+  sortir de la boîte depuis qu'ils sont des sections qui s'ouvrent en place. Le bord bas **se fond**
+  (`mask-image` + `animation-timeline: scroll(self block)`, le jumeau vertical de
+  `.isv2-refs.is-scrollable`) : le bas d'une carte de groupe est une **bordure**, donc coupée net
+  elle a l'air cassée, et macOS masque les barres de défilement. Le fondu ne coûte rien quand tout
+  tient : une scroll-timeline sur un élément non scrollable est inactive.
 - **Advanced** = les **mêmes blocs éditables** que l'auto-brief, avec les mêmes règles : taper dans
   un bloc **EST** la reprise en main, un réglage changé ensuite marque le brief périmé au lieu de
   l'écraser, et le garde-fou nomme le réglage qu'il s'apprête à réécrire. Le chip est **désactivé
@@ -622,26 +596,6 @@ uppercase`, ce que les règles maison interdisent — on hiérarchise par taille
 > « se lirait comme un sélecteur de mode concurrent du vrai » — la raison même pour laquelle le
 > toggle Image / In feed utilise les chips. Le même primitif rend d'ailleurs cette bande symétrique
 > de celle qui lui fait face dans l'en-tête du preview.
-
-> ⚠️ **Une tuile de référence n'avait pas de taille propre.** C'est un `<button>`, donc
-> `inline-block`, et son seul enfant dans le flux est un `<img width: 100%>` — le shrink-to-fit
-> résolvait donc toute la tuile depuis la largeur **intrinsèque** de l'image, qui vaut 0 pendant le
-> chargement et 0 pour toujours si elle échoue. Les trois tuiles retombaient alors à 2px et la
-> section se lisait comme cassée. Le slot connaît déjà la bonne largeur ; la tuile n'avait qu'à la
-> remplir (`display: block; width: 100%`). Corrigé pour **les trois hôtes**, délibérément hors du
-> flag : avec une image chargée la taille calculée est identique à l'octet, donc ça ne change rien de
-> visible — ça empêche seulement les tuiles de disparaître quand l'image n'arrive pas.
-
-> ⚠️ Une **tuile de référence dont l'image n'arrive pas** — ce sont des URLs distantes — était un
-> carré grey-05 sur une carte blanche bordé de grey-10 : invisible, et ça lisait « la section est
-> cassée » plutôt que « l'image n'est pas arrivée ». La tuile porte maintenant son propre placeholder
-> **sous** l'`<img>` (fond grey-10 + un glyphe `ap-icon-image` **discret** — 24px en grey-40 : à 48px
-> en grey-60 il transformait trois emplacements de référence en trois icônes d'erreur, la chose la
-> plus voyante du formulaire, à sa place d'honneur), donc une image chargée le recouvre
-> entièrement et ça ne coûte rien quand tout va bien. Corrigé pour **les trois hôtes**.
-> `display: block` sur `.isv2-ref` est porteur : la tuile était un `<button>` (inline-block) et est un
-> `<label>` maintenant, donc `inline` — et une boîte inline ignore `aspect-ratio`, ce qui la faisait
-> retomber à un filet.
 
 > ⚠️ **Ce n'est pas le variant grille retiré** (`imageStudioGridBrief`, `6ea8de36` → `2ef212ff`).
 > Celui-là remplaçait le prompt en prose par des champs nommés **inventés**, comme **seul** éditeur et
