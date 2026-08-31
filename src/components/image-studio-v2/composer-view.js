@@ -23,7 +23,7 @@
 
 import { escapeHtml } from "../../utils.js?v=22";
 import { isBriefStage } from "./brief-stage.js?v=39";
-import { isSetupFirst } from "./setup-stage.js?v=18";
+import { isSetupFirst } from "./setup-stage.js?v=19";
 
 // Empty-state hint for the prompt field — a full structured brief, so the
 // placeholder itself shows the kind of rich prompt the box is built for (and why

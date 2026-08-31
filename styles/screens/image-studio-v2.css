@@ -33,6 +33,24 @@
   max-height: 940px;
   padding: 0;
   overflow: hidden;
+  transition:
+    width 220ms var(--app-ease-out),
+    height 220ms var(--app-ease-out);
+}
+
+/* V3, before its first image (index.js#renderBody). The full shell is sized for the
+   RESULTS view — a big picture with a rail beside it. Asking for the image happens in a
+   list of seven rows, and in a 1355×811 modal that list came to 16% of the stage with the
+   rest left white. So the shell is smaller for that step and grows at the first
+   generation — under the loader, so the change is attached to something happening.
+
+   Still a FIXED size, not `height: auto`. The studio's whole height chain is
+   `height: 100%` / `flex: 1 1 auto` from `.isv2-body` down to `.isv2-stage`, built to
+   fill a known box; content-sizing the shell resolves that chain to zero and then the
+   grid's `minmax(0, 1fr)` collapses the widths too. A smaller box needs none of that. */
+.isv2-modal--compact {
+  width: min(94vw, 760px);
+  height: min(86vh, 560px);
 }
 
 .isv2-close {
@@ -402,6 +420,8 @@
   /* V3's options measure — the width of the row list and of the pane switch above it, in
      ONE place so the two can't drift apart. */
   --isv2-opts-measure: 440px;
+  /* And the width it takes when it is alone on the stage — see .is-solo. */
+  --isv2-solo-measure: 620px;
   height: 100%;
   box-sizing: border-box;
   max-width: 1120px;
@@ -781,6 +801,27 @@
    The split geometry is the auto-brief stage's, reused whole (`.isv2-bs.is-split`) —
    EQUAL halves, because the left one holds a narrow list of rows and not a wide form, so
    it has no claim on more than half. */
+
+/* Solo — no image yet, so no second half. The column takes the centre of the stage at a
+   comfortable measure instead of hugging the left edge of a half it shares with a
+   placeholder. Wider than the 431px it gets in the split, because here it is the only
+   thing on screen and has no divider to sit away from. */
+.isv2-bs--setup.is-solo {
+  max-width: none;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+}
+
+.isv2-bs--setup.is-solo .isv2-bs-left {
+  width: 100%;
+  max-width: var(--isv2-solo-measure);
+}
+
+/* Solo, the list has the column's whole width — the measure is on the column itself. */
+.isv2-bs--setup.is-solo .isv2-opts,
+.isv2-bs--setup.is-solo .isv2-panetabs {
+  max-width: none;
+}
 
 /* Sentence case for every label on this stage, eyebrows included. `.isv2-bs-eyebrow`
    uppercases, which the house rules forbid — hierarchy comes from size, weight and ink.

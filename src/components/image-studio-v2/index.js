@@ -36,7 +36,7 @@ import { getSessionById } from "../../sessions-store.js?v=24";
 import { getContextById } from "../../contexts-store.js?v=57";
 import { MODAL_ID, KEY, ctx, state, autosize } from "./context.js?v=50";
 import { loadImg } from "../../image-studio-canvas.js?v=6";
-import { renderStudio } from "./stage-view.js?v=129";
+import { renderStudio } from "./stage-view.js?v=130";
 import { offerUndoIfNeeded, resetUndoOffers } from "./prompt-guard.js?v=19";
 import { bindStudioEvents } from "./events.js?v=34";
 import * as imageStudio from "../../image-studio.js?v=104";
@@ -64,6 +64,21 @@ const HTML = `
 function renderBody() {
   const st = state();
   if (!st || !ctx.body) return;
+  // V3 before its first image: the shell shrinks to what it holds. The modal is sized for
+  // the RESULTS view — a big picture with a rail beside it — and V3 spends its first
+  // screen, the one where all the work happens, in that same 1355×811 shell with a list
+  // of seven rows in it. Measured: 16% of the stage in use. The container follows its
+  // contents and grows back when there is a picture to grow for.
+  //
+  // On the shell and not inside it because the size lives on `.isv2-modal`, which is
+  // outside `#isv2Body` — the render path can't reach it from the stage.
+  const compact =
+    !!st.setupFirst &&
+    st.mode === "generate" &&
+    st.genPhase !== "generating" &&
+    !st.variations.length &&
+    !st.currentImage;
+  ctx.modal.classList.toggle("isv2-modal--compact", compact);
   ctx.body.innerHTML = renderStudio(st);
   // Both composer fields auto-grow to whatever text carried over: the derived
   // brief on open, and anything typed before a re-render.

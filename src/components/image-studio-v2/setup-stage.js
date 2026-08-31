@@ -32,9 +32,10 @@
 //    on screen; offered before there is one it would be a draft of a brief, which is
 //    the surface this variant exists to remove.
 //
-// 3. The layout NEVER changes — two halves from open to commit, the same geometry the
-//    auto-brief stage uses (`.isv2-bs`), so switching pane or landing an image reflows
-//    nothing. The options half scrolls internally; the preview half does not.
+// 3. The stage is ONE column until there is something to preview, then two. Reserving
+//    half a modal for a placeholder is worse than one reflow — see setupStage for the
+//    measurements. Switching pane never reflows; only the first generation does, and it
+//    happens under the loader.
 //
 // 4. The row list has a MEASURE (~440px) and is LEFT-ALIGNED, sharing its edge with the
 //    pane switch above it. A list of label-and-value rows stretched across a 700px half
@@ -108,11 +109,29 @@ function advancedPane(st) {
 
 export function setupStage(st) {
   const advanced = st.pane === "advanced" && briefReady(st);
-  return `<div class="isv2-bs is-split isv2-bs--setup">
+  // Before anything has been asked for, there is no second half to fill — so there is no
+  // second half. The options take the centre of the stage on their own, and the split
+  // arrives with the picture.
+  //
+  // Measured, at 1440×900: the split-from-the-first-frame version put the seven rows at
+  // 12.5% of the stage and a 521×521 "your image appears here" box at 272k px² beside
+  // them — two and a half times the area of every option put together — with 245px of
+  // dead gutter between the two. The biggest object on screen was a placeholder for
+  // something that did not exist, at exactly the moment the user was doing the work.
+  //
+  // The cost, stated: the layout DOES change when the first image lands, which the split
+  // was chosen to avoid. That was the right instinct for a picture joining a brief already
+  // on screen (brief-stage.js) — the brief stays put and the picture arrives beside it.
+  // Here the left half is a 431px list of rows, and reserving half a modal for a promise
+  // is a worse trade than one reflow. Generation is the moment the split appears, so the
+  // reflow happens under the loader rather than out of nowhere.
+  const split = st.genPhase === "generating" || st.variations.length > 0 || !!st.currentImage;
+  const pane = advanced ? advancedPane(st) : optionsPane(st);
+  return `<div class="isv2-bs isv2-bs--setup${split ? " is-split" : " is-solo"}">
     <div class="isv2-bs-left">
       ${paneTabs(st)}
-      ${advanced ? advancedPane(st) : optionsPane(st)}
+      ${pane}
     </div>
-    ${previewColumn(st)}
+    ${split ? previewColumn(st) : ""}
   </div>`;
 }

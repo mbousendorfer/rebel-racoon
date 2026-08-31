@@ -499,11 +499,31 @@ V3 inverse : **les réglages sont le formulaire, Generate en est le submit, et l
 à « qu'est-ce que tu as envoyé ? »** plutôt que la chose à remplir d'abord. Il n'y a **aucun champ de
 prompt en prose** dans cette variante.
 
-Le stage est **deux moitiés pour toute la boucle**, la géométrie de l'auto-brief réutilisée telle
-quelle (`.isv2-bs.is-split`) : à gauche une bande de deux chips **Options / Advanced** puis le pane
-correspondant, à droite la colonne de preview (vide → generating → in-feed → résultats + vignettes +
-le voile « la brief a changé depuis cette image »). **La mise en page ne change jamais** — ni au
-changement de pane, ni à l'arrivée de la première image.
+Le stage est **une colonne tant qu'il n'y a rien à prévisualiser, deux ensuite**, et le **shell
+lui-même est plus petit** pendant cette première étape.
+
+⚠️ La version « deux moitiés dès la première frame » a été mesurée à 1440×900 : les sept lignes
+faisaient **12,5 % du stage**, à côté d'un carré « Your image appears here » de 521×521 — soit
+**272 k px², deux fois et demie la surface de toutes les options réunies** — avec 245px de gouffre
+mort entre les deux. Le plus gros objet de l'écran était le placeholder d'une chose qui n'existait
+pas, exactement au moment où l'utilisateur travaille. Et le shell fait 1355×811 parce qu'il est
+dimensionné pour la vue RÉSULTATS (une grande image et son chutier) : demander l'image se fait dans
+une liste de sept lignes, donc l'écran était blanc à 84 %.
+
+Donc : `.is-solo` tant qu'aucune image n'existe (la colonne au centre, à ~620px, pas de moitié
+droite, pas de carré vide, pas de libellé « Preview »), `.isv2-modal--compact` sur le shell
+(760×560), et les deux tombent au **premier Generate** — sous le loader, donc le changement est
+attaché à quelque chose qui se passe. Résultat mesuré : **50,2 % du stage occupé** au lieu de 12,5 %.
+
+Le prix, assumé : **la mise en page change** à l'arrivée de la première image, ce que le split
+permanent voulait éviter. C'était le bon réflexe pour une image qui rejoint un brief déjà à l'écran
+(`brief-stage.js`) ; ici la moitié gauche est une liste de lignes, et réserver la moitié d'un modal
+pour une promesse est un pire marché qu'un seul reflow. Changer de pane, lui, ne reflow jamais.
+
+⚠️ Le shell compact reste une taille **FIXE**. Toute la chaîne de hauteur du studio est
+`height: 100%` / `flex: 1 1 auto` de `.isv2-body` jusqu'à `.isv2-stage`, bâtie pour remplir une boîte
+connue : passer le shell en `height: auto` résout cette chaîne à zéro, puis le `minmax(0, 1fr)` de la
+grille effondre aussi les largeurs. Une boîte plus petite n'a besoin d'aucun de ces contournements.
 
 - **Options** = les **sept mêmes lignes** que le panneau épinglé (`settingRows`), sans rien enroulé
   autour : chacune est un groupe — une option, sa valeur dans l'en-tête — séparées par des filets.
