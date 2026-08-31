@@ -266,17 +266,38 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xs);
+  gap: var(--isv2-bs-gap);
+  /* A size container, so the frame below can be bounded by the height that ACTUALLY
+     remains once the head row and the thumbnail strip have taken theirs — the same
+     reason `.isv2-stage-body` is one for `.isv2-frame`. Safe here: this column's height
+     comes from the grid row and its width from the track, never from its contents, so
+     the implied `contain: size` costs nothing. */
+  container-type: size;
+  /* What the column spends above and below the frame: the head row (a 24px filter chip,
+     taller than the 20px heading beside it), the always-present thumbnail strip, and the
+     two gaps between the three. Declared here, next to the rules that set those two
+     heights, so it cannot drift from them unnoticed. */
+  --isv2-bs-chrome: calc(24px + 44px + 2 * var(--isv2-bs-gap));
 }
 
 /* The shot GROWS to the height the column leaves it, and takes its width from the
    ratio — bounded by the column so a wide format can't overflow. `align-self: center`
    was the bug: in a column flex container that content-sizes the width, so an
    aspect-ratio box had nothing to size from and collapsed. */
+/* Sized like `.isv2-frame`: as big as fits, and NEVER off its ratio. `flex: 1 1 auto`
+   claimed the whole column height and `aspect-ratio` then had nothing left to say — at
+   1240px of viewport a 1:1 preview came out 654x837, and `object-fit: cover` cropped the
+   square image the studio was about to commit into a portrait. So the width is derived
+   from the height the column leaves, the ratio caps it, and `max-height` keeps a wide
+   format from overflowing when the width hits the column's edge instead. Every state
+   carries the same box, so the no-reflow promise holds: the frame the image lands in is
+   the frame the empty state drew. */
 .isv2-bs-shot {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-height: 0;
+  width: min(100%, calc((100cqh - var(--isv2-bs-chrome)) * var(--isv2-shot-ratio, 1)));
   max-width: 100%;
+  max-height: calc(100cqh - var(--isv2-bs-chrome));
   margin-inline: auto;
   /* Carried by every state, transparent when there is a picture: the empty state's dashed
      border would otherwise make its box 2px wider than the image's, which the
@@ -329,9 +350,13 @@
 }
 
 /* The empty half: same box the picture will occupy, so nothing moves when it arrives. */
+/* Sized to the FRAME, which is ~600px square in a split stage: a 32px mark and a 14px
+   title left the only thing on that surface looking like a caption dropped in the middle
+   of it. The mark takes `lg` from the words it introduces, the two lines keep `xxxs`
+   between them — one gap for "these belong together", one for "and this is the group". */
 .isv2-bs-shot.is-empty {
   flex-direction: column;
-  gap: var(--ref-spacing-xxs);
+  gap: var(--ref-spacing-xxxs);
   padding: var(--ref-spacing-md);
   text-align: center;
   border-style: dashed;
@@ -341,19 +366,20 @@
 }
 
 .isv2-bs-shot.is-empty > i {
-  font-size: 32px;
+  font-size: var(--sys-icon-css-xl);
+  margin-bottom: var(--ref-spacing-xs);
   color: var(--ref-color-grey-40);
 }
 
 .isv2-bs-empty-title {
-  font-size: var(--sys-text-style-body-bold-size);
-  line-height: var(--sys-text-style-body-bold-line-height);
-  font-weight: var(--sys-text-style-body-bold-weight);
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
   color: var(--sys-text-color-default);
 }
 
 .isv2-bs-empty-sub {
-  max-width: 34ch;
+  max-width: 38ch;
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
 }
@@ -402,6 +428,10 @@
   /* V3's form measure — the width of the options list and of the pane switch above it,
      in ONE place so the two can't drift apart. */
   --isv2-form-measure: 520px;
+  /* ONE gap for both halves, because the preview's frame computes its size from the
+     height its own siblings leave it — so the value the column is spaced with and the
+     value that maths subtracts must be the same declaration, not two that agree today. */
+  --isv2-bs-gap: var(--ref-spacing-xs);
   height: 100%;
   box-sizing: border-box;
   max-width: 1120px;
@@ -422,7 +452,7 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xs);
+  gap: var(--isv2-bs-gap);
   padding: var(--ref-spacing-sm) var(--ref-spacing-md);
 }
 
@@ -821,8 +851,9 @@
   max-width: var(--isv2-form-measure);
   display: flex;
   flex-direction: column;
-  /* BETWEEN groups — deliberately larger than the gap inside one (which is zero: the
-     rows are hairline-separated). That difference is the whole grouping. */
+  /* BETWEEN groups — deliberately larger than any gap inside one (the heading binds to
+     its card at `xs`, the rows are hairline-separated). That difference is the whole
+     grouping, and the card's own `padding-block` reads as another 8px on top of it. */
   gap: var(--ref-spacing-md);
   /* Room for the last group's border to not sit flush on the scroller's edge. */
   padding-block-end: var(--ref-spacing-xxs);
@@ -866,33 +897,60 @@
   }
 }
 
+/* Both halves padded to the modal's own inline step (`lg`, the header's), so the form's
+   left edge continues the line the title and the tab rail already sit on, and the
+   hairline between the halves runs down the middle of a 64px gutter instead of a 40px
+   one. The auto-brief stage keeps `sm md`: its left half is prose at full width, which
+   needs the room this one spends on air. */
+.isv2-bs--setup {
+  --isv2-bs-gap: var(--ref-spacing-sm);
+}
+
+.isv2-bs--setup .isv2-bs-left,
+.isv2-bs--setup.is-split .isv2-bs-preview {
+  padding: var(--ref-spacing-sm) var(--ref-spacing-lg);
+}
+
 /* Sentence case for every label on THIS stage, the section eyebrows included.
    `.isv2-bs-eyebrow` uppercases, which the house rules forbid outright — hierarchy comes
    from size, weight and ink, never from shouting — and with the option groups captioned
    in sentence case the two halves were labelling themselves in two different voices.
    Scoped to V3 so the auto-brief stage keeps the treatment it shipped with. */
+/* And the same size, weight and ink as the group headings across the hairline: `Preview`
+   and `The brief I sent` label a half of the stage each, which is the same job at the
+   same level. Caption/grey-80 put them a tier below the thing they name. */
 .isv2-bs--setup .isv2-bs-eyebrow {
   text-transform: none;
   letter-spacing: normal;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-h4-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--sys-text-color-default);
 }
 
-/* One group = a caption plus a bounded card. Same type, same ink, same case as the
-   preview's eyebrow opposite it. */
+/* One group = a heading plus a bounded card. Same type, same ink, same case as the
+   preview's eyebrow opposite it. The gap binds them: `xs` to its own card against `lg`
+   between groups, so which card a heading belongs to is never in question. */
 .isv2-optgroup {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xxs);
+  gap: var(--ref-spacing-xs);
 }
 
-/* The de-emphasised half of the pair: caption size, grey-80, sentence case. NOT
-   uppercase — the house rules ban uppercase labels, and hierarchy here comes from size
-   and ink, not from shouting. */
+/* These two lines are the ONLY thing organising seven rows, so they read as headings:
+   body size, bold, grey-100 — the size-and-weight levers, sentence case, no uppercase.
+   They were caption/grey-80, the `.isv2-sheet-hint` costume, which is the tier for an
+   ASIDE about a thing; at caption weight above a 380px card they registered as a
+   footnote floating over it rather than as the question the card answers. Ink alone was
+   never going to carry a section heading — and this is also what keeps them speaking in
+   the same voice as the `Preview` heading facing them across the hairline. */
 .isv2-optgroup-label {
   margin: 0;
   padding-inline: var(--ref-spacing-xxxs);
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--sys-text-color-light);
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-h4-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--sys-text-color-default);
 }
 
 /* `.ap-card`'s recipe, value for value — white, 1px grey-10, a card radius — composed
@@ -903,16 +961,39 @@
 .isv2-optgroup-rows {
   display: flex;
   flex-direction: column;
+  /* NO block padding, unlike the DS's `.ap-list-panel-items`: the rows stay flush to the
+     card's edges the way `.ap-accordion` puts its own content, because the row heights and
+     the body padding below are already doing the un-cramping and 16px per card was the
+     difference between the seventh row being on screen at 980px of viewport and being
+     under the fold. Corner breathing room is the cheapest thing on this pane to give up. */
   background: var(--app-surface);
   border: 1px solid var(--app-border-soft);
   border-radius: var(--app-radius-card);
   overflow: hidden;
 }
 
-/* Inside a card the header can afford the DS accordion's own inline padding. */
-.isv2-opts .isv2-acc-head,
-.isv2-opts .isv2-acc-body {
+/* Inside a card the header can afford the DS accordion's own inline padding — and, at
+   this measure, the DS's own ROW geometry. `.ap-list-panel-item` is the DS component for
+   "rows stacked inside a bounded card", and it is 40px tall with `xxs sm` padding; the
+   panel's 36px is the pinned 284px rail's density decision (`--comp-input-height`), which
+   at 520px wide read as a table row rather than a control. Same numbers, from the DS,
+   rather than a height invented for this one screen. */
+.isv2-opts .isv2-acc-head {
+  min-height: 40px;
+  padding-block: var(--ref-spacing-xxs);
   padding-inline: var(--ref-spacing-sm);
+}
+
+/* The body takes the DS accordion's content padding (`sm` all round) instead of the
+   panel's 8/16/12, and its gap goes to `sm` too — the value `.ap-accordion-content`
+   ships. The four clusters inside References (the switch, the brand strip, the uploader,
+   "How to use it") were 12px apart, which is the gap WITHIN a cluster: they read as one
+   run of eight controls. Top stays one step short of the DS, keeping the documented
+   asymmetry — the header sits a touch further from its content than the content does
+   from the next row's hairline. */
+.isv2-opts .isv2-acc-body {
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm) var(--ref-spacing-sm);
 }
 
 /* `set` reads as INK AND WEIGHT, not as colour.
@@ -935,12 +1016,27 @@
 .isv2-opts--brief {
   max-width: none;
   overflow: visible;
-  gap: var(--ref-spacing-xxs);
+  gap: var(--ref-spacing-xs);
   padding-block-end: 0;
   /* No scroller here, so no fade — and a mask on a non-scrolling box would clip the
      popovers the blocks' fields can raise. */
   mask-image: none;
   animation: none;
+}
+
+/* The blocks get the room the pane has. They are sized for the auto-brief stage, where
+   the brief shares its half with a modifier bar and every 4px is spent; here the pane
+   holds nothing else and ran out of content two thirds of the way down the half, so six
+   cards at an 8px gap with 8px of inner padding read as a table of cells rather than as
+   six answers. One step up on both — `xs` between, `xs`/`sm` inside — spends the void on
+   the thing the pane is for. The hero keeps its h3 value, so it still leads. */
+.isv2-bs--setup .isv2-bs-doc {
+  gap: var(--ref-spacing-xs);
+}
+
+.isv2-bs--setup .isv2-bs-block {
+  gap: var(--ref-spacing-xxxs);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
 }
 
 /* The brief's status line sits UNDER its own blocks here. The auto-brief stage keeps it

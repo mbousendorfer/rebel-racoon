@@ -31,7 +31,7 @@ import { imageTypeBody, styleBody, formatBody, outputBody } from "./settings-vie
 import { refsBody, refSummary } from "./references-view.js?v=16";
 import { brandingBody } from "./branding-view.js?v=4";
 import { briefBody } from "./brief-blocks.js?v=2";
-import { previewColumn } from "./preview-column.js?v=1";
+import { previewColumn } from "./preview-column.js?v=2";
 
 // Is the brief holding the stage? For the WHOLE generate flow, image or not.
 //

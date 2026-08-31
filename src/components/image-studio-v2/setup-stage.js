@@ -36,10 +36,16 @@
 //    auto-brief stage uses (`.isv2-bs`), so switching pane or landing an image reflows
 //    nothing. The options half scrolls internally; the preview half does not.
 //
-// 4. The form has a MEASURE (~520px, centred in its half) rather than filling it. At the
-//    half's full width a row put its label at one edge and its value at the other with
+// 4. The form has a MEASURE (~520px, left-aligned in its half) rather than filling it. At
+//    the half's full width a row put its label at one edge and its value at the other with
 //    400px of nothing between them — the pair stopped reading as a pair. A form is one
 //    of the few things that should be narrower than the space it has.
+//
+// 5. The DENSITY is the DS's, not the pinned panel's. These same seven rows run at 36px in
+//    a 284px rail, where every pixel counts; in a 520px card that reads as a table. Under
+//    `.isv2-opts` a row takes `.ap-list-panel-item`'s geometry (40px, `xxs sm`) and a
+//    section body takes `.ap-accordion-content`'s padding and gap — the DS components for
+//    "rows inside a bounded card" and "an expanded section". FEATURES §7bis has the table.
 //
 // The brief's blocks (brief-blocks.js) and the preview column (preview-column.js) are
 // shared with the auto-brief stage — one renderer each, two hosts, so a card and the
@@ -47,7 +53,7 @@
 
 import { settingRowEntries } from "./settings-view.js?v=19";
 import { briefBody, briefNote } from "./brief-blocks.js?v=2";
-import { previewColumn } from "./preview-column.js?v=1";
+import { previewColumn } from "./preview-column.js?v=2";
 
 /** Is V3 holding the stage? For the WHOLE generate flow, image or not. */
 export function isSetupFirst(st) {
@@ -75,9 +81,12 @@ function paneTabs(st) {
 // FEATURES has always said the order encodes a reasoning: "ce qui va DANS l'image, puis
 // son traitement". In a 284px column that could only ever be implied by the sequence.
 // Here there is room to state it, and stating it is what turns seven equal-weight rows
-// into two things a reader can scan. The caption is the de-emphasised half of a
-// label/value pair — caption size, grey-80, sentence case (the house rule bans
-// uppercase labels) — so the group reads as an answer under a question.
+// into two things a reader can scan. The two labels are HEADINGS — body size, bold,
+// grey-100, sentence case (the house rule bans uppercase labels). They were captions at
+// grey-80, which is `.isv2-sheet-hint`'s costume: the tier for an ASIDE about a thing. At
+// that weight above a 380px card they read as a footnote floating over it rather than as
+// the question the card answers — and ink alone was never going to carry a section
+// heading. It also puts them at the level of the `Preview` heading across the hairline.
 //
 // The group is a CARD, built to `.ap-card`'s recipe value for value (white,
 // 1px grey-10, the app's card radius) rather than by taking the class: `.ap-card`

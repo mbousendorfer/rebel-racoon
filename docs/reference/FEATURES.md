@@ -519,10 +519,16 @@ changement de pane, ni à l'arrivée de la première image.
   Overrider une classe `.ap-*` hors de `ds-patches.css` retourne la cascade en silence, donc on
   compose depuis les mêmes tokens. Pas d'ombre, donc une carte qui contient des lignes n'imbrique
   aucune élévation.
+  Les deux libellés sont des **titres** — body 14px, bold, grey-100, en casse de phrase — et non
+  des captions grey-80. C'est le seul dispositif qui organise sept lignes, et au costume de
+  `.isv2-sheet-hint` (le tier d'un **aparté** sur une chose) ils se lisaient comme une note de bas
+  de page posée au-dessus d'une carte de 380px plutôt que comme la question à laquelle elle
+  répond. L'encre seule n'allait jamais porter un titre de section — c'est aussi ce qui les fait
+  parler de la même voix que le « Preview » qui leur fait face de l'autre côté du filet.
 - **Une mesure, un bord gauche.** Le formulaire fait ~520px et n'occupe **pas** toute la moitié :
   à pleine largeur une ligne posait son libellé contre un bord et sa valeur contre l'autre, 400px
   plus loin, et la paire cessait de se lire comme une paire. Il est **aligné à gauche et non
-  centré** — la bande de chips, les captions de groupe et les blocs du brief partent tous du même
+  centré** — la bande de chips, les titres de groupe et les blocs du brief partent tous du même
   bord gauche, ce qui est ce qui en fait une seule colonne. Le pane **Advanced** prend la largeur
   entière de la moitié parce que c'est de la **prose** : à 520px ses deux colonnes tombaient à ~40
   caractères par ligne, sous les 45-75 que l'œil demande.
@@ -542,6 +548,45 @@ changement de pane, ni à l'arrivée de la première image.
   partagée. La **ligne d'état du brief passe sous les blocs** et non dans le footer : ici le brief
   est un pane sur deux, et le footer parlerait d'une chose que le lecteur n'a peut-être pas à
   l'écran.
+
+### La densité vient du DS, pas d'un réglage maison
+
+Le variant avait hérité la densité du **panneau épinglé de 284px**, où chaque pixel compte :
+lignes de 36px (`--comp-input-height`), corps de section en `8/16/12` avec un gap de 12. Dans une
+carte de 520px ça se lit comme un **tableau**, pas comme un formulaire. Les valeurs viennent
+maintenant des composants que le DS destine à cette forme-là, et **uniquement sous `.isv2-opts`**
+— le panneau épinglé garde la sienne, qui est le bon réglage pour un rail :
+
+| Ce qui a changé (V3 seul)          | Avant     | Après                 | D'où ça vient                                                       |
+| ---------------------------------- | --------- | --------------------- | ------------------------------------------------------------------- |
+| Hauteur de ligne                   | 36px      | **40px**, `xxs sm`    | `.ap-list-panel-item` — le composant DS des lignes dans une carte   |
+| Corps de section                   | `8/16/12` | **`xs/sm/sm`**        | `.ap-accordion-content` (`sm` partout), moins un cran en haut       |
+| Gap dans un corps                  | `xs`      | **`sm`**              | idem — 12px est le gap _à l'intérieur_ d'un cluster, pas entre deux |
+| Titre → sa carte                   | `xxs`     | **`xs`**              | contre `md` entre groupes : c'est l'écart qui fait le groupement    |
+| Padding des deux moitiés           | `sm md`   | **`sm lg`**           | le `lg` du header, donc un seul bord gauche du titre au formulaire  |
+| Blocs du brief (pane **Advanced**) | `xxs xs`  | **`xs sm`**, gap `xs` | le pane ne porte rien d'autre et s'arrêtait au tiers de la moitié   |
+| Marque + titre du cadre vide       | 32px / 14 | **40px / h3**         | le cadre fait ~600px de côté ; 32/14 y était une légende perdue     |
+
+La carte de groupe, elle, **ne prend pas** le `padding-block` de `.ap-list-panel-items` : 16px par
+carte était la différence entre la septième ligne à l'écran et sous la ligne de flottaison à 980px
+de viewport, et l'air aux coins est ce qu'il y avait de moins cher à céder sur ce pane. Au-delà, le
+pane scrolle — c'est ce que le fondu de bord existe pour dire.
+
+### Le cadre de preview ne mentait plus qu'ici
+
+`.isv2-bs-shot` était `flex: 1 1 auto` : il réclamait **toute** la hauteur de la colonne, ce qui ne
+laissait plus rien à dire à son `aspect-ratio`. À 1240px de viewport un aperçu **1:1 sortait en
+654×837**, et l'`object-fit: cover` à l'intérieur **recadrait** l'image carrée que le studio
+s'apprêtait à commiter. Il prend maintenant le primitif de `.isv2-frame` — celui du stage
+classique, qui n'a jamais dérivé : `width: min(100%, (100cqh − chrome) × ratio)`, avec
+`.isv2-bs-preview` en `container-type: size` et le ratio passé **aussi** en `--isv2-shot-ratio`
+(une valeur `aspect-ratio` ne se lit pas dans un `calc()`). Le `chrome` soustrait ce que la colonne
+dépense autour du cadre — la ligne d'en-tête, la bande de vignettes toujours présente, les deux
+gaps — et il est déclaré à côté des règles qui posent ces hauteurs. Le gap des deux moitiés est
+devenu `--isv2-bs-gap` pour cette raison : la valeur qui espace la colonne et celle que ce calcul
+retire doivent être **une seule déclaration**, pas deux qui se ressemblent aujourd'hui. Chaque état
+porte le même cadre, donc la promesse « rien ne bouge quand l'image arrive » tient toujours. Le
+correctif est **partagé** avec le stage auto-brief, qui rendait le même cadre faux.
 
 ### Le brief est écrit AU moment de générer
 
@@ -589,7 +634,9 @@ affirmation spatiale et sont partagés mot pour mot.
 - **Plus de labels en majuscules sur cet écran.** `.isv2-bs-eyebrow` passe en `text-transform:
 uppercase`, ce que les règles maison interdisent — on hiérarchise par taille, graisse et encre.
   Neutralisé sous `.isv2-bs--setup`, si bien que _« The brief I sent »_ et _« Preview »_ parlent de
-  la même voix que les captions de groupe en face. Le stage auto-brief garde son traitement.
+  la même voix que les titres de groupe en face — **exactement** la même (body 14 bold grey-100),
+  parce qu'ils font le même travail au même niveau : nommer une moitié du stage. Le stage
+  auto-brief garde son traitement.
 
 > ⚠️ Le switch de pane est une **paire de `.ap-filter-chip`**, pas `.ap-tabs`. Le header de la modale
 > porte déjà la seule bande d'onglets de l'écran (Generate | Edit) ; une seconde à 300px de là

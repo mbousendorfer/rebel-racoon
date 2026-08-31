@@ -66,6 +66,13 @@ function feedCard(st) {
 // state's "on the left" points at the right place in both. The day a host needs to word
 // something differently, that is the moment to add the option — not before.
 export function previewColumn(st) {
+  // The ratio rides as BOTH `aspect-ratio` and `--isv2-shot-ratio`. The frame is a flex
+  // item in a column, so `aspect-ratio` alone could not stop the column from growing it
+  // TALLER than its own shape: at 1240px of viewport a 1:1 preview was 654x837, and the
+  // `object-fit: cover` inside it cropped the square image the studio was about to
+  // commit. The custom property is what lets the width be computed from the height the
+  // column actually leaves — the primitive `.isv2-frame` has always used on the classic
+  // stage, which is why that one never distorted. See `.isv2-bs-shot`.
   const ratio = imageStudio.activeRatio(KEY);
   if (st.genPhase !== "generating" && !st.variations.length) {
     return `<div class="isv2-bs-preview">
@@ -73,7 +80,7 @@ export function previewColumn(st) {
         <p class="isv2-bs-eyebrow">Preview</p>
         ${previewToggle(st, true)}
       </div>
-      <div class="isv2-bs-shot is-empty" style="aspect-ratio:${ratio}">
+      <div class="isv2-bs-shot is-empty" style="--isv2-shot-ratio:${ratio};aspect-ratio:${ratio}">
         <i class="ap-icon-image" aria-hidden="true"></i>
         <p class="isv2-bs-empty-title">Your image appears here</p>
         <p class="isv2-bs-empty-sub">Set the options on the left, then generate.</p>
@@ -89,7 +96,7 @@ export function previewColumn(st) {
         <p class="isv2-bs-eyebrow">Preview</p>
         ${previewToggle(st, true)}
       </div>
-      <div class="isv2-bs-shot is-busy" style="aspect-ratio:${ratio}" role="status">
+      <div class="isv2-bs-shot is-busy" style="--isv2-shot-ratio:${ratio};aspect-ratio:${ratio}" role="status">
         <span class="gen-image-spinner"></span>
         <span class="isv2-bs-shot-label">Generating ${n} ${what}${n > 1 ? "s" : ""}…</span>
       </div>
@@ -138,7 +145,7 @@ export function previewColumn(st) {
       <p class="isv2-bs-eyebrow">Preview</p>
       ${previewToggle(st)}
     </div>
-    <div class="isv2-bs-shot${stale ? " is-stale" : ""}" style="aspect-ratio:${ratio}">
+    <div class="isv2-bs-shot${stale ? " is-stale" : ""}" style="--isv2-shot-ratio:${ratio};aspect-ratio:${ratio}">
       <img src="${escapeHtml(shot.url)}" alt="Generated image" />
       ${restale}
     </div>
