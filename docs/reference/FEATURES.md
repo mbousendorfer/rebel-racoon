@@ -521,13 +521,28 @@ changement de pane, ni à l'arrivée de la première image.
   le look « carte handoff » de l'app, qui **n'est pas** la carte du DS ; l'utilisateur l'a signalé.
   La carte DS est plate, et sur la toile grise un rectangle blanc bordé 1px se lit déjà comme sa
   propre carte sans élévation.
-- **Une mesure, un bord gauche.** Le formulaire fait ~520px et n'occupe **pas** toute la moitié :
-  à pleine largeur une ligne posait son libellé contre un bord et sa valeur contre l'autre, 400px
-  plus loin, et la paire cessait de se lire comme une paire. Il est **aligné à gauche et non
-  centré** — la bande de chips, les cartes d'option et les blocs du brief partent tous du même
-  bord gauche, ce qui est ce qui en fait une seule colonne. Le pane **Advanced** prend la largeur
-  entière de la moitié parce que c'est de la **prose** : à 520px ses deux colonnes tombaient à ~40
-  caractères par ligne, sous les 45-75 que l'œil demande.
+- **La colonne d'options EST une mesure, pas une moitié.** Le formulaire fait ~520px. La grille
+  était `repeat(2, 1fr)` — deux moitiés égales — donc la colonne gauche faisait ~700px et laissait
+  une **bande morte de ~180px** entre le bord droit du formulaire et le filet (signalée par
+  l'utilisateur, capture à l'appui). La grille de `.isv2-bs--setup.is-split` est maintenant
+  `calc(mesure + 2·lg) minmax(0,1fr)` : la gauche vaut exactement le formulaire plus son padding, la
+  **preview absorbe le reste** — c'est la moitié qui veut de la place, et c'est le même master-detail
+  que le Topic Feed (un côté mesure fixe, l'autre prend le reste). Le formulaire remplit donc sa
+  colonne, plus de bande. Le pane **Advanced** partage cette colonne étroite, donc ses blocs passent
+  en **une seule colonne** (`grid-template-columns: 1fr`) : à ~520px un grid 2-up tombait à ~40
+  caractères par ligne, sous les 45-75 que l'œil demande ; empilés, chaque bloc court sur toute la
+  mesure et se lit comme un vrai champ.
+- **Espacement resserré.** Gap **entre cartes** ramené de `sm` à `xxs` (les cartes plates + le canal
+  gris séparent déjà — `sm` se lisait « beaucoup trop espacé »), padding vertical des deux moitiés de
+  `md` à `sm`. **Titres de section en h3 (16px)**, à égalité avec le « Preview » d'en face : chaque
+  carte est une section, son titre mérite une taille de titre (le panneau épinglé de 284px garde 14px,
+  là les lignes sont des rangs, pas des sections).
+- Le pane scrolle quand il faut — sans danger, puisque les réglages n'ont plus de flyout à faire
+  sortir de la boîte depuis qu'ils sont des sections qui s'ouvrent en place. Le bord bas **se fond**
+  (`mask-image` + `animation-timeline: scroll(self block)`, le jumeau vertical de
+  `.isv2-refs.is-scrollable`) : le bas d'une carte est une **bordure**, donc coupée net
+  elle a l'air cassée, et macOS masque les barres de défilement. Le fondu ne coûte rien quand tout
+  tient : une scroll-timeline sur un élément non scrollable est inactive.
 - Le pane scrolle quand il faut — sans danger, puisque les réglages n'ont plus de flyout à faire
   sortir de la boîte depuis qu'ils sont des sections qui s'ouvrent en place. Le bord bas **se fond**
   (`mask-image` + `animation-timeline: scroll(self block)`, le jumeau vertical de

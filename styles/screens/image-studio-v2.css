@@ -229,6 +229,16 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+/* V3: the options half is a MEASURE, not half the modal. The form is a fixed ~520px, so
+   at 50/50 the left column was ~700px and left a dead ~180px band between the form's
+   right edge and the divider (the user flagged it). Size the left column to exactly the
+   form plus its own inline padding, and let the preview take everything else — the image
+   half is the one that wants the room. Same master-detail move as the Topic Feed: one
+   side is the fixed measure, the other absorbs the remainder. */
+.isv2-bs--setup.is-split {
+  grid-template-columns: calc(var(--isv2-form-measure) + 2 * var(--ref-spacing-lg)) minmax(0, 1fr);
+}
+
 .isv2-bs.is-split .isv2-bs-preview {
   padding: var(--ref-spacing-sm) var(--ref-spacing-md);
   border-left: 1px solid var(--sys-border-color-default);
@@ -851,14 +861,13 @@
   max-width: var(--isv2-form-measure);
   display: flex;
   flex-direction: column;
-  /* BETWEEN option cards — one card per option now (the two group headings and their
-     bounded group-cards were dropped at the user's call, see setup-stage.js). `sm` is
-     enough because each card carries its own shadow, which does the separating; `lg`
-     would push the seventh card too far down. */
-  gap: var(--ref-spacing-sm);
-  /* Room for the last card's SHADOW, not just its border, so a soft edge isn't clipped
-     against the scroller's bottom. */
-  padding-block-end: var(--ref-spacing-sm);
+  /* BETWEEN option cards — tight. The cards are flat now (1px grey-10 on the grey
+     canvas), so the border plus the thin grey channel already separate them; `sm` read
+     as "beaucoup trop espacé" (the user's words) for seven single-row cards. `xxs` keeps
+     them a list, not a stack of far-apart tiles. */
+  gap: var(--ref-spacing-xxs);
+  /* A hair of room past the last card's bottom border on the scroller's edge. */
+  padding-block-end: var(--ref-spacing-xxs);
   /* A group card's bottom edge is a BORDER, so a clipped one looks broken rather than
      cut off — and macOS hides overlay scrollbars, so there is no other signal. Same
      answer as the reference strip: fade the edge you can still scroll towards, using a
@@ -910,7 +919,7 @@
 
 .isv2-bs--setup .isv2-bs-left,
 .isv2-bs--setup.is-split .isv2-bs-preview {
-  padding: var(--ref-spacing-md) var(--ref-spacing-lg);
+  padding: var(--ref-spacing-sm) var(--ref-spacing-lg);
 }
 
 /* Sentence case for every label on THIS stage, the section eyebrows included.
@@ -1018,8 +1027,13 @@
    cards at an 8px gap with 8px of inner padding read as a table of cells rather than as
    six answers. One step up on both — `xs` between, `xs`/`sm` inside — spends the void on
    the thing the pane is for. The hero keeps its h3 value, so it still leads. */
-.isv2-bs--setup .isv2-bs-doc {
-  gap: var(--ref-spacing-sm);
+/* One column, not two: the left half is now the form's measure (~520px), where a 2-up
+   brief grid dropped to ~40 characters a line, under the 45-75 the eye wants. Stacked,
+   each block runs the full measure and reads as a proper field. The hero already spanned
+   both columns, so it is unaffected. */
+.isv2-bs--setup.is-split .isv2-bs-doc {
+  grid-template-columns: 1fr;
+  gap: var(--ref-spacing-xs);
 }
 
 .isv2-bs--setup .isv2-bs-block {
@@ -1617,6 +1631,15 @@
   flex: 0 1 auto;
   font-weight: var(--sys-text-style-body-bold-weight);
   color: var(--sys-text-color-default);
+}
+
+/* On the V3 options pane each card is a SECTION, so its title reads at section size —
+   h3 (16px), the same as the `Preview` / `The brief I sent` headings across the hairline.
+   In the pinned 284px panel these stay body-size (14px): there the panel itself is the
+   card and the rows are rows, not sections. */
+.isv2-opts .isv2-acc-title {
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
 }
 
 /* The current value, right-aligned before the toggle: the row still reads when
