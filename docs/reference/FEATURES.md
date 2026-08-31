@@ -552,25 +552,34 @@ changement de pane, ni à l'arrivée de la première image.
 ### La densité vient du DS, pas d'un réglage maison
 
 Le variant avait hérité la densité du **panneau épinglé de 284px**, où chaque pixel compte :
-lignes de 36px (`--comp-input-height`), corps de section en `8/16/12` avec un gap de 12. Dans une
-carte de 520px ça se lit comme un **tableau**, pas comme un formulaire. Les valeurs viennent
-maintenant des composants que le DS destine à cette forme-là, et **uniquement sous `.isv2-opts`**
-— le panneau épinglé garde la sienne, qui est le bon réglage pour un rail :
+lignes de 36px (`--comp-input-height`), corps de section en `8/16/12`, deux libellés de groupe en
+caption grey-80. Dans une carte de 520px ça se lit comme un **tableau**, pas comme un formulaire.
+Les valeurs viennent maintenant des composants que le DS destine à cette forme-là, et **uniquement
+sous `.isv2-opts` / `.isv2-bs--setup`** — le panneau épinglé garde la sienne, qui est le bon
+réglage pour un rail :
 
-| Ce qui a changé (V3 seul)          | Avant     | Après                 | D'où ça vient                                                       |
-| ---------------------------------- | --------- | --------------------- | ------------------------------------------------------------------- |
-| Hauteur de ligne                   | 36px      | **40px**, `xxs sm`    | `.ap-list-panel-item` — le composant DS des lignes dans une carte   |
-| Corps de section                   | `8/16/12` | **`xs/sm/sm`**        | `.ap-accordion-content` (`sm` partout), moins un cran en haut       |
-| Gap dans un corps                  | `xs`      | **`sm`**              | idem — 12px est le gap _à l'intérieur_ d'un cluster, pas entre deux |
-| Titre → sa carte                   | `xxs`     | **`xs`**              | contre `md` entre groupes : c'est l'écart qui fait le groupement    |
-| Padding des deux moitiés           | `sm md`   | **`sm lg`**           | le `lg` du header, donc un seul bord gauche du titre au formulaire  |
-| Blocs du brief (pane **Advanced**) | `xxs xs`  | **`xs sm`**, gap `xs` | le pane ne porte rien d'autre et s'arrêtait au tiers de la moitié   |
-| Marque + titre du cadre vide       | 32px / 14 | **40px / h3**         | le cadre fait ~600px de côté ; 32/14 y était une légende perdue     |
+| Ce qui a changé (V3 seul)          | Avant               | Après                   | D'où ça vient                                                                                 |
+| ---------------------------------- | ------------------- | ----------------------- | --------------------------------------------------------------------------------------------- |
+| Hauteur de ligne                   | 36px                | **40px**, `xxs sm`      | `.ap-list-panel-item` — le composant DS des lignes dans une carte                             |
+| Corps de section                   | `8/16/12`           | **`xs/sm/sm`**          | `.ap-accordion-content` (`sm` partout), moins un cran en haut                                 |
+| Gap dans un corps                  | `xs`                | **`sm`**                | idem — 12px est le gap _à l'intérieur_ d'un cluster, pas entre deux                           |
+| **Élévation des cartes de groupe** | aucune              | **`--app-shadow-card`** | `.isv2-frame` et toutes les cartes source/idea/post ; **pas** imbriquée (stage + pane à plat) |
+| Titres de groupe + eyebrows        | caption / body-bold | **h3 (16px) grey-100**  | les seuls libellés qui organisent l'écran → taille de titre de section                        |
+| Entre groupes                      | `md`                | **`lg`**                | deux cartes qu'on regarde tour à tour, pas une pile                                           |
+| Padding vertical des deux moitiés  | `sm`                | **`md`**, gutter `lg`   | de l'air en haut/bas ; le `lg` inline garde le bord gauche commun                             |
+| Blocs du brief (pane **Advanced**) | `xxs xs`            | **`xs sm`**, gap `sm`   | le pane ne porte rien d'autre et s'arrêtait au tiers de la moitié                             |
+| Marque + titre du cadre vide       | 32px / 14           | **40px / h3**           | le cadre fait ~600px de côté ; 32/14 y était une légende perdue                               |
 
-La carte de groupe, elle, **ne prend pas** le `padding-block` de `.ap-list-panel-items` : 16px par
-carte était la différence entre la septième ligne à l'écran et sous la ligne de flottaison à 980px
-de viewport, et l'air aux coins est ce qu'il y avait de moins cher à céder sur ce pane. Au-delà, le
-pane scrolle — c'est ce que le fondu de bord existe pour dire.
+L'élévation est ce qui a fait basculer l'écran de « moins compact » à « polished » : sur une toile
+grise plate, deux cartes blanches avec l'ombre douce du DS **se lisent** comme deux objets, là où le
+même contenu à plat était une liste de lignes grises. Ce n'est **pas** de l'élévation imbriquée — le
+stage et le pane sont tous deux sans ombre, donc c'est la première et seule ombre de la colonne.
+
+La carte de groupe **ne prend pas** le `padding-block` de `.ap-list-panel-items` (l'air aux coins
+était le moins cher à céder), et avec l'air assumé les sept lignes **ne tiennent plus** toutes dans
+le pli à ~980px : **Output** passe sous la ligne de flottaison et le pane scrolle. C'est le geste
+choisi (« moins compact, quitte à un léger scroll »), et le **fondu de bord bas** est ce qui le dit
+— `padding-block-end` monté à `sm` pour que l'ombre de la dernière carte ne soit pas coupée net.
 
 ### Le cadre de preview ne mentait plus qu'ici
 

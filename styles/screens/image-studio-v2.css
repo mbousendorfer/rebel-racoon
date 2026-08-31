@@ -851,12 +851,15 @@
   max-width: var(--isv2-form-measure);
   display: flex;
   flex-direction: column;
-  /* BETWEEN groups — deliberately larger than any gap inside one (the heading binds to
-     its card at `xs`, the rows are hairline-separated). That difference is the whole
-     grouping, and the card's own `padding-block` reads as another 8px on top of it. */
-  gap: var(--ref-spacing-md);
-  /* Room for the last group's border to not sit flush on the scroller's edge. */
-  padding-block-end: var(--ref-spacing-xxs);
+  /* BETWEEN groups — `lg`, and deliberately larger than any gap inside one (the heading
+     binds to its card at `xs`, the rows are hairline-separated). That difference is the
+     whole grouping; the group card's own shadow lifts the separation further. Went from
+     `md` to `lg` for the "more air" pass — the two cards read as two things you look at
+     in turn, not a stack. */
+  gap: var(--ref-spacing-lg);
+  /* Room for the last group's SHADOW, not just its border, so a soft edge isn't clipped
+     against the scroller's bottom. */
+  padding-block-end: var(--ref-spacing-sm);
   /* A group card's bottom edge is a BORDER, so a clipped one looks broken rather than
      cut off — and macOS hides overlay scrollbars, so there is no other signal. Same
      answer as the reference strip: fade the edge you can still scroll towards, using a
@@ -908,7 +911,7 @@
 
 .isv2-bs--setup .isv2-bs-left,
 .isv2-bs--setup.is-split .isv2-bs-preview {
-  padding: var(--ref-spacing-sm) var(--ref-spacing-lg);
+  padding: var(--ref-spacing-md) var(--ref-spacing-lg);
 }
 
 /* Sentence case for every label on THIS stage, the section eyebrows included.
@@ -919,12 +922,16 @@
 /* And the same size, weight and ink as the group headings across the hairline: `Preview`
    and `The brief I sent` label a half of the stage each, which is the same job at the
    same level. Caption/grey-80 put them a tier below the thing they name. */
+/* `Preview` / `The brief I sent` at h3 (16px), matched to the group headings across the
+   hairline — each labels one half of the stage, the same job at the same level. Bumped
+   from body-bold (14) to h3 in the "more finish" pass: with the option cards now lifted
+   off the canvas, the thing that names them earns a proper section-title size. */
 .isv2-bs--setup .isv2-bs-eyebrow {
   text-transform: none;
   letter-spacing: normal;
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-h4-line-height);
-  font-weight: var(--sys-text-style-body-bold-weight);
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
   color: var(--sys-text-color-default);
 }
 
@@ -947,17 +954,22 @@
 .isv2-optgroup-label {
   margin: 0;
   padding-inline: var(--ref-spacing-xxxs);
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-h4-line-height);
-  font-weight: var(--sys-text-style-body-bold-weight);
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
   color: var(--sys-text-color-default);
 }
 
 /* `.ap-card`'s recipe, value for value — white, 1px grey-10, a card radius — composed
    from the tokens rather than by taking the class, because `.ap-card` brings
-   `padding: sm` + `gap: sm` and these rows need their hairlines edge to edge. No
-   shadow, so the card can hold rows without nesting elevation. `overflow: hidden` is
-   what makes the first and last rows respect the corner. */
+   `padding: sm` + `gap: sm` and these rows need their hairlines edge to edge.
+   `overflow: hidden` is what makes the first and last rows respect the corner.
+
+   And it LIFTS off the canvas with `--app-shadow-card` — the same elevation the classic
+   stage's `.isv2-frame` and every source/idea/post card in the app carry. NOT nested
+   elevation: the stage and the pane it sits on are both flat, so this is the first and
+   only shadow in the column, the thing that makes a flat list of grey rows read as two
+   deliberate cards. */
 .isv2-optgroup-rows {
   display: flex;
   flex-direction: column;
@@ -969,6 +981,7 @@
   background: var(--app-surface);
   border: 1px solid var(--app-border-soft);
   border-radius: var(--app-radius-card);
+  box-shadow: var(--app-shadow-card);
   overflow: hidden;
 }
 
@@ -1031,7 +1044,7 @@
    six answers. One step up on both — `xs` between, `xs`/`sm` inside — spends the void on
    the thing the pane is for. The hero keeps its h3 value, so it still leads. */
 .isv2-bs--setup .isv2-bs-doc {
-  gap: var(--ref-spacing-xs);
+  gap: var(--ref-spacing-sm);
 }
 
 .isv2-bs--setup .isv2-bs-block {
