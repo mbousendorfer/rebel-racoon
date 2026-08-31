@@ -14,7 +14,7 @@ import {
   getMode as getRightPanelMode,
   getActiveBatchRef as getActiveDraftsBatchRef,
   subscribe as subscribeRightPanel,
-} from "./right-panel.js?v=469";
+} from "./right-panel.js?v=471";
 import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=71";
 import { getThread, subscribe as subscribeThread } from "../assistant.js?v=79";
 import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=73";

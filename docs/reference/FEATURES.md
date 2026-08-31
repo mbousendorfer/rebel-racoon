@@ -505,67 +505,34 @@ correspondant, à droite la colonne de preview (vide → generating → in-feed 
 le voile « la brief a changé depuis cette image »). **La mise en page ne change jamais** — ni au
 changement de pane, ni à l'arrivée de la première image.
 
-- **Options** = un **formulaire ouvert en permanence**, pas des lignes qu'on déplie. Les sept
-  réglages sont là, chacun dans un `.ap-form-field` (libellé au-dessus du contrôle, le gap de 8px du
-  DS), répartis en **deux groupes bornés** : _« What's in the image »_ (References · Text in image ·
-  Branding) et _« How it's made »_ (Type · Format · Style · Output · Variations).
-  ⚠️ **C'étaient sept `.ap-accordion`.** Avec trois ouverts le pane débordait de 198px et Output
-  tombait entièrement sous la ligne de flottaison, et les filets entre lignes rendaient impossible
-  de dire quelles chips appartenaient à quelle ligne. Le dépliage est la bonne réponse pour une
-  colonne de 284px ; pour le formulaire qui EST la première étape il cachait ce qu'on venait régler.
-  Le groupe est une **carte** bâtie sur la recette de `.ap-card` valeur pour valeur (blanc, 1px
-  grey-10, radius de carte) **plutôt qu'en prenant la classe** — `.ap-card` porte `padding: sm` +
-  `gap: sm` et cette grille a besoin des siens, et overrider une `.ap-*` hors de `ds-patches.css`
-  retourne la cascade en silence. Pas d'ombre, donc aucune élévation imbriquée.
-- **Les contrôles sont ceux que le DS prescrit, et V3 les écrit lui-même**
-  ([`options-form.js`](../../src/components/image-studio-v2/options-form.js)). `.ap-filter-chip`
-  n'est pas une classe DS : c'est un patch local qui tient lieu de `filter-chips-list`, un composant
-  défini comme _« cocher une chip affine la liste visible »_. Une valeur de formulaire n'est pas un
-  filtre, et le tie-breaker DS route un **choix exclusif dans un formulaire** vers **Radio /
-  Radio-button-card** — le guide de `segmented-control` l'écrit noir sur blanc (_« ❌ an in-form
-  exclusive choice (that's a Radio group) »_) et `.ap-segmented-control` n'est de toute façon pas
-  dans le `ds/` synced. Donc : `.ap-radio-container` (Type, Format, ref-mode, Variations, Slides),
-  `.ap-radio-card` (Output avec son icône, Style avec ses vignettes en `.card`), `.ap-toggle-container` dans **la forme DS exacte** (`<label><input><i></i><span>`, le
-  libellé en enfant direct), `.ap-textarea-field` pour Text in image.
-  **Chaque groupe est un `<fieldset>` avec un `<legend>`** : c'est ce qui fait que ↑↓ navigue dans le
-  groupe et que Tab le saute.
-  ⚠️ **Le panneau épinglé et le popover de l'auto-brief gardent leurs chips**, et c'est assumé : une
-  colonne de 284px et un popover qui s'ouvre vers le haut ne peuvent pas héberger des radio-cards.
-  L'argument est l'**espace dont dispose chaque hôte**, pas ce que le contrôle veut dire. C'est la
-  seule exception au « un rendu, plusieurs hôtes » de ce studio, et le jour où le panneau aura la
-  place, c'est vers ce fichier qu'il converge.
-- **« Any » est une option explicite** pour Type et Style. Un groupe de radios ne peut pas être vidé,
-  et c'est ce qui débloque le composant DS — mais surtout ça rend visible un comportement qui
-  existait déjà sans que rien ne l'annonce (recliquer la chip sélectionnée l'effaçait). Le moteur a
-  pour ça `setImageTypeExact` / `setStyleExact`, **séparés** des setters à toggle dont les hôtes à
-  chips dépendent encore, avec leurs propres kinds dans `APPLY` : partager `imageType` aurait rejoué
-  un **toggle** sur une valeur déjà résolue au replay du garde-fou.
-  Les radios commitent sur `change`, sous des hooks `data-img-pick-*` bien à eux — pas les hooks de
-  clic des chips : un clic sur un `<label>` qui entoure un radio déclenche **les deux**, donc un hook
-  partagé appliquerait chaque choix deux fois et retomberait à zéro.
-- **Le champ Style est ABSENT** quand une référence pilote le look, pas présent-et-grisé : un champ
-  qui ne peut rien faire n'est pas un champ. La raison est énoncée là où la cause se décide, sous les
-  modes de References (_« This image sets the style, so there's no Style to pick »_). Coupez la
-  référence et le champ réapparaît avec Any + ses six vignettes.
-- **Moitiés inégales** — les options ~58%, la preview ~42%. Un formulaire de sept champs a besoin de
-  plus de place qu'une image 1:1, et le plafonner dans une moitié égale laissait un **gouffre de
-  170px** entre lui et le séparateur. Le formulaire remplit sa colonne ; les trois bords gauches (la
-  bande de chips, les captions, les cartes) tombent au même pixel, ce qui est ce qui en fait une
-  colonne. Le pane **Advanced** garde la largeur entière parce que c'est de la **prose**.
-- **Cinq niveaux typographiques, pas deux** : caption de groupe 12/**700** grey-80 (une structure, donc
-  la graisse — mais pas l'encre d'un titre, sinon elle écrase les libellés dessous) · libellé de champ
-  14/400 grey-100 · description de libellé (`<small>` du `<legend>` : « Best for ⟨icône⟩ », le nom du
-  brand book) 12/400 grey-80 · contrôle 14/400 grey-100 · note 12/400 grey-80.
-  ⚠️ Avant, le libellé et sa valeur étaient **tous les deux** en 14/700 grey-100 — deux niveaux réels
-  pour cinq rôles, et une caption de groupe plus légère qu'un sous-libellé de ligne. Le `is-set` en
-  gras a disparu : sans accordéon il n'y a plus de valeur repliée à marquer.
-- **Le rythme vient de `patterns/layout.md`** : 8px dans un champ (le gap propre de
-  `.ap-form-field`), 16px entre champs, 16px entre les deux groupes. Un seul `gap` par conteneur,
-  aucune marge par enfant. À 1440×900 dans l'état par défaut le formulaire tient **exactement** sans
-  scroll ; au-delà le bord bas **se fond** (`mask-image` + `animation-timeline: scroll(self block)`,
-  jumeau vertical de `.isv2-refs.is-scrollable`), parce que le bas d'une carte est une **bordure** et
-  que coupée net elle a l'air cassée. Le fondu ne coûte rien quand tout tient : une scroll-timeline
-  sur un élément non scrollable est inactive.
+- **Options** = les **sept mêmes lignes** que le panneau épinglé (`settingRows`), sans rien enroulé
+  autour : chacune est un groupe — une option, sa valeur dans l'en-tête — séparées par des filets.
+  Au repos le pane est un **résumé de sept lignes** de toute la configuration, ce qui est exactement
+  ce que la première étape d'un formulaire demande : on voit tout, on ouvre celle qu'on veut changer.
+  References est épinglée ouverte, comme dans le panneau.
+  ⚠️ **Ce fut brièvement deux cartes bordées portant dix-neuf radios en permanence**, sur la théorie
+  que des contrôles aussi petits n'ont pas besoin d'être repliés. C'était faux, et la raison mérite
+  d'être gardée : **une ligne repliée EST le groupement.** Ouvert, le même contenu devient une
+  quarantaine d'éléments sans résumé nulle part, et les coiffer de deux titres ne fait que deux
+  fourre-tout. Le débordement qui avait motivé le changement (198px) avait été mesuré avec **trois
+  lignes ouvertes en même temps**, ce qui est un test et pas un usage : au repos et à deux lignes
+  ouvertes, ça tient. `git log -S optionsForm` a la version en formulaire.
+- **Une mesure, un bord gauche.** La liste fait ~440px et est **alignée à gauche**, partageant son
+  bord avec la bande de chips au-dessus. Une ligne libellé-et-valeur étalée sur 700px met ses deux
+  moitiés aux deux bouts de l'écran ; un panneau qui se lit comme un panneau est plus étroit que
+  l'espace où il est posé. Plus large que les 284px du panneau épinglé, parce qu'il y a la place pour
+  que les tuiles de référence respirent. Les moitiés sont **égales** : la gauche porte une liste
+  étroite, elle n'a aucun droit sur plus de la moitié. Le pane **Advanced** prend la largeur entière
+  parce que c'est de la **prose**.
+- La valeur d'une ligne décidée se lit en **encre**, pas en couleur ni en graisse : grey-100 quand un
+  choix est fait, grey-80 quand Archie choisit encore pour vous. Elle a été électrique (la seule
+  couleur du panneau, posée sur deux noms de marque — et une donnée statique teintée de la couleur
+  réservée à l'interactif), puis en gras (la valeur pesait alors exactement autant que son libellé).
+  Le libellé garde le bold de l'accordéon DS : c'est lui qu'on scanne pour trouver le réglage.
+- Le pane scrolle quand plusieurs lignes sont ouvertes, et le bord bas **se fond** (`mask-image` +
+  `animation-timeline: scroll(self block)`, jumeau vertical de `.isv2-refs.is-scrollable`) parce que
+  macOS masque les barres de défilement. Zéro coût quand tout tient : une scroll-timeline sur un
+  élément non scrollable est inactive.
 - **Advanced** = les **mêmes blocs éditables** que l'auto-brief, avec les mêmes règles : taper dans
   un bloc **EST** la reprise en main, un réglage changé ensuite marque le brief périmé au lieu de
   l'écraser, et le garde-fou nomme le réglage qu'il s'apprête à réécrire. Le chip est **désactivé
@@ -630,16 +597,6 @@ uppercase`, ce que les règles maison interdisent — on hiérarchise par taille
 > « se lirait comme un sélecteur de mode concurrent du vrai » — la raison même pour laquelle le
 > toggle Image / In feed utilise les chips. Le même primitif rend d'ailleurs cette bande symétrique
 > de celle qui lui fait face dans l'en-tête du preview.
-
-> ⚠️ **Un seul poids pour tous les libellés d'option de ce formulaire.** Le DS met
-> `.ap-radio-card-title` en bold et `.ap-radio-container > span` en regular — juste quand une carte
-> est un objet autonome à comparer, mais dans une même carte de groupe ça faisait peser « Single
-> image » et « 1:1 » plus que « Any » et « Infographic » sans qu'un lecteur puisse dire pourquoi.
-> Neutralisé sous `.isv2-opts`. Dans la même veine, Format a **perdu son glyphe de ratio** : trois
-> cartes à ~130px dans une demi-cellule faisaient retourner « glyphe + tag + mot » à la ligne, et le
-> champ devenait trois colonnes en deux lignes mal alignées. Le tag dit déjà le ratio, et sans glyphe
-> Format parle le même vocabulaire que Type et Variations à côté — un seul type de contrôle par
-> groupe.
 
 > ⚠️ Une **tuile de référence dont l'image n'arrive pas** — ce sont des URLs distantes — était un
 > carré grey-05 sur une carte blanche bordé de grey-10 : invisible, et ça lisait « la section est

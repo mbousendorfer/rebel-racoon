@@ -704,34 +704,6 @@ function applyImageType(s, key) {
   s.imageTypeKey = s.imageTypeKey === key ? null : key;
 }
 
-// V3 renders Type and Style as real radio groups, and a radio group cannot be emptied
-// — so "Any" is an explicit option there rather than the invisible "click the selected
-// chip again" contract the chips still use. These setters write the value EXACTLY:
-// `null` means Any, and picking the already-picked value is a no-op instead of a clear.
-//
-// Deliberately separate from setImageType / setStyle rather than a flag on them: the
-// chip hosts depend on the toggle-off, and one setter that means two different things
-// depending on who called it is how a contract starts drifting.
-export function setImageTypeExact(sessionId, key) {
-  const s = states.get(sessionId);
-  if (!s) return;
-  const next = key || null;
-  if (s.imageTypeKey === next) return;
-  if (defer(s, sessionId, "imageTypeExact", next)) return;
-  s.imageTypeKey = next;
-  settingChanged(sessionId);
-}
-
-export function setStyleExact(sessionId, key) {
-  const s = states.get(sessionId);
-  if (!s) return;
-  const next = key || null;
-  if (s.styleKey === next) return;
-  if (defer(s, sessionId, "styleExact", next)) return;
-  s.styleKey = next;
-  afterLegacySetting(sessionId);
-}
-
 export function setImageType(sessionId, key) {
   const s = states.get(sessionId);
   if (!s) return;
@@ -1285,16 +1257,6 @@ export function undoPromptRewrite(sessionId) {
 const APPLY = {
   imageType: applyImageType,
   style: applyStyle,
-  // The radio path's own kinds: a plain assignment, because the value the setter parked
-  // is already the final one. Sharing `imageType`/`style` would replay a TOGGLE over a
-  // resolved value — right today only because the exact setters drop the equal case
-  // first, which is the kind of correctness that stops being true after one edit.
-  imageTypeExact: (s, key) => {
-    s.imageTypeKey = key || null;
-  },
-  styleExact: (s, key) => {
-    s.styleKey = key || null;
-  },
   format: applyFormat,
   useBranding: applyUseBranding,
   useBrandColors: applyUseBrandColors,

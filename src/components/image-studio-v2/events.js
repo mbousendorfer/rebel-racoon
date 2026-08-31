@@ -20,7 +20,7 @@
 // anything that writes to the draft lives in commit.js.
 
 import { KEY, ctx, state, autosize } from "./context.js?v=50";
-import { useImage, commitSlideEdit, applyEditTool, runGenerate } from "./commit.js?v=17";
+import { useImage, commitSlideEdit, applyEditTool, runGenerate } from "./commit.js?v=18";
 import {
   focusEditingText,
   syncEditingText,
@@ -35,7 +35,7 @@ import {
   startCropGesture,
   applyCropSelection,
 } from "./interactions.js?v=49";
-import * as imageStudio from "../../image-studio.js?v=102";
+import * as imageStudio from "../../image-studio.js?v=103";
 
 function onClick(event, close) {
   const st = state();
@@ -332,25 +332,6 @@ function onChange(event) {
     imageStudio.setUseBrandColors(KEY, event.target.checked);
   } else if (event.target.matches("[data-img-toggle-ref]")) {
     imageStudio.setUseReference(KEY, event.target.checked);
-  } else if (event.target.matches("[data-img-pick-ref]")) {
-    // V3's radio path. Separate hooks from the chips' click handlers on purpose: a click
-    // on a <label> wrapping a radio fires BOTH, so a shared hook would apply every
-    // choice twice and net to zero.
-    imageStudio.toggleReferenceImage(KEY, event.target.value);
-  } else if (event.target.matches("[data-img-pick-refmode]")) {
-    imageStudio.setRefMode(KEY, event.target.value);
-  } else if (event.target.matches("[data-img-pick-type]")) {
-    imageStudio.setImageTypeExact(KEY, event.target.value);
-  } else if (event.target.matches("[data-img-pick-style]")) {
-    imageStudio.setStyleExact(KEY, event.target.value);
-  } else if (event.target.matches("[data-img-pick-format]")) {
-    imageStudio.setFormat(KEY, event.target.value);
-  } else if (event.target.matches("[data-img-pick-output]")) {
-    imageStudio.setOutputMode(KEY, event.target.value);
-  } else if (event.target.matches("[data-img-pick-varcount]")) {
-    imageStudio.setVariationCount(KEY, Number(event.target.value));
-  } else if (event.target.matches("[data-img-pick-slidecount]")) {
-    imageStudio.setSlideCount(KEY, Number(event.target.value));
   } else if (event.target.matches("[data-img-render-text]")) {
     // Blur commits, which is what refreshes the collapsed row's value.
     imageStudio.commitRenderText(KEY, event.target.value);

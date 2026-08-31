@@ -399,9 +399,9 @@
 }
 
 .isv2-bs {
-  /* V3's form measure — the width of the options list and of the pane switch above it,
-     in ONE place so the two can't drift apart. */
-  --isv2-form-measure: 520px;
+  /* V3's options measure — the width of the row list and of the pane switch above it, in
+     ONE place so the two can't drift apart. */
+  --isv2-opts-measure: 440px;
   height: 100%;
   box-sizing: border-box;
   max-width: 1120px;
@@ -778,15 +778,9 @@
 }
 
 /* ── V3: options first (flag imageStudioSetupFirst) ─────────────────────────
-   The split geometry is the auto-brief stage's, reused whole (`.isv2-bs.is-split`).
-   What differs is the ratio and what fills the left half. */
-
-/* UNEQUAL halves: the form takes ~58%, the picture ~42%. A seven-field form needs more
-   room than a 1:1 preview, and capping the form inside an equal half instead left a
-   170px gutter between it and the divider — a void that read as a broken layout. */
-.isv2-bs--setup.is-split {
-  grid-template-columns: minmax(0, 1.38fr) minmax(0, 1fr);
-}
+   The split geometry is the auto-brief stage's, reused whole (`.isv2-bs.is-split`) —
+   EQUAL halves, because the left one holds a narrow list of rows and not a wide form, so
+   it has no claim on more than half. */
 
 /* Sentence case for every label on this stage, eyebrows included. `.isv2-bs-eyebrow`
    uppercases, which the house rules forbid — hierarchy comes from size, weight and ink.
@@ -796,32 +790,43 @@
   letter-spacing: normal;
 }
 
-/* The pane switch. `.ap-filter-chip` here is right — switching which pane you are
-   looking at IS a filter over what's visible, which is the one job that component is
-   defined for. The form controls inside are a different matter (see options-form.js). */
+/* The pane switch. `.ap-filter-chip` is right here — choosing which pane you look at IS a
+   filter over what's visible, the one job that component is defined for. It takes the
+   list's measure so the two share a left edge: a control floating over a narrower thing
+   it controls reads as unrelated to it. */
 .isv2-panetabs {
   flex: 0 0 auto;
   display: flex;
   gap: var(--ref-spacing-xxs);
+  width: 100%;
+  max-width: var(--isv2-opts-measure);
 }
 
-/* The form fills its column now. It scrolls when it must — safe because nothing in it
-   flies out of the box (`overflow-y: auto` computes `overflow-x` to `auto` too, the trap
-   that bit this file three times). The bottom edge FADES while there is more to reach:
-   a group's last field cut mid-height looks broken, and macOS hides overlay scrollbars.
-   Costs nothing when everything fits — a scroll timeline on a non-scrollable element is
-   inactive, so the fade lengths stay at their 0px initial values. */
+/* The seven rows, hairline-separated, and NOTHING wrapped around them.
+   ⚠️ Two bordered cards with a heading over each was tried and read as two catch-alls: a
+   collapsed row is already its own group — one option, its value in the header — so
+   grouping the groups only added furniture, and opening them all at once replaced a
+   seven-line summary with forty elements and no summary anywhere.
+
+   LEFT-ALIGNED at a measure, not stretched across the half: a label-and-value row spread
+   over 700px puts its two halves at opposite ends of the screen. Wider than the 284px
+   inspector, because there is room for the reference tiles to breathe; narrow enough to
+   still read as a panel.
+
+   It scrolls when several rows are open — safe because the rows have no flyouts left to
+   escape the box (`overflow-y: auto` computes `overflow-x` to `auto` too, the trap that
+   bit this file three times). The bottom edge FADES while there is more to reach, since
+   macOS hides overlay scrollbars; it costs nothing when everything fits, because a scroll
+   timeline on a non-scrollable element is inactive. */
 .isv2-opts {
   --isv2-tile: 80px;
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
+  width: 100%;
+  max-width: var(--isv2-opts-measure);
   display: flex;
   flex-direction: column;
-  /* BETWEEN groups. One level up from the 16px between fields, which is itself one level
-     up from the 8px inside a field — the DS's own rhythm rule. */
-  gap: var(--ref-spacing-sm);
-  padding-block-end: var(--ref-spacing-xxs);
   mask-image: linear-gradient(
     to bottom,
     rgb(0 0 0 / 0) 0,
@@ -856,186 +861,31 @@
   }
 }
 
-/* ── The two groups ─────────────────────────────────────────────────────────── */
-
-.isv2-optgroup {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxs);
+/* A row has room here, so it can afford the DS accordion's own inline padding. */
+.isv2-opts .isv2-acc-head,
+.isv2-opts .isv2-acc-body {
+  padding-inline: var(--ref-spacing-xs);
 }
 
-/* A structural heading, so it earns WEIGHT — but not a heading's ink, or it would
-   out-shout the field labels under it. 12px bold grey-80: heavier than a field label and
-   lighter in colour, which is what puts it above them without competing. Sentence case;
-   the house rules ban uppercase labels. */
-.isv2-optgroup-label {
-  margin: 0;
-  padding-inline: var(--ref-spacing-xxxs);
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--sys-text-color-light);
+/* A row's LABEL is what you scan to find the setting, so it keeps the DS accordion's
+   bold. Its VALUE is what you read once you've found it: regular weight, and only the INK
+   changes — grey-100 once a choice has been made, grey-80 while Archie is still choosing
+   for you.
+   It was electric blue first, which put the panel's only colour on two brand names — the
+   least important thing on screen — and tinted a static datum with the colour this house
+   reserves for the interactive. Then it was bold, which made the value weigh exactly as
+   much as the label above it. Ink alone says it and leaves the pair legible. */
+.isv2-opts .isv2-acc-value.is-set {
+  color: var(--sys-text-color-default);
 }
 
-/* `.ap-card`'s recipe, value for value (white, 1px grey-10, the app's card radius),
-   composed from the tokens rather than by taking the class: `.ap-card` brings
-   `padding: sm` + `gap: sm` and this grid needs its own. No shadow, so a card holding
-   fields nests no elevation. */
-.isv2-optgrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  /* BETWEEN fields — one level up from the 8px `.ap-form-field` keeps inside itself. */
-  gap: var(--ref-spacing-sm);
-  padding: var(--ref-spacing-xs);
-  background: var(--app-surface);
-  border: 1px solid var(--app-border-soft);
-  border-radius: var(--app-radius-card);
-}
-
-/* A field spanning both columns: the ones with real internal structure. */
-.isv2-field--wide {
-  grid-column: 1 / -1;
-}
-
-/* `.ap-form-field` is a <fieldset> here so a radio group is a real group. Strip the
-   element's UA chrome; the DS rules do the rest. */
-.isv2-field {
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-/* A `--wide` field stacks its own parts at the field rhythm. */
-.isv2-field--wide {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xs);
-}
-
-/* Radios in a row when they are short, in two columns when they are words. Both wrap. */
-.isv2-radio-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ref-spacing-xxs) var(--ref-spacing-sm);
-}
-
-.isv2-radio-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--ref-spacing-xxs) var(--ref-spacing-sm);
-}
-
-/* A framed radio card in a row should share the row's height rather than hug its text. */
-/* Every radio card in a row shares the row rather than hugging its text — framed or
-   not. Without `min-width: 0` a card's description sets its min-content width and each
-   one wraps onto its own line, which turned a three-across control into a 136px stack. */
-.isv2-radio-row > .ap-radio-card,
-.isv2-radio-grid > .ap-radio-card {
-  flex: 1 1 0;
-  min-width: 0;
-}
-
-/* One weight for every option label in this form. The DS makes `.ap-radio-card-title`
-   bold and `.ap-radio-container > span` regular — sensible when a card is a standalone
-   object to compare, but inside one group card it made "Single image" and "1:1" outweigh
-   "Any" and "Infographic" for no reason a reader could name. Peers read as peers. */
-.isv2-opts .ap-radio-card-title {
-  font-weight: var(--sys-text-style-body-weight);
-}
-
-/* The mark on a picked tile has to read on BOTH grounds — over a photograph, where a
-   white ring is right, and over the grey placeholder, where it vanished. A hairline of
-   its own gives it an edge either way. */
-.isv2-ref-radio {
-  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.12);
-}
-
-/* The reference block is a field with real internal structure; the two fields under it
-   are its siblings, not its continuation. Whitespace alone at this scale made them read
-   as part of it, so the block closes with a hairline. */
-.isv2-optgrid > .isv2-field--wide:not(:last-child) {
-  padding-bottom: var(--ref-spacing-sm);
-  border-bottom: 1px solid var(--app-border-soft);
-}
-
-/* A note under a field: the same 12px grey-80 as a label description, because it plays
-   the same part. With an icon when it explains an absence. */
-.isv2-fieldnote {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
-  margin: 0;
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--sys-text-color-light);
-}
-
-.isv2-fieldnote > i {
-  flex-shrink: 0;
-  font-size: var(--sys-icon-css-sm, 16px);
-  color: var(--ref-color-grey-60);
-}
-
-/* The tile pools and the adder share one row: the button used to own a full band under
-   the thumbnails, which cost 44px for one click and pushed the last field off the fold.
-   Beside them it reads as the next slot, which is what it is. */
-.isv2-reffield {
-  display: flex;
-  align-items: flex-end;
-  flex-wrap: wrap;
-  gap: var(--ref-spacing-sm);
-}
-
-.isv2-tilefield {
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-.isv2-ref-add {
-  flex: 0 0 auto;
-}
-
-/* Two switches, stacked at the in-field rhythm, with the palette recap beside its own. */
-.isv2-togglestack {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxs);
-}
-
-.isv2-toggleline {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-}
-
-/* The tile is a <label> around a real radio now, not a <button> with aria-pressed. The
-   input is visually hidden the way every DS control hides its own, and the focus ring
-   moves to the tile so keyboard users can see where they are. */
-.isv2-ref > input[type="radio"] {
-  position: absolute;
-  clip: rect(0, 0, 0, 0);
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  padding: 0;
-  border: 0;
-  overflow: hidden;
-}
-
-.isv2-ref:has(input:focus-visible) {
-  outline: 3px solid var(--ref-color-electric-blue-100);
-  outline-offset: 1px;
-}
-
-/* The brief pane keeps the prose measure and does not scroll: its blocks already do
-   (`.isv2-bs-doc`), and a scroller inside a scroller gives one list two scrollbars. */
+/* The brief pane takes the whole half — it is PROSE, and at 440px its two columns would
+   run ~30 characters a line. It does not scroll: its blocks already do (`.isv2-bs-doc`),
+   and a scroller inside a scroller gives one list two scrollbars. */
 .isv2-opts--brief {
+  max-width: none;
   overflow: visible;
   gap: var(--ref-spacing-xxs);
-  padding-block-end: 0;
   mask-image: none;
   animation: none;
 }

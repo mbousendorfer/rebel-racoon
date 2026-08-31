@@ -243,24 +243,16 @@ confirmation that protects a hand-edited brief, then one view module per surface
 **Three variants, one engine.** Classic (no flag) lands on a prose brief in the bottom composer with
 the settings pinned to the stage's left edge. `imageStudioAutoBrief` makes the brief the stage's hero
 with the settings as chips under it. `imageStudioSetupFirst` (V3) inverts both: the **options** are
-the first step, Generate is the form's submit, and the brief lives behind an **Advanced** tab that
-stays disabled until an image exists — because what it holds is the prompt that produced the image on
+the first step (the pinned panel's own seven rows, at a wider measure — a collapsed row IS the
+grouping, and exploding them into a permanently-open form of nineteen radios was tried and reverted),
+Generate is the form's submit, and the brief lives behind an **Advanced** tab that stays disabled
+until an image exists — because what it holds is the prompt that produced the image on
 screen. V3 wins when both flags are on, and that precedence is declared in **one** place,
 `isBriefStage()`. What the brief MEANS is shared by the two non-classic variants through
 `briefIsDerived(s)` in the engine — every option rewrites it, typing in a block is the takeover — so
 there is one rule rather than two that can drift. The two split variants also share their renderers:
 `brief-blocks.js` (a brief block) and `preview-column.js` (the right half), extracted so a card and
 the thing it opens cannot end up saying different sentences about one brief.
-
-⚠️ **V3's Options form is the one place that deliberately does NOT share** — `options-form.js`
-rebuilds all seven controls instead of reusing `settings-view.js`'s bodies. The DS routes an in-form
-exclusive choice to Radio / Radio-button-card (its own `segmented-control` guide says so, and
-`.ap-filter-chip` is a local stand-in for `filter-chips-list`, a control defined as "toggling a chip
-refines the visible list") — but radio cards do not fit a 284px pinned column or a popover opening
-upward, so the two narrow hosts keep their chips. The argument is the **space each host has**, not
-what the control means. That is also why the engine carries `setImageTypeExact` / `setStyleExact`
-beside the toggling setters: a radio group cannot be emptied, so V3 shows an explicit "Any", and one
-setter meaning two things by caller is how a contract starts drifting.
 
 ⚠️ A confirmation inside the studio must NOT be `confirm-modal.js`: it registers with
 `modal-coordinator`, whose `requestOpen` closes the active overlay — the studio — running `exit(KEY)`

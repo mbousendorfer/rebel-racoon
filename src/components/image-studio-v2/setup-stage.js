@@ -36,20 +36,19 @@
 //    auto-brief stage uses (`.isv2-bs`), so switching pane or landing an image reflows
 //    nothing. The options half scrolls internally; the preview half does not.
 //
-// 4. The halves are UNEQUAL — the options take ~58%, the preview ~42%. A form needs more
-//    room than a 1:1 picture, and capping the form inside an equal half instead left a
-//    170px gutter between it and the divider. The form fills its column; the picture is
-//    still comfortable in what's left.
+// 4. The row list has a MEASURE (~440px) and is LEFT-ALIGNED, sharing its edge with the
+//    pane switch above it. A list of label-and-value rows stretched across a 700px half
+//    puts the two halves of every row at opposite ends of the screen; a panel that reads
+//    as a panel is narrower than the space it sits in.
 //
-// 5. No disclosure. Every control is on screen, because every one of them is small — and
-//    the DS routes an in-form exclusive choice to Radio, not to the filter chips the
-//    narrow hosts use. options-form.js carries that argument.
+// 5. The rows are the pinned inspector's, verbatim — same sections, same chips, same
+//    state, same data-* hooks. What differs is the room they get, not what they are.
 //
 // The brief's blocks (brief-blocks.js) and the preview column (preview-column.js) are
 // shared with the auto-brief stage — one renderer each, two hosts, so a card and the
 // thing it opens can't end up saying different sentences about the same brief.
 
-import { optionsForm } from "./options-form.js?v=9";
+import { settingRows } from "./settings-view.js?v=23";
 import { briefBody, briefNote } from "./brief-blocks.js?v=3";
 import { previewColumn } from "./preview-column.js?v=2";
 
@@ -73,15 +72,22 @@ function paneTabs(st) {
   </div>`;
 }
 
-// The options, as a permanently-open form — see options-form.js.
+// The options: the SAME seven rows as the pinned inspector, and nothing wrapped around
+// them.
 //
-// It used to be seven `.ap-accordion` rows. With three of them open the pane overflowed
-// by 198px and Output fell off the bottom entirely, and the hairlines between rows made
-// it impossible to tell which chips belonged to which row. Disclosure was the right
-// answer for a 284px pinned column; for the form that IS the first step it hid the
-// thing the user came to set.
+// ⚠️ This was briefly two bordered cards holding nineteen permanently-visible radio
+// buttons, on the theory that controls this small don't need disclosure. That was wrong,
+// and the reason is worth keeping: **a collapsed row IS the grouping.** One option, one
+// row, its current value in the header — so the pane at rest is a seven-line summary of
+// the whole configuration, which is exactly what the first step of a form wants. Opened
+// out, the same content becomes forty elements with no summary anywhere, and grouping
+// them under two headings just makes two catch-alls.
+//
+// The overflow that motivated the change (198px with three rows open) was measured with
+// three rows open at once, which is a test, not a use. One or two at a time fits, and the
+// pane fades its bottom edge when it doesn't.
 function optionsPane(st) {
-  return `<div class="isv2-opts">${optionsForm(st)}</div>`;
+  return `<div class="isv2-opts">${settingRows(st)}</div>`;
 }
 
 // The brief, and where it stands. The status line sits UNDER the blocks here rather
