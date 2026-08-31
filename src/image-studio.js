@@ -510,14 +510,19 @@ export function start(
     // the view and never collapses. Style preset has its own `disabled` state
     // (references guide the look), independent of this Set.
     //
-    // V3 adds `renderText` back, because the reason for the exception does not hold
-    // there: nothing is pre-filled at open — the headline is seeded at generate time
-    // (deriveNow) — so the section would arrive open and EMPTY, spending the ~60px
-    // that decides whether all seven rows fit the half without a scroll. It fills in
-    // and opens itself at that seed — see deriveNow.
+    // V3 shuts BOTH exceptions, for the same reason in two shapes: its pane is the first
+    // step of the flow, and that step's job is to let you take in the whole configuration
+    // at a glance before diving into one thing. `refs` pinned open was seven stacked
+    // pieces beside six one-line rows — 60% of the pane for one option — so the pane
+    // stopped being a summary of anything. Collapsed, it keeps its answer in the header
+    // (the brand name, and the picked image as a thumbnail: see settings-view#settingRow),
+    // which is what the 284px inspector had no room to do and is why it had to stay open
+    // there. `renderText` shuts because nothing is pre-filled at open here — the headline
+    // is seeded at generate time — so it would arrive open and EMPTY; it opens itself at
+    // that seed (deriveNow).
     collapsedGroups: new Set(
       isFlagOn("imageStudioSetupFirst")
-        ? ["renderText", "branding", "imageType", "style", "format", "output"]
+        ? ["refs", "renderText", "branding", "imageType", "style", "format", "output"]
         : ["branding", "imageType", "style", "format", "output"],
     ),
     variationCount: 2, // single-image mode: how many alternatives to pick from

@@ -3,11 +3,11 @@ import { isFlagOn } from "./feature-flags.js?v=23";
 import { initArchieLoader } from "./archie-loader.js?v=3";
 import { initTopbar, renderTopbar } from "./components/topbar.js?v=324";
 import { initSidebar, renderSidebar } from "./components/sidebar.js?v=296";
-import { init as initRightPanel } from "./components/right-panel.js?v=472";
+import { init as initRightPanel } from "./components/right-panel.js?v=474";
 import { init as initScheduleModal } from "./components/schedule-modal.js?v=74";
 import { init as initBugReportModal } from "./components/bug-report-modal.js?v=25";
 import { init as initFeedbackModal } from "./components/feedback-modal.js?v=28";
-import { init as initImageStudio } from "./components/image-studio-v2/index.js?v=119";
+import { init as initImageStudio } from "./components/image-studio-v2/index.js?v=121";
 import { init as initVideoClipsModal } from "./components/video-clips-modal.js?v=74";
 import { init as initChatPickerModal } from "./components/chat-picker-modal.js?v=80";
 import { init as initAddSourceModal } from "./components/add-source-modal.js?v=81";
@@ -48,7 +48,7 @@ import {
   openIdeas as __capOpenIdeas,
   openSources as __capOpenSources,
   openContextBriefPanel as __capOpenContextPanel,
-} from "./components/right-panel.js?v=472";
+} from "./components/right-panel.js?v=474";
 
 // Route table.
 // Every screen is responsible for calling renderTopbar() itself so the crumb

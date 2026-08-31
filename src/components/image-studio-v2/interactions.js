@@ -7,7 +7,7 @@
 
 import { KEY, ctx, state, clamp, FRAME_SEL } from "./context.js?v=50";
 import { cropImage } from "../../image-studio-canvas.js?v=6";
-import * as imageStudio from "../../image-studio.js?v=103";
+import * as imageStudio from "../../image-studio.js?v=104";
 
 // ── File / font pickers ─────────────────────────────────────────────────────
 

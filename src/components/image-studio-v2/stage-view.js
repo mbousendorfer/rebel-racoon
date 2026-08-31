@@ -38,16 +38,16 @@ import { getPosts } from "../../posts-store.js?v=52";
 import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=46";
 import { renderPostCard } from "../post-card.js?v=99";
 import { KEY, ctx } from "./context.js?v=50";
-import { composer } from "./composer-view.js?v=96";
-import { settingsPanel } from "./settings-view.js?v=24";
-import { briefStage, isBriefStage } from "./brief-stage.js?v=37";
-import { setupStage, isSetupFirst } from "./setup-stage.js?v=16";
+import { composer } from "./composer-view.js?v=98";
+import { settingsPanel } from "./settings-view.js?v=26";
+import { briefStage, isBriefStage } from "./brief-stage.js?v=39";
+import { setupStage, isSetupFirst } from "./setup-stage.js?v=18";
 import { briefNote } from "./brief-blocks.js?v=3";
-import { toolPalette } from "./tools-view.js?v=24";
-import { promptGuardDialog } from "./prompt-guard.js?v=18";
+import { toolPalette } from "./tools-view.js?v=26";
+import { promptGuardDialog } from "./prompt-guard.js?v=19";
 import { editCanvas } from "./edit-view.js?v=49";
 import { compositeOverlays } from "../../image-studio-canvas.js?v=6";
-import * as imageStudio from "../../image-studio.js?v=103";
+import * as imageStudio from "../../image-studio.js?v=104";
 
 // In-feed preview — the edit canvas layers logo/text overlays as live DOM over
 // the image, but renderPostCard only takes a URL, so overlays wouldn't show. We

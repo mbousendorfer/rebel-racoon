@@ -34,7 +34,7 @@ import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.j
 import { KEY } from "./context.js?v=50";
 import { REFS_TIP, refSummary, refsBody } from "./references-view.js?v=20";
 import { BRANDING_TIP, brandingBody } from "./branding-view.js?v=4";
-import * as imageStudio from "../../image-studio.js?v=103";
+import * as imageStudio from "../../image-studio.js?v=104";
 
 // A thin rule between two clusters inside one row body. Shared with the
 // Add-image sheet (tools-view.js), which is where the class name comes from.
@@ -71,7 +71,18 @@ export function settingsPanel(st) {
 // it never enters `collapsedGroups` at all. The value still rides in the header:
 // with the body open it is a summary of what's below ("Acme · 3") rather than a
 // stand-in for it.
-function settingRow({ name, label, value, tip = "", body, open, set = false, disabled = false, pinned = false }) {
+function settingRow({
+  name,
+  label,
+  value,
+  tip = "",
+  body,
+  open,
+  set = false,
+  disabled = false,
+  pinned = false,
+  thumb = "",
+}) {
   const expanded = pinned || (open && !disabled);
   // `tip` is an info icon beside the TITLE — where an annotation belongs, and where
   // it can sit next to a value rather than instead of one (References has both: a
@@ -92,6 +103,7 @@ function settingRow({ name, label, value, tip = "", body, open, set = false, dis
         <span class="ap-accordion-title isv2-acc-title">${escapeHtml(label)}</span>
         ${tip ? `<i class="ap-icon-info isv2-acc-info" data-tooltip="${escapeHtml(tip)}" aria-hidden="true"></i>` : ""}
       </span>
+      ${thumb ? `<img class="isv2-acc-thumb" src="${escapeHtml(thumb)}" alt="" />` : ""}
       ${value ? `<span class="isv2-acc-value${set ? " is-set" : ""}">${escapeHtml(value)}</span>` : ""}`;
   return `<div class="ap-accordion isv2-acc${expanded ? "" : " collapsed"}${disabled ? " is-disabled" : ""}${pinned ? " isv2-acc--pinned" : ""}">
     ${
@@ -139,7 +151,17 @@ export function settingRows(st) {
       tip: REFS_TIP,
       value: refSummary(picked, st),
       set: !!picked,
-      pinned: true,
+      // Pinned open everywhere EXCEPT V3. In a 284px column the header had room for a
+      // word and nothing else, so a collapsed References row said "Acme" and left you to
+      // open it to find out which image that meant — hence pinning. V3's pane is wider:
+      // the header can carry the picked image itself, so the row answers its own question
+      // closed, and the pane gets to be seven uniform rows instead of one open section
+      // beside six lines.
+      pinned: !st.setupFirst,
+      // It never needed `open` while it was always pinned; un-pinned it does, or the row
+      // renders its toggle and then refuses to answer it.
+      open: isOpen("refs"),
+      thumb: st.setupFirst && picked ? picked.url : "",
       body: () => refsBody(st, picked),
     }),
   );

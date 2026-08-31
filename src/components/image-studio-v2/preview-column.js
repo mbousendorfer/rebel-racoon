@@ -23,7 +23,7 @@ import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.j
 import { getPosts } from "../../posts-store.js?v=52";
 import { renderPostCard } from "../post-card.js?v=99";
 import { KEY, ctx } from "./context.js?v=50";
-import * as imageStudio from "../../image-studio.js?v=103";
+import * as imageStudio from "../../image-studio.js?v=104";
 
 // Image ↔ in-feed. It lives in the preview's own header because it changes what the
 // PREVIEW shows and nothing else — centred over the whole stage it read as modal chrome

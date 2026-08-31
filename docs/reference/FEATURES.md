@@ -509,7 +509,12 @@ changement de pane, ni à l'arrivée de la première image.
   autour : chacune est un groupe — une option, sa valeur dans l'en-tête — séparées par des filets.
   Au repos le pane est un **résumé de sept lignes** de toute la configuration, ce qui est exactement
   ce que la première étape d'un formulaire demande : on voit tout, on ouvre celle qu'on veut changer.
-  References est épinglée ouverte, comme dans le panneau.
+  **Les sept arrivent repliées**, References comprise — 7 lignes, 7 éléments interactifs. Épinglée
+  ouverte comme dans le panneau, elle occupait sept morceaux empilés à côté de six lignes, soit 60%
+  du pane pour une option : le pane cessait d'être le résumé de quoi que ce soit. Repliée, sa ligne
+  garde sa réponse dans l'en-tête — le nom de la marque **et la vignette de l'image choisie** — ce
+  que la colonne de 284px n'avait pas la place de faire, et qui est précisément pourquoi elle devait
+  y rester ouverte.
   ⚠️ **Ce fut brièvement deux cartes bordées portant dix-neuf radios en permanence**, sur la théorie
   que des contrôles aussi petits n'ont pas besoin d'être repliés. C'était faux, et la raison mérite
   d'être gardée : **une ligne repliée EST le groupement.** Ouvert, le même contenu devient une
@@ -597,6 +602,15 @@ uppercase`, ce que les règles maison interdisent — on hiérarchise par taille
 > « se lirait comme un sélecteur de mode concurrent du vrai » — la raison même pour laquelle le
 > toggle Image / In feed utilise les chips. Le même primitif rend d'ailleurs cette bande symétrique
 > de celle qui lui fait face dans l'en-tête du preview.
+
+> ⚠️ **Une tuile de référence n'avait pas de taille propre.** C'est un `<button>`, donc
+> `inline-block`, et son seul enfant dans le flux est un `<img width: 100%>` — le shrink-to-fit
+> résolvait donc toute la tuile depuis la largeur **intrinsèque** de l'image, qui vaut 0 pendant le
+> chargement et 0 pour toujours si elle échoue. Les trois tuiles retombaient alors à 2px et la
+> section se lisait comme cassée. Le slot connaît déjà la bonne largeur ; la tuile n'avait qu'à la
+> remplir (`display: block; width: 100%`). Corrigé pour **les trois hôtes**, délibérément hors du
+> flag : avec une image chargée la taille calculée est identique à l'octet, donc ça ne change rien de
+> visible — ça empêche seulement les tuiles de disparaître quand l'image n'arrive pas.
 
 > ⚠️ Une **tuile de référence dont l'image n'arrive pas** — ce sont des URLs distantes — était un
 > carré grey-05 sur une carte blanche bordé de grey-10 : invisible, et ça lisait « la section est

@@ -20,7 +20,7 @@
 // anything that writes to the draft lives in commit.js.
 
 import { KEY, ctx, state, autosize } from "./context.js?v=50";
-import { useImage, commitSlideEdit, applyEditTool, runGenerate } from "./commit.js?v=18";
+import { useImage, commitSlideEdit, applyEditTool, runGenerate } from "./commit.js?v=19";
 import {
   focusEditingText,
   syncEditingText,
@@ -35,7 +35,7 @@ import {
   startCropGesture,
   applyCropSelection,
 } from "./interactions.js?v=49";
-import * as imageStudio from "../../image-studio.js?v=103";
+import * as imageStudio from "../../image-studio.js?v=104";
 
 function onClick(event, close) {
   const st = state();

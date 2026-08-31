@@ -890,6 +890,18 @@
   font-style: normal;
 }
 
+/* A row's answer, as a picture. Only V3 renders it (settings-view#settingRow gates it on
+   the flag) — it is what lets References close without the row going vague. */
+.isv2-opts .isv2-acc-thumb {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--app-radius-sm);
+  border: 1px solid var(--sys-border-color-default);
+  background: var(--app-surface-subtle);
+  object-fit: cover;
+}
+
 /* The brief pane takes the whole half — it is PROSE, and at 440px its two columns would
    run ~30 characters a line. It does not scroll: its blocks already do (`.isv2-bs-doc`),
    and a scroller inside a scroller gives one list two scrollbars. */
@@ -1906,8 +1918,18 @@
   animation-timeline: scroll(self inline);
 }
 
+/* A reference tile had no size of its OWN. It is a <button>, so `inline-block`, and its
+   only in-flow child is an `<img width: 100%>` — so shrink-to-fit resolved the whole tile
+   from the image's INTRINSIC width, which is 0 while it loads and 0 forever if it fails.
+   The three tiles then collapse to 2px and the section reads as broken. The slot already
+   knows the right width; the tile just has to fill it.
+   Fixed for every host, deliberately outside the V3 flag: with a loaded image the computed
+   size is byte-for-byte what it was, so this changes nothing anyone can see — it only
+   stops the tiles vanishing when an image doesn't arrive. */
 .isv2-ref {
   position: relative;
+  display: block;
+  width: 100%;
   aspect-ratio: 1;
   padding: 0;
   border: 1px solid var(--sys-border-color-default);
