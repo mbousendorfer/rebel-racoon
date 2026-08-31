@@ -879,6 +879,17 @@
   color: var(--sys-text-color-default);
 }
 
+/* Disabled, inside V3 only: grey-60 — the one step the house rules reserve for it — and
+   no italic. Globally it is grey-40 (#AEB5C1, below the grey-80 ink floor, so the row
+   reads as broken rather than as unavailable) plus an italic that exists nowhere in the
+   DS type ramp. That is a real DS gap, but fixing it for every host would change two
+   variants nobody asked me to touch, so it lives behind the flag until it is asked for. */
+.isv2-opts .isv2-acc.is-disabled .isv2-acc-title,
+.isv2-opts .isv2-acc.is-disabled .isv2-acc-value {
+  color: var(--ref-color-grey-60);
+  font-style: normal;
+}
+
 /* The brief pane takes the whole half — it is PROSE, and at 440px its two columns would
    run ~30 characters a line. It does not scroll: its blocks already do (`.isv2-bs-doc`),
    and a scroller inside a scroller gives one list two scrollbars. */
@@ -1498,14 +1509,11 @@
   color: var(--sys-border-color-active);
 }
 
-/* Disabled: grey-60, which is the ONE step the house rules reserve for it, and no
-   italic. It was grey-40 (#AEB5C1) — below the grey-80 ink floor, so the row read as
-   broken rather than as unavailable — plus an italic that exists nowhere in the DS type
-   ramp. The weight drop and the missing chevron already say "not now". */
 .isv2-acc.is-disabled .isv2-acc-title,
 .isv2-acc.is-disabled .isv2-acc-value {
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-40);
   font-weight: var(--sys-text-style-body-weight);
+  font-style: italic;
 }
 
 /* Top padding is SMALLER than the bottom because the header contributes 6px of its
@@ -1898,44 +1906,17 @@
   animation-timeline: scroll(self inline);
 }
 
-/* A reference whose image has not arrived — or never will, these being remote URLs —
-   used to be a grey-05 square on a white card with a grey-10 hairline: invisible, and it
-   read as the section being broken rather than as a picture that failed. Now the tile
-   carries its own placeholder UNDER the <img>: a grey-10 ground and a centred image
-   glyph. A loaded image covers it completely, so this costs nothing when all is well. */
 .isv2-ref {
   position: relative;
-  /* `display: block` is load-bearing: the tile used to be a <button> (inline-block by
-     default) and is a <label> now, which is plain `inline` — and an inline box ignores
-     both `aspect-ratio` and `height`, so the tiles collapsed to a hairline. */
-  display: block;
-  width: 100%;
   aspect-ratio: 1;
   padding: 0;
   border: 1px solid var(--sys-border-color-default);
   border-radius: var(--app-radius-md);
-  background: var(--ref-color-grey-10);
+  background: var(--app-surface-subtle);
   overflow: hidden;
 }
 
-/* The glyph is a real `.ap-icon-image` element, not a `::before` with a hand-rolled
-   mask: the icon font applies its own `mask-image`, so there is no variable to borrow
-   and an invented one fails silently. It sits UNDER the <img>, which covers it whole. */
-/* Quiet. At 48px in grey-60 this turned three reference slots into three error icons —
-   the loudest thing in the form, in its hero position. The job is to say "an image goes
-   here", which a small faint mark does; a big dark one says "something went wrong".
-   (An absolute size, not a percentage: a percentage resolves against the inherited
-   font-size, which is how it was once 5px.) */
-.isv2-ref-ph {
-  position: absolute;
-  inset: 0;
-  margin: auto;
-  font-size: var(--sys-icon-css-md, 24px);
-  color: var(--ref-color-grey-40);
-}
-
 .isv2-ref img {
-  position: relative;
   width: 100%;
   height: 100%;
   object-fit: cover;

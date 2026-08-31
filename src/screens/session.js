@@ -112,7 +112,7 @@ import {
   openClips as openClipsPanel,
   getMode as getRightPanelMode,
   subscribe as subscribeRightPanel,
-} from "../components/right-panel.js?v=471";
+} from "../components/right-panel.js?v=472";
 import { setHandoff, consumeHandoff, hasHandoff } from "../handoff.js?v=21";
 import { attachTopicToChat, useTopicInChat, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=4";
 import { getFeedForPlaybook } from "../topic-feeds-store.js?v=4";

@@ -12,7 +12,7 @@
 // popovers, which genuinely are one-at-a-time.
 
 import { escapeHtml } from "../../utils.js?v=22";
-import { sheetDivider } from "./settings-view.js?v=23";
+import { sheetDivider } from "./settings-view.js?v=24";
 import * as imageStudio from "../../image-studio.js?v=103";
 
 // The floating palette — the manual tools, top-left over the canvas, where the
