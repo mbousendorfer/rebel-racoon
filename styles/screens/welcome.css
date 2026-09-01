@@ -1743,6 +1743,46 @@ button.recap__logotile:hover {
   gap: var(--ref-spacing-xs);
 }
 
+/* ── Default look — the brand's starting point for a generated image ────────
+   Three labelled chip groups in one row of the Brand section. Same chip primitive as
+   the language picker and the voice-mode toggle, so the row reads as a VALUE rather
+   than a control panel — the distinction the removed Topics section got wrong. */
+.recap__look {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+}
+
+.recap__look-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+}
+
+/* The de-emphasised half of a label/value pair, same treatment as
+   .recap__lang-primary-label. */
+.recap__look-label {
+  font-size: var(--sys-text-style-caption-size);
+  font-weight: var(--sys-text-style-caption-weight);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
+}
+
+.recap__look-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xs);
+}
+
+/* Why the reference-mode group is disabled. grey-80 is the ink floor — never grey-40,
+   which reads as broken rather than as unavailable. */
+.recap__look-hint {
+  margin: 0;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
+}
+
 .recap__lang-primary {
   display: flex;
   flex-direction: column;

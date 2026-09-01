@@ -31,15 +31,15 @@
 // inline-text.js.
 
 import { requestOpen, notifyClose, bindOverlayDismissal } from "../../modal-coordinator.js?v=22";
-import { getPosts } from "../../posts-store.js?v=52";
-import { getSessionById } from "../../sessions-store.js?v=24";
-import { getContextById } from "../../contexts-store.js?v=57";
-import { MODAL_ID, KEY, ctx, state, autosize } from "./context.js?v=49";
+import { getPosts } from "../../posts-store.js?v=53";
+import { getSessionById } from "../../sessions-store.js?v=25";
+import { getContextById } from "../../contexts-store.js?v=58";
+import { MODAL_ID, KEY, ctx, state, autosize } from "./context.js?v=50";
 import { loadImg } from "../../image-studio-canvas.js?v=6";
-import { renderStudio } from "./stage-view.js?v=116";
-import { offerUndoIfNeeded, resetUndoOffers } from "./prompt-guard.js?v=16";
-import { bindStudioEvents } from "./events.js?v=31";
-import * as imageStudio from "../../image-studio.js?v=101";
+import { renderStudio } from "./stage-view.js?v=117";
+import { offerUndoIfNeeded, resetUndoOffers } from "./prompt-guard.js?v=17";
+import { bindStudioEvents } from "./events.js?v=32";
+import * as imageStudio from "../../image-studio.js?v=102";
 
 let backdrop;
 let initialized = false;
@@ -148,6 +148,10 @@ export function open(postId, opts = {}) {
     playbookRefs: context?.referenceImages || [],
     playbookName: context?.brandName || context?.name || "",
     playbookColors: (Array.isArray(context?.brandColors) ? context.brandColors : []).filter((c) => c && c.hex),
+    // The brand's default look — three declarative criteria from the Brand section's
+    // "Default look" row (image type, style preset, how to use a reference). Read,
+    // never written: the studio's own chips are per-post and stop at this state.
+    playbookImageDefaults: context?.imageDefaults || null,
   });
   resetUndoOffers();
   if (unsub) unsub();

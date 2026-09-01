@@ -1421,6 +1421,7 @@ export const contexts = [
     brandPersonality:
       "Confident without bragging, helpful without performing. Speaks the way operators talk to each other — direct, specific, occasionally dry. Never hypey.",
     brandTypography: { headingFont: "Inter", bodyFont: "Inter" },
+    imageDefaults: { imageType: "visual-hook", style: "bold-editorial", refMode: "layout" },
     brandColors: [
       { name: "Primary", hex: "#1A1F36" },
       { name: "Secondary", hex: "#3B4A6B" },
@@ -1633,6 +1634,7 @@ export const contexts = [
     brandPersonality:
       "Opinionated, generous with credit, willing to be wrong out loud. Speaks from scar tissue, not theory. The human is the brand — readers follow the person, not a logo.",
     brandTypography: { headingFont: "System UI", bodyFont: "System UI" },
+    imageDefaults: { imageType: "", style: "corporate", refMode: "" },
     brandColors: [
       { name: "Primary", hex: "#178DFE" },
       { name: "Accent", hex: "#178DFE" },
@@ -1741,6 +1743,7 @@ export const contexts = [
     brandPersonality:
       "Trustworthy, attentive, occasionally surprised on the customer's behalf. Lets the customer be the hero and the numbers carry the emotion.",
     brandTypography: { headingFont: "Inter", bodyFont: "Inter" },
+    imageDefaults: { imageType: "infographic", style: "corporate", refMode: "" },
     brandColors: [
       { name: "Primary", hex: "#1A6E3F" },
       { name: "Accent", hex: "#34A65F" },
@@ -1870,6 +1873,7 @@ export const contexts = [
     brandPersonality:
       "Steady and kind. Takes the fear seriously without dramatising it, is a little wry about animals being animals, and never makes an owner feel careless.",
     brandTypography: { headingFont: "Poppins", bodyFont: "Inter" },
+    imageDefaults: { imageType: "visual-hook", style: "photoreal", refMode: "style" },
     brandColors: [
       { name: "Primary", hex: "#2F1B54" },
       { name: "Accent", hex: "#7C4DFF" },

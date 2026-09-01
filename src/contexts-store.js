@@ -22,7 +22,7 @@
 // chooses "Save as global". updateContext is used by the section-edit flow
 // when scope is "Update everywhere".
 
-import { contexts as seed, sharedContexts } from "./mocks.js?v=75";
+import { contexts as seed, sharedContexts } from "./mocks.js?v=76";
 import { isNewUser } from "./user-mode.js?v=24";
 import { CURRENT_USER } from "./org.js?v=2";
 import { isFlagOn } from "./feature-flags.js?v=23";
@@ -62,6 +62,7 @@ const contexts = isNewUser()
         ...c,
         ...normalizeOwnership(c),
         ...normalizeBrandLogos(c),
+        ...normalizeImageDefaults(c),
       }),
     );
 const notifier = createNotifier("contexts-store");
@@ -119,6 +120,40 @@ function normalizeBrandLogos(ctx) {
     brandLogos: list,
     brandLogo: urls.includes(ctx.brandLogo) ? ctx.brandLogo : urls[0] || "",
   };
+}
+
+// The brand's default LOOK for generated images: what KIND of image, what
+// AESTHETIC, and how a reference image should be used.
+//
+// Three declarative criteria, and they pass CONCEPTS §1's inclusion test the way
+// `brandColors` does: they say what the brand looks like, they schedule nothing.
+// The test that separates them from the listening config that LEFT this fiche —
+// does removing the field change what Archie does on its own or on a cadence? For
+// `enabledSourceIds`/`cadence`, yes. For a style preset, no: nothing runs, nothing
+// is fetched, the value is read only at the instant a human opens a studio. What
+// stays out is the RUN config — format, single/carousel, variation count — which
+// answers "what job for this post?"; `formatId` already derives from the draft's
+// network, a better answer than a stored preference.
+//
+// Shaped after `brandTypography`, not `brandLogos`: a nested plain object, one
+// row in the Brand section, one line in each of the four wiring points. `""` means
+// no preference — and it means two subtly different things downstream, which is
+// why the studio and not this store decides: an empty `imageType`/`style` leaves
+// the studio on "Any" (`null`), while an empty `refMode` falls back to the engine's
+// DEFAULT_REF_MODE. So the fiche must NOT show "Blend" pre-selected on "" or it
+// would claim a decision nobody made.
+//
+// Always exactly three string keys, never `undefined`: `snapshotEditable`
+// JSON-round-trips this object and `JSON.stringify` DROPS an undefined key, so a
+// two-key snapshot would make Cancel restore a differently shaped object.
+// Membership is NOT validated here — that would make this store import the studio
+// engine. `image-studio.js#start` does it, where the three catalogues live.
+// (No id counter, so none of the module-init TDZ hazard noted at the top of this
+// file applies — nothing to hoist.)
+function normalizeImageDefaults(ctx) {
+  const d = ctx.imageDefaults && typeof ctx.imageDefaults === "object" ? ctx.imageDefaults : {};
+  const s = (v) => (typeof v === "string" ? v.trim() : "");
+  return { imageDefaults: { imageType: s(d.imageType), style: s(d.style), refMode: s(d.refMode) } };
 }
 
 // Ownership — who this Playbook belongs to and how far it reaches. Two scopes
@@ -262,6 +297,7 @@ export function addContext(ctx = {}) {
     // having supplied a logo, and the surfaces that use it have to say so rather
     // than stamp a placeholder.
     ...normalizeBrandLogos(ctx),
+    ...normalizeImageDefaults(ctx),
     referenceImages: Array.isArray(ctx.referenceImages)
       ? ctx.referenceImages.map((i) => ({ ...i, networks: Array.isArray(i.networks) ? [...i.networks] : [] }))
       : [],
@@ -342,6 +378,8 @@ export function updateContext(id, patch) {
   if (patch.brandPersonality !== undefined) c.brandPersonality = patch.brandPersonality;
   if (patch.brandTypography !== undefined) c.brandTypography = patch.brandTypography;
   if (patch.brandColors !== undefined) c.brandColors = patch.brandColors;
+  // Re-normalised rather than assigned, so a partial patch still lands three keys.
+  if (patch.imageDefaults !== undefined) Object.assign(c, normalizeImageDefaults(patch));
   // The set and its default are one fact, so they re-normalize together even
   // when only one of them is patched — otherwise a patch that drops the default
   // logo from the set would leave `brandLogo` pointing at a mark that's gone.
@@ -434,6 +472,7 @@ export function duplicateContext(id) {
     visualStyle: src.visualStyle || "",
     brandPersonality: src.brandPersonality || "",
     brandTypography: src.brandTypography ? { ...src.brandTypography } : null,
+    imageDefaults: { ...(src.imageDefaults || {}) },
     brandColors: (src.brandColors || []).map((c) => ({ ...c })),
     brandLogos: (src.brandLogos || []).map((l) => ({ ...l })),
     brandLogo: src.brandLogo || "",
@@ -473,11 +512,17 @@ export function deleteContext(id) {
 // au test d'inclusion de CONCEPTS.md §1 — il bougerait sans que personne ne
 // touche à l'identité de la marque, donc ce n'est pas de l'identité.
 //
-// Les trois champs listés ici sont exactement ceux que `image-studio-v2/index.js`
-// lit sur le Context (playbookLogo / playbookColors / playbookRefs) : les seuls
-// dont l'absence change vraiment l'image produite. `brandName` retombe sur
-// `name` et `brandLogos` dérive de `brandLogo`, donc ni l'un ni l'autre ne
-// peut manquer.
+// Les champs listés ici ne sont PLUS tous ceux qu'`image-studio-v2/index.js` lit
+// sur le Context : `imageDefaults` (le look par défaut) en est un quatrième, et il
+// n'est délibérément PAS un gap — son état vide veut dire « Any », une réponse
+// légitime et pas un manque. Ceux d'ici sont ceux dont l'absence change vraiment
+// l'image produite (playbookLogo / playbookColors / playbookRefs). `brandName`
+// retombe sur `name` et `brandLogos` dérive de `brandLogo`, donc ni l'un ni
+// l'autre ne peut manquer.
+//
+// Le verdict ci-dessus reste vrai tel quel : il porte sur un champ de COMPLÉTUDE,
+// qui bougerait sans que personne ne touche à l'identité. Trois critères de look
+// déclaratifs, eux, passent le test — voir CONCEPTS.md §1.
 export function getBrandKitGaps(ctx) {
   if (!ctx) return [];
   const gaps = [];

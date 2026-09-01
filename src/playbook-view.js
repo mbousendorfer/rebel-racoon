@@ -18,7 +18,13 @@ import { html, raw, escapeHtml as esc } from "./utils.js?v=22";
 import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=27";
 import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=3";
 import { isFlagOn } from "./feature-flags.js?v=23";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=46";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=47";
+// The Default look row offers the SAME three catalogues the Image Studio renders, from
+// the one place they are declared — REF_MODES' own header makes the argument: the label,
+// the hint and the brief clause "drift the moment they live apart". No cycle: the engine
+// imports only clip-formats / image-studio-canvas / feature-flags, and its module body
+// builds consts, so importing it here costs nothing at load.
+import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=102";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -100,6 +106,10 @@ const FIELD_HINTS = {
   brandLogo: {
     q: "Which mark should I default to?",
     a: "I stamp the default bottom-right on the images I generate. The others stay available to place by hand.",
+  },
+  imageDefaults: {
+    q: "What should generated images look like by default?",
+    a: "I start every image here. Change any of it per post in the Image Studio — nothing you do there comes back to this fiche.",
   },
 };
 
@@ -361,6 +371,58 @@ function ensureBrand(data) {
     data.brandTypography = brandFonts(data);
   }
   if (!Array.isArray(data.referenceImages)) data.referenceImages = [];
+  // Shape only, deliberately NOT derived like the four above: the pre-fill is the
+  // analysis's job (context-builder#imageDefaultsFromAnalysis). Guessing a look the
+  // first time someone opens the editor would be a silent write to the fiche.
+  if (!data.imageDefaults || typeof data.imageDefaults !== "object") {
+    data.imageDefaults = { imageType: "", style: "", refMode: "" };
+  }
+}
+
+// ── Default look — the brand's starting point for a generated image ────────
+//
+// Three declarative criteria (image type, style preset, how to use a reference), all
+// single-select WITH toggle-off: pressing the picked chip again clears it, and "clear"
+// IS the "no preference" state — hence no "Any" chip, which would be a second way to
+// say the same thing. Same primitive as renderVoiceModeToggle, which is also what makes
+// this row look like the control it defaults (the brand-colour-dots argument).
+//
+// Chips and not the studio's thumbnails for Style, deliberately: those would be the
+// THIRD image grid in this section, competing with the logo gallery and the reference
+// tiles — and the studio's tiles are mocks, not real previews of these presets.
+//
+// refMode is rendered but DISABLED with its reason when there is no reference image: a
+// control that disappears leaves you wondering whether the option exists at all. The
+// reason points down at the Reference images row, which is why this row comes after it.
+function lookGroup(label, field, options, current, disabled, edit) {
+  const chips = options
+    .map((o) => {
+      const on = current === o.key;
+      if (!edit) return on ? `<span class="ap-tag blue">${esc(o.label)}</span>` : "";
+      return `<button type="button" class="ap-filter-chip" aria-pressed="${on}" ${disabled ? "disabled" : ""}
+        data-recap-look="${esc(field)}" data-recap-look-value="${esc(o.key)}">${esc(o.label)}</button>`;
+    })
+    .join("");
+  // Read mode never invents a value: an empty refMode must NOT print "Blend" just
+  // because that is where the engine lands, or the fiche claims a decision nobody made.
+  const body = edit
+    ? `<div class="recap__look-chips">${chips}</div>`
+    : chips || `<span class="recap__row-empty">No preference</span>`;
+  return `<div class="recap__look-group">
+    <span class="recap__look-label">${esc(label)}</span>
+    ${body}
+  </div>`;
+}
+
+function renderDefaultLook(data, edit) {
+  const d = data.imageDefaults || { imageType: "", style: "", refMode: "" };
+  const hasRefs = (Array.isArray(data.referenceImages) ? data.referenceImages : []).length > 0;
+  return `<div class="recap__look">
+    ${lookGroup("Image type", "imageType", IMAGE_TYPES, d.imageType, false, edit)}
+    ${lookGroup("Style", "style", STYLE_PRESETS, d.style, false, edit)}
+    ${lookGroup("Use a reference", "refMode", REF_MODES, d.refMode, !hasRefs, edit)}
+    ${hasRefs ? "" : `<p class="recap__look-hint">Add a reference image below and I'll say how to use it.</p>`}
+  </div>`;
 }
 
 // Snapshot only the user-editable fields so Cancel can restore them.
@@ -390,6 +452,7 @@ export function snapshotEditable(d) {
       brandLogos: d.brandLogos || [],
       brandLogo: d.brandLogo || "",
       referenceImages: d.referenceImages || [],
+      imageDefaults: d.imageDefaults || { imageType: "", style: "", refMode: "" },
       competitors: d.competitors || [],
       dismissedCompetitors: d.dismissedCompetitors || [],
     }),
@@ -1180,7 +1243,11 @@ function renderVoicePanel(data, edit) {
             ),
           ),
           renderRow(
-            "Visual style",
+            // Label only — the key stays `visualStyle` across the store, the analysis and
+            // the mocks. This row is about TEXT mechanics (its own placeholder says so) and
+            // sits in Voice & style; with "Default look" now in Brand, the old label was an
+            // active trap. Renaming the key would be churn no user can see.
+            "Emoji & casing",
             renderTextarea("visualStyle", data.visualStyle, "Emoji use, capitalisation, hashtags, links…"),
           ),
         ].join("");
@@ -1193,7 +1260,7 @@ function renderVoicePanel(data, edit) {
       renderRow("Signature hooks", renderQuotes(ve.signatureHooks)),
       renderRow("Closing patterns", renderQuotes(ve.closingPatterns)),
       renderRow("Formatting", renderText(data.formattingStyle)),
-      renderRow("Visual style", renderText(data.visualStyle)),
+      renderRow("Emoji & casing", renderText(data.visualStyle)),
     ].join("");
   }
   // "Learn from…" — a single DS dropdown that merges the old "Learn from my
@@ -1278,6 +1345,10 @@ function renderBrandPanel(data, edit) {
       // modal + remove + add) regardless of the Brand section's edit state —
       // but not when the fiche itself is read-only.
       renderRow("Reference images", renderRefImages(data, canEditView())),
+      // Last: Logo/colours/type/personality are the MATERIALS, Reference images the
+      // EXAMPLES, and this is the instruction on how to use all of them. An
+      // instruction before its materials is a control without a subject.
+      renderRow("Default look", renderFieldHint(FIELD_HINTS.imageDefaults) + renderDefaultLook(data, true)),
     ].join("");
   } else {
     body = [
@@ -1286,6 +1357,7 @@ function renderBrandPanel(data, edit) {
       renderRow("Typography", renderTypeSpecimen(data)),
       renderRow("Personality", renderText(data.brandPersonality)),
       renderRow("Reference images", renderRefImages(data, false)),
+      renderRow("Default look", renderDefaultLook(data, false)),
     ].join("");
   }
   return `
@@ -2080,6 +2152,7 @@ const WRITE_HOOKS = [
   "[data-recap-refimg-add]",
   "[data-recap-refimg-remove]",
   "[data-recap-learn]",
+  "[data-recap-look]",
 ].join(",");
 
 function onClick(event) {
@@ -2426,6 +2499,19 @@ function onClick(event) {
     // The default is stored as the url, not an index — an index would silently
     // point at a different mark as soon as one above it is removed.
     if (logo) data.brandLogo = logo.url;
+    repaint();
+    return;
+  }
+  // Default look — one hook for the three sub-controls, single-select with toggle-off.
+  // Pressing the picked chip again clears the field, and cleared IS "no preference".
+  const look = event.target.closest("[data-recap-look]");
+  if (look) {
+    const field = look.dataset.recapLook;
+    const val = look.dataset.recapLookValue;
+    if (!data.imageDefaults || typeof data.imageDefaults !== "object") {
+      data.imageDefaults = { imageType: "", style: "", refMode: "" };
+    }
+    data.imageDefaults[field] = data.imageDefaults[field] === val ? "" : val;
     repaint();
     return;
   }

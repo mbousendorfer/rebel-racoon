@@ -20,13 +20,13 @@ C'est le `CLAUDE.md` d'une marque : le document qu'on donnerait à un rédacteur
 
 Cinq familles, détaillées champ par champ dans [`FEATURES.md` §9](FEATURES.md#9-playbooks) :
 
-| Famille              | Répond à                                                                     |
-| -------------------- | ---------------------------------------------------------------------------- |
-| **Identité**         | Qui est cette marque ? (nom, site, business summary, langue(s))              |
-| **Audience & goals** | À qui je parle, quels problèmes ils ont, quel objectif je poursuis, quel CTA |
-| **Voice & style**    | Comment ça sonne (hooks signature, closings, formatting, style visuel)       |
-| **Brand identity**   | À quoi ça ressemble (logos, couleurs, typo, personnalité, images de réf.)    |
-| **Competitors**      | Contre qui je me positionne (flag `playbookCompetitors`)                     |
+| Famille              | Répond à                                                                                                  |
+| -------------------- | --------------------------------------------------------------------------------------------------------- |
+| **Identité**         | Qui est cette marque ? (nom, site, business summary, langue(s))                                           |
+| **Audience & goals** | À qui je parle, quels problèmes ils ont, quel objectif je poursuis, quel CTA                              |
+| **Voice & style**    | Comment ça sonne (hooks signature, closings, formatting, style visuel)                                    |
+| **Brand identity**   | À quoi ça ressemble (logos, couleurs, typo, personnalité, images de réf., **look par défaut des images**) |
+| **Competitors**      | Contre qui je me positionne (flag `playbookCompetitors`)                                                  |
 
 ### Le test d'inclusion
 
@@ -48,6 +48,10 @@ Avant d'ajouter un champ ou une section, trois questions. **Une seule réponse �
 | **La config opérationnelle**   | quelles sources d'écoute tournent, à quelle cadence, quoi surveiller | `topic-feeds-store.js`, édité sur `/topics/settings` ([`FEATURES.md`](FEATURES.md) §17)                       |
 
 Les **comptes sociaux connectés** (`connectedSocials`, `selectedProfileId`) restent, eux, admissibles : ils disent sous quelle identité cette marque publie, ce qui est encore une réponse à « qui êtes-vous ? ».
+
+Le **look par défaut des images** (`imageDefaults` : type d'image, style, usage des références) est admissible pour la même raison que `brandColors` — il dit à quoi la marque ressemble, il ne lance rien. Le test qui le sépare de la config de listening qui a **quitté** cette fiche : _est-ce que retirer le champ change ce qu'Archie fait **tout seul ou sur une cadence** ?_ Pour `enabledSourceIds`/`cadence`, oui. Pour un style preset, non : rien ne tourne, rien n'est allé chercher, la valeur n'est lue qu'à l'instant où un humain ouvre un studio. Et la section Brand livre **déjà** quatre lignes dont le seul consommateur est le générateur d'images ([`FEATURES.md` §9](FEATURES.md#9-playbooks) justifie la place du logo par ce que « le générateur d'images cuit dans les pixels ») : si « seul le générateur le lit » disqualifiait, ces quatre-là seraient déjà dehors. La ligne n'est pas _qui le lit_, c'est _ce que ça affirme_.
+
+Ce qui reste **exclu**, et c'est ce qui tient la troisième question : la config **de run** — format, single/carousel, nombre de variations — qui répond à « quel job pour ce post ? ». Le `formatId` se dérive déjà du réseau du draft, une meilleure réponse qu'une préférence stockée. Un relecteur qui doute de cette ligne doit vérifier cette exclusion d'abord.
 
 ### Trois exceptions de stockage, assumées
 
@@ -157,7 +161,7 @@ Ce que ça implique, et qui n'est pas négociable :
 
 - **Rien n'y survit qui ne soit commité.** Fermer sans valider ne laisse rien derrière. L'état du studio est de travail, pas de stockage — c'est pourquoi [`image-studio.js`](../../src/image-studio.js) est un `Map(key → state)` en mémoire, effacé à la sortie.
 - **Un artefact à la fois.** Un studio qui gérerait une collection serait un écran, pas un atelier.
-- **Il lit le Playbook, il ne l'écrit pas** : logos, couleurs et images de référence viennent de la fiche ; un Playbook sans logo se répare dans le Playbook, pas ici.
+- **Il lit le Playbook, il ne l'écrit pas** : logos, couleurs, images de référence **et le look par défaut** viennent de la fiche ; un Playbook sans logo se répare dans le Playbook, pas ici. Changer le Type ou le Style **dans** le studio ne remonte jamais sur la fiche — c'est un choix pour ce post.
 
 ⚠️ **Collision de noms à connaître.** En prod côté Agorapulse, le produit lui-même s'appelle **Studio**. Règle : **« Studio » seul = le produit prod** ; **« Image Studio » / « Clip Studio » / « Batch Studio » = l'atelier**. Ne jamais écrire « le Studio » pour désigner un atelier.
 

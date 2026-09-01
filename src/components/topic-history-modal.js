@@ -24,8 +24,8 @@
 
 import { requestOpen, notifyClose } from "../modal-coordinator.js?v=22";
 import { escapeHtml } from "../utils.js?v=22";
-import { getTopicById, topicTitle } from "../topics-store.js?v=9";
-import { renderTopicTrail } from "../topic-article.js?v=23";
+import { getTopicById, topicTitle } from "../topics-store.js?v=10";
+import { renderTopicTrail } from "../topic-article.js?v=24";
 
 const MODAL_ID = "topic-history";
 

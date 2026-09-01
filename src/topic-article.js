@@ -76,7 +76,7 @@
 // whose whole value is the detail.
 
 import { html, raw, escapeAttr } from "./utils.js?v=22";
-import { topicTitle, topicStates } from "./topics-store.js?v=9";
+import { topicTitle, topicStates } from "./topics-store.js?v=10";
 import { findTopicState } from "./topics-catalog.js?v=4";
 import { renderSocialPostCard } from "./components/social-post-card.js?v=11";
 

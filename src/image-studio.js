@@ -20,7 +20,7 @@
 // faithful results; Reprompt is an honest preview (reseed). The committed url
 // rides back to the draft via attachImageToDraft (see the modal component).
 
-import { FORMATS, formatsForNetwork, defaultFormatFor, NETWORK_FORMATS } from "./clip-formats.js?v=26";
+import { FORMATS, formatsForNetwork, defaultFormatFor, NETWORK_FORMATS } from "./clip-formats.js?v=27";
 // Layering note: the only import this engine takes from the view side, and a
 // deliberate one — canvas.js is pure, UI-agnostic (its own header says so) and
 // already shared by both studio versions. "Text in image" is mocked by baking the
@@ -347,6 +347,7 @@ export function start(
     playbookRefs = [],
     playbookName = "",
     playbookColors = [],
+    playbookImageDefaults = null,
   } = {},
 ) {
   // NAMED colours, filtered once here so both `playbookColors` and the switch that
@@ -354,6 +355,42 @@ export function start(
   // array would turn a palette of malformed entries into a switch that's on with
   // nothing behind it.
   const brandColors = (Array.isArray(playbookColors) ? playbookColors : []).filter((c) => c && c.hex);
+  // The brand's default LOOK, from the Playbook's Brand section (the "Default look"
+  // row). Same shape as useBranding / useBrandColors / selectedRefId below: a default
+  // DERIVED from the fiche rather than a constant.
+  //
+  // Membership is validated HERE and not in contexts-store, because this is where the
+  // three catalogues live — a store that imported them would invert the layering. An
+  // unrecognised key therefore means "no preference", never a crash and never a
+  // section that opens on nothing.
+  //
+  // Read once, never written back: the studio reads the Playbook, it does not edit it
+  // (CONCEPTS §5). The chips inside the studio mutate this state, never the Context.
+  const pbLook = playbookImageDefaults && typeof playbookImageDefaults === "object" ? playbookImageDefaults : {};
+  const pbImageType = IMAGE_TYPES.some((o) => o.key === pbLook.imageType) ? pbLook.imageType : null;
+  const pbStyle = STYLE_PRESETS.some((o) => o.key === pbLook.style) ? pbLook.style : null;
+  const pbRefMode = REF_MODES.some((m) => m.key === pbLook.refMode) ? pbLook.refMode : DEFAULT_REF_MODE;
+
+  // Sections start COLLAPSED with the documented exceptions (the long note at
+  // `collapsedGroups` below) — but a section that ARRIVES carrying a value has to
+  // arrive OPEN, or the studio decided something behind a collapsed header. A
+  // Playbook default is exactly that case, so it opens its own row.
+  //
+  // Two `delete`s on the constructed Set rather than a third and fourth literal:
+  // the two literals differ only by `renderText`, which neither touches, so this
+  // stays variant-agnostic. Don't "simplify" it back into the ternary.
+  //
+  // Guarded on the VALIDATED values, so a typo'd key in a seed or an analysis can
+  // never open an empty section. `refMode` needs nothing: `refs` is pinned open in
+  // every variant and never enters this Set, so a Playbook ref mode is on screen
+  // for free (refSummary prints it, e.g. "Acme · Layout").
+  const collapsedGroups = new Set(
+    isFlagOn("imageStudioSetupFirst")
+      ? ["renderText", "branding", "imageType", "style", "format", "output"]
+      : ["branding", "imageType", "style", "format", "output"],
+  );
+  if (pbImageType) collapsedGroups.delete("imageType");
+  if (pbStyle) collapsedGroups.delete("style");
   // posts-store stores X as "twitter"; the format catalogue keys on "x".
   const net = network === "twitter" ? "x" : network || null;
   const resolvedFormat = formatId || (net ? defaultFormatFor(net) : "1:1");
@@ -456,8 +493,8 @@ export function start(
     openModifier: null,
     shotSig: null, // the inputs the shots on screen were made from (see previewStale)
     renderText: "", // words to paint INTO the image (empty = none)
-    styleKey: null, // selected Style preset (STYLE_PRESETS)
-    imageTypeKey: null, // selected Image type (IMAGE_TYPES)
+    styleKey: pbStyle, // selected Style preset (STYLE_PRESETS) — the Playbook's, or null = "Any"
+    imageTypeKey: pbImageType, // selected Image type (IMAGE_TYPES) — the Playbook's, or null = "Any"
     // The ACTIVE reference as an array of 0 or 1, derived from selectedRefId by
     // syncSelectedRef(). Kept in this shape because the prompt, the generation
     // seed and the style-preset lock all read "the refs in play" and none of
@@ -465,7 +502,7 @@ export function start(
     referenceImages: initialSelectedRefId ? [{ ...pbRefs[0], fromPlaybook: true }] : [],
     selectedRefId: initialSelectedRefId,
     lastRefId: initialSelectedRefId, // what the switch restores when turned back on
-    refMode: DEFAULT_REF_MODE, // how the model uses it — see REF_MODES
+    refMode: pbRefMode, // how the model uses it — the Playbook's, else DEFAULT_REF_MODE (REF_MODES)
     playbookRefs: pbRefs, // the Playbook's brand images (snapshot)
     uploadedRefs: [], // the user's own uploads — a POOL to pick from, not the selection
     // Branding — the Playbook's logo, stamped into the corner of what's generated.
@@ -508,18 +545,20 @@ export function start(
     //
     // Brand kit isn't in here either, for a different reason: it's pinned open in
     // the view and never collapses. Style preset has its own `disabled` state
-    // (references guide the look), independent of this Set.
+    // (references guide the look), independent of this Set — which is also why no
+    // guard is needed when the Playbook supplies a style AND a reference is in play:
+    // `settingRow` computes `expanded = pinned || (open && !disabled)`, so the row
+    // stays shut reading "From references" (nothing hidden) and opens on the
+    // Playbook's value the moment the References switch goes off.
+    //
+    // A Playbook default un-collapses its own row — see the two `delete`s above.
     //
     // V3 adds `renderText` back, because the reason for the exception does not hold
     // there: nothing is pre-filled at open — the headline is seeded at generate time
     // (deriveNow) — so the section would arrive open and EMPTY, spending the ~60px
     // that decides whether all seven rows fit the half without a scroll. It fills in
     // and opens itself at that seed — see deriveNow.
-    collapsedGroups: new Set(
-      isFlagOn("imageStudioSetupFirst")
-        ? ["renderText", "branding", "imageType", "style", "format", "output"]
-        : ["branding", "imageType", "style", "format", "output"],
-    ),
+    collapsedGroups,
     variationCount: 2, // single-image mode: how many alternatives to pick from
     slideCount, // carousel mode: how many slides to generate
     variations, // [{ seed, url, w, h }] — alternatives (single) or slides (carousel)

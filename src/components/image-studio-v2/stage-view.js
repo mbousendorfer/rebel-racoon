@@ -34,20 +34,20 @@
 // machinery that has to follow a precise pixel).
 
 import { html, raw, escapeHtml } from "../../utils.js?v=22";
-import { getPosts } from "../../posts-store.js?v=52";
-import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=46";
-import { renderPostCard } from "../post-card.js?v=99";
-import { KEY, ctx } from "./context.js?v=49";
-import { composer } from "./composer-view.js?v=85";
-import { settingsPanel } from "./settings-view.js?v=19";
-import { briefStage, isBriefStage } from "./brief-stage.js?v=32";
-import { setupStage, isSetupFirst } from "./setup-stage.js?v=6";
-import { briefNote } from "./brief-blocks.js?v=2";
-import { toolPalette } from "./tools-view.js?v=20";
-import { promptGuardDialog } from "./prompt-guard.js?v=16";
-import { editCanvas } from "./edit-view.js?v=48";
+import { getPosts } from "../../posts-store.js?v=53";
+import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=47";
+import { renderPostCard } from "../post-card.js?v=100";
+import { KEY, ctx } from "./context.js?v=50";
+import { composer } from "./composer-view.js?v=86";
+import { settingsPanel } from "./settings-view.js?v=20";
+import { briefStage, isBriefStage } from "./brief-stage.js?v=33";
+import { setupStage, isSetupFirst } from "./setup-stage.js?v=7";
+import { briefNote } from "./brief-blocks.js?v=3";
+import { toolPalette } from "./tools-view.js?v=21";
+import { promptGuardDialog } from "./prompt-guard.js?v=17";
+import { editCanvas } from "./edit-view.js?v=49";
 import { compositeOverlays } from "../../image-studio-canvas.js?v=6";
-import * as imageStudio from "../../image-studio.js?v=101";
+import * as imageStudio from "../../image-studio.js?v=102";
 
 // In-feed preview — the edit canvas layers logo/text overlays as live DOM over
 // the image, but renderPostCard only takes a URL, so overlays wouldn't show. We

@@ -322,6 +322,21 @@ première. Un-à-la-fois gardait le panneau court mais interdisait de voir deux 
 refermait dans le dos de l'utilisateur. L'état est `collapsedGroups`, un Set de ce qui est **fermé** —
 ce qui rend à `openPopover` son seul sens : les flyouts du mode Edit, eux réellement exclusifs.
 
+**Une section qui ARRIVE avec une valeur arrive ouverte.** C'est la règle que suivait déjà le seed du
+headline ; elle vaut maintenant aussi à l'ouverture, pour les lignes que le **Playbook** décide (Type,
+Style — voir le _Default look_ en §9). Deux `delete` sur le Set construit dans `start()`, gardés sur les
+valeurs **validées contre les catalogues**, donc une clé fautive dans un seed ou une analyse ne peut
+jamais ouvrir une section vide. Appliqué à l'identique dans les trois variantes, parce que c'est un
+`delete` et non un quatrième littéral. Le `refMode` n'a besoin de rien : `refs` est épinglée ouverte
+partout et n'entre dans ce Set dans aucune variante, donc un mode venu de la fiche est à l'écran
+gratuitement (`refSummary` l'imprime, « Acme · Layout »).
+
+⚠️ Cas de conflit assumé : quand la fiche porte **et** un style **et** une image de référence, la
+ligne Style reste **fermée et `disabled`** en affichant `From references` — `settingRow` calcule
+`expanded = pinned || (open && !disabled)`, donc rien n'est caché — et elle s'ouvre sur la valeur du
+Playbook dès que le switch References tombe. Une fiche qui porte les deux ne se contredit pas : les
+références sont des **exemples**, le style est le repli quand on travaille sans.
+
 L'ordre dit un raisonnement : **ce qui va DANS l'image**, puis son **traitement**.
 
 - **References** ([`references-view.js`](../../src/components/image-studio-v2/references-view.js)) —
@@ -719,8 +734,8 @@ Rendu via `playbook-view` en mode **library**. Header identité + rail sticky + 
 Sections éditables inline (une à la fois, Save/Cancel avec snapshot) :
 
 1. **Audience & goals** — Language(s), Business, Primary audience, Content style, Primary goal, Content action, CTA links.
-2. **Voice & style** — toggle **Guided ⇄ Write it yourself**. Guided = Signature hooks + Closing patterns + Formatting + Visual style. Switcher **par langue** (2+ langues, flag `multilingualPlaybook`) — voice **écrite nativement par langue, jamais traduite** (voir mémoire _multilingual-playbook-model_). Dropdown « Learn from… ».
-3. **Brand** — **Logo** (galerie + un défaut), Brand colors (hex swatches), Typography, Personality, Reference images.
+2. **Voice & style** — toggle **Guided ⇄ Write it yourself**. Guided = Signature hooks + Closing patterns + Formatting + **Emoji & casing** (le champ s'appelle toujours `visualStyle` en base ; il porte des conventions de **texte** — emoji, casse, hashtags — et son ancien libellé « Visual style » devenait un piège une fois « Default look » posé dans Brand. Libellé renommé, clé inchangée : la renommer serait du churn qu'aucun utilisateur ne voit). Switcher **par langue** (2+ langues, flag `multilingualPlaybook`) — voice **écrite nativement par langue, jamais traduite** (voir mémoire _multilingual-playbook-model_). Dropdown « Learn from… ».
+3. **Brand** — **Logo** (galerie + un défaut), Brand colors (hex swatches), Typography, Personality, Reference images, **Default look**.
 4. **Competitors** (flag `playbookCompetitors`) — voir ci-dessous.
 
 **Les logos** sont la première ligne de Brand, parce que c'est la pièce la plus concrète de l'identité visuelle et la seule que le générateur d'images cuit dans les pixels.
@@ -736,6 +751,62 @@ Retirer le défaut passe la main à ce qui reste ; vider le set fait retomber le
 Upload = bouton + input caché (pas le `.ap-dropzone` partagé : la ligne « Reference images » juste dessous est déjà un bouton + input caché, et deux affordances d'upload à une ligne d'écart se liraient comme deux natures de contrôle), multi-fichiers, `FileReader.readAsDataURL` et non `URL.createObjectURL` — un object URL est éphémère et ne survivrait pas au store. Le label est le nom du fichier sans son extension : c'est le seul que l'utilisateur ait donné. Plafond `MAX_BRAND_LOGOS = 8`.
 
 Le défaut **remplace le monogramme d'initiales** dans le header du Playbook (pattern image + jumeau monogramme, swap sur `error`, comme les logos de compétiteurs) : une marque qui a un logo se reconnaît à lui. Le set repart ensuite dans l'Image Studio — voir §7.
+
+#### Default look — le point de départ d'une image générée
+
+`imageDefaults: { imageType, style, refMode }`, trois enums, `""` = pas de préférence. Pourquoi c'est
+admissible sur une fiche et où s'arrête le périmètre : [`CONCEPTS.md` §1](CONCEPTS.md#1-le-playbook).
+Le studio les lit dans `start()` (12ᵉ option `playbookImageDefaults`) et les pose sur les trois clés
+d'état qui existaient déjà — donc **aucun module de vue n'a changé**, et les trois variantes en
+héritent ensemble. Il les **lit et ne les écrit jamais** : changer le Type dans le studio est un choix
+pour ce post.
+
+**Forme calquée sur `brandTypography`**, pas sur `brandLogos` : objet plat imbriqué, une ligne dans
+chacun des quatre points de câblage du store. Toujours **exactement trois clés string**, jamais
+`undefined` — `snapshotEditable` fait un aller-retour JSON et `JSON.stringify` **supprime** une clé
+`undefined`, donc un snapshot à deux clés ferait restaurer une forme différente au Cancel.
+L'appartenance aux catalogues est validée dans `start()` et non dans le store : c'est là que vivent
+les catalogues, et un store qui les importerait inverserait les couches.
+
+**Dernière ligne de la section**, et c'est un ordre de lecture : Logo / Couleurs / Typo / Personnalité
+sont les **matériaux**, Reference images les **exemples**, le look par défaut l'**instruction sur
+comment s'en servir**. Une instruction avant ses matériaux est un contrôle sans sujet.
+
+Trois sous-groupes en `.ap-filter-chip` + `aria-pressed`, **mono-sélection avec dé-sélection** :
+re-presser le chip choisi le vide, et vide **est** l'état « pas de préférence » — donc pas de chip
+« Any », qui serait une seconde façon de dire la même chose. Même primitif que le toggle Guided ⇄
+Write it yourself, ce qui fait aussi que la ligne **ressemble au contrôle qu'elle règle**. Pas de
+vignettes pour Style ici, délibérément : ce seraient les **troisièmes** images de la section, en
+concurrence avec la galerie de logos et les tuiles de référence — et celles du studio sont des mocks,
+pas de vrais aperçus de ces presets. Le sous-groupe `refMode` est **rendu mais `disabled` avec sa
+raison** quand il n'y a aucune image de référence (« Add a reference image below and I'll say how to
+use it. ») : un contrôle qui disparaît laisse se demander si l'option existe. Et la lecture n'invente
+jamais rien — un `refMode` vide n'imprime **pas** « Blend » sous prétexte que c'est là que le moteur
+retombe, sinon la fiche revendiquerait une décision que personne n'a prise.
+
+**Pré-rempli par l'analyse du site, à la création seulement.** `imageDefaultsFromAnalysis` mappe
+`imageVoice.websites[0].personality` — le ton choisit la famille, l'énergie choisit le membre :
+
+| tone / energy                | → style          |
+| ---------------------------- | ---------------- |
+| operator-first / medium-high | `bold-editorial` |
+| evidence-led / calm          | `corporate`      |
+| direct / calm                | `corporate`      |
+| warm / calm                  | `photoreal`      |
+| professional / medium        | `tech-minimal`   |
+| non reconnu                  | `""`             |
+
+Seul `style` est dérivé. `imageType` répond à ce que **ce** post doit montrer et `refMode` décrit
+l'usage d'une image de référence que l'analyse n'a pas choisie — deviner l'un ou l'autre serait
+l'erreur du variant grille retiré (des champs nommés, inventés). Un ton non reconnu donne `""` plutôt
+qu'un preset de repli : mettre sur la fiche une affirmation que rien ne soutient est pire que « Any ».
+
+⚠️ Le mapping vit dans **`applyAnalysisToDraft`** et **pas** dans `sectionPatchFromAnalysis`, parce que
+ce patch-là est aussi ce que **Re-analyze website** applique à une fiche **existante** : comme seul
+`style` est dérivé, il effacerait un type d'image et un mode de référence choisis à la main sans rien
+à mettre à leur place. Le pré-remplissage appartient au chemin qui **crée** un Playbook. Corollaire :
+Re-analyze ne touche pas au Default look. `voicePatchFromAnalysis` (« Learn from… ») ne l'inclut pas
+non plus — il est scopé à Voice & style.
 
 Un Playbook est une **fiche** : chaque section répond à « qui êtes-vous ? ». La config opérationnelle (quelles sources d'écoute tournent, à quelle fréquence) vit dans son propre store, clé par Playbook, et s'édite sur la route qui possède la feature — voir §17. Une section Topics a été essayée puis retirée : une grille d'interrupteurs se lisait comme un panneau de réglages coincé dans un profil. Le champ `ctx.topics` qui la portait est parti avec elle.
 

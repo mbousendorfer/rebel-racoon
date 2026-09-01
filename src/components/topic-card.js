@@ -63,8 +63,8 @@
 // contain phrasing content, so no h3 and no p in there.
 
 import { html, raw, escapeAttr } from "../utils.js?v=22";
-import { topicTitle } from "../topics-store.js?v=9";
-import { renderTopicStates } from "../topic-article.js?v=23";
+import { topicTitle } from "../topics-store.js?v=10";
+import { renderTopicStates } from "../topic-article.js?v=24";
 
 // ── The state chips ───────────────────────────────────────────────────────
 // `renderTopicStates` comes from topic-article.js, which is where a Topic's

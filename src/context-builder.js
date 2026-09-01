@@ -14,12 +14,12 @@
 // suggestions, editingId, onComplete }.
 
 import * as inlineQuestion from "./inline-question.js?v=50";
-import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=79";
-import * as rightPanel from "./components/right-panel.js?v=462";
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=57";
+import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=80";
+import * as rightPanel from "./components/right-panel.js?v=463";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=58";
 import { analyzeWebsite } from "./context-mock-analysis.js?v=27";
-import { connectors as connectorMocks } from "./mocks.js?v=75";
-import { getConnectedProfiles, buildConnectedProfileItems, PROFILE_SEARCH_THRESHOLD } from "./social-profiles.js?v=46";
+import { connectors as connectorMocks } from "./mocks.js?v=76";
+import { getConnectedProfiles, buildConnectedProfileItems, PROFILE_SEARCH_THRESHOLD } from "./social-profiles.js?v=47";
 import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=3";
 import { isFlagOn } from "./feature-flags.js?v=23";
 
@@ -66,6 +66,9 @@ function emptyDraft(overrides = {}) {
     brandColors: [], // Array<{ name, hex }>
     brandLogos: [], // Array<{ id, label, url }> — every mark found or uploaded
     brandLogo: "", // the DEFAULT's url (one of brandLogos, "" = none)
+    // The brand's default look for generated images — { imageType, style, refMode },
+    // "" on each = no preference. See contexts-store#normalizeImageDefaults.
+    imageDefaults: { imageType: "", style: "", refMode: "" },
     referenceImages: [], // Array<{ id, label, url, note?, networks? }> — note/networks = optional usage guidance
     // Competitors — Array<{ id, name, description, websiteUrl, socials:[{network,url}], logo?, suggested? }>.
     // Pre-filled from the website analysis, each flagged `suggested: true` =
@@ -122,6 +125,47 @@ function logoPatchFromAnalysis(s) {
   return { brandLogos: list, brandLogo: list[0]?.url || "" };
 }
 
+// The brand's default LOOK, guessed from the site's personality. Tone picks the
+// family, energy picks the member — deliberately small, because a website's
+// personality genuinely constrains "photographic vs graphic" and "quiet vs loud"
+// and nothing finer than that.
+//
+// Only `style` is derived. `imageType` answers what THIS post should show and
+// `refMode` describes the use of a reference image the analysis never picked —
+// guessing either would be the retired grid-brief mistake (named fields, invented).
+// An unrecognised tone yields "" rather than a fallback preset: putting a claim on
+// the fiche that nothing supports is worse than leaving it on "Any".
+const LOOK_FAMILY = {
+  professional: "graphic",
+  "operator-first": "graphic",
+  direct: "graphic",
+  "evidence-led": "graphic",
+  authoritative: "graphic",
+  warm: "warm",
+  friendly: "warm",
+  playful: "warm",
+  human: "warm",
+};
+const LOOK_BY_ENERGY = {
+  graphic: { calm: "corporate", medium: "tech-minimal", high: "bold-editorial" },
+  warm: { calm: "photoreal", medium: "photoreal", high: "hand-drawn" },
+};
+function energyBand(e) {
+  const v = String(e || "").toLowerCase();
+  if (v === "calm" || v === "low") return "calm";
+  if (v === "high" || v === "medium-high") return "high";
+  return "medium";
+}
+// NOT part of sectionPatchFromAnalysis, on purpose: that patch is also what
+// "Re-analyze website" applies to an EXISTING fiche, and since only `style` is
+// derived it would blank a hand-picked image type and reference mode with nothing
+// to put in their place. The pre-fill belongs to the path that CREATES a Playbook.
+export function imageDefaultsFromAnalysis(analysis) {
+  const p = (analysis && analysis.suggestions)?.imageVoice?.websites?.[0]?.personality || {};
+  const fam = LOOK_FAMILY[String(p.tone || "").toLowerCase()];
+  return { imageType: "", style: fam ? LOOK_BY_ENERGY[fam][energyBand(p.energy)] : "", refMode: "" };
+}
+
 export function sectionPatchFromAnalysis(analysis) {
   const s = (analysis && analysis.suggestions) || {};
   return {
@@ -172,6 +216,7 @@ function applyAnalysisToDraft(d, analysis) {
   d.suggestions = analysis.suggestions;
   d.color = analysis.suggestions.color || "orange";
   Object.assign(d, sectionPatchFromAnalysis(analysis));
+  d.imageDefaults = imageDefaultsFromAnalysis(analysis);
 }
 
 // Patch the draft from outside the conversational flow — used by the
@@ -528,6 +573,7 @@ export function save(sessionId) {
     brandColors: Array.isArray(d.brandColors) ? d.brandColors.map((c) => ({ ...c })) : [],
     brandLogos: Array.isArray(d.brandLogos) ? d.brandLogos.map((l) => ({ ...l })) : [],
     brandLogo: d.brandLogo || "",
+    imageDefaults: { ...(d.imageDefaults || {}) },
     referenceImages: Array.isArray(d.referenceImages)
       ? d.referenceImages.map((i) => ({ ...i, networks: Array.isArray(i.networks) ? [...i.networks] : [] }))
       : [],

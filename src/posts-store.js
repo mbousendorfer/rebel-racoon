@@ -7,7 +7,7 @@
 //   attachImageToDraft(sessionId, postId, imageUrl)
 //   subscribe(sessionId, fn)    → unsubscribe fn
 
-import { postsBySession as seedPostsBySession, allSeedSessions as seedRecentSessions } from "./mocks.js?v=75";
+import { postsBySession as seedPostsBySession, allSeedSessions as seedRecentSessions } from "./mocks.js?v=76";
 import { isNewUser } from "./user-mode.js?v=24";
 import { createSessionNotifier } from "./store-utils.js?v=3";
 

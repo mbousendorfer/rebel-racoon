@@ -14,7 +14,7 @@
 //   • addToQueue(entries)       — push one or many {id, network, text, when}
 //   • busyCountsByDay(start,end)— Map<dateKey, count> for calendar dots
 
-import { scheduledQueue as SEED } from "./mocks.js?v=75";
+import { scheduledQueue as SEED } from "./mocks.js?v=76";
 import { createNotifier } from "./store-utils.js?v=3";
 
 let queue = SEED.slice();
