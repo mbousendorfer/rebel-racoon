@@ -306,8 +306,13 @@
   justify-content: center;
   /* The resting composition's own natural height, pinned so the dragover and
      generating states match it exactly — the frame must not resize between the
-     three. Raise it if the resting content grows, or the slot will jump again. */
-  min-height: 210px;
+     three. Raise it if the resting content grows, or the slot will jump again.
+     Went 210 -> 254 when the Image Studio moved onto a row of its own, and 254 is
+     ARITHMETIC, not a round number: 48 padding + 60 tile + 24 title + 22 sub +
+     16 + 36 button + 12 + 36 studio. The sub was shortened to "Drop it here or
+     browse." precisely so it can never wrap — a two-line sub would push the
+     resting state past the pin and the frame would start jumping again. */
+  min-height: 254px;
   padding: var(--ref-spacing-md);
   border: 1.5px dashed var(--ref-color-grey-20);
   border-radius: var(--app-radius-md);
@@ -324,12 +329,19 @@
    05 on hover, 10 while a file is actually over it — so a drop target behaves
    like every other drop target in the app. These fills are transient feedback,
    which is why they survive while the RESTING fill was removed. */
+/* ⚠️ Both states also hand the mermaid button their own fill. `.ap-button.mermaid`
+   paints its interior with an ::after that the DS hardcodes to white, so on a
+   tinted host the button reads as a white rectangle punched through the tint.
+   `--ap-mermaid-inner` (ds-patches.css) is the hook for exactly this. Hovering
+   the BUTTON still wins: the DS's own `:hover::after` is more specific. */
 .posts__card-media-empty-slot:hover {
+  --ap-mermaid-inner: var(--ref-color-electric-blue-05);
   border-color: var(--ref-color-electric-blue-100);
   background: var(--ref-color-electric-blue-05);
 }
 
 .posts__card-media-empty-slot.is-dragover {
+  --ap-mermaid-inner: var(--ref-color-electric-blue-10);
   border-color: var(--ref-color-electric-blue-100);
   background: var(--ref-color-electric-blue-10);
 }
@@ -380,18 +392,34 @@
   color: var(--sys-text-color-light);
 }
 
-/* ONE filled primary, then a link. Two outlined buttons read as a pair of
-   equals however the labels are worded — which is exactly what went wrong
-   before — and the DS ships no filled AI button, so the primary is
-   `.ap-button.primary.orange` (the documented "primary AI CTA"). Auto-width;
+/* TWO TIERS, STACKED — not two controls on one row.
+   ⚠️ The Image Studio used to be an `.ap-link` sitting beside the button, and it
+   was invisible: next to a rectangle, the eye takes the rectangle and stops, so
+   no amount of size on the link would have fixed it. It gets a row of its own
+   instead. And it must NOT become a second button — two outlined rectangles read
+   as a pair of equals however they are labelled, which is the mistake this block
+   already made twice (see post-card.js#renderEmptyMedia).
+   A column, so the hierarchy is top-to-bottom and unambiguous. Auto-width;
    buttons are never stretched. */
 .posts__card-media-empty-actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: var(--ref-spacing-sm);
+  gap: var(--ref-spacing-xs);
   margin-top: var(--ref-spacing-sm);
+}
+
+/* The Image Studio's row. BODY size, not caption: it is the second of the two
+   routes out of this block, not a footnote about the first — and the sentence is
+   what sells it ("set the type, style and format"), because a bare product name
+   says nothing about why you would click it. Measure-capped so it wraps to two
+   tidy lines in the narrow drafts panel instead of running the slot's full width. */
+.posts__card-media-empty-studio {
+  margin: 0;
+  max-width: 38ch;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--sys-text-color-light);
 }
 
 /* Generating: the loader and its line replace the column, still inside the same

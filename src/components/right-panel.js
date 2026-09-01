@@ -12,7 +12,7 @@ import {
   attachImageToDraft,
   subscribe as subscribePostsStore,
 } from "../posts-store.js?v=53";
-import { renderPostCard } from "./post-card.js?v=100";
+import { renderPostCard } from "./post-card.js?v=101";
 import { renderTopPostEcho } from "./top-post-card.js?v=93";
 import { renderClipCard } from "./clip-card.js?v=35";
 import { onFeedbackClick } from "./feedback-control.js?v=4";

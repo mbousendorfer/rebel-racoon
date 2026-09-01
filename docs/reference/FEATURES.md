@@ -145,14 +145,14 @@ Store **per-session** [`posts-store.js`](../../src/posts-store.js). Draft = auth
 - **Char counter** par network (LinkedIn 3000, X 280, IG 2200, FB 63206, TikTok 2200, YT 5000) → rouge si dépassé.
 - **Media** : clip (faux player, gradient, play, durée, scrubber 24%, badge sous-titres) / image
   (_Edit_ → studio · _Change_ → file picker · _Remove_) / **fente vide** (`.posts__card-media-empty`) :
-  une **vraie dropzone média** — pointillé, **sans fond**, 210px, centrée, **toute la zone est
+  une **vraie dropzone média** — pointillé, **sans fond**, 254px, centrée, **toute la zone est
   cliquable** (hover bleu, clic → file picker) : pastille grise à glyphe upload, titre `h3`
-  « Upload an image », sous-titre `body` « Drop it here or browse — or I'll generate one from this
-  draft. », puis **un** `.ap-button.primary.blue` **Generate an image** (génère **en place**, sans
-  studio ; ⚠️ **bleu volontaire, pas orange** — cf. UI-PATTERNS) et **Image Studio** en `.ap-link`.
+  « Upload an image », sous-titre `body` « Drop it here or browse. », puis **un**
+  `.ap-button.mermaid` **Generate an image** (génère **en place**, sans studio) et, **sur une ligne
+  à lui**, « Or **open the Image Studio** to set the type, style and format. »
   Quatre entrées : cliquer la zone, y glisser un fichier, générer, ou le rail (clavier).
-  Voir [`UI-PATTERNS.md`](UI-PATTERNS.md) § Fente média vide — notamment **pourquoi un bouton
-  contour ne peut pas être un primaire** (le DS n'a aucun bouton IA plein).
+  Voir [`UI-PATTERNS.md`](UI-PATTERNS.md) § Fente média vide — notamment **pourquoi il ne doit
+  jamais y avoir un second bouton à côté du mermaid** (deux contours = une paire d'égaux).
 - **Hint de brand kit** : si le Playbook du chat n'a ni logo, ni couleurs, ni images de référence
   (`getBrandKitGaps` dans [`contexts-store.js`](../../src/contexts-store.js) — dérivé, jamais stocké),
   une ligne `.muted` sous la fente **nomme ce qui manque** et propose `Open the Playbook` (`.ap-link`,

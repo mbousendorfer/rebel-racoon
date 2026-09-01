@@ -28,7 +28,7 @@
 import { html, raw, escapeHtml } from "../../utils.js?v=22";
 import { getPosts } from "../../posts-store.js?v=53";
 import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=47";
-import { renderPostCard } from "../post-card.js?v=100";
+import { renderPostCard } from "../post-card.js?v=101";
 import { KEY, ctx } from "./context.js?v=50";
 import { composer } from "./composer-view.js?v=88";
 import { setupStage } from "./setup-stage.js?v=9";

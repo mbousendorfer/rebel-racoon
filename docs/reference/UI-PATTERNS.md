@@ -198,21 +198,32 @@ CSS dans [`posts.css`](../../styles/screens/posts.css)) : `-slot[data-post-drop]
 `-title` + `-sub` + `-actions`, puis `-hint` **hors** du cadre.
 États : `.is-dragover`, `.is-generating`.
 
-Trois strates, chacune nettement au-dessus de la suivante : pastille neutre → titre `h3` →
-sous-titre `body` en encre light → **un** bouton plein. Le drag/drop est câblé dans
-[`right-panel.js`](../../src/components/right-panel.js) ; `.is-dragover` reprend le bleu
-électrique de `.ap-dropzone`.
+Quatre strates, chacune nettement au-dessus de la suivante : pastille neutre → titre `h3` →
+sous-titre `body` en encre light → **un** bouton mermaid → **l'Image Studio sur sa propre ligne**.
+Le drag/drop est câblé dans [`right-panel.js`](../../src/components/right-panel.js) ;
+`.is-dragover` reprend le bleu électrique de `.ap-dropzone`.
 
-- ⚠️ **Un bouton CONTOUR ne peut pas être un primaire.** `.ap-button.mermaid` est une bordure
-  dégradée, pas un bouton plein : posé à côté d'un `stroked grey` il pèse pareil, et la « paire
-  d'égaux » revient quels que soient les libellés. **Le DS n'a aucun bouton IA plein** — les seuls
-  contrôles pleins dominants sont `.ap-button.primary.orange` et `.primary.blue`. L'échelle maison
-  est écrite dans [`_analyse-common.js:394`](../../src/screens/_analyse-common.js) :
+- **Le contrôle unique est `.ap-button.mermaid`** — le traitement IA du DS, demandé nommément sur
+  cette fente. C'est une **bordure dégradée**, donc un poids de contour et non un bouton plein :
+  le DS ne livre aucun bouton IA plein. C'est précisément ce qui rend la règle suivante vitale.
+  ⚠️ Historique : `.primary.orange`, puis `.primary.blue`, maintenant `mermaid`.
+  **Ne « restaurer » ni l'un ni l'autre** — le bleu se battait en plus avec le lien bleu à côté et
+  avec la teinte bleue du dragover.
+- ⚠️ **JAMAIS un second bouton à côté.** Deux rectangles en contour se lisent comme une paire
+  d'égaux quels que soient les libellés — l'erreur commise **deux fois** ici quand le bouton
+  mermaid côtoyait un `stroked grey`. L'échelle maison est écrite dans
+  [`_analyse-common.js:394`](../../src/screens/_analyse-common.js) :
   `primary` → `stroked grey` → `ghost grey` (+ `.ap-link` en 4ᵉ).
-- ⚠️ **Ici le primaire est `.ap-button.primary.blue`, PAS orange — et c'est voulu.**
-  [`DESIGN-SYSTEM.md`](DESIGN-SYSTEM.md) appelle l'orange le « primary AI CTA », mais Matt a
-  tranché le bleu sur cette fente. Même arbitrage que le primaire du Quickpicker.
-  **Ne pas le « restaurer » en orange.**
+- **L'Image Studio tient sa visibilité d'une LIGNE À LUI + une phrase**, pas d'un poids.
+  En `.ap-link` collé au bouton il était invisible : à côté d'un rectangle, l'œil prend le
+  rectangle et s'arrête — aucune taille de lien n'aurait corrigé ça. Il est donc passé en dessous,
+  dans `.posts__card-media-empty-studio` (taille **body**, pas caption : c'est la seconde des deux
+  routes, pas une note de bas de page), et la phrase dit ce qu'on y gagne (« set the type, style
+  and format ») parce qu'un nom de produit nu ne donne aucune raison de cliquer.
+- ⚠️ **`.ap-button.mermaid` sur un fond teinté** : le DS peint son intérieur en `white` en dur, donc
+  au survol / dragover de la fente il se découpait en blanc dans la teinte. Les deux états lui
+  passent leur propre fond via `--ap-mermaid-inner` (hook `ds-patches.css`). Survoler le **bouton**
+  l'emporte toujours : le `:hover::after` du DS est plus spécifique.
 - **Toute la zone est cliquable** (`right-panel.js` → file picker), d'où `cursor: pointer` et un
   hover. Un bloc intitulé « Upload an image », en pointillé comme toutes les dropzones de l'app,
   qui ne ferait rien au clic serait la même promesse cassée que le pointillé sans drop.
@@ -220,14 +231,17 @@ sous-titre `body` en encre light → **un** bouton plein. Le drag/drop est câbl
   Pas de `role`/`tabindex` sur la zone en revanche — elle contient de vrais boutons, et un
   interactif imbriqué doublerait un arrêt de tabulation ; **le clavier passe par le rail**.
 - **Un seul accent par bloc.** La pastille reste grise et ne reprend pas l'orange de
-  `.drafts-card__icon` : un second orange diviserait la gravité que le bouton plein doit tenir.
+  `.drafts-card__icon` : un second accent diviserait la gravité que le dégradé mermaid doit tenir.
 - **Pas de fond au repos.** Le pointillé seul dit « dépose un fichier ici » ; une teinte par-dessus
   était un second signal faible en concurrence avec le premier. Hover et dragover remplissent
   toujours, dans la gradation de `.ap-dropzone` (**05 au survol, 10 quand un fichier est dessus**) :
   ce sont des retours transitoires, pas de la décoration au repos.
-- **Une hauteur unique (210px)** posée sur le `-slot`, pour que le cadre soit identique au repos, en
-  dragover et en génération. C'est la hauteur naturelle de la composition au repos : si le contenu
-  grandit, remonter la valeur ou le bloc resaute. Volontairement **pas** d'`aspect-ratio`.
+- **Une hauteur unique (254px)** posée sur le `-slot`, pour que le cadre soit identique au repos, en
+  dragover et en génération. C'est de l'**arithmétique**, pas un chiffre rond : 48 padding + 60
+  pastille + 24 titre + 22 sous-titre + 16 + 36 bouton + 12 + 36 ligne studio. Le sous-titre a été
+  raccourci à « Drop it here or browse. » **exprès** pour qu'il ne puisse jamais passer à deux
+  lignes — sinon le repos dépasse le pin et le cadre resaute. Si le contenu grandit, refaire
+  l'addition. Volontairement **pas** d'`aspect-ratio`.
 - **L'upload n'est pas dans la fente** : ce serait une troisième action dans la même rangée, ce qui
   a aplati la hiérarchie à chaque tentative. Il vit dans le rail de la carte — seul endroit où il
   fonctionne aussi quand le draft **a** une image, et seule route clavier vers un fichier (le

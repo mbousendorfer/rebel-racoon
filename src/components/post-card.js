@@ -27,31 +27,36 @@ import { renderFeedbackControl } from "./feedback-control.js?v=4";
 // The media slot of a draft that has no image yet — a real drop target
 // (`[data-post-drop]`, drag wiring in right-panel.js) at the height of an image.
 //
-// The hierarchy here is load-bearing and was got wrong twice, so it is written
-// down. Three strata, each one clearly above the next:
+// The hierarchy here is load-bearing and was got wrong three times, so it is
+// written down. Four strata, each one clearly above the next:
 //
-//   tile (neutral) -> title (h3) -> sub (body, light ink) -> ONE filled button
+//   tile (neutral) -> title (h3) -> sub (body, light ink)
+//                  -> ONE mermaid button -> the Image Studio, on a row of its own
 //
-// 1. The primary MUST be a filled button. `.ap-button.mermaid` is a gradient
-//    BORDER (gradient background + an ::after inset), so it carries the same
-//    visual weight as the `stroked grey` it used to sit beside — two outlined
-//    rectangles read as a pair of equals no matter what the labels say. The DS
-//    ships no filled AI button (the mermaid gradient exists only in that border
-//    form), and the house ladder is written down in _analyse-common.js:394 —
-//    primary -> stroked grey -> ghost grey.
-//    ⚠️ BLUE, not orange, and that is deliberate. DESIGN-SYSTEM.md calls orange
-//    the "primary AI CTA", but Matt chose blue here — the same call already made
-//    for the Quickpicker's primary. Do NOT "restore" it to orange.
-// 1b. The whole slot is clickable (browse), so the copy says so. A dashed box
+// 1. The one control is `.ap-button.mermaid` — the DS's AI treatment, and the
+//    user asked for it here by name. It is a gradient BORDER (gradient
+//    background + an ::after inset), NOT a filled button: the DS ships no filled
+//    AI button. That is the whole reason for rule 2.
+//    ⚠️ It used to be `.ap-button.primary.blue`, and before that `.primary.orange`.
+//    Do NOT "restore" either — mermaid is the current, explicit call. The blue
+//    also fought the electric-blue link beside it and the blue dragover tint.
+// 2. ⚠️ NEVER put a second button next to it. Two outlined rectangles read as a
+//    pair of equals however the labels are worded — that is what went wrong the
+//    first two times, when the mermaid button sat beside a `stroked grey` one.
+//    The Image Studio therefore earns its visibility from a ROW OF ITS OWN plus a
+//    sentence naming what it gives you, never from a second rectangle. Separation
+//    and explanation, not weight: a link crammed beside a button is invisible
+//    whatever size it is, because the eye takes the rectangle and stops.
+// 2b. The whole slot is clickable (browse), so the copy says so. A dashed box
 //    titled "Upload an image" that does nothing on click is the same broken
 //    promise the dashed border itself was. The zone gets no role/tabindex
 //    though: it contains real buttons, and a nested interactive would both
 //    duplicate a tab stop and put a fake button around real ones — the rail's
 //    Upload icon is the keyboard route.
-// 2. Only ONE accent in the block. The tile stays grey rather than borrowing the
-//    orange Archie tile from drafts-card__icon: a second orange would split the
-//    gravity the filled button is there to hold.
-// 3. No resting background. The dashed border alone says "drop a file here";
+// 3. Only ONE accent in the block. The tile stays grey rather than borrowing the
+//    orange Archie tile from drafts-card__icon: a second accent would split the
+//    gravity the mermaid gradient is there to hold.
+// 4. No resting background. The dashed border alone says "drop a file here";
 //    a tint on top of it was a second weak signal competing with the first.
 //
 // Upload is NOT here. It would be a third action fighting for the same row, so
@@ -89,13 +94,16 @@ function renderEmptyMedia(post, opts) {
     <div class="posts__card-media-empty-slot" data-post-drop="${post.id}">
       <span class="posts__card-media-empty-tile" aria-hidden="true"><i class="ap-icon-upload"></i></span>
       <p class="posts__card-media-empty-title">Upload an image</p>
-      <p class="posts__card-media-empty-sub">Drop it here or browse — or I'll generate one from this draft.</p>
+      <p class="posts__card-media-empty-sub">Drop it here or browse.</p>
       <div class="posts__card-media-empty-actions">
-        <button type="button" class="ap-button primary blue" data-post-image="${post.id}">
+        <button type="button" class="ap-button mermaid" data-post-image="${post.id}">
           <i class="ap-icon-archie-official"></i>
           <span>Generate an image</span>
         </button>
-        <button type="button" class="ap-link" data-post-studio="${post.id}">Image Studio</button>
+        <p class="posts__card-media-empty-studio">
+          Or <button type="button" class="ap-link" data-post-studio="${post.id}">open the Image Studio</button>
+          to set the type, style and format.
+        </p>
       </div>
     </div>
     ${hint}
