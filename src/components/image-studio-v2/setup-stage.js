@@ -1,5 +1,4 @@
-// Image Studio V3 — the options come first, the brief comes last.
-//   (flag imageStudioSetupFirst; wins over imageStudioAutoBrief when both are on)
+// Image Studio — the generate stage: the options come first, the brief comes last.
 //
 // ┌───────────────────────────────┬──────────────────────────────────┐
 // │ [ Options ] [ Advanced ]      │  PREVIEW      [Image | In feed]  │
@@ -12,11 +11,17 @@
 // │  Output       2 variations  ▾ │                                  │
 // └───────────────────────────────┴──────────────────────────────────┘
 //
-// The other two variants land the user on the BRIEF — a prose field in the bottom
-// composer (classic), or the hero of the stage (auto-brief) — and treat the options as
-// secondary. This one inverts that: the options are the form, Generate is its submit,
-// and the brief is the answer to "what did you actually send?" rather than the thing
-// you have to fill in first. There is no prose prompt field anywhere in this variant.
+// The options are the form, Generate is its submit, and the brief is the answer to
+// "what did you actually send?" rather than the thing you have to fill in first.
+// There is no prose prompt field anywhere in the generate flow.
+//
+// Two earlier arrangements were removed rather than kept behind a flag, and are worth
+// naming so they don't come back: a prose brief in a bottom composer with the options
+// pinned to the stage's left edge in a 284px rail that ran out of height and clipped
+// its own controls (git log -S isv2-panel), and one where the auto-written brief WAS
+// the stage with the options as a bar of popover modifiers under it
+// (git log -S isv2-bs-mod). Both landed the user on a brief before there was anything
+// to brief about.
 //
 // ── Three decisions worth defending ──────────────────────────────────────────
 //
@@ -32,9 +37,9 @@
 //    on screen; offered before there is one it would be a draft of a brief, which is
 //    the surface this variant exists to remove.
 //
-// 3. The layout NEVER changes — two halves from open to commit, the same geometry the
-//    auto-brief stage uses (`.isv2-bs`), so switching pane or landing an image reflows
-//    nothing. The options half scrolls internally; the preview half does not.
+// 3. The layout NEVER changes — two halves from open to commit (`.isv2-bs`), so
+//    switching pane or landing an image reflows nothing. The options half scrolls
+//    internally; the preview half does not.
 //
 // 4. The form has a MEASURE (~520px, left-aligned in its half) rather than filling it. At
 //    the half's full width a row put its label at one edge and its value at the other with
@@ -47,18 +52,14 @@
 //    section body takes `.ap-accordion-content`'s padding and gap — the DS components for
 //    "rows inside a bounded card" and "an expanded section". FEATURES §7bis has the table.
 //
-// The brief's blocks (brief-blocks.js) and the preview column (preview-column.js) are
-// shared with the auto-brief stage — one renderer each, two hosts, so a card and the
-// thing it opens can't end up saying different sentences about the same brief.
+// The brief's blocks (brief-blocks.js) and the preview column (preview-column.js) stay
+// in modules of their own: each is a subject with its own rules — what a brief block IS
+// and how it commits, what the preview shows in each of its four states — and this file
+// is the LAYOUT that hosts them.
 
-import { settingRowEntries } from "./settings-view.js?v=21";
-import { briefBody, briefNote } from "./brief-blocks.js?v=3";
-import { previewColumn } from "./preview-column.js?v=3";
-
-/** Is V3 holding the stage? For the WHOLE generate flow, image or not. */
-export function isSetupFirst(st) {
-  return !!st.setupFirst && st.mode === "generate";
-}
+import { settingRowEntries } from "./settings-view.js?v=22";
+import { briefBody, briefNote } from "./brief-blocks.js?v=4";
+import { previewColumn } from "./preview-column.js?v=4";
 
 /** Is the brief reachable yet? It describes an image, so it needs one. */
 function briefReady(st) {
@@ -83,9 +84,9 @@ function paneTabs(st) {
 // encodes "ce qui va DANS l'image, puis son traitement", stated rather than implied); the
 // user overruled it — the headings read as chrome the options didn't need, and one card
 // per option separates them more cleanly than a labelled group of rows did. The order
-// still carries the reasoning the way the pinned 284px panel always has: by sequence, not
-// by a caption. `settingRowEntries` already returns them in that order, so the pane is
-// just their cards in a row — the card recipe lives in CSS (`.isv2-opts .isv2-acc`).
+// still carries the reasoning by sequence, not by a caption. `settingRowEntries` already
+// returns them in that order, so the pane is just their cards in a row — the card recipe
+// lives in CSS (`.isv2-opts .isv2-acc`).
 function optionsPane(st) {
   const rows = settingRowEntries(st)
     .map((e) => e.html)

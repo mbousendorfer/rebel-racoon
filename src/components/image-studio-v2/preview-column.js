@@ -1,10 +1,10 @@
 // Image Studio — the preview half: one column, four states, two hosts.
 //
 // The result JOINS the options rather than replacing them. Generating used to swap the
-// entire screen for the classic canvas — a different layout, different controls, and
-// the settings you had just been using gone. Keeping the left half and adding the
-// picture beside it means ONE interface for the whole loop: set the options, look at
-// what they produced, change one, regenerate.
+// entire screen for a centred canvas with a pinned variations rail — a different
+// layout, different controls, and the settings you had just been using gone. Keeping
+// the left half and adding the picture beside it means ONE interface for the whole
+// loop: set the options, look at what they produced, change one, regenerate.
 //
 // Which is why this column is rendered from the FIRST frame, empty state and all: a
 // half that appears out of nowhere when the first image lands reflows everything the
@@ -12,18 +12,16 @@
 // it appear with the second variation resized the shot box the moment the image
 // arrived, a layout change by the back door.
 //
-// Two hosts, and they must show the same picture the same way:
-//   brief-stage.js  (imageStudioAutoBrief) — beside the brief
-//   setup-stage.js  (imageStudioSetupFirst) — beside the options
-// The classic variant does NOT use this: it centres the image in the whole stage with
-// a pinned variations rail (stage-view.js#resultsStage).
+// Its host is setup-stage.js, which puts it beside the options. A module of its own
+// because the four states and what each says are a subject; where the column sits is
+// the stage's business.
 
 import { escapeHtml } from "../../utils.js?v=22";
 import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=47";
 import { getPosts } from "../../posts-store.js?v=53";
 import { renderPostCard } from "../post-card.js?v=100";
 import { KEY, ctx } from "./context.js?v=50";
-import * as imageStudio from "../../image-studio.js?v=102";
+import * as imageStudio from "../../image-studio.js?v=103";
 
 // Image ↔ in-feed. It lives in the preview's own header because it changes what the
 // PREVIEW shows and nothing else — centred over the whole stage it read as modal chrome
@@ -62,8 +60,8 @@ function feedCard(st) {
   return `<div class="isv2-bs-feed">${renderPostCard({ ...base, clipRef: null, isRegenerating: false, ...media })}</div>`;
 }
 
-// No per-host parameters: both variants keep their options on the left, so the empty
-// state's "on the left" points at the right place in both. The day a host needs to word
+// No per-host parameters: the one host keeps its options on the left, so the empty
+// state's "on the left" points at the right place. The day a second host needs to word
 // something differently, that is the moment to add the option — not before.
 export function previewColumn(st) {
   // The ratio rides as BOTH `aspect-ratio` and `--isv2-shot-ratio`. The frame is a flex
@@ -71,8 +69,8 @@ export function previewColumn(st) {
   // TALLER than its own shape: at 1240px of viewport a 1:1 preview was 654x837, and the
   // `object-fit: cover` inside it cropped the square image the studio was about to
   // commit. The custom property is what lets the width be computed from the height the
-  // column actually leaves — the primitive `.isv2-frame` has always used on the classic
-  // stage, which is why that one never distorted. See `.isv2-bs-shot`.
+  // column actually leaves — the primitive `.isv2-frame` uses in Edit mode, which is
+  // why the edit canvas never distorted. See `.isv2-bs-shot`.
   const ratio = imageStudio.activeRatio(KEY);
   if (st.genPhase !== "generating" && !st.variations.length) {
     return `<div class="isv2-bs-preview">

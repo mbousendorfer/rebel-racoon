@@ -1,9 +1,9 @@
-// Image Studio — protecting a hand-edited prompt from the settings that rewrite it.
+// Image Studio — protecting a hand-edited brief from the options that rewrite it.
 //
-// Type and References don't nudge a line of the brief, they re-derive the whole
-// thing. That's fine while the brief is Archie's — it's his to rewrite — but once
-// the user has typed in the field, the same click silently throws their words
-// away. So when the prompt is hand-edited, those settings ask first.
+// An option doesn't nudge a line of the brief, it re-derives the whole thing. That's
+// fine while the brief is Archie's — it's his to rewrite — but once the user has
+// typed in a block, the same click silently throws their words away. So a brief that
+// has been taken over makes the options ask first.
 //
 // Two surfaces, one subject:
 //   promptGuardDialog(st)    the confirmation, when a change is parked
@@ -24,7 +24,7 @@
 import { escapeHtml } from "../../utils.js?v=22";
 import { showToast } from "../toast.js?v=21";
 import { KEY } from "./context.js?v=50";
-import * as imageStudio from "../../image-studio.js?v=102";
+import * as imageStudio from "../../image-studio.js?v=103";
 
 // What each guarded setting is called in the sentence, so the dialog names the
 // thing the user just clicked rather than saying "a setting".
@@ -40,34 +40,21 @@ const WHAT = {
   useReference: "the reference image",
 };
 
-// Same dialog, two subjects. The classic modal is protecting the prose prompt the user
-// typed in; the two split variants protect the editable blocks of their brief. Naming
-// the wrong one would make the warning unreadable.
-function subject(st) {
-  // A brief is a set of editable BLOCKS, and every option rewrites all of them. Naming
-  // "the prompt" would point at something the user never sees in either variant — V3
-  // renders no prose field at all.
-  if (st.autoBrief || st.setupFirst) {
-    return {
-      title: "Rewrite the brief?",
-      body: "You've edited the brief by hand. Changing",
-      tail: "makes me write the whole brief again, so your edits will be lost.",
-      cta: "Rewrite brief",
-    };
-  }
-  return {
-    title: "Rewrite your prompt?",
-    body: "You've edited the prompt by hand. Changing",
-    tail: "rewrites it from your settings, so your edits will be lost.",
-    cta: "Rewrite prompt",
-  };
-}
+// The brief is a set of editable BLOCKS, and every option rewrites all of them — so
+// the sentence is about the brief, never about "the prompt", a word the generate flow
+// no longer shows anywhere.
+const COPY = {
+  title: "Rewrite the brief?",
+  body: "You've edited the brief by hand. Changing",
+  tail: "makes me write the whole brief again, so your edits will be lost.",
+  cta: "Rewrite brief",
+};
 
 export function promptGuardDialog(st) {
   const parked = st.pendingSettingChange;
   if (!parked) return "";
   const what = WHAT[parked.kind] || "this setting";
-  const copy = subject(st);
+  const copy = COPY;
   return `<div class="isv2-guard" data-img-guard>
     <div class="ap-dialog isv2-guard-card" role="alertdialog" aria-modal="true" aria-labelledby="isv2GuardTitle" aria-describedby="isv2GuardBody">
       <div class="ap-dialog-header">
@@ -117,7 +104,7 @@ export function offerUndoIfNeeded(st) {
   const undo = st.promptUndo;
   if (!undo || st.promptLoading || undo === offered) return;
   offered = undo;
-  showToast("Prompt rewritten from your settings", {
+  showToast("Brief rewritten from your options", {
     action: { label: "Undo", onClick: () => imageStudio.undoPromptRewrite(KEY) },
   });
 }

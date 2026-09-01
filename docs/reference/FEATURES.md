@@ -208,11 +208,14 @@ Store [`schedule-store.js`](../../src/schedule-store.js) : file upcoming, `getQu
 ### Image Studio ([`components/image-studio-v2/`](../../src/components/image-studio-v2/))
 
 Modale near-fullscreen, deux modes pairs (**Generate** / **Edit**, tabs DS). Un header d'une ligne
-(titre · les deux modes), un **stage pleine largeur**, un **composer en bas**, un footer qui porte
-l'unique action de sortie. Les réglages vivent dans un **panneau épinglé à gauche du stage** —
-à côté de l'image qu'ils décrivent, sur le bord que la palette d'outils d'Edit réutilise, si bien que
-changer de mode échange les contrôles sur place au lieu de les envoyer à l'autre bout de la modale.
-Le **chutier des variations** garde le bord droit.
+(titre · les deux modes) et un footer qui porte l'unique action de sortie. Entre les deux, **le stage
+prend une forme par mode** :
+
+- **Generate** = **deux moitiés** pour toute la boucle — les sept lignes d'options à gauche, l'image
+  (ou son placeholder) à droite — et **Generate est le submit du formulaire**, dans le footer. Pas de
+  composer en bas, pas de panneau épinglé, pas de chutier : le stage porte tout. Détail en §7bis.
+- **Edit** = un **canvas centré** avec la palette d'outils épinglée au bord gauche et un composer
+  « décris un changement » en dessous, parce qu'ici l'image **est** la surface qu'on travaille.
 
 **Entrées** (les seules — pas de route, pas de raccourci) :
 
@@ -268,7 +271,7 @@ est _« Use this image »_ dans le footer, présent **dès la première frame** 
 y ait quelque chose à valider) — la destination est visible tout du long au lieu d'apparaître quand
 les résultats tombent.
 
-Stage : `empty → generating (~4,2 s) → résultats` (grande image + chutier), avec une bascule
+Stage : `empty → generating (~4,2 s) → résultats` (la colonne de preview, §7bis), avec une bascule
 **Image / In feed** (aperçu réel via `renderPostCard`).
 
 ### Le prompt édité à la main est protégé
@@ -326,9 +329,9 @@ ce qui rend à `openPopover` son seul sens : les flyouts du mode Edit, eux réel
 headline ; elle vaut maintenant aussi à l'ouverture, pour les lignes que le **Playbook** décide (Type,
 Style — voir le _Default look_ en §9). Deux `delete` sur le Set construit dans `start()`, gardés sur les
 valeurs **validées contre les catalogues**, donc une clé fautive dans un seed ou une analyse ne peut
-jamais ouvrir une section vide. Appliqué à l'identique dans les trois variantes, parce que c'est un
+jamais ouvrir une section vide. Une seule règle, parce que c'est un
 `delete` et non un quatrième littéral. Le `refMode` n'a besoin de rien : `refs` est épinglée ouverte
-partout et n'entre dans ce Set dans aucune variante, donc un mode venu de la fiche est à l'écran
+partout et n'entre jamais dans ce Set, donc un mode venu de la fiche est à l'écran
 gratuitement (`refSummary` l'imprime, « Acme · Layout »).
 
 ⚠️ Cas de conflit assumé : quand la fiche porte **et** un style **et** une image de référence, la
@@ -402,7 +405,7 @@ L'ordre dit un raisonnement : **ce qui va DANS l'image**, puis son **traitement*
   tamponne **le défaut**, et rien d'autre.
   Le **mode Edit** propose en revanche **tout le set** (`st.playbookLogos`) en tête du flyout « Add an
   image » (groupe _« From your Playbook »_, avant Upload et avant les presets), chaque marque posée
-  comme calque déplaçable. Toutes les variantes et pas seulement le défaut, parce que la raison d'aller
+  comme calque déplaçable. Dans les deux modes et pas seulement au défaut, parce que la raison d'aller
   la chercher à la main est justement qu'une autre convient mieux : le lockup inversé sur une photo
   sombre, l'icône là où un wordmark ne se lit pas à cette taille. Le switch est la signature
   automatique, les tuiles sont la pose à la main. Les tuiles portent un **index**
@@ -434,7 +437,7 @@ L'ordre dit un raisonnement : **ce qui va DANS l'image**, puis son **traitement*
 
 Les neuf vignettes sont **dessinées en CSS, zéro asset** — le patron `.sub-preview--*` de
 `clip-subtitles.js` : un markup, neuf modificateurs. Choisi contre le SVG parce que ces cartes rendent
-à **trois tailles** (≈40px dans le rail de 284px, 154px en V3, 167px dans le popover auto-brief, un
+à **plusieurs tailles** (la carte d'option porte la sienne, ≈154px, et l'art suit, un
 rapport ~4×) : une composition en % est sans résolution, là où neuf `viewBox` fixes demanderaient un
 `vector-effect` par trait et neuf blobs de HTML de confiance dans un module JS. D'où les règles de
 dimensionnement, porteuses : positions et tailles en **%**, traits et bordures en **px**, rien sous
@@ -542,32 +545,35 @@ le prompt. Les réglages s'appliquent à la **génération suivante**, jamais r�
 
 ---
 
-## 7bis. Image Studio V3 — les options d'abord, le brief en Advanced
+## 7bis. Le stage Generate — les options d'abord, le brief en Advanced
 
-**Derrière le flag `imageStudioSetupFirst` (OFF par défaut).** Gagne sur `imageStudioAutoBrief`
-quand les deux sont ON — la précédence est déclarée dans `isBriefStage()` ([`brief-stage.js`](../../src/components/image-studio-v2/brief-stage.js)),
-en un seul endroit, pour qu'aucun appelant n'ait à connaître l'ordre.
+**Les réglages sont le formulaire, Generate en est le submit, et le brief est la réponse à
+« qu'est-ce que tu as envoyé ? »** plutôt que la chose à remplir d'abord. Il n'y a **aucun champ de
+prompt en prose** nulle part.
 
-Les deux autres variantes font atterrir l'utilisateur sur le **brief** — un champ en prose dans le
-composer (classique) ou le héros du stage (auto-brief) — et traitent les réglages comme secondaires.
-V3 inverse : **les réglages sont le formulaire, Generate en est le submit, et le brief est la réponse
-à « qu'est-ce que tu as envoyé ? »** plutôt que la chose à remplir d'abord. Il n'y a **aucun champ de
-prompt en prose** dans cette variante.
+> ⚠️ **Deux dispositions antérieures ont été SUPPRIMÉES, pas mises derrière un flag.** Une
+> _classique_ faisait atterrir sur un brief en prose dans un composer du bas, les options épinglées
+> au bord gauche du stage dans un inspecteur de 284px (`git log -S isv2-panel`) ; une _auto-brief_
+> faisait du brief écrit le héros du stage, les options en barre de modificateurs à popover en
+> dessous (`git log -S isv2-bs-mod`). Les deux mettaient l'utilisateur devant un brief avant qu'il y
+> ait quoi que ce soit à briefer, et les trois variantes coûtaient trois chemins dans un seul moteur
+> (`briefIsDerived()`, `isBriefStage()`, `afterLegacySetting()` n'existaient que pour les
+> réconcilier). Leurs flags `imageStudioAutoBrief` / `imageStudioSetupFirst` sont partis avec elles.
+> **Ne propose pas de les rétablir.**
 
-Le stage est **deux moitiés pour toute la boucle**, la géométrie de l'auto-brief réutilisée telle
-quelle (`.isv2-bs.is-split`) : à gauche une bande de deux chips **Options / Advanced** puis le pane
+Le stage est **deux moitiés pour toute la boucle** (`.isv2-bs.is-split`) : à gauche une bande de deux chips **Options / Advanced** puis le pane
 correspondant, à droite la colonne de preview (vide → generating → in-feed → résultats + vignettes +
 le voile « la brief a changé depuis cette image »). **La mise en page ne change jamais** — ni au
 changement de pane, ni à l'arrivée de la première image.
 
-- **Options** = les **sept mêmes lignes** que le panneau épinglé (References · Text in image ·
-  Branding · Type · Style · Format · Output), **une carte par option**. Elles ont d'abord vécu en
+- **Options** = les **sept lignes** (References · Text in image · Branding · Type · Style ·
+  Format · Output), **une carte par option**. Elles ont d'abord vécu en
   **deux groupes bornés** coiffés de titres _« What's in the image »_ / _« How it's made »_ — l'idée
   était d'**énoncer** le raisonnement que l'ordre encode, là où le panneau de 284px ne pouvait que
   l'**impliquer par la séquence**. **L'utilisateur a tranché contre** : les titres se lisaient comme
   du chrome dont les options n'avaient pas besoin, et une carte par option les sépare plus proprement
-  qu'un groupe de lignes étiqueté. L'ordre porte toujours le raisonnement comme dans le panneau
-  épinglé — par la séquence, pas par une légende — et `settingRowEntries` les renvoie déjà dans cet
+  qu'un groupe de lignes étiqueté. L'ordre porte toujours le raisonnement — par la séquence, pas par
+  une légende — et `settingRowEntries` les renvoie déjà dans cet
   ordre, donc le pane est juste leurs cartes à la suite.
   Chaque carte est la recette **du DS** valeur pour valeur : `.ap-card` / `.ap-accordion` sont tous
   deux `blanc · 1px grey-10 · border-radius --ref-border-radius-md (8px)` et **sans ombre**. Composée
@@ -590,7 +596,7 @@ changement de pane, ni à l'arrivée de la première image.
 - **Espacement resserré.** Gap **entre cartes** ramené de `sm` à `xxs` (les cartes plates + le canal
   gris séparent déjà — `sm` se lisait « beaucoup trop espacé »), padding vertical des deux moitiés de
   `md` à `sm`. **Titres de section en h3 (16px)**, à égalité avec le « Preview » d'en face : chaque
-  carte est une section, son titre mérite une taille de titre (le panneau épinglé de 284px garde 14px,
+  carte est une section, son titre mérite une taille de titre (la base `.isv2-acc` garde 14px,
   là les lignes sont des rangs, pas des sections).
 - Le pane scrolle quand il faut — sans danger, puisque les réglages n'ont plus de flyout à faire
   sortir de la boîte depuis qu'ils sont des sections qui s'ouvrent en place. Le bord bas **se fond**
@@ -604,27 +610,27 @@ changement de pane, ni à l'arrivée de la première image.
   `.isv2-refs.is-scrollable`) : le bas d'une carte de groupe est une **bordure**, donc coupée net
   elle a l'air cassée, et macOS masque les barres de défilement. Le fondu ne coûte rien quand tout
   tient : une scroll-timeline sur un élément non scrollable est inactive.
-- **Advanced** = les **mêmes blocs éditables** que l'auto-brief, avec les mêmes règles : taper dans
+- **Advanced** = des **blocs éditables**, avec ces règles : taper dans
   un bloc **EST** la reprise en main, un réglage changé ensuite marque le brief périmé au lieu de
   l'écraser, et le garde-fou nomme le réglage qu'il s'apprête à réécrire. Le chip est **désactivé
   tant qu'aucune image n'existe**, avec la phrase du tab Edit (_« Generate an image first »_) : ce
   qu'il contient est le prompt qui a produit l'image à l'écran, pas un brouillon de brief.
 - **Footer** : `Generate` (blue secondary) → `Regenerate` dès qu'il y a des images, `Use this image`
-  (orange primary) dans le slot primaire du début à la fin. C'est la branche footer de l'auto-brief,
+  (orange primary) dans le slot primaire du début à la fin. C'est la branche footer de Generate,
   partagée. La **ligne d'état du brief passe sous les blocs** et non dans le footer : ici le brief
   est un pane sur deux, et le footer parlerait d'une chose que le lecteur n'a peut-être pas à
   l'écran.
 
 ### La densité vient du DS, pas d'un réglage maison
 
-Le variant avait hérité la densité du **panneau épinglé de 284px**, où chaque pixel compte :
+Les cartes avaient hérité la densité de l'**inspecteur épinglé de 284px**, où chaque pixel comptait :
 lignes de 36px (`--comp-input-height`), corps de section en `8/16/12`, deux libellés de groupe en
 caption grey-80. Dans une carte de 520px ça se lit comme un **tableau**, pas comme un formulaire.
 Les valeurs viennent maintenant des composants que le DS destine à cette forme-là, et **uniquement
-sous `.isv2-opts` / `.isv2-bs--setup`** — le panneau épinglé garde la sienne, qui est le bon
+sous `.isv2-opts` / `.isv2-bs--setup`** — la base `.isv2-acc` garde la sienne, qui est le bon
 réglage pour un rail :
 
-| Ce qui a changé (V3 seul)           | Avant                | Après                   | D'où ça vient                                                                                  |
+| Ce qui a changé                     | Avant                | Après                   | D'où ça vient                                                                                  |
 | ----------------------------------- | -------------------- | ----------------------- | ---------------------------------------------------------------------------------------------- |
 | Structure                           | 2 groupes titrés     | **1 carte par option**  | choix utilisateur — les titres étaient du chrome, une carte sépare mieux qu'un groupe étiqueté |
 | Hauteur de ligne                    | 36px                 | **40px**, `xxs sm`      | `.ap-list-panel-item` — le composant DS des lignes dans une carte                              |
@@ -659,7 +665,7 @@ recrée aussi les `<img>` de références ; une image encore en chargement (ou b
 instant à hauteur nulle, ce qui rétrécissait la carte References de ~62px **à chaque expand** et
 poussait tout ce qui suit vers le haut. `.isv2-refs` a maintenant `min-height: var(--isv2-tile)`, si
 bien que la hauteur de la carte ne dépend plus de l'état des images (mesuré : hauteur constante,
-delta 0, à travers expand/collapse). Correctif partagé par toutes les variantes (le strip de
+delta 0, à travers expand/collapse). Correctif partagé par les deux modes (le strip de
 références est le même partout).
 
 ### Le cadre de preview ne mentait plus qu'ici
@@ -668,7 +674,7 @@ références est le même partout).
 laissait plus rien à dire à son `aspect-ratio`. À 1240px de viewport un aperçu **1:1 sortait en
 654×837**, et l'`object-fit: cover` à l'intérieur **recadrait** l'image carrée que le studio
 s'apprêtait à commiter. Il prend maintenant le primitif de `.isv2-frame` — celui du stage
-classique, qui n'a jamais dérivé : `width: min(100%, (100cqh − chrome) × ratio)`, avec
+du canvas d'Edit, qui n'a jamais dérivé : `width: min(100%, (100cqh − chrome) × ratio)`, avec
 `.isv2-bs-preview` en `container-type: size` et le ratio passé **aussi** en `--isv2-shot-ratio`
 (une valeur `aspect-ratio` ne se lit pas dans un `calc()`). Le `chrome` soustrait ce que la colonne
 dépense autour du cadre — la ligne d'en-tête, la bande de vignettes toujours présente, les deux
@@ -676,45 +682,45 @@ gaps — et il est déclaré à côté des règles qui posent ces hauteurs. Le g
 devenu `--isv2-bs-gap` pour cette raison : la valeur qui espace la colonne et celle que ce calcul
 retire doivent être **une seule déclaration**, pas deux qui se ressemblent aujourd'hui. Chaque état
 porte le même cadre, donc la promesse « rien ne bouge quand l'image arrive » tient toujours. Le
-correctif est **partagé** avec le stage auto-brief, qui rendait le même cadre faux.
+correctif vit sur `.isv2-bs-shot`, la seule déclaration du cadre.
 
 ### Le brief est écrit AU moment de générer
 
-`index.js#open` ne dérive **rien** sous V3, et `deriveNow()` écrit le brief **synchrone** quand on
+`index.js#open` ne dérive **rien**, et `deriveNow()` écrit le brief **synchrone** quand on
 presse Generate — `derivePrompt` est une fonction pure, les 2 s de `DERIVE_MS` sont du théâtre, et un
 battement là ne servirait qu'à laisser mort pendant deux secondes le seul contrôle vivant du
 formulaire. C'est aussi ce qui rend l'onglet Advanced honnête : le texte qu'il porte est le prompt qui
 a produit l'image, pas un brouillon.
 
 Le seed du **headline** (`renderText`) suit la même horloge : il arrive au premier Generate, et **la
-section s'ouvre pour lui** (`collapsedGroups.delete("renderText")`). Sans ça V3 peindrait des mots
-dans l'image sans qu'aucune ligne à l'écran ne le dise — la règle que le `collapsedGroups` initial
-suivait déjà, appliquée à un variant où la section arrive vide.
+section s'ouvre pour lui** (`collapsedGroups.delete("renderText")`). Sans ça le studio peindrait des
+mots dans l'image sans qu'aucune ligne à l'écran ne le dise — la règle que le `collapsedGroups`
+initial suit déjà, appliquée à une section qui arrive vide.
 
-### Un rendu par sujet, deux hôtes
+### Un module par sujet
 
-Trois renderers sortent de [`brief-stage.js`](../../src/components/image-studio-v2/brief-stage.js) et
-sont partagés par les deux variantes en split, le même motif que `topic-article.js` :
+Le stage est une **layout** ; ce qu'elle héberge sont des sujets, chacun avec ses propres règles —
+le même motif que `topic-article.js` :
 
 | Module              | Ce qu'il rend                                                            |
 | ------------------- | ------------------------------------------------------------------------ |
+| `setup-stage.js`    | la layout : la bande de chips, le pane Options, le pane Advanced         |
+| `settings-view.js`  | ce qu'**est** une ligne d'option, et le contrôle dans son corps          |
 | `brief-blocks.js`   | un bloc de brief, le hero « Text on the image », et `briefNote` (l'état) |
 | `preview-column.js` | la moitié droite, ses quatre états, le toggle Image / In feed            |
-| `setup-stage.js`    | V3 seul : la bande de chips + le pane Options                            |
 
-`briefNote` prend un `intro` : c'est la **seule** phrase qui doit dire _où_ sont les réglages —
-« above » dans le footer de l'auto-brief, un onglet plus loin dans V3, et une phrase qui dit « above »
-à propos d'un onglet est simplement fausse. Les deux états « repris en main » ne font aucune
-affirmation spatiale et sont partagés mot pour mot.
+`briefNote` garde son paramètre `intro` : c'est la **seule** phrase qui affirme _où_ sont les
+réglages, et le pane qui l'imprime est un onglet plus loin qu'eux. Les deux états « repris en main »
+ne font aucune affirmation spatiale et sont fixes.
 
 ### Trois écarts au DS corrigés dans la foulée
 
-- **`is-set` n'est plus bleu** (V3 seulement). La valeur d'une ligne décidée passait à
+- **`is-set` n'est plus bleu.** La valeur d'une ligne décidée passait à
   `--sys-border-color-active` (#178DFE) : cela mettait la **seule couleur du formulaire** sur deux
   noms de marque — la chose la moins importante de l'écran — et teintait une **donnée statique** de
   la couleur que la maison réserve à l'interactif. Elle se lit maintenant en **encre + graisse**
   (grey-100 bold quand c'est décidé, grey-80 regular sinon), le levier que les règles maison
-  nomment pour exactement ça. Portée à `.isv2-opts` : le panneau épinglé garde sa décision
+  nomment pour exactement ça. Portée à `.isv2-opts` : la base `.isv2-acc` garde sa décision
   documentée (`12bec519`, contraste mesuré).
 - **La ligne désactivée** (le Style quand une référence pilote le look) était `--ref-color-grey-40`
   (#AEB5C1) **plus un italique**. grey-40 est sous le plancher d'encre grey-80 — la ligne avait
@@ -725,7 +731,7 @@ affirmation spatiale et sont partagés mot pour mot.
 uppercase`, ce que les règles maison interdisent — on hiérarchise par taille, graisse et encre.
   Neutralisé sous `.isv2-bs--setup`, et monté en **h3 (16px) grey-100** : _« The brief I sent »_ et
   _« Preview »_ nomment chacun une moitié du stage, donc ils prennent une taille de titre de section.
-  Le stage auto-brief garde son traitement (uppercase 12px).
+  La base `.isv2-bs-eyebrow` garde son traitement (uppercase 12px).
 
 > ⚠️ Le switch de pane est une **paire de `.ap-filter-chip`**, pas `.ap-tabs`. Le header de la modale
 > porte déjà la seule bande d'onglets de l'écran (Generate | Edit) ; une seconde à 300px de là
@@ -797,7 +803,7 @@ Le défaut **remplace le monogramme d'initiales** dans le header du Playbook (pa
 `imageDefaults: { imageType, style, refMode }`, trois enums, `""` = pas de préférence. Pourquoi c'est
 admissible sur une fiche et où s'arrête le périmètre : [`CONCEPTS.md` §1](CONCEPTS.md#1-le-playbook).
 Le studio les lit dans `start()` (12ᵉ option `playbookImageDefaults`) et les pose sur les trois clés
-d'état qui existaient déjà — donc **aucun module de vue n'a changé**, et les trois variantes en
+d'état qui existaient déjà — donc **aucun module de vue n'a changé**, et les surfaces en
 héritent ensemble. Il les **lit et ne les écrit jamais** : changer le Type dans le studio est un choix
 pour ce post.
 
@@ -992,25 +998,25 @@ Détail dimensions/coexistence avec la status-card : [`SHELL-LAYOUT.md`](SHELL-L
 - **Feature flags** : une toggle par flag.
 - **Docs** : lien externe **« Conversation thread components »** → `/handoff/components.html`.
 
-### Feature flags ([`ff-catalog.js`](../../src/ff-catalog.js)) — les 13
+### Feature flags ([`ff-catalog.js`](../../src/ff-catalog.js)) — les 11
 
-| id                       | label                                                    | défaut  | Gate                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| ------------------------ | -------------------------------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `draftInlineEdit`        | Inline edit on draft posts                               | **OFF** | Édition inline des post cards.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| `playbookDefault`        | Default Playbook toggle                                  | **OFF** | Étoile ★ set/unset default sur `/playbook/:id`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `connectors`             | Connectors (live MCP sources)                            | **OFF** | Toute la feature connecteurs (gallery, modal, submenu, Live connectors, tab modal).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| `conversationStatusCard` | Conversation status card                                 | **OFF** | Carte flottante + toggle « i ».                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `statusActionSnackbars`  | Action success snackbars                                 | **OFF** | Snackbars succès dupliquant la status bar.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| `playbookColors`         | Playbook colors                                          | **OFF** | Quand OFF (défaut), masque les visuels couleur Playbook partout (classe `body.hide-playbook-colors`) ; ON = couleurs affichées.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `multilingualPlaybook`   | Multilingual Playbooks                                   | **OFF** | Playbooks multi-langues (voice par langue, étape langue du draft flow).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| `manyProfiles`           | Many connected profiles (demo)                           | **OFF** | Seed ~40 profils connectés variés → le quickpicker de profil affiche une recherche live (voir §draft flow).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `playbookCompetitors`    | Playbook competitors                                     | **OFF** | Section **Competitors** du Playbook (panneau + entrée de rail + compteur `/contexts`). La donnée reste présente quand OFF (voir §9).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `topicFeed`              | Topic Feed (listening)                                   | **OFF** | Toute la feature **Topic Feed** (§17) : la route `/topics` + sa page `/topics/settings`, l'entrée de nav et sa marque d'unread, la liste « Fresh topics to review » du chat neuf, et l'entrée « Pick from the Topic Feed » du menu Add. Un deep-link périmé rebondit sur `/`. La donnée (feeds + Topics seedés) reste présente quand OFF, comme `playbookCompetitors`.                                                                                                                                                                                                                                                                 |
-| `playbookSharing`        | Playbook sharing (org-wide)                              | **OFF** | **À qui appartient un Playbook** (§9bis). OFF (défaut) = un seul utilisateur implicite, tout est visible et éditable comme avant ; ON = chaque Playbook est **personnel** ou **partagé à toute l'org** (jamais nommément), lecture seule pour les autres, droits manager, chat dégradé après perte d'accès, section **Your role** dans l'Admin. Les deux Playbooks de démo (`ctx-acme-devrel`, `ctx-orphan-brightline`) et le chat `s-brightline` ne sont seedés **que** sous ce flag — contrairement à `topics`, ce ne sont pas des champs qui roulent avec la donnée mais des objets entiers qui n'ont aucun sens sans propriétaire. |
-| `imageStudioAutoBrief`   | Image Studio: auto-written brief + centred setup         | **OFF** | Variante Image Studio (§7) : le brief est un document éditable en blocs, écrit depuis les réglages, avec sa propre mise en page prompt+options / preview.                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| `imageStudioSetupFirst`  | Image Studio V3: options first, brief in an Advanced tab | **OFF** | Variante Image Studio (§7bis) : les réglages sont la **première** étape, Generate est le submit du formulaire, et le brief vit derrière un onglet **Advanced** — désactivé jusqu'à ce qu'une image existe. Aucun champ de prompt en prose. **Gagne sur `imageStudioAutoBrief`** quand les deux sont ON.                                                                                                                                                                                                                                                                                                                                |
+| id                       | label                          | défaut  | Gate                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ------------------------ | ------------------------------ | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `draftInlineEdit`        | Inline edit on draft posts     | **OFF** | Édition inline des post cards.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `playbookDefault`        | Default Playbook toggle        | **OFF** | Étoile ★ set/unset default sur `/playbook/:id`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `connectors`             | Connectors (live MCP sources)  | **OFF** | Toute la feature connecteurs (gallery, modal, submenu, Live connectors, tab modal).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `conversationStatusCard` | Conversation status card       | **OFF** | Carte flottante + toggle « i ».                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `statusActionSnackbars`  | Action success snackbars       | **OFF** | Snackbars succès dupliquant la status bar.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `playbookColors`         | Playbook colors                | **OFF** | Quand OFF (défaut), masque les visuels couleur Playbook partout (classe `body.hide-playbook-colors`) ; ON = couleurs affichées.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `multilingualPlaybook`   | Multilingual Playbooks         | **OFF** | Playbooks multi-langues (voice par langue, étape langue du draft flow).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `manyProfiles`           | Many connected profiles (demo) | **OFF** | Seed ~40 profils connectés variés → le quickpicker de profil affiche une recherche live (voir §draft flow).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `playbookCompetitors`    | Playbook competitors           | **OFF** | Section **Competitors** du Playbook (panneau + entrée de rail + compteur `/contexts`). La donnée reste présente quand OFF (voir §9).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `topicFeed`              | Topic Feed (listening)         | **OFF** | Toute la feature **Topic Feed** (§17) : la route `/topics` + sa page `/topics/settings`, l'entrée de nav et sa marque d'unread, la liste « Fresh topics to review » du chat neuf, et l'entrée « Pick from the Topic Feed » du menu Add. Un deep-link périmé rebondit sur `/`. La donnée (feeds + Topics seedés) reste présente quand OFF, comme `playbookCompetitors`.                                                                                                                                                                                                                                                                 |
+| `playbookSharing`        | Playbook sharing (org-wide)    | **OFF** | **À qui appartient un Playbook** (§9bis). OFF (défaut) = un seul utilisateur implicite, tout est visible et éditable comme avant ; ON = chaque Playbook est **personnel** ou **partagé à toute l'org** (jamais nommément), lecture seule pour les autres, droits manager, chat dégradé après perte d'accès, section **Your role** dans l'Admin. Les deux Playbooks de démo (`ctx-acme-devrel`, `ctx-orphan-brightline`) et le chat `s-brightline` ne sont seedés **que** sous ce flag — contrairement à `topics`, ce ne sont pas des champs qui roulent avec la donnée mais des objets entiers qui n'ont aucun sens sans propriétaire. |
 
 Persistés en `localStorage` (`archie-feature-flags`), lus via `isFlagOn()`. Voir aussi [`STORES.md`](STORES.md).
+
+⚠️ **`imageStudioAutoBrief` et `imageStudioSetupFirst` ont été retirés du catalogue** en même temps que les deux dispositions qu'ils pilotaient (§7bis) : le studio options-first est désormais le seul, donc il ne reste rien à commuter. Un switch qui ne commute plus rien est du bruit dans l'Admin.
 
 ⚠️ Le `NAV` de [`sidebar.js`](../../src/components/sidebar.js) accepte encore un `flag` en **liste** aussi bien qu'en string. Plus aucune ligne n'en a besoin — la seule qui en avait deux était Home (`frontPage` + `topics`), et les deux flags sont partis avec elle. La capacité reste : une ligne de nav qui survit à l'une de ses dépendances est pire qu'une ligne absente.
 

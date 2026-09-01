@@ -168,12 +168,11 @@ src/
     share-playbook-modal.js  personal ⇄ org scope + owner + change log (flag)
     image-studio-v2/      the Image Studio, split by subject (see FEATURES §7 / §7bis):
                           index (lifecycle) · events · commit · inline-text · prompt-guard ·
-                          stage-view · composer-view · settings-view ·
-                          references-view · branding-view · tools-view ·
-                          edit-view · interactions · context ·
-                          brief-stage (flag imageStudioAutoBrief) ·
-                          setup-stage (flag imageStudioSetupFirst) ·
-                          brief-blocks + preview-column (shared by those two)
+                          stage-view (shell) · setup-stage (Generate: options + preview) ·
+                          settings-view · references-view · branding-view ·
+                          brief-blocks · preview-column ·
+                          composer-view (Edit only) · tools-view · edit-view ·
+                          interactions · context
 
   modal-coordinator.js    one-overlay-at-a-time: requestOpen / notifyClose / bindOverlayDismissal
 ```
@@ -237,20 +236,27 @@ animation. Nothing else in the studio may skip the render path.
 The modules split by **subject**, not by size: `index.js` is the lifecycle, `events.js` every
 delegated listener, `commit.js` the paths that write to the draft, `prompt-guard.js` the
 confirmation that protects a hand-edited brief, then one view module per surface
-(`stage-view`, `composer-view`, `settings-view`, `references-view`, `branding-view`, `tools-view`,
-`edit-view`).
+(`stage-view`, `setup-stage`, `settings-view`, `references-view`, `branding-view`, `brief-blocks`,
+`preview-column`, `composer-view`, `tools-view`, `edit-view`).
 
-**Three variants, one engine.** Classic (no flag) lands on a prose brief in the bottom composer with
-the settings pinned to the stage's left edge. `imageStudioAutoBrief` makes the brief the stage's hero
-with the settings as chips under it. `imageStudioSetupFirst` (V3) inverts both: the **options** are
-the first step, Generate is the form's submit, and the brief lives behind an **Advanced** tab that
-stays disabled until an image exists — because what it holds is the prompt that produced the image on
-screen. V3 wins when both flags are on, and that precedence is declared in **one** place,
-`isBriefStage()`. What the brief MEANS is shared by the two non-classic variants through
-`briefIsDerived(s)` in the engine — every option rewrites it, typing in a block is the takeover — so
-there is one rule rather than two that can drift. The two split variants also share their renderers:
-`brief-blocks.js` (a brief block) and `preview-column.js` (the right half), extracted so a card and
-the thing it opens cannot end up saying different sentences about one brief.
+**The options come first, the brief comes last.** Generate is two halves for the whole loop — the
+seven option rows on the left, the image or its placeholder on the right — and **Generate is the
+form's submit**, in the footer. There is **no prose prompt field anywhere.** The brief is written AT
+generate time (`deriveNow`), not at open, and lives behind an **Advanced** tab beside Options that
+stays disabled until an image exists, because what it holds is the prompt that produced the image on
+screen rather than a draft of one. Every option rewrites the brief; typing in one of its blocks IS
+the takeover, after which an option change flags it stale instead of overwriting, and the guard names
+the option it is about to rewrite.
+
+⚠️ **Two earlier arrangements were DELETED, not flagged — don't propose either back.** A _classic_
+one landed on a prose brief in a bottom composer with the options pinned to the stage's left edge in
+a 284px inspector (`git log -S isv2-panel`), and an _auto-brief_ one made the written brief the hero
+of the stage with the options as a bar of popover modifiers under it (`git log -S isv2-bs-mod`). Both
+asked the user to face a brief before there was anything to brief about, and keeping three variants
+meant three code paths through one engine — `briefIsDerived()`, `isBriefStage()` and
+`afterLegacySetting()` existed only to reconcile them. Their flags (`imageStudioAutoBrief`,
+`imageStudioSetupFirst`) are gone with them: the surviving studio is the behaviour, not a variant of
+it.
 
 ⚠️ A confirmation inside the studio must NOT be `confirm-modal.js`: it registers with
 `modal-coordinator`, whose `requestOpen` closes the active overlay — the studio — running `exit(KEY)`
@@ -261,7 +267,7 @@ and deleting the session. Render it in the studio body from state instead, liste
 
 Two naming legacies are deliberate, not oversights: the `image-studio-v2/` directory, the `.isv2-`
 prefix and `KEY = "studio-v2"` date from when a second studio was mounted beside this one behind the
-`imageStudioV2` flag (both removed). Renaming them would touch two stylesheets and sixteen modules
+`imageStudioV2` flag (both removed). Renaming them would touch two stylesheets and fifteen modules
 for something no user can see. Likewise `isv2-sheet-label` / `-hint` / `-switch` were written for
 flyout sheets the settings panel replaced — `settings-view.js` carries the disclosure.
 
@@ -361,7 +367,7 @@ Every token substitution is commented with the value it stands in for, because t
 
 ### Admin / user mode (prototype controls)
 
-The **Admin** popover in the sidebar footer cog (`admin-menu.js`) is the prototype control panel: switch user mode and toggle feature flags (each change reloads so stores re-seed). `user-mode.js`: `getUserMode()` returns `"returning"` (populated mocks, default) or `"new-alt"` (empty stores + first-time onboarding); `isNewUser()` tests for `new-alt`. Feature flags live in `ff-catalog.js` (`FLAGS`, each with a `default`) and are read via `isFlagOn()`. The 13 flags: `draftInlineEdit` (OFF), `playbookDefault` (OFF), `connectors` (OFF — gates the whole connectors feature), `conversationStatusCard` (OFF), `statusActionSnackbars` (OFF), `playbookColors` (OFF — colors hidden by default), `manyProfiles` (OFF — demo seed of ~40 connected profiles), `multilingualPlaybook` (OFF), `playbookCompetitors` (OFF — gates the Playbook's Competitors section), `topicFeed` (OFF — gates the whole Topic Feed: `/topics`, `/topics/settings`, the nav row and its unread count, the new chat's "Fresh topics to review" list, and the composer's "Pick from the Topic Feed"), `playbookSharing` (OFF — gates Playbook ownership: a Playbook is personal or shared with the whole org, never named-shared; read-only fiche + Duplicate for recipients, manager rights, the degraded chat after access is lost, and the Admin **Your role** control. Unlike `topicFeed`, its two demo Playbooks and its demo chat are seeded **only** under the flag), `imageStudioAutoBrief` (OFF — the auto-written, block-editable brief variant of the Image Studio), and `imageStudioSetupFirst` (OFF — Image Studio V3: the options are the first step and Generate is the form's submit, with the brief behind an Advanced tab that stays disabled until an image exists; no prose prompt field at all. Wins over `imageStudioAutoBrief` when both are on). Full table + gates: [`docs/reference/FEATURES.md`](docs/reference/FEATURES.md#14-admin-feature-flags--user-modes).
+The **Admin** popover in the sidebar footer cog (`admin-menu.js`) is the prototype control panel: switch user mode and toggle feature flags (each change reloads so stores re-seed). `user-mode.js`: `getUserMode()` returns `"returning"` (populated mocks, default) or `"new-alt"` (empty stores + first-time onboarding); `isNewUser()` tests for `new-alt`. Feature flags live in `ff-catalog.js` (`FLAGS`, each with a `default`) and are read via `isFlagOn()`. The 11 flags: `draftInlineEdit` (OFF), `playbookDefault` (OFF), `connectors` (OFF — gates the whole connectors feature), `conversationStatusCard` (OFF), `statusActionSnackbars` (OFF), `playbookColors` (OFF — colors hidden by default), `manyProfiles` (OFF — demo seed of ~40 connected profiles), `multilingualPlaybook` (OFF), `playbookCompetitors` (OFF — gates the Playbook's Competitors section), `topicFeed` (OFF — gates the whole Topic Feed: `/topics`, `/topics/settings`, the nav row and its unread count, the new chat's "Fresh topics to review" list, and the composer's "Pick from the Topic Feed"), `playbookSharing` (OFF — gates Playbook ownership: a Playbook is personal or shared with the whole org, never named-shared; read-only fiche + Duplicate for recipients, manager rights, the degraded chat after access is lost, and the Admin **Your role** control. Unlike `topicFeed`, its two demo Playbooks and its demo chat are seeded **only** under the flag). The two Image Studio flags (`imageStudioAutoBrief`, `imageStudioSetupFirst`) are **gone**: the options-first studio they gated is now the only one, so there is nothing left to switch (§ The Image Studio). Full table + gates: [`docs/reference/FEATURES.md`](docs/reference/FEATURES.md#14-admin-feature-flags--user-modes).
 
 ### Module loading
 

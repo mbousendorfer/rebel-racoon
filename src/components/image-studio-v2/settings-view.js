@@ -1,9 +1,9 @@
-// Image Studio — the settings panel: the seven rows beside the image.
+// Image Studio — the seven option rows, and the controls inside them.
 //
-// The settings sit BESIDE the image they describe rather than under it, pinned to
-// the stage's left edge — the same edge Edit mode's tool palette uses, so
-// switching mode swaps the controls in place instead of throwing them across the
-// modal.
+// They are the LEFT HALF of the generate stage (setup-stage.js hosts them, one card
+// each). This module owns what a row is and what its body holds; where the rows sit
+// is the stage's business. They used to be a 284px inspector pinned to the stage's
+// left edge beside a mostly-empty canvas — `git log -S isv2-panel` has it.
 //
 // Row order is "what goes IN the image" first, then treatment:
 //   References · Text in image · Branding   what the image is made of
@@ -21,7 +21,7 @@
 // `-switch-label` were written for the flyout SHEETS these sections replaced.
 // They dress the panel now. `isv2-sheet-body` / `-title` still belong to the one
 // real sheet left (the Add-image flyout, tools-view.js). The names stayed because
-// renaming them means touching two stylesheets and five modules for something no
+// renaming them means touching two stylesheets and four modules for something no
 // user can see — this note is the disclosure instead.
 //
 // Hierarchy inside a row body is ONE binary: dark = it names the thing below it
@@ -34,23 +34,13 @@ import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.j
 import { KEY } from "./context.js?v=50";
 import { REFS_TIP, refSummary, refsBody } from "./references-view.js?v=17";
 import { BRANDING_TIP, brandingBody } from "./branding-view.js?v=4";
-import * as imageStudio from "../../image-studio.js?v=102";
+import * as imageStudio from "../../image-studio.js?v=103";
 
 // A thin rule between two clusters inside one row body. Shared with the
 // Add-image sheet (tools-view.js), which is where the class name comes from.
 export const sheetDivider = `<span class="isv2-sheet-divider" role="separator"></span>`;
 
-// The floating inspector — the settings, beside the image rather than under it,
-// on the stage's left edge (where edit mode also keeps its tools).
-//
-// The `<aside>` is the PLACEMENT, not the rows: V3 (setup-stage.js) hosts the very same
-// seven rows in the left half of a two-up stage, where a pinned inspector would make no
-// sense. So the rows are exported separately and this wrapper stays what it always was.
-export function settingsPanel(st) {
-  return `<aside class="isv2-panel" role="group" aria-label="Generation settings">${settingRows(st)}</aside>`;
-}
-
-// One setting = one DS Accordion section, expanding IN PLACE inside the panel.
+// One setting = one DS Accordion section, expanding IN PLACE.
 //
 // This replaced a stack of `.ap-select` triggers that threw flyout sheets over
 // the image. Sections are the better tool for three reasons: the options land
@@ -122,12 +112,11 @@ function bestFor(network) {
 
 // The seven rows, each tagged with its own name.
 //
-// Still returned as tagged entries (not one concatenated string) so a host can address a
-// row by `name`: V3 renders each as its own card (setup-stage.js#optionsPane), and the
-// tag is also what let the short-lived two-group layout pick rows by name rather than by
-// index. The order is the meaning — References / Text / Branding is what goes IN the
-// image, Type / Style / Format / Output is how it's made — carried by the sequence, the
-// way the pinned panel always has.
+// Returned as tagged entries (not one concatenated string) so the host can address a
+// row by `name` rather than by index: setup-stage renders each as its own card, and the
+// tag is what let the short-lived two-group layout pick rows out. The order is the
+// meaning — References / Text / Branding is what goes IN the image, Type / Style /
+// Format / Output is how it's made — carried by the sequence, never by a caption.
 export function settingRowEntries(st) {
   // Sections are independent: a Set of what's shut, not a single "which one is open".
   const isOpen = (id) => !st.collapsedGroups.has(id);
@@ -250,13 +239,6 @@ export function settingRowEntries(st) {
   return out;
 }
 
-/** All seven, in order, as one string — what the pinned inspector wants. */
-export function settingRows(st) {
-  return settingRowEntries(st)
-    .map((e) => e.html)
-    .join("");
-}
-
 // Text in image — a plain DS textarea field, and nothing under it until something
 // is wrong. The permanent `54/90` counter was a meter for a limit you hit once in
 // twenty drafts, sitting in a panel that is short of room; now the field says
@@ -305,11 +287,10 @@ export function renderTextBody(st) {
 //           look like? This is where the colour lives.
 //
 // One markup, nine CSS modifiers, zero assets — the `.sub-preview--*` pattern from
-// clip-subtitles.js. Chosen over SVG because these cards render at THREE sizes
-// (~58px thumbs in the 284px rail, ~126px in the auto-brief popover, a ~2x range):
-// a composition expressed in % is resolution-free, where nine fixed-viewBox SVGs
-// would need per-stroke `vector-effect` and would put nine blobs of trusted HTML in
-// a JS module. Sizing rules live with the CSS.
+// clip-subtitles.js. Chosen over SVG because a card's art scales with the option
+// card it sits in: a composition expressed in % is resolution-free, where nine
+// fixed-viewBox SVGs would need per-stroke `vector-effect` and would put nine blobs
+// of trusted HTML in a JS module. Sizing rules live with the CSS.
 //
 // `.isv2-art` IS the backdrop, and its ::before/::after add two more drawable layers
 // on top of the three slots — five for at most three elements. The slots are
@@ -341,7 +322,7 @@ function optionCard({ family, hook, key, label, tip, selected }) {
   </button>`;
 }
 
-export function imageTypeBody(st) {
+function imageTypeBody(st) {
   const cards = imageStudio.IMAGE_TYPES.map((o) =>
     optionCard({
       family: "type",
@@ -358,7 +339,7 @@ export function imageTypeBody(st) {
   return `<div class="gen-style-grid isv2-type-grid">${cards}</div>`;
 }
 
-export function styleBody(st) {
+function styleBody(st) {
   const cards = imageStudio.STYLE_PRESETS.map((o) =>
     optionCard({
       family: "look",
@@ -372,7 +353,7 @@ export function styleBody(st) {
   return `<div class="gen-style-grid isv2-style-grid">${cards}</div>`;
 }
 
-export function formatBody(st, choices) {
+function formatBody(st, choices) {
   const chips = choices
     .map((f) => {
       const sel = st.formatId === f.id;
@@ -385,7 +366,7 @@ export function formatBody(st, choices) {
 
 // Type + count in one flat sheet: two labelled sections separated by a divider,
 // never a nested dropdown.
-export function outputBody(st, canCarousel, isCarousel) {
+function outputBody(st, canCarousel, isCarousel) {
   const typeSection = canCarousel
     ? `<div class="isv2-chip-group">
         <button type="button" class="ap-filter-chip" data-img-output="single" aria-pressed="${!isCarousel}"><i class="ap-icon-image" aria-hidden="true"></i>Single image</button>

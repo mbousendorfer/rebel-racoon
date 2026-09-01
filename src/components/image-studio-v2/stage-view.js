@@ -1,53 +1,42 @@
 // Image Studio — the modal's chrome, and the whole layout assembled.
 //
-//   ┌────────────────────────────────────────────────────────┐
-//   │  Image Studio        Generate | Edit                 ✕ │  header
-//   ├────────────────────────────────────────────────────────┤
-//   │                  [ Image | In feed ]                   │
-//   │  ┌────────────┐                            ┌──┐        │
-//   │  │ References │                            │▪ │        │
-//   │  │ Text in …  │                            │▪ │        │
-//   │  │ Branding   │        [   IMAGE   ]       │+ │        │
-//   │  │ Type       │                            └──┘        │
-//   │  │ Style      │                          variations    │
-//   │  │ Format     │                                        │
-//   │  │ Output     │                                        │
-//   │  └────────────┘                                        │
-//   │   settings-view                                        │  stage
-//   ├────────────────────────────────────────────────────────┤
-//   │            ✨ [ the brief …        ] [Generate]         │  composer
-//   ├────────────────────────────────────────────────────────┤
-//   │                                    [ Use this image ]  │  footer
-//   └────────────────────────────────────────────────────────┘
+//   GENERATE (setup-stage.js)            EDIT (edit-view.js + tools-view.js)
+//   ┌──────────────────────────────┐     ┌──────────────────────────────┐
+//   │ Image Studio  Generate|Edit ✕│     │ Image Studio  Generate|Edit ✕│
+//   ├──────────────┬───────────────┤     ├──────────────────────────────┤
+//   │ Options |Adv.│ PREVIEW  ▣|▤  │     │        [ Image | In feed ]   │
+//   │ References ▾ │ ┌───────────┐ │     │  ┌──┐                        │
+//   │ Text in …  ▾ │ │           │ │     │  │▪ │      [  IMAGE  ]       │
+//   │ Branding   ▾ │ │   IMAGE   │ │     │  │▪ │                        │
+//   │ Type       ▾ │ │           │ │     │  └──┘   tools-view           │
+//   │ Style      ▾ │ └───────────┘ │     ├──────────────────────────────┤
+//   │ Format     ▾ │  ▪ ▪ ▪        │     │  ✨ [ describe a change ] [↺]│
+//   │ Output     ▾ │               │     ├──────────────────────────────┤
+//   ├──────────────┴───────────────┤     │  [Undo]     [Use this image] │
+//   │  [note]      [Generate]      │     └──────────────────────────────┘
+//   └──────────────────────────────┘
 //
-// The creative-tool three-zone arrangement: inputs left, canvas centre, output
-// right, prompt bottom. Two things fall out of it — the settings sit beside the
-// image they describe instead of underneath it, and the bottom bar shrinks back
-// to the one thing it should hold.
+// Generate is TWO HALVES for the whole loop — the form on the left, the picture on
+// the right — so setting an option and judging what it produced never swap screens.
+// Edit is the other shape: one centred canvas with its tools pinned to the left edge
+// and a composer under it, because there the image IS the surface being worked on.
 //
-// EDIT swaps the settings panel for the tool palette on the SAME left edge, so
-// changing mode moves the controls in place rather than across the modal; the
-// variations rail keeps the right edge to itself.
-//
-// This module renders the shell, the header, the footer and every stage state
-// EXCEPT the edit canvas, which edit-view owns (it carries the overlay/crop
-// machinery that has to follow a precise pixel).
+// The stage therefore has no shared middle state, and this module is the SHELL:
+// the header, the footer, the mode dispatch and the in-feed preview. Each mode's
+// body is its own module.
 
 import { html, raw, escapeHtml } from "../../utils.js?v=22";
 import { getPosts } from "../../posts-store.js?v=53";
 import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=47";
 import { renderPostCard } from "../post-card.js?v=100";
 import { KEY, ctx } from "./context.js?v=50";
-import { composer } from "./composer-view.js?v=87";
-import { settingsPanel } from "./settings-view.js?v=21";
-import { briefStage, isBriefStage } from "./brief-stage.js?v=34";
-import { setupStage, isSetupFirst } from "./setup-stage.js?v=8";
-import { briefNote } from "./brief-blocks.js?v=3";
+import { composer } from "./composer-view.js?v=88";
+import { setupStage } from "./setup-stage.js?v=9";
 import { toolPalette } from "./tools-view.js?v=22";
-import { promptGuardDialog } from "./prompt-guard.js?v=17";
+import { promptGuardDialog } from "./prompt-guard.js?v=18";
 import { editCanvas } from "./edit-view.js?v=49";
 import { compositeOverlays } from "../../image-studio-canvas.js?v=6";
-import * as imageStudio from "../../image-studio.js?v=102";
+import * as imageStudio from "../../image-studio.js?v=103";
 
 // In-feed preview — the edit canvas layers logo/text overlays as live DOM over
 // the image, but renderPostCard only takes a URL, so overlays wouldn't show. We
@@ -80,20 +69,15 @@ function compositedPreviewUrl(img, overlays) {
 }
 
 export function renderStudio(st) {
-  // The inspector is a COLUMN of the modal body, not a box inside the stage: as a child
-  // of the stage it could only ever be as tall as the stage, which left the composer
-  // running underneath it and a band of empty canvas below the sidebar. Out here it runs
-  // the full height between header and footer, and the stage + composer share the rest
-  // of the width beside it.
-  const feedView = hasImage(st) && st.canvasView === "feed";
-  // Both split variants carry their own options inside the stage, so the pinned
-  // inspector would be a second copy of them.
-  const showPanel = st.mode === "generate" && !feedView && !isSplitStage(st);
+  // `.isv2-main` was a two-column row: a pinned settings inspector, then the stage.
+  // The inspector is gone — generate carries its own options inside the stage — so the
+  // row has one child. It stays a row rather than collapsing into the shell because
+  // the column is what gives the stage `min-height: 0` against a flex parent, which is
+  // what lets the options half scroll instead of pushing the footer off the modal.
   return html`
     <div class="isv2">
       ${raw(header(st))}
       <div class="isv2-main">
-        ${raw(showPanel ? settingsPanel(st) : "")}
         <div class="isv2-main-col">
           <section class="isv2-stage" aria-label="Preview">${raw(stageContent(st))}</section>
           ${raw(composer(st))}
@@ -107,18 +91,6 @@ export function renderStudio(st) {
 /** Is there an image to preview yet? Used by both the shell and the stage. */
 function hasImage(st) {
   return !!st.currentImage || (st.genPhase === "results" && st.variations.length > 0);
-}
-
-// Is the stage laid out as two halves — its own options on one side, the picture on the
-// other — rather than as one centred canvas with pinned chrome around it? True for the
-// auto-brief stage and for V3, which share that geometry and therefore share every
-// consequence of it: no pinned inspector, no variations rail, no bottom composer, no
-// stage-wide view toggle, and a footer that runs the whole loop.
-//
-// The two predicates are mutually exclusive on their own (isBriefStage stands down when
-// setupFirst is on), so the order they are read in never matters.
-function isSplitStage(st) {
-  return isBriefStage(st) || isSetupFirst(st);
 }
 
 // ── The footer bar ─────────────────────────────────────────────────────────
@@ -138,38 +110,25 @@ export function footerBar(st) {
     primary = carousel
       ? `<button type="button" class="ap-button primary orange" data-img-apply-slide ${st.editBusy || !st.currentImage ? "disabled" : ""}><i class="ap-icon-check"></i><span>Apply to slide ${(st.selectedIndex ?? 0) + 1}</span></button>`
       : `<button type="button" class="ap-button primary orange" data-img-use ${st.editBusy || !st.currentImage ? "disabled" : ""}><i class="ap-icon-check"></i><span>Use this image</span></button>`;
-  } else if (isSplitStage(st)) {
-    // The split stages run the whole loop, so the footer follows: while there is
-    // nothing to use, the primary slot carries Generate; once an image exists it carries
-    // the destination ("Use this image") and Regenerate moves beside it. Same slot, same
+  } else {
+    // Generate is the form's SUBMIT, so it lives in the footer: while there is nothing
+    // to use, the primary slot carries it; once an image exists that slot carries the
+    // destination ("Use this image") and Regenerate moves beside it. Same slot, same
     // weight, no layout swap between the two.
-    // Auto-brief gates on the brief being written, because the brief is on screen and an
-    // empty one means Archie is still working. V3 has no brief yet by design — it is
-    // written when this button is pressed (commit.js#runGenerate → deriveNow) — so gating
-    // on it there would leave the form's only live control dead for no stated reason.
-    const ready = isSetupFirst(st) ? true : !st.promptLoading && !!(st.promptText || "").trim();
+    //
+    // Never gated on the brief: there is no brief yet by design — it is written when
+    // this button is pressed (commit.js#runGenerate → deriveNow) — so gating on it
+    // would leave the form's only live control dead for no stated reason.
     const busy = st.genPhase === "generating";
     const hasShot = st.variations.length > 0;
-    // The brief's status line lives here, to the RIGHT of Regenerate: it is a statement
-    // about the whole brief, which is what this footer is for. V3 keeps it under the
-    // blocks instead — there the brief is one pane of two, and the footer would be
-    // talking about something the user may not even have on screen.
-    const note = isSetupFirst(st) ? "" : briefNote(st);
-    const noteHtml = note ? `<p class="isv2-footer-note">${note}</p>` : "";
     if (hasShot) {
-      left = `<button type="button" class="ap-button stroked grey" data-img-generate ${busy ? "disabled" : ""}><i class="ap-icon-refresh"></i><span>Regenerate</span></button>${noteHtml}`;
+      left = `<button type="button" class="ap-button stroked grey" data-img-generate ${busy ? "disabled" : ""}><i class="ap-icon-refresh"></i><span>Regenerate</span></button>`;
       primary = `<button type="button" class="ap-button primary orange" data-img-use ${st.currentImage ? "" : "disabled"}><i class="ap-icon-check"></i><span>${escapeHtml(carousel ? `Use carousel · ${st.variations.length} slides` : "Use this image")}</span></button>`;
     } else if (busy) {
-      left = noteHtml;
       primary = `<button type="button" class="ap-button primary blue loading" disabled><span class="ap-loading-bar"></span><span>Generating…</span></button>`;
     } else {
-      left = noteHtml;
-      primary = `<button type="button" class="ap-button primary blue" data-img-generate ${ready ? "" : "disabled"}><i class="ap-icon-sparkles-mermaid"></i><span>Generate</span></button>`;
+      primary = `<button type="button" class="ap-button primary blue" data-img-generate><i class="ap-icon-sparkles-mermaid"></i><span>Generate</span></button>`;
     }
-  } else {
-    const label = carousel ? `Use carousel · ${st.variations.length} slides` : "Use this image";
-    const ready = carousel ? st.variations.length >= 2 : !!st.currentImage;
-    primary = `<button type="button" class="ap-button primary orange" data-img-use ${ready ? "" : "disabled"}><i class="ap-icon-check"></i><span>${escapeHtml(label)}</span></button>`;
   }
   return `<div class="ap-dialog-footer isv2-footer">
     <div class="ap-dialog-footer-left">${left}</div>
@@ -219,125 +178,24 @@ function viewToggle(st) {
 // ── Stage ───────────────────────────────────────────────────────────────────
 
 function stageContent(st) {
-  const hasImg = !!st.currentImage || (st.genPhase === "results" && st.variations.length > 0);
+  // GENERATE owns its whole stage — both halves, from open to commit — so the shell
+  // adds nothing around it: no pinned inspector, no variations rail, no stage-wide
+  // view toggle (the preview column carries its own, beside the picture it switches).
+  if (st.mode === "generate") {
+    // No scroll, ever: the stage is laid out to fit exactly, and `has-setup` says so
+    // in CSS. Something overflowing is a layout bug to fix, not a scrollbar to hide it.
+    return `<div class="isv2-stage-body has-setup">${setupStage(st)}</div>`;
+  }
+  // EDIT is the other shape: one centred canvas with the tool palette pinned to the
+  // left edge, and the body reserving that width on BOTH sides so the image sits on
+  // the modal's exact centre line rather than sliding under the palette.
+  const hasImg = hasImage(st);
   const feedView = hasImg && st.canvasView === "feed";
-  // The split variants: the stage's job is SETUP as much as preview, so it holds both
-  // halves for the whole loop. Leaving the settings pinned to the left edge meant a
-  // 284px column that overflowed and clipped its own controls, while the biggest area
-  // on screen held a placeholder saying an image would appear there later.
-  const autoSetup = isSplitStage(st);
-  let inner;
-  if (isSetupFirst(st)) inner = setupStage(st);
-  else if (isBriefStage(st)) inner = briefStage(st);
-  else if (feedView) inner = feedPreview(st);
-  else if (st.mode === "edit") inner = editCanvas(st);
-  else if (st.genPhase === "generating") inner = generatingStage(st);
-  else if (st.genPhase === "results") inner = resultsStage(st);
-  else inner = emptyStage();
-  // Three floating zones around the image: the settings inspector LEFT and the
-  // manual edit tools TOP-LEFT — one side for everything you set — and the
-  // variations "chutier" RIGHT, where what you produced accumulates. The body
-  // reserves room for whichever ones are up, so the image centres in what's left
-  // over rather than sliding underneath them.
-  const showRail =
-    st.mode === "generate" && !feedView && st.genPhase === "results" && st.variations.length > 0 && !autoSetup;
-  const showPalette = st.mode === "edit" && !feedView;
-  // The inspector and the chutier are PINNED to the stage's edges, and the body
-  // reserves the same width on BOTH sides for them. Symmetry is the whole point:
-  // it puts the image on the modal's exact centre line, which is also where the
-  // toggle above it and the prompt below it sit. Reserving asymmetrically (the
-  // rail is narrower than the inspector) is what knocked the image off that line
-  // and left it visibly misaligned with its own prompt.
-  const bodyCls =
-    "isv2-stage-body" +
-    (showRail ? " has-rail" : "") +
-    (showPalette ? " has-palette" : "") +
-    (autoSetup ? " has-setup" : "");
-  // The split stages carry the view toggle in their own preview header — see
-  // preview-column.js. Rendering it here too would put the same control in two places,
-  // one of them a half-modal from what it switches.
-  const top = hasImg && !autoSetup ? `<div class="isv2-stage-top">${viewToggle(st)}</div>` : "";
-  return `${top}<div class="${bodyCls}">
-    ${inner}
-    ${showRail ? variationsRail(st) : ""}
-    ${showPalette ? toolPalette(st) : ""}
+  const top = hasImg ? `<div class="isv2-stage-top">${viewToggle(st)}</div>` : "";
+  return `${top}<div class="isv2-stage-body${feedView ? "" : " has-palette"}">
+    ${feedView ? feedPreview(st) : editCanvas(st)}
+    ${feedView ? "" : toolPalette(st)}
   </div>`;
-}
-
-function emptyStage() {
-  return `<div class="gen-empty">
-    <i class="ap-icon-image" aria-hidden="true"></i>
-    <p class="gen-empty-title">Your image appears here</p>
-    <span class="gen-empty-sub">Write a prompt below, then generate.</span>
-  </div>`;
-}
-
-function generatingStage(st) {
-  const ratio = imageStudio.activeRatio(KEY);
-  const n = st.outputMode === "carousel" ? st.slideCount : st.variationCount;
-  const what = st.outputMode === "carousel" ? "slide" : "variation";
-  return `<div class="gen-stage-wrap" style="--gen-ratio:${ratio}">
-    <div class="gen-single gen-single--loading" style="aspect-ratio:${ratio}" role="status" aria-label="Generating">
-      <div class="gen-loading-inner">
-        <span class="gen-image-spinner gen-loading-mark"></span>
-        <p class="gen-loading-label">Generating ${n} ${what}${n > 1 ? "s" : ""}…</p>
-      </div>
-    </div>
-  </div>`;
-}
-
-// One large preview of the focused image, centered. The pencil enters Edit on
-// the image under the cursor — the fastest path from "that one" to retouching it.
-function resultsStage(st) {
-  const ratio = imageStudio.activeRatio(KEY);
-  const carousel = st.outputMode === "carousel";
-  const sel = st.selectedIndex == null ? 0 : st.selectedIndex;
-  const current = st.variations[sel] || st.variations[0];
-  const editLabel = carousel ? `Edit slide ${sel + 1}` : "Edit this image";
-  return `<div class="isv2-frame isv2-frame--result" style="--isv2-ratio:${ratio}">
-    <img class="isv2-frame-img" src="${current ? escapeHtml(current.url) : ""}" alt="${carousel ? `Slide ${sel + 1}` : "Selected variation"}" />
-    <button type="button" class="ap-icon-button isv2-frame-edit" data-img-mode="edit" aria-label="${editLabel}" title="${editLabel}"><i class="ap-icon-pen" aria-hidden="true"></i></button>
-    ${carousel ? `<span class="isv2-slide-pos" aria-hidden="true">${sel + 1} / ${st.variations.length}</span>` : ""}
-  </div>`;
-}
-
-// Vertical rail on the LEFT edge of the image area — your generated assets,
-// where a creative tool keeps them. Single = pick-one (check on the chosen one);
-// carousel = numbered slides, removable down to 2, all kept.
-function variationsRail(st) {
-  const carousel = st.outputMode === "carousel";
-  const sel = st.selectedIndex == null ? 0 : st.selectedIndex;
-  const cap = carousel ? imageStudio.carouselMaxFor(st.network) || 8 : 8;
-  const canRemove = carousel && st.variations.length > 2;
-  const thumbs = st.variations
-    .map((v, i) => {
-      const on = i === sel;
-      if (carousel) {
-        const label = `Slide ${i + 1}`;
-        return `<div class="isv2-thumb${on ? " is-selected" : ""}" role="button" tabindex="0" aria-pressed="${on}" data-img-variation="${i}" title="${label}">
-          <img src="${escapeHtml(v.url)}" alt="${label}" />
-          <span class="isv2-thumb-num" aria-hidden="true">${i + 1}</span>
-          ${canRemove ? `<button type="button" class="isv2-thumb-remove" data-img-remove-variation="${i}" aria-label="Remove ${label}"><i class="ap-icon-close" aria-hidden="true"></i></button>` : ""}
-        </div>`;
-      }
-      return `<button type="button" class="isv2-thumb${on ? " is-selected" : ""}" role="tab" aria-selected="${on}" data-img-variation="${i}" title="Variation ${i + 1}">
-        <img src="${escapeHtml(v.url)}" alt="Variation ${i + 1}" />
-        ${on ? `<span class="isv2-thumb-check" aria-hidden="true"><i class="ap-icon-check"></i></span>` : ""}
-      </button>`;
-    })
-    .join("");
-  const addTile =
-    st.variations.length < cap
-      ? `<button type="button" class="isv2-thumb isv2-thumb--add" data-img-add-variation title="${carousel ? "Add a slide" : "Generate another"}" ${st.addingVariation ? "disabled" : ""}>${
-          st.addingVariation
-            ? `<span class="gen-image-spinner"></span>`
-            : `<i class="ap-icon-plus" aria-hidden="true"></i>`
-        }</button>`
-      : "";
-  const label = carousel
-    ? `<p class="isv2-rail-label" title="Carousel · all slides are kept"><i class="ap-icon-multiple-images" aria-hidden="true"></i>${st.variations.length}</p>`
-    : "";
-  return `<div class="isv2-rail" role="${carousel ? "group" : "tablist"}" aria-label="${carousel ? "Slides" : "Variations"}">${label}${thumbs}${addTile}</div>`;
 }
 
 // The post rendered in-feed exactly as the Drafts board shows it (reuses

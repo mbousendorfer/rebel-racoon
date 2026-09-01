@@ -27,7 +27,6 @@ import { FORMATS, formatsForNetwork, defaultFormatFor, NETWORK_FORMATS } from ".
 // words into the generated pixels with the very same flattener the Edit overlays
 // use, so there is nothing to duplicate here.
 import { compositeOverlays } from "./image-studio-canvas.js?v=6";
-import { isFlagOn } from "./feature-flags.js?v=23";
 
 const states = new Map(); // sessionId → state
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -376,19 +375,15 @@ export function start(
   // arrive OPEN, or the studio decided something behind a collapsed header. A
   // Playbook default is exactly that case, so it opens its own row.
   //
-  // Two `delete`s on the constructed Set rather than a third and fourth literal:
-  // the two literals differ only by `renderText`, which neither touches, so this
-  // stays variant-agnostic. Don't "simplify" it back into the ternary.
+  // Two `delete`s on the constructed Set rather than two more literals: the deletes
+  // say WHY a row opens (it arrived carrying a value) where a second list would only
+  // say which.
   //
   // Guarded on the VALIDATED values, so a typo'd key in a seed or an analysis can
-  // never open an empty section. `refMode` needs nothing: `refs` is pinned open in
-  // every variant and never enters this Set, so a Playbook ref mode is on screen
-  // for free (refSummary prints it, e.g. "Acme · Layout").
-  const collapsedGroups = new Set(
-    isFlagOn("imageStudioSetupFirst")
-      ? ["renderText", "branding", "imageType", "style", "format", "output"]
-      : ["branding", "imageType", "style", "format", "output"],
-  );
+  // never open an empty section. `refMode` needs nothing: `refs` is pinned open and
+  // never enters this Set, so a Playbook ref mode is on screen for free (refSummary
+  // prints it, e.g. "Acme · Layout").
+  const collapsedGroups = new Set(["renderText", "branding", "imageType", "style", "format", "output"]);
   if (pbImageType) collapsedGroups.delete("imageType");
   if (pbStyle) collapsedGroups.delete("style");
   // posts-store stores X as "twitter"; the format catalogue keys on "x".
@@ -463,22 +458,6 @@ export function start(
     skipPromptWarning: false,
     // One step of undo for a rewrite, offered in a toast.
     promptUndo: null,
-    // ── Auto-brief variant (flag imageStudioAutoBrief) ─────────────────────────
-    // When on, the brief is a read-only OUTPUT of the settings, always in sync:
-    // every setting rewrites it, Type never re-touches "Text in image" after the
-    // one-time seed, and the whole hand-edit guard (pendingSettingChange / skip /
-    // undo) stands down — see defer() and settingChanged(). The user can take the
-    // brief over to edit it by hand; settings then flag it stale and offer a
-    // rebuild rather than overwriting. Read once per open (a flag toggle reloads).
-    autoBrief: isFlagOn("imageStudioAutoBrief"),
-    // ── V3 variant (flag imageStudioSetupFirst) ────────────────────────────────
-    // The options come FIRST and the brief comes last: nothing is derived at open,
-    // Generate writes the brief (deriveNow) and only then generates, and the brief
-    // itself lives behind the left half's Advanced tab. Brief SEMANTICS are shared
-    // with auto-brief — every option rewrites it, typing in a block is the takeover
-    // — via briefIsDerived(), so there is one rule and not two. Read once per open,
-    // like autoBrief: a flag toggle reloads, so it can't switch under a live session.
-    setupFirst: isFlagOn("imageStudioSetupFirst"),
     // Which half-left pane is showing: "options" or "advanced" (the brief). Advanced
     // is unreachable until an image exists, so this only ever leaves "options" after
     // a generation — see setPane.
@@ -486,11 +465,6 @@ export function start(
     renderTextSeeded: false, // "Text in image" pre-suggested once at open, never re-touched after
     briefTakenOver: false, // user hit "Edit the brief" — the words are theirs now
     briefStale: false, // a setting changed while taken over — brief no longer matches
-    // Which prompt modifier has its control open, or null. ONE at a time, unlike the
-    // panel's independent sections: here the brief is the hero, so the modifier
-    // surface has to stay small or it pushes the thing it modifies off the screen.
-    // Distinct from `openPopover`, which means edit-mode flyouts and nothing else.
-    openModifier: null,
     shotSig: null, // the inputs the shots on screen were made from (see previewStale)
     renderText: "", // words to paint INTO the image (empty = none)
     styleKey: pbStyle, // selected Style preset (STYLE_PRESETS) — the Playbook's, or null = "Any"
@@ -536,12 +510,9 @@ export function start(
     // it. Once opened a section STAYS open (the panel is not an accordion), so
     // this Set is only the starting point.
     //
-    // `renderText` is NOT in here: Archie now pre-fills the headline from the
-    // draft, and a section that arrives with content in it has to arrive open —
-    // otherwise the studio silently decided to paint words into the image and the
-    // only clue is a value in a collapsed header. `refs` isn't either: it's pinned
-    // open in the view. `branding` IS: it defaults on, but its header already says
-    // whose logo ("Branding · Acme"), and a switch needs no room to be understood.
+    // `refs` is NOT in here: it's pinned open in the view. `branding` IS: it
+    // defaults on, but its header already says whose logo ("Branding · Acme"), and
+    // a switch needs no room to be understood.
     //
     // Brand kit isn't in here either, for a different reason: it's pinned open in
     // the view and never collapses. Style preset has its own `disabled` state
@@ -553,8 +524,8 @@ export function start(
     //
     // A Playbook default un-collapses its own row — see the two `delete`s above.
     //
-    // V3 adds `renderText` back, because the reason for the exception does not hold
-    // there: nothing is pre-filled at open — the headline is seeded at generate time
+    // `renderText` IS in here, unlike the other things the studio decides for you:
+    // nothing is pre-filled at open — the headline is seeded at generate time
     // (deriveNow) — so the section would arrive open and EMPTY, spending the ~60px
     // that decides whether all seven rows fit the half without a scroll. It fills in
     // and opens itself at that seed — see deriveNow.
@@ -626,14 +597,6 @@ function safeRevoke(url) {
 
 // ── Compose inputs ──────────────────────────────────────────────────────────
 
-// Store the prompt WITHOUT notifying so typing doesn't re-render the aside
-// (mirrors clip-studio's instructions textarea). The bottom-bar Generate button
-// reads state.promptText at click time.
-export function setPromptSilent(sessionId, text) {
-  const s = states.get(sessionId);
-  if (s) s.promptText = text;
-}
-
 // Writing the brief FROM the settings — the one place that moves both values, so
 // that what the studio wrote is never mistaken for what the user typed.
 function writeBrief(s, text) {
@@ -643,18 +606,6 @@ function writeBrief(s, text) {
 
 function isDirty(s) {
   return (s.promptText || "").trim() !== (s.derivedPrompt || "").trim();
-}
-
-// Is the brief an OUTPUT of the options rather than a field the user owns?
-//
-// True for both non-classic variants, and that sharing is the point: auto-brief and
-// V3 disagree about WHERE the brief sits and WHEN it is written, but not about what
-// it means. So every seam that used to read `s.autoBrief` — the guard (defer), the
-// rewrite rule (settingChanged), the tail for the quiet settings (afterLegacySetting)
-// and the one-time headline seed (runDerive) — reads this instead. Classic stays
-// byte-for-byte what it was.
-function briefIsDerived(s) {
-  return !!s.autoBrief || !!s.setupFirst;
 }
 
 // Same deal for the text to render: typing must not re-render the settings (the
@@ -676,10 +627,9 @@ export function commitRenderText(sessionId, text) {
   const s = states.get(sessionId);
   if (!s) return;
   s.renderText = String(text || "");
-  // Auto-brief makes "Text in image" a first-class input: committing it rewrites
-  // the brief like any other setting (what the user asked for). Off, unchanged —
-  // it only refreshes the collapsed row's value.
-  afterLegacySetting(sessionId);
+  // "Text in image" is a first-class input: committing it rewrites the brief like
+  // any other option.
+  settingChanged(sessionId);
 }
 
 /** The over-limit line, or "" while the text fits. Here rather than in a view
@@ -705,7 +655,7 @@ export function setStyle(sessionId, key) {
   if (!s) return;
   if (defer(s, sessionId, "style", key)) return;
   applyStyle(s, key);
-  afterLegacySetting(sessionId);
+  settingChanged(sessionId);
 }
 
 // ── The guarded settings ────────────────────────────────────────────────────
@@ -726,14 +676,10 @@ export function setStyle(sessionId, key) {
 // Park the change behind the confirmation instead of applying it. Returns true
 // when it parked, so the caller bails out.
 function defer(s, sessionId, kind, payload) {
-  if (briefIsDerived(s)) {
-    // The brief's blocks are edited in place, and editing one IS the takeover
-    // (commitBriefLine). Every modifier rewrites the whole brief, so once those words are
-    // the user's, changing one has to ask before throwing them away.
-    if (!s.briefTakenOver || s.skipPromptWarning) return false;
-  } else if (!isDirty(s) || s.skipPromptWarning) {
-    return false;
-  }
+  // The brief's blocks are edited in place, and editing one IS the takeover
+  // (commitBriefLine). Every option rewrites the whole brief, so once those words are
+  // the user's, changing one has to ask before throwing them away.
+  if (!s.briefTakenOver || s.skipPromptWarning) return false;
   s.pendingSettingChange = { kind, payload };
   notify(sessionId);
   return true;
@@ -762,14 +708,14 @@ export function setFormat(sessionId, formatId) {
   // covers. Count/output are not: they change how many images, not what the brief says.
   if (defer(s, sessionId, "format", formatId)) return;
   s.formatId = formatId;
-  afterLegacySetting(sessionId);
+  settingChanged(sessionId);
 }
 
 export function setVariationCount(sessionId, n) {
   const s = states.get(sessionId);
   if (!s) return;
   s.variationCount = n;
-  afterLegacySetting(sessionId);
+  settingChanged(sessionId);
 }
 
 // Single image vs multi-slide carousel (generate mode). Only meaningful when the
@@ -779,7 +725,7 @@ export function setOutputMode(sessionId, mode) {
   if (!s) return;
   s.outputMode = mode === "carousel" ? "carousel" : "single";
   if (s.outputMode === "carousel" && s.slideCount < 2) s.slideCount = 4;
-  afterLegacySetting(sessionId);
+  settingChanged(sessionId);
 }
 
 export function setSlideCount(sessionId, n) {
@@ -787,7 +733,7 @@ export function setSlideCount(sessionId, n) {
   if (!s) return;
   const max = carouselMaxFor(s.network) || 10;
   s.slideCount = Math.max(2, Math.min(max, n));
-  afterLegacySetting(sessionId);
+  settingChanged(sessionId);
 }
 
 // Every candidate the user can pick from, brand kit first — the one grid the
@@ -874,7 +820,7 @@ export function setUseBranding(sessionId, on) {
   if (!s || !s.playbookLogo) return;
   if (defer(s, sessionId, "useBranding", !!on)) return;
   s.useBranding = !!on;
-  afterLegacySetting(sessionId);
+  settingChanged(sessionId);
 }
 
 // Send the Playbook's palette to the model, or don't. A no-op without colours —
@@ -891,7 +837,7 @@ export function setUseBrandColors(sessionId, on) {
   if (defer(s, sessionId, "useBrandColors", !!on)) return;
   s.useBrandColors = !!on;
   syncPaletteLine(s);
-  afterLegacySetting(sessionId);
+  settingChanged(sessionId);
 }
 
 // A setting reaches the model through exactly ONE line of the brief, and the brief
@@ -1011,16 +957,7 @@ export function toggleGroupCollapsed(sessionId, id) {
   notify(sessionId);
 }
 
-// Open one prompt modifier's control, or shut it. Same name again = shut, so the bar
-// can never end up with two panels fighting for the space under it.
-export function setOpenModifier(sessionId, name) {
-  const s = states.get(sessionId);
-  if (!s) return;
-  s.openModifier = s.openModifier === name ? null : name || null;
-  notify(sessionId);
-}
-
-// V3's left half: which pane is showing. "advanced" (the brief) is only reachable
+// The stage's left half: which pane is showing. "advanced" (the brief) is only reachable
 // once there is an image, since the brief describes one — the chip is disabled
 // until then, and this refuses the switch as well so a stale click can't slip past
 // a re-render.
@@ -1031,9 +968,6 @@ export function setPane(sessionId, pane) {
   if (next === "advanced" && !s.variations.length && !s.currentImage) return;
   if (s.pane === next) return;
   s.pane = next;
-  // Leaving the options behind takes their popover with them; it is anchored to a
-  // row that is no longer on screen.
-  s.openModifier = null;
   notify(sessionId);
 }
 
@@ -1126,7 +1060,7 @@ function derivePrompt(s) {
   return lines.join("\n");
 }
 
-export function runDerive(sessionId, { delay = DERIVE_MS } = {}) {
+function runDerive(sessionId, { delay = DERIVE_MS } = {}) {
   const s = states.get(sessionId);
   // Already writing: the pending timer reads state when it FIRES, so a second
   // trigger during the window would produce the same text. Dropping it is right.
@@ -1138,19 +1072,13 @@ export function runDerive(sessionId, { delay = DERIVE_MS } = {}) {
     if (!cur) return;
     // Headline first: derivePrompt reads renderText to write the "Text in image:"
     // line, so deriving it after would leave the brief and the field disagreeing.
-    // Only when empty — a re-derive must never overwrite what the user typed.
     //
-    // Auto-brief decouples Type from the headline: the field is seeded ONCE (at
-    // open), then no setting ever rewrites it again, so touching Type stops moving
-    // two fields at once. Off, the legacy behaviour stands — backfill any time the
-    // field is empty, which is what coupled Type to the headline.
-    if (briefIsDerived(cur)) {
-      if (!cur.renderTextSeeded) {
-        if (!cur.renderText) cur.renderText = deriveRenderText(cur);
-        cur.renderTextSeeded = true;
-      }
-    } else if (!cur.renderText) {
-      cur.renderText = deriveRenderText(cur);
+    // Seeded ONCE, then no option ever rewrites it again — which is what stops
+    // touching Type from moving two fields at a time. Only when empty, so the seed
+    // can never overwrite what the user typed.
+    if (!cur.renderTextSeeded) {
+      if (!cur.renderText) cur.renderText = deriveRenderText(cur);
+      cur.renderTextSeeded = true;
     }
     writeBrief(cur, derivePrompt(cur));
     cur.promptLoading = false;
@@ -1169,7 +1097,7 @@ function rederive(sessionId) {
   runDerive(sessionId, { delay: REDERIVE_MS });
 }
 
-// V3 writes the brief AT generate time instead of at open, and does it
+// The brief is written AT generate time rather than at open, and written
 // SYNCHRONOUSLY: derivePrompt is a pure function — the DERIVE_MS beat is theatre —
 // so there is nothing to wait for, and a beat here would only leave the Generate
 // button dead for two seconds on a screen that never shows the brief anyway. The
@@ -1191,7 +1119,7 @@ export function deriveNow(sessionId) {
   if (!s.renderTextSeeded) {
     if (!s.renderText) s.renderText = deriveRenderText(s);
     s.renderTextSeeded = true;
-    // The seed is the one moment V3 puts words into the image without being asked, so
+    // The seed is the one moment the studio puts words into the image unasked, so
     // the section holding them opens for it. Same rule the initial `collapsedGroups`
     // follows — a section that has content in it arrives open, because the alternative
     // is the studio quietly deciding to paint a headline and the only clue being a
@@ -1202,31 +1130,21 @@ export function deriveNow(sessionId) {
   writeBrief(s, derivePrompt(s));
 }
 
-// ── Auto-brief: one rule for every setting ───────────────────────────────────
+// ── One rule for every option ────────────────────────────────────────────────
 //
-// The variant's whole point is that the brief is a faithful, always-in-sync
-// output of the settings — so ANY setting change rewrites it. The one exception
-// is a brief the user has taken over: we don't clobber their words, we flag that
-// the brief no longer matches the settings and let them rebuild on their terms.
+// The brief is a faithful, always-in-sync output of the options — so ANY option
+// change rewrites it. The one exception is a brief the user has taken over: we
+// don't clobber their words, we flag that the brief no longer matches the options
+// and let them rebuild on their terms.
 function settingChanged(sessionId) {
   const s = states.get(sessionId);
   if (!s) return;
-  if (briefIsDerived(s) && s.briefTakenOver) {
+  if (s.briefTakenOver) {
     s.briefStale = true;
     notify(sessionId);
     return;
   }
   rederive(sessionId);
-}
-
-// The tail for the settings that, in the legacy modal, only nudged their own line
-// or nothing (Style / Format / Output / Branding / Text in image): off, they keep
-// that behaviour and just notify; on, they rewrite the brief like everything else.
-function afterLegacySetting(sessionId) {
-  const s = states.get(sessionId);
-  if (!s) return;
-  if (briefIsDerived(s)) settingChanged(sessionId);
-  else notify(sessionId);
 }
 
 // Rebuilding hands the brief back to Archie: settings drive it again, and the
@@ -1241,7 +1159,7 @@ export function rebuildBrief(sessionId) {
   rederive(sessionId);
 }
 
-// ── The brief, edited section by section (auto-brief stage) ─────────────────
+// ── The brief, edited section by section ─────────────────────────────────────
 //
 // The brief is stored as one prose string, but it is READ as blocks — one per
 // "Label: value" line — and each block is directly editable. So an edit writes back

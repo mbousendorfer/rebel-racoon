@@ -5,10 +5,10 @@
 // the label recedes to a caption and the value carries the weight, so a block reads
 // as an answer under a question rather than as a form field.
 //
-// Two variants render it, and they must say the SAME thing about the same brief:
-//   brief-stage.js  (imageStudioAutoBrief) — the brief holds the stage, options under it
-//   setup-stage.js  (imageStudioSetupFirst) — the brief is the left half's Advanced pane
-// Hence one module. Placement is each host's business; what a block IS is not.
+// Its host is setup-stage.js's Advanced pane. It stays a module of its own because a
+// block is a SUBJECT with its own rules — how it is parsed out of the prose, that
+// typing in one is the takeover, how an edit writes back to its own line — and the
+// stage is the layout that hosts it. Placement there, meaning here.
 //
 // Every block is a field, ALWAYS — there is no read-only mode and no "edit it
 // yourself" link to press first. Typing in one IS the takeover
@@ -17,7 +17,7 @@
 
 import { escapeHtml } from "../../utils.js?v=22";
 import { KEY } from "./context.js?v=50";
-import * as imageStudio from "../../image-studio.js?v=102";
+import * as imageStudio from "../../image-studio.js?v=103";
 
 // The words on the image, as the lead block. This one edits `renderText` — the text
 // that actually gets set into the artwork — not the prompt's sentence about it. They
@@ -74,19 +74,17 @@ export function briefBody(st) {
   return `<div class="isv2-bs-doc">${blocks}</div>`;
 }
 
-// Where the brief stands. Rendered by whichever host has the room for a status line —
-// the auto-brief stage puts it in the modal footer beside Regenerate, V3 puts it under
-// the Advanced pane's blocks.
+// Where the brief stands, printed under the blocks in the Advanced pane.
 //
 // No invitation to start editing, since every block already is a field: this only
 // reports the state, and offers the way back to Archie's version once something has
 // changed.
 //
-// `intro` is the untouched state, and ONLY that one, because it is the only sentence that
-// has to point at where the options are — "above" in the auto-brief footer, another tab
-// away in V3, and a sentence that says "above" about a tab is simply wrong. The two
-// taken-over states make no spatial claim, so both hosts share them word for word.
-const NOTE_INTRO = `I write this brief from the options above. Change one and I rewrite it — or edit the text yourself.`;
+// `intro` stays a parameter because it is the one sentence that makes a SPATIAL claim
+// about where the options are, and the pane it prints in is a tab away from them — a
+// second host would have to word that differently. The two taken-over states make no
+// such claim, so they are fixed here.
+const NOTE_INTRO = `I write this brief from your options. Change one and I rewrite it — or edit the text yourself.`;
 
 export function briefNote(st, { intro = NOTE_INTRO } = {}) {
   if (st.promptLoading) return "";

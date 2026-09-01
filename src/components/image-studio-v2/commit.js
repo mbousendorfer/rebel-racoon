@@ -19,7 +19,7 @@ import { attachImageToDraft, attachCarouselToDraft } from "../../posts-store.js?
 import { KEY, ctx, state } from "./context.js?v=50";
 import { compositeOverlays } from "../../image-studio-canvas.js?v=6";
 import { syncEditingText } from "./inline-text.js?v=16";
-import * as imageStudio from "../../image-studio.js?v=102";
+import * as imageStudio from "../../image-studio.js?v=103";
 
 // Commit the working image to the origin draft, then close.
 export function useImage(close) {
@@ -79,19 +79,17 @@ export function applyEditTool(tool) {
   imageStudio.applyEdit(KEY, tool);
 }
 
-// Run (or re-run) generation from whatever is in the fields right now — they are read
-// on demand for the same reason.
+// Run (or re-run) generation. There is no prose prompt to read: the brief is written
+// HERE, at generate time, from the options as they stand (imageStudio#deriveNow) — so
+// the brief that lands in state is by construction the one that produced the images
+// about to appear, which is what makes the Advanced pane honest. A brief the user
+// edited by hand in that pane is left alone; deriveNow declines to touch it.
 //
-// V3 renders no prose prompt at all: the brief is written HERE, at generate time, from
-// the options as they stand (imageStudio#deriveNow). So the query below finds nothing,
-// which is correct — there is no field to read, and the brief that lands in state is by
-// construction the one that produced the images about to appear. A brief the user
-// edited by hand in the Advanced pane is left alone; deriveNow declines to touch it.
+// "Text in image" IS read from the DOM, because typing in it is silent (a re-render
+// would rebuild the field under the caret) and Generate can fire before it blurs.
 export function runGenerate() {
-  const ta = ctx.modal.querySelector("[data-img-prompt]");
-  if (ta) imageStudio.setPromptSilent(KEY, ta.value);
   const el = ctx.modal.querySelector("[data-img-render-text]");
   if (el) imageStudio.setRenderTextSilent(KEY, el.value);
-  if (state()?.setupFirst) imageStudio.deriveNow(KEY);
+  imageStudio.deriveNow(KEY);
   if ((state()?.promptText || "").trim()) imageStudio.runGeneration(KEY);
 }

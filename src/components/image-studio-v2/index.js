@@ -6,15 +6,14 @@
 //
 //   Module map
 //     context.js        MODAL_ID / KEY / ctx / state() / FRAME_SEL / autosize
-//     stage-view.js     the shell: header, stage states, variations rail, footer
-//     composer-view.js  the bottom composer — the brief in Generate, the note in Edit
-//     settings-view.js  the settings panel: the seven rows beside the image
+//     stage-view.js     the shell: header, mode dispatch, in-feed preview, footer
+//     setup-stage.js    Generate's stage: the options half + the preview half
+//     settings-view.js  the seven option rows and the controls inside them
 //     references-view.js  ─┐ two of those rows, each with real internal structure
 //     branding-view.js    ─┘
-//     brief-stage.js    the auto-brief layout   (flag imageStudioAutoBrief)
-//     setup-stage.js    the options-first layout (flag imageStudioSetupFirst)
-//     brief-blocks.js   ─┐ shared by those two: one brief renderer, one preview
-//     preview-column.js ─┘ column, so both variants say the same thing
+//     brief-blocks.js   the brief, read and edited as blocks (the Advanced pane)
+//     preview-column.js the preview half: four states, one column
+//     composer-view.js  the bottom composer — Edit mode only
 //     tools-view.js     Edit mode's floating tool palette + its one flyout
 //     edit-view.js      the edit canvas: overlays, crop box, text mini-toolbar
 //     events.js         every delegated listener
@@ -36,10 +35,10 @@ import { getSessionById } from "../../sessions-store.js?v=25";
 import { getContextById } from "../../contexts-store.js?v=58";
 import { MODAL_ID, KEY, ctx, state, autosize } from "./context.js?v=50";
 import { loadImg } from "../../image-studio-canvas.js?v=6";
-import { renderStudio } from "./stage-view.js?v=118";
-import { offerUndoIfNeeded, resetUndoOffers } from "./prompt-guard.js?v=17";
-import { bindStudioEvents } from "./events.js?v=32";
-import * as imageStudio from "../../image-studio.js?v=102";
+import { renderStudio } from "./stage-view.js?v=119";
+import { offerUndoIfNeeded, resetUndoOffers } from "./prompt-guard.js?v=18";
+import { bindStudioEvents } from "./events.js?v=33";
+import * as imageStudio from "../../image-studio.js?v=103";
 
 let backdrop;
 let initialized = false;
@@ -64,21 +63,15 @@ const HTML = `
 function renderBody() {
   const st = state();
   if (!st || !ctx.body) return;
-  // Toggling a setting section re-renders the WHOLE body (the one-way path), which
-  // replaces the settings scroller with a fresh node at scrollTop 0 — so a card you
-  // expanded after scrolling would snap the pane back to the top, reading as the blocks
-  // "jumping". Carry the scroll across the swap. Both scrollers are singletons in the
-  // body: `.isv2-opts` is V3's option cards, `.isv2-panel` the classic pinned panel.
+  // Toggling an option row re-renders the WHOLE body (the one-way path), which replaces
+  // the options scroller with a fresh node at scrollTop 0 — so a card you expanded after
+  // scrolling would snap the pane back to the top, reading as the blocks "jumping".
+  // Carry the scroll across the swap; `.isv2-opts` is a singleton in the body.
   const prevOptsScroll = ctx.body.querySelector(".isv2-opts")?.scrollTop ?? 0;
-  const prevPanelScroll = ctx.body.querySelector(".isv2-panel")?.scrollTop ?? 0;
   ctx.body.innerHTML = renderStudio(st);
   const opts = ctx.body.querySelector(".isv2-opts");
   if (opts) opts.scrollTop = prevOptsScroll;
-  const panel = ctx.body.querySelector(".isv2-panel");
-  if (panel) panel.scrollTop = prevPanelScroll;
-  // Both composer fields auto-grow to whatever text carried over: the derived
-  // brief on open, and anything typed before a re-render.
-  autosize(ctx.body.querySelector("[data-img-prompt]"));
+  // The edit composer auto-grows to whatever carried over a re-render.
   autosize(ctx.body.querySelector("[data-img-edit-prompt]"));
   // The brief blocks size to their own content, so a long section is never clipped and
   // a short one never reserves space it doesn't need — which is what lets the whole
@@ -170,12 +163,10 @@ export function open(postId, opts = {}) {
     loadImg(editImageUrl)
       .then((img) => imageStudio.setEditImageDims(KEY, img.naturalWidth, img.naturalHeight))
       .catch(() => {});
-  } else if (ctx.postId && !carouselUrls && !state()?.setupFirst) {
-    // V3 writes the brief when you press Generate, not now: it shows no brief on the
-    // way in, so this derive would be invisible work whose only effect is a Generate
-    // button dead for two seconds. See image-studio.js#deriveNow.
-    imageStudio.runDerive(KEY);
   }
+  // Nothing is derived on the way in. The brief is written when Generate is pressed
+  // (image-studio.js#deriveNow) — the studio shows no brief before that, so a derive
+  // here would be invisible work whose only effect is a dead button for two seconds.
 }
 
 function close() {

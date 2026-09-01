@@ -20,7 +20,7 @@
 // anything that writes to the draft lives in commit.js.
 
 import { KEY, ctx, state, autosize } from "./context.js?v=50";
-import { useImage, commitSlideEdit, applyEditTool, runGenerate } from "./commit.js?v=17";
+import { useImage, commitSlideEdit, applyEditTool, runGenerate } from "./commit.js?v=18";
 import {
   focusEditingText,
   syncEditingText,
@@ -35,7 +35,7 @@ import {
   startCropGesture,
   applyCropSelection,
 } from "./interactions.js?v=49";
-import * as imageStudio from "../../image-studio.js?v=102";
+import * as imageStudio from "../../image-studio.js?v=103";
 
 function onClick(event, close) {
   const st = state();
@@ -64,28 +64,21 @@ function onClick(event, close) {
   const insidePop = event.target.closest("[data-img-popover]");
   if (st.openPopover && !popToggle && !insidePop) imageStudio.setOpenPopover(KEY, null);
 
-  // Same lifecycle for the brief stage's modifier popover: a click anywhere that isn't
-  // its own button or inside the popover shuts it, then FALLS THROUGH so the click
-  // still does whatever it came to do.
-  const inModPop = !!event.target.closest(".isv2-bs-pop");
-  const modToggleHit = !!event.target.closest("[data-img-modifier]");
-  if (st.openModifier && !modToggleHit && !inModPop) imageStudio.setOpenModifier(KEY, null);
-
   const toggle = event.target.closest("[data-img-popover-toggle]");
   if (toggle && !toggle.disabled) {
     const name = toggle.dataset.imgPopoverToggle;
     return void imageStudio.setOpenPopover(KEY, st.openPopover === name ? null : name);
   }
 
-  // The settings panel's sections — independent, not an accordion. A section the
-  // user opened stays open until they close it, and opening a second leaves the
-  // first alone; the state is a Set of what's SHUT (`collapsedGroups`).
+  // The option rows — independent, not an accordion. A row the user opened stays open
+  // until they close it, and opening a second leaves the first alone; the state is a
+  // Set of what's SHUT (`collapsedGroups`).
   const grpToggle = event.target.closest("[data-img-group-toggle]");
   if (grpToggle && !grpToggle.disabled) {
     return void imageStudio.toggleGroupCollapsed(KEY, grpToggle.dataset.imgGroupToggle);
   }
 
-  // V3's left half: Options ⇄ Advanced (the brief). setPane refuses "advanced" while
+  // The stage's left half: Options ⇄ Advanced (the brief). setPane refuses "advanced" while
   // there is no image, so the disabled chip and the state agree even if a click lands
   // between a generation ending and the re-render.
   const paneBtn = event.target.closest("[data-img-pane]");
@@ -93,33 +86,13 @@ function onClick(event, close) {
     return void imageStudio.setPane(KEY, paneBtn.dataset.imgPane);
   }
 
-  // ── Composer settings ──
-  // Type / Style / Format are single-select: picking one is the whole errand, so a pick
-  // made inside a modifier popover shuts it. The panels that hold several decisions —
-  // References (pick + mode + add), Branding (two switches), Text (a field), Output
-  // (kind AND count) — deliberately stay open, because closing on the first click would
-  // stop you finishing.
-  const closePopAfterPick = () => {
-    if (inModPop) imageStudio.setOpenModifier(KEY, null);
-  };
+  // ── The option rows ──
   const typeBtn = event.target.closest("[data-img-image-type]");
-  if (typeBtn) {
-    const v = typeBtn.dataset.imgImageType;
-    closePopAfterPick();
-    return void imageStudio.setImageType(KEY, v);
-  }
+  if (typeBtn) return void imageStudio.setImageType(KEY, typeBtn.dataset.imgImageType);
   const styleBtn = event.target.closest("[data-img-style]");
-  if (styleBtn) {
-    const v = styleBtn.dataset.imgStyle;
-    closePopAfterPick();
-    return void imageStudio.setStyle(KEY, v);
-  }
+  if (styleBtn) return void imageStudio.setStyle(KEY, styleBtn.dataset.imgStyle);
   const fmtBtn = event.target.closest("[data-img-format]");
-  if (fmtBtn) {
-    const v = fmtBtn.dataset.imgFormat;
-    closePopAfterPick();
-    return void imageStudio.setFormat(KEY, v);
-  }
+  if (fmtBtn) return void imageStudio.setFormat(KEY, fmtBtn.dataset.imgFormat);
   const varBtn = event.target.closest("[data-img-varcount]");
   if (varBtn) return void imageStudio.setVariationCount(KEY, Number(varBtn.dataset.imgVarcount));
   const outBtn = event.target.closest("[data-img-output]");
@@ -135,15 +108,9 @@ function onClick(event, close) {
   const refRm = event.target.closest("[data-img-ref-remove]");
   if (refRm) return void imageStudio.removeReferenceImage(KEY, refRm.dataset.imgRefRemove);
 
-  // ── Prompt row ──
-  // Rebuild hands an edited brief back to Archie — settings drive it again.
+  // ── The brief ──
+  // Rebuild hands an edited brief back to Archie — the options drive it again.
   if (event.target.closest("[data-img-brief-rebuild]")) return void imageStudio.rebuildBrief(KEY);
-
-  // Auto-brief stage: a modifier opens its own control under the bar, one at a time.
-  // Checked BEFORE the settings hooks above would matter, but after them in source
-  // order it makes no difference — a modifier chip carries no setting hook of its own.
-  const modBtn = event.target.closest("[data-img-modifier]");
-  if (modBtn && !modBtn.disabled) return void imageStudio.setOpenModifier(KEY, modBtn.dataset.imgModifier);
 
   // ── Chrome ──
   const modeBtn = event.target.closest("[data-img-mode]");
@@ -266,8 +233,8 @@ function onClick(event, close) {
 }
 
 function onInput(event) {
-  // Auto-brief stage: each brief section is its own editable block. Silent while
-  // typing — a re-render would rebuild the block under the caret.
+  // Each brief section is its own editable block. Silent while typing — a re-render
+  // would rebuild the block under the caret.
   const briefLine = event.target.matches("[data-img-brief-line]") ? event.target : null;
   if (briefLine) {
     imageStudio.setBriefLineSilent(KEY, briefLine.dataset.imgBriefLine, briefLine.value);
@@ -286,12 +253,7 @@ function onInput(event) {
     }
     return;
   }
-  if (event.target.matches("[data-img-prompt]")) {
-    imageStudio.setPromptSilent(KEY, event.target.value);
-    const gen = ctx.modal.querySelector("[data-img-generate]");
-    if (gen) gen.disabled = !event.target.value.trim();
-    autosize(event.target);
-  } else if (event.target.matches("[data-img-edit-prompt]")) {
+  if (event.target.matches("[data-img-edit-prompt]")) {
     imageStudio.setEditPromptSilent(KEY, event.target.value);
     autosize(event.target);
   } else {
@@ -343,10 +305,10 @@ function onChange(event) {
 }
 
 // ── Drag & drop reference images ────────────────────────────────────────────
-// The References section is one scroll into a panel, so the WHOLE modal accepts
-// an image drop in generate mode — dragging a file in is unambiguous enough not
-// to need the section in view first. The drop then opens the section, because
-// otherwise a drop would only change a count somewhere off-screen.
+// The References row can be scrolled out of the options half, so the WHOLE modal
+// accepts an image drop in generate mode — dragging a file in is unambiguous enough
+// not to need the row in view first. The drop then opens it, because otherwise a
+// drop would only change a count somewhere off-screen.
 
 function isImageDrag(event) {
   return [...(event.dataTransfer?.items || [])].some((i) => i.kind === "file");
@@ -373,8 +335,8 @@ function onDrop(event) {
   const files = [...(event.dataTransfer?.files || [])].filter((f) => f.type.startsWith("image/"));
   if (!files.length) return;
   for (const f of files) imageStudio.addReferenceImage(KEY, URL.createObjectURL(f));
-  // Show what just landed — a drop with the sheet closed would otherwise only
-  // change a chip's count.
+  // Show what just landed — a drop with the row closed would otherwise only change
+  // a count in its header.
   imageStudio.setOpenPopover(KEY, "refs");
 }
 
@@ -427,18 +389,12 @@ function onKeydown(event) {
   // onGuardKeydown. This listener sits on the modal element, so it only sees keys
   // pressed while focus is inside it.
   if (st.pendingSettingChange) return;
-  // Both composer fields: Enter runs the bar's primary action, Shift+Enter
-  // inserts a newline — the same contract as the main conversational composer.
+  // The edit composer: Enter runs Redraw, Shift+Enter inserts a newline — the same
+  // contract as the main conversational composer.
   if (event.key === "Enter" && !event.shiftKey && event.target.matches("[data-img-edit-prompt]")) {
     event.preventDefault();
     event.stopPropagation();
     if (!st.editBusy) applyEditTool("prompt");
-    return;
-  }
-  if (event.key === "Enter" && !event.shiftKey && event.target.matches("[data-img-prompt]")) {
-    event.preventDefault();
-    event.stopPropagation();
-    if (st.genPhase !== "generating") runGenerate();
     return;
   }
   if (event.key === "Enter" && st.editingOverlayId) {
@@ -464,12 +420,6 @@ function onKeydown(event) {
     if (st.openPopover) {
       event.stopPropagation();
       return void imageStudio.setOpenPopover(KEY, null);
-    }
-    // The modifier popover unwinds before the modal's Escape-to-close, same as the
-    // edit popovers above it.
-    if (st.openModifier) {
-      event.stopPropagation();
-      return void imageStudio.setOpenModifier(KEY, null);
     }
     if (st.cropDrawing && !st.editBusy) {
       event.stopPropagation();
