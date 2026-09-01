@@ -28,9 +28,6 @@ await Promise.all([
 
 // Rewrite font-face.css: ../../fonts/averta/ → ../fonts/averta/
 const fontFace = await readFile(join(theme, "style/css-ui/font-face.css"), "utf8");
-await writeFile(
-  join(ds, "css-ui/font-face.css"),
-  fontFace.replaceAll("../../fonts/averta/", "../fonts/averta/"),
-);
+await writeFile(join(ds, "css-ui/font-face.css"), fontFace.replaceAll("../../fonts/averta/", "../fonts/averta/"));
 
 console.log("✓ Design System synced to ./ds/");
