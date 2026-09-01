@@ -27,7 +27,7 @@
 import { escapeHtml } from "../../utils.js?v=22";
 import { KEY } from "./context.js?v=50";
 import * as imageStudio from "../../image-studio.js?v=102";
-import { imageTypeBody, styleBody, formatBody, outputBody } from "./settings-view.js?v=20";
+import { imageTypeBody, styleBody, formatBody, outputBody } from "./settings-view.js?v=21";
 import { refsBody, refSummary } from "./references-view.js?v=17";
 import { brandingBody } from "./branding-view.js?v=4";
 import { briefBody } from "./brief-blocks.js?v=3";

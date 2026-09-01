@@ -422,9 +422,49 @@ L'ordre dit un raisonnement : **ce qui va DANS l'image**, puis son **traitement*
   Valeur d'en-tête : la moitié active (`Acme` / `Logo only` / `Colors only` / `Off` / `No brand kit`),
   parce qu'« On » cacherait la différence entre un logo tamponné et un brief de couleurs.
 - **Type** — à quoi sert l'image (`IMAGE_TYPES` : Visual hook / Infographic / Illustration). Dimension
-  distincte du style.
-- **Style** — 6 presets en vignettes. **Désactivé dès qu'une référence est en jeu**, et il dit alors
-  pourquoi (`From references`) : deux sources de look qui se contredisent, c'est une de trop.
+  distincte du style, et **c'est ce que l'art dit** : un Type est un **schéma de composition**
+  (monochrome, géométrie seule, gris DS), un Style est une **pastille de couleur**. Sans ce partage,
+  neuf cartes dans deux sections voisines se lisent comme un seul choix à neuf branches. Le
+  monochrome est doublement voulu : un diagramme de composition parle de placement et de masse, et
+  le bleu électrique est la couleur de l'interactif — une forme bleue dans une carte **non
+  sélectionnée** se battrait avec l'anneau bleu qui veut dire « choisi ».
+- **Style** — 6 presets en vignettes **dessinées**. **Désactivé dès qu'une référence est en jeu**, et
+  il dit alors pourquoi (`From references`) : deux sources de look qui se contredisent, c'est une de
+  trop.
+
+Les neuf vignettes sont **dessinées en CSS, zéro asset** — le patron `.sub-preview--*` de
+`clip-subtitles.js` : un markup, neuf modificateurs. Choisi contre le SVG parce que ces cartes rendent
+à **trois tailles** (≈40px dans le rail de 284px, 154px en V3, 167px dans le popover auto-brief, un
+rapport ~4×) : une composition en % est sans résolution, là où neuf `viewBox` fixes demanderaient un
+`vector-effect` par trait et neuf blobs de HTML de confiance dans un module JS. D'où les règles de
+dimensionnement, porteuses : positions et tailles en **%**, traits et bordures en **px**, rien sous
+**8 %** de la hauteur, flous et ombres en **`cqh`** (`container-type: size` sur `.isv2-art`, le même
+tour que `.isv2-frame`).
+
+Ce ne sont **pas** des emplacements d'icône — ce sont des cadres d'aperçu 4:3 qui montrent à quoi
+ressemblera l'image, le travail que font déjà les maquettes de sous-titres et le faux still vidéo de
+`session.js`. Le DS ne livre ni schéma de composition ni pastille de style, donc rien n'est réinventé ;
+et le repli « une icône DS pour les trois Types » n'existe pas : **aucune icône DS ne veut dire
+« illustration »** (`ap-icon-pen` est le verbe éditer partout dans l'app, `ap-icon-mask` est un masque
+de théâtre, et brush / palette / draw / pencil sont absents). Les couleurs des six Styles sont des
+**valeurs d'échantillon stylistiques**, volontairement hors tokens — la même licence que
+`subtitle-style.css` prend pour ses maquettes de sous-titres ; `validate_css` les signale, c'est
+correct et c'est écrit là.
+
+Elles ont remplacé des **photos picsum aléatoires** qui n'avaient aucun rapport avec le preset
+qu'elles prétendaient montrer, et qui étaient bloquées par CORS en preview.
+
+Le marqueur de sélection est un **dot radio pour les deux**, plus une coche : `references-view.js`
+pose la règle — mono-sélection **avec dé-sélection** prend `aria-pressed` + un dot, parce qu'« une
+coche promet qu'on peut en prendre plusieurs ». Type et Style sont exactement ce contrat, donc
+l'ancienne coche de Style était l'exception et Type n'avait rien. Toujours rendu, vide quand non
+choisi (comme les tuiles de référence) : un anneau vide dit qu'il y a un choix à faire, et la carte
+garde les mêmes parties sélectionnée ou non, donc rien ne saute. Géométrie partagée avec
+`.isv2-ref-radio` en une seule déclaration ; seule la couleur de l'anneau change (blanc sur photo,
+grey-60 sur l'art clair). `IMAGE_TYPES.desc` reste dans le tooltip et pas sur la carte : l'art fait ce
+travail, et à 79px une seconde ligne de caption double presque la hauteur de la rangée pour redire
+l'image.
+
 - **Format** — les ratios recommandés du network du draft, avec un glyphe dessiné à ses propres
   proportions. La valeur dit la forme (`1:1 · Square`) ; le hint suit la convention app-wide
   « **Best for** » + icône réseau.

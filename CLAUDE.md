@@ -265,9 +265,12 @@ prefix and `KEY = "studio-v2"` date from when a second studio was mounted beside
 for something no user can see. Likewise `isv2-sheet-label` / `-hint` / `-switch` were written for
 flyout sheets the settings panel replaced — `settings-view.js` carries the disclosure.
 
-⚠️ Three class families are assembled by string concatenation and a rename breaks them silently:
+⚠️ Four class families are assembled by string concatenation and a rename breaks them silently:
 `.image-studio__crop-handle--{nw,ne,se,sw}`, `.image-studio__popover--{kind}`,
-`.image-studio__tt-{kind}`.
+`.image-studio__tt-{kind}`, and `.isv2-art--{key}` — the drawn Type/Style previews, keyed off
+`IMAGE_TYPES` / `STYLE_PRESETS`, so renaming a catalogue key un-styles its card. That last one
+degrades to a plain grey frame rather than to nothing, because the two family blocks
+(`.isv2-art--type` / `--look`) carry a neutral fallback.
 
 ### Connectors as live, MCP-queryable sources
 

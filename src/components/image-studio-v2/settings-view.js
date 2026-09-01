@@ -290,26 +290,85 @@ export function renderTextBody(st) {
     <p class="ap-form-message error" data-img-render-text-msg role="status"${imageStudio.renderTextOverMessage(text) ? "" : ` style="display:none"`}>${escapeHtml(imageStudio.renderTextOverMessage(text))}</p>`;
 }
 
+// ── The drawn option art ─────────────────────────────────────────────────────
+//
+// Type and Style are two different questions, so they get two different KINDS of
+// picture — otherwise nine cards in two neighbouring sections read as one choice
+// with nine branches, when the panel's own comment says Type is "a distinct
+// dimension from the style":
+//
+//   Type  = a COMPOSITION schematic. Monochrome, geometry only, DS greys — how is
+//           this image laid out? Greyscale on purpose: electric blue is this house's
+//           interactive colour, and a blue shape inside an unselected card would read
+//           as "selected" against the very marker that means it.
+//   Style = a COLOUR swatch. Its palette, gradients, contrast — what does this image
+//           look like? This is where the colour lives.
+//
+// One markup, nine CSS modifiers, zero assets — the `.sub-preview--*` pattern from
+// clip-subtitles.js. Chosen over SVG because these cards render at THREE sizes
+// (~58px thumbs in the 284px rail, ~126px in the auto-brief popover, a ~2x range):
+// a composition expressed in % is resolution-free, where nine fixed-viewBox SVGs
+// would need per-stroke `vector-effect` and would put nine blobs of trusted HTML in
+// a JS module. Sizing rules live with the CSS.
+//
+// `.isv2-art` IS the backdrop, and its ::before/::after add two more drawable layers
+// on top of the three slots — five for at most three elements. The slots are
+// deliberately meaningless: each modifier assigns them a role.
+function optionArt(family, key) {
+  return `<span class="isv2-art isv2-art--${family} isv2-art--${escapeHtml(key)}" aria-hidden="true">
+    <span class="isv2-art__a"></span><span class="isv2-art__b"></span><span class="isv2-art__c"></span>
+  </span>`;
+}
+
+// The selection marker for BOTH: a radio DOT, not a tick.
+//
+// references-view.js states the contract — single-select WITH toggle-off gets
+// `aria-pressed` + a dot, because "a tick promises you can have several". Type and
+// Style are exactly that shape (`s.x === key ? null : key`), so Style's old tick was
+// the odd one out and Type had no marker at all. Always rendered, empty when off
+// (like the reference tiles): an empty ring says a choice is on offer, and the card
+// keeps the same parts whether or not it is picked, so nothing shifts on select.
+const pickMark = `<span class="isv2-pickmark" aria-hidden="true"></span>`;
+
+// One card renderer, two catalogues. Same frame (`.gen-style-card`: border, hover,
+// focus-visible, selected) so a Type card and a Style card are the same object with
+// different art inside.
+function optionCard({ family, hook, key, label, tip, selected }) {
+  return `<button type="button" class="gen-style-card${selected ? " is-selected" : ""}" ${hook}="${escapeHtml(key)}"
+    aria-pressed="${selected}" title="${escapeHtml(tip)}" aria-label="${escapeHtml(tip)}">
+    <span class="gen-style-thumb">${optionArt(family, key)}${pickMark}</span>
+    <span class="gen-style-name">${escapeHtml(label)}</span>
+  </button>`;
+}
+
 export function imageTypeBody(st) {
-  const chips = imageStudio.IMAGE_TYPES.map((o) => {
-    const sel = st.imageTypeKey === o.key;
-    const tip = `${o.label} · ${o.desc}`;
-    return `<button type="button" class="ap-filter-chip" data-img-image-type="${escapeHtml(o.key)}" aria-pressed="${sel}" title="${escapeHtml(tip)}" aria-label="${escapeHtml(tip)}">${escapeHtml(o.label)}</button>`;
-  }).join("");
-  return `<div class="isv2-chip-group">${chips}</div>`;
+  const cards = imageStudio.IMAGE_TYPES.map((o) =>
+    optionCard({
+      family: "type",
+      hook: "data-img-image-type",
+      key: o.key,
+      label: o.label,
+      // `desc` stays out of the card face and rides in the tooltip: the art does that
+      // job now, and a second caption line nearly doubles the row's height at 79px to
+      // restate the picture.
+      tip: `${o.label} · ${o.desc}`,
+      selected: st.imageTypeKey === o.key,
+    }),
+  ).join("");
+  return `<div class="gen-style-grid isv2-type-grid">${cards}</div>`;
 }
 
 export function styleBody(st) {
-  const cards = imageStudio.STYLE_PRESETS.map((o) => {
-    const sel = st.styleKey === o.key;
-    return `<button type="button" class="gen-style-card${sel ? " is-selected" : ""}" data-img-style="${escapeHtml(o.key)}" aria-pressed="${sel}" title="${escapeHtml(o.label)}">
-      <span class="gen-style-thumb">
-        <img src="https://picsum.photos/seed/archie-style-${escapeHtml(o.key)}/220/170" alt="" loading="lazy" />
-        ${sel ? `<span class="gen-style-check" aria-hidden="true"><i class="ap-icon-check"></i></span>` : ""}
-      </span>
-      <span class="gen-style-name">${escapeHtml(o.label)}</span>
-    </button>`;
-  }).join("");
+  const cards = imageStudio.STYLE_PRESETS.map((o) =>
+    optionCard({
+      family: "look",
+      hook: "data-img-style",
+      key: o.key,
+      label: o.label,
+      tip: o.label,
+      selected: st.styleKey === o.key,
+    }),
+  ).join("");
   return `<div class="gen-style-grid isv2-style-grid">${cards}</div>`;
 }
 

@@ -909,6 +909,9 @@ body.has-modal {
   font-family: inherit;
 }
 
+/* Holds a DRAWN preview (`.isv2-art`, image-studio-v2.css) plus its pick mark —
+   the picsum <img> it used to hold was a random photo unrelated to the preset it
+   claimed to show, and CORS-blocked in preview besides. */
 .gen-style-thumb {
   position: relative;
   display: block;
@@ -918,13 +921,6 @@ body.has-modal {
   border: 2px solid var(--ref-color-grey-20);
   background: var(--ref-color-grey-10);
   transition: border-color var(--ref-animation-short) var(--app-ease-out);
-}
-
-.gen-style-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
 }
 
 .gen-style-card:hover .gen-style-thumb {
@@ -942,21 +938,6 @@ body.has-modal {
 
 .gen-style-card.is-selected .gen-style-thumb {
   border-color: var(--ref-color-electric-blue-100);
-}
-
-.gen-style-check {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  border-radius: var(--app-radius-circle);
-  background: var(--ref-color-electric-blue-100);
-  color: var(--ref-color-white);
-  font-size: 11px;
 }
 
 .gen-style-name {

@@ -51,7 +51,7 @@
 // shared with the auto-brief stage — one renderer each, two hosts, so a card and the
 // thing it opens can't end up saying different sentences about the same brief.
 
-import { settingRowEntries } from "./settings-view.js?v=20";
+import { settingRowEntries } from "./settings-view.js?v=21";
 import { briefBody, briefNote } from "./brief-blocks.js?v=3";
 import { previewColumn } from "./preview-column.js?v=3";
 

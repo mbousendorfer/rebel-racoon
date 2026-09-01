@@ -956,6 +956,12 @@
    as its own card without elevation. `overflow: hidden` keeps the header's hover tint and
    the first/last rows inside the 8px corner. */
 .isv2-opts .isv2-acc {
+  /* NEVER shrink. `.isv2-opts` is a flex column, so its children shrink by default —
+     and `overflow: hidden` (which the 8px corner needs) sets a flex item's automatic
+     minimum size to 0, so there was nothing left to stop them. Past a certain modal
+     height the cards were squashed and their text clipped mid-line instead of the
+     pane scrolling. The pane is the scroller; the cards keep their own height. */
+  flex: 0 0 auto;
   background: var(--ref-color-white);
   border: 1px solid var(--ref-color-grey-10);
   border-radius: var(--ref-border-radius-md);
@@ -1706,10 +1712,14 @@
   color: var(--ref-color-grey-60);
 }
 
-/* Two columns at the panel's width — the six presets still read at 118px. */
-.isv2-style-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
+/* NO column override for the pinned panel. This rule used to say `repeat(2)` and was
+   DEAD: `.gen-style-grid` (modals.css) has the same specificity and modals.css is
+   linked AFTER this file, so its `repeat(3)` always won. Removing the lie rather than
+   raising the specificity to win it, because 3 columns is the better answer here — the
+   swatches are pure colour and still read at ~40px, and two columns would cost the
+   284px rail a third row of height it can't spare. Type is 3 options, so one row at
+   every width. The auto-brief popover keeps its `repeat(6)` (two classes, so it wins
+   the cascade honestly). */
 
 /* ── The footer bar ───────────────────────────────────────────────────────── */
 
@@ -1739,6 +1749,357 @@
   border: 1.5px solid currentColor;
   border-radius: 2px;
   opacity: 0.75;
+}
+
+/* ── Option art — nine drawn previews for Type and Style ───────────────────
+   The frame is a component (`.gen-style-card/-thumb`, modals.css); the art is
+   CONTENT, so it lives here beside `.isv2-ratio-glyph`, its sibling primitive.
+
+   One markup, nine modifiers, zero assets — the `.sub-preview--*` pattern. These
+   are not icon slots: they are 4:3 preview frames whose job is to show what the
+   generated image will look like, the same job the subtitle mocks and session.js's
+   faux video still already do. The DS ships neither a composition schematic nor a
+   style swatch, so nothing here re-invents a DS icon. (`search_icons` has no
+   "illustration" glyph at all — `ap-icon-pen` is the edit/rename verb everywhere in
+   this app and `ap-icon-mask` is a theatre mask; brush/palette/draw/pencil don't
+   exist. Drawn was the only coherent option.)
+
+   SIZING RULES, load-bearing because these render across a ~2x range (~58px thumbs
+   in the 284px rail, ~126px in the auto-brief popover):
+     · positions and sizes in %      — resolution-free
+     · strokes, borders, hairlines in px — 1px reads at both ends; 2% would be
+       1.2px at the small end and 2.5px at the large one
+     · nothing smaller than 8% of the height
+     · blurs and shadows in cqh, hence `container-type: size` (same trick as
+       `.isv2-frame` further up this file)
+
+   ⚠️ `.isv2-art--{key}` is assembled by string concatenation from the catalogue key
+   (settings-view.js#optionArt), joining `.image-studio__crop-handle--`,
+   `--popover--` and `--tt-`: renaming a key in IMAGE_TYPES / STYLE_PRESETS silently
+   un-styles its card. The family blocks below carry a neutral fallback so an
+   unknown key degrades to an empty grey frame rather than to nothing. */
+.isv2-art {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  container-type: size;
+}
+
+.isv2-art__a,
+.isv2-art__b,
+.isv2-art__c {
+  position: absolute;
+  display: block;
+}
+
+/* ── Type: composition schematics ──────────────────────────────────────────
+   Monochrome, DS greys only, no accent. Greyscale is the point twice over: a
+   composition diagram is about placement and mass rather than colour, and electric
+   blue is this house's interactive colour — a blue shape inside an UNSELECTED card
+   would fight the blue ring that means "picked". */
+.isv2-art--type {
+  background: var(--ref-color-grey-05);
+}
+
+/* Visual hook — one striking focal subject, generous negative space. The subject is
+   off-centre and large; the emptiness around it is the other half of the statement. */
+.isv2-art--visual-hook .isv2-art__a {
+  left: 12%;
+  top: 18%;
+  width: 44%;
+  height: 58%;
+  border-radius: var(--app-radius-circle);
+  background: var(--ref-color-grey-60);
+}
+.isv2-art--visual-hook .isv2-art__b {
+  right: 12%;
+  top: 30%;
+  width: 24%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--ref-color-grey-20);
+}
+.isv2-art--visual-hook .isv2-art__c {
+  right: 12%;
+  top: 46%;
+  width: 16%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--ref-color-grey-20);
+}
+
+/* Infographic — a chart as the hero, on a baseline, with a label line under it. */
+.isv2-art--infographic {
+  background: var(--ref-color-grey-05);
+}
+.isv2-art--infographic .isv2-art__a {
+  left: 16%;
+  bottom: 26%;
+  width: 16%;
+  height: 26%;
+  background: var(--ref-color-grey-40);
+}
+.isv2-art--infographic .isv2-art__b {
+  left: 40%;
+  bottom: 26%;
+  width: 16%;
+  height: 48%;
+  background: var(--ref-color-grey-80);
+}
+.isv2-art--infographic .isv2-art__c {
+  left: 64%;
+  bottom: 26%;
+  width: 16%;
+  height: 34%;
+  background: var(--ref-color-grey-40);
+}
+/* The baseline the bars stand on, and the caption line under it. */
+.isv2-art--infographic::before {
+  content: "";
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: 26%;
+  height: 1px;
+  background: var(--ref-color-grey-60);
+}
+.isv2-art--infographic::after {
+  content: "";
+  position: absolute;
+  left: 16%;
+  bottom: 12%;
+  width: 36%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--ref-color-grey-20);
+}
+
+/* Illustration — flat overlapping shapes and confident linework, no photography:
+   a filled circle, an outlined square, a triangle. */
+.isv2-art--illustration .isv2-art__a {
+  left: 14%;
+  top: 22%;
+  width: 38%;
+  height: 50%;
+  border-radius: var(--app-radius-circle);
+  background: var(--ref-color-grey-40);
+}
+.isv2-art--illustration .isv2-art__b {
+  left: 38%;
+  top: 34%;
+  width: 34%;
+  height: 44%;
+  border: 2px solid var(--ref-color-grey-80);
+  background: transparent;
+}
+.isv2-art--illustration .isv2-art__c {
+  right: 12%;
+  top: 18%;
+  width: 0;
+  height: 0;
+  border-left: 11px solid transparent;
+  border-right: 11px solid transparent;
+  border-bottom: 19px solid var(--ref-color-grey-60);
+}
+
+/* ── Style: colour swatches ────────────────────────────────────────────────
+   These reproduce aesthetic looks, so their colours are stylistic SAMPLE values,
+   intentionally not DS tokens — the same licence `subtitle-style.css` takes for the
+   creator caption mocks, and the same one connector brand accents take. Expect
+   validate_css to flag them; that is correct and disclosed here. */
+.isv2-art--look {
+  background: var(--ref-color-grey-05);
+}
+
+/* Tech Minimal — cool near-white, one thin rule, lots of air. */
+.isv2-art--tech-minimal {
+  background: linear-gradient(160deg, #f7f9fc 0%, #e8eef7 100%);
+}
+.isv2-art--tech-minimal .isv2-art__a {
+  left: 18%;
+  top: 34%;
+  width: 64%;
+  height: 1px;
+  background: #7d90ab;
+}
+.isv2-art--tech-minimal .isv2-art__b {
+  left: 18%;
+  top: 52%;
+  width: 40%;
+  height: 1px;
+  background: #b6c2d4;
+}
+.isv2-art--tech-minimal .isv2-art__c {
+  right: 16%;
+  bottom: 18%;
+  width: 18%;
+  height: 18%;
+  border: 1px solid #7d90ab;
+}
+
+/* Corporate — navy over white, a clean horizontal split, restrained. */
+.isv2-art--corporate {
+  background: #ffffff;
+}
+.isv2-art--corporate .isv2-art__a {
+  inset: 0 0 52% 0;
+  background: #1b2a4a;
+}
+.isv2-art--corporate .isv2-art__b {
+  left: 14%;
+  bottom: 26%;
+  width: 46%;
+  height: 7%;
+  background: #4a5f86;
+}
+.isv2-art--corporate .isv2-art__c {
+  left: 14%;
+  bottom: 14%;
+  width: 28%;
+  height: 7%;
+  background: #b9c3d6;
+}
+
+/* 3D Render — a lit sphere with a soft shadow. The one that most needs cqh: a px
+   blur that reads at 126px is a smudge at 58px. */
+.isv2-art--3d-render {
+  background: radial-gradient(120% 100% at 30% 0%, #efeaff 0%, #cfc4f2 60%, #a894e8 100%);
+}
+.isv2-art--3d-render .isv2-art__a {
+  left: 26%;
+  top: 20%;
+  width: 48%;
+  height: 62%;
+  border-radius: var(--app-radius-circle);
+  background: radial-gradient(circle at 34% 28%, #ffffff 0%, #b7a4ee 45%, #6a4fc4 100%);
+  box-shadow: 0 4cqh 8cqh rgba(60, 36, 120, 0.35);
+}
+.isv2-art--3d-render .isv2-art__b {
+  left: 30%;
+  bottom: 10%;
+  width: 40%;
+  height: 8%;
+  border-radius: var(--app-radius-circle);
+  background: rgba(60, 36, 120, 0.28);
+  filter: blur(2cqh);
+}
+
+/* Bold Editorial — high contrast, big blocks, a hot accent. */
+.isv2-art--bold-editorial {
+  background: #141414;
+}
+.isv2-art--bold-editorial .isv2-art__a {
+  left: 0;
+  top: 0;
+  width: 46%;
+  height: 100%;
+  background: #ff5a1f;
+}
+.isv2-art--bold-editorial .isv2-art__b {
+  right: 10%;
+  top: 24%;
+  width: 34%;
+  height: 12%;
+  background: #ffffff;
+}
+.isv2-art--bold-editorial .isv2-art__c {
+  right: 10%;
+  top: 44%;
+  width: 22%;
+  height: 12%;
+  background: #8a8a8a;
+}
+
+/* Photoreal — a photographic horizon: warm sky, sun, darker ground. */
+.isv2-art--photoreal {
+  background: linear-gradient(180deg, #8fb7d9 0%, #d9c3a4 62%, #6d5a44 62%, #4b3d2e 100%);
+}
+.isv2-art--photoreal .isv2-art__a {
+  left: 22%;
+  top: 22%;
+  width: 22%;
+  height: 29%;
+  border-radius: var(--app-radius-circle);
+  background: #fbe9c4;
+  filter: blur(1cqh);
+}
+.isv2-art--photoreal .isv2-art__b {
+  right: 12%;
+  bottom: 20%;
+  width: 26%;
+  height: 24%;
+  background: #3c3125;
+  clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+}
+
+/* Hand-drawn — cream paper, a wobbly ink stroke and a loose circle. */
+.isv2-art--hand-drawn {
+  background: #f6efe2;
+}
+.isv2-art--hand-drawn .isv2-art__a {
+  left: 16%;
+  top: 24%;
+  width: 40%;
+  height: 46%;
+  border: 2px solid #2f2a24;
+  border-radius: 52% 48% 45% 55% / 50% 55% 45% 50%;
+}
+.isv2-art--hand-drawn .isv2-art__b {
+  right: 14%;
+  top: 34%;
+  width: 26%;
+  height: 2px;
+  background: #2f2a24;
+  transform: rotate(-6deg);
+}
+.isv2-art--hand-drawn .isv2-art__c {
+  right: 14%;
+  top: 52%;
+  width: 18%;
+  height: 2px;
+  background: #8a7f6d;
+  transform: rotate(-4deg);
+}
+
+/* ── The pick mark ─────────────────────────────────────────────────────────
+   references-view.js sets the rule: single-select WITH toggle-off is a radio dot,
+   never a tick, because "a tick promises you can have several". Shared geometry
+   with `.isv2-ref-radio` in one declaration so the two can't drift; only the ON
+   selector differs (the tiles key on `.is-used`, the cards on `aria-pressed`).
+   The ring colour is a variable because white reads on a photo and vanishes on the
+   pale art below. */
+.isv2-pickmark,
+.isv2-ref-radio {
+  --isv2-pickmark-ring: var(--ref-color-white);
+  position: absolute;
+  left: 4px;
+  top: 4px;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--isv2-pickmark-ring);
+  border-radius: var(--app-radius-circle);
+  background: transparent;
+}
+
+.gen-style-thumb .isv2-pickmark {
+  --isv2-pickmark-ring: var(--ref-color-grey-60);
+}
+
+.gen-style-card[aria-pressed="true"] .isv2-pickmark {
+  border-color: var(--sys-color-accent-default-bg-default);
+  background: var(--sys-color-accent-default-bg-default);
+}
+
+.gen-style-card[aria-pressed="true"] .isv2-pickmark::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: var(--app-radius-circle);
+  background: var(--ref-color-white);
 }
 
 /* ── The sheet — the tool palette's "Add an image" flyout ─────────────────── */
