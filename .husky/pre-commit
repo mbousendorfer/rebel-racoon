@@ -4,4 +4,9 @@
 # diagnose - so it blocks the commit rather than shipping.
 python3 scripts/check-template-comments.py
 
+# One cache-bust number for the whole module graph. Two versions for one module
+# means two module instances - i.e. two copies of a store, with split state.
+# This has landed on main more than once, so it blocks the commit too.
+node scripts/cache-version.mjs check
+
 npx lint-staged
