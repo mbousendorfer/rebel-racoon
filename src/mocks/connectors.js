@@ -1,0 +1,410 @@
+// The connectors catalog and the documents each one would return.
+// Seed data only — no network, no persistence, no randomness.
+// Re-exported by ../mocks.js, which stays the single import path.
+
+// Lookup helpers ----------------------------------------------------------------
+
+// ── Settings drawer mocks ─────────────────────────────────────────────────
+// All settings sections are mocked in-memory. Connect/disconnect, save, etc.
+// flip these objects locally — no persistence.
+
+// Mock doc lists exposed by each connector once "connected". Used by the
+// Add source modal's Browse sub-screen.
+export const connectorDocs = {
+  slite: [
+    { id: "slite-1", title: "Q2 strategy offsite — full notes", kind: "Doc", size: "8 min read", iconKey: "text" },
+    { id: "slite-2", title: "Brand guidelines v3", kind: "Doc", size: "12 min read", iconKey: "text" },
+    { id: "slite-3", title: "Onboarding playbook", kind: "Doc", size: "5 min read", iconKey: "text" },
+    { id: "slite-4", title: "Customer interview — Acme", kind: "Doc", size: "4 min read", iconKey: "text" },
+    { id: "slite-5", title: "Sales enablement deck — narrative", kind: "Doc", size: "9 min read", iconKey: "text" },
+    { id: "slite-6", title: "Engineering principles", kind: "Doc", size: "6 min read", iconKey: "text" },
+  ],
+  notion: [
+    { id: "notion-1", title: "Roadmap H2 2026", kind: "Page", size: "Updated 2d ago", iconKey: "text" },
+    { id: "notion-2", title: "Hiring plan — design + eng", kind: "Page", size: "Updated 1w ago", iconKey: "text" },
+    { id: "notion-3", title: "Engineering wiki — home", kind: "Page", size: "Updated 3d ago", iconKey: "text" },
+    { id: "notion-4", title: "Q1 retro notes", kind: "Page", size: "Updated 1mo ago", iconKey: "text" },
+    { id: "notion-5", title: "Pricing experiment results", kind: "Page", size: "Updated 4d ago", iconKey: "text" },
+  ],
+  gdrive: [
+    { id: "gd-1", title: "Q2-pitch.pdf", kind: "PDF", size: "2.4 MB", iconKey: "pdf" },
+    { id: "gd-2", title: "Customer logos.png", kind: "Image", size: "780 KB", iconKey: "image" },
+    { id: "gd-3", title: "Founder keynote — rough cut.mp4", kind: "Video", size: "84 MB", iconKey: "video" },
+    { id: "gd-4", title: "Pricing model.xlsx", kind: "Spreadsheet", size: "1.1 MB", iconKey: "file" },
+    { id: "gd-5", title: "Brand assets/", kind: "Folder", size: "32 files", iconKey: "file" },
+    { id: "gd-6", title: "Customer success stories.docx", kind: "Word", size: "640 KB", iconKey: "word" },
+  ],
+  slack: [
+    { id: "slack-1", title: "#product-launches — last 7 days", kind: "Channel", size: "120 messages", iconKey: "text" },
+    { id: "slack-2", title: "#wins — Q2 highlights", kind: "Channel", size: "48 messages", iconKey: "text" },
+    { id: "slack-3", title: "DM with Lucia — messaging draft", kind: "Thread", size: "26 messages", iconKey: "text" },
+    {
+      id: "slack-4",
+      title: "#feedback — recent customer pings",
+      kind: "Channel",
+      size: "60 messages",
+      iconKey: "text",
+    },
+    { id: "slack-5", title: "#leadership — strategy thread", kind: "Thread", size: "18 messages", iconKey: "text" },
+  ],
+  confluence: [
+    { id: "conf-1", title: "Product spec — Inbox v4", kind: "Page", size: "Updated 3d ago", iconKey: "text" },
+    { id: "conf-2", title: "GTM playbook — Q3", kind: "Page", size: "Updated 1w ago", iconKey: "text" },
+    { id: "conf-3", title: "Architecture decision records", kind: "Space", size: "42 pages", iconKey: "text" },
+  ],
+  gdocs: [
+    { id: "gdocs-1", title: "Messaging house — master", kind: "Doc", size: "Updated 2d ago", iconKey: "text" },
+    { id: "gdocs-2", title: "Webinar script — April", kind: "Doc", size: "6 min read", iconKey: "text" },
+  ],
+  dropbox: [
+    { id: "dbx-1", title: "Brand kit 2026/", kind: "Folder", size: "58 files", iconKey: "file" },
+    { id: "dbx-2", title: "Case study — Acme.pdf", kind: "PDF", size: "1.8 MB", iconKey: "pdf" },
+  ],
+  onedrive: [
+    { id: "od-1", title: "Sales deck — enterprise.pptx", kind: "Slides", size: "9.2 MB", iconKey: "file" },
+    { id: "od-2", title: "Quarterly report.docx", kind: "Word", size: "720 KB", iconKey: "word" },
+  ],
+  box: [
+    { id: "box-1", title: "Legal — MSA template.pdf", kind: "PDF", size: "320 KB", iconKey: "pdf" },
+    { id: "box-2", title: "Customer assets/", kind: "Folder", size: "120 files", iconKey: "file" },
+  ],
+  github: [
+    { id: "gh-1", title: "product/roadmap — open issues", kind: "Issues", size: "37 open", iconKey: "text" },
+    { id: "gh-2", title: "Release notes — v2.8.0", kind: "Release", size: "Published 4d ago", iconKey: "text" },
+    { id: "gh-3", title: "PR #1284 — Inbox filters", kind: "Pull request", size: "Merged", iconKey: "text" },
+  ],
+  linear: [
+    { id: "lin-1", title: "Cycle 41 — committed scope", kind: "Cycle", size: "22 issues", iconKey: "text" },
+    { id: "lin-2", title: "ENG-902 — Live connectors", kind: "Issue", size: "In progress", iconKey: "text" },
+  ],
+  jira: [
+    { id: "jira-1", title: "SOCIAL-1203 — Calendar revamp", kind: "Epic", size: "14 stories", iconKey: "text" },
+    { id: "jira-2", title: "Sprint 58 — board", kind: "Sprint", size: "31 issues", iconKey: "text" },
+  ],
+  trello: [
+    { id: "trello-1", title: "Content calendar — June", kind: "Board", size: "48 cards", iconKey: "text" },
+    { id: "trello-2", title: "Campaign — Summer launch", kind: "List", size: "12 cards", iconKey: "text" },
+  ],
+  asana: [
+    { id: "asana-1", title: "Launch checklist — v2.8", kind: "Project", size: "26 tasks", iconKey: "text" },
+    { id: "asana-2", title: "Content ops — recurring", kind: "Project", size: "40 tasks", iconKey: "text" },
+  ],
+  figma: [
+    { id: "fig-1", title: "Brand system — components", kind: "File", size: "Updated 1d ago", iconKey: "image" },
+    { id: "fig-2", title: "Social templates — 2026", kind: "File", size: "Updated 5d ago", iconKey: "image" },
+  ],
+  teams: [
+    { id: "teams-1", title: "Marketing — General", kind: "Channel", size: "82 messages", iconKey: "text" },
+    { id: "teams-2", title: "Launch room — standup", kind: "Channel", size: "37 messages", iconKey: "text" },
+  ],
+  discord: [
+    { id: "disc-1", title: "#community — last 7 days", kind: "Channel", size: "210 messages", iconKey: "text" },
+    { id: "disc-2", title: "#feedback — feature asks", kind: "Channel", size: "64 messages", iconKey: "text" },
+  ],
+  hubspot: [
+    { id: "hs-1", title: "Q2 pipeline — closing soon", kind: "Deals", size: "18 deals", iconKey: "text" },
+    { id: "hs-2", title: "Customer testimonials — list", kind: "Contacts", size: "32 records", iconKey: "text" },
+  ],
+  salesforce: [
+    {
+      id: "sf-1",
+      title: "Enterprise opportunities — open",
+      kind: "Opportunities",
+      size: "24 records",
+      iconKey: "text",
+    },
+    { id: "sf-2", title: "Account — Acme Corp", kind: "Account", size: "Updated 2d ago", iconKey: "text" },
+  ],
+  intercom: [
+    { id: "ic-1", title: "Recent conversations — billing", kind: "Conversations", size: "53 threads", iconKey: "text" },
+    { id: "ic-2", title: "Help center — top articles", kind: "Articles", size: "120 articles", iconKey: "text" },
+  ],
+  zendesk: [
+    { id: "zd-1", title: "Tickets — last 7 days", kind: "Tickets", size: "88 tickets", iconKey: "text" },
+    { id: "zd-2", title: "Knowledge base — product", kind: "Articles", size: "64 articles", iconKey: "text" },
+  ],
+  airtable: [
+    { id: "at-1", title: "Content calendar", kind: "Base", size: "4 tables", iconKey: "file" },
+    { id: "at-2", title: "Client roster", kind: "Table", size: "62 records", iconKey: "file" },
+    { id: "at-3", title: "Asset library — briefs", kind: "Table", size: "138 records", iconKey: "file" },
+    { id: "at-4", title: "Campaign tracker — Q3", kind: "Table", size: "27 records", iconKey: "file" },
+  ],
+  zoom: [
+    { id: "zoom-1", title: "Discovery call — Acme.mp4", kind: "Recording", size: "42 min", iconKey: "video" },
+    { id: "zoom-2", title: "Webinar — Retention tactics", kind: "Recording", size: "58 min", iconKey: "video" },
+    { id: "zoom-3", title: "Customer QBR — transcript", kind: "Transcript", size: "11k words", iconKey: "text" },
+    { id: "zoom-4", title: "Team retro — June", kind: "Recording", size: "34 min", iconKey: "video" },
+  ],
+  fathom: [
+    { id: "fathom-1", title: "Sales call — Northwind", kind: "Summary", size: "Updated 1d ago", iconKey: "text" },
+    {
+      id: "fathom-2",
+      title: "Podcast interview — full transcript",
+      kind: "Transcript",
+      size: "9k words",
+      iconKey: "text",
+    },
+    { id: "fathom-3", title: "Strategy sync — highlights", kind: "Highlights", size: "12 clips", iconKey: "text" },
+  ],
+};
+
+// Connectors catalog. Each connector behaves like a Codex-style extension:
+// once connected it becomes a LIVE, queryable source (the assistant searches
+// its content via a simulated MCP query — see assistant.js sendConnectorMessage).
+//
+// Fields:
+//   category      grouping for the gallery (Docs & wikis / Storage / …)
+//   featured      surfaced in the gallery's "Featured" grid
+//   accent        brand color used by the monogram-tile fallback (no token —
+//                 these are third-party brand identities, like social logos)
+//   capabilities  MCP-tool-style verbs; shown as the connector's "tools" and
+//                 replayed in the simulated "Querying … via MCP" reasoning chip
+//   logo          only the four original connectors ship an SVG asset; the
+//                 rest fall back to an accent monogram tile (renderConnectorLogo)
+export const connectors = [
+  {
+    id: "slite",
+    name: "Slite",
+    desc: "Search and read docs from your Slite workspace",
+    category: "Docs & wikis",
+    featured: true,
+    accent: "#3155EE",
+    capabilities: ["Search docs", "Read note content", "List recent edits"],
+    logo: "assets/logos/slite.svg",
+    status: "connected",
+    account: "matt@archie.io",
+    lastSync: "just now",
+  },
+  {
+    id: "notion",
+    name: "Notion",
+    desc: "Search pages and query databases in your Notion workspace",
+    category: "Docs & wikis",
+    featured: true,
+    accent: "#111111",
+    capabilities: ["Search pages", "Read page content", "Query databases"],
+    logo: "assets/logos/notion.svg",
+    status: "connected",
+    account: "matthieu@archie.io",
+    lastSync: "5 minutes ago",
+  },
+  {
+    id: "gdrive",
+    name: "Google Drive",
+    desc: "Search files and read documents across your Drive",
+    category: "Storage",
+    featured: true,
+    accent: "#1FA463",
+    capabilities: ["Search files", "Read documents", "List folders"],
+    logo: "assets/logos/gdrive.svg",
+    status: "disconnected",
+  },
+  {
+    id: "slack",
+    name: "Slack",
+    desc: "Search messages and read channel history",
+    category: "Messaging",
+    accent: "#611F69",
+    capabilities: ["Search messages", "Read channel history", "List channels"],
+    logo: "assets/logos/slack.svg",
+    status: "disconnected",
+  },
+  {
+    id: "confluence",
+    logo: "assets/logos/confluence.svg",
+    name: "Confluence",
+    desc: "Search spaces and read pages from Confluence",
+    category: "Docs & wikis",
+    accent: "#1868DB",
+    capabilities: ["Search spaces", "Read pages", "List recent updates"],
+    status: "disconnected",
+  },
+  {
+    id: "gdocs",
+    logo: "assets/logos/gdocs.svg",
+    name: "Google Docs",
+    desc: "Search and read content from your Google Docs",
+    category: "Docs & wikis",
+    accent: "#1A73E8",
+    capabilities: ["Search docs", "Read document content", "List comments"],
+    status: "disconnected",
+  },
+  {
+    id: "dropbox",
+    logo: "assets/logos/dropbox.svg",
+    name: "Dropbox",
+    desc: "Search files and read content stored in Dropbox",
+    category: "Storage",
+    accent: "#0061FF",
+    capabilities: ["Search files", "Read file content", "List folders"],
+    status: "disconnected",
+  },
+  {
+    id: "onedrive",
+    logo: "assets/logos/onedrive.svg",
+    name: "OneDrive",
+    desc: "Search files and read documents from OneDrive",
+    category: "Storage",
+    accent: "#0364B8",
+    capabilities: ["Search files", "Read documents", "List folders"],
+    status: "disconnected",
+  },
+  {
+    id: "box",
+    logo: "assets/logos/box.svg",
+    name: "Box",
+    desc: "Search files and read content stored in Box",
+    category: "Storage",
+    accent: "#0061D5",
+    capabilities: ["Search files", "Read file content", "List folders"],
+    status: "disconnected",
+  },
+  {
+    id: "github",
+    logo: "assets/logos/github.svg",
+    name: "GitHub",
+    desc: "Search repos and read issues, PRs and releases",
+    category: "Dev & project",
+    featured: true,
+    accent: "#24292E",
+    capabilities: ["Search repos", "Read issues & PRs", "List releases"],
+    status: "disconnected",
+  },
+  {
+    id: "linear",
+    logo: "assets/logos/linear.svg",
+    name: "Linear",
+    desc: "Search issues and read cycle details from Linear",
+    category: "Dev & project",
+    accent: "#5E6AD2",
+    capabilities: ["Search issues", "Read issue details", "List cycles"],
+    status: "disconnected",
+  },
+  {
+    id: "jira",
+    logo: "assets/logos/jira.svg",
+    name: "Jira",
+    desc: "Search issues and read sprint details from Jira",
+    category: "Dev & project",
+    accent: "#2684FF",
+    capabilities: ["Search issues", "Read tickets", "List sprints"],
+    status: "disconnected",
+  },
+  {
+    id: "trello",
+    logo: "assets/logos/trello.svg",
+    name: "Trello",
+    desc: "Search cards and read boards from Trello",
+    category: "Dev & project",
+    accent: "#0079BF",
+    capabilities: ["Search cards", "Read card content", "List boards"],
+    status: "disconnected",
+  },
+  {
+    id: "asana",
+    logo: "assets/logos/asana.svg",
+    name: "Asana",
+    desc: "Search tasks and read projects from Asana",
+    category: "Dev & project",
+    accent: "#F06A6A",
+    capabilities: ["Search tasks", "Read task details", "List projects"],
+    status: "disconnected",
+  },
+  {
+    id: "figma",
+    logo: "assets/logos/figma.svg",
+    name: "Figma",
+    desc: "Search files and read frame content from Figma",
+    category: "Dev & project",
+    accent: "#A259FF",
+    capabilities: ["Search files", "Read frame content", "List comments"],
+    status: "disconnected",
+  },
+  {
+    id: "teams",
+    logo: "assets/logos/teams.svg",
+    name: "Microsoft Teams",
+    desc: "Search messages and read channel posts from Teams",
+    category: "Messaging",
+    accent: "#4B53BC",
+    capabilities: ["Search messages", "Read channel posts", "List teams"],
+    status: "disconnected",
+  },
+  {
+    id: "discord",
+    logo: "assets/logos/discord.svg",
+    name: "Discord",
+    desc: "Search messages and read channel history from Discord",
+    category: "Messaging",
+    accent: "#5865F2",
+    capabilities: ["Search messages", "Read channel history", "List servers"],
+    status: "disconnected",
+  },
+  {
+    id: "hubspot",
+    logo: "assets/logos/hubspot.svg",
+    name: "HubSpot",
+    desc: "Search records and read deals and contacts from HubSpot",
+    category: "CRM & support",
+    accent: "#FF7A59",
+    capabilities: ["Search records", "Read deals & contacts", "List pipelines"],
+    status: "disconnected",
+  },
+  {
+    id: "salesforce",
+    logo: "assets/logos/salesforce.svg",
+    name: "Salesforce",
+    desc: "Search records and read opportunities from Salesforce",
+    category: "CRM & support",
+    accent: "#00A1E0",
+    capabilities: ["Search records", "Read opportunities", "List accounts"],
+    status: "disconnected",
+  },
+  {
+    id: "intercom",
+    logo: "assets/logos/intercom.svg",
+    name: "Intercom",
+    desc: "Search conversations and read help articles from Intercom",
+    category: "CRM & support",
+    accent: "#1F8DED",
+    capabilities: ["Search conversations", "Read tickets", "List articles"],
+    status: "disconnected",
+  },
+  {
+    id: "zendesk",
+    logo: "assets/logos/zendesk.svg",
+    name: "Zendesk",
+    desc: "Search tickets and read conversations from Zendesk",
+    category: "CRM & support",
+    accent: "#03363D",
+    capabilities: ["Search tickets", "Read conversations", "List articles"],
+    status: "disconnected",
+  },
+  {
+    id: "airtable",
+    name: "Airtable",
+    desc: "Search bases and read records across your Airtable workspace",
+    category: "Storage",
+    accent: "#2D7FF9",
+    capabilities: ["Search bases", "Read records", "List tables"],
+    status: "disconnected",
+  },
+  {
+    id: "zoom",
+    name: "Zoom",
+    desc: "Search cloud recordings and read meeting transcripts from Zoom",
+    category: "Meetings & calls",
+    accent: "#0B5CFF",
+    capabilities: ["Search recordings", "Read transcripts", "List meetings"],
+    status: "disconnected",
+  },
+  {
+    id: "fathom",
+    name: "Fathom",
+    desc: "Search calls and read AI meeting summaries from Fathom",
+    category: "Meetings & calls",
+    accent: "#5468FF",
+    capabilities: ["Search calls", "Read summaries & highlights", "List meetings"],
+    status: "disconnected",
+  },
+];

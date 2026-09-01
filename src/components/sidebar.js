@@ -1,12 +1,12 @@
-import { html, raw, escapeHtml } from "../utils.js?v=1002";
-import { navigate, getPath } from "../router.js?v=1002";
-import { open as openBugReportModal } from "./bug-report-modal.js?v=1002";
-import { open as openFeedbackModal } from "./feedback-modal.js?v=1002";
-import { open as openConfirmModal } from "./confirm-modal.js?v=1002";
-import { open as openRenameModal } from "./rename-modal.js?v=1002";
-import { open as openSearchModal } from "./search-modal.js?v=1002";
-import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=1002";
-import { renderAdminMenu, applyUserMode, applyOrgRole, toggleFlag } from "../admin-menu.js?v=1002";
+import { html, raw, escapeHtml } from "../utils.js?v=1003";
+import { navigate, getPath } from "../router.js?v=1003";
+import { open as openBugReportModal } from "./bug-report-modal.js?v=1003";
+import { open as openFeedbackModal } from "./feedback-modal.js?v=1003";
+import { open as openConfirmModal } from "./confirm-modal.js?v=1003";
+import { open as openRenameModal } from "./rename-modal.js?v=1003";
+import { open as openSearchModal } from "./search-modal.js?v=1003";
+import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=1003";
+import { renderAdminMenu, applyUserMode, applyOrgRole, toggleFlag } from "../admin-menu.js?v=1003";
 import {
   getSessions,
   getSessionById,
@@ -14,21 +14,21 @@ import {
   deleteSession,
   togglePin as togglePinSession,
   subscribe as subscribeSessions,
-} from "../sessions-store.js?v=1002";
-import { isFlagOn } from "../feature-flags.js?v=1002";
-import { isNewUser } from "../user-mode.js?v=1002";
-import { clearSession as clearLibrarySession } from "../library.js?v=1002";
-import { getContextById, getDefaultContext, subscribe as subscribeContexts } from "../contexts-store.js?v=1002";
+} from "../sessions-store.js?v=1003";
+import { isFlagOn } from "../feature-flags.js?v=1003";
+import { isNewUser } from "../user-mode.js?v=1003";
+import { clearSession as clearLibrarySession } from "../library.js?v=1003";
+import { getContextById, getDefaultContext, subscribe as subscribeContexts } from "../contexts-store.js?v=1003";
 // A Playbook nobody shared with me must not surface here either — the store
 // still holds it (see playbook-access.js), the sidebar just doesn't name it.
-import { canView, visibleContexts } from "../playbook-access.js?v=1002";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1002";
-import { countToReview, subscribe as subscribeTopics } from "../topics-store.js?v=1002";
-import { getConnectedConnectors, subscribe as subscribeConnectors } from "../connectors-store.js?v=1002";
-import { closePanel as closeRightPanel } from "./right-panel.js?v=1002";
-import { clearSession as clearAssistantSession } from "../assistant.js?v=1002";
-import { clearSession as clearPostsSession } from "../posts-store.js?v=1002";
-import { clearSession as clearSourcesSession } from "../sources-stream.js?v=1002";
+import { canView, visibleContexts } from "../playbook-access.js?v=1003";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1003";
+import { countToReview, subscribe as subscribeTopics } from "../topics-store.js?v=1003";
+import { getConnectedConnectors, subscribe as subscribeConnectors } from "../connectors-store.js?v=1003";
+import { closePanel as closeRightPanel } from "./right-panel.js?v=1003";
+import { clearSession as clearAssistantSession } from "../assistant.js?v=1003";
+import { clearSession as clearPostsSession } from "../posts-store.js?v=1003";
+import { clearSession as clearSourcesSession } from "../sources-stream.js?v=1003";
 
 // Global app sidebar — Brand / + New conversation / Recent chats / User footer.
 // Rendered once at boot into #sidebar; re-rendered on every route change so the
@@ -958,7 +958,7 @@ function togglePinSidebar(sessionId) {
   if (!before) return;
   const after = togglePinSession(sessionId);
   if (!after) return;
-  import("./toast.js?v=1002").then(({ showToast }) => {
+  import("./toast.js?v=1003").then(({ showToast }) => {
     showToast(after.pinned ? "Chat pinned" : "Chat unpinned", {
       action: {
         label: "Undo",
@@ -1018,7 +1018,7 @@ function deleteSidebarSession(sessionId) {
         closeRightPanel();
         navigate("/");
       }
-      import("./toast.js?v=1002").then(({ showToast }) => showToast("Chat deleted"));
+      import("./toast.js?v=1003").then(({ showToast }) => showToast("Chat deleted"));
     },
   });
 }

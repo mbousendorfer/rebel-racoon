@@ -86,8 +86,11 @@ src/
   org.js                — CONFIG: who I am, my org, its members, my role (localStorage: archie-org-role)
   playbook-access.js    — who may view/use/edit/share a Playbook; the store never filters
   file-kinds.js         — source kind → DS icon class
-  mocks.js              — ALL seed data (sessions, contexts, sources, ideas, posts,
-                          connectors + connectorDocs, social accounts, threads, prefs)
+  mocks.js              — barrel over mocks/ — the single import path for seed data
+  mocks/                — ALL seed data, one file per domain: sessions, top-posts,
+                          sources, ideas, playbooks, topics, posts, threads,
+                          schedule, connectors, social. Self-contained: no file
+                          under mocks/ reads a sibling.
   image-studio.js       — Image Studio state engine (UI-agnostic) + all its mocks
   image-studio-canvas.js — pure canvas helpers: bake / crop / text metrics
 
@@ -446,7 +449,7 @@ Exception: the `sparklesMermaid` icon uses inline SVG for its gradient fill. Thi
 ## Key conventions
 
 - `index.html` is HTML markup only — all UI is rendered by JS.
-- All seed data lives in `src/mocks.js`.
+- All seed data lives under `src/mocks/`, one file per domain, re-exported by the `src/mocks.js` barrel — consumers always import from `mocks.js`, never from a domain file. A new domain is a new file plus one `export *` line; it must not read another domain.
 - Event wiring is **pure event delegation** with `data-*` attributes on the screen/modal/panel root. No inline `onclick`, no per-child `addEventListener` for interactive elements.
 - Keep `?v=N` import suffixes consistent across importers; bump in lockstep when a module changes its exports or is a shared singleton/store.
 - The `html` tagged-template escapes interpolations by default — wrap trusted HTML fragments in `raw()`, and do **not** double-escape (don't call `escapeHtml()` on a value already interpolated into an `html` template).
