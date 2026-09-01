@@ -284,23 +284,6 @@ button.ap-link {
   color: var(--ref-color-electric-blue-40);
 }
 
-.ap-filter-chip-icon,
-.ap-filter-chip-avatar {
-  flex: 0 0 16px;
-  width: 16px;
-  height: 16px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-.ap-filter-chip-avatar img {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  border: 1px solid var(--ref-color-grey-10);
-  object-fit: cover;
-}
-
 .ap-filter-chip-count {
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);

@@ -479,9 +479,9 @@
    reader — the layout jumping is exactly what a skeleton exists to prevent.
 
    The shimmer is local to this screen, matching what the app already does:
-   `thread-skeleton-shimmer`, `clip-studio-shimmer` and `gen-shimmer` are each
-   defined by their own screen. (Fourth copy of one gradient — a shared primitive
-   in base.css is due, but it would mean touching three working consumers.) */
+   `thread-skeleton-shimmer` and `clip-studio-shimmer` are each defined by their
+   own screen. (Third copy of one gradient — a shared primitive in base.css is
+   due, but it would mean touching two working consumers.) */
 .topic-ghost {
   display: flex;
   flex-direction: column;

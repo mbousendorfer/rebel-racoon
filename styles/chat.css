@@ -137,12 +137,6 @@
   flex-direction: row;
 }
 
-.chat-turn-header {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-}
-
 .chat-turn-avatar {
   font-size: var(--sys-icon-css-sm);
   line-height: 1;
@@ -749,19 +743,6 @@ span.chat-bubble-choice-chip {
   color: var(--sys-text-color-default);
 }
 
-/* Profile chips — one per unique target network, showing the connected
-   social account's handle alongside the platform glyph. Sits between
-   the title and the "From <idea>" subtitle so the card answers
-   "where will these drafts go?" at a glance. */
-.drafts-card__profiles {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--ref-spacing-sm);
-  min-width: 0;
-  color: var(--sys-text-color-light);
-}
-
 /* Subtitle: "From '<lead idea title>'". Single line, truncates with
    ellipsis. The quoted title is rendered in a slightly heavier weight
    so the citation reads as a proper noun. */
@@ -810,11 +791,7 @@ span.chat-bubble-choice-chip {
   gap: var(--ref-spacing-xs);
 }
 
-.chat-bubble-choice-chip--preview,
-.chat-bubble-choice-chip--bold,
-.chat-bubble-choice-chip--clean,
-.chat-bubble-choice-chip--caption,
-.chat-bubble-choice-chip--none {
+.chat-bubble-choice-chip--preview {
   position: relative;
   flex-direction: column;
   align-items: center;
@@ -827,11 +804,7 @@ span.chat-bubble-choice-chip {
 
 /* On the tall preview chips the check floats in the top-right corner rather
    than adding a third row to the centred column. */
-.chat-bubble-choice-chip--preview .chat-bubble-choice-check,
-.chat-bubble-choice-chip--bold .chat-bubble-choice-check,
-.chat-bubble-choice-chip--clean .chat-bubble-choice-check,
-.chat-bubble-choice-chip--caption .chat-bubble-choice-check,
-.chat-bubble-choice-chip--none .chat-bubble-choice-check {
+.chat-bubble-choice-chip--preview .chat-bubble-choice-check {
   position: absolute;
   top: var(--ref-spacing-xxs);
   right: var(--ref-spacing-xxs);
@@ -848,27 +821,6 @@ span.chat-bubble-choice-chip {
   color: var(--ref-color-white);
 }
 
-.chat-bubble-choice-preview--bold {
-  font-weight: var(--sys-text-style-body-bold-weight);
-  font-size: var(--sys-text-style-body-bold-size);
-  line-height: var(--sys-text-style-body-bold-line-height);
-}
-
-.chat-bubble-choice-preview--clean {
-  font-weight: var(--sys-text-style-body-weight);
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  background: var(--ref-color-grey-80);
-}
-
-.chat-bubble-choice-preview--caption {
-  font-weight: var(--sys-text-style-caption-weight);
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  background: rgba(0, 0, 0, 0.65);
-}
-
-.chat-bubble-choice-preview--none,
 .chat-bubble-choice-preview--default {
   background: transparent;
   color: var(--ref-color-grey-60);

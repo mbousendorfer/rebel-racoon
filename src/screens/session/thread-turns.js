@@ -6,7 +6,7 @@
 // and returns an HTML string. No store reads, no DOM, no side effects: the
 // store-coupled turns (extraction / clip-extraction / source resolution) stay
 // in session.js and pass their resolved data in as arguments.
-import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=1001";
+import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=1002";
 
 // Chat-switch skeleton — shown for ~340ms inside .session__assistant-thread
 // when switching chats, then swapped for the real thread.
@@ -154,13 +154,13 @@ export function renderChoiceTurn(message) {
     .map((c) => {
       const isSelected = (message.selected || []).includes(c.value);
       const selectedClass = isSelected ? " is-selected" : "";
-      const previewClass = c.preview ? ` chat-bubble-choice-chip--${c.previewKind || "preview"}` : "";
+      const previewClass = c.preview ? " chat-bubble-choice-chip--preview" : "";
       // Selected affordance — the same filled blue check badge as the picker
       // rows. Always in the markup, CSS-hidden until the chip is .is-selected
       // (selection is a pure DOM toggle, so it can't be rendered conditionally).
       const checkBadge = `<span class="chat-bubble-choice-check" aria-hidden="true"><i class="ap-icon-check"></i></span>`;
       const inner = c.preview
-        ? `<span class="chat-bubble-choice-preview chat-bubble-choice-preview--${c.previewKind || "default"}">${c.preview}</span>
+        ? `<span class="chat-bubble-choice-preview chat-bubble-choice-preview--default">${c.preview}</span>
            <span class="chat-bubble-choice-label">${c.label}</span>${checkBadge}`
         : `<i class="${c.icon}" aria-hidden="true"></i>
            <span>${c.label}</span>${checkBadge}`;

@@ -157,10 +157,6 @@
   font-weight: var(--sys-text-style-caption-weight);
 }
 
-.posts__card-status {
-  flex-shrink: 0;
-}
-
 .posts__card-body {
   display: flex;
   flex-direction: column;

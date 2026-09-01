@@ -45,7 +45,6 @@ body.has-modal {
 .chat-picker-modal,
 .add-source-modal,
 .connectors-modal,
-.topic-modal,
 .topic-ignore,
 .topic-history,
 .topic-picker,
@@ -73,13 +72,6 @@ body.has-modal {
   /* Cap the height so the dialog reads as a panel and the gallery scrolls
      inside it, rather than the modal stretching to near-full-viewport. */
   max-height: min(calc(100vh - 48px), 720px);
-}
-
-/* 720, not the connectors dialog's 920: this one is prose. Past ~720 the
-   measure decouples and the analysis stops being readable. */
-.topic-modal {
-  width: min(calc(100% - 32px), 720px);
-  max-height: min(calc(100vh - 48px), 800px);
 }
 
 .bug-report-modal {
@@ -530,7 +522,6 @@ body.has-modal {
 .chat-picker-modal.open,
 .add-source-modal.open,
 .connectors-modal.open,
-.topic-modal.open,
 .topic-ignore.open,
 .topic-history.open,
 .topic-picker.open,
@@ -952,130 +943,9 @@ body.has-modal {
   font-weight: var(--sys-text-style-body-bold-weight);
 }
 
-/* ── Preview stage ───────────────────────────────────────── */
-/* The wrap carries --gen-ratio (format width/height) + the height budget the
-   image must fit within, and centres the framed image on the grey canvas. */
-.gen-stage-wrap {
-  --gen-ratio: 1.7778;
-  --gen-stage-h: min(440px, 52vh);
-  /* Fill the pane's vertical space and centre the image; the feedback stays
-     pinned at the bottom of the pane as the last child. */
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* The generated image — a framed surface that lifts off the grey canvas. Its
-   width is derived from the height budget so it always fits, whatever the
-   format (tall 9:16 stays narrow, wide 16:9 fills the pane). */
-.gen-single {
-  position: relative;
-  aspect-ratio: var(--gen-ratio);
-  width: min(100%, calc(var(--gen-stage-h) * var(--gen-ratio)));
-  max-height: var(--gen-stage-h);
-  margin-inline: auto;
-  border: 1px solid var(--ref-color-grey-20);
-  border-radius: var(--ref-border-radius-md);
-  background: var(--ref-color-white);
-  box-shadow: var(--app-shadow-popover-lg);
-  overflow: hidden;
-  animation: gen-single-in var(--ref-animation-normal) var(--app-ease-out) both;
-}
-
-/* Skeleton while generating — shimmer canvas hosting a centred Archie loader.
-   Keeps the same footprint as the result frame (sized by .gen-single); the
-   loader is centred via an absolutely-positioned inner so the frame doesn't
-   collapse to the loader's content size. */
-.gen-single--loading {
-  border-color: var(--ref-color-grey-10);
-  box-shadow: none;
-  background-image: linear-gradient(
-    90deg,
-    var(--ref-color-grey-10) 25%,
-    var(--ref-color-grey-05) 50%,
-    var(--ref-color-grey-10) 75%
-  );
-  background-size: 200% 100%;
-  animation: gen-shimmer 1.2s linear infinite;
-}
-
-.gen-loading-inner {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--ref-spacing-sm);
-}
-
 /* Beats the DS `.gen-image-spinner { --archie-loader-size: 20px }` default. */
 .gen-image-spinner.gen-loading-mark {
   --archie-loader-size: 88px;
-}
-
-.gen-loading-label {
-  margin: 0;
-  font-size: var(--sys-text-style-caption-bold-size);
-  line-height: var(--sys-text-style-caption-bold-line-height);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-grey-60);
-}
-
-@keyframes gen-shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-
-@keyframes gen-single-in {
-  from {
-    opacity: 0;
-    transform: scale(0.99);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .gen-single,
-  .gen-single--loading {
-    animation: none;
-  }
-}
-
-.gen-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--ref-spacing-xxs);
-  color: var(--ref-color-grey-60);
-  text-align: center;
-}
-
-.gen-empty > i {
-  font-size: 36px;
-  color: var(--ref-color-grey-40);
-}
-
-.gen-empty-title {
-  margin: 0;
-  font-size: var(--sys-text-style-body-bold-size);
-  line-height: var(--sys-text-style-body-bold-line-height);
-  font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--ref-color-grey-80);
-}
-
-.gen-empty-sub {
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
 }
 
 /* ── Shortcut legend ────────────────────────────────────── */

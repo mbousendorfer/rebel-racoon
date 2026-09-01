@@ -1555,10 +1555,6 @@
   gap: var(--ref-spacing-xs);
 }
 
-.context-brief__name-section .context-brief__color-swatches {
-  flex: 0 0 auto;
-}
-
 .context-brief__color-swatch {
   width: 28px;
   height: 28px;
