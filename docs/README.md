@@ -76,6 +76,18 @@ Critères d'acceptation écrits **depuis l'app tournante** : chacun dit ce que l
 
 ## ✅ Maintenance
 
+Ce qui se vérifie tout seul (il n'y a pas de suite de tests) :
+
+```bash
+npm run check:versions  # un seul ?v= dans tout le graphe — lancé par le hook pre-commit
+npm run check:templates # un backtick dans un commentaire HTML blanchit l'app — idem
+npm run check:dead      # audit : exports que personne ne nomme + classes CSS jamais émises
+```
+
+`check:dead` rapporte, il ne supprime pas : une classe ASSEMBLÉE (`isv2-art--${key}`) est
+signalée `[built?]` et bien vivante. C'est l'outil qui a servi à la passe de nettoyage — le
+relancer avant d'écrire un nouvel écran évite d'hériter du mort de l'ancien.
+
 - **Quand tu modifies une convention** → mettre à jour à la fois [`CLAUDE.md`](../CLAUDE.md) ET le doc concerné dans `docs/reference/`.
 - **Quand tu produis un audit** → poser le doc dans `docs/audits/` avec date + portée en intro. S'il devient obsolète, le supprimer (l'historique git suffit).
 - **Quand tu trouves un doc qui contredit le code** → corriger le doc immédiatement, ou le supprimer s'il n'est pas récupérable. Pas de zone tampon "à jour plus tard".

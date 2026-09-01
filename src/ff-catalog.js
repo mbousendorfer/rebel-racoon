@@ -25,8 +25,7 @@ export const FLAGS = Object.freeze([
       "When OFF (default), hides everything connectors-related: the " +
       "Connectors gallery (route /connectors + sidebar nav) and modal, the " +
       "composer Add → 'Connected sources' submenu, the Sources panel 'Live " +
-      "connectors' group, the Settings → Connectors section, and the " +
-      "Add-source modal's Connectors tab.",
+      "connectors' group, and the Add-source modal's Connectors tab.",
   },
   {
     id: "conversationStatusCard",

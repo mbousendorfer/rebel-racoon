@@ -4,17 +4,17 @@ Source de vérité : [`src/app.js`](../../src/app.js) (route table) + [`src/rout
 
 ## Route table
 
-| Route                | Handler                | Notes                                                                                                                                                                                                                                                                                                          |
-| -------------------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/`                  | `dashboard.js`         | **Redirect**, et rien d'autre : first-time (`new-alt`) → `/welcome-alt` ; returning → most-recent session ou nouvelle session. Cette route a rendu une front page magazine derrière le flag `frontPage` ; c'est parti avec le magazine Topics (voir [`FEATURES.md`](FEATURES.md) §17).                         |
-| `/session/:id`       | `session.js`           | La surface chat principale (le plus gros fichier du projet). Héberge le thread assistant, le composer, les flows per-session (intake, draft, clips).                                                                                                                                                           |
-| `/contexts`          | `contexts.js`          | Library **Playbooks** : cards (DO/DON'T, brief, color tag) + edit en side panel.                                                                                                                                                                                                                               |
-| `/playbook/:id`      | `playbook.js`          | Page détail d'un Playbook. Topbar back → `/contexts`.                                                                                                                                                                                                                                                          |
-| `/connectors`        | `connectors.js`        | Gallery des connectors (feature flag `connectors`, default OFF). Détail dans un modal.                                                                                                                                                                                                                         |
-| `/topics`            | `topics.js`            | Le **Topic Feed** : deux segments (Ready to draft / Topics for later), un dropdown Filters, trois groupes d'âge, pagination par 10, et l'article en **master–detail** à côté de la liste. Scopé à **un** Playbook par `?pb=` — jamais un scope global. Flag `topicFeed`, default OFF ; deep-link périmé → `/`. |
-| `/topics/settings`   | `topics-settings.js`   | **Feed settings** — les huit sources d'écoute + la cadence + les sites de la source Brand website, scopés à un Playbook (`?pb=`). Une page, pas un onglet : on la règle une fois. Commit direct, aucune barre Save. Topbar back → `/topics`.                                                                   |
-| `/welcome-alt`       | `welcome-alt.js`       | Onboarding first-time. Redirige vers une session transitoire. Body en `.onboarding` (full-bleed).                                                                                                                                                                                                              |
-| `/welcome-alt/recap` | `welcome-alt-recap.js` | Recap final du Playbook construit pendant l'onboarding.                                                                                                                                                                                                                                                        |
+| Route                | Handler                | Notes                                                                                                                                                                                                                                                                                              |
+| -------------------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`                  | `dashboard.js`         | **Redirect**, et rien d'autre : first-time (`new-alt`) → `/welcome-alt` ; returning → most-recent session ou nouvelle session. Cette route a rendu une front page magazine derrière le flag `frontPage` ; c'est parti avec le magazine Topics (voir [`FEATURES.md`](FEATURES.md) §17).             |
+| `/session/:id`       | `session.js`           | La surface chat principale (le plus gros fichier du projet). Héberge le thread assistant, le composer, les flows per-session (intake, draft, clips).                                                                                                                                               |
+| `/contexts`          | `contexts.js`          | Library **Playbooks** : cards (DO/DON'T, brief, color tag) + edit en side panel.                                                                                                                                                                                                                   |
+| `/playbook/:id`      | `playbook.js`          | Page détail d'un Playbook. Topbar back → `/contexts`.                                                                                                                                                                                                                                              |
+| `/connectors`        | `connectors.js`        | Gallery des connectors (feature flag `connectors`, default OFF). Détail dans un modal.                                                                                                                                                                                                             |
+| `/topics`            | `topics.js`            | Le **Topic Feed** : une seule liste, un dropdown Filters portant les six états, trois groupes d'âge, pagination par 10, et l'article en **master–detail** à côté de la liste. Scopé à **un** Playbook par `?pb=` — jamais un scope global. Flag `topicFeed`, default OFF ; deep-link périmé → `/`. |
+| `/topics/settings`   | `topics-settings.js`   | **Feed settings** — les huit sources d'écoute + la cadence + les sites de la source Brand website, scopés à un Playbook (`?pb=`). Une page, pas un onglet : on la règle une fois. Commit direct, aucune barre Save. Topbar back → `/topics`.                                                       |
+| `/welcome-alt`       | `welcome-alt.js`       | Onboarding first-time. Redirige vers une session transitoire. Body en `.onboarding` (full-bleed).                                                                                                                                                                                                  |
+| `/welcome-alt/recap` | `welcome-alt-recap.js` | Recap final du Playbook construit pendant l'onboarding.                                                                                                                                                                                                                                            |
 
 ## Matching & lifecycle
 
@@ -23,8 +23,10 @@ Le router (`src/router.js`) :
 1. Écoute `hashchange` sur `window`.
 2. Sépare le path de la query : `#/session/abc?tab=posts` → path = `/session/abc`, query = `tab=posts`.
 3. Cherche la 1ère route qui match le path (avec `:param` extraction).
-4. Si match : appelle `cleanup()` du précédent handler (s'il en a retourné une), vide `#app`, appelle le nouveau handler avec `({ ...params }, target)`.
-5. Si pas de match : fallback (à confirmer dans le code — généralement redirection home ou 404 silencieux).
+4. Si match : appelle `cleanup()` du précédent handler (s'il en a retourné une), puis le nouveau handler avec `({ ...params }, target)`. **Le router ne vide pas `#app`** — c'est le handler qui écrit dans `target`. Puis `afterRender(path, params)` et `target.scrollTop = 0`.
+5. Si pas de match : `navigate("/")`. `/` étant toujours enregistrée, le `Not found.` du router est une garde défensive qu'on n'atteint pas.
+
+`getPath()` lit aussi un `?route=/foo` en query : le script de capture Figma impose un hash en `#figmacapture=`, incompatible avec le router — ce param est la porte de sortie (cf. [`src/figma-capture.js`](../../src/figma-capture.js)).
 
 **Important** : le router re-run le handler sur **chaque hashchange**, y compris pour des changements de query (à path identique). C'est intentionnel — l'écran réagit aux query params (tab, focusIdea, etc.).
 
@@ -55,14 +57,14 @@ Exemples observés :
 `src/handoff.js` est un bridge à usage unique sur `sessionStorage`.
 
 ```js
-import { setHandoff, consumeHandoff, hasHandoff } from "./handoff.js";
+import { setHandoff, consumeHandoff } from "./handoff.js";
 
 // avant de navigate
-setHandoff("pendingDraftIdeaId", { ideaId: "i-42" });
+setHandoff("pendingAskSource", { sourceId: "src-1", filename: "notes.pdf" });
 navigate("/session/abc");
 
 // dans le handler de la destination
-const payload = consumeHandoff("pendingDraftIdeaId"); // atomic read+remove
+const payload = consumeHandoff("pendingAskSource"); // atomic read+remove
 if (payload) {
   /* … */
 }
@@ -70,15 +72,16 @@ if (payload) {
 
 ### Handoffs actifs (consumés au mount de `session.js`)
 
-| Clé                          | Posé par                                              | Consommé par →                      |
-| ---------------------------- | ----------------------------------------------------- | ----------------------------------- |
-| `pendingStartFlow`           | dashboard / new chat with a Playbook                  | `startActionPickerFlow`             |
-| `pendingDraftIdeaId`         | idea card "Draft post"                                | `askProfileQuestion` (`draft-flow`) |
-| `pendingAskSource`           | source card "Ask"                                     | `askWhatToKnow`                     |
-| `pendingAskConnector`        | connectors gallery / modal "Try in chat"              | `askConnector` (`connector-ask`)    |
-| `pendingTopicChat`           | Use in chat, depuis les quatre surfaces qui l'offrent | `attachTopicToChat` (`topic-flow`)  |
-| `pendingStartContextBuilder` | `/contexts` "New Playbook" + welcome-alt              | `context-builder` (création)        |
-| `pendingStartPlaybookEditor` | `/contexts` card edit                                 | `playbook-editor`                   |
+| Clé                          | Posé par                                              | Consommé par →                     |
+| ---------------------------- | ----------------------------------------------------- | ---------------------------------- |
+| `pendingAskSource`           | source card "Ask"                                     | `askWhatToKnow`                    |
+| `pendingAskConnector`        | connectors gallery / modal "Try in chat"              | `askConnector` (`connector-ask`)   |
+| `pendingTopicChat`           | Use in chat, depuis les quatre surfaces qui l'offrent | `attachTopicToChat` (`topic-flow`) |
+| `pendingStartContextBuilder` | `/contexts` "New Playbook" + welcome-alt              | `context-builder` (création)       |
+| `pendingStartClipStudio`     | composer session → "Extract video clips"              | `clipStudio.start` (nouveau chat)  |
+| `pendingStartBatch`          | composer session → "Batch of posts"                   | `batchStudio.start` (nouveau chat) |
+
+Une clé **consommée mais jamais posée** se lit comme un point d'entrée vivant alors qu'elle est morte : `pendingStartFlow` et `pendingDraftIdeaId` sont restés dans cette table longtemps après que leurs producteurs aient été remplacés. N'ajouter une ligne qu'avec les deux bouts.
 
 ## Navigation interne — patterns
 

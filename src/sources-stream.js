@@ -8,11 +8,11 @@
 // The state machine timers live here (not inside the modal) so uploads
 // continue in background after the user closes the modal.
 
-import { sourcesBySession as seedByCsesssion } from "./mocks.js?v=1004";
-import { isNewUser } from "./user-mode.js?v=1004";
-import { createNotifier } from "./store-utils.js?v=1004";
-import { detectUrlService } from "./url-services.js?v=1004";
-import { isFlagOn } from "./feature-flags.js?v=1004";
+import { sourcesBySession as seedByCsesssion } from "./mocks.js?v=1005";
+import { isNewUser } from "./user-mode.js?v=1005";
+import { createNotifier } from "./store-utils.js?v=1005";
+import { detectUrlService } from "./url-services.js?v=1005";
+import { isFlagOn } from "./feature-flags.js?v=1005";
 
 // Canned extraction output attached to every Processed Video source.
 // Generic enough to plausibly come from any keynote / talk / demo video.
@@ -385,7 +385,7 @@ function transitionToDone(upload) {
   // "ready" ping has no status-bar equivalent (extraction defers to the
   // analyze choice), so it always fires.
   if (isVideo || isFlagOn("statusActionSnackbars")) {
-    import("./components/toast.js?v=1004").then(({ showToast }) => {
+    import("./components/toast.js?v=1005").then(({ showToast }) => {
       showToast(
         isVideo ? `${upload.name} ready` : `${upload.name} ready · ${formatExtractionSummary(ideaCount, clipCount)}`,
       );
@@ -702,7 +702,7 @@ export function completeScriptedSource(sourceId, { signal, signalColor, ideaCoun
   // source completes and miss the inline bubble flip. The non-video toast
   // duplicates the composer status bar, so it's gated; the video ping stays.
   if (isVideo || isFlagOn("statusActionSnackbars")) {
-    import("./components/toast.js?v=1004").then(({ showToast }) => {
+    import("./components/toast.js?v=1005").then(({ showToast }) => {
       showToast(
         isVideo ? `${src.filename} ready` : `${src.filename} ready · ${formatExtractionSummary(ideaCount, clipCount)}`,
       );

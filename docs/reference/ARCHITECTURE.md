@@ -5,9 +5,9 @@
 ## Principes
 
 - **Vanilla JS pur** — pas de framework, pas de bundler, pas de build, pas de dépendance runtime externe.
-- **ES modules** servis directement depuis `src/`, avec suffixes `?v=N` pour le cache-bust (à bumper en cohérence cross-importers).
+- **ES modules** servis directement depuis `src/`, avec un suffixe `?v=N` de cache-bust — **un seul numéro pour toute l'app**, réécrit en une passe par `npm run bump` (cf. § Cycle d'import).
 - **Pure event delegation** — chaque écran/modal/composant attache un seul listener sur sa racine et dispatche via `data-*`. Aucun `onclick=` inline, aucun listener per-child sur les enfants interactifs.
-- **Mocks** — toutes les seed data sont dans `src/mocks.js`. Aucune persistance d'état app (seul `archie-user-mode`, les feature flags, l'état collapse de la sidebar et les `sessionStorage` handoffs survivent au reload).
+- **Mocks** — toutes les seed data sont sous `src/mocks/`, un fichier par domaine derrière le barrel `src/mocks.js`. Aucune persistance d'état app (seul `archie-user-mode`, les feature flags, l'état collapse de la sidebar et les `sessionStorage` handoffs survivent au reload).
 
 ## Lifecycle de l'app
 
@@ -40,16 +40,18 @@
 
 ## Source layout (résumé)
 
-| Domaine                           | Fichiers                                                                                                                                                                                                                                                                                                                                                          |
-| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Bootstrap**                     | `app.js`, `router.js`, `url-state.js`, `handoff.js`, `utils.js`, `store-utils.js`, `user-mode.js`, `feature-flags.js`, `ff-catalog.js`, `file-kinds.js`, `mocks.js`                                                                                                                                                                                               |
-| **Stores**                        | `sessions-store.js`, `contexts-store.js`, `connectors-store.js`, `library.js`, `posts-store.js`, `assistant.js`, `sources-stream.js`, `schedule-store.js`, `topic-feeds-store.js`, `topics-store.js`, `folders-store.js`, `top-posts-store.js`, `feedback-store.js`, `composer-mentions.js`, `image-studio.js` (moteur du studio) — voir [`STORES.md`](STORES.md) |
-| **Flow orchestrators**            | `start-flow.js`, `draft-flow.js`, `draft-rewrite.js`, `context-builder.js`, `playbook-view.js`, `context-mock-analysis.js`, `sidebar-wizard.js`, `inline-question.js`, `library-actions.js`, `topic-article.js`, `topic-flow.js`, `social-profiles.js`, `clip-formats.js`, `connectors-view.js`, `connector-ask.js`, `composer-connector.js`, `topic-flow.js`     |
-| **Screens**                       | `screens/{dashboard, session, contexts, playbook, connectors, topics, topics-settings, welcome-alt, welcome-alt-recap}.js` + `screens/_analyse-common.js` + `screens/session/{intake-lifecycle, thinking-chip, thread-turns, wizard-keyboard}.js`                                                                                                                 |
-| **Components (persistent shell)** | `components/{topbar, sidebar, right-panel, conversation-status-card, content-workspace, toast, shortcut-legend}.js`                                                                                                                                                                                                                                               |
-| **Components (cards)**            | `components/{source-card, idea-card, idea-card-compact, post-card, clip-card, social-post-card, topic-card, top-post-card, empty-state}.js`                                                                                                                                                                                                                       |
-| **Modals**                        | `components/{add-source, connectors, topic-picker, topic-ignore, video-clips, schedule, bug-report, feedback, chat-picker, confirm, rename, search, save-folder, analyze-profiles, fill-document}-modal.js` + `components/image-studio-v2/` (the Image Studio, 16 modules — voir [`FEATURES.md`](FEATURES.md) §7)                                                 |
-| **Modal coordinator**             | `modal-coordinator.js` — one-overlay-at-a-time orchestration                                                                                                                                                                                                                                                                                                      |
+| Domaine                           | Fichiers                                                                                                                                                                                                                                                                                                                                                                                             |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Bootstrap**                     | `app.js`, `router.js`, `url-state.js`, `handoff.js`, `utils.js`, `store-utils.js`, `user-mode.js`, `feature-flags.js`, `ff-catalog.js`, `file-kinds.js`, `mocks.js` + `mocks/`, `archie-loader.js`, `figma-capture.js`, `org.js`, `playbook-access.js`                                                                                                                                               |
+| **Stores**                        | `sessions-store.js`, `contexts-store.js`, `connectors-store.js`, `library.js`, `posts-store.js`, `assistant.js`, `sources-stream.js`, `schedule-store.js`, `topic-feeds-store.js`, `topics-store.js`, `folders-store.js`, `top-posts-store.js`, `feedback-store.js`, `composer-mentions.js`, `image-studio.js` (moteur du studio) — voir [`STORES.md`](STORES.md)                                    |
+| **Flow orchestrators**            | `draft-flow.js`, `draft-rewrite.js`, `context-builder.js`, `playbook-view.js`, `context-mock-analysis.js`, `sidebar-wizard.js`, `inline-question.js`, `library-actions.js`, `topic-article.js`, `topic-flow.js`, `top-posts-flow.js`, `social-profiles.js`, `clip-formats.js`, `connectors-view.js`, `connector-ask.js`, `composer-connector.js`, `languages.js`, `url-services.js`, `admin-menu.js` |
+| **Studios**                       | `batch-studio.js`, `clip-studio.js`, `caption-editor.js`, `clip-captions.js`, `clip-subtitles.js`, `image-studio.js`, `image-studio-canvas.js`                                                                                                                                                                                                                                                       |
+| **Screens**                       | `screens/{dashboard, session, contexts, playbook, connectors, topics, topics-settings, welcome-alt, welcome-alt-recap}.js` + `screens/_analyse-common.js` + `screens/session/{intake-lifecycle, thinking-chip, thread-turns, wizard-keyboard}.js`                                                                                                                                                    |
+| **Components (persistent shell)** | `components/{topbar, sidebar, right-panel, conversation-status-card, content-workspace, toast, shortcut-legend}.js`                                                                                                                                                                                                                                                                                  |
+| **Components (cards)**            | `components/{source-card, idea-card, idea-card-compact, post-card, clip-card, social-post-card, topic-card, top-post-card, empty-state}.js`                                                                                                                                                                                                                                                          |
+| **Components (shared bits)**      | `components/{more-menu, dropzone, tooltip, feedback-control}.js`                                                                                                                                                                                                                                                                                                                                     |
+| **Modals**                        | `components/{add-source, connectors, topic-picker, topic-ignore, topic-history, video-clips, schedule, bug-report, feedback, chat-picker, confirm, rename, search, save-folder, share-playbook, analyze-profiles, fill-document}-modal.js` + `components/image-studio-v2/` (the Image Studio, 17 modules — voir [`FEATURES.md`](FEATURES.md) §7)                                                     |
+| **Modal coordinator**             | `modal-coordinator.js` — one-overlay-at-a-time orchestration                                                                                                                                                                                                                                                                                                                                         |
 
 ## Conventions de fichiers
 
@@ -134,18 +136,20 @@ const wrapped = html`<div>${raw(prerenderedHtml)}</div>`; // n'escape pas raw()
 
 ## Cycle d'import + versioning
 
-Les imports portent un suffixe `?v=N` :
+Les imports portent un suffixe `?v=N`, et **c'est le même numéro partout** — dans `src/`, dans les `<link>` de `index.html`, et sur le `<script>` d'entrée :
 
 ```js
-import { sendMessage } from "./assistant.js?v=40";
+import { sendMessage } from "./assistant.js?v=1004";
 ```
 
-⚠️ Bumper la version d'un module impose de bumper **chez tous les importeurs** sinon un singleton/store devient deux instances séparées (avec leurs propres state map + subscribers).
+Le navigateur cache un module par son URL exacte : un store nommé à deux versions devient deux instances (state map + subscribers séparés). Un numéro unique rend la divergence impossible plutôt que simplement déconseillée.
 
-Outils :
+```bash
+npm run bump            # N → N+1 partout, en une passe
+npm run check:versions  # échoue si un ?v= diverge — le hook pre-commit le lance
+```
 
-- `scripts/bump-cache.py` — utilitaire à utiliser pour bump consistant
-- Plus de détails dans [`STORES.md#singleton-warning`](STORES.md#singleton-warning)
+Ne jamais éditer un `?v=` à la main : `scripts/cache-version.mjs` détient le numéro et couvre aussi les `import("…")` dynamiques, qu'un sed manuel oubliait. Plus de détails dans [`STORES.md#singleton-warning`](STORES.md#singleton-warning).
 
 ## Voir aussi
 

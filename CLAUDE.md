@@ -53,17 +53,17 @@ With Claude Code the dev server auto-launches via `.claude/launch.json` (server 
 
 ### Routes (declared in `src/app.js`)
 
-| Route                | Screen                 | Notes                                                                                             |
-| -------------------- | ---------------------- | ------------------------------------------------------------------------------------------------- |
-| `/`                  | `dashboard.js`         | Redirect, and nothing else (first-time → `/welcome-alt`, returning → most-recent session)         |
-| `/session/:id`       | `session.js`           | The main chat surface (largest file); hosts the assistant thread, composer, and per-session flows |
-| `/contexts`          | `contexts.js`          | Standalone **Playbooks** library (cards + edit)                                                   |
-| `/playbook/:id`      | `playbook.js`          | Playbook detail page (topbar back → `/contexts`)                                                  |
-| `/connectors`        | `connectors.js`        | Connectors gallery (marketplace); detail opens in a modal (gated by the `connectors` flag)        |
-| `/topics`            | `topics.js`            | **Topics** — the listening section: lead story + grid, across every Playbook (gated by `topics`)  |
-| `/topics/settings`   | `topics-settings.js`   | **Topics settings** — the six listening sources + cadence for one Playbook (`?pb=`); topbar back  |
-| `/welcome-alt`       | `welcome-alt.js`       | First-time onboarding kickoff (thin redirect into a transient session)                            |
-| `/welcome-alt/recap` | `welcome-alt-recap.js` | Onboarding recap reveal of the built Playbook                                                     |
+| Route                | Screen                 | Notes                                                                                                                |
+| -------------------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `/`                  | `dashboard.js`         | Redirect, and nothing else (first-time → `/welcome-alt`, returning → most-recent session)                            |
+| `/session/:id`       | `session.js`           | The main chat surface (largest file); hosts the assistant thread, composer, and per-session flows                    |
+| `/contexts`          | `contexts.js`          | Standalone **Playbooks** library (cards + edit)                                                                      |
+| `/playbook/:id`      | `playbook.js`          | Playbook detail page (topbar back → `/contexts`)                                                                     |
+| `/connectors`        | `connectors.js`        | Connectors gallery (marketplace); detail opens in a modal (gated by the `connectors` flag)                           |
+| `/topics`            | `topics.js`            | **Topic Feed** — the triage queue: list + article side by side, scoped to ONE Playbook via `?pb=` (flag `topicFeed`) |
+| `/topics/settings`   | `topics-settings.js`   | **Feed settings** — the eight listening sources + cadence for one Playbook (`?pb=`); topbar back                     |
+| `/welcome-alt`       | `welcome-alt.js`       | First-time onboarding kickoff (thin redirect into a transient session)                                               |
+| `/welcome-alt/recap` | `welcome-alt-recap.js` | Onboarding recap reveal of the built Playbook                                                                        |
 
 There is **no `/settings` route** — it was removed. The prototype Admin controls (user mode + feature flags + docs link) now live in the sidebar footer cog popover (`admin-menu.js`, rendered by `sidebar.js`); the old Social-accounts page was dropped (`social-profiles.js` remains as a shared helper).
 
@@ -86,6 +86,8 @@ src/
   org.js                — CONFIG: who I am, my org, its members, my role (localStorage: archie-org-role)
   playbook-access.js    — who may view/use/edit/share a Playbook; the store never filters
   file-kinds.js         — source kind → DS icon class
+  figma-capture.js      — ?openModal= / ?openPanel= deep links for the Figma screen capture
+  archie-loader.js      — swaps every spinner in the app for the animated Archie mark
   mocks.js              — barrel over mocks/ — the single import path for seed data
   mocks/                — ALL seed data, one file per domain: sessions, top-posts,
                           sources, ideas, playbooks, topics, posts, threads,
@@ -111,7 +113,6 @@ src/
   composer-connector.js — composer's "Connected sources" submenu (feature-flagged)
 
   # Conversational flow orchestrators (drive the assistant thread + pickers)
-  start-flow.js         — action-picker intro for an existing-Playbook chat
   draft-flow.js         — "Draft post from idea" turn sequence (channel pick → execute → result)
   draft-rewrite.js      — regenerate-a-draft (thinking → streaming → commit)
   context-builder.js    — Playbook creation/edit conversation (drives welcome-alt + edits)
@@ -135,9 +136,12 @@ src/
   languages.js          — language catalog for multilingual Playbooks
   url-services.js       — recognises a service (Notion/Google Docs/…) from a pasted URL
   admin-menu.js         — sidebar cog Admin popover (user mode + feature flags + docs)
+  caption-editor.js     — the clip caption editor (word marks, drag handles, presets)
+  clip-captions.js      — caption preset catalog + the mock transcript they render
+  clip-subtitles.js     — the subtitle-style picker's rendered samples
 
   screens/
-    dashboard.js, session.js, ideas.js, contexts.js, playbook.js,
+    dashboard.js, session.js, contexts.js, playbook.js,
     connectors.js, topics.js, topics-settings.js,
     welcome-alt.js, welcome-alt-recap.js
     _analyse-common.js  — shared "chat bubble + numbered picker bar" wizard primitives
@@ -158,6 +162,11 @@ src/
     source-card.js, idea-card.js, idea-card-compact.js, post-card.js, clip-card.js, empty-state.js
     topic-card.js         one Topic: the feed's card, the picker's card, the in-chat row
     social-post-card.js   someone ELSE's published post, as evidence (not top-post-card)
+    top-post-card.js      MY published post that performed — the Repurpose board's card
+    more-menu.js          installMoreMenu(): the shared ⋯ popover on source / idea / clip cards
+    dropzone.js           bindDropzone(): a dashed target that really accepts a drop
+    tooltip.js            document-delegated [data-tooltip] — no per-screen wiring
+    feedback-control.js   the thumbs + reasons row under anything Archie generated
     toast.js              showToast() snackbar (DS .ap-snackbar)
     shortcut-legend.js    ? key dialog
     # Modals (init → open → close, coordinated by modal-coordinator.js):
@@ -165,9 +174,11 @@ src/
     connectors-modal.js   connectors gallery + detail overlay (from composer Add / Sources panel / page)
     topic-picker-modal.js one dialog, two views — the picker's list, and the article
     topic-ignore-modal.js "Why did this Topic miss the mark?" — the reason, kept
+    topic-history-modal.js the Topic's two-sided trail: the scan's, then the reader's
     video-clips-modal.js, schedule-modal.js,
     bug-report-modal.js, feedback-modal.js, chat-picker-modal.js,
     confirm-modal.js, rename-modal.js, search-modal.js,
+    save-folder-modal.js, analyze-profiles-modal.js, fill-document-modal.js,
     share-playbook-modal.js  personal ⇄ org scope + owner + change log (flag)
     image-studio-v2/      the Image Studio, split by subject (see FEATURES §7 / §7bis):
                           index (lifecycle) · events · commit · inline-text · prompt-guard ·
@@ -357,16 +368,18 @@ Every token substitution is commented with the value it stands in for, because t
 
 ### Cross-screen handoffs
 
-`handoff.js` exposes `setHandoff(key, payload)` / `consumeHandoff(key)` (atomic read+remove) / `hasHandoff(key)` over `sessionStorage`. Consumed at `session.js` mount:
+`handoff.js` exposes `setHandoff(key, payload)` / `consumeHandoff(key)` (atomic read+remove) over `sessionStorage`. Consumed at `session.js` mount:
 
-| Key                          | Set by                                       | Consumed by →                     |
-| ---------------------------- | -------------------------------------------- | --------------------------------- |
-| `pendingStartFlow`           | dashboard / new chat with a Playbook         | `startActionPickerFlow`           |
-| `pendingDraftIdeaId`         | idea card "Draft post"                       | `askProfileQuestion` (draft-flow) |
-| `pendingAskSource`           | source card "Ask"                            | `askWhatToKnow`                   |
-| `pendingAskConnector`        | connectors gallery/modal "Try in chat"       | `askConnector`                    |
-| `pendingStartContextBuilder` | `/contexts` "New Playbook" + welcome-alt     | `context-builder` (create)        |
-| `pendingTopicChat`           | "Use in chat", from any of its four surfaces | `attachTopicToChat` (topic-flow)  |
+| Key                          | Set by                                       | Consumed by →                    |
+| ---------------------------- | -------------------------------------------- | -------------------------------- |
+| `pendingAskSource`           | source card "Ask"                            | `askWhatToKnow`                  |
+| `pendingAskConnector`        | connectors gallery/modal "Try in chat"       | `askConnector`                   |
+| `pendingStartContextBuilder` | `/contexts` "New Playbook" + welcome-alt     | `context-builder` (create)       |
+| `pendingTopicChat`           | "Use in chat", from any of its four surfaces | `attachTopicToChat` (topic-flow) |
+| `pendingStartClipStudio`     | session composer "Extract video clips"       | `clipStudio.start` (new chat)    |
+| `pendingStartBatch`          | session composer "Batch of posts"            | `batchStudio.start` (new chat)   |
+
+A key that is consumed but never set is dead weight that reads as a live entry point — `pendingStartFlow` and `pendingDraftIdeaId` both sat here after their producers were replaced. Add a row only with both ends.
 
 ### Admin / user mode (prototype controls)
 
@@ -401,7 +414,7 @@ This project is built on the official Agorapulse Design System (`@agorapulse/ui-
    - `styles/ds-patches.css` — the **only** place to extend a DS class with a missing variant or add a primitive the DS forgot (e.g. `.ap-filter-chip`, `.app-modal-backdrop`). It should shrink as the DS evolves.
    - `styles/screens/<screen>.css` — screen-specific styling.
    - `styles/components/<component>.css` — shared component styling.
-   - **Never** redeclare a `.ap-*` class with overrides outside `ds-patches.css` — it flips the cascade silently.
+   - **Never** redeclare a `.ap-*` class with overrides outside `ds-patches.css` — it flips the cascade silently. The one standing exception is `styles/components/archie-loader.css`, which claims `.ap-loader` on purpose: every spinner in the app is replaced by the animated Archie mark, and that is a brand decision, not a missing DS primitive. It says so at the top of the file. Don't add a second exception without the same kind of note.
 6. **Validate before committing** — `validate_css` on the ds-css MCP.
 
 ### Brand color convention

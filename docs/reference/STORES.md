@@ -13,7 +13,7 @@ const state = new Map(); // sessionId → state (ou un array pour un catalogue)
 const { subscribe, notify } = createNotifier("storeName");
 
 function seed(sessionId) {
-  // lazy seed depuis mocks.js, sauf en mode new-alt
+  // lazy seed depuis mocks/, sauf en mode new-alt
   if (isNewUser()) return emptyState();
   return mocks.byId(sessionId) ?? emptyState();
 }
@@ -65,8 +65,6 @@ Les vrais globaux sont les **catalogues** — ils préexistent à tout chat : `c
 **Le feed est scopé, donc ses compteurs le sont.** Le compteur de la ligne de nav est le nombre de Topics **à revoir** du feed du Playbook par défaut, pas une somme sur tout le compte : la surface qu'il envoie ouvrir n'en montre qu'un. Il n'y a **pas** de scope global à lire — le module `active-playbook.js` du fork, qui persistait un scope en `localStorage` et se faisait écrire par un select posé dans une barre de filtres, n'est délibérément pas porté. `?pb=` dit la même chose et s'arrête à son écran.
 
 **Aucun scan au boot.** Le magazine appelait un `maybeAutoScan()` au démarrage pour qu'un dossier soit déjà arrivé avant le premier render. Le Topic Feed ne le fait pas : sa file est seedée pleine, avec un vrai étalement de statuts et de groupes d'âge, donc la fraîcheur se lit dans la donnée plutôt que dans une arrivée rejouée à chaque rechargement.
-
-Conséquence : si tu ajoutes une source depuis la session A, la library de la session B verra aussi cette source (si elle est listée dans son periphery — selon la sélection).
 
 ## Le store ne filtre pas : `playbook-access`
 
@@ -136,9 +134,16 @@ import { getSessions } from "./sessions-store.js?v=12"; // instance #1
 import { getSessions } from "./sessions-store.js?v=13"; // instance #2 — !!
 ```
 
-Les deux instances ont leurs propres `state` Map et `subscribers` Set. **Bumper un store impose de bumper en lockstep dans tous les importeurs.**
+Les deux instances ont leurs propres `state` Map et `subscribers` Set — deux copies du store, avec des états qui divergent. C'est arrivé plusieurs fois sur `main`.
 
-`scripts/bump-cache.py` automatise ce bump. À utiliser systématiquement.
+D'où la règle actuelle : **un seul numéro pour toute l'app**, réécrit en une passe.
+
+```bash
+npm run bump            # N → N+1 dans src/ ET dans index.html
+npm run check:versions  # échoue si un ?v= diverge — lancé par le hook pre-commit
+```
+
+`scripts/cache-version.mjs` détient le numéro. Ne jamais éditer un `?v=` à la main : le sed manuel oubliait systématiquement les `import("…")` dynamiques (`right-panel` → `session.js`, les `toast.js` paresseux…), et c'est exactement là que la divergence se logeait.
 
 ## Voir aussi
 
