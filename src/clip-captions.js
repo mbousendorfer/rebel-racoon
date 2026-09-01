@@ -72,7 +72,7 @@ export const DESIGN_WIDTH = 1080;
 // Demo footage served from the project's /video folder — used as the real
 // video behind every clip/caption preview. Assigned deterministically per clip
 // so a given clip always shows the same source.
-export const CLIP_VIDEOS = ["video/leeroy.mp4", "video/medium.mp4", "video/cats.mp4"];
+const CLIP_VIDEOS = ["video/leeroy.mp4", "video/medium.mp4", "video/cats.mp4"];
 
 export function videoForClip(clip) {
   const key = String((clip && clip.id) || "clip");

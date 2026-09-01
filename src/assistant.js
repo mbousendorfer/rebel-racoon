@@ -6,11 +6,11 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1000";
-import { findConnector } from "./connectors-store.js?v=1000";
-import { createSessionNotifier } from "./store-utils.js?v=1000";
-import { showToast } from "./components/toast.js?v=1000";
-import { isFlagOn } from "./feature-flags.js?v=1000";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1001";
+import { findConnector } from "./connectors-store.js?v=1001";
+import { createSessionNotifier } from "./store-utils.js?v=1001";
+import { showToast } from "./components/toast.js?v=1001";
+import { isFlagOn } from "./feature-flags.js?v=1001";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -43,9 +43,9 @@ function newId() {
 
 // --- Public API -----------------------------------------------------------
 
-export function getThread(sessionId, { hasContext = false, skipGreeting = false } = {}) {
+export function getThread(sessionId, { hasContext = false } = {}) {
   if (!threads.has(sessionId)) {
-    seedThread(sessionId, { hasContext, skipGreeting });
+    seedThread(sessionId, { hasContext });
   }
   return threads.get(sessionId);
 }
@@ -584,16 +584,13 @@ function notify(sessionId) {
   notifier.notify(sessionId, (threads.get(sessionId) || []).slice());
 }
 
-function seedThread(sessionId, { hasContext, skipGreeting }) {
-  // Start-flow takes over the intro — skip the default greeting so we don't
-  // double up "Hi —" + the flow's first AI turn. Welcome-alt onboarding owns
-  // its own intro too (context-builder startAlt); seed it empty regardless of
-  // which read (topbar / status card / panel) triggers the seed first, so the
-  // chat never opens with a stray greeting above the onboarding message.
-  // Clip Studio sessions (clip-studio-*) own their own full-page flow; the
-  // clips-stage chat should open empty (no stray greeting above the grid),
-  // same as the welcome-alt onboarding.
-  if (skipGreeting || sessionId.startsWith("welcome-alt-") || sessionId.startsWith("clip-studio-")) {
+function seedThread(sessionId, { hasContext }) {
+  // Welcome-alt onboarding owns its own intro (context-builder startAlt), so
+  // seed it empty regardless of which read (topbar / status card / panel)
+  // triggers the seed first — otherwise the chat opens with a stray greeting
+  // above the onboarding message. Clip Studio sessions (clip-studio-*) own
+  // their own full-page flow and want the same empty open above the grid.
+  if (sessionId.startsWith("welcome-alt-") || sessionId.startsWith("clip-studio-")) {
     threads.set(sessionId, []);
     return;
   }

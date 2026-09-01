@@ -8,7 +8,7 @@
 // (styles/components/subtitle-style.css).
 
 // Trusted preview HTML for one subtitle style (or the "none" ban glyph).
-export function subPreview(value) {
+function subPreview(value) {
   if (value === "none") {
     return `<span class="sub-preview sub-preview--none"><i class="ap-icon-ban" aria-hidden="true"></i></span>`;
   }

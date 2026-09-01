@@ -31,20 +31,20 @@ import {
   postTopPostsWidget,
   postUserTurn,
   postUserProfilesTurn,
-} from "./assistant.js?v=1000";
-import { getTopPosts, getTopPost } from "./top-posts-store.js?v=1000";
-import { addPostDraft } from "./posts-store.js?v=1000";
-import { addReadySource } from "./sources-stream.js?v=1000";
+} from "./assistant.js?v=1001";
+import { getTopPosts, getTopPost } from "./top-posts-store.js?v=1001";
+import { addPostDraft } from "./posts-store.js?v=1001";
+import { addReadySource } from "./sources-stream.js?v=1001";
 import {
   getConnectedProfiles,
   BRAND_INITIALS,
   NETWORK_ICON_BY_PLATFORM,
   PROFILE_SEARCH_THRESHOLD,
-} from "./social-profiles.js?v=1000";
-import { SORTS, PERIODS } from "./components/top-post-card.js?v=1000";
-import { showToast } from "./components/toast.js?v=1000";
-import * as inlineQuestion from "./inline-question.js?v=1000";
-import { getDefaultContext } from "./contexts-store.js?v=1000";
+} from "./social-profiles.js?v=1001";
+import { SORTS, PERIODS } from "./components/top-post-card.js?v=1001";
+import { showToast } from "./components/toast.js?v=1001";
+import * as inlineQuestion from "./inline-question.js?v=1001";
+import { getDefaultContext } from "./contexts-store.js?v=1001";
 
 // Cap on drafts produced in one run — post × angle × channel can multiply fast
 // (e.g. 3 posts × 4 angles × 3 channels = 36). Keep the result turn scannable;
@@ -558,7 +558,7 @@ function normNet(n) {
 
 // Unique source networks across the picked posts — the profiles the winner(s)
 // already live on, which the repurpose target picker excludes.
-export function repurposeSourceNetworks(postIds) {
+function repurposeSourceNetworks(postIds) {
   const posts = (postIds || []).map(getTopPost).filter(Boolean);
   return [...new Set(posts.map((p) => normNet(p.network)).filter((n) => CHANNEL_META[n]))];
 }
@@ -566,54 +566,9 @@ export function repurposeSourceNetworks(postIds) {
 // The connected profile account(s) the picked winner(s) already ran on — the
 // "same profile" repurpose target. Top posts are network-level (they don't pin a
 // specific account), so this resolves by matching the source network(s).
-export function repurposeSourceProfiles(postIds) {
+function repurposeSourceProfiles(postIds) {
   const sourceNets = repurposeSourceNetworks(postIds);
   return getConnectedProfiles().filter((p) => sourceNets.includes(normNet(p.platform)));
-}
-
-// Step 2a — the same-vs-other choice, and the ONLY step for a same-profile
-// repost. A single-select Quickpicker: keep the win on the profile it ran on (a
-// fresh take for the same audience) or spread it to the user's OTHER connected
-// profiles. The "same" row carries an inline version counter (`counter: true`)
-// so the user sets how many drafts and generates right here — no extra step;
-// "other" navigates to the per-profile picker. The "same" row shows the source
-// profile's own avatar when a single source resolves; "other" is disabled when
-// there's nothing else connected.
-export function repurposeScopeItems(postIds) {
-  const sources = repurposeSourceProfiles(postIds);
-  const otherCount = repurposeProfileItems(postIds, { include: "other" }).length;
-  const single = sources.length === 1 ? sources[0] : null;
-
-  const sameAvatar = single
-    ? {
-        imageUrl: single.photo || null,
-        initials: single.photo ? null : BRAND_INITIALS,
-        networkIcon: NETWORK_ICON_BY_PLATFORM[normNet(single.platform)] || null,
-      }
-    : null;
-
-  return [
-    {
-      value: "same",
-      label: single ? `Same profile — ${single.handle}` : "The same profile",
-      caption: single ? "Repost a fresh take for the same audience" : "A fresh take back on each post's own profile",
-      avatar: sameAvatar || undefined,
-      icon: sameAvatar ? undefined : "ap-icon-refresh",
-      // Inline version counter — the same-profile repost generates from right
-      // here, so no dedicated follow-up step is needed.
-      counter: true,
-    },
-    {
-      value: "other",
-      label: "Other profiles",
-      caption: otherCount
-        ? "Adapt the win for your other connected profiles"
-        : "No other connected profiles to spread to",
-      icon: "ap-icon-multiple-users",
-      disabled: otherCount === 0,
-      endNote: otherCount === 0 ? "Nothing to pick" : null,
-    },
-  ];
 }
 
 // Repurpose-target quick-picker items — the user's CONNECTED SOCIAL PROFILES,

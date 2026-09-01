@@ -24,7 +24,7 @@ export function shadowMetrics(i) {
 }
 
 // The primary family, quoted if multi-word (for document.fonts.load / canvas).
-export function fontPrimary(family) {
+function fontPrimary(family) {
   if (!family) return "Averta";
   return /\s/.test(family) ? `"${family}"` : family;
 }

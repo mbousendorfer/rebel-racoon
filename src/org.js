@@ -34,10 +34,6 @@ export function memberName(id) {
   return getMember(id)?.name || "a teammate";
 }
 
-export function isMe(id) {
-  return id === CURRENT_USER.id;
-}
-
 // "member" | "manager" — the prototype control that lets one browser session
 // look at a shared Playbook through a manager's eyes. Same shape as
 // user-mode.js: read synchronously at render time, toggling reloads.

@@ -11,18 +11,11 @@
 // Interactive hooks are data-* attributes bound identically on each surface:
 //   data-connector-open|connect|disconnect|try, data-connectors-category|search
 
-import { escapeHtml } from "./utils.js?v=1000";
-import { getConnectors } from "./connectors-store.js?v=1000";
+import { escapeHtml } from "./utils.js?v=1001";
+import { getConnectors } from "./connectors-store.js?v=1001";
 
 // Category display order — anything unlisted falls to the end alphabetically.
-export const CATEGORY_ORDER = [
-  "Docs & wikis",
-  "Storage",
-  "Meetings & calls",
-  "Dev & project",
-  "Messaging",
-  "CRM & support",
-];
+const CATEGORY_ORDER = ["Docs & wikis", "Storage", "Meetings & calls", "Dev & project", "Messaging", "CRM & support"];
 
 // ─── Logo ────────────────────────────────────────────────────────────────
 // SVG asset when one ships; otherwise an accent-colored monogram tile (width /
@@ -40,13 +33,13 @@ export function renderConnectorLogo(c, size = 40) {
 
 // ─── Filtering ─────────────────────────────────────────────────────────────
 
-export function matchesQuery(c, q) {
+function matchesQuery(c, q) {
   if (!q) return true;
   const hay = `${c.name} ${c.desc} ${(c.capabilities || []).join(" ")} ${c.category || ""}`.toLowerCase();
   return hay.includes(q);
 }
 
-export function sortedCategories(cats) {
+function sortedCategories(cats) {
   return [...cats].sort((a, b) => {
     const ia = CATEGORY_ORDER.indexOf(a);
     const ib = CATEGORY_ORDER.indexOf(b);
@@ -75,7 +68,7 @@ function renderCategoryChip(value, label, active) {
 // single-line description, with a trailing affordance (green check when
 // connected, "+" when not). The whole row opens the detail (where Connect /
 // Try-in-chat / Disconnect live), so the grid stays dense and scannable.
-export function renderConnectorCard(c) {
+function renderConnectorCard(c) {
   const isConnected = c.status === "connected";
   const trailing = isConnected
     ? `<span class="connectors-card__check" aria-hidden="true"><i class="ap-icon-rounded-check"></i></span>`

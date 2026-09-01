@@ -24,7 +24,7 @@
 // reader that hasn't been migrated keeps working. Never machine-translate:
 // Archie selects the native voice entry for the target language.
 
-export const LANGUAGES = [
+const LANGUAGES = [
   { code: "en", label: "English" },
   { code: "fr", label: "Français" },
   { code: "es", label: "Español" },

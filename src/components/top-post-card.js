@@ -12,9 +12,9 @@
 // render; no module-local state (the active sort lives in top-posts-flow's
 // picker state).
 
-import { html, raw } from "../utils.js?v=1000";
-import { profileForNetwork, NETWORK_ICON_BY_PLATFORM, BRAND_INITIALS } from "../social-profiles.js?v=1000";
-import { renderEmptyState } from "./empty-state.js?v=1000";
+import { html, raw } from "../utils.js?v=1001";
+import { profileForNetwork, NETWORK_ICON_BY_PLATFORM, BRAND_INITIALS } from "../social-profiles.js?v=1001";
+import { renderEmptyState } from "./empty-state.js?v=1001";
 
 const NET_ICON = {
   linkedin: "ap-icon-linkedin-official",
@@ -188,7 +188,7 @@ function renderMediaBlock(post) {
 // to fit more, and every tier line-clamps so the card height stays bounded (the
 // copy truncates rather than growing the card / its grid row). Thresholds are on
 // the rendered character count.
-export function soloSizeTier(text) {
+function soloSizeTier(text) {
   const n = (text || "").length;
   if (n <= 70) return "top-post-card__text--xl";
   if (n <= 150) return "top-post-card__text--lg";
@@ -196,7 +196,7 @@ export function soloSizeTier(text) {
   return "top-post-card__text--sm";
 }
 
-export function renderTopPostCard(post) {
+function renderTopPostCard(post) {
   // These are posts from the brand's own profiles, so the card leads with the
   // profile identity (brand avatar + network badge + handle) — the same lens the
   // board's profile chips sort by — rather than a bare network label. Falls back
@@ -328,7 +328,7 @@ export function renderTopPostEcho(post) {
 // `<label>` so clicking anywhere selects the (visually-hidden) real
 // `<input type=radio>`; a shared `name` (per widget `group`) makes the rows a
 // native single-select group. `disabled` freezes it once the pick is confirmed.
-export function renderTopPostSelectRow(post, { selected = false, disabled = false, group = "" } = {}) {
+function renderTopPostSelectRow(post, { selected = false, disabled = false, group = "" } = {}) {
   if (!post) return "";
   return html`
     <label class="ap-radio-card card top-posts-widget__row">

@@ -345,10 +345,6 @@ export function findTopicState(id) {
 }
 
 /** The ids a Topic can carry for one facet — the filter reads these. */
-export function stateIdsForFacet(facet) {
-  return TOPIC_STATES.filter((s) => s.facet === facet).map((s) => s.id);
-}
-
 // ── The filter's default ───────────────────────────────────────────────────
 // Derived from `defaultOn` rather than written out again, so a state cannot be
 // added to the vocabulary and forgotten in the default.

@@ -75,10 +75,10 @@
 // was flagged, and it could only ever show two clamped lines of an explanation
 // whose whole value is the detail.
 
-import { html, raw, escapeAttr } from "./utils.js?v=1000";
-import { topicTitle, topicStates } from "./topics-store.js?v=1000";
-import { findTopicState } from "./topics-catalog.js?v=1000";
-import { renderSocialPostCard } from "./components/social-post-card.js?v=1000";
+import { html, raw, escapeAttr } from "./utils.js?v=1001";
+import { topicTitle, topicStates } from "./topics-store.js?v=1001";
+import { findTopicState } from "./topics-catalog.js?v=1001";
+import { renderSocialPostCard } from "./components/social-post-card.js?v=1001";
 
 /**
  * The object's identity: where it came from, then the claim as an h2 under it —
@@ -406,7 +406,7 @@ function renderRelevance(topic) {
 // place to change a label.
 const trailLabel = (id) => findTopicState(id)?.label || id;
 
-export function trailLength(topic) {
+function trailLength(topic) {
   return (topic?.history || []).length;
 }
 
@@ -439,7 +439,7 @@ export function renderTopicTrail(topic) {
 //
 // Nothing to show, no control: a Topic with no trail renders no kebab rather
 // than a menu whose only item is empty.
-export function renderTopicMenu(topic, { open = false } = {}) {
+function renderTopicMenu(topic, { open = false } = {}) {
   const count = trailLength(topic);
   if (!count) return "";
   return html`<div class="topic-article__tools">

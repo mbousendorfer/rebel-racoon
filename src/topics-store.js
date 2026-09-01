@@ -49,10 +49,10 @@
 //   markUsed(id) / ignoreTopic(id, reason) / unignoreTopic(id)
 //   subscribe(fn)                      → unsubscribe
 
-import { topics as seed } from "./mocks.js?v=1000";
-import { isNewUser } from "./user-mode.js?v=1000";
-import { createNotifier } from "./store-utils.js?v=1000";
-import { DEFAULT_STATE_IDS, LIVE_SOURCE_IDS, TOPIC_STATES, findTopicState, kindOf } from "./topics-catalog.js?v=1000";
+import { topics as seed } from "./mocks.js?v=1001";
+import { isNewUser } from "./user-mode.js?v=1001";
+import { createNotifier } from "./store-utils.js?v=1001";
+import { DEFAULT_STATE_IDS, LIVE_SOURCE_IDS, TOPIC_STATES, findTopicState, kindOf } from "./topics-catalog.js?v=1001";
 
 const topics = isNewUser() ? [] : seed.map(cloneTopic);
 
@@ -120,13 +120,13 @@ export function ageMinutes(label) {
 // is newest-first and every render relies on it. Boundaries are inclusive at the
 // top, so "1w ago" is Last 7 days rather than falling into the next bucket on a
 // technicality.
-export const AGE_GROUPS = Object.freeze([
+const AGE_GROUPS = Object.freeze([
   { id: "week", label: "Last 7 days", maxDays: 7 },
   { id: "month", label: "Earlier this month", maxDays: 30 },
   { id: "earlier", label: "Earlier", maxDays: Infinity },
 ]);
 
-export function ageGroupOf(topic) {
+function ageGroupOf(topic) {
   const days = ageMinutes(topic && topic.ageLabel) / DAY;
   return AGE_GROUPS.find((g) => days <= g.maxDays) || AGE_GROUPS[AGE_GROUPS.length - 1];
 }
@@ -358,11 +358,11 @@ export function topicTitle(topic) {
   return topic?.article?.title || topic?.headline || "";
 }
 
-export function getStatus(topicId) {
+function getStatus(topicId) {
   return (triage.get(topicId) || {}).status || "new";
 }
 
-export function getIgnoreReason(topicId) {
+function getIgnoreReason(topicId) {
   return (triage.get(topicId) || {}).reason || "";
 }
 

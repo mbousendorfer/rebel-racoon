@@ -17,7 +17,7 @@
 // video-clips-modal trimmer, the right-panel Clips/Drafts surfaces, and the
 // draft-creation flow all operate on one source with no divergence.
 
-import { buildClipsForSource, updateSourceClips, getSources } from "./sources-stream.js?v=1000";
+import { buildClipsForSource, updateSourceClips, getSources } from "./sources-stream.js?v=1001";
 
 const states = new Map(); // sessionId → state
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -79,13 +79,6 @@ export function start(sessionId, { contextId = null } = {}) {
   notify(sessionId);
 }
 
-export function setStage(sessionId, stage) {
-  const s = states.get(sessionId);
-  if (!s) return;
-  s.stage = stage;
-  notify(sessionId);
-}
-
 // Playbook (Context) governing the voice/audience/CTAs of the drafts created
 // from the selected clips. Chosen up-front on the setup screen.
 export function setContext(sessionId, contextId) {
@@ -100,16 +93,6 @@ export function setConfig(sessionId, partial) {
   const s = states.get(sessionId);
   if (!s) return;
   s.config = { ...s.config, ...partial };
-  notify(sessionId);
-}
-
-// Marks that a video has been chosen (file picked / URL submitted) so the
-// "Generate clips" CTA can enable. Analysis starts only on Generate.
-export function setVideoProvided(sessionId, { sourceName }) {
-  const s = states.get(sessionId);
-  if (!s) return;
-  s.videoProvided = true;
-  s.pending = { sourceName: sourceName || "your video" };
   notify(sessionId);
 }
 
@@ -212,18 +195,6 @@ export function toggleClip(sessionId, clipId) {
   else set.add(clipId);
   s.selectedClipIds = [...set];
   notify(sessionId);
-}
-
-export function setSelectedClips(sessionId, ids) {
-  const s = states.get(sessionId);
-  if (!s) return;
-  s.selectedClipIds = [...ids];
-  notify(sessionId);
-}
-
-export function isClipSelected(sessionId, clipId) {
-  const s = states.get(sessionId);
-  return !!s && (s.selectedClipIds || []).includes(clipId);
 }
 
 // ── Profiles step ───────────────────────────────────────────────────────────

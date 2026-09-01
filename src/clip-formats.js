@@ -1,4 +1,4 @@
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1000";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1001";
 
 // Shared aspect-ratio catalog for video clips.
 //
@@ -61,7 +61,7 @@ export const CLIP_RATIO_ORDER = ["16:9", "9:16", "4:3", "1:1", "4:5"];
 // A small proportion tile — a rectangle drawn at the format's true aspect ratio
 // (CSS `aspect-ratio`) with the ratio label centered inside. Styled in
 // subtitle-style.css.
-export function ratioTilePreview(fmt) {
+function ratioTilePreview(fmt) {
   return `<span class="ratio-tile"><span class="ratio-tile__frame" style="aspect-ratio:${fmt.id.replace(":", "/")}"></span><span class="ratio-tile__tag">${fmt.tag}</span></span>`;
 }
 

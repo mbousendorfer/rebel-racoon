@@ -17,9 +17,9 @@
 // surface asks here, and `revokedContextFor()` is the one place allowed to look
 // past the gate.
 
-import { getContexts, getContextById } from "./contexts-store.js?v=1000";
-import { isFlagOn } from "./feature-flags.js?v=1000";
-import { CURRENT_USER, isManager, memberName, getMember } from "./org.js?v=1000";
+import { getContexts, getContextById } from "./contexts-store.js?v=1001";
+import { isFlagOn } from "./feature-flags.js?v=1001";
+import { CURRENT_USER, isManager, memberName, getMember } from "./org.js?v=1001";
 
 // Single choke point. Flag OFF ⇒ the app behaves exactly as it did before
 // sharing existed: one implicit user, everything visible, everything editable.
@@ -27,7 +27,7 @@ function on() {
   return isFlagOn("playbookSharing");
 }
 
-export function isShared(ctx) {
+function isShared(ctx) {
   return !!ctx && ctx.scope === "organization";
 }
 
@@ -35,10 +35,6 @@ export function isMine(ctx) {
   if (!ctx) return false;
   if (!on()) return true;
   return ctx.ownerId === CURRENT_USER.id;
-}
-
-export function isSharedWithMe(ctx) {
-  return on() && !!ctx && !isMine(ctx) && isShared(ctx);
 }
 
 export function ownerOf(ctx) {
@@ -61,11 +57,7 @@ export function canView(ctx) {
 }
 
 // "Use" = attach it to a chat and generate with it.
-export function canUse(ctx) {
-  return canView(ctx);
-}
-
-export function canDuplicate(ctx) {
+function canUse(ctx) {
   return canView(ctx);
 }
 
@@ -113,12 +105,6 @@ export function usableContexts() {
 
 export function editableContexts() {
   return getContexts().filter(canEdit);
-}
-
-export function isAccessibleContextId(id) {
-  if (!id) return true; // A chat with no Playbook attached is not a revoked chat.
-  const ctx = getContextById(id);
-  return !!ctx && canView(ctx);
 }
 
 // The tombstone: what a chat can still say about a Playbook it lost. Returns

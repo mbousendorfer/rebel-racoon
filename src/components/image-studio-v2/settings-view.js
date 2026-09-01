@@ -29,12 +29,12 @@
 // that thing (`.isv2-sheet-hint`). No second size and no bold — three bold labels
 // stacked in a 260px column would shout over the section title.
 
-import { escapeHtml } from "../../utils.js?v=1000";
-import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=1000";
-import { KEY } from "./context.js?v=1000";
-import { REFS_TIP, refSummary, refsBody } from "./references-view.js?v=1000";
-import { BRANDING_TIP, brandingBody } from "./branding-view.js?v=1000";
-import * as imageStudio from "../../image-studio.js?v=1000";
+import { escapeHtml } from "../../utils.js?v=1001";
+import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=1001";
+import { KEY } from "./context.js?v=1001";
+import { REFS_TIP, refSummary, refsBody } from "./references-view.js?v=1001";
+import { BRANDING_TIP, brandingBody } from "./branding-view.js?v=1001";
+import * as imageStudio from "../../image-studio.js?v=1001";
 
 // A thin rule between two clusters inside one row body. Shared with the
 // Add-image sheet (tools-view.js), which is where the class name comes from.
@@ -264,7 +264,7 @@ const RENDER_TEXT_TIP = "For a text box you can move, use Add text in Edit.";
 const RENDER_TEXT_PLACEHOLDER = `Black Friday
 −50% on everything`;
 
-export function renderTextBody(st) {
+function renderTextBody(st) {
   const text = st.renderText || "";
   return `<div class="ap-textarea-field narrow isv2-textfield">
       <textarea data-img-render-text rows="2" placeholder="${escapeHtml(RENDER_TEXT_PLACEHOLDER)}" aria-label="Text to write into the image">${escapeHtml(text)}</textarea>

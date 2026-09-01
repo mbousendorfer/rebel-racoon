@@ -19,10 +19,10 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw } from "../utils.js?v=1000";
-import { isPortraitFormat } from "../clip-formats.js?v=1000";
-import { presetById } from "../clip-captions.js?v=1000";
-import { renderFeedbackControl } from "./feedback-control.js?v=1000";
+import { html, raw } from "../utils.js?v=1001";
+import { isPortraitFormat } from "../clip-formats.js?v=1001";
+import { presetById } from "../clip-captions.js?v=1001";
+import { renderFeedbackControl } from "./feedback-control.js?v=1001";
 
 // The media slot of a draft that has no image yet — a real drop target
 // (`[data-post-drop]`, drag wiring in right-panel.js) at the height of an image.
@@ -503,7 +503,7 @@ export function renderPostCard(post, opts = {}) {
 // the source. Returns "" when the draft has no provenance. The toggle + the
 // collapse mechanism live in renderPostCard's foot row (a CSS checkbox toggle),
 // so the panel can expand full-width while the toggle stays inline on the right.
-export function renderGenerationContextBody(post) {
+function renderGenerationContextBody(post) {
   const gc = post.generationContext;
   if (!gc) return "";
   const tone = gc.kind === "repurpose" ? "repurpose" : gc.kind === "clip" ? "clip" : "angle";

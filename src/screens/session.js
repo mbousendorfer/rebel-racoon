@@ -1,7 +1,7 @@
-import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr } from "../utils.js?v=1000";
-import { navigate } from "../router.js?v=1000";
-import { renderTopbar } from "../components/topbar.js?v=1000";
-import { socialAccounts, chatStarters, connectorDocs } from "../mocks.js?v=1000";
+import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr } from "../utils.js?v=1001";
+import { navigate } from "../router.js?v=1001";
+import { renderTopbar } from "../components/topbar.js?v=1001";
+import { socialAccounts, chatStarters, connectorDocs } from "../mocks.js?v=1001";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
@@ -11,13 +11,13 @@ import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
   PROFILE_SEARCH_THRESHOLD,
-} from "../social-profiles.js?v=1000";
-import { FORMATS, formatsForNetwork, defaultFormatFor, clipFormatItems } from "../clip-formats.js?v=1000";
-import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../clip-subtitles.js?v=1000";
-import { getSessionById, getSessions, subscribe as subscribeSessions } from "../sessions-store.js?v=1000";
-import { getContextById, getContexts, getDefaultContext, updateContext } from "../contexts-store.js?v=1000";
-import { revokedContextFor, usableContexts, canView } from "../playbook-access.js?v=1000";
-import { isNewUser } from "../user-mode.js?v=1000";
+} from "../social-profiles.js?v=1001";
+import { FORMATS, formatsForNetwork, defaultFormatFor, clipFormatItems } from "../clip-formats.js?v=1001";
+import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../clip-subtitles.js?v=1001";
+import { getSessionById, getSessions, subscribe as subscribeSessions } from "../sessions-store.js?v=1001";
+import { getContextById, getContexts, getDefaultContext, updateContext } from "../contexts-store.js?v=1001";
+import { revokedContextFor, usableContexts, canView } from "../playbook-access.js?v=1001";
+import { isNewUser } from "../user-mode.js?v=1001";
 import {
   getThread,
   sendMessage,
@@ -37,57 +37,56 @@ import {
   markConnectPromptResolved,
   toggleTopPostsWidgetPick,
   answerTopPostsWidget,
-} from "../assistant.js?v=1000";
-import { iconFor as fileIconForKind } from "../file-kinds.js?v=1000";
-import { getSources, getIdeas, extractVideoIdeas } from "../library.js?v=1000";
-import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=1000";
+} from "../assistant.js?v=1001";
+import { iconFor as fileIconForKind } from "../file-kinds.js?v=1001";
+import { getSources, getIdeas, extractVideoIdeas } from "../library.js?v=1001";
+import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=1001";
 import {
   renderInto as renderComposerMentions,
   removeMention as removeComposerMention,
   subscribe as subscribeComposerMentions,
   addMention as addComposerMention,
-} from "../composer-mentions.js?v=1000";
-import { getPosts, addPostDraft, setSubtitleStyle, subscribe as subscribePostsStore } from "../posts-store.js?v=1000";
-import { startDraftFlow, executeDraft, executeDraftBatch, getAnglesForIdea } from "../draft-flow.js?v=1000";
-import { startActionPickerFlow, handleActionPick } from "../start-flow.js?v=1000";
-import * as topPostsFlow from "../top-posts-flow.js?v=1000";
+} from "../composer-mentions.js?v=1001";
+import { getPosts, addPostDraft, setSubtitleStyle, subscribe as subscribePostsStore } from "../posts-store.js?v=1001";
+import { startDraftFlow, executeDraft, executeDraftBatch, getAnglesForIdea } from "../draft-flow.js?v=1001";
+import * as topPostsFlow from "../top-posts-flow.js?v=1001";
 import {
   renderTopPostsBoard,
   renderTopPostEcho,
   renderTopPostsWidget,
   TOP_POSTS_LIMIT,
-} from "../components/top-post-card.js?v=1000";
-import { getTopPost } from "../top-posts-store.js?v=1000";
-import { renderEmptyState } from "../components/empty-state.js?v=1000";
-import * as sidebarWizard from "../sidebar-wizard.js?v=1000";
-import * as inlineQuestion from "../inline-question.js?v=1000";
-import * as clipStudio from "../clip-studio.js?v=1000";
-import * as batchStudio from "../batch-studio.js?v=1000";
-import { askConnector } from "../connector-ask.js?v=1000";
-import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=1000";
-import { renderConnectorLogo } from "../connectors-view.js?v=1000";
+} from "../components/top-post-card.js?v=1001";
+import { getTopPost } from "../top-posts-store.js?v=1001";
+import { renderEmptyState } from "../components/empty-state.js?v=1001";
+import * as sidebarWizard from "../sidebar-wizard.js?v=1001";
+import * as inlineQuestion from "../inline-question.js?v=1001";
+import * as clipStudio from "../clip-studio.js?v=1001";
+import * as batchStudio from "../batch-studio.js?v=1001";
+import { askConnector } from "../connector-ask.js?v=1001";
+import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=1001";
+import { renderConnectorLogo } from "../connectors-view.js?v=1001";
 import {
   getActiveConnector,
   clearActiveConnector,
   subscribe as subscribeComposerConnector,
-} from "../composer-connector.js?v=1000";
-import { isFlagOn } from "../feature-flags.js?v=1000";
-import * as contextBuilder from "../context-builder.js?v=1000";
-import { renderPicker } from "./_analyse-common.js?v=1000";
-import { renderSourceCard } from "../components/source-card.js?v=1000";
-import { renderIdeaCard } from "../components/idea-card.js?v=1000";
-import { renderCompactIdeaCard } from "../components/idea-card-compact.js?v=1000";
+} from "../composer-connector.js?v=1001";
+import { isFlagOn } from "../feature-flags.js?v=1001";
+import * as contextBuilder from "../context-builder.js?v=1001";
+import { renderPicker } from "./_analyse-common.js?v=1001";
+import { renderSourceCard } from "../components/source-card.js?v=1001";
+import { renderIdeaCard } from "../components/idea-card.js?v=1001";
+import { renderCompactIdeaCard } from "../components/idea-card-compact.js?v=1001";
 import {
   contentState,
   renderContentWorkspace as renderSharedContentWorkspace,
   rerenderContentWorkspaceBody,
   renderContentEmptyState,
-} from "../components/content-workspace.js?v=1000";
-import { open as openVideoClipsModal } from "../components/video-clips-modal.js?v=1000";
-import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=1000";
-import { open as openAddSourceModal } from "../components/add-source-modal.js?v=1000";
-import { open as openConnectorsModal } from "../components/connectors-modal.js?v=1000";
-import { dropzoneHTML } from "../components/dropzone.js?v=1000";
+} from "../components/content-workspace.js?v=1001";
+import { open as openVideoClipsModal } from "../components/video-clips-modal.js?v=1001";
+import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=1001";
+import { open as openAddSourceModal } from "../components/add-source-modal.js?v=1001";
+import { open as openConnectorsModal } from "../components/connectors-modal.js?v=1001";
+import { dropzoneHTML } from "../components/dropzone.js?v=1001";
 import {
   classifyFile,
   startFileUpload,
@@ -102,28 +101,28 @@ import {
   updateSourceClips,
   extractClipsForSource,
   setSourceIdeaCount,
-} from "../sources-stream.js?v=1000";
-import { renderClipCard } from "../components/clip-card.js?v=1000";
-import { onFeedbackClick } from "../components/feedback-control.js?v=1000";
-import { showToast } from "../components/toast.js?v=1000";
+} from "../sources-stream.js?v=1001";
+import { renderClipCard } from "../components/clip-card.js?v=1001";
+import { onFeedbackClick } from "../components/feedback-control.js?v=1001";
+import { showToast } from "../components/toast.js?v=1001";
 import {
   openDrafts as openDraftsPanel,
   openIdeas as openIdeasPanel,
   openClips as openClipsPanel,
   getMode as getRightPanelMode,
   subscribe as subscribeRightPanel,
-} from "../components/right-panel.js?v=1000";
-import { setHandoff, consumeHandoff, hasHandoff } from "../handoff.js?v=1000";
-import { attachTopicToChat, useTopicInChat, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=1000";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1000";
-import { getFreshTopics, countFresh, subscribe as subscribeTopics } from "../topics-store.js?v=1000";
-import { findTopicSource } from "../topics-catalog.js?v=1000";
-import { renderTopicCard } from "../components/topic-card.js?v=1000";
-import { openTopicPicker, openTopicArticle } from "../components/topic-picker-modal.js?v=1000";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1000";
-import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=1000";
-import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=1000";
-import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=1000";
+} from "../components/right-panel.js?v=1001";
+import { setHandoff, consumeHandoff } from "../handoff.js?v=1001";
+import { attachTopicToChat, useTopicInChat, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=1001";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1001";
+import { getFreshTopics, countFresh, subscribe as subscribeTopics } from "../topics-store.js?v=1001";
+import { findTopicSource } from "../topics-catalog.js?v=1001";
+import { renderTopicCard } from "../components/topic-card.js?v=1001";
+import { openTopicPicker, openTopicArticle } from "../components/topic-picker-modal.js?v=1001";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1001";
+import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=1001";
+import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=1001";
+import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=1001";
 // Pure thread-turn renderers — shared with the component handoff gallery so
 // the previews there never drift from the app (handoff/components.html).
 import {
@@ -135,7 +134,7 @@ import {
   renderSystemNotice,
   renderExtractingNotice,
   renderResultCard,
-} from "./session/thread-turns.js?v=1000";
+} from "./session/thread-turns.js?v=1001";
 
 // Default composer placeholder — restored whenever no connector is attached.
 // A connected connector swaps it for "Ask {name} anything…".
@@ -366,14 +365,7 @@ function showSwitchSkeleton(root) {
 }
 
 function renderAssistantPanel(session, attachedContext) {
-  // Skip the default greeting if a start flow is queued — its first AI bubble
-  // will introduce the conversation instead. (Read-only: don't consume the
-  // flag here; the bindSession handoff below clears it after dispatching.)
-  const hasPendingStartFlow = hasHandoff("pendingStartFlow");
-  const thread = getThread(session.id, {
-    hasContext: !!attachedContext,
-    skipGreeting: hasPendingStartFlow,
-  });
+  const thread = getThread(session.id, { hasContext: !!attachedContext });
 
   // Clip Studio — dedicated full-page "Extract video clips" flow (upload →
   // analyzing → clips). Must precede the wizard / inline-question branches so
@@ -2449,11 +2441,9 @@ function defaultChatNameLocal() {
   return `Chat · ${fmt.format(new Date())}`;
 }
 
-// Build + show the "Which profile?" question. Used both from the in-session
-// Draft Post button and from the dashboard's Draft Post handler (via the
-// pendingDraftIdeaId hand-off in handoff.js). The chosen profile's platform
-// becomes the draft's network so the user gets posts on the surface they
-// actually want to publish to. `count` is threaded through from the count
+// Build + show the "Which profile?" question, reached from every Draft Post
+// entry point. The chosen profile's platform becomes the draft's network so
+// the user gets posts on the surface they actually want to publish to. `count` is threaded through from the count
 // picker; `onBack` lets the second-step picker return to the first.
 // External entry to the draft-from-idea flow — echoes the chosen idea as a
 // selection card (so the pick stays visible) then opens the profile step.
@@ -2707,7 +2697,7 @@ export function askAngleQuestion(sessionId, ideaId, { language = null } = {}) {
 // Step 2: how many drafts. Threads the chosen `angle` through to the
 // profile picker. When reached from the angle step (`onBack` set) the
 // picker shows a Back affordance; entered directly it shows Cancel.
-export function askDraftCountQuestion(sessionId, ideaId, { angle = null, onBack = null, language = null } = {}) {
+function askDraftCountQuestion(sessionId, ideaId, { angle = null, onBack = null, language = null } = {}) {
   postAssistantMessage(sessionId, "How many drafts should I generate?");
   const advance = (count) => {
     // Clamp to a reasonable range — single-digit + custom typed numbers
@@ -3656,13 +3646,6 @@ function wireAssistantPanel(root, session, attachedContext) {
   // Apply idea focus on initial render if ?focusIdea= is present.
   applyIdeaFocus(root);
 
-  // Check for a pending draft intent set by the dashboard handler — start the
-  // conversational flow after subscriptions are active so thread updates show.
-  const pendingIdeaId = consumeHandoff("pendingDraftIdeaId");
-  if (pendingIdeaId) {
-    setTimeout(() => startIdeaDraft(session.id, pendingIdeaId), 100);
-  }
-
   // Hand-off from a Topic's "Use in chat", from any of the four surfaces that
   // offer it. Attaching is all it does: intake-lifecycle turns the source into
   // the source-intake card in the thread, so the Topic names itself and the
@@ -3686,16 +3669,6 @@ function wireAssistantPanel(root, session, attachedContext) {
   const pendingAskConnector = consumeHandoff("pendingAskConnector");
   if (pendingAskConnector?.connectorId) {
     setTimeout(() => askConnector(session.id, pendingAskConnector.connectorId), 200);
-  }
-
-  // Pending start flow set by the dashboard's New chat button. Only the
-  // action-picker variant remains — creating a context happens via the
-  // inline wizard (contextBuilder.start) instead.
-  const pendingStart = consumeHandoff("pendingStartFlow");
-  if (pendingStart && pendingStart.hasContext) {
-    setTimeout(() => {
-      startActionPickerFlow(session.id, { contextName: pendingStart.contextName });
-    }, 200);
   }
 
   // Spawn-session handoff from the /contexts page "New context" button.
@@ -4220,8 +4193,6 @@ function bindSession(root, session) {
         msg.context.angle || null,
         msg.context.language || null,
       );
-    } else if (msg.handler === "start-action") {
-      handleActionPick(session.id, msg, selectedValues, { setQuery });
     } else if (msg.handler === "subtitle-style-pick") {
       // PDF flow step 06.B — user picks a subtitle preset (or "none") for
       // the clip-derived drafts. Applies the style to each draft id we
