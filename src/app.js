@@ -1,54 +1,44 @@
-import { route, setAfterRender, start } from "./router.js?v=1003";
-import { isFlagOn } from "./feature-flags.js?v=1003";
-import { initArchieLoader } from "./archie-loader.js?v=1003";
-import { initTopbar, renderTopbar } from "./components/topbar.js?v=1003";
-import { initSidebar, renderSidebar } from "./components/sidebar.js?v=1003";
-import { init as initRightPanel } from "./components/right-panel.js?v=1003";
-import { init as initScheduleModal } from "./components/schedule-modal.js?v=1003";
-import { init as initBugReportModal } from "./components/bug-report-modal.js?v=1003";
-import { init as initFeedbackModal } from "./components/feedback-modal.js?v=1003";
-import { init as initImageStudio } from "./components/image-studio-v2/index.js?v=1003";
-import { init as initVideoClipsModal } from "./components/video-clips-modal.js?v=1003";
-import { init as initChatPickerModal } from "./components/chat-picker-modal.js?v=1003";
-import { init as initAddSourceModal } from "./components/add-source-modal.js?v=1003";
-import { init as initConnectorsModal } from "./components/connectors-modal.js?v=1003";
-import { init as initTopicIgnoreModal } from "./components/topic-ignore-modal.js?v=1003";
-import { init as initTopicHistoryModal } from "./components/topic-history-modal.js?v=1003";
-import { init as initTopicPickerModal } from "./components/topic-picker-modal.js?v=1003";
-import { init as initConfirmModal } from "./components/confirm-modal.js?v=1003";
-import { init as initRenameModal } from "./components/rename-modal.js?v=1003";
-import { init as initSaveFolderModal } from "./components/save-folder-modal.js?v=1003";
-import { init as initSharePlaybookModal } from "./components/share-playbook-modal.js?v=1003";
-import { init as initAnalyzeProfilesModal } from "./components/analyze-profiles-modal.js?v=1003";
-import { init as initFillDocumentModal } from "./components/fill-document-modal.js?v=1003";
-import { init as initSearchModal } from "./components/search-modal.js?v=1003";
-import { init as initTooltip } from "./components/tooltip.js?v=1003";
+import { route, setAfterRender, start } from "./router.js?v=1004";
+import { isFlagOn } from "./feature-flags.js?v=1004";
+import { initArchieLoader } from "./archie-loader.js?v=1004";
+import { initTopbar, renderTopbar } from "./components/topbar.js?v=1004";
+import { initSidebar, renderSidebar } from "./components/sidebar.js?v=1004";
+import { init as initRightPanel } from "./components/right-panel.js?v=1004";
+import { init as initScheduleModal } from "./components/schedule-modal.js?v=1004";
+import { init as initBugReportModal } from "./components/bug-report-modal.js?v=1004";
+import { init as initFeedbackModal } from "./components/feedback-modal.js?v=1004";
+import { init as initImageStudio } from "./components/image-studio-v2/index.js?v=1004";
+import { init as initVideoClipsModal } from "./components/video-clips-modal.js?v=1004";
+import { init as initChatPickerModal } from "./components/chat-picker-modal.js?v=1004";
+import { init as initAddSourceModal } from "./components/add-source-modal.js?v=1004";
+import { init as initConnectorsModal } from "./components/connectors-modal.js?v=1004";
+import { init as initTopicIgnoreModal } from "./components/topic-ignore-modal.js?v=1004";
+import { init as initTopicHistoryModal } from "./components/topic-history-modal.js?v=1004";
+import { init as initTopicPickerModal } from "./components/topic-picker-modal.js?v=1004";
+import { init as initConfirmModal } from "./components/confirm-modal.js?v=1004";
+import { init as initRenameModal } from "./components/rename-modal.js?v=1004";
+import { init as initSaveFolderModal } from "./components/save-folder-modal.js?v=1004";
+import { init as initSharePlaybookModal } from "./components/share-playbook-modal.js?v=1004";
+import { init as initAnalyzeProfilesModal } from "./components/analyze-profiles-modal.js?v=1004";
+import { init as initFillDocumentModal } from "./components/fill-document-modal.js?v=1004";
+import { init as initSearchModal } from "./components/search-modal.js?v=1004";
+import { init as initTooltip } from "./components/tooltip.js?v=1004";
 import {
   init as initConversationStatusCard,
   render as renderConversationStatusCard,
-} from "./components/conversation-status-card.js?v=1003";
-import { renderDashboard } from "./screens/dashboard.js?v=1003";
-import { renderSession } from "./screens/session.js?v=1003";
-import { renderContexts } from "./screens/contexts.js?v=1003";
-import { renderTopics } from "./screens/topics.js?v=1003";
-import { renderTopicsSettings } from "./screens/topics-settings.js?v=1003";
-import { renderConnectors } from "./screens/connectors.js?v=1003";
-import { renderWelcomeAlt } from "./screens/welcome-alt.js?v=1003";
+} from "./components/conversation-status-card.js?v=1004";
+import { renderDashboard } from "./screens/dashboard.js?v=1004";
+import { renderSession } from "./screens/session.js?v=1004";
+import { renderContexts } from "./screens/contexts.js?v=1004";
+import { renderTopics } from "./screens/topics.js?v=1004";
+import { renderTopicsSettings } from "./screens/topics-settings.js?v=1004";
+import { renderConnectors } from "./screens/connectors.js?v=1004";
+import { renderWelcomeAlt } from "./screens/welcome-alt.js?v=1004";
 // Settings route removed — the prototype Admin controls moved to the sidebar
 // cog popover (see admin-menu.js + sidebar.js); Social accounts page dropped.
-import { renderWelcomeAltRecap } from "./screens/welcome-alt-recap.js?v=1003";
-import { renderPlaybook } from "./screens/playbook.js?v=1003";
-import * as __capAddSource from "./components/add-source-modal.js?v=1003";
-import * as __capBug from "./components/bug-report-modal.js?v=1003";
-import * as __capFeedback from "./components/feedback-modal.js?v=1003";
-import * as __capChatPicker from "./components/chat-picker-modal.js?v=1003";
-import * as __capSearch from "./components/search-modal.js?v=1003";
-import {
-  openDrafts as __capOpenDrafts,
-  openIdeas as __capOpenIdeas,
-  openSources as __capOpenSources,
-  openContextBriefPanel as __capOpenContextPanel,
-} from "./components/right-panel.js?v=1003";
+import { renderWelcomeAltRecap } from "./screens/welcome-alt-recap.js?v=1004";
+import { renderPlaybook } from "./screens/playbook.js?v=1004";
+import { initFigmaCapture } from "./figma-capture.js?v=1004";
 
 // Route table.
 // Every screen is responsible for calling renderTopbar() itself so the crumb
@@ -138,64 +128,5 @@ setAfterRender((path) => {
 
 start();
 
-// Figma capture helper — programmatically open a modal after the route
-// renders so it can be captured. Query: ?openModal=add-source[&tab=url|connectors]
-{
-  const params = new URLSearchParams(window.location.search);
-  const which = params.get("openModal");
-  if (which) {
-    const tab = params.get("tab");
-    // Defer to after first render so the topbar/sidebar/screen are mounted.
-    window.setTimeout(() => {
-      try {
-        switch (which) {
-          case "add-source":
-            __capAddSource.open({ tab: tab || "upload" });
-            break;
-          case "bug":
-            __capBug.open();
-            break;
-          case "feedback":
-            __capFeedback.open();
-            break;
-          case "chat-picker":
-            __capChatPicker.open({ ideaId: null });
-            break;
-          case "search":
-            __capSearch.open();
-            break;
-        }
-      } catch (err) {
-        console.error("[capture] failed to open modal", which, err);
-      }
-    }, 600);
-  }
-
-  // Right-panel programmatic open (used by Figma capture)
-  const panel = params.get("openPanel");
-  if (panel) {
-    window.setTimeout(() => {
-      try {
-        switch (panel) {
-          case "drafts":
-            __capOpenDrafts();
-            break;
-          case "ideas":
-            __capOpenIdeas();
-            break;
-          case "sources":
-            __capOpenSources();
-            break;
-          case "context": {
-            const m = (params.get("route") || "").match(/^\/session\/([^/?]+)/);
-            const sessionId = m ? m[1] : null;
-            if (sessionId) __capOpenContextPanel({ sessionId, mode: "read" });
-            break;
-          }
-        }
-      } catch (err) {
-        console.error("[capture] failed to open panel", panel, err);
-      }
-    }, 1000);
-  }
-}
+// Deep links that open a modal or a panel for the Figma screen capture.
+initFigmaCapture();

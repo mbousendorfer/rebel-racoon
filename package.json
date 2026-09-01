@@ -20,7 +20,8 @@
     "check:templates": "python3 scripts/check-template-comments.py",
     "prepare": "husky",
     "bump": "node scripts/cache-version.mjs bump",
-    "check:versions": "node scripts/cache-version.mjs check"
+    "check:versions": "node scripts/cache-version.mjs check",
+    "check:dead": "node scripts/find-dead-code.mjs"
   },
   "dependencies": {
     "@agorapulse/ui-symbol": "^20.2.3",

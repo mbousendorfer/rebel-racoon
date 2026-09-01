@@ -17,25 +17,37 @@ npm start     # runs `npx serve -p 8000` — open http://localhost:8000
 
 With Claude Code the dev server auto-launches via `.claude/launch.json`.
 
+There is no test suite — changes are verified by running the app. What the repo
+does check:
+
+```bash
+npm run bump            # one cache-bust number across every module + stylesheet
+npm run check:versions  # fails if any ?v= disagrees (pre-commit hook runs it)
+npm run check:templates # a backtick inside an HTML comment blanks the app
+npm run check:dead      # audit: unreferenced exports + CSS classes nothing emits
+npm run format          # prettier
+```
+
 ## Stack
 
 - **Vanilla JS** — no framework, no bundler, ES modules served straight from `src/`.
 - **Hash router** — `src/router.js`, route table in `src/app.js`.
 - **Agorapulse V2 DS** — `@agorapulse/ui-theme` + `@agorapulse/ui-symbol`, synced into `ds/` by `scripts/sync-ds.mjs` at install. UI uses `.ap-*` classes + DS tokens (`--ref-*`, `--sys-*`) — no raw hex or pixel values.
-- **Mocks** — `src/mocks.js`. Hardcoded, no network, no persistence.
+- **Mocks** — `src/mocks/`, one file per domain behind the `src/mocks.js` barrel. Hardcoded, no network, no persistence.
 
 ## Routes
 
-| Route                | Screen                |
-| -------------------- | --------------------- |
-| `/`                  | Dashboard (redirect)  |
-| `/session/:id`       | Chat (main surface)   |
-| `/ideas`             | Ideas library         |
-| `/contexts`          | Playbooks library     |
-| `/playbook/:id`      | Playbook detail       |
-| `/connectors`        | Connectors gallery    |
-| `/welcome-alt`       | Onboarding (new user) |
-| `/welcome-alt/recap` | Onboarding recap      |
+| Route                | Screen                                 |
+| -------------------- | -------------------------------------- |
+| `/`                  | Redirect (first-time → onboarding)     |
+| `/session/:id`       | Chat (main surface)                    |
+| `/contexts`          | Playbooks library                      |
+| `/playbook/:id`      | Playbook detail                        |
+| `/connectors`        | Connectors gallery (flag `connectors`) |
+| `/topics`            | Topic Feed (flag `topicFeed`)          |
+| `/topics/settings`   | Topic Feed listening config (`?pb=`)   |
+| `/welcome-alt`       | Onboarding (new user)                  |
+| `/welcome-alt/recap` | Onboarding recap                       |
 
 Full route + handoff documentation: [`docs/reference/ROUTES.md`](docs/reference/ROUTES.md). Il n'y a **plus** de route `/settings` : les contrôles Admin (user mode + feature flags) vivent dans le popover ⚙️ de la sidebar.
 
