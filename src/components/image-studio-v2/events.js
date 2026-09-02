@@ -19,23 +19,23 @@
 // Anything that patches the DOM instead of re-rendering lives in inline-text.js;
 // anything that writes to the draft lives in commit.js.
 
-import { KEY, ctx, state, autosize } from "./context.js?v=1009";
-import { useImage, commitSlideEdit, applyEditTool, runGenerate } from "./commit.js?v=1009";
+import { KEY, ctx, state, autosize } from "./context.js?v=1010";
+import { useImage, commitSlideEdit, applyEditTool, runGenerate } from "./commit.js?v=1010";
 import {
   focusEditingText,
   syncEditingText,
   restoreEditingCaret,
   previewOverlayInput,
   toggleTextEffect,
-} from "./inline-text.js?v=1009";
+} from "./inline-text.js?v=1010";
 import {
   openFilePicker,
   openLogoPicker,
   startOverlayGesture,
   startCropGesture,
   applyCropSelection,
-} from "./interactions.js?v=1009";
-import * as imageStudio from "../../image-studio.js?v=1009";
+} from "./interactions.js?v=1010";
+import * as imageStudio from "../../image-studio.js?v=1010";
 
 function onClick(event, close) {
   const st = state();
@@ -85,6 +85,9 @@ function onClick(event, close) {
   if (paneBtn && !paneBtn.disabled) {
     return void imageStudio.setPane(KEY, paneBtn.dataset.imgPane);
   }
+
+  // The "out of date" overlay's × — keep the current image, close the notice.
+  if (event.target.closest("[data-img-stale-dismiss]")) return void imageStudio.dismissStale(KEY);
 
   // ── The option rows ──
   const typeBtn = event.target.closest("[data-img-image-type]");
