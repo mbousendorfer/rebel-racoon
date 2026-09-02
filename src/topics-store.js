@@ -18,13 +18,14 @@
 // trending and updated independently (AC-TRK-6). One vocabulary, four fields.
 //
 // The consequences the views depend on:
-//   • In the FEED, a trending Topic shows under its OWN status — a trending
-//     to-review Topic appears only while "To review" is ticked and vanishes when
-//     it isn't. Trending is not a feed-level override, because as an override it
-//     made the status filter lie. This is why the filter is "untick to hide" and
-//     not an OR over ticked rows; see matchesFilters.
+//   • In the FEED, a signal never puts a Topic on screen on its own. Trending and
+//     Updated are card CHIPS, not filter rows: a Topic shows because of its lane
+//     (kind) and its answered-status, and a signal only decorates it. So a
+//     trending Topic that has been ignored stays hidden until the reader ticks
+//     Ignored — a signal cannot make the filter lie because the filter never
+//     reads it. See matchesFilters.
 //   • An IGNORED Topic is never surfaced by a signal, anywhere. Ignore means
-//     ignore: ticking Ignored in the filter is the only way to see one. The
+//     ignore: ticking Ignored in "Marked as" is the only way to see one. The
 //     opposite rule — "a spike is never hidden by triage" — was tried and
 //     dropped: it made Ignore a suggestion rather than an answer, and the one
 //     thing a reader wants from "not this one" is that it stays gone.
@@ -49,10 +50,18 @@
 //   markUsed(id) / ignoreTopic(id, reason) / unignoreTopic(id)
 //   subscribe(fn)                      → unsubscribe
 
-import { topics as seed } from "./mocks.js?v=1011";
-import { isNewUser } from "./user-mode.js?v=1011";
-import { createNotifier } from "./store-utils.js?v=1011";
-import { DEFAULT_STATE_IDS, LIVE_SOURCE_IDS, TOPIC_STATES, findTopicState, kindOf } from "./topics-catalog.js?v=1011";
+import { topics as seed } from "./mocks.js?v=1012";
+import { isNewUser } from "./user-mode.js?v=1012";
+import { createNotifier } from "./store-utils.js?v=1012";
+import {
+  DEFAULT_KIND,
+  DEFAULT_MARKED_IDS,
+  MARKED_STATUS_IDS,
+  LIVE_SOURCE_IDS,
+  TOPIC_STATES,
+  findTopicState,
+  kindOf,
+} from "./topics-catalog.js?v=1012";
 
 const topics = isNewUser() ? [] : seed.map(cloneTopic);
 
@@ -174,9 +183,22 @@ function byRecency(a, b) {
 // never reach, and pin the Filters badge to 1.
 const ALL_SOURCE_IDS = LIVE_SOURCE_IDS.slice();
 
-/** The filter state a feed opens with. Reset restores exactly this. */
+/**
+ * The filter state a feed opens with. Reset restores exactly this.
+ *
+ * THREE groups, one field each — the Filters panel's three controls:
+ *   kind    the Topics radio (the lane): "To review" (ready) at rest
+ *   marked  the answered statuses opted into on top of the To-review baseline:
+ *           Already used at rest, Ignored not
+ *   sources the source checkboxes: every live source at rest
+ *
+ * `new` is not a field here: it is the baseline every lane shows, so a lane
+ * always shows its To-review Topics and `marked` only ever ADDS the answered
+ * ones. Trending / Updated are not fields either — they are card chips, never
+ * filter rows (a signal is a claim about now, not a lane).
+ */
 export function defaultFilters() {
-  return { states: DEFAULT_STATE_IDS.slice(), sources: ALL_SOURCE_IDS.slice(), only: null };
+  return { kind: DEFAULT_KIND, marked: DEFAULT_MARKED_IDS.slice(), sources: ALL_SOURCE_IDS.slice() };
 }
 
 // ── The one deriver: which of the six states a Topic carries ───────────────
@@ -200,65 +222,57 @@ export function topicStates(topic) {
   }).map((st) => st.id);
 }
 
-// How many of the two groups are narrowed below full breadth. The Filters badge
+// How many of the three groups differ from their default. The Filters badge
 // counts GROUPS, not ticked options — "2" means two groups are filtering, which
 // is what the reader needs to know. Counting options gave numbers like "5" that
 // meant nothing.
 //
-// Compared against the DEFAULT, not against all options: the status default is
-// two of three, so a full-breadth comparison would read "narrowed" the moment the
+// Compared against the DEFAULT, not against full breadth: the marked default is
+// one of two, so a full-breadth comparison would read "narrowed" the moment the
 // panel opened and pin the badge to 1 forever. The badge means "you have changed
-// something", and at rest it means nothing is changed.
+// something", and at rest — the exact default — it reads nothing.
 //
-// Length alone is enough, deliberately: any change to a group's selection changes
-// its length UNLESS the reader swaps one option for another — still a deviation,
-// but not one worth a second data structure to catch in a prototype.
-//
-// The kind used to be excluded here because the tab row above the list was a
-// control you could see, and a control you can see needs no badge. The tabs are
-// gone and `later` is a row in the state group like the rest, so it is counted by
-// the same comparison as everything else.
+// ⚠️ The mock shows a persistent "3"; this keeps the app's own convention (no
+// badge at rest, count what deviates), which the product's other filters follow.
+// Switch to "count active groups" here if the persistent count is ever wanted.
+const sameSet = (a = [], b = []) => a.length === b.length && a.every((x) => b.includes(x));
+
 export function narrowedGroupCount(filters = defaultFilters()) {
   let n = 0;
-  if (filters.only) n++;
-  else if ((filters.states || []).length !== DEFAULT_STATE_IDS.length) n++;
-  if ((filters.sources || []).length !== ALL_SOURCE_IDS.length) n++;
+  if ((filters.kind || DEFAULT_KIND) !== DEFAULT_KIND) n++;
+  if (!sameSet(filters.marked || [], DEFAULT_MARKED_IDS)) n++;
+  if (!sameSet(filters.sources || [], ALL_SOURCE_IDS)) n++;
   return n;
 }
 
 // The one filter predicate. Factored out so the list and any "what is the filter
 // hiding?" count can never disagree about what hidden means.
 //
-// ── One semantics, on every row: UNTICK A STATE TO HIDE WHAT CARRIES IT ────
-// A Topic shows only when EVERY state it carries is ticked. That is what lets six
-// rows behave identically while the four underlying fields stay separate.
+// THREE orthogonal gates, ANDed — source, then lane, then answered-status:
 //
-// ⚠️ NOT an OR over ticked rows, and this is the load-bearing part. Under an OR,
-// an *ignored + trending* Topic would reappear the moment Trending was ticked —
-// which is the "Trending, normally hidden" group this feature explicitly rejected
-// (AC-PICK-2b: "Decided: no.") and a direct breach of the store's own rule that an
-// ignored Topic is never surfaced by a signal, anywhere. The rule was not up for
-// revision, so the semantics follows from it rather than being a taste call.
+//   1. source   the Topic's source is ticked in the Sources group.
+//   2. kind     the Topic is in the chosen lane. Mutually exclusive by nature —
+//               a Topic has exactly one kind — so this is `===`, not a set test.
+//   3. status   `new` (To review) always passes: it is the lane's baseline. The
+//               two ANSWERED statuses pass only when ticked in "Marked as".
 //
-// What it costs, plainly: a state can be HIDDEN but not ISOLATED — there is no
-// "show me only what is spiking". That would be a sort or a separate chip row,
-// not this list.
-// ── And ONE positive operator: `only` ─────────────────────────────────────
-// ⚠️ "Only X" CANNOT be expressed as a tick pattern, which is why it gets its own
-// field. Untick-to-hide can only ever hide Topics that CARRY a label, and a `later`
-// Topic always also carries a triage status — so ticking `later` alone hides every
-// Topic including the `later` ones, and `ready` has no label at all, so nothing can
-// hide it. Shipping "Only" as `states = [X]` returned an empty list.
+// ⚠️ THE IGNORED RULE SURVIVES, and it now falls out for free. An ignored Topic
+// shows only when `ignored` is ticked in "Marked as" — ticking it is the reader
+// naming it, exactly as before — and a signal can never resurface it because
+// signals are not read here at all (they are card chips, not filter rows). So
+// AC-PICK-2b / AC-SIG-2 hold by construction rather than by a hand-written
+// untick-to-hide clause.
 //
-// So `only` is a REQUIREMENT: show the Topics carrying X, ignore the ticks. It does
-// not weaken the ignored rule — "Only Ignored" is the reader explicitly asking for
-// ignored Topics, which is what ticking Ignored does, just in one click. A signal
-// never surfaces an ignored Topic on its own; the reader has to name it.
+// ⚠️ THE FOUR FIELDS STAY SEPARATE (AC-CORE-1). This reads `kind` and `status`
+// and ignores `isTrending` / `isUpdated`; nothing here collapses them, so a
+// re-scan still cannot overwrite the reader's answer and the wire contract that
+// reports the three independently is untouched.
 function matchesFilters(t, filters) {
-  const { states = [], sources = [], only = null } = filters;
+  const { kind = DEFAULT_KIND, marked = [], sources = [] } = filters;
   if (!sources.includes(t.sourceId)) return false;
-  if (only) return topicStates(t).includes(only);
-  return topicStates(t).every((id) => states.includes(id));
+  if (kindOf(t) !== kind) return false;
+  if (t.status === "new") return true;
+  return marked.includes(t.status);
 }
 
 /**

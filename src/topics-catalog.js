@@ -179,40 +179,64 @@ export const CADENCES = Object.freeze([
 
 export const DEFAULT_CADENCE = "weekly";
 
-// ── The two kinds, which ARE the two tabs ─────────────────────────────────
+// ── The two kinds ARE the Topics radio ────────────────────────────────────
 // A Topic is either something you can draft now or something worth keeping for
-// later, and that single axis is the tab row above the list. One
-// vocabulary, not two: the fork carried a `researchType` of `ready-to-post` /
-// `content-strategy` and mapped it onto segment ids `ready` / `later` at render
-// time — a mapping layer whose only job was to translate an old name.
+// later, and that single axis is the "Topics" radio at the top of the Filters
+// panel — "read one kind at a time". It is the scan's classification, so it is
+// mutually exclusive by nature: a Topic has exactly one kind, and the reader
+// reads one lane at a time.
 //
-// Worse, its segment predicate also read a CONTENT PILLAR: a `content-strategy`
-// Topic already linked to a pillar counted as ready-to-draft. Pillars are not
-// part of this port, so that clause is gone and the rule is the flat one it
-// always wanted to be — the scan's classification decides the segment, and
-// nothing else moves a Topic between them.
-// ⚠️ TOPIC_KINDS is gone with the two tabs it labelled. `ready` needs no label
-// now — a draftable Topic wears no chip and has no filter row, exactly like the
-// `new` state — and `later`'s label lives in TOPIC_STATES with the other five.
+// ⚠️ HISTORY, so this is not re-litigated. This axis was a tab row (`AC-SEG`),
+// then withdrawn into a flat six-state filter where `later` was one row you
+// unticked. That flat filter is now gone too: the panel is three grouped
+// controls (Topics · Marked as · Sources), and `kind` is the radio again —
+// reinstated deliberately, with the docs (`AC-SEG`, `AC-FILT`) rewritten to
+// match. `git log -S renderStateSelect` has the flat-filter version.
+//
+// The fork carried a `researchType` of `ready-to-post` / `content-strategy`
+// mapped onto `ready` / `later` at render time, and its predicate also read a
+// CONTENT PILLAR (a pillar-linked `content-strategy` Topic counted as ready).
+// Pillars are not part of this port, so the rule is the flat one it always
+// wanted: the scan classifies, nothing a reader does moves a Topic between kinds.
+export const TOPIC_KINDS = Object.freeze([
+  // "To review" is the ACTIVE lane (draftable now); "For later" is the parked
+  // lane. Note "To review" is the kind label here — the `new` STATUS (also
+  // "To review" historically) is now the always-shown baseline inside a lane and
+  // wears no chip, so the two never appear as competing controls.
+  { id: "ready", label: "To review" },
+  { id: "later", label: "For later" },
+]);
+
+/** The lane the panel opens in. */
+export const DEFAULT_KIND = "ready";
+
+export function findTopicKind(id) {
+  return TOPIC_KINDS.find((k) => k.id === id) || null;
+}
+
 /**
  * The kind a Topic sits in. UNCLASSIFIED FALLS TO `later`, on purpose:
- * "Ready to draft" would claim a readiness nothing earned. The fork's code did
- * the opposite of its own spec here (AC-SEG-6) and defaulted to ready.
- *
- * It used to decide which of two TABS a Topic appeared under. The tabs are gone —
- * `later` is one of the six states now — but the rule is unchanged: the scan
+ * "To review" would claim a readiness nothing earned. The fork's code did the
+ * opposite of its own spec here (AC-SEG-6) and defaulted to ready. The scan
  * classifies, and nothing a reader does moves a Topic between kinds.
  */
 export function kindOf(topic) {
   return topic && topic.kind === "ready" ? "ready" : "later";
 }
 
-// ── ONE vocabulary ─────────────────────────────────────────────────────────
-// Six states, one level. This replaces three separate declarations — the two
-// TOPIC_KINDS labels, REVIEW_STATUSES and ATTENTION_SIGNALS — which is what put
-// the five things a reader thinks of as one list at three different levels of
-// prominence: a DS pill for the signals, a bare icon for the triage states, and
-// a whole tab for the kind. One pill species now, and one filter list.
+// ── ONE vocabulary of CHIPS ────────────────────────────────────────────────
+// Six states, one level, as the marks a Topic wears. This replaces three
+// separate declarations — REVIEW_STATUSES, ATTENTION_SIGNALS and two kind labels
+// — which is what put the things a reader thinks of as one row of chips at three
+// levels of prominence: a DS pill for the signals, a bare icon for the triage
+// states, a whole tab for the kind. One pill species now.
+//
+// ⚠️ TOPIC_STATES drives the CHIPS (card + article header), the state deriver
+// (`topicStates`) and the trail labels — NOT the Filters panel. The panel keys
+// off `kind` (the Topics radio), the answered statuses (Marked as) and the
+// source, so a state and its filter can never be the same control. `defaultOn`
+// below is a chip-rest hint, no longer a filter default; the filter's default
+// lives in topics-store's `defaultFilters`.
 //
 // ⚠️ THE DATA MODEL DID NOT FLATTEN, and must not. `status` lives in the triage
 // Map (the reader owns it), `isTrending` / `isUpdated` live on the Topic and are
@@ -233,8 +257,10 @@ export function kindOf(topic) {
 // `chip: false` on `new` is the one asymmetry, and it is deliberate: it is the
 // ABSENCE of an answer, the most common value in any feed, and a glyph meaning
 // "nothing has happened yet" is the one thing a glyph cannot say. It would have
-// spent a mark on nearly every row to convey nothing. It keeps its FILTER row —
-// narrowing to the untouched ones is a real thing to want.
+// spent a mark on nearly every row to convey nothing. `new` is also the panel's
+// baseline — every lane shows its To-review Topics without a control, and the
+// "Marked as" group only adds the answered ones on top — so it needs no filter
+// row either.
 //
 // `hint` is a sentence, never a restatement of the label: a tooltip reading
 // "Used" over a chip labelled Used has told you nothing.
@@ -319,9 +345,10 @@ export const TOPIC_STATES = Object.freeze([
     tone: "blue",
     icon: "ap-icon-bookmark",
     chip: true,
-    // OFF by default, which is what the "Ready to draft" tab did. Landing on a
-    // list that mixes draftable Topics with ones the scan says are not draftable
-    // yet would bury the reason to be here.
+    // Not a filter row: `later` is now a LANE, the "For later" option of the
+    // Topics radio, so the panel reads one lane at a time and the default lane is
+    // "To review". Landing on a list that mixes draftable Topics with ones the
+    // scan says are not draftable yet would bury the reason to be here.
     defaultOn: false,
     hint: "A theme worth keeping — not enough around it to draft from yet.",
   },
@@ -332,9 +359,9 @@ export const TOPIC_STATES = Object.freeze([
     tone: "grey",
     icon: "ap-icon-eye-off",
     chip: true,
-    // The one answer that means "not this one", so it is the one state left out
-    // of the default. Already used stays IN: the work exists, it is findable, and
-    // hiding it is how the same Topic gets drafted twice.
+    // The one answer that means "not this one", so it is the "Marked as" option
+    // left unticked by default. Already used stays ticked: the work exists, it is
+    // findable, and hiding it is how the same Topic gets drafted twice.
     defaultOn: false,
     hint: "Kept off this list, even if it starts trending or gets updated.",
   },
@@ -344,18 +371,20 @@ export function findTopicState(id) {
   return TOPIC_STATES.find((s) => s.id === id) || null;
 }
 
-/** The ids a Topic can carry for one facet — the filter reads these. */
-// ── The filter's default ───────────────────────────────────────────────────
-// Derived from `defaultOn` rather than written out again, so a state cannot be
-// added to the vocabulary and forgotten in the default.
-//
-// The COUNT matters as much as the contents: narrowedGroupCount compares this
-// array's length against the live filter, so the Filters badge reads nothing at
-// rest and 1 the moment the reader changes the group.
-export const DEFAULT_STATE_IDS = Object.freeze(TOPIC_STATES.filter((s) => s.defaultOn).map((s) => s.id));
+// ── "Marked as": the answered statuses the panel opts INTO ─────────────────
+// `new` (To review) is the baseline every lane shows; the "Marked as" group only
+// adds the two ANSWERED statuses back on top. Derived from TOPIC_STATES so a new
+// status-facet state joins the group automatically — the status facet minus the
+// `new` baseline.
+export const MARKED_STATUS_IDS = Object.freeze(
+  TOPIC_STATES.filter((s) => s.facet === "status" && s.id !== "new").map((s) => s.id),
+);
 
-/** Every declared state id — what a deep link widens to. */
-export const ALL_STATE_IDS = Object.freeze(TOPIC_STATES.map((s) => s.id));
+// Already used is ticked at rest — findable work is not hidden, hiding it is how
+// a Topic gets drafted twice — and Ignored is not: "not this one" stays gone
+// until the reader ticks it back. narrowedGroupCount compares the live set
+// against this, so the badge reads nothing at rest.
+export const DEFAULT_MARKED_IDS = Object.freeze(["used"]);
 
 export function findTopicSource(id) {
   return TOPIC_SOURCES.find((s) => s.id === id) || null;

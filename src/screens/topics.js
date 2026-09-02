@@ -24,15 +24,15 @@
 // view. There is an explicit Load more too, and both do exactly the same thing —
 // an infinite list with no button is unusable by keyboard.
 
-import { html, raw, escapeAttr } from "../utils.js?v=1011";
-import { navigate, getPath } from "../router.js?v=1011";
-import { isFlagOn } from "../feature-flags.js?v=1011";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1011";
-import { renderTopbar } from "../components/topbar.js?v=1011";
-import { showToast } from "../components/toast.js?v=1011";
-import { renderEmptyState } from "../components/empty-state.js?v=1011";
-import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=1011";
-import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1011";
+import { html, raw, escapeAttr } from "../utils.js?v=1012";
+import { navigate, getPath } from "../router.js?v=1012";
+import { isFlagOn } from "../feature-flags.js?v=1012";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1012";
+import { renderTopbar } from "../components/topbar.js?v=1012";
+import { showToast } from "../components/toast.js?v=1012";
+import { renderEmptyState } from "../components/empty-state.js?v=1012";
+import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=1012";
+import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1012";
 import {
   getTopicsForFeed,
   groupTopicsByAge,
@@ -44,21 +44,21 @@ import {
   ignoreTopic,
   unignoreTopic,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=1011";
+} from "../topics-store.js?v=1012";
 import {
   TOPIC_SOURCES,
-  TOPIC_STATES,
-  ALL_STATE_IDS,
+  TOPIC_KINDS,
+  MARKED_STATUS_IDS,
   findTopicState,
   findTopicSource,
   findCadence,
   isLiveSource,
-} from "../topics-catalog.js?v=1011";
-import { renderTopicCard } from "../components/topic-card.js?v=1011";
-import { renderTopicArticle, renderTopicHeader } from "../topic-article.js?v=1011";
-import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=1011";
-import { openTopicHistory } from "../components/topic-history-modal.js?v=1011";
-import { useTopicInChat } from "../topic-flow.js?v=1011";
+} from "../topics-catalog.js?v=1012";
+import { renderTopicCard } from "../components/topic-card.js?v=1012";
+import { renderTopicArticle, renderTopicHeader } from "../topic-article.js?v=1012";
+import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=1012";
+import { openTopicHistory } from "../components/topic-history-modal.js?v=1012";
+import { useTopicInChat } from "../topic-flow.js?v=1012";
 
 const PAGE = 10;
 // Long enough to read the scanning line, short enough that nobody waits for it
@@ -88,9 +88,11 @@ function freshView() {
     // the list at the same time.
     paneMenuOpen: false,
     filtersOpen: false,
-    // The state select inside the Filters panel. Held here because a pick
-    // repaints the panel — see renderStateSelect.
-    statesOpen: false,
+    // The two multi-selects inside the Filters panel (Marked as, Sources). Held
+    // in `view` because a pick repaints the whole panel, so a natively-open
+    // <details> would collapse on every tick — see renderMultiSelect.
+    markedOpen: false,
+    sourcesOpen: false,
     // Which article the last paint drew, so the pane's scroll offset is kept
     // across a repaint of the same Topic and dropped when the reader opens
     // another one.
@@ -137,9 +139,11 @@ export function renderTopics(_params, target) {
   if (deepTopic) {
     view.openTopicId = deepTopic.id;
     view.autoOpened = true;
-    // Every state ticked, so a linked Topic opens whatever it carries — ignored,
-    // for later, or both. There is no segment to force any more.
-    view.filters = { ...view.filters, states: ALL_STATE_IDS.slice(), only: null };
+    // Widen so a linked Topic opens whatever it carries. The panel reads one lane
+    // at a time, so the lane is set to the Topic's OWN kind (not both — there is
+    // no "both" for a radio), and every answered status is ticked so an ignored or
+    // used linked Topic still shows. `new` passes anyway as the baseline.
+    view.filters = { ...view.filters, kind: deepTopic.kind, marked: MARKED_STATUS_IDS.slice() };
     // No scanning state on a Topic link: the reader came for one thing and a
     // working state would be theatre between them and it.
     view.scanning = false;
@@ -431,60 +435,39 @@ function renderToolbar(pb, feed) {
   </div>`;
 }
 
-// ⚠️ ROW 3, THE TWO TABS, IS GONE. `.ap-tabs` carried "Ready to draft" /
-// "Topics for later" here, and `later` is now one of the six states in the Filters
-// panel. Two controls for one fact is what AC-FILT-2 refused when it said "no
-// filter for the two segments — the segmented control already does that job, and a
-// second one could disagree with it"; the answer turned out to be keeping the
-// filter and dropping the tabs, not the other way round. The per-tab counts moved
-// onto the filter rows, so nothing was lost with them.
+// ── The Filters panel — three groups, the product's Filter Dropdown ────────
+// A reversal, made on purpose and with the docs (AC-SEG, AC-FILT) rewritten to
+// match: the flat six-state list is gone. The panel is three grouped controls,
+// each answering one question, each its own field in the filter:
 //
-// `git log -S renderTabs` has the version with tabs, and `git log -S
-// ap-segmented-control` the wrong-component one before that.
-
-// ── The Filters panel ──────────────────────────────────────────────────────
-// The DS Filter Dropdown: two groups, both multi-select, committed on change.
-// Words only — no glyph beside an option. A state's glyph means something on a
-// card, where it stands in for a sentence; in a list of labelled checkboxes it is
-// a second reading of a word that is already there.
+//   Topics    a RADIO on `kind` — "read one kind at a time". To review (the
+//             active lane) / For later (the parked lane). One at a time because a
+//             Topic has exactly one kind. This is the old two-segment axis, back
+//             as a radio INSIDE the panel rather than as tabs above the list.
+//   Marked as a multi-select on the ANSWERED statuses — Already used / Ignored —
+//             opted into on top of the To-review baseline every lane already
+//             shows.
+//   Sources   a multi-select on the listening source, live ones tickable and the
+//             rest "Coming soon".
 //
-// ── SIX rows now, at one level ────────────────────────────────────────────
-// To review · Trending · Updated · Already used are ticked at rest, For later and
-// Ignored are not — which reproduces the old landing exactly (the "Ready to draft"
-// tab plus Ignored unticked) without a second control.
+// ⚠️ TRENDING / UPDATED ARE NOT HERE. They are card chips, not filter rows: a
+// signal is a claim about NOW, not a lane, and there is no "show me only what is
+// spiking". Dropping them from the filter is what lets the ignored rule fall out
+// for free — the predicate never reads a signal, so one can never resurface an
+// ignored Topic (topics-store matchesFilters). `git log -S renderStateSelect` has
+// the flat-filter version; `git log -S renderTabs` the tabbed one before it.
 //
-// Every row behaves identically: UNTICK A STATE TO HIDE WHAT CARRIES IT. Not an OR
-// over ticked rows — that would resurface an ignored-but-trending Topic the moment
-// Trending was ticked, which is the group this feature rejected outright. The
-// predicate lives in topics-store's matchesFilters with the full argument.
-//
-// Each row carries the DS's "Only" shortcut at its end, revealed on hover: one
-// click to narrow to that single state rather than unticking the other five.
-//
-// ⚠️ The rows carried a COUNT of Topics per state for two commits — where the two
-// tabs' counts had gone. Removed: six numbers down the right edge competed with
-// the six labels for the same glance, and the shape of the feed is not what a
-// reader opens a filter to read. The trigger already says what is excluded.
+// The SELECTION shows as chips in each multi-select's trigger, echoing what the
+// reader sees elsewhere — the state's own pill for "Marked as", the source's own
+// provenance badge for "Sources".
 function renderFilters() {
-  const stateRows = renderStateSelect();
-  const sourceRows = TOPIC_SOURCES.map((s) =>
-    filterOption("source", s.id, s.name, view.filters.sources.includes(s.id), !isLiveSource(s.id)),
-  );
-
   return html`<div class="ap-filter-dropdown topics-view__filter-panel" role="menu" aria-label="Filter topics">
     <div class="ap-filter-dropdown__content">
-      <div class="ap-filter-leaf with-border-bottom">
-        <div class="ap-filter-leaf__header ap-filter-leaf__expanded">
-          <span class="ap-filter-leaf__title">Topic status</span>
-        </div>
-        <div class="ap-filter-leaf__content">${raw(stateRows)}</div>
-      </div>
-      <div class="ap-filter-leaf">
-        <div class="ap-filter-leaf__header ap-filter-leaf__expanded">
-          <span class="ap-filter-leaf__title">Sources</span>
-        </div>
-        <div class="ap-filter-leaf__content">${raw(sourceRows.join(""))}</div>
-      </div>
+      ${raw(renderFilterLeaf("Topics", "Read one kind at a time.", renderKindRadio(), true))}
+      ${raw(
+        renderFilterLeaf("Marked as", "Topics you have already answered keep their mark.", renderMarkedSelect(), true),
+      )}
+      ${raw(renderFilterLeaf("Sources", "Where I found the topic.", renderSourceSelect(), false))}
     </div>
     <div class="ap-filter-dropdown__footer">
       <div class="ap-filter-dropdown__footer--apply">
@@ -494,104 +477,126 @@ function renderFilters() {
   </div>`;
 }
 
-// ── The state group is a DS SELECT, not six checkboxes ────────────────────
-// A multi-select behind one trigger. `<details>` is the disclosure, which is what
-// the toolbar's Playbook picker already uses — no managed overlay, no second
-// z-index layer, nothing for modal-coordinator to arbitrate.
-//
-// ⚠️ THE OPEN FLAG IS IN `view`, not left to <details>. Ticking an option fires
-// `change`, which repaints the screen, which rebuilds this panel — so a natively
-// open <details> would collapse on every pick, and picking four states would mean
-// opening it four times. `view.statesOpen` survives the repaint the same way
-// `view.filtersOpen` does, and the summary's click is intercepted so the native
-// toggle cannot desync from it.
-//
-// ⚠️ `.ap-select-dropdown` is `position: absolute` and this panel's content is
-// `overflow-y: auto`, so the menu is CLIPPED by that scroller. It fits today —
-// measured: menu bottom 334 against a content bottom of 681, on a panel capped at
-// min(90vh, 750px) — because this is the FIRST leaf and there are only six
-// options. Move it below the eight sources and it will be cut off.
-//
-// What the trigger says is chosen to keep the one fact a collapsed control
-// normally costs you: WHICH states are hidden. "All except For later, Ignored" is
-// the default reading, and it never truncates.
-function stateSummary(picked) {
-  // A requirement outranks the ticks, so it is what the trigger has to report.
-  if (view.filters.only) return `Only ${findTopicState(view.filters.only)?.label || view.filters.only}`;
-  const all = TOPIC_STATES.map((st) => st.id);
-  if (!picked.length) return "No states";
-  if (picked.length === all.length) return "All states";
-  const missing = TOPIC_STATES.filter((st) => !picked.includes(st.id)).map((st) => st.label);
-  // Naming the exclusions is shorter AND more useful whenever there are few of
-  // them: "what am I not seeing?" is the question a narrowed filter raises.
-  if (missing.length <= 2) return `All except ${missing.join(", ")}`;
-  return TOPIC_STATES.filter((st) => picked.includes(st.id))
-    .map((st) => st.label)
-    .join(", ");
+// One leaf: a bold group title, a one-line description, then the control. The
+// description is the panel's own voice — it says what the group narrows, which a
+// bare heading cannot.
+function renderFilterLeaf(title, hint, bodyHtml, withBorder) {
+  return html`<div class="ap-filter-leaf${raw(withBorder ? " with-border-bottom" : "")}">
+    <div class="ap-filter-leaf__header ap-filter-leaf__expanded">
+      <span class="ap-filter-leaf__title">${title}</span>
+    </div>
+    <div class="ap-filter-leaf__content">
+      <p class="topics-view__filter-hint">${hint}</p>
+      ${raw(bodyHtml)}
+    </div>
+  </div>`;
 }
 
-function renderStateSelect() {
-  const picked = view.filters.states;
-  const options = TOPIC_STATES.map((st) => {
-    const on = picked.includes(st.id);
-    // ONE element carrying both shipped classes: .ap-select-option gives the row
-    // its height, padding, type and selected fill; .ap-checkbox-container draws
-    // the box — and it only works on a DIRECT child <i>, which is why the two are
-    // composed here rather than nested. .ap-select-option-text is `flex: 1`, so it
-    // pushes the count to the right without a rule of my own.
-    return html`<label class="ap-select-option${raw(on ? " selected" : "")}${raw(" ap-checkbox-container")}">
-      <input type="checkbox" data-topic-filter="state" value="${escapeAttr(st.id)}" ${raw(on ? "checked" : "")} />
-      <!-- BARE, for the reason spelled out in filterOption below. -->
-      <i aria-hidden="true"></i>
-      <span class="ap-select-option-text">${st.label}</span>
-      <!-- The DS's "Only" shortcut: narrow to this one state in a single click,
-           instead of unticking the other five. A <button> inside the <label>, so
-           it does NOT toggle the checkbox — the click is handled on its own hook
-           and the label's default is prevented. Hidden until the row is hovered,
-           as the source has it. -->
-      <button type="button" class="standalone-link" data-topic-filter-only="${escapeAttr(st.id)}">Only</button>
+// ── Topics — the DS radio, one lane at a time ──────────────────────────────
+// The real `.ap-radio-container` (label > input[type=radio] + span). Exclusive by
+// its shared `name`, which is exactly what "read one kind at a time" means.
+function renderKindRadio() {
+  const options = TOPIC_KINDS.map((k) => {
+    const on = view.filters.kind === k.id;
+    return html`<label class="ap-radio-container">
+      <input type="radio" name="topicKind" value="${escapeAttr(k.id)}" data-topic-kind ${raw(on ? "checked" : "")} />
+      <span>${k.label}</span>
     </label>`;
   }).join("");
+  return html`<div class="topics-view__radio-group">${raw(options)}</div>`;
+}
 
-  return html`<details class="ap-select" ${raw(view.statesOpen ? "open" : "")}>
-    <summary class="ap-select-trigger" data-topic-states-toggle title="Which states to show">
-      <span class="ap-select-value">${stateSummary(picked)}</span>
+// ── The two multi-selects — the DS Select, chips in the trigger ────────────
+// A `<details>`/`<summary>` disclosure, the same primitive the toolbar's Playbook
+// picker uses — no managed overlay, nothing for modal-coordinator to arbitrate.
+// The DS `.ap-select-trigger` already styles `.ap-tag` chips inside it, so the
+// selection reads as chips for free.
+//
+// ⚠️ THE OPEN FLAG IS IN `view`, not left to `<details>`. Ticking an option fires
+// `change`, which repaints the panel, so a natively-open `<details>` would
+// collapse on every pick. `view.markedOpen` / `view.sourcesOpen` survive the
+// repaint the way `view.filtersOpen` does, and the summary's click is intercepted
+// so the native toggle cannot desync from it.
+//
+// ⚠️ `.ap-select-dropdown` is `position: absolute`; the panel content is set to
+// `overflow: visible` in topics.css so the LOWER select (Sources) is not clipped
+// by a scroller — there are only three short groups, so the panel never needs to
+// scroll and an open menu is free to overlay whatever sits below the panel.
+function renderMultiSelect(id, open, chipsHtml, placeholder, optionsHtml, label) {
+  return html`<details class="ap-select topics-view__ms" ${raw(open ? "open" : "")}>
+    <summary class="ap-select-trigger" data-topic-ms-toggle="${escapeAttr(id)}" title="Choose ${escapeAttr(label)}">
+      <span class="topics-view__ms-chips">
+        ${raw(chipsHtml || html`<span class="ap-select-placeholder">${placeholder}</span>`)}
+      </span>
       <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
     </summary>
-    <div class="ap-select-dropdown" role="group" aria-label="Topic status">
-      <div class="ap-select-options">${raw(options)}</div>
+    <div class="ap-select-dropdown" role="group" aria-label="${escapeAttr(label)}">
+      <div class="ap-select-options">${raw(optionsHtml)}</div>
     </div>
   </details>`;
 }
 
-function filterOption(group, id, label, checked, disabled = false, count = null) {
-  return html`<div class="ap-filter-leaf__option">
-    <label class="ap-checkbox-container">
-      <input
-        type="checkbox"
-        data-topic-filter="${escapeAttr(group)}"
-        value="${escapeAttr(id)}"
-        ${raw(checked ? "checked" : "")}
-        ${raw(disabled ? "disabled" : "")}
-      />
-      <!-- BARE. The DS draws the 16x16 box on this <i> itself, with the tick in
-           ::after revealed by :has(input:checked). An ap-icon-* class here does
-           not ADD a glyph, it applies a mask-image to the element and clips the
-           box down to the icon's shape - border, fill and tick all vanish at
-           once, and nothing in the DS resets mask-image so load order cannot
-           save it. Every other checkbox in this app writes it bare too. -->
-      <i aria-hidden="true"></i>
-      <span class="ap-filter-leaf__label${raw(disabled ? " disabled" : "")}">${label}</span>
-    </label>
-    <!-- Not-yet-built sources say so in a grey tag, never in electric blue.
-         Blue is the colour of the interactive in this app, and a disabled row is
-         the one thing on the panel that cannot be interacted with. -->
+// Marked as: the two answered statuses, each shown in the trigger as the STATE'S
+// OWN pill — the green Already used / grey Ignored a card wears — so the filter
+// and the card name a state the same way. Order follows the vocabulary.
+function renderMarkedSelect() {
+  const picked = view.filters.marked || [];
+  const chips = MARKED_STATUS_IDS.filter((id) => picked.includes(id))
+    .map((id) => {
+      const st = findTopicState(id);
+      return html`<span class="ap-tag ${raw(st.tone)}"
+        ><i class="${raw(st.icon)}" aria-hidden="true"></i><span>${st.label}</span></span
+      >`;
+    })
+    .join("");
+  const options = MARKED_STATUS_IDS.map((id) => {
+    const st = findTopicState(id);
+    return filterCheckbox("marked", id, st.label, picked.includes(id));
+  }).join("");
+  return renderMultiSelect("marked", view.markedOpen, chips, "None", options, "marked statuses");
+}
+
+// Sources: each selected source shown as its provenance badge + name — the same
+// pip the card carries — so a source reads the same here as everywhere. NOT a
+// blue chip (blue is the interactive colour and a source name is static data);
+// the badge keeps the source's own accent. The not-yet-built ones are disabled
+// with a grey "Coming soon" tag.
+function renderSourceSelect() {
+  const picked = view.filters.sources || [];
+  const chips = TOPIC_SOURCES.filter((s) => picked.includes(s.id))
+    .map(
+      (s) =>
+        html`<span class="topics-view__ms-source"
+          ><span class="topic-badge topic-badge--${raw(s.accent)}" aria-hidden="true"
+            ><i class="${raw(s.icon)}"></i></span
+          ><span>${s.name}</span></span
+        >`,
+    )
+    .join("");
+  const options = TOPIC_SOURCES.map((s) =>
+    filterCheckbox("source", s.id, s.name, picked.includes(s.id), !isLiveSource(s.id)),
+  ).join("");
+  return renderMultiSelect("sources", view.sourcesOpen, chips, "No sources", options, "sources");
+}
+
+// One checkbox row inside a multi-select's dropdown. `.ap-select-option` gives the
+// row its height/padding; `.ap-checkbox-container` draws the box — and it only
+// works on a DIRECT child <i>, so the two compose on one element. The <i> stays
+// BARE: an `ap-icon-*` there does not add a glyph, it masks the box away. A
+// disabled source carries its grey "Coming soon" tag at the row's end.
+function filterCheckbox(group, id, label, checked, disabled = false) {
+  return html`<label class="ap-select-option ap-checkbox-container${raw(disabled ? " disabled" : "")}">
+    <input
+      type="checkbox"
+      data-topic-filter="${escapeAttr(group)}"
+      value="${escapeAttr(id)}"
+      ${raw(checked ? "checked" : "")}
+      ${raw(disabled ? "disabled" : "")}
+    />
+    <i aria-hidden="true"></i>
+    <span class="ap-select-option-text">${label}</span>
     ${raw(disabled ? html`<span class="ap-tag grey mini">Coming soon</span>` : "")}
-    <!-- The state's count, in the slot the port already reserves at the end of a
-         row (margin-left: auto, same as the tag above). Grey, never blue: it is a
-         quantity, not something to click. -->
-    ${raw(count === null ? "" : html`<span class="ap-counter normal grey">${String(count)}</span>`)}
-  </div>`;
+  </label>`;
 }
 
 // ── Waiting: GHOSTS, not a spinner ─────────────────────────────────────────
@@ -844,15 +849,25 @@ function bind(target) {
 
   boundChange = (event) => {
     if (!view) return;
+
+    // The Topics radio: pick a lane. Exclusive, so this replaces `kind` outright.
+    const kindInput = event.target.closest("[data-topic-kind]");
+    if (kindInput) {
+      view.filters = { ...view.filters, kind: kindInput.value };
+      view.page = 1;
+      paint(target, scopedPlaybook());
+      return;
+    }
+
+    // A multi-select checkbox: "marked" (answered statuses) or "source". The
+    // control's group name is plural in the filter (`marked` / `sources`).
     const filter = event.target.closest("[data-topic-filter]");
     if (filter) {
-      const group = filter.dataset.topicFilter === "state" ? "states" : "sources";
+      const group = filter.dataset.topicFilter === "marked" ? "marked" : "sources";
       const list = new Set(view.filters[group]);
       if (filter.checked) list.add(filter.value);
       else list.delete(filter.value);
-      // Touching a checkbox leaves "only" mode: the reader is back to composing a
-      // set, and a stale requirement would silently outrank every tick.
-      view.filters = { ...view.filters, [group]: [...list], only: null };
+      view.filters = { ...view.filters, [group]: [...list] };
       // Any filter change returns to page one. Narrowing must never leave the
       // reader three pages deep in a list that is now shorter than that.
       view.page = 1;
@@ -882,7 +897,8 @@ function bind(target) {
     const filtersBtn = event.target.closest("[data-topic-filters-toggle]");
     if (!filtersBtn && !insidePanel && view.filtersOpen) {
       view.filtersOpen = false;
-      view.statesOpen = false;
+      view.markedOpen = false;
+      view.sourcesOpen = false;
       paint(target, scopedPlaybook());
     }
 
@@ -892,37 +908,27 @@ function bind(target) {
       return;
     }
 
-    // The select's own disclosure. preventDefault so <details> does not ALSO
-    // toggle itself: the flag is the single source of truth, and letting both run
-    // means the next repaint puts it back where the flag says.
-    // "Only" narrows to one state. It lives inside the option's <label>, so the
-    // default has to be prevented or the click would toggle that state's checkbox
-    // on the way past and leave it unticked.
-    const only = event.target.closest("[data-topic-filter-only]");
-    if (only) {
+    // A multi-select's own disclosure. preventDefault so `<details>` does not ALSO
+    // toggle itself — the flag is the single source of truth. One select open at a
+    // time, so opening one closes the other and there is never a second overlay.
+    const msToggle = event.target.closest("[data-topic-ms-toggle]");
+    if (msToggle) {
       event.preventDefault();
-      const id = only.dataset.topicFilterOnly;
-      // `only` is the REQUIREMENT the store reads; `states` is set to match so the
-      // panel shows one row ticked rather than lying about what is on.
-      view.filters = { ...view.filters, states: [id], only: id };
-      view.page = 1;
-      paint(target, scopedPlaybook());
-      return;
-    }
-
-    const statesBtn = event.target.closest("[data-topic-states-toggle]");
-    if (statesBtn) {
-      event.preventDefault();
-      view.statesOpen = !view.statesOpen;
+      const which = msToggle.dataset.topicMsToggle;
+      view.markedOpen = which === "marked" ? !view.markedOpen : false;
+      view.sourcesOpen = which === "sources" ? !view.sourcesOpen : false;
       paint(target, scopedPlaybook());
       return;
     }
 
     if (filtersBtn) {
-      // Closing the panel closes the select with it, so reopening Filters never
-      // starts with a menu already hanging open over the sources.
+      // Closing the panel closes the selects with it, so reopening Filters never
+      // starts with a menu already hanging open over the groups below it.
       view.filtersOpen = !view.filtersOpen;
-      if (!view.filtersOpen) view.statesOpen = false;
+      if (!view.filtersOpen) {
+        view.markedOpen = false;
+        view.sourcesOpen = false;
+      }
       paint(target, scopedPlaybook());
       return;
     }
@@ -1033,10 +1039,11 @@ function bind(target) {
     if (document.body.classList.contains("has-modal")) return;
     // A menu or the filter panel takes the key next: Escape shuts the thing
     // that opened last, not the thing behind it.
-    // The select is INSIDE the panel, so it is the innermost thing open: Escape
-    // takes it alone and leaves the panel up.
-    if (view.statesOpen) {
-      view.statesOpen = false;
+    // A multi-select is INSIDE the panel, so it is the innermost thing open:
+    // Escape takes it alone and leaves the panel up.
+    if (view.markedOpen || view.sourcesOpen) {
+      view.markedOpen = false;
+      view.sourcesOpen = false;
       paint(target, scopedPlaybook());
       return;
     }

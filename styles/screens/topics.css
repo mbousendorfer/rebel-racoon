@@ -1126,22 +1126,68 @@
    `close: null`. */
 
 /* ── The Filters panel's own additions ────────────────────────────────────
-   The DS's filter-leaf option is `justify-content: flex-start`, which is right
-   for a row that is only a checkbox and a label. Ours can carry a Coming-soon
-   tag, and a tag sitting flush against its label reads as part of it. */
-.topics-view__filter-panel .ap-filter-leaf__option > .ap-tag {
+   Three groups: a radio (Topics) and two DS multi-selects (Marked as, Sources)
+   whose selection shows as chips in the trigger. */
+
+/* The one-line description under each group heading — the panel's own voice,
+   saying what the group narrows. Body regular in grey-80 (the ink floor), quieter
+   than the body-bold heading by weight, not by dropping into a lighter grey. */
+.topics-view__filter-hint {
+  margin: 0 0 var(--ref-spacing-xs);
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--sys-text-color-light);
+}
+
+/* The two radio lanes, stacked. */
+.topics-view__radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+}
+
+/* ⚠️ The multi-select dropdowns are position:absolute; the DS content scroller
+   (`overflow-y: auto`) would CLIP the lower one (Sources). With only three short
+   groups the panel never needs to scroll, so the content is free to overflow and
+   let an open menu overlay whatever sits below the panel — which is what the
+   design shows. Was scoped to the state select being the FIRST leaf; now that two
+   selects sit at different heights, visible overflow is the general fix. */
+.topics-view__filter-panel .ap-filter-dropdown__content {
+  overflow: visible;
+}
+
+/* The selected values as chips in the trigger. flex:1 + overflow:hidden so a long
+   run is clipped rather than shoving the chevron out of the box. */
+.topics-view__ms-chips {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* A source shown as its provenance badge + name — the card's own pip, shrunk to
+   the trigger's 20px chip height so it sits level with the tag chips in the
+   sibling select. Never a blue chip: blue is the interactive colour and a source
+   name is static data, so the badge keeps the source's own accent. */
+.topics-view__ms-source {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  white-space: nowrap;
+  color: var(--sys-text-color-default);
+  font-size: var(--sys-text-style-caption-size);
+}
+
+.topics-view__ms-source .topic-badge {
+  width: 20px;
+  height: 20px;
+}
+
+/* The "Coming soon" tag rides to the row's end. The option's text is already
+   flex:1, so this only guards against the tag being pulled in on a short label. */
+.topics-view__ms .ap-select-option > .ap-tag {
   margin-left: auto;
   flex-shrink: 0;
-}
-
-/* The option row has to hold one line: the source names are short, and a wrapped
-   checkbox row breaks the column of ticks the panel is scanned by. */
-.topics-view__filter-panel .ap-checkbox-container {
-  min-width: 0;
-}
-
-.topics-view__filter-panel .ap-filter-leaf__label {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
