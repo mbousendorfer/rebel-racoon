@@ -16,12 +16,12 @@
 // because the four states and what each says are a subject; where the column sits is
 // the stage's business.
 
-import { escapeHtml } from "../../utils.js?v=1006";
-import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=1006";
-import { getPosts } from "../../posts-store.js?v=1006";
-import { renderPostCard } from "../post-card.js?v=1006";
-import { KEY, ctx } from "./context.js?v=1006";
-import * as imageStudio from "../../image-studio.js?v=1006";
+import { escapeHtml } from "../../utils.js?v=1007";
+import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=1007";
+import { getPosts } from "../../posts-store.js?v=1007";
+import { renderPostCard } from "../post-card.js?v=1007";
+import { KEY, ctx } from "./context.js?v=1007";
+import * as imageStudio from "../../image-studio.js?v=1007";
 
 // Image ↔ in-feed. It lives in the preview's own header because it changes what the
 // PREVIEW shows and nothing else — centred over the whole stage it read as modal chrome
@@ -130,12 +130,17 @@ export function previewColumn(st) {
   // fix attached: the picture is the thing that has gone out of date, so the prompt to
   // redo it belongs there rather than in a footer the eye has already left.
   const stale = imageStudio.previewStale(st);
+  // The words ride on their own opaque panel rather than straight on the picture: the
+  // image underneath is arbitrary — often one with baked-in text of its own — so white
+  // type on a scrim reads differently on every generation. See `.isv2-bs-stale`.
   const restale = stale
     ? `<div class="isv2-bs-stale">
-        <p class="isv2-bs-stale-note">The brief changed since this image.</p>
-        <button type="button" class="ap-button primary blue" data-img-generate>
-          <i class="ap-icon-refresh"></i><span>Regenerate</span>
-        </button>
+        <div class="isv2-bs-stale-panel">
+          <p class="isv2-bs-stale-note">The brief changed since this image.</p>
+          <button type="button" class="ap-button primary blue" data-img-generate>
+            <i class="ap-icon-refresh"></i><span>Regenerate</span>
+          </button>
+        </div>
       </div>`
     : "";
   return `<div class="isv2-bs-preview">

@@ -31,20 +31,20 @@ import {
   postTopPostsWidget,
   postUserTurn,
   postUserProfilesTurn,
-} from "./assistant.js?v=1006";
-import { getTopPosts, getTopPost } from "./top-posts-store.js?v=1006";
-import { addPostDraft } from "./posts-store.js?v=1006";
-import { addReadySource } from "./sources-stream.js?v=1006";
+} from "./assistant.js?v=1007";
+import { getTopPosts, getTopPost } from "./top-posts-store.js?v=1007";
+import { addPostDraft } from "./posts-store.js?v=1007";
+import { addReadySource } from "./sources-stream.js?v=1007";
 import {
   getConnectedProfiles,
   BRAND_INITIALS,
   NETWORK_ICON_BY_PLATFORM,
   PROFILE_SEARCH_THRESHOLD,
-} from "./social-profiles.js?v=1006";
-import { SORTS, PERIODS } from "./components/top-post-card.js?v=1006";
-import { showToast } from "./components/toast.js?v=1006";
-import * as inlineQuestion from "./inline-question.js?v=1006";
-import { getDefaultContext } from "./contexts-store.js?v=1006";
+} from "./social-profiles.js?v=1007";
+import { SORTS, PERIODS } from "./components/top-post-card.js?v=1007";
+import { showToast } from "./components/toast.js?v=1007";
+import * as inlineQuestion from "./inline-question.js?v=1007";
+import { getDefaultContext } from "./contexts-store.js?v=1007";
 
 // Cap on drafts produced in one run — post × angle × channel can multiply fast
 // (e.g. 3 posts × 4 angles × 3 channels = 36). Keep the result turn scannable;

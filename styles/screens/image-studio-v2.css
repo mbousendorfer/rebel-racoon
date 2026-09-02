@@ -311,24 +311,43 @@
   filter: saturate(0.5);
 }
 
+/* White type on a 45% scrim was legible on the studio's own sample photos and nowhere
+   else: the picture behind is whatever was just generated — a bright sky, a light
+   product shot, or an image carrying its own baked-in headline right under these
+   words. So the notice stops competing with it. The overlay only puts the picture
+   OUT (a scrim plus a blur, which also dissolves any text baked into it), and the
+   message sits on an opaque surface that reads the same whatever it covers. */
 .isv2-bs-stale {
   position: absolute;
   inset: 0;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-md);
+  background: color-mix(in srgb, var(--ref-color-grey-100) 35%, transparent);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* No shadow: the blurred, darkened image around it already detaches the panel, and this
+   sits inside the modal's own elevation. */
+.isv2-bs-stale-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+  max-width: 34ch;
+  padding: var(--ref-spacing-md);
   text-align: center;
-  background: color-mix(in srgb, var(--ref-color-grey-100) 45%, transparent);
+  border-radius: var(--app-radius-card);
+  background: var(--ref-color-white);
 }
 
 .isv2-bs-stale-note {
   font-size: var(--sys-text-style-body-bold-size);
   line-height: var(--sys-text-style-body-bold-line-height);
   font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--ref-color-white);
+  color: var(--sys-text-color-default);
 }
 
 .isv2-bs-shot img {
