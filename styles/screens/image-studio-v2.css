@@ -375,7 +375,16 @@
 
 .isv2-bs-shot.is-busy {
   flex-direction: column;
+  gap: var(--ref-spacing-xs);
   border-color: var(--sys-border-color-default);
+}
+
+/* Same reasoning as `.is-empty` above: this box is ~600px square in a split stage, and
+   the shared 20px inline spinner read as a speck in the middle of it. Sized so the mark
+   matches the empty state's `xl` icon (40px tall → 53px wide at the 227.15/170.03
+   viewBox), which is what keeps the two states of the same box the same weight. */
+.isv2-bs-shot.is-busy .gen-image-spinner {
+  --archie-loader-size: 54px;
 }
 
 .isv2-bs-shot-label {
