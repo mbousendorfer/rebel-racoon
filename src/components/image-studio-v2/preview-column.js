@@ -16,12 +16,12 @@
 // because the four states and what each says are a subject; where the column sits is
 // the stage's business.
 
-import { escapeHtml } from "../../utils.js?v=1007";
-import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=1007";
-import { getPosts } from "../../posts-store.js?v=1007";
-import { renderPostCard } from "../post-card.js?v=1007";
-import { KEY, ctx } from "./context.js?v=1007";
-import * as imageStudio from "../../image-studio.js?v=1007";
+import { escapeHtml } from "../../utils.js?v=1008";
+import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=1008";
+import { getPosts } from "../../posts-store.js?v=1008";
+import { renderPostCard } from "../post-card.js?v=1008";
+import { KEY, ctx } from "./context.js?v=1008";
+import * as imageStudio from "../../image-studio.js?v=1008";
 
 // Image ↔ in-feed. It lives in the preview's own header because it changes what the
 // PREVIEW shows and nothing else — centred over the whole stage it read as modal chrome
@@ -133,13 +133,23 @@ export function previewColumn(st) {
   // The words ride on their own opaque panel rather than straight on the picture: the
   // image underneath is arbitrary — often one with baked-in text of its own — so white
   // type on a scrim reads differently on every generation. See `.isv2-bs-stale`.
+  //
+  // A badge + title + one line of why, the primary redo, then the second door: the brief
+  // is editable by hand in Advanced, so the reader who'd rather steer it than re-roll is
+  // pointed there (data-img-pane switches the left half to the brief editor, which stays
+  // enabled because an image exists whenever this panel shows).
   const restale = stale
     ? `<div class="isv2-bs-stale">
         <div class="isv2-bs-stale-panel">
-          <p class="isv2-bs-stale-note">The brief changed since this image.</p>
+          <span class="isv2-bs-stale-badge"><i class="ap-icon-history" aria-hidden="true"></i></span>
+          <div class="isv2-bs-stale-copy">
+            <p class="isv2-bs-stale-title">This image is out of date</p>
+            <p class="isv2-bs-stale-note">You changed the brief after it was generated.</p>
+          </div>
           <button type="button" class="ap-button primary blue" data-img-generate>
             <i class="ap-icon-refresh"></i><span>Regenerate</span>
           </button>
+          <p class="isv2-bs-stale-hint">Prefer to steer it? <button type="button" class="ap-link standalone small" data-img-pane="advanced">Edit the prompt in Advanced</button></p>
         </div>
       </div>`
     : "";

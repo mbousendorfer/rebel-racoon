@@ -330,24 +330,63 @@
 }
 
 /* No shadow: the blurred, darkened image around it already detaches the panel, and this
-   sits inside the modal's own elevation. */
+   sits inside the modal's own elevation. The badge introduces the message, the two copy
+   lines answer what/why, then the CTA, then the quieter second route. */
 .isv2-bs-stale-panel {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--ref-spacing-sm);
-  max-width: 34ch;
-  padding: var(--ref-spacing-md);
+  max-width: 40ch;
+  padding: var(--ref-spacing-lg) var(--ref-spacing-lg) var(--ref-spacing-md);
   text-align: center;
-  border-radius: var(--app-radius-card);
+  border-radius: var(--app-radius-modal);
   background: var(--ref-color-white);
 }
 
-.isv2-bs-stale-note {
-  font-size: var(--sys-text-style-body-bold-size);
-  line-height: var(--sys-text-style-body-bold-line-height);
-  font-weight: var(--sys-text-style-body-bold-weight);
+/* Soft blue disc, same family as the Regenerate button, so the panel reads as one calm
+   informational unit rather than an alarm. */
+.isv2-bs-stale-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--app-radius-circle);
+  background: var(--sys-color-accent-light-bg);
+  color: var(--sys-color-accent-light-text);
+}
+
+.isv2-bs-stale-badge > i {
+  font-size: var(--sys-icon-css-md);
+}
+
+.isv2-bs-stale-copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.isv2-bs-stale-title {
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
   color: var(--sys-text-color-default);
+}
+
+.isv2-bs-stale-note {
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--sys-text-color-light);
+}
+
+/* The second door, held a step back from the CTA: a hint, not a peer of Regenerate. The
+   `xxs` top margin gives the button room; the `.ap-link` inside carries the interaction. */
+.isv2-bs-stale-hint {
+  margin-top: var(--ref-spacing-xxs);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--sys-text-color-light);
 }
 
 .isv2-bs-shot img {
