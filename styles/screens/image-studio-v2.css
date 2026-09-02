@@ -445,8 +445,13 @@
   --archie-loader-size: 54px;
 }
 
+/* Body, not caption: this is the only line on a ~520px surface while the image builds,
+   so the 12px caption read as fine print under the mark. Matches the empty state's own
+   title weight so the two states of the box carry the same voice. */
 .isv2-bs-shot-label {
-  font-size: var(--sys-text-style-caption-size);
+  font-size: var(--sys-text-style-h4-size);
+  line-height: var(--sys-text-style-h4-line-height);
+  font-weight: var(--sys-text-style-h4-weight);
   color: var(--sys-text-color-light);
 }
 
