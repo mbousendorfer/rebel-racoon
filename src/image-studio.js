@@ -20,13 +20,13 @@
 // faithful results; Reprompt is an honest preview (reseed). The committed url
 // rides back to the draft via attachImageToDraft (see the modal component).
 
-import { FORMATS, formatsForNetwork, defaultFormatFor, NETWORK_FORMATS } from "./clip-formats.js?v=1010";
+import { FORMATS, formatsForNetwork, defaultFormatFor, NETWORK_FORMATS } from "./clip-formats.js?v=1011";
 // Layering note: the only import this engine takes from the view side, and a
 // deliberate one — canvas.js is pure, UI-agnostic (its own header says so) and
 // already shared by both studio versions. "Text in image" is mocked by baking the
 // words into the generated pixels with the very same flattener the Edit overlays
 // use, so there is nothing to duplicate here.
-import { compositeOverlays } from "./image-studio-canvas.js?v=1010";
+import { compositeOverlays } from "./image-studio-canvas.js?v=1011";
 
 const states = new Map(); // sessionId → state
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -466,7 +466,7 @@ export function start(
     briefTakenOver: false, // user hit "Edit the brief" — the words are theirs now
     briefStale: false, // a setting changed while taken over — brief no longer matches
     shotSig: null, // the inputs the shots on screen were made from (see previewStale)
-    staleAckSig: null, // signature the user dismissed the "out of date" notice at (see previewStale)
+    staleAckShotSig: null, // the IMAGE (shotSig) the user dismissed the "out of date" notice for (see previewStale)
     renderText: "", // words to paint INTO the image (empty = none)
     styleKey: pbStyle, // selected Style preset (STYLE_PRESETS) — the Playbook's, or null = "Any"
     imageTypeKey: pbImageType, // selected Image type (IMAGE_TYPES) — the Playbook's, or null = "Any"
@@ -1276,20 +1276,21 @@ function genSignature(s) {
 /** Has anything changed since the image on screen was made? */
 export function previewStale(s) {
   if (!s || s.variations.length === 0 || !s.shotSig) return false;
-  const sig = genSignature(s);
-  // Dismissed at this exact signature — the reader chose to keep the image as-is. A
-  // further option change moves the signature off the dismissed one and the notice
-  // returns, so "keep it" answers the change in front of you, not every future one.
-  if (s.staleAckSig === sig) return false;
-  return s.shotSig !== sig;
+  // Dismissed FOR THIS IMAGE — the reader chose to keep it. Keyed to shotSig (the image's
+  // identity, rewritten only by a generation), never to the live option signature: the
+  // signature space is navigable back and forth, so acknowledging a signature made the
+  // notice flip-flop as options were toggled toward and away from the dismissed combo.
+  // Tied to the image, "keep it" stays kept until the next generation replaces it.
+  if (s.staleAckShotSig === s.shotSig) return false;
+  return s.shotSig !== genSignature(s);
 }
 
-/** The reader closed the "out of date" notice — keep the current image, stop nagging
- *  until something else changes. */
+/** The reader closed the "out of date" notice — keep the current image, and stop nagging
+ *  about it until a new generation replaces it. */
 export function dismissStale(sessionId) {
   const s = states.get(sessionId);
-  if (!s) return;
-  s.staleAckSig = genSignature(s);
+  if (!s || !s.shotSig) return;
+  s.staleAckShotSig = s.shotSig;
   notify(sessionId);
 }
 
@@ -1343,7 +1344,7 @@ export function runGeneration(sessionId) {
     now.genPhase = "results";
     // Stamp what these shots were made from — see previewStale.
     now.shotSig = genSignature(now);
-    now.staleAckSig = null; // a fresh image starts with no dismissed notice
+    now.staleAckShotSig = null; // a fresh image starts with no dismissed notice
     // Auto-adopt the first variation as the working image so the Edit mode
     // unlocks immediately; the user can still pick another in the grid.
     adoptVariation(now, 0);
