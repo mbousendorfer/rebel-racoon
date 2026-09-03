@@ -113,13 +113,13 @@ body.has-modal {
   min-height: 0;
 }
 
-/* Which Topic's trail this is. Same treatment as the Ignore dialog's quoted
-   headline, for the same reason: it is the only line naming the subject. */
+/* Which Topic's trail this is — the only line naming the subject. Standard DS
+   body-light, no italic: the quotes around the title already mark it as the
+   subject, so the slant was custom emphasis the DS does not ask for. */
 .topic-history__sub {
   margin: 0;
   font-size: var(--sys-text-style-body-size);
   line-height: var(--sys-text-style-body-line-height);
-  font-style: italic;
   color: var(--sys-text-color-light);
 }
 

@@ -1008,21 +1008,36 @@
   border-radius: var(--app-radius-sm);
 }
 
-/* ── The trail ─────────────────────────────────────────────────────────────
-   No accordion and no sibling checkbox any more: the trail left the article, so
-   what is left here is the ROW styling, shared by its two hosts — the modal the
-   feed opens and the third view the picker dialog swaps to. `git log -S
-   ap-accordion` has the collapsed-box version if it is ever wanted back. */
+/* ── The trail — the DS "Post History" timeline ────────────────────────────
+   No accordion and no sibling checkbox: the trail left the article, so what is
+   left here is the ROW styling, shared by its two hosts — the modal the feed
+   opens and the third view the picker dialog swaps to. `git log -S ap-accordion`
+   has the collapsed-box version if it is ever wanted back.
+
+   Each row is [ circular status medallion | text block ] — the Post History
+   layout: a colour-coded icon leads, then the action line with the time pushed to
+   the right edge, then the note under it. The medallion is the reused `topic-badge`
+   primitive (see topic-article.js trailMark). */
 .topic-article__trail {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xs);
+  gap: var(--ref-spacing-sm);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .topic-article__trail-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xs);
+}
+
+/* The text block takes the rest of the row; min-width:0 lets the note wrap and
+   the time hold the right edge instead of overflowing. */
+.topic-article__trail-main {
+  flex: 1 1 auto;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -1031,8 +1046,7 @@
 .topic-article__trail-head {
   display: flex;
   align-items: baseline;
-  gap: var(--ref-spacing-xxs);
-  flex-wrap: wrap;
+  gap: var(--ref-spacing-xs);
 }
 
 .topic-article__trail-status {
@@ -1042,13 +1056,18 @@
   color: var(--sys-text-color-default);
 }
 
+/* Pushed to the row's right edge, the Post History placement — the time is
+   apparatus, so it sits opposite the label rather than trailing it. */
 .topic-article__trail-when {
+  margin-left: auto;
+  flex-shrink: 0;
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   color: var(--sys-text-color-light);
 }
 
 .topic-article__trail-note {
+  margin: 0;
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   color: var(--sys-text-color-light);

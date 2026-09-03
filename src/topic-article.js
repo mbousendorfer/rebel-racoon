@@ -78,10 +78,10 @@
 // was flagged, and it could only ever show two clamped lines of an explanation
 // whose whole value is the detail.
 
-import { html, raw, escapeAttr } from "./utils.js?v=1018";
-import { topicTitle, topicStates } from "./topics-store.js?v=1018";
-import { findTopicState } from "./topics-catalog.js?v=1018";
-import { renderSocialPostCard } from "./components/social-post-card.js?v=1018";
+import { html, raw, escapeAttr } from "./utils.js?v=1019";
+import { topicTitle, topicStates } from "./topics-store.js?v=1019";
+import { findTopicState } from "./topics-catalog.js?v=1019";
+import { renderSocialPostCard } from "./components/social-post-card.js?v=1019";
 
 /**
  * The object's identity: where it came from, then the claim as an h2 under it —
@@ -410,20 +410,52 @@ function trailLength(topic) {
   return (topic?.history || []).length;
 }
 
+// ── The status medallion, adopted from the DS "Post History" timeline ──────
+// Each row leads with a circular colour-coded icon, the same shape and read as
+// the Post History design. It reuses the `topic-badge` primitive (tinted -10
+// ground, glyph on -100/-150) — the app's one tinted-icon pip, already on the
+// card and the header — with a `--round` variant, rather than inventing a second
+// medallion. The colour is the state's OWN tone (so the medallion matches the
+// chip the reader already knows) and the glyph is the state's OWN icon.
+//
+// `tone → topic-badge accent`: the tag tones don't share the badge's accent
+// names one-for-one, so the pairs are spelled out. `new` ("To review") carries
+// no chip tone or icon — it is the absence of an answer — so it falls back to a
+// neutral grey ground and the antenna glyph, the mark of the scan that surfaced
+// it.
+const TRAIL_ACCENT = { tagOrange: "orange", menthol: "menthol", green: "green", blue: "electric-blue", grey: "grey" };
+
+function trailMark(status) {
+  const st = findTopicState(status);
+  const accent = TRAIL_ACCENT[st?.tone] || "grey";
+  const icon = st?.icon || "ap-icon-antenna";
+  // grey is the base `.topic-badge`, so it takes no accent modifier.
+  const accentClass = accent === "grey" ? "" : ` topic-badge--${accent}`;
+  return { icon, accentClass };
+}
+
 export function renderTopicTrail(topic) {
   const trail = topic?.history || [];
   if (!trail.length) return "";
   const rows = trail
-    .map(
-      (h) =>
-        html`<li class="topic-article__trail-row">
-          <span class="topic-article__trail-head">
+    .map((h) => {
+      const { icon, accentClass } = trailMark(h.status);
+      // The time is pushed to the row's right edge (CSS margin-left: auto on the
+      // when), the analysis line on the left — the Post History layout: mark ·
+      // action … time, then the note on its own line under the action.
+      return html`<li class="topic-article__trail-row">
+        <span class="topic-badge topic-badge--lg topic-badge--round${raw(accentClass)}" aria-hidden="true">
+          <i class="${icon}"></i>
+        </span>
+        <div class="topic-article__trail-main">
+          <div class="topic-article__trail-head">
             <strong class="topic-article__trail-status">${trailLabel(h.status)}</strong>
             <span class="topic-article__trail-when">${h.when}</span>
-          </span>
-          ${raw(h.note ? html`<span class="topic-article__trail-note">${h.note}</span>` : "")}
-        </li>`,
-    )
+          </div>
+          ${raw(h.note ? html`<p class="topic-article__trail-note">${h.note}</p>` : "")}
+        </div>
+      </li>`;
+    })
     .join("");
 
   return html`<ol class="topic-article__trail">

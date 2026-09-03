@@ -37,6 +37,13 @@
   height: 32px;
 }
 
+/* Fully circular — the Topic history timeline's status medallion, matching the
+   DS "Post History" design's round status icons. The default pip stays a soft
+   square (its own source-identity read); this variant is opt-in. */
+.topic-badge--round {
+  border-radius: 50%;
+}
+
 .topic-badge--lg > i {
   font-size: var(--sys-icon-css-mini-sm);
   width: var(--sys-icon-css-mini-sm);
