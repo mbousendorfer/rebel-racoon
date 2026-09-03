@@ -13,19 +13,19 @@
 // tones, contentStyle, objective, contentAction, ctaLinks, language, color,
 // suggestions, editingId, onComplete }.
 
-import * as inlineQuestion from "./inline-question.js?v=1037";
-import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1037";
-import * as rightPanel from "./components/right-panel.js?v=1037";
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1037";
-import { analyzeWebsite } from "./context-mock-analysis.js?v=1037";
-import { connectors as connectorMocks } from "./mocks.js?v=1037";
+import * as inlineQuestion from "./inline-question.js?v=1038";
+import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1038";
+import * as rightPanel from "./components/right-panel.js?v=1038";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1038";
+import { analyzeWebsite } from "./context-mock-analysis.js?v=1038";
+import { connectors as connectorMocks } from "./mocks.js?v=1038";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "./social-profiles.js?v=1037";
-import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=1037";
-import { isFlagOn } from "./feature-flags.js?v=1037";
+} from "./social-profiles.js?v=1038";
+import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=1038";
+import { isFlagOn } from "./feature-flags.js?v=1038";
 
 const drafts = new Map(); // sessionId → draft
 const subscribers = new Map(); // sessionId → Set<fn>

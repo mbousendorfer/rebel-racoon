@@ -86,10 +86,10 @@
 // was flagged, and it could only ever show two clamped lines of an explanation
 // whose whole value is the detail.
 
-import { html, raw, escapeAttr } from "./utils.js?v=1037";
-import { topicTitle, topicStates } from "./topics-store.js?v=1037";
-import { findTopicState } from "./topics-catalog.js?v=1037";
-import { renderSocialPostCard } from "./components/social-post-card.js?v=1037";
+import { html, raw, escapeAttr } from "./utils.js?v=1038";
+import { topicTitle, topicStates } from "./topics-store.js?v=1038";
+import { findTopicState } from "./topics-catalog.js?v=1038";
+import { renderSocialPostCard } from "./components/social-post-card.js?v=1038";
 
 /**
  * The object's identity: where it came from, then the claim as an h2 under it —
@@ -538,7 +538,7 @@ function renderTopicMenu(topic, { open = false } = {}) {
             <button
               type="button"
               role="menuitem"
-              class="ap-action-dropdown-item has-description"
+              class="ap-action-dropdown-item"
               data-topic-trail="${escapeAttr(topic.id)}"
             >
               <i class="ap-icon-history"></i>
@@ -546,9 +546,6 @@ function renderTopicMenu(topic, { open = false } = {}) {
                 <div class="ap-action-dropdown-item-label-container">
                   <span class="ap-action-dropdown-item-label">Topic history</span>
                 </div>
-                <span class="ap-action-dropdown-item-description"
-                  >${String(count)} ${count === 1 ? "entry" : "entries"}</span
-                >
               </div>
             </button>
           </div>`
