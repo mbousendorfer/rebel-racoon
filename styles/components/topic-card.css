@@ -184,11 +184,12 @@
   flex-wrap: wrap;
 }
 
-/* Pushed to the end of the line only in the FEED, where the list is scanned down
-   a column and a common right edge gives the signals their own. It stops at the
-   kebab's gutter, not at the card's edge — see the meta run's padding. The picker,
-   the hero grid and the article header keep the chips next to the age, where the
-   run reads as one sentence of facts. */
+/* Pushed to the end of the line in the FEED, where the list is scanned down a
+   column and a common right edge gives the signals their own — the article header
+   does the same (topics.css `.topic-article__provenance .topic-states`), so the
+   signals share one right edge across both columns. It stops at the kebab's
+   gutter, not at the card's edge — see the meta run's padding. The picker and the
+   hero grid keep the chips next to the age, where the run reads as one sentence. */
 .topic-card--feed .topic-states {
   margin-left: auto;
 }

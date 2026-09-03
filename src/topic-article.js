@@ -78,10 +78,10 @@
 // was flagged, and it could only ever show two clamped lines of an explanation
 // whose whole value is the detail.
 
-import { html, raw, escapeAttr } from "./utils.js?v=1017";
-import { topicTitle, topicStates } from "./topics-store.js?v=1017";
-import { findTopicState } from "./topics-catalog.js?v=1017";
-import { renderSocialPostCard } from "./components/social-post-card.js?v=1017";
+import { html, raw, escapeAttr } from "./utils.js?v=1018";
+import { topicTitle, topicStates } from "./topics-store.js?v=1018";
+import { findTopicState } from "./topics-catalog.js?v=1018";
+import { renderSocialPostCard } from "./components/social-post-card.js?v=1018";
 
 /**
  * The object's identity: where it came from, then the claim as an h2 under it —
@@ -337,11 +337,10 @@ function renderProvenance(topic, source) {
     <!-- The separator belongs to the source, not to the age: with no source to
          separate from, a leading "· 2h ago" is a dangling punctuation mark. -->
     <span>${source ? `· ${topic.ageLabel}` : topic.ageLabel}</span>
-    <!-- The chips come last on the line, exactly as they do on the card: the
-         states are the one thing here a reader cannot know without being told.
-         NOT pushed to the far edge, unlike the feed's card — the pane is one
-         column wide, and a lone chip flush right at the very top would read as a
-         control rather than as the last fact in a run of facts. -->
+    <!-- The chips come last on the line and are pushed to its END (CSS
+         margin-left: auto), a common right edge with the feed card's chips so the
+         signals own the same edge in both columns. They stop at the kebab's
+         reserved gutter, not the pane edge. -->
     ${raw(renderTopicStates(topic))}
   </div>`;
 }
