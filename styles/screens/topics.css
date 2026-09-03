@@ -582,47 +582,31 @@
 
 /* ── The object's header ───────────────────────────────────────────────────
    Two rows: where it came from, then the claim — the same two, in the same order,
-   that the top of every Topic card carries. The pane hangs the verbs and the way
-   out on a third; the dialog renders the same block without them. */
+   that the top of every Topic card carries. `relative` so the kebab can anchor to
+   the top-right corner, out of flow. The verbs no longer live here — they ride a
+   sticky bar in the article body (pane) or the dialog's own footer. */
 .topic-article__head {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xxs);
 }
 
-/* ── The verbs, on their own row ───────────────────────────────────────────
-   Right-aligned, tertiary → secondary → primary left to right, and `nowrap` so
-   the group can never break across two lines.
+/* ── The kebab, in the header's top-right corner ───────────────────────────
+   Out of flow and pinned to the corner, exactly as `topic-card__more` is on the
+   list card — same control, same place, so it carries over with no relearning.
+   Absolute means it costs the provenance line and the title nothing: they keep the
+   full measure, and the header measures the same height whether or not a Topic
+   carries a trail (the kebab only renders when it does).
 
-   ⚠️ They shared the provenance line until now: two 40px buttons against a 12px
-   caption with 300px of dead space between them, so the row read as two unrelated
-   clusters on a baseline set by the buttons, and the kebab floated between them
-   attached to nothing. On a narrow pane it wrapped and the controls dropped below
-   the metadata, kebab first.
-
-   Their own row also decouples them from the TITLE: however many lines the claim
-   takes, the verbs sit the same distance above the header's bottom edge. A little
-   more air above them than the 8px inside the identity block, because they are a
-   different kind of thing from the two lines that name the Topic. */
-.topic-article__head-tools {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  flex-wrap: nowrap;
-  gap: var(--ref-spacing-xxs);
-  margin-top: var(--ref-spacing-xxxs);
-}
-
-/* The kebab is tertiary and belongs to neither verb, so it keeps its distance from
-   the pair rather than sitting one 8px gap away like a third button. */
-.topic-article__head-tools > .topic-article__tools {
-  margin-right: var(--ref-spacing-xxs);
-}
-
-/* The kebab's anchor. `relative` so the dropdown hangs off it rather than off
-   the pane, which is the card menu's arrangement too. */
+   Vertically centred on the 24px provenance line: the 36px button is offset up by
+   half the difference so its glyph sits on that line rather than hanging below it.
+   The dropdown still hangs off this element — an absolute box is a positioned
+   ancestor too — so the menu opens under the kebab, the card menu's arrangement. */
 .topic-article__tools {
-  position: relative;
+  position: absolute;
+  top: calc((var(--ref-spacing-md) - var(--sys-icon-button-height)) / 2);
+  right: 0;
   display: flex;
   flex-shrink: 0;
 }
@@ -674,6 +658,9 @@
   align-items: center;
   gap: var(--ref-spacing-xxxs);
   min-height: var(--ref-spacing-md);
+  /* Clear the top-right kebab: the chips run left-to-right after the age and this
+     reserve stops the last one slipping under the absolutely-positioned control. */
+  padding-right: var(--ref-spacing-xl);
   margin: 0;
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
@@ -1060,7 +1047,8 @@
   color: var(--sys-text-color-light);
 }
 
-/* ── The footer's verbs ──────────────────────────────────────────────────── */
+/* ── The verbs ─────────────────────────────────────────────────────────────
+   One row of buttons, shared by the dialog's footer and the pane's sticky bar. */
 
 .topic-article__actions {
   display: flex;
@@ -1075,6 +1063,38 @@
    right of the footer and put the two decisions on the opposite side from the
    edge the eye lands on. Only the dialog renders it - the pane passes
    `close: null`. */
+
+/* ── The pane's sticky action bar ──────────────────────────────────────────
+   The verbs sit BETWEEN the analysis and the Contributing posts, and `sticky;
+   bottom: 0` gives the behaviour the two-pane reader needs for free:
+
+     • short read → the bar can never leave `.topic-article`, whose box ends just
+       under the prose, so it rests inline between the content and the evidence;
+     • long read  → `.topic-article` overflows the scroller, so the bar pins to the
+       pane's bottom edge and floats there while the analysis scrolls under it,
+       then settles back above Contributing posts at the very end.
+
+   Host-scoped (only the pane passes `actions`, but the bleed arithmetic is the
+   pane's): negative inline margins carry the band and its top hairline out to the
+   pane-body's padding box — the same move `.topic-article__section` makes — so the
+   opaque background covers scrolling prose edge to edge while the buttons stay on
+   the measure, right-aligned. The hairline reads as a footer rule, never a coloured
+   cap. */
+.topics-view__pane-body .topic-article__actionbar {
+  position: sticky;
+  /* Pull the stuck position DOWN by the scroller's own bottom padding so the bar
+     pins flush to the pane's bottom edge, not floating the 24px of padding above
+     it. Only affects the stuck state; at rest between content and evidence the bar
+     keeps its natural position. */
+  bottom: calc(-1 * var(--ref-spacing-md));
+  z-index: 5;
+  display: flex;
+  justify-content: flex-end;
+  margin-inline: calc(-1 * var(--ref-spacing-md));
+  padding: var(--ref-spacing-xs) var(--ref-spacing-md);
+  background: var(--app-surface);
+  border-top: 1px solid var(--app-border-soft);
+}
 
 /* ── The Filters panel's own additions ────────────────────────────────────
    Three groups: a radio (Topics) and two DS multi-selects (Marked as, Sources)

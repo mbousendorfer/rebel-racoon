@@ -6,8 +6,8 @@
 // apart. Same shape as playbook-view.js and connectors-view.js: pure render
 // helpers, no store reads beyond the title resolver, no DOM, no listeners.
 //
-//   renderTopicHeader(topic, { source, withActions, menuOpen })  the identity
-//   renderTopicArticle(topic, { source, withHeader })   the prose and the evidence
+//   renderTopicHeader(topic, { source, menuOpen })      the identity + top-right kebab
+//   renderTopicArticle(topic, { source, withHeader, actions })  prose, verbs, evidence
 //   renderTopicActions(topic, { close })                the two verbs
 //   renderTopicMenu(topic, { open })                    the header's kebab
 //   renderTopicTrail(topic) / trailLength(topic)        the trail, for its hosts
@@ -36,16 +36,19 @@
 // One renderer, both hosts.
 //
 // ── Why the identity is its own renderer ───────────────────────────────────
-// The feed's pane keeps its header OUTSIDE the scroller, so the title and the
-// verbs stay put while the analysis scrolls. It used to keep only the verbs
-// there: a strip of "Use in chat / Ignore / Close" above a body whose title sat
-// below it, inside the scroller — so the actions had no subject, and scrolling
-// took away the one line naming what they act on.
+// The feed's pane keeps its header OUTSIDE the scroller, so the title stays put
+// while the analysis scrolls. The kebab rides in its top-right corner; the two
+// verbs are NOT up here — they sit at the FOOT of the read, on a sticky bar the
+// article renders between the analysis and the evidence, so the reader decides
+// having just finished the thing they are deciding on. That bar floats at the
+// pane's bottom edge while a long analysis scrolls and settles above Contributing
+// posts at the end (see renderTopicArticle's `actions` slot and the CSS on
+// `.topic-article__actionbar`).
 //
-// The dialog composes the same two pieces differently: identity inline at the
-// top of its scroller, verbs in a sticky footer against its bottom edge. That is
-// the host's business. What may NOT differ is what the identity and the verbs
-// SAY, which is why both are rendered from here and nowhere else.
+// The dialog composes the same pieces differently: identity inline at the top of
+// its scroller, verbs in a sticky footer against its bottom edge. That is the
+// host's business. What may NOT differ is what the identity and the verbs SAY,
+// which is why both are rendered from here and nowhere else.
 //
 // ── What the article is ────────────────────────────────────────────────────
 // The two triage facts, the analysis in its two authored sections, and the posts
@@ -75,53 +78,43 @@
 // was flagged, and it could only ever show two clamped lines of an explanation
 // whose whole value is the detail.
 
-import { html, raw, escapeAttr } from "./utils.js?v=1014";
-import { topicTitle, topicStates } from "./topics-store.js?v=1014";
-import { findTopicState } from "./topics-catalog.js?v=1014";
-import { renderSocialPostCard } from "./components/social-post-card.js?v=1014";
+import { html, raw, escapeAttr } from "./utils.js?v=1017";
+import { topicTitle, topicStates } from "./topics-store.js?v=1017";
+import { findTopicState } from "./topics-catalog.js?v=1017";
+import { renderSocialPostCard } from "./components/social-post-card.js?v=1017";
 
 /**
  * The object's identity: where it came from, then the claim as an h2 under it —
- * the same order the cards carry.
+ * the same order the cards carry — with the kebab pinned to the top-right corner.
  *
- * `withActions: true` also hangs the two verbs and the way out on it — for a host
- * that puts its header outside the scroller and wants them to stay in view with
- * the title they act on. The dialog leaves it false and keeps its own footer.
+ * No verbs here anymore: the pane keeps this header fixed outside its scroller and
+ * hangs the two verbs on the article's sticky `actions` bar; the dialog renders
+ * this same header inline and keeps the verbs in its own footer.
  */
-export function renderTopicHeader(topic, { source = null, withActions = false, menuOpen = false } = {}) {
+export function renderTopicHeader(topic, { source = null, menuOpen = false } = {}) {
   if (!topic) return "";
-  // No way out up here. A two-pane reader does not close a message, it opens the
-  // next one — the list is right there — so a Close button spent the header's
-  // best slot on the one action the layout already provides. Escape still closes
-  // the pane, wired by the host.
-  // The kebab sits at the START of the right-hand group - tertiary, then
-  // secondary, then primary, the same escalation the dialog footer uses. In the
-  // dialog `withActions` is false, so the kebab is alone at the right end of the
-  // meta row: one call site, and the placement falls out of what the host asked
-  // for. It is the same control the cards carry, so a reader who learned `...`
-  // on a card has already learned this one.
-  // Provenance first, then the claim, then the verbs — the card's own order, so
-  // the door and the room agree. See the note at the top of this file.
+  // The kebab sits in the header's TOP-RIGHT CORNER, out of flow, exactly where
+  // the list cards put theirs (topic-card__more) — so a reader who learned `...`
+  // on a card finds it in the same place here, the provenance line and the title
+  // keep the full measure, and the header measures the same height whether or not
+  // a Topic carries a trail (the kebab only renders when it does). It is the first
+  // child so it reads first in the source order and anchors to the head's corner.
+  //
+  // The two verbs are NO LONGER in the header. The pane hangs them on a sticky bar
+  // between the analysis and the Contributing posts (renderTopicArticle's `actions`
+  // slot); the dialog keeps them in its own footer. Either way they sit at the foot
+  // of the read, where the reader has just finished the thing they are deciding on.
+  //
+  // Provenance first, then the claim — the card's own order, so the door and the
+  // room agree. See the note at the top of this file.
   return html`<div class="topic-article__head">
-    ${raw(renderProvenance(topic, source))}
+    ${raw(renderTopicMenu(topic, { open: menuOpen }))} ${raw(renderProvenance(topic, source))}
     <h2 class="topic-article__title">${topicTitle(topic)}</h2>
-    <!-- The verbs get their OWN row, right-aligned. They used to share the
-         provenance line, which put two 40px buttons against a 12px caption with
-         300px of nothing between them — two unrelated clusters on one baseline set
-         by the buttons. And on a narrow pane that row wrapped, so the controls
-         dropped below and the kebab led the group.
-         Their own row also decouples them from the title completely: however many
-         lines the claim takes, the verbs are the same distance from the bottom of
-         the header. -->
-    <div class="topic-article__head-tools">
-      ${raw(renderTopicMenu(topic, { open: menuOpen }))}
-      ${raw(withActions ? renderTopicActions(topic, { close: null }) : "")}
-    </div>
-    <!-- Two rows and no more: where it came from, then the claim, with the verbs
-         under them. The two quick facts used to sit here too and they render on a
-         minority of Topics (relevance 9 of 52, why now 13), so this header's
-         height changed from one Topic to the next. They are the article's first
-         band now - see the note at the top of this file. -->
+    <!-- Two rows and no more: where it came from, then the claim. The two quick
+         facts used to sit here too and they render on a minority of Topics
+         (relevance 9 of 52, why now 13), so this header's height changed from one
+         Topic to the next. They are the article's first band now - see the note at
+         the top of this file. -->
   </div>`;
 }
 
@@ -130,7 +123,7 @@ export function renderTopicHeader(topic, { source = null, withActions = false, m
  * identity itself, outside the scroller — printing it twice would be the same
  * sentence twice.
  */
-export function renderTopicArticle(topic, { source = null, withHeader = true, menuOpen = false } = {}) {
+export function renderTopicArticle(topic, { source = null, withHeader = true, menuOpen = false, actions = "" } = {}) {
   if (!topic) return "";
   const article = topic.article || {};
   const paragraphs = article.paragraphs || [];
@@ -189,6 +182,14 @@ export function renderTopicArticle(topic, { source = null, withHeader = true, me
          own 12px rhythm rather than the 32px that separates one band from the
          next. Content first, its limits after - never in its place. -->
     <div class="topic-article__body">${raw(body)}${raw(laterNote)}</div>
+    <!-- The verbs, BETWEEN the analysis and the evidence. Passed by the feed pane
+         only (the dialog keeps its own footer), and there it is a sticky bar:
+         inline between the content and Contributing posts while the read is short,
+         pinned to the pane's bottom edge while a long analysis scrolls past it,
+         then settling back above the evidence at the end. It is where the read
+         finishes, so the reader decides having just read the thing they are
+         deciding on. Nothing at all when no verbs are passed. -->
+    ${raw(actions ? html`<div class="topic-article__actionbar">${raw(actions)}</div>` : "")}
     ${raw(
       posts.length
         ? html`<section class="topic-article__section">

@@ -24,15 +24,15 @@
 // view. There is an explicit Load more too, and both do exactly the same thing —
 // an infinite list with no button is unusable by keyboard.
 
-import { html, raw, escapeAttr } from "../utils.js?v=1014";
-import { navigate, getPath } from "../router.js?v=1014";
-import { isFlagOn } from "../feature-flags.js?v=1014";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1014";
-import { renderTopbar } from "../components/topbar.js?v=1014";
-import { showToast } from "../components/toast.js?v=1014";
-import { renderEmptyState } from "../components/empty-state.js?v=1014";
-import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=1014";
-import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1014";
+import { html, raw, escapeAttr } from "../utils.js?v=1017";
+import { navigate, getPath } from "../router.js?v=1017";
+import { isFlagOn } from "../feature-flags.js?v=1017";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1017";
+import { renderTopbar } from "../components/topbar.js?v=1017";
+import { showToast } from "../components/toast.js?v=1017";
+import { renderEmptyState } from "../components/empty-state.js?v=1017";
+import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=1017";
+import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1017";
 import {
   getTopicsForFeed,
   groupTopicsByAge,
@@ -43,7 +43,7 @@ import {
   ignoreTopic,
   unignoreTopic,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=1014";
+} from "../topics-store.js?v=1017";
 import {
   TOPIC_SOURCES,
   TOPIC_KINDS,
@@ -52,12 +52,12 @@ import {
   findTopicSource,
   findCadence,
   isLiveSource,
-} from "../topics-catalog.js?v=1014";
-import { renderTopicCard } from "../components/topic-card.js?v=1014";
-import { renderTopicArticle, renderTopicHeader } from "../topic-article.js?v=1014";
-import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=1014";
-import { openTopicHistory } from "../components/topic-history-modal.js?v=1014";
-import { useTopicInChat } from "../topic-flow.js?v=1014";
+} from "../topics-catalog.js?v=1017";
+import { renderTopicCard } from "../components/topic-card.js?v=1017";
+import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=1017";
+import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=1017";
+import { openTopicHistory } from "../components/topic-history-modal.js?v=1017";
+import { useTopicInChat } from "../topic-flow.js?v=1017";
 
 const PAGE = 10;
 // Long enough to read the scanning line, short enough that nobody waits for it
@@ -723,16 +723,22 @@ function renderEmpty(total, feed) {
 // what they act on. The title and the source now sit in that same fixed header,
 // which is what a mail reader puts above its actions and for the same reason.
 //
-// Identity and verbs both come from topic-article.js — the dialog renders the
-// same two pieces, inline and in a sticky footer. Only the placement is the
-// host's.
+// Identity and verbs both come from topic-article.js. The header (provenance,
+// title, top-right kebab) stays FIXED in `__pane-head`, outside the scroller; the
+// verbs ride a sticky bar inside the scrolling article, between the analysis and
+// the evidence (renderTopicArticle's `actions` slot). Only the placement is the
+// host's — the dialog renders the same pieces in its own footer.
 function renderPane(topic) {
   const source = findTopicSource(topic.sourceId);
   return html`<section class="topics-view__pane" aria-label="Topic article">
     <header class="topics-view__pane-head">
-      ${raw(renderTopicHeader(topic, { source, withActions: true, menuOpen: view.paneMenuOpen }))}
+      ${raw(renderTopicHeader(topic, { source, menuOpen: view.paneMenuOpen }))}
     </header>
-    <div class="topics-view__pane-body">${raw(renderTopicArticle(topic, { source, withHeader: false }))}</div>
+    <div class="topics-view__pane-body">
+      ${raw(
+        renderTopicArticle(topic, { source, withHeader: false, actions: renderTopicActions(topic, { close: null }) }),
+      )}
+    </div>
   </section>`;
 }
 
