@@ -678,6 +678,19 @@
   margin-left: auto;
 }
 
+/* ── Title-first header (the article dialog) ───────────────────────────────
+   The claim leads and the provenance sits UNDER it. There is no kebab up here
+   (withMenu: false), so the run reclaims the reserved gutter, and the chips sit
+   inline after the age rather than pushed to a right edge — the line reads as one
+   run of facts below the title, "Competitors · 2h ago · Trending". */
+.topic-article__head--title-first .topic-article__provenance {
+  padding-right: 0;
+}
+
+.topic-article__head--title-first .topic-article__provenance .topic-states {
+  margin-left: 0;
+}
+
 .topic-article__source {
   font-weight: var(--sys-text-style-caption-bold-weight);
   color: var(--sys-text-color-default);
@@ -877,6 +890,19 @@
 .topic-article__section-head {
   margin: 0;
   display: flex;
+}
+
+/* The STATIC heading — the article dialog's grey posts panel, where the posts are
+   shown expanded, so there is no disclosure: no chevron, no link treatment, just
+   the label and its count above the list. Body-bold, default ink — a panel title,
+   quieter than the analysis subheads but a real heading. */
+.topic-article__section-head--static {
+  align-items: baseline;
+  gap: var(--ref-spacing-xxs);
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--sys-text-color-default);
 }
 
 /* ── The rule runs the FULL WIDTH of the card ──────────────────────────────

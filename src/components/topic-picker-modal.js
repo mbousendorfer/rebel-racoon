@@ -25,16 +25,16 @@
 // it was created in, so the picker never asks which Playbook first: that question
 // was answered when the chat was made.
 
-import { html, raw, escapeHtml } from "../utils.js?v=1023";
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1023";
-import { renderEmptyState } from "./empty-state.js?v=1023";
-import { renderTopicCard } from "./topic-card.js?v=1023";
-import { renderTopicArticle, renderTopicActions, renderTopicTrail } from "../topic-article.js?v=1023";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1023";
-import { getTopicsForFeed, groupTopicsByAge, getTopicById, topicTitle, topicStates } from "../topics-store.js?v=1023";
-import { findTopicSource } from "../topics-catalog.js?v=1023";
-import { getContextById } from "../contexts-store.js?v=1023";
-import { useTopicInChat } from "../topic-flow.js?v=1023";
+import { html, raw, escapeHtml } from "../utils.js?v=1025";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1025";
+import { renderEmptyState } from "./empty-state.js?v=1025";
+import { renderTopicCard } from "./topic-card.js?v=1025";
+import { renderTopicArticle, renderTopicActions, renderTopicTrail, renderTopicPosts } from "../topic-article.js?v=1025";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1025";
+import { getTopicsForFeed, groupTopicsByAge, getTopicById, topicTitle, topicStates } from "../topics-store.js?v=1025";
+import { findTopicSource } from "../topics-catalog.js?v=1025";
+import { getContextById } from "../contexts-store.js?v=1025";
+import { useTopicInChat } from "../topic-flow.js?v=1025";
 
 const MODAL_ID = "topic-picker";
 
@@ -196,13 +196,23 @@ function paint() {
   if (!state) return;
   bodyEl.innerHTML =
     state.view === "article" ? renderArticleView() : state.view === "history" ? renderHistoryView() : renderListView();
+  // Only the two-column article view is wide; the list and the history trail are
+  // single columns and a 960px dialog would stretch their cards across dead width.
+  modal.classList.toggle("topic-picker--wide", state.view === "article");
   // Only the article has verbs; the list's cards carry their own, and the trail
   // is not a decision — its way back is the Back link.
   const openTopic = state.view === "article" && state.topicId ? getTopicById(state.topicId) : null;
+  // History moved off the header kebab into a footer button on the LEFT, opposite
+  // the verbs. Only when there is a trail to show — same gate the kebab used.
+  const hasTrail = (openTopic?.history || []).length > 0;
+  const historyBtn = hasTrail
+    ? `<button type="button" class="ap-button transparent grey" data-topic-trail="${openTopic.id}"><i class="ap-icon-history"></i><span>History</span></button>`
+    : "";
   footEl.innerHTML = openTopic
-    ? `<div class="ap-dialog-footer"><div class="ap-dialog-footer-right">${renderTopicActions(openTopic, {
-        close: "Close",
-      })}</div></div>`
+    ? `<div class="ap-dialog-footer topic-picker__foot">
+        <div class="ap-dialog-footer-left">${historyBtn}</div>
+        <div class="ap-dialog-footer-right">${renderTopicActions(openTopic, { close: "Close" })}</div>
+      </div>`
     : "";
   const topic = state.topicId ? getTopicById(state.topicId) : null;
   modal.setAttribute(
@@ -273,12 +283,20 @@ function renderListView() {
     <div class="topic-picker__list">${raw(groups)}</div>`;
 }
 
-// ── The article ────────────────────────────────────────────────────────────
-// No header above it: the article's own h2 IS the title. The back action, when
-// there is one, names where it returns — "Back" alone makes the reader guess.
+// ── The article — two columns ──────────────────────────────────────────────
+// The wider dialog splits: the analysis on the LEFT (its own h2 is the title, so
+// no header above it, with "Competitors · age · status" UNDER the title), and the
+// contributing posts in a GREY PANEL on the RIGHT, shown expanded rather than
+// folded — in a dialog with room for them there is nothing to defer.
+//
+// Topic history is NOT a kebab here (withMenu: false); it is a button in the
+// footer, left of the verbs. The back action, when there is one, names where it
+// returns — "Back" alone makes the reader guess.
 function renderArticleView() {
   const topic = getTopicById(state.topicId);
   if (!topic) return renderListView();
+  const source = findTopicSource(topic.sourceId);
+  const posts = topic.posts || [];
   return html`${raw(
       state.canGoBack
         ? html`<button type="button" class="ap-link standalone small topic-picker__back" data-topic-picker-back>
@@ -286,8 +304,23 @@ function renderArticleView() {
           </button>`
         : "",
     )}
-    <div class="topic-picker__article">
-      ${raw(renderTopicArticle(topic, { source: findTopicSource(topic.sourceId), menuOpen: !!state.menuOpen }))}
+    <div class="topic-picker__split">
+      <div class="topic-picker__article">
+        ${raw(
+          renderTopicArticle(topic, {
+            source,
+            withPosts: false,
+            headerOpts: { titleFirst: true, withMenu: false },
+          }),
+        )}
+      </div>
+      ${raw(
+        posts.length
+          ? html`<aside class="topic-picker__posts-panel">
+              ${raw(renderTopicPosts(topic, { collapsible: false }))}
+            </aside>`
+          : "",
+      )}
     </div>`;
 }
 

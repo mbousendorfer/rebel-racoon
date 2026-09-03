@@ -1239,6 +1239,53 @@ body.has-modal {
   flex-direction: column;
 }
 
+/* The article view is two columns (analysis + evidence panel), so it needs room
+   the single-column list and history views do not. Toggled per view in paint(). */
+.topic-picker--wide {
+  width: min(calc(100% - 32px), 960px);
+}
+
+/* Analysis on the left, the evidence in its own panel on the right. `stretch` so
+   the grey panel is as tall as the analysis and the grey fills the column even
+   when the posts are few. */
+.topic-picker__split {
+  display: flex;
+  align-items: stretch;
+  gap: var(--ref-spacing-md);
+}
+
+.topic-picker__article {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* The contributing posts, shown EXPANDED in a grey panel — a dialog has room, so
+   there is nothing to fold away. grey-05 ground, the same the pane's action band
+   uses; the cards inside keep their own fill. */
+.topic-picker__posts-panel {
+  flex: 0 0 300px;
+  align-self: stretch;
+  background: var(--app-surface-subtle);
+  border-radius: var(--app-radius-card);
+  padding: var(--ref-spacing-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+}
+
+/* The shared `.topic-article__posts` list is `display: none` until the collapsible
+   disclosure opens it. Here it is shown directly (no checkbox), so the panel opts
+   it back into flow. */
+.topic-picker__posts-panel .topic-article__posts {
+  display: flex;
+}
+
+/* Footer: Topic history on the left, the verbs (Close / Ignore / Use in chat) on
+   the right — the DS footer is flex, so space-between pushes the two apart. */
+.topic-picker__foot {
+  justify-content: space-between;
+}
+
 /* The scroller. The dialog's × is absolutely positioned over it by .ap-dialog,
    so the padding-right keeps a long title clear of the control. */
 .topic-picker__body {

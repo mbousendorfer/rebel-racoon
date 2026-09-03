@@ -6,8 +6,9 @@
 // apart. Same shape as playbook-view.js and connectors-view.js: pure render
 // helpers, no store reads beyond the title resolver, no DOM, no listeners.
 //
-//   renderTopicHeader(topic, { source, menuOpen })      the identity + top-right kebab
-//   renderTopicArticle(topic, { source, withHeader, actions })  prose, verbs, evidence
+//   renderTopicHeader(topic, { source, menuOpen, titleFirst, withMenu })  the identity
+//   renderTopicArticle(topic, { source, withHeader, actions, withPosts, headerOpts })
+//   renderTopicPosts(topic, { collapsible })            the evidence (inline or a panel)
 //   renderTopicActions(topic, { close })                the two verbs
 //   renderTopicMenu(topic, { open })                    the header's kebab
 //   renderTopicTrail(topic) / trailLength(topic)        the trail, for its hosts
@@ -27,8 +28,13 @@
 //
 // ⚠️ The other direction was built first — claim on top in both — on the argument
 // that the claim is the identity and the caption line is identical on every card
-// while `competitor-posts` is the only live source. Turned down: the card's order
-// is the one that stays.
+// while `competitor-posts` is the only live source. Turned down for the CARD and
+// the feed PANE: their order is provenance-then-claim, and it stays.
+//
+// The wider article DIALOG is the ONE exception, on purpose: it passes `titleFirst`
+// so the claim is the hero and the "Competitors · age · status" run sits under it —
+// a two-column reading surface has room to lead with the title, where the card and
+// the one-column pane do not. Same renderer, the order is a host option.
 //
 // The chips are exported for the same reason the order is shared: they were
 // declared in the card and nowhere else, so opening a Trending Topic dropped the
@@ -45,8 +51,10 @@
 // posts at the end (see renderTopicArticle's `actions` slot and the CSS on
 // `.topic-article__actionbar`).
 //
-// The dialog composes the same pieces differently: identity inline at the top of
-// its scroller, verbs in a sticky footer against its bottom edge. That is the
+// The dialog composes the same pieces differently: two columns — the identity and
+// the analysis on the left (title-first), the contributing posts EXPANDED in a grey
+// panel on the right (renderTopicPosts, collapsible false) — with the verbs in a
+// footer and Topic history a button beside them (no header kebab). That is the
 // host's business. What may NOT differ is what the identity and the verbs SAY,
 // which is why both are rendered from here and nowhere else.
 //
@@ -78,10 +86,10 @@
 // was flagged, and it could only ever show two clamped lines of an explanation
 // whose whole value is the detail.
 
-import { html, raw, escapeAttr } from "./utils.js?v=1023";
-import { topicTitle, topicStates } from "./topics-store.js?v=1023";
-import { findTopicState } from "./topics-catalog.js?v=1023";
-import { renderSocialPostCard } from "./components/social-post-card.js?v=1023";
+import { html, raw, escapeAttr } from "./utils.js?v=1025";
+import { topicTitle, topicStates } from "./topics-store.js?v=1025";
+import { findTopicState } from "./topics-catalog.js?v=1025";
+import { renderSocialPostCard } from "./components/social-post-card.js?v=1025";
 
 /**
  * The object's identity: where it came from, then the claim as an h2 under it —
@@ -91,30 +99,30 @@ import { renderSocialPostCard } from "./components/social-post-card.js?v=1023";
  * hangs the two verbs on the article's sticky `actions` bar; the dialog renders
  * this same header inline and keeps the verbs in its own footer.
  */
-export function renderTopicHeader(topic, { source = null, menuOpen = false } = {}) {
+export function renderTopicHeader(
+  topic,
+  { source = null, menuOpen = false, titleFirst = false, withMenu = true } = {},
+) {
   if (!topic) return "";
   // The kebab sits in the header's TOP-RIGHT CORNER, out of flow, exactly where
   // the list cards put theirs (topic-card__more) — so a reader who learned `...`
-  // on a card finds it in the same place here, the provenance line and the title
-  // keep the full measure, and the header measures the same height whether or not
-  // a Topic carries a trail (the kebab only renders when it does). It is the first
-  // child so it reads first in the source order and anchors to the head's corner.
+  // on a card finds it in the same place here. `withMenu: false` drops it entirely
+  // — the article dialog moves Topic history to a footer button, so its header
+  // carries no kebab.
   //
-  // The two verbs are NO LONGER in the header. The pane hangs them on a sticky bar
-  // between the analysis and the Contributing posts (renderTopicArticle's `actions`
-  // slot); the dialog keeps them in its own footer. Either way they sit at the foot
-  // of the read, where the reader has just finished the thing they are deciding on.
+  // ORDER is the host's: the feed pane leads with provenance then the claim — the
+  // card's own order, door and room agreeing. The wider article DIALOG passes
+  // `titleFirst` so the claim is the hero and the "Competitors · age · status" run
+  // sits UNDER it, which is what the two-column layout has room for.
   //
-  // Provenance first, then the claim — the card's own order, so the door and the
-  // room agree. See the note at the top of this file.
-  return html`<div class="topic-article__head">
-    ${raw(renderTopicMenu(topic, { open: menuOpen }))} ${raw(renderProvenance(topic, source))}
-    <h2 class="topic-article__title">${topicTitle(topic)}</h2>
-    <!-- Two rows and no more: where it came from, then the claim. The two quick
-         facts used to sit here too and they render on a minority of Topics
-         (relevance 9 of 52, why now 13), so this header's height changed from one
-         Topic to the next. They are the article's first band now - see the note at
-         the top of this file. -->
+  // The two verbs are NEVER in the header — the pane hangs them on its sticky
+  // actions bar, the dialog keeps them in its footer.
+  const menu = withMenu ? renderTopicMenu(topic, { open: menuOpen }) : "";
+  const provenance = renderProvenance(topic, source);
+  const title = html`<h2 class="topic-article__title">${topicTitle(topic)}</h2>`;
+  const order = titleFirst ? `${title}${provenance}` : `${provenance}${title}`;
+  return html`<div class="topic-article__head${raw(titleFirst ? " topic-article__head--title-first" : "")}">
+    ${raw(menu)}${raw(order)}
   </div>`;
 }
 
@@ -123,7 +131,10 @@ export function renderTopicHeader(topic, { source = null, menuOpen = false } = {
  * identity itself, outside the scroller — printing it twice would be the same
  * sentence twice.
  */
-export function renderTopicArticle(topic, { source = null, withHeader = true, menuOpen = false, actions = "" } = {}) {
+export function renderTopicArticle(
+  topic,
+  { source = null, withHeader = true, menuOpen = false, actions = "", withPosts = true, headerOpts = {} } = {},
+) {
   if (!topic) return "";
   const article = topic.article || {};
   const paragraphs = article.paragraphs || [];
@@ -173,7 +184,7 @@ export function renderTopicArticle(topic, { source = null, withHeader = true, me
       : "";
 
   return html`<div class="topic-article">
-    ${raw(withHeader ? renderTopicHeader(topic, { source, menuOpen }) : "")}
+    ${raw(withHeader ? renderTopicHeader(topic, { source, menuOpen, ...headerOpts }) : "")}
     <!-- Band 1: what this Topic is for and why it landed. Renders nothing at all
          on the 43 Topics of 52 that carry neither field. -->
     ${raw(renderRelevance(topic))}
@@ -190,15 +201,13 @@ export function renderTopicArticle(topic, { source = null, withHeader = true, me
          finishes, so the reader decides having just read the thing they are
          deciding on. Nothing at all when no verbs are passed. -->
     ${raw(actions ? html`<div class="topic-article__actionbar">${raw(actions)}</div>` : "")}
+    <!-- The evidence, inline and collapsible — the feed pane's arrangement. The
+         withPosts option omits it entirely for a host that shows the posts
+         elsewhere: the article dialog lists them expanded in its own right-hand
+         grey panel (renderTopicPosts, collapsible false). -->
     ${raw(
-      posts.length
-        ? html`<section class="topic-article__section">
-            <!-- "Contributing posts", not "Sources": a Source in this app is
-                 something you bring INTO a chat, and these are the evidence the
-                 analysis was written from. Naming them Sources put two different
-                 objects under one word on the same screen. -->
-            ${raw(renderPosts(topic, posts))}
-          </section>`
+      withPosts && posts.length
+        ? html`<section class="topic-article__section">${raw(renderTopicPosts(topic, { collapsible: true }))}</section>`
         : "",
     )}
   </div>`;
@@ -238,7 +247,21 @@ export function renderTopicArticle(topic, { source = null, withHeader = true, me
 //     hairline above this heading was already removed for. It would also give the
 //     header 14/700 dark ink, outranking the 12/700 light apparatus label the rest
 //     of the article uses.
-function renderPosts(topic, posts) {
+export function renderTopicPosts(topic, { collapsible = true } = {}) {
+  const posts = topic?.posts || [];
+  if (!posts.length) return "";
+  const list = html`<div class="topic-article__posts">
+    ${raw(posts.map((pp) => renderSocialPostCard(pp)).join(""))}
+  </div>`;
+  // Shown directly, no disclosure — the article dialog's right-hand panel, where
+  // the posts ARE the panel's content, so folding them away would leave it empty.
+  if (!collapsible) {
+    return html`<h3 class="topic-article__section-head topic-article__section-head--static">
+        <span>Contributing posts</span>
+        <span class="ap-counter normal grey">${String(posts.length)}</span>
+      </h3>
+      ${raw(list)}`;
+  }
   const id = `topic-posts-${topic.id}`;
   return html`<input type="checkbox" class="topic-article__section-check" id="${escapeAttr(id)}" />
     <!-- The <h3> stays, so the document outline does not lose a section to a
