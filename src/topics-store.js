@@ -50,9 +50,9 @@
 //   markUsed(id) / ignoreTopic(id, reason) / unignoreTopic(id)
 //   subscribe(fn)                      → unsubscribe
 
-import { topics as seed } from "./mocks.js?v=1034";
-import { isNewUser } from "./user-mode.js?v=1034";
-import { createNotifier } from "./store-utils.js?v=1034";
+import { topics as seed } from "./mocks.js?v=1037";
+import { isNewUser } from "./user-mode.js?v=1037";
+import { createNotifier } from "./store-utils.js?v=1037";
 import {
   DEFAULT_MARKED_IDS,
   MARKED_STATUS_IDS,
@@ -60,7 +60,7 @@ import {
   TOPIC_STATES,
   findTopicState,
   kindOf,
-} from "./topics-catalog.js?v=1034";
+} from "./topics-catalog.js?v=1037";
 
 const topics = isNewUser() ? [] : seed.map(cloneTopic);
 
@@ -353,6 +353,20 @@ export function getFreshTopics(feedId) {
     .sort(byRecency)
     .slice(0, FRESH_MAX - picked.length);
   return [...picked, ...rest].slice(0, FRESH_MAX);
+}
+
+/**
+ * The Topics a chat can pull in from its feed: draft-ready (the `ready` lane) and
+ * not ignored — any age, and an already-used one still qualifies. This is the
+ * composer picker's rule, kept HERE so the one place that decides "what can I
+ * draft from" cannot drift from the vocabulary (`topicStates`). Newest first,
+ * because getTopicsForFeed already is.
+ */
+export function getPickableTopics(feedId) {
+  return getTopicsForFeed(feedId).filter((t) => {
+    const st = topicStates(t);
+    return !st.includes("later") && !st.includes("ignored");
+  });
 }
 
 export function getTopicById(id) {

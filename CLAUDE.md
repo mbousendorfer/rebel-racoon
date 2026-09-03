@@ -126,7 +126,8 @@ src/
   connectors-view.js    — shared pure render helpers for the connectors gallery + detail
   connector-ask.js      — launches the in-chat "Ask a connector" flow (gallery + right panel)
   topic-article.js      — ONE article renderer: the feed's pane, the picker, the in-chat dialog
-  topic-flow.js         — Use in chat: mark Used, then a new chat with the Topic as a Source
+  topic-flow.js         — Use in chat: mark Used, then a new chat with the Topic as a Source;
+                          plus the composer's INLINE picker (startTopicPickerInline)
 
   # Studios (full-panel takeovers) + newer surfaces (not exhaustive — see docs/reference/FEATURES.md)
   batch-studio.js       — batch-of-posts studio (upload/analyse → review)
@@ -350,7 +351,9 @@ The split is measured with a **`@container` query on the row**, never a media qu
 
 ### Two verbs, and only two
 
-**Use in chat** (`topic-flow.js`) marks the Topic **Used**, then opens a **new** chat with it attached as a Source via `addReadySource` — so Extract ideas, Draft, Ask and the Sources panel all light up with no new plumbing and no special case. The mark lands _before_ the chat opens, in one place, so all four surfaces mean the same thing. No echo message and no question picker on arrival: the source-intake card already names the Topic.
+**Use in chat** (`topic-flow.js`) marks the Topic **Used**, then opens a **new** chat with it attached as a Source via `addReadySource` — so Extract ideas, Draft, Ask and the Sources panel all light up with no new plumbing and no special case. The mark lands _before_ the chat opens, in one place, so the three surfaces that navigate (feed card, feed article, hero card) mean the same thing. No echo message and no question picker on arrival: the source-intake card already names the Topic.
+
+**The composer's "Pick from the Topic Feed" is the one INLINE exception** (`startTopicPickerInline`): it runs in the chat the reader is already in, the same shape as "Top performing posts" — one Archie line, then a single-select **widget turn** (`renderTopicsWidget`, radio cards of the feed's draft-ready Topics, newest first, max six), and **Use this topic** marks it Used, attaches it to _this_ chat via the same `attachTopicToChat`, then offers a next-steps Quickpicker (Extract ideas / Draft a post / Ask about it). Every neighbour in the Add menu acts in place; a Topic that opened a second chat was the one item that took the reader away from the chat they had just asked to add to. ⚠️ The dialog's LIST view that used to back this entry point was deleted with it (`git log -S renderListView`) — `topic-picker-modal.js` now opens on the article only.
 
 **Ignore** opens `topic-ignore-modal.js` and asks why. The reason is the only thing a reader ever _tells_ Archie about the listening, and it is what makes the Ignored state readable afterwards — the card prints it back. It is `stroked grey`, not red: ignoring hides a Topic that ticking Ignored brings straight back. Reversible via the toast's Undo, which also **clears the reason**. ⚠️ The fork's "Don't show this again" checkbox is not ported — it turned Ignore into a one-click action with no reason, contradicting the same feature's promise that the reason is kept.
 
@@ -370,14 +373,14 @@ Every token substitution is commented with the value it stands in for, because t
 
 `handoff.js` exposes `setHandoff(key, payload)` / `consumeHandoff(key)` (atomic read+remove) over `sessionStorage`. Consumed at `session.js` mount:
 
-| Key                          | Set by                                       | Consumed by →                    |
-| ---------------------------- | -------------------------------------------- | -------------------------------- |
-| `pendingAskSource`           | source card "Ask"                            | `askWhatToKnow`                  |
-| `pendingAskConnector`        | connectors gallery/modal "Try in chat"       | `askConnector`                   |
-| `pendingStartContextBuilder` | `/contexts` "New Playbook" + welcome-alt     | `context-builder` (create)       |
-| `pendingTopicChat`           | "Use in chat", from any of its four surfaces | `attachTopicToChat` (topic-flow) |
-| `pendingStartClipStudio`     | session composer "Extract video clips"       | `clipStudio.start` (new chat)    |
-| `pendingStartBatch`          | session composer "Batch of posts"            | `batchStudio.start` (new chat)   |
+| Key                          | Set by                                                                                                       | Consumed by →                    |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------ | -------------------------------- |
+| `pendingAskSource`           | source card "Ask"                                                                                            | `askWhatToKnow`                  |
+| `pendingAskConnector`        | connectors gallery/modal "Try in chat"                                                                       | `askConnector`                   |
+| `pendingStartContextBuilder` | `/contexts` "New Playbook" + welcome-alt                                                                     | `context-builder` (create)       |
+| `pendingTopicChat`           | "Use in chat", from the three surfaces that navigate (the composer's picker is inline and attaches directly) | `attachTopicToChat` (topic-flow) |
+| `pendingStartClipStudio`     | session composer "Extract video clips"                                                                       | `clipStudio.start` (new chat)    |
+| `pendingStartBatch`          | session composer "Batch of posts"                                                                            | `batchStudio.start` (new chat)   |
 
 A key that is consumed but never set is dead weight that reads as a live entry point — `pendingStartFlow` and `pendingDraftIdeaId` both sat here after their producers were replaced. Add a row only with both ends.
 

@@ -1,7 +1,7 @@
-import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr } from "../utils.js?v=1034";
-import { navigate } from "../router.js?v=1034";
-import { renderTopbar } from "../components/topbar.js?v=1034";
-import { socialAccounts, chatStarters, connectorDocs } from "../mocks.js?v=1034";
+import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr } from "../utils.js?v=1037";
+import { navigate } from "../router.js?v=1037";
+import { renderTopbar } from "../components/topbar.js?v=1037";
+import { socialAccounts, chatStarters, connectorDocs } from "../mocks.js?v=1037";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
@@ -11,13 +11,13 @@ import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
   PROFILE_SEARCH_THRESHOLD,
-} from "../social-profiles.js?v=1034";
-import { FORMATS, formatsForNetwork, defaultFormatFor, clipFormatItems } from "../clip-formats.js?v=1034";
-import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../clip-subtitles.js?v=1034";
-import { getSessionById, getSessions, subscribe as subscribeSessions } from "../sessions-store.js?v=1034";
-import { getContextById, getContexts, getDefaultContext, updateContext } from "../contexts-store.js?v=1034";
-import { revokedContextFor, usableContexts, canView } from "../playbook-access.js?v=1034";
-import { isNewUser } from "../user-mode.js?v=1034";
+} from "../social-profiles.js?v=1037";
+import { FORMATS, formatsForNetwork, defaultFormatFor, clipFormatItems } from "../clip-formats.js?v=1037";
+import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../clip-subtitles.js?v=1037";
+import { getSessionById, getSessions, subscribe as subscribeSessions } from "../sessions-store.js?v=1037";
+import { getContextById, getContexts, getDefaultContext, updateContext } from "../contexts-store.js?v=1037";
+import { revokedContextFor, usableContexts, canView } from "../playbook-access.js?v=1037";
+import { isNewUser } from "../user-mode.js?v=1037";
 import {
   getThread,
   sendMessage,
@@ -37,56 +37,58 @@ import {
   markConnectPromptResolved,
   toggleTopPostsWidgetPick,
   answerTopPostsWidget,
-} from "../assistant.js?v=1034";
-import { iconFor as fileIconForKind } from "../file-kinds.js?v=1034";
-import { getSources, getIdeas, extractVideoIdeas } from "../library.js?v=1034";
-import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=1034";
+  toggleTopicsWidgetPick,
+  answerTopicsWidget,
+} from "../assistant.js?v=1037";
+import { iconFor as fileIconForKind } from "../file-kinds.js?v=1037";
+import { getSources, getIdeas, extractVideoIdeas, appendExtractedIdeas } from "../library.js?v=1037";
+import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=1037";
 import {
   renderInto as renderComposerMentions,
   removeMention as removeComposerMention,
   subscribe as subscribeComposerMentions,
   addMention as addComposerMention,
-} from "../composer-mentions.js?v=1034";
-import { getPosts, addPostDraft, setSubtitleStyle, subscribe as subscribePostsStore } from "../posts-store.js?v=1034";
-import { startDraftFlow, executeDraft, executeDraftBatch, getAnglesForIdea } from "../draft-flow.js?v=1034";
-import * as topPostsFlow from "../top-posts-flow.js?v=1034";
+} from "../composer-mentions.js?v=1037";
+import { getPosts, addPostDraft, setSubtitleStyle, subscribe as subscribePostsStore } from "../posts-store.js?v=1037";
+import { startDraftFlow, executeDraft, executeDraftBatch, getAnglesForIdea } from "../draft-flow.js?v=1037";
+import * as topPostsFlow from "../top-posts-flow.js?v=1037";
 import {
   renderTopPostsBoard,
   renderTopPostEcho,
   renderTopPostsWidget,
   TOP_POSTS_LIMIT,
-} from "../components/top-post-card.js?v=1034";
-import { getTopPost } from "../top-posts-store.js?v=1034";
-import { renderEmptyState } from "../components/empty-state.js?v=1034";
-import * as sidebarWizard from "../sidebar-wizard.js?v=1034";
-import * as inlineQuestion from "../inline-question.js?v=1034";
-import * as clipStudio from "../clip-studio.js?v=1034";
-import * as batchStudio from "../batch-studio.js?v=1034";
-import { askConnector } from "../connector-ask.js?v=1034";
-import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=1034";
-import { renderConnectorLogo } from "../connectors-view.js?v=1034";
+} from "../components/top-post-card.js?v=1037";
+import { getTopPost } from "../top-posts-store.js?v=1037";
+import { renderEmptyState } from "../components/empty-state.js?v=1037";
+import * as sidebarWizard from "../sidebar-wizard.js?v=1037";
+import * as inlineQuestion from "../inline-question.js?v=1037";
+import * as clipStudio from "../clip-studio.js?v=1037";
+import * as batchStudio from "../batch-studio.js?v=1037";
+import { askConnector } from "../connector-ask.js?v=1037";
+import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=1037";
+import { renderConnectorLogo } from "../connectors-view.js?v=1037";
 import {
   getActiveConnector,
   clearActiveConnector,
   subscribe as subscribeComposerConnector,
-} from "../composer-connector.js?v=1034";
-import { isFlagOn } from "../feature-flags.js?v=1034";
-import * as contextBuilder from "../context-builder.js?v=1034";
-import { renderPicker } from "./_analyse-common.js?v=1034";
-import { renderSourceCard } from "../components/source-card.js?v=1034";
-import { renderIdeaCard } from "../components/idea-card.js?v=1034";
-import { renderCompactIdeaCard } from "../components/idea-card-compact.js?v=1034";
+} from "../composer-connector.js?v=1037";
+import { isFlagOn } from "../feature-flags.js?v=1037";
+import * as contextBuilder from "../context-builder.js?v=1037";
+import { renderPicker } from "./_analyse-common.js?v=1037";
+import { renderSourceCard } from "../components/source-card.js?v=1037";
+import { renderIdeaCard } from "../components/idea-card.js?v=1037";
+import { renderCompactIdeaCard } from "../components/idea-card-compact.js?v=1037";
 import {
   contentState,
   renderContentWorkspace as renderSharedContentWorkspace,
   rerenderContentWorkspaceBody,
   renderContentEmptyState,
-} from "../components/content-workspace.js?v=1034";
-import { open as openVideoClipsModal } from "../components/video-clips-modal.js?v=1034";
-import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=1034";
-import { open as openAddSourceModal } from "../components/add-source-modal.js?v=1034";
-import { open as openConnectorsModal } from "../components/connectors-modal.js?v=1034";
-import { dropzoneHTML } from "../components/dropzone.js?v=1034";
+} from "../components/content-workspace.js?v=1037";
+import { open as openVideoClipsModal } from "../components/video-clips-modal.js?v=1037";
+import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=1037";
+import { open as openAddSourceModal } from "../components/add-source-modal.js?v=1037";
+import { open as openConnectorsModal } from "../components/connectors-modal.js?v=1037";
+import { dropzoneHTML } from "../components/dropzone.js?v=1037";
 import {
   classifyFile,
   startFileUpload,
@@ -101,28 +103,35 @@ import {
   updateSourceClips,
   extractClipsForSource,
   setSourceIdeaCount,
-} from "../sources-stream.js?v=1034";
-import { renderClipCard } from "../components/clip-card.js?v=1034";
-import { onFeedbackClick } from "../components/feedback-control.js?v=1034";
-import { showToast } from "../components/toast.js?v=1034";
+} from "../sources-stream.js?v=1037";
+import { renderClipCard } from "../components/clip-card.js?v=1037";
+import { onFeedbackClick } from "../components/feedback-control.js?v=1037";
+import { showToast } from "../components/toast.js?v=1037";
 import {
   openDrafts as openDraftsPanel,
   openIdeas as openIdeasPanel,
   openClips as openClipsPanel,
   getMode as getRightPanelMode,
   subscribe as subscribeRightPanel,
-} from "../components/right-panel.js?v=1034";
-import { setHandoff, consumeHandoff } from "../handoff.js?v=1034";
-import { attachTopicToChat, useTopicInChat, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=1034";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1034";
-import { getFreshTopics, countFresh, subscribe as subscribeTopics } from "../topics-store.js?v=1034";
-import { findTopicSource } from "../topics-catalog.js?v=1034";
-import { renderTopicCard } from "../components/topic-card.js?v=1034";
-import { openTopicPicker, openTopicArticle } from "../components/topic-picker-modal.js?v=1034";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1034";
-import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=1034";
-import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=1034";
-import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=1034";
+} from "../components/right-panel.js?v=1037";
+import { setHandoff, consumeHandoff } from "../handoff.js?v=1037";
+import { attachTopicToChat, useTopicInChat, startTopicPickerInline, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=1037";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1037";
+import {
+  getFreshTopics,
+  countFresh,
+  getTopicById,
+  topicTitle,
+  markUsed,
+  subscribe as subscribeTopics,
+} from "../topics-store.js?v=1037";
+import { findTopicSource } from "../topics-catalog.js?v=1037";
+import { renderTopicCard, renderTopicsWidget } from "../components/topic-card.js?v=1037";
+import { openTopicArticle } from "../components/topic-picker-modal.js?v=1037";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1037";
+import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=1037";
+import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=1037";
+import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=1037";
 // Pure thread-turn renderers — shared with the component handoff gallery so
 // the previews there never drift from the app (handoff/components.html).
 import {
@@ -134,7 +143,7 @@ import {
   renderSystemNotice,
   renderExtractingNotice,
   renderResultCard,
-} from "./session/thread-turns.js?v=1034";
+} from "./session/thread-turns.js?v=1037";
 
 // Default composer placeholder — restored whenever no connector is attached.
 // A connected connector swaps it for "Ask {name} anything…".
@@ -2913,6 +2922,90 @@ function askVideoIntake(sessionId, sourceId, filename) {
   });
 }
 
+// ── The composer's Topic pick lands ────────────────────────────────────────
+// The inline "Pick from the Topic Feed" widget was confirmed. Mark the Topic Used
+// and attach it as a source to THIS chat — the same attachTopicToChat the handoff
+// path runs at mount, so the source-intake card, the Sources panel and every
+// downstream verb light up with no special case — then ask what to do with it.
+//
+// Mirrors the top-posts confirm (data-topposts-widget-confirm) in two ways: no
+// echo turn, because the frozen widget already shows the pick and the intake
+// card names the Topic again; and the tail is a Quickpicker, the same shape as
+// askVideoIntake, because a Topic that has just landed is a source the reader
+// has not yet said what to do with.
+function finishTopicPick(session, topicId) {
+  const topic = topicId ? getTopicById(topicId) : null;
+  if (!topic) {
+    postAssistantMessage(session.id, "That Topic isn't in the feed anymore.");
+    return;
+  }
+  // The generating hooks' revoked-Playbook refusal is a click-CAPTURE guard on
+  // the card buttons; a programmatic tail walks straight past it, so it is
+  // repeated here with the same words.
+  const revoked = revokedContextFor(session);
+  if (revoked) {
+    showToast(`I can't — ${revoked.ownerName} stopped sharing ${revoked.name}.`, { variant: "error" });
+    return;
+  }
+  markUsed(topic.id);
+  // addReadySource dedupes on the id SILENTLY, so a second pick of the same Topic
+  // would look like nothing happened. Say it instead — and still offer the next
+  // step, since the source is there either way.
+  const already = getStreamSources(session.id).some((s) => s.id === topic.id);
+  if (already) showToast("Already in this chat's sources.");
+  else attachTopicToChat(session.id, topic.id);
+
+  // Plain title — the message bubble renders no markdown, so **bold** would show
+  // its asterisks. The quotes do the marking instead.
+  postAssistantMessage(session.id, `“${topicTitle(topic)}” is in this chat as a source. What should I do with it?`);
+  inlineQuestion.ask(session.id, {
+    title: "Next step",
+    stepLabel: "Topic",
+    skipLabel: "Not now",
+    items: [
+      {
+        value: "extract",
+        label: "Extract ideas",
+        caption: "Pull the angles worth posting into your Ideas.",
+        icon: "ap-icon-sparkles",
+      },
+      {
+        value: "draft",
+        label: "Draft a post",
+        caption: "Extract the lead idea and draft from it right away.",
+        icon: "ap-icon-pen",
+      },
+      {
+        value: "ask",
+        label: "Ask about it",
+        caption: "Question the Topic before deciding.",
+        icon: "ap-icon-single-chat-bubble",
+      },
+    ],
+    onPick: (value) => {
+      const src = getStreamSources(session.id).find((s) => s.id === topic.id);
+      if (!src) return;
+      if (value === "extract") {
+        // The source card's own "Extract more ideas", verbatim.
+        postUserTurn(session.id, "Extract ideas");
+        appendExtractedIdeas(session.id, [src]);
+      } else if (value === "draft") {
+        // There is no source-level draft entry — drafting starts from an IDEA
+        // (startIdeaDraft). One source yields exactly one idea, so extract, then
+        // draft from the idea it produced.
+        postUserTurn(session.id, "Draft a post");
+        appendExtractedIdeas(session.id, [src], (created) => {
+          if (created?.[0]) startIdeaDraft(session.id, created[0].id);
+        });
+      } else if (value === "ask") {
+        // askWhatToKnow posts its own selection echo.
+        askWhatToKnow(session.id, src.filename, src.id);
+      }
+    },
+    onSkip: () => {},
+  });
+}
+
 // ── Video-intake choice branches ──────────────────────────────────────────
 // Run after the user answers "what to do with this video?" (intake-lifecycle).
 // Extraction is deferred at upload, so each branch produces only its output.
@@ -3006,6 +3099,11 @@ function renderTurn(message, sessionId) {
     return renderTopPostsWidgetTurn(message);
   }
 
+  // Inline "topics" selection widget — the Add menu's "Pick from the Topic Feed".
+  if (message.role === "assistant" && message.variant === "topics-widget") {
+    return renderTopicsWidgetTurn(message);
+  }
+
   if (message.role === "user" && message.variant === "selection-echo") {
     return renderSelectionEchoTurn(message.echo);
   }
@@ -3040,6 +3138,25 @@ function renderTopPostsWidgetTurn(message) {
       ${renderTopPostsWidget({
         network: message.network,
         posts,
+        selected: message.selected || [],
+        answered: message.status === "answered",
+        group: message.id,
+      })}
+    </div>
+  `;
+}
+
+// Inline "topics" selection widget turn — the AI-side turn hosting the
+// single-select Topic cards (renderTopicsWidget). Resolves the Topic ids to live
+// Topics each render, so one that left the feed drops out; selection + answered
+// state live on the turn message, exactly like the top-posts widget.
+function renderTopicsWidgetTurn(message) {
+  const topics = (message.topicIds || []).map(getTopicById).filter(Boolean);
+  return `
+    <div class="chat-turn chat-turn--ai">
+      <i class="ap-icon-archie-official chat-turn-avatar" aria-hidden="true"></i>
+      ${renderTopicsWidget({
+        topics,
         selected: message.selected || [],
         answered: message.status === "answered",
         group: message.id,
@@ -4640,6 +4757,13 @@ function bindSession(root, session) {
         if (valid.length) askRepurposeProfiles(session.id, valid);
         return;
       }
+      // Inline topics widget — confirm the pick → freeze the widget, then attach
+      // the Topic to THIS chat and ask what to do with it (finishTopicPick).
+      if (event.target.closest("[data-topics-widget-confirm]")) {
+        const [topicId] = answerTopicsWidget(session.id);
+        finishTopicPick(session, topicId);
+        return;
+      }
       // Step 1 Playbook picker → set the voice governing the repurposed drafts.
       const topPostsPlaybook = event.target.closest("[data-topposts-playbook-pick]");
       if (topPostsPlaybook) {
@@ -5097,11 +5221,13 @@ function bindSession(root, session) {
           topPostsFlow.startTopPostsInline(session.id);
           return;
         }
-        // Neither is a Topic. The picker is scoped to the CHAT'S OWN Playbook —
-        // a chat keeps the brand it was created in, so the picker never asks
-        // which one first.
+        // Neither is a Topic — and it runs INLINE too, the same shape as top
+        // posts: one Archie line and an in-thread widget of the feed's draft-ready
+        // Topics, the pick attaching to THIS chat. Scoped to the CHAT'S OWN
+        // Playbook — a chat keeps the brand it was created in, so there is no
+        // "which Playbook" step first.
         if (kind === "topic") {
-          openTopicPicker({ playbookId: session.contextId || null });
+          startTopicPickerInline(session.id, session);
           return;
         }
         // URL + Paste text need the modal UI (a URL field / textarea) — open
@@ -5169,22 +5295,40 @@ function bindSession(root, session) {
     { signal },
   );
 
-  // Inline top-posts widget — the DS radios are a native single-select group,
-  // so selection arrives as a `change` (click or keyboard). Sync the store,
-  // reflect the checked row in place (no whole-thread re-render → no image
-  // reload / scroll reset), and enable the confirm CTA.
+  // The in-chat selection widgets (top posts, topics) use DS radios — a native
+  // single-select group — so a pick arrives as a `change` (click or keyboard).
+  // Sync the store, reflect the checked row in place (no whole-thread re-render
+  // → no image reload / scroll reset), and enable the confirm CTA. One helper,
+  // two widgets.
+  const syncWidgetRows = (widget, rowSelector, ctaSelector) => {
+    widget?.querySelectorAll(rowSelector).forEach((row) => {
+      row.classList.toggle("is-selected", !!row.querySelector("input[type=radio]")?.checked);
+    });
+    const cta = widget?.querySelector(ctaSelector);
+    if (cta) cta.disabled = false;
+  };
   root.addEventListener(
     "change",
     (event) => {
-      const radio = event.target.closest("[data-topposts-widget-radio]");
-      if (!radio || radio.disabled) return;
-      toggleTopPostsWidgetPick(session.id, radio.dataset.toppostsWidgetRadio);
-      const widget = radio.closest("[data-topposts-widget]");
-      widget?.querySelectorAll(".top-posts-widget__row").forEach((row) => {
-        row.classList.toggle("is-selected", !!row.querySelector("input[type=radio]")?.checked);
-      });
-      const cta = widget?.querySelector("[data-topposts-widget-confirm]");
-      if (cta) cta.disabled = false;
+      const postRadio = event.target.closest("[data-topposts-widget-radio]");
+      if (postRadio && !postRadio.disabled) {
+        toggleTopPostsWidgetPick(session.id, postRadio.dataset.toppostsWidgetRadio);
+        syncWidgetRows(
+          postRadio.closest("[data-topposts-widget]"),
+          ".top-posts-widget__row",
+          "[data-topposts-widget-confirm]",
+        );
+        return;
+      }
+      const topicRadio = event.target.closest("[data-topics-widget-radio]");
+      if (topicRadio && !topicRadio.disabled) {
+        toggleTopicsWidgetPick(session.id, topicRadio.dataset.topicsWidgetRadio);
+        syncWidgetRows(
+          topicRadio.closest("[data-topics-widget]"),
+          ".topics-widget__row",
+          "[data-topics-widget-confirm]",
+        );
+      }
     },
     { signal },
   );

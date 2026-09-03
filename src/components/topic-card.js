@@ -1,8 +1,19 @@
-// One Topic, in the two shapes it is read in.
+// One Topic, in the shapes it is read in.
 //
 //   renderTopicCard(topic, { variant: "feed" })    the queue on /topics
-//   renderTopicCard(topic, { variant: "picker" })  the Pick-a-topic dialog, and
-//                                                  the new chat's Fresh-topics grid
+//   renderTopicCard(topic, { variant: "picker" })  the new chat's Fresh-topics grid
+//   renderTopicCard(topic, { variant: "widget" })  the SAME body with no button in
+//                                                  it, for a row of the in-chat
+//                                                  picker widget (below)
+//   renderTopicsWidget({ topics, … })              the composer's "Pick from the
+//                                                  Topic Feed" turn: radio cards
+//
+// The widget variant is not a fourth look — it is the feed/picker body, part for
+// part, minus the <button>. It exists because that body has to sit inside a
+// radio <label> (the DS `.ap-radio-card`), and interactive content cannot nest
+// in a label any more than a button can in a button — see the note at the end
+// of this header. Everything inside the body was already a <span> for exactly
+// that reason, so the widget costs one wrapper and nothing else.
 //
 // There WAS a third shape — renderTopicRow, a full-width row for the new chat's
 // hero. Six of them stacked ran ~500px tall and pushed the workflow starters off
@@ -62,9 +73,10 @@
 // Everything inside the body is a <span> for the same reason — a button may only
 // contain phrasing content, so no h3 and no p in there.
 
-import { html, raw, escapeAttr } from "../utils.js?v=1034";
-import { topicTitle } from "../topics-store.js?v=1034";
-import { renderTopicStates } from "../topic-article.js?v=1034";
+import { html, raw, escapeAttr } from "../utils.js?v=1037";
+import { topicTitle } from "../topics-store.js?v=1037";
+import { renderTopicStates } from "../topic-article.js?v=1037";
+import { findTopicSource } from "../topics-catalog.js?v=1037";
 
 // ── The state chips ───────────────────────────────────────────────────────
 // `renderTopicStates` comes from topic-article.js, which is where a Topic's
@@ -108,6 +120,19 @@ export function renderTopicCard(
   // for an answer, so everything else has been dealt with and steps back.
   const triaged = topic.status !== "new";
 
+  // The WIDGET shape: the body alone, in a <div>, so it can live inside the
+  // radio <label> of the in-chat picker. No door of its own INSIDE — the label
+  // is the control and the row's radio is what it toggles; the read door ("View
+  // more") is a sibling of the label on the item, see renderTopicSelectRow.
+  if (variant === "widget") {
+    return html`<div
+      class="topic-card topic-card--widget${raw(triaged ? " is-triaged" : "")}"
+      data-topic-id="${escapeAttr(topic.id)}"
+    >
+      ${raw(renderTopicBody(topic, source, ignored))}
+    </div>`;
+  }
+
   return html`<article
     class="topic-card topic-card--${raw(picker ? "picker" : "feed")}${raw(triaged ? " is-triaged" : "")}${raw(
       articleOpen ? " is-reading" : "",
@@ -120,27 +145,7 @@ export function renderTopicCard(
       data-topic-read="${escapeAttr(topic.id)}"
       ${raw(picker ? "" : `aria-expanded="${articleOpen ? "true" : "false"}"`)}
     >
-      <!-- WHERE IT CAME FROM FIRST, then the claim, then the summary — and the
-           article header renders those same two rows in that same order. A card
-           and the article it opens are two views of one Topic and must not present
-           it two ways round. See the note at the top of this file. -->
-      ${raw(renderMeta(topic, source))}
-      <span class="topic-card__headline">${topicTitle(topic)}</span>
-      <!-- No "Summary:" label. Every card carried one, so it labelled nothing —
-           a two-line block under a headline is self-evidently the summary, and
-           the word ate a chunk of the first of only two visible lines. -->
-      <span class="topic-card__summary">${topic.summary}</span>
-      <!-- The reason only ever shows on an ignored Topic, and only in the feed:
-           it is the sentence the reader typed, and without it Ignored is a state
-           with no explanation attached. The picker never lists an ignored Topic,
-           so it can never render this. -->
-      ${raw(
-        ignored && topic.ignoreReason
-          ? html`<span class="topic-card__reason"
-              ><span class="topic-card__reason-label">You ignored this:</span> ${topic.ignoreReason}</span
-            >`
-          : "",
-      )}
+      ${raw(renderTopicBody(topic, source, ignored))}
     </button>
     ${raw(picker ? "" : renderKebab(topic, menuOpen))}
     <!-- The verb ON the card, for a host that has no kebab and sits beside other
@@ -165,6 +170,123 @@ export function renderTopicCard(
         : "",
     )}
   </article>`;
+}
+
+// The body every shape shares: WHERE IT CAME FROM FIRST, then the claim, then the
+// summary — and the article header renders those same rows in that same order. A
+// card and the article it opens are two views of one Topic and must not present
+// it two ways round. See the note at the top of this file.
+//
+// All <span>s, on purpose: this sits inside a <button> in the feed and picker
+// shapes and inside a radio <label> in the widget shape, and neither may hold
+// interactive or block content.
+function renderTopicBody(topic, source, ignored) {
+  return html`${raw(renderMeta(topic, source))}
+    <span class="topic-card__headline">${topicTitle(topic)}</span>
+    <!-- No "Summary:" label. Every card carried one, so it labelled nothing — a
+         two-line block under a headline is self-evidently the summary, and the
+         word ate a chunk of the first of only two visible lines. -->
+    <span class="topic-card__summary">${topic.summary}</span>
+    <!-- The reason only ever shows on an ignored Topic, and only in the feed: it
+         is the sentence the reader typed, and without it Ignored is a state with
+         no explanation attached. The picker and the widget never list an ignored
+         Topic, so they can never render this. -->
+    ${raw(
+      ignored && topic.ignoreReason
+        ? html`<span class="topic-card__reason"
+            ><span class="topic-card__reason-label">You ignored this:</span> ${topic.ignoreReason}</span
+          >`
+        : "",
+    )}`;
+}
+
+// ── The in-chat picker widget ──────────────────────────────────────────────
+// The composer's "Pick from the Topic Feed", rendered as a turn — the same
+// shape as the top-posts widget (top-post-card.js renderTopPostsWidget): a head,
+// a single-select list of radio cards, and a confirm CTA. SINGLE select, because
+// a Topic becomes ONE source and the next step is asked about that one. When
+// `answered`, rows freeze and the footer drops — a static record of the pick.
+// `group` scopes the radios' shared `name` to this widget so two widgets in one
+// thread cannot cross-select.
+//
+// One row is the DS radio-button card (`.ap-radio-card.card`): the card owns the
+// frame, the dot (::before) and the hover / checked border; we supply the body.
+// The whole row is a <label>, so clicking anywhere selects the (visually hidden)
+// real <input type=radio> — which is why the body inside is the button-free
+// widget variant. The hooks are `data-topics-widget-*`, DISTINCT from the hero's
+// `data-topic-use` / `data-topic-read`, whose root-level delegates in session.js
+// would otherwise swallow a click on a row.
+function renderTopicSelectRow(topic, { source = null, selected = false, disabled = false, group = "" } = {}) {
+  if (!topic) return "";
+  return html`<div class="topics-widget__item">
+    <label class="ap-radio-card card topics-widget__row">
+      <input
+        type="radio"
+        name="topics-pick-${escapeAttr(group)}"
+        value="${escapeAttr(topic.id)}"
+        data-topics-widget-radio="${escapeAttr(topic.id)}"
+        ${raw(selected ? "checked" : "")}
+        ${raw(disabled ? "disabled" : "")}
+      />
+      <div>${raw(renderTopicCard(topic, { source, variant: "widget" }))}</div>
+    </label>
+    <!-- The read door: opens the article dialog. A SIBLING of the label, never a
+         child - a click inside the label would toggle the radio, and interactive
+         content in a label is invalid HTML besides. It sits over the card's
+         bottom-right corner, where the body has cleared room for it. The hook is
+         the same data-topic-read the hero's cards use, so the session's existing
+         delegate opens the dialog with no new wiring. Reading stays available on a
+         frozen widget too: the pick is made, the article is still worth a look. -->
+    <button
+      type="button"
+      class="ap-link standalone small topics-widget__more"
+      data-topic-read="${escapeAttr(topic.id)}"
+    >
+      View more
+    </button>
+  </div>`;
+}
+
+export function renderTopicsWidget({ topics = [], selected = [], answered = false, group = "" } = {}) {
+  const sel = new Set(selected);
+  const rows = topics
+    .map((t) =>
+      renderTopicSelectRow(t, {
+        source: findTopicSource(t.sourceId),
+        selected: sel.has(t.id),
+        disabled: answered,
+        group,
+      }),
+    )
+    .join("");
+  // Every id resolved to nothing — the Topics left the feed between the turn
+  // landing and this paint. Say so rather than draw an empty frame.
+  const body = rows || html`<p class="topics-widget__gone muted">These Topics are no longer in the feed.</p>`;
+  const footer = answered
+    ? ""
+    : html`<div class="topics-widget__foot">
+        <button
+          type="button"
+          class="ap-button primary blue topics-widget__cta"
+          data-topics-widget-confirm
+          ${raw(sel.size ? "" : "disabled")}
+        >
+          <span>Use this topic</span>
+        </button>
+      </div>`;
+  return html`<div class="topics-widget${raw(answered ? " topics-widget--answered" : "")}" data-topics-widget>
+    <div class="topics-widget__head">
+      <span class="topics-widget__title">
+        <i class="ap-icon-antenna" aria-hidden="true"></i>
+        Draft-ready Topics
+      </span>
+      <span class="topics-widget__hint muted">Pick one</span>
+    </div>
+    <div class="topics-widget__list" role="radiogroup" aria-label="Pick one Topic to bring into this chat">
+      ${raw(body)}
+    </div>
+    ${raw(footer)}
+  </div>`;
 }
 
 // Two rows, and deliberately only two. Four behind one trigger is a menu; two is

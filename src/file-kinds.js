@@ -11,6 +11,9 @@ export const KIND_ICON = {
   image: "ap-icon-file--image",
   audio: "ap-icon-file",
   file: "ap-icon-file",
+  // A Topic pulled in from the Topic Feed — the listening antenna, the same glyph
+  // the feed's provenance badge and the picker's empty state wear.
+  topic: "ap-icon-antenna",
 };
 
 export function iconFor(kind) {

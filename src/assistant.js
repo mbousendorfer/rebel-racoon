@@ -6,11 +6,11 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1034";
-import { findConnector } from "./connectors-store.js?v=1034";
-import { createSessionNotifier } from "./store-utils.js?v=1034";
-import { showToast } from "./components/toast.js?v=1034";
-import { isFlagOn } from "./feature-flags.js?v=1034";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1037";
+import { findConnector } from "./connectors-store.js?v=1037";
+import { createSessionNotifier } from "./store-utils.js?v=1037";
+import { showToast } from "./components/toast.js?v=1037";
+import { isFlagOn } from "./feature-flags.js?v=1037";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -440,37 +440,80 @@ export function postTopPostsWidget(sessionId, { network, postIds }) {
   return id;
 }
 
-// Find the latest still-open (ready) top-posts widget turn for a session.
-function activeTopPostsWidget(sessionId) {
+// Find the latest still-open (ready) widget turn of one variant for a session.
+// Shared by the top-posts and topics widgets — same single-select-then-freeze
+// lifecycle, so one walker serves both.
+function activeWidget(sessionId, variant) {
   const thread = getThread(sessionId);
   for (let i = thread.length - 1; i >= 0; i -= 1) {
     const m = thread[i];
-    if (m.variant === "top-posts-widget" && m.status === "ready") return m;
+    if (m.variant === variant && m.status === "ready") return m;
   }
   return null;
 }
 
-// Pick a post in the active top-posts widget. SINGLE-select: the clicked post
-// becomes the sole selection (clicking the selected one clears it). Returns
-// whether the post is now selected. Deliberately does NOT notify() — the caller
-// updates the rows in place (like the Quickpicker) so there's no whole-thread
-// re-render, image reload, or scroll reset inside the widget list.
-export function toggleTopPostsWidgetPick(sessionId, postId) {
-  const msg = activeTopPostsWidget(sessionId);
+// SINGLE-select pick inside the active widget: the clicked item becomes the sole
+// selection (clicking the selected one clears it). Returns whether it is now
+// selected. Deliberately does NOT notify() — the caller updates the rows in place
+// (like the Quickpicker) so there's no whole-thread re-render, image reload, or
+// scroll reset inside the widget list.
+function toggleWidgetPick(sessionId, variant, itemId) {
+  const msg = activeWidget(sessionId, variant);
   if (!msg) return false;
-  const alreadyOnly = msg.selected.length === 1 && msg.selected[0] === postId;
-  msg.selected = alreadyOnly ? [] : [postId];
+  const alreadyOnly = msg.selected.length === 1 && msg.selected[0] === itemId;
+  msg.selected = alreadyOnly ? [] : [itemId];
   return !alreadyOnly;
 }
 
-// Freeze the active top-posts widget (status → "answered", disabling further
-// selection) and return the chosen post ids so the caller can advance the flow.
-export function answerTopPostsWidget(sessionId) {
-  const msg = activeTopPostsWidget(sessionId);
+// Freeze the active widget (status → "answered", disabling further selection)
+// and return the chosen ids so the caller can advance the flow.
+function answerWidget(sessionId, variant) {
+  const msg = activeWidget(sessionId, variant);
   if (!msg) return [];
   msg.status = "answered";
   notify(sessionId);
   return msg.selected.slice();
+}
+
+export function toggleTopPostsWidgetPick(sessionId, postId) {
+  return toggleWidgetPick(sessionId, "top-posts-widget", postId);
+}
+
+export function answerTopPostsWidget(sessionId) {
+  return answerWidget(sessionId, "top-posts-widget");
+}
+
+// Interactive "topics" selection widget — the composer's "Pick from the Topic
+// Feed", run INLINE in the current chat exactly like the top-posts widget: a
+// single-select list of the feed's draft-ready Topics rendered as a turn
+// (renderTopicsWidgetTurn in session.js). Selection lives ON the turn object and
+// mutates in place, so every thread re-render reflects it. The Topic ids are
+// re-resolved at render time (getTopicById), so a Topic that leaves the feed
+// simply drops out of the list.
+export function postTopicsWidget(sessionId, { feedId, topicIds }) {
+  const thread = getThread(sessionId);
+  const id = newId();
+  thread.push({
+    id,
+    role: "assistant",
+    variant: "topics-widget",
+    meta: "Archie",
+    feedId: feedId || null,
+    topicIds: Array.isArray(topicIds) ? topicIds.slice() : [],
+    selected: [],
+    status: "ready",
+    createdAt: Date.now(),
+  });
+  notify(sessionId);
+  return id;
+}
+
+export function toggleTopicsWidgetPick(sessionId, topicId) {
+  return toggleWidgetPick(sessionId, "topics-widget", topicId);
+}
+
+export function answerTopicsWidget(sessionId) {
+  return answerWidget(sessionId, "topics-widget");
 }
 
 // Generic "you picked this object" echo — a compact icon + title + meta chip in

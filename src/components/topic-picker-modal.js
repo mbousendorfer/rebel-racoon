@@ -1,12 +1,13 @@
-// The Topic dialog — one dialog, two views.
+// The Topic dialog — one dialog, two views: the ARTICLE and its HISTORY.
 //
-//   openTopicPicker({ playbookId })  the composer's "Pick from the Topic Feed"
 //   openTopicArticle(topicId)        a row in the in-chat "Fresh topics" list
 //
-// Both land in the same <aside>. The picker opens on the LIST and a card's body
-// opens the article INSIDE it, with a back action that names where it returns;
-// the in-chat list opens straight on the article and has no back, because there
-// is no list in here to go back to.
+// ⚠️ It used to open on a LIST too — the composer's "Pick from the Topic Feed"
+// listed the feed's draft-ready Topics here and a card's body opened the article
+// inside. That entry point is an in-thread widget now (topic-flow.js
+// startTopicPickerInline, the same shape as "Top performing posts"), so the list
+// view, its back action and `openTopicPicker` are gone: a dialog view nothing
+// opens reads as a live entry point. `git log -S renderListView` has it.
 //
 // ── One article, not two ───────────────────────────────────────────────────
 // The body and the verbs come from topic-article.js — the same functions the feed
@@ -17,37 +18,28 @@
 // The article view is a proper modal: a real HEADER (the Topic's title +
 // provenance, rendered by renderTopicHeader with the close × over its corner), a
 // two-column BODY (analysis left, a full-height grey posts panel right, flush to
-// the edges), and the FOOTER (History + the verbs). The list and history views
-// leave the header empty and title themselves inside the scrolling body. paint()
-// also writes the Topic's title into the dialog's aria-label.
-//
-// ── Scope ──────────────────────────────────────────────────────────────────
-// The picker lists ONE Playbook's Topics — the chat's own. A chat keeps the brand
-// it was created in, so the picker never asks which Playbook first: that question
-// was answered when the chat was made.
+// the edges), and the FOOTER (History + the verbs). The history view leaves the
+// header empty and titles itself inside the scrolling body. paint() also writes
+// the Topic's title into the dialog's aria-label.
 
-import { html, raw, escapeHtml } from "../utils.js?v=1034";
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1034";
-import { renderEmptyState } from "./empty-state.js?v=1034";
-import { renderTopicCard } from "./topic-card.js?v=1034";
+import { html, raw, escapeHtml } from "../utils.js?v=1037";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1037";
 import {
   renderTopicArticle,
   renderTopicActions,
   renderTopicTrail,
   renderTopicPosts,
   renderTopicHeader,
-} from "../topic-article.js?v=1034";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1034";
-import { getTopicsForFeed, groupTopicsByAge, getTopicById, topicTitle, topicStates } from "../topics-store.js?v=1034";
-import { findTopicSource } from "../topics-catalog.js?v=1034";
-import { getContextById } from "../contexts-store.js?v=1034";
-import { useTopicInChat } from "../topic-flow.js?v=1034";
+} from "../topic-article.js?v=1037";
+import { getTopicById, topicTitle } from "../topics-store.js?v=1037";
+import { findTopicSource } from "../topics-catalog.js?v=1037";
+import { useTopicInChat } from "../topic-flow.js?v=1037";
 
 const MODAL_ID = "topic-picker";
 
 let backdrop, modal, headerEl, bodyEl, footEl;
 let initialized = false;
-// { view: "list" | "article", playbookId, topicId, canGoBack }
+// { view: "article" | "history", topicId, menuOpen }
 let state = null;
 
 const HTML = `
@@ -97,11 +89,6 @@ function injectOnce() {
       close();
       return;
     }
-    if (event.target.closest("[data-topic-picker-back]")) {
-      state = { ...state, view: "list", topicId: null, menuOpen: false };
-      paint();
-      return;
-    }
     if (event.target.closest("[data-topic-history-back]")) {
       state = { ...state, view: "article", menuOpen: false };
       paint();
@@ -129,15 +116,6 @@ function injectOnce() {
       state = { ...state, menuOpen: false };
       paint();
     }
-    const read = event.target.closest("[data-topic-read]");
-    if (read) {
-      state = { ...state, view: "article", topicId: read.dataset.topicRead, canGoBack: true };
-      paint();
-      // Reading starts at the top: the dialog kept the list's scroll offset, so
-      // an article opened from the fourth card began four cards down its own prose.
-      bodyEl.scrollTop = 0;
-      return;
-    }
     const use = event.target.closest("[data-topic-use]");
     if (use) {
       // Close FIRST. useTopicInChat navigates, and a dialog still mounted over
@@ -162,22 +140,14 @@ export function init() {
   injectOnce();
 }
 
-/** The composer's picker: this chat's Playbook, ready-to-draft Topics only. */
-export function openTopicPicker({ playbookId = null } = {}) {
-  injectOnce();
-  requestOpen(MODAL_ID, close);
-  state = { view: "list", playbookId, topicId: null, canGoBack: false, menuOpen: false };
-  show();
-}
-
-/** One Topic's article, from a row in the in-chat list. No list behind it. */
+/** One Topic's article, from a row in the in-chat list. */
 export function openTopicArticle(topicId) {
   injectOnce();
   const topic = getTopicById(topicId);
   // A link to a Topic that no longer exists opens nothing and goes nowhere.
   if (!topic) return;
   requestOpen(MODAL_ID, close);
-  state = { view: "article", playbookId: null, topicId, canGoBack: false, menuOpen: false };
+  state = { view: "article", topicId, menuOpen: false };
   show();
 }
 
@@ -209,19 +179,15 @@ function paint() {
   const isArticle = state.view === "article" && !!state.topicId;
   const articleTopic = isArticle ? getTopicById(state.topicId) : null;
   // The header carries the identity ONLY on the article view (title + provenance,
-  // with the close × over its corner); the list and history views title themselves
-  // inside the scrolling body, so the header is empty for them.
+  // with the close × over its corner); the history view titles itself inside the
+  // scrolling body, so the header is empty for it.
   headerEl.innerHTML = articleTopic ? renderArticleHeader(articleTopic) : "";
-  bodyEl.innerHTML = articleTopic
-    ? renderArticleBody(articleTopic)
-    : state.view === "history"
-      ? renderHistoryView()
-      : renderListView();
-  // Only the two-column article view is wide; the list and the history trail are
-  // single columns and a 960px dialog would stretch their cards across dead width.
+  bodyEl.innerHTML = articleTopic ? renderArticleBody(articleTopic) : renderHistoryView();
+  // Only the two-column article view is wide; the history trail is a single
+  // column and a 960px dialog would stretch it across dead width.
   modal.classList.toggle("topic-picker--wide", isArticle);
-  // Only the article has verbs; the list's cards carry their own, and the trail
-  // is not a decision — its way back is the Back link.
+  // Only the article has verbs; the trail is not a decision — its way back is the
+  // Back link.
   const openTopic = state.view === "article" && state.topicId ? getTopicById(state.topicId) : null;
   // History moved off the header kebab into a footer button on the LEFT, opposite
   // the verbs. Only when there is a trail to show — same gate the kebab used.
@@ -236,72 +202,7 @@ function paint() {
       </div>`
     : "";
   const topic = state.topicId ? getTopicById(state.topicId) : null;
-  modal.setAttribute(
-    "aria-label",
-    topic ? `Topic: ${escapeHtml(topic.article?.title || topic.headline)}` : "Pick a Topic",
-  );
-}
-
-// ── The list ───────────────────────────────────────────────────────────────
-// READY-TO-DRAFT only, and never an ignored one. Same rule as the feed's first
-// segment: the scan's classification decides it. The picker has no filter, so it
-// has no way to show an ignored Topic and no business inventing one — an ignored
-// Topic is never surfaced anywhere except by ticking Ignored on the feed.
-//
-// Grouped and ordered exactly like the feed, with the feed's own cards, so a
-// reader who was just reading the feed is not handed a different-looking object.
-function renderListView() {
-  const pb = state.playbookId ? getContextById(state.playbookId) : null;
-  const feed = pb ? getFeedForPlaybook(pb.id) : null;
-  // Draftable and not dismissed. Expressed through the same deriver the feed's
-  // filter uses, so "what counts as pickable" cannot drift from the vocabulary.
-  // The picker has NO filter of its own, deliberately — see the note above.
-  const pickable = (t) => {
-    const st = topicStates(t);
-    return !st.includes("later") && !st.includes("ignored");
-  };
-  const topics = feed ? getTopicsForFeed(feed.id).filter(pickable) : [];
-
-  if (!topics.length) {
-    return html`<div class="topic-picker__head">
-        <h2 class="ap-dialog-title topic-picker__title">Pick a Topic</h2>
-      </div>
-      ${raw(
-        renderEmptyState({
-          icon: "ap-icon-antenna",
-          title: "Nothing ready to draft yet",
-          body: pb
-            ? `I haven't found a draft-ready Topic for ${pb.name} yet. There may be some under Topics for later in the feed.`
-            : "This chat has no Playbook, so there's no feed to pick from.",
-          wrapperClass: "topic-picker__empty",
-        }),
-      )}`;
-  }
-
-  const groups = groupTopicsByAge(topics)
-    .map(
-      (g) =>
-        html`<section class="topic-picker__group">
-          <h3 class="topic-picker__group-label">${g.group.label}</h3>
-          ${raw(
-            g.topics
-              .map((t) => renderTopicCard(t, { source: findTopicSource(t.sourceId), variant: "picker" }))
-              .join(""),
-          )}
-        </section>`,
-    )
-    .join("");
-
-  return html`<div class="topic-picker__head">
-      <h2 class="ap-dialog-title topic-picker__title">Pick a Topic</h2>
-      <!-- Names the scope rather than offering it as a control: a chat keeps the
-           brand it was created in, so this is a fact about where you are, not a
-           question. -->
-      <p class="topic-picker__scope">
-        ${raw(pb ? html`Topics created under the <strong>${pb.name}</strong> Playbook` : "")}
-      </p>
-    </div>
-    <div class="topic-picker__list">${raw(groups)}</div>`;
+  modal.setAttribute("aria-label", topic ? `Topic: ${escapeHtml(topic.article?.title || topic.headline)}` : "Topic");
 }
 
 // ── The article — a proper modal: header, two-column body, footer ──────────
@@ -311,17 +212,10 @@ function renderListView() {
 // below splits: the analysis scrolls on the LEFT, the contributing posts fill a
 // GREY PANEL on the RIGHT that spans the full height between header and footer,
 // flush to the dialog's edges. Topic history is a footer button (withMenu false,
-// so no header kebab); the back action, when there is one, names where it returns.
+// so no header kebab).
 function renderArticleHeader(topic) {
   const source = findTopicSource(topic.sourceId);
   return html`<div class="ap-dialog-header topic-picker__article-header">
-    ${raw(
-      state.canGoBack
-        ? html`<button type="button" class="ap-link standalone small topic-picker__back" data-topic-picker-back>
-            <i class="ap-icon-arrow-left" aria-hidden="true"></i><span>Back to the topic list</span>
-          </button>`
-        : "",
-    )}
     ${raw(renderTopicHeader(topic, { source, titleFirst: true, withMenu: false }))}
   </div>`;
 }
@@ -341,14 +235,13 @@ function renderArticleBody(topic) {
   </div>`;
 }
 
-// ── The trail, as this host's third view ───────────────────────────────────
+// ── The trail, as this host's second view ──────────────────────────────────
 // The feed opens the same rows in a modal; here they replace the dialog's body,
-// with a Back that returns to the article rather than to the list. Reusing the
-// list→article shape the dialog already had means no second overlay and no
-// second trail renderer.
+// with a Back that returns to the article. Swapping the body rather than opening
+// a second overlay means no second modal and no second trail renderer.
 function renderHistoryView() {
   const topic = getTopicById(state.topicId);
-  if (!topic) return renderListView();
+  if (!topic) return "";
   return html`<button type="button" class="ap-link standalone small topic-picker__back" data-topic-history-back>
       <i class="ap-icon-arrow-left" aria-hidden="true"></i><span>Back to the topic</span>
     </button>

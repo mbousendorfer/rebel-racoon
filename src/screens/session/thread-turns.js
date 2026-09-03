@@ -6,7 +6,7 @@
 // and returns an HTML string. No store reads, no DOM, no side effects: the
 // store-coupled turns (extraction / clip-extraction / source resolution) stay
 // in session.js and pass their resolved data in as arguments.
-import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=1034";
+import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=1037";
 
 // Chat-switch skeleton — shown for ~340ms inside .session__assistant-thread
 // when switching chats, then swapped for the real thread.
@@ -57,9 +57,12 @@ export function renderSourceIntakeTurn(message, source = null) {
     text: "ap-icon-file--text",
     image: "ap-icon-file--image",
     audio: "ap-icon-file",
+    topic: "ap-icon-antenna",
   };
   const kindKey = (message.kind || "").toLowerCase();
-  const icon = iconByKind[kindKey] || "ap-icon-file";
+  // A source may carry its own glyph (a Topic keeps its listening source's icon,
+  // set by topic-flow's attachTopicToChat); that wins over the kind fallback.
+  const icon = source?.iconClass || iconByKind[kindKey] || "ap-icon-file";
   const isLoading = message.status === "loading";
 
   // A recognised link (YouTube, Drive, Notion, …) shows the service logo

@@ -1321,53 +1321,10 @@ body.has-modal {
   padding-right: var(--ref-spacing-xl);
 }
 
-.topic-picker__head {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxxs);
-}
+/* ⚠️ The dialog's LIST view is gone — the composer's "Pick from the Topic Feed"
+   is an in-thread widget now (topic-card.css .topics-widget). `git log -S
+   topic-picker__group` has the list rules. */
 
-.topic-picker__title {
-  margin: 0;
-}
-
-/* States the scope; never a control. A chat keeps the brand it was created in. */
-.topic-picker__scope {
-  margin: 0;
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  color: var(--sys-text-color-light);
-}
-
-.topic-picker__list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-sm);
-}
-
-.topic-picker__group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxs);
-}
-
-/* Sentence case, ranked by weight — the same group label the feed uses, because
-   it is the same grouping. */
-.topic-picker__group-label {
-  margin: 0;
-  font-size: var(--sys-text-style-caption-bold-size);
-  line-height: var(--sys-text-style-caption-bold-line-height);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--sys-text-color-light);
-}
-
-.topic-picker__group > .topic-card {
-  width: 100%;
-}
-
-/* Names where it returns. "Back" on its own makes the reader guess, and this
-   dialog can be reached with no list behind it at all — in which case it is not
-   rendered. */
 /* The picker's third view. The dialog cannot open the history MODAL — it is the
    active overlay and requestOpen would close it — so the trail replaces the
    body, with a Back to the article. */
@@ -1401,12 +1358,3 @@ body.has-modal {
 /* The DS .ap-dialog-footer does the pinning by structure now (it is a sibling of
    the scroller), so the hand-rolled sticky footer with its four negative margins
    is gone. Nothing left to style. */
-
-.topic-picker__empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  padding: var(--ref-spacing-lg) var(--ref-spacing-md);
-  text-align: center;
-}
