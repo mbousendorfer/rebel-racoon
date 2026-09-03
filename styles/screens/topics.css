@@ -838,10 +838,51 @@
   margin-top: 0;
 }
 
-/* The "nothing draftable yet" line. Muted body prose in the prose's own slot —
-   an absence reads as an absence, not as a boxed announcement. */
-.topic-article__thin {
+/* ── The "For later" callout ───────────────────────────────────────────────
+   A centred empty-state block on a soft grey ground at the TOP of a `later`
+   Topic's article: an icon medallion, a title, one sentence. It says the theme is
+   kept but not draftable yet, above the analysis — never in its place (the old
+   `.topic-article__thin` one-liner it grew out of). */
+.topic-article__later {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xl) var(--ref-spacing-lg);
+  background: var(--app-surface-subtle);
+  border-radius: var(--app-radius-card);
+}
+
+/* The medallion: a soft grey square with the glyph centred — the app's
+   empty-state icon treatment. */
+.topic-article__later-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--ref-spacing-lg) + var(--ref-spacing-sm));
+  height: calc(var(--ref-spacing-lg) + var(--ref-spacing-sm));
+  border-radius: var(--app-radius-sm);
+  background: var(--ref-color-grey-10);
+  color: var(--ref-color-grey-100);
+  margin-bottom: var(--ref-spacing-xxs);
+}
+
+.topic-article__later-icon > i {
+  font-size: var(--sys-icon-css-md);
+}
+
+.topic-article__later-title {
   margin: 0;
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
+  color: var(--sys-text-color-default);
+}
+
+.topic-article__later-body {
+  margin: 0;
+  max-width: 52ch;
   font-size: var(--sys-text-style-body-size);
   line-height: var(--sys-text-style-body-line-height);
   color: var(--sys-text-color-light);

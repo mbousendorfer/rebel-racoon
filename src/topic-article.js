@@ -86,10 +86,10 @@
 // was flagged, and it could only ever show two clamped lines of an explanation
 // whose whole value is the detail.
 
-import { html, raw, escapeAttr } from "./utils.js?v=1030";
-import { topicTitle, topicStates } from "./topics-store.js?v=1030";
-import { findTopicState } from "./topics-catalog.js?v=1030";
-import { renderSocialPostCard } from "./components/social-post-card.js?v=1030";
+import { html, raw, escapeAttr } from "./utils.js?v=1031";
+import { topicTitle, topicStates } from "./topics-store.js?v=1031";
+import { findTopicState } from "./topics-catalog.js?v=1031";
+import { renderSocialPostCard } from "./components/social-post-card.js?v=1031";
 
 /**
  * The object's identity: where it came from, then the claim as an h2 under it —
@@ -156,43 +156,27 @@ export function renderTopicArticle(
 
   const posts = topic.posts || [];
 
-  // ── A "later" Topic HAS no detailed version, by definition ────────────────
-  // `later` is the scan saying it found a theme worth keeping but not enough
-  // material to write up. So the prose slot carries that fact instead of prose —
-  // keyed on the KIND, not on whether an article happens to exist, because the
-  // kind is the claim being made. Rendering three paragraphs under a "Topics for
-  // later" tab said the opposite of the tab.
-  //
-  // No button of its own: the header's primary IS the action this copy names, and
-  // a second Use-in-chat two inches above it would be the same verb asking twice.
-  // ── A "later" Topic HAS its analysis. It is not draftable YET ────────────
-  // ⚠️ This slot used to REPLACE the prose with "I haven't found enough to write
-  // a detailed version yet" — while the detailed version sat in the data. All 18
-  // `later` Topics carry a finished analysis: 136 words on average, min 64, max
-  // 216, with their own subheads and title. The panel was telling the reader
-  // something false and hiding real content to do it.
-  //
-  // The true distinction is DRAFTABILITY, which is what the original's own copy
-  // says ("not enough content or assets around this topic to create a draft").
-  // So the analysis shows, and the note below it says the true thing instead.
-  const laterNote =
-    topic.kind === "later"
-      ? html`<p class="topic-article__thin">
-          A theme worth keeping, not a draft yet — I don't have enough assets around it to write a post from. Use it in
-          chat if you can fill the gap.
-        </p>`
-      : "";
+  // ── A "later" Topic is a theme kept, not a draft yet ──────────────────────
+  // It leads with a CALLOUT that says so — draftability, not absence of content:
+  // the analysis still shows below it (all `later` Topics carry a finished one,
+  // 136 words on average). ⚠️ Do NOT turn this into the old placeholder that
+  // REPLACED the prose with "not enough to write a detailed version" while the
+  // detailed version sat in the data — the callout sits ABOVE the analysis, it
+  // does not stand in for it. The message is the true one: not enough to DRAFT
+  // from yet, use it in chat to fill the gap or leave it for a later run.
+  const laterCallout = topic.kind === "later" ? renderLaterCallout() : "";
 
   return html`<div class="topic-article">
     ${raw(withHeader ? renderTopicHeader(topic, { source, menuOpen, ...headerOpts }) : "")}
+    <!-- The "For later" callout leads the article — a theme kept, not draftable
+         yet — above the analysis, never in its place. -->
+    ${raw(laterCallout)}
     <!-- Band 1: what this Topic is for and why it landed. Renders nothing at all
          on the 43 Topics of 52 that carry neither field. -->
     ${raw(renderRelevance(topic))}
-    <!-- Band 2. The draftability note goes INSIDE the prose, as its last
-         paragraph: it is a statement ABOUT the analysis, so it takes the prose's
-         own 12px rhythm rather than the 32px that separates one band from the
-         next. Content first, its limits after - never in its place. -->
-    <div class="topic-article__body">${raw(body)}${raw(laterNote)}</div>
+    <!-- Band 2: the analysis. The "For later" draftability note is no longer a
+         thin line at the bottom of the prose — it is the callout at the top. -->
+    <div class="topic-article__body">${raw(body)}</div>
     <!-- The verbs, BETWEEN the analysis and the evidence. Passed by the feed pane
          only (the dialog keeps its own footer), and there it is a sticky bar:
          inline between the content and Contributing posts while the read is short,
@@ -210,6 +194,21 @@ export function renderTopicArticle(
         ? html`<section class="topic-article__section">${raw(renderTopicPosts(topic, { collapsible: true }))}</section>`
         : "",
     )}
+  </div>`;
+}
+
+// ── The "For later" callout ────────────────────────────────────────────────
+// A centred block at the top of a `later` Topic's article: a soft icon medallion,
+// a title and one sentence, on the article's grey-05 ground. It says the theme is
+// kept but not draftable yet — it sits ABOVE the analysis, never in its place.
+function renderLaterCallout() {
+  return html`<div class="topic-article__later">
+    <span class="topic-article__later-icon" aria-hidden="true"><i class="ap-icon-note"></i></span>
+    <h3 class="topic-article__later-title">Not enough data to write a detailed version yet</h3>
+    <p class="topic-article__later-body">
+      There's not enough content or assets around this topic to create a draft yet. Use the topic in chat if you have
+      assets that fill the gaps, or leave it here and let a future run add more details.
+    </p>
   </div>`;
 }
 
