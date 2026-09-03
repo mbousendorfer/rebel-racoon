@@ -1,7 +1,7 @@
-import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=1012";
-import { getPath, navigate } from "../router.js?v=1012";
-import { parseHashParams } from "../url-state.js?v=1012";
-import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=1012";
+import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=1014";
+import { getPath, navigate } from "../router.js?v=1014";
+import { parseHashParams } from "../url-state.js?v=1014";
+import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=1014";
 // Lot 19 — topbar no longer carries its own sidebar-toggle button. The
 // sidebar head exposes the toggle in both expanded (chevron-left) and
 // collapsed (view-list) states, so the duplicate in the topbar was just
@@ -14,25 +14,32 @@ import {
   getMode as getRightPanelMode,
   getActiveBatchRef as getActiveDraftsBatchRef,
   subscribe as subscribeRightPanel,
-} from "./right-panel.js?v=1012";
-import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=1012";
-import { getThread, subscribe as subscribeThread } from "../assistant.js?v=1012";
-import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=1012";
-import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=1012";
+} from "./right-panel.js?v=1014";
+import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=1014";
+import { getThread, subscribe as subscribeThread } from "../assistant.js?v=1014";
+import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=1014";
+import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=1014";
 import {
   isEnabled as isStatusCardEnabled,
   toggle as toggleStatusCard,
   subscribeVisibility as subscribeStatusCardVisibility,
-} from "./conversation-status-card.js?v=1012";
-import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=1012";
-import { open as openRenameModal } from "./rename-modal.js?v=1012";
-import { subscribe as subscribeContexts } from "../contexts-store.js?v=1012";
-import { isFlagOn } from "../feature-flags.js?v=1012";
+} from "./conversation-status-card.js?v=1014";
+import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=1014";
+import { open as openRenameModal } from "./rename-modal.js?v=1014";
+import {
+  subscribe as subscribeContexts,
+  getContextById,
+  getDefaultContext,
+  getContexts,
+} from "../contexts-store.js?v=1014";
+import { isFlagOn } from "../feature-flags.js?v=1014";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1014";
+import { findCadence } from "../topics-catalog.js?v=1014";
 import {
   getPickerState as getTopPostsState,
   subscribePicker as subscribeTopPosts,
   backToProfiles as topPostsBackToProfiles,
-} from "../top-posts-flow.js?v=1012";
+} from "../top-posts-flow.js?v=1014";
 
 // The playbook/context pill now lives in the composer (session.js
 // renderPlaybookControl) — selectable on a New Chat, then a static
@@ -81,7 +88,9 @@ export function renderTopbar(_options = {}) {
     ? renderWelcomeAltExit()
     : onSession
       ? `${renderSessionPills(rpMode, draftCount, isEmpty, ideaCount)}${renderStatusCardToggle(statusCardAvailable)}`
-      : "";
+      : getPath() === "/topics"
+        ? renderTopicsSettings()
+        : "";
   // On the repurposing winner board (profile-first mode), the topbar leads with
   // a "Change profile" back — the app's standard back affordance — in place of
   // the session title.
@@ -129,6 +138,35 @@ function renderWelcomeAltExit() {
       Exit
       <i class="ap-icon-close" aria-hidden="true"></i>
     </button>
+  `;
+}
+
+// Feed settings cog — far right of the topbar on /topics, the app's canonical
+// home for a page-level action. It moved out of the feed's own toolbar (it sat
+// beside the Playbook scope select there). Icon-only: the cog is the one glyph
+// nobody has to hover to recognise, and its title carries the cadence, which has
+// nowhere else to live. The Playbook scope rides in the hash (`?pb=`) both ways,
+// so the settings page keeps the feed's scope and the back returns to it.
+function renderTopicsSettings() {
+  if (!isFlagOn("topicFeed")) return "";
+  // Resolve the scope the same way the feed does (screens/topics.js
+  // scopedPlaybook): the `?pb=` if it names a real Playbook, else the default.
+  // So the cog carries the scope even on a bare /topics visit, and the settings
+  // page + its back keep it.
+  const wanted = parseHashParams().get("pb");
+  const pb = (wanted && getContextById(wanted)) || getDefaultContext() || getContexts()[0] || null;
+  const feed = pb ? getFeedForPlaybook(pb.id) : null;
+  const href = `#/topics/settings${pb ? `?pb=${encodeURIComponent(pb.id)}` : ""}`;
+  const title = feed ? `Feed settings · refreshed ${findCadence(feed.cadence)?.adverb || "weekly"}` : "Feed settings";
+  return `
+    <a
+      class="ap-icon-button transparent app-topbar__topics-settings"
+      href="${escapeAttr(href)}"
+      aria-label="Feed settings"
+      title="${escapeAttr(title)}"
+    >
+      <i class="ap-icon-cog"></i>
+    </a>
   `;
 }
 
@@ -255,7 +293,7 @@ export function initTopbar() {
     // renderWelcomeAltExit() above. The wizard chrome no longer carries
     // its own Exit affordance; this is the only entry.
     if (event.target.closest("[data-topbar-welcome-alt-exit]")) {
-      import("./confirm-modal.js?v=1012").then(({ open }) => {
+      import("./confirm-modal.js?v=1014").then(({ open }) => {
         open({
           title: "Exit onboarding?",
           body: "Your progress so far will be discarded. You can start over anytime from the dashboard.",

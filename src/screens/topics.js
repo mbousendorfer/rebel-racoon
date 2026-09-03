@@ -24,19 +24,18 @@
 // view. There is an explicit Load more too, and both do exactly the same thing —
 // an infinite list with no button is unusable by keyboard.
 
-import { html, raw, escapeAttr } from "../utils.js?v=1012";
-import { navigate, getPath } from "../router.js?v=1012";
-import { isFlagOn } from "../feature-flags.js?v=1012";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1012";
-import { renderTopbar } from "../components/topbar.js?v=1012";
-import { showToast } from "../components/toast.js?v=1012";
-import { renderEmptyState } from "../components/empty-state.js?v=1012";
-import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=1012";
-import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1012";
+import { html, raw, escapeAttr } from "../utils.js?v=1014";
+import { navigate, getPath } from "../router.js?v=1014";
+import { isFlagOn } from "../feature-flags.js?v=1014";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1014";
+import { renderTopbar } from "../components/topbar.js?v=1014";
+import { showToast } from "../components/toast.js?v=1014";
+import { renderEmptyState } from "../components/empty-state.js?v=1014";
+import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=1014";
+import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1014";
 import {
   getTopicsForFeed,
   groupTopicsByAge,
-  countAll,
   getTopicById,
   topicTitle,
   defaultFilters,
@@ -44,7 +43,7 @@ import {
   ignoreTopic,
   unignoreTopic,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=1012";
+} from "../topics-store.js?v=1014";
 import {
   TOPIC_SOURCES,
   TOPIC_KINDS,
@@ -53,12 +52,12 @@ import {
   findTopicSource,
   findCadence,
   isLiveSource,
-} from "../topics-catalog.js?v=1012";
-import { renderTopicCard } from "../components/topic-card.js?v=1012";
-import { renderTopicArticle, renderTopicHeader } from "../topic-article.js?v=1012";
-import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=1012";
-import { openTopicHistory } from "../components/topic-history-modal.js?v=1012";
-import { useTopicInChat } from "../topic-flow.js?v=1012";
+} from "../topics-catalog.js?v=1014";
+import { renderTopicCard } from "../components/topic-card.js?v=1014";
+import { renderTopicArticle, renderTopicHeader } from "../topic-article.js?v=1014";
+import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=1014";
+import { openTopicHistory } from "../components/topic-history-modal.js?v=1014";
+import { useTopicInChat } from "../topic-flow.js?v=1014";
 
 const PAGE = 10;
 // Long enough to read the scanning line, short enough that nobody waits for it
@@ -299,16 +298,6 @@ function renderPage(pb) {
 
   return html`
     ${raw(renderToolbar(pb, feed))}
-    <!-- The count is a PAGE ROW, above the reader — not a header inside the list
-         column. That is what lets the pane's card edge meet the list's FIRST CARD
-         edge: with the count out of the split, the only thing between the column's
-         top and its first card is the age separator, which is exactly what
-         --topic-group-offset is derived from. Inside the column it added 37px the
-         offset knew nothing about, so the pane floated 44px high.
-         It is capped and left-aligned for free: the .topics-view > * rule caps
-         every direct child of this screen.
-         NOTE no backticks in here - this is inside a template literal. -->
-    ${raw(empty || view.scanning ? "" : renderListHead(feed))}
     <div class="topics-view__body">
       ${raw(
         empty
@@ -378,10 +367,10 @@ function renderToolbar(pb, feed) {
          the composer's Playbook picker. It was a bare select for one commit,
          which said nothing about what it scopes, and a <label> stacked above it
          before that, which is form chrome in a toolbar. -->
-    <!-- The scope and its settings are ONE cluster: the select says which
-         Playbook, the cog configures that Playbook's listening. Proximity is
-         what says so — a tight gap inside, a wide one before Filters, which
-         answers a different question (which of these Topics to show). -->
+    <!-- The scope select says which Playbook this feed reads for. The cog that
+         configures that Playbook's listening now lives at the far right of the
+         topbar (components/topbar.js), the app's canonical home for a page-level
+         action. -->
     <div class="topics-view__scope-group">
       <div class="topics-view__scope">
         <details class="ap-select" id="topicScope" data-topic-scope>
@@ -395,23 +384,6 @@ function renderToolbar(pb, feed) {
           </div>
         </details>
       </div>
-
-      <!-- Icon-only, and that is the house treatment: the cog is the one glyph
-           nobody has to hover to recognise, and a labelled Settings would give a
-           rare action the same weight as the controls it sits beside. Its title
-           carries the cadence, which has nowhere else to live. -->
-      <a
-        class="ap-icon-button stroked grey topics-view__settings"
-        href="#/topics/settings${raw(pb ? `?pb=${encodeURIComponent(pb.id)}` : "")}"
-        aria-label="Feed settings"
-        title="${raw(
-          feed
-            ? `Feed settings · refreshed ${escapeAttr(findCadence(feed.cadence)?.adverb || "weekly")}`
-            : "Feed settings",
-        )}"
-      >
-        <i class="ap-icon-cog"></i>
-      </a>
     </div>
 
     <!-- LABELLED, with its count inline. The product never ships this as an icon
@@ -651,39 +623,6 @@ function renderPaneSkeleton() {
       <div class="topic-ghost topic-ghost--article" style="--ghost-delay: 0.14s">${raw(bars)}</div>
     </div>
   </section>`;
-}
-
-// ── The list column's own header ───────────────────────────────────────────
-// `listening-feed-search-list-header`'s shape, reduced to the one number this feed
-// has: the total. ⚠️ It briefly carried an unseen count and a `Mark all as seen`
-// action — the whole seen/unseen axis is out for now, see `git log -S countUnseen`.
-//
-// The count is UNFILTERED — it describes the feed, not the current selection, so
-// narrowing the filter never looks like Topics ceasing to exist.
-//
-// ── It is a PAGE ROW, above the reader ────────────────────────────────────
-// Not inside the list column, and not inside the scroller. Three placements were
-// tried and each failed differently:
-//
-//   in the scroller       it scrolled out of view, and a count you cannot consult
-//                         while scrolling counts nothing;
-//   in the list column    it put 37px between the column's top and its first card
-//                         that `--topic-group-offset` knew nothing about, so the
-//                         pane's edge floated 44px above the cards — the drift
-//                         this whole run was chasing;
-//   ⇒ a page row          the split holds only the two readers, so the age
-//                         separator is the ONLY thing above the first card and the
-//                         offset that clears it is exact again.
-//
-// It is still fixed (the page does not scroll side by side), still capped and
-// left-aligned (`.topics-view > *` caps every direct child), and still quiet.
-// Suppressed while scanning and on the dead ends, where there is nothing to count.
-function renderListHead(feed) {
-  if (!feed) return "";
-  const totalAll = countAll(feed.id);
-  return html`<div class="topics-view__list-head">
-    <h2 class="topics-view__list-count">${String(totalAll)} ${totalAll === 1 ? "topic" : "topics"}</h2>
-  </div>`;
 }
 
 // ── The list ───────────────────────────────────────────────────────────────

@@ -144,19 +144,11 @@
   flex-wrap: wrap;
 }
 
-/* ── The cog belongs to the SCOPE, not to the right edge ───────────────────
-   It was pinned far right with `margin-left: auto` for two commits, taken from
-   the product's header pattern where the cog is last on the right (5 surfaces
-   out of 5). That reading missed the CONDITION: in the product, the row carrying
-   the cog always has something anchoring it — a page title on the left, or
-   search and sort on the right of a toolbar. This toolbar has neither, so once
-   the page stopped centring the cog sat ~700px from the nearest control,
-   floating opposite nothing.
-
-   And it configures the SELECTED Playbook's listening, so it belongs beside the
-   select that names it: the select says which Playbook, the cog configures that
-   Playbook. Proximity is the only thing that can say that. Put it back on the
-   right edge the day this row grows a search or a sort to anchor that side. */
+/* ── The scope select, on its own ──────────────────────────────────────────
+   The feed-settings cog used to sit here, beside the select that names the
+   Playbook it configures. It now lives at the far right of the topbar
+   (components/topbar.js), the app's canonical home for a page-level action, so
+   this group holds only the scope. */
 .topics-view__scope-group {
   display: flex;
   align-items: center;
@@ -172,50 +164,9 @@
 /* ⚠️ Row 3 — the two `.ap-tabs` — is gone; `later` is a state in the Filters
    panel now. `git log -S topics-view__tabs` has the rule. */
 
-/* ── The count: a PAGE ROW above the reader ────────────────────────────────
-   `listening-feed-search-list-header`'s shape, reduced to the one number this feed
-   has. ⚠️ It briefly held an unseen counter and a bulk action; that axis is out.
-
-   It is a direct child of `.topics-view`, which is what makes the reader below it
-   work: with the count out of the split, the age separator is the ONLY thing
-   between the list column's top and its first card, so `--topic-group-offset`
-   clears exactly that and the pane's card edge meets the cards' edges.
-
-   ⚠️ TWO PLACEMENTS FAILED FIRST, and differently. Inside the scrollport it
-   scrolled out of view — a count you cannot consult while scrolling counts nothing.
-   As the list column's own fixed header it stopped scrolling, but it put 37px
-   between the column's top and its first card that the pane's offset knew nothing
-   about, so the pane's edge floated 44px above the cards and level with nothing at
-   all. The offset was then removed in favour of a shared column-top line, which
-   was true to the pixel and INVISIBLE: the line it shared was the quietest text on
-   the screen, so the misalignment a reader actually sees — a hard white card edge
-   against a column of card edges — was still there.
-
-   Out here it is fixed (the page does not scroll side by side), capped and
-   left-aligned for free (`.topics-view > *`), and it stops competing with the
-   reader's geometry entirely. */
-.topics-view__list-head {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  flex: 0 0 auto;
-}
-
-/* ── A count is METADATA ───────────────────────────────────────────────────
-   ⚠️ It was `--sys-text-style-h4-*` in `--sys-text-color-default` — 16/700 dark,
-   the EXACT type `.topic-card__headline` wears two rows below it. So the number
-   describing the list competed with the content it describes, and the column's
-   loudest line was the one carrying the least. Caption weight and light ink put it
-   back where apparatus belongs. The ink is the only lever pulled that hard, and it
-   is the right one here: this is not a hierarchy step inside content, it is content
-   versus its label. */
-.topics-view__list-count {
-  margin: 0;
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  font-weight: var(--sys-text-style-caption-weight);
-  color: var(--sys-text-color-light);
-}
+/* ⚠️ The list count (`21 topics`, a page row above the reader) was removed at
+   the user's request. `git log -S topics-view__list-count` has the rule and the
+   long note on why it lived out here rather than inside the list column. */
 
 /* ── The reader ────────────────────────────────────────────────────────────
    `min-height: 0` on the flex child is what lets the columns inside it scroll:
