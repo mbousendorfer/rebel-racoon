@@ -136,10 +136,11 @@
 .topics-view__toolbar {
   display: flex;
   align-items: center;
-  /* Between GROUPS. `sm` here against `xxxs` inside the scope cluster below —
-     spacing within a group has to be smaller than spacing between them, or the
-     grouping is a claim nothing backs up. */
-  gap: var(--ref-spacing-sm);
+  /* The scope select and Filters are both list-narrowers and read as one cluster,
+     so they sit a tight `xs` apart — still wider than the `xxxs` inside the scope
+     cluster, so the grouping holds. (It was `sm`, which left a wide void once the
+     settings cog moved out of this row to the topbar.) */
+  gap: var(--ref-spacing-xs);
   flex: 0 0 auto;
   flex-wrap: wrap;
 }
