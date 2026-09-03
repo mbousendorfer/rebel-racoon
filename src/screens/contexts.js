@@ -1,16 +1,16 @@
-import { html, raw, escapeText, escapeAttr } from "../utils.js?v=1022";
-import { renderTopbar } from "../components/topbar.js?v=1022";
+import { html, raw, escapeText, escapeAttr } from "../utils.js?v=1023";
+import { renderTopbar } from "../components/topbar.js?v=1023";
 import {
   getContexts,
   subscribe as subscribeContexts,
   duplicateContext,
   deleteContext,
-} from "../contexts-store.js?v=1022";
-import { navigate } from "../router.js?v=1022";
-import { setHandoff } from "../handoff.js?v=1022";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=1022";
-import { renderEmptyState } from "../components/empty-state.js?v=1022";
-import { isFlagOn } from "../feature-flags.js?v=1022";
+} from "../contexts-store.js?v=1023";
+import { navigate } from "../router.js?v=1023";
+import { setHandoff } from "../handoff.js?v=1023";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=1023";
+import { renderEmptyState } from "../components/empty-state.js?v=1023";
+import { isFlagOn } from "../feature-flags.js?v=1023";
 import {
   visibleContexts,
   canEdit,
@@ -18,8 +18,8 @@ import {
   canManageSharing,
   accessLabel,
   isMine,
-} from "../playbook-access.js?v=1022";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=1022";
+} from "../playbook-access.js?v=1023";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=1023";
 
 // Contexts library — standalone page (handoff §2.4).
 // Header → search → grid of ContextCards. Each card surfaces brand /
@@ -346,7 +346,7 @@ function bind(root) {
       event.stopPropagation();
       const copy = duplicateContext(dupBtn.dataset.contextsDuplicate);
       if (copy) {
-        import("../components/toast.js?v=1022").then(({ showToast }) => showToast("Playbook duplicated"));
+        import("../components/toast.js?v=1023").then(({ showToast }) => showToast("Playbook duplicated"));
         navigate(`/playbook/${copy.id}`);
       }
       return;
@@ -357,7 +357,7 @@ function bind(root) {
       const ctx = getContexts().find((c) => c.id === delBtn.dataset.contextsDelete);
       if (!ctx) return;
       if (getContexts().length <= 1) {
-        import("../components/toast.js?v=1022").then(({ showToast }) =>
+        import("../components/toast.js?v=1023").then(({ showToast }) =>
           showToast("Can't delete the last Playbook — every chat needs one."),
         );
         return;
@@ -372,7 +372,7 @@ function bind(root) {
         danger: true,
         onConfirm: () => {
           deleteContext(ctx.id);
-          import("../components/toast.js?v=1022").then(({ showToast }) => showToast("Playbook deleted"));
+          import("../components/toast.js?v=1023").then(({ showToast }) => showToast("Playbook deleted"));
         },
       });
       return;

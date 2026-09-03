@@ -17,8 +17,8 @@
 //     showMention — render the Mention button (default true; false where there
 //                   is no composer, e.g. the standalone Ideas page)
 
-import { iconFor } from "../file-kinds.js?v=1022";
-import { escapeText, escapeAttr } from "../utils.js?v=1022";
+import { iconFor } from "../file-kinds.js?v=1023";
+import { escapeText, escapeAttr } from "../utils.js?v=1023";
 
 export function renderCompactIdeaCard(
   idea,

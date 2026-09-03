@@ -634,7 +634,10 @@
   line-height: var(--sys-text-style-h1-line-height);
   font-weight: var(--sys-text-style-h1-weight);
   color: var(--sys-text-color-default);
-  text-wrap: balance;
+  /* `pretty`, not `balance`: balance evens the line lengths, which leaves the
+     first line short of the full measure — the title looked indented from the
+     right. `pretty` fills each line to the width and only tidies the last few. */
+  text-wrap: pretty;
 }
 
 /* ── The provenance run: the card's meta run, part for part ───────────────
