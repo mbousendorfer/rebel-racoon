@@ -26,22 +26,22 @@
 // it was created in, so the picker never asks which Playbook first: that question
 // was answered when the chat was made.
 
-import { html, raw, escapeHtml } from "../utils.js?v=1027";
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1027";
-import { renderEmptyState } from "./empty-state.js?v=1027";
-import { renderTopicCard } from "./topic-card.js?v=1027";
+import { html, raw, escapeHtml } from "../utils.js?v=1028";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1028";
+import { renderEmptyState } from "./empty-state.js?v=1028";
+import { renderTopicCard } from "./topic-card.js?v=1028";
 import {
   renderTopicArticle,
   renderTopicActions,
   renderTopicTrail,
   renderTopicPosts,
   renderTopicHeader,
-} from "../topic-article.js?v=1027";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1027";
-import { getTopicsForFeed, groupTopicsByAge, getTopicById, topicTitle, topicStates } from "../topics-store.js?v=1027";
-import { findTopicSource } from "../topics-catalog.js?v=1027";
-import { getContextById } from "../contexts-store.js?v=1027";
-import { useTopicInChat } from "../topic-flow.js?v=1027";
+} from "../topic-article.js?v=1028";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1028";
+import { getTopicsForFeed, groupTopicsByAge, getTopicById, topicTitle, topicStates } from "../topics-store.js?v=1028";
+import { findTopicSource } from "../topics-catalog.js?v=1028";
+import { getContextById } from "../contexts-store.js?v=1028";
+import { useTopicInChat } from "../topic-flow.js?v=1028";
 
 const MODAL_ID = "topic-picker";
 
@@ -232,7 +232,7 @@ function paint() {
   footEl.innerHTML = openTopic
     ? `<div class="ap-dialog-footer topic-picker__foot">
         <div class="ap-dialog-footer-left">${historyBtn}</div>
-        <div class="ap-dialog-footer-right">${renderTopicActions(openTopic, { close: "Close" })}</div>
+        <div class="ap-dialog-footer-right">${renderTopicActions(openTopic, { close: null })}</div>
       </div>`
     : "";
   const topic = state.topicId ? getTopicById(state.topicId) : null;
