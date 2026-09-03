@@ -86,10 +86,10 @@
 // was flagged, and it could only ever show two clamped lines of an explanation
 // whose whole value is the detail.
 
-import { html, raw, escapeAttr } from "./utils.js?v=1031";
-import { topicTitle, topicStates } from "./topics-store.js?v=1031";
-import { findTopicState } from "./topics-catalog.js?v=1031";
-import { renderSocialPostCard } from "./components/social-post-card.js?v=1031";
+import { html, raw, escapeAttr } from "./utils.js?v=1032";
+import { topicTitle, topicStates } from "./topics-store.js?v=1032";
+import { findTopicState } from "./topics-catalog.js?v=1032";
+import { renderSocialPostCard } from "./components/social-post-card.js?v=1032";
 
 /**
  * The object's identity: where it came from, then the claim as an h2 under it —
@@ -177,24 +177,49 @@ export function renderTopicArticle(
     <!-- Band 2: the analysis. The "For later" draftability note is no longer a
          thin line at the bottom of the prose — it is the callout at the top. -->
     <div class="topic-article__body">${raw(body)}</div>
-    <!-- The verbs, BETWEEN the analysis and the evidence. Passed by the feed pane
-         only (the dialog keeps its own footer), and there it is a sticky bar:
-         inline between the content and Contributing posts while the read is short,
-         pinned to the pane's bottom edge while a long analysis scrolls past it,
-         then settling back above the evidence at the end. It is where the read
-         finishes, so the reader decides having just read the thing they are
-         deciding on. Nothing at all when no verbs are passed. -->
-    ${raw(actions ? html`<div class="topic-article__actionbar">${raw(actions)}</div>` : "")}
-    <!-- The evidence, inline and collapsible — the feed pane's arrangement. The
-         withPosts option omits it entirely for a host that shows the posts
-         elsewhere: the article dialog lists them expanded in its own right-hand
-         grey panel (renderTopicPosts, collapsible false). -->
-    ${raw(
-      withPosts && posts.length
-        ? html`<section class="topic-article__section">${raw(renderTopicPosts(topic, { collapsible: true }))}</section>`
-        : "",
-    )}
+    ${raw(renderArticleBottom(topic, { actions, posts: withPosts ? posts : [] }))}
   </div>`;
+}
+
+// ── The pane's bottom: the verbs and the evidence, one grey band ───────────
+// The sticky action bar carries the "Contributing posts N" disclosure on its
+// LEFT and the verbs on its right; opening it unfolds the posts BELOW, in the same
+// grey. So the whole bottom of the pane is one continuous band — verbs always in
+// reach, evidence a click away — rather than a bar and a separate section under it.
+//
+// The checkbox, the bar and the tray are siblings so the CSS `~` disclosure works
+// (`.topic-article__section-check:checked ~ .topic-article__posts` shows the tray,
+// `~ .topic-article__actionbar .…-toggle` turns the chevron). No JS: the renderer
+// is pure and the pane has nowhere to keep an open flag.
+//
+// A host with posts but NO verbs (none today) still gets the standalone collapsible
+// section; a host with verbs but no posts gets just the bar. The dialog passes
+// withPosts:false, so its posts live in the side panel and never reach here.
+function renderArticleBottom(topic, { actions = "", posts = [] } = {}) {
+  if (!actions) {
+    return posts.length
+      ? html`<section class="topic-article__section">${raw(renderTopicPosts(topic, { collapsible: true }))}</section>`
+      : "";
+  }
+  const id = `topic-posts-${topic.id}`;
+  const toggle = posts.length
+    ? html`<label class="ap-link standalone topic-article__posts-toggle" for="${escapeAttr(id)}">
+        <span>Contributing posts</span>
+        <span class="ap-counter normal grey">${String(posts.length)}</span>
+        <i class="ap-icon-chevron-down topic-article__section-toggle" aria-hidden="true"></i>
+      </label>`
+    : "";
+  return html`${raw(
+      posts.length ? html`<input type="checkbox" class="topic-article__section-check" id="${escapeAttr(id)}" />` : "",
+    )}
+    <div class="topic-article__actionbar">${raw(toggle)}${raw(actions)}</div>
+    ${raw(
+      posts.length
+        ? html`<div class="topic-article__posts topic-article__posts--tray">
+            ${raw(posts.map((p) => renderSocialPostCard(p)).join(""))}
+          </div>`
+        : "",
+    )}`;
 }
 
 // ── The "For later" callout ────────────────────────────────────────────────

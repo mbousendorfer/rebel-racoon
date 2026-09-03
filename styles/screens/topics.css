@@ -1162,8 +1162,10 @@
    `close: null`. */
 
 /* ── The pane's sticky action bar ──────────────────────────────────────────
-   The verbs sit BETWEEN the analysis and the Contributing posts, and `sticky;
-   bottom: 0` gives the behaviour the two-pane reader needs for free:
+   The band carries the "Contributing posts N" disclosure on its left and the verbs
+   on its right; opening the disclosure unfolds the posts BELOW it in the same grey
+   (see `.topic-article__posts-toggle` / `--tray`). `sticky; bottom: 0` gives the
+   behaviour the two-pane reader needs for free:
 
      • short read → the bar can never leave `.topic-article`, whose box ends just
        under the prose, so it rests inline between the content and the evidence;
@@ -1186,6 +1188,7 @@
   bottom: calc(-1 * var(--ref-spacing-md));
   z-index: 5;
   display: flex;
+  align-items: center;
   justify-content: flex-end;
   margin-inline: calc(-1 * var(--ref-spacing-md));
   /* Top: eat half the article's 32px band gap so the band hugs the prose above.
@@ -1200,6 +1203,32 @@
      stuck, covers the scrolling prose behind it. */
   background: var(--app-surface-subtle);
   border-top: 1px solid var(--app-border-soft);
+}
+
+/* "Contributing posts N" — the disclosure toggle on the LEFT of the bar (the DS
+   link's blue), the verbs held to the right by margin-right:auto. */
+.topics-view__pane-body .topic-article__posts-toggle {
+  margin-right: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  cursor: pointer;
+  user-select: none;
+}
+
+/* The evidence tray — the posts unfold BELOW the bar, in the same grey, bleeding
+   to the pane edges so the band reads as one continuous surface. It is the shared
+   `.topic-article__posts` (display:none until the disclosure opens, then flex). */
+.topics-view__pane-body .topic-article__posts--tray {
+  margin-inline: calc(-1 * var(--ref-spacing-md));
+  padding: var(--ref-spacing-md);
+  background: var(--app-surface-subtle);
+}
+
+/* The chevron turns when the disclosure opens — the toggle now lives in the bar,
+   so the checked-state selector reaches it there rather than in a section head. */
+.topic-article__section-check:checked ~ .topic-article__actionbar .topic-article__section-toggle {
+  transform: rotate(180deg);
 }
 
 /* ── The Filters panel's own additions ────────────────────────────────────
