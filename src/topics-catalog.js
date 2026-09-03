@@ -181,17 +181,18 @@ export const DEFAULT_CADENCE = "weekly";
 
 // ── The two kinds ARE the Topics radio ────────────────────────────────────
 // A Topic is either something you can draft now or something worth keeping for
-// later, and that single axis is the "Topics" radio at the top of the Filters
-// panel — "read one kind at a time". It is the scan's classification, so it is
-// mutually exclusive by nature: a Topic has exactly one kind, and the reader
-// reads one lane at a time.
+// later, and that single axis is the "Topics" multi-select at the top of the
+// Filters panel. It is the scan's classification, mutually exclusive by nature: a
+// Topic has exactly one kind. BOTH lanes show together in one list at rest — the
+// reader can narrow to one, but the default reads both, with a For-later Topic
+// told apart by its own "For later" chip.
 //
 // ⚠️ HISTORY, so this is not re-litigated. This axis was a tab row (`AC-SEG`),
-// then withdrawn into a flat six-state filter where `later` was one row you
-// unticked. That flat filter is now gone too: the panel is three grouped
-// controls (Topics · Marked as · Sources), and `kind` is the radio again —
-// reinstated deliberately, with the docs (`AC-SEG`, `AC-FILT`) rewritten to
-// match. `git log -S renderStateSelect` has the flat-filter version.
+// then a flat six-state filter where `later` was one row you unticked, then a
+// one-lane-at-a-time RADIO. It is now a multi-select that is EMPTY by default —
+// both lanes in one list — reinstating the "read everything, narrow if you want"
+// default the tabs and the radio both refused. `git log -S renderKindRadio` has
+// the radio; `git log -S renderStateSelect` the flat filter before it.
 //
 // The fork carried a `researchType` of `ready-to-post` / `content-strategy`
 // mapped onto `ready` / `later` at render time, and its predicate also read a
@@ -201,13 +202,15 @@ export const DEFAULT_CADENCE = "weekly";
 export const TOPIC_KINDS = Object.freeze([
   // "To review" is the ACTIVE lane (draftable now); "For later" is the parked
   // lane. Note "To review" is the kind label here — the `new` STATUS (also
-  // "To review" historically) is now the always-shown baseline inside a lane and
-  // wears no chip, so the two never appear as competing controls.
+  // "To review" historically) is the always-shown baseline in the list and wears
+  // no chip, so the two never appear as competing controls.
   { id: "ready", label: "To review" },
   { id: "later", label: "For later" },
 ]);
 
-/** The lane the panel opens in. */
+// The ACTIVE lane — draftable now. No longer a filter default (the Topics filter
+// opens empty, showing both lanes); kept as the name of the lane countToReview
+// and the in-chat list treat as "actionable now".
 export const DEFAULT_KIND = "ready";
 
 export function findTopicKind(id) {

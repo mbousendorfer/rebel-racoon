@@ -24,15 +24,15 @@
 // view. There is an explicit Load more too, and both do exactly the same thing —
 // an infinite list with no button is unusable by keyboard.
 
-import { html, raw, escapeAttr } from "../utils.js?v=1020";
-import { navigate, getPath } from "../router.js?v=1020";
-import { isFlagOn } from "../feature-flags.js?v=1020";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1020";
-import { renderTopbar } from "../components/topbar.js?v=1020";
-import { showToast } from "../components/toast.js?v=1020";
-import { renderEmptyState } from "../components/empty-state.js?v=1020";
-import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=1020";
-import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1020";
+import { html, raw, escapeAttr } from "../utils.js?v=1021";
+import { navigate, getPath } from "../router.js?v=1021";
+import { isFlagOn } from "../feature-flags.js?v=1021";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1021";
+import { renderTopbar } from "../components/topbar.js?v=1021";
+import { showToast } from "../components/toast.js?v=1021";
+import { renderEmptyState } from "../components/empty-state.js?v=1021";
+import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=1021";
+import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1021";
 import {
   getTopicsForFeed,
   groupTopicsByAge,
@@ -43,7 +43,7 @@ import {
   ignoreTopic,
   unignoreTopic,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=1020";
+} from "../topics-store.js?v=1021";
 import {
   TOPIC_SOURCES,
   TOPIC_KINDS,
@@ -52,12 +52,12 @@ import {
   findTopicSource,
   findCadence,
   isLiveSource,
-} from "../topics-catalog.js?v=1020";
-import { renderTopicCard } from "../components/topic-card.js?v=1020";
-import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=1020";
-import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=1020";
-import { openTopicHistory } from "../components/topic-history-modal.js?v=1020";
-import { useTopicInChat } from "../topic-flow.js?v=1020";
+} from "../topics-catalog.js?v=1021";
+import { renderTopicCard } from "../components/topic-card.js?v=1021";
+import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=1021";
+import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=1021";
+import { openTopicHistory } from "../components/topic-history-modal.js?v=1021";
+import { useTopicInChat } from "../topic-flow.js?v=1021";
 
 const PAGE = 10;
 // Long enough to read the scanning line, short enough that nobody waits for it
@@ -87,9 +87,10 @@ function freshView() {
     // the list at the same time.
     paneMenuOpen: false,
     filtersOpen: false,
-    // The two multi-selects inside the Filters panel (Marked as, Sources). Held
-    // in `view` because a pick repaints the whole panel, so a natively-open
-    // <details> would collapse on every tick — see renderMultiSelect.
+    // The three multi-selects inside the Filters panel (Topics, Marked as,
+    // Sources). Held in `view` because a pick repaints the whole panel, so a
+    // natively-open <details> would collapse on every tick — see renderMultiSelect.
+    kindOpen: false,
     markedOpen: false,
     sourcesOpen: false,
     // Which article the last paint drew, so the pane's scroll offset is kept
@@ -138,11 +139,10 @@ export function renderTopics(_params, target) {
   if (deepTopic) {
     view.openTopicId = deepTopic.id;
     view.autoOpened = true;
-    // Widen so a linked Topic opens whatever it carries. The panel reads one lane
-    // at a time, so the lane is set to the Topic's OWN kind (not both — there is
-    // no "both" for a radio), and every answered status is ticked so an ignored or
-    // used linked Topic still shows. `new` passes anyway as the baseline.
-    view.filters = { ...view.filters, kind: deepTopic.kind, marked: MARKED_STATUS_IDS.slice() };
+    // Widen so a linked Topic opens whatever it carries. Kind stays empty (both
+    // lanes), and every answered status is ticked so an ignored or used linked
+    // Topic still shows. `new` passes anyway as the baseline.
+    view.filters = { ...view.filters, kind: [], marked: MARKED_STATUS_IDS.slice() };
     // No scanning state on a Topic link: the reader came for one thing and a
     // working state would be theatre between them and it.
     view.scanning = false;
@@ -412,13 +412,15 @@ function renderToolbar(pb, feed) {
 // match: the flat six-state list is gone. The panel is three grouped controls,
 // each answering one question, each its own field in the filter:
 //
-//   Topics    a RADIO on `kind` — "read one kind at a time". To review (the
-//             active lane) / For later (the parked lane). One at a time because a
-//             Topic has exactly one kind. This is the old two-segment axis, back
-//             as a radio INSIDE the panel rather than as tabs above the list.
+//   Topics    a multi-select on `kind`, EMPTY at rest — both lanes show in one
+//             list (To review, the active lane, and For later, the parked one).
+//             Ticking a lane narrows to it; a For-later Topic is told apart in the
+//             mixed list by its own blue "For later" chip, not by a card change.
+//             ⚠️ This replaced a one-lane-at-a-time RADIO (`git log -S
+//             renderKindRadio`) and, before it, tabs above the list (`renderTabs`)
+//             — the arbitration changed: read both by default, narrow if you want.
 //   Marked as a multi-select on the ANSWERED statuses — Already used / Ignored —
-//             opted into on top of the To-review baseline every lane already
-//             shows.
+//             opted into on top of the To-review baseline the list already shows.
 //   Sources   a multi-select on the listening source, live ones tickable and the
 //             rest "Coming soon".
 //
@@ -435,7 +437,9 @@ function renderToolbar(pb, feed) {
 function renderFilters() {
   return html`<div class="ap-filter-dropdown topics-view__filter-panel" role="menu" aria-label="Filter topics">
     <div class="ap-filter-dropdown__content">
-      ${raw(renderFilterLeaf("Topics", "Read one kind at a time.", renderKindRadio(), true))}
+      ${raw(
+        renderFilterLeaf("Topics", "Both lanes show by default — narrow to one if you want.", renderKindSelect(), true),
+      )}
       ${raw(
         renderFilterLeaf("Marked as", "Topics you have already answered keep their mark.", renderMarkedSelect(), true),
       )}
@@ -464,18 +468,18 @@ function renderFilterLeaf(title, hint, bodyHtml, withBorder) {
   </div>`;
 }
 
-// ── Topics — the DS radio, one lane at a time ──────────────────────────────
-// The real `.ap-radio-container` (label > input[type=radio] + span). Exclusive by
-// its shared `name`, which is exactly what "read one kind at a time" means.
-function renderKindRadio() {
-  const options = TOPIC_KINDS.map((k) => {
-    const on = view.filters.kind === k.id;
-    return html`<label class="ap-radio-container">
-      <input type="radio" name="topicKind" value="${escapeAttr(k.id)}" data-topic-kind ${raw(on ? "checked" : "")} />
-      <span>${k.label}</span>
-    </label>`;
-  }).join("");
-  return html`<div class="topics-view__radio-group">${raw(options)}</div>`;
+// ── Topics — a multi-select, EMPTY = both lanes ────────────────────────────
+// The same DS Select the other two groups use, so all three filters read one way.
+// Empty at rest, which the predicate treats as "no lane constraint" (both show).
+// The trigger chips are neutral grey labels: a lane is a filter facet, not one of
+// the state pills a Topic wears, so it takes no tone of its own here.
+function renderKindSelect() {
+  const picked = view.filters.kind || [];
+  const chips = TOPIC_KINDS.filter((k) => picked.includes(k.id))
+    .map((k) => html`<span class="ap-tag grey"><span>${k.label}</span></span>`)
+    .join("");
+  const options = TOPIC_KINDS.map((k) => filterCheckbox("kind", k.id, k.label, picked.includes(k.id))).join("");
+  return renderMultiSelect("kind", view.kindOpen, chips, "Both lanes", options, "lanes");
 }
 
 // ── The two multi-selects — the DS Select, chips in the trigger ────────────
@@ -795,20 +799,12 @@ function bind(target) {
   boundChange = (event) => {
     if (!view) return;
 
-    // The Topics radio: pick a lane. Exclusive, so this replaces `kind` outright.
-    const kindInput = event.target.closest("[data-topic-kind]");
-    if (kindInput) {
-      view.filters = { ...view.filters, kind: kindInput.value };
-      view.page = 1;
-      paint(target, scopedPlaybook());
-      return;
-    }
-
-    // A multi-select checkbox: "marked" (answered statuses) or "source". The
-    // control's group name is plural in the filter (`marked` / `sources`).
+    // A multi-select checkbox: "kind" (lane), "marked" (answered statuses) or
+    // "source". The filter key is the same as the data value except "source",
+    // which stores under the plural `sources`.
     const filter = event.target.closest("[data-topic-filter]");
     if (filter) {
-      const group = filter.dataset.topicFilter === "marked" ? "marked" : "sources";
+      const group = filter.dataset.topicFilter === "source" ? "sources" : filter.dataset.topicFilter;
       const list = new Set(view.filters[group]);
       if (filter.checked) list.add(filter.value);
       else list.delete(filter.value);
@@ -842,6 +838,7 @@ function bind(target) {
     const filtersBtn = event.target.closest("[data-topic-filters-toggle]");
     if (!filtersBtn && !insidePanel && view.filtersOpen) {
       view.filtersOpen = false;
+      view.kindOpen = false;
       view.markedOpen = false;
       view.sourcesOpen = false;
       paint(target, scopedPlaybook());
@@ -860,6 +857,7 @@ function bind(target) {
     if (msToggle) {
       event.preventDefault();
       const which = msToggle.dataset.topicMsToggle;
+      view.kindOpen = which === "kind" ? !view.kindOpen : false;
       view.markedOpen = which === "marked" ? !view.markedOpen : false;
       view.sourcesOpen = which === "sources" ? !view.sourcesOpen : false;
       paint(target, scopedPlaybook());
@@ -871,6 +869,7 @@ function bind(target) {
       // starts with a menu already hanging open over the groups below it.
       view.filtersOpen = !view.filtersOpen;
       if (!view.filtersOpen) {
+        view.kindOpen = false;
         view.markedOpen = false;
         view.sourcesOpen = false;
       }
@@ -986,7 +985,8 @@ function bind(target) {
     // that opened last, not the thing behind it.
     // A multi-select is INSIDE the panel, so it is the innermost thing open:
     // Escape takes it alone and leaves the panel up.
-    if (view.markedOpen || view.sourcesOpen) {
+    if (view.kindOpen || view.markedOpen || view.sourcesOpen) {
+      view.kindOpen = false;
       view.markedOpen = false;
       view.sourcesOpen = false;
       paint(target, scopedPlaybook());

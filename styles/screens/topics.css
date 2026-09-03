@@ -1145,13 +1145,6 @@
   color: var(--sys-text-color-light);
 }
 
-/* The two radio lanes, stacked. */
-.topics-view__radio-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xs);
-}
-
 /* ⚠️ The multi-select dropdowns are position:absolute; the DS content scroller
    (`overflow-y: auto`) would CLIP the lower one (Sources). With only three short
    groups the panel never needs to scroll, so the content is free to overflow and

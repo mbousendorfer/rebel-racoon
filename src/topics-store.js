@@ -50,18 +50,17 @@
 //   markUsed(id) / ignoreTopic(id, reason) / unignoreTopic(id)
 //   subscribe(fn)                      → unsubscribe
 
-import { topics as seed } from "./mocks.js?v=1020";
-import { isNewUser } from "./user-mode.js?v=1020";
-import { createNotifier } from "./store-utils.js?v=1020";
+import { topics as seed } from "./mocks.js?v=1021";
+import { isNewUser } from "./user-mode.js?v=1021";
+import { createNotifier } from "./store-utils.js?v=1021";
 import {
-  DEFAULT_KIND,
   DEFAULT_MARKED_IDS,
   MARKED_STATUS_IDS,
   LIVE_SOURCE_IDS,
   TOPIC_STATES,
   findTopicState,
   kindOf,
-} from "./topics-catalog.js?v=1020";
+} from "./topics-catalog.js?v=1021";
 
 const topics = isNewUser() ? [] : seed.map(cloneTopic);
 
@@ -187,18 +186,22 @@ const ALL_SOURCE_IDS = LIVE_SOURCE_IDS.slice();
  * The filter state a feed opens with. Reset restores exactly this.
  *
  * THREE groups, one field each — the Filters panel's three controls:
- *   kind    the Topics radio (the lane): "To review" (ready) at rest
+ *   kind    the Topics select (the lane): EMPTY at rest, which means both lanes
+ *           show together — To review and For later in one list. Ticking a lane
+ *           narrows to it; ticking both is the same as none. This is the
+ *           "read both, narrow if you want" model that replaced the one-lane-at-
+ *           a-time radio.
  *   marked  the answered statuses opted into on top of the To-review baseline:
  *           Already used at rest, Ignored not
  *   sources the source checkboxes: every live source at rest
  *
- * `new` is not a field here: it is the baseline every lane shows, so a lane
+ * `new` is not a field here: it is the baseline every lane shows, so the list
  * always shows its To-review Topics and `marked` only ever ADDS the answered
  * ones. Trending / Updated are not fields either — they are card chips, never
  * filter rows (a signal is a claim about now, not a lane).
  */
 export function defaultFilters() {
-  return { kind: DEFAULT_KIND, marked: DEFAULT_MARKED_IDS.slice(), sources: ALL_SOURCE_IDS.slice() };
+  return { kind: [], marked: DEFAULT_MARKED_IDS.slice(), sources: ALL_SOURCE_IDS.slice() };
 }
 
 // ── The one deriver: which of the six states a Topic carries ───────────────
@@ -239,7 +242,7 @@ const sameSet = (a = [], b = []) => a.length === b.length && a.every((x) => b.in
 
 export function narrowedGroupCount(filters = defaultFilters()) {
   let n = 0;
-  if ((filters.kind || DEFAULT_KIND) !== DEFAULT_KIND) n++;
+  if ((filters.kind || []).length > 0) n++;
   if (!sameSet(filters.marked || [], DEFAULT_MARKED_IDS)) n++;
   if (!sameSet(filters.sources || [], ALL_SOURCE_IDS)) n++;
   return n;
@@ -251,8 +254,9 @@ export function narrowedGroupCount(filters = defaultFilters()) {
 // THREE orthogonal gates, ANDed — source, then lane, then answered-status:
 //
 //   1. source   the Topic's source is ticked in the Sources group.
-//   2. kind     the Topic is in the chosen lane. Mutually exclusive by nature —
-//               a Topic has exactly one kind — so this is `===`, not a set test.
+//   2. kind     EMPTY passes every lane — both To review and For later show in
+//               one list at rest. A non-empty set narrows to the ticked lane(s),
+//               so it is a set membership test, not the old one-lane `===`.
 //   3. status   `new` (To review) always passes: it is the lane's baseline. The
 //               two ANSWERED statuses pass only when ticked in "Marked as".
 //
@@ -268,9 +272,9 @@ export function narrowedGroupCount(filters = defaultFilters()) {
 // re-scan still cannot overwrite the reader's answer and the wire contract that
 // reports the three independently is untouched.
 function matchesFilters(t, filters) {
-  const { kind = DEFAULT_KIND, marked = [], sources = [] } = filters;
+  const { kind = [], marked = [], sources = [] } = filters;
   if (!sources.includes(t.sourceId)) return false;
-  if (kindOf(t) !== kind) return false;
+  if (kind.length && !kind.includes(kindOf(t))) return false;
   if (t.status === "new") return true;
   return marked.includes(t.status);
 }
@@ -300,11 +304,11 @@ export function countAll(feedId) {
 }
 
 // ── The sidebar's unread mark ──────────────────────────────────────────────
-// Topics still waiting for an answer AND draftable. The `kind` half is new: this
-// counted every `new` Topic, including the `later` ones parked behind the second
-// tab, so the badge read 9 on a feed where a click showed 4. With the tabs gone
-// and For later off by default, a badge that does not count what a click shows is
-// a badge that lies.
+// Topics still waiting for an answer AND draftable — `new` AND `ready`. The `kind`
+// half counts: a `later` Topic is not draftable yet (by definition), so it is not
+// something "to review" even though the feed now shows both lanes in one list. The
+// badge is "how many can I act on now", which is the To-review lane, not the whole
+// untriaged pile.
 export function countToReview(feedId) {
   return topics.filter((t) => t.feedId === feedId && getStatus(t.id) === "new" && kindOf(t) === "ready").length;
 }
