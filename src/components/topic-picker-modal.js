@@ -26,22 +26,22 @@
 // it was created in, so the picker never asks which Playbook first: that question
 // was answered when the chat was made.
 
-import { html, raw, escapeHtml } from "../utils.js?v=1033";
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1033";
-import { renderEmptyState } from "./empty-state.js?v=1033";
-import { renderTopicCard } from "./topic-card.js?v=1033";
+import { html, raw, escapeHtml } from "../utils.js?v=1034";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1034";
+import { renderEmptyState } from "./empty-state.js?v=1034";
+import { renderTopicCard } from "./topic-card.js?v=1034";
 import {
   renderTopicArticle,
   renderTopicActions,
   renderTopicTrail,
   renderTopicPosts,
   renderTopicHeader,
-} from "../topic-article.js?v=1033";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1033";
-import { getTopicsForFeed, groupTopicsByAge, getTopicById, topicTitle, topicStates } from "../topics-store.js?v=1033";
-import { findTopicSource } from "../topics-catalog.js?v=1033";
-import { getContextById } from "../contexts-store.js?v=1033";
-import { useTopicInChat } from "../topic-flow.js?v=1033";
+} from "../topic-article.js?v=1034";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1034";
+import { getTopicsForFeed, groupTopicsByAge, getTopicById, topicTitle, topicStates } from "../topics-store.js?v=1034";
+import { findTopicSource } from "../topics-catalog.js?v=1034";
+import { getContextById } from "../contexts-store.js?v=1034";
+import { useTopicInChat } from "../topic-flow.js?v=1034";
 
 const MODAL_ID = "topic-picker";
 

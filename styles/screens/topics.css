@@ -365,8 +365,10 @@
   overflow-y: auto;
   /* Top is `sm`, not `md`: the header already pads 16 under itself, so `md` here
      put 40px of empty band around a 1px rule. The sides stay `md` — that is the
-     gutter the measure is derived from and the header shares. */
-  padding: var(--ref-spacing-sm) var(--ref-spacing-md) var(--ref-spacing-md);
+     gutter the measure is derived from and the header shares. NO bottom padding:
+     the grey action band owns the bottom edge (it and its posts tray reach it in
+     both the open and closed states, so no white strip and no jump between them). */
+  padding: var(--ref-spacing-sm) var(--ref-spacing-md) 0;
 }
 
 /* Nothing open. Rendered rather than collapsed, so the columns keep their widths
@@ -1185,19 +1187,19 @@
      pins flush to the pane's bottom edge, not floating the 24px of padding above
      it. Only affects the stuck state; at rest between content and evidence the bar
      keeps its natural position. */
-  bottom: calc(-1 * var(--ref-spacing-md));
+  /* The scroller has no bottom padding, so `bottom: 0` pins the band flush to the
+     pane's bottom edge — the same place whether it is stuck mid-scroll or settled
+     at the end, so nothing shifts between the two. */
+  bottom: 0;
   z-index: 5;
   display: flex;
   align-items: center;
   justify-content: flex-end;
   margin-inline: calc(-1 * var(--ref-spacing-md));
-  /* Top: eat half the article's 32px band gap so the band hugs the prose above.
-     Bottom: eat the WHOLE gap so the band sits flush against Contributing posts —
-     otherwise the grey band ends, then a white strip, then the section's own
-     divider, which read as dead space. Flush, the band's bottom edge IS the line
-     above the evidence. */
+  /* Eat half the article's 32px band gap so the band hugs the prose above. No
+     bottom margin: the tray (when open) pulls itself flush against the band, and
+     when closed the band already reaches the pane's padding-free bottom. */
   margin-top: calc(-1 * var(--ref-spacing-sm));
-  margin-bottom: calc(-1 * var(--ref-spacing-lg));
   padding: var(--ref-spacing-xs) var(--ref-spacing-md);
   /* A grey-05 band, not white: it reads as a distinct footer rail — and, when
      stuck, covers the scrolling prose behind it. */
@@ -1221,10 +1223,11 @@
    `.topic-article__posts` (display:none until the disclosure opens, then flex). */
 .topics-view__pane-body .topic-article__posts--tray {
   margin-inline: calc(-1 * var(--ref-spacing-md));
-  /* Also eat the scroller's own bottom padding so the grey reaches the pane's
-     bottom edge — otherwise a white strip shows below the last post. The pane
-     clips its rounded corners (overflow: hidden), so the bleed stays tidy. */
-  margin-bottom: calc(-1 * var(--ref-spacing-md));
+  /* Eat the whole article band gap so the tray sits flush under the action band —
+     one continuous grey surface. The scroller has no bottom padding, so the tray
+     reaches the pane's bottom edge on its own (clipped by the pane's rounded
+     corners, overflow: hidden). */
+  margin-top: calc(-1 * var(--ref-spacing-lg));
   padding: var(--ref-spacing-md);
   background: var(--app-surface-subtle);
 }
