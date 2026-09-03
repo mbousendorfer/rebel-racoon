@@ -1221,6 +1221,10 @@
    `.topic-article__posts` (display:none until the disclosure opens, then flex). */
 .topics-view__pane-body .topic-article__posts--tray {
   margin-inline: calc(-1 * var(--ref-spacing-md));
+  /* Also eat the scroller's own bottom padding so the grey reaches the pane's
+     bottom edge — otherwise a white strip shows below the last post. The pane
+     clips its rounded corners (overflow: hidden), so the bleed stays tidy. */
+  margin-bottom: calc(-1 * var(--ref-spacing-md));
   padding: var(--ref-spacing-md);
   background: var(--app-surface-subtle);
 }
