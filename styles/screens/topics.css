@@ -1117,9 +1117,13 @@
   display: flex;
   justify-content: flex-end;
   margin-inline: calc(-1 * var(--ref-spacing-md));
-  /* Eat half of the article's 32px band gap above and below so the band hugs the
-     content instead of floating in a lot of dead space. */
-  margin-block: calc(-1 * var(--ref-spacing-sm));
+  /* Top: eat half the article's 32px band gap so the band hugs the prose above.
+     Bottom: eat the WHOLE gap so the band sits flush against Contributing posts —
+     otherwise the grey band ends, then a white strip, then the section's own
+     divider, which read as dead space. Flush, the band's bottom edge IS the line
+     above the evidence. */
+  margin-top: calc(-1 * var(--ref-spacing-sm));
+  margin-bottom: calc(-1 * var(--ref-spacing-lg));
   padding: var(--ref-spacing-xs) var(--ref-spacing-md);
   /* A grey-05 band, not white: it reads as a distinct footer rail — and, when
      stuck, covers the scrolling prose behind it. */
