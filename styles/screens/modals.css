@@ -1283,7 +1283,7 @@ body.has-modal {
    grey-05 ground, its own scroll when the posts overflow; the cards keep their
    fill. Shown EXPANDED — a dialog has room, so there is nothing to fold away. */
 .topic-picker__posts-panel {
-  flex: 0 0 320px;
+  flex: 0 0 400px;
   overflow-y: auto;
   background: var(--app-surface-subtle);
   padding: var(--ref-spacing-sm);
