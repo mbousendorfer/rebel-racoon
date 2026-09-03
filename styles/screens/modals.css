@@ -1239,34 +1239,53 @@ body.has-modal {
   flex-direction: column;
 }
 
-/* The article view is two columns (analysis + evidence panel), so it needs room
-   the single-column list and history views do not. Toggled per view in paint(). */
+/* The article view is a proper modal — a header (title + provenance), a
+   two-column body that fills the height, then the footer. Wider than the
+   single-column list and history views need. Toggled per view in paint(). */
 .topic-picker--wide {
   width: min(calc(100% - 32px), 960px);
 }
 
-/* Analysis on the left, the evidence in its own panel on the right. `stretch` so
-   the grey panel is as tall as the analysis and the grey fills the column even
-   when the posts are few. */
-.topic-picker__split {
-  display: flex;
-  align-items: stretch;
-  gap: var(--ref-spacing-md);
+/* The header region: the Topic's title + provenance. The close × is over its
+   top-right (the DS puts it there), so padding-right clears it. A hairline under
+   it divides it from the body. */
+.topic-picker__article-header {
+  flex: 0 0 auto;
+  padding: var(--ref-spacing-md);
+  padding-right: var(--ref-spacing-xl);
+  border-bottom: 1px solid var(--app-border-soft);
 }
 
+/* On the article view the body IS the two-column split: no padding of its own
+   (each column owns its gutters) and it does not scroll — the columns do. */
+.topic-picker--wide .topic-picker__body {
+  flex-direction: row;
+  overflow: hidden;
+  padding: 0;
+}
+
+.topic-picker__split {
+  display: flex;
+  width: 100%;
+  min-height: 0;
+}
+
+/* The analysis scrolls; its own gutter keeps the prose off the edges. */
 .topic-picker__article {
   flex: 1 1 auto;
   min-width: 0;
+  overflow-y: auto;
+  padding: var(--ref-spacing-md);
 }
 
-/* The contributing posts, shown EXPANDED in a grey panel — a dialog has room, so
-   there is nothing to fold away. grey-05 ground, the same the pane's action band
-   uses; the cards inside keep their own fill. */
+/* The evidence panel fills the FULL height between the header and the footer and
+   sits flush to the dialog's right, top and bottom edges — no white around it.
+   grey-05 ground, its own scroll when the posts overflow; the cards keep their
+   fill. Shown EXPANDED — a dialog has room, so there is nothing to fold away. */
 .topic-picker__posts-panel {
-  flex: 0 0 300px;
-  align-self: stretch;
+  flex: 0 0 320px;
+  overflow-y: auto;
   background: var(--app-surface-subtle);
-  border-radius: var(--app-radius-card);
   padding: var(--ref-spacing-sm);
   display: flex;
   flex-direction: column;

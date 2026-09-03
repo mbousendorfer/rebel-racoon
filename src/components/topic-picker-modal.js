@@ -14,31 +14,38 @@
 // how a card and the thing it opens end up saying different sentences about the
 // same Topic.
 //
-// On the article view the dialog prints NO header of its own: the article already
-// carries the Topic's title as its h2, and a header above it would be the same
-// sentence twice. It is still NAMED for screen readers — paint() writes the
-// Topic's title into the dialog's aria-label — and the close control sits
-// top-right in both views.
+// The article view is a proper modal: a real HEADER (the Topic's title +
+// provenance, rendered by renderTopicHeader with the close × over its corner), a
+// two-column BODY (analysis left, a full-height grey posts panel right, flush to
+// the edges), and the FOOTER (History + the verbs). The list and history views
+// leave the header empty and title themselves inside the scrolling body. paint()
+// also writes the Topic's title into the dialog's aria-label.
 //
 // ── Scope ──────────────────────────────────────────────────────────────────
 // The picker lists ONE Playbook's Topics — the chat's own. A chat keeps the brand
 // it was created in, so the picker never asks which Playbook first: that question
 // was answered when the chat was made.
 
-import { html, raw, escapeHtml } from "../utils.js?v=1025";
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1025";
-import { renderEmptyState } from "./empty-state.js?v=1025";
-import { renderTopicCard } from "./topic-card.js?v=1025";
-import { renderTopicArticle, renderTopicActions, renderTopicTrail, renderTopicPosts } from "../topic-article.js?v=1025";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1025";
-import { getTopicsForFeed, groupTopicsByAge, getTopicById, topicTitle, topicStates } from "../topics-store.js?v=1025";
-import { findTopicSource } from "../topics-catalog.js?v=1025";
-import { getContextById } from "../contexts-store.js?v=1025";
-import { useTopicInChat } from "../topic-flow.js?v=1025";
+import { html, raw, escapeHtml } from "../utils.js?v=1027";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1027";
+import { renderEmptyState } from "./empty-state.js?v=1027";
+import { renderTopicCard } from "./topic-card.js?v=1027";
+import {
+  renderTopicArticle,
+  renderTopicActions,
+  renderTopicTrail,
+  renderTopicPosts,
+  renderTopicHeader,
+} from "../topic-article.js?v=1027";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1027";
+import { getTopicsForFeed, groupTopicsByAge, getTopicById, topicTitle, topicStates } from "../topics-store.js?v=1027";
+import { findTopicSource } from "../topics-catalog.js?v=1027";
+import { getContextById } from "../contexts-store.js?v=1027";
+import { useTopicInChat } from "../topic-flow.js?v=1027";
 
 const MODAL_ID = "topic-picker";
 
-let backdrop, modal, bodyEl, footEl;
+let backdrop, modal, headerEl, bodyEl, footEl;
 let initialized = false;
 // { view: "list" | "article", playbookId, topicId, canGoBack }
 let state = null;
@@ -56,6 +63,10 @@ const HTML = `
   <button class="ap-dialog-close" type="button" data-topic-picker-close aria-label="Close">
     <i class="ap-icon-close"></i>
   </button>
+  <!-- The modal HEADER — the article view fills it with the Topic's title +
+       provenance; the list and history views leave it empty and title themselves
+       inside the scrolling body. The close × above sits over its top-right. -->
+  <div id="topicPickerHeader"></div>
   <div class="topic-picker__body" id="topicPickerBody"></div>
   <!-- The DS dialog footer is a SIBLING of the scrolling body, never inside it:
        that is what pins it to the dialog's bottom edge without position sticky
@@ -72,6 +83,7 @@ function injectOnce() {
 
   backdrop = document.getElementById("topicPickerBackdrop");
   modal = document.getElementById("topicPickerModal");
+  headerEl = document.getElementById("topicPickerHeader");
   bodyEl = document.getElementById("topicPickerBody");
   footEl = document.getElementById("topicPickerFoot");
 
@@ -194,11 +206,20 @@ export function close() {
 
 function paint() {
   if (!state) return;
-  bodyEl.innerHTML =
-    state.view === "article" ? renderArticleView() : state.view === "history" ? renderHistoryView() : renderListView();
+  const isArticle = state.view === "article" && !!state.topicId;
+  const articleTopic = isArticle ? getTopicById(state.topicId) : null;
+  // The header carries the identity ONLY on the article view (title + provenance,
+  // with the close × over its corner); the list and history views title themselves
+  // inside the scrolling body, so the header is empty for them.
+  headerEl.innerHTML = articleTopic ? renderArticleHeader(articleTopic) : "";
+  bodyEl.innerHTML = articleTopic
+    ? renderArticleBody(articleTopic)
+    : state.view === "history"
+      ? renderHistoryView()
+      : renderListView();
   // Only the two-column article view is wide; the list and the history trail are
   // single columns and a 960px dialog would stretch their cards across dead width.
-  modal.classList.toggle("topic-picker--wide", state.view === "article");
+  modal.classList.toggle("topic-picker--wide", isArticle);
   // Only the article has verbs; the list's cards carry their own, and the trail
   // is not a decision — its way back is the Back link.
   const openTopic = state.view === "article" && state.topicId ? getTopicById(state.topicId) : null;
@@ -283,45 +304,41 @@ function renderListView() {
     <div class="topic-picker__list">${raw(groups)}</div>`;
 }
 
-// ── The article — two columns ──────────────────────────────────────────────
-// The wider dialog splits: the analysis on the LEFT (its own h2 is the title, so
-// no header above it, with "Competitors · age · status" UNDER the title), and the
-// contributing posts in a GREY PANEL on the RIGHT, shown expanded rather than
-// folded — in a dialog with room for them there is nothing to defer.
-//
-// Topic history is NOT a kebab here (withMenu: false); it is a button in the
-// footer, left of the verbs. The back action, when there is one, names where it
-// returns — "Back" alone makes the reader guess.
-function renderArticleView() {
-  const topic = getTopicById(state.topicId);
-  if (!topic) return renderListView();
+// ── The article — a proper modal: header, two-column body, footer ──────────
+// The HEADER holds the identity — the Topic's title with "Competitors · age ·
+// status" under it (renderTopicHeader titleFirst) — and the close × sits over its
+// top-right, so the title and the way out live in the modal's header. The BODY
+// below splits: the analysis scrolls on the LEFT, the contributing posts fill a
+// GREY PANEL on the RIGHT that spans the full height between header and footer,
+// flush to the dialog's edges. Topic history is a footer button (withMenu false,
+// so no header kebab); the back action, when there is one, names where it returns.
+function renderArticleHeader(topic) {
   const source = findTopicSource(topic.sourceId);
-  const posts = topic.posts || [];
-  return html`${raw(
+  return html`<div class="ap-dialog-header topic-picker__article-header">
+    ${raw(
       state.canGoBack
         ? html`<button type="button" class="ap-link standalone small topic-picker__back" data-topic-picker-back>
             <i class="ap-icon-arrow-left" aria-hidden="true"></i><span>Back to the topic list</span>
           </button>`
         : "",
     )}
-    <div class="topic-picker__split">
-      <div class="topic-picker__article">
-        ${raw(
-          renderTopicArticle(topic, {
-            source,
-            withPosts: false,
-            headerOpts: { titleFirst: true, withMenu: false },
-          }),
-        )}
-      </div>
-      ${raw(
-        posts.length
-          ? html`<aside class="topic-picker__posts-panel">
-              ${raw(renderTopicPosts(topic, { collapsible: false }))}
-            </aside>`
-          : "",
-      )}
-    </div>`;
+    ${raw(renderTopicHeader(topic, { source, titleFirst: true, withMenu: false }))}
+  </div>`;
+}
+
+function renderArticleBody(topic) {
+  const source = findTopicSource(topic.sourceId);
+  const posts = topic.posts || [];
+  return html`<div class="topic-picker__split">
+    <div class="topic-picker__article">
+      ${raw(renderTopicArticle(topic, { source, withHeader: false, withPosts: false }))}
+    </div>
+    ${raw(
+      posts.length
+        ? html`<aside class="topic-picker__posts-panel">${raw(renderTopicPosts(topic, { collapsible: false }))}</aside>`
+        : "",
+    )}
+  </div>`;
 }
 
 // ── The trail, as this host's third view ───────────────────────────────────
