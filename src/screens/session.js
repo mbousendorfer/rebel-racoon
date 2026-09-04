@@ -1,7 +1,7 @@
-import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr } from "../utils.js?v=1039";
-import { navigate } from "../router.js?v=1039";
-import { renderTopbar } from "../components/topbar.js?v=1039";
-import { socialAccounts, chatStarters, connectorDocs } from "../mocks.js?v=1039";
+import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr } from "../utils.js?v=1040";
+import { navigate } from "../router.js?v=1040";
+import { renderTopbar } from "../components/topbar.js?v=1040";
+import { socialAccounts, chatStarters, connectorDocs } from "../mocks.js?v=1040";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
@@ -11,13 +11,12 @@ import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
   PROFILE_SEARCH_THRESHOLD,
-} from "../social-profiles.js?v=1039";
-import { FORMATS, formatsForNetwork, defaultFormatFor, clipFormatItems } from "../clip-formats.js?v=1039";
-import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../clip-subtitles.js?v=1039";
-import { getSessionById, getSessions, subscribe as subscribeSessions } from "../sessions-store.js?v=1039";
-import { getContextById, getContexts, getDefaultContext, updateContext } from "../contexts-store.js?v=1039";
-import { revokedContextFor, usableContexts, canView } from "../playbook-access.js?v=1039";
-import { isNewUser } from "../user-mode.js?v=1039";
+} from "../social-profiles.js?v=1040";
+import { formatsForNetwork, defaultFormatFor } from "../clip-formats.js?v=1040";
+import { getSessionById, getSessions, subscribe as subscribeSessions } from "../sessions-store.js?v=1040";
+import { getContextById, getContexts, getDefaultContext, updateContext } from "../contexts-store.js?v=1040";
+import { revokedContextFor, usableContexts, canView } from "../playbook-access.js?v=1040";
+import { isNewUser } from "../user-mode.js?v=1040";
 import {
   getThread,
   sendMessage,
@@ -39,56 +38,56 @@ import {
   answerTopPostsWidget,
   toggleTopicsWidgetPick,
   answerTopicsWidget,
-} from "../assistant.js?v=1039";
-import { iconFor as fileIconForKind } from "../file-kinds.js?v=1039";
-import { getSources, getIdeas, extractVideoIdeas, appendExtractedIdeas } from "../library.js?v=1039";
-import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=1039";
+} from "../assistant.js?v=1040";
+import { iconFor as fileIconForKind } from "../file-kinds.js?v=1040";
+import { getSources, getIdeas, extractVideoIdeas, appendExtractedIdeas } from "../library.js?v=1040";
+import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=1040";
 import {
   renderInto as renderComposerMentions,
   removeMention as removeComposerMention,
   subscribe as subscribeComposerMentions,
   addMention as addComposerMention,
-} from "../composer-mentions.js?v=1039";
-import { getPosts, addPostDraft, setSubtitleStyle, subscribe as subscribePostsStore } from "../posts-store.js?v=1039";
-import { startDraftFlow, executeDraft, executeDraftBatch, getAnglesForIdea } from "../draft-flow.js?v=1039";
-import * as topPostsFlow from "../top-posts-flow.js?v=1039";
+} from "../composer-mentions.js?v=1040";
+import { getPosts, addPostDraft, setSubtitleStyle, subscribe as subscribePostsStore } from "../posts-store.js?v=1040";
+import { startDraftFlow, executeDraft, executeDraftBatch, getAnglesForIdea } from "../draft-flow.js?v=1040";
+import * as topPostsFlow from "../top-posts-flow.js?v=1040";
 import {
   renderTopPostsBoard,
   renderTopPostEcho,
   renderTopPostsWidget,
   TOP_POSTS_LIMIT,
-} from "../components/top-post-card.js?v=1039";
-import { getTopPost } from "../top-posts-store.js?v=1039";
-import { renderEmptyState } from "../components/empty-state.js?v=1039";
-import * as sidebarWizard from "../sidebar-wizard.js?v=1039";
-import * as inlineQuestion from "../inline-question.js?v=1039";
-import * as clipStudio from "../clip-studio.js?v=1039";
-import * as batchStudio from "../batch-studio.js?v=1039";
-import { askConnector } from "../connector-ask.js?v=1039";
-import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=1039";
-import { renderConnectorLogo } from "../connectors-view.js?v=1039";
+} from "../components/top-post-card.js?v=1040";
+import { getTopPost } from "../top-posts-store.js?v=1040";
+import { renderEmptyState } from "../components/empty-state.js?v=1040";
+import * as sidebarWizard from "../sidebar-wizard.js?v=1040";
+import * as inlineQuestion from "../inline-question.js?v=1040";
+import * as clipStudio from "../clip-studio.js?v=1040";
+import * as batchStudio from "../batch-studio.js?v=1040";
+import { askConnector } from "../connector-ask.js?v=1040";
+import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=1040";
+import { renderConnectorLogo } from "../connectors-view.js?v=1040";
 import {
   getActiveConnector,
   clearActiveConnector,
   subscribe as subscribeComposerConnector,
-} from "../composer-connector.js?v=1039";
-import { isFlagOn } from "../feature-flags.js?v=1039";
-import * as contextBuilder from "../context-builder.js?v=1039";
-import { renderPicker } from "./_analyse-common.js?v=1039";
-import { renderSourceCard } from "../components/source-card.js?v=1039";
-import { renderIdeaCard } from "../components/idea-card.js?v=1039";
-import { renderCompactIdeaCard } from "../components/idea-card-compact.js?v=1039";
+} from "../composer-connector.js?v=1040";
+import { isFlagOn } from "../feature-flags.js?v=1040";
+import * as contextBuilder from "../context-builder.js?v=1040";
+import { renderPicker } from "./_analyse-common.js?v=1040";
+import { renderSourceCard } from "../components/source-card.js?v=1040";
+import { renderIdeaCard } from "../components/idea-card.js?v=1040";
+import { renderCompactIdeaCard } from "../components/idea-card-compact.js?v=1040";
 import {
   contentState,
   renderContentWorkspace as renderSharedContentWorkspace,
   rerenderContentWorkspaceBody,
   renderContentEmptyState,
-} from "../components/content-workspace.js?v=1039";
-import { open as openVideoClipsModal } from "../components/video-clips-modal.js?v=1039";
-import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=1039";
-import { open as openAddSourceModal } from "../components/add-source-modal.js?v=1039";
-import { open as openConnectorsModal } from "../components/connectors-modal.js?v=1039";
-import { dropzoneHTML } from "../components/dropzone.js?v=1039";
+} from "../components/content-workspace.js?v=1040";
+import { open as openVideoClipsModal } from "../components/video-clips-modal.js?v=1040";
+import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=1040";
+import { open as openAddSourceModal } from "../components/add-source-modal.js?v=1040";
+import { open as openConnectorsModal } from "../components/connectors-modal.js?v=1040";
+import { dropzoneHTML } from "../components/dropzone.js?v=1040";
 import {
   classifyFile,
   startFileUpload,
@@ -103,20 +102,20 @@ import {
   updateSourceClips,
   extractClipsForSource,
   setSourceIdeaCount,
-} from "../sources-stream.js?v=1039";
-import { renderClipCard } from "../components/clip-card.js?v=1039";
-import { onFeedbackClick } from "../components/feedback-control.js?v=1039";
-import { showToast } from "../components/toast.js?v=1039";
+} from "../sources-stream.js?v=1040";
+import { renderClipCard } from "../components/clip-card.js?v=1040";
+import { onFeedbackClick } from "../components/feedback-control.js?v=1040";
+import { showToast } from "../components/toast.js?v=1040";
 import {
   openDrafts as openDraftsPanel,
   openIdeas as openIdeasPanel,
   openClips as openClipsPanel,
   getMode as getRightPanelMode,
   subscribe as subscribeRightPanel,
-} from "../components/right-panel.js?v=1039";
-import { setHandoff, consumeHandoff } from "../handoff.js?v=1039";
-import { attachTopicToChat, useTopicInChat, startTopicPickerInline, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=1039";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1039";
+} from "../components/right-panel.js?v=1040";
+import { setHandoff, consumeHandoff } from "../handoff.js?v=1040";
+import { attachTopicToChat, useTopicInChat, startTopicPickerInline, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=1040";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1040";
 import {
   getFreshTopics,
   countFresh,
@@ -124,14 +123,15 @@ import {
   topicTitle,
   markUsed,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=1039";
-import { findTopicSource } from "../topics-catalog.js?v=1039";
-import { renderTopicCard, renderTopicsWidget } from "../components/topic-card.js?v=1039";
-import { openTopicArticle } from "../components/topic-picker-modal.js?v=1039";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1039";
-import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=1039";
-import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=1039";
-import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=1039";
+} from "../topics-store.js?v=1040";
+import { findTopicSource } from "../topics-catalog.js?v=1040";
+import { renderTopicCard, renderTopicsWidget } from "../components/topic-card.js?v=1040";
+import { openTopicArticle } from "../components/topic-picker-modal.js?v=1040";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1040";
+import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=1040";
+import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=1040";
+import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=1040";
+import { clipContext } from "./session/clip-draft-flow.js?v=1040";
 // Pure thread-turn renderers — shared with the component handoff gallery so
 // the previews there never drift from the app (handoff/components.html).
 import {
@@ -143,7 +143,7 @@ import {
   renderSystemNotice,
   renderExtractingNotice,
   renderResultCard,
-} from "./session/thread-turns.js?v=1039";
+} from "./session/thread-turns.js?v=1040";
 
 // Default composer placeholder — restored whenever no connector is attached.
 // A connected connector swaps it for "Ask {name} anything…".
@@ -2427,18 +2427,6 @@ function startAskFlowFromSession(sessionId, sourceId, filename) {
 // context" panel (post-card.js): the clip it was generated from as the
 // headline + the source video it was cut out of. Mirrors ideaContext /
 // repurposeContext in draft-flow / top-posts-flow.
-function clipContext(clip, sourceName) {
-  return {
-    kind: "clip",
-    headline: { icon: "ap-icon-video", text: `Clip · ${clip.title}` },
-    source: {
-      icon: "ap-icon-file--video",
-      label: sourceName || "Video source",
-      detail: clip.summary || "",
-    },
-  };
-}
-
 // Local copy of dashboard's defaultChatName — keeps session.js standalone
 // without a circular import for a 5-line helper.
 function defaultChatNameLocal() {
@@ -2740,149 +2728,6 @@ function askDraftCountQuestion(sessionId, ideaId, { angle = null, onBack = null,
     onBack: onBack || undefined,
     onSkip: onBack ? undefined : () => {},
   });
-}
-
-// ── Draft from clips — quick picker (ratio → subtitles → accounts) ──
-//
-// Triggered by a clip-card "Draft" button (a single clip) or the Clips-panel
-// footer CTA (several selected clips). Each step is the inline-question picker
-// and every pick is echoed as a user turn. The flow asks once for an export
-// ratio, then a subtitle style, then the target account(s), and finally
-// generates one post draft per (clip × account) — each carrying the chosen
-// ratio + subtitle style + a back-reference to its source clip — then posts a
-// "N drafts to review" result card.
-//
-// `entries` is [{ clip, sourceName, sourceId }] — one per selected clip.
-
-// Subtitle-style catalog for the clip-draft flow lives in clip-subtitles.js
-// (shared with the handoff gallery). CLIP_SUBTITLE_ITEMS = the picker cards;
-// CLIP_SUBTITLE_LABEL = id → label for echoing the pick back into the chat.
-
-export function startClipDraftFlow(sessionId, entries) {
-  const list = Array.isArray(entries) ? entries : entries ? [entries] : [];
-  if (!list.length) return;
-  // Echo the picked clip(s) as a selection card before the format question.
-  const first = list[0];
-  postSelectionEcho(sessionId, {
-    icon: "ap-icon-file--video",
-    title: list.length === 1 ? first.clip?.title || "Clip" : `${list.length} clips`,
-    meta: first.sourceName ? `Clip · ${first.sourceName}` : "Video clip",
-  });
-  askClipFormat(sessionId, list);
-}
-
-// Step 1 — which aspect ratio? All export formats are offered as visual
-// proportion tiles (the target accounts aren't picked yet, so we don't filter
-// by network). Items come from clip-formats.clipFormatItems() (shared with the
-// handoff gallery).
-function askClipFormat(sessionId, entries) {
-  postAssistantMessage(sessionId, "What aspect ratio would you like for the clips?");
-  inlineQuestion.ask(sessionId, {
-    title: "Pick an export format",
-    stepLabel: "Ratio",
-    skipLabel: "Cancel",
-    variant: "cards",
-    items: clipFormatItems(),
-    onPick: (formatId) => {
-      const fmt = FORMATS[formatId];
-      postUserTurn(sessionId, fmt ? `${fmt.tag} · ${fmt.label}` : formatId);
-      askClipSubtitle(sessionId, entries, formatId);
-    },
-    onSkip: () => {},
-  });
-}
-
-// Step 2 — which subtitle style? (AI-generated, burned into the video.) Shown
-// as a 2-column card grid, each card CSS-rendering the style on a "MAKE IT POP"
-// mock; the pick echoes back as a selection card.
-function askClipSubtitle(sessionId, entries, format) {
-  postAssistantMessage(sessionId, "Choose a subtitle style — I'll generate and burn them into the video.");
-  inlineQuestion.ask(sessionId, {
-    title: "Choose a subtitle style",
-    stepLabel: "Subtitles",
-    variant: "cards",
-    // Fixed 3×3 grid — "No subtitles" is the first card (see CLIP_SUBTITLE_ITEMS).
-    cardCols: 3,
-    items: CLIP_SUBTITLE_ITEMS,
-    onPick: (style) => {
-      postSelectionEcho(sessionId, {
-        icon: "ap-icon-closed-captions",
-        title: CLIP_SUBTITLE_LABEL[style] || style,
-        meta: style === "none" ? "No subtitles" : "Subtitle style",
-      });
-      askClipAccounts(sessionId, entries, format, style);
-    },
-    onBack: () => askClipFormat(sessionId, entries),
-  });
-}
-
-// Step 3 — which account(s)? Multi-select, the clips' own networks preselected.
-function askClipAccounts(sessionId, entries, format, style) {
-  const connected = getConnectedProfiles();
-  if (connected.length === 0) {
-    postAssistantMessage(
-      sessionId,
-      "No connected social profiles yet. Open Settings → Social accounts to connect one.",
-    );
-    return;
-  }
-  postAssistantMessage(sessionId, "Which account(s) should I draft for?");
-  const clipNets = new Set(entries.map((e) => e.clip.network));
-  const preset = connected.filter((a) => clipNets.has(a.platform)).map((a) => a.id);
-  // Destination picker (not an analysis step) — every connected account is a
-  // valid target, so don't gate on post history.
-  const clipProfileItems = buildConnectedProfileItems({ requirePosts: false });
-  inlineQuestion.ask(sessionId, {
-    title: "Pick one or more connected accounts",
-    stepLabel: "Accounts",
-    skipLabel: "Cancel",
-    multi: true,
-    defaultSelected: preset,
-    submitLabel: "Continue",
-    // A long list of destinations gets a live search box to narrow it down.
-    searchable: clipProfileItems.length > PROFILE_SEARCH_THRESHOLD,
-    searchPlaceholder: "Search accounts by name, handle or network…",
-    items: clipProfileItems,
-    onPick: (ids) => {
-      const accounts = (Array.isArray(ids) ? ids : [ids])
-        .map((id) => connected.find((a) => a.id === id))
-        .filter(Boolean);
-      if (accounts.length === 0) return;
-      // Echo the picked profiles via the canonical renderProfileTag — pass
-      // the raw socialAccounts entries straight through.
-      postUserProfilesTurn(sessionId, accounts);
-      generateClipDrafts(sessionId, entries, accounts, format, style);
-    },
-    onBack: () => askClipSubtitle(sessionId, entries, format),
-    onSkip: () => {},
-  });
-}
-
-// Generate one post draft per (clip × account), then post the result card.
-// Each draft's clipRef carries sourceId + clipId so the post can later open
-// the source clip back in the Video Clips modal for editing.
-function generateClipDrafts(sessionId, entries, accounts, format, style) {
-  const pendingId = startPending(sessionId, "Generating drafts");
-  setTimeout(() => {
-    finishPending(sessionId, pendingId);
-    const drafts = [];
-    for (const { clip, sourceName, sourceId } of entries) {
-      for (const a of accounts) {
-        const d = addPostDraft(sessionId, {
-          network: a.platform,
-          text: [clip.title, clip.summary].filter(Boolean),
-          hashtags: (clip.tags || []).map((t) => `#${t}`),
-          clipRef: { start: clip.start, end: clip.end, sourceName, hue: clip.hue, sourceId, clipId: clip.id },
-          format,
-          subtitleStyle: style === "none" ? null : style,
-        });
-        d.generationContext = clipContext(clip, sourceName);
-        drafts.push(d);
-      }
-    }
-    const title = entries.length === 1 ? entries[0].clip.title : `${entries.length} clips`;
-    postDraftResult(sessionId, { ideaTitle: title, drafts });
-  }, 1600);
 }
 
 // "What would you like to do with this video?" — asked via the quick picker

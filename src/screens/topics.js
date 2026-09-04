@@ -24,15 +24,15 @@
 // view. There is an explicit Load more too, and both do exactly the same thing —
 // an infinite list with no button is unusable by keyboard.
 
-import { html, raw, escapeAttr } from "../utils.js?v=1039";
-import { navigate, getPath } from "../router.js?v=1039";
-import { isFlagOn } from "../feature-flags.js?v=1039";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1039";
-import { renderTopbar } from "../components/topbar.js?v=1039";
-import { showToast } from "../components/toast.js?v=1039";
-import { renderEmptyState } from "../components/empty-state.js?v=1039";
-import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=1039";
-import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1039";
+import { html, raw, escapeAttr } from "../utils.js?v=1040";
+import { navigate, getPath } from "../router.js?v=1040";
+import { isFlagOn } from "../feature-flags.js?v=1040";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1040";
+import { renderTopbar } from "../components/topbar.js?v=1040";
+import { showToast } from "../components/toast.js?v=1040";
+import { renderEmptyState } from "../components/empty-state.js?v=1040";
+import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=1040";
+import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1040";
 import {
   getTopicsForFeed,
   groupTopicsByAge,
@@ -43,7 +43,7 @@ import {
   ignoreTopic,
   unignoreTopic,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=1039";
+} from "../topics-store.js?v=1040";
 import {
   TOPIC_SOURCES,
   TOPIC_KINDS,
@@ -52,12 +52,12 @@ import {
   findTopicSource,
   findCadence,
   isLiveSource,
-} from "../topics-catalog.js?v=1039";
-import { renderTopicCard } from "../components/topic-card.js?v=1039";
-import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=1039";
-import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=1039";
-import { openTopicHistory } from "../components/topic-history-modal.js?v=1039";
-import { useTopicInChat } from "../topic-flow.js?v=1039";
+} from "../topics-catalog.js?v=1040";
+import { renderTopicCard } from "../components/topic-card.js?v=1040";
+import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=1040";
+import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=1040";
+import { openTopicHistory } from "../components/topic-history-modal.js?v=1040";
+import { useTopicInChat } from "../topic-flow.js?v=1040";
 
 const PAGE = 10;
 // Long enough to read the scanning line, short enough that nobody waits for it
