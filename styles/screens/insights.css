@@ -395,13 +395,6 @@
   pointer-events: none;
 }
 
-/* .ap-status-card owns the frame, the type and the tone; this only stops it
-   stretching to the full width the component defaults to. */
-.ins-proxy-note {
-  width: auto;
-  min-width: 0;
-}
-
 /* ── Linked posts ───────────────────────────────────────────────────────────
    The rows themselves are the winners flow's echo card (`.top-post-echo`,
    styles/components/top-post-card.css) — one template for a quoted post,

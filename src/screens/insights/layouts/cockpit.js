@@ -21,8 +21,8 @@
 // chart the headline measure and leave the others as 96px sparklines in the
 // table, which meant an objective's second measure had no curve anywhere.
 
-import { readingFor } from "../model.js?v=1056";
-import { trendSpec, sparklineSpec, ringSvg, progressBar, mountCharts } from "../charts.js?v=1056";
+import { readingFor } from "../model.js?v=1059";
+import { trendSpec, sparklineSpec, ringSvg, progressBar, mountCharts } from "../charts.js?v=1059";
 import {
   tierCounts,
   statusPill,
@@ -37,7 +37,7 @@ import {
   objectiveActions,
   figure,
   esc,
-} from "../pieces.js?v=1056";
+} from "../pieces.js?v=1059";
 
 export const id = "cockpit";
 export const label = "Cockpit";
@@ -81,7 +81,7 @@ function renderRail(entries, rollup, selected) {
 
   return `<aside class="ins-cockpit-rail">
     <header class="ins-cockpit-rail__head">
-      <h1 class="ins-cockpit-rail__title">Objectives</h1>
+      <h2 class="ins-cockpit-rail__title">Objectives</h2>
       ${tierCounts(rollup)}
     </header>
     <ul class="ins-cockpit-rail__list">${rows}</ul>

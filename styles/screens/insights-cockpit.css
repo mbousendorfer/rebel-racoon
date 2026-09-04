@@ -29,13 +29,18 @@
   border-bottom: 1px solid var(--sys-border-color-default);
 }
 
+/* The section's label, bound to the DS h2 text style — size, line-height AND
+   weight. It used to run at the h1 size with weight 900 and -0.02em of hand
+   tracking, which is a display style the DS does not have: the ramp stops at h1
+   24/32/700 and hierarchy comes from picking a rung, not from inventing one.
+   The objective being read is the page's big title (h1 style); this labels the
+   selector above it. */
 .ins-cockpit-rail__title {
   margin: 0;
-  font-size: var(--sys-text-style-h1-size);
-  line-height: var(--sys-text-style-h1-line-height);
-  font-weight: var(--ref-font-weight-black);
+  font-size: var(--sys-text-style-h2-size);
+  line-height: var(--sys-text-style-h2-line-height);
+  font-weight: var(--sys-text-style-h2-weight);
   color: var(--sys-text-color-default);
-  letter-spacing: -0.02em;
 }
 
 .ins-cockpit-rail__list {
@@ -71,13 +76,22 @@
   cursor: pointer;
   transition:
     border-color var(--ref-animation-short) var(--app-ease-standard),
-    background-color var(--ref-animation-short) var(--app-ease-standard);
+    background-color var(--ref-animation-short) var(--app-ease-standard),
+    box-shadow var(--ref-animation-short) var(--app-ease-standard);
 }
 
-.ins-cockpit-row:hover,
-.ins-cockpit-row:focus-visible {
+.ins-cockpit-row:hover {
   border-color: var(--ref-color-electric-blue-100);
+}
+
+/* Focus has to be told apart from hover, which the border alone cannot do — the
+   app's own ring (the one .ap-filter-chip uses in ds-patches). */
+.ins-cockpit-row:focus-visible {
   outline: none;
+  border-color: var(--ref-color-electric-blue-100);
+  box-shadow:
+    0 0 0 1px var(--ref-color-white),
+    0 0 0 3px var(--ref-color-electric-blue-100);
 }
 
 .ins-cockpit-row.is-selected {
@@ -156,13 +170,16 @@
   gap: var(--ref-spacing-xs);
 }
 
+/* The objective being read — the DS's top rung, h1 style, weight and all. It
+   ran at 28px/800 with -0.01em of tracking: one step past the end of the ramp,
+   and the same string in Report's own chapter title is already bound to the h1
+   style. */
 .ins-cockpit-pane__title h2 {
   margin: 0;
-  font-size: var(--ref-font-size-xxxl);
-  line-height: var(--ref-font-line-height-xl);
-  font-weight: var(--ref-font-weight-extra-bold);
+  font-size: var(--sys-text-style-h1-size);
+  line-height: var(--sys-text-style-h1-line-height);
+  font-weight: var(--sys-text-style-h1-weight);
   color: var(--sys-text-color-default);
-  letter-spacing: -0.01em;
 }
 
 .ins-cockpit-pane__meta {

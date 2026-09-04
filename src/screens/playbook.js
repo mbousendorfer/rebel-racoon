@@ -17,9 +17,9 @@
 // `loader` cfg, run the (mock) analysis on a timer, then `updateContext` with
 // the section patch — the loader flips to ready and paints the fresh data.
 
-import { navigate } from "../router.js?v=1056";
-import { escapeHtml as esc } from "../utils.js?v=1056";
-import { renderTopbar } from "../components/topbar.js?v=1056";
+import { navigate } from "../router.js?v=1059";
+import { escapeHtml as esc } from "../utils.js?v=1059";
+import { renderTopbar } from "../components/topbar.js?v=1059";
 import {
   getContextById,
   getContexts,
@@ -27,14 +27,14 @@ import {
   deleteContext,
   duplicateContext,
   appendHistory,
-} from "../contexts-store.js?v=1056";
-import { mount, snapshotEditable } from "../playbook-view.js?v=1056";
-import { open as openRenameModal } from "../components/rename-modal.js?v=1056";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=1056";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=1056";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=1056";
-import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=1056";
-import { sectionPatchFromAnalysis } from "../context-builder.js?v=1056";
+} from "../contexts-store.js?v=1059";
+import { mount, snapshotEditable } from "../playbook-view.js?v=1059";
+import { open as openRenameModal } from "../components/rename-modal.js?v=1059";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=1059";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=1059";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=1059";
+import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=1059";
+import { sectionPatchFromAnalysis } from "../context-builder.js?v=1059";
 import {
   canView,
   canEdit,
@@ -44,8 +44,8 @@ import {
   isMine,
   ownerOf,
   ownerName,
-} from "../playbook-access.js?v=1056";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=1056";
+} from "../playbook-access.js?v=1059";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=1059";
 
 const AUTOFILL_MS = 1500;
 
@@ -65,7 +65,7 @@ const STAGES = {
 };
 
 function toast(msg) {
-  import("../components/toast.js?v=1056").then(({ showToast }) => showToast(msg));
+  import("../components/toast.js?v=1059").then(({ showToast }) => showToast(msg));
 }
 
 function prettyUrl(url) {

@@ -25,8 +25,8 @@
 // chapter's own verdict 60px above it, and encoding "how far along" as an arc
 // nobody can compare, with the real work done by the number printed inside.
 
-import { rollupSentence, readingFor } from "../model.js?v=1056";
-import { trendSpec, mountCharts } from "../charts.js?v=1056";
+import { rollupSentence, readingFor } from "../model.js?v=1059";
+import { trendSpec, mountCharts } from "../charts.js?v=1059";
 import {
   tierCounts,
   statusPill,
@@ -39,7 +39,7 @@ import {
   proxyNote,
   objectiveActions,
   esc,
-} from "../pieces.js?v=1056";
+} from "../pieces.js?v=1059";
 
 export const id = "report";
 export const label = "Report";
@@ -70,7 +70,7 @@ function renderHero(entries, rollup, shown) {
   const posts = rollup.posts;
   return `<header class="ap-card ins-report-hero">
     <div class="ins-report-hero__titles">
-      <h1 class="ins-report-hero__title">Objectives</h1>
+      <h2 class="ins-report-hero__title">Objectives</h2>
       ${tierCounts(rollup)}
     </div>
     ${

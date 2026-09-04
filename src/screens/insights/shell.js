@@ -32,28 +32,28 @@
 // host is never repainted without `destroyChartsIn(host)` first — the one rule
 // that keeps a brand switch from leaking a chart per repaint.
 
-import { html, raw } from "../../utils.js?v=1056";
-import { renderTopbar } from "../../components/topbar.js?v=1056";
-import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=1056";
+import { html, raw } from "../../utils.js?v=1059";
+import { renderTopbar } from "../../components/topbar.js?v=1059";
+import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=1059";
 import {
   subscribe as subscribeScope,
   getActivePlaybook,
   getActivePlaybookId,
   setActivePlaybook,
-} from "../../active-playbook.js?v=1056";
-import { getPath, navigate } from "../../router.js?v=1056";
-import { isFlagOn } from "../../feature-flags.js?v=1056";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=1056";
-import { consumeHandoff } from "../../handoff.js?v=1056";
-import { open as openObjectiveModal } from "../../components/objective-modal.js?v=1056";
-import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=1056";
-import { renderEmptyState } from "../../components/empty-state.js?v=1056";
-import { playbookSelect, viewSelect } from "./pieces.js?v=1056";
-import { objectiveEntries, playbookRollup, entryByKey } from "./model.js?v=1056";
-import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=1056";
-import * as report from "./layouts/report.js?v=1056";
-import * as cockpit from "./layouts/cockpit.js?v=1056";
-import * as cockpitBis from "./layouts/cockpit-bis.js?v=1056";
+} from "../../active-playbook.js?v=1059";
+import { getPath, navigate } from "../../router.js?v=1059";
+import { isFlagOn } from "../../feature-flags.js?v=1059";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=1059";
+import { consumeHandoff } from "../../handoff.js?v=1059";
+import { open as openObjectiveModal } from "../../components/objective-modal.js?v=1059";
+import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=1059";
+import { renderEmptyState } from "../../components/empty-state.js?v=1059";
+import { playbookSelect, viewSelect } from "./pieces.js?v=1059";
+import { objectiveEntries, playbookRollup, entryByKey } from "./model.js?v=1059";
+import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=1059";
+import * as report from "./layouts/report.js?v=1059";
+import * as cockpit from "./layouts/cockpit.js?v=1059";
+import * as cockpitBis from "./layouts/cockpit-bis.js?v=1059";
 
 /** Set by a Playbook's objectives block ("Open in Insights"); payload `${ctxId}::${label}`. */
 export const FOCUS_OBJECTIVE_HANDOFF = "focusObjective";

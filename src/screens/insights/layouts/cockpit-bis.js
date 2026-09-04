@@ -25,8 +25,8 @@
 // numbers, which is what they are for; the curve is the pane's job, at the size
 // it needs.
 
-import { readingFor } from "../model.js?v=1056";
-import { trendSpec, sparklineSpec, progressBar, mountCharts } from "../charts.js?v=1056";
+import { readingFor } from "../model.js?v=1059";
+import { trendSpec, sparklineSpec, progressBar, mountCharts } from "../charts.js?v=1059";
 import {
   statusPill,
   measurePill,
@@ -40,7 +40,7 @@ import {
   objectiveActions,
   figure,
   esc,
-} from "../pieces.js?v=1056";
+} from "../pieces.js?v=1059";
 
 export const id = "cockpit-bis";
 export const label = "Cockpit bis";
@@ -89,7 +89,7 @@ function renderStrip(entries, selected) {
     .map((e) => {
       const on = e === selected;
       return `<li>
-        <button type="button" class="ins-cockpitb-tile${on ? " is-selected" : ""}" data-ins-select="${esc(e.key)}" data-ins-objective="${esc(e.key)}"${on ? ' aria-current="true"' : ""}>
+        <button type="button" class="ap-card ins-cockpitb-tile${on ? " is-selected" : ""}" data-ins-select="${esc(e.key)}" data-ins-objective="${esc(e.key)}"${on ? ' aria-current="true"' : ""}>
           <span class="ins-cockpitb-tile__head">
             <span class="ins-cockpitb-tile__name">${esc(e.label)}</span>
             ${statusPill(e)}
@@ -102,11 +102,12 @@ function renderStrip(entries, selected) {
 
   // A card-shaped door, quiet on purpose: it is an empty slot the reader may
   // fill, not a call to action competing with the page bar's primary. Full-cell
-  // because it IS a cell — the tiles beside it are buttons of the same size.
+  // because it IS a cell — the tiles beside it are cards of the same size, and
+  // it wears .ap-card for the same reason they do.
   const slot =
     entries.length < ROW
       ? `<li class="ins-cockpitb-strip__slot">
-          <button type="button" class="ins-cockpitb-add" data-ins-new>
+          <button type="button" class="ap-card ins-cockpitb-add" data-ins-new>
             <i class="ap-icon-plus" aria-hidden="true"></i><span>New objective</span>
           </button>
         </li>`
@@ -114,7 +115,7 @@ function renderStrip(entries, selected) {
 
   return `<nav class="ins-cockpitb-strip" aria-label="Objectives">
     <div class="ins-cockpitb-strip__inner">
-      <h1 class="ins-cockpitb-strip__title">Objectives</h1>
+      <h2 class="ins-cockpitb-strip__title">Objectives</h2>
       <ul class="ins-cockpitb-strip__list">${tiles}${slot}</ul>
     </div>
   </nav>`;

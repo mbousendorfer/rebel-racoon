@@ -8,11 +8,11 @@
 // Pure render helpers — strings in, strings out. No listeners: every action is
 // a `data-ins-*` hook the shell dispatches.
 
-import { escapeHtml as esc } from "../../utils.js?v=1056";
-import { renderPostEchoRow } from "../../components/top-post-card.js?v=1056";
-import { getContexts } from "../../contexts-store.js?v=1056";
-import { progressBar } from "./charts.js?v=1056";
-import { signedPct } from "./model.js?v=1056";
+import { escapeHtml as esc } from "../../utils.js?v=1059";
+import { renderPostEchoRow } from "../../components/top-post-card.js?v=1059";
+import { getContexts } from "../../contexts-store.js?v=1059";
+import { progressBar } from "./charts.js?v=1059";
+import { signedPct } from "./model.js?v=1059";
 
 // ── The page's head — the scope control and the state line ────────────────
 //
@@ -236,20 +236,38 @@ export function measureRow(m, { showPill = false } = {}) {
 }
 
 /**
- * An objective measured on a proxy because a connection is missing. A state
- * that needs a sentence of context and describes ONE element inline: the DS
- * Status card. It was a `.ap-tag tagOrange mini` — a Tag names an entity a user
- * can create and remove, its colours name an object TYPE (tagOrange is spoken
- * for: Listening keywords), and `mini` is for referencing an object inline in
- * running text. Three of the component's Don'ts in one span.
+ * An objective measured on a proxy because a connection is missing — a state
+ * that needs a sentence of context. The DS component for that is the INFOBOX,
+ * in its warning variant.
+ *
+ * ⚠️ It was a `.ap-status-card tagOrange` with `.upper` / `.flow` children, and
+ * that markup rendered NOTHING: the DS's Status card is Angular-only — its spec
+ * lists `ap-status` as the only CSS-UI class it has, and `.ap-status-card`,
+ * `.upper` and `.flow` are in no stylesheet this app loads. Three invented
+ * classes styling a component that does not exist outside Angular. (Before
+ * that it was a `.ap-tag tagOrange mini`, which was three of the Tag's own
+ * Don'ts in one span — a Tag names an entity a user can create, its colours
+ * name an object TYPE, and `mini` is for inline references in running text.)
+ *
+ * Infobox was ruled out then as "page-level and dismissible". Its close button
+ * is a part you leave out (`.ap-infobox-close`), and the whole point of the
+ * component is a state that needs explaining — so the objection was about a
+ * variant, not the component.
+ *
+ * No app class on it: the component brings the frame, the tone, the type, its
+ * 4px left edge and its own width, and what makes this note read as scoped to
+ * ONE objective is where it sits — under that objective's reading — not a box
+ * narrower than the cards beside it.
  */
 export function proxyNote(entry) {
-  return `<div class="ap-status-card tagOrange ins-proxy-note">
-    <div class="upper">
-      <i class="ap-icon-warning_fill" aria-hidden="true"></i>
-      <div class="flow"><span>Needs Google Analytics</span></div>
+  return `<div class="ap-infobox warning has-title">
+    <i class="ap-icon-warning_fill" aria-hidden="true"></i>
+    <div class="ap-infobox-content">
+      <div class="ap-infobox-texts">
+        <span class="ap-infobox-title">Needs Google Analytics</span>
+        ${entry.soon ? `<span class="ap-infobox-message">${esc(entry.soon)}</span>` : ""}
+      </div>
     </div>
-    ${entry.soon ? `<p>${esc(entry.soon)}</p>` : ""}
   </div>`;
 }
 

@@ -46,15 +46,20 @@
   gap: var(--ref-spacing-xs);
 }
 
-/* The page's subject, in the same slot the rail and the Report hero put it —
-   this layout had none, and a band of tiles with no title reads as a toolbar. */
+/* The band's label, in the same slot the rail and the Report hero put it — this
+   layout had none, and a band of tiles with no title reads as a toolbar. */
+/* The section's label, bound to the DS h2 text style — size, line-height AND
+   weight. It used to run at the h1 size with weight 900 and -0.02em of hand
+   tracking, which is a display style the DS does not have: the ramp stops at h1
+   24/32/700 and hierarchy comes from picking a rung, not from inventing one.
+   The objective being read is the page's big title (h1 style); this labels the
+   selector above it. */
 .ins-cockpitb-strip__title {
   margin: 0;
-  font-size: var(--sys-text-style-h1-size);
-  line-height: var(--sys-text-style-h1-line-height);
-  font-weight: var(--ref-font-weight-black);
+  font-size: var(--sys-text-style-h2-size);
+  line-height: var(--sys-text-style-h2-line-height);
+  font-weight: var(--sys-text-style-h2-weight);
   color: var(--sys-text-color-default);
-  letter-spacing: -0.02em;
 }
 
 /* FOUR to a row — the number the band is calibrated on. Fixed columns, not
@@ -102,32 +107,39 @@
   min-width: 0;
 }
 
-/* A selectable object, so it carries an edge at rest and the app's own
-   selection language on top of it: blue border on hover, blue border plus the
-   5% tint when it is the one being read. No elevation, no coloured edge bar. */
+/* The tile IS a card, so it wears .ap-card: the frame, the radius, the padding
+   and the white ground come from the component, and this only adds what makes
+   it a selectable one — a tighter gap than a card's sections need, and the app's
+   selection language: blue border on hover, blue border plus the 5% tint when
+   it is the one being read. No elevation, no coloured edge bar. */
 .ins-cockpitb-tile {
-  display: flex;
-  flex-direction: column;
   gap: var(--ref-spacing-xxs);
   width: 100%;
   min-width: 0;
-  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
-  border: 1px solid var(--app-border-soft);
-  border-radius: var(--ref-border-radius-md);
-  background: var(--app-surface);
   text-align: left;
   font: inherit;
   color: inherit;
   cursor: pointer;
   transition:
     border-color var(--ref-animation-short) var(--app-ease-standard),
-    background-color var(--ref-animation-short) var(--app-ease-standard);
+    background-color var(--ref-animation-short) var(--app-ease-standard),
+    box-shadow var(--ref-animation-short) var(--app-ease-standard);
 }
 
-.ins-cockpitb-tile:hover,
-.ins-cockpitb-tile:focus-visible {
+.ins-cockpitb-tile:hover {
   border-color: var(--ref-color-electric-blue-100);
+}
+
+/* Keyboard focus needs to be told apart from hover, which the border alone
+   cannot do — the app's own ring (the one .ap-filter-chip uses in ds-patches):
+   a white gap, then 2px of electric blue outside the border. */
+.ins-cockpitb-tile:focus-visible,
+.ins-cockpitb-add:focus-visible {
   outline: none;
+  border-color: var(--ref-color-electric-blue-100);
+  box-shadow:
+    0 0 0 1px var(--ref-color-white),
+    0 0 0 3px var(--ref-color-electric-blue-100);
 }
 
 .ins-cockpitb-tile.is-selected {
@@ -149,37 +161,36 @@
    are buttons of the same size, and a slot narrower than the gap it stands in
    would read as a stray button. */
 .ins-cockpitb-add {
-  display: flex;
+  /* .ap-card gives it the tiles' frame; what changes is the ground (the band's
+     own grey shows through, so it reads as room left rather than as a filled
+     card) and the axis — one centred row instead of a column of sections. */
+  flex-direction: row;
   align-items: center;
   justify-content: center;
   gap: var(--ref-spacing-xxs);
   width: 100%;
-  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
-  border: 1px solid var(--app-border-soft);
-  border-radius: var(--ref-border-radius-md);
   background: transparent;
   font: inherit;
-  font-weight: var(--ref-font-weight-bold);
+  font-weight: var(--sys-text-style-body-bold-weight);
   color: var(--sys-text-color-light);
   cursor: pointer;
   transition:
     border-color var(--ref-animation-short) var(--app-ease-standard),
     background-color var(--ref-animation-short) var(--app-ease-standard),
+    box-shadow var(--ref-animation-short) var(--app-ease-standard),
     color var(--ref-animation-short) var(--app-ease-standard);
 }
 
-.ins-cockpitb-add:hover,
-.ins-cockpitb-add:focus-visible {
+.ins-cockpitb-add:hover {
   border-color: var(--ref-color-electric-blue-100);
   background: var(--app-surface);
   color: var(--ref-color-electric-blue-100);
-  outline: none;
 }
 
 .ins-cockpitb-tile__name {
-  font-size: var(--ref-font-size-md);
-  line-height: var(--ref-font-line-height-lg);
-  font-weight: var(--ref-font-weight-bold);
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
   color: var(--sys-text-color-default);
   white-space: nowrap;
   overflow: hidden;
@@ -231,13 +242,16 @@
   gap: var(--ref-spacing-xs);
 }
 
+/* The objective being read — the DS's top rung, h1 style, weight and all. It
+   ran at 28px/800 with -0.01em of tracking: one step past the end of the ramp,
+   and the same string in Report's own chapter title is already bound to the h1
+   style. */
 .ins-cockpitb-pane__title h2 {
   margin: 0;
-  font-size: var(--ref-font-size-xxxl);
-  line-height: var(--ref-font-line-height-xl);
-  font-weight: var(--ref-font-weight-extra-bold);
+  font-size: var(--sys-text-style-h1-size);
+  line-height: var(--sys-text-style-h1-line-height);
+  font-weight: var(--sys-text-style-h1-weight);
   color: var(--sys-text-color-default);
-  letter-spacing: -0.01em;
 }
 
 .ins-cockpitb-pane__meta {
@@ -246,8 +260,8 @@
   flex-wrap: wrap;
   gap: var(--ref-spacing-xxxs);
   margin: 0;
-  font-size: var(--ref-font-size-sm);
-  line-height: var(--ref-font-line-height-sm);
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
   color: var(--sys-text-color-light);
 }
 

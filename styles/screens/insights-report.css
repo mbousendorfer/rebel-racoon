@@ -39,13 +39,18 @@
   min-width: 0;
 }
 
+/* The section's label, bound to the DS h2 text style — size, line-height AND
+   weight. It used to run at the h1 size with weight 900 and -0.02em of hand
+   tracking, which is a display style the DS does not have: the ramp stops at h1
+   24/32/700 and hierarchy comes from picking a rung, not from inventing one.
+   The objective being read is the page's big title (h1 style); this labels the
+   selector above it. */
 .ins-report-hero__title {
   margin: 0;
-  font-size: var(--ref-font-size-xxxl);
-  line-height: var(--ref-font-line-height-xl);
-  font-weight: var(--ref-font-weight-black);
+  font-size: var(--sys-text-style-h2-size);
+  line-height: var(--sys-text-style-h2-line-height);
+  font-weight: var(--sys-text-style-h2-weight);
   color: var(--sys-text-color-default);
-  letter-spacing: -0.02em;
 }
 
 .ins-report-hero__note {
