@@ -27,13 +27,15 @@
 // alignment) — defaults to the `session__empty` class that ships in
 // styles/base.css since it's the most common shape.
 
-export function renderEmptyState({ icon, title, body, actionHtml = "", wrapperClass = "session__empty" }) {
+// `level` is the heading level: an empty state that IS the page's whole content
+// is its h1, and starting a document at h3 is a level jump with no h1 at all.
+export function renderEmptyState({ icon, title, body, actionHtml = "", wrapperClass = "session__empty", level = 3 }) {
   return `
     <div class="${wrapperClass}">
       <div class="session__empty-icon">
         <i class="${icon} lg"></i>
       </div>
-      <h3 class="text-subtitle">${title}</h3>
+      <h${level} class="text-subtitle">${title}</h${level}>
       <p class="muted">${body}</p>
       ${actionHtml ? `<div class="session__empty-action">${actionHtml}</div>` : ""}
     </div>

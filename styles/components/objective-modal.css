@@ -1,0 +1,595 @@
+/* Objective modal (sentence form, handoff 1e) + the metric catalogue /
+   measure configurator it embeds (2c/2d — also opened standalone from the
+   Playbook block's edit mode). DS .ap-dialog chrome throughout; values read
+   in Averta with tabular numerals, never a mono face. */
+
+.objm__backdrop,
+.objc__backdrop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ref-spacing-lg);
+}
+
+.objm__backdrop[hidden],
+.objc__backdrop[hidden] {
+  display: none;
+}
+
+.objm,
+.objc {
+  width: min(640px, 100%);
+  max-height: 88vh;
+  box-shadow: var(--app-shadow-popover-lg);
+}
+
+/* The form modal lets its two select dropdowns float clear of the dialog box
+   (.ap-dialog clips to overflow:hidden for its rounded corners; the form has no
+   own scroll to contain, so it can open the clip). The catalogue keeps the DS
+   default — it scrolls and must stay clipped. */
+.objm {
+  overflow: visible;
+}
+
+.objm__content,
+.objc__content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-md);
+}
+
+/* The form is short and its two selects sit up top, so let their DS dropdowns
+   float over the content (position:absolute) rather than push it down — an
+   overflow:auto here would clip the float and reintroduce the modal growth.
+   The catalogue, which can run tall, keeps its own scroll. */
+.objm__content {
+  overflow: visible;
+}
+
+.objc__content {
+  overflow-y: auto;
+}
+
+/* ── Title + settings ─────────────────────────────────────────────────── */
+/* The name IS the objective, so "Grow [name]" is the hero line — a large input,
+   the thing you read the modal by. The window and Playbook are settings on it,
+   demoted to a quiet second line so they read as adjustments, not as prose the
+   name is buried inside. */
+.objm__title {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+}
+
+.objm__titleword {
+  flex: 0 0 auto;
+  font-family: var(--sys-text-style-h2-font-family);
+  font-size: var(--sys-text-style-h2-size);
+  font-weight: var(--sys-text-style-h2-weight);
+  line-height: var(--sys-text-style-h2-line-height);
+  color: var(--sys-text-color-default);
+}
+
+.objm__name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Size + weight only — the input keeps .ap-input-group's own line-height so the
+   field height doesn't balloon. */
+.objm__name input {
+  width: 100%;
+  font-size: var(--sys-text-style-h2-size);
+  font-weight: var(--sys-text-style-h2-weight);
+}
+
+/* The value is bold; the prompt for it is not — bold grey read as filled-in. */
+.objm__name input::placeholder {
+  font-weight: var(--sys-text-style-body-weight);
+}
+
+.objm__settings {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-sm);
+  font-size: var(--sys-text-style-body-size);
+  color: var(--sys-text-color-light);
+}
+
+.objm__word {
+  white-space: nowrap;
+}
+
+/* A connective and the control it introduces wrap together — "for" left
+   stranded at the end of a line while its select dropped to the next one. */
+.objm__clause {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  min-width: 0;
+  max-width: 100%;
+}
+
+.objm__select {
+  width: auto;
+  max-width: 100%;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.objm__select > .ap-select-trigger {
+  width: auto;
+}
+
+.objm__select .ap-select-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The DS dropdown floats (position:absolute); left:0/right:0 already match the
+   trigger, min-width guards against a trigger narrower than its own options. A
+   long list (every Playbook) scrolls inside the popover rather than running off
+   the short modal. */
+.objm__select .ap-select-dropdown {
+  min-width: 100%;
+  max-height: 264px;
+  overflow-y: auto;
+}
+
+.objm__date {
+  max-width: 220px;
+}
+
+/* ── Measures ─────────────────────────────────────────────────────────── */
+/* One bound section — heading, what it does, the cards — so the label belongs
+   to the list under it instead of floating at the same distance from everything. */
+.objm__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+}
+
+.objm__seclabel {
+  font-size: var(--sys-text-style-body-size);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--sys-text-color-default);
+}
+
+/* Was a bordered inset with three colour-coded verdicts — a legend with more
+   weight than the section it explained. It is helper text; it reads as one. */
+.objm__caption {
+  margin: 0 0 var(--ref-spacing-xxs);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--sys-text-color-light);
+}
+
+.objm__addrow {
+  display: flex;
+}
+
+.objm__measures {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+}
+
+.objm__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-sm);
+  border: 1px solid var(--app-border-soft);
+  border-radius: var(--app-radius-md);
+  background: var(--app-surface);
+}
+
+.objm__cardhead {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+}
+
+/* Name + scope read as one label — "Reach · all networks", the same shape the
+   overview objective cards use. Baseline-aligned so the smaller scope sits on
+   the name's baseline, not floated to its centre. */
+.objm__id {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--ref-spacing-xxs);
+  min-width: 0;
+}
+
+.objm__cardname {
+  font-size: var(--sys-text-style-h3-size);
+  font-weight: var(--sys-text-style-h3-weight);
+  color: var(--sys-text-color-default);
+}
+
+.objm__scope {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--sys-text-color-light);
+  white-space: nowrap;
+}
+
+/* The middot belongs to the scope so it only appears when the scope does. */
+.objm__scope::before {
+  content: "·";
+  margin-right: var(--ref-spacing-xxs);
+}
+
+.objm__cardbody {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xs);
+  font-size: var(--sys-text-style-body-size);
+  color: var(--sys-text-color-light);
+}
+
+/* Baseline is now an editable field (same shape as the target). */
+.objm__from {
+  width: 110px;
+}
+
+.objm__from input {
+  width: 100%;
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--sys-text-style-body-bold-weight);
+}
+
+.objm__target {
+  width: 110px;
+}
+
+.objm__target input {
+  width: 100%;
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--sys-text-style-body-bold-weight);
+}
+
+/* The derived line under the inputs: the Suggested tag (when Archie set the
+   target) beside the deltas it works out to. A quiet row, never a second focus. */
+.objm__cardhint {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--sys-text-color-light);
+}
+
+.objm__hinttext {
+  font-variant-numeric: tabular-nums;
+}
+
+.objm__spacer,
+.objc__spacer {
+  flex: 1;
+}
+
+/* Empty state only. `background: none` matters — a bare <button> paints the
+   UA grey fill, which read as a disabled block behind the dashed border. */
+.objm__addcard {
+  display: flex;
+  align-items: baseline;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
+  border: 1.5px dashed var(--app-border);
+  border-radius: var(--app-radius-card);
+  background: none;
+  font-family: inherit;
+  font-size: var(--sys-text-style-body-size);
+  color: var(--sys-text-color-light);
+  cursor: pointer;
+  text-align: left;
+  transition:
+    border-color var(--ref-animation-short) var(--app-ease-out),
+    color var(--ref-animation-short) var(--app-ease-out);
+}
+
+.objm__addcard-title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--sys-text-color-default);
+}
+
+.objm__addcard-title > i {
+  font-size: var(--sys-icon-css-sm);
+}
+
+/* Card hover is a blue border — never an added shadow or a coloured edge. */
+.objm__addcard:hover {
+  border-color: var(--sys-border-color-active);
+}
+
+.objm__addcard:hover .objm__addcard-title {
+  color: var(--sys-border-color-active);
+}
+
+.objm__addcard:focus-visible {
+  outline: 2px solid var(--sys-border-color-active);
+  outline-offset: 2px;
+}
+
+.objm__addhint {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--sys-text-color-light);
+}
+
+/* ── The catalogue (2c) ───────────────────────────────────────────────── */
+.objc__search > * {
+  width: 100%;
+}
+
+.objc__search input {
+  width: 100%;
+}
+
+/* A short stack of collapsible category CARDS, spaced apart. */
+.objc__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+}
+
+/* Each metric family is a collapsible CARD (native <details>), closed by default —
+   the catalog opens as a short stack of ~8 cards, not a wall of metrics. */
+.objc__cat {
+  border: 1px solid var(--app-border-soft);
+  border-radius: var(--app-radius-card);
+  background: var(--app-surface);
+  overflow: hidden;
+}
+
+/* The card header is the hierarchy anchor and the whole-row toggle: bold name,
+   then the count — right-aligned so every card's count lines up in one column. */
+.objc__cathead {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-sm);
+  cursor: pointer;
+  list-style: none;
+  transition: background-color var(--ref-animation-short) var(--app-ease-out);
+}
+
+.objc__cathead::-webkit-details-marker {
+  display: none;
+}
+
+.objc__cathead:hover {
+  background: var(--app-surface-subtle);
+}
+
+.objc__cat[open] .objc__cathead {
+  border-bottom: 1px solid var(--app-border-soft);
+}
+
+.objc__catname {
+  font-size: var(--sys-text-style-body-bold-size);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--sys-text-color-default);
+}
+
+.objc__catcount {
+  flex-shrink: 0;
+}
+
+.objc__catarrow {
+  flex-shrink: 0;
+  color: var(--sys-text-color-light);
+  font-size: var(--sys-icon-css-sm);
+  transition: transform var(--ref-animation-short) var(--app-ease-out);
+}
+
+.objc__cat[open] .objc__catarrow {
+  transform: rotate(180deg);
+}
+
+.objc__catbody {
+  display: flex;
+  flex-direction: column;
+  padding: var(--ref-spacing-xxs) 0;
+}
+
+/* Each metric is a DS .ap-list-panel-item; .objc__row only resets the <button>
+   chrome (the UA button fill was the grey block). The name grows so the TYPE tag
+   right-aligns into one column down the card. */
+.objc__row {
+  background: none;
+  border: 0;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+}
+
+.objc__row:focus-visible {
+  outline: 2px solid var(--sys-border-color-active);
+  outline-offset: -2px;
+}
+
+.objc__row-name {
+  flex: 1;
+  min-width: 0;
+  color: var(--sys-text-color-default);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.objc__row-type {
+  flex-shrink: 0;
+}
+
+/* Not-yet-available metrics — muted, not clickable, with the proxy Archie uses
+   meanwhile. */
+.objc__soon {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-sm);
+}
+
+.objc__soon .objc__row-name {
+  flex: 0 0 auto;
+  color: var(--sys-text-color-light);
+}
+
+.objc__empty {
+  margin: 0;
+  padding: 0 var(--ref-spacing-sm);
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--sys-text-color-light);
+}
+
+/* ── The configurator (2d) ────────────────────────────────────────────── */
+/* A label column and a control column, on a 24px band so the label lines up
+   with the chip row next to it. Two groups — WHERE the measure reads, then
+   WHAT it reads to — parted by one rule, so four rows don't read as one list. */
+.objc__cfg {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+}
+
+.objc__field {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  align-items: start;
+  gap: var(--ref-spacing-sm);
+}
+
+.objc__fieldlabel {
+  font-size: var(--sys-text-style-body-size);
+  line-height: 24px;
+  color: var(--sys-text-color-light);
+}
+
+.objc__fieldbody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  min-width: 0;
+}
+
+.objc__rule {
+  margin: 0;
+  border: 0;
+  border-top: 1px solid var(--app-border-soft);
+}
+
+.objc__chips {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxs);
+  min-height: 24px;
+}
+
+/* ── Scope select ─────────────────────────────────────────────────────────
+   Scope is one choice among ~5, so it is a select rather than a chip row.
+   Sized to its content like the objective sentence's window select, not
+   stretched across the row (the DS ships .ap-select at width:100%). */
+.objc__select {
+  width: fit-content;
+  max-width: 100%;
+  align-self: flex-start;
+}
+
+.objc__select > .ap-select-trigger {
+  width: auto;
+}
+
+/* The trigger shrinks to the CURRENT value, so the dropdown must size to its
+   widest option instead of inheriting that width — otherwise every longer
+   network ellipsises inside its own menu. */
+.objc__select .ap-select-dropdown {
+  min-width: max-content;
+  max-height: 264px;
+  overflow-y: auto;
+}
+
+/* "All networks" when the metric can't be summed: an honest disabled option,
+   never a feature-lock tint — the caption underneath says why. */
+.objc__select .ap-select-option.disabled {
+  color: var(--sys-text-color-light);
+  pointer-events: none;
+}
+
+/* The config view is a short form, so its select dropdown floats clear of the
+   dialog instead of pushing the panel taller. Scoped with :has() because the
+   CATALOG view in the same dialog can run tall and must keep its scroll. */
+.objc:has(.objc__cfg),
+.objc__content:has(.objc__cfg) {
+  overflow: visible;
+}
+
+/* A profile is always the DS avatar + network badge + name (renderProfileTag),
+   never a bare string — same presentation as every other profile surface. */
+.objc__profile {
+  display: flex;
+  align-items: center;
+  min-height: 24px;
+  color: var(--sys-text-color-default);
+}
+
+/* Many profiles: a DS multi-select, because a brand can have 200 connected
+   profiles and 200 chips is not a control. Give the menu a comfortable width —
+   max-content would size to the longest handle and wobble per network. */
+.objc__profiles .ap-select-dropdown {
+  min-width: 260px;
+}
+
+/* .ap-select-option is already a 40px flex row with its own gap, so a profile
+   row only has to let the avatar tag take the remaining width. */
+.objc__profileopt .profile-tag,
+.objc__profileall > span:last-child {
+  flex: 1;
+  min-width: 0;
+}
+
+/* The reading — the same "from X to Y" sentence as the measure card on the
+   objective form; the values carry the weight, the connectives don't. */
+.objc__reading,
+.objc__static,
+.objc__computing {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxs);
+  min-height: 24px;
+  margin: 0;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--sys-text-color-light);
+}
+
+.objc__static {
+  color: var(--sys-text-color-default);
+}
+
+.objc__reading strong {
+  font-weight: var(--sys-text-style-body-bold-weight);
+  font-variant-numeric: tabular-nums;
+  color: var(--sys-text-color-default);
+}
+
+.objc__reading-sub {
+  font-size: var(--sys-text-style-caption-size);
+}
+
+.objc__computing {
+  font-size: var(--sys-text-style-caption-size);
+}
+
+/* Helper text under the control it explains — not a bordered note beside it. */
+.objc__caption {
+  margin: 0;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--sys-text-color-light);
+}

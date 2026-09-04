@@ -1,0 +1,228 @@
+/* ---- Insights · Report — one chapter per objective ---------------------------------
+   An editorial page: the hero says who and how things stand, once; then each
+   objective is a chapter with a headline, a standfirst, the evidence (number +
+   measures beside the curve), its posts, and Archie's closing line.
+
+   The rhythm is deliberate — every chapter is the same shape, so the reader
+   learns it on the first one and reads the rest by scanning. */
+
+.ins-report {
+  width: min(var(--ins-content), 100%);
+  margin: 0 auto;
+  padding: var(--ref-spacing-md) var(--ref-spacing-xl) var(--ref-spacing-xxl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-md);
+}
+
+/* ── Hero ───────────────────────────────────────────────────────────────────
+   Title + scope, the counts, then the tab strip along the card's bottom edge —
+   the tabs belong to the page, so they sit in its head rather than floating
+   above the chapter they switch. */
+
+/* .ap-card carries the frame AND the padding/gap — this only tightens the gap,
+   because the head's four rows are one block, not four sections. */
+.ins-report-hero {
+  gap: var(--ref-spacing-xs);
+}
+
+.ins-report-hero__titles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  min-width: 0;
+}
+
+.ins-report-hero__title {
+  margin: 0;
+  font-size: var(--ref-font-size-xxxl);
+  line-height: var(--ref-font-line-height-xl);
+  font-weight: var(--ref-font-weight-black);
+  color: var(--sys-text-color-default);
+  letter-spacing: -0.02em;
+}
+
+.ins-report-hero__note {
+  margin: 0;
+  font-size: var(--ref-font-size-sm);
+  line-height: var(--ref-font-line-height-sm);
+  color: var(--sys-text-color-light);
+}
+
+/* ── Tabs — one objective at a time ─────────────────────────────────────── */
+
+/* The add action is a SIBLING of the tab component, not a child of its nav: a
+   role="tablist" owns tabs, and a button inside it was invalid ARIA that also
+   broke arrow-key traversal. */
+.ins-report-tabsrow {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--ref-spacing-xs);
+}
+
+.ins-report-tabs {
+  flex: 1;
+  min-width: 0;
+}
+
+/* The DS tab already carries the selected underline; all this adds is room for
+   the verdict dot in front of the name. */
+.ins-report-tab {
+  gap: var(--ref-spacing-xxs);
+}
+
+/* ── Chapter ────────────────────────────────────────────────────────────── */
+
+.ins-report-chapter {
+  scroll-margin-top: var(--ref-spacing-md);
+}
+
+/* Headline + standfirst, full width: the chapter has ONE beginning. It used to
+   open inside the left column, which made the card read as two unrelated
+   halves and left the curve's top edge aligned to nothing. */
+.ins-report-chapter__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+}
+
+.ins-report-chapter__headline {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xs);
+}
+
+.ins-report-chapter__title {
+  margin: 0;
+  font-size: var(--sys-text-style-h1-size);
+  line-height: var(--sys-text-style-h1-line-height);
+  font-weight: var(--sys-text-style-h1-weight);
+  color: var(--sys-text-color-default);
+}
+
+/* The meta pushes to the far end of the headline row — the name and its verdict
+   read first, the provenance is there when looked for. */
+.ins-report-chapter__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxxs);
+  margin: 0 0 0 auto;
+  font-size: var(--ref-font-size-sm);
+  line-height: var(--ref-font-line-height-sm);
+  color: var(--sys-text-color-light);
+}
+
+.ins-report-chapter__reading {
+  margin: 0;
+  max-width: 68ch;
+  font-size: var(--ref-font-size-md);
+  line-height: var(--ref-font-line-height-lg);
+  color: var(--sys-text-color-default);
+}
+
+.ins-report-chapter__grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 320px) minmax(0, 1fr);
+  gap: var(--ref-spacing-xl);
+}
+
+.ins-report-chapter__aside {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+  min-width: 0;
+}
+
+.ins-report-chapter__measures {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.ins-report-chapter__measureslabel {
+  margin: 0 0 var(--ref-spacing-xxs);
+  padding-bottom: var(--ref-spacing-xxs);
+  border-bottom: 1px solid var(--sys-color-border-color-default);
+  font-size: var(--ref-font-size-xs);
+  line-height: var(--ref-font-line-height-xs);
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--sys-text-color-light);
+}
+
+.ins-report-chapter__chart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  min-width: 0;
+}
+
+.ins-chart--report {
+  flex: 1;
+}
+
+/* ── Posts ──────────────────────────────────────────────────────────────── */
+
+/* No band of its own: a .ap-divider separates it, so the chapter is one card
+   with one padding instead of a card with full-bleed rows fighting it. */
+.ins-report-chapter__posts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+}
+
+/* ── Footer — Archie's line, then the two doors ─────────────────────────── */
+
+.ins-report-chapter__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-md);
+}
+
+.ins-report-chapter__pitch {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  margin: 0;
+  min-width: 0;
+  font-size: var(--ref-font-size-sm);
+  line-height: var(--ref-font-line-height-sm);
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--sys-text-color-default);
+}
+
+/* Archie speaking — the mark is the only orange in the footer besides its own
+   button, and it is what makes the line read as a recommendation rather than a
+   caption. */
+.ins-report-chapter__pitch > i {
+  flex-shrink: 0;
+  color: var(--ref-color-orange-100);
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────────── */
+
+/* The chapter stacks well before the page gets narrow: with a 320px aside and
+   a 40px gutter, a 1000px viewport (minus the rail) left the curve 184px wide —
+   a chart that small is a decoration, so the two columns become one first. */
+@media (max-width: 1080px) {
+  .ins-report-chapter__grid {
+    grid-template-columns: 1fr;
+    gap: var(--ref-spacing-md);
+  }
+}
+
+@media (max-width: 900px) {
+  .ins-report {
+    padding: var(--ref-spacing-sm) var(--ref-spacing-md) var(--ref-spacing-xl);
+  }
+  .ins-report-chapter__meta {
+    margin-left: 0;
+    flex-basis: 100%;
+  }
+  .ins-report-chapter__foot {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

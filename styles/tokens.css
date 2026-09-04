@@ -112,6 +112,38 @@
      scrim fade. Matches the `--ease-standard` in handoff colors_and_type.css. */
   --app-ease-standard: cubic-bezier(0.2, 0, 0, 1);
 
+  /* ── Charts (Insights) ────────────────────────────────────────────────
+     Highcharts paints in SVG attributes and cannot resolve var(); charts.js
+     reads these once via getComputedStyle. The status colours map the three
+     verdict tiers: on-track → DS success, at-risk → tagOrange (NOT brand
+     orange, which is the AI/spotlight colour), off-track → DS error. The
+     categorical ramp is for series that are not a verdict (one line per
+     objective on the trajectories chart) — no orange, red or green in it, so
+     a series colour is never mistaken for a state. */
+  --app-chart-on-track: var(--sys-color-success-text); /* #45B854 */
+  --app-chart-on-track-soft: var(--sys-color-success-light-bg); /* #ECF7ED */
+  /* tag-orange-150, NOT -100: the DS status pill's at-risk dot is
+     --comp-status-tag-orange-dot-background-color = #A66200. At -100 (#FBB500)
+     an at-risk objective showed a brown dot in its pill and a yellow curve
+     beside it, and #FBB500 on white is ~1.8:1 — under the 3:1 floor a
+     graphical object needs to be seen at all. */
+  --app-chart-at-risk: var(--ref-color-tag-orange-150); /* #A66200 */
+  --app-chart-at-risk-soft: var(--ref-color-tag-orange-10); /* #FFF8E6 */
+  --app-chart-off-track: var(--sys-color-error-text); /* #E81313 */
+  --app-chart-off-track-soft: var(--sys-color-error-light-bg); /* #FDE7E7 */
+  --app-chart-neutral: var(--ref-color-grey-60); /* collecting / parked */
+  --app-chart-neutral-soft: var(--ref-color-grey-05);
+  --app-chart-target: var(--ref-color-grey-80); /* the dashed target line */
+  --app-chart-grid: var(--ref-color-grey-10);
+  --app-chart-axis: var(--ref-color-grey-80);
+  --app-chart-axis-line: var(--ref-color-grey-20);
+  --app-chart-1: var(--ref-color-electric-blue-100);
+  --app-chart-2: var(--ref-color-purple-100);
+  --app-chart-3: var(--ref-color-menthol-100);
+  --app-chart-4: var(--ref-color-soft-blue-100);
+  --app-chart-5: var(--ref-color-yellow-100);
+  --app-chart-6: var(--ref-color-bluesky-100);
+
   /* ── App chrome sizing ────────────────────────────────────────────── */
   --app-topbar-height: 56px;
 

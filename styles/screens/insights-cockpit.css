@@ -1,0 +1,326 @@
+/* ---- Insights · Cockpit — a rail of objectives, one read in full --------------------
+   Master–detail that fills the viewport: the rail scrolls its rows, the pane
+   scrolls its cards, the page itself never scrolls. Density is the point — this
+   is the layout for someone who already knows their objectives. */
+
+.ins-cockpit {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr);
+  background: var(--app-bg);
+}
+
+/* ── Rail ───────────────────────────────────────────────────────────────── */
+
+.ins-cockpit-rail {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-right: 1px solid var(--app-border-soft);
+  background: var(--app-surface);
+}
+
+.ins-cockpit-rail__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-md) var(--ref-spacing-md) var(--ref-spacing-sm);
+  border-bottom: 1px solid var(--sys-color-border-color-default);
+}
+
+.ins-cockpit-rail__title {
+  margin: 0;
+  font-size: var(--sys-text-style-h1-size);
+  line-height: var(--sys-text-style-h1-line-height);
+  font-weight: var(--ref-font-weight-black);
+  color: var(--sys-text-color-default);
+  letter-spacing: -0.02em;
+}
+
+.ins-cockpit-rail__list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  list-style: none;
+  margin: 0;
+  padding: var(--ref-spacing-xs);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+}
+
+/* Two rows: the identity, then the curve of the measure deciding the verdict —
+   full width of the text column instead of squeezed into an 84px gutter, which
+   is the difference between a curve you can read and a smudge. */
+.ins-cockpit-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
+  width: 100%;
+  padding: var(--ref-spacing-xs);
+  border: 1px solid transparent;
+  border-radius: var(--app-radius-starter);
+  background: transparent;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition:
+    border-color var(--ref-animation-short) var(--app-ease-standard),
+    background-color var(--ref-animation-short) var(--app-ease-standard);
+}
+
+.ins-cockpit-row:hover,
+.ins-cockpit-row:focus-visible {
+  border-color: var(--ref-color-electric-blue-100);
+  outline: none;
+}
+
+.ins-cockpit-row.is-selected {
+  border-color: var(--ref-color-electric-blue-100);
+  background: var(--ref-color-electric-blue-05);
+}
+
+.ins-cockpit-row__ring {
+  grid-row: 1 / span 2;
+}
+
+.ins-cockpit-row__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  min-width: 0;
+}
+
+.ins-cockpit-row__name {
+  font-size: var(--ref-font-size-sm);
+  line-height: var(--ref-font-line-height-sm);
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--sys-text-color-default);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ins-cockpit-row__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  min-width: 0;
+}
+
+.ins-cockpit-row__spark {
+  position: relative;
+  display: block;
+  min-width: 0;
+}
+
+/* The measure's name sits ON the sparkline's left, small and quiet: the curve
+   is meaningless without knowing what it counts, and a row of its own would
+   cost a third line per objective. */
+.ins-cockpit-row__sparkname {
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-size: var(--ref-font-size-xs);
+  line-height: var(--ref-font-line-height-xs);
+  color: var(--sys-text-color-light);
+  background: linear-gradient(to right, var(--app-surface) 70%, transparent);
+  padding-right: var(--ref-spacing-xxs);
+  pointer-events: none;
+}
+
+.ins-cockpit-row.is-selected .ins-cockpit-row__sparkname {
+  background: linear-gradient(to right, var(--ref-color-electric-blue-05) 70%, transparent);
+}
+
+.ins-cockpit-rail__foot {
+  padding: var(--ref-spacing-xs) var(--ref-spacing-md);
+  border-top: 1px solid var(--sys-color-border-color-default);
+  font-size: var(--ref-font-size-xs);
+  line-height: var(--ref-font-line-height-xs);
+}
+
+/* ── Pane ───────────────────────────────────────────────────────────────── */
+
+.ins-cockpit-pane {
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--ref-spacing-md) var(--ref-spacing-lg) var(--ref-spacing-xxl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+}
+
+/* The pane is a flex column with a DEFINITE height (it is a viewport-sized grid
+   row that scrolls), so its children are over-constrained and flex-shrink would
+   squeeze them — which silently clipped the readout's tallest cell by 24px.
+   Nothing in a scrolling column should shrink: it scrolls instead. */
+.ins-cockpit-pane > * {
+  flex-shrink: 0;
+}
+
+.ins-cockpit-pane__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ref-spacing-sm);
+}
+
+.ins-cockpit-pane__titles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  min-width: 0;
+}
+
+.ins-cockpit-pane__title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xs);
+}
+
+.ins-cockpit-pane__title h2 {
+  margin: 0;
+  font-size: var(--ref-font-size-xxxl);
+  line-height: var(--ref-font-line-height-xl);
+  font-weight: var(--ref-font-weight-extra-bold);
+  color: var(--sys-text-color-default);
+  letter-spacing: -0.01em;
+}
+
+.ins-cockpit-pane__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxxs);
+  margin: 0;
+  font-size: var(--ref-font-size-sm);
+  line-height: var(--ref-font-line-height-sm);
+  color: var(--sys-text-color-light);
+}
+
+.ins-cockpit-pane__reading {
+  margin: 0;
+  max-width: 78ch;
+  font-size: var(--ref-font-size-md);
+  line-height: var(--ref-font-line-height-lg);
+  color: var(--sys-text-color-default);
+}
+
+/* ── Readout ────────────────────────────────────────────────────────────────
+   Three cells, NOT four of equal weight: how far along dominates (it is the
+   answer), current and target are what it is made of. Four identical numerals
+   left the reader to work out which one mattered. */
+/* .ap-card frames and pads it; the cells are a grid inside that padding, told
+   apart by a hairline rather than by a band of their own. */
+.ins-cockpit-readout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--ref-spacing-md);
+}
+
+.ins-cockpit-readout > * + * {
+  padding-left: var(--ref-spacing-md);
+  border-left: 1px solid var(--sys-color-border-color-default);
+}
+
+/* ── Cards ──────────────────────────────────────────────────────────────── */
+
+.ins-cockpit-card {
+  gap: var(--ref-spacing-xs);
+}
+
+.ins-chart--cockpit {
+  margin: 0 calc(-1 * var(--ref-spacing-xxs));
+}
+
+/* ── Measures table ─────────────────────────────────────────────────────── */
+
+/* No per-th/td rules and no width: the DS table sets its own width, aligns its
+   headers, centres its cells, and ships `.right` for numeric columns and
+   `tbody tr.selected` for a highlighted row. Styling individual cells is the
+   component's documented Don't. */
+
+.ins-cockpit-table__metric {
+  display: block;
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--sys-text-color-default);
+}
+
+.ins-cockpit-table th[scope="row"] .ins-muted {
+  font-size: var(--ref-font-size-xs);
+}
+
+.ins-cockpit-table__bar {
+  min-width: 150px;
+}
+
+.ins-cockpit-table__bar .app-bar {
+  display: inline-block;
+  width: calc(100% - 46px);
+  vertical-align: middle;
+  margin-right: var(--ref-spacing-xxxs);
+}
+
+.ins-cockpit-table__bar .ins-num {
+  display: inline-block;
+  width: 38px;
+  font-weight: var(--ref-font-weight-bold);
+}
+
+.ins-cockpit-table__spark {
+  width: 120px;
+  min-width: 120px;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────────── */
+
+@media (max-width: 1100px) {
+  .ins-cockpit-readout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .ins-cockpit-readout > *:first-child {
+    grid-column: 1 / -1;
+    padding-bottom: var(--ref-spacing-sm);
+    border-bottom: 1px solid var(--sys-color-border-color-default);
+  }
+  .ins-cockpit-readout > *:nth-child(2) {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .ins-cockpit-table__spark {
+    display: none;
+  }
+}
+
+@media (max-width: 1000px) {
+  .ins-cockpit {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .ins-cockpit-rail {
+    border-right: 0;
+    border-bottom: 1px solid var(--sys-color-border-color-default);
+  }
+  .ins-cockpit-rail__list {
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  .ins-cockpit-row {
+    width: 300px;
+    flex-shrink: 0;
+  }
+  .ins-cockpit-rail__foot {
+    display: none;
+  }
+  .ins-cockpit-pane__head {
+    flex-direction: column;
+  }
+}

@@ -115,6 +115,7 @@ import {
 } from "../components/right-panel.js?v=1041";
 import { setHandoff, consumeHandoff } from "../handoff.js?v=1041";
 import { attachTopicToChat, useTopicInChat, startTopicPickerInline, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=1041";
+import { startObjectiveChat, OBJECTIVE_CHAT_HANDOFF } from "../objective-flow.js?v=1041";
 import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1041";
 import {
   getFreshTopics,
@@ -3612,6 +3613,15 @@ function wireAssistantPanel(root, session, attachedContext) {
   // the source-intake card in the thread, so the Topic names itself and the
   // composer is right there. No echoed message and no follow-up question — the
   // card already says which Topic is in the chat.
+  // Hand-off from Insights — an objective's "Work on this", or a linked post's
+  // "Repurpose". Archie opens on the diagnosis (or on the post, quoted back with
+  // what it did) and offers the angles as a question picker, so the chat starts
+  // where the reader left off instead of on a blank composer.
+  const pendingObjective = consumeHandoff(OBJECTIVE_CHAT_HANDOFF);
+  if (pendingObjective?.ctxId) {
+    setTimeout(() => startObjectiveChat(session.id, pendingObjective), 150);
+  }
+
   const pendingTopic = consumeHandoff(TOPIC_CHAT_HANDOFF);
   if (pendingTopic?.topicId) {
     setTimeout(() => attachTopicToChat(session.id, pendingTopic.topicId), 100);

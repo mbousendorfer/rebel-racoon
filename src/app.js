@@ -1,5 +1,8 @@
-import { route, setAfterRender, start } from "./router.js?v=1041";
+import { navigate, route, setAfterRender, start } from "./router.js?v=1041";
 import { initArchieLoader } from "./archie-loader.js?v=1041";
+import { renderInsights } from "./screens/insights/shell.js?v=1041";
+import { init as initObjectiveModal } from "./components/objective-modal.js?v=1041";
+import { init as initObjectiveCatalogPanel } from "./components/objective-catalog-panel.js?v=1041";
 import { initTopbar, renderTopbar } from "./components/topbar.js?v=1041";
 import { initSidebar, renderSidebar } from "./components/sidebar.js?v=1041";
 import { init as initRightPanel } from "./components/right-panel.js?v=1041";
@@ -49,6 +52,15 @@ route("/playbook/:id", renderPlaybook);
 route("/connectors", renderConnectors);
 // The Topic Feed. Gated on `topicFeed` inside the screen rather than here, so a
 // stale deep link bounces to / instead of rendering a dead route.
+// Insights — the active brand's objectives, read two ways. ONE route: the two
+// layouts are a control inside the screen, not URLs. /insights/:tab exists only
+// so links from the older tabbed hub land, query kept, and it is gated by the
+// same flag as the screen (which bounces home when the switch is off).
+route("/insights", renderInsights);
+route("/insights/:tab", () => {
+  const query = window.location.hash.split("?")[1];
+  navigate(query ? `/insights?${query}` : "/insights");
+});
 route("/topics", renderTopics);
 // route() anchors its regex (^…$), so this is a distinct sibling of /topics — no
 // ordering concern. The config is a settings PAGE rather than a tab on the feed:
@@ -90,6 +102,8 @@ initTopicPickerModal();
 initConfirmModal();
 initRenameModal();
 initSaveFolderModal();
+initObjectiveModal();
+initObjectiveCatalogPanel();
 initSharePlaybookModal();
 initAnalyzeProfilesModal();
 initFillDocumentModal();

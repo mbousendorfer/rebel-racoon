@@ -626,3 +626,74 @@ button.ap-link {
 .ap-button.mermaid::after {
   background: var(--ap-mermaid-inner, var(--ref-color-white));
 }
+
+/* ── Progress ring + progress bar — primitives the DS has no component for ──
+   Verified absent from the DS: no .ap-progress, .ap-meter, .ap-gauge, .ap-ring
+   in css-ui, and nothing in the specs' intent table maps to progress. So this is
+   the last-resort invention case — and it belongs HERE, not in a screen
+   stylesheet: both are rendered by charts.js, the app's one charting module,
+   and the bar already has callers in two layouts. Same reasoning as
+   .app-modal-backdrop and the .ap-segmented-control port above.
+
+   Colour comes from the tier class, so the shapes follow the --app-chart-*
+   tokens without a line of JS. */
+
+/* ── Ring ───────────────────────────────────────────────────────────────── */
+
+.app-ring {
+  display: block;
+  flex-shrink: 0;
+}
+
+.app-ring__track {
+  stroke: var(--ref-color-grey-10);
+}
+
+.app-ring__arc {
+  stroke: var(--app-chart-neutral);
+  transition: stroke-dasharray var(--ref-animation-long) var(--app-ease-standard);
+}
+
+.app-ring--on-track .app-ring__arc {
+  stroke: var(--app-chart-on-track);
+}
+.app-ring--at-risk .app-ring__arc {
+  stroke: var(--app-chart-at-risk);
+}
+.app-ring--off-track .app-ring__arc {
+  stroke: var(--app-chart-off-track);
+}
+
+.app-ring__label {
+  fill: var(--sys-text-color-default);
+  font-family: var(--ref-font-family);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Bar ────────────────────────────────────────────────────────────────── */
+
+.app-bar {
+  position: relative;
+  height: 6px;
+  border-radius: var(--app-radius-pill);
+  background: var(--ref-color-grey-10);
+  overflow: hidden;
+}
+
+.app-bar__fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--app-chart-neutral);
+  transition: width var(--ref-animation-long) var(--app-ease-standard);
+}
+
+.app-bar--on-track .app-bar__fill {
+  background: var(--app-chart-on-track);
+}
+.app-bar--at-risk .app-bar__fill {
+  background: var(--app-chart-at-risk);
+}
+.app-bar--off-track .app-bar__fill {
+  background: var(--app-chart-off-track);
+}
