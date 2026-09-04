@@ -25,8 +25,8 @@
 // chapter's own verdict 60px above it, and encoding "how far along" as an arc
 // nobody can compare, with the real work done by the number printed inside.
 
-import { rollupSentence, readingFor } from "../model.js?v=1046";
-import { trendSpec, mountCharts } from "../charts.js?v=1046";
+import { rollupSentence, readingFor } from "../model.js?v=1052";
+import { trendSpec, mountCharts } from "../charts.js?v=1052";
 import {
   tierCounts,
   statusPill,
@@ -39,7 +39,7 @@ import {
   proxyNote,
   objectiveActions,
   esc,
-} from "../pieces.js?v=1046";
+} from "../pieces.js?v=1052";
 
 export const id = "report";
 export const label = "Report";
@@ -91,8 +91,13 @@ function renderHero(entries, rollup, shown) {
 // ::before, and a third adornment on a component whose API is a label, an
 // optional counter and an optional icon.
 //
-// There is no add button in this row: the page bar carries the one primary, and
-// a second door to the same modal a few pixels above it is not an affordance.
+// The strip ends with "New objective", flush against the last tab and reading as
+// one of them, because the strip is the list of objectives and the way you add
+// to a list is at its end. It is NOT inside the tablist: a role="tablist" owns
+// tabs, and a button among them is invalid ARIA that also broke the arrow-key
+// traversal — so it is a sibling of the nav, wearing the tab's own class and
+// sitting on the same track line. Blue, because it is a control and not a tab
+// that can be selected; the page bar's primary stays where it is.
 const TAB_GLYPH = {
   "on-track": "ap-icon-rounded-check_fill",
   "at-risk": "ap-icon-warning_fill",
@@ -116,6 +121,9 @@ function renderTabs(entries, shown) {
     <div class="ap-tabs ins-report-tabs">
       <div class="ap-tabs-nav" role="tablist" aria-label="Objectives" data-ins-tablist>${tabs}</div>
     </div>
+    <button type="button" class="ap-tabs-tab ins-report-addtab" data-ins-new>
+      <i class="ap-icon-plus" aria-hidden="true"></i><span>New objective</span>
+    </button>
   </div>`;
 }
 
@@ -202,7 +210,7 @@ function renderChapter(entry, local, specs) {
     <div class="ap-divider" role="presentation"></div>
     <section class="ins-report-chapter__posts">
       <h3 class="ins-section-title">Posts drafted with Archie <span class="ap-counter normal grey">${entry.posts.length}</span></h3>
-      ${entry.posts.length ? `<div class="ins-postlist">${entry.posts.map((p) => postCard(p, entry)).join("")}</div>` : postsEmpty(entry)}
+      ${entry.posts.length ? `<div class="ins-postlist">${entry.posts.map((p) => postCard(p, entry)).join("")}</div>` : postsEmpty()}
     </section>
     <div class="ap-divider" role="presentation"></div>
     <footer class="ins-report-chapter__foot">

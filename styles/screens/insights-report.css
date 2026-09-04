@@ -21,9 +21,13 @@
    above the chapter they switch. */
 
 /* .ap-card carries the frame AND the padding/gap — this only tightens the gap,
-   because the head's four rows are one block, not four sections. */
+   because the head's four rows are one block, not four sections.
+   Bottom padding goes to zero: the strip's own track line IS the bottom of the
+   card, so a band of white under the underline would leave the tabs floating
+   inside the head instead of closing it. */
 .ins-report-hero {
   gap: var(--ref-spacing-xs);
+  padding-bottom: 0;
 }
 
 .ins-report-hero__titles {
@@ -53,16 +57,41 @@
 
 /* The add action is a SIBLING of the tab component, not a child of its nav: a
    role="tablist" owns tabs, and a button inside it was invalid ARIA that also
-   broke arrow-key traversal. */
+   broke arrow-key traversal. It still has to READ as the last tab, so the track
+   line CONTINUES past the nav: the button carries the same 1px of it and a flex
+   filler carries the rest to the card's edge. The line is NOT put on the row
+   itself — the DS nav draws its own, and a row border underneath it stacked two
+   hairlines into a 2px segment under the tabs only. Same #EAECEF the
+   component's --comp-tabs-border-color resolves to, and colinear because
+   align-items: flex-end puts every bottom edge on one line. */
 .ins-report-tabsrow {
   display: flex;
   align-items: flex-end;
-  gap: var(--ref-spacing-xs);
+  gap: 0;
 }
 
+.ins-report-tabsrow::after {
+  content: "";
+  flex: 1 1 auto;
+  align-self: stretch;
+  border-bottom: 1px solid var(--sys-border-color-default);
+}
+
+/* The nav hugs its tabs instead of taking the row (.ap-tabs is width: 100%), or
+   the add button would be pushed past the end of the strip. */
 .ins-report-tabs {
-  flex: 1;
+  flex: 0 1 auto;
+  width: auto;
   min-width: 0;
+}
+
+/* A control, not a selectable tab — so it takes the interactive ink rather than
+   the tab's grey, and never the active underline. */
+.ins-report-addtab {
+  gap: var(--ref-spacing-xxs);
+  border-bottom: 1px solid var(--sys-border-color-default);
+  color: var(--ref-color-electric-blue-100);
+  font-weight: var(--ref-font-weight-bold);
 }
 
 /* The DS tab already carries the selected underline; all this adds is room for

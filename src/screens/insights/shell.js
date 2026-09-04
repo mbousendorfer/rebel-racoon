@@ -32,36 +32,28 @@
 // host is never repainted without `destroyChartsIn(host)` first — the one rule
 // that keeps a brand switch from leaking a chart per repaint.
 
-import { html, raw } from "../../utils.js?v=1046";
-import { renderTopbar } from "../../components/topbar.js?v=1046";
-import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=1046";
+import { html, raw } from "../../utils.js?v=1052";
+import { renderTopbar } from "../../components/topbar.js?v=1052";
+import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=1052";
 import {
   subscribe as subscribeScope,
   getActivePlaybook,
   getActivePlaybookId,
   setActivePlaybook,
-} from "../../active-playbook.js?v=1046";
-import { getPath, navigate } from "../../router.js?v=1046";
-import { isFlagOn } from "../../feature-flags.js?v=1046";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=1046";
-import { consumeHandoff } from "../../handoff.js?v=1046";
-import { open as openObjectiveModal } from "../../components/objective-modal.js?v=1046";
-import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=1046";
-import { showToast } from "../../components/toast.js?v=1046";
-import { renderEmptyState } from "../../components/empty-state.js?v=1046";
-import { playbookSelect, viewSelect } from "./pieces.js?v=1046";
-import {
-  objectiveEntries,
-  playbookRollup,
-  entryByKey,
-  removePost,
-  restorePost,
-  subscribe as subscribeModel,
-} from "./model.js?v=1046";
-import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=1046";
-import * as report from "./layouts/report.js?v=1046";
-import * as cockpit from "./layouts/cockpit.js?v=1046";
-import * as cockpitBis from "./layouts/cockpit-bis.js?v=1046";
+} from "../../active-playbook.js?v=1052";
+import { getPath, navigate } from "../../router.js?v=1052";
+import { isFlagOn } from "../../feature-flags.js?v=1052";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=1052";
+import { consumeHandoff } from "../../handoff.js?v=1052";
+import { open as openObjectiveModal } from "../../components/objective-modal.js?v=1052";
+import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=1052";
+import { renderEmptyState } from "../../components/empty-state.js?v=1052";
+import { playbookSelect, viewSelect } from "./pieces.js?v=1052";
+import { objectiveEntries, playbookRollup, entryByKey } from "./model.js?v=1052";
+import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=1052";
+import * as report from "./layouts/report.js?v=1052";
+import * as cockpit from "./layouts/cockpit.js?v=1052";
+import * as cockpitBis from "./layouts/cockpit-bis.js?v=1052";
 
 /** Set by a Playbook's objectives block ("Open in Insights"); payload `${ctxId}::${label}`. */
 export const FOCUS_OBJECTIVE_HANDOFF = "focusObjective";
@@ -186,7 +178,7 @@ function paint() {
   const selected = parseHashParams().get("objective") || focusKey;
   // firstPaint gates the load reveal: a repaint replaces innerHTML, and a CSS
   // animation on fresh nodes restarts — so re-animating on every store notify
-  // would flicker the page on a brand switch or a removed post.
+  // would flicker the page on a brand switch or an edited objective.
   const vm = { entries, rollup, ctx, layoutId, focusKey, selectedKey: selected, local, firstPaint };
   firstPaint = false;
   layoutCleanup = currentLayout().render(host, vm) || null;
@@ -239,7 +231,7 @@ function onClick(event) {
   });
 
   const t = event.target.closest(
-    "[data-ins-layout],[data-ins-new],[data-ins-adjust],[data-ins-chat],[data-ins-remove-post],[data-ins-select],[data-ins-measure-tab],[data-ins-jump],[data-ins-scope-pick],[data-ins-repurpose],[data-ins-view]",
+    "[data-ins-new],[data-ins-adjust],[data-ins-chat],[data-ins-select],[data-ins-measure-tab],[data-ins-jump],[data-ins-scope-pick],[data-ins-repurpose],[data-ins-view]",
   );
   if (!t) return;
   const ds = t.dataset;
@@ -250,7 +242,10 @@ function onClick(event) {
     t.closest("[data-ins-scope]")?.removeAttribute("open");
     layoutId = ds.insView;
     writeLayoutId(layoutId);
-    firstPaint = true;
+    // NO reveal here. Switching view is the reader re-arranging the page they
+    // are already reading, not arriving on it — and it is a control they use to
+    // compare, so it gets used repeatedly. Re-running the 300ms rise on every
+    // click made the whole page bounce each time.
     paint();
     return;
   }
@@ -267,14 +262,6 @@ function onClick(event) {
     return;
   }
 
-  if (ds.insLayout) {
-    if (ds.insLayout === layoutId) return;
-    layoutId = ds.insLayout;
-    writeLayoutId(layoutId);
-    firstPaint = true;
-    paint();
-    return;
-  }
   if ("insNew" in ds) {
     openObjectiveModal({ mode: "create", contextId: getActivePlaybookId(), onChange: commit });
     return;
@@ -297,15 +284,6 @@ function onClick(event) {
     const entry = entryByKey(ds.insRepurpose);
     const post = entry?.posts.find((p) => p.id === ds.insPost);
     if (entry && post) repurposePostInChat(entry, post);
-    return;
-  }
-  if (ds.insRemovePost) {
-    const key = ds.insRemovePost;
-    const postId = ds.insPost;
-    const entry = entryByKey(key);
-    if (!entry || !postId) return;
-    removePost(key, postId);
-    showToast(`Removed from ${entry.label}`, { action: { label: "Undo", onClick: () => restorePost(key, postId) } });
     return;
   }
   if (ds.insSelect) {
@@ -377,7 +355,12 @@ export function renderInsights(_params, target) {
   // an objective writes `?objective=` and the router re-runs this handler, so a
   // tab click in Report (and a row click in Cockpit) is a remount of the same
   // page — re-animating it made the whole page jump on every switch.
-  const mountKey = `${layoutId}::${getActivePlaybookId()}`;
+  //
+  // The layout is deliberately NOT part of the key: it is how the same reading
+  // is arranged, not which reading it is. With it in, switching view and then
+  // clicking an objective produced a key never seen before and the entrance
+  // replayed one click after the switch — the same bounce, one step removed.
+  const mountKey = getActivePlaybookId() || "none";
   firstPaint = mountKey !== lastMountKey;
   lastMountKey = mountKey;
   // ONLY the handoff highlights. `?objective=` is how a selection is expressed
@@ -407,7 +390,7 @@ export function renderInsights(_params, target) {
   topbarEl?.addEventListener("keydown", onKeydown);
   window.addEventListener("resize", onResize);
 
-  unsubs.push(subscribeContexts(schedulePaint), subscribeScope(schedulePaint), subscribeModel(schedulePaint));
+  unsubs.push(subscribeContexts(schedulePaint), subscribeScope(schedulePaint));
 
   return teardown;
 }

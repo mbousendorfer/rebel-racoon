@@ -50,15 +50,14 @@
   gap: var(--ref-spacing-xxs);
 }
 
-/* Two rows: the identity, then the curve of the measure deciding the verdict —
-   full width of the text column instead of squeezed into an 84px gutter, which
-   is the difference between a curve you can read and a smudge. */
+/* One row: the ring, then the name and its verdict. No curve — see the module
+   header; a sparkline this narrow could not be read without a label printed on
+   top of it. */
 .ins-cockpit-row {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  grid-template-rows: auto auto;
   align-items: center;
-  gap: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
+  gap: var(--ref-spacing-xs);
   width: 100%;
   padding: var(--ref-spacing-xs);
   border: 1px solid transparent;
@@ -84,10 +83,6 @@
   background: var(--ref-color-electric-blue-05);
 }
 
-.ins-cockpit-row__ring {
-  grid-row: 1 / span 2;
-}
-
 .ins-cockpit-row__text {
   display: flex;
   flex-direction: column;
@@ -110,31 +105,6 @@
   align-items: center;
   gap: var(--ref-spacing-xxxs);
   min-width: 0;
-}
-
-.ins-cockpit-row__spark {
-  position: relative;
-  display: block;
-  min-width: 0;
-}
-
-/* The measure's name sits ON the sparkline's left, small and quiet: the curve
-   is meaningless without knowing what it counts, and a row of its own would
-   cost a third line per objective. */
-.ins-cockpit-row__sparkname {
-  position: absolute;
-  top: 0;
-  left: 0;
-  font-size: var(--ref-font-size-xs);
-  line-height: var(--ref-font-line-height-xs);
-  color: var(--sys-text-color-light);
-  background: linear-gradient(to right, var(--app-surface) 70%, transparent);
-  padding-right: var(--ref-spacing-xxs);
-  pointer-events: none;
-}
-
-.ins-cockpit-row.is-selected .ins-cockpit-row__sparkname {
-  background: linear-gradient(to right, var(--ref-color-electric-blue-05) 70%, transparent);
 }
 
 .ins-cockpit-rail__foot {

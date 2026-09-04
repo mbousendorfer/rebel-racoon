@@ -1,9 +1,16 @@
 // ---- Insights · Cockpit — the instrument panel --------------------------------
 //
 // Master–detail that fills the viewport and never scrolls as a page: a rail of
-// every objective on the left — ring, verdict, and the curve of the measure
-// deciding it — and the selected one read in full on the right: the readout,
-// the curve, the measures as a table, the posts as rows.
+// every objective on the left — ring, name, verdict — and the selected one read
+// in full on the right: the readout, the curve, the measures as a table, the
+// posts as rows.
+//
+// The rail rows carry NO sparkline. A 34px curve in a 190px gutter cannot be
+// read, and it needed the measure's name printed on top of it to mean anything,
+// which put a label over a line and made the row look broken. Where it stands
+// (the ring) and how it is judged (the pill) is what a row of a list owes the
+// reader; the curve is the pane's job, at a size that can be read. The band in
+// Cockpit bis is the other answer — there the curve gets half a tile.
 //
 // Best for: checking. The reader who knows their objectives and comes to
 // compare them and drill into one — dense, numeric, one thing in focus. The
@@ -14,8 +21,8 @@
 // chart the headline measure and leave the others as 96px sparklines in the
 // table, which meant an objective's second measure had no curve anywhere.
 
-import { readingFor } from "../model.js?v=1046";
-import { trendSpec, sparklineSpec, ringSvg, progressBar, mountCharts } from "../charts.js?v=1046";
+import { readingFor } from "../model.js?v=1052";
+import { trendSpec, sparklineSpec, ringSvg, progressBar, mountCharts } from "../charts.js?v=1052";
 import {
   tierCounts,
   statusPill,
@@ -30,7 +37,7 @@ import {
   objectiveActions,
   figure,
   esc,
-} from "../pieces.js?v=1046";
+} from "../pieces.js?v=1052";
 
 export const id = "cockpit";
 export const label = "Cockpit";
@@ -45,7 +52,7 @@ export function render(host, vm) {
   const specs = new Map();
 
   host.innerHTML = `<div class="ins-cockpit">
-    ${renderRail(entries, rollup, selected, specs)}
+    ${renderRail(entries, rollup, selected)}
     ${renderPane(selected, local, specs, firstPaint)}
   </div>`;
 
@@ -55,14 +62,10 @@ export function render(host, vm) {
 
 // ── Rail ──────────────────────────────────────────────────────────────────
 
-function renderRail(entries, rollup, selected, specs) {
+function renderRail(entries, rollup, selected) {
   const rows = entries
-    .map((e, i) => {
+    .map((e) => {
       const weak = e.headline;
-      const sparkId = `cockpit-spark-${i}`;
-      if (weak?.series) {
-        specs.set(sparkId, sparklineSpec(weak.series, { tier: e.collecting ? "collecting" : weak.tier, height: 34 }));
-      }
       const on = e === selected;
       return `<li>
         <button type="button" class="ins-cockpit-row ${on ? "is-selected" : ""}" data-ins-select="${esc(e.key)}" data-ins-objective="${esc(e.key)}"${on ? ' aria-current="true"' : ""}>
@@ -70,10 +73,6 @@ function renderRail(entries, rollup, selected, specs) {
           <span class="ins-cockpit-row__text">
             <span class="ins-cockpit-row__name">${esc(e.label)}</span>
             <span class="ins-cockpit-row__meta">${statusPill(e, { dot: false })}</span>
-          </span>
-          <span class="ins-cockpit-row__spark">
-            ${weak?.series ? `<span class="ins-chart__node" data-ins-chart="${sparkId}" style="height:34px"></span>` : ""}
-            <span class="ins-cockpit-row__sparkname">${esc(weak?.metricLabel || "")}</span>
           </span>
         </button>
       </li>`;
@@ -203,7 +202,7 @@ function renderPane(entry, local, specs, firstPaint) {
 
     <section class="ap-card ins-cockpit-card">
       <h3 class="ins-section-title">Posts drafted with Archie <span class="ap-counter normal grey">${entry.posts.length}</span></h3>
-      ${entry.posts.length ? `<div class="ins-postlist">${entry.posts.map((p) => postCard(p, entry)).join("")}</div>` : postsEmpty(entry)}
+      ${entry.posts.length ? `<div class="ins-postlist">${entry.posts.map((p) => postCard(p, entry)).join("")}</div>` : postsEmpty()}
     </section>
   </main>`;
 }

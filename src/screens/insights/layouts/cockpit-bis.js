@@ -25,8 +25,8 @@
 // against the dashed target line), and the band is what finally makes it big
 // enough to say it.
 
-import { readingFor } from "../model.js?v=1046";
-import { trendSpec, sparklineSpec, progressBar, mountCharts } from "../charts.js?v=1046";
+import { readingFor } from "../model.js?v=1052";
+import { trendSpec, sparklineSpec, progressBar, mountCharts } from "../charts.js?v=1052";
 import {
   statusPill,
   measurePill,
@@ -40,7 +40,7 @@ import {
   objectiveActions,
   figure,
   esc,
-} from "../pieces.js?v=1046";
+} from "../pieces.js?v=1052";
 
 export const id = "cockpit-bis";
 export const label = "Cockpit bis";
@@ -70,9 +70,15 @@ export function render(host, vm) {
 // up and can be read against each other — which is the one thing a stacked rail
 // of 34px sparklines could not do.
 //
-// No counts line above it and no roll-up: with the tiles themselves on screen,
+// It is titled and it is a TRAY — grey ground, a grey-20 line under it — not a
+// white band on a near-white page: the tiles are white, so a white band made
+// the selector and the read below it read as one continuous surface. The title
+// is what says where the band stops being page chrome and starts being the list
+// of objectives.
+//
+// No counts line, though, and no roll-up: with the tiles themselves on screen,
 // "On track 1 · At risk 1 · Off track 0" is a recount of what the reader is
-// already looking at. The band IS the summary.
+// already looking at.
 
 function renderStrip(entries, selected, specs) {
   const tiles = entries
@@ -111,7 +117,10 @@ function renderStrip(entries, selected, specs) {
     .join("");
 
   return `<nav class="ins-cockpitb-strip" aria-label="Objectives">
-    <ul class="ins-cockpitb-strip__list">${tiles}</ul>
+    <div class="ins-cockpitb-strip__inner">
+      <h1 class="ins-cockpitb-strip__title">Objectives</h1>
+      <ul class="ins-cockpitb-strip__list">${tiles}</ul>
+    </div>
   </nav>`;
 }
 
@@ -237,7 +246,7 @@ function renderPane(entry, local, specs, firstPaint) {
 
     <section class="ap-card ins-cockpitb-card">
       <h3 class="ins-section-title">Posts drafted with Archie <span class="ap-counter normal grey">${entry.posts.length}</span></h3>
-      ${entry.posts.length ? `<div class="ins-postlist">${entry.posts.map((p) => postCard(p, entry)).join("")}</div>` : postsEmpty(entry)}
+      ${entry.posts.length ? `<div class="ins-postlist">${entry.posts.map((p) => postCard(p, entry)).join("")}</div>` : postsEmpty()}
     </section>
   </main>`;
 }

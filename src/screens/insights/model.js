@@ -15,11 +15,13 @@
 // publish day. Two paints of one objective draw the same line; two objectives
 // never draw the same one.
 //
-// The only state is the in-memory set of posts the reader removed from an
-// objective — a prototype affordance that dies with the reload (documented as
-// such in CLAUDE.md). If it ever has to survive, it becomes a global store.
+// The model holds NO state. It used to keep a set of posts the reader had
+// removed from an objective; a post is attributed by Archie because it moved
+// the measure, so un-attributing it asked the reader to argue with an
+// observation rather than act on it. The verb is gone, and with it the set, the
+// notifier it existed to fire, and the entry's removed counts.
 
-import { getActivePlaybook } from "../../active-playbook.js?v=1046";
+import { getActivePlaybook } from "../../active-playbook.js?v=1052";
 import {
   resolveObjectives,
   objectiveVerdict,
@@ -30,12 +32,11 @@ import {
   parseMetricValue,
   formatLike,
   metricLabel,
-} from "../../objective-measures.js?v=1046";
-import { TIER_LABELS, TIER_STATUS_CLASS, TIER_ORDER } from "../../objective-scoring.js?v=1046";
-import { nextMoveFor } from "../../objective-flow.js?v=1046";
-import { objectivePosts, objectivePostPool, TOP_POST_TODAY, TOP_POST_IMAGES } from "../../mocks.js?v=1046";
-import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=1046";
-import { createNotifier } from "../../store-utils.js?v=1046";
+} from "../../objective-measures.js?v=1052";
+import { TIER_LABELS, TIER_STATUS_CLASS, TIER_ORDER } from "../../objective-scoring.js?v=1052";
+import { nextMoveFor } from "../../objective-flow.js?v=1052";
+import { objectivePosts, objectivePostPool, TOP_POST_TODAY, TOP_POST_IMAGES } from "../../mocks.js?v=1052";
+import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=1052";
 
 /** The mock "today" — one anchor for the series' x-axis and the posts' dates. */
 export const INSIGHTS_TODAY = TOP_POST_TODAY;
@@ -108,28 +109,6 @@ export function signedPct(pct) {
   const r = Math.round(pct);
   if (r === 0) return "0%";
   return r > 0 ? `+${r}%` : `−${Math.abs(r)}%`;
-}
-
-// ── Removed posts (in-memory) ─────────────────────────────────────────────
-
-const removed = new Set();
-const notifier = createNotifier("insights-model");
-export const subscribe = notifier.subscribe;
-
-const removalKey = (key, postId) => `${key}|${postId}`;
-
-export function isPostRemoved(key, postId) {
-  return removed.has(removalKey(key, postId));
-}
-
-export function removePost(key, postId) {
-  removed.add(removalKey(key, postId));
-  notifier.notify(null);
-}
-
-export function restorePost(key, postId) {
-  removed.delete(removalKey(key, postId));
-  notifier.notify(null);
 }
 
 // ── Linked posts — Archie-drafted, published, attributed to a measure ──────
@@ -208,7 +187,6 @@ function linkedPostsFor(entry, seed) {
         metricLabel: measure?.metricLabel || metricLabel(row.metricId),
         measureId: measure?.id || null,
         contribution: contributionFor(row, measure),
-        removed: isPostRemoved(entry.key, row.id),
       };
     })
     .sort((a, b) => a.daysAgo - b.daysAgo);
@@ -375,16 +353,11 @@ function buildEntry(ctx, resolved) {
     headline: null,
     progress: 0,
     posts: [],
-    postsTotal: 0,
-    postsRemoved: 0,
     nextMove: null,
     counts: null,
   };
 
-  const allPosts = linkedPostsFor(entry, seed);
-  entry.postsTotal = allPosts.length;
-  entry.posts = allPosts.filter((p) => !p.removed);
-  entry.postsRemoved = entry.postsTotal - entry.posts.length;
+  entry.posts = linkedPostsFor(entry, seed);
 
   measures.forEach((m, i) => {
     m.series = measureSeries(m, entry, entry.posts, seed + i * 13);

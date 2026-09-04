@@ -412,25 +412,6 @@
   flex-shrink: 0;
 }
 
-/* The remove sits after it, in the same trailing slot (where the winners row
-   carries "View on…"), and appears on hover so a list of evidence does not read
-   as a list of dismissals. */
-/* Its native size, 36px: the DS icon button has ONE size and no size modifier,
-   and re-pointing its --comp-* tokens from app CSS both broke that rule and
-   invented a variant the DS does not have. (The DS's own close-button, which
-   would be the component for a dismiss, is Angular-only — no CSS-UI class — so
-   the icon button is the control here.) */
-.ins-postrow__remove {
-  flex-shrink: 0;
-  opacity: 0;
-  transition: opacity var(--ref-animation-short);
-}
-
-.ins-postrow:hover .ins-postrow__remove,
-.ins-postrow:focus-within .ins-postrow__remove {
-  opacity: 1;
-}
-
 .ins-posts-empty {
   margin: 0;
   padding: var(--ref-spacing-xs) 0;

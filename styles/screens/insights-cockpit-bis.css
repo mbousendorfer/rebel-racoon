@@ -18,12 +18,15 @@
 }
 
 /* ── The band ───────────────────────────────────────────────────────────────
-   Chrome, not content: white surface with a hairline under it, the same way the
-   rail is a white panel beside a grey page. */
+   A tray, not a white band: the tiles are white, so on a white ground the
+   selector and the read below it read as one surface. Grey ground (the same
+   tray the Topic Feed quotes evidence in) and the app's strong border under it
+   — a DS hairline of #EAECEF is what the topbar uses to sit ABOVE content, and
+   it was not enough between two zones that both hold white cards. */
 
 .ins-cockpitb-strip {
-  background: var(--app-surface);
-  border-bottom: 1px solid var(--sys-border-color-default);
+  background: var(--app-surface-subtle);
+  border-bottom: 1px solid var(--app-border);
   padding: var(--ref-spacing-sm) var(--ref-spacing-xl);
   /* Two or three tiles is the case, and they are one row. The cap is what stops
      a Playbook that grew six objectives from pushing the read off the page:
@@ -34,11 +37,29 @@
   overflow-y: auto;
 }
 
+.ins-cockpitb-strip__inner {
+  width: min(var(--ins-content), 100%);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+}
+
+/* The page's subject, in the same slot the rail and the Report hero put it —
+   this layout had none, and a band of tiles with no title reads as a toolbar. */
+.ins-cockpitb-strip__title {
+  margin: 0;
+  font-size: var(--sys-text-style-h1-size);
+  line-height: var(--sys-text-style-h1-line-height);
+  font-weight: var(--ref-font-weight-black);
+  color: var(--sys-text-color-default);
+  letter-spacing: -0.02em;
+}
+
 .ins-cockpitb-strip__list {
   list-style: none;
-  margin: 0 auto;
+  margin: 0;
   padding: 0;
-  width: min(var(--ins-content), 100%);
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
   align-items: stretch;

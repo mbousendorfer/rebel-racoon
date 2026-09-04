@@ -8,11 +8,11 @@
 // Pure render helpers — strings in, strings out. No listeners: every action is
 // a `data-ins-*` hook the shell dispatches.
 
-import { escapeHtml as esc } from "../../utils.js?v=1046";
-import { renderPostEchoRow } from "../../components/top-post-card.js?v=1046";
-import { getContexts } from "../../contexts-store.js?v=1046";
-import { progressBar } from "./charts.js?v=1046";
-import { signedPct } from "./model.js?v=1046";
+import { escapeHtml as esc } from "../../utils.js?v=1052";
+import { renderPostEchoRow } from "../../components/top-post-card.js?v=1052";
+import { getContexts } from "../../contexts-store.js?v=1052";
+import { progressBar } from "./charts.js?v=1052";
+import { signedPct } from "./model.js?v=1052";
 
 // ── The page's head — the scope control and the state line ────────────────
 //
@@ -268,6 +268,10 @@ export function proxyNote(entry) {
  * The contribution stays in ink rather than borrowing the winners' green
  * ×-vs-average accent — green means "on track" on this screen, and a green
  * multiple inside an off-track objective would read as reassurance.
+ *
+ * There is NO remove: a post is on this list because Archie measured that it
+ * moved the objective, and a reader cannot un-observe that. The one trailing
+ * control is Repurpose.
  */
 export function postCard(post, entry) {
   const contribution = post.contribution.value || post.metricLabel;
@@ -281,15 +285,13 @@ export function postCard(post, entry) {
     statsHtml: `<b>${esc(contribution)}</b> · ${esc(post.contribution.multiple)}`,
     actionHtml:
       `<button type="button" class="ap-button ghost blue ins-postrow__reuse" data-ins-repurpose="${esc(entry.key)}" data-ins-post="${esc(post.id)}">` +
-      `<i class="ap-icon-sparkles" aria-hidden="true"></i><span>Repurpose</span></button>` +
-      `<button type="button" class="ap-icon-button ins-postrow__remove" data-ins-remove-post="${esc(entry.key)}" data-ins-post="${esc(post.id)}" aria-label="Remove this post from ${esc(entry.label)}" title="Remove from this objective"><i class="ap-icon-close" aria-hidden="true"></i></button>`,
+      `<i class="ap-icon-sparkles" aria-hidden="true"></i><span>Repurpose</span></button>`,
   });
 }
 
 /** The empty case under an objective — no posts drafted with Archie yet. */
-export function postsEmpty(entry) {
-  const gone = entry.postsRemoved ? ` ${entry.postsRemoved} removed by you.` : "";
-  return `<p class="ins-posts-empty">No post drafted with Archie has moved this objective yet.${gone}</p>`;
+export function postsEmpty() {
+  return `<p class="ins-posts-empty">No post drafted with Archie has moved this objective yet.</p>`;
 }
 
 // ── Actions ───────────────────────────────────────────────────────────────
