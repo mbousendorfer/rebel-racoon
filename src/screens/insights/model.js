@@ -19,7 +19,7 @@
 // objective — a prototype affordance that dies with the reload (documented as
 // such in CLAUDE.md). If it ever has to survive, it becomes a global store.
 
-import { getActivePlaybook } from "../../active-playbook.js?v=1041";
+import { getActivePlaybook } from "../../active-playbook.js?v=1046";
 import {
   resolveObjectives,
   objectiveVerdict,
@@ -30,12 +30,12 @@ import {
   parseMetricValue,
   formatLike,
   metricLabel,
-} from "../../objective-measures.js?v=1041";
-import { TIER_LABELS, TIER_STATUS_CLASS, TIER_ORDER } from "../../objective-scoring.js?v=1041";
-import { nextMoveFor } from "../../objective-flow.js?v=1041";
-import { objectivePosts, objectivePostPool, TOP_POST_TODAY, TOP_POST_IMAGES } from "../../mocks.js?v=1041";
-import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=1041";
-import { createNotifier } from "../../store-utils.js?v=1041";
+} from "../../objective-measures.js?v=1046";
+import { TIER_LABELS, TIER_STATUS_CLASS, TIER_ORDER } from "../../objective-scoring.js?v=1046";
+import { nextMoveFor } from "../../objective-flow.js?v=1046";
+import { objectivePosts, objectivePostPool, TOP_POST_TODAY, TOP_POST_IMAGES } from "../../mocks.js?v=1046";
+import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=1046";
+import { createNotifier } from "../../store-utils.js?v=1046";
 
 /** The mock "today" — one anchor for the series' x-axis and the posts' dates. */
 export const INSIGHTS_TODAY = TOP_POST_TODAY;

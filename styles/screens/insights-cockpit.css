@@ -26,7 +26,7 @@
   flex-direction: column;
   gap: var(--ref-spacing-xxs);
   padding: var(--ref-spacing-md) var(--ref-spacing-md) var(--ref-spacing-sm);
-  border-bottom: 1px solid var(--sys-color-border-color-default);
+  border-bottom: 1px solid var(--sys-border-color-default);
 }
 
 .ins-cockpit-rail__title {
@@ -139,7 +139,7 @@
 
 .ins-cockpit-rail__foot {
   padding: var(--ref-spacing-xs) var(--ref-spacing-md);
-  border-top: 1px solid var(--sys-color-border-color-default);
+  border-top: 1px solid var(--sys-border-color-default);
   font-size: var(--ref-font-size-xs);
   line-height: var(--ref-font-line-height-xs);
 }
@@ -227,7 +227,7 @@
 
 .ins-cockpit-readout > * + * {
   padding-left: var(--ref-spacing-md);
-  border-left: 1px solid var(--sys-color-border-color-default);
+  border-left: 1px solid var(--sys-border-color-default);
 }
 
 /* ── Cards ──────────────────────────────────────────────────────────────── */
@@ -288,7 +288,7 @@
   .ins-cockpit-readout > *:first-child {
     grid-column: 1 / -1;
     padding-bottom: var(--ref-spacing-sm);
-    border-bottom: 1px solid var(--sys-color-border-color-default);
+    border-bottom: 1px solid var(--sys-border-color-default);
   }
   .ins-cockpit-readout > *:nth-child(2) {
     padding-left: 0;
@@ -306,7 +306,7 @@
   }
   .ins-cockpit-rail {
     border-right: 0;
-    border-bottom: 1px solid var(--sys-color-border-color-default);
+    border-bottom: 1px solid var(--sys-border-color-default);
   }
   .ins-cockpit-rail__list {
     flex-direction: row;

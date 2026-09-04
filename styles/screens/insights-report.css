@@ -144,7 +144,7 @@
 .ins-report-chapter__measureslabel {
   margin: 0 0 var(--ref-spacing-xxs);
   padding-bottom: var(--ref-spacing-xxs);
-  border-bottom: 1px solid var(--sys-color-border-color-default);
+  border-bottom: 1px solid var(--sys-border-color-default);
   font-size: var(--ref-font-size-xs);
   line-height: var(--ref-font-line-height-xs);
   font-weight: var(--ref-font-weight-bold);

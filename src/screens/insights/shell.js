@@ -7,11 +7,15 @@
 // The previous hub grew all of those and read as a report about Archie; this is
 // a view of the reader's objectives.
 //
-// Three LAYOUTS paint the same model, chosen from a segmented control in the
-// topbar and remembered in localStorage (`archie-insights-layout`):
-//   cockpit — the instrument panel (default): a rail of every objective, one
-//             read in full beside it
-//   report  — the monthly read: one full-width chapter per objective, scrolled
+// Three LAYOUTS paint the same model, chosen from the page bar's View select
+// and remembered in localStorage (`archie-insights-layout`):
+//   cockpit     — the instrument panel (default): a rail of every objective,
+//                 one read in full beside it
+//   cockpit-bis — the same master–detail rotated: the objectives as a band
+//                 across the top, one read at the page's full width. It exists
+//                 because a Playbook has two or three objectives, and a 340px
+//                 rail of viewport height cannot be filled by two rows
+//   report      — the monthly read: one chapter per objective, tab by tab
 // They are deliberately different answers to "how do I read my objectives", so
 // the switch exists to compare them live — it is a prototype exploration, and
 // the day one wins the other is a delete. A third, Bento (a mosaic of tiles),
@@ -28,24 +32,24 @@
 // host is never repainted without `destroyChartsIn(host)` first — the one rule
 // that keeps a brand switch from leaking a chart per repaint.
 
-import { html, raw } from "../../utils.js?v=1041";
-import { renderTopbar } from "../../components/topbar.js?v=1041";
-import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=1041";
+import { html, raw } from "../../utils.js?v=1046";
+import { renderTopbar } from "../../components/topbar.js?v=1046";
+import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=1046";
 import {
   subscribe as subscribeScope,
   getActivePlaybook,
   getActivePlaybookId,
   setActivePlaybook,
-} from "../../active-playbook.js?v=1041";
-import { getPath, navigate } from "../../router.js?v=1041";
-import { isFlagOn } from "../../feature-flags.js?v=1041";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=1041";
-import { consumeHandoff } from "../../handoff.js?v=1041";
-import { open as openObjectiveModal } from "../../components/objective-modal.js?v=1041";
-import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=1041";
-import { showToast } from "../../components/toast.js?v=1041";
-import { renderEmptyState } from "../../components/empty-state.js?v=1041";
-import { playbookSelect, viewSelect } from "./pieces.js?v=1041";
+} from "../../active-playbook.js?v=1046";
+import { getPath, navigate } from "../../router.js?v=1046";
+import { isFlagOn } from "../../feature-flags.js?v=1046";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=1046";
+import { consumeHandoff } from "../../handoff.js?v=1046";
+import { open as openObjectiveModal } from "../../components/objective-modal.js?v=1046";
+import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=1046";
+import { showToast } from "../../components/toast.js?v=1046";
+import { renderEmptyState } from "../../components/empty-state.js?v=1046";
+import { playbookSelect, viewSelect } from "./pieces.js?v=1046";
 import {
   objectiveEntries,
   playbookRollup,
@@ -53,10 +57,11 @@ import {
   removePost,
   restorePost,
   subscribe as subscribeModel,
-} from "./model.js?v=1041";
-import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=1041";
-import * as report from "./layouts/report.js?v=1041";
-import * as cockpit from "./layouts/cockpit.js?v=1041";
+} from "./model.js?v=1046";
+import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=1046";
+import * as report from "./layouts/report.js?v=1046";
+import * as cockpit from "./layouts/cockpit.js?v=1046";
+import * as cockpitBis from "./layouts/cockpit-bis.js?v=1046";
 
 /** Set by a Playbook's objectives block ("Open in Insights"); payload `${ctxId}::${label}`. */
 export const FOCUS_OBJECTIVE_HANDOFF = "focusObjective";
@@ -64,7 +69,7 @@ export const FOCUS_OBJECTIVE_HANDOFF = "focusObjective";
 /** localStorage — which layout the reader last chose. */
 export const INSIGHTS_LAYOUT_KEY = "archie-insights-layout";
 
-export const LAYOUTS = [cockpit, report];
+export const LAYOUTS = [cockpit, cockpitBis, report];
 
 // Cockpit is what a first visit opens on: every objective is visible at once,
 // so "what needs me" is answered before anything is clicked, and the pane's

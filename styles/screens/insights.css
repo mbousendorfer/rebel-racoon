@@ -56,8 +56,9 @@
   overflow-x: hidden;
 }
 
-/* The Cockpit fills the viewport and scrolls its two columns on their own. */
-.insights--cockpit .insights__host {
+/* Both Cockpits fill the viewport and scroll their own panes: the page itself
+   never scrolls, so the selector (rail or band) is always on screen. */
+:is(.insights--cockpit, .insights--cockpit-bis) .insights__host {
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -283,12 +284,21 @@
   color: var(--sys-text-color-light);
 }
 
+/* The same sentence, one rung down: the band's tiles say "52% of target on
+   Reach, down 9%" exactly like the pane's readout does — three of them side by
+   side just cannot each own a 56px numeral. Size is the only difference, which
+   is what keeps a tile and the read it opens speaking the same words. */
+.ins-score--sm .ins-score__value {
+  font-size: var(--ref-font-size-xxxl);
+  letter-spacing: -0.02em;
+}
+
 /* ── Chart name ─────────────────────────────────────────────────────────── */
 
 .ins-chart__name {
   margin: 0;
   padding-bottom: var(--ref-spacing-xxs);
-  border-bottom: 1px solid var(--sys-color-border-color-default);
+  border-bottom: 1px solid var(--sys-border-color-default);
   font-size: var(--sys-text-style-h4-size);
   line-height: var(--sys-text-style-h4-line-height);
   font-weight: var(--sys-text-style-h4-weight);
@@ -302,7 +312,7 @@
   flex-direction: column;
   gap: var(--ref-spacing-xxxs);
   padding: var(--ref-spacing-xs) 0;
-  border-top: 1px solid var(--sys-color-border-color-default);
+  border-top: 1px solid var(--sys-border-color-default);
 }
 
 .ins-measure:first-child {

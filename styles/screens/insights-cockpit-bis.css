@@ -1,0 +1,311 @@
+/* ---- Insights · Cockpit bis — a band of objectives, one read at full width ---------
+   Cockpit's master–detail, rotated: the selector is a pinned band of equal tiles
+   across the top and the read takes the whole width underneath. Same promise as
+   Cockpit — the page itself never scrolls, the read scrolls inside it — so the
+   band stays on screen and switching objective costs one click, no scroll.
+
+   Why rotated: two or three objectives cannot fill a 340px column of viewport
+   height, and the pane that column starves is the one holding a 7-column table
+   and a 300px curve. Horizontally the same two items have room to say more, and
+   their tiles line up so the numbers can be compared. */
+
+.ins-cockpitb {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  background: var(--app-bg);
+}
+
+/* ── The band ───────────────────────────────────────────────────────────────
+   Chrome, not content: white surface with a hairline under it, the same way the
+   rail is a white panel beside a grey page. */
+
+.ins-cockpitb-strip {
+  background: var(--app-surface);
+  border-bottom: 1px solid var(--sys-border-color-default);
+  padding: var(--ref-spacing-sm) var(--ref-spacing-xl);
+  /* Two or three tiles is the case, and they are one row. The cap is what stops
+     a Playbook that grew six objectives from pushing the read off the page:
+     past two rows the band scrolls instead. Sized so two rows of wrapped tiles
+     still fit on a laptop — a cap that lands one pixel inside a row spends a
+     scrollbar on nothing. */
+  max-height: 48vh;
+  overflow-y: auto;
+}
+
+.ins-cockpitb-strip__list {
+  list-style: none;
+  margin: 0 auto;
+  padding: 0;
+  width: min(var(--ins-content), 100%);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+  align-items: stretch;
+  gap: var(--ref-spacing-xs);
+}
+
+.ins-cockpitb-strip__list > li {
+  display: flex;
+  min-width: 0;
+}
+
+/* A selectable object, so it carries an edge at rest and the app's own
+   selection language on top of it: blue border on hover, blue border plus the
+   5% tint when it is the one being read. No elevation, no coloured edge bar. */
+.ins-cockpitb-tile {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  width: 100%;
+  min-width: 0;
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  border: 1px solid var(--app-border-soft);
+  border-radius: var(--ref-border-radius-md);
+  background: var(--app-surface);
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition:
+    border-color var(--ref-animation-short) var(--app-ease-standard),
+    background-color var(--ref-animation-short) var(--app-ease-standard);
+}
+
+.ins-cockpitb-tile:hover,
+.ins-cockpitb-tile:focus-visible {
+  border-color: var(--ref-color-electric-blue-100);
+  outline: none;
+}
+
+.ins-cockpitb-tile.is-selected {
+  border-color: var(--ref-color-electric-blue-100);
+  background: var(--ref-color-electric-blue-05);
+}
+
+/* Identity + score in one column, the curve beside it. Both are flex items with
+   a basis, so a tile too narrow for the pair (four objectives and up) wraps the
+   curve under it instead of squeezing it into a smudge. */
+.ins-cockpitb-tile__main {
+  /* Grows faster than the curve beside it: the score's own line — "82% of
+     target on Engagement rate, flat" — has to fit on ONE row, or the tile pays
+     a third row for a wrap. */
+  flex: 1.4 1 240px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+}
+
+.ins-cockpitb-tile__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-xs);
+  min-width: 0;
+}
+
+.ins-cockpitb-tile__name {
+  font-size: var(--ref-font-size-md);
+  line-height: var(--ref-font-line-height-lg);
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--sys-text-color-default);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The curve gets half the tile — the point of the whole rotation, and the one
+   thing the rail's 34px gutter could not give it. */
+.ins-cockpitb-tile__spark {
+  flex: 1 1 220px;
+  min-width: 0;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* ── The read ─────────────────────────────────────────────────────────────── */
+
+.ins-cockpitb-pane {
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--ref-spacing-md) var(--ref-spacing-xl) var(--ref-spacing-xxl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+}
+
+/* The pane is a flex column with a definite height (a viewport-sized grid row
+   that scrolls), so its children are over-constrained and flex-shrink would
+   squeeze them instead of scrolling — the same 24px clip Cockpit hit. */
+.ins-cockpitb-pane > * {
+  flex-shrink: 0;
+  width: min(var(--ins-content), 100%);
+  margin-inline: auto;
+}
+
+.ins-cockpitb-pane__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ref-spacing-sm);
+}
+
+.ins-cockpitb-pane__titles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  min-width: 0;
+}
+
+.ins-cockpitb-pane__title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xs);
+}
+
+.ins-cockpitb-pane__title h2 {
+  margin: 0;
+  font-size: var(--ref-font-size-xxxl);
+  line-height: var(--ref-font-line-height-xl);
+  font-weight: var(--ref-font-weight-extra-bold);
+  color: var(--sys-text-color-default);
+  letter-spacing: -0.01em;
+}
+
+.ins-cockpitb-pane__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxxs);
+  margin: 0;
+  font-size: var(--ref-font-size-sm);
+  line-height: var(--ref-font-line-height-sm);
+  color: var(--sys-text-color-light);
+}
+
+.ins-cockpitb-pane__reading {
+  margin: 0;
+  max-width: 78ch;
+  font-size: var(--ref-font-size-md);
+  line-height: var(--ref-font-line-height-lg);
+  color: var(--sys-text-color-default);
+}
+
+/* ── Score + curve, one card ────────────────────────────────────────────────
+   The figures column is fixed and narrow; the chart absorbs the rest of the
+   page's width, which is what this layout has to spend. */
+
+.ins-cockpitb-read {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: var(--ref-spacing-md);
+  align-items: start;
+}
+
+.ins-cockpitb-read__figures {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+  padding-right: var(--ref-spacing-md);
+  border-right: 1px solid var(--sys-border-color-default);
+}
+
+.ins-cockpitb-read__pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--ref-spacing-sm);
+}
+
+.ins-cockpitb-read__chart {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+}
+
+.ins-chart--cockpitb {
+  margin: 0 calc(-1 * var(--ref-spacing-xxs));
+}
+
+/* ── Cards ──────────────────────────────────────────────────────────────── */
+
+.ins-cockpitb-card {
+  gap: var(--ref-spacing-xs);
+}
+
+/* ── Measures table ─────────────────────────────────────────────────────────
+   No per-th/td rules and no widths: the DS table sets its own, ships `.right`
+   for numeric columns and `tbody tr.selected` for the charted row. Only the two
+   cells holding a shape of ours need a size. */
+
+.ins-cockpitb-table__metric {
+  display: block;
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--sys-text-color-default);
+}
+
+.ins-cockpitb-table th[scope="row"] .ins-muted {
+  font-size: var(--ref-font-size-xs);
+}
+
+.ins-cockpitb-table__bar {
+  min-width: 150px;
+}
+
+.ins-cockpitb-table__bar .app-bar {
+  display: inline-block;
+  width: calc(100% - 46px);
+  vertical-align: middle;
+  margin-right: var(--ref-spacing-xxxs);
+}
+
+.ins-cockpitb-table__bar .ins-num {
+  display: inline-block;
+  width: 38px;
+  font-weight: var(--ref-font-weight-bold);
+}
+
+.ins-cockpitb-table__spark {
+  width: 120px;
+  min-width: 120px;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+
+/* Under ~1100px the figures column stops being worth a column of its own: the
+   score and its two figures go back to a row above the curve. */
+@media (max-width: 1100px) {
+  .ins-cockpitb-read {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ins-cockpitb-read__figures {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--ref-spacing-md);
+    padding-right: 0;
+    padding-bottom: var(--ref-spacing-sm);
+    border-right: 0;
+    border-bottom: 1px solid var(--sys-border-color-default);
+  }
+  .ins-cockpitb-read__pair {
+    flex: 1;
+  }
+  .ins-cockpitb-table__spark {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .ins-cockpitb-strip,
+  .ins-cockpitb-pane {
+    padding-inline: var(--ref-spacing-sm);
+  }
+  .ins-cockpitb-pane__head {
+    flex-direction: column;
+  }
+}
