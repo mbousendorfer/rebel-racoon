@@ -496,18 +496,14 @@
 /* ── Conversation echo (picked-post preview in the thread) ───────── */
 /* A compact, chat-sized take on the board card: media thumbnail + body, one row
    tall, right-aligned as a user turn. */
+/* The frame is .ap-card's — white, 1px grey-10, the DS radius. All this adds is
+   the row direction and the user-side corner language (sharp top-right, same as
+   .chat-bubble--user) so every right-aligned response shares the shape. */
 .top-post-echo {
-  display: flex;
-  gap: var(--ref-spacing-sm);
+  flex-direction: row;
   align-self: flex-end;
   max-width: 440px;
-  padding: var(--ref-spacing-sm);
-  border: 1px solid var(--app-border);
-  border-radius: var(--app-radius-card);
-  /* User-side corner language: sharp top-right (12 / 0 / 12 / 12), same as
-     .chat-bubble--user, so every right-aligned response shares the shape. */
   border-top-right-radius: 0;
-  background: var(--ref-color-white);
 }
 
 /* Media thumbnail — fixed width, stretches to the card height. Mirrors the board
@@ -567,6 +563,25 @@
    shrinks so the handle + "View on" link keep the remaining row. */
 .top-post-echo__avatar {
   flex: 0 0 auto;
+}
+
+/* The handle takes the room it needs and gives the rest back — the head now
+   carries a date and a trailing control beside it. */
+.top-post-echo__net {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* The publish date, beside the handle: quiet (it is context, not the subject)
+   and never broken across two lines. */
+.top-post-echo__when {
+  flex: 0 0 auto;
+  color: var(--sys-text-color-light);
+  font-size: var(--sys-text-style-caption-size);
+  font-weight: var(--sys-text-style-caption-weight);
+  white-space: nowrap;
 }
 
 .top-post-echo__excerpt {

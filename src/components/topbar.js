@@ -560,6 +560,9 @@ function currentTitle() {
   if (path === "/contexts") return "Playbooks";
   if (path === "/connectors") return "Connectors";
   if (path === "/topics") return "Topic Feed";
+  // The topbar names the SECTION; the brand is named by the page bar's
+  // Playbook select, and again by each layout's own head.
+  if (path.startsWith("/insights")) return "Insights";
   const sessionMatch = /^\/session\/([^/?]+)/.exec(path);
   if (sessionMatch) {
     const id = sessionMatch[1];

@@ -16,3 +16,4 @@ export * from "./mocks/threads.js?v=1041";
 export * from "./mocks/schedule.js?v=1041";
 export * from "./mocks/connectors.js?v=1041";
 export * from "./mocks/social.js?v=1041";
+export * from "./mocks/objectives.js?v=1041";

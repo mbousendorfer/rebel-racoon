@@ -292,7 +292,7 @@ const TOP_POST_PAGE_COUNTS = [7, 12, 5, 10, 9];
 // as the poster for image winners. Cropped to 16:9 to match the tile. No
 // local post-image assets exist in the proto, so these load over the network; the
 // card falls back to a grey tile if one is blocked.
-const TOP_POST_IMAGES = [
+export const TOP_POST_IMAGES = [
   "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=640&h=360&q=70",
   "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=640&h=360&q=70",
   "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=640&h=360&q=70",
@@ -310,7 +310,7 @@ const TOP_POST_IMAGE_COUNTS = [1, 3, 1, 2, 5, 1, 4, 1];
 // FIXED base ("today" = 2 Jul 2026) so the mock reads consistently regardless of
 // the real clock — e.g. daysAgo 4 → "Jun 28, 2026". Shown on the winner cards
 // alongside the relative "Nd ago" age.
-const TOP_POST_TODAY = new Date(2026, 6, 2);
+export const TOP_POST_TODAY = new Date(2026, 6, 2);
 const TOP_POST_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 function topPostDate(daysAgo) {
   const d = new Date(TOP_POST_TODAY);

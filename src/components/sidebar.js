@@ -596,6 +596,17 @@ const NAV = [
   // the feed itself is scoped: a count that spans four brands would send the
   // reader to a screen showing one of them. There is no global scope to read
   // from, deliberately — see the note at the top of screens/topics.js.
+  // Insights — the one analytics surface you walk to. NO COUNTER, deliberately:
+  // the row above reads "Playbooks 7" — a count of THINGS — so an identically
+  // styled "Insights 5" gets read as five insights rather than five objectives
+  // in trouble.
+  {
+    path: "/insights",
+    icon: "ap-icon-bar-graph",
+    label: "Insights",
+    flag: "insightsHub",
+    match: (p) => p.startsWith("/insights"),
+  },
   {
     path: "/topics",
     icon: "ap-icon-antenna",

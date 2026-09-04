@@ -268,6 +268,10 @@ export function addContext(ctx = {}) {
     voiceProfile: ctx.voiceProfile && typeof ctx.voiceProfile === "object" ? { ...ctx.voiceProfile } : null,
     contentStyle: Array.isArray(ctx.contentStyle) ? ctx.contentStyle.slice() : [],
     objective: Array.isArray(ctx.objective) ? ctx.objective.slice() : [],
+    // The per-label corrections the objective editor writes (measures, window,
+    // grace, origin). Whitelisted so a rebuilt or patched Playbook keeps them.
+    objectiveMeasures:
+      ctx.objectiveMeasures && typeof ctx.objectiveMeasures === "object" ? structuredClone(ctx.objectiveMeasures) : {},
     contentAction: Array.isArray(ctx.contentAction) ? ctx.contentAction.slice() : [],
     ctaLinks: Array.isArray(ctx.ctaLinks) ? ctx.ctaLinks.map((l) => ({ ...l })) : [],
     // — multilingual model (see languages.js) — flat `language` kept as a
@@ -366,6 +370,7 @@ export function updateContext(id, patch) {
   if (patch.audienceProblems !== undefined) c.audienceProblems = patch.audienceProblems;
   if (patch.contentStyle !== undefined) c.contentStyle = patch.contentStyle;
   if (patch.objective !== undefined) c.objective = patch.objective;
+  if (patch.objectiveMeasures !== undefined) c.objectiveMeasures = patch.objectiveMeasures;
   if (patch.contentAction !== undefined) c.contentAction = patch.contentAction;
   if (patch.ctaLinks !== undefined) c.ctaLinks = patch.ctaLinks;
   if (patch.imageVoice !== undefined) c.imageVoice = patch.imageVoice;

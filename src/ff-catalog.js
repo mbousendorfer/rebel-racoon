@@ -1,5 +1,19 @@
 export const FLAGS = Object.freeze([
   {
+    id: "insightsHub",
+    label: "Insights hub (/insights)",
+    // OFF: the feature lands dark. The flag gates the ROUTE as well as the nav
+    // row — a typed /insights bounces home while the switch is off.
+    default: false,
+    hides:
+      "When OFF, the Insights section disappears entirely. ON adds the active " +
+      "brand's objectives read two ways (Cockpit / Report, a select in the " +
+      "page bar): the counted verdict, a real trajectory toward target per " +
+      "measure, and the posts drafted with Archie that moved it. It is the one " +
+      "analytics surface you choose to open, which is why a wall of figures is " +
+      "legitimate here and nowhere else.",
+  },
+  {
     id: "draftInlineEdit",
     label: "Inline edit on draft posts",
     default: false,

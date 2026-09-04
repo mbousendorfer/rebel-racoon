@@ -267,36 +267,50 @@ function renderTopPostCard(post) {
   `;
 }
 
-// ── Conversation echo ────────────────────────────────────────────────
-// Compact card shown in the thread when the user picks a winner to build on
-// (assistant.postTopPostPickTurn → renderTopPostPickTurn in session.js), so the
-// chosen post stays visible as a real preview rather than a truncated text echo.
-export function renderTopPostEcho(post) {
-  if (!post) return "";
-  // A compact, chat-sized take on the board card: a small media thumbnail
-  // (image poster / text glyph) beside the posting profile, excerpt and a
-  // trimmed stat line. Same visual language, one row tall.
-  const type = post.mediaType || "text";
-  let thumb;
-  if (type === "text") {
-    thumb = `<span class="top-post-echo__thumb top-post-echo__thumb--text"><i class="ap-icon-file--text" aria-hidden="true"></i></span>`;
-  } else {
-    thumb = `<span class="top-post-echo__thumb">${
-      post.image ? `<img src="${post.image}" alt="" loading="lazy" />` : ""
-    }</span>`;
-  }
+/**
+ * The echo row itself, shared. Two callers now — the winners flow (a picked
+ * post, in the thread) and Insights' linked posts, which carry a contribution
+ * to an objective instead of a view count. Same DOM, same CSS, so a post looks
+ * like a post wherever it is quoted; only the stat line and the trailing action
+ * differ. The chat geometry (right-aligned bubble, sharp top-right, 440px cap)
+ * lives on `.top-post-echo` and is reset by the host, the way
+ * `.top-posts-widget__row` already does.
+ *
+ * @param {object} o
+ *   network / when / excerpt — the identity and the copy
+ *   mediaType / image — the thumbnail; a glyph stands in when there is no image
+ *   statsHtml — the one stat line, host-owned (`<b>` for what matters)
+ *   actionHtml — the trailing control in the head (View on…, or a remove button)
+ *   className — a host modifier on the row
+ */
+export function renderPostEchoRow({
+  network,
+  when = "",
+  excerpt = "",
+  mediaType = "text",
+  image = null,
+  statsHtml = "",
+  actionHtml = "",
+  className = "",
+} = {}) {
+  // A thumbnail always resolves: an image when there is one, otherwise the glyph
+  // for what the post is. It used to draw an empty grey square for a document,
+  // because only `text` had a fallback.
+  const thumb = image
+    ? `<span class="top-post-echo__thumb"><img src="${image}" alt="" loading="lazy" /></span>`
+    : `<span class="top-post-echo__thumb top-post-echo__thumb--text"><i class="${MEDIA_GLYPH[mediaType] || MEDIA_GLYPH.text}" aria-hidden="true"></i></span>`;
   // Lead with the posting profile (brand avatar + network badge + handle) — the
   // same identity the board card shows — not a bare network label. Falls back to
   // the network label when no connected profile resolves.
-  const net = (post.network || "").toLowerCase();
-  const account = profileForNetwork(post.network);
-  const networkIcon = NETWORK_ICON_BY_PLATFORM[net] || iconFor(post.network);
-  const handle = account?.handle || labelFor(post.network);
+  const net = (network || "").toLowerCase();
+  const account = profileForNetwork(network);
+  const networkIcon = NETWORK_ICON_BY_PLATFORM[net] || iconFor(network);
+  const handle = account?.handle || labelFor(network);
   const avatarInner = account?.photo
     ? `<img src="${account.photo}" alt="" />`
     : `<span class="ap-avatar-initials">${BRAND_INITIALS}</span>`;
   return html`
-    <div class="top-post-echo">
+    <div class="ap-card top-post-echo ${className}">
       ${raw(thumb)}
       <div class="top-post-echo__body">
         <span class="top-post-echo__head">
@@ -304,16 +318,37 @@ export function renderTopPostEcho(post) {
             >${raw(avatarInner)}<span class="ap-avatar-network"><i class="${networkIcon}"></i></span
           ></span>
           <span class="top-post-echo__net">${handle}</span>
-          ${raw(renderViewOnLink(post))}
+          ${when ? raw(html`<span class="top-post-echo__when">${when}</span>`) : ""} ${raw(actionHtml)}
         </span>
-        <span class="top-post-echo__excerpt">${post.excerpt}</span>
-        <span class="top-post-echo__stats">
-          <b class="top-post-echo__avg">${post.vsAvg}×</b> vs avg · <b>${formatCompact(post.views)}</b> views ·
-          <b>${formatCompact(post.impressions)}</b> reach
-        </span>
+        <span class="top-post-echo__excerpt">${excerpt}</span>
+        <span class="top-post-echo__stats">${raw(statsHtml)}</span>
       </div>
     </div>
   `;
+}
+
+const MEDIA_GLYPH = {
+  text: "ap-icon-file--text",
+  document: "ap-icon-file--text",
+  image: "ap-icon-image",
+  video: "ap-icon-file--video",
+};
+
+// ── Conversation echo ────────────────────────────────────────────────
+// Compact card shown in the thread when the user picks a winner to build on
+// (assistant.postTopPostPickTurn → renderTopPostPickTurn in session.js), so the
+// chosen post stays visible as a real preview rather than a truncated text echo.
+export function renderTopPostEcho(post) {
+  if (!post) return "";
+  return renderPostEchoRow({
+    network: post.network,
+    when: post.publishedOn,
+    excerpt: post.excerpt,
+    mediaType: post.mediaType,
+    image: post.image,
+    statsHtml: `<b class="top-post-echo__avg">${post.vsAvg}×</b> vs avg · <b>${formatCompact(post.views)}</b> views · <b>${formatCompact(post.impressions)}</b> reach`,
+    actionHtml: renderViewOnLink(post),
+  });
 }
 
 // ── Inline selection widget (Add-menu flow) ─────────────────────────
