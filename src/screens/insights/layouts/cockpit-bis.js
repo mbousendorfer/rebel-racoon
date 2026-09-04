@@ -9,24 +9,24 @@
 // 340px column of full viewport height on them — two rows of content and the
 // rest white — and pays for it twice, because the pane it starves is the half
 // with a 7-column table and a 300px curve in it. Rotating the selector spends
-// width instead of height, and width is what a two-item list has to spare: each
-// tile gets the room for its own reading (the percentage, what it is a
-// percentage of, and a curve wide enough to read) instead of a 34px smudge.
+// width instead of height, and width is what a short list has to spare.
 //
-// Best for: two or three objectives — which is every Playbook in the app. Past
-// four the band wraps and starts scrolling, and Cockpit's rail is the better
-// answer again; that is the comparison this layout exists to settle.
+// The row is built for FOUR tiles. That is the number the band is calibrated
+// on: four objectives read side by side without wrapping, and a Playbook with
+// two or three shows the slot it has left as a placeholder rather than
+// stretching its tiles across the page. Past four it wraps and scrolls, and
+// Cockpit's rail is the better answer again.
 //
-// What the tile deliberately does NOT carry: a progress ring or a bar beside
-// the percentage. Report cut its ring row for encoding "how far along" as a
-// shape nobody can compare with the real work done by the numeral printed
-// inside it — a bar next to the same numeral is that critique again. The
-// sparkline stays because it says something the numeral cannot (which way, and
-// against the dashed target line), and the band is what finally makes it big
-// enough to say it.
+// What the tile carries is the sentence and nothing else: the name, the
+// verdict, and "74% of target on Reach, down 8%". No ring, no bar, no
+// sparkline. The shapes all said what the numeral beside them already said —
+// Report cut its ring row for exactly that — and at a quarter of the row a
+// curve is back to being a smudge. Comparing four tiles is comparing four
+// numbers, which is what they are for; the curve is the pane's job, at the size
+// it needs.
 
-import { readingFor } from "../model.js?v=1054";
-import { trendSpec, sparklineSpec, progressBar, mountCharts } from "../charts.js?v=1054";
+import { readingFor } from "../model.js?v=1056";
+import { trendSpec, sparklineSpec, progressBar, mountCharts } from "../charts.js?v=1056";
 import {
   statusPill,
   measurePill,
@@ -40,7 +40,7 @@ import {
   objectiveActions,
   figure,
   esc,
-} from "../pieces.js?v=1054";
+} from "../pieces.js?v=1056";
 
 export const id = "cockpit-bis";
 export const label = "Cockpit bis";
@@ -48,7 +48,9 @@ export const title = "Cockpit bis — the objectives as a band, one read at full
 export const icon = "ap-icon-view-cards";
 
 const CHART_HEIGHT = 280;
-const SPARK_HEIGHT = 44;
+
+/** The row is calibrated on four tiles; below that the band offers its free slot. */
+const ROW = 4;
 
 export function render(host, vm) {
   const { entries, selectedKey, local, firstPaint } = vm;
@@ -56,7 +58,7 @@ export function render(host, vm) {
   const specs = new Map();
 
   host.innerHTML = `<div class="ins-cockpitb">
-    ${renderStrip(entries, selected, specs)}
+    ${renderStrip(entries, selected)}
     ${renderPane(selected, local, specs, firstPaint)}
   </div>`;
 
@@ -66,9 +68,11 @@ export function render(host, vm) {
 
 // ── The band ──────────────────────────────────────────────────────────────
 //
-// One tile per objective, equal columns, so the percentages and the curves line
-// up and can be read against each other — which is the one thing a stacked rail
-// of 34px sparklines could not do.
+// One tile per objective in a four-up row, so the scores line up and can be
+// read against each other — which a stacked rail of 34px sparklines could not
+// do. Under four, the next cell is a placeholder: the band knows how many
+// objectives fit, so the free slot is the invitation, and it costs nothing that
+// an empty cell was not already costing.
 //
 // It is titled and it is a TRAY — grey ground, a grey-20 line under it — not a
 // white band on a near-white page: the tiles are white, so a white band made
@@ -80,46 +84,38 @@ export function render(host, vm) {
 // "On track 1 · At risk 1 · Off track 0" is a recount of what the reader is
 // already looking at.
 
-function renderStrip(entries, selected, specs) {
+function renderStrip(entries, selected) {
   const tiles = entries
-    .map((e, i) => {
-      const weak = e.headline;
-      const sparkId = `cockpitb-spark-${i}`;
-      if (weak?.series) {
-        specs.set(
-          sparkId,
-          sparklineSpec(weak.series, {
-            tier: e.collecting ? "collecting" : weak.tier,
-            height: SPARK_HEIGHT,
-          }),
-        );
-      }
+    .map((e) => {
       const on = e === selected;
-      // The identity and the curve sit SIDE BY SIDE inside the tile, and wrap to
-      // two rows only when the tile is too narrow for both (four objectives and
-      // up). That is what keeps the band ~150px tall instead of 200: the width
-      // the rotation buys is spent on the sparkline, not on a third row.
       return `<li>
         <button type="button" class="ins-cockpitb-tile${on ? " is-selected" : ""}" data-ins-select="${esc(e.key)}" data-ins-objective="${esc(e.key)}"${on ? ' aria-current="true"' : ""}>
-          <span class="ins-cockpitb-tile__main">
-            <span class="ins-cockpitb-tile__head">
-              <span class="ins-cockpitb-tile__name">${esc(e.label)}</span>
-              ${statusPill(e)}
-            </span>
-            ${scoreFigure(e, { size: "sm" })}
+          <span class="ins-cockpitb-tile__head">
+            <span class="ins-cockpitb-tile__name">${esc(e.label)}</span>
+            ${statusPill(e)}
           </span>
-          <span class="ins-cockpitb-tile__spark">
-            ${weak?.series ? `<span class="ins-chart__node" data-ins-chart="${sparkId}" style="height:${SPARK_HEIGHT}px"></span>` : ""}
-          </span>
+          ${scoreFigure(e, { size: "sm" })}
         </button>
       </li>`;
     })
     .join("");
 
+  // A card-shaped door, quiet on purpose: it is an empty slot the reader may
+  // fill, not a call to action competing with the page bar's primary. Full-cell
+  // because it IS a cell — the tiles beside it are buttons of the same size.
+  const slot =
+    entries.length < ROW
+      ? `<li class="ins-cockpitb-strip__slot">
+          <button type="button" class="ins-cockpitb-add" data-ins-new>
+            <i class="ap-icon-plus" aria-hidden="true"></i><span>New objective</span>
+          </button>
+        </li>`
+      : "";
+
   return `<nav class="ins-cockpitb-strip" aria-label="Objectives">
     <div class="ins-cockpitb-strip__inner">
       <h1 class="ins-cockpitb-strip__title">Objectives</h1>
-      <ul class="ins-cockpitb-strip__list">${tiles}</ul>
+      <ul class="ins-cockpitb-strip__list">${tiles}${slot}</ul>
     </div>
   </nav>`;
 }

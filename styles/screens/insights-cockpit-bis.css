@@ -35,6 +35,7 @@
      scrollbar on nothing. */
   max-height: 48vh;
   overflow-y: auto;
+  container-type: inline-size;
 }
 
 .ins-cockpitb-strip__inner {
@@ -56,14 +57,44 @@
   letter-spacing: -0.02em;
 }
 
+/* FOUR to a row — the number the band is calibrated on. Fixed columns, not
+   auto-fit: with auto-fit two objectives stretched into two half-page tiles and
+   the row's capacity was invisible, which is what the free-slot placeholder is
+   there to show. Stepped down by CONTAINER width, never viewport: the sidebar
+   collapses and the right panel overlays, so the viewport does not know how
+   wide this band is. */
 .ins-cockpitb-strip__list {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: stretch;
   gap: var(--ref-spacing-xs);
+}
+
+/* One column — and no free slot to offer: a full-width invitation stacked under
+   a full-width tile is not a leftover cell, it is a second banner. The page
+   bar's primary is still there. */
+@container (max-width: 520px) {
+  .ins-cockpitb-strip__list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ins-cockpitb-strip__slot {
+    display: none;
+  }
+}
+
+@container (min-width: 760px) {
+  .ins-cockpitb-strip__list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@container (min-width: 1000px) {
+  .ins-cockpitb-strip__list {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 
 .ins-cockpitb-strip__list > li {
@@ -76,9 +107,8 @@
    5% tint when it is the one being read. No elevation, no coloured edge bar. */
 .ins-cockpitb-tile {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
   width: 100%;
   min-width: 0;
   padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
@@ -105,26 +135,45 @@
   background: var(--ref-color-electric-blue-05);
 }
 
-/* Identity + score in one column, the curve beside it. Both are flex items with
-   a basis, so a tile too narrow for the pair (four objectives and up) wraps the
-   curve under it instead of squeezing it into a smudge. */
-.ins-cockpitb-tile__main {
-  /* Grows faster than the curve beside it: the score's own line — "82% of
-     target on Engagement rate, flat" — has to fit on ONE row, or the tile pays
-     a third row for a wrap. */
-  flex: 1.4 1 240px;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxs);
-}
-
 .ins-cockpitb-tile__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--ref-spacing-xs);
   min-width: 0;
+}
+
+/* The free slot. Quiet — the band's own ground showing through a card-shaped
+   outline — so it reads as room left rather than as a fourth objective or a
+   second primary. It fills its cell because it IS a cell: the tiles beside it
+   are buttons of the same size, and a slot narrower than the gap it stands in
+   would read as a stray button. */
+.ins-cockpitb-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ref-spacing-xxs);
+  width: 100%;
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  border: 1px solid var(--app-border-soft);
+  border-radius: var(--ref-border-radius-md);
+  background: transparent;
+  font: inherit;
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--sys-text-color-light);
+  cursor: pointer;
+  transition:
+    border-color var(--ref-animation-short) var(--app-ease-standard),
+    background-color var(--ref-animation-short) var(--app-ease-standard),
+    color var(--ref-animation-short) var(--app-ease-standard);
+}
+
+.ins-cockpitb-add:hover,
+.ins-cockpitb-add:focus-visible {
+  border-color: var(--ref-color-electric-blue-100);
+  background: var(--app-surface);
+  color: var(--ref-color-electric-blue-100);
+  outline: none;
 }
 
 .ins-cockpitb-tile__name {
@@ -135,17 +184,6 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-/* The curve gets half the tile — the point of the whole rotation, and the one
-   thing the rail's 34px gutter could not give it. */
-.ins-cockpitb-tile__spark {
-  flex: 1 1 220px;
-  min-width: 0;
-  align-self: stretch;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
 }
 
 /* ── The read ─────────────────────────────────────────────────────────────── */
