@@ -26,7 +26,7 @@ Cinq familles, détaillées champ par champ dans [`FEATURES.md` §9](FEATURES.md
 | **Audience & goals** | À qui je parle, quels problèmes ils ont, quel objectif je poursuis, quel CTA                              |
 | **Voice & style**    | Comment ça sonne (hooks signature, closings, formatting, style visuel)                                    |
 | **Brand identity**   | À quoi ça ressemble (logos, couleurs, typo, personnalité, images de réf., **look par défaut des images**) |
-| **Competitors**      | Contre qui je me positionne (flag `playbookCompetitors`)                                                  |
+| **Competitors**      | Contre qui je me positionne                                                                               |
 
 ### Le test d'inclusion
 
