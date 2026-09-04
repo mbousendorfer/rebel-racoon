@@ -14,17 +14,17 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1040";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1040";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1040";
-import { isFlagOn } from "./feature-flags.js?v=1040";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1040";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1041";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1041";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1041";
+import { isFlagOn } from "./feature-flags.js?v=1041";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1041";
 // The Default look row offers the SAME three catalogues the Image Studio renders, from
 // the one place they are declared — REF_MODES' own header makes the argument: the label,
 // the hint and the brief clause "drift the moment they live apart". No cycle: the engine
 // imports only clip-formats / image-studio-canvas / feature-flags, and its module body
 // builds consts, so importing it here costs nothing at load.
-import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1040";
+import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1041";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -386,29 +386,39 @@ function ensureBrand(data) {
 // control that disappears leaves you wondering whether the option exists at all. The
 // reason points down at the Reference images row, which is why this row comes after it.
 function lookGroup(label, field, options, current, disabled, edit) {
+  // Read mode is an identity-sheet value, not a control: the picked label reads as
+  // plain grey-100 text beside a grey caption — never an electric-blue chip (blue is
+  // the ink of the interactive) and never a full-width box (a stretched .ap-tag reads
+  // as an empty button). Read mode never invents a value either: an empty refMode must
+  // NOT print "Blend" just because that is where the engine lands, or the fiche claims a
+  // decision nobody made.
+  if (!edit) {
+    const picked = options.find((o) => o.key === current);
+    const value = picked
+      ? `<span class="recap__look-value">${esc(picked.label)}</span>`
+      : `<span class="recap__row-empty">No preference</span>`;
+    return `<div class="recap__look-group">
+      <span class="recap__look-label">${esc(label)}</span>
+      ${value}
+    </div>`;
+  }
   const chips = options
     .map((o) => {
       const on = current === o.key;
-      if (!edit) return on ? `<span class="ap-tag blue">${esc(o.label)}</span>` : "";
       return `<button type="button" class="ap-filter-chip" aria-pressed="${on}" ${disabled ? "disabled" : ""}
         data-recap-look="${esc(field)}" data-recap-look-value="${esc(o.key)}">${esc(o.label)}</button>`;
     })
     .join("");
-  // Read mode never invents a value: an empty refMode must NOT print "Blend" just
-  // because that is where the engine lands, or the fiche claims a decision nobody made.
-  const body = edit
-    ? `<div class="recap__look-chips">${chips}</div>`
-    : chips || `<span class="recap__row-empty">No preference</span>`;
   return `<div class="recap__look-group">
     <span class="recap__look-label">${esc(label)}</span>
-    ${body}
+    <div class="recap__look-chips">${chips}</div>
   </div>`;
 }
 
 function renderDefaultLook(data, edit) {
   const d = data.imageDefaults || { imageType: "", style: "", refMode: "" };
   const hasRefs = (Array.isArray(data.referenceImages) ? data.referenceImages : []).length > 0;
-  return `<div class="recap__look">
+  return `<div class="recap__look${edit ? "" : " recap__look--read"}">
     ${lookGroup("Image type", "imageType", IMAGE_TYPES, d.imageType, false, edit)}
     ${lookGroup("Style", "style", STYLE_PRESETS, d.style, false, edit)}
     ${lookGroup("Use a reference", "refMode", REF_MODES, d.refMode, !hasRefs, edit)}

@@ -25,18 +25,18 @@
 // the header, the footer, the mode dispatch and the in-feed preview. Each mode's
 // body is its own module.
 
-import { html, raw, escapeHtml } from "../../utils.js?v=1040";
-import { getPosts } from "../../posts-store.js?v=1040";
-import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=1040";
-import { renderPostCard } from "../post-card.js?v=1040";
-import { KEY, ctx } from "./context.js?v=1040";
-import { composer } from "./composer-view.js?v=1040";
-import { setupStage } from "./setup-stage.js?v=1040";
-import { toolPalette } from "./tools-view.js?v=1040";
-import { promptGuardDialog } from "./prompt-guard.js?v=1040";
-import { editCanvas } from "./edit-view.js?v=1040";
-import { compositeOverlays } from "../../image-studio-canvas.js?v=1040";
-import * as imageStudio from "../../image-studio.js?v=1040";
+import { html, raw, escapeHtml } from "../../utils.js?v=1041";
+import { getPosts } from "../../posts-store.js?v=1041";
+import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=1041";
+import { renderPostCard } from "../post-card.js?v=1041";
+import { KEY, ctx } from "./context.js?v=1041";
+import { composer } from "./composer-view.js?v=1041";
+import { setupStage } from "./setup-stage.js?v=1041";
+import { toolPalette } from "./tools-view.js?v=1041";
+import { promptGuardDialog } from "./prompt-guard.js?v=1041";
+import { editCanvas } from "./edit-view.js?v=1041";
+import { compositeOverlays } from "../../image-studio-canvas.js?v=1041";
+import * as imageStudio from "../../image-studio.js?v=1041";
 
 // In-feed preview — the edit canvas layers logo/text overlays as live DOM over
 // the image, but renderPostCard only takes a URL, so overlays wouldn't show. We

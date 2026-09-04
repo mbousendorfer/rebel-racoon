@@ -1761,6 +1761,33 @@ button.recap__logotile:hover {
   color: var(--ref-color-grey-80);
 }
 
+/* Read mode is an identity-sheet spec, not a control panel: each criterion is a
+   caption → value pair on one aligned line, so the three picks scan as a block of
+   values rather than as three stretched blue buttons. */
+.recap__look--read {
+  gap: var(--ref-spacing-xs);
+}
+
+.recap__look--read .recap__look-group {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  align-items: baseline;
+  gap: var(--ref-spacing-sm);
+}
+
+.recap__look--read .recap__look-label {
+  padding-top: 0;
+  color: var(--ref-color-grey-60);
+}
+
+/* The picked value — the emphasis of the pair. Same ink as .recap__row-text so it
+   reads exactly like the other read values in the panel (Personality, Business). */
+.recap__look-value {
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--ref-color-grey-100);
+}
+
 .recap__look-chips {
   display: flex;
   flex-wrap: wrap;
