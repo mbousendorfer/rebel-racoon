@@ -230,17 +230,10 @@
   letter-spacing: -0.01em;
 }
 
-.recap__name-edit,
-.recap__name-default {
+.recap__name-edit {
   width: 28px;
   height: 28px;
   flex-shrink: 0;
-}
-
-/* Default-toggle star — outline by default, gold when this Playbook is the
-   default. */
-.recap__name-default.is-on i {
-  color: var(--ref-color-yellow-100);
 }
 
 .recap__meta {
@@ -2122,8 +2115,7 @@ button.recap__logotile:hover {
 }
 
 .welcome-screen--reveal.is-editing .recap__panel-edit,
-.welcome-screen--reveal.is-editing .recap__name-edit,
-.welcome-screen--reveal.is-editing .recap__name-default {
+.welcome-screen--reveal.is-editing .recap__name-edit {
   display: none;
 }
 

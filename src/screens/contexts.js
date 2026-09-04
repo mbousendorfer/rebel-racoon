@@ -1,16 +1,15 @@
-import { html, raw, escapeText, escapeAttr } from "../utils.js?v=1038";
-import { renderTopbar } from "../components/topbar.js?v=1038";
+import { html, raw, escapeText, escapeAttr } from "../utils.js?v=1039";
+import { renderTopbar } from "../components/topbar.js?v=1039";
 import {
   getContexts,
   subscribe as subscribeContexts,
   duplicateContext,
   deleteContext,
-} from "../contexts-store.js?v=1038";
-import { navigate } from "../router.js?v=1038";
-import { setHandoff } from "../handoff.js?v=1038";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=1038";
-import { renderEmptyState } from "../components/empty-state.js?v=1038";
-import { isFlagOn } from "../feature-flags.js?v=1038";
+} from "../contexts-store.js?v=1039";
+import { navigate } from "../router.js?v=1039";
+import { setHandoff } from "../handoff.js?v=1039";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=1039";
+import { renderEmptyState } from "../components/empty-state.js?v=1039";
 import {
   visibleContexts,
   canEdit,
@@ -18,8 +17,8 @@ import {
   canManageSharing,
   accessLabel,
   isMine,
-} from "../playbook-access.js?v=1038";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=1038";
+} from "../playbook-access.js?v=1039";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=1039";
 
 // Contexts library — standalone page (handoff §2.4).
 // Header → search → grid of ContextCards. Each card surfaces brand /
@@ -156,14 +155,9 @@ function renderContextCard(ctx) {
     ctx.voiceProfile?.headline ||
     (Array.isArray(ctx.tones) && ctx.tones.length ? ctx.tones.join(" · ").toLowerCase() : "");
   const audienceCount = Array.isArray(ctx.audience) ? ctx.audience.length : ctx.audience ? 1 : 0;
-  // Competitors ride along in the data whatever the flag says, so gate the
-  // counter on the flag rather than on the count alone. `suggested` entries are
-  // still pending proposals from Archie, not competitors of this brand yet —
-  // they must not inflate the count.
-  const competitorCount =
-    isFlagOn("playbookCompetitors") && Array.isArray(ctx.competitors)
-      ? ctx.competitors.filter((c) => !c.suggested).length
-      : 0;
+  // `suggested` entries are still pending proposals from Archie, not
+  // competitors of this brand yet — they must not inflate the count.
+  const competitorCount = Array.isArray(ctx.competitors) ? ctx.competitors.filter((c) => !c.suggested).length : 0;
   const usedIn = ctx.usedIn || 0;
   // Brand color preview — first website's primary / accent / link from
   // imageVoice, up to 3 dots. Matches the "people avatars" affordance
@@ -346,7 +340,7 @@ function bind(root) {
       event.stopPropagation();
       const copy = duplicateContext(dupBtn.dataset.contextsDuplicate);
       if (copy) {
-        import("../components/toast.js?v=1038").then(({ showToast }) => showToast("Playbook duplicated"));
+        import("../components/toast.js?v=1039").then(({ showToast }) => showToast("Playbook duplicated"));
         navigate(`/playbook/${copy.id}`);
       }
       return;
@@ -357,7 +351,7 @@ function bind(root) {
       const ctx = getContexts().find((c) => c.id === delBtn.dataset.contextsDelete);
       if (!ctx) return;
       if (getContexts().length <= 1) {
-        import("../components/toast.js?v=1038").then(({ showToast }) =>
+        import("../components/toast.js?v=1039").then(({ showToast }) =>
           showToast("Can't delete the last Playbook — every chat needs one."),
         );
         return;
@@ -372,7 +366,7 @@ function bind(root) {
         danger: true,
         onConfirm: () => {
           deleteContext(ctx.id);
-          import("../components/toast.js?v=1038").then(({ showToast }) => showToast("Playbook deleted"));
+          import("../components/toast.js?v=1039").then(({ showToast }) => showToast("Playbook deleted"));
         },
       });
       return;

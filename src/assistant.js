@@ -6,11 +6,10 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1038";
-import { findConnector } from "./connectors-store.js?v=1038";
-import { createSessionNotifier } from "./store-utils.js?v=1038";
-import { showToast } from "./components/toast.js?v=1038";
-import { isFlagOn } from "./feature-flags.js?v=1038";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1039";
+import { findConnector } from "./connectors-store.js?v=1039";
+import { createSessionNotifier } from "./store-utils.js?v=1039";
+import { showToast } from "./components/toast.js?v=1039";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -333,7 +332,7 @@ export function postExtractionResult(sessionId, { filename, ideas }) {
   // "N drafts ready". No action button: the extracted ideas already render
   // inline in the thread as an idea card.
   const n = ideas.length;
-  if (isFlagOn("statusActionSnackbars")) showToast(`${n} idea${n === 1 ? "" : "s"} ready`);
+  showToast(`${n} idea${n === 1 ? "" : "s"} ready`);
 }
 
 // Push a "pending" marker to indicate the session is busy (e.g. while a source

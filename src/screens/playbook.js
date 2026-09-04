@@ -17,9 +17,9 @@
 // `loader` cfg, run the (mock) analysis on a timer, then `updateContext` with
 // the section patch — the loader flips to ready and paints the fresh data.
 
-import { navigate } from "../router.js?v=1038";
-import { escapeHtml as esc } from "../utils.js?v=1038";
-import { renderTopbar } from "../components/topbar.js?v=1038";
+import { navigate } from "../router.js?v=1039";
+import { escapeHtml as esc } from "../utils.js?v=1039";
+import { renderTopbar } from "../components/topbar.js?v=1039";
 import {
   getContextById,
   getContexts,
@@ -27,15 +27,14 @@ import {
   deleteContext,
   duplicateContext,
   appendHistory,
-} from "../contexts-store.js?v=1038";
-import { mount, snapshotEditable } from "../playbook-view.js?v=1038";
-import { open as openRenameModal } from "../components/rename-modal.js?v=1038";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=1038";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=1038";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=1038";
-import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=1038";
-import { sectionPatchFromAnalysis } from "../context-builder.js?v=1038";
-import { isFlagOn } from "../feature-flags.js?v=1038";
+} from "../contexts-store.js?v=1039";
+import { mount, snapshotEditable } from "../playbook-view.js?v=1039";
+import { open as openRenameModal } from "../components/rename-modal.js?v=1039";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=1039";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=1039";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=1039";
+import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=1039";
+import { sectionPatchFromAnalysis } from "../context-builder.js?v=1039";
 import {
   canView,
   canEdit,
@@ -45,8 +44,8 @@ import {
   isMine,
   ownerOf,
   ownerName,
-} from "../playbook-access.js?v=1038";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=1038";
+} from "../playbook-access.js?v=1039";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=1039";
 
 const AUTOFILL_MS = 1500;
 
@@ -66,7 +65,7 @@ const STAGES = {
 };
 
 function toast(msg) {
-  import("../components/toast.js?v=1038").then(({ showToast }) => showToast(msg));
+  import("../components/toast.js?v=1039").then(({ showToast }) => showToast(msg));
 }
 
 function prettyUrl(url) {
@@ -198,12 +197,9 @@ export function renderPlaybook(params, target) {
       ownership: buildOwnership(getContextById(id)),
       notice: () => buildNotice(getContextById(id)),
       headerActions: () => buildHeaderActions(getContextById(id)),
-      // The rename pencil, the default star and the voice re-analysis are all
-      // writes: withhold the callback and playbook-view renders no affordance.
+      // The rename pencil and the voice re-analysis are both writes: withhold
+      // the callback and playbook-view renders no affordance.
       onEditName: canEdit(getContextById(id)) ? onEditName : undefined,
-      // Gated behind the playbookDefault flag (default OFF): without the
-      // callback, playbook-view renders no "set as default" star.
-      onToggleDefault: isFlagOn("playbookDefault") && canEdit(getContextById(id)) ? toggleDefault : undefined,
       onAnalyzeVoice: canEdit(getContextById(id)) ? onAnalyzeVoice : undefined,
       onFooter,
     };
@@ -245,21 +241,6 @@ export function renderPlaybook(params, target) {
       onConfirm: (ids) =>
         runAutofill(STAGES.social, () => voicePatchFromAnalysis(analyzeSocialProfiles(ids)), "Voice & style updated."),
     });
-  }
-
-  // Header star → toggle this Playbook as the default. Setting it unsets the
-  // previous default; unsetting just clears the flag (getDefaultContext then
-  // falls back to the first Playbook).
-  function toggleDefault() {
-    const ctx = getContextById(id);
-    const makeDefault = !ctx?.isDefault;
-    if (makeDefault) {
-      const prev = getContexts().find((c) => c.isDefault);
-      if (prev && prev.id !== id) updateContext(prev.id, { isDefault: false });
-    }
-    updateContext(id, { isDefault: makeDefault, updatedAt: "just now" });
-    remount();
-    toast(makeDefault ? "Set as default Playbook." : "No longer the default Playbook.");
   }
 
   function confirmDelete() {

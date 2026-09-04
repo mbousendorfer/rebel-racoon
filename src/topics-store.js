@@ -44,15 +44,14 @@
 //   getTopicById(id)                   → Topic | null
 //   topicTitle(topic)                  → string
 //   topicStates(topic)                 → string[]  (the six-state vocabulary)
-//   countAll(feedId)                   → number   (the list header's total)
 //   defaultFilters() / narrowedGroupCount(filters)
 //   getStatus(id) / getIgnoreReason(id)
 //   markUsed(id) / ignoreTopic(id, reason) / unignoreTopic(id)
 //   subscribe(fn)                      → unsubscribe
 
-import { topics as seed } from "./mocks.js?v=1038";
-import { isNewUser } from "./user-mode.js?v=1038";
-import { createNotifier } from "./store-utils.js?v=1038";
+import { topics as seed } from "./mocks.js?v=1039";
+import { isNewUser } from "./user-mode.js?v=1039";
+import { createNotifier } from "./store-utils.js?v=1039";
 import {
   DEFAULT_MARKED_IDS,
   MARKED_STATUS_IDS,
@@ -60,7 +59,7 @@ import {
   TOPIC_STATES,
   findTopicState,
   kindOf,
-} from "./topics-catalog.js?v=1038";
+} from "./topics-catalog.js?v=1039";
 
 const topics = isNewUser() ? [] : seed.map(cloneTopic);
 
@@ -296,11 +295,6 @@ export function groupTopicsByAge(list) {
   return AGE_GROUPS.map((g) => ({ group: g, topics: list.filter((t) => ageGroupOf(t).id === g.id) })).filter(
     (row) => row.topics.length,
   );
-}
-
-/** The header's first number: everything the feed holds, before filters. */
-export function countAll(feedId) {
-  return topics.filter((t) => t.feedId === feedId).length;
 }
 
 // ── The sidebar's unread mark ──────────────────────────────────────────────

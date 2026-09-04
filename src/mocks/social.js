@@ -103,13 +103,11 @@ export const socialAccounts = [
   },
 ];
 
-// Demo dataset for the `manyProfiles` feature flag. A large, varied set of
-// CONNECTED social profiles — several brands, each on a handful of the six
-// badge-supported networks — so the profile quickpicker's search field can be
-// evaluated against a realistic long list. Not part of the default seed;
-// social-profiles.js appends it to getConnectedProfiles() only when the flag
-// is on. Every entry carries its own `initials` so the avatar fallback reads
-// as a distinct brand (no shared photo).
+// A large, varied set of CONNECTED social profiles — several brands, each on a
+// handful of the six badge-supported networks — so the profile quickpicker's
+// search field can be evaluated against a realistic long list. social-profiles.js
+// appends it to getConnectedProfiles(). Every entry carries its own `initials`
+// so the avatar fallback reads as a distinct brand (no shared photo).
 export const demoManyProfiles = (() => {
   // [platform, platformLabel, kind, handleStyle] — "@" builds an @handle from
   // the brand slug, "name" reuses the brand name as the handle.

@@ -9,15 +9,6 @@ export const FLAGS = Object.freeze([
       "inline editing for draft posts).",
   },
   {
-    id: "playbookDefault",
-    label: "Default Playbook toggle",
-    default: false,
-    hides:
-      "When OFF (default), hides the star button next to the Playbook name on " +
-      "the /playbook detail page that sets/unsets it as the default Playbook. " +
-      "The default-selection logic still works internally.",
-  },
-  {
     id: "connectors",
     label: "Connectors (live MCP sources)",
     default: false,
@@ -35,39 +26,6 @@ export const FLAGS = Object.freeze([
       "When OFF, hides the floating conversation status card (sources / " +
       "ideas / clips / drafts summary) entirely, including its 'i' toggle " +
       "button in the session topbar.",
-  },
-  {
-    id: "statusActionSnackbars",
-    label: "Action success snackbars",
-    default: false,
-    hides:
-      "When OFF, suppress the success snackbars that now duplicate the " +
-      "persistent composer status bar: 'N drafts ready to review', " +
-      "'Drafted N posts from <source>', 'N ideas ready', and the non-video " +
-      "source-ready toast ('<source> ready · N ideas'). The composer status " +
-      "bar (and the in-progress / video-ready toasts) stay regardless.",
-  },
-  {
-    id: "playbookColors",
-    label: "Playbook colors",
-    default: false,
-    hides:
-      "When OFF (default), hides the playbook color visuals everywhere: the " +
-      "top stripe + palette dots on /contexts cards, the color dot on " +
-      "sidebar conversation rows, and the color swatch picker in the " +
-      "brief panel. When ON, the color coding is shown. Body gets " +
-      "`hide-playbook-colors` while the flag is OFF.",
-  },
-  {
-    id: "manyProfiles",
-    label: "Many connected profiles (demo)",
-    default: false,
-    hides:
-      "When ON, seeds a large, varied set of connected social profiles (~40 " +
-      "across Facebook / Instagram / LinkedIn / X / TikTok / YouTube) so the " +
-      "profile quickpicker's search field can be evaluated with a realistic " +
-      "long list. When OFF (default), only the base connected accounts show " +
-      "and the picker stays a short, unsearched list.",
   },
   {
     id: "multilingualPlaybook",
@@ -92,7 +50,7 @@ export const FLAGS = Object.freeze([
       '"Fresh topics to review" list on a new chat, and the composer Add menu\'s ' +
       '"Pick from the Topic Feed". A stale deep link bounces to /. The seeded ' +
       "feeds and Topics ride along in the data either way, like " +
-      "playbookCompetitors \u2014 only the surfaces are gated.\n\nWhen ON, " +
+      "multilingualPlaybook \u2014 only the surfaces are gated.\n\nWhen ON, " +
       "Agorapulse listening assembles a TOPIC per feed \u2014 a headline, an " +
       "article in two sections, and the posts behind it \u2014 and /topics is the " +
       "queue you triage it in: two segments (Ready to draft / Topics for later), " +
@@ -105,20 +63,6 @@ export const FLAGS = Object.freeze([
       "an ignored Topic that starts trending stays hidden.",
   },
   {
-    id: "playbookCompetitors",
-    label: "Playbook competitors",
-    default: false,
-    hides:
-      "When OFF (default), hides the Competitors section of a Playbook: its " +
-      "panel + rail entry on /playbook and the onboarding recap, and the " +
-      "competitor counter on /contexts cards. The discovered competitors " +
-      "still ride along in the data (the website analysis pre-fills them) — " +
-      "only the surfaces are gated, like multilingualPlaybook. When ON, the " +
-      "section lists competitors (name, description, website, social " +
-      "profiles, auto-extracted favicon), Archie can discover more from the " +
-      "brand's market, and each one is editable in its own modal.",
-  },
-  {
     id: "playbookSharing",
     label: "Playbook sharing (org-wide)",
     default: false,
@@ -126,7 +70,7 @@ export const FLAGS = Object.freeze([
       "Whether a Playbook belongs to somebody. When OFF (default), there is " +
       "one implicit user: every Playbook is visible, editable and deletable, " +
       "exactly as before. The ownership data (owner, scope, change log) still " +
-      "rides along in the seeds, like playbookCompetitors. When ON, a Playbook " +
+      "rides along in the seeds, like multilingualPlaybook. When ON, a Playbook " +
       "is either personal or shared with the whole organisation — there is no " +
       "named sharing. Its owner is the only one who can edit, delete, share or " +
       "hand it over; everyone else may open it READ-ONLY, use it in a chat, and " +

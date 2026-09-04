@@ -208,15 +208,6 @@ export const TOPIC_KINDS = Object.freeze([
   { id: "later", label: "For later" },
 ]);
 
-// The ACTIVE lane — draftable now. No longer a filter default (the Topics filter
-// opens empty, showing both lanes); kept as the name of the lane countToReview
-// and the in-chat list treat as "actionable now".
-export const DEFAULT_KIND = "ready";
-
-export function findTopicKind(id) {
-  return TOPIC_KINDS.find((k) => k.id === id) || null;
-}
-
 /**
  * The kind a Topic sits in. UNCLASSIFIED FALLS TO `later`, on purpose:
  * "To review" would claim a readiness nothing earned. The fork's code did the

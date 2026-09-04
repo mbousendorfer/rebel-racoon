@@ -1628,12 +1628,6 @@ body.playbook-revoked .session__composer-card {
   margin-right: var(--ref-spacing-xxs);
 }
 
-/* Feature flag: hide playbook colors. Drops the colour dot inside
-   the dropdown rows, matching the /contexts cards and sidebar rows. */
-body.hide-playbook-colors .composer-context__dot {
-  display: none;
-}
-
 /* Empty-state block */
 
 .session__empty {

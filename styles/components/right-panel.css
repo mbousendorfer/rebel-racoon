@@ -1596,14 +1596,6 @@
   border-color: var(--ref-color-grey-150);
 }
 
-/* Feature flag: hide playbook colors. Drops every color swatch
-   container in the brief panel (hero edit-mode picker + read-mode
-   display in the branding showcase). */
-body.hide-playbook-colors .context-brief__color-swatches,
-body.hide-playbook-colors .context-brief__hero-color {
-  display: none;
-}
-
 .context-brief__cta-readonly-list {
   margin: 0;
   padding: 0;

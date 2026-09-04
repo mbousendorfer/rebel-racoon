@@ -7,9 +7,8 @@
 // as the muted caption, and a DS avatar carrying the brand photo plus a
 // corner network badge.
 
-import { socialAccounts, demoManyProfiles } from "./mocks.js?v=1038";
-import { escapeHtml } from "./utils.js?v=1038";
-import { isFlagOn } from "./feature-flags.js?v=1038";
+import { socialAccounts, demoManyProfiles } from "./mocks.js?v=1039";
+import { escapeHtml } from "./utils.js?v=1039";
 
 // Map our mock's `platform` slug to the DS's official full-color network
 // icon used by the .ap-avatar-network corner badge.
@@ -106,13 +105,13 @@ export function renderProfileEchoCard(account, { network } = {}) {
   `;
 }
 
-// All currently-connected social accounts (mock). With the `manyProfiles`
-// feature flag ON, the base connected accounts are followed by a large, varied
-// demo set (see mocks.demoManyProfiles) so the profile quickpicker's search
-// can be evaluated against a realistic ~40-profile list.
+// All currently-connected social accounts (mock). The base connected accounts
+// are followed by a large, varied demo set (see mocks.demoManyProfiles) so the
+// profile quickpicker's search can be evaluated against a realistic ~40-profile
+// list.
 export function getConnectedProfiles() {
   const base = socialAccounts.filter((p) => p.status === "connected");
-  return isFlagOn("manyProfiles") ? [...base, ...demoManyProfiles] : base;
+  return [...base, ...demoManyProfiles];
 }
 
 // Build inline-question picker items for the connected profiles. The

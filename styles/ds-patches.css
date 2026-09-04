@@ -544,48 +544,6 @@ button.ap-link {
    Not ported: presets (save / edit / update), the Apply button, and feature-lock.
    The one place this app uses it commits on change and has no locked groups;
    those come back with the markup that needs them. */
-/* ── Select · the "Only" shortcut on a multi-select row ────────────────────
-   Transcribed from libs/ui-components/select/src/dropdown-item-multiple-one-line
-   (its template) + libs/ui-theme/assets/style/_select.scss (`.standalone-link`).
-   ANGULAR-ONLY: the CSS-UI layer ships no class for it — grep `only` in
-   ds/css-ui/index.css returns nothing — so this is the missing-primitive case
-   ds-patches is for, and the day it lands in css-ui this block is a delete.
-
-   The DS's own class name is kept (`standalone-link`, unnamespaced in the source)
-   rather than invented, and scoped under `.ap-select-option` so it cannot leak.
-
-   Hidden until the row is hovered, exactly as the source has it: the shortcut is
-   for the reader who already knows what they want, and six always-visible "Only"
-   links would compete with the six labels they sit beside.
-
-   Token substitutions, because the `--sys-color-*-interactive-*` family is not in
-   this repo's synced ds/ yet:
-     --sys-color-text-interactive-active  →  --comp-link-default-color  (#0E72D6)
-     --sys-color-link-hovered             →  --comp-link-hover-color    (#3A9EFE)
-   Re-point them on the next ds/ sync. */
-.ap-select-option > .standalone-link {
-  display: none;
-  margin-left: auto;
-  padding: 0;
-  border: none;
-  background-color: transparent;
-  font-family: var(--ref-font-family);
-  font-size: var(--ref-font-size-sm);
-  line-height: var(--ref-font-line-height-sm);
-  font-weight: var(--ref-font-weight-bold);
-  color: var(--comp-link-default-color);
-  cursor: pointer;
-}
-
-.ap-select-option:hover > .standalone-link,
-.ap-select-option > .standalone-link:focus-visible {
-  display: block;
-}
-
-.ap-select-option > .standalone-link:hover {
-  color: var(--comp-link-hover-color);
-}
-
 .ap-filter-dropdown {
   display: flex;
   flex-direction: column;
@@ -647,38 +605,11 @@ button.ap-link {
   line-height: var(--sys-text-style-body-bold-line-height);
 }
 
-.ap-filter-leaf__label {
-  color: var(--sys-text-color-default);
-  font-family: var(--sys-text-style-body-font-family);
-  font-size: var(--sys-text-style-body-size);
-  font-weight: var(--sys-text-style-body-weight);
-  line-height: var(--sys-text-style-body-line-height);
-}
-
 .ap-filter-leaf__content {
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xs);
   padding: 0 var(--ref-spacing-sm) var(--ref-spacing-sm);
-}
-
-.ap-filter-leaf__option {
-  display: flex;
-  gap: var(--ref-spacing-xxs);
-  align-items: center;
-  justify-content: flex-start;
-}
-
-.ap-filter-leaf__option > .ap-checkbox-container {
-  font-family: var(--sys-text-style-body-font-family);
-  font-size: var(--sys-text-style-body-size);
-  font-weight: var(--sys-text-style-body-weight);
-  line-height: var(--sys-text-style-body-line-height);
-  color: var(--sys-text-color-default);
-}
-
-.ap-filter-leaf__option .disabled {
-  color: var(--ref-color-grey-40);
 }
 
 /* .ap-button.mermaid draws its gradient "border" by painting an ::after inset

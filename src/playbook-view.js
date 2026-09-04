@@ -14,17 +14,17 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1038";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1038";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1038";
-import { isFlagOn } from "./feature-flags.js?v=1038";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1038";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1039";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1039";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1039";
+import { isFlagOn } from "./feature-flags.js?v=1039";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1039";
 // The Default look row offers the SAME three catalogues the Image Studio renders, from
 // the one place they are declared — REF_MODES' own header makes the argument: the label,
 // the hint and the brief clause "drift the moment they live apart". No cycle: the engine
 // imports only clip-formats / image-studio-canvas / feature-flags, and its module body
 // builds consts, so importing it here costs nothing at load.
-import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1038";
+import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1039";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -57,17 +57,9 @@ const SECTIONS = [
   { id: "pbk-sec-competitors", scope: "competitors", icon: "ap-icon-buildings", title: "Competitors" },
 ];
 
-// Competitors are gated behind a feature flag (default OFF). When OFF the
-// section and its rail entry disappear; the underlying data still rides along
-// (the website analysis pre-fills it), exactly like multilingualPlaybook.
-function competitorsOn() {
-  return isFlagOn("playbookCompetitors");
-}
-
-// The sections this Playbook actually shows — drives the rail nav and the
-// panels, so gating happens in one place.
+// The sections this Playbook shows — drives the rail nav and the panels.
 function sectionsFor() {
-  return competitorsOn() ? SECTIONS : SECTIONS.filter((s) => s.scope !== "competitors");
+  return SECTIONS;
 }
 
 // Edit-mode guidance. Surfaced only while a section is being edited (one at a
@@ -172,7 +164,6 @@ let scrollSpy = null; // IntersectionObserver for the section-nav active state
 //   notice(): string,                  // html above the layout (read-only banner)
 //   headerActions(): string | null,    // html for the header action bar (library)
 //   onEditName(): void,                // header name pencil (rename)
-//   onToggleDefault(): void,           // header star → toggle default (library)
 //   onAnalyzeVoice(): void,            // Voice & style → analyze social profiles
 //   onFooter(event): boolean,          // catch-all click handler (header actions)
 // }
@@ -1804,11 +1795,6 @@ function renderHeader(data) {
     .filter(Boolean)
     .join("");
 
-  const isDefault = Boolean(data.isDefault);
-  const defaultStar = cfg.onToggleDefault
-    ? `<button type="button" class="ap-icon-button transparent recap__name-default ${isDefault ? "is-on" : ""}" data-recap-toggle-default aria-pressed="${isDefault}" title="${isDefault ? "Default Playbook — click to unset" : "Set as default"}" aria-label="${isDefault ? "Default Playbook — click to unset" : "Set as default"}"><i class="${isDefault ? "ap-icon-star_fill" : "ap-icon-star"}"></i></button>`
-    : "";
-
   return `
     <header class="recap__header">
       <div class="recap__id">
@@ -1821,7 +1807,6 @@ function renderHeader(data) {
                 ? `<button type="button" class="ap-icon-button transparent recap__name-edit" data-recap-edit-name title="Rename" aria-label="Rename Playbook"><i class="ap-icon-pen"></i></button>`
                 : ""
             }
-            ${defaultStar}
             ${
               cfg.ownership?.tag
                 ? `<span class="ap-tag grey mini recap__owner-tag" title="${esc(cfg.ownership.tag)}"><span>${esc(cfg.ownership.tag)}</span></span>`
@@ -1950,11 +1935,11 @@ function paint() {
         ${renderGoalsPanel(data, scope === "goals")}
         ${renderVoicePanel(data, scope === "voice")}
         ${renderBrandPanel(data, scope === "brand")}
-        ${competitorsOn() ? renderCompetitorsPanel(data, scope === "competitors") : ""}
+        ${renderCompetitorsPanel(data, scope === "competitors")}
       </div>
     </div>
     ${renderRefModal(data)}
-    ${competitorsOn() ? renderCompetitorModal(data) : ""}
+    ${renderCompetitorModal(data)}
   `;
 
   mountTarget.innerHTML = html`
@@ -2141,7 +2126,6 @@ function addLine(field) {
 const WRITE_HOOKS = [
   "[data-recap-edit-card]",
   "[data-recap-edit-name]",
-  "[data-recap-toggle-default]",
   "[data-recap-save]",
   "[data-recap-cmp-add]",
   "[data-recap-cmp-remove]",
@@ -2171,12 +2155,6 @@ function onClick(event) {
   // Header name pencil → rename (mode-specific handler).
   if (event.target.closest("[data-recap-edit-name]")) {
     cfg.onEditName?.();
-    return;
-  }
-
-  // Header star → toggle default (library mode).
-  if (event.target.closest("[data-recap-toggle-default]")) {
-    cfg.onToggleDefault?.();
     return;
   }
 
