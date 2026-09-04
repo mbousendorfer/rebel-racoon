@@ -20,6 +20,10 @@
      asked for the xl.) */
   --ins-display-xl: 56px;
   --ins-content: 1240px;
+  /* The page's gutter. Every zone that reads the content column — the bar, a
+     band, a pane — pads by exactly this, so "the column" is one number and not
+     three that agree by accident. */
+  --ins-gutter: var(--ref-spacing-xl);
 }
 
 /* ── The page bar ───────────────────────────────────────────────────────────
@@ -32,7 +36,28 @@
   align-items: flex-end;
   gap: var(--ref-spacing-sm);
   flex-wrap: wrap;
-  padding: var(--ref-spacing-sm) var(--ref-spacing-xl) 0;
+  padding: var(--ref-spacing-sm) var(--ins-gutter) 0;
+}
+
+/* ONE left edge for the page. The two centred layouts read a column capped at
+   --ins-content and centred in the host; the bar has to be capped and centred
+   on the SAME grid, or the Playbook select starts 34px left of the card under
+   it — which is exactly what it did. The cap is the column plus its two
+   gutters, so the bar's padding edge lands on the column's edge.
+   Cockpit is excluded on purpose: its rail is full-bleed against the host, so
+   its page bar follows the host's own gutter and not a centred column. */
+:is(.insights--cockpit-bis, .insights--report) .insights__bar {
+  width: min(calc(var(--ins-content) + 2 * var(--ins-gutter)), 100%);
+  margin-inline: auto;
+}
+
+/* Cockpit has no centred column to sit on — it is two full-height panels — so
+   its bar lands on the two edges that exist underneath it instead: the rail's
+   own inset on the left (24px, where "Objectives" and the rows start) and the
+   pane's on the right (32px, where the cards end). A single 40px gutter left
+   the Playbook select above nothing in particular. */
+.insights--cockpit .insights__bar {
+  padding-inline: var(--ref-spacing-md) var(--ref-spacing-lg);
 }
 
 .insights__bar .ins-pbfield,

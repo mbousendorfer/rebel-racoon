@@ -25,8 +25,8 @@
 // against the dashed target line), and the band is what finally makes it big
 // enough to say it.
 
-import { readingFor } from "../model.js?v=1052";
-import { trendSpec, sparklineSpec, progressBar, mountCharts } from "../charts.js?v=1052";
+import { readingFor } from "../model.js?v=1054";
+import { trendSpec, sparklineSpec, progressBar, mountCharts } from "../charts.js?v=1054";
 import {
   statusPill,
   measurePill,
@@ -40,7 +40,7 @@ import {
   objectiveActions,
   figure,
   esc,
-} from "../pieces.js?v=1052";
+} from "../pieces.js?v=1054";
 
 export const id = "cockpit-bis";
 export const label = "Cockpit bis";
@@ -198,7 +198,13 @@ function renderPane(entry, local, specs, firstPaint) {
   // numerals across 1240px is a band of air, and putting the score beside the
   // chart is what keeps "where it stands" and "how it got there" on the first
   // screen now that the band takes the top of it.
-  return `<main class="ins-cockpitb-pane${firstPaint ? " ins-reveal" : ""}">
+  // ONE wrapper holds the column, instead of every child capping and centring
+  // itself: with the cap on each child, the reading paragraph — the only one
+  // with a measure of its own — resolved its auto margins against the pane and
+  // landed 34px left of the cards. The column is a box now, and everything in
+  // it starts where the box starts.
+  return `<main class="ins-cockpitb-pane">
+    <div class="ins-cockpitb-pane__inner${firstPaint ? " ins-reveal" : ""}">
     <header class="ins-cockpitb-pane__head">
       <div class="ins-cockpitb-pane__titles">
         <div class="ins-cockpitb-pane__title"><h2>${esc(entry.label)}</h2>${statusPill(entry)}</div>
@@ -248,5 +254,6 @@ function renderPane(entry, local, specs, firstPaint) {
       <h3 class="ins-section-title">Posts drafted with Archie <span class="ap-counter normal grey">${entry.posts.length}</span></h3>
       ${entry.posts.length ? `<div class="ins-postlist">${entry.posts.map((p) => postCard(p, entry)).join("")}</div>` : postsEmpty()}
     </section>
+    </div>
   </main>`;
 }

@@ -6,10 +6,12 @@
    The rhythm is deliberate — every chapter is the same shape, so the reader
    learns it on the first one and reads the rest by scanning. */
 
+/* The cap is the column PLUS its gutters: with the gutters inside the cap, the
+   chapters were 1160px wide starting 40px right of the page bar above them. */
 .ins-report {
-  width: min(var(--ins-content), 100%);
+  width: min(calc(var(--ins-content) + 2 * var(--ins-gutter)), 100%);
   margin: 0 auto;
-  padding: var(--ref-spacing-md) var(--ref-spacing-xl) var(--ref-spacing-xxl);
+  padding: var(--ref-spacing-md) var(--ins-gutter) var(--ref-spacing-xxl);
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-md);

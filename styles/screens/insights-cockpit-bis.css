@@ -153,19 +153,23 @@
 .ins-cockpitb-pane {
   min-height: 0;
   overflow-y: auto;
-  padding: var(--ref-spacing-md) var(--ref-spacing-xl) var(--ref-spacing-xxl);
+  padding: var(--ref-spacing-md) var(--ins-gutter) var(--ref-spacing-xxl);
+}
+
+/* The column, once — same cap and same centring as the band's inner, so the
+   title, the tiles, the objective's name and every card share one left edge. */
+.ins-cockpitb-pane__inner {
+  width: min(var(--ins-content), 100%);
+  margin-inline: auto;
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-sm);
 }
 
-/* The pane is a flex column with a definite height (a viewport-sized grid row
-   that scrolls), so its children are over-constrained and flex-shrink would
-   squeeze them instead of scrolling — the same 24px clip Cockpit hit. */
-.ins-cockpitb-pane > * {
+/* Nothing in a scrolling column shrinks — it scrolls. (Cockpit's pane lost 24px
+   off its tallest cell to flex-shrink before this rule existed there.) */
+.ins-cockpitb-pane__inner > * {
   flex-shrink: 0;
-  width: min(var(--ins-content), 100%);
-  margin-inline: auto;
 }
 
 .ins-cockpitb-pane__head {
@@ -209,6 +213,8 @@
   color: var(--sys-text-color-light);
 }
 
+/* Its own measure, left-aligned in the column (it is a block inside the
+   wrapper now, so max-width no longer fights auto margins). */
 .ins-cockpitb-pane__reading {
   margin: 0;
   max-width: 78ch;
