@@ -8,11 +8,11 @@
 // Pure render helpers — strings in, strings out. No listeners: every action is
 // a `data-ins-*` hook the shell dispatches.
 
-import { escapeHtml as esc } from "../../utils.js?v=1061";
-import { renderPostEchoRow } from "../../components/top-post-card.js?v=1061";
-import { getContexts } from "../../contexts-store.js?v=1061";
-import { progressBar } from "./charts.js?v=1061";
-import { signedPct } from "./model.js?v=1061";
+import { escapeHtml as esc } from "../../utils.js?v=1063";
+import { renderPostEchoRow } from "../../components/top-post-card.js?v=1063";
+import { getContexts } from "../../contexts-store.js?v=1063";
+import { progressBar } from "./charts.js?v=1063";
+import { signedPct } from "./model.js?v=1063";
 
 // ── The page's head — the scope, worn as the heading ─────────────────────
 //
@@ -72,43 +72,6 @@ export function playbookTitle(ctx) {
       <div class="ap-select-options">${rows}</div>
     </div>
   </details>`;
-}
-
-/**
- * Which reading is on screen. A select, not a segmented control: this repo
- * deleted its segmented-control port on the grounds that "the product uses TABS
- * for that shape everywhere ... only one of the two lists is ever on screen".
- * The same reasoning rules out tabs here too — the page already has one tab bar
- * (the objectives), and a second above it would read as a hierarchy that isn't
- * there. It is the bar's only field now that the scope moved into the heading,
- * and it stays labelled: "View" is the one thing on this page whose name a
- * reader cannot infer from its value.
- */
-export function viewSelect(layouts, currentId) {
-  const current = layouts.find((l) => l.id === currentId) || layouts[0];
-  const rows = layouts
-    .map(
-      (
-        l,
-      ) => `<div class="ap-select-option${l.id === current.id ? " selected" : ""}" data-ins-view="${esc(l.id)}" role="option" aria-selected="${l.id === current.id}">
-        <span class="ap-select-option-text">${esc(l.label)}</span>
-        ${l.id === current.id ? `<i class="ap-icon-check ap-select-option-check" aria-hidden="true"></i>` : ""}
-      </div>`,
-    )
-    .join("");
-  return `<div class="ap-form-field ins-viewfield">
-    <label for="insViewTrigger">View</label>
-    <details class="ap-select" data-ins-scope>
-      <summary class="ap-select-trigger" id="insViewTrigger" role="combobox"
-        aria-haspopup="listbox" aria-expanded="false" aria-controls="insViewListbox">
-        <span class="ap-select-value">${esc(current.label)}</span>
-        <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
-      </summary>
-      <div class="ap-select-dropdown" id="insViewListbox" role="listbox">
-        <div class="ap-select-options">${rows}</div>
-      </div>
-    </details>
-  </div>`;
 }
 
 /**

@@ -7,8 +7,9 @@
 // The previous hub grew all of those and read as a report about Archie; this is
 // a view of the reader's objectives.
 //
-// Three LAYOUTS paint the same model, chosen from the page bar's View select
-// and remembered in localStorage (`archie-insights-layout`):
+// Three LAYOUTS paint the same model, chosen from the topbar's View switch and
+// remembered in localStorage — the catalogue and the choice live in views.js,
+// because the topbar renders the switch and the shell paints the choice:
 //   cockpit     — the instrument panel (default): a rail of every objective,
 //                 one read in full beside it
 //   cockpit-bis — the same master–detail rotated: the objectives as a band
@@ -32,61 +33,29 @@
 // host is never repainted without `destroyChartsIn(host)` first — the one rule
 // that keeps a brand switch from leaking a chart per repaint.
 
-import { html, raw } from "../../utils.js?v=1061";
-import { renderTopbar } from "../../components/topbar.js?v=1061";
-import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=1061";
+import { html, raw } from "../../utils.js?v=1063";
+import { renderTopbar } from "../../components/topbar.js?v=1063";
+import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=1063";
 import {
   subscribe as subscribeScope,
   getActivePlaybook,
   getActivePlaybookId,
   setActivePlaybook,
-} from "../../active-playbook.js?v=1061";
-import { getPath, navigate } from "../../router.js?v=1061";
-import { isFlagOn } from "../../feature-flags.js?v=1061";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=1061";
-import { consumeHandoff } from "../../handoff.js?v=1061";
-import { open as openObjectiveModal } from "../../components/objective-modal.js?v=1061";
-import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=1061";
-import { renderEmptyState } from "../../components/empty-state.js?v=1061";
-import { playbookTitle, viewSelect } from "./pieces.js?v=1061";
-import { objectiveEntries, playbookRollup, entryByKey } from "./model.js?v=1061";
-import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=1061";
-import * as report from "./layouts/report.js?v=1061";
-import * as cockpit from "./layouts/cockpit.js?v=1061";
-import * as cockpitBis from "./layouts/cockpit-bis.js?v=1061";
+} from "../../active-playbook.js?v=1063";
+import { getPath, navigate } from "../../router.js?v=1063";
+import { isFlagOn } from "../../feature-flags.js?v=1063";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=1063";
+import { consumeHandoff } from "../../handoff.js?v=1063";
+import { open as openObjectiveModal } from "../../components/objective-modal.js?v=1063";
+import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=1063";
+import { renderEmptyState } from "../../components/empty-state.js?v=1063";
+import { playbookTitle } from "./pieces.js?v=1063";
+import { objectiveEntries, playbookRollup, entryByKey } from "./model.js?v=1063";
+import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=1063";
+import { DEFAULT_LAYOUT, readLayoutId, writeLayoutId, layoutById } from "./views.js?v=1063";
 
 /** Set by a Playbook's objectives block ("Open in Insights"); payload `${ctxId}::${label}`. */
 export const FOCUS_OBJECTIVE_HANDOFF = "focusObjective";
-
-/** localStorage — which layout the reader last chose. */
-export const INSIGHTS_LAYOUT_KEY = "archie-insights-layout";
-
-export const LAYOUTS = [cockpit, cockpitBis, report];
-
-// Cockpit is what a first visit opens on: every objective is visible at once,
-// so "what needs me" is answered before anything is clicked, and the pane's
-// structure is the clearer read. Report is one switch away and the choice
-// sticks.
-const DEFAULT_LAYOUT = "cockpit";
-
-// ── Layout choice ─────────────────────────────────────────────────────────
-
-function readLayoutId() {
-  try {
-    const v = localStorage.getItem(INSIGHTS_LAYOUT_KEY);
-    return LAYOUTS.some((l) => l.id === v) ? v : DEFAULT_LAYOUT;
-  } catch {
-    return DEFAULT_LAYOUT;
-  }
-}
-
-function writeLayoutId(id) {
-  try {
-    localStorage.setItem(INSIGHTS_LAYOUT_KEY, id);
-  } catch {
-    /* private mode — the choice just doesn't persist */
-  }
-}
 
 // ── Module state ──────────────────────────────────────────────────────────
 
@@ -114,15 +83,14 @@ let boundTarget = null;
 
 // ── The page bar ──────────────────────────────────────────────────────────
 //
-// This repo's topbar carries no screen-actions slot, so the page's own controls
-// live in the page: the reading and the one primary. The SCOPE is not here — it
-// is the heading each layout renders (`playbookTitle`), so the brand the page
-// is about is the biggest word on it instead of the value of a 260px field.
-// The bar is what is left: which reading, and the one primary.
+// One control, and it is the page's own: New objective. The other two moved out
+// of it — the SCOPE became the heading each layout renders (`playbookTitle`),
+// and the VIEW switch went to the topbar (views.js), where prototype chrome
+// belongs. What is left is the one thing a reader of THIS page does that no
+// layout offers on its own: Cockpit's rail has no add door.
 
-function renderBar(layoutId) {
+function renderBar() {
   return `<header class="insights__bar">
-    ${viewSelect(LAYOUTS, layoutId)}
     <button type="button" class="ap-button primary blue insights__new" data-ins-new>
       <i class="ap-icon-plus" aria-hidden="true"></i><span>New objective</span>
     </button>
@@ -163,7 +131,7 @@ function renderEmpty(ctx) {
 // ── Painting ──────────────────────────────────────────────────────────────
 
 function currentLayout() {
-  return LAYOUTS.find((l) => l.id === layoutId) || cockpit;
+  return layoutById(layoutId);
 }
 
 function paint() {
@@ -177,7 +145,7 @@ function paint() {
   const ctx = getActivePlaybook();
   const entries = ctx ? objectiveEntries(ctx) : [];
   section.className = `screen insights insights--${layoutId}`;
-  bar.innerHTML = ctx ? renderBar(layoutId) : "";
+  bar.innerHTML = ctx ? renderBar() : "";
 
   if (!ctx || !entries.length) {
     host.innerHTML = renderEmptyPage(ctx);
@@ -236,12 +204,14 @@ function onClick(event) {
   // Every dropdown here is a <details>, which does not close itself on an
   // outside click. Any click not inside the open one shuts it — before the
   // dispatch guard below, so a click on empty page space still closes it.
-  // Scoped to the SECTION, not the host: the scope switcher is a layout's
-  // heading (inside the host) and the View select is in the page bar (outside
-  // it), and a query that saw only one left the other stuck open.
-  section?.querySelectorAll("[data-ins-scope][open]").forEach((d) => {
-    if (!d.contains(event.target)) d.removeAttribute("open");
-  });
+  // Two hosts, because the two dropdowns live on either side of #app: the scope
+  // switcher is a layout's heading, the View switch is in the topbar. A query
+  // that saw only one left the other stuck open.
+  [section, topbarEl].forEach((root) =>
+    root?.querySelectorAll("[data-ins-scope][open]").forEach((d) => {
+      if (!d.contains(event.target)) d.removeAttribute("open");
+    }),
+  );
 
   const t = event.target.closest(
     "[data-ins-new],[data-ins-adjust],[data-ins-chat],[data-ins-select],[data-ins-measure-tab],[data-ins-jump],[data-ins-scope-pick],[data-ins-repurpose],[data-ins-view]",
@@ -255,6 +225,10 @@ function onClick(event) {
     t.closest("[data-ins-scope]")?.removeAttribute("open");
     layoutId = ds.insView;
     writeLayoutId(layoutId);
+    // The switch is in the topbar and shows the CURRENT reading, so it has to
+    // be repainted with the page — otherwise it keeps naming the view the
+    // reader just left.
+    renderTopbar();
     // NO reveal here. Switching view is the reader re-arranging the page they
     // are already reading, not arriving on it — and it is a control they use to
     // compare, so it gets used repeatedly. Re-running the 300ms rise on every
@@ -403,6 +377,9 @@ export function renderInsights(_params, target) {
   topbarEl = document.getElementById("topbar");
   topbarEl?.addEventListener("click", onClick);
   topbarEl?.addEventListener("keydown", onKeydown);
+  // `toggle` does not bubble — hence capture, and hence on both hosts: the
+  // View switch's <details> is in the topbar, the scope switcher's is in #app.
+  topbarEl?.addEventListener("toggle", onToggle, true);
   window.addEventListener("resize", onResize);
 
   unsubs.push(subscribeContexts(schedulePaint), subscribeScope(schedulePaint));
@@ -426,6 +403,7 @@ function teardown() {
   boundTarget?.removeEventListener("toggle", onToggle, true);
   topbarEl?.removeEventListener("click", onClick);
   topbarEl?.removeEventListener("keydown", onKeydown);
+  topbarEl?.removeEventListener("toggle", onToggle, true);
   window.removeEventListener("resize", onResize);
   boundTarget = null;
   topbarEl = null;

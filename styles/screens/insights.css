@@ -27,15 +27,16 @@
 }
 
 /* ── The page bar ───────────────────────────────────────────────────────────
-   This repo's topbar carries no screen-actions slot, so the page's own controls
-   sit in the page: the reading and the one primary. The SCOPE is not here — the
-   Playbook's name is the heading each layout renders, and the heading is the
-   switcher (see § The Playbook title). The View select keeps a form control's
-   width — a full-width one reads as a filter bar. */
+   One control now, and it is the page's own: New objective. The SCOPE became
+   the heading each layout renders (§ The Playbook title) and the VIEW switch
+   went to the topbar (§ The view switch), so what is left is a row holding the
+   page's primary — which is why it is `justify-content: flex-end` rather than a
+   flex row with a `margin-left: auto` on its only child. */
 
 .insights__bar {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
+  justify-content: flex-end;
   gap: var(--ref-spacing-sm);
   flex-wrap: wrap;
   padding: var(--ref-spacing-sm) var(--ins-gutter) 0;
@@ -62,13 +63,8 @@
   padding-inline: var(--ref-spacing-md) var(--ref-spacing-lg);
 }
 
-.insights__bar .ins-viewfield {
-  flex: 0 0 auto;
-  width: 180px;
-}
-
 .insights__new {
-  margin-left: auto;
+  flex: 0 0 auto;
 }
 
 .insights__host {
@@ -141,6 +137,54 @@
   outline: 2px solid var(--ref-color-electric-blue-100);
   outline-offset: var(--ref-spacing-xxxs);
   transition: outline-color var(--ref-animation-long) var(--app-ease-standard);
+}
+
+/* ── The view switch — Insights' control, worn by the topbar ────────────────
+   Rendered by topbar.js (renderInsightsView) but styled here, because it is
+   PROTOTYPE chrome for this screen: the day one layout wins, the switch and
+   these rules are deleted together with the other two.
+
+   The trigger is a DS ghost button, so it matches the topbar's own pills; only
+   the anchoring is ours. The menu opens from the RIGHT edge — the control sits
+   at the far right of the topbar, and the DS dropdown's `left: 0; right: 0`
+   would hang it off the viewport. */
+
+.ins-viewswitch {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.ins-viewswitch > summary {
+  list-style: none;
+}
+
+.ins-viewswitch > summary::-webkit-details-marker {
+  display: none;
+}
+
+.ins-viewswitch > summary::marker {
+  display: none;
+}
+
+/* .ap-button is not a <summary>'s natural shape: the DS component centres its
+   content, which a summary's default `display: list-item` undoes. */
+.ins-viewswitch__trigger {
+  display: inline-flex;
+  cursor: pointer;
+}
+
+.ins-viewswitch__arrow {
+  transition: transform var(--ref-animation-short) var(--app-ease-standard);
+}
+
+.ins-viewswitch[open] .ins-viewswitch__arrow {
+  transform: rotate(180deg);
+}
+
+.ins-viewswitch__menu {
+  left: auto;
+  right: 0;
+  min-width: 220px;
 }
 
 /* ── The Playbook title — the heading IS the scope ──────────────────────────

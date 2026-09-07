@@ -70,8 +70,8 @@
 //   onSkip()          fn      — called when Skip / Esc; if omitted, no skip btn
 //   onBack()          fn      — called when ← Back is clicked; if omitted, no back btn
 
-import { chatTurn } from "./screens/_analyse-common.js?v=1061";
-import { createSessionNotifier } from "./store-utils.js?v=1061";
+import { chatTurn } from "./screens/_analyse-common.js?v=1063";
+import { createSessionNotifier } from "./store-utils.js?v=1063";
 
 const states = new Map(); // sessionId → opts
 const sessionNotifier = createSessionNotifier("inline-question");
