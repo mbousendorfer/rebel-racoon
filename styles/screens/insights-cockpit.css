@@ -21,17 +21,15 @@
   background: var(--app-surface);
 }
 
-/* The rail's own head, and the third face of the same tray (insights.css § The
-   header band): the ground and the strong rule, without the bleed — the rail is
-   already a panel, so the head is a zone inside it and not a band across the
-   page. Same reason as the other two: the rows under it sit on white, and a
-   white head reads as the first row rather than as the head. */
+/* The rail's own head — the same head as the other layouts', minus the bleed:
+   the rail is already a panel, so this is a zone inside it and not a band
+   across the page. Which is also why it declares no ground: the chrome's white
+   is the rail's own, and the strong rule is what makes it a head. */
 .ins-cockpit-rail__head {
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xxs);
   padding: var(--ref-spacing-md) var(--ref-spacing-md) var(--ref-spacing-sm);
-  background: var(--app-surface-subtle);
   border-bottom: 1px solid var(--app-border);
 }
 

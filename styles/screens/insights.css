@@ -32,26 +32,32 @@
    topbar is the reading — and the reading opens with its HEAD: the Playbook's
    name, how things stand, and the selector that picks one objective.
 
-   That head is a TRAY, in all three layouts, and that is the whole point of
-   this block. Cockpit bis found the rule first (see its own file): the readings
-   below are white cards, so a WHITE head reads as the first of them —
-   "the selector and the read below it read as one continuous surface". The head
-   is chrome, not content, so it gets chrome's treatment: the subtle grey ground
-   (grey-05, one step under the page's own grey-bg, so it is a surface and not a
-   hole), a grey-20 rule closing it — the app's strong border, because a DS
-   hairline is what the topbar uses to sit above content and it is not enough
-   between two zones that both hold white — and no radius and no shadow: it
-   spans the host, so it has no corners to round, and an elevated head over
-   elevated cards is the nested-elevation the DS rules out.
+   The head is chrome, so it takes chrome's ground: WHITE, continuing the
+   topbar's own surface downward, with a grey-20 rule closing it — the app's
+   strong border, because the DS hairline is what the topbar uses to sit above
+   content and it was not enough between two zones that both hold white. Below
+   that rule the page is grey and the readings float on it as cards. So the
+   screen reads in two blocks: the chrome is one white slab from the top of the
+   window to the rule, the content is what floats under it.
 
-   Full-bleed, with the content inside capped on the SAME column as the reading
-   below it — so the band crosses the page but its words line up with the cards.
-   (Cockpit is the exception: its head sits inside the rail, which is already a
-   panel of its own, so it takes the ground and the rule and not the bleed.) */
+   No radius and no shadow: it spans the host, so it has no corners to round,
+   and an elevated head over elevated cards is the nested-elevation the DS rules
+   out. Full-bleed, with the content inside capped on the SAME column as the
+   reading below it — so the band crosses the page but its words line up with
+   the cards. (Cockpit is the exception to the bleed: its head sits inside the
+   rail, which is already a panel of its own, so it takes the rule and not the
+   bleed — and its ground is the rail's own white.)
+
+   ⚠️ ONE band is grey, and it is not an oversight: Cockpit bis's, because that
+   band holds the objectives as white TILES. A band's ground is decided by what
+   it holds — text and controls sit on the chrome's white, cards need a tray
+   under them or they dissolve into it ("the selector and the read below it read
+   as one continuous surface", which is how that layout's own file puts it). The
+   override lives with the band that needs it, in insights-cockpit-bis.css. */
 
 .insights__band {
   flex: 0 0 auto;
-  background: var(--app-surface-subtle);
+  background: var(--app-surface);
   border-bottom: 1px solid var(--app-border);
 }
 

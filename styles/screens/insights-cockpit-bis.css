@@ -18,13 +18,16 @@
 }
 
 /* ── The band ───────────────────────────────────────────────────────────────
-   A tray, not a white band: the tiles are white, so on a white ground the
-   selector and the read below it read as one surface. That rule was worked out
-   here and now lives in insights.css (§ The header band), which this composes —
-   Report's head wears the same frame. What stays here is what is this layout's
-   own: the two-row cap and the container query. */
+   The frame is the shared header band (insights.css § The header band); what
+   stays here is what is this layout's own — and the GROUND is one of those
+   things. Every other head in Insights sits on the chrome's white, because it
+   holds text and controls. This one holds the objectives as white TILES, and on
+   a white ground the tiles and the read below them dissolve into one continuous
+   surface. So it stays a tray: grey-05, one step under the page's own grey-bg,
+   so it is a surface and not a hole. */
 
 .ins-cockpitb-strip {
+  background: var(--app-surface-subtle);
   /* Two or three tiles is the case, and they are one row. The cap is what stops
      a Playbook that grew six objectives from pushing the read off the page:
      past two rows the band scrolls instead. Sized so two rows of wrapped tiles

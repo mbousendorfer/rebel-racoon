@@ -13,10 +13,10 @@
 // the page is the thing being evaluated, and a comparison control standing
 // inside it reads as one of the page's own features.
 
-import { escapeHtml as esc } from "../../utils.js?v=1064";
-import * as report from "./layouts/report.js?v=1064";
-import * as cockpit from "./layouts/cockpit.js?v=1064";
-import * as cockpitBis from "./layouts/cockpit-bis.js?v=1064";
+import { escapeHtml as esc } from "../../utils.js?v=1065";
+import * as report from "./layouts/report.js?v=1065";
+import * as cockpit from "./layouts/cockpit.js?v=1065";
+import * as cockpitBis from "./layouts/cockpit-bis.js?v=1065";
 
 export const LAYOUTS = [cockpit, cockpitBis, report];
 
