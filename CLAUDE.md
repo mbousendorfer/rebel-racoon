@@ -344,10 +344,15 @@ repurpose (`session.js`), clip drafts (`clip-draft-flow.js`), top posts inline +
 
 Two rules this rests on:
 
-- **The Quickpicker asks, the modal consents.** Connecting an account is an Agorapulse action, not
-  an Archie one ([`CONCEPTS.md`](docs/reference/CONCEPTS.md) §6 — the account catalogue belongs to
-  the platform). Archie names the need in the conversation; the platform's dialog does the
-  connecting. Don't collapse the two into a bare "Connect" button.
+- **The grid asks, the dialog consents** — the product's own two beats. The step is a card grid of
+  NETWORKS (glyph, name, "Pages" / "Professional accounts"), laid out like Agorapulse's _Add new
+  social profiles_ screen, because that is the real unit: you don't pick from accounts you already
+  have, you pick a network and its dialog hands one back. Connecting is an Agorapulse action, not an
+  Archie one ([`CONCEPTS.md`](docs/reference/CONCEPTS.md) §6 — the account catalogue belongs to the
+  platform). Don't collapse the two into a bare "Connect" button.
+- ⚠️ **The cards variant resolves by DESTROYING the picker** (`pick()` deletes the state before
+  calling `onPick`). So the dialog must hand control back on cancel — `onDismiss` re-arms the grid.
+  Without it, backing out of the dialog leaves the flow with nothing on screen.
 - **`social-profiles.js` now holds state.** A module-level `Set` of connected ids, seeded once from
   the mocks (flag off) or empty (flag on), with `connectAccounts()` writing to it and a notifier so
   every surface agrees. `profileForNetwork()` goes through the SAME gate — otherwise the schedule

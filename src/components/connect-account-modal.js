@@ -8,28 +8,34 @@
 //
 // Public API:
 //   init()                                  — inject markup + bind once on app boot
-//   open({ preselected, onConfirm })        — onConfirm(connectedAccounts: Account[])
+//   open({ network, preselected, onConfirm, onDismiss })
+//       onConfirm(connectedAccounts: Account[]) — at least one connected
+//       onDismiss()                            — closed without connecting
 //
 // Behaviour:
-//   - Lists getConnectableAccounts(); `preselected` ids start ticked.
+//   - Lists getConnectableAccounts(), scoped to `network` when given — the
+//     step's grid picks the network, this dialog picks the account on it.
+//     `preselected` ids start ticked.
 //   - "Connect" is disabled until at least one account is ticked; it calls
 //     connectAccounts(ids) then fires onConfirm with the accounts that flipped.
 //   - Cancel / Esc / backdrop / close-X dismiss without connecting anything.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1072";
-import { escapeHtml as esc } from "../utils.js?v=1072";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1076";
+import { escapeHtml as esc } from "../utils.js?v=1076";
 import {
   getConnectableAccounts,
   connectAccounts,
   NETWORK_ICON_BY_PLATFORM,
+  NETWORK_LABEL,
   BRAND_INITIALS,
-} from "../social-profiles.js?v=1072";
+} from "../social-profiles.js?v=1076";
 
 const MODAL_ID = "connect-account";
 
-let backdrop, modal, listEl, confirmBtn, cancelBtn, closeBtn;
+let backdrop, modal, listEl, titleEl, confirmBtn, cancelBtn, closeBtn;
 let initialized = false;
 let pendingOnConfirm = null;
+let pendingOnDismiss = null;
 
 const HTML = `
 <div class="app-modal-backdrop connect-account-modal__backdrop" id="connectAccountBackdrop" hidden></div>
@@ -49,8 +55,8 @@ const HTML = `
   </button>
   <div class="ap-dialog-content">
     <p class="connect-account-modal__lead">
-      Pick the accounts to connect. Drafts are written for the network they publish on, so the
-      choice sets the format and the length.
+      Drafts are written for the network they publish on — that's what sets the format and the
+      length.
     </p>
     <div class="connect-account-modal__list" id="connectAccountList" role="group" aria-label="Accounts to connect"></div>
     <div class="ap-infobox info connect-account-modal__note">
@@ -70,8 +76,8 @@ const HTML = `
   </div>
 </aside>`;
 
-function renderList(preselected) {
-  const accounts = getConnectableAccounts();
+function renderList(preselected, network) {
+  const accounts = getConnectableAccounts().filter((p) => !network || p.platform === network);
   if (!accounts.length) {
     listEl.innerHTML = `<p class="connect-account-modal__empty">Every account is already connected.</p>`;
     return;
@@ -116,6 +122,7 @@ function injectOnce() {
   backdrop = document.getElementById("connectAccountBackdrop");
   modal = document.getElementById("connectAccountModal");
   listEl = document.getElementById("connectAccountList");
+  titleEl = document.getElementById("connectAccountTitle");
   confirmBtn = document.getElementById("connectAccountConfirm");
   cancelBtn = document.getElementById("connectAccountCancel");
   closeBtn = document.getElementById("connectAccountClose");
@@ -142,6 +149,7 @@ function submit() {
   if (!ids.length) return;
   const fn = pendingOnConfirm;
   pendingOnConfirm = null;
+  pendingOnDismiss = null;
   // Connect BEFORE closing so a subscriber repainting on close already sees them.
   const connected = connectAccounts(ids);
   close();
@@ -152,12 +160,18 @@ export function init() {
   injectOnce();
 }
 
-export function open({ preselected = [], onConfirm = null } = {}) {
+export function open({ network = null, preselected = [], onConfirm = null, onDismiss = null } = {}) {
   injectOnce();
   requestOpen(MODAL_ID, close);
 
   pendingOnConfirm = onConfirm;
-  renderList(preselected);
+  pendingOnDismiss = onDismiss;
+  // Name the network the grid just picked, so the dialog reads as its step and
+  // not as a second, unrelated question.
+  titleEl.textContent = network
+    ? `Connect your ${NETWORK_LABEL[network] || network} account`
+    : "Connect a social account";
+  renderList(preselected, network);
   syncConfirm();
 
   backdrop.hidden = false;
@@ -174,6 +188,12 @@ function close() {
   modal.setAttribute("aria-hidden", "true");
   backdrop.hidden = true;
   document.body.classList.remove("has-modal");
+  // Still holding onConfirm means nothing was connected: this is a cancel, and
+  // the caller has to put its step back (the card grid resolved on pick, so
+  // there is nothing left on screen otherwise).
+  const dismissed = pendingOnConfirm ? pendingOnDismiss : null;
   pendingOnConfirm = null;
+  pendingOnDismiss = null;
   notifyClose(MODAL_ID);
+  if (typeof dismissed === "function") dismissed();
 }

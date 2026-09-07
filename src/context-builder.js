@@ -13,21 +13,21 @@
 // tones, contentStyle, objective, contentAction, ctaLinks, language, color,
 // suggestions, editingId, onComplete }.
 
-import * as inlineQuestion from "./inline-question.js?v=1072";
-import { connectableItems } from "./connect-profiles-flow.js?v=1072";
-import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=1072";
-import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1072";
-import * as rightPanel from "./components/right-panel.js?v=1072";
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1072";
-import { analyzeWebsite } from "./context-mock-analysis.js?v=1072";
-import { connectors as connectorMocks } from "./mocks.js?v=1072";
+import * as inlineQuestion from "./inline-question.js?v=1076";
+import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=1076";
+import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=1076";
+import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1076";
+import * as rightPanel from "./components/right-panel.js?v=1076";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1076";
+import { analyzeWebsite } from "./context-mock-analysis.js?v=1076";
+import { connectors as connectorMocks } from "./mocks.js?v=1076";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "./social-profiles.js?v=1072";
-import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=1072";
-import { isFlagOn } from "./feature-flags.js?v=1072";
+} from "./social-profiles.js?v=1076";
+import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=1076";
+import { isFlagOn } from "./feature-flags.js?v=1076";
 
 const drafts = new Map(); // sessionId → draft
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -421,16 +421,17 @@ function askAltProfile(sessionId) {
       title: "Connect an account (optional)",
       subtitle: "Nothing publishes yet — this only lets me write and schedule for it.",
       stepLabel: altStepLabel("profile"),
-      items: connectableItems(),
-      multi: true,
-      submitLabel: "Connect",
+      // The same grid as the in-chat step, and as the product's own "Add new
+      // social profiles" screen: pick a network, its dialog hands back the
+      // account.
+      variant: "cards",
+      cardCols: 4,
+      items: connectableNetworkCards(),
       skipLabel: "Skip",
-      onPick: (ids) => {
-        const picked = Array.isArray(ids) ? ids : [ids];
-        if (!picked.length) return;
-        // Same two beats as in chat: the picker asks, the modal consents.
+      onPick: (platform) => {
         openConnectAccountModal({
-          preselected: picked,
+          network: platform,
+          preselected: accountIdsForNetwork(platform),
           onConfirm: (accounts) => {
             if (!accounts.length) return;
             commitAltProfiles(sessionId, accounts);
@@ -438,6 +439,8 @@ function askAltProfile(sessionId) {
             notify(sessionId);
             askAltDocuments(sessionId);
           },
+          // Backing out of the dialog puts the grid back, not a dead end.
+          onDismiss: () => askAltProfile(sessionId),
         });
       },
       onSkip: () => {

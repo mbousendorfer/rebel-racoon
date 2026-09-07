@@ -7,10 +7,10 @@
 // as the muted caption, and a DS avatar carrying the brand photo plus a
 // corner network badge.
 
-import { socialAccounts, demoManyProfiles } from "./mocks.js?v=1072";
-import { escapeHtml } from "./utils.js?v=1072";
-import { isFlagOn } from "./feature-flags.js?v=1072";
-import { createNotifier } from "./store-utils.js?v=1072";
+import { socialAccounts, demoManyProfiles } from "./mocks.js?v=1076";
+import { escapeHtml } from "./utils.js?v=1076";
+import { isFlagOn } from "./feature-flags.js?v=1076";
+import { createNotifier } from "./store-utils.js?v=1076";
 
 // Map our mock's `platform` slug to the DS's official full-color network
 // icon used by the .ap-avatar-network corner badge.
@@ -32,6 +32,18 @@ export const NETWORK_LABEL = {
   x: "X (Twitter)",
   tiktok: "TikTok",
   youtube: "YouTube",
+};
+
+// What you connect ON a network, in the product's own words — the subtitle
+// under each card of Agorapulse's "Add new social profiles" grid, which the
+// connect step reproduces. Keyed by platform slug.
+export const NETWORK_CONNECT_KINDS = {
+  facebook: "Pages",
+  instagram: "Professional accounts",
+  linkedin: "Profiles, company pages",
+  x: "Profiles",
+  tiktok: "Accounts",
+  youtube: "Channels",
 };
 
 // Mock brand initials shown as the avatar fallback when no photo loads.
@@ -158,6 +170,27 @@ export function getConnectedProfiles() {
 export function getConnectableAccounts() {
   const ids = ensureSeeded();
   return socialAccounts.filter((p) => !ids.has(p.id) && p.handle);
+}
+
+// The same accounts, grouped into the NETWORKS you can still add — the unit the
+// product's "Add new social profiles" grid is built on (you pick a network, its
+// own dialog picks the account). A network drops out of the grid once every
+// account it offers is connected.
+export function getConnectableNetworks() {
+  const byPlatform = new Map();
+  for (const account of getConnectableAccounts()) {
+    if (!byPlatform.has(account.platform)) {
+      byPlatform.set(account.platform, {
+        platform: account.platform,
+        label: NETWORK_LABEL[account.platform] || account.platformLabel || account.platform,
+        kinds: NETWORK_CONNECT_KINDS[account.platform] || account.kind || "Accounts",
+        icon: NETWORK_ICON_BY_PLATFORM[account.platform] || null,
+        accounts: [],
+      });
+    }
+    byPlatform.get(account.platform).accounts.push(account);
+  }
+  return [...byPlatform.values()];
 }
 
 // Mock-connect one or more accounts by id. Returns the accounts that actually

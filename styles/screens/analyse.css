@@ -486,3 +486,27 @@
 .analyse__picker-loading .archie-loader {
   --archie-loader-size: 44px;
 }
+
+/* ── Connect-a-network cards ────────────────────────────────────────────── */
+/* The account step's grid, shaped like Agorapulse's own "Add new social
+   profiles" screen: the network's full-colour glyph over its name, and what
+   you connect on it underneath. Rides on .analyse__card (hover, focus and the
+   shortcut badge come from there); only the stacking and the glyph differ. */
+.analyse__card:has(.connect-card__glyph) {
+  align-items: center;
+  justify-content: center;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-sm) var(--ref-spacing-xs);
+  text-align: center;
+}
+
+.analyse__card:has(.connect-card__glyph) .analyse__card-text {
+  align-items: center;
+}
+
+.connect-card__glyph {
+  display: grid;
+  place-items: center;
+  font-size: 28px;
+  line-height: 1;
+}
