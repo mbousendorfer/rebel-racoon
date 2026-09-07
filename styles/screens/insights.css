@@ -48,12 +48,11 @@
    rail, which is already a panel of its own, so it takes the rule and not the
    bleed — and its ground is the rail's own white.)
 
-   ⚠️ ONE band is grey, and it is not an oversight: Cockpit bis's, because that
-   band holds the objectives as white TILES. A band's ground is decided by what
-   it holds — text and controls sit on the chrome's white, cards need a tray
-   under them or they dissolve into it ("the selector and the read below it read
-   as one continuous surface", which is how that layout's own file puts it). The
-   override lives with the band that needs it, in insights-cockpit-bis.css. */
+   ⚠️ No exceptions: all three heads take this ground, Cockpit bis's band of
+   tiles included. It was the one grey tray — its own file has the finding that
+   put it there, and the reason it went white anyway. A band that holds cards
+   carries them on their own border now, not on a change of surface behind
+   them. */
 
 .insights__band {
   flex: 0 0 auto;
