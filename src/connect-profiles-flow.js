@@ -14,20 +14,21 @@
 // always the case with the flag off, so this module is a no-op there. That
 // single short-circuit is why callers can wrap unconditionally.
 
-import * as inlineQuestion from "./inline-question.js?v=1070";
-import { postAssistantMessage, postUserProfilesTurn } from "./assistant.js?v=1070";
+import * as inlineQuestion from "./inline-question.js?v=1072";
+import { postAssistantMessage, postUserProfilesTurn } from "./assistant.js?v=1072";
 import {
   getConnectedProfiles,
   getConnectableAccounts,
   NETWORK_ICON_BY_PLATFORM,
   BRAND_INITIALS,
-} from "./social-profiles.js?v=1070";
-import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=1070";
+} from "./social-profiles.js?v=1072";
+import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=1072";
 
 // Picker rows for the accounts on offer — same shape as
 // buildConnectedProfileItems() so the connect step and the pick step it stands
-// in for read as one family.
-function connectableItems() {
+// in for read as one family. Exported because Playbook creation offers the same
+// list as its (optional) account step.
+export function connectableItems() {
   return getConnectableAccounts().map((p) => ({
     value: p.id,
     label: p.handle,

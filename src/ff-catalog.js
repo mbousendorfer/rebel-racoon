@@ -101,13 +101,14 @@ export const FLAGS = Object.freeze([
     label: "Skip connecting profiles at setup",
     default: false,
     hides:
-      "Where the app asks for a social account. When OFF (default), creating a " +
-      "Playbook asks which profile will publish as its second question, and the " +
-      "~40 demo accounts are connected from the start.\n\nWhen ON, that " +
-      "question disappears — Playbook creation drops to 3 steps (4 with " +
-      "multilingualPlaybook) — and NOTHING is connected to begin with, in both " +
-      "user modes. Nobody is asked to connect an account before they have seen " +
-      "what Archie does with one.\n\nThe ask moves to the moment it is needed: " +
+      "Whether connecting a social account is a REQUIREMENT or a choice. When OFF " +
+      "(default), creating a Playbook makes you pick which profile will publish " +
+      "before you can go on, and the ~40 demo accounts are connected from the " +
+      "start.\n\nWhen ON, nothing is connected to begin with (in both user " +
+      "modes) and the step becomes optional: it still asks — offering to connect " +
+      "an account when none is, or the usual profile pick when some are — but it " +
+      "carries a Skip, and the step count is unchanged. Skipping is not a dead " +
+      "end.\n\nThe ask comes back at the moment it is needed: " +
       "the three chat flows that draft FOR an account — draft from an idea, " +
       'draft from clips, and repurpose — each replace their "pick an account" ' +
       'step with a "connect an account" step in the same place, and resume ' +

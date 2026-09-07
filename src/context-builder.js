@@ -13,19 +13,21 @@
 // tones, contentStyle, objective, contentAction, ctaLinks, language, color,
 // suggestions, editingId, onComplete }.
 
-import * as inlineQuestion from "./inline-question.js?v=1070";
-import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1070";
-import * as rightPanel from "./components/right-panel.js?v=1070";
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1070";
-import { analyzeWebsite } from "./context-mock-analysis.js?v=1070";
-import { connectors as connectorMocks } from "./mocks.js?v=1070";
+import * as inlineQuestion from "./inline-question.js?v=1072";
+import { connectableItems } from "./connect-profiles-flow.js?v=1072";
+import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=1072";
+import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1072";
+import * as rightPanel from "./components/right-panel.js?v=1072";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1072";
+import { analyzeWebsite } from "./context-mock-analysis.js?v=1072";
+import { connectors as connectorMocks } from "./mocks.js?v=1072";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "./social-profiles.js?v=1070";
-import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=1070";
-import { isFlagOn } from "./feature-flags.js?v=1070";
+} from "./social-profiles.js?v=1072";
+import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=1072";
+import { isFlagOn } from "./feature-flags.js?v=1072";
 
 const drafts = new Map(); // sessionId → draft
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -280,16 +282,17 @@ export function startAlt(sessionId, { onComplete, prefilledUrl = "" } = {}) {
 // The onboarding steps, in order, as they exist under the current flags — the
 // single place that knows which questions the flow asks. Two flags move it:
 // `multilingualPlaybook` inserts a language step after the URL, and
-// `skipConnectProfiles` drops the profile step (nobody is asked to connect an
-// account before they have seen what Archie does with one — the ask moves into
-// the chat flows that need it, see connect-profiles-flow.js).
+// `skipConnectProfiles` does NOT remove the account step — it turns it into a
+// choice. The step is still asked, but it is optional (a Skip), and when
+// nothing is connected it offers to connect rather than listing profiles that
+// don't exist. Skipping is not a dead end: the chat flows that draft FOR an
+// account ask again at the moment it is needed (connect-profiles-flow.js).
 // Labels are derived from this list, so adding or removing a step renumbers the
 // rest for free.
 function altSteps() {
   const steps = ["url"];
   if (isFlagOn("multilingualPlaybook")) steps.push("language");
-  if (!isFlagOn("skipConnectProfiles")) steps.push("profile");
-  steps.push("documents", "images");
+  steps.push("profile", "documents", "images");
   return steps;
 }
 function altTotalSteps() {
@@ -308,11 +311,11 @@ function askAltPrevious(sessionId, stepId) {
   else if (prev === "documents") askAltDocuments(sessionId);
   else askAltUrl(sessionId, d?.sourceUrl || d?.websiteUrl || "");
 }
-// The step after the URL question — the first one the flags leave standing.
+// The step after the URL question — the language picker when multilingual is
+// on, otherwise the account step.
 function askAltAfterUrl(sessionId) {
   if (isFlagOn("multilingualPlaybook")) askAltLanguage(sessionId);
-  else if (!isFlagOn("skipConnectProfiles")) askAltProfile(sessionId);
-  else askAltDocuments(sessionId);
+  else askAltProfile(sessionId);
 }
 
 function askAltUrl(sessionId, prefilledUrl = "") {
@@ -378,8 +381,7 @@ function askAltLanguage(sessionId) {
       postUserTurn(sessionId, chosen);
       inlineQuestion.exit(sessionId);
       notify(sessionId);
-      if (isFlagOn("skipConnectProfiles")) askAltDocuments(sessionId);
-      else askAltProfile(sessionId);
+      askAltProfile(sessionId);
     },
     onBack: () => {
       const dd = drafts.get(sessionId);
@@ -388,15 +390,73 @@ function askAltLanguage(sessionId) {
   });
 }
 
+// Record the account(s) this Playbook publishes as, echo them, and move on.
+// The first one is the selected profile — connecting several is allowed, but a
+// Playbook still names ONE identity.
+function commitAltProfiles(sessionId, profiles) {
+  const d = drafts.get(sessionId);
+  if (!d || !profiles.length) return;
+  d.selectedProfileId = profiles[0].id;
+  d.connectedSocials = profiles.map((p) => p.platform);
+  postUserProfilesTurn(sessionId, profiles);
+}
+
+// The account step. Under `skipConnectProfiles` it is a CHOICE rather than a
+// gate: optional either way, and shaped by what the user actually has.
+//   - nothing connected → offer to connect (the same rows and the same modal as
+//     the in-chat step), or Skip;
+//   - something connected → the normal profile pick, plus a Skip.
+// Skipping leaves connectedSocials empty, which is a legitimate Playbook state:
+// the chat flows ask for an account when they need one.
 function askAltProfile(sessionId) {
+  const optional = isFlagOn("skipConnectProfiles");
+  const connectedProfiles = getConnectedProfiles();
+
+  if (optional && connectedProfiles.length === 0) {
+    postAssistantMessage(
+      sessionId,
+      "Connect the account you'll publish from and I'll tune tone and format for it. Skip it and I'll ask when I write your first draft.",
+    );
+    inlineQuestion.ask(sessionId, {
+      title: "Connect an account (optional)",
+      subtitle: "Nothing publishes yet — this only lets me write and schedule for it.",
+      stepLabel: altStepLabel("profile"),
+      items: connectableItems(),
+      multi: true,
+      submitLabel: "Connect",
+      skipLabel: "Skip",
+      onPick: (ids) => {
+        const picked = Array.isArray(ids) ? ids : [ids];
+        if (!picked.length) return;
+        // Same two beats as in chat: the picker asks, the modal consents.
+        openConnectAccountModal({
+          preselected: picked,
+          onConfirm: (accounts) => {
+            if (!accounts.length) return;
+            commitAltProfiles(sessionId, accounts);
+            inlineQuestion.exit(sessionId);
+            notify(sessionId);
+            askAltDocuments(sessionId);
+          },
+        });
+      },
+      onSkip: () => {
+        inlineQuestion.exit(sessionId);
+        notify(sessionId);
+        askAltDocuments(sessionId);
+      },
+      onBack: () => askAltPrevious(sessionId, "profile"),
+    });
+    return;
+  }
+
   postAssistantMessage(sessionId, "Pick the profile to use for this Playbook. I'll tune tone and format for it.");
   // Connected profiles + their picker presentation come from the shared
   // social-profiles helper so this onboarding step and the in-session
   // draft profile picker stay identical.
-  const connectedProfiles = getConnectedProfiles();
   const items = buildConnectedProfileItems();
   inlineQuestion.ask(sessionId, {
-    title: "Which profile will publish?",
+    title: optional ? "Which profile will publish? (optional)" : "Which profile will publish?",
     stepLabel: altStepLabel("profile"),
     items,
     // With many connected profiles, filter the list live instead of scrolling.
@@ -404,17 +464,22 @@ function askAltProfile(sessionId) {
     searchPlaceholder: "Search profiles by name, handle or network…",
     onPick: (id) => {
       const profile = connectedProfiles.find((p) => p.id === id);
-      const d = drafts.get(sessionId);
-      if (!d) return;
-      if (profile) {
-        d.selectedProfileId = profile.id;
-        d.connectedSocials = [profile.platform];
-        postUserProfilesTurn(sessionId, [profile]);
-      }
+      if (!drafts.get(sessionId)) return;
+      if (profile) commitAltProfiles(sessionId, [profile]);
       inlineQuestion.exit(sessionId);
       notify(sessionId);
       askAltDocuments(sessionId);
     },
+    // Only skippable under the flag — without it the Playbook has always named
+    // a profile, and making it optional here would change the flag-off flow.
+    skipLabel: optional ? "Skip" : undefined,
+    onSkip: optional
+      ? () => {
+          inlineQuestion.exit(sessionId);
+          notify(sessionId);
+          askAltDocuments(sessionId);
+        }
+      : undefined,
     // Back to the language picker (multilingual on) or the URL question — and
     // askAltPrevious re-renders question 1 with whatever URL the draft holds.
     onBack: () => askAltPrevious(sessionId, "profile"),

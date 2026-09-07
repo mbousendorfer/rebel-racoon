@@ -8,11 +8,11 @@
 // Pure render helpers — strings in, strings out. No listeners: every action is
 // a `data-ins-*` hook the shell dispatches.
 
-import { escapeHtml as esc } from "../../utils.js?v=1070";
-import { renderPostEchoRow } from "../../components/top-post-card.js?v=1070";
-import { getContexts } from "../../contexts-store.js?v=1070";
-import { progressBar } from "./charts.js?v=1070";
-import { signedPct } from "./model.js?v=1070";
+import { escapeHtml as esc } from "../../utils.js?v=1072";
+import { renderPostEchoRow } from "../../components/top-post-card.js?v=1072";
+import { getContexts } from "../../contexts-store.js?v=1072";
+import { progressBar } from "./charts.js?v=1072";
+import { signedPct } from "./model.js?v=1072";
 
 // ── The page's head — the scope, worn as the heading ─────────────────────
 //
