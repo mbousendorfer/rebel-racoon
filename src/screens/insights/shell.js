@@ -32,28 +32,28 @@
 // host is never repainted without `destroyChartsIn(host)` first — the one rule
 // that keeps a brand switch from leaking a chart per repaint.
 
-import { html, raw } from "../../utils.js?v=1059";
-import { renderTopbar } from "../../components/topbar.js?v=1059";
-import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=1059";
+import { html, raw } from "../../utils.js?v=1061";
+import { renderTopbar } from "../../components/topbar.js?v=1061";
+import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=1061";
 import {
   subscribe as subscribeScope,
   getActivePlaybook,
   getActivePlaybookId,
   setActivePlaybook,
-} from "../../active-playbook.js?v=1059";
-import { getPath, navigate } from "../../router.js?v=1059";
-import { isFlagOn } from "../../feature-flags.js?v=1059";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=1059";
-import { consumeHandoff } from "../../handoff.js?v=1059";
-import { open as openObjectiveModal } from "../../components/objective-modal.js?v=1059";
-import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=1059";
-import { renderEmptyState } from "../../components/empty-state.js?v=1059";
-import { playbookSelect, viewSelect } from "./pieces.js?v=1059";
-import { objectiveEntries, playbookRollup, entryByKey } from "./model.js?v=1059";
-import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=1059";
-import * as report from "./layouts/report.js?v=1059";
-import * as cockpit from "./layouts/cockpit.js?v=1059";
-import * as cockpitBis from "./layouts/cockpit-bis.js?v=1059";
+} from "../../active-playbook.js?v=1061";
+import { getPath, navigate } from "../../router.js?v=1061";
+import { isFlagOn } from "../../feature-flags.js?v=1061";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=1061";
+import { consumeHandoff } from "../../handoff.js?v=1061";
+import { open as openObjectiveModal } from "../../components/objective-modal.js?v=1061";
+import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=1061";
+import { renderEmptyState } from "../../components/empty-state.js?v=1061";
+import { playbookTitle, viewSelect } from "./pieces.js?v=1061";
+import { objectiveEntries, playbookRollup, entryByKey } from "./model.js?v=1061";
+import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=1061";
+import * as report from "./layouts/report.js?v=1061";
+import * as cockpit from "./layouts/cockpit.js?v=1061";
+import * as cockpitBis from "./layouts/cockpit-bis.js?v=1061";
 
 /** Set by a Playbook's objectives block ("Open in Insights"); payload `${ctxId}::${label}`. */
 export const FOCUS_OBJECTIVE_HANDOFF = "focusObjective";
@@ -115,12 +115,13 @@ let boundTarget = null;
 // ── The page bar ──────────────────────────────────────────────────────────
 //
 // This repo's topbar carries no screen-actions slot, so the page's own controls
-// live in the page: the scope, the reading, and the one primary. It also means
-// each layout stops rendering its own Playbook picker — the bar owns it once.
+// live in the page: the reading and the one primary. The SCOPE is not here — it
+// is the heading each layout renders (`playbookTitle`), so the brand the page
+// is about is the biggest word on it instead of the value of a 260px field.
+// The bar is what is left: which reading, and the one primary.
 
-function renderBar(ctx, layoutId) {
+function renderBar(layoutId) {
   return `<header class="insights__bar">
-    ${playbookSelect(ctx)}
     ${viewSelect(LAYOUTS, layoutId)}
     <button type="button" class="ap-button primary blue insights__new" data-ins-new>
       <i class="ap-icon-plus" aria-hidden="true"></i><span>New objective</span>
@@ -129,6 +130,15 @@ function renderBar(ctx, layoutId) {
 }
 
 // ── Empty states ──────────────────────────────────────────────────────────
+
+// With no objectives no layout renders, and the heading is the only Playbook
+// switcher there is — so the empty page keeps it above the state. Without it a
+// brand with an empty Insights was a dead end: nothing on screen could re-point
+// the page off it.
+function renderEmptyPage(ctx) {
+  const head = ctx ? `<div class="insights__emptyhead">${playbookTitle(ctx)}</div>` : "";
+  return head + renderEmpty(ctx);
+}
 
 function renderEmpty(ctx) {
   if (!ctx) {
@@ -167,10 +177,10 @@ function paint() {
   const ctx = getActivePlaybook();
   const entries = ctx ? objectiveEntries(ctx) : [];
   section.className = `screen insights insights--${layoutId}`;
-  bar.innerHTML = ctx ? renderBar(ctx, layoutId) : "";
+  bar.innerHTML = ctx ? renderBar(layoutId) : "";
 
   if (!ctx || !entries.length) {
-    host.innerHTML = renderEmpty(ctx);
+    host.innerHTML = renderEmptyPage(ctx);
     return;
   }
 
@@ -223,10 +233,13 @@ function commit(ctxId) {
 }
 
 function onClick(event) {
-  // The brand switcher is a <details>, which does not close itself on an
+  // Every dropdown here is a <details>, which does not close itself on an
   // outside click. Any click not inside the open one shuts it — before the
   // dispatch guard below, so a click on empty page space still closes it.
-  host?.querySelectorAll("[data-ins-scope][open]").forEach((d) => {
+  // Scoped to the SECTION, not the host: the scope switcher is a layout's
+  // heading (inside the host) and the View select is in the page bar (outside
+  // it), and a query that saw only one left the other stuck open.
+  section?.querySelectorAll("[data-ins-scope][open]").forEach((d) => {
     if (!d.contains(event.target)) d.removeAttribute("open");
   });
 
@@ -330,7 +343,9 @@ function onKeydown(event) {
 function onToggle(event) {
   const details = event.target.closest?.("[data-ins-scope]");
   if (!details) return;
-  details.querySelector(".ap-select-trigger")?.setAttribute("aria-expanded", String(details.open));
+  // `[role="combobox"]`, not `.ap-select-trigger`: the scope switcher's trigger
+  // wears the heading's class, and only the role is common to both.
+  details.querySelector('[role="combobox"]')?.setAttribute("aria-expanded", String(details.open));
 }
 
 function onResize() {

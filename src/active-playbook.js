@@ -31,8 +31,8 @@
 //   setActivePlaybook(id)  mutates + notifies
 //   subscribe(fn)          → unsubscribe
 
-import { getContexts, getContextById, getDefaultContext } from "./contexts-store.js?v=1059";
-import { createNotifier } from "./store-utils.js?v=1059";
+import { getContexts, getContextById, getDefaultContext } from "./contexts-store.js?v=1061";
+import { createNotifier } from "./store-utils.js?v=1061";
 
 const KEY = "archie-active-playbook";
 

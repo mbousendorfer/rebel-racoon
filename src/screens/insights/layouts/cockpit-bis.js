@@ -25,8 +25,8 @@
 // numbers, which is what they are for; the curve is the pane's job, at the size
 // it needs.
 
-import { readingFor } from "../model.js?v=1059";
-import { trendSpec, sparklineSpec, progressBar, mountCharts } from "../charts.js?v=1059";
+import { readingFor } from "../model.js?v=1061";
+import { trendSpec, sparklineSpec, progressBar, mountCharts } from "../charts.js?v=1061";
 import {
   statusPill,
   measurePill,
@@ -39,8 +39,9 @@ import {
   proxyNote,
   objectiveActions,
   figure,
+  playbookTitle,
   esc,
-} from "../pieces.js?v=1059";
+} from "../pieces.js?v=1061";
 
 export const id = "cockpit-bis";
 export const label = "Cockpit bis";
@@ -53,12 +54,12 @@ const CHART_HEIGHT = 280;
 const ROW = 4;
 
 export function render(host, vm) {
-  const { entries, selectedKey, local, firstPaint } = vm;
+  const { entries, ctx, selectedKey, local, firstPaint } = vm;
   const selected = entries.find((e) => e.key === selectedKey) || entries[0];
   const specs = new Map();
 
   host.innerHTML = `<div class="ins-cockpitb">
-    ${renderStrip(entries, selected)}
+    ${renderStrip(entries, selected, ctx)}
     ${renderPane(selected, local, specs, firstPaint)}
   </div>`;
 
@@ -78,13 +79,14 @@ export function render(host, vm) {
 // white band on a near-white page: the tiles are white, so a white band made
 // the selector and the read below it read as one continuous surface. The title
 // is what says where the band stops being page chrome and starts being the list
-// of objectives.
+// of objectives — and that title is the Playbook's name, which IS the scope
+// switcher (pieces.js). The <nav>'s own label still says "Objectives".
 //
 // No counts line, though, and no roll-up: with the tiles themselves on screen,
 // "On track 1 · At risk 1 · Off track 0" is a recount of what the reader is
 // already looking at.
 
-function renderStrip(entries, selected) {
+function renderStrip(entries, selected, ctx) {
   const tiles = entries
     .map((e) => {
       const on = e === selected;
@@ -115,7 +117,7 @@ function renderStrip(entries, selected) {
 
   return `<nav class="ins-cockpitb-strip" aria-label="Objectives">
     <div class="ins-cockpitb-strip__inner">
-      <h2 class="ins-cockpitb-strip__title">Objectives</h2>
+      ${playbookTitle(ctx)}
       <ul class="ins-cockpitb-strip__list">${tiles}${slot}</ul>
     </div>
   </nav>`;

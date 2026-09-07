@@ -29,19 +29,8 @@
   border-bottom: 1px solid var(--sys-border-color-default);
 }
 
-/* The section's label, bound to the DS h2 text style — size, line-height AND
-   weight. It used to run at the h1 size with weight 900 and -0.02em of hand
-   tracking, which is a display style the DS does not have: the ramp stops at h1
-   24/32/700 and hierarchy comes from picking a rung, not from inventing one.
-   The objective being read is the page's big title (h1 style); this labels the
-   selector above it. */
-.ins-cockpit-rail__title {
-  margin: 0;
-  font-size: var(--sys-text-style-h2-size);
-  line-height: var(--sys-text-style-h2-line-height);
-  font-weight: var(--sys-text-style-h2-weight);
-  color: var(--sys-text-color-default);
-}
+/* The rail's heading is the Playbook title-switcher (.ins-pbtitle in
+   insights.css) — it carries the DS h2 rung and needs nothing from here. */
 
 .ins-cockpit-rail__list {
   flex: 1;
@@ -49,8 +38,8 @@
   overflow-y: auto;
   list-style: none;
   margin: 0;
-  /* Horizontally the rail's own inset, so a row's edge starts where the title
-     above it does — the rows used to sit 16px left of "Objectives". */
+  /* Horizontally the rail's own inset, so a row's edge starts where the heading
+     above it does — the rows used to sit 16px left of it. */
   padding: var(--ref-spacing-xs) var(--ref-spacing-md);
   display: flex;
   flex-direction: column;

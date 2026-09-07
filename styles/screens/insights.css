@@ -28,8 +28,10 @@
 
 /* ── The page bar ───────────────────────────────────────────────────────────
    This repo's topbar carries no screen-actions slot, so the page's own controls
-   sit in the page: the scope, the reading, and the one primary. The two selects
-   keep a form control's width — a full-width one reads as a filter bar. */
+   sit in the page: the reading and the one primary. The SCOPE is not here — the
+   Playbook's name is the heading each layout renders, and the heading is the
+   switcher (see § The Playbook title). The View select keeps a form control's
+   width — a full-width one reads as a filter bar. */
 
 .insights__bar {
   display: flex;
@@ -53,20 +55,15 @@
 
 /* Cockpit has no centred column to sit on — it is two full-height panels — so
    its bar lands on the two edges that exist underneath it instead: the rail's
-   own inset on the left (24px, where "Objectives" and the rows start) and the
-   pane's on the right (32px, where the cards end). A single 40px gutter left
-   the Playbook select above nothing in particular. */
+   own inset on the left (24px, where the rail's heading and the rows start) and
+   the pane's on the right (32px, where the cards end). A single 40px gutter
+   left the bar above nothing in particular. */
 .insights--cockpit .insights__bar {
   padding-inline: var(--ref-spacing-md) var(--ref-spacing-lg);
 }
 
-.insights__bar .ins-pbfield,
 .insights__bar .ins-viewfield {
   flex: 0 0 auto;
-  width: 260px;
-}
-
-.insights__bar .ins-viewfield {
   width: 180px;
 }
 
@@ -90,6 +87,17 @@
 }
 
 /* ── Empty ──────────────────────────────────────────────────────────────── */
+
+/* No objectives means no layout, and the heading is the only Playbook switcher
+   there is — so it is rendered above the empty state, on the same column edge
+   the page bar sits on. Left-aligned on purpose: the state below it is centred,
+   a centred heading would read as part of it. */
+.insights__emptyhead {
+  display: flex;
+  width: min(calc(var(--ins-content) + 2 * var(--ins-gutter)), 100%);
+  margin-inline: auto;
+  padding: var(--ref-spacing-xs) var(--ins-gutter) 0;
+}
 
 .insights__empty {
   display: flex;
@@ -135,24 +143,117 @@
   transition: outline-color var(--ref-animation-long) var(--app-ease-standard);
 }
 
-/* ── The page head — scope select + counts ──────────────────────────────── */
+/* ── The Playbook title — the heading IS the scope ──────────────────────────
+   Every layout heads its selector with the Playbook's name, and the name opens
+   the list of Playbooks: one element does the naming and the switching. Only
+   the DROPDOWN is the DS select's (.ap-select-dropdown / -options / -option, so
+   an option row looks the same here as in every other picker in the app); the
+   trigger is a heading, not a field, so it carries its own class rather than
+   overriding .ap-select-trigger from outside ds-patches.
 
-/* The DS form field gives label-above-control; the select inside is the DS
-   .ap-select over <details> (ds-patches carries its [open] state). */
-.ins-pbfield > label {
-  color: var(--sys-text-color-light);
-  font-size: var(--ref-font-size-sm);
-  line-height: var(--ref-font-line-height-sm);
+   What keeps it from being "a title that is secretly a picker" — the objection
+   that got the earlier version dropped: the chevron is always there, the hit
+   area fills grey on hover, and the chevron goes electric blue and flips when
+   open. The interactive colour is what declares it a control.
+
+   The type is the DS h2 rung — size, line-height AND weight. It used to run at
+   the h1 size with weight 900 and -0.02em of hand tracking, which is a display
+   style the DS does not have: the ramp stops at h1 24/32/700 and hierarchy
+   comes from picking a rung, not from inventing one. The objective being read
+   is the page's big title (h1 style); this heads the selector above it. */
+
+.ins-pbtitle {
+  /* The dropdown is absolutely positioned against this. */
+  position: relative;
+  /* Every host is a flex column, which would otherwise stretch the heading —
+     and a full-width hit area on a 1240px page is a hover state the size of the
+     card. It is as wide as its name. */
+  align-self: flex-start;
+  max-width: 100%;
 }
 
-.ins-pbfield__name {
+/* <details> markers, removed the way the DS's own select removes them. */
+.ins-pbtitle > summary {
+  list-style: none;
+}
+
+.ins-pbtitle > summary::-webkit-details-marker {
+  display: none;
+}
+
+.ins-pbtitle > summary::marker {
+  display: none;
+}
+
+/* The negative inline start pulls the hit area's padding back off the column,
+   so the name still starts on the same edge as the counts and the rows under
+   it — a heading that shifted 8px right when it became a control would be
+   visible on every layout. */
+.ins-pbtitle__trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xxs);
+  margin-inline-start: calc(-1 * var(--ref-spacing-xxs));
+  border-radius: var(--ref-border-radius-sm);
+  cursor: pointer;
+  transition: background-color var(--ref-animation-short) var(--app-ease-standard);
+}
+
+.ins-pbtitle__trigger:hover {
+  background: var(--ref-color-grey-05);
+}
+
+.ins-pbtitle__trigger:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: var(--ref-spacing-xxxs);
+}
+
+.ins-pbtitle__name {
   margin: 0;
-  padding: var(--ref-spacing-xxxs) 0;
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  font-weight: var(--ref-font-weight-bold);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--sys-text-style-h2-size);
+  line-height: var(--sys-text-style-h2-line-height);
+  font-weight: var(--sys-text-style-h2-weight);
   color: var(--sys-text-color-default);
 }
+
+/* One Playbook — nothing to switch to, so no trigger and no chevron. It keeps
+   the type and the margin the switcher's heading has, and nothing else. */
+.ins-pbtitle__name--static {
+  align-self: flex-start;
+}
+
+.ins-pbtitle__arrow {
+  flex: 0 0 auto;
+  color: var(--sys-text-color-light);
+  transition:
+    transform var(--ref-animation-short) var(--app-ease-standard),
+    color var(--ref-animation-short) var(--app-ease-standard);
+}
+
+.ins-pbtitle__trigger:hover .ins-pbtitle__arrow,
+.ins-pbtitle[open] .ins-pbtitle__arrow {
+  color: var(--ref-color-electric-blue-100);
+}
+
+.ins-pbtitle[open] .ins-pbtitle__arrow {
+  transform: rotate(180deg);
+}
+
+/* The DS dropdown stretches to its host's two edges; the host here is as wide
+   as a brand name, which is not a menu width. It opens from the left edge at a
+   readable measure instead. */
+.ins-pbtitle__menu {
+  right: auto;
+  min-width: 260px;
+  max-width: 360px;
+}
+
+/* ── The page head — the counts line ────────────────────────────────────── */
 
 .ins-counts {
   display: flex;

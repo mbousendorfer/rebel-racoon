@@ -15,9 +15,12 @@
 // the hero was reaching for, which is why the hero has no summary of its own
 // beyond the counts.
 //
-// The hero says things ONCE, in the order they are asked: what page is this
-// (the title), for which brand (the scope select), how do things stand (the
-// counts), which objective am I reading (the tabs).
+// The hero says things ONCE, in the order they are asked: which brand is this
+// (the title, which IS the scope switcher — see pieces.js), how do things stand
+// (the counts), which objective am I reading (the tabs). The word "Objectives"
+// used to hold the title's slot and the brand sat in a field up in the page
+// bar; the counts and the tabs under it already say these are objectives, so
+// the slot went to the one thing nothing else on the page names.
 //
 // It has been through two wrong versions. First an average-progress gauge, which
 // averaged a clicks percentage with a mentions percentage and so measured
@@ -25,8 +28,8 @@
 // chapter's own verdict 60px above it, and encoding "how far along" as an arc
 // nobody can compare, with the real work done by the number printed inside.
 
-import { rollupSentence, readingFor } from "../model.js?v=1059";
-import { trendSpec, mountCharts } from "../charts.js?v=1059";
+import { rollupSentence, readingFor } from "../model.js?v=1061";
+import { trendSpec, mountCharts } from "../charts.js?v=1061";
 import {
   tierCounts,
   statusPill,
@@ -38,8 +41,9 @@ import {
   postsEmpty,
   proxyNote,
   objectiveActions,
+  playbookTitle,
   esc,
-} from "../pieces.js?v=1059";
+} from "../pieces.js?v=1061";
 
 export const id = "report";
 export const label = "Report";
@@ -49,14 +53,14 @@ export const icon = "ap-icon-file--text";
 const CHART_HEIGHT = 280;
 
 export function render(host, vm) {
-  const { entries, rollup, local, selectedKey, firstPaint } = vm;
+  const { entries, rollup, ctx, local, selectedKey, firstPaint } = vm;
   const specs = new Map();
   // Worst-first ordering means the default tab is the objective asking for
   // attention, not the first one declared.
   const shown = entries.find((e) => e.key === selectedKey) || entries[0];
 
   host.innerHTML = `<div class="ins-report${firstPaint ? " ins-reveal" : ""}">
-    ${renderHero(entries, rollup, shown)}
+    ${renderHero(entries, rollup, shown, ctx)}
     ${renderChapter(shown, local, specs)}
   </div>`;
 
@@ -66,11 +70,11 @@ export function render(host, vm) {
 
 // ── Hero ──────────────────────────────────────────────────────────────────
 
-function renderHero(entries, rollup, shown) {
+function renderHero(entries, rollup, shown, ctx) {
   const posts = rollup.posts;
   return `<header class="ap-card ins-report-hero">
     <div class="ins-report-hero__titles">
-      <h2 class="ins-report-hero__title">Objectives</h2>
+      ${playbookTitle(ctx)}
       ${tierCounts(rollup)}
     </div>
     ${

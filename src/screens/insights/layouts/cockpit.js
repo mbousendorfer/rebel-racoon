@@ -21,8 +21,8 @@
 // chart the headline measure and leave the others as 96px sparklines in the
 // table, which meant an objective's second measure had no curve anywhere.
 
-import { readingFor } from "../model.js?v=1059";
-import { trendSpec, sparklineSpec, ringSvg, progressBar, mountCharts } from "../charts.js?v=1059";
+import { readingFor } from "../model.js?v=1061";
+import { trendSpec, sparklineSpec, ringSvg, progressBar, mountCharts } from "../charts.js?v=1061";
 import {
   tierCounts,
   statusPill,
@@ -36,8 +36,9 @@ import {
   proxyNote,
   objectiveActions,
   figure,
+  playbookTitle,
   esc,
-} from "../pieces.js?v=1059";
+} from "../pieces.js?v=1061";
 
 export const id = "cockpit";
 export const label = "Cockpit";
@@ -47,12 +48,12 @@ export const icon = "ap-icon-chart-screen";
 const CHART_HEIGHT = 300;
 
 export function render(host, vm) {
-  const { entries, rollup, selectedKey, local, firstPaint } = vm;
+  const { entries, rollup, ctx, selectedKey, local, firstPaint } = vm;
   const selected = entries.find((e) => e.key === selectedKey) || entries[0];
   const specs = new Map();
 
   host.innerHTML = `<div class="ins-cockpit">
-    ${renderRail(entries, rollup, selected)}
+    ${renderRail(entries, rollup, selected, ctx)}
     ${renderPane(selected, local, specs, firstPaint)}
   </div>`;
 
@@ -62,7 +63,7 @@ export function render(host, vm) {
 
 // ── Rail ──────────────────────────────────────────────────────────────────
 
-function renderRail(entries, rollup, selected) {
+function renderRail(entries, rollup, selected, ctx) {
   const rows = entries
     .map((e) => {
       const weak = e.headline;
@@ -79,12 +80,15 @@ function renderRail(entries, rollup, selected) {
     })
     .join("");
 
+  // The rail's head is the Playbook's name, and the name is the scope switcher
+  // (pieces.js). The word "Objectives" moved to the list's own label: the rows
+  // under the counts are what it named, and a screen reader gets it there.
   return `<aside class="ins-cockpit-rail">
     <header class="ins-cockpit-rail__head">
-      <h2 class="ins-cockpit-rail__title">Objectives</h2>
+      ${playbookTitle(ctx)}
       ${tierCounts(rollup)}
     </header>
-    <ul class="ins-cockpit-rail__list">${rows}</ul>
+    <ul class="ins-cockpit-rail__list" aria-label="Objectives">${rows}</ul>
     <footer class="ins-cockpit-rail__foot">
       <span class="ins-muted">${rollup.posts} post${rollup.posts === 1 ? "" : "s"} drafted with Archie</span>
     </footer>

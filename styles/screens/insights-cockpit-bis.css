@@ -47,20 +47,9 @@
 }
 
 /* The band's label, in the same slot the rail and the Report hero put it — this
-   layout had none, and a band of tiles with no title reads as a toolbar. */
-/* The section's label, bound to the DS h2 text style — size, line-height AND
-   weight. It used to run at the h1 size with weight 900 and -0.02em of hand
-   tracking, which is a display style the DS does not have: the ramp stops at h1
-   24/32/700 and hierarchy comes from picking a rung, not from inventing one.
-   The objective being read is the page's big title (h1 style); this labels the
-   selector above it. */
-.ins-cockpitb-strip__title {
-  margin: 0;
-  font-size: var(--sys-text-style-h2-size);
-  line-height: var(--sys-text-style-h2-line-height);
-  font-weight: var(--sys-text-style-h2-weight);
-  color: var(--sys-text-color-default);
-}
+   layout had none, and a band of tiles with no title reads as a toolbar. It is
+   the Playbook title-switcher (.ins-pbtitle in insights.css), which carries the
+   DS h2 rung and needs nothing from here. */
 
 /* FOUR to a row — the number the band is calibrated on. Fixed columns, not
    auto-fit: with auto-fit two objectives stretched into two half-page tiles and

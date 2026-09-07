@@ -8,33 +8,39 @@
 // Pure render helpers — strings in, strings out. No listeners: every action is
 // a `data-ins-*` hook the shell dispatches.
 
-import { escapeHtml as esc } from "../../utils.js?v=1059";
-import { renderPostEchoRow } from "../../components/top-post-card.js?v=1059";
-import { getContexts } from "../../contexts-store.js?v=1059";
-import { progressBar } from "./charts.js?v=1059";
-import { signedPct } from "./model.js?v=1059";
+import { escapeHtml as esc } from "../../utils.js?v=1061";
+import { renderPostEchoRow } from "../../components/top-post-card.js?v=1061";
+import { getContexts } from "../../contexts-store.js?v=1061";
+import { progressBar } from "./charts.js?v=1061";
+import { signedPct } from "./model.js?v=1061";
 
-// ── The page's head — the scope control and the state line ────────────────
+// ── The page's head — the scope, worn as the heading ─────────────────────
 //
 // Insights reads ONE Playbook, and its head is where you change which. That is
 // not a decoration: the rail's own scope switcher is parked (see the commented
 // block in sidebar.js), so this is the only door to the scope anywhere in the
 // app, and a dashboard you cannot re-point is a dashboard of one brand.
 //
-// It is a real DS select, labelled — a control that changes what the whole page
-// shows should LOOK like a control. It was the page title with a chevron for a
-// while, on the theory that the brand name is the scope; a title that is
-// secretly a picker reads as neither, so the title went back to being a title
-// (the page's subject) and the scope became a select beside it.
+// So the heading IS the scope: the Playbook's name at the h2 rung with a
+// chevron after it, opening the DS select's own option list. Every layout puts
+// it where it used to print the word "Objectives" — the rail's head, the band's
+// title, the Report hero — and the page bar no longer carries a Playbook field.
+//
+// ⚠️ This is a deliberate reversal. The title-with-a-chevron was tried, dropped
+// for "a title that is secretly a picker reads as neither", and the scope became
+// a labelled select beside the title. The reversal is the user's call, and what
+// makes it safe is that the picker is not secret: the chevron is always
+// visible, the hit area lights up on hover, and the arrow turns blue — the
+// interactive colour — so the heading declares itself a control. What it buys
+// is the word the heading spends: "Objectives" labelled a list the counts and
+// the tabs under it already name, while the brand the whole page is about was
+// printed once, small, in a form field.
 
-/** The Playbook picker. One Playbook → the name as text: a select with a single option cannot be used. */
-export function playbookSelect(ctx, { className = "" } = {}) {
+/** The Playbook picker, as the section's heading. One Playbook → a plain heading: a select with a single option cannot be used. */
+export function playbookTitle(ctx) {
   const all = getContexts();
   if (all.length < 2) {
-    return `<div class="ap-form-field ins-pbfield ${className}">
-      <label>Playbook</label>
-      <p class="ins-pbfield__name">${esc(ctx.name)}</p>
-    </div>`;
+    return `<h2 class="ins-pbtitle__name ins-pbtitle__name--static">${esc(ctx.name)}</h2>`;
   }
   const rows = all
     .map(
@@ -46,23 +52,26 @@ export function playbookSelect(ctx, { className = "" } = {}) {
       </div>`,
     )
     .join("");
-  // The label is wired to the trigger, and the trigger has combobox semantics.
-  // It used to carry aria-label="Playbook — currently <name>", which duplicated
-  // BOTH visible strings and, because aria-label overrides content, took the
-  // value's own text away from a screen reader to replace it with a sentence.
-  return `<div class="ap-form-field ins-pbfield ${className}">
-    <label for="insPbTrigger">Playbook</label>
-    <details class="ap-select ins-pbselect" data-ins-scope>
-      <summary class="ap-select-trigger" id="insPbTrigger" role="combobox"
-        aria-haspopup="listbox" aria-expanded="false" aria-controls="insPbListbox">
-        <span class="ap-select-value">${esc(ctx.name)}</span>
-        <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
-      </summary>
-      <div class="ap-select-dropdown" id="insPbListbox" role="listbox">
-        <div class="ap-select-options">${rows}</div>
-      </div>
-    </details>
-  </div>`;
+  // `aria-label="Playbook"` — one word, and it has to be there: `combobox` does
+  // not take its name from its contents (checked in the tree: without it the
+  // control came back nameless), and the visible label the old select had is
+  // gone. It says WHAT is being chosen, never the current value — the value is
+  // the heading inside, which AT reads on its own. (It used to say "Playbook —
+  // currently <name>", which restated both visible strings.)
+  //
+  // The heading lives INSIDE the summary: `<summary>` takes heading content by
+  // spec, and that keeps the page's outline intact now that the h2 and the
+  // control are one element rather than two.
+  return `<details class="ins-pbtitle" data-ins-scope>
+    <summary class="ins-pbtitle__trigger" role="combobox" aria-label="Playbook"
+      aria-haspopup="listbox" aria-expanded="false" aria-controls="insPbListbox">
+      <h2 class="ins-pbtitle__name">${esc(ctx.name)}</h2>
+      <i class="ap-icon-chevron-down ins-pbtitle__arrow" aria-hidden="true"></i>
+    </summary>
+    <div class="ap-select-dropdown ins-pbtitle__menu" id="insPbListbox" role="listbox" aria-label="Playbook">
+      <div class="ap-select-options">${rows}</div>
+    </div>
+  </details>`;
 }
 
 /**
@@ -71,7 +80,9 @@ export function playbookSelect(ctx, { className = "" } = {}) {
  * for that shape everywhere ... only one of the two lists is ever on screen".
  * The same reasoning rules out tabs here too — the page already has one tab bar
  * (the objectives), and a second above it would read as a hierarchy that isn't
- * there. Two selects side by side, "Playbook" and "View", say what they do.
+ * there. It is the bar's only field now that the scope moved into the heading,
+ * and it stays labelled: "View" is the one thing on this page whose name a
+ * reader cannot infer from its value.
  */
 export function viewSelect(layouts, currentId) {
   const current = layouts.find((l) => l.id === currentId) || layouts[0];
