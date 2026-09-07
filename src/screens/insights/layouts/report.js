@@ -28,8 +28,8 @@
 // chapter's own verdict 60px above it, and encoding "how far along" as an arc
 // nobody can compare, with the real work done by the number printed inside.
 
-import { rollupSentence, readingFor } from "../model.js?v=1063";
-import { trendSpec, mountCharts } from "../charts.js?v=1063";
+import { rollupSentence, readingFor } from "../model.js?v=1064";
+import { trendSpec, mountCharts } from "../charts.js?v=1064";
 import {
   tierCounts,
   statusPill,
@@ -43,7 +43,7 @@ import {
   objectiveActions,
   playbookTitle,
   esc,
-} from "../pieces.js?v=1063";
+} from "../pieces.js?v=1064";
 
 export const id = "report";
 export const label = "Report";
@@ -59,9 +59,12 @@ export function render(host, vm) {
   // attention, not the first one declared.
   const shown = entries.find((e) => e.key === selectedKey) || entries[0];
 
-  host.innerHTML = `<div class="ins-report${firstPaint ? " ins-reveal" : ""}">
+  // The head is OUTSIDE the column: it is a full-bleed band (insights.css
+  // § The header band) whose inner content is capped on the same column as the
+  // chapter, so the band crosses the page while its words line up with the card.
+  host.innerHTML = `<div class="ins-reportpage${firstPaint ? " ins-reveal" : ""}">
     ${renderHero(entries, rollup, shown, ctx)}
-    ${renderChapter(shown, local, specs)}
+    <div class="ins-report">${renderChapter(shown, local, specs)}</div>
   </div>`;
 
   mountCharts(host, specs);
@@ -70,19 +73,25 @@ export function render(host, vm) {
 
 // ── Hero ──────────────────────────────────────────────────────────────────
 
+// ⚠️ NOT a `.ap-card`. It was one, and it read as the first of two identical
+// white cards — the head and the chapter under it said "two sections of the
+// same thing" when one is chrome and the other is the content. It is the shared
+// header band now, the same tray Cockpit bis's strip is (insights.css).
 function renderHero(entries, rollup, shown, ctx) {
   const posts = rollup.posts;
-  return `<header class="ap-card ins-report-hero">
-    <div class="ins-report-hero__titles">
-      ${playbookTitle(ctx)}
-      ${tierCounts(rollup)}
+  return `<header class="insights__band ins-report-hero">
+    <div class="insights__band-inner">
+      <div class="ins-report-hero__titles">
+        ${playbookTitle(ctx)}
+        ${tierCounts(rollup)}
+      </div>
+      ${
+        posts
+          ? `<p class="ins-report-hero__note">${posts} post${posts === 1 ? "" : "s"} drafted with Archie moved them over the window.</p>`
+          : ""
+      }
+      ${renderTabs(entries, shown)}
     </div>
-    ${
-      posts
-        ? `<p class="ins-report-hero__note">${posts} post${posts === 1 ? "" : "s"} drafted with Archie moved them over the window.</p>`
-        : ""
-    }
-    ${renderTabs(entries, shown)}
   </header>`;
 }
 

@@ -19,15 +19,12 @@
 
 /* ── The band ───────────────────────────────────────────────────────────────
    A tray, not a white band: the tiles are white, so on a white ground the
-   selector and the read below it read as one surface. Grey ground (the same
-   tray the Topic Feed quotes evidence in) and the app's strong border under it
-   — a DS hairline of #EAECEF is what the topbar uses to sit ABOVE content, and
-   it was not enough between two zones that both hold white cards. */
+   selector and the read below it read as one surface. That rule was worked out
+   here and now lives in insights.css (§ The header band), which this composes —
+   Report's head wears the same frame. What stays here is what is this layout's
+   own: the two-row cap and the container query. */
 
 .ins-cockpitb-strip {
-  background: var(--app-surface-subtle);
-  border-bottom: 1px solid var(--app-border);
-  padding: var(--ref-spacing-sm) var(--ref-spacing-xl);
   /* Two or three tiles is the case, and they are one row. The cap is what stops
      a Playbook that grew six objectives from pushing the read off the page:
      past two rows the band scrolls instead. Sized so two rows of wrapped tiles
@@ -36,14 +33,6 @@
   max-height: 48vh;
   overflow-y: auto;
   container-type: inline-size;
-}
-
-.ins-cockpitb-strip__inner {
-  width: min(var(--ins-content), 100%);
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xs);
 }
 
 /* The band's label, in the same slot the rail and the Report hero put it — this

@@ -6,8 +6,18 @@
    The rhythm is deliberate — every chapter is the same shape, so the reader
    learns it on the first one and reads the rest by scanning. */
 
-/* The cap is the column PLUS its gutters: with the gutters inside the cap, the
-   chapters were 1160px wide starting 40px right of the page bar above them. */
+/* The page is the band then the column — the head bleeds edge to edge, the
+   reading is capped. */
+.ins-reportpage {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* The cap is the column PLUS its gutters, the same expression the band's inner
+   uses, so the chapter's edges and the head's words land on one line. With the
+   gutters inside the cap the chapters were 1160px wide, starting 40px right of
+   everything above them. */
 .ins-report {
   width: min(calc(var(--ins-content) + 2 * var(--ins-gutter)), 100%);
   margin: 0 auto;
@@ -17,19 +27,20 @@
   gap: var(--ref-spacing-md);
 }
 
-/* ── Hero ───────────────────────────────────────────────────────────────────
-   Title + scope, the counts, then the tab strip along the card's bottom edge —
-   the tabs belong to the page, so they sit in its head rather than floating
-   above the chapter they switch. */
+/* ── The head ───────────────────────────────────────────────────────────────
+   The Playbook's name, the counts, the note, then the tab strip — the tabs
+   belong to the page, so they sit in its head rather than floating above the
+   chapter they switch.
 
-/* .ap-card carries the frame AND the padding/gap — this only tightens the gap,
-   because the head's four rows are one block, not four sections.
-   Bottom padding goes to zero: the strip's own track line IS the bottom of the
-   card, so a band of white under the underline would leave the tabs floating
-   inside the head instead of closing it. */
-.ins-report-hero {
-  gap: var(--ref-spacing-xs);
-  padding-bottom: 0;
+   The frame is the shared header band (insights.css § The header band); all
+   this adds is the strip's own room. The tab track line is left ABOVE the
+   band's closing rule with a gutter of grey between them, rather than made to
+   coincide with it: they are two different lines — one is the tab component's,
+   marking which objective is open, the other is the page's, marking where the
+   head stops. Colinear they read as a 2px smudge, and the DS's own hairline
+   would be painted over the app's strong border for the column's width only. */
+.ins-report-hero .insights__band-inner {
+  padding-bottom: var(--ref-spacing-xs);
 }
 
 .ins-report-hero__titles {

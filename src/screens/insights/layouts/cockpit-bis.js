@@ -25,8 +25,8 @@
 // numbers, which is what they are for; the curve is the pane's job, at the size
 // it needs.
 
-import { readingFor } from "../model.js?v=1063";
-import { trendSpec, sparklineSpec, progressBar, mountCharts } from "../charts.js?v=1063";
+import { readingFor } from "../model.js?v=1064";
+import { trendSpec, sparklineSpec, progressBar, mountCharts } from "../charts.js?v=1064";
 import {
   statusPill,
   measurePill,
@@ -41,7 +41,7 @@ import {
   figure,
   playbookTitle,
   esc,
-} from "../pieces.js?v=1063";
+} from "../pieces.js?v=1064";
 
 export const id = "cockpit-bis";
 export const label = "Cockpit bis";
@@ -115,8 +115,10 @@ function renderStrip(entries, selected, ctx) {
         </li>`
       : "";
 
-  return `<nav class="ins-cockpitb-strip" aria-label="Objectives">
-    <div class="ins-cockpitb-strip__inner">
+  // The band's frame is the shared one (insights.css § The header band) — this
+  // layout is where the tray was worked out, and Report's head now wears it too.
+  return `<nav class="insights__band ins-cockpitb-strip" aria-label="Objectives">
+    <div class="insights__band-inner ins-cockpitb-strip__inner">
       ${playbookTitle(ctx)}
       <ul class="ins-cockpitb-strip__list">${tiles}${slot}</ul>
     </div>

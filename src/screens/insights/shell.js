@@ -33,26 +33,26 @@
 // host is never repainted without `destroyChartsIn(host)` first — the one rule
 // that keeps a brand switch from leaking a chart per repaint.
 
-import { html, raw } from "../../utils.js?v=1063";
-import { renderTopbar } from "../../components/topbar.js?v=1063";
-import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=1063";
+import { html, raw } from "../../utils.js?v=1064";
+import { renderTopbar } from "../../components/topbar.js?v=1064";
+import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=1064";
 import {
   subscribe as subscribeScope,
   getActivePlaybook,
   getActivePlaybookId,
   setActivePlaybook,
-} from "../../active-playbook.js?v=1063";
-import { getPath, navigate } from "../../router.js?v=1063";
-import { isFlagOn } from "../../feature-flags.js?v=1063";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=1063";
-import { consumeHandoff } from "../../handoff.js?v=1063";
-import { open as openObjectiveModal } from "../../components/objective-modal.js?v=1063";
-import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=1063";
-import { renderEmptyState } from "../../components/empty-state.js?v=1063";
-import { playbookTitle } from "./pieces.js?v=1063";
-import { objectiveEntries, playbookRollup, entryByKey } from "./model.js?v=1063";
-import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=1063";
-import { DEFAULT_LAYOUT, readLayoutId, writeLayoutId, layoutById } from "./views.js?v=1063";
+} from "../../active-playbook.js?v=1064";
+import { getPath, navigate } from "../../router.js?v=1064";
+import { isFlagOn } from "../../feature-flags.js?v=1064";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=1064";
+import { consumeHandoff } from "../../handoff.js?v=1064";
+import { open as openObjectiveModal } from "../../components/objective-modal.js?v=1064";
+import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=1064";
+import { renderEmptyState } from "../../components/empty-state.js?v=1064";
+import { playbookTitle } from "./pieces.js?v=1064";
+import { objectiveEntries, playbookRollup, entryByKey } from "./model.js?v=1064";
+import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=1064";
+import { DEFAULT_LAYOUT, readLayoutId, writeLayoutId, layoutById } from "./views.js?v=1064";
 
 /** Set by a Playbook's objectives block ("Open in Insights"); payload `${ctxId}::${label}`. */
 export const FOCUS_OBJECTIVE_HANDOFF = "focusObjective";
@@ -61,7 +61,6 @@ export const FOCUS_OBJECTIVE_HANDOFF = "focusObjective";
 
 let host = null;
 let section = null;
-let bar = null;
 let layoutId = DEFAULT_LAYOUT;
 let layoutCleanup = null;
 let focusKey = null;
@@ -81,21 +80,14 @@ const unsubs = [];
 let topbarEl = null;
 let boundTarget = null;
 
-// ── The page bar ──────────────────────────────────────────────────────────
+// ── No page bar ───────────────────────────────────────────────────────────
 //
-// One control, and it is the page's own: New objective. The other two moved out
-// of it — the SCOPE became the heading each layout renders (`playbookTitle`),
-// and the VIEW switch went to the topbar (views.js), where prototype chrome
-// belongs. What is left is the one thing a reader of THIS page does that no
-// layout offers on its own: Cockpit's rail has no add door.
-
-function renderBar() {
-  return `<header class="insights__bar">
-    <button type="button" class="ap-button primary blue insights__new" data-ins-new>
-      <i class="ap-icon-plus" aria-hidden="true"></i><span>New objective</span>
-    </button>
-  </header>`;
-}
+// There was one, and all three of its controls left. The SCOPE became the
+// heading each layout renders (`playbookTitle`), the VIEW switch went to the
+// topbar (views.js) where prototype chrome belongs, and New objective followed
+// it there — a row of the page spent on one button, sitting above a header that
+// then had to compete with it for the top of the screen. What is left below the
+// topbar is the reading, and its own header band.
 
 // ── Empty states ──────────────────────────────────────────────────────────
 
@@ -104,7 +96,9 @@ function renderBar() {
 // brand with an empty Insights was a dead end: nothing on screen could re-point
 // the page off it.
 function renderEmptyPage(ctx) {
-  const head = ctx ? `<div class="insights__emptyhead">${playbookTitle(ctx)}</div>` : "";
+  const head = ctx
+    ? `<header class="insights__band"><div class="insights__band-inner">${playbookTitle(ctx)}</div></header>`
+    : "";
   return head + renderEmpty(ctx);
 }
 
@@ -145,7 +139,6 @@ function paint() {
   const ctx = getActivePlaybook();
   const entries = ctx ? objectiveEntries(ctx) : [];
   section.className = `screen insights insights--${layoutId}`;
-  bar.innerHTML = ctx ? renderBar() : "";
 
   if (!ctx || !entries.length) {
     host.innerHTML = renderEmptyPage(ctx);
@@ -359,11 +352,9 @@ export function renderInsights(_params, target) {
   focused = false;
 
   target.innerHTML = html`<section class="screen insights insights--${layoutId}">
-    <div data-ins-bar></div>
     <div class="insights__host" data-ins-host></div>
   </section>`;
   section = target.querySelector(".insights");
-  bar = target.querySelector("[data-ins-bar]");
   host = target.querySelector("[data-ins-host]");
 
   paint();
@@ -409,5 +400,4 @@ function teardown() {
   topbarEl = null;
   host = null;
   section = null;
-  bar = null;
 }

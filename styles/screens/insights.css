@@ -26,45 +26,43 @@
   --ins-gutter: var(--ref-spacing-xl);
 }
 
-/* ── The page bar ───────────────────────────────────────────────────────────
-   One control now, and it is the page's own: New objective. The SCOPE became
-   the heading each layout renders (§ The Playbook title) and the VIEW switch
-   went to the topbar (§ The view switch), so what is left is a row holding the
-   page's primary — which is why it is `justify-content: flex-end` rather than a
-   flex row with a `margin-left: auto` on its only child. */
+/* ── The header band ────────────────────────────────────────────────────────
+   The page has NO bar of its own any more: the scope became the heading, and
+   the View switch and New objective went to the topbar. What sits under the
+   topbar is the reading — and the reading opens with its HEAD: the Playbook's
+   name, how things stand, and the selector that picks one objective.
 
-.insights__bar {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--ref-spacing-sm);
-  flex-wrap: wrap;
-  padding: var(--ref-spacing-sm) var(--ins-gutter) 0;
+   That head is a TRAY, in all three layouts, and that is the whole point of
+   this block. Cockpit bis found the rule first (see its own file): the readings
+   below are white cards, so a WHITE head reads as the first of them —
+   "the selector and the read below it read as one continuous surface". The head
+   is chrome, not content, so it gets chrome's treatment: the subtle grey ground
+   (grey-05, one step under the page's own grey-bg, so it is a surface and not a
+   hole), a grey-20 rule closing it — the app's strong border, because a DS
+   hairline is what the topbar uses to sit above content and it is not enough
+   between two zones that both hold white — and no radius and no shadow: it
+   spans the host, so it has no corners to round, and an elevated head over
+   elevated cards is the nested-elevation the DS rules out.
+
+   Full-bleed, with the content inside capped on the SAME column as the reading
+   below it — so the band crosses the page but its words line up with the cards.
+   (Cockpit is the exception: its head sits inside the rail, which is already a
+   panel of its own, so it takes the ground and the rule and not the bleed.) */
+
+.insights__band {
+  flex: 0 0 auto;
+  background: var(--app-surface-subtle);
+  border-bottom: 1px solid var(--app-border);
 }
 
-/* ONE left edge for the page. The two centred layouts read a column capped at
-   --ins-content and centred in the host; the bar has to be capped and centred
-   on the SAME grid, or the Playbook select starts 34px left of the card under
-   it — which is exactly what it did. The cap is the column plus its two
-   gutters, so the bar's padding edge lands on the column's edge.
-   Cockpit is excluded on purpose: its rail is full-bleed against the host, so
-   its page bar follows the host's own gutter and not a centred column. */
-:is(.insights--cockpit-bis, .insights--report) .insights__bar {
+.insights__band-inner {
   width: min(calc(var(--ins-content) + 2 * var(--ins-gutter)), 100%);
   margin-inline: auto;
-}
-
-/* Cockpit has no centred column to sit on — it is two full-height panels — so
-   its bar lands on the two edges that exist underneath it instead: the rail's
-   own inset on the left (24px, where the rail's heading and the rows start) and
-   the pane's on the right (32px, where the cards end). A single 40px gutter
-   left the bar above nothing in particular. */
-.insights--cockpit .insights__bar {
-  padding-inline: var(--ref-spacing-md) var(--ref-spacing-lg);
-}
-
-.insights__new {
-  flex: 0 0 auto;
+  padding: var(--ref-spacing-sm) var(--ins-gutter);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  min-width: 0;
 }
 
 .insights__host {
@@ -84,16 +82,9 @@
 
 /* ── Empty ──────────────────────────────────────────────────────────────── */
 
-/* No objectives means no layout, and the heading is the only Playbook switcher
-   there is — so it is rendered above the empty state, on the same column edge
-   the page bar sits on. Left-aligned on purpose: the state below it is centred,
-   a centred heading would read as part of it. */
-.insights__emptyhead {
-  display: flex;
-  width: min(calc(var(--ins-content) + 2 * var(--ins-gutter)), 100%);
-  margin-inline: auto;
-  padding: var(--ref-spacing-xs) var(--ins-gutter) 0;
-}
+/* No objectives means no layout — but the page still opens with its head, so
+   the band is there with the Playbook switcher in it and nothing else. Without
+   it a brand with an empty Insights was a dead end AND a page with no top. */
 
 .insights__empty {
   display: flex;

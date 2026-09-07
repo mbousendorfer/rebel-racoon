@@ -1,7 +1,7 @@
-import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=1063";
-import { getPath, navigate } from "../router.js?v=1063";
-import { parseHashParams } from "../url-state.js?v=1063";
-import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=1063";
+import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=1064";
+import { getPath, navigate } from "../router.js?v=1064";
+import { parseHashParams } from "../url-state.js?v=1064";
+import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=1064";
 // Lot 19 — topbar no longer carries its own sidebar-toggle button. The
 // sidebar head exposes the toggle in both expanded (chevron-left) and
 // collapsed (view-list) states, so the duplicate in the topbar was just
@@ -14,36 +14,36 @@ import {
   getMode as getRightPanelMode,
   getActiveBatchRef as getActiveDraftsBatchRef,
   subscribe as subscribeRightPanel,
-} from "./right-panel.js?v=1063";
-import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=1063";
-import { getThread, subscribe as subscribeThread } from "../assistant.js?v=1063";
-import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=1063";
-import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=1063";
+} from "./right-panel.js?v=1064";
+import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=1064";
+import { getThread, subscribe as subscribeThread } from "../assistant.js?v=1064";
+import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=1064";
+import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=1064";
 import {
   isEnabled as isStatusCardEnabled,
   toggle as toggleStatusCard,
   subscribeVisibility as subscribeStatusCardVisibility,
-} from "./conversation-status-card.js?v=1063";
-import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=1063";
-import { open as openRenameModal } from "./rename-modal.js?v=1063";
+} from "./conversation-status-card.js?v=1064";
+import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=1064";
+import { open as openRenameModal } from "./rename-modal.js?v=1064";
 import {
   subscribe as subscribeContexts,
   getContextById,
   getDefaultContext,
   getContexts,
-} from "../contexts-store.js?v=1063";
-import { isFlagOn } from "../feature-flags.js?v=1063";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1063";
-import { findCadence } from "../topics-catalog.js?v=1063";
+} from "../contexts-store.js?v=1064";
+import { isFlagOn } from "../feature-flags.js?v=1064";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1064";
+import { findCadence } from "../topics-catalog.js?v=1064";
 import {
   getPickerState as getTopPostsState,
   subscribePicker as subscribeTopPosts,
   backToProfiles as topPostsBackToProfiles,
-} from "../top-posts-flow.js?v=1063";
+} from "../top-posts-flow.js?v=1064";
 // The Insights view switch. Imported from views.js, NOT from the screen's
 // shell: the shell imports this module, so taking it from there would close a
 // cycle. views.js imports neither.
-import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=1063";
+import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=1064";
 
 // The playbook/context pill now lives in the composer (session.js
 // renderPlaybookControl) — selectable on a New Chat, then a static
@@ -96,7 +96,7 @@ export function renderTopbar(_options = {}) {
       : getPath() === "/topics"
         ? renderTopicsSettings()
         : getPath().startsWith("/insights")
-          ? renderInsightsView()
+          ? renderInsightsActions()
           : "";
   // On the repurposing winner board (profile-first mode), the topbar leads with
   // a "Change profile" back — the app's standard back affordance — in place of
@@ -177,17 +177,24 @@ function renderTopicsSettings() {
   `;
 }
 
-// The Insights view switch — far right, beside where /topics puts its cog. It
-// is PROTOTYPE chrome: three layouts kept side by side to be compared live (see
-// views.js), which is why it is up here and not in the page. The page bar keeps
-// the one control that is the page's own, New objective.
+// Insights' two page-level controls, far right — where /topics puts its cog and
+// a session puts its pills. The View switch is PROTOTYPE chrome (three layouts
+// kept side by side to be compared live — see views.js); New objective is the
+// page's one primary, and it is here rather than in the page because Insights
+// had grown a bar of its own holding nothing else. That bar is gone: a row of
+// the page spent on one button, above a header that then had to compete with
+// it. The primary sits LAST, the rightmost slot being the strongest one.
 //
-// The screen owns the click: insights/shell.js binds its dispatch to #topbar
-// too, so `data-ins-view` is handled there and this only paints. Which means
-// the switch is inert on any other route — hence the route gate above.
-function renderInsightsView() {
+// The screen owns both clicks: insights/shell.js binds its dispatch to #topbar
+// too, so `data-ins-view` and `data-ins-new` are handled there and this only
+// paints. Which means they are inert on any other route — hence the route gate
+// above.
+function renderInsightsActions() {
   if (!isFlagOn("insightsHub")) return "";
-  return viewSwitch(readLayoutId());
+  return `${viewSwitch(readLayoutId())}
+    <button type="button" class="ap-button primary blue" data-ins-new>
+      <i class="ap-icon-plus" aria-hidden="true"></i><span>New objective</span>
+    </button>`;
 }
 
 // "i" icon-button at the far right of the topbar — toggles the floating
@@ -313,7 +320,7 @@ export function initTopbar() {
     // renderWelcomeAltExit() above. The wizard chrome no longer carries
     // its own Exit affordance; this is the only entry.
     if (event.target.closest("[data-topbar-welcome-alt-exit]")) {
-      import("./confirm-modal.js?v=1063").then(({ open }) => {
+      import("./confirm-modal.js?v=1064").then(({ open }) => {
         open({
           title: "Exit onboarding?",
           body: "Your progress so far will be discarded. You can start over anytime from the dashboard.",
