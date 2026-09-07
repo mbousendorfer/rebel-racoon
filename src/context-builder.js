@@ -13,19 +13,19 @@
 // tones, contentStyle, objective, contentAction, ctaLinks, language, color,
 // suggestions, editingId, onComplete }.
 
-import * as inlineQuestion from "./inline-question.js?v=1066";
-import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1066";
-import * as rightPanel from "./components/right-panel.js?v=1066";
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1066";
-import { analyzeWebsite } from "./context-mock-analysis.js?v=1066";
-import { connectors as connectorMocks } from "./mocks.js?v=1066";
+import * as inlineQuestion from "./inline-question.js?v=1070";
+import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1070";
+import * as rightPanel from "./components/right-panel.js?v=1070";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1070";
+import { analyzeWebsite } from "./context-mock-analysis.js?v=1070";
+import { connectors as connectorMocks } from "./mocks.js?v=1070";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "./social-profiles.js?v=1066";
-import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=1066";
-import { isFlagOn } from "./feature-flags.js?v=1066";
+} from "./social-profiles.js?v=1070";
+import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=1070";
+import { isFlagOn } from "./feature-flags.js?v=1070";
 
 const drafts = new Map(); // sessionId → draft
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -277,20 +277,42 @@ export function startAlt(sessionId, { onComplete, prefilledUrl = "" } = {}) {
   askAltUrl(sessionId, url);
 }
 
-// Onboarding step count + label. A language step is inserted (right after the
-// URL) only when multilingual Playbooks are enabled — so the flow stays a tight
-// 3 steps by default and becomes 4 with the flag on.
+// The onboarding steps, in order, as they exist under the current flags — the
+// single place that knows which questions the flow asks. Two flags move it:
+// `multilingualPlaybook` inserts a language step after the URL, and
+// `skipConnectProfiles` drops the profile step (nobody is asked to connect an
+// account before they have seen what Archie does with one — the ask moves into
+// the chat flows that need it, see connect-profiles-flow.js).
+// Labels are derived from this list, so adding or removing a step renumbers the
+// rest for free.
+function altSteps() {
+  const steps = ["url"];
+  if (isFlagOn("multilingualPlaybook")) steps.push("language");
+  if (!isFlagOn("skipConnectProfiles")) steps.push("profile");
+  steps.push("documents", "images");
+  return steps;
+}
 function altTotalSteps() {
-  return isFlagOn("multilingualPlaybook") ? 5 : 4;
+  return altSteps().length;
 }
-function altStepLabel(n) {
-  return `${n} / ${altTotalSteps()}`;
+function altStepLabel(stepId) {
+  return `${altSteps().indexOf(stepId) + 1} / ${altTotalSteps()}`;
 }
-// The step after the URL question — the language picker when multilingual is on,
-// otherwise straight to the profile step.
+// Walk to the step before `stepId`, whichever ones are present under the flags.
+function askAltPrevious(sessionId, stepId) {
+  const steps = altSteps();
+  const prev = steps[steps.indexOf(stepId) - 1];
+  const d = drafts.get(sessionId);
+  if (prev === "language") askAltLanguage(sessionId);
+  else if (prev === "profile") askAltProfile(sessionId);
+  else if (prev === "documents") askAltDocuments(sessionId);
+  else askAltUrl(sessionId, d?.sourceUrl || d?.websiteUrl || "");
+}
+// The step after the URL question — the first one the flags leave standing.
 function askAltAfterUrl(sessionId) {
   if (isFlagOn("multilingualPlaybook")) askAltLanguage(sessionId);
-  else askAltProfile(sessionId);
+  else if (!isFlagOn("skipConnectProfiles")) askAltProfile(sessionId);
+  else askAltDocuments(sessionId);
 }
 
 function askAltUrl(sessionId, prefilledUrl = "") {
@@ -300,7 +322,7 @@ function askAltUrl(sessionId, prefilledUrl = "") {
   postAssistantMessage(sessionId, intro);
   inlineQuestion.ask(sessionId, {
     title: "What's your website URL?",
-    stepLabel: altStepLabel(1),
+    stepLabel: altStepLabel("url"),
     items: [],
     customPlaceholder: "https://your-brand.com",
     customValue: prefilledUrl,
@@ -342,7 +364,7 @@ function askAltLanguage(sessionId) {
   inlineQuestion.ask(sessionId, {
     title: "Choose your Playbook language",
     subtitle: "The language I'll write your posts in. You can add more later.",
-    stepLabel: altStepLabel(2),
+    stepLabel: altStepLabel("language"),
     items: LANGUAGE_OPTIONS.map((l) => ({ value: l, label: l, icon: "ap-icon-web" })),
     selected: current,
     onPick: (lang) => {
@@ -356,7 +378,8 @@ function askAltLanguage(sessionId) {
       postUserTurn(sessionId, chosen);
       inlineQuestion.exit(sessionId);
       notify(sessionId);
-      askAltProfile(sessionId);
+      if (isFlagOn("skipConnectProfiles")) askAltDocuments(sessionId);
+      else askAltProfile(sessionId);
     },
     onBack: () => {
       const dd = drafts.get(sessionId);
@@ -374,7 +397,7 @@ function askAltProfile(sessionId) {
   const items = buildConnectedProfileItems();
   inlineQuestion.ask(sessionId, {
     title: "Which profile will publish?",
-    stepLabel: altStepLabel(isFlagOn("multilingualPlaybook") ? 3 : 2),
+    stepLabel: altStepLabel("profile"),
     items,
     // With many connected profiles, filter the list live instead of scrolling.
     searchable: items.length > PROFILE_SEARCH_THRESHOLD,
@@ -392,17 +415,9 @@ function askAltProfile(sessionId) {
       notify(sessionId);
       askAltDocuments(sessionId);
     },
-    onBack: () => {
-      // Step back to the language picker (multilingual on) or the URL question.
-      if (isFlagOn("multilingualPlaybook")) {
-        askAltLanguage(sessionId);
-      } else {
-        // Re-render question 1 with whatever URL the draft already holds
-        // (the prefilled value, or what the user typed when they advanced).
-        const d = drafts.get(sessionId);
-        askAltUrl(sessionId, d?.sourceUrl || d?.websiteUrl || "");
-      }
-    },
+    // Back to the language picker (multilingual on) or the URL question — and
+    // askAltPrevious re-renders question 1 with whatever URL the draft holds.
+    onBack: () => askAltPrevious(sessionId, "profile"),
   });
 }
 
@@ -425,7 +440,7 @@ function askAltDocuments(sessionId) {
   inlineQuestion.ask(sessionId, {
     title: "Connect documents (optional)",
     subtitle: "You can connect more sources later in Settings.",
-    stepLabel: altStepLabel(isFlagOn("multilingualPlaybook") ? 4 : 3),
+    stepLabel: altStepLabel("documents"),
     items,
     multi: true,
     submitLabel: "Continue",
@@ -444,7 +459,7 @@ function askAltDocuments(sessionId) {
       notify(sessionId);
       askAltReferenceImages(sessionId);
     },
-    onBack: () => askAltProfile(sessionId),
+    onBack: () => askAltPrevious(sessionId, "documents"),
   });
 }
 
@@ -460,7 +475,7 @@ function askAltReferenceImages(sessionId) {
   inlineQuestion.ask(sessionId, {
     title: "Add reference images (optional)",
     subtitle: "Logos, product shots, a brand board — I use them in the image generator.",
-    stepLabel: altStepLabel(isFlagOn("multilingualPlaybook") ? 5 : 4),
+    stepLabel: altStepLabel("images"),
     items: [
       {
         value: "add",

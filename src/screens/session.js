@@ -1,7 +1,7 @@
-import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr } from "../utils.js?v=1066";
-import { navigate } from "../router.js?v=1066";
-import { renderTopbar } from "../components/topbar.js?v=1066";
-import { socialAccounts, chatStarters, connectorDocs } from "../mocks.js?v=1066";
+import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr } from "../utils.js?v=1070";
+import { navigate } from "../router.js?v=1070";
+import { renderTopbar } from "../components/topbar.js?v=1070";
+import { socialAccounts, chatStarters, connectorDocs } from "../mocks.js?v=1070";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
@@ -11,12 +11,12 @@ import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
   PROFILE_SEARCH_THRESHOLD,
-} from "../social-profiles.js?v=1066";
-import { formatsForNetwork, defaultFormatFor } from "../clip-formats.js?v=1066";
-import { getSessionById, getSessions, subscribe as subscribeSessions } from "../sessions-store.js?v=1066";
-import { getContextById, getContexts, getDefaultContext, updateContext } from "../contexts-store.js?v=1066";
-import { revokedContextFor, usableContexts, canView } from "../playbook-access.js?v=1066";
-import { isNewUser } from "../user-mode.js?v=1066";
+} from "../social-profiles.js?v=1070";
+import { formatsForNetwork, defaultFormatFor } from "../clip-formats.js?v=1070";
+import { getSessionById, getSessions, subscribe as subscribeSessions } from "../sessions-store.js?v=1070";
+import { getContextById, getContexts, getDefaultContext, updateContext } from "../contexts-store.js?v=1070";
+import { revokedContextFor, usableContexts, canView } from "../playbook-access.js?v=1070";
+import { isNewUser } from "../user-mode.js?v=1070";
 import {
   getThread,
   sendMessage,
@@ -38,56 +38,57 @@ import {
   answerTopPostsWidget,
   toggleTopicsWidgetPick,
   answerTopicsWidget,
-} from "../assistant.js?v=1066";
-import { iconFor as fileIconForKind } from "../file-kinds.js?v=1066";
-import { getSources, getIdeas, extractVideoIdeas, appendExtractedIdeas } from "../library.js?v=1066";
-import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=1066";
+} from "../assistant.js?v=1070";
+import { iconFor as fileIconForKind } from "../file-kinds.js?v=1070";
+import { getSources, getIdeas, extractVideoIdeas, appendExtractedIdeas } from "../library.js?v=1070";
+import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=1070";
 import {
   renderInto as renderComposerMentions,
   removeMention as removeComposerMention,
   subscribe as subscribeComposerMentions,
   addMention as addComposerMention,
-} from "../composer-mentions.js?v=1066";
-import { getPosts, addPostDraft, setSubtitleStyle, subscribe as subscribePostsStore } from "../posts-store.js?v=1066";
-import { startDraftFlow, executeDraft, executeDraftBatch, getAnglesForIdea } from "../draft-flow.js?v=1066";
-import * as topPostsFlow from "../top-posts-flow.js?v=1066";
+} from "../composer-mentions.js?v=1070";
+import { getPosts, addPostDraft, setSubtitleStyle, subscribe as subscribePostsStore } from "../posts-store.js?v=1070";
+import { startDraftFlow, executeDraft, executeDraftBatch, getAnglesForIdea } from "../draft-flow.js?v=1070";
+import * as topPostsFlow from "../top-posts-flow.js?v=1070";
 import {
   renderTopPostsBoard,
   renderTopPostEcho,
   renderTopPostsWidget,
   TOP_POSTS_LIMIT,
-} from "../components/top-post-card.js?v=1066";
-import { getTopPost } from "../top-posts-store.js?v=1066";
-import { renderEmptyState } from "../components/empty-state.js?v=1066";
-import * as sidebarWizard from "../sidebar-wizard.js?v=1066";
-import * as inlineQuestion from "../inline-question.js?v=1066";
-import * as clipStudio from "../clip-studio.js?v=1066";
-import * as batchStudio from "../batch-studio.js?v=1066";
-import { askConnector } from "../connector-ask.js?v=1066";
-import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=1066";
-import { renderConnectorLogo } from "../connectors-view.js?v=1066";
+} from "../components/top-post-card.js?v=1070";
+import { getTopPost } from "../top-posts-store.js?v=1070";
+import { renderEmptyState } from "../components/empty-state.js?v=1070";
+import * as sidebarWizard from "../sidebar-wizard.js?v=1070";
+import * as inlineQuestion from "../inline-question.js?v=1070";
+import { requireConnectedProfiles } from "../connect-profiles-flow.js?v=1070";
+import * as clipStudio from "../clip-studio.js?v=1070";
+import * as batchStudio from "../batch-studio.js?v=1070";
+import { askConnector } from "../connector-ask.js?v=1070";
+import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=1070";
+import { renderConnectorLogo } from "../connectors-view.js?v=1070";
 import {
   getActiveConnector,
   clearActiveConnector,
   subscribe as subscribeComposerConnector,
-} from "../composer-connector.js?v=1066";
-import { isFlagOn } from "../feature-flags.js?v=1066";
-import * as contextBuilder from "../context-builder.js?v=1066";
-import { renderPicker } from "./_analyse-common.js?v=1066";
-import { renderSourceCard } from "../components/source-card.js?v=1066";
-import { renderIdeaCard } from "../components/idea-card.js?v=1066";
-import { renderCompactIdeaCard } from "../components/idea-card-compact.js?v=1066";
+} from "../composer-connector.js?v=1070";
+import { isFlagOn } from "../feature-flags.js?v=1070";
+import * as contextBuilder from "../context-builder.js?v=1070";
+import { renderPicker } from "./_analyse-common.js?v=1070";
+import { renderSourceCard } from "../components/source-card.js?v=1070";
+import { renderIdeaCard } from "../components/idea-card.js?v=1070";
+import { renderCompactIdeaCard } from "../components/idea-card-compact.js?v=1070";
 import {
   contentState,
   renderContentWorkspace as renderSharedContentWorkspace,
   rerenderContentWorkspaceBody,
   renderContentEmptyState,
-} from "../components/content-workspace.js?v=1066";
-import { open as openVideoClipsModal } from "../components/video-clips-modal.js?v=1066";
-import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=1066";
-import { open as openAddSourceModal } from "../components/add-source-modal.js?v=1066";
-import { open as openConnectorsModal } from "../components/connectors-modal.js?v=1066";
-import { dropzoneHTML } from "../components/dropzone.js?v=1066";
+} from "../components/content-workspace.js?v=1070";
+import { open as openVideoClipsModal } from "../components/video-clips-modal.js?v=1070";
+import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=1070";
+import { open as openAddSourceModal } from "../components/add-source-modal.js?v=1070";
+import { open as openConnectorsModal } from "../components/connectors-modal.js?v=1070";
+import { dropzoneHTML } from "../components/dropzone.js?v=1070";
 import {
   classifyFile,
   startFileUpload,
@@ -102,21 +103,21 @@ import {
   updateSourceClips,
   extractClipsForSource,
   setSourceIdeaCount,
-} from "../sources-stream.js?v=1066";
-import { renderClipCard } from "../components/clip-card.js?v=1066";
-import { onFeedbackClick } from "../components/feedback-control.js?v=1066";
-import { showToast } from "../components/toast.js?v=1066";
+} from "../sources-stream.js?v=1070";
+import { renderClipCard } from "../components/clip-card.js?v=1070";
+import { onFeedbackClick } from "../components/feedback-control.js?v=1070";
+import { showToast } from "../components/toast.js?v=1070";
 import {
   openDrafts as openDraftsPanel,
   openIdeas as openIdeasPanel,
   openClips as openClipsPanel,
   getMode as getRightPanelMode,
   subscribe as subscribeRightPanel,
-} from "../components/right-panel.js?v=1066";
-import { setHandoff, consumeHandoff } from "../handoff.js?v=1066";
-import { attachTopicToChat, useTopicInChat, startTopicPickerInline, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=1066";
-import { startObjectiveChat, OBJECTIVE_CHAT_HANDOFF } from "../objective-flow.js?v=1066";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1066";
+} from "../components/right-panel.js?v=1070";
+import { setHandoff, consumeHandoff } from "../handoff.js?v=1070";
+import { attachTopicToChat, useTopicInChat, startTopicPickerInline, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=1070";
+import { startObjectiveChat, OBJECTIVE_CHAT_HANDOFF } from "../objective-flow.js?v=1070";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1070";
 import {
   getFreshTopics,
   countFresh,
@@ -124,15 +125,15 @@ import {
   topicTitle,
   markUsed,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=1066";
-import { findTopicSource } from "../topics-catalog.js?v=1066";
-import { renderTopicCard, renderTopicsWidget } from "../components/topic-card.js?v=1066";
-import { openTopicArticle } from "../components/topic-picker-modal.js?v=1066";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1066";
-import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=1066";
-import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=1066";
-import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=1066";
-import { clipContext } from "./session/clip-draft-flow.js?v=1066";
+} from "../topics-store.js?v=1070";
+import { findTopicSource } from "../topics-catalog.js?v=1070";
+import { renderTopicCard, renderTopicsWidget } from "../components/topic-card.js?v=1070";
+import { openTopicArticle } from "../components/topic-picker-modal.js?v=1070";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1070";
+import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=1070";
+import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=1070";
+import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=1070";
+import { clipContext } from "./session/clip-draft-flow.js?v=1070";
 // Pure thread-turn renderers — shared with the component handoff gallery so
 // the previews there never drift from the app (handoff/components.html).
 import {
@@ -144,7 +145,7 @@ import {
   renderSystemNotice,
   renderExtractingNotice,
   renderResultCard,
-} from "./session/thread-turns.js?v=1066";
+} from "./session/thread-turns.js?v=1070";
 
 // Default composer placeholder — restored whenever no connector is attached.
 // A connected connector swaps it for "Ask {name} anything…".
@@ -2510,18 +2511,22 @@ function askProfileQuestion(
   ideaId,
   { count = 1, angle = null, anglePicks = null, onBack = null, language = null } = {},
 ) {
+  // Nothing connected (skipConnectProfiles) → ask for the connection in this
+  // very slot, then come back here. With an account connected this returns
+  // straight through, so the flow below is unchanged.
+  if (getConnectedProfiles().length === 0) {
+    requireConnectedProfiles(sessionId, {
+      stepLabel: "Profile",
+      onBack: onBack || undefined,
+      onReady: () => askProfileQuestion(sessionId, ideaId, { count, angle, anglePicks, onBack, language }),
+    });
+    return;
+  }
   // Connected profiles + their picker presentation come from the shared
   // social-profiles helper, so this picker proposes the exact same
   // accounts (brand handle + avatar with network badge) as the Playbook
   // onboarding profile step.
   const connected = getConnectedProfiles();
-  if (connected.length === 0) {
-    postAssistantMessage(
-      sessionId,
-      "No connected social profiles yet. Open Settings → Social accounts to connect one.",
-    );
-    return;
-  }
   postAssistantMessage(sessionId, "Which profile should I draft this for?");
   const profileItems = buildConnectedProfileItems();
   inlineQuestion.ask(sessionId, {
@@ -2573,10 +2578,12 @@ function askRepurposeProfiles(sessionId, postIds) {
   // Every profile starts at 0 (fully opt-in); source profiles just lead the list.
   const items = topPostsFlow.repurposeProfileItems(postIds, { include: "all" }).map((it) => ({ ...it, count: 0 }));
   if (!items.length) {
-    postAssistantMessage(
-      sessionId,
-      "No connected profiles to repurpose to. Connect one in Settings → Social accounts.",
-    );
+    // Same slot, same shape: ask for the account here, then re-enter with the
+    // list this step needs.
+    requireConnectedProfiles(sessionId, {
+      stepLabel: "Profile",
+      onReady: () => askRepurposeProfiles(sessionId, postIds),
+    });
     return;
   }
   postAssistantMessage(sessionId, "Where should I repurpose these?");

@@ -7,8 +7,10 @@
 // as the muted caption, and a DS avatar carrying the brand photo plus a
 // corner network badge.
 
-import { socialAccounts, demoManyProfiles } from "./mocks.js?v=1066";
-import { escapeHtml } from "./utils.js?v=1066";
+import { socialAccounts, demoManyProfiles } from "./mocks.js?v=1070";
+import { escapeHtml } from "./utils.js?v=1070";
+import { isFlagOn } from "./feature-flags.js?v=1070";
+import { createNotifier } from "./store-utils.js?v=1070";
 
 // Map our mock's `platform` slug to the DS's official full-color network
 // icon used by the .ap-avatar-network corner badge.
@@ -49,7 +51,9 @@ function normalizePlatform(network) {
 export function profileForNetwork(network) {
   const key = normalizePlatform(network);
   if (!key) return null;
-  return socialAccounts.find((a) => a.platform === key && a.status === "connected") || null;
+  // Through the same gate as getConnectedProfiles(), or the schedule modal and
+  // the top-post cards would show a profile nobody has connected.
+  return getConnectedProfiles().find((a) => a.platform === key) || null;
 }
 
 // Canonical profile display — DS avatar (brand photo + corner network badge)
@@ -105,13 +109,71 @@ export function renderProfileEchoCard(account, { network } = {}) {
   `;
 }
 
+// ---------------------------------------------------------------------------
+// Which accounts are connected RIGHT NOW.
+//
+// The mocks describe accounts; this Set describes the ones connected in this
+// browser session, so connecting one in a chat shows up everywhere afterwards.
+// Seeded lazily, once:
+//   flag OFF — every mock-connected account plus the whole demoManyProfiles
+//              set, i.e. the pre-flag behaviour byte for byte;
+//   flag ON  — EMPTY. Nothing is connected until the user connects it, which
+//              is the state the whole feature exists to make reachable.
+// ---------------------------------------------------------------------------
+const notifier = createNotifier("social-profiles");
+export const subscribe = notifier.subscribe;
+
+let connectedIds = null;
+
+// Every account the user could connect, mock-connected or not — the brand's
+// own accounts, one per network. demoManyProfiles stays out: those ~36 exist to
+// exercise the picker's search on an established account, not to be connected
+// one by one.
+const ALL_ACCOUNTS = [...socialAccounts, ...demoManyProfiles];
+
+function ensureSeeded() {
+  if (connectedIds) return connectedIds;
+  connectedIds = new Set(
+    isFlagOn("skipConnectProfiles") ? [] : ALL_ACCOUNTS.filter((p) => p.status === "connected").map((p) => p.id),
+  );
+  return connectedIds;
+}
+
 // All currently-connected social accounts (mock). The base connected accounts
 // are followed by a large, varied demo set (see mocks.demoManyProfiles) so the
 // profile quickpicker's search can be evaluated against a realistic ~40-profile
 // list.
 export function getConnectedProfiles() {
-  const base = socialAccounts.filter((p) => p.status === "connected");
-  return [...base, ...demoManyProfiles];
+  const ids = ensureSeeded();
+  return ALL_ACCOUNTS.filter((p) => ids.has(p.id));
+}
+
+// What the connect modal offers: the brand's own accounts that aren't connected
+// yet, in mock order so the list is stable.
+// `handle` is the identity test, not `status`: the mock's disconnected entries
+// come in two kinds — real accounts (name, handle, photo, post history) and
+// bare network stubs like `{ id: "tt", platformLabel: "TikTok" }` standing for
+// a network the brand has no account on. A stub has nothing to connect TO, and
+// would render as an "undefined" row, so it never reaches the picker.
+export function getConnectableAccounts() {
+  const ids = ensureSeeded();
+  return socialAccounts.filter((p) => !ids.has(p.id) && p.handle);
+}
+
+// Mock-connect one or more accounts by id. Returns the accounts that actually
+// flipped, so a caller can echo exactly what it connected.
+export function connectAccounts(accountIds) {
+  const ids = ensureSeeded();
+  const added = [];
+  for (const id of accountIds || []) {
+    if (ids.has(id)) continue;
+    const account = ALL_ACCOUNTS.find((p) => p.id === id);
+    if (!account) continue;
+    ids.add(id);
+    added.push(account);
+  }
+  if (added.length) notifier.notify(getConnectedProfiles());
+  return added;
 }
 
 // Build inline-question picker items for the connected profiles. The

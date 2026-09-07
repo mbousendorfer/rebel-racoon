@@ -326,6 +326,38 @@ An **ignored Topic is never surfaced by a signal, anywhere.** Ticking Ignored in
 
 `withTriage()` **clears both signals past the first age group**, because Trending and Updated are claims about _now_ and a card carrying either under a three-weeks-ago separator contradicts itself. Enforced on read, not in the seed, so every surface agrees for free.
 
+### Connecting an account: asked in the flow, never as a prerequisite
+
+Behind `skipConnectProfiles`, Playbook creation stops asking which profile will publish, and nothing
+is connected to begin with. The ask moves to the moment it pays for itself — the chat flows that
+draft FOR an account. `requireConnectedProfiles()` in
+[`connect-profiles-flow.js`](src/connect-profiles-flow.js) is the whole feature: it returns straight
+through when anything is connected, so callers wrap unconditionally and the flag-off path is
+byte-identical. Otherwise it puts a Quickpicker in the step's own slot, hands the confirm to
+[`connect-account-modal.js`](src/components/connect-account-modal.js), then calls `onReady` — so the
+flow **resumes where it left off** instead of restarting. Four callers today: draft-from-idea and
+repurpose (`session.js`), clip drafts (`clip-draft-flow.js`), top posts inline + studio
+(`top-posts-flow.js`).
+
+Two rules this rests on:
+
+- **The Quickpicker asks, the modal consents.** Connecting an account is an Agorapulse action, not
+  an Archie one ([`CONCEPTS.md`](docs/reference/CONCEPTS.md) §6 — the account catalogue belongs to
+  the platform). Archie names the need in the conversation; the platform's dialog does the
+  connecting. Don't collapse the two into a bare "Connect" button.
+- **`social-profiles.js` now holds state.** A module-level `Set` of connected ids, seeded once from
+  the mocks (flag off) or empty (flag on), with `connectAccounts()` writing to it and a notifier so
+  every surface agrees. `profileForNetwork()` goes through the SAME gate — otherwise the schedule
+  modal and the top-post cards would show a profile nobody connected. `getConnectableAccounts()`
+  filters on `handle`, not `status`: the mock's disconnected entries include bare network stubs
+  (`{ id: "tt", platformLabel: "TikTok" }`) that have nothing to connect to and would render as
+  "undefined" rows.
+
+⚠️ A surface that merely _lists_ profiles is out of scope on purpose — it renders its empty list.
+But a surface that makes the user _pick_ one must never render an empty picker: that is a silent
+dead end, which is the exact failure this feature removes. Top Posts was gated for that reason after
+it was seen doing it.
+
 ### The listening config left the Playbook
 
 The magazine kept it as `ctx.topics`. It now lives in `topic-feeds-store.js`, keyed by Playbook: **one feed per Playbook**, provisioned lazily on read (`provisionMissingFeeds`), so a brand new to the app never meets a screen asking it to configure something first — and nothing can _delete_ a feed, since the next read would rebuild it.
@@ -387,7 +419,7 @@ A key that is consumed but never set is dead weight that reads as a live entry p
 
 ### Admin / user mode (prototype controls)
 
-The **Admin** popover in the sidebar footer cog (`admin-menu.js`) is the prototype control panel: switch user mode and toggle feature flags (each change reloads so stores re-seed). `user-mode.js`: `getUserMode()` returns `"returning"` (populated mocks, default) or `"new-alt"` (empty stores + first-time onboarding); `isNewUser()` tests for `new-alt`. Feature flags live in `ff-catalog.js` (`FLAGS`, each with a `default`) and are read via `isFlagOn()`. The 6 flags: `draftInlineEdit` (OFF), `connectors` (OFF — gates the whole connectors feature), `conversationStatusCard` (OFF), `multilingualPlaybook` (OFF), `topicFeed` (OFF — gates the whole Topic Feed: `/topics`, `/topics/settings`, the nav row and its unread count, the new chat's "Fresh topics to review" list, and the composer's "Pick from the Topic Feed"), `playbookSharing` (OFF — gates Playbook ownership: a Playbook is personal or shared with the whole org, never named-shared; read-only fiche + Duplicate for recipients, manager rights, the degraded chat after access is lost, and the Admin **Your role** control. Unlike `topicFeed`, its two demo Playbooks and its demo chat are seeded **only** under the flag).
+The **Admin** popover in the sidebar footer cog (`admin-menu.js`) is the prototype control panel: switch user mode and toggle feature flags (each change reloads so stores re-seed). `user-mode.js`: `getUserMode()` returns `"returning"` (populated mocks, default) or `"new-alt"` (empty stores + first-time onboarding); `isNewUser()` tests for `new-alt`. Feature flags live in `ff-catalog.js` (`FLAGS`, each with a `default`) and are read via `isFlagOn()`. The 7 flags: `draftInlineEdit` (OFF), `connectors` (OFF — gates the whole connectors feature), `conversationStatusCard` (OFF), `multilingualPlaybook` (OFF), `topicFeed` (OFF — gates the whole Topic Feed: `/topics`, `/topics/settings`, the nav row and its unread count, the new chat's "Fresh topics to review" list, and the composer's "Pick from the Topic Feed"), `playbookSharing` (OFF — gates Playbook ownership: a Playbook is personal or shared with the whole org, never named-shared; read-only fiche + Duplicate for recipients, manager rights, the degraded chat after access is lost, and the Admin **Your role** control. Unlike `topicFeed`, its two demo Playbooks and its demo chat are seeded **only** under the flag)., `skipConnectProfiles` (OFF — where the app asks for a social account: ON drops the "which profile will publish?" question from Playbook creation AND starts with nothing connected in both user modes, moving the ask into the chat flows that draft for an account — see § Connecting an account below).
 
 **Flags removed in the 2026-09-04 cleanup** — do not reintroduce these as toggles: `playbookDefault` was **deleted** (the "set as default" star on `/playbook` is gone; the internal default-Playbook selection via `getDefaultContext` / `isDefault` and the badge on `/contexts` cards stay). `statusActionSnackbars`, `playbookColors`, `manyProfiles` and `playbookCompetitors` were **baked ON** — the success snackbars always fire, Playbook colours always show (no more `hide-playbook-colors` body class), the ~40-profile demo set is always seeded, and the Competitors section always renders. Their OFF branches are deleted, exactly like the earlier Image Studio flags (`imageStudioAutoBrief`, `imageStudioSetupFirst`, also gone — § The Image Studio). Full table + gates: [`docs/reference/FEATURES.md`](docs/reference/FEATURES.md#14-admin-feature-flags--user-modes).
 

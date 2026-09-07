@@ -53,6 +53,7 @@ body.has-modal {
 .save-folder-modal,
 .share-playbook-modal,
 .analyze-profiles-modal,
+.connect-account-modal,
 .fill-document-modal,
 .search-modal,
 .shortcut-legend {
@@ -158,7 +159,8 @@ body.has-modal {
   flex-direction: column;
 }
 
-.analyze-profiles-modal__lead {
+.analyze-profiles-modal__lead,
+.connect-account-modal__lead {
   margin: 0;
   font-size: var(--sys-text-style-body-size);
   line-height: var(--sys-text-style-body-line-height);
@@ -175,7 +177,8 @@ body.has-modal {
   color: var(--ref-color-grey-60);
 }
 
-.analyze-profiles-modal__list {
+.analyze-profiles-modal__list,
+.connect-account-modal__list {
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xxs);
@@ -189,7 +192,8 @@ body.has-modal {
 /* Rows are selectable cards: the control is the DS checkbox
    (.ap-checkbox-container draws the box + hides the input); the card chrome
    (border, selected blue border) mirrors the DS card tokens. */
-.analyze-profiles-modal__row {
+.analyze-profiles-modal__row,
+.connect-account-modal__row {
   align-items: center;
   gap: var(--ref-spacing-sm);
   padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
@@ -199,11 +203,13 @@ body.has-modal {
   transition: border-color 0.2s ease-in-out;
 }
 
-.analyze-profiles-modal__row:hover:not(.is-disabled) {
+.analyze-profiles-modal__row:hover:not(.is-disabled),
+.connect-account-modal__row:hover {
   border-color: var(--ref-color-grey-40);
 }
 
-.analyze-profiles-modal__row:has(input:checked) {
+.analyze-profiles-modal__row:has(input:checked),
+.connect-account-modal__row:has(input:checked) {
   border-color: var(--ref-color-electric-blue-100);
 }
 
@@ -212,11 +218,13 @@ body.has-modal {
   opacity: 0.6;
 }
 
-.analyze-profiles-modal__row > .ap-avatar {
+.analyze-profiles-modal__row > .ap-avatar,
+.connect-account-modal__row > .ap-avatar {
   flex-shrink: 0;
 }
 
-.analyze-profiles-modal__row > .analyze-profiles-modal__meta {
+.analyze-profiles-modal__row > .analyze-profiles-modal__meta,
+.connect-account-modal__row > .connect-account-modal__meta {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -225,7 +233,8 @@ body.has-modal {
   flex: 1;
 }
 
-.analyze-profiles-modal__handle {
+.analyze-profiles-modal__handle,
+.connect-account-modal__handle {
   font-size: var(--sys-text-style-body-bold-size);
   font-weight: var(--sys-text-style-body-bold-weight);
   color: var(--ref-color-grey-100);
@@ -242,13 +251,31 @@ body.has-modal {
   color: var(--ref-color-grey-40);
 }
 
-.analyze-profiles-modal__empty {
+.analyze-profiles-modal__empty,
+.connect-account-modal__empty {
   margin: 0;
   font-size: var(--sys-text-style-body-size);
   color: var(--ref-color-grey-60);
 }
 
 .analyze-profiles-modal__warn {
+  margin-top: var(--ref-spacing-xs);
+}
+
+/* ── Connect a social account modal ────────────────────────── */
+/* Shares the analyze modal's row visuals (grouped above); only what differs
+   lives here. No disabled rows: every unconnected account is connectable. */
+.connect-account-modal {
+  width: min(calc(100% - 32px), 480px);
+  flex-direction: column;
+}
+
+.connect-account-modal__caption {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+
+.connect-account-modal__note {
   margin-top: var(--ref-spacing-xs);
 }
 
@@ -530,6 +557,7 @@ body.has-modal {
 .save-folder-modal.open,
 .share-playbook-modal.open,
 .analyze-profiles-modal.open,
+.connect-account-modal.open,
 .fill-document-modal.open,
 .search-modal.open,
 .shortcut-legend.open {

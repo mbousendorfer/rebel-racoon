@@ -13,14 +13,14 @@
 //     it fires onConfirm(ids) then closes. A warning notes the overwrite.
 //   - Cancel / Esc / backdrop / close-X dismiss without firing.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1066";
-import { escapeHtml as esc } from "../utils.js?v=1066";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1070";
+import { escapeHtml as esc } from "../utils.js?v=1070";
 import {
   getConnectedProfiles,
   NETWORK_ICON_BY_PLATFORM,
   BRAND_INITIALS,
   PROFILE_SEARCH_THRESHOLD,
-} from "../social-profiles.js?v=1066";
+} from "../social-profiles.js?v=1070";
 
 const MODAL_ID = "analyze-profiles";
 
@@ -82,7 +82,7 @@ const HTML = `
 function renderList() {
   const profiles = getConnectedProfiles();
   if (!profiles.length) {
-    listEl.innerHTML = `<p class="analyze-profiles-modal__empty">No connected profiles. Connect a social account first.</p>`;
+    listEl.innerHTML = `<p class="analyze-profiles-modal__empty">No connected profiles yet. Connect one from a chat when you draft a post, and I can learn from it here.</p>`;
     return;
   }
   // Row HTML is built from esc()'d values; assign directly (no escaping wrapper).

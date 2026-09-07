@@ -15,13 +15,14 @@
 // whole screen. clipContext is exported alongside because the clip-studio
 // finalize path in session.js builds the same generationContext object.
 
-import { FORMATS, clipFormatItems } from "../../clip-formats.js?v=1066";
-import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../../clip-subtitles.js?v=1066";
+import { FORMATS, clipFormatItems } from "../../clip-formats.js?v=1070";
+import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../../clip-subtitles.js?v=1070";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "../../social-profiles.js?v=1066";
+} from "../../social-profiles.js?v=1070";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=1070";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -30,9 +31,9 @@ import {
   postDraftResult,
   startPending,
   finishPending,
-} from "../../assistant.js?v=1066";
-import * as inlineQuestion from "../../inline-question.js?v=1066";
-import { addPostDraft } from "../../posts-store.js?v=1066";
+} from "../../assistant.js?v=1070";
+import * as inlineQuestion from "../../inline-question.js?v=1070";
+import { addPostDraft } from "../../posts-store.js?v=1070";
 
 // The generationContext a clip-derived draft carries — the "why this draft
 // exists" header shown on the post card. Shared with session.js's clip-studio
@@ -109,14 +110,17 @@ function askClipSubtitle(sessionId, entries, format) {
 
 // Step 3 — which account(s)? Multi-select, the clips' own networks preselected.
 function askClipAccounts(sessionId, entries, format, style) {
-  const connected = getConnectedProfiles();
-  if (connected.length === 0) {
-    postAssistantMessage(
-      sessionId,
-      "No connected social profiles yet. Open Settings → Social accounts to connect one.",
-    );
+  // Nothing connected (skipConnectProfiles) → ask for the connection in this
+  // step's own slot, keeping Back pointing at the subtitle step, then re-enter.
+  if (getConnectedProfiles().length === 0) {
+    requireConnectedProfiles(sessionId, {
+      stepLabel: "Accounts",
+      onBack: () => askClipSubtitle(sessionId, entries, format),
+      onReady: () => askClipAccounts(sessionId, entries, format, style),
+    });
     return;
   }
+  const connected = getConnectedProfiles();
   postAssistantMessage(sessionId, "Which account(s) should I draft for?");
   const clipNets = new Set(entries.map((e) => e.clip.network));
   const preset = connected.filter((a) => clipNets.has(a.platform)).map((a) => a.id);

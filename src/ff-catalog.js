@@ -96,4 +96,23 @@ export const FLAGS = Object.freeze([
       "Also gates the Share modal, the ownership marks on /contexts cards, the " +
       "owner row on a Playbook, and the Your-role control in Admin.",
   },
+  {
+    id: "skipConnectProfiles",
+    label: "Skip connecting profiles at setup",
+    default: false,
+    hides:
+      "Where the app asks for a social account. When OFF (default), creating a " +
+      "Playbook asks which profile will publish as its second question, and the " +
+      "~40 demo accounts are connected from the start.\n\nWhen ON, that " +
+      "question disappears — Playbook creation drops to 3 steps (4 with " +
+      "multilingualPlaybook) — and NOTHING is connected to begin with, in both " +
+      "user modes. Nobody is asked to connect an account before they have seen " +
+      "what Archie does with one.\n\nThe ask moves to the moment it is needed: " +
+      "the three chat flows that draft FOR an account — draft from an idea, " +
+      'draft from clips, and repurpose — each replace their "pick an account" ' +
+      'step with a "connect an account" step in the same place, and resume ' +
+      "where they left off once the connect modal confirms. Every other profile " +
+      "surface (Clip Studio, Top Posts, Objectives, the analyze-profiles modal) " +
+      "simply renders its empty list until an account is connected.",
+  },
 ]);
