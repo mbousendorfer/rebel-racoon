@@ -421,11 +421,7 @@ function renderAssistantPanel(session, attachedContext) {
   // of the panel (default) or inline inside the empty hero. We render it
   // once and place it via `${composerMarkup}` so click handlers (delegated
   // on #app) keep working in both positions.
-  // The composer's Playbook select only ever asked because nothing above it
-  // had. In workspace mode the rail's switcher answered it before the chat
-  // existed, so the control stays — as the static indicator it already has for
-  // a started chat — and stops being a second place to change brand.
-  const composerMarkup = renderComposer(attachedContext, session, isEmptyConversation && !isWorkspaceMode());
+  const composerMarkup = renderComposer(attachedContext, session, isEmptyConversation);
   return html`
     <aside class="session__assistant" aria-label="Assistant panel">
       <div
@@ -688,35 +684,22 @@ function renderBatchRest(session) {
   `;
 }
 
-// The in-flow Playbook pickers, with the question taken out of them.
+// ⚠️ In workspace mode the in-flow Playbook pickers render NOTHING.
 //
 // Batch, Clip Studio and the repurpose board each asked "which Playbook governs
-// these drafts?" in their own select. In workspace mode that was answered in
-// the rail before the flow started, so the control keeps SAYING which brand and
-// stops asking — the same disabled DS trigger the composer uses on a started
-// chat, in the same slot, so no flow changes layout.
-function renderStaticPlaybook(ctx, wrapperClass) {
-  if (!ctx) return "";
-  return `
-    <div class="${wrapperClass}">
-      <div
-        class="ap-select-trigger disabled"
-        data-context-color="${escapeHtml(ctx.color || "grey")}"
-        title="Playbook: ${escapeHtml(ctx.name)}"
-      >
-        <span class="ap-select-inline-label">Playbook</span>
-        <span class="ap-select-value">${escapeHtml(ctx.name)}</span>
-      </div>
-    </div>
-  `;
-}
+// these drafts?" in their own select. The rail answered it before the flow
+// started, so the question is gone — and so is the control. It was a disabled
+// trigger for one commit, on the theory that the flow should still SAY which
+// brand: a greyed-out field that repeats what the rail prints two inches away
+// is chrome the reader has to rule out, not information. The commit rows are
+// `justify-content: flex-end`, so the CTA simply keeps its place.
 
 // Playbook picker for the Batch Studio commit group — same DS form-select shape
 // as the composer's renderPlaybookControl, but full-width and its picks route
 // through the `data-batch-playbook-pick` delegate (→ batchStudio.setContext)
 // instead of mutating session.contextId.
 function renderBatchPlaybookControl(ctx) {
-  if (isWorkspaceMode()) return renderStaticPlaybook(ctx, "batch-studio__playbook");
+  if (isWorkspaceMode()) return "";
   const playbooks = usableContexts();
   const items = playbooks
     .map((c) => {
@@ -799,7 +782,7 @@ function buildClipCaptionCards(cfg) {
 // voice/audience/CTAs of the drafts created from the clips. Mirrors the batch
 // playbook control; routes through the `data-clip-playbook-pick` delegate.
 function renderClipPlaybookControl(ctx) {
-  if (isWorkspaceMode()) return renderStaticPlaybook(ctx, "clip-studio__select");
+  if (isWorkspaceMode()) return "";
   const playbooks = usableContexts();
   const items = playbooks
     .map((c) => {
@@ -832,7 +815,7 @@ function renderClipPlaybookControl(ctx) {
 // Playbook governs the voice of the repurposed drafts. Mirrors the batch / clip
 // playbook controls; routes through the `data-topposts-playbook-pick` delegate.
 function renderTopPostsPlaybookControl(ctx) {
-  if (isWorkspaceMode()) return renderStaticPlaybook(ctx, "studio-commit__playbook");
+  if (isWorkspaceMode()) return "";
   const playbooks = usableContexts();
   const items = playbooks
     .map((c) => {
@@ -1276,8 +1259,15 @@ function dotColorVar(colorName) {
 //     through the delegated [data-playbook-pick] handler in bindSession.
 //   • static (active conversation) → a non-interactive .ap-select-trigger
 //     in disabled state. No dropdown.
+//   • workspace mode (flag playbookWorkspace) → nothing at all: the rail's
+//     switcher is the one place the brand is named and chosen.
 // Returns "" when there are no playbooks at all on a locked chat.
 function renderPlaybookControl(ctx, selectable) {
+  // Workspace mode: nothing. The rail names the brand permanently, one row of
+  // chrome above this one, so a pill in the composer toolbar would be the same
+  // sentence twice — and it could only ever be the disabled half of the
+  // control, since the question is answered before the chat exists.
+  if (isWorkspaceMode()) return "";
   // Static indicator on active chats — only when a playbook is attached.
   if (!selectable) {
     if (!ctx) return "";

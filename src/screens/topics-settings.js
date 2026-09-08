@@ -199,7 +199,7 @@ function renderPage() {
               : "",
           )}
           <button type="button" class="ap-link" data-settings-playbook="${escapeAttr(ctx.id)}">
-            Open the Playbook
+            ${isWorkspaceMode() ? `Open ${ctx.name}` : "Open the Playbook"}
           </button>
         </p>
       </header>
@@ -225,19 +225,13 @@ function renderPage() {
 // DS caption, so you can compare Playbooks without leaving the page — most of
 // what the stacked layout was actually good for.
 function renderPlaybookSelect(playbooks, active) {
-  // Workspace mode: this page configures the feed of the brand you are in, and
-  // the rail is where you change brand. So the picker keeps its slot and its
-  // shape — it just states the Playbook instead of offering the others. What it
-  // loses is the cross-Playbook overview in its options; that is the price of a
-  // scope, and it is the same price /topics pays.
-  if (isWorkspaceMode()) {
-    return html`<div class="ap-select topics-settings__pbselect">
-      <div class="ap-select-trigger disabled" title="Which Playbook these sources belong to">
-        <span class="ap-select-inline-label">Playbook</span>
-        <span class="ap-select-value">${active.name}</span>
-      </div>
-    </div>`;
-  }
+  // ⚠️ Workspace mode: no select at all. The rail owns the scope, so this one
+  // could only be a disabled restatement of it — and this page has real
+  // switches, next to which a greyed-out field reads as one more thing that
+  // refuses to move. What the page loses is the brand's NAME in the bar; the
+  // "Open the Playbook" link below picks it up (see renderPage), which keeps
+  // the name on a control that still does something.
+  if (isWorkspaceMode()) return "";
   const options = playbooks
     .map((c) => {
       const feed = getFeedForPlaybook(c.id);

@@ -15,7 +15,7 @@
 // all. What was wrong with the port was not that the scope was global, it was
 // that it was HIDDEN behind a page control; a permanent switcher at the top of
 // the rail is the other half of that bargain. This page's own scope select then
-// states the brand instead of offering the others — see the toolbar.
+// own scope select then disappears entirely — see the toolbar.
 //
 // ── The layout ─────────────────────────────────────────────────────────────
 // Master–detail, and the split is measured with a @container query on the row
@@ -396,23 +396,18 @@ function renderToolbar(pb, feed) {
          configures that Playbook's listening now lives at the far right of the
          topbar (components/topbar.js), the app's canonical home for a page-level
          action. -->
-    <div class="topics-view__scope-group">
-      <div class="topics-view__scope">
-        ${raw(
-          isWorkspaceMode()
-            ? // Workspace mode: the rail re-points this page, so the control
-              // keeps its slot and states the brand instead of offering the
-              // others. Not deleted — the reader still has to see WHOSE feed
-              // this is at the place they look for it, and the toolbar keeps
-              // its shape either way. Same treatment as the composer's and the
-              // studios' pickers.
-              `<div class="ap-select">
-                <div class="ap-select-trigger disabled" title="Which Playbook this feed reads for">
-                  <span class="ap-select-inline-label">Playbook</span>
-                  <span class="ap-select-value">${pb ? escapeAttr(pb.name) : "No Playbook"}</span>
-                </div>
-              </div>`
-            : html`<details class="ap-select" id="topicScope" data-topic-scope>
+    ${raw(
+      // ⚠️ Workspace mode: no scope control here AT ALL. The rail re-points this
+      // page and prints the brand permanently, so this select could only be the
+      // disabled half of itself — and a greyed-out field in a bar whose other
+      // control (Filters) is live reads as something broken rather than as
+      // information. Filters keeps its place: the toolbar is a `flex: 0 0 auto`
+      // row, so it just loses a sibling.
+      isWorkspaceMode()
+        ? ""
+        : html`<div class="topics-view__scope-group">
+            <div class="topics-view__scope">
+              <details class="ap-select" id="topicScope" data-topic-scope>
                 <summary class="ap-select-trigger" title="Which Playbook this feed reads for">
                   <span class="ap-select-inline-label">Playbook</span>
                   <span class="ap-select-value">${raw(pb ? escapeAttr(pb.name) : "Choose a Playbook")}</span>
@@ -421,10 +416,10 @@ function renderToolbar(pb, feed) {
                 <div class="ap-select-dropdown" role="listbox" aria-label="Playbook">
                   <div class="ap-select-options">${raw(pbOptions)}</div>
                 </div>
-              </details>`,
-        )}
-      </div>
-    </div>
+              </details>
+            </div>
+          </div>`,
+    )}
 
     <!-- LABELLED, with its count inline. The product never ships this as an icon
          button — Inbox, Drafts and Analytics all write the word and put the
