@@ -11,6 +11,7 @@
 import { escapeHtml as esc } from "../../utils.js?v=1078";
 import { renderPostEchoRow } from "../../components/top-post-card.js?v=1078";
 import { getContexts } from "../../contexts-store.js?v=1078";
+import { isWorkspaceMode } from "../../active-playbook.js?v=1078";
 import { progressBar } from "./charts.js?v=1078";
 import { signedPct } from "./model.js?v=1078";
 
@@ -39,7 +40,12 @@ import { signedPct } from "./model.js?v=1078";
 /** The Playbook picker, as the section's heading. One Playbook → a plain heading: a select with a single option cannot be used. */
 export function playbookTitle(ctx) {
   const all = getContexts();
-  if (all.length < 2) {
+  // Workspace mode moved the door: the rail's switcher is permanent and sits
+  // above every surface, so the heading goes back to being a heading. The note
+  // above ("the rail's own scope switcher is parked") is what this reverses —
+  // a page that can be re-pointed from two places is a page whose two controls
+  // can disagree.
+  if (isWorkspaceMode() || all.length < 2) {
     return `<h2 class="ins-pbtitle__name ins-pbtitle__name--static">${esc(ctx.name)}</h2>`;
   }
   const rows = all

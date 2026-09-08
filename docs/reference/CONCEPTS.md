@@ -108,6 +108,8 @@ Deux conséquences de conception :
 - **Rien n'y « expire ».** Ce qui est produit dans un chat reste dans ce chat. Une session ne se clôture pas, elle se retrouve — d'où le pin, le rename, le regroupement dans la sidebar.
 - **Son Playbook est fixé à l'ouverture.** Un chat naît avec un Playbook et n'en change plus : le contrôle est un dropdown sur un chat neuf, un indicateur statique dès qu'il est actif ([`FEATURES.md`](FEATURES.md) §1). La cohérence de ce qu'on y produit est ainsi vraie **par construction** — pas besoin de se demander sous quelle marque tel draft a été écrit. Changer d'avis, c'est ouvrir un chat.
 
+  **Derrière le flag `playbookWorkspace`, seule la question « qui choisit ? » change, pas la règle.** Le Playbook devient le niveau au-dessus (un switcher permanent en tête de la rail, cf. CLAUDE.md § The Playbook scope) : un chat neuf **hérite** du Playbook actif au lieu de le demander, et le dropdown du composer redevient l'indicateur statique qu'il est déjà sur un chat démarré. Ce qu'un chat ne fait toujours pas, c'est changer de marque : changer de workspace ne réécrit aucun chat existant — c'est précisément pour ça qu'un switch depuis `/session/*` emmène sur un chat de la marque choisie plutôt que de re-scoper celui qu'on lisait.
+
 Un chat **peut** vivre sans Playbook (Archie travaille alors sans cadrage), mais il ne peut pas en avoir deux.
 
 ---

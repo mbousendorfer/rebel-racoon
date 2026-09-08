@@ -14,6 +14,28 @@ export const FLAGS = Object.freeze([
       "legitimate here and nowhere else.",
   },
   {
+    id: "playbookWorkspace",
+    label: "Playbook as a workspace (rail switcher)",
+    // OFF: byte-for-byte the per-chat model — the Playbook is a field on a
+    // session, asked in the composer on a fresh chat and fixed after that.
+    default: false,
+    hides:
+      "Whether the Playbook is a FIELD on the things you make, or the LEVEL " +
+      "ABOVE them. When OFF (default), each surface asks its own question: the " +
+      "composer's select on a new chat, `?pb=` on the Topic Feed and its " +
+      "settings, an implicit default Playbook for the clip / batch / repurpose " +
+      "flows, and the Insights title. Any two of them could disagree.\n\n" +
+      "When ON, one Playbook is active at all times, chosen from the switcher " +
+      "under the wordmark in the rail, and everything below it is that brand's " +
+      "work: the chat list, a new chat, the Topic Feed and its count, Insights, " +
+      "the studios' drafts. The four pickers become static indicators — they " +
+      "still SAY which brand, they no longer ask.\n\nThe cost is stated in " +
+      "active-playbook.js: a scope HIDES. There is deliberately no " +
+      '"All playbooks" view, which is why the switcher is permanent and always ' +
+      "prints the brand name — the scope is only safe while it is legible. " +
+      "/contexts stays unfiltered: it is the catalogue the switcher picks from.",
+  },
+  {
     id: "draftInlineEdit",
     label: "Inline edit on draft posts",
     default: false,

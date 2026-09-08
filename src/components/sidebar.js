@@ -18,7 +18,16 @@ import {
 import { isFlagOn } from "../feature-flags.js?v=1078";
 import { isNewUser } from "../user-mode.js?v=1078";
 import { clearSession as clearLibrarySession } from "../library.js?v=1078";
-import { getContextById, getDefaultContext, subscribe as subscribeContexts } from "../contexts-store.js?v=1078";
+import { getContextById, subscribe as subscribeContexts } from "../contexts-store.js?v=1078";
+import {
+  getActivePlaybook,
+  setActivePlaybook,
+  isWorkspaceMode,
+  scopeSessions,
+  playbookForNewWork,
+  subscribe as subscribeScope,
+} from "../active-playbook.js?v=1078";
+import { setHandoff } from "../handoff.js?v=1078";
 // A Playbook nobody shared with me must not surface here either — the store
 // still holds it (see playbook-access.js), the sidebar just doesn't name it.
 import { canView, visibleContexts } from "../playbook-access.js?v=1078";
@@ -110,6 +119,10 @@ export function setSidebarCollapsed(collapsed, { auto = false } = {}) {
   renderSidebar();
 }
 
+function closePlaybookSwitcher() {
+  document.querySelector("[data-pb-switcher][open]")?.removeAttribute("open");
+}
+
 function toggleSidebar() {
   setSidebarCollapsed(!isSidebarCollapsed());
 }
@@ -183,6 +196,33 @@ export function initSidebar() {
     // the Search row intentionally isn't a route.
     if (event.target.closest("[data-sidebar-search-open]")) {
       openSearchModal();
+      return;
+    }
+    // Playbook switcher — pick a brand, or the two footer verbs. The <details>
+    // is closed by hand: picking re-renders the whole rail anyway, but
+    // "Manage" / "Create" navigate away and a re-render on arrival would
+    // otherwise bring the open dropdown back with it.
+    const pbPick = event.target.closest("[data-pb-switch-pick]");
+    if (pbPick) {
+      event.preventDefault();
+      closePlaybookSwitcher();
+      switchPlaybook(pbPick.dataset.pbSwitchPick);
+      return;
+    }
+    if (event.target.closest("[data-pb-switch-manage]")) {
+      event.preventDefault();
+      closePlaybookSwitcher();
+      navigate("/contexts");
+      return;
+    }
+    if (event.target.closest("[data-pb-switch-create]")) {
+      // Same handoff as /contexts' "New Playbook": the builder runs as a
+      // conversation in its own transient session, and hands back to the
+      // library when it's done.
+      event.preventDefault();
+      closePlaybookSwitcher();
+      setHandoff("pendingStartContextBuilder", { flow: "alt", prefilledUrl: "", returnTo: "/contexts" });
+      navigate(`/session/welcome-alt-${Date.now().toString(36)}`);
       return;
     }
     const navItem = event.target.closest("[data-sidebar-nav]");
@@ -312,10 +352,21 @@ export function initSidebar() {
     navigate(`/session/${row.dataset.sidebarSession}`);
   });
 
+  // A <details> doesn't close itself on an outside click, and this one is the
+  // one dropdown in the rail that survives a click on the page (the row menus
+  // are re-rendered away by navigation).
+  document.addEventListener("click", (event) => {
+    const open = el.querySelector("[data-pb-switcher][open]");
+    if (open && !open.contains(event.target)) open.removeAttribute("open");
+  });
+
   // Live-rerender on store mutations so the nav counters and any context
   // colors used by session rows stay in sync without waiting for the next
   // route change.
   subscribeContexts(() => renderSidebar());
+  // The switcher prints the active brand and the list under it is scoped to
+  // that brand, so a scope change repaints the whole rail.
+  subscribeScope(() => renderSidebar());
   subscribeSessions(() => renderSidebar());
   subscribeConnectors(() => renderSidebar());
   // A Topic used or ignored anywhere has to move the unread mark immediately —
@@ -427,6 +478,8 @@ export function renderSidebar() {
         </button>
       </div>
 
+      ${raw(renderPlaybookSwitcher({ collapsed: true }))}
+
       <nav class="app-sidebar__nav" aria-label="Library">${raw(renderNav(path))}</nav>
 
       <div class="app-sidebar__list-spacer"></div>
@@ -456,6 +509,8 @@ export function renderSidebar() {
       </button>
     </div>
 
+    ${raw(renderPlaybookSwitcher({ collapsed: false }))}
+
     <nav class="app-sidebar__nav" aria-label="Library">${raw(renderNav(path))}</nav>
 
     ${raw(renderOrganizeHeader())}
@@ -473,6 +528,141 @@ export function renderSidebar() {
       </div>
     </div>
   `;
+}
+
+// Initials for the collapsed rail. Playbooks are named "Brand · framing", so
+// the part before the separator is the identity — "Acme · Q2 marketing" is an
+// A, not an AQ. Two letters at most, from the first two words of that part.
+function playbookInitials(name) {
+  const brand = String(name || "").split("·")[0];
+  const words = brand.split(/\s+/).filter(Boolean);
+  return words
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("");
+}
+
+// ── The Playbook switcher — the scope, worn at the top of the rail ─────────
+//
+// One question, asked once, above everything it governs. It replaces the six
+// pickers that each asked it separately — see the header of active-playbook.js
+// for the list, what a global scope costs, and why there is no "All playbooks"
+// row here.
+//
+// It sits UNDER the wordmark and ABOVE New chat, which is the whole claim of
+// the layout: Archie is the product, the brand is the scope, and everything
+// below the switcher — New chat, Search, the nav, the chat list — belongs to
+// the brand named in it. Same DS `.ap-select` as the composer control it
+// replaces, inline label included: a scope that hides is only safe while it is
+// legible, and the label is what says WHAT is being switched.
+//
+// Collapsed rail: the dot alone can't be legible, so the button doesn't try to
+// switch — it re-opens the rail, where the name is.
+function renderPlaybookSwitcher({ collapsed }) {
+  if (!isWorkspaceMode()) return "";
+  const active = getActivePlaybook();
+  const dotClass = `app-sidebar__row-color-dot app-sidebar__row-color-dot--${active?.color || "grey"}`;
+
+  if (collapsed) {
+    if (!active) return "";
+    // The brand's initials in a DS square avatar — the same "identity in a
+    // small box" the user row wears at the bottom of the rail, and what every
+    // collapsed workspace switcher shows. An 8px dot alone was tried and read
+    // as a stray marker rather than a control: at this width the letters are
+    // the only thing that still names the brand.
+    return `
+      <div class="app-sidebar__pb app-sidebar__pb--collapsed">
+        <button
+          type="button"
+          class="app-sidebar__pb-chip"
+          data-sidebar-toggle
+          aria-label="Playbook: ${escapeHtml(active.name)} — expand to switch"
+          title="Playbook: ${escapeHtml(active.name)} — expand to switch"
+        >
+          <span class="ap-avatar square size-24">
+            <span class="ap-avatar-initials">${escapeHtml(playbookInitials(active.name))}</span>
+          </span>
+        </button>
+      </div>
+    `;
+  }
+
+  // No Playbook at all (new-alt mode, first run): the switcher has nothing to
+  // switch between, so it becomes the one thing that helps — the offer to make
+  // the first one. Rendering an empty select here would be a control that
+  // opens onto nothing.
+  if (!active) {
+    return `
+      <div class="app-sidebar__pb">
+        <button type="button" class="app-sidebar__nav-item app-sidebar__pb-empty" data-pb-switch-create>
+          <i class="ap-icon-plus" aria-hidden="true"></i>
+          <span>Create a playbook</span>
+        </button>
+      </div>
+    `;
+  }
+
+  const options = visibleContexts()
+    .map((c) => {
+      const isSel = c.id === active.id;
+      return `
+        <div
+          class="ap-select-option${isSel ? " selected" : ""}"
+          data-pb-switch-pick="${escapeHtml(c.id)}"
+          role="option"
+          aria-selected="${isSel ? "true" : "false"}"
+        >
+          <span class="app-sidebar__row-color-dot app-sidebar__row-color-dot--${c.color || "grey"}" aria-hidden="true"></span>
+          <span class="ap-select-option-text">${escapeHtml(c.name)}</span>
+          ${isSel ? `<i class="ap-icon-check ap-select-option-check" aria-hidden="true"></i>` : ""}
+        </div>
+      `;
+    })
+    .join("");
+
+  return `
+    <div class="app-sidebar__pb">
+      <details class="ap-select app-sidebar__pb-select" data-pb-switcher>
+        <summary
+          class="ap-select-trigger app-sidebar__pb-trigger"
+          title="Playbook: ${escapeHtml(active.name)} — switch"
+        >
+          <span class="${dotClass}" aria-hidden="true"></span>
+          <span class="ap-select-inline-label">Playbook</span>
+          <span class="ap-select-value">${escapeHtml(active.name)}</span>
+          <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
+        </summary>
+        <div class="ap-select-dropdown app-sidebar__pb-dropdown" role="listbox" aria-label="Switch playbook">
+          <div class="ap-select-options">${options}</div>
+          <div class="ap-select-footer">
+            <button type="button" class="ap-select-create" data-pb-switch-manage>
+              <i class="ap-icon-target ap-select-create-icon" aria-hidden="true"></i>
+              <span>Manage playbooks</span>
+            </button>
+            <button type="button" class="ap-select-create" data-pb-switch-create>
+              <i class="ap-icon-plus ap-select-create-icon" aria-hidden="true"></i>
+              <span>Create a playbook</span>
+            </button>
+          </div>
+        </div>
+      </details>
+    </div>
+  `;
+}
+
+// Switching brand. The list, the nav counts and the feed re-scope themselves
+// off the store's notify — but a CHAT does not: it keeps the Playbook it was
+// born with (CONCEPTS §2), so the one you are reading is now outside the scope
+// and no longer in the list under it. So a switch made from a chat lands on
+// that brand's most recent chat, or on a fresh one when it has none. Every
+// other route stays put and simply re-paints.
+function switchPlaybook(id) {
+  if (!id || id === getActivePlaybook()?.id) return;
+  setActivePlaybook(id);
+  if (!getPath().startsWith("/session/")) return;
+  const next = scopeSessions(getSessions()).filter((sess) => sess.contextId === id)[0];
+  closeRightPanel();
+  navigate(next ? `/session/${next.id}` : `/session/new-${Date.now().toString(36)}`);
 }
 
 // Footer popmenu — trigger button + popmenu list. The popmenu lives in the
@@ -594,8 +784,10 @@ const NAV = [
   //
   // Scoped to the default Playbook rather than summed across every one, because
   // the feed itself is scoped: a count that spans four brands would send the
-  // reader to a screen showing one of them. There is no global scope to read
-  // from, deliberately — see the note at the top of screens/topics.js.
+  // reader to a screen showing one of them. Which Playbook that is comes from
+  // playbookForNewWork(): the active one in workspace mode, the default
+  // otherwise — the same resolution the feed itself uses, so the count and the
+  // screen it sends you to can never name two different brands.
   // Insights — the one analytics surface you walk to. NO COUNTER, deliberately:
   // the row above reads "Playbooks 7" — a count of THINGS — so an identically
   // styled "Insights 5" gets read as five insights rather than five objectives
@@ -616,7 +808,7 @@ const NAV = [
     // still the Topic Feed rather than somewhere else.
     match: (p) => p.startsWith("/topics"),
     count: () => {
-      const pb = getDefaultContext() || visibleContexts()[0] || null;
+      const pb = playbookForNewWork() || visibleContexts()[0] || null;
       const feed = pb ? getFeedForPlaybook(pb.id) : null;
       return feed ? countToReview(feed.id) : 0;
     },
@@ -688,6 +880,18 @@ const ORGANIZE_GROUP_OPTIONS = [
   { value: "playbook", label: "Playbook" },
   { value: "date", label: "Date" },
 ];
+
+// The options actually offered, and the grouping actually applied. In workspace
+// mode the list already IS one Playbook, so "Group by → Playbook" would draw a
+// single heading over everything — the option goes, and a preference stored
+// before the switch falls back to None rather than rendering that heading.
+function organizeGroupOptions() {
+  return isWorkspaceMode() ? ORGANIZE_GROUP_OPTIONS.filter((o) => o.value !== "playbook") : ORGANIZE_GROUP_OPTIONS;
+}
+
+function effectiveGroupBy(groupBy) {
+  return isWorkspaceMode() && groupBy === "playbook" ? "none" : groupBy;
+}
 const ORGANIZE_SORT_OPTIONS = [
   { value: "recency", label: "Recency" },
   { value: "alphabetical", label: "Alphabetical" },
@@ -792,7 +996,7 @@ function renderOrganizeHeader() {
         <i class="ap-icon-filter"></i>
       </button>
       <div class="ap-action-dropdown app-sidebar__organize-menu" role="menu" data-sidebar-organize-menu hidden>
-        ${renderOrganizeSection("Group by", "groupBy", ORGANIZE_GROUP_OPTIONS, groupBy)}
+        ${renderOrganizeSection("Group by", "groupBy", organizeGroupOptions(), effectiveGroupBy(groupBy))}
         <div class="ap-action-dropdown-divider" role="separator"></div>
         ${renderOrganizeSection("Sort by", "sortBy", ORGANIZE_SORT_OPTIONS, sortBy)}
       </div>
@@ -803,24 +1007,31 @@ function renderOrganizeHeader() {
 // Pinned + Recent groups. Search lives in a dedicated modal now
 // (./search-modal.js) — the sidebar always renders the full list.
 function renderRecentLists(activeSessionId) {
-  const allSessions = getSessions();
+  // Scoped to the active Playbook in workspace mode — the rail under the
+  // switcher is that brand's work and nothing else.
+  const allSessions = scopeSessions(getSessions());
   if (isNewUser() || allSessions.length === 0) {
     // FIND-E4: first-run anchor for the recent-conversations list. The
     // bare "No conversations yet" was a dead end — anchor a soft hint
     // that points at the New conversation button just above this list,
     // so the user has an obvious next move without duplicating the
     // primary CTA.
+    // A scope that hides has to say so: chats DO exist, just not in this
+    // brand, and "No chats yet" under a switcher would read as "the app is
+    // empty" instead of "you're looking at Acme".
+    const scopedEmpty = !isNewUser() && getSessions().length > 0;
     return `
       <div class="app-sidebar__empty app-sidebar__empty--first-run">
         <div class="app-sidebar__empty-icon">
           <i class="ap-icon-single-chat-bubble" aria-hidden="true"></i>
         </div>
-        <span class="app-sidebar__empty-text">No chats yet</span>
+        <span class="app-sidebar__empty-text">${scopedEmpty ? "No chats in this playbook" : "No chats yet"}</span>
         <span class="app-sidebar__empty-hint">Start one with the New chat button above.</span>
       </div>
     `;
   }
-  const { groupBy, sortBy } = getOrganizePrefs();
+  const { groupBy: storedGroupBy, sortBy } = getOrganizePrefs();
+  const groupBy = effectiveGroupBy(storedGroupBy);
 
   const pinned = sortSessions(
     allSessions.filter((s) => s.pinned),

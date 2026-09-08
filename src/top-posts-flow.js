@@ -45,7 +45,7 @@ import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=1078";
 import { SORTS, PERIODS } from "./components/top-post-card.js?v=1078";
 import { showToast } from "./components/toast.js?v=1078";
 import * as inlineQuestion from "./inline-question.js?v=1078";
-import { getDefaultContext } from "./contexts-store.js?v=1078";
+import { playbookForNewWork } from "./active-playbook.js?v=1078";
 
 // Cap on drafts produced in one run — post × angle × channel can multiply fast
 // (e.g. 3 posts × 4 angles × 3 channels = 36). Keep the result turn scannable;
@@ -368,9 +368,11 @@ export function startTopPostsFlow(sessionId) {
     requireConnectedProfiles(sessionId, { stepLabel: "Account", onReady: () => startTopPostsFlow(sessionId) });
     return;
   }
-  // Pre-select the default Playbook so drafts already have a voice; the user can
-  // switch it on step 1's account screen (setContext).
-  repurposeContexts.set(sessionId, getDefaultContext()?.id || null);
+  // Pre-select the Playbook the drafts will be written in — the active one in
+  // workspace mode, the default otherwise. Step 1's account screen lets the
+  // user switch it (setContext) only in the latter: with a rail switcher the
+  // brand was already chosen, and the screen just names it.
+  repurposeContexts.set(sessionId, playbookForNewWork()?.id || null);
   // Step 1 is the full-page profile chooser: pick a connected profile → load its
   // winners → a board scoped to that profile.
   openStage(sessionId, "profile");
@@ -398,9 +400,9 @@ export function startTopPostsInline(sessionId) {
     requireConnectedProfiles(sessionId, { stepLabel: "Account", onReady: () => startTopPostsInline(sessionId) });
     return;
   }
-  // Default the drafts' voice to the workspace default (parity with the studio,
-  // which also pre-selects it; the inline flow keeps it implicit to stay short).
-  repurposeContexts.set(sessionId, getDefaultContext()?.id || null);
+  // Default the drafts' voice the same way the studio does (parity); the inline
+  // flow keeps it implicit either way to stay short.
+  repurposeContexts.set(sessionId, playbookForNewWork()?.id || null);
   postAssistantMessage(sessionId, "Which account should I pull your winners from?");
   inlineQuestion.ask(
     sessionId,

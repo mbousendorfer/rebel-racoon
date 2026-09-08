@@ -15,7 +15,10 @@
 //
 // ONE Playbook at a time, scoped by `?pb=` — the same param the feed filters on,
 // so filtering the feed to a brand and opening settings lands on that brand, and
-// the topbar's back carries it home again. Stacking a block per Playbook was the
+// the topbar's back carries it home again. Under `playbookWorkspace` the rail
+// owns the scope instead: `?pb=` is not read, the page's own Playbook select
+// states the brand rather than offering the others, and nothing writes the param
+// any more. Stacking a block per Playbook was the
 // first shape this page ever had and it does not scale: at twenty Playbooks that
 // is 160 switches with each of the eight descriptions repeated twenty times, and
 // it is the descriptions, not the switches, that make such a page explode.
@@ -33,6 +36,7 @@ import { renderTopbar } from "../components/topbar.js?v=1078";
 import { renderEmptyState } from "../components/empty-state.js?v=1078";
 import { isFlagOn } from "../feature-flags.js?v=1078";
 import { getContextById, getDefaultContext } from "../contexts-store.js?v=1078";
+import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=1078";
 import { editableContexts, canEdit } from "../playbook-access.js?v=1078";
 import { getFeedForPlaybook, updateFeed, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1078";
 import { TOPIC_SOURCES, CADENCES, findTopicSource, findCadence, isLiveSource } from "../topics-catalog.js?v=1078";
@@ -43,6 +47,7 @@ import { open as openFeedback } from "../components/feedback-modal.js?v=1078";
 const PB_SEARCH_THRESHOLD = 8;
 
 let unsubscribeFeeds = null;
+let unsubscribeScope = null;
 let boundTarget = null;
 let boundClick = null;
 let boundChange = null;
@@ -57,6 +62,14 @@ let boundInput = null;
 // at someone else's shared Playbook falls back rather than showing switches that
 // would refuse to commit.
 function activePlaybookId() {
+  // Workspace mode: the page configures the feed of the brand you are IN, and
+  // `?pb=` is not read — the rail is the only scope. The canEdit guard still
+  // applies: a Playbook I can't edit can't be configured either.
+  if (isWorkspaceMode()) {
+    const active = getActivePlaybook();
+    if (active && canEdit(active)) return active.id;
+    return editableContexts()[0]?.id || null;
+  }
   const wanted = parseHashParams().get("pb");
   if (wanted && canEdit(getContextById(wanted))) return wanted;
   const fallback = getDefaultContext();
@@ -78,6 +91,9 @@ export function renderTopicsSettings(_params, target) {
   // Every control writes through updateFeed, so the store's notify is what
   // repaints — there is no local draft state to keep in sync.
   unsubscribeFeeds = subscribeFeeds(() => paint(target));
+  // A brand switched in the rail re-points this page in place — the switches
+  // shown are the ones of the feed you are now in.
+  unsubscribeScope = subscribeScope(() => paint(target));
   return teardown;
 }
 
@@ -85,6 +101,10 @@ function teardown() {
   if (unsubscribeFeeds) {
     unsubscribeFeeds();
     unsubscribeFeeds = null;
+  }
+  if (unsubscribeScope) {
+    unsubscribeScope();
+    unsubscribeScope = null;
   }
   if (boundTarget && boundClick) boundTarget.removeEventListener("click", boundClick);
   if (boundTarget && boundChange) boundTarget.removeEventListener("change", boundChange);
@@ -133,7 +153,11 @@ function renderPage() {
   const onCount = TOPIC_SOURCES.filter((s) => enabled.has(s.id)).length;
 
   const mine = feedKey(ctx);
-  const differing = playbooks.filter((c) => c.id !== ctx.id && feedKey(c) !== mine).length;
+  // "N other Playbooks listen to different sources" was the picker's companion:
+  // a reason to open it and compare. In workspace mode there is no picker here
+  // and the other brands are out of scope, so the line points at something this
+  // page can no longer reach — it goes, and "Open the Playbook" stands alone.
+  const differing = isWorkspaceMode() ? 0 : playbooks.filter((c) => c.id !== ctx.id && feedKey(c) !== mine).length;
 
   const count =
     onCount === 0
@@ -201,6 +225,19 @@ function renderPage() {
 // DS caption, so you can compare Playbooks without leaving the page — most of
 // what the stacked layout was actually good for.
 function renderPlaybookSelect(playbooks, active) {
+  // Workspace mode: this page configures the feed of the brand you are in, and
+  // the rail is where you change brand. So the picker keeps its slot and its
+  // shape — it just states the Playbook instead of offering the others. What it
+  // loses is the cross-Playbook overview in its options; that is the price of a
+  // scope, and it is the same price /topics pays.
+  if (isWorkspaceMode()) {
+    return html`<div class="ap-select topics-settings__pbselect">
+      <div class="ap-select-trigger disabled" title="Which Playbook these sources belong to">
+        <span class="ap-select-inline-label">Playbook</span>
+        <span class="ap-select-value">${active.name}</span>
+      </div>
+    </div>`;
+  }
   const options = playbooks
     .map((c) => {
       const feed = getFeedForPlaybook(c.id);

@@ -1,17 +1,24 @@
 // The ACTIVE PLAYBOOK — the one scope everything else in Archie hangs off.
 //
-// A Playbook is not a field on several objects any more. It is the level ABOVE
-// them: one Playbook is active at all times, chosen once from the switcher at the
-// top of the rail, and every surface below it — Content strategy, the Topic feed,
-// the chat list, a new chat, the new-session Topics — shows only that brand's
+// A Playbook is not a field on the work any more. It is the level ABOVE it: one
+// Playbook is active at all times, chosen once from the switcher under the
+// wordmark in the rail, and every surface below it — the chat list, a new chat,
+// the Topic feed and its count, Insights, the studios' drafts — is that brand's
 // work. Nothing asks again.
 //
+// ⚠️ Gated by `playbookWorkspace`, EXCEPT for Insights, which reads the scope
+// flag or no flag (it landed with this module, before the rest of the app used
+// it). The gate is the three functions at the bottom of this file — every scoped
+// surface reads those, never the flag, so OFF is byte-for-byte the per-chat
+// model. Insights is the only caller that reads getActivePlaybook() directly.
+//
 // ── What this removed ─────────────────────────────────────────────────────
-// Four separate pickers: the composer's Playbook select, the Topic-feed form's,
-// the New-pillar dialog's, and the Playbook facet on /content-strategy. Each was
-// the same question asked in a different place, and any two of them could
-// disagree — a chat, a feed and a pillar could belong to three different brands
-// at once and only the objects knew.
+// Six separate pickers, each asking the same question somewhere else: the
+// composer's Playbook select on a fresh chat, the Topic Feed toolbar's, the one
+// on /topics/settings, and the batch / clip-studio / repurpose selects — plus
+// `?pb=` in the URL and an implicit getDefaultContext() for anything new. Any
+// two of them could disagree: a chat, a feed and a batch could belong to three
+// different brands at once and only the objects knew.
 //
 // ── The cost, stated plainly ──────────────────────────────────────────────
 // A global scope HIDES. Anything outside it is invisible rather than empty, so
@@ -30,8 +37,12 @@
 //   getActivePlaybook()    → Context | null   (falls back to the default)
 //   setActivePlaybook(id)  mutates + notifies
 //   subscribe(fn)          → unsubscribe
+//   isWorkspaceMode()      → is the scope live at all? (flag playbookWorkspace)
+//   playbookForNewWork()   → the Playbook new work is born under
+//   scopeSessions(list)    → the chat list, scoped
 
 import { getContexts, getContextById, getDefaultContext } from "./contexts-store.js?v=1078";
+import { isFlagOn } from "./feature-flags.js?v=1078";
 import { createNotifier } from "./store-utils.js?v=1078";
 
 const KEY = "archie-active-playbook";
@@ -83,4 +94,38 @@ export function setActivePlaybook(id) {
   activeId = id;
   write(id);
   notifier.notify(null);
+}
+
+// ── The flag's one short-circuit ──────────────────────────────────────────
+//
+// `playbookWorkspace` OFF has to be byte-for-byte the per-chat model, so every
+// surface the workspace changes reads the scope through the three functions
+// below rather than testing the flag itself — the same arrangement as
+// `playbook-access.js` and its `playbookSharing` gate. One place to delete when
+// the flag is baked in, one place to look when it misbehaves.
+
+export function isWorkspaceMode() {
+  return isFlagOn("playbookWorkspace");
+}
+
+// The Playbook a piece of NEW work is born under — a fresh chat, a clip studio,
+// a batch, a repurpose board. Workspace mode: the active one, nothing asked.
+// Otherwise the implicit default, which is the value those four pickers opened
+// on anyway.
+export function playbookForNewWork() {
+  return isWorkspaceMode() ? getActivePlaybook() : getDefaultContext();
+}
+
+// The chat list, scoped to the active brand.
+//
+// A chat with NO Playbook is kept in EVERY workspace rather than filtered out:
+// it belongs to no brand, so no workspace could claim it, and hiding it would
+// make it unreachable from anywhere — a scope may hide what lives elsewhere,
+// never what lives nowhere. With no scope resolved (new-alt mode, zero
+// Playbooks) the filter is a no-op instead of an empty rail.
+export function scopeSessions(list) {
+  if (!isWorkspaceMode()) return list;
+  const id = getActivePlaybookId();
+  if (!id) return list;
+  return list.filter((s) => !s.contextId || s.contextId === id);
 }

@@ -33,6 +33,7 @@ import {
   getContexts,
 } from "../contexts-store.js?v=1078";
 import { isFlagOn } from "../feature-flags.js?v=1078";
+import { getActivePlaybook, isWorkspaceMode } from "../active-playbook.js?v=1078";
 import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1078";
 import { findCadence } from "../topics-catalog.js?v=1078";
 import {
@@ -148,6 +149,16 @@ function renderWelcomeAltExit() {
   `;
 }
 
+// The Topic Feed's scope, resolved exactly as screens/topics.js does: the
+// active Playbook in workspace mode, otherwise `?pb=` when it names a real one
+// and the default when it doesn't. Duplicating the rule would be how the cog
+// ends up naming a different brand than the screen under it.
+function topicsScopedPlaybook() {
+  if (isWorkspaceMode()) return getActivePlaybook();
+  const wanted = parseHashParams().get("pb");
+  return (wanted && getContextById(wanted)) || getDefaultContext() || getContexts()[0] || null;
+}
+
 // Feed settings cog — far right of the topbar on /topics, the app's canonical
 // home for a page-level action. It moved out of the feed's own toolbar (it sat
 // beside the Playbook scope select there). Icon-only: the cog is the one glyph
@@ -156,14 +167,13 @@ function renderWelcomeAltExit() {
 // so the settings page keeps the feed's scope and the back returns to it.
 function renderTopicsSettings() {
   if (!isFlagOn("topicFeed")) return "";
-  // Resolve the scope the same way the feed does (screens/topics.js
-  // scopedPlaybook): the `?pb=` if it names a real Playbook, else the default.
-  // So the cog carries the scope even on a bare /topics visit, and the settings
-  // page + its back keep it.
-  const wanted = parseHashParams().get("pb");
-  const pb = (wanted && getContextById(wanted)) || getDefaultContext() || getContexts()[0] || null;
+  // Resolve the scope the same way the feed does — see topicsScopedPlaybook.
+  const pb = topicsScopedPlaybook();
   const feed = pb ? getFeedForPlaybook(pb.id) : null;
-  const href = `#/topics/settings${pb ? `?pb=${encodeURIComponent(pb.id)}` : ""}`;
+  // Workspace mode carries no `?pb=`: the settings page reads the rail like
+  // every other surface, so a link that pinned a brand into the URL would be a
+  // second scope waiting to disagree with it.
+  const href = `#/topics/settings${pb && !isWorkspaceMode() ? `?pb=${encodeURIComponent(pb.id)}` : ""}`;
   const title = feed ? `Feed settings · refreshed ${findCadence(feed.cadence)?.adverb || "weekly"}` : "Feed settings";
   return `
     <a

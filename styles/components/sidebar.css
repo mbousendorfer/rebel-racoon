@@ -18,6 +18,50 @@
   overflow: hidden;
 }
 
+/* ── Playbook switcher — the workspace scope (flag playbookWorkspace) ───
+   Between the head and the nav, on purpose: the wordmark is the product, this
+   is the brand that everything under it belongs to.
+
+   Almost nothing to style — the DS .ap-select is already width:100% with a
+   relative box for its own absolute dropdown, and .ap-select-value already
+   ellipses a long brand name. All this block owes it is the rail's horizontal
+   rhythm (the nav's --ref-spacing-xs gutter) and a little air under the head's
+   rule. No separator of its own: the select's border is boundary enough, and
+   two hairlines a few pixels apart read as a mistake. */
+.app-sidebar__pb {
+  padding: var(--ref-spacing-xs) var(--ref-spacing-xs) var(--ref-spacing-xxs);
+}
+
+/* Collapsed rail — the dot alone, on the same 40px icon grid as the nav.
+   It doesn't open the dropdown: a scope you can't read is a scope you
+   shouldn't be able to change, so the button re-opens the rail instead. */
+.app-sidebar__pb--collapsed {
+  display: flex;
+  justify-content: center;
+  padding: var(--ref-spacing-xxs) 0 0;
+}
+
+.app-sidebar__pb-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+/* First run — nothing to switch between, so the row is the offer to create the
+   first Playbook. Shaped like a nav item (it sits in the same column) and inked
+   with the interactive blue, because it is the only row here that isn't
+   navigation. */
+.app-sidebar__pb-empty {
+  color: var(--ref-color-electric-blue-150);
+  font-weight: var(--ref-font-weight-bold);
+}
+
 /* ── Head ────────────────────────────────────────────────────────────── */
 
 /* Locked to the topbar height + a matching border-bottom so the brand

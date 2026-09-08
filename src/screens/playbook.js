@@ -28,6 +28,7 @@ import {
   duplicateContext,
   appendHistory,
 } from "../contexts-store.js?v=1078";
+import { isWorkspaceMode, setActivePlaybook } from "../active-playbook.js?v=1078";
 import { mount, snapshotEditable } from "../playbook-view.js?v=1078";
 import { open as openRenameModal } from "../components/rename-modal.js?v=1078";
 import { open as openConfirmModal } from "../components/confirm-modal.js?v=1078";
@@ -330,6 +331,12 @@ export function renderPlaybook(params, target) {
 
     if (event.target.closest("[data-playbook-start]")) {
       closeMenus();
+      // In workspace mode, starting a chat from a fiche is also the shortest
+      // way to change brand — the chat would otherwise belong to a Playbook the
+      // rail says you are not in, and the two would contradict each other on
+      // screen. So the switch happens first; the `?contextId=` then merely
+      // restates it.
+      if (isWorkspaceMode()) setActivePlaybook(id);
       navigate(`/session/new-${Date.now().toString(36)}?contextId=${id}`);
       return true;
     }

@@ -84,6 +84,10 @@ src/
   user-mode.js          — "returning" vs "new-alt" mode (localStorage: archie-user-mode)
   feature-flags.js      — flag get/set (localStorage); ff-catalog.js is the flag list
   org.js                — CONFIG: who I am, my org, its members, my role (localStorage: archie-org-role)
+  active-playbook.js   — the ACTIVE Playbook: the app-wide scope behind the flag
+                          `playbookWorkspace` (localStorage: archie-active-playbook), plus the
+                          three functions every scoped surface reads — isWorkspaceMode() /
+                          playbookForNewWork() / scopeSessions(). Insights reads it flag or no flag.
   playbook-access.js    — who may view/use/edit/share a Playbook; the store never filters
   file-kinds.js         — source kind → DS icon class
   figma-capture.js      — ?openModal= / ?openPanel= deep links for the Figma screen capture
@@ -156,7 +160,8 @@ src/
   components/             — each exports init() (injects DOM once) + render/open()
     topbar.js             persistent header: route title (rename on session) +
                           Sources / Ideas / Drafts pills + status-card toggle; back on /playbook
-    sidebar.js            left rail: brand, New chat, Search, Playbooks / Connectors / Topic Feed nav,
+    sidebar.js            left rail: brand, the Playbook switcher (flag `playbookWorkspace`),
+                          New chat, Search, Playbooks / Connectors / Topic Feed nav,
                           recent chats (pin/rename/delete + Sort & group), footer popmenu (feedback/bug/shortcuts + Admin menu)
     right-panel.js        sliding panel — modes: drafts / ideas / sources / clips / context-brief
     conversation-status-card.js  floating in-progress card (sources/ideas/drafts counts)
@@ -381,9 +386,19 @@ The magazine kept it as `ctx.topics`. It now lives in `topic-feeds-store.js`, ke
 
 Which feeds listen and how often answers "what job should Archie run?", not "who are you?" ([`CONCEPTS.md`](docs/reference/CONCEPTS.md) §1). Data stays per Playbook; only its owner changed. It also buys `websites` — one feed's scan list, which has no place on a fiche whose `websiteUrl` is the brand's canonical address.
 
-### No global scope. `?pb=` and the session's own contextId
+### The Playbook scope — `?pb=` by default, a workspace behind `playbookWorkspace`
 
-The fork introduced `active-playbook.js`: a global, `localStorage`-persisted Playbook scope written to by a select sitting in the feed's own filter bar — so a control that promised a page filter silently re-scoped the sidebar, the next new chat and the composer's picker. **It is deliberately not ported.** The feed and its settings page read `?pb=` (the same param in both directions); the in-chat surfaces read the session's `contextId`, because a chat keeps the brand it was created in. Don't reintroduce a global scope without a permanently visible switcher — a scope that hides is only safe while it is legible.
+The fork introduced `active-playbook.js`: a global, `localStorage`-persisted Playbook scope written to by a select sitting in the feed's own filter bar — so a control that promised a page filter silently re-scoped the sidebar, the next new chat and the composer's picker. That version was **deliberately not ported**, on one condition stated at the time: _don't reintroduce a global scope without a permanently visible switcher — a scope that hides is only safe while it is legible._
+
+**Behind `playbookWorkspace` (default OFF), that condition is now met and the scope IS the model.** A Playbook is the level above the work, not a field on it: one is active at all times, chosen from the switcher under the wordmark in the rail, and everything below it belongs to that brand — the chat list, a new chat, the Topic Feed and its count, Insights, the studios' drafts. The six pickers that each asked the question separately (the composer's select, the feed's toolbar select, `/topics/settings`' own, the batch / clip / repurpose selects) keep their slot and **state** the brand instead of offering the others; the Insights title stops being a picker, because the rail is the door now.
+
+Three rules hold it up:
+
+- **The flag short-circuits in ONE place.** `isWorkspaceMode()` / `playbookForNewWork()` / `scopeSessions()` in [`active-playbook.js`](src/active-playbook.js) are what every surface reads — the same arrangement as `playbook-access.js` and `playbookSharing`. Flag OFF is byte-for-byte the per-chat model: `?pb=` on the feed and its settings, `getDefaultContext()` for new work, a selectable composer pill on a fresh chat.
+- **A chat still keeps its own Playbook** ([`CONCEPTS.md`](docs/reference/CONCEPTS.md) §2). It inherits the active one at birth and never changes — so switching brand does not rewrite what a chat produced. It also means the chat you are reading can fall outside the new scope, which is why a switch made from `/session/*` lands on that brand's most recent chat (or a fresh one).
+- **There is no "All playbooks", and `/contexts` stays unfiltered.** A scope HIDES: anything outside it is invisible rather than empty, so cross-brand views are the price — an "All" row would turn the guarantee back into a filter. The Playbooks library is the exception because it is the catalogue the switcher picks from, not a view of the work.
+
+⚠️ Don't re-point a surface at `getDefaultContext()` or add a `?pb=` producer without going through those three functions: two scopes that can disagree is the exact failure this replaced.
 
 ### One article, three hosts
 
@@ -436,7 +451,7 @@ A key that is consumed but never set is dead weight that reads as a live entry p
 
 ### Admin / user mode (prototype controls)
 
-The **Admin** popover in the sidebar footer cog (`admin-menu.js`) is the prototype control panel: switch user mode and toggle feature flags (each change reloads so stores re-seed). `user-mode.js`: `getUserMode()` returns `"returning"` (populated mocks, default) or `"new-alt"` (empty stores + first-time onboarding); `isNewUser()` tests for `new-alt`. Feature flags live in `ff-catalog.js` (`FLAGS`, each with a `default`) and are read via `isFlagOn()`. The 7 flags: `draftInlineEdit` (OFF), `connectors` (OFF — gates the whole connectors feature), `conversationStatusCard` (OFF), `multilingualPlaybook` (OFF), `topicFeed` (OFF — gates the whole Topic Feed: `/topics`, `/topics/settings`, the nav row and its unread count, the new chat's "Fresh topics to review" list, and the composer's "Pick from the Topic Feed"), `playbookSharing` (OFF — gates Playbook ownership: a Playbook is personal or shared with the whole org, never named-shared; read-only fiche + Duplicate for recipients, manager rights, the degraded chat after access is lost, and the Admin **Your role** control. Unlike `topicFeed`, its two demo Playbooks and its demo chat are seeded **only** under the flag)., `skipConnectProfiles` (OFF — whether connecting a social account is required or chosen: ON starts with nothing connected in both user modes and makes Playbook creation's account step optional (a Skip, and an offer to connect when nothing is), with the ask returning in the chat flows that draft for an account — see § Connecting an account below).
+The **Admin** popover in the sidebar footer cog (`admin-menu.js`) is the prototype control panel: switch user mode and toggle feature flags (each change reloads so stores re-seed). `user-mode.js`: `getUserMode()` returns `"returning"` (populated mocks, default) or `"new-alt"` (empty stores + first-time onboarding); `isNewUser()` tests for `new-alt`. Feature flags live in `ff-catalog.js` (`FLAGS`, each with a `default`) and are read via `isFlagOn()`. The flags: `insightsHub` (OFF — gates the whole `/insights` section, route included), `playbookWorkspace` (OFF — whether the Playbook is a field on the work or the level above it; ON puts the switcher in the rail and scopes everything under it, see § The Playbook scope), `draftInlineEdit` (OFF), `connectors` (OFF — gates the whole connectors feature), `conversationStatusCard` (OFF), `multilingualPlaybook` (OFF), `topicFeed` (OFF — gates the whole Topic Feed: `/topics`, `/topics/settings`, the nav row and its unread count, the new chat's "Fresh topics to review" list, and the composer's "Pick from the Topic Feed"), `playbookSharing` (OFF — gates Playbook ownership: a Playbook is personal or shared with the whole org, never named-shared; read-only fiche + Duplicate for recipients, manager rights, the degraded chat after access is lost, and the Admin **Your role** control. Unlike `topicFeed`, its two demo Playbooks and its demo chat are seeded **only** under the flag)., `skipConnectProfiles` (OFF — whether connecting a social account is required or chosen: ON starts with nothing connected in both user modes and makes Playbook creation's account step optional (a Skip, and an offer to connect when nothing is), with the ask returning in the chat flows that draft for an account — see § Connecting an account below).
 
 **Flags removed in the 2026-09-04 cleanup** — do not reintroduce these as toggles: `playbookDefault` was **deleted** (the "set as default" star on `/playbook` is gone; the internal default-Playbook selection via `getDefaultContext` / `isDefault` and the badge on `/contexts` cards stay). `statusActionSnackbars`, `playbookColors`, `manyProfiles` and `playbookCompetitors` were **baked ON** — the success snackbars always fire, Playbook colours always show (no more `hide-playbook-colors` body class), the ~40-profile demo set is always seeded, and the Competitors section always renders. Their OFF branches are deleted, exactly like the earlier Image Studio flags (`imageStudioAutoBrief`, `imageStudioSetupFirst`, also gone — § The Image Studio). Full table + gates: [`docs/reference/FEATURES.md`](docs/reference/FEATURES.md#14-admin-feature-flags--user-modes).
 

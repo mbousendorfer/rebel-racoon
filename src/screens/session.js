@@ -14,7 +14,8 @@ import {
 } from "../social-profiles.js?v=1078";
 import { formatsForNetwork, defaultFormatFor } from "../clip-formats.js?v=1078";
 import { getSessionById, getSessions, subscribe as subscribeSessions } from "../sessions-store.js?v=1078";
-import { getContextById, getContexts, getDefaultContext, updateContext } from "../contexts-store.js?v=1078";
+import { getContextById, getContexts, updateContext } from "../contexts-store.js?v=1078";
+import { playbookForNewWork, isWorkspaceMode } from "../active-playbook.js?v=1078";
 import { revokedContextFor, usableContexts, canView } from "../playbook-access.js?v=1078";
 import { isNewUser } from "../user-mode.js?v=1078";
 import {
@@ -239,7 +240,7 @@ export function renderSession(params, target) {
     // we land on a fresh `/session/new` or `/session/new-<id>`. The
     // user can still swap it via the composer pill before the first send.
     contextId:
-      q.contextId || (params.id === "new" || params.id.startsWith("new-") ? getDefaultContext()?.id || null : null),
+      q.contextId || (params.id === "new" || params.id.startsWith("new-") ? playbookForNewWork()?.id || null : null),
   };
   // Reset selection when switching to a different chat. Tab + URL-param
   // changes within the same session keep the selection intact.
@@ -257,7 +258,7 @@ export function renderSession(params, target) {
   // NOT relaunch the studio.
   if (session.id.startsWith("clip-studio-") && !clipStudio.isActive(session.id)) {
     if (consumeHandoff("pendingStartClipStudio"))
-      clipStudio.start(session.id, { contextId: getDefaultContext()?.id || null });
+      clipStudio.start(session.id, { contextId: playbookForNewWork()?.id || null });
   }
 
   // Batch Studio — dedicated "Batch from a source" intake in its own `batch-*`
@@ -265,7 +266,7 @@ export function renderSession(params, target) {
   // user navigates away doesn't relaunch it. Pre-selects the default Playbook.
   if (session.id.startsWith("batch-") && !batchStudio.isActive(session.id)) {
     if (consumeHandoff("pendingStartBatch"))
-      batchStudio.start(session.id, { contextId: getDefaultContext()?.id || null });
+      batchStudio.start(session.id, { contextId: playbookForNewWork()?.id || null });
   }
 
   renderTopbar({ crumb: session.name });
@@ -420,7 +421,11 @@ function renderAssistantPanel(session, attachedContext) {
   // of the panel (default) or inline inside the empty hero. We render it
   // once and place it via `${composerMarkup}` so click handlers (delegated
   // on #app) keep working in both positions.
-  const composerMarkup = renderComposer(attachedContext, session, isEmptyConversation);
+  // The composer's Playbook select only ever asked because nothing above it
+  // had. In workspace mode the rail's switcher answered it before the chat
+  // existed, so the control stays — as the static indicator it already has for
+  // a started chat — and stops being a second place to change brand.
+  const composerMarkup = renderComposer(attachedContext, session, isEmptyConversation && !isWorkspaceMode());
   return html`
     <aside class="session__assistant" aria-label="Assistant panel">
       <div
@@ -683,11 +688,35 @@ function renderBatchRest(session) {
   `;
 }
 
+// The in-flow Playbook pickers, with the question taken out of them.
+//
+// Batch, Clip Studio and the repurpose board each asked "which Playbook governs
+// these drafts?" in their own select. In workspace mode that was answered in
+// the rail before the flow started, so the control keeps SAYING which brand and
+// stops asking — the same disabled DS trigger the composer uses on a started
+// chat, in the same slot, so no flow changes layout.
+function renderStaticPlaybook(ctx, wrapperClass) {
+  if (!ctx) return "";
+  return `
+    <div class="${wrapperClass}">
+      <div
+        class="ap-select-trigger disabled"
+        data-context-color="${escapeHtml(ctx.color || "grey")}"
+        title="Playbook: ${escapeHtml(ctx.name)}"
+      >
+        <span class="ap-select-inline-label">Playbook</span>
+        <span class="ap-select-value">${escapeHtml(ctx.name)}</span>
+      </div>
+    </div>
+  `;
+}
+
 // Playbook picker for the Batch Studio commit group — same DS form-select shape
 // as the composer's renderPlaybookControl, but full-width and its picks route
 // through the `data-batch-playbook-pick` delegate (→ batchStudio.setContext)
 // instead of mutating session.contextId.
 function renderBatchPlaybookControl(ctx) {
+  if (isWorkspaceMode()) return renderStaticPlaybook(ctx, "batch-studio__playbook");
   const playbooks = usableContexts();
   const items = playbooks
     .map((c) => {
@@ -770,6 +799,7 @@ function buildClipCaptionCards(cfg) {
 // voice/audience/CTAs of the drafts created from the clips. Mirrors the batch
 // playbook control; routes through the `data-clip-playbook-pick` delegate.
 function renderClipPlaybookControl(ctx) {
+  if (isWorkspaceMode()) return renderStaticPlaybook(ctx, "clip-studio__select");
   const playbooks = usableContexts();
   const items = playbooks
     .map((c) => {
@@ -802,6 +832,7 @@ function renderClipPlaybookControl(ctx) {
 // Playbook governs the voice of the repurposed drafts. Mirrors the batch / clip
 // playbook controls; routes through the `data-topposts-playbook-pick` delegate.
 function renderTopPostsPlaybookControl(ctx) {
+  if (isWorkspaceMode()) return renderStaticPlaybook(ctx, "studio-commit__playbook");
   const playbooks = usableContexts();
   const items = playbooks
     .map((c) => {
@@ -1369,7 +1400,7 @@ function renderFreshTopics(session) {
   if (!topics.length) return "";
   const total = countFresh(feed.id);
   const pb = getContextById(pbId);
-  const scopeHref = `#/topics?pb=${encodeURIComponent(pbId)}`;
+  const scopeHref = isWorkspaceMode() ? "#/topics" : `#/topics?pb=${encodeURIComponent(pbId)}`;
 
   const cards = topics
     .map((t) => renderTopicCard(t, { source: findTopicSource(t.sourceId), variant: "picker", withUse: true }))
@@ -2508,7 +2539,7 @@ function defaultChatNameLocal() {
 // default Playbook + "English" so the flow always has a language to write in.
 function playbookLanguages(sessionId) {
   const session = getSessionById(sessionId);
-  const ctx = session?.contextId ? getContextById(session.contextId) : getDefaultContext();
+  const ctx = session?.contextId ? getContextById(session.contextId) : playbookForNewWork();
   const langs = ctx && Array.isArray(ctx.languages) && ctx.languages.length ? ctx.languages.slice() : null;
   const primary = ctx?.primaryLanguage || (langs && langs[0]) || ctx?.language || "English";
   return { languages: langs || [primary], primary };
@@ -4008,7 +4039,7 @@ function repaintBatchRest(root, session) {
 function startBatchChat(session) {
   const st = batchStudio.getState(session.id);
   if (!st || !st.sources.length) return;
-  const contextId = st.contextId || getDefaultContext()?.id || "";
+  const contextId = st.contextId || playbookForNewWork()?.id || "";
   if (!batchStudio.stashPending(session.id)) return;
   batchStudio.exit(session.id);
   const newId = `new-${Date.now().toString(36)}`;

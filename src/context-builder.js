@@ -19,6 +19,7 @@ import { open as openConnectAccountModal } from "./components/connect-account-mo
 import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1078";
 import * as rightPanel from "./components/right-panel.js?v=1078";
 import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1078";
+import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=1078";
 import { analyzeWebsite } from "./context-mock-analysis.js?v=1078";
 import { connectors as connectorMocks } from "./mocks.js?v=1078";
 import {
@@ -717,6 +718,10 @@ export function save(sessionId) {
   payload.voiceByLanguage = baseVbl;
 
   const saved = d.editingId ? updateContext(d.editingId, payload) : addContext(payload);
+  // A brand you just created is the brand you are in. Only on creation: editing
+  // the fiche you are already scoped to must not re-point the app, and editing
+  // another one from /contexts is not a request to switch.
+  if (!d.editingId && isWorkspaceMode() && saved) setActivePlaybook(saved.id);
   const onComplete = d.onComplete;
   drafts.delete(sessionId);
   inlineQuestion.exit(sessionId);

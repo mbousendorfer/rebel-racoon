@@ -1,13 +1,21 @@
 // /topics — the Topic Feed: a queue you triage, with the article beside it.
 //
 // ── Scope ──────────────────────────────────────────────────────────────────
-// One Playbook at a time, carried in `?pb=`. NOT a global active-Playbook: the
-// version this was ported from had a module that owned the app's scope, persisted
-// it, and was written to by a select sitting in this page's filter bar — so a
-// control that promised a page filter silently re-scoped the sidebar, the next
-// new chat and the composer's picker. `?pb=` says the same thing, survives a
-// link, and stops at this screen. The settings page reads the same param, so the
-// scope survives the round trip in both directions.
+// One Playbook at a time. WHICH one depends on one flag, and the two answers
+// were both written against the same failure.
+//
+// Flag OFF: `?pb=`. The version this was ported from had a module that owned the
+// app's scope, persisted it, and was written to by a select sitting in this
+// page's filter bar — so a control that promised a page filter silently
+// re-scoped the sidebar, the next new chat and the composer's picker. `?pb=`
+// says the same thing, survives a link, and stops at this screen. The settings
+// page reads the same param, so the scope survives the round trip both ways.
+//
+// Flag `playbookWorkspace` ON: the ACTIVE Playbook, and `?pb=` is not read at
+// all. What was wrong with the port was not that the scope was global, it was
+// that it was HIDDEN behind a page control; a permanent switcher at the top of
+// the rail is the other half of that bargain. This page's own scope select then
+// states the brand instead of offering the others — see the toolbar.
 //
 // ── The layout ─────────────────────────────────────────────────────────────
 // Master–detail, and the split is measured with a @container query on the row
@@ -32,6 +40,7 @@ import { renderTopbar } from "../components/topbar.js?v=1078";
 import { showToast } from "../components/toast.js?v=1078";
 import { renderEmptyState } from "../components/empty-state.js?v=1078";
 import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=1078";
+import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=1078";
 import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1078";
 import {
   getTopicsForFeed,
@@ -67,6 +76,7 @@ const SCAN_MS = 1600;
 let view = null;
 let unsubscribe = null;
 let unsubscribeFeeds = null;
+let unsubscribeScope = null;
 let boundRoot = null;
 let boundChange = null;
 let boundClick = null;
@@ -110,9 +120,13 @@ function freshView() {
 }
 
 // ── Scope resolution ───────────────────────────────────────────────────────
-// A `?pb=` naming a Playbook that no longer exists falls back to the default
-// rather than emptying the screen with no explanation.
+// Workspace mode: the feed reads the ACTIVE Playbook and `?pb=` stops being
+// consulted at all — a page-level scope and an app-level scope that could
+// disagree is the whole problem the switcher removes. Otherwise the old rule
+// stands: `?pb=` if it names a real Playbook, else the default, so a stale link
+// falls back rather than emptying the screen with no explanation.
 function scopedPlaybook() {
+  if (isWorkspaceMode()) return getActivePlaybook();
   const wanted = parseHashParams().get("pb");
   return (wanted && getContextById(wanted)) || getDefaultContext() || getContexts()[0] || null;
 }
@@ -161,12 +175,23 @@ export function renderTopics(_params, target) {
 
   unsubscribe = subscribeTopics(() => paint(target, scopedPlaybook()));
   unsubscribeFeeds = subscribeFeeds(() => paint(target, scopedPlaybook()));
+  // Switching brand in the rail re-points this screen in place (there is no
+  // navigation to re-run it). The view is reset rather than repainted: the open
+  // article, the page and the narrowing all belong to the feed just left. No
+  // scanning state either — the reader asked for another brand, not for a
+  // refresh, and only the mount path has a timer to clear it.
+  unsubscribeScope = subscribeScope(() => {
+    view = freshView();
+    view.scanning = false;
+    paint(target, scopedPlaybook());
+  });
   return teardown;
 }
 
 function teardown() {
   if (unsubscribe) (unsubscribe(), (unsubscribe = null));
   if (unsubscribeFeeds) (unsubscribeFeeds(), (unsubscribeFeeds = null));
+  if (unsubscribeScope) (unsubscribeScope(), (unsubscribeScope = null));
   if (observer) (observer.disconnect(), (observer = null));
   // ⚠️ The listeners have to come OFF, not just be forgotten.
   //
@@ -373,16 +398,31 @@ function renderToolbar(pb, feed) {
          action. -->
     <div class="topics-view__scope-group">
       <div class="topics-view__scope">
-        <details class="ap-select" id="topicScope" data-topic-scope>
-          <summary class="ap-select-trigger" title="Which Playbook this feed reads for">
-            <span class="ap-select-inline-label">Playbook</span>
-            <span class="ap-select-value">${raw(pb ? escapeAttr(pb.name) : "Choose a Playbook")}</span>
-            <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
-          </summary>
-          <div class="ap-select-dropdown" role="listbox" aria-label="Playbook">
-            <div class="ap-select-options">${raw(pbOptions)}</div>
-          </div>
-        </details>
+        ${raw(
+          isWorkspaceMode()
+            ? // Workspace mode: the rail re-points this page, so the control
+              // keeps its slot and states the brand instead of offering the
+              // others. Not deleted — the reader still has to see WHOSE feed
+              // this is at the place they look for it, and the toolbar keeps
+              // its shape either way. Same treatment as the composer's and the
+              // studios' pickers.
+              `<div class="ap-select">
+                <div class="ap-select-trigger disabled" title="Which Playbook this feed reads for">
+                  <span class="ap-select-inline-label">Playbook</span>
+                  <span class="ap-select-value">${pb ? escapeAttr(pb.name) : "No Playbook"}</span>
+                </div>
+              </div>`
+            : html`<details class="ap-select" id="topicScope" data-topic-scope>
+                <summary class="ap-select-trigger" title="Which Playbook this feed reads for">
+                  <span class="ap-select-inline-label">Playbook</span>
+                  <span class="ap-select-value">${raw(pb ? escapeAttr(pb.name) : "Choose a Playbook")}</span>
+                  <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
+                </summary>
+                <div class="ap-select-dropdown" role="listbox" aria-label="Playbook">
+                  <div class="ap-select-options">${raw(pbOptions)}</div>
+                </div>
+              </details>`,
+        )}
       </div>
     </div>
 
@@ -902,7 +942,9 @@ function bind(target) {
 
     if (event.target.closest("[data-topic-settings]")) {
       const pb = scopedPlaybook();
-      navigate(pb ? `/topics/settings?pb=${encodeURIComponent(pb.id)}` : "/topics/settings");
+      // No `?pb=` in workspace mode: the settings page reads the rail, and a
+      // brand pinned in the URL would be a second scope beside it.
+      navigate(pb && !isWorkspaceMode() ? `/topics/settings?pb=${encodeURIComponent(pb.id)}` : "/topics/settings");
       return;
     }
 
