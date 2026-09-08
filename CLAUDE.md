@@ -338,9 +338,18 @@ draft FOR an account. `requireConnectedProfiles()` in
 through when anything is connected, so callers wrap unconditionally and the flag-off path is
 byte-identical. Otherwise it puts a Quickpicker in the step's own slot, hands the confirm to
 [`connect-account-modal.js`](src/components/connect-account-modal.js), then calls `onReady` — so the
-flow **resumes where it left off** instead of restarting. Four callers today: draft-from-idea and
-repurpose (`session.js`), clip drafts (`clip-draft-flow.js`), top posts inline + studio
-(`top-posts-flow.js`).
+flow **resumes where it left off** instead of restarting. The rule is coverage, not convenience:
+EVERY path that produces a draft asks — `addPostDraft`'s five call sites are the checklist —
+draft-from-idea and repurpose (`session.js`), clip drafts (`clip-draft-flow.js`), top posts inline
+
+- studio (`top-posts-flow.js`), and the Clip Studio. A batch of posts needs no gate of its own: it
+  replays its sources through the classic source → idea workflow, which is already gated.
+
+The Clip Studio is the one that can't use the shared step — it is a full-panel takeover, so a
+Quickpicker posted into the thread would be hidden behind it. `renderClipStudioConnect` renders
+the SAME network cards in the studio's own chrome instead, and connecting notifies so the normal
+profiles stage takes over. Left alone it was a silent dead end: `finalizeClipStudio` returns early
+on an empty account list, so "Create N drafts" sat disabled with nothing explaining why.
 
 Two rules this rests on:
 

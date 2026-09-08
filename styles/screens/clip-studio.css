@@ -888,3 +888,13 @@
   display: flex;
   align-items: center;
 }
+
+/* Connect step — the account grid shown in place of the profiles list when
+   nothing is connected (skipConnectProfiles). The cards themselves are the
+   shared .analyse__card grid; only the surround needs neutralising, since here
+   it sits in the studio's own scroller rather than in a picker card. */
+.clip-studio__connect {
+  border: 0;
+  background: none;
+  padding: 0;
+}
