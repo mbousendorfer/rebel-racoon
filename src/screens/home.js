@@ -26,6 +26,7 @@ import {
 } from "../playbook-access.js?v=1079";
 import { isWorkspaceMode, getActivePlaybookId, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=1079";
 import { open as openShareModal } from "../components/share-playbook-modal.js?v=1079";
+import { installMoreMenu } from "../components/more-menu.js?v=1079";
 
 // The account HOME — and the Playbooks catalogue it merged with.
 //
@@ -53,6 +54,24 @@ import { open as openShareModal } from "../components/share-playbook-modal.js?v=
 // `.contexts-card*`) and the stylesheet (styles/screens/contexts.css). Renaming
 // them would touch a stylesheet and every card selector for something no user
 // can see; same call as the `.isv2-` prefix in the Image Studio.
+
+// ── The row's overflow menu — one open at a time (shared behaviour) ───────
+// The row lists its verbs in a kebab instead of the tile's hover toolbar. Two
+// reasons: a toolbar whose width depends on my rights (four buttons or two)
+// makes the whole right-hand cluster start at a different x on every row, which
+// is the one thing a list is for; and a hover-only control is a poor primary on
+// a row whose body is now a navigation. Installed once at module scope, like
+// source-card and idea-card do — it binds document listeners.
+installMoreMenu({
+  menuSelector: ".contexts-card__more-menu",
+  triggerSelector: "[data-contexts-more]",
+  closeAfterSelectors: [
+    "[data-contexts-share]",
+    "[data-contexts-edit]",
+    "[data-contexts-duplicate]",
+    "[data-contexts-delete]",
+  ],
+});
 
 let unsubs = [];
 // Where this screen paints — the router's #app. Held at module level because
@@ -189,6 +208,18 @@ function renderTabBody() {
   const all = visibleContexts();
   const visible = filter(all, pageState);
   if (visible.length === 0) return renderContextsEmpty(all, pageState);
+  // On the home the Playbooks tab is a LIST of full-width rows, not a grid of
+  // tiles. Two reasons, and the second is the one that matters: the numbers
+  // (chats, audiences, competitors) line up in a column you can read down —
+  // a 3-up grid scatters them across nine positions — and a row is the shape
+  // of the thing it now is, a door into a workspace, sitting beside the Chats
+  // tab's own rows. Flag OFF the catalogue keeps its grid: it is a page for
+  // browsing fiches, and its cards are the object, not a door.
+  if (isHome) {
+    return `<div class="contexts-view__list">${visible
+      .map((c) => renderContextCard(c, { row: true }))
+      .join("")}${renderGhostCard({ row: true })}</div>`;
+  }
   return `<div class="contexts-view__grid">${visible.map(renderContextCard).join("")}${renderGhostCard()}</div>`;
 }
 
@@ -497,9 +528,14 @@ function renderContextsEmpty(allContexts, pageState) {
 // Trailing "ghost" card — visually invites a new Playbook from the grid
 // itself, so the user doesn't have to chase the header CTA after scrolling.
 // Triggers the same `data-contexts-new` handler as the header button.
-function renderGhostCard() {
+function renderGhostCard({ row = false } = {}) {
   return `
-    <button type="button" class="contexts-card contexts-card--ghost" data-contexts-new aria-label="Create a new Playbook">
+    <button
+      type="button"
+      class="contexts-card contexts-card--ghost${row ? " contexts-card--row" : ""}"
+      data-contexts-new
+      aria-label="Create a new Playbook"
+    >
       <span class="contexts-card--ghost__glyph"><i class="ap-icon-archie-official"></i></span>
       <span class="contexts-card--ghost__title">Create a Playbook</span>
       <span class="contexts-card--ghost__sub">One brand, one voice, one goal — I'll keep every draft aligned.</span>
@@ -507,7 +543,7 @@ function renderGhostCard() {
   `;
 }
 
-function renderContextCard(ctx) {
+function renderContextCard(ctx, { row = false } = {}) {
   const color = ctx.color || "orange";
   const summary = (ctx.businessSummary || ctx.briefSummary || "").trim();
   const voiceHeadline =
@@ -591,14 +627,117 @@ function renderContextCard(ctx) {
     ? `<span class="ap-tag blue mini contexts-card__current"><span>Current</span></span>`
     : "";
   const cardTitle = isWorkspaceMode() ? `Start a chat in ${ctx.name}` : "";
-  return `
-    <article
-      class="contexts-card contexts-card--${color}"
+  // The same four verbs, as a DS action-dropdown. Same `data-contexts-*` hooks,
+  // so the screen's handlers don't know which shape fired them.
+  const menuId = `ctxMore-${ctx.id}`;
+  const menuItem = (hook, icon, label, danger) => `
+    <button
+      type="button"
+      role="menuitem"
+      class="ap-action-dropdown-item${danger ? " red-mode" : ""}"
+      ${hook}="${escapeAttr(ctx.id)}"
+    >
+      <i class="${icon}"></i>
+      <div class="ap-action-dropdown-item-text">
+        <div class="ap-action-dropdown-item-label-container">
+          <span class="ap-action-dropdown-item-label">${label}</span>
+        </div>
+      </div>
+    </button>
+  `;
+  const moreHtml = `
+    <div class="contexts-card__row-more">
+      <button
+        type="button"
+        class="ap-icon-button transparent contexts-card__more"
+        data-contexts-more="${escapeAttr(ctx.id)}"
+        aria-haspopup="menu"
+        aria-expanded="false"
+        aria-controls="${menuId}"
+        aria-label="More actions"
+        title="More actions"
+      >
+        <i class="ap-icon-more"></i>
+      </button>
+      <div class="ap-action-dropdown contexts-card__more-menu" id="${menuId}" role="menu" hidden>
+        ${canManageSharing(ctx) ? menuItem("data-contexts-share", "ap-icon-share", "Share") : ""}
+        ${canEdit(ctx) ? menuItem("data-contexts-edit", "ap-icon-pen", "Open the Playbook") : ""}
+        ${menuItem("data-contexts-duplicate", "ap-icon-copy", "Duplicate")}
+        ${canDelete(ctx) ? menuItem("data-contexts-delete", "ap-icon-trash", "Delete", true) : ""}
+      </div>
+    </div>
+  `;
+
+  // The pieces, once — the two shapes below arrange them, they don't reword
+  // them. A card and the row it becomes must say the same thing about one
+  // Playbook, which is the same rule topic-card.js follows for its two shapes.
+  const voiceHtml = voiceHeadline
+    ? `<div class="contexts-card__voice">
+        <i class="ap-icon-archie-official"></i>
+        <span>${escapeText(voiceHeadline)}</span>
+      </div>`
+    : "";
+  const briefHtml = summary
+    ? `<p class="contexts-card__brief${row ? " contexts-card__brief--row" : ""}">${escapeText(summary)}</p>`
+    : `<p class="contexts-card__brief contexts-card__brief--empty${row ? " contexts-card__brief--row" : ""}">No brief yet — open this Playbook to add one.</p>`;
+  const countersHtml = `
+    <div class="contexts-card__counters">
+      <span class="contexts-card__counter" title="${usedIn} ${usedIn === 1 ? "chat uses this Playbook" : "chats use this Playbook"}">
+        <i class="ap-icon-single-chat-bubble"></i>
+        <span>${usedIn}</span>
+      </span>
+      ${
+        audienceCount
+          ? `<span class="contexts-card__counter" title="${audienceCount} ${audienceCount === 1 ? "audience" : "audiences"}">
+              <i class="ap-icon-target"></i>
+              <span>${audienceCount}</span>
+            </span>`
+          : ""
+      }
+      ${
+        competitorCount
+          ? `<span class="contexts-card__counter" title="${competitorCount} ${competitorCount === 1 ? "competitor" : "competitors"}">
+              <i class="ap-icon-buildings"></i>
+              <span>${competitorCount}</span>
+            </span>`
+          : ""
+      }
+    </div>
+  `;
+  const openAttrs = `
       data-contexts-card="${ctx.id}"
       role="button"
       tabindex="0"
-      ${cardTitle ? `title="${escapeAttr(cardTitle)}" aria-label="${escapeAttr(cardTitle)}"` : ""}
-    >
+      ${cardTitle ? `title="${escapeAttr(cardTitle)}" aria-label="${escapeAttr(cardTitle)}"` : ""}`;
+
+  // ── The row ─────────────────────────────────────────────────────────────
+  // One line of identity, one of brief, then the numbers, the marks and the
+  // date in fixed cells so they read down the list as columns. The brand's
+  // colour moves from a top strip to a dot: a coloured bar down the leading
+  // edge of a list row is the accent rail this project has rejected more than
+  // once, and the dot is what the rail and the Chats tab already use for the
+  // same fact. The verbs keep their own cell — reserved, not overlaid, so
+  // revealing them covers nothing and shifts nothing.
+  if (row) {
+    return `
+    <article class="contexts-card contexts-card--row contexts-card--${color}"${openAttrs}>
+      <div class="contexts-card__row-main">
+        <div class="contexts-card__row-head">
+          <span class="contexts-card__row-dot" aria-hidden="true"></span>
+          <h3 class="contexts-card__name">${escapeText(ctx.name)}${isDefaultBadge}</h3>
+          ${voiceHtml}${currentTag}${ownerTag}
+        </div>
+        ${briefHtml}
+      </div>
+      ${countersHtml}
+      <div class="contexts-card__updated">Updated ${escapeText(ctx.updatedAt || "recently")}</div>
+      ${moreHtml}
+    </article>
+  `;
+  }
+
+  return `
+    <article class="contexts-card contexts-card--${color}"${openAttrs}>
       <span class="contexts-card__swatch" aria-hidden="true"></span>
 
       <div class="contexts-card__actions" data-contexts-card-actions>${actions}</div>
@@ -610,44 +749,10 @@ function renderContextCard(ctx) {
         </h3>
       </header>
 
-      ${
-        voiceHeadline
-          ? `<div class="contexts-card__voice">
-              <i class="ap-icon-archie-official"></i>
-              <span>${escapeText(voiceHeadline)}</span>
-            </div>`
-          : ""
-      }
-
-      ${
-        summary
-          ? `<p class="contexts-card__brief">${escapeText(summary)}</p>`
-          : `<p class="contexts-card__brief contexts-card__brief--empty">No brief yet — open this Playbook to add one.</p>`
-      }
+      ${voiceHtml} ${briefHtml}
 
       <footer class="contexts-card__foot">
-        <div class="contexts-card__counters">
-          <span class="contexts-card__counter" title="${usedIn} ${usedIn === 1 ? "chat uses this Playbook" : "chats use this Playbook"}">
-            <i class="ap-icon-single-chat-bubble"></i>
-            <span>${usedIn}</span>
-          </span>
-          ${
-            audienceCount
-              ? `<span class="contexts-card__counter" title="${audienceCount} ${audienceCount === 1 ? "audience" : "audiences"}">
-                  <i class="ap-icon-target"></i>
-                  <span>${audienceCount}</span>
-                </span>`
-              : ""
-          }
-          ${
-            competitorCount
-              ? `<span class="contexts-card__counter" title="${competitorCount} ${competitorCount === 1 ? "competitor" : "competitors"}">
-                  <i class="ap-icon-buildings"></i>
-                  <span>${competitorCount}</span>
-                </span>`
-              : ""
-          }
-        </div>
+        ${countersHtml}
         <div class="contexts-card__meta">
           ${currentTag}
           ${ownerTag}
@@ -655,9 +760,7 @@ function renderContextCard(ctx) {
         </div>
       </footer>
 
-      <div class="contexts-card__updated">
-        <span>Updated ${escapeText(ctx.updatedAt || "recently")}</span>
-      </div>
+      <div class="contexts-card__updated">Updated ${escapeText(ctx.updatedAt || "recently")}</div>
     </article>
   `;
 }
@@ -803,6 +906,12 @@ function bind(root) {
           import("../components/toast.js?v=1079").then(({ showToast }) => showToast("Playbook deleted"));
         },
       });
+      return;
+    }
+    // The kebab and its menu are not the card: without this the trigger would
+    // fall through to the card fallback below and enter the workspace.
+    // more-menu.js owns the toggle itself, on the document.
+    if (event.target.closest("[data-contexts-more]") || event.target.closest(".contexts-card__more-menu")) {
       return;
     }
     // Card click — anywhere outside the action buttons. On the home it enters
