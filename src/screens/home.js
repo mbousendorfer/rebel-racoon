@@ -28,6 +28,8 @@ import { isWorkspaceMode, getActivePlaybookId, setActivePlaybook, catalogueRoute
 import { open as openShareModal } from "../components/share-playbook-modal.js?v=1079";
 import { installMoreMenu } from "../components/more-menu.js?v=1079";
 import { isFlagOn } from "../feature-flags.js?v=1079";
+import { getConnectedConnectors } from "../connectors-store.js?v=1079";
+import { renderConnectorLogo } from "../connectors-view.js?v=1079";
 import { ownerOf } from "../playbook-access.js?v=1079";
 
 // The account HOME — and the Playbooks catalogue it merged with.
@@ -288,7 +290,7 @@ function renderHomeHero() {
           data-home-prompt
         ></textarea>
         <div class="home-hero__toolbar">
-          ${renderHeroPicker(picked, options)}
+          ${renderHomeAdd()} ${renderHeroPicker(picked, options)}
           <button
             type="button"
             class="ap-button primary orange home-hero__send"
@@ -320,6 +322,91 @@ function pickedPlaybook() {
     options[0] ||
     null
   );
+}
+
+// ── The hero's Add menu ───────────────────────────────────────────────────
+//
+// The same offer the chat composer makes — a PDF, a video, a URL, pasted text,
+// your top posts, a Topic, a connected source. It cannot DO any of it here: the
+// intake machinery is per-session (uploads, processing, replay), and there is no
+// session on this page.
+//
+// So the home doesn't stage, it LAUNCHES: picking an item switches to the
+// chosen brand, mints the chat, and hands the intent across in
+// `pendingHomeAdd`, which session.js dispatches to the very same functions the
+// composer's own menu calls. One key, one switch — three keys for three flows
+// would be three rows in the handoff table that all mean "the home asked".
+//
+// FLAT, with dividers: the ADS ships no nested dropdown, so the composer's
+// "Connected sources ▸" flyout is not reproduced — the connected sources are a
+// third section instead.
+function renderHomeAdd() {
+  const item = (hook, icon, label) => `
+    <button type="button" role="menuitem" class="ap-action-dropdown-item" ${hook}>
+      <i class="${icon}"></i>
+      <div class="ap-action-dropdown-item-text">
+        <div class="ap-action-dropdown-item-label-container">
+          <span class="ap-action-dropdown-item-label">${label}</span>
+        </div>
+      </div>
+    </button>
+  `;
+  const divider = `<div class="ap-action-dropdown-divider" role="separator"></div>`;
+
+  const topics = isFlagOn("topicFeed")
+    ? item('data-home-add="topic"', "ap-icon-antenna", "Pick from the Topic Feed")
+    : "";
+
+  let connectors = "";
+  if (isFlagOn("connectors")) {
+    const connected = getConnectedConnectors();
+    const rows = connected.length
+      ? connected
+          .map(
+            (c) => `
+            <button type="button" role="menuitem" class="ap-action-dropdown-item home-hero__connector" data-home-add-connector="${escapeAttr(c.id)}">
+              <span class="home-hero__connector-logo">${renderConnectorLogo(c, 18)}</span>
+              <div class="ap-action-dropdown-item-text">
+                <div class="ap-action-dropdown-item-label-container">
+                  <span class="ap-action-dropdown-item-label">${escapeText(c.name)}</span>
+                </div>
+              </div>
+            </button>`,
+          )
+          .join("")
+      : `<div class="home-hero__menu-label">No sources connected yet</div>`;
+    connectors = `
+      ${divider}
+      <div class="home-hero__menu-label">Connected sources</div>
+      ${rows}
+      ${item('data-home-add="connectors"', "ap-icon-view-grid", "Browse connectors")}
+    `;
+  }
+
+  return `
+    <div class="home-hero__add">
+      <button
+        type="button"
+        class="ap-button stroked grey home-hero__add-toggle"
+        data-home-add-toggle
+        aria-haspopup="menu"
+        aria-expanded="false"
+      >
+        <i class="ap-icon-plus"></i>
+        <span>Add</span>
+      </button>
+      <div class="ap-action-dropdown home-hero__add-menu" data-home-add-menu role="menu" hidden>
+        ${item('data-home-add="pdf"', "ap-icon-file--pdf", "Add PDF")}
+        ${item('data-home-add="video"', "ap-icon-file--video", "Add video")}
+        ${item('data-home-add="url"', "ap-icon-link", "Add URL")}
+        ${item('data-home-add="text"', "ap-icon-file--text", "Paste text")}
+        ${divider}
+        ${item('data-home-add="top-posts"', "ap-icon-feature-analytics", "Top performing posts")}
+        ${topics}
+        ${connectors}
+      </div>
+    </div>
+  `;
 }
 
 // Same DS select as the rail's switcher, deliberately: it is the same question
@@ -847,12 +934,39 @@ function deleteBody(ctx) {
 
 function bind(root) {
   root.addEventListener("click", (event) => {
-    // The hero's picker is a <details>: it doesn't close itself on an outside
-    // click. Before the dispatch guards, so a click on empty page space shuts
-    // it. No document listener — paint() recreates this node, and a listener on
-    // the document would outlive it.
+    // The hero's two menus don't close themselves on an outside click. Before
+    // the dispatch guards, so a click on empty page space shuts them. No
+    // document listener — paint() recreates these nodes, and a document
+    // listener would outlive them.
     const openPicker = root.querySelector("[data-home-pb][open]");
     if (openPicker && !openPicker.contains(event.target)) openPicker.removeAttribute("open");
+    if (!event.target.closest(".home-hero__add")) closeAddMenu(root);
+
+    // Add — the same menu the composer carries, launching instead of staging.
+    if (event.target.closest("[data-home-add-toggle]")) {
+      event.preventDefault();
+      const menu = root.querySelector("[data-home-add-menu]");
+      const toggle = root.querySelector("[data-home-add-toggle]");
+      if (menu) {
+        menu.hidden = !menu.hidden;
+        toggle?.setAttribute("aria-expanded", menu.hidden ? "false" : "true");
+      }
+      return;
+    }
+    const addItem = event.target.closest("[data-home-add]");
+    if (addItem) {
+      event.preventDefault();
+      closeAddMenu(root);
+      startFromHomeAdd(root, addItem.dataset.homeAdd);
+      return;
+    }
+    const addConnector = event.target.closest("[data-home-add-connector]");
+    if (addConnector) {
+      event.preventDefault();
+      closeAddMenu(root);
+      startFromHomeAdd(root, "connector", addConnector.dataset.homeAddConnector);
+      return;
+    }
 
     // Tabs — the state lives in the URL, so the router repaints and Back works.
     const tabBtn = event.target.closest("[data-home-tab]");
@@ -1062,6 +1176,38 @@ function submitHomePrompt(root) {
   setActivePlaybook(picked.id);
   setHandoff("pendingHomePrompt", { text });
   const params = new URLSearchParams({ contextId: picked.id, title: chatNameFromPrompt(text) });
+  navigate(`/session/new-${Date.now().toString(36)}?${params.toString()}`);
+}
+
+function closeAddMenu(root) {
+  const menu = root.querySelector("[data-home-add-menu]");
+  if (menu && !menu.hidden) {
+    menu.hidden = true;
+    root.querySelector("[data-home-add-toggle]")?.setAttribute("aria-expanded", "false");
+  }
+}
+
+// An Add item, launched. Same two beats as Send — switch, then mint the chat —
+// with the intent riding across in `pendingHomeAdd` for session.js to dispatch.
+// "Browse connectors" is the exception: a gallery is a page, not a chat.
+//
+// Anything already typed comes ALONG: the reader wrote it, and dropping it
+// because they then reached for Add would be the worst kind of quiet loss.
+function startFromHomeAdd(root, kind, connectorId) {
+  if (kind === "connectors") {
+    navigate("/connectors");
+    return;
+  }
+  const picked = pickedPlaybook();
+  if (!picked) return;
+  const field = root.querySelector("[data-home-prompt]");
+  const text = (field?.value || "").trim();
+  setActivePlaybook(picked.id);
+  setHandoff("pendingHomeAdd", { kind, connectorId: connectorId || null });
+  if (text) setHandoff("pendingHomePrompt", { text });
+  const params = new URLSearchParams({ contextId: picked.id });
+  if (text) params.set("title", chatNameFromPrompt(text));
+  closeRightPanel();
   navigate(`/session/new-${Date.now().toString(36)}?${params.toString()}`);
 }
 

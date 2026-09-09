@@ -86,6 +86,43 @@
   gap: var(--ref-spacing-xs);
 }
 
+/* ── The Add menu ──────────────────────────────────────────────────────────
+   Same offer as the composer's, opening DOWNWARD: the chat's menu drops upward
+   because its composer sits at the viewport's bottom edge; this one is near the
+   top of the page, where up would run off the hero. */
+.home-hero__add {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.home-hero__add-menu {
+  position: absolute;
+  top: calc(100% + var(--ref-spacing-xxxs));
+  left: 0;
+  z-index: 30;
+  min-width: 250px;
+}
+
+/* A quiet section label inside the menu — the same treatment the composer's
+   own "Connected sources" label carries (session.css). It exists because the
+   ADS has no nested dropdown, so the flyout became a titled section. */
+.home-hero__menu-label {
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs) var(--app-spacing-micro);
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--sys-text-color-light);
+}
+
+/* A connector's logo in the dropdown item's icon slot — match the DS icon size
+   + trailing spacing (.ap-action-dropdown-item > i:first-child). */
+.home-hero__connector-logo {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  margin-right: var(--ref-spacing-xs);
+}
+
 /* The DS select ships full-width; clamp it to its content so it sits inline
    with the send button instead of stretching across the card. */
 .home-hero__pb,

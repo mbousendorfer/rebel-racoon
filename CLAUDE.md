@@ -460,6 +460,7 @@ Every token substitution is commented with the value it stands in for, because t
 | `pendingAskConnector`        | connectors gallery/modal "Try in chat"                                                                       | `askConnector`                   |
 | `pendingStartContextBuilder` | `/contexts` "New Playbook" + welcome-alt                                                                     | `context-builder` (create)       |
 | `pendingHomePrompt`          | the account home's hero (Send / Enter)                                                                       | `sendMessage` (session.js)       |
+| `pendingHomeAdd`             | the account home's hero **Add** menu                                                                         | the composer's own Add dispatch  |
 | `OBJECTIVE_CHAT_HANDOFF`     | `objective-flow.js` — "Fix this in a chat" / repurpose a post                                                | `startObjectiveChat`             |
 | `pendingTopicChat`           | "Use in chat", from the three surfaces that navigate (the composer's picker is inline and attaches directly) | `attachTopicToChat` (topic-flow) |
 | `pendingStartClipStudio`     | session composer "Extract video clips"                                                                       | `clipStudio.start` (new chat)    |

@@ -88,16 +88,17 @@ if (payload) {
 
 ### Handoffs actifs (consumés au mount de `session.js`)
 
-| Clé                          | Posé par                                                                                                       | Consommé par →                     |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
-| `pendingAskSource`           | source card "Ask"                                                                                              | `askWhatToKnow`                    |
-| `pendingAskConnector`        | connectors gallery / modal "Try in chat"                                                                       | `askConnector` (`connector-ask`)   |
-| `pendingTopicChat`           | Use in chat, depuis les trois surfaces qui naviguent (le picker du composer est inline et attache directement) | `attachTopicToChat` (`topic-flow`) |
-| `pendingStartContextBuilder` | `/contexts` "New Playbook" + welcome-alt                                                                       | `context-builder` (création)       |
-| `pendingHomePrompt`          | le héro de la home du compte (Send / Enter)                                                                    | `sendMessage` (session.js)         |
-| `OBJECTIVE_CHAT_HANDOFF`     | `objective-flow.js` — « Fix this in a chat » / repurpose d'un post                                             | `startObjectiveChat`               |
-| `pendingStartClipStudio`     | composer session → "Extract video clips"                                                                       | `clipStudio.start` (nouveau chat)  |
-| `pendingStartBatch`          | composer session → "Batch of posts"                                                                            | `batchStudio.start` (nouveau chat) |
+| Clé                          | Posé par                                                                                                       | Consommé par →                      |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| `pendingAskSource`           | source card "Ask"                                                                                              | `askWhatToKnow`                     |
+| `pendingAskConnector`        | connectors gallery / modal "Try in chat"                                                                       | `askConnector` (`connector-ask`)    |
+| `pendingTopicChat`           | Use in chat, depuis les trois surfaces qui naviguent (le picker du composer est inline et attache directement) | `attachTopicToChat` (`topic-flow`)  |
+| `pendingStartContextBuilder` | `/contexts` "New Playbook" + welcome-alt                                                                       | `context-builder` (création)        |
+| `pendingHomePrompt`          | le héro de la home du compte (Send / Enter)                                                                    | `sendMessage` (session.js)          |
+| `pendingHomeAdd`             | le menu **Add** du héro de la home                                                                             | le dispatch du menu Add du composer |
+| `OBJECTIVE_CHAT_HANDOFF`     | `objective-flow.js` — « Fix this in a chat » / repurpose d'un post                                             | `startObjectiveChat`                |
+| `pendingStartClipStudio`     | composer session → "Extract video clips"                                                                       | `clipStudio.start` (nouveau chat)   |
+| `pendingStartBatch`          | composer session → "Batch of posts"                                                                            | `batchStudio.start` (nouveau chat)  |
 
 Une clé **consommée mais jamais posée** se lit comme un point d'entrée vivant alors qu'elle est morte : `pendingStartFlow` et `pendingDraftIdeaId` sont restés dans cette table longtemps après que leurs producteurs aient été remplacés. N'ajouter une ligne qu'avec les deux bouts.
 

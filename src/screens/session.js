@@ -3720,6 +3720,25 @@ function wireAssistantPanel(root, session, attachedContext) {
     setTimeout(() => sendMessage(session.id, pendingHomePrompt.text), 100);
   }
 
+  // Hand-off from the account home's Add menu. The home can't run an intake —
+  // uploads, processing and replay are per-session and it has none — so it
+  // launches instead: it minted this chat and named the flow it wanted, and the
+  // dispatch below calls the SAME functions the composer's own Add menu calls.
+  // After the prompt above (150 vs 100 ms) so a message typed on the home lands
+  // in the thread before a modal opens over it.
+  const pendingAdd = consumeHandoff("pendingHomeAdd");
+  if (pendingAdd?.kind) {
+    setTimeout(() => {
+      const kind = pendingAdd.kind;
+      if (kind === "connector" && pendingAdd.connectorId) askConnector(session.id, pendingAdd.connectorId);
+      else if (kind === "top-posts") topPostsFlow.startTopPostsInline(session.id);
+      else if (kind === "topic") startTopicPickerInline(session.id, session);
+      else if (kind === "text") openAddSourceModal({ tab: "pasteText", currentSessionId: session.id });
+      else if (kind === "url") openAddSourceModal({ tab: "url", currentSessionId: session.id });
+      else startPillFromKind(root, session, kind);
+    }, 150);
+  }
+
   // Hand-off from a source card's "Ask" button on the dashboard or another
   // session — open the askWhatToKnow inline question in this freshly mounted
   // chat.
