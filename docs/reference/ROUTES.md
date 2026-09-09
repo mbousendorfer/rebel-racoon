@@ -57,7 +57,7 @@ setHashQuery("/session/abc", { tab: "posts", focusIdea: "i-42" });
 
 `setHashQuery` appelle `navigate()` du router. Idiomatic pour pousser un changement d'état d'écran sans reload.
 
-Exemples en service : `#/session/:id?tab=…&focusIdea=…`, `#/topics?pb=…` (flag OFF), et `#/home?tab=chats|playbooks` — les deux listes de la home, dans l'URL pour que le Back du navigateur passe de l'une à l'autre ; **Chats est le défaut**, et une valeur inconnue y retombe.
+Exemples en service : `#/session/:id?tab=…&focusIdea=…`, `#/topics?pb=…` (flag OFF), et `#/home?tab=chats|playbooks` — les deux listes de la home, dans l'URL pour que le Back du navigateur passe de l'une à l'autre ; **Chats est le défaut**, et une valeur inconnue y retombe. ⚠️ Toute porte qui dit « le catalogue » doit donc porter `?tab=playbooks` : c'est ce que rend `catalogueRoute()` ([`active-playbook.js`](../../src/active-playbook.js)), et le wordmark est la seule à viser `/home` nu — lui dit « la home », pas « les playbooks ».
 
 Exemples observés :
 

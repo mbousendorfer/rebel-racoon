@@ -1,21 +1,21 @@
-import { html, raw, escapeText, escapeAttr } from "../utils.js?v=1084";
-import { renderTopbar } from "../components/topbar.js?v=1084";
+import { html, raw, escapeText, escapeAttr } from "../utils.js?v=1085";
+import { renderTopbar } from "../components/topbar.js?v=1085";
 import {
   getContexts,
   getContextById,
   subscribe as subscribeContexts,
   duplicateContext,
   deleteContext,
-} from "../contexts-store.js?v=1084";
-import { getSessions, getSessionById, subscribe as subscribeSessions } from "../sessions-store.js?v=1084";
-import { getSources, getIdeas } from "../library.js?v=1084";
-import { getPosts } from "../posts-store.js?v=1084";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1084";
-import { closePanel as closeRightPanel } from "../components/right-panel.js?v=1084";
-import { navigate, getPath } from "../router.js?v=1084";
-import { setHandoff } from "../handoff.js?v=1084";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=1084";
-import { renderEmptyState } from "../components/empty-state.js?v=1084";
+} from "../contexts-store.js?v=1085";
+import { getSessions, getSessionById, subscribe as subscribeSessions } from "../sessions-store.js?v=1085";
+import { getSources, getIdeas } from "../library.js?v=1085";
+import { getPosts } from "../posts-store.js?v=1085";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1085";
+import { closePanel as closeRightPanel } from "../components/right-panel.js?v=1085";
+import { navigate, getPath } from "../router.js?v=1085";
+import { setHandoff } from "../handoff.js?v=1085";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=1085";
+import { renderEmptyState } from "../components/empty-state.js?v=1085";
 import {
   visibleContexts,
   usableContexts,
@@ -25,15 +25,15 @@ import {
   canManageSharing,
   accessLabel,
   isMine,
-} from "../playbook-access.js?v=1084";
-import { isWorkspaceMode, getActivePlaybookId, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=1084";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=1084";
-import { installMoreMenu } from "../components/more-menu.js?v=1084";
-import { renderStarterCards } from "../components/starter-card.js?v=1084";
-import { isFlagOn } from "../feature-flags.js?v=1084";
-import { getConnectedConnectors } from "../connectors-store.js?v=1084";
-import { renderConnectorLogo } from "../connectors-view.js?v=1084";
-import { ownerOf } from "../playbook-access.js?v=1084";
+} from "../playbook-access.js?v=1085";
+import { isWorkspaceMode, getActivePlaybookId, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=1085";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=1085";
+import { installMoreMenu } from "../components/more-menu.js?v=1085";
+import { renderStarterCards } from "../components/starter-card.js?v=1085";
+import { isFlagOn } from "../feature-flags.js?v=1085";
+import { getConnectedConnectors } from "../connectors-store.js?v=1085";
+import { renderConnectorLogo } from "../connectors-view.js?v=1085";
+import { ownerOf } from "../playbook-access.js?v=1085";
 
 // The account HOME — and the Playbooks catalogue it merged with.
 //
@@ -101,9 +101,10 @@ export function renderHome(_params, target) {
 
 export function renderContextsRoute(_params, target) {
   // In workspace mode the catalogue IS the home's Playbooks tab. Kept as a
-  // route so every stale deep link and every inbound navigate still lands.
+  // route so every stale deep link and every inbound navigate still lands — on
+  // that TAB, since `/contexts` meant the catalogue and the home opens on Chats.
   if (isWorkspaceMode()) {
-    replaceHash("/home");
+    replaceHash(catalogueRoute());
     return;
   }
   return mountScreen(target, false);
@@ -1151,7 +1152,7 @@ function bind(root) {
       event.stopPropagation();
       const copy = duplicateContext(dupBtn.dataset.contextsDuplicate);
       if (copy) {
-        import("../components/toast.js?v=1084").then(({ showToast }) => showToast("Playbook duplicated"));
+        import("../components/toast.js?v=1085").then(({ showToast }) => showToast("Playbook duplicated"));
         navigate(`/playbook/${copy.id}`);
       }
       return;
@@ -1162,7 +1163,7 @@ function bind(root) {
       const ctx = getContexts().find((c) => c.id === delBtn.dataset.contextsDelete);
       if (!ctx) return;
       if (getContexts().length <= 1) {
-        import("../components/toast.js?v=1084").then(({ showToast }) =>
+        import("../components/toast.js?v=1085").then(({ showToast }) =>
           showToast("Can't delete the last Playbook — every chat needs one."),
         );
         return;
@@ -1177,7 +1178,7 @@ function bind(root) {
         danger: true,
         onConfirm: () => {
           deleteContext(ctx.id);
-          import("../components/toast.js?v=1084").then(({ showToast }) => showToast("Playbook deleted"));
+          import("../components/toast.js?v=1085").then(({ showToast }) => showToast("Playbook deleted"));
         },
       });
       return;

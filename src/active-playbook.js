@@ -42,9 +42,9 @@
 //   scopeSessions(list)    → the chat list, scoped
 //   isAccountScope(path)   → is this route ABOVE the workspaces?
 
-import { getContexts, getContextById, getDefaultContext } from "./contexts-store.js?v=1084";
-import { isFlagOn } from "./feature-flags.js?v=1084";
-import { createNotifier } from "./store-utils.js?v=1084";
+import { getContexts, getContextById, getDefaultContext } from "./contexts-store.js?v=1085";
+import { isFlagOn } from "./feature-flags.js?v=1085";
+import { createNotifier } from "./store-utils.js?v=1085";
 
 const KEY = "archie-active-playbook";
 
@@ -156,6 +156,12 @@ export function isAccountScope(path) {
 // Where the catalogue of brands lives, per model — so no caller has to test the
 // flag to find it. Workspace mode merged it into the account home; without the
 // flag it is still its own page.
+//
+// ⚠️ WITH the tab. The home opens on Chats by default, so a control that says
+// "All playbooks" and navigates to a bare `/home` lands on the other list —
+// which is what every one of these doors did. Every caller uses this as a
+// navigation target only (navigate / href / returnTo), never compared against a
+// path, and path comparisons elsewhere read getPath(), which strips the query.
 export function catalogueRoute() {
-  return isWorkspaceMode() ? "/home" : "/contexts";
+  return isWorkspaceMode() ? "/home?tab=playbooks" : "/contexts";
 }
