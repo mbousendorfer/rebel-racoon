@@ -156,18 +156,25 @@
    Under the tabs, not beside them: the DS nav owns its own full-width rule and
    its border, and a search field inside a [role=tablist] would be a non-tab in
    a list of tabs. */
+/* ⚠️ No negative margin here. It had `margin-top: -12px` to tighten the gap
+   under the tabs, and that is what made the hint read as un-centred: the row
+   then sat 12px under the tabs and 24px above the table, so the label looked
+   pulled up into the tab strip even though its box centre matched the search
+   field's exactly. The page's own 24px flex gap on both sides is the fix —
+   centre the row in its band rather than nudge it. */
 .home-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--ref-spacing-sm);
   flex-wrap: wrap;
-  margin-top: calc(-1 * var(--ref-spacing-xs));
 }
 
+/* No `min-width: 0`: in a space-between row this let the label shrink to
+   nothing and clip when the controls got wide, instead of wrapping onto the
+   second line the row already allows. */
 .home-toolbar__hint {
   margin: 0;
-  min-width: 0;
 }
 
 .home-toolbar__actions {
