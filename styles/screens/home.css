@@ -207,57 +207,28 @@
 /* ── The two tables ────────────────────────────────────────────────────────
    Both tabs are the same shape, deliberately: records to scan, one row each,
    columns NAMED in a header. The Playbooks tab was a grid of tiles, then a list
-   of horizontal cards — which was a table imitating one, with fixed widths, a
-   uniform row height and aligned numbers. Only the border and radius per row
-   were still card. The tile survives on `/contexts` flag OFF, where a Playbook
-   is an object you browse rather than a row you pick from.
+   of horizontal cards — which was a table imitating one. The tile survives on
+   `/contexts` flag OFF, where a Playbook is an object you browse rather than a
+   row you pick from.
 
-   Rows are the navigation, so they need the affordance the DS ships no modifier
-   for. Screen-owned class, never a redeclared `.ap-*` selector. */
-.home-table tbody tr {
-  cursor: pointer;
-}
+   ⚠️ NOTHING here styles a `tr`, `th` or `td`, and no class is put on one: the
+   component's guideline is explicit ("semantic HTML — no classes on tr/th/td",
+   "use root modifiers rather than styling individual tr/th/td"). Appearance
+   comes from the ROOT modifiers — `outer-border`, `header-background`, `small`,
+   plus `clickable-rows` which ds-patches.css adds because the DS ships no
+   row-navigation affordance — and from the documented CELL classes (`right`).
+   Everything below dresses the content INSIDE `.ap-table-cell-content`, which
+   is the DS's own inner wrapper. */
 
-.home-table tbody tr:hover {
-  background: var(--ref-color-grey-05);
-}
-
-.home-table tbody tr:focus-visible {
-  outline: 2px solid var(--ref-color-electric-blue-100);
-  outline-offset: -2px;
-}
-
-/* The leading cell takes the slack and everything else shrinks to its content.
-   `max-width: 0` with `width: 100%` is what lets a cell in an auto-layout table
-   truncate at all — without it the prose just widens the column. */
-.home-table__lead {
-  width: 100%;
-  max-width: 0;
-}
-
-.home-table th {
-  white-space: nowrap;
-}
-
-/* The actions column's header still has to name itself for a screen reader; it
-   just doesn't need to say it out loud above a single kebab. */
-.home-table__th-quiet {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
-/* ── The Playbooks table's own cells ────────────────────────────────────────
-   Two text lines and a 32px brand mark per row, so this table does NOT take the
-   DS's `small` metric the Chats table uses — that one is 40px of cell for a
-   single line, and the two lines came out crushed against the thumbnail. The
-   vertical padding is scoped to this table's cells rather than the DS class. */
-.home-playbooks tbody td {
-  padding-top: var(--ref-spacing-xxs);
-  padding-bottom: var(--ref-spacing-xxs);
+/* ── What sits INSIDE the Playbooks table's cells ───────────────────────────
+   The identity cell is the DS's own pattern for this — "a leading cell often
+   pairs an avatar + name + email" (references/patterns.md) — with the brief
+   playing the second line. It also means the row is taller than one line, so
+   this table skips the `small` metric the Chats table takes: 40px of cell for
+   one line crushed two against the thumbnail. The breathing room is padding on
+   the CONTENT, never on the `td`. */
+.home-playbooks__identity {
+  padding: var(--ref-spacing-xxs) 0;
 }
 .home-playbooks__identity {
   gap: var(--ref-spacing-xs);
@@ -305,9 +276,11 @@
   text-overflow: ellipsis;
 }
 
-/* One line, cut with an ellipsis: every row is two text lines tall, so the
-   table keeps one rhythm and nothing jumps as it repaints. */
+/* One line, cut with an ellipsis at a MEASURE rather than at a cell width:
+   capping the text is what lets the table stay auto-layout with no width forced
+   on a `td`, and ~52 characters is the same measure the tile's brief reads at. */
 .home-playbooks__brief {
+  max-width: 52ch;
   color: var(--ref-color-grey-80);
   white-space: nowrap;
   overflow: hidden;

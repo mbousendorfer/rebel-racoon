@@ -697,3 +697,27 @@ button.ap-link {
 .app-bar--off-track .app-bar__fill {
   background: var(--app-chart-off-track);
 }
+
+/* ── .ap-table.clickable-rows — a MISSING root modifier ───────────────────
+   The DS's data-table pattern prescribes rows that navigate ("per-row overflow
+   menu and row actions", references/patterns.md), but `ds/css-ui` ships no
+   affordance for it: no cursor, no hover, no focus ring on a row you can click.
+   Screens were styling `tbody tr` themselves, which the component's own
+   guideline forbids — "use root modifiers rather than styling individual
+   tr / th / td". So it becomes a root modifier here, which is the shape the
+   guideline asks for, and the day the DS ships one this block is a delete.
+
+   Hover is grey-05, the same wash `.striped` and `.header-background` use, so a
+   hovered row reads as the table's own surface rather than a new colour. */
+.ap-table.clickable-rows tbody tr {
+  cursor: pointer;
+}
+
+.ap-table.clickable-rows tbody tr:hover {
+  background-color: var(--ref-color-grey-05);
+}
+
+.ap-table.clickable-rows tbody tr:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: -2px;
+}

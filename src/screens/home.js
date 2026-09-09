@@ -1,21 +1,21 @@
-import { html, raw, escapeText, escapeAttr } from "../utils.js?v=1080";
-import { renderTopbar } from "../components/topbar.js?v=1080";
+import { html, raw, escapeText, escapeAttr } from "../utils.js?v=1081";
+import { renderTopbar } from "../components/topbar.js?v=1081";
 import {
   getContexts,
   getContextById,
   subscribe as subscribeContexts,
   duplicateContext,
   deleteContext,
-} from "../contexts-store.js?v=1080";
-import { getSessions, getSessionById, subscribe as subscribeSessions } from "../sessions-store.js?v=1080";
-import { getSources, getIdeas } from "../library.js?v=1080";
-import { getPosts } from "../posts-store.js?v=1080";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1080";
-import { closePanel as closeRightPanel } from "../components/right-panel.js?v=1080";
-import { navigate, getPath } from "../router.js?v=1080";
-import { setHandoff } from "../handoff.js?v=1080";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=1080";
-import { renderEmptyState } from "../components/empty-state.js?v=1080";
+} from "../contexts-store.js?v=1081";
+import { getSessions, getSessionById, subscribe as subscribeSessions } from "../sessions-store.js?v=1081";
+import { getSources, getIdeas } from "../library.js?v=1081";
+import { getPosts } from "../posts-store.js?v=1081";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1081";
+import { closePanel as closeRightPanel } from "../components/right-panel.js?v=1081";
+import { navigate, getPath } from "../router.js?v=1081";
+import { setHandoff } from "../handoff.js?v=1081";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=1081";
+import { renderEmptyState } from "../components/empty-state.js?v=1081";
 import {
   visibleContexts,
   usableContexts,
@@ -25,15 +25,15 @@ import {
   canManageSharing,
   accessLabel,
   isMine,
-} from "../playbook-access.js?v=1080";
-import { isWorkspaceMode, getActivePlaybookId, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=1080";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=1080";
-import { installMoreMenu } from "../components/more-menu.js?v=1080";
-import { renderStarterCards } from "../components/starter-card.js?v=1080";
-import { isFlagOn } from "../feature-flags.js?v=1080";
-import { getConnectedConnectors } from "../connectors-store.js?v=1080";
-import { renderConnectorLogo } from "../connectors-view.js?v=1080";
-import { ownerOf } from "../playbook-access.js?v=1080";
+} from "../playbook-access.js?v=1081";
+import { isWorkspaceMode, getActivePlaybookId, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=1081";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=1081";
+import { installMoreMenu } from "../components/more-menu.js?v=1081";
+import { renderStarterCards } from "../components/starter-card.js?v=1081";
+import { isFlagOn } from "../feature-flags.js?v=1081";
+import { getConnectedConnectors } from "../connectors-store.js?v=1081";
+import { renderConnectorLogo } from "../connectors-view.js?v=1081";
+import { ownerOf } from "../playbook-access.js?v=1081";
 
 // The account HOME — and the Playbooks catalogue it merged with.
 //
@@ -534,13 +534,13 @@ function renderPlaybooksTable(list) {
   if (!list.length) return renderContextsEmpty(visibleContexts(), pageState);
   const sharing = isFlagOn("playbookSharing");
   return `
-    <table class="ap-table outer-border home-table home-playbooks">
+    <table class="ap-table outer-border header-background clickable-rows home-playbooks">
       <thead>
         <tr>
           <th scope="col">Playbook</th>
           ${sharing ? `<th scope="col">Owner</th><th scope="col">Access</th>` : ""}
           <th scope="col">Updated</th>
-          <th scope="col"><span class="home-table__th-quiet">Actions</span></th>
+          <th scope="col" class="right">Action</th>
         </tr>
       </thead>
       <tbody>${list.map(renderPlaybookRow).join("")}</tbody>
@@ -564,7 +564,7 @@ function renderPlaybookRow(ctx) {
       tabindex="0"
       ${title ? `title="${escapeAttr(title)}" aria-label="${escapeAttr(title)}"` : ""}
     >
-      <td class="home-table__lead">
+      <td>
         <div class="ap-table-cell-content home-playbooks__identity">
           ${playbookThumb(ctx)}
           <div class="home-playbooks__text">
@@ -592,8 +592,8 @@ function renderPlaybookRow(ctx) {
             </td>`
           : ""
       }
-      <td class="home-playbooks__when">${escapeText(ctx.updatedAt || "recently")}</td>
-      <td>${playbookMoreMenu(ctx)}</td>
+      <td><div class="ap-table-cell-content">${escapeText(ctx.updatedAt || "recently")}</div></td>
+      <td class="right">${playbookMoreMenu(ctx)}</td>
     </tr>
   `;
 }
@@ -727,7 +727,7 @@ function renderChatsTab() {
     .map(
       ({ session, ctx }) => `
       <tr data-home-chat="${escapeAttr(session.id)}" role="button" tabindex="0">
-        <td class="home-table__lead">
+        <td>
           <div class="ap-table-cell-content">
             <span class="home-chats__name">${escapeText(session.name)}</span>
           </div>
@@ -741,14 +741,14 @@ function renderChatsTab() {
             <span class="${ctx ? "" : "muted"}">${ctx ? escapeText(ctx.name) : "No Playbook"}</span>
           </div>
         </td>
-        <td class="home-chats__when">${escapeText(session.lastActivity || "")}</td>
+        <td><div class="ap-table-cell-content">${escapeText(session.lastActivity || "")}</div></td>
       </tr>
     `,
     )
     .join("");
 
   return `
-    <table class="ap-table small outer-border home-table home-chats">
+    <table class="ap-table small outer-border header-background clickable-rows home-chats">
       <thead>
         <tr>
           <th scope="col">Chat</th>
@@ -1150,7 +1150,7 @@ function bind(root) {
       event.stopPropagation();
       const copy = duplicateContext(dupBtn.dataset.contextsDuplicate);
       if (copy) {
-        import("../components/toast.js?v=1080").then(({ showToast }) => showToast("Playbook duplicated"));
+        import("../components/toast.js?v=1081").then(({ showToast }) => showToast("Playbook duplicated"));
         navigate(`/playbook/${copy.id}`);
       }
       return;
@@ -1161,7 +1161,7 @@ function bind(root) {
       const ctx = getContexts().find((c) => c.id === delBtn.dataset.contextsDelete);
       if (!ctx) return;
       if (getContexts().length <= 1) {
-        import("../components/toast.js?v=1080").then(({ showToast }) =>
+        import("../components/toast.js?v=1081").then(({ showToast }) =>
           showToast("Can't delete the last Playbook — every chat needs one."),
         );
         return;
@@ -1176,7 +1176,7 @@ function bind(root) {
         danger: true,
         onConfirm: () => {
           deleteContext(ctx.id);
-          import("../components/toast.js?v=1080").then(({ showToast }) => showToast("Playbook deleted"));
+          import("../components/toast.js?v=1081").then(({ showToast }) => showToast("Playbook deleted"));
         },
       });
       return;
