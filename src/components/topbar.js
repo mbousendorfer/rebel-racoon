@@ -1,7 +1,7 @@
-import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=1078";
-import { getPath, navigate } from "../router.js?v=1078";
-import { parseHashParams } from "../url-state.js?v=1078";
-import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=1078";
+import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=1079";
+import { getPath, navigate } from "../router.js?v=1079";
+import { parseHashParams } from "../url-state.js?v=1079";
+import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=1079";
 // Lot 19 — topbar no longer carries its own sidebar-toggle button. The
 // sidebar head exposes the toggle in both expanded (chevron-left) and
 // collapsed (view-list) states, so the duplicate in the topbar was just
@@ -14,37 +14,37 @@ import {
   getMode as getRightPanelMode,
   getActiveBatchRef as getActiveDraftsBatchRef,
   subscribe as subscribeRightPanel,
-} from "./right-panel.js?v=1078";
-import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=1078";
-import { getThread, subscribe as subscribeThread } from "../assistant.js?v=1078";
-import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=1078";
-import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=1078";
+} from "./right-panel.js?v=1079";
+import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=1079";
+import { getThread, subscribe as subscribeThread } from "../assistant.js?v=1079";
+import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=1079";
+import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=1079";
 import {
   isEnabled as isStatusCardEnabled,
   toggle as toggleStatusCard,
   subscribeVisibility as subscribeStatusCardVisibility,
-} from "./conversation-status-card.js?v=1078";
-import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=1078";
-import { open as openRenameModal } from "./rename-modal.js?v=1078";
+} from "./conversation-status-card.js?v=1079";
+import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=1079";
+import { open as openRenameModal } from "./rename-modal.js?v=1079";
 import {
   subscribe as subscribeContexts,
   getContextById,
   getDefaultContext,
   getContexts,
-} from "../contexts-store.js?v=1078";
-import { isFlagOn } from "../feature-flags.js?v=1078";
-import { getActivePlaybook, isWorkspaceMode, isAccountScope } from "../active-playbook.js?v=1078";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1078";
-import { findCadence } from "../topics-catalog.js?v=1078";
+} from "../contexts-store.js?v=1079";
+import { isFlagOn } from "../feature-flags.js?v=1079";
+import { getActivePlaybook, isWorkspaceMode, isAccountScope } from "../active-playbook.js?v=1079";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1079";
+import { findCadence } from "../topics-catalog.js?v=1079";
 import {
   getPickerState as getTopPostsState,
   subscribePicker as subscribeTopPosts,
   backToProfiles as topPostsBackToProfiles,
-} from "../top-posts-flow.js?v=1078";
+} from "../top-posts-flow.js?v=1079";
 // The Insights view switch. Imported from views.js, NOT from the screen's
 // shell: the shell imports this module, so taking it from there would close a
 // cycle. views.js imports neither.
-import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=1078";
+import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=1079";
 
 // The playbook/context pill now lives in the composer (session.js
 // renderPlaybookControl) — selectable on a New Chat, then a static
@@ -330,7 +330,7 @@ export function initTopbar() {
     // renderWelcomeAltExit() above. The wizard chrome no longer carries
     // its own Exit affordance; this is the only entry.
     if (event.target.closest("[data-topbar-welcome-alt-exit]")) {
-      import("./confirm-modal.js?v=1078").then(({ open }) => {
+      import("./confirm-modal.js?v=1079").then(({ open }) => {
         open({
           title: "Exit onboarding?",
           body: "Your progress so far will be discarded. You can start over anytime from the dashboard.",
@@ -553,11 +553,13 @@ function backTargetFor(path) {
   // page — and it names the brand, because "Back" alone would not say what you
   // are returning to. `/` resolves that brand's home (dashboard.js).
   if (isAccountScope(path)) {
-    if (path === "/contexts") {
+    if (path === "/home" || path === "/contexts") {
       const active = getActivePlaybook();
       return { to: "/", label: active ? `Back to ${active.name}` : "Back to my work" };
     }
-    return { to: "/contexts", label: "Back to all playbooks" };
+    // Another brand's fiche, opened from the home's Playbooks tab. Hardcoded
+    // `/home`: this branch is only reachable in workspace mode.
+    return { to: "/home", label: "Back to all playbooks" };
   }
   // Workspace mode: the ACTIVE brand's fiche is an in-workspace route, reached
   // from the rail's own row — no crumb, and currentTitle() names it instead. A
@@ -610,7 +612,9 @@ function currentSessionId() {
 // the topbar title clickable.
 function currentTitle() {
   const path = getPath();
-  if (path === "/") return "Home";
+  // Two homes, one word: `/` is the active brand's (a redirect that never
+  // renders), `/home` is the account's.
+  if (path === "/" || path === "/home") return "Home";
   if (path === "/contexts") return "Playbooks";
   // Only ever read in workspace mode, where the active brand's fiche renders no
   // back control (see backTargetFor). The brand's own name is the page's h1, so

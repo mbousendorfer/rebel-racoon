@@ -1,0 +1,173 @@
+/* The account home — the hero, the tab row's toolbar, the chats table.
+   The screen itself (page cap, grid, cards) is styles/screens/contexts.css:
+   the home merged WITH the catalogue, so it inherits its page box.
+
+   ⚠️ The colour dots reuse `.app-sidebar__row-color-dot--<color>` from
+   styles/components/sidebar.css — the same reuse the search modal already
+   makes. Third consumer; the class arguably wants its own file now, but moving
+   it is a separate cleanup, not this feature's business.
+
+   ⚠️ Nothing here may be called `.empty-chat`: `.app-shell:has(.empty-chat)`
+   (layout.css) hides the app topbar, and on this page the topbar carries the
+   only way back into the work. */
+
+/* ── The hero ──────────────────────────────────────────────────────────────
+   Narrower than the page: a prompt box the width of a card grid reads as a
+   form, not as an invitation. Centred on the page's own 1280px box. */
+.home-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--ref-spacing-lg) 0 var(--ref-spacing-md);
+  text-align: center;
+}
+
+.home-hero__title {
+  margin: 0;
+  font-size: var(--sys-text-style-h1-size);
+  line-height: var(--sys-text-style-h1-line-height);
+  font-weight: var(--sys-text-style-h1-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.home-hero__sub {
+  margin: 0;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--ref-color-grey-80);
+}
+
+/* The box. One bounded card holding the field and its two controls, so the
+   textarea and the Playbook it will run under read as one object. */
+.home-hero__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  width: 100%;
+  margin-top: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-sm);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-card);
+  background: var(--ref-color-white);
+  text-align: left;
+}
+
+.home-hero__card:focus-within {
+  border-color: var(--ref-color-electric-blue-100);
+}
+
+.home-hero__input {
+  width: 100%;
+  border: 0;
+  padding: 0;
+  resize: none;
+  background: transparent;
+  font-family: var(--ref-font-family);
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--ref-color-grey-100);
+}
+
+.home-hero__input:focus {
+  outline: none;
+}
+
+.home-hero__input::placeholder {
+  color: var(--ref-color-grey-80);
+}
+
+.home-hero__toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+}
+
+/* The DS select ships full-width; clamp it to its content so it sits inline
+   with the send button instead of stretching across the card. */
+.home-hero__pb,
+.home-hero__pb > .ap-select-trigger {
+  width: auto;
+}
+
+.home-hero__pb {
+  min-width: 0;
+}
+
+/* Send is pushed to the trailing edge, like the composer's. */
+.home-hero__send {
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+
+.home-hero__hint {
+  margin: 0;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
+}
+
+.home-hero__hint kbd {
+  font-family: inherit;
+  font-weight: var(--ref-font-weight-bold);
+}
+
+/* ── The tab row's toolbar ─────────────────────────────────────────────────
+   Under the tabs, not beside them: the DS nav owns its own full-width rule and
+   its border, and a search field inside a [role=tablist] would be a non-tab in
+   a list of tabs. */
+.home-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-sm);
+  flex-wrap: wrap;
+  margin-top: calc(-1 * var(--ref-spacing-xs));
+}
+
+.home-toolbar__hint {
+  margin: 0;
+  min-width: 0;
+}
+
+.home-toolbar__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+}
+
+/* ── The chats table ───────────────────────────────────────────────────────
+   Rows are the navigation, so they need the affordance the DS doesn't ship a
+   modifier for. Screen-owned class, not a redeclared `.ap-*` selector. */
+.home-chats tbody tr {
+  cursor: pointer;
+}
+
+.home-chats tbody tr:hover {
+  background: var(--ref-color-grey-05);
+}
+
+.home-chats tbody tr:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: -2px;
+}
+
+.home-chats__name {
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--ref-color-grey-100);
+}
+
+.home-chats__pin {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--ref-color-grey-80);
+}
+
+.home-chats__when {
+  white-space: nowrap;
+  color: var(--ref-color-grey-80);
+}

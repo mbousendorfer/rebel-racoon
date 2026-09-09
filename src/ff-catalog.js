@@ -33,7 +33,10 @@ export const FLAGS = Object.freeze([
       "active-playbook.js: a scope HIDES. There is deliberately no " +
       '"All playbooks" view, which is why the switcher is permanent and always ' +
       "prints the brand name — the scope is only safe while it is legible. " +
-      "/contexts stays unfiltered: it is the catalogue the switcher picks from.",
+      "/contexts stays unfiltered: it is the catalogue the switcher picks from — " +
+      "and in this mode it lives on the account HOME the wordmark opens (/home), " +
+      "beside a hero that starts a chat on the brand you pick and a Chats tab " +
+      "listing every chat, all brands.",
   },
   {
     id: "draftInlineEdit",

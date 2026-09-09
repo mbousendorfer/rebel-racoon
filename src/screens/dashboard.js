@@ -1,7 +1,7 @@
-import { getSessions } from "../sessions-store.js?v=1078";
-import { scopeSessions } from "../active-playbook.js?v=1078";
-import { getContexts } from "../contexts-store.js?v=1078";
-import { isNewUser } from "../user-mode.js?v=1078";
+import { getSessions } from "../sessions-store.js?v=1079";
+import { scopeSessions } from "../active-playbook.js?v=1079";
+import { getContexts } from "../contexts-store.js?v=1079";
+import { isNewUser } from "../user-mode.js?v=1079";
 
 // Dashboard route — pure redirect surface.
 //
@@ -17,6 +17,12 @@ import { isNewUser } from "../user-mode.js?v=1078";
 // six, section chips. That went out with the Topics magazine it was built on
 // (see the Topic Feed § in CLAUDE.md). If a front page comes back, it comes back
 // on top of the Topic Feed's own data, not as a second reader of a second store.
+//
+// ⚠️ The account home is NOT that page: `/home` (screens/home.js, flag
+// `playbookWorkspace`) is a page of what you HAVE — your Playbooks and your
+// chats — while the front page was a page of what Archie PROPOSES. `/` is still
+// only a redirect, and it resolves the active BRAND's home; `/home` is the
+// account's. Two levels, two homes.
 
 export function renderDashboard(_params, _target) {
   // Branch 1 — first-time user without a Playbook → onboarding.

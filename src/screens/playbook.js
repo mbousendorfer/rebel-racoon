@@ -17,9 +17,9 @@
 // `loader` cfg, run the (mock) analysis on a timer, then `updateContext` with
 // the section patch — the loader flips to ready and paints the fresh data.
 
-import { navigate } from "../router.js?v=1078";
-import { escapeHtml as esc } from "../utils.js?v=1078";
-import { renderTopbar } from "../components/topbar.js?v=1078";
+import { navigate } from "../router.js?v=1079";
+import { escapeHtml as esc } from "../utils.js?v=1079";
+import { renderTopbar } from "../components/topbar.js?v=1079";
 import {
   getContextById,
   getContexts,
@@ -27,15 +27,15 @@ import {
   deleteContext,
   duplicateContext,
   appendHistory,
-} from "../contexts-store.js?v=1078";
-import { isWorkspaceMode, setActivePlaybook } from "../active-playbook.js?v=1078";
-import { mount, snapshotEditable } from "../playbook-view.js?v=1078";
-import { open as openRenameModal } from "../components/rename-modal.js?v=1078";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=1078";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=1078";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=1078";
-import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=1078";
-import { sectionPatchFromAnalysis } from "../context-builder.js?v=1078";
+} from "../contexts-store.js?v=1079";
+import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=1079";
+import { mount, snapshotEditable } from "../playbook-view.js?v=1079";
+import { open as openRenameModal } from "../components/rename-modal.js?v=1079";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=1079";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=1079";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=1079";
+import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=1079";
+import { sectionPatchFromAnalysis } from "../context-builder.js?v=1079";
 import {
   canView,
   canEdit,
@@ -45,8 +45,8 @@ import {
   isMine,
   ownerOf,
   ownerName,
-} from "../playbook-access.js?v=1078";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=1078";
+} from "../playbook-access.js?v=1079";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=1079";
 
 const AUTOFILL_MS = 1500;
 
@@ -66,7 +66,7 @@ const STAGES = {
 };
 
 function toast(msg) {
-  import("../components/toast.js?v=1078").then(({ showToast }) => showToast(msg));
+  import("../components/toast.js?v=1079").then(({ showToast }) => showToast(msg));
 }
 
 function prettyUrl(url) {
@@ -151,7 +151,7 @@ export function renderPlaybook(params, target) {
   // A Playbook that isn't mine and isn't shared is not a 404 — it exists, I
   // just can't be here. Same exit either way.
   if (!guard || !canView(guard)) {
-    navigate("/contexts");
+    navigate(catalogueRoute());
     return () => {};
   }
 
@@ -268,7 +268,7 @@ export function renderPlaybook(params, target) {
         if (ctx && !isMine(ctx)) toast(`${ownerName(ctx)} will be notified.`);
         deleteContext(id);
         toast("Playbook deleted");
-        navigate("/contexts");
+        navigate(catalogueRoute());
       },
     });
   }
@@ -350,7 +350,7 @@ export function renderPlaybook(params, target) {
         // allowed to be here.
         onDone: () => {
           const ctx = getContextById(id);
-          if (!ctx || !canView(ctx)) navigate("/contexts");
+          if (!ctx || !canView(ctx)) navigate(catalogueRoute());
           else remount();
         },
       });

@@ -42,9 +42,9 @@
 //   scopeSessions(list)    → the chat list, scoped
 //   isAccountScope(path)   → is this route ABOVE the workspaces?
 
-import { getContexts, getContextById, getDefaultContext } from "./contexts-store.js?v=1078";
-import { isFlagOn } from "./feature-flags.js?v=1078";
-import { createNotifier } from "./store-utils.js?v=1078";
+import { getContexts, getContextById, getDefaultContext } from "./contexts-store.js?v=1079";
+import { isFlagOn } from "./feature-flags.js?v=1079";
+import { createNotifier } from "./store-utils.js?v=1079";
 
 const KEY = "archie-active-playbook";
 
@@ -145,7 +145,17 @@ export function scopeSessions(list) {
 // That is the whole rule — the chrome follows the object's scope.
 export function isAccountScope(path) {
   if (!isWorkspaceMode()) return false;
-  if (path === "/contexts") return true;
+  // Both, deliberately: `/contexts` redirects to `/home` in this mode, and
+  // afterRender() still runs once with the old path on the redirect frame —
+  // dropping it there would flash the rail back in for one paint.
+  if (path === "/home" || path === "/contexts") return true;
   const match = /^\/playbook\/([^/?]+)/.exec(path || "");
   return !!match && match[1] !== getActivePlaybookId();
+}
+
+// Where the catalogue of brands lives, per model — so no caller has to test the
+// flag to find it. Workspace mode merged it into the account home; without the
+// flag it is still its own page.
+export function catalogueRoute() {
+  return isWorkspaceMode() ? "/home" : "/contexts";
 }
