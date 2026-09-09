@@ -91,6 +91,29 @@ body.onboarding .app-content {
   grid-column: 1;
 }
 
+/* ---------- Account scope (flag playbookWorkspace) ----------
+   `body.account-scope` (set in app.js) marks the routes that live ABOVE the
+   workspaces: the Playbooks catalogue, and another brand's fiche opened from
+   it. The rail goes — a page about eight brands must not be framed by the
+   chrome of one — and the content takes the whole width.
+
+   The TOPBAR stays, unlike onboarding mode which drops both: it is what carries
+   the way back in ("‹ Back to Acme · Q2 marketing"), so it is the one piece of
+   chrome this state actually needs. */
+
+body.account-scope .app-sidebar {
+  display: none;
+}
+
+body.account-scope .app-shell {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+body.account-scope .app-topbar,
+body.account-scope .app-content {
+  grid-column: 1;
+}
+
 /* ---------- Empty-chat full-bleed ----------
    A fresh chat (the empty-state hero) drops the topbar and reclaims its row
    so the welcome view stays as simple as possible — just the sidebar + the

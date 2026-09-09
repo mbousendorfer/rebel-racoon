@@ -5,6 +5,7 @@ import { init as initObjectiveModal } from "./components/objective-modal.js?v=10
 import { init as initObjectiveCatalogPanel } from "./components/objective-catalog-panel.js?v=1078";
 import { initTopbar, renderTopbar } from "./components/topbar.js?v=1078";
 import { initSidebar, renderSidebar } from "./components/sidebar.js?v=1078";
+import { isAccountScope } from "./active-playbook.js?v=1078";
 import { init as initRightPanel } from "./components/right-panel.js?v=1078";
 import { init as initScheduleModal } from "./components/schedule-modal.js?v=1078";
 import { init as initBugReportModal } from "./components/bug-report-modal.js?v=1078";
@@ -135,6 +136,11 @@ setAfterRender((path) => {
     /* ignore */
   }
   document.body.classList.toggle("onboarding", (path.startsWith("/welcome") || isAltSession) && !integratedCreate);
+  // Account scope — the routes that live ABOVE the workspaces (the Playbooks
+  // catalogue, and another brand's fiche opened from it). The shell steps back
+  // to a single column with no rail: a page listing eight brands must not wear
+  // the chrome of one. See active-playbook.js § Above the workspaces.
+  document.body.classList.toggle("account-scope", isAccountScope(path));
 });
 
 start();

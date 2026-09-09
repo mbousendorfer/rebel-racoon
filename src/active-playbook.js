@@ -40,6 +40,7 @@
 //   isWorkspaceMode()      → is the scope live at all? (flag playbookWorkspace)
 //   playbookForNewWork()   → the Playbook new work is born under
 //   scopeSessions(list)    → the chat list, scoped
+//   isAccountScope(path)   → is this route ABOVE the workspaces?
 
 import { getContexts, getContextById, getDefaultContext } from "./contexts-store.js?v=1078";
 import { isFlagOn } from "./feature-flags.js?v=1078";
@@ -128,4 +129,23 @@ export function scopeSessions(list) {
   const id = getActivePlaybookId();
   if (!id) return list;
   return list.filter((s) => !s.contextId || s.contextId === id);
+}
+
+// ── Above the workspaces ──────────────────────────────────────────────────
+//
+// Two levels, and the switcher is the seam between them. Inside a workspace,
+// every surface is one brand's. But the CATALOGUE of brands — and any other
+// brand's fiche you open from it — belongs to the level above: it talks about
+// the marques you are not in, which is the one thing the rail promises never to
+// do. So those routes step OUT of the shell (app.js drops `body.account-scope`
+// on them, layout.css hides the rail) and lead back in with a crumb.
+//
+// ⚠️ The active brand's OWN fiche is not account scope: it is the workspace's
+// identity sheet, the row in the rail points at it, and it keeps the chrome.
+// That is the whole rule — the chrome follows the object's scope.
+export function isAccountScope(path) {
+  if (!isWorkspaceMode()) return false;
+  if (path === "/contexts") return true;
+  const match = /^\/playbook\/([^/?]+)/.exec(path || "");
+  return !!match && match[1] !== getActivePlaybookId();
 }

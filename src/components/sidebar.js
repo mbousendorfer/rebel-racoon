@@ -636,8 +636,8 @@ function renderPlaybookSwitcher({ collapsed }) {
           <div class="ap-select-options">${options}</div>
           <div class="ap-select-footer">
             <button type="button" class="ap-select-create" data-pb-switch-manage>
-              <i class="ap-icon-target ap-select-create-icon" aria-hidden="true"></i>
-              <span>Manage playbooks</span>
+              <i class="ap-icon-stack ap-select-create-icon" aria-hidden="true"></i>
+              <span>All playbooks</span>
             </button>
             <button type="button" class="ap-select-create" data-pb-switch-create>
               <i class="ap-icon-plus ap-select-create-icon" aria-hidden="true"></i>
@@ -660,9 +660,12 @@ function switchPlaybook(id) {
   if (!id || id === getActivePlaybook()?.id) return;
   setActivePlaybook(id);
   if (!getPath().startsWith("/session/")) return;
-  const next = scopeSessions(getSessions()).filter((sess) => sess.contextId === id)[0];
+  // `/` IS "this brand's home": a pure redirect to the most recent chat in
+  // scope, or a fresh one ([`screens/dashboard.js`]). Computing the
+  // destination here too is how two answers to one question start to drift —
+  // the topbar's way back from the catalogue asks the same thing.
   closeRightPanel();
-  navigate(next ? `/session/${next.id}` : `/session/new-${Date.now().toString(36)}`);
+  navigate("/");
 }
 
 // Footer popmenu — trigger button + popmenu list. The popmenu lives in the
@@ -770,6 +773,10 @@ const NAV = [
     match: (p) => p === "/contexts",
     count: () => visibleContexts().length,
   },
+  // ⚠️ In workspace mode that row is REPLACED, not kept — see workspaceNav().
+  // "Playbooks 8" was the only row in a one-brand rail whose destination talked
+  // about the seven others, and a second door to them beside the switcher —
+  // one that didn't admit it changed scope.
   {
     path: "/connectors",
     icon: "ap-icon-view-grid",
@@ -815,6 +822,35 @@ const NAV = [
   },
 ];
 
+// The nav, in workspace mode: the catalogue row becomes THIS brand's fiche.
+//
+// Singular, no counter — a count of one is noise, and the 8 it used to print
+// was the cross-brand leak. It is also the honest frequency: while you work you
+// open the fiche of the brand you are in (voice, audience, brand) far more often
+// than the list of all of them, which you open to switch, create or delete. The
+// list moved up to the switcher's footer ("All playbooks"), the one control that
+// announces it changes scope.
+//
+// No active Playbook (new-alt, nothing created yet) → no row at all: the
+// switcher is already rendering the offer to create the first one.
+function workspaceNav(items) {
+  if (!isWorkspaceMode()) return items;
+  const active = getActivePlaybook();
+  const fiche = active ? `/playbook/${active.id}` : null;
+  return items
+    .map((item) => {
+      if (item.path !== "/contexts") return item;
+      if (!fiche) return null;
+      return {
+        path: fiche,
+        icon: "ap-icon-target",
+        label: "Playbook",
+        match: (p) => p === fiche,
+      };
+    })
+    .filter(Boolean);
+}
+
 function renderNav(path) {
   // Action rows at the top of the nav group: New conversation + Search.
   // Both are verbs (not routes), so they live alongside Playbooks / Connectors
@@ -848,7 +884,7 @@ function renderNav(path) {
     </button>
   `;
 
-  const routeItems = NAV.filter((item) => !item.flag || [item.flag].flat().every(isFlagOn))
+  const routeItems = workspaceNav(NAV.filter((item) => !item.flag || [item.flag].flat().every(isFlagOn)))
     .map((item) => {
       const count = item.count ? item.count() : 0;
       const counter = count > 0 ? `<span class="ap-counter normal grey">${count}</span>` : "";

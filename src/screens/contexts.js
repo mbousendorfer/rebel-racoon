@@ -18,6 +18,7 @@ import {
   accessLabel,
   isMine,
 } from "../playbook-access.js?v=1078";
+import { isWorkspaceMode, getActivePlaybookId, setActivePlaybook } from "../active-playbook.js?v=1078";
 import { open as openShareModal } from "../components/share-playbook-modal.js?v=1078";
 
 // Contexts library — standalone page (handoff §2.4).
@@ -210,6 +211,34 @@ function renderContextCard(ctx) {
         </button>`
       : "",
   ].join("");
+  // ── Entering a brand vs. reading its fiche ──────────────────────────────
+  //
+  // The card BODY opens the fiche, in both models. It was wired to enter the
+  // workspace for one commit and that was wrong twice over: the management
+  // verbs (the pen included) are revealed on hover, so a slightly wide click
+  // lands on the body — and there the costs are not symmetrical. Opening a
+  // fiche is a page; switching brand moves the whole app. The ambient target
+  // gets the harmless meaning, the explicit control gets the scope move.
+  //
+  // Which is why the scope move needs a control here at all: in account scope
+  // the rail — and with it the switcher — is off screen, so without this link
+  // the catalogue could only ever send you back where you came from.
+  const isCurrent = isWorkspaceMode() && ctx.id === getActivePlaybookId();
+  const currentTag = isCurrent
+    ? `<span class="ap-tag blue mini contexts-card__current"><span>Current</span></span>`
+    : "";
+  // "Switch", not "Open": the body already opens something, and only a scope
+  // can be switched — the word says which of the two doors this is.
+  const switchLink =
+    isWorkspaceMode() && !isCurrent
+      ? `<button
+          type="button"
+          class="ap-link small contexts-card__switch"
+          data-contexts-switch="${ctx.id}"
+          title="Switch to ${escapeAttr(ctx.name)}"
+          aria-label="Switch to ${escapeAttr(ctx.name)}"
+        >Switch</button>`
+      : "";
   return `
     <article class="contexts-card contexts-card--${color}" data-contexts-card="${ctx.id}" role="button" tabindex="0">
       <span class="contexts-card__swatch" aria-hidden="true"></span>
@@ -262,12 +291,16 @@ function renderContextCard(ctx) {
           }
         </div>
         <div class="contexts-card__meta">
+          ${currentTag}
           ${ownerTag}
           ${dotsHtml}
         </div>
       </footer>
 
-      <div class="contexts-card__updated">Updated ${escapeText(ctx.updatedAt || "recently")}</div>
+      <div class="contexts-card__updated">
+        <span>Updated ${escapeText(ctx.updatedAt || "recently")}</span>
+        ${switchLink}
+      </div>
     </article>
   `;
 }
@@ -369,6 +402,17 @@ function bind(root) {
           import("../components/toast.js?v=1078").then(({ showToast }) => showToast("Playbook deleted"));
         },
       });
+      return;
+    }
+    // "Switch" — make this brand the active workspace and go into its work.
+    // `/` resolves that home (dashboard.js): its most recent chat, else a fresh
+    // one. Before the card-body fallback below, and it stops propagation, so
+    // the two doors on one card can't both fire.
+    const switchBtn = event.target.closest("[data-contexts-switch]");
+    if (switchBtn) {
+      event.stopPropagation();
+      setActivePlaybook(switchBtn.dataset.contextsSwitch);
+      navigate("/");
       return;
     }
     // Card click — anywhere outside the action buttons opens the panel in

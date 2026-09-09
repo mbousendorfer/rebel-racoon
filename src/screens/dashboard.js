@@ -1,4 +1,5 @@
 import { getSessions } from "../sessions-store.js?v=1078";
+import { scopeSessions } from "../active-playbook.js?v=1078";
 import { getContexts } from "../contexts-store.js?v=1078";
 import { isNewUser } from "../user-mode.js?v=1078";
 
@@ -26,8 +27,12 @@ export function renderDashboard(_params, _target) {
     return;
   }
 
-  // Branch 2 — normal redirect.
-  const recent = getSessions()[0];
+  // Branch 2 — normal redirect, THROUGH the scope. In workspace mode `/` is
+  // "the home of the brand I'm in": landing on another brand's chat would put a
+  // conversation on screen that the rail beside it doesn't list. It is also the
+  // one definition of that destination — the rail's switcher and the way back
+  // from the catalogue both come here rather than each computing their own.
+  const recent = scopeSessions(getSessions())[0];
   const targetPath = isNewUser() || !recent ? "/session/new" : `/session/${recent.id}`;
   window.location.replace(window.location.href.split("#")[0] + "#" + targetPath);
 }

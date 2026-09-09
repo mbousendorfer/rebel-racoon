@@ -33,7 +33,7 @@ import {
   getContexts,
 } from "../contexts-store.js?v=1078";
 import { isFlagOn } from "../feature-flags.js?v=1078";
-import { getActivePlaybook, isWorkspaceMode } from "../active-playbook.js?v=1078";
+import { getActivePlaybook, isWorkspaceMode, isAccountScope } from "../active-playbook.js?v=1078";
 import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1078";
 import { findCadence } from "../topics-catalog.js?v=1078";
 import {
@@ -548,7 +548,24 @@ function isSessionRoute() {
 
 // Routes that lead with a back control instead of a title, and where they go.
 function backTargetFor(path) {
-  if (/^\/playbook\//.test(path)) return { to: "/contexts", label: "Back to Playbooks" };
+  // Account scope (see active-playbook.js): these routes sit above the
+  // workspaces, so their back control leads back IN rather than to a sibling
+  // page — and it names the brand, because "Back" alone would not say what you
+  // are returning to. `/` resolves that brand's home (dashboard.js).
+  if (isAccountScope(path)) {
+    if (path === "/contexts") {
+      const active = getActivePlaybook();
+      return { to: "/", label: active ? `Back to ${active.name}` : "Back to my work" };
+    }
+    return { to: "/contexts", label: "Back to all playbooks" };
+  }
+  // Workspace mode: the ACTIVE brand's fiche is an in-workspace route, reached
+  // from the rail's own row — no crumb, and currentTitle() names it instead. A
+  // "Back to Playbooks" there would kick the reader out of the workspace.
+  if (/^\/playbook\//.test(path)) {
+    if (isWorkspaceMode()) return null;
+    return { to: "/contexts", label: "Back to Playbooks" };
+  }
   // The Topics settings page carries its Playbook scope BACK to the feed, so a
   // filtered feed survives the round trip. getPath() strips the query, so the scope
   // has to be read from the hash here rather than taken from `path`.
@@ -595,6 +612,10 @@ function currentTitle() {
   const path = getPath();
   if (path === "/") return "Home";
   if (path === "/contexts") return "Playbooks";
+  // Only ever read in workspace mode, where the active brand's fiche renders no
+  // back control (see backTargetFor). The brand's own name is the page's h1, so
+  // the topbar names the SECTION — same rule as Insights.
+  if (path.startsWith("/playbook/")) return "Playbook";
   if (path === "/connectors") return "Connectors";
   if (path === "/topics") return "Topic Feed";
   // The topbar names the SECTION; the brand is named once, by the heading each

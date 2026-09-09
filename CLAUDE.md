@@ -87,7 +87,9 @@ src/
   active-playbook.js   — the ACTIVE Playbook: the app-wide scope behind the flag
                           `playbookWorkspace` (localStorage: archie-active-playbook), plus the
                           three functions every scoped surface reads — isWorkspaceMode() /
-                          playbookForNewWork() / scopeSessions(). Insights reads it flag or no flag.
+                          playbookForNewWork() / scopeSessions() — and isAccountScope(path),
+                          which marks the routes that live ABOVE the workspaces. Insights
+                          reads it flag or no flag.
   playbook-access.js    — who may view/use/edit/share a Playbook; the store never filters
   file-kinds.js         — source kind → DS icon class
   figma-capture.js      — ?openModal= / ?openPanel= deep links for the Figma screen capture
@@ -161,7 +163,8 @@ src/
     topbar.js             persistent header: route title (rename on session) +
                           Sources / Ideas / Drafts pills + status-card toggle; back on /playbook
     sidebar.js            left rail: brand, the Playbook switcher (flag `playbookWorkspace`),
-                          New chat, Search, Playbooks / Connectors / Topic Feed nav,
+                          New chat, Search, Playbooks / Connectors / Topic Feed nav
+                          (under the flag: `Playbook`, singular, = the active brand's fiche),
                           recent chats (pin/rename/delete + Sort & group), footer popmenu (feedback/bug/shortcuts + Admin menu)
     right-panel.js        sliding panel — modes: drafts / ideas / sources / clips / context-brief
     conversation-status-card.js  floating in-progress card (sources/ideas/drafts counts)
@@ -391,6 +394,13 @@ Which feeds listen and how often answers "what job should Archie run?", not "who
 The fork introduced `active-playbook.js`: a global, `localStorage`-persisted Playbook scope written to by a select sitting in the feed's own filter bar — so a control that promised a page filter silently re-scoped the sidebar, the next new chat and the composer's picker. That version was **deliberately not ported**, on one condition stated at the time: _don't reintroduce a global scope without a permanently visible switcher — a scope that hides is only safe while it is legible._
 
 **Behind `playbookWorkspace` (default OFF), that condition is now met and the scope IS the model.** A Playbook is the level above the work, not a field on it: one is active at all times, chosen from the switcher under the wordmark in the rail, and everything below it belongs to that brand — the chat list, a new chat, the Topic Feed and its count, Insights, the studios' drafts. The six pickers that each asked the question separately (the composer's select, the feed's toolbar select, `/topics/settings`' own, the batch / clip / repurpose selects) are **gone**, not disabled: a greyed-out field restating what the rail prints permanently is chrome the reader has to rule out, and next to a live control it reads as something broken. Every host absorbs the loss on its own (`flex-end` commit rows, `margin-left:auto` on Send), and the Insights title stops being a picker because the rail is the door now. Where a page would otherwise stop naming its brand, an existing **live** control picks the name up — `/topics/settings`' "Open the Playbook" link becomes "Open Acme · Q2 marketing".
+
+**Two levels, and the switcher is the seam.** Inside a workspace every surface is one brand's. The CATALOGUE of brands — and any other brand's fiche opened from it — belongs to the level above, so those routes step out of the shell: `isAccountScope(path)` (same module) drives `body.account-scope`, layout.css hides the rail, and the topbar keeps only the way back in ("‹ Back to Acme · Q2 marketing" from the catalogue, "‹ Back to all playbooks" from a fiche). It is the mechanism `body.onboarding` already used, not a new one. Consequences worth knowing before touching either surface:
+
+- **The rail's row is singular.** `Playbooks 8` — a count of every brand, in a rail that promises one — became **`Playbook`** → `/playbook/<active>`: the fiche of the brand you are in, which is both in scope and the frequent destination. The list moved to the switcher's footer ("All playbooks"), the only control that announces it changes scope. `workspaceNav()` in sidebar.js does that swap.
+- **The active brand's own fiche stays IN the workspace** — chrome, no crumb, the rail row lit. Only cross-brand routes leave. That is the whole rule: the chrome follows the object's scope.
+- **On a catalogue card, the ambient click is the harmless one.** The body opens the fiche (as it always did); a labelled **Switch** link carries the scope move, and the active card reads `Current` instead. It was wired the other way for one commit: the management verbs are hover-revealed, so a wide click landed on the body — and there the costs are not symmetrical, since opening a fiche is a page while switching brand moves the whole app. The link is also load-bearing: in account scope the switcher is off screen, so without it the catalogue could only send you back where you came from.
+- **`/` is the one definition of "this brand's home"** — a redirect to the most recent chat IN SCOPE, else a fresh one (dashboard.js reads `scopeSessions`). The rail's switcher, the catalogue's Switch and the topbar's way back all navigate there rather than each computing a destination.
 
 Three rules hold it up:
 
