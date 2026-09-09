@@ -22,7 +22,13 @@
   width: 100%;
   max-width: 720px;
   margin: 0 auto;
-  padding: var(--ref-spacing-lg) 0 var(--ref-spacing-md);
+  /* No bottom padding: the workflows below are the composer's own next move
+     ("type it, or start from one of these"), so the two read as one block. The
+     page's 24px flex gap is the whole distance — the same rule as the tab
+     toolbar below, where a hand-tuned nudge is what made the band asymmetric.
+     It used to add 24px here, plus 16px of margin on the workflows, plus the
+     "Enter to send" line, putting ~90px between the two halves of one gesture. */
+  padding: var(--ref-spacing-lg) 0 0;
   text-align: center;
 }
 
@@ -140,18 +146,6 @@
   flex: 0 0 auto;
 }
 
-.home-hero__hint {
-  margin: 0;
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-80);
-}
-
-.home-hero__hint kbd {
-  font-family: inherit;
-  font-weight: var(--ref-font-weight-bold);
-}
-
 /* ── The tab row's toolbar ─────────────────────────────────────────────────
    Under the tabs, not beside them: the DS nav owns its own full-width rule and
    its border, and a search field inside a [role=tablist] would be a non-tab in
@@ -196,7 +190,6 @@
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xs);
-  margin-top: var(--ref-spacing-sm);
 }
 
 .home-workflows__label {

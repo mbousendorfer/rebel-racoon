@@ -729,9 +729,11 @@ body.playbook-revoked .session__composer-card {
   gap: var(--ref-spacing-xxs);
   /* A floor, and only that: the grid stretches all three to the tallest, so
      this is what the row measures when every subtitle is short. It was 158px,
-     tuned when the subtitle broke into four lines at 22ch; with the text on one
-     or two lines that left ~26px of slack between it and the pinned CTA. */
-  min-height: 140px;
+     tuned when the subtitle broke into four lines at 22ch, then 140px — still
+     above what the content asks for now that the subtitle takes the card's
+     width (16 + 24 title + 8 + 32 two lines + 8 + 4 + 16 CTA + 16 = 124px), so
+     it padded the tallest card instead of only catching the shortest. */
+  min-height: 120px;
   padding: var(--ref-spacing-sm);
   /* Cards rest on a clean white surface; the colour identity comes only from
      the title/CTA + a faint watermark. The tinted wash blooms in on hover via
@@ -831,7 +833,9 @@ body.playbook-revoked .session__composer-card {
 .starter-card__cta {
   position: relative;
   margin-top: auto;
-  padding-top: var(--ref-spacing-xxs);
+  /* Enough to read as a separate row under the copy; it was 8px, on top of the
+     card's own 8px flex gap, which is 16px of air in a card being shortened. */
+  padding-top: var(--ref-spacing-xxxs);
   align-self: flex-start;
 }
 
