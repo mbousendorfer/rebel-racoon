@@ -8,6 +8,8 @@ import {
   deleteContext,
 } from "../contexts-store.js?v=1079";
 import { getSessions, getSessionById, subscribe as subscribeSessions } from "../sessions-store.js?v=1079";
+import { getSources, getIdeas } from "../library.js?v=1079";
+import { getPosts } from "../posts-store.js?v=1079";
 import { parseHashParams, setHashQuery } from "../url-state.js?v=1079";
 import { closePanel as closeRightPanel } from "../components/right-panel.js?v=1079";
 import { navigate, getPath } from "../router.js?v=1079";
@@ -505,17 +507,18 @@ function renderHomeToolbar(tab, totalChats) {
 // three aligned columns.
 function renderChatsTab() {
   const q = (pageState.query || "").trim().toLowerCase();
+  // Recency, the store's own order, and nothing else. NOT pinned-first, which
+  // this list led with for a commit: a pin is something you do to a chat inside
+  // its workspace, so the rail is where it sorts and where it shows. Up here the
+  // only visible ordering column is Last activity, and a list ordered by a fact
+  // it doesn't print reads as arbitrary.
   const rows = getSessions()
     .map((s) => ({ session: s, ctx: chatPlaybook(s) }))
     .filter(({ session, ctx }) => {
       if (!q) return true;
       // The brand is a visible column, so it has to be searchable.
       return `${session.name} ${ctx?.name || ""}`.toLowerCase().includes(q);
-    })
-    // Pinned first, then the store's own order (newest first) — the same
-    // ordering the rail and the search modal lead with. No sort control: that
-    // is the rail's, and this is not the rail.
-    .sort((a, b) => Number(!!b.session.pinned) - Number(!!a.session.pinned));
+    });
 
   if (rows.length === 0) {
     return q
@@ -542,10 +545,12 @@ function renderChatsTab() {
       <tr data-home-chat="${escapeAttr(session.id)}" role="button" tabindex="0">
         <td>
           <div class="ap-table-cell-content">
-            ${session.pinned ? `<i class="ap-icon-pin home-chats__pin" title="Pinned" aria-hidden="true"></i>` : ""}
             <span class="home-chats__name">${escapeText(session.name)}</span>
           </div>
         </td>
+        ${countCell(getSources(session.id).length)}
+        ${countCell(getIdeas(session.id).length)}
+        ${countCell(getPosts(session.id).length)}
         <td>
           <div class="ap-table-cell-content">
             <span class="app-sidebar__row-color-dot app-sidebar__row-color-dot--${escapeAttr(ctx?.color || "grey")}" aria-hidden="true"></span>
@@ -563,6 +568,9 @@ function renderChatsTab() {
       <thead>
         <tr>
           <th scope="col">Chat</th>
+          <th scope="col" class="right">Sources</th>
+          <th scope="col" class="right">Ideas</th>
+          <th scope="col" class="right">Drafts</th>
           <th scope="col">Playbook</th>
           <th scope="col">Last activity</th>
         </tr>
@@ -570,6 +578,23 @@ function renderChatsTab() {
       <tbody>${body}</tbody>
     </table>
   `;
+}
+
+// How far the work in a chat got — sources in, ideas out, drafts written. Three
+// numbers with a COLUMN HEADER each rather than three icons in one cell: a
+// number needs its name in text, and in a table the header is that name.
+//
+// ⚠️ Not the same call as the Playbooks tab, which just LOST its three counters.
+// The difference is what the reader is doing: nobody picks a brand by how many
+// audiences its fiche lists, but "3 sources · 5 ideas · 2 drafts" is exactly how
+// far a conversation got, which is what you scan a list of work for.
+//
+// A zero prints as a zero, muted: an empty cell in a numeric column reads as
+// "unknown", and "this chat has produced nothing yet" is a fact worth seeing.
+function countCell(n) {
+  return `<td class="right"><div class="ap-table-cell-content">
+    <span class="${n ? "home-chats__count" : "home-chats__count home-chats__count--zero"}">${n}</span>
+  </div></td>`;
 }
 
 // The Playbook behind a chat, but only if I may open it — same rule the rail's
