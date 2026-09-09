@@ -27,6 +27,8 @@ import {
 import { isWorkspaceMode, getActivePlaybookId, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=1079";
 import { open as openShareModal } from "../components/share-playbook-modal.js?v=1079";
 import { installMoreMenu } from "../components/more-menu.js?v=1079";
+import { isFlagOn } from "../feature-flags.js?v=1079";
+import { ownerOf } from "../playbook-access.js?v=1079";
 
 // The account HOME — and the Playbooks catalogue it merged with.
 //
@@ -216,9 +218,14 @@ function renderTabBody() {
   // tab's own rows. Flag OFF the catalogue keeps its grid: it is a page for
   // browsing fiches, and its cards are the object, not a door.
   if (isHome) {
-    return `<div class="contexts-view__list">${visible
-      .map((c) => renderContextCard(c, { row: true }))
-      .join("")}${renderGhostCard({ row: true })}</div>`;
+    // No ghost row at the end: `Create a Playbook` is already the toolbar's
+    // primary, two rows above. On a grid the ghost tile fills the last cell of
+    // a shape that would otherwise look unfinished; a list has no such hole,
+    // so it was the same offer twice.
+    const listClass = isFlagOn("playbookSharing")
+      ? "contexts-view__list contexts-view__list--sharing"
+      : "contexts-view__list";
+    return `<div class="${listClass}">${visible.map((c) => renderContextCard(c, { row: true })).join("")}</div>`;
   }
   return `<div class="contexts-view__grid">${visible.map(renderContextCard).join("")}${renderGhostCard()}</div>`;
 }
@@ -627,6 +634,54 @@ function renderContextCard(ctx, { row = false } = {}) {
     ? `<span class="ap-tag blue mini contexts-card__current"><span>Current</span></span>`
     : "";
   const cardTitle = isWorkspaceMode() ? `Start a chat in ${ctx.name}` : "";
+  // ── The row's own columns: the brand, who owns it, what I can do ────────
+  //
+  // Modelled on how Claude Design lists a design system — a visual, the owner,
+  // the access — because a Playbook is the same kind of object: the identity a
+  // machine writes from. The three facts were either missing here or squeezed
+  // into a variable-width tag inside the identity cell; as columns they align
+  // down the list, which is the only reason to be a list.
+  //
+  // The visual is the brand's OWN asset (its logo) where the analysis found one,
+  // and the DS square avatar's initials where it didn't — so the column keeps
+  // one width and one shape either way, and never a stretched or cropped mark.
+  const brandInitials = String(ctx.name || "")
+    .split("·")[0]
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("");
+  const thumbHtml = `
+    <span class="ap-avatar square size-40 contexts-card__thumb" aria-hidden="true">
+      ${
+        ctx.brandLogo
+          ? `<img src="${escapeAttr(ctx.brandLogo)}" alt="" />`
+          : `<span class="ap-avatar-initials">${escapeText(brandInitials)}</span>`
+      }
+    </span>
+  `;
+
+  // Owner and access only exist as questions under `playbookSharing`. Without
+  // it every Playbook is mine and the two columns would be nine identical rows.
+  const sharing = isFlagOn("playbookSharing");
+  const owner = sharing ? ownerOf(ctx) : null;
+  const ownerHtml = sharing
+    ? `<div class="contexts-card__owner-cell">
+        <span class="ap-avatar size-24"><span class="ap-avatar-initials">${escapeText(isMine(ctx) ? "MB" : owner?.initials || "?")}</span></span>
+        <span class="contexts-card__owner-name">${escapeText(isMine(ctx) ? "You" : owner?.name || "a teammate")}</span>
+      </div>`
+    : "";
+  // What I can DO with it, as the product's own two glyphs. The title carries
+  // the sentence — "Shared with org", "Shared by Sam Rivera" — so the icon
+  // never has to be guessed from its shape alone.
+  const accessTitle = accessLabel(ctx) || (canEdit(ctx) ? "You can edit this Playbook" : "Read-only");
+  const accessHtml = sharing
+    ? `<div class="contexts-card__access" title="${escapeAttr(accessTitle)}" aria-label="${escapeAttr(accessTitle)}">
+        <i class="${canEdit(ctx) ? "ap-icon-pen" : "ap-icon-eye-on"}" aria-hidden="true"></i>
+      </div>`
+    : "";
+
   // The same four verbs, as a DS action-dropdown. Same `data-contexts-*` hooks,
   // so the screen's handlers don't know which shape fired them.
   const menuId = `ctxMore-${ctx.id}`;
@@ -721,15 +776,16 @@ function renderContextCard(ctx, { row = false } = {}) {
   if (row) {
     return `
     <article class="contexts-card contexts-card--row contexts-card--${color}"${openAttrs}>
+      ${thumbHtml}
       <div class="contexts-card__row-main">
         <div class="contexts-card__row-head">
           <span class="contexts-card__row-dot" aria-hidden="true"></span>
           <h3 class="contexts-card__name">${escapeText(ctx.name)}${isDefaultBadge}</h3>
-          ${voiceHtml}${currentTag}${ownerTag}
+          ${voiceHtml}${currentTag}
         </div>
         ${briefHtml}
       </div>
-      ${countersHtml}
+      ${countersHtml} ${ownerHtml} ${accessHtml}
       <div class="contexts-card__updated">Updated ${escapeText(ctx.updatedAt || "recently")}</div>
       ${moreHtml}
     </article>

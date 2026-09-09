@@ -465,13 +465,65 @@
    so the list has one rhythm and nothing jumps as it repaints. */
 .contexts-card--row {
   display: grid;
-  /* identity | numbers | date | verbs — the middle two FIXED, so they start at
-     the same x on every row. `auto` sized them to their own content and the
-     cluster wandered from row to row. */
-  grid-template-columns: minmax(0, 1fr) 104px 128px 32px;
+  /* brand | identity | numbers | date | verbs — everything but the identity
+     FIXED, so each starts at the same x on every row. `auto` sized cells to
+     their own content and the cluster wandered from row to row. */
+  grid-template-columns: 40px minmax(0, 1fr) 104px 128px 32px;
   align-items: center;
-  gap: var(--ref-spacing-md);
+  gap: var(--ref-spacing-sm);
   padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+}
+
+/* Under `playbookSharing` the row answers two more questions — who owns it,
+   what I can do with it — so it grows the two columns that hold them. */
+.contexts-view__list--sharing .contexts-card--row {
+  grid-template-columns: 40px minmax(0, 1fr) 104px 132px 20px 128px 32px;
+}
+
+/* The brand's own mark, or its initials when the analysis found no logo. The
+   DS avatar covers its images; a logo has to be CONTAINED or a wordmark comes
+   back cropped, and it sits on the tile's own white so a light-on-dark mark
+   still reads. */
+.contexts-card__thumb {
+  overflow: hidden;
+}
+
+.contexts-card__thumb > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 3px;
+  background: var(--ref-color-white);
+  box-sizing: border-box;
+}
+
+.contexts-card__owner-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  min-width: 0;
+}
+
+.contexts-card__owner-name {
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.contexts-card__access {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ref-color-grey-80);
+}
+
+.contexts-card__access > i {
+  font-size: var(--sys-icon-css-sm);
 }
 
 /* Hover is the border going blue — the interactive colour — and nothing else:
@@ -582,11 +634,14 @@
 /* Narrow content (a small window): drop the columns that are context before
    the ones that are the point — the palette and the date go, the numbers stay. */
 @media (max-width: 900px) {
-  .contexts-card--row {
-    grid-template-columns: minmax(0, 1fr) 104px 32px;
+  .contexts-card--row,
+  .contexts-view__list--sharing .contexts-card--row {
+    grid-template-columns: 40px minmax(0, 1fr) 104px 32px;
   }
 
-  .contexts-card--row .contexts-card__updated {
+  .contexts-card--row .contexts-card__updated,
+  .contexts-card--row .contexts-card__owner-cell,
+  .contexts-card--row .contexts-card__access {
     display: none;
   }
 }
