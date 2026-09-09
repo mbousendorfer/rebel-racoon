@@ -29,6 +29,7 @@ import {
 import { isWorkspaceMode, getActivePlaybookId, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=1079";
 import { open as openShareModal } from "../components/share-playbook-modal.js?v=1079";
 import { installMoreMenu } from "../components/more-menu.js?v=1079";
+import { renderStarterCards } from "../components/starter-card.js?v=1079";
 import { isFlagOn } from "../feature-flags.js?v=1079";
 import { getConnectedConnectors } from "../connectors-store.js?v=1079";
 import { renderConnectorLogo } from "../connectors-view.js?v=1079";
@@ -69,8 +70,8 @@ import { ownerOf } from "../playbook-access.js?v=1079";
 // a row whose body is now a navigation. Installed once at module scope, like
 // source-card and idea-card do — it binds document listeners.
 installMoreMenu({
-  menuSelector: ".contexts-card__more-menu",
-  triggerSelector: "[data-contexts-more]",
+  menuSelector: ".home-playbooks__more-menu",
+  triggerSelector: "[data-playbook-more]",
   closeAfterSelectors: [
     "[data-contexts-share]",
     "[data-contexts-edit]",
@@ -196,8 +197,8 @@ function renderPage() {
   const tab = activeTab();
   return html`
     <div class="contexts-view__page">
-      ${raw(renderHomeHero())} ${raw(renderHomeTabs(all.length, getSessions().length, tab))}
-      ${raw(renderHomeToolbar(tab, totalChats))}
+      ${raw(renderHomeHero())} ${raw(renderHomeWorkflows())}
+      ${raw(renderHomeTabs(all.length, getSessions().length, tab))} ${raw(renderHomeToolbar(tab, totalChats))}
       <div class="contexts-view__body">${raw(renderTabBody())}</div>
     </div>
   `;
@@ -221,16 +222,7 @@ function renderTabBody() {
   // of the thing it now is, a door into a workspace, sitting beside the Chats
   // tab's own rows. Flag OFF the catalogue keeps its grid: it is a page for
   // browsing fiches, and its cards are the object, not a door.
-  if (isHome) {
-    // No ghost row at the end: `Create a Playbook` is already the toolbar's
-    // primary, two rows above. On a grid the ghost tile fills the last cell of
-    // a shape that would otherwise look unfinished; a list has no such hole,
-    // so it was the same offer twice.
-    const listClass = isFlagOn("playbookSharing")
-      ? "contexts-view__list contexts-view__list--sharing"
-      : "contexts-view__list";
-    return `<div class="${listClass}">${visible.map((c) => renderContextCard(c, { row: true })).join("")}</div>`;
-  }
+  if (isHome) return renderPlaybooksTable(visible);
   return `<div class="contexts-view__grid">${visible.map(renderContextCard).join("")}${renderGhostCard()}</div>`;
 }
 
@@ -448,6 +440,31 @@ function renderHeroPicker(picked, options) {
   `;
 }
 
+// ── The three workflows ───────────────────────────────────────────────────
+//
+// The same cards the new chat's hero carries, from the same renderer
+// (components/starter-card.js). They belong here for the reason the hero has
+// them: the composer answers "I know what I want to say", these answer "I have
+// a source / a video / a winning post and want a batch out of it" — and on the
+// home you also get to say WHICH brand it lands in before it starts.
+//
+// Only the dispatch differs: the chat runs the flow in place, the home switches
+// brand and mints the session the flow needs (see startFromStarter).
+//
+// Full page width, unlike the hero's 720px column: the cards then share their
+// left and right edges with the list under them, so the page reads as one
+// centred prompt over two full-width blocks rather than three widths stacked.
+function renderHomeWorkflows() {
+  // Nothing to start a workflow IN yet. Same rule as the hero.
+  if (usableContexts().length === 0) return "";
+  return `
+    <section class="home-workflows">
+      <h2 class="home-workflows__label" id="homeStarterLabel">Jump into a workflow</h2>
+      <div class="starter-grid" role="group" aria-labelledby="homeStarterLabel">${renderStarterCards()}</div>
+    </section>
+  `;
+}
+
 // ── The two lists ─────────────────────────────────────────────────────────
 // Real DS tabs (.ap-tabs ships in ds/css-ui). /topics dropped its tabs because
 // only one list was ever on screen there; here there are genuinely two, which
@@ -498,6 +515,173 @@ function renderHomeToolbar(tab, totalChats) {
   `;
 }
 
+// The Playbooks tab — a TABLE, the same shape as the Chats tab beside it.
+//
+// ⚠️ It was a list of horizontal cards for two commits, and before that a grid
+// of tiles. The table is the end of that road, and the reason is what these two
+// tabs ARE: records to scan. Short comparable fields, one row each, and a
+// reader moving DOWN a column — which is what a table is, and what the card
+// list was imitating with fixed widths, one uniform row height and aligned
+// numbers. Only the border and radius per row were still card.
+//
+// What the table adds that no card list could: its columns are NAMED, in text,
+// in a header. The card list left the reader to infer that "MB" was an owner, a
+// pen was a permission and a date was the last edit.
+//
+// The grid of tiles survives for `/contexts` flag OFF: there, a Playbook is an
+// object you browse, not a row you pick from.
+function renderPlaybooksTable(list) {
+  if (!list.length) return renderContextsEmpty(visibleContexts(), pageState);
+  const sharing = isFlagOn("playbookSharing");
+  return `
+    <table class="ap-table outer-border home-table home-playbooks">
+      <thead>
+        <tr>
+          <th scope="col">Playbook</th>
+          ${sharing ? `<th scope="col">Owner</th><th scope="col">Access</th>` : ""}
+          <th scope="col">Updated</th>
+          <th scope="col"><span class="home-table__th-quiet">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>${list.map(renderPlaybookRow).join("")}</tbody>
+    </table>
+  `;
+}
+
+// One Playbook, as a row. The words it says — the brief, the default star, the
+// Current mark — come from the same three helpers the tile uses, so the two
+// shapes can't drift into saying different things about one Playbook.
+function renderPlaybookRow(ctx) {
+  const sharing = isFlagOn("playbookSharing");
+  const owner = sharing ? ownerOf(ctx) : null;
+  const mine = isMine(ctx);
+  const accessTitle = accessLabel(ctx) || (canEdit(ctx) ? "You can edit this Playbook" : "Read-only");
+  const title = isWorkspaceMode() ? `Start a chat in ${ctx.name}` : "";
+  return `
+    <tr
+      data-contexts-card="${escapeAttr(ctx.id)}"
+      role="button"
+      tabindex="0"
+      ${title ? `title="${escapeAttr(title)}" aria-label="${escapeAttr(title)}"` : ""}
+    >
+      <td class="home-table__lead">
+        <div class="ap-table-cell-content home-playbooks__identity">
+          ${playbookThumb(ctx)}
+          <div class="home-playbooks__text">
+            <div class="home-playbooks__name-row">
+              <span class="app-sidebar__row-color-dot app-sidebar__row-color-dot--${escapeAttr(ctx.color || "grey")}" aria-hidden="true"></span>
+              <span class="home-playbooks__name">${escapeText(ctx.name)}</span>
+              ${defaultBadge(ctx)}${currentTagFor(ctx)}
+            </div>
+            <div class="home-playbooks__brief">${escapeText(playbookBrief(ctx))}</div>
+          </div>
+        </div>
+      </td>
+      ${
+        sharing
+          ? `<td>
+              <div class="ap-table-cell-content home-playbooks__owner">
+                <span class="ap-avatar size-24"><span class="ap-avatar-initials">${escapeText(mine ? "MB" : owner?.initials || "?")}</span></span>
+                <span class="home-playbooks__owner-name">${escapeText(mine ? "You" : owner?.name || "a teammate")}</span>
+              </div>
+            </td>
+            <td>
+              <div class="ap-table-cell-content home-playbooks__access" title="${escapeAttr(accessTitle)}" aria-label="${escapeAttr(accessTitle)}">
+                <i class="${canEdit(ctx) ? "ap-icon-pen" : "ap-icon-eye-on"}" aria-hidden="true"></i>
+              </div>
+            </td>`
+          : ""
+      }
+      <td class="home-playbooks__when">${escapeText(ctx.updatedAt || "recently")}</td>
+      <td>${playbookMoreMenu(ctx)}</td>
+    </tr>
+  `;
+}
+
+// ── The three pieces both shapes must say the same way ───────────────────
+
+// The brand's own mark where the analysis found a logo, its initials where it
+// didn't — so the column keeps one width and one shape, and never a stretched
+// or cropped lockup.
+function playbookThumb(ctx) {
+  const initials = String(ctx.name || "")
+    .split("·")[0]
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("");
+  return `
+    <span class="ap-avatar square size-32 home-playbooks__thumb" aria-hidden="true">
+      ${
+        ctx.brandLogo
+          ? `<img src="${escapeAttr(ctx.brandLogo)}" alt="" />`
+          : `<span class="ap-avatar-initials">${escapeText(initials)}</span>`
+      }
+    </span>
+  `;
+}
+
+function playbookBrief(ctx) {
+  const summary = (ctx.businessSummary || ctx.briefSummary || "").trim();
+  return summary || "No brief yet — open this Playbook to add one.";
+}
+
+function defaultBadge(ctx) {
+  return ctx.isDefault
+    ? `<span class="contexts-card__badge" title="Default Playbook"><i class="ap-icon-star_fill"></i></span>`
+    : "";
+}
+
+function currentTagFor(ctx) {
+  return isWorkspaceMode() && ctx.id === getActivePlaybookId()
+    ? `<span class="ap-tag blue mini contexts-card__current"><span>Current</span></span>`
+    : "";
+}
+
+// The four verbs, in a DS action-dropdown. Same `data-contexts-*` hooks as the
+// tile's hover toolbar, so the screen's handlers don't know which shape fired.
+function playbookMoreMenu(ctx) {
+  const menuId = `ctxMore-${ctx.id}`;
+  const item = (hook, icon, label, danger) => `
+    <button
+      type="button"
+      role="menuitem"
+      class="ap-action-dropdown-item${danger ? " red-mode" : ""}"
+      ${hook}="${escapeAttr(ctx.id)}"
+    >
+      <i class="${icon}"></i>
+      <div class="ap-action-dropdown-item-text">
+        <div class="ap-action-dropdown-item-label-container">
+          <span class="ap-action-dropdown-item-label">${label}</span>
+        </div>
+      </div>
+    </button>
+  `;
+  return `
+    <div class="home-playbooks__more">
+      <button
+        type="button"
+        class="ap-icon-button transparent"
+        data-playbook-more="${escapeAttr(ctx.id)}"
+        aria-haspopup="menu"
+        aria-expanded="false"
+        aria-controls="${menuId}"
+        aria-label="More actions"
+        title="More actions"
+      >
+        <i class="ap-icon-more"></i>
+      </button>
+      <div class="ap-action-dropdown home-playbooks__more-menu" id="${menuId}" role="menu" hidden>
+        ${canManageSharing(ctx) ? item("data-contexts-share", "ap-icon-share", "Share") : ""}
+        ${canEdit(ctx) ? item("data-contexts-edit", "ap-icon-pen", "Open the Playbook") : ""}
+        ${item("data-contexts-duplicate", "ap-icon-copy", "Duplicate")}
+        ${canDelete(ctx) ? item("data-contexts-delete", "ap-icon-trash", "Delete", true) : ""}
+      </div>
+    </div>
+  `;
+}
+
 // The Chats tab — `getSessions()`, UNSCOPED. That is the whole point of the
 // tab: at the account level the question is "where is my work", and the rail
 // one level down already answers "this brand's work".
@@ -543,7 +727,7 @@ function renderChatsTab() {
     .map(
       ({ session, ctx }) => `
       <tr data-home-chat="${escapeAttr(session.id)}" role="button" tabindex="0">
-        <td>
+        <td class="home-table__lead">
           <div class="ap-table-cell-content">
             <span class="home-chats__name">${escapeText(session.name)}</span>
           </div>
@@ -564,7 +748,7 @@ function renderChatsTab() {
     .join("");
 
   return `
-    <table class="ap-table small outer-border home-chats">
+    <table class="ap-table small outer-border home-table home-chats">
       <thead>
         <tr>
           <th scope="col">Chat</th>
@@ -647,14 +831,9 @@ function renderContextsEmpty(allContexts, pageState) {
 // Trailing "ghost" card — visually invites a new Playbook from the grid
 // itself, so the user doesn't have to chase the header CTA after scrolling.
 // Triggers the same `data-contexts-new` handler as the header button.
-function renderGhostCard({ row = false } = {}) {
+function renderGhostCard() {
   return `
-    <button
-      type="button"
-      class="contexts-card contexts-card--ghost${row ? " contexts-card--row" : ""}"
-      data-contexts-new
-      aria-label="Create a new Playbook"
-    >
+    <button type="button" class="contexts-card contexts-card--ghost" data-contexts-new aria-label="Create a new Playbook">
       <span class="contexts-card--ghost__glyph"><i class="ap-icon-archie-official"></i></span>
       <span class="contexts-card--ghost__title">Create a Playbook</span>
       <span class="contexts-card--ghost__sub">One brand, one voice, one goal — I'll keep every draft aligned.</span>
@@ -662,7 +841,7 @@ function renderGhostCard({ row = false } = {}) {
   `;
 }
 
-function renderContextCard(ctx, { row = false } = {}) {
+function renderContextCard(ctx) {
   const color = ctx.color || "orange";
   const summary = (ctx.businessSummary || ctx.briefSummary || "").trim();
   const voiceHeadline =
@@ -746,95 +925,6 @@ function renderContextCard(ctx, { row = false } = {}) {
     ? `<span class="ap-tag blue mini contexts-card__current"><span>Current</span></span>`
     : "";
   const cardTitle = isWorkspaceMode() ? `Start a chat in ${ctx.name}` : "";
-  // ── The row's own columns: the brand, who owns it, what I can do ────────
-  //
-  // Modelled on how Claude Design lists a design system — a visual, the owner,
-  // the access — because a Playbook is the same kind of object: the identity a
-  // machine writes from. The three facts were either missing here or squeezed
-  // into a variable-width tag inside the identity cell; as columns they align
-  // down the list, which is the only reason to be a list.
-  //
-  // The visual is the brand's OWN asset (its logo) where the analysis found one,
-  // and the DS square avatar's initials where it didn't — so the column keeps
-  // one width and one shape either way, and never a stretched or cropped mark.
-  const brandInitials = String(ctx.name || "")
-    .split("·")[0]
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join("");
-  const thumbHtml = `
-    <span class="ap-avatar square size-40 contexts-card__thumb" aria-hidden="true">
-      ${
-        ctx.brandLogo
-          ? `<img src="${escapeAttr(ctx.brandLogo)}" alt="" />`
-          : `<span class="ap-avatar-initials">${escapeText(brandInitials)}</span>`
-      }
-    </span>
-  `;
-
-  // Owner and access only exist as questions under `playbookSharing`. Without
-  // it every Playbook is mine and the two columns would be nine identical rows.
-  const sharing = isFlagOn("playbookSharing");
-  const owner = sharing ? ownerOf(ctx) : null;
-  const ownerHtml = sharing
-    ? `<div class="contexts-card__owner-cell">
-        <span class="ap-avatar size-24"><span class="ap-avatar-initials">${escapeText(isMine(ctx) ? "MB" : owner?.initials || "?")}</span></span>
-        <span class="contexts-card__owner-name">${escapeText(isMine(ctx) ? "You" : owner?.name || "a teammate")}</span>
-      </div>`
-    : "";
-  // What I can DO with it, as the product's own two glyphs. The title carries
-  // the sentence — "Shared with org", "Shared by Sam Rivera" — so the icon
-  // never has to be guessed from its shape alone.
-  const accessTitle = accessLabel(ctx) || (canEdit(ctx) ? "You can edit this Playbook" : "Read-only");
-  const accessHtml = sharing
-    ? `<div class="contexts-card__access" title="${escapeAttr(accessTitle)}" aria-label="${escapeAttr(accessTitle)}">
-        <i class="${canEdit(ctx) ? "ap-icon-pen" : "ap-icon-eye-on"}" aria-hidden="true"></i>
-      </div>`
-    : "";
-
-  // The same four verbs, as a DS action-dropdown. Same `data-contexts-*` hooks,
-  // so the screen's handlers don't know which shape fired them.
-  const menuId = `ctxMore-${ctx.id}`;
-  const menuItem = (hook, icon, label, danger) => `
-    <button
-      type="button"
-      role="menuitem"
-      class="ap-action-dropdown-item${danger ? " red-mode" : ""}"
-      ${hook}="${escapeAttr(ctx.id)}"
-    >
-      <i class="${icon}"></i>
-      <div class="ap-action-dropdown-item-text">
-        <div class="ap-action-dropdown-item-label-container">
-          <span class="ap-action-dropdown-item-label">${label}</span>
-        </div>
-      </div>
-    </button>
-  `;
-  const moreHtml = `
-    <div class="contexts-card__row-more">
-      <button
-        type="button"
-        class="ap-icon-button transparent contexts-card__more"
-        data-contexts-more="${escapeAttr(ctx.id)}"
-        aria-haspopup="menu"
-        aria-expanded="false"
-        aria-controls="${menuId}"
-        aria-label="More actions"
-        title="More actions"
-      >
-        <i class="ap-icon-more"></i>
-      </button>
-      <div class="ap-action-dropdown contexts-card__more-menu" id="${menuId}" role="menu" hidden>
-        ${canManageSharing(ctx) ? menuItem("data-contexts-share", "ap-icon-share", "Share") : ""}
-        ${canEdit(ctx) ? menuItem("data-contexts-edit", "ap-icon-pen", "Open the Playbook") : ""}
-        ${menuItem("data-contexts-duplicate", "ap-icon-copy", "Duplicate")}
-        ${canDelete(ctx) ? menuItem("data-contexts-delete", "ap-icon-trash", "Delete", true) : ""}
-      </div>
-    </div>
-  `;
-
   // The pieces, once — the two shapes below arrange them, they don't reword
   // them. A card and the row it becomes must say the same thing about one
   // Playbook, which is the same rule topic-card.js follows for its two shapes.
@@ -845,8 +935,8 @@ function renderContextCard(ctx, { row = false } = {}) {
       </div>`
     : "";
   const briefHtml = summary
-    ? `<p class="contexts-card__brief${row ? " contexts-card__brief--row" : ""}">${escapeText(summary)}</p>`
-    : `<p class="contexts-card__brief contexts-card__brief--empty${row ? " contexts-card__brief--row" : ""}">No brief yet — open this Playbook to add one.</p>`;
+    ? `<p class="contexts-card__brief">${escapeText(summary)}</p>`
+    : `<p class="contexts-card__brief contexts-card__brief--empty">${escapeText(playbookBrief(ctx))}</p>`;
   const countersHtml = `
     <div class="contexts-card__counters">
       <span class="contexts-card__counter" title="${usedIn} ${usedIn === 1 ? "chat uses this Playbook" : "chats use this Playbook"}">
@@ -877,45 +967,12 @@ function renderContextCard(ctx, { row = false } = {}) {
       tabindex="0"
       ${cardTitle ? `title="${escapeAttr(cardTitle)}" aria-label="${escapeAttr(cardTitle)}"` : ""}`;
 
-  // ── The row ─────────────────────────────────────────────────────────────
-  // One line of identity, one of brief, then the owner, the access and the date
-  // in fixed cells so they read down the list as columns. The brand's colour
-  // moves from a top strip to a dot: a coloured bar down the leading edge of a
-  // list row is the accent rail this project has rejected more than once, and
-  // the dot is what the rail and the Chats tab already use for the same fact.
-  // The verbs keep their own cell — reserved, not overlaid, so revealing them
-  // covers nothing and shifts nothing.
-  //
-  // ⚠️ Three things the tile carries and the row does NOT, each removed after
-  // seeing nine rows of them side by side:
-  //   • the COUNTERS (chats / audiences / competitors) — three numbers a row
-  //     that nobody reads to choose a brand, in the widest column on the page;
-  //   • the VOICE CHIP ("Direct · operator-first · specific") — a tile has room
-  //     to characterise, a row has a name and the brand's own sentence right
-  //     under it, which says it better;
-  //   • the analysed PALETTE dots — the thumbnail and the dot already carry the
-  //     visual identity.
-  // The tile keeps all three: a grid of nine cards is browsed, this list is
-  // scanned, and scanning wants fewer columns rather than more.
-  if (row) {
-    return `
-    <article class="contexts-card contexts-card--row contexts-card--${color}"${openAttrs}>
-      ${thumbHtml}
-      <div class="contexts-card__row-main">
-        <div class="contexts-card__row-head">
-          <span class="contexts-card__row-dot" aria-hidden="true"></span>
-          <h3 class="contexts-card__name">${escapeText(ctx.name)}${isDefaultBadge}</h3>
-          ${currentTag}
-        </div>
-        ${briefHtml}
-      </div>
-      ${ownerHtml} ${accessHtml}
-      <div class="contexts-card__updated">Updated ${escapeText(ctx.updatedAt || "recently")}</div>
-      ${moreHtml}
-    </article>
-  `;
-  }
-
+  // ── The tile ────────────────────────────────────────────────────────────
+  // The catalogue's own shape, flag OFF: a colour strip, the voice chip, three
+  // counters, the palette, the hover toolbar. A Playbook is an OBJECT you
+  // browse here. On the home the same Playbook is a row you pick from
+  // (renderPlaybookRow), which is why the two shapes differ in everything but
+  // the words they say.
   return `
     <article class="contexts-card contexts-card--${color}"${openAttrs}>
       <span class="contexts-card__swatch" aria-hidden="true"></span>
@@ -1028,6 +1085,15 @@ function bind(root) {
       return;
     }
 
+    // A workflow card. Same three actions the chat's hero dispatches, minus the
+    // session it has and this page hasn't.
+    const starter = event.target.closest("[data-starter-action]");
+    if (starter) {
+      event.preventDefault();
+      startFromStarter(starter.dataset.starterAction);
+      return;
+    }
+
     if (event.target.closest("[data-home-send]")) {
       event.preventDefault();
       submitHomePrompt(root);
@@ -1118,7 +1184,7 @@ function bind(root) {
     // The kebab and its menu are not the card: without this the trigger would
     // fall through to the card fallback below and enter the workspace.
     // more-menu.js owns the toggle itself, on the document.
-    if (event.target.closest("[data-contexts-more]") || event.target.closest(".contexts-card__more-menu")) {
+    if (event.target.closest("[data-playbook-more]") || event.target.closest(".home-playbooks__more-menu")) {
       return;
     }
     // Card click — anywhere outside the action buttons. On the home it enters
@@ -1214,6 +1280,38 @@ function submitHomePrompt(root) {
   setHandoff("pendingHomePrompt", { text });
   const params = new URLSearchParams({ contextId: picked.id, title: chatNameFromPrompt(text) });
   navigate(`/session/new-${Date.now().toString(36)}?${params.toString()}`);
+}
+
+// A workflow, launched from the home. Batch and Clip Studio each run in their
+// own transient session and already read `playbookForNewWork()` when they
+// start — which is the ACTIVE Playbook — so switching first is what binds them
+// to the brand picked in the hero. Their handoffs are the ones session.js
+// consumes synchronously on a `batch-*` / `clip-studio-*` id, unchanged.
+//
+// Top posts has no session of its own: it runs IN a chat, so the home mints one
+// and rides `pendingHomeAdd` — with the studio kind, `startTopPostsFlow`, which
+// is what the card opens in the hero (the Add menu's row is the inline variant;
+// both exist in the chat too).
+function startFromStarter(action) {
+  const picked = pickedPlaybook();
+  if (!picked) return;
+  setActivePlaybook(picked.id);
+  closeRightPanel();
+  const stamp = Date.now().toString(36);
+  if (action === "open-batch") {
+    setHandoff("pendingStartBatch", {});
+    navigate(`/session/batch-${stamp}`);
+    return;
+  }
+  if (action === "open-video-clips") {
+    setHandoff("pendingStartClipStudio", {});
+    navigate(`/session/clip-studio-${stamp}`);
+    return;
+  }
+  if (action === "open-top-posts") {
+    setHandoff("pendingHomeAdd", { kind: "top-posts-studio", connectorId: null });
+    navigate(`/session/new-${stamp}?contextId=${encodeURIComponent(picked.id)}`);
+  }
 }
 
 function closeAddMenu(root) {

@@ -175,6 +175,7 @@ src/
     content-workspace.js  shared Sources+Ideas library layout (search / sort / By Source / All Ideas)
     source-card.js, idea-card.js, idea-card-compact.js, post-card.js, clip-card.js, empty-state.js
     topic-card.js         one Topic: the feed's card, the picker's card, the in-chat row
+    starter-card.js       one workflow starter, two hosts: the new chat's hero + the account home
     social-post-card.js   someone ELSE's published post, as evidence (not top-post-card)
     top-post-card.js      MY published post that performed — the Repurpose board's card
     more-menu.js          installMoreMenu(): the shared ⋯ popover on source / idea / clip cards

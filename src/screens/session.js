@@ -1,7 +1,7 @@
 import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr } from "../utils.js?v=1079";
 import { navigate } from "../router.js?v=1079";
 import { renderTopbar } from "../components/topbar.js?v=1079";
-import { socialAccounts, chatStarters, connectorDocs } from "../mocks.js?v=1079";
+import { socialAccounts, connectorDocs } from "../mocks.js?v=1079";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
@@ -60,6 +60,7 @@ import {
 } from "../components/top-post-card.js?v=1079";
 import { getTopPost } from "../top-posts-store.js?v=1079";
 import { renderEmptyState } from "../components/empty-state.js?v=1079";
+import { renderStarterCards } from "../components/starter-card.js?v=1079";
 import * as sidebarWizard from "../sidebar-wizard.js?v=1079";
 import * as inlineQuestion from "../inline-question.js?v=1079";
 import {
@@ -2085,37 +2086,9 @@ function renderEmptyHero(sessionId, composerMarkup = "", session = null) {
     (s) => (s.kind || "").toLowerCase() === "video" && s.status === "Processed" && typeof s.durationSec === "number",
   );
   const videoLabel = firstVideo ? `"${firstVideo.filename}"` : "your video";
-  const starters = [...chatStarters];
-  const cards = starters
-    .map((s) => {
-      // `comingSoon` cards are teasers — rendered as a non-interactive panel
-      // carrying a "Coming soon" badge instead of a clickable CTA arrow.
-      if (s.comingSoon) {
-        const tone = s.tone || "orange";
-        return `
-          <div class="starter-card starter-card--${tone} starter-card--soon" data-starter="${s.id}" aria-disabled="true">
-            <i class="starter-card__art ${s.icon}" aria-hidden="true"></i>
-            <span class="starter-card__title">${s.title}</span>
-            <span class="starter-card__subtitle">${s.subtitle}</span>
-            <span class="starter-card__cta--soon ap-badge blue">${s.cta}</span>
-          </div>
-        `;
-      }
-      const resolvedPrompt = (s.prompt || "")
-        .replace(/\{\{source\}\}/g, sourceLabel)
-        .replace(/\{\{video-source\}\}/g, videoLabel);
-      const actionAttr = s.action ? ` data-starter-action="${s.action}"` : "";
-      const tone = s.tone || "orange";
-      return `
-        <button type="button" class="starter-card starter-card--${tone}" data-starter="${s.id}"${actionAttr} data-starter-prompt="${escapeHtml(resolvedPrompt)}">
-          <i class="starter-card__art ${s.icon}" aria-hidden="true"></i>
-          <span class="starter-card__title">${s.title}</span>
-          <span class="starter-card__subtitle">${s.subtitle}</span>
-          <span class="starter-card__cta ap-link standalone small">${s.cta}<i class="ap-icon-arrow-right" aria-hidden="true"></i></span>
-        </button>
-      `;
-    })
-    .join("");
+  // The three cards come from components/starter-card.js — the home renders the
+  // same ones, so there is one renderer and two hosts.
+  const cards = renderStarterCards({ sourceLabel, videoLabel });
   return html`
     <div class="empty-chat" data-empty-chat>
       <span class="empty-chat__logo" role="img" aria-label="Archie">
@@ -3732,6 +3705,9 @@ function wireAssistantPanel(root, session, attachedContext) {
       const kind = pendingAdd.kind;
       if (kind === "connector" && pendingAdd.connectorId) askConnector(session.id, pendingAdd.connectorId);
       else if (kind === "top-posts") topPostsFlow.startTopPostsInline(session.id);
+      // The home's workflow CARD opens the full board, the way the hero's card
+      // does; its Add menu's row is the inline variant. Both exist in the chat.
+      else if (kind === "top-posts-studio") topPostsFlow.startTopPostsFlow(session.id);
       else if (kind === "topic") startTopicPickerInline(session.id, session);
       else if (kind === "text") openAddSourceModal({ tab: "pasteText", currentSessionId: session.id });
       else if (kind === "url") openAddSourceModal({ tab: "url", currentSessionId: session.id });

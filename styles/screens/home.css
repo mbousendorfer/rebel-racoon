@@ -176,20 +176,179 @@
   gap: var(--ref-spacing-xs);
 }
 
-/* ── The chats table ───────────────────────────────────────────────────────
-   Rows are the navigation, so they need the affordance the DS doesn't ship a
-   modifier for. Screen-owned class, not a redeclared `.ap-*` selector. */
-.home-chats tbody tr {
+/* ── The workflows ─────────────────────────────────────────────────────────
+   The same three cards the chat's hero carries, from the same renderer. Full
+   page width, unlike the hero's 720px column, so they share their edges with
+   the table below: the page reads as one centred prompt over two full-width
+   blocks rather than three widths stacked.
+
+   ⚠️ `.starter-grid` and `.starter-card*` live in styles/screens/session.css,
+   free-standing rather than scoped under `.empty-chat` — which is what lets
+   this page render the same markup. Third such reuse after the colour dots. */
+.home-workflows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  margin-top: var(--ref-spacing-sm);
+}
+
+.home-workflows__label {
+  margin: 0;
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.home-workflows .starter-grid {
+  max-width: none;
+}
+
+/* ── The two tables ────────────────────────────────────────────────────────
+   Both tabs are the same shape, deliberately: records to scan, one row each,
+   columns NAMED in a header. The Playbooks tab was a grid of tiles, then a list
+   of horizontal cards — which was a table imitating one, with fixed widths, a
+   uniform row height and aligned numbers. Only the border and radius per row
+   were still card. The tile survives on `/contexts` flag OFF, where a Playbook
+   is an object you browse rather than a row you pick from.
+
+   Rows are the navigation, so they need the affordance the DS ships no modifier
+   for. Screen-owned class, never a redeclared `.ap-*` selector. */
+.home-table tbody tr {
   cursor: pointer;
 }
 
-.home-chats tbody tr:hover {
+.home-table tbody tr:hover {
   background: var(--ref-color-grey-05);
 }
 
-.home-chats tbody tr:focus-visible {
+.home-table tbody tr:focus-visible {
   outline: 2px solid var(--ref-color-electric-blue-100);
   outline-offset: -2px;
+}
+
+/* The leading cell takes the slack and everything else shrinks to its content.
+   `max-width: 0` with `width: 100%` is what lets a cell in an auto-layout table
+   truncate at all — without it the prose just widens the column. */
+.home-table__lead {
+  width: 100%;
+  max-width: 0;
+}
+
+.home-table th {
+  white-space: nowrap;
+}
+
+/* The actions column's header still has to name itself for a screen reader; it
+   just doesn't need to say it out loud above a single kebab. */
+.home-table__th-quiet {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ── The Playbooks table's own cells ────────────────────────────────────────
+   Two text lines and a 32px brand mark per row, so this table does NOT take the
+   DS's `small` metric the Chats table uses — that one is 40px of cell for a
+   single line, and the two lines came out crushed against the thumbnail. The
+   vertical padding is scoped to this table's cells rather than the DS class. */
+.home-playbooks tbody td {
+  padding-top: var(--ref-spacing-xxs);
+  padding-bottom: var(--ref-spacing-xxs);
+}
+.home-playbooks__identity {
+  gap: var(--ref-spacing-xs);
+  min-width: 0;
+}
+
+/* The DS avatar covers its images; a logo has to be CONTAINED or a wordmark
+   comes back cropped, and it sits on the tile's own white so a light-on-dark
+   mark still reads. */
+.home-playbooks__thumb {
+  overflow: hidden;
+  flex: 0 0 auto;
+}
+
+.home-playbooks__thumb > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 3px;
+  background: var(--ref-color-white);
+  box-sizing: border-box;
+}
+
+.home-playbooks__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.home-playbooks__name-row {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  min-width: 0;
+}
+
+.home-playbooks__name {
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--ref-color-grey-100);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* One line, cut with an ellipsis: every row is two text lines tall, so the
+   table keeps one rhythm and nothing jumps as it repaints. */
+.home-playbooks__brief {
+  color: var(--ref-color-grey-80);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.home-playbooks__owner {
+  gap: var(--ref-spacing-xxs);
+}
+
+.home-playbooks__owner-name {
+  color: var(--ref-color-grey-80);
+  white-space: nowrap;
+}
+
+.home-playbooks__access {
+  color: var(--ref-color-grey-80);
+}
+
+.home-playbooks__access > i {
+  font-size: var(--sys-icon-css-sm);
+}
+
+.home-playbooks__when {
+  white-space: nowrap;
+  color: var(--ref-color-grey-80);
+}
+
+/* The kebab's menu drops out of the cell, so nothing on this path may clip. */
+.home-playbooks__more {
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.home-playbooks__more-menu {
+  position: absolute;
+  top: calc(100% + var(--ref-spacing-xxxs));
+  right: 0;
+  z-index: 20;
+  min-width: 220px;
 }
 
 .home-chats__name {
