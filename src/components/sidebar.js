@@ -657,15 +657,34 @@ function renderPlaybookSwitcher({ collapsed }) {
 // that brand's most recent chat, or on a fresh one when it has none. Every
 // other route stays put and simply re-paints.
 function switchPlaybook(id) {
-  if (!id || id === getActivePlaybook()?.id) return;
+  const previous = getActivePlaybook()?.id;
+  if (!id || id === previous) return;
+  const path = getPath();
+  // Was I reading the workspace's OWN fiche? Then the SURFACE is "this brand's
+  // Playbook", not that one brand — so it re-points to the brand just picked,
+  // exactly as /topics and Insights re-point themselves. It has to be answered
+  // BEFORE the switch: a moment later the path's id is no longer the active
+  // one, which is also why leaving it alone was worse than a stale page —
+  // isAccountScope() would start calling it another brand's fiche while
+  // `body.account-scope` (only written on a route change) still said workspace,
+  // so the rail named Pawtrack above Acme's sheet.
+  const onOwnFiche = !!previous && path === `/playbook/${previous}`;
   setActivePlaybook(id);
-  if (!getPath().startsWith("/session/")) return;
-  // `/` IS "this brand's home": a pure redirect to the most recent chat in
-  // scope, or a fresh one ([`screens/dashboard.js`]). Computing the
-  // destination here too is how two answers to one question start to drift —
-  // the topbar's way back from the catalogue asks the same thing.
-  closeRightPanel();
-  navigate("/");
+  if (path.startsWith("/session/")) {
+    // `/` IS "this brand's home": a pure redirect to the most recent chat in
+    // scope, or a fresh one ([`screens/dashboard.js`]). Computing the
+    // destination here too is how two answers to one question start to drift —
+    // the topbar's way back from the catalogue asks the same thing.
+    closeRightPanel();
+    navigate("/");
+    return;
+  }
+  if (onOwnFiche) {
+    navigate(`/playbook/${id}`);
+    return;
+  }
+  // Everything else is a surface with no brand in its URL (the feed, its
+  // settings, Insights): the scope notify repaints it where it stands.
 }
 
 // Footer popmenu — trigger button + popmenu list. The popmenu lives in the
