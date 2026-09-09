@@ -25,8 +25,8 @@
 // numbers, which is what they are for; the curve is the pane's job, at the size
 // it needs.
 
-import { readingFor } from "../model.js?v=1083";
-import { trendSpec, sparklineSpec, progressBar, mountCharts } from "../charts.js?v=1083";
+import { readingFor } from "../model.js?v=1084";
+import { trendSpec, sparklineSpec, progressBar, mountCharts } from "../charts.js?v=1084";
 import {
   statusPill,
   measurePill,
@@ -41,7 +41,7 @@ import {
   figure,
   playbookTitle,
   esc,
-} from "../pieces.js?v=1083";
+} from "../pieces.js?v=1084";
 
 export const id = "cockpit-bis";
 export const label = "Cockpit bis";

@@ -1,21 +1,21 @@
-import { html, raw, escapeText, escapeAttr } from "../utils.js?v=1083";
-import { renderTopbar } from "../components/topbar.js?v=1083";
+import { html, raw, escapeText, escapeAttr } from "../utils.js?v=1084";
+import { renderTopbar } from "../components/topbar.js?v=1084";
 import {
   getContexts,
   getContextById,
   subscribe as subscribeContexts,
   duplicateContext,
   deleteContext,
-} from "../contexts-store.js?v=1083";
-import { getSessions, getSessionById, subscribe as subscribeSessions } from "../sessions-store.js?v=1083";
-import { getSources, getIdeas } from "../library.js?v=1083";
-import { getPosts } from "../posts-store.js?v=1083";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1083";
-import { closePanel as closeRightPanel } from "../components/right-panel.js?v=1083";
-import { navigate, getPath } from "../router.js?v=1083";
-import { setHandoff } from "../handoff.js?v=1083";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=1083";
-import { renderEmptyState } from "../components/empty-state.js?v=1083";
+} from "../contexts-store.js?v=1084";
+import { getSessions, getSessionById, subscribe as subscribeSessions } from "../sessions-store.js?v=1084";
+import { getSources, getIdeas } from "../library.js?v=1084";
+import { getPosts } from "../posts-store.js?v=1084";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1084";
+import { closePanel as closeRightPanel } from "../components/right-panel.js?v=1084";
+import { navigate, getPath } from "../router.js?v=1084";
+import { setHandoff } from "../handoff.js?v=1084";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=1084";
+import { renderEmptyState } from "../components/empty-state.js?v=1084";
 import {
   visibleContexts,
   usableContexts,
@@ -25,15 +25,15 @@ import {
   canManageSharing,
   accessLabel,
   isMine,
-} from "../playbook-access.js?v=1083";
-import { isWorkspaceMode, getActivePlaybookId, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=1083";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=1083";
-import { installMoreMenu } from "../components/more-menu.js?v=1083";
-import { renderStarterCards } from "../components/starter-card.js?v=1083";
-import { isFlagOn } from "../feature-flags.js?v=1083";
-import { getConnectedConnectors } from "../connectors-store.js?v=1083";
-import { renderConnectorLogo } from "../connectors-view.js?v=1083";
-import { ownerOf } from "../playbook-access.js?v=1083";
+} from "../playbook-access.js?v=1084";
+import { isWorkspaceMode, getActivePlaybookId, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=1084";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=1084";
+import { installMoreMenu } from "../components/more-menu.js?v=1084";
+import { renderStarterCards } from "../components/starter-card.js?v=1084";
+import { isFlagOn } from "../feature-flags.js?v=1084";
+import { getConnectedConnectors } from "../connectors-store.js?v=1084";
+import { renderConnectorLogo } from "../connectors-view.js?v=1084";
+import { ownerOf } from "../playbook-access.js?v=1084";
 
 // The account HOME — and the Playbooks catalogue it merged with.
 //
@@ -381,7 +381,7 @@ function renderHomeAdd() {
     <div class="home-hero__add">
       <button
         type="button"
-        class="ap-button stroked grey home-hero__add-toggle"
+        class="ap-button stroked grey"
         data-home-add-toggle
         aria-haspopup="menu"
         aria-expanded="false"
@@ -433,7 +433,7 @@ function renderHeroPicker(picked, options) {
         <span class="ap-select-value">${escapeText(picked?.name || "Select a Playbook")}</span>
         <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
       </summary>
-      <div class="ap-select-dropdown home-hero__pb-dropdown" role="listbox" aria-label="Choose a Playbook">
+      <div class="ap-select-dropdown" role="listbox" aria-label="Choose a Playbook">
         <div class="ap-select-options">${rows}</div>
       </div>
     </details>
@@ -488,7 +488,7 @@ function renderHomeTabs(playbookCount, chatCount, tab) {
     `;
   };
   return `
-    <div class="ap-tabs home-tabs">
+    <div class="ap-tabs">
       <div class="ap-tabs-nav" role="tablist" aria-label="Playbooks and chats">
         ${item("chats", "ap-icon-single-chat-bubble", "Chats", chatCount)}
         ${item("playbooks", "ap-icon-target", "Playbooks", playbookCount)}
@@ -556,7 +556,7 @@ function renderPlaybookRow(ctx) {
   const owner = sharing ? ownerOf(ctx) : null;
   const mine = isMine(ctx);
   const accessTitle = accessLabel(ctx) || (canEdit(ctx) ? "You can edit this Playbook" : "Read-only");
-  const title = isWorkspaceMode() ? `Start a chat in ${ctx.name}` : "";
+  const title = startChatTitle(ctx);
   return `
     <tr
       data-contexts-card="${escapeAttr(ctx.id)}"
@@ -631,6 +631,12 @@ function defaultBadge(ctx) {
   return ctx.isDefault
     ? `<span class="contexts-card__badge" title="Default Playbook"><i class="ap-icon-star_fill"></i></span>`
     : "";
+}
+
+// What activating this Playbook does, as a title — empty without the workspace
+// model, where a card opens the fiche instead.
+function startChatTitle(ctx) {
+  return isWorkspaceMode() ? `Start a chat in ${ctx.name}` : "";
 }
 
 function currentTagFor(ctx) {
@@ -866,9 +872,7 @@ function renderContextCard(ctx) {
         .map((c) => `<span class="contexts-card__palette-dot" style="background:${escapeAttr(c)};"></span>`)
         .join("")}</div>`
     : "";
-  const isDefaultBadge = ctx.isDefault
-    ? `<span class="contexts-card__badge" title="Default Playbook"><i class="ap-icon-star_fill"></i></span>`
-    : "";
+  const isDefaultBadge = defaultBadge(ctx);
   // Who this Playbook belongs to, in the card's metadata corner next to the
   // palette dots — never a coloured border, a card's state goes in its content.
   // It tried living beside the title first and broke long names onto two lines;
@@ -920,14 +924,11 @@ function renderContextCard(ctx) {
   //
   // Flag OFF there is no workspace to enter, so the card keeps opening the
   // fiche and none of this renders.
-  const isCurrent = isWorkspaceMode() && ctx.id === getActivePlaybookId();
-  const currentTag = isCurrent
-    ? `<span class="ap-tag blue mini contexts-card__current"><span>Current</span></span>`
-    : "";
-  const cardTitle = isWorkspaceMode() ? `Start a chat in ${ctx.name}` : "";
-  // The pieces, once — the two shapes below arrange them, they don't reword
-  // them. A card and the row it becomes must say the same thing about one
-  // Playbook, which is the same rule topic-card.js follows for its two shapes.
+  const currentTag = currentTagFor(ctx);
+  const cardTitle = startChatTitle(ctx);
+  // The tile's own pieces. What the two shapes must say IDENTICALLY — the
+  // default star, the Current mark, the title of the click — comes from the
+  // shared helpers above, the same rule topic-card.js follows for its shapes.
   const voiceHtml = voiceHeadline
     ? `<div class="contexts-card__voice">
         <i class="ap-icon-archie-official"></i>
@@ -1150,7 +1151,7 @@ function bind(root) {
       event.stopPropagation();
       const copy = duplicateContext(dupBtn.dataset.contextsDuplicate);
       if (copy) {
-        import("../components/toast.js?v=1083").then(({ showToast }) => showToast("Playbook duplicated"));
+        import("../components/toast.js?v=1084").then(({ showToast }) => showToast("Playbook duplicated"));
         navigate(`/playbook/${copy.id}`);
       }
       return;
@@ -1161,7 +1162,7 @@ function bind(root) {
       const ctx = getContexts().find((c) => c.id === delBtn.dataset.contextsDelete);
       if (!ctx) return;
       if (getContexts().length <= 1) {
-        import("../components/toast.js?v=1083").then(({ showToast }) =>
+        import("../components/toast.js?v=1084").then(({ showToast }) =>
           showToast("Can't delete the last Playbook — every chat needs one."),
         );
         return;
@@ -1176,7 +1177,7 @@ function bind(root) {
         danger: true,
         onConfirm: () => {
           deleteContext(ctx.id);
-          import("../components/toast.js?v=1083").then(({ showToast }) => showToast("Playbook deleted"));
+          import("../components/toast.js?v=1084").then(({ showToast }) => showToast("Playbook deleted"));
         },
       });
       return;

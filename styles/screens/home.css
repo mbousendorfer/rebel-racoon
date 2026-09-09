@@ -311,11 +311,6 @@
   font-size: var(--sys-icon-css-sm);
 }
 
-.home-playbooks__when {
-  white-space: nowrap;
-  color: var(--ref-color-grey-80);
-}
-
 /* The kebab's menu drops out of the cell, so nothing on this path may clip. */
 .home-playbooks__more {
   position: relative;
@@ -344,10 +339,5 @@
 }
 
 .home-chats__count--zero {
-  color: var(--ref-color-grey-80);
-}
-
-.home-chats__when {
-  white-space: nowrap;
   color: var(--ref-color-grey-80);
 }
