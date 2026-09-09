@@ -727,7 +727,11 @@ body.playbook-revoked .session__composer-card {
   align-items: flex-start;
   text-align: left;
   gap: var(--ref-spacing-xxs);
-  min-height: 158px;
+  /* A floor, and only that: the grid stretches all three to the tallest, so
+     this is what the row measures when every subtitle is short. It was 158px,
+     tuned when the subtitle broke into four lines at 22ch; with the text on one
+     or two lines that left ~26px of slack between it and the pinned CTA. */
+  min-height: 140px;
   padding: var(--ref-spacing-sm);
   /* Cards rest on a clean white surface; the colour identity comes only from
      the title/CTA + a faint watermark. The tinted wash blooms in on hover via
@@ -811,8 +815,13 @@ body.playbook-revoked .session__composer-card {
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   font-weight: var(--sys-text-style-caption-weight);
-  color: var(--ref-color-grey-60);
-  max-width: 22ch;
+  /* grey-80, not grey-60: this is body copy, and grey-60 is the disabled ink. */
+  color: var(--ref-color-grey-80);
+  /* A ceiling for readability, not a throttle. It was 22ch — a quarter of the
+     card's width — so a 70-character sentence broke into four lines and left
+     the right half of every card empty. The watermark it was avoiding is a 10%
+     wash the text paints over anyway (both carry position: relative). */
+  max-width: 46ch;
 }
 
 /* Push the CTA to the bottom of the card so every card's CTA baseline lines
