@@ -772,12 +772,9 @@ Header **« Playbooks »** + _« N Playbooks · applied across N chats »_ + sea
 
 **Sous `playbookWorkspace` (§14), cette page quitte le shell et devient un onglet.** Le catalogue est l'onglet **Playbooks** de la home du compte (§12) : son `h1` « Playbooks » et son sous-titre disparaissent — le héro porte le seul `h1`, et l'onglet dit déjà « Playbooks 8 » — la recherche et **Create a Playbook** passent dans la barre d'outils sous les onglets, et « Applied across N chats » y survit en ligne discrète. **Les cartes ne changent pas d'un octet** : verbes au survol, `Current`, `Switch`, garde de suppression, ghost card. Flag OFF, `/contexts` rend toujours cette page seule, avec son entête. Elle parle des marques où l'on n'est **pas** : la porter dans le chrome d'une seule était la contradiction que le switcher a créée. Donc `body.account-scope` ([`ROUTES.md`](ROUTES.md) § Deux niveaux de chrome) — pas de rail, une colonne, topbar réduite à **« ‹ Back to <marque> »** — et une seule porte d'entrée : le footer du switcher (**All playbooks**). La ligne de nav, elle, ne mène plus ici : elle est passée au singulier et pointe la fiche de la marque active (§12).
 
-Deux ajouts sur la carte, sous le flag :
+**Sous le flag, la carte EST le workspace** : cliquer dessus bascule sur cette marque et ouvre un **chat neuf** dedans (`?contextId=`, pas `/` — la home est un lanceur, le geste est « démarrer », pas « reprendre »). La fiche garde le crayon, avec les autres verbes au survol, et la marque active porte un tag **`Current`** dans le coin métadonnées.
 
-- **`Current`** (tag bleu, coin métadonnées) sur la marque active — elle n'offre pas de la rejoindre, on y est.
-- **`Switch`** (lien, sur la ligne du timestamp) sur les autres : bascule le scope puis va dans le travail de cette marque via `/`. Il est indispensable et pas décoratif — en account scope le switcher est hors écran, sans lui le catalogue ne saurait que renvoyer d'où l'on vient.
-
-⚠️ **Le corps de la carte ouvre la fiche, comme avant** — et c'est délibéré : il a porté la bascule pendant un commit, mais les verbes de gestion (le crayon compris) n'apparaissent qu'au survol, donc un clic large tombait sur le corps. Or les coûts ne sont pas symétriques : ouvrir une fiche est une page, changer de marque déplace toute l'app. La cible ambiante prend le sens anodin, le contrôle libellé prend le changement de scope.
+⚠️ **C'est l'inverse de ce qui a tenu un commit** — le corps ouvrait la fiche, un petit lien `Switch` portait la bascule — au nom de l'asymétrie d'un clic raté (une page contre toute l'app qui bouge). Décision de l'utilisateur ; ce qui la rend sûre, c'est que rien n'est perdu : le chat neuf est vide, le fil d'Ariane ramène, et la marque quittée est à une carte. Le lien `Switch` est parti avec, devenu un second contrôle pour ce que fait la carte entière. Flag OFF, la carte ouvre toujours la fiche.
 
 ### Détail (`/playbook/:id`, [`screens/playbook.js`](../../src/screens/playbook.js))
 
@@ -973,10 +970,11 @@ Là où `/` est la maison de la **marque** active (un redirect), celle-ci est la
 
 **Envoyer** = `setActivePlaybook` → handoff `pendingHomePrompt` → `/session/new-<ts>?contextId=…&title=<phrase tronquée>` → `sendMessage` à l'arrivée. Le Playbook et le nom voyagent dans l'URL (convention d'`objective-flow`), seul le texte a besoin d'un pont, et le handoff est à usage unique — recharger l'URL ne re-poste rien.
 
-**Deux onglets** DS (`.ap-tabs`), état dans l'URL (`?tab=playbooks|chats`) pour que le Back du navigateur passe de l'une à l'autre :
+**Deux onglets** DS (`.ap-tabs`), état dans l'URL (`?tab=chats|playbooks`) pour que le Back du navigateur passe de l'une à l'autre. **Chats est le premier et le défaut** : le sujet de la home est le travail ; le catalogue est ce qu'on ouvre pour basculer, créer ou gérer.
 
-- **Playbooks** — le catalogue (§9), inchangé.
 - **Chats** — **tous les chats, toutes marques** (`getSessions()` non scopé) en `.ap-table` : Chat · Playbook · Last activity. La marque est **nommée en texte** (dot + nom), grise et « No Playbook » si la fiche est inaccessible. Épinglés en tête (glyphe `ap-icon-pin`). Un clic **re-scope** — `setActivePlaybook` puis on ouvre — sinon le lecteur atterrit sur un chat que la rail à côté ne liste pas. Un chat sans Playbook s'ouvre sans toucher au scope : il vit partout par construction.
+
+- **Playbooks** — le catalogue (§9) : chaque carte est une porte vers son workspace (bascule + chat neuf), le crayon garde la fiche.
 
 La recherche est unique et filtre l'onglet actif — sur les chats, le nom **et** la marque, parce qu'une colonne visible doit être cherchable.
 

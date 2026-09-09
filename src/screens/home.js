@@ -134,7 +134,10 @@ function paint() {
 // linkable and the browser's Back moves between them. An unknown value falls
 // back rather than rendering nothing.
 function activeTab() {
-  return parseHashParams().get("tab") === "chats" ? "chats" : "playbooks";
+  // Chats first, and the default: the home's subject is the work, and the
+  // catalogue is what you open to switch, create or manage. An unknown value
+  // falls back rather than rendering nothing.
+  return parseHashParams().get("tab") === "playbooks" ? "playbooks" : "chats";
 }
 
 function renderPage() {
@@ -343,8 +346,8 @@ function renderHomeTabs(playbookCount, chatCount, tab) {
   return `
     <div class="ap-tabs home-tabs">
       <div class="ap-tabs-nav" role="tablist" aria-label="Playbooks and chats">
-        ${item("playbooks", "ap-icon-target", "Playbooks", playbookCount)}
         ${item("chats", "ap-icon-single-chat-bubble", "Chats", chatCount)}
+        ${item("playbooks", "ap-icon-target", "Playbooks", playbookCount)}
       </div>
     </div>
   `;
@@ -566,36 +569,36 @@ function renderContextCard(ctx) {
         </button>`
       : "",
   ].join("");
-  // ── Entering a brand vs. reading its fiche ──────────────────────────────
+  // ── On the home, a card IS the workspace ────────────────────────────────
   //
-  // The card BODY opens the fiche, in both models. It was wired to enter the
-  // workspace for one commit and that was wrong twice over: the management
-  // verbs (the pen included) are revealed on hover, so a slightly wide click
-  // lands on the body — and there the costs are not symmetrical. Opening a
-  // fiche is a page; switching brand moves the whole app. The ambient target
-  // gets the harmless meaning, the explicit control gets the scope move.
+  // Clicking it switches to that brand and opens a fresh chat in it: on a page
+  // whose subject is "which brand am I working in", the card is the door, the
+  // way it is in every workspace picker. The fiche keeps the pen, with the
+  // other management verbs.
   //
-  // Which is why the scope move needs a control here at all: in account scope
-  // the rail — and with it the switcher — is off screen, so without this link
-  // the catalogue could only ever send you back where you came from.
+  // ⚠️ This REVERSES what stood here for a commit — the body opening the fiche,
+  // with a small "Switch" link carrying the scope move — argued from the
+  // asymmetry of a mis-click (a page versus the whole app moving). The user's
+  // call, and what makes it safe is that nothing is lost: the new chat is
+  // empty, the crumb goes back, and the brand you left is one card away. The
+  // Switch link went with it, redundant: a second control for what the whole
+  // card now does.
+  //
+  // Flag OFF there is no workspace to enter, so the card keeps opening the
+  // fiche and none of this renders.
   const isCurrent = isWorkspaceMode() && ctx.id === getActivePlaybookId();
   const currentTag = isCurrent
     ? `<span class="ap-tag blue mini contexts-card__current"><span>Current</span></span>`
     : "";
-  // "Switch", not "Open": the body already opens something, and only a scope
-  // can be switched — the word says which of the two doors this is.
-  const switchLink =
-    isWorkspaceMode() && !isCurrent
-      ? `<button
-          type="button"
-          class="ap-link small contexts-card__switch"
-          data-contexts-switch="${ctx.id}"
-          title="Switch to ${escapeAttr(ctx.name)}"
-          aria-label="Switch to ${escapeAttr(ctx.name)}"
-        >Switch</button>`
-      : "";
+  const cardTitle = isWorkspaceMode() ? `Start a chat in ${ctx.name}` : "";
   return `
-    <article class="contexts-card contexts-card--${color}" data-contexts-card="${ctx.id}" role="button" tabindex="0">
+    <article
+      class="contexts-card contexts-card--${color}"
+      data-contexts-card="${ctx.id}"
+      role="button"
+      tabindex="0"
+      ${cardTitle ? `title="${escapeAttr(cardTitle)}" aria-label="${escapeAttr(cardTitle)}"` : ""}
+    >
       <span class="contexts-card__swatch" aria-hidden="true"></span>
 
       <div class="contexts-card__actions" data-contexts-card-actions>${actions}</div>
@@ -654,7 +657,6 @@ function renderContextCard(ctx) {
 
       <div class="contexts-card__updated">
         <span>Updated ${escapeText(ctx.updatedAt || "recently")}</span>
-        ${switchLink}
       </div>
     </article>
   `;
@@ -803,23 +805,13 @@ function bind(root) {
       });
       return;
     }
-    // "Switch" — make this brand the active workspace and go into its work.
-    // `/` resolves that home (dashboard.js): its most recent chat, else a fresh
-    // one. Before the card-body fallback below, and it stops propagation, so
-    // the two doors on one card can't both fire.
-    const switchBtn = event.target.closest("[data-contexts-switch]");
-    if (switchBtn) {
-      event.stopPropagation();
-      setActivePlaybook(switchBtn.dataset.contextsSwitch);
-      navigate("/");
-      return;
-    }
-    // Card click — anywhere outside the action buttons opens the panel in
-    // read-only mode for inspection. The footer buttons stop propagation
-    // so they win over this fallback.
+    // Card click — anywhere outside the action buttons. On the home it enters
+    // the workspace (see renderContextCard); flag OFF it opens the fiche for
+    // inspection, as it always did. The action buttons stop propagation so
+    // they win over this fallback.
     const card = event.target.closest("[data-contexts-card]");
     if (card) {
-      navigate(`/playbook/${card.dataset.contextsCard}`);
+      enterWorkspace(card.dataset.contextsCard);
       return;
     }
   });
@@ -850,13 +842,38 @@ function bind(root) {
       submitHomePrompt(root);
       return;
     }
-    // A <tr role="button"> is not natively activatable.
+    // Neither a <tr role="button"> nor an <article role="button"> is natively
+    // activatable, and both are now this page's primary targets.
+    if (event.key !== "Enter" && event.key !== " ") return;
     const chatRow = event.target.closest("[data-home-chat]");
-    if (chatRow && (event.key === "Enter" || event.key === " ")) {
+    if (chatRow) {
       event.preventDefault();
       openChatFromHome(chatRow.dataset.homeChat);
+      return;
+    }
+    const card = event.target.closest("[data-contexts-card]");
+    if (card) {
+      event.preventDefault();
+      enterWorkspace(card.dataset.contextsCard);
     }
   });
+}
+
+// A Playbook card, activated. In workspace mode that means: work in this brand
+// — switch the scope, then open a fresh chat bound to it, the same landing
+// "Start a chat" gives on the fiche. `?contextId=` rather than `/`, which would
+// resolve to whatever chat the brand last had: this page is a launcher, and the
+// gesture is "start", not "resume". Flag OFF, there is no workspace to enter and
+// the card keeps opening the fiche.
+function enterWorkspace(id) {
+  if (!id) return;
+  if (!isWorkspaceMode()) {
+    navigate(`/playbook/${id}`);
+    return;
+  }
+  setActivePlaybook(id);
+  closeRightPanel();
+  navigate(`/session/new-${Date.now().toString(36)}?contextId=${encodeURIComponent(id)}`);
 }
 
 // ── Starting a chat from the home ─────────────────────────────────────────

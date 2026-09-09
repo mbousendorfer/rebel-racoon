@@ -441,21 +441,8 @@
 }
 
 .contexts-card__updated {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--ref-spacing-xxs);
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   font-weight: var(--sys-text-style-caption-weight);
   color: var(--ref-color-grey-60);
-}
-
-/* "Switch" — the one control on a card that changes the app's scope (flag
-   playbookWorkspace). It rides the timestamp row: the only line in the card
-   with room to spare, and far enough from the hover actions that the two never
-   compete for the same click. Always visible, unlike those actions — in account
-   scope this is the only way INTO a brand from here. */
-.contexts-card__switch {
-  flex: 0 0 auto;
 }
