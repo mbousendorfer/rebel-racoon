@@ -465,10 +465,10 @@
    so the list has one rhythm and nothing jumps as it repaints. */
 .contexts-card--row {
   display: grid;
-  /* brand | identity | numbers | date | verbs — everything but the identity
-     FIXED, so each starts at the same x on every row. `auto` sized cells to
-     their own content and the cluster wandered from row to row. */
-  grid-template-columns: 40px minmax(0, 1fr) 104px 128px 32px;
+  /* brand | identity | date | verbs — everything but the identity FIXED, so
+     each starts at the same x on every row. `auto` sized cells to their own
+     content and the cluster wandered from row to row. */
+  grid-template-columns: 40px minmax(0, 1fr) 128px 32px;
   align-items: center;
   gap: var(--ref-spacing-sm);
   padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
@@ -477,7 +477,7 @@
 /* Under `playbookSharing` the row answers two more questions — who owns it,
    what I can do with it — so it grows the two columns that hold them. */
 .contexts-view__list--sharing .contexts-card--row {
-  grid-template-columns: 40px minmax(0, 1fr) 104px 132px 20px 128px 32px;
+  grid-template-columns: 40px minmax(0, 1fr) 132px 20px 128px 32px;
 }
 
 /* The brand's own mark, or its initials when the analysis found no logo. The
@@ -571,10 +571,6 @@
   text-overflow: ellipsis;
 }
 
-.contexts-card--row .contexts-card__voice {
-  flex: 0 0 auto;
-}
-
 /* One line, cut with an ellipsis. The grid card clamps to three; a row that
    wrapped would break the list's single rhythm. */
 .contexts-card__brief--row {
@@ -584,13 +580,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   color: var(--ref-color-grey-80);
-}
-
-/* The numbers keep their own gap and start at the cell's leading edge, so the
-   first counter of every row shares one vertical line. */
-.contexts-card--row .contexts-card__counters {
-  gap: var(--ref-spacing-xs);
-  justify-content: flex-start;
 }
 
 /* The marks ride with the identity, after the voice chip: they qualify the
@@ -636,18 +625,12 @@
 @media (max-width: 900px) {
   .contexts-card--row,
   .contexts-view__list--sharing .contexts-card--row {
-    grid-template-columns: 40px minmax(0, 1fr) 104px 32px;
+    grid-template-columns: 40px minmax(0, 1fr) 32px;
   }
 
   .contexts-card--row .contexts-card__updated,
   .contexts-card--row .contexts-card__owner-cell,
   .contexts-card--row .contexts-card__access {
-    display: none;
-  }
-}
-
-@media (max-width: 700px) {
-  .contexts-card--row .contexts-card__voice {
     display: none;
   }
 }

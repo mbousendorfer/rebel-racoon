@@ -853,13 +853,25 @@ function renderContextCard(ctx, { row = false } = {}) {
       ${cardTitle ? `title="${escapeAttr(cardTitle)}" aria-label="${escapeAttr(cardTitle)}"` : ""}`;
 
   // ── The row ─────────────────────────────────────────────────────────────
-  // One line of identity, one of brief, then the numbers, the marks and the
-  // date in fixed cells so they read down the list as columns. The brand's
-  // colour moves from a top strip to a dot: a coloured bar down the leading
-  // edge of a list row is the accent rail this project has rejected more than
-  // once, and the dot is what the rail and the Chats tab already use for the
-  // same fact. The verbs keep their own cell — reserved, not overlaid, so
-  // revealing them covers nothing and shifts nothing.
+  // One line of identity, one of brief, then the owner, the access and the date
+  // in fixed cells so they read down the list as columns. The brand's colour
+  // moves from a top strip to a dot: a coloured bar down the leading edge of a
+  // list row is the accent rail this project has rejected more than once, and
+  // the dot is what the rail and the Chats tab already use for the same fact.
+  // The verbs keep their own cell — reserved, not overlaid, so revealing them
+  // covers nothing and shifts nothing.
+  //
+  // ⚠️ Three things the tile carries and the row does NOT, each removed after
+  // seeing nine rows of them side by side:
+  //   • the COUNTERS (chats / audiences / competitors) — three numbers a row
+  //     that nobody reads to choose a brand, in the widest column on the page;
+  //   • the VOICE CHIP ("Direct · operator-first · specific") — a tile has room
+  //     to characterise, a row has a name and the brand's own sentence right
+  //     under it, which says it better;
+  //   • the analysed PALETTE dots — the thumbnail and the dot already carry the
+  //     visual identity.
+  // The tile keeps all three: a grid of nine cards is browsed, this list is
+  // scanned, and scanning wants fewer columns rather than more.
   if (row) {
     return `
     <article class="contexts-card contexts-card--row contexts-card--${color}"${openAttrs}>
@@ -868,11 +880,11 @@ function renderContextCard(ctx, { row = false } = {}) {
         <div class="contexts-card__row-head">
           <span class="contexts-card__row-dot" aria-hidden="true"></span>
           <h3 class="contexts-card__name">${escapeText(ctx.name)}${isDefaultBadge}</h3>
-          ${voiceHtml}${currentTag}
+          ${currentTag}
         </div>
         ${briefHtml}
       </div>
-      ${countersHtml} ${ownerHtml} ${accessHtml}
+      ${ownerHtml} ${accessHtml}
       <div class="contexts-card__updated">Updated ${escapeText(ctx.updatedAt || "recently")}</div>
       ${moreHtml}
     </article>
