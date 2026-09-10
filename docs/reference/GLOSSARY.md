@@ -174,18 +174,19 @@ Un dossier de contenu **Agorapulse** dans lequel un draft sauvegardé est class�
 
 ### Owner, Shared with org, Manager (flag `playbookSharing`)
 
-Le vocabulaire de l'appartenance d'un Playbook. Le modèle est **binaire** : il n'y a pas de partage nommé, donc aucun mot pour « destinataire d'un partage ».
+Le vocabulaire de l'appartenance d'un Playbook. **Trois portées**, et ce qui les sépare deux à deux : la liste est **fixe** (nommée) ou **dynamique** (l'org, arrivées comprises).
 
-| Terme UI                                              | Sens                                                                                 | En code                                         |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------------ | ----------------------------------------------- |
-| **Owner**                                             | La seule personne qui peut éditer, supprimer, partager ou transférer                 | `ctx.ownerId`                                   |
-| **Just me**                                           | Le Playbook n'existe que pour son propriétaire (défaut à la création)                | `ctx.scope === "personal"`                      |
-| **Everyone at {org}** / badge **« Shared with org »** | Toute l'organisation peut le lire et l'utiliser ; seul le propriétaire l'édite       | `ctx.scope === "organization"`                  |
-| badge **« Shared by {nom} »**                         | Le même état, vu de l'autre côté                                                     | `!isMine(ctx) && isShared(ctx)`                 |
-| **Manager**                                           | Rôle qui donne les droits du propriétaire, **sur les Playbooks partagés uniquement** | `isManager()`, `localStorage` `archie-org-role` |
-| **Recent changes**                                    | Le journal du modal de partage — qui, quoi, quand ; **jamais** de diff               | `ctx.history`                                   |
+| Terme UI                                                 | Sens                                                                                                                                         | En code                                         |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| **Owner**                                                | La seule personne qui peut **éditer le contenu** — et, par défaut, tout le reste                                                             | `ctx.ownerId`                                   |
+| **Just me**                                              | Le Playbook n'existe que pour son propriétaire (défaut à la création)                                                                        | `ctx.scope === "personal"`                      |
+| **Specific people** / badge **« Shared with N people »** | Une liste **fixe** de collègues peut le lire et l'utiliser — personne d'autre, ni les arrivées                                               | `ctx.scope === "members"`, `ctx.sharedWith`     |
+| **Everyone at {org}** / badge **« Shared with org »**    | Liste **dynamique** : toute l'organisation, arrivées comprises                                                                               | `ctx.scope === "organization"`                  |
+| badge **« Shared by {nom} »**                            | Les deux états partagés, vus de l'autre côté                                                                                                 | `!isMine(ctx) && isShared(ctx)`                 |
+| **Manager**                                              | Rôle qui donne la **gouvernance** — partager, transférer, supprimer — sur les Playbooks partagés uniquement. **Jamais** l'édition du contenu | `isManager()`, `localStorage` `archie-org-role` |
+| **Recent changes**                                       | Le journal du modal de partage — qui, quoi, quand ; **jamais** de diff                                                                       | `ctx.history`                                   |
 
-⛔️ À ne pas dire : **« invite »**, **« collaborator »**, **« co-editor »**, **« permissions »** — rien de tout ça n'existe dans le modèle. Et **« share with someone »** est faux : on partage avec l'organisation, pas avec une personne.
+⛔️ À ne pas dire : **« invite »**, **« collaborator »**, **« co-editor »**, **« permissions »** — rien de tout ça n'existe dans le modèle. On **partage** une fiche avec des gens ou avec l'org ; on n'invite personne, et un destinataire ne devient jamais co-auteur.
 
 ### User mode (proto control)
 

@@ -232,18 +232,35 @@ Three attempts at a general settings page were reverted here: the drawer (`2b0ab
 
 ### Playbook sharing: the store holds the facts, `playbook-access` holds the rights
 
-Behind the `playbookSharing` flag a Playbook has an owner and one of **two** scopes — `personal` or
-`organization`. **There is no named sharing**: you don't hand a fiche to three colleagues, you keep it or
-you put it in front of the whole org. So there is no recipient list, no people-picker, and no word for
-"someone a Playbook was shared with" beyond "everyone".
+Behind the `playbookSharing` flag a Playbook has an owner and one of **three** scopes — `personal`,
+`members` (a **fixed** list of colleagues, in `sharedWith`) or `organization` (a **dynamic** list: the whole
+org, joiners included). That fixed-vs-dynamic difference is what the two sharing cards say FIRST — the doc
+asks twice for it to be underlined. ⚠️ This shipped with two scopes and a "there is no named sharing" note
+for two weeks, on an arbitration nobody ever wrote down; the spec has had three states in every version, so
+the doc won and the people-picker is real. An **empty `members` list is not shared** — it reaches nobody, and
+a manager's whole reach hangs off that predicate.
 
-`contexts-store` carries `ownerId` / `scope` / `history` but **never filters** — `getContexts()` keeps
-returning everything to everyone. That is deliberate: a chat whose Playbook stopped being shared still has
-to _name_ it ("this chat runs on Brightline · launch, and Jonas Beck stopped sharing it"), which means
-reading a fiche you may no longer open. `src/playbook-access.js` is the only gate — `canView` / `canUse` /
-`canEdit` / `canManageSharing`, plus `visibleContexts()` / `usableContexts()` / `editableContexts()` that
-surfaces substitute for `getContexts()`, and `revokedContextFor()` as the one function allowed to look past
-it. The flag short-circuits in a single place, so flag OFF is byte-for-byte the pre-sharing behaviour.
+**Editing and governing are separate rights.** `canEdit` is the owner, full stop: a shared fiche is
+read-only for everyone it reaches, managers included. What a manager gets on a **shared** Playbook lives in
+`canGovern` — share it, hand it over, delete it — and `canDelete` / `canManageSharing` / `canTransfer` all
+derive from that, never from `canEdit`. A manager with a pencil on a colleague's Playbook was the bug this
+replaced.
+
+**A Playbook tied to a social profile (`selectedProfileId`) only reaches people who can reach that
+profile.** `profileBlockFor()` runs before every other test in `canView`, and the picker keeps a blocked
+teammate in the list — disabled, with the reason — because removing the row would leave the owner hunting
+for their colleague. The permission is Agorapulse's, so it is read from `org.js` (`profiles` per member) and
+never stored on the fiche; an unresolvable profile **fails open**.
+
+`contexts-store` carries `ownerId` / `scope` / `sharedWith` / `history` but **never filters** —
+`getContexts()` keeps returning everything to everyone. That is deliberate: a chat whose Playbook stopped
+being shared still has to _name_ it ("this chat runs on Brightline · launch, and Jonas Beck stopped sharing
+it"), which means reading a fiche you may no longer open. `src/playbook-access.js` is the only gate —
+`canView` / `canUse` / `canEdit` / `canGovern` / `canManageSharing`, plus `visibleContexts()` /
+`usableContexts()` / `editableContexts()` that surfaces substitute for `getContexts()`, and
+`revokedContextFor()` as the one function allowed to look past it. `sharedWith` survives a trip through
+private and back, because the doc promises both directions with no data loss — only `scope` decides who is
+in. The flag short-circuits in a single place, so flag OFF is byte-for-byte the pre-sharing behaviour.
 
 Ownership is **chrome, never a section**: a tag in the card's metadata corner and beside the fiche's name,
 an Owner quick-fact in the rail, and everything else in the Share modal. A "Sharing" section on the fiche
@@ -471,7 +488,7 @@ A key that is consumed but never set is dead weight that reads as a live entry p
 
 ### Admin / user mode (prototype controls)
 
-The **Admin** popover in the sidebar footer cog (`admin-menu.js`) is the prototype control panel: switch user mode and toggle feature flags (each change reloads so stores re-seed). `user-mode.js`: `getUserMode()` returns `"returning"` (populated mocks, default) or `"new-alt"` (empty stores + first-time onboarding); `isNewUser()` tests for `new-alt`. Feature flags live in `ff-catalog.js` (`FLAGS`, each with a `default`) and are read via `isFlagOn()`. The flags: `insightsHub` (OFF — gates the whole `/insights` section, route included), `playbookWorkspace` (OFF — whether the Playbook is a field on the work or the level above it; ON puts the switcher in the rail, scopes everything under it, and gives the wordmark an account home at `/home`, see § The Playbook scope), `draftInlineEdit` (OFF), `connectors` (OFF — gates the whole connectors feature), `conversationStatusCard` (OFF), `multilingualPlaybook` (OFF), `topicFeed` (OFF — gates the whole Topic Feed: `/topics`, `/topics/settings`, the nav row and its unread count, the new chat's "Fresh topics to review" list, and the composer's "Pick from the Topic Feed"), `playbookSharing` (OFF — gates Playbook ownership: a Playbook is personal or shared with the whole org, never named-shared; read-only fiche + Duplicate for recipients, manager rights, the degraded chat after access is lost, and the Admin **Your role** control. Unlike `topicFeed`, its two demo Playbooks and its demo chat are seeded **only** under the flag)., `skipConnectProfiles` (OFF — whether connecting a social account is required or chosen: ON starts with nothing connected in both user modes and makes Playbook creation's account step optional (a Skip, and an offer to connect when nothing is), with the ask returning in the chat flows that draft for an account — see § Connecting an account below).
+The **Admin** popover in the sidebar footer cog (`admin-menu.js`) is the prototype control panel: switch user mode and toggle feature flags (each change reloads so stores re-seed). `user-mode.js`: `getUserMode()` returns `"returning"` (populated mocks, default) or `"new-alt"` (empty stores + first-time onboarding); `isNewUser()` tests for `new-alt`. Feature flags live in `ff-catalog.js` (`FLAGS`, each with a `default`) and are read via `isFlagOn()`. The flags: `insightsHub` (OFF — gates the whole `/insights` section, route included), `playbookWorkspace` (OFF — whether the Playbook is a field on the work or the level above it; ON puts the switcher in the rail, scopes everything under it, and gives the wordmark an account home at `/home`, see § The Playbook scope), `draftInlineEdit` (OFF), `connectors` (OFF — gates the whole connectors feature), `conversationStatusCard` (OFF), `multilingualPlaybook` (OFF), `topicFeed` (OFF — gates the whole Topic Feed: `/topics`, `/topics/settings`, the nav row and its unread count, the new chat's "Fresh topics to review" list, and the composer's "Pick from the Topic Feed"), `playbookSharing` (OFF — gates Playbook ownership: a Playbook is personal, shared with named colleagues, or shared with the whole org; read-only fiche + Duplicate for recipients, manager **governance** rights (never content), the profile gate, the degraded chat after access is lost, and the Admin **Your role** control. Unlike `topicFeed`, its two demo Playbooks and its demo chat are seeded **only** under the flag)., `skipConnectProfiles` (OFF — whether connecting a social account is required or chosen: ON starts with nothing connected in both user modes and makes Playbook creation's account step optional (a Skip, and an offer to connect when nothing is), with the ask returning in the chat flows that draft for an account — see § Connecting an account below).
 
 **Flags removed in the 2026-09-04 cleanup** — do not reintroduce these as toggles: `playbookDefault` was **deleted** (the "set as default" star on `/playbook` is gone; the internal default-Playbook selection via `getDefaultContext` / `isDefault` and the badge on `/contexts` cards stay). `statusActionSnackbars`, `playbookColors`, `manyProfiles` and `playbookCompetitors` were **baked ON** — the success snackbars always fire, Playbook colours always show (no more `hide-playbook-colors` body class), the ~40-profile demo set is always seeded, and the Competitors section always renders. Their OFF branches are deleted, exactly like the earlier Image Studio flags (`imageStudioAutoBrief`, `imageStudioSetupFirst`, also gone — § The Image Studio). Full table + gates: [`docs/reference/FEATURES.md`](docs/reference/FEATURES.md#14-admin-feature-flags--user-modes).
 
