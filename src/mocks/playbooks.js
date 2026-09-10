@@ -495,7 +495,12 @@ export const contexts = [
     color: "green",
     isDefault: false,
     ownerId: "u-me",
-    scope: "personal",
+    // Shared by NAME, not with the org: the two people who write customer
+    // stories, and nobody who joins later. Seen from the owner's side — the
+    // card reads "Shared with 2 people" and the dialog opens on the picker
+    // with these two ticked. Inert with the flag off, like ownerId itself.
+    scope: "members",
+    sharedWith: ["u-sam", "u-lea"],
     brandName: "Acme",
     brandLogos: ACME_LOGOS.map((l) => ({ ...l })),
     brandLogo: "assets/logos/brands/acme.svg",
@@ -1586,7 +1591,12 @@ export const sharedContexts = [
     color: "blue",
     isDefault: false,
     ownerId: "u-sam",
-    scope: "organization",
+    // Received by NAME: Sam picked the two of us rather than the whole org, so
+    // this is the read-only case AND the fixed-list headline ("Sam Rivera shared
+    // this Playbook with you"). The org-wide reach is demoed from the owner's
+    // side by "Acme · Q2 marketing" above.
+    scope: "members",
+    sharedWith: ["u-me", "u-nina"],
     brandName: "Acme",
     brandLogos: ACME_LOGOS.map((l) => ({ ...l })),
     brandLogo: "assets/logos/brands/acme.svg",
@@ -1643,7 +1653,7 @@ export const sharedContexts = [
     // on a first run. No diffs, by design — who and when, never what.
     history: [
       { id: "h-seed-1", actorId: "u-sam", action: "created this Playbook", when: "3 weeks ago" },
-      { id: "h-seed-2", actorId: "u-sam", action: "shared it with the organisation", when: "3 weeks ago" },
+      { id: "h-seed-2", actorId: "u-sam", action: "shared it with 2 people", when: "3 weeks ago" },
       { id: "h-seed-3", actorId: "u-sam", action: "edited the Voice & style section", when: "yesterday" },
     ],
     analysis: { voice: null, brief: null, brand: null },

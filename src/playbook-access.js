@@ -1,13 +1,18 @@
 // Who may do what to a Playbook.
 //
-// A Playbook has exactly one owner and one of two scopes:
+// A Playbook has exactly one owner and one of three scopes (doc §5.3):
 //   "personal"     — only its owner sees it
-//   "organization" — everyone in the org may SEE and USE it; only the owner
-//                    may EDIT it
+//   "members"      — a FIXED list of colleagues may SEE and USE it
+//   "organization" — a DYNAMIC list: everyone in the org, joiners included
 //
-// There is no named sharing: you don't hand a Playbook to three colleagues, you
-// either keep it or you put it in front of the whole org. That was the explicit
-// product call, and it's why this file has no member-list plumbing.
+// Whichever way it reaches you, only the OWNER may edit it.
+//
+// ⚠️ For two weeks this file said "there is no named sharing" and shipped two
+// scopes. The doc has three, in both its versions (§5.1, §5.3, §6.1, lot L2),
+// and the arbitration that removed one was never written down anywhere — so the
+// doc won. The fixed-vs-dynamic distinction is the part it insists on making
+// legible, which is why `members` is a real scope with a list and not an
+// "organization" with a count beside it.
 //
 // ⚠️ The store deliberately keeps returning everything. Filtering inside
 // contexts-store would make the degraded-chat banner impossible to write: a chat
@@ -17,9 +22,9 @@
 // surface asks here, and `revokedContextFor()` is the one place allowed to look
 // past the gate.
 
-import { getContexts, getContextById } from "./contexts-store.js?v=1090";
-import { isFlagOn } from "./feature-flags.js?v=1090";
-import { CURRENT_USER, isManager, memberName, getMember } from "./org.js?v=1090";
+import { getContexts, getContextById } from "./contexts-store.js?v=1093";
+import { isFlagOn } from "./feature-flags.js?v=1093";
+import { CURRENT_USER, isManager, memberName, getMember } from "./org.js?v=1093";
 
 // Single choke point. Flag OFF ⇒ the app behaves exactly as it did before
 // sharing existed: one implicit user, everything visible, everything editable.
@@ -27,8 +32,32 @@ function on() {
   return isFlagOn("playbookSharing");
 }
 
-function isShared(ctx) {
+// The named recipients, defensive against a seed that never went through the
+// store's normalizer.
+export function recipientsOf(ctx) {
+  return Array.isArray(ctx?.sharedWith) ? ctx.sharedWith : [];
+}
+
+export function isOrgShared(ctx) {
   return !!ctx && ctx.scope === "organization";
+}
+
+// A `members` Playbook with nobody in the list reaches no one — it is private
+// in everything but name, so it must not count as shared (a manager's whole
+// reach hangs off this predicate).
+function isMemberShared(ctx) {
+  return !!ctx && ctx.scope === "members" && recipientsOf(ctx).length > 0;
+}
+
+// "Shared" = it left its owner's hands, either way. What a manager may govern.
+function isShared(ctx) {
+  return isOrgShared(ctx) || isMemberShared(ctx);
+}
+
+// Does it reach ME? The org list is everyone; the named list is an id lookup.
+function reachesMe(ctx) {
+  if (isOrgShared(ctx)) return true;
+  return isMemberShared(ctx) && recipientsOf(ctx).includes(CURRENT_USER.id);
 }
 
 export function isMine(ctx) {
@@ -55,7 +84,12 @@ export function ownerName(ctx) {
 export function canView(ctx) {
   if (!ctx) return false;
   if (!on()) return true;
-  return isMine(ctx) || isShared(ctx);
+  if (isMine(ctx)) return true;
+  // A manager sees what the org can see — and nothing more (doc §8, Q1). Which
+  // for a named share means: the fiche exists for them even though the list
+  // doesn't name them, because they may have to hand it over or delete it.
+  if (isShared(ctx) && isManager()) return true;
+  return reachesMe(ctx);
 }
 
 // "Use" = attach it to a chat and generate with it.
@@ -105,10 +139,17 @@ export function actingOnBehalf(ctx) {
   return on() && !!ctx && !isMine(ctx);
 }
 
+// The ownership mark, in the card's metadata corner and beside the fiche's
+// name. Mine-and-private says nothing: that's the default nobody needs told.
 export function accessLabel(ctx) {
   if (!on() || !ctx) return "";
   if (!isMine(ctx)) return `Shared by ${ownerName(ctx)}`;
-  return isShared(ctx) ? "Shared with org" : "";
+  if (isOrgShared(ctx)) return "Shared with org";
+  if (!isMemberShared(ctx)) return "";
+  const n = recipientsOf(ctx).length;
+  // One recipient is named — a count of 1 is a worse sentence than the name it
+  // stands for, and this is the only place the reader sees the list at a glance.
+  return n === 1 ? `Shared with ${memberName(recipientsOf(ctx)[0])}` : `Shared with ${n} people`;
 }
 
 // ── What the surfaces list ────────────────────────────────────────────

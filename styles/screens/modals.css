@@ -193,7 +193,8 @@ body.has-modal {
    (.ap-checkbox-container draws the box + hides the input); the card chrome
    (border, selected blue border) mirrors the DS card tokens. */
 .analyze-profiles-modal__row,
-.connect-account-modal__row {
+.connect-account-modal__row,
+.share-playbook-modal__member {
   align-items: center;
   gap: var(--ref-spacing-sm);
   padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
@@ -204,22 +205,26 @@ body.has-modal {
 }
 
 .analyze-profiles-modal__row:hover:not(.is-disabled),
-.connect-account-modal__row:hover {
+.connect-account-modal__row:hover,
+.share-playbook-modal__member:hover:not(.is-disabled) {
   border-color: var(--ref-color-grey-40);
 }
 
 .analyze-profiles-modal__row:has(input:checked),
-.connect-account-modal__row:has(input:checked) {
+.connect-account-modal__row:has(input:checked),
+.share-playbook-modal__member:has(input:checked) {
   border-color: var(--ref-color-electric-blue-100);
 }
 
-.analyze-profiles-modal__row.is-disabled {
+.analyze-profiles-modal__row.is-disabled,
+.share-playbook-modal__member.is-disabled {
   cursor: default;
   opacity: 0.6;
 }
 
 .analyze-profiles-modal__row > .ap-avatar,
-.connect-account-modal__row > .ap-avatar {
+.connect-account-modal__row > .ap-avatar,
+.share-playbook-modal__member > .ap-avatar {
   flex-shrink: 0;
 }
 
@@ -1128,6 +1133,18 @@ body.has-modal {
   gap: var(--ref-spacing-sm);
 }
 
+/* With the people picker open the content is ~250px taller, which pushed the
+   footer — and Save with it — off the bottom of a 900px viewport: .ap-dialog is
+   `overflow: hidden` and this content is `overflow: visible`, so nothing
+   scrolled, it just left the card. So in THAT state only, the content becomes
+   the scroller (min-height:0 lets it shrink inside .ap-dialog's flex column).
+   Scoped to the state that needs it: with no picker on screen the owner select
+   still escapes the dialog exactly as before. */
+.share-playbook-modal.is-picking .ap-dialog-content {
+  overflow-y: auto;
+  min-height: 0;
+}
+
 .share-playbook-modal__options {
   display: flex;
   flex-direction: column;
@@ -1143,6 +1160,51 @@ body.has-modal {
 }
 .share-playbook-modal__option .ap-radio-card-title > i {
   font-size: var(--sys-icon-css-sm);
+  color: var(--sys-text-color-light);
+}
+
+/* ── The people picker (scope "members") ──────────────────────────────
+   Revealed by the middle card, and rendered UNDER the cards rather than
+   inside one: a checkbox nested in a <label> retargets its clicks to that
+   label's radio. Indented so it still reads as belonging to the card above.
+   Rows are the DS checkbox (.ap-checkbox-container draws the box and hides
+   the input) — the same shape as the analyze-profiles list. */
+.share-playbook-modal__picker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  padding-left: var(--ref-spacing-lg);
+}
+
+.share-playbook-modal__members {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  /* Same cap as the save-folder list: past ~7 rows the dialog would grow
+     past its own max-height instead of the list scrolling inside it. The vh
+     half matters because this dialog's content is `overflow: visible` (so the
+     owner select can escape it) — on a short viewport an over-tall list would
+     spill out of the card rather than scroll. */
+  max-height: min(320px, 28vh);
+  overflow-y: auto;
+}
+
+/* Row chrome, border and selected-blue included, comes from the shared group
+   the analyze-profiles rows use — one shape for every checkable row in a
+   dialog, so the two can't drift apart. Only the two things this list does
+   differently live here. */
+.share-playbook-modal__member.is-hidden {
+  display: none;
+}
+.share-playbook-modal__member-name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.share-playbook-modal__nomatch {
+  margin: 0;
+  font-size: var(--ref-font-size-sm);
+  line-height: var(--ref-font-line-height-sm);
   color: var(--sys-text-color-light);
 }
 

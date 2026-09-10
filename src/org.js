@@ -12,17 +12,27 @@ const ROLE_KEY = "archie-org-role";
 
 export const CURRENT_USER = { id: "u-me", name: "Matt Bousendorfer", initials: "MB" };
 
-export const ORG = { id: "org-agorapulse", name: "Agorapulse", memberCount: 12 };
-
-// The colleagues a shared Playbook can belong to, or be handed over to. Small
-// on purpose: this list exists to make ownership legible, not to model an org
-// chart.
+// The colleagues a shared Playbook can belong to, be handed over to, or be
+// shared with by name. Twelve, and no longer four: once the Share dialog got a
+// people picker, a list of three next to "All 12 of them" was a contradiction
+// the reader could see. The count is derived from the list below for the same
+// reason — the two can't drift.
 export const MEMBERS = [
   CURRENT_USER,
   { id: "u-sam", name: "Sam Rivera", initials: "SR" },
   { id: "u-lea", name: "Léa Mercier", initials: "LM" },
   { id: "u-jonas", name: "Jonas Beck", initials: "JB" },
+  { id: "u-nina", name: "Nina Kowalski", initials: "NK" },
+  { id: "u-tom", name: "Tom Ellery", initials: "TE" },
+  { id: "u-priya", name: "Priya Raman", initials: "PR" },
+  { id: "u-marc", name: "Marc Aubert", initials: "MA" },
+  { id: "u-dara", name: "Dara Okonkwo", initials: "DO" },
+  { id: "u-hugo", name: "Hugo Vasseur", initials: "HV" },
+  { id: "u-yuki", name: "Yuki Tanaka", initials: "YT" },
+  { id: "u-ines", name: "Inès Ferrand", initials: "IF" },
 ];
+
+export const ORG = { id: "org-agorapulse", name: "Agorapulse", memberCount: MEMBERS.length };
 
 export function getMember(id) {
   return MEMBERS.find((m) => m.id === id) || null;

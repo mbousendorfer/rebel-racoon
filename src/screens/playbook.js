@@ -17,9 +17,9 @@
 // `loader` cfg, run the (mock) analysis on a timer, then `updateContext` with
 // the section patch — the loader flips to ready and paints the fresh data.
 
-import { navigate } from "../router.js?v=1090";
-import { escapeHtml as esc } from "../utils.js?v=1090";
-import { renderTopbar } from "../components/topbar.js?v=1090";
+import { navigate } from "../router.js?v=1093";
+import { escapeHtml as esc } from "../utils.js?v=1093";
+import { renderTopbar } from "../components/topbar.js?v=1093";
 import {
   getContextById,
   getContexts,
@@ -27,27 +27,28 @@ import {
   deleteContext,
   duplicateContext,
   appendHistory,
-} from "../contexts-store.js?v=1090";
-import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=1090";
-import { mount, snapshotEditable } from "../playbook-view.js?v=1090";
-import { open as openRenameModal } from "../components/rename-modal.js?v=1090";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=1090";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=1090";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=1090";
-import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=1090";
-import { sectionPatchFromAnalysis } from "../context-builder.js?v=1090";
+} from "../contexts-store.js?v=1093";
+import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=1093";
+import { mount, snapshotEditable } from "../playbook-view.js?v=1093";
+import { open as openRenameModal } from "../components/rename-modal.js?v=1093";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=1093";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=1093";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=1093";
+import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=1093";
+import { sectionPatchFromAnalysis } from "../context-builder.js?v=1093";
 import {
   canView,
   canEdit,
   canGovern,
+  isOrgShared,
   canDelete,
   canManageSharing,
   accessLabel,
   isMine,
   ownerOf,
   ownerName,
-} from "../playbook-access.js?v=1090";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=1090";
+} from "../playbook-access.js?v=1093";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=1093";
 
 const AUTOFILL_MS = 1500;
 
@@ -67,7 +68,7 @@ const STAGES = {
 };
 
 function toast(msg) {
-  import("../components/toast.js?v=1090").then(({ showToast }) => showToast(msg));
+  import("../components/toast.js?v=1093").then(({ showToast }) => showToast(msg));
 }
 
 function prettyUrl(url) {
@@ -136,6 +137,12 @@ function buildOwnership(ctx) {
 // being broken, so the notice names both halves.
 function buildNotice(ctx) {
   if (canEdit(ctx) || !accessLabel(ctx)) return "";
+  // Whichever way it reached me — the whole org, or my name on a list — the
+  // headline says which, because they are not the same promise: one follows the
+  // org, the other is a list its owner wrote by hand.
+  const headline = isOrgShared(ctx)
+    ? `${esc(ownerName(ctx))} shares this Playbook with your organisation`
+    : `${esc(ownerName(ctx))} shared this Playbook with you`;
   const message = canGovern(ctx)
     ? `You can read it and write with it, and manage it as a manager — share it, hand it over, delete it. What it SAYS is ${esc(ownerName(ctx))}'s: to change a word, duplicate it.`
     : "You can read it and write with it. To change anything, duplicate it — the copy is yours.";
@@ -144,7 +151,7 @@ function buildNotice(ctx) {
       <i class="ap-icon-info" aria-hidden="true"></i>
       <div class="ap-infobox-content">
         <div class="ap-infobox-texts">
-          <span class="ap-infobox-title">${esc(ownerName(ctx))} shares this Playbook with your organisation</span>
+          <span class="ap-infobox-title">${headline}</span>
           <span class="ap-infobox-message">${message}</span>
         </div>
       </div>

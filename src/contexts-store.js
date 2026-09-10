@@ -22,17 +22,17 @@
 // chooses "Save as global". updateContext is used by the section-edit flow
 // when scope is "Update everywhere".
 
-import { contexts as seed, sharedContexts } from "./mocks.js?v=1090";
-import { isNewUser } from "./user-mode.js?v=1090";
-import { CURRENT_USER } from "./org.js?v=1090";
-import { isFlagOn } from "./feature-flags.js?v=1090";
-import { createNotifier } from "./store-utils.js?v=1090";
+import { contexts as seed, sharedContexts } from "./mocks.js?v=1093";
+import { isNewUser } from "./user-mode.js?v=1093";
+import { CURRENT_USER } from "./org.js?v=1093";
+import { isFlagOn } from "./feature-flags.js?v=1093";
+import { createNotifier } from "./store-utils.js?v=1093";
 import {
   normalizeLanguages,
   mirrorPrimaryToTopLevel,
   syncTopLevelToPrimary,
   cloneVoiceByLanguage,
-} from "./languages.js?v=1090";
+} from "./languages.js?v=1093";
 
 // Lives up here, away from normalizeBrandLogos where it belongs, because the
 // seed below calls that normalizer at module-init time — a `let` declared beside
@@ -178,10 +178,31 @@ function normalizeHistory(h) {
     }));
 }
 
+// The three reaches of a Playbook (doc §5.3). `members` is a FIXED list,
+// `organization` a dynamic one — that difference is the thing the Share dialog
+// has to make legible, and it's why they aren't one field with a count.
+//
+// The values are inlined rather than kept in a module-level array: the seed at
+// the top of this file normalizes Playbooks while the module is still
+// evaluating, and a `const` declared down here is in its TDZ at that point
+// (a bare `function` is hoisted, so this one is safe to call from anywhere).
+function normalizeScope(scope) {
+  return scope === "members" || scope === "organization" ? scope : "personal";
+}
+
+// The named recipients. Kept whatever the scope is, so switching to private and
+// back doesn't lose the list — "le passage d'un état à l'autre se fait dans les
+// deux sens, sans perte de données" (doc §5.3). Only `scope` decides who's in.
+function normalizeSharedWith(ids) {
+  if (!Array.isArray(ids)) return [];
+  return [...new Set(ids.filter((id) => typeof id === "string" && id))];
+}
+
 function normalizeOwnership(ctx) {
   return {
     ownerId: ctx.ownerId || CURRENT_USER.id,
-    scope: ctx.scope === "organization" ? "organization" : "personal",
+    scope: normalizeScope(ctx.scope),
+    sharedWith: normalizeSharedWith(ctx.sharedWith),
     history: normalizeHistory(ctx.history),
   };
 }
@@ -417,7 +438,8 @@ export function updateContext(id, patch) {
   if (patch.selectedProfileId !== undefined) c.selectedProfileId = patch.selectedProfileId;
   if (patch.usedIn !== undefined) c.usedIn = patch.usedIn;
   if (patch.ownerId !== undefined) c.ownerId = patch.ownerId || CURRENT_USER.id;
-  if (patch.scope !== undefined) c.scope = patch.scope === "organization" ? "organization" : "personal";
+  if (patch.scope !== undefined) c.scope = normalizeScope(patch.scope);
+  if (patch.sharedWith !== undefined) c.sharedWith = normalizeSharedWith(patch.sharedWith);
   if (patch.history !== undefined) c.history = normalizeHistory(patch.history);
   if (patch.updatedAt !== undefined) c.updatedAt = patch.updatedAt;
   // Legacy + analysis sub-object
