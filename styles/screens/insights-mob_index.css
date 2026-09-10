@@ -1,0 +1,159 @@
+/* ---- Insights · Mob · Index — the index, then the fiche ------------------------
+   Two levels, and the only lecture here whose page SCROLLS: it deliberately
+   does not join the `:is(.insights--cockpit, .insights--cockpit-bis)` no-scroll
+   rule in insights.css, because there is no selector on screen that has to stay
+   visible while you read. Nothing is pinned, so nothing has to be.
+
+   One wrapper carries the 1240px column, not each child: with the cap on every
+   child, the ones with a measure of their own resolve their auto margins
+   against the host and land left of the cards (commit 0125f9e6). */
+
+.ins-mob_index {
+  padding: var(--ref-spacing-md) var(--ins-gutter) var(--ref-spacing-xxl);
+}
+
+.ins-mob_index__inner {
+  width: min(var(--ins-content), 100%);
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+  min-width: 0;
+}
+
+/* ── The index ────────────────────────────────────────────────────────────── */
+
+.ins-mob_index__card {
+  gap: var(--ref-spacing-xs);
+}
+
+/* No per-th/td rules beyond the columns that hold a drawn shape or a button —
+   the DS table owns its own width, header alignment and `.right`. */
+
+/* The whole row is the door (data-ins-select on the <tr>), so it takes the
+   pointer and the app's interactive tint on hover — the same promise a card
+   makes with its blue border, which a borderless table row cannot make. The
+   name inside is a real button, which is what the keyboard and AT reach.
+   Electric blue 05 is the tint Cockpit's rail uses for a SELECTED row, and it
+   is free here: selecting in this lecture navigates, so no row on this table is
+   ever in the selected state and the two cannot be confused. */
+.ins-mob_index__row {
+  cursor: pointer;
+}
+
+.ins-mob_index__row:hover {
+  background: var(--ref-color-electric-blue-05);
+}
+
+.ins-mob_index__row:hover .ins-mob_index__go {
+  color: var(--ref-color-electric-blue-100);
+}
+
+/* A button that reads as the row's title: the DS table sets the cell's type, so
+   this only strips the button's chrome and takes the interactive colour on
+   hover. */
+.ins-mob_index__name {
+  display: block;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  font: inherit;
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--sys-text-color-default);
+  cursor: pointer;
+}
+
+.ins-mob_index__row:hover .ins-mob_index__name,
+.ins-mob_index__name:hover {
+  color: var(--ref-color-electric-blue-100);
+}
+
+.ins-mob_index__name:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: var(--ref-spacing-xxxs);
+  border-radius: var(--ref-border-radius-sm);
+}
+
+.ins-mob_index__sub {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxxs);
+  font-size: var(--ref-font-size-xs);
+  line-height: var(--ref-font-line-height-xs);
+  color: var(--sys-text-color-light);
+}
+
+/* The missing connection, as ONE line under the name — not a `.ap-infobox` per
+   row: five banners in a table is the page shouting the same sentence five
+   times. The full note is on the fiche, where there is one of them. */
+.ins-mob_index__soon {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  font-size: var(--ref-font-size-xs);
+  line-height: var(--ref-font-line-height-xs);
+  color: var(--sys-color-warning-text);
+}
+
+.ins-mob_index__bar {
+  min-width: 160px;
+}
+
+.ins-mob_index__bar .app-bar {
+  display: inline-block;
+  width: calc(100% - 46px);
+  vertical-align: middle;
+  margin-right: var(--ref-spacing-xxxs);
+}
+
+.ins-mob_index__bar .ins-num {
+  display: inline-block;
+  width: 38px;
+  font-weight: var(--ref-font-weight-bold);
+}
+
+/* The affordance, not a control: it says the row opens, the row is what you
+   click. Grey at rest so a column of blue chevrons does not read as five
+   links. */
+.ins-mob_index__go {
+  width: 32px;
+  color: var(--sys-text-color-light);
+  transition: color var(--ref-animation-short) var(--app-ease-standard);
+}
+
+/* ── The fiche ───────────────────────────────────────────────────────────── */
+
+/* The crumb is the only way back — the topbar carries none. Ghost grey and on a
+   line of its own, so it reads as navigation and not as a third verb next to
+   the objective's own two. Pulled back off the column by its own padding, the
+   way a heading-as-control is. */
+.ins-mob_index__crumb {
+  display: flex;
+  margin-inline-start: calc(-1 * var(--ref-spacing-xxs));
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+
+/* Under this the eight columns stop fitting, and the three the reader can lose
+   first are the ones the name already implies or the state repeats. Measured on
+   the VIEWPORT here and not a container, because the table is the whole page —
+   there is no band whose width the viewport would not know. */
+@media (max-width: 1080px) {
+  .ins-mob_index__table :is(th, td):nth-child(3),
+  .ins-mob_index__table :is(th, td):nth-child(4),
+  .ins-mob_index__table :is(th, td):nth-child(6) {
+    display: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .ins-mob_index__table :is(th, td):nth-child(5) {
+    display: none;
+  }
+  .ins-mob_index {
+    padding-inline: var(--ref-spacing-sm);
+  }
+}

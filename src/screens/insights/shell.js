@@ -33,26 +33,26 @@
 // host is never repainted without `destroyChartsIn(host)` first — the one rule
 // that keeps a brand switch from leaking a chart per repaint.
 
-import { html, raw } from "../../utils.js?v=1088";
-import { renderTopbar } from "../../components/topbar.js?v=1088";
-import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=1088";
+import { html, raw } from "../../utils.js?v=1089";
+import { renderTopbar } from "../../components/topbar.js?v=1089";
+import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=1089";
 import {
   subscribe as subscribeScope,
   getActivePlaybook,
   getActivePlaybookId,
   setActivePlaybook,
-} from "../../active-playbook.js?v=1088";
-import { getPath, navigate } from "../../router.js?v=1088";
-import { isFlagOn } from "../../feature-flags.js?v=1088";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=1088";
-import { consumeHandoff } from "../../handoff.js?v=1088";
-import { open as openObjectiveModal } from "../../components/objective-modal.js?v=1088";
-import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=1088";
-import { renderEmptyState } from "../../components/empty-state.js?v=1088";
-import { playbookTitle } from "./pieces.js?v=1088";
-import { objectiveEntries, playbookRollup, entryByKey } from "./model.js?v=1088";
-import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=1088";
-import { DEFAULT_LAYOUT, readLayoutId, writeLayoutId, layoutById } from "./views.js?v=1088";
+} from "../../active-playbook.js?v=1089";
+import { getPath, navigate } from "../../router.js?v=1089";
+import { isFlagOn } from "../../feature-flags.js?v=1089";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=1089";
+import { consumeHandoff } from "../../handoff.js?v=1089";
+import { open as openObjectiveModal } from "../../components/objective-modal.js?v=1089";
+import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=1089";
+import { renderEmptyState } from "../../components/empty-state.js?v=1089";
+import { playbookTitle } from "./pieces.js?v=1089";
+import { objectiveEntries, playbookRollup, entryByKey } from "./model.js?v=1089";
+import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=1089";
+import { DEFAULT_LAYOUT, readLayoutId, writeLayoutId, layoutById } from "./views.js?v=1089";
 
 /** Set by a Playbook's objectives block ("Open in Insights"); payload `${ctxId}::${label}`. */
 export const FOCUS_OBJECTIVE_HANDOFF = "focusObjective";
@@ -207,7 +207,7 @@ function onClick(event) {
   );
 
   const t = event.target.closest(
-    "[data-ins-new],[data-ins-adjust],[data-ins-chat],[data-ins-select],[data-ins-measure-tab],[data-ins-jump],[data-ins-scope-pick],[data-ins-repurpose],[data-ins-view]",
+    "[data-ins-new],[data-ins-adjust],[data-ins-chat],[data-ins-select],[data-ins-unselect],[data-ins-measure-tab],[data-ins-jump],[data-ins-scope-pick],[data-ins-repurpose],[data-ins-view]",
   );
   if (!t) return;
   const ds = t.dataset;
@@ -270,6 +270,13 @@ function onClick(event) {
     // Cockpit's selection rides in the URL so a link carries the objective;
     // the router re-runs this screen on the query change.
     setHashQuery(getPath(), { objective: ds.insSelect });
+    return;
+  }
+  if ("insUnselect" in ds) {
+    // The way back UP a level, for a lecture that has one (mob_index): drop
+    // ?objective and the layout renders its index again. Same primitive the
+    // scope pick uses above to purge a key belonging to another brand.
+    setHashQuery(getPath(), {});
     return;
   }
   if (ds.insMeasureTab) {

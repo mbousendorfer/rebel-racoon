@@ -1,0 +1,105 @@
+/* ---- Insights · Mob · Side — full width, the facts on the right ----------------
+   No left rail: the narrow column moves to the RIGHT and stops carrying
+   navigation. Which is the whole trade this lecture tests — a right column is
+   affordable because it holds things you glance at and can stick to the top of
+   the scroll; a left column holding navigation for three items is not, because
+   navigation for three items is a dropdown.
+
+   The split is measured with a @container query on the row, never a media
+   query: the app's rail collapses and the right panel overlays, so viewport
+   width never tells you content width. */
+
+/* The QUERY CONTAINER is the padding box, not the grid: a container query
+   styles a container's descendants and never the container element itself, so
+   `container-type` on the grid could not re-shape that same grid. */
+.ins-mob_side {
+  padding: var(--ref-spacing-md) var(--ins-gutter) var(--ref-spacing-xxl);
+  container-type: inline-size;
+}
+
+.ins-mob_side__inner {
+  width: min(var(--ins-content), 100%);
+  margin-inline: auto;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: var(--ref-spacing-md);
+  align-items: start;
+}
+
+.ins-mob_side__main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+}
+
+/* Sticky, and `align-self: start` so the column is as tall as its card rather
+   than as tall as the read beside it — a stretched card with a rule at its foot
+   would put that rule level with the posts list. */
+.ins-mob_side__aside {
+  min-width: 0;
+  position: sticky;
+  top: var(--ref-spacing-md);
+  align-self: start;
+}
+
+/* ── Head ───────────────────────────────────────────────────────────────────
+   Two lines, Monarch's own: the brand above, the objective below. The Playbook
+   line is not decoration — outside workspace mode `playbookTitle` is the ONLY
+   door to the scope in the whole app, so a lecture that dropped it would make
+   its brand unchangeable (pieces.js). The verbs sit on the right of the row,
+   never in the facts column. */
+
+.insights__band-inner.ins-mob_side__head {
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ref-spacing-sm);
+}
+
+.ins-mob_side__titles {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+}
+
+/* The brand steps down a rung: here it heads the objective rather than the page,
+   and two h-rung titles stacked would compete. Size and weight only — the ink
+   stays grey-80, never lighter. */
+.ins-mob_side__titles .ins-pbtitle__name {
+  font-size: var(--ref-font-size-sm);
+  line-height: var(--ref-font-line-height-sm);
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--sys-text-color-light);
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+
+/* Below 900px of READ width the facts stop being a column and become a block
+   under the read. The threshold is the read width and not the padding box:
+   a query container's size is its CONTENT box, so the two 40px gutters are
+   already out of it (checked in the browser — the split flips between 940px and
+   860px of content, not of border box).
+   They keep their order — the facts before the posts would be worse: the reader
+   would meet them twice, once as a column and once as a detour. */
+@container (max-width: 900px) {
+  .ins-mob_side__inner {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ins-mob_side__aside {
+    position: static;
+  }
+}
+
+@media (max-width: 720px) {
+  .ins-mob_side {
+    padding-inline: var(--ref-spacing-sm);
+  }
+
+  .insights__band-inner.ins-mob_side__head {
+    flex-direction: column;
+  }
+}

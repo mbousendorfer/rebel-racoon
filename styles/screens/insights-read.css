@@ -1,0 +1,327 @@
+/* ---- Insights · the read stack the mob_ lectures share -------------------------
+   The sections `src/screens/insights/read.js` renders: the objective's head, its
+   reading, the readout, the chart frame, the measures table, the facts column,
+   and the objective title-picker. Three lectures (Index / Side / Band) compose
+   these, so they are styled ONCE here rather than three times in three files —
+   which is the same reason read.js exists.
+
+   ⚠️ Deletable as a block. The day one reading wins, the losers, read.js and
+   this file go together; nothing outside the mob_ lectures selects `.ins-read__*`
+   or `.ins-objtitle*`. Cockpit / Cockpit bis / Report keep their own copies of
+   this geometry, untouched on purpose — they are the baseline being compared
+   against. */
+
+/* ── The objective title — the heading IS the objective picker ───────────────
+   The same construction as `.ins-pbtitle` (insights.css), one rung up the page:
+   that one picks the Playbook at the h2 rung, this one picks the objective at
+   the h1 rung, which is the rung the objective being read already ran at in
+   Cockpit's pane and Report's chapter title.
+
+   What keeps it from being "a title that is secretly a picker": the chevron is
+   always there, the hit area fills grey on hover, and the chevron goes electric
+   blue and flips when open — the interactive colour declares it a control. */
+
+.ins-objtitle {
+  position: relative;
+  /* As wide as its name: a full-width hit area on a 1240px page is a hover
+     state the size of the card. */
+  align-self: flex-start;
+  max-width: 100%;
+}
+
+.ins-objtitle > summary {
+  list-style: none;
+}
+
+.ins-objtitle > summary::-webkit-details-marker {
+  display: none;
+}
+
+.ins-objtitle > summary::marker {
+  display: none;
+}
+
+/* The negative inline start pulls the hit area's padding back off the column so
+   the name starts on the same edge as the line above and the cards below. */
+.ins-objtitle__trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xxs);
+  margin-inline-start: calc(-1 * var(--ref-spacing-xxs));
+  border-radius: var(--ref-border-radius-sm);
+  cursor: pointer;
+  transition: background-color var(--ref-animation-short) var(--app-ease-standard);
+}
+
+.ins-objtitle__trigger:hover {
+  background: var(--ref-color-grey-05);
+}
+
+.ins-objtitle__trigger:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: var(--ref-spacing-xxxs);
+}
+
+.ins-objtitle__name {
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--sys-text-style-h1-size);
+  line-height: var(--sys-text-style-h1-line-height);
+  font-weight: var(--sys-text-style-h1-weight);
+  color: var(--sys-text-color-default);
+}
+
+/* One objective — nothing to switch to, so no trigger and no chevron. */
+.ins-objtitle__name--static {
+  align-self: flex-start;
+}
+
+.ins-objtitle__arrow {
+  flex: 0 0 auto;
+  color: var(--sys-text-color-light);
+  transition:
+    transform var(--ref-animation-short) var(--app-ease-standard),
+    color var(--ref-animation-short) var(--app-ease-standard);
+}
+
+.ins-objtitle__trigger:hover .ins-objtitle__arrow,
+.ins-objtitle[open] .ins-objtitle__arrow {
+  color: var(--ref-color-electric-blue-100);
+}
+
+.ins-objtitle[open] .ins-objtitle__arrow {
+  transform: rotate(180deg);
+}
+
+/* The DS dropdown stretches to its host's two edges; the host is as wide as an
+   objective's name, which is not a menu width. */
+.ins-objtitle__menu {
+  right: auto;
+  min-width: 280px;
+  max-width: 420px;
+}
+
+/* An option carries the objective's verdict, so the row is name | pill | check
+   rather than the select's usual name | check. */
+.ins-objtitle__menu .ap-select-option {
+  gap: var(--ref-spacing-xxs);
+}
+
+.ins-objtitle__menu .ap-select-option-text {
+  min-width: 0;
+}
+
+/* ── Head ───────────────────────────────────────────────────────────────── */
+
+.ins-read__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ref-spacing-sm);
+}
+
+.ins-read__titles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  min-width: 0;
+}
+
+.ins-read__title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xs);
+}
+
+/* The DS's top rung, h1 style, weight and all — the same string Report's
+   chapter title is bound to. No invented display step. */
+.ins-read__title h2 {
+  margin: 0;
+  font-size: var(--sys-text-style-h1-size);
+  line-height: var(--sys-text-style-h1-line-height);
+  font-weight: var(--sys-text-style-h1-weight);
+  color: var(--sys-text-color-default);
+}
+
+.ins-read__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxxs);
+  margin: 0;
+  font-size: var(--ref-font-size-sm);
+  line-height: var(--ref-font-line-height-sm);
+  color: var(--sys-text-color-light);
+}
+
+/* ── Reading ────────────────────────────────────────────────────────────── */
+
+.ins-read__reading {
+  margin: 0;
+  max-width: 78ch;
+  font-size: var(--ref-font-size-md);
+  line-height: var(--ref-font-line-height-lg);
+  color: var(--sys-text-color-default);
+}
+
+/* ── Readout — three cells, not four of equal weight ──────────────────────
+   How far along dominates (it is the answer); current and target are what it is
+   made of. Told apart by a hairline inside the card's own padding, never by a
+   band of their own. */
+
+.ins-read__readout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--ref-spacing-md);
+}
+
+.ins-read__readout > * + * {
+  padding-left: var(--ref-spacing-md);
+  border-left: 1px solid var(--sys-border-color-default);
+}
+
+/* ── The same figures, stacked — for a host that sets them beside the curve ── */
+
+.ins-read__figures {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+  min-width: 0;
+}
+
+.ins-read__figpair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--ref-spacing-xs);
+  padding-top: var(--ref-spacing-sm);
+  border-top: 1px solid var(--sys-border-color-default);
+}
+
+.ins-read__figmeta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxxs);
+  margin: 0;
+  padding-top: var(--ref-spacing-xs);
+  border-top: 1px solid var(--sys-border-color-default);
+  font-size: var(--ref-font-size-sm);
+  line-height: var(--ref-font-line-height-sm);
+  color: var(--sys-text-color-light);
+}
+
+/* ── Cards ──────────────────────────────────────────────────────────────── */
+
+.ins-read__card {
+  gap: var(--ref-spacing-xs);
+}
+
+/* The curve runs to the card's padding edge; Highcharts already insets its own
+   plot area, so the card's inline padding doubled it. */
+.ins-chart--read {
+  margin: 0 calc(-1 * var(--ref-spacing-xxs));
+}
+
+/* ── Measures table ─────────────────────────────────────────────────────────
+   No per-th/td rules and no width: the DS table sets its own width, aligns its
+   headers, and ships `.right` for numeric columns and `tbody tr.selected` for
+   the highlighted row. Styling individual cells is the component's documented
+   Don't — what follows only sizes the two columns holding a drawn shape. */
+
+.ins-read__metric {
+  display: block;
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--sys-text-color-default);
+}
+
+.ins-read__table th[scope="row"] .ins-muted {
+  font-size: var(--ref-font-size-xs);
+}
+
+.ins-read__bar {
+  min-width: 150px;
+}
+
+.ins-read__bar .app-bar {
+  display: inline-block;
+  width: calc(100% - 46px);
+  vertical-align: middle;
+  margin-right: var(--ref-spacing-xxxs);
+}
+
+.ins-read__bar .ins-num {
+  display: inline-block;
+  width: 38px;
+  font-weight: var(--ref-font-weight-bold);
+}
+
+.ins-read__spark {
+  width: 120px;
+  min-width: 120px;
+}
+
+/* ── The facts column ───────────────────────────────────────────────────────
+   Label / value rows, the way Monarch's Details and Plane's Properties read.
+   No button in here: the verbs stay in the head, which also keeps a 300px
+   column from growing a full-width CTA. */
+
+.ins-read__facts {
+  gap: 0;
+}
+
+.ins-read__fact {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xs) 0;
+  border-top: 1px solid var(--sys-border-color-default);
+}
+
+.ins-read__fact:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.ins-read__factname {
+  flex: 0 0 auto;
+  font-size: var(--ref-font-size-sm);
+  line-height: var(--ref-font-line-height-sm);
+  color: var(--sys-text-color-light);
+}
+
+.ins-read__factvalue {
+  min-width: 0;
+  text-align: right;
+  font-size: var(--ref-font-size-sm);
+  line-height: var(--ref-font-line-height-sm);
+}
+
+.ins-read__facttext {
+  color: var(--sys-text-color-default);
+  font-weight: var(--ref-font-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The Playbook's counts sit at the foot, under a rule: they are the level ABOVE
+   this objective, not another of its facts. */
+.ins-read__factsfoot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  margin-top: var(--ref-spacing-xs);
+  padding-top: var(--ref-spacing-sm);
+  border-top: 1px solid var(--app-border);
+}
+
+/* The note inside the column is the DS infobox, which brings its own frame and
+   width — all it needs here is to clear the row above it. */
+.ins-read__facts .ap-infobox {
+  margin-top: var(--ref-spacing-xs);
+}

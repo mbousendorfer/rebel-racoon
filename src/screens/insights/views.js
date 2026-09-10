@@ -6,19 +6,31 @@
 // imports the topbar, so a switch owned by the shell would have made the
 // topbar import it back — a cycle for one string.
 //
-// ⚠️ The switch is PROTOTYPE chrome, not product UI. Three layouts are three
-// answers to "how do I read my objectives", kept side by side to be compared
-// live; the day one wins, the others are a delete and this module goes with
-// them. That is exactly why the control sits in the topbar and not in the page:
-// the page is the thing being evaluated, and a comparison control standing
-// inside it reads as one of the page's own features.
+// ⚠️ The switch is PROTOTYPE chrome, not product UI. Each layout is one answer
+// to "how do I read my objectives", kept side by side to be compared live; the
+// day one wins, the others are a delete and this module goes with them. That is
+// exactly why the control sits in the topbar and not in the page: the page is
+// the thing being evaluated, and a comparison control standing inside it reads
+// as one of the page's own features.
+//
+// There are SIX. The first three are the app's own; the three `mob_` ones were
+// drawn from what the market actually ships for goal dashboards (Asana, Monarch,
+// Customer.io, Deel, Front, Plane), each attacking the same grief from a
+// different side: Cockpit reserves a 340px column of full viewport height for a
+// list of two or three objectives. Index removes the selector from the read
+// entirely (two levels), Side moves the narrow column to the right and fills it
+// with facts instead of navigation, Band puts the figures beside the curve and
+// keeps the selector to one tab strip. They share their fiche — see read.js.
 
-import { escapeHtml as esc } from "../../utils.js?v=1088";
-import * as report from "./layouts/report.js?v=1088";
-import * as cockpit from "./layouts/cockpit.js?v=1088";
-import * as cockpitBis from "./layouts/cockpit-bis.js?v=1088";
+import { escapeHtml as esc } from "../../utils.js?v=1089";
+import * as report from "./layouts/report.js?v=1089";
+import * as cockpit from "./layouts/cockpit.js?v=1089";
+import * as cockpitBis from "./layouts/cockpit-bis.js?v=1089";
+import * as mobIndex from "./layouts/mob_index.js?v=1089";
+import * as mobSide from "./layouts/mob_side.js?v=1089";
+import * as mobBand from "./layouts/mob_band.js?v=1089";
 
-export const LAYOUTS = [cockpit, cockpitBis, report];
+export const LAYOUTS = [cockpit, cockpitBis, report, mobIndex, mobSide, mobBand];
 
 /** localStorage — which layout the reader last chose. */
 export const INSIGHTS_LAYOUT_KEY = "archie-insights-layout";

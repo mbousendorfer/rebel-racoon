@@ -1,0 +1,134 @@
+/* ---- Insights · Mob · Band — the figures beside the curve ----------------------
+   Front's answer, and the narrowest reading of the grief that opened the series:
+   the numbers do not need a column down the side of the page, they need to sit
+   next to the thing that explains them. A "Key figures" card at a third, the
+   curve at two thirds, one band, the table underneath.
+
+   The band is measured with a @container query, never a media query: the app's
+   rail collapses and the right panel overlays, so the viewport does not know how
+   wide this row is. */
+
+.ins-mob_band {
+  padding: var(--ref-spacing-md) var(--ins-gutter) var(--ref-spacing-xxl);
+}
+
+.ins-mob_band__inner {
+  width: min(var(--ins-content), 100%);
+  margin-inline: auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+  container-type: inline-size;
+}
+
+/* ── Head ───────────────────────────────────────────────────────────────────
+   The Playbook's name (which IS the scope switcher), the counts, the selected
+   objective's two verbs, then the strip.
+
+   The counts STAY, unlike in Cockpit bis: its tiles put every verdict on screen,
+   which made a counts line a recount of what the reader was looking at. A tab
+   strip shows one objective's verdict as a glyph and none of the others' totals,
+   so the line is the only place "On track 2 · At risk 1" is said. */
+
+.insights__band-inner.ins-mob_band__head {
+  gap: var(--ref-spacing-sm);
+}
+
+.ins-mob_band__headrow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ref-spacing-sm);
+}
+
+.ins-mob_band__titles {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+}
+
+/* The strip and the add control share one track line: the row's ::after carries
+   the rule across whatever the tabs leave, so the underline is unbroken and
+   colinear (align-items: flex-end puts every bottom edge on one line). */
+.ins-mob_band__tabsrow {
+  display: flex;
+  align-items: flex-end;
+  gap: 0;
+}
+
+.ins-mob_band__tabsrow::after {
+  content: "";
+  flex: 1 1 auto;
+  align-self: stretch;
+  border-bottom: 1px solid var(--sys-border-color-default);
+}
+
+/* The nav hugs its tabs instead of taking the row (.ap-tabs is width: 100%), or
+   the add button would be pushed past the end of the strip. */
+.ins-mob_band__tabs {
+  flex: 0 1 auto;
+  width: auto;
+  min-width: 0;
+}
+
+.ins-mob_band__tab {
+  gap: var(--ref-spacing-xxs);
+}
+
+/* A control, not a selectable tab — interactive ink rather than the tab's grey,
+   and never the active underline. The topbar's primary stays where it is. */
+.ins-mob_band__addtab {
+  gap: var(--ref-spacing-xxs);
+  border-bottom: 1px solid var(--sys-border-color-default);
+  color: var(--ref-color-electric-blue-100);
+  font-weight: var(--ref-font-weight-bold);
+}
+
+/* ── The band ────────────────────────────────────────────────────────────── */
+
+.ins-mob_band__band {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: var(--ref-spacing-sm);
+  align-items: stretch;
+}
+
+/* Two cards of one row, so they end on the same line: the figures card is short
+   and the chart card is 280px tall, and a figures card floating at its own
+   height left the band's bottom edge stepped. */
+.ins-mob_band__figures {
+  min-width: 0;
+  gap: var(--ref-spacing-xs);
+}
+
+/* The card is stretched to the chart's height, so its content spreads down it:
+   the score at the top, the pair it is made of in the middle, the provenance at
+   the foot. Left to hug its content the card ended ~180px short of the curve
+   beside it — a band of air, which is the exact fault this lecture exists to
+   remove. */
+.ins-mob_band__figures .ins-read__figures {
+  flex: 1;
+  justify-content: space-between;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+
+/* Below this the band stacks: the figures above the curve, in that order,
+   because the figures are the answer and the curve is how it got there. */
+@container (max-width: 820px) {
+  .ins-mob_band__band {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .ins-mob_band {
+    padding-inline: var(--ref-spacing-sm);
+  }
+
+  .ins-mob_band__headrow {
+    flex-direction: column;
+  }
+}

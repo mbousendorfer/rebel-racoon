@@ -8,12 +8,12 @@
 // Pure render helpers — strings in, strings out. No listeners: every action is
 // a `data-ins-*` hook the shell dispatches.
 
-import { escapeHtml as esc } from "../../utils.js?v=1088";
-import { renderPostEchoRow } from "../../components/top-post-card.js?v=1088";
-import { getContexts } from "../../contexts-store.js?v=1088";
-import { isWorkspaceMode } from "../../active-playbook.js?v=1088";
-import { progressBar } from "./charts.js?v=1088";
-import { signedPct } from "./model.js?v=1088";
+import { escapeHtml as esc } from "../../utils.js?v=1089";
+import { renderPostEchoRow } from "../../components/top-post-card.js?v=1089";
+import { getContexts } from "../../contexts-store.js?v=1089";
+import { isWorkspaceMode } from "../../active-playbook.js?v=1089";
+import { progressBar } from "./charts.js?v=1089";
+import { signedPct } from "./model.js?v=1089";
 
 // ── The page's head — the scope, worn as the heading ─────────────────────
 //
@@ -75,6 +75,48 @@ export function playbookTitle(ctx) {
       <i class="ap-icon-chevron-down ins-pbtitle__arrow" aria-hidden="true"></i>
     </summary>
     <div class="ap-select-dropdown ins-pbtitle__menu" id="insPbListbox" role="listbox" aria-label="Playbook">
+      <div class="ap-select-options">${rows}</div>
+    </div>
+  </details>`;
+}
+
+/**
+ * The OBJECTIVE picker, as the read's own heading — the same construction as
+ * `playbookTitle` above, one rung up the page: the objective's name at the h1
+ * rung with a chevron after it, opening the other objectives of this Playbook
+ * with their verdicts beside them.
+ *
+ * It leans on the reversal `playbookTitle`'s note documents: a title that is a
+ * picker is fine as long as it is not SECRET — the chevron is always visible,
+ * the hit area fills on hover, the arrow goes electric blue. Same `data-ins-scope`
+ * hook, so the shell's outside-click closer (shell.js § onClick) takes it over
+ * without a line of its own.
+ *
+ * One objective → a plain heading: a select with a single option cannot be used.
+ *
+ * Used by the mob_ lectures that read one objective without a list on screen.
+ */
+export function objectiveTitle(entries, selected) {
+  if (entries.length < 2) {
+    return `<h2 class="ins-objtitle__name ins-objtitle__name--static">${esc(selected.label)}</h2>`;
+  }
+  const rows = entries
+    .map((e) => {
+      const on = e.key === selected.key;
+      return `<div class="ap-select-option${on ? " selected" : ""}" data-ins-select="${esc(e.key)}" role="option" aria-selected="${on}">
+        <span class="ap-select-option-text">${esc(e.label)}</span>
+        ${statusPill(e, { dot: false })}
+        ${on ? `<i class="ap-icon-check ap-select-option-check" aria-hidden="true"></i>` : ""}
+      </div>`;
+    })
+    .join("");
+  return `<details class="ins-objtitle" data-ins-scope>
+    <summary class="ins-objtitle__trigger" role="combobox" aria-label="Objective"
+      aria-haspopup="listbox" aria-expanded="false" aria-controls="insObjListbox">
+      <h2 class="ins-objtitle__name">${esc(selected.label)}</h2>
+      <i class="ap-icon-chevron-down ins-objtitle__arrow" aria-hidden="true"></i>
+    </summary>
+    <div class="ap-select-dropdown ins-objtitle__menu" id="insObjListbox" role="listbox" aria-label="Objective">
       <div class="ap-select-options">${rows}</div>
     </div>
   </details>`;
