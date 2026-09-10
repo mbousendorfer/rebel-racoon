@@ -19,8 +19,8 @@
 //     • onDone() — fired after a committed change (scope or ownership), so the
 //       caller can repaint or bail out if it just handed away its own access.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1095";
-import { getContextById, updateContext, appendHistory } from "../contexts-store.js?v=1095";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1098";
+import { getContextById, updateContext, appendHistory } from "../contexts-store.js?v=1098";
 import {
   canTransfer,
   isMine,
@@ -29,10 +29,10 @@ import {
   recipientsOf,
   tiedProfile,
   profileBlockFor,
-} from "../playbook-access.js?v=1095";
-import { MEMBERS, ORG, CURRENT_USER, getMember, memberName } from "../org.js?v=1095";
-import { showToast } from "./toast.js?v=1095";
-import { html, raw, escapeHtml } from "../utils.js?v=1095";
+} from "../playbook-access.js?v=1098";
+import { MEMBERS, ORG, CURRENT_USER, getMember, memberName } from "../org.js?v=1098";
+import { showToast } from "./toast.js?v=1098";
+import { html, raw, escapeHtml } from "../utils.js?v=1098";
 
 const MODAL_ID = "sharePlaybook";
 
@@ -51,6 +51,16 @@ let pickedMembers = new Set();
 // would be worse than no search at all.
 let memberQuery = "";
 let transferTo = null;
+
+// Search has to ignore accents, or half this org is unreachable by typing:
+// "lea" would miss Léa Mercier and "ines" Inès Ferrand. Folded on both sides —
+// the row key and the query.
+function fold(text) {
+  return (text || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "");
+}
 
 // Above this many rows a picker earns its search box — the same threshold
 // social-profiles.js uses for profile pickers, so every list in the app flips
@@ -158,75 +168,119 @@ function candidates(ctx) {
   return MEMBERS.filter((m) => m.id !== ctx.ownerId);
 }
 
-// The people picker, revealed by the middle card. OUTSIDE the radio card, not
-// inside it: a checkbox nested in a <label> would retarget every click to that
-// label's radio, so the list sits under the cards and stays attached by
-// indentation instead.
+// The people picker, revealed by the middle card: the DS **Selection
+// Dropdown** behind an `.ap-select` trigger — the component the design system
+// ships for exactly this (search + checkable items + an empty state), and the
+// same composition the save-drafts dialog already uses for its folder picker.
+// One pattern for "pick from a list of things" in a modal, not two.
+//
+// ⚠️ It shipped for one commit as eleven full-width checkbox CARDS stacked in
+// the dialog body. That made the content ~250px taller than a 900px viewport
+// could hold — Save ended up under the fold — and it asked the reader to scan a
+// wall of rows to answer "who has this?", which is what the trigger now says in
+// one line. Don't go back to the flat list.
 function renderMemberPicker(ctx) {
   if (picked !== "members") return "";
   const rows = candidates(ctx);
-  const q = memberQuery.trim().toLowerCase();
-  const withSearch = rows.length > MEMBER_SEARCH_THRESHOLD;
+  const q = fold(memberQuery.trim());
   const list = rows
     .map((m) => {
       const on = pickedMembers.has(m.id);
-      const hidden = q && !m.name.toLowerCase().includes(q);
+      const hidden = q && !fold(m.name).includes(q);
       // "Le destinataire ne peut pas être sélectionné" (doc §7): the row stays
       // in the list, disabled, and says WHY — dropping it would leave the owner
-      // wondering where their colleague went.
+      // wondering where their colleague went. A short tag + tooltip rather than
+      // a sentence, so a row stays one line.
       const blocked = profileBlockFor(ctx, m.id);
+      const account = blocked ? blocked.handle || blocked.name || "this account" : "";
       return html`<label
-        class="ap-checkbox-container share-playbook-modal__member${raw(hidden ? " is-hidden" : "")}${raw(
-          blocked ? " is-disabled" : "",
+        class="ap-selection-dropdown-item share-playbook-modal__member${raw(blocked ? " is-disabled" : "")}${raw(
+          hidden ? " is-hidden" : "",
         )}"
-        data-share-member-row="${m.name.toLowerCase()}"
+        data-share-member-row="${fold(m.name)}"
       >
-        <input
-          type="checkbox"
-          value="${m.id}"
-          data-share-member
-          ${raw(on ? "checked" : "")}
-          ${raw(blocked ? "disabled" : "")}
-        />
-        <i></i>
+        <span class="ap-checkbox-container">
+          <input
+            type="checkbox"
+            value="${m.id}"
+            data-share-member
+            ${raw(on ? "checked" : "")}
+            ${raw(blocked ? "disabled" : "")}
+          />
+          <i></i>
+        </span>
         ${raw(avatar(m))}
         <span class="share-playbook-modal__member-name">${m.name}</span>
         ${raw(
-          blocked
-            ? html`<span class="share-playbook-modal__member-note"
-                >No access to ${blocked.handle || blocked.name || "this account"}</span
-              >`
-            : "",
+          blocked ? html`<span class="ap-tag grey mini" data-tooltip="No access to ${account}">No access</span>` : "",
         )}
       </label>`;
     })
     .join("");
-  const visible = rows.filter((m) => !q || m.name.toLowerCase().includes(q)).length;
-  // The empty state is always in the DOM, just hidden: typing filters rows in
-  // place instead of re-rendering, so there has to be a node to reveal.
+  const visible = rows.filter((m) => !q || fold(m.name).includes(q)).length;
+  // Open on arrival only while there is nobody to show in the trigger: that is
+  // the state where the reader has to open it anyway (and Save is disabled, so
+  // the panel covering the footer costs nothing). With a list already in the
+  // trigger it starts collapsed, and Save is never hidden behind it.
   return html`
-    <div class="share-playbook-modal__picker">
-      ${raw(
-        withSearch
-          ? html`<div class="ap-input-group share-playbook-modal__search">
-              <i class="ap-icon-search" aria-hidden="true"></i>
-              <input
-                type="search"
-                value="${memberQuery}"
-                data-share-search
-                placeholder="Search ${escapeHtml(ORG.name)}…"
-                aria-label="Search teammates"
-                autocomplete="off"
-              />
-            </div>`
-          : "",
-      )}
-      <div class="share-playbook-modal__members" role="group" aria-label="People to share with">${raw(list)}</div>
-      <p class="share-playbook-modal__nomatch" data-share-nomatch ${raw(visible ? "hidden" : "")}>
-        Nobody at ${escapeHtml(ORG.name)} matches your search.
-      </p>
+    <div class="share-playbook-modal__field">
+      <details class="ap-select share-playbook-modal__combo" ${raw(pickedMembers.size ? "" : "open")}>
+        <summary class="ap-select-trigger" title="Choose who gets this Playbook">
+          <span class="ap-select-value" data-share-people-value>${raw(triggerContent(ctx))}</span>
+          <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
+        </summary>
+        <div class="ap-selection-dropdown share-playbook-modal__dropdown">
+          <div class="ap-selection-dropdown-search">
+            <i class="ap-icon-search" aria-hidden="true"></i>
+            <input
+              type="text"
+              value="${memberQuery}"
+              data-share-search
+              placeholder="Search ${escapeHtml(ORG.name)}…"
+              aria-label="Search teammates"
+              autocomplete="off"
+            />
+          </div>
+          <div class="ap-selection-dropdown-items" role="group" aria-label="People to share with">
+            ${raw(list)}
+            <!-- Always in the DOM, just hidden: typing filters rows in place
+                 instead of re-rendering, so there has to be a node to reveal. -->
+            <div class="ap-selection-dropdown-empty" data-share-nomatch ${raw(visible ? "hidden" : "")}>
+              Nobody at ${escapeHtml(ORG.name)} matches your search.
+            </div>
+          </div>
+        </div>
+      </details>
     </div>
   `;
+}
+
+// What the trigger says. Faces first (the DS avatar group, capped at three with
+// its own overflow bubble), then the names — two of them fit, past that a count
+// reads better than a truncated list.
+function triggerContent(ctx) {
+  const chosen = candidates(ctx).filter((m) => pickedMembers.has(m.id));
+  if (!chosen.length) return html`<span class="ap-select-placeholder">Choose who gets it…</span>`;
+  const shown = chosen.slice(0, 3);
+  const extra = chosen.length - shown.length;
+  // row-reverse on .ap-avatar-group means the LAST child sits leftmost, so the
+  // overflow bubble is emitted first to land at the end of the stack.
+  const faces = html`<span class="ap-avatar-group" aria-hidden="true"
+    >${raw(extra ? html`<span class="ap-avatar-group-overflow">+${extra}</span>` : "")}${raw(
+      shown
+        .slice()
+        .reverse()
+        .map((m) => avatar(m))
+        .join(""),
+    )}</span
+  >`;
+  const label =
+    chosen.length === 1
+      ? chosen[0].name
+      : chosen.length === 2
+        ? `${chosen[0].name} and ${chosen[1].name}`
+        : `${chosen.length} people`;
+  return html`${raw(faces)}<span class="share-playbook-modal__people-label">${label}</span>`;
 }
 
 // Who it reaches TODAY: the stored list minus anyone the profile gate already
@@ -397,9 +451,6 @@ function renderBody() {
   const ctx = getContextById(activeId);
   if (!ctx) return;
   subtitleEl.textContent = ctx.name;
-  // The picker makes the content taller than the dialog can be; the class puts
-  // the scroll on the content so the footer stays reachable (see modals.css).
-  modal.classList.toggle("is-picking", picked === "members");
   contentEl.innerHTML = [
     renderScopeCards(ctx),
     renderMemberPicker(ctx),
@@ -430,6 +481,11 @@ function syncCommit(ctx) {
   else saveBtn.textContent = n === 1 ? "Share with 1 person" : `Share with ${n} people`;
 }
 
+function refreshPickerTrigger(ctx) {
+  const el = contentEl.querySelector("[data-share-people-value]");
+  if (el) el.innerHTML = triggerContent(ctx);
+}
+
 function refreshConsequence(ctx) {
   const slot = contentEl.querySelector("#sharePlaybookWarn");
   if (slot) slot.innerHTML = renderConsequence(ctx);
@@ -438,7 +494,7 @@ function refreshConsequence(ctx) {
 // Live search over the rows already on screen — never a re-render, or the
 // caret would leave the field on the first keystroke.
 function filterMembers() {
-  const q = memberQuery.trim().toLowerCase();
+  const q = fold(memberQuery.trim());
   let visible = 0;
   contentEl.querySelectorAll("[data-share-member-row]").forEach((row) => {
     const match = !q || row.dataset.shareMemberRow.includes(q);
@@ -482,8 +538,10 @@ function injectOnce() {
     if (event.target.matches("[data-share-member]")) {
       if (event.target.checked) pickedMembers.add(event.target.value);
       else pickedMembers.delete(event.target.value);
-      // Targeted, not a re-render: the row keeps its focus and the query stays.
+      // Targeted, not a re-render: the dropdown stays open, the row keeps its
+      // focus, and the search query survives.
       syncCommit(ctx);
+      refreshPickerTrigger(ctx);
       refreshConsequence(ctx);
     }
   });

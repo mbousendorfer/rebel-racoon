@@ -22,13 +22,13 @@
 // with facts instead of navigation, Band puts the figures beside the curve and
 // keeps the selector to one tab strip. They share their fiche — see read.js.
 
-import { escapeHtml as esc } from "../../utils.js?v=1095";
-import * as report from "./layouts/report.js?v=1095";
-import * as cockpit from "./layouts/cockpit.js?v=1095";
-import * as cockpitBis from "./layouts/cockpit-bis.js?v=1095";
-import * as mobIndex from "./layouts/mob_index.js?v=1095";
-import * as mobSide from "./layouts/mob_side.js?v=1095";
-import * as mobBand from "./layouts/mob_band.js?v=1095";
+import { escapeHtml as esc } from "../../utils.js?v=1098";
+import * as report from "./layouts/report.js?v=1098";
+import * as cockpit from "./layouts/cockpit.js?v=1098";
+import * as cockpitBis from "./layouts/cockpit-bis.js?v=1098";
+import * as mobIndex from "./layouts/mob_index.js?v=1098";
+import * as mobSide from "./layouts/mob_side.js?v=1098";
+import * as mobBand from "./layouts/mob_band.js?v=1098";
 
 export const LAYOUTS = [cockpit, cockpitBis, report, mobIndex, mobSide, mobBand];
 

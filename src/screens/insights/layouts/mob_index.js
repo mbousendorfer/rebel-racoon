@@ -33,9 +33,9 @@
 // and Monarch give their goal pages. A second switcher on the fiche would be two
 // controls that can disagree, which is the failure that note warns about.
 
-import { playbookTitle, tierCounts, statusPill, originMark, windowLine, trendGlyph, esc } from "../pieces.js?v=1095";
-import { progressBar, mountCharts } from "../charts.js?v=1095";
-import { shownMeasure, readHead, readReading, readout, readChart, readMeasures, readPosts } from "../read.js?v=1095";
+import { playbookTitle, tierCounts, statusPill, originMark, windowLine, trendGlyph, esc } from "../pieces.js?v=1098";
+import { progressBar, mountCharts } from "../charts.js?v=1098";
+import { shownMeasure, readHead, readReading, readout, readChart, readMeasures, readPosts } from "../read.js?v=1098";
 
 export const id = "mob_index";
 export const label = "Mob · Index";

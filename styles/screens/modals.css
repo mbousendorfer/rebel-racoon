@@ -193,8 +193,7 @@ body.has-modal {
    (.ap-checkbox-container draws the box + hides the input); the card chrome
    (border, selected blue border) mirrors the DS card tokens. */
 .analyze-profiles-modal__row,
-.connect-account-modal__row,
-.share-playbook-modal__member {
+.connect-account-modal__row {
   align-items: center;
   gap: var(--ref-spacing-sm);
   padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
@@ -205,26 +204,22 @@ body.has-modal {
 }
 
 .analyze-profiles-modal__row:hover:not(.is-disabled),
-.connect-account-modal__row:hover,
-.share-playbook-modal__member:hover:not(.is-disabled) {
+.connect-account-modal__row:hover {
   border-color: var(--ref-color-grey-40);
 }
 
 .analyze-profiles-modal__row:has(input:checked),
-.connect-account-modal__row:has(input:checked),
-.share-playbook-modal__member:has(input:checked) {
+.connect-account-modal__row:has(input:checked) {
   border-color: var(--ref-color-electric-blue-100);
 }
 
-.analyze-profiles-modal__row.is-disabled,
-.share-playbook-modal__member.is-disabled {
+.analyze-profiles-modal__row.is-disabled {
   cursor: default;
   opacity: 0.6;
 }
 
 .analyze-profiles-modal__row > .ap-avatar,
-.connect-account-modal__row > .ap-avatar,
-.share-playbook-modal__member > .ap-avatar {
+.connect-account-modal__row > .ap-avatar {
   flex-shrink: 0;
 }
 
@@ -1076,8 +1071,10 @@ body.has-modal {
 }
 
 /* The DS Selection Dropdown panel, positioned as the .ap-select popover
-   (fills the trigger width, keeps its DS shadow, scrolls internally). */
-.save-folder-modal__dropdown {
+   (fills the trigger width, keeps its DS shadow, scrolls internally). Shared
+   with the Share dialog's people picker: same component, same job. */
+.save-folder-modal__dropdown,
+.share-playbook-modal__dropdown {
   position: absolute;
   top: 100%;
   left: 0;
@@ -1085,7 +1082,10 @@ body.has-modal {
   z-index: 1000;
   width: auto;
   margin-top: var(--ref-spacing-xxxs);
-  max-height: 320px;
+  /* The vh half matters in the Share dialog: its trigger sits ~585px down a
+     900px viewport, and a fixed 320 would hang the panel's last rows off the
+     bottom of the screen. */
+  max-height: min(320px, 30vh);
 }
 
 /* The DS footer sets display:flex, which would beat the [hidden] attribute —
@@ -1100,7 +1100,8 @@ body.has-modal {
 .save-folder-modal__dropdown .ap-selection-dropdown-item {
   cursor: pointer;
 }
-.save-folder-modal__dropdown .ap-selection-dropdown-item > .ap-checkbox-container {
+.save-folder-modal__dropdown .ap-selection-dropdown-item > .ap-checkbox-container,
+.share-playbook-modal__dropdown .ap-selection-dropdown-item > .ap-checkbox-container {
   flex: 0 0 auto;
 }
 .save-folder-modal__folder-name {
@@ -1133,18 +1134,6 @@ body.has-modal {
   gap: var(--ref-spacing-sm);
 }
 
-/* With the people picker open the content is ~250px taller, which pushed the
-   footer — and Save with it — off the bottom of a 900px viewport: .ap-dialog is
-   `overflow: hidden` and this content is `overflow: visible`, so nothing
-   scrolled, it just left the card. So in THAT state only, the content becomes
-   the scroller (min-height:0 lets it shrink inside .ap-dialog's flex column).
-   Scoped to the state that needs it: with no picker on screen the owner select
-   still escapes the dialog exactly as before. */
-.share-playbook-modal.is-picking .ap-dialog-content {
-  overflow-y: auto;
-  min-height: 0;
-}
-
 .share-playbook-modal__options {
   display: flex;
   flex-direction: column;
@@ -1164,61 +1153,63 @@ body.has-modal {
 }
 
 /* ── The people picker (scope "members") ──────────────────────────────
-   Revealed by the middle card, and rendered UNDER the cards rather than
-   inside one: a checkbox nested in a <label> retargets its clicks to that
-   label's radio. Indented so it still reads as belonging to the card above.
-   Rows are the DS checkbox (.ap-checkbox-container draws the box and hides
-   the input) — the same shape as the analyze-profiles list. */
-.share-playbook-modal__picker {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xs);
-  padding-left: var(--ref-spacing-lg);
+   Revealed by the middle card: an `.ap-select` trigger opening the DS
+   Selection Dropdown, the same composition the save-drafts dialog uses for
+   its folder picker (its popover positioning rules above are shared). The
+   panel scrolls internally, so the dialog keeps its normal height and its
+   content can stay `overflow: visible` for the owner select below.
+
+   ⚠️ This was eleven full-width checkbox cards stacked in the dialog body for
+   one commit. Don't go back: it put Save under the fold. */
+.share-playbook-modal__field {
+  /* Indented so it reads as belonging to the card above it. */
+  margin-left: var(--ref-spacing-lg);
+  margin-top: calc(-1 * var(--ref-spacing-xxs));
+}
+.share-playbook-modal__combo {
+  width: 100%;
 }
 
-.share-playbook-modal__members {
+/* The trigger's two parts: the stack of faces, then the sentence. */
+.share-playbook-modal__combo > .ap-select-trigger > .ap-select-value {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: var(--ref-spacing-xxs);
-  /* Same cap as the save-folder list: past ~7 rows the dialog would grow
-     past its own max-height instead of the list scrolling inside it. The vh
-     half matters because this dialog's content is `overflow: visible` (so the
-     owner select can escape it) — on a short viewport an over-tall list would
-     spill out of the card rather than scroll. */
-  max-height: min(320px, 28vh);
-  overflow-y: auto;
+}
+.share-playbook-modal__people-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* Row chrome, border and selected-blue included, comes from the shared group
-   the analyze-profiles rows use — one shape for every checkable row in a
-   dialog, so the two can't drift apart. Only the two things this list does
-   differently live here. */
-.share-playbook-modal__member.is-hidden {
-  display: none;
+/* The DS item rule flexes every span with an ellipsis — pin the avatar and the
+   reason tag, let the name take the room (same fix as the folder rows). */
+.share-playbook-modal__member > .ap-avatar,
+.share-playbook-modal__member > .ap-tag {
+  flex: 0 0 auto;
 }
 .share-playbook-modal__member-name {
   flex: 1 1 auto;
   min-width: 0;
-}
-
-/* Why this row is greyed out — the profile the Playbook publishes under, and
-   this person can't reach it. Right of the name, like the analyze-profiles
-   list's own "No posts to analyze". */
-.share-playbook-modal__member-note {
-  flex: 0 0 auto;
-  font-size: var(--sys-text-style-caption-size);
-  /* grey-80 (= --sys-text-color-light), not the grey-40 its neighbour in this
-     file reaches for: grey-40 doesn't carry text. The row's own .is-disabled
-     opacity is what makes it read as unavailable. */
-  color: var(--sys-text-color-light);
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.share-playbook-modal__nomatch {
-  margin: 0;
-  font-size: var(--ref-font-size-sm);
-  line-height: var(--ref-font-line-height-sm);
-  color: var(--sys-text-color-light);
+/* Can't be picked (no access to the Playbook's profile). The DS's own
+   `:disabled` rule only reaches a <button> item and `.locked` means
+   feature-locked (purple padlock, an upsell) — neither fits, so this is the
+   disabled ink, grey-60, on the row the DS draws. */
+.share-playbook-modal__member.is-disabled {
+  color: var(--ref-color-grey-60);
+  cursor: default;
+  pointer-events: none;
+}
+
+/* Search miss. */
+.share-playbook-modal__member.is-hidden {
+  display: none;
 }
 
 /* Owner row — information, above the rule that separates the scope decision

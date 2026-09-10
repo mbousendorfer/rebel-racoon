@@ -28,8 +28,8 @@
 // chapter's own verdict 60px above it, and encoding "how far along" as an arc
 // nobody can compare, with the real work done by the number printed inside.
 
-import { rollupSentence, readingFor } from "../model.js?v=1095";
-import { trendSpec, mountCharts } from "../charts.js?v=1095";
+import { rollupSentence, readingFor } from "../model.js?v=1098";
+import { trendSpec, mountCharts } from "../charts.js?v=1098";
 import {
   tierCounts,
   statusPill,
@@ -43,7 +43,7 @@ import {
   objectiveActions,
   playbookTitle,
   esc,
-} from "../pieces.js?v=1095";
+} from "../pieces.js?v=1098";
 
 export const id = "report";
 export const label = "Report";

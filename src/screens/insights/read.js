@@ -18,8 +18,8 @@
 // Pure render helpers — strings in, strings out, no listeners. Every action is
 // a `data-ins-*` hook the shell dispatches (shell.js § Actions).
 
-import { readingFor } from "./model.js?v=1095";
-import { trendSpec, sparklineSpec, progressBar } from "./charts.js?v=1095";
+import { readingFor } from "./model.js?v=1098";
+import { trendSpec, sparklineSpec, progressBar } from "./charts.js?v=1098";
 import {
   statusPill,
   measurePill,
@@ -34,7 +34,7 @@ import {
   tierCounts,
   figure,
   esc,
-} from "./pieces.js?v=1095";
+} from "./pieces.js?v=1098";
 
 /** Which measure is on screen: the reader's tab if they picked one, else the weakest. */
 export function shownMeasure(entry, local) {

@@ -18,9 +18,9 @@
 // that then runs top to bottom with the figures in an aside; these tabs pick an
 // objective whose figures and curve share one row at the top.
 
-import { playbookTitle, tierCounts, objectiveActions, esc } from "../pieces.js?v=1095";
-import { mountCharts } from "../charts.js?v=1095";
-import { shownMeasure, readReading, readFigures, readChart, readMeasures, readPosts } from "../read.js?v=1095";
+import { playbookTitle, tierCounts, objectiveActions, esc } from "../pieces.js?v=1098";
+import { mountCharts } from "../charts.js?v=1098";
+import { shownMeasure, readReading, readFigures, readChart, readMeasures, readPosts } from "../read.js?v=1098";
 
 export const id = "mob_band";
 export const label = "Mob · Band";
