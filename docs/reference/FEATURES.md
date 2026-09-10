@@ -954,7 +954,10 @@ Le manager ne voit **que** les Playbooks partagés : une fiche personnelle non p
 
 **Notification & historique.** Toute action d'un manager sur la fiche d'un autre toaste _« Sam Rivera will be notified »_ et ajoute une ligne au journal. Le journal est **sans versioning et sans diff** — qui, quoi (la phrase que l'appelant fournit), quand — et vit **dans le modal**, comme `usedIn` vit sur la carte.
 
-**Ce qui n'est pas fait** (non-objectifs v1) : bibliothèque inter-orgs, versioning, fusion de doublons, rôle « co-éditeur », notifications email (dites en copy, il n'y a pas de centre de notifications dans le proto), instrumentation des métriques.
+**Ce qui n'est pas fait** (non-objectifs v1) : bibliothèque inter-orgs, versioning, fusion de doublons, rôle « co-éditeur », instrumentation des métriques. Plus deux parcours que la doc décrit et que le proto **n'ouvre volontairement pas** (tranché à l'audit du 2026-09-10) :
+
+- **Le départ du propriétaire** (§7, lot L5) — « les playbooks partagés sont transférés au manager ». Aucun écran : le proto n'a pas d'état « a quitté l'org », et le transfert manuel (le modal) couvre déjà le geste. `memberName()` rend « a teammate » pour un id qui ne résout plus, ce qui suffit à ne pas casser une phrase.
+- **La notification au partage** (§6.1.4, Q3 « Email ») — le proto ne toaste que les actions **manager** sur la fiche d'un autre (« Sam Rivera will be notified »), parce que c'est la seule dont le doc exige une trace. Il n'y a pas de centre de notifications où poser le reste, et en inventer un pour une ligne serait une surface entière hors sujet.
 
 ### Mock analysis ([`context-mock-analysis.js`](../../src/context-mock-analysis.js))
 
