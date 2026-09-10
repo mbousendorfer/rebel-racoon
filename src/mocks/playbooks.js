@@ -501,6 +501,10 @@ export const contexts = [
     // with these two ticked. Inert with the flag off, like ownerId itself.
     scope: "members",
     sharedWith: ["u-sam", "u-lea"],
+    // Tied to the LinkedIn account it publishes under, which narrows who it can
+    // be shared with at all: the picker greys out the teammates who can't reach
+    // that profile (doc §7). Both recipients above can.
+    selectedProfileId: "li",
     brandName: "Acme",
     brandLogos: ACME_LOGOS.map((l) => ({ ...l })),
     brandLogo: "assets/logos/brands/acme.svg",

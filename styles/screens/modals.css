@@ -1201,6 +1201,19 @@ body.has-modal {
   min-width: 0;
 }
 
+/* Why this row is greyed out — the profile the Playbook publishes under, and
+   this person can't reach it. Right of the name, like the analyze-profiles
+   list's own "No posts to analyze". */
+.share-playbook-modal__member-note {
+  flex: 0 0 auto;
+  font-size: var(--sys-text-style-caption-size);
+  /* grey-80 (= --sys-text-color-light), not the grey-40 its neighbour in this
+     file reaches for: grey-40 doesn't carry text. The row's own .is-disabled
+     opacity is what makes it read as unavailable. */
+  color: var(--sys-text-color-light);
+  white-space: nowrap;
+}
+
 .share-playbook-modal__nomatch {
   margin: 0;
   font-size: var(--ref-font-size-sm);

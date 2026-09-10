@@ -22,9 +22,10 @@
 // surface asks here, and `revokedContextFor()` is the one place allowed to look
 // past the gate.
 
-import { getContexts, getContextById } from "./contexts-store.js?v=1093";
-import { isFlagOn } from "./feature-flags.js?v=1093";
-import { CURRENT_USER, isManager, memberName, getMember } from "./org.js?v=1093";
+import { getContexts, getContextById } from "./contexts-store.js?v=1095";
+import { isFlagOn } from "./feature-flags.js?v=1095";
+import { CURRENT_USER, isManager, memberName, getMember, hasProfileAccess } from "./org.js?v=1095";
+import { getConnectedProfiles } from "./social-profiles.js?v=1095";
 
 // Single choke point. Flag OFF ⇒ the app behaves exactly as it did before
 // sharing existed: one implicit user, everything visible, everything editable.
@@ -47,6 +48,32 @@ export function isOrgShared(ctx) {
 // reach hangs off this predicate).
 function isMemberShared(ctx) {
   return !!ctx && ctx.scope === "members" && recipientsOf(ctx).length > 0;
+}
+
+// ── The profile gate (doc §7, both of its profile rows) ───────────────
+//
+// A Playbook that publishes under a social profile can only reach people who
+// can reach that profile — including the person who joins the org tomorrow.
+// The permission is Agorapulse's, not Archie's, so it's read from org.js and
+// never stored on the Playbook.
+//
+// FAIL OPEN when the profile can't be resolved (nothing connected, a stale id):
+// an unverifiable claim must not lock a fiche, and §8 Q2's whole point is that
+// a Playbook carries no private profile data in the first place.
+export function tiedProfile(ctx) {
+  const id = ctx?.selectedProfileId;
+  if (!id) return null;
+  return getConnectedProfiles().find((p) => p.id === id) || null;
+}
+
+// Why this person can't be given the Playbook — `null` when they can. Returned
+// as the profile so callers can name it ("No access to @northwind.studio").
+export function profileBlockFor(ctx, memberId) {
+  const profile = tiedProfile(ctx);
+  if (!profile) return null;
+  // The owner picked the profile: they have it by construction.
+  if (ctx.ownerId === memberId) return null;
+  return hasProfileAccess(memberId, profile.id) ? null : profile;
 }
 
 // "Shared" = it left its owner's hands, either way. What a manager may govern.
@@ -85,6 +112,9 @@ export function canView(ctx) {
   if (!ctx) return false;
   if (!on()) return true;
   if (isMine(ctx)) return true;
+  // The profile gate comes before every other reach: a share that names me
+  // still can't hand me a Playbook publishing under an account I can't see.
+  if (profileBlockFor(ctx, CURRENT_USER.id)) return false;
   // A manager sees what the org can see — and nothing more (doc §8, Q1). Which
   // for a named share means: the fiche exists for them even though the list
   // doesn't name them, because they may have to hand it over or delete it.

@@ -19,12 +19,20 @@
 //     • onDone() — fired after a committed change (scope or ownership), so the
 //       caller can repaint or bail out if it just handed away its own access.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1093";
-import { getContextById, updateContext, appendHistory } from "../contexts-store.js?v=1093";
-import { canTransfer, isMine, actingOnBehalf, ownerName, recipientsOf } from "../playbook-access.js?v=1093";
-import { MEMBERS, ORG, CURRENT_USER, getMember, memberName } from "../org.js?v=1093";
-import { showToast } from "./toast.js?v=1093";
-import { html, raw, escapeHtml } from "../utils.js?v=1093";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1095";
+import { getContextById, updateContext, appendHistory } from "../contexts-store.js?v=1095";
+import {
+  canTransfer,
+  isMine,
+  actingOnBehalf,
+  ownerName,
+  recipientsOf,
+  tiedProfile,
+  profileBlockFor,
+} from "../playbook-access.js?v=1095";
+import { MEMBERS, ORG, CURRENT_USER, getMember, memberName } from "../org.js?v=1095";
+import { showToast } from "./toast.js?v=1095";
+import { html, raw, escapeHtml } from "../utils.js?v=1095";
 
 const MODAL_ID = "sharePlaybook";
 
@@ -124,13 +132,25 @@ function renderScopeCards(ctx) {
             Everyone at ${raw(org)}
           </span>
           <span
-            >All ${ORG.memberCount} of them, and whoever joins next — the list follows the org. They can read it and
-            write with it. You stay the only one who can change it.</span
+            >${raw(orgReachLine(ctx))} They can read it and write with it. You stay the only one who can change
+            it.</span
           >
         </div>
       </label>
     </div>
   `;
+}
+
+// The dynamic list, said accurately. A Playbook that publishes under a social
+// profile doesn't reach the whole org — it reaches the part of it that can see
+// that profile, joiners included (doc §7). Promising "all 12" would be a lie
+// the picker below contradicts three rows down.
+function orgReachLine(ctx) {
+  const profile = tiedProfile(ctx);
+  if (!profile) {
+    return `All ${ORG.memberCount} of them, and whoever joins next — the list follows the org.`;
+  }
+  return `Everyone who can reach ${escapeHtml(profile.handle || profile.name || "this account")}, joiners included — the list follows the org.`;
 }
 
 // Everyone the picker can offer: the org minus the owner, who holds it already.
@@ -151,14 +171,33 @@ function renderMemberPicker(ctx) {
     .map((m) => {
       const on = pickedMembers.has(m.id);
       const hidden = q && !m.name.toLowerCase().includes(q);
+      // "Le destinataire ne peut pas être sélectionné" (doc §7): the row stays
+      // in the list, disabled, and says WHY — dropping it would leave the owner
+      // wondering where their colleague went.
+      const blocked = profileBlockFor(ctx, m.id);
       return html`<label
-        class="ap-checkbox-container share-playbook-modal__member${raw(hidden ? " is-hidden" : "")}"
+        class="ap-checkbox-container share-playbook-modal__member${raw(hidden ? " is-hidden" : "")}${raw(
+          blocked ? " is-disabled" : "",
+        )}"
         data-share-member-row="${m.name.toLowerCase()}"
       >
-        <input type="checkbox" value="${m.id}" data-share-member ${raw(on ? "checked" : "")} />
+        <input
+          type="checkbox"
+          value="${m.id}"
+          data-share-member
+          ${raw(on ? "checked" : "")}
+          ${raw(blocked ? "disabled" : "")}
+        />
         <i></i>
         ${raw(avatar(m))}
         <span class="share-playbook-modal__member-name">${m.name}</span>
+        ${raw(
+          blocked
+            ? html`<span class="share-playbook-modal__member-note"
+                >No access to ${blocked.handle || blocked.name || "this account"}</span
+              >`
+            : "",
+        )}
       </label>`;
     })
     .join("");
@@ -190,6 +229,14 @@ function renderMemberPicker(ctx) {
   `;
 }
 
+// Who it reaches TODAY: the stored list minus anyone the profile gate already
+// keeps out, because that is who canView() actually lets in. Using the raw list
+// instead would open the dialog "dirty", offering to remove a colleague who
+// never had access in the first place.
+function currentRecipients(ctx) {
+  return recipientsOf(ctx).filter((id) => !profileBlockFor(ctx, id));
+}
+
 // Who this Playbook reaches if the current pick commits. `null` for the org —
 // the list is dynamic, so it can't be enumerated.
 function reachAfter(ctx) {
@@ -201,7 +248,10 @@ function reachAfter(ctx) {
 // Who can open it TODAY, for the same comparison. Also null for the org.
 function reachBefore(ctx) {
   if (ctx.scope === "organization") return null;
-  if (ctx.scope === "members") return candidates(ctx).filter((m) => recipientsOf(ctx).includes(m.id));
+  if (ctx.scope === "members") {
+    const now = currentRecipients(ctx);
+    return candidates(ctx).filter((m) => now.includes(m.id));
+  }
   return [];
 }
 
@@ -211,7 +261,7 @@ function reachBefore(ctx) {
 function isDirty(ctx) {
   if (picked !== ctx.scope) return true;
   if (picked !== "members") return false;
-  const before = recipientsOf(ctx);
+  const before = currentRecipients(ctx);
   return before.length !== pickedMembers.size || before.some((id) => !pickedMembers.has(id));
 }
 
@@ -537,7 +587,7 @@ export function open({ contextId, onDone = null } = {}) {
   // Seeded from the Playbook whatever its scope is: a fiche pulled back to
   // private still remembers the list, so picking "Specific people" again offers
   // the same names rather than an empty slate.
-  pickedMembers = new Set(recipientsOf(ctx));
+  pickedMembers = new Set(currentRecipients(ctx));
   memberQuery = "";
   transferTo = null;
   renderBody();
