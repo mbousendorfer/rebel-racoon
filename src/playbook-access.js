@@ -3,7 +3,7 @@
 // A Playbook has exactly one owner and one of two scopes:
 //   "personal"     — only its owner sees it
 //   "organization" — everyone in the org may SEE and USE it; only the owner
-//                    (and a manager) may EDIT it
+//                    may EDIT it
 //
 // There is no named sharing: you don't hand a Playbook to three colleagues, you
 // either keep it or you put it in front of the whole org. That was the explicit
@@ -17,9 +17,9 @@
 // surface asks here, and `revokedContextFor()` is the one place allowed to look
 // past the gate.
 
-import { getContexts, getContextById } from "./contexts-store.js?v=1089";
-import { isFlagOn } from "./feature-flags.js?v=1089";
-import { CURRENT_USER, isManager, memberName, getMember } from "./org.js?v=1089";
+import { getContexts, getContextById } from "./contexts-store.js?v=1090";
+import { isFlagOn } from "./feature-flags.js?v=1090";
+import { CURRENT_USER, isManager, memberName, getMember } from "./org.js?v=1090";
 
 // Single choke point. Flag OFF ⇒ the app behaves exactly as it did before
 // sharing existed: one implicit user, everything visible, everything editable.
@@ -47,7 +47,9 @@ export function ownerName(ctx) {
 
 // ── The rights table ──────────────────────────────────────────────────
 // Owner            → everything
-// Shared with me   → view / use / duplicate (and edit too, if I'm a manager)
+// Shared with me   → view / use / duplicate
+// Manager, shared  → view / use / duplicate + share / hand over / delete,
+//                    but NOT the content
 // Someone else's personal Playbook → nothing at all
 
 export function canView(ctx) {
@@ -61,7 +63,23 @@ function canUse(ctx) {
   return canView(ctx);
 }
 
+// The CONTENT is the owner's, and nobody else's — a shared Playbook is
+// read-only for everyone it reaches, managers included (doc §5.2: "Edit the
+// content → Org manager ❌"). ⚠️ This used to return true for a manager on a
+// shared fiche, which put a pencil on every section of a colleague's Playbook;
+// the governance moves that a manager DOES get now live in canGovern() below.
+// Keeping the two apart is the whole point: "who decides what it says" and
+// "who decides what becomes of it" are different questions.
 export function canEdit(ctx) {
+  if (!ctx) return false;
+  if (!on()) return true;
+  return isMine(ctx);
+}
+
+// Governance — what a manager may do to a SHARED Playbook without owning it:
+// put it in front of the org (or pull it back), hand it over, delete it. Every
+// one of these notifies the owner and lands in the log (doc §6.4).
+export function canGovern(ctx) {
   if (!ctx) return false;
   if (!on()) return true;
   if (isMine(ctx)) return true;
@@ -70,13 +88,13 @@ export function canEdit(ctx) {
   return isShared(ctx) && isManager();
 }
 
-export const canDelete = canEdit;
+export const canDelete = canGovern;
 
 // Sharing and hand-over are the only two rights that don't exist at all with
 // the flag off — everything else has a pre-sharing equivalent that must keep
 // behaving identically, but a Share button would be a new affordance.
 export function canManageSharing(ctx) {
-  return on() && canEdit(ctx);
+  return on() && canGovern(ctx);
 }
 
 export const canTransfer = canManageSharing;

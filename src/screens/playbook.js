@@ -17,9 +17,9 @@
 // `loader` cfg, run the (mock) analysis on a timer, then `updateContext` with
 // the section patch — the loader flips to ready and paints the fresh data.
 
-import { navigate } from "../router.js?v=1089";
-import { escapeHtml as esc } from "../utils.js?v=1089";
-import { renderTopbar } from "../components/topbar.js?v=1089";
+import { navigate } from "../router.js?v=1090";
+import { escapeHtml as esc } from "../utils.js?v=1090";
+import { renderTopbar } from "../components/topbar.js?v=1090";
 import {
   getContextById,
   getContexts,
@@ -27,26 +27,27 @@ import {
   deleteContext,
   duplicateContext,
   appendHistory,
-} from "../contexts-store.js?v=1089";
-import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=1089";
-import { mount, snapshotEditable } from "../playbook-view.js?v=1089";
-import { open as openRenameModal } from "../components/rename-modal.js?v=1089";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=1089";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=1089";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=1089";
-import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=1089";
-import { sectionPatchFromAnalysis } from "../context-builder.js?v=1089";
+} from "../contexts-store.js?v=1090";
+import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=1090";
+import { mount, snapshotEditable } from "../playbook-view.js?v=1090";
+import { open as openRenameModal } from "../components/rename-modal.js?v=1090";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=1090";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=1090";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=1090";
+import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=1090";
+import { sectionPatchFromAnalysis } from "../context-builder.js?v=1090";
 import {
   canView,
   canEdit,
+  canGovern,
   canDelete,
   canManageSharing,
   accessLabel,
   isMine,
   ownerOf,
   ownerName,
-} from "../playbook-access.js?v=1089";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=1089";
+} from "../playbook-access.js?v=1090";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=1090";
 
 const AUTOFILL_MS = 1500;
 
@@ -66,7 +67,7 @@ const STAGES = {
 };
 
 function toast(msg) {
-  import("../components/toast.js?v=1089").then(({ showToast }) => showToast(msg));
+  import("../components/toast.js?v=1090").then(({ showToast }) => showToast(msg));
 }
 
 function prettyUrl(url) {
@@ -128,15 +129,23 @@ function buildOwnership(ctx) {
 
 // Say WHY the pencils are gone. Removing them silently reads as a broken page;
 // naming the owner and offering the way out (Duplicate) reads as a rule.
+//
+// A manager lands here too, now that governing a fiche and writing it are
+// separate rights: they hold Share / hand-over / Delete in the header and no
+// pencil in the body. Telling them only "duplicate it" would read as the page
+// being broken, so the notice names both halves.
 function buildNotice(ctx) {
   if (canEdit(ctx) || !accessLabel(ctx)) return "";
+  const message = canGovern(ctx)
+    ? `You can read it and write with it, and manage it as a manager — share it, hand it over, delete it. What it SAYS is ${esc(ownerName(ctx))}'s: to change a word, duplicate it.`
+    : "You can read it and write with it. To change anything, duplicate it — the copy is yours.";
   return `
     <div class="ap-infobox info recap__notice">
       <i class="ap-icon-info" aria-hidden="true"></i>
       <div class="ap-infobox-content">
         <div class="ap-infobox-texts">
           <span class="ap-infobox-title">${esc(ownerName(ctx))} shares this Playbook with your organisation</span>
-          <span class="ap-infobox-message">You can read it and write with it. To change anything, duplicate it — the copy is yours.</span>
+          <span class="ap-infobox-message">${message}</span>
         </div>
       </div>
     </div>
