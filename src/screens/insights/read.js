@@ -18,8 +18,8 @@
 // Pure render helpers — strings in, strings out, no listeners. Every action is
 // a `data-ins-*` hook the shell dispatches (shell.js § Actions).
 
-import { readingFor } from "./model.js?v=1109";
-import { trendSpec, sparklineSpec, progressBar } from "./charts.js?v=1109";
+import { readingFor } from "./model.js?v=1110";
+import { trendSpec, sparklineSpec, progressBar } from "./charts.js?v=1110";
 import {
   statusPill,
   measurePill,
@@ -34,7 +34,7 @@ import {
   tierCounts,
   figure,
   esc,
-} from "./pieces.js?v=1109";
+} from "./pieces.js?v=1110";
 
 /** Which measure is on screen: the reader's tab if they picked one, else the weakest. */
 export function shownMeasure(entry, local) {
@@ -87,17 +87,25 @@ export function readout(entry) {
 // below, a Measures table whose first column is those same two names. Two
 // lists of the same items, one of which happened to also be the selector.
 //
-// Now there is one list, and it IS the selector — the table is the chart's
-// LEGEND, which is the shape a chart-plus-series-list takes everywhere
-// (Highcharts' own legend sits under the plot and switches series on click).
-// So nothing moved on screen: the curve stays where it was, the strip above it
-// is gone, and the row you click is the row that was already highlighted.
+// Now there is one list, and it IS the selector — the table is the master, the
+// curve under it is the detail of the row you picked. That is the shape every
+// analytics product uses for "a list of series, one charted" (GA, Amplitude:
+// click the row, its trend renders below), and the order is what makes it
+// learnable: a control sits ABOVE what it changes.
+//
+// ⚠️ It shipped for one commit the other way up — curve first, table under it
+// as the chart's "legend", on the argument that Highcharts' own legend sits
+// below the plot and switches series on click. Rejected, and rightly: a legend
+// TOGGLES series that are already drawn, it does not swap the subject of the
+// chart above it, and nothing tells a reader that clicking a row underneath a
+// curve will replace that curve. Don't put the selector back below.
 //
 // The selected measure is still NAMED above its curve — a metric has to be
-// named in text, an unlabelled 300px area chart says nothing — but that is a
-// caption for one curve, not a second list to choose from. It is the line the
-// single-measure case already used, now used always: with one measure there
-// was never a strip, so that case loses nothing.
+// named in text, an unlabelled 300px area chart says nothing — and it is what
+// makes the causality visible: click "Brand mentions", the caption under the
+// table says Brand mentions. It is the line the single-measure case already
+// used, now used always: with one measure there was never a strip, so that
+// case loses nothing.
 //
 // `specs` is the map the host hands to `mountCharts` after the innerHTML
 // lands; the chart nodes are placeholders until then, which is what keeps
@@ -153,12 +161,7 @@ export function readMeasures(entry, shown, specs, { idPrefix = "read", chartId, 
   // hold a drawn shape: the component sets its own width, aligns its headers
   // and ships `.right` and `tbody tr.selected`.
   return `<section class="ap-card ins-section ins-read__card ins-read__measures">
-    <p class="ins-chart__name">${esc(shown?.metricLabel || "Trend")}${shown?.scopeLabel ? ` <span class="ins-muted">· ${esc(shown.scopeLabel)}</span>` : ""}</p>
-    <div class="ins-chart ins-chart--read">
-      ${shown?.series ? `<div class="ins-chart__node" data-ins-chart="${esc(id)}" style="height:${height}px"></div>` : `<p class="ins-posts-empty">No series for this measure.</p>`}
-      ${overlay}
-    </div>
-    <h3 class="ins-section-title ins-read__mtitle">Measures <span class="ap-counter normal grey">${entry.measures.length}</span></h3>
+    <h3 class="ins-section-title">Measures <span class="ap-counter normal grey">${entry.measures.length}</span></h3>
     <table class="ap-table small ins-read__table">
       <thead>
         <tr>
@@ -173,6 +176,13 @@ export function readMeasures(entry, shown, specs, { idPrefix = "read", chartId, 
       </thead>
       <tbody>${rows}</tbody>
     </table>
+    <div class="ins-read__curve">
+      <p class="ins-chart__name">${esc(shown?.metricLabel || "Trend")}${shown?.scopeLabel ? ` <span class="ins-muted">· ${esc(shown.scopeLabel)}</span>` : ""}</p>
+      <div class="ins-chart ins-chart--read">
+        ${shown?.series ? `<div class="ins-chart__node" data-ins-chart="${esc(id)}" style="height:${height}px"></div>` : `<p class="ins-posts-empty">No series for this measure.</p>`}
+        ${overlay}
+      </div>
+    </div>
   </section>`;
 }
 

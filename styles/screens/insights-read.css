@@ -209,9 +209,19 @@
    is gone). So the rows behave like the objective cards' rows do: the whole
    row takes the pointer and the app's interactive tint, and the name inside is
    a real button, which is what the keyboard and AT reach. */
-.ins-read__mtitle {
+/* The curve is the detail of the selected row, so the rule goes BETWEEN the
+   list and the curve: one card, two zones, the picking above the reading. */
+.ins-read__curve {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
   padding-top: var(--ref-spacing-sm);
   border-top: 1px solid var(--sys-border-color-default);
+}
+
+.ins-read__curve > .ins-chart__name {
+  padding-bottom: 0;
+  border-bottom: 0;
 }
 
 .ins-read__mrow {

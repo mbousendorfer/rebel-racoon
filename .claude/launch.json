@@ -18,6 +18,12 @@
         "/Users/matthieu.bousendorfer/sources/design_handoff_studio/source"
       ],
       "port": 8001
+    },
+    {
+      "name": "archie-ng",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "npm --prefix ../rebel-racoon-ng exec -- ng serve --port 4200"],
+      "port": 4200
     }
   ]
 }

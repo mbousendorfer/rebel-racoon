@@ -62,10 +62,10 @@ import {
   trendGlyph,
   postsMovedLine,
   esc,
-} from "../pieces.js?v=1109";
-import { ringSvg, trendSpec, mountCharts } from "../charts.js?v=1109";
-import { readingFor } from "../model.js?v=1109";
-import { shownMeasure, readHead, readReading, readout, readMeasures, readPosts } from "../read.js?v=1109";
+} from "../pieces.js?v=1110";
+import { ringSvg, trendSpec, mountCharts } from "../charts.js?v=1110";
+import { readingFor } from "../model.js?v=1110";
+import { shownMeasure, readHead, readReading, readout, readMeasures, readPosts } from "../read.js?v=1110";
 
 export const id = "mob_index";
 export const label = "Mob · Index";

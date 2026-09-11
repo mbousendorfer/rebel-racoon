@@ -29,9 +29,9 @@
 // `body` is HTML (chat turns) and `picker` is the standard picker shape from
 // _analyse-common.js (items + handler + optional customPlaceholder).
 
-import { chatTurn, bulletsBlock, fieldsBlock } from "./screens/_analyse-common.js?v=1109";
-import { voiceAnalysis, strategyBrief, brandTheme } from "./mocks.js?v=1109";
-import { createSessionNotifier } from "./store-utils.js?v=1109";
+import { chatTurn, bulletsBlock, fieldsBlock } from "./screens/_analyse-common.js?v=1110";
+import { voiceAnalysis, strategyBrief, brandTheme } from "./mocks.js?v=1110";
+import { createSessionNotifier } from "./store-utils.js?v=1110";
 
 // ---- State -----------------------------------------------------------------
 
