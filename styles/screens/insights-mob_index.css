@@ -39,47 +39,61 @@
   min-width: 0;
 }
 
-/* ── The index — a grid of objective cards ────────────────────────────────
-   ⚠️ This was a table. See the note at the top of mob_index.js for who
-   overruled that and what had to survive from the Bento cut (the curve).
+/* ── The index — ONE FULL-WIDTH ROW PER OBJECTIVE ─────────────────────────
+   ⚠️ Third shape for this surface, and the reasoning is written down so the
+   fourth doesn't happen by accident:
+     1. a TABLE of eight 14px columns — hierarchised nothing, the objective's
+        name weighed what the six figures beside it weighed;
+     2. a 2×2 GRID of cards — better looking, but you cannot compare two
+        objectives whose figures sit at different screen positions, and a hub
+        is a comparison surface before anything else;
+     3. this — one row per objective, each row a card, every row on the SAME
+        internal grid. That last part is the whole point: the zones line up
+        from row to row, so 74 / 82 / 84 / 84 read down the page.
 
-   Two columns at the page's 1240px, one under ~940px of content: `auto-fill`
-   with a 420px floor rather than a hand-written breakpoint, because the app's
-   rail collapses and the right panel overlays — the viewport never tells you
-   the content width (the same reason /topics measures a container). */
-.ins-mob_index__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
-  gap: var(--ref-spacing-sm);
-}
+   It is not the table coming back. A table row is cells of body text; these
+   rows carry a display-rung numeral, a named metric, and a real 72px curve —
+   and the row is a card with its own border and hover, not a `<tr>`.
 
-/* The card IS the door: the whole surface takes the click, and it says so the
-   way every other card in the app does — a blue border on hover, no added
-   elevation, no coloured edge bar. The name inside stays a real button, which
-   is what the keyboard and AT reach. */
-.ins-mob_index__obj {
+   No ring in the figure zone: in a single column the numeral IS the
+   comparator, so four 88px rings would be weight spent on what the alignment
+   already does — and the ring printed the same percentage as the text beside
+   it, which was the last duplication left on this surface. */
+.ins-mob_index__list {
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-sm);
-  cursor: pointer;
-  transition:
-    border-color var(--ref-animation-short) var(--app-ease-standard),
-    background-color var(--ref-animation-short) var(--app-ease-standard);
+  /* The rows measure THEMSELVES, not the viewport: the app's rail collapses
+     and the right panel overlays, so viewport width never tells you content
+     width (the same reason /topics queries a container). */
+  container-type: inline-size;
 }
 
-.ins-mob_index__obj:hover {
+/* The row's zones. `fr` only where content can flex — identity and curve —
+   with the two figure zones fixed so they cannot drift row to row. */
+.ins-mob_index__row {
+  display: grid;
+  grid-template-columns: minmax(200px, 1.3fr) 150px minmax(170px, 1fr) minmax(180px, 1.4fr) auto 24px;
+  align-items: center;
+  gap: var(--ref-spacing-md);
+  /* `md` all round, the platform's own section padding: at `sm` four rows read
+     as a compressed list with two thirds of the page empty under them. */
+  padding: var(--ref-spacing-md);
+  cursor: pointer;
+  transition: border-color var(--ref-animation-short) var(--app-ease-standard);
+}
+
+/* The row IS the door: blue border on hover, the app's card convention. No
+   added elevation, no coloured edge bar. */
+.ins-mob_index__row:hover {
   border-color: var(--ref-color-electric-blue-100);
 }
 
-/* Name and verdict on one line, the meta under the name: the two things a
-   reader needs before deciding to look further, and they are not the same kind
-   of fact — one is the subject, the other is the answer. */
-.ins-mob_index__objhead {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--ref-spacing-sm);
+.ins-mob_index__row:hover .ins-mob_index__go {
+  color: var(--ref-color-electric-blue-100);
 }
+
+/* ── Identity ──────────────────────────────────────────────────────────── */
 
 .ins-mob_index__ident {
   display: flex;
@@ -88,9 +102,6 @@
   min-width: 0;
 }
 
-/* The card's title. `lg` because it is the biggest thing in the card after the
-   ring's figure — in the table it rode at the cell's 14px and weighed the same
-   as the six numbers beside it, which is most of what "mal hiérarchisé" meant. */
 .ins-mob_index__name {
   display: block;
   max-width: 100%;
@@ -99,14 +110,14 @@
   background: none;
   text-align: left;
   font-family: inherit;
-  font-size: var(--ref-font-size-lg);
-  line-height: var(--ref-font-line-height-lg);
+  font-size: var(--ref-font-size-md);
+  line-height: var(--ref-font-line-height-md);
   font-weight: var(--ref-font-weight-bold);
   color: var(--sys-text-color-default);
   cursor: pointer;
 }
 
-.ins-mob_index__obj:hover .ins-mob_index__name,
+.ins-mob_index__row:hover .ins-mob_index__name,
 .ins-mob_index__name:hover {
   color: var(--ref-color-electric-blue-100);
 }
@@ -127,50 +138,63 @@
   color: var(--sys-text-color-light);
 }
 
-/* ── The read: the ring, then the sentence ────────────────────────────────
-   The ring is the glance (tier-coloured, the figure inside it) and the
-   sentence is the read. Side by side, because the sentence is what makes the
-   figure mean something — "74%" alone is the fault this lecture was accused of
-   in its table form. */
-.ins-mob_index__read {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-md);
-}
+/* ── The figure — the comparator ───────────────────────────────────────── */
 
-.ins-mob_index__read > .app-ring {
-  flex: 0 0 auto;
-}
-
-.ins-mob_index__facts {
+.ins-mob_index__figure {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xxs);
+  gap: var(--ref-spacing-xxxs);
   min-width: 0;
 }
 
-/* What the ring is a percentage OF. The ring carries the figure, this carries
-   its subject — a number without its metric named in text is unreadable, and
-   this is the only line on the card that names it. */
-.ins-mob_index__metric {
-  margin: 0;
-  font-size: var(--ref-font-size-sm);
-  line-height: var(--ref-font-line-height-sm);
+/* The page's biggest numeral, at the platform's own headline size
+   (`.main-data`, 38px, analytics.scss) via the screen's variable. */
+.ins-mob_index__pct,
+.ins-mob_index__pending {
+  font-size: var(--ins-display-xl);
+  line-height: 1;
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--sys-text-color-default);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The unit rides small and light on the numeral, the way the score figure's
+   does — "74%" has to read as one token, not as two of equal weight. */
+.ins-mob_index__unit {
+  font-size: var(--ref-font-size-md);
+  font-weight: var(--ref-font-weight-bold);
   color: var(--sys-text-color-light);
 }
 
-.ins-mob_index__metric > strong {
-  font-weight: var(--ref-font-weight-bold);
-  color: var(--sys-text-color-default);
+/* The bar is the numeral's underline: tier-coloured, so how far along is
+   encoded twice — once to read, once to see — without a second figure. */
+.ins-mob_index__figure .app-bar {
+  width: 100%;
 }
 
-/* The prose fallback — a collecting objective, or one with no measure yet: no
-   figure to show, so the sentence is all there is. */
-.ins-mob_index__reading {
-  margin: 0;
+.ins-mob_index__figlabel {
+  font-size: var(--ref-font-size-xs);
+  line-height: var(--ref-font-line-height-xs);
+  color: var(--sys-text-color-light);
+}
+
+/* ── The measure: what the figure is OF ────────────────────────────────── */
+
+.ins-mob_index__measure {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  min-width: 0;
+}
+
+.ins-mob_index__metric {
   font-size: var(--ref-font-size-sm);
   line-height: var(--ref-font-line-height-sm);
+  font-weight: var(--ref-font-weight-bold);
   color: var(--sys-text-color-default);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .ins-mob_index__figs {
@@ -186,41 +210,108 @@
    target is the lighter half — it is the fixed side, the current value moves. */
 .ins-mob_index__pair {
   white-space: nowrap;
-  font-weight: var(--ref-font-weight-bold);
 }
 
 .ins-mob_index__to {
   margin-inline: var(--ref-spacing-xxxs);
   color: var(--sys-text-color-light);
-  font-weight: var(--ref-font-weight-regular);
 }
 
 .ins-mob_index__target {
   color: var(--sys-text-color-light);
 }
 
-/* The missing connection, as ONE line in the card — not a `.ap-infobox` per
-   card: four banners on one page is the page shouting the same sentence four
-   times. The full note is on the fiche, where there is one of them. */
-.ins-mob_index__soon {
+/* ── The curve ─────────────────────────────────────────────────────────── */
+
+.ins-mob_index__curve {
+  min-width: 0;
+}
+
+.ins-mob_index__curve > .ins-chart__node {
+  display: block;
+}
+
+/* ── The verdict, and the way in ───────────────────────────────────────── */
+
+.ins-mob_index__verdict {
   display: flex;
   align-items: center;
-  gap: var(--ref-spacing-xxxs);
-  margin: 0;
-  font-size: var(--ref-font-size-xs);
-  line-height: var(--ref-font-line-height-xs);
+  gap: var(--ref-spacing-xxs);
+  justify-content: flex-end;
+}
+
+/* The missing connection, as the glyph alone with its sentence in the title:
+   the full note is on the fiche, where there is one of them, and four banners
+   down a list is the page shouting the same thing four times. */
+.ins-mob_index__soon {
+  display: inline-flex;
   color: var(--sys-color-warning-text);
 }
 
-/* ── The curve ────────────────────────────────────────────────────────────
-   The one thing that had to survive the Bento cut: every card keeps its
-   trajectory. It sits directly on the card — no inner panel, which would be
-   elevation inside elevation — and takes the full width, because a curve read
-   across 40px says nothing. `margin-top: auto` so the curves of two cards of
-   unequal height still line up on the row's baseline. */
-.ins-mob_index__curve {
-  display: block;
-  margin-top: auto;
+/* The affordance, not a control: it says the row opens, the row is what you
+   click. Grey at rest so a column of blue chevrons does not read as four
+   links. */
+.ins-mob_index__go {
+  color: var(--sys-text-color-light);
+  transition: color var(--ref-animation-short) var(--app-ease-standard);
+}
+
+/* ── Narrower: the row folds, it never squeezes ────────────────────────── */
+
+/* Measured on the LIST, not the viewport. The curve is the first thing to go:
+   below ~1040px of content it would be under 150px, where a trajectory is a
+   smudge, and the figure and the operands are what the reader compares. */
+@container (max-width: 1040px) {
+  .ins-mob_index__row {
+    grid-template-columns: minmax(180px, 1.3fr) 130px minmax(150px, 1fr) auto 24px;
+  }
+  .ins-mob_index__curve {
+    display: none;
+  }
+}
+
+/* Below this the zones stack: identity and verdict on the first line, the
+   figure and its measure under them. The areas are NAMED rather than left to
+   auto-placement, which put the verdict pill on a third line of its own. */
+@container (max-width: 720px) {
+  .ins-mob_index__row {
+    grid-template-columns: auto 1fr 24px;
+    grid-template-areas:
+      "ident   ident   go"
+      "figure  measure measure";
+    row-gap: var(--ref-spacing-sm);
+    align-items: center;
+  }
+  .ins-mob_index__ident {
+    grid-area: ident;
+    /* The verdict rides with the name here, not in a column of its own. */
+    flex-direction: row;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: var(--ref-spacing-xxs) var(--ref-spacing-xs);
+  }
+  .ins-mob_index__verdict {
+    grid-area: ident;
+    justify-self: end;
+    align-self: start;
+  }
+  .ins-mob_index__go {
+    grid-area: go;
+    align-self: start;
+  }
+  .ins-mob_index__figure {
+    grid-area: figure;
+    flex-direction: row;
+    align-items: baseline;
+    gap: var(--ref-spacing-xs);
+  }
+  .ins-mob_index__figure .app-bar {
+    display: none;
+  }
+  .ins-mob_index__measure {
+    grid-area: measure;
+    align-items: flex-end;
+  }
 }
 
 /* ── The fiche's hero ─────────────────────────────────────────────────────

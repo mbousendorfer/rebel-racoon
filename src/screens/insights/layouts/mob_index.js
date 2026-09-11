@@ -62,10 +62,9 @@ import {
   trendGlyph,
   postsMovedLine,
   esc,
-} from "../pieces.js?v=1112";
-import { ringSvg, trendSpec, mountCharts } from "../charts.js?v=1112";
-import { readingFor } from "../model.js?v=1112";
-import { shownMeasure, readHead, readReading, readout, readMeasures, readPosts } from "../read.js?v=1112";
+} from "../pieces.js?v=1115";
+import { progressBar, trendSpec, mountCharts } from "../charts.js?v=1115";
+import { shownMeasure, readHead, readReading, readout, readMeasures, readPosts } from "../read.js?v=1115";
 
 export const id = "mob_index";
 export const label = "Mob · Index";
@@ -73,9 +72,12 @@ export const title = "Mob · Index — an index of objectives, one opened at ful
 export const icon = "ap-icon-view-table";
 
 const CHART_HEIGHT = 300;
-// The card's curve. Tall enough to read a trajectory off — a 28px sparkline is
-// a smudge — and short enough that two cards still fit a 900px viewport.
-const CARD_CHART_HEIGHT = 104;
+// The row's curve. Tall enough to read a trajectory off — a 28px sparkline is
+// a smudge — and short enough that four rows and the head still fit one
+// screen. 72 was tried first: the rows came out at ~110px, which made the page
+// compact AND left two thirds of it empty, which is the complaint this screen
+// started from. A row that breathes is also a curve you can read.
+const ROW_CHART_HEIGHT = 96;
 
 export function render(host, vm) {
   const { entries, rollup, ctx, selectedKey, local, firstPaint } = vm;
@@ -94,91 +96,83 @@ export function render(host, vm) {
 
 function renderIndex(entries, rollup, ctx, specs, firstPaint) {
   // Worst first — the order `model.js` already returns, so the objective asking
-  // for attention is the first card and not the first one declared.
-  const cards = entries
+  // for attention is the first row and not the first one declared.
+  const rows = entries
     .map((e, i) => {
       const m = e.headline;
-      // The curve, at card scale: `compact` drops the axis labels and the
+      // The curve, at row scale: `compact` drops the axis labels and the
       // gridlines but KEEPS the dashed target line and the post markers — the
-      // two things that make it a reading and not a decoration. A bare
-      // sparkline was tried in the table this replaced: 28px of pale wash that
-      // nobody can read a trajectory off.
-      const chartId = `mobindex-card-${i}`;
+      // two things that make it a reading and not a decoration.
+      const chartId = `mobindex-row-${i}`;
       if (m?.series) {
         specs.set(
           chartId,
           trendSpec(m.series, {
             tier: e.tier,
             metricLabel: m.metricLabel,
-            height: CARD_CHART_HEIGHT,
+            height: ROW_CHART_HEIGHT,
             compact: true,
           }),
         );
       }
-      const pair =
-        m && !e.collecting
-          ? `<span class="ins-mob_index__pair"><span class="ins-num">${esc(m.currentLabel || "—")}</span>
-             <span class="ins-mob_index__to" aria-hidden="true">→</span>
-             <span class="ins-num ins-mob_index__target">${esc(m.targetLabel || "—")}</span></span>`
-          : "";
-      return `<article class="ap-card ins-mob_index__obj" data-ins-select="${esc(e.key)}" data-ins-objective="${esc(e.key)}">
-        <header class="ins-mob_index__objhead">
-          <div class="ins-mob_index__ident">
-            <button type="button" class="ins-mob_index__name" data-ins-select="${esc(e.key)}">${esc(e.label)}</button>
-            <span class="ins-mob_index__sub">${originMark(e, { short: true })} <span class="ins-dot" aria-hidden="true">·</span> ${esc(windowLine(e))}</span>
-          </div>
-          ${statusPill(e)}
-        </header>
 
-        <div class="ins-mob_index__read">
-          ${ringSvg(e.progress, e.tier, {
-            size: 88,
-            stroke: 8,
-            pending: e.collecting,
-            name: m?.metricLabel || "",
-          })}
-          <div class="ins-mob_index__facts">
-            ${
-              // The ring already prints the percentage, so the card does not
-              // print it again in prose: what the ring CANNOT say is which
-              // metric it is about, and a figure has to be named in text. So
-              // this line names it and carries the move, and the numbers under
-              // it are the two operands.
-              //
-              // ⚠️ It was `readingFor(e)` — "Reach is at 74% of target, down 8%
-              // over the window" — next to a ring reading 74% and a row reading
-              // 14,800 → 20,000 · −8%: the same three facts, twice, on a card
-              // the reader only has to glance at. The prose comes back when
-              // there is NO figure (collecting, no measure), where it is all
-              // there is to show.
-              m && !e.collecting
-                ? `<p class="ins-mob_index__metric">of target on <strong>${esc(m.metricLabel)}</strong></p>
-                   <div class="ins-mob_index__figs">${pair}${trendGlyph(m)}</div>`
-                : `<p class="ins-mob_index__reading">${esc(readingFor(e))}</p>`
-            }
-          </div>
+      // ── The figure zone: the comparator ─────────────────────────────────
+      // The percentage, and a bar as its underline. NO RING: in a single
+      // column the figures line up under each other, so the numeral IS the
+      // comparator — 74 / 82 / 84 / 84 read down the page — and four 88px
+      // rings in a column is weight spent on what the alignment already does.
+      // Dropping it also ends the last duplication on this surface: the ring
+      // printed the same percentage the text beside it printed.
+      const figure = e.collecting
+        ? `<span class="ins-mob_index__pending">${e.grace?.day ?? 1}<span class="ins-mob_index__unit">/${e.grace?.of ?? 7}</span></span>
+           <span class="ins-mob_index__figlabel">days collected</span>`
+        : `<span class="ins-mob_index__pct">${e.progress}<span class="ins-mob_index__unit">%</span></span>
+           ${progressBar(e.progress, e.tier)}
+           <span class="ins-mob_index__figlabel">of target</span>`;
+
+      // ── The measure zone: what the figure is OF ──────────────────────────
+      // The metric named in text — a figure without its metric named is
+      // unreadable — then its two operands and the move.
+      const measure = e.collecting
+        ? `<span class="ins-mob_index__metric">${esc(m?.metricLabel || "No measure yet")}</span>
+           <span class="ins-muted">${esc(e.soon || "Filling its first window")}</span>`
+        : `<span class="ins-mob_index__metric">${esc(m?.metricLabel || "—")}</span>
+           <span class="ins-mob_index__figs">
+             <span class="ins-mob_index__pair"><span class="ins-num">${esc(m?.currentLabel || "—")}</span><span class="ins-mob_index__to" aria-hidden="true">→</span><span class="ins-num ins-mob_index__target">${esc(m?.targetLabel || "—")}</span></span>
+             ${m ? trendGlyph(m) : ""}
+           </span>`;
+
+      return `<article class="ap-card ins-mob_index__row" data-ins-select="${esc(e.key)}" data-ins-objective="${esc(e.key)}">
+        <div class="ins-mob_index__ident">
+          <button type="button" class="ins-mob_index__name" data-ins-select="${esc(e.key)}">${esc(e.label)}</button>
+          <span class="ins-mob_index__sub">${originMark(e, { short: true })} <span class="ins-dot" aria-hidden="true">·</span> ${esc(windowLine(e))}</span>
         </div>
 
-        ${
-          e.parked && e.soon
-            ? `<p class="ins-mob_index__soon"><i class="ap-icon-warning_fill ap-icon-sm" aria-hidden="true"></i>${esc(e.soon)}</p>`
-            : ""
-        }
+        <div class="ins-mob_index__figure">${figure}</div>
 
-        ${
-          m?.series
-            ? `<span class="ins-chart__node ins-mob_index__curve" data-ins-chart="${chartId}" style="height:${CARD_CHART_HEIGHT}px"></span>`
-            : ""
-        }
+        <div class="ins-mob_index__measure">${measure}</div>
+
+        <div class="ins-mob_index__curve">
+          ${m?.series ? `<span class="ins-chart__node" data-ins-chart="${chartId}" style="height:${ROW_CHART_HEIGHT}px"></span>` : ""}
+        </div>
+
+        <div class="ins-mob_index__verdict">
+          ${statusPill(e)}
+          ${
+            e.parked && e.soon
+              ? `<span class="ins-mob_index__soon" title="${esc(e.soon)}"><i class="ap-icon-warning_fill ap-icon-sm" aria-hidden="true"></i></span>`
+              : ""
+          }
+        </div>
+
+        <i class="ap-icon-chevron-right ins-mob_index__go" aria-hidden="true"></i>
       </article>`;
     })
     .join("");
 
   // The verdict counts sit with the LIST, not in the page header: they count the
-  // cards below them, so they belong to the row that names those cards
-  // ("Objectives 4") rather than to the row that names the brand. In the band
-  // they were a page-level fact about a page whose subject is elsewhere, two
-  // rows and ~60px away from the thing they describe.
+  // rows below them, so they belong to the row that names those rows
+  // ("Objectives 4") rather than to the row that names the brand.
   //
   // What stays in the band is the brand and the one line saying the objectives
   // are being worked. Still NOT a KPI strip — no tile, no new figure, nothing
@@ -195,7 +189,7 @@ function renderIndex(entries, rollup, ctx, specs, firstPaint) {
           <h3 class="ins-section-title">Objectives <span class="ap-counter normal grey">${entries.length}</span></h3>
           ${tierCounts(rollup)}
         </div>
-        <div class="ins-mob_index__grid">${cards}</div>
+        <div class="ins-mob_index__list">${rows}</div>
       </div>
     </div>`;
 }
