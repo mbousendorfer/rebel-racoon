@@ -166,12 +166,17 @@
   color: var(--sys-text-color-default);
 }
 
-/* ── The report card: the band, and the white box inside it ───────────────
-   The fiche's chassis, transcribed from Figma `Analytics - Shared components`
+/* ── The report card — ONE PER MEASURE ────────────────────────────────────
+   The fiche's block, transcribed from Figma `Analytics - Shared components`
    → `Card / Report card (to detach)` (1070:7477) and its head
    `Card / Title+synthesis` (1069:7931). Geometry read off the file rather than
    guessed: band padding 24 (`md`), the synthesis box inset in it at padding 16
    (`sm`), its cells separated by a 1px × 40 rule with 24 on either side.
+
+   One card = one measure: `Reach` is a block, `Brand mentions` is a block, and
+   the objective is the page's header above them. That is how prod stacks
+   report cards, and it is what let the measures TABLE and its selector go
+   (read.js § one measure, one report card).
 
    ⚠️ The card carries NO padding of its own — the band has to bleed to its
    edges — so `.ins-section` is deliberately not on it, and `overflow: hidden`
@@ -191,7 +196,7 @@
 .ins-read__reportband {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xs);
+  gap: var(--ref-spacing-xxs);
   padding: var(--ref-spacing-md);
   background: var(--app-surface-subtle);
   border-bottom: 1px solid var(--app-border);
@@ -208,6 +213,45 @@
   padding: var(--ref-spacing-md);
 }
 
+/* ── The measure's name, scope and state ──────────────────────────────────
+   The name at the h3 rung: the objective owns h1 in the page header one rung
+   up, and prod's own card title (H1 24/32) is that page-subject rung, which
+   this block is not.
+
+   ⚠️ The state pill sits BESIDE the name, not at the far right where prod
+   holds `Download chart`. That slot is sized for a 36px button; a 20px pill
+   alone at the end of a 1150px row reads as belonging to nothing. Beside the
+   name it is the same construction as the objective's own `Brand awareness ●
+   At risk` in the page header — one rung down. */
+.ins-read__mhead {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xs);
+  min-width: 0;
+}
+
+.ins-read__mtitle {
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
+  color: var(--sys-text-color-default);
+}
+
+/* prod's `description` slot, at the caption rung: "All networks" is a scope,
+   not a paragraph, so it takes 14/18 rather than the 16/24 prod writes there. */
+.ins-read__mscope {
+  margin: 0;
+  font-size: var(--ref-font-size-sm);
+  line-height: var(--ref-font-line-height-sm);
+  color: var(--sys-text-color-light);
+}
+
 /* ── The synthesis box ────────────────────────────────────────────────────
    White on the band's grey, which is the whole trick: the figures stop
    floating on the page ground and become an object with edges, without adding
@@ -218,7 +262,10 @@
    instead of folding is how three facts turn into three ellipses. */
 .ins-read__synth {
   display: flex;
-  align-items: center;
+  /* Top-aligned, so the four labels read as one row of headings and the values
+     hang under them at their own sizes — the 38px numeral is 20px taller than
+     the others, and centring pushed its label out of line with theirs. */
+  align-items: flex-start;
   gap: var(--ref-spacing-md);
   padding: var(--ref-spacing-sm);
   background: var(--app-surface);
@@ -232,9 +279,12 @@
   min-width: 0;
 }
 
-/* The lead cell holds `scoreFigure` at xl, which brings its own two lines. */
-.ins-read__cell--lead {
-  gap: 0;
+/* The lead cell's figure is `.ins-score__value` (insights.css) — the screen's
+   one display scale, `--ins-display-xl` = the platform's `.main-data` 38px.
+   Reused rather than redeclared: a second 38px rule is a second thing to keep
+   in step. */
+.ins-read__cell--lead .ins-score__value {
+  display: block;
 }
 
 .ins-read__celllabel {
@@ -279,161 +329,21 @@
   }
 }
 
-/* ── Cards ──────────────────────────────────────────────────────────────── */
+/* ── The card's body: the curve, and nothing else ────────────────────────
+   No sub-title over it — the band says the metric's name forty pixels above
+   the plot, and prod's own `Engagement overview` under `Engagement` is prod
+   naming one metric twice. No top rule either: the band's `border-bottom` is
+   already the seam between the figures and the picture.
 
-.ins-read__card {
-  gap: var(--ref-spacing-xs);
-}
-
-/* The curve runs to the card's padding edge; Highcharts already insets its own
+   The curve runs to the card's padding edge; Highcharts already insets its own
    plot area, so the card's inline padding doubled it. */
 .ins-chart--read {
   margin: 0 calc(-1 * var(--ref-spacing-xxs));
 }
 
-/* ── Measures table ─────────────────────────────────────────────────────────
-   The DS table sets its own width, aligns its headers, and ships `.right` for
-   numeric columns and `tbody tr.selected` for the highlighted row. Styling
-   individual cells is the component's documented Don't — what follows only
-   sizes columns and tints the target half of a pair. */
-
-/* ── The measures list, as the chart's legend ─────────────────────────────
-   One card holds the curve and the list; the list is what switches the curve
-   (read.js has the note on why the tab strip that used to sit above the chart
-   is gone). So the rows behave like the objective cards' rows do: the whole
-   row takes the pointer and the app's interactive tint, and the name inside is
-   a real button, which is what the keyboard and AT reach. */
-/* The curve is the detail of the selected row, so the rule goes BETWEEN the
-   list and the curve: one card, two zones, the picking above the reading. */
-.ins-read__curve {
-  display: flex;
-  flex-direction: column;
+/* The cards that are NOT the report card — Posts, and Side's facts column. */
+.ins-read__card {
   gap: var(--ref-spacing-xs);
-  padding-top: var(--ref-spacing-sm);
-  /* grey-20, the house weight for a limit — `--sys-border-color-default` is
-     grey-10 and vanishes between two white blocks. */
-  border-top: 1px solid var(--app-border);
-}
-
-/* The graph's own sub-title, at the rung prod gives it: `Engagement overview`
-   in the report card is H3-Bold 16/24, one step above the section titles
-   around it, and it carries no rule of its own — `.ins-read__curve` already
-   owns the separator. Scoped here so Cockpit's `.ins-chart__name` is untouched. */
-.ins-read__curve > .ins-chart__name {
-  padding-bottom: 0;
-  border-bottom: 0;
-  font-size: var(--sys-text-style-h3-size);
-  line-height: var(--sys-text-style-h3-line-height);
-  font-weight: var(--sys-text-style-h3-weight);
-}
-
-.ins-read__mrow {
-  cursor: pointer;
-}
-
-/* Not on the selected row: the DS table already paints it, and a hover tint on
-   top of the selected band reads as a third state. */
-.ins-read__mrow:not(.selected):hover {
-  background: var(--ref-color-electric-blue-05);
-}
-
-.ins-read__mname {
-  display: block;
-  max-width: 100%;
-  padding: 0;
-  border: 0;
-  background: none;
-  text-align: left;
-  font: inherit;
-  font-weight: var(--ref-font-weight-bold);
-  color: var(--sys-text-color-default);
-  cursor: pointer;
-}
-
-.ins-read__mrow:hover .ins-read__mname,
-.ins-read__mname:hover {
-  color: var(--ref-color-electric-blue-100);
-}
-
-.ins-read__mname:focus-visible {
-  outline: 2px solid var(--ref-color-electric-blue-100);
-  outline-offset: var(--ref-spacing-xxxs);
-  border-radius: var(--ref-border-radius-sm);
-}
-
-/* The DS ships the cell's second line (`.ap-table-cell-description`, grey-80 at
-   12px) — nothing to restate here. What the row header DOES need is its name
-   button to keep the description under it rather than beside it, which the
-   container class does. */
-
-/* The DS paints EVERY `th` white and sticks it to the top — both written for
-   the HEADER row, which is the only `th` the component expects. The measure's
-   name cell is a row header (`scope="row"`), so it inherited the pair: the
-   selected row's tint and the hover's started AFTER the name instead of at the
-   card's edge, and the name column floated over the rest on scroll. Undone for
-   the row headers only; the DS's bold ink, padding and bottom rule stay, and
-   the last row loses its rule the way the component already does it for `td`. */
-.ins-read__table th[scope="row"] {
-  position: static;
-  background-color: transparent;
-}
-
-.ins-read__table tbody tr:last-child th {
-  border-bottom: none;
-}
-
-/* ⚠️ The card clips (`overflow: hidden`, so the band's corners follow the
-   radius), and a `<table>` ignores its own `overflow-x` — the DS declares one
-   on `.ap-table` but it only bites on the `.scrollable` variant, which switches
-   the element to `display: block`. So the table rides in its own scroller:
-   under ~540px it scrolls sideways instead of having its `State` column cut off
-   at the card's edge. Wide content scrolls inside its own container — never the
-   page. */
-.ins-read__tablewrap {
-  overflow-x: auto;
-  margin-inline: calc(-1 * var(--ref-spacing-xxs));
-  padding-inline: var(--ref-spacing-xxs);
-}
-
-.ins-read__table {
-  min-width: 540px;
-}
-
-/* The columns, as the platform's `Table / Simple` builds them (node 1070:6792):
-   one `.left cols` for the label and n `.right cols` of EQUAL width. Prod cuts
-   them into exact fifths; the name column here carries two lines, so it takes
-   40% and the four figure columns split the rest evenly. Written on the header
-   row only — the body cells follow the column, and a table that sizes itself
-   on content clustered all four figures against the right edge with 300px of
-   white between them and the name. */
-.ins-read__table th:first-child {
-  width: 40%;
-}
-
-.ins-read__table th:not(:first-child) {
-  width: 15%;
-}
-
-/* `14,800 / 20,000` — the value, then the target it is measured against, in
-   one cell (read.js has the note on why Target stopped being a column). The
-   target is the lighter half: it is the constant, the current value is what
-   moved. */
-.ins-read__pair {
-  white-space: nowrap;
-}
-
-.ins-read__of,
-.ins-read__target {
-  color: var(--sys-text-color-light);
-  font-weight: var(--ref-font-weight-regular);
-}
-
-/* The percentage is the one figure in the row that is a JUDGEMENT rather than a
-   reading, so it is the one in bold. It used to be a 150px cell holding a bar
-   plus the number; the bar went with the platform's table idiom, which holds
-   figures only (read.js § the table). */
-.ins-read__pct {
-  font-weight: var(--ref-font-weight-bold);
 }
 
 /* ── The facts column ───────────────────────────────────────────────────────

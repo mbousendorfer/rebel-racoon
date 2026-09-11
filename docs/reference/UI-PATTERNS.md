@@ -311,33 +311,43 @@ Ce qui n'a **pas** été repris, et pourquoi :
   composants Angular (`ap-chart-spline`…), inutilisables depuis du CSS-UI. Ses valeurs
   sont **mirroitées** avec la référence en commentaire, pas importées.
 
-### La fiche objectif EST le report card d'Analytics
+### La fiche objectif = un en-tête de page + UN report card PAR MESURE
 
 Deuxième source, celle du **design** : le fichier Figma `Analytics - Shared components`
 (`1ZSobtunR472OmSX7usn8M`), page `🚧 UI`, qui tient la plupart des composants d'Analytics.
-Le composant qui répond à « comment Analytics montre une métrique et les mesures
-derrière » est `Card / Report card (to detach)` — et depuis le 2026-09-11 la fiche
-objectif **est** ce composant.
+Le composant qui répond à « comment Analytics montre une métrique et ce qu'il y a derrière »
+est `Card / Report card (to detach)` — et c'est ainsi qu'une page Reports est faite : un
+en-tête qui nomme son sujet, puis **une pile de report cards, une par métrique**.
 
-| Nœud Figma                           | Ce que la fiche en fait                                                                                                                                                                                                                                        |
-| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Card / Report card` `1070:7477`     | `readReport()` : **une** `.ap-card`, bandeau gris puis corps blanc, au lieu des quatre blocs empilés sur le fond de page                                                                                                                                       |
-| `Card / Title+synthesis` `1069:7931` | le bandeau : titre H1 + verdict, la phrase de lecture dans le créneau « description » (16/24 grey-80), les deux verbes là où prod pose `Download chart`                                                                                                        |
-| son cadre `Synthesis`                | `readSynthesis()` : encart **blanc** dans le gris, padding 16, cellules label/valeur, filet 1px × 40 avec 24 de part et d'autre. Ce que prod y met : `Total engagement` \| variation + période — ce qu'on y met : le 38px, `Window`, `Origin`                  |
-| `Card / Key metrics` `432:6310`      | emprunt **assumé** pour la cellule de tête : sa `Value` est un gros chiffre, la synthèse de prod est à 14px bold                                                                                                                                               |
-| `Table / Simple` `1070:6792`         | la table : `.left cols` + n × `.right cols` de largeur égale, **que des chiffres** — d'où la barre de progression retirée de la cellule `Progress` et les quatre colonnes en `.right`                                                                          |
-| son `Graph title + export`           | le sous-titre de la courbe passe au rung **h3** (16/24), sans filet propre                                                                                                                                                                                     |
-| `.ap-table-cell-*` (CSS-UI)          | la cellule nom utilise les classes du DS (`-text-container`, `-content`, `-description`) au lieu d'un empilement maison. ⚠️ En **span**, jamais en `div` : le DS style `.ap-table th > div` comme la ligne d'en-tête (`align-items:center`) et centrait le nom |
+La fiche suit ça depuis le 2026-09-11 : `Brand awareness` est le **titre de la page**
+(en-tête dans `.insights__band` : h1 + verdict, provenance · fenêtre · N measures, les deux
+verbes), et `Reach` et `Brand mentions` sont **deux blocs autonomes** en dessous.
 
-Divergences volontaires, écrites pour ne pas être « corrigées » plus tard :
+| Nœud Figma                               | Ce que la fiche en fait                                                                                                                                                                                                                            |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Card / Report card` `1070:7477`         | `readMeasures()` → une `.ap-card` **par mesure** : bandeau gris puis corps blanc                                                                                                                                                                   |
+| `Card / Title+synthesis` `1069:7931`     | le bandeau de chaque bloc : le nom de la métrique au rung **h3** (l'objectif possède h1, un rung au-dessus), sa portée dans le créneau « description », sa pastille d'état à côté du nom                                                           |
+| son cadre `Synthesis`                    | `.ins-read__synth` : encart **blanc** dans le gris, padding 16, cellules label-au-dessus-valeur, filet 1px × 40 avec 24 de part et d'autre. Ici : `Progress` (38px), `Current`, `Target`, `Variation`                                              |
+| `Card / Key metrics` `432:6310`          | emprunt assumé pour la cellule de tête : sa `Value` est un gros chiffre, la synthèse du report card est à 14px bold                                                                                                                                |
+| `KPI / Percentage-variation` `220:25560` | la cellule `Variation` (`trendGlyph`) — coïncidait déjà                                                                                                                                                                                            |
+| `Table / Simple` `1070:6792`             | **plus utilisée sur la fiche** : la table des measures a disparu avec le sélecteur (voir ci-dessous). Reste la référence pour toute table d'Analytics : `.left cols` + n × `.right cols` de largeur égale, que des chiffres, aucune forme dessinée |
 
-- **Table au-dessus de la courbe**, alors que prod met la table sous le graphe. Chez prod
-  la table est un **découpage** de la seule métrique tracée (Organic/Paid/Total) ; ici elle
-  **choisit** ce que la courbe trace, et un sélecteur se place au-dessus de ce qu'il change
-  (la version « lignes sous le graphe » a été construite puis rejetée). Tracer les deux
-  mesures ensemble n'est pas une issue : un volume (14 800) et un taux (4,1 %) ne partagent
-  pas d'axe.
-- **Pas de ligne de total.** Prod ferme sa table sur un `Total engagement` en gras ; deux
+Ce que ce découpage **supprime**, et c'est son intérêt : la table à cinq colonnes, son
+compteur, et le **sélecteur de mesure**. Trois versions ont été dessinées pour décider où le
+poser (une bande d'onglets DS au-dessus du graphe, puis des lignes au-dessus, puis des
+lignes en dessous — recalées) ; la réponse était qu'une page à deux mesures n'en a pas
+besoin, puisque chaque courbe peut être à l'écran en même temps. Cockpit garde la table et
+les onglets : c'est la référence non modifiée.
+
+Divergences volontaires avec le composant prod, écrites pour ne pas être « corrigées » :
+
+- **Pas de sous-titre au-dessus du graphe.** Prod écrit `Engagement overview` sous
+  `Engagement` : c'est prod qui nomme deux fois la même métrique. Le bandeau du bloc dit
+  déjà `Reach` quarante pixels au-dessus du tracé.
+- **La pastille d'état est à côté du nom**, pas à l'extrémité droite du bandeau où prod
+  tient `Download chart` : ce créneau est dimensionné pour un bouton de 36px, et une
+  pastille de 20px seule au bout d'une ligne de 1150px n'appartient visuellement à rien.
+- **Pas de ligne de total** (prod ferme sa table sur un `Total engagement` en gras) : deux
   mesures d'unités différentes ne s'additionnent pas, et l'avancement d'un objectif n'est
   pas la somme de celui de ses mesures.
 - **Filets en grey-20** (`--app-border`), pas `--sys-border-color-default` qui résout en

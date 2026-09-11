@@ -20,21 +20,22 @@
 // The verbs stay in the head, never in the column: a 300px column grows
 // full-width buttons, and a button is never full-width here.
 
-import { playbookTitle, objectiveTitle, objectiveActions, esc } from "../pieces.js?v=1121";
-import { mountCharts } from "../charts.js?v=1121";
-import { shownMeasure, readReport, readPosts, readFacts } from "../read.js?v=1121";
+import { playbookTitle, objectiveTitle, objectiveActions, esc } from "../pieces.js?v=1123";
+import { mountCharts } from "../charts.js?v=1123";
+import { readReading, readMeasures, readPosts, readFacts } from "../read.js?v=1123";
 
 export const id = "mob_side";
 export const label = "Mob · Side";
 export const title = "Mob · Side — the read at full width, the facts on the right";
 export const icon = "ap-icon-view-grid";
 
-const CHART_HEIGHT = 300;
+// One card per measure, so each curve takes 260 rather than the 300 a single
+// shared chart could afford (read.js § one measure, one report card).
+const CHART_HEIGHT = 260;
 
 export function render(host, vm) {
-  const { entries, rollup, ctx, selectedKey, local, firstPaint } = vm;
+  const { entries, rollup, ctx, selectedKey, firstPaint } = vm;
   const selected = entries.find((e) => e.key === selectedKey) || entries[0];
-  const shown = shownMeasure(selected, local);
   const specs = new Map();
 
   host.innerHTML = `<header class="insights__band">
@@ -49,13 +50,12 @@ export function render(host, vm) {
     <div class="ins-mob_side">
       <div class="ins-mob_side__inner${firstPaint ? " ins-reveal" : ""}" data-ins-objective="${esc(selected.key)}">
         <div class="ins-mob_side__main">
-          <!-- The report card, minus two of its pieces, because this lecture
-               already carries them: the objective's NAME is up in the page band
-               as a picker (a title inside the card would say it twice), and the
-               window and the provenance are two of the five rows of the facts
-               column on the right. So the card's band holds the synthesis
-               alone. -->
-          ${readReport(selected, shown, specs, { head: false, facts: false, idPrefix: "mobside", chartId: "mobside-trend", height: CHART_HEIGHT })}
+          <!-- No page header to render here: this lecture's own band already
+               names the objective (as a picker) and holds its verbs, and the
+               facts column on the right carries the window, the provenance and
+               the counts. So the main column is exactly the measure cards. -->
+          ${readReading(selected)}
+          ${readMeasures(selected, specs, { idPrefix: "mobside", height: CHART_HEIGHT })}
           ${readPosts(selected)}
         </div>
         <div class="ins-mob_side__aside">

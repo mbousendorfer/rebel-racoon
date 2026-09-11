@@ -66,16 +66,20 @@ import {
   trendGlyph,
   postsMovedLine,
   esc,
-} from "../pieces.js?v=1121";
-import { trendSpec, mountCharts } from "../charts.js?v=1121";
-import { shownMeasure, readReport, readPosts } from "../read.js?v=1121";
+} from "../pieces.js?v=1123";
+import { trendSpec, mountCharts } from "../charts.js?v=1123";
+import { readHead, readReading, readMeasures, readPosts } from "../read.js?v=1123";
 
 export const id = "mob_index";
 export const label = "Mob · Index";
 export const title = "Mob · Index — an index of objectives, one opened at full width";
 export const icon = "ap-icon-view-table";
 
-const CHART_HEIGHT = 300;
+// The fiche's curves. 300 was right when ONE chart served every measure; with
+// one card per measure there are N of them stacked, so each breathes at 260 —
+// still twice the height of anything that could be called a sparkline, and two
+// cards plus the header land inside a laptop screen and a half.
+const CHART_HEIGHT = 260;
 // The card's curve. Tall enough to read a trajectory off — a 28px sparkline is
 // a smudge — and short enough that two rows of cards and the head still fit
 // one screen. It gets the card's full width, ~560px at two per line, which is
@@ -83,12 +87,12 @@ const CHART_HEIGHT = 300;
 const CARD_CHART_HEIGHT = 96;
 
 export function render(host, vm) {
-  const { entries, rollup, ctx, selectedKey, local, firstPaint } = vm;
+  const { entries, rollup, ctx, selectedKey, firstPaint } = vm;
   const selected = selectedKey ? entries.find((e) => e.key === selectedKey) : null;
   const specs = new Map();
 
   host.innerHTML = selected
-    ? renderFiche(selected, local, specs, firstPaint)
+    ? renderFiche(selected, specs, firstPaint)
     : renderIndex(entries, rollup, ctx, specs, firstPaint);
 
   mountCharts(host, specs);
@@ -196,26 +200,33 @@ function renderIndex(entries, rollup, ctx, specs, firstPaint) {
 
 // ── The fiche ─────────────────────────────────────────────────────────────
 //
+// A PAGE HEADER, then one card per measure — prod's own arrangement for a
+// report (read.js § the module header). The header goes in `.insights__band`,
+// the white full-bleed strip this layout's index already uses for its own head:
+// it makes the objective read as the page's subject rather than as one more
+// block in the stack, which is exactly what "Brand awareness is the page title"
+// means.
+//
 // The crumb is the whole point of the level above: it is the only way back, the
 // topbar carrying none. Ghost grey, so it reads as navigation and not as one of
 // the objective's own verbs sitting two rows below it.
 
-function renderFiche(entry, local, specs, firstPaint) {
-  const shown = shownMeasure(entry, local);
-  return `<div class="ins-mob_index">
-    <div class="ins-mob_index__inner${firstPaint ? " ins-reveal" : ""}" data-ins-objective="${esc(entry.key)}">
-      <div class="ins-mob_index__crumb">
-        <button type="button" class="ap-button ghost grey" data-ins-unselect>
-          <i class="ap-icon-chevron-left" aria-hidden="true"></i><span>Objectives</span>
-        </button>
+function renderFiche(entry, specs, firstPaint) {
+  return `<header class="insights__band">
+      <div class="insights__band-inner">
+        <div class="ins-mob_index__crumb">
+          <button type="button" class="ap-button ghost grey" data-ins-unselect>
+            <i class="ap-icon-chevron-left" aria-hidden="true"></i><span>Objectives</span>
+          </button>
+        </div>
+        ${readHead(entry)}
+        ${readReading(entry)}
       </div>
-      <!-- ONE card, the platform's report card: the band (name · verdict ·
-           the two verbs · the white synthesis box) over the body (measures ·
-           curve). This used to be four blocks stacked on the page's own ground
-           — head, prose, readout, card — which is what made the fiche start
-           cold on "Measures 2" with its figures floating above it. -->
-      ${readReport(entry, shown, specs, { idPrefix: "mobindex", chartId: "mobindex-trend", height: CHART_HEIGHT })}
-      ${readPosts(entry)}
-    </div>
-  </div>`;
+    </header>
+    <div class="ins-mob_index">
+      <div class="ins-mob_index__inner${firstPaint ? " ins-reveal" : ""}" data-ins-objective="${esc(entry.key)}">
+        ${readMeasures(entry, specs, { idPrefix: "mobindex", height: CHART_HEIGHT })}
+        ${readPosts(entry)}
+      </div>
+    </div>`;
 }
