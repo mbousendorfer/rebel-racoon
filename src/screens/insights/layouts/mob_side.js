@@ -20,9 +20,9 @@
 // The verbs stay in the head, never in the column: a 300px column grows
 // full-width buttons, and a button is never full-width here.
 
-import { playbookTitle, objectiveTitle, objectiveActions, esc } from "../pieces.js?v=1118";
-import { mountCharts } from "../charts.js?v=1118";
-import { shownMeasure, readReading, readout, readMeasures, readPosts, readFacts } from "../read.js?v=1118";
+import { playbookTitle, objectiveTitle, objectiveActions, esc } from "../pieces.js?v=1121";
+import { mountCharts } from "../charts.js?v=1121";
+import { shownMeasure, readReport, readPosts, readFacts } from "../read.js?v=1121";
 
 export const id = "mob_side";
 export const label = "Mob · Side";
@@ -49,9 +49,13 @@ export function render(host, vm) {
     <div class="ins-mob_side">
       <div class="ins-mob_side__inner${firstPaint ? " ins-reveal" : ""}" data-ins-objective="${esc(selected.key)}">
         <div class="ins-mob_side__main">
-          ${readReading(selected)}
-          ${readout(selected)}
-          ${readMeasures(selected, shown, specs, { idPrefix: "mobside", chartId: "mobside-trend", height: CHART_HEIGHT })}
+          <!-- The report card, minus two of its pieces, because this lecture
+               already carries them: the objective's NAME is up in the page band
+               as a picker (a title inside the card would say it twice), and the
+               window and the provenance are two of the five rows of the facts
+               column on the right. So the card's band holds the synthesis
+               alone. -->
+          ${readReport(selected, shown, specs, { head: false, facts: false, idPrefix: "mobside", chartId: "mobside-trend", height: CHART_HEIGHT })}
           ${readPosts(selected)}
         </div>
         <div class="ins-mob_side__aside">

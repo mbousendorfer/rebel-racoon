@@ -293,18 +293,11 @@
   }
 }
 
-/* ── The fiche's hero ─────────────────────────────────────────────────────
-   Title, provenance and the figure row are ONE block, so they have to sit
-   closer to each other than to the cards below them — proximity is what makes
-   them read as a head instead of three more stacked things. The column's own
-   `gap: sm` separates the blocks; this pulls the hero's lines back together. */
-.ins-mob_index__inner > .ins-read__head {
-  margin-bottom: calc(-1 * var(--ref-spacing-xs));
-}
-
-.ins-mob_index__inner > .ins-read__readout {
-  margin-bottom: var(--ref-spacing-xxs);
-}
+/* The fiche's hero needs no margin rattling here any more. It used to be three
+   blocks loose on the column — head, prose, figure row — pulled back together
+   with negative margins so they would read as one head; they are now inside
+   the report card's own band, which groups them with a surface instead of with
+   arithmetic (read.js § the report card). */
 
 /* ── The fiche ───────────────────────────────────────────────────────────── */
 

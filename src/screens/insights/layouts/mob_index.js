@@ -66,9 +66,9 @@ import {
   trendGlyph,
   postsMovedLine,
   esc,
-} from "../pieces.js?v=1118";
-import { trendSpec, mountCharts } from "../charts.js?v=1118";
-import { shownMeasure, readHead, readReading, readout, readMeasures, readPosts } from "../read.js?v=1118";
+} from "../pieces.js?v=1121";
+import { trendSpec, mountCharts } from "../charts.js?v=1121";
+import { shownMeasure, readReport, readPosts } from "../read.js?v=1121";
 
 export const id = "mob_index";
 export const label = "Mob · Index";
@@ -209,10 +209,12 @@ function renderFiche(entry, local, specs, firstPaint) {
           <i class="ap-icon-chevron-left" aria-hidden="true"></i><span>Objectives</span>
         </button>
       </div>
-      ${readHead(entry)}
-      ${readReading(entry)}
-      ${readout(entry)}
-      ${readMeasures(entry, shown, specs, { idPrefix: "mobindex", chartId: "mobindex-trend", height: CHART_HEIGHT })}
+      <!-- ONE card, the platform's report card: the band (name · verdict ·
+           the two verbs · the white synthesis box) over the body (measures ·
+           curve). This used to be four blocks stacked on the page's own ground
+           — head, prose, readout, card — which is what made the fiche start
+           cold on "Measures 2" with its figures floating above it. -->
+      ${readReport(entry, shown, specs, { idPrefix: "mobindex", chartId: "mobindex-trend", height: CHART_HEIGHT })}
       ${readPosts(entry)}
     </div>
   </div>`;
