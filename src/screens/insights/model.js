@@ -21,7 +21,7 @@
 // observation rather than act on it. The verb is gone, and with it the set, the
 // notifier it existed to fire, and the entry's removed counts.
 
-import { getActivePlaybook } from "../../active-playbook.js?v=1123";
+import { getActivePlaybook } from "../../active-playbook.js?v=1125";
 import {
   resolveObjectives,
   objectiveVerdict,
@@ -32,11 +32,11 @@ import {
   parseMetricValue,
   formatLike,
   metricLabel,
-} from "../../objective-measures.js?v=1123";
-import { TIER_LABELS, TIER_STATUS_CLASS, TIER_ORDER } from "../../objective-scoring.js?v=1123";
-import { nextMoveFor } from "../../objective-flow.js?v=1123";
-import { objectivePosts, objectivePostPool, TOP_POST_TODAY, TOP_POST_IMAGES } from "../../mocks.js?v=1123";
-import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=1123";
+} from "../../objective-measures.js?v=1125";
+import { TIER_LABELS, TIER_STATUS_CLASS, TIER_ORDER } from "../../objective-scoring.js?v=1125";
+import { nextMoveFor } from "../../objective-flow.js?v=1125";
+import { objectivePosts, objectivePostPool, TOP_POST_TODAY, TOP_POST_IMAGES } from "../../mocks.js?v=1125";
+import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=1125";
 
 /** The mock "today" — one anchor for the series' x-axis and the posts' dates. */
 export const INSIGHTS_TODAY = TOP_POST_TODAY;
@@ -152,17 +152,37 @@ function slug(str) {
     .replace(/^-|-$/g, "");
 }
 
+// The contribution, in PIECES as well as in prose. The sentence
+// ("+3,300 reach · 1.9× median") is what a chat hand-off and a chart tooltip
+// quote; the pieces are what a card's stat strip needs, where the number and
+// its unit sit on two lines and cannot be one string. `amount` / `unit` are
+// split off the same source rather than re-derived, so the two can never
+// disagree — a mock's pre-formatted `figure` is "<number> <unit>" by
+// construction (mocks/objectives.js), and the computed branch builds it that
+// way too.
 function contributionFor(row, measure) {
   const current = measure?.current;
   let value = row.figure || null;
   if (!value && measure && current != null) {
-    const amount = current * row.share;
-    const formatted = formatLike(measure.baselineValue, amount);
+    const raw = current * row.share;
+    const formatted = formatLike(measure.baselineValue, raw);
     const label = measure.metricLabel.toLowerCase();
     value = measure.isRate ? `${formatted} ${label}` : `+${formatted} ${label}`;
   }
-  const multiple = `${Math.round(row.multiple * 10) / 10}× median`;
-  return { value, share: row.share, multiple, label: value ? `${value} · ${multiple}` : multiple };
+  const cut = value ? value.indexOf(" ") : -1;
+  const amount = cut > 0 ? value.slice(0, cut) : value;
+  const unit = cut > 0 ? value.slice(cut + 1) : measure?.metricLabel || "";
+  const times = Math.round(row.multiple * 10) / 10;
+  const multiple = `${times}× median`;
+  return {
+    value,
+    amount,
+    unit,
+    share: row.share,
+    multiple,
+    multipleValue: `${times}×`,
+    label: value ? `${value} · ${multiple}` : multiple,
+  };
 }
 
 function linkedPostsFor(entry, seed) {

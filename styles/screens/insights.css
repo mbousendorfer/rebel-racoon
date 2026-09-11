@@ -553,39 +553,21 @@
   pointer-events: none;
 }
 
-/* ── Linked posts ───────────────────────────────────────────────────────────
-   The rows themselves are the winners flow's echo card (`.top-post-echo`,
-   styles/components/top-post-card.css) — one template for a quoted post,
-   wherever it is quoted. All that lives here is the list and the reset of the
-   row's CHAT geometry (right-aligned, 440px cap, sharp top-right corner), the
-   same reset `.top-posts-widget__row` does for the in-conversation list. */
+/* ── Posts drafted with Archie ───────────────────────────────────────────
+   The section is the winners BOARD's grid, and its rows are the board's cards
+   (pieces.js `postCard` → `renderTopPostCard`). So the layout is the board's
+   too: `.top-posts-grid` is composed onto the list, and nothing is restated
+   here — the 300px floor, the uniform 400px row and the gap all come from the
+   component's own stylesheet.
+
+   ⚠️ What used to live here (`git log -S ins-postrow`): the rules that undid
+   `.top-post-echo`'s CHAT geometry — the right-aligned 440px bubble with its
+   sharp top-right corner — plus a hover border and a `margin-left:auto` on the
+   ghost Repurpose. All of it went with the row itself. The echo row stays the
+   chat's shape, where that geometry is correct. */
 
 .ins-postlist {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxs);
-}
-
-.ins-postlist .top-post-echo {
-  align-self: stretch;
-  max-width: none;
-  /* The chat bubble's sharp top-right belongs to the thread, not to a list. */
-  border-top-right-radius: var(--ref-border-radius-md);
-  transition: border-color var(--ref-animation-short) var(--app-ease-standard);
-}
-
-/* Only when a control inside is hovered: the row itself has no click handler,
-   and a blue border promises one. */
-.ins-postlist .top-post-echo:has(button:hover) {
-  border-color: var(--ref-color-electric-blue-100);
-}
-
-/* Repurpose stays VISIBLE — it is the loop's other end, and an action you have
-   to hover to discover is an action nobody uses. Ghost rather than the board's
-   primary blue: the board is one decision, this is one row of several. */
-.ins-postrow__reuse {
-  margin-left: auto;
-  flex-shrink: 0;
+  min-width: 0;
 }
 
 .ins-posts-empty {

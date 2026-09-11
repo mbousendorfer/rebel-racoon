@@ -33,8 +33,8 @@
 // Pure render helpers — strings in, strings out, no listeners. Every action is
 // a `data-ins-*` hook the shell dispatches (shell.js § Actions).
 
-import { readingFor } from "./model.js?v=1123";
-import { trendSpec } from "./charts.js?v=1123";
+import { readingFor } from "./model.js?v=1125";
+import { trendSpec } from "./charts.js?v=1125";
 import {
   statusPill,
   measurePill,
@@ -47,7 +47,7 @@ import {
   objectiveActions,
   tierCounts,
   esc,
-} from "./pieces.js?v=1123";
+} from "./pieces.js?v=1125";
 
 // ── Head ──────────────────────────────────────────────────────────────────
 //
@@ -227,7 +227,7 @@ export function readMeasures(entry, specs, { idPrefix = "read", height = 260 } =
 export function readPosts(entry) {
   return `<section class="ap-card ins-section ins-read__card">
     <h3 class="ins-section-title">Posts drafted with Archie <span class="ap-counter normal grey">${entry.posts.length}</span></h3>
-    ${entry.posts.length ? `<div class="ins-postlist">${entry.posts.map((p) => postCard(p, entry)).join("")}</div>` : postsEmpty()}
+    ${entry.posts.length ? `<div class="ins-postlist top-posts-grid">${entry.posts.map((p) => postCard(p, entry)).join("")}</div>` : postsEmpty()}
   </section>`;
 }
 

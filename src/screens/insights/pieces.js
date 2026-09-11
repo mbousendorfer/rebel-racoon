@@ -8,12 +8,12 @@
 // Pure render helpers — strings in, strings out. No listeners: every action is
 // a `data-ins-*` hook the shell dispatches.
 
-import { escapeHtml as esc } from "../../utils.js?v=1123";
-import { renderPostEchoRow } from "../../components/top-post-card.js?v=1123";
-import { getContexts } from "../../contexts-store.js?v=1123";
-import { isWorkspaceMode } from "../../active-playbook.js?v=1123";
-import { progressBar } from "./charts.js?v=1123";
-import { signedPct } from "./model.js?v=1123";
+import { escapeHtml as esc } from "../../utils.js?v=1125";
+import { renderTopPostCard } from "../../components/top-post-card.js?v=1125";
+import { getContexts } from "../../contexts-store.js?v=1125";
+import { isWorkspaceMode } from "../../active-playbook.js?v=1125";
+import { progressBar } from "./charts.js?v=1125";
+import { signedPct } from "./model.js?v=1125";
 
 // ── The page's head — the scope, worn as the heading ─────────────────────
 //
@@ -296,36 +296,61 @@ export function proxyNote(entry) {
 // ── Linked posts ──────────────────────────────────────────────────────────
 
 /**
- * One post drafted with Archie, as evidence. It is the SAME row the winners
- * flow quotes in the conversation (`renderPostEchoRow`) — a post should look
- * like a post wherever it is shown, and Insights had grown its own card that
- * said the same things in a different shape. What is ours is the stat line
- * (this post's contribution to the measure, not a view count) and the trailing
- * controls: **Repurpose** — the loop's other end, since a post that moved an
- * objective is the best brief for the next one — and a remove, because a post
- * Archie attributed can be un-attributed by the reader.
+ * ONE post that moved this objective, as the winners BOARD draws it —
+ * `renderTopPostCard` (top-post-card.js), the same component `/session`'s
+ * "20 best-performing posts" grid is made of. A post should look like a post
+ * wherever it is shown, and this section had grown its own compact row saying
+ * the same things in a different shape.
  *
- * The contribution stays in ink rather than borrowing the winners' green
- * ×-vs-average accent — green means "on track" on this screen, and a green
- * multiple inside an off-track objective would read as reassurance.
+ * ⚠️ It WAS that compact row (`renderPostEchoRow`, still the chat's own shape,
+ * `git log -S ins-postrow`). The row was chosen when this was "one row of
+ * several" under a table; the section is now a grid of the real cards, so what
+ * a post looks like is decided in one place for both surfaces.
+ *
+ * Three slots are ours, because they are the only things the two hosts measure
+ * differently:
+ *   • the stat strip — this post's contribution to the measure and its share of
+ *     it, not a view count. Two columns where the board has four; the strip is
+ *     built for either.
+ *   • the hero figure — `1.9× median` rather than `4.3× vs average`: the
+ *     comparison Archie can actually make for a post attached to a measure.
+ *   • the CTA — **Repurpose**, the loop's other end, since a post that moved an
+ *     objective is the best brief for the next one. Same blue primary the board
+ *     gives it, carrying `data-ins-*` so this screen's own dispatch answers.
+ *
+ * `--neutral` keeps the multiple in INK instead of the board's green. Green
+ * means "on track" on this screen, and a green multiple inside an off-track
+ * objective would read as reassurance — the board has no such vocabulary to
+ * collide with.
  *
  * There is NO remove: a post is on this list because Archie measured that it
- * moved the objective, and a reader cannot un-observe that. The one trailing
- * control is Repurpose.
+ * moved the objective, and a reader cannot un-observe that.
  */
 export function postCard(post, entry) {
-  const contribution = post.contribution.value || post.metricLabel;
-  return renderPostEchoRow({
-    className: "ins-postrow",
-    network: post.network,
-    when: post.date,
-    excerpt: post.excerpt,
-    mediaType: post.mediaType,
-    image: post.image,
-    statsHtml: `<b>${esc(contribution)}</b> · ${esc(post.contribution.multiple)}`,
-    actionHtml:
-      `<button type="button" class="ap-button ghost blue ins-postrow__reuse" data-ins-repurpose="${esc(entry.key)}" data-ins-post="${esc(post.id)}">` +
-      `<i class="ap-icon-sparkles" aria-hidden="true"></i><span>Repurpose</span></button>`,
+  const c = post.contribution || {};
+  // The unit comes out of the model lowercase (it is a fragment of the
+  // sentence "+3,300 reach"); as a column heading beside the board's own
+  // `Views` / `Reach` it takes a capital.
+  const unit = c.unit || post.metricLabel || "";
+  const stats = [
+    [esc(c.amount || "—"), esc(unit.charAt(0).toUpperCase() + unit.slice(1))],
+    [c.share != null ? `${Math.round(c.share * 100)}%` : "—", "of the measure"],
+  ]
+    .map(
+      ([v, l]) =>
+        `<div class="top-post-card__stat"><span class="top-post-card__stat-value">${v}</span><span class="top-post-card__stat-label">${l}</span></div>`,
+    )
+    .join("");
+  return renderTopPostCard(post, {
+    className: "top-post-card--neutral ins-postcard",
+    statsHtml: stats,
+    heroHtml: `<span class="top-post-card__hero">
+        <span class="top-post-card__hero-value">${esc(c.multipleValue || "—")}</span>
+        <span class="top-post-card__hero-label">vs&nbsp;median</span>
+      </span>`,
+    ctaHtml:
+      `<button type="button" class="ap-button primary blue top-post-card__cta" data-ins-repurpose="${esc(entry.key)}" data-ins-post="${esc(post.id)}">` +
+      `Repurpose</button>`,
   });
 }
 

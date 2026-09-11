@@ -183,6 +183,15 @@
   align-items: stretch;
 }
 
+/* ── Modifier: --neutral ─────────────────────────────────────────
+   The card without its one accent. Insights reuses this card for the posts that
+   moved an objective, on a screen where GREEN already means "on track" — a
+   green multiple inside an off-track objective would read as reassurance. The
+   figure stays, in ink. */
+.top-post-card--neutral .top-post-card__hero-value {
+  color: var(--sys-text-color-default);
+}
+
 /* ── Card ───────────────────────────────────────────────────────── */
 /* Built on the Figma `.post Contructor` preview for the top part, then the
    existing performance + footer below it. Zones: preview header (grey band) →
@@ -429,9 +438,15 @@
 
 /* Metric strip — four equal columns, value stacked over its label, so the
    numbers line up and scan left-to-right. */
+/* As many equal columns as there are stats, not four fixed ones: the board
+   passes four (Views / Reach / Reactions / Shares), Insights passes two (a
+   contribution and its share). At four children this resolves to exactly the
+   old rule; at two it gives them half the card each instead of leaving the
+   right half empty and wrapping their labels over three lines. */
 .top-post-card__stats {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
   gap: 0 var(--ref-spacing-xs);
 }
 

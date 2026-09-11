@@ -1,5 +1,5 @@
-import { html, raw, escapeText } from "../utils.js?v=1123";
-import { showToast } from "./toast.js?v=1123";
+import { html, raw, escapeText } from "../utils.js?v=1125";
+import { showToast } from "./toast.js?v=1125";
 import {
   getQueue,
   getQueueOn,
@@ -7,9 +7,9 @@ import {
   dayKey,
   addToQueue,
   subscribe as subscribeQueue,
-} from "../schedule-store.js?v=1123";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1123";
-import { renderProfileTag, profileForNetwork } from "../social-profiles.js?v=1123";
+} from "../schedule-store.js?v=1125";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1125";
+import { renderProfileTag, profileForNetwork } from "../social-profiles.js?v=1125";
 
 // Schedule modal (multi-draft).
 //   • 960px wide, two-column body

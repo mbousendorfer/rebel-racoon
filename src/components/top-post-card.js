@@ -12,9 +12,9 @@
 // render; no module-local state (the active sort lives in top-posts-flow's
 // picker state).
 
-import { html, raw } from "../utils.js?v=1123";
-import { profileForNetwork, NETWORK_ICON_BY_PLATFORM, BRAND_INITIALS } from "../social-profiles.js?v=1123";
-import { renderEmptyState } from "./empty-state.js?v=1123";
+import { html, raw } from "../utils.js?v=1125";
+import { profileForNetwork, NETWORK_ICON_BY_PLATFORM, BRAND_INITIALS } from "../social-profiles.js?v=1125";
+import { renderEmptyState } from "./empty-state.js?v=1125";
 
 const NET_ICON = {
   linkedin: "ap-icon-linkedin-official",
@@ -152,11 +152,13 @@ function postTypeBadge(post) {
     icon = "ap-icon-video";
     title = "Video";
   } else if (type === "document") {
-    // LinkedIn Document — no preview, so the badge carries the page count.
-    const pages = post.pageCount || 1;
+    // LinkedIn Document — no preview, so the badge carries the page count when
+    // there is one. A post that only says "document" (Insights' own posts do)
+    // used to render "1 pages": a count it never had, mis-pluralised.
+    const pages = post.pageCount || 0;
     icon = "ap-icon-file--pdf";
-    title = `Document · ${pages} pages`;
-    text = `${pages} pages`;
+    title = pages > 1 ? `Document · ${pages} pages` : "Document";
+    text = pages > 1 ? `${pages} pages` : "";
   } else if (type === "image" && count > 1) {
     icon = "ap-icon-multiple-images";
     title = `Carousel · ${count} images`;
@@ -196,7 +198,29 @@ function soloSizeTier(text) {
   return "top-post-card__text--sm";
 }
 
-function renderTopPostCard(post) {
+/**
+ * ONE post, as the winners board draws it — and now as Insights draws the posts
+ * that moved an objective, which is why the three host-owned slots are
+ * parameters instead of being hard-coded to the board's own data.
+ *
+ * Everything that makes a post a post — the profile head with its `View on`
+ * link, the copy, the media or the pull-quote, the post-type badge, the zone
+ * geometry — is the SAME for both hosts. What differs is only what a host can
+ * measure: the board has views / reach / reactions / shares and a
+ * ×-vs-average; Insights has one measure's contribution and a ×-vs-median. So:
+ *
+ *   statsHtml — the strip under the body. Give it `.top-post-card__stat`
+ *               children; two columns read as well as four.
+ *   heroHtml  — the footer's left half, the one figure the card is about.
+ *   ctaHtml   — the footer's button, so each host carries its own data hook.
+ *   className — a host modifier (Insights uses `--neutral`, see the CSS).
+ *
+ * Defaults reproduce the board exactly, so its call site stays `renderTopPostCard(p)`.
+ */
+export function renderTopPostCard(
+  post,
+  { className = "", statsHtml: statsOverride = null, heroHtml = null, ctaHtml = null } = {},
+) {
   // These are posts from the brand's own profiles, so the card leads with the
   // profile identity (brand avatar + network badge + handle) — the same lens the
   // board's profile chips sort by — rather than a bare network label. Falls back
@@ -214,17 +238,20 @@ function renderTopPostCard(post) {
   // instead of a run-on line. IG surfaces Saves in place of Shares.
   const secondaryVal = post.saves != null ? post.saves : post.shares;
   const secondaryLabel = post.saves != null ? "Saves" : "Shares";
-  const statsHtml = [
-    [formatCompact(post.views), "Views"],
-    [formatCompact(post.impressions), "Reach"],
-    [formatCompact(post.reactions), "Reactions"],
-    [formatCompact(secondaryVal), secondaryLabel],
-  ]
-    .map(
-      ([v, l]) =>
-        `<div class="top-post-card__stat"><span class="top-post-card__stat-value">${v}</span><span class="top-post-card__stat-label">${l}</span></div>`,
-    )
-    .join("");
+  const statsHtml =
+    statsOverride !== null
+      ? statsOverride
+      : [
+          [formatCompact(post.views), "Views"],
+          [formatCompact(post.impressions), "Reach"],
+          [formatCompact(post.reactions), "Reactions"],
+          [formatCompact(secondaryVal), secondaryLabel],
+        ]
+          .map(
+            ([v, l]) =>
+              `<div class="top-post-card__stat"><span class="top-post-card__stat-value">${v}</span><span class="top-post-card__stat-label">${l}</span></div>`,
+          )
+          .join("");
   const mediaHtml = renderMediaBlock(post);
   // Text-only winners have no media, so the copy IS the body: the pull-quote on a
   // soft "note" surface, with the post-type badge overlaid bottom-left (same as
@@ -237,14 +264,14 @@ function renderTopPostCard(post) {
         ${raw(postTypeBadge(post))}
       </div>`;
   return html`
-    <article class="ap-card top-post-card">
+    <article class="ap-card top-post-card ${className}">
       <header class="top-post-card__preview-head">
         <span class="ap-avatar size-24 top-post-card__avatar" aria-hidden="true"
           >${raw(avatarInner)}<span class="ap-avatar-network"><i class="${networkIcon}"></i></span
         ></span>
         <span class="top-post-card__identity">
           <span class="top-post-card__author">${handle}</span>
-          <span class="top-post-card__time">${post.publishedOn}</span>
+          <span class="top-post-card__time">${post.publishedOn || post.date || ""}</span>
         </span>
         ${raw(renderViewOnLink(post))}
       </header>
@@ -254,13 +281,23 @@ function renderTopPostCard(post) {
       <div class="top-post-card__perf">
         <div class="top-post-card__stats">${raw(statsHtml)}</div>
         <div class="top-post-card__foot">
-          <span class="top-post-card__hero">
-            <span class="top-post-card__hero-value">${post.vsAvg}×</span>
-            <span class="top-post-card__hero-label">vs&nbsp;average</span>
-          </span>
-          <button type="button" class="ap-button primary blue top-post-card__cta" data-top-post-repurpose="${post.id}">
-            Repurpose
-          </button>
+          ${raw(
+            heroHtml ||
+              html`<span class="top-post-card__hero">
+                <span class="top-post-card__hero-value">${post.vsAvg}×</span>
+                <span class="top-post-card__hero-label">vs&nbsp;average</span>
+              </span>`,
+          )}
+          ${raw(
+            ctaHtml ||
+              html`<button
+                type="button"
+                class="ap-button primary blue top-post-card__cta"
+                data-top-post-repurpose="${post.id}"
+              >
+                Repurpose
+              </button>`,
+          )}
         </div>
       </div>
     </article>

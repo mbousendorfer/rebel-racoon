@@ -22,8 +22,8 @@
 // chart the headline measure and leave the others as 96px sparklines in the
 // table, which meant an objective's second measure had no curve anywhere.
 
-import { readingFor } from "../model.js?v=1123";
-import { trendSpec, sparklineSpec, ringSvg, progressBar, mountCharts } from "../charts.js?v=1123";
+import { readingFor } from "../model.js?v=1125";
+import { trendSpec, sparklineSpec, ringSvg, progressBar, mountCharts } from "../charts.js?v=1125";
 import {
   tierCounts,
   statusPill,
@@ -39,7 +39,7 @@ import {
   figure,
   playbookTitle,
   esc,
-} from "../pieces.js?v=1123";
+} from "../pieces.js?v=1125";
 
 export const id = "cockpit";
 export const label = "Cockpit";
@@ -207,7 +207,7 @@ function renderPane(entry, local, specs, firstPaint) {
 
     <section class="ap-card ins-section ins-cockpit-card">
       <h3 class="ins-section-title">Posts drafted with Archie <span class="ap-counter normal grey">${entry.posts.length}</span></h3>
-      ${entry.posts.length ? `<div class="ins-postlist">${entry.posts.map((p) => postCard(p, entry)).join("")}</div>` : postsEmpty()}
+      ${entry.posts.length ? `<div class="ins-postlist top-posts-grid">${entry.posts.map((p) => postCard(p, entry)).join("")}</div>` : postsEmpty()}
     </section>
   </main>`;
 }
