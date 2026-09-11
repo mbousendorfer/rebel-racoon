@@ -441,33 +441,36 @@ L'ordre dit un raisonnement : **ce qui va DANS l'image**, puis son **traitement*
   « choisi », une forme bleue dans une carte **non sélectionnée** se battrait avec lui. ⚠️ Une
   première passe avait pris l'ambre `tag-orange` pour tenir la couleur d'**action** IA hors des
   cadres ; tranché dans l'autre sens — ce sont des images, pas des contrôles.
-- **Style** — 6 presets en vignettes **dessinées**. **Désactivé dès qu'une référence est en jeu**, et
-  il dit alors pourquoi (`From references`) : deux sources de look qui se contredisent, c'est une de
-  trop.
+- **Style** — 6 presets en vignettes **dessinées** (`style-art.js`, un SVG inline par clé, couleurs en
+  CSS, tokens DS). Un Style est un **traitement**, donc les six partagent un seul squelette — un objet
+  héros, deux lignes de texte — et ne diffèrent que par la manière : c'est ce qui les fait lire comme
+  une question à six réponses et non six images sans rapport. Tech Minimal = filets et air ; Corporate
+  = bandeau navy, titre et son filet orange, tuile photo ; 3D Render = sphère violette glossy et ombre de
+  contact ; Bold Editorial = diagonale orange / navy, blocs de titre lourds ; Photoreal = ciel dégradé,
+  crêtes brumeuses, grain ; Hand-drawn = encre sur papier, chaque trait passé dans un
+  `feDisplacementMap`. **Désactivé dès qu'une référence est en jeu**, et il dit alors pourquoi
+  (`From references`) : deux sources de look qui se contredisent, c'est une de trop.
 
-Les six pastilles Style sont **dessinées en CSS, zéro asset** — le patron `.sub-preview--*` de
-`clip-subtitles.js` : un markup, six modificateurs. Une palette EST des bandes plates de couleur, trois
-spans la disent. D'où les règles de dimensionnement, porteuses : positions et tailles en **%**, traits
-et bordures en **px**, rien sous **8 %** de la hauteur, flous et ombres en **`cqh`**
-(`container-type: size` sur `.isv2-art`, le même tour que `.isv2-frame`).
-
-Les trois Types **étaient** dans la même famille et l'ont quittée (`git log -S "isv2-art--visual-hook"`)
-: trois spans plus `::before`/`::after`, c'est cinq formes, et à cinq formes un Type ne peut que nommer
-une géométrie — « Illustration » était un cercle, un carré et un triangle. L'argument du scaling qui
-avait choisi le CSS ne tenait pas : un `viewBox` est sans résolution par construction, et ces dessins
-n'ont aucun filet qui demanderait `vector-effect`. Le marqueur radio suit : anneau **blanc** sur le
-dessin sombre (`.isv2-type-art--dark`, via `:has()`), grey-60 sur les clairs — la coupure que les
-tuiles de référence faisaient déjà entre une photo et un art clair.
+Les neuf vignettes **étaient dessinées en CSS** — le patron `.sub-preview--*` de `clip-subtitles.js`,
+un markup, neuf modificateurs — et ne le sont plus (`git log -S "isv2-art--visual-hook"` pour les
+Types, `-S "isv2-art--tech-minimal"` pour les Styles) : trois spans plus `::before`/`::after`, c'est
+cinq formes, et à cinq formes une carte ne peut que nommer une géométrie — « Illustration » était un
+cercle, un carré et un triangle, « Corporate » deux bandes. L'argument du scaling qui avait choisi le
+CSS ne tenait pas : un `viewBox` est sans résolution par construction, et ces dessins n'ont aucun
+filet qui demanderait `vector-effect`. Les Types sont passés d'abord ; à côté d'eux, les pastilles
+Style avaient l'air des placeholders qu'elles étaient, et elles ont suivi. Leurs couleurs étaient des
+hex d'échantillon hors tokens ; tout est token maintenant, l'exemption `validate_css` que ce bloc
+portait est partie avec lui. Le marqueur radio suit : anneau **blanc** sur un dessin sombre
+(`.isv2-option-art--dark`, via `:has()` — le hook, Corporate, Bold Editorial), grey-60 sur les clairs
+— la coupure que les tuiles de référence faisaient déjà entre une photo et un art clair. Il ne reste
+de `.isv2-art` que le cadre gris de repli pour une clé de catalogue sans dessin.
 
 Ce ne sont **pas** des emplacements d'icône — ce sont des cadres d'aperçu 4:3 qui montrent à quoi
 ressemblera l'image, le travail que font déjà les maquettes de sous-titres et le faux still vidéo de
-`session.js`. Le DS ne livre ni schéma de composition ni pastille de style, donc rien n'est réinventé ;
-et le repli « une icône DS pour les trois Types » n'existe pas : **aucune icône DS ne veut dire
+`session.js`. Le DS ne livre ni aperçu de type ni pastille de style, donc rien n'est réinventé ; et le
+repli « une icône DS pour les trois Types » n'existe pas : **aucune icône DS ne veut dire
 « illustration »** (`ap-icon-pen` est le verbe éditer partout dans l'app, `ap-icon-mask` est un masque
-de théâtre, et brush / palette / draw / pencil sont absents). Les couleurs des six Styles sont des
-**valeurs d'échantillon stylistiques**, volontairement hors tokens — la même licence que
-`subtitle-style.css` prend pour ses maquettes de sous-titres ; `validate_css` les signale, c'est
-correct et c'est écrit là.
+de théâtre, et brush / palette / draw / pencil sont absents).
 
 Elles ont remplacé des **photos picsum aléatoires** qui n'avaient aucun rapport avec le preset
 qu'elles prétendaient montrer, et qui étaient bloquées par CORS en preview.

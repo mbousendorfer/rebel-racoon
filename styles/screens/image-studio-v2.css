@@ -1402,11 +1402,11 @@
   display: block;
 }
 
-/* ── Type: three drawn previews of what the image will BE ──────────────────
-   `type-art.js` holds the geometry (one inline SVG per IMAGE_TYPES entry) and names
-   its shapes; every colour lives here, so the tokens are where `validate_css` can see
-   them and a palette change lands in one file. Two families of class: `ta-*` fills,
-   `ta-stop-*` gradient stops.
+/* ── Option art: the nine drawn previews of Type and Style ─────────────────
+   `type-art.js` and `style-art.js` hold the geometry (one inline SVG per catalogue
+   entry) and name their shapes; every colour lives here, so the tokens are where
+   `validate_css` can see them and a palette change lands in one file. Two families of
+   class: `ta-*` fills and strokes, `ta-stop-*` gradient stops.
 
    Greys carry the composition and ONE warm accent carries the image: the brand's own
    orange (`--ref-color-orange-*`, the Archie mark's colour) on the navy of grey-150 —
@@ -1416,103 +1416,166 @@
    these frames; the user overruled it — the previews are pictures, not controls, and
    nobody mistakes an orange sun for a button. Don't swap it back.
 
-   This replaced the CSS composition schematics (`git log -S "isv2-art--visual-hook"`):
-   three spans plus ::before/::after capped every Type at five shapes, and at five
-   shapes a Type can only name a geometry — a circle, a square and a triangle for
-   "Illustration" — rather than the thing being made. The Style swatches below are
-   still CSS and should stay: a palette IS flat bands of colour. */
-.isv2-type-art {
+   This replaced the CSS previews (`git log -S "isv2-art--visual-hook"`, then
+   `-S "isv2-art--tech-minimal"`): three spans plus ::before/::after capped every card
+   at five shapes, and at five shapes a card can only name a geometry — a circle, a
+   square and a triangle for "Illustration", two bands for "Corporate". The Style
+   swatches went second, once the Types beside them made the gap visible. */
+.isv2-option-art {
   display: block;
   width: 100%;
   height: 100%;
 }
 
-.isv2-type-art .ta-ink {
+.isv2-option-art .ta-ink {
   fill: var(--ref-color-grey-150);
 }
-.isv2-type-art .ta-ink-2 {
+.isv2-option-art .ta-ink-2 {
   fill: var(--ref-color-grey-100);
 }
-.isv2-type-art .ta-mid {
+.isv2-option-art .ta-mid {
   fill: var(--ref-color-grey-80);
 }
-.isv2-type-art .ta-soft {
+.isv2-option-art .ta-soft {
   fill: var(--ref-color-grey-40);
 }
-.isv2-type-art .ta-pale {
+.isv2-option-art .ta-pale {
   fill: var(--ref-color-grey-20);
 }
-.isv2-type-art .ta-white {
+.isv2-option-art .ta-white {
   fill: var(--ref-color-white);
 }
-.isv2-type-art .ta-sky {
+.isv2-option-art .ta-sky {
   fill: var(--ref-color-orange-10);
 }
-.isv2-type-art .ta-field {
+.isv2-option-art .ta-field {
   fill: var(--ref-color-orange-40);
 }
-.isv2-type-art .ta-accent-lo {
+.isv2-option-art .ta-accent-lo {
   fill: var(--ref-color-orange-60);
 }
-.isv2-type-art .ta-accent-md {
+.isv2-option-art .ta-accent-md {
   fill: var(--ref-color-orange-80);
 }
-.isv2-type-art .ta-accent {
+.isv2-option-art .ta-accent {
   fill: var(--ref-color-orange-100);
 }
-.isv2-type-art .ta-accent-hi {
+.isv2-option-art .ta-accent-hi {
   fill: var(--ref-color-orange-150);
 }
 
 /* The portrait's rim light is a FILL (the silhouette drawn once in warm, once in ink,
    offset), not a stroke — see type-art.js. */
-.isv2-type-art .ta-rim-fill {
+.isv2-option-art .ta-rim-fill {
   fill: var(--ref-color-orange-60);
 }
 
 /* Strokes: the illustration's ink crests and birds, its sun's flat halo, the chart's
    plot line, its faint rules, and the white arrow in the callout. */
-.isv2-type-art .ta-line {
+.isv2-option-art .ta-line {
   stroke: var(--ref-color-grey-150);
 }
-.isv2-type-art .ta-halo {
+.isv2-option-art .ta-halo {
   stroke: var(--ref-color-orange-40);
 }
-.isv2-type-art .ta-plot {
+.isv2-option-art .ta-plot {
   stroke: var(--ref-color-grey-100);
 }
-.isv2-type-art .ta-grid {
+.isv2-option-art .ta-grid {
   fill: var(--ref-color-grey-10);
 }
-.isv2-type-art .ta-stroke-white {
+.isv2-option-art .ta-stroke-white {
   stroke: var(--ref-color-white);
 }
 
 /* Gradient stops take `stop-color`, not `fill` — hence a second family over the same
    tokens rather than one shared set. */
-.isv2-type-art .ta-stop-night {
+.isv2-option-art .ta-stop-night {
   stop-color: var(--ref-color-grey-150);
 }
-.isv2-type-art .ta-stop-dusk {
+.isv2-option-art .ta-stop-dusk {
   stop-color: var(--ref-color-grey-80);
 }
-.isv2-type-art .ta-stop-white {
+.isv2-option-art .ta-stop-white {
   stop-color: var(--ref-color-white);
 }
-.isv2-type-art .ta-stop-paper {
+.isv2-option-art .ta-stop-paper {
   stop-color: var(--ref-color-grey-05);
 }
-.isv2-type-art .ta-stop-glow {
+.isv2-option-art .ta-stop-glow {
   stop-color: var(--ref-color-orange-80);
 }
-.isv2-type-art .ta-stop-accent-lo {
+.isv2-option-art .ta-stop-accent-lo {
   stop-color: var(--ref-color-orange-60);
 }
-.isv2-type-art .ta-stop-accent {
+.isv2-option-art .ta-stop-accent {
   stop-color: var(--ref-color-orange-100);
 }
-.isv2-type-art .ta-stop-accent-hi {
+.isv2-option-art .ta-stop-accent-hi {
   stop-color: var(--ref-color-orange-150);
+}
+
+/* The Style row's own palette — purple for the render, sky and sun for the photo,
+   paper for the sketch — all DS ramps. */
+.isv2-option-art .ta-purple-150 {
+  fill: var(--ref-color-purple-150);
+}
+.isv2-option-art .ta-rim-purple {
+  stroke: var(--ref-color-purple-40);
+}
+.isv2-option-art .ta-sun {
+  fill: var(--ref-color-yellow-40);
+}
+.isv2-option-art .ta-sunlit {
+  stroke: var(--ref-color-orange-40);
+}
+.isv2-option-art .ta-sky-haze {
+  fill: var(--ref-color-orange-10);
+}
+.isv2-option-art .ta-paper-warm {
+  fill: var(--ref-color-yellow-10);
+}
+.isv2-option-art .ta-line-soft {
+  stroke: var(--ref-color-grey-40);
+}
+.isv2-option-art .ta-pencil {
+  stroke: var(--ref-color-grey-60);
+}
+.isv2-option-art .ta-stop-ink-2 {
+  stop-color: var(--ref-color-grey-100);
+}
+.isv2-option-art .ta-stop-soft {
+  stop-color: var(--ref-color-grey-40);
+}
+.isv2-option-art .ta-stop-pale {
+  stop-color: var(--ref-color-grey-20);
+}
+.isv2-option-art .ta-stop-purple-10 {
+  stop-color: var(--ref-color-purple-10);
+}
+.isv2-option-art .ta-stop-purple-40 {
+  stop-color: var(--ref-color-purple-40);
+}
+.isv2-option-art .ta-stop-purple-60 {
+  stop-color: var(--ref-color-purple-60);
+}
+.isv2-option-art .ta-stop-purple-100 {
+  stop-color: var(--ref-color-purple-100);
+}
+.isv2-option-art .ta-stop-purple-150 {
+  stop-color: var(--ref-color-purple-150);
+}
+.isv2-option-art .ta-stop-skyblue-hi {
+  stop-color: var(--ref-color-soft-blue-80);
+}
+.isv2-option-art .ta-stop-skyblue-lo {
+  stop-color: var(--ref-color-soft-blue-20);
+}
+.isv2-option-art .ta-stop-horizon {
+  stop-color: var(--ref-color-orange-20);
+}
+.isv2-option-art .ta-stop-sun {
+  stop-color: var(--ref-color-yellow-40);
 }
 
 /* The fallback frame, for an IMAGE_TYPES key with no drawing — `typeArt()` falls back
@@ -1521,163 +1584,12 @@
   background: var(--ref-color-grey-05);
 }
 
-/* ── Style: colour swatches ────────────────────────────────────────────────
-   These reproduce aesthetic looks, so their colours are stylistic SAMPLE values,
-   intentionally not DS tokens — the same licence `subtitle-style.css` takes for the
-   creator caption mocks, and the same one connector brand accents take. Expect
-   validate_css to flag them; that is correct and disclosed here. */
+/* ── Style: the six fallback frames ────────────────────────────────────────
+   The swatches themselves are SVG now (`style-art.js`, palette above). `.isv2-art--look`
+   is only what `styleArt()` returns for a STYLE_PRESETS key with no drawing: a grey
+   frame rather than nothing. */
 .isv2-art--look {
   background: var(--ref-color-grey-05);
-}
-
-/* Tech Minimal — cool near-white, one thin rule, lots of air. */
-.isv2-art--tech-minimal {
-  background: linear-gradient(160deg, #f7f9fc 0%, #e8eef7 100%);
-}
-.isv2-art--tech-minimal .isv2-art__a {
-  left: 18%;
-  top: 34%;
-  width: 64%;
-  height: 1px;
-  background: #7d90ab;
-}
-.isv2-art--tech-minimal .isv2-art__b {
-  left: 18%;
-  top: 52%;
-  width: 40%;
-  height: 1px;
-  background: #b6c2d4;
-}
-.isv2-art--tech-minimal .isv2-art__c {
-  right: 16%;
-  bottom: 18%;
-  width: 18%;
-  height: 18%;
-  border: 1px solid #7d90ab;
-}
-
-/* Corporate — navy over white, a clean horizontal split, restrained. */
-.isv2-art--corporate {
-  background: #ffffff;
-}
-.isv2-art--corporate .isv2-art__a {
-  inset: 0 0 52% 0;
-  background: #1b2a4a;
-}
-.isv2-art--corporate .isv2-art__b {
-  left: 14%;
-  bottom: 26%;
-  width: 46%;
-  height: 7%;
-  background: #4a5f86;
-}
-.isv2-art--corporate .isv2-art__c {
-  left: 14%;
-  bottom: 14%;
-  width: 28%;
-  height: 7%;
-  background: #b9c3d6;
-}
-
-/* 3D Render — a lit sphere with a soft shadow. The one that most needs cqh: a px
-   blur that reads at 126px is a smudge at 58px. */
-.isv2-art--3d-render {
-  background: radial-gradient(120% 100% at 30% 0%, #efeaff 0%, #cfc4f2 60%, #a894e8 100%);
-}
-.isv2-art--3d-render .isv2-art__a {
-  left: 26%;
-  top: 20%;
-  width: 48%;
-  height: 62%;
-  border-radius: var(--app-radius-circle);
-  background: radial-gradient(circle at 34% 28%, #ffffff 0%, #b7a4ee 45%, #6a4fc4 100%);
-  box-shadow: 0 4cqh 8cqh rgba(60, 36, 120, 0.35);
-}
-.isv2-art--3d-render .isv2-art__b {
-  left: 30%;
-  bottom: 10%;
-  width: 40%;
-  height: 8%;
-  border-radius: var(--app-radius-circle);
-  background: rgba(60, 36, 120, 0.28);
-  filter: blur(2cqh);
-}
-
-/* Bold Editorial — high contrast, big blocks, a hot accent. */
-.isv2-art--bold-editorial {
-  background: #141414;
-}
-.isv2-art--bold-editorial .isv2-art__a {
-  left: 0;
-  top: 0;
-  width: 46%;
-  height: 100%;
-  background: #ff5a1f;
-}
-.isv2-art--bold-editorial .isv2-art__b {
-  right: 10%;
-  top: 24%;
-  width: 34%;
-  height: 12%;
-  background: #ffffff;
-}
-.isv2-art--bold-editorial .isv2-art__c {
-  right: 10%;
-  top: 44%;
-  width: 22%;
-  height: 12%;
-  background: #8a8a8a;
-}
-
-/* Photoreal — a photographic horizon: warm sky, sun, darker ground. */
-.isv2-art--photoreal {
-  background: linear-gradient(180deg, #8fb7d9 0%, #d9c3a4 62%, #6d5a44 62%, #4b3d2e 100%);
-}
-.isv2-art--photoreal .isv2-art__a {
-  left: 22%;
-  top: 22%;
-  width: 22%;
-  height: 29%;
-  border-radius: var(--app-radius-circle);
-  background: #fbe9c4;
-  filter: blur(1cqh);
-}
-.isv2-art--photoreal .isv2-art__b {
-  right: 12%;
-  bottom: 20%;
-  width: 26%;
-  height: 24%;
-  background: #3c3125;
-  clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
-}
-
-/* Hand-drawn — cream paper, a wobbly ink stroke and a loose circle. */
-.isv2-art--hand-drawn {
-  background: #f6efe2;
-}
-.isv2-art--hand-drawn .isv2-art__a {
-  left: 16%;
-  top: 24%;
-  width: 40%;
-  height: 46%;
-  border: 2px solid #2f2a24;
-  border-radius: 52% 48% 45% 55% / 50% 55% 45% 50%;
-}
-.isv2-art--hand-drawn .isv2-art__b {
-  right: 14%;
-  top: 34%;
-  width: 26%;
-  height: 2px;
-  background: #2f2a24;
-  transform: rotate(-6deg);
-}
-.isv2-art--hand-drawn .isv2-art__c {
-  right: 14%;
-  top: 52%;
-  width: 18%;
-  height: 2px;
-  background: #8a7f6d;
-  transform: rotate(-4deg);
 }
 
 /* ── The pick mark ─────────────────────────────────────────────────────────
@@ -1709,7 +1621,7 @@
 /* …except over a dark drawing, where grey-60 all but disappears. Same split the
    reference tiles already make (white on a photo, grey-60 on light art); the Type row
    only reached it when one of its three previews turned into a night shot. */
-.gen-style-thumb:has(.isv2-type-art--dark) .isv2-pickmark {
+.gen-style-thumb:has(.isv2-option-art--dark) .isv2-pickmark {
   --isv2-pickmark-ring: var(--ref-color-white);
 }
 

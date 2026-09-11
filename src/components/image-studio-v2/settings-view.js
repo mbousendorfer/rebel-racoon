@@ -29,13 +29,14 @@
 // that thing (`.isv2-sheet-hint`). No second size and no bold — three bold labels
 // stacked in a 260px column would shout over the section title.
 
-import { escapeHtml } from "../../utils.js?v=1139";
-import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=1139";
-import { KEY } from "./context.js?v=1139";
-import { REFS_TIP, refSummary, refsBody } from "./references-view.js?v=1139";
-import { BRANDING_TIP, brandingBody } from "./branding-view.js?v=1139";
-import * as imageStudio from "../../image-studio.js?v=1139";
-import { typeArt } from "./type-art.js?v=1139";
+import { escapeHtml } from "../../utils.js?v=1141";
+import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=1141";
+import { KEY } from "./context.js?v=1141";
+import { REFS_TIP, refSummary, refsBody } from "./references-view.js?v=1141";
+import { BRANDING_TIP, brandingBody } from "./branding-view.js?v=1141";
+import * as imageStudio from "../../image-studio.js?v=1141";
+import { typeArt } from "./type-art.js?v=1141";
+import { styleArt } from "./style-art.js?v=1141";
 
 // A thin rule between two clusters inside one row body. Shared with the
 // Add-image sheet (tools-view.js), which is where the class name comes from.
@@ -280,22 +281,15 @@ function renderTextBody(st) {
 // with nine branches, when the panel's own comment says Type is "a distinct
 // dimension from the style":
 //
-//   Type  = the IMAGE. A small drawing of what this type produces — a backlit shot
-//           with a headline, a data poster, a flat landscape. One inline SVG each,
-//           in `type-art.js`, which is where the reasoning lives.
-//   Style = a COLOUR swatch. Its palette, gradients, contrast — what does this image
-//           look like? Six CSS modifiers over one markup, the `.sub-preview--*`
-//           pattern from clip-subtitles.js. A palette IS flat bands of colour, so
-//           three spans say it and nothing is gained by drawing it.
+//   Type  = the IMAGE. What this type produces — a backlit shot with a headline, a
+//           data poster, a flat landscape. Three subjects. `type-art.js`.
+//   Style = the TREATMENT. One held-still subject — a hero object and two lines of
+//           text — rendered six ways. `style-art.js`.
 //
-// `.isv2-art` IS the backdrop for those swatches, and its ::before/::after add two
-// more drawable layers on top of the three slots — five for at most three elements.
-// The slots are deliberately meaningless: each modifier assigns them a role.
+// Both are inline SVG with every colour in CSS; the reasoning lives with each module.
+// The `.isv2-art` span is only the fallback frame for a catalogue key with no drawing.
 function optionArt(family, key) {
-  if (family === "type") return typeArt(key);
-  return `<span class="isv2-art isv2-art--${family} isv2-art--${escapeHtml(key)}" aria-hidden="true">
-    <span class="isv2-art__a"></span><span class="isv2-art__b"></span><span class="isv2-art__c"></span>
-  </span>`;
+  return family === "type" ? typeArt(key) : styleArt(key);
 }
 
 // The selection marker for BOTH: a radio DOT, not a tick.

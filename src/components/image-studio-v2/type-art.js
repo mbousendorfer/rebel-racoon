@@ -46,9 +46,9 @@
 //
 // Ids inside <defs> are namespaced per drawing (`ita-h-*`): two SVGs sharing a
 // gradient id would silently swap fills.
-import { escapeHtml } from "../../utils.js?v=1139";
+import { escapeHtml } from "../../utils.js?v=1141";
 
-const VISUAL_HOOK = `<svg class="isv2-type-art isv2-type-art--dark" viewBox="0 0 120 90" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+const VISUAL_HOOK = `<svg class="isv2-option-art isv2-option-art--dark" viewBox="0 0 120 90" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
   <defs>
     <linearGradient id="ita-h-sky" x1="0" y1="0" x2=".3" y2="1"><stop offset="0" class="ta-stop-night"/><stop offset="1" class="ta-stop-dusk"/></linearGradient>
     <radialGradient id="ita-h-glow" cx=".5" cy=".5" r=".5"><stop offset="0" class="ta-stop-glow" stop-opacity=".95"/><stop offset=".45" class="ta-stop-glow" stop-opacity=".45"/><stop offset="1" class="ta-stop-glow" stop-opacity="0"/></radialGradient>
@@ -90,7 +90,7 @@ const VISUAL_HOOK = `<svg class="isv2-type-art isv2-type-art--dark" viewBox="0 0
   <rect width="120" height="90" filter="url(#ita-h-grain)" opacity=".16" style="mix-blend-mode:overlay"/>
 </svg>`;
 
-const INFOGRAPHIC = `<svg class="isv2-type-art" viewBox="0 0 120 90" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+const INFOGRAPHIC = `<svg class="isv2-option-art" viewBox="0 0 120 90" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
   <defs>
     <linearGradient id="ita-i-paper" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="ta-stop-white"/><stop offset="1" class="ta-stop-paper"/></linearGradient>
     <linearGradient id="ita-i-bar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="ta-stop-accent-lo"/><stop offset="1" class="ta-stop-accent"/></linearGradient>
@@ -123,7 +123,7 @@ const INFOGRAPHIC = `<svg class="isv2-type-art" viewBox="0 0 120 90" preserveAsp
   <rect x="38" y="83" width="3" height="3" rx=".8" class="ta-soft"/><rect x="44" y="83" width="10" height="3" rx="1.5" class="ta-pale"/>
 </svg>`;
 
-const ILLUSTRATION = `<svg class="isv2-type-art" viewBox="0 0 120 90" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+const ILLUSTRATION = `<svg class="isv2-option-art" viewBox="0 0 120 90" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
   <rect width="120" height="90" class="ta-sky"/>
   <!-- The one warm disc in the row, with a flat halo ring — no gradient anywhere here. -->
   <circle cx="86" cy="28" r="17" fill="none" class="ta-halo" stroke-width="2"/>
