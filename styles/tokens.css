@@ -12,6 +12,25 @@
   --app-border: var(--ref-color-grey-20);
   --app-border-soft: var(--ref-color-grey-10);
 
+  /* ── The app's content measure ─────────────────────────────────────────
+     ONE number for every full-width page. It is the PLAYBOOK fiche's measure
+     — `.recap > *` in welcome.css — chosen on 2026-09-11 as the app's
+     reference: "la même largeur max que dans les playbook, et ce, partout dans
+     l'app quand on affiche de la pleine largeur". It replaced three page caps
+     that disagreed (1280 on the catalogue and the connectors gallery, 1200 on
+     Insights, 1080 on the fiche), which read as three different apps.
+
+     ⚠️ It is a CONTENT width, and everything is `border-box`: a page that pads
+     itself caps at `calc(var(--app-content) + 2 * <its gutter>)` so the
+     padding never eats into the measure. A page whose children carry the cap
+     (the fiche) uses it raw.
+
+     ONE surface deliberately does not read it, and says why in its own file:
+     `/topics`, whose cap is not a taste but a SUM — the list's ceiling plus the
+     prose measure plus the gaps — so that the master–detail cannot break. A
+     fixed number there is the bug that feature was ported to fix. */
+  --app-content: 1080px;
+
   /* ── Archie "butter" — brand accent for in-conversation status pills
      ("Extracting" / "Extracted N ideas" / "Drafting" / "Analyzing"). Replaces
      the former light-purple (mermaid-10 #F5F1FF) tint. The accent is a darker

@@ -101,7 +101,14 @@
      measure plus its own padding. 1440 was picked by hand and was 412px too
      wide - 43% of the pane was empty, which is what "too much white space"
      was. A hand-picked number also drifts the moment the measure changes,
-     which is the same class of bug as the enumerated child list above. */
+     which is the same class of bug as the enumerated child list above.
+
+     ⚠️ THE ONE PAGE THAT DOES NOT READ `--app-content`. Every other full-width
+     page caps at the app's measure (tokens.css); this one cannot, because its
+     cap is not a taste but a sum — replacing it with a smaller fixed number is
+     exactly how the fork broke this feature, dropping the article below the
+     list at laptop widths. If the app's measure has to apply here, the PROSE
+     measure is what moves and this calc follows it. */
   max-width: calc(var(--topic-list-max) + var(--ref-spacing-md) + var(--topic-measure) + 2 * var(--ref-spacing-md));
 }
 

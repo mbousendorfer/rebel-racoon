@@ -15,7 +15,11 @@
   flex-direction: column;
   gap: var(--ref-spacing-md);
   padding: var(--ref-spacing-md) var(--ref-spacing-xl) var(--ref-spacing-xl);
-  max-width: 1280px;
+  /* The app's measure + this box's own gutters: the cap is `border-box`, so the
+     padding has to be added back or it would eat 80px out of the column. Was a
+     hand-written 1280 (= 1200 of content), which made this page 120px wider
+     than the fiche it links to. */
+  max-width: calc(var(--app-content) + 2 * var(--ref-spacing-xl));
   width: 100%;
   margin: 0 auto;
 }

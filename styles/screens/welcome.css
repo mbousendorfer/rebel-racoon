@@ -146,9 +146,13 @@
   padding: var(--ref-spacing-lg) var(--ref-spacing-xl) calc(var(--ref-spacing-xxxl) * 1.5);
 }
 
+/* The Playbook fiche's measure, and the app's: `--app-content` (tokens.css) is
+   defined AS this number, because this page is the one every other full-width
+   page is now aligned on. The children carry the cap rather than the host, so
+   the value is the content width with no padding to subtract. */
 .recap > * {
   width: 100%;
-  max-width: 1080px;
+  max-width: var(--app-content);
   margin-inline: auto;
 }
 

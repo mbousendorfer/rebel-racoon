@@ -28,10 +28,15 @@
   container-type: inline-size;
 }
 
-/* max-width-lg (1200), not -md (700): the six source cards read as a set of things you
-   pick from, and at 700 two columns are cramped while one column is a 900px scroll of
-   wide short bands that look like rows again. At 1200 each column is ~570 — a card's
-   width, not a row's. The prose above is capped separately so it doesn't stretch.
+/* The APP's measure (`--app-content`, tokens.css), not the DS's settings cap.
+   ⚠️ This was `--sys-settings-content-max-width-lg` (1200), argued below against
+   `-md` (700): the six source cards read as a set of things you pick from, and at
+   700 two columns are cramped while one column is a 900px scroll of wide short
+   bands that look like rows again. That argument SURVIVES the change — at 1080
+   each column is ~510, still a card's width and not a row's — while the page stops
+   being 120px wider than every other full-width page in the app. The rest of the
+   `--sys-settings-*` recipe is untouched: it still supplies the gap and the padding.
+   The prose above is capped separately so it doesn't stretch.
 
    LEFT-ALIGNED, like /topics: the leftover goes to the right margin only. Centred,
    the topbar printed "Back to the feed" hard against the left edge while the title
@@ -45,7 +50,11 @@
   flex-direction: column;
   gap: var(--sys-settings-content-vertical-spacing);
   padding: var(--sys-settings-content-internal-margin);
-  max-width: var(--sys-settings-content-max-width-lg);
+  /* The app's measure plus the DS recipe's own padding: the cap is border-box,
+     and what a reader compares from page to page is where the CONTENT starts
+     and ends, not where the invisible gutter does. At `var(--app-content)` flat
+     this page's cards would sit 48px narrower than the catalogue's. */
+  max-width: calc(var(--app-content) + 2 * var(--sys-settings-content-internal-margin));
   width: 100%;
 }
 

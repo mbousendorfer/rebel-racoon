@@ -21,16 +21,19 @@
      rather than tokenised, because the DS type ramp caps at 28px and no token
      goes there. */
   --ins-display-xl: 38px;
-  /* The page's measure — the platform's own analytics measure:
-     `.report-content-view` in `analytics.scss` caps every Reports and ROI page
-     at `max-width: 1200px` centred. This page is an analytics page before it
-     is anything else, so it reads at the width the reader already knows from
-     Reports. (It sat at 1080 for one commit — the Playbook fiche's measure,
-     `.recap > *` in welcome.css — which made it read as a fiche instead.)
+  /* The page's measure — the APP's, `--app-content` (tokens.css), which is the
+     Playbook fiche's 1080.
+     ⚠️ This overrules the platform's own analytics measure. `.report-content-view`
+     in `analytics.scss` caps every Reports and ROI page at 1200px, and this
+     page sat there for three commits on that argument — it is an analytics
+     page, so it should read at the width the reader knows from Reports. The
+     user reverted it on 2026-09-11: inside THIS app, a page 120px wider than
+     every other full-width page reads as a different app, and Insights is
+     reached from the fiche, not from Reports. One number, app-wide.
      Every zone that reads the content column — the band, the grid, a pane —
      resolves from here, so the head stays aligned with the reading under it by
      construction. */
-  --ins-content: 1200px;
+  --ins-content: var(--app-content);
   /* The page's gutter. Every zone that reads the content column — the bar, a
      band, a pane — pads by exactly this, so "the column" is one number and not
      three that agree by accident. */
