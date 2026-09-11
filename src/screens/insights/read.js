@@ -33,8 +33,8 @@
 // Pure render helpers — strings in, strings out, no listeners. Every action is
 // a `data-ins-*` hook the shell dispatches (shell.js § Actions).
 
-import { readingFor } from "./model.js?v=1129";
-import { trendSpec } from "./charts.js?v=1129";
+import { readingFor } from "./model.js?v=1136";
+import { trendSpec } from "./charts.js?v=1136";
 import {
   statusPill,
   measurePill,
@@ -47,62 +47,74 @@ import {
   objectiveActions,
   tierCounts,
   esc,
-} from "./pieces.js?v=1129";
+} from "./pieces.js?v=1136";
 
-// ── Head ──────────────────────────────────────────────────────────────────
+// ── The hero ──────────────────────────────────────────────────────────────
 //
-// The objective at the DS h1 rung with its verdict beside it, and the two doors
-// on the right. It is the `Title` row of the platform's own report card
-// (Figma Analytics · `Card / Title+synthesis`, node 1069:7931): the name at the
-// H1 rung, the action held at the far right where prod keeps `Download chart`.
+// The page's header plate, and the one block on this screen that is allowed to
+// be a hero: the objective's name at the DS's TOP rung (h1, 24/32 — the ramp
+// stops there, and a bigger step would be a number invented for one page), its
+// verdict beside it, the answer in one sentence under it, and the facts that
+// identify it at the caption rung below that.
 //
-// It carries the OBJECTIVE's own facts and no measure's: the provenance, the
-// window, and how many measures are under it. Each measure states its own
-// figures in its own card's synthesis box, so nothing here is said twice — and
-// the measure count is legitimate again now that no `Measures N` counter exists
-// twelve pixels below it.
+// The hierarchy is the whole design: 24 bold navy → 16 regular grey-80 → 12
+// regular grey-80. Three sizes, three weights, one ink pair — which is how this
+// app ranks things ("hiérarchiser par taille, graisse, encre"), rather than by
+// tinting a band or drawing a rule between rows.
 //
-// There is no big numeral here either. `74%` is `Reach`'s progress, not the
-// objective's: it now lives in Reach's own card, where the number and the curve
-// that produced it are the same block. What answers "how is this objective
-// doing" at the page level is the verdict pill, which is a word.
+// The verbs sit on the title's line, right-aligned, where prod's report card
+// holds `Download chart`.
+//
+// ⚠️ THE LEDE IS PERMANENT AGAIN, and that reverses a note this file carried.
+// The prose was demoted to a fallback when it was the THIRD statement of the
+// same fact on one page — the hero's figure row said it in numerals, the table
+// row in columns, the pill in a word. Both of those are gone from the hero: the
+// numbers moved into each measure's own report card, where the figure and the
+// curve that produced it are one block. So the hero has no numeral left, and a
+// header that prints only a name and a coloured pill says nothing about how the
+// objective is doing. One sentence at the top, the numbers in the cards below:
+// that is a hierarchy, not a repetition — and it is prod's own anatomy, whose
+// report card carries a description under its title (Figma 1069:7931).
 
-export function readHead(entry, { actions = true } = {}) {
+export function readHero(entry, { actions = true } = {}) {
   const n = entry.measures.length;
-  return `<header class="ins-read__head">
-    <div class="ins-read__titles">
+  return `<header class="ins-read__hero">
+    <div class="ins-read__herotop">
       <div class="ins-read__title"><h2>${esc(entry.label)}</h2>${statusPill(entry)}</div>
-      <p class="ins-read__meta">${originMark(entry)} <span class="ins-dot" aria-hidden="true">·</span> ${esc(windowLine(entry))} <span class="ins-dot" aria-hidden="true">·</span> ${n} measure${n === 1 ? "" : "s"}</p>
+      ${actions ? objectiveActions(entry) : ""}
     </div>
-    ${actions ? objectiveActions(entry) : ""}
+    ${readLede(entry)}
+    <p class="ins-read__meta">${originMark(entry)} <span class="ins-dot" aria-hidden="true">·</span> ${esc(windowLine(entry))} <span class="ins-dot" aria-hidden="true">·</span> ${n} measure${n === 1 ? "" : "s"}</p>
   </header>`;
 }
 
 /**
- * The one-line reading, and the missing-connection note when there is one.
+ * The objective's answer, in one sentence. Exported on its own because the
+ * hosts place it differently: the hero has it as its description line, and
+ * Side — whose head is a picker, not a title — hangs it under that.
  *
- * ⚠️ The prose is now the FALLBACK, not a permanent line. "Reach is at 74% of
- * target, down 8% over the window" was the THIRD statement of that fact on one
- * page — the figure row says it in numerals, the table row says it in columns,
- * and the status pill says the verdict a second time. When every fact is
- * repeated four times nothing on the page is emphasised, which is what made
- * this page read as flat.
- *
- * It comes back for the states that have no figure to show — a collecting
- * objective, or one with no measure yet — where a sentence is all there is.
- * When it does, it lands in the report card's DESCRIPTION slot, under the
- * title — prod's own two-line paragraph in grey-80 (`Card / Title+synthesis`).
- *
- * The proxy note rides with it, unconditionally: it is the only thing on the
- * page that says WHY a number is standing in for another, and no figure carries
- * that. Both belong to the OBJECTIVE, not to a measure, so they sit in the page
- * header — which is also the one white surface on the page, and an
- * `.ap-infobox` on a tint reads as muddy.
+ * `readingFor` (model.js) is the only string in the app that says what is
+ * happening to an objective in words, and the states with nothing to measure
+ * yet are the ones that need it most ("No verdict yet — engagement rate is
+ * still filling its first window").
  */
-export function readReading(entry) {
-  const noFigure = entry.collecting || !entry.headline;
-  return `${noFigure ? `<p class="ins-read__reading">${esc(readingFor(entry))}</p>` : ""}
-    ${entry.parked ? proxyNote(entry) : ""}`;
+export function readLede(entry) {
+  return `<p class="ins-read__lede">${esc(readingFor(entry))}</p>`;
+}
+
+/**
+ * The one banner an objective can carry: the missing connection behind a proxy
+ * measure. It is the only thing on the page that says WHY a number is standing
+ * in for another, and no figure carries that — so it is unconditional whenever
+ * the objective is parked.
+ *
+ * ⚠️ It does NOT belong in the hero. An `.ap-infobox warning` inside the header
+ * plate turns the page's identity into an alert, and the plate's whole job is to
+ * say what this objective IS. The hosts put it at the top of the content column
+ * instead, where the reader meets it just before the measures it explains.
+ */
+export function readNotice(entry) {
+  return entry.parked ? proxyNote(entry) : "";
 }
 
 // ── One measure, one report card ──────────────────────────────────────────

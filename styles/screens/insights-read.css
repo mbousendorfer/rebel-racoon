@@ -119,23 +119,33 @@
   min-width: 0;
 }
 
-/* ── Head ───────────────────────────────────────────────────────────────── */
+/* ── The hero ─────────────────────────────────────────────────────────────
+   The page's header plate. Three rungs of the DS ramp and nothing else does the
+   work: 24/32 bold navy for the name, 16/20 regular grey-80 for the answer,
+   12/16 regular grey-80 for the facts. No tint, no rule between the rows, no
+   elevation — this app ranks by size, weight and ink, and a header that needs a
+   coloured band to feel important is a header whose type is not doing its job.
 
-.ins-read__head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  /* The verbs drop UNDER the title rather than squeezing it: at ~560px of
-     content the two buttons take half the row, and "Brand awareness" was
-     breaking across two lines with its verdict pill pushed to a third. */
-  flex-wrap: wrap;
-  gap: var(--ref-spacing-sm);
-}
-
-.ins-read__titles {
+   The rows are TIGHT on purpose (`xxs`, 8px): a hero is one object, and the
+   band's own 24px of padding is what separates it from the page. Loose rows
+   read as three unrelated lines, which is what this was. */
+.ins-read__hero {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xxxs);
+  gap: var(--ref-spacing-xxs);
+  min-width: 0;
+}
+
+/* The name, its verdict, and the two verbs on one line — the verbs at the far
+   right, the slot prod's report card gives `Download chart`. They WRAP rather
+   than squeeze: at ~560px of content the two buttons take half the row, and the
+   name was breaking across two lines with its pill pushed to a third. */
+.ins-read__herotop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xs) var(--ref-spacing-sm);
   min-width: 0;
 }
 
@@ -144,26 +154,52 @@
   align-items: center;
   flex-wrap: wrap;
   gap: var(--ref-spacing-xs);
+  min-width: 0;
 }
 
 /* The DS's top rung, h1 style, weight and all — the same string Report's
-   chapter title is bound to. No invented display step. */
+   chapter title is bound to. No invented display step: the ramp stops at 24 and
+   a 32px title would be a number picked for one page. */
 .ins-read__title h2 {
   margin: 0;
+  min-width: 0;
   font-size: var(--sys-text-style-h1-size);
   line-height: var(--sys-text-style-h1-line-height);
   font-weight: var(--sys-text-style-h1-weight);
   color: var(--sys-text-color-default);
 }
 
-/* ── Reading ────────────────────────────────────────────────────────────── */
-
-.ins-read__reading {
+/* The answer, in one sentence — prod's `description` slot, at the DS's
+   `subtitle` style (16/20 regular). Capped at a reading measure: a sentence
+   running the page's full 1080px is a line nobody finishes.
+   Ink is grey-100, where prod's description is grey-80: prod's is a static
+   explainer ("Number of fan interactions … for the selected period"), ours is
+   the live reading of the objective. It is CONTENT, and the grey-80 below it is
+   what metadata looks like — two grey-80 lines in a row would have left size as
+   the only thing telling them apart. */
+.ins-read__lede {
   margin: 0;
-  max-width: 78ch;
-  font-size: var(--ref-font-size-md);
-  line-height: var(--ref-font-line-height-lg);
+  max-width: 72ch;
+  font-size: var(--sys-text-style-subtitle-size);
+  line-height: var(--sys-text-style-subtitle-line-height);
+  font-weight: var(--sys-text-style-subtitle-weight);
   color: var(--sys-text-color-default);
+}
+
+/* The facts that identify the objective — provenance, window, how many
+   measures. Caption rung, one step under the lede, so the eye reads them last
+   without them ever going lighter than grey-80. */
+.ins-read__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxxs);
+  /* The name and its reading are one statement (`xxs` apart); the facts are a
+     different kind of line, so they get one step more air above them. */
+  margin: var(--ref-spacing-xxxs) 0 0;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--sys-text-color-light);
 }
 
 /* ── The report card — ONE PER MEASURE ────────────────────────────────────

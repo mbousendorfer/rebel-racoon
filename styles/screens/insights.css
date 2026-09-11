@@ -119,7 +119,10 @@
 .insights__band-inner {
   width: min(calc(var(--ins-content) + 2 * var(--ins-gutter)), 100%);
   margin-inline: auto;
-  padding: var(--ref-spacing-sm) var(--ins-gutter);
+  /* `md` block, the padding every card on this page uses — the plate has to
+     breathe like the blocks under it. At `sm` the hero's three rows sat 16px
+     from the topbar's rule and read as a strip rather than as a header. */
+  padding: var(--ref-spacing-md) var(--ins-gutter);
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xs);

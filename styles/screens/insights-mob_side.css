@@ -51,11 +51,17 @@
    its brand unchangeable (pieces.js). The verbs sit on the right of the row,
    never in the facts column. */
 
-.insights__band-inner.ins-mob_side__head {
+/* The head's first ROW — the titles and the verbs. It used to BE the band's
+   inner element; the lede now sits under it, so the band is a column again and
+   this is the row inside it. */
+.ins-mob_side__head {
+  display: flex;
   flex-direction: row;
   align-items: flex-start;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: var(--ref-spacing-sm);
+  min-width: 0;
 }
 
 .ins-mob_side__titles {
@@ -99,7 +105,7 @@
     padding-inline: var(--ref-spacing-sm);
   }
 
-  .insights__band-inner.ins-mob_side__head {
+  .ins-mob_side__head {
     flex-direction: column;
   }
 }

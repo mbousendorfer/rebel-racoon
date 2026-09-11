@@ -71,9 +71,9 @@ import {
   trendGlyph,
   postsMovedLine,
   esc,
-} from "../pieces.js?v=1129";
-import { trendSpec, mountCharts } from "../charts.js?v=1129";
-import { readHead, readReading, readMeasures, readPosts } from "../read.js?v=1129";
+} from "../pieces.js?v=1136";
+import { trendSpec, mountCharts } from "../charts.js?v=1136";
+import { readHero, readNotice, readMeasures, readPosts } from "../read.js?v=1136";
 
 export const id = "mob_index";
 export const label = "Mob · Index";
@@ -248,12 +248,12 @@ function renderIndex(entries, rollup, ctx, specs, firstPaint) {
 function renderFiche(entry, specs, firstPaint) {
   return `<header class="insights__band">
       <div class="insights__band-inner">
-        ${readHead(entry)}
-        ${readReading(entry)}
+        ${readHero(entry)}
       </div>
     </header>
     <div class="ins-mob_index">
       <div class="ins-mob_index__inner${firstPaint ? " ins-reveal" : ""}" data-ins-objective="${esc(entry.key)}">
+        ${readNotice(entry)}
         ${readMeasures(entry, specs, { idPrefix: "mobindex", height: CHART_HEIGHT })}
         ${readPosts(entry)}
       </div>
