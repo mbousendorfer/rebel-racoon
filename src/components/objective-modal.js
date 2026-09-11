@@ -21,10 +21,10 @@
 // Replaces objective-editor-modal (the field-stack editor): the sentence form
 // is the editor now. Body-level, modal-coordinator, closes on route change.
 
-import { escapeHtml as esc } from "../utils.js?v=1137";
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1137";
-import { getContexts } from "../contexts-store.js?v=1137";
-import { createCatalogFlow, searchSelectorFor } from "./objective-catalog-panel.js?v=1137";
+import { escapeHtml as esc } from "../utils.js?v=1139";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1139";
+import { getContexts } from "../contexts-store.js?v=1139";
+import { createCatalogFlow, searchSelectorFor } from "./objective-catalog-panel.js?v=1139";
 import {
   resolveObjectives,
   materializeMeasureEntries,
@@ -33,7 +33,7 @@ import {
   scopedBaselineFor,
   scopeLabel,
   WINDOWS,
-} from "../objective-measures.js?v=1137";
+} from "../objective-measures.js?v=1139";
 
 const MODAL_ID = "objectiveModal";
 
@@ -219,14 +219,19 @@ function renderForm() {
       </span>`
       : "";
   const hasMeasures = draft.measures.length > 0;
+  // ONE sentence, one line: `Grow <name> over a <window>` (+ `for <Playbook>`
+  // when creating). It was two rows — the name on a hero line, the window on a
+  // quiet second one — and a sentence broken in half reads as neither a
+  // sentence nor a form. On one line the connectives do their job, the modal
+  // loses ~48px, and the name still dominates by being the only thing at the h2
+  // rung. The clauses wrap as units (`.objm__clause`), so a narrow dialog
+  // breaks the sentence between clauses and never inside one.
   return `
-    <div class="objm__title">
+    <div class="objm__sentence">
       <span class="objm__titleword">Grow</span>
       <div class="ap-input-group objm__name">
         <input type="text" data-objm-name value="${esc(draft.name)}" placeholder="what this objective grows…" aria-label="Objective name" />
       </div>
-    </div>
-    <div class="objm__settings">
       <span class="objm__clause">
         <span class="objm__word">over a</span>
         ${renderInlineSelect({
@@ -244,8 +249,17 @@ function renderForm() {
         : ""
     }
     <div class="objm__section">
-      <span class="objm__seclabel">Measured by</span>
-      <p class="objm__caption">Its status — on track, watch, or at risk — is read from these measures. Nothing else to set.</p>
+      <span class="objm__seclabel">Measured by${hasMeasures ? ` <span class="ap-counter normal grey">${draft.measures.length}</span>` : ""}</span>
+      ${
+        // ⚠️ The caption is EMPTY-STATE ONLY. "Its status … is read from these
+        // measures" teaches what a measure is FOR, which is what a reader with
+        // none needs; over a list of two it is two lines of 12px restating what
+        // the list already demonstrates. Teaching copy belongs where the thing
+        // is missing.
+        hasMeasures
+          ? ""
+          : `<p class="objm__caption">Its status — on track, watch, or at risk — is read from these measures. Nothing else to set.</p>`
+      }
       ${
         hasMeasures
           ? // Once a measure exists the dashed card has done its job: a full-width
@@ -291,11 +305,26 @@ function renderInlineSelect({ value, options, attr, placeholder = "" }) {
     </details>`;
 }
 
-// One compact measure card, three clean levels: the metric identity
-// (name · scope) with edit/remove hard right, then the target its type asks
-// for, then one quiet derived line — did Archie suggest this, and what it works
-// out to. The metric TYPE isn't shown: it's 1:1 with the name (a Reach is
-// always a volume) and the from→to vs hold-above shape already says which.
+// One measure, on a two-row GRID: the identity and the fields share the first
+// row — identity left, numbers right, the two verbs hard right — and the quiet
+// derived line sits under the numbers it derives from.
+//
+// ⚠️ It was three stacked rows (identity / fields / hint), each full width, at
+// 16px of padding: ~110px per measure, with the right half of the identity row
+// empty and the right half of the hint row empty too. The grid puts the numbers
+// in that space, which is both denser AND better aligned — the `from`/`to`
+// fields now land on the same x from card to card, which they could not when
+// each card was a free-flowing flex row (a rate measure says `hold above … now
+// at …` and pushed its fields elsewhere).
+//
+// Hierarchy inside the card, top to bottom: the metric name at body-BOLD (14),
+// one clear step under the objective's own h2 name — it was h3 (16), which put
+// a measure's label one rung off the modal's hero; its scope at the caption
+// rung; the numbers bold with tabular figures because they are what you came to
+// change; the derived line at the caption rung, grey-80, never a second focus.
+//
+// The metric TYPE isn't shown: it's 1:1 with the name (a Reach is always a
+// volume) and the from→to vs hold-above shape already says which.
 function renderMeasureCard(entry, i) {
   const rate = isRateMetric(entry.metricId);
   // The baseline is suggested from the catalogue but editable — the current
@@ -318,7 +347,10 @@ function renderMeasureCard(entry, i) {
       <div class="ap-input-group objm__target"><input type="text" data-objm-target data-objm-i="${i}" value="${esc(target)}" aria-label="Target" /></div>`;
   // Derived line under the inputs — kept out of the from→to run so the two
   // numbers pair cleanly. The orange tag marks a target Archie proposed and the
-  // user hasn't touched; the deltas say what it amounts to.
+  // user hasn't touched (orange because it is AI provenance, the repo's own
+  // convention); `mini`, because this is the quietest line in the card and a
+  // full-size peach tag was the loudest thing in it. The deltas say what the
+  // target amounts to.
   const showSuggested = !rate && !(entry.target == null && target === "") && !entry.targetEdited;
   const deltas = [];
   if (!rate && suggestedPct != null) deltas.push(`+${suggestedPct}%`);
@@ -327,22 +359,21 @@ function renderMeasureCard(entry, i) {
   const hint =
     showSuggested || deltas.length
       ? `<div class="objm__cardhint">
-           ${showSuggested ? `<span class="ap-tag tagOrange">Suggested</span>` : ""}
+           ${showSuggested ? `<span class="ap-tag tagOrange mini">Suggested</span>` : ""}
            ${deltas.length ? `<span class="objm__hinttext">${deltas.join(" · ")}</span>` : ""}
          </div>`
       : "";
   return `
     <div class="objm__card">
-      <div class="objm__cardhead">
-        <span class="objm__id">
-          <span class="objm__cardname">${esc(name)}</span>
-          <span class="objm__scope">${esc(scopeText)}</span>
-        </span>
-        <span class="objm__spacer"></span>
+      <span class="objm__id">
+        <span class="objm__cardname">${esc(name)}</span>
+        <span class="objm__scope">${esc(scopeText)}</span>
+      </span>
+      <div class="objm__cardbody">${body}</div>
+      <div class="objm__cardverbs">
         <button type="button" class="ap-icon-button transparent" data-objm-edit="${i}" aria-label="Change ${esc(name)} metric or scope"><i class="ap-icon-pen"></i></button>
         <button type="button" class="ap-icon-button transparent" data-objm-remove="${i}" aria-label="Remove ${esc(name)}"><i class="ap-icon-close"></i></button>
       </div>
-      <div class="objm__cardbody">${body}</div>
       ${hint}
     </div>`;
 }

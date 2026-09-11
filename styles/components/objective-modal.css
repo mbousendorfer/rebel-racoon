@@ -50,15 +50,25 @@
   overflow-y: auto;
 }
 
-/* ── Title + settings ─────────────────────────────────────────────────── */
-/* The name IS the objective, so "Grow [name]" is the hero line — a large input,
-   the thing you read the modal by. The window and Playbook are settings on it,
-   demoted to a quiet second line so they read as adjustments, not as prose the
-   name is buried inside. */
-.objm__title {
+/* ── The sentence ─────────────────────────────────────────────────────────
+   `Grow [name] over a [window]`, on ONE line. The name IS the objective, so it
+   keeps the h2 rung and all the flexible width; the connectives and their
+   controls ride at body size beside it, which is what makes the row read as a
+   sentence rather than as a stack of fields.
+
+   ⚠️ It was TWO rows — the name on a hero line, the window on a quiet second
+   one — on the argument that the window is a setting ON the name and should not
+   be prose the name is buried inside. Kept, but the argument does not need a
+   row of its own to hold: the window select is visibly a control, and the name
+   still dominates by being the only thing at h2. The second row cost ~48px and
+   left the first one half empty. */
+.objm__sentence {
   display: flex;
   align-items: center;
-  gap: var(--ref-spacing-sm);
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  font-size: var(--sys-text-style-body-size);
+  color: var(--sys-text-color-light);
 }
 
 .objm__titleword {
@@ -70,8 +80,10 @@
   color: var(--sys-text-color-default);
 }
 
+/* A floor of 240px: below that the field cannot hold an objective's name, so
+   the clause after it wraps to the next line instead of squeezing it. */
 .objm__name {
-  flex: 1 1 auto;
+  flex: 1 1 240px;
   min-width: 0;
 }
 
@@ -86,15 +98,6 @@
 /* The value is bold; the prompt for it is not — bold grey read as filled-in. */
 .objm__name input::placeholder {
   font-weight: var(--sys-text-style-body-weight);
-}
-
-.objm__settings {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--ref-spacing-sm);
-  font-size: var(--sys-text-style-body-size);
-  color: var(--sys-text-color-light);
 }
 
 .objm__word {
@@ -151,7 +154,14 @@
   gap: var(--ref-spacing-xs);
 }
 
+/* The section's head, with the count in the app's own `.ap-counter` — the same
+   shape every section title on /insights wears. It is also what replaced the
+   caption in the filled state: a number says "there are two of these" without
+   spending two lines of 12px on it. */
 .objm__seclabel {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
   font-size: var(--sys-text-style-body-size);
   font-weight: var(--sys-text-style-body-bold-weight);
   color: var(--sys-text-color-default);
@@ -170,41 +180,76 @@
   display: flex;
 }
 
+/* The cards measure THEMSELVES — the dialog is 640px wide on a desktop and the
+   full width of a phone, so the fold below has to key off the card and not the
+   viewport. */
 .objm__measures {
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xs);
+  container-type: inline-size;
 }
 
+/* Identity | numbers | verbs on one row, and the derived line under the
+   numbers. `auto` on the last two columns so the fields and the buttons keep
+   their intrinsic width and the identity absorbs the slack — which also lines
+   the fields up from card to card. */
 .objm__card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-sm);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-areas:
+    "id fields verbs"
+    ". hint   .";
+  align-items: center;
+  gap: var(--ref-spacing-xxs) var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
   border: 1px solid var(--app-border-soft);
   border-radius: var(--app-radius-md);
   background: var(--app-surface);
 }
 
-.objm__cardhead {
+/* Below ~470px of card the numbers drop under the identity — a `from [x] to
+   [y]` run cannot compress, and the verbs must stay reachable. */
+@container (max-width: 470px) {
+  .objm__card {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "id     verbs"
+      "fields fields"
+      "hint   hint";
+  }
+}
+
+.objm__cardverbs {
+  grid-area: verbs;
   display: flex;
   align-items: center;
-  gap: var(--ref-spacing-xs);
+  gap: var(--ref-spacing-xxxs);
 }
 
 /* Name + scope read as one label — "Reach · all networks", the same shape the
    overview objective cards use. Baseline-aligned so the smaller scope sits on
    the name's baseline, not floated to its centre. */
+/* Name OVER scope, the DS table cell's own two-line anatomy
+   (`.ap-table-cell-text-container`). Side by side it fitted "Reach · all
+   networks" and wrapped "Brand mentions · all networks", so two cards in the
+   same list came out 94px and 110px tall — an unevenness that reads as a bug.
+   Stacked, the column needs only the width of one word and every card is the
+   same height whatever its metric is called. */
 .objm__id {
-  display: inline-flex;
-  align-items: baseline;
-  gap: var(--ref-spacing-xxs);
+  grid-area: id;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   min-width: 0;
 }
 
+/* body-BOLD (14), one step under the objective's own h2 name in the sentence
+   above. At h3 (16) a measure's label sat at the modal's second-highest rung,
+   which is why every line in here read as equally important. */
 .objm__cardname {
-  font-size: var(--sys-text-style-h3-size);
-  font-weight: var(--sys-text-style-h3-weight);
+  font-size: var(--sys-text-style-body-size);
+  font-weight: var(--sys-text-style-body-bold-weight);
   color: var(--sys-text-color-default);
 }
 
@@ -214,24 +259,24 @@
   white-space: nowrap;
 }
 
-/* The middot belongs to the scope so it only appears when the scope does. */
-.objm__scope::before {
-  content: "·";
-  margin-right: var(--ref-spacing-xxs);
-}
+/* No middot any more: it separated an inline pair, and the pair is now two
+   lines. */
 
 .objm__cardbody {
+  grid-area: fields;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: var(--ref-spacing-xs);
-  font-size: var(--sys-text-style-body-size);
+  gap: var(--ref-spacing-xxs);
+  font-size: var(--sys-text-style-caption-size);
   color: var(--sys-text-color-light);
 }
 
-/* Baseline is now an editable field (same shape as the target). */
+/* Baseline is now an editable field (same shape as the target). 96px, not 110:
+   the widest value any measure carries is seven characters ("+14,800"), and the
+   extra 28px per card was space the identity could use. */
 .objm__from {
-  width: 110px;
+  width: 96px;
 }
 
 .objm__from input {
@@ -241,7 +286,7 @@
 }
 
 .objm__target {
-  width: 110px;
+  width: 96px;
 }
 
 .objm__target input {
@@ -253,8 +298,10 @@
 /* The derived line under the inputs: the Suggested tag (when Archie set the
    target) beside the deltas it works out to. A quiet row, never a second focus. */
 .objm__cardhint {
+  grid-area: hint;
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: var(--ref-spacing-xs);
   font-size: var(--sys-text-style-caption-size);
   color: var(--sys-text-color-light);

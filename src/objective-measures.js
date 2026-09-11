@@ -36,8 +36,8 @@
 // on the Insights side, while this catalogue parks them. Insights marks those
 // cards "via proxy" by resolving the label here — one story, two surfaces.
 
-import { NETWORK_LABEL, getConnectedProfiles } from "./social-profiles.js?v=1137";
-import { getContextById } from "./contexts-store.js?v=1137";
+import { NETWORK_LABEL, getConnectedProfiles } from "./social-profiles.js?v=1139";
+import { getContextById } from "./contexts-store.js?v=1139";
 
 // The connected profiles are GLOBAL (one demo account), but an objective
 // belongs to a brand — a Noba Fashion objective read on tiles named
