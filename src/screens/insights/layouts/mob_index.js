@@ -62,10 +62,10 @@ import {
   trendGlyph,
   postsMovedLine,
   esc,
-} from "../pieces.js?v=1108";
-import { ringSvg, trendSpec, mountCharts } from "../charts.js?v=1108";
-import { readingFor } from "../model.js?v=1108";
-import { shownMeasure, readHead, readReading, readout, readChart, readMeasures, readPosts } from "../read.js?v=1108";
+} from "../pieces.js?v=1109";
+import { ringSvg, trendSpec, mountCharts } from "../charts.js?v=1109";
+import { readingFor } from "../model.js?v=1109";
+import { shownMeasure, readHead, readReading, readout, readMeasures, readPosts } from "../read.js?v=1109";
 
 export const id = "mob_index";
 export const label = "Mob · Index";
@@ -208,8 +208,7 @@ function renderFiche(entry, local, specs, firstPaint) {
       ${readHead(entry)}
       ${readReading(entry)}
       ${readout(entry)}
-      ${readChart(entry, shown, specs, { id: "mobindex-trend", height: CHART_HEIGHT })}
-      ${readMeasures(entry, shown, specs, { idPrefix: "mobindex" })}
+      ${readMeasures(entry, shown, specs, { idPrefix: "mobindex", chartId: "mobindex-trend", height: CHART_HEIGHT })}
       ${readPosts(entry)}
     </div>
   </div>`;

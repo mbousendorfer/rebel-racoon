@@ -18,8 +18,8 @@
 // Pure render helpers — strings in, strings out, no listeners. Every action is
 // a `data-ins-*` hook the shell dispatches (shell.js § Actions).
 
-import { readingFor } from "./model.js?v=1108";
-import { trendSpec, sparklineSpec, progressBar } from "./charts.js?v=1108";
+import { readingFor } from "./model.js?v=1109";
+import { trendSpec, sparklineSpec, progressBar } from "./charts.js?v=1109";
 import {
   statusPill,
   measurePill,
@@ -34,7 +34,7 @@ import {
   tierCounts,
   figure,
   esc,
-} from "./pieces.js?v=1108";
+} from "./pieces.js?v=1109";
 
 /** Which measure is on screen: the reader's tab if they picked one, else the weakest. */
 export function shownMeasure(entry, local) {
@@ -80,34 +80,31 @@ export function readout(entry) {
   </div>`;
 }
 
-// ── Chart ─────────────────────────────────────────────────────────────────
+// ── Measures: the curve and the list it belongs to, in ONE card ───────────
 //
-// Every measure is reachable in full, not just the one deciding the verdict —
-// the same switcher Cockpit's chart card and Report's chapter carry. With a
-// single measure the chart is named in prose: a one-tab tab bar cannot be used.
+// ⚠️ This was TWO cards, and the same measures were named in BOTH: a DS tab
+// strip over the chart ("Video views | Completion rate") and then, ~600px
+// below, a Measures table whose first column is those same two names. Two
+// lists of the same items, one of which happened to also be the selector.
+//
+// Now there is one list, and it IS the selector — the table is the chart's
+// LEGEND, which is the shape a chart-plus-series-list takes everywhere
+// (Highcharts' own legend sits under the plot and switches series on click).
+// So nothing moved on screen: the curve stays where it was, the strip above it
+// is gone, and the row you click is the row that was already highlighted.
+//
+// The selected measure is still NAMED above its curve — a metric has to be
+// named in text, an unlabelled 300px area chart says nothing — but that is a
+// caption for one curve, not a second list to choose from. It is the line the
+// single-measure case already used, now used always: with one measure there
+// was never a strip, so that case loses nothing.
+//
+// `specs` is the map the host hands to `mountCharts` after the innerHTML
+// lands; the chart nodes are placeholders until then, which is what keeps
+// these functions free of DOM.
 
-function measureTabs(entry, shown) {
-  if (entry.measures.length < 2) {
-    return `<p class="ins-chart__name">${esc(shown?.metricLabel || "Trend")}${shown?.scopeLabel ? ` <span class="ins-muted">· ${esc(shown.scopeLabel)}</span>` : ""}</p>`;
-  }
-  const tabs = entry.measures
-    .map(
-      (
-        m,
-      ) => `<button type="button" class="ap-tabs-tab ${m === shown ? "active" : ""}" role="tab" id="ins-mtab-${esc(m.id)}"
-        aria-controls="ins-mpanel" aria-selected="${m === shown}" tabindex="${m === shown ? 0 : -1}"
-        data-ins-measure-tab="${esc(entry.key)}" data-ins-measure="${esc(m.id)}"><span>${esc(m.metricLabel)}</span></button>`,
-    )
-    .join("");
-  return `<div class="ap-tabs ins-read__tabs"><div class="ap-tabs-nav" role="tablist" aria-label="Measure" data-ins-tablist>${tabs}</div></div>`;
-}
-
-/**
- * The curve, in its own card. `specs` is the map the host hands to
- * `mountCharts` after the innerHTML lands — the chart node is a placeholder
- * until then, which is what keeps these functions free of DOM.
- */
-export function readChart(entry, shown, specs, { id, height = 300, card = true } = {}) {
+export function readMeasures(entry, shown, specs, { idPrefix = "read", chartId, height = 300 } = {}) {
+  const id = chartId || `${idPrefix}-trend`;
   if (shown?.series) {
     specs.set(
       id,
@@ -124,27 +121,19 @@ export function readChart(entry, shown, specs, { id, height = 300, card = true }
         <span class="ins-muted">day ${entry.grace?.day ?? 1} of ${entry.grace?.of ?? 7}</span>
       </div>`
     : "";
-  const body = `${measureTabs(entry, shown)}
-    <div class="ins-chart ins-chart--read" id="ins-mpanel" role="tabpanel" aria-labelledby="ins-mtab-${esc(shown?.id || "")}">
-      ${shown?.series ? `<div class="ins-chart__node" data-ins-chart="${esc(id)}" style="height:${height}px"></div>` : `<p class="ins-posts-empty">No series for this measure.</p>`}
-      ${overlay}
-    </div>`;
-  return card ? `<section class="ap-card ins-section ins-read__card">${body}</section>` : body;
-}
 
-// ── Measures ──────────────────────────────────────────────────────────────
-//
-// The DS table, seven columns. No per-th/td rules: the component sets its own
-// width, aligns its headers and ships `.right` and `tbody tr.selected`.
-
-export function readMeasures(entry, shown, specs, { idPrefix = "read" } = {}) {
   const rows = entry.measures
     .map((m, i) => {
       const sparkId = `${idPrefix}-mspark-${i}`;
       if (m.series) specs.set(sparkId, sparklineSpec(m.series, { tier: m.tier, height: 30 }));
-      return `<tr${m === shown ? ' class="selected"' : ""}>
+      const on = m === shown;
+      // The row carries the same two data attributes the tab carried, so the
+      // shell's existing dispatch switches the curve with no change to it. The
+      // name is a real BUTTON — what the keyboard and AT reach — the same
+      // arrangement the objective cards use for their own titles.
+      return `<tr class="ins-read__mrow${on ? " selected" : ""}" data-ins-measure-tab="${esc(entry.key)}" data-ins-measure="${esc(m.id)}">
         <th scope="row">
-          <span class="ins-read__metric">${esc(m.metricLabel)}${m.proxy ? ` <span class="ap-badge blue">proxy</span>` : ""}</span>
+          <button type="button" class="ins-read__mname" data-ins-measure-tab="${esc(entry.key)}" data-ins-measure="${esc(m.id)}" aria-pressed="${on}">${esc(m.metricLabel)}</button>${m.proxy ? ` <span class="ap-badge blue">proxy</span>` : ""}
           <span class="ins-muted">${esc(m.scopeLabel || "All networks")}</span>
         </th>
         <td class="right ins-num">${esc(m.currentLabel)}</td>
@@ -160,8 +149,16 @@ export function readMeasures(entry, shown, specs, { idPrefix = "read" } = {}) {
     })
     .join("");
 
-  return `<section class="ap-card ins-section ins-read__card">
-    <h3 class="ins-section-title">Measures</h3>
+  // The DS table, seven columns. No per-th/td rules beyond the two cells that
+  // hold a drawn shape: the component sets its own width, aligns its headers
+  // and ships `.right` and `tbody tr.selected`.
+  return `<section class="ap-card ins-section ins-read__card ins-read__measures">
+    <p class="ins-chart__name">${esc(shown?.metricLabel || "Trend")}${shown?.scopeLabel ? ` <span class="ins-muted">· ${esc(shown.scopeLabel)}</span>` : ""}</p>
+    <div class="ins-chart ins-chart--read">
+      ${shown?.series ? `<div class="ins-chart__node" data-ins-chart="${esc(id)}" style="height:${height}px"></div>` : `<p class="ins-posts-empty">No series for this measure.</p>`}
+      ${overlay}
+    </div>
+    <h3 class="ins-section-title ins-read__mtitle">Measures <span class="ap-counter normal grey">${entry.measures.length}</span></h3>
     <table class="ap-table small ins-read__table">
       <thead>
         <tr>

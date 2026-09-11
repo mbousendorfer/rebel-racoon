@@ -20,9 +20,9 @@
 // The verbs stay in the head, never in the column: a 300px column grows
 // full-width buttons, and a button is never full-width here.
 
-import { playbookTitle, objectiveTitle, objectiveActions, esc } from "../pieces.js?v=1108";
-import { mountCharts } from "../charts.js?v=1108";
-import { shownMeasure, readReading, readout, readChart, readMeasures, readPosts, readFacts } from "../read.js?v=1108";
+import { playbookTitle, objectiveTitle, objectiveActions, esc } from "../pieces.js?v=1109";
+import { mountCharts } from "../charts.js?v=1109";
+import { shownMeasure, readReading, readout, readMeasures, readPosts, readFacts } from "../read.js?v=1109";
 
 export const id = "mob_side";
 export const label = "Mob · Side";
@@ -51,8 +51,7 @@ export function render(host, vm) {
         <div class="ins-mob_side__main">
           ${readReading(selected)}
           ${readout(selected)}
-          ${readChart(selected, shown, specs, { id: "mobside-trend", height: CHART_HEIGHT })}
-          ${readMeasures(selected, shown, specs, { idPrefix: "mobside" })}
+          ${readMeasures(selected, shown, specs, { idPrefix: "mobside", chartId: "mobside-trend", height: CHART_HEIGHT })}
           ${readPosts(selected)}
         </div>
         <div class="ins-mob_side__aside">

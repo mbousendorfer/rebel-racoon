@@ -203,10 +203,49 @@
    the highlighted row. Styling individual cells is the component's documented
    Don't — what follows only sizes the two columns holding a drawn shape. */
 
-.ins-read__metric {
+/* ── The measures list, as the chart's legend ─────────────────────────────
+   One card holds the curve and the list; the list is what switches the curve
+   (read.js has the note on why the tab strip that used to sit above the chart
+   is gone). So the rows behave like the objective cards' rows do: the whole
+   row takes the pointer and the app's interactive tint, and the name inside is
+   a real button, which is what the keyboard and AT reach. */
+.ins-read__mtitle {
+  padding-top: var(--ref-spacing-sm);
+  border-top: 1px solid var(--sys-border-color-default);
+}
+
+.ins-read__mrow {
+  cursor: pointer;
+}
+
+/* Not on the selected row: the DS table already paints it, and a hover tint on
+   top of the selected band reads as a third state. */
+.ins-read__mrow:not(.selected):hover {
+  background: var(--ref-color-electric-blue-05);
+}
+
+.ins-read__mname {
   display: block;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  font: inherit;
   font-weight: var(--ref-font-weight-bold);
   color: var(--sys-text-color-default);
+  cursor: pointer;
+}
+
+.ins-read__mrow:hover .ins-read__mname,
+.ins-read__mname:hover {
+  color: var(--ref-color-electric-blue-100);
+}
+
+.ins-read__mname:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: var(--ref-spacing-xxxs);
+  border-radius: var(--ref-border-radius-sm);
 }
 
 .ins-read__table th[scope="row"] .ins-muted {
