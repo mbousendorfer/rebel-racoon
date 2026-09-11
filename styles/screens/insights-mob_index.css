@@ -21,16 +21,19 @@
   min-width: 0;
 }
 
-/* ── The head ─────────────────────────────────────────────────────────────
-   The brand and its three verdict counts on ONE line. Stacked, they asked the
-   same question twice ("where am I" / "how is it going") in two thin rows, and
-   left the head weighing less than the table under it. `baseline` so the pills
-   sit on the title's baseline rather than centring against its cap height, and
-   `wrap` so a long Playbook name pushes them to a second line instead of
-   squeezing them. */
-.ins-mob_index__titles {
+/* ── The list's head ─────────────────────────────────────────────────────
+   "Objectives 4" and the three verdict pills on one line, the pills right
+   after the title rather than pushed to the far edge: they count the cards
+   underneath, so they read as part of the sentence that names those cards.
+   They used to live up in the page band, next to the brand — a page-level fact
+   about something two rows and ~60px below it.
+
+   Centred, not baseline-aligned: a pill is a box with its own height, and
+   sitting it on the h4's baseline dropped it a couple of pixels low. `wrap` so
+   a narrow column puts the pills under the title instead of squeezing them. */
+.ins-mob_index__listhead {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   flex-wrap: wrap;
   gap: var(--ref-spacing-xxs) var(--ref-spacing-md);
   min-width: 0;

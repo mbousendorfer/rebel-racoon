@@ -8,12 +8,12 @@
 // Pure render helpers — strings in, strings out. No listeners: every action is
 // a `data-ins-*` hook the shell dispatches.
 
-import { escapeHtml as esc } from "../../utils.js?v=1107";
-import { renderPostEchoRow } from "../../components/top-post-card.js?v=1107";
-import { getContexts } from "../../contexts-store.js?v=1107";
-import { isWorkspaceMode } from "../../active-playbook.js?v=1107";
-import { progressBar } from "./charts.js?v=1107";
-import { signedPct } from "./model.js?v=1107";
+import { escapeHtml as esc } from "../../utils.js?v=1108";
+import { renderPostEchoRow } from "../../components/top-post-card.js?v=1108";
+import { getContexts } from "../../contexts-store.js?v=1108";
+import { isWorkspaceMode } from "../../active-playbook.js?v=1108";
+import { progressBar } from "./charts.js?v=1108";
+import { signedPct } from "./model.js?v=1108";
 
 // ── The page's head — the scope, worn as the heading ─────────────────────
 //
@@ -134,13 +134,21 @@ export function objectiveTitle(entries, selected) {
  * let the counts line drift from the verdict pills it summarises.
  */
 export function tierCounts(rollup) {
-  const one = (n, label, tone) =>
-    `<span class="ins-count"><span class="ap-status ${tone}">${label}</span><span class="ap-counter normal grey">${n}</span></span>`;
+  // ONE pill per state, the count inside it. It was a DS Status pill plus a
+  // detached DS Counter chip — two components per state, six objects for three
+  // facts, and once this row moved next to a section title that already carries
+  // its own grey counter, those chips started reading as a second kind of count.
+  //
+  // A zero is dropped rather than shown in its tier's colour: a red "0 Off
+  // track" is an alarm tint on a non-problem, and the absence of the pill says
+  // the same thing. `collecting` was already handled that way — this only makes
+  // the rule uniform.
+  const one = (n, label, tone) => (n ? `<span class="ap-status ${tone}">${n} ${label}</span>` : "");
   return `<div class="ins-counts">
     ${one(rollup.onTrack, "On track", "green")}
     ${one(rollup.atRisk, "At risk", "tagOrange")}
     ${one(rollup.offTrack, "Off track", "red")}
-    ${rollup.collecting ? one(rollup.collecting, "Collecting", "grey") : ""}
+    ${one(rollup.collecting, "Collecting", "grey")}
   </div>`;
 }
 

@@ -62,10 +62,10 @@ import {
   trendGlyph,
   postsMovedLine,
   esc,
-} from "../pieces.js?v=1107";
-import { ringSvg, trendSpec, mountCharts } from "../charts.js?v=1107";
-import { readingFor } from "../model.js?v=1107";
-import { shownMeasure, readHead, readReading, readout, readChart, readMeasures, readPosts } from "../read.js?v=1107";
+} from "../pieces.js?v=1108";
+import { ringSvg, trendSpec, mountCharts } from "../charts.js?v=1108";
+import { readingFor } from "../model.js?v=1108";
+import { shownMeasure, readHead, readReading, readout, readChart, readMeasures, readPosts } from "../read.js?v=1108";
 
 export const id = "mob_index";
 export const label = "Mob · Index";
@@ -164,22 +164,27 @@ function renderIndex(entries, rollup, ctx, specs, firstPaint) {
     })
     .join("");
 
-  // The head is the page's header: the brand and its verdict counts on ONE line
-  // (stacked, they asked the same question twice in two thin rows), and under it
-  // the one line that says the objectives are being worked. NOT a KPI strip —
-  // no tile, no new figure, nothing restated. See the note at the top.
+  // The verdict counts sit with the LIST, not in the page header: they count the
+  // cards below them, so they belong to the row that names those cards
+  // ("Objectives 4") rather than to the row that names the brand. In the band
+  // they were a page-level fact about a page whose subject is elsewhere, two
+  // rows and ~60px away from the thing they describe.
+  //
+  // What stays in the band is the brand and the one line saying the objectives
+  // are being worked. Still NOT a KPI strip — no tile, no new figure, nothing
+  // restated. See the note at the top.
   return `<header class="insights__band">
       <div class="insights__band-inner">
-        <div class="ins-mob_index__titles">
-          ${playbookTitle(ctx)}
-          ${tierCounts(rollup)}
-        </div>
+        ${playbookTitle(ctx)}
         ${postsMovedLine(rollup)}
       </div>
     </header>
     <div class="ins-mob_index">
       <div class="ins-mob_index__inner${firstPaint ? " ins-reveal" : ""}">
-        <h3 class="ins-section-title">Objectives <span class="ap-counter normal grey">${entries.length}</span></h3>
+        <div class="ins-mob_index__listhead">
+          <h3 class="ins-section-title">Objectives <span class="ap-counter normal grey">${entries.length}</span></h3>
+          ${tierCounts(rollup)}
+        </div>
         <div class="ins-mob_index__grid">${cards}</div>
       </div>
     </div>`;

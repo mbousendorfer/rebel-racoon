@@ -359,18 +359,14 @@
 
 /* ── The page head — the counts line ────────────────────────────────────── */
 
+/* The verdict counts — one DS Status pill per state, the count inside it
+   (pieces.js `tierCounts`). The pills own their type, colour and radius; this
+   only spaces them. `xs` and not `sm`: they are one fact in three parts and
+   read as a group, which matters more now that they sit beside a title. */
 .ins-counts {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--ref-spacing-xxxs) var(--ref-spacing-sm);
-}
-
-/* A DS Status pill and a DS Counter, side by side — the components own their
-   own type and colour, so this only pairs them. */
-.ins-count {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
+  gap: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
 }
 
 /* Screen-reader-only text — the tab strip states each objective's verdict for
