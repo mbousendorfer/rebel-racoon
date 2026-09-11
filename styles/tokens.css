@@ -116,10 +116,14 @@
      Highcharts paints in SVG attributes and cannot resolve var(); charts.js
      reads these once via getComputedStyle. The status colours map the three
      verdict tiers: on-track → DS success, at-risk → tagOrange (NOT brand
-     orange, which is the AI/spotlight colour), off-track → DS error. The
-     categorical ramp is for series that are not a verdict (one line per
-     objective on the trajectories chart) — no orange, red or green in it, so
-     a series colour is never mistaken for a state. */
+     orange, which is the AI/spotlight colour), off-track → DS error.
+
+     Two of the three land on the DS's own data colours by construction:
+     `ChartColors.SENTIMENT_COLORS.positive` is #45B854 and its `negative` /
+     `LIMIT_COLOR` is #E81313 (@agorapulse/ui-charts v22) — the same hues this
+     screen already used for on-track and off-track. At-risk has no prod
+     ancestor: the platform ships no objective/target widget, so no palette
+     names that state. */
   --app-chart-on-track: var(--sys-color-success-text); /* #45B854 */
   --app-chart-on-track-soft: var(--sys-color-success-light-bg); /* #ECF7ED */
   /* tag-orange-150, NOT -100: the DS status pill's at-risk dot is
@@ -133,16 +137,34 @@
   --app-chart-off-track-soft: var(--sys-color-error-light-bg); /* #FDE7E7 */
   --app-chart-neutral: var(--ref-color-grey-60); /* collecting / parked */
   --app-chart-neutral-soft: var(--ref-color-grey-05);
+  /* ⚠️ NOT the DS's LIMIT_COLOR (#E81313, red). A limit is a line you must not
+     cross — prod paints it red because crossing it is the alarm. A target is a
+     line you are trying to REACH, and a red goal on a green curve reads as a
+     failure before you have failed. Grey-80 keeps it a reference. */
   --app-chart-target: var(--ref-color-grey-80); /* the dashed target line */
+  /* Axis + grid: the values @agorapulse/ui-charts ships in
+     `ChartOptions.DEFAULT_OPTIONS` — grid, axis LINES and ticks on grey-10,
+     labels on grey-85 — so a curve here is framed like a curve in Reports. */
   --app-chart-grid: var(--ref-color-grey-10);
-  --app-chart-axis: var(--ref-color-grey-80);
-  --app-chart-axis-line: var(--ref-color-grey-20);
-  --app-chart-1: var(--ref-color-electric-blue-100);
-  --app-chart-2: var(--ref-color-purple-100);
-  --app-chart-3: var(--ref-color-menthol-100);
-  --app-chart-4: var(--ref-color-soft-blue-100);
-  --app-chart-5: var(--ref-color-yellow-100);
-  --app-chart-6: var(--ref-color-bluesky-100);
+  --app-chart-axis: var(--ref-color-grey-85);
+  --app-chart-axis-line: var(--ref-color-grey-10);
+  /* The DS's own CATEGORICAL palette, in its fixed order: `ChartColors`
+     (@agorapulse/ui-charts v22) → `DATA_COLORS`, read by position
+     (`getDataColor(n)`), wrapping after ten. The brand ramps that used to sit
+     here — electric blue, purple, menthol… — are deprecated in the package
+     ("Brand palette is being removed"), which is why the names below are the
+     DS's data names and not ours. No orange, red or green tier colour is in
+     it, so a series is never mistaken for a verdict. */
+  --app-chart-data-1: #12aaba; /* data-cyan-100 */
+  --app-chart-data-2: #d98800; /* data-sun-100 */
+  --app-chart-data-3: #cc2878; /* data-peony-100 */
+  --app-chart-data-4: #42b85a; /* data-lime-100 */
+  --app-chart-data-5: #8a62cc; /* data-iris-100 */
+  --app-chart-data-6: #cc5040; /* data-cherry-100 */
+  --app-chart-data-7: #3a92e8; /* data-sky-100 */
+  --app-chart-data-8: #dc6a30; /* data-tangerine-100 */
+  --app-chart-data-9: #12a87a; /* data-emerald-100 */
+  --app-chart-data-10: #4a6acc; /* data-navy-100 */
 
   /* ── App chrome sizing ────────────────────────────────────────────── */
   --app-topbar-height: 56px;

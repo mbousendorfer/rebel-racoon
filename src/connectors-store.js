@@ -17,8 +17,8 @@
 // The internal array is seeded once from mocks.connectors. Re-imports of
 // this module return the same store; a full page reload re-seeds.
 
-import { connectors as seed } from "./mocks.js?v=1105";
-import { createNotifier } from "./store-utils.js?v=1105";
+import { connectors as seed } from "./mocks.js?v=1107";
+import { createNotifier } from "./store-utils.js?v=1107";
 
 const connectors = seed.map((c) => ({ ...c }));
 const notifier = createNotifier("connectors-store");

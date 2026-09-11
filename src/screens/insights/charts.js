@@ -25,7 +25,7 @@
 // both. The shell calls destroyChartsIn(host) before every paint and on
 // teardown — layouts never destroy on their own.
 
-import Highcharts from "../../../vendor/highcharts/highcharts-12.4.0.esm.js?v=1105";
+import Highcharts from "../../../vendor/highcharts/highcharts-12.4.0.esm.js?v=1107";
 
 // ── Tokens ────────────────────────────────────────────────────────────────
 
@@ -68,12 +68,18 @@ export function tierColor(tier) {
 
 let themed = false;
 
+// The theme is the platform's, not one of our own: every value below that has a
+// counterpart in `ChartOptions.DEFAULT_OPTIONS` (@agorapulse/ui-charts v22, the
+// base every Reports and ROI chart is built on) takes the platform's value, so
+// a curve here is framed like a curve there. The package itself is Angular
+// components — unusable from a CSS-UI prototype — so this mirrors its options
+// rather than importing them; the divergences left are marked ⚠️ with a reason.
 export function applyTheme() {
   if (themed) return;
   themed = true;
   const font = token("--ref-font-family") || "Averta, sans-serif";
   const white = token("--ref-color-white") || "#FFFFFF";
-  const ink = token("--sys-text-color-default") || "#344563";
+  const ink = token("--ref-color-grey-100") || "#212E44";
   Highcharts.setOptions({
     chart: {
       backgroundColor: "transparent",
@@ -81,7 +87,10 @@ export function applyTheme() {
       spacing: [8, 0, 0, 0],
       animation: { duration: 400 },
     },
-    colors: [1, 2, 3, 4, 5, 6].map((i) => chartColor(String(i))),
+    // The DS categorical palette, in its fixed order (`ChartColors.DATA_COLORS`
+    // / `getDataColor(n)`). Position-assigned and wrapping after ten, exactly
+    // as the package does it.
+    colors: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => chartColor(`data-${i}`)),
     credits: { enabled: false },
     title: { text: undefined },
     legend: { enabled: false },
@@ -91,30 +100,43 @@ export function applyTheme() {
     xAxis: {
       type: "datetime",
       lineColor: chartColor("axis-line"),
+      gridLineColor: chartColor("grid"),
+      tickColor: chartColor("axis-line"),
       tickLength: 0,
-      gridLineWidth: 0,
+      // Prod draws both grids at 1px. This screen ran with no vertical grid at
+      // all, which read cleaner in isolation and wrong beside a Reports chart.
+      gridLineWidth: 1,
       labels: { style: { color: chartColor("axis"), fontSize: captionSize() } },
     },
     yAxis: {
       title: { text: null },
       gridLineColor: chartColor("grid"),
+      lineColor: chartColor("axis-line"),
       gridLineWidth: 1,
+      // A reach of 14,800 has no half — prod's default, and it also stops a
+      // short window inventing decimal ticks.
+      allowDecimals: false,
       labels: { style: { color: chartColor("axis"), fontSize: captionSize() } },
     },
+    // A WHITE tooltip with ink text, 4px, no border, and the platform's barely
+    // there shadow — this was a dark ink bubble with white text, the one piece
+    // of chart chrome that looked like another product.
     tooltip: {
-      backgroundColor: ink,
+      backgroundColor: white,
       borderWidth: 0,
-      borderRadius: Number.parseInt(token("--ref-border-radius-md") || "8", 10),
-      shadow: false,
+      borderRadius: 4,
+      shadow: { color: "#000000", offsetX: 0, offsetY: 2, opacity: 0.02, width: 6 },
       useHTML: true,
       padding: Number.parseInt(token("--ref-spacing-xxs") || "8", 10),
-      style: { color: white, fontSize: captionSize(), lineHeight: captionLine() },
+      style: { color: ink, fontSize: captionSize(), lineHeight: captionLine() },
     },
     plotOptions: {
       series: {
         animation: { duration: 400 },
         marker: { enabled: false },
-        states: { hover: { lineWidthPlus: 0, halo: { size: 6 } }, inactive: { opacity: 1 } },
+        // `inactive: 0.2` is the platform's: hovering one series fades the
+        // others instead of leaving the reader to pick it out.
+        states: { hover: { brightness: 0, lineWidthPlus: 0, halo: { size: 6 } }, inactive: { opacity: 0.2 } },
       },
     },
   });
@@ -184,7 +206,10 @@ export function trendSpec(
       name: metricLabel || "Value",
       data: series.points,
       color: color.stroke,
-      lineWidth: 2,
+      // 4px is the DS spline's own line weight (`ChartSplineOptions`); the
+      // compact variant stays at 2, because 4 across a 104px card curve is a
+      // ribbon and the platform has no chart that small to copy.
+      lineWidth: isCompact ? 2 : 4,
       fillColor: gradient(color.stroke),
       threshold: null,
       connectNulls: false,
@@ -258,6 +283,9 @@ export function trendSpec(
       tickInterval: WEEK_MS,
       labels: { enabled: !isCompact, formatter: ({ value }) => dateLabel(value) },
       lineWidth: isCompact ? 0 : 1,
+      // The theme turns the vertical grid on for a full chart (prod's default);
+      // a card curve keeps none — at 104px they'd be most of what you see.
+      gridLineWidth: isCompact ? 0 : 1,
       crosshair: isCompact ? false : { width: 1, color: chartColor("axis-line"), dashStyle: "Dash", snap: true },
     },
     yAxis: {

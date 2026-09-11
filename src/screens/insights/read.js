@@ -18,8 +18,8 @@
 // Pure render helpers — strings in, strings out, no listeners. Every action is
 // a `data-ins-*` hook the shell dispatches (shell.js § Actions).
 
-import { readingFor } from "./model.js?v=1105";
-import { trendSpec, sparklineSpec, progressBar } from "./charts.js?v=1105";
+import { readingFor } from "./model.js?v=1107";
+import { trendSpec, sparklineSpec, progressBar } from "./charts.js?v=1107";
 import {
   statusPill,
   measurePill,
@@ -34,7 +34,7 @@ import {
   tierCounts,
   figure,
   esc,
-} from "./pieces.js?v=1105";
+} from "./pieces.js?v=1107";
 
 /** Which measure is on screen: the reader's tab if they picked one, else the weakest. */
 export function shownMeasure(entry, local) {
@@ -73,7 +73,7 @@ export function readReading(entry) {
 
 export function readout(entry) {
   const head = entry.headline;
-  return `<div class="ap-card ins-read__readout">
+  return `<div class="ap-card ins-section ins-read__readout">
     ${scoreFigure(entry, { size: "xl" })}
     ${figure(esc(head?.currentLabel || "—"), "current")}
     ${figure(esc(head?.targetLabel || "—"), head?.isRate ? "hold above" : "target")}
@@ -129,7 +129,7 @@ export function readChart(entry, shown, specs, { id, height = 300, card = true }
       ${shown?.series ? `<div class="ins-chart__node" data-ins-chart="${esc(id)}" style="height:${height}px"></div>` : `<p class="ins-posts-empty">No series for this measure.</p>`}
       ${overlay}
     </div>`;
-  return card ? `<section class="ap-card ins-read__card">${body}</section>` : body;
+  return card ? `<section class="ap-card ins-section ins-read__card">${body}</section>` : body;
 }
 
 // ── Measures ──────────────────────────────────────────────────────────────
@@ -160,7 +160,7 @@ export function readMeasures(entry, shown, specs, { idPrefix = "read" } = {}) {
     })
     .join("");
 
-  return `<section class="ap-card ins-read__card">
+  return `<section class="ap-card ins-section ins-read__card">
     <h3 class="ins-section-title">Measures</h3>
     <table class="ap-table small ins-read__table">
       <thead>
@@ -182,7 +182,7 @@ export function readMeasures(entry, shown, specs, { idPrefix = "read" } = {}) {
 // ── Posts ─────────────────────────────────────────────────────────────────
 
 export function readPosts(entry) {
-  return `<section class="ap-card ins-read__card">
+  return `<section class="ap-card ins-section ins-read__card">
     <h3 class="ins-section-title">Posts drafted with Archie <span class="ap-counter normal grey">${entry.posts.length}</span></h3>
     ${entry.posts.length ? `<div class="ins-postlist">${entry.posts.map((p) => postCard(p, entry)).join("")}</div>` : postsEmpty()}
   </section>`;
@@ -202,7 +202,7 @@ export function readFacts(entry, rollup) {
   const breakdown = [c.on ? `${c.on} on` : "", c.soft ? `${c.soft} at risk` : "", c.off ? `${c.off} off` : ""]
     .filter(Boolean)
     .join(" · ");
-  return `<aside class="ap-card ins-read__facts" aria-label="Objective facts">
+  return `<aside class="ap-card ins-section ins-read__facts" aria-label="Objective facts">
     ${row("Verdict", statusPill(entry))}
     ${row("Window", `<span class="ins-read__facttext">${esc(windowLine(entry))}</span>`)}
     ${row("Origin", originMark(entry, { short: true }))}

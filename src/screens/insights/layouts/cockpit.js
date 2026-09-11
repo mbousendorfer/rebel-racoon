@@ -22,8 +22,8 @@
 // chart the headline measure and leave the others as 96px sparklines in the
 // table, which meant an objective's second measure had no curve anywhere.
 
-import { readingFor } from "../model.js?v=1105";
-import { trendSpec, sparklineSpec, ringSvg, progressBar, mountCharts } from "../charts.js?v=1105";
+import { readingFor } from "../model.js?v=1107";
+import { trendSpec, sparklineSpec, ringSvg, progressBar, mountCharts } from "../charts.js?v=1107";
 import {
   tierCounts,
   statusPill,
@@ -39,7 +39,7 @@ import {
   figure,
   playbookTitle,
   esc,
-} from "../pieces.js?v=1105";
+} from "../pieces.js?v=1107";
 
 export const id = "cockpit";
 export const label = "Cockpit";
@@ -173,13 +173,13 @@ function renderPane(entry, local, specs, firstPaint) {
     <p class="ins-cockpit-pane__reading">${esc(readingFor(entry))}</p>
     ${parkedNote}
 
-    <div class="ap-card ins-cockpit-readout">
+    <div class="ap-card ins-section ins-cockpit-readout">
       ${scoreFigure(entry, { size: "xl" })}
       ${figure(esc(head?.currentLabel || "—"), "current")}
       ${figure(esc(head?.targetLabel || "—"), targetName)}
     </div>
 
-    <section class="ap-card ins-cockpit-card">
+    <section class="ap-card ins-section ins-cockpit-card">
       ${chartHead}
       <div class="ins-chart ins-chart--cockpit" id="ins-mpanel" role="tabpanel" aria-labelledby="ins-mtab-${esc(shown?.id || "")}">
         ${shown?.series ? `<div class="ins-chart__node" data-ins-chart="${chartId}" style="height:${CHART_HEIGHT}px"></div>` : ""}
@@ -187,7 +187,7 @@ function renderPane(entry, local, specs, firstPaint) {
       </div>
     </section>
 
-    <section class="ap-card ins-cockpit-card">
+    <section class="ap-card ins-section ins-cockpit-card">
       <h3 class="ins-section-title">Measures</h3>
       <table class="ap-table small ins-cockpit-table">
         <thead>
@@ -205,7 +205,7 @@ function renderPane(entry, local, specs, firstPaint) {
       </table>
     </section>
 
-    <section class="ap-card ins-cockpit-card">
+    <section class="ap-card ins-section ins-cockpit-card">
       <h3 class="ins-section-title">Posts drafted with Archie <span class="ap-counter normal grey">${entry.posts.length}</span></h3>
       ${entry.posts.length ? `<div class="ins-postlist">${entry.posts.map((p) => postCard(p, entry)).join("")}</div>` : postsEmpty()}
     </section>

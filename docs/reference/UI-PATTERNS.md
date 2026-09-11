@@ -276,6 +276,48 @@ Les modals hauts plafonnent leur hauteur (`max-height: min(calc(100vh - 48px), 7
 
 ---
 
+## 3bis. Insights — ce qui vient de la plateforme, et ce qui n'existe pas là-bas
+
+La page Insights est la seule surface du proto qui a un **équivalent en production** : la
+tribu `analytics` du monorepo (`~/code/platform`) ship une bibliothèque partagée
+(`analytics/commons/frontend/libs/analytics/ui`) dont Reports et ROI sont faits. Audit du
+2026-09-11, et ce que le proto en a reprisic :
+
+| Le proto                                    | La source en prod                                                                                                                         | Repris ?                                                                                                                                                                                                       |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--ins-content` (mesure de page)            | `.report-content-view` — `max-width: 1200px` centré (`analytics.scss`)                                                                    | ✅ 1200px                                                                                                                                                                                                      |
+| `--ins-display-xl` (gros numéral)           | `.main-data` — **38px** bold grey-100. Les deux autres numéraux de prod : 24px sur une overview-card, 64px sur une tuile de widget pleine | ✅ 38px                                                                                                                                                                                                        |
+| `.ins-section` (châssis de section)         | `[analytics-section]` — grey-10, radius 8, `.section-content{padding:md;gap:md}`, `.title-wrapper`, `.button-wrapper`                     | ✅ composé **avec** `.ap-card`, dont le cadre est déjà identique (même bordure, `--ref-border-radius-md` = 8px) : seule la respiration passe de `sm` à `md`                                                    |
+| thème Highcharts (`charts.js` `applyTheme`) | `ChartOptions.DEFAULT_OPTIONS` de **`@agorapulse/ui-charts` v22**                                                                         | ✅ tooltip **blanc** 4px sans bordure + son ombre (c'était une bulle d'encre sombre), grille et lignes d'axe grey-10, labels grey-85 12px, `allowDecimals:false`, `inactive.opacity 0.2`, `hover.brightness 0` |
+| `lineWidth` du spline                       | `ChartSplineOptions` — **4**                                                                                                              | ✅ sur le plein format ; **2** en `compact` (4 sur une courbe de carte à 104px est un ruban, et la prod n'a pas de graphe si petit à copier)                                                                   |
+| `--app-chart-data-*`                        | `ChartColors.DATA_COLORS` — 10 teintes, ordre fixe, lues par position (`getDataColor(n)`)                                                 | ✅ remplacent une rampe maison (electric blue / purple / menthol…), que le paquet déclare **dépréciée**                                                                                                        |
+| `--app-chart-on-track` / `-off-track`       | `SENTIMENT_COLORS.positive` `#45B854` / `negative` = `LIMIT_COLOR` `#E81313`                                                              | ✅ coïncidaient **déjà**                                                                                                                                                                                       |
+| `trendGlyph`                                | la variation d'`analytics-overview-card` : glyphes `data-increase`/`-decrease`/`-stagnate`, `+X%`, vert **seulement si positif**          | ✅ coïncidait **déjà**                                                                                                                                                                                         |
+
+Ce qui n'a **pas** été repris, et pourquoi :
+
+- **`--app-chart-target` reste grey-80**, pas `LIMIT_COLOR`. Une _limite_ est une ligne
+  qu'on ne doit pas franchir — la prod la peint en rouge parce que la franchir EST
+  l'alarme. Une _cible_ est une ligne qu'on essaie d'atteindre, et une cible rouge
+  au-dessus d'une courbe verte se lit comme un échec avant l'échec.
+- **L'anatomie d'`ap-analytics-overview-card`** (footer métrique secondaire + lien « See
+  section », tooltip info sur le titre) — pas demandée dans cette passe. Ce que la carte
+  d'objectif en partage déjà : la bordure grey-10, et **bordure bleue + titre bleu au
+  survol**, qui sont exactement le hover de la prod.
+- **Le CTA orange** de `analytics-section-no-data` : « New objective » est un CTA de page
+  de liste, donc **bleu** ici par la convention du repo (§5), et l'orange est réservé à
+  l'IA. Le mettre en orange donnerait deux couleurs à la même action sur un écran.
+- **Le paquet `@agorapulse/ui-charts` n'est pas ajouté** aux dépendances : ce sont des
+  composants Angular (`ap-chart-spline`…), inutilisables depuis du CSS-UI. Ses valeurs
+  sont **mirroitées** avec la référence en commentaire, pas importées.
+
+⚠️ **Deux choses n'ont aucun ancêtre en prod** : l'anneau de progression (`ringSvg`) et le
+vocabulaire on-track / at-risk / off-track. La plateforme ne ship **aucun** widget
+d'objectif — ROI fait des tables « key performance », pas des cibles — et sa seule barre de
+progression est un `mat-progress-bar` (Angular) au langage de **quota** (piste
+`electric-blue-10`), pas de cible. Ne pas chercher à les aligner sur quelque chose : il n'y
+a rien.
+
 ## 4. Icônes
 
 Glyphes webfont DS `<i class="ap-icon-*">` (quasi toujours `aria-hidden="true"`). Icon-buttons = `.ap-icon-button` (mettre `aria-label` sur le bouton). Les plus utilisés : `ap-icon-archie-official` (avatar), `-close`, `-plus`, `-pen`, `-check`, `-chevron-down`, `-trash`, `-file`, `-sparkles`, `-search`, `-link`, `-upload`, + glyphes réseaux (`-linkedin-official`, `-twitter-official`/`-x-official`, `-instagram-official`, `-tiktok-official`, `-facebook-official`, `-youtube-official`).

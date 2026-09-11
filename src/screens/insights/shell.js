@@ -32,26 +32,26 @@
 // host is never repainted without `destroyChartsIn(host)` first — the one rule
 // that keeps a brand switch from leaking a chart per repaint.
 
-import { html, raw } from "../../utils.js?v=1105";
-import { renderTopbar } from "../../components/topbar.js?v=1105";
-import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=1105";
+import { html, raw } from "../../utils.js?v=1107";
+import { renderTopbar } from "../../components/topbar.js?v=1107";
+import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=1107";
 import {
   subscribe as subscribeScope,
   getActivePlaybook,
   getActivePlaybookId,
   setActivePlaybook,
-} from "../../active-playbook.js?v=1105";
-import { getPath, navigate } from "../../router.js?v=1105";
-import { isFlagOn } from "../../feature-flags.js?v=1105";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=1105";
-import { consumeHandoff } from "../../handoff.js?v=1105";
-import { open as openObjectiveModal } from "../../components/objective-modal.js?v=1105";
-import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=1105";
-import { renderEmptyState } from "../../components/empty-state.js?v=1105";
-import { playbookTitle } from "./pieces.js?v=1105";
-import { objectiveEntries, playbookRollup, entryByKey } from "./model.js?v=1105";
-import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=1105";
-import { DEFAULT_LAYOUT, readLayoutId, writeLayoutId, layoutById } from "./views.js?v=1105";
+} from "../../active-playbook.js?v=1107";
+import { getPath, navigate } from "../../router.js?v=1107";
+import { isFlagOn } from "../../feature-flags.js?v=1107";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=1107";
+import { consumeHandoff } from "../../handoff.js?v=1107";
+import { open as openObjectiveModal } from "../../components/objective-modal.js?v=1107";
+import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=1107";
+import { renderEmptyState } from "../../components/empty-state.js?v=1107";
+import { playbookTitle } from "./pieces.js?v=1107";
+import { objectiveEntries, playbookRollup, entryByKey } from "./model.js?v=1107";
+import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=1107";
+import { DEFAULT_LAYOUT, readLayoutId, writeLayoutId, layoutById } from "./views.js?v=1107";
 
 /** Set by a Playbook's objectives block ("Open in Insights"); payload `${ctxId}::${label}`. */
 export const FOCUS_OBJECTIVE_HANDOFF = "focusObjective";

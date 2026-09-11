@@ -13,20 +13,24 @@
    Highcharts curves agree with the .ap-status pill above them. */
 
 .insights {
-  /* ONE display size above the DS type ramp, which caps at 28px: a dashboard
-     numeral has to be read from across the room, and no DS token goes there.
-     Declared, scoped to .insights, and the only exception on this screen.
-     (There was a second, --ins-display-lg at 40px — dead, because every caller
-     asked for the xl.) */
-  --ins-display-xl: 56px;
-  /* The page's measure — the SAME one the Playbook page caps its sections on
-     (`.recap > *`, 1080px, welcome.css), with the same `--ref-spacing-xl`
-     gutter. Two reading pages of the app that cap at two different widths read
-     as two apps, and at 1240 this one ran the full width of a wide screen
-     while the Playbook sat in a column. Every zone that reads the content
-     column — the band, the grid, a pane — resolves from here, so the head
-     stays aligned with the reading under it by construction. */
-  --ins-content: 1080px;
+  /* The big numeral. 38px is not ours: it is `.main-data` in the platform's
+     own `analytics.scss` — the size every ROI/Reports section prints its
+     headline figure at. It replaces a 56px we had declared for ourselves, a
+     value that exists nowhere in the platform (prod's three are 24px on an
+     overview card, 38 here, 64 on a full-tile report widget). Still declared
+     rather than tokenised, because the DS type ramp caps at 28px and no token
+     goes there. */
+  --ins-display-xl: 38px;
+  /* The page's measure — the platform's own analytics measure:
+     `.report-content-view` in `analytics.scss` caps every Reports and ROI page
+     at `max-width: 1200px` centred. This page is an analytics page before it
+     is anything else, so it reads at the width the reader already knows from
+     Reports. (It sat at 1080 for one commit — the Playbook fiche's measure,
+     `.recap > *` in welcome.css — which made it read as a fiche instead.)
+     Every zone that reads the content column — the band, the grid, a pane —
+     resolves from here, so the head stays aligned with the reading under it by
+     construction. */
+  --ins-content: 1200px;
   /* The page's gutter. Every zone that reads the content column — the bar, a
      band, a pane — pads by exactly this, so "the column" is one number and not
      three that agree by accident. */
@@ -59,6 +63,49 @@
    tray behind it was Cockpit bis's band of tiles, deleted 2026-09-11 — a band
    that holds cards carries them on their own border, not on a change of surface
    behind them. */
+
+/* ── The section chassis ───────────────────────────────────────────────────
+   The platform's `[analytics-section]` (analytics.scss): white, 1px grey-10,
+   8px radius, and `.section-content` at `padding: md; gap: md`. Its frame is
+   byte-for-byte `.ap-card`'s — same border, same `--ref-border-radius-md`,
+   which IS 8px — so the DS class stays on the element and this class only
+   brings the proportions the platform's analytics sections breathe at: md
+   instead of the card's sm. Composed, not overridden: `.ap-card` is never
+   redeclared outside ds-patches.
+
+   Why not just live with the card's 16px: every section on this page holds a
+   chart or a table, and prod pads those at 24 — at 16 the same content sits
+   tighter here than in Reports, which is exactly the kind of one-screen drift
+   this pass exists to remove. */
+.ins-section {
+  padding: var(--ref-spacing-md);
+  gap: var(--ref-spacing-md);
+}
+
+/* The section's head: its title, and whatever control the section owns, on one
+   line. `[analytics-section] .title-wrapper`, same shape — the h3 truncates
+   rather than pushing the control off the row. */
+.ins-section__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-xxs);
+  min-width: 0;
+}
+
+.ins-section__head > .ins-section-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+/* `[analytics-section] .button-wrapper` — actions right-aligned at the foot. */
+.ins-section__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--ref-spacing-xxs);
+}
 
 .insights__band {
   flex: 0 0 auto;
