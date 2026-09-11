@@ -14,14 +14,14 @@
 // the design's own "the panel slides"), and `open()` wraps the same flow in a
 // standalone body-level dialog for the Playbook block's edit mode.
 
-import { escapeHtml as esc } from "../utils.js?v=1145";
+import { escapeHtml as esc } from "../utils.js?v=1148";
 import {
   NETWORK_LABEL,
   getConnectedProfiles,
   renderProfileTag,
   PROFILE_SEARCH_THRESHOLD,
-} from "../social-profiles.js?v=1145";
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1145";
+} from "../social-profiles.js?v=1148";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1148";
 import {
   catalogEntries,
   metricLabel,
@@ -30,7 +30,7 @@ import {
   proposeTargetFrom,
   isRateMetric,
   isAdditiveMetric,
-} from "../objective-measures.js?v=1145";
+} from "../objective-measures.js?v=1148";
 
 const COMPUTE_MS = 900;
 
@@ -108,49 +108,63 @@ export function createCatalogFlow({ contextId, targetLabel, confirmLabel, onAdd,
 
   // ── Views ──────────────────────────────────────────────────────────────
 
+  // ── The catalogue: EVERYTHING VISIBLE, in two columns ─────────────────
+  //
+  // ⚠️ It was eight collapsed accordion CARDS, one per family, each with a count
+  // and a chevron — and that was the design's own stated intent ("the catalog
+  // opens as a short stack of ~8 family headers, not a wall of metrics").
+  // Wrong: the whole catalogue is EIGHTEEN metrics. Collapsing 18 items behind 8
+  // doors spends 450px of chrome to hide 18 words, and nobody opens eight doors
+  // to find out what is behind them — a picker whose items are invisible until
+  // you guess which family holds them is a picker you search or abandon.
+  //
+  // So: two columns of family blocks, every metric on screen, no accordion. The
+  // families become quiet 12px eyebrows and the METRICS carry the weight, which
+  // is the right way round — they are what the reader picks. `columns: 2` with
+  // `break-inside: avoid` keeps a family whole in one column.
+  //
+  // WHAT WAS DROPPED, because it was said two and three times over:
+  //   • the TYPE tag on every row (`Volume` twelve times, `Counter`, `Rate`).
+  //     It does not change which metric you want — it changes how the target is
+  //     written, which the next step SHOWS with a live figure, and the dialog's
+  //     own subtitle names it there ("Followers net growth · Counter").
+  //   • the green `Adds up` tag. Same thing: it only matters once a scope is on
+  //     screen, and the config step's caption says it in a sentence.
+  //   • the per-family COUNT. It stood in for the rows it hid; the rows are
+  //     there now.
   function renderCatalog() {
     const q = state.query.trim().toLowerCase();
-    // Categories COLLAPSE by default (native <details>): the catalog opens as a
-    // short stack of ~8 family headers, not a wall of every metric. The header is
-    // the hierarchy anchor (bold, with a count); a metric row reveals under it.
-    // A search auto-expands the families that still have a match.
-    const cats = catalogEntries()
+    const fams = catalogEntries()
       .map((family) => {
         const metrics = family.metrics.filter((m) => !q || m.label.toLowerCase().includes(q));
         if (!metrics.length) return "";
         const rows = metrics
           .map((m) => {
             if (!m.available) {
+              // A real metric the platform cannot serve yet: the name greyed, the
+              // reason under it, and the proxy Archie would use instead as the
+              // only control — so the row is honest about being unpickable
+              // without being a dead end.
               return `
                 <div class="objc__soon">
                   <span class="objc__row-name">${esc(m.label)}</span>
-                  <span class="ap-tag tagOrange">Needs Google Analytics</span>
-                  <span class="objc__spacer"></span>
-                  <button type="button" class="ap-link standalone small" data-objc-proxy-pick="${m.proxyId}">Use the proxy</button>
+                  <span class="objc__soonwhy">Needs Google Analytics ·
+                    <button type="button" class="ap-link standalone small" data-objc-proxy-pick="${m.proxyId}">use ${esc(m.proxyLabel || "the proxy")}</button>
+                  </span>
                 </div>`;
             }
-            // name (grows) · Adds up · TYPE last so every type right-aligns into
-            // one column down the card, and Adds up sits just before it.
             return `
               <button type="button" class="ap-list-panel-item objc__row" data-objc-pick="${m.id}">
                 <span class="objc__row-name">${esc(m.label)}</span>
-                ${m.additive ? `<span class="ap-tag green">Adds up</span>` : ""}
-                <span class="ap-tag grey objc__row-type">${metricTypeLabel(m.id)}</span>
+                <i class="ap-icon-chevron-right objc__rowgo" aria-hidden="true"></i>
               </button>`;
           })
           .join("");
-        // name (grows) · count · chevron, so the counts right-align into one
-        // column down the stack of category cards.
         return `
-          <details class="objc__cat"${q ? " open" : ""}>
-            <summary class="objc__cathead">
-              <span class="objc__catname">${esc(family.familyLabel)}</span>
-              <span class="objc__spacer"></span>
-              <span class="ap-counter grey objc__catcount">${metrics.length}</span>
-              <i class="ap-icon-chevron-down objc__catarrow" aria-hidden="true"></i>
-            </summary>
-            <div class="objc__catbody">${rows}</div>
-          </details>`;
+          <section class="objc__fam">
+            <h4 class="objc__famname">${esc(family.familyLabel)}</h4>
+            <div class="objc__famrows">${rows}</div>
+          </section>`;
       })
       .join("");
     return `
@@ -160,7 +174,7 @@ export function createCatalogFlow({ contextId, targetLabel, confirmLabel, onAdd,
           <input type="text" data-objc-search value="${esc(state.query)}" placeholder="Search the metric catalog…" aria-label="Search the metric catalog" />
         </div>
       </div>
-      <div class="objc__body">${cats || `<p class="objc__empty">Nothing in the catalog matches "${esc(state.query)}".</p>`}</div>`;
+      <div class="objc__cols">${fams || `<p class="objc__empty">Nothing in the catalog matches "${esc(state.query)}".</p>`}</div>`;
   }
 
   // A suggested target reads as a decision once you can see the jump it asks

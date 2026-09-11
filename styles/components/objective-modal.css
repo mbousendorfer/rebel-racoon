@@ -380,82 +380,62 @@
   width: 100%;
 }
 
-/* A short stack of collapsible category CARDS, spaced apart. */
-.objc__body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xs);
+/* ── The catalogue: two columns, everything visible ───────────────────────
+   Eighteen metrics, eight families, no accordion (objective-catalog-panel.js
+   § the catalogue has the full reasoning). `columns` rather than a grid,
+   because the families have 1–4 rows each and a column flow packs them without
+   leaving a 3-row hole beside a 1-row family; `break-inside: avoid` is what
+   keeps a family from being split across the two columns. */
+.objc__cols {
+  columns: 2;
+  column-gap: var(--ref-spacing-lg);
 }
 
-/* Each metric family is a collapsible CARD (native <details>), closed by default —
-   the catalog opens as a short stack of ~8 cards, not a wall of metrics. */
-.objc__cat {
-  border: 1px solid var(--app-border-soft);
-  border-radius: var(--app-radius-card);
-  background: var(--app-surface);
-  overflow: hidden;
+/* One column on a phone: the dialog is `min(640px, 100%)`, so at 375px two
+   columns would be 140px wide and every metric name would elide. */
+@media (max-width: 560px) {
+  .objc__cols {
+    columns: 1;
+  }
 }
 
-/* The card header is the hierarchy anchor and the whole-row toggle: bold name,
-   then the count — right-aligned so every card's count lines up in one column. */
-.objc__cathead {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-sm);
-  cursor: pointer;
-  list-style: none;
-  transition: background-color var(--ref-animation-short) var(--app-ease-out);
+.objc__fam {
+  break-inside: avoid;
+  /* `columns` has no row-gap: the margin is what separates one family from the
+     next inside a column. Nothing above the first one. */
+  margin-bottom: var(--ref-spacing-md);
 }
 
-.objc__cathead::-webkit-details-marker {
-  display: none;
-}
-
-.objc__cathead:hover {
-  background: var(--app-surface-subtle);
-}
-
-.objc__cat[open] .objc__cathead {
-  border-bottom: 1px solid var(--app-border-soft);
-}
-
-.objc__catname {
-  font-size: var(--sys-text-style-body-bold-size);
+/* The family is an EYEBROW, not a header: 12px bold grey-80 over 14px navy
+   rows, so the metrics carry the weight — they are what the reader picks. It
+   used to be a 14px bold navy card header with a count and a chevron, which
+   made the eight families louder than the eighteen things inside them. */
+.objc__famname {
+  margin: 0 0 var(--ref-spacing-xxxs);
+  /* `sm`, exactly `.ap-list-panel-item`'s own inline padding, so the eyebrow
+     starts on the same x as the metric names under it. At `xxs` it sat 8px to
+     their left — the kind of miss that makes a tidy list look untidy. */
+  padding-inline: var(--ref-spacing-sm);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
   font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--sys-text-color-default);
-}
-
-.objc__catcount {
-  flex-shrink: 0;
-}
-
-.objc__catarrow {
-  flex-shrink: 0;
   color: var(--sys-text-color-light);
-  font-size: var(--sys-icon-css-sm);
-  transition: transform var(--ref-animation-short) var(--app-ease-out);
 }
 
-.objc__cat[open] .objc__catarrow {
-  transform: rotate(180deg);
-}
-
-.objc__catbody {
+.objc__famrows {
   display: flex;
   flex-direction: column;
-  padding: var(--ref-spacing-xxs) 0;
 }
 
 /* Each metric is a DS .ap-list-panel-item; .objc__row only resets the <button>
-   chrome (the UA button fill was the grey block). The name grows so the TYPE tag
-   right-aligns into one column down the card. */
+   chrome (the UA button fill was the grey block). */
 .objc__row {
   background: none;
   border: 0;
   width: 100%;
   text-align: left;
   font-family: inherit;
+  border-radius: var(--ref-border-radius-sm);
 }
 
 .objc__row:focus-visible {
@@ -472,21 +452,42 @@
   white-space: nowrap;
 }
 
-.objc__row-type {
+/* The chevron says the row OPENS a step (the scope + target configurator) — it
+   is not a one-click add. Grey at rest, blue with the row's own hover, so a
+   column of eighteen does not read as eighteen links. */
+.objc__rowgo {
   flex-shrink: 0;
+  color: var(--sys-text-color-light);
+  font-size: var(--sys-icon-css-sm);
+  transition: color var(--ref-animation-short) var(--app-ease-out);
+}
+
+.objc__row:hover .objc__rowgo {
+  color: var(--ref-color-electric-blue-100);
 }
 
 /* Not-yet-available metrics — muted, not clickable, with the proxy Archie uses
    meanwhile. */
+/* Same inline padding as a pickable row, so the two kinds of row share a left
+   edge. */
 .objc__soon {
   display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
+  flex-direction: column;
+  gap: 0;
   padding: var(--ref-spacing-xxs) var(--ref-spacing-sm);
 }
 
 .objc__soon .objc__row-name {
   flex: 0 0 auto;
+  color: var(--sys-text-color-light);
+}
+
+/* The reason and the way round it, on one wrapping line under the name. It was
+   an orange tag beside the name plus a link after it — three items competing on
+   a row the reader cannot even pick. */
+.objc__soonwhy {
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
   color: var(--sys-text-color-light);
 }
 
