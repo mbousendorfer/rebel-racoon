@@ -426,24 +426,37 @@ L'ordre dit un raisonnement : **ce qui va DANS l'image**, puis son **traitement*
   Valeur d'en-tête : la moitié active (`Acme` / `Logo only` / `Colors only` / `Off` / `No brand kit`),
   parce qu'« On » cacherait la différence entre un logo tamponné et un brief de couleurs.
 - **Type** — à quoi sert l'image (`IMAGE_TYPES` : Visual hook / Infographic / Illustration). Dimension
-  distincte du style, et **c'est ce que l'art dit** : un Type est un **schéma de composition**
-  (monochrome, géométrie seule, gris DS), un Style est une **pastille de couleur**. Sans ce partage,
-  neuf cartes dans deux sections voisines se lisent comme un seul choix à neuf branches. Le
-  monochrome est doublement voulu : un diagramme de composition parle de placement et de masse, et
-  le bleu électrique est la couleur de l'interactif — une forme bleue dans une carte **non
-  sélectionnée** se battrait avec l'anneau bleu qui veut dire « choisi ».
+  distincte du style, et **c'est ce que l'art dit** : un Type est **une image** — un petit dessin de ce
+  que ce type produit —, un Style est une **pastille de couleur**. Sans ce partage, neuf cartes dans
+  deux sections voisines se lisent comme un seul choix à neuf branches. Les trois dessins vivent dans
+  `type-art.js` (un SVG inline par clé), leurs couleurs dans la CSS (`.ta-*` / `.ta-stop-*`, tokens
+  DS uniquement). Ce qui les sépare est le **traitement**, pas le sujet : Visual hook est
+  photographique (profondeur de champ, sujet à contre-jour cropé par le cadre, accroche écrite
+  par-dessus), Infographic est une affiche de données (kicker, titre, chiffre en callout, barres avec
+  le gagnant en accent, courbe, légende), Illustration est du vecteur plat (aplats, filets d'encre sur
+  les crêtes, aucun dégradé). Et **un seul disque chaud dans la rangée**, le soleil de l'Illustration :
+  une sphère dans le hook et un donut dans le graphe faisaient lire trois cartes comme trois couchers
+  de soleil. La couleur d'appoint est l'ambre `tag-orange`, pas le bleu électrique (l'anneau bleu veut
+  dire « choisi », une forme bleue dans une carte **non sélectionnée** se battrait avec lui) et pas
+  l'orange de marque (c'est la couleur d'**action** IA — rien dans ces cadres ne doit ressembler à un
+  bouton).
 - **Style** — 6 presets en vignettes **dessinées**. **Désactivé dès qu'une référence est en jeu**, et
   il dit alors pourquoi (`From references`) : deux sources de look qui se contredisent, c'est une de
   trop.
 
-Les neuf vignettes sont **dessinées en CSS, zéro asset** — le patron `.sub-preview--*` de
-`clip-subtitles.js` : un markup, neuf modificateurs. Choisi contre le SVG parce que ces cartes rendent
-à **plusieurs tailles** (la carte d'option porte la sienne, ≈154px, et l'art suit, un
-rapport ~4×) : une composition en % est sans résolution, là où neuf `viewBox` fixes demanderaient un
-`vector-effect` par trait et neuf blobs de HTML de confiance dans un module JS. D'où les règles de
-dimensionnement, porteuses : positions et tailles en **%**, traits et bordures en **px**, rien sous
-**8 %** de la hauteur, flous et ombres en **`cqh`** (`container-type: size` sur `.isv2-art`, le même
-tour que `.isv2-frame`).
+Les six pastilles Style sont **dessinées en CSS, zéro asset** — le patron `.sub-preview--*` de
+`clip-subtitles.js` : un markup, six modificateurs. Une palette EST des bandes plates de couleur, trois
+spans la disent. D'où les règles de dimensionnement, porteuses : positions et tailles en **%**, traits
+et bordures en **px**, rien sous **8 %** de la hauteur, flous et ombres en **`cqh`**
+(`container-type: size` sur `.isv2-art`, le même tour que `.isv2-frame`).
+
+Les trois Types **étaient** dans la même famille et l'ont quittée (`git log -S "isv2-art--visual-hook"`)
+: trois spans plus `::before`/`::after`, c'est cinq formes, et à cinq formes un Type ne peut que nommer
+une géométrie — « Illustration » était un cercle, un carré et un triangle. L'argument du scaling qui
+avait choisi le CSS ne tenait pas : un `viewBox` est sans résolution par construction, et ces dessins
+n'ont aucun filet qui demanderait `vector-effect`. Le marqueur radio suit : anneau **blanc** sur le
+dessin sombre (`.isv2-type-art--dark`, via `:has()`), grey-60 sur les clairs — la coupure que les
+tuiles de référence faisaient déjà entre une photo et un art clair.
 
 Ce ne sont **pas** des emplacements d'icône — ce sont des cadres d'aperçu 4:3 qui montrent à quoi
 ressemblera l'image, le travail que font déjà les maquettes de sous-titres et le faux still vidéo de

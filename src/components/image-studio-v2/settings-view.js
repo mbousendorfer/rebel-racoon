@@ -35,6 +35,7 @@ import { KEY } from "./context.js?v=1129";
 import { REFS_TIP, refSummary, refsBody } from "./references-view.js?v=1129";
 import { BRANDING_TIP, brandingBody } from "./branding-view.js?v=1129";
 import * as imageStudio from "../../image-studio.js?v=1129";
+import { typeArt } from "./type-art.js?v=1129";
 
 // A thin rule between two clusters inside one row body. Shared with the
 // Add-image sheet (tools-view.js), which is where the class name comes from.
@@ -279,23 +280,19 @@ function renderTextBody(st) {
 // with nine branches, when the panel's own comment says Type is "a distinct
 // dimension from the style":
 //
-//   Type  = a COMPOSITION schematic. Monochrome, geometry only, DS greys — how is
-//           this image laid out? Greyscale on purpose: electric blue is this house's
-//           interactive colour, and a blue shape inside an unselected card would read
-//           as "selected" against the very marker that means it.
+//   Type  = the IMAGE. A small drawing of what this type produces — a backlit shot
+//           with a headline, a data poster, a flat landscape. One inline SVG each,
+//           in `type-art.js`, which is where the reasoning lives.
 //   Style = a COLOUR swatch. Its palette, gradients, contrast — what does this image
-//           look like? This is where the colour lives.
+//           look like? Six CSS modifiers over one markup, the `.sub-preview--*`
+//           pattern from clip-subtitles.js. A palette IS flat bands of colour, so
+//           three spans say it and nothing is gained by drawing it.
 //
-// One markup, nine CSS modifiers, zero assets — the `.sub-preview--*` pattern from
-// clip-subtitles.js. Chosen over SVG because a card's art scales with the option
-// card it sits in: a composition expressed in % is resolution-free, where nine
-// fixed-viewBox SVGs would need per-stroke `vector-effect` and would put nine blobs
-// of trusted HTML in a JS module. Sizing rules live with the CSS.
-//
-// `.isv2-art` IS the backdrop, and its ::before/::after add two more drawable layers
-// on top of the three slots — five for at most three elements. The slots are
-// deliberately meaningless: each modifier assigns them a role.
+// `.isv2-art` IS the backdrop for those swatches, and its ::before/::after add two
+// more drawable layers on top of the three slots — five for at most three elements.
+// The slots are deliberately meaningless: each modifier assigns them a role.
 function optionArt(family, key) {
+  if (family === "type") return typeArt(key);
   return `<span class="isv2-art isv2-art--${family} isv2-art--${escapeHtml(key)}" aria-hidden="true">
     <span class="isv2-art__a"></span><span class="isv2-art__b"></span><span class="isv2-art__c"></span>
   </span>`;

@@ -1402,114 +1402,121 @@
   display: block;
 }
 
-/* ── Type: composition schematics ──────────────────────────────────────────
-   Monochrome, DS greys only, no accent. Greyscale is the point twice over: a
-   composition diagram is about placement and mass rather than colour, and electric
-   blue is this house's interactive colour — a blue shape inside an UNSELECTED card
-   would fight the blue ring that means "picked". */
+/* ── Type: three drawn previews of what the image will BE ──────────────────
+   `type-art.js` holds the geometry (one inline SVG per IMAGE_TYPES entry) and names
+   its shapes; every colour lives here, so the tokens are where `validate_css` can see
+   them and a palette change lands in one file. Two families of class: `ta-*` fills,
+   `ta-stop-*` gradient stops.
+
+   Greys carry the composition and ONE warm accent carries the image. Not electric
+   blue — a blue shape inside an UNSELECTED card would fight the blue ring that means
+   "picked". Not the brand orange either (`--ref-color-orange-*`), which is the AI /
+   spotlight ACTION colour in this house: amber (`--ref-color-tag-orange-*`) is the tag
+   family, so nothing inside these frames reads as a button.
+
+   This replaced the CSS composition schematics (`git log -S "isv2-art--visual-hook"`):
+   three spans plus ::before/::after capped every Type at five shapes, and at five
+   shapes a Type can only name a geometry — a circle, a square and a triangle for
+   "Illustration" — rather than the thing being made. The Style swatches below are
+   still CSS and should stay: a palette IS flat bands of colour. */
+.isv2-type-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.isv2-type-art .ta-ink {
+  fill: var(--ref-color-grey-150);
+}
+.isv2-type-art .ta-ink-2 {
+  fill: var(--ref-color-grey-100);
+}
+.isv2-type-art .ta-mid {
+  fill: var(--ref-color-grey-80);
+}
+.isv2-type-art .ta-soft {
+  fill: var(--ref-color-grey-40);
+}
+.isv2-type-art .ta-pale {
+  fill: var(--ref-color-grey-20);
+}
+.isv2-type-art .ta-white {
+  fill: var(--ref-color-white);
+}
+.isv2-type-art .ta-sky {
+  fill: var(--ref-color-tag-orange-10);
+}
+.isv2-type-art .ta-field {
+  fill: var(--ref-color-tag-orange-40);
+}
+.isv2-type-art .ta-accent-lo {
+  fill: var(--ref-color-tag-orange-60);
+}
+.isv2-type-art .ta-accent-md {
+  fill: var(--ref-color-tag-orange-80);
+}
+.isv2-type-art .ta-accent {
+  fill: var(--ref-color-tag-orange-100);
+}
+.isv2-type-art .ta-accent-hi {
+  fill: var(--ref-color-tag-orange-150);
+}
+
+/* The portrait's rim light is a FILL (the silhouette drawn once in warm, once in ink,
+   offset), not a stroke — see type-art.js. */
+.isv2-type-art .ta-rim-fill {
+  fill: var(--ref-color-tag-orange-60);
+}
+
+/* Strokes: the illustration's ink crests and birds, its sun's flat halo, the chart's
+   plot line, its faint rules, and the white arrow in the callout. */
+.isv2-type-art .ta-line {
+  stroke: var(--ref-color-grey-150);
+}
+.isv2-type-art .ta-halo {
+  stroke: var(--ref-color-tag-orange-40);
+}
+.isv2-type-art .ta-plot {
+  stroke: var(--ref-color-grey-100);
+}
+.isv2-type-art .ta-grid {
+  fill: var(--ref-color-grey-10);
+}
+.isv2-type-art .ta-stroke-white {
+  stroke: var(--ref-color-white);
+}
+
+/* Gradient stops take `stop-color`, not `fill` — hence a second family over the same
+   tokens rather than one shared set. */
+.isv2-type-art .ta-stop-night {
+  stop-color: var(--ref-color-grey-150);
+}
+.isv2-type-art .ta-stop-dusk {
+  stop-color: var(--ref-color-grey-80);
+}
+.isv2-type-art .ta-stop-white {
+  stop-color: var(--ref-color-white);
+}
+.isv2-type-art .ta-stop-paper {
+  stop-color: var(--ref-color-grey-05);
+}
+.isv2-type-art .ta-stop-glow {
+  stop-color: var(--ref-color-tag-orange-80);
+}
+.isv2-type-art .ta-stop-accent-lo {
+  stop-color: var(--ref-color-tag-orange-60);
+}
+.isv2-type-art .ta-stop-accent {
+  stop-color: var(--ref-color-tag-orange-100);
+}
+.isv2-type-art .ta-stop-accent-hi {
+  stop-color: var(--ref-color-tag-orange-150);
+}
+
+/* The fallback frame, for an IMAGE_TYPES key with no drawing — `typeArt()` falls back
+   to the old `.isv2-art` markup, so a renamed key degrades to grey, not to nothing. */
 .isv2-art--type {
   background: var(--ref-color-grey-05);
-}
-
-/* Visual hook — one striking focal subject, generous negative space. The subject is
-   off-centre and large; the emptiness around it is the other half of the statement. */
-.isv2-art--visual-hook .isv2-art__a {
-  left: 12%;
-  top: 18%;
-  width: 44%;
-  height: 58%;
-  border-radius: var(--app-radius-circle);
-  background: var(--ref-color-grey-60);
-}
-.isv2-art--visual-hook .isv2-art__b {
-  right: 12%;
-  top: 30%;
-  width: 24%;
-  height: 6px;
-  border-radius: 3px;
-  background: var(--ref-color-grey-20);
-}
-.isv2-art--visual-hook .isv2-art__c {
-  right: 12%;
-  top: 46%;
-  width: 16%;
-  height: 6px;
-  border-radius: 3px;
-  background: var(--ref-color-grey-20);
-}
-
-/* Infographic — a chart as the hero, on a baseline, with a label line under it. */
-.isv2-art--infographic {
-  background: var(--ref-color-grey-05);
-}
-.isv2-art--infographic .isv2-art__a {
-  left: 16%;
-  bottom: 26%;
-  width: 16%;
-  height: 26%;
-  background: var(--ref-color-grey-40);
-}
-.isv2-art--infographic .isv2-art__b {
-  left: 40%;
-  bottom: 26%;
-  width: 16%;
-  height: 48%;
-  background: var(--ref-color-grey-80);
-}
-.isv2-art--infographic .isv2-art__c {
-  left: 64%;
-  bottom: 26%;
-  width: 16%;
-  height: 34%;
-  background: var(--ref-color-grey-40);
-}
-/* The baseline the bars stand on, and the caption line under it. */
-.isv2-art--infographic::before {
-  content: "";
-  position: absolute;
-  left: 12%;
-  right: 12%;
-  bottom: 26%;
-  height: 1px;
-  background: var(--ref-color-grey-60);
-}
-.isv2-art--infographic::after {
-  content: "";
-  position: absolute;
-  left: 16%;
-  bottom: 12%;
-  width: 36%;
-  height: 6px;
-  border-radius: 3px;
-  background: var(--ref-color-grey-20);
-}
-
-/* Illustration — flat overlapping shapes and confident linework, no photography:
-   a filled circle, an outlined square, a triangle. */
-.isv2-art--illustration .isv2-art__a {
-  left: 14%;
-  top: 22%;
-  width: 38%;
-  height: 50%;
-  border-radius: var(--app-radius-circle);
-  background: var(--ref-color-grey-40);
-}
-.isv2-art--illustration .isv2-art__b {
-  left: 38%;
-  top: 34%;
-  width: 34%;
-  height: 44%;
-  border: 2px solid var(--ref-color-grey-80);
-  background: transparent;
-}
-.isv2-art--illustration .isv2-art__c {
-  right: 12%;
-  top: 18%;
-  width: 0;
-  height: 0;
-  border-left: 11px solid transparent;
-  border-right: 11px solid transparent;
-  border-bottom: 19px solid var(--ref-color-grey-60);
 }
 
 /* ── Style: colour swatches ────────────────────────────────────────────────
@@ -1695,6 +1702,13 @@
 
 .gen-style-thumb .isv2-pickmark {
   --isv2-pickmark-ring: var(--ref-color-grey-60);
+}
+
+/* …except over a dark drawing, where grey-60 all but disappears. Same split the
+   reference tiles already make (white on a photo, grey-60 on light art); the Type row
+   only reached it when one of its three previews turned into a night shot. */
+.gen-style-thumb:has(.isv2-type-art--dark) .isv2-pickmark {
+  --isv2-pickmark-ring: var(--ref-color-white);
 }
 
 .gen-style-card[aria-pressed="true"] .isv2-pickmark {

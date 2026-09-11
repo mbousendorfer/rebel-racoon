@@ -201,7 +201,7 @@ src/
                           settings-view · references-view · branding-view ·
                           brief-blocks · preview-column ·
                           composer-view (Edit only) · tools-view · edit-view ·
-                          interactions · context
+                          interactions · context · type-art (the 3 drawn Type previews)
 
   modal-coordinator.js    one-overlay-at-a-time: requestOpen / notifyClose / bindOverlayDismissal
 ```
@@ -283,7 +283,8 @@ The modules split by **subject**, not by size: `index.js` is the lifecycle, `eve
 delegated listener, `commit.js` the paths that write to the draft, `prompt-guard.js` the
 confirmation that protects a hand-edited brief, then one view module per surface
 (`stage-view`, `setup-stage`, `settings-view`, `references-view`, `branding-view`, `brief-blocks`,
-`preview-column`, `composer-view`, `tools-view`, `edit-view`).
+`preview-column`, `composer-view`, `tools-view`, `edit-view`), plus `type-art.js`, the three drawn
+previews of the Type row.
 
 **The options come first, the brief comes last.** Generate is two halves for the whole loop — the
 seven option rows on the left, the image or its placeholder on the right — and **Generate is the
@@ -319,10 +320,18 @@ flyout sheets the settings panel replaced — `settings-view.js` carries the dis
 
 ⚠️ Four class families are assembled by string concatenation and a rename breaks them silently:
 `.image-studio__crop-handle--{nw,ne,se,sw}`, `.image-studio__popover--{kind}`,
-`.image-studio__tt-{kind}`, and `.isv2-art--{key}` — the drawn Type/Style previews, keyed off
-`IMAGE_TYPES` / `STYLE_PRESETS`, so renaming a catalogue key un-styles its card. That last one
-degrades to a plain grey frame rather than to nothing, because the two family blocks
-(`.isv2-art--type` / `--look`) carry a neutral fallback.
+`.image-studio__tt-{kind}`, and `.isv2-art--{key}` — the drawn Style swatches, keyed off
+`STYLE_PRESETS`, so renaming a catalogue key un-styles its card. That last one degrades to a plain
+grey frame rather than to nothing, because the family block (`.isv2-art--look`) carries a neutral
+fallback.
+
+The three **Type** previews left that family: they are inline SVG now (`type-art.js`, one drawing per
+`IMAGE_TYPES` key, colours in CSS as `.ta-*` / `.ta-stop-*` tokens). Five shapes — three spans plus
+`::before`/`::after` — could only name a geometry, so "Illustration" was a circle, a square and a
+triangle. A Style stays CSS, because a palette IS flat bands of colour. Two rules came out of drawing
+them: what separates the three is **treatment** (photographic · data poster · flat vector), not
+subject; and there is **ONE warm disc in the row**, the Illustration's sun — a sphere in the hook and
+a donut in the chart made three cards read as three sunsets.
 
 ### Connectors as live, MCP-queryable sources
 
