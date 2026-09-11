@@ -21,10 +21,35 @@
   min-width: 0;
 }
 
+/* ── The head ─────────────────────────────────────────────────────────────
+   The brand and its three verdict counts on ONE line. Stacked, they asked the
+   same question twice ("where am I" / "how is it going") in two thin rows, and
+   left the head weighing less than the table under it. `baseline` so the pills
+   sit on the title's baseline rather than centring against its cap height, and
+   `wrap` so a long Playbook name pushes them to a second line instead of
+   squeezing them. */
+.ins-mob_index__titles {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxs) var(--ref-spacing-md);
+  min-width: 0;
+}
+
 /* ── The index ────────────────────────────────────────────────────────────── */
 
 .ins-mob_index__card {
   gap: var(--ref-spacing-xs);
+}
+
+/* Row rhythm. The DS table is tuned for one line per cell; this one carries a
+   name, a meta line and sometimes a warning in its first cell, so at the
+   component's own padding the rows read as a dense grid rather than a list you
+   scan. Four objectives then occupy 190px of a 1240px page — which is what
+   made this lecture look unfinished rather than short. */
+.ins-mob_index__table :is(th, td) {
+  padding-block: var(--ref-spacing-xs);
+  vertical-align: middle;
 }
 
 /* No per-th/td rules beyond the columns that hold a drawn shape or a button —
@@ -60,6 +85,10 @@
   background: none;
   text-align: left;
   font: inherit;
+  /* One rung above the table's own type: the name is the row's subject, and at
+     the cell's 14px it weighed the same as the six figures beside it. */
+  font-size: var(--ref-font-size-md);
+  line-height: var(--ref-font-line-height-md);
   font-weight: var(--ref-font-weight-bold);
   color: var(--sys-text-color-default);
   cursor: pointer;
@@ -98,21 +127,68 @@
   color: var(--sys-color-warning-text);
 }
 
+/* Bar and figure on ONE line, as a flex row rather than two inline-blocks
+   sharing a `calc(100% - Npx)`: that arithmetic has to also pay for the
+   whitespace between the two tags, and the moment the figure grew a rung the
+   pair wrapped and the percentage dropped under its own bar. Flex has no such
+   budget to get wrong.
+   ⚠️ The flex goes on a wrapper INSIDE the cell, not on the cell: a `td` that
+   is its own flex container stops honouring `vertical-align`, so in the one row
+   tall enough to carry a warning line the bar sat at the top while every other
+   cell stayed centred. */
 .ins-mob_index__bar {
-  min-width: 160px;
+  min-width: 180px;
 }
 
-.ins-mob_index__bar .app-bar {
-  display: inline-block;
-  width: calc(100% - 46px);
-  vertical-align: middle;
-  margin-right: var(--ref-spacing-xxxs);
+.ins-mob_index__barrow {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
 }
 
-.ins-mob_index__bar .ins-num {
-  display: inline-block;
-  width: 38px;
+.ins-mob_index__barrow .app-bar {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* The percentage is the row's headline figure — the one number the reader
+   compares down the column — so it takes the same rung as the name. */
+.ins-mob_index__barrow .ins-num {
+  flex: 0 0 auto;
+  min-width: 42px;
+  text-align: right;
+  font-size: var(--ref-font-size-md);
+  line-height: var(--ref-font-line-height-md);
   font-weight: var(--ref-font-weight-bold);
+}
+
+/* ── Current → target, as one fact ─────────────────────────────────────────
+   Two right-aligned columns with white between them made the eye bridge a gap
+   to read the pair they only mean together. One cell, one arrow — the sentence
+   the fiche's own measure rows already write. The target is the lighter half:
+   it is the fixed side, the current value is what moves. */
+.ins-mob_index__pair {
+  white-space: nowrap;
+}
+
+.ins-mob_index__to {
+  margin-inline: var(--ref-spacing-xxxs);
+  color: var(--sys-text-color-light);
+}
+
+.ins-mob_index__target {
+  color: var(--sys-text-color-light);
+}
+
+/* ── The trajectory ────────────────────────────────────────────────────────
+   The curve, in the index. It is the direct answer to what killed the Bento
+   board — a board of tiles "turned every measure into a number without its
+   curve" — and the one part of a comparison no figure carries: two objectives
+   at 84% are not the same objective if one is climbing and the other sagging.
+   Same width as the fiche's Measures column, so the two read as one family. */
+.ins-mob_index__spark {
+  width: 120px;
+  min-width: 120px;
 }
 
 /* The affordance, not a control: it says the row opens, the row is what you
@@ -137,12 +213,16 @@
 
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 
-/* Under this the eight columns stop fitting, and the three the reader can lose
-   first are the ones the name already implies or the state repeats. Measured on
-   the VIEWPORT here and not a container, because the table is the whole page —
-   there is no band whose width the viewport would not know. */
+/* Under this the eight columns stop fitting. What goes first is the measure
+   COUNT (the fiche says it, and it is the one column nobody compares) and the
+   trajectory — the curve is the richest cell, but it is also the one that needs
+   room to mean anything, and a 40px sparkline is a smudge. Measured on the
+   VIEWPORT here and not a container, because the table is the whole page —
+   there is no band whose width the viewport would not know.
+
+   Columns: 1 Objective · 2 Progress · 3 Current → target · 4 Trajectory ·
+   5 Trend · 6 Measures · 7 State · 8 the chevron. */
 @media (max-width: 1080px) {
-  .ins-mob_index__table :is(th, td):nth-child(3),
   .ins-mob_index__table :is(th, td):nth-child(4),
   .ins-mob_index__table :is(th, td):nth-child(6) {
     display: none;
@@ -150,6 +230,7 @@
 }
 
 @media (max-width: 720px) {
+  .ins-mob_index__table :is(th, td):nth-child(3),
   .ins-mob_index__table :is(th, td):nth-child(5) {
     display: none;
   }

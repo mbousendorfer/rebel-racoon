@@ -70,6 +70,16 @@
   min-width: 0;
 }
 
+/* "14 posts drafted with Archie moved them over the window." — the shared
+   sentence (pieces.js `postsMovedLine`), wherever a head carries it. Report
+   adds its own class on top for the hero's grid slot. */
+.ins-postsline {
+  margin: 0;
+  font-size: var(--ref-font-size-sm);
+  line-height: var(--ref-font-line-height-sm);
+  color: var(--sys-text-color-light);
+}
+
 .insights__host {
   flex: 1;
   min-height: 0;

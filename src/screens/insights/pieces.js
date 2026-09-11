@@ -8,12 +8,12 @@
 // Pure render helpers — strings in, strings out. No listeners: every action is
 // a `data-ins-*` hook the shell dispatches.
 
-import { escapeHtml as esc } from "../../utils.js?v=1098";
-import { renderPostEchoRow } from "../../components/top-post-card.js?v=1098";
-import { getContexts } from "../../contexts-store.js?v=1098";
-import { isWorkspaceMode } from "../../active-playbook.js?v=1098";
-import { progressBar } from "./charts.js?v=1098";
-import { signedPct } from "./model.js?v=1098";
+import { escapeHtml as esc } from "../../utils.js?v=1102";
+import { renderPostEchoRow } from "../../components/top-post-card.js?v=1102";
+import { getContexts } from "../../contexts-store.js?v=1102";
+import { isWorkspaceMode } from "../../active-playbook.js?v=1102";
+import { progressBar } from "./charts.js?v=1102";
+import { signedPct } from "./model.js?v=1102";
 
 // ── The page's head — the scope, worn as the heading ─────────────────────
 //
@@ -142,6 +142,20 @@ export function tierCounts(rollup) {
     ${one(rollup.offTrack, "Off track", "red")}
     ${rollup.collecting ? one(rollup.collecting, "Collecting", "grey") : ""}
   </div>`;
+}
+
+/**
+ * "14 posts drafted with Archie moved them over the window." — the one line in
+ * a head that says these objectives are being WORKED and not just watched.
+ *
+ * Shared, because Report's hero and the Index's head say the same sentence
+ * about the same number: a second copy is how two heads end up disagreeing.
+ * Callers pass their own class when they already style that slot.
+ */
+export function postsMovedLine(rollup, { className = "" } = {}) {
+  const n = rollup.posts;
+  if (!n) return "";
+  return `<p class="ins-postsline${className ? ` ${className}` : ""}">${n} post${n === 1 ? "" : "s"} drafted with Archie moved them over the window.</p>`;
 }
 
 // ── Verdict ───────────────────────────────────────────────────────────────

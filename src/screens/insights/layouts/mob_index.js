@@ -22,6 +22,18 @@
 // No KPI strip above the table either, Deel-style: `tierCounts` in the head
 // already says On track / At risk / Off track, and a band of tiles restating
 // those three numbers is exactly the fault that got Report's ring row cut.
+// That rule still holds after the legibility pass below: the head gained WEIGHT
+// (brand + counts on one line, the shared "N posts drafted" sentence under it)
+// and not a single new figure.
+//
+// What the row gained instead is its TRAJECTORY — the headline measure's
+// sparkline, 120px, tier-coloured, the same helper the fiche's Measures table
+// uses. It is the answer to the objection that killed Bento ("it turned every
+// measure into a number without its curve") in the one place a table can take
+// it: two objectives at 84% are not the same objective if one climbs and the
+// other sags, and no figure in the row carries that. Current and Target became
+// ONE cell for the same reason — they only mean anything as a pair, and two
+// right-aligned columns made the eye bridge white space to read it.
 //
 // The two states key off `?objective=` — which `shell.js` hands over as
 // `selectedKey`, already nullable. So "nothing selected" is a state this layout
@@ -33,9 +45,18 @@
 // and Monarch give their goal pages. A second switcher on the fiche would be two
 // controls that can disagree, which is the failure that note warns about.
 
-import { playbookTitle, tierCounts, statusPill, originMark, windowLine, trendGlyph, esc } from "../pieces.js?v=1098";
-import { progressBar, mountCharts } from "../charts.js?v=1098";
-import { shownMeasure, readHead, readReading, readout, readChart, readMeasures, readPosts } from "../read.js?v=1098";
+import {
+  playbookTitle,
+  tierCounts,
+  statusPill,
+  originMark,
+  windowLine,
+  trendGlyph,
+  postsMovedLine,
+  esc,
+} from "../pieces.js?v=1102";
+import { progressBar, sparklineSpec, mountCharts } from "../charts.js?v=1102";
+import { shownMeasure, readHead, readReading, readout, readChart, readMeasures, readPosts } from "../read.js?v=1102";
 
 export const id = "mob_index";
 export const label = "Mob · Index";
@@ -63,8 +84,25 @@ function renderIndex(entries, rollup, ctx, specs, firstPaint) {
   // Worst first — the order `model.js` already returns, so the objective asking
   // for attention is the first row and not the first one declared.
   const rows = entries
-    .map((e) => {
+    .map((e, i) => {
       const m = e.headline;
+      // The curve, IN the index. This is the answer to the objection that
+      // killed the Bento board — "it turned every measure into a number without
+      // its curve" — and it is why a table can be the door: a row compares, and
+      // a 120px trajectory is the one part of the comparison a number can't
+      // carry. Same helper, same tier colour as the fiche's Measures table.
+      const sparkId = `mobindex-row-spark-${i}`;
+      if (m?.series) specs.set(sparkId, sparklineSpec(m.series, { tier: e.tier, height: 28 }));
+      // Current and Target were two right-aligned columns with a gap of white
+      // between them, so the eye had to bridge them to read the one fact they
+      // make together. One cell, one arrow, the sentence the fiche's measure
+      // rows already write: 14,800 → 20,000.
+      const pair =
+        m && (m.currentLabel || m.targetLabel)
+          ? `<span class="ins-num">${esc(m.currentLabel || "—")}</span>
+             <span class="ins-mob_index__to" aria-hidden="true">→</span>
+             <span class="ins-num ins-mob_index__target">${esc(m.targetLabel || "—")}</span>`
+          : `<span class="ins-num">—</span>`;
       return `<tr class="ins-mob_index__row" data-ins-select="${esc(e.key)}" data-ins-objective="${esc(e.key)}">
         <th scope="row">
           <button type="button" class="ins-mob_index__name" data-ins-select="${esc(e.key)}">${esc(e.label)}</button>
@@ -72,11 +110,13 @@ function renderIndex(entries, rollup, ctx, specs, firstPaint) {
           ${e.parked && e.soon ? `<span class="ins-mob_index__soon"><i class="ap-icon-warning_fill ap-icon-sm" aria-hidden="true"></i>${esc(e.soon)}</span>` : ""}
         </th>
         <td class="ins-mob_index__bar">
-          ${progressBar(e.progress, e.tier, { pending: e.collecting })}
-          <span class="ins-num">${e.collecting ? "—" : `${e.progress}%`}</span>
+          <span class="ins-mob_index__barrow">
+            ${progressBar(e.progress, e.tier, { pending: e.collecting })}
+            <span class="ins-num">${e.collecting ? "—" : `${e.progress}%`}</span>
+          </span>
         </td>
-        <td class="right ins-num">${esc(m?.currentLabel || "—")}</td>
-        <td class="right ins-num">${esc(m?.targetLabel || "—")}</td>
+        <td class="ins-mob_index__pair">${pair}</td>
+        <td class="ins-mob_index__spark">${m?.series ? `<span class="ins-chart__node" data-ins-chart="${sparkId}" style="height:28px"></span>` : ""}</td>
         <td>${m ? trendGlyph(m) : ""}</td>
         <td class="ins-num">${e.counts.measures}</td>
         <td>${statusPill(e)}</td>
@@ -85,10 +125,18 @@ function renderIndex(entries, rollup, ctx, specs, firstPaint) {
     })
     .join("");
 
+  // The head is the page's header, so it is built like one: the brand and its
+  // verdict counts on ONE line (they answer "where am I" and "how is it going",
+  // which is one question asked twice when they are stacked), and under it the
+  // one line that says the objectives are being worked. NOT a KPI strip — no
+  // tile, no new figure, nothing restated. See the note at the top of this file.
   return `<header class="insights__band">
       <div class="insights__band-inner">
-        ${playbookTitle(ctx)}
-        ${tierCounts(rollup)}
+        <div class="ins-mob_index__titles">
+          ${playbookTitle(ctx)}
+          ${tierCounts(rollup)}
+        </div>
+        ${postsMovedLine(rollup)}
       </div>
     </header>
     <div class="ins-mob_index">
@@ -100,8 +148,8 @@ function renderIndex(entries, rollup, ctx, specs, firstPaint) {
               <tr>
                 <th scope="col">Objective</th>
                 <th scope="col">Progress</th>
-                <th scope="col" class="right">Current</th>
-                <th scope="col" class="right">Target</th>
+                <th scope="col">Current → target</th>
+                <th scope="col">Trajectory</th>
                 <th scope="col">Trend</th>
                 <th scope="col">Measures</th>
                 <th scope="col">State</th>

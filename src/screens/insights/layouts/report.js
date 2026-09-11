@@ -28,8 +28,8 @@
 // chapter's own verdict 60px above it, and encoding "how far along" as an arc
 // nobody can compare, with the real work done by the number printed inside.
 
-import { rollupSentence, readingFor } from "../model.js?v=1098";
-import { trendSpec, mountCharts } from "../charts.js?v=1098";
+import { rollupSentence, readingFor } from "../model.js?v=1102";
+import { trendSpec, mountCharts } from "../charts.js?v=1102";
 import {
   tierCounts,
   statusPill,
@@ -42,8 +42,9 @@ import {
   proxyNote,
   objectiveActions,
   playbookTitle,
+  postsMovedLine,
   esc,
-} from "../pieces.js?v=1098";
+} from "../pieces.js?v=1102";
 
 export const id = "report";
 export const label = "Report";
@@ -78,18 +79,13 @@ export function render(host, vm) {
 // same thing" when one is chrome and the other is the content. It is the shared
 // header band now, the same tray Cockpit bis's strip is (insights.css).
 function renderHero(entries, rollup, shown, ctx) {
-  const posts = rollup.posts;
   return `<header class="insights__band ins-report-hero">
     <div class="insights__band-inner">
       <div class="ins-report-hero__titles">
         ${playbookTitle(ctx)}
         ${tierCounts(rollup)}
       </div>
-      ${
-        posts
-          ? `<p class="ins-report-hero__note">${posts} post${posts === 1 ? "" : "s"} drafted with Archie moved them over the window.</p>`
-          : ""
-      }
+      ${postsMovedLine(rollup, { className: "ins-report-hero__note" })}
       ${renderTabs(entries, shown)}
     </div>
   </header>`;
