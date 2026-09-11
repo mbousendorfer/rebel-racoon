@@ -436,10 +436,11 @@ L'ordre dit un raisonnement : **ce qui va DANS l'image**, puis son **traitement*
   le gagnant en accent, courbe, légende), Illustration est du vecteur plat (aplats, filets d'encre sur
   les crêtes, aucun dégradé). Et **un seul disque chaud dans la rangée**, le soleil de l'Illustration :
   une sphère dans le hook et un donut dans le graphe faisaient lire trois cartes comme trois couchers
-  de soleil. La couleur d'appoint est l'ambre `tag-orange`, pas le bleu électrique (l'anneau bleu veut
-  dire « choisi », une forme bleue dans une carte **non sélectionnée** se battrait avec lui) et pas
-  l'orange de marque (c'est la couleur d'**action** IA — rien dans ces cadres ne doit ressembler à un
-  bouton).
+  de soleil. La couleur d'appoint est **l'orange de marque** (`--ref-color-orange-*`, celui du mark Archie) sur
+  le navy grey-150 — des images Agorapulse. Pas le bleu électrique : l'anneau bleu veut dire
+  « choisi », une forme bleue dans une carte **non sélectionnée** se battrait avec lui. ⚠️ Une
+  première passe avait pris l'ambre `tag-orange` pour tenir la couleur d'**action** IA hors des
+  cadres ; tranché dans l'autre sens — ce sont des images, pas des contrôles.
 - **Style** — 6 presets en vignettes **dessinées**. **Désactivé dès qu'une référence est en jeu**, et
   il dit alors pourquoi (`From references`) : deux sources de look qui se contredisent, c'est une de
   trop.

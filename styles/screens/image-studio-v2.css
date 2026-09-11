@@ -1408,11 +1408,13 @@
    them and a palette change lands in one file. Two families of class: `ta-*` fills,
    `ta-stop-*` gradient stops.
 
-   Greys carry the composition and ONE warm accent carries the image. Not electric
-   blue — a blue shape inside an UNSELECTED card would fight the blue ring that means
-   "picked". Not the brand orange either (`--ref-color-orange-*`), which is the AI /
-   spotlight ACTION colour in this house: amber (`--ref-color-tag-orange-*`) is the tag
-   family, so nothing inside these frames reads as a button.
+   Greys carry the composition and ONE warm accent carries the image: the brand's own
+   orange (`--ref-color-orange-*`, the Archie mark's colour) on the navy of grey-150 —
+   an Agorapulse picture, asked for by name. Not electric blue: a blue shape inside an
+   UNSELECTED card would fight the blue ring that means "picked". ⚠️ A first pass used
+   amber (`--ref-color-tag-orange-*`) to keep the AI / spotlight ACTION colour out of
+   these frames; the user overruled it — the previews are pictures, not controls, and
+   nobody mistakes an orange sun for a button. Don't swap it back.
 
    This replaced the CSS composition schematics (`git log -S "isv2-art--visual-hook"`):
    three spans plus ::before/::after capped every Type at five shapes, and at five
@@ -1444,28 +1446,28 @@
   fill: var(--ref-color-white);
 }
 .isv2-type-art .ta-sky {
-  fill: var(--ref-color-tag-orange-10);
+  fill: var(--ref-color-orange-10);
 }
 .isv2-type-art .ta-field {
-  fill: var(--ref-color-tag-orange-40);
+  fill: var(--ref-color-orange-40);
 }
 .isv2-type-art .ta-accent-lo {
-  fill: var(--ref-color-tag-orange-60);
+  fill: var(--ref-color-orange-60);
 }
 .isv2-type-art .ta-accent-md {
-  fill: var(--ref-color-tag-orange-80);
+  fill: var(--ref-color-orange-80);
 }
 .isv2-type-art .ta-accent {
-  fill: var(--ref-color-tag-orange-100);
+  fill: var(--ref-color-orange-100);
 }
 .isv2-type-art .ta-accent-hi {
-  fill: var(--ref-color-tag-orange-150);
+  fill: var(--ref-color-orange-150);
 }
 
 /* The portrait's rim light is a FILL (the silhouette drawn once in warm, once in ink,
    offset), not a stroke — see type-art.js. */
 .isv2-type-art .ta-rim-fill {
-  fill: var(--ref-color-tag-orange-60);
+  fill: var(--ref-color-orange-60);
 }
 
 /* Strokes: the illustration's ink crests and birds, its sun's flat halo, the chart's
@@ -1474,7 +1476,7 @@
   stroke: var(--ref-color-grey-150);
 }
 .isv2-type-art .ta-halo {
-  stroke: var(--ref-color-tag-orange-40);
+  stroke: var(--ref-color-orange-40);
 }
 .isv2-type-art .ta-plot {
   stroke: var(--ref-color-grey-100);
@@ -1501,16 +1503,16 @@
   stop-color: var(--ref-color-grey-05);
 }
 .isv2-type-art .ta-stop-glow {
-  stop-color: var(--ref-color-tag-orange-80);
+  stop-color: var(--ref-color-orange-80);
 }
 .isv2-type-art .ta-stop-accent-lo {
-  stop-color: var(--ref-color-tag-orange-60);
+  stop-color: var(--ref-color-orange-60);
 }
 .isv2-type-art .ta-stop-accent {
-  stop-color: var(--ref-color-tag-orange-100);
+  stop-color: var(--ref-color-orange-100);
 }
 .isv2-type-art .ta-stop-accent-hi {
-  stop-color: var(--ref-color-tag-orange-150);
+  stop-color: var(--ref-color-orange-150);
 }
 
 /* The fallback frame, for an IMAGE_TYPES key with no drawing — `typeArt()` falls back

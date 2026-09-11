@@ -326,7 +326,8 @@ grey frame rather than to nothing, because the family block (`.isv2-art--look`) 
 fallback.
 
 The three **Type** previews left that family: they are inline SVG now (`type-art.js`, one drawing per
-`IMAGE_TYPES` key, colours in CSS as `.ta-*` / `.ta-stop-*` tokens). Five shapes — three spans plus
+`IMAGE_TYPES` key, colours in CSS as `.ta-*` / `.ta-stop-*` tokens — brand orange on navy, the
+user's call over the amber a first pass used). Five shapes — three spans plus
 `::before`/`::after` — could only name a geometry, so "Illustration" was a circle, a square and a
 triangle. A Style stays CSS, because a palette IS flat bands of colour. Two rules came out of drawing
 them: what separates the three is **treatment** (photographic · data poster · flat vector), not

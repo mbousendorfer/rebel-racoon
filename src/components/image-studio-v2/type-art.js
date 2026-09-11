@@ -34,18 +34,19 @@
 // block: circle, rectangle, and the one disc that is actually a sun.
 //
 // ── Colour ──────────────────────────────────────────────────────────────────
-// Greys carry the composition; ONE warm accent carries the image. Not electric blue,
-// which is this house's interactive colour — a blue shape inside an UNSELECTED card
-// would fight the blue ring that means "picked". Not the brand orange either
-// (`--ref-color-orange-*`), which is the AI / spotlight ACTION colour: amber
-// (`--ref-color-tag-orange-*`) is the tag family, so nothing in these frames reads as
-// a button. Every value is a real DS token, and they live in CSS — the markup below
-// carries geometry and class names only, so `validate_css` sees the tokens and a
-// theme change lands without touching this file.
+// Greys carry the composition; ONE warm accent carries the image — the brand's own
+// orange (`--ref-color-orange-*`, the Archie mark's colour) on grey-150 navy, so the
+// three previews are Agorapulse pictures. Not electric blue, which is this house's
+// interactive colour — a blue shape inside an UNSELECTED card would fight the blue ring
+// that means "picked". (A first pass used amber to keep the AI-action orange out of the
+// frames; overruled — these are pictures, not controls.) Every value is a real DS
+// token, and they live in CSS — the markup below carries geometry and class names
+// only, so `validate_css` sees the tokens and a palette change lands without touching
+// this file: the amber → orange swap touched zero paths here.
 //
 // Ids inside <defs> are namespaced per drawing (`ita-h-*`): two SVGs sharing a
 // gradient id would silently swap fills.
-import { escapeHtml } from "../../utils.js?v=1136";
+import { escapeHtml } from "../../utils.js?v=1137";
 
 const VISUAL_HOOK = `<svg class="isv2-type-art isv2-type-art--dark" viewBox="0 0 120 90" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
   <defs>
