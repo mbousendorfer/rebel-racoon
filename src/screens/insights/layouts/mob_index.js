@@ -12,28 +12,37 @@
 // while you read. Nothing else on the page competes with the objective once it
 // is open, and the index gets the whole width to be a table instead of a gutter.
 //
-// ⚠️ The index is a TABLE, not a mosaic of tiles. A board of tiles was built
-// here once — Bento — and cut: "at a glance is not how anyone reads an
-// objective, and the board turned every measure into a number without its
-// curve" (shell.js). The defence of a table is that it is not the reading
-// surface: it is the door, and every measure keeps its full-size curve one click
-// behind it. A row compares, the fiche explains.
+// ⚠️ THE INDEX IS A GRID OF CARDS. It was a TABLE, twice, and this file said in
+// as many words that it had to stay one — "not a mosaic of tiles", because a
+// board of tiles was built here once (Bento) and cut: "at a glance is not how
+// anyone reads an objective, and the board turned every measure into a number
+// without its curve" (shell.js).
 //
-// No KPI strip above the table either, Deel-style: `tierCounts` in the head
-// already says On track / At risk / Off track, and a band of tiles restating
-// those three numbers is exactly the fault that got Report's ring row cut.
-// That rule still holds after the legibility pass below: the head gained WEIGHT
-// (brand + counts on one line, the shared "N posts drafted" sentence under it)
-// and not a single new figure.
+// The user overruled that on 2026-09-11, twice, the second time flatly: "le
+// tableau n'est définitivement pas la bonne représentation". A table of eight
+// 14px columns is a database read — it hierarchises nothing, the objective's
+// name weighs exactly what the six figures beside it weigh, and no amount of
+// row rhythm or column merging fixes that (both were tried in the commit
+// before this one).
 //
-// What the row gained instead is its TRAJECTORY — the headline measure's
-// sparkline, 120px, tier-coloured, the same helper the fiche's Measures table
-// uses. It is the answer to the objection that killed Bento ("it turned every
-// measure into a number without its curve") in the one place a table can take
-// it: two objectives at 84% are not the same objective if one climbs and the
-// other sags, and no figure in the row carries that. Current and Target became
-// ONE cell for the same reason — they only mean anything as a pair, and two
-// right-aligned columns made the eye bridge white space to read it.
+// WHAT MAKES THIS NOT BENTO — the one thing that has to survive from the cut:
+// **every card carries its CURVE**, `trendSpec` at 104px with `compact`, which
+// keeps the dashed target line and the post markers and drops only the axis
+// labels. That was the whole indictment of the tile board — "a number without
+// its curve" — and it is answered, not ignored. Each card also carries the
+// objective's one-line READING ("Reach is at 74% of target, down 8% over the
+// window"), so the page answers *why* before anything is clicked. What Bento
+// had and this doesn't: tiles of equal weight fighting each other, and no
+// trajectory anywhere.
+//
+// No KPI strip above the grid, Deel-style: `tierCounts` in the head already
+// says On track / At risk / Off track, and a band restating those three numbers
+// is exactly the fault that got Report's ring row cut. The head carries WEIGHT
+// instead (brand + counts on one line, the shared "N posts drafted" sentence)
+// and not one new figure.
+//
+// No outer card around the grid either — a card inside a card is nested
+// elevation, and the section title does that job for free.
 //
 // The two states key off `?objective=` — which `shell.js` hands over as
 // `selectedKey`, already nullable. So "nothing selected" is a state this layout
@@ -54,9 +63,10 @@ import {
   trendGlyph,
   postsMovedLine,
   esc,
-} from "../pieces.js?v=1102";
-import { progressBar, sparklineSpec, mountCharts } from "../charts.js?v=1102";
-import { shownMeasure, readHead, readReading, readout, readChart, readMeasures, readPosts } from "../read.js?v=1102";
+} from "../pieces.js?v=1103";
+import { ringSvg, trendSpec, mountCharts } from "../charts.js?v=1103";
+import { readingFor } from "../model.js?v=1103";
+import { shownMeasure, readHead, readReading, readout, readChart, readMeasures, readPosts } from "../read.js?v=1103";
 
 export const id = "mob_index";
 export const label = "Mob · Index";
@@ -64,6 +74,9 @@ export const title = "Mob · Index — an index of objectives, one opened at ful
 export const icon = "ap-icon-view-table";
 
 const CHART_HEIGHT = 300;
+// The card's curve. Tall enough to read a trajectory off — a 28px sparkline is
+// a smudge — and short enough that two cards still fit a 900px viewport.
+const CARD_CHART_HEIGHT = 104;
 
 export function render(host, vm) {
   const { entries, rollup, ctx, selectedKey, local, firstPaint } = vm;
@@ -82,54 +95,80 @@ export function render(host, vm) {
 
 function renderIndex(entries, rollup, ctx, specs, firstPaint) {
   // Worst first — the order `model.js` already returns, so the objective asking
-  // for attention is the first row and not the first one declared.
-  const rows = entries
+  // for attention is the first card and not the first one declared.
+  const cards = entries
     .map((e, i) => {
       const m = e.headline;
-      // The curve, IN the index. This is the answer to the objection that
-      // killed the Bento board — "it turned every measure into a number without
-      // its curve" — and it is why a table can be the door: a row compares, and
-      // a 120px trajectory is the one part of the comparison a number can't
-      // carry. Same helper, same tier colour as the fiche's Measures table.
-      const sparkId = `mobindex-row-spark-${i}`;
-      if (m?.series) specs.set(sparkId, sparklineSpec(m.series, { tier: e.tier, height: 28 }));
-      // Current and Target were two right-aligned columns with a gap of white
-      // between them, so the eye had to bridge them to read the one fact they
-      // make together. One cell, one arrow, the sentence the fiche's measure
-      // rows already write: 14,800 → 20,000.
+      // The curve, at card scale: `compact` drops the axis labels and the
+      // gridlines but KEEPS the dashed target line and the post markers — the
+      // two things that make it a reading and not a decoration. A bare
+      // sparkline was tried in the table this replaced: 28px of pale wash that
+      // nobody can read a trajectory off.
+      const chartId = `mobindex-card-${i}`;
+      if (m?.series) {
+        specs.set(
+          chartId,
+          trendSpec(m.series, {
+            tier: e.tier,
+            metricLabel: m.metricLabel,
+            height: CARD_CHART_HEIGHT,
+            compact: true,
+          }),
+        );
+      }
       const pair =
-        m && (m.currentLabel || m.targetLabel)
-          ? `<span class="ins-num">${esc(m.currentLabel || "—")}</span>
+        m && !e.collecting
+          ? `<span class="ins-mob_index__pair"><span class="ins-num">${esc(m.currentLabel || "—")}</span>
              <span class="ins-mob_index__to" aria-hidden="true">→</span>
-             <span class="ins-num ins-mob_index__target">${esc(m.targetLabel || "—")}</span>`
-          : `<span class="ins-num">—</span>`;
-      return `<tr class="ins-mob_index__row" data-ins-select="${esc(e.key)}" data-ins-objective="${esc(e.key)}">
-        <th scope="row">
-          <button type="button" class="ins-mob_index__name" data-ins-select="${esc(e.key)}">${esc(e.label)}</button>
-          <span class="ins-mob_index__sub">${originMark(e, { short: true })} <span class="ins-dot" aria-hidden="true">·</span> ${esc(windowLine(e))}</span>
-          ${e.parked && e.soon ? `<span class="ins-mob_index__soon"><i class="ap-icon-warning_fill ap-icon-sm" aria-hidden="true"></i>${esc(e.soon)}</span>` : ""}
-        </th>
-        <td class="ins-mob_index__bar">
-          <span class="ins-mob_index__barrow">
-            ${progressBar(e.progress, e.tier, { pending: e.collecting })}
-            <span class="ins-num">${e.collecting ? "—" : `${e.progress}%`}</span>
-          </span>
-        </td>
-        <td class="ins-mob_index__pair">${pair}</td>
-        <td class="ins-mob_index__spark">${m?.series ? `<span class="ins-chart__node" data-ins-chart="${sparkId}" style="height:28px"></span>` : ""}</td>
-        <td>${m ? trendGlyph(m) : ""}</td>
-        <td class="ins-num">${e.counts.measures}</td>
-        <td>${statusPill(e)}</td>
-        <td class="ins-mob_index__go"><i class="ap-icon-chevron-right" aria-hidden="true"></i></td>
-      </tr>`;
+             <span class="ins-num ins-mob_index__target">${esc(m.targetLabel || "—")}</span></span>`
+          : "";
+      const measures = `${e.counts.measures} measure${e.counts.measures === 1 ? "" : "s"}`;
+      return `<article class="ap-card ins-mob_index__obj" data-ins-select="${esc(e.key)}" data-ins-objective="${esc(e.key)}">
+        <header class="ins-mob_index__objhead">
+          <div class="ins-mob_index__ident">
+            <button type="button" class="ins-mob_index__name" data-ins-select="${esc(e.key)}">${esc(e.label)}</button>
+            <span class="ins-mob_index__sub">${originMark(e, { short: true })} <span class="ins-dot" aria-hidden="true">·</span> ${esc(windowLine(e))}</span>
+          </div>
+          ${statusPill(e)}
+        </header>
+
+        <div class="ins-mob_index__read">
+          ${ringSvg(e.progress, e.tier, {
+            size: 88,
+            stroke: 8,
+            pending: e.collecting,
+            name: m?.metricLabel || "",
+          })}
+          <div class="ins-mob_index__facts">
+            <p class="ins-mob_index__reading">${esc(readingFor(e))}</p>
+            <div class="ins-mob_index__figs">
+              ${pair}
+              ${pair ? `<span class="ins-dot" aria-hidden="true">·</span>` : ""}
+              <span class="ins-muted">${measures}</span>
+              ${m && !e.collecting ? trendGlyph(m) : ""}
+            </div>
+          </div>
+        </div>
+
+        ${
+          e.parked && e.soon
+            ? `<p class="ins-mob_index__soon"><i class="ap-icon-warning_fill ap-icon-sm" aria-hidden="true"></i>${esc(e.soon)}</p>`
+            : ""
+        }
+
+        ${
+          m?.series
+            ? `<span class="ins-chart__node ins-mob_index__curve" data-ins-chart="${chartId}" style="height:${CARD_CHART_HEIGHT}px"></span>`
+            : ""
+        }
+      </article>`;
     })
     .join("");
 
-  // The head is the page's header, so it is built like one: the brand and its
-  // verdict counts on ONE line (they answer "where am I" and "how is it going",
-  // which is one question asked twice when they are stacked), and under it the
-  // one line that says the objectives are being worked. NOT a KPI strip — no
-  // tile, no new figure, nothing restated. See the note at the top of this file.
+  // The head is the page's header: the brand and its verdict counts on ONE line
+  // (stacked, they asked the same question twice in two thin rows), and under it
+  // the one line that says the objectives are being worked. NOT a KPI strip —
+  // no tile, no new figure, nothing restated. See the note at the top.
   return `<header class="insights__band">
       <div class="insights__band-inner">
         <div class="ins-mob_index__titles">
@@ -141,24 +180,8 @@ function renderIndex(entries, rollup, ctx, specs, firstPaint) {
     </header>
     <div class="ins-mob_index">
       <div class="ins-mob_index__inner${firstPaint ? " ins-reveal" : ""}">
-        <section class="ap-card ins-mob_index__card">
-          <h3 class="ins-section-title">Objectives <span class="ap-counter normal grey">${entries.length}</span></h3>
-          <table class="ap-table ins-mob_index__table">
-            <thead>
-              <tr>
-                <th scope="col">Objective</th>
-                <th scope="col">Progress</th>
-                <th scope="col">Current → target</th>
-                <th scope="col">Trajectory</th>
-                <th scope="col">Trend</th>
-                <th scope="col">Measures</th>
-                <th scope="col">State</th>
-                <th scope="col"><span class="ins-visually-hidden">Open</span></th>
-              </tr>
-            </thead>
-            <tbody>${rows}</tbody>
-          </table>
-        </section>
+        <h3 class="ins-section-title">Objectives <span class="ap-counter normal grey">${entries.length}</span></h3>
+        <div class="ins-mob_index__grid">${cards}</div>
       </div>
     </div>`;
 }

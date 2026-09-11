@@ -36,47 +36,58 @@
   min-width: 0;
 }
 
-/* ── The index ────────────────────────────────────────────────────────────── */
+/* ── The index — a grid of objective cards ────────────────────────────────
+   ⚠️ This was a table. See the note at the top of mob_index.js for who
+   overruled that and what had to survive from the Bento cut (the curve).
 
-.ins-mob_index__card {
-  gap: var(--ref-spacing-xs);
+   Two columns at the page's 1240px, one under ~940px of content: `auto-fill`
+   with a 420px floor rather than a hand-written breakpoint, because the app's
+   rail collapses and the right panel overlays — the viewport never tells you
+   the content width (the same reason /topics measures a container). */
+.ins-mob_index__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  gap: var(--ref-spacing-sm);
 }
 
-/* Row rhythm. The DS table is tuned for one line per cell; this one carries a
-   name, a meta line and sometimes a warning in its first cell, so at the
-   component's own padding the rows read as a dense grid rather than a list you
-   scan. Four objectives then occupy 190px of a 1240px page — which is what
-   made this lecture look unfinished rather than short. */
-.ins-mob_index__table :is(th, td) {
-  padding-block: var(--ref-spacing-xs);
-  vertical-align: middle;
-}
-
-/* No per-th/td rules beyond the columns that hold a drawn shape or a button —
-   the DS table owns its own width, header alignment and `.right`. */
-
-/* The whole row is the door (data-ins-select on the <tr>), so it takes the
-   pointer and the app's interactive tint on hover — the same promise a card
-   makes with its blue border, which a borderless table row cannot make. The
-   name inside is a real button, which is what the keyboard and AT reach.
-   Electric blue 05 is the tint Cockpit's rail uses for a SELECTED row, and it
-   is free here: selecting in this lecture navigates, so no row on this table is
-   ever in the selected state and the two cannot be confused. */
-.ins-mob_index__row {
+/* The card IS the door: the whole surface takes the click, and it says so the
+   way every other card in the app does — a blue border on hover, no added
+   elevation, no coloured edge bar. The name inside stays a real button, which
+   is what the keyboard and AT reach. */
+.ins-mob_index__obj {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
   cursor: pointer;
+  transition:
+    border-color var(--ref-animation-short) var(--app-ease-standard),
+    background-color var(--ref-animation-short) var(--app-ease-standard);
 }
 
-.ins-mob_index__row:hover {
-  background: var(--ref-color-electric-blue-05);
+.ins-mob_index__obj:hover {
+  border-color: var(--ref-color-electric-blue-100);
 }
 
-.ins-mob_index__row:hover .ins-mob_index__go {
-  color: var(--ref-color-electric-blue-100);
+/* Name and verdict on one line, the meta under the name: the two things a
+   reader needs before deciding to look further, and they are not the same kind
+   of fact — one is the subject, the other is the answer. */
+.ins-mob_index__objhead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ref-spacing-sm);
 }
 
-/* A button that reads as the row's title: the DS table sets the cell's type, so
-   this only strips the button's chrome and takes the interactive colour on
-   hover. */
+.ins-mob_index__ident {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  min-width: 0;
+}
+
+/* The card's title. `lg` because it is the biggest thing in the card after the
+   ring's figure — in the table it rode at the cell's 14px and weighed the same
+   as the six numbers beside it, which is most of what "mal hiérarchisé" meant. */
 .ins-mob_index__name {
   display: block;
   max-width: 100%;
@@ -84,17 +95,15 @@
   border: 0;
   background: none;
   text-align: left;
-  font: inherit;
-  /* One rung above the table's own type: the name is the row's subject, and at
-     the cell's 14px it weighed the same as the six figures beside it. */
-  font-size: var(--ref-font-size-md);
-  line-height: var(--ref-font-line-height-md);
+  font-family: inherit;
+  font-size: var(--ref-font-size-lg);
+  line-height: var(--ref-font-line-height-lg);
   font-weight: var(--ref-font-weight-bold);
   color: var(--sys-text-color-default);
   cursor: pointer;
 }
 
-.ins-mob_index__row:hover .ins-mob_index__name,
+.ins-mob_index__obj:hover .ins-mob_index__name,
 .ins-mob_index__name:hover {
   color: var(--ref-color-electric-blue-100);
 }
@@ -115,89 +124,85 @@
   color: var(--sys-text-color-light);
 }
 
-/* The missing connection, as ONE line under the name — not a `.ap-infobox` per
-   row: five banners in a table is the page shouting the same sentence five
-   times. The full note is on the fiche, where there is one of them. */
-.ins-mob_index__soon {
+/* ── The read: the ring, then the sentence ────────────────────────────────
+   The ring is the glance (tier-coloured, the figure inside it) and the
+   sentence is the read. Side by side, because the sentence is what makes the
+   figure mean something — "74%" alone is the fault this lecture was accused of
+   in its table form. */
+.ins-mob_index__read {
   display: flex;
   align-items: center;
-  gap: var(--ref-spacing-xxxs);
-  font-size: var(--ref-font-size-xs);
-  line-height: var(--ref-font-line-height-xs);
-  color: var(--sys-color-warning-text);
+  gap: var(--ref-spacing-md);
 }
 
-/* Bar and figure on ONE line, as a flex row rather than two inline-blocks
-   sharing a `calc(100% - Npx)`: that arithmetic has to also pay for the
-   whitespace between the two tags, and the moment the figure grew a rung the
-   pair wrapped and the percentage dropped under its own bar. Flex has no such
-   budget to get wrong.
-   ⚠️ The flex goes on a wrapper INSIDE the cell, not on the cell: a `td` that
-   is its own flex container stops honouring `vertical-align`, so in the one row
-   tall enough to carry a warning line the bar sat at the top while every other
-   cell stayed centred. */
-.ins-mob_index__bar {
-  min-width: 180px;
+.ins-mob_index__read > .app-ring {
+  flex: 0 0 auto;
 }
 
-.ins-mob_index__barrow {
+.ins-mob_index__facts {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: var(--ref-spacing-xxs);
-}
-
-.ins-mob_index__barrow .app-bar {
-  flex: 1 1 auto;
   min-width: 0;
 }
 
-/* The percentage is the row's headline figure — the one number the reader
-   compares down the column — so it takes the same rung as the name. */
-.ins-mob_index__barrow .ins-num {
-  flex: 0 0 auto;
-  min-width: 42px;
-  text-align: right;
-  font-size: var(--ref-font-size-md);
-  line-height: var(--ref-font-line-height-md);
-  font-weight: var(--ref-font-weight-bold);
+/* The objective's own verdict, in words. Body size and full ink: it is the
+   line the reader actually reads, not a caption under a number. */
+.ins-mob_index__reading {
+  margin: 0;
+  font-size: var(--ref-font-size-sm);
+  line-height: var(--ref-font-line-height-sm);
+  color: var(--sys-text-color-default);
 }
 
-/* ── Current → target, as one fact ─────────────────────────────────────────
-   Two right-aligned columns with white between them made the eye bridge a gap
-   to read the pair they only mean together. One cell, one arrow — the sentence
-   the fiche's own measure rows already write. The target is the lighter half:
-   it is the fixed side, the current value is what moves. */
+.ins-mob_index__figs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxs);
+  font-size: var(--ref-font-size-sm);
+  line-height: var(--ref-font-line-height-sm);
+}
+
+/* Current → target, as one fact: they only mean something as a pair. The
+   target is the lighter half — it is the fixed side, the current value moves. */
 .ins-mob_index__pair {
   white-space: nowrap;
+  font-weight: var(--ref-font-weight-bold);
 }
 
 .ins-mob_index__to {
   margin-inline: var(--ref-spacing-xxxs);
   color: var(--sys-text-color-light);
+  font-weight: var(--ref-font-weight-regular);
 }
 
 .ins-mob_index__target {
   color: var(--sys-text-color-light);
 }
 
-/* ── The trajectory ────────────────────────────────────────────────────────
-   The curve, in the index. It is the direct answer to what killed the Bento
-   board — a board of tiles "turned every measure into a number without its
-   curve" — and the one part of a comparison no figure carries: two objectives
-   at 84% are not the same objective if one is climbing and the other sagging.
-   Same width as the fiche's Measures column, so the two read as one family. */
-.ins-mob_index__spark {
-  width: 120px;
-  min-width: 120px;
+/* The missing connection, as ONE line in the card — not a `.ap-infobox` per
+   card: four banners on one page is the page shouting the same sentence four
+   times. The full note is on the fiche, where there is one of them. */
+.ins-mob_index__soon {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  margin: 0;
+  font-size: var(--ref-font-size-xs);
+  line-height: var(--ref-font-line-height-xs);
+  color: var(--sys-color-warning-text);
 }
 
-/* The affordance, not a control: it says the row opens, the row is what you
-   click. Grey at rest so a column of blue chevrons does not read as five
-   links. */
-.ins-mob_index__go {
-  width: 32px;
-  color: var(--sys-text-color-light);
-  transition: color var(--ref-animation-short) var(--app-ease-standard);
+/* ── The curve ────────────────────────────────────────────────────────────
+   The one thing that had to survive the Bento cut: every card keeps its
+   trajectory. It sits directly on the card — no inner panel, which would be
+   elevation inside elevation — and takes the full width, because a curve read
+   across 40px says nothing. `margin-top: auto` so the curves of two cards of
+   unequal height still line up on the row's baseline. */
+.ins-mob_index__curve {
+  display: block;
+  margin-top: auto;
 }
 
 /* ── The fiche ───────────────────────────────────────────────────────────── */
@@ -213,27 +218,9 @@
 
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 
-/* Under this the eight columns stop fitting. What goes first is the measure
-   COUNT (the fiche says it, and it is the one column nobody compares) and the
-   trajectory — the curve is the richest cell, but it is also the one that needs
-   room to mean anything, and a 40px sparkline is a smudge. Measured on the
-   VIEWPORT here and not a container, because the table is the whole page —
-   there is no band whose width the viewport would not know.
-
-   Columns: 1 Objective · 2 Progress · 3 Current → target · 4 Trajectory ·
-   5 Trend · 6 Measures · 7 State · 8 the chevron. */
-@media (max-width: 1080px) {
-  .ins-mob_index__table :is(th, td):nth-child(4),
-  .ins-mob_index__table :is(th, td):nth-child(6) {
-    display: none;
-  }
-}
-
+/* The grid's own `auto-fill` handles the column count; the only thing left to
+   say is that a narrow viewport gets its gutter back. */
 @media (max-width: 720px) {
-  .ins-mob_index__table :is(th, td):nth-child(3),
-  .ins-mob_index__table :is(th, td):nth-child(5) {
-    display: none;
-  }
   .ins-mob_index {
     padding-inline: var(--ref-spacing-sm);
   }
