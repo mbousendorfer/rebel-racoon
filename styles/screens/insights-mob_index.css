@@ -39,63 +39,63 @@
   min-width: 0;
 }
 
-/* ── The index — ONE FULL-WIDTH ROW PER OBJECTIVE ─────────────────────────
-   ⚠️ Third shape for this surface, and the reasoning is written down so the
-   fourth doesn't happen by accident:
-     1. a TABLE of eight 14px columns — hierarchised nothing, the objective's
-        name weighed what the six figures beside it weighed;
-     2. a 2×2 GRID of cards — better looking, but you cannot compare two
-        objectives whose figures sit at different screen positions, and a hub
-        is a comparison surface before anything else;
-     3. this — one row per objective, each row a card, every row on the SAME
-        internal grid. That last part is the whole point: the zones line up
-        from row to row, so 74 / 82 / 84 / 84 read down the page.
+/* ── The index — A GRID OF CARDS, TWO PER LINE ────────────────────────────
+   ⚠️ Fourth shape here. The three before it, and why each lost, are written
+   out at the top of mob_index.js — read that list before drawing a fifth. The
+   short version: table (hierarchised nothing) → 2×2 grid of bare figures (a
+   number without its curve) → one full-width row per objective (compared well,
+   but spread six zones across 1200px) → this, the row's own folded state
+   promoted to the resting shape, with the curve inside the card.
 
-   It is not the table coming back. A table row is cells of body text; these
-   rows carry a display-rung numeral, a named metric, and a real 72px curve —
-   and the row is a card with its own border and hover, not a `<tr>`.
-
-   No ring in the figure zone: in a single column the numeral IS the
-   comparator, so four 88px rings would be weight spent on what the alignment
-   already does — and the ring printed the same percentage as the text beside
-   it, which was the last duplication left on this surface. */
+   `auto-fill` at a 420px floor, so the column count is the content width's
+   answer and not a number written here: two per line inside the 1200px cap,
+   one when the panel or a narrow window takes the space. */
 .ins-mob_index__list {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
   gap: var(--ref-spacing-sm);
-  /* The rows measure THEMSELVES, not the viewport: the app's rail collapses
+  /* The cards measure THEMSELVES, not the viewport: the app's rail collapses
      and the right panel overlays, so viewport width never tells you content
      width (the same reason /topics queries a container). */
   container-type: inline-size;
 }
 
-/* The row's zones. `fr` only where content can flex — identity and curve —
-   with the two figure zones fixed so they cannot drift row to row. */
-.ins-mob_index__row {
+/* The card's three bands. Identity carries the verdict and the chevron on its
+   own line — the objective introduces itself and says how it is doing before
+   any number — then the figures, then the trajectory under both.
+
+   `align-items: start` is the default for the bands; the figure band centres
+   its own two zones so the 38px numeral and the two-line measure meet. */
+.ins-mob_index__card {
   display: grid;
-  grid-template-columns: minmax(200px, 1.3fr) 150px minmax(170px, 1fr) minmax(180px, 1.4fr) auto 24px;
-  align-items: center;
-  gap: var(--ref-spacing-md);
-  /* `md` all round, the platform's own section padding: at `sm` four rows read
-     as a compressed list with two thirds of the page empty under them. */
+  grid-template-columns: 1fr auto 20px;
+  grid-template-areas:
+    "ident  verdict go"
+    "figure measure measure"
+    "curve  curve   curve";
+  align-items: start;
+  column-gap: var(--ref-spacing-sm);
+  row-gap: var(--ref-spacing-md);
+  /* `md` all round, the platform's own section padding. */
   padding: var(--ref-spacing-md);
   cursor: pointer;
   transition: border-color var(--ref-animation-short) var(--app-ease-standard);
 }
 
-/* The row IS the door: blue border on hover, the app's card convention. No
+/* The card IS the door: blue border on hover, the app's card convention. No
    added elevation, no coloured edge bar. */
-.ins-mob_index__row:hover {
+.ins-mob_index__card:hover {
   border-color: var(--ref-color-electric-blue-100);
 }
 
-.ins-mob_index__row:hover .ins-mob_index__go {
+.ins-mob_index__card:hover .ins-mob_index__go {
   color: var(--ref-color-electric-blue-100);
 }
 
 /* ── Identity ──────────────────────────────────────────────────────────── */
 
 .ins-mob_index__ident {
+  grid-area: ident;
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xxxs);
@@ -117,7 +117,7 @@
   cursor: pointer;
 }
 
-.ins-mob_index__row:hover .ins-mob_index__name,
+.ins-mob_index__card:hover .ins-mob_index__name,
 .ins-mob_index__name:hover {
   color: var(--ref-color-electric-blue-100);
 }
@@ -140,17 +140,22 @@
 
 /* ── The figure — the comparator ───────────────────────────────────────── */
 
+/* One line: the numeral and the word it is a percentage OF, on a shared
+   baseline. No bar — the curve two bands below draws "versus target" with its
+   own dashed line, and two drawings of one fact in a 560px card is the
+   duplication this screen has been shedding. */
 .ins-mob_index__figure {
+  grid-area: figure;
   display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxxs);
+  align-items: baseline;
+  gap: var(--ref-spacing-xs);
+  align-self: center;
   min-width: 0;
 }
 
-/* The page's biggest numeral, at the platform's own headline size
+/* The card's biggest numeral, at the platform's own headline size
    (`.main-data`, 38px, analytics.scss) via the screen's variable. */
-.ins-mob_index__pct,
-.ins-mob_index__pending {
+.ins-mob_index__pct {
   font-size: var(--ins-display-xl);
   line-height: 1;
   font-weight: var(--ref-font-weight-bold);
@@ -166,28 +171,29 @@
   color: var(--sys-text-color-light);
 }
 
-/* The bar is the numeral's underline: tier-coloured, so how far along is
-   encoded twice — once to read, once to see — without a second figure. */
-.ins-mob_index__figure .app-bar {
-  width: 100%;
-}
-
 .ins-mob_index__figlabel {
-  font-size: var(--ref-font-size-xs);
-  line-height: var(--ref-font-line-height-xs);
+  font-size: var(--ref-font-size-sm);
+  line-height: var(--ref-font-line-height-sm);
   color: var(--sys-text-color-light);
 }
 
 /* ── The measure: what the figure is OF ────────────────────────────────── */
 
+/* Right-aligned against the card's edge, so the numeral and the measure are
+   the two ends of one sentence instead of two items in a left-hand stack. */
 .ins-mob_index__measure {
+  grid-area: measure;
   display: flex;
   flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
   gap: var(--ref-spacing-xxxs);
+  align-self: center;
   min-width: 0;
 }
 
 .ins-mob_index__metric {
+  max-width: 100%;
   font-size: var(--ref-font-size-sm);
   line-height: var(--ref-font-line-height-sm);
   font-weight: var(--ref-font-weight-bold);
@@ -201,6 +207,7 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
+  justify-content: flex-end;
   gap: var(--ref-spacing-xxs);
   font-size: var(--ref-font-size-sm);
   line-height: var(--ref-font-line-height-sm);
@@ -221,10 +228,16 @@
   color: var(--sys-text-color-light);
 }
 
-/* ── The curve ─────────────────────────────────────────────────────────── */
-
+/* ── The curve ─────────────────────────────────────────────────────────────
+   Full card width, under a hairline: the figures are what the objective IS
+   right now, the curve is how it got there, and the rule is what says the two
+   bands are different kinds of statement. Same grey-20 filet the fiche's own
+   cards use, never a second border weight. */
 .ins-mob_index__curve {
+  grid-area: curve;
   min-width: 0;
+  padding-top: var(--ref-spacing-sm);
+  border-top: 1px solid var(--sys-border-color-default);
 }
 
 .ins-mob_index__curve > .ins-chart__node {
@@ -234,10 +247,10 @@
 /* ── The verdict, and the way in ───────────────────────────────────────── */
 
 .ins-mob_index__verdict {
+  grid-area: verdict;
   display: flex;
   align-items: center;
   gap: var(--ref-spacing-xxs);
-  justify-content: flex-end;
 }
 
 /* The missing connection, as the glyph alone with its sentence in the title:
@@ -248,69 +261,35 @@
   color: var(--sys-color-warning-text);
 }
 
-/* The affordance, not a control: it says the row opens, the row is what you
-   click. Grey at rest so a column of blue chevrons does not read as four
-   links. */
+/* The affordance, not a control: it says the card opens, the card is what you
+   click. Grey at rest so a page of blue chevrons does not read as four links. */
 .ins-mob_index__go {
+  grid-area: go;
+  justify-self: end;
   color: var(--sys-text-color-light);
   transition: color var(--ref-animation-short) var(--app-ease-standard);
 }
 
-/* ── Narrower: the row folds, it never squeezes ────────────────────────── */
-
-/* Measured on the LIST, not the viewport. The curve is the first thing to go:
-   below ~1040px of content it would be under 150px, where a trajectory is a
-   smudge, and the figure and the operands are what the reader compares. */
-@container (max-width: 1040px) {
-  .ins-mob_index__row {
-    grid-template-columns: minmax(180px, 1.3fr) 130px minmax(150px, 1fr) auto 24px;
-  }
-  .ins-mob_index__curve {
-    display: none;
-  }
-}
-
-/* Below this the zones stack: identity and verdict on the first line, the
-   figure and its measure under them. The areas are NAMED rather than left to
-   auto-placement, which put the verdict pill on a third line of its own. */
-@container (max-width: 720px) {
-  .ins-mob_index__row {
-    grid-template-columns: auto 1fr 24px;
+/* ── Narrow: the figure band stacks ───────────────────────────────────────
+   Measured on the LIST, not the viewport. One column of cards is already the
+   grid's own answer below 420px + gap; what this adds is the card that is
+   narrower than its own two-zone figure band — under ~460px the metric name
+   starts eliding, so the measure drops under the numeral and re-aligns left. */
+@container (max-width: 460px) {
+  .ins-mob_index__card {
     grid-template-areas:
-      "ident   ident   go"
-      "figure  measure measure";
-    row-gap: var(--ref-spacing-sm);
-    align-items: center;
-  }
-  .ins-mob_index__ident {
-    grid-area: ident;
-    /* The verdict rides with the name here, not in a column of its own. */
-    flex-direction: row;
-    align-items: baseline;
-    flex-wrap: wrap;
-    gap: var(--ref-spacing-xxs) var(--ref-spacing-xs);
-  }
-  .ins-mob_index__verdict {
-    grid-area: ident;
-    justify-self: end;
-    align-self: start;
-  }
-  .ins-mob_index__go {
-    grid-area: go;
-    align-self: start;
-  }
-  .ins-mob_index__figure {
-    grid-area: figure;
-    flex-direction: row;
-    align-items: baseline;
-    gap: var(--ref-spacing-xs);
-  }
-  .ins-mob_index__figure .app-bar {
-    display: none;
+      "ident   verdict go"
+      "figure  figure  figure"
+      "measure measure measure"
+      "curve   curve   curve";
+    row-gap: var(--ref-spacing-xs);
   }
   .ins-mob_index__measure {
-    grid-area: measure;
-    align-items: flex-end;
+    align-items: flex-start;
+    text-align: left;
+  }
+  .ins-mob_index__curve {
+    margin-top: var(--ref-spacing-xs);
   }
 }
 

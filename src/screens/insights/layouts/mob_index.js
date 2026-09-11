@@ -11,28 +11,32 @@
 // selector has to be on screen AT ALL while you read. Nothing else on the page competes with the objective once it
 // is open, and the index gets the whole width to be a table instead of a gutter.
 //
-// ⚠️ THE INDEX IS A GRID OF CARDS. It was a TABLE, twice, and this file said in
-// as many words that it had to stay one — "not a mosaic of tiles", because a
-// board of tiles was built here once (Bento) and cut: "at a glance is not how
-// anyone reads an objective, and the board turned every measure into a number
-// without its curve" (shell.js).
+// ⚠️ FOURTH SHAPE for this index. Each one lost for a reason that is written
+// down — read the list before drawing a fifth:
+//   1. a TABLE of eight 14px columns. It hierarchised nothing: the objective's
+//      name weighed exactly what the six figures beside it weighed. Cut twice,
+//      the second time flatly — "le tableau n'est définitivement pas la bonne
+//      représentation".
+//   2. a 2×2 GRID of cards carrying figures only. Too close to Bento, the tile
+//      board cut before it: "a number without its curve" (shell.js).
+//   3. one FULL-WIDTH ROW per objective, all rows on one internal grid so the
+//      percentages aligned down the page. Comparison worked; the row didn't —
+//      across 1200px its six zones read as loosely related cells, and the user
+//      preferred the row's own FOLDED state to its resting one.
+//   4. this — that folded state promoted to the resting shape, two per line,
+//      with the curve inside the card under the figures.
 //
-// The user overruled that on 2026-09-11, twice, the second time flatly: "le
-// tableau n'est définitivement pas la bonne représentation". A table of eight
-// 14px columns is a database read — it hierarchises nothing, the objective's
-// name weighs exactly what the six figures beside it weigh, and no amount of
-// row rhythm or column merging fixes that (both were tried in the commit
-// before this one).
+// So the card IS the fold: name, verdict and the way in on one line; the
+// percentage and the measure it is OF under them; the trajectory beneath both.
+// Nothing was invented for it — the zones and their classes are the row's own,
+// which is why the fold's `@container` block was deleted rather than reworked.
 //
-// WHAT MAKES THIS NOT BENTO — the one thing that has to survive from the cut:
-// **every card carries its CURVE**, `trendSpec` at 104px with `compact`, which
-// keeps the dashed target line and the post markers and drops only the axis
-// labels. That was the whole indictment of the tile board — "a number without
-// its curve" — and it is answered, not ignored. Each card also carries the
-// objective's one-line READING ("Reach is at 74% of target, down 8% over the
-// window"), so the page answers *why* before anything is clicked. What Bento
-// had and this doesn't: tiles of equal weight fighting each other, and no
-// trajectory anywhere.
+// WHAT KEEPS IT OUT OF BENTO: **every card carries its CURVE** — `trendSpec`
+// with `compact`, which keeps the dashed target line and the post markers and
+// drops only the axis labels. That was the whole indictment of the tile board,
+// and shape 2 above is the one that failed on it. The percentage is not
+// doubled either: no ring, and no bar since the curve took the card — one
+// numeral for how far along, one curve for versus what.
 //
 // No KPI strip above the grid, Deel-style: `tierCounts` in the head already
 // says On track / At risk / Off track, and a band restating those three numbers
@@ -62,9 +66,9 @@ import {
   trendGlyph,
   postsMovedLine,
   esc,
-} from "../pieces.js?v=1115";
-import { progressBar, trendSpec, mountCharts } from "../charts.js?v=1115";
-import { shownMeasure, readHead, readReading, readout, readMeasures, readPosts } from "../read.js?v=1115";
+} from "../pieces.js?v=1116";
+import { trendSpec, mountCharts } from "../charts.js?v=1116";
+import { shownMeasure, readHead, readReading, readout, readMeasures, readPosts } from "../read.js?v=1116";
 
 export const id = "mob_index";
 export const label = "Mob · Index";
@@ -72,12 +76,11 @@ export const title = "Mob · Index — an index of objectives, one opened at ful
 export const icon = "ap-icon-view-table";
 
 const CHART_HEIGHT = 300;
-// The row's curve. Tall enough to read a trajectory off — a 28px sparkline is
-// a smudge — and short enough that four rows and the head still fit one
-// screen. 72 was tried first: the rows came out at ~110px, which made the page
-// compact AND left two thirds of it empty, which is the complaint this screen
-// started from. A row that breathes is also a curve you can read.
-const ROW_CHART_HEIGHT = 96;
+// The card's curve. Tall enough to read a trajectory off — a 28px sparkline is
+// a smudge — and short enough that two rows of cards and the head still fit
+// one screen. It gets the card's full width, ~560px at two per line, which is
+// more than the row's own 180px column ever had.
+const CARD_CHART_HEIGHT = 96;
 
 export function render(host, vm) {
   const { entries, rollup, ctx, selectedKey, local, firstPaint } = vm;
@@ -96,38 +99,35 @@ export function render(host, vm) {
 
 function renderIndex(entries, rollup, ctx, specs, firstPaint) {
   // Worst first — the order `model.js` already returns, so the objective asking
-  // for attention is the first row and not the first one declared.
-  const rows = entries
+  // for attention is the first card and not the first one declared.
+  const cards = entries
     .map((e, i) => {
       const m = e.headline;
-      // The curve, at row scale: `compact` drops the axis labels and the
+      // The curve, at card scale: `compact` drops the axis labels and the
       // gridlines but KEEPS the dashed target line and the post markers — the
       // two things that make it a reading and not a decoration.
-      const chartId = `mobindex-row-${i}`;
+      const chartId = `mobindex-card-${i}`;
       if (m?.series) {
         specs.set(
           chartId,
           trendSpec(m.series, {
             tier: e.tier,
             metricLabel: m.metricLabel,
-            height: ROW_CHART_HEIGHT,
+            height: CARD_CHART_HEIGHT,
             compact: true,
           }),
         );
       }
 
       // ── The figure zone: the comparator ─────────────────────────────────
-      // The percentage, and a bar as its underline. NO RING: in a single
-      // column the figures line up under each other, so the numeral IS the
-      // comparator — 74 / 82 / 84 / 84 read down the page — and four 88px
-      // rings in a column is weight spent on what the alignment already does.
-      // Dropping it also ends the last duplication on this surface: the ring
-      // printed the same percentage the text beside it printed.
+      // The percentage and the word it is a percentage OF, on one baseline.
+      // No ring and no bar: the curve below carries "versus target" with its
+      // dashed line, so a bar would draw the same fact a second time — and the
+      // ring printed the very number standing next to it.
       const figure = e.collecting
-        ? `<span class="ins-mob_index__pending">${e.grace?.day ?? 1}<span class="ins-mob_index__unit">/${e.grace?.of ?? 7}</span></span>
+        ? `<span class="ins-mob_index__pct">${e.grace?.day ?? 1}<span class="ins-mob_index__unit">/${e.grace?.of ?? 7}</span></span>
            <span class="ins-mob_index__figlabel">days collected</span>`
         : `<span class="ins-mob_index__pct">${e.progress}<span class="ins-mob_index__unit">%</span></span>
-           ${progressBar(e.progress, e.tier)}
            <span class="ins-mob_index__figlabel">of target</span>`;
 
       // ── The measure zone: what the figure is OF ──────────────────────────
@@ -142,18 +142,10 @@ function renderIndex(entries, rollup, ctx, specs, firstPaint) {
              ${m ? trendGlyph(m) : ""}
            </span>`;
 
-      return `<article class="ap-card ins-mob_index__row" data-ins-select="${esc(e.key)}" data-ins-objective="${esc(e.key)}">
+      return `<article class="ap-card ins-mob_index__card" data-ins-select="${esc(e.key)}" data-ins-objective="${esc(e.key)}">
         <div class="ins-mob_index__ident">
           <button type="button" class="ins-mob_index__name" data-ins-select="${esc(e.key)}">${esc(e.label)}</button>
           <span class="ins-mob_index__sub">${originMark(e, { short: true })} <span class="ins-dot" aria-hidden="true">·</span> ${esc(windowLine(e))}</span>
-        </div>
-
-        <div class="ins-mob_index__figure">${figure}</div>
-
-        <div class="ins-mob_index__measure">${measure}</div>
-
-        <div class="ins-mob_index__curve">
-          ${m?.series ? `<span class="ins-chart__node" data-ins-chart="${chartId}" style="height:${ROW_CHART_HEIGHT}px"></span>` : ""}
         </div>
 
         <div class="ins-mob_index__verdict">
@@ -166,12 +158,20 @@ function renderIndex(entries, rollup, ctx, specs, firstPaint) {
         </div>
 
         <i class="ap-icon-chevron-right ins-mob_index__go" aria-hidden="true"></i>
+
+        <div class="ins-mob_index__figure">${figure}</div>
+
+        <div class="ins-mob_index__measure">${measure}</div>
+
+        <div class="ins-mob_index__curve">
+          ${m?.series ? `<span class="ins-chart__node" data-ins-chart="${chartId}" style="height:${CARD_CHART_HEIGHT}px"></span>` : ""}
+        </div>
       </article>`;
     })
     .join("");
 
   // The verdict counts sit with the LIST, not in the page header: they count the
-  // rows below them, so they belong to the row that names those rows
+  // cards below them, so they belong to the row that names those cards
   // ("Objectives 4") rather than to the row that names the brand.
   //
   // What stays in the band is the brand and the one line saying the objectives
@@ -189,7 +189,7 @@ function renderIndex(entries, rollup, ctx, specs, firstPaint) {
           <h3 class="ins-section-title">Objectives <span class="ap-counter normal grey">${entries.length}</span></h3>
           ${tierCounts(rollup)}
         </div>
-        <div class="ins-mob_index__list">${rows}</div>
+        <div class="ins-mob_index__list">${cards}</div>
       </div>
     </div>`;
 }
