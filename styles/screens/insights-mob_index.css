@@ -21,6 +21,18 @@
   min-width: 0;
 }
 
+/* ── The page's head (workspace mode) ────────────────────────────────────
+   With no band above, the list's head IS the page's head: the title and the
+   verdict pills on one line, the rollup's sentence under them. It keeps the
+   band's own vertical rhythm (`sm` above, `xs` between the two lines) so the
+   page starts where the band used to start rather than jumping up 87px. */
+.ins-mob_index__pagehead {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  padding-top: var(--ref-spacing-xs);
+}
+
 /* ── The list's head ─────────────────────────────────────────────────────
    "Objectives 4" and the three verdict pills on one line, the pills right
    after the title rather than pushed to the far edge: they count the cards
@@ -301,14 +313,11 @@
 
 /* ── The fiche ───────────────────────────────────────────────────────────── */
 
-/* The crumb is the only way back — the topbar carries none. Ghost grey and on a
-   line of its own, so it reads as navigation and not as a third verb next to
-   the objective's own two. Pulled back off the column by its own padding, the
-   way a heading-as-control is. */
-.ins-mob_index__crumb {
-  display: flex;
-  margin-inline-start: calc(-1 * var(--ref-spacing-xxs));
-}
+/* ⚠️ No crumb rule here any more. The `‹ Objectives` button left the page for
+   the TOPBAR, where `/playbook`, `/topics/settings` and the account-scope
+   routes already keep their back control (topbar.js `backTargetFor`). What it
+   used to need — a line of its own, pulled back off the column by its own
+   padding — went with it. */
 
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 

@@ -419,6 +419,14 @@ The fork introduced `active-playbook.js`: a global, `localStorage`-persisted Pla
 
 **Two levels, and the switcher is the seam.** Inside a workspace every surface is one brand's. The CATALOGUE of brands — and any other brand's fiche opened from it — belongs to the level above, so those routes step out of the shell: `isAccountScope(path)` (same module) drives `body.account-scope`, layout.css hides the rail, and the topbar keeps only the way back in ("‹ Back to Acme · Q2 marketing" from the catalogue, "‹ Back to all playbooks" from a fiche). It is the mechanism `body.onboarding` already used, not a new one. Consequences worth knowing before touching either surface:
 
+- **Insights' page head is the flag's too.** Flag ON, `/insights` drops its brand
+  band entirely — the rail names the Playbook one row above the topbar's own
+  title, so a band re-printing it spent the top of the page on what the chrome
+  already said — and **`Objectives` becomes the page title** (`pageTitle()` in
+  the screen's `pieces.js`, at the rung the brand name held). Cockpit's rail
+  head takes the same word, since a column of three counts and no noun says
+  nothing. Flag OFF the band stays: there, the brand name in it is the app's
+  only Playbook switcher.
 - **The rail's row is singular.** `Playbooks 8` — a count of every brand, in a rail that promises one — became **`Playbook`** → `/playbook/<active>`: the fiche of the brand you are in, which is both in scope and the frequent destination. The list moved to the switcher's footer ("All playbooks" → `/home`), the only control that announces it changes scope. `workspaceNav()` in sidebar.js does that swap.
 - **The wordmark is the account's door.** In workspace mode it opens `/home`; flag OFF there is no level above the work, so it keeps minting a chat — and `[data-sidebar-new]`, which shares its handler branch, keeps that job in both modes.
 - **The active brand's own fiche stays IN the workspace** — chrome, no crumb, the rail row lit. Only cross-brand routes leave. That is the whole rule: the chrome follows the object's scope.

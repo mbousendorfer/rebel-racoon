@@ -316,6 +316,25 @@
   outline-offset: var(--ref-spacing-xxxs);
 }
 
+/* ── The page's title ─────────────────────────────────────────────────────
+   The subject of the page, at the rung the brand name used to hold: h2 TYPE on
+   an `<h2>` element, the topbar owning the document's h1. In workspace mode the
+   rail carries the brand, so this is what sits at the top of the page instead —
+   `Objectives` on the index, the rail's own noun in Cockpit (pieces.js
+   `pageTitle`). Same size and weight as the name it replaces: promoting the
+   subject changes the WORD at the top of the page, not the page's rhythm. */
+.ins-pagetitle {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  margin: 0;
+  min-width: 0;
+  font-size: var(--sys-text-style-h2-size);
+  line-height: var(--sys-text-style-h2-line-height);
+  font-weight: var(--sys-text-style-h2-weight);
+  color: var(--sys-text-color-default);
+}
+
 .ins-pbtitle__name {
   margin: 0;
   min-width: 0;

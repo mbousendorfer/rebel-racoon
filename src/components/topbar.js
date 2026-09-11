@@ -1,7 +1,7 @@
-import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=1127";
-import { getPath, navigate } from "../router.js?v=1127";
-import { parseHashParams } from "../url-state.js?v=1127";
-import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=1127";
+import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=1129";
+import { getPath, navigate } from "../router.js?v=1129";
+import { parseHashParams } from "../url-state.js?v=1129";
+import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=1129";
 // Lot 19 — topbar no longer carries its own sidebar-toggle button. The
 // sidebar head exposes the toggle in both expanded (chevron-left) and
 // collapsed (view-list) states, so the duplicate in the topbar was just
@@ -14,37 +14,37 @@ import {
   getMode as getRightPanelMode,
   getActiveBatchRef as getActiveDraftsBatchRef,
   subscribe as subscribeRightPanel,
-} from "./right-panel.js?v=1127";
-import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=1127";
-import { getThread, subscribe as subscribeThread } from "../assistant.js?v=1127";
-import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=1127";
-import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=1127";
+} from "./right-panel.js?v=1129";
+import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=1129";
+import { getThread, subscribe as subscribeThread } from "../assistant.js?v=1129";
+import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=1129";
+import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=1129";
 import {
   isEnabled as isStatusCardEnabled,
   toggle as toggleStatusCard,
   subscribeVisibility as subscribeStatusCardVisibility,
-} from "./conversation-status-card.js?v=1127";
-import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=1127";
-import { open as openRenameModal } from "./rename-modal.js?v=1127";
+} from "./conversation-status-card.js?v=1129";
+import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=1129";
+import { open as openRenameModal } from "./rename-modal.js?v=1129";
 import {
   subscribe as subscribeContexts,
   getContextById,
   getDefaultContext,
   getContexts,
-} from "../contexts-store.js?v=1127";
-import { isFlagOn } from "../feature-flags.js?v=1127";
-import { getActivePlaybook, isWorkspaceMode, isAccountScope, catalogueRoute } from "../active-playbook.js?v=1127";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1127";
-import { findCadence } from "../topics-catalog.js?v=1127";
+} from "../contexts-store.js?v=1129";
+import { isFlagOn } from "../feature-flags.js?v=1129";
+import { getActivePlaybook, isWorkspaceMode, isAccountScope, catalogueRoute } from "../active-playbook.js?v=1129";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1129";
+import { findCadence } from "../topics-catalog.js?v=1129";
 import {
   getPickerState as getTopPostsState,
   subscribePicker as subscribeTopPosts,
   backToProfiles as topPostsBackToProfiles,
-} from "../top-posts-flow.js?v=1127";
+} from "../top-posts-flow.js?v=1129";
 // The Insights view switch. Imported from views.js, NOT from the screen's
 // shell: the shell imports this module, so taking it from there would close a
 // cycle. views.js imports neither.
-import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=1127";
+import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=1129";
 
 // The playbook/context pill now lives in the composer (session.js
 // renderPlaybookControl) — selectable on a New Chat, then a static
@@ -330,7 +330,7 @@ export function initTopbar() {
     // renderWelcomeAltExit() above. The wizard chrome no longer carries
     // its own Exit affordance; this is the only entry.
     if (event.target.closest("[data-topbar-welcome-alt-exit]")) {
-      import("./confirm-modal.js?v=1127").then(({ open }) => {
+      import("./confirm-modal.js?v=1129").then(({ open }) => {
         open({
           title: "Exit onboarding?",
           body: "Your progress so far will be discarded. You can start over anytime from the dashboard.",
@@ -567,6 +567,19 @@ function backTargetFor(path) {
   if (/^\/playbook\//.test(path)) {
     if (isWorkspaceMode()) return null;
     return { to: "/contexts", label: "Back to Playbooks" };
+  }
+  // Insights' fiche is a LEVEL, not a route: `?objective=` is what opens it, and
+  // `Mob · Index` is the only reading with two levels (Cockpit and Side keep the
+  // whole list on screen, so they have no level to come back from — and their
+  // selection always resolves to an objective, never to nothing). Its in-page
+  // crumb moved here so the way back is where every other feature keeps it.
+  // getPath() strips the query, so the selection has to be read from the hash.
+  if (path === "/insights") {
+    if (readLayoutId() !== "mob_index") return null;
+    if (!parseHashParams().get("objective")) return null;
+    // `/insights` with no query IS the index — the same primitive the fiche's
+    // own crumb used (shell.js § insUnselect drops the param).
+    return { to: "/insights", label: "Back to objectives" };
   }
   // The Topics settings page carries its Playbook scope BACK to the feed, so a
   // filtered feed survives the round trip. getPath() strips the query, so the scope

@@ -8,12 +8,12 @@
 // Pure render helpers — strings in, strings out. No listeners: every action is
 // a `data-ins-*` hook the shell dispatches.
 
-import { escapeHtml as esc } from "../../utils.js?v=1127";
-import { renderTopPostCard } from "../../components/top-post-card.js?v=1127";
-import { getContexts } from "../../contexts-store.js?v=1127";
-import { isWorkspaceMode } from "../../active-playbook.js?v=1127";
-import { progressBar } from "./charts.js?v=1127";
-import { signedPct } from "./model.js?v=1127";
+import { escapeHtml as esc } from "../../utils.js?v=1129";
+import { renderTopPostCard } from "../../components/top-post-card.js?v=1129";
+import { getContexts } from "../../contexts-store.js?v=1129";
+import { isWorkspaceMode } from "../../active-playbook.js?v=1129";
+import { progressBar } from "./charts.js?v=1129";
+import { signedPct } from "./model.js?v=1129";
 
 // ── The page's head — the scope, worn as the heading ─────────────────────
 //
@@ -37,15 +37,25 @@ import { signedPct } from "./model.js?v=1127";
 // the tabs under it already name, while the brand the whole page is about was
 // printed once, small, in a form field.
 
-/** The Playbook picker, as the section's heading. One Playbook → a plain heading: a select with a single option cannot be used. */
+/**
+ * The Playbook picker, as the section's heading. One Playbook → a plain
+ * heading: a select with a single option cannot be used.
+ *
+ * ⚠️ In WORKSPACE MODE it renders NOTHING, and the hosts treat the empty string
+ * as "no band". The rail carries the brand permanently, one row above the
+ * topbar's own title, so a page that re-prints it spends its first 87px saying
+ * what the chrome already said — and the page's own subject (`Objectives`, or
+ * the objective being read) never gets the top of the screen. The hosts put
+ * that subject there instead: `pageTitle()` below.
+ *
+ * It still renders the PICKER when the flag is off: outside workspace mode this
+ * heading is the only door to the scope in the whole app, and a page with no
+ * way to re-point itself is a dead end (shell.js § Empty states).
+ */
 export function playbookTitle(ctx) {
   const all = getContexts();
-  // Workspace mode moved the door: the rail's switcher is permanent and sits
-  // above every surface, so the heading goes back to being a heading. The note
-  // above ("the rail's own scope switcher is parked") is what this reverses —
-  // a page that can be re-pointed from two places is a page whose two controls
-  // can disagree.
-  if (isWorkspaceMode() || all.length < 2) {
+  if (isWorkspaceMode()) return "";
+  if (all.length < 2) {
     return `<h2 class="ins-pbtitle__name ins-pbtitle__name--static">${esc(ctx.name)}</h2>`;
   }
   const rows = all
@@ -78,6 +88,19 @@ export function playbookTitle(ctx) {
       <div class="ap-select-options">${rows}</div>
     </div>
   </details>`;
+}
+
+/**
+ * The page's own title, for the hosts whose band is gone.
+ *
+ * It takes the rung the brand name had — h2 type, `<h2>` element, since the
+ * topbar owns the document's `<h1>` ("Insights") — so promoting the subject
+ * changes the WORD at the top of the page and not the page's rhythm. The
+ * counter is the same `.ap-counter` the section titles carry; the word and the
+ * rung are declared here once, because two hosts print them.
+ */
+export function pageTitle(label, { count = null } = {}) {
+  return `<h2 class="ins-pagetitle">${esc(label)}${count != null ? ` <span class="ap-counter normal grey">${count}</span>` : ""}</h2>`;
 }
 
 /**
