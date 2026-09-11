@@ -1,10 +1,10 @@
 // ---- Insights — the read stack the mob_ lectures share -------------------------
 //
-// The three `mob_` readings (Index / Side / Band) all render THE SAME objective
-// fiche; what differs is how they arrange its blocks — Index stacks them behind
-// a crumb, Side deports three of them into a right-hand column, Band puts the
-// figures beside the curve. So the blocks live here, one function each, and the
-// hosts compose them. Same idea as `pieces.js`, one rung up: pieces owns the
+// Both `mob_` readings (Index / Side) render THE SAME objective fiche; what
+// differs is how they arrange its blocks — Index stacks them behind a crumb,
+// Side deports three of them into a right-hand column. So the blocks live here,
+// one function each, and the hosts compose them. (Band was the third host until
+// it was deleted on 2026-09-11.) Same idea as `pieces.js`, one rung up: pieces owns the
 // vocabulary (a verdict is a DS status pill, everywhere), this owns the SECTIONS
 // that vocabulary is assembled into.
 //
@@ -18,8 +18,8 @@
 // Pure render helpers — strings in, strings out, no listeners. Every action is
 // a `data-ins-*` hook the shell dispatches (shell.js § Actions).
 
-import { readingFor } from "./model.js?v=1103";
-import { trendSpec, sparklineSpec, progressBar } from "./charts.js?v=1103";
+import { readingFor } from "./model.js?v=1104";
+import { trendSpec, sparklineSpec, progressBar } from "./charts.js?v=1104";
 import {
   statusPill,
   measurePill,
@@ -34,7 +34,7 @@ import {
   tierCounts,
   figure,
   esc,
-} from "./pieces.js?v=1103";
+} from "./pieces.js?v=1104";
 
 /** Which measure is on screen: the reader's tab if they picked one, else the weakest. */
 export function shownMeasure(entry, local) {

@@ -13,24 +13,28 @@
 // the thing being evaluated, and a comparison control standing inside it reads
 // as one of the page's own features.
 //
-// There are SIX. The first three are the app's own; the three `mob_` ones were
+// There are FIVE. The first three are the app's own; the two `mob_` ones were
 // drawn from what the market actually ships for goal dashboards (Asana, Monarch,
 // Customer.io, Deel, Front, Plane), each attacking the same grief from a
 // different side: Cockpit reserves a 340px column of full viewport height for a
 // list of two or three objectives. Index removes the selector from the read
-// entirely (two levels), Side moves the narrow column to the right and fills it
-// with facts instead of navigation, Band puts the figures beside the curve and
-// keeps the selector to one tab strip. They share their fiche — see read.js.
+// entirely (two levels, and the index itself is a grid of cards), Side moves the
+// narrow column to the right and fills it with facts instead of navigation. They
+// share their fiche — see read.js.
+//
+// Mob · Band was the third of them — the figures beside the curve, the selector
+// down to one tab strip — and was deleted outright on 2026-09-11 rather than
+// kept as a sixth choice. That is the intended end of this switch: a lecture
+// that loses is a delete, not a flag.
 
-import { escapeHtml as esc } from "../../utils.js?v=1103";
-import * as report from "./layouts/report.js?v=1103";
-import * as cockpit from "./layouts/cockpit.js?v=1103";
-import * as cockpitBis from "./layouts/cockpit-bis.js?v=1103";
-import * as mobIndex from "./layouts/mob_index.js?v=1103";
-import * as mobSide from "./layouts/mob_side.js?v=1103";
-import * as mobBand from "./layouts/mob_band.js?v=1103";
+import { escapeHtml as esc } from "../../utils.js?v=1104";
+import * as report from "./layouts/report.js?v=1104";
+import * as cockpit from "./layouts/cockpit.js?v=1104";
+import * as cockpitBis from "./layouts/cockpit-bis.js?v=1104";
+import * as mobIndex from "./layouts/mob_index.js?v=1104";
+import * as mobSide from "./layouts/mob_side.js?v=1104";
 
-export const LAYOUTS = [cockpit, cockpitBis, report, mobIndex, mobSide, mobBand];
+export const LAYOUTS = [cockpit, cockpitBis, report, mobIndex, mobSide];
 
 /** localStorage — which layout the reader last chose. */
 export const INSIGHTS_LAYOUT_KEY = "archie-insights-layout";

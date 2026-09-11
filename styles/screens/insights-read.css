@@ -1,9 +1,9 @@
 /* ---- Insights · the read stack the mob_ lectures share -------------------------
    The sections `src/screens/insights/read.js` renders: the objective's head, its
    reading, the readout, the chart frame, the measures table, the facts column,
-   and the objective title-picker. Three lectures (Index / Side / Band) compose
-   these, so they are styled ONCE here rather than three times in three files —
-   which is the same reason read.js exists.
+   and the objective title-picker. Two lectures (Index / Side) compose these, so
+   they are styled ONCE here rather than twice in two files — which is the same
+   reason read.js exists.
 
    ⚠️ Deletable as a block. The day one reading wins, the losers, read.js and
    this file go together; nothing outside the mob_ lectures selects `.ins-read__*`
