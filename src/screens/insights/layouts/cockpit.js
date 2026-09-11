@@ -9,8 +9,9 @@
 // read, and it needed the measure's name printed on top of it to mean anything,
 // which put a label over a line and made the row look broken. Where it stands
 // (the ring) and how it is judged (the pill) is what a row of a list owes the
-// reader; the curve is the pane's job, at a size that can be read. The band in
-// Cockpit bis is the other answer — there the curve gets half a tile.
+// reader; the curve is the pane's job, at a size that can be read. Mob · Index
+// is the other answer — there every card carries its own curve, because a card
+// has the width a gutter doesn't.
 //
 // Best for: checking. The reader who knows their objectives and comes to
 // compare them and drill into one — dense, numeric, one thing in focus. The
@@ -21,8 +22,8 @@
 // chart the headline measure and leave the others as 96px sparklines in the
 // table, which meant an objective's second measure had no curve anywhere.
 
-import { readingFor } from "../model.js?v=1104";
-import { trendSpec, sparklineSpec, ringSvg, progressBar, mountCharts } from "../charts.js?v=1104";
+import { readingFor } from "../model.js?v=1105";
+import { trendSpec, sparklineSpec, ringSvg, progressBar, mountCharts } from "../charts.js?v=1105";
 import {
   tierCounts,
   statusPill,
@@ -38,7 +39,7 @@ import {
   figure,
   playbookTitle,
   esc,
-} from "../pieces.js?v=1104";
+} from "../pieces.js?v=1105";
 
 export const id = "cockpit";
 export const label = "Cockpit";

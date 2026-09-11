@@ -12,11 +12,10 @@
 // because the topbar renders the switch and the shell paints the choice:
 //   cockpit     — the instrument panel (default): a rail of every objective,
 //                 one read in full beside it
-//   cockpit-bis — the same master–detail rotated: the objectives as a band
-//                 across the top, one read at the page's full width. It exists
-//                 because a Playbook has two or three objectives, and a 340px
-//                 rail of viewport height cannot be filled by two rows
-//   report      — the monthly read: one chapter per objective, tab by tab
+//   mob_index   — a grid of objective cards, each with its curve; the one you
+//                 click read at full width behind a crumb
+//   mob_side    — the narrow column on the RIGHT, filled with facts rather
+//                 than navigation
 // They are deliberately different answers to "how do I read my objectives", so
 // the switch exists to compare them live — it is a prototype exploration, and
 // the day one wins the other is a delete. A third, Bento (a mosaic of tiles),
@@ -33,26 +32,26 @@
 // host is never repainted without `destroyChartsIn(host)` first — the one rule
 // that keeps a brand switch from leaking a chart per repaint.
 
-import { html, raw } from "../../utils.js?v=1104";
-import { renderTopbar } from "../../components/topbar.js?v=1104";
-import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=1104";
+import { html, raw } from "../../utils.js?v=1105";
+import { renderTopbar } from "../../components/topbar.js?v=1105";
+import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=1105";
 import {
   subscribe as subscribeScope,
   getActivePlaybook,
   getActivePlaybookId,
   setActivePlaybook,
-} from "../../active-playbook.js?v=1104";
-import { getPath, navigate } from "../../router.js?v=1104";
-import { isFlagOn } from "../../feature-flags.js?v=1104";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=1104";
-import { consumeHandoff } from "../../handoff.js?v=1104";
-import { open as openObjectiveModal } from "../../components/objective-modal.js?v=1104";
-import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=1104";
-import { renderEmptyState } from "../../components/empty-state.js?v=1104";
-import { playbookTitle } from "./pieces.js?v=1104";
-import { objectiveEntries, playbookRollup, entryByKey } from "./model.js?v=1104";
-import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=1104";
-import { DEFAULT_LAYOUT, readLayoutId, writeLayoutId, layoutById } from "./views.js?v=1104";
+} from "../../active-playbook.js?v=1105";
+import { getPath, navigate } from "../../router.js?v=1105";
+import { isFlagOn } from "../../feature-flags.js?v=1105";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=1105";
+import { consumeHandoff } from "../../handoff.js?v=1105";
+import { open as openObjectiveModal } from "../../components/objective-modal.js?v=1105";
+import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=1105";
+import { renderEmptyState } from "../../components/empty-state.js?v=1105";
+import { playbookTitle } from "./pieces.js?v=1105";
+import { objectiveEntries, playbookRollup, entryByKey } from "./model.js?v=1105";
+import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=1105";
+import { DEFAULT_LAYOUT, readLayoutId, writeLayoutId, layoutById } from "./views.js?v=1105";
 
 /** Set by a Playbook's objectives block ("Open in Insights"); payload `${ctxId}::${label}`. */
 export const FOCUS_OBJECTIVE_HANDOFF = "focusObjective";

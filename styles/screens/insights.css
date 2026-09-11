@@ -19,7 +19,14 @@
      (There was a second, --ins-display-lg at 40px — dead, because every caller
      asked for the xl.) */
   --ins-display-xl: 56px;
-  --ins-content: 1240px;
+  /* The page's measure — the SAME one the Playbook page caps its sections on
+     (`.recap > *`, 1080px, welcome.css), with the same `--ref-spacing-xl`
+     gutter. Two reading pages of the app that cap at two different widths read
+     as two apps, and at 1240 this one ran the full width of a wide screen
+     while the Playbook sat in a column. Every zone that reads the content
+     column — the band, the grid, a pane — resolves from here, so the head
+     stays aligned with the reading under it by construction. */
+  --ins-content: 1080px;
   /* The page's gutter. Every zone that reads the content column — the bar, a
      band, a pane — pads by exactly this, so "the column" is one number and not
      three that agree by accident. */
@@ -48,11 +55,10 @@
    rail, which is already a panel of its own, so it takes the rule and not the
    bleed — and its ground is the rail's own white.)
 
-   ⚠️ No exceptions: all three heads take this ground, Cockpit bis's band of
-   tiles included. It was the one grey tray — its own file has the finding that
-   put it there, and the reason it went white anyway. A band that holds cards
-   carries them on their own border now, not on a change of surface behind
-   them. */
+   ⚠️ No exceptions: every head takes this ground. The one that tried a grey
+   tray behind it was Cockpit bis's band of tiles, deleted 2026-09-11 — a band
+   that holds cards carries them on their own border, not on a change of surface
+   behind them. */
 
 .insights__band {
   flex: 0 0 auto;
@@ -87,9 +93,10 @@
   overflow-x: hidden;
 }
 
-/* Both Cockpits fill the viewport and scroll their own panes: the page itself
-   never scrolls, so the selector (rail or band) is always on screen. */
-:is(.insights--cockpit, .insights--cockpit-bis) .insights__host {
+/* Cockpit fills the viewport and scrolls its own panes: the page itself never
+   scrolls, so the rail is always on screen. (Cockpit bis shared this rule until
+   it was deleted — hence the single selector where there were two.) */
+.insights--cockpit .insights__host {
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -479,49 +486,6 @@
   line-height: var(--sys-text-style-h4-line-height);
   font-weight: var(--sys-text-style-h4-weight);
   color: var(--sys-text-color-default);
-}
-
-/* ── Measure row ────────────────────────────────────────────────────────── */
-
-.ins-measure {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxxs);
-  padding: var(--ref-spacing-xs) 0;
-  border-top: 1px solid var(--sys-border-color-default);
-}
-
-.ins-measure:first-child {
-  border-top: 0;
-  padding-top: 0;
-}
-
-.ins-measure__head,
-.ins-measure__foot {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--ref-spacing-xs);
-}
-
-.ins-measure__name {
-  font-size: var(--ref-font-size-sm);
-  line-height: var(--ref-font-line-height-sm);
-  font-weight: var(--ref-font-weight-bold);
-  color: var(--sys-text-color-default);
-}
-
-.ins-measure__pct {
-  font-size: var(--ref-font-size-sm);
-  font-weight: var(--ref-font-weight-bold);
-  color: var(--sys-text-color-default);
-  font-variant-numeric: tabular-nums;
-}
-
-.ins-measure__figures {
-  font-size: var(--ref-font-size-sm);
-  color: var(--sys-text-color-default);
-  font-variant-numeric: tabular-nums;
 }
 
 /* ── Chart frame ────────────────────────────────────────────────────────── */

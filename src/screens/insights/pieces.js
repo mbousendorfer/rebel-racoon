@@ -8,12 +8,12 @@
 // Pure render helpers — strings in, strings out. No listeners: every action is
 // a `data-ins-*` hook the shell dispatches.
 
-import { escapeHtml as esc } from "../../utils.js?v=1104";
-import { renderPostEchoRow } from "../../components/top-post-card.js?v=1104";
-import { getContexts } from "../../contexts-store.js?v=1104";
-import { isWorkspaceMode } from "../../active-playbook.js?v=1104";
-import { progressBar } from "./charts.js?v=1104";
-import { signedPct } from "./model.js?v=1104";
+import { escapeHtml as esc } from "../../utils.js?v=1105";
+import { renderPostEchoRow } from "../../components/top-post-card.js?v=1105";
+import { getContexts } from "../../contexts-store.js?v=1105";
+import { isWorkspaceMode } from "../../active-playbook.js?v=1105";
+import { progressBar } from "./charts.js?v=1105";
+import { signedPct } from "./model.js?v=1105";
 
 // ── The page's head — the scope, worn as the heading ─────────────────────
 //
@@ -248,28 +248,6 @@ export function scoreFigure(entry, { size = "lg" } = {}) {
 }
 
 // ── Measures ──────────────────────────────────────────────────────────────
-
-/** "14,800 → 20,000" or, for a rate, "4.1% · hold above 5.0%". */
-function measureFigures(m) {
-  if (m.isRate) return `${esc(m.currentLabel)} <span class="ins-muted">· hold above ${esc(m.targetLabel)}</span>`;
-  return `${esc(m.currentLabel)} <span class="ins-muted">→ ${esc(m.targetLabel)}</span>`;
-}
-
-/** A compact measure row: name + scope, figures, bar, % — the list every layout stacks. */
-export function measureRow(m, { showPill = false } = {}) {
-  const pct = m.progress == null ? "—" : `${m.progress}%`;
-  return `<div class="ins-measure" data-ins-measure-id="${esc(m.id)}">
-    <div class="ins-measure__head">
-      <span class="ins-measure__name">${esc(m.metricLabel)}${m.scopeLabel ? `<span class="ins-muted"> · ${esc(m.scopeLabel)}</span>` : ""}${m.proxy ? ` <span class="ap-badge blue">proxy</span>` : ""}</span>
-      <span class="ins-measure__pct">${pct}</span>
-    </div>
-    ${progressBar(m.progress, m.tier, { pending: m.progress == null })}
-    <div class="ins-measure__foot">
-      <span class="ins-measure__figures">${measureFigures(m)}</span>
-      ${showPill ? measurePill(m) : trendGlyph(m)}
-    </div>
-  </div>`;
-}
 
 /**
  * An objective measured on a proxy because a connection is missing — a state

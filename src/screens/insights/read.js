@@ -8,8 +8,8 @@
 // vocabulary (a verdict is a DS status pill, everywhere), this owns the SECTIONS
 // that vocabulary is assembled into.
 //
-// ⚠️ Cockpit, Cockpit bis and Report are deliberately NOT re-pointed at this
-// module. They are the reference the mob_ lectures are being compared against,
+// ⚠️ Cockpit is deliberately NOT re-pointed at this module. It is the reference
+// the mob_ lectures are being compared against,
 // and rewriting them would invalidate the comparison — so their own copies of
 // this stack stay exactly as they are. The duplication is the price of an
 // intact baseline, and it ends the day one reading wins: the losers and this
@@ -18,8 +18,8 @@
 // Pure render helpers — strings in, strings out, no listeners. Every action is
 // a `data-ins-*` hook the shell dispatches (shell.js § Actions).
 
-import { readingFor } from "./model.js?v=1104";
-import { trendSpec, sparklineSpec, progressBar } from "./charts.js?v=1104";
+import { readingFor } from "./model.js?v=1105";
+import { trendSpec, sparklineSpec, progressBar } from "./charts.js?v=1105";
 import {
   statusPill,
   measurePill,
@@ -34,7 +34,7 @@ import {
   tierCounts,
   figure,
   esc,
-} from "./pieces.js?v=1104";
+} from "./pieces.js?v=1105";
 
 /** Which measure is on screen: the reader's tab if they picked one, else the weakest. */
 export function shownMeasure(entry, local) {
@@ -77,19 +77,6 @@ export function readout(entry) {
     ${scoreFigure(entry, { size: "xl" })}
     ${figure(esc(head?.currentLabel || "—"), "current")}
     ${figure(esc(head?.targetLabel || "—"), head?.isRate ? "hold above" : "target")}
-  </div>`;
-}
-
-/** The same three figures STACKED — for a host that puts them beside the curve. */
-export function readFigures(entry) {
-  const head = entry.headline;
-  return `<div class="ins-read__figures">
-    ${scoreFigure(entry, { size: "xl" })}
-    <div class="ins-read__figpair">
-      ${figure(esc(head?.currentLabel || "—"), "current")}
-      ${figure(esc(head?.targetLabel || "—"), head?.isRate ? "hold above" : "target")}
-    </div>
-    <p class="ins-read__figmeta">${originMark(entry, { short: true })} <span class="ins-dot" aria-hidden="true">·</span> ${esc(windowLine(entry))}</p>
   </div>`;
 }
 

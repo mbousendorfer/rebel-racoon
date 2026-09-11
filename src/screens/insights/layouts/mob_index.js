@@ -7,9 +7,8 @@
 // still works at ten objectives with history behind them.
 //
 // WHY it exists: Cockpit spends a 340px column of full viewport height on a list
-// of two or three, next to the app's own rail. Cockpit bis rotated that selector
-// into a band; this one asks whether the selector has to be on screen AT ALL
-// while you read. Nothing else on the page competes with the objective once it
+// of two or three, next to the app's own rail. This one asks whether the
+// selector has to be on screen AT ALL while you read. Nothing else on the page competes with the objective once it
 // is open, and the index gets the whole width to be a table instead of a gutter.
 //
 // ⚠️ THE INDEX IS A GRID OF CARDS. It was a TABLE, twice, and this file said in
@@ -63,10 +62,10 @@ import {
   trendGlyph,
   postsMovedLine,
   esc,
-} from "../pieces.js?v=1104";
-import { ringSvg, trendSpec, mountCharts } from "../charts.js?v=1104";
-import { readingFor } from "../model.js?v=1104";
-import { shownMeasure, readHead, readReading, readout, readChart, readMeasures, readPosts } from "../read.js?v=1104";
+} from "../pieces.js?v=1105";
+import { ringSvg, trendSpec, mountCharts } from "../charts.js?v=1105";
+import { readingFor } from "../model.js?v=1105";
+import { shownMeasure, readHead, readReading, readout, readChart, readMeasures, readPosts } from "../read.js?v=1105";
 
 export const id = "mob_index";
 export const label = "Mob · Index";

@@ -7,9 +7,8 @@
 
    ⚠️ Deletable as a block. The day one reading wins, the losers, read.js and
    this file go together; nothing outside the mob_ lectures selects `.ins-read__*`
-   or `.ins-objtitle*`. Cockpit / Cockpit bis / Report keep their own copies of
-   this geometry, untouched on purpose — they are the baseline being compared
-   against. */
+   or `.ins-objtitle*`. Cockpit keeps its own copy of this geometry, untouched on
+   purpose — it is the baseline being compared against. */
 
 /* ── The objective title — the heading IS the objective picker ───────────────
    The same construction as `.ins-pbtitle` (insights.css), one rung up the page:
@@ -184,36 +183,6 @@
 .ins-read__readout > * + * {
   padding-left: var(--ref-spacing-md);
   border-left: 1px solid var(--sys-border-color-default);
-}
-
-/* ── The same figures, stacked — for a host that sets them beside the curve ── */
-
-.ins-read__figures {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-sm);
-  min-width: 0;
-}
-
-.ins-read__figpair {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: var(--ref-spacing-xs);
-  padding-top: var(--ref-spacing-sm);
-  border-top: 1px solid var(--sys-border-color-default);
-}
-
-.ins-read__figmeta {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--ref-spacing-xxxs);
-  margin: 0;
-  padding-top: var(--ref-spacing-xs);
-  border-top: 1px solid var(--sys-border-color-default);
-  font-size: var(--ref-font-size-sm);
-  line-height: var(--ref-font-line-height-sm);
-  color: var(--sys-text-color-light);
 }
 
 /* ── Cards ──────────────────────────────────────────────────────────────── */

@@ -1,6 +1,6 @@
 /* ---- Insights · Mob · Index — the index, then the fiche ------------------------
    Two levels, and the only lecture here whose page SCROLLS: it deliberately
-   does not join the `:is(.insights--cockpit, .insights--cockpit-bis)` no-scroll
+   does not join the `.insights--cockpit` no-scroll
    rule in insights.css, because there is no selector on screen that has to stay
    visible while you read. Nothing is pinned, so nothing has to be.
 
