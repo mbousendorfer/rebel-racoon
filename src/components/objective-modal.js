@@ -21,10 +21,11 @@
 // Replaces objective-editor-modal (the field-stack editor): the sentence form
 // is the editor now. Body-level, modal-coordinator, closes on route change.
 
-import { escapeHtml as esc } from "../utils.js?v=1141";
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1141";
-import { getContexts } from "../contexts-store.js?v=1141";
-import { createCatalogFlow, searchSelectorFor } from "./objective-catalog-panel.js?v=1141";
+import { escapeHtml as esc } from "../utils.js?v=1145";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1145";
+import { getContexts } from "../contexts-store.js?v=1145";
+import { getActivePlaybookId } from "../active-playbook.js?v=1145";
+import { createCatalogFlow, searchSelectorFor } from "./objective-catalog-panel.js?v=1145";
 import {
   resolveObjectives,
   materializeMeasureEntries,
@@ -33,7 +34,7 @@ import {
   scopedBaselineFor,
   scopeLabel,
   WINDOWS,
-} from "../objective-measures.js?v=1141";
+} from "../objective-measures.js?v=1145";
 
 const MODAL_ID = "objectiveModal";
 
@@ -103,7 +104,10 @@ function genId() {
 export function open({ data = null, label = null, mode = "adjust", contextId = null, onChange = null } = {}) {
   init();
   requestOpen(MODAL_ID, close);
-  const ctxId = contextId ?? data?.id;
+  // The scope comes from the surface, never from a control in here (§ renderForm).
+  // The fallback is the same function Insights itself reads, so the two can
+  // never resolve to different Playbooks.
+  const ctxId = contextId ?? data?.id ?? getActivePlaybookId();
   draft = {
     mode,
     data,
@@ -204,20 +208,19 @@ function canSave() {
   return !!draft.name.trim() && !!draft.contextId && draft.measures.length > 0;
 }
 
+// ⚠️ NO `for <Playbook>` CLAUSE. An objective is created in the Playbook the
+// surface that opened this dialog is scoped to — `/insights` reads ONE Playbook
+// and names it permanently (the rail's switcher in workspace mode, the page's
+// own heading otherwise), and the shell passes that id in. Asking again is the
+// fault this repo keeps removing: a control restating the scope the chrome
+// already prints is a control the reader has to rule out, and two places that
+// can answer "which Playbook" are two answers that can disagree. Same reason
+// the composer's, the feed's, the batch's, the clip's and the repurpose board's
+// own Playbook selects are gone (CLAUDE.md § The Playbook scope).
+//
+// The modal is not left guessing: `open()` falls back to the active Playbook,
+// so a caller that passes nothing still produces a saveable draft.
 function renderForm() {
-  const playbookPick =
-    draft.mode === "create" && !draft.data
-      ? `
-      <span class="objm__clause">
-        <span class="objm__word">for</span>
-        ${renderInlineSelect({
-          value: draft.contextId || "",
-          placeholder: "a Playbook…",
-          options: getContexts().map((c) => ({ value: c.id, label: c.name })),
-          attr: "data-objm-playbook",
-        })}
-      </span>`
-      : "";
   const hasMeasures = draft.measures.length > 0;
   // ONE sentence, one line: `Grow <name> over a <window>` (+ `for <Playbook>`
   // when creating). It was two rows — the name on a hero line, the window on a
@@ -240,7 +243,6 @@ function renderForm() {
           attr: "data-objm-window",
         })}
       </span>
-      ${playbookPick}
     </div>
     ${
       draft.window.type === "fixed"
@@ -516,14 +518,6 @@ function onClick(event) {
   if (win) {
     draft.window =
       win.dataset.objmWindow === "fixed" ? { type: "fixed", date: draft.window.date } : { type: "rolling" };
-    paint();
-    return;
-  }
-  const pb = event.target.closest("[data-objm-playbook]");
-  if (pb) {
-    draft.contextId = pb.dataset.objmPlaybook;
-    draft.data = getContexts().find((c) => c.id === draft.contextId) || null;
-    seedFromName();
     paint();
     return;
   }

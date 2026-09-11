@@ -14,14 +14,14 @@
 // the design's own "the panel slides"), and `open()` wraps the same flow in a
 // standalone body-level dialog for the Playbook block's edit mode.
 
-import { escapeHtml as esc } from "../utils.js?v=1141";
+import { escapeHtml as esc } from "../utils.js?v=1145";
 import {
   NETWORK_LABEL,
   getConnectedProfiles,
   renderProfileTag,
   PROFILE_SEARCH_THRESHOLD,
-} from "../social-profiles.js?v=1141";
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1141";
+} from "../social-profiles.js?v=1145";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1145";
 import {
   catalogEntries,
   metricLabel,
@@ -30,7 +30,7 @@ import {
   proposeTargetFrom,
   isRateMetric,
   isAdditiveMetric,
-} from "../objective-measures.js?v=1141";
+} from "../objective-measures.js?v=1145";
 
 const COMPUTE_MS = 900;
 
@@ -104,14 +104,6 @@ export function createCatalogFlow({ contextId, targetLabel, confirmLabel, onAdd,
     const all = profilesFor(state.network);
     const first = all.find((p) => state.profileIds.has(p.id)) || all[0];
     return `computing from ${first?.handle || first?.name || "your profiles"}…`;
-  }
-
-  function scopeChipLabel(network) {
-    const all = profilesFor(network);
-    const picked = all.filter((p) => state.profileIds.has(p.id)).length;
-    const name = NETWORK_LABEL[network] || network;
-    if (state.network === network && picked && picked < all.length) return `${name} · ${picked}/${all.length} profiles`;
-    return name;
   }
 
   // ── Views ──────────────────────────────────────────────────────────────
@@ -201,146 +193,175 @@ export function createCatalogFlow({ contextId, targetLabel, confirmLabel, onAdd,
     });
     const netName = state.network ? NETWORK_LABEL[state.network] || state.network : "";
 
-    // Scope is ONE choice among ~5, so it is a select, not a chip row: chips
-    // spend a whole line on options you set once, and a row of them reads as a
-    // multi-select filter when only one can win. Same DS select the objective
-    // sentence uses for its window, so the two look like one family.
+    // ── ONE control: the profiles, GROUPED BY NETWORK ────────────────────
     //
-    // Not-additive is not a PREMIUM lock — feature-lock (purple, a padlock)
-    // reads as "upgrade to unlock", a promise this can never keep. "All
-    // networks" is simply a disabled option; the caption below says why.
-    const networkOptions = networks.map((n) => ({ value: n, label: scopeChipLabel(n) }));
-    networkOptions.push({ value: "all", label: "All networks", disabled: !additive });
-    const currentNetwork = state.network || "all";
-    const currentOption = networkOptions.find((o) => o.value === currentNetwork && !o.disabled);
-    const networkSelect = `
-      <details class="ap-select objc__select" data-objc-select>
-        <summary class="ap-select-trigger">
-          <span class="ap-select-value${currentOption ? "" : " ap-select-placeholder"}">${esc(currentOption ? currentOption.label : "Pick a network")}</span>
-          <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
-        </summary>
-        <div class="ap-select-dropdown" role="listbox">
-          <div class="ap-select-options">
-            ${networkOptions
-              .map((o) => {
-                if (o.disabled) {
-                  return `<div class="ap-select-option disabled" aria-disabled="true"><span class="ap-select-option-text">${esc(o.label)}</span></div>`;
-                }
-                const on = o.value === currentNetwork;
-                return `
-                  <div class="ap-select-option${on ? " selected" : ""}" data-objc-network="${esc(o.value)}" role="option" aria-selected="${on}">
-                    <span class="ap-select-option-text">${esc(o.label)}</span>
-                    ${on ? `<i class="ap-icon-check" aria-hidden="true"></i>` : ""}
-                  </div>`;
-              })
-              .join("")}
-          </div>
-        </div>
-      </details>`;
-    const scopeCaption = additive
-      ? ""
-      : `<p class="objc__caption">${esc(metricLabel(m))} can’t be summed across networks — measure one at a time.</p>`;
-
-    const profiles = state.network ? profilesFor(state.network) : [];
+    // ⚠️ This was TWO fields — `Measure on [network]` then `Profiles [multi]` —
+    // and the second was the first, restated: a network IS its profiles, so the
+    // reader answered the same question twice, and the network field's own
+    // options had to print "LinkedIn · 3/7 profiles" to stay honest about what
+    // the field below it had done. Picking profiles says which network without
+    // being asked.
+    //
+    // The DS ships the grouped list (`.ap-select-group` + `-group-label`), so
+    // this is its own primitive and not a nested menu — ADS has no flyout, and
+    // sections + a divider is the documented way to group options.
+    //
+    // ONE NETWORK AT A TIME, because that is exactly what the model holds: a
+    // measure's scope is `{ network, profileIds? }` (objective-measures.js), and
+    // every read of it is guarded by `scope?.network`. So picking a profile in
+    // another group MOVES the measure to that network rather than adding to it —
+    // the caption says so for the metrics that cannot be summed. The
+    // cross-network case keeps its own row at the top (`Every connected
+    // profile`), which is the old "All networks" option and stays locked to
+    // metrics that add up.
+    const groups = networks.map((n) => ({ network: n, profiles: profilesFor(n) })).filter((g) => g.profiles.length);
+    const allProfiles = getConnectedProfiles();
+    const everyNetwork = !state.network;
+    const profiles = state.network ? profilesFor(state.network) : allProfiles;
     const pickedCount = profiles.filter((p) => state.profileIds.has(p.id)).length;
-    let profileBody;
-    if (!state.network) {
-      profileBody = `<p class="objc__static">Every connected profile.</p>`;
-    } else if (profiles.length <= 1) {
-      // One profile is not a choice — a lone chip you can't uncheck is a
-      // control that does nothing. Show WHO it is instead, through the same
-      // renderProfileTag (DS avatar + corner network badge + name) every other
-      // profile surface uses, so a profile looks like a profile everywhere.
-      profileBody = `
-        <div class="objc__profile">${profiles[0] ? renderProfileTag(profiles[0]) : "—"}</div>
-        <p class="objc__caption">The only ${esc(netName)} profile connected.</p>`;
-    } else {
-      // A chip per profile does not survive contact with a real account — a brand
-      // can have 200 connected profiles, and 200 chips is not a control. So: the
-      // DS MULTI-select, built the way the DS builds one —
-      //   · each option carries a CHECKBOX (.ap-select-option-checkbox holding the
-      //     .ap-checkbox-container visual), never .selected + .ap-select-option-check:
-      //     those two are the SINGLE-select markers, and a menu of seven rows with
-      //     one blue tick reads as "pick one";
-      //   · the trigger carries .ap-select-labels — .ap-label chips for what is
-      //     picked, with .ap-select-label-count for the overflow;
-      //   · an .ap-select-all row, because selecting 200 by hand is not an option.
-      // Search appears past the same PROFILE_SEARCH_THRESHOLD every other profile
-      // picker in the app uses, and each row shows the profile through
-      // renderProfileTag so a profile looks like a profile everywhere.
-      const allPicked = pickedCount === profiles.length;
-      const q = state.profileQuery.trim().toLowerCase();
-      const shown = q
-        ? profiles.filter((p) => `${p.handle || ""} ${p.name || ""}`.toLowerCase().includes(q))
-        : profiles;
-      const searchable = profiles.length > PROFILE_SEARCH_THRESHOLD;
-      // The input is inert (tabindex -1, aria-hidden): the row's click handler owns
-      // the toggle and re-renders from state, so the box never disagrees with it.
-      const checkbox = (on) =>
-        `<span class="ap-checkbox-container ap-select-option-checkbox" aria-hidden="true"><input type="checkbox" tabindex="-1"${on ? " checked" : ""} /><i></i></span>`;
-      const picked = profiles.filter((p) => state.profileIds.has(p.id));
-      const CHIP_MAX = 2;
-      const chips = picked
-        .slice(0, CHIP_MAX)
-        .map((p) => `<span class="ap-label"><span>${esc(p.handle || p.name)}</span></span>`)
-        .join("");
-      const overflow = picked.length - Math.min(picked.length, CHIP_MAX);
-      const rows = shown
-        .map((p) => {
-          const on = state.profileIds.has(p.id);
-          return `
-            <div class="ap-select-option objc__profileopt" role="option" aria-selected="${on}" data-objc-profile="${esc(p.id)}">
-              ${checkbox(on)}${renderProfileTag(p)}
-            </div>`;
-        })
-        .join("");
-      profileBody = `
-        <details class="ap-select objc__select objc__profiles" data-objc-select${state.profilesOpen ? " open" : ""}>
-          <summary class="ap-select-trigger" data-objc-profiles-toggle>
-            <span class="ap-select-labels">${chips}${overflow ? `<span class="ap-select-label-count">+${overflow}</span>` : ""}</span>
-            <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
-          </summary>
-          <div class="ap-select-dropdown" role="listbox" aria-multiselectable="true">
-            ${
-              searchable
-                ? `<div class="ap-select-search">
-                     <i class="ap-icon-search ap-select-search-icon" aria-hidden="true"></i>
-                     <input class="ap-select-search-input" type="text" data-objc-profile-search value="${esc(state.profileQuery)}" placeholder="Search profiles…" aria-label="Search profiles" />
-                   </div>`
-                : ""
-            }
-            ${
-              q
-                ? ""
-                : `<div class="ap-select-all objc__profileall" role="option" aria-selected="${allPicked}" data-objc-profile-all>
-                     ${checkbox(allPicked)}<span>All ${profiles.length} ${esc(netName)} profiles</span>
-                   </div>
-                   <div class="ap-select-divider"></div>`
-            }
-            <div class="ap-select-options">
-              ${rows || `<p class="ap-select-not-found">No profile matches “${esc(state.profileQuery)}”.</p>`}
-            </div>
-          </div>
-        </details>
-        <p class="objc__caption">${allPicked ? `Every ${esc(netName)} profile — deselect one to narrow the measure.` : `${pickedCount} of ${profiles.length} — the measure sums only these.`}</p>`;
-    }
+    const allPicked = pickedCount === profiles.length;
+    const q = state.profileQuery.trim().toLowerCase();
+    const matches = (p) => !q || `${p.handle || ""} ${p.name || ""}`.toLowerCase().includes(q);
+    const searchable = allProfiles.length > PROFILE_SEARCH_THRESHOLD;
+    // The input is inert (tabindex -1, aria-hidden): the row's click handler owns
+    // the toggle and re-renders from state, so the box never disagrees with it.
+    const checkbox = (on) =>
+      `<span class="ap-checkbox-container ap-select-option-checkbox" aria-hidden="true"><input type="checkbox" tabindex="-1"${on ? " checked" : ""} /><i></i></span>`;
 
-    // The same "from X to Y" sentence the measure card shows back on the
-    // objective form, so what you configure looks like what lands. Two naked
-    // values on two rows read as fields that failed to render.
+    // The trigger says the NETWORK and the count, not a run of profile chips:
+    // the network field is gone, so this is the only place the scope's network
+    // is printed — and two names plus "+5" told the reader neither the network
+    // nor the total.
+    let triggerText;
+    if (everyNetwork) triggerText = `Every connected profile · ${allProfiles.length}`;
+    else if (allPicked) triggerText = `${netName} · all ${profiles.length} profile${profiles.length === 1 ? "" : "s"}`;
+    else triggerText = `${netName} · ${pickedCount} of ${profiles.length} profiles`;
+
+    const groupRows = groups
+      .map((g) => {
+        const shown = g.profiles.filter(matches);
+        if (!shown.length) return "";
+        const netAll = state.network === g.network && g.profiles.every((p) => state.profileIds.has(p.id));
+        const label = NETWORK_LABEL[g.network] || g.network;
+        // A whole-network row per group, for the same reason the flat list had
+        // one: ticking 200 profiles by hand is not an option. Hidden while
+        // searching, where "all" would mean "all of the matches".
+        const allRow =
+          q || g.profiles.length < 2
+            ? ""
+            : `<div class="ap-select-option objc__profileopt" role="option" aria-selected="${netAll}" data-objc-net-all="${esc(g.network)}">
+                 ${checkbox(netAll)}<span>All ${g.profiles.length} ${esc(label)} profiles</span>
+               </div>`;
+        const rows = shown
+          .map((pf) => {
+            const on = state.network === g.network && state.profileIds.has(pf.id);
+            return `
+              <div class="ap-select-option objc__profileopt" role="option" aria-selected="${on}" data-objc-profile="${esc(pf.id)}">
+                ${checkbox(on)}${renderProfileTag(pf)}
+              </div>`;
+          })
+          .join("");
+        return `<div class="ap-select-group"><span class="ap-select-group-label">${esc(label)}</span></div>${allRow}${rows}`;
+      })
+      .join("");
+
+    // `Every connected profile` — the old "All networks", and still a deliberate
+    // act: a metric that cannot be summed across networks keeps it disabled, and
+    // the caption says why. Not a feature-lock (purple + padlock reads as
+    // "upgrade to unlock", a promise this can never keep) — just a disabled
+    // option.
+    const everyRow =
+      q || groups.length < 2
+        ? ""
+        : additive
+          ? `<div class="ap-select-all objc__profileall" role="option" aria-selected="${everyNetwork}" data-objc-network="all">
+               ${checkbox(everyNetwork)}<span>Every connected profile · ${allProfiles.length}</span>
+             </div>
+             <div class="ap-select-divider"></div>`
+          : `<div class="ap-select-all objc__profileall disabled" aria-disabled="true">
+               ${checkbox(false)}<span>Every connected profile</span>
+             </div>
+             <div class="ap-select-divider"></div>`;
+
+    let caption;
+    if (everyNetwork) caption = `Every profile on every network — the measure sums them all.`;
+    else if (!additive)
+      caption = `${metricLabel(m)} can’t be summed across networks: picking a profile from another one measures that network instead.`;
+    else if (allPicked) caption = `Every ${netName} profile — deselect one to narrow the measure.`;
+    else caption = `${pickedCount} of ${profiles.length} — the measure sums only these.`;
+
+    const profileField =
+      allProfiles.length <= 1
+        ? // One profile is not a choice — a lone row you can't uncheck is a
+          // control that does nothing. Show WHO it is instead, through the same
+          // renderProfileTag (DS avatar + corner network badge + name) every
+          // other profile surface uses.
+          `<div class="objc__profile">${allProfiles[0] ? renderProfileTag(allProfiles[0]) : "—"}</div>
+           <p class="objc__caption">The only profile connected.</p>`
+        : `<details class="ap-select objc__select objc__profiles" data-objc-select${state.profilesOpen ? " open" : ""}>
+             <summary class="ap-select-trigger" data-objc-profiles-toggle>
+               <span class="ap-select-value">${esc(triggerText)}</span>
+               <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
+             </summary>
+             <div class="ap-select-dropdown" role="listbox" aria-multiselectable="true">
+               ${
+                 searchable
+                   ? `<div class="ap-select-search">
+                        <i class="ap-icon-search ap-select-search-icon" aria-hidden="true"></i>
+                        <input class="ap-select-search-input" type="text" data-objc-profile-search value="${esc(state.profileQuery)}" placeholder="Search profiles…" aria-label="Search profiles" />
+                      </div>`
+                   : ""
+               }
+               ${everyRow}
+               <div class="ap-select-options">
+                 ${groupRows || `<p class="ap-select-not-found">No profile matches “${esc(state.profileQuery)}”.</p>`}
+               </div>
+             </div>
+           </details>
+           <p class="objc__caption">${esc(caption)}</p>`;
+
+    // ── What Archie computed ─────────────────────────────────────────────
+    //
+    // The TARGET is the one thing this view produces: the reader posed a scope,
+    // Archie read the baseline off it and proposed a number. So it is the view's
+    // figure — the DS's top rung (h1, 24/32, the biggest step the ramp has) on a
+    // grey-05 inset, with the orange `Suggested` tag beside it because orange is
+    // this app's mark for something the AI produced.
+    //
+    // ⚠️ It was a SENTENCE at body size — "from 3,700 today to 4,300 Suggested ·
+    // +16%" — one 14px line among the three other 14px lines of the form, with
+    // its two numbers in bold as the only sign that anything had been calculated.
+    // The inset is the same device the objective's own report card uses for its
+    // figures (insights-read.css § the synthesis box): a tint plus one big
+    // numeral is how this app says "this number was computed for you".
+    //
+    // The small line under it carries what the figure is measured FROM, which is
+    // the other half of the proposal and the thing a reader checks before
+    // accepting it.
     const delta = pctDelta(state.baseline, state.target);
     const suggested = `<span class="ap-tag tagOrange">Suggested${delta != null && delta > 0 ? ` · +${delta}%` : ""}</span>`;
     let reading;
     if (state.baselineState !== "ready") {
       reading = `
-        <p class="objc__computing">
-          <span class="ap-loader blue size-16" aria-hidden="true"><svg><circle></circle><circle></circle></svg></span>
-          <span>${esc(computingLabel())}</span>
-        </p>`;
-    } else if (rate) {
-      reading = `<p class="objc__reading">hold above <strong>${esc(state.target || "—")}</strong> ${suggested} <span class="objc__reading-sub">today ${esc(state.baseline || "—")}</span></p>`;
+        <div class="objc__proposal">
+          <p class="objc__computing">
+            <span class="ap-loader blue size-16" aria-hidden="true"><svg><circle></circle><circle></circle></svg></span>
+            <span>${esc(computingLabel())}</span>
+          </p>
+        </div>`;
     } else {
-      reading = `<p class="objc__reading">from <strong>${esc(state.baseline || "—")}</strong> today to <strong>${esc(state.target || "—")}</strong> ${suggested}</p>`;
+      reading = `
+        <div class="objc__proposal">
+          <div class="objc__proposal-head">
+            <span class="objc__proposal-figure">${esc(state.target || "—")}</span>
+            ${suggested}
+          </div>
+          <p class="objc__proposal-sub">${
+            rate
+              ? `a bar to stay above — today ${esc(state.baseline || "—")}`
+              : `from ${esc(state.baseline || "—")} today`
+          }</p>
+        </div>`;
     }
     // The type explainer was a boxed info note; it explains the target, so it
     // belongs under the target as helper text, not as a fourth bordered block.
@@ -351,15 +372,8 @@ export function createCatalogFlow({ contextId, targetLabel, confirmLabel, onAdd,
     return `
       <div class="objc__cfg">
         <div class="objc__field">
-          <span class="objc__fieldlabel">Measure on</span>
-          <div class="objc__fieldbody">
-            ${networkSelect}
-            ${scopeCaption}
-          </div>
-        </div>
-        <div class="objc__field">
           <span class="objc__fieldlabel">Profiles</span>
-          <div class="objc__fieldbody">${profileBody}</div>
+          <div class="objc__fieldbody">${profileField}</div>
         </div>
         <hr class="objc__rule" />
         <div class="objc__field">
@@ -459,10 +473,12 @@ export function createCatalogFlow({ contextId, targetLabel, confirmLabel, onAdd,
         recompute();
         return true;
       }
-      // "All N profiles" selects every profile on the network. It is not a
-      // two-way toggle: the scope can never be empty (see below), so unchecking
-      // it would only bounce straight back to all.
-      if (event.target.closest("[data-objc-profile-all]")) {
+      // "All N <network> profiles" — per GROUP now, so it also sets which
+      // network the measure is on. Not a two-way toggle: the scope can never be
+      // empty (see below), so unchecking it would bounce straight back to all.
+      const netAll = event.target.closest("[data-objc-net-all]");
+      if (netAll) {
+        state.network = netAll.dataset.objcNetAll;
         state.profileIds = new Set(profilesFor(state.network).map((p) => p.id));
         recompute();
         return true;
@@ -470,6 +486,18 @@ export function createCatalogFlow({ contextId, targetLabel, confirmLabel, onAdd,
       const prof = event.target.closest("[data-objc-profile]");
       if (prof) {
         const id = prof.dataset.objcProfile;
+        const picked = getConnectedProfiles().find((p) => p.id === id);
+        // A profile from ANOTHER network moves the measure there rather than
+        // adding to the current scope: the model holds one network per measure
+        // (§ the grouped control above). Its own group's ticks go with it —
+        // which is what the caption warns about for the metrics that cannot be
+        // summed across networks.
+        if (picked && picked.platform !== state.network) {
+          state.network = picked.platform;
+          state.profileIds = new Set([id]);
+          recompute();
+          return true;
+        }
         if (state.profileIds.has(id)) state.profileIds.delete(id);
         else state.profileIds.add(id);
         if (!state.profileIds.size) state.profileIds = new Set(profilesFor(state.network).map((p) => p.id));
