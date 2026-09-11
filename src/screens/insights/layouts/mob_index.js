@@ -62,10 +62,10 @@ import {
   trendGlyph,
   postsMovedLine,
   esc,
-} from "../pieces.js?v=1110";
-import { ringSvg, trendSpec, mountCharts } from "../charts.js?v=1110";
-import { readingFor } from "../model.js?v=1110";
-import { shownMeasure, readHead, readReading, readout, readMeasures, readPosts } from "../read.js?v=1110";
+} from "../pieces.js?v=1112";
+import { ringSvg, trendSpec, mountCharts } from "../charts.js?v=1112";
+import { readingFor } from "../model.js?v=1112";
+import { shownMeasure, readHead, readReading, readout, readMeasures, readPosts } from "../read.js?v=1112";
 
 export const id = "mob_index";
 export const label = "Mob · Index";
@@ -121,7 +121,6 @@ function renderIndex(entries, rollup, ctx, specs, firstPaint) {
              <span class="ins-mob_index__to" aria-hidden="true">→</span>
              <span class="ins-num ins-mob_index__target">${esc(m.targetLabel || "—")}</span></span>`
           : "";
-      const measures = `${e.counts.measures} measure${e.counts.measures === 1 ? "" : "s"}`;
       return `<article class="ap-card ins-mob_index__obj" data-ins-select="${esc(e.key)}" data-ins-objective="${esc(e.key)}">
         <header class="ins-mob_index__objhead">
           <div class="ins-mob_index__ident">
@@ -139,13 +138,24 @@ function renderIndex(entries, rollup, ctx, specs, firstPaint) {
             name: m?.metricLabel || "",
           })}
           <div class="ins-mob_index__facts">
-            <p class="ins-mob_index__reading">${esc(readingFor(e))}</p>
-            <div class="ins-mob_index__figs">
-              ${pair}
-              ${pair ? `<span class="ins-dot" aria-hidden="true">·</span>` : ""}
-              <span class="ins-muted">${measures}</span>
-              ${m && !e.collecting ? trendGlyph(m) : ""}
-            </div>
+            ${
+              // The ring already prints the percentage, so the card does not
+              // print it again in prose: what the ring CANNOT say is which
+              // metric it is about, and a figure has to be named in text. So
+              // this line names it and carries the move, and the numbers under
+              // it are the two operands.
+              //
+              // ⚠️ It was `readingFor(e)` — "Reach is at 74% of target, down 8%
+              // over the window" — next to a ring reading 74% and a row reading
+              // 14,800 → 20,000 · −8%: the same three facts, twice, on a card
+              // the reader only has to glance at. The prose comes back when
+              // there is NO figure (collecting, no measure), where it is all
+              // there is to show.
+              m && !e.collecting
+                ? `<p class="ins-mob_index__metric">of target on <strong>${esc(m.metricLabel)}</strong></p>
+                   <div class="ins-mob_index__figs">${pair}${trendGlyph(m)}</div>`
+                : `<p class="ins-mob_index__reading">${esc(readingFor(e))}</p>`
+            }
           </div>
         </div>
 

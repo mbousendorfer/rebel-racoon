@@ -149,8 +149,23 @@
   min-width: 0;
 }
 
-/* The objective's own verdict, in words. Body size and full ink: it is the
-   line the reader actually reads, not a caption under a number. */
+/* What the ring is a percentage OF. The ring carries the figure, this carries
+   its subject — a number without its metric named in text is unreadable, and
+   this is the only line on the card that names it. */
+.ins-mob_index__metric {
+  margin: 0;
+  font-size: var(--ref-font-size-sm);
+  line-height: var(--ref-font-line-height-sm);
+  color: var(--sys-text-color-light);
+}
+
+.ins-mob_index__metric > strong {
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--sys-text-color-default);
+}
+
+/* The prose fallback — a collecting objective, or one with no measure yet: no
+   figure to show, so the sentence is all there is. */
 .ins-mob_index__reading {
   margin: 0;
   font-size: var(--ref-font-size-sm);
@@ -206,6 +221,19 @@
 .ins-mob_index__curve {
   display: block;
   margin-top: auto;
+}
+
+/* ── The fiche's hero ─────────────────────────────────────────────────────
+   Title, provenance and the figure row are ONE block, so they have to sit
+   closer to each other than to the cards below them — proximity is what makes
+   them read as a head instead of three more stacked things. The column's own
+   `gap: sm` separates the blocks; this pulls the hero's lines back together. */
+.ins-mob_index__inner > .ins-read__head {
+  margin-bottom: calc(-1 * var(--ref-spacing-xs));
+}
+
+.ins-mob_index__inner > .ins-read__readout {
+  margin-bottom: var(--ref-spacing-xxs);
 }
 
 /* ── The fiche ───────────────────────────────────────────────────────────── */

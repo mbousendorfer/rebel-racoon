@@ -18,8 +18,8 @@
 // Pure render helpers — strings in, strings out, no listeners. Every action is
 // a `data-ins-*` hook the shell dispatches (shell.js § Actions).
 
-import { readingFor } from "./model.js?v=1110";
-import { trendSpec, sparklineSpec, progressBar } from "./charts.js?v=1110";
+import { readingFor } from "./model.js?v=1112";
+import { trendSpec, sparklineSpec, progressBar } from "./charts.js?v=1112";
 import {
   statusPill,
   measurePill,
@@ -34,7 +34,7 @@ import {
   tierCounts,
   figure,
   esc,
-} from "./pieces.js?v=1110";
+} from "./pieces.js?v=1112";
 
 /** Which measure is on screen: the reader's tab if they picked one, else the weakest. */
 export function shownMeasure(entry, local) {
@@ -44,36 +44,64 @@ export function shownMeasure(entry, local) {
 
 // ── Head ──────────────────────────────────────────────────────────────────
 //
-// The objective at the DS h1 rung with its verdict beside it, the provenance /
-// window / measure count under it, and the two doors on the right. Same three
-// lines as Cockpit's pane head — an objective introduces itself the same way
-// whichever reading opened it.
+// The objective at the DS h1 rung with its verdict beside it, the provenance and
+// the window under it, and the two doors on the right. Same lines as Cockpit's
+// pane head — an objective introduces itself the same way whichever reading
+// opened it.
+//
+// The measure COUNT left this line: the Measures card's own counter says it
+// twelve pixels lower, and a page head should carry what identifies the
+// objective, not an inventory of the card below it.
 
 export function readHead(entry, { actions = true } = {}) {
-  const n = entry.measures.length;
   return `<header class="ins-read__head">
     <div class="ins-read__titles">
       <div class="ins-read__title"><h2>${esc(entry.label)}</h2>${statusPill(entry)}</div>
-      <p class="ins-read__meta">${originMark(entry)} <span class="ins-dot" aria-hidden="true">·</span> ${esc(windowLine(entry))} <span class="ins-dot" aria-hidden="true">·</span> ${n} measure${n === 1 ? "" : "s"}</p>
+      <p class="ins-read__meta">${originMark(entry)} <span class="ins-dot" aria-hidden="true">·</span> ${esc(windowLine(entry))}</p>
     </div>
     ${actions ? objectiveActions(entry) : ""}
   </header>`;
 }
 
-/** The one-line reading, and the missing-connection note when there is one. */
+/**
+ * The one-line reading, and the missing-connection note when there is one.
+ *
+ * ⚠️ The prose is now the FALLBACK, not a permanent line. "Reach is at 74% of
+ * target, down 8% over the window" was the THIRD statement of that fact on one
+ * page — the figure row says it in numerals, the table row says it in columns,
+ * and the status pill says the verdict a second time. When every fact is
+ * repeated four times nothing on the page is emphasised, which is what made
+ * this page read as flat.
+ *
+ * It comes back for the states that have no figure to show — a collecting
+ * objective, or one with no measure yet — where a sentence is all there is.
+ * The proxy note is unconditional: it is the only thing on the page that says
+ * WHY a number is standing in for another, and no figure carries that.
+ */
 export function readReading(entry) {
-  return `<p class="ins-read__reading">${esc(readingFor(entry))}</p>
+  const noFigure = entry.collecting || !entry.headline;
+  return `${noFigure ? `<p class="ins-read__reading">${esc(readingFor(entry))}</p>` : ""}
     ${entry.parked ? proxyNote(entry) : ""}`;
 }
 
-// ── Readout ───────────────────────────────────────────────────────────────
+// ── The hero's figure row ─────────────────────────────────────────────────
 //
-// Three cells, not four of equal weight: how far along dominates (it is the
-// answer), current and target are what it is made of.
+// Three figures: how far along dominates (it is the answer), current and target
+// are what it is made of.
+//
+// ⚠️ NOT a card any more. It was `.ap-card`, which made it the fourth white box
+// of identical weight — same border, same radius, same 24px padding — on a page
+// that had no hero at all. On the page's own ground, directly under the title,
+// it IS the hero: the objective's verdict as one big numeral.
+//
+// And the three figures are GROUPED at the left instead of being distributed
+// `2fr 1fr 1fr` across 1200px. Spread edge to edge they read as three unrelated
+// cells; side by side they read as one fact and its two operands, which is what
+// they are.
 
 export function readout(entry) {
   const head = entry.headline;
-  return `<div class="ap-card ins-section ins-read__readout">
+  return `<div class="ins-read__readout">
     ${scoreFigure(entry, { size: "xl" })}
     ${figure(esc(head?.currentLabel || "—"), "current")}
     ${figure(esc(head?.targetLabel || "—"), head?.isRate ? "hold above" : "target")}
