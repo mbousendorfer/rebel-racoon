@@ -207,10 +207,10 @@
 }
 
 /* ── Measures table ─────────────────────────────────────────────────────────
-   No per-th/td rules and no width: the DS table sets its own width, aligns its
-   headers, and ships `.right` for numeric columns and `tbody tr.selected` for
-   the highlighted row. Styling individual cells is the component's documented
-   Don't — what follows only sizes the two columns holding a drawn shape. */
+   The DS table sets its own width, aligns its headers, and ships `.right` for
+   numeric columns and `tbody tr.selected` for the highlighted row. Styling
+   individual cells is the component's documented Don't — what follows only
+   sizes columns and tints the target half of a pair. */
 
 /* ── The measures list, as the chart's legend ─────────────────────────────
    One card holds the curve and the list; the list is what switches the curve
@@ -271,6 +271,48 @@
   font-size: var(--ref-font-size-xs);
 }
 
+/* The DS paints EVERY `th` white and sticks it to the top — both written for
+   the HEADER row, which is the only `th` the component expects. The measure's
+   name cell is a row header (`scope="row"`), so it inherited the pair: the
+   selected row's tint and the hover's started AFTER the name instead of at the
+   card's edge, and the name column floated over the rest on scroll. Undone for
+   the row headers only; the DS's bold ink, padding and bottom rule stay, and
+   the last row loses its rule the way the component already does it for `td`. */
+.ins-read__table th[scope="row"] {
+  position: static;
+  background-color: transparent;
+}
+
+.ins-read__table tbody tr:last-child th {
+  border-bottom: none;
+}
+
+/* The NAME column absorbs every spare pixel, so the four figure columns pack
+   against the right edge instead of being spread evenly across the card. Two
+   rows over 1100px of card, each column padded to a fifth of it, put `Trend`
+   140px from `Progress` and `State` 200px further still: nothing lined up
+   closely enough to compare, and the eye travelled the full width per row.
+   Packed right is what Uniswap, Pinterest Trends, Semrush and GitLab all do
+   with a list of measured things — the label is elastic, the numbers are a
+   block. */
+.ins-read__table th:first-child {
+  width: 100%;
+}
+
+/* `14,800 / 20,000` — the value, then the target it is measured against, in
+   one cell (read.js has the note on why Target stopped being a column). The
+   target is the lighter half: it is the constant, the current value is what
+   moved. */
+.ins-read__pair {
+  white-space: nowrap;
+}
+
+.ins-read__of,
+.ins-read__target {
+  color: var(--sys-text-color-light);
+  font-weight: var(--ref-font-weight-regular);
+}
+
 .ins-read__bar {
   min-width: 150px;
 }
@@ -286,11 +328,6 @@
   display: inline-block;
   width: 38px;
   font-weight: var(--ref-font-weight-bold);
-}
-
-.ins-read__spark {
-  width: 120px;
-  min-width: 120px;
 }
 
 /* ── The facts column ───────────────────────────────────────────────────────

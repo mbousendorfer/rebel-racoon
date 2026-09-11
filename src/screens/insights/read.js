@@ -18,8 +18,8 @@
 // Pure render helpers — strings in, strings out, no listeners. Every action is
 // a `data-ins-*` hook the shell dispatches (shell.js § Actions).
 
-import { readingFor } from "./model.js?v=1116";
-import { trendSpec, sparklineSpec, progressBar } from "./charts.js?v=1116";
+import { readingFor } from "./model.js?v=1118";
+import { trendSpec, progressBar } from "./charts.js?v=1118";
 import {
   statusPill,
   measurePill,
@@ -32,9 +32,8 @@ import {
   proxyNote,
   objectiveActions,
   tierCounts,
-  figure,
   esc,
-} from "./pieces.js?v=1116";
+} from "./pieces.js?v=1118";
 
 /** Which measure is on screen: the reader's tab if they picked one, else the weakest. */
 export function shownMeasure(entry, local) {
@@ -84,27 +83,35 @@ export function readReading(entry) {
     ${entry.parked ? proxyNote(entry) : ""}`;
 }
 
-// ── The hero's figure row ─────────────────────────────────────────────────
+// ── The hero: ONE figure ──────────────────────────────────────────────────
 //
-// Three figures: how far along dominates (it is the answer), current and target
-// are what it is made of.
+// How far along, and the measure it is of. That is the objective's answer, and
+// it is the only thing on this page allowed to be 56px tall.
 //
-// ⚠️ NOT a card any more. It was `.ap-card`, which made it the fourth white box
-// of identical weight — same border, same radius, same 24px padding — on a page
+// ⚠️ NOT a card. It was `.ap-card`, which made it the fourth white box of
+// identical weight — same border, same radius, same 24px padding — on a page
 // that had no hero at all. On the page's own ground, directly under the title,
-// it IS the hero: the objective's verdict as one big numeral.
+// it IS the hero.
 //
-// And the three figures are GROUPED at the left instead of being distributed
-// `2fr 1fr 1fr` across 1200px. Spread edge to edge they read as three unrelated
-// cells; side by side they read as one fact and its two operands, which is what
-// they are.
+// ⚠️ And it is no longer THREE figures. `14,800 current` and `20,000 target`
+// stood beside the score — and forty pixels below, the Measures table's first
+// row printed the same two numbers in its own columns, because the headline
+// measure is a measure like the others and always has a row. The operands
+// belong to the measure, so they are stated where a measure is stated: in its
+// row, as `14,800 / 20,000`, which is also the division the score IS.
+//
+// That split is what every goal page in the market does once it has a list of
+// measures under the hero — ClickUp, TheyDo, Literal and Quicken all put ONE
+// figure at the top and let the list below carry the per-item numbers. Asana's
+// three-tile hero is the exception that proves it: Asana has no measures list
+// at all, so its hero is the only place those numbers could go.
+//
+// Cockpit keeps the three-figure readout on purpose: it is the baseline the
+// mob_ lectures are compared against and it has its own copy (cockpit.js).
 
 export function readout(entry) {
-  const head = entry.headline;
   return `<div class="ins-read__readout">
     ${scoreFigure(entry, { size: "xl" })}
-    ${figure(esc(head?.currentLabel || "—"), "current")}
-    ${figure(esc(head?.targetLabel || "—"), head?.isRate ? "hold above" : "target")}
   </div>`;
 }
 
@@ -159,9 +166,7 @@ export function readMeasures(entry, shown, specs, { idPrefix = "read", chartId, 
     : "";
 
   const rows = entry.measures
-    .map((m, i) => {
-      const sparkId = `${idPrefix}-mspark-${i}`;
-      if (m.series) specs.set(sparkId, sparklineSpec(m.series, { tier: m.tier, height: 30 }));
+    .map((m) => {
       const on = m === shown;
       // The row carries the same two data attributes the tab carried, so the
       // shell's existing dispatch switches the curve with no change to it. The
@@ -172,33 +177,50 @@ export function readMeasures(entry, shown, specs, { idPrefix = "read", chartId, 
           <button type="button" class="ins-read__mname" data-ins-measure-tab="${esc(entry.key)}" data-ins-measure="${esc(m.id)}" aria-pressed="${on}">${esc(m.metricLabel)}</button>${m.proxy ? ` <span class="ap-badge blue">proxy</span>` : ""}
           <span class="ins-muted">${esc(m.scopeLabel || "All networks")}</span>
         </th>
-        <td class="right ins-num">${esc(m.currentLabel)}</td>
-        <td class="right ins-num">${esc(m.targetLabel)}</td>
+        <td class="right ins-read__pair"><span class="ins-num">${esc(m.currentLabel)}</span><span class="ins-read__of" aria-hidden="true"> / </span><span class="ins-num ins-read__target">${esc(m.targetLabel)}</span></td>
         <td class="ins-read__bar">
           ${progressBar(m.progress, m.tier, { pending: m.progress == null })}
           <span class="ins-num">${m.progress == null ? "—" : `${m.progress}%`}</span>
         </td>
         <td>${trendGlyph(m)}</td>
-        <td class="ins-read__spark">${m.series ? `<span class="ins-chart__node" data-ins-chart="${sparkId}" style="height:30px"></span>` : ""}</td>
         <td>${measurePill(m)}</td>
       </tr>`;
     })
     .join("");
 
-  // The DS table, seven columns. No per-th/td rules beyond the two cells that
-  // hold a drawn shape: the component sets its own width, aligns its headers
-  // and ships `.right` and `tbody tr.selected`.
+  // The DS table, FIVE columns, and the rule they answer to: one column, one
+  // fact. It carried seven, and four of them were two facts drawn four ways —
+  // where the measure stands (a bar, a `%`, and `Current` ÷ `Target`) and where
+  // it is going (a `−8%`, a 120px sparkline, and a verdict pill derived from
+  // both). Two went:
+  //
+  //   • `Trajectory` — the sparkline of the very series the 300px chart draws
+  //     forty pixels below for the selected row, and for the others a second
+  //     drawing of the `Trend` number beside it. Uniswap, Pinterest Trends and
+  //     PlanetScale all carry a sparkline INSTEAD of a numeric delta, never
+  //     both; and at 120 × 30px on a series that moves 10% over a month, these
+  //     two rendered as flat lines — a smudge standing in for a reading.
+  //   • `Target` as a column of its own — folded into `Current` as
+  //     `14,800 / 20,000`, which is how 15Five ("Start: 0 Target: 10"),
+  //     Employment Hero ("Start: 0% Goal: 100%") and Charma all write a
+  //     measure's target: beside its value, not as a second column. It also
+  //     puts the division on screen next to the `74%` that IS that division.
+  //
+  // `Trend` survives over the sparkline because it is exact, it is one word
+  // wide, and screen readers get it for free.
+  //
+  // No per-th/td rules beyond the two that hold a drawn shape or absorb the
+  // slack: the component sets its own width, aligns its headers and ships
+  // `.right` and `tbody tr.selected`.
   return `<section class="ap-card ins-section ins-read__card ins-read__measures">
     <h3 class="ins-section-title">Measures <span class="ap-counter normal grey">${entry.measures.length}</span></h3>
     <table class="ap-table small ins-read__table">
       <thead>
         <tr>
           <th scope="col">Measure</th>
-          <th scope="col" class="right">Current</th>
-          <th scope="col" class="right">Target</th>
+          <th scope="col" class="right">Current / target</th>
           <th scope="col">Progress</th>
           <th scope="col">Trend</th>
-          <th scope="col">Trajectory</th>
           <th scope="col">State</th>
         </tr>
       </thead>
