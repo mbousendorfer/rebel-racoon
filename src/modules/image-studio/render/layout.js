@@ -3,10 +3,10 @@
 // everywhere" recomposes with these, it never crops: a wide format moves the
 // text to the left half, a story keeps everything out of the network's UI.
 
-import { createLayer } from "../model/schema.js?v=1301";
-import { fontStack } from "../config/fonts.js?v=1301";
-import { resolvePalette, inkOn } from "./palette.js?v=1301";
-import { assetUrlSync, logoUrl } from "../ui/asset.js?v=1301";
+import { createLayer } from "../model/schema.js?v=1304";
+import { fontStack } from "../config/fonts.js?v=1304";
+import { resolvePalette, inkOn } from "./palette.js?v=1304";
+import { assetUrlSync, logoUrl } from "../ui/asset.js?v=1304";
 
 export const ARCHETYPES = Object.freeze({
   square: { text: { x: 0.08, y: 0.62, w: 0.84, h: 0.2, size: 0.075 }, logo: { x: 0.72, y: 0.87, w: 0.2, h: 0.07 } },
@@ -16,7 +16,7 @@ export const ARCHETYPES = Object.freeze({
 });
 
 /** The starting layers of a creation for a format: the image, the headline (layer mode), the logo. */
-export function defaultLayers({ layout = "square", headline = "", textMode = "layer" }) {
+export function defaultLayers({ layout = "square", headline = "", textMode = "layer", ratio = 1 }) {
   const a = ARCHETYPES[layout] || ARCHETYPES.square;
   const layers = [createLayer("image", { x: 0, y: 0, w: 1, h: 1, z: 0, locked: true, props: { source: "variation" } })];
   if (textMode === "layer" && headline) {
@@ -39,12 +39,55 @@ export function defaultLayers({ layout = "square", headline = "", textMode = "la
   return layers;
 }
 
-/** Re-places an existing set of layers for another archetype (same content, new positions). */
-export function recompose(layers, layout) {
+const overlaps = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+
+/**
+ * Re-places a set of layers for another archetype — same content, new
+ * positions. The text block and the logo go where that shape wants them; a
+ * shape or an asset sitting behind the text (a backdrop) travels WITH the text,
+ * keeping its offset and proportion to it; anything else keeps its relative spot.
+ * The image isn't cropped: it is re-rendered at the new ratio from the same seeds.
+ */
+/**
+ * The largest text size (fraction of the width, never above `size`) at which
+ * `content` fits its box — the estimate the export's word-wrap agrees with
+ * closely enough (≈0.55 em per character, 1.2 line height).
+ */
+export function fitTextSize(content, box, size, ratio) {
+  const chars = String(content || "").length || 1;
+  let s = size;
+  for (let i = 0; i < 12; i += 1) {
+    const perLine = Math.max(1, Math.floor(box.w / (s * 0.55)));
+    const lines = Math.ceil(chars / perLine);
+    const height = lines * s * 1.2 * ratio; // s is a fraction of W; ratio = W / H
+    if (height <= box.h) break;
+    s *= 0.9;
+  }
+  return Math.max(0.025, s);
+}
+
+export function recompose(layers, format) {
+  const layout = typeof format === "string" ? format : format.layout;
+  const ratio = typeof format === "string" ? 1 : format.width / format.height;
   const a = ARCHETYPES[layout] || ARCHETYPES.square;
+  const text = layers.find((l) => l.type === "text");
+  const toText = text ? { x: a.text.x, y: a.text.y, w: a.text.w, h: a.text.h } : null;
   return layers.map((l) => {
-    if (l.type === "text") return { ...l, ...a.text, props: { ...l.props, size: a.text.size } };
-    if (l.type === "logo") return { ...l, ...a.logo };
+    if (l.type === "text") {
+      const wanted = l.id === text?.id ? a.text.size : l.props.size * (a.text.size / (text?.props.size || a.text.size));
+      return { ...l, ...a.text, props: { ...l.props, size: fitTextSize(l.props.content, a.text, wanted, ratio) } };
+    }
+    if (l.type === "logo") {
+      // Keep the logo's own proportions, inside the archetype's slot.
+      const ratio = l.h / l.w;
+      const w = Math.min(a.logo.w, a.logo.h / (ratio || 1));
+      return { ...l, x: a.logo.x, y: a.logo.y, w, h: w * ratio };
+    }
+    if ((l.type === "shape" || l.type === "asset") && text && overlaps(l, text)) {
+      const sx = toText.w / text.w;
+      const sy = toText.h / text.h;
+      return { ...l, x: toText.x + (l.x - text.x) * sx, y: toText.y + (l.y - text.y) * sy, w: l.w * sx, h: l.h * sy };
+    }
     return { ...l };
   });
 }

@@ -9,21 +9,21 @@
 // Delete removes the selected one. A drag patches the DOM live and commits once,
 // on release, so the undo stack gets one step per gesture.
 
-import { html, toString } from "../../lib/html.js?v=1301";
-import { delegate } from "../../lib/delegate.js?v=1301";
-import { renderFrame } from "../frame.js?v=1301";
-import { renderEmpty } from "../../ui/empty.js?v=1301";
-import { preserveFocus, syncSlider } from "../../ui/fields.js?v=1301";
-import { openDialog } from "../../ui/dialog.js?v=1301";
-import { toast } from "../../ui/toast.js?v=1301";
-import { assetImg, hydrateAssets, warmAssetUrls } from "../../ui/asset.js?v=1301";
-import { variationCanvas, variationSvg } from "../../ui/variation.js?v=1301";
-import { formatById, formatRatio } from "../../config/formats.js?v=1301";
-import { networkById } from "../../config/networks.js?v=1301";
-import { isHex } from "../../model/schema.js?v=1301";
-import { resolveLayers } from "../../render/layout.js?v=1301";
-import { toPngBlob, downloadBlob, slug } from "../../render/export.js?v=1301";
-import { copyService, editService, imageGenerationService } from "../../services/index.js?v=1301";
+import { html, toString } from "../../lib/html.js?v=1304";
+import { delegate } from "../../lib/delegate.js?v=1304";
+import { renderFrame } from "../frame.js?v=1304";
+import { renderEmpty } from "../../ui/empty.js?v=1304";
+import { preserveFocus, syncSlider } from "../../ui/fields.js?v=1304";
+import { openDialog } from "../../ui/dialog.js?v=1304";
+import { toast } from "../../ui/toast.js?v=1304";
+import { assetImg, hydrateAssets, warmAssetUrls } from "../../ui/asset.js?v=1304";
+import { variationCanvas, variationSvg } from "../../ui/variation.js?v=1304";
+import { formatById, formatRatio } from "../../config/formats.js?v=1304";
+import { networkById } from "../../config/networks.js?v=1304";
+import { isHex } from "../../model/schema.js?v=1304";
+import { resolveLayers } from "../../render/layout.js?v=1304";
+import { toPngBlob, downloadBlob, slug } from "../../render/export.js?v=1304";
+import { copyService, editService, imageGenerationService } from "../../services/index.js?v=1304";
 import {
   canEditBrand,
   getAssets,
@@ -33,8 +33,14 @@ import {
   saveColorToPlaybook,
   saveFontToPlaybook,
   subscribe,
-} from "../../state/store.js?v=1301";
-import { replaceVariation } from "../../state/creation-actions.js?v=1301";
+} from "../../state/store.js?v=1304";
+import { adaptEverywhere, replaceVariation } from "../../state/creation-actions.js?v=1304";
+import { FORMATS } from "../../config/formats.js?v=1304";
+import { NETWORKS } from "../../config/networks.js?v=1304";
+import { renderMockup, safeZoneOverlay } from "../../ui/mockups.js?v=1304";
+import { menu } from "../../ui/menu.js?v=1304";
+import { toggle } from "../../ui/fields.js?v=1304";
+import { wait } from "../../lib/delegate.js?v=1304";
 import {
   addAssetLayer,
   addLogoLayer,
@@ -43,13 +49,14 @@ import {
   applyBrand,
   canUndo,
   commitLayers,
+  layersOf,
   moveLayer,
   patchLayer,
   removeLayer,
   reorder,
   undoLayers,
-} from "../../state/editor-actions.js?v=1301";
-import { renderLayers, renderProps, renderTextIdeas, renderWordsBar, layerName } from "./panels.js?v=1301";
+} from "../../state/editor-actions.js?v=1304";
+import { renderLayers, renderProps, renderTextIdeas, renderWordsBar, layerName } from "./panels.js?v=1304";
 
 const CHANGE_WORDS = { fonts: "fonts", colours: "colours", contrast: "text contrast", logo: "logo version" };
 
@@ -62,7 +69,11 @@ export function mount(target, params, ctx) {
     ideas: { status: "idle", hooks: [], ctas: [] },
     regen: null, // "background" | "subject"
     drag: null,
+    formatId: new URLSearchParams(window.location.hash.split("?")[1] || "").get("format"),
+    safeZones: false,
+    adapting: false,
   };
+  const openAdaptOnMount = new URLSearchParams(window.location.hash.split("?")[1] || "").get("adapt") === "1";
   let alive = true;
   const abort = new AbortController();
 
@@ -71,11 +82,48 @@ export function mount(target, params, ctx) {
     if (!creation || !creation.selectedVariationId) return null;
     const brand = getBrand(creation.brandId);
     const variation = creation.variations.find((v) => v.id === creation.selectedVariationId);
-    const format = formatById(creation.master.formatId) || formatById("ig-post");
-    return { creation, brand, variation, format, layers: creation.master.layers };
+    if (!state.formatId || !creation.brief.formatIds.includes(state.formatId))
+      state.formatId = creation.master.formatId;
+    const format = formatById(state.formatId) || formatById("ig-post");
+    const own = layersOf(creation, format.id);
+    return { creation, brand, variation, format, layers: own || [], adapted: !!own };
   };
 
-  const commit = (layers, action) => commitLayers(id, layers, { action });
+  const commit = (layers, action) => commitLayers(id, layers, { action, formatId: state.formatId });
+
+  const setFormatInUrl = () =>
+    history.replaceState(
+      null,
+      "",
+      `#/image-generator/editor/${encodeURIComponent(id)}?format=${encodeURIComponent(state.formatId)}`,
+    );
+
+  const renderFormatTabs = (creation) => html`
+    <div class="ap-tabs imst-format-tabs">
+      <div class="ap-tabs-nav scrollable" role="tablist" aria-label="Formats">
+        ${creation.brief.formatIds.map((fid) => {
+          const f = formatById(fid);
+          const n = networkById(f.network);
+          const on = fid === state.formatId;
+          const ready = !!layersOf(creation, fid);
+          return html`<button
+            type="button"
+            class="ap-tabs-tab${on ? " active" : ""}"
+            role="tab"
+            aria-selected="${on}"
+            data-imst-format="${fid}"
+          >
+            <i class="${n.icon}" aria-hidden="true"></i><span>${n.label} ${formatRatio(f)}</span>
+            ${fid === creation.master.formatId
+              ? html`<span class="ap-counter normal grey">Master</span>`
+              : ready
+                ? ""
+                : html`<span class="ap-counter normal grey">To adapt</span>`}
+          </button>`;
+        })}
+      </div>
+    </div>
+  `;
 
   const paint = () => {
     if (!alive || state.drag) return;
@@ -94,7 +142,8 @@ export function mount(target, params, ctx) {
       );
       return;
     }
-    const { creation, brand, variation, format, layers } = d;
+    const { creation, brand, variation, format, layers, adapted } = d;
+    const adaptedCount = creation.brief.formatIds.filter((f) => layersOf(creation, f)).length;
     if (state.selectedId && !layers.some((l) => l.id === state.selectedId)) state.selectedId = null;
     const selected = layers.find((l) => l.id === state.selectedId) || null;
     const logoPx = selected?.type === "logo" ? Math.round(selected.w * format.width) : 0;
@@ -116,21 +165,54 @@ export function mount(target, params, ctx) {
                 type="button"
                 class="ap-button ghost grey"
                 data-imst-action="undo"
-                ${canUndo(id) ? "" : "disabled"}
+                ${canUndo(id, format.id) ? "" : "disabled"}
               >
                 <i class="ap-icon-rotate-left" aria-hidden="true"></i><span>Undo</span>
               </button>
-              <button type="button" class="ap-button stroked grey" data-imst-action="download">
-                <i class="ap-icon-download" aria-hidden="true"></i><span>Download PNG</span>
-              </button>
-              <button type="button" class="ap-button primary orange" data-imst-action="apply-brand">
+              <button type="button" class="ap-button stroked grey" data-imst-action="apply-brand">
                 <i class="ap-icon-sparkles" aria-hidden="true"></i><span>Apply the brand</span>
+              </button>
+              <button type="button" class="ap-button stroked grey" data-imst-action="preview">
+                <i class="ap-icon-eye-on" aria-hidden="true"></i><span>Preview in context</span>
+              </button>
+              ${menu({
+                label: "Download",
+                trigger: {
+                  className: "ap-button stroked grey",
+                  label: "Download PNG",
+                  content: html`<i class="ap-icon-download" aria-hidden="true"></i><span>Download</span
+                    ><i class="ap-icon-chevron-down" aria-hidden="true"></i>`,
+                },
+                items: [
+                  {
+                    action: "download",
+                    icon: "ap-icon-download",
+                    label: "This format",
+                    description: `${format.width} × ${format.height} PNG`,
+                  },
+                  {
+                    action: "download-all",
+                    icon: "ap-icon-download",
+                    label: `All adapted formats (${adaptedCount})`,
+                    description: "One PNG per format",
+                  },
+                ],
+              })}
+              <button
+                type="button"
+                class="ap-button primary orange${state.adapting ? " loading" : ""}"
+                data-imst-action="adapt"
+                ${state.adapting ? "disabled" : ""}
+              >
+                <i class="ap-icon-sparkles" aria-hidden="true"></i
+                ><span>${state.adapting ? "Adapting…" : "Adapt everywhere"}</span>
               </button>
             </div>
           </header>
           <div class="imst-editor">
             <aside class="imst-editor__side">${renderLayers(layers, state.selectedId)}</aside>
             <div class="imst-editor__stage">
+              ${renderFormatTabs(creation)}
               <div
                 class="imst-stage${state.regen ? " is-busy" : ""}"
                 style="--imst-stage-ratio: ${format.width / format.height}"
@@ -141,15 +223,29 @@ export function mount(target, params, ctx) {
                   formatId: format.id,
                   brand,
                   layers,
-                  interactive: true,
+                  interactive: adapted,
                   selectedId: state.selectedId,
                 })}
+                ${state.safeZones ? safeZoneOverlay(format) : ""}
+                ${adapted
+                  ? ""
+                  : html`<span class="imst-stage__busy">
+                      <span class="ap-body-bold">Not adapted to this format yet</span>
+                      <button type="button" class="ap-button primary orange" data-imst-action="adapt-one">
+                        <i class="ap-icon-sparkles" aria-hidden="true"></i
+                        ><span>Adapt to ${networkById(format.network).label} ${formatRatio(format)}</span>
+                      </button>
+                    </span>`}
                 ${state.regen
                   ? html`<span class="imst-stage__busy" role="status"
                       ><span class="ap-loader size-30"></span
                       ><span class="ap-body-bold">New ${state.regen}…</span></span
                     >`
                   : ""}
+              </div>
+              <div class="imst-stage__tools">
+                ${toggle({ path: "view.safeZones", checked: state.safeZones, label: "Show safe zones" })}
+                ${format.note ? html`<span class="ap-caption">${format.note}</span>` : ""}
               </div>
               ${renderWordsBar(state.nl)}
             </div>
@@ -172,6 +268,16 @@ export function mount(target, params, ctx) {
       }),
     );
     restore();
+    // Keep the active format tab visible in its scrolling bar (not the page).
+    const nav = target.querySelector(".imst-format-tabs .ap-tabs-nav");
+    const tab = nav?.querySelector(".ap-tabs-tab.active");
+    if (
+      nav &&
+      tab &&
+      (tab.offsetLeft < nav.scrollLeft || tab.offsetLeft + tab.offsetWidth > nav.scrollLeft + nav.clientWidth)
+    ) {
+      nav.scrollLeft = tab.offsetLeft - nav.clientWidth / 2 + tab.offsetWidth / 2;
+    }
   };
 
   // ── Actions ────────────────────────────────────────────────────────────────
@@ -251,26 +357,174 @@ export function mount(target, params, ctx) {
     paint();
   }
 
+  async function downloadFormat(fid) {
+    const creation = getCreation(id);
+    const brand = getBrand(creation.brandId);
+    const variation = creation.variations.find((v) => v.id === creation.selectedVariationId);
+    const f = formatById(fid);
+    const layers = layersOf(creation, fid);
+    await warmAssetUrls(layers.filter((l) => l.type === "asset").map((l) => l.props.assetId));
+    const blob = await toPngBlob({
+      svg: variationSvg({ creation, variation, formatId: fid, brand }),
+      width: f.width,
+      height: f.height,
+      layers: resolveLayers(layers, brand),
+    });
+    downloadBlob(blob, `${slug(creation.title)}-${fid}.png`);
+  }
+
+  const exportError = (error) =>
+    toast(
+      error.name === "SecurityError"
+        ? "One image comes from another site and can't be exported."
+        : error.message || "The download failed.",
+      {
+        variant: "error",
+      },
+    );
+
   async function doDownload() {
-    const { creation, brand, variation, format, layers } = data();
+    const { format, adapted } = data();
+    if (!adapted) {
+      toast("Adapt this format first.", { variant: "error" });
+      return;
+    }
     try {
-      await warmAssetUrls(layers.filter((l) => l.type === "asset").map((l) => l.props.assetId));
-      const blob = await toPngBlob({
-        svg: variationSvg({ creation, variation, formatId: format.id, brand }),
-        width: format.width,
-        height: format.height,
-        layers: resolveLayers(layers, brand),
-      });
-      downloadBlob(blob, `${slug(creation.title)}-${format.id}.png`);
+      await downloadFormat(format.id);
       toast(`Downloaded ${format.width} × ${format.height} PNG.`);
     } catch (error) {
-      toast(
-        error.name === "SecurityError"
-          ? "One image comes from another site and can't be exported."
-          : error.message || "The download failed.",
-        { variant: "error" },
-      );
+      exportError(error);
     }
+  }
+
+  async function doDownloadAll() {
+    const creation = getCreation(id);
+    const ready = creation.brief.formatIds.filter((f) => layersOf(creation, f));
+    try {
+      for (const fid of ready) {
+        await downloadFormat(fid);
+        await wait(350); // browsers drop back-to-back downloads
+      }
+      toast(`Downloaded ${ready.length} PNG${ready.length === 1 ? "" : "s"}.`);
+    } catch (error) {
+      exportError(error);
+    }
+  }
+
+  async function runAdapt(formatIds) {
+    state.adapting = true;
+    paint();
+    // The mock "recomposes" — a real service would outpaint the background here.
+    await wait(1200);
+    if (!alive) return;
+    const master = getCreation(id).master.formatId;
+    const before = new Set(getCreation(id).adaptations.map((a) => a.formatId));
+    adaptEverywhere(id, formatIds);
+    state.adapting = false;
+    const targets = formatIds.filter((f) => f !== master);
+    state.formatId = targets.find((f) => !before.has(f)) || targets[0] || master;
+    setFormatInUrl();
+    toast(`Adapted to ${targets.length} format${targets.length === 1 ? "" : "s"} — recomposed, not cropped.`);
+    paint();
+  }
+
+  function openAdaptDialog() {
+    const creation = getCreation(id);
+    const master = creation.master.formatId;
+    const picked = new Set(creation.brief.formatIds);
+    const body = () => html`
+      <p class="ap-body imst-dialog__text">
+        Each format is recomposed from the master: the background is redrawn at the new shape, the text and the logo
+        move to where that format wants them. Formats already adapted are recomposed again.
+      </p>
+      <div class="imst-adapt-grid">
+        ${NETWORKS.map(
+          (n) =>
+            html`<fieldset class="imst-adapt-group">
+              <legend class="ap-body-bold"><i class="${n.icon}" aria-hidden="true"></i> ${n.label}</legend>
+              ${FORMATS.filter((f) => f.network === n.id).map(
+                (f) =>
+                  html`<label class="ap-checkbox-container">
+                    <input
+                      type="checkbox"
+                      value="${f.id}"
+                      data-imst-adapt-pick
+                      ${picked.has(f.id) ? "checked" : ""}
+                      ${f.id === master ? "disabled" : ""}
+                    />
+                    <i></i><span>${f.label} · ${formatRatio(f)}${f.id === master ? " (master)" : ""}</span>
+                  </label>`,
+              )}
+            </fieldset>`,
+        )}
+      </div>
+    `;
+    const count = () => [...picked].filter((f) => f !== master).length;
+    const footer = () =>
+      html`<div class="ap-dialog-footer-left">
+          <button type="button" class="ap-button ghost grey" data-imst-adapt="all">Select all</button>
+        </div>
+        <div class="ap-dialog-footer-right">
+          <button type="button" class="ap-button stroked grey" data-imst-adapt="cancel">Cancel</button>
+          <button type="button" class="ap-button primary orange" data-imst-adapt="go" ${count() ? "" : "disabled"}>
+            <i class="ap-icon-sparkles" aria-hidden="true"></i
+            ><span>Adapt ${count()} format${count() === 1 ? "" : "s"}</span>
+          </button>
+        </div>`;
+    const dialog = openDialog({
+      title: "Adapt everywhere",
+      subtitle: `From the master, ${networkById(formatById(master).network).label} ${formatRatio(formatById(master))}.`,
+      size: "lg",
+      body: body(),
+      footer: footer(),
+      onMount(el) {
+        el.addEventListener("change", (event) => {
+          const box = event.target.closest("[data-imst-adapt-pick]");
+          if (!box) return;
+          if (box.checked) picked.add(box.value);
+          else picked.delete(box.value);
+          dialog.setFooter(footer());
+        });
+        el.addEventListener("click", (event) => {
+          const btn = event.target.closest("[data-imst-adapt]");
+          if (!btn) return;
+          const what = btn.dataset.imstAdapt;
+          if (what === "all") {
+            FORMATS.forEach((f) => picked.add(f.id));
+            dialog.setBody(body());
+            dialog.setFooter(footer());
+          } else if (what === "cancel") dialog.close();
+          else {
+            dialog.close();
+            runAdapt([...picked]);
+          }
+        });
+      },
+    });
+  }
+
+  function openPreview() {
+    const creation = getCreation(id);
+    const brand = getBrand(creation.brandId);
+    const variation = creation.variations.find((v) => v.id === creation.selectedVariationId);
+    const ready = creation.brief.formatIds.filter((f) => layersOf(creation, f));
+    const fallback = creation.brief.headline || creation.title;
+    openDialog({
+      title: "Preview in context",
+      subtitle: `${ready.length} format${ready.length === 1 ? "" : "s"}, as each network shows them.`,
+      size: "lg",
+      body: html`<div class="imst-mocks">
+        ${ready.map((fid) => {
+          const f = formatById(fid);
+          return renderMockup({
+            format: f,
+            brand,
+            caption: creation.copy?.captions?.[f.network]?.text || fallback,
+            canvas: variationCanvas({ creation, variation, formatId: fid, brand, layers: layersOf(creation, fid) }),
+          });
+        })}
+      </div>`,
+    });
   }
 
   async function doWords() {
@@ -446,7 +700,7 @@ export function mount(target, params, ctx) {
       paint();
     } else if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "z") {
       event.preventDefault();
-      if (undoLayers(id)) paint();
+      if (undoLayers(id, state.formatId)) paint();
     }
   }
 
@@ -463,6 +717,10 @@ export function mount(target, params, ctx) {
   }
 
   paint();
+  if (openAdaptOnMount && data()) {
+    history.replaceState(null, "", `#/image-generator/editor/${encodeURIComponent(id)}`);
+    openAdaptDialog();
+  }
   warmAssetUrls(
     layersNow()
       .filter((l) => l.type === "asset")
@@ -507,6 +765,11 @@ export function mount(target, params, ctx) {
     delegate(target, "change", "[data-imst-field]", (_e, el) => {
       const path = el.dataset.imstField;
       if (path === "words") return;
+      if (path === "view.safeZones") {
+        state.safeZones = el.checked;
+        paint();
+        return;
+      }
       if (path.startsWith("unlock.")) {
         state.unlock[path.slice(7)] = el.checked;
         paint();
@@ -560,6 +823,12 @@ export function mount(target, params, ctx) {
       });
     }),
     delegate(target, "click", "[data-imst-regen]", (_e, el) => doRegen(el.dataset.imstRegen)),
+    delegate(target, "click", "[data-imst-format]", (_e, el) => {
+      state.formatId = el.dataset.imstFormat;
+      state.selectedId = null;
+      setFormatInUrl();
+      paint();
+    }),
     delegate(target, "click", "[data-imst-use-text]", (_e, el) => useText(el.dataset.imstUseText)),
     delegate(target, "submit", "[data-imst-form='words']", (event) => {
       event.preventDefault();
@@ -573,9 +842,13 @@ export function mount(target, params, ctx) {
       else if (a === "add-asset") openLibrary();
       else if (a === "apply-brand") doApplyBrand();
       else if (a === "download") doDownload();
+      else if (a === "download-all") doDownloadAll();
+      else if (a === "adapt") openAdaptDialog();
+      else if (a === "adapt-one") runAdapt([state.formatId]);
+      else if (a === "preview") openPreview();
       else if (a === "text-ideas") doTextIdeas();
       else if (a === "undo") {
-        if (undoLayers(id)) paint();
+        if (undoLayers(id, state.formatId)) paint();
       } else if (a === "delete-layer") {
         const layer = layersNow().find((l) => l.id === state.selectedId);
         if (layer && layer.type !== "image") {

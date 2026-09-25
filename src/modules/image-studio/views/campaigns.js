@@ -2,19 +2,19 @@
 // Campaigns: title, period, event, how many images. History: every generation
 // run, newest first — reopen it, or delete it.
 
-import { html, toString } from "../lib/html.js?v=1301";
-import { delegate } from "../lib/delegate.js?v=1301";
-import { renderFrame } from "./frame.js?v=1301";
-import { renderEmpty } from "../ui/empty.js?v=1301";
-import { renderBrandPicker } from "../ui/brand-picker.js?v=1301";
-import { confirmDialog } from "../ui/dialog.js?v=1301";
-import { toast } from "../ui/toast.js?v=1301";
-import { variationCanvas } from "../ui/variation.js?v=1301";
-import { storageService } from "../services/index.js?v=1301";
-import { CALENDAR_EVENTS } from "../config/calendar-events.js?v=1301";
-import { formatById, formatRatio } from "../config/formats.js?v=1301";
-import { networkById } from "../config/networks.js?v=1301";
-import { deleteCreation } from "../state/creation-actions.js?v=1301";
+import { html, toString } from "../lib/html.js?v=1304";
+import { delegate } from "../lib/delegate.js?v=1304";
+import { renderFrame } from "./frame.js?v=1304";
+import { renderEmpty } from "../ui/empty.js?v=1304";
+import { renderBrandPicker } from "../ui/brand-picker.js?v=1304";
+import { confirmDialog } from "../ui/dialog.js?v=1304";
+import { toast } from "../ui/toast.js?v=1304";
+import { variationCanvas } from "../ui/variation.js?v=1304";
+import { storageService } from "../services/index.js?v=1304";
+import { CALENDAR_EVENTS } from "../config/calendar-events.js?v=1304";
+import { formatById, formatRatio } from "../config/formats.js?v=1304";
+import { networkById } from "../config/networks.js?v=1304";
+import { deleteCreation } from "../state/creation-actions.js?v=1304";
 import {
   boot,
   getActiveBrand,
@@ -23,7 +23,7 @@ import {
   getCreations,
   getStyle,
   subscribe,
-} from "../state/store.js?v=1301";
+} from "../state/store.js?v=1304";
 
 const day = (iso) =>
   iso ? new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "—";

@@ -86,10 +86,10 @@
 // was flagged, and it could only ever show two clamped lines of an explanation
 // whose whole value is the detail.
 
-import { html, raw, escapeAttr } from "./utils.js?v=1301";
-import { topicTitle, topicStates } from "./topics-store.js?v=1301";
-import { findTopicState } from "./topics-catalog.js?v=1301";
-import { renderSocialPostCard } from "./components/social-post-card.js?v=1301";
+import { html, raw, escapeAttr } from "./utils.js?v=1304";
+import { topicTitle, topicStates } from "./topics-store.js?v=1304";
+import { findTopicState } from "./topics-catalog.js?v=1304";
+import { renderSocialPostCard } from "./components/social-post-card.js?v=1304";
 
 /**
  * The object's identity: where it came from, then the claim as an h2 under it —

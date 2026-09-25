@@ -2,36 +2,53 @@
 // transforms (return new arrays) + the writes that persist them. Every write
 // keeps the previous layers on an in-memory undo stack.
 
-import { storageService as storage } from "../services/index.js?v=1301";
-import { createLayer, historyEntry } from "../model/schema.js?v=1301";
-import { contrast, inkOn, resolvePalette } from "../render/palette.js?v=1301";
+import { storageService as storage } from "../services/index.js?v=1304";
+import { createLayer, historyEntry } from "../model/schema.js?v=1304";
+import { contrast, inkOn, resolvePalette } from "../render/palette.js?v=1304";
 
-const undo = new Map(); // creationId → layers[][]
+const undo = new Map(); // `${creationId}|${formatId}` → layers[][]
 
-export function commitLayers(creationId, layers, { action, record = true } = {}) {
+/** The layers of one format of a creation: the master's, or its adaptation's. */
+export function layersOf(creation, formatId) {
+  if (!formatId || formatId === creation.master.formatId) return creation.master.layers;
+  return creation.adaptations.find((a) => a.formatId === formatId)?.layers || null;
+}
+
+function writeLayers(creation, formatId, layers) {
+  if (!formatId || formatId === creation.master.formatId)
+    return { ...creation, master: { ...creation.master, layers } };
+  const others = creation.adaptations.filter((a) => a.formatId !== formatId);
+  return { ...creation, adaptations: [...others, { formatId, layers }] };
+}
+
+export function commitLayers(creationId, layers, { action, record = true, formatId = null } = {}) {
   const c = storage.get("creations", creationId);
   if (!c) return null;
+  const f = formatId || c.master.formatId;
   if (record) {
-    const stack = undo.get(creationId) || [];
-    stack.push(c.master.layers);
+    const key = `${creationId}|${f}`;
+    const stack = undo.get(key) || [];
+    stack.push(layersOf(c, f) || []);
     if (stack.length > 40) stack.shift();
-    undo.set(creationId, stack);
+    undo.set(key, stack);
   }
   return storage.put("creations", {
-    ...c,
-    master: { ...c.master, layers },
+    ...writeLayers(c, f, layers),
     history: action ? [...c.history, historyEntry("edited", action)] : c.history,
   });
 }
 
-export function canUndo(creationId) {
-  return (undo.get(creationId) || []).length > 0;
+export function canUndo(creationId, formatId) {
+  const c = storage.get("creations", creationId);
+  return (undo.get(`${creationId}|${formatId || c?.master.formatId}`) || []).length > 0;
 }
 
-export function undoLayers(creationId) {
-  const stack = undo.get(creationId) || [];
+export function undoLayers(creationId, formatId) {
+  const c = storage.get("creations", creationId);
+  const f = formatId || c?.master.formatId;
+  const stack = undo.get(`${creationId}|${f}`) || [];
   const prev = stack.pop();
-  if (prev) commitLayers(creationId, prev, { record: false, action: "Undo" });
+  if (prev) commitLayers(creationId, prev, { record: false, action: "Undo", formatId: f });
   return !!prev;
 }
 

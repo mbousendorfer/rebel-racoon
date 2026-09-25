@@ -2,13 +2,13 @@
 // layers (text, logo…) laid over it in the DOM, exactly where the PNG export
 // will draw them. One function for the results grid, the editor and exports.
 
-import { html, raw } from "../lib/html.js?v=1301";
-import { formatById } from "../config/formats.js?v=1301";
-import { renderVisual, svgToDataUrl } from "../render/visual.js?v=1301";
-import { subjectKindFor } from "../render/subjects.js?v=1301";
-import { defaultLayers, resolveLayers } from "../render/layout.js?v=1301";
-import { storageService as storage } from "../services/index.js?v=1301";
-import { getAsset, getStyle } from "../state/store.js?v=1301";
+import { html, raw } from "../lib/html.js?v=1304";
+import { formatById } from "../config/formats.js?v=1304";
+import { renderVisual, svgToDataUrl } from "../render/visual.js?v=1304";
+import { subjectKindFor } from "../render/subjects.js?v=1304";
+import { defaultLayers, resolveLayers } from "../render/layout.js?v=1304";
+import { storageService as storage } from "../services/index.js?v=1304";
+import { getAsset, getStyle } from "../state/store.js?v=1304";
 
 export function productHref(productId) {
   if (!productId) return "";
@@ -51,7 +51,12 @@ export function variationSvg({ creation, variation, formatId, brand }) {
 export function layersFor({ creation, formatId, useMaster = false }) {
   const format = formatById(formatId) || formatById("ig-post");
   if (useMaster && creation.master?.layers?.length) return creation.master.layers;
-  return defaultLayers({ layout: format.layout, headline: creation.brief.headline, textMode: creation.brief.textMode });
+  return defaultLayers({
+    layout: format.layout,
+    headline: creation.brief.headline,
+    textMode: creation.brief.textMode,
+    ratio: format.width / format.height,
+  });
 }
 
 /** DOM overlay for resolved layers (skipping the image layer, which is the SVG itself). */

@@ -11,15 +11,15 @@
 // is the Playbook, and analysing a site or files is how a Playbook is CREATED —
 // src/context-mock-analysis.js (analyzeWebsite / analyzeBrandFiles).
 
-import * as imageGenerationMock from "./mock/image-generation.mock.js?v=1301";
-import * as copyMock from "./mock/copy.mock.js?v=1301";
-import * as ideasMock from "./mock/ideas.mock.js?v=1301";
-import * as editMock from "./mock/edit.mock.js?v=1301";
-import * as storage from "./storage.js?v=1301";
+import * as imageGenerationMock from "./mock/image-generation.mock.js?v=1304";
+import * as copyMock from "./mock/copy.mock.js?v=1304";
+import * as ideasMock from "./mock/ideas.mock.js?v=1304";
+import * as editMock from "./mock/edit.mock.js?v=1304";
+import * as storage from "./storage.js?v=1304";
 
 export const imageGenerationService = imageGenerationMock;
 export const copyService = copyMock;
 export const ideaService = ideasMock;
 export const editService = editMock;
 export const storageService = storage;
-export { buildPrompt } from "./prompt.js?v=1301";
+export { buildPrompt } from "./prompt.js?v=1304";

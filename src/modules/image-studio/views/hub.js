@@ -9,26 +9,26 @@
 //
 // Deep links: ?style=<id> preselects a style, ?creation=<id> reopens a run.
 
-import { html, toString } from "../lib/html.js?v=1301";
-import { delegate } from "../lib/delegate.js?v=1301";
-import { renderFrame } from "./frame.js?v=1301";
-import { renderEmpty } from "../ui/empty.js?v=1301";
-import { renderBrandPicker } from "../ui/brand-picker.js?v=1301";
-import { renderBrandCard } from "../ui/brand-card.js?v=1301";
-import { picker } from "../ui/picker.js?v=1301";
-import { preserveFocus } from "../ui/fields.js?v=1301";
-import { toast } from "../ui/toast.js?v=1301";
-import { variationCanvas, variationSvg, layersFor, productHref } from "../ui/variation.js?v=1301";
-import { STYLE_FAMILIES, presetById } from "../config/style-presets.js?v=1301";
-import { FORMATS, formatById, formatRatio } from "../config/formats.js?v=1301";
-import { NETWORKS, networkById } from "../config/networks.js?v=1301";
-import { upcomingEvents } from "../config/calendar-events.js?v=1301";
-import { TEXT_MODES } from "../model/schema.js?v=1301";
-import { imageGenerationService, ideaService } from "../services/index.js?v=1301";
-import { renderVisual, svgToDataUrl } from "../render/visual.js?v=1301";
-import { subjectKindFor } from "../render/subjects.js?v=1301";
-import { resolveLayers } from "../render/layout.js?v=1301";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1301";
+import { html, toString } from "../lib/html.js?v=1304";
+import { delegate } from "../lib/delegate.js?v=1304";
+import { renderFrame } from "./frame.js?v=1304";
+import { renderEmpty } from "../ui/empty.js?v=1304";
+import { renderBrandPicker } from "../ui/brand-picker.js?v=1304";
+import { renderBrandCard } from "../ui/brand-card.js?v=1304";
+import { picker } from "../ui/picker.js?v=1304";
+import { preserveFocus } from "../ui/fields.js?v=1304";
+import { toast } from "../ui/toast.js?v=1304";
+import { variationCanvas, variationSvg, layersFor, productHref } from "../ui/variation.js?v=1304";
+import { STYLE_FAMILIES, presetById } from "../config/style-presets.js?v=1304";
+import { FORMATS, formatById, formatRatio } from "../config/formats.js?v=1304";
+import { NETWORKS, networkById } from "../config/networks.js?v=1304";
+import { upcomingEvents } from "../config/calendar-events.js?v=1304";
+import { TEXT_MODES } from "../model/schema.js?v=1304";
+import { imageGenerationService, ideaService } from "../services/index.js?v=1304";
+import { renderVisual, svgToDataUrl } from "../render/visual.js?v=1304";
+import { subjectKindFor } from "../render/subjects.js?v=1304";
+import { resolveLayers } from "../render/layout.js?v=1304";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1304";
 import {
   getActiveBrand,
   getAsset,
@@ -38,7 +38,7 @@ import {
   getStyle,
   getStylesForBrand,
   subscribe,
-} from "../state/store.js?v=1301";
+} from "../state/store.js?v=1304";
 import {
   addBatch,
   deleteCreation,
@@ -46,7 +46,7 @@ import {
   replaceVariation,
   startCreation,
   toggleFavorite,
-} from "../state/creation-actions.js?v=1301";
+} from "../state/creation-actions.js?v=1304";
 
 const SECTOR_OF = { coffee: "food", finance: "finance", lifestyle: "lifestyle" };
 
@@ -418,6 +418,16 @@ ${b.prompt}</textarea
             >
               <i class="ap-icon-download" aria-hidden="true"></i>
             </button>
+            <button
+              type="button"
+              class="ap-icon-button transparent grey"
+              data-imst-var="adapt"
+              data-id="${v.id}"
+              aria-label="Adapt variation ${index + 1} to every format"
+              data-tooltip="Adapt everywhere"
+            >
+              <i class="ap-icon-view-grid" aria-hidden="true"></i>
+            </button>
           </span>
         </figcaption>
       </figure>
@@ -721,9 +731,9 @@ ${b.prompt}</textarea
         const c = toggleFavorite(state.creationId, id);
         toast(c.favoriteVariationIds.includes(id) ? "Added to favourites." : "Removed from favourites.");
       } else if (action === "download") download(id);
-      else if (action === "edit") {
+      else if (action === "edit" || action === "adapt") {
         openVariation(state.creationId, id);
-        ctx.navigate(`/image-generator/editor/${state.creationId}`);
+        ctx.navigate(`/image-generator/editor/${state.creationId}${action === "adapt" ? "?adapt=1" : ""}`);
       }
     }),
   ];
