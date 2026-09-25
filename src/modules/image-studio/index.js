@@ -5,18 +5,19 @@
 // through state/playbook-brand.js only, the Playbooks — the brand IS the
 // Playbook. See docs/audits/image-studio-integration.md.
 
-import { navigate } from "../../router.js?v=1304";
-import { isFlagOn } from "../../feature-flags.js?v=1304";
-import { renderTopbar } from "../../components/topbar.js?v=1304";
-import { boot, setActiveBrand, startPlaybookCreation } from "./state/store.js?v=1304";
-import { delegate, disposer } from "./lib/delegate.js?v=1304";
-import { installMenus } from "./ui/menu.js?v=1304";
-import { closeAllDialogs } from "./ui/dialog.js?v=1304";
-import * as hub from "./views/hub.js?v=1304";
-import * as campaigns from "./views/campaigns.js?v=1304";
-import * as styles from "./views/styles.js?v=1304";
-import * as styleCreator from "./views/style-creator.js?v=1304";
-import * as editor from "./views/editor/index.js?v=1304";
+import { navigate } from "../../router.js?v=1307";
+import { isFlagOn } from "../../feature-flags.js?v=1307";
+import { renderTopbar } from "../../components/topbar.js?v=1307";
+import { boot, setActiveBrand, startPlaybookCreation } from "./state/store.js?v=1307";
+import { delegate, disposer } from "./lib/delegate.js?v=1307";
+import { installMenus } from "./ui/menu.js?v=1307";
+import { closeAllDialogs } from "./ui/dialog.js?v=1307";
+import * as hub from "./views/hub.js?v=1307";
+import * as campaigns from "./views/campaigns.js?v=1307";
+import * as styles from "./views/styles.js?v=1307";
+import * as styleCreator from "./views/style-creator.js?v=1307";
+import * as editor from "./views/editor/index.js?v=1307";
+import * as catalog from "./views/catalog.js?v=1307";
 
 export const FLAG = "sexySquirrel";
 
@@ -60,4 +61,5 @@ export const ROUTES = Object.freeze([
   { pattern: "/image-generator/styles/new", handler: screen(styleCreator.mount) },
   { pattern: "/image-generator/styles/:id", handler: screen(styleCreator.mount) },
   { pattern: "/image-generator/editor/:creationId", handler: screen(editor.mount) },
+  { pattern: "/image-generator/catalog", handler: screen(catalog.mount) },
 ]);

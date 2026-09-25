@@ -9,21 +9,21 @@
 // Delete removes the selected one. A drag patches the DOM live and commits once,
 // on release, so the undo stack gets one step per gesture.
 
-import { html, toString } from "../../lib/html.js?v=1304";
-import { delegate } from "../../lib/delegate.js?v=1304";
-import { renderFrame } from "../frame.js?v=1304";
-import { renderEmpty } from "../../ui/empty.js?v=1304";
-import { preserveFocus, syncSlider } from "../../ui/fields.js?v=1304";
-import { openDialog } from "../../ui/dialog.js?v=1304";
-import { toast } from "../../ui/toast.js?v=1304";
-import { assetImg, hydrateAssets, warmAssetUrls } from "../../ui/asset.js?v=1304";
-import { variationCanvas, variationSvg } from "../../ui/variation.js?v=1304";
-import { formatById, formatRatio } from "../../config/formats.js?v=1304";
-import { networkById } from "../../config/networks.js?v=1304";
-import { isHex } from "../../model/schema.js?v=1304";
-import { resolveLayers } from "../../render/layout.js?v=1304";
-import { toPngBlob, downloadBlob, slug } from "../../render/export.js?v=1304";
-import { copyService, editService, imageGenerationService } from "../../services/index.js?v=1304";
+import { html, toString } from "../../lib/html.js?v=1307";
+import { delegate } from "../../lib/delegate.js?v=1307";
+import { renderFrame } from "../frame.js?v=1307";
+import { renderEmpty } from "../../ui/empty.js?v=1307";
+import { preserveFocus, syncSlider } from "../../ui/fields.js?v=1307";
+import { openDialog } from "../../ui/dialog.js?v=1307";
+import { toast } from "../../ui/toast.js?v=1307";
+import { assetImg, hydrateAssets, warmAssetUrls } from "../../ui/asset.js?v=1307";
+import { variationCanvas, variationSvg } from "../../ui/variation.js?v=1307";
+import { formatById, formatRatio } from "../../config/formats.js?v=1307";
+import { networkById } from "../../config/networks.js?v=1307";
+import { isHex } from "../../model/schema.js?v=1307";
+import { resolveLayers } from "../../render/layout.js?v=1307";
+import { toPngBlob, downloadBlob, slug } from "../../render/export.js?v=1307";
+import { copyService, editService, imageGenerationService } from "../../services/index.js?v=1307";
 import {
   canEditBrand,
   getAssets,
@@ -33,14 +33,18 @@ import {
   saveColorToPlaybook,
   saveFontToPlaybook,
   subscribe,
-} from "../../state/store.js?v=1304";
-import { adaptEverywhere, replaceVariation } from "../../state/creation-actions.js?v=1304";
-import { FORMATS } from "../../config/formats.js?v=1304";
-import { NETWORKS } from "../../config/networks.js?v=1304";
-import { renderMockup, safeZoneOverlay } from "../../ui/mockups.js?v=1304";
-import { menu } from "../../ui/menu.js?v=1304";
-import { toggle } from "../../ui/fields.js?v=1304";
-import { wait } from "../../lib/delegate.js?v=1304";
+} from "../../state/store.js?v=1307";
+import { adaptEverywhere, replaceVariation, setCaption } from "../../state/creation-actions.js?v=1307";
+import { attentionSpots, brandCheck, fixIssue, predictPerformance } from "../../state/checks.js?v=1307";
+import { scoreRing } from "../../ui/ring.js?v=1307";
+import { heatmapOverlay } from "../../ui/heatmap.js?v=1307";
+import { COPY_LIMITS } from "../../config/copy-limits.js?v=1307";
+import { FORMATS } from "../../config/formats.js?v=1307";
+import { NETWORKS } from "../../config/networks.js?v=1307";
+import { renderMockup, safeZoneOverlay } from "../../ui/mockups.js?v=1307";
+import { menu } from "../../ui/menu.js?v=1307";
+import { toggle } from "../../ui/fields.js?v=1307";
+import { wait } from "../../lib/delegate.js?v=1307";
 import {
   addAssetLayer,
   addLogoLayer,
@@ -55,8 +59,17 @@ import {
   removeLayer,
   reorder,
   undoLayers,
-} from "../../state/editor-actions.js?v=1304";
-import { renderLayers, renderProps, renderTextIdeas, renderWordsBar, layerName } from "./panels.js?v=1304";
+} from "../../state/editor-actions.js?v=1307";
+import {
+  renderChecks,
+  renderLayers,
+  renderPost,
+  renderProps,
+  renderSideTabs,
+  renderTextIdeas,
+  renderWordsBar,
+  layerName,
+} from "./panels.js?v=1307";
 
 const CHANGE_WORDS = { fonts: "fonts", colours: "colours", contrast: "text contrast", logo: "logo version" };
 
@@ -72,6 +85,10 @@ export function mount(target, params, ctx) {
     formatId: new URLSearchParams(window.location.hash.split("?")[1] || "").get("format"),
     safeZones: false,
     adapting: false,
+    sideTab: "layer",
+    heatmap: false,
+    check: null, // { status, sig, result }
+    caption: { status: "idle" },
   };
   const openAdaptOnMount = new URLSearchParams(window.location.hash.split("?")[1] || "").get("adapt") === "1";
   let alive = true;
@@ -90,6 +107,29 @@ export function mount(target, params, ctx) {
   };
 
   const commit = (layers, action) => commitLayers(id, layers, { action, formatId: state.formatId });
+
+  // What the brand check was computed for — any change to it makes the result stale.
+  const signature = (d) =>
+    JSON.stringify([d.format.id, d.variation.seed, d.variation.bgSeed, d.variation.subjectSeed, d.layers]);
+
+  async function runCheck() {
+    const d = data();
+    if (!d || !d.adapted) return;
+    const sig = signature(d);
+    state.check = { status: "loading", sig: null };
+    try {
+      const result = await brandCheck({
+        svg: variationSvg({ creation: d.creation, variation: d.variation, formatId: d.format.id, brand: d.brand }),
+        brand: d.brand,
+        format: d.format,
+        layers: d.layers,
+      });
+      state.check = { status: "done", sig, result };
+    } catch {
+      state.check = { status: "done", sig, result: { score: 0, issues: [] } };
+    }
+    paint();
+  }
 
   const setFormatInUrl = () =>
     history.replaceState(
@@ -227,6 +267,7 @@ export function mount(target, params, ctx) {
                   selectedId: state.selectedId,
                 })}
                 ${state.safeZones ? safeZoneOverlay(format) : ""}
+                ${state.heatmap && adapted ? heatmapOverlay(attentionSpots({ variation, format, layers }), format) : ""}
                 ${adapted
                   ? ""
                   : html`<span class="imst-stage__busy">
@@ -250,24 +291,51 @@ export function mount(target, params, ctx) {
               ${renderWordsBar(state.nl)}
             </div>
             <aside class="imst-editor__side">
-              ${renderProps({
-                layer: selected,
-                brand,
-                format,
-                unlock: state.unlock,
-                canSave: canEditBrand(brand.id),
-                logoPx,
-              })}
-              ${renderTextIdeas(
-                state.ideas,
-                layers.some((l) => l.type === "text"),
-              )}
+              ${renderSideTabs(state.sideTab)}
+              ${state.sideTab === "post"
+                ? renderPost({
+                    network: networkById(format.network),
+                    limits: COPY_LIMITS[format.network],
+                    caption: creation.copy?.captions?.[format.network],
+                    status: state.caption.status,
+                  })
+                : state.sideTab === "checks"
+                  ? adapted
+                    ? renderChecks({
+                        check: state.check?.sig === signature(d) ? state.check : null,
+                        perf: predictPerformance({
+                          creation,
+                          variation,
+                          format,
+                          layers,
+                          check: state.check?.sig === signature(d) ? state.check.result : null,
+                        }),
+                        heatmap: state.heatmap,
+                        ring: scoreRing,
+                      })
+                    : html`<section class="ap-card imst-panel">
+                        <p class="ap-body imst-panel__hint">Adapt this format first.</p>
+                      </section>`
+                  : html`${renderProps({
+                      layer: selected,
+                      brand,
+                      format,
+                      unlock: state.unlock,
+                      canSave: canEditBrand(brand.id),
+                      logoPx,
+                    })}
+                    ${renderTextIdeas(
+                      state.ideas,
+                      layers.some((l) => l.type === "text"),
+                    )}`}
             </aside>
           </div>
         `,
       }),
     );
     restore();
+    if (state.sideTab === "checks" && adapted && state.check?.status !== "loading" && state.check?.sig !== signature(d))
+      runCheck();
     // Keep the active format tab visible in its scrolling bar (not the page).
     const nav = target.querySelector(".imst-format-tabs .ap-tabs-nav");
     const tab = nav?.querySelector(".ap-tabs-tab.active");
@@ -285,6 +353,7 @@ export function mount(target, params, ctx) {
   const layersNow = () => data()?.layers || [];
   const select = (layerId) => {
     state.selectedId = layerId;
+    state.sideTab = "layer";
     paint();
     target.querySelector(`[data-imst-layer="${layerId}"]`)?.focus({ preventScroll: true });
   };
@@ -527,6 +596,26 @@ export function mount(target, params, ctx) {
     });
   }
 
+  async function doCaption() {
+    const d = data();
+    const network = d.format.network;
+    state.caption = { status: "loading" };
+    paint();
+    try {
+      const headline = d.layers.find((l) => l.type === "text")?.props.content || d.creation.brief.headline;
+      const [text, hashtags] = await Promise.all([
+        copyService.caption({ brand: d.brand, brief: d.creation.brief, network, headline }, { signal: abort.signal }),
+        copyService.hashtags({ brand: d.brand, brief: d.creation.brief, network }, { signal: abort.signal }),
+      ]);
+      setCaption(id, network, { text, hashtags });
+    } catch (error) {
+      if (error.name === "AbortError") return;
+      toast("The caption failed. Try again.", { variant: "error" });
+    }
+    state.caption = { status: "idle" };
+    paint();
+  }
+
   async function doWords() {
     const text = state.nl.text.trim();
     if (!text) return;
@@ -754,7 +843,14 @@ export function mount(target, params, ctx) {
     delegate(target, "input", "[data-imst-field]", (_e, el) => {
       const path = el.dataset.imstField;
       if (path === "words") state.nl.text = el.value;
-      else if (path === "layer.content") {
+      else if (path === "caption.text") {
+        const limits = COPY_LIMITS[data().format.network];
+        const counter = target.querySelector("[data-imst-counter]");
+        if (counter) {
+          counter.textContent = `${el.value.length} / ${limits.maxChars} characters${el.value.length > limits.maxChars ? " — too long" : ""}`;
+          counter.classList.toggle("is-error", el.value.length > limits.maxChars);
+        }
+      } else if (path === "layer.content") {
         const layer = layersNow().find((l) => l.id === state.selectedId);
         const node = target.querySelector(`[data-imst-layer="${layer.id}"] span`);
         if (node) node.textContent = el.value;
@@ -765,6 +861,15 @@ export function mount(target, params, ctx) {
     delegate(target, "change", "[data-imst-field]", (_e, el) => {
       const path = el.dataset.imstField;
       if (path === "words") return;
+      if (path === "caption.text") {
+        setCaption(id, data().format.network, { text: el.value });
+        return;
+      }
+      if (path === "view.heatmap") {
+        state.heatmap = el.checked;
+        paint();
+        return;
+      }
       if (path === "view.safeZones") {
         state.safeZones = el.checked;
         paint();
@@ -823,6 +928,41 @@ export function mount(target, params, ctx) {
       });
     }),
     delegate(target, "click", "[data-imst-regen]", (_e, el) => doRegen(el.dataset.imstRegen)),
+    delegate(target, "click", "[data-imst-side]", (_e, el) => {
+      state.sideTab = el.dataset.imstSide;
+      paint();
+    }),
+    delegate(target, "click", "[data-imst-fix]", (_e, el) => {
+      const d = data();
+      const issues = state.check?.result?.issues || [];
+      const chosen = el.dataset.imstFix === "all" ? issues : issues.filter((i) => i.id === el.dataset.imstFix);
+      const layers = chosen.reduce(
+        (acc, issue) => fixIssue(issue, acc, { brand: d.brand, format: d.format }),
+        d.layers,
+      );
+      commit(layers, chosen.length > 1 ? `Fixed ${chosen.length} brand issues` : `Fixed: ${chosen[0].title}`);
+      toast(chosen.length > 1 ? `${chosen.length} issues fixed.` : `Fixed: ${chosen[0].title.toLowerCase()}.`);
+      paint();
+    }),
+    delegate(target, "click", "[data-imst-copy]", async (_e, el) => {
+      const d = data();
+      const cap = d.creation.copy?.captions?.[d.format.network] || {};
+      const text = el.dataset.imstCopy === "caption" ? cap.text : (cap.hashtags || []).join(" ");
+      try {
+        await navigator.clipboard.writeText(text);
+        toast(el.dataset.imstCopy === "caption" ? "Caption copied." : "Hashtags copied.");
+      } catch {
+        toast("Copying isn't allowed here — select the text and copy it.", { variant: "error" });
+      }
+    }),
+    delegate(target, "click", "[data-imst-tag-remove]", (_e, el) => {
+      const d = data();
+      const cap = d.creation.copy?.captions?.[d.format.network] || {};
+      setCaption(id, d.format.network, {
+        hashtags: (cap.hashtags || []).filter((_, i) => i !== Number(el.dataset.imstTagRemove)),
+      });
+      paint();
+    }),
     delegate(target, "click", "[data-imst-format]", (_e, el) => {
       state.formatId = el.dataset.imstFormat;
       state.selectedId = null;
@@ -846,6 +986,7 @@ export function mount(target, params, ctx) {
       else if (a === "adapt") openAdaptDialog();
       else if (a === "adapt-one") runAdapt([state.formatId]);
       else if (a === "preview") openPreview();
+      else if (a === "caption") doCaption();
       else if (a === "text-ideas") doTextIdeas();
       else if (a === "undo") {
         if (undoLayers(id, state.formatId)) paint();

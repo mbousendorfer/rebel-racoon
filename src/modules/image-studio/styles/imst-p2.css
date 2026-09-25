@@ -1,0 +1,190 @@
+/* Image Generator — catalogue, full post, brand check, predicted performance.
+ * Scores always carry their metric's name in text; the ring is the app's
+ * .app-ring port. The heatmap is a data overlay in DS warm ramps.
+ */
+
+/* ── Catalogue ───────────────────────────────────────────────────────── */
+
+.imst-product {
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+  border-color: var(--ref-color-grey-20);
+}
+
+.imst-product:hover,
+.imst-product:focus-within {
+  border-color: var(--ref-color-electric-blue-40);
+}
+
+.imst-product__media {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  background: var(--ref-color-grey-05);
+  color: var(--ref-color-grey-80);
+}
+
+.imst-product__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.imst-product__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  padding: var(--ref-spacing-xs);
+}
+
+.imst-product__body h3,
+.imst-product__desc {
+  margin: 0;
+}
+
+.imst-product__desc,
+.imst-product__domain {
+  color: var(--ref-color-grey-80);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.imst-product__shoots {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--ref-spacing-xxxs);
+  margin-top: var(--ref-spacing-xxs);
+}
+
+.imst-product__shoots img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: var(--ref-border-radius-sm);
+}
+
+.imst-product-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: var(--ref-spacing-md);
+}
+
+.imst-product-form__fields,
+.imst-product-form__image {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+}
+
+.imst-product-form__img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--ref-border-radius-md);
+}
+
+.imst-shoot__caption {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ── Post ────────────────────────────────────────────────────────────── */
+
+.imst-counter {
+  color: var(--ref-color-grey-80);
+}
+
+.imst-counter.is-error {
+  color: var(--sys-text-color-error);
+}
+
+/* ── Checks ──────────────────────────────────────────────────────────── */
+
+.imst-score {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+}
+
+.imst-issues,
+.imst-factors {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+}
+
+.imst-issue {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ref-spacing-xs);
+  padding-top: var(--ref-spacing-xs);
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+
+.imst-issue__text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.imst-issue__text .ap-caption {
+  color: var(--ref-color-grey-80);
+}
+
+.imst-fix-all {
+  align-self: flex-start;
+}
+
+.imst-factors li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--ref-spacing-xs);
+  color: var(--ref-color-grey-100);
+}
+
+/* ── Attention heatmap ───────────────────────────────────────────────── */
+
+.imst-heat {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
+
+.imst-heat__stop-hot {
+  stop-color: var(--ref-color-red-100);
+  stop-opacity: 0.9;
+}
+
+.imst-heat__stop-warm {
+  stop-color: var(--ref-color-orange-100);
+  stop-opacity: 0.55;
+}
+
+.imst-heat__stop-cold {
+  stop-color: var(--ref-color-orange-20);
+  stop-opacity: 0;
+}
+
+/* A field and its action on one line (the product URL). */
+.imst-form-row {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--ref-spacing-xs);
+}
+
+.imst-form-row > .imst-field {
+  flex: 1 1 auto;
+}

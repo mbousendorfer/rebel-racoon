@@ -1,13 +1,13 @@
 // Image Generator — the editor's panels: layers (left), properties + text
 // ideas (right), and the edit-in-words bar under the stage. Pure renderers.
 
-import { html } from "../../lib/html.js?v=1304";
-import { menu } from "../../ui/menu.js?v=1304";
-import { picker } from "../../ui/picker.js?v=1304";
-import { slider, toggle } from "../../ui/fields.js?v=1304";
-import { swatch } from "../../ui/swatch.js?v=1304";
-import { FONT_CHOICES } from "../../config/fonts.js?v=1304";
-import { resolvePalette } from "../../render/palette.js?v=1304";
+import { html } from "../../lib/html.js?v=1307";
+import { menu } from "../../ui/menu.js?v=1307";
+import { picker } from "../../ui/picker.js?v=1307";
+import { slider, toggle } from "../../ui/fields.js?v=1307";
+import { swatch } from "../../ui/swatch.js?v=1307";
+import { FONT_CHOICES } from "../../config/fonts.js?v=1307";
+import { resolvePalette } from "../../render/palette.js?v=1307";
 
 const ROLE_LABEL = {
   primary: "Primary",
@@ -447,5 +447,172 @@ export function renderWordsBar(nl) {
           ${nl.message}
         </p>`
       : ""}
+  `;
+}
+
+// ── Side tabs ────────────────────────────────────────────────────────────────
+
+export function renderSideTabs(active) {
+  const tabs = [
+    ["layer", "Layer"],
+    ["post", "Post"],
+    ["checks", "Checks"],
+  ];
+  return html`<div class="ap-tabs full-width">
+    <div class="ap-tabs-nav" role="tablist" aria-label="Editor panels">
+      ${tabs.map(
+        ([id, label]) =>
+          html`<button
+            type="button"
+            class="ap-tabs-tab${active === id ? " active" : ""}"
+            role="tab"
+            aria-selected="${active === id}"
+            data-imst-side="${id}"
+          >
+            ${label}
+          </button>`,
+      )}
+    </div>
+  </div>`;
+}
+
+// ── Post: caption + hashtags for the active format's network ────────────────
+
+export function renderPost({ network, limits, caption, status }) {
+  const text = caption?.text || "";
+  const tags = caption?.hashtags || [];
+  const over = text.length > limits.maxChars;
+  const loading = status === "loading";
+  return html`
+    <section class="ap-card imst-panel" aria-labelledby="imst-post-title" aria-busy="${loading}">
+      <header class="imst-panel__head">
+        <h2 class="ap-body-bold" id="imst-post-title">${network.label} post</h2>
+        <button
+          type="button"
+          class="ap-button ghost grey${loading ? " loading" : ""}"
+          data-imst-action="caption"
+          ${loading ? "disabled" : ""}
+        >
+          <i class="ap-icon-sparkles" aria-hidden="true"></i><span>${text ? "Rewrite" : "Write it"}</span>
+        </button>
+      </header>
+      <div class="imst-prop">
+        <label class="imst-prop__label ap-caption" for="imst-caption">Caption</label>
+        <div class="ap-textarea-field">
+          <textarea
+            id="imst-caption"
+            rows="6"
+            data-imst-field="caption.text"
+            placeholder="I'll write it in the brand's voice — or type your own."
+          >
+${text}</textarea
+          >
+        </div>
+        <span class="ap-caption imst-counter${over ? " is-error" : ""}" data-imst-counter
+          >${text.length} / ${limits.maxChars} characters${over ? " — too long for " + network.label : ""}</span
+        >
+        ${limits.visibleChars < limits.maxChars
+          ? html`<span class="ap-caption imst-prop__label"
+              >The first ${limits.visibleChars} characters show before “…more”.</span
+            >`
+          : ""}
+      </div>
+      <div class="imst-prop">
+        <span class="imst-prop__label ap-caption"
+          >Hashtags · ${limits.hashtags.min}–${limits.hashtags.max} work best on ${network.label}</span
+        >
+        <div class="ap-tag-list">
+          ${tags.length
+            ? tags.map(
+                (t, i) =>
+                  html`<span class="ap-tag grey"
+                    ><span>${t}</span
+                    ><button type="button" aria-label="Remove ${t}" data-imst-tag-remove="${i}">
+                      <i class="ap-icon-close" aria-hidden="true"></i></button
+                  ></span>`,
+              )
+            : html`<span class="ap-caption imst-prop__label">None yet</span>`}
+        </div>
+      </div>
+      <div class="imst-prop imst-prop--inline">
+        <button type="button" class="ap-button stroked grey" data-imst-copy="caption" ${text ? "" : "disabled"}>
+          <i class="ap-icon-copy" aria-hidden="true"></i><span>Copy caption</span>
+        </button>
+        <button type="button" class="ap-button stroked grey" data-imst-copy="hashtags" ${tags.length ? "" : "disabled"}>
+          <i class="ap-icon-copy" aria-hidden="true"></i><span>Copy hashtags</span>
+        </button>
+      </div>
+    </section>
+  `;
+}
+
+// ── Checks: brand check + predicted performance ─────────────────────────────
+
+const SEVERITY = { high: ["red", "Must fix"], medium: ["orange", "Should fix"], low: ["grey", "Minor"] };
+
+export function renderChecks({ check, perf, heatmap, ring }) {
+  if (!check || check.status === "loading") {
+    return html`<section class="ap-card imst-panel" aria-busy="true">
+      <p class="ap-body imst-panel__hint"><span class="ap-loader size-16"></span> Checking against the Playbook…</p>
+    </section>`;
+  }
+  const { score, issues } = check.result;
+  return html`
+    <section class="ap-card imst-panel" aria-labelledby="imst-check-title">
+      <header class="imst-panel__head"><h2 class="ap-body-bold" id="imst-check-title">Brand check</h2></header>
+      <div class="imst-score">
+        ${ring(score, { name: "Brand check score" })}
+        <div>
+          <span class="ap-body-bold">Brand check score ${score} / 100</span><br /><span
+            class="ap-caption imst-prop__label"
+            >${issues.length
+              ? `${issues.length} issue${issues.length === 1 ? "" : "s"} against the Playbook's rules`
+              : "Follows every rule of the Playbook"}</span
+          >
+        </div>
+      </div>
+      ${issues.length
+        ? html`<ul class="imst-issues">
+              ${issues.map(
+                (i) =>
+                  html`<li class="imst-issue">
+                    <div class="imst-issue__text">
+                      <span class="ap-status ${SEVERITY[i.severity][0]} no-dot">${SEVERITY[i.severity][1]}</span>
+                      <span class="ap-body-bold">${i.title}</span>
+                      <span class="ap-caption">${i.detail}</span>
+                    </div>
+                    <button type="button" class="ap-button ghost blue" data-imst-fix="${i.id}">Fix</button>
+                  </li>`,
+              )}
+            </ul>
+            ${issues.length > 1
+              ? html`<button type="button" class="ap-button stroked grey imst-fix-all" data-imst-fix="all">
+                  Fix all
+                </button>`
+              : ""}`
+        : ""}
+    </section>
+    <section class="ap-card imst-panel" aria-labelledby="imst-perf-title">
+      <header class="imst-panel__head"><h2 class="ap-body-bold" id="imst-perf-title">Predicted performance</h2></header>
+      <div class="imst-score">
+        ${ring(perf.score, { name: "Predicted performance" })}
+        <div>
+          <span class="ap-body-bold">Predicted performance ${perf.score} / 100</span><br /><span
+            class="ap-caption imst-prop__label"
+            >An estimate, not a promise — from the factors below.</span
+          >
+        </div>
+      </div>
+      <ul class="imst-factors">
+        ${perf.factors.map(
+          (f) =>
+            html`<li>
+              <span class="ap-body">${f.label}</span
+              ><span class="ap-body-bold">${f.delta > 0 ? `+${f.delta}` : f.delta}</span>
+            </li>`,
+        )}
+      </ul>
+      ${toggle({ path: "view.heatmap", checked: heatmap, label: "Show the attention heatmap" })}
+    </section>
   `;
 }

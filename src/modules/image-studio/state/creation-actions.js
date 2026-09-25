@@ -2,11 +2,11 @@
 // as a creation straight away (that IS the history); opening a variation in the
 // editor gives it its layers.
 
-import { storageService as storage } from "../services/index.js?v=1304";
-import { createCampaign, createCreation, historyEntry } from "../model/schema.js?v=1304";
-import { formatById } from "../config/formats.js?v=1304";
-import { uid } from "../lib/id.js?v=1304";
-import { defaultLayers, recompose } from "../render/layout.js?v=1304";
+import { storageService as storage } from "../services/index.js?v=1307";
+import { createCampaign, createCreation, historyEntry } from "../model/schema.js?v=1307";
+import { formatById } from "../config/formats.js?v=1307";
+import { uid } from "../lib/id.js?v=1307";
+import { defaultLayers, recompose } from "../render/layout.js?v=1307";
 
 function get(id) {
   return storage.get("creations", id);
@@ -148,6 +148,14 @@ export function adaptEverywhere(creationId, formatIds) {
       historyEntry("adapted", `${adaptations.length} format${adaptations.length === 1 ? "" : "s"}`),
     ],
   });
+}
+
+/** The caption + hashtags of one network's post. */
+export function setCaption(creationId, network, patch) {
+  const c = get(creationId);
+  const captions = { ...(c.copy?.captions || {}) };
+  captions[network] = { text: "", hashtags: [], ...(captions[network] || {}), ...patch };
+  return save({ ...c, copy: { ...(c.copy || {}), captions } });
 }
 
 export function removeAdaptation(creationId, formatId) {

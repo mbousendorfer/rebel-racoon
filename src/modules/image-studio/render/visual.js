@@ -8,12 +8,12 @@
 //     (only colours, textures and mood are held);
 //   · reference images — their sampled colours tint the palette by their weight.
 
-import { prng } from "../lib/prng.js?v=1304";
-import { presetById } from "../config/style-presets.js?v=1304";
-import { generatorFor } from "./generators.js?v=1304";
-import { inkOn, resolvePalette } from "./palette.js?v=1304";
-import { fontStack } from "../config/fonts.js?v=1304";
-import { subjectPath } from "./subjects.js?v=1304";
+import { prng } from "../lib/prng.js?v=1307";
+import { presetById } from "../config/style-presets.js?v=1307";
+import { generatorFor } from "./generators.js?v=1307";
+import { inkOn, resolvePalette } from "./palette.js?v=1307";
+import { fontStack } from "../config/fonts.js?v=1307";
+import { subjectPath } from "./subjects.js?v=1307";
 
 let renderSeq = 0;
 
@@ -64,14 +64,7 @@ export function renderVisual(o) {
   const rs = prng(o.subjectSeed ?? o.seed ^ 0x27d4eb2d);
   // The subject sits where the text layer ISN'T: lower-right third on a tall
   // canvas, right of centre on a wide one — the text block and logo take the rest.
-  // Matches render/layout.js: square/portrait keep the text in the lower third,
-  // stories keep it just under the middle, wide formats on the left half.
-  const ratio = H / W;
-  const wide = ratio < 0.72;
-  const tall = ratio > 1.5;
-  const s = wide ? H * (0.5 + rs() * 0.12) : W * (tall ? 0.52 + rs() * 0.1 : 0.4 + rs() * 0.08);
-  const cx = W * (wide ? 0.72 : 0.5 + (rs() - 0.5) * 0.14);
-  const cy = H * (wide ? 0.5 : tall ? 0.3 : 0.36 + (rs() - 0.5) * 0.06);
+  const { cx, cy, s } = subjectPlacement(W, H, rs);
   const kind = o.subjectKind || "object";
   const ctx = {
     W,
@@ -125,6 +118,29 @@ function embeddedText(c, o) {
       )
       .join("")
   );
+}
+
+/**
+ * Where the subject sits, in viewBox units (W = 1000). Matches render/layout.js:
+ * square / portrait keep the text in the lower third, stories just under the
+ * middle, wide formats on the left half. Exported for the attention heatmap.
+ */
+export function subjectPlacement(W, H, rs) {
+  const ratio = H / W;
+  const wide = ratio < 0.72;
+  const tall = ratio > 1.5;
+  const s = wide ? H * (0.5 + rs() * 0.12) : W * (tall ? 0.52 + rs() * 0.1 : 0.4 + rs() * 0.08);
+  const cx = W * (wide ? 0.72 : 0.5 + (rs() - 0.5) * 0.14);
+  const cy = H * (wide ? 0.5 : tall ? 0.3 : 0.36 + (rs() - 0.5) * 0.06);
+  return { cx, cy, s };
+}
+
+/** The subject's centre and size as fractions of the canvas — same maths as the render. */
+export function subjectFraction({ width, height, seed, subjectSeed }) {
+  const W = 1000;
+  const H = Math.round((1000 * height) / width);
+  const { cx, cy, s } = subjectPlacement(W, H, prng(subjectSeed ?? seed ^ 0x27d4eb2d));
+  return { x: cx / W, y: cy / H, r: s / 2 / W };
 }
 
 export function svgToDataUrl(svg) {

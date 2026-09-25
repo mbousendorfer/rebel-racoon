@@ -5,7 +5,7 @@
 // picker({ id, label, value, groups, multi }) → fragment. One delegated click
 // on [data-imst-pick] resolves it: data-imst-pick = picker id, data-value = option.
 
-import { html } from "../lib/html.js?v=1304";
+import { html } from "../lib/html.js?v=1307";
 
 /**
  * groups: [{ label?, options: [{ value, label, caption?, disabled?, icon? }] }]
