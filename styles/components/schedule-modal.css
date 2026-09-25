@@ -148,6 +148,10 @@
    WHEN (a tinted cell) and WHAT (the draft). */
 .schedule-modal__timeline {
   --tile-w: 48px;
+  /* ONE tile height for both states — the shimmer tile while the times are
+     being found and the date tile once one lands — so no row changes height
+     when its date arrives. 66 = the date tile's own three lines + padding. */
+  --tile-h: 66px;
   --when-w: 216px;
   list-style: none;
   margin: 0;
@@ -217,11 +221,14 @@
 
 .schedule-modal__tile {
   flex: 0 0 var(--tile-w);
+  box-sizing: border-box;
+  height: var(--tile-h);
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 2px; /* the three lines read as one object — below the 4px scale on purpose */
-  padding: 6px 0; /* 48px-wide tile, 52px tall — keeps the three lines tight */
+  padding: 0;
   background: var(--ref-color-white);
   border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--ref-border-radius-md);
@@ -243,9 +250,7 @@
 }
 
 .schedule-modal__tile.is-pending {
-  background: var(--ref-color-white);
   gap: var(--ref-spacing-xxxs);
-  padding-block: var(--ref-spacing-xs);
 }
 
 .schedule-modal__when-body {
