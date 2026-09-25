@@ -32,16 +32,16 @@
 // view. There is an explicit Load more too, and both do exactly the same thing —
 // an infinite list with no button is unusable by keyboard.
 
-import { html, raw, escapeAttr } from "../utils.js?v=1234";
-import { navigate, getPath } from "../router.js?v=1234";
-import { isFlagOn } from "../feature-flags.js?v=1234";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1234";
-import { renderTopbar } from "../components/topbar.js?v=1234";
-import { showToast } from "../components/toast.js?v=1234";
-import { renderEmptyState } from "../components/empty-state.js?v=1234";
-import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=1234";
-import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=1234";
-import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1234";
+import { html, raw, escapeAttr } from "../utils.js?v=1236";
+import { navigate, getPath } from "../router.js?v=1236";
+import { isFlagOn } from "../feature-flags.js?v=1236";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1236";
+import { renderTopbar } from "../components/topbar.js?v=1236";
+import { showToast } from "../components/toast.js?v=1236";
+import { renderEmptyState } from "../components/empty-state.js?v=1236";
+import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=1236";
+import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=1236";
+import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1236";
 import {
   getTopicsForFeed,
   groupTopicsByAge,
@@ -52,7 +52,7 @@ import {
   ignoreTopic,
   unignoreTopic,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=1234";
+} from "../topics-store.js?v=1236";
 import {
   TOPIC_SOURCES,
   TOPIC_KINDS,
@@ -61,12 +61,12 @@ import {
   findTopicSource,
   findCadence,
   isLiveSource,
-} from "../topics-catalog.js?v=1234";
-import { renderTopicCard } from "../components/topic-card.js?v=1234";
-import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=1234";
-import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=1234";
-import { openTopicHistory } from "../components/topic-history-modal.js?v=1234";
-import { useTopicInChat } from "../topic-flow.js?v=1234";
+} from "../topics-catalog.js?v=1236";
+import { renderTopicCard } from "../components/topic-card.js?v=1236";
+import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=1236";
+import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=1236";
+import { openTopicHistory } from "../components/topic-history-modal.js?v=1236";
+import { useTopicInChat } from "../topic-flow.js?v=1236";
 
 const PAGE = 10;
 // Long enough to read the scanning line, short enough that nobody waits for it

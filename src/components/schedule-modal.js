@@ -1,14 +1,14 @@
-import { html, raw, escapeText } from "../utils.js?v=1234";
-import { showToast } from "./toast.js?v=1234";
+import { html, raw, escapeText } from "../utils.js?v=1236";
+import { showToast } from "./toast.js?v=1236";
 import {
   getQueueOn,
   busyCountsByDay,
   dayKey,
   addToQueue,
   subscribe as subscribeQueue,
-} from "../schedule-store.js?v=1234";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1234";
-import { renderProfileTag, profileForNetwork, NETWORK_LABEL } from "../social-profiles.js?v=1234";
+} from "../schedule-store.js?v=1236";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1236";
+import { renderProfileTag, profileForNetwork, NETWORK_LABEL } from "../social-profiles.js?v=1236";
 
 // Schedule modal — one column, result first.
 //   • Header   — "Schedule N drafts" + one line saying I already picked.
@@ -17,11 +17,12 @@ import { renderProfileTag, profileForNetwork, NETWORK_LABEL } from "../social-pr
 //                and an "Adjust" disclosure, closed at rest, holding the
 //                four settings: rhythm (multi only), start day, time of day,
 //                days to skip. Every change re-spreads live.
-//   • Timeline — the batch as a posting schedule, one row per draft in date
-//                order, each row in two zones that never mix: WHEN (a date
-//                tile hung on the rail, the time + its pen, why I picked it,
-//                whether the day is busy) and WHAT (the draft as its own
-//                block — profile, first lines, and its ✕).
+//   • Timeline — the batch as a posting schedule: ONE bordered list, one row
+//                per draft in date order, hairlines between rows. Each row
+//                is two zones that never mix: WHEN (a tinted cell — date
+//                tile, time + its pen, why I picked it, whether the day is
+//                busy) and WHAT (profile, first lines, the media thumbnail,
+//                and its ✕).
 //   • Footer   — what the batch adds up to ("4 posts over 8 days"), the
 //                disclosure line, then Cancel + the one primary.
 //
@@ -719,7 +720,8 @@ function renderSettings() {
 
 // ── The timeline ──────────────────────────────────────────────────────
 // Why I picked THIS time — the one line that makes a suggestion read as a
-// decision. Kept to a few words so it fits the WHEN column; the full reading
+// decision. Kept to a few words so it fits the WHEN cell — the network is
+// already named by the profile tag beside it — and the full reading
 // ("LinkedIn's best window: Tue–Thu, 9 AM") rides in the tooltip.
 function reasonFor(slot) {
   const network = networkOf(slot.post);
@@ -729,8 +731,8 @@ function reasonFor(slot) {
   const window = `${name}'s best window: ${formatDays(map.dow)}, ${formatHour(pickHour(map.hours, null))}`;
   if (tod) return { label: `Best ${tod} hour`, detail: `${name}'s best ${tod} hour` };
   return map.dow.includes(new Date(slot.when).getDay())
-    ? { label: `Best ${name} window`, detail: window }
-    : { label: `Best ${name} hour`, detail: `${name}'s best hour, on your rhythm — ${window}` };
+    ? { label: "Best window", detail: window }
+    : { label: "Best hour", detail: `${name}'s best hour, on your rhythm — ${window}` };
 }
 
 // What else is on the day a draft lands on — the queue plus the other
@@ -827,31 +829,57 @@ function renderWhen(slot) {
     </div>`;
 }
 
-// WHAT — the draft itself, as a block of its own: who publishes it and what
-// it says, with its one action (leave it out) in its own corner.
+// The draft's media, when it has one — what the post will LOOK like in the
+// feed is half of recognising it. Image → the image; carousel → its first
+// slide + the slide count; video clip → its hue frame + a play glyph and the
+// duration (clips carry no poster image, the same frame post-card draws).
+function renderThumb(post) {
+  if (post.clipRef) {
+    const clip = post.clipRef;
+    const h = typeof clip.hue === "number" ? clip.hue : 24;
+    const secs = Math.max(1, Math.round(clip.end - clip.start));
+    const bg = `linear-gradient(135deg, oklch(0.42 0.12 ${h}) 0%, oklch(0.18 0.06 ${h}) 100%)`;
+    return `
+      <span class="schedule-modal__thumb is-video" style="background: ${bg}" aria-label="Video clip, ${secs} seconds" role="img">
+        <i class="ap-icon-play_fill" aria-hidden="true"></i>
+        <span class="schedule-modal__thumb-badge">0:${String(secs).padStart(2, "0")}</span>
+      </span>`;
+  }
+  if (!post.imageUrl) return "";
+  const count = Array.isArray(post.carousel) ? post.carousel.length : 0;
+  return `
+    <span class="schedule-modal__thumb">
+      <img src="${escapeText(post.imageUrl)}" alt="${count > 1 ? `Carousel, ${count} images` : "Image for this post"}" loading="lazy" />
+      ${count > 1 ? `<span class="schedule-modal__thumb-badge">1/${count}</span>` : ""}
+    </span>`;
+}
+
+// WHAT — the draft itself: who publishes it, what it says, what it shows,
+// and its one action (leave it out).
 function renderDraft(slot) {
   const post = slot.post;
   const network = networkOf(post);
   return `
-    <article class="schedule-modal__draft">
-      <header class="schedule-modal__draft-head">
+    <div class="schedule-modal__draft">
+      <div class="schedule-modal__draft-body">
         ${renderProfileTag(profileForNetwork(network), { network })}
-        ${
-          state.posts.length > 1
-            ? `<button
-          type="button"
-          class="ap-icon-button schedule-modal__draft-remove"
-          data-schedule-remove="${escapeText(post.id)}"
-          aria-label="Leave this draft out"
-          data-tooltip="Leave this draft out"
-        >
-          <i class="ap-icon-close"></i>
-        </button>`
-            : ""
-        }
-      </header>
-      <p class="schedule-modal__draft-text">${escapeText(extractFirstLine(post))}</p>
-    </article>`;
+        <p class="schedule-modal__draft-text">${escapeText(extractFirstLine(post))}</p>
+      </div>
+      ${renderThumb(post)}
+      ${
+        state.posts.length > 1
+          ? `<button
+        type="button"
+        class="ap-icon-button schedule-modal__draft-remove"
+        data-schedule-remove="${escapeText(post.id)}"
+        aria-label="Leave this draft out"
+        data-tooltip="Leave this draft out"
+      >
+        <i class="ap-icon-close"></i>
+      </button>`
+          : ""
+      }
+    </div>`;
 }
 
 function renderRow(slot, i) {
@@ -870,8 +898,8 @@ function renderRow(slot, i) {
     </li>`;
 }
 
-// The batch as a posting timeline: rows in date order, their tiles strung
-// on one rail. A hand-edited date moves its row to its new place.
+// The batch as a posting timeline: one framed list, rows in date order. A
+// hand-edited date moves its row to its new place.
 function renderTimeline() {
   const rows = [...state.slots]
     .sort((a, b) => a.when - b.when)
