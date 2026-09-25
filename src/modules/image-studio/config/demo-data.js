@@ -1,20 +1,19 @@
 // Image Generator — the demo seed, loaded on the module's first launch only.
 // The brands are Archie's seeded Playbooks (Acme · Q2 marketing, PawTrack);
 // what is seeded here is the generator's OWN objects for them: custom styles,
-// products, campaigns and a few creations. Keyed by Playbook id, so in new-user
+// products and a few creations. Keyed by Playbook id, so in new-user
 // mode (no Playbooks) they simply belong to nobody and never show.
 
 import {
   createAsset,
-  createCampaign,
   createCreation,
   createLayer,
   createProduct,
   createStyle,
   createVariation,
   historyEntry,
-} from "../model/schema.js?v=1307";
-import { productShotSvg } from "../render/product-shot.js?v=1307";
+} from "../model/schema.js?v=1308";
+import { productShotSvg } from "../render/product-shot.js?v=1308";
 
 const ACME = "ctx-acme";
 const PAWTRACK = "ctx-pawtrack";
@@ -126,12 +125,10 @@ export function seedDemoData() {
     }),
   ];
 
-  const year = new Date().getFullYear();
   const creations = [
     createCreation({
       id: "cr_demo_acme_launch",
       brandId: ACME,
-      campaignId: "cp_demo_acme_q4",
       title: "Plan the quarter in one place",
       brief: {
         prompt: "The Acme Workspace dashboard floating above a clean desk",
@@ -139,7 +136,6 @@ export function seedDemoData() {
         productId: "pr_demo_workspace",
         formatIds: ["li-square", "li-link", "x-landscape"],
         textMode: "layer",
-        ideaId: null,
       },
       variations: [createVariation(1203, { id: "va_demo_a1", bgSeed: 11, subjectSeed: 21 })],
       selectedVariationId: "va_demo_a1",
@@ -158,7 +154,6 @@ export function seedDemoData() {
     createCreation({
       id: "cr_demo_acme_number",
       brandId: ACME,
-      campaignId: "cp_demo_acme_q4",
       title: "3× faster approvals",
       brief: {
         prompt: "Teams on Acme approve briefs 3× faster",
@@ -166,7 +161,6 @@ export function seedDemoData() {
         productId: null,
         formatIds: ["li-square", "ig-post"],
         textMode: "embedded",
-        ideaId: null,
       },
       variations: [createVariation(9087, { id: "va_demo_b1", bgSeed: 51, subjectSeed: 61 })],
       selectedVariationId: "va_demo_b1",
@@ -176,7 +170,6 @@ export function seedDemoData() {
     createCreation({
       id: "cr_demo_paw_walk",
       brandId: PAWTRACK,
-      campaignId: "cp_demo_paw_autumn",
       title: "Every walk, remembered",
       brief: {
         prompt: "A dog running through autumn leaves at sunrise, wearing the collar",
@@ -184,7 +177,6 @@ export function seedDemoData() {
         productId: "pr_demo_collar",
         formatIds: ["ig-portrait", "ig-story", "fb-square"],
         textMode: "layer",
-        ideaId: null,
       },
       variations: [createVariation(4471, { id: "va_demo_c1", bgSeed: 31, subjectSeed: 41 })],
       selectedVariationId: "va_demo_c1",
@@ -196,29 +188,5 @@ export function seedDemoData() {
       history: [historyEntry("created")],
     }),
   ];
-  const campaigns = [
-    createCampaign({
-      id: "cp_demo_acme_q4",
-      brandId: ACME,
-      title: "Q4 planning season",
-      objective: "Book demos with marketing leads before budgets close",
-      angle: "Next year's plan, in one place",
-      eventId: "budget-season",
-      start: `${year}-10-01`,
-      end: `${year}-11-30`,
-      creationIds: ["cr_demo_acme_launch", "cr_demo_acme_number"],
-    }),
-    createCampaign({
-      id: "cp_demo_paw_autumn",
-      brandId: PAWTRACK,
-      title: "Autumn walks",
-      objective: "Drive collar pre-orders for the season",
-      angle: "The season's first walks",
-      eventId: "autumn",
-      start: `${year}-09-22`,
-      end: `${year}-10-31`,
-      creationIds: ["cr_demo_paw_walk"],
-    }),
-  ];
-  return { styles, products, campaigns, creations, assets };
+  return { styles, products, creations, assets };
 }

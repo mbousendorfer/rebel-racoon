@@ -5,19 +5,19 @@
 // through state/playbook-brand.js only, the Playbooks — the brand IS the
 // Playbook. See docs/audits/image-studio-integration.md.
 
-import { navigate } from "../../router.js?v=1307";
-import { isFlagOn } from "../../feature-flags.js?v=1307";
-import { renderTopbar } from "../../components/topbar.js?v=1307";
-import { boot, setActiveBrand, startPlaybookCreation } from "./state/store.js?v=1307";
-import { delegate, disposer } from "./lib/delegate.js?v=1307";
-import { installMenus } from "./ui/menu.js?v=1307";
-import { closeAllDialogs } from "./ui/dialog.js?v=1307";
-import * as hub from "./views/hub.js?v=1307";
-import * as campaigns from "./views/campaigns.js?v=1307";
-import * as styles from "./views/styles.js?v=1307";
-import * as styleCreator from "./views/style-creator.js?v=1307";
-import * as editor from "./views/editor/index.js?v=1307";
-import * as catalog from "./views/catalog.js?v=1307";
+import { navigate } from "../../router.js?v=1308";
+import { isFlagOn } from "../../feature-flags.js?v=1308";
+import { renderTopbar } from "../../components/topbar.js?v=1308";
+import { boot, setActiveBrand, startPlaybookCreation } from "./state/store.js?v=1308";
+import { delegate, disposer } from "./lib/delegate.js?v=1308";
+import { installMenus } from "./ui/menu.js?v=1308";
+import { closeAllDialogs } from "./ui/dialog.js?v=1308";
+import * as hub from "./views/hub.js?v=1308";
+import * as history from "./views/history.js?v=1308";
+import * as styles from "./views/styles.js?v=1308";
+import * as styleCreator from "./views/style-creator.js?v=1308";
+import * as editor from "./views/editor/index.js?v=1308";
+import * as catalog from "./views/catalog.js?v=1308";
 
 export const FLAG = "sexySquirrel";
 
@@ -55,7 +55,7 @@ function screen(mount) {
 
 export const ROUTES = Object.freeze([
   { pattern: "/image-generator", handler: screen(hub.mount) },
-  { pattern: "/image-generator/campaigns", handler: screen(campaigns.mount) },
+  { pattern: "/image-generator/history", handler: screen(history.mount) },
   { pattern: "/image-generator/styles", handler: screen(styles.mount) },
   // Before /:id — route() takes the first match, and "new" would pass for an id.
   { pattern: "/image-generator/styles/new", handler: screen(styleCreator.mount) },

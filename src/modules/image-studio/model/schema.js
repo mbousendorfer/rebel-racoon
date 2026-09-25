@@ -1,11 +1,11 @@
-// Image Generator — the module's own data model: styles, products, campaigns,
+// Image Generator — the module's own data model: styles, products,
 // creations, layers, assets. Shapes are in docs/audits/image-studio-integration.md §4.
 //
 // There is no Brand here: the brand IS the Playbook, read through
 // state/playbook-brand.js. Everything below is scoped to one by `brandId`,
 // which is a Playbook (Context) id.
 
-import { uid, nowIso } from "../lib/id.js?v=1307";
+import { uid, nowIso } from "../lib/id.js?v=1308";
 
 // 2: brands moved to the Playbook (v1 had its own brands collection).
 export const SCHEMA_VERSION = 2;
@@ -54,24 +54,6 @@ export function createProduct(partial = {}) {
   };
 }
 
-export function createCampaign(partial = {}) {
-  const at = nowIso();
-  return {
-    id: uid("cp"),
-    brandId: null,
-    title: "",
-    objective: "",
-    angle: "",
-    eventId: null,
-    start: null,
-    end: null,
-    creationIds: [],
-    createdAt: at,
-    updatedAt: at,
-    ...partial,
-  };
-}
-
 export function createLayer(type, partial = {}) {
   return {
     id: uid("ly"),
@@ -98,9 +80,8 @@ export function createCreation(partial = {}) {
   return {
     id: uid("cr"),
     brandId: null,
-    campaignId: null,
     title: "",
-    brief: { prompt: "", headline: "", styleId: null, productId: null, formatIds: [], textMode: "layer", ideaId: null },
+    brief: { prompt: "", headline: "", styleId: null, productId: null, formatIds: [], textMode: "layer" },
     // The style as it was when the images were made — a style edited or deleted
     // later must not change images that already exist.
     styleSnapshot: null,

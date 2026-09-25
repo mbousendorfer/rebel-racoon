@@ -1,34 +1,29 @@
 // Image Generator — Generate (hub), the module's front door.
 //
 //   brand card      the Playbook every image follows (edit it on the Playbook)
-//   campaign ideas  four ideas from the brand, its catalogue and the calendar —
-//                   a click fills the brief; you can always write your own
 //   prompt bar      the brief + Style · Product · Formats · Text pickers → Generate
 //   results         batches of four variations, newest first, each with
 //                   regenerate · more like this · favourite · download · edit
 //
 // Deep links: ?style=<id> preselects a style, ?creation=<id> reopens a run.
 
-import { html, toString } from "../lib/html.js?v=1307";
-import { delegate } from "../lib/delegate.js?v=1307";
-import { renderFrame } from "./frame.js?v=1307";
-import { renderEmpty } from "../ui/empty.js?v=1307";
-import { renderBrandPicker } from "../ui/brand-picker.js?v=1307";
-import { renderBrandCard } from "../ui/brand-card.js?v=1307";
-import { picker } from "../ui/picker.js?v=1307";
-import { preserveFocus } from "../ui/fields.js?v=1307";
-import { toast } from "../ui/toast.js?v=1307";
-import { variationCanvas, variationSvg, layersFor, productHref } from "../ui/variation.js?v=1307";
-import { STYLE_FAMILIES, presetById } from "../config/style-presets.js?v=1307";
-import { FORMATS, formatById, formatRatio } from "../config/formats.js?v=1307";
-import { NETWORKS, networkById } from "../config/networks.js?v=1307";
-import { upcomingEvents } from "../config/calendar-events.js?v=1307";
-import { TEXT_MODES } from "../model/schema.js?v=1307";
-import { imageGenerationService, ideaService } from "../services/index.js?v=1307";
-import { renderVisual, svgToDataUrl } from "../render/visual.js?v=1307";
-import { subjectKindFor } from "../render/subjects.js?v=1307";
-import { resolveLayers } from "../render/layout.js?v=1307";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1307";
+import { html, toString } from "../lib/html.js?v=1308";
+import { delegate } from "../lib/delegate.js?v=1308";
+import { renderFrame } from "./frame.js?v=1308";
+import { renderEmpty } from "../ui/empty.js?v=1308";
+import { renderBrandPicker } from "../ui/brand-picker.js?v=1308";
+import { renderBrandCard } from "../ui/brand-card.js?v=1308";
+import { picker } from "../ui/picker.js?v=1308";
+import { preserveFocus } from "../ui/fields.js?v=1308";
+import { toast } from "../ui/toast.js?v=1308";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1308";
+import { STYLE_FAMILIES } from "../config/style-presets.js?v=1308";
+import { FORMATS, formatById, formatRatio } from "../config/formats.js?v=1308";
+import { NETWORKS, networkById } from "../config/networks.js?v=1308";
+import { TEXT_MODES } from "../model/schema.js?v=1308";
+import { imageGenerationService } from "../services/index.js?v=1308";
+import { resolveLayers } from "../render/layout.js?v=1308";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1308";
 import {
   getActiveBrand,
   getAsset,
@@ -38,7 +33,7 @@ import {
   getStyle,
   getStylesForBrand,
   subscribe,
-} from "../state/store.js?v=1307";
+} from "../state/store.js?v=1308";
 import {
   addBatch,
   deleteCreation,
@@ -46,9 +41,7 @@ import {
   replaceVariation,
   startCreation,
   toggleFavorite,
-} from "../state/creation-actions.js?v=1307";
-
-const SECTOR_OF = { coffee: "food", finance: "finance", lifestyle: "lifestyle" };
+} from "../state/creation-actions.js?v=1308";
 
 function hashParams() {
   return new URLSearchParams(window.location.hash.split("?")[1] || "");
@@ -63,7 +56,6 @@ function defaultBrief(brand) {
     productId: null,
     formatIds: ["ig-post"],
     textMode: "layer",
-    ideaId: null,
   };
 }
 
@@ -83,8 +75,6 @@ export function mount(target, _params, ctx) {
   const state = {
     brandId: null,
     brief: null,
-    idea: null,
-    ideas: { status: "idle", list: [], round: 0 },
     creationId: hashParams().get("creation"),
     run: { status: "idle", label: "" },
     regenerating: new Set(),
@@ -96,8 +86,6 @@ export function mount(target, _params, ctx) {
   const brandChanged = (brand) => {
     state.brandId = brand?.id || null;
     state.brief = brand ? defaultBrief(brand) : null;
-    state.idea = null;
-    state.ideas = { status: "idle", list: [], round: 0 };
     const reopened = state.creationId ? getCreation(state.creationId) : null;
     if (reopened && reopened.brandId === state.brandId)
       state.brief = { ...state.brief, ...structuredClone(reopened.brief) };
@@ -107,7 +95,6 @@ export function mount(target, _params, ctx) {
     const productParam = hashParams().get("product");
     if (brand && productParam && getProducts(brand.id).some((p) => p.id === productParam))
       state.brief.productId = productParam;
-    if (brand) loadIdeas();
   };
 
   const setCreationInUrl = (id) => {
@@ -115,113 +102,7 @@ export function mount(target, _params, ctx) {
     history.replaceState(null, "", id ? `${base}?creation=${encodeURIComponent(id)}` : base);
   };
 
-  async function loadIdeas(round = state.ideas.round) {
-    const brand = getActiveBrand();
-    if (!brand) return;
-    state.ideas = { ...state.ideas, status: "loading", round };
-    paint();
-    try {
-      const list = await ideaService.suggest({
-        brand,
-        products: getProducts(brand.id),
-        styles: getStylesForBrand(brand.id),
-        events: upcomingEvents(new Date(), SECTOR_OF[brand.sectorKey] || "*", 6),
-        round,
-      });
-      if (state.brandId !== brand.id) return;
-      state.ideas = { status: "done", list, round };
-    } catch {
-      state.ideas = { status: "error", list: [], round };
-    }
-    paint();
-  }
-
   // ── Rendering ──────────────────────────────────────────────────────────────
-
-  const renderIdeas = (brand) => {
-    const { status, list } = state.ideas;
-    const cards =
-      status === "loading" || status === "idle"
-        ? Array.from(
-            { length: 4 },
-            () =>
-              html`<div class="ap-card imst-idea imst-idea--skeleton" aria-hidden="true">
-                <span class="imst-skeleton imst-skeleton--thumb"></span><span class="imst-skeleton"></span
-                ><span class="imst-skeleton imst-skeleton--short"></span>
-              </div>`,
-          )
-        : list.map((idea) => {
-            const style = getStyle(idea.styleId);
-            const f = formatById(idea.formatIds[0]);
-            const thumb = svgToDataUrl(
-              renderVisual({
-                style,
-                brand,
-                seed: idea.previewSeed,
-                width: 1080,
-                height: 1080,
-                subjectKind: subjectKindFor(idea.prompt, idea.productId),
-                productHref: productHref(idea.productId),
-                getAsset,
-              }),
-            );
-            const on = state.idea?.id === idea.id;
-            return html`
-              <button
-                type="button"
-                class="ap-card imst-idea${on ? " is-selected" : ""}"
-                aria-pressed="${on}"
-                data-imst-idea="${idea.id}"
-              >
-                <img class="imst-idea__thumb" src="${thumb}" alt="" />
-                <span class="imst-idea__body">
-                  ${idea.eventLabel
-                    ? html`<span class="ap-tag grey mini imst-idea__event"
-                        ><i class="ap-icon-calendar" aria-hidden="true"></i
-                        ><span>${idea.eventDate} · ${idea.eventLabel}</span></span
-                      >`
-                    : ""}
-                  <span class="ap-body-bold imst-idea__title">${idea.title}</span>
-                  <span class="ap-caption imst-idea__angle">${idea.angle}</span>
-                  <span class="ap-caption imst-idea__meta"
-                    >${style?.label || "Style"} · ${formatsLine(idea.formatIds)}</span
-                  >
-                </span>
-              </button>
-            `;
-          });
-    return html`
-      <section class="imst-section" aria-labelledby="imst-ideas-title" aria-busy="${status === "loading"}">
-        <header class="imst-section__head">
-          <div>
-            <h2 class="ap-subtitle" id="imst-ideas-title">Campaign ideas</h2>
-            <p class="ap-caption">
-              From ${brand.playbookName}, its catalogue and what's coming up. Pick one to fill the brief.
-            </p>
-          </div>
-          <button
-            type="button"
-            class="ap-button ghost grey"
-            data-imst-action="more-ideas"
-            ${status === "loading" ? "disabled" : ""}
-          >
-            <i class="ap-icon-refresh" aria-hidden="true"></i><span>More ideas</span>
-          </button>
-        </header>
-        ${status === "error"
-          ? html`<div class="ap-infobox error" role="alert">
-              <i class="ap-icon-warning_fill" aria-hidden="true"></i>
-              <div class="ap-infobox-content">
-                <div class="ap-infobox-texts">
-                  <div class="ap-infobox-message">I couldn't come up with ideas this time.</div>
-                </div>
-                <button type="button" class="ap-button ghost blue" data-imst-action="more-ideas">Try again</button>
-              </div>
-            </div>`
-          : html`<div class="imst-grid imst-grid--ideas">${cards}</div>`}
-      </section>
-    `;
-  };
 
   const renderPromptBar = (brand) => {
     const b = state.brief;
@@ -257,16 +138,6 @@ export function mount(target, _params, ctx) {
     return html`
       <section class="ap-card imst-prompt" aria-labelledby="imst-prompt-title">
         <h2 class="imst-sr-only" id="imst-prompt-title">Describe the image</h2>
-        ${state.idea
-          ? html`<div class="imst-prompt__idea">
-              <span class="ap-caption">From the idea</span>
-              <span class="ap-tag blue"
-                ><span>${state.idea.title}</span
-                ><button type="button" aria-label="Stop using this idea" data-imst-action="clear-idea">
-                  <i class="ap-icon-close" aria-hidden="true"></i></button
-              ></span>
-            </div>`
-          : ""}
         <div class="ap-textarea-field">
           <textarea
             rows="3"
@@ -509,7 +380,7 @@ ${b.prompt}</textarea
     `;
   };
 
-  // Async work (ideas, generation, test runs) can resolve after the route has
+  // Async work (generation, regeneration) can resolve after the route has
   // changed: a painter that outlives its view would overwrite the next screen.
   let alive = true;
   const paint = () => {
@@ -518,9 +389,7 @@ ${b.prompt}</textarea
     if ((brand?.id || null) !== state.brandId) brandChanged(brand);
     const restore = preserveFocus(target);
     const body = brand
-      ? html`${renderBrandCard(brand, { compact: true })}${renderIdeas(brand)}${renderPromptBar(brand)}${renderResults(
-          brand,
-        )}`
+      ? html`${renderBrandCard(brand, { compact: true })}${renderPromptBar(brand)}${renderResults(brand)}`
       : renderEmpty({
           icon: "ap-icon-image",
           title: "Start with a Playbook",
@@ -552,14 +421,14 @@ ${b.prompt}</textarea
   async function generate() {
     const brand = getActiveBrand();
     if (!state.brief.prompt.trim()) {
-      state.error = "Describe the image first — or pick a campaign idea.";
+      state.error = "Describe the image first.";
       paint();
       target.querySelector('[data-imst-field="prompt"]')?.focus();
       return;
     }
     state.error = "";
     const req = request(brand);
-    const creation = startCreation({ brand, brief: { ...state.brief }, style: req.style, idea: state.idea });
+    const creation = startCreation({ brand, brief: { ...state.brief }, style: req.style });
     state.creationId = creation.id;
     setCreationInUrl(creation.id);
     state.run = { status: "loading", label: "Generating 4 variations…" };
@@ -689,35 +558,11 @@ ${b.prompt}</textarea
       if (el.getAttribute("aria-disabled") === "true") return;
       onPick(el.dataset.imstPick, el.dataset.value);
     }),
-    delegate(target, "click", "[data-imst-idea]", (_e, el) => {
-      const idea = state.ideas.list.find((i) => i.id === el.dataset.imstIdea);
-      if (!idea) return;
-      state.idea = idea;
-      const style = getStyle(idea.styleId);
-      Object.assign(state.brief, {
-        prompt: idea.prompt,
-        styleId: idea.styleId,
-        productId: idea.productId,
-        formatIds: idea.formatIds.slice(),
-        ideaId: idea.id,
-        textMode: state.brief.textMode === "embedded" && !style?.supportsEmbeddedText ? "layer" : state.brief.textMode,
-      });
-      state.error = "";
-      state.warning = "";
-      paint();
-      target.querySelector(".imst-prompt")?.scrollIntoView({ block: "nearest", behavior: "smooth" });
-    }),
     delegate(target, "click", "[data-imst-action]", (_e, el) => {
       const a = el.dataset.imstAction;
       if (a === "generate") generate();
-      else if (a === "more-ideas") loadIdeas(state.ideas.round + 1);
-      else if (a === "clear-idea") {
-        state.idea = null;
-        state.brief.ideaId = null;
-        paint();
-      } else if (a === "new-brief") {
+      else if (a === "new-brief") {
         state.creationId = null;
-        state.idea = null;
         state.brief = defaultBrief(getActiveBrand());
         state.run = { status: "idle" };
         setCreationInUrl(null);

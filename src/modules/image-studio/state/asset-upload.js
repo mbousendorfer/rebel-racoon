@@ -5,8 +5,8 @@
 // as an image can't fetch a blob: URL — only an embedded data: URL. So photos
 // that may become a subject also keep a small JPEG data URL (≤ 640 px).
 
-import { storageService as storage } from "../services/index.js?v=1307";
-import { createAsset } from "../model/schema.js?v=1307";
+import { storageService as storage } from "../services/index.js?v=1308";
+import { createAsset } from "../model/schema.js?v=1308";
 
 async function previewDataUrl(file, max = 640) {
   const url = URL.createObjectURL(file);

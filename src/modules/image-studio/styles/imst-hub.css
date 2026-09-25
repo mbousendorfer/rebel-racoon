@@ -1,4 +1,4 @@
-/* Image Generator — Generate (hub): ideas, prompt bar, results, history.
+/* Image Generator — Generate (hub): prompt bar, results, history.
  * The canvas and its layers draw generated CONTENT (brand colours inline);
  * everything around them is DS chrome.
  */
@@ -48,89 +48,12 @@
   }
 }
 
-/* ── Campaign ideas ───────────────────────────────────────────────────── */
-
-.imst-grid--ideas {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-.imst-idea {
-  padding: var(--ref-spacing-xs);
-  gap: var(--ref-spacing-xs);
-  border-color: var(--ref-color-grey-20);
-  text-align: left;
-  font: inherit;
-  color: inherit;
-  cursor: pointer;
-  background: var(--ref-color-white);
-}
-
-.imst-idea:hover {
-  border-color: var(--ref-color-electric-blue-40);
-}
-
-.imst-idea.is-selected {
-  border-color: var(--ref-color-electric-blue-100);
-}
-
-.imst-idea:focus-visible {
-  outline: 2px solid var(--sys-border-color-active);
-  outline-offset: 2px;
-}
-
-.imst-idea--skeleton {
-  cursor: default;
-}
-
-.imst-idea__thumb {
-  display: block;
-  width: 100%;
-  aspect-ratio: 1;
-  object-fit: cover;
-  border-radius: var(--ref-border-radius-md);
-}
-
-.imst-idea__body {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--ref-spacing-xxxs);
-}
-
-.imst-idea__title {
-  color: var(--ref-color-grey-100);
-}
-
-.imst-idea__angle,
-.imst-idea__meta {
-  color: var(--ref-color-grey-80);
-}
-
-.imst-formats-line {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: var(--ref-spacing-xxxs) var(--ref-spacing-xxs);
-}
-
-.imst-formats-line__item {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
-}
-
 /* ── Prompt bar ───────────────────────────────────────────────────────── */
 
 .imst-prompt {
   gap: var(--ref-spacing-sm);
   padding: var(--ref-spacing-md);
   border-color: var(--ref-color-grey-20);
-}
-
-.imst-prompt__idea {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  color: var(--ref-color-grey-80);
 }
 
 .imst-prompt textarea {
@@ -271,7 +194,7 @@
   display: block;
 }
 
-/* ── Campaigns & history ─────────────────────────────────────────────── */
+/* ── History ─────────────────────────────────────────────── */
 
 .imst-history {
   list-style: none;
@@ -317,7 +240,6 @@
 }
 
 @media (max-width: 1200px) {
-  .imst-grid--ideas,
   .imst-grid--variations {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

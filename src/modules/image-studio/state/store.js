@@ -1,12 +1,12 @@
 // Image Generator — the module's app state. Its own objects (styles, products,
-// campaigns, creations, assets) come from storageService, scoped by `brandId`
+// creations, assets) come from storageService, scoped by `brandId`
 // — a Playbook id. The brands themselves are Playbooks, re-exported from the
 // adapter so views have one import.
 
-import { storageService as storage } from "../services/index.js?v=1307";
-import { STYLE_PRESETS } from "../config/style-presets.js?v=1307";
-import { seedDemoData } from "../config/demo-data.js?v=1307";
-import { adoptCreatedPlaybook, subscribeBrands } from "./playbook-brand.js?v=1307";
+import { storageService as storage } from "../services/index.js?v=1308";
+import { STYLE_PRESETS } from "../config/style-presets.js?v=1308";
+import { seedDemoData } from "../config/demo-data.js?v=1308";
+import { adoptCreatedPlaybook, subscribeBrands } from "./playbook-brand.js?v=1308";
 
 export {
   getActiveBrand,
@@ -20,7 +20,7 @@ export {
   startPlaybookCreation,
   saveColorToPlaybook,
   saveFontToPlaybook,
-} from "./playbook-brand.js?v=1307";
+} from "./playbook-brand.js?v=1308";
 
 export function boot() {
   storage.ensureSeeded(seedDemoData);
@@ -53,10 +53,6 @@ export function getStyle(id) {
 
 export function getProducts(brandId) {
   return storage.list("products", (p) => p.brandId === brandId);
-}
-
-export function getCampaigns(brandId) {
-  return storage.list("campaigns", (c) => !brandId || c.brandId === brandId);
 }
 
 export function getCreations(brandId) {

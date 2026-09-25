@@ -286,3 +286,7 @@ Calculé commit par commit sur mes commits (une autre session pousse aussi sur `
 - **Kit de marque du Playbook** (décision R2) : `src/contexts-store.js`, `src/mocks/playbooks.js`, `src/playbook-view.js`, `src/playbook-brand-kit.js` (nouveau), `src/context-builder.js`, `src/context-mock-analysis.js`, `src/screens/welcome-alt-recap.js`, `styles/screens/welcome.css` — chacun gaté par le flag : **flag OFF, la fiche, sa création et la nav sont identiques à avant** (vérifié dans le navigateur).
 - **Docs** : `CLAUDE.md`, `docs/reference/CONCEPTS.md`, `FEATURES.md`, `ROUTES.md`, ce rapport.
 - Tout le reste : uniquement le bump global `?v=`.
+
+## 9. Suppression des campagnes (2026-09-25)
+
+À la demande : plus d'entité `Campaign`, plus de page ni de table Campaigns, plus d'idées de campagne sur le hub (le mock `ideaService` et `config/calendar-events.js` sont supprimés). Ce qui reste de la page devient **History** (`/image-generator/history`). La clé `imageStudio:v2:campaigns` est purgée au chargement. Les créations n'ont plus de `campaignId`, et le brief n'a plus d'`ideaId`.

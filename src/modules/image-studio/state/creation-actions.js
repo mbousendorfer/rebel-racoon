@@ -2,11 +2,11 @@
 // as a creation straight away (that IS the history); opening a variation in the
 // editor gives it its layers.
 
-import { storageService as storage } from "../services/index.js?v=1307";
-import { createCampaign, createCreation, historyEntry } from "../model/schema.js?v=1307";
-import { formatById } from "../config/formats.js?v=1307";
-import { uid } from "../lib/id.js?v=1307";
-import { defaultLayers, recompose } from "../render/layout.js?v=1307";
+import { storageService as storage } from "../services/index.js?v=1308";
+import { createCreation, historyEntry } from "../model/schema.js?v=1308";
+import { formatById } from "../config/formats.js?v=1308";
+import { uid } from "../lib/id.js?v=1308";
+import { defaultLayers, recompose } from "../render/layout.js?v=1308";
 
 function get(id) {
   return storage.get("creations", id);
@@ -24,47 +24,17 @@ function shortTitle(prompt) {
   return t.length > 48 ? t.slice(0, 45).trimEnd() + "…" : t.charAt(0).toUpperCase() + t.slice(1);
 }
 
-/**
- * A new creation for a brief. An idea from the hub becomes (or joins) a
- * campaign with its title, angle and event — that is how campaigns fill up.
- */
-export function startCreation({ brand, brief, style, idea }) {
-  let campaignId = null;
-  if (idea) {
-    const existing = storage.list("campaigns", (c) => c.brandId === brand.id && c.title === idea.title)[0];
-    const campaign =
-      existing ||
-      storage.put(
-        "campaigns",
-        createCampaign({
-          brandId: brand.id,
-          title: idea.title,
-          angle: idea.angle,
-          objective: idea.angle,
-          eventId: idea.eventId,
-          start: new Date().toISOString().slice(0, 10),
-        }),
-      );
-    campaignId = campaign.id;
-  }
-  const creation = save(
+/** A new creation for a brief — saved straight away: the history IS the list of creations. */
+export function startCreation({ brand, brief, style }) {
+  return save(
     createCreation({
       brandId: brand.id,
-      campaignId,
-      title: idea?.title || shortTitle(brief.prompt),
+      title: shortTitle(brief.prompt),
       brief: { ...brief },
       styleSnapshot: style ? structuredClone(style) : null,
       history: [historyEntry("created", style ? `Style: ${style.label}` : "")],
     }),
   );
-  if (campaignId) {
-    const campaign = storage.get("campaigns", campaignId);
-    storage.put("campaigns", {
-      ...campaign,
-      creationIds: [...new Set([...(campaign.creationIds || []), creation.id])],
-    });
-  }
-  return creation;
 }
 
 /** Adds a batch of variations (a generation, or "Similar to #n"). Newest batch first. */
@@ -168,12 +138,5 @@ export function removeAdaptation(creationId, formatId) {
 }
 
 export function deleteCreation(id) {
-  const c = get(id);
-  if (!c) return;
   storage.remove("creations", id);
-  if (c.campaignId) {
-    const campaign = storage.get("campaigns", c.campaignId);
-    if (campaign)
-      storage.put("campaigns", { ...campaign, creationIds: (campaign.creationIds || []).filter((x) => x !== id) });
-  }
 }

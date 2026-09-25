@@ -2,9 +2,9 @@
 // transforms (return new arrays) + the writes that persist them. Every write
 // keeps the previous layers on an in-memory undo stack.
 
-import { storageService as storage } from "../services/index.js?v=1307";
-import { createLayer, historyEntry } from "../model/schema.js?v=1307";
-import { contrast, inkOn, resolvePalette } from "../render/palette.js?v=1307";
+import { storageService as storage } from "../services/index.js?v=1308";
+import { createLayer, historyEntry } from "../model/schema.js?v=1308";
+import { contrast, inkOn, resolvePalette } from "../render/palette.js?v=1308";
 
 const undo = new Map(); // `${creationId}|${formatId}` → layers[][]
 

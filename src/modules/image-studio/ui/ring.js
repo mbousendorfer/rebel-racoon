@@ -1,7 +1,7 @@
 // Image Generator — a score ring on the app's .app-ring port (ds-patches):
 // the tier class picks the colour, the label ALWAYS names the metric.
 
-import { html } from "../lib/html.js?v=1307";
+import { html } from "../lib/html.js?v=1308";
 
 export function scoreRing(score, { name, size = 56, stroke = 6 }) {
   const tier = score >= 80 ? "on-track" : score >= 60 ? "at-risk" : "off-track";

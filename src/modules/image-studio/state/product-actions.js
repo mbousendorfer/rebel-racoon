@@ -1,10 +1,10 @@
 // Image Generator — the catalogue: a Playbook's products, and their product
 // shoots (staged scenes generated from the product's image).
 
-import { storageService as storage } from "../services/index.js?v=1307";
-import { createAsset, createProduct } from "../model/schema.js?v=1307";
-import { uid } from "../lib/id.js?v=1307";
-import { uploadAsset } from "./asset-upload.js?v=1307";
+import { storageService as storage } from "../services/index.js?v=1308";
+import { createAsset, createProduct } from "../model/schema.js?v=1308";
+import { uid } from "../lib/id.js?v=1308";
+import { uploadAsset } from "./asset-upload.js?v=1308";
 
 export const SHOOT_SCENES = Object.freeze([
   { id: "studio", label: "Studio", styleId: "preset-packshot", prompt: "on a seamless studio backdrop, soft shadow" },

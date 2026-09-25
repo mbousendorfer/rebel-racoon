@@ -7,18 +7,19 @@
 //
 // Swappable: a real backend only has to honour the same function signatures.
 
-import { createNotifier } from "../state/notifier.js?v=1307";
-import { SCHEMA_VERSION } from "../model/schema.js?v=1307";
+import { createNotifier } from "../state/notifier.js?v=1308";
+import { SCHEMA_VERSION } from "../model/schema.js?v=1308";
 
 const PREFIX = "imageStudio:v2:";
 // No "brands": the brand is the Playbook. Every entity carries `brandId`, a Playbook id.
-export const COLLECTIONS = Object.freeze(["styles", "products", "campaigns", "creations", "assets"]);
+export const COLLECTIONS = Object.freeze(["styles", "products", "creations", "assets"]);
 
 // v1 kept its own brands; its keys are dropped rather than migrated — they
 // only ever held demo data.
 try {
   for (const k of Object.keys(window.localStorage))
-    if (k.startsWith("imageStudio:v1:")) window.localStorage.removeItem(k);
+    // v1 kept its own brands; v2 had campaigns (removed) — both dropped, not migrated.
+    if (k.startsWith("imageStudio:v1:") || k === "imageStudio:v2:campaigns") window.localStorage.removeItem(k);
 } catch {
   /* storage unavailable */
 }
@@ -136,7 +137,7 @@ export function ensureSeeded(seed) {
   return true;
 }
 
-/** Wipes the module's metadata and blobs (Campaigns › Reset demo data). */
+/** Wipes the module's metadata and blobs (History › Reset demo data). */
 export async function resetAll() {
   for (const collection of [...COLLECTIONS, "meta"]) {
     try {

@@ -1,38 +1,22 @@
-// Image Generator — Campaigns and history, for the active Playbook.
-// Campaigns: title, period, event, how many images. History: every generation
-// run, newest first — reopen it, or delete it.
+// Image Generator — History, for the active Playbook: every generation run,
+// newest first — reopen it on Generate, or delete it.
 
-import { html, toString } from "../lib/html.js?v=1307";
-import { delegate } from "../lib/delegate.js?v=1307";
-import { renderFrame } from "./frame.js?v=1307";
-import { renderEmpty } from "../ui/empty.js?v=1307";
-import { renderBrandPicker } from "../ui/brand-picker.js?v=1307";
-import { confirmDialog } from "../ui/dialog.js?v=1307";
-import { toast } from "../ui/toast.js?v=1307";
-import { variationCanvas } from "../ui/variation.js?v=1307";
-import { storageService } from "../services/index.js?v=1307";
-import { CALENDAR_EVENTS } from "../config/calendar-events.js?v=1307";
-import { formatById, formatRatio } from "../config/formats.js?v=1307";
-import { networkById } from "../config/networks.js?v=1307";
-import { deleteCreation } from "../state/creation-actions.js?v=1307";
-import {
-  boot,
-  getActiveBrand,
-  getCampaigns,
-  getCreation,
-  getCreations,
-  getStyle,
-  subscribe,
-} from "../state/store.js?v=1307";
+import { html, toString } from "../lib/html.js?v=1308";
+import { delegate } from "../lib/delegate.js?v=1308";
+import { renderFrame } from "./frame.js?v=1308";
+import { renderEmpty } from "../ui/empty.js?v=1308";
+import { renderBrandPicker } from "../ui/brand-picker.js?v=1308";
+import { confirmDialog } from "../ui/dialog.js?v=1308";
+import { toast } from "../ui/toast.js?v=1308";
+import { variationCanvas } from "../ui/variation.js?v=1308";
+import { storageService } from "../services/index.js?v=1308";
+import { formatById, formatRatio } from "../config/formats.js?v=1308";
+import { networkById } from "../config/networks.js?v=1308";
+import { deleteCreation } from "../state/creation-actions.js?v=1308";
+import { boot, getActiveBrand, getCreation, getCreations, getStyle, subscribe } from "../state/store.js?v=1308";
 
 const day = (iso) =>
   iso ? new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "—";
-
-function period(c) {
-  if (!c.start && !c.end) return "—";
-  const f = (d) => new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
-  return c.end ? `${f(c.start)} – ${f(c.end)}` : `From ${f(c.start)}`;
-}
 
 export function mount(target) {
   const paint = () => {
@@ -40,11 +24,11 @@ export function mount(target) {
     if (!brand) {
       target.innerHTML = toString(
         renderFrame({
-          section: "campaigns",
+          section: "history",
           body: renderEmpty({
-            icon: "ap-icon-calendar",
+            icon: "ap-icon-history",
             title: "Start with a Playbook",
-            body: "Campaigns and images belong to a brand, and your brand lives in a Playbook.",
+            body: "Images belong to a brand, and your brand lives in a Playbook.",
             action: html`<button type="button" class="ap-button primary blue" data-imst-action="new-playbook">
               <span>Create a Playbook</span>
             </button>`,
@@ -53,34 +37,8 @@ export function mount(target) {
       );
       return;
     }
-    const campaigns = getCampaigns(brand.id);
     const creations = getCreations(brand.id).filter((c) => c.variations.length);
-    const campaignsBody = campaigns.length
-      ? html`<table class="ap-table outer-border imst-table">
-          <thead>
-            <tr>
-              <th>Campaign</th>
-              <th>Period</th>
-              <th>Event</th>
-              <th class="right">Images</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${campaigns.map(
-              (c) =>
-                html`<tr>
-                  <td><span class="ap-body-bold">${c.title}</span><br /><span class="ap-caption">${c.angle}</span></td>
-                  <td>${period(c)}</td>
-                  <td>${CALENDAR_EVENTS.find((e) => e.id === c.eventId)?.label || "—"}</td>
-                  <td class="right">${(c.creationIds || []).filter((id) => getCreation(id)).length}</td>
-                </tr>`,
-            )}
-          </tbody>
-        </table>`
-      : html`<p class="ap-body imst-section__empty">
-          No campaign yet. Picking a campaign idea on Generate starts one.
-        </p>`;
-    const historyBody = creations.length
+    const list = creations.length
       ? html`<ul class="imst-history">
           ${creations.map((c) => {
             const v = c.variations.find((x) => x.id === c.selectedVariationId) || c.variations[0];
@@ -129,20 +87,17 @@ export function mount(target) {
             </li>`;
           })}
         </ul>`
-      : html`<p class="ap-body imst-section__empty">Nothing generated for ${brand.playbookName} yet.</p>`;
+      : renderEmpty({
+          icon: "ap-icon-history",
+          title: "Nothing generated yet",
+          body: `Images you generate for ${brand.playbookName} show up here.`,
+        });
     target.innerHTML = toString(
       renderFrame({
-        section: "campaigns",
+        section: "history",
         aside: renderBrandPicker(),
         body: html`
-          <section class="imst-section" aria-labelledby="imst-campaigns-title">
-            <header class="imst-section__head"><h2 class="ap-subtitle" id="imst-campaigns-title">Campaigns</h2></header>
-            ${campaignsBody}
-          </section>
-          <section class="imst-section" aria-labelledby="imst-history-title">
-            <header class="imst-section__head"><h2 class="ap-subtitle" id="imst-history-title">History</h2></header>
-            ${historyBody}
-          </section>
+          ${list}
           <div class="imst-page-foot">
             <button type="button" class="ap-button ghost grey" data-imst-action="reset">Reset demo data</button>
           </div>
@@ -168,7 +123,7 @@ export function mount(target) {
     delegate(target, "click", "[data-imst-action='reset']", async () => {
       const ok = await confirmDialog({
         title: "Reset demo data?",
-        body: "Every style, product, campaign and image in Image Generator is replaced by the demo set. Your Playbooks are not touched. This can't be undone.",
+        body: "Every style, product and image in Image Generator is replaced by the demo set. Your Playbooks are not touched. This can't be undone.",
         confirmLabel: "Reset",
         danger: true,
       });

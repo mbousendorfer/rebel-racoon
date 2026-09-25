@@ -2,7 +2,7 @@
 // spots are radial gradients; their colours come from CSS (DS red / orange /
 // yellow ramps) through stop classes, never from the brand.
 
-import { html, raw } from "../lib/html.js?v=1307";
+import { html, raw } from "../lib/html.js?v=1308";
 
 let seq = 0;
 
