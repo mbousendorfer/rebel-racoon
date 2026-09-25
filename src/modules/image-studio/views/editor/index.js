@@ -9,21 +9,21 @@
 // Delete removes the selected one. A drag patches the DOM live and commits once,
 // on release, so the undo stack gets one step per gesture.
 
-import { html, toString } from "../../lib/html.js?v=1237";
-import { delegate } from "../../lib/delegate.js?v=1237";
-import { renderFrame } from "../frame.js?v=1237";
-import { renderEmpty } from "../../ui/empty.js?v=1237";
-import { preserveFocus, syncSlider } from "../../ui/fields.js?v=1237";
-import { openDialog } from "../../ui/dialog.js?v=1237";
-import { toast } from "../../ui/toast.js?v=1237";
-import { assetImg, hydrateAssets, warmAssetUrls } from "../../ui/asset.js?v=1237";
-import { variationCanvas, variationSvg } from "../../ui/variation.js?v=1237";
-import { formatById, formatRatio } from "../../config/formats.js?v=1237";
-import { networkById } from "../../config/networks.js?v=1237";
-import { isHex } from "../../model/schema.js?v=1237";
-import { resolveLayers } from "../../render/layout.js?v=1237";
-import { toPngBlob, downloadBlob, slug } from "../../render/export.js?v=1237";
-import { copyService, editService, imageGenerationService } from "../../services/index.js?v=1237";
+import { html, toString } from "../../lib/html.js?v=1301";
+import { delegate } from "../../lib/delegate.js?v=1301";
+import { renderFrame } from "../frame.js?v=1301";
+import { renderEmpty } from "../../ui/empty.js?v=1301";
+import { preserveFocus, syncSlider } from "../../ui/fields.js?v=1301";
+import { openDialog } from "../../ui/dialog.js?v=1301";
+import { toast } from "../../ui/toast.js?v=1301";
+import { assetImg, hydrateAssets, warmAssetUrls } from "../../ui/asset.js?v=1301";
+import { variationCanvas, variationSvg } from "../../ui/variation.js?v=1301";
+import { formatById, formatRatio } from "../../config/formats.js?v=1301";
+import { networkById } from "../../config/networks.js?v=1301";
+import { isHex } from "../../model/schema.js?v=1301";
+import { resolveLayers } from "../../render/layout.js?v=1301";
+import { toPngBlob, downloadBlob, slug } from "../../render/export.js?v=1301";
+import { copyService, editService, imageGenerationService } from "../../services/index.js?v=1301";
 import {
   canEditBrand,
   getAssets,
@@ -33,8 +33,8 @@ import {
   saveColorToPlaybook,
   saveFontToPlaybook,
   subscribe,
-} from "../../state/store.js?v=1237";
-import { replaceVariation } from "../../state/creation-actions.js?v=1237";
+} from "../../state/store.js?v=1301";
+import { replaceVariation } from "../../state/creation-actions.js?v=1301";
 import {
   addAssetLayer,
   addLogoLayer,
@@ -48,8 +48,8 @@ import {
   removeLayer,
   reorder,
   undoLayers,
-} from "../../state/editor-actions.js?v=1237";
-import { renderLayers, renderProps, renderTextIdeas, renderWordsBar, layerName } from "./panels.js?v=1237";
+} from "../../state/editor-actions.js?v=1301";
+import { renderLayers, renderProps, renderTextIdeas, renderWordsBar, layerName } from "./panels.js?v=1301";
 
 const CHANGE_WORDS = { fonts: "fonts", colours: "colours", contrast: "text contrast", logo: "logo version" };
 

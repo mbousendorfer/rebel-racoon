@@ -7,9 +7,9 @@
 //   Idea: { id, title, angle, prompt, formatIds[], styleId, productId?, eventId?, eventLabel?, eventDate?, previewSeed }
 // `round` changes on "More ideas"; the same round gives the same ideas.
 
-import { hashString, pick, prng, shuffle } from "../../lib/prng.js?v=1237";
-import { wait } from "../../lib/delegate.js?v=1237";
-import { MOCK } from "../../config/mock.js?v=1237";
+import { hashString, pick, prng, shuffle } from "../../lib/prng.js?v=1301";
+import { wait } from "../../lib/delegate.js?v=1301";
+import { MOCK } from "../../config/mock.js?v=1301";
 
 const FORMAT_SETS = [
   ["ig-portrait", "ig-story", "fb-square"],

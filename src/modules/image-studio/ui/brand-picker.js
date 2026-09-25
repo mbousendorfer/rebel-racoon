@@ -9,10 +9,10 @@
 // Otherwise it is a DS .ap-action-dropdown (the CSS-UI stand-in for the
 // Angular-only nav-selector) over the Playbooks the user can use.
 
-import { html } from "../lib/html.js?v=1237";
-import { menu } from "./menu.js?v=1237";
-import { logoUrl } from "./asset.js?v=1237";
-import { getActiveBrand, getBrands, hasOwnBrandPicker } from "../state/store.js?v=1237";
+import { html } from "../lib/html.js?v=1301";
+import { menu } from "./menu.js?v=1301";
+import { logoUrl } from "./asset.js?v=1301";
+import { getActiveBrand, getBrands, hasOwnBrandPicker } from "../state/store.js?v=1301";
 
 function mark(brand) {
   const url = logoUrl(brand, "icon");

@@ -85,7 +85,8 @@ export const postsBySession = {
       hashtags: ["Q2Planning", "ContentOps"],
       cta: "",
       stats: { likes: 147, comments: 8, reposts: 11 },
-      hasImage: false,
+      hasImage: true,
+      imageUrl: "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=640&h=360&q=70",
       generationContext: seedIdeaGen("The data-backed post-mortem", "Why we stopped writing quarterly OKRs"),
     },
     {
@@ -131,7 +132,14 @@ export const postsBySession = {
       hashtags: ["Launches", "Retros"],
       cta: "",
       stats: { likes: 198, comments: 22, reposts: 14 },
-      hasImage: false,
+      hasImage: true,
+      // A carousel: slide 0 doubles as the poster, like attachCarouselToDraft.
+      imageUrl: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=640&h=360&q=70",
+      carousel: [
+        "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=640&h=360&q=70",
+        "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=640&h=360&q=70",
+        "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=640&h=360&q=70",
+      ],
       generationContext: seedIdeaGen("The honest founder retro", "The three constraints that killed our first launch"),
     },
     {
@@ -146,7 +154,9 @@ export const postsBySession = {
       hashtags: ["FounderKeynote", "BTS"],
       cta: "",
       stats: { likes: 0, comments: 0, reposts: 0 },
-      hasImage: false,
+      // Carries the image its "Image dimensions invalid" error is about.
+      hasImage: true,
+      imageUrl: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=640&h=360&q=70",
       generationContext: seedIdeaGen("The behind-the-scenes recap", "What a founder keynote looks like at 50 people"),
       errors: [
         {

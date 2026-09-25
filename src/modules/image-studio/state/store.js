@@ -3,10 +3,10 @@
 // — a Playbook id. The brands themselves are Playbooks, re-exported from the
 // adapter so views have one import.
 
-import { storageService as storage } from "../services/index.js?v=1237";
-import { STYLE_PRESETS } from "../config/style-presets.js?v=1237";
-import { seedDemoData } from "../config/demo-data.js?v=1237";
-import { adoptCreatedPlaybook, subscribeBrands } from "./playbook-brand.js?v=1237";
+import { storageService as storage } from "../services/index.js?v=1301";
+import { STYLE_PRESETS } from "../config/style-presets.js?v=1301";
+import { seedDemoData } from "../config/demo-data.js?v=1301";
+import { adoptCreatedPlaybook, subscribeBrands } from "./playbook-brand.js?v=1301";
 
 export {
   getActiveBrand,
@@ -20,7 +20,7 @@ export {
   startPlaybookCreation,
   saveColorToPlaybook,
   saveFontToPlaybook,
-} from "./playbook-brand.js?v=1237";
+} from "./playbook-brand.js?v=1301";
 
 export function boot() {
   storage.ensureSeeded(seedDemoData);

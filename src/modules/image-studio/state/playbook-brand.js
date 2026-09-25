@@ -10,18 +10,18 @@
 // (/playbook/:id, src/playbook-brand-kit.js). Sub-brands don't exist: a variant
 // is a duplicated Playbook (docs/reference/CONCEPTS.md §1).
 
-import { getContextById, subscribe as subscribeContexts, updateContext } from "../../../contexts-store.js?v=1237";
-import { canEdit, usableContexts } from "../../../playbook-access.js?v=1237";
+import { getContextById, subscribe as subscribeContexts, updateContext } from "../../../contexts-store.js?v=1301";
+import { canEdit, usableContexts } from "../../../playbook-access.js?v=1301";
 import {
   getActivePlaybookId,
   isWorkspaceMode,
   playbookForNewWork,
   setActivePlaybook,
   subscribe as subscribeActive,
-} from "../../../active-playbook.js?v=1237";
-import { setHandoff } from "../../../handoff.js?v=1237";
-import { navigate } from "../../../router.js?v=1237";
-import { storageService as storage } from "../services/index.js?v=1237";
+} from "../../../active-playbook.js?v=1301";
+import { setHandoff } from "../../../handoff.js?v=1301";
+import { navigate } from "../../../router.js?v=1301";
+import { storageService as storage } from "../services/index.js?v=1301";
 
 // Which copy archetype the mocked copyService uses — guessed from the Playbook's words.
 function sectorKeyOf(ctx) {

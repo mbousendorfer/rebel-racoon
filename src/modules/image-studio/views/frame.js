@@ -2,7 +2,7 @@
 // tabs (Generate · Campaigns · Styles) and the body. Deep pages (the style creator, the
 // editor) swap the tabs for a back link to their section.
 
-import { html } from "../lib/html.js?v=1237";
+import { html } from "../lib/html.js?v=1301";
 
 export const SECTIONS = Object.freeze([
   // Generating is the product; campaigns are what you generated. There is no
