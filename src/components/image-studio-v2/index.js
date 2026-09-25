@@ -29,16 +29,16 @@
 // rebuilt on any change. The exceptions, and why they have to exist, are in
 // inline-text.js.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../../modal-coordinator.js?v=1246";
-import { getPosts } from "../../posts-store.js?v=1246";
-import { getSessionById } from "../../sessions-store.js?v=1246";
-import { getContextById } from "../../contexts-store.js?v=1246";
-import { MODAL_ID, KEY, ctx, state, autosize } from "./context.js?v=1246";
-import { loadImg } from "../../image-studio-canvas.js?v=1246";
-import { renderStudio } from "./stage-view.js?v=1246";
-import { offerUndoIfNeeded, resetUndoOffers } from "./prompt-guard.js?v=1246";
-import { bindStudioEvents } from "./events.js?v=1246";
-import * as imageStudio from "../../image-studio.js?v=1246";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../../modal-coordinator.js?v=1247";
+import { getPosts } from "../../posts-store.js?v=1247";
+import { getSessionById } from "../../sessions-store.js?v=1247";
+import { getContextById } from "../../contexts-store.js?v=1247";
+import { MODAL_ID, KEY, ctx, state, autosize } from "./context.js?v=1247";
+import { loadImg } from "../../image-studio-canvas.js?v=1247";
+import { renderStudio } from "./stage-view.js?v=1247";
+import { offerUndoIfNeeded, resetUndoOffers } from "./prompt-guard.js?v=1247";
+import { bindStudioEvents } from "./events.js?v=1247";
+import * as imageStudio from "../../image-studio.js?v=1247";
 
 let backdrop;
 let initialized = false;

@@ -157,8 +157,12 @@
   overflow: hidden;
 }
 
-/* WHAT → WHEN → ✕. Every cell stretches to the row's height and centres its
-   content, so rows of different heights still share one midline. */
+/* WHAT → WHEN → ✕, on ONE top line. Every cell stretches to the row's height
+   (so the fills run edge to edge) but its content starts at the same top:
+   the thumbnail, the profile tag, the date tile, the time and the ✕ all sit
+   on the row's first 24px line, whatever each cell holds below. Centring
+   was tried and dropped — cells of different content have different
+   middles, so nothing lined up from one row to the next. */
 .schedule-modal__row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) var(--when-w) 44px;
@@ -174,7 +178,7 @@
 .schedule-modal__when {
   grid-area: when;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--ref-spacing-xs);
   min-width: 0;
   padding: var(--ref-spacing-xs);
@@ -252,11 +256,14 @@
   min-width: 0;
 }
 
+/* The first line is 24px like the profile tag opposite; the 36px pen button
+   overhangs it instead of pushing the time down off the shared top. */
 .schedule-modal__when-head {
   position: relative;
   display: inline-flex;
   align-items: center;
   gap: var(--ref-spacing-xxxs);
+  height: 24px;
 }
 
 .schedule-modal__when-time {
@@ -323,7 +330,7 @@
 .schedule-modal__draft {
   grid-area: draft;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--ref-spacing-sm);
   min-width: 0;
   padding: var(--ref-spacing-xs) var(--ref-spacing-sm) var(--ref-spacing-xs) var(--ref-spacing-xs);
@@ -399,8 +406,10 @@
 .schedule-modal__row-actions {
   grid-area: actions;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  /* The 36px ✕ centred on the first 24px line: 12 + 12 − 18. */
+  padding-top: calc(var(--ref-spacing-xs) - 6px);
   background: var(--ref-color-grey-05);
 }
 
