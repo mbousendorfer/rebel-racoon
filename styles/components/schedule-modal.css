@@ -145,11 +145,14 @@
   border-top: 1px solid var(--ref-color-grey-20);
 }
 
-/* WHEN ─ tile + time + two short notes, on a grey-05 cell. */
+/* WHEN ─ the date + time (one control), then at most two short notes, on a
+   grey-05 cell. */
 .schedule-modal__when {
+  position: relative;
   display: flex;
+  flex-direction: column;
   align-items: flex-start;
-  gap: var(--ref-spacing-xs);
+  gap: var(--ref-spacing-xxs);
   min-width: 0;
   padding: var(--ref-spacing-xs);
   background: var(--ref-color-grey-05);
@@ -190,22 +193,61 @@
   padding-block: var(--ref-spacing-xs);
 }
 
-.schedule-modal__when-body {
+/* The tile + the time are ONE button: the whole date opens the picker. At
+   rest it reads as data (grey ink, no pen); on hover / focus the time turns
+   blue and the pen appears — blue only once it is being pointed at. */
+.schedule-modal__when-trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--ref-border-radius-md);
+}
+
+span.schedule-modal__when-trigger {
+  cursor: default;
+}
+
+.schedule-modal__when-trigger:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: 2px;
+}
+
+.schedule-modal__when-trigger:hover .schedule-modal__when-time,
+.schedule-modal__when-trigger:focus-visible .schedule-modal__when-time {
+  color: var(--ref-color-electric-blue-100);
+}
+
+.schedule-modal__when-pen {
+  margin-left: var(--ref-spacing-xxxs);
+  font-size: var(--sys-icon-css-sm);
+  opacity: 0;
+  transition: opacity 120ms var(--app-ease-standard);
+}
+
+.schedule-modal__when-trigger:hover .schedule-modal__when-pen,
+.schedule-modal__when-trigger:focus-visible .schedule-modal__when-pen {
+  opacity: 1;
+}
+
+/* Notes sit under the time, aligned with it rather than with the tile. */
+.schedule-modal__when-notes {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
-  min-width: 0;
-}
-
-.schedule-modal__when-head {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
+  padding-left: calc(var(--tile-w) + var(--ref-spacing-xs));
 }
 
 .schedule-modal__when-time {
+  display: inline-flex;
+  align-items: center;
   font-size: var(--sys-text-style-h3-size);
   line-height: var(--sys-text-style-h3-line-height);
   font-weight: var(--sys-text-style-h3-weight);
@@ -215,12 +257,12 @@
 }
 
 /* The native datetime input is kept (it IS the picker) but hidden under the
-   time, where showPicker() anchors it. */
+   date, where showPicker() anchors it. */
 .schedule-modal__when-input {
   position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 100%;
+  left: var(--ref-spacing-xs);
+  top: calc(var(--ref-spacing-xs) + 52px); /* just under the tile */
+  width: 160px;
   height: 1px;
   opacity: 0;
   pointer-events: none;
@@ -239,25 +281,19 @@
   font-size: var(--sys-icon-css-sm);
 }
 
-/* The reason is mine — orange sparkle, grey-80 words. */
-.schedule-modal__when-note.is-reason i {
-  color: var(--ref-color-orange-100);
-}
-
 .schedule-modal__when-pending {
   display: inline-flex;
   align-items: center;
   height: 24px;
-  margin-top: var(--ref-spacing-xxxs);
   padding-inline: var(--ref-spacing-xs);
   border-radius: 999px; /* pill */
   font-size: var(--sys-text-style-caption-size);
   color: var(--ref-color-grey-80);
   background: linear-gradient(
     90deg,
-    var(--ref-color-grey-05) 0%,
+    var(--ref-color-white) 0%,
     var(--ref-color-grey-10) 50%,
-    var(--ref-color-grey-05) 100%
+    var(--ref-color-white) 100%
   );
   background-size: 200% 100%;
   animation: schedule-modal__shimmer 1.4s linear infinite;
@@ -337,6 +373,25 @@
   margin-top: calc(-1 * var(--ref-spacing-xxxs));
 }
 
+/* Row actions (the pen, the ✕) show on the row you're on — hover or
+   keyboard focus — and always on a touch screen, which has no hover. */
+@media (hover: hover) {
+  .schedule-modal__draft-remove {
+    opacity: 0;
+    transition: opacity 120ms var(--app-ease-standard);
+  }
+  .schedule-modal__row:hover .schedule-modal__draft-remove,
+  .schedule-modal__row:focus-within .schedule-modal__draft-remove {
+    opacity: 1;
+  }
+}
+
+@media (hover: none) {
+  .schedule-modal__when-pen {
+    opacity: 1;
+  }
+}
+
 /* Shimmer bars inside a pending tile. */
 .schedule-modal__shimmer {
   display: block;
@@ -373,7 +428,8 @@
   animation: schedule-modal__pop 360ms var(--app-ease-bounce) both;
 }
 
-.schedule-modal__row.is-landing .schedule-modal__when-body {
+.schedule-modal__row.is-landing .schedule-modal__when-time,
+.schedule-modal__row.is-landing .schedule-modal__when-notes {
   animation: schedule-modal__reveal 280ms var(--app-ease-out) both;
 }
 
@@ -418,12 +474,6 @@
 }
 
 /* ── Footer ───────────────────────────────────────────────────────────── */
-.schedule-modal__foot {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-}
-
 .schedule-modal__foot-span {
   font-size: var(--sys-text-style-body-size);
   line-height: var(--sys-text-style-body-line-height);
@@ -432,12 +482,6 @@
 
 .schedule-modal__foot-span strong {
   font-weight: var(--sys-text-style-body-bold-weight);
-}
-
-.schedule-modal__foot-disclosure {
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-80);
 }
 
 /* Spinner shown inside the primary CTA while the confirm callback runs. */
