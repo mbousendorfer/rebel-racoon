@@ -1,14 +1,14 @@
-import { html, raw, escapeText } from "../utils.js?v=1232";
-import { showToast } from "./toast.js?v=1232";
+import { html, raw, escapeText } from "../utils.js?v=1234";
+import { showToast } from "./toast.js?v=1234";
 import {
   getQueueOn,
   busyCountsByDay,
   dayKey,
   addToQueue,
   subscribe as subscribeQueue,
-} from "../schedule-store.js?v=1232";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1232";
-import { renderProfileTag, profileForNetwork, NETWORK_LABEL } from "../social-profiles.js?v=1232";
+} from "../schedule-store.js?v=1234";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1234";
+import { renderProfileTag, profileForNetwork, NETWORK_LABEL } from "../social-profiles.js?v=1234";
 
 // Schedule modal — one column, result first.
 //   • Header   — "Schedule N drafts" + one line saying I already picked.
@@ -17,10 +17,11 @@ import { renderProfileTag, profileForNetwork, NETWORK_LABEL } from "../social-pr
 //                and an "Adjust" disclosure, closed at rest, holding the
 //                four settings: rhythm (multi only), start day, time of day,
 //                days to skip. Every change re-spreads live.
-//   • Timeline — the batch as a posting schedule: one row per draft in date
-//                order, each hung on a rail by a date tile (weekday · day ·
-//                month), with its time, its profile, its first line, WHY I
-//                picked that time, and what else is already on that day.
+//   • Timeline — the batch as a posting schedule, one row per draft in date
+//                order, each row in two zones that never mix: WHEN (a date
+//                tile hung on the rail, the time + its pen, why I picked it,
+//                whether the day is busy) and WHAT (the draft as its own
+//                block — profile, first lines, and its ✕).
 //   • Footer   — what the batch adds up to ("4 posts over 8 days"), the
 //                disclosure line, then Cancel + the one primary.
 //
@@ -718,23 +719,24 @@ function renderSettings() {
 
 // ── The timeline ──────────────────────────────────────────────────────
 // Why I picked THIS time — the one line that makes a suggestion read as a
-// decision. Named in text; the sparkle only marks it as mine.
+// decision. Kept to a few words so it fits the WHEN column; the full reading
+// ("LinkedIn's best window: Tue–Thu, 9 AM") rides in the tooltip.
 function reasonFor(slot) {
   const network = networkOf(slot.post);
   const name = networkName(network);
   const map = PER_NETWORK_OPTIMAL[network] || FALLBACK_OPTIMAL;
   const tod = state.strategy.timeOfDay;
-  if (tod) return `${name}'s best ${tod} hour`;
-  const inWindow = map.dow.includes(new Date(slot.when).getDay());
-  return inWindow
-    ? `In ${name}'s best window · ${formatDays(map.dow)}, ${formatHour(pickHour(map.hours, null))}`
-    : `${name}'s best hour, on your rhythm`;
+  const window = `${name}'s best window: ${formatDays(map.dow)}, ${formatHour(pickHour(map.hours, null))}`;
+  if (tod) return { label: `Best ${tod} hour`, detail: `${name}'s best ${tod} hour` };
+  return map.dow.includes(new Date(slot.when).getDay())
+    ? { label: `Best ${name} window`, detail: window }
+    : { label: `Best ${name} hour`, detail: `${name}'s best hour, on your rhythm — ${window}` };
 }
 
 // What else is on the day a draft lands on — the queue plus the other
 // drafts of this batch. It replaces the calendar: the one thing the calendar
 // was for was "am I stacking on a busy day?", and the answer belongs on the
-// row being decided, not in a second column.
+// row being decided. A count on the row, the list in the tooltip.
 function sameDayNote(slot) {
   const key = dayKey(slot.when);
   const others = [
@@ -743,13 +745,11 @@ function sameDayNote(slot) {
       .filter((s) => s !== slot && !s.pending && dayKey(s.when) === key)
       .map((s) => ({ when: s.when, network: networkOf(s.post) })),
   ].sort((a, b) => a.when - b.when);
-  if (others.length === 0) return "";
-  const shown = others
-    .slice(0, 2)
-    .map((e) => `${formatTime(e.when)} ${networkName(e.network)}`)
-    .join(", ");
-  const more = others.length > 2 ? ` and ${others.length - 2} more` : "";
-  return `Also that day: ${shown}${more}`;
+  if (others.length === 0) return null;
+  return {
+    label: `+${others.length} ${others.length === 1 ? "post" : "posts"} that day`,
+    detail: `Also that day: ${others.map((e) => `${formatTime(e.when)} ${networkName(e.network)}`).join(", ")}`,
+  };
 }
 
 // The date tile — weekday, the day in large, the month. Static data, so
@@ -772,11 +772,89 @@ function renderTile(slot) {
     </div>`;
 }
 
-function renderRow(slot, i) {
+// WHEN — the tile on the rail, the time and its pen, then at most two short
+// lines: why this time (or "Set by you"), and whether the day is busy.
+function renderWhen(slot) {
+  const id = escapeText(slot.post.id);
+  if (slot.pending) {
+    return `
+      <div class="schedule-modal__when">
+        ${renderTile(slot)}
+        <div class="schedule-modal__when-body">
+          <span class="schedule-modal__when-pending" role="status">Finding a time…</span>
+        </div>
+      </div>`;
+  }
+  const reason = reasonFor(slot);
+  const busy = sameDayNote(slot);
+  return `
+    <div class="schedule-modal__when">
+      ${renderTile(slot)}
+      <div class="schedule-modal__when-body">
+        <span class="schedule-modal__when-head">
+          <span class="schedule-modal__when-time">${formatTime(slot.when)}</span>
+          <button
+            type="button"
+            class="ap-icon-button schedule-modal__when-edit"
+            data-schedule-when="${id}"
+            aria-label="Change the publish time — ${escapeText(formatDay(slot.when))}, ${formatTime(slot.when)}"
+            data-tooltip="Change date or time"
+          >
+            <i class="ap-icon-pen"></i>
+          </button>
+          <input
+            type="datetime-local"
+            class="schedule-modal__when-input"
+            value="${toLocalInput(slot.when)}"
+            data-schedule-slot="${id}"
+            tabindex="-1"
+            aria-hidden="true"
+          />
+        </span>
+        ${
+          slot.pinned
+            ? `<span class="schedule-modal__when-note">Set by you ·
+                <button type="button" class="ap-link small" data-schedule-reset="${id}" aria-label="Use my suggestion again">Reset</button></span>`
+            : `<span class="schedule-modal__when-note is-reason" data-tooltip="${escapeText(reason.detail)}">
+                <i class="ap-icon-sparkles" aria-hidden="true"></i>${escapeText(reason.label)}</span>`
+        }
+        ${
+          busy
+            ? `<span class="schedule-modal__when-note" data-tooltip="${escapeText(busy.detail)}">${escapeText(busy.label)}</span>`
+            : ""
+        }
+      </div>
+    </div>`;
+}
+
+// WHAT — the draft itself, as a block of its own: who publishes it and what
+// it says, with its one action (leave it out) in its own corner.
+function renderDraft(slot) {
   const post = slot.post;
-  const id = escapeText(post.id);
   const network = networkOf(post);
-  const note = slot.pending ? "" : sameDayNote(slot);
+  return `
+    <article class="schedule-modal__draft">
+      <header class="schedule-modal__draft-head">
+        ${renderProfileTag(profileForNetwork(network), { network })}
+        ${
+          state.posts.length > 1
+            ? `<button
+          type="button"
+          class="ap-icon-button schedule-modal__draft-remove"
+          data-schedule-remove="${escapeText(post.id)}"
+          aria-label="Leave this draft out"
+          data-tooltip="Leave this draft out"
+        >
+          <i class="ap-icon-close"></i>
+        </button>`
+            : ""
+        }
+      </header>
+      <p class="schedule-modal__draft-text">${escapeText(extractFirstLine(post))}</p>
+    </article>`;
+}
+
+function renderRow(slot, i) {
   const classes = [
     "schedule-modal__row",
     slot.pending ? "is-pending" : "",
@@ -785,67 +863,10 @@ function renderRow(slot, i) {
   ]
     .filter(Boolean)
     .join(" ");
-
-  const when = slot.pending
-    ? `<span class="schedule-modal__when is-pending" role="status">Finding a time…</span>`
-    : `<span class="schedule-modal__when">
-        <span class="schedule-modal__when-time">${formatTime(slot.when)}</span>
-        <button
-          type="button"
-          class="ap-icon-button schedule-modal__when-edit"
-          data-schedule-when="${id}"
-          aria-label="Change the publish time — ${escapeText(formatDay(slot.when))}, ${formatTime(slot.when)}"
-          data-tooltip="Change date or time"
-        >
-          <i class="ap-icon-pen"></i>
-        </button>
-        <input
-          type="datetime-local"
-          class="schedule-modal__when-input"
-          value="${toLocalInput(slot.when)}"
-          data-schedule-slot="${id}"
-          tabindex="-1"
-          aria-hidden="true"
-        />
-      </span>`;
-
-  const meta = slot.pending
-    ? ""
-    : `
-      <ul class="schedule-modal__row-meta">
-        ${
-          slot.pinned
-            ? `<li><i class="ap-icon-pen" aria-hidden="true"></i><span>Set by you</span>
-               <button type="button" class="ap-link small" data-schedule-reset="${id}">Use my suggestion</button></li>`
-            : `<li class="is-reason"><i class="ap-icon-sparkles" aria-hidden="true"></i><span>${escapeText(reasonFor(slot))}</span></li>`
-        }
-        ${note ? `<li><i class="ap-icon-calendar" aria-hidden="true"></i><span>${escapeText(note)}</span></li>` : ""}
-      </ul>`;
-
   return `
     <li class="${classes}" style="--i: ${i}">
-      ${renderTile(slot)}
-      <div class="schedule-modal__row-main">
-        <div class="schedule-modal__row-head">
-          ${when}
-          ${renderProfileTag(profileForNetwork(network), { network })}
-        </div>
-        <p class="schedule-modal__row-text">${escapeText(extractFirstLine(post))}</p>
-        ${meta}
-      </div>
-      ${
-        state.posts.length > 1
-          ? `<button
-        type="button"
-        class="ap-icon-button schedule-modal__row-remove"
-        data-schedule-remove="${id}"
-        aria-label="Leave this draft out"
-        data-tooltip="Leave this draft out"
-      >
-        <i class="ap-icon-close"></i>
-      </button>`
-          : ""
-      }
+      ${renderWhen(slot)}
+      ${renderDraft(slot)}
     </li>`;
 }
 
