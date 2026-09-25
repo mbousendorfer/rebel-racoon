@@ -176,15 +176,20 @@ Store **per-session** [`posts-store.js`](../../src/posts-store.js). Draft = auth
 
 Store [`schedule-store.js`](../../src/schedule-store.js) : file upcoming, `getQueue` (tri asc), `getQueueOn(day)`, `busyCountsByDay` (dots calendrier), `addToQueue`.
 
-### Modal Schedule ([`schedule-modal.js`](../../src/components/schedule-modal.js)) — 960px, deux colonnes
+### Modal Schedule ([`schedule-modal.js`](../../src/components/schedule-modal.js)) — 720px, une colonne, le résultat d'abord
 
-- **Titre** _« Schedule N draft(s) »_. Sous-titre selon single/multi.
-- **Mode** (radio cards) : **Optimal times** (sparkles) / **Custom**.
-- **Stratégie (Optimal)** : chips cadence _Every weekday / 3× a week / Twice a week / Every other day / Once a week_ + free-text _« Or describe your own strategy »_ (parse morning/afternoon/evening + « avoid <weekday> »). « Starting from » (défaut demain). **« Compute best times »** (seule action qui expand la stratégie ; 1.6 s loading). Schedule désactivé tant que non computé.
-- **Moteur Optimal** : parcourt les jours matchant la cadence, saute les weekdays évités ET jours déjà occupés ; une date par draft à la meilleure heure du network (`PER_NETWORK_OPTIMAL`). Overflow empilé sur le dernier jour.
-- **Slot list** : carte par draft (tag network + 1re ligne + `datetime-local` + ✕). Multi : **drag-to-reorder** (les dates suivent l'ordre). Éditer une heure → bascule Custom.
-- **Calendrier** (droite) : grille mois, dots « This batch » (accent) + « Already scheduled » (gris), click jour → liste combinée. Vide → _« No posts on this day — a good window to schedule. »_.
-- **Footer** : Clear all dates · disclosure _« Posts will publish to your connected accounts. »_ · Cancel · **Schedule N posts**. Succès → toast _« N post(s) scheduled »_.
+- **Titre** _« Schedule N draft(s) »_. Sous-titre : _« I picked a time for each draft, around what's already scheduled. Change any of them below. »_ — les dates sont **proposées à l'ouverture**, rien à calculer avant.
+- **Résumé du choix** : une phrase dans un cadre grey-20 — _« Every weekday · from Sat, Sep 26 · best time per network »_ (un seul draft : _« Best time for LinkedIn · from … »_) — et un bouton ghost bleu **Adjust** qui déplie les réglages, **fermés par défaut** :
+  - **Posting rhythm** (`.ap-select`, multi-drafts seulement) : _Every weekday / 3 times a week / Twice a week / Every other day / Once a week_.
+  - **Starting** (date, défaut demain).
+  - **Time of day** (`.ap-select`) : _Best time_ (l'heure propre à chaque réseau) / _Morning / Afternoon / Evening_.
+  - **Skip these days** : sept checkboxes DS, lundi d'abord (cocher les sept est refusé).
+  - Chaque changement **recalcule en direct**.
+- **Moteur** : parcourt les jours qui matchent le rythme, saute les jours exclus, les jours déjà occupés dans la file ET ceux des drafts épinglés ; une date par draft à la meilleure heure du réseau (`PER_NETWORK_OPTIMAL`), biaisée par Time of day. Un draft seul prend le premier jour libre parmi les meilleurs jours de son réseau. Débordement empilé sur le dernier jour, une heure d'écart.
+- **Liste des drafts** : une ligne par draft (profile tag + 1re ligne + `datetime-local` + ✕ en multi), séparées par des filets grey-20. Sous la ligne, en caption grey-80 : _« Also that day: 9:00 AM LinkedIn, … »_ (file existante + autres drafts du batch) — c'est ce que le calendrier servait à dire, posé sur la ligne qu'on décide.
+- **Éditer une date l'épingle** : _« Set by you · Use my suggestion »_. Les réglages ne l'écrasent plus ; le lien la rend au moteur.
+- **Footer** : disclosure _« Posts will publish to your connected accounts. »_ · Cancel · **Schedule N posts** (jamais désactivé hors envoi). Succès → toast _« N post(s) scheduled »_.
+- ⚠️ **Remplace** une version à deux modes (cartes Optimal / Custom, chips de cadence, champ libre _« Or describe your own strategy »_, bouton **Compute best times** qui débloquait Schedule, calendrier mensuel à droite, drag-to-reorder, _Clear all dates_). Tout était au même niveau et deux primaires se disputaient l'action. Ne pas remettre la porte « Compute » ni le choix de mode : éditer une date EST le mode custom.
 
 ---
 

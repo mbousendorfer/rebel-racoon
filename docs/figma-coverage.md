@@ -405,6 +405,8 @@ les deux cartes radio (`Optimal times` / `Custom`), les 5 chips de cadence, le c
 `Review dates` ; à droite un **calendrier de 320px** avec les dates retenues en bleu. Pied :
 `Clear all dates` à gauche, `Cancel` + `Schedule 4 posts` à droite.
 
+> ⚠️ **Périmé depuis le 25/09/2026** : la modale a été refondue (une colonne, dates proposées à l'ouverture, réglages derrière _Adjust_, plus de calendrier) — voir [`FEATURES.md`](reference/FEATURES.md) §5. Le frame Figma est à refaire.
+
 ### `Suggested clips` refaite
 
 976 de large, sous-titre `founder-keynote.mp4 · 5 clips worth posting · 24:18 of footage`,
