@@ -111,14 +111,35 @@
   width: 100%;
 }
 
-.schedule-modal__skip {
+/* The last row: "Skip" + the seven days on the left, the save action on
+   the right — one row, no divider, no caption. It wraps (save to its own
+   line, still right-aligned) only when the dialog is too narrow. */
+.schedule-modal__settings-foot {
   grid-column: 1 / -1;
-}
-
-.schedule-modal__skip-days {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
   gap: var(--ref-spacing-xxs) var(--ref-spacing-sm);
+}
+
+.schedule-modal__skip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ref-spacing-xxs) var(--ref-spacing-xs);
+}
+
+/* Same type as the DS .ap-form-field > label beside it. */
+.schedule-modal__skip-label {
+  margin-right: var(--ref-spacing-xxxs);
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--ref-color-grey-100);
+}
+
+.schedule-modal__preset-save {
+  margin-left: auto;
 }
 
 /* ── The timeline ─────────────────────────────────────────────────────── */
@@ -157,6 +178,34 @@
 }
 
 /* The date tile — static data, so grey ink on white, never blue. */
+/* The tile's wrapper carries the corner badge, so the badge can sit outside
+   the tile's aria-hidden and still be read + hovered. */
+.schedule-modal__tile-wrap {
+  position: relative;
+  flex: 0 0 var(--tile-w);
+  display: flex;
+}
+
+/* "In its network's best window" — my sparkle, pinned on the tile's corner.
+   A white disc with the grey-20 hairline, like the tile it sits on. */
+.schedule-modal__tile-badge {
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--ref-color-white);
+  border: 1px solid var(--ref-color-grey-20);
+}
+
+.schedule-modal__tile-badge i {
+  color: var(--ref-color-orange-100); /* size from the DS .ap-icon-xs (12px) */
+}
+
 .schedule-modal__tile {
   flex: 0 0 var(--tile-w);
   display: flex;
@@ -536,17 +585,8 @@
 }
 
 /* ── Save the rhythm for this Playbook ────────────────────────────────── */
-.schedule-modal__preset {
-  grid-column: 1 / -1;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  padding-top: var(--ref-spacing-sm);
-  border-top: 1px solid var(--ref-color-grey-20);
-}
-
 .schedule-modal__preset-note {
+  margin-left: auto;
   display: inline-flex;
   align-items: center;
   gap: var(--ref-spacing-xxxs);

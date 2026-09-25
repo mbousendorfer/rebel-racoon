@@ -1,16 +1,16 @@
-import { html, raw, escapeText } from "../utils.js?v=1242";
-import { showToast } from "./toast.js?v=1242";
-import { getQueue, getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=1242";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1242";
+import { html, raw, escapeText } from "../utils.js?v=1244";
+import { showToast } from "./toast.js?v=1244";
+import { getQueue, getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=1244";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1244";
 import {
   renderProfileTag,
   profileForNetwork,
   NETWORK_LABEL,
   NETWORK_ICON_BY_PLATFORM,
-} from "../social-profiles.js?v=1242";
-import { getContextById } from "../contexts-store.js?v=1242";
-import { canEdit } from "../playbook-access.js?v=1242";
-import { getPreset, savePreset } from "../schedule-presets-store.js?v=1242";
+} from "../social-profiles.js?v=1244";
+import { getContextById } from "../contexts-store.js?v=1244";
+import { canEdit } from "../playbook-access.js?v=1244";
+import { getPreset, savePreset } from "../schedule-presets-store.js?v=1244";
 
 // Schedule modal — one column, result first.
 //   • Header   — "Schedule N drafts" + one line saying I already picked.
@@ -709,26 +709,27 @@ function usingSavedPreset() {
   return !!saved && sameRhythm(saved, state.strategy);
 }
 
-// The last row of Adjust: save these settings as the Playbook's rhythm, or
-// say they already are. Saving is the owner's call, like editing the fiche.
-function renderPresetRow() {
+// Saving the rhythm for the chat's Playbook — a quiet action at the end of
+// the skip-days row, not a section of its own: it is the rare gesture of the
+// panel, so it takes no height. The Playbook is named in the tooltip; once
+// saved, the sentence above names it too ("Acme · Q2 marketing's rhythm —").
+// Saving is the owner's call, like editing the fiche.
+function renderPresetAction() {
   const ctx = state.playbook;
   if (!ctx) return "";
-  const name = escapeText(ctx.name);
-  let body;
+  const name = ctx.name;
+  const tip = escapeText(`${name} will start from this rhythm every time you schedule for it.`);
   if (!canEdit(ctx)) {
-    body = `<span class="schedule-modal__preset-note">Only the owner of ${name} can save its posting rhythm.</span>`;
-  } else if (usingSavedPreset()) {
-    body = `<span class="schedule-modal__preset-note is-saved"><i class="ap-icon-check" aria-hidden="true"></i>This is ${name}'s rhythm — I'll start from it every time you schedule for this Playbook.</span>`;
-  } else {
-    const saved = getPreset(ctx.id);
-    body = `
-      <button type="button" class="ap-button stroked grey" data-schedule-save-preset>
-        <i class="ap-icon-bookmark" aria-hidden="true"></i><span>${saved ? `Update ${name}'s rhythm` : `Save as ${name}'s rhythm`}</span>
-      </button>
-      <span class="schedule-modal__preset-note">I'll start from it every time you schedule for this Playbook.</span>`;
+    return `<span class="schedule-modal__preset-note" data-tooltip="${escapeText(`Only the owner of ${name} can save its posting rhythm.`)}">Only the owner can save it</span>`;
   }
-  return `<div class="schedule-modal__preset">${body}</div>`;
+  if (usingSavedPreset()) {
+    return `<span class="schedule-modal__preset-note is-saved" data-tooltip="${tip}"><i class="ap-icon-check" aria-hidden="true"></i>Saved for this Playbook</span>`;
+  }
+  const saved = getPreset(ctx.id);
+  return `
+    <button type="button" class="ap-button ghost blue schedule-modal__preset-save" data-schedule-save-preset data-tooltip="${tip}">
+      <i class="ap-icon-bookmark" aria-hidden="true"></i><span>${saved ? "Update for this Playbook" : "Save for this Playbook"}</span>
+    </button>`;
 }
 
 function renderRhythm() {
@@ -830,11 +831,13 @@ function renderSettings() {
           options: TIMES_OF_DAY.map((t) => ({ id: t.id, label: t.label, selected: t.id === tod.id })),
         })}
       </div>
-      <div class="ap-form-field schedule-modal__skip">
-        <label id="scheduleSkipLabel">Skip these days</label>
-        <div class="schedule-modal__skip-days" role="group" aria-labelledby="scheduleSkipLabel">${skipBoxes}</div>
+      <div class="schedule-modal__settings-foot">
+        <div class="schedule-modal__skip" role="group" aria-labelledby="scheduleSkipLabel">
+          <span class="schedule-modal__skip-label" id="scheduleSkipLabel">Skip</span>
+          ${skipBoxes}
+        </div>
+        ${renderPresetAction()}
       </div>
-      ${renderPresetRow()}
     </div>
   `;
 }
@@ -852,7 +855,7 @@ function reasonFor(slot) {
   const window = `${name}'s best window: ${formatDays(map.dow)}, ${formatHour(pickHour(map.hours, null))}`;
   if (tod) return { label: `Best ${tod} hour`, detail: `${name}'s best ${tod} hour` };
   return map.dow.includes(new Date(slot.when).getDay())
-    ? { label: "Best window", detail: window }
+    ? { label: "Best window", detail: window, window: true }
     : { label: "Best hour", detail: `${name}'s best hour, on your rhythm — ${window}` };
 }
 
@@ -971,12 +974,25 @@ function renderTile(slot) {
       </div>`;
   }
   const d = new Date(slot.when);
+  // A date I picked INSIDE its network's best window wears my sparkle on its
+  // corner — the badge says it, so the row doesn't need a line for it. The
+  // other reasons ("Best hour", "Best morning hour", "Set by you") stay as
+  // text under the time: only the common case moved to the badge.
+  const reason = slot.pinned ? null : reasonFor(slot);
+  const badge = reason?.window
+    ? `<span class="schedule-modal__tile-badge" role="img" aria-label="${escapeText(reason.detail)}" data-tooltip="${escapeText(reason.detail)}">
+        <i class="ap-icon-sparkles ap-icon-xs" aria-hidden="true"></i>
+      </span>`
+    : "";
   return `
-    <div class="schedule-modal__tile" aria-hidden="true">
-      <span class="schedule-modal__tile-dow">${d.toLocaleDateString("en-US", { weekday: "short" })}</span>
-      <span class="schedule-modal__tile-day">${d.getDate()}</span>
-      <span class="schedule-modal__tile-month">${d.toLocaleDateString("en-US", { month: "short" })}</span>
-    </div>`;
+    <span class="schedule-modal__tile-wrap">
+      <div class="schedule-modal__tile" aria-hidden="true">
+        <span class="schedule-modal__tile-dow">${d.toLocaleDateString("en-US", { weekday: "short" })}</span>
+        <span class="schedule-modal__tile-day">${d.getDate()}</span>
+        <span class="schedule-modal__tile-month">${d.toLocaleDateString("en-US", { month: "short" })}</span>
+      </div>
+      ${badge}
+    </span>`;
 }
 
 // WHEN — the tile on the rail, the time and its pen, then at most two short
@@ -1022,7 +1038,9 @@ function renderWhen(slot) {
           slot.pinned
             ? `<span class="schedule-modal__when-note">Set by you ·
                 <button type="button" class="ap-link small" data-schedule-reset="${id}" aria-label="Use my suggestion again">Reset</button></span>`
-            : `<span class="schedule-modal__when-note is-reason" data-tooltip="${escapeText(reason.detail)}">
+            : reason.window
+              ? ""
+              : `<span class="schedule-modal__when-note is-reason" data-tooltip="${escapeText(reason.detail)}">
                 <i class="ap-icon-sparkles" aria-hidden="true"></i>${escapeText(reason.label)}</span>`
         }
         ${renderDayNote(slot, agenda)}
