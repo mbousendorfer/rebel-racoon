@@ -1,15 +1,15 @@
-# Brand Studio (module « Image Studio ») — Phase 0 : audit d'intégration
+# Image Generator (module « Image Studio ») — audit d'intégration
 
 ## Contexte
 
-Le brief demande d'ajouter à Archie un module autonome de génération de visuels, conforme à la marque et avec une IA mockée. Toute la construction se fait derrière le feature flag « Sexy Squirrel ».
+Le brief demande d'ajouter à Archie un **générateur d'images IA** autonome pour les posts sociaux (IA mockée). La marque n'est pas le produit : c'est le réglage, décrit une fois, qui rend chaque image générée conforme. Toute la construction se fait derrière le feature flag « Sexy Squirrel ».
 
 - `~/sources/archie` n'existe pas. Archie, c'est ce repo, rebel-racoon.
 - Rapport de phase 0, rédigé le 2026-09-25, sans une ligne de code. La construction attend le GO sur ce rapport.
 
 Décisions déjà prises :
 
-- **Nom dans l'UI : « Brand Studio ».** Le dossier de code reste `src/modules/image-studio/`, avec le préfixe `imst-`. Le studio existant (modale ouverte depuis un brouillon) garde le nom « Image Studio » et ses préfixes `.isv2-*` / `.image-studio__*`.
+- **Nom dans l'UI : « Image Generator »**, route `/image-generator`. Un premier choix, « Brand Studio », avait mis la marque au centre ; il a été corrigé avant tout commit de code. Le module s'ouvre sur la génération, et l'ordre des sections est Generate · Campaigns · Brands. Le dossier de code reste `src/modules/image-studio/`, avec le préfixe `imst-`. Le studio existant (modale ouverte depuis un brouillon) garde le nom « Image Studio » et ses préfixes `.isv2-*` / `.image-studio__*`.
 - **Fichiers touchés hors du dossier, acceptés :**
   - la route dans `app.js` ;
   - la ligne de nav dans `sidebar.js` ;
@@ -24,16 +24,16 @@ Décisions déjà prises :
 
 ## 1. Hébergement
 
-- **Flag.** Entrée `{ id: "sexySquirrel", label: "Sexy Squirrel — Brand Studio (/brand-studio)", default: false, hides: … }` dans `src/ff-catalog.js`. Le menu Admin la liste tout seul (`admin-menu.js:93`), et `isFlagOn` renvoie false pour un id absent du catalogue.
+- **Flag.** Entrée `{ id: "sexySquirrel", label: "Sexy Squirrel — Image Generator (/image-generator)", default: false, hides: … }` dans `src/ff-catalog.js`. Le menu Admin la liste tout seul (`admin-menu.js:93`), et `isFlagOn` renvoie false pour un id absent du catalogue.
 - **Routes.** Le module exporte `ROUTES = [{ pattern, handler }]` et `app.js` fait une boucle `route()` dessus. Ça fait deux lignes dans `app.js`, et le module garde ses sous-routes pour lui. Les patterns sont ancrés (`router.js:8-17`), et `:param` ne capture qu'un seul segment. Sous-routes :
-  - `/brand-studio` : le hub, ou l'onboarding s'il n'y a aucune marque
-  - `/brand-studio/brands`
-  - `/brand-studio/brands/:id` (`?tab=`)
-  - `/brand-studio/styles/new` et `/brand-studio/styles/:id`
-  - `/brand-studio/editor/:creationId`
-  - `/brand-studio/campaigns`
+  - `/image-generator` : le hub, ou l'onboarding s'il n'y a aucune marque
+  - `/image-generator/brands`
+  - `/image-generator/brands/:id` (`?tab=`)
+  - `/image-generator/styles/new` et `/image-generator/styles/:id`
+  - `/image-generator/editor/:creationId`
+  - `/image-generator/campaigns`
 - **Garde.** Chaque handler commence par `if (!isFlagOn("sexySquirrel")) { navigate("/"); return; }`, comme `topics.js:134-140`. Ensuite `renderTopbar()`, puis le rendu dans `target`. Le handler renvoie un cleanup qui retire les listeners et vide le store de vue.
-- **Nav.** Une entrée dans `NAV` (`sidebar.js:801-856`) : `{ path: "/brand-studio", icon: "ap-icon-image", label: "Brand Studio", flag: "sexySquirrel", match: p => p.startsWith("/brand-studio") }`. Le clic est déjà délégué par `[data-sidebar-nav]`.
+- **Nav.** Une entrée dans `NAV` (`sidebar.js:801-856`) : `{ path: "/image-generator", icon: "ap-icon-image", label: "Image Generator", flag: "sexySquirrel", match: p => p.startsWith("/image-generator") }`. Le clic est déjà délégué par `[data-sidebar-nav]`.
 - **Titre.** Une ligne dans `currentTitle()` (`topbar.js:626-653`).
 - **Layout.** C'est une route de workspace ordinaire : rail, topbar et `#app`, sans `onboarding` ni `account-scope`. La page utilise la largeur `--app-content` comme les autres pages pleines (voir Q3 plus bas).
 - **Dossier :**
@@ -152,7 +152,7 @@ Les ids sont préfixés par entité (`br_`, `st_`…). Les dates sont en ISO. Le
 ## 5. Wireframes
 
 ```
-HUB  /brand-studio                                    [Marque: Brûlerie Nord ▾]
+HUB  /image-generator                                    [Marque: Brûlerie Nord ▾]
 ┌───────────────────────────────────────────────────────────────────────────┐
 │ Campaign ideas                                         [↻ More ideas]     │
 │ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐                          │
@@ -178,14 +178,14 @@ ONBOARDING (aucune marque)
 └───────────────────────────────────────────────────────────────┘
 → REVIEW : chaque bloc [✓ Keep] [Edit] → [Save brand]
 
-MES MARQUES  /brand-studio/brands                         [Import] [New brand]
+MES MARQUES  /image-generator/brands                         [Import] [New brand]
 ┌────────────┐ ┌────────────┐ ┌────────────┐
 │ LOGO       │ │ LOGO       │ │  + sub-brand│
 │ ●●●●●      │ │ ●●●●       │ │   of …      │
 │ Name · Def.│ │ Name    ⋯  │ │             │   ⋯ = edit/duplicate/default/export/delete
 └────────────┘ └────────────┘ └────────────┘
 
-DÉTAIL MARQUE  /brand-studio/brands/:id
+DÉTAIL MARQUE  /image-generator/brands/:id
 [Identity|Image style|Voice|Rules|Assets|Styles|Catalog]   (hérité ⇄ surchargé par champ)
 
 CRÉATEUR DE STYLE
@@ -197,7 +197,7 @@ CRÉATEUR DE STYLE
 │ Style prompt [        ] ││                 [Save style] │
 └─────────────────────────┘└──────────────────────────────┘
 
-ÉDITEUR  /brand-studio/editor/:id                [Apply brand] [Adapt everywhere]
+ÉDITEUR  /image-generator/editor/:id                [Apply brand] [Adapt everywhere]
 ┌ Layers ──┐┌──────── Stage ────────┐┌ Properties ──────┐
 │ ▤ Logo 👁 ││                       ││ Font [Heading ▾] │
 │ T Hook 👁 ││   (safe zone overlay) ││ Color ● ● ● 🔓   │
@@ -208,15 +208,15 @@ CRÉATEUR DE STYLE
 Formats : [1:1 ✓][4:5][9:16][1.91:1][16:9]  ← déclinaisons côte à côte · [Preview in feed] [⤓ PNG]
 P2 : panneau Brand check (score + problèmes [Fix]) · Performance (score + heatmap)
 
-CAMPAGNES  /brand-studio/campaigns   table : Campagne · Période · Créations · Màj  + Historique
+CAMPAGNES  /image-generator/campaigns   table : Campagne · Période · Créations · Màj  + Historique
 ```
 
 ## 6. Questions ouvertes
 
 1. **Tokens `--app-*`.** Le brief n'autorise que `--ref`/`--sys`/`--comp`. Or le DS n'a aucune ombre en ref ni en sys, et toutes les cartes de l'app utilisent `--app-radius-card` (12px). Deux options : rester DS pur (`--ref-border-radius-md` à 8px, aucune ombre hors `--comp-*-shadow`, avec un rendu légèrement moins « natif »), ou autoriser `--app-*` pour les rayons, les ombres de popover et `--app-content`. Recommandation : autoriser `--app-*`, que je signalerai dans l'audit final.
-2. **Scope Playbook.** Avec `playbookWorkspace` ON, le rail affiche le Playbook actif au-dessus d'un module qui l'ignore. Faut-il passer `/brand-studio` en `account-scope` ? Ce serait une modification hors dossier (`isAccountScope`), et le rail disparaîtrait avec l'entrée de nav. Recommandation : laisser le module dans le workspace et documenter l'écart.
+2. **Scope Playbook.** Avec `playbookWorkspace` ON, le rail affiche le Playbook actif au-dessus d'un module qui l'ignore. Faut-il passer `/image-generator` en `account-scope` ? Ce serait une modification hors dossier (`isAccountScope`), et le rail disparaîtrait avec l'entrée de nav. Recommandation : laisser le module dans le workspace et documenter l'écart.
 3. **Langue.** L'UI d'Archie est en anglais, donc tout le copy du module sera en anglais, à la première personne quand c'est Archie qui parle.
-4. **CONCEPTS.md.** Faut-il y ajouter une note : « Brand (Brand Studio) ≠ Playbook, pas de lien, par décision » ? Sinon, un futur lecteur verra un doublon du Playbook.
+4. **CONCEPTS.md.** Faut-il y ajouter une note : « Brand (Image Generator) ≠ Playbook, pas de lien, par décision » ? Sinon, un futur lecteur verra un doublon du Playbook.
 5. **Commits.** Un commit + push sur `main` à la fin de chaque étape (règle mémoire). Le flag est OFF par défaut, donc le déploiement Pages ne change rien pour les visiteurs.
 
 ## 7. Suite après GO (rappel du brief)

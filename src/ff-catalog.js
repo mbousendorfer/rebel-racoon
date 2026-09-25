@@ -122,6 +122,22 @@ export const FLAGS = Object.freeze([
       "owner row on a Playbook, and the Your-role control in Admin.",
   },
   {
+    id: "sexySquirrel",
+    label: "Sexy Squirrel — AI Image Generator (/image-generator)",
+    // OFF: the module lands dark. Gates the route (a typed /image-generator bounces
+    // home) and the rail row. Everything else lives in src/modules/image-studio/.
+    default: false,
+    hides:
+      "When OFF, Image Generator disappears entirely. ON adds a standalone AI " +
+      "image generator for social posts (Instagram, Facebook, X, LinkedIn): start " +
+      "from a campaign idea or your own prompt, get four variations, edit them " +
+      "on a layered canvas, adapt them to every format and export PNG. Describe " +
+      "a brand once and every image it generates follows that brand's logos, " +
+      "colours, fonts and rules. Everything (brands, styles, catalogue, " +
+      "campaigns, creations) is its own, stored in this browser, and shares " +
+      "nothing with Playbooks, drafts or the draft Image Studio.",
+  },
+  {
     id: "skipConnectProfiles",
     label: "Skip connecting profiles at setup",
     default: false,
