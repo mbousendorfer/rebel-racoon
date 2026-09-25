@@ -35,6 +35,11 @@
 /* ── How I picked ─────────────────────────────────────────────────────── */
 /* A tinted surface, not a card: grey-05 fill, no border, no shadow. */
 .schedule-modal__rhythm {
+  /* Its own stacking layer ABOVE the list: an open .ap-select hangs over the
+     rows below, and the tiles' badges (z-index 1) would otherwise paint on
+     top of the dropdown. */
+  position: relative;
+  z-index: 2;
   background: var(--ref-color-grey-05);
   border-radius: var(--app-radius-card);
 }
