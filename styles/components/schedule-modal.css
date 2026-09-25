@@ -152,7 +152,7 @@
      being found and the date tile once one lands — so no row changes height
      when its date arrives. 66 = the date tile's own three lines + padding. */
   --tile-h: 66px;
-  --when-w: 216px;
+  --when-w: 200px;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -169,7 +169,7 @@
    middles, so nothing lined up from one row to the next. */
 .schedule-modal__row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) var(--when-w) 44px;
+  grid-template-columns: minmax(0, 1fr) var(--when-w) auto;
   grid-template-areas: "draft when actions";
   align-items: stretch;
 }
@@ -402,15 +402,18 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* The ✕ in a column of its own, centred — on the WHEN cell's grey-05, so the
-   right-hand band reads as one: the date, then the row's one action. */
+/* The row's actions grouped in one column — change the date, leave the
+   draft out — on the WHEN cell's grey-05, so the right-hand band reads as
+   one: the date, then what you can do with the row. */
 .schedule-modal__row-actions {
   grid-area: actions;
   display: flex;
   align-items: flex-start;
-  justify-content: center;
-  /* The 36px ✕ centred on the first 24px line: 12 + 12 − 18. */
-  padding-top: calc(var(--ref-spacing-xs) - 6px);
+  justify-content: flex-end;
+  gap: var(--ref-spacing-xxxs);
+  /* The 36px buttons centred on the first 24px line: 12 + 12 − 18. */
+  padding: calc(var(--ref-spacing-xs) - 6px) var(--ref-spacing-xxs) 0 0;
+  min-width: 44px;
   background: var(--ref-color-grey-05);
 }
 
@@ -531,7 +534,7 @@
 /* Narrow dialog — settings go one column, WHEN drops under WHAT. */
 @media (max-width: 600px) {
   .schedule-modal__row {
-    grid-template-columns: minmax(0, 1fr) 44px;
+    grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas:
       "draft actions"
       "when when";

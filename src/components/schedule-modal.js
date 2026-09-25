@@ -1,16 +1,16 @@
-import { html, raw, escapeText } from "../utils.js?v=1250";
-import { showToast } from "./toast.js?v=1250";
-import { getQueue, getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=1250";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1250";
+import { html, raw, escapeText } from "../utils.js?v=1252";
+import { showToast } from "./toast.js?v=1252";
+import { getQueue, getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=1252";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1252";
 import {
   renderProfileTag,
   profileForNetwork,
   NETWORK_LABEL,
   NETWORK_ICON_BY_PLATFORM,
-} from "../social-profiles.js?v=1250";
-import { getContextById } from "../contexts-store.js?v=1250";
-import { canEdit } from "../playbook-access.js?v=1250";
-import { getPreset, savePreset } from "../schedule-presets-store.js?v=1250";
+} from "../social-profiles.js?v=1252";
+import { getContextById } from "../contexts-store.js?v=1252";
+import { canEdit } from "../playbook-access.js?v=1252";
+import { getPreset, savePreset } from "../schedule-presets-store.js?v=1252";
 
 // Schedule modal — one column, result first.
 //   • Header   — "Schedule N drafts" + one line saying I already picked.
@@ -996,15 +996,6 @@ function renderWhen(slot) {
       <div class="schedule-modal__when-body">
         <span class="schedule-modal__when-head">
           <span class="schedule-modal__when-time">${formatTime(slot.when)}</span>
-          <button
-            type="button"
-            class="ap-icon-button schedule-modal__when-edit"
-            data-schedule-when="${id}"
-            aria-label="Change the publish time — ${escapeText(formatDay(slot.when))}, ${formatTime(slot.when)}"
-            data-tooltip="Change date or time"
-          >
-            <i class="ap-icon-pen"></i>
-          </button>
           <input
             type="datetime-local"
             class="schedule-modal__when-input"
@@ -1087,6 +1078,21 @@ function renderRow(slot, i) {
       ${renderDraft(slot)}
       ${renderWhen(slot)}
       <div class="schedule-modal__row-actions">
+        ${
+          // The row's actions, together: change its date, leave it out. The
+          // date cell holds information only — tile, time, notes.
+          slot.pending
+            ? ""
+            : `<button
+          type="button"
+          class="ap-icon-button"
+          data-schedule-when="${escapeText(slot.post.id)}"
+          aria-label="Change the publish time — ${escapeText(formatDay(slot.when))}, ${formatTime(slot.when)}"
+          data-tooltip="Change date or time"
+        >
+          <i class="ap-icon-pen"></i>
+        </button>`
+        }
         ${
           state.posts.length > 1
             ? `<button
