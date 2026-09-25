@@ -1,14 +1,16 @@
-import { html, raw, escapeText } from "../utils.js?v=1236";
-import { showToast } from "./toast.js?v=1236";
+import { html, raw, escapeText } from "../utils.js?v=1240";
+import { showToast } from "./toast.js?v=1240";
+import { getQueue, getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=1240";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1240";
 import {
-  getQueueOn,
-  busyCountsByDay,
-  dayKey,
-  addToQueue,
-  subscribe as subscribeQueue,
-} from "../schedule-store.js?v=1236";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1236";
-import { renderProfileTag, profileForNetwork, NETWORK_LABEL } from "../social-profiles.js?v=1236";
+  renderProfileTag,
+  profileForNetwork,
+  NETWORK_LABEL,
+  NETWORK_ICON_BY_PLATFORM,
+} from "../social-profiles.js?v=1240";
+import { getContextById } from "../contexts-store.js?v=1240";
+import { canEdit } from "../playbook-access.js?v=1240";
+import { getPreset, savePreset } from "../schedule-presets-store.js?v=1240";
 
 // Schedule modal — one column, result first.
 //   • Header   — "Schedule N drafts" + one line saying I already picked.
@@ -38,6 +40,15 @@ import { renderProfileTag, profileForNetwork, NETWORK_LABEL } from "../social-pr
 // change, the rows landing one after another. That is a wait, not a gate:
 // nothing to click to start it, and a change mid-way simply restarts it.
 // Schedule waits for it (a date the user hasn't seen can't be confirmed).
+//
+// What else is on a suggested day is answered ON the row: a link naming the
+// count ("2 other posts that day"), orange and naming the clash when a post on
+// the SAME network sits within two hours, which unfolds that day's agenda
+// under the row. The sentence says how many busy days I stepped over.
+//
+// The rhythm can be saved PER PLAYBOOK (schedule-presets-store): the modal
+// opens on the chat's Playbook preset when there is one. Operational config,
+// so a store keyed by Playbook — never a field on the fiche (CONCEPTS §1).
 //
 // A hand-edited date is PINNED: the settings re-spread every other draft
 // around it and never overwrite it, and the row says so ("Set by you") with
@@ -101,6 +112,9 @@ function emptyState() {
     slots: [], // [{post, when: epoch ms, pinned: bool}] — one per draft, in post order
     strategy: { cadence: "weekdays", timeOfDay: null, skip: [], startFrom: null },
     adjustOpen: false,
+    peekId: null, // the row whose day agenda is unfolded (one at a time)
+    playbook: null, // the chat's Playbook — whose rhythm preset we read / save
+    skippedBusy: 0, // busy days the spread stepped over (said in the sentence)
     onConfirm: null,
     status: "idle", // 'idle' | 'scheduling' | 'error'
     errorMessage: "",
@@ -204,16 +218,24 @@ export function init() {
   });
 }
 
-export function open({ posts, onConfirm }) {
+export function open({ posts, onConfirm, playbookId = null }) {
   if (!posts || posts.length === 0) return;
   // Register with the coordinator first so any other overlay currently
   // up gets closed before we paint; it also snapshots the trigger for focus.
   requestOpen(ROOT_ID, close);
+  const playbook = playbookId ? getContextById(playbookId) : null;
+  const preset = playbook ? getPreset(playbook.id) : null;
   state = {
     ...emptyState(),
     open: true,
     posts: [...posts],
-    strategy: { cadence: "weekdays", timeOfDay: null, skip: [], startFrom: defaultStartFrom() },
+    playbook,
+    // The Playbook's saved rhythm when it has one — but never its start date:
+    // a batch always starts tomorrow.
+    strategy: {
+      ...(preset || { cadence: "weekdays", timeOfDay: null, skip: [] }),
+      startFrom: defaultStartFrom(),
+    },
     onConfirm: typeof onConfirm === "function" ? onConfirm : null,
   };
   // Dates are proposed on open — the user waits for them, never asks for them.
@@ -239,18 +261,60 @@ function close() {
 }
 
 // ── The spread ────────────────────────────────────────────────────────
+// Does a day match the rhythm? One draft has no rhythm: it takes its
+// network's best days instead.
+function dayMatches(day, start, strategy) {
+  const dow = day.getDay();
+  if (strategy.skip.includes(dow)) return false;
+  if (state.posts.length === 1) {
+    const map = PER_NETWORK_OPTIMAL[networkOf(state.posts[0])] || FALLBACK_OPTIMAL;
+    return map.dow.includes(dow);
+  }
+  const cadence = CADENCES.find((c) => c.id === strategy.cadence) || CADENCES[0];
+  if (cadence.every) return Math.round((day - start) / 86400000) % cadence.every === 0;
+  if (cadence.weekly) return dow === start.getDay();
+  return cadence.days.includes(dow);
+}
+
+// How many days that matched the rhythm I stepped over because something
+// was already scheduled on them — the proof, in the sentence, that the
+// spread read the calendar.
+// The days already carrying a post on one of THIS batch's networks. That is
+// what the spread avoids: a Facebook post doesn't crowd a LinkedIn one, so a
+// day busy on another network stays eligible — and its row says what's there.
+// (A batch is usually one network: the Drafts panel schedules per network.)
+function busyDaysForBatch() {
+  const networks = new Set(state.posts.map((p) => platformOf(networkOf(p))));
+  const keys = new Set();
+  for (const e of getQueue()) if (networks.has(platformOf(e.network))) keys.add(dayKey(e.when));
+  return keys;
+}
+
+function countSkippedBusy() {
+  const free = state.slots.filter((x) => !x.pinned);
+  if (!free.length) return 0;
+  const last = Math.max(...free.map((x) => x.when));
+  const start = startOfDay(state.strategy.startFrom || defaultStartFrom());
+  const busy = busyDaysForBatch();
+  let n = 0;
+  for (const cursor = new Date(start); cursor.getTime() <= last; cursor.setDate(cursor.getDate() + 1)) {
+    if (busy.has(dayKey(cursor.getTime())) && dayMatches(cursor, start, state.strategy)) n++;
+  }
+  return n;
+}
+
 // Walking from `startFrom`, collect the next `count` days that match the
-// rhythm, skipping the weekdays the user ticked, any day already carrying
-// a scheduled post and any day a pinned draft already holds — so the new
-// dates slot in around what's on the calendar. Bounded look-ahead so a
-// pathological pattern can't loop forever.
+// rhythm, skipping the weekdays the user ticked, any day already carrying a
+// post on one of the batch's networks, and any day a pinned draft already
+// holds — so the new dates slot in around what's on the calendar. Bounded
+// look-ahead so a pathological pattern can't loop forever.
 function strategyDays(count, strategy, takenKeys) {
   const start = startOfDay(strategy.startFrom || defaultStartFrom());
   const single = state.posts.length === 1;
   // One draft has no rhythm: any day qualifies, the network's best day wins below.
   const cadence = single ? null : CADENCES.find((c) => c.id === strategy.cadence) || CADENCES[0];
   const skip = new Set(strategy.skip);
-  const busy = busyCountsByDay();
+  const busy = busyDaysForBatch();
   const startDow = start.getDay();
   const days = [];
   const cursor = new Date(start);
@@ -265,7 +329,7 @@ function strategyDays(count, strategy, takenKeys) {
       qualifies = cadence.days.includes(dow);
     }
     const key = dayKey(cursor.getTime());
-    const taken = (busy.get(key) || 0) > 0 || takenKeys.has(key);
+    const taken = busy.has(key) || takenKeys.has(key);
     if (qualifies && !skip.has(dow) && !taken) days.push(new Date(cursor));
     cursor.setDate(cursor.getDate() + 1);
   }
@@ -307,6 +371,7 @@ function respread() {
     when.setHours(hour + overflow, 0, 0, 0);
     return { post, when: when.getTime(), pinned: false };
   });
+  state.skippedBusy = countSkippedBusy();
 }
 
 // ── Events ────────────────────────────────────────────────────────────
@@ -352,6 +417,19 @@ function onClick(event) {
     } catch {
       input.focus();
     }
+    return;
+  }
+  const peek = event.target.closest("[data-schedule-peek]");
+  if (peek) {
+    state.peekId = state.peekId === peek.dataset.schedulePeek ? null : peek.dataset.schedulePeek;
+    render();
+    return;
+  }
+  if (event.target.closest("[data-schedule-save-preset]")) {
+    if (!state.playbook || !canEdit(state.playbook)) return;
+    const { cadence, timeOfDay, skip } = state.strategy;
+    savePreset(state.playbook.id, { cadence, timeOfDay, skip });
+    render();
     return;
   }
   const reset = event.target.closest("[data-schedule-reset]");
@@ -602,13 +680,55 @@ function rhythmSentence() {
           .join(", "),
       )}`
     : "";
+  // Whose rhythm this is, when it's the Playbook's saved one.
+  const lead = usingSavedPreset() ? `${b(`${state.playbook.name}'s rhythm`)} — ` : "";
+  const n = state.skippedBusy;
+  const stepped =
+    n > 0 && !isComputing()
+      ? ` I stepped over ${b(`${n} ${n === 1 ? "day" : "days"}`)} that already ${n === 1 ? "has a post" : "have posts"} on the same network.`
+      : "";
   if (state.posts.length === 1) {
     const name = networkName(networkOf(state.posts[0]));
     const when = s.timeOfDay ? `in the ${b(tod.label.toLowerCase())}` : `at ${b(`${name}'s best time`)}`;
-    return `From ${b(formatDay(s.startFrom))}, ${when}${skip}.`;
+    return `${lead}${lead ? "from" : "From"} ${b(formatDay(s.startFrom))}, ${when}${skip}.${stepped}`;
   }
   const cadence = CADENCES.find((c) => c.id === s.cadence) || CADENCES[0];
-  return `${b(cadence.label)} from ${b(formatDay(s.startFrom))}, ${at}${skip}.`;
+  return `${lead}${b(cadence.label)} from ${b(formatDay(s.startFrom))}, ${at}${skip}.${stepped}`;
+}
+
+function sameRhythm(a, b) {
+  return (
+    a.cadence === b.cadence &&
+    (a.timeOfDay || null) === (b.timeOfDay || null) &&
+    [...a.skip].sort().join() === [...b.skip].sort().join()
+  );
+}
+
+function usingSavedPreset() {
+  const saved = state.playbook ? getPreset(state.playbook.id) : null;
+  return !!saved && sameRhythm(saved, state.strategy);
+}
+
+// The last row of Adjust: save these settings as the Playbook's rhythm, or
+// say they already are. Saving is the owner's call, like editing the fiche.
+function renderPresetRow() {
+  const ctx = state.playbook;
+  if (!ctx) return "";
+  const name = escapeText(ctx.name);
+  let body;
+  if (!canEdit(ctx)) {
+    body = `<span class="schedule-modal__preset-note">Only the owner of ${name} can save its posting rhythm.</span>`;
+  } else if (usingSavedPreset()) {
+    body = `<span class="schedule-modal__preset-note is-saved"><i class="ap-icon-check" aria-hidden="true"></i>This is ${name}'s rhythm — I'll start from it every time you schedule for this Playbook.</span>`;
+  } else {
+    const saved = getPreset(ctx.id);
+    body = `
+      <button type="button" class="ap-button stroked grey" data-schedule-save-preset>
+        <i class="ap-icon-bookmark" aria-hidden="true"></i><span>${saved ? `Update ${name}'s rhythm` : `Save as ${name}'s rhythm`}</span>
+      </button>
+      <span class="schedule-modal__preset-note">I'll start from it every time you schedule for this Playbook.</span>`;
+  }
+  return `<div class="schedule-modal__preset">${body}</div>`;
 }
 
 function renderRhythm() {
@@ -714,6 +834,7 @@ function renderSettings() {
         <label id="scheduleSkipLabel">Skip these days</label>
         <div class="schedule-modal__skip-days" role="group" aria-labelledby="scheduleSkipLabel">${skipBoxes}</div>
       </div>
+      ${renderPresetRow()}
     </div>
   `;
 }
@@ -738,20 +859,104 @@ function reasonFor(slot) {
 // What else is on the day a draft lands on — the queue plus the other
 // drafts of this batch. It replaces the calendar: the one thing the calendar
 // was for was "am I stacking on a busy day?", and the answer belongs on the
-// row being decided. A count on the row, the list in the tooltip.
-function sameDayNote(slot) {
+// row being decided. A CLASH is a post on the same network within two hours
+// — the case that actually costs reach, so it's the one that turns orange.
+const CLASH_MS = 2 * 60 * 60 * 1000;
+
+function platformOf(network) {
+  const n = (network || "").toLowerCase();
+  return n === "twitter" ? "x" : n;
+}
+
+function dayAgenda(slot) {
   const key = dayKey(slot.when);
-  const others = [
-    ...getQueueOn(slot.when),
+  const mine = platformOf(networkOf(slot.post));
+  const items = [
+    ...getQueueOn(slot.when).map((e) => ({
+      when: e.when,
+      network: platformOf(e.network),
+      text: e.text,
+      isBatch: false,
+    })),
     ...state.slots
       .filter((s) => s !== slot && !s.pending && dayKey(s.when) === key)
-      .map((s) => ({ when: s.when, network: networkOf(s.post) })),
+      .map((s) => ({
+        when: s.when,
+        network: platformOf(networkOf(s.post)),
+        text: extractFirstLine(s.post),
+        isBatch: true,
+      })),
+  ]
+    .map((e) => ({ ...e, clash: e.network === mine && Math.abs(e.when - slot.when) < CLASH_MS }))
+    .sort((a, b) => a.when - b.when);
+  return { items, clash: items.find((e) => e.clash) || null };
+}
+
+function formatGap(ms) {
+  const min = Math.round(Math.abs(ms) / 60000);
+  if (min < 60) return `${min} min`;
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return m ? `${h} h ${m}` : `${h} h`;
+}
+
+// The row's note: a link that names what's there and unfolds the day. Short
+// on purpose — it lives in the WHEN cell; which post, on which network, is
+// one click away in the unfolded agenda.
+function renderDayNote(slot, agenda) {
+  if (!agenda.items.length) return "";
+  const id = escapeText(slot.post.id);
+  const open = state.peekId === slot.post.id;
+  const n = agenda.items.length;
+  const label = agenda.clash
+    ? `Too close: ${formatGap(agenda.clash.when - slot.when)}`
+    : `+${n} ${n === 1 ? "post" : "posts"} that day`;
+  return `
+    <span class="schedule-modal__when-note${agenda.clash ? " is-clash" : ""}">
+      <i class="${agenda.clash ? "ap-icon-warning_fill" : "ap-icon-calendar"}" aria-hidden="true"></i>
+      <button
+        type="button"
+        class="ap-link small"
+        data-schedule-peek="${id}"
+        aria-expanded="${open ? "true" : "false"}"
+        aria-controls="schedulePeek-${id}"
+        ${agenda.clash ? `data-tooltip="${escapeText(`${networkName(agenda.clash.network)} post at ${formatTime(agenda.clash.when)}`)}"` : ""}
+      >${escapeText(label)}</button>
+    </span>`;
+}
+
+// The day's agenda, unfolded under the row: every post on that day, in
+// time order, with this draft's own slot marked so the gap reads at a glance.
+function renderPeek(slot, agenda) {
+  const id = escapeText(slot.post.id);
+  const entries = [
+    ...agenda.items,
+    { when: slot.when, network: platformOf(networkOf(slot.post)), text: extractFirstLine(slot.post), isSelf: true },
   ].sort((a, b) => a.when - b.when);
-  if (others.length === 0) return null;
-  return {
-    label: `+${others.length} ${others.length === 1 ? "post" : "posts"} that day`,
-    detail: `Also that day: ${others.map((e) => `${formatTime(e.when)} ${networkName(e.network)}`).join(", ")}`,
-  };
+  const rows = entries
+    .map(
+      (e) => `
+      <li class="schedule-modal__peek-item${e.isSelf ? " is-self" : ""}${e.clash ? " is-clash" : ""}">
+        <span class="schedule-modal__peek-time">${formatTime(e.when)}</span>
+        <i class="${NETWORK_ICON_BY_PLATFORM[e.network] || "ap-icon-megaphone"}" aria-hidden="true"></i>
+        <span class="schedule-modal__peek-text">${escapeText(e.text || "")}</span>
+        ${
+          e.isSelf
+            ? `<span class="ap-status blue no-dot">This draft</span>`
+            : e.clash
+              ? `<span class="ap-status orange no-dot">${formatGap(e.when - slot.when)} apart</span>`
+              : e.isBatch
+                ? `<span class="ap-status grey no-dot">This batch</span>`
+                : ""
+        }
+      </li>`,
+    )
+    .join("");
+  return `
+    <div class="schedule-modal__peek" id="schedulePeek-${id}">
+      <span class="schedule-modal__peek-head">${escapeText(formatDay(slot.when))}</span>
+      <ul class="schedule-modal__peek-list">${rows}</ul>
+    </div>`;
 }
 
 // The date tile — weekday, the day in large, the month. Static data, so
@@ -788,7 +993,7 @@ function renderWhen(slot) {
       </div>`;
   }
   const reason = reasonFor(slot);
-  const busy = sameDayNote(slot);
+  const agenda = dayAgenda(slot);
   return `
     <div class="schedule-modal__when">
       ${renderTile(slot)}
@@ -820,11 +1025,7 @@ function renderWhen(slot) {
             : `<span class="schedule-modal__when-note is-reason" data-tooltip="${escapeText(reason.detail)}">
                 <i class="ap-icon-sparkles" aria-hidden="true"></i>${escapeText(reason.label)}</span>`
         }
-        ${
-          busy
-            ? `<span class="schedule-modal__when-note" data-tooltip="${escapeText(busy.detail)}">${escapeText(busy.label)}</span>`
-            : ""
-        }
+        ${renderDayNote(slot, agenda)}
       </div>
     </div>`;
 }
@@ -895,6 +1096,7 @@ function renderRow(slot, i) {
     <li class="${classes}" style="--i: ${i}">
       ${renderWhen(slot)}
       ${renderDraft(slot)}
+      ${!slot.pending && state.peekId === slot.post.id ? renderPeek(slot, dayAgenda(slot)) : ""}
     </li>`;
 }
 

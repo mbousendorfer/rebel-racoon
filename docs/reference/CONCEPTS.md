@@ -46,6 +46,9 @@ Avant d'ajouter un champ ou une section, trois questions. **Une seule réponse �
 | **Le contenu produit**         | Sources, Ideas, Drafts, posts programmés, Topics                     | `sources-stream.js` (global), `library.js`, `posts-store.js`, `schedule-store.js`, `topics-store.js` (global) |
 | **Les métriques & historique** | performance des posts, top posts, ce qui a marché                    | `top-posts-store.js`, et la prod côté Agorapulse                                                              |
 | **La config opérationnelle**   | quelles sources d'écoute tournent, à quelle cadence, quoi surveiller | `topic-feeds-store.js`, édité sur `/topics/settings` ([`FEATURES.md`](FEATURES.md) §17)                       |
+| **Le rythme de publication**   | « twice a week, mornings, never on Mondays »                         | `schedule-presets-store.js`, édité dans la modale Schedule, sous _Adjust_ ([`FEATURES.md`](FEATURES.md) §5)   |
+
+Le **rythme de publication** est par marque, mais il répond à « quel job Archie doit tourner ? » : quand publier. Il se lit au même instant que `imageDefaults` (quand un humain ouvre la modale), et c'est bien la troisième question qui l'exclut, pas celle de la cadence. `imageDefaults` affirme à quoi ressemble la marque ; le rythme affirme une **routine de publication**, qui relève de la config de run. Il est donc stocké par Playbook, hors de la fiche, et ne doit jamais y être rendu.
 
 Les **comptes sociaux connectés** (`connectedSocials`, `selectedProfileId`) restent, eux, admissibles : ils disent sous quelle identité cette marque publie, ce qui est encore une réponse à « qui êtes-vous ? ».
 

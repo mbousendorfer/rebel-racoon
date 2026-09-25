@@ -127,7 +127,7 @@
    WHEN (a tinted cell) and WHAT (the draft). */
 .schedule-modal__timeline {
   --tile-w: 48px;
-  --when-w: 200px;
+  --when-w: 216px;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -465,4 +465,101 @@
   .schedule-modal__settings--three {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+/* ── What else is on that day ─────────────────────────────────────────── */
+.schedule-modal__when-note.is-clash i {
+  color: var(--ref-color-orange-100);
+}
+
+/* The day's agenda, unfolded under its row — spans both zones, on the same
+   grey-05 as the WHEN cell so it reads as that date's detail. */
+.schedule-modal__peek {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  background: var(--ref-color-grey-05);
+  border-top: 1px solid var(--ref-color-grey-20);
+  animation: schedule-modal__reveal 200ms var(--app-ease-out) both;
+}
+
+.schedule-modal__peek-head {
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.schedule-modal__peek-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.schedule-modal__peek-item {
+  display: grid;
+  grid-template-columns: 64px auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
+}
+
+.schedule-modal__peek-item i {
+  font-size: var(--sys-icon-css-sm);
+}
+
+.schedule-modal__peek-time {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.schedule-modal__peek-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* This draft's own slot, in the day it lands on — full ink, bold time. */
+.schedule-modal__peek-item.is-self {
+  color: var(--ref-color-grey-100);
+}
+
+.schedule-modal__peek-item.is-self .schedule-modal__peek-time {
+  font-weight: var(--sys-text-style-caption-bold-weight);
+}
+
+/* ── Save the rhythm for this Playbook ────────────────────────────────── */
+.schedule-modal__preset {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  padding-top: var(--ref-spacing-sm);
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+
+.schedule-modal__preset-note {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
+}
+
+.schedule-modal__preset-note.is-saved {
+  color: var(--ref-color-grey-100);
+}
+
+.schedule-modal__preset-note.is-saved i {
+  font-size: var(--sys-icon-css-sm);
+  color: var(--ref-color-green-100);
 }
