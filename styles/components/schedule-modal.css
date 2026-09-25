@@ -157,9 +157,13 @@
   overflow: hidden;
 }
 
+/* WHAT → WHEN → ✕. Every cell stretches to the row's height and centres its
+   content, so rows of different heights still share one midline. */
 .schedule-modal__row {
   display: grid;
-  grid-template-columns: var(--when-w) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) var(--when-w) 44px;
+  grid-template-areas: "draft when actions";
+  align-items: stretch;
 }
 
 .schedule-modal__row + .schedule-modal__row {
@@ -168,13 +172,14 @@
 
 /* WHEN ─ tile + time + two short notes, on a grey-05 cell. */
 .schedule-modal__when {
+  grid-area: when;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--ref-spacing-xs);
   min-width: 0;
   padding: var(--ref-spacing-xs);
   background: var(--ref-color-grey-05);
-  border-right: 1px solid var(--ref-color-grey-20);
+  border-left: 1px solid var(--ref-color-grey-20);
 }
 
 /* The date tile — static data, so grey ink on white, never blue. */
@@ -313,12 +318,15 @@
 }
 
 /* WHAT ─ profile + text, then the media thumbnail, then the ✕. */
+/* WHAT ─ the media thumbnail leads (it is how a post is recognised), then
+   profile + first lines. */
 .schedule-modal__draft {
+  grid-area: draft;
   display: flex;
-  align-items: flex-start;
-  gap: var(--ref-spacing-xs);
+  align-items: center;
+  gap: var(--ref-spacing-sm);
   min-width: 0;
-  padding: var(--ref-spacing-xs) var(--ref-spacing-xxs) var(--ref-spacing-xs) var(--ref-spacing-sm);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm) var(--ref-spacing-xs) var(--ref-spacing-xs);
   background: var(--ref-color-white);
 }
 
@@ -355,6 +363,11 @@
   background: var(--ref-color-grey-05);
 }
 
+.schedule-modal__thumb.is-text i {
+  font-size: var(--sys-icon-css-md);
+  color: var(--ref-color-grey-80);
+}
+
 .schedule-modal__thumb img {
   width: 100%;
   height: 100%;
@@ -381,9 +394,14 @@
   font-variant-numeric: tabular-nums;
 }
 
-.schedule-modal__draft-remove {
-  flex: 0 0 auto;
-  margin-top: calc(-1 * var(--ref-spacing-xxxs));
+/* The ✕ in a column of its own, centred — on the WHEN cell's grey-05, so the
+   right-hand band reads as one: the date, then the row's one action. */
+.schedule-modal__row-actions {
+  grid-area: actions;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ref-color-grey-05);
 }
 
 /* Shimmer bars inside a pending tile. */
@@ -500,14 +518,17 @@
   display: inline-block;
 }
 
-/* Narrow dialog — settings go one column, WHEN stacks over WHAT. */
+/* Narrow dialog — settings go one column, WHEN drops under WHAT. */
 @media (max-width: 600px) {
   .schedule-modal__row {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) 44px;
+    grid-template-areas:
+      "draft actions"
+      "when when";
   }
   .schedule-modal__when {
-    border-right: 0;
-    border-bottom: 1px solid var(--ref-color-grey-20);
+    border-left: 0;
+    border-top: 1px solid var(--ref-color-grey-20);
   }
 
   .schedule-modal__settings,

@@ -1,16 +1,16 @@
-import { html, raw, escapeText } from "../utils.js?v=1244";
-import { showToast } from "./toast.js?v=1244";
-import { getQueue, getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=1244";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1244";
+import { html, raw, escapeText } from "../utils.js?v=1246";
+import { showToast } from "./toast.js?v=1246";
+import { getQueue, getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=1246";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1246";
 import {
   renderProfileTag,
   profileForNetwork,
   NETWORK_LABEL,
   NETWORK_ICON_BY_PLATFORM,
-} from "../social-profiles.js?v=1244";
-import { getContextById } from "../contexts-store.js?v=1244";
-import { canEdit } from "../playbook-access.js?v=1244";
-import { getPreset, savePreset } from "../schedule-presets-store.js?v=1244";
+} from "../social-profiles.js?v=1246";
+import { getContextById } from "../contexts-store.js?v=1246";
+import { canEdit } from "../playbook-access.js?v=1246";
+import { getPreset, savePreset } from "../schedule-presets-store.js?v=1246";
 
 // Schedule modal — one column, result first.
 //   • Header   — "Schedule N drafts" + one line saying I already picked.
@@ -21,10 +21,10 @@ import { getPreset, savePreset } from "../schedule-presets-store.js?v=1244";
 //                days to skip. Every change re-spreads live.
 //   • Timeline — the batch as a posting schedule: ONE bordered list, one row
 //                per draft in date order, hairlines between rows. Each row
-//                is two zones that never mix: WHEN (a tinted cell — date
-//                tile, time + its pen, why I picked it, whether the day is
-//                busy) and WHAT (profile, first lines, the media thumbnail,
-//                and its ✕).
+//                reads WHAT → WHEN: the draft on the left (media thumbnail
+//                first, then profile + first lines), its date on the right
+//                (a tinted cell — tile, time + pen, why, how busy the day
+//                is), and the ✕ in a column of its own.
 //   • Footer   — what the batch adds up to ("4 posts over 8 days"), the
 //                disclosure line, then Cancel + the one primary.
 //
@@ -1064,7 +1064,15 @@ function renderThumb(post) {
         <span class="schedule-modal__thumb-badge">0:${String(secs).padStart(2, "0")}</span>
       </span>`;
   }
-  if (!post.imageUrl) return "";
+  // A text-only post still fills the column — a neutral tile saying "text"
+  // — the quote glyph — so every row's text starts at the same x and
+  // nothing floats.
+  if (!post.imageUrl) {
+    return `
+      <span class="schedule-modal__thumb is-text" role="img" aria-label="Text-only post">
+        <i class="ap-icon-quote" aria-hidden="true"></i>
+      </span>`;
+  }
   const count = Array.isArray(post.carousel) ? post.carousel.length : 0;
   return `
     <span class="schedule-modal__thumb">
@@ -1080,24 +1088,11 @@ function renderDraft(slot) {
   const network = networkOf(post);
   return `
     <div class="schedule-modal__draft">
+      ${renderThumb(post)}
       <div class="schedule-modal__draft-body">
         ${renderProfileTag(profileForNetwork(network), { network })}
         <p class="schedule-modal__draft-text">${escapeText(extractFirstLine(post))}</p>
       </div>
-      ${renderThumb(post)}
-      ${
-        state.posts.length > 1
-          ? `<button
-        type="button"
-        class="ap-icon-button schedule-modal__draft-remove"
-        data-schedule-remove="${escapeText(post.id)}"
-        aria-label="Leave this draft out"
-        data-tooltip="Leave this draft out"
-      >
-        <i class="ap-icon-close"></i>
-      </button>`
-          : ""
-      }
     </div>`;
 }
 
@@ -1112,8 +1107,23 @@ function renderRow(slot, i) {
     .join(" ");
   return `
     <li class="${classes}" style="--i: ${i}">
-      ${renderWhen(slot)}
       ${renderDraft(slot)}
+      ${renderWhen(slot)}
+      <div class="schedule-modal__row-actions">
+        ${
+          state.posts.length > 1
+            ? `<button
+          type="button"
+          class="ap-icon-button schedule-modal__draft-remove"
+          data-schedule-remove="${escapeText(slot.post.id)}"
+          aria-label="Leave this draft out"
+          data-tooltip="Leave this draft out"
+        >
+          <i class="ap-icon-close"></i>
+        </button>`
+            : ""
+        }
+      </div>
       ${!slot.pending && state.peekId === slot.post.id ? renderPeek(slot, dayAgenda(slot)) : ""}
     </li>`;
 }
