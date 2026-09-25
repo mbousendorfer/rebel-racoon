@@ -18,7 +18,9 @@ export function escapeHtml(value) {
 }
 
 function serialize(value) {
-  if (value == null || value === false) return "";
+  // `false` prints "false" on purpose: aria-pressed="${on}" must read "false",
+  // not "". Conditional markup uses ternaries, never `cond && html\`…\``.
+  if (value == null) return "";
   if (Array.isArray(value)) return value.map(serialize).join("");
   if (typeof value === "object" && value[RAW]) return value.value;
   return escapeHtml(value);

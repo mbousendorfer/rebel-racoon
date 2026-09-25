@@ -1,11 +1,11 @@
 // Image Generator — every write a custom style undergoes. A custom style is the
 // generator's, saved FOR a Playbook (brandId) and listed first in its picker.
 
-import { storageService as storage } from "../services/index.js?v=1229";
-import { createAsset, createStyle } from "../model/schema.js?v=1229";
-import { presetById, CUSTOM_STYLE_LIMITS } from "../config/style-presets.js?v=1229";
-import { sampleColors } from "../render/sample-colors.js?v=1229";
-import { uid } from "../lib/id.js?v=1229";
+import { storageService as storage } from "../services/index.js?v=1235";
+import { createAsset, createStyle } from "../model/schema.js?v=1235";
+import { presetById, CUSTOM_STYLE_LIMITS } from "../config/style-presets.js?v=1235";
+import { sampleColors } from "../render/sample-colors.js?v=1235";
+import { uid } from "../lib/id.js?v=1235";
 
 /** A custom style can write text into the image when its heaviest preset can. */
 export function deriveEmbeddedText(sources) {

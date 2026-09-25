@@ -5,7 +5,7 @@
 // state/playbook-brand.js. Everything below is scoped to one by `brandId`,
 // which is a Playbook (Context) id.
 
-import { uid, nowIso } from "../lib/id.js?v=1229";
+import { uid, nowIso } from "../lib/id.js?v=1235";
 
 // 2: brands moved to the Playbook (v1 had its own brands collection).
 export const SCHEMA_VERSION = 2;
@@ -100,8 +100,14 @@ export function createCreation(partial = {}) {
     brandId: null,
     campaignId: null,
     title: "",
-    brief: { prompt: "", styleId: null, productId: null, formatIds: [], textMode: "layer", ideaId: null },
+    brief: { prompt: "", headline: "", styleId: null, productId: null, formatIds: [], textMode: "layer", ideaId: null },
+    // The style as it was when the images were made — a style edited or deleted
+    // later must not change images that already exist.
+    styleSnapshot: null,
+    // Variations come in batches (a generation, "Similar to…"): { id, seed, bgSeed, subjectSeed, batchId, prompt }
     variations: [],
+    batches: [],
+    favoriteVariationIds: [],
     selectedVariationId: null,
     master: { formatId: null, layers: [] },
     adaptations: [],

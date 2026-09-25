@@ -2,10 +2,10 @@
 // palette with roles, fonts, moods. Read-only here; the pen goes to the
 // Playbook page, where the brand is edited.
 
-import { html } from "../lib/html.js?v=1229";
-import { swatch } from "./swatch.js?v=1229";
-import { logoUrl } from "./asset.js?v=1229";
-import { canEditBrand, playbookPath } from "../state/store.js?v=1229";
+import { html } from "../lib/html.js?v=1235";
+import { swatch } from "./swatch.js?v=1235";
+import { logoUrl } from "./asset.js?v=1235";
+import { canEditBrand, playbookPath } from "../state/store.js?v=1235";
 
 const ROLE = { primary: "Primary", secondary: "Secondary", accent: "Accent", background: "Background", text: "Text" };
 
@@ -18,14 +18,17 @@ export function brandGaps(brand) {
   return gaps;
 }
 
-export function renderBrandCard(brand) {
+export function renderBrandCard(brand, { compact = false } = {}) {
   const logo = logoUrl(brand, "color");
   const editable = canEditBrand(brand.id);
   const gaps = brandGaps(brand);
   const heading = brand.fonts.find((f) => f.role === "heading")?.family;
   const body = brand.fonts.find((f) => f.role === "body")?.family;
   return html`
-    <section class="ap-card imst-brand" aria-label="Brand applied to every image">
+    <section
+      class="ap-card imst-brand${compact ? " imst-brand--compact" : ""}"
+      aria-label="Brand applied to every image"
+    >
       <div class="imst-brand__logo">
         ${logo
           ? html`<img src="${logo}" alt="${brand.name} logo" />`

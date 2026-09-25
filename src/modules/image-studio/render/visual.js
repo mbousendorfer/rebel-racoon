@@ -8,11 +8,12 @@
 //     (only colours, textures and mood are held);
 //   · reference images — their sampled colours tint the palette by their weight.
 
-import { prng } from "../lib/prng.js?v=1229";
-import { presetById } from "../config/style-presets.js?v=1229";
-import { generatorFor } from "./generators.js?v=1229";
-import { resolvePalette } from "./palette.js?v=1229";
-import { subjectPath } from "./subjects.js?v=1229";
+import { prng } from "../lib/prng.js?v=1235";
+import { presetById } from "../config/style-presets.js?v=1235";
+import { generatorFor } from "./generators.js?v=1235";
+import { inkOn, resolvePalette } from "./palette.js?v=1235";
+import { fontStack } from "../config/fonts.js?v=1235";
+import { subjectPath } from "./subjects.js?v=1235";
 
 let renderSeq = 0;
 
@@ -63,10 +64,14 @@ export function renderVisual(o) {
   const rs = prng(o.subjectSeed ?? o.seed ^ 0x27d4eb2d);
   // The subject sits where the text layer ISN'T: lower-right third on a tall
   // canvas, right of centre on a wide one — the text block and logo take the rest.
-  const wide = W / H > 1.4;
-  const s = Math.min(W, H) * (0.42 + rs() * 0.12);
-  const cx = W * (wide ? 0.66 : 0.5 + (rs() - 0.5) * 0.16);
-  const cy = H * (wide ? 0.52 : 0.46 + (rs() - 0.5) * 0.1);
+  // Matches render/layout.js: square/portrait keep the text in the lower third,
+  // stories keep it just under the middle, wide formats on the left half.
+  const ratio = H / W;
+  const wide = ratio < 0.72;
+  const tall = ratio > 1.5;
+  const s = wide ? H * (0.5 + rs() * 0.12) : W * (tall ? 0.52 + rs() * 0.1 : 0.4 + rs() * 0.08);
+  const cx = W * (wide ? 0.72 : 0.5 + (rs() - 0.5) * 0.14);
+  const cy = H * (wide ? 0.5 : tall ? 0.3 : 0.36 + (rs() - 0.5) * 0.06);
   const kind = o.subjectKind || "object";
   const ctx = {
     W,
@@ -80,9 +85,46 @@ export function renderVisual(o) {
     text: o.text || null,
     productHref: o.productHref || "",
   };
-  const body = generatorFor(drawing.family, drawing.variant)(ctx);
+  const body = generatorFor(drawing.family, drawing.variant)(ctx) + embeddedText(ctx, o);
   const title = o.title ? `<title>${String(o.title).replace(/[&<>]/g, "")}</title>` : "";
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${o.width}" height="${o.height}" preserveAspectRatio="xMidYMid slice">${title}${body}</svg>`;
+}
+
+// "Built into the image": the model writes the headline itself, so it becomes
+// part of the pixels — in the brand's heading font, on a soft scrim so it reads
+// whatever the generator drew underneath. Only offered for styles that support it.
+function embeddedText(c, o) {
+  const headline = o.text?.embedded && o.text.headline ? String(o.text.headline) : "";
+  if (!headline) return "";
+  const { W, H, p } = c;
+  const family = o.brand?.fonts?.find((f) => f.role === "heading")?.family;
+  const font = family ? fontStack(family).replace(/"/g, "'") : "Helvetica, Arial, sans-serif";
+  const size = Math.min(W, H) * (headline.length > 28 ? 0.06 : 0.08);
+  const words = headline.split(/\s+/);
+  const perLine = Math.max(1, Math.floor((W * 0.8) / (size * 0.55)));
+  const lines = [];
+  let line = "";
+  for (const w of words) {
+    if ((line + " " + w).trim().length > perLine) {
+      lines.push(line.trim());
+      line = w;
+    } else line += " " + w;
+  }
+  if (line.trim()) lines.push(line.trim());
+  const shown = lines.slice(0, 3);
+  const top = H * 0.08;
+  const scrimH = size * 1.25 * shown.length + size;
+  const ink = inkOn(p.background, p.text);
+  const esc = (t) => t.replace(/[&<>]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[ch]);
+  return (
+    `<rect x="${W * 0.05}" y="${top - size * 0.2}" width="${W * 0.9}" height="${scrimH}" rx="${size * 0.3}" fill="${p.background}" opacity="0.82"/>` +
+    shown
+      .map(
+        (l, i) =>
+          `<text x="${W * 0.09}" y="${top + size * (1.05 + i * 1.25)}" font-size="${size}" font-weight="700" font-family="${font}" fill="${ink}">${esc(l)}</text>`,
+      )
+      .join("")
+  );
 }
 
 export function svgToDataUrl(svg) {
