@@ -1,16 +1,16 @@
-import { html, raw, escapeText } from "../utils.js?v=1257";
-import { showToast } from "./toast.js?v=1257";
-import { getQueue, getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=1257";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1257";
+import { html, raw, escapeText } from "../utils.js?v=1258";
+import { showToast } from "./toast.js?v=1258";
+import { getQueue, getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=1258";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1258";
 import {
   renderProfileTag,
   profileForNetwork,
   NETWORK_LABEL,
   NETWORK_ICON_BY_PLATFORM,
-} from "../social-profiles.js?v=1257";
-import { getContextById } from "../contexts-store.js?v=1257";
-import { canEdit } from "../playbook-access.js?v=1257";
-import { getPreset, savePreset } from "../schedule-presets-store.js?v=1257";
+} from "../social-profiles.js?v=1258";
+import { getContextById } from "../contexts-store.js?v=1258";
+import { canEdit } from "../playbook-access.js?v=1258";
+import { getPreset, savePreset } from "../schedule-presets-store.js?v=1258";
 
 // Schedule modal — one column, result first.
 //   • Header   — "Schedule N drafts" + one line saying I already picked.
@@ -44,7 +44,7 @@ import { getPreset, savePreset } from "../schedule-presets-store.js?v=1257";
 // What else is on a suggested day is answered ON the row: a link naming the
 // count ("2 other posts that day"), orange and naming the clash when a post on
 // the SAME network sits within two hours, which unfolds that day's agenda
-// under the row. The sentence says how many busy days I stepped over.
+// under the row.
 //
 // The rhythm can be saved PER PLAYBOOK (schedule-presets-store): the modal
 // opens on the chat's Playbook preset when there is one. Operational config,
@@ -114,7 +114,6 @@ function emptyState() {
     adjustOpen: false,
     peekId: null, // the row whose day agenda is unfolded (one at a time)
     playbook: null, // the chat's Playbook — whose rhythm preset we read / save
-    skippedBusy: 0, // busy days the spread stepped over (said in the sentence)
     onConfirm: null,
     status: "idle", // 'idle' | 'scheduling' | 'error'
     errorMessage: "",
@@ -272,24 +271,6 @@ function close() {
 }
 
 // ── The spread ────────────────────────────────────────────────────────
-// Does a day match the rhythm? One draft has no rhythm: it takes its
-// network's best days instead.
-function dayMatches(day, start, strategy) {
-  const dow = day.getDay();
-  if (strategy.skip.includes(dow)) return false;
-  if (state.posts.length === 1) {
-    const map = PER_NETWORK_OPTIMAL[networkOf(state.posts[0])] || FALLBACK_OPTIMAL;
-    return map.dow.includes(dow);
-  }
-  const cadence = CADENCES.find((c) => c.id === strategy.cadence) || CADENCES[0];
-  if (cadence.every) return Math.round((day - start) / 86400000) % cadence.every === 0;
-  if (cadence.weekly) return dow === start.getDay();
-  return cadence.days.includes(dow);
-}
-
-// How many days that matched the rhythm I stepped over because something
-// was already scheduled on them — the proof, in the sentence, that the
-// spread read the calendar.
 // The days already carrying a post on one of THIS batch's networks. That is
 // what the spread avoids: a Facebook post doesn't crowd a LinkedIn one, so a
 // day busy on another network stays eligible — and its row says what's there.
@@ -299,19 +280,6 @@ function busyDaysForBatch() {
   const keys = new Set();
   for (const e of getQueue()) if (networks.has(platformOf(e.network))) keys.add(dayKey(e.when));
   return keys;
-}
-
-function countSkippedBusy() {
-  const free = state.slots.filter((x) => !x.pinned);
-  if (!free.length) return 0;
-  const last = Math.max(...free.map((x) => x.when));
-  const start = startOfDay(state.strategy.startFrom || defaultStartFrom());
-  const busy = busyDaysForBatch();
-  let n = 0;
-  for (const cursor = new Date(start); cursor.getTime() <= last; cursor.setDate(cursor.getDate() + 1)) {
-    if (busy.has(dayKey(cursor.getTime())) && dayMatches(cursor, start, state.strategy)) n++;
-  }
-  return n;
 }
 
 // Walking from `startFrom`, collect the next `count` days that match the
@@ -382,7 +350,6 @@ function respread() {
     when.setHours(hour + overflow, 0, 0, 0);
     return { post, when: when.getTime(), pinned: false };
   });
-  state.skippedBusy = countSkippedBusy();
 }
 
 // ── Events ────────────────────────────────────────────────────────────
@@ -701,18 +668,13 @@ function rhythmSentence() {
     : "";
   // Whose rhythm this is, when it's the Playbook's saved one.
   const lead = usingSavedPreset() ? `${b(`${state.playbook.name}'s rhythm`)} — ` : "";
-  const n = state.skippedBusy;
-  const stepped =
-    n > 0 && !isComputing()
-      ? ` I stepped over ${b(`${n} ${n === 1 ? "day" : "days"}`)} that already ${n === 1 ? "has a post" : "have posts"} on the same network.`
-      : "";
   if (state.posts.length === 1) {
     const name = networkName(networkOf(state.posts[0]));
     const when = s.timeOfDay ? `in the ${b(tod.label.toLowerCase())}` : `at ${b(`${name}'s best time`)}`;
-    return `${lead}${lead ? "from" : "From"} ${b(formatDay(s.startFrom))}, ${when}${skip}.${stepped}`;
+    return `${lead}${lead ? "from" : "From"} ${b(formatDay(s.startFrom))}, ${when}${skip}.`;
   }
   const cadence = CADENCES.find((c) => c.id === s.cadence) || CADENCES[0];
-  return `${lead}${b(cadence.label)} from ${b(formatDay(s.startFrom))}, ${at}${skip}.${stepped}`;
+  return `${lead}${b(cadence.label)} from ${b(formatDay(s.startFrom))}, ${at}${skip}.`;
 }
 
 function sameRhythm(a, b) {
