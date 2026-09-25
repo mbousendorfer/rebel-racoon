@@ -1,16 +1,16 @@
-import { html, raw, escapeText } from "../utils.js?v=1241";
-import { showToast } from "./toast.js?v=1241";
-import { getQueue, getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=1241";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1241";
+import { html, raw, escapeText } from "../utils.js?v=1242";
+import { showToast } from "./toast.js?v=1242";
+import { getQueue, getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=1242";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1242";
 import {
   renderProfileTag,
   profileForNetwork,
   NETWORK_LABEL,
   NETWORK_ICON_BY_PLATFORM,
-} from "../social-profiles.js?v=1241";
-import { getContextById } from "../contexts-store.js?v=1241";
-import { canEdit } from "../playbook-access.js?v=1241";
-import { getPreset, savePreset } from "../schedule-presets-store.js?v=1241";
+} from "../social-profiles.js?v=1242";
+import { getContextById } from "../contexts-store.js?v=1242";
+import { canEdit } from "../playbook-access.js?v=1242";
+import { getPreset, savePreset } from "../schedule-presets-store.js?v=1242";
 
 // Schedule modal — one column, result first.
 //   • Header   — "Schedule N drafts" + one line saying I already picked.
@@ -44,7 +44,7 @@ import { getPreset, savePreset } from "../schedule-presets-store.js?v=1241";
 // What else is on a suggested day is answered ON the row: a link naming the
 // count ("2 other posts that day"), orange and naming the clash when a post on
 // the SAME network sits within two hours, which unfolds that day's agenda
-// under the row.
+// under the row. The sentence says how many busy days I stepped over.
 //
 // The rhythm can be saved PER PLAYBOOK (schedule-presets-store): the modal
 // opens on the chat's Playbook preset when there is one. Operational config,
@@ -114,6 +114,7 @@ function emptyState() {
     adjustOpen: false,
     peekId: null, // the row whose day agenda is unfolded (one at a time)
     playbook: null, // the chat's Playbook — whose rhythm preset we read / save
+    skippedBusy: 0, // busy days the spread stepped over (said in the sentence)
     onConfirm: null,
     status: "idle", // 'idle' | 'scheduling' | 'error'
     errorMessage: "",
@@ -260,6 +261,24 @@ function close() {
 }
 
 // ── The spread ────────────────────────────────────────────────────────
+// Does a day match the rhythm? One draft has no rhythm: it takes its
+// network's best days instead.
+function dayMatches(day, start, strategy) {
+  const dow = day.getDay();
+  if (strategy.skip.includes(dow)) return false;
+  if (state.posts.length === 1) {
+    const map = PER_NETWORK_OPTIMAL[networkOf(state.posts[0])] || FALLBACK_OPTIMAL;
+    return map.dow.includes(dow);
+  }
+  const cadence = CADENCES.find((c) => c.id === strategy.cadence) || CADENCES[0];
+  if (cadence.every) return Math.round((day - start) / 86400000) % cadence.every === 0;
+  if (cadence.weekly) return dow === start.getDay();
+  return cadence.days.includes(dow);
+}
+
+// How many days that matched the rhythm I stepped over because something
+// was already scheduled on them — the proof, in the sentence, that the
+// spread read the calendar.
 // The days already carrying a post on one of THIS batch's networks. That is
 // what the spread avoids: a Facebook post doesn't crowd a LinkedIn one, so a
 // day busy on another network stays eligible — and its row says what's there.
@@ -269,6 +288,19 @@ function busyDaysForBatch() {
   const keys = new Set();
   for (const e of getQueue()) if (networks.has(platformOf(e.network))) keys.add(dayKey(e.when));
   return keys;
+}
+
+function countSkippedBusy() {
+  const free = state.slots.filter((x) => !x.pinned);
+  if (!free.length) return 0;
+  const last = Math.max(...free.map((x) => x.when));
+  const start = startOfDay(state.strategy.startFrom || defaultStartFrom());
+  const busy = busyDaysForBatch();
+  let n = 0;
+  for (const cursor = new Date(start); cursor.getTime() <= last; cursor.setDate(cursor.getDate() + 1)) {
+    if (busy.has(dayKey(cursor.getTime())) && dayMatches(cursor, start, state.strategy)) n++;
+  }
+  return n;
 }
 
 // Walking from `startFrom`, collect the next `count` days that match the
@@ -339,6 +371,7 @@ function respread() {
     when.setHours(hour + overflow, 0, 0, 0);
     return { post, when: when.getTime(), pinned: false };
   });
+  state.skippedBusy = countSkippedBusy();
 }
 
 // ── Events ────────────────────────────────────────────────────────────
@@ -548,7 +581,15 @@ function renderInner() {
   return html`
     <div class="ap-dialog-header">
       <span class="ap-dialog-title" id="${ROOT_ID}Title">Schedule ${n} ${n === 1 ? "draft" : "drafts"}</span>
-      <span class="ap-dialog-subtitle">${subtitle(computing)}</span>
+      <span class="ap-dialog-subtitle">
+        ${computing
+          ? n === 1
+            ? "I'm finding the best time for this post, around what's already scheduled."
+            : "I'm finding the best time for each draft, around what's already scheduled."
+          : n === 1
+            ? "I picked the best time for this post, around what's already scheduled. Change it if you need to."
+            : "I picked a time for each draft, around what's already scheduled. Change any of them."}
+      </span>
     </div>
 
     <div class="ap-dialog-content schedule-modal__body">
@@ -568,7 +609,7 @@ function renderInner() {
     </div>
 
     <div class="ap-dialog-footer">
-      <div class="ap-dialog-footer-left">${raw(renderFootSummary())}</div>
+      <div class="ap-dialog-footer-left schedule-modal__foot">${raw(renderFootSummary())}</div>
       <div class="ap-dialog-footer-right">
         <button type="button" class="ap-button ghost grey" data-schedule-close ${busy ? "disabled" : ""}>Cancel</button>
         <button
@@ -590,24 +631,6 @@ function renderInner() {
       <i class="ap-icon-close"></i>
     </button>
   `;
-}
-
-// Who it publishes as (when the batch is one profile), then what I did.
-function subtitle(computing) {
-  const n = state.posts.length;
-  const nets = batchNetworks();
-  let who = "";
-  if (nets.length === 1) {
-    const account = profileForNetwork(nets[0]);
-    const name = account?.handle || account?.platformLabel || networkName(nets[0]);
-    who = `On ${name}'s ${networkName(nets[0])}. `;
-  }
-  const what = computing
-    ? `I'm finding the best time for ${n === 1 ? "this post" : "each draft"}, around what's already scheduled.`
-    : n === 1
-      ? "I picked the best time for this post, around what's already scheduled."
-      : "I picked a time for each draft, around what's already scheduled.";
-  return who + what;
 }
 
 // ── Formatting (en-US like the rest of the copy — a French date inside an
@@ -659,13 +682,18 @@ function rhythmSentence() {
     : "";
   // Whose rhythm this is, when it's the Playbook's saved one.
   const lead = usingSavedPreset() ? `${b(`${state.playbook.name}'s rhythm`)} — ` : "";
+  const n = state.skippedBusy;
+  const stepped =
+    n > 0 && !isComputing()
+      ? ` I stepped over ${b(`${n} ${n === 1 ? "day" : "days"}`)} that already ${n === 1 ? "has a post" : "have posts"} on the same network.`
+      : "";
   if (state.posts.length === 1) {
     const name = networkName(networkOf(state.posts[0]));
     const when = s.timeOfDay ? `in the ${b(tod.label.toLowerCase())}` : `at ${b(`${name}'s best time`)}`;
-    return `${lead}${lead ? "from" : "From"} ${b(formatDay(s.startFrom))}, ${when}${skip}.`;
+    return `${lead}${lead ? "from" : "From"} ${b(formatDay(s.startFrom))}, ${when}${skip}.${stepped}`;
   }
   const cadence = CADENCES.find((c) => c.id === s.cadence) || CADENCES[0];
-  return `${lead}${b(cadence.label)} from ${b(formatDay(s.startFrom))}, ${at}${skip}.`;
+  return `${lead}${b(cadence.label)} from ${b(formatDay(s.startFrom))}, ${at}${skip}.${stepped}`;
 }
 
 function sameRhythm(a, b) {
@@ -812,15 +840,20 @@ function renderSettings() {
 }
 
 // ── The timeline ──────────────────────────────────────────────────────
-// Why I picked THIS time — said in the time's tooltip, in full.
+// Why I picked THIS time — the one line that makes a suggestion read as a
+// decision. Kept to a few words so it fits the WHEN cell — the network is
+// already named by the profile tag beside it — and the full reading
+// ("LinkedIn's best window: Tue–Thu, 9 AM") rides in the tooltip.
 function reasonFor(slot) {
   const network = networkOf(slot.post);
   const name = networkName(network);
   const map = PER_NETWORK_OPTIMAL[network] || FALLBACK_OPTIMAL;
   const tod = state.strategy.timeOfDay;
   const window = `${name}'s best window: ${formatDays(map.dow)}, ${formatHour(pickHour(map.hours, null))}`;
-  if (tod) return `${name}'s best ${tod} hour`;
-  return map.dow.includes(new Date(slot.when).getDay()) ? window : `${name}'s best hour, on your rhythm`;
+  if (tod) return { label: `Best ${tod} hour`, detail: `${name}'s best ${tod} hour` };
+  return map.dow.includes(new Date(slot.when).getDay())
+    ? { label: "Best window", detail: window }
+    : { label: "Best hour", detail: `${name}'s best hour, on your rhythm — ${window}` };
 }
 
 // What else is on the day a draft lands on — the queue plus the other
@@ -880,7 +913,7 @@ function renderDayNote(slot, agenda) {
     : `+${n} ${n === 1 ? "post" : "posts"} that day`;
   return `
     <span class="schedule-modal__when-note${agenda.clash ? " is-clash" : ""}">
-      ${agenda.clash ? `<i class="ap-icon-warning_fill" aria-hidden="true"></i>` : ""}
+      <i class="${agenda.clash ? "ap-icon-warning_fill" : "ap-icon-calendar"}" aria-hidden="true"></i>
       <button
         type="button"
         class="ap-link small"
@@ -953,46 +986,47 @@ function renderWhen(slot) {
   if (slot.pending) {
     return `
       <div class="schedule-modal__when">
-        <span class="schedule-modal__when-trigger">
-          ${renderTile(slot)}
+        ${renderTile(slot)}
+        <div class="schedule-modal__when-body">
           <span class="schedule-modal__when-pending" role="status">Finding a time…</span>
-        </span>
+        </div>
       </div>`;
   }
-  const notes = [
-    slot.pinned
-      ? `<span class="schedule-modal__when-note">Set by you ·
-          <button type="button" class="ap-link small" data-schedule-reset="${id}" aria-label="Use my suggestion again">Reset</button></span>`
-      : "",
-    renderDayNote(slot, dayAgenda(slot)),
-  ].filter(Boolean);
-  // The whole date + time is the control: one click target, one pen that
-  // shows on hover / focus, instead of a pen button on every row at rest.
-  // Why I picked the time rides in its tooltip — the sentence above already
-  // says "at each network's best time" once for the whole batch.
+  const reason = reasonFor(slot);
+  const agenda = dayAgenda(slot);
   return `
     <div class="schedule-modal__when">
-      <button
-        type="button"
-        class="schedule-modal__when-trigger"
-        data-schedule-when="${id}"
-        aria-label="Change the publish time — ${escapeText(formatDay(slot.when))}, ${formatTime(slot.when)}"
-        data-tooltip="${escapeText(slot.pinned ? "Change date or time" : reasonFor(slot))}"
-      >
-        ${renderTile(slot)}
-        <span class="schedule-modal__when-time">
-          ${formatTime(slot.when)}<i class="ap-icon-pen schedule-modal__when-pen" aria-hidden="true"></i>
+      ${renderTile(slot)}
+      <div class="schedule-modal__when-body">
+        <span class="schedule-modal__when-head">
+          <span class="schedule-modal__when-time">${formatTime(slot.when)}</span>
+          <button
+            type="button"
+            class="ap-icon-button schedule-modal__when-edit"
+            data-schedule-when="${id}"
+            aria-label="Change the publish time — ${escapeText(formatDay(slot.when))}, ${formatTime(slot.when)}"
+            data-tooltip="Change date or time"
+          >
+            <i class="ap-icon-pen"></i>
+          </button>
+          <input
+            type="datetime-local"
+            class="schedule-modal__when-input"
+            value="${toLocalInput(slot.when)}"
+            data-schedule-slot="${id}"
+            tabindex="-1"
+            aria-hidden="true"
+          />
         </span>
-      </button>
-      <input
-        type="datetime-local"
-        class="schedule-modal__when-input"
-        value="${toLocalInput(slot.when)}"
-        data-schedule-slot="${id}"
-        tabindex="-1"
-        aria-hidden="true"
-      />
-      ${notes.length ? `<div class="schedule-modal__when-notes">${notes.join("")}</div>` : ""}
+        ${
+          slot.pinned
+            ? `<span class="schedule-modal__when-note">Set by you ·
+                <button type="button" class="ap-link small" data-schedule-reset="${id}" aria-label="Use my suggestion again">Reset</button></span>`
+            : `<span class="schedule-modal__when-note is-reason" data-tooltip="${escapeText(reason.detail)}">
+                <i class="ap-icon-sparkles" aria-hidden="true"></i>${escapeText(reason.label)}</span>`
+        }
+        ${renderDayNote(slot, agenda)}
+      </div>
     </div>`;
 }
 
@@ -1023,20 +1057,13 @@ function renderThumb(post) {
 
 // WHAT — the draft itself: who publishes it, what it says, what it shows,
 // and its one action (leave it out).
-// One profile for the whole batch (the usual case — the Drafts panel
-// schedules per network) is named once, in the subtitle; the rows only carry
-// a profile tag when the batch mixes them.
-function batchNetworks() {
-  return [...new Set(state.posts.map((p) => platformOf(networkOf(p))))];
-}
-
 function renderDraft(slot) {
   const post = slot.post;
   const network = networkOf(post);
   return `
     <div class="schedule-modal__draft">
       <div class="schedule-modal__draft-body">
-        ${batchNetworks().length > 1 ? renderProfileTag(profileForNetwork(network), { network }) : ""}
+        ${renderProfileTag(profileForNetwork(network), { network })}
         <p class="schedule-modal__draft-text">${escapeText(extractFirstLine(post))}</p>
       </div>
       ${renderThumb(post)}
@@ -1085,15 +1112,19 @@ function renderTimeline() {
 
 // Footer left: what the batch adds up to, once the dates exist.
 function renderFootSummary() {
-  if (isComputing() || state.slots.length === 0) return "";
+  const disclosure = `<span class="schedule-modal__foot-disclosure">Posts will publish to your connected accounts.</span>`;
+  if (isComputing() || state.slots.length === 0) return disclosure;
   const times = state.slots.map((s) => s.when).sort((a, b) => a - b);
   const first = times[0];
   const last = times[times.length - 1];
+  let span;
   if (times.length === 1) {
-    return `<span class="schedule-modal__foot-span"><strong>${escapeText(formatDay(first))}</strong> at ${formatTime(first)}</span>`;
+    span = `<strong>${escapeText(formatDay(first))}</strong> at ${formatTime(first)}`;
+  } else {
+    const days = Math.round((startOfDay(last) - startOfDay(first)) / 86400000) + 1;
+    span = `<strong>${times.length} posts over ${days} ${days === 1 ? "day" : "days"}</strong> · ${escapeText(formatShortDate(first))} – ${escapeText(formatShortDate(last))}`;
   }
-  const days = Math.round((startOfDay(last) - startOfDay(first)) / 86400000) + 1;
-  return `<span class="schedule-modal__foot-span"><strong>${times.length} posts over ${days} ${days === 1 ? "day" : "days"}</strong> · ${escapeText(formatShortDate(first))} – ${escapeText(formatShortDate(last))}</span>`;
+  return `<span class="schedule-modal__foot-span">${span}</span>${disclosure}`;
 }
 
 function toDateInput(ts) {
