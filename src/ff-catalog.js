@@ -140,6 +140,21 @@ export const FLAGS = Object.freeze([
       "month calendar beside the list.",
   },
   {
+    id: "sexySquirrel",
+    label: "Sexy Squirrel — AI Image Generator (/image-generator)",
+    // OFF: lands dark. Gates the route (a typed /image-generator bounces home),
+    // the rail row, and the Playbook's brand-kit rows + two creation entries.
+    default: false,
+    hides:
+      "When OFF, Image Generator disappears entirely. ON adds an AI image " +
+      "generator for social posts (Instagram, Facebook, X, LinkedIn): start from " +
+      "a campaign idea or your own prompt, get four variations, edit them on a " +
+      "layered canvas, adapt them to every format and export PNG. The brand is " +
+      "the Playbook: ON also adds its brand kit (logo versions, colour roles, " +
+      "moods, words to avoid, visual rules) to the Playbook page, and two more " +
+      "ways to create a Playbook (from files, or by hand).",
+  },
+  {
     id: "skipConnectProfiles",
     label: "Skip connecting profiles at setup",
     default: false,

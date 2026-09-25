@@ -14,17 +14,28 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1260";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1260";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1260";
-import { isFlagOn } from "./feature-flags.js?v=1260";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1260";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1261";
+import {
+  kitEnabled,
+  renderColorRole,
+  colorRoleCaption,
+  renderLogoVariants,
+  renderVisualRules,
+  handleKitClick,
+  handleKitInput,
+  handleKitChange,
+  kitSnapshot,
+} from "./playbook-brand-kit.js?v=1261";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1261";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1261";
+import { isFlagOn } from "./feature-flags.js?v=1261";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1261";
 // The Default look row offers the SAME three catalogues the Image Studio renders, from
 // the one place they are declared — REF_MODES' own header makes the argument: the label,
 // the hint and the brief clause "drift the moment they live apart". No cycle: the engine
 // imports only clip-formats / image-studio-canvas / feature-flags, and its module body
 // builds consts, so importing it here costs nothing at load.
-import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1260";
+import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1261";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -456,6 +467,7 @@ export function snapshotEditable(d) {
       imageDefaults: d.imageDefaults || { imageType: "", style: "", refMode: "" },
       competitors: d.competitors || [],
       dismissedCompetitors: d.dismissedCompetitors || [],
+      ...kitSnapshot(d),
     }),
   );
 }
@@ -607,6 +619,7 @@ function renderSwatches(colors) {
         <span class="recap__swatch-meta">
           <span class="recap__swatch-name">${esc(c.name || "Colour")}</span>
           <span class="recap__swatch-hex">${esc((c.hex || "").toUpperCase())}</span>
+          ${colorRoleCaption(c) ? `<span class="recap__swatch-role">${esc(colorRoleCaption(c))}</span>` : ""}
         </span>
       </div>`,
     )
@@ -1251,6 +1264,9 @@ function renderVoicePanel(data, edit) {
             "Emoji & casing",
             renderTextarea("visualStyle", data.visualStyle, "Emoji use, capitalisation, hashtags, links…"),
           ),
+          kitEnabled()
+            ? renderRow("Words to avoid", renderEditChips("voiceAvoid", data.voiceAvoid, "Add a word or phrase…"))
+            : "",
         ].join("");
     body = renderSectionHint(SECTION_HINTS.voice) + renderVoiceModeToggle(data.voiceMode) + fields;
   } else if (manual) {
@@ -1262,6 +1278,7 @@ function renderVoicePanel(data, edit) {
       renderRow("Closing patterns", renderQuotes(ve.closingPatterns)),
       renderRow("Formatting", renderText(data.formattingStyle)),
       renderRow("Emoji & casing", renderText(data.visualStyle)),
+      kitEnabled() ? renderRow("Words to avoid", renderChips(data.voiceAvoid || [])) : "",
     ].join("");
   }
   // "Learn from…" — a single DS dropdown that merges the old "Learn from my
@@ -1307,6 +1324,7 @@ function renderBrandPanel(data, edit) {
           <span class="recap__color-swatch" data-recap-color-swatch="${i}" style="background:${esc(c.hex || "#ffffff")};"></span>
           <input type="text" class="recap__color-name" data-recap-color-field="name" data-recap-color-index="${i}" value="${esc(c.name || "")}" placeholder="Name" aria-label="Colour name" />
           <input type="text" class="recap__color-hex" data-recap-color-field="hex" data-recap-color-index="${i}" value="${esc(c.hex || "")}" placeholder="#1A1F36" aria-label="Hex value" spellcheck="false" />
+          ${renderColorRole(c, i)}
           <button type="button" class="ap-icon-button transparent grey" data-recap-color-remove="${i}" aria-label="Remove colour"><i class="ap-icon-close"></i></button>
         </div>`,
       )
@@ -1316,6 +1334,8 @@ function renderBrandPanel(data, edit) {
       // Logo first: it's the most concrete piece of the visual identity, and the
       // one thing the image generator stamps into the pixels.
       renderRow("Logo", renderFieldHint(FIELD_HINTS.brandLogo) + renderBrandLogo(data, true)),
+      // Brand kit (flag sexySquirrel) — which version each mark is.
+      kitEnabled() ? renderRow("Logo versions", renderLogoVariants(data, true, data.brandLogos)) : "",
       renderRow(
         "Brand color",
         `<div class="recap__colors" data-recap-colors>${colorRows}</div>
@@ -1342,6 +1362,7 @@ function renderBrandPanel(data, edit) {
           "How the brand comes across — its character in a few sentences…",
         ),
       ),
+      kitEnabled() ? renderRow("Moods", renderEditChips("brandMoods", data.brandMoods, "Add a mood…")) : "",
       // Reference images live under Brand. They're always-editable (per-image
       // modal + remove + add) regardless of the Brand section's edit state —
       // but not when the fiche itself is read-only.
@@ -1350,15 +1371,19 @@ function renderBrandPanel(data, edit) {
       // EXAMPLES, and this is the instruction on how to use all of them. An
       // instruction before its materials is a control without a subject.
       renderRow("Default look", renderFieldHint(FIELD_HINTS.imageDefaults) + renderDefaultLook(data, true)),
+      kitEnabled() ? renderRow("Visual rules", renderVisualRules(data, true)) : "",
     ].join("");
   } else {
     body = [
       renderRow("Logo", renderBrandLogo(data, false)),
+      kitEnabled() ? renderRow("Logo versions", renderLogoVariants(data, false, brandLogoList(data))) : "",
       renderRow("Brand color", renderSwatches(colors)),
       renderRow("Typography", renderTypeSpecimen(data)),
       renderRow("Personality", renderText(data.brandPersonality)),
+      kitEnabled() ? renderRow("Moods", renderChips(data.brandMoods || [])) : "",
       renderRow("Reference images", renderRefImages(data, false)),
       renderRow("Default look", renderDefaultLook(data, false)),
+      kitEnabled() ? renderRow("Visual rules", renderVisualRules(data, false)) : "",
     ].join("");
   }
   return `
@@ -2147,6 +2172,11 @@ const WRITE_HOOKS = [
   "[data-recap-refimg-remove]",
   "[data-recap-learn]",
   "[data-recap-look]",
+  "[data-recap-kit-pick]",
+  "[data-recap-kit-line-add]",
+  "[data-recap-kit-line-remove]",
+  "[data-recap-kit-pair-add]",
+  "[data-recap-kit-pair-remove]",
 ].join(",");
 
 function onClick(event) {
@@ -2170,6 +2200,12 @@ function onClick(event) {
 
   const data = cfg.getData();
   if (!data) return;
+
+  // Brand kit rows (flag sexySquirrel) — only live while a section is edited.
+  if (editScope && handleKitClick(event, data)) {
+    repaint();
+    return;
+  }
 
   const penBtn = event.target.closest("[data-recap-edit-card]");
   if (penBtn) {
@@ -2602,6 +2638,7 @@ function onInput(event) {
   const data = cfg.getData();
   if (!data) return;
   const t = event.target;
+  if (handleKitInput(event, data)) return;
   if (t.matches("[data-recap-summary]")) {
     data.businessSummary = t.value;
   } else if (t.matches("[data-recap-refnote]")) {
@@ -2653,6 +2690,7 @@ function onChange(event) {
   if (!editScope) return;
   const data = cfg.getData();
   if (!data) return;
+  if (handleKitChange(event, data)) return;
   // Brand-logo upload — appended to the set, read as data URLs so they persist
   // with the Playbook (an object URL is ephemeral and wouldn't survive the store).
   if (event.target.matches("[data-recap-logo-input]")) {

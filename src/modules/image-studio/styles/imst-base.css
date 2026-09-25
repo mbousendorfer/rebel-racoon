@@ -1,0 +1,96 @@
+/* Image Generator — module shell: page frame, section bar, empty state.
+ *
+ * Every selector is prefixed .imst- (the module never touches .ap-* — those
+ * belong to ds-patches.css — nor the draft Image Studio's .isv2- / .image-studio__).
+ * Chrome uses DS tokens only (+ the app's --app-* layout tokens, allowed per
+ * the audit §6.1). Brand colours never reach this file: they are content and
+ * live inline on generated visuals.
+ */
+
+.imst {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background: var(--ref-color-grey-bg);
+  color: var(--sys-text-color-default);
+}
+
+.imst-page {
+  width: 100%;
+  max-width: calc(var(--app-content) + 2 * var(--ref-spacing-xl));
+  margin: 0 auto;
+  padding: var(--ref-spacing-md) var(--ref-spacing-xl) var(--ref-spacing-xxl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-md);
+}
+
+/* ── Section bar: tabs (or a back link) on the left, brand switcher on the right ── */
+
+.imst-bar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--ref-spacing-md);
+}
+
+.imst-bar--back {
+  align-items: center;
+}
+
+.imst-bar__main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.imst-bar__aside {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+}
+
+.imst-back {
+  align-items: center;
+}
+
+.imst-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-lg);
+}
+
+/* ── Empty state (composition — the DS ships none) ─────────────────────── */
+
+.imst-empty {
+  max-width: calc(var(--app-content) / 2);
+  margin: var(--ref-spacing-xxl) auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+  text-align: center;
+}
+
+.imst-empty__icon {
+  display: grid;
+  place-items: center;
+  width: var(--ref-spacing-xxxl);
+  height: var(--ref-spacing-xxxl);
+  border-radius: var(--app-radius-lg);
+  background: var(--ref-color-grey-10);
+  color: var(--ref-color-grey-80);
+}
+
+.imst-empty__title,
+.imst-empty__body {
+  margin: 0;
+}
+
+/* Tablet: tighter gutters. */
+@media (max-width: 1024px) {
+  .imst-page {
+    padding-left: var(--ref-spacing-md);
+    padding-right: var(--ref-spacing-md);
+  }
+}

@@ -1,0 +1,328 @@
+/* Image Generator — Generate (hub): ideas, prompt bar, results, history.
+ * The canvas and its layers draw generated CONTENT (brand colours inline);
+ * everything around them is DS chrome.
+ */
+
+.imst-brand--compact {
+  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
+}
+
+.imst-brand--compact .imst-brand__logo {
+  width: var(--ref-spacing-xxl);
+  height: var(--ref-spacing-xxl);
+}
+
+/* ── Skeletons (shimmer grey-05 → grey-10, the app's loader convention) ── */
+
+.imst-skeleton {
+  display: block;
+  height: var(--ref-spacing-xs);
+  border-radius: var(--ref-border-radius-sm);
+  background: linear-gradient(90deg, var(--ref-color-grey-05), var(--ref-color-grey-10), var(--ref-color-grey-05));
+  background-size: 200% 100%;
+  animation: imst-shimmer 1.4s ease-in-out infinite;
+}
+
+.imst-skeleton--thumb {
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: var(--ref-border-radius-md);
+}
+
+.imst-skeleton--short {
+  width: 60%;
+}
+
+@keyframes imst-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .imst-skeleton {
+    animation: none;
+  }
+}
+
+/* ── Campaign ideas ───────────────────────────────────────────────────── */
+
+.imst-grid--ideas {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.imst-idea {
+  padding: var(--ref-spacing-xs);
+  gap: var(--ref-spacing-xs);
+  border-color: var(--ref-color-grey-20);
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  background: var(--ref-color-white);
+}
+
+.imst-idea:hover {
+  border-color: var(--ref-color-electric-blue-40);
+}
+
+.imst-idea.is-selected {
+  border-color: var(--ref-color-electric-blue-100);
+}
+
+.imst-idea:focus-visible {
+  outline: 2px solid var(--sys-border-color-active);
+  outline-offset: 2px;
+}
+
+.imst-idea--skeleton {
+  cursor: default;
+}
+
+.imst-idea__thumb {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: var(--ref-border-radius-md);
+}
+
+.imst-idea__body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.imst-idea__title {
+  color: var(--ref-color-grey-100);
+}
+
+.imst-idea__angle,
+.imst-idea__meta {
+  color: var(--ref-color-grey-80);
+}
+
+.imst-formats-line {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxxs) var(--ref-spacing-xxs);
+}
+
+.imst-formats-line__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+}
+
+/* ── Prompt bar ───────────────────────────────────────────────────────── */
+
+.imst-prompt {
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-md);
+  border-color: var(--ref-color-grey-20);
+}
+
+.imst-prompt__idea {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  color: var(--ref-color-grey-80);
+}
+
+.imst-prompt textarea {
+  width: 100%;
+  resize: vertical;
+}
+
+.imst-prompt__pickers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xs);
+}
+
+.imst-picker-select {
+  width: auto;
+  min-width: calc(var(--ref-spacing-xxxl) * 2.6);
+}
+
+.imst-picker-select--wide {
+  min-width: calc(var(--ref-spacing-xxxl) * 3.4);
+}
+
+.imst-picker-select .ap-select-dropdown {
+  min-width: calc(var(--ref-spacing-xxxl) * 4.5);
+  max-height: calc(var(--ref-spacing-xxxl) * 6);
+  overflow-y: auto;
+}
+
+.imst-prompt__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--ref-spacing-sm);
+  color: var(--ref-color-grey-80);
+}
+
+/* ── Results ──────────────────────────────────────────────────────────── */
+
+.imst-batch {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+}
+
+.imst-batch h3,
+.imst-batch p {
+  margin: 0;
+}
+
+.imst-grid--variations {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: start;
+}
+
+.imst-variation {
+  margin: 0;
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+  border-color: var(--ref-color-grey-20);
+}
+
+.imst-variation:hover,
+.imst-variation:focus-within {
+  border-color: var(--ref-color-electric-blue-40);
+}
+
+.imst-variation__media {
+  position: relative;
+}
+
+.imst-variation__media--empty {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  background: var(--ref-color-grey-05);
+}
+
+.imst-variation__busy {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--ref-color-white) 60%, transparent);
+}
+
+.imst-variation__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
+  color: var(--ref-color-grey-80);
+}
+
+.imst-variation__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0;
+}
+
+/* ── Canvas: the generated image + DOM layers where the export draws them ── */
+
+.imst-canvas {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  container-type: inline-size;
+  background: var(--ref-color-grey-05);
+}
+
+.imst-canvas__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.imst-layer {
+  position: absolute;
+  box-sizing: border-box;
+}
+
+.imst-layer--text {
+  font-weight: 700;
+  line-height: 1.2;
+  overflow-wrap: break-word;
+}
+
+.imst-layer--media img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.imst-editor-stub {
+  max-width: calc(var(--app-content) / 2);
+}
+
+/* ── Campaigns & history ─────────────────────────────────────────────── */
+
+.imst-history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--ref-spacing-xxxl) * 5), 1fr));
+  gap: var(--ref-spacing-sm);
+}
+
+.imst-history__item {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xs);
+  border-color: var(--ref-color-grey-20);
+}
+
+.imst-history__item:hover {
+  border-color: var(--ref-color-electric-blue-40);
+}
+
+.imst-history__open {
+  flex: 0 0 calc(var(--ref-spacing-xxxl) + var(--ref-spacing-md));
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  border-radius: var(--ref-border-radius-sm);
+  overflow: hidden;
+}
+
+.imst-history__body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.imst-history__body .ap-caption {
+  color: var(--ref-color-grey-80);
+}
+
+@media (max-width: 1200px) {
+  .imst-grid--ideas,
+  .imst-grid--variations {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

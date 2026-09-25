@@ -412,6 +412,56 @@ function deriveName(url) {
 }
 
 /**
+ * Mock-analyse a set of brand FILES (logo, past visuals, photos) — the "Start
+ * from files" way into a Playbook (flag sexySquirrel). Nothing is parsed: the
+ * palette is derived from the file names so the same files always give the
+ * same brand, and the first image is taken as the logo. Same shape as
+ * analyzeWebsite.
+ * @param {{name:string, url:string}[]} files  — url is a data URL
+ */
+export function analyzeBrandFiles(files = []) {
+  const list = Array.isArray(files) ? files : [];
+  const first = list[0]?.name || "My brand";
+  const stem = first
+    .replace(/\.[^.]+$/, "")
+    .replace(/[-_ ]?(logo|brand|final|v\d+|copy)$/i, "")
+    .replace(/[-_]+/g, " ")
+    .trim();
+  const name = stem ? stem.replace(/\b\w/g, (c) => c.toUpperCase()) : "My brand";
+  let h = 2166136261;
+  for (const ch of list.map((f) => f.name).join("|")) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
+  const hue = (h >>> 0) % 360;
+  const hsl = (hh, sat, l) => {
+    const a = (sat / 100) * Math.min(l / 100, 1 - l / 100);
+    const f = (n) => {
+      const k = (n + hh / 30) % 12;
+      return Math.round(255 * (l / 100 - a * Math.max(Math.min(k - 3, 9 - k, 1), -1)))
+        .toString(16)
+        .padStart(2, "0");
+    };
+    return `#${f(0)}${f(8)}${f(4)}`.toUpperCase();
+  };
+  const result = clone(GENERIC);
+  result.name = name;
+  result.businessSummary = `Playbook built from your files (${list.length}). I took the colours and the look from them — edit each section to say what the brand does and who it's for.`;
+  result.suggestions.brandColors = [
+    { name: "Primary", hex: hsl(hue, 62, 44), role: "primary" },
+    { name: "Secondary", hex: hsl((hue + 150) % 360, 34, 42), role: "secondary" },
+    { name: "Accent", hex: hsl((hue + 40) % 360, 86, 58), role: "accent" },
+    { name: "Background", hex: hsl(hue, 30, 96), role: "background" },
+    { name: "Text", hex: hsl(hue, 40, 14), role: "text" },
+  ];
+  result.suggestions.brandMoods = ["crafted", "consistent", "recognisable"];
+  const site = result.suggestions.imageVoice?.websites?.[0];
+  if (site) {
+    site.domain = "";
+    site.url = "";
+    site.images = { ...(site.images || {}), logos: list[0] ? [{ label: "Logo", url: list[0].url }] : [] };
+  }
+  return result;
+}
+
+/**
  * Mock-analyse an uploaded document. We don't actually parse the file —
  * we use the filename to derive a brand name. Returns the same shape
  * as `analyzeWebsite`.

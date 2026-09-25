@@ -1,0 +1,224 @@
+/* Image Generator — the module's UI primitives, composed from DS classes:
+ * dialogs (.ap-dialog), menus (.ap-action-dropdown on <details>), swatches,
+ * snackbars, the brand card and the brand picker. .imst- only; never an .ap-*
+ * redeclaration (those belong to styles/ds-patches.css).
+ */
+
+.imst-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ── Dialog ─────────────────────────────────────────────────────────────── */
+
+.imst-dialog {
+  position: fixed;
+  top: 50vh;
+  left: 50vw;
+  transform: translate(-50%, -50%);
+  z-index: var(--app-z-modal);
+  max-height: calc(100vh - 2 * var(--ref-spacing-md));
+  border: 1px solid var(--ref-color-grey-20);
+  box-shadow: var(--app-shadow-popover-lg);
+}
+
+.imst-dialog--sm {
+  width: min(calc(100vw - 2 * var(--ref-spacing-sm)), calc(var(--app-content) / 2.4));
+}
+
+.imst-dialog--md {
+  width: min(calc(100vw - 2 * var(--ref-spacing-sm)), calc(var(--app-content) / 1.8));
+}
+
+.imst-dialog--lg {
+  width: min(calc(100vw - 2 * var(--ref-spacing-sm)), calc(var(--app-content) * 0.85));
+}
+
+.imst-dialog__content {
+  overflow-y: auto;
+}
+
+.imst-dialog__text {
+  margin: 0;
+}
+
+/* ── Menus (<details> + .ap-action-dropdown) ───────────────────────────── */
+
+.imst-menu {
+  position: relative;
+  display: inline-block;
+}
+
+.imst-menu > summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.imst-menu > summary::-webkit-details-marker {
+  display: none;
+}
+
+.imst-menu__pop {
+  position: absolute;
+  top: calc(100% + var(--ref-spacing-xxxs));
+  z-index: var(--app-z-overlay);
+}
+
+.imst-menu--end .imst-menu__pop {
+  right: 0;
+}
+
+.imst-menu--start .imst-menu__pop {
+  left: 0;
+}
+
+.imst-menu__pop img {
+  width: var(--ref-spacing-md);
+  height: var(--ref-spacing-md);
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* ── Swatches (brand colours are CONTENT: the fill comes from --imst-swatch) ── */
+
+.imst-palette {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.imst-swatch {
+  display: inline-block;
+  flex-shrink: 0;
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--ref-border-radius-sm);
+  background: var(--imst-swatch);
+}
+
+.imst-swatch--sm {
+  width: var(--ref-spacing-sm);
+  height: var(--ref-spacing-sm);
+}
+
+.imst-swatch--md {
+  width: var(--ref-spacing-md);
+  height: var(--ref-spacing-md);
+}
+
+.imst-swatch--lg {
+  width: var(--ref-spacing-xl);
+  height: var(--ref-spacing-xl);
+}
+
+/* ── Snackbars: under the topbar, like Archie's own region ─────────────── */
+
+.imst-toasts {
+  z-index: var(--app-z-modal-stacked);
+}
+
+/* ── Brand picker ──────────────────────────────────────────────────────── */
+
+.imst-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  max-width: calc(var(--app-content) / 3);
+}
+
+.imst-picker__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.imst-picker__logo {
+  width: var(--ref-spacing-sm);
+  height: var(--ref-spacing-sm);
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* ── Brand card (the active Playbook, as images will apply it) ─────────── */
+
+.imst-brand {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--ref-spacing-md);
+  padding: var(--ref-spacing-md);
+}
+
+.imst-brand__logo {
+  display: grid;
+  place-items: center;
+  width: var(--ref-spacing-xxxl);
+  height: var(--ref-spacing-xxxl);
+  flex-shrink: 0;
+  padding: var(--ref-spacing-xxs);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--ref-border-radius-md);
+  color: var(--ref-color-grey-80);
+}
+
+.imst-brand__logo img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.imst-brand__body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+}
+
+.imst-brand__title {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.imst-brand__title .ap-subtitle,
+.imst-brand__facts dd {
+  margin: 0;
+}
+
+.imst-brand__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xs) var(--ref-spacing-lg);
+  margin: 0;
+}
+
+.imst-brand__facts > div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.imst-brand__facts dt {
+  color: var(--ref-color-grey-80);
+}
+
+.imst-brand__edit {
+  align-self: flex-start;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.imst-page-foot {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+  .imst-brand {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

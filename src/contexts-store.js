@@ -22,17 +22,17 @@
 // chooses "Save as global". updateContext is used by the section-edit flow
 // when scope is "Update everywhere".
 
-import { contexts as seed, sharedContexts } from "./mocks.js?v=1260";
-import { isNewUser } from "./user-mode.js?v=1260";
-import { CURRENT_USER } from "./org.js?v=1260";
-import { isFlagOn } from "./feature-flags.js?v=1260";
-import { createNotifier } from "./store-utils.js?v=1260";
+import { contexts as seed, sharedContexts } from "./mocks.js?v=1261";
+import { isNewUser } from "./user-mode.js?v=1261";
+import { CURRENT_USER } from "./org.js?v=1261";
+import { isFlagOn } from "./feature-flags.js?v=1261";
+import { createNotifier } from "./store-utils.js?v=1261";
 import {
   normalizeLanguages,
   mirrorPrimaryToTopLevel,
   syncTopLevelToPrimary,
   cloneVoiceByLanguage,
-} from "./languages.js?v=1260";
+} from "./languages.js?v=1261";
 
 // Lives up here, away from normalizeBrandLogos where it belongs, because the
 // seed below calls that normalizer at module-init time — a `let` declared beside
@@ -43,6 +43,10 @@ let brandLogoSeq = 0;
 // would have left its temporal dead zone.
 const MAX_HISTORY = 12;
 let historySeq = 0;
+// Same again: the brand-kit normalizers (see normalizeBrandKit) read these while
+// the seed is being built.
+export const LOGO_VARIANTS = Object.freeze(["color", "white", "black", "icon"]);
+export const COLOR_ROLES = Object.freeze(["primary", "secondary", "accent", "background", "text"]);
 
 // Lot 15 — first-time user mode starts empty so the standalone /contexts
 // page renders its empty state. Returning user keeps the mock seed. Every
@@ -63,6 +67,7 @@ const contexts = isNewUser()
         ...normalizeOwnership(c),
         ...normalizeBrandLogos(c),
         ...normalizeImageDefaults(c),
+        ...normalizeBrandKit(c),
       }),
     );
 const notifier = createNotifier("contexts-store");
@@ -109,16 +114,88 @@ function normalizeCompetitors(list) {
 function normalizeBrandLogos(ctx) {
   const list = (Array.isArray(ctx.brandLogos) ? ctx.brandLogos : [])
     .filter((l) => l && l.url)
-    .map((l) => ({ id: l.id || `logo-${(brandLogoSeq += 1)}`, label: l.label || "Logo", url: l.url }));
+    .map((l) => ({
+      id: l.id || `logo-${(brandLogoSeq += 1)}`,
+      label: l.label || "Logo",
+      url: l.url,
+      variant: normalizeLogoVariant(l),
+    }));
   // A context that only ever carried the single `brandLogo` (the mocks, an
   // older payload) becomes a one-entry set rather than losing its mark.
   if (!list.length && ctx.brandLogo) {
-    list.push({ id: `logo-${(brandLogoSeq += 1)}`, label: "Logo", url: ctx.brandLogo });
+    list.push({ id: `logo-${(brandLogoSeq += 1)}`, label: "Logo", url: ctx.brandLogo, variant: "color" });
   }
   const urls = list.map((l) => l.url);
   return {
     brandLogos: list,
     brandLogo: urls.includes(ctx.brandLogo) ? ctx.brandLogo : urls[0] || "",
+  };
+}
+
+// ── The brand kit — the rules an image generator needs to stay on-brand ──────
+//
+// Added for the Image Generator (flag `sexySquirrel`), and stored on the Playbook
+// because each one passes CONCEPTS §1's inclusion test: it says what the brand
+// looks like, it stays true on its own, and nothing runs on it. The flag only
+// gates the ROWS on the fiche; the data rides along, like `multilingualPlaybook`.
+//
+//   brandLogos[].variant  which version a mark is — colour / white / black / icon
+//   brandColors[].role    what a colour is FOR — primary / secondary / accent / background / text
+//   brandMoods            a few words for the imagery's atmosphere
+//   voiceAvoid            words and phrasings the brand never uses
+//   brandRules            visual do / don't, the logo's minimum size and clear
+//                         space, no distortion, and colour pairs that must never meet
+//
+// Variant and role are DERIVED from the free label when missing (seeds, older
+// payloads), so every existing Playbook arrives with a sensible guess rather than
+// an empty column. "" means "not said", never a silent default.
+function normalizeLogoVariant(logo) {
+  if (LOGO_VARIANTS.includes(logo.variant)) return logo.variant;
+  if (logo.variant === "") return "";
+  const label = String(logo.label || "").toLowerCase();
+  if (/revers|white|negative|inverse/.test(label)) return "white";
+  if (/mono|black|dark/.test(label)) return "black";
+  if (/icon|favicon|mark|symbol|avatar/.test(label)) return "icon";
+  if (/logo|colou?r|primary|full/.test(label)) return "color";
+  return "";
+}
+
+function normalizeColorRole(color) {
+  if (COLOR_ROLES.includes(color.role)) return color.role;
+  if (color.role === "") return "";
+  const name = String(color.name || "").toLowerCase();
+  return COLOR_ROLES.find((r) => name.includes(r)) || "";
+}
+
+function normalizeBrandColors(list) {
+  return (Array.isArray(list) ? list : []).map((c) => ({ ...c, role: normalizeColorRole(c) }));
+}
+
+function strings(v) {
+  return Array.isArray(v) ? v.filter((x) => typeof x === "string" && x.trim()).map((x) => x.trim()) : [];
+}
+
+function normalizeBrandRules(rules) {
+  const r = rules && typeof rules === "object" ? rules : {};
+  const num = (v, fallback) => (Number.isFinite(Number(v)) && v !== "" && v !== null ? Number(v) : fallback);
+  return {
+    visualDos: strings(r.visualDos),
+    visualDonts: strings(r.visualDonts),
+    logoMinPx: num(r.logoMinPx, 48),
+    clearSpace: num(r.clearSpace, 0.5),
+    noLogoDistortion: r.noLogoDistortion !== false,
+    forbiddenPairs: (Array.isArray(r.forbiddenPairs) ? r.forbiddenPairs : [])
+      .filter((pair) => Array.isArray(pair) && pair.length === 2 && pair.every((h) => typeof h === "string" && h))
+      .map((pair) => [pair[0], pair[1]]),
+  };
+}
+
+function normalizeBrandKit(ctx) {
+  return {
+    brandColors: normalizeBrandColors(ctx.brandColors),
+    brandMoods: strings(ctx.brandMoods),
+    voiceAvoid: strings(ctx.voiceAvoid),
+    brandRules: normalizeBrandRules(ctx.brandRules),
   };
 }
 
@@ -316,7 +393,8 @@ export function addContext(ctx = {}) {
     voiceManual: ctx.voiceManual || "",
     brandPersonality: ctx.brandPersonality || "",
     brandTypography: ctx.brandTypography && typeof ctx.brandTypography === "object" ? { ...ctx.brandTypography } : null,
-    brandColors: Array.isArray(ctx.brandColors) ? ctx.brandColors.map((c) => ({ ...c })) : [],
+    // brandColors, brandMoods, voiceAvoid, brandRules — see normalizeBrandKit.
+    ...normalizeBrandKit(ctx),
     // The brand marks + which one is the default (see normalizeBrandLogos).
     // Optional — a Playbook can have a voice and an audience without anyone
     // having supplied a logo, and the surfaces that use it have to say so rather
@@ -403,7 +481,10 @@ export function updateContext(id, patch) {
   if (patch.voiceManual !== undefined) c.voiceManual = patch.voiceManual;
   if (patch.brandPersonality !== undefined) c.brandPersonality = patch.brandPersonality;
   if (patch.brandTypography !== undefined) c.brandTypography = patch.brandTypography;
-  if (patch.brandColors !== undefined) c.brandColors = patch.brandColors;
+  if (patch.brandColors !== undefined) c.brandColors = normalizeBrandColors(patch.brandColors);
+  if (patch.brandMoods !== undefined) c.brandMoods = strings(patch.brandMoods);
+  if (patch.voiceAvoid !== undefined) c.voiceAvoid = strings(patch.voiceAvoid);
+  if (patch.brandRules !== undefined) c.brandRules = normalizeBrandRules(patch.brandRules);
   // Re-normalised rather than assigned, so a partial patch still lands three keys.
   if (patch.imageDefaults !== undefined) Object.assign(c, normalizeImageDefaults(patch));
   // The set and its default are one fact, so they re-normalize together even
@@ -501,6 +582,9 @@ export function duplicateContext(id) {
     brandTypography: src.brandTypography ? { ...src.brandTypography } : null,
     imageDefaults: { ...(src.imageDefaults || {}) },
     brandColors: (src.brandColors || []).map((c) => ({ ...c })),
+    brandMoods: (src.brandMoods || []).slice(),
+    voiceAvoid: (src.voiceAvoid || []).slice(),
+    brandRules: structuredClone(src.brandRules || {}),
     brandLogos: (src.brandLogos || []).map((l) => ({ ...l })),
     brandLogo: src.brandLogo || "",
     referenceImages: (src.referenceImages || []).map((i) => ({
