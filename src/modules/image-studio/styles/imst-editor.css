@@ -1,0 +1,329 @@
+/* Image Generator — the editor: layers · stage · properties.
+ * Selection uses the DS focus ink (electric blue), never an edge-accent bar.
+ */
+
+.imst-editor__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ref-spacing-md);
+}
+
+.imst-editor__head h1,
+.imst-editor__head p {
+  margin: 0;
+}
+
+.imst-editor__head p {
+  color: var(--ref-color-grey-80);
+}
+
+.imst-editor__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--ref-spacing-xs);
+}
+
+.imst-editor {
+  display: grid;
+  grid-template-columns: calc(var(--ref-spacing-xxxl) * 4) minmax(0, 1fr) calc(var(--ref-spacing-xxxl) * 5);
+  gap: var(--ref-spacing-md);
+  align-items: start;
+}
+
+.imst-editor__side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+  min-width: 0;
+}
+
+.imst-editor__stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+  min-width: 0;
+}
+
+/* The stage fits the viewport whatever the format: a story is limited by height. */
+.imst-stage {
+  position: relative;
+  width: min(100%, calc(70vh * var(--imst-stage-ratio)));
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--ref-border-radius-md);
+  overflow: hidden;
+  background: var(--ref-color-white);
+}
+
+.imst-stage__busy {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ref-spacing-xs);
+  background: color-mix(in srgb, var(--ref-color-white) 65%, transparent);
+  color: var(--ref-color-grey-100);
+}
+
+/* ── Layers on the stage ─────────────────────────────────────────────── */
+
+.imst-stage [data-imst-layer] {
+  cursor: move;
+  outline: 1px dashed transparent;
+  outline-offset: 0;
+}
+
+.imst-stage [data-imst-layer]:hover {
+  outline-color: var(--ref-color-electric-blue-40);
+}
+
+.imst-stage [data-imst-layer].is-selected,
+.imst-stage [data-imst-layer]:focus-visible {
+  outline: 2px solid var(--sys-border-color-active);
+}
+
+.imst-layer__handle {
+  position: absolute;
+  right: calc(-1 * var(--ref-spacing-xxxs));
+  bottom: calc(-1 * var(--ref-spacing-xxxs));
+  width: var(--ref-spacing-xs);
+  height: var(--ref-spacing-xs);
+  border: 2px solid var(--ref-color-white);
+  border-radius: var(--ref-border-radius-sm);
+  background: var(--sys-border-color-active);
+  cursor: nwse-resize;
+}
+
+/* ── Panels ──────────────────────────────────────────────────────────── */
+
+.imst-panel {
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-sm);
+  border-color: var(--ref-color-grey-20);
+}
+
+.imst-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-xxs);
+}
+
+.imst-panel__head h2 {
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.imst-panel__hint {
+  margin: 0;
+  color: var(--ref-color-grey-80);
+}
+
+.imst-layers {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.imst-layers__row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border-radius: var(--ref-border-radius-sm);
+}
+
+.imst-layers__row:hover {
+  background: var(--ref-color-grey-05);
+}
+
+.imst-layers__row.is-selected {
+  background: var(--ref-color-electric-blue-05);
+}
+
+.imst-layers__row.is-hidden .imst-layers__name {
+  text-decoration: line-through;
+}
+
+.imst-layers__pick {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-xxs);
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--ref-color-grey-100);
+  text-align: left;
+  cursor: pointer;
+}
+
+.imst-layers__pick:focus-visible {
+  outline: 2px solid var(--sys-border-color-active);
+  border-radius: var(--ref-border-radius-sm);
+}
+
+.imst-layers__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.imst-prop {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+}
+
+.imst-prop--inline {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.imst-prop__label {
+  color: var(--ref-color-grey-80);
+}
+
+.imst-prop__note {
+  margin: 0;
+  color: var(--ref-color-grey-80);
+}
+
+.imst-prop__note.is-warning {
+  color: var(--sys-text-color-error);
+}
+
+.imst-prop textarea {
+  width: 100%;
+  resize: vertical;
+}
+
+.imst-swatch-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxs);
+}
+
+.imst-swatch-btn {
+  display: inline-flex;
+  padding: var(--ref-spacing-xxxs);
+  border: 1px solid transparent;
+  border-radius: var(--ref-border-radius-md);
+  background: none;
+  cursor: pointer;
+}
+
+.imst-swatch-btn[aria-pressed="true"] {
+  border-color: var(--sys-border-color-active);
+}
+
+.imst-swatch-btn:focus-visible {
+  outline: 2px solid var(--sys-border-color-active);
+}
+
+.imst-save-link {
+  align-self: flex-start;
+}
+
+.imst-idea-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.imst-idea-list__item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--ref-border-radius-sm);
+  background: var(--ref-color-white);
+  font: inherit;
+  color: var(--ref-color-grey-100);
+  text-align: left;
+  cursor: pointer;
+}
+
+.imst-idea-list__item:hover {
+  border-color: var(--ref-color-electric-blue-40);
+}
+
+/* ── Edit in words ───────────────────────────────────────────────────── */
+
+.imst-words {
+  display: flex;
+  gap: var(--ref-spacing-xs);
+  width: 100%;
+}
+
+.imst-words__input {
+  flex: 1 1 auto;
+}
+
+.imst-words__result {
+  align-self: flex-start;
+  margin: 0;
+  color: var(--ref-color-grey-80);
+}
+
+.imst-words__result.is-error {
+  color: var(--sys-text-color-error);
+}
+
+/* ── Library dialog ──────────────────────────────────────────────────── */
+
+.imst-library {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--ref-spacing-xxxl) * 2), 1fr));
+  gap: var(--ref-spacing-xs);
+}
+
+.imst-library__tile {
+  padding: var(--ref-spacing-xxs);
+  gap: var(--ref-spacing-xxs);
+  border-color: var(--ref-color-grey-20);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  background: var(--ref-color-white);
+}
+
+.imst-library__tile:hover {
+  border-color: var(--ref-color-electric-blue-40);
+}
+
+.imst-library__tile img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: var(--ref-border-radius-sm);
+}
+
+@media (max-width: 1200px) {
+  .imst-editor {
+    grid-template-columns: minmax(0, 1fr) calc(var(--ref-spacing-xxxl) * 5);
+  }
+
+  .imst-editor > .imst-editor__side:first-child {
+    grid-column: 1 / -1;
+    order: 2;
+  }
+}

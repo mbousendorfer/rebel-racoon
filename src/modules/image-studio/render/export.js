@@ -102,7 +102,10 @@ export async function toPngBlob({ svg, width, height, layers = [] }) {
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext("2d");
+    const brightness = layers.find((l) => l.type === "image")?.brightness || 1;
+    if (brightness !== 1) ctx.filter = `brightness(${brightness})`;
     ctx.drawImage(img, 0, 0, width, height);
+    ctx.filter = "none";
     await drawLayers(ctx, layers, width, height);
     return await new Promise((resolve, reject) =>
       canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Export failed."))), "image/png"),

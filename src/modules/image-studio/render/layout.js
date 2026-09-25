@@ -3,10 +3,10 @@
 // everywhere" recomposes with these, it never crops: a wide format moves the
 // text to the left half, a story keeps everything out of the network's UI.
 
-import { createLayer } from "../model/schema.js?v=1235";
-import { fontStack } from "../config/fonts.js?v=1235";
-import { resolvePalette, inkOn } from "./palette.js?v=1235";
-import { logoUrl } from "../ui/asset.js?v=1235";
+import { createLayer } from "../model/schema.js?v=1237";
+import { fontStack } from "../config/fonts.js?v=1237";
+import { resolvePalette, inkOn } from "./palette.js?v=1237";
+import { assetUrlSync, logoUrl } from "../ui/asset.js?v=1237";
 
 export const ARCHETYPES = Object.freeze({
   square: { text: { x: 0.08, y: 0.62, w: 0.84, h: 0.2, size: 0.075 }, logo: { x: 0.72, y: 0.87, w: 0.2, h: 0.07 } },
@@ -87,7 +87,8 @@ export function resolveLayers(layers, brand) {
     if (l.type === "logo") return { ...base, href: logoUrl(brand, l.props.variant || "color") };
     if (l.type === "shape")
       return { ...base, color: colorOf(l.props), radius: l.props.radius || 0, opacity: l.props.opacity ?? 1 };
-    if (l.type === "asset") return { ...base, href: l.props.href || "" };
+    if (l.type === "asset") return { ...base, href: l.props.href || assetUrlSync(l.props.assetId) };
+    if (l.type === "image") return { ...base, brightness: l.props.brightness || 1 };
     return base;
   });
 }

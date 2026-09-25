@@ -9,26 +9,26 @@
 //
 // Deep links: ?style=<id> preselects a style, ?creation=<id> reopens a run.
 
-import { html, toString } from "../lib/html.js?v=1235";
-import { delegate } from "../lib/delegate.js?v=1235";
-import { renderFrame } from "./frame.js?v=1235";
-import { renderEmpty } from "../ui/empty.js?v=1235";
-import { renderBrandPicker } from "../ui/brand-picker.js?v=1235";
-import { renderBrandCard } from "../ui/brand-card.js?v=1235";
-import { picker } from "../ui/picker.js?v=1235";
-import { preserveFocus } from "../ui/fields.js?v=1235";
-import { toast } from "../ui/toast.js?v=1235";
-import { variationCanvas, variationSvg, layersFor, productHref } from "../ui/variation.js?v=1235";
-import { STYLE_FAMILIES, presetById } from "../config/style-presets.js?v=1235";
-import { FORMATS, formatById, formatRatio } from "../config/formats.js?v=1235";
-import { NETWORKS, networkById } from "../config/networks.js?v=1235";
-import { upcomingEvents } from "../config/calendar-events.js?v=1235";
-import { TEXT_MODES } from "../model/schema.js?v=1235";
-import { imageGenerationService, ideaService } from "../services/index.js?v=1235";
-import { renderVisual, svgToDataUrl } from "../render/visual.js?v=1235";
-import { subjectKindFor } from "../render/subjects.js?v=1235";
-import { resolveLayers } from "../render/layout.js?v=1235";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1235";
+import { html, toString } from "../lib/html.js?v=1237";
+import { delegate } from "../lib/delegate.js?v=1237";
+import { renderFrame } from "./frame.js?v=1237";
+import { renderEmpty } from "../ui/empty.js?v=1237";
+import { renderBrandPicker } from "../ui/brand-picker.js?v=1237";
+import { renderBrandCard } from "../ui/brand-card.js?v=1237";
+import { picker } from "../ui/picker.js?v=1237";
+import { preserveFocus } from "../ui/fields.js?v=1237";
+import { toast } from "../ui/toast.js?v=1237";
+import { variationCanvas, variationSvg, layersFor, productHref } from "../ui/variation.js?v=1237";
+import { STYLE_FAMILIES, presetById } from "../config/style-presets.js?v=1237";
+import { FORMATS, formatById, formatRatio } from "../config/formats.js?v=1237";
+import { NETWORKS, networkById } from "../config/networks.js?v=1237";
+import { upcomingEvents } from "../config/calendar-events.js?v=1237";
+import { TEXT_MODES } from "../model/schema.js?v=1237";
+import { imageGenerationService, ideaService } from "../services/index.js?v=1237";
+import { renderVisual, svgToDataUrl } from "../render/visual.js?v=1237";
+import { subjectKindFor } from "../render/subjects.js?v=1237";
+import { resolveLayers } from "../render/layout.js?v=1237";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1237";
 import {
   getActiveBrand,
   getAsset,
@@ -38,7 +38,7 @@ import {
   getStyle,
   getStylesForBrand,
   subscribe,
-} from "../state/store.js?v=1235";
+} from "../state/store.js?v=1237";
 import {
   addBatch,
   deleteCreation,
@@ -46,7 +46,7 @@ import {
   replaceVariation,
   startCreation,
   toggleFavorite,
-} from "../state/creation-actions.js?v=1235";
+} from "../state/creation-actions.js?v=1237";
 
 const SECTOR_OF = { coffee: "food", finance: "finance", lifestyle: "lifestyle" };
 

@@ -3,23 +3,25 @@
 // view every generator surface uses, resolves which Playbook is active, and
 // knows the two doors back into Archie (the Playbook page, Playbook creation).
 //
-// The generator never writes a Playbook. Editing the brand happens on the
-// Playbook page (/playbook/:id), where the brand kit rows live (flag
-// sexySquirrel — src/playbook-brand-kit.js). Sub-brands don't exist: a variant
+// The generator writes a Playbook in ONE case only: the editor's explicit "Save
+// to the Playbook" on an adjustment (a colour or a font used off-brand). That is
+// a deliberate edit, which is the only way a Playbook may change (CONCEPTS §1);
+// everything else — the kit itself — is edited on the Playbook page
+// (/playbook/:id, src/playbook-brand-kit.js). Sub-brands don't exist: a variant
 // is a duplicated Playbook (docs/reference/CONCEPTS.md §1).
 
-import { getContextById, subscribe as subscribeContexts } from "../../../contexts-store.js?v=1235";
-import { canEdit, usableContexts } from "../../../playbook-access.js?v=1235";
+import { getContextById, subscribe as subscribeContexts, updateContext } from "../../../contexts-store.js?v=1237";
+import { canEdit, usableContexts } from "../../../playbook-access.js?v=1237";
 import {
   getActivePlaybookId,
   isWorkspaceMode,
   playbookForNewWork,
   setActivePlaybook,
   subscribe as subscribeActive,
-} from "../../../active-playbook.js?v=1235";
-import { setHandoff } from "../../../handoff.js?v=1235";
-import { navigate } from "../../../router.js?v=1235";
-import { storageService as storage } from "../services/index.js?v=1235";
+} from "../../../active-playbook.js?v=1237";
+import { setHandoff } from "../../../handoff.js?v=1237";
+import { navigate } from "../../../router.js?v=1237";
+import { storageService as storage } from "../services/index.js?v=1237";
 
 // Which copy archetype the mocked copyService uses — guessed from the Playbook's words.
 function sectorKeyOf(ctx) {
@@ -157,6 +159,28 @@ export function adoptCreatedPlaybook() {
   const created = usableContexts().find((c) => !before.includes(c.id));
   storage.setMeta({ pendingCreationFrom: null });
   if (created) setActiveBrand(created.id);
+}
+
+/** Adds a colour to the Playbook's palette (editor → "Save to the Playbook"). */
+export function saveColorToPlaybook(id, hex, name = "Custom") {
+  const ctx = getContextById(id);
+  if (!ctx || !canEdit(ctx)) return false;
+  if ((ctx.brandColors || []).some((c) => String(c.hex).toUpperCase() === hex.toUpperCase())) return true;
+  updateContext(id, {
+    brandColors: [...(ctx.brandColors || []), { name, hex: hex.toUpperCase(), role: "" }],
+    updatedAt: "just now",
+  });
+  return true;
+}
+
+/** Sets the Playbook's heading or body font (editor → "Save to the Playbook"). */
+export function saveFontToPlaybook(id, role, family) {
+  const ctx = getContextById(id);
+  if (!ctx || !canEdit(ctx)) return false;
+  const t = { headingFont: "", bodyFont: "", ...(ctx.brandTypography || {}) };
+  t[role === "body" ? "bodyFont" : "headingFont"] = family;
+  updateContext(id, { brandTypography: t, updatedAt: "just now" });
+  return true;
 }
 
 /** Repaint when a Playbook changes or the active one does. */

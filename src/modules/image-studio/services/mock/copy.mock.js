@@ -2,25 +2,32 @@
 // brand's voice (its tone, its examples' rhythm, never its "avoid" words).
 //
 // Contract:
-//   hooks({ brand, brief }) → Promise<string[3]>
-//   ctas({ brand, brief }) → Promise<string[3]>
+//   hooks({ brand, brief, round? }) → Promise<string[3]>
+//   ctas({ brand, brief, round? }) → Promise<string[3]>
 //   caption({ brand, brief, network, headline }) → Promise<string>   (within the network's limit)
 //   hashtags({ brand, brief, network }) → Promise<string[]>
 
-import { MOCK } from "../../config/mock.js?v=1235";
-import { COPY_LIMITS } from "../../config/copy-limits.js?v=1235";
-import { hashString, prng, shuffle } from "../../lib/prng.js?v=1235";
-import { wait } from "../../lib/delegate.js?v=1235";
+import { MOCK } from "../../config/mock.js?v=1237";
+import { COPY_LIMITS } from "../../config/copy-limits.js?v=1237";
+import { hashString, prng, shuffle } from "../../lib/prng.js?v=1237";
+import { wait } from "../../lib/delegate.js?v=1237";
 
 function delay(signal) {
   const [min, max] = MOCK.copy.delayMs;
   return wait(min + Math.random() * (max - min), signal);
 }
 
+// The thing the post is about, as a short phrase: the headline if there is one,
+// else the brief with its idea prefix ("Event: angle") and filler removed.
 function subjectOf(brief) {
-  const text = (brief?.prompt || "").replace(/#\w+/g, "").trim();
-  if (!text) return "what we do";
-  return text.length > 60 ? text.slice(0, 57).trimEnd() + "…" : text;
+  const raw = String(brief?.headline || brief?.prompt || "").replace(/#\w+/g, "");
+  const main = (raw.includes(":") ? raw.split(":")[0] : raw)
+    .replace(/^(a|an|the|our|my)\s+/i, "")
+    .replace(/\b(photo|image|picture|visual|illustration) of\s+/i, "")
+    .trim();
+  if (!main) return "what we do";
+  const short = main.split(/\s+/).slice(0, 7).join(" ");
+  return short.charAt(0).toLowerCase() + short.slice(1);
 }
 
 function scrub(text, brand) {
@@ -32,33 +39,42 @@ function scrub(text, brand) {
   return out.trim();
 }
 
+const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+
 const HOOKS = [
+  (s) => `${cap(s)}, done properly`,
   (s) => `The story behind ${s}`,
-  (s) => `${s.charAt(0).toUpperCase() + s.slice(1)}, done properly`,
-  (s) => `What changes when you get ${s} right`,
+  (s) => `What changes with ${s}`,
   (s) => `Three things nobody tells you about ${s}`,
+  (s) => `${cap(s)} — this week only`,
   (s) => `We made ${s} simpler`,
-  (s) => `${s.charAt(0).toUpperCase() + s.slice(1)} — this week only`,
+  (s) => `Why ${s} matters now`,
+  (s) => `${cap(s)}, in one picture`,
 ];
 
 const CTAS_BY_SECTOR = {
-  coffee: ["Order this week's roast", "Visit the roastery", "Find your blend"],
-  finance: ["Book a 20-minute demo", "See how it works", "Start your free trial"],
-  default: ["Discover more", "Shop the collection", "Learn more"],
+  coffee: ["Order this week's roast", "Visit the roastery", "Find your blend", "Taste it this week"],
+  finance: ["Book a 20-minute demo", "See how it works", "Start your free trial", "Talk to our team"],
+  default: ["Discover more", "See how it works", "Get yours", "Learn more"],
 };
 
-export async function hooks({ brand, brief }, { signal } = {}) {
+/** Three hooks: two built on the subject, one taken from the brand's own voice examples. `round` varies them. */
+export async function hooks({ brand, brief, round = 0 }, { signal } = {}) {
   await delay(signal);
-  const rand = prng(hashString((brief?.prompt || "") + (brand?.id || "")));
+  const rand = prng(hashString(`${brief?.prompt || ""}|${brand?.id || ""}|${round}`));
   const subject = subjectOf(brief);
-  return shuffle(rand, HOOKS)
+  const built = shuffle(rand, HOOKS)
     .slice(0, 3)
     .map((fn) => scrub(fn(subject), brand));
+  const voice = (brand?.voice?.examples || []).filter((e) => e.length <= 90);
+  if (voice.length) built[2] = scrub(voice[Math.floor(rand() * voice.length)], brand);
+  return built;
 }
 
-export async function ctas({ brand }, { signal } = {}) {
+export async function ctas({ brand, round = 0 }, { signal } = {}) {
   await delay(signal);
-  return (CTAS_BY_SECTOR[brand?.sectorKey] || CTAS_BY_SECTOR.default).slice();
+  const list = CTAS_BY_SECTOR[brand?.sectorKey] || CTAS_BY_SECTOR.default;
+  return shuffle(prng(hashString(`${brand?.id}|cta|${round}`)), list).slice(0, 3);
 }
 
 export async function hashtags({ brand, brief, network }, { signal } = {}) {

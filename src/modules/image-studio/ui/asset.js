@@ -2,9 +2,9 @@
 // IndexedDB blobs resolve after render, so they go out with data-imst-asset and
 // hydrateAssets(root) fills their src.
 
-import { html } from "../lib/html.js?v=1235";
-import { storageService as storage } from "../services/index.js?v=1235";
-import { getAsset } from "../state/store.js?v=1235";
+import { html } from "../lib/html.js?v=1237";
+import { storageService as storage } from "../services/index.js?v=1237";
+import { getAsset } from "../state/store.js?v=1237";
 
 export function assetImg(assetOrId, { alt = "", className = "" } = {}) {
   const asset = typeof assetOrId === "string" ? getAsset(assetOrId) : assetOrId;
@@ -14,6 +14,25 @@ export function assetImg(assetOrId, { alt = "", className = "" } = {}) {
     return html`<img class="${className}" src="${storage.svgDataUrl(asset.svg)}" alt="${alt}" draggable="false" />`;
   }
   return html`<img class="${className}" data-imst-asset="${asset.id}" alt="${alt}" draggable="false" />`;
+}
+
+const urlCache = new Map();
+
+/** A URL for an asset right now: inline SVG always, a blob only once warmed. */
+export function assetUrlSync(id) {
+  const asset = getAsset(id);
+  if (!asset) return "";
+  if (asset.svg) return storage.svgDataUrl(asset.svg);
+  return urlCache.get(id) || "";
+}
+
+/** Resolves blob URLs for these assets so assetUrlSync can return them. */
+export async function warmAssetUrls(ids) {
+  for (const id of ids) {
+    if (!id || urlCache.has(id)) continue;
+    const url = await storage.assetUrl(getAsset(id));
+    if (url) urlCache.set(id, url);
+  }
 }
 
 export async function hydrateAssets(root) {

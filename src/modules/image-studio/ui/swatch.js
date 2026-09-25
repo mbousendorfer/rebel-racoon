@@ -2,7 +2,7 @@
 // hairline border, the brand colour as its fill (content, not chrome), the hex
 // in a tooltip and in the accessible name.
 
-import { html, raw } from "../lib/html.js?v=1235";
+import { html, raw } from "../lib/html.js?v=1237";
 
 export function swatch(hex, { label, size = "md", attrs = "" } = {}) {
   const name = label ? `${label} ${hex}` : hex;

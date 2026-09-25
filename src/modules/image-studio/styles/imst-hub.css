@@ -271,10 +271,6 @@
   display: block;
 }
 
-.imst-editor-stub {
-  max-width: calc(var(--app-content) / 2);
-}
-
 /* ── Campaigns & history ─────────────────────────────────────────────── */
 
 .imst-history {

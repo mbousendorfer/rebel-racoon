@@ -5,18 +5,18 @@
 // through state/playbook-brand.js only, the Playbooks — the brand IS the
 // Playbook. See docs/audits/image-studio-integration.md.
 
-import { navigate } from "../../router.js?v=1235";
-import { isFlagOn } from "../../feature-flags.js?v=1235";
-import { renderTopbar } from "../../components/topbar.js?v=1235";
-import { boot, setActiveBrand, startPlaybookCreation } from "./state/store.js?v=1235";
-import { delegate, disposer } from "./lib/delegate.js?v=1235";
-import { installMenus } from "./ui/menu.js?v=1235";
-import { closeAllDialogs } from "./ui/dialog.js?v=1235";
-import * as hub from "./views/hub.js?v=1235";
-import * as campaigns from "./views/campaigns.js?v=1235";
-import * as styles from "./views/styles.js?v=1235";
-import * as styleCreator from "./views/style-creator.js?v=1235";
-import * as editor from "./views/editor.js?v=1235";
+import { navigate } from "../../router.js?v=1237";
+import { isFlagOn } from "../../feature-flags.js?v=1237";
+import { renderTopbar } from "../../components/topbar.js?v=1237";
+import { boot, setActiveBrand, startPlaybookCreation } from "./state/store.js?v=1237";
+import { delegate, disposer } from "./lib/delegate.js?v=1237";
+import { installMenus } from "./ui/menu.js?v=1237";
+import { closeAllDialogs } from "./ui/dialog.js?v=1237";
+import * as hub from "./views/hub.js?v=1237";
+import * as campaigns from "./views/campaigns.js?v=1237";
+import * as styles from "./views/styles.js?v=1237";
+import * as styleCreator from "./views/style-creator.js?v=1237";
+import * as editor from "./views/editor/index.js?v=1237";
 
 export const FLAG = "sexySquirrel";
 

@@ -2,13 +2,13 @@
 // layers (text, logo…) laid over it in the DOM, exactly where the PNG export
 // will draw them. One function for the results grid, the editor and exports.
 
-import { html, raw } from "../lib/html.js?v=1235";
-import { formatById } from "../config/formats.js?v=1235";
-import { renderVisual, svgToDataUrl } from "../render/visual.js?v=1235";
-import { subjectKindFor } from "../render/subjects.js?v=1235";
-import { defaultLayers, resolveLayers } from "../render/layout.js?v=1235";
-import { storageService as storage } from "../services/index.js?v=1235";
-import { getAsset, getStyle } from "../state/store.js?v=1235";
+import { html, raw } from "../lib/html.js?v=1237";
+import { formatById } from "../config/formats.js?v=1237";
+import { renderVisual, svgToDataUrl } from "../render/visual.js?v=1237";
+import { subjectKindFor } from "../render/subjects.js?v=1237";
+import { defaultLayers, resolveLayers } from "../render/layout.js?v=1237";
+import { storageService as storage } from "../services/index.js?v=1237";
+import { getAsset, getStyle } from "../state/store.js?v=1237";
 
 export function productHref(productId) {
   if (!productId) return "";
@@ -66,21 +66,25 @@ export function overlayHtml(resolved, { interactive = false, selectedId = null }
           ? `data-imst-layer="${l.id}" tabindex="0" role="button" aria-label="${l.type} layer"`
           : 'aria-hidden="true"';
         const sel = l.id === selectedId ? " is-selected" : "";
+        const handle =
+          interactive && l.id === selectedId && !l.locked
+            ? '<span class="imst-layer__handle" data-imst-handle aria-hidden="true"></span>'
+            : "";
         if (l.type === "text") {
           const esc = String(l.content).replace(
             /[&<>"]/g,
             (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[ch],
           );
           const band = l.band ? `background:${l.bandColor};box-shadow:0 0 0 0.3em ${l.bandColor};` : "";
-          return `<div class="imst-layer imst-layer--text${sel}" ${attrs} style="${box}font-family:${l.fontStack.replace(/"/g, "'")};color:${l.color};text-align:${l.align};font-size:${(l.size * 100).toFixed(2)}cqw;${band}"><span>${esc}</span></div>`;
+          return `<div class="imst-layer imst-layer--text${sel}" ${attrs} style="${box}font-family:${l.fontStack.replace(/"/g, "'")};color:${l.color};text-align:${l.align};font-size:${(l.size * 100).toFixed(2)}cqw;${band}"><span>${esc}</span>${handle}</div>`;
         }
         if (l.type === "logo" || l.type === "asset") {
           return l.href
-            ? `<div class="imst-layer imst-layer--media${sel}" ${attrs} style="${box}"><img src="${l.href}" alt="" draggable="false"/></div>`
+            ? `<div class="imst-layer imst-layer--media${sel}" ${attrs} style="${box}"><img src="${l.href}" alt="" draggable="false"/>${handle}</div>`
             : "";
         }
         if (l.type === "shape") {
-          return `<div class="imst-layer imst-layer--shape${sel}" ${attrs} style="${box}background:${l.color};opacity:${l.opacity};border-radius:${l.radius * 100}%"></div>`;
+          return `<div class="imst-layer imst-layer--shape${sel}" ${attrs} style="${box}background:${l.color};opacity:${l.opacity};border-radius:${l.radius * 100}%">${handle}</div>`;
         }
         return "";
       })
@@ -88,15 +92,35 @@ export function overlayHtml(resolved, { interactive = false, selectedId = null }
   );
 }
 
-/** A variation as a sized canvas: image + overlays. */
-export function variationCanvas({ creation, variation, formatId, brand, layers, className = "" }) {
+/** A variation as a sized canvas: image + overlays. `interactive` makes the layers selectable (editor). */
+export function variationCanvas({
+  creation,
+  variation,
+  formatId,
+  brand,
+  layers,
+  className = "",
+  interactive = false,
+  selectedId = null,
+}) {
   const format = formatById(formatId) || formatById("ig-post");
   const svg = variationSvg({ creation, variation, formatId: format.id, brand });
   const resolved = resolveLayers(layers || layersFor({ creation, formatId: format.id }), brand);
+  const brightness = resolved.find((l) => l.type === "image")?.brightness || 1;
   return html`
-    <div class="imst-canvas ${className}" style="aspect-ratio: ${format.width} / ${format.height}">
-      <img class="imst-canvas__image" src="${svgToDataUrl(svg)}" alt="${creation.title}, variation" draggable="false" />
-      ${overlayHtml(resolved)}
+    <div
+      class="imst-canvas ${className}"
+      style="aspect-ratio: ${format.width} / ${format.height}"
+      ${interactive ? raw("data-imst-stage") : ""}
+    >
+      <img
+        class="imst-canvas__image"
+        src="${svgToDataUrl(svg)}"
+        alt="${creation.title}, variation"
+        draggable="false"
+        ${brightness !== 1 ? raw(`style="filter: brightness(${brightness})"`) : ""}
+      />
+      ${overlayHtml(resolved, { interactive, selectedId })}
     </div>
   `;
 }
