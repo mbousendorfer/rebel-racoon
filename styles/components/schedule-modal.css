@@ -1,7 +1,11 @@
-/* Schedule modal — one column, result first: a one-line summary of how the
-   dates were picked (with its settings behind "Adjust"), then the drafts
-   with their dates, then the footer. See schedule-modal.js for why the
-   calendar, the mode picker and the Compute gate are gone. */
+/* Schedule modal — one column, result first: how I picked (a sentence, its
+   settings behind "Adjust"), then the batch as a posting timeline, then
+   the footer. See schedule-modal.js for why the calendar, the mode picker
+   and the Compute gate are gone.
+
+   House language: Averta + DS tokens only, ink grey-80 → grey-100, every
+   hairline grey-20, blue only on what is clickable, orange only on what is
+   mine (the sparkle), no shadow inside the dialog. */
 
 .schedule-modal__scrim {
   position: fixed;
@@ -28,32 +32,48 @@
   overflow-y: auto;
 }
 
-/* ── How I picked (summary + settings) ───────────────────────────────── */
-/* One bordered region — a limit, not a card: grey-20 hairline, no shadow. */
+/* ── How I picked ─────────────────────────────────────────────────────── */
+/* A tinted surface, not a card: grey-05 fill, no border, no shadow. */
 .schedule-modal__rhythm {
-  border: 1px solid var(--ref-color-grey-20);
+  background: var(--ref-color-grey-05);
   border-radius: var(--app-radius-card);
 }
 
 .schedule-modal__rhythm-head {
   display: flex;
   align-items: center;
-  gap: var(--ref-spacing-xxs);
-  padding: var(--ref-spacing-xxs) var(--ref-spacing-xxs) var(--ref-spacing-xxs) var(--ref-spacing-sm);
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-xxs) var(--ref-spacing-xs) var(--ref-spacing-xs);
+}
+
+/* A white disc holding my mark — the sparkle at rest, the Archie loader
+   while the times are being found. */
+.schedule-modal__rhythm-mark {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--ref-color-white);
 }
 
 .schedule-modal__rhythm-icon {
-  flex: 0 0 auto;
   font-size: var(--sys-icon-css-sm);
-  color: var(--ref-color-grey-80);
+  color: var(--ref-color-orange-100);
 }
 
 .schedule-modal__rhythm-summary {
   flex: 1 1 auto;
   min-width: 0;
+  margin: 0;
   font-size: var(--sys-text-style-body-size);
   line-height: var(--sys-text-style-body-line-height);
   color: var(--ref-color-grey-100);
+}
+
+.schedule-modal__rhythm-summary strong {
+  font-weight: var(--sys-text-style-body-bold-weight);
 }
 
 .schedule-modal__adjust {
@@ -61,25 +81,30 @@
 }
 
 .schedule-modal__adjust-arrow {
-  transition: transform 160ms var(--app-ease-standard, ease);
+  transition: transform 200ms var(--app-ease-standard);
 }
 
 .schedule-modal__adjust[aria-expanded="true"] .schedule-modal__adjust-arrow {
   transform: rotate(180deg);
 }
 
-/* The settings on one row (rhythm · start · time of day — a single draft
-   has no rhythm, so two), the skip-days row spanning all of them. */
+/* The settings, one row (rhythm · start · time of day — a single draft has
+   no rhythm, so two), the skip-days row spanning all of them. */
 .schedule-modal__settings {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--ref-spacing-sm);
-  padding: var(--ref-spacing-sm);
+  margin: 0 var(--ref-spacing-xs);
+  padding: var(--ref-spacing-sm) 0;
   border-top: 1px solid var(--ref-color-grey-20);
 }
 
 .schedule-modal__settings--three {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.schedule-modal__settings.is-revealing {
+  animation: schedule-modal__reveal 220ms var(--app-ease-out) both;
 }
 
 .schedule-modal__settings .ap-select {
@@ -96,8 +121,10 @@
   gap: var(--ref-spacing-xxs) var(--ref-spacing-sm);
 }
 
-/* ── Drafts + their dates ─────────────────────────────────────────────── */
-.schedule-modal__slots {
+/* ── The timeline ─────────────────────────────────────────────────────── */
+.schedule-modal__timeline {
+  --tile-w: 52px;
+  --tile-mid: 44px; /* row padding-top 16 + half the ~56px tile */
   list-style: none;
   margin: 0;
   padding: 0;
@@ -105,68 +132,290 @@
   flex-direction: column;
 }
 
-/* Rows separated by hairlines rather than boxed — the list is the content
-   of the dialog, not a stack of cards inside it. */
-.schedule-modal__slot {
+.schedule-modal__row {
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
+  grid-template-columns: var(--tile-w) minmax(0, 1fr) auto;
+  align-items: start;
   column-gap: var(--ref-spacing-sm);
-  row-gap: var(--ref-spacing-xxxs);
-  padding: var(--ref-spacing-xs) 0;
-  border-bottom: 1px solid var(--ref-color-grey-20);
+  padding: var(--ref-spacing-sm) 0;
 }
 
-.schedule-modal__slot:last-child {
-  border-bottom: 0;
+/* The rail — one hairline strung through every tile's centre. Each row
+   draws its own segment; the first starts at its tile, the last stops at
+   its tile, and a lone row draws none. */
+.schedule-modal__row::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--tile-w) / 2);
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--ref-color-grey-20);
 }
 
-.schedule-modal__slot-post {
+.schedule-modal__row:first-child::before {
+  top: var(--tile-mid);
+}
+
+.schedule-modal__row:last-child::before {
+  bottom: auto;
+  height: var(--tile-mid);
+}
+
+.schedule-modal__row:only-child::before {
+  display: none;
+}
+
+/* The date tile — static data, so grey ink on white, never blue. It sits
+   on the rail (above it), which is why it carries its own white fill. */
+.schedule-modal__tile {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
+  gap: 2px; /* the three lines read as one object — below the 4px scale on purpose */
+  padding: var(--ref-spacing-xxs) 0;
+  background: var(--ref-color-white);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--ref-border-radius-md);
+  font-variant-numeric: tabular-nums;
+}
+
+.schedule-modal__tile-dow,
+.schedule-modal__tile-month {
+  font-size: var(--sys-text-style-caption-size);
+  line-height: 1;
+  color: var(--ref-color-grey-80);
+}
+
+.schedule-modal__tile-day {
+  font-size: var(--sys-text-style-h1-size);
+  line-height: 1;
+  font-weight: var(--sys-text-style-h1-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.schedule-modal__tile.is-pending {
+  background: var(--ref-color-grey-05);
+  gap: var(--ref-spacing-xxxs);
+  padding-block: var(--ref-spacing-xs);
+}
+
+.schedule-modal__row-main {
+  display: flex;
+  flex-direction: column;
   gap: var(--ref-spacing-xxxs);
   min-width: 0;
 }
 
-.schedule-modal__slot-text {
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.schedule-modal__row-head {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  min-height: var(--comp-input-height);
+}
+
+/* The time, and the pen that changes it. The native datetime input is kept
+   (it IS the picker) but hidden under the head, where showPicker() anchors. */
+.schedule-modal__when {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.schedule-modal__when-time {
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
+  color: var(--ref-color-grey-100);
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+
+.schedule-modal__when-input {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.schedule-modal__when.is-pending {
+  height: 24px;
+  padding-inline: var(--ref-spacing-xs);
+  border-radius: 999px; /* pill */
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+  background: linear-gradient(
+    90deg,
+    var(--ref-color-grey-05) 0%,
+    var(--ref-color-grey-10) 50%,
+    var(--ref-color-grey-05) 100%
+  );
+  background-size: 200% 100%;
+  animation: schedule-modal__shimmer 1.4s linear infinite;
+}
+
+.schedule-modal__row-text {
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  max-width: 60ch;
   font-size: var(--sys-text-style-body-size);
   line-height: var(--sys-text-style-body-line-height);
   color: var(--ref-color-grey-100);
 }
 
-.schedule-modal__slot-when {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
-}
-
-.schedule-modal__slot-when .ap-input-group {
-  width: 216px;
-}
-
-.schedule-modal__slot-when input {
-  font-variant-numeric: tabular-nums;
-}
-
-/* "Set by you · Use my suggestion" and "Also that day: …" — under the row,
-   secondary ink (grey-80 is the floor). */
-.schedule-modal__slot-meta {
-  grid-column: 1 / -1;
+.schedule-modal__row-meta {
+  list-style: none;
+  margin: var(--ref-spacing-xxxs) 0 0;
+  padding: 0;
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
+  gap: var(--ref-spacing-xxxs) var(--ref-spacing-sm);
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   color: var(--ref-color-grey-80);
 }
 
+.schedule-modal__row-meta li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.schedule-modal__row-meta i {
+  font-size: var(--sys-icon-css-sm);
+  color: var(--ref-color-grey-80);
+}
+
+/* The reason is mine — orange sparkle, grey-80 words. */
+.schedule-modal__row-meta .is-reason i {
+  color: var(--ref-color-orange-100);
+}
+
+.schedule-modal__row-remove {
+  align-self: start;
+}
+
+/* Leaving a draft out is the rare gesture — the ✕ shows on the row you're
+   on (hover or keyboard focus), and always on a touch screen. */
+@media (hover: hover) {
+  .schedule-modal__row-remove {
+    opacity: 0;
+    transition: opacity 120ms var(--app-ease-standard);
+  }
+  .schedule-modal__row:hover .schedule-modal__row-remove,
+  .schedule-modal__row:focus-within .schedule-modal__row-remove {
+    opacity: 1;
+  }
+}
+
+/* Shimmer bars inside a pending tile. */
+.schedule-modal__shimmer {
+  display: block;
+  border-radius: var(--ref-border-radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--ref-color-grey-10) 0%,
+    var(--ref-color-grey-20) 50%,
+    var(--ref-color-grey-10) 100%
+  );
+  background-size: 200% 100%;
+  animation: schedule-modal__shimmer 1.4s linear infinite;
+}
+
+.schedule-modal__shimmer--sm {
+  width: 24px;
+  height: 8px;
+}
+
+.schedule-modal__shimmer--lg {
+  width: 28px;
+  height: 20px;
+}
+
+/* ── Motion ───────────────────────────────────────────────────────────── */
+/* On open the rows rise in one after another; when a date lands, its tile
+   pops and its details fade in. Each plays once (one-shot flags in JS). */
+.schedule-modal__row.is-entering {
+  animation: schedule-modal__rise 360ms var(--app-ease-out) both;
+  animation-delay: calc(var(--i) * 60ms);
+}
+
+.schedule-modal__row.is-landing .schedule-modal__tile {
+  animation: schedule-modal__pop 360ms var(--app-ease-bounce) both;
+}
+
+.schedule-modal__row.is-landing .schedule-modal__when,
+.schedule-modal__row.is-landing .schedule-modal__row-meta {
+  animation: schedule-modal__reveal 280ms var(--app-ease-out) both;
+}
+
+@keyframes schedule-modal__rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes schedule-modal__pop {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+}
+
+@keyframes schedule-modal__reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes schedule-modal__shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .schedule-modal__row,
+  .schedule-modal__row *,
+  .schedule-modal__settings,
+  .schedule-modal__shimmer,
+  .schedule-modal__when.is-pending {
+    animation: none !important;
+  }
+}
+
 /* ── Footer ───────────────────────────────────────────────────────────── */
+.schedule-modal__foot {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.schedule-modal__foot-span {
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--ref-color-grey-100);
+}
+
+.schedule-modal__foot-span strong {
+  font-weight: var(--sys-text-style-body-bold-weight);
+}
+
 .schedule-modal__foot-disclosure {
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
@@ -180,39 +429,14 @@
   border-radius: 50%;
   border: 2px solid var(--ref-color-white);
   border-top-color: transparent;
-  animation: schedule-modal__spin 0.8s linear infinite;
+  animation: app-spin 0.8s linear infinite;
   display: inline-block;
 }
 
-@keyframes schedule-modal__spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Narrow dialog — the date drops under the draft, settings go one column. */
+/* Narrow dialog — settings go one column. */
 @media (max-width: 600px) {
-  .schedule-modal__slot,
   .schedule-modal__settings,
   .schedule-modal__settings--three {
     grid-template-columns: minmax(0, 1fr);
   }
-}
-
-/* A row whose date is still being found — the same footprint as the
-   datetime field it becomes, so nothing moves when the date lands. */
-.schedule-modal__slot-pending {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  width: 216px;
-  height: var(--comp-input-height);
-  padding-inline: var(--ref-spacing-xs);
-  box-sizing: border-box;
-  border: 1px solid var(--ref-color-grey-20);
-  border-radius: var(--ref-border-radius-sm);
-  background: var(--ref-color-grey-05);
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-80);
 }

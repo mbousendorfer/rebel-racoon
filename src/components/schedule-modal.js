@@ -1,14 +1,14 @@
-import { html, raw, escapeText } from "../utils.js?v=1230";
-import { showToast } from "./toast.js?v=1230";
+import { html, raw, escapeText } from "../utils.js?v=1232";
+import { showToast } from "./toast.js?v=1232";
 import {
   getQueueOn,
   busyCountsByDay,
   dayKey,
   addToQueue,
   subscribe as subscribeQueue,
-} from "../schedule-store.js?v=1230";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1230";
-import { renderProfileTag, profileForNetwork, NETWORK_LABEL } from "../social-profiles.js?v=1230";
+} from "../schedule-store.js?v=1232";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1232";
+import { renderProfileTag, profileForNetwork, NETWORK_LABEL } from "../social-profiles.js?v=1232";
 
 // Schedule modal — one column, result first.
 //   • Header   — "Schedule N drafts" + one line saying I already picked.
@@ -17,9 +17,12 @@ import { renderProfileTag, profileForNetwork, NETWORK_LABEL } from "../social-pr
 //                and an "Adjust" disclosure, closed at rest, holding the
 //                four settings: rhythm (multi only), start day, time of day,
 //                days to skip. Every change re-spreads live.
-//   • Drafts   — one row per draft: profile, first line, its date/time
-//                (editable) and what else is already on that day.
-//   • Footer   — the disclosure line, then Cancel + the one primary.
+//   • Timeline — the batch as a posting schedule: one row per draft in date
+//                order, each hung on a rail by a date tile (weekday · day ·
+//                month), with its time, its profile, its first line, WHY I
+//                picked that time, and what else is already on that day.
+//   • Footer   — what the batch adds up to ("4 posts over 8 days"), the
+//                disclosure line, then Cancel + the one primary.
 //
 // ⚠️ This replaced a two-mode version (Optimal / Custom radio cards, cadence
 // chips, a free-text "describe your own strategy", a "Compute best times"
@@ -130,6 +133,7 @@ function compute() {
       setTimeout(() => {
         if (!state.open) return;
         slot.pending = false;
+        slot.justLanded = true; // consumed by the next render — plays the landing once
         render();
       }, at),
     );
@@ -212,6 +216,7 @@ export function open({ posts, onConfirm }) {
   };
   // Dates are proposed on open — the user waits for them, never asks for them.
   compute();
+  state.entering = true; // first paint staggers the rows in (consumed by render)
   if (!unsubscribeQueue) {
     unsubscribeQueue = subscribeQueue(() => {
       if (state.open) render();
@@ -316,6 +321,7 @@ function onClick(event) {
   }
   if (event.target.closest("[data-schedule-adjust]")) {
     state.adjustOpen = !state.adjustOpen;
+    state.adjustRevealing = state.adjustOpen;
     render();
     return;
   }
@@ -331,6 +337,19 @@ function onClick(event) {
     state.strategy.timeOfDay = tod.dataset.scheduleTod || null;
     compute();
     render();
+    return;
+  }
+  // The time on a row is text, not a field: its pen opens the browser's own
+  // date-time picker, anchored on a hidden input sitting under the row head.
+  const when = event.target.closest("[data-schedule-when]");
+  if (when) {
+    const input = modal().querySelector(`[data-schedule-slot="${CSS.escape(when.dataset.scheduleWhen)}"]`);
+    if (!input) return;
+    try {
+      input.showPicker();
+    } catch {
+      input.focus();
+    }
     return;
   }
   const reset = event.target.closest("[data-schedule-reset]");
@@ -387,6 +406,7 @@ function onChange(event) {
     if (!slot || isNaN(ts)) return;
     slot.when = ts;
     slot.pinned = true;
+    slot.justLanded = true; // the row moves to its new place in the timeline — say so
     render();
   }
 }
@@ -444,6 +464,10 @@ function onConfirmFailed(err) {
 }
 
 // ── Render ────────────────────────────────────────────────────────────
+function modal() {
+  return document.getElementById(ROOT_ID);
+}
+
 function render() {
   const scrim = document.getElementById(`${ROOT_ID}Scrim`);
   const modal = document.getElementById(ROOT_ID);
@@ -459,6 +483,11 @@ function render() {
   // The reveal re-renders while the user may have a select open — keep it open.
   const openSelect = modal.querySelector("details.ap-select[open]")?.dataset.selectKey;
   modal.innerHTML = renderInner();
+  // One-shot animation flags: each plays on exactly one paint, so the
+  // re-renders the staggered reveal causes never restart an animation.
+  state.entering = false;
+  state.adjustRevealing = false;
+  state.slots.forEach((slot) => (slot.justLanded = false));
   if (openSelect) {
     const again = modal.querySelector(`details.ap-select[data-select-key="${openSelect}"]`);
     if (again) again.open = true;
@@ -478,8 +507,8 @@ function renderInner() {
             ? "I'm finding the best time for this post, around what's already scheduled."
             : "I'm finding the best time for each draft, around what's already scheduled."
           : n === 1
-            ? "I picked the best time for this post, around what's already scheduled. Change it below if you need to."
-            : "I picked a time for each draft, around what's already scheduled. Change any of them below."}
+            ? "I picked the best time for this post, around what's already scheduled. Change it if you need to."
+            : "I picked a time for each draft, around what's already scheduled. Change any of them."}
       </span>
     </div>
 
@@ -496,13 +525,11 @@ function renderInner() {
             </div>
           `)
         : ""}
-      ${raw(renderRhythm())} ${raw(renderSlots())}
+      ${raw(renderRhythm())} ${raw(renderTimeline())}
     </div>
 
     <div class="ap-dialog-footer">
-      <div class="ap-dialog-footer-left">
-        <span class="schedule-modal__foot-disclosure">Posts will publish to your connected accounts.</span>
-      </div>
+      <div class="ap-dialog-footer-left schedule-modal__foot">${raw(renderFootSummary())}</div>
       <div class="ap-dialog-footer-right">
         <button type="button" class="ap-button ghost grey" data-schedule-close ${busy ? "disabled" : ""}>Cancel</button>
         <button
@@ -526,47 +553,75 @@ function renderInner() {
   `;
 }
 
+// ── Formatting (en-US like the rest of the copy — a French date inside an
+// English sentence reads as a bug) ──────────────────────────────────────
 function formatDay(ts) {
-  // en-US like the rest of the copy — a French date inside an English sentence reads as a bug.
   return new Date(ts).toLocaleDateString("en-US", { weekday: "short", day: "numeric", month: "short" });
 }
 
-// The one sentence that says HOW I picked — rhythm · start · time of day
-// (· skipped days). It is the closed state of the settings, so the user
-// reads the reasoning before being offered a way to change it.
-function rhythmSummary() {
+function formatShortDate(ts) {
+  return new Date(ts).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+function formatTime(ts) {
+  return new Date(ts).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+}
+
+function formatHour(h) {
+  return formatTime(new Date(2000, 0, 1, h).getTime()).replace(":00", "");
+}
+
+function networkName(network) {
+  return NETWORK_LABEL[network === "twitter" ? "x" : network] || network;
+}
+
+// A network's best days, Monday first: a contiguous run reads "Tue–Thu",
+// anything else is listed ("Tue, Thu, Sun").
+function formatDays(dows) {
+  const order = WEEKDAYS.map((w) => w.dow).filter((d) => dows.includes(d));
+  const idx = order.map((d) => WEEKDAYS.findIndex((w) => w.dow === d));
+  const contiguous = idx.length > 2 && idx.every((v, i) => i === 0 || v === idx[i - 1] + 1);
+  const name = (d) => WEEKDAYS.find((w) => w.dow === d).short;
+  return contiguous ? `${name(order[0])}–${name(order[order.length - 1])}` : order.map(name).join(", ");
+}
+
+// ── How I picked ──────────────────────────────────────────────────────
+// One sentence, its variable parts in bold — the closed state of the
+// settings, so the reasoning is read before a way to change it is offered.
+function rhythmSentence() {
   const s = state.strategy;
-  const parts = [];
-  const tod = (TIMES_OF_DAY.find((t) => t.id === s.timeOfDay) || TIMES_OF_DAY[0]).short;
-  if (state.posts.length > 1) {
-    parts.push((CADENCES.find((c) => c.id === s.cadence) || CADENCES[0]).label);
-    parts.push(`from ${formatDay(s.startFrom)}`);
-    parts.push(tod);
-  } else {
-    // One draft has no rhythm — lead with what decided its date.
-    const network = networkOf(state.posts[0]);
-    const name = NETWORK_LABEL[network === "twitter" ? "x" : network] || network;
-    parts.push(s.timeOfDay ? tod.charAt(0).toUpperCase() + tod.slice(1) : `Best time for ${name}`);
-    parts.push(`from ${formatDay(s.startFrom)}`);
+  const b = (t) => `<strong>${escapeText(t)}</strong>`;
+  const tod = TIMES_OF_DAY.find((t) => t.id === s.timeOfDay) || TIMES_OF_DAY[0];
+  const at = s.timeOfDay ? `in the ${b(tod.label.toLowerCase())}` : `at ${b("each network's best time")}`;
+  const skip = s.skip.length
+    ? `, never on ${b(
+        WEEKDAYS.filter((w) => s.skip.includes(w.dow))
+          .map((w) => w.short)
+          .join(", "),
+      )}`
+    : "";
+  if (state.posts.length === 1) {
+    const name = networkName(networkOf(state.posts[0]));
+    const when = s.timeOfDay ? `in the ${b(tod.label.toLowerCase())}` : `at ${b(`${name}'s best time`)}`;
+    return `From ${b(formatDay(s.startFrom))}, ${when}${skip}.`;
   }
-  if (s.skip.length) {
-    const names = WEEKDAYS.filter((w) => s.skip.includes(w.dow)).map((w) => w.short);
-    parts.push(`no ${names.join(", ")}`);
-  }
-  return parts.join(" · ");
+  const cadence = CADENCES.find((c) => c.id === s.cadence) || CADENCES[0];
+  return `${b(cadence.label)} from ${b(formatDay(s.startFrom))}, ${at}${skip}.`;
 }
 
 function renderRhythm() {
   const open = state.adjustOpen;
   return `
-    <section class="schedule-modal__rhythm" aria-label="How I picked the dates">
+    <section class="schedule-modal__rhythm${open ? " is-open" : ""}" aria-label="How I picked the dates">
       <div class="schedule-modal__rhythm-head">
-        ${
-          isComputing()
-            ? `<span class="ap-loader size-16 schedule-modal__rhythm-icon" aria-hidden="true"></span>`
-            : `<i class="ap-icon-clock schedule-modal__rhythm-icon" aria-hidden="true"></i>`
-        }
-        <span class="schedule-modal__rhythm-summary">${escapeText(rhythmSummary())}</span>
+        <span class="schedule-modal__rhythm-mark" aria-hidden="true">
+          ${
+            isComputing()
+              ? `<span class="ap-loader size-16"></span>`
+              : `<i class="ap-icon-sparkles schedule-modal__rhythm-icon"></i>`
+          }
+        </span>
+        <p class="schedule-modal__rhythm-summary">${rhythmSentence()}</p>
         <button
           type="button"
           class="ap-button ghost blue schedule-modal__adjust"
@@ -620,7 +675,10 @@ function renderSettings() {
       </label>`,
   ).join("");
   return `
-    <div class="schedule-modal__settings${multi ? " schedule-modal__settings--three" : ""}" id="scheduleAdjust">
+    <div
+      class="schedule-modal__settings${multi ? " schedule-modal__settings--three" : ""}${state.adjustRevealing ? " is-revealing" : ""}"
+      id="scheduleAdjust"
+    >
       ${
         multi
           ? `<div class="ap-form-field">
@@ -658,6 +716,21 @@ function renderSettings() {
   `;
 }
 
+// ── The timeline ──────────────────────────────────────────────────────
+// Why I picked THIS time — the one line that makes a suggestion read as a
+// decision. Named in text; the sparkle only marks it as mine.
+function reasonFor(slot) {
+  const network = networkOf(slot.post);
+  const name = networkName(network);
+  const map = PER_NETWORK_OPTIMAL[network] || FALLBACK_OPTIMAL;
+  const tod = state.strategy.timeOfDay;
+  if (tod) return `${name}'s best ${tod} hour`;
+  const inWindow = map.dow.includes(new Date(slot.when).getDay());
+  return inWindow
+    ? `In ${name}'s best window · ${formatDays(map.dow)}, ${formatHour(pickHour(map.hours, null))}`
+    : `${name}'s best hour, on your rhythm`;
+}
+
 // What else is on the day a draft lands on — the queue plus the other
 // drafts of this batch. It replaces the calendar: the one thing the calendar
 // was for was "am I stacking on a busy day?", and the answer belongs on the
@@ -673,75 +746,134 @@ function sameDayNote(slot) {
   if (others.length === 0) return "";
   const shown = others
     .slice(0, 2)
-    .map((e) => `${formatTime(e.when)} ${NETWORK_LABEL[e.network === "twitter" ? "x" : e.network] || e.network}`)
+    .map((e) => `${formatTime(e.when)} ${networkName(e.network)}`)
     .join(", ");
   const more = others.length > 2 ? ` and ${others.length - 2} more` : "";
   return `Also that day: ${shown}${more}`;
 }
 
-function renderSlots() {
-  const rows = state.slots
-    .map((slot) => {
-      const post = slot.post;
-      const network = networkOf(post);
-      const note = slot.pending ? "" : sameDayNote(slot);
-      return `
-        <li class="schedule-modal__slot">
-          <div class="schedule-modal__slot-post">
-            ${renderProfileTag(profileForNetwork(network), { network })}
-            <span class="schedule-modal__slot-text">${escapeText(extractFirstLine(post))}</span>
-          </div>
-          <div class="schedule-modal__slot-when">
-            ${
-              slot.pending
-                ? `<div class="schedule-modal__slot-pending" role="status">
-              <span class="ap-loader size-16" aria-hidden="true"></span><span>Finding a time…</span>
-            </div>`
-                : `<div class="ap-input-group">
-              <input
-                type="datetime-local"
-                value="${toLocalInput(slot.when)}"
-                data-schedule-slot="${escapeText(post.id)}"
-                aria-label="Publish time"
-              />
-            </div>`
-            }
-            ${
-              state.posts.length > 1
-                ? `<button
-              type="button"
-              class="ap-icon-button stroked transparent"
-              data-schedule-remove="${escapeText(post.id)}"
-              aria-label="Leave this draft out"
-              title="Leave this draft out"
-            >
-              <i class="ap-icon-close"></i>
-            </button>`
-                : ""
-            }
-          </div>
-          ${
-            slot.pinned || note
-              ? `<div class="schedule-modal__slot-meta">
-            ${
-              slot.pinned
-                ? `<span>Set by you</span>
-              <button type="button" class="ap-link small" data-schedule-reset="${escapeText(post.id)}">Use my suggestion</button>`
-                : ""
-            }
-            ${note ? `<span>${escapeText(note)}</span>` : ""}
-          </div>`
-              : ""
-          }
-        </li>
-      `;
-    })
-    .join("");
-  return `<ul class="schedule-modal__slots" aria-label="Drafts and their publish times">${rows}</ul>`;
+// The date tile — weekday, the day in large, the month. Static data, so
+// grey ink on white: never blue, which is the interactive colour here.
+function renderTile(slot) {
+  if (slot.pending) {
+    return `
+      <div class="schedule-modal__tile is-pending" aria-hidden="true">
+        <span class="schedule-modal__shimmer schedule-modal__shimmer--sm"></span>
+        <span class="schedule-modal__shimmer schedule-modal__shimmer--lg"></span>
+        <span class="schedule-modal__shimmer schedule-modal__shimmer--sm"></span>
+      </div>`;
+  }
+  const d = new Date(slot.when);
+  return `
+    <div class="schedule-modal__tile" aria-hidden="true">
+      <span class="schedule-modal__tile-dow">${d.toLocaleDateString("en-US", { weekday: "short" })}</span>
+      <span class="schedule-modal__tile-day">${d.getDate()}</span>
+      <span class="schedule-modal__tile-month">${d.toLocaleDateString("en-US", { month: "short" })}</span>
+    </div>`;
 }
 
-function formatTime(ts) {
-  return new Date(ts).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+function renderRow(slot, i) {
+  const post = slot.post;
+  const id = escapeText(post.id);
+  const network = networkOf(post);
+  const note = slot.pending ? "" : sameDayNote(slot);
+  const classes = [
+    "schedule-modal__row",
+    slot.pending ? "is-pending" : "",
+    slot.justLanded ? "is-landing" : "",
+    state.entering ? "is-entering" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const when = slot.pending
+    ? `<span class="schedule-modal__when is-pending" role="status">Finding a time…</span>`
+    : `<span class="schedule-modal__when">
+        <span class="schedule-modal__when-time">${formatTime(slot.when)}</span>
+        <button
+          type="button"
+          class="ap-icon-button schedule-modal__when-edit"
+          data-schedule-when="${id}"
+          aria-label="Change the publish time — ${escapeText(formatDay(slot.when))}, ${formatTime(slot.when)}"
+          data-tooltip="Change date or time"
+        >
+          <i class="ap-icon-pen"></i>
+        </button>
+        <input
+          type="datetime-local"
+          class="schedule-modal__when-input"
+          value="${toLocalInput(slot.when)}"
+          data-schedule-slot="${id}"
+          tabindex="-1"
+          aria-hidden="true"
+        />
+      </span>`;
+
+  const meta = slot.pending
+    ? ""
+    : `
+      <ul class="schedule-modal__row-meta">
+        ${
+          slot.pinned
+            ? `<li><i class="ap-icon-pen" aria-hidden="true"></i><span>Set by you</span>
+               <button type="button" class="ap-link small" data-schedule-reset="${id}">Use my suggestion</button></li>`
+            : `<li class="is-reason"><i class="ap-icon-sparkles" aria-hidden="true"></i><span>${escapeText(reasonFor(slot))}</span></li>`
+        }
+        ${note ? `<li><i class="ap-icon-calendar" aria-hidden="true"></i><span>${escapeText(note)}</span></li>` : ""}
+      </ul>`;
+
+  return `
+    <li class="${classes}" style="--i: ${i}">
+      ${renderTile(slot)}
+      <div class="schedule-modal__row-main">
+        <div class="schedule-modal__row-head">
+          ${when}
+          ${renderProfileTag(profileForNetwork(network), { network })}
+        </div>
+        <p class="schedule-modal__row-text">${escapeText(extractFirstLine(post))}</p>
+        ${meta}
+      </div>
+      ${
+        state.posts.length > 1
+          ? `<button
+        type="button"
+        class="ap-icon-button schedule-modal__row-remove"
+        data-schedule-remove="${id}"
+        aria-label="Leave this draft out"
+        data-tooltip="Leave this draft out"
+      >
+        <i class="ap-icon-close"></i>
+      </button>`
+          : ""
+      }
+    </li>`;
+}
+
+// The batch as a posting timeline: rows in date order, their tiles strung
+// on one rail. A hand-edited date moves its row to its new place.
+function renderTimeline() {
+  const rows = [...state.slots]
+    .sort((a, b) => a.when - b.when)
+    .map(renderRow)
+    .join("");
+  return `<ol class="schedule-modal__timeline" aria-label="Drafts and their publish times">${rows}</ol>`;
+}
+
+// Footer left: what the batch adds up to, once the dates exist.
+function renderFootSummary() {
+  const disclosure = `<span class="schedule-modal__foot-disclosure">Posts will publish to your connected accounts.</span>`;
+  if (isComputing() || state.slots.length === 0) return disclosure;
+  const times = state.slots.map((s) => s.when).sort((a, b) => a - b);
+  const first = times[0];
+  const last = times[times.length - 1];
+  let span;
+  if (times.length === 1) {
+    span = `<strong>${escapeText(formatDay(first))}</strong> at ${formatTime(first)}`;
+  } else {
+    const days = Math.round((startOfDay(last) - startOfDay(first)) / 86400000) + 1;
+    span = `<strong>${times.length} posts over ${days} ${days === 1 ? "day" : "days"}</strong> · ${escapeText(formatShortDate(first))} – ${escapeText(formatShortDate(last))}`;
+  }
+  return `<span class="schedule-modal__foot-span">${span}</span>${disclosure}`;
 }
 
 function toDateInput(ts) {

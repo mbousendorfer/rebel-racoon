@@ -179,17 +179,22 @@ Store [`schedule-store.js`](../../src/schedule-store.js) : file upcoming, `getQu
 ### Modal Schedule ([`schedule-modal.js`](../../src/components/schedule-modal.js)) — 720px, une colonne, le résultat d'abord
 
 - **Titre** _« Schedule N draft(s) »_. Sous-titre : _« I picked a time for each draft, around what's already scheduled. Change any of them below. »_ — les dates sont **proposées à l'ouverture**, rien à calculer avant.
-- **Résumé du choix** : une phrase dans un cadre grey-20 — _« Every weekday · from Sat, Sep 26 · best time per network »_ (un seul draft : _« Best time for LinkedIn · from … »_) — et un bouton ghost bleu **Adjust** qui déplie les réglages, **fermés par défaut** :
+- **Résumé du choix** : sur une surface grey-05, un disque blanc portant la sparkle orange (le loader Archie pendant le calcul) et **une phrase dont les variables sont en gras** — _« **Every weekday** from **Sat, Sep 26**, at **each network's best time**. »_ (un seul draft : _« From **Sat, Sep 26**, at **LinkedIn's best time**. »_). Le bouton ghost bleu **Adjust** déplie les réglages, **fermés par défaut** :
   - **Posting rhythm** (`.ap-select`, multi-drafts seulement) : _Every weekday / 3 times a week / Twice a week / Every other day / Once a week_.
   - **Starting** (date, défaut demain).
   - **Time of day** (`.ap-select`) : _Best time_ (l'heure propre à chaque réseau) / _Morning / Afternoon / Evening_.
   - **Skip these days** : sept checkboxes DS, lundi d'abord (cocher les sept est refusé).
   - Chaque changement **relance le calcul**.
-- **Le calcul prend un temps** (~2,5 s) : à l'ouverture et après chaque réglage, chaque ligne recalculée affiche _« Finding a time… »_ avec le loader Archie, au gabarit du champ date, puis les dates arrivent l'une après l'autre (première à 2 s, dernière 0,8 s plus tard, quelle que soit la taille du batch). Sous-titre _« I'm finding the best time for each draft… »_ pendant le calcul. **Schedule attend la fin du calcul.** C'est une attente, pas une porte : rien à cliquer pour lancer le calcul, et un réglage changé en cours de route le relance. Les lignes épinglées ne sont jamais recalculées, donc n'attendent pas.
 - **Moteur** : parcourt les jours qui matchent le rythme, saute les jours exclus, les jours déjà occupés dans la file ET ceux des drafts épinglés ; une date par draft à la meilleure heure du réseau (`PER_NETWORK_OPTIMAL`), biaisée par Time of day. Un draft seul prend le premier jour libre parmi les meilleurs jours de son réseau. Débordement empilé sur le dernier jour, une heure d'écart.
-- **Liste des drafts** : une ligne par draft (profile tag + 1re ligne + `datetime-local` + ✕ en multi), séparées par des filets grey-20. Sous la ligne, en caption grey-80 : _« Also that day: 9:00 AM LinkedIn, … »_ (file existante + autres drafts du batch) — c'est ce que le calendrier servait à dire, posé sur la ligne qu'on décide.
-- **Éditer une date l'épingle** : _« Set by you · Use my suggestion »_. Les réglages ne l'écrasent plus ; le lien la rend au moteur.
-- **Footer** : disclosure _« Posts will publish to your connected accounts. »_ · Cancel · **Schedule N posts** (désactivé seulement pendant le calcul et l'envoi). Succès → toast _« N post(s) scheduled »_.
+- **La frise** : le batch se lit comme un calendrier éditorial. Les lignes sont **triées par date**, chacune accrochée à un **rail** grey-20 par une **vignette de date** (jour de la semaine · grand chiffre · mois, encre grise sur blanc, jamais bleue). Chaque ligne porte :
+  - **l'heure** en h3, avec un crayon (`.ap-icon-button` nu) qui ouvre le sélecteur natif via `showPicker()` sur un `datetime-local` caché ;
+  - le profile tag et la 1re ligne du draft (2 lignes max) ;
+  - **pourquoi cette heure**, sparkle orange : _« In LinkedIn's best window · Tue–Thu, 9 AM »_ / _« LinkedIn's best hour, on your rhythm »_ / _« LinkedIn's best morning hour »_ ;
+  - _« Also that day: 9:00 AM LinkedIn, … »_ (la file existante + les autres drafts du batch). C'est ce que le calendrier servait à dire, posé sur la ligne qu'on décide.
+  - Le ✕ (_Leave this draft out_) n'apparaît qu'au survol ou au focus de la ligne ; il est toujours visible sur écran tactile.
+- **Mouvement** : à l'ouverture, les lignes montent en cascade (60 ms d'écart). Pendant le calcul, la vignette et l'heure sont en shimmer. Quand une date arrive, sa vignette « pop » (ease-bounce) et ses détails apparaissent en fondu. Chaque animation joue **une seule fois**, grâce à des drapeaux consommés au render : les re-renders du calcul échelonné ne les relancent pas. `prefers-reduced-motion` coupe tout.
+- **Éditer une date l'épingle** : _« Set by you · Use my suggestion »_, et la ligne rejoint sa place dans la frise. Les réglages ne l'écrasent plus ; le lien la rend au moteur.
+- **Footer** : à gauche, ce que le batch représente (_« **4 posts over 8 days** · Sep 29 – Oct 6 »_, ou _« **Tue, Sep 29** at 9:00 AM »_), puis la disclosure _« Posts will publish to your connected accounts. »_ ; à droite, Cancel · **Schedule N posts** (désactivé seulement pendant le calcul et l'envoi). Succès → toast _« N post(s) scheduled »_.
 - ⚠️ **Remplace** une version à deux modes (cartes Optimal / Custom, chips de cadence, champ libre _« Or describe your own strategy »_, bouton **Compute best times** qui débloquait Schedule, calendrier mensuel à droite, drag-to-reorder, _Clear all dates_). Tout était au même niveau et deux primaires se disputaient l'action. Ne pas remettre la porte « Compute » ni le choix de mode : éditer une date EST le mode custom.
 
 ---
