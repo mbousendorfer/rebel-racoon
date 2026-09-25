@@ -184,11 +184,12 @@ Store [`schedule-store.js`](../../src/schedule-store.js) : file upcoming, `getQu
   - **Starting** (date, défaut demain).
   - **Time of day** (`.ap-select`) : _Best time_ (l'heure propre à chaque réseau) / _Morning / Afternoon / Evening_.
   - **Skip these days** : sept checkboxes DS, lundi d'abord (cocher les sept est refusé).
-  - Chaque changement **recalcule en direct**.
+  - Chaque changement **relance le calcul**.
+- **Le calcul prend un temps** (~2,5 s) : à l'ouverture et après chaque réglage, chaque ligne recalculée affiche _« Finding a time… »_ avec le loader Archie, au gabarit du champ date, puis les dates arrivent l'une après l'autre (première à 2 s, dernière 0,8 s plus tard, quelle que soit la taille du batch). Sous-titre _« I'm finding the best time for each draft… »_ pendant le calcul. **Schedule attend la fin du calcul.** C'est une attente, pas une porte : rien à cliquer pour lancer le calcul, et un réglage changé en cours de route le relance. Les lignes épinglées ne sont jamais recalculées, donc n'attendent pas.
 - **Moteur** : parcourt les jours qui matchent le rythme, saute les jours exclus, les jours déjà occupés dans la file ET ceux des drafts épinglés ; une date par draft à la meilleure heure du réseau (`PER_NETWORK_OPTIMAL`), biaisée par Time of day. Un draft seul prend le premier jour libre parmi les meilleurs jours de son réseau. Débordement empilé sur le dernier jour, une heure d'écart.
 - **Liste des drafts** : une ligne par draft (profile tag + 1re ligne + `datetime-local` + ✕ en multi), séparées par des filets grey-20. Sous la ligne, en caption grey-80 : _« Also that day: 9:00 AM LinkedIn, … »_ (file existante + autres drafts du batch) — c'est ce que le calendrier servait à dire, posé sur la ligne qu'on décide.
 - **Éditer une date l'épingle** : _« Set by you · Use my suggestion »_. Les réglages ne l'écrasent plus ; le lien la rend au moteur.
-- **Footer** : disclosure _« Posts will publish to your connected accounts. »_ · Cancel · **Schedule N posts** (jamais désactivé hors envoi). Succès → toast _« N post(s) scheduled »_.
+- **Footer** : disclosure _« Posts will publish to your connected accounts. »_ · Cancel · **Schedule N posts** (désactivé seulement pendant le calcul et l'envoi). Succès → toast _« N post(s) scheduled »_.
 - ⚠️ **Remplace** une version à deux modes (cartes Optimal / Custom, chips de cadence, champ libre _« Or describe your own strategy »_, bouton **Compute best times** qui débloquait Schedule, calendrier mensuel à droite, drag-to-reorder, _Clear all dates_). Tout était au même niveau et deux primaires se disputaient l'action. Ne pas remettre la porte « Compute » ni le choix de mode : éditer une date EST le mode custom.
 
 ---

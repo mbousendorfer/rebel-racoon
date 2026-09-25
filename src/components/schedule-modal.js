@@ -1,14 +1,14 @@
-import { html, raw, escapeText } from "../utils.js?v=1228";
-import { showToast } from "./toast.js?v=1228";
+import { html, raw, escapeText } from "../utils.js?v=1230";
+import { showToast } from "./toast.js?v=1230";
 import {
   getQueueOn,
   busyCountsByDay,
   dayKey,
   addToQueue,
   subscribe as subscribeQueue,
-} from "../schedule-store.js?v=1228";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1228";
-import { renderProfileTag, profileForNetwork, NETWORK_LABEL } from "../social-profiles.js?v=1228";
+} from "../schedule-store.js?v=1230";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1230";
+import { renderProfileTag, profileForNetwork, NETWORK_LABEL } from "../social-profiles.js?v=1230";
 
 // Schedule modal — one column, result first.
 //   • Header   — "Schedule N drafts" + one line saying I already picked.
@@ -28,6 +28,11 @@ import { renderProfileTag, profileForNetwork, NETWORK_LABEL } from "../social-pr
 // nothing said so, while the calendar already painted dates that did not
 // yet count. Don't bring the gate or the mode picker back: dates are
 // proposed on open, and editing one IS the custom mode.
+//
+// Finding the times TAKES a beat — ~2.5s on open and after every setting
+// change, the rows landing one after another. That is a wait, not a gate:
+// nothing to click to start it, and a change mid-way simply restarts it.
+// Schedule waits for it (a date the user hasn't seen can't be confirmed).
 //
 // A hand-edited date is PINNED: the settings re-spread every other draft
 // around it and never overwrite it, and the row says so ("Set by you") with
@@ -100,6 +105,41 @@ function emptyState() {
 let state = emptyState();
 let unsubscribeQueue = null;
 
+// The "finding the best times" beat: the first date lands after COMPUTE_MS,
+// the last one COMPUTE_STAGGER_MS later — whatever the batch size, so a
+// 12-draft batch doesn't take twice as long as a 3-draft one.
+const COMPUTE_MS = 2000;
+const COMPUTE_STAGGER_MS = 800;
+let computeTimers = [];
+
+function cancelCompute() {
+  computeTimers.forEach(clearTimeout);
+  computeTimers = [];
+}
+
+// Re-spread, then hold every freshly-picked date back until its turn.
+// Pinned rows are never recomputed, so they never wait.
+function compute() {
+  cancelCompute();
+  respread();
+  const pending = state.slots.filter((s) => !s.pinned);
+  pending.forEach((slot, i) => {
+    slot.pending = true;
+    const at = COMPUTE_MS + (pending.length > 1 ? Math.round((i * COMPUTE_STAGGER_MS) / (pending.length - 1)) : 0);
+    computeTimers.push(
+      setTimeout(() => {
+        if (!state.open) return;
+        slot.pending = false;
+        render();
+      }, at),
+    );
+  });
+}
+
+function isComputing() {
+  return state.slots.some((s) => s.pending);
+}
+
 function startOfDay(ts) {
   const d = new Date(ts);
   d.setHours(0, 0, 0, 0);
@@ -170,8 +210,8 @@ export function open({ posts, onConfirm }) {
     strategy: { cadence: "weekdays", timeOfDay: null, skip: [], startFrom: defaultStartFrom() },
     onConfirm: typeof onConfirm === "function" ? onConfirm : null,
   };
-  // Dates are proposed on open — nothing to compute first.
-  respread();
+  // Dates are proposed on open — the user waits for them, never asks for them.
+  compute();
   if (!unsubscribeQueue) {
     unsubscribeQueue = subscribeQueue(() => {
       if (state.open) render();
@@ -181,6 +221,7 @@ export function open({ posts, onConfirm }) {
 }
 
 function close() {
+  cancelCompute();
   state = emptyState();
   if (unsubscribeQueue) {
     unsubscribeQueue();
@@ -281,14 +322,14 @@ function onClick(event) {
   const cadence = event.target.closest("[data-schedule-cadence]");
   if (cadence) {
     state.strategy.cadence = cadence.dataset.scheduleCadence;
-    respread();
+    compute();
     render();
     return;
   }
   const tod = event.target.closest("[data-schedule-tod]");
   if (tod) {
     state.strategy.timeOfDay = tod.dataset.scheduleTod || null;
-    respread();
+    compute();
     render();
     return;
   }
@@ -296,7 +337,7 @@ function onClick(event) {
   if (reset) {
     const slot = state.slots.find((s) => s.post.id === reset.dataset.scheduleReset);
     if (slot) slot.pinned = false;
-    respread();
+    compute();
     render();
     return;
   }
@@ -310,7 +351,7 @@ function onClick(event) {
     return;
   }
   if (event.target.closest("[data-schedule-confirm]")) {
-    if (state.status === "scheduling") return;
+    if (state.status === "scheduling" || isComputing()) return;
     confirmSchedule();
   }
 }
@@ -320,7 +361,7 @@ function onChange(event) {
     const ts = new Date(`${event.target.value}T00:00:00`).getTime();
     if (isNaN(ts)) return;
     state.strategy.startFrom = ts;
-    respread();
+    compute();
     render();
     return;
   }
@@ -335,7 +376,7 @@ function onChange(event) {
       return;
     }
     state.strategy.skip = [...skip];
-    respread();
+    compute();
     render();
     return;
   }
@@ -415,19 +456,30 @@ function render() {
   }
   scrim.hidden = false;
   modal.hidden = false;
+  // The reveal re-renders while the user may have a select open — keep it open.
+  const openSelect = modal.querySelector("details.ap-select[open]")?.dataset.selectKey;
   modal.innerHTML = renderInner();
+  if (openSelect) {
+    const again = modal.querySelector(`details.ap-select[data-select-key="${openSelect}"]`);
+    if (again) again.open = true;
+  }
 }
 
 function renderInner() {
   const n = state.posts.length;
   const busy = state.status === "scheduling";
+  const computing = isComputing();
   return html`
     <div class="ap-dialog-header">
       <span class="ap-dialog-title" id="${ROOT_ID}Title">Schedule ${n} ${n === 1 ? "draft" : "drafts"}</span>
       <span class="ap-dialog-subtitle">
-        ${n === 1
-          ? "I picked the best time for this post, around what's already scheduled. Change it below if you need to."
-          : "I picked a time for each draft, around what's already scheduled. Change any of them below."}
+        ${computing
+          ? n === 1
+            ? "I'm finding the best time for this post, around what's already scheduled."
+            : "I'm finding the best time for each draft, around what's already scheduled."
+          : n === 1
+            ? "I picked the best time for this post, around what's already scheduled. Change it below if you need to."
+            : "I picked a time for each draft, around what's already scheduled. Change any of them below."}
       </span>
     </div>
 
@@ -453,7 +505,12 @@ function renderInner() {
       </div>
       <div class="ap-dialog-footer-right">
         <button type="button" class="ap-button ghost grey" data-schedule-close ${busy ? "disabled" : ""}>Cancel</button>
-        <button type="button" class="ap-button primary orange" data-schedule-confirm ${busy ? "disabled" : ""}>
+        <button
+          type="button"
+          class="ap-button primary orange"
+          data-schedule-confirm
+          ${busy || computing ? "disabled" : ""}
+        >
           ${busy
             ? raw(`<span class="schedule-modal__spinner" aria-hidden="true"></span><span>Scheduling…</span>`)
             : raw(
@@ -504,7 +561,11 @@ function renderRhythm() {
   return `
     <section class="schedule-modal__rhythm" aria-label="How I picked the dates">
       <div class="schedule-modal__rhythm-head">
-        <i class="ap-icon-clock schedule-modal__rhythm-icon" aria-hidden="true"></i>
+        ${
+          isComputing()
+            ? `<span class="ap-loader size-16 schedule-modal__rhythm-icon" aria-hidden="true"></span>`
+            : `<i class="ap-icon-clock schedule-modal__rhythm-icon" aria-hidden="true"></i>`
+        }
         <span class="schedule-modal__rhythm-summary">${escapeText(rhythmSummary())}</span>
         <button
           type="button"
@@ -533,7 +594,7 @@ function renderSelect({ label, value, options, attr }) {
     )
     .join("");
   return `
-    <details class="ap-select">
+    <details class="ap-select" data-select-key="${attr}">
       <summary class="ap-select-trigger" aria-label="${escapeText(label)}">
         <span class="ap-select-value">${escapeText(value)}</span>
         <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
@@ -606,7 +667,7 @@ function sameDayNote(slot) {
   const others = [
     ...getQueueOn(slot.when),
     ...state.slots
-      .filter((s) => s !== slot && dayKey(s.when) === key)
+      .filter((s) => s !== slot && !s.pending && dayKey(s.when) === key)
       .map((s) => ({ when: s.when, network: networkOf(s.post) })),
   ].sort((a, b) => a.when - b.when);
   if (others.length === 0) return "";
@@ -623,7 +684,7 @@ function renderSlots() {
     .map((slot) => {
       const post = slot.post;
       const network = networkOf(post);
-      const note = sameDayNote(slot);
+      const note = slot.pending ? "" : sameDayNote(slot);
       return `
         <li class="schedule-modal__slot">
           <div class="schedule-modal__slot-post">
@@ -631,14 +692,20 @@ function renderSlots() {
             <span class="schedule-modal__slot-text">${escapeText(extractFirstLine(post))}</span>
           </div>
           <div class="schedule-modal__slot-when">
-            <div class="ap-input-group">
+            ${
+              slot.pending
+                ? `<div class="schedule-modal__slot-pending" role="status">
+              <span class="ap-loader size-16" aria-hidden="true"></span><span>Finding a time…</span>
+            </div>`
+                : `<div class="ap-input-group">
               <input
                 type="datetime-local"
                 value="${toLocalInput(slot.when)}"
                 data-schedule-slot="${escapeText(post.id)}"
                 aria-label="Publish time"
               />
-            </div>
+            </div>`
+            }
             ${
               state.posts.length > 1
                 ? `<button

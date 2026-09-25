@@ -198,3 +198,21 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* A row whose date is still being found — the same footprint as the
+   datetime field it becomes, so nothing moves when the date lands. */
+.schedule-modal__slot-pending {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  width: 216px;
+  height: var(--comp-input-height);
+  padding-inline: var(--ref-spacing-xs);
+  box-sizing: border-box;
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--ref-border-radius-sm);
+  background: var(--ref-color-grey-05);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
+}
