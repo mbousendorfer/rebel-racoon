@@ -199,7 +199,8 @@
   display: flex;
 }
 
-/* "In its network's best window" — my sparkle, pinned on the tile's corner.
+/* "The network's best time" — my sparkle, pinned on the tile's corner of
+   every date I picked (never on one set by hand).
    A white disc with the grey-20 hairline, like the tile it sits on. */
 .schedule-modal__tile-badge {
   position: absolute;
@@ -303,11 +304,6 @@
 
 .schedule-modal__when-note i {
   font-size: var(--sys-icon-css-sm);
-}
-
-/* The reason is mine — orange sparkle, grey-80 words. */
-.schedule-modal__when-note.is-reason i {
-  color: var(--ref-color-orange-100);
 }
 
 .schedule-modal__when-pending {

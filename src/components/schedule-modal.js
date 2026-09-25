@@ -1,16 +1,16 @@
-import { html, raw, escapeText } from "../utils.js?v=1248";
-import { showToast } from "./toast.js?v=1248";
-import { getQueue, getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=1248";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1248";
+import { html, raw, escapeText } from "../utils.js?v=1250";
+import { showToast } from "./toast.js?v=1250";
+import { getQueue, getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=1250";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1250";
 import {
   renderProfileTag,
   profileForNetwork,
   NETWORK_LABEL,
   NETWORK_ICON_BY_PLATFORM,
-} from "../social-profiles.js?v=1248";
-import { getContextById } from "../contexts-store.js?v=1248";
-import { canEdit } from "../playbook-access.js?v=1248";
-import { getPreset, savePreset } from "../schedule-presets-store.js?v=1248";
+} from "../social-profiles.js?v=1250";
+import { getContextById } from "../contexts-store.js?v=1250";
+import { canEdit } from "../playbook-access.js?v=1250";
+import { getPreset, savePreset } from "../schedule-presets-store.js?v=1250";
 
 // Schedule modal — one column, result first.
 //   • Header   — "Schedule N drafts" + one line saying I already picked.
@@ -647,22 +647,8 @@ function formatTime(ts) {
   return new Date(ts).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
 }
 
-function formatHour(h) {
-  return formatTime(new Date(2000, 0, 1, h).getTime()).replace(":00", "");
-}
-
 function networkName(network) {
   return NETWORK_LABEL[network === "twitter" ? "x" : network] || network;
-}
-
-// A network's best days, Monday first: a contiguous run reads "Tue–Thu",
-// anything else is listed ("Tue, Thu, Sun").
-function formatDays(dows) {
-  const order = WEEKDAYS.map((w) => w.dow).filter((d) => dows.includes(d));
-  const idx = order.map((d) => WEEKDAYS.findIndex((w) => w.dow === d));
-  const contiguous = idx.length > 2 && idx.every((v, i) => i === 0 || v === idx[i - 1] + 1);
-  const name = (d) => WEEKDAYS.find((w) => w.dow === d).short;
-  return contiguous ? `${name(order[0])}–${name(order[order.length - 1])}` : order.map(name).join(", ");
 }
 
 // ── How I picked ──────────────────────────────────────────────────────
@@ -842,21 +828,17 @@ function renderSettings() {
   `;
 }
 
-// ── The timeline ──────────────────────────────────────────────────────
-// Why I picked THIS time — the one line that makes a suggestion read as a
-// decision. Kept to a few words so it fits the WHEN cell — the network is
-// already named by the profile tag beside it — and the full reading
-// ("LinkedIn's best window: Tue–Thu, 9 AM") rides in the tooltip.
+// Why I picked THIS time. There is one concept — the network's BEST TIME —
+// whatever made it (its best days, the rhythm, a time-of-day bias): the
+// badge on the tile says it for every date I picked, and this is its
+// tooltip. "Best hour" / "Best window" / "Best morning hour" were three
+// words for one idea and got merged.
+// No days in the tooltip: the date is the rhythm's, the hour is the network's,
+// and naming the network's best days on a date outside them contradicted it.
 function reasonFor(slot) {
-  const network = networkOf(slot.post);
-  const name = networkName(network);
-  const map = PER_NETWORK_OPTIMAL[network] || FALLBACK_OPTIMAL;
+  const name = networkName(networkOf(slot.post));
   const tod = state.strategy.timeOfDay;
-  const window = `${name}'s best window: ${formatDays(map.dow)}, ${formatHour(pickHour(map.hours, null))}`;
-  if (tod) return { label: `Best ${tod} hour`, detail: `${name}'s best ${tod} hour` };
-  return map.dow.includes(new Date(slot.when).getDay())
-    ? { label: "Best window", detail: window, window: true }
-    : { label: "Best hour", detail: `${name}'s best hour, on your rhythm — ${window}` };
+  return tod ? `${name}'s best time in the ${tod}` : `${name}'s best time`;
 }
 
 // What else is on the day a draft lands on — the queue plus the other
@@ -974,13 +956,12 @@ function renderTile(slot) {
       </div>`;
   }
   const d = new Date(slot.when);
-  // A date I picked INSIDE its network's best window wears my sparkle on its
-  // corner — the badge says it, so the row doesn't need a line for it. The
-  // other reasons ("Best hour", "Best morning hour", "Set by you") stay as
-  // text under the time: only the common case moved to the badge.
+  // Every date I picked wears my sparkle on its corner — "the network's best
+  // time", one treatment for all. A date set by hand has none; its row says
+  // "Set by you" instead.
   const reason = slot.pinned ? null : reasonFor(slot);
-  const badge = reason?.window
-    ? `<span class="schedule-modal__tile-badge" role="img" aria-label="${escapeText(reason.detail)}" data-tooltip="${escapeText(reason.detail)}">
+  const badge = reason
+    ? `<span class="schedule-modal__tile-badge" role="img" aria-label="${escapeText(reason)}" data-tooltip="${escapeText(reason)}">
         <i class="ap-icon-sparkles ap-icon-xs" aria-hidden="true"></i>
       </span>`
     : "";
@@ -1008,7 +989,6 @@ function renderWhen(slot) {
         </div>
       </div>`;
   }
-  const reason = reasonFor(slot);
   const agenda = dayAgenda(slot);
   return `
     <div class="schedule-modal__when">
@@ -1038,10 +1018,7 @@ function renderWhen(slot) {
           slot.pinned
             ? `<span class="schedule-modal__when-note">Set by you ·
                 <button type="button" class="ap-link small" data-schedule-reset="${id}" aria-label="Use my suggestion again">Reset</button></span>`
-            : reason.window
-              ? ""
-              : `<span class="schedule-modal__when-note is-reason" data-tooltip="${escapeText(reason.detail)}">
-                <i class="ap-icon-sparkles" aria-hidden="true"></i>${escapeText(reason.label)}</span>`
+            : ""
         }
         ${renderDayNote(slot, agenda)}
       </div>
