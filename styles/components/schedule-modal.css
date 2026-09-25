@@ -127,7 +127,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--ref-spacing-xxs) var(--ref-spacing-xs);
+  gap: var(--ref-spacing-xxxs);
 }
 
 /* Same type as the DS .ap-form-field > label beside it. */
@@ -152,7 +152,7 @@
      being found and the date tile once one lands — so no row changes height
      when its date arrives. 66 = the date tile's own three lines + padding. */
   --tile-h: 66px;
-  --when-w: 200px;
+  --when-w: 192px; /* tile + time + the widest note ("+2 posts that day"), nothing more */
   list-style: none;
   margin: 0;
   padding: 0;
@@ -169,8 +169,8 @@
    middles, so nothing lined up from one row to the next. */
 .schedule-modal__row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) var(--when-w) auto;
-  grid-template-areas: "draft when actions";
+  grid-template-columns: minmax(0, 1fr) var(--when-w);
+  grid-template-areas: "draft when";
   align-items: stretch;
 }
 
@@ -272,13 +272,36 @@
   height: 24px;
 }
 
+/* The time is a button (it opens the picker), dressed as the data it is:
+   grey ink at rest, blue on hover / focus — blue only once pointed at. */
 .schedule-modal__when-time {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: var(--ref-border-radius-sm);
   font-size: var(--sys-text-style-h3-size);
   line-height: var(--sys-text-style-h3-line-height);
   font-weight: var(--sys-text-style-h3-weight);
   color: var(--ref-color-grey-100);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+
+.schedule-modal__when-time:hover,
+.schedule-modal__when-time:focus-visible {
+  color: var(--ref-color-electric-blue-100);
+}
+
+.schedule-modal__when-time:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: 2px;
+}
+
+.schedule-modal__tile-wrap[data-schedule-when] {
+  cursor: pointer;
 }
 
 /* The native datetime input is kept (it IS the picker) but hidden under the
@@ -402,19 +425,38 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* The row's actions grouped in one column — change the date, leave the
-   draft out — on the WHEN cell's grey-05, so the right-hand band reads as
-   one: the date, then what you can do with the row. */
-.schedule-modal__row-actions {
-  grid-area: actions;
+/* The row's actions — change the date, leave the draft out — together, on
+   the row you're on: they float over the draft's top-right corner, against
+   the date column, so they cost no width at rest. On white, so the text
+   under them doesn't show through; no shadow (nothing floats IN a dialog). */
+.schedule-modal__draft {
+  position: relative;
+}
+
+.schedule-modal__row-tools {
+  position: absolute;
+  top: calc(var(--ref-spacing-xs) - 6px); /* 36px buttons centred on the first 24px line */
+  right: var(--ref-spacing-xxs);
   display: flex;
-  align-items: flex-start;
-  justify-content: flex-end;
-  gap: var(--ref-spacing-xxxs);
-  /* The 36px buttons centred on the first 24px line: 12 + 12 − 18. */
-  padding: calc(var(--ref-spacing-xs) - 6px) var(--ref-spacing-xxs) 0 0;
-  min-width: 44px;
-  background: var(--ref-color-grey-05);
+  gap: 2px;
+  padding-left: var(--ref-spacing-xxs);
+  background: var(--ref-color-white);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms var(--app-ease-standard);
+}
+
+.schedule-modal__row:hover .schedule-modal__row-tools,
+.schedule-modal__row:focus-within .schedule-modal__row-tools {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (hover: none) {
+  .schedule-modal__row-tools {
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
 
 /* Shimmer bars inside a pending tile. */
@@ -534,10 +576,10 @@
 /* Narrow dialog — settings go one column, WHEN drops under WHAT. */
 @media (max-width: 600px) {
   .schedule-modal__row {
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
-      "draft actions"
-      "when when";
+      "draft"
+      "when";
   }
   .schedule-modal__when {
     border-left: 0;
@@ -555,17 +597,17 @@
   color: var(--ref-color-orange-100);
 }
 
-/* The day's agenda, unfolded under its row — spans both zones, on the same
-   grey-05 as the WHEN cell so it reads as that date's detail. */
-.schedule-modal__peek {
-  grid-column: 1 / -1;
+/* The day's agenda — a floating DS .ap-action-dropdown surface anchored to
+   its link (placed in JS against the dialog's box). The DS gives it the
+   surface, radius, shadow and z-index; we give it width and layout. */
+.schedule-modal__peek.ap-action-dropdown {
+  position: absolute;
+  width: 380px;
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xxs);
-  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
-  background: var(--ref-color-grey-05);
-  border-top: 1px solid var(--ref-color-grey-20);
-  animation: schedule-modal__reveal 200ms var(--app-ease-out) both;
+  padding: var(--ref-spacing-xs);
+  animation: schedule-modal__reveal 160ms var(--app-ease-out) both;
 }
 
 .schedule-modal__peek-head {

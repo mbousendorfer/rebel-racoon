@@ -1,16 +1,16 @@
-import { html, raw, escapeText } from "../utils.js?v=1252";
-import { showToast } from "./toast.js?v=1252";
-import { getQueue, getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=1252";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1252";
+import { html, raw, escapeText } from "../utils.js?v=1254";
+import { showToast } from "./toast.js?v=1254";
+import { getQueue, getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=1254";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1254";
 import {
   renderProfileTag,
   profileForNetwork,
   NETWORK_LABEL,
   NETWORK_ICON_BY_PLATFORM,
-} from "../social-profiles.js?v=1252";
-import { getContextById } from "../contexts-store.js?v=1252";
-import { canEdit } from "../playbook-access.js?v=1252";
-import { getPreset, savePreset } from "../schedule-presets-store.js?v=1252";
+} from "../social-profiles.js?v=1254";
+import { getContextById } from "../contexts-store.js?v=1254";
+import { canEdit } from "../playbook-access.js?v=1254";
+import { getPreset, savePreset } from "../schedule-presets-store.js?v=1254";
 
 // Schedule modal — one column, result first.
 //   • Header   — "Schedule N drafts" + one line saying I already picked.
@@ -210,6 +210,17 @@ export function init() {
   modal.addEventListener("change", onChange);
   // Backdrop click + Escape go through the shared coordinator. `state.open`
   // is the canonical isOpen — visibility is driven by .hidden.
+  // Escape closes the day popover first; the dialog only on the next press.
+  // Capture on document runs before the coordinator's own keydown listener.
+  document.addEventListener(
+    "keydown",
+    (event) => {
+      if (event.key !== "Escape" || !state.open || !state.peekId) return;
+      event.stopPropagation();
+      closePeek();
+    },
+    true,
+  );
   bindOverlayDismissal({
     modal,
     backdrop: scrim,
@@ -382,6 +393,12 @@ function onClick(event) {
     if (!d.contains(event.target)) d.open = false;
   });
 
+  // A click anywhere outside the day popover (and its own link) closes it.
+  if (state.peekId && !event.target.closest(".schedule-modal__peek") && !event.target.closest("[data-schedule-peek]")) {
+    state.peekId = null;
+    render();
+  }
+
   if (event.target.closest("[data-schedule-close]")) {
     close();
     return;
@@ -419,9 +436,31 @@ function onClick(event) {
     }
     return;
   }
+  const skipDay = event.target.closest("[data-schedule-skip-day]");
+  if (skipDay) {
+    const dow = parseInt(skipDay.dataset.scheduleSkipDay, 10);
+    const skip = new Set(state.strategy.skip);
+    if (skip.has(dow)) skip.delete(dow);
+    else skip.add(dow);
+    // Skipping all seven days would leave nowhere to post — refuse the last one.
+    if (skip.size === 7) return;
+    state.strategy.skip = [...skip];
+    compute();
+    render();
+    return;
+  }
   const peek = event.target.closest("[data-schedule-peek]");
   if (peek) {
     state.peekId = state.peekId === peek.dataset.schedulePeek ? null : peek.dataset.schedulePeek;
+    render();
+    return;
+  }
+  if (event.target.closest("[data-schedule-restore-preset]")) {
+    const saved = state.playbook ? getPreset(state.playbook.id) : null;
+    if (!saved) return;
+    // Back to the Playbook's rhythm — the start date stays the one chosen.
+    state.strategy = { ...saved, startFrom: state.strategy.startFrom };
+    compute();
     render();
     return;
   }
@@ -460,21 +499,6 @@ function onChange(event) {
     const ts = new Date(`${event.target.value}T00:00:00`).getTime();
     if (isNaN(ts)) return;
     state.strategy.startFrom = ts;
-    compute();
-    render();
-    return;
-  }
-  if (event.target.matches("[data-schedule-skip]")) {
-    const dow = parseInt(event.target.value, 10);
-    const skip = new Set(state.strategy.skip);
-    if (event.target.checked) skip.add(dow);
-    else skip.delete(dow);
-    // Skipping all seven days would leave nowhere to post — refuse the last one.
-    if (skip.size === 7) {
-      event.target.checked = false;
-      return;
-    }
-    state.strategy.skip = [...skip];
     compute();
     render();
     return;
@@ -563,6 +587,12 @@ function render() {
   // The reveal re-renders while the user may have a select open — keep it open.
   const openSelect = modal.querySelector("details.ap-select[open]")?.dataset.selectKey;
   modal.innerHTML = renderInner();
+  if (state.peekId) {
+    placePeek(modal);
+    // The popover is pinned to the dialog, not the scroller — scrolling
+    // would slide the link out from under it, so a scroll closes it.
+    modal.querySelector(".schedule-modal__body")?.addEventListener("scroll", closePeek, { once: true });
+  }
   // One-shot animation flags: each plays on exactly one paint, so the
   // re-renders the staggered reveal causes never restart an animation.
   state.entering = false;
@@ -630,6 +660,7 @@ function renderInner() {
     <button type="button" class="ap-dialog-close" data-schedule-close aria-label="Close (Esc)">
       <i class="ap-icon-close"></i>
     </button>
+    ${raw(renderPeekPopover())}
   `;
 }
 
@@ -704,18 +735,42 @@ function renderPresetAction() {
   const ctx = state.playbook;
   if (!ctx) return "";
   const name = ctx.name;
-  const tip = escapeText(`${name} will start from this rhythm every time you schedule for it.`);
-  if (!canEdit(ctx)) {
-    return `<span class="schedule-modal__preset-note" data-tooltip="${escapeText(`Only the owner of ${name} can save its posting rhythm.`)}">Only the owner can save it</span>`;
-  }
-  if (usingSavedPreset()) {
-    return `<span class="schedule-modal__preset-note is-saved" data-tooltip="${tip}"><i class="ap-icon-check" aria-hidden="true"></i>Saved for this Playbook</span>`;
-  }
+  const owner = canEdit(ctx);
   const saved = getPreset(ctx.id);
+  const tip = escapeText(`${name} starts from this rhythm every time you schedule for it.`);
+  // 1 — no rhythm saved yet.
+  if (!saved) {
+    return owner
+      ? `<button type="button" class="ap-button ghost blue schedule-modal__preset-save" data-schedule-save-preset data-tooltip="${tip}">
+          <i class="ap-icon-bookmark" aria-hidden="true"></i><span>Save for this Playbook</span>
+        </button>`
+      : `<span class="schedule-modal__preset-note" data-tooltip="${escapeText(`Only the owner of ${name} can save its posting rhythm.`)}">Only the owner can save it</span>`;
+  }
+  // 2 — the settings ARE the Playbook's rhythm.
+  if (usingSavedPreset()) {
+    return `<span class="schedule-modal__preset-note is-saved" data-tooltip="${tip}"><i class="ap-icon-check" aria-hidden="true"></i>This Playbook's rhythm</span>`;
+  }
+  // 3 — a rhythm is saved and these settings drift from it: say so, offer the
+  // way back to it (anyone), and the way to make this the new one (owner).
+  // Changing a setting for one batch must never silently rewrite the brand's.
   return `
-    <button type="button" class="ap-button ghost blue schedule-modal__preset-save" data-schedule-save-preset data-tooltip="${tip}">
-      <i class="ap-icon-bookmark" aria-hidden="true"></i><span>${saved ? "Update for this Playbook" : "Save for this Playbook"}</span>
-    </button>`;
+    <span class="schedule-modal__preset-note" data-tooltip="${escapeText(`${name}'s rhythm: ${rhythmLabel(saved)}`)}">
+      Differs from this Playbook's rhythm ·
+      <button type="button" class="ap-link small" data-schedule-restore-preset>Restore</button>
+      ${owner ? `· <button type="button" class="ap-link small" data-schedule-save-preset>Update</button>` : ""}
+    </span>`;
+}
+
+// A saved rhythm in words, for the "Differs from…" tooltip.
+function rhythmLabel(r) {
+  const cadence = (CADENCES.find((c) => c.id === r.cadence) || CADENCES[0]).label;
+  const tod = r.timeOfDay ? `, in the ${r.timeOfDay}` : ", at each network's best time";
+  const skip = r.skip.length
+    ? `, never on ${WEEKDAYS.filter((w) => r.skip.includes(w.dow))
+        .map((w) => w.short)
+        .join(", ")}`
+    : "";
+  return `${cadence}${tod}${skip}`;
 }
 
 function renderRhythm() {
@@ -775,13 +830,16 @@ function renderSettings() {
   const multi = state.posts.length > 1;
   const cadence = CADENCES.find((c) => c.id === s.cadence) || CADENCES[0];
   const tod = TIMES_OF_DAY.find((t) => t.id === s.timeOfDay) || TIMES_OF_DAY[0];
+  // Seven toggle chips — pressed = skipped. Half the width of seven labelled
+  // checkboxes, which is what lets the preset action share their row.
   const skipBoxes = WEEKDAYS.map(
     (w) => `
-      <label class="ap-checkbox-container">
-        <input type="checkbox" value="${w.dow}" data-schedule-skip ${s.skip.includes(w.dow) ? "checked" : ""} />
-        <i></i>
-        <span>${w.short}</span>
-      </label>`,
+      <button
+        type="button"
+        class="ap-filter-chip"
+        data-schedule-skip-day="${w.dow}"
+        aria-pressed="${s.skip.includes(w.dow) ? "true" : "false"}"
+      >${w.short}</button>`,
   ).join("");
   return `
     <div
@@ -879,6 +937,7 @@ function dayAgenda(slot) {
 
 function formatGap(ms) {
   const min = Math.round(Math.abs(ms) / 60000);
+  if (min === 0) return "same time";
   if (min < 60) return `${min} min`;
   const h = Math.floor(min / 60);
   const m = min % 60;
@@ -894,7 +953,10 @@ function renderDayNote(slot, agenda) {
   const open = state.peekId === slot.post.id;
   const n = agenda.items.length;
   const label = agenda.clash
-    ? `Too close: ${formatGap(agenda.clash.when - slot.when)}`
+    ? (() => {
+        const gap = formatGap(agenda.clash.when - slot.when);
+        return gap === "same time" ? "Same time" : `${gap} apart`;
+      })()
     : `+${n} ${n === 1 ? "post" : "posts"} that day`;
   return `
     <span class="schedule-modal__when-note${agenda.clash ? " is-clash" : ""}">
@@ -912,6 +974,44 @@ function renderDayNote(slot, agenda) {
 
 // The day's agenda, unfolded under the row: every post on that day, in
 // time order, with this draft's own slot marked so the gap reads at a glance.
+function renderPeekPopover() {
+  const slot = state.peekId && state.slots.find((s) => s.post.id === state.peekId && !s.pending);
+  return slot ? renderPeek(slot, dayAgenda(slot)) : "";
+}
+
+// The day's agenda floats over the list, anchored to the link that asked for
+// it — a DS .ap-action-dropdown surface, rendered at the dialog root so the
+// list's overflow can't clip it. ⚠️ It used to unfold UNDER the row, pushing
+// every row below it down: « un peu perturbant ». Positioned in JS, against
+// the MODAL's box: the dialog is transform-centred, so it is the containing
+// block of anything fixed inside it (share-playbook-modal's placePopover).
+function placePeek(modalEl) {
+  const pop = modalEl.querySelector(".schedule-modal__peek");
+  const trigger = pop && modalEl.querySelector(`[data-schedule-peek="${CSS.escape(state.peekId)}"]`);
+  if (!pop || !trigger) return;
+  const r = trigger.getBoundingClientRect();
+  const host = modalEl.getBoundingClientRect();
+  const width = pop.offsetWidth;
+  const below = window.innerHeight - r.bottom - 16;
+  const flip = below < pop.offsetHeight + 8 && r.top > below;
+  // Right-aligned to the link's end when there's no room to its right.
+  const left = Math.min(r.left - host.left, host.width - width - 16);
+  pop.style.left = `${Math.round(Math.max(16, left))}px`;
+  if (flip) {
+    pop.style.top = "auto";
+    pop.style.bottom = `${Math.round(host.bottom - r.top + 4)}px`;
+  } else {
+    pop.style.bottom = "auto";
+    pop.style.top = `${Math.round(r.bottom - host.top + 4)}px`;
+  }
+}
+
+function closePeek() {
+  if (!state.peekId) return;
+  state.peekId = null;
+  render();
+}
+
 function renderPeek(slot, agenda) {
   const id = escapeText(slot.post.id);
   const entries = [
@@ -938,7 +1038,7 @@ function renderPeek(slot, agenda) {
     )
     .join("");
   return `
-    <div class="schedule-modal__peek" id="schedulePeek-${id}">
+    <div class="ap-action-dropdown schedule-modal__peek" id="schedulePeek-${id}" role="dialog" aria-label="Also on ${escapeText(formatDay(slot.when))}">
       <span class="schedule-modal__peek-head">${escapeText(formatDay(slot.when))}</span>
       <ul class="schedule-modal__peek-list">${rows}</ul>
     </div>`;
@@ -966,7 +1066,7 @@ function renderTile(slot) {
       </span>`
     : "";
   return `
-    <span class="schedule-modal__tile-wrap">
+    <span class="schedule-modal__tile-wrap" data-schedule-when="${escapeText(slot.post.id)}">
       <div class="schedule-modal__tile" aria-hidden="true">
         <span class="schedule-modal__tile-dow">${d.toLocaleDateString("en-US", { weekday: "short" })}</span>
         <span class="schedule-modal__tile-day">${d.getDate()}</span>
@@ -995,7 +1095,12 @@ function renderWhen(slot) {
       ${renderTile(slot)}
       <div class="schedule-modal__when-body">
         <span class="schedule-modal__when-head">
-          <span class="schedule-modal__when-time">${formatTime(slot.when)}</span>
+          <button
+            type="button"
+            class="schedule-modal__when-time"
+            data-schedule-when="${id}"
+            aria-label="Change the publish time — ${escapeText(formatDay(slot.when))}, ${formatTime(slot.when)}"
+          >${formatTime(slot.when)}</button>
           <input
             type="datetime-local"
             class="schedule-modal__when-input"
@@ -1061,7 +1166,42 @@ function renderDraft(slot) {
         ${renderProfileTag(profileForNetwork(network), { network })}
         <p class="schedule-modal__draft-text">${escapeText(extractFirstLine(post))}</p>
       </div>
+      ${renderRowTools(slot)}
     </div>`;
+}
+
+// The row's actions, together, shown on the row you're on (hover / keyboard
+// focus; always on a touch screen): change its date, leave it out. They
+// float over the top-right of the draft, against the date column, so they
+// take no width at rest. The date itself (tile + time) is clickable too, so
+// editing never depends on finding the pen.
+function renderRowTools(slot) {
+  const id = escapeText(slot.post.id);
+  const pen = slot.pending
+    ? ""
+    : `<button
+        type="button"
+        class="ap-icon-button"
+        data-schedule-when="${id}"
+        aria-label="Change the publish time — ${escapeText(formatDay(slot.when))}, ${formatTime(slot.when)}"
+        data-tooltip="Change date or time"
+      >
+        <i class="ap-icon-pen"></i>
+      </button>`;
+  const remove =
+    state.posts.length > 1
+      ? `<button
+        type="button"
+        class="ap-icon-button"
+        data-schedule-remove="${id}"
+        aria-label="Leave this draft out"
+        data-tooltip="Leave this draft out"
+      >
+        <i class="ap-icon-close"></i>
+      </button>`
+      : "";
+  if (!pen && !remove) return "";
+  return `<div class="schedule-modal__row-tools">${pen}${remove}</div>`;
 }
 
 function renderRow(slot, i) {
@@ -1077,37 +1217,6 @@ function renderRow(slot, i) {
     <li class="${classes}" style="--i: ${i}">
       ${renderDraft(slot)}
       ${renderWhen(slot)}
-      <div class="schedule-modal__row-actions">
-        ${
-          // The row's actions, together: change its date, leave it out. The
-          // date cell holds information only — tile, time, notes.
-          slot.pending
-            ? ""
-            : `<button
-          type="button"
-          class="ap-icon-button"
-          data-schedule-when="${escapeText(slot.post.id)}"
-          aria-label="Change the publish time — ${escapeText(formatDay(slot.when))}, ${formatTime(slot.when)}"
-          data-tooltip="Change date or time"
-        >
-          <i class="ap-icon-pen"></i>
-        </button>`
-        }
-        ${
-          state.posts.length > 1
-            ? `<button
-          type="button"
-          class="ap-icon-button schedule-modal__draft-remove"
-          data-schedule-remove="${escapeText(slot.post.id)}"
-          aria-label="Leave this draft out"
-          data-tooltip="Leave this draft out"
-        >
-          <i class="ap-icon-close"></i>
-        </button>`
-            : ""
-        }
-      </div>
-      ${!slot.pending && state.peekId === slot.post.id ? renderPeek(slot, dayAgenda(slot)) : ""}
     </li>`;
 }
 
