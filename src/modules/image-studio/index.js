@@ -5,15 +5,17 @@
 // through state/playbook-brand.js only, the Playbooks — the brand IS the
 // Playbook. See docs/audits/image-studio-integration.md.
 
-import { navigate } from "../../router.js?v=1227";
-import { isFlagOn } from "../../feature-flags.js?v=1227";
-import { renderTopbar } from "../../components/topbar.js?v=1227";
-import { boot, setActiveBrand, startPlaybookCreation } from "./state/store.js?v=1227";
-import { delegate, disposer } from "./lib/delegate.js?v=1227";
-import { installMenus } from "./ui/menu.js?v=1227";
-import { closeAllDialogs } from "./ui/dialog.js?v=1227";
-import * as hub from "./views/hub.js?v=1227";
-import * as campaigns from "./views/campaigns.js?v=1227";
+import { navigate } from "../../router.js?v=1229";
+import { isFlagOn } from "../../feature-flags.js?v=1229";
+import { renderTopbar } from "../../components/topbar.js?v=1229";
+import { boot, setActiveBrand, startPlaybookCreation } from "./state/store.js?v=1229";
+import { delegate, disposer } from "./lib/delegate.js?v=1229";
+import { installMenus } from "./ui/menu.js?v=1229";
+import { closeAllDialogs } from "./ui/dialog.js?v=1229";
+import * as hub from "./views/hub.js?v=1229";
+import * as campaigns from "./views/campaigns.js?v=1229";
+import * as styles from "./views/styles.js?v=1229";
+import * as styleCreator from "./views/style-creator.js?v=1229";
 
 export const FLAG = "sexySquirrel";
 
@@ -52,4 +54,8 @@ function screen(mount) {
 export const ROUTES = Object.freeze([
   { pattern: "/image-generator", handler: screen(hub.mount) },
   { pattern: "/image-generator/campaigns", handler: screen(campaigns.mount) },
+  { pattern: "/image-generator/styles", handler: screen(styles.mount) },
+  // Before /:id — route() takes the first match, and "new" would pass for an id.
+  { pattern: "/image-generator/styles/new", handler: screen(styleCreator.mount) },
+  { pattern: "/image-generator/styles/:id", handler: screen(styleCreator.mount) },
 ]);

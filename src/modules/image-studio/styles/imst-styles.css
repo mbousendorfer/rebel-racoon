@@ -1,0 +1,292 @@
+/* Image Generator — Styles gallery + custom style creator.
+ * Cards follow the app's convention: hairline border, blue border on hover,
+ * no lift, no accent bar. Thumbnails are generated content.
+ */
+
+.imst-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+}
+
+.imst-section__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ref-spacing-sm);
+}
+
+.imst-section__head h2,
+.imst-section__head p,
+.imst-section__empty {
+  margin: 0;
+}
+
+.imst-section__head p {
+  color: var(--ref-color-grey-80);
+}
+
+.imst-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxs);
+}
+
+.imst-grid {
+  display: grid;
+  gap: var(--ref-spacing-sm);
+}
+
+.imst-grid--styles {
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--ref-spacing-xxxl) * 3), 1fr));
+}
+
+.imst-style-card {
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+  text-align: left;
+  border-color: var(--ref-color-grey-20);
+  transition: border-color var(--ref-animation-normal) ease;
+}
+
+button.imst-style-card {
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  background: var(--ref-color-white);
+}
+
+.imst-style-card:hover,
+.imst-style-card:focus-within {
+  border-color: var(--ref-color-electric-blue-40);
+}
+
+.imst-style-card:focus-visible,
+.imst-style-card__open:focus-visible {
+  outline: 2px solid var(--sys-border-color-active);
+  outline-offset: 2px;
+}
+
+.imst-style-card__open {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.imst-thumb {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  background: var(--ref-color-grey-05);
+}
+
+.imst-style-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  padding: var(--ref-spacing-xs);
+}
+
+.imst-style-card__title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-xxs);
+}
+
+.imst-style-card__title h3 {
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.imst-style-card__meta {
+  color: var(--ref-color-grey-80);
+}
+
+.imst-style-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxxs);
+  margin-top: var(--ref-spacing-xxxs);
+}
+
+.imst-icon-summary {
+  list-style: none;
+}
+
+/* ── Test grid (preset preview + creator test run) ─────────────────────── */
+
+.imst-test-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--ref-spacing-xs);
+}
+
+.imst-test-grid__item {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+}
+
+.imst-test-grid__item img,
+.imst-test-grid__frame {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: var(--ref-border-radius-md);
+  object-fit: cover;
+}
+
+.imst-test-grid__frame {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 1px dashed var(--ref-color-grey-20);
+  background: var(--ref-color-grey-05);
+}
+
+.imst-test-grid__frame img {
+  border-radius: 0;
+}
+
+.imst-test-grid__empty {
+  padding: var(--ref-spacing-xs);
+  text-align: center;
+  color: var(--ref-color-grey-80);
+}
+
+.imst-test-grid figcaption {
+  color: var(--ref-color-grey-80);
+}
+
+/* ── Creator ───────────────────────────────────────────────────────────── */
+
+.imst-creator__head h1,
+.imst-creator__head p {
+  margin: 0;
+}
+
+.imst-creator__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.imst-creator {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: var(--ref-spacing-md);
+  align-items: start;
+}
+
+.imst-creator__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+}
+
+.imst-creator__card {
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-md);
+  border-color: var(--ref-color-grey-20);
+}
+
+.imst-creator__card h2 {
+  margin: 0;
+}
+
+.imst-creator__preview {
+  position: sticky;
+  top: var(--ref-spacing-md);
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-md);
+  border-color: var(--ref-color-grey-20);
+}
+
+.imst-creator__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--ref-spacing-xs);
+}
+
+.imst-field__hint {
+  color: var(--ref-color-grey-80);
+}
+
+.imst-sources {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+}
+
+.imst-source {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+}
+
+.imst-source__media {
+  width: var(--ref-spacing-xxl);
+  height: var(--ref-spacing-xxl);
+  flex-shrink: 0;
+  border-radius: var(--ref-border-radius-sm);
+  border: 1px solid var(--ref-color-grey-20);
+  object-fit: cover;
+}
+
+.imst-source__body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.imst-source__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.imst-source__weight {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+}
+
+.imst-source__share {
+  flex-shrink: 0;
+  min-width: calc(var(--ref-spacing-xxxl) + var(--ref-spacing-xs));
+  color: var(--ref-color-grey-80);
+}
+
+.imst-radio-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ref-spacing-xs);
+}
+
+.imst-preset-adder {
+  width: auto;
+  align-self: flex-start;
+}
+
+@media (max-width: 1024px) {
+  .imst-creator {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .imst-creator__preview {
+    position: static;
+  }
+}

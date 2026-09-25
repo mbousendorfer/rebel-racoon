@@ -40,11 +40,11 @@ Décision utilisateur, prise pendant l'étape 2 : **les « brands » du brief so
 
 **Fichiers hors module touchés par cette révision** : `contexts-store.js`, `mocks/playbooks.js`, `playbook-view.js` (+ `playbook-brand-kit.js`), `context-builder.js`, `context-mock-analysis.js`, `screens/welcome-alt-recap.js`, `styles/screens/welcome.css`, plus CONCEPTS / FEATURES / ROUTES. Flag OFF, chacun est au comportement d'avant.
 
-**Questions ouvertes nées de R2**
+**Questions nées de R2 — tranchées (2026-09-25)**
 
-1. Les Playbooks vivent en mémoire (reseedés au rechargement) : un kit édité se perd au reload, comme tout le reste d'Archie. Le brief voulait que la marque persiste. Faut-il persister les Playbooks, ou accepter la règle du proto ?
-2. Export / import JSON d'une marque = d'un Playbook : à faire côté Playbook, ou abandonné ?
-3. Les `imageDefaults` du Playbook (type / style / usage des réf.) visent les presets de l'Image Studio des drafts, pas les 22 presets du générateur. Les mapper, ou ajouter au kit des « styles préférés » propres au générateur ?
+1. **Persistance** : règle du proto. Les Playbooks (et donc le kit de marque) restent en mémoire, reseedés au rechargement ; seuls les objets propres au générateur persistent (`imageStudio:v2:*` + IndexedDB).
+2. **Export / import JSON d'une marque** : abandonné.
+3. **L'Image Studio des drafts n'existe pas pour ce travail** : le générateur ne lit pas `imageDefaults` (qui vise ses presets) et ne s'y réfère nulle part. Les styles préférés d'un Playbook sont ceux du générateur — ses styles personnalisés en tête du sélecteur, clés par Playbook.
 
 ---
 

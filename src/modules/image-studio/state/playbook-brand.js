@@ -8,18 +8,18 @@
 // sexySquirrel — src/playbook-brand-kit.js). Sub-brands don't exist: a variant
 // is a duplicated Playbook (docs/reference/CONCEPTS.md §1).
 
-import { getContextById, subscribe as subscribeContexts } from "../../../contexts-store.js?v=1227";
-import { canEdit, usableContexts } from "../../../playbook-access.js?v=1227";
+import { getContextById, subscribe as subscribeContexts } from "../../../contexts-store.js?v=1229";
+import { canEdit, usableContexts } from "../../../playbook-access.js?v=1229";
 import {
   getActivePlaybookId,
   isWorkspaceMode,
   playbookForNewWork,
   setActivePlaybook,
   subscribe as subscribeActive,
-} from "../../../active-playbook.js?v=1227";
-import { setHandoff } from "../../../handoff.js?v=1227";
-import { navigate } from "../../../router.js?v=1227";
-import { storageService as storage } from "../services/index.js?v=1227";
+} from "../../../active-playbook.js?v=1229";
+import { setHandoff } from "../../../handoff.js?v=1229";
+import { navigate } from "../../../router.js?v=1229";
+import { storageService as storage } from "../services/index.js?v=1229";
 
 // Which copy archetype the mocked copyService uses — guessed from the Playbook's words.
 function sectorKeyOf(ctx) {
@@ -53,8 +53,9 @@ export function toBrand(ctx) {
     personality: ctx.brandPersonality || "",
     imageStyle: {
       moods: (ctx.brandMoods || []).slice(),
+      // Not `imageDefaults`: that field targets another tool's presets. The
+      // generator's style preferences are its own styles, keyed by Playbook.
       references: (ctx.referenceImages || []).map((r) => ({ id: r.id, label: r.label, url: r.url })),
-      defaults: { ...(ctx.imageDefaults || {}) },
     },
     voice: {
       tone: [vp.headline, ...(ctx.tones || [])].filter(Boolean).join(" · "),

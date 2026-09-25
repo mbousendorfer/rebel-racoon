@@ -2,12 +2,12 @@
 // (a Playbook) sits on top; campaign ideas, the prompt bar and the four
 // variations land below it in step 4.
 
-import { html, toString } from "../lib/html.js?v=1227";
-import { renderFrame } from "./frame.js?v=1227";
-import { renderEmpty } from "../ui/empty.js?v=1227";
-import { renderBrandPicker } from "../ui/brand-picker.js?v=1227";
-import { renderBrandCard } from "../ui/brand-card.js?v=1227";
-import { getActiveBrand, getCreations, subscribe } from "../state/store.js?v=1227";
+import { html, toString } from "../lib/html.js?v=1229";
+import { renderFrame } from "./frame.js?v=1229";
+import { renderEmpty } from "../ui/empty.js?v=1229";
+import { renderBrandPicker } from "../ui/brand-picker.js?v=1229";
+import { renderBrandCard } from "../ui/brand-card.js?v=1229";
+import { getActiveBrand, getCreations, subscribe } from "../state/store.js?v=1229";
 
 export function mount(target) {
   const paint = () => {

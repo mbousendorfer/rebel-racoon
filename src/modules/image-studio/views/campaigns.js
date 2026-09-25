@@ -1,15 +1,15 @@
 // Image Generator — Campaigns and history, for the active brand. Step 1 skeleton;
 // the table and history land with the hub (step 4).
 
-import { html, toString } from "../lib/html.js?v=1227";
-import { delegate } from "../lib/delegate.js?v=1227";
-import { renderFrame } from "./frame.js?v=1227";
-import { renderEmpty } from "../ui/empty.js?v=1227";
-import { renderBrandPicker } from "../ui/brand-picker.js?v=1227";
-import { confirmDialog } from "../ui/dialog.js?v=1227";
-import { toast } from "../ui/toast.js?v=1227";
-import { storageService } from "../services/index.js?v=1227";
-import { boot, getActiveBrand, getCampaigns, subscribe } from "../state/store.js?v=1227";
+import { html, toString } from "../lib/html.js?v=1229";
+import { delegate } from "../lib/delegate.js?v=1229";
+import { renderFrame } from "./frame.js?v=1229";
+import { renderEmpty } from "../ui/empty.js?v=1229";
+import { renderBrandPicker } from "../ui/brand-picker.js?v=1229";
+import { confirmDialog } from "../ui/dialog.js?v=1229";
+import { toast } from "../ui/toast.js?v=1229";
+import { storageService } from "../services/index.js?v=1229";
+import { boot, getActiveBrand, getCampaigns, subscribe } from "../state/store.js?v=1229";
 
 export function mount(target) {
   const paint = () => {
