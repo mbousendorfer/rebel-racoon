@@ -152,7 +152,7 @@
      being found and the date tile once one lands — so no row changes height
      when its date arrives. 66 = the date tile's own three lines + padding. */
   --tile-h: 66px;
-  --when-w: 192px; /* tile + time + the widest note ("+2 posts that day"), nothing more */
+  --when-w: 216px; /* tile + time + its pen, and the widest note on ONE line */
   list-style: none;
   margin: 0;
   padding: 0;
@@ -300,6 +300,26 @@
   outline-offset: 2px;
 }
 
+/* The pen beside the time: its place is always kept (no shift), it shows on
+   the row you're on — and always on a touch screen. The 36px button
+   overhangs the 24px line rather than pushing the time down. */
+.schedule-modal__when-edit {
+  margin-block: -6px;
+  opacity: 0;
+  transition: opacity 120ms var(--app-ease-standard);
+}
+
+.schedule-modal__row:hover .schedule-modal__when-edit,
+.schedule-modal__row:focus-within .schedule-modal__when-edit {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .schedule-modal__when-edit {
+    opacity: 1;
+  }
+}
+
 .schedule-modal__tile-wrap[data-schedule-when] {
   cursor: pointer;
 }
@@ -317,6 +337,7 @@
 }
 
 .schedule-modal__when-note {
+  white-space: nowrap; /* a note is one line — the cell is sized for it */
   display: inline-flex;
   align-items: center;
   gap: var(--ref-spacing-xxxs);
@@ -425,10 +446,9 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* The row's actions — change the date, leave the draft out — together, on
-   the row you're on: they float over the draft's top-right corner, against
-   the date column, so they cost no width at rest. On white, so the text
-   under them doesn't show through; no shadow (nothing floats IN a dialog). */
+/* Leaving the draft out — the draft's own action, in the draft's top-right
+   corner, on the row you're on. On white, so the text under it doesn't show
+   through; no shadow (nothing floats IN a dialog). */
 .schedule-modal__draft {
   position: relative;
 }

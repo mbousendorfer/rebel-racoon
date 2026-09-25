@@ -1,16 +1,16 @@
-import { html, raw, escapeText } from "../utils.js?v=1254";
-import { showToast } from "./toast.js?v=1254";
-import { getQueue, getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=1254";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1254";
+import { html, raw, escapeText } from "../utils.js?v=1257";
+import { showToast } from "./toast.js?v=1257";
+import { getQueue, getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=1257";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1257";
 import {
   renderProfileTag,
   profileForNetwork,
   NETWORK_LABEL,
   NETWORK_ICON_BY_PLATFORM,
-} from "../social-profiles.js?v=1254";
-import { getContextById } from "../contexts-store.js?v=1254";
-import { canEdit } from "../playbook-access.js?v=1254";
-import { getPreset, savePreset } from "../schedule-presets-store.js?v=1254";
+} from "../social-profiles.js?v=1257";
+import { getContextById } from "../contexts-store.js?v=1257";
+import { canEdit } from "../playbook-access.js?v=1257";
+import { getPreset, savePreset } from "../schedule-presets-store.js?v=1257";
 
 // Schedule modal — one column, result first.
 //   • Header   — "Schedule N drafts" + one line saying I already picked.
@@ -616,9 +616,11 @@ function renderInner() {
           ? n === 1
             ? "I'm finding the best time for this post, around what's already scheduled."
             : "I'm finding the best time for each draft, around what's already scheduled."
-          : n === 1
-            ? "I picked the best time for this post, around what's already scheduled. Change it if you need to."
-            : "I picked a time for each draft, around what's already scheduled. Change any of them."}
+          : // Same words as the computing line, one verb apart: the two must wrap
+            // the same, or the dialog's height jumps when the times land.
+            n === 1
+            ? "I picked the best time for this post, around what's already scheduled."
+            : "I picked the best time for each draft, around what's already scheduled."}
       </span>
     </div>
 
@@ -755,13 +757,13 @@ function renderPresetAction() {
   // Changing a setting for one batch must never silently rewrite the brand's.
   return `
     <span class="schedule-modal__preset-note" data-tooltip="${escapeText(`${name}'s rhythm: ${rhythmLabel(saved)}`)}">
-      Differs from this Playbook's rhythm ·
+      Not this Playbook's rhythm ·
       <button type="button" class="ap-link small" data-schedule-restore-preset>Restore</button>
       ${owner ? `· <button type="button" class="ap-link small" data-schedule-save-preset>Update</button>` : ""}
     </span>`;
 }
 
-// A saved rhythm in words, for the "Differs from…" tooltip.
+// A saved rhythm in words, for the "Not this Playbook's rhythm" tooltip.
 function rhythmLabel(r) {
   const cadence = (CADENCES.find((c) => c.id === r.cadence) || CADENCES[0]).label;
   const tod = r.timeOfDay ? `, in the ${r.timeOfDay}` : ", at each network's best time";
@@ -1101,6 +1103,16 @@ function renderWhen(slot) {
             data-schedule-when="${id}"
             aria-label="Change the publish time — ${escapeText(formatDay(slot.when))}, ${formatTime(slot.when)}"
           >${formatTime(slot.when)}</button>
+          <button
+            type="button"
+            class="ap-icon-button schedule-modal__when-edit"
+            data-schedule-when="${id}"
+            aria-label="Change the publish time — ${escapeText(formatDay(slot.when))}, ${formatTime(slot.when)}"
+            data-tooltip="Change date or time"
+            tabindex="-1"
+          >
+            <i class="ap-icon-pen"></i>
+          </button>
           <input
             type="datetime-local"
             class="schedule-modal__when-input"
@@ -1170,38 +1182,24 @@ function renderDraft(slot) {
     </div>`;
 }
 
-// The row's actions, together, shown on the row you're on (hover / keyboard
-// focus; always on a touch screen): change its date, leave it out. They
-// float over the top-right of the draft, against the date column, so they
-// take no width at rest. The date itself (tile + time) is clickable too, so
-// editing never depends on finding the pen.
+// Leaving the draft out acts on the DRAFT, so it lives in the draft's
+// corner — shown on the row you're on (hover / keyboard focus; always on a
+// touch screen). Changing the date acts on the date: its pen is in the date
+// cell, beside the time.
 function renderRowTools(slot) {
-  const id = escapeText(slot.post.id);
-  const pen = slot.pending
-    ? ""
-    : `<button
+  if (state.posts.length < 2) return "";
+  return `
+    <div class="schedule-modal__row-tools">
+      <button
         type="button"
         class="ap-icon-button"
-        data-schedule-when="${id}"
-        aria-label="Change the publish time — ${escapeText(formatDay(slot.when))}, ${formatTime(slot.when)}"
-        data-tooltip="Change date or time"
-      >
-        <i class="ap-icon-pen"></i>
-      </button>`;
-  const remove =
-    state.posts.length > 1
-      ? `<button
-        type="button"
-        class="ap-icon-button"
-        data-schedule-remove="${id}"
+        data-schedule-remove="${escapeText(slot.post.id)}"
         aria-label="Leave this draft out"
         data-tooltip="Leave this draft out"
       >
         <i class="ap-icon-close"></i>
-      </button>`
-      : "";
-  if (!pen && !remove) return "";
-  return `<div class="schedule-modal__row-tools">${pen}${remove}</div>`;
+      </button>
+    </div>`;
 }
 
 function renderRow(slot, i) {
