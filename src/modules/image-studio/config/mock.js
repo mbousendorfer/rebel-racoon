@@ -9,9 +9,6 @@ export const MOCK = Object.freeze({
     // A brief containing this word always fails — to demo the error state on cue.
     failKeyword: "#fail",
   },
-  analysis: {
-    stepMs: [700, 1300],
-  },
   copy: {
     delayMs: [600, 1200],
   },

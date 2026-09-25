@@ -1,15 +1,14 @@
 // Image Generator — the page frame every section renders inside: the section
-// tabs (Generate · Campaigns · Brands) and the body. Deep pages (a brand, the
-// style creator, the editor) swap the tabs for a back link to their section.
+// tabs (Generate · Campaigns) and the body. Deep pages (the style creator, the
+// editor) swap the tabs for a back link to their section.
 
-import { html } from "../lib/html.js?v=1225";
+import { html } from "../lib/html.js?v=1227";
 
 export const SECTIONS = Object.freeze([
-  // Generating is the product; campaigns are what you generated, brands are the
-  // settings that keep every image on-brand. Hence the order.
+  // Generating is the product; campaigns are what you generated. There is no
+  // Brands section: the brand is the Playbook, edited on its own page.
   { id: "create", path: "/image-generator", icon: "ap-icon-sparkles", label: "Generate" },
   { id: "campaigns", path: "/image-generator/campaigns", icon: "ap-icon-calendar", label: "Campaigns" },
-  { id: "brands", path: "/image-generator/brands", icon: "ap-icon-image", label: "Brands" },
 ]);
 
 function renderTabs(active) {
@@ -37,7 +36,7 @@ function renderTabs(active) {
 
 /**
  * @param {{section?:string, back?:{path:string,label:string}, aside?:object, body:object}} opts
- *   aside: a fragment on the right of the bar (the brand switcher).
+ *   aside: a fragment on the right of the bar (the brand picker).
  */
 export function renderFrame({ section, back, aside, body }) {
   const bar = back

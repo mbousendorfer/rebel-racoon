@@ -1,17 +1,27 @@
 // Image Generator — storageService: CRUD for every entity of the module.
 //
 // Metadata lives in localStorage, one key per collection, all under
-// `imageStudio:v1:`. Pixels (uploads, exported / favourited PNGs) live in the
+// `imageStudio:v2:`. Pixels (uploads, exported / favourited PNGs) live in the
 // IndexedDB database `imageStudio`, store `blobs`. Generated variations are NOT
 // stored as pixels: seed + style + palette + format re-render them identically.
 //
 // Swappable: a real backend only has to honour the same function signatures.
 
-import { createNotifier } from "../state/notifier.js?v=1225";
-import { SCHEMA_VERSION, resolveBrand } from "../model/schema.js?v=1225";
+import { createNotifier } from "../state/notifier.js?v=1227";
+import { SCHEMA_VERSION } from "../model/schema.js?v=1227";
 
-const PREFIX = "imageStudio:v1:";
-export const COLLECTIONS = Object.freeze(["brands", "styles", "products", "campaigns", "creations", "assets"]);
+const PREFIX = "imageStudio:v2:";
+// No "brands": the brand is the Playbook. Every entity carries `brandId`, a Playbook id.
+export const COLLECTIONS = Object.freeze(["styles", "products", "campaigns", "creations", "assets"]);
+
+// v1 kept its own brands; its keys are dropped rather than migrated — they
+// only ever held demo data.
+try {
+  for (const k of Object.keys(window.localStorage))
+    if (k.startsWith("imageStudio:v1:")) window.localStorage.removeItem(k);
+} catch {
+  /* storage unavailable */
+}
 
 const cache = new Map();
 const notifier = createNotifier();
@@ -106,7 +116,7 @@ export function subscribe(fn) {
 // ── Meta ─────────────────────────────────────────────────────────────────────
 
 export function getMeta() {
-  return readJson("meta", { schemaVersion: SCHEMA_VERSION, seededAt: null, activeBrandId: null });
+  return readJson("meta", { schemaVersion: SCHEMA_VERSION, seededAt: null, activePlaybookId: null });
 }
 
 export function setMeta(patch) {
@@ -116,17 +126,17 @@ export function setMeta(patch) {
   return next;
 }
 
-/** Seeds the demo data once per browser. `seed()` returns { brands, styles, … }. */
+/** Seeds the demo data once per browser. `seed()` returns { styles, products, … }. */
 export function ensureSeeded(seed) {
   const meta = getMeta();
   if (meta.seededAt) return false;
   const data = seed();
   for (const collection of COLLECTIONS) if (data[collection]) putMany(collection, data[collection]);
-  setMeta({ schemaVersion: SCHEMA_VERSION, seededAt: new Date().toISOString(), activeBrandId: data.activeBrandId });
+  setMeta({ schemaVersion: SCHEMA_VERSION, seededAt: new Date().toISOString() });
   return true;
 }
 
-/** Wipes the module's metadata and blobs (Brands page › Reset demo data). */
+/** Wipes the module's metadata and blobs (Campaigns › Reset demo data). */
 export async function resetAll() {
   for (const collection of [...COLLECTIONS, "meta"]) {
     try {
@@ -208,104 +218,4 @@ export async function assetUrl(asset) {
 
 export function svgDataUrl(svg) {
   return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
-}
-
-// ── Import / export ──────────────────────────────────────────────────────────
-
-function blobToDataUrl(blob) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(blob);
-  });
-}
-
-/** One brand as a portable JSON document: the brand, its styles, products and assets (pixels inlined). */
-export async function exportBrand(brandId) {
-  const stored = get("brands", brandId);
-  if (!stored) throw new Error("Brand not found");
-  // A sub-brand travels RESOLVED: the file has no parent to inherit from.
-  const { inherited: _inherited, ...brand } = resolveBrand(stored, (id) => get("brands", id));
-  const assets = [];
-  const referenced = new Set([...brand.logos.map((l) => l.assetId), ...(brand.imageStyle?.referenceAssetIds || [])]);
-  for (const asset of list("assets", (a) => a.brandId === brandId || referenced.has(a.id))) {
-    const copy = { ...asset };
-    if (asset.blobKey) {
-      const blob = await getBlob(asset.blobKey).catch(() => null);
-      copy.dataUrl = blob ? await blobToDataUrl(blob) : null;
-    }
-    assets.push(copy);
-  }
-  return {
-    format: "image-generator/brand",
-    schemaVersion: SCHEMA_VERSION,
-    exportedAt: new Date().toISOString(),
-    brand,
-    styles: list("styles", (s) => s.brandId === brandId),
-    products: list("products", (p) => p.brandId === brandId),
-    assets,
-  };
-}
-
-/**
- * Imports a brand document. Ids are re-minted so importing the same file twice
- * yields two brands rather than overwriting one. Returns the new brand.
- */
-export async function importBrand(doc, mintId) {
-  if (doc?.format !== "image-generator/brand" || !doc.brand)
-    throw new Error("This file isn't a Image Generator brand.");
-  const ids = new Map();
-  const remap = (old, prefix) => {
-    if (!old) return old;
-    if (!ids.has(old)) ids.set(old, mintId(prefix));
-    return ids.get(old);
-  };
-  const brandId = remap(doc.brand.id, "br");
-  for (const asset of doc.assets || []) {
-    const { dataUrl, ...rest } = asset;
-    const next = { ...rest, id: remap(asset.id, "as"), brandId };
-    if (dataUrl) {
-      const blob = await (await fetch(dataUrl)).blob();
-      next.blobKey = next.id;
-      await putBlob(next.blobKey, blob);
-    }
-    put("assets", next);
-  }
-  const remapAssets = (list_) => (list_ || []).map((id) => ids.get(id) || id);
-  for (const style of doc.styles || []) {
-    put("styles", {
-      ...style,
-      id: remap(style.id, "st"),
-      brandId,
-      custom: style.custom && {
-        ...style.custom,
-        sources: style.custom.sources.map((s) => (s.type === "image" ? { ...s, ref: ids.get(s.ref) || s.ref } : s)),
-      },
-    });
-  }
-  for (const product of doc.products || []) {
-    put("products", {
-      ...product,
-      id: remap(product.id, "pr"),
-      brandId,
-      imageAssetId: ids.get(product.imageAssetId) || product.imageAssetId,
-      shotAssetIds: remapAssets(product.shotAssetIds),
-    });
-  }
-  const brand = {
-    ...doc.brand,
-    id: brandId,
-    parentId: null,
-    isDefault: false,
-    overriddenFields: [],
-    name: doc.brand.name,
-    logos: doc.brand.logos.map((l) => ({ ...l, assetId: ids.get(l.assetId) || l.assetId })),
-    imageStyle: {
-      ...doc.brand.imageStyle,
-      referenceAssetIds: remapAssets(doc.brand.imageStyle?.referenceAssetIds),
-      preferredStyleIds: (doc.brand.imageStyle?.preferredStyleIds || []).map((id) => ids.get(id) || id),
-    },
-  };
-  return put("brands", brand);
 }

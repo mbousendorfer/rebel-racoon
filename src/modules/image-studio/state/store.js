@@ -1,64 +1,45 @@
-// Image Generator — the module's app state over storageService: the active brand,
-// resolved brands, and one subscribe() for every view. Persistent state is in
-// storage; this file only adds what views derive from it.
+// Image Generator — the module's app state. Its own objects (styles, products,
+// campaigns, creations, assets) come from storageService, scoped by `brandId`
+// — a Playbook id. The brands themselves are Playbooks, re-exported from the
+// adapter so views have one import.
 
-import { storageService as storage } from "../services/index.js?v=1225";
-import { resolveBrand } from "../model/schema.js?v=1225";
-import { STYLE_PRESETS } from "../config/style-presets.js?v=1225";
-import { seedDemoData } from "../config/demo-data.js?v=1225";
+import { storageService as storage } from "../services/index.js?v=1227";
+import { STYLE_PRESETS } from "../config/style-presets.js?v=1227";
+import { seedDemoData } from "../config/demo-data.js?v=1227";
+import { adoptCreatedPlaybook, subscribeBrands } from "./playbook-brand.js?v=1227";
+
+export {
+  getActiveBrand,
+  getActiveBrandId,
+  getBrand,
+  getBrands,
+  setActiveBrand,
+  hasOwnBrandPicker,
+  canEditBrand,
+  playbookPath,
+  startPlaybookCreation,
+} from "./playbook-brand.js?v=1227";
 
 export function boot() {
   storage.ensureSeeded(seedDemoData);
+  adoptCreatedPlaybook();
 }
 
-export const subscribe = storage.subscribe;
-
-// ── Brands ───────────────────────────────────────────────────────────────────
-
-export function getBrands() {
-  return storage.list("brands").sort((a, b) => a.name.localeCompare(b.name));
-}
-
-export function getBrand(id) {
-  return storage.get("brands", id);
-}
-
-/** The brand as it should be USED: inheritance applied. */
-export function getResolvedBrand(id) {
-  return resolveBrand(getBrand(id), getBrand);
-}
-
-export function getChildren(brandId) {
-  return storage.list("brands", (b) => b.parentId === brandId);
-}
-
-export function getDefaultBrand() {
-  const brands = getBrands();
-  return brands.find((b) => b.isDefault) || brands[0] || null;
-}
-
-export function getActiveBrandId() {
-  const id = storage.getMeta().activeBrandId;
-  if (id && getBrand(id)) return id;
-  return getDefaultBrand()?.id || null;
-}
-
-export function getActiveBrand() {
-  const id = getActiveBrandId();
-  return id ? getResolvedBrand(id) : null;
-}
-
-export function setActiveBrand(id) {
-  storage.setMeta({ activeBrandId: id });
+/** One subscription for everything a view shows: module storage + Playbooks. */
+export function subscribe(fn) {
+  const a = storage.subscribe(fn);
+  const b = subscribeBrands(fn);
+  return () => {
+    a();
+    b();
+  };
 }
 
 // ── Styles ───────────────────────────────────────────────────────────────────
 
 /** The style picker's list for a brand: its own custom styles FIRST, then the presets. */
 export function getStylesForBrand(brandId) {
-  const brand = getBrand(brandId);
-  const lineage = [brandId, brand?.parentId].filter(Boolean);
-  const custom = storage.list("styles", (s) => lineage.includes(s.brandId));
+  const custom = storage.list("styles", (s) => s.brandId === brandId);
   return [...custom, ...STYLE_PRESETS];
 }
 

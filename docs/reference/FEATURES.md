@@ -945,6 +945,15 @@ non plus — il est scopé à Voice & style.
 
 Un Playbook est une **fiche** : chaque section répond à « qui êtes-vous ? ». La config opérationnelle (quelles sources d'écoute tournent, à quelle fréquence) vit dans son propre store, clé par Playbook, et s'édite sur la route qui possède la feature — voir §17. Une section Topics a été essayée puis retirée : une grille d'interrupteurs se lisait comme un panneau de réglages coincé dans un profil. Le champ `ctx.topics` qui la portait est parti avec elle.
 
+### Kit de marque (flag `sexySquirrel`, défaut OFF)
+
+Ce dont un générateur d'images a besoin, en plus du logo, des couleurs et de la typo, pour rester dans la marque — sur la fiche parce que chacun passe le test d'inclusion ([`CONCEPTS.md`](CONCEPTS.md) §1). Rendu par [`playbook-brand-kit.js`](../../src/playbook-brand-kit.js), appelé par `playbook-view` ; stocké par `contexts-store#normalizeBrandKit`. Le flag ne gate que les **lignes** ; la donnée voyage toujours, comme `multilingualPlaybook`.
+
+- **Brand** : **Logo versions** (chaque logo déclare Colour / White / Black / Icon only — `brandLogos[].variant`), un **rôle** par couleur dans l'éditeur de couleurs (Primary / Secondary / Accent only / Background / Text — `brandColors[].role`, affiché sous le hex en lecture quand il dit plus que le nom), **Moods** (chips — `brandMoods`), et **Visual rules** en dernier (`brandRules` : do / don't, taille minimale du logo en px, zone de protection en hauteurs de logo, « never stretch or skew », paires de couleurs qui ne se rencontrent jamais).
+- **Voice & style** : **Words to avoid** (chips — `voiceAvoid`).
+- Version et rôle sont **dérivés** du libellé quand ils manquent (« Reversed » → White, « Favicon » → Icon only, « Accent » → accent) : chaque Playbook existant arrive avec une supposition, jamais une colonne vide. `""` = pas dit.
+- **Création** : la première étape du flow (« How do you want to start? ») propose, en plus de l'URL, **Start from files instead** (logo, visuels, photos → `analyzeBrandFiles`, palette dérivée des fichiers, premier fichier pris comme logo, tous en images de réf. ; le loader du recap dit « Reading your files ») et **Fill it in myself** (pas d'analyse, pas de loader : la fiche vide EST le formulaire). Même nombre d'étapes.
+
 ### Competitors
 
 Le marché contre lequel Archie positionne la marque. Champs sur le Playbook : `competitors: Array<{ id, name, description, websiteUrl, socials:[{network,url}], logo?, suggested? }>` et `dismissedCompetitors: string[]`.
@@ -1583,16 +1592,17 @@ Deux corrections d'audit sur le seed :
 
 ---
 
-## 18. Image Generator — générateur d'images IA autonome (flag `sexySquirrel`, défaut OFF)
+## 18. Image Generator — générateur d'images IA (flag `sexySquirrel`, défaut OFF)
 
-Un **générateur d'images IA** pour les posts Instagram, Facebook, X et LinkedIn, hébergé dans Archie mais **autonome** : route `/image-generator/*`, code dans [`src/modules/image-studio/`](../../src/modules/image-studio/), préfixes `.imst-` / `data-imst-` / `imageStudio:`. Le contrat d'intégration (et pourquoi) est dans [`audits/image-studio-integration.md`](../audits/image-studio-integration.md).
+Un **générateur d'images IA** pour les posts Instagram, Facebook, X et LinkedIn : route `/image-generator/*`, code dans [`src/modules/image-studio/`](../../src/modules/image-studio/), préfixes `.imst-` / `data-imst-` / `imageStudio:`. Le contrat d'intégration est dans [`audits/image-studio-integration.md`](../audits/image-studio-integration.md).
 
-- **Le produit, c'est la génération** : on arrive sur **Generate** (idées de campagne, barre de prompt, quatre variations), puis l'éditeur à calques, les déclinaisons par format et l'export PNG. **Campaigns** range ce qu'on a produit ; **Brands** est le réglage — une marque décrite une fois (depuis son site, des fichiers ou à la main) que chaque image suit.
-- **Aucun lien avec le reste d'Archie**, par décision : une _Brand_ n'est pas un Playbook, un style n'est pas un preset de l'Image Studio des drafts (§7), une création n'est pas un draft. Le module n'importe que le router, les flags et la topbar ; seul `app.js` l'importe.
-- **Persistance propre**, contrairement au reste du proto : métadonnées en localStorage `imageStudio:v1:*`, pixels en IndexedDB `imageStudio`. Une variation générée n'est pas stockée en image : seed + style + palette + format la redessinent à l'identique.
-- **IA mockée derrière des interfaces** (`services/index.js` est le seul endroit à changer pour brancher de vraies API) : `imageGenerationService`, `brandAnalysisService`, `copyService`, `storageService`. Un brief contenant `#fail` échoue toujours, pour montrer l'état d'erreur.
-- **Seed de démo** au premier lancement : deux marques (un torréfacteur + sa déclinaison café-bar, une fintech B2B + sa déclinaison UK), styles, produits, campagnes, créations.
-- **Flag OFF** : pas de ligne de nav, `/image-generator` rebondit sur `/`, rien n'est écrit en storage.
+- **Le produit, c'est la génération** : on arrive sur **Generate** (la marque active, puis — étape 4 — idées de campagne, barre de prompt, quatre variations), ensuite l'éditeur à calques, les déclinaisons par format et l'export PNG. **Campaigns** range ce qu'on a produit.
+- **La marque, c'est le Playbook.** Le générateur n'a pas de marques à lui : il lit le Playbook actif — logos et leur version, couleurs et leur rôle, typo, moods, images de réf., mots à éviter, règles visuelles (le **kit de marque**, §9) — à travers **un seul** fichier, [`state/playbook-brand.js`](../../src/modules/image-studio/state/playbook-brand.js). Il ne l'écrit jamais : la carte de marque du hub mène à « Edit in the Playbook ». Pas de sous-marques : une déclinaison est un Playbook dupliqué ([`CONCEPTS.md`](CONCEPTS.md) §1).
+- **Quel Playbook** : en workspace mode, celui de la rail — aucun second sélecteur dans la page. Sinon, un sélecteur DS dans la barre de section, mémorisé dans le stockage du module. « New Playbook » ouvre la création de Playbook existante (URL · fichiers · à la main, §9) et le Playbook créé devient la marque active au retour.
+- **Ce qui est au générateur** : ses styles personnalisés, son catalogue produits, ses campagnes, ses créations — clés par Playbook (`brandId` = id du Context). Persistés, contrairement au reste du proto : métadonnées en localStorage `imageStudio:v2:*`, pixels en IndexedDB `imageStudio`. Une variation n'est pas stockée en image : seed + style + palette + format la redessinent à l'identique.
+- **IA mockée derrière des interfaces** (`services/index.js` est le seul endroit à changer) : `imageGenerationService`, `copyService`, `storageService`. L'analyse de marque (URL ou fichiers) appartient à la création de Playbook ([`context-mock-analysis.js`](../../src/context-mock-analysis.js)). Un brief contenant `#fail` échoue toujours.
+- **Seed de démo** au premier lancement, pour les Playbooks seedés Acme · Q2 marketing et PawTrack : styles, produits, campagnes, créations.
+- **Flag OFF** : pas de ligne de nav, `/image-generator` rebondit sur `/`, le module n'écrit rien, et la fiche Playbook comme sa création sont identiques à avant.
 
 ---
 

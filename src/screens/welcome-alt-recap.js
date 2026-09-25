@@ -4,11 +4,11 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { navigate } from "../router.js?v=1225";
-import { catalogueRoute } from "../active-playbook.js?v=1225";
-import { getDraft, isAnalysisReady, save, patchDraft, restoreDraft } from "../context-builder.js?v=1225";
-import { mount } from "../playbook-view.js?v=1225";
-import { open as openRenameModal } from "../components/rename-modal.js?v=1225";
+import { navigate } from "../router.js?v=1227";
+import { catalogueRoute } from "../active-playbook.js?v=1227";
+import { getDraft, isAnalysisReady, save, patchDraft, restoreDraft } from "../context-builder.js?v=1227";
+import { mount } from "../playbook-view.js?v=1227";
+import { open as openRenameModal } from "../components/rename-modal.js?v=1227";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";
@@ -18,6 +18,15 @@ const WELCOME_ALT_RETURN_KEY = "welcomeAltReturnTo";
 const LOADING_STAGES = [
   { title: "Reading your website", sub: "Scanning your pages, copy, and brand cues." },
   { title: "Learning your voice", sub: "Capturing your tone, vocabulary, and rhythm." },
+  { title: "Mapping your audience", sub: "Working out who you're for — and what moves them." },
+  { title: "Building your Playbook", sub: "Turning it all into a brief every post draws from." },
+];
+
+// Brand kit (flag sexySquirrel): a Playbook started from files says so, instead
+// of claiming to read a website nobody gave.
+const FILE_LOADING_STAGES = [
+  { title: "Reading your files", sub: "Looking at your logo, past visuals and photos." },
+  { title: "Picking out your colours", sub: "Sampling the palette your visuals already use." },
   { title: "Mapping your audience", sub: "Working out who you're for — and what moves them." },
   { title: "Building your Playbook", sub: "Turning it all into a brief every post draws from." },
 ];
@@ -50,7 +59,9 @@ export function renderWelcomeAltRecap(_params, target) {
     }
   }
 
-  const skipLoader = restored || (introDoneSid === sid && isAnalysisReady(sid));
+  // "Fill it in myself" has nothing to analyse: no loader, straight to the fiche.
+  const source = getDraft(sid)?.sourceType;
+  const skipLoader = restored || source === "manual" || (introDoneSid === sid && isAnalysisReady(sid));
   if (skipLoader) introDoneSid = sid;
 
   return mount(target, {
@@ -62,7 +73,7 @@ export function renderWelcomeAltRecap(_params, target) {
     onPaint: () => {
       if (isAnalysisReady(sid)) persistDraft(sid);
     },
-    loader: LOADING_STAGES,
+    loader: source === "documents" ? FILE_LOADING_STAGES : LOADING_STAGES,
     skipLoader,
     onIntroDone: () => {
       introDoneSid = sid;

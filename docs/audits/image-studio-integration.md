@@ -20,6 +20,32 @@ Décisions déjà prises :
   - un § dans `FEATURES.md` et une ligne dans `ROUTES.md`.
 - **Primitives DS manquantes** : on réutilise les portages de `styles/ds-patches.css` (`.ap-slider`, `.ap-dropzone`, `.app-bar` / `.app-ring`, `.ap-filter-chip`, `.app-modal-backdrop`).
 
+## Révision 2 (2026-09-25) — la marque, c'est le Playbook
+
+Décision utilisateur, prise pendant l'étape 2 : **les « brands » du brief sont les Playbooks.** Les éléments de marque se rattachent au Playbook. Ça lève le principe « module autonome » pour la marque, et seulement pour elle. Ce qui suit **remplace** les passages correspondants plus bas, marqués ⟶ R2.
+
+| Sujet                                  | Avant (brief / phase 0)                         | Maintenant                                                                                                                                                                                                                                                                             |
+| -------------------------------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Objet marque                           | `Brand` du module, dans `imageStudio:v1:brands` | Le **Playbook** (Context). Plus de collection `brands` ; stockage passé en `imageStudio:v2:*`, les clés v1 sont purgées                                                                                                                                                                |
+| Champs manquants                       | Sur la `Brand`                                  | Ajoutés **au Playbook** (`contexts-store#normalizeBrandKit`) : `brandLogos[].variant`, `brandColors[].role`, `brandMoods`, `voiceAvoid`, `brandRules` (do/don't, taille min du logo, zone de protection, pas de déformation, paires interdites). Seedés sur Acme, PawTrack, Agorapulse |
+| Édition                                | Détail de marque en 7 onglets dans le module    | **Section Brand (et Voice) de `/playbook/:id`**, lignes gatées par le flag ([`playbook-brand-kit.js`](../../src/playbook-brand-kit.js)). Le module n'écrit jamais un Playbook ; sa carte de marque mène à « Edit in the Playbook »                                                     |
+| Section « Brands » du module           | Liste de cartes + CRUD                          | **Supprimée** (une surface de réglage n'agrège pas)                                                                                                                                                                                                                                    |
+| Création (URL · fichiers · à la main)  | Onboarding du module                            | **Création de Playbook existante**, étendue sous le flag : « Start from files instead » (`analyzeBrandFiles`) et « Fill it in myself » (pas d'analyse, la fiche vide est le formulaire). Le Playbook créé devient la marque active au retour                                           |
+| Sous-marques / héritage                | Parent + surcharges                             | **Abandonnés** : CONCEPTS §1 interdit la hiérarchie, une déclinaison est un Playbook dupliqué                                                                                                                                                                                          |
+| Marque active + switcher               | Switcher du module                              | Workspace mode : **la rail** (aucun second contrôle). Sinon : sélecteur DS dans la barre de section, mémorisé dans `imageStudio:v2:meta`                                                                                                                                               |
+| `brandAnalysisService`                 | Service du module                               | Retiré du module : l'analyse appartient à la création de Playbook ([`context-mock-analysis.js`](../../src/context-mock-analysis.js))                                                                                                                                                   |
+| Export / import JSON d'une marque      | Prévu                                           | **Abandonné** pour l'instant : ce serait un export de Playbook, hors périmètre du module (question ouverte ci-dessous)                                                                                                                                                                 |
+| Styles, produits, campagnes, créations | Au module                                       | **Inchangé** : au module, clés par Playbook (`brandId` = id du Context)                                                                                                                                                                                                                |
+| Imports Archie du module               | router, flags, topbar                           | + `contexts-store`, `playbook-access`, `active-playbook`, `handoff` — **uniquement** dans [`state/playbook-brand.js`](../../src/modules/image-studio/state/playbook-brand.js)                                                                                                          |
+
+**Fichiers hors module touchés par cette révision** : `contexts-store.js`, `mocks/playbooks.js`, `playbook-view.js` (+ `playbook-brand-kit.js`), `context-builder.js`, `context-mock-analysis.js`, `screens/welcome-alt-recap.js`, `styles/screens/welcome.css`, plus CONCEPTS / FEATURES / ROUTES. Flag OFF, chacun est au comportement d'avant.
+
+**Questions ouvertes nées de R2**
+
+1. Les Playbooks vivent en mémoire (reseedés au rechargement) : un kit édité se perd au reload, comme tout le reste d'Archie. Le brief voulait que la marque persiste. Faut-il persister les Playbooks, ou accepter la règle du proto ?
+2. Export / import JSON d'une marque = d'un Playbook : à faire côté Playbook, ou abandonné ?
+3. Les `imageDefaults` du Playbook (type / style / usage des réf.) visent les presets de l'Image Studio des drafts, pas les 22 presets du générateur. Les mapper, ou ajouter au kit des « styles préférés » propres au générateur ?
+
 ---
 
 ## 1. Hébergement
@@ -120,7 +146,7 @@ Décisions déjà prises :
 3. **État vide.** Il n'existe pas de classe DS. On compose une icône `lg`, un titre au text-style subtitle, du body et un CTA `.primary.blue` de largeur auto, calqués sur `renderEmptyState` mais réécrits dans le module.
 4. **Surfaces de contenu propres au module** (ce ne sont pas des composants de chrome) : le stage de l'éditeur avec ses poignées, le cadre de ratio, les overlays de safe zones et de heatmap, les maquettes de feed et de story par réseau. Leur chrome n'utilise que des tokens DS ; les couleurs de marque ne servent qu'au contenu.
 
-## 4. Modèle de données
+## 4. Modèle de données (⟶ R2 : plus de `Brand`, c'est le Playbook)
 
 Les ids sont préfixés par entité (`br_`, `st_`…). Les dates sont en ISO. Les coordonnées sont normalisées de 0 à 1.
 
@@ -149,7 +175,7 @@ Les ids sont préfixés par entité (`br_`, `st_`…). Les dates sont en ISO. Le
 - **Démo** : deux marques complètes, par exemple une torréfaction artisanale et une fintech B2B. Chacune a ses styles, ses produits et 2 à 3 créations. Elles sont semées une fois (grâce à `meta.seededAt`) et n'ont aucun lien avec `src/mocks/`.
 - **Portabilité** : export et import JSON d'une marque, avec ses styles, ses produits et ses assets encodés en base64.
 
-## 5. Wireframes
+## 5. Wireframes (⟶ R2 : Onboarding, Mes marques et Détail marque sont remplacés par la création et la fiche Playbook)
 
 ```
 HUB  /image-generator                                    [Marque: Brûlerie Nord ▾]

@@ -1,11 +1,11 @@
 // Image Generator — the demo seed, loaded on the module's first launch only.
-// Two complete, credible brands (each with a regional / sub-brand), their
-// custom styles, products, campaigns and a few creations. Nothing here reads
-// or mirrors Archie's own mocks.
+// The brands are Archie's seeded Playbooks (Acme · Q2 marketing, PawTrack);
+// what is seeded here is the generator's OWN objects for them: custom styles,
+// products, campaigns and a few creations. Keyed by Playbook id, so in new-user
+// mode (no Playbooks) they simply belong to nobody and never show.
 
 import {
   createAsset,
-  createBrand,
   createCampaign,
   createCreation,
   createLayer,
@@ -13,32 +13,11 @@ import {
   createStyle,
   createVariation,
   historyEntry,
-} from "../model/schema.js?v=1225";
-import { logoSvg } from "../render/logo.js?v=1225";
-import { productShotSvg } from "../render/product-shot.js?v=1225";
+} from "../model/schema.js?v=1227";
+import { productShotSvg } from "../render/product-shot.js?v=1227";
 
-const HARBOR = "br_demo_harbor";
-const HARBOR_BAR = "br_demo_harbor_bar";
-const LEDGERLY = "br_demo_ledgerly";
-const LEDGERLY_UK = "br_demo_ledgerly_uk";
-
-function logoAssets(brandId, spec) {
-  return ["color", "white", "black", "icon"].map((variant) =>
-    createAsset({
-      id: `as_${brandId}_logo_${variant}`,
-      brandId,
-      kind: "logo",
-      name: `${spec.name} — ${variant}`,
-      mime: "image/svg+xml",
-      svg: logoSvg({ ...spec, variant }),
-      source: "upload",
-    }),
-  );
-}
-
-function logosOf(assets) {
-  return assets.map((a) => ({ variant: a.id.split("_logo_")[1], assetId: a.id }));
-}
+const ACME = "ctx-acme";
+const PAWTRACK = "ctx-pawtrack";
 
 function productAsset(brandId, id, name, shape, colors) {
   return createAsset({
@@ -54,7 +33,9 @@ function productAsset(brandId, id, name, shape, colors) {
   });
 }
 
-function masterLayers({ headline, logoAssetId, layout = "bottom-left", band = false }) {
+// The logo layer names a VERSION, not a file: the render resolves it against
+// the Playbook's logos at draw time, so a logo changed on the Playbook follows.
+function masterLayers({ headline, layout = "bottom-left", band = false }) {
   const textY = layout === "top-left" ? 0.08 : 0.62;
   return [
     createLayer("image", { x: 0, y: 0, w: 1, h: 1, z: 0, locked: true, props: { source: "variation" } }),
@@ -66,298 +47,108 @@ function masterLayers({ headline, logoAssetId, layout = "bottom-left", band = fa
       z: 2,
       props: { content: headline, fontRole: "heading", colorRole: "text", size: 0.075, align: "left", band },
     }),
-    createLayer("logo", {
-      x: 0.72,
-      y: 0.86,
-      w: 0.2,
-      h: 0.07,
-      z: 3,
-      props: { assetId: logoAssetId, variant: "color" },
-    }),
+    createLayer("logo", { x: 0.72, y: 0.86, w: 0.2, h: 0.07, z: 3, props: { variant: "color" } }),
   ];
 }
 
 export function seedDemoData() {
-  // ── Harbor & Hearth Coffee — an independent roaster ───────────────────────
-  const harborPalette = [
-    { hex: "#B5652B", name: "Copper", role: "primary" },
-    { hex: "#5F7361", name: "Sage", role: "secondary" },
-    { hex: "#D9A441", name: "Honey", role: "accent" },
-    { hex: "#F5EDE1", name: "Crema", role: "background" },
-    { hex: "#2A1C14", name: "Espresso", role: "text" },
-  ];
-  const harborLogos = logoAssets(HARBOR, {
-    name: "Harbor & Hearth",
-    mark: "bean",
-    primary: "#B5652B",
-    text: "#2A1C14",
-    background: "#F5EDE1",
-    font: "Georgia, serif",
-  });
-  const harbor = createBrand({
-    id: HARBOR,
-    name: "Harbor & Hearth Coffee",
-    websiteUrl: "https://harborandhearth.coffee",
-    sectorKey: "coffee",
-    isDefault: true,
-    logos: logosOf(harborLogos),
-    palette: harborPalette,
-    fonts: [
-      { family: "Georgia", role: "heading" },
-      { family: "Helvetica Neue", role: "body" },
-    ],
-    imageStyle: {
-      moods: ["warm", "morning light", "tactile", "unhurried"],
-      referenceAssetIds: [],
-      preferredStyleIds: ["st_demo_harbor_morning", "preset-lifestyle", "preset-flat-lay", "preset-editorial"],
-    },
-    voice: {
-      tone: "Warm, unhurried and a little nerdy about the craft. We talk like the person behind the counter who remembers your order — never salesy.",
-      examples: [
-        "This week's roast just came out of the drum. Smells like cocoa and a slow Saturday.",
-        "Grind it right before you brew. Your cup will know.",
-        "Meet Tadesse, who grew the Guji lot we can't stop drinking.",
-        "No, we won't tell you it's the best coffee in the world. We'll tell you where it's from.",
-      ],
-      avoid: ["cheap", "best coffee in the world", "hack", "caffeine fix"],
-    },
-    positioning: {
-      sector: "Food & drink — specialty coffee",
-      audience: "Home brewers and neighbourhood regulars, 25–45, who care where things come from",
-      values: ["Craft", "Traceability", "Hospitality"],
-      valueProp: "Coffee roasted this week, for people who notice.",
-    },
-    rules: {
-      dos: [
-        "Let the product breathe: one hero object per visual",
-        "Warm, natural light — morning, not neon",
-        "Crema or wood as the main surface",
-      ],
-      donts: ["No stock-photo smiles", "Never recolour the bean mark", "No text over the cup itself"],
-      logoMinPx: 56,
-      clearSpace: 0.5,
-      noLogoDistortion: true,
-      forbiddenPairs: [["#D9A441", "#F5EDE1"]],
-    },
-  });
-  const harborBar = createBrand({
-    id: HARBOR_BAR,
-    parentId: HARBOR,
-    name: "Harbor & Hearth — Café Bar",
-    sectorKey: "coffee",
-    overriddenFields: ["voice", "palette"],
-    palette: [
-      { hex: "#2A1C14", name: "Espresso", role: "primary" },
-      { hex: "#B5652B", name: "Copper", role: "secondary" },
-      { hex: "#E07A5F", name: "Terracotta", role: "accent" },
-      { hex: "#FBF7F2", name: "Milk", role: "background" },
-      { hex: "#2A1C14", name: "Espresso", role: "text" },
-    ],
-    voice: {
-      tone: "Same warmth, more evening: the café bar speaks to people meeting up after work. Playful, a touch cheeky.",
-      examples: [
-        "Espresso tonic season is open. Bring a friend, we'll bring the ice.",
-        "Tuesday latte-art throwdown. Bring your worst heart.",
-        "Open until 10 on Fridays. Decaf is a valid life choice.",
-      ],
-      avoid: ["cheap", "hack", "party"],
-    },
-  });
-
-  // ── Ledgerly — spend management for finance teams ────────────────────────
-  const ledgerlyLogos = logoAssets(LEDGERLY, {
-    name: "Ledgerly",
-    mark: "ledger",
-    primary: "#3B5BFD",
-    text: "#0B1F3A",
-    background: "#FFFFFF",
-    font: "Avenir Next, Helvetica, sans-serif",
-  });
-  const ledgerly = createBrand({
-    id: LEDGERLY,
-    name: "Ledgerly",
-    websiteUrl: "https://ledgerly.io",
-    sectorKey: "finance",
-    logos: logosOf(ledgerlyLogos),
-    palette: [
-      { hex: "#3B5BFD", name: "Ledger Blue", role: "primary" },
-      { hex: "#12B5A6", name: "Teal", role: "secondary" },
-      { hex: "#FFB547", name: "Signal", role: "accent" },
-      { hex: "#F4F6FB", name: "Cloud", role: "background" },
-      { hex: "#0B1F3A", name: "Midnight", role: "text" },
-    ],
-    fonts: [
-      { family: "Avenir Next", role: "heading" },
-      { family: "Helvetica Neue", role: "body" },
-    ],
-    imageStyle: {
-      moods: ["clear", "confident", "calm", "precise"],
-      referenceAssetIds: [],
-      preferredStyleIds: ["st_demo_ledgerly_clean3d", "preset-big-number", "preset-infographic", "preset-swiss"],
-    },
-    voice: {
-      tone: "Clear, confident and calm. We explain money like a good accountant friend: no jargon, no hype, always a number to back it up.",
-      examples: [
-        "Month-end shouldn't mean late nights. Here's how three teams got it down to two days.",
-        "Every card, every receipt, one place.",
-        "Budgets are plans. We help you keep them.",
-        "87% of our customers close their books in under five days.",
-      ],
-      avoid: ["disrupt", "revolutionary", "guaranteed", "to the moon"],
-    },
-    positioning: {
-      sector: "B2B financial software",
-      audience: "CFOs and finance leads at 50–500 person companies",
-      values: ["Clarity", "Control", "Trust"],
-      valueProp: "Close the month in days, not weeks.",
-    },
-    rules: {
-      dos: ["One number, big, when there is one", "Cloud or white backgrounds", "Straight angles, a strict grid"],
-      donts: ["No piles of cash or coins", "No handshake photos", "Never put Signal yellow on white text"],
-      logoMinPx: 40,
-      clearSpace: 0.75,
-      noLogoDistortion: true,
-      forbiddenPairs: [
-        ["#FFB547", "#FFFFFF"],
-        ["#12B5A6", "#3B5BFD"],
-      ],
-    },
-  });
-  const ledgerlyUk = createBrand({
-    id: LEDGERLY_UK,
-    parentId: LEDGERLY,
-    name: "Ledgerly UK",
-    sectorKey: "finance",
-    overriddenFields: ["voice", "positioning"],
-    voice: {
-      tone: "The same calm clarity, in British English: organise, colour, VAT, and a drier sense of humour.",
-      examples: [
-        "Quarter-end, without the queue for the kettle.",
-        "Every VAT receipt, matched before you've finished your tea.",
-        "Budgets are plans. We help you stick to them.",
-      ],
-      avoid: ["disrupt", "revolutionary", "guaranteed", "awesome"],
-    },
-    positioning: {
-      sector: "B2B financial software — UK",
-      audience: "Finance directors at UK scale-ups",
-      values: ["Clarity", "Control", "Trust"],
-      valueProp: "Close the month in days, VAT included.",
-    },
-  });
-
-  // ── Custom styles ─────────────────────────────────────────────────────────
   const styles = [
     createStyle({
-      id: "st_demo_harbor_morning",
-      brandId: HARBOR,
-      label: "Harbor morning",
-      description: "Warm window light over wood and crema.",
-      supportsEmbeddedText: false,
-      render: { generator: "blend", variant: "custom" },
-      custom: {
-        sources: [
-          { type: "preset", ref: "preset-lifestyle", label: "Lifestyle", weight: 0.7 },
-          { type: "preset", ref: "preset-editorial", label: "Editorial", weight: 0.3 },
-        ],
-        fidelity: "essential",
-        stylePrompt: "Soft morning light from the left, always a warm wooden surface, steam visible.",
-      },
-    }),
-    createStyle({
-      id: "st_demo_ledgerly_clean3d",
-      brandId: LEDGERLY,
-      label: "Ledgerly clean 3D",
-      description: "Glossy objects on a strict Swiss grid.",
+      id: "st_demo_acme_product",
+      brandId: ACME,
+      label: "Acme product-first",
+      description: "Glossy product moments on a strict grid.",
       supportsEmbeddedText: true,
-      render: { generator: "blend", variant: "custom" },
       custom: {
         sources: [
           { type: "preset", ref: "preset-glossy", label: "Glossy product", weight: 0.6 },
           { type: "preset", ref: "preset-swiss", label: "Swiss minimal", weight: 0.4 },
         ],
         fidelity: "composition",
-        stylePrompt: "Always a plain Cloud background, one object, lots of air.",
+        stylePrompt: "Always a plain navy or white field, one product moment, lots of air.",
+      },
+    }),
+    createStyle({
+      id: "st_demo_pawtrack_daylight",
+      brandId: PAWTRACK,
+      label: "PawTrack daylight",
+      description: "Real dogs outside, soft daylight, a violet accent.",
+      supportsEmbeddedText: false,
+      custom: {
+        sources: [
+          { type: "preset", ref: "preset-lifestyle", label: "Lifestyle", weight: 0.7 },
+          { type: "preset", ref: "preset-flat", label: "Flat", weight: 0.3 },
+        ],
+        fidelity: "essential",
+        stylePrompt: "Outdoors, morning light, the dog is always the hero.",
       },
     }),
   ];
 
-  // ── Products ──────────────────────────────────────────────────────────────
-  const hColors = { primary: "#B5652B", text: "#2A1C14", accent: "#D9A441", background: "#F5EDE1", surface: "#EFE6D8" };
-  const lColors = { primary: "#3B5BFD", text: "#0B1F3A", accent: "#FFB547", background: "#FFFFFF", surface: "#F4F6FB" };
-  const productAssets = [
-    productAsset(HARBOR, "as_demo_p_nightshift", "Night Shift Espresso", "bag", hColors),
-    productAsset(HARBOR, "as_demo_p_guji", "Ethiopia Guji — single origin", "bag", { ...hColors, primary: "#5F7361" }),
-    productAsset(HARBOR, "as_demo_p_kettle", "Gooseneck pour-over kettle", "kettle", hColors),
-    productAsset(LEDGERLY, "as_demo_p_cards", "Ledgerly corporate cards", "card", lColors),
-    productAsset(LEDGERLY, "as_demo_p_dashboard", "Spend dashboard", "screen", lColors),
+  const acme = { primary: "#1A1F36", text: "#1A1F36", accent: "#FF6726", background: "#FFFFFF", surface: "#EEF0F5" };
+  const paw = { primary: "#2F1B54", text: "#241537", accent: "#7C4DFF", background: "#FFFFFF", surface: "#F3EEFF" };
+  const assets = [
+    productAsset(ACME, "as_demo_p_workspace", "Acme Workspace", "screen", acme),
+    productAsset(ACME, "as_demo_p_mobile", "Acme mobile app", "card", acme),
+    productAsset(PAWTRACK, "as_demo_p_collar", "PawTrack GPS collar", "bottle", paw),
+    productAsset(PAWTRACK, "as_demo_p_app", "PawTrack app", "screen", paw),
   ];
   const products = [
     createProduct({
-      id: "pr_demo_nightshift",
-      brandId: HARBOR,
-      name: "Night Shift Espresso",
-      description: "Our house espresso: dark chocolate, molasses, a long sweet finish. 250 g bag.",
-      url: "https://harborandhearth.coffee/shop/night-shift",
-      imageAssetId: "as_demo_p_nightshift",
+      id: "pr_demo_workspace",
+      brandId: ACME,
+      name: "Acme Workspace",
+      description: "The operating system for small marketing teams: plans, briefs and approvals in one place.",
+      url: "https://acme.example.com/workspace",
+      imageAssetId: "as_demo_p_workspace",
     }),
     createProduct({
-      id: "pr_demo_guji",
-      brandId: HARBOR,
-      name: "Ethiopia Guji",
-      description: "Washed single origin from the Guji zone: peach, jasmine, black tea.",
-      url: "https://harborandhearth.coffee/shop/guji",
-      imageAssetId: "as_demo_p_guji",
+      id: "pr_demo_mobile",
+      brandId: ACME,
+      name: "Acme mobile app",
+      description: "Approve a brief from anywhere in two taps.",
+      imageAssetId: "as_demo_p_mobile",
     }),
     createProduct({
-      id: "pr_demo_kettle",
-      brandId: HARBOR,
-      name: "Gooseneck kettle",
-      description: "A precise pour for filter coffee. Matte copper finish.",
-      imageAssetId: "as_demo_p_kettle",
+      id: "pr_demo_collar",
+      brandId: PAWTRACK,
+      name: "PawTrack GPS collar",
+      description: "Live location and activity for your dog, with a week of battery.",
+      url: "https://pawtrack.example.com/collar",
+      imageAssetId: "as_demo_p_collar",
     }),
     createProduct({
-      id: "pr_demo_cards",
-      brandId: LEDGERLY,
-      name: "Corporate cards",
-      description: "Physical and virtual cards with limits per team, receipts captured automatically.",
-      url: "https://ledgerly.io/cards",
-      imageAssetId: "as_demo_p_cards",
-    }),
-    createProduct({
-      id: "pr_demo_dashboard",
-      brandId: LEDGERLY,
-      name: "Spend dashboard",
-      description: "Real-time spend by team, vendor and budget line.",
-      url: "https://ledgerly.io/dashboard",
-      imageAssetId: "as_demo_p_dashboard",
+      id: "pr_demo_app",
+      brandId: PAWTRACK,
+      name: "PawTrack app",
+      description: "Walks, health and alerts in one app.",
+      imageAssetId: "as_demo_p_app",
     }),
   ];
 
-  // ── Campaigns + creations ─────────────────────────────────────────────────
   const year = new Date().getFullYear();
   const creations = [
     createCreation({
-      id: "cr_demo_autumn_roast",
-      brandId: HARBOR,
-      campaignId: "cp_demo_autumn",
-      title: "Autumn roast is here",
+      id: "cr_demo_acme_launch",
+      brandId: ACME,
+      campaignId: "cp_demo_acme_q4",
+      title: "Plan the quarter in one place",
       brief: {
-        prompt: "A bag of our autumn roast on a wooden table, morning light, falling leaves outside",
-        styleId: "st_demo_harbor_morning",
-        productId: "pr_demo_nightshift",
-        formatIds: ["ig-post", "ig-story", "fb-link"],
+        prompt: "The Acme Workspace dashboard floating above a clean desk",
+        styleId: "st_demo_acme_product",
+        productId: "pr_demo_workspace",
+        formatIds: ["li-square", "li-link", "x-landscape"],
         textMode: "layer",
         ideaId: null,
       },
       variations: [createVariation(1203, { id: "va_demo_a1", bgSeed: 11, subjectSeed: 21 })],
       selectedVariationId: "va_demo_a1",
       master: {
-        formatId: "ig-post",
-        layers: masterLayers({ headline: "Autumn roast is here", logoAssetId: `as_${HARBOR}_logo_color` }),
+        formatId: "li-square",
+        layers: masterLayers({ headline: "Plan the quarter in one place", band: true }),
       },
       copy: {
-        hooks: ["Autumn roast is here", "The season's first bag", "Slow mornings are back"],
+        hooks: ["Plan the quarter in one place", "Your Q4, on one page", "Stop planning in five tabs"],
         ctas: [],
         captions: {},
       },
@@ -365,121 +156,69 @@ export function seedDemoData() {
       history: [historyEntry("created"), historyEntry("edited", "Headline changed")],
     }),
     createCreation({
-      id: "cr_demo_coffee_day",
-      brandId: HARBOR,
-      campaignId: "cp_demo_coffee_day",
-      title: "The people who grow it",
+      id: "cr_demo_acme_number",
+      brandId: ACME,
+      campaignId: "cp_demo_acme_q4",
+      title: "3× faster approvals",
       brief: {
-        prompt: "Hands holding ripe coffee cherries, Ethiopian hillside",
-        styleId: "preset-editorial",
-        productId: "pr_demo_guji",
-        formatIds: ["ig-portrait", "li-square"],
-        textMode: "layer",
-        ideaId: null,
-      },
-      variations: [createVariation(4471, { id: "va_demo_b1", bgSeed: 31, subjectSeed: 41 })],
-      selectedVariationId: "va_demo_b1",
-      master: {
-        formatId: "ig-portrait",
-        layers: masterLayers({
-          headline: "The people who grow it",
-          logoAssetId: `as_${HARBOR}_logo_color`,
-          layout: "top-left",
-        }),
-      },
-      history: [historyEntry("created")],
-    }),
-    createCreation({
-      id: "cr_demo_close",
-      brandId: LEDGERLY,
-      campaignId: "cp_demo_q_close",
-      title: "Close in 5 days",
-      brief: {
-        prompt: "87% of customers close their books in under five days",
+        prompt: "Teams on Acme approve briefs 3× faster",
         styleId: "preset-big-number",
         productId: null,
-        formatIds: ["li-link", "li-square", "x-landscape"],
+        formatIds: ["li-square", "ig-post"],
         textMode: "embedded",
         ideaId: null,
       },
-      variations: [createVariation(9087, { id: "va_demo_c1", bgSeed: 51, subjectSeed: 61 })],
-      selectedVariationId: "va_demo_c1",
-      master: {
-        formatId: "li-square",
-        layers: masterLayers({
-          headline: "Close the month in days, not weeks",
-          logoAssetId: `as_${LEDGERLY}_logo_color`,
-          band: true,
-        }),
-      },
-      favorite: true,
-      history: [historyEntry("created"), historyEntry("adapted", "3 formats")],
+      variations: [createVariation(9087, { id: "va_demo_b1", bgSeed: 51, subjectSeed: 61 })],
+      selectedVariationId: "va_demo_b1",
+      master: { formatId: "li-square", layers: masterLayers({ headline: "3× faster approvals" }) },
+      history: [historyEntry("created"), historyEntry("adapted", "2 formats")],
     }),
     createCreation({
-      id: "cr_demo_cards",
-      brandId: LEDGERLY,
-      campaignId: null,
-      title: "Every card, one place",
+      id: "cr_demo_paw_walk",
+      brandId: PAWTRACK,
+      campaignId: "cp_demo_paw_autumn",
+      title: "Every walk, remembered",
       brief: {
-        prompt: "Corporate cards floating above a clean dashboard",
-        styleId: "st_demo_ledgerly_clean3d",
-        productId: "pr_demo_cards",
-        formatIds: ["li-square"],
+        prompt: "A dog running through autumn leaves at sunrise, wearing the collar",
+        styleId: "st_demo_pawtrack_daylight",
+        productId: "pr_demo_collar",
+        formatIds: ["ig-portrait", "ig-story", "fb-square"],
         textMode: "layer",
         ideaId: null,
       },
-      variations: [createVariation(3310, { id: "va_demo_d1", bgSeed: 71, subjectSeed: 81 })],
-      selectedVariationId: "va_demo_d1",
+      variations: [createVariation(4471, { id: "va_demo_c1", bgSeed: 31, subjectSeed: 41 })],
+      selectedVariationId: "va_demo_c1",
       master: {
-        formatId: "li-square",
-        layers: masterLayers({ headline: "Every card, one place", logoAssetId: `as_${LEDGERLY}_logo_color` }),
+        formatId: "ig-portrait",
+        layers: masterLayers({ headline: "Every walk, remembered", layout: "top-left" }),
       },
+      favorite: true,
       history: [historyEntry("created")],
     }),
   ];
   const campaigns = [
     createCampaign({
-      id: "cp_demo_autumn",
-      brandId: HARBOR,
-      title: "Autumn roast launch",
-      objective: "Launch the seasonal blend and drive pre-orders",
-      angle: "The season's first bag",
+      id: "cp_demo_acme_q4",
+      brandId: ACME,
+      title: "Q4 planning season",
+      objective: "Book demos with marketing leads before budgets close",
+      angle: "Next year's plan, in one place",
+      eventId: "budget-season",
+      start: `${year}-10-01`,
+      end: `${year}-11-30`,
+      creationIds: ["cr_demo_acme_launch", "cr_demo_acme_number"],
+    }),
+    createCampaign({
+      id: "cp_demo_paw_autumn",
+      brandId: PAWTRACK,
+      title: "Autumn walks",
+      objective: "Drive collar pre-orders for the season",
+      angle: "The season's first walks",
       eventId: "autumn",
       start: `${year}-09-22`,
-      end: `${year}-10-20`,
-      creationIds: ["cr_demo_autumn_roast"],
-    }),
-    createCampaign({
-      id: "cp_demo_coffee_day",
-      brandId: HARBOR,
-      title: "International Coffee Day",
-      objective: "Tell the origin story of our Guji lot",
-      angle: "The people who grow it",
-      eventId: "coffee-day",
-      start: `${year}-09-28`,
-      end: `${year}-10-02`,
-      creationIds: ["cr_demo_coffee_day"],
-    }),
-    createCampaign({
-      id: "cp_demo_q_close",
-      brandId: LEDGERLY,
-      title: "Quarter-close season",
-      objective: "Book demos with finance leads before quarter end",
-      angle: "Closing the books without the chaos",
-      eventId: "q3-close",
-      start: `${year}-09-15`,
-      end: `${year}-10-05`,
-      creationIds: ["cr_demo_close"],
+      end: `${year}-10-31`,
+      creationIds: ["cr_demo_paw_walk"],
     }),
   ];
-
-  return {
-    brands: [harbor, harborBar, ledgerly, ledgerlyUk],
-    styles,
-    products,
-    campaigns,
-    creations,
-    assets: [...harborLogos, ...ledgerlyLogos, ...productAssets],
-    activeBrandId: HARBOR,
-  };
+  return { styles, products, campaigns, creations, assets };
 }

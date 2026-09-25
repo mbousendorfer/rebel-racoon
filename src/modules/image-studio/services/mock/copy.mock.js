@@ -7,10 +7,10 @@
 //   caption({ brand, brief, network, headline }) → Promise<string>   (within the network's limit)
 //   hashtags({ brand, brief, network }) → Promise<string[]>
 
-import { MOCK } from "../../config/mock.js?v=1225";
-import { COPY_LIMITS } from "../../config/copy-limits.js?v=1225";
-import { hashString, prng, shuffle } from "../../lib/prng.js?v=1225";
-import { wait } from "../../lib/delegate.js?v=1225";
+import { MOCK } from "../../config/mock.js?v=1227";
+import { COPY_LIMITS } from "../../config/copy-limits.js?v=1227";
+import { hashString, prng, shuffle } from "../../lib/prng.js?v=1227";
+import { wait } from "../../lib/delegate.js?v=1227";
 
 function delay(signal) {
   const [min, max] = MOCK.copy.delayMs;
@@ -67,7 +67,7 @@ export async function hashtags({ brand, brief, network }, { signal } = {}) {
   const words = [
     brand?.name?.replace(/\s+/g, ""),
     ...(brief?.prompt || "").split(/\s+/).filter((w) => w.length > 4),
-    ...(brand?.positioning?.values || []),
+    ...(brand?.positioning?.objectives || []),
     ...(brand?.imageStyle?.moods || []),
   ]
     .filter(Boolean)
@@ -88,7 +88,7 @@ export async function caption({ brand, brief, network, headline }, { signal } = 
     x: [headline || `${subject}.`, cta + "."],
     instagram: [headline || subject, example, `${cta} — link in bio.`],
     facebook: [headline || subject, example, `${cta}.`],
-    linkedin: [headline || subject, example, brand?.positioning?.valueProp, `${cta}.`],
+    linkedin: [headline || subject, example, brand?.positioning?.summary?.split(/(?<=\.)\s/)[0], `${cta}.`],
   };
   let text = scrub(
     (byNetwork[network] || byNetwork.facebook).filter(Boolean).join(network === "x" ? " " : "\n\n"),

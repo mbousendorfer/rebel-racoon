@@ -216,6 +216,17 @@ export const contexts = [
       "Confident without bragging, helpful without performing. Speaks the way operators talk to each other — direct, specific, occasionally dry. Never hypey.",
     brandTypography: { headingFont: "Inter", bodyFont: "Inter" },
     imageDefaults: { imageType: "visual-hook", style: "bold-editorial", refMode: "layout" },
+    // Brand kit (Image Generator, flag sexySquirrel) — see contexts-store#normalizeBrandKit.
+    brandMoods: ["confident", "precise", "high-contrast", "product-first"],
+    voiceAvoid: ["synergy", "leverage", "10x", "game-changer", "excited to announce"],
+    brandRules: {
+      visualDos: ["One product moment per visual", "Dark navy or white as the field", "Orange only as the accent"],
+      visualDonts: ["No stock handshakes", "No gradients across the logo", "Never orange text on navy below 24px"],
+      logoMinPx: 40,
+      clearSpace: 0.5,
+      noLogoDistortion: true,
+      forbiddenPairs: [["#FF6726", "#3B4A6B"]],
+    },
     brandColors: [
       { name: "Primary", hex: "#1A1F36" },
       { name: "Secondary", hex: "#3B4A6B" },
@@ -677,6 +688,17 @@ export const contexts = [
       "Steady and kind. Takes the fear seriously without dramatising it, is a little wry about animals being animals, and never makes an owner feel careless.",
     brandTypography: { headingFont: "Poppins", bodyFont: "Inter" },
     imageDefaults: { imageType: "visual-hook", style: "photoreal", refMode: "style" },
+    // Brand kit (Image Generator, flag sexySquirrel) — see contexts-store#normalizeBrandKit.
+    brandMoods: ["warm", "playful", "outdoors", "daylight"],
+    voiceAvoid: ["fur baby", "pawsome", "cheap"],
+    brandRules: {
+      visualDos: ["Real dogs, real owners", "Daylight, outside", "Violet as the accent, never the field"],
+      visualDonts: ["No dogs in costumes", "No studio cut-outs", "Don't put the logo on a busy background"],
+      logoMinPx: 48,
+      clearSpace: 0.5,
+      noLogoDistortion: true,
+      forbiddenPairs: [["#7C4DFF", "#2F1B54"]],
+    },
     brandColors: [
       { name: "Primary", hex: "#2F1B54" },
       { name: "Accent", hex: "#7C4DFF" },
@@ -1367,6 +1389,17 @@ export const contexts = [
     brandTypography: {
       headingFont: "Averta",
       bodyFont: "Averta",
+    },
+    // Brand kit (Image Generator, flag sexySquirrel) — see contexts-store#normalizeBrandKit.
+    brandMoods: ["clear", "human", "energetic", "no-nonsense"],
+    voiceAvoid: ["revolutionary", "best-in-class", "leverage", "synergy"],
+    brandRules: {
+      visualDos: ["Show the product doing the job", "Plenty of white", "Real people, real teams"],
+      visualDonts: ["No 3D mascots", "No neon", "Never stretch the logo"],
+      logoMinPx: 48,
+      clearSpace: 0.75,
+      noLogoDistortion: true,
+      forbiddenPairs: [],
     },
     brandColors: [
       {

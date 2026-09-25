@@ -2221,3 +2221,153 @@ button.recap__logotile:hover {
     align-self: start;
   }
 }
+
+/* ── Brand kit rows (flag sexySquirrel — src/playbook-brand-kit.js) ──────────
+   Logo versions, colour roles, visual rules. Built from the fiche's own row
+   vocabulary (.recap__look-label / -value, .recap__line-edit, swatch chips) +
+   DS .ap-select / .ap-toggle-container / .ap-input-group. */
+
+.recap__kit-select {
+  width: auto;
+  min-width: calc(var(--ref-spacing-xxxl) * 2.5);
+  flex-shrink: 0;
+}
+
+.recap__kit-logos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+}
+
+.recap__kit-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+}
+
+.recap__kit-logo-thumb {
+  width: var(--ref-spacing-xxl);
+  height: var(--ref-spacing-xxl);
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--ref-spacing-xxxs);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--ref-border-radius-md);
+  background: var(--ref-color-white);
+}
+
+/* A white logo is invisible on white: its tile takes the darkest DS surface. */
+.recap__kit-logo-thumb--dark {
+  background: var(--ref-color-grey-150);
+}
+
+.recap__kit-logo-thumb img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.recap__kit-logo-label {
+  min-width: calc(var(--ref-spacing-xxxl) * 1.5);
+  color: var(--ref-color-grey-100);
+}
+
+/* A colour's role, under its hex — sentence case, unlike the hex above it. */
+.recap__swatch-role {
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
+}
+
+.recap__kit-facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--ref-spacing-xs) var(--ref-spacing-md);
+  margin: 0;
+}
+
+.recap__kit-facts dt {
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--ref-color-grey-80);
+}
+
+.recap__kit-facts dd {
+  margin: 0;
+  color: var(--ref-color-grey-100);
+}
+
+.recap__kit-rules {
+  margin: 0;
+  padding-left: var(--ref-spacing-sm);
+}
+
+.recap__kit-edit,
+.recap__kit-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+}
+
+.recap__kit-edit {
+  gap: var(--ref-spacing-md);
+}
+
+.recap__kit-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-md);
+}
+
+.recap__kit-num {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.recap__kit-num .ap-input-group {
+  width: auto;
+  color: var(--ref-color-grey-80);
+}
+
+.recap__kit-num input {
+  width: calc(var(--ref-spacing-xxxl) + var(--ref-spacing-xs));
+}
+
+.recap__kit-pairs,
+.recap__kit-pair-add {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+}
+
+.recap__kit-pair {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+}
+
+.recap__kit-pair-with {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+
+.recap__kit-pair-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+}
+
+.recap__kit-pair-list li {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+}

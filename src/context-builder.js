@@ -13,25 +13,25 @@
 // tones, contentStyle, objective, contentAction, ctaLinks, language, color,
 // suggestions, editingId, onComplete }.
 
-import * as inlineQuestion from "./inline-question.js?v=1225";
-import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=1225";
-import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=1225";
-import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=1225";
-import { showToast } from "./components/toast.js?v=1225";
-import { recordReasons } from "./feedback-store.js?v=1225";
-import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1225";
-import * as rightPanel from "./components/right-panel.js?v=1225";
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1225";
-import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=1225";
-import { analyzeWebsite } from "./context-mock-analysis.js?v=1225";
-import { connectors as connectorMocks } from "./mocks.js?v=1225";
+import * as inlineQuestion from "./inline-question.js?v=1227";
+import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=1227";
+import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=1227";
+import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=1227";
+import { showToast } from "./components/toast.js?v=1227";
+import { recordReasons } from "./feedback-store.js?v=1227";
+import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1227";
+import * as rightPanel from "./components/right-panel.js?v=1227";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1227";
+import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=1227";
+import { analyzeWebsite, analyzeBrandFiles } from "./context-mock-analysis.js?v=1227";
+import { connectors as connectorMocks } from "./mocks.js?v=1227";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "./social-profiles.js?v=1225";
-import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=1225";
-import { isFlagOn } from "./feature-flags.js?v=1225";
+} from "./social-profiles.js?v=1227";
+import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=1227";
+import { isFlagOn } from "./feature-flags.js?v=1227";
 
 const drafts = new Map(); // sessionId → draft
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -80,6 +80,10 @@ function emptyDraft(overrides = {}) {
     // "" on each = no preference. See contexts-store#normalizeImageDefaults.
     imageDefaults: { imageType: "", style: "", refMode: "" },
     referenceImages: [], // Array<{ id, label, url, note?, networks? }> — note/networks = optional usage guidance
+    // Brand kit (flag sexySquirrel) — see contexts-store#normalizeBrandKit.
+    brandMoods: [],
+    voiceAvoid: [],
+    brandRules: null,
     // Competitors — Array<{ id, name, description, websiteUrl, socials:[{network,url}], logo?, suggested? }>.
     // Pre-filled from the website analysis, each flagged `suggested: true` =
     // a PENDING proposal the user still has to accept in the Playbook's
@@ -204,6 +208,10 @@ export function sectionPatchFromAnalysis(analysis) {
     brandPersonality: s.brandPersonality || "",
     brandTypography: s.brandTypography ? { ...s.brandTypography } : null,
     brandColors: (s.brandColors || []).map((c) => ({ ...c })),
+    // Brand kit — only when the analysis has an opinion, so "Re-analyze website"
+    // never blanks moods or banned words someone typed.
+    ...(Array.isArray(s.brandMoods) ? { brandMoods: s.brandMoods.slice() } : {}),
+    ...(Array.isArray(s.voiceAvoid) ? { voiceAvoid: s.voiceAvoid.slice() } : {}),
     // Marks the crawl turned up (imageVoice.websites[0].images.logos). The
     // first becomes the default; the user re-picks in the Brand section.
     ...logoPatchFromAnalysis(s),
@@ -256,6 +264,8 @@ export function restoreDraft(sessionId, draft) {
 export function isAnalysisReady(sessionId) {
   const d = drafts.get(sessionId);
   if (!d) return false;
+  // "Fill it in myself" never waits for an analysis — the empty fiche IS the form.
+  if (d.sourceType === "manual") return true;
   return Boolean(d.businessSummary || (d.tones && d.tones.length));
 }
 
@@ -322,15 +332,96 @@ function askAltAfterUrl(sessionId) {
   else askAltProfile(sessionId);
 }
 
+// Brand kit (flag sexySquirrel): the first step offers two more ways in beside
+// the URL — from files (logo, past visuals, photos → a mocked analysis) and by
+// hand (no analysis; the empty fiche is the form). Same step, same count: only
+// its answers change, so every later step is untouched.
+const ALT_START_ITEMS = [
+  {
+    value: "files",
+    label: "Start from files instead",
+    caption: "Your logo, past visuals or photos",
+    icon: "ap-icon-upload",
+  },
+  {
+    value: "manual",
+    label: "Fill it in myself",
+    caption: "No analysis — you write the Playbook",
+    icon: "ap-icon-pen",
+  },
+];
+
+function startAltFromFiles(sessionId) {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/*";
+  input.multiple = true;
+  input.addEventListener("change", () => {
+    const files = Array.from(input.files || []).filter((f) => f.type.startsWith("image/"));
+    if (!files.length) return; // cancelled — the question stays open
+    const read = files.map(
+      (file) =>
+        new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve({ name: file.name, url: reader.result });
+          reader.onerror = () => resolve(null);
+          reader.readAsDataURL(file);
+        }),
+    );
+    Promise.all(read).then((loaded) => {
+      const list = loaded.filter(Boolean);
+      const d = drafts.get(sessionId);
+      if (!d || !list.length) return;
+      d.sourceType = "documents";
+      d.sourceFile = list[0].name;
+      d.sourceUrl = "";
+      d.websiteUrl = "";
+      postUserTurn(sessionId, `${list.length} ${list.length === 1 ? "file" : "files"} added`);
+      inlineQuestion.exit(sessionId);
+      notify(sessionId);
+      // Same background timing as the website analysis, for the same reason.
+      window.setTimeout(() => {
+        const dd = drafts.get(sessionId);
+        if (!dd) return;
+        applyAnalysisToDraft(dd, analyzeBrandFiles(list));
+        // Every file is a reference; the first one is taken as the logo.
+        dd.referenceImages = list.map((f, i) => ({ id: `ref-file-${i}`, label: f.name, url: f.url }));
+        notify(sessionId);
+      }, 4000);
+      askAltAfterUrl(sessionId);
+    });
+  });
+  input.click();
+}
+
+function startAltManually(sessionId) {
+  const d = drafts.get(sessionId);
+  if (!d) return;
+  d.sourceType = "manual";
+  d.sourceUrl = "";
+  d.websiteUrl = "";
+  d.name = d.name || "New Playbook";
+  postUserTurn(sessionId, "I'll fill it in myself");
+  inlineQuestion.exit(sessionId);
+  notify(sessionId);
+  askAltAfterUrl(sessionId);
+}
+
 function askAltUrl(sessionId, prefilledUrl = "") {
+  const kit = isFlagOn("sexySquirrel");
   const intro = prefilledUrl
     ? "Here's the site I found — confirm it below to begin."
-    : "Drop your website URL below to begin.";
+    : kit
+      ? "Drop your website URL below to begin — or start from your files, or fill it in yourself."
+      : "Drop your website URL below to begin.";
   postAssistantMessage(sessionId, intro);
   inlineQuestion.ask(sessionId, {
-    title: "What's your website URL?",
+    title: kit ? "How do you want to start?" : "What's your website URL?",
     stepLabel: altStepLabel("url"),
-    items: [],
+    items: kit ? ALT_START_ITEMS : [],
+    onPick: kit
+      ? (value) => (value === "files" ? startAltFromFiles(sessionId) : startAltManually(sessionId))
+      : undefined,
     customPlaceholder: "https://your-brand.com",
     customValue: prefilledUrl,
     onCustom: (value) => {
@@ -690,6 +781,9 @@ export function save(sessionId) {
     brandLogos: Array.isArray(d.brandLogos) ? d.brandLogos.map((l) => ({ ...l })) : [],
     brandLogo: d.brandLogo || "",
     imageDefaults: { ...(d.imageDefaults || {}) },
+    brandMoods: Array.isArray(d.brandMoods) ? d.brandMoods.slice() : [],
+    voiceAvoid: Array.isArray(d.voiceAvoid) ? d.voiceAvoid.slice() : [],
+    brandRules: d.brandRules ? structuredClone(d.brandRules) : null,
     referenceImages: Array.isArray(d.referenceImages)
       ? d.referenceImages.map((i) => ({ ...i, networks: Array.isArray(i.networks) ? [...i.networks] : [] }))
       : [],
