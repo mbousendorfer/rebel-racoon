@@ -122,6 +122,24 @@ export const FLAGS = Object.freeze([
       "owner row on a Playbook, and the Your-role control in Admin.",
   },
   {
+    id: "newScheduleModal",
+    label: "New SM (schedule modal)",
+    // ON: the redesigned schedule modal. OFF: the previous one, kept whole in
+    // schedule-modal-legacy.js for comparison.
+    default: true,
+    hides:
+      "Which schedule modal opens from the Drafts panel. When ON (default), " +
+      'the redesign: dates proposed on open after a short "finding the best ' +
+      'time" beat, one sentence saying how they were picked with its ' +
+      "settings behind Adjust (rhythm, start, time of day, skipped days, and " +
+      "a rhythm saved per Playbook), and the batch as one list — each draft " +
+      "with its media, then its date, what else is already planned that day, " +
+      "and a clash warning on the same network.\n\nWhen OFF, the previous " +
+      "modal: Optimal / Custom mode cards, cadence chips, a free-text " +
+      "strategy, a Compute best times button that unlocks Schedule, and a " +
+      "month calendar beside the list.",
+  },
+  {
     id: "skipConnectProfiles",
     label: "Skip connecting profiles at setup",
     default: false,
