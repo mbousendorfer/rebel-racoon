@@ -7,17 +7,16 @@
 // Playbook (imageStyles) and is managed here, where the logo and the colours
 // are. Creating or editing one opens the style creator, a page of its own
 // (/playbook/:id/styles/*), because it needs the room: reference images, their
-// weights and a test on three subjects. The 22 presets — the looks the studio
-// offers besides the brand's own — are browsed from here too, in a dialog.
+// weights and a test on three subjects. The system presets are NOT shown here:
+// they belong to no Playbook, and the fiche lists only what is this brand's.
 
-import { html, toString } from "../lib/html.js?v=1357";
-import { navigate } from "../../../router.js?v=1357";
-import { styleThumb } from "../ui/style-thumb.js?v=1357";
-import { confirmDialog, openDialog } from "../ui/dialog.js?v=1357";
-import { toast } from "../ui/toast.js?v=1357";
-import { STYLE_FAMILIES, STYLE_PRESETS, STYLE_TEST_SUBJECTS, presetById } from "../config/style-presets.js?v=1357";
-import { canEditBrand, getBrand, getStyle, getStylesForBrand } from "../state/store.js?v=1357";
-import { deleteStyle, duplicateStyle } from "../state/style-actions.js?v=1357";
+import { html, toString } from "../lib/html.js?v=1358";
+import { navigate } from "../../../router.js?v=1358";
+import { styleThumb } from "../ui/style-thumb.js?v=1358";
+import { confirmDialog } from "../ui/dialog.js?v=1358";
+import { toast } from "../ui/toast.js?v=1358";
+import { canEditBrand, getBrand, getStyle, getStylesForBrand } from "../state/store.js?v=1358";
+import { deleteStyle, duplicateStyle } from "../state/style-actions.js?v=1358";
 
 const creatorPath = (playbookId, rest) => `/playbook/${encodeURIComponent(playbookId)}/styles/${rest}`;
 
@@ -76,7 +75,7 @@ function styleCard(style, brand, canEdit) {
   `;
 }
 
-/** The Brand section's "Image styles" row: the Playbook's styles, New style, Browse presets. */
+/** The Brand section's "Image styles" row: the Playbook's own styles and New style. */
 export function renderPlaybookStyles(playbookId, { canEdit = true } = {}) {
   const brand = getBrand(playbookId);
   if (!brand) return "";
@@ -90,107 +89,15 @@ export function renderPlaybookStyles(playbookId, { canEdit = true } = {}) {
             No style of this brand's own yet. Give a few reference images whose look you want, and it comes first
             whenever an image is made for this Playbook.
           </p>`}
-      <div class="imst-pbstyles__actions">
-        ${editable
-          ? html`<button type="button" class="ap-button stroked grey" data-imst-pb-style="new">
+      ${editable
+        ? html`<div class="imst-pbstyles__actions">
+            <button type="button" class="ap-button stroked grey" data-imst-pb-style="new">
               <i class="ap-icon-plus" aria-hidden="true"></i><span>New style</span>
-            </button>`
-          : ""}
-        <button type="button" class="ap-link" data-imst-pb-style="presets">
-          Browse the ${STYLE_PRESETS.length} presets
-        </button>
-      </div>
+            </button>
+          </div>`
+        : ""}
     </div>
   `);
-}
-
-function presetPreview(preset, brand) {
-  openDialog({
-    title: preset.label,
-    subtitle: preset.description,
-    size: "lg",
-    body: html`
-      <div class="imst-test-grid">
-        ${STYLE_TEST_SUBJECTS.map(
-          (s, i) =>
-            html`<figure class="imst-test-grid__item">
-              ${styleThumb(preset, brand, { seed: 7 + i * 131, kind: s.id })}
-              <figcaption class="ap-caption">${s.label}</figcaption>
-            </figure>`,
-        )}
-      </div>
-      <p class="ap-body imst-dialog__text">
-        ${preset.supportsEmbeddedText
-          ? "This style can carry text I write into the image, or an editable text layer."
-          : "Text goes on an editable layer with this style — it can't carry text written into the image."}
-      </p>
-    `,
-  });
-}
-
-function browsePresets(playbookId) {
-  const brand = getBrand(playbookId);
-  let family = "all";
-  let galleryH = 0; // measured on open: two and a half rows, whatever the filter shows
-  const body = () => html`
-    <div class="imst-chips" role="group" aria-label="Filter presets by family">
-      ${[{ id: "all", label: "All" }, ...STYLE_FAMILIES].map(
-        (f) =>
-          html`<button
-            type="button"
-            class="ap-filter-chip"
-            aria-pressed="${family === f.id}"
-            data-imst-family="${f.id}"
-          >
-            ${f.label}
-          </button>`,
-      )}
-    </div>
-    <div class="imst-gallery-scroll" style="${galleryH ? `--imst-gallery-h: ${galleryH}px` : ""}">
-      <div class="imst-gallery">
-        ${STYLE_PRESETS.filter((p) => family === "all" || p.family === family).map(
-          (p) =>
-            html`<button
-              type="button"
-              class="imst-gallery__item"
-              data-imst-preset="${p.id}"
-              aria-label="${p.label} — preview"
-            >
-              <span class="imst-gallery__art">${styleThumb(p, brand)}</span>
-              <span class="imst-gallery__text"
-                ><span class="ap-body-bold">${p.label}</span><span class="ap-caption">${p.description}</span></span
-              >
-            </button>`,
-        )}
-      </div>
-    </div>
-  `;
-  const dialog = openDialog({
-    title: "Presets",
-    subtitle: `The looks the studio offers besides this brand's own — every one drawn in ${brand.name}'s colours.`,
-    size: "lg",
-    body: body(),
-    onMount(el) {
-      const scroller = el.querySelector(".imst-gallery-scroll");
-      const item = el.querySelector(".imst-gallery__item");
-      if (scroller && item) {
-        const gap = parseFloat(getComputedStyle(el.querySelector(".imst-gallery")).rowGap) || 0;
-        const pad = parseFloat(getComputedStyle(scroller).paddingTop) || 0;
-        galleryH = Math.round(item.offsetHeight * 2.5 + gap * 2 + pad);
-        scroller.style.setProperty("--imst-gallery-h", `${galleryH}px`);
-      }
-      el.addEventListener("click", (event) => {
-        const chip = event.target.closest("[data-imst-family]");
-        if (chip) {
-          family = chip.dataset.imstFamily;
-          dialog.setBody(body());
-          return;
-        }
-        const card = event.target.closest("[data-imst-preset]");
-        if (card) presetPreview(presetById(card.dataset.imstPreset), brand);
-      });
-    },
-  });
 }
 
 /** The fiche's delegated click, for the row above. Returns true when it handled the click. */
@@ -199,10 +106,6 @@ export function handlePlaybookStylesClick(event, playbookId, { onChange = () => 
   if (!el || !playbookId) return false;
   const action = el.dataset.imstPbStyle;
   const styleId = el.dataset.imstStyle;
-  if (action === "presets") {
-    browsePresets(playbookId);
-    return true;
-  }
   if (!canEditBrand(playbookId)) return true;
   if (action === "new") navigate(creatorPath(playbookId, "new"));
   else if (action === "edit") navigate(creatorPath(playbookId, encodeURIComponent(styleId)));
