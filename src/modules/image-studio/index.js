@@ -11,13 +11,13 @@
 // through state/playbook-brand.js only, the Playbooks — the brand IS the
 // Playbook. See docs/audits/image-studio-integration.md.
 
-import { navigate } from "../../router.js?v=1370";
-import { isFlagOn } from "../../feature-flags.js?v=1370";
-import { renderTopbar } from "../../components/topbar.js?v=1370";
-import { delegate, disposer } from "./lib/delegate.js?v=1370";
-import { installMenus } from "./ui/menu.js?v=1370";
-import { closeAllDialogs } from "./ui/dialog.js?v=1370";
-import * as styleCreator from "./views/style-creator.js?v=1370";
+import { navigate } from "../../router.js?v=1373";
+import { isFlagOn } from "../../feature-flags.js?v=1373";
+import { renderTopbar } from "../../components/topbar.js?v=1373";
+import { delegate, disposer } from "./lib/delegate.js?v=1373";
+import { installMenus } from "./ui/menu.js?v=1373";
+import { closeAllDialogs } from "./ui/dialog.js?v=1373";
+import * as styleCreator from "./views/style-creator.js?v=1373";
 
 export const FLAG = "sexySquirrel";
 
@@ -54,9 +54,9 @@ export const ROUTES = Object.freeze([
   { pattern: "/playbook/:id/styles/:styleId", handler: screen(styleCreator.mount) },
 ]);
 
-export { openDraftStudio } from "./ui/draft-studio.js?v=1370";
+export { openDraftStudio } from "./ui/draft-studio.js?v=1373";
 export {
   renderPlaybookStyles,
   renderPlaybookStyleStrip,
   handlePlaybookStylesClick,
-} from "./views/playbook-styles.js?v=1370";
+} from "./views/playbook-styles.js?v=1373";

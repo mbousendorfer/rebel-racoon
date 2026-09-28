@@ -14,7 +14,7 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1370";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1373";
 import {
   kitEnabled,
   renderColorRole,
@@ -28,18 +28,18 @@ import {
   handleKitInput,
   handleKitChange,
   kitSnapshot,
-} from "./playbook-brand-kit.js?v=1370";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1370";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1370";
-import { isFlagOn } from "./feature-flags.js?v=1370";
-import { parseHashParams } from "./url-state.js?v=1370";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1370";
+} from "./playbook-brand-kit.js?v=1373";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1373";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1373";
+import { isFlagOn } from "./feature-flags.js?v=1373";
+import { parseHashParams } from "./url-state.js?v=1373";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1373";
 // The Default look row offers the SAME three catalogues the Image Studio renders, from
 // the one place they are declared — REF_MODES' own header makes the argument: the label,
 // the hint and the brief clause "drift the moment they live apart". No cycle: the engine
 // imports only clip-formats / image-studio-canvas / feature-flags, and its module body
 // builds consts, so importing it here costs nothing at load.
-import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1370";
+import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1373";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -1301,9 +1301,20 @@ function renderVoicePanel(data, edit) {
   }
   // "Learn from…" — a single DS dropdown that merges the old "Learn from my
   // posts" (social profiles) and document analysis, both scoped to Voice & style.
-  const analyzeBtn =
-    !edit && cfg.onAnalyzeVoice
-      ? `<details class="recap__panel-menu" data-recap-learn-menu>
+  const analyzeBtn = !edit ? learnMenu() : "";
+  return `
+    <section class="recap__panel ${edit ? "is-editing" : ""}" id="${section.id}" ${edit ? "data-recap-editing-card" : ""}>
+      ${renderPanelHead(section, edit, analyzeBtn)}
+      <div class="recap__panel-body">${body}</div>
+    </section>
+  `;
+}
+
+// "Learn from…" — a single DS dropdown that merges the old "Learn from my
+// posts" (social profiles) and document analysis, both scoped to Voice & style.
+function learnMenu() {
+  return cfg.onAnalyzeVoice
+    ? `<details class="recap__panel-menu" data-recap-learn-menu>
           <summary class="ap-button ghost grey recap__panel-action recap__panel-menu-toggle">
             <i class="ap-icon-double-chat-bubbles" aria-hidden="true"></i>
             <span>Learn from…</span>
@@ -1320,13 +1331,7 @@ function renderVoicePanel(data, edit) {
             </button>
           </div>
         </details>`
-      : "";
-  return `
-    <section class="recap__panel ${edit ? "is-editing" : ""}" id="${section.id}" ${edit ? "data-recap-editing-card" : ""}>
-      ${renderPanelHead(section, edit, analyzeBtn)}
-      <div class="recap__panel-body">${body}</div>
-    </section>
-  `;
+    : "";
 }
 
 function renderBrandPanel(data, edit) {
@@ -1975,11 +1980,12 @@ function overviewCard(tab, title, body, { wide = false, index = 0 } = {}) {
 const pb2Empty = (text) => `<p class="pb2-empty">${esc(text)}</p>`;
 // Static facts, so grey tags — blue is for what you can act on.
 const pb2Tags = (values) =>
-  `<span class="pb2-tags">${values.map((v) => `<span class="ap-tag grey"><span>${esc(v)}</span></span>`).join("")}</span>`;
+  `<span class="pb2-tags">${values.map((v) => `<span class="ap-tag grey" title="${esc(v)}"><span>${esc(v)}</span></span>`).join("")}</span>`;
 
-function renderOverview(data) {
-  // ── How it looks — the hero: a brand-guidelines spread, in the brand's own colours.
-  // One band per COLOUR: two roles on one hex (Primary = Accent) share their band.
+// The palette, as a brand guideline shows it: ONE continuous strip, then each
+// colour's name, hex and (brand kit) role. One band per COLOUR — two roles on
+// one hex (Primary = Accent) share their band.
+function pb2Palette(data, { roles = false, max = 6 } = {}) {
   const colors = [];
   for (const c of visualColors(data)) {
     const hex = String(c.hex || "").toUpperCase();
@@ -1987,7 +1993,259 @@ function renderOverview(data) {
     if (same) same.name = [same.name, c.name].filter(Boolean).join(" · ");
     else colors.push({ ...c });
   }
-  colors.splice(6);
+  colors.splice(max);
+  if (!colors.length) return pb2Empty("No colours captured yet.");
+  return `<div class="pb2-strip" role="img" aria-label="Brand colours: ${esc(colors.map((c) => c.name || c.hex).join(", "))}">
+      ${colors.map((c) => `<span class="pb2-strip__band" style="background:${esc(c.hex)}"></span>`).join("")}
+    </div>
+    <ul class="pb2-swatches">${colors
+      .map((c) => {
+        const role = roles ? colorRoleCaption(c) : "";
+        return `<li class="pb2-swatch"><span class="pb2-swatch__name">${esc(c.name || "Colour")}</span><span class="pb2-swatch__hex">${esc(
+          (c.hex || "").toUpperCase(),
+        )}</span>${role ? `<span class="pb2-swatch__role">${esc(role)}</span>` : ""}</li>`;
+      })
+      .join("")}</ul>`;
+}
+
+// ── The other tabs, in read mode — the same care as the Overview ─────────────
+// A tab reads as a spread of blocks; EDIT opens the section's own form (the
+// recap panel, unchanged), so every field, hint and save path stays one code.
+
+function pb2Block(title, body, { wide = false, caption = "", index = 0, icon = "" } = {}) {
+  return `
+    <section class="pb2-block${wide ? " pb2-block--wide" : ""}" style="--pb2-i:${index}">
+      <header class="pb2-block__head">
+        ${icon ? `<span class="pb2-card__icon" aria-hidden="true"><i class="${icon}"></i></span>` : ""}
+        <h3 class="pb2-block__title">${esc(title)}</h3>
+        ${caption ? `<span class="pb2-block__caption">${esc(caption)}</span>` : ""}
+      </header>
+      <div class="pb2-block__body">${body}</div>
+    </section>
+  `;
+}
+
+function pb2TabHead(scope, extra = "") {
+  const edit = canEditView()
+    ? `<button type="button" class="ap-button stroked grey" data-recap-edit-card="${scope}"><i class="ap-icon-pen" aria-hidden="true"></i><span>Edit</span></button>`
+    : "";
+  return `
+    <header class="pb2-tabhead">
+      <p class="pb2-tabhead__lead">${esc(SECTION_LEADS[scope] || "")}</p>
+      <div class="pb2-tabhead__actions">${extra}${edit}</div>
+    </header>
+  `;
+}
+
+const pb2Text = (text, empty = "Not set yet.") => (text ? `<p class="pb2-prose">${esc(text)}</p>` : pb2Empty(empty));
+
+function renderGoalsRead2(data) {
+  const audience = (data.audience || [])[0];
+  const ctas = (Array.isArray(data.ctaLinks) ? data.ctaLinks : []).filter((l) => l.checked);
+  const blocks = [
+    pb2Block(
+      "The business",
+      `${data.businessSummary ? `<p class="pb2-lead pb2-lead--xl">${esc(data.businessSummary)}</p>` : pb2Empty("No business summary yet.")}
+       <div class="pb2-inline"><span class="pb2-sub">Written in</span>${pb2Tags(contextLanguages(data))}</div>`,
+      { wide: true, index: 0, icon: "ap-icon-buildings" },
+    ),
+    pb2Block(
+      "Speaking to",
+      audience
+        ? `<div class="pb2-persona pb2-persona--lg"><p class="pb2-persona__text">${esc(audience)}</p></div>`
+        : pb2Empty("No audience set yet."),
+      { index: 1, icon: "ap-icon-user" },
+    ),
+    pb2Block(
+      "Content style",
+      (data.contentStyle || []).length ? pb2Tags(data.contentStyle) : pb2Empty("No content style yet."),
+      { index: 2, icon: "ap-icon-quote" },
+    ),
+    pb2Block(
+      "What posts should achieve",
+      (data.objective || []).length ? pb2Checklist(data.objective) : pb2Empty("No goal set yet."),
+      { index: 3, icon: "ap-icon-target" },
+    ),
+    pb2Block(
+      "What readers should do",
+      (data.contentAction || []).length
+        ? pb2Checklist(data.contentAction, "ap-icon-arrow-right")
+        : pb2Empty("No action set yet."),
+      { index: 4, icon: "ap-icon-arrow-right" },
+    ),
+    pb2Block(
+      "Where posts point to",
+      ctas.length
+        ? `<ul class="pb2-links">${ctas
+            .map(
+              (c) =>
+                `<li class="pb2-link"><span class="pb2-link__icon" aria-hidden="true"><i class="ap-icon-link"></i></span><span class="pb2-link__text"><span class="pb2-link__label">${esc(
+                  c.label || prettyUrl(c.url),
+                )}</span>${c.url ? `<span class="pb2-link__url">${esc(prettyUrl(c.url))}</span>` : ""}</span></li>`,
+            )
+            .join("")}</ul>`
+        : pb2Empty("No links yet — add the pages a post can send readers to."),
+      { wide: true, index: 5, icon: "ap-icon-link" },
+    ),
+  ];
+  return `${pb2TabHead("goals")}<div class="pb2-grid">${blocks.join("")}</div>`;
+}
+
+function pb2Checklist(values, icon = "ap-icon-check") {
+  return `<ul class="pb2-checks">${values
+    // The circle is a wrapper: an ap-icon-* class masks its own element.
+    .map(
+      (v) =>
+        `<li class="pb2-check"><span class="pb2-check__mark" aria-hidden="true"><i class="${icon}"></i></span><span>${esc(v)}</span></li>`,
+    )
+    .join("")}</ul>`;
+}
+
+function pb2Lines(values, icon = "ap-icon-quote") {
+  const list = (values || []).filter(Boolean);
+  if (!list.length) return pb2Empty("None captured yet.");
+  return `<ul class="pb2-lines">${list
+    .map((h) => `<li class="pb2-line"><i class="${icon}" aria-hidden="true"></i><span>${esc(h)}</span></li>`)
+    .join("")}</ul>`;
+}
+
+function renderVoiceRead2(data, learnMenu) {
+  const ve = voiceEntry(data);
+  const traits = String(data.voiceProfile?.headline || "")
+    .split(/\s*[·•|,]\s*/)
+    .filter(Boolean)
+    .slice(0, 4);
+  const blocks = [];
+  if (data.voiceMode === "manual") {
+    blocks.push(pb2Block("In your own words", pb2Text(data.voiceManual), { wide: true, icon: "ap-icon-quote" }));
+  } else {
+    blocks.push(
+      pb2Block(
+        "The voice",
+        `${
+          traits.length
+            ? `<p class="pb2-traits">${traits
+                .map((t) => `<span class="pb2-trait">${esc(t.charAt(0).toUpperCase() + t.slice(1))}</span>`)
+                .join('<span class="pb2-trait__dot" aria-hidden="true"></span>')}</p>`
+            : ""
+        }${data.voiceProfile?.writingStyle ? `<p class="pb2-lead">${esc(data.voiceProfile.writingStyle)}</p>` : ""}${
+          !traits.length && !data.voiceProfile?.writingStyle ? pb2Empty("No voice captured yet.") : ""
+        }`,
+        { wide: true, index: 0, icon: "ap-icon-quote" },
+      ),
+      pb2Block("Opens with", pb2Lines(ve.signatureHooks), { index: 1, caption: "Signature hooks" }),
+      pb2Block("Closes with", pb2Lines(ve.closingPatterns), { index: 2, caption: "Closing patterns" }),
+      pb2Block("Formatting", pb2Text(data.formattingStyle), { index: 3 }),
+      pb2Block("Emoji & casing", pb2Text(data.visualStyle), { index: 4 }),
+    );
+    if (kitEnabled())
+      blocks.push(
+        pb2Block(
+          "Words to avoid",
+          (data.voiceAvoid || []).length
+            ? `<span class="pb2-tags">${data.voiceAvoid
+                .map(
+                  (w) =>
+                    `<span class="ap-tag grey pb2-avoid"><i class="ap-icon-ban" aria-hidden="true"></i><span>${esc(w)}</span></span>`,
+                )
+                .join("")}</span>`
+            : pb2Empty("None yet — add the words this brand never says."),
+          { wide: true, index: 5, icon: "ap-icon-ban" },
+        ),
+      );
+  }
+  return `${pb2TabHead("voice", learnMenu)}${renderVoiceLangSwitcher(data)}<div class="pb2-grid">${blocks.join("")}</div>`;
+}
+
+const PB2_LOGO_VERSIONS = { color: "Colour", white: "White", black: "Black", icon: "Icon only" };
+
+function renderBrandRead2(data) {
+  const logos = brandLogoList(data);
+  const { headingFont, bodyFont } = brandFonts(data);
+  const r = data.brandRules || {};
+  const specimen = (role, font, sample) =>
+    `<div class="pb2-font">
+      <span class="pb2-font__glyphs" style="font-family:'${esc(font)}', var(--sys-text-style-body-font-family);">Aa</span>
+      <div class="pb2-font__meta">
+        <span class="pb2-sub">${esc(role)}</span>
+        <span class="pb2-font__name">${esc(font)}</span>
+        <span class="pb2-font__sample" style="font-family:'${esc(font)}', var(--sys-text-style-body-font-family);">${esc(sample)}</span>
+      </div>
+    </div>`;
+  const marks = logos.length
+    ? `<ul class="pb2-logos">${logos
+        .map(
+          (l) => `<li class="pb2-logo-tile">
+            <span class="pb2-logo-tile__art${l.variant === "white" || /revers|white|negative/i.test(l.label || "") ? " is-dark" : ""}"><img src="${esc(l.url)}" alt="${esc(l.label || "Logo")}" /></span>
+            <span class="pb2-logo-tile__name">${esc(l.label || "Logo")}${l.url === data.brandLogo ? ' <span class="ap-tag grey mini"><span>Default</span></span>' : ""}</span>
+            ${kitEnabled() && l.variant ? `<span class="pb2-logo-tile__version">${esc(PB2_LOGO_VERSIONS[l.variant] || "")}</span>` : ""}
+          </li>`,
+        )
+        .join("")}</ul>`
+    : pb2Empty("No logo yet — add the marks this brand uses.");
+  const pairs = (r.forbiddenPairs || []).map(
+    ([a, b]) =>
+      `<span class="pb2-pair"><span class="pb2-pair__chip" style="background:${esc(a)}"></span><span class="pb2-pair__chip" style="background:${esc(b)}"></span></span>`,
+  );
+  const blocks = [
+    pb2Block("Logos", marks, { wide: true, index: 0, icon: "ap-icon-image" }),
+    pb2Block("Colour", pb2Palette(data, { roles: true, max: 8 }), { wide: true, index: 1 }),
+    pb2Block(
+      "Typography",
+      headingFont || bodyFont
+        ? `<div class="pb2-fonts">${specimen("Headings", headingFont || bodyFont, "Every objective names its signal.")}${specimen(
+            "Body",
+            bodyFont || headingFont,
+            "Short paragraphs, one idea each, and a line break that lets it land.",
+          )}</div>`
+        : pb2Empty("No typography captured yet."),
+      { index: 2 },
+    ),
+    pb2Block(
+      "Personality",
+      data.brandPersonality
+        ? `<p class="pb2-statement">${esc(data.brandPersonality)}</p>`
+        : pb2Empty("No personality captured yet."),
+      { index: 3 },
+    ),
+  ];
+  if (kitEnabled()) {
+    const styles = renderImageStyles(data, canEditView());
+    blocks.push(
+      pb2Block(
+        "Imagery",
+        `${(data.brandMoods || []).length ? `<div class="pb2-inline"><span class="pb2-sub">Moods</span>${pb2Tags(data.brandMoods)}</div>` : ""}
+         ${styles ? `<div><span class="pb2-sub">Image styles</span>${styles}</div>` : ""}`,
+        { wide: true, index: 4, icon: "ap-icon-image" },
+      ),
+      pb2Block(
+        "Visual rules",
+        `<div class="pb2-rules">
+          <div><span class="pb2-sub">Do</span>${(r.visualDos || []).length ? pb2Checklist(r.visualDos) : pb2Empty("None yet.")}</div>
+          <div><span class="pb2-sub">Don't</span>${(r.visualDonts || []).length ? pb2Checklist(r.visualDonts, "ap-icon-close") : pb2Empty("None yet.")}</div>
+        </div>
+        <dl class="pb2-facts">
+          <div><dt>Logo minimum size</dt><dd>${esc(r.logoMinPx ?? 48)} px</dd></div>
+          <div><dt>Clear space</dt><dd>${esc(r.clearSpace ?? 0.5)} × logo height</dd></div>
+          <div><dt>Distortion</dt><dd>${r.noLogoDistortion === false ? "Allowed" : "Never stretch or skew"}</dd></div>
+          <div><dt>Colours that never meet</dt><dd>${pairs.length ? `<span class="pb2-pairs">${pairs.join("")}</span>` : "None"}</dd></div>
+        </dl>`,
+        { wide: true, index: 5 },
+      ),
+    );
+  } else {
+    // Without the brand kit, Reference images and Default look still belong here.
+    blocks.push(
+      pb2Block("Reference images", renderRefImages(data, canEditView()), { wide: true, index: 4 }),
+      pb2Block("Default look", renderDefaultLook(data, false), { wide: true, index: 5 }),
+    );
+  }
+  return `${pb2TabHead("brand")}<div class="pb2-grid">${blocks.join("")}</div>`;
+}
+
+function renderOverview(data) {
+  // ── How it looks — the hero: a brand-guidelines spread, in the brand's own colours.
+  const colors = visualColors(data);
   const { headingFont, bodyFont } = brandFonts(data);
   const moods = data.brandMoods || [];
   const logos = brandLogoList(data).slice(0, 3);
@@ -2000,19 +2258,7 @@ function renderOverview(data) {
         )
         .join("")}</div>`
     : `<span class="pb2-mark pb2-mark--lead pb2-mark--mono">${esc(initials(data.name))}</span>`;
-  const palette = colors.length
-    ? `<div class="pb2-strip" role="img" aria-label="Brand colours: ${esc(colors.map((c) => c.name || c.hex).join(", "))}">
-        ${colors.map((c) => `<span class="pb2-strip__band" style="background:${esc(c.hex)}"></span>`).join("")}
-      </div>
-      <ul class="pb2-swatches">${colors
-        .map(
-          (c) =>
-            `<li class="pb2-swatch"><span class="pb2-swatch__name">${esc(c.name || "Colour")}</span><span class="pb2-swatch__hex">${esc(
-              (c.hex || "").toUpperCase(),
-            )}</span></li>`,
-        )
-        .join("")}</ul>`
-    : pb2Empty("No colours captured yet.");
+  const palette = colors.length ? pb2Palette(data) : pb2Empty("No colours captured yet.");
   const type =
     headingFont || bodyFont
       ? `<div class="pb2-specimen">
@@ -2125,9 +2371,11 @@ function renderBrandGroup(title) {
 
 function renderActivePanel(data) {
   const scope = editScope;
-  if (activeTab === "goals") return renderGoalsPanel(data, scope === "goals");
-  if (activeTab === "voice") return renderVoicePanel(data, scope === "voice");
-  if (activeTab === "brand") return renderBrandPanel(data, scope === "brand");
+  // Editing opens the section's own form; reading gets the tab's spread.
+  if (activeTab === "goals") return scope === "goals" ? renderGoalsPanel(data, true) : renderGoalsRead2(data);
+  if (activeTab === "voice")
+    return scope === "voice" ? renderVoicePanel(data, true) : renderVoiceRead2(data, learnMenu());
+  if (activeTab === "brand") return scope === "brand" ? renderBrandPanel(data, true) : renderBrandRead2(data);
   if (activeTab === "competitors") return renderCompetitorsPanel(data, scope === "competitors");
   return renderOverview(data);
 }

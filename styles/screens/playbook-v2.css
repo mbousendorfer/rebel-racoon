@@ -281,11 +281,21 @@
 
 /* The palette as ONE continuous strip, the way a guideline shows it. */
 .pb2-strip {
+  position: relative;
   display: flex;
   height: calc(var(--ref-spacing-xxxl) + var(--ref-spacing-md));
   border-radius: var(--app-radius-card);
   overflow: hidden;
+}
+
+/* The outline sits ABOVE the bands, so a white colour still has an edge. */
+.pb2-strip::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
   box-shadow: inset 0 0 0 1px var(--ref-color-grey-20);
+  pointer-events: none;
 }
 
 .pb2-strip__band {
@@ -565,4 +575,355 @@
   letter-spacing: 0;
   font-size: var(--ref-font-size-sm);
   color: var(--ref-color-grey-100);
+}
+
+/* ── The other tabs, in read mode — a spread of blocks ──────────────────── */
+
+.pb2-tabhead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-md);
+}
+
+.pb2-tabhead__lead {
+  margin: 0;
+  color: var(--ref-color-grey-80);
+  font-size: var(--ref-font-size-md);
+}
+
+.pb2-tabhead__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  flex-shrink: 0;
+}
+
+.pb2-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ref-spacing-md);
+}
+
+.pb2-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-md);
+  padding: var(--ref-spacing-md) var(--ref-spacing-lg) var(--ref-spacing-lg);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-card);
+  background: var(--ref-color-white);
+  animation: pb2-rise 0.32s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: calc(var(--pb2-i, 0) * 40ms);
+}
+
+.pb2-block--wide {
+  grid-column: 1 / -1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pb2-block {
+    animation: none;
+  }
+}
+
+.pb2-block__head {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+}
+
+.pb2-block__title {
+  flex: 1;
+  margin: 0;
+  font-family: var(--sys-text-style-subtitle-font-family);
+  font-size: var(--sys-text-style-subtitle-size);
+  line-height: var(--sys-text-style-subtitle-line-height);
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--ref-color-grey-100);
+}
+
+.pb2-block__caption {
+  color: var(--ref-color-grey-80);
+  font-size: var(--ref-font-size-sm);
+}
+
+.pb2-block__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-md);
+  color: var(--ref-color-grey-100);
+}
+
+.pb2-lead--xl {
+  font-size: var(--ref-font-size-lg);
+  line-height: 1.55;
+  max-width: 70ch;
+}
+
+.pb2-prose {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.pb2-statement {
+  margin: 0;
+  font-size: var(--ref-font-size-lg);
+  line-height: 1.5;
+  font-weight: var(--ref-font-weight-bold);
+}
+
+.pb2-inline {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  flex-wrap: wrap;
+}
+
+.pb2-inline .pb2-sub {
+  margin: 0;
+}
+
+.pb2-persona--lg .pb2-persona__text {
+  font-size: var(--ref-font-size-md);
+}
+
+.pb2-checks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pb2-check {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xs);
+  line-height: 1.45;
+}
+
+.pb2-check__mark {
+  display: inline-grid;
+  place-items: center;
+  width: var(--ref-spacing-md);
+  height: var(--ref-spacing-md);
+  flex-shrink: 0;
+  border-radius: var(--app-radius-circle);
+  background: var(--ref-color-grey-05);
+  color: var(--ref-color-grey-100);
+  font-size: var(--ref-font-size-xs);
+}
+
+.pb2-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--ref-spacing-xxxl) * 4), 1fr));
+  gap: var(--ref-spacing-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pb2-link {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  min-width: 0;
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  border-radius: var(--ref-border-radius-md);
+  background: var(--ref-color-grey-05);
+}
+
+.pb2-link__icon {
+  color: var(--ref-color-grey-80);
+  flex-shrink: 0;
+}
+
+.pb2-link__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.pb2-link__label {
+  font-weight: var(--ref-font-weight-bold);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pb2-link__url {
+  font-size: var(--ref-font-size-xs);
+  color: var(--ref-color-grey-80);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Words to avoid: struck through — said once, never written. */
+.pb2-avoid {
+  gap: var(--ref-spacing-xxxs);
+}
+
+.pb2-avoid span {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+/* Brand — logos as a gallery on their intended ground. */
+.pb2-logos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--ref-spacing-xxxl) * 2.8), 1fr));
+  gap: var(--ref-spacing-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pb2-logo-tile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.pb2-logo-tile__art {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 10;
+  margin-bottom: var(--ref-spacing-xxs);
+  border-radius: var(--ref-border-radius-md);
+  background: var(--ref-color-grey-05);
+}
+
+.pb2-logo-tile__art.is-dark {
+  background: var(--ref-color-grey-100);
+}
+
+.pb2-logo-tile__art img {
+  max-width: 64%;
+  max-height: 56%;
+  object-fit: contain;
+}
+
+.pb2-logo-tile__name {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  font-weight: var(--ref-font-weight-bold);
+}
+
+.pb2-logo-tile__version {
+  font-size: var(--ref-font-size-xs);
+  color: var(--ref-color-grey-80);
+}
+
+.pb2-swatch__role {
+  font-size: var(--ref-font-size-xs);
+  color: var(--ref-color-grey-80);
+}
+
+.pb2-fonts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-md);
+}
+
+.pb2-font {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-md);
+}
+
+.pb2-font__glyphs {
+  display: inline-grid;
+  place-items: center;
+  width: calc(var(--ref-spacing-xxxl) * 1.2);
+  aspect-ratio: 1;
+  flex-shrink: 0;
+  border-radius: var(--ref-border-radius-md);
+  background: var(--ref-color-grey-05);
+  font-size: var(--ref-font-size-xxxl);
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--ref-color-grey-100);
+}
+
+.pb2-font__meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.pb2-font__meta .pb2-sub {
+  margin: 0;
+}
+
+.pb2-font__name {
+  font-size: var(--ref-font-size-md);
+  font-weight: var(--ref-font-weight-bold);
+}
+
+.pb2-font__sample {
+  color: var(--ref-color-grey-80);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pb2-rules {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ref-spacing-lg);
+}
+
+.pb2-facts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--ref-spacing-sm);
+  margin: 0;
+  padding-top: var(--ref-spacing-md);
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+
+.pb2-facts dt {
+  font-size: var(--ref-font-size-xs);
+  color: var(--ref-color-grey-80);
+}
+
+.pb2-facts dd {
+  margin: var(--ref-spacing-xxxs) 0 0;
+  font-weight: var(--ref-font-weight-bold);
+}
+
+.pb2-pairs {
+  display: inline-flex;
+  gap: var(--ref-spacing-xs);
+}
+
+.pb2-pair {
+  display: inline-flex;
+}
+
+.pb2-pair__chip {
+  width: var(--ref-spacing-md);
+  height: var(--ref-spacing-md);
+  border-radius: var(--app-radius-circle);
+  box-shadow:
+    0 0 0 2px var(--ref-color-white),
+    inset 0 0 0 1px var(--ref-color-grey-20);
+}
+
+.pb2-pair__chip + .pb2-pair__chip {
+  margin-left: calc(var(--ref-spacing-xxxs) * -1);
+}
+
+@media (max-width: 1100px) {
+  .pb2-grid,
+  .pb2-rules {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pb2-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
