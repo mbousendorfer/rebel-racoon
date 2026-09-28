@@ -142,3 +142,31 @@ export function shapeForFormat(formatId) {
     FORMAT_SHAPES[0]
   );
 }
+
+/** Network ids as Archie's drafts name them → this module's. */
+export const DRAFT_NETWORK = Object.freeze({
+  linkedin: "linkedin",
+  twitter: "x",
+  x: "x",
+  instagram: "instagram",
+  facebook: "facebook",
+});
+
+/**
+ * The shapes a network publishes, each pointing at THAT network's format.
+ * With no network, every shape with its default format.
+ */
+export function shapesFor(network) {
+  if (!network) return FORMAT_SHAPES;
+  const byShape = {
+    square: (f) => f.layout === "square",
+    portrait: (f) => f.layout === "portrait",
+    story: (f) => f.layout === "tall",
+    landscape: (f) => f.layout === "wide" && f.mockup !== "link",
+    link: (f) => f.mockup === "link",
+  };
+  return FORMAT_SHAPES.map((s) => {
+    const f = FORMATS.find((x) => x.network === network && byShape[s.id](x));
+    return f ? { ...s, formatId: f.id, networks: [network] } : null;
+  }).filter(Boolean);
+}

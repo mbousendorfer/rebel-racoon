@@ -7,10 +7,10 @@
 //   caption({ brand, brief, network, headline }) → Promise<string>   (within the network's limit)
 //   hashtags({ brand, brief, network }) → Promise<string[]>
 
-import { MOCK } from "../../config/mock.js?v=1317";
-import { COPY_LIMITS } from "../../config/copy-limits.js?v=1317";
-import { hashString, prng, shuffle } from "../../lib/prng.js?v=1317";
-import { wait } from "../../lib/delegate.js?v=1317";
+import { MOCK } from "../../config/mock.js?v=1320";
+import { COPY_LIMITS } from "../../config/copy-limits.js?v=1320";
+import { hashString, prng, shuffle } from "../../lib/prng.js?v=1320";
+import { wait } from "../../lib/delegate.js?v=1320";
 
 function delay(signal) {
   const [min, max] = MOCK.copy.delayMs;
@@ -112,4 +112,53 @@ export async function caption({ brand, brief, network, headline }, { signal } = 
   );
   if (text.length > limits.maxChars) text = text.slice(0, limits.maxChars - 1).trimEnd() + "…";
   return text;
+}
+
+/**
+ * An image brief from a post's text — what the post is about, as a picture
+ * (the draft's image studio: "Suggest from the post"). The mock keeps the
+ * post's first real sentence, drops its hashtags / links / emoji, and turns it
+ * into a scene in the brand's moods.
+ */
+// A post is not a picture: the suggestion names a SCENE the post evokes, never
+// restates its hook. Keyword themes first, the brand's products as the fallback
+// subject, the brand's moods as the treatment.
+const POST_SCENES = [
+  [
+    /\b(plan|objective|goal|okr|target|roadmap|strategy)\w*/i,
+    "a single target pinned on a clean wall planner, one marker circled",
+  ],
+  [
+    /\b(metric|kpi|data|signal|dashboard|report|analytics|number)\w*/i,
+    "one bold gauge on a minimal dashboard, everything else quiet",
+  ],
+  [/\b(launch|release|announce|new|introduc)\w*/i, "the product on a plinth under a single spotlight, as if unveiled"],
+  [
+    /\b(team|hire|hiring|culture|people|together)\w*/i,
+    "a small team around one table, mid-conversation, natural light",
+  ],
+  [
+    /\b(event|webinar|conference|meetup|summit)\w*/i,
+    "an empty stage with one chair and a warm backlight, just before it starts",
+  ],
+  [/\b(tip|how to|guide|lesson|mistake|learn)\w*/i, "a notebook open on a desk with three short handwritten points"],
+  [/\b(customer|client|story|case)\w*/i, "a customer's hands using the product at their own desk"],
+  [/\b(coffee|morning|ritual|break)\w*/i, "a steaming mug on a sunlit desk at the start of the day"],
+];
+
+export async function promptFromPost({ brand, text }, { signal } = {}) {
+  await delay(signal);
+  const clean = String(text || "")
+    .replace(/https?:\/\/\S+/g, "")
+    .replace(/#\w+/g, "")
+    .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  const scene =
+    POST_SCENES.find(([re]) => re.test(clean))?.[1] ||
+    (brand?.products?.[0]?.name
+      ? `the ${brand.products[0].name} in a simple, uncluttered setting`
+      : "one simple object that stands for the idea, on a plain background");
+  const moods = (brand?.imageStyle?.moods || []).slice(0, 2).join(" and ");
+  return `${scene[0].toUpperCase()}${scene.slice(1)}${moods ? `, ${moods}` : ""}. No text in the image.`;
 }

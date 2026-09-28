@@ -522,3 +522,40 @@
     gap: var(--ref-spacing-sm);
   }
 }
+
+/* ── The studio in the draft's dialog ────────────────────────────────── */
+
+.imst-dialog--studio {
+  width: min(calc(100vw - 2 * var(--ref-spacing-md)), calc(var(--app-content) * 1.35));
+  height: calc(100vh - 2 * var(--ref-spacing-md));
+  display: flex;
+  flex-direction: column;
+}
+
+.imst-dialog--studio .imst-dialog__content {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  padding-top: var(--ref-spacing-sm);
+}
+
+.imst-draft-host {
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+}
+
+.imst-draft-host .imst-studio {
+  height: 100%;
+}
+
+.imst-stage2__frame--image {
+  background: var(--ref-color-grey-05);
+}
+
+.imst-current-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}

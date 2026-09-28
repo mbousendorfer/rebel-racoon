@@ -284,9 +284,20 @@ Calculé commit par commit sur mes commits (une autre session pousse aussi sur `
 
 - **Shell** (autorisé) : `src/app.js` (boucle de routes), `src/components/sidebar.js` (entrée de nav), `src/components/topbar.js` (titre), `src/ff-catalog.js` (flag `sexySquirrel`), `index.html` (6 feuilles du module).
 - **Kit de marque du Playbook** (décision R2) : `src/contexts-store.js`, `src/mocks/playbooks.js`, `src/playbook-view.js`, `src/playbook-brand-kit.js` (nouveau), `src/context-builder.js`, `src/context-mock-analysis.js`, `src/screens/welcome-alt-recap.js`, `styles/screens/welcome.css` — chacun gaté par le flag : **flag OFF, la fiche, sa création et la nav sont identiques à avant** (vérifié dans le navigateur).
+- **L'image d'un draft** (§10) : `src/components/right-panel.js` — sous le flag, `onPostStudio` ouvre le studio du module au lieu de l'Image Studio ; flag OFF, la branche n'est pas prise.
 - **Docs** : `CLAUDE.md`, `docs/reference/CONCEPTS.md`, `FEATURES.md`, `ROUTES.md`, ce rapport.
 - Tout le reste : uniquement le bump global `?v=`.
 
 ## 9. Suppression des campagnes (2026-09-25)
 
 À la demande : plus d'entité `Campaign`, plus de page ni de table Campaigns, plus d'idées de campagne sur le hub (le mock `ideaService` et `config/calendar-events.js` sont supprimés). Ce qui reste de la page devient **History** (`/image-generator/history`). La clé `imageStudio:v2:campaigns` est purgée au chargement. Les créations n'ont plus de `campaignId`, et le brief n'a plus d'`ideaId`.
+
+## 10. Le studio remplace l'Image Studio des drafts (2026-09-28)
+
+À la demande, toujours sous `sexySquirrel` : « Generate an image » / « Edit image » sur un draft (`[data-post-studio]`, `[data-post-image-edit]`) n'ouvrent plus l'Image Studio (`components/image-studio-v2/`) mais **le même studio** que `/image-generator`, dans une dialog quasi plein écran (`ui/draft-studio.js` → `views/studio.js` en mode `draft`).
+
+- **Un seul studio, deux hôtes.** `mountStudio(target, { mode: "page" | "draft" })` : la page garde sa barre de section et le sélecteur de marque ; la dialog prend le Playbook **du chat** (jamais un sélecteur — un chat garde son Playbook, CONCEPTS §2), n'offre que les formes que le réseau du draft publie, et montre d'abord l'image actuelle du draft.
+- **« Suggest from the post »** propose une scène à partir du texte du post (mock `copyService.promptFromPost`) — une image, pas une reformulation de l'accroche.
+- **« Use in draft » / « Replace the draft's image »** exporte la variation en PNG (le même export que Download) et l'écrit via `attachImageToDraft` : le seul point de contact avec les stores d'Archie, passé en callback par `right-panel.js` — le module n'importe toujours aucun store.
+- Adapt everywhere et l'éditeur à calques restent sur la page : un draft est un post pour un réseau, sa dialog va au résultat.
+- **Flag OFF** : l'Image Studio d'origine, inchangé.

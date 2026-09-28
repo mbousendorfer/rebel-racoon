@@ -232,6 +232,8 @@ Store [`schedule-store.js`](../../src/schedule-store.js) : file upcoming, `getQu
 
 ### Image Studio ([`components/image-studio-v2/`](../../src/components/image-studio-v2/))
 
+> Flag `sexySquirrel` ON : les drafts ouvrent le studio de l'Image Generator à la place (§18).
+
 Modale near-fullscreen, deux modes pairs (**Generate** / **Edit**, tabs DS). Un header d'une ligne
 (titre · les deux modes) et un footer qui porte l'unique action de sortie. Entre les deux, **le stage
 prend une forme par mode** :
@@ -1636,6 +1638,7 @@ Un **générateur d'images IA** pour les posts Instagram, Facebook, X et LinkedI
 - **Ce qui est au générateur** : ses styles personnalisés, son catalogue produits, ses créations — clés par Playbook (`brandId` = id du Context). Persistés, contrairement au reste du proto : métadonnées en localStorage `imageStudio:v2:*`, pixels en IndexedDB `imageStudio`. Une variation n'est pas stockée en image : seed + style + palette + format la redessinent à l'identique.
 - **IA mockée derrière des interfaces** (`services/index.js` est le seul endroit à changer) : `imageGenerationService`, `copyService`, `editService`, `productService`, `storageService`. L'analyse de marque (URL ou fichiers) appartient à la création de Playbook ([`context-mock-analysis.js`](../../src/context-mock-analysis.js)). Un brief contenant `#fail` échoue toujours.
 - **Seed de démo** au premier lancement, pour les Playbooks seedés Acme · Q2 marketing et PawTrack : styles, produits, créations.
+- **L'image d'un draft** : sous le flag, « Generate an image » / « Edit image » sur un draft ouvrent **ce studio** dans une dialog (au lieu de l'Image Studio, §7) — le Playbook du chat, les seules formes que publie le réseau du draft, l'image actuelle d'abord, **Suggest from the post** (une scène tirée du texte), et **Use in draft** / **Replace the draft's image** qui écrit le PNG sur le draft. Détails : audit §10.
 - **Flag OFF** : pas de ligne de nav, `/image-generator` rebondit sur `/`, le module n'écrit rien, et la fiche Playbook comme sa création sont identiques à avant.
 
 ---

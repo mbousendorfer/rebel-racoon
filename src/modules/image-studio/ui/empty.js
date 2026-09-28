@@ -2,7 +2,7 @@
 // composition Archie's own renderEmptyState uses (icon · subtitle · body · one
 // hug-width primary blue CTA), rewritten here so the module imports nothing.
 
-import { html } from "../lib/html.js?v=1317";
+import { html } from "../lib/html.js?v=1320";
 
 export function renderEmpty({ icon, title, body, action }) {
   return html`
