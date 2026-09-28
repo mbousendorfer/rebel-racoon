@@ -7,10 +7,10 @@
 // as the muted caption, and a DS avatar carrying the brand photo plus a
 // corner network badge.
 
-import { socialAccounts, demoManyProfiles } from "./mocks.js?v=1366";
-import { escapeHtml } from "./utils.js?v=1366";
-import { isFlagOn } from "./feature-flags.js?v=1366";
-import { createNotifier } from "./store-utils.js?v=1366";
+import { socialAccounts, demoManyProfiles } from "./mocks.js?v=1369";
+import { escapeHtml } from "./utils.js?v=1369";
+import { isFlagOn } from "./feature-flags.js?v=1369";
+import { createNotifier } from "./store-utils.js?v=1369";
 
 // Map our mock's `platform` slug to the DS's official full-color network
 // icon used by the .ap-avatar-network corner badge.

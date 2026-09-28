@@ -301,3 +301,36 @@ button.imst-style-card {
   display: inline-flex;
   flex-shrink: 0;
 }
+
+/* The brand's styles as a strip of pictures (Playbook 2.0 Overview). */
+.imst-pbstrip {
+  display: flex;
+  gap: var(--ref-spacing-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.imst-pbstrip__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  width: calc(var(--ref-spacing-xxxl) * 2.2);
+}
+
+.imst-pbstrip__img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: var(--ref-border-radius-md);
+}
+
+.imst-pbstrip__name {
+  font-size: var(--ref-font-size-xs);
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--ref-color-grey-100);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

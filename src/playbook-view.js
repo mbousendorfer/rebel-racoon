@@ -14,7 +14,7 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1366";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1369";
 import {
   kitEnabled,
   renderColorRole,
@@ -22,23 +22,24 @@ import {
   renderLogoVariants,
   renderVisualRules,
   renderImageStyles,
+  renderImageStyleStrip,
   handleImageStylesClick,
   handleKitClick,
   handleKitInput,
   handleKitChange,
   kitSnapshot,
-} from "./playbook-brand-kit.js?v=1366";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1366";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1366";
-import { isFlagOn } from "./feature-flags.js?v=1366";
-import { parseHashParams } from "./url-state.js?v=1366";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1366";
+} from "./playbook-brand-kit.js?v=1369";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1369";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1369";
+import { isFlagOn } from "./feature-flags.js?v=1369";
+import { parseHashParams } from "./url-state.js?v=1369";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1369";
 // The Default look row offers the SAME three catalogues the Image Studio renders, from
 // the one place they are declared — REF_MODES' own header makes the argument: the label,
 // the hint and the brief clause "drift the moment they live apart". No cycle: the engine
 // imports only clip-formats / image-studio-canvas / feature-flags, and its module body
 // builds consts, so importing it here costs nothing at load.
-import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1366";
+import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1369";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -1950,13 +1951,20 @@ function renderTabs2(data) {
   `;
 }
 
-function overviewCard(tab, title, body) {
+// An Overview card IS the door to its tab: the whole card opens it (blue border
+// on hover, the house's card hover), and the head names the section with its icon.
+function overviewCard(tab, title, body, { wide = false, index = 0 } = {}) {
+  const section = SECTIONS.find((x) => x.scope === tab);
+  const tabTitle = TABS.find((t) => t.id === tab).title;
   return `
-    <section class="ap-card pb2-card" aria-labelledby="pb2-ov-${tab}">
+    <section class="pb2-card${wide ? " pb2-card--wide" : ""}" style="--pb2-i:${index}" data-pb2-tab="${tab}"
+      aria-labelledby="pb2-ov-${tab}">
       <header class="pb2-card__head">
+        <span class="pb2-card__icon" aria-hidden="true"><i class="${section.icon}"></i></span>
         <h2 class="pb2-card__title" id="pb2-ov-${tab}">${esc(title)}</h2>
-        <button type="button" class="ap-link pb2-card__open" data-pb2-tab="${tab}">
-          <span>${esc(TABS.find((t) => t.id === tab).title)}</span><i class="ap-icon-arrow-right" aria-hidden="true"></i>
+        <button type="button" class="ap-icon-button transparent grey pb2-card__open" data-pb2-tab="${tab}"
+          aria-label="Open ${esc(tabTitle)}" data-tooltip="Open ${esc(tabTitle)}">
+          <i class="ap-icon-arrow-right" aria-hidden="true"></i>
         </button>
       </header>
       <div class="pb2-card__body">${body}</div>
@@ -1970,7 +1978,73 @@ const pb2Tags = (values) =>
   `<span class="pb2-tags">${values.map((v) => `<span class="ap-tag grey"><span>${esc(v)}</span></span>`).join("")}</span>`;
 
 function renderOverview(data) {
-  // Who it's for
+  // ── How it looks — the hero: a brand-guidelines spread, in the brand's own colours.
+  // One band per COLOUR: two roles on one hex (Primary = Accent) share their band.
+  const colors = [];
+  for (const c of visualColors(data)) {
+    const hex = String(c.hex || "").toUpperCase();
+    const same = colors.find((x) => x.hex.toUpperCase() === hex);
+    if (same) same.name = [same.name, c.name].filter(Boolean).join(" · ");
+    else colors.push({ ...c });
+  }
+  colors.splice(6);
+  const { headingFont, bodyFont } = brandFonts(data);
+  const moods = data.brandMoods || [];
+  const logos = brandLogoList(data).slice(0, 3);
+  const strip = renderImageStyleStrip(data, 3);
+  const marks = logos.length
+    ? `<div class="pb2-marks">${logos
+        .map(
+          (l, i) =>
+            `<span class="pb2-mark${i === 0 ? " pb2-mark--lead" : ""}${/revers|white|negative/i.test(l.label || "") ? " pb2-mark--dark" : ""}"><img src="${esc(l.url)}" alt="${esc(l.label || "Logo")}" /></span>`,
+        )
+        .join("")}</div>`
+    : `<span class="pb2-mark pb2-mark--lead pb2-mark--mono">${esc(initials(data.name))}</span>`;
+  const palette = colors.length
+    ? `<div class="pb2-strip" role="img" aria-label="Brand colours: ${esc(colors.map((c) => c.name || c.hex).join(", "))}">
+        ${colors.map((c) => `<span class="pb2-strip__band" style="background:${esc(c.hex)}"></span>`).join("")}
+      </div>
+      <ul class="pb2-swatches">${colors
+        .map(
+          (c) =>
+            `<li class="pb2-swatch"><span class="pb2-swatch__name">${esc(c.name || "Colour")}</span><span class="pb2-swatch__hex">${esc(
+              (c.hex || "").toUpperCase(),
+            )}</span></li>`,
+        )
+        .join("")}</ul>`
+    : pb2Empty("No colours captured yet.");
+  const type =
+    headingFont || bodyFont
+      ? `<div class="pb2-specimen">
+          <span class="pb2-specimen__glyphs" style="font-family:'${esc(headingFont || bodyFont)}', var(--sys-text-style-body-font-family);">Aa</span>
+          <dl class="pb2-specimen__roles">
+            <div><dt>Headings</dt><dd>${esc(headingFont || "—")}</dd></div>
+            <div><dt>Body</dt><dd>${esc(bodyFont || "—")}</dd></div>
+          </dl>
+        </div>`
+      : pb2Empty("No typography captured yet.");
+  const looks = `
+    <div class="pb2-looks">
+      <div class="pb2-looks__marks">${marks}</div>
+      <div class="pb2-looks__colour">
+        <h3 class="pb2-sub">Colour</h3>
+        ${palette}
+      </div>
+      <div class="pb2-looks__type">
+        <h3 class="pb2-sub">Type</h3>
+        ${type}
+      </div>
+    </div>
+    ${
+      strip || (moods.length && kitEnabled())
+        ? `<div class="pb2-looks__imagery">
+            ${strip ? `<div><h3 class="pb2-sub">Image styles</h3>${strip}</div>` : ""}
+            ${moods.length && kitEnabled() ? `<div><h3 class="pb2-sub">Moods</h3>${pb2Tags(moods)}</div>` : ""}
+          </div>`
+        : ""
+    }`;
+
+  // ── Who it's for
   const audience = (data.audience || [])[0];
   const goals = data.objective || [];
   const who = [
@@ -1978,89 +2052,67 @@ function renderOverview(data) {
       ? `<p class="pb2-lead">${esc(data.businessSummary)}</p>`
       : pb2Empty("No business summary yet."),
     audience
-      ? `<div class="pb2-kv"><span class="pb2-kv__k">Audience</span><span class="pb2-kv__v">${esc(audience)}</span></div>`
+      ? `<div class="pb2-persona"><span class="pb2-persona__icon" aria-hidden="true"><i class="ap-icon-user"></i></span><div><span class="pb2-sub">Speaking to</span><p class="pb2-persona__text">${esc(audience)}</p></div></div>`
       : "",
-    goals.length ? `<div class="pb2-kv"><span class="pb2-kv__k">Goals</span>${pb2Tags(goals)}</div>` : "",
+    goals.length ? `<div><h3 class="pb2-sub">Goals</h3>${pb2Tags(goals)}</div>` : "",
   ].join("");
 
-  // How it sounds
+  // ── How it sounds — the voice as three words, then the lines it opens on.
   const ve = voiceEntry(data);
-  const hooks = (ve.signatureHooks || []).filter(Boolean).slice(0, 2);
-  const headline = data.voiceProfile?.headline;
+  const hooks = (ve.signatureHooks || []).filter(Boolean).slice(0, 3);
+  const traits = String(data.voiceProfile?.headline || "")
+    .split(/\s*[·•|,]\s*/)
+    .filter(Boolean)
+    .slice(0, 4);
   const sounds = [
-    headline ? `<p class="pb2-voice">${esc(headline)}</p>` : "",
+    traits.length
+      ? `<p class="pb2-traits">${traits.map((t) => `<span class="pb2-trait">${esc(t.charAt(0).toUpperCase() + t.slice(1))}</span>`).join('<span class="pb2-trait__dot" aria-hidden="true"></span>')}</p>`
+      : "",
     hooks.length
-      ? `<div class="pb2-quotes">${hooks.map((h) => `<blockquote class="pb2-quote">${esc(h)}</blockquote>`).join("")}</div>`
-      : "",
-    !headline && !hooks.length ? pb2Empty("No voice captured yet.") : "",
-  ].join("");
-
-  // How it looks
-  const colors = visualColors(data).slice(0, 6);
-  const { headingFont, bodyFont } = brandFonts(data);
-  const moods = data.brandMoods || [];
-  const logo = data.brandLogo
-    ? `<span class="pb2-logo"><img src="${esc(data.brandLogo)}" alt="${esc(data.name || "Brand")} logo" /></span>`
-    : "";
-  const looks = [
-    logo || colors.length ? `<div class="pb2-looks">${logo}` : "",
-    colors.length
-      ? `<div class="pb2-palette">${colors
+      ? `<div><h3 class="pb2-sub">Opens with</h3><ul class="pb2-lines">${hooks
           .map(
-            (c) =>
-              `<span class="pb2-palette__chip" style="background:${esc(c.hex)}" title="${esc(`${c.name || "Colour"} ${c.hex}`)}"></span>`,
+            (h) => `<li class="pb2-line"><i class="ap-icon-quote" aria-hidden="true"></i><span>${esc(h)}</span></li>`,
           )
-          .join("")}</div>`
+          .join("")}</ul></div>`
       : "",
-    logo || colors.length ? `</div>` : "",
-    headingFont || bodyFont
-      ? `<div class="pb2-type"><span class="pb2-type__ag" style="font-family:'${esc(headingFont || bodyFont)}', var(--sys-text-style-body-font-family);">Aa</span><span class="pb2-type__names">${esc(
-          [headingFont, bodyFont]
-            .filter(Boolean)
-            .filter((f, i, a) => a.indexOf(f) === i)
-            .join(" · "),
-        )}</span></div>`
-      : "",
-    moods.length && kitEnabled()
-      ? `<div class="pb2-kv"><span class="pb2-kv__k">Moods</span>${pb2Tags(moods)}</div>`
-      : "",
-    !colors.length && !headingFont && !bodyFont ? pb2Empty("No brand identity captured yet.") : "",
+    !traits.length && !hooks.length ? pb2Empty("No voice captured yet.") : "",
   ].join("");
 
-  // Who it competes with
+  // ── Who it competes with
   const cmps = competitorList(data).filter((c) => !c.suggested);
   const pending = competitorList(data).length - cmps.length;
   const rivals = cmps.length
     ? `<ul class="pb2-rivals">${cmps
-        .slice(0, 6)
+        .slice(0, 8)
         .map(
           (c) =>
-            `<li class="pb2-rival"><span class="pb2-rival__logo">${renderCompetitorLogo(c, 32)}</span><span class="pb2-rival__name">${esc(c.name || competitorDomain(c))}</span></li>`,
+            `<li class="pb2-rival"><span class="pb2-rival__logo">${renderCompetitorLogo(c, 36)}</span><span class="pb2-rival__text"><span class="pb2-rival__name">${esc(
+              c.name || competitorDomain(c),
+            )}</span><span class="pb2-rival__domain">${esc(competitorDomain(c))}</span></span></li>`,
         )
-        .join("")}</ul>${cmps.length > 6 ? `<p class="pb2-more">and ${cmps.length - 6} more</p>` : ""}${
+        .join("")}</ul>${cmps.length > 8 ? `<p class="pb2-more">and ${cmps.length - 8} more</p>` : ""}${
         pending ? `<p class="pb2-more">${pending} suggested by Archie, waiting for your answer</p>` : ""
       }`
-    : pb2Empty(
-        pending
-          ? `No competitors yet — ${pending} suggested by Archie, waiting for your answer.`
-          : "No competitors yet — Archie can scan the market and suggest a few.",
-      );
+    : `<div class="pb2-void">
+        <span class="pb2-void__icon" aria-hidden="true"><i class="ap-icon-buildings"></i></span>
+        <div>
+          <p class="pb2-void__title">${pending ? `${pending} suggested by Archie` : "No competitors yet"}</p>
+          <p class="pb2-void__text">${
+            pending
+              ? "They're waiting for your answer — keep the ones that matter."
+              : "I can scan the market and suggest the brands this one is measured against."
+          }</p>
+        </div>
+      </div>`;
 
   return `
     <div class="pb2-overview">
-      ${overviewCard("goals", "Who it's for", who)}
-      ${overviewCard("voice", "How it sounds", sounds)}
-      ${overviewCard("brand", "How it looks", looks)}
-      ${overviewCard("competitors", "Who it competes with", rivals)}
+      ${overviewCard("brand", "How it looks", looks, { wide: true, index: 0 })}
+      ${overviewCard("goals", "Who it's for", who, { index: 1 })}
+      ${overviewCard("voice", "How it sounds", sounds, { index: 2 })}
+      ${overviewCard("competitors", "Who it competes with", rivals, { wide: true, index: 3 })}
     </div>
   `;
-}
-
-// Playbook 2.0: the Brand tab reads as two groups — what the brand IS (marks,
-// colours, type, personality) and what its images follow (moods, styles, rules).
-function renderBrandGroup(title) {
-  if (!v2On() || !kitEnabled()) return "";
-  return `<h3 class="pb2-group">${esc(title)}</h3>`;
 }
 
 function renderActivePanel(data) {

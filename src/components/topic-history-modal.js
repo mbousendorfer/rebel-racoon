@@ -22,10 +22,10 @@
 // trail says one thing in two places; only the placement differs, which is the
 // same split the article's identity and verbs already use.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1366";
-import { escapeHtml } from "../utils.js?v=1366";
-import { getTopicById, topicTitle } from "../topics-store.js?v=1366";
-import { renderTopicTrail } from "../topic-article.js?v=1366";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1369";
+import { escapeHtml } from "../utils.js?v=1369";
+import { getTopicById, topicTitle } from "../topics-store.js?v=1369";
+import { renderTopicTrail } from "../topic-article.js?v=1369";
 
 const MODAL_ID = "topic-history";
 
