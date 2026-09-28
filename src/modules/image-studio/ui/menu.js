@@ -4,15 +4,16 @@
 // menu({ trigger, items, align }) → fragment. installMenus(root) → off():
 // one open at a time, closes on outside click, Escape, and after an item click.
 
-import { html, raw } from "../lib/html.js?v=1337";
+import { html, raw } from "../lib/html.js?v=1339";
 
 /**
  * item: { action, label, icon?, description?, attrs?, danger? } | "divider"
  * trigger: { className, content, label } — `content` is a fragment inside <summary>.
  */
-export function menu({ trigger, items, align = "end", label = "Menu", wide = false }) {
+// `up` opens the menu above its trigger — for a menu in a footer.
+export function menu({ trigger, items, align = "end", label = "Menu", wide = false, up = false }) {
   return html`
-    <details class="imst-menu imst-menu--${align}" data-imst-menu>
+    <details class="imst-menu imst-menu--${align}${up ? " imst-menu--up" : ""}" data-imst-menu>
       <summary class="${trigger.className}" aria-label="${trigger.label || label}" aria-haspopup="menu">
         ${trigger.content}
       </summary>

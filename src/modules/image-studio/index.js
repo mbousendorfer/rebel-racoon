@@ -5,17 +5,17 @@
 // through state/playbook-brand.js only, the Playbooks — the brand IS the
 // Playbook. See docs/audits/image-studio-integration.md.
 
-import { navigate } from "../../router.js?v=1337";
-import { isFlagOn } from "../../feature-flags.js?v=1337";
-import { renderTopbar } from "../../components/topbar.js?v=1337";
-import { boot, setActiveBrand, startPlaybookCreation } from "./state/store.js?v=1337";
-import { delegate, disposer } from "./lib/delegate.js?v=1337";
-import { installMenus } from "./ui/menu.js?v=1337";
-import { closeAllDialogs } from "./ui/dialog.js?v=1337";
-import * as history from "./views/history.js?v=1337";
-import * as styles from "./views/styles.js?v=1337";
-import * as styleCreator from "./views/style-creator.js?v=1337";
-import * as editor from "./views/editor/index.js?v=1337";
+import { navigate } from "../../router.js?v=1339";
+import { isFlagOn } from "../../feature-flags.js?v=1339";
+import { renderTopbar } from "../../components/topbar.js?v=1339";
+import { boot, setActiveBrand, startPlaybookCreation } from "./state/store.js?v=1339";
+import { delegate, disposer } from "./lib/delegate.js?v=1339";
+import { installMenus } from "./ui/menu.js?v=1339";
+import { closeAllDialogs } from "./ui/dialog.js?v=1339";
+import * as history from "./views/history.js?v=1339";
+import * as styles from "./views/styles.js?v=1339";
+import * as styleCreator from "./views/style-creator.js?v=1339";
+import * as editor from "./views/editor/index.js?v=1339";
 
 export const FLAG = "sexySquirrel";
 
@@ -71,4 +71,4 @@ export const ROUTES = Object.freeze([
 
 // The one other door into the module: the draft's image studio (right panel),
 // behind the same flag. Called by src/components/right-panel.js.
-export { openDraftStudio } from "./ui/draft-studio.js?v=1337";
+export { openDraftStudio } from "./ui/draft-studio.js?v=1339";

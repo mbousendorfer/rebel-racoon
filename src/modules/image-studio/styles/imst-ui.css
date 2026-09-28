@@ -76,6 +76,11 @@
   left: 0;
 }
 
+.imst-menu--up .imst-menu__pop {
+  top: auto;
+  bottom: calc(100% + var(--ref-spacing-xxxs));
+}
+
 .imst-menu__pop img {
   width: var(--ref-spacing-md);
   height: var(--ref-spacing-md);

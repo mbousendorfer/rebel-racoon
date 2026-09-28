@@ -15,31 +15,32 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, "Refine" to iterate in place, earlier runs underneath
 
-import { html, toString } from "../lib/html.js?v=1337";
-import { delegate } from "../lib/delegate.js?v=1337";
-import { hashString } from "../lib/prng.js?v=1337";
-import { renderEmpty } from "../ui/empty.js?v=1337";
-import { preserveFocus } from "../ui/fields.js?v=1337";
-import { toast } from "../ui/toast.js?v=1337";
-import { hydrateAssets, logoUrl } from "../ui/asset.js?v=1337";
-import { styleThumb } from "../ui/style-thumb.js?v=1337";
-import { openDialog } from "../ui/dialog.js?v=1337";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1337";
-import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1337";
-import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1337";
-import { networkById } from "../config/networks.js?v=1337";
-import { copyService, imageGenerationService } from "../services/index.js?v=1337";
-import { unbranded } from "../state/playbook-brand.js?v=1337";
-import { resolveLayers } from "../render/layout.js?v=1337";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1337";
-import { getBrand, getCreation, getProducts, getStyle, getStylesForBrand, subscribe } from "../state/store.js?v=1337";
+import { html, toString } from "../lib/html.js?v=1339";
+import { delegate } from "../lib/delegate.js?v=1339";
+import { hashString } from "../lib/prng.js?v=1339";
+import { renderEmpty } from "../ui/empty.js?v=1339";
+import { preserveFocus } from "../ui/fields.js?v=1339";
+import { toast } from "../ui/toast.js?v=1339";
+import { hydrateAssets, logoUrl } from "../ui/asset.js?v=1339";
+import { styleThumb } from "../ui/style-thumb.js?v=1339";
+import { openDialog } from "../ui/dialog.js?v=1339";
+import { menu } from "../ui/menu.js?v=1339";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1339";
+import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1339";
+import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1339";
+import { networkById } from "../config/networks.js?v=1339";
+import { copyService, imageGenerationService } from "../services/index.js?v=1339";
+import { unbranded } from "../state/playbook-brand.js?v=1339";
+import { resolveLayers } from "../render/layout.js?v=1339";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1339";
+import { getBrand, getCreation, getProducts, getStyle, getStylesForBrand, subscribe } from "../state/store.js?v=1339";
 import {
   addBatch,
   deleteCreation,
   replaceVariation,
   startCreation,
   toggleFavorite,
-} from "../state/creation-actions.js?v=1337";
+} from "../state/creation-actions.js?v=1339";
 
 // The presets offered first when the brand has few styles of its own — one per
 // family, the ones that read best at thumbnail size.
@@ -53,6 +54,8 @@ const QUICK_PRESETS = [
   "preset-retro",
 ];
 
+const variationsLabel = (n) => (n === 1 ? "1 variation" : `${n} variations`);
+
 function defaultBrief(brand, network = null) {
   const own = getStylesForBrand(brand.id).find((s) => s.kind === "custom");
   const firstShape = shapesFor(network)[0];
@@ -64,6 +67,7 @@ function defaultBrief(brand, network = null) {
     formatIds: [firstShape?.formatId || "ig-post"],
     textMode: "layer",
     useBrand: true,
+    count: 4,
   };
 }
 
@@ -342,10 +346,23 @@ ${b.prompt}</textarea
           </section>
         </div>
         <footer class="imst-controls__foot">
-          <div class="imst-controls__sum">
-            <span class="ap-body-bold">4 variations</span>
-            <span class="ap-caption">${style.label} · ${shape.label} ${shape.ratio}</span>
-          </div>
+          ${menu({
+            align: "start",
+            up: true,
+            label: "How many variations",
+            trigger: {
+              className: "ap-button stroked grey",
+              label: `${variationsLabel(b.count)}. Change`,
+              content: html`<span>${variationsLabel(b.count)}</span
+                ><i class="ap-icon-chevron-down" aria-hidden="true"></i>`,
+            },
+            items: [1, 2, 3, 4].map((n) => ({
+              action: "count",
+              attrs: `data-imst-count="${n}"`,
+              label: variationsLabel(n),
+              selected: n === b.count,
+            })),
+          })}
           <button
             type="button"
             class="ap-button primary orange${running ? " loading" : ""}"
@@ -390,7 +407,8 @@ ${b.prompt}</textarea
             >A preview of
             ${style.label}${b.useBrand === false ? ", in neutral colours" : ` in ${brand.name}'s colours`}.</span
           >
-          Describe what you want and generate — you'll get four variations to pick from.
+          Describe what you want and generate — you'll get
+          ${b.count === 1 ? "one image" : `${b.count} variations to pick from`}.
         </p>
       </div>
     `;
@@ -406,12 +424,14 @@ ${b.prompt}</textarea
           html`<span class="imst-shimmer"></span
             ><span class="imst-stage2__status"
               ><span class="ap-loader size-30"></span
-              ><span class="ap-body-bold">Generating 4 variations in ${style.label}…</span></span
+              ><span class="ap-body-bold"
+                >Generating ${variationsLabel(state.brief.count).toLowerCase()} in ${style.label}…</span
+              ></span
             >`,
         )}
         <div class="imst-filmstrip">
           ${Array.from(
-            { length: 4 },
+            { length: state.brief.count > 1 ? state.brief.count : 0 },
             () =>
               html`<span
                 class="imst-filmstrip__item is-loading"
@@ -515,25 +535,32 @@ ${b.prompt}</textarea
               >`
             : ""}`,
         )}
-        <div class="imst-filmstrip" role="listbox" aria-label="${batch.label}" data-imst-strip>
-          ${strip.map(
-            (x, i) =>
-              html`<button
-                type="button"
-                class="imst-filmstrip__item"
-                role="option"
-                aria-selected="${x.id === v.id}"
-                data-imst-focus="${x.id}"
-                aria-label="Variation ${i + 1}"
-                style="aspect-ratio: ${format.width} / ${format.height}"
-              >
-                ${variationCanvas({ creation: c, variation: x, formatId: format.id, brand: lookOf(brand, c.brief) })}
-                ${(c.favoriteVariationIds || []).includes(x.id)
-                  ? html`<i class="ap-icon-heart_fill imst-filmstrip__fav" aria-label="In favourites"></i>`
-                  : ""}
-              </button>`,
-          )}
-        </div>
+        ${strip.length > 1
+          ? html` <div class="imst-filmstrip" role="listbox" aria-label="${batch.label}" data-imst-strip>
+              ${strip.map(
+                (x, i) =>
+                  html`<button
+                    type="button"
+                    class="imst-filmstrip__item"
+                    role="option"
+                    aria-selected="${x.id === v.id}"
+                    data-imst-focus="${x.id}"
+                    aria-label="Variation ${i + 1}"
+                    style="aspect-ratio: ${format.width} / ${format.height}"
+                  >
+                    ${variationCanvas({
+                      creation: c,
+                      variation: x,
+                      formatId: format.id,
+                      brand: lookOf(brand, c.brief),
+                    })}
+                    ${(c.favoriteVariationIds || []).includes(x.id)
+                      ? html`<i class="ap-icon-heart_fill imst-filmstrip__fav" aria-label="In favourites"></i>`
+                      : ""}
+                  </button>`,
+              )}
+            </div>`
+          : ""}
         <form class="imst-refine" data-imst-form="refine">
           <i class="ap-icon-sparkles imst-refine__icon" aria-hidden="true"></i>
           <input
@@ -644,6 +671,8 @@ ${b.prompt}</textarea
     format: formatById(brief.formatIds[0]),
     textMode: brief.textMode,
     text: { headline: brief.headline },
+    // The CURRENT choice, also for More like this / Refine on an earlier run.
+    count: state.brief.count || 4,
   });
 
   async function generate() {
@@ -664,7 +693,7 @@ ${b.prompt}</textarea
     paint();
     try {
       const variations = await imageGenerationService.generate(req, { signal: state.abort.signal });
-      addBatch(creation.id, variations, { label: "4 variations" });
+      addBatch(creation.id, variations, { label: variationsLabel(variations.length) });
       state.run = { status: "idle" };
     } catch (error) {
       if (error.name === "AbortError") return;
@@ -967,6 +996,10 @@ ${b.prompt}</textarea
       else if (a === "suggest") suggestFromPost();
       else if (a === "suggest-headline") suggestHeadline();
       else if (a === "all-styles") openStyleGallery();
+      else if (a === "count") {
+        state.brief.count = Number(el.dataset.imstCount) || 4;
+        paint();
+      }
     }),
     delegate(target, "click", "[data-imst-var]", (_e, el) => {
       const c = currentCreation();

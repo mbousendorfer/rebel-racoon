@@ -12,11 +12,11 @@
 // The mock returns SEEDS, not pixels: render/ draws them locally, on-style and
 // on-palette, so the same variation always looks the same.
 
-import { MOCK } from "../../config/mock.js?v=1337";
-import { createVariation } from "../../model/schema.js?v=1337";
-import { randomSeed } from "../../lib/prng.js?v=1337";
-import { wait } from "../../lib/delegate.js?v=1337";
-import { buildPrompt } from "../prompt.js?v=1337";
+import { MOCK } from "../../config/mock.js?v=1339";
+import { createVariation } from "../../model/schema.js?v=1339";
+import { randomSeed } from "../../lib/prng.js?v=1339";
+import { wait } from "../../lib/delegate.js?v=1339";
+import { buildPrompt } from "../prompt.js?v=1339";
 
 function delay(signal) {
   const [min, max] = MOCK.generation.delayMs;
@@ -44,14 +44,14 @@ function variation(seed, request, extra = {}) {
 export async function generate(request, { signal } = {}) {
   await delay(signal);
   maybeFail(request);
-  return Array.from({ length: MOCK.generation.variations }, () => variation(randomSeed(), request));
+  return Array.from({ length: request.count || MOCK.generation.variations }, () => variation(randomSeed(), request));
 }
 
 export async function similar(base, request, { signal } = {}) {
   await delay(signal);
   maybeFail(request);
   // Same background family and subject placement, small jitter: seeds near the base.
-  return Array.from({ length: MOCK.generation.variations }, (_, i) =>
+  return Array.from({ length: request.count || MOCK.generation.variations }, (_, i) =>
     variation(base.seed + (i + 1) * 7, request, { bgSeed: base.bgSeed + i + 1, subjectSeed: base.subjectSeed }),
   );
 }

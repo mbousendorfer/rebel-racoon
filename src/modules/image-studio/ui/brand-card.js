@@ -2,10 +2,10 @@
 // palette with roles, fonts, moods. Read-only here; the pen goes to the
 // Playbook page, where the brand is edited.
 
-import { html } from "../lib/html.js?v=1337";
-import { swatch } from "./swatch.js?v=1337";
-import { logoUrl } from "./asset.js?v=1337";
-import { canEditBrand, playbookPath } from "../state/store.js?v=1337";
+import { html } from "../lib/html.js?v=1339";
+import { swatch } from "./swatch.js?v=1339";
+import { logoUrl } from "./asset.js?v=1339";
+import { canEditBrand, playbookPath } from "../state/store.js?v=1339";
 
 const ROLE = { primary: "Primary", secondary: "Secondary", accent: "Accent", background: "Background", text: "Text" };
 
