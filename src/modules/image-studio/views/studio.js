@@ -15,26 +15,32 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, "Refine" to iterate in place, earlier runs underneath
 
-import { html, toString } from "../lib/html.js?v=1348";
-import { delegate } from "../lib/delegate.js?v=1348";
-import { hashString } from "../lib/prng.js?v=1348";
-import { renderEmpty } from "../ui/empty.js?v=1348";
-import { preserveFocus } from "../ui/fields.js?v=1348";
-import { toast } from "../ui/toast.js?v=1348";
-import { hydrateAssets, logoUrl } from "../ui/asset.js?v=1348";
-import { styleThumb } from "../ui/style-thumb.js?v=1348";
-import { openDialog } from "../ui/dialog.js?v=1348";
-import { menu } from "../ui/menu.js?v=1348";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1348";
-import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1348";
-import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1348";
-import { networkById } from "../config/networks.js?v=1348";
-import { copyService, imageGenerationService } from "../services/index.js?v=1348";
-import { unbranded } from "../state/playbook-brand.js?v=1348";
-import { resolveLayers } from "../render/layout.js?v=1348";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1348";
-import { getBrand, getCreation, getProducts, getStyle, getStylesForBrand, subscribe } from "../state/store.js?v=1348";
-import { addBatch, deleteCreation, replaceVariation, startCreation } from "../state/creation-actions.js?v=1348";
+import { html, toString } from "../lib/html.js?v=1350";
+import { delegate } from "../lib/delegate.js?v=1350";
+import { hashString } from "../lib/prng.js?v=1350";
+import { renderEmpty } from "../ui/empty.js?v=1350";
+import { preserveFocus } from "../ui/fields.js?v=1350";
+import { toast } from "../ui/toast.js?v=1350";
+import { hydrateAssets, logoUrl } from "../ui/asset.js?v=1350";
+import { styleThumb } from "../ui/style-thumb.js?v=1350";
+import { openDialog } from "../ui/dialog.js?v=1350";
+import { menu } from "../ui/menu.js?v=1350";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1350";
+import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1350";
+import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1350";
+import { networkById } from "../config/networks.js?v=1350";
+import { copyService, imageGenerationService } from "../services/index.js?v=1350";
+import { unbranded } from "../state/playbook-brand.js?v=1350";
+import { resolveLayers } from "../render/layout.js?v=1350";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1350";
+import { getBrand, getCreation, getProducts, getStyle, getStylesForBrand, subscribe } from "../state/store.js?v=1350";
+import {
+  addBatch,
+  appendVariations,
+  deleteCreation,
+  replaceVariation,
+  startCreation,
+} from "../state/creation-actions.js?v=1350";
 
 // The presets offered first when the brand has few styles of its own — one per
 // family, the ones that read best at thumbnail size.
@@ -453,9 +459,10 @@ ${b.prompt}</textarea
   const renderResults = (brand, c) => {
     const format = formatById(c.brief.formatIds[0]);
     const v = focused(c);
-    // Every image of this session in ONE strip, newest run first, a gap between
-    // runs — no "earlier" section and no batch jargon ("Like variation 2").
-    const runs = c.batches?.length ? c.batches : [latestBatch(c)];
+    // Every image of this session in ONE strip, oldest first, a gap between
+    // runs — no "earlier" section and no batch jargon ("Like variation 2") —
+    // and a "+" tile at the end that adds one more.
+    const runs = c.batches?.length ? [...c.batches].reverse() : [latestBatch(c)];
     const strip = runs.flatMap((bt) => batchVariations(c, bt).map((x, i) => ({ x, runStart: i === 0 })));
     const shown = new Set(strip.map((e) => e.x.id));
     c.variations.filter((x) => !shown.has(x.id)).forEach((x, i) => strip.push({ x, runStart: i === 0 }));
@@ -493,9 +500,6 @@ ${b.prompt}</textarea
             >
               <i class="ap-icon-download" aria-hidden="true"></i>
             </button>
-            <button type="button" class="ap-button stroked grey" data-imst-var="similar">
-              <i class="ap-icon-sparkles" aria-hidden="true"></i><span>More like this</span>
-            </button>
           </div>
         </header>
         ${stageFrame(
@@ -511,7 +515,7 @@ ${b.prompt}</textarea
               >`
             : ""}`,
         )}
-        ${strip.length > 1
+        ${strip.length
           ? html` <div class="imst-filmstrip" role="listbox" aria-label="Variations" data-imst-strip>
               ${strip.map(
                 ({ x, runStart }, i) =>
@@ -532,6 +536,25 @@ ${b.prompt}</textarea
                     })}
                   </button>`,
               )}
+              ${state.addingOne
+                ? html`<span
+                    class="imst-filmstrip__item imst-filmstrip__add is-loading"
+                    style="aspect-ratio: ${format.width} / ${format.height}"
+                    role="status"
+                    aria-label="Generating one more"
+                    ><span class="imst-shimmer"></span><span class="ap-loader size-16"></span
+                  ></span>`
+                : html`<button
+                    type="button"
+                    class="imst-filmstrip__item imst-filmstrip__add"
+                    data-imst-var="add-one"
+                    aria-label="Generate one more"
+                    data-tooltip="One more"
+                    style="aspect-ratio: ${format.width} / ${format.height}"
+                    ${state.run.status === "loading" ? "disabled" : ""}
+                  >
+                    <i class="ap-icon-plus" aria-hidden="true"></i>
+                  </button>`}
             </div>`
           : ""}
         <form class="imst-refine" data-imst-form="refine">
@@ -683,7 +706,27 @@ ${b.prompt}</textarea
     paint();
   }
 
-  /** More like this / Refine: a new batch close to the focused variation. */
+  /** The "+" tile: one more image from the same brief, into the latest run. */
+  async function addOne() {
+    const c = currentCreation();
+    if (!c || state.addingOne) return;
+    state.addingOne = true;
+    paint();
+    try {
+      const [v] = await imageGenerationService.generate(
+        { ...request(brandNow(), c.brief, c.styleSnapshot), count: 1 },
+        {},
+      );
+      appendVariations(c.id, [v]);
+      state.focusId = v.id;
+    } catch {
+      toast("That one didn't come through. Try again.", { variant: "error" });
+    }
+    state.addingOne = false;
+    paint();
+  }
+
+  /** Refine: a new batch close to the focused variation. */
   async function iterate(refinement = "") {
     const brand = brandNow();
     const c = currentCreation();
@@ -1022,7 +1065,7 @@ ${b.prompt}</textarea
       const v = focused(c);
       const a = el.dataset.imstVar;
       if (a === "regenerate") regenerate();
-      else if (a === "similar") iterate();
+      else if (a === "add-one") addOne();
       else if (a === "download") download();
       else if (a === "use") useInDraft();
     }),

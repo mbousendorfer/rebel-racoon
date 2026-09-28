@@ -2,11 +2,11 @@
 // as a creation straight away (that IS the history); opening a variation in the
 // editor gives it its layers.
 
-import { storageService as storage } from "../services/index.js?v=1348";
-import { createCreation, historyEntry } from "../model/schema.js?v=1348";
-import { formatById } from "../config/formats.js?v=1348";
-import { uid } from "../lib/id.js?v=1348";
-import { defaultLayers, recompose } from "../render/layout.js?v=1348";
+import { storageService as storage } from "../services/index.js?v=1350";
+import { createCreation, historyEntry } from "../model/schema.js?v=1350";
+import { formatById } from "../config/formats.js?v=1350";
+import { uid } from "../lib/id.js?v=1350";
+import { defaultLayers, recompose } from "../render/layout.js?v=1350";
 
 function get(id) {
   return storage.get("creations", id);
@@ -50,6 +50,17 @@ export function addBatch(creationId, variations, { label, parentVariationId = nu
       ...c.history,
       historyEntry(parentVariationId ? "similar" : "generated", `${variations.length} variations`),
     ],
+  });
+}
+
+/** One more image in the latest run — the filmstrip's "+" tile. */
+export function appendVariations(creationId, variations) {
+  const c = get(creationId);
+  const batchId = c.batches?.[0]?.id ?? null;
+  return save({
+    ...c,
+    variations: [...c.variations, ...variations.map((v) => ({ ...v, batchId }))],
+    history: [...c.history, historyEntry("generated", `${variations.length} more`)],
   });
 }
 

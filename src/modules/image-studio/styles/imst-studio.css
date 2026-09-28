@@ -611,7 +611,32 @@
   flex-shrink: 0;
 }
 
-/* A new run (More like this, Refine) starts after a wider gap. */
+/* The "+" tile: an empty frame at the end of the strip that adds one more.
+ * Solid, not dashed — a dashed box promises a drop. */
+.imst-filmstrip__item.imst-filmstrip__add {
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--ref-color-grey-20);
+  background: var(--ref-color-white);
+  color: var(--ref-color-grey-80);
+  font-size: var(--ref-font-size-lg);
+}
+
+.imst-filmstrip__item.imst-filmstrip__add:hover:not(:disabled) {
+  border-color: var(--ref-color-electric-blue-100);
+  color: var(--ref-color-electric-blue-100);
+}
+
+.imst-filmstrip__item.imst-filmstrip__add:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.imst-filmstrip__add.is-loading > .ap-loader {
+  position: relative;
+}
+
+/* A new run (Refine) starts after a wider gap. */
 .imst-filmstrip__item.is-run-start {
   margin-left: var(--ref-spacing-sm);
 }
