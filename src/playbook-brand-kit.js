@@ -9,9 +9,10 @@
 // the fiche's live data object, exactly like every other Brand row, and are
 // committed by the section's Save (snapshotEditable carries the fields).
 
-import { escapeHtml as esc } from "./utils.js?v=1350";
-import { isFlagOn } from "./feature-flags.js?v=1350";
-import { COLOR_ROLES, LOGO_VARIANTS } from "./contexts-store.js?v=1350";
+import { escapeHtml as esc } from "./utils.js?v=1354";
+import { isFlagOn } from "./feature-flags.js?v=1354";
+import { COLOR_ROLES, LOGO_VARIANTS, getContextById } from "./contexts-store.js?v=1354";
+import { handlePlaybookStylesClick, renderPlaybookStyles } from "./modules/image-studio/index.js?v=1354";
 
 export const KIT_FLAG = "sexySquirrel";
 
@@ -298,6 +299,20 @@ export function handleKitChange(event, data) {
     return true;
   }
   return false;
+}
+
+// The brand's own image styles — rendered and handled by the Image Generator
+// module, which owns them (its style creator edits them). Only a SAVED Playbook
+// has any: a Playbook still being created has no page to come back to.
+export function renderImageStyles(data, canEdit) {
+  if (!kitEnabled() || !data?.id || !getContextById(data.id)) return "";
+  return renderPlaybookStyles(data.id, { canEdit });
+}
+
+/** Always live, like Reference images: styles are managed outside the section's edit mode. */
+export function handleImageStylesClick(event, data, onChange) {
+  if (!kitEnabled() || !data?.id) return false;
+  return handlePlaybookStylesClick(event, data.id, { onChange });
 }
 
 /** Fields the fiche's snapshot must carry so Cancel restores them. */

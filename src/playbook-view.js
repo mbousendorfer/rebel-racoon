@@ -14,28 +14,30 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1350";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1354";
 import {
   kitEnabled,
   renderColorRole,
   colorRoleCaption,
   renderLogoVariants,
   renderVisualRules,
+  renderImageStyles,
+  handleImageStylesClick,
   handleKitClick,
   handleKitInput,
   handleKitChange,
   kitSnapshot,
-} from "./playbook-brand-kit.js?v=1350";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1350";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1350";
-import { isFlagOn } from "./feature-flags.js?v=1350";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1350";
+} from "./playbook-brand-kit.js?v=1354";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1354";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1354";
+import { isFlagOn } from "./feature-flags.js?v=1354";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1354";
 // The Default look row offers the SAME three catalogues the Image Studio renders, from
 // the one place they are declared — REF_MODES' own header makes the argument: the label,
 // the hint and the brief clause "drift the moment they live apart". No cycle: the engine
 // imports only clip-formats / image-studio-canvas / feature-flags, and its module body
 // builds consts, so importing it here costs nothing at load.
-import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1350";
+import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1354";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -544,6 +546,11 @@ function editActionButtons() {
 // Read-only mode. A Playbook shared with me is a fiche I can use, not one I can
 // change — so every affordance that WRITES has to disappear, not just refuse.
 // Default true: the onboarding recap and my own Playbooks never pass the flag.
+function imageStylesRow(data) {
+  const row = renderImageStyles(data, canEditView());
+  return row ? renderRow("Image styles", row) : "";
+}
+
 function canEditView() {
   return cfg?.canEdit !== false;
 }
@@ -1367,10 +1374,16 @@ function renderBrandPanel(data, edit) {
       // modal + remove + add) regardless of the Brand section's edit state —
       // but not when the fiche itself is read-only.
       renderRow("Reference images", renderRefImages(data, canEditView())),
+      // Image styles (flag sexySquirrel): the brand's own, always live like the
+      // references above. They replace "Default look", whose only reader — the
+      // old draft Image Studio — the flag swaps for the Image Generator's studio.
+      kitEnabled() ? imageStylesRow(data) : "",
       // Last: Logo/colours/type/personality are the MATERIALS, Reference images the
       // EXAMPLES, and this is the instruction on how to use all of them. An
       // instruction before its materials is a control without a subject.
-      renderRow("Default look", renderFieldHint(FIELD_HINTS.imageDefaults) + renderDefaultLook(data, true)),
+      kitEnabled()
+        ? ""
+        : renderRow("Default look", renderFieldHint(FIELD_HINTS.imageDefaults) + renderDefaultLook(data, true)),
       kitEnabled() ? renderRow("Visual rules", renderVisualRules(data, true)) : "",
     ].join("");
   } else {
@@ -1382,7 +1395,8 @@ function renderBrandPanel(data, edit) {
       renderRow("Personality", renderText(data.brandPersonality)),
       kitEnabled() ? renderRow("Moods", renderChips(data.brandMoods || [])) : "",
       renderRow("Reference images", renderRefImages(data, false)),
-      renderRow("Default look", renderDefaultLook(data, false)),
+      kitEnabled() ? imageStylesRow(data) : "",
+      kitEnabled() ? "" : renderRow("Default look", renderDefaultLook(data, false)),
       kitEnabled() ? renderRow("Visual rules", renderVisualRules(data, false)) : "",
     ].join("");
   }
@@ -2200,6 +2214,9 @@ function onClick(event) {
 
   const data = cfg.getData();
   if (!data) return;
+
+  // Image styles (flag sexySquirrel) — live in and out of edit mode.
+  if (handleImageStylesClick(event, data, repaintPreservingScroll)) return;
 
   // Brand kit rows (flag sexySquirrel) — only live while a section is edited.
   if (editScope && handleKitClick(event, data)) {

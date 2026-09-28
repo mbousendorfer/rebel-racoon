@@ -3,25 +3,28 @@
 // view every generator surface uses, resolves which Playbook is active, and
 // knows the two doors back into Archie (the Playbook page, Playbook creation).
 //
-// The generator writes a Playbook in ONE case only: the editor's explicit "Save
-// to the Playbook" on an adjustment (a colour or a font used off-brand). That is
-// a deliberate edit, which is the only way a Playbook may change (CONCEPTS §1);
-// everything else — the kit itself — is edited on the Playbook page
-// (/playbook/:id, src/playbook-brand-kit.js). Sub-brands don't exist: a variant
+// The generator writes a Playbook in ONE case only: the style creator
+// (/playbook/:id/styles/*), opened from the fiche's Brand section, saving the
+// brand's own image styles (`imageStyles`). That is a deliberate edit, the only
+// way a Playbook may change (CONCEPTS §1); the rest of the kit is edited on the
+// Playbook page itself (src/playbook-brand-kit.js). Sub-brands don't exist: a variant
 // is a duplicated Playbook (docs/reference/CONCEPTS.md §1).
 
-import { getContextById, subscribe as subscribeContexts, updateContext } from "../../../contexts-store.js?v=1350";
-import { canEdit, usableContexts } from "../../../playbook-access.js?v=1350";
+import {
+  getContextById,
+  getContexts,
+  subscribe as subscribeContexts,
+  updateContext,
+} from "../../../contexts-store.js?v=1354";
+import { createStyle } from "../model/schema.js?v=1354";
+import { canEdit, usableContexts } from "../../../playbook-access.js?v=1354";
 import {
   getActivePlaybookId,
   isWorkspaceMode,
   playbookForNewWork,
-  setActivePlaybook,
   subscribe as subscribeActive,
-} from "../../../active-playbook.js?v=1350";
-import { setHandoff } from "../../../handoff.js?v=1350";
-import { navigate } from "../../../router.js?v=1350";
-import { storageService as storage } from "../services/index.js?v=1350";
+} from "../../../active-playbook.js?v=1354";
+import { storageService as storage } from "../services/index.js?v=1354";
 
 // Which copy archetype the mocked copyService uses — guessed from the Playbook's words.
 function sectorKeyOf(ctx) {
@@ -84,10 +87,6 @@ export function toBrand(ctx) {
   };
 }
 
-export function getBrands() {
-  return usableContexts().map(toBrand);
-}
-
 export function getBrand(id) {
   return toBrand(getContextById(id));
 }
@@ -110,76 +109,47 @@ export function getActiveBrandId() {
   return usable.has(fallback) ? fallback : usableContexts()[0]?.id || null;
 }
 
-export function getActiveBrand() {
-  const id = getActiveBrandId();
-  return id ? getBrand(id) : null;
-}
-
-export function setActiveBrand(id) {
-  if (isWorkspaceMode()) setActivePlaybook(id);
-  else storage.setMeta({ activePlaybookId: id });
-}
-
-/** True when the brand picker is the generator's own (no rail switcher to defer to). */
-export function hasOwnBrandPicker() {
-  return !isWorkspaceMode();
-}
-
 export function canEditBrand(id) {
   const ctx = getContextById(id);
   return !!ctx && canEdit(ctx);
 }
 
-export function playbookPath(id) {
-  return `/playbook/${encodeURIComponent(id)}`;
+// ── The brand's own image styles — a field of the Playbook (imageStyles) ─────
+// The style creator is the only writer, and a deliberate edit, like the rest
+// of the fiche. The generator turns each into a full style (createStyle).
+
+/** The Playbook's own styles, as the generator uses them. */
+export function getPlaybookStyles(id) {
+  const ctx = getContextById(id);
+  return (ctx?.imageStyles || []).map((s) => createStyle({ ...s, brandId: id }));
 }
 
-/** Opens Archie's Playbook creation (URL · files · by hand) and comes back here. */
-export function startPlaybookCreation(returnTo = "/image-generator/history") {
-  // Remember what existed, so the Playbook created in between is adopted on return.
-  storage.setMeta({ pendingCreationFrom: usableContexts().map((c) => c.id) });
-  try {
-    window.sessionStorage.setItem("welcomeAltIntegrated", "1");
-    window.sessionStorage.setItem("welcomeAltReturnTo", returnTo);
-  } catch {
-    /* ignore */
+/** A custom style by id, whichever Playbook holds it (a creation remembers only the id). */
+export function findPlaybookStyle(styleId) {
+  for (const ctx of getContexts()) {
+    const hit = (ctx.imageStyles || []).find((s) => s.id === styleId);
+    if (hit) return createStyle({ ...hit, brandId: ctx.id });
   }
-  setHandoff("pendingStartContextBuilder", { flow: "alt", prefilledUrl: "", returnTo });
-  navigate(`/session/welcome-alt-${Date.now().toString(36)}`);
+  return null;
 }
 
-/**
- * Coming back from Playbook creation: the Playbook that didn't exist before
- * becomes the active brand — that's what the user created it for. Cancelled
- * creation (nothing new) just clears the marker.
- */
-export function adoptCreatedPlaybook() {
-  const before = storage.getMeta().pendingCreationFrom;
-  if (!Array.isArray(before)) return;
-  const created = usableContexts().find((c) => !before.includes(c.id));
-  storage.setMeta({ pendingCreationFrom: null });
-  if (created) setActiveBrand(created.id);
+/** Adds or replaces one style on the Playbook. */
+export function savePlaybookStyle(id, style) {
+  const ctx = getContextById(id);
+  if (!ctx || !canEdit(ctx)) return null;
+  const { brandId: _b, ...stored } = style;
+  const list = ctx.imageStyles || [];
+  const next = list.some((s) => s.id === style.id)
+    ? list.map((s) => (s.id === style.id ? stored : s))
+    : [...list, stored];
+  updateContext(id, { imageStyles: next, updatedAt: "just now" });
+  return createStyle({ ...stored, brandId: id });
 }
 
-/** Adds a colour to the Playbook's palette (editor → "Save to the Playbook"). */
-export function saveColorToPlaybook(id, hex, name = "Custom") {
+export function deletePlaybookStyle(id, styleId) {
   const ctx = getContextById(id);
   if (!ctx || !canEdit(ctx)) return false;
-  if ((ctx.brandColors || []).some((c) => String(c.hex).toUpperCase() === hex.toUpperCase())) return true;
-  updateContext(id, {
-    brandColors: [...(ctx.brandColors || []), { name, hex: hex.toUpperCase(), role: "" }],
-    updatedAt: "just now",
-  });
-  return true;
-}
-
-/** Sets the Playbook's heading or body font (editor → "Save to the Playbook"). */
-export function saveFontToPlaybook(id, role, family) {
-  const ctx = getContextById(id);
-  if (!ctx || !canEdit(ctx)) return false;
-  const t = { headingFont: "", bodyFont: "", ...(ctx.brandTypography || {}) };
-  t[role === "body" ? "bodyFont" : "headingFont"] = family;
-  updateContext(id, { brandTypography: t, updatedAt: "just now" });
+  updateContext(id, { imageStyles: (ctx.imageStyles || []).filter((s) => s.id !== styleId), updatedAt: "just now" });
   return true;
 }
 

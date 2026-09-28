@@ -136,10 +136,6 @@
   color: var(--ref-color-grey-80);
 }
 
-.imst-ctl-brand .imst-picker__name {
-  display: none;
-}
-
 .imst-dots {
   display: inline-flex;
   flex-shrink: 0;

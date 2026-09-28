@@ -218,6 +218,23 @@ export const contexts = [
     imageDefaults: { imageType: "visual-hook", style: "bold-editorial", refMode: "layout" },
     // Brand kit (Image Generator, flag sexySquirrel) — see contexts-store#normalizeBrandKit.
     brandMoods: ["confident", "precise", "high-contrast", "product-first"],
+    // The brand's own image styles (Image Generator) — identity, see contexts-store#normalizeImageStyles.
+    imageStyles: [
+      {
+        id: "st_demo_acme_product",
+        label: "Acme product-first",
+        description: "Glossy product moments on a strict grid.",
+        supportsEmbeddedText: true,
+        custom: {
+          sources: [
+            { type: "preset", ref: "preset-glossy", label: "Glossy product", weight: 0.6 },
+            { type: "preset", ref: "preset-swiss", label: "Swiss minimal", weight: 0.4 },
+          ],
+          fidelity: "composition",
+          stylePrompt: "Always a plain navy or white field, one product moment, lots of air.",
+        },
+      },
+    ],
     voiceAvoid: ["synergy", "leverage", "10x", "game-changer", "excited to announce"],
     brandRules: {
       visualDos: ["One product moment per visual", "Dark navy or white as the field", "Orange only as the accent"],
@@ -690,6 +707,22 @@ export const contexts = [
     imageDefaults: { imageType: "visual-hook", style: "photoreal", refMode: "style" },
     // Brand kit (Image Generator, flag sexySquirrel) — see contexts-store#normalizeBrandKit.
     brandMoods: ["warm", "playful", "outdoors", "daylight"],
+    imageStyles: [
+      {
+        id: "st_demo_pawtrack_daylight",
+        label: "PawTrack daylight",
+        description: "Real dogs outside, soft daylight, a violet accent.",
+        supportsEmbeddedText: false,
+        custom: {
+          sources: [
+            { type: "preset", ref: "preset-lifestyle", label: "Lifestyle", weight: 0.7 },
+            { type: "preset", ref: "preset-flat", label: "Flat", weight: 0.3 },
+          ],
+          fidelity: "essential",
+          stylePrompt: "Outdoors, morning light, the dog is always the hero.",
+        },
+      },
+    ],
     voiceAvoid: ["fur baby", "pawsome", "cheap"],
     brandRules: {
       visualDos: ["Real dogs, real owners", "Daylight, outside", "Violet as the accent, never the field"],

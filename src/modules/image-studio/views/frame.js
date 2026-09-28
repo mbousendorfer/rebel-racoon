@@ -1,38 +1,7 @@
-// Image Generator — the page frame every section renders inside: the section
-// tabs (History · Styles) and the body. Deep pages (the style creator, the
-// editor) swap the tabs for a back link to their section.
+// Image Generator — the page frame of the module's one page, the style creator
+// (the topbar carries its way back to the Playbook).
 
-import { html } from "../lib/html.js?v=1350";
-
-export const SECTIONS = Object.freeze([
-  // No Generate section: an image is generated FROM A DRAFT (the draft's
-  // studio). No Brands section: the brand is the Playbook, edited on its page.
-  { id: "history", path: "/image-generator/history", icon: "ap-icon-history", label: "History" },
-  { id: "styles", path: "/image-generator/styles", icon: "ap-icon-image", label: "Styles" },
-]);
-
-function renderTabs(active) {
-  return html`
-    <div class="ap-tabs">
-      <div class="ap-tabs-nav" role="tablist" aria-label="Image Generator sections">
-        ${SECTIONS.map(
-          (s) => html`
-            <button
-              type="button"
-              class="ap-tabs-tab${s.id === active ? " active" : ""}"
-              role="tab"
-              aria-selected="${s.id === active ? "true" : "false"}"
-              data-imst-nav="${s.path}"
-            >
-              <i class="${s.icon}" aria-hidden="true"></i>
-              <span>${s.label}</span>
-            </button>
-          `,
-        )}
-      </div>
-    </div>
-  `;
-}
+import { html } from "../lib/html.js?v=1354";
 
 /**
  * @param {{section?:string, back?:{path:string,label:string}, aside?:object, body:object, fill?:boolean}} opts
@@ -44,14 +13,16 @@ export function renderFrame({ section, back, aside, body, fill = false }) {
     ? html`<button type="button" class="ap-link imst-back" data-imst-nav="${back.path}">
         <i class="ap-icon-arrow-left" aria-hidden="true"></i><span>${back.label}</span>
       </button>`
-    : renderTabs(section);
+    : "";
   return html`
     <section class="imst${fill ? " imst--fill" : ""}" data-imst-root>
       <div class="imst-page">
-        <div class="imst-bar${back ? " imst-bar--back" : ""}">
-          <div class="imst-bar__main">${bar}</div>
-          ${aside ? html`<div class="imst-bar__aside">${aside}</div>` : ""}
-        </div>
+        ${bar || aside
+          ? html`<div class="imst-bar${back ? " imst-bar--back" : ""}">
+              <div class="imst-bar__main">${bar}</div>
+              ${aside ? html`<div class="imst-bar__aside">${aside}</div>` : ""}
+            </div>`
+          : ""}
         <div class="imst-body">${body}</div>
       </div>
     </section>

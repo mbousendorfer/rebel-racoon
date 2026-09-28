@@ -22,17 +22,17 @@
 // chooses "Save as global". updateContext is used by the section-edit flow
 // when scope is "Update everywhere".
 
-import { contexts as seed, sharedContexts } from "./mocks.js?v=1350";
-import { isNewUser } from "./user-mode.js?v=1350";
-import { CURRENT_USER } from "./org.js?v=1350";
-import { isFlagOn } from "./feature-flags.js?v=1350";
-import { createNotifier } from "./store-utils.js?v=1350";
+import { contexts as seed, sharedContexts } from "./mocks.js?v=1354";
+import { isNewUser } from "./user-mode.js?v=1354";
+import { CURRENT_USER } from "./org.js?v=1354";
+import { isFlagOn } from "./feature-flags.js?v=1354";
+import { createNotifier } from "./store-utils.js?v=1354";
 import {
   normalizeLanguages,
   mirrorPrimaryToTopLevel,
   syncTopLevelToPrimary,
   cloneVoiceByLanguage,
-} from "./languages.js?v=1350";
+} from "./languages.js?v=1354";
 
 // Lives up here, away from normalizeBrandLogos where it belongs, because the
 // seed below calls that normalizer at module-init time — a `let` declared beside
@@ -145,6 +145,10 @@ function normalizeBrandLogos(ctx) {
 //   voiceAvoid            words and phrasings the brand never uses
 //   brandRules            visual do / don't, the logo's minimum size and clear
 //                         space, no distortion, and colour pairs that must never meet
+//   imageStyles           the brand's own image styles — a blend of reference images
+//                         and presets, a fidelity, a style prompt. What the brand's
+//                         images LOOK like, so it is identity (CONCEPTS §1); the
+//                         generator reads them and its style creator edits them.
 //
 // Variant and role are DERIVED from the free label when missing (seeds, older
 // payloads), so every existing Playbook arrives with a sensible guess rather than
@@ -190,12 +194,25 @@ function normalizeBrandRules(rules) {
   };
 }
 
+// A style keeps the shape the generator gives it (render/visual.js reads
+// `custom.sources`); the store only guarantees an id, a name and the sources list.
+function normalizeImageStyles(list) {
+  return (Array.isArray(list) ? list : [])
+    .filter((s) => s && typeof s === "object" && s.id && String(s.label || "").trim())
+    .map((s) => ({
+      ...s,
+      kind: "custom",
+      custom: { fidelity: "essential", stylePrompt: "", ...(s.custom || {}), sources: [...(s.custom?.sources || [])] },
+    }));
+}
+
 function normalizeBrandKit(ctx) {
   return {
     brandColors: normalizeBrandColors(ctx.brandColors),
     brandMoods: strings(ctx.brandMoods),
     voiceAvoid: strings(ctx.voiceAvoid),
     brandRules: normalizeBrandRules(ctx.brandRules),
+    imageStyles: normalizeImageStyles(ctx.imageStyles),
   };
 }
 
@@ -485,6 +502,7 @@ export function updateContext(id, patch) {
   if (patch.brandMoods !== undefined) c.brandMoods = strings(patch.brandMoods);
   if (patch.voiceAvoid !== undefined) c.voiceAvoid = strings(patch.voiceAvoid);
   if (patch.brandRules !== undefined) c.brandRules = normalizeBrandRules(patch.brandRules);
+  if (patch.imageStyles !== undefined) c.imageStyles = normalizeImageStyles(patch.imageStyles);
   // Re-normalised rather than assigned, so a partial patch still lands three keys.
   if (patch.imageDefaults !== undefined) Object.assign(c, normalizeImageDefaults(patch));
   // The set and its default are one fact, so they re-normalize together even
@@ -585,6 +603,11 @@ export function duplicateContext(id) {
     brandMoods: (src.brandMoods || []).slice(),
     voiceAvoid: (src.voiceAvoid || []).slice(),
     brandRules: structuredClone(src.brandRules || {}),
+    // A copy's styles are its own: new ids, so editing one never edits the other's.
+    imageStyles: (src.imageStyles || []).map((st) => ({
+      ...structuredClone(st),
+      id: `${st.id}-${Math.random().toString(36).slice(2, 7)}`,
+    })),
     brandLogos: (src.brandLogos || []).map((l) => ({ ...l })),
     brandLogo: src.brandLogo || "",
     referenceImages: (src.referenceImages || []).map((i) => ({

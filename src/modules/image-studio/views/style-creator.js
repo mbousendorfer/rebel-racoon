@@ -1,31 +1,33 @@
-// Image Generator — the custom style creator (/image-generator/styles/new, /:id).
+// Image Generator — the brand's style creator, opened from the Playbook's Brand
+// section (/playbook/:id/styles/new, /playbook/:id/styles/:styleId). The style is
+// saved ON that Playbook (imageStyles); the topbar's back returns to the fiche.
 //
 // Sources: up to 10 reference images and/or up to 5 presets, each with a weight.
 // Fidelity: "Essential" (colours, textures, strokes, mood) or "Style &
 // composition" (+ framing, angle, layout). An optional style prompt. A test run
 // on three neutral subjects before saving. Saved FOR the active Playbook.
 
-import { html, toString } from "../lib/html.js?v=1350";
-import { delegate } from "../lib/delegate.js?v=1350";
-import { hashString, randomSeed } from "../lib/prng.js?v=1350";
-import { renderFrame } from "./frame.js?v=1350";
-import { renderEmpty } from "../ui/empty.js?v=1350";
-import { field, preserveFocus, slider, syncSlider, textArea, textInput } from "../ui/fields.js?v=1350";
-import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1350";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1350";
-import { toast } from "../ui/toast.js?v=1350";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1350";
+import { html, toString } from "../lib/html.js?v=1354";
+import { delegate } from "../lib/delegate.js?v=1354";
+import { hashString, randomSeed } from "../lib/prng.js?v=1354";
+import { renderFrame } from "./frame.js?v=1354";
+import { renderEmpty } from "../ui/empty.js?v=1354";
+import { field, preserveFocus, slider, syncSlider, textArea, textInput } from "../ui/fields.js?v=1354";
+import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1354";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1354";
+import { toast } from "../ui/toast.js?v=1354";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=1354";
 import {
   CUSTOM_STYLE_LIMITS,
   STYLE_FAMILIES,
   STYLE_PRESETS,
   STYLE_TEST_SUBJECTS,
   presetById,
-} from "../config/style-presets.js?v=1350";
-import { createStyle } from "../model/schema.js?v=1350";
-import { imageGenerationService } from "../services/index.js?v=1350";
-import { getActiveBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1350";
-import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1350";
+} from "../config/style-presets.js?v=1354";
+import { createStyle } from "../model/schema.js?v=1354";
+import { imageGenerationService } from "../services/index.js?v=1354";
+import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1354";
+import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1354";
 
 const FIDELITY = [
   { id: "essential", title: "Essential", body: "Colours, textures, strokes and mood." },
@@ -62,9 +64,10 @@ function share(draft, source) {
 }
 
 export function mount(target, params, ctx) {
-  const editing = params.id ? getStyle(params.id) : null;
-  // A style belongs to one Playbook: edit it in that brand's colours.
-  const brand = editing ? getBrand(editing.brandId) : getActiveBrand();
+  // The Playbook is in the URL: a style belongs to one, and is edited in its colours.
+  const found = params.styleId ? getStyle(params.styleId) : null;
+  const editing = found && found.brandId === params.id ? found : null;
+  const brand = canEditBrand(params.id) ? getBrand(params.id) : null;
   const fromPreset = new URLSearchParams(window.location.hash.split("?")[1] || "").get("from");
   const state = {
     draft: draftFrom(editing, brand?.id, fromPreset),
@@ -75,7 +78,7 @@ export function mount(target, params, ctx) {
     abort: null,
   };
 
-  const back = { path: "/image-generator/styles", label: "All styles" };
+  const fiche = `/playbook/${encodeURIComponent(params.id)}`;
 
   // The style as it would be saved — what the preview renders with.
   const previewStyle = () =>
@@ -233,11 +236,10 @@ export function mount(target, params, ctx) {
     if (!brand) {
       target.innerHTML = toString(
         renderFrame({
-          back,
           body: renderEmpty({
             icon: "ap-icon-image",
-            title: "Start with a Playbook",
-            body: "A style is saved for a brand, and your brand lives in a Playbook.",
+            title: "You can't edit this Playbook's styles",
+            body: "Styles are part of a Playbook's brand, and only its owner edits them.",
           }),
         }),
       );
@@ -249,11 +251,12 @@ export function mount(target, params, ctx) {
     const presets = d.sources.map((s, i) => [s, i]).filter(([s]) => s.type === "preset");
     target.innerHTML = toString(
       renderFrame({
-        back,
         body: html`
           <header class="imst-creator__head">
             <h1 class="ap-h2">${editing ? `Edit ${editing.label}` : "New style"}</h1>
-            <p class="ap-body">Saved for ${brand.playbookName}. It will come first whenever you pick a style for it.</p>
+            <p class="ap-body">
+              Part of ${brand.playbookName}'s brand. It comes first whenever an image is made for this Playbook.
+            </p>
           </header>
           <div class="imst-creator">
             <div class="imst-creator__form">
@@ -353,7 +356,7 @@ export function mount(target, params, ctx) {
               </div>`
             : ""}
           <div class="imst-creator__footer">
-            <button type="button" class="ap-button stroked grey" data-imst-nav="/image-generator/styles">Cancel</button>
+            <button type="button" class="ap-button stroked grey" data-imst-nav="${fiche}">Cancel</button>
             <button type="button" class="ap-button primary blue" data-imst-action="save">
               ${editing ? "Save changes" : "Save style"}
             </button>
@@ -467,8 +470,8 @@ export function mount(target, params, ctx) {
           return;
         }
         const saved = saveStyle(state.draft);
-        toast(editing ? `${saved.label} updated.` : `${saved.label} saved for ${brand.playbookName}.`);
-        ctx.navigate("/image-generator/styles");
+        toast(editing ? `${saved.label} updated.` : `${saved.label} added to ${brand.playbookName}.`);
+        ctx.navigate(fiche);
       }
     }),
   ];

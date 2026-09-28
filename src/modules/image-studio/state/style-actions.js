@@ -1,11 +1,12 @@
 // Image Generator — every write a custom style undergoes. A custom style is the
-// generator's, saved FOR a Playbook (brandId) and listed first in its picker.
+// BRAND's: it lives on the Playbook and is listed first in the studio's picker.
 
-import { storageService as storage } from "../services/index.js?v=1350";
-import { createAsset, createStyle } from "../model/schema.js?v=1350";
-import { presetById, CUSTOM_STYLE_LIMITS } from "../config/style-presets.js?v=1350";
-import { sampleColors } from "../render/sample-colors.js?v=1350";
-import { uid } from "../lib/id.js?v=1350";
+import { storageService as storage } from "../services/index.js?v=1354";
+import { createAsset, createStyle } from "../model/schema.js?v=1354";
+import { presetById, CUSTOM_STYLE_LIMITS } from "../config/style-presets.js?v=1354";
+import { sampleColors } from "../render/sample-colors.js?v=1354";
+import { uid } from "../lib/id.js?v=1354";
+import { deletePlaybookStyle, findPlaybookStyle, savePlaybookStyle } from "./playbook-brand.js?v=1354";
 
 /** A custom style can write text into the image when its heaviest preset can. */
 export function deriveEmbeddedText(sources) {
@@ -24,8 +25,10 @@ export function validateStyleDraft(draft) {
   return errors;
 }
 
+// A custom style is the BRAND's — a field of its Playbook (imageStyles), written
+// through the adapter. Reference images stay in the module's asset store (pixels).
 export function saveStyle(draft) {
-  const base = draft.id ? storage.get("styles", draft.id) : null;
+  const base = draft.id ? findPlaybookStyle(draft.id) : null;
   const style = createStyle({
     ...(base || {}),
     id: draft.id || uid("st"),
@@ -39,14 +42,15 @@ export function saveStyle(draft) {
       stylePrompt: draft.stylePrompt.trim(),
     },
     createdAt: base?.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   });
-  return storage.put("styles", style);
+  return savePlaybookStyle(draft.brandId, style);
 }
 
-export function duplicateStyle(id) {
-  const src = storage.get("styles", id);
+export function duplicateStyle(brandId, id) {
+  const src = findPlaybookStyle(id);
   if (!src) return null;
-  return storage.put("styles", {
+  return savePlaybookStyle(brandId, {
     ...structuredClone(src),
     id: uid("st"),
     label: `${src.label} (copy)`,
@@ -54,8 +58,8 @@ export function duplicateStyle(id) {
   });
 }
 
-export function deleteStyle(id) {
-  storage.remove("styles", id);
+export function deleteStyle(brandId, id) {
+  return deletePlaybookStyle(brandId, id);
 }
 
 /** Stores a reference image for a Playbook, with its dominant colours sampled. */

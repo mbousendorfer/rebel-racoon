@@ -305,3 +305,13 @@ Calculé commit par commit sur mes commits (une autre session pousse aussi sur `
 ## 11. La génération ne se fait plus que depuis un draft (2026-09-28)
 
 À la demande : l'onglet Generate et le studio pleine page sont supprimés, `/image-generator` redirige vers History, le Catalog (produits + Product shoot) est retiré, « Use this style » aussi. `views/studio.js` n'a plus qu'un mode (le draft) ; `views/hub.js`, `views/catalog.js`, `state/product-actions.js` et `services/mock/product.mock.js` sont supprimés. Aucun fichier hors module touché, hormis les docs.
+
+## 12. Les styles passent sur le Playbook ; plus de section Image Generator (2026-09-28)
+
+À la demande (« déplace toute cette gestion / création de styles dans les playbooks, au niveau de la brand »), avec les réponses : stockage **sur le Playbook**, créateur **en page ouverte depuis la fiche**, presets **consultables depuis la fiche**, section Image Generator **supprimée**.
+
+- **Données** : `imageStyles` sur le Context (`contexts-store.js` — normalisé, dupliqué avec de nouveaux ids), seedé sur Acme et PawTrack (`mocks/playbooks.js`). Le module les lit et les écrit par l'adaptateur (`getPlaybookStyles` / `findPlaybookStyle` / `savePlaybookStyle` / `deletePlaybookStyle`) ; les pixels des images de référence restent dans son stockage.
+- **Fiche** : ligne **Image styles** de la section Brand (`playbook-brand-kit.js` → `renderPlaybookStyles` / `handlePlaybookStylesClick` du module ; `playbook-view.js` l'insère et relaie le clic). Elle remplace Default look sous le flag.
+- **Créateur** : routes du module `/playbook/:id/styles/new` et `/:styleId` ; `topbar.js` leur donne « Back to <Playbook> ».
+- **Supprimé** : la section (routes `/image-generator/*`, ligne de nav dans `sidebar.js`, titre dans `topbar.js`), History, l'éditeur (calques, formats, Post, Checks), la page Styles, le seed de démo, `editService`, et leurs feuilles (`imst-editor.css`, `imst-p2.css`, retirées d'`index.html`).
+- **Hors module touchés** : `contexts-store.js`, `mocks/playbooks.js`, `playbook-brand-kit.js`, `playbook-view.js`, `components/topbar.js`, `components/sidebar.js`, `index.html`, docs.

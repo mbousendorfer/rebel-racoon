@@ -1,31 +1,13 @@
-// Image Generator — the module's app state. Its own objects (styles, products,
-// creations, assets) come from storageService, scoped by `brandId`
-// — a Playbook id. The brands themselves are Playbooks, re-exported from the
-// adapter so views have one import.
+// Image Generator — the module's app state. Its own objects (creations and
+// assets) come from storageService, scoped by `brandId` — a Playbook id. The
+// brands, and the brand's own styles, are the Playbooks', read through the
+// adapter and re-exported here so views have one import.
 
-import { storageService as storage } from "../services/index.js?v=1350";
-import { STYLE_PRESETS } from "../config/style-presets.js?v=1350";
-import { seedDemoData } from "../config/demo-data.js?v=1350";
-import { adoptCreatedPlaybook, subscribeBrands } from "./playbook-brand.js?v=1350";
+import { storageService as storage } from "../services/index.js?v=1354";
+import { STYLE_PRESETS } from "../config/style-presets.js?v=1354";
+import { findPlaybookStyle, getPlaybookStyles, subscribeBrands } from "./playbook-brand.js?v=1354";
 
-export {
-  getActiveBrand,
-  getActiveBrandId,
-  getBrand,
-  getBrands,
-  setActiveBrand,
-  hasOwnBrandPicker,
-  canEditBrand,
-  playbookPath,
-  startPlaybookCreation,
-  saveColorToPlaybook,
-  saveFontToPlaybook,
-} from "./playbook-brand.js?v=1350";
-
-export function boot() {
-  storage.ensureSeeded(seedDemoData);
-  adoptCreatedPlaybook();
-}
+export { getActiveBrandId, getBrand, canEditBrand } from "./playbook-brand.js?v=1354";
 
 /** One subscription for everything a view shows: module storage + Playbooks. */
 export function subscribe(fn) {
@@ -41,24 +23,17 @@ export function subscribe(fn) {
 
 /** The style picker's list for a brand: its own custom styles FIRST, then the presets. */
 export function getStylesForBrand(brandId) {
-  const custom = storage.list("styles", (s) => s.brandId === brandId);
-  return [...custom, ...STYLE_PRESETS];
+  return [...getPlaybookStyles(brandId), ...STYLE_PRESETS];
 }
 
 export function getStyle(id) {
-  return STYLE_PRESETS.find((p) => p.id === id) || storage.get("styles", id);
+  return STYLE_PRESETS.find((p) => p.id === id) || findPlaybookStyle(id);
 }
 
 // ── Everything else, scoped to a brand ───────────────────────────────────────
 
 export function getProducts(brandId) {
   return storage.list("products", (p) => p.brandId === brandId);
-}
-
-export function getCreations(brandId) {
-  return storage
-    .list("creations", (c) => !brandId || c.brandId === brandId)
-    .sort((a, b) => (b.updatedAt || "").localeCompare(a.updatedAt || ""));
 }
 
 export function getCreation(id) {

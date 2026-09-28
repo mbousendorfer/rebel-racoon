@@ -4,21 +4,20 @@
 // Playbook is the brand, the draft's network sets the shapes, and "Use in
 // draft" hands the finished PNG back to the caller — the draft.
 
-import { html } from "../lib/html.js?v=1350";
-import { openDialog } from "./dialog.js?v=1350";
-import { installMenus } from "./menu.js?v=1350";
-import { toast } from "./toast.js?v=1350";
-import { mountStudio } from "../views/studio.js?v=1350";
-import { DRAFT_NETWORK } from "../config/formats.js?v=1350";
-import { networkById } from "../config/networks.js?v=1350";
-import { boot, getActiveBrandId } from "../state/store.js?v=1350";
+import { html } from "../lib/html.js?v=1354";
+import { openDialog } from "./dialog.js?v=1354";
+import { installMenus } from "./menu.js?v=1354";
+import { toast } from "./toast.js?v=1354";
+import { mountStudio } from "../views/studio.js?v=1354";
+import { DRAFT_NETWORK } from "../config/formats.js?v=1354";
+import { networkById } from "../config/networks.js?v=1354";
+import { getActiveBrandId } from "../state/store.js?v=1354";
 
 /**
  * @param {{ brandId?: string, network?: string, text?: string, imageUrl?: string,
  *           slides?: number, onUse: (dataUrl: string) => void }} draft
  */
 export function openDraftStudio({ brandId, network, text = "", imageUrl = "", slides = 0, onUse }) {
-  boot();
   const net = DRAFT_NETWORK[network] || null;
   const label = net ? networkById(net).label : "";
   const excerpt = String(text).replace(/\s+/g, " ").trim();

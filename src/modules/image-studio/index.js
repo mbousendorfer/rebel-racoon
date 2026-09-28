@@ -1,21 +1,23 @@
-// Image Generator — the module's ONLY entry point. The shell imports ROUTES from
-// here (src/app.js) and nothing else. Behind the `sexySquirrel` flag.
+// Image Generator — the module's entry point, behind the `sexySquirrel` flag.
+// Three doors into Archie, and only three:
+//   · openDraftStudio — the draft's image studio (right panel): where images
+//     are generated, and the only place they are;
+//   · renderPlaybookStyles / handlePlaybookStylesClick — the brand's image
+//     styles, in the Playbook's Brand section (playbook-brand-kit.js);
+//   · ROUTES — the style creator, a page reached from that section.
+// There is no Image Generator section any more: no History, no editor.
 //
 // What the module imports from Archie: the shell (router, flags, topbar) and,
 // through state/playbook-brand.js only, the Playbooks — the brand IS the
 // Playbook. See docs/audits/image-studio-integration.md.
 
-import { navigate } from "../../router.js?v=1350";
-import { isFlagOn } from "../../feature-flags.js?v=1350";
-import { renderTopbar } from "../../components/topbar.js?v=1350";
-import { boot, setActiveBrand, startPlaybookCreation } from "./state/store.js?v=1350";
-import { delegate, disposer } from "./lib/delegate.js?v=1350";
-import { installMenus } from "./ui/menu.js?v=1350";
-import { closeAllDialogs } from "./ui/dialog.js?v=1350";
-import * as history from "./views/history.js?v=1350";
-import * as styles from "./views/styles.js?v=1350";
-import * as styleCreator from "./views/style-creator.js?v=1350";
-import * as editor from "./views/editor/index.js?v=1350";
+import { navigate } from "../../router.js?v=1354";
+import { isFlagOn } from "../../feature-flags.js?v=1354";
+import { renderTopbar } from "../../components/topbar.js?v=1354";
+import { delegate, disposer } from "./lib/delegate.js?v=1354";
+import { installMenus } from "./ui/menu.js?v=1354";
+import { closeAllDialogs } from "./ui/dialog.js?v=1354";
+import * as styleCreator from "./views/style-creator.js?v=1354";
 
 export const FLAG = "sexySquirrel";
 
@@ -31,7 +33,6 @@ function screen(mount) {
       return undefined;
     }
     renderTopbar();
-    boot();
     const bag = disposer();
     const ctx = { navigate, dispose: bag };
     bag.add(installMenus(target));
@@ -41,10 +42,6 @@ function screen(mount) {
         navigate(el.dataset.imstNav);
       }),
     );
-    bag.add(
-      delegate(target, "click", "[data-imst-action='switch-brand']", (_e, el) => setActiveBrand(el.dataset.imstBrand)),
-    );
-    bag.add(delegate(target, "click", "[data-imst-action='new-playbook']", () => startPlaybookCreation()));
     bag.add(mount(target, params, ctx));
     bag.add(closeAllDialogs);
     return () => bag.run();
@@ -52,23 +49,10 @@ function screen(mount) {
 }
 
 export const ROUTES = Object.freeze([
-  // Images are generated from a draft only (the draft's studio, below): the
-  // section opens on what was made. replace(), so Back doesn't bounce here.
-  {
-    pattern: "/image-generator",
-    handler: () => {
-      window.location.replace(window.location.href.split("#")[0] + "#/image-generator/history");
-      return undefined;
-    },
-  },
-  { pattern: "/image-generator/history", handler: screen(history.mount) },
-  { pattern: "/image-generator/styles", handler: screen(styles.mount) },
-  // Before /:id — route() takes the first match, and "new" would pass for an id.
-  { pattern: "/image-generator/styles/new", handler: screen(styleCreator.mount) },
-  { pattern: "/image-generator/styles/:id", handler: screen(styleCreator.mount) },
-  { pattern: "/image-generator/editor/:creationId", handler: screen(editor.mount) },
+  // Before /:styleId — route() takes the first match, and "new" would pass for an id.
+  { pattern: "/playbook/:id/styles/new", handler: screen(styleCreator.mount) },
+  { pattern: "/playbook/:id/styles/:styleId", handler: screen(styleCreator.mount) },
 ]);
 
-// The one other door into the module: the draft's image studio (right panel),
-// behind the same flag. Called by src/components/right-panel.js.
-export { openDraftStudio } from "./ui/draft-studio.js?v=1350";
+export { openDraftStudio } from "./ui/draft-studio.js?v=1354";
+export { renderPlaybookStyles, handlePlaybookStylesClick } from "./views/playbook-styles.js?v=1354";

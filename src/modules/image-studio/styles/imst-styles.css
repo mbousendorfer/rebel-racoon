@@ -32,15 +32,6 @@
   gap: var(--ref-spacing-xxs);
 }
 
-.imst-grid {
-  display: grid;
-  gap: var(--ref-spacing-sm);
-}
-
-.imst-grid--styles {
-  grid-template-columns: repeat(auto-fill, minmax(calc(var(--ref-spacing-xxxl) * 3), 1fr));
-}
-
 .imst-style-card {
   padding: 0;
   gap: 0;
@@ -108,17 +99,6 @@ button.imst-style-card {
 
 .imst-style-card__meta {
   color: var(--ref-color-grey-80);
-}
-
-.imst-style-card__tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ref-spacing-xxxs);
-  margin-top: var(--ref-spacing-xxxs);
-}
-
-.imst-icon-summary {
-  list-style: none;
 }
 
 /* ── Test grid (preset preview + creator test run) ─────────────────────── */
@@ -289,4 +269,34 @@ button.imst-style-card {
   .imst-creator__preview {
     position: static;
   }
+}
+
+/* ── The brand's image styles, in the Playbook's Brand section ───────── */
+
+.imst-pbstyles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+}
+
+.imst-pbstyles__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--ref-spacing-xxxl) * 3.4), 1fr));
+  gap: var(--ref-spacing-sm);
+}
+
+.imst-pbstyles__empty {
+  margin: 0;
+  color: var(--ref-color-grey-80);
+}
+
+.imst-pbstyles__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+}
+
+.imst-pbstyle__actions {
+  display: inline-flex;
+  flex-shrink: 0;
 }

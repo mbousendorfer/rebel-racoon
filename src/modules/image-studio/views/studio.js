@@ -1,8 +1,8 @@
 // Image Generator — the studio, opened FROM A DRAFT (flag sexySquirrel
 // replaces the draft's Image Studio): the draft's Playbook is the brand, only
 // its network's shapes, a prompt suggested from the post, and "Use in draft"
-// puts the PNG in the post. It is the ONLY place images are generated — the
-// /image-generator section keeps what was made (History) and the styles.
+// puts the PNG in the post. It is the ONLY place images are generated; the
+// brand's own styles live on the Playbook (Brand › Image styles).
 //
 //   CONTROLS (left column, Generate always in reach at its foot)
 //     brand applied · the prompt · the style as a picture (6 quick picks + the
@@ -15,32 +15,32 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, "Refine" to iterate in place, earlier runs underneath
 
-import { html, toString } from "../lib/html.js?v=1350";
-import { delegate } from "../lib/delegate.js?v=1350";
-import { hashString } from "../lib/prng.js?v=1350";
-import { renderEmpty } from "../ui/empty.js?v=1350";
-import { preserveFocus } from "../ui/fields.js?v=1350";
-import { toast } from "../ui/toast.js?v=1350";
-import { hydrateAssets, logoUrl } from "../ui/asset.js?v=1350";
-import { styleThumb } from "../ui/style-thumb.js?v=1350";
-import { openDialog } from "../ui/dialog.js?v=1350";
-import { menu } from "../ui/menu.js?v=1350";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1350";
-import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1350";
-import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1350";
-import { networkById } from "../config/networks.js?v=1350";
-import { copyService, imageGenerationService } from "../services/index.js?v=1350";
-import { unbranded } from "../state/playbook-brand.js?v=1350";
-import { resolveLayers } from "../render/layout.js?v=1350";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1350";
-import { getBrand, getCreation, getProducts, getStyle, getStylesForBrand, subscribe } from "../state/store.js?v=1350";
+import { html, toString } from "../lib/html.js?v=1354";
+import { delegate } from "../lib/delegate.js?v=1354";
+import { hashString } from "../lib/prng.js?v=1354";
+import { renderEmpty } from "../ui/empty.js?v=1354";
+import { preserveFocus } from "../ui/fields.js?v=1354";
+import { toast } from "../ui/toast.js?v=1354";
+import { hydrateAssets, logoUrl } from "../ui/asset.js?v=1354";
+import { styleThumb } from "../ui/style-thumb.js?v=1354";
+import { openDialog } from "../ui/dialog.js?v=1354";
+import { menu } from "../ui/menu.js?v=1354";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1354";
+import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1354";
+import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1354";
+import { networkById } from "../config/networks.js?v=1354";
+import { copyService, imageGenerationService } from "../services/index.js?v=1354";
+import { unbranded } from "../state/playbook-brand.js?v=1354";
+import { resolveLayers } from "../render/layout.js?v=1354";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1354";
+import { getBrand, getCreation, getProducts, getStyle, getStylesForBrand, subscribe } from "../state/store.js?v=1354";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1350";
+} from "../state/creation-actions.js?v=1354";
 
 // The presets offered first when the brand has few styles of its own — one per
 // family, the ones that read best at thumbnail size.
