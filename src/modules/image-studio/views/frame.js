@@ -2,7 +2,7 @@
 // tabs (History · Styles) and the body. Deep pages (the style creator, the
 // editor) swap the tabs for a back link to their section.
 
-import { html } from "../lib/html.js?v=1339";
+import { html } from "../lib/html.js?v=1340";
 
 export const SECTIONS = Object.freeze([
   // No Generate section: an image is generated FROM A DRAFT (the draft's
