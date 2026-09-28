@@ -6,11 +6,11 @@
 //   fromUrl(url, { brand }) → Promise<{ name, description, url, shape, svg }>
 //   Rejects { code: "invalid_url" } for something that isn't a URL.
 
-import { MOCK } from "../../config/mock.js?v=1329";
-import { wait } from "../../lib/delegate.js?v=1329";
-import { hashString, pick, prng } from "../../lib/prng.js?v=1329";
-import { productShotSvg, PRODUCT_SHAPES } from "../../render/product-shot.js?v=1329";
-import { resolvePalette, lighten } from "../../render/palette.js?v=1329";
+import { MOCK } from "../../config/mock.js?v=1332";
+import { wait } from "../../lib/delegate.js?v=1332";
+import { hashString, pick, prng } from "../../lib/prng.js?v=1332";
+import { productShotSvg, PRODUCT_SHAPES } from "../../render/product-shot.js?v=1332";
+import { resolvePalette, lighten } from "../../render/palette.js?v=1332";
 
 const HINTS = [
   { re: /(bag|coffee|bean|blend|roast|tea)/, shape: "bag", noun: "blend" },

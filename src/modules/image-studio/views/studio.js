@@ -18,25 +18,25 @@
 //
 // Deep links: ?creation=<id> reopens a run · ?style=<id> preselects.
 
-import { html, toString } from "../lib/html.js?v=1329";
-import { delegate } from "../lib/delegate.js?v=1329";
-import { hashString } from "../lib/prng.js?v=1329";
-import { renderFrame } from "./frame.js?v=1329";
-import { renderEmpty } from "../ui/empty.js?v=1329";
-import { renderBrandPicker } from "../ui/brand-picker.js?v=1329";
-import { preserveFocus } from "../ui/fields.js?v=1329";
-import { toast } from "../ui/toast.js?v=1329";
-import { assetImg, hydrateAssets, logoUrl, warmAssetUrls } from "../ui/asset.js?v=1329";
-import { styleThumb } from "../ui/style-thumb.js?v=1329";
-import { openDialog } from "../ui/dialog.js?v=1329";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1329";
-import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1329";
-import { FORMAT_SHAPES, formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1329";
-import { networkById } from "../config/networks.js?v=1329";
-import { copyService, imageGenerationService } from "../services/index.js?v=1329";
-import { unbranded } from "../state/playbook-brand.js?v=1329";
-import { resolveLayers } from "../render/layout.js?v=1329";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1329";
+import { html, toString } from "../lib/html.js?v=1332";
+import { delegate } from "../lib/delegate.js?v=1332";
+import { hashString } from "../lib/prng.js?v=1332";
+import { renderFrame } from "./frame.js?v=1332";
+import { renderEmpty } from "../ui/empty.js?v=1332";
+import { renderBrandPicker } from "../ui/brand-picker.js?v=1332";
+import { preserveFocus } from "../ui/fields.js?v=1332";
+import { toast } from "../ui/toast.js?v=1332";
+import { assetImg, hydrateAssets, logoUrl, warmAssetUrls } from "../ui/asset.js?v=1332";
+import { styleThumb } from "../ui/style-thumb.js?v=1332";
+import { openDialog } from "../ui/dialog.js?v=1332";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1332";
+import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1332";
+import { FORMAT_SHAPES, formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1332";
+import { networkById } from "../config/networks.js?v=1332";
+import { copyService, imageGenerationService } from "../services/index.js?v=1332";
+import { unbranded } from "../state/playbook-brand.js?v=1332";
+import { resolveLayers } from "../render/layout.js?v=1332";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1332";
 import {
   getActiveBrand,
   getBrand,
@@ -45,7 +45,7 @@ import {
   getStyle,
   getStylesForBrand,
   subscribe,
-} from "../state/store.js?v=1329";
+} from "../state/store.js?v=1332";
 import {
   addBatch,
   deleteCreation,
@@ -53,7 +53,7 @@ import {
   replaceVariation,
   startCreation,
   toggleFavorite,
-} from "../state/creation-actions.js?v=1329";
+} from "../state/creation-actions.js?v=1332";
 
 // The presets offered first when the brand has few styles of its own — one per
 // family, the ones that read best at thumbnail size.
