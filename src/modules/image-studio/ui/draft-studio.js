@@ -4,14 +4,14 @@
 // Playbook is the brand, the draft's network sets the shapes, and "Use in
 // draft" hands the finished PNG back to the caller — the draft.
 
-import { html } from "../lib/html.js?v=1340";
-import { openDialog } from "./dialog.js?v=1340";
-import { installMenus } from "./menu.js?v=1340";
-import { toast } from "./toast.js?v=1340";
-import { mountStudio } from "../views/studio.js?v=1340";
-import { DRAFT_NETWORK } from "../config/formats.js?v=1340";
-import { networkById } from "../config/networks.js?v=1340";
-import { boot, getActiveBrandId } from "../state/store.js?v=1340";
+import { html } from "../lib/html.js?v=1342";
+import { openDialog } from "./dialog.js?v=1342";
+import { installMenus } from "./menu.js?v=1342";
+import { toast } from "./toast.js?v=1342";
+import { mountStudio } from "../views/studio.js?v=1342";
+import { DRAFT_NETWORK } from "../config/formats.js?v=1342";
+import { networkById } from "../config/networks.js?v=1342";
+import { boot, getActiveBrandId } from "../state/store.js?v=1342";
 
 /**
  * @param {{ brandId?: string, network?: string, text?: string, imageUrl?: string,
@@ -28,11 +28,14 @@ export function openDraftStudio({ brandId, network, text = "", imageUrl = "", sl
     subtitle: excerpt ? `“${excerpt.length > 110 ? excerpt.slice(0, 107).trimEnd() + "…" : excerpt}”` : "",
     size: "studio",
     body: html`<div class="imst imst-draft-host" data-imst-draft-host></div>`,
-    onMount(el) {
+    footer: html`<div class="ap-dialog-footer-right" data-imst-draft-foot></div>`,
+    onMount(el, api) {
       const host = el.querySelector("[data-imst-draft-host]");
       const offMenus = installMenus(host);
       const offStudio = mountStudio(host, {
         draft: { brandId: brandId || getActiveBrandId(), network: net, text: excerpt, imageUrl, slides },
+        footer: el.querySelector("[data-imst-draft-foot]"),
+        onCancel: () => api.close(),
         onUse(dataUrl) {
           onUse(dataUrl);
           dialog.close();

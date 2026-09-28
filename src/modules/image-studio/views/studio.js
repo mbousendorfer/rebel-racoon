@@ -15,32 +15,32 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, "Refine" to iterate in place, earlier runs underneath
 
-import { html, toString } from "../lib/html.js?v=1340";
-import { delegate } from "../lib/delegate.js?v=1340";
-import { hashString } from "../lib/prng.js?v=1340";
-import { renderEmpty } from "../ui/empty.js?v=1340";
-import { preserveFocus } from "../ui/fields.js?v=1340";
-import { toast } from "../ui/toast.js?v=1340";
-import { hydrateAssets, logoUrl } from "../ui/asset.js?v=1340";
-import { styleThumb } from "../ui/style-thumb.js?v=1340";
-import { openDialog } from "../ui/dialog.js?v=1340";
-import { menu } from "../ui/menu.js?v=1340";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1340";
-import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1340";
-import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1340";
-import { networkById } from "../config/networks.js?v=1340";
-import { copyService, imageGenerationService } from "../services/index.js?v=1340";
-import { unbranded } from "../state/playbook-brand.js?v=1340";
-import { resolveLayers } from "../render/layout.js?v=1340";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1340";
-import { getBrand, getCreation, getProducts, getStyle, getStylesForBrand, subscribe } from "../state/store.js?v=1340";
+import { html, toString } from "../lib/html.js?v=1342";
+import { delegate } from "../lib/delegate.js?v=1342";
+import { hashString } from "../lib/prng.js?v=1342";
+import { renderEmpty } from "../ui/empty.js?v=1342";
+import { preserveFocus } from "../ui/fields.js?v=1342";
+import { toast } from "../ui/toast.js?v=1342";
+import { hydrateAssets, logoUrl } from "../ui/asset.js?v=1342";
+import { styleThumb } from "../ui/style-thumb.js?v=1342";
+import { openDialog } from "../ui/dialog.js?v=1342";
+import { menu } from "../ui/menu.js?v=1342";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1342";
+import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1342";
+import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1342";
+import { networkById } from "../config/networks.js?v=1342";
+import { copyService, imageGenerationService } from "../services/index.js?v=1342";
+import { unbranded } from "../state/playbook-brand.js?v=1342";
+import { resolveLayers } from "../render/layout.js?v=1342";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1342";
+import { getBrand, getCreation, getProducts, getStyle, getStylesForBrand, subscribe } from "../state/store.js?v=1342";
 import {
   addBatch,
   deleteCreation,
   replaceVariation,
   startCreation,
   toggleFavorite,
-} from "../state/creation-actions.js?v=1340";
+} from "../state/creation-actions.js?v=1342";
 
 // The presets offered first when the brand has few styles of its own — one per
 // family, the ones that read best at thumbnail size.
@@ -78,7 +78,10 @@ const lookOf = (brand, brief) => (brief?.useBrand === false ? unbranded(brand) :
  * @param {HTMLElement} target
  * @param {{ draft: { brandId, network, text, imageUrl, slides }, onUse: (dataUrl) => void }} opts
  */
-export function mountStudio(target, { draft, onUse }) {
+export function mountStudio(target, { draft, onUse, onCancel = () => {}, footer = null }) {
+  // The dialog's footer holds the final actions (DS: right-aligned); clicks are
+  // delegated from the dialog so body and footer share one set of handlers.
+  const root = target.closest(".ap-dialog") || target;
   const brandNow = () => getBrand(draft.brandId);
   const shapes = () => shapesFor(draft.network);
   const state = {
@@ -191,7 +194,6 @@ export function mountStudio(target, { draft, onUse }) {
     const shape = shapeForFormat(b.formatIds[0]);
     const format = formatById(b.formatIds[0]);
     const canEmbed = !!style?.supportsEmbeddedText;
-    const running = state.run.status === "loading";
     // Every shape for the same networks (a draft's dialog): say it once, beside the title.
     const nets = shapes().map((x) => x.networks.join(","));
     const sharedNets = nets.every((n) => n === nets[0]) ? shapes()[0]?.networks : null;
@@ -297,6 +299,28 @@ ${b.prompt}</textarea
             </div>
           </section>
 
+          <section class="imst-ctl" aria-labelledby="imst-ctl-count">
+            <header class="imst-ctl__head imst-ctl__head--control">
+              <h3 class="imst-ctl__label ap-body-bold" id="imst-ctl-count">Variations</h3>
+              ${menu({
+                align: "end",
+                label: "How many variations",
+                trigger: {
+                  className: "ap-button stroked grey",
+                  label: `${variationsLabel(b.count)}. Change`,
+                  content: html`<span>${variationsLabel(b.count)}</span
+                    ><i class="ap-icon-chevron-down" aria-hidden="true"></i>`,
+                },
+                items: [1, 2, 3, 4].map((n) => ({
+                  action: "count",
+                  attrs: `data-imst-count="${n}"`,
+                  label: variationsLabel(n),
+                  selected: n === b.count,
+                })),
+              })}
+            </header>
+          </section>
+
           <section class="imst-ctl" aria-labelledby="imst-ctl-text">
             <header class="imst-ctl__head">
               <h3 class="imst-ctl__label ap-body-bold" id="imst-ctl-text">Text on the image</h3>
@@ -345,33 +369,6 @@ ${b.prompt}</textarea
               : ""}
           </section>
         </div>
-        <footer class="imst-controls__foot">
-          ${menu({
-            align: "start",
-            up: true,
-            label: "How many variations",
-            trigger: {
-              className: "ap-button stroked grey",
-              label: `${variationsLabel(b.count)}. Change`,
-              content: html`<span>${variationsLabel(b.count)}</span
-                ><i class="ap-icon-chevron-down" aria-hidden="true"></i>`,
-            },
-            items: [1, 2, 3, 4].map((n) => ({
-              action: "count",
-              attrs: `data-imst-count="${n}"`,
-              label: variationsLabel(n),
-              selected: n === b.count,
-            })),
-          })}
-          <button
-            type="button"
-            class="ap-button primary orange${running ? " loading" : ""}"
-            data-imst-action="generate"
-            ${running ? "disabled" : ""}
-          >
-            <i class="ap-icon-sparkles" aria-hidden="true"></i><span>${running ? "Generating…" : "Generate"}</span>
-          </button>
-        </footer>
       </aside>
     `;
   };
@@ -513,15 +510,6 @@ ${b.prompt}</textarea
             <button type="button" class="ap-button stroked grey" data-imst-var="similar">
               <i class="ap-icon-sparkles" aria-hidden="true"></i><span>More like this</span>
             </button>
-            <button
-              type="button"
-              class="ap-button primary blue${state.using ? " loading" : ""}"
-              data-imst-var="use"
-              ${state.using ? "disabled" : ""}
-            >
-              <i class="ap-icon-check" aria-hidden="true"></i
-              ><span>${draft.imageUrl ? "Replace the draft's image" : "Use in draft"}</span>
-            </button>
           </div>
         </header>
         ${stageFrame(
@@ -638,6 +626,40 @@ ${b.prompt}</textarea
     return renderPreview(brand);
   };
 
+  // Cancel · Generate (orange: the AI action) · Use in draft (the final one, primary).
+  // Once there is a result, Generate steps back to "Generate again".
+  const paintFooter = () => {
+    if (!footer) return;
+    const c = currentCreation();
+    const running = state.run.status === "loading";
+    const result = !!(c && c.variations.length) && state.run.status !== "error";
+    footer.innerHTML = toString(html`
+      <button type="button" class="ap-button stroked grey" data-imst-action="cancel">Cancel</button>
+      ${brandNow()
+        ? html`<button
+            type="button"
+            class="ap-button ${result ? "stroked grey" : "primary orange"}${running ? " loading" : ""}"
+            data-imst-action="generate"
+            ${running ? "disabled" : ""}
+          >
+            <i class="ap-icon-sparkles" aria-hidden="true"></i
+            ><span>${running ? "Generating…" : result ? "Generate again" : "Generate"}</span>
+          </button>`
+        : ""}
+      ${result
+        ? html`<button
+            type="button"
+            class="ap-button primary blue${state.using ? " loading" : ""}"
+            data-imst-var="use"
+            ${state.using || running ? "disabled" : ""}
+          >
+            <i class="ap-icon-check" aria-hidden="true"></i
+            ><span>${draft.imageUrl ? "Replace the draft's image" : "Use in draft"}</span>
+          </button>`
+        : ""}
+    `);
+  };
+
   const paint = () => {
     if (!alive) return;
     const brand = brandNow();
@@ -651,6 +673,7 @@ ${b.prompt}</textarea
           body: "Images follow a brand, and the brand lives in the chat's Playbook. Pick one for this chat first.",
         }),
       );
+      paintFooter();
       return;
     }
     target.innerHTML = toString(
@@ -659,6 +682,7 @@ ${b.prompt}</textarea
         <main class="imst-canvas-col">${renderCanvas(brand)}</main>
       </div>`,
     );
+    paintFooter();
     hydrateAssets(target);
     restore();
   };
@@ -992,9 +1016,10 @@ ${b.prompt}</textarea
       }
       iterate(state.refine.trim());
     }),
-    delegate(target, "click", "[data-imst-action]", (_e, el) => {
+    delegate(root, "click", "[data-imst-action]", (_e, el) => {
       const a = el.dataset.imstAction;
-      if (a === "generate") generate();
+      if (a === "cancel") onCancel();
+      else if (a === "generate") generate();
       else if (a === "suggest") suggestFromPost();
       else if (a === "suggest-headline") suggestHeadline();
       else if (a === "all-styles") openStyleGallery();
@@ -1003,7 +1028,7 @@ ${b.prompt}</textarea
         paint();
       }
     }),
-    delegate(target, "click", "[data-imst-var]", (_e, el) => {
+    delegate(root, "click", "[data-imst-var]", (_e, el) => {
       const c = currentCreation();
       const v = focused(c);
       const a = el.dataset.imstVar;

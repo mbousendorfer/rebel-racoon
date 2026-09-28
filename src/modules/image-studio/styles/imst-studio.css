@@ -49,29 +49,6 @@
   padding: var(--ref-spacing-xxxs) var(--ref-spacing-xs) var(--ref-spacing-md) var(--ref-spacing-xxxs);
 }
 
-.imst-controls__foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-sm) var(--ref-spacing-xs) 0 var(--ref-spacing-xxxs);
-  border-top: 1px solid var(--ref-color-grey-20);
-}
-
-.imst-controls__sum {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  color: var(--ref-color-grey-100);
-}
-
-.imst-controls__sum .ap-caption {
-  color: var(--ref-color-grey-80);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .imst-ctl {
   display: flex;
   flex-direction: column;
@@ -84,6 +61,11 @@
   align-items: baseline;
   justify-content: space-between;
   gap: var(--ref-spacing-xs);
+}
+
+/* A section that is only a label and its control: the two on one line. */
+.imst-ctl__head--control {
+  align-items: center;
 }
 
 .imst-ctl__label {
