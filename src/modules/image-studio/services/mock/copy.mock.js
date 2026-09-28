@@ -7,13 +7,12 @@
 //   caption({ brand, brief, network, headline }) → Promise<string>   (within the network's limit)
 //   hashtags({ brand, brief, network }) → Promise<string[]>
 
-import { MOCK } from "../../config/mock.js?v=1342";
-import { COPY_LIMITS } from "../../config/copy-limits.js?v=1342";
-import { hashString, prng, shuffle } from "../../lib/prng.js?v=1342";
-import { wait } from "../../lib/delegate.js?v=1342";
+import { MOCK } from "../../config/mock.js?v=1343";
+import { COPY_LIMITS } from "../../config/copy-limits.js?v=1343";
+import { hashString, prng, shuffle } from "../../lib/prng.js?v=1343";
+import { wait } from "../../lib/delegate.js?v=1343";
 
-function delay(signal) {
-  const [min, max] = MOCK.copy.delayMs;
+function delay(signal, [min, max] = MOCK.copy.delayMs) {
   return wait(min + Math.random() * (max - min), signal);
 }
 
@@ -147,7 +146,7 @@ const POST_SCENES = [
 ];
 
 export async function promptFromPost({ brand, text }, { signal } = {}) {
-  await delay(signal);
+  await delay(signal, MOCK.suggest.delayMs);
   const clean = String(text || "")
     .replace(/https?:\/\/\S+/g, "")
     .replace(/#\w+/g, "")
@@ -167,7 +166,7 @@ export async function promptFromPost({ brand, text }, { signal } = {}) {
 // words, the post's own opening first. `round` walks the candidates, so asking
 // again offers the next line instead of the same one.
 export async function headlineFromPost({ text, round = 0 }, { signal } = {}) {
-  await delay(signal);
+  await delay(signal, MOCK.suggest.delayMs);
   const clean = String(text || "")
     .replace(/https?:\/\/\S+/g, "")
     .replace(/#\w+/g, "")

@@ -15,32 +15,32 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, "Refine" to iterate in place, earlier runs underneath
 
-import { html, toString } from "../lib/html.js?v=1342";
-import { delegate } from "../lib/delegate.js?v=1342";
-import { hashString } from "../lib/prng.js?v=1342";
-import { renderEmpty } from "../ui/empty.js?v=1342";
-import { preserveFocus } from "../ui/fields.js?v=1342";
-import { toast } from "../ui/toast.js?v=1342";
-import { hydrateAssets, logoUrl } from "../ui/asset.js?v=1342";
-import { styleThumb } from "../ui/style-thumb.js?v=1342";
-import { openDialog } from "../ui/dialog.js?v=1342";
-import { menu } from "../ui/menu.js?v=1342";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1342";
-import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1342";
-import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1342";
-import { networkById } from "../config/networks.js?v=1342";
-import { copyService, imageGenerationService } from "../services/index.js?v=1342";
-import { unbranded } from "../state/playbook-brand.js?v=1342";
-import { resolveLayers } from "../render/layout.js?v=1342";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1342";
-import { getBrand, getCreation, getProducts, getStyle, getStylesForBrand, subscribe } from "../state/store.js?v=1342";
+import { html, toString } from "../lib/html.js?v=1343";
+import { delegate } from "../lib/delegate.js?v=1343";
+import { hashString } from "../lib/prng.js?v=1343";
+import { renderEmpty } from "../ui/empty.js?v=1343";
+import { preserveFocus } from "../ui/fields.js?v=1343";
+import { toast } from "../ui/toast.js?v=1343";
+import { hydrateAssets, logoUrl } from "../ui/asset.js?v=1343";
+import { styleThumb } from "../ui/style-thumb.js?v=1343";
+import { openDialog } from "../ui/dialog.js?v=1343";
+import { menu } from "../ui/menu.js?v=1343";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1343";
+import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1343";
+import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1343";
+import { networkById } from "../config/networks.js?v=1343";
+import { copyService, imageGenerationService } from "../services/index.js?v=1343";
+import { unbranded } from "../state/playbook-brand.js?v=1343";
+import { resolveLayers } from "../render/layout.js?v=1343";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1343";
+import { getBrand, getCreation, getProducts, getStyle, getStylesForBrand, subscribe } from "../state/store.js?v=1343";
 import {
   addBatch,
   deleteCreation,
   replaceVariation,
   startCreation,
   toggleFavorite,
-} from "../state/creation-actions.js?v=1342";
+} from "../state/creation-actions.js?v=1343";
 
 // The presets offered first when the brand has few styles of its own — one per
 // family, the ones that read best at thumbnail size.
@@ -803,30 +803,45 @@ ${b.prompt}</textarea
     }
   }
 
-  async function suggestFromPost() {
-    const brand = brandNow();
+  // A suggestion fills its field IN PLACE: the button shows it's working, and
+  // nothing else is redrawn — the preview catches up on the next choice.
+  async function suggestInto(button, field, ask) {
+    if (!button || button.disabled) return;
+    button.classList.add("loading");
+    button.disabled = true;
     try {
-      state.brief.prompt = await copyService.promptFromPost({ brand, text: draft.text });
-      state.error = "";
-      paint();
-      target.querySelector("#imst-prompt")?.focus();
+      const text = await ask();
+      state.brief[field] = text;
+      const input = target.querySelector(`[data-imst-field='${field}']`);
+      if (input) {
+        input.value = text;
+        input.focus();
+      }
+      // The headline is drawn on the live preview: show it there too.
+      if (field === "headline" && !currentCreation()) paint();
+      if (field === "prompt" && state.error) {
+        state.error = "";
+        target.querySelector(".imst-composer")?.classList.remove("has-error");
+        target.querySelector("#imst-prompt-error")?.remove();
+      }
     } catch {
       toast("No suggestion this time. Try again.", { variant: "error" });
+    } finally {
+      button.classList.remove("loading");
+      button.disabled = false;
     }
   }
 
-  async function suggestHeadline() {
-    try {
-      state.brief.headline = await copyService.headlineFromPost({
+  const suggestFromPost = (button) =>
+    suggestInto(button, "prompt", () => copyService.promptFromPost({ brand: brandNow(), text: draft.text }));
+
+  const suggestHeadline = (button) =>
+    suggestInto(button, "headline", () =>
+      copyService.headlineFromPost({
         text: draft.text,
         round: (state.headlineRound = (state.headlineRound ?? -1) + 1),
-      });
-      paint();
-      target.querySelector("[data-imst-field='headline']")?.focus();
-    } catch {
-      toast("No suggestion this time. Try again.", { variant: "error" });
-    }
-  }
+      }),
+    );
 
   async function download() {
     const brand = brandNow();
@@ -1020,8 +1035,8 @@ ${b.prompt}</textarea
       const a = el.dataset.imstAction;
       if (a === "cancel") onCancel();
       else if (a === "generate") generate();
-      else if (a === "suggest") suggestFromPost();
-      else if (a === "suggest-headline") suggestHeadline();
+      else if (a === "suggest") suggestFromPost(el);
+      else if (a === "suggest-headline") suggestHeadline(el);
       else if (a === "all-styles") openStyleGallery();
       else if (a === "count") {
         state.brief.count = Number(el.dataset.imstCount) || 4;

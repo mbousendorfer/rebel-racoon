@@ -11,11 +11,11 @@
 // Performance: a MOCKED prediction (0–100) from a few readable factors, each
 // named — plus the attention hot spots the heatmap draws.
 
-import { contrast, inkOn, resolvePalette } from "../render/palette.js?v=1342";
-import { fitTextSize } from "../render/layout.js?v=1342";
-import { resolveLayers } from "../render/layout.js?v=1342";
-import { subjectFraction } from "../render/visual.js?v=1342";
-import { hashString } from "../lib/prng.js?v=1342";
+import { contrast, inkOn, resolvePalette } from "../render/palette.js?v=1343";
+import { fitTextSize } from "../render/layout.js?v=1343";
+import { resolveLayers } from "../render/layout.js?v=1343";
+import { subjectFraction } from "../render/visual.js?v=1343";
+import { hashString } from "../lib/prng.js?v=1343";
 
 const PENALTY = { high: 20, medium: 10, low: 5 };
 

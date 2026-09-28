@@ -12,4 +12,8 @@ export const MOCK = Object.freeze({
   copy: {
     delayMs: [600, 1200],
   },
+  // "Suggest from the post": a local read of the post, so it answers at once.
+  suggest: {
+    delayMs: [200, 400],
+  },
 });
