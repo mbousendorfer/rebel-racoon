@@ -7,8 +7,8 @@
 // lighter / darker, hide / remove — and applies what it can. Anything else
 // comes back `understood: false` so the UI can say so instead of pretending.
 
-import { wait } from "../../lib/delegate.js?v=1332";
-import { MOCK } from "../../config/mock.js?v=1332";
+import { wait } from "../../lib/delegate.js?v=1333";
+import { MOCK } from "../../config/mock.js?v=1333";
 
 const POSITIONS = [
   { re: /bottom[\s-]*right/, x: (w) => 0.94 - w, y: (h) => 0.94 - h, label: "bottom right" },

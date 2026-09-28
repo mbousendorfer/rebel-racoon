@@ -743,6 +743,31 @@
   color: var(--ref-color-grey-80);
 }
 
+/* Every card the same height (one-line name, two-line description), so two and
+ * a half rows is a fixed height the filters never change. */
+.imst-gallery__text .ap-body-bold {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.imst-gallery__text .ap-caption {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 2lh;
+}
+
+.imst-gallery-scroll {
+  height: var(--imst-gallery-h, auto);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  /* Room for the focus ring and the selected ring, which sit outside the cards. */
+  padding: var(--ref-spacing-xxxs);
+  margin: calc(var(--ref-spacing-xxxs) * -1);
+}
+
 @media (max-width: 1024px) {
   .imst-studio {
     grid-template-columns: calc(var(--ref-spacing-xxxl) * 5) minmax(0, 1fr);

@@ -3,22 +3,22 @@
 // image, and stays recognisable because its own picture is drawn in. "Product
 // shoot" stages it in three scenes — studio, lifestyle, seasonal.
 
-import { html, toString } from "../lib/html.js?v=1332";
-import { delegate } from "../lib/delegate.js?v=1332";
-import { randomSeed } from "../lib/prng.js?v=1332";
-import { renderFrame } from "./frame.js?v=1332";
-import { renderEmpty } from "../ui/empty.js?v=1332";
-import { renderBrandPicker } from "../ui/brand-picker.js?v=1332";
-import { menu } from "../ui/menu.js?v=1332";
-import { assetImg, hydrateAssets, warmAssetUrls } from "../ui/asset.js?v=1332";
-import { confirmDialog, openDialog } from "../ui/dialog.js?v=1332";
-import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1332";
-import { field, textArea, textInput } from "../ui/fields.js?v=1332";
-import { toast } from "../ui/toast.js?v=1332";
-import { productHref } from "../ui/variation.js?v=1332";
-import { renderVisual, svgToDataUrl } from "../render/visual.js?v=1332";
-import { imageGenerationService, productService, storageService } from "../services/index.js?v=1332";
-import { getActiveBrand, getAsset, getProducts, getStyle, subscribe } from "../state/store.js?v=1332";
+import { html, toString } from "../lib/html.js?v=1333";
+import { delegate } from "../lib/delegate.js?v=1333";
+import { randomSeed } from "../lib/prng.js?v=1333";
+import { renderFrame } from "./frame.js?v=1333";
+import { renderEmpty } from "../ui/empty.js?v=1333";
+import { renderBrandPicker } from "../ui/brand-picker.js?v=1333";
+import { menu } from "../ui/menu.js?v=1333";
+import { assetImg, hydrateAssets, warmAssetUrls } from "../ui/asset.js?v=1333";
+import { confirmDialog, openDialog } from "../ui/dialog.js?v=1333";
+import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1333";
+import { field, textArea, textInput } from "../ui/fields.js?v=1333";
+import { toast } from "../ui/toast.js?v=1333";
+import { productHref } from "../ui/variation.js?v=1333";
+import { renderVisual, svgToDataUrl } from "../render/visual.js?v=1333";
+import { imageGenerationService, productService, storageService } from "../services/index.js?v=1333";
+import { getActiveBrand, getAsset, getProducts, getStyle, subscribe } from "../state/store.js?v=1333";
 import {
   SHOOT_SCENES,
   addShoot,
@@ -26,7 +26,7 @@ import {
   saveDrawnImage,
   saveProduct,
   uploadProductImage,
-} from "../state/product-actions.js?v=1332";
+} from "../state/product-actions.js?v=1333";
 
 function shotUrl(product, shot, brand) {
   const scene = SHOOT_SCENES.find((s) => s.id === shot.scene);

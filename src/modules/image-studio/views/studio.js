@@ -18,25 +18,25 @@
 //
 // Deep links: ?creation=<id> reopens a run · ?style=<id> preselects.
 
-import { html, toString } from "../lib/html.js?v=1332";
-import { delegate } from "../lib/delegate.js?v=1332";
-import { hashString } from "../lib/prng.js?v=1332";
-import { renderFrame } from "./frame.js?v=1332";
-import { renderEmpty } from "../ui/empty.js?v=1332";
-import { renderBrandPicker } from "../ui/brand-picker.js?v=1332";
-import { preserveFocus } from "../ui/fields.js?v=1332";
-import { toast } from "../ui/toast.js?v=1332";
-import { assetImg, hydrateAssets, logoUrl, warmAssetUrls } from "../ui/asset.js?v=1332";
-import { styleThumb } from "../ui/style-thumb.js?v=1332";
-import { openDialog } from "../ui/dialog.js?v=1332";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1332";
-import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1332";
-import { FORMAT_SHAPES, formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1332";
-import { networkById } from "../config/networks.js?v=1332";
-import { copyService, imageGenerationService } from "../services/index.js?v=1332";
-import { unbranded } from "../state/playbook-brand.js?v=1332";
-import { resolveLayers } from "../render/layout.js?v=1332";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1332";
+import { html, toString } from "../lib/html.js?v=1333";
+import { delegate } from "../lib/delegate.js?v=1333";
+import { hashString } from "../lib/prng.js?v=1333";
+import { renderFrame } from "./frame.js?v=1333";
+import { renderEmpty } from "../ui/empty.js?v=1333";
+import { renderBrandPicker } from "../ui/brand-picker.js?v=1333";
+import { preserveFocus } from "../ui/fields.js?v=1333";
+import { toast } from "../ui/toast.js?v=1333";
+import { assetImg, hydrateAssets, logoUrl, warmAssetUrls } from "../ui/asset.js?v=1333";
+import { styleThumb } from "../ui/style-thumb.js?v=1333";
+import { openDialog } from "../ui/dialog.js?v=1333";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1333";
+import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1333";
+import { FORMAT_SHAPES, formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1333";
+import { networkById } from "../config/networks.js?v=1333";
+import { copyService, imageGenerationService } from "../services/index.js?v=1333";
+import { unbranded } from "../state/playbook-brand.js?v=1333";
+import { resolveLayers } from "../render/layout.js?v=1333";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1333";
 import {
   getActiveBrand,
   getBrand,
@@ -45,7 +45,7 @@ import {
   getStyle,
   getStylesForBrand,
   subscribe,
-} from "../state/store.js?v=1332";
+} from "../state/store.js?v=1333";
 import {
   addBatch,
   deleteCreation,
@@ -53,7 +53,7 @@ import {
   replaceVariation,
   startCreation,
   toggleFavorite,
-} from "../state/creation-actions.js?v=1332";
+} from "../state/creation-actions.js?v=1333";
 
 // The presets offered first when the brand has few styles of its own — one per
 // family, the ones that read best at thumbnail size.
@@ -851,6 +851,8 @@ ${b.prompt}</textarea
   function openStyleGallery() {
     const brand = brandNow();
     let family = "all";
+    // Measured once on open: two and a half rows, then the height holds whatever the filter shows.
+    let galleryH = 0;
     const own = getStylesForBrand(brand.id).filter((s) => s.kind === "custom");
     const body = () => html`
       <div class="imst-chips" role="group" aria-label="Filter styles">
@@ -870,23 +872,25 @@ ${b.prompt}</textarea
             </button>`,
         )}
       </div>
-      <div class="imst-gallery">
-        ${[...own, ...STYLE_PRESETS]
-          .filter((s) => family === "all" || (family === "own" ? s.kind === "custom" : s.family === family))
-          .map(
-            (s) =>
-              html`<button
-                type="button"
-                class="imst-gallery__item"
-                aria-pressed="${s.id === state.brief.styleId}"
-                data-imst-pick-style="${s.id}"
-              >
-                ${styleThumb(s, lookOf(brand, state.brief), { seed: hashString(s.id) })}
-                <span class="imst-gallery__text"
-                  ><span class="ap-body-bold">${s.label}</span><span class="ap-caption">${s.description}</span></span
+      <div class="imst-gallery-scroll" style="${galleryH ? `--imst-gallery-h: ${galleryH}px` : ""}">
+        <div class="imst-gallery">
+          ${[...own, ...STYLE_PRESETS]
+            .filter((s) => family === "all" || (family === "own" ? s.kind === "custom" : s.family === family))
+            .map(
+              (s) =>
+                html`<button
+                  type="button"
+                  class="imst-gallery__item"
+                  aria-pressed="${s.id === state.brief.styleId}"
+                  data-imst-pick-style="${s.id}"
                 >
-              </button>`,
-          )}
+                  ${styleThumb(s, lookOf(brand, state.brief), { seed: hashString(s.id) })}
+                  <span class="imst-gallery__text"
+                    ><span class="ap-body-bold">${s.label}</span><span class="ap-caption">${s.description}</span></span
+                  >
+                </button>`,
+            )}
+        </div>
       </div>
     `;
     const dialog = openDialog({
@@ -895,6 +899,14 @@ ${b.prompt}</textarea
       size: "lg",
       body: body(),
       onMount(el) {
+        const scroller = el.querySelector(".imst-gallery-scroll");
+        const item = el.querySelector(".imst-gallery__item");
+        if (scroller && item) {
+          const gap = parseFloat(getComputedStyle(el.querySelector(".imst-gallery")).rowGap) || 0;
+          const pad = parseFloat(getComputedStyle(scroller).paddingTop) || 0;
+          galleryH = Math.round(item.offsetHeight * 2.5 + gap * 2 + pad);
+          scroller.style.setProperty("--imst-gallery-h", `${galleryH}px`);
+        }
         el.addEventListener("click", (event) => {
           const chip = event.target.closest("[data-imst-family]");
           if (chip) {
