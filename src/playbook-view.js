@@ -14,7 +14,7 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1359";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1360";
 import {
   kitEnabled,
   renderColorRole,
@@ -27,17 +27,17 @@ import {
   handleKitInput,
   handleKitChange,
   kitSnapshot,
-} from "./playbook-brand-kit.js?v=1359";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1359";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1359";
-import { isFlagOn } from "./feature-flags.js?v=1359";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1359";
+} from "./playbook-brand-kit.js?v=1360";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1360";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1360";
+import { isFlagOn } from "./feature-flags.js?v=1360";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1360";
 // The Default look row offers the SAME three catalogues the Image Studio renders, from
 // the one place they are declared — REF_MODES' own header makes the argument: the label,
 // the hint and the brief clause "drift the moment they live apart". No cycle: the engine
 // imports only clip-formats / image-studio-canvas / feature-flags, and its module body
 // builds consts, so importing it here costs nothing at load.
-import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1359";
+import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1360";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -1373,9 +1373,12 @@ function renderBrandPanel(data, edit) {
       // Reference images live under Brand. They're always-editable (per-image
       // modal + remove + add) regardless of the Brand section's edit state —
       // but not when the fiche itself is read-only.
-      renderRow("Reference images", renderRefImages(data, canEditView())),
-      // Image styles (flag sexySquirrel): the brand's own, always live like the
-      // references above. They replace "Default look", whose only reader — the
+      // Under sexySquirrel reference images belong to the brand's image STYLES
+      // (the row below), so the fiche no longer carries a loose set of them.
+      kitEnabled() ? "" : renderRow("Reference images", renderRefImages(data, canEditView())),
+      // Image styles (flag sexySquirrel): the brand's own, always live (managed
+      // outside the section's edit mode). They replace "Default look" and the loose
+      // Reference images, whose only reader — the
       // old draft Image Studio — the flag swaps for the Image Generator's studio.
       kitEnabled() ? imageStylesRow(data) : "",
       // Last: Logo/colours/type/personality are the MATERIALS, Reference images the
@@ -1394,7 +1397,7 @@ function renderBrandPanel(data, edit) {
       renderRow("Typography", renderTypeSpecimen(data)),
       renderRow("Personality", renderText(data.brandPersonality)),
       kitEnabled() ? renderRow("Moods", renderChips(data.brandMoods || [])) : "",
-      renderRow("Reference images", renderRefImages(data, false)),
+      kitEnabled() ? "" : renderRow("Reference images", renderRefImages(data, false)),
       kitEnabled() ? imageStylesRow(data) : "",
       kitEnabled() ? "" : renderRow("Default look", renderDefaultLook(data, false)),
       kitEnabled() ? renderRow("Visual rules", renderVisualRules(data, false)) : "",

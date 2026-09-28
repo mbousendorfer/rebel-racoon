@@ -13,25 +13,25 @@
 // tones, contentStyle, objective, contentAction, ctaLinks, language, color,
 // suggestions, editingId, onComplete }.
 
-import * as inlineQuestion from "./inline-question.js?v=1359";
-import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=1359";
-import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=1359";
-import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=1359";
-import { showToast } from "./components/toast.js?v=1359";
-import { recordReasons } from "./feedback-store.js?v=1359";
-import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1359";
-import * as rightPanel from "./components/right-panel.js?v=1359";
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1359";
-import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=1359";
-import { analyzeWebsite, analyzeBrandFiles } from "./context-mock-analysis.js?v=1359";
-import { connectors as connectorMocks } from "./mocks.js?v=1359";
+import * as inlineQuestion from "./inline-question.js?v=1360";
+import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=1360";
+import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=1360";
+import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=1360";
+import { showToast } from "./components/toast.js?v=1360";
+import { recordReasons } from "./feedback-store.js?v=1360";
+import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1360";
+import * as rightPanel from "./components/right-panel.js?v=1360";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1360";
+import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=1360";
+import { analyzeWebsite, analyzeBrandFiles } from "./context-mock-analysis.js?v=1360";
+import { connectors as connectorMocks } from "./mocks.js?v=1360";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "./social-profiles.js?v=1359";
-import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=1359";
-import { isFlagOn } from "./feature-flags.js?v=1359";
+} from "./social-profiles.js?v=1360";
+import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=1360";
+import { isFlagOn } from "./feature-flags.js?v=1360";
 
 const drafts = new Map(); // sessionId → draft
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -306,7 +306,10 @@ export function startAlt(sessionId, { onComplete, prefilledUrl = "" } = {}) {
 function altSteps() {
   const steps = ["url"];
   if (isFlagOn("multilingualPlaybook")) steps.push("language");
-  steps.push("profile", "documents", "images");
+  steps.push("profile", "documents");
+  // Image Generator (flag sexySquirrel): reference images belong to the brand's
+  // image STYLES now, made on the fiche — the Playbook no longer asks for loose ones.
+  if (!isFlagOn("sexySquirrel")) steps.push("images");
   return steps;
 }
 function altTotalSteps() {
@@ -640,12 +643,12 @@ function askAltDocuments(sessionId) {
       }
       inlineQuestion.exit(sessionId);
       notify(sessionId);
-      askAltReferenceImages(sessionId);
+      afterAltDocuments(sessionId);
     },
     onSkip: () => {
       inlineQuestion.exit(sessionId);
       notify(sessionId);
-      askAltReferenceImages(sessionId);
+      afterAltDocuments(sessionId);
     },
     onBack: () => askAltPrevious(sessionId, "documents"),
   });
@@ -655,6 +658,11 @@ function askAltDocuments(sessionId) {
 // on-brand. Picking the one action opens a file dialog (data URLs → the draft's
 // referenceImages, surfaced in the Playbook + the image generator); a cancelled
 // dialog leaves the question open so the user can still Skip.
+function afterAltDocuments(sessionId) {
+  if (altSteps().includes("images")) askAltReferenceImages(sessionId);
+  else maybeOpenAltBrief(sessionId);
+}
+
 function askAltReferenceImages(sessionId) {
   postAssistantMessage(
     sessionId,

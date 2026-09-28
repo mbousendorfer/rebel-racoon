@@ -15,16 +15,16 @@ import {
   getContexts,
   subscribe as subscribeContexts,
   updateContext,
-} from "../../../contexts-store.js?v=1359";
-import { createStyle } from "../model/schema.js?v=1359";
-import { canEdit, usableContexts } from "../../../playbook-access.js?v=1359";
+} from "../../../contexts-store.js?v=1360";
+import { createStyle } from "../model/schema.js?v=1360";
+import { canEdit, usableContexts } from "../../../playbook-access.js?v=1360";
 import {
   getActivePlaybookId,
   isWorkspaceMode,
   playbookForNewWork,
   subscribe as subscribeActive,
-} from "../../../active-playbook.js?v=1359";
-import { storageService as storage } from "../services/index.js?v=1359";
+} from "../../../active-playbook.js?v=1360";
+import { storageService as storage } from "../services/index.js?v=1360";
 
 // Which copy archetype the mocked copyService uses — guessed from the Playbook's words.
 function sectorKeyOf(ctx) {
@@ -58,9 +58,8 @@ export function toBrand(ctx) {
     personality: ctx.brandPersonality || "",
     imageStyle: {
       moods: (ctx.brandMoods || []).slice(),
-      // Not `imageDefaults`: that field targets another tool's presets. The
-      // generator's style preferences are its own styles, keyed by Playbook.
-      references: (ctx.referenceImages || []).map((r) => ({ id: r.id, label: r.label, url: r.url })),
+      // Not `imageDefaults` nor the loose `referenceImages`: both serve the old
+      // Image Studio. The brand's look is its own styles (imageStyles).
     },
     voice: {
       tone: [vp.headline, ...(ctx.tones || [])].filter(Boolean).join(" · "),
