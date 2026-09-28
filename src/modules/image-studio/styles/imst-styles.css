@@ -291,10 +291,55 @@ button.imst-style-card {
   color: var(--ref-color-grey-80);
 }
 
-.imst-pbstyles__actions {
+/* The "New style" tile: an empty-state card that IS the button, first in the grid.
+ * Solid border, not dashed — a dashed box promises a drop. */
+.imst-pbstyles__new {
   display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-sm);
+  flex-direction: column;
+  padding: 0;
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--ref-border-radius-md);
+  background: var(--ref-color-white);
+  font: inherit;
+  color: var(--ref-color-grey-100);
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.15s ease;
+}
+
+.imst-pbstyles__new:hover {
+  border-color: var(--ref-color-electric-blue-100);
+}
+
+.imst-pbstyles__new:focus-visible {
+  outline: 2px solid var(--sys-border-color-active);
+  outline-offset: 2px;
+}
+
+.imst-pbstyles__new-art {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  background: var(--ref-color-grey-05);
+  color: var(--ref-color-grey-80);
+  font-size: var(--ref-font-size-xxl);
+  transition: color 0.15s ease;
+}
+
+.imst-pbstyles__new:hover .imst-pbstyles__new-art {
+  color: var(--ref-color-electric-blue-100);
+}
+
+.imst-pbstyles__new-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  padding: var(--ref-spacing-xs);
+}
+
+.imst-pbstyles__new-text .ap-caption {
+  color: var(--ref-color-grey-80);
 }
 
 .imst-pbstyle__actions {

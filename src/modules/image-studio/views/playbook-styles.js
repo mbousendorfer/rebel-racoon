@@ -10,13 +10,13 @@
 // weights and a test on three subjects. The system presets are NOT shown here:
 // they belong to no Playbook, and the fiche lists only what is this brand's.
 
-import { html, toString } from "../lib/html.js?v=1373";
-import { navigate } from "../../../router.js?v=1373";
-import { styleThumb } from "../ui/style-thumb.js?v=1373";
-import { confirmDialog } from "../ui/dialog.js?v=1373";
-import { toast } from "../ui/toast.js?v=1373";
-import { canEditBrand, getBrand, getStyle, getStylesForBrand } from "../state/store.js?v=1373";
-import { deleteStyle, duplicateStyle } from "../state/style-actions.js?v=1373";
+import { html, toString } from "../lib/html.js?v=1374";
+import { navigate } from "../../../router.js?v=1374";
+import { styleThumb } from "../ui/style-thumb.js?v=1374";
+import { confirmDialog } from "../ui/dialog.js?v=1374";
+import { toast } from "../ui/toast.js?v=1374";
+import { canEditBrand, getBrand, getStyle, getStylesForBrand } from "../state/store.js?v=1374";
+import { deleteStyle, duplicateStyle } from "../state/style-actions.js?v=1374";
 
 const creatorPath = (playbookId, rest) => `/playbook/${encodeURIComponent(playbookId)}/styles/${rest}`;
 
@@ -81,21 +81,24 @@ export function renderPlaybookStyles(playbookId, { canEdit = true } = {}) {
   if (!brand) return "";
   const editable = canEdit && canEditBrand(playbookId);
   const own = getStylesForBrand(playbookId).filter((s) => s.kind === "custom");
+  // "New style" is the FIRST tile of the grid, an empty-state card that is the
+  // button — always in reach at the left, however many styles follow.
+  const newTile = editable
+    ? html`<button type="button" class="imst-pbstyles__new" data-imst-pb-style="new">
+        <span class="imst-pbstyles__new-art" aria-hidden="true"><i class="ap-icon-plus"></i></span>
+        <span class="imst-pbstyles__new-text">
+          <span class="ap-body-bold">New style</span>
+          <span class="ap-caption"
+            >${own.length ? "From a few reference images" : "Give a few reference images whose look you want"}</span
+          >
+        </span>
+      </button>`
+    : "";
+  if (!own.length && !editable)
+    return toString(html`<p class="ap-body imst-pbstyles__empty">No style of this brand's own yet.</p>`);
   return toString(html`
     <div class="imst-pbstyles">
-      ${own.length
-        ? html`<div class="imst-pbstyles__grid">${own.map((s) => styleCard(s, brand, editable))}</div>`
-        : html`<p class="ap-body imst-pbstyles__empty">
-            No style of this brand's own yet. Give a few reference images whose look you want, and it comes first
-            whenever an image is made for this Playbook.
-          </p>`}
-      ${editable
-        ? html`<div class="imst-pbstyles__actions">
-            <button type="button" class="ap-button stroked grey" data-imst-pb-style="new">
-              <i class="ap-icon-plus" aria-hidden="true"></i><span>New style</span>
-            </button>
-          </div>`
-        : ""}
+      <div class="imst-pbstyles__grid">${newTile}${own.map((s) => styleCard(s, brand, editable))}</div>
     </div>
   `);
 }
