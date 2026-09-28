@@ -7,10 +7,10 @@
 //   caption({ brand, brief, network, headline }) → Promise<string>   (within the network's limit)
 //   hashtags({ brand, brief, network }) → Promise<string[]>
 
-import { MOCK } from "../../config/mock.js?v=1326";
-import { COPY_LIMITS } from "../../config/copy-limits.js?v=1326";
-import { hashString, prng, shuffle } from "../../lib/prng.js?v=1326";
-import { wait } from "../../lib/delegate.js?v=1326";
+import { MOCK } from "../../config/mock.js?v=1329";
+import { COPY_LIMITS } from "../../config/copy-limits.js?v=1329";
+import { hashString, prng, shuffle } from "../../lib/prng.js?v=1329";
+import { wait } from "../../lib/delegate.js?v=1329";
 
 function delay(signal) {
   const [min, max] = MOCK.copy.delayMs;

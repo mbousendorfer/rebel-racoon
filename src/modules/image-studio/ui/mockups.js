@@ -3,9 +3,9 @@
 // it's a stand-in for someone else's interface, never the brand's colours.
 // Also the safe-zone overlay: the parts of a format a network's UI covers.
 
-import { html } from "../lib/html.js?v=1326";
-import { networkById } from "../config/networks.js?v=1326";
-import { logoUrl } from "./asset.js?v=1326";
+import { html } from "../lib/html.js?v=1329";
+import { networkById } from "../config/networks.js?v=1329";
+import { logoUrl } from "./asset.js?v=1329";
 
 function avatar(brand) {
   const url = logoUrl(brand, "icon");

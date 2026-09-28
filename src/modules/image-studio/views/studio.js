@@ -7,7 +7,7 @@
 //
 //   CONTROLS (left column, Generate always in reach at its foot)
 //     brand applied · the prompt · the style as a picture (6 quick picks + the
-//     full gallery) · the shape drawn to scale · the product as a thumbnail ·
+//     full gallery) · the shape drawn to scale ·
 //     text on the image and how it's set
 //   CANVAS (the rest)
 //     before generating — a LIVE preview of what the choices give, in the
@@ -16,27 +16,27 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, "Refine" to iterate in place, earlier runs underneath
 //
-// Deep links: ?creation=<id> reopens a run · ?style=<id> / ?product=<id> preselect.
+// Deep links: ?creation=<id> reopens a run · ?style=<id> preselects.
 
-import { html, toString } from "../lib/html.js?v=1326";
-import { delegate } from "../lib/delegate.js?v=1326";
-import { hashString } from "../lib/prng.js?v=1326";
-import { renderFrame } from "./frame.js?v=1326";
-import { renderEmpty } from "../ui/empty.js?v=1326";
-import { renderBrandPicker } from "../ui/brand-picker.js?v=1326";
-import { preserveFocus } from "../ui/fields.js?v=1326";
-import { toast } from "../ui/toast.js?v=1326";
-import { assetImg, hydrateAssets, logoUrl, warmAssetUrls } from "../ui/asset.js?v=1326";
-import { styleThumb } from "../ui/style-thumb.js?v=1326";
-import { openDialog } from "../ui/dialog.js?v=1326";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1326";
-import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1326";
-import { FORMAT_SHAPES, formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1326";
-import { networkById } from "../config/networks.js?v=1326";
-import { copyService, imageGenerationService } from "../services/index.js?v=1326";
-import { unbranded } from "../state/playbook-brand.js?v=1326";
-import { resolveLayers } from "../render/layout.js?v=1326";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1326";
+import { html, toString } from "../lib/html.js?v=1329";
+import { delegate } from "../lib/delegate.js?v=1329";
+import { hashString } from "../lib/prng.js?v=1329";
+import { renderFrame } from "./frame.js?v=1329";
+import { renderEmpty } from "../ui/empty.js?v=1329";
+import { renderBrandPicker } from "../ui/brand-picker.js?v=1329";
+import { preserveFocus } from "../ui/fields.js?v=1329";
+import { toast } from "../ui/toast.js?v=1329";
+import { assetImg, hydrateAssets, logoUrl, warmAssetUrls } from "../ui/asset.js?v=1329";
+import { styleThumb } from "../ui/style-thumb.js?v=1329";
+import { openDialog } from "../ui/dialog.js?v=1329";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1329";
+import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1329";
+import { FORMAT_SHAPES, formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1329";
+import { networkById } from "../config/networks.js?v=1329";
+import { copyService, imageGenerationService } from "../services/index.js?v=1329";
+import { unbranded } from "../state/playbook-brand.js?v=1329";
+import { resolveLayers } from "../render/layout.js?v=1329";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1329";
 import {
   getActiveBrand,
   getBrand,
@@ -45,7 +45,7 @@ import {
   getStyle,
   getStylesForBrand,
   subscribe,
-} from "../state/store.js?v=1326";
+} from "../state/store.js?v=1329";
 import {
   addBatch,
   deleteCreation,
@@ -53,7 +53,7 @@ import {
   replaceVariation,
   startCreation,
   toggleFavorite,
-} from "../state/creation-actions.js?v=1326";
+} from "../state/creation-actions.js?v=1329";
 
 // The presets offered first when the brand has few styles of its own — one per
 // family, the ones that read best at thumbnail size.
@@ -121,9 +121,6 @@ export function mountStudio(target, { mode = "page", navigate = () => {}, draft 
     else state.creationId = null;
     const styleParam = hashParams().get("style");
     if (brand && styleParam && getStyle(styleParam)) state.brief.styleId = styleParam;
-    const productParam = hashParams().get("product");
-    if (brand && productParam && getProducts(brand.id).some((p) => p.id === productParam))
-      state.brief.productId = productParam;
     if (brand) warmAssetUrls(getProducts(brand.id).map((p) => p.imageAssetId)).then(paint);
   };
 
@@ -168,9 +165,11 @@ export function mountStudio(target, { mode = "page", navigate = () => {}, draft 
             <span class="ap-caption"
               >${on
                 ? inDraft
-                  ? "This chat's Playbook"
-                  : "Applied to every image"
-                : "Off — neutral colours, no logo or brand rules"}</span
+                  ? "This chat's Playbook · applied"
+                  : "Applied"
+                : inDraft
+                  ? "Not applied — neutral colours, no logo"
+                  : "Not applied"}</span
             >
           </div>
           ${on
@@ -191,22 +190,42 @@ export function mountStudio(target, { mode = "page", navigate = () => {}, draft 
               >`
             : ""}
           ${inDraft ? "" : renderBrandPicker()}
+          <label class="ap-toggle-container" data-tooltip="${on ? "Don't use the Playbook" : "Use the Playbook"}">
+            <input type="checkbox" data-imst-usebrand aria-label="Use the Playbook" ${on ? "checked" : ""} /><i></i
+            ><span></span>
+          </label>
         </div>
-        <label class="ap-toggle-container imst-ctl__toggle">
-          <input type="checkbox" data-imst-usebrand ${on ? "checked" : ""} /><i></i><span>Use the Playbook</span>
-        </label>
       </div>
     `;
   };
+
+  // "Best for" + the network's icon; its name goes in title / aria-label.
+  const bestFor = (networks) =>
+    html`<span class="ap-caption imst-best"
+      >Best for
+      <span class="imst-best__nets"
+        >${networks.map(
+          (n) =>
+            html`<i
+              class="${networkById(n).icon}"
+              role="img"
+              aria-label="${networkById(n).label}"
+              title="${networkById(n).label}"
+            ></i>`,
+        )}</span
+      ></span
+    >`;
 
   const renderControls = (brand) => {
     const b = state.brief;
     const style = getStyle(b.styleId);
     const shape = shapeForFormat(b.formatIds[0]);
     const format = formatById(b.formatIds[0]);
-    const products = getProducts(brand.id);
     const canEmbed = !!style?.supportsEmbeddedText;
     const running = state.run.status === "loading";
+    // Every shape for the same networks (a draft's dialog): say it once, beside the title.
+    const nets = shapes().map((x) => x.networks.join(","));
+    const sharedNets = nets.every((n) => n === nets[0]) ? shapes()[0]?.networks : null;
     const styleCount = getStylesForBrand(brand.id).length || STYLE_PRESETS.length;
     return html`
       <aside class="imst-controls" aria-label="Describe the image">
@@ -273,7 +292,10 @@ ${b.prompt}</textarea
 
           <section class="imst-ctl" aria-labelledby="imst-ctl-shape">
             <header class="imst-ctl__head">
-              <h3 class="imst-ctl__label ap-body-bold" id="imst-ctl-shape">Shape</h3>
+              <div class="imst-ctl__title">
+                <h3 class="imst-ctl__label ap-body-bold" id="imst-ctl-shape">Shape</h3>
+                ${sharedNets ? bestFor(sharedNets) : ""}
+              </div>
               <span class="ap-caption imst-ctl__meta">${format.width} × ${format.height} px</span>
             </header>
             <div class="imst-seg" role="radiogroup" aria-labelledby="imst-ctl-shape">
@@ -297,61 +319,11 @@ ${b.prompt}</textarea
                     ></span>
                     <span class="imst-seg__name">${s.label}</span>
                     <span class="ap-caption imst-seg__ratio">${s.ratio}</span>
-                    <span class="ap-caption imst-seg__best"
-                      >Best for
-                      <span class="imst-seg__nets"
-                        >${s.networks.map(
-                          (n) =>
-                            html`<i
-                              class="${networkById(n).icon}"
-                              role="img"
-                              aria-label="${networkById(n).label}"
-                              title="${networkById(n).label}"
-                            ></i>`,
-                        )}</span
-                      ></span
-                    >
+                    ${sharedNets ? "" : bestFor(s.networks)}
                   </button>`,
               )}
             </div>
           </section>
-
-          ${products.length
-            ? html`<section class="imst-ctl" aria-labelledby="imst-ctl-product">
-                <header class="imst-ctl__head">
-                  <h3 class="imst-ctl__label ap-body-bold" id="imst-ctl-product">Product</h3>
-                  <span class="ap-caption imst-ctl__meta">Optional</span>
-                </header>
-                <div class="imst-pills" role="radiogroup" aria-labelledby="imst-ctl-product">
-                  <button
-                    type="button"
-                    class="imst-pill imst-pill--plain"
-                    role="radio"
-                    aria-checked="${!b.productId}"
-                    data-imst-product=""
-                  >
-                    <span>No product</span>
-                  </button>
-                  ${products.map(
-                    (p) =>
-                      html`<button
-                        type="button"
-                        class="imst-pill"
-                        role="radio"
-                        aria-checked="${b.productId === p.id}"
-                        data-imst-product="${p.id}"
-                      >
-                        <span class="imst-pill__thumb"
-                          >${p.imageAssetId
-                            ? assetImg(p.imageAssetId)
-                            : html`<i class="ap-icon-product-tag" aria-hidden="true"></i>`}</span
-                        >
-                        <span>${p.name}</span>
-                      </button>`,
-                  )}
-                </div>
-              </section>`
-            : ""}
 
           <section class="imst-ctl" aria-labelledby="imst-ctl-text">
             <header class="imst-ctl__head">
@@ -608,7 +580,7 @@ ${b.prompt}</textarea
             class="imst-refine__input"
             data-imst-field="refine"
             value="${state.refine}"
-            placeholder="Refine this one — warmer light, closer on the product…"
+            placeholder="Refine this one — warmer light, a closer crop…"
             aria-label="Refine this variation"
           />
           <button type="submit" class="ap-button primary orange" ${state.run.status === "loading" ? "disabled" : ""}>
@@ -989,11 +961,6 @@ ${b.prompt}</textarea
     delegate(target, "click", "[data-imst-style]", (_e, el) => setStyle(el.dataset.imstStyle)),
     delegate(target, "click", "[data-imst-shape]", (_e, el) => {
       state.brief.formatIds = [shapes().find((s) => s.id === el.dataset.imstShape).formatId];
-      leaveResults();
-      paint();
-    }),
-    delegate(target, "click", "[data-imst-product]", (_e, el) => {
-      state.brief.productId = el.dataset.imstProduct || null;
       leaveResults();
       paint();
     }),

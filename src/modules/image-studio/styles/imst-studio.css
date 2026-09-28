@@ -412,83 +412,32 @@
   line-height: 1.25;
 }
 
-.imst-seg__best {
-  display: flex;
+.imst-best {
+  display: inline-flex;
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
   gap: var(--ref-spacing-xxxs);
-  margin-top: var(--ref-spacing-xxxs);
   color: var(--ref-color-grey-80);
   line-height: 1.25;
 }
 
-.imst-seg__nets {
-  display: flex;
+.imst-seg__opt .imst-best {
+  margin-top: var(--ref-spacing-xxxs);
+}
+
+.imst-best__nets {
+  display: inline-flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: var(--ref-spacing-xxxs);
   font-size: var(--ref-font-size-xs);
 }
 
-/* Product: pills with the product's own picture, the full name */
-.imst-pills {
+.imst-ctl__title {
   display: flex;
-  flex-wrap: wrap;
+  align-items: baseline;
   gap: var(--ref-spacing-xxs);
-}
-
-.imst-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  height: var(--ref-spacing-xl);
-  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xs) var(--ref-spacing-xxxs) var(--ref-spacing-xxxs);
-  border: 1px solid var(--ref-color-grey-20);
-  border-radius: var(--app-radius-pill);
-  background: var(--ref-color-white);
-  font: inherit;
-  font-size: var(--ref-font-size-sm);
-  color: var(--ref-color-grey-100);
-  cursor: pointer;
-  transition: border-color 0.15s ease;
-}
-
-.imst-pill--plain {
-  padding-left: var(--ref-spacing-xs);
-}
-
-.imst-pill:hover {
-  border-color: var(--ref-color-electric-blue-40);
-}
-
-.imst-pill[aria-checked="true"] {
-  border-color: var(--ref-color-electric-blue-100);
-  background: var(--ref-color-electric-blue-05);
-  font-weight: var(--ref-font-weight-bold);
-}
-
-.imst-pill:focus-visible {
-  outline: 2px solid var(--sys-border-color-active);
-  outline-offset: 2px;
-}
-
-.imst-pill__thumb {
-  display: grid;
-  place-items: center;
-  width: var(--ref-spacing-lg);
-  height: var(--ref-spacing-lg);
-  flex-shrink: 0;
-  border-radius: var(--app-radius-circle);
-  overflow: hidden;
-  background: var(--ref-color-grey-05);
-  color: var(--ref-color-grey-80);
-}
-
-.imst-pill__thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
 }
 
 /* The gallery dialog keeps the tile look of the older picks */
