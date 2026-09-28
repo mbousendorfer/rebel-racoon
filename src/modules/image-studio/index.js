@@ -5,19 +5,17 @@
 // through state/playbook-brand.js only, the Playbooks — the brand IS the
 // Playbook. See docs/audits/image-studio-integration.md.
 
-import { navigate } from "../../router.js?v=1335";
-import { isFlagOn } from "../../feature-flags.js?v=1335";
-import { renderTopbar } from "../../components/topbar.js?v=1335";
-import { boot, setActiveBrand, startPlaybookCreation } from "./state/store.js?v=1335";
-import { delegate, disposer } from "./lib/delegate.js?v=1335";
-import { installMenus } from "./ui/menu.js?v=1335";
-import { closeAllDialogs } from "./ui/dialog.js?v=1335";
-import * as hub from "./views/hub.js?v=1335";
-import * as history from "./views/history.js?v=1335";
-import * as styles from "./views/styles.js?v=1335";
-import * as styleCreator from "./views/style-creator.js?v=1335";
-import * as editor from "./views/editor/index.js?v=1335";
-import * as catalog from "./views/catalog.js?v=1335";
+import { navigate } from "../../router.js?v=1337";
+import { isFlagOn } from "../../feature-flags.js?v=1337";
+import { renderTopbar } from "../../components/topbar.js?v=1337";
+import { boot, setActiveBrand, startPlaybookCreation } from "./state/store.js?v=1337";
+import { delegate, disposer } from "./lib/delegate.js?v=1337";
+import { installMenus } from "./ui/menu.js?v=1337";
+import { closeAllDialogs } from "./ui/dialog.js?v=1337";
+import * as history from "./views/history.js?v=1337";
+import * as styles from "./views/styles.js?v=1337";
+import * as styleCreator from "./views/style-creator.js?v=1337";
+import * as editor from "./views/editor/index.js?v=1337";
 
 export const FLAG = "sexySquirrel";
 
@@ -54,16 +52,23 @@ function screen(mount) {
 }
 
 export const ROUTES = Object.freeze([
-  { pattern: "/image-generator", handler: screen(hub.mount) },
+  // Images are generated from a draft only (the draft's studio, below): the
+  // section opens on what was made. replace(), so Back doesn't bounce here.
+  {
+    pattern: "/image-generator",
+    handler: () => {
+      window.location.replace(window.location.href.split("#")[0] + "#/image-generator/history");
+      return undefined;
+    },
+  },
   { pattern: "/image-generator/history", handler: screen(history.mount) },
   { pattern: "/image-generator/styles", handler: screen(styles.mount) },
   // Before /:id — route() takes the first match, and "new" would pass for an id.
   { pattern: "/image-generator/styles/new", handler: screen(styleCreator.mount) },
   { pattern: "/image-generator/styles/:id", handler: screen(styleCreator.mount) },
   { pattern: "/image-generator/editor/:creationId", handler: screen(editor.mount) },
-  { pattern: "/image-generator/catalog", handler: screen(catalog.mount) },
 ]);
 
 // The one other door into the module: the draft's image studio (right panel),
 // behind the same flag. Called by src/components/right-panel.js.
-export { openDraftStudio } from "./ui/draft-studio.js?v=1335";
+export { openDraftStudio } from "./ui/draft-studio.js?v=1337";

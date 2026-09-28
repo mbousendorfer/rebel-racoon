@@ -1,16 +1,14 @@
 // Image Generator — the page frame every section renders inside: the section
-// tabs (Generate · History · Styles · Catalog) and the body. Deep pages (the style creator, the
+// tabs (History · Styles) and the body. Deep pages (the style creator, the
 // editor) swap the tabs for a back link to their section.
 
-import { html } from "../lib/html.js?v=1335";
+import { html } from "../lib/html.js?v=1337";
 
 export const SECTIONS = Object.freeze([
-  // Generating is the product; History is what you generated. There is no
-  // Brands section: the brand is the Playbook, edited on its own page.
-  { id: "create", path: "/image-generator", icon: "ap-icon-sparkles", label: "Generate" },
+  // No Generate section: an image is generated FROM A DRAFT (the draft's
+  // studio). No Brands section: the brand is the Playbook, edited on its page.
   { id: "history", path: "/image-generator/history", icon: "ap-icon-history", label: "History" },
   { id: "styles", path: "/image-generator/styles", icon: "ap-icon-image", label: "Styles" },
-  { id: "catalog", path: "/image-generator/catalog", icon: "ap-icon-product-tag", label: "Catalog" },
 ]);
 
 function renderTabs(active) {

@@ -1,19 +1,19 @@
 // Image Generator — History, for the active Playbook: every generation run,
 // newest first — reopen it on Generate, or delete it.
 
-import { html, toString } from "../lib/html.js?v=1335";
-import { delegate } from "../lib/delegate.js?v=1335";
-import { renderFrame } from "./frame.js?v=1335";
-import { renderEmpty } from "../ui/empty.js?v=1335";
-import { renderBrandPicker } from "../ui/brand-picker.js?v=1335";
-import { confirmDialog } from "../ui/dialog.js?v=1335";
-import { toast } from "../ui/toast.js?v=1335";
-import { variationCanvas } from "../ui/variation.js?v=1335";
-import { storageService } from "../services/index.js?v=1335";
-import { formatById, formatRatio } from "../config/formats.js?v=1335";
-import { networkById } from "../config/networks.js?v=1335";
-import { deleteCreation } from "../state/creation-actions.js?v=1335";
-import { boot, getActiveBrand, getCreation, getCreations, getStyle, subscribe } from "../state/store.js?v=1335";
+import { html, toString } from "../lib/html.js?v=1337";
+import { delegate } from "../lib/delegate.js?v=1337";
+import { renderFrame } from "./frame.js?v=1337";
+import { renderEmpty } from "../ui/empty.js?v=1337";
+import { renderBrandPicker } from "../ui/brand-picker.js?v=1337";
+import { confirmDialog } from "../ui/dialog.js?v=1337";
+import { toast } from "../ui/toast.js?v=1337";
+import { variationCanvas } from "../ui/variation.js?v=1337";
+import { storageService } from "../services/index.js?v=1337";
+import { formatById, formatRatio } from "../config/formats.js?v=1337";
+import { networkById } from "../config/networks.js?v=1337";
+import { deleteCreation } from "../state/creation-actions.js?v=1337";
+import { boot, getActiveBrand, getCreation, getCreations, getStyle, subscribe } from "../state/store.js?v=1337";
 
 const day = (iso) =>
   iso ? new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "—";
@@ -48,7 +48,7 @@ export function mount(target) {
               <button
                 type="button"
                 class="imst-history__open"
-                data-imst-nav="/image-generator?creation=${c.id}"
+                data-imst-nav="/image-generator/editor/${c.id}"
                 aria-label="Open ${c.title}"
               >
                 ${variationCanvas({

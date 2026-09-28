@@ -1,18 +1,18 @@
 // Image Generator — Styles: the Playbook's own styles first, then the system
 // presets by family. Every thumbnail is drawn in the active brand's palette.
 
-import { html, toString } from "../lib/html.js?v=1335";
-import { delegate } from "../lib/delegate.js?v=1335";
-import { renderFrame } from "./frame.js?v=1335";
-import { renderEmpty } from "../ui/empty.js?v=1335";
-import { renderBrandPicker } from "../ui/brand-picker.js?v=1335";
-import { menu } from "../ui/menu.js?v=1335";
-import { styleThumb } from "../ui/style-thumb.js?v=1335";
-import { confirmDialog, openDialog } from "../ui/dialog.js?v=1335";
-import { toast } from "../ui/toast.js?v=1335";
-import { STYLE_FAMILIES, STYLE_PRESETS, STYLE_TEST_SUBJECTS, presetById } from "../config/style-presets.js?v=1335";
-import { getActiveBrand, getStyle, getStylesForBrand, subscribe } from "../state/store.js?v=1335";
-import { deleteStyle, duplicateStyle } from "../state/style-actions.js?v=1335";
+import { html, toString } from "../lib/html.js?v=1337";
+import { delegate } from "../lib/delegate.js?v=1337";
+import { renderFrame } from "./frame.js?v=1337";
+import { renderEmpty } from "../ui/empty.js?v=1337";
+import { renderBrandPicker } from "../ui/brand-picker.js?v=1337";
+import { menu } from "../ui/menu.js?v=1337";
+import { styleThumb } from "../ui/style-thumb.js?v=1337";
+import { confirmDialog, openDialog } from "../ui/dialog.js?v=1337";
+import { toast } from "../ui/toast.js?v=1337";
+import { STYLE_FAMILIES, STYLE_PRESETS, STYLE_TEST_SUBJECTS, presetById } from "../config/style-presets.js?v=1337";
+import { getActiveBrand, getStyle, getStylesForBrand, subscribe } from "../state/store.js?v=1337";
+import { deleteStyle, duplicateStyle } from "../state/style-actions.js?v=1337";
 
 /** "Lifestyle 70% · Editorial 30% · 2 images" — what a custom style is made of, in words. */
 export function sourcesSummary(style) {
@@ -120,8 +120,7 @@ function openPresetPreview(preset, brand, navigate) {
       </p>
     `,
     footer: html`<div class="ap-dialog-footer-right">
-      <button type="button" class="ap-button stroked grey" data-imst-dlg="customize">Make it your own</button>
-      <button type="button" class="ap-button primary blue" data-imst-dlg="use">Use this style</button>
+      <button type="button" class="ap-button primary blue" data-imst-dlg="customize">Make it your own</button>
     </div>`,
     onMount(el) {
       el.addEventListener("click", (event) => {
@@ -129,7 +128,6 @@ function openPresetPreview(preset, brand, navigate) {
         if (!btn) return;
         dialog.close();
         if (btn.dataset.imstDlg === "customize") navigate(`/image-generator/styles/new?from=${preset.id}`);
-        else navigate(`/image-generator?style=${preset.id}`);
       });
     },
   });

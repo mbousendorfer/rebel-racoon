@@ -301,3 +301,7 @@ Calculé commit par commit sur mes commits (une autre session pousse aussi sur `
 - **« Use in draft » / « Replace the draft's image »** exporte la variation en PNG (le même export que Download) et l'écrit via `attachImageToDraft` : le seul point de contact avec les stores d'Archie, passé en callback par `right-panel.js` — le module n'importe toujours aucun store.
 - Adapt everywhere et l'éditeur à calques restent sur la page : un draft est un post pour un réseau, sa dialog va au résultat.
 - **Flag OFF** : l'Image Studio d'origine, inchangé.
+
+## 11. La génération ne se fait plus que depuis un draft (2026-09-28)
+
+À la demande : l'onglet Generate et le studio pleine page sont supprimés, `/image-generator` redirige vers History, le Catalog (produits + Product shoot) est retiré, « Use this style » aussi. `views/studio.js` n'a plus qu'un mode (le draft) ; `views/hub.js`, `views/catalog.js`, `state/product-actions.js` et `services/mock/product.mock.js` sont supprimés. Aucun fichier hors module touché, hormis les docs.

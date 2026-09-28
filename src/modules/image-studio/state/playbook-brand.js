@@ -10,18 +10,18 @@
 // (/playbook/:id, src/playbook-brand-kit.js). Sub-brands don't exist: a variant
 // is a duplicated Playbook (docs/reference/CONCEPTS.md §1).
 
-import { getContextById, subscribe as subscribeContexts, updateContext } from "../../../contexts-store.js?v=1335";
-import { canEdit, usableContexts } from "../../../playbook-access.js?v=1335";
+import { getContextById, subscribe as subscribeContexts, updateContext } from "../../../contexts-store.js?v=1337";
+import { canEdit, usableContexts } from "../../../playbook-access.js?v=1337";
 import {
   getActivePlaybookId,
   isWorkspaceMode,
   playbookForNewWork,
   setActivePlaybook,
   subscribe as subscribeActive,
-} from "../../../active-playbook.js?v=1335";
-import { setHandoff } from "../../../handoff.js?v=1335";
-import { navigate } from "../../../router.js?v=1335";
-import { storageService as storage } from "../services/index.js?v=1335";
+} from "../../../active-playbook.js?v=1337";
+import { setHandoff } from "../../../handoff.js?v=1337";
+import { navigate } from "../../../router.js?v=1337";
+import { storageService as storage } from "../services/index.js?v=1337";
 
 // Which copy archetype the mocked copyService uses — guessed from the Playbook's words.
 function sectorKeyOf(ctx) {
@@ -135,7 +135,7 @@ export function playbookPath(id) {
 }
 
 /** Opens Archie's Playbook creation (URL · files · by hand) and comes back here. */
-export function startPlaybookCreation(returnTo = "/image-generator") {
+export function startPlaybookCreation(returnTo = "/image-generator/history") {
   // Remember what existed, so the Playbook created in between is adopted on return.
   storage.setMeta({ pendingCreationFrom: usableContexts().map((c) => c.id) });
   try {
@@ -193,7 +193,7 @@ export function subscribeBrands(fn) {
   };
 }
 
-// "Use the Playbook" off: the same brand id (its catalogue and history stay
+// "Use the Playbook" off: the same brand id (its styles and history stay
 // its own) but none of its identity — no logo, a neutral palette, the default
 // fonts, no moods or words to avoid. Colours are CONTENT here, not chrome.
 const NEUTRAL_PALETTE = [

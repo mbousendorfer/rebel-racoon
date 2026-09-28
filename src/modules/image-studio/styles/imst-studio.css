@@ -769,16 +769,6 @@
   left: var(--ref-spacing-xxs);
 }
 
-.imst-gallery__new-art {
-  display: grid;
-  place-items: center;
-  aspect-ratio: 1;
-  border-radius: var(--ref-border-radius-sm);
-  background: var(--ref-color-grey-05);
-  color: var(--ref-color-grey-80);
-  font-size: var(--ref-font-size-xl);
-}
-
 /* Every card the same height (one-line name, two-line description), so two and
  * a half rows is a fixed height the filters never change. */
 .imst-gallery__text .ap-body-bold {

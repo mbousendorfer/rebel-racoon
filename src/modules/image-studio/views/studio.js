@@ -1,9 +1,8 @@
-// Image Generator — the studio: one component, two hosts.
-//   mode "page"  — the Generate tab (/image-generator), the whole content area
-//   mode "draft" — opened FROM A DRAFT (flag sexySquirrel replaces the draft's
-//                  Image Studio): the draft's Playbook is the brand, only its
-//                  network's shapes, a prompt suggested from the post, and
-//                  "Use in draft" puts the PNG in the post.
+// Image Generator — the studio, opened FROM A DRAFT (flag sexySquirrel
+// replaces the draft's Image Studio): the draft's Playbook is the brand, only
+// its network's shapes, a prompt suggested from the post, and "Use in draft"
+// puts the PNG in the post. It is the ONLY place images are generated — the
+// /image-generator section keeps what was made (History) and the styles.
 //
 //   CONTROLS (left column, Generate always in reach at its foot)
 //     brand applied · the prompt · the style as a picture (6 quick picks + the
@@ -15,45 +14,32 @@
 //     generating — the shape, shimmering, with what's being made in words
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, "Refine" to iterate in place, earlier runs underneath
-//
-// Deep links: ?creation=<id> reopens a run · ?style=<id> preselects.
 
-import { html, toString } from "../lib/html.js?v=1335";
-import { delegate } from "../lib/delegate.js?v=1335";
-import { hashString } from "../lib/prng.js?v=1335";
-import { renderFrame } from "./frame.js?v=1335";
-import { renderEmpty } from "../ui/empty.js?v=1335";
-import { renderBrandPicker } from "../ui/brand-picker.js?v=1335";
-import { preserveFocus } from "../ui/fields.js?v=1335";
-import { toast } from "../ui/toast.js?v=1335";
-import { assetImg, hydrateAssets, logoUrl, warmAssetUrls } from "../ui/asset.js?v=1335";
-import { styleThumb } from "../ui/style-thumb.js?v=1335";
-import { openDialog } from "../ui/dialog.js?v=1335";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1335";
-import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1335";
-import { FORMAT_SHAPES, formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1335";
-import { networkById } from "../config/networks.js?v=1335";
-import { copyService, imageGenerationService } from "../services/index.js?v=1335";
-import { unbranded } from "../state/playbook-brand.js?v=1335";
-import { resolveLayers } from "../render/layout.js?v=1335";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1335";
-import {
-  getActiveBrand,
-  getBrand,
-  getCreation,
-  getProducts,
-  getStyle,
-  getStylesForBrand,
-  subscribe,
-} from "../state/store.js?v=1335";
+import { html, toString } from "../lib/html.js?v=1337";
+import { delegate } from "../lib/delegate.js?v=1337";
+import { hashString } from "../lib/prng.js?v=1337";
+import { renderEmpty } from "../ui/empty.js?v=1337";
+import { preserveFocus } from "../ui/fields.js?v=1337";
+import { toast } from "../ui/toast.js?v=1337";
+import { hydrateAssets, logoUrl } from "../ui/asset.js?v=1337";
+import { styleThumb } from "../ui/style-thumb.js?v=1337";
+import { openDialog } from "../ui/dialog.js?v=1337";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1337";
+import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1337";
+import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1337";
+import { networkById } from "../config/networks.js?v=1337";
+import { copyService, imageGenerationService } from "../services/index.js?v=1337";
+import { unbranded } from "../state/playbook-brand.js?v=1337";
+import { resolveLayers } from "../render/layout.js?v=1337";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1337";
+import { getBrand, getCreation, getProducts, getStyle, getStylesForBrand, subscribe } from "../state/store.js?v=1337";
 import {
   addBatch,
   deleteCreation,
-  openVariation,
   replaceVariation,
   startCreation,
   toggleFavorite,
-} from "../state/creation-actions.js?v=1335";
+} from "../state/creation-actions.js?v=1337";
 
 // The presets offered first when the brand has few styles of its own — one per
 // family, the ones that read best at thumbnail size.
@@ -86,19 +72,15 @@ const lookOf = (brand, brief) => (brief?.useBrand === false ? unbranded(brand) :
 
 /**
  * @param {HTMLElement} target
- * @param {{ mode?: "page"|"draft", navigate?: Function,
- *           draft?: { brandId, network, text, imageUrl, slides, label }, onUse?: (dataUrl) => void }} opts
+ * @param {{ draft: { brandId, network, text, imageUrl, slides }, onUse: (dataUrl) => void }} opts
  */
-export function mountStudio(target, { mode = "page", navigate = () => {}, draft = null, onUse = null } = {}) {
-  const inDraft = mode === "draft";
-  const hashParams = () =>
-    inDraft ? new URLSearchParams() : new URLSearchParams(window.location.hash.split("?")[1] || "");
-  const brandNow = () => (inDraft ? getBrand(draft.brandId) : getActiveBrand());
-  const shapes = () => shapesFor(inDraft ? draft.network : null);
+export function mountStudio(target, { draft, onUse }) {
+  const brandNow = () => getBrand(draft.brandId);
+  const shapes = () => shapesFor(draft.network);
   const state = {
     brandId: null,
     brief: null,
-    creationId: hashParams().get("creation"),
+    creationId: null,
     focusId: null,
     run: { status: "idle" }, // idle | loading | error
     busy: new Set(), // variation ids being regenerated
@@ -111,22 +93,12 @@ export function mountStudio(target, { mode = "page", navigate = () => {}, draft 
 
   const brandChanged = (brand) => {
     state.brandId = brand?.id || null;
-    state.brief = brand ? defaultBrief(brand, inDraft ? draft.network : null) : null;
+    state.brief = brand ? defaultBrief(brand, draft.network) : null;
     // A draft that already has an image shows it first; any choice switches to the live preview.
-    state.showCurrent = !!(inDraft && draft.imageUrl);
+    state.showCurrent = !!draft.imageUrl;
     state.focusId = null;
-    const reopened = state.creationId ? getCreation(state.creationId) : null;
-    if (reopened && reopened.brandId === state.brandId)
-      state.brief = { ...state.brief, ...structuredClone(reopened.brief), formatIds: [reopened.brief.formatIds[0]] };
-    else state.creationId = null;
-    const styleParam = hashParams().get("style");
-    if (brand && styleParam && getStyle(styleParam)) state.brief.styleId = styleParam;
-    if (brand) warmAssetUrls(getProducts(brand.id).map((p) => p.imageAssetId)).then(paint);
+    state.creationId = null;
   };
-
-  const setCreationInUrl = (id) =>
-    inDraft ||
-    history.replaceState(null, "", id ? `#/image-generator?creation=${encodeURIComponent(id)}` : "#/image-generator");
 
   const currentCreation = () => (state.creationId ? getCreation(state.creationId) : null);
   const latestBatch = (c) => (c.batches?.length ? c.batches[0] : { id: null, label: "Variations" });
@@ -163,13 +135,7 @@ export function mountStudio(target, { mode = "page", navigate = () => {}, draft 
           <div class="imst-ctl-brand__text">
             <span class="ap-body-bold">${brand.name}</span>
             <span class="ap-caption"
-              >${on
-                ? inDraft
-                  ? "This chat's Playbook · applied"
-                  : "Applied"
-                : inDraft
-                  ? "Not applied — neutral colours, no logo"
-                  : "Not applied"}</span
+              >${on ? "This chat's Playbook · applied" : "Not applied — neutral colours, no logo"}</span
             >
           </div>
           ${on
@@ -189,7 +155,6 @@ export function mountStudio(target, { mode = "page", navigate = () => {}, draft 
                   )}</span
               >`
             : ""}
-          ${inDraft ? "" : renderBrandPicker()}
           <label class="ap-toggle-container" data-tooltip="${on ? "Don't use the Playbook" : "Use the Playbook"}">
             <input type="checkbox" data-imst-usebrand aria-label="Use the Playbook" ${on ? "checked" : ""} /><i></i
             ><span></span>
@@ -246,7 +211,7 @@ export function mountStudio(target, { mode = "page", navigate = () => {}, draft 
 ${b.prompt}</textarea
               >
               <div class="imst-composer__bar">
-                ${inDraft && draft.text
+                ${draft.text
                   ? html`<button type="button" class="ap-button mermaid" data-imst-action="suggest">
                       <i class="ap-icon-sparkles" aria-hidden="true"></i><span>Suggest from the post</span>
                     </button>`
@@ -342,7 +307,7 @@ ${b.prompt}</textarea
                 placeholder="A headline, e.g. Plans that name their signal"
                 aria-labelledby="imst-ctl-text"
               />
-              ${inDraft && draft.text
+              ${draft.text
                 ? html`<button
                     type="button"
                     class="ap-button mermaid"
@@ -526,22 +491,15 @@ ${b.prompt}</textarea
             <button type="button" class="ap-button stroked grey" data-imst-var="similar">
               <i class="ap-icon-sparkles" aria-hidden="true"></i><span>More like this</span>
             </button>
-            ${inDraft
-              ? html`<button
-                  type="button"
-                  class="ap-button primary blue${state.using ? " loading" : ""}"
-                  data-imst-var="use"
-                  ${state.using ? "disabled" : ""}
-                >
-                  <i class="ap-icon-check" aria-hidden="true"></i
-                  ><span>${draft.imageUrl ? "Replace the draft's image" : "Use in draft"}</span>
-                </button>`
-              : html`<button type="button" class="ap-button stroked grey" data-imst-var="adapt">
-                    <i class="ap-icon-view-grid" aria-hidden="true"></i><span>Adapt everywhere</span>
-                  </button>
-                  <button type="button" class="ap-button primary blue" data-imst-var="edit">
-                    <i class="ap-icon-pen" aria-hidden="true"></i><span>Edit</span>
-                  </button>`}
+            <button
+              type="button"
+              class="ap-button primary blue${state.using ? " loading" : ""}"
+              data-imst-var="use"
+              ${state.using ? "disabled" : ""}
+            >
+              <i class="ap-icon-check" aria-hidden="true"></i
+              ><span>${draft.imageUrl ? "Replace the draft's image" : "Use in draft"}</span>
+            </button>
           </div>
         </header>
         ${stageFrame(
@@ -656,7 +614,7 @@ ${b.prompt}</textarea
     const brand = brandNow();
     if ((brand?.id || null) !== state.brandId) brandChanged(brand);
     const restore = preserveFocus(target);
-    if (!brand && inDraft) {
+    if (!brand) {
       target.innerHTML = toString(
         renderEmpty({
           icon: "ap-icon-image",
@@ -666,27 +624,12 @@ ${b.prompt}</textarea
       );
       return;
     }
-    if (!brand) {
-      target.innerHTML = toString(
-        renderFrame({
-          section: "create",
-          body: renderEmpty({
-            icon: "ap-icon-image",
-            title: "Start with a Playbook",
-            body: "Images follow a brand, and your brand lives in a Playbook: its logo, colours, fonts and rules. Create one from your website, your files, or by hand.",
-            action: html`<button type="button" class="ap-button primary blue" data-imst-action="new-playbook">
-              <span>Create a Playbook</span>
-            </button>`,
-          }),
-        }),
-      );
-      return;
-    }
-    const studio = html`<div class="imst-studio${inDraft ? " imst-studio--draft" : ""}">
-      ${renderControls(brand)}
-      <main class="imst-canvas-col">${renderCanvas(brand)}</main>
-    </div>`;
-    target.innerHTML = toString(inDraft ? studio : renderFrame({ section: "create", fill: true, body: studio }));
+    target.innerHTML = toString(
+      html`<div class="imst-studio imst-studio--draft">
+        ${renderControls(brand)}
+        <main class="imst-canvas-col">${renderCanvas(brand)}</main>
+      </div>`,
+    );
     hydrateAssets(target);
     restore();
   };
@@ -716,7 +659,6 @@ ${b.prompt}</textarea
     const creation = startCreation({ brand, brief: { ...state.brief }, style: req.style });
     state.creationId = creation.id;
     state.focusId = null;
-    setCreationInUrl(creation.id);
     state.run = { status: "loading" };
     state.abort = new AbortController();
     paint();
@@ -728,7 +670,6 @@ ${b.prompt}</textarea
       if (error.name === "AbortError") return;
       deleteCreation(creation.id);
       state.creationId = null;
-      setCreationInUrl(null);
       state.run = { status: "error" };
     }
     paint();
@@ -874,17 +815,6 @@ ${b.prompt}</textarea
           ><span class="ap-caption">${s.description || "Made from your references."}</span></span
         >
       </button>`;
-    // Creating a style is a page of its own: offered where leaving costs nothing, not from a draft.
-    const newStyleCard = () =>
-      inDraft
-        ? ""
-        : html`<button type="button" class="imst-gallery__item imst-gallery__new" data-imst-new-style>
-            <span class="imst-gallery__new-art"><i class="ap-icon-plus" aria-hidden="true"></i></span>
-            <span class="imst-gallery__text"
-              ><span class="ap-body-bold">New style</span
-              ><span class="ap-caption">Mix your references and presets into one.</span></span
-            >
-          </button>`;
     const body = () => html`
       <div class="imst-chips" role="group" aria-label="Filter styles">
         ${[
@@ -906,13 +836,13 @@ ${b.prompt}</textarea
       <div class="imst-gallery-scroll" style="${galleryH ? `--imst-gallery-h: ${galleryH}px` : ""}">
         ${family === "all" && own.length
           ? html`<h3 class="ap-body-bold imst-gallery__group">My styles</h3>
-              <div class="imst-gallery">${own.map(card)}${newStyleCard()}</div>
+              <div class="imst-gallery">${own.map(card)}</div>
               <h3 class="ap-body-bold imst-gallery__group">Presets</h3>
               <div class="imst-gallery">${STYLE_PRESETS.map(card)}</div>`
           : html`<div class="imst-gallery">
               ${(family === "own" ? own : STYLE_PRESETS.filter((s) => family === "all" || s.family === family)).map(
                 card,
-              )}${family === "own" ? newStyleCard() : ""}
+              )}
             </div>`}
       </div>
     `;
@@ -935,11 +865,6 @@ ${b.prompt}</textarea
           if (chip) {
             family = chip.dataset.imstFamily;
             dialog.setBody(body());
-            return;
-          }
-          if (event.target.closest("[data-imst-new-style]")) {
-            dialog.close();
-            navigate("/image-generator/styles/new");
             return;
           }
           const pick = event.target.closest("[data-imst-pick-style]");
@@ -969,7 +894,6 @@ ${b.prompt}</textarea
     if (currentCreation()) {
       state.creationId = null;
       state.focusId = null;
-      setCreationInUrl(null);
     }
     state.run = { status: "idle" };
   }
@@ -1055,10 +979,6 @@ ${b.prompt}</textarea
         toast(next.favoriteVariationIds.includes(v.id) ? "Added to favourites." : "Removed from favourites.");
       } else if (a === "download") download();
       else if (a === "use") useInDraft();
-      else if (a === "edit" || a === "adapt") {
-        openVariation(c.id, v.id);
-        navigate(`/image-generator/editor/${c.id}${a === "adapt" ? "?adapt=1" : ""}`);
-      }
     }),
   ];
   return () => {
