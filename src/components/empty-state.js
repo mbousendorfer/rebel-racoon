@@ -13,7 +13,7 @@
 // chrome (the wrapping class), but the inner layout is shared.
 //
 // Usage:
-//   import { renderEmptyState } from "../components/empty-state.js?v=1354";
+//   import { renderEmptyState } from "../components/empty-state.js?v=1355";
 //   const html = renderEmptyState({
 //     icon: "ap-icon-feature-library",
 //     title: "No sources yet",

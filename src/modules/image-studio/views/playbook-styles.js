@@ -10,14 +10,14 @@
 // test on three subjects. The 22 presets are browsed from here too, in a dialog,
 // as the starting points a style can be made from.
 
-import { html, toString } from "../lib/html.js?v=1354";
-import { navigate } from "../../../router.js?v=1354";
-import { styleThumb } from "../ui/style-thumb.js?v=1354";
-import { confirmDialog, openDialog } from "../ui/dialog.js?v=1354";
-import { toast } from "../ui/toast.js?v=1354";
-import { STYLE_FAMILIES, STYLE_PRESETS, STYLE_TEST_SUBJECTS, presetById } from "../config/style-presets.js?v=1354";
-import { canEditBrand, getBrand, getStyle, getStylesForBrand } from "../state/store.js?v=1354";
-import { deleteStyle, duplicateStyle } from "../state/style-actions.js?v=1354";
+import { html, toString } from "../lib/html.js?v=1355";
+import { navigate } from "../../../router.js?v=1355";
+import { styleThumb } from "../ui/style-thumb.js?v=1355";
+import { confirmDialog, openDialog } from "../ui/dialog.js?v=1355";
+import { toast } from "../ui/toast.js?v=1355";
+import { STYLE_FAMILIES, STYLE_PRESETS, STYLE_TEST_SUBJECTS, presetById } from "../config/style-presets.js?v=1355";
+import { canEditBrand, getBrand, getStyle, getStylesForBrand } from "../state/store.js?v=1355";
+import { deleteStyle, duplicateStyle } from "../state/style-actions.js?v=1355";
 
 const creatorPath = (playbookId, rest) => `/playbook/${encodeURIComponent(playbookId)}/styles/${rest}`;
 

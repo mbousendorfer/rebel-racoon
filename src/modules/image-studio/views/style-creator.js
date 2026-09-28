@@ -7,27 +7,27 @@
 // composition" (+ framing, angle, layout). An optional style prompt. A test run
 // on three neutral subjects before saving. Saved FOR the active Playbook.
 
-import { html, toString } from "../lib/html.js?v=1354";
-import { delegate } from "../lib/delegate.js?v=1354";
-import { hashString, randomSeed } from "../lib/prng.js?v=1354";
-import { renderFrame } from "./frame.js?v=1354";
-import { renderEmpty } from "../ui/empty.js?v=1354";
-import { field, preserveFocus, slider, syncSlider, textArea, textInput } from "../ui/fields.js?v=1354";
-import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1354";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1354";
-import { toast } from "../ui/toast.js?v=1354";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1354";
+import { html, toString } from "../lib/html.js?v=1355";
+import { delegate } from "../lib/delegate.js?v=1355";
+import { hashString, randomSeed } from "../lib/prng.js?v=1355";
+import { renderFrame } from "./frame.js?v=1355";
+import { renderEmpty } from "../ui/empty.js?v=1355";
+import { field, preserveFocus, slider, syncSlider, textArea, textInput } from "../ui/fields.js?v=1355";
+import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1355";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1355";
+import { toast } from "../ui/toast.js?v=1355";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=1355";
 import {
   CUSTOM_STYLE_LIMITS,
   STYLE_FAMILIES,
   STYLE_PRESETS,
   STYLE_TEST_SUBJECTS,
   presetById,
-} from "../config/style-presets.js?v=1354";
-import { createStyle } from "../model/schema.js?v=1354";
-import { imageGenerationService } from "../services/index.js?v=1354";
-import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1354";
-import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1354";
+} from "../config/style-presets.js?v=1355";
+import { createStyle } from "../model/schema.js?v=1355";
+import { imageGenerationService } from "../services/index.js?v=1355";
+import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1355";
+import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1355";
 
 const FIDELITY = [
   { id: "essential", title: "Essential", body: "Colours, textures, strokes and mood." },
@@ -142,21 +142,21 @@ export function mount(target, params, ctx) {
         </summary>
         <div class="ap-select-dropdown" role="listbox">
           <div class="ap-select-options">
-            ${STYLE_FAMILIES.map(
-              (f) => html`
-                <div class="ap-select-group">
-                  <div class="ap-select-group-label">${f.label}</div>
-                  ${STYLE_PRESETS.filter((p) => p.family === f.id && !taken.has(p.id)).map(
-                    (p) =>
-                      html`<div class="ap-select-option" role="option" tabindex="0" data-imst-add-preset="${p.id}">
-                        <span class="ap-select-option-text"
-                          ><span class="ap-select-option-title">${p.label}</span></span
-                        >
-                      </div>`,
-                  )}
-                </div>
-              `,
-            )}
+            ${STYLE_FAMILIES.map((f) => {
+              // The DS group is a HEADER row: its options follow it as siblings.
+              const options = STYLE_PRESETS.filter((p) => p.family === f.id && !taken.has(p.id));
+              return options.length
+                ? html`<div class="ap-select-group"><span class="ap-select-group-label">${f.label}</span></div>
+                    ${options.map(
+                      (p) =>
+                        html`<div class="ap-select-option" role="option" tabindex="0" data-imst-add-preset="${p.id}">
+                          <span class="ap-select-option-text"
+                            ><span class="ap-select-option-title">${p.label}</span></span
+                          >
+                        </div>`,
+                    )}`
+                : "";
+            })}
           </div>
         </div>
       </details>
