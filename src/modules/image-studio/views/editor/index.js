@@ -9,21 +9,21 @@
 // Delete removes the selected one. A drag patches the DOM live and commits once,
 // on release, so the undo stack gets one step per gesture.
 
-import { html, toString } from "../../lib/html.js?v=1333";
-import { delegate } from "../../lib/delegate.js?v=1333";
-import { renderFrame } from "../frame.js?v=1333";
-import { renderEmpty } from "../../ui/empty.js?v=1333";
-import { preserveFocus, syncSlider } from "../../ui/fields.js?v=1333";
-import { openDialog } from "../../ui/dialog.js?v=1333";
-import { toast } from "../../ui/toast.js?v=1333";
-import { assetImg, hydrateAssets, warmAssetUrls } from "../../ui/asset.js?v=1333";
-import { variationCanvas, variationSvg } from "../../ui/variation.js?v=1333";
-import { formatById, formatRatio } from "../../config/formats.js?v=1333";
-import { networkById } from "../../config/networks.js?v=1333";
-import { isHex } from "../../model/schema.js?v=1333";
-import { resolveLayers } from "../../render/layout.js?v=1333";
-import { toPngBlob, downloadBlob, slug } from "../../render/export.js?v=1333";
-import { copyService, editService, imageGenerationService } from "../../services/index.js?v=1333";
+import { html, toString } from "../../lib/html.js?v=1334";
+import { delegate } from "../../lib/delegate.js?v=1334";
+import { renderFrame } from "../frame.js?v=1334";
+import { renderEmpty } from "../../ui/empty.js?v=1334";
+import { preserveFocus, syncSlider } from "../../ui/fields.js?v=1334";
+import { openDialog } from "../../ui/dialog.js?v=1334";
+import { toast } from "../../ui/toast.js?v=1334";
+import { assetImg, hydrateAssets, warmAssetUrls } from "../../ui/asset.js?v=1334";
+import { variationCanvas, variationSvg } from "../../ui/variation.js?v=1334";
+import { formatById, formatRatio } from "../../config/formats.js?v=1334";
+import { networkById } from "../../config/networks.js?v=1334";
+import { isHex } from "../../model/schema.js?v=1334";
+import { resolveLayers } from "../../render/layout.js?v=1334";
+import { toPngBlob, downloadBlob, slug } from "../../render/export.js?v=1334";
+import { copyService, editService, imageGenerationService } from "../../services/index.js?v=1334";
 import {
   canEditBrand,
   getAssets,
@@ -33,18 +33,18 @@ import {
   saveColorToPlaybook,
   saveFontToPlaybook,
   subscribe,
-} from "../../state/store.js?v=1333";
-import { adaptEverywhere, replaceVariation, setCaption } from "../../state/creation-actions.js?v=1333";
-import { attentionSpots, brandCheck, fixIssue, predictPerformance } from "../../state/checks.js?v=1333";
-import { scoreRing } from "../../ui/ring.js?v=1333";
-import { heatmapOverlay } from "../../ui/heatmap.js?v=1333";
-import { COPY_LIMITS } from "../../config/copy-limits.js?v=1333";
-import { FORMATS } from "../../config/formats.js?v=1333";
-import { NETWORKS } from "../../config/networks.js?v=1333";
-import { renderMockup, safeZoneOverlay } from "../../ui/mockups.js?v=1333";
-import { menu } from "../../ui/menu.js?v=1333";
-import { toggle } from "../../ui/fields.js?v=1333";
-import { wait } from "../../lib/delegate.js?v=1333";
+} from "../../state/store.js?v=1334";
+import { adaptEverywhere, replaceVariation, setCaption } from "../../state/creation-actions.js?v=1334";
+import { attentionSpots, brandCheck, fixIssue, predictPerformance } from "../../state/checks.js?v=1334";
+import { scoreRing } from "../../ui/ring.js?v=1334";
+import { heatmapOverlay } from "../../ui/heatmap.js?v=1334";
+import { COPY_LIMITS } from "../../config/copy-limits.js?v=1334";
+import { FORMATS } from "../../config/formats.js?v=1334";
+import { NETWORKS } from "../../config/networks.js?v=1334";
+import { renderMockup, safeZoneOverlay } from "../../ui/mockups.js?v=1334";
+import { menu } from "../../ui/menu.js?v=1334";
+import { toggle } from "../../ui/fields.js?v=1334";
+import { wait } from "../../lib/delegate.js?v=1334";
 import {
   addAssetLayer,
   addLogoLayer,
@@ -59,7 +59,7 @@ import {
   removeLayer,
   reorder,
   undoLayers,
-} from "../../state/editor-actions.js?v=1333";
+} from "../../state/editor-actions.js?v=1334";
 import {
   renderChecks,
   renderLayers,
@@ -69,7 +69,7 @@ import {
   renderTextIdeas,
   renderWordsBar,
   layerName,
-} from "./panels.js?v=1333";
+} from "./panels.js?v=1334";
 
 const CHANGE_WORDS = { fonts: "fonts", colours: "colours", contrast: "text contrast", logo: "logo version" };
 

@@ -1,18 +1,18 @@
 // Image Generator — Styles: the Playbook's own styles first, then the system
 // presets by family. Every thumbnail is drawn in the active brand's palette.
 
-import { html, toString } from "../lib/html.js?v=1333";
-import { delegate } from "../lib/delegate.js?v=1333";
-import { renderFrame } from "./frame.js?v=1333";
-import { renderEmpty } from "../ui/empty.js?v=1333";
-import { renderBrandPicker } from "../ui/brand-picker.js?v=1333";
-import { menu } from "../ui/menu.js?v=1333";
-import { styleThumb } from "../ui/style-thumb.js?v=1333";
-import { confirmDialog, openDialog } from "../ui/dialog.js?v=1333";
-import { toast } from "../ui/toast.js?v=1333";
-import { STYLE_FAMILIES, STYLE_PRESETS, STYLE_TEST_SUBJECTS, presetById } from "../config/style-presets.js?v=1333";
-import { getActiveBrand, getStyle, getStylesForBrand, subscribe } from "../state/store.js?v=1333";
-import { deleteStyle, duplicateStyle } from "../state/style-actions.js?v=1333";
+import { html, toString } from "../lib/html.js?v=1334";
+import { delegate } from "../lib/delegate.js?v=1334";
+import { renderFrame } from "./frame.js?v=1334";
+import { renderEmpty } from "../ui/empty.js?v=1334";
+import { renderBrandPicker } from "../ui/brand-picker.js?v=1334";
+import { menu } from "../ui/menu.js?v=1334";
+import { styleThumb } from "../ui/style-thumb.js?v=1334";
+import { confirmDialog, openDialog } from "../ui/dialog.js?v=1334";
+import { toast } from "../ui/toast.js?v=1334";
+import { STYLE_FAMILIES, STYLE_PRESETS, STYLE_TEST_SUBJECTS, presetById } from "../config/style-presets.js?v=1334";
+import { getActiveBrand, getStyle, getStylesForBrand, subscribe } from "../state/store.js?v=1334";
+import { deleteStyle, duplicateStyle } from "../state/style-actions.js?v=1334";
 
 /** "Lifestyle 70% · Editorial 30% · 2 images" — what a custom style is made of, in words. */
 export function sourcesSummary(style) {
@@ -165,7 +165,7 @@ export function mount(target, _params, ctx) {
           <section class="imst-section" aria-labelledby="imst-own-styles">
             <header class="imst-section__head">
               <div>
-                <h2 class="ap-subtitle" id="imst-own-styles">Styles for ${brand.name}</h2>
+                <h2 class="ap-subtitle" id="imst-own-styles">My styles</h2>
                 <p class="ap-caption">They come first whenever you pick a style for this Playbook.</p>
               </div>
               <button type="button" class="ap-button primary blue" data-imst-nav="/image-generator/styles/new">

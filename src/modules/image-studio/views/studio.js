@@ -18,25 +18,25 @@
 //
 // Deep links: ?creation=<id> reopens a run · ?style=<id> preselects.
 
-import { html, toString } from "../lib/html.js?v=1333";
-import { delegate } from "../lib/delegate.js?v=1333";
-import { hashString } from "../lib/prng.js?v=1333";
-import { renderFrame } from "./frame.js?v=1333";
-import { renderEmpty } from "../ui/empty.js?v=1333";
-import { renderBrandPicker } from "../ui/brand-picker.js?v=1333";
-import { preserveFocus } from "../ui/fields.js?v=1333";
-import { toast } from "../ui/toast.js?v=1333";
-import { assetImg, hydrateAssets, logoUrl, warmAssetUrls } from "../ui/asset.js?v=1333";
-import { styleThumb } from "../ui/style-thumb.js?v=1333";
-import { openDialog } from "../ui/dialog.js?v=1333";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1333";
-import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1333";
-import { FORMAT_SHAPES, formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1333";
-import { networkById } from "../config/networks.js?v=1333";
-import { copyService, imageGenerationService } from "../services/index.js?v=1333";
-import { unbranded } from "../state/playbook-brand.js?v=1333";
-import { resolveLayers } from "../render/layout.js?v=1333";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1333";
+import { html, toString } from "../lib/html.js?v=1334";
+import { delegate } from "../lib/delegate.js?v=1334";
+import { hashString } from "../lib/prng.js?v=1334";
+import { renderFrame } from "./frame.js?v=1334";
+import { renderEmpty } from "../ui/empty.js?v=1334";
+import { renderBrandPicker } from "../ui/brand-picker.js?v=1334";
+import { preserveFocus } from "../ui/fields.js?v=1334";
+import { toast } from "../ui/toast.js?v=1334";
+import { assetImg, hydrateAssets, logoUrl, warmAssetUrls } from "../ui/asset.js?v=1334";
+import { styleThumb } from "../ui/style-thumb.js?v=1334";
+import { openDialog } from "../ui/dialog.js?v=1334";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1334";
+import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1334";
+import { FORMAT_SHAPES, formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1334";
+import { networkById } from "../config/networks.js?v=1334";
+import { copyService, imageGenerationService } from "../services/index.js?v=1334";
+import { unbranded } from "../state/playbook-brand.js?v=1334";
+import { resolveLayers } from "../render/layout.js?v=1334";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1334";
 import {
   getActiveBrand,
   getBrand,
@@ -45,7 +45,7 @@ import {
   getStyle,
   getStylesForBrand,
   subscribe,
-} from "../state/store.js?v=1333";
+} from "../state/store.js?v=1334";
 import {
   addBatch,
   deleteCreation,
@@ -53,7 +53,7 @@ import {
   replaceVariation,
   startCreation,
   toggleFavorite,
-} from "../state/creation-actions.js?v=1333";
+} from "../state/creation-actions.js?v=1334";
 
 // The presets offered first when the brand has few styles of its own — one per
 // family, the ones that read best at thumbnail size.
@@ -285,7 +285,7 @@ ${b.prompt}</textarea
             </div>
             <p class="ap-caption imst-ctl__note">
               <span class="ap-body-bold">${style.label}</span>${style.kind === "custom"
-                ? html` · ${brand.name}'s own style`
+                ? html` · My style`
                 : ""}${style.description ? html` — ${style.description}` : ""}
             </p>
           </section>
@@ -858,7 +858,7 @@ ${b.prompt}</textarea
       <div class="imst-chips" role="group" aria-label="Filter styles">
         ${[
           { id: "all", label: "All" },
-          ...(own.length ? [{ id: "own", label: `${brand.name}'s` }] : []),
+          ...(own.length ? [{ id: "own", label: "My styles" }] : []),
           ...STYLE_FAMILIES,
         ].map(
           (f) =>

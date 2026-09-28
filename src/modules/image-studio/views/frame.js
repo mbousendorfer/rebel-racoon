@@ -2,7 +2,7 @@
 // tabs (Generate · History · Styles · Catalog) and the body. Deep pages (the style creator, the
 // editor) swap the tabs for a back link to their section.
 
-import { html } from "../lib/html.js?v=1333";
+import { html } from "../lib/html.js?v=1334";
 
 export const SECTIONS = Object.freeze([
   // Generating is the product; History is what you generated. There is no
