@@ -190,9 +190,10 @@ button.imst-style-card {
   border-color: var(--ref-color-grey-20);
 }
 
-.imst-creator__footer {
+/* The creator's Cancel / Save, handed to the topbar (setTopbarActions). */
+.imst-topbar-actions {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
   gap: var(--ref-spacing-xs);
 }
 

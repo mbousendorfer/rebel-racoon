@@ -8,21 +8,23 @@
 // composition" (+ framing, angle, layout). An optional style prompt. A test run
 // on three neutral subjects before saving. Saved FOR the active Playbook.
 
-import { html, toString } from "../lib/html.js?v=1358";
-import { delegate } from "../lib/delegate.js?v=1358";
-import { hashString, randomSeed } from "../lib/prng.js?v=1358";
-import { renderFrame } from "./frame.js?v=1358";
-import { renderEmpty } from "../ui/empty.js?v=1358";
-import { field, preserveFocus, slider, syncSlider, textArea, textInput } from "../ui/fields.js?v=1358";
-import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1358";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1358";
-import { toast } from "../ui/toast.js?v=1358";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1358";
-import { CUSTOM_STYLE_LIMITS, STYLE_TEST_SUBJECTS } from "../config/style-presets.js?v=1358";
-import { createStyle } from "../model/schema.js?v=1358";
-import { imageGenerationService } from "../services/index.js?v=1358";
-import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1358";
-import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1358";
+import { html, toString } from "../lib/html.js?v=1359";
+import { delegate } from "../lib/delegate.js?v=1359";
+import { getPath } from "../../../router.js?v=1359";
+import { setTopbarActions } from "../../../components/topbar.js?v=1359";
+import { hashString, randomSeed } from "../lib/prng.js?v=1359";
+import { renderFrame } from "./frame.js?v=1359";
+import { renderEmpty } from "../ui/empty.js?v=1359";
+import { field, preserveFocus, slider, syncSlider, textArea, textInput } from "../ui/fields.js?v=1359";
+import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1359";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1359";
+import { toast } from "../ui/toast.js?v=1359";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=1359";
+import { CUSTOM_STYLE_LIMITS, STYLE_TEST_SUBJECTS } from "../config/style-presets.js?v=1359";
+import { createStyle } from "../model/schema.js?v=1359";
+import { imageGenerationService } from "../services/index.js?v=1359";
+import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1359";
+import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1359";
 
 const FIDELITY = [
   { id: "essential", title: "Essential", body: "Colours, textures, strokes and mood." },
@@ -297,12 +299,6 @@ export function mount(target, params, ctx) {
                 </div>
               </div>`
             : ""}
-          <div class="imst-creator__footer">
-            <button type="button" class="ap-button stroked grey" data-imst-nav="${fiche}">Cancel</button>
-            <button type="button" class="ap-button primary blue" data-imst-action="save">
-              ${editing ? "Save changes" : "Save style"}
-            </button>
-          </div>
         `,
       }),
     );
@@ -350,8 +346,40 @@ export function mount(target, params, ctx) {
     paint();
   }
 
+  function save() {
+    state.errors = validateStyleDraft(state.draft);
+    if (state.errors.length) {
+      paint();
+      target.querySelector(".ap-infobox.error")?.scrollIntoView({ block: "nearest" });
+      return;
+    }
+    const saved = saveStyle(state.draft);
+    toast(editing ? `${saved.label} updated.` : `${saved.label} added to ${brand.playbookName}.`);
+    ctx.navigate(fiche);
+  }
+
   paint();
+  // The page's actions live in the topbar, right side (DS: the header carries them).
+  const topbar = document.getElementById("topbar");
+  if (brand)
+    setTopbarActions(
+      getPath(),
+      toString(
+        html`<div class="imst-topbar-actions">
+          <button type="button" class="ap-button stroked grey" data-imst-creator="cancel">Cancel</button>
+          <button type="button" class="ap-button primary blue" data-imst-creator="save">
+            ${editing ? "Save changes" : "Save style"}
+          </button>
+        </div>`,
+      ),
+    );
   const offs = [
+    topbar
+      ? delegate(topbar, "click", "[data-imst-creator]", (_e, el) => {
+          if (el.dataset.imstCreator === "save") save();
+          else ctx.navigate(fiche);
+        })
+      : () => {},
     bindDropzones(target, async (_id, files) => {
       const room = CUSTOM_STYLE_LIMITS.images - state.draft.sources.filter((s) => s.type === "image").length;
       const images = files.filter((f) => f.type.startsWith("image/"));
@@ -398,22 +426,13 @@ export function mount(target, params, ctx) {
         state.stale = !!state.test;
         paint();
       } else if (action === "test") runTest();
-      else if (action === "save") {
-        state.errors = validateStyleDraft(state.draft);
-        if (state.errors.length) {
-          paint();
-          target.querySelector(".ap-infobox.error")?.scrollIntoView({ block: "nearest" });
-          return;
-        }
-        const saved = saveStyle(state.draft);
-        toast(editing ? `${saved.label} updated.` : `${saved.label} added to ${brand.playbookName}.`);
-        ctx.navigate(fiche);
-      }
+      else if (action === "save") save();
     }),
   ];
   return () => {
     alive = false;
     state.abort?.abort();
     offs.forEach((off) => off());
+    setTopbarActions(null);
   };
 }
