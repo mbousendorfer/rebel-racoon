@@ -601,8 +601,19 @@
 /* Filmstrip: the four, at their ratio */
 .imst-filmstrip {
   display: flex;
-  justify-content: center;
+  justify-content: safe center;
   gap: var(--ref-spacing-xs);
+  /* Every run lands here: past a row's worth, it scrolls sideways. */
+  overflow-x: auto;
+  scrollbar-width: thin;
+  padding: var(--ref-spacing-xxxs);
+  /* A scroller may shrink in the column's flex: keep the thumbnails whole. */
+  flex-shrink: 0;
+}
+
+/* A new run (More like this, Refine) starts after a wider gap. */
+.imst-filmstrip__item.is-run-start {
+  margin-left: var(--ref-spacing-sm);
 }
 
 .imst-filmstrip__item {
@@ -636,17 +647,6 @@
 
 .imst-filmstrip__item.is-loading {
   cursor: default;
-}
-
-.imst-filmstrip__item--small {
-  height: var(--ref-spacing-xxxl);
-}
-
-.imst-filmstrip__fav {
-  position: absolute;
-  top: var(--ref-spacing-xxxs);
-  right: var(--ref-spacing-xxxs);
-  color: var(--ref-color-white);
 }
 
 /* Refine in place */
@@ -692,35 +692,6 @@
 
 .imst-refine__input::placeholder {
   color: var(--ref-color-grey-60);
-}
-
-.imst-earlier {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xs);
-  padding-top: var(--ref-spacing-sm);
-  border-top: 1px solid var(--ref-color-grey-20);
-}
-
-.imst-earlier h3 {
-  margin: 0;
-}
-
-.imst-earlier__row {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-sm);
-}
-
-.imst-earlier__label {
-  width: calc(var(--ref-spacing-xxxl) * 2.4);
-  flex-shrink: 0;
-  color: var(--ref-color-grey-80);
-}
-
-.imst-earlier__thumbs {
-  display: flex;
-  gap: var(--ref-spacing-xxs);
 }
 
 /* Style gallery dialog */

@@ -2,11 +2,11 @@
 // as a creation straight away (that IS the history); opening a variation in the
 // editor gives it its layers.
 
-import { storageService as storage } from "../services/index.js?v=1345";
-import { createCreation, historyEntry } from "../model/schema.js?v=1345";
-import { formatById } from "../config/formats.js?v=1345";
-import { uid } from "../lib/id.js?v=1345";
-import { defaultLayers, recompose } from "../render/layout.js?v=1345";
+import { storageService as storage } from "../services/index.js?v=1348";
+import { createCreation, historyEntry } from "../model/schema.js?v=1348";
+import { formatById } from "../config/formats.js?v=1348";
+import { uid } from "../lib/id.js?v=1348";
+import { defaultLayers, recompose } from "../render/layout.js?v=1348";
 
 function get(id) {
   return storage.get("creations", id);
@@ -60,14 +60,6 @@ export function replaceVariation(creationId, variationId, next) {
     variations: c.variations.map((v) => (v.id === variationId ? { ...next, id: v.id, batchId: v.batchId } : v)),
     history: [...c.history, historyEntry("regenerated", "One variation")],
   });
-}
-
-export function toggleFavorite(creationId, variationId) {
-  const c = get(creationId);
-  const set = new Set(c.favoriteVariationIds || []);
-  if (set.has(variationId)) set.delete(variationId);
-  else set.add(variationId);
-  return save({ ...c, favoriteVariationIds: [...set], favorite: set.size > 0 });
 }
 
 /** Picks the variation to edit and lays out its first format. */

@@ -12,8 +12,8 @@ import {
   createStyle,
   createVariation,
   historyEntry,
-} from "../model/schema.js?v=1345";
-import { productShotSvg } from "../render/product-shot.js?v=1345";
+} from "../model/schema.js?v=1348";
+import { productShotSvg } from "../render/product-shot.js?v=1348";
 
 const ACME = "ctx-acme";
 const PAWTRACK = "ctx-pawtrack";
@@ -148,7 +148,6 @@ export function seedDemoData() {
         ctas: [],
         captions: {},
       },
-      favorite: true,
       history: [historyEntry("created"), historyEntry("edited", "Headline changed")],
     }),
     createCreation({
@@ -184,7 +183,6 @@ export function seedDemoData() {
         formatId: "ig-portrait",
         layers: masterLayers({ headline: "Every walk, remembered", layout: "top-left" }),
       },
-      favorite: true,
       history: [historyEntry("created")],
     }),
   ];
