@@ -1,7 +1,7 @@
 // Image Generator — simple drawn product shots for the demo catalogue and the
 // mocked URL extraction. Standalone SVG; brand colours are content.
 
-import { escapeHtml } from "../lib/html.js?v=1343";
+import { escapeHtml } from "../lib/html.js?v=1345";
 
 const SHAPES = {
   bag: (c) =>

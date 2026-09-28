@@ -214,6 +214,26 @@
   white-space: nowrap;
 }
 
+/* While a suggestion is on its way (4–8 s, like the real call): the field
+ * shimmers behind its "Reading the post…" placeholder. */
+.imst-composer.is-suggesting {
+  background: linear-gradient(
+    100deg,
+    var(--ref-color-white) 30%,
+    var(--ref-color-grey-05) 50%,
+    var(--ref-color-white) 70%
+  );
+  background-size: 200% 100%;
+  animation: imst-shimmer 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .imst-composer.is-suggesting {
+    animation: none;
+    background: var(--ref-color-grey-05);
+  }
+}
+
 /* The one-line variant: the headline, its Suggest inside the field */
 .imst-composer--line {
   flex-direction: row;

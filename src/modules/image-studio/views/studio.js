@@ -15,32 +15,32 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, "Refine" to iterate in place, earlier runs underneath
 
-import { html, toString } from "../lib/html.js?v=1343";
-import { delegate } from "../lib/delegate.js?v=1343";
-import { hashString } from "../lib/prng.js?v=1343";
-import { renderEmpty } from "../ui/empty.js?v=1343";
-import { preserveFocus } from "../ui/fields.js?v=1343";
-import { toast } from "../ui/toast.js?v=1343";
-import { hydrateAssets, logoUrl } from "../ui/asset.js?v=1343";
-import { styleThumb } from "../ui/style-thumb.js?v=1343";
-import { openDialog } from "../ui/dialog.js?v=1343";
-import { menu } from "../ui/menu.js?v=1343";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1343";
-import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1343";
-import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1343";
-import { networkById } from "../config/networks.js?v=1343";
-import { copyService, imageGenerationService } from "../services/index.js?v=1343";
-import { unbranded } from "../state/playbook-brand.js?v=1343";
-import { resolveLayers } from "../render/layout.js?v=1343";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1343";
-import { getBrand, getCreation, getProducts, getStyle, getStylesForBrand, subscribe } from "../state/store.js?v=1343";
+import { html, toString } from "../lib/html.js?v=1345";
+import { delegate } from "../lib/delegate.js?v=1345";
+import { hashString } from "../lib/prng.js?v=1345";
+import { renderEmpty } from "../ui/empty.js?v=1345";
+import { preserveFocus } from "../ui/fields.js?v=1345";
+import { toast } from "../ui/toast.js?v=1345";
+import { hydrateAssets, logoUrl } from "../ui/asset.js?v=1345";
+import { styleThumb } from "../ui/style-thumb.js?v=1345";
+import { openDialog } from "../ui/dialog.js?v=1345";
+import { menu } from "../ui/menu.js?v=1345";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1345";
+import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1345";
+import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1345";
+import { networkById } from "../config/networks.js?v=1345";
+import { copyService, imageGenerationService } from "../services/index.js?v=1345";
+import { unbranded } from "../state/playbook-brand.js?v=1345";
+import { resolveLayers } from "../render/layout.js?v=1345";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1345";
+import { getBrand, getCreation, getProducts, getStyle, getStylesForBrand, subscribe } from "../state/store.js?v=1345";
 import {
   addBatch,
   deleteCreation,
   replaceVariation,
   startCreation,
   toggleFavorite,
-} from "../state/creation-actions.js?v=1343";
+} from "../state/creation-actions.js?v=1345";
 
 // The presets offered first when the brand has few styles of its own — one per
 // family, the ones that read best at thumbnail size.
@@ -803,16 +803,30 @@ ${b.prompt}</textarea
     }
   }
 
-  // A suggestion fills its field IN PLACE: the button shows it's working, and
-  // nothing else is redrawn — the preview catches up on the next choice.
+  // A suggestion takes as long as the real call (4–8 s): the field says it's
+  // reading the post and shimmers, the button spins, the field is read-only
+  // meanwhile. It then fills IN PLACE — nothing else is redrawn.
   async function suggestInto(button, field, ask) {
     if (!button || button.disabled) return;
+    const input = target.querySelector(`[data-imst-field='${field}']`);
+    const box = input?.closest(".imst-composer");
+    const placeholder = input?.placeholder;
+    // The DS way to say "working" on a button: the icon becomes the loader.
+    const icon = button.querySelector("i");
+    const spinner = document.createElement("span");
+    spinner.className = "ap-loader size-16";
+    icon?.replaceWith(spinner);
     button.classList.add("loading");
     button.disabled = true;
+    box?.classList.add("is-suggesting");
+    if (input) {
+      input.readOnly = true;
+      input.placeholder = "Reading the post…";
+      if (!input.value) input.setAttribute("aria-busy", "true");
+    }
     try {
       const text = await ask();
       state.brief[field] = text;
-      const input = target.querySelector(`[data-imst-field='${field}']`);
       if (input) {
         input.value = text;
         input.focus();
@@ -827,8 +841,15 @@ ${b.prompt}</textarea
     } catch {
       toast("No suggestion this time. Try again.", { variant: "error" });
     } finally {
+      if (icon) spinner.replaceWith(icon);
       button.classList.remove("loading");
       button.disabled = false;
+      box?.classList.remove("is-suggesting");
+      if (input) {
+        input.readOnly = false;
+        input.placeholder = placeholder;
+        input.removeAttribute("aria-busy");
+      }
     }
   }
 

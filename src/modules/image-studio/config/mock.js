@@ -12,8 +12,9 @@ export const MOCK = Object.freeze({
   copy: {
     delayMs: [600, 1200],
   },
-  // "Suggest from the post": a local read of the post, so it answers at once.
+  // "Suggest from the post": as slow as the real app's call (4–8 s), so the
+  // waiting state is designed for the wait people will actually have.
   suggest: {
-    delayMs: [200, 400],
+    delayMs: [4000, 8000],
   },
 });
