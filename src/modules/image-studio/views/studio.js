@@ -18,25 +18,25 @@
 //
 // Deep links: ?creation=<id> reopens a run · ?style=<id> preselects.
 
-import { html, toString } from "../lib/html.js?v=1334";
-import { delegate } from "../lib/delegate.js?v=1334";
-import { hashString } from "../lib/prng.js?v=1334";
-import { renderFrame } from "./frame.js?v=1334";
-import { renderEmpty } from "../ui/empty.js?v=1334";
-import { renderBrandPicker } from "../ui/brand-picker.js?v=1334";
-import { preserveFocus } from "../ui/fields.js?v=1334";
-import { toast } from "../ui/toast.js?v=1334";
-import { assetImg, hydrateAssets, logoUrl, warmAssetUrls } from "../ui/asset.js?v=1334";
-import { styleThumb } from "../ui/style-thumb.js?v=1334";
-import { openDialog } from "../ui/dialog.js?v=1334";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1334";
-import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1334";
-import { FORMAT_SHAPES, formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1334";
-import { networkById } from "../config/networks.js?v=1334";
-import { copyService, imageGenerationService } from "../services/index.js?v=1334";
-import { unbranded } from "../state/playbook-brand.js?v=1334";
-import { resolveLayers } from "../render/layout.js?v=1334";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1334";
+import { html, toString } from "../lib/html.js?v=1335";
+import { delegate } from "../lib/delegate.js?v=1335";
+import { hashString } from "../lib/prng.js?v=1335";
+import { renderFrame } from "./frame.js?v=1335";
+import { renderEmpty } from "../ui/empty.js?v=1335";
+import { renderBrandPicker } from "../ui/brand-picker.js?v=1335";
+import { preserveFocus } from "../ui/fields.js?v=1335";
+import { toast } from "../ui/toast.js?v=1335";
+import { assetImg, hydrateAssets, logoUrl, warmAssetUrls } from "../ui/asset.js?v=1335";
+import { styleThumb } from "../ui/style-thumb.js?v=1335";
+import { openDialog } from "../ui/dialog.js?v=1335";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1335";
+import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1335";
+import { FORMAT_SHAPES, formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1335";
+import { networkById } from "../config/networks.js?v=1335";
+import { copyService, imageGenerationService } from "../services/index.js?v=1335";
+import { unbranded } from "../state/playbook-brand.js?v=1335";
+import { resolveLayers } from "../render/layout.js?v=1335";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1335";
 import {
   getActiveBrand,
   getBrand,
@@ -45,7 +45,7 @@ import {
   getStyle,
   getStylesForBrand,
   subscribe,
-} from "../state/store.js?v=1334";
+} from "../state/store.js?v=1335";
 import {
   addBatch,
   deleteCreation,
@@ -53,7 +53,7 @@ import {
   replaceVariation,
   startCreation,
   toggleFavorite,
-} from "../state/creation-actions.js?v=1334";
+} from "../state/creation-actions.js?v=1335";
 
 // The presets offered first when the brand has few styles of its own — one per
 // family, the ones that read best at thumbnail size.
@@ -276,6 +276,9 @@ ${b.prompt}</textarea
                     aria-label="${s.label}"
                   >
                     ${styleThumb(s, lookOf(brand, b), { className: "imst-tile__img", seed: hashString(s.id) })}
+                    ${s.kind === "custom"
+                      ? html`<span class="ap-tag grey mini imst-mine"><span>My style</span></span>`
+                      : ""}
                     <span class="imst-tile__name">${s.label}</span>
                     ${s.id === b.styleId
                       ? html`<span class="imst-tile__check" aria-hidden="true"><i class="ap-icon-check"></i></span>`
@@ -854,6 +857,34 @@ ${b.prompt}</textarea
     // Measured once on open: two and a half rows, then the height holds whatever the filter shows.
     let galleryH = 0;
     const own = getStylesForBrand(brand.id).filter((s) => s.kind === "custom");
+    const card = (s) =>
+      html`<button
+        type="button"
+        class="imst-gallery__item${s.kind === "custom" ? " is-mine" : ""}"
+        aria-pressed="${s.id === state.brief.styleId}"
+        data-imst-pick-style="${s.id}"
+      >
+        <span class="imst-gallery__art"
+          >${styleThumb(s, lookOf(brand, state.brief), { seed: hashString(s.id) })}${s.kind === "custom"
+            ? html`<span class="ap-tag grey mini imst-mine"><span>My style</span></span>`
+            : ""}</span
+        >
+        <span class="imst-gallery__text"
+          ><span class="ap-body-bold">${s.label}</span
+          ><span class="ap-caption">${s.description || "Made from your references."}</span></span
+        >
+      </button>`;
+    // Creating a style is a page of its own: offered where leaving costs nothing, not from a draft.
+    const newStyleCard = () =>
+      inDraft
+        ? ""
+        : html`<button type="button" class="imst-gallery__item imst-gallery__new" data-imst-new-style>
+            <span class="imst-gallery__new-art"><i class="ap-icon-plus" aria-hidden="true"></i></span>
+            <span class="imst-gallery__text"
+              ><span class="ap-body-bold">New style</span
+              ><span class="ap-caption">Mix your references and presets into one.</span></span
+            >
+          </button>`;
     const body = () => html`
       <div class="imst-chips" role="group" aria-label="Filter styles">
         ${[
@@ -873,24 +904,16 @@ ${b.prompt}</textarea
         )}
       </div>
       <div class="imst-gallery-scroll" style="${galleryH ? `--imst-gallery-h: ${galleryH}px` : ""}">
-        <div class="imst-gallery">
-          ${[...own, ...STYLE_PRESETS]
-            .filter((s) => family === "all" || (family === "own" ? s.kind === "custom" : s.family === family))
-            .map(
-              (s) =>
-                html`<button
-                  type="button"
-                  class="imst-gallery__item"
-                  aria-pressed="${s.id === state.brief.styleId}"
-                  data-imst-pick-style="${s.id}"
-                >
-                  ${styleThumb(s, lookOf(brand, state.brief), { seed: hashString(s.id) })}
-                  <span class="imst-gallery__text"
-                    ><span class="ap-body-bold">${s.label}</span><span class="ap-caption">${s.description}</span></span
-                  >
-                </button>`,
-            )}
-        </div>
+        ${family === "all" && own.length
+          ? html`<h3 class="ap-body-bold imst-gallery__group">My styles</h3>
+              <div class="imst-gallery">${own.map(card)}${newStyleCard()}</div>
+              <h3 class="ap-body-bold imst-gallery__group">Presets</h3>
+              <div class="imst-gallery">${STYLE_PRESETS.map(card)}</div>`
+          : html`<div class="imst-gallery">
+              ${(family === "own" ? own : STYLE_PRESETS.filter((s) => family === "all" || s.family === family)).map(
+                card,
+              )}${family === "own" ? newStyleCard() : ""}
+            </div>`}
       </div>
     `;
     const dialog = openDialog({
@@ -912,6 +935,11 @@ ${b.prompt}</textarea
           if (chip) {
             family = chip.dataset.imstFamily;
             dialog.setBody(body());
+            return;
+          }
+          if (event.target.closest("[data-imst-new-style]")) {
+            dialog.close();
+            navigate("/image-generator/styles/new");
             return;
           }
           const pick = event.target.closest("[data-imst-pick-style]");

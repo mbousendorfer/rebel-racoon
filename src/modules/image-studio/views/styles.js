@@ -1,18 +1,18 @@
 // Image Generator — Styles: the Playbook's own styles first, then the system
 // presets by family. Every thumbnail is drawn in the active brand's palette.
 
-import { html, toString } from "../lib/html.js?v=1334";
-import { delegate } from "../lib/delegate.js?v=1334";
-import { renderFrame } from "./frame.js?v=1334";
-import { renderEmpty } from "../ui/empty.js?v=1334";
-import { renderBrandPicker } from "../ui/brand-picker.js?v=1334";
-import { menu } from "../ui/menu.js?v=1334";
-import { styleThumb } from "../ui/style-thumb.js?v=1334";
-import { confirmDialog, openDialog } from "../ui/dialog.js?v=1334";
-import { toast } from "../ui/toast.js?v=1334";
-import { STYLE_FAMILIES, STYLE_PRESETS, STYLE_TEST_SUBJECTS, presetById } from "../config/style-presets.js?v=1334";
-import { getActiveBrand, getStyle, getStylesForBrand, subscribe } from "../state/store.js?v=1334";
-import { deleteStyle, duplicateStyle } from "../state/style-actions.js?v=1334";
+import { html, toString } from "../lib/html.js?v=1335";
+import { delegate } from "../lib/delegate.js?v=1335";
+import { renderFrame } from "./frame.js?v=1335";
+import { renderEmpty } from "../ui/empty.js?v=1335";
+import { renderBrandPicker } from "../ui/brand-picker.js?v=1335";
+import { menu } from "../ui/menu.js?v=1335";
+import { styleThumb } from "../ui/style-thumb.js?v=1335";
+import { confirmDialog, openDialog } from "../ui/dialog.js?v=1335";
+import { toast } from "../ui/toast.js?v=1335";
+import { STYLE_FAMILIES, STYLE_PRESETS, STYLE_TEST_SUBJECTS, presetById } from "../config/style-presets.js?v=1335";
+import { getActiveBrand, getStyle, getStylesForBrand, subscribe } from "../state/store.js?v=1335";
+import { deleteStyle, duplicateStyle } from "../state/style-actions.js?v=1335";
 
 /** "Lifestyle 70% · Editorial 30% · 2 images" — what a custom style is made of, in words. */
 export function sourcesSummary(style) {
