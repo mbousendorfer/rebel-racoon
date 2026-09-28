@@ -28,25 +28,25 @@
 }
 
 /* ── Controls column ─────────────────────────────────────────────────── */
+/* No card around it: the column sits on the page, the CANVAS is the surface.
+ * Sections are told apart by space (lg between, xs within), never by rules. */
 
 .imst-controls {
   display: flex;
   flex-direction: column;
   min-height: 0;
-  border: 1px solid var(--ref-color-grey-20);
-  border-radius: var(--ref-border-radius-md);
   background: var(--ref-color-white);
-  overflow: hidden;
 }
 
 .imst-controls__scroll {
+  scrollbar-width: thin;
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-md);
-  padding: var(--ref-spacing-md);
+  gap: var(--ref-spacing-lg);
+  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xs) var(--ref-spacing-md) var(--ref-spacing-xxxs);
 }
 
 .imst-controls__foot {
@@ -54,9 +54,22 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
+  padding: var(--ref-spacing-sm) var(--ref-spacing-xs) 0 var(--ref-spacing-xxxs);
   border-top: 1px solid var(--ref-color-grey-20);
+}
+
+.imst-controls__sum {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  color: var(--ref-color-grey-100);
+}
+
+.imst-controls__sum .ap-caption {
   color: var(--ref-color-grey-80);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .imst-ctl {
@@ -70,6 +83,7 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
+  gap: var(--ref-spacing-xs);
 }
 
 .imst-ctl__label {
@@ -77,14 +91,15 @@
   color: var(--ref-color-grey-100);
 }
 
-.imst-ctl__label .ap-caption {
+.imst-ctl__meta,
+.imst-ctl__note {
+  margin: 0;
   color: var(--ref-color-grey-80);
-  font-weight: normal;
 }
 
-.imst-ctl-prompt textarea {
-  width: 100%;
-  resize: vertical;
+.imst-ctl__note .ap-body-bold {
+  color: var(--ref-color-grey-100);
+  font-size: inherit;
 }
 
 .imst-ctl__warn {
@@ -94,26 +109,31 @@
   color: var(--ref-color-grey-100);
 }
 
-.imst-ctl-radios {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxs);
+.imst-ctl__toggle {
+  align-self: flex-start;
 }
 
-/* Brand applied */
+/* Brand applied: the mark, the name, the palette as overlapping dots */
 .imst-ctl-brand {
   display: flex;
   align-items: center;
   gap: var(--ref-spacing-xs);
-  padding-bottom: var(--ref-spacing-sm);
-  border-bottom: 1px solid var(--ref-color-grey-20);
 }
 
 .imst-ctl-brand__logo {
-  width: var(--ref-spacing-lg);
-  height: var(--ref-spacing-lg);
-  object-fit: contain;
+  width: var(--ref-spacing-xl);
+  height: var(--ref-spacing-xl);
   flex-shrink: 0;
+  border-radius: var(--app-radius-card);
+  object-fit: contain;
+}
+
+.imst-ctl-brand__logo--initial {
+  display: grid;
+  place-items: center;
+  background: var(--ref-color-grey-10);
+  color: var(--ref-color-grey-100);
+  font-weight: var(--ref-font-weight-bold);
 }
 
 .imst-ctl-brand__text {
@@ -121,122 +141,221 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xxxs);
+  color: var(--ref-color-grey-100);
+}
+
+.imst-ctl-brand__text .ap-caption {
+  color: var(--ref-color-grey-80);
 }
 
 .imst-ctl-brand .imst-picker__name {
   display: none;
 }
 
-/* Style: the chosen one, large; six quick picks; the gallery behind "All styles" */
-.imst-style-now {
-  display: flex;
-  gap: var(--ref-spacing-xs);
-  align-items: center;
-}
-
-.imst-style-now__thumb {
-  width: calc(var(--ref-spacing-xxxl) * 1.4);
-  height: calc(var(--ref-spacing-xxxl) * 1.4);
+.imst-dots {
+  display: inline-flex;
   flex-shrink: 0;
-  border-radius: var(--ref-border-radius-md);
-  object-fit: cover;
+  padding-left: var(--ref-spacing-xxxs);
 }
 
-.imst-style-now__text {
+.imst-dots__dot {
+  width: var(--ref-spacing-md);
+  height: var(--ref-spacing-md);
+  margin-left: calc(var(--ref-spacing-xxs) * -1);
+  border-radius: var(--app-radius-circle);
+  background: var(--imst-swatch);
+  /* The white ring separates overlapping dots; the hairline keeps a white colour visible. */
+  box-shadow:
+    0 0 0 2px var(--ref-color-white),
+    inset 0 0 0 1px var(--ref-color-grey-20);
+}
+
+/* The prompt: one composer, its tools inside it */
+.imst-composer {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: var(--ref-spacing-xxxs);
-  color: var(--ref-color-grey-100);
-}
-
-.imst-style-now__text .ap-caption {
-  color: var(--ref-color-grey-80);
-}
-
-.imst-style-quick {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--ref-spacing-xs);
-}
-
-.imst-style-pick,
-.imst-product-pick,
-.imst-shape,
-.imst-gallery__item {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxxs);
-  padding: var(--ref-spacing-xxxs);
   border: 1px solid var(--ref-color-grey-20);
-  border-radius: var(--ref-border-radius-md);
+  border-radius: var(--app-radius-card);
   background: var(--ref-color-white);
-  font: inherit;
-  color: var(--ref-color-grey-100);
-  text-align: left;
-  cursor: pointer;
+  transition: border-color 0.15s ease;
 }
 
-.imst-style-pick:hover,
-.imst-product-pick:hover,
-.imst-shape:hover,
-.imst-gallery__item:hover {
-  border-color: var(--ref-color-electric-blue-40);
+.imst-composer:hover {
+  border-color: var(--ref-color-grey-40);
 }
 
-.imst-style-pick[aria-checked="true"],
-.imst-product-pick[aria-checked="true"],
-.imst-shape[aria-checked="true"],
-.imst-gallery__item[aria-pressed="true"] {
+.imst-composer:focus-within {
   border-color: var(--ref-color-electric-blue-100);
-  box-shadow: inset 0 0 0 1px var(--ref-color-electric-blue-100);
+  box-shadow: 0 0 0 3px var(--ref-color-electric-blue-10);
 }
 
-.imst-style-pick:focus-visible,
-.imst-product-pick:focus-visible,
-.imst-shape:focus-visible,
-.imst-gallery__item:focus-visible {
-  outline: 2px solid var(--sys-border-color-active);
-  outline-offset: 2px;
+.imst-composer.has-error {
+  border-color: var(--ref-color-red-100);
 }
 
-.imst-style-pick__thumb {
+.imst-composer__input {
   width: 100%;
-  aspect-ratio: 1;
-  object-fit: cover;
-  border-radius: var(--ref-border-radius-sm);
+  min-height: calc(var(--ref-spacing-xxxl) * 1.6);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm) var(--ref-spacing-xxs);
+  border: 0;
+  outline: 0;
+  resize: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: var(--ref-font-size-md);
+  line-height: 1.5;
+  color: var(--ref-color-grey-100);
 }
 
-.imst-style-pick__name,
-.imst-product-pick__name {
-  padding: 0 var(--ref-spacing-xxxs);
-  overflow: hidden;
-  text-overflow: ellipsis;
+.imst-composer__input::placeholder {
+  color: var(--ref-color-grey-60);
+}
+
+.imst-composer__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-xxs);
+  padding: 0 var(--ref-spacing-xxs) var(--ref-spacing-xxs);
+}
+
+.imst-composer__hint {
+  margin-left: auto;
+  padding-right: var(--ref-spacing-xxs);
+  color: var(--ref-color-grey-80);
   white-space: nowrap;
 }
 
-/* Shape, drawn to scale */
-.imst-shapes {
+/* Style: pictures first — the name on the picture, the choice as a ring */
+.imst-tiles {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--ref-spacing-xxs);
 }
 
-.imst-shape {
-  align-items: center;
-  padding: var(--ref-spacing-xs) var(--ref-spacing-xxxs);
-  text-align: center;
+.imst-tile {
+  position: relative;
+  display: block;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  border-radius: var(--app-radius-card);
+  overflow: hidden;
+  background: var(--ref-color-grey-05);
+  cursor: pointer;
+  font: inherit;
+  /* The ring sits outside the picture, so choosing never crops it. */
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  transition: outline-color 0.15s ease;
 }
 
-.imst-shape__box {
+.imst-tile__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.imst-tile:hover {
+  outline-color: var(--ref-color-electric-blue-40);
+}
+
+.imst-tile:hover .imst-tile__img {
+  transform: scale(1.04);
+}
+
+.imst-tile[aria-checked="true"] {
+  outline-color: var(--ref-color-electric-blue-100);
+}
+
+.imst-tile:focus-visible {
+  outline-color: var(--sys-border-color-active);
+}
+
+.imst-tile__name {
+  position: absolute;
+  inset: auto 0 0;
+  padding: var(--ref-spacing-md) var(--ref-spacing-xxs) var(--ref-spacing-xxs);
+  /* Text on a picture needs its own ground: the scrim darkens only the bottom. */
+  background: linear-gradient(to top, color-mix(in srgb, var(--ref-color-grey-150) 80%, transparent), transparent);
+  color: var(--ref-color-white);
+  font-size: var(--ref-font-size-xs);
+  font-weight: var(--ref-font-weight-bold);
+  line-height: 1.25;
+  text-align: left;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.imst-tile__check {
+  position: absolute;
+  top: var(--ref-spacing-xxs);
+  right: var(--ref-spacing-xxs);
   display: grid;
   place-items: center;
-  width: 100%;
-  height: var(--ref-spacing-xl);
+  width: var(--ref-spacing-md);
+  height: var(--ref-spacing-md);
+  border-radius: var(--app-radius-circle);
+  background: var(--ref-color-electric-blue-100);
+  color: var(--ref-color-white);
+  font-size: var(--ref-font-size-xs);
 }
 
-.imst-shape__frame {
+/* Shape: one track, each option drawn to scale */
+.imst-seg {
+  display: flex;
+  gap: var(--ref-spacing-xxxs);
+  padding: var(--ref-spacing-xxxs);
+  border-radius: var(--app-radius-card);
+  background: var(--ref-color-grey-05);
+}
+
+.imst-seg__opt {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-xxxs) var(--ref-spacing-xxs);
+  border: 1px solid transparent;
+  border-radius: var(--ref-border-radius-md);
+  background: transparent;
+  font: inherit;
+  color: var(--ref-color-grey-100);
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.imst-seg__opt:hover {
+  border-color: var(--ref-color-electric-blue-40);
+}
+
+.imst-seg__opt[aria-checked="true"] {
+  background: var(--ref-color-white);
+  border-color: var(--ref-color-electric-blue-100);
+}
+
+.imst-seg__opt:focus-visible {
+  outline: 2px solid var(--sys-border-color-active);
+  outline-offset: 1px;
+}
+
+.imst-seg__box {
+  display: grid;
+  place-items: center;
+  width: var(--ref-spacing-lg);
+  height: var(--ref-spacing-lg);
+  margin-bottom: var(--ref-spacing-xxxs);
+}
+
+.imst-seg__frame {
   display: block;
   max-width: 100%;
   max-height: 100%;
@@ -244,43 +363,124 @@
   border-radius: var(--ref-border-radius-sm);
 }
 
-.imst-shape[aria-checked="true"] .imst-shape__frame {
+.imst-seg__opt[aria-checked="true"] .imst-seg__frame {
   border-color: var(--ref-color-electric-blue-100);
-  background: var(--ref-color-electric-blue-05);
+  background: var(--ref-color-electric-blue-10);
 }
 
-.imst-shape__nets {
+.imst-seg__name {
+  font-size: var(--ref-font-size-sm);
+  line-height: 1.25;
+}
+
+.imst-seg__opt[aria-checked="true"] .imst-seg__name {
+  font-weight: var(--ref-font-weight-bold);
+}
+
+.imst-seg__ratio {
+  color: var(--ref-color-grey-80);
+  line-height: 1.25;
+}
+
+.imst-seg__nets {
   display: flex;
   gap: var(--ref-spacing-xxxs);
-  justify-content: center;
+  color: var(--ref-color-grey-80);
   font-size: var(--ref-font-size-xs);
 }
 
-/* Product, as thumbnails */
-.imst-products {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+/* Product: pills with the product's own picture, the full name */
+.imst-pills {
+  display: flex;
+  flex-wrap: wrap;
   gap: var(--ref-spacing-xxs);
 }
 
-.imst-product-pick__thumb {
-  display: grid;
-  place-items: center;
-  width: 100%;
-  aspect-ratio: 1;
-  border-radius: var(--ref-border-radius-sm);
-  background: var(--ref-color-grey-05);
-  color: var(--ref-color-grey-80);
-  overflow: hidden;
+.imst-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  height: var(--ref-spacing-xl);
+  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xs) var(--ref-spacing-xxxs) var(--ref-spacing-xxxs);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-pill);
+  background: var(--ref-color-white);
+  font: inherit;
+  font-size: var(--ref-font-size-sm);
+  color: var(--ref-color-grey-100);
+  cursor: pointer;
+  transition: border-color 0.15s ease;
 }
 
-.imst-product-pick__thumb img {
+.imst-pill--plain {
+  padding-left: var(--ref-spacing-xs);
+}
+
+.imst-pill:hover {
+  border-color: var(--ref-color-electric-blue-40);
+}
+
+.imst-pill[aria-checked="true"] {
+  border-color: var(--ref-color-electric-blue-100);
+  background: var(--ref-color-electric-blue-05);
+  font-weight: var(--ref-font-weight-bold);
+}
+
+.imst-pill:focus-visible {
+  outline: 2px solid var(--sys-border-color-active);
+  outline-offset: 2px;
+}
+
+.imst-pill__thumb {
+  display: grid;
+  place-items: center;
+  width: var(--ref-spacing-lg);
+  height: var(--ref-spacing-lg);
+  flex-shrink: 0;
+  border-radius: var(--app-radius-circle);
+  overflow: hidden;
+  background: var(--ref-color-grey-05);
+  color: var(--ref-color-grey-80);
+}
+
+.imst-pill__thumb img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
+/* The gallery dialog keeps the tile look of the older picks */
+.imst-gallery__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  padding: var(--ref-spacing-xxxs);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-card);
+  background: var(--ref-color-white);
+  font: inherit;
+  color: var(--ref-color-grey-100);
+  text-align: left;
+  cursor: pointer;
+}
+
+.imst-gallery__item:hover {
+  border-color: var(--ref-color-electric-blue-40);
+}
+
+.imst-gallery__item[aria-pressed="true"] {
+  border-color: var(--ref-color-electric-blue-100);
+  box-shadow: inset 0 0 0 1px var(--ref-color-electric-blue-100);
+}
+
+.imst-gallery__item:focus-visible {
+  outline: 2px solid var(--sys-border-color-active);
+  outline-offset: 2px;
+}
+
 /* ── Canvas column ───────────────────────────────────────────────────── */
+/* The canvas IS the surface: a soft dotted ground the image sits on, like a
+ * design tool's artboard. */
 
 .imst-canvas-col {
   min-height: 0;
@@ -288,6 +488,11 @@
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  padding: var(--ref-spacing-md);
+  border-radius: var(--app-radius-modal);
+  background-color: var(--ref-color-grey-05);
+  background-image: radial-gradient(var(--ref-color-grey-20) 1px, transparent 1px);
+  background-size: var(--ref-spacing-sm) var(--ref-spacing-sm);
 }
 
 .imst-canvas-area {
@@ -328,8 +533,7 @@
   position: relative;
   width: min(100cqw, calc(100cqh * var(--imst-ratio)));
   aspect-ratio: var(--imst-ratio);
-  border: 1px solid var(--ref-color-grey-20);
-  border-radius: var(--ref-border-radius-md);
+  border-radius: var(--app-radius-card);
   overflow: hidden;
   background: var(--ref-color-grey-05);
 }
@@ -455,14 +659,46 @@
 /* Refine in place */
 .imst-refine {
   display: flex;
-  gap: var(--ref-spacing-xs);
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
   width: 100%;
   max-width: calc(var(--app-content) * 0.7);
   align-self: center;
+  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xxxs) var(--ref-spacing-xxxs) var(--ref-spacing-sm);
+  border: 1px solid var(--ref-color-grey-20);
+  /* Card radius, not a pill: the DS button inside keeps its own corners and nests in it. */
+  border-radius: var(--app-radius-card);
+  background: var(--ref-color-white);
+  transition: border-color 0.15s ease;
+}
+
+.imst-refine:hover {
+  border-color: var(--ref-color-grey-40);
+}
+
+.imst-refine:focus-within {
+  border-color: var(--ref-color-electric-blue-100);
+  box-shadow: 0 0 0 3px var(--ref-color-electric-blue-10);
+}
+
+.imst-refine__icon {
+  color: var(--ref-color-orange-100);
+  flex-shrink: 0;
 }
 
 .imst-refine__input {
   flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  font-size: var(--ref-font-size-sm);
+  color: var(--ref-color-grey-100);
+}
+
+.imst-refine__input::placeholder {
+  color: var(--ref-color-grey-60);
 }
 
 .imst-earlier {
@@ -549,13 +785,19 @@
   height: 100%;
 }
 
-.imst-stage2__frame--image {
-  background: var(--ref-color-grey-05);
+/* The draft's current image keeps its own ratio: the frame hugs the picture. */
+.imst-current {
+  position: relative;
+  display: inline-flex;
+  max-width: 100cqw;
+  max-height: 100cqh;
+  border-radius: var(--app-radius-card);
+  overflow: hidden;
 }
 
-.imst-current-img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+.imst-current__img {
   display: block;
+  max-width: 100cqw;
+  max-height: 100cqh;
+  object-fit: contain;
 }

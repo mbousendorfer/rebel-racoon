@@ -18,7 +18,7 @@
 //   clearActiveConnector(sessionId)
 //   subscribe(sessionId, fn)        → unsubscribe
 
-import { createSessionNotifier } from "./store-utils.js?v=1320";
+import { createSessionNotifier } from "./store-utils.js?v=1323";
 
 const bySession = new Map(); // sessionId → connectorId
 const notifier = createSessionNotifier("composer-connector");

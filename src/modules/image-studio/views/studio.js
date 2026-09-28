@@ -18,25 +18,24 @@
 //
 // Deep links: ?creation=<id> reopens a run · ?style=<id> / ?product=<id> preselect.
 
-import { html, toString } from "../lib/html.js?v=1320";
-import { delegate } from "../lib/delegate.js?v=1320";
-import { hashString } from "../lib/prng.js?v=1320";
-import { renderFrame } from "./frame.js?v=1320";
-import { renderEmpty } from "../ui/empty.js?v=1320";
-import { renderBrandPicker } from "../ui/brand-picker.js?v=1320";
-import { preserveFocus } from "../ui/fields.js?v=1320";
-import { toast } from "../ui/toast.js?v=1320";
-import { swatch } from "../ui/swatch.js?v=1320";
-import { assetImg, hydrateAssets, logoUrl, warmAssetUrls } from "../ui/asset.js?v=1320";
-import { styleThumb } from "../ui/style-thumb.js?v=1320";
-import { openDialog } from "../ui/dialog.js?v=1320";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1320";
-import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1320";
-import { FORMAT_SHAPES, formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1320";
-import { networkById } from "../config/networks.js?v=1320";
-import { copyService, imageGenerationService } from "../services/index.js?v=1320";
-import { resolveLayers } from "../render/layout.js?v=1320";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1320";
+import { html, toString } from "../lib/html.js?v=1323";
+import { delegate } from "../lib/delegate.js?v=1323";
+import { hashString } from "../lib/prng.js?v=1323";
+import { renderFrame } from "./frame.js?v=1323";
+import { renderEmpty } from "../ui/empty.js?v=1323";
+import { renderBrandPicker } from "../ui/brand-picker.js?v=1323";
+import { preserveFocus } from "../ui/fields.js?v=1323";
+import { toast } from "../ui/toast.js?v=1323";
+import { assetImg, hydrateAssets, logoUrl, warmAssetUrls } from "../ui/asset.js?v=1323";
+import { styleThumb } from "../ui/style-thumb.js?v=1323";
+import { openDialog } from "../ui/dialog.js?v=1323";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1323";
+import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1323";
+import { FORMAT_SHAPES, formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1323";
+import { networkById } from "../config/networks.js?v=1323";
+import { copyService, imageGenerationService } from "../services/index.js?v=1323";
+import { resolveLayers } from "../render/layout.js?v=1323";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1323";
 import {
   getActiveBrand,
   getBrand,
@@ -45,7 +44,7 @@ import {
   getStyle,
   getStylesForBrand,
   subscribe,
-} from "../state/store.js?v=1320";
+} from "../state/store.js?v=1323";
 import {
   addBatch,
   deleteCreation,
@@ -53,7 +52,7 @@ import {
   replaceVariation,
   startCreation,
   toggleFavorite,
-} from "../state/creation-actions.js?v=1320";
+} from "../state/creation-actions.js?v=1323";
 
 // The presets offered first when the brand has few styles of its own — one per
 // family, the ones that read best at thumbnail size.
@@ -152,14 +151,31 @@ export function mountStudio(target, { mode = "page", navigate = () => {}, draft 
     const logo = logoUrl(brand, "icon") || logoUrl(brand, "color");
     return html`
       <div class="imst-ctl-brand">
-        ${logo ? html`<img class="imst-ctl-brand__logo" src="${logo}" alt="" />` : ""}
+        ${logo
+          ? html`<img class="imst-ctl-brand__logo" src="${logo}" alt="" />`
+          : html`<span class="imst-ctl-brand__logo imst-ctl-brand__logo--initial" aria-hidden="true"
+              >${brand.name.slice(0, 1)}</span
+            >`}
         <div class="imst-ctl-brand__text">
           <span class="ap-body-bold">${brand.name}</span>
-          <span class="imst-palette" aria-label="Brand colours"
-            >${brand.palette.slice(0, 5).map((c) => swatch(c.hex, { label: c.name, size: "sm" }))}</span
-          >
+          ${inDraft ? html`<span class="ap-caption">This chat's Playbook</span>` : ""}
         </div>
-        ${inDraft ? html`<span class="ap-caption">This chat's Playbook</span>` : renderBrandPicker()}
+        <span
+          class="imst-dots"
+          role="img"
+          aria-label="Brand colours: ${brand.palette.map((c) => c.name || c.hex).join(", ")}"
+          >${brand.palette
+            .slice(0, 5)
+            .map(
+              (c) =>
+                html`<span
+                  class="imst-dots__dot"
+                  style="--imst-swatch: ${c.hex}"
+                  data-tooltip="${c.name ? `${c.name} ${c.hex}` : c.hex}"
+                ></span>`,
+            )}</span
+        >
+        ${inDraft ? "" : renderBrandPicker()}
       </div>
     `;
   };
@@ -168,98 +184,103 @@ export function mountStudio(target, { mode = "page", navigate = () => {}, draft 
     const b = state.brief;
     const style = getStyle(b.styleId);
     const shape = shapeForFormat(b.formatIds[0]);
+    const format = formatById(b.formatIds[0]);
     const products = getProducts(brand.id);
     const canEmbed = !!style?.supportsEmbeddedText;
     const running = state.run.status === "loading";
+    const styleCount = getStylesForBrand(brand.id).length || STYLE_PRESETS.length;
     return html`
       <aside class="imst-controls" aria-label="Describe the image">
         <div class="imst-controls__scroll">
           ${renderBrandRow(brand)}
 
           <section class="imst-ctl">
-            <header class="imst-ctl__head">
-              <label class="imst-ctl__label ap-body-bold" for="imst-prompt">Describe the image</label>
-              ${inDraft && draft.text
-                ? html`<button type="button" class="ap-link" data-imst-action="suggest">
-                    <i class="ap-icon-sparkles" aria-hidden="true"></i><span>Suggest from the post</span>
-                  </button>`
-                : ""}
-            </header>
-            <div class="ap-textarea-field imst-ctl-prompt">
+            <label class="imst-ctl__label ap-body-bold" for="imst-prompt">Describe the image</label>
+            <div class="imst-composer${state.error ? " has-error" : ""}">
               <textarea
                 id="imst-prompt"
-                rows="5"
+                class="imst-composer__input"
+                rows="4"
                 data-imst-field="prompt"
-                placeholder="e.g. A dog running through autumn leaves at sunrise, wearing the collar"
+                placeholder="What should the image show? A scene, a subject, a mood…"
+                ${state.error ? html`aria-invalid="true" aria-describedby="imst-prompt-error"` : ""}
               >
 ${b.prompt}</textarea
               >
+              <div class="imst-composer__bar">
+                ${inDraft && draft.text
+                  ? html`<button type="button" class="ap-button mermaid" data-imst-action="suggest">
+                      <i class="ap-icon-sparkles" aria-hidden="true"></i><span>Suggest from the post</span>
+                    </button>`
+                  : ""}
+                <span class="ap-caption imst-composer__hint">⌘ Enter to generate</span>
+              </div>
             </div>
-            ${state.error ? html`<span class="ap-form-message error" role="alert">${state.error}</span>` : ""}
+            ${state.error
+              ? html`<span class="ap-form-message error" id="imst-prompt-error" role="alert">${state.error}</span>`
+              : ""}
           </section>
 
           <section class="imst-ctl" aria-labelledby="imst-ctl-style">
             <header class="imst-ctl__head">
               <h3 class="imst-ctl__label ap-body-bold" id="imst-ctl-style">Style</h3>
-              <button type="button" class="ap-link" data-imst-action="all-styles">All styles</button>
+              <button type="button" class="ap-link" data-imst-action="all-styles">All ${styleCount} styles</button>
             </header>
-            <div class="imst-style-now">
-              ${styleThumb(style, brand, {
-                className: "imst-style-now__thumb",
-                kind: "object",
-                seed: hashString(style.id),
-              })}
-              <div class="imst-style-now__text">
-                <span class="ap-body-bold">${style.label}</span>
-                <span class="ap-caption"
-                  >${style.description || (style.kind === "custom" ? `A style of ${brand.name}'s` : "")}</span
-                >
-                ${style.kind === "custom"
-                  ? html`<span class="ap-tag grey mini"><span>${brand.name}'s style</span></span>`
-                  : ""}
-              </div>
-            </div>
-            <div class="imst-style-quick" role="radiogroup" aria-labelledby="imst-ctl-style">
+            <div class="imst-tiles" role="radiogroup" aria-labelledby="imst-ctl-style">
               ${quickStyles(brand).map(
                 (s) =>
                   html`<button
                     type="button"
-                    class="imst-style-pick"
+                    class="imst-tile"
                     role="radio"
                     aria-checked="${s.id === b.styleId}"
                     data-imst-style="${s.id}"
-                    title="${s.label}"
+                    aria-label="${s.label}"
                   >
-                    ${styleThumb(s, brand, { className: "imst-style-pick__thumb", seed: hashString(s.id) })}
-                    <span class="ap-caption imst-style-pick__name">${s.label}</span>
+                    ${styleThumb(s, brand, { className: "imst-tile__img", seed: hashString(s.id) })}
+                    <span class="imst-tile__name">${s.label}</span>
+                    ${s.id === b.styleId
+                      ? html`<span class="imst-tile__check" aria-hidden="true"><i class="ap-icon-check"></i></span>`
+                      : ""}
                   </button>`,
               )}
             </div>
+            <p class="ap-caption imst-ctl__note">
+              <span class="ap-body-bold">${style.label}</span>${style.kind === "custom"
+                ? html` · ${brand.name}'s own style`
+                : ""}${style.description ? html` — ${style.description}` : ""}
+            </p>
           </section>
 
           <section class="imst-ctl" aria-labelledby="imst-ctl-shape">
-            <h3 class="imst-ctl__label ap-body-bold" id="imst-ctl-shape">Shape</h3>
-            <div class="imst-shapes" role="radiogroup" aria-labelledby="imst-ctl-shape">
+            <header class="imst-ctl__head">
+              <h3 class="imst-ctl__label ap-body-bold" id="imst-ctl-shape">Shape</h3>
+              <span class="ap-caption imst-ctl__meta">${format.width} × ${format.height} px</span>
+            </header>
+            <div class="imst-seg" role="radiogroup" aria-labelledby="imst-ctl-shape">
               ${shapes().map(
                 (s) =>
                   html`<button
                     type="button"
-                    class="imst-shape"
+                    class="imst-seg__opt"
                     role="radio"
                     aria-checked="${s.id === shape.id}"
                     data-imst-shape="${s.id}"
                     aria-label="${s.label} ${s.ratio}"
                   >
-                    <span class="imst-shape__box"
+                    <span class="imst-seg__box"
                       ><span
-                        class="imst-shape__frame"
+                        class="imst-seg__frame"
                         style="aspect-ratio: ${s.w} / ${s.h}; ${s.w >= s.h ? "width: 100%" : "height: 100%"}"
                       ></span
                     ></span>
-                    <span class="ap-caption imst-shape__name">${s.label}</span>
-                    <span class="imst-shape__nets" aria-hidden="true"
-                      >${s.networks.map((n) => html`<i class="${networkById(n).icon}"></i>`)}</span
-                    >
+                    <span class="imst-seg__name">${s.label}</span>
+                    <span class="ap-caption imst-seg__ratio">${s.ratio}</span>
+                    ${inDraft
+                      ? ""
+                      : html`<span class="imst-seg__nets" aria-hidden="true"
+                          >${s.networks.map((n) => html`<i class="${networkById(n).icon}"></i>`)}</span
+                        >`}
                   </button>`,
               )}
             </div>
@@ -267,36 +288,35 @@ ${b.prompt}</textarea
 
           ${products.length
             ? html`<section class="imst-ctl" aria-labelledby="imst-ctl-product">
-                <h3 class="imst-ctl__label ap-body-bold" id="imst-ctl-product">
-                  Product <span class="ap-caption">optional</span>
-                </h3>
-                <div class="imst-products" role="radiogroup" aria-labelledby="imst-ctl-product">
+                <header class="imst-ctl__head">
+                  <h3 class="imst-ctl__label ap-body-bold" id="imst-ctl-product">Product</h3>
+                  <span class="ap-caption imst-ctl__meta">Optional</span>
+                </header>
+                <div class="imst-pills" role="radiogroup" aria-labelledby="imst-ctl-product">
                   <button
                     type="button"
-                    class="imst-product-pick imst-product-pick--none"
+                    class="imst-pill imst-pill--plain"
                     role="radio"
                     aria-checked="${!b.productId}"
                     data-imst-product=""
                   >
-                    <span class="imst-product-pick__thumb"><i class="ap-icon-close" aria-hidden="true"></i></span
-                    ><span class="ap-caption">None</span>
+                    <span>No product</span>
                   </button>
                   ${products.map(
                     (p) =>
                       html`<button
                         type="button"
-                        class="imst-product-pick"
+                        class="imst-pill"
                         role="radio"
                         aria-checked="${b.productId === p.id}"
                         data-imst-product="${p.id}"
-                        title="${p.name}"
                       >
-                        <span class="imst-product-pick__thumb"
+                        <span class="imst-pill__thumb"
                           >${p.imageAssetId
                             ? assetImg(p.imageAssetId)
                             : html`<i class="ap-icon-product-tag" aria-hidden="true"></i>`}</span
                         >
-                        <span class="ap-caption imst-product-pick__name">${p.name}</span>
+                        <span>${p.name}</span>
                       </button>`,
                   )}
                 </div>
@@ -304,45 +324,35 @@ ${b.prompt}</textarea
             : ""}
 
           <section class="imst-ctl" aria-labelledby="imst-ctl-text">
-            <h3 class="imst-ctl__label ap-body-bold" id="imst-ctl-text">
-              Text on the image <span class="ap-caption">optional</span>
-            </h3>
+            <header class="imst-ctl__head">
+              <h3 class="imst-ctl__label ap-body-bold" id="imst-ctl-text">Text on the image</h3>
+              <span class="ap-caption imst-ctl__meta">Optional</span>
+            </header>
             <div class="ap-input-group">
               <input
                 type="text"
                 class="ap-input"
                 data-imst-field="headline"
                 value="${b.headline}"
-                placeholder="e.g. Every walk, remembered"
+                placeholder="A headline, e.g. Plans that name their signal"
                 aria-labelledby="imst-ctl-text"
               />
             </div>
-            <div class="imst-ctl-radios" role="radiogroup" aria-label="How the text is set">
-              <label class="ap-radio-container">
-                <input
-                  type="radio"
-                  name="imst-textmode"
-                  value="layer"
-                  data-imst-textmode
-                  ${b.textMode === "layer" ? "checked" : ""}
-                />
-                <span>An editable layer</span>
-              </label>
-              <label class="ap-radio-container">
-                <input
-                  type="radio"
-                  name="imst-textmode"
-                  value="embedded"
-                  data-imst-textmode
-                  ${b.textMode === "embedded" ? "checked" : ""}
-                  ${canEmbed ? "" : "disabled"}
-                />
-                <span
-                  >Written into the
-                  image${canEmbed ? "" : html` <span class="ap-caption">— not with ${style.label}</span>`}</span
-                >
-              </label>
-            </div>
+            <label class="ap-toggle-container imst-ctl__toggle">
+              <input
+                type="checkbox"
+                data-imst-textmode
+                ${b.textMode === "embedded" ? "checked" : ""}
+                ${canEmbed ? "" : "disabled"}
+              /><i></i><span>Write it into the image</span>
+            </label>
+            <span class="ap-caption imst-ctl__note"
+              >${!canEmbed
+                ? `${style.label} can't write text, so it stays an editable layer you can move and restyle.`
+                : b.textMode === "embedded"
+                  ? "Part of the picture — it won't be editable afterwards."
+                  : "Otherwise it stays an editable layer you can move and restyle."}</span
+            >
             ${state.warning
               ? html`<span class="ap-caption imst-ctl__warn" role="status"
                   ><i class="ap-icon-warning_fill" aria-hidden="true"></i> ${state.warning}</span
@@ -351,7 +361,10 @@ ${b.prompt}</textarea
           </section>
         </div>
         <footer class="imst-controls__foot">
-          <span class="ap-caption">4 variations · ${shape.label.toLowerCase()} ${shape.ratio}</span>
+          <div class="imst-controls__sum">
+            <span class="ap-body-bold">4 variations</span>
+            <span class="ap-caption">${style.label} · ${shape.label} ${shape.ratio}</span>
+          </div>
           <button
             type="button"
             class="ap-button primary orange${running ? " loading" : ""}"
@@ -540,17 +553,15 @@ ${b.prompt}</textarea
           )}
         </div>
         <form class="imst-refine" data-imst-form="refine">
-          <div class="ap-input-group imst-refine__input">
-            <i class="ap-icon-sparkles" aria-hidden="true"></i>
-            <input
-              type="text"
-              class="ap-input"
-              data-imst-field="refine"
-              value="${state.refine}"
-              placeholder="Refine this one — e.g. warmer light, closer on the product"
-              aria-label="Refine this variation"
-            />
-          </div>
+          <i class="ap-icon-sparkles imst-refine__icon" aria-hidden="true"></i>
+          <input
+            type="text"
+            class="imst-refine__input"
+            data-imst-field="refine"
+            value="${state.refine}"
+            placeholder="Refine this one — warmer light, closer on the product…"
+            aria-label="Refine this variation"
+          />
           <button type="submit" class="ap-button primary orange" ${state.run.status === "loading" ? "disabled" : ""}>
             <span>Refine</span>
           </button>
@@ -586,9 +597,9 @@ ${b.prompt}</textarea
 
   const renderCurrent = () => html`
     <div class="imst-canvas-area imst-canvas-area--preview">
-      <div class="imst-stage2" style="--imst-ratio: 1">
-        <div class="imst-stage2__frame imst-stage2__frame--image">
-          <img class="imst-current-img" src="${draft.imageUrl}" alt="The draft's current image" />
+      <div class="imst-stage2">
+        <div class="imst-current">
+          <img class="imst-current__img" src="${draft.imageUrl}" alt="The draft's current image" />
           <span class="ap-tag grey imst-stage2__badge"
             ><span>${draft.slides > 1 ? `Current carousel · slide 1 of ${draft.slides}` : "Current image"}</span></span
           >
@@ -920,9 +931,9 @@ ${b.prompt}</textarea
       paint();
     }),
     delegate(target, "change", "[data-imst-textmode]", (_e, el) => {
-      state.brief.textMode = el.value;
+      state.brief.textMode = el.checked ? "embedded" : "layer";
       state.warning = "";
-      if (!currentCreation()) paint();
+      paint();
     }),
     delegate(target, "click", "[data-imst-focus]", (_e, el) => {
       state.focusId = el.dataset.imstFocus;

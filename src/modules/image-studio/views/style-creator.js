@@ -5,27 +5,27 @@
 // composition" (+ framing, angle, layout). An optional style prompt. A test run
 // on three neutral subjects before saving. Saved FOR the active Playbook.
 
-import { html, toString } from "../lib/html.js?v=1320";
-import { delegate } from "../lib/delegate.js?v=1320";
-import { hashString, randomSeed } from "../lib/prng.js?v=1320";
-import { renderFrame } from "./frame.js?v=1320";
-import { renderEmpty } from "../ui/empty.js?v=1320";
-import { field, preserveFocus, slider, syncSlider, textArea, textInput } from "../ui/fields.js?v=1320";
-import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1320";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1320";
-import { toast } from "../ui/toast.js?v=1320";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1320";
+import { html, toString } from "../lib/html.js?v=1323";
+import { delegate } from "../lib/delegate.js?v=1323";
+import { hashString, randomSeed } from "../lib/prng.js?v=1323";
+import { renderFrame } from "./frame.js?v=1323";
+import { renderEmpty } from "../ui/empty.js?v=1323";
+import { field, preserveFocus, slider, syncSlider, textArea, textInput } from "../ui/fields.js?v=1323";
+import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1323";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1323";
+import { toast } from "../ui/toast.js?v=1323";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=1323";
 import {
   CUSTOM_STYLE_LIMITS,
   STYLE_FAMILIES,
   STYLE_PRESETS,
   STYLE_TEST_SUBJECTS,
   presetById,
-} from "../config/style-presets.js?v=1320";
-import { createStyle } from "../model/schema.js?v=1320";
-import { imageGenerationService } from "../services/index.js?v=1320";
-import { getActiveBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1320";
-import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1320";
+} from "../config/style-presets.js?v=1323";
+import { createStyle } from "../model/schema.js?v=1323";
+import { imageGenerationService } from "../services/index.js?v=1323";
+import { getActiveBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1323";
+import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1323";
 
 const FIDELITY = [
   { id: "essential", title: "Essential", body: "Colours, textures, strokes and mood." },
