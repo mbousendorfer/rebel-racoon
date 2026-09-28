@@ -140,6 +140,19 @@ export const FLAGS = Object.freeze([
       "month calendar beside the list.",
   },
   {
+    id: "playbook2",
+    label: "Playbook 2.0 — the fiche in tabs",
+    // OFF: lands dark. Only the saved Playbook's page (/playbook/:id) changes;
+    // the onboarding recap keeps the long single-page reveal.
+    default: false,
+    hides:
+      "When OFF, a Playbook's page is one long scroll with a section rail. ON " +
+      "rebuilds it: an identity header with the page's actions, DS tabs — " +
+      "Overview, Audience & goals, Voice & style, Brand, Competitors — and an " +
+      "Overview that shows the brand at a glance (who it's for, how it sounds, " +
+      "how it looks, who it competes with), each card opening its tab.",
+  },
+  {
     id: "sexySquirrel",
     label: "Sexy Squirrel — AI Image Generator (from a draft)",
     // OFF: lands dark. Gates the draft's studio (the old Image Studio opens

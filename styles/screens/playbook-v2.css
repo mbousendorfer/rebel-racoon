@@ -1,0 +1,350 @@
+/* Playbook 2.0 (flag playbook2) — the saved Playbook's page, in tabs.
+ * An identity header carrying the page's actions, DS tabs (sticky), then ONE
+ * section per tab — or the Overview, the brand at a glance. The section panels
+ * are the recap's own (welcome.css); only the page around them changes here.
+ */
+
+.pb2__body.welcome-screen__body.recap {
+  gap: var(--ref-spacing-md);
+  padding-top: var(--ref-spacing-xl);
+}
+
+/* ── Identity header ──────────────────────────────────────────────────── */
+
+.pb2-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-md);
+  flex-wrap: wrap;
+  padding-bottom: var(--ref-spacing-xs);
+}
+
+.pb2-hero__id {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-md);
+  min-width: 0;
+}
+
+.pb2-hero__mark {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.pb2-hero__mark .recap__monogram {
+  width: calc(var(--ref-spacing-xxxl) + var(--ref-spacing-xxxs));
+  height: calc(var(--ref-spacing-xxxl) + var(--ref-spacing-xxxs));
+  box-shadow: none;
+}
+
+.pb2-hero__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  min-width: 0;
+}
+
+.pb2-hero__titlerow {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+}
+
+.pb2-hero__name {
+  margin: 0;
+  font-family: var(--sys-text-style-h1-font-family);
+  font-size: var(--sys-text-style-h1-size);
+  line-height: var(--sys-text-style-h1-line-height);
+  font-weight: var(--sys-text-style-h1-weight);
+  color: var(--ref-color-grey-100);
+  letter-spacing: -0.01em;
+}
+
+.pb2-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs) var(--ref-spacing-sm);
+  color: var(--ref-color-grey-80);
+  font-size: var(--ref-font-size-sm);
+}
+
+.pb2-meta__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+}
+
+.pb2-hero__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+}
+
+/* ── Tabs: stay in reach while a long section scrolls ────────────────── */
+
+.pb2-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--app-bg);
+}
+
+.pb2-tabs .ap-tabs-tab[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* ── A section in its tab: its lead sentence instead of a repeated title ── */
+
+.pb2-panel-head {
+  justify-content: space-between;
+}
+
+.pb2-panel-lead {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  color: var(--ref-color-grey-80);
+  font-size: var(--ref-font-size-sm);
+}
+
+.pb2__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-lg);
+}
+
+/* ── Overview: the brand at a glance, one card per section ────────────── */
+
+.pb2-overview {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ref-spacing-md);
+}
+
+.pb2-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-md);
+  border-color: var(--ref-color-grey-20);
+}
+
+.pb2-card__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--ref-spacing-xs);
+}
+
+.pb2-card__title {
+  margin: 0;
+  font-family: var(--sys-text-style-subtitle-font-family);
+  font-size: var(--sys-text-style-subtitle-size);
+  line-height: var(--sys-text-style-subtitle-line-height);
+  font-weight: var(--sys-text-style-subtitle-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.pb2-card__open {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  white-space: nowrap;
+}
+
+.pb2-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+  color: var(--ref-color-grey-100);
+}
+
+.pb2-empty {
+  margin: 0;
+  color: var(--ref-color-grey-80);
+}
+
+.pb2-lead {
+  margin: 0;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Label → value, the label in a fixed column so the values line up. */
+.pb2-kv {
+  display: grid;
+  grid-template-columns: calc(var(--ref-spacing-xxxl) + var(--ref-spacing-xxs)) minmax(0, 1fr);
+  align-items: baseline;
+  gap: var(--ref-spacing-xs);
+}
+
+.pb2-kv__k {
+  color: var(--ref-color-grey-80);
+  font-size: var(--ref-font-size-sm);
+}
+
+.pb2-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxs);
+}
+
+.pb2-kv__v {
+  font-weight: var(--ref-font-weight-bold);
+}
+
+/* How it sounds: the voice in one line, then the brand's own opening lines. */
+.pb2-voice {
+  margin: 0;
+  font-size: var(--ref-font-size-lg);
+  font-weight: var(--ref-font-weight-bold);
+  line-height: 1.35;
+}
+
+.pb2-quotes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+}
+
+.pb2-quote {
+  margin: 0;
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  border-radius: var(--ref-border-radius-md);
+  background: var(--ref-color-grey-05);
+  font-style: italic;
+}
+
+/* How it looks: the mark, the palette as large chips, the type as a specimen. */
+.pb2-looks {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+  flex-wrap: wrap;
+}
+
+.pb2-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--ref-spacing-xxxl) + var(--ref-spacing-md));
+  height: var(--ref-spacing-xl);
+  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--ref-border-radius-md);
+  background: var(--ref-color-white);
+}
+
+.pb2-logo img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.pb2-palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxs);
+}
+
+.pb2-palette__chip {
+  width: var(--ref-spacing-xl);
+  height: var(--ref-spacing-xl);
+  border-radius: var(--ref-border-radius-md);
+  /* The hairline keeps a white brand colour visible on the white card. */
+  box-shadow: inset 0 0 0 1px var(--ref-color-grey-20);
+}
+
+.pb2-type {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+}
+
+.pb2-type__ag {
+  font-size: var(--ref-font-size-xxxl);
+  line-height: 1;
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--ref-color-grey-100);
+}
+
+.pb2-type__names {
+  color: var(--ref-color-grey-80);
+  font-size: var(--ref-font-size-sm);
+}
+
+/* Who it competes with: logo + name, two columns. */
+.pb2-rivals {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pb2-rival {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  min-width: 0;
+}
+
+.pb2-rival__logo {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.pb2-rival__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pb2-more {
+  margin: 0;
+  color: var(--ref-color-grey-80);
+  font-size: var(--ref-font-size-sm);
+}
+
+@media (max-width: 1024px) {
+  .pb2-overview {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* The Brand tab's two groups — Identity, Imagery. */
+.pb2-group {
+  margin: 0;
+  padding: var(--ref-spacing-md) var(--ref-spacing-lg) 0;
+  font-family: var(--sys-text-style-subtitle-font-family);
+  font-size: var(--sys-text-style-subtitle-size);
+  line-height: var(--sys-text-style-subtitle-line-height);
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--ref-color-grey-100);
+}
+
+.pb2-group + .recap__row {
+  border-top: 0;
+}
+
+.recap__row + .pb2-group {
+  margin-top: var(--ref-spacing-xs);
+  border-top: 1px solid var(--ref-color-grey-20);
+  padding-top: var(--ref-spacing-lg);
+}
+
+/* House rule: no uppercase labels, and label ink never lighter than grey-80.
+   Scoped to the new page; the onboarding recap keeps its own look. */
+.pb2 .recap__cmpgroup-title {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: var(--ref-font-size-sm);
+  color: var(--ref-color-grey-100);
+}

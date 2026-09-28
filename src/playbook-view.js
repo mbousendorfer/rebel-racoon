@@ -14,7 +14,7 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1360";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1366";
 import {
   kitEnabled,
   renderColorRole,
@@ -27,17 +27,18 @@ import {
   handleKitInput,
   handleKitChange,
   kitSnapshot,
-} from "./playbook-brand-kit.js?v=1360";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1360";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1360";
-import { isFlagOn } from "./feature-flags.js?v=1360";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1360";
+} from "./playbook-brand-kit.js?v=1366";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1366";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1366";
+import { isFlagOn } from "./feature-flags.js?v=1366";
+import { parseHashParams } from "./url-state.js?v=1366";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1366";
 // The Default look row offers the SAME three catalogues the Image Studio renders, from
 // the one place they are declared — REF_MODES' own header makes the argument: the label,
 // the hint and the brief clause "drift the moment they live apart". No cycle: the engine
 // imports only clip-formats / image-studio-canvas / feature-flags, and its module body
 // builds consts, so importing it here costs nothing at load.
-import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1360";
+import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1366";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -154,6 +155,7 @@ let loadingTimer = null;
 let loadingStage = 0;
 let phase = "ready"; // "loading" | "ready"
 let scrollSpy = null; // IntersectionObserver for the section-nav active state
+let activeTab = "overview"; // Playbook 2.0 (flag playbook2): the tab on screen
 
 // ── Public API ───────────────────────────────────────────────────────────
 
@@ -183,6 +185,7 @@ let scrollSpy = null; // IntersectionObserver for the section-nav active state
 export function mount(target, config) {
   cfg = config;
   mountTarget = target;
+  activeTab = tabFromUrl();
   editScope = null;
   snapshot = null;
   audienceCustom = false;
@@ -564,6 +567,13 @@ function panelEditActions() {
 }
 
 function renderPanelHead(section, edit, extraAction = "") {
+  if (v2On())
+    return `
+    <header class="recap__panel-head pb2-panel-head">
+      <p class="pb2-panel-lead">${esc(SECTION_LEADS[section.scope] || "")}</p>
+      ${edit ? panelEditActions() : `${extraAction}${canEditView() ? panelPen(section.scope) : ""}`}
+    </header>
+  `;
   return `
     <header class="recap__panel-head">
       <span class="recap__panel-icon"><i class="${section.icon}" aria-hidden="true"></i></span>
@@ -1338,6 +1348,7 @@ function renderBrandPanel(data, edit) {
       .join("");
     body = [
       renderSectionHint(SECTION_HINTS.brand),
+      renderBrandGroup("Identity"),
       // Logo first: it's the most concrete piece of the visual identity, and the
       // one thing the image generator stamps into the pixels.
       renderRow("Logo", renderFieldHint(FIELD_HINTS.brandLogo) + renderBrandLogo(data, true)),
@@ -1369,6 +1380,7 @@ function renderBrandPanel(data, edit) {
           "How the brand comes across — its character in a few sentences…",
         ),
       ),
+      renderBrandGroup("Imagery"),
       kitEnabled() ? renderRow("Moods", renderEditChips("brandMoods", data.brandMoods, "Add a mood…")) : "",
       // Reference images live under Brand. They're always-editable (per-image
       // modal + remove + add) regardless of the Brand section's edit state —
@@ -1391,11 +1403,13 @@ function renderBrandPanel(data, edit) {
     ].join("");
   } else {
     body = [
+      renderBrandGroup("Identity"),
       renderRow("Logo", renderBrandLogo(data, false)),
       kitEnabled() ? renderRow("Logo versions", renderLogoVariants(data, false, brandLogoList(data))) : "",
       renderRow("Brand color", renderSwatches(colors)),
       renderRow("Typography", renderTypeSpecimen(data)),
       renderRow("Personality", renderText(data.brandPersonality)),
+      renderBrandGroup("Imagery"),
       kitEnabled() ? renderRow("Moods", renderChips(data.brandMoods || [])) : "",
       kitEnabled() ? "" : renderRow("Reference images", renderRefImages(data, false)),
       kitEnabled() ? imageStylesRow(data) : "",
@@ -1822,6 +1836,242 @@ function renderCompetitorModal(data) {
 // renderCompetitorLogo uses, so a logo that can't load (a data URL from a file
 // the browser then rejected) falls back to the initials instead of an empty box.
 // The swap is wired by onLoadError().
+// ── Playbook 2.0 (flag playbook2) — the fiche in tabs ─────────────────────
+// The long single page (rail + four stacked panels) became one TAB per section,
+// plus an Overview that shows the brand at a glance. Only the saved Playbook's
+// page (mode "library") changes; the onboarding recap keeps its reveal. The
+// section renderers are the SAME — a tab hosts one panel, edit mode included.
+
+const TABS = [
+  { id: "overview", title: "Overview" },
+  { id: "goals", title: "Audience & goals" },
+  { id: "voice", title: "Voice & style" },
+  { id: "brand", title: "Brand" },
+  { id: "competitors", title: "Competitors" },
+];
+
+// What each section is FOR, said once at the top of its tab — the tab already
+// names it, so the panel head carries the sentence instead of repeating the title.
+const SECTION_LEADS = {
+  goals: "Who the posts are for, and what they should make happen.",
+  voice: "How the brand sounds — the lines it opens and closes on, and its writing conventions.",
+  brand: "How the brand looks — its marks, colours, type and the rules its images follow.",
+  competitors: "Who the brand is measured against, so Archie can position it.",
+};
+
+function v2On() {
+  return cfg?.mode === "library" && isFlagOn("playbook2");
+}
+
+function tabFromUrl() {
+  const q = parseHashParams();
+  const wanted = q.get("tab") || q.get("section");
+  return TABS.some((t) => t.id === wanted) ? wanted : "overview";
+}
+
+// The tab is the page's state, kept in the URL without a route change (the
+// router would remount the fiche and drop an open edit).
+function setTab(id) {
+  activeTab = id;
+  const [path] = window.location.hash.slice(1).split("?");
+  const q = parseHashParams();
+  q.delete("section");
+  if (id === "overview") q.delete("tab");
+  else q.set("tab", id);
+  const query = q.toString();
+  history.replaceState(null, "", `#${path}${query ? `?${query}` : ""}`);
+}
+
+function renderHeader2(data) {
+  const colors = visualColors(data);
+  const accent = colors.find((c) => /accent/i.test(c.name))?.hex || colors[0]?.hex || "var(--ref-color-orange-100)";
+  const primary = colors[0]?.hex || accent;
+  const site = brandSite(data);
+  const domain = site?.domain || prettyUrl(data.websiteUrl);
+  const usedIn = typeof data.usedIn === "number" ? data.usedIn : null;
+  const langs = contextLanguages(data);
+  const meta = [
+    domain ? `<span class="pb2-meta__item"><i class="ap-icon-web" aria-hidden="true"></i>${esc(domain)}</span>` : "",
+    `<span class="pb2-meta__item">${esc(langs.join(" · "))}</span>`,
+    usedIn !== null ? `<span class="pb2-meta__item">Used in ${usedIn} ${usedIn === 1 ? "chat" : "chats"}</span>` : "",
+    data.updatedAt ? `<span class="pb2-meta__item">Updated ${esc(data.updatedAt)}</span>` : "",
+    cfg.ownership?.owner
+      ? `<span class="pb2-meta__item"><span class="ap-avatar size-24" aria-hidden="true"><span class="ap-avatar-initials">${esc(
+          cfg.ownership.initials || "?",
+        )}</span></span>${esc(cfg.ownership.owner)}</span>`
+      : "",
+  ]
+    .filter(Boolean)
+    .join("");
+  return `
+    <header class="pb2-hero">
+      <div class="pb2-hero__id">
+        <span class="pb2-hero__mark">${renderHeaderMark(data, accent, primary)}</span>
+        <div class="pb2-hero__text">
+          <div class="pb2-hero__titlerow">
+            <h1 class="pb2-hero__name">${esc(data.name || "Untitled Playbook")}</h1>
+            ${
+              cfg.onEditName
+                ? `<button type="button" class="ap-icon-button transparent grey" data-recap-edit-name title="Rename" aria-label="Rename Playbook"><i class="ap-icon-pen"></i></button>`
+                : ""
+            }
+            ${
+              cfg.ownership?.tag
+                ? `<span class="ap-tag grey mini" title="${esc(cfg.ownership.tag)}"><span>${esc(cfg.ownership.tag)}</span></span>`
+                : ""
+            }
+          </div>
+          <div class="pb2-meta">${meta}</div>
+        </div>
+      </div>
+      ${cfg.headerActions ? `<div class="pb2-hero__actions">${cfg.headerActions()}</div>` : ""}
+    </header>
+  `;
+}
+
+function renderTabs2(data) {
+  // Pending suggestions are not part of the Playbook: they are never counted.
+  const cmpCount = competitorList(data).filter((c) => !c.suggested).length;
+  const locked = !!editScope;
+  return `
+    <div class="ap-tabs pb2-tabs">
+      <div class="ap-tabs-nav" role="tablist" aria-label="Playbook sections">
+        ${TABS.map((t) => {
+          const on = t.id === activeTab;
+          const off = locked && !on;
+          return `<button type="button" class="ap-tabs-tab${on ? " active" : ""}" role="tab" aria-selected="${on}"
+            data-pb2-tab="${t.id}" ${off ? 'aria-disabled="true" data-tooltip="Save or cancel your changes first"' : ""}>
+            <span>${esc(t.title)}</span>
+            ${t.id === "competitors" && cmpCount ? `<span class="ap-counter normal grey">${cmpCount}</span>` : ""}
+          </button>`;
+        }).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function overviewCard(tab, title, body) {
+  return `
+    <section class="ap-card pb2-card" aria-labelledby="pb2-ov-${tab}">
+      <header class="pb2-card__head">
+        <h2 class="pb2-card__title" id="pb2-ov-${tab}">${esc(title)}</h2>
+        <button type="button" class="ap-link pb2-card__open" data-pb2-tab="${tab}">
+          <span>${esc(TABS.find((t) => t.id === tab).title)}</span><i class="ap-icon-arrow-right" aria-hidden="true"></i>
+        </button>
+      </header>
+      <div class="pb2-card__body">${body}</div>
+    </section>
+  `;
+}
+
+const pb2Empty = (text) => `<p class="pb2-empty">${esc(text)}</p>`;
+// Static facts, so grey tags — blue is for what you can act on.
+const pb2Tags = (values) =>
+  `<span class="pb2-tags">${values.map((v) => `<span class="ap-tag grey"><span>${esc(v)}</span></span>`).join("")}</span>`;
+
+function renderOverview(data) {
+  // Who it's for
+  const audience = (data.audience || [])[0];
+  const goals = data.objective || [];
+  const who = [
+    data.businessSummary
+      ? `<p class="pb2-lead">${esc(data.businessSummary)}</p>`
+      : pb2Empty("No business summary yet."),
+    audience
+      ? `<div class="pb2-kv"><span class="pb2-kv__k">Audience</span><span class="pb2-kv__v">${esc(audience)}</span></div>`
+      : "",
+    goals.length ? `<div class="pb2-kv"><span class="pb2-kv__k">Goals</span>${pb2Tags(goals)}</div>` : "",
+  ].join("");
+
+  // How it sounds
+  const ve = voiceEntry(data);
+  const hooks = (ve.signatureHooks || []).filter(Boolean).slice(0, 2);
+  const headline = data.voiceProfile?.headline;
+  const sounds = [
+    headline ? `<p class="pb2-voice">${esc(headline)}</p>` : "",
+    hooks.length
+      ? `<div class="pb2-quotes">${hooks.map((h) => `<blockquote class="pb2-quote">${esc(h)}</blockquote>`).join("")}</div>`
+      : "",
+    !headline && !hooks.length ? pb2Empty("No voice captured yet.") : "",
+  ].join("");
+
+  // How it looks
+  const colors = visualColors(data).slice(0, 6);
+  const { headingFont, bodyFont } = brandFonts(data);
+  const moods = data.brandMoods || [];
+  const logo = data.brandLogo
+    ? `<span class="pb2-logo"><img src="${esc(data.brandLogo)}" alt="${esc(data.name || "Brand")} logo" /></span>`
+    : "";
+  const looks = [
+    logo || colors.length ? `<div class="pb2-looks">${logo}` : "",
+    colors.length
+      ? `<div class="pb2-palette">${colors
+          .map(
+            (c) =>
+              `<span class="pb2-palette__chip" style="background:${esc(c.hex)}" title="${esc(`${c.name || "Colour"} ${c.hex}`)}"></span>`,
+          )
+          .join("")}</div>`
+      : "",
+    logo || colors.length ? `</div>` : "",
+    headingFont || bodyFont
+      ? `<div class="pb2-type"><span class="pb2-type__ag" style="font-family:'${esc(headingFont || bodyFont)}', var(--sys-text-style-body-font-family);">Aa</span><span class="pb2-type__names">${esc(
+          [headingFont, bodyFont]
+            .filter(Boolean)
+            .filter((f, i, a) => a.indexOf(f) === i)
+            .join(" · "),
+        )}</span></div>`
+      : "",
+    moods.length && kitEnabled()
+      ? `<div class="pb2-kv"><span class="pb2-kv__k">Moods</span>${pb2Tags(moods)}</div>`
+      : "",
+    !colors.length && !headingFont && !bodyFont ? pb2Empty("No brand identity captured yet.") : "",
+  ].join("");
+
+  // Who it competes with
+  const cmps = competitorList(data).filter((c) => !c.suggested);
+  const pending = competitorList(data).length - cmps.length;
+  const rivals = cmps.length
+    ? `<ul class="pb2-rivals">${cmps
+        .slice(0, 6)
+        .map(
+          (c) =>
+            `<li class="pb2-rival"><span class="pb2-rival__logo">${renderCompetitorLogo(c, 32)}</span><span class="pb2-rival__name">${esc(c.name || competitorDomain(c))}</span></li>`,
+        )
+        .join("")}</ul>${cmps.length > 6 ? `<p class="pb2-more">and ${cmps.length - 6} more</p>` : ""}${
+        pending ? `<p class="pb2-more">${pending} suggested by Archie, waiting for your answer</p>` : ""
+      }`
+    : pb2Empty(
+        pending
+          ? `No competitors yet — ${pending} suggested by Archie, waiting for your answer.`
+          : "No competitors yet — Archie can scan the market and suggest a few.",
+      );
+
+  return `
+    <div class="pb2-overview">
+      ${overviewCard("goals", "Who it's for", who)}
+      ${overviewCard("voice", "How it sounds", sounds)}
+      ${overviewCard("brand", "How it looks", looks)}
+      ${overviewCard("competitors", "Who it competes with", rivals)}
+    </div>
+  `;
+}
+
+// Playbook 2.0: the Brand tab reads as two groups — what the brand IS (marks,
+// colours, type, personality) and what its images follow (moods, styles, rules).
+function renderBrandGroup(title) {
+  if (!v2On() || !kitEnabled()) return "";
+  return `<h3 class="pb2-group">${esc(title)}</h3>`;
+}
+
+function renderActivePanel(data) {
+  const scope = editScope;
+  if (activeTab === "goals") return renderGoalsPanel(data, scope === "goals");
+  if (activeTab === "voice") return renderVoicePanel(data, scope === "voice");
+  if (activeTab === "brand") return renderBrandPanel(data, scope === "brand");
+  if (activeTab === "competitors") return renderCompetitorsPanel(data, scope === "competitors");
+  return renderOverview(data);
+}
+
 function renderHeaderMark(data, accent, primary) {
   const tint = `--brand-accent:${esc(accent)}; --brand-primary:${esc(primary)};`;
   const mono = `<span class="recap__monogram${data.brandLogo ? " is-hidden" : ""}" style="${tint}">${esc(initials(data.name))}</span>`;
@@ -1978,6 +2228,19 @@ function paint() {
 
   const data = cfg.getData();
   const scope = editScope;
+  if (v2On()) {
+    mountTarget.innerHTML = html`
+      <section class="welcome-screen welcome-screen--reveal ${modeClass} pb2 ${scope ? "is-editing" : ""}">
+        <div class="welcome-screen__body recap pb2__body">
+          ${raw(renderHeader2(data))} ${raw(cfg.notice?.() || "")} ${raw(renderTabs2(data))}
+          <div class="pb2__panel" role="tabpanel">${raw(renderActivePanel(data))}</div>
+          ${raw(renderRefModal(data))} ${raw(renderCompetitorModal(data))}
+        </div>
+      </section>
+    `;
+    portalModal();
+    return;
+  }
   const body = `
     ${renderHeader(data)}
     ${cfg.notice?.() || ""}
@@ -2197,6 +2460,15 @@ const WRITE_HOOKS = [
 ].join(",");
 
 function onClick(event) {
+  // Playbook 2.0 tabs — locked while a section is being edited.
+  const tab = event.target.closest("[data-pb2-tab]");
+  if (tab) {
+    if (editScope && tab.dataset.pb2Tab !== activeTab) return;
+    setTab(tab.dataset.pb2Tab);
+    repaint();
+    mountTarget?.querySelector(".welcome-screen")?.scrollTo({ top: 0 });
+    return;
+  }
   if (!canEditView() && event.target.closest(WRITE_HOOKS)) return;
 
   // Section-nav — scroll the panel into view (buttons, not anchors, so the
