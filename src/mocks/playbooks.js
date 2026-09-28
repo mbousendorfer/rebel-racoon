@@ -226,9 +226,22 @@ export const contexts = [
         description: "Glossy product moments on a strict grid.",
         supportsEmbeddedText: true,
         custom: {
+          // Reference images carry their sampled colours: the look is read from them.
           sources: [
-            { type: "preset", ref: "preset-glossy", label: "Glossy product", weight: 0.6 },
-            { type: "preset", ref: "preset-swiss", label: "Swiss minimal", weight: 0.4 },
+            {
+              type: "image",
+              name: "Product on navy",
+              url: "https://picsum.photos/seed/acme-style-navy/480/480",
+              colors: ["#141A30", "#1F2742", "#FF6A2B"],
+              weight: 0.7,
+            },
+            {
+              type: "image",
+              name: "Dark desk, one lamp",
+              url: "https://picsum.photos/seed/acme-style-lamp/480/480",
+              colors: ["#0F1324", "#2A2F45", "#E8612A"],
+              weight: 0.5,
+            },
           ],
           fidelity: "composition",
           stylePrompt: "Always a plain navy or white field, one product moment, lots of air.",
@@ -715,8 +728,20 @@ export const contexts = [
         supportsEmbeddedText: false,
         custom: {
           sources: [
-            { type: "preset", ref: "preset-lifestyle", label: "Lifestyle", weight: 0.7 },
-            { type: "preset", ref: "preset-flat", label: "Flat", weight: 0.3 },
+            {
+              type: "image",
+              name: "Morning walk",
+              url: "https://picsum.photos/seed/pawtrack-style-walk/480/480",
+              colors: ["#C98A4B", "#E3B77A", "#6F8F5A"],
+              weight: 0.7,
+            },
+            {
+              type: "image",
+              name: "Golden hour, park",
+              url: "https://picsum.photos/seed/pawtrack-style-park/480/480",
+              colors: ["#D9954F", "#A8683A", "#8FAF6E"],
+              weight: 0.5,
+            },
           ],
           fidelity: "essential",
           stylePrompt: "Outdoors, morning light, the dog is always the hero.",

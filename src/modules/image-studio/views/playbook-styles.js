@@ -6,30 +6,26 @@
 // A style is part of the brand — what its images look like — so it lives ON the
 // Playbook (imageStyles) and is managed here, where the logo and the colours
 // are. Creating or editing one opens the style creator, a page of its own
-// (/playbook/:id/styles/*), because it needs the room: references, weights and a
-// test on three subjects. The 22 presets are browsed from here too, in a dialog,
-// as the starting points a style can be made from.
+// (/playbook/:id/styles/*), because it needs the room: reference images, their
+// weights and a test on three subjects. The 22 presets — the looks the studio
+// offers besides the brand's own — are browsed from here too, in a dialog.
 
-import { html, toString } from "../lib/html.js?v=1355";
-import { navigate } from "../../../router.js?v=1355";
-import { styleThumb } from "../ui/style-thumb.js?v=1355";
-import { confirmDialog, openDialog } from "../ui/dialog.js?v=1355";
-import { toast } from "../ui/toast.js?v=1355";
-import { STYLE_FAMILIES, STYLE_PRESETS, STYLE_TEST_SUBJECTS, presetById } from "../config/style-presets.js?v=1355";
-import { canEditBrand, getBrand, getStyle, getStylesForBrand } from "../state/store.js?v=1355";
-import { deleteStyle, duplicateStyle } from "../state/style-actions.js?v=1355";
+import { html, toString } from "../lib/html.js?v=1357";
+import { navigate } from "../../../router.js?v=1357";
+import { styleThumb } from "../ui/style-thumb.js?v=1357";
+import { confirmDialog, openDialog } from "../ui/dialog.js?v=1357";
+import { toast } from "../ui/toast.js?v=1357";
+import { STYLE_FAMILIES, STYLE_PRESETS, STYLE_TEST_SUBJECTS, presetById } from "../config/style-presets.js?v=1357";
+import { canEditBrand, getBrand, getStyle, getStylesForBrand } from "../state/store.js?v=1357";
+import { deleteStyle, duplicateStyle } from "../state/style-actions.js?v=1357";
 
 const creatorPath = (playbookId, rest) => `/playbook/${encodeURIComponent(playbookId)}/styles/${rest}`;
 
-/** "Glossy product 60% · Swiss minimal 40% · 2 reference images" — a style's recipe, in words. */
+/** "3 reference images · Style & composition" — what a style is made of, in words. */
 export function sourcesSummary(style) {
-  const sources = style.custom?.sources || [];
-  const total = sources.reduce((sum, s) => sum + s.weight, 0) || 1;
-  const presets = sources
-    .filter((s) => s.type === "preset")
-    .map((s) => `${presetById(s.ref)?.label || s.label} ${Math.round((s.weight / total) * 100)}%`);
-  const images = sources.filter((s) => s.type === "image").length;
-  return [...presets, images ? `${images} reference image${images === 1 ? "" : "s"}` : ""].filter(Boolean).join(" · ");
+  const images = (style.custom?.sources || []).filter((s) => s.type === "image").length;
+  const keep = style.custom?.fidelity === "composition" ? "Style & composition" : "Essential";
+  return [images ? `${images} reference image${images === 1 ? "" : "s"}` : "", keep].filter(Boolean).join(" · ");
 }
 
 function styleCard(style, brand, canEdit) {
@@ -91,8 +87,8 @@ export function renderPlaybookStyles(playbookId, { canEdit = true } = {}) {
       ${own.length
         ? html`<div class="imst-pbstyles__grid">${own.map((s) => styleCard(s, brand, editable))}</div>`
         : html`<p class="ap-body imst-pbstyles__empty">
-            No style of this brand's own yet. Mix reference images and presets into one, and it comes first whenever an
-            image is made for this Playbook.
+            No style of this brand's own yet. Give a few reference images whose look you want, and it comes first
+            whenever an image is made for this Playbook.
           </p>`}
       <div class="imst-pbstyles__actions">
         ${editable
@@ -108,8 +104,8 @@ export function renderPlaybookStyles(playbookId, { canEdit = true } = {}) {
   `);
 }
 
-function presetPreview(preset, brand, playbookId, editable) {
-  const dialog = openDialog({
+function presetPreview(preset, brand) {
+  openDialog({
     title: preset.label,
     subtitle: preset.description,
     size: "lg",
@@ -129,24 +125,11 @@ function presetPreview(preset, brand, playbookId, editable) {
           : "Text goes on an editable layer with this style — it can't carry text written into the image."}
       </p>
     `,
-    footer: editable
-      ? html`<div class="ap-dialog-footer-right">
-          <button type="button" class="ap-button primary blue" data-imst-dlg="customize">Make a style from it</button>
-        </div>`
-      : "",
-    onMount(el) {
-      el.addEventListener("click", (event) => {
-        if (!event.target.closest("[data-imst-dlg='customize']")) return;
-        dialog.close();
-        navigate(`${creatorPath(playbookId, "new")}?from=${preset.id}`);
-      });
-    },
   });
 }
 
 function browsePresets(playbookId) {
   const brand = getBrand(playbookId);
-  const editable = canEditBrand(playbookId);
   let family = "all";
   let galleryH = 0; // measured on open: two and a half rows, whatever the filter shows
   const body = () => html`
@@ -184,7 +167,7 @@ function browsePresets(playbookId) {
   `;
   const dialog = openDialog({
     title: "Presets",
-    subtitle: `The starting points a style is made from — every one drawn in ${brand.name}'s colours.`,
+    subtitle: `The looks the studio offers besides this brand's own — every one drawn in ${brand.name}'s colours.`,
     size: "lg",
     body: body(),
     onMount(el) {
@@ -204,7 +187,7 @@ function browsePresets(playbookId) {
           return;
         }
         const card = event.target.closest("[data-imst-preset]");
-        if (card) presetPreview(presetById(card.dataset.imstPreset), brand, playbookId, editable);
+        if (card) presetPreview(presetById(card.dataset.imstPreset), brand);
       });
     },
   });

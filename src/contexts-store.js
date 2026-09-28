@@ -22,17 +22,17 @@
 // chooses "Save as global". updateContext is used by the section-edit flow
 // when scope is "Update everywhere".
 
-import { contexts as seed, sharedContexts } from "./mocks.js?v=1355";
-import { isNewUser } from "./user-mode.js?v=1355";
-import { CURRENT_USER } from "./org.js?v=1355";
-import { isFlagOn } from "./feature-flags.js?v=1355";
-import { createNotifier } from "./store-utils.js?v=1355";
+import { contexts as seed, sharedContexts } from "./mocks.js?v=1357";
+import { isNewUser } from "./user-mode.js?v=1357";
+import { CURRENT_USER } from "./org.js?v=1357";
+import { isFlagOn } from "./feature-flags.js?v=1357";
+import { createNotifier } from "./store-utils.js?v=1357";
 import {
   normalizeLanguages,
   mirrorPrimaryToTopLevel,
   syncTopLevelToPrimary,
   cloneVoiceByLanguage,
-} from "./languages.js?v=1355";
+} from "./languages.js?v=1357";
 
 // Lives up here, away from normalizeBrandLogos where it belongs, because the
 // seed below calls that normalizer at module-init time — a `let` declared beside
@@ -145,8 +145,8 @@ function normalizeBrandLogos(ctx) {
 //   voiceAvoid            words and phrasings the brand never uses
 //   brandRules            visual do / don't, the logo's minimum size and clear
 //                         space, no distortion, and colour pairs that must never meet
-//   imageStyles           the brand's own image styles — a blend of reference images
-//                         and presets, a fidelity, a style prompt. What the brand's
+//   imageStyles           the brand's own image styles — reference images (the look
+//                         is read from them), a fidelity, a style prompt. What the brand's
 //                         images LOOK like, so it is identity (CONCEPTS §1); the
 //                         generator reads them and its style creator edits them.
 //

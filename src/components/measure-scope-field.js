@@ -20,14 +20,14 @@
 // Pure render + a pure reducer: the host owns the open/query UI state and the
 // draft, so this file holds no state and no listeners.
 
-import { escapeHtml as esc } from "../utils.js?v=1355";
+import { escapeHtml as esc } from "../utils.js?v=1357";
 import {
   NETWORK_LABEL,
   getConnectedProfiles,
   renderProfileTag,
   PROFILE_SEARCH_THRESHOLD,
-} from "../social-profiles.js?v=1355";
-import { isAdditiveMetric, metricLabel } from "../objective-measures.js?v=1355";
+} from "../social-profiles.js?v=1357";
+import { isAdditiveMetric, metricLabel } from "../objective-measures.js?v=1357";
 
 function profilesFor(network) {
   return getConnectedProfiles().filter((p) => p.platform === network);

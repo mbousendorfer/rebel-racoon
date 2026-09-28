@@ -2,18 +2,16 @@
 //
 // Deterministic: the same (style, brand palette, seeds, size, subject) always
 // draws the same picture, which is why a variation stores seeds, not pixels.
-// A preset draws with its own generator. A CUSTOM style blends its sources:
-//   · presets — "Style & composition" always draws with the heaviest one (the
-//     framing is part of the style); "Essential" picks one per seed by weight
-//     (only colours, textures and mood are held);
-//   · reference images — their sampled colours tint the palette by their weight.
+// A preset draws with its own generator. A CUSTOM style is made of reference
+// images: its look is read from their colours (lookFromColors) and they tint
+// the palette. (Older styles that mixed presets still draw with them.)
 
-import { prng } from "../lib/prng.js?v=1355";
-import { presetById } from "../config/style-presets.js?v=1355";
-import { generatorFor } from "./generators.js?v=1355";
-import { inkOn, resolvePalette } from "./palette.js?v=1355";
-import { fontStack } from "../config/fonts.js?v=1355";
-import { subjectPath } from "./subjects.js?v=1355";
+import { prng } from "../lib/prng.js?v=1357";
+import { presetById } from "../config/style-presets.js?v=1357";
+import { generatorFor } from "./generators.js?v=1357";
+import { inkOn, resolvePalette } from "./palette.js?v=1357";
+import { fontStack } from "../config/fonts.js?v=1357";
+import { subjectPath } from "./subjects.js?v=1357";
 
 let renderSeq = 0;
 
@@ -27,14 +25,59 @@ function weightedPick(rand, sources) {
   return sources[sources.length - 1];
 }
 
+function hsl(hex) {
+  const n = parseInt(String(hex || "").replace("#", ""), 16);
+  if (!Number.isFinite(n)) return { h: 0, s: 0, l: 0.5 };
+  const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => v / 255);
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  const d = max - min;
+  const sat = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
+  let h = 0;
+  if (d) h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return { h: (h * 60 + 360) % 360, s: sat, l };
+}
+
+/**
+ * The look a style's reference images point to — what a real model would read
+ * from them, mocked from their sampled colours: dark with one vivid colour → a
+ * glossy hero shot; dark → a film still; vivid and light → flat illustration;
+ * greyish → Swiss minimal or editorial; warm → lifestyle photography.
+ */
+export function lookFromColors(colors) {
+  const c = colors.map(hsl);
+  if (!c.length) return "preset-editorial";
+  const avg = (k) => c.reduce((sum, x) => sum + x[k], 0) / c.length;
+  const l = avg("l");
+  const sat = avg("s");
+  const vivid = c.some((x) => x.s > 0.6 && x.l > 0.35 && x.l < 0.75);
+  const warm = c.filter((x) => x.s > 0.2 && (x.h < 60 || x.h > 330)).length / c.length;
+  if (l < 0.32) return vivid ? "preset-glossy" : "preset-cinematic";
+  if (sat > 0.55 && l > 0.45) return "preset-flat";
+  if (sat < 0.18) return l > 0.7 ? "preset-swiss" : "preset-editorial";
+  if (warm >= 0.5) return "preset-lifestyle";
+  return "preset-watercolor";
+}
+
+/** The colours a style's reference images carry: sampled at upload, or given with the image. */
+export function styleImageColors(style, getAsset = () => null) {
+  return (style?.custom?.sources || [])
+    .filter((s) => s.type === "image" && s.weight > 0)
+    .flatMap((s) => s.colors || getAsset(s.ref)?.colors || []);
+}
+
 /** Which generator a style draws with, for a given seed, plus the palette tint it asks for. */
 export function resolveStyleDrawing(style, seed, getAsset = () => null) {
   if (!style) return { family: "illustration", variant: "flat", tint: [], tintWeight: 0 };
   if (style.kind !== "custom") return { ...style.render, family: style.family, tint: [], tintWeight: 0 };
   const sources = style.custom?.sources || [];
+  // Older styles mixed presets; they still draw with them. A style is now made
+  // of reference images only, and its look is read FROM them.
   const presets = sources.filter((s) => s.type === "preset" && presetById(s.ref) && s.weight > 0);
   const images = sources.filter((s) => s.type === "image" && s.weight > 0);
-  let chosen = presetById("preset-editorial");
+  const colors = styleImageColors(style, getAsset);
+  let chosen = presetById(lookFromColors(colors));
   if (presets.length) {
     const src =
       style.custom.fidelity === "composition"
@@ -42,10 +85,12 @@ export function resolveStyleDrawing(style, seed, getAsset = () => null) {
         : weightedPick(prng(seed ^ 0x9e3779b9), presets);
     chosen = presetById(src.ref);
   }
-  const tint = images.flatMap((s) => getAsset(s.ref)?.colors || []).slice(0, 3);
+  const tint = colors.slice(0, 3);
   const imageWeight = images.reduce((sum, s) => sum + s.weight, 0);
   const presetWeight = presets.reduce((sum, s) => sum + s.weight, 0);
-  const tintWeight = tint.length ? Math.min(0.85, imageWeight / (imageWeight + presetWeight || 1)) : 0;
+  const tintWeight = tint.length
+    ? Math.min(0.85, presets.length ? imageWeight / (imageWeight + presetWeight || 1) : 0.6)
+    : 0;
   return { family: chosen.family, variant: chosen.render.variant, tint, tintWeight };
 }
 

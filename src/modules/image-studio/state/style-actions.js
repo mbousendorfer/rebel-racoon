@@ -1,27 +1,27 @@
 // Image Generator — every write a custom style undergoes. A custom style is the
 // BRAND's: it lives on the Playbook and is listed first in the studio's picker.
 
-import { storageService as storage } from "../services/index.js?v=1355";
-import { createAsset, createStyle } from "../model/schema.js?v=1355";
-import { presetById, CUSTOM_STYLE_LIMITS } from "../config/style-presets.js?v=1355";
-import { sampleColors } from "../render/sample-colors.js?v=1355";
-import { uid } from "../lib/id.js?v=1355";
-import { deletePlaybookStyle, findPlaybookStyle, savePlaybookStyle } from "./playbook-brand.js?v=1355";
+import { storageService as storage } from "../services/index.js?v=1357";
+import { createAsset, createStyle } from "../model/schema.js?v=1357";
+import { presetById, CUSTOM_STYLE_LIMITS } from "../config/style-presets.js?v=1357";
+import { sampleColors } from "../render/sample-colors.js?v=1357";
+import { uid } from "../lib/id.js?v=1357";
+import { lookFromColors } from "../render/visual.js?v=1357";
+import { getAsset } from "./store.js?v=1357";
+import { deletePlaybookStyle, findPlaybookStyle, savePlaybookStyle } from "./playbook-brand.js?v=1357";
 
-/** A custom style can write text into the image when its heaviest preset can. */
+/** A custom style can write text into the image when the look read from its images can. */
 export function deriveEmbeddedText(sources) {
-  const top = sources.filter((s) => s.type === "preset").sort((a, b) => b.weight - a.weight)[0];
-  return !!(top && presetById(top.ref)?.supportsEmbeddedText);
+  const colors = sources.filter((s) => s.type === "image").flatMap((s) => s.colors || getAsset(s.ref)?.colors || []);
+  return !!presetById(lookFromColors(colors))?.supportsEmbeddedText;
 }
 
 export function validateStyleDraft(draft) {
   const errors = [];
   if (!draft.label.trim()) errors.push("Give the style a name.");
   const images = draft.sources.filter((s) => s.type === "image").length;
-  const presets = draft.sources.filter((s) => s.type === "preset").length;
-  if (!images && !presets) errors.push("Add at least one reference image or preset.");
+  if (!images) errors.push("Add at least one reference image: the style's look is read from them.");
   if (images > CUSTOM_STYLE_LIMITS.images) errors.push(`Up to ${CUSTOM_STYLE_LIMITS.images} reference images.`);
-  if (presets > CUSTOM_STYLE_LIMITS.presets) errors.push(`Up to ${CUSTOM_STYLE_LIMITS.presets} presets.`);
   return errors;
 }
 
@@ -37,7 +37,7 @@ export function saveStyle(draft) {
     description: draft.description.trim(),
     supportsEmbeddedText: deriveEmbeddedText(draft.sources),
     custom: {
-      sources: draft.sources.map((s) => ({ ...s })),
+      sources: draft.sources.filter((s) => s.type === "image").map((s) => ({ ...s })),
       fidelity: draft.fidelity,
       stylePrompt: draft.stylePrompt.trim(),
     },

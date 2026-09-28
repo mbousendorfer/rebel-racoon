@@ -2,57 +2,51 @@
 // section (/playbook/:id/styles/new, /playbook/:id/styles/:styleId). The style is
 // saved ON that Playbook (imageStyles); the topbar's back returns to the fiche.
 //
-// Sources: up to 10 reference images and/or up to 5 presets, each with a weight.
+// Sources: up to 10 reference images, each with a weight — the look is read from
+// them (no presets to mix: removed at the user's request, 2026-09-28).
 // Fidelity: "Essential" (colours, textures, strokes, mood) or "Style &
 // composition" (+ framing, angle, layout). An optional style prompt. A test run
 // on three neutral subjects before saving. Saved FOR the active Playbook.
 
-import { html, toString } from "../lib/html.js?v=1355";
-import { delegate } from "../lib/delegate.js?v=1355";
-import { hashString, randomSeed } from "../lib/prng.js?v=1355";
-import { renderFrame } from "./frame.js?v=1355";
-import { renderEmpty } from "../ui/empty.js?v=1355";
-import { field, preserveFocus, slider, syncSlider, textArea, textInput } from "../ui/fields.js?v=1355";
-import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1355";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1355";
-import { toast } from "../ui/toast.js?v=1355";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1355";
-import {
-  CUSTOM_STYLE_LIMITS,
-  STYLE_FAMILIES,
-  STYLE_PRESETS,
-  STYLE_TEST_SUBJECTS,
-  presetById,
-} from "../config/style-presets.js?v=1355";
-import { createStyle } from "../model/schema.js?v=1355";
-import { imageGenerationService } from "../services/index.js?v=1355";
-import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1355";
-import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1355";
+import { html, toString } from "../lib/html.js?v=1357";
+import { delegate } from "../lib/delegate.js?v=1357";
+import { hashString, randomSeed } from "../lib/prng.js?v=1357";
+import { renderFrame } from "./frame.js?v=1357";
+import { renderEmpty } from "../ui/empty.js?v=1357";
+import { field, preserveFocus, slider, syncSlider, textArea, textInput } from "../ui/fields.js?v=1357";
+import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1357";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1357";
+import { toast } from "../ui/toast.js?v=1357";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=1357";
+import { CUSTOM_STYLE_LIMITS, STYLE_TEST_SUBJECTS } from "../config/style-presets.js?v=1357";
+import { createStyle } from "../model/schema.js?v=1357";
+import { imageGenerationService } from "../services/index.js?v=1357";
+import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1357";
+import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1357";
 
 const FIDELITY = [
   { id: "essential", title: "Essential", body: "Colours, textures, strokes and mood." },
   { id: "composition", title: "Style & composition", body: "All of that, plus framing, camera angle and layout." },
 ];
 
-function draftFrom(style, brandId, fromPreset) {
+function draftFrom(style, brandId) {
   if (style) {
     return {
       id: style.id,
       brandId: style.brandId,
       label: style.label,
       description: style.description,
-      sources: style.custom.sources.map((s) => ({ ...s })),
+      sources: style.custom.sources.filter((s) => s.type === "image").map((s) => ({ ...s })),
       fidelity: style.custom.fidelity,
       stylePrompt: style.custom.stylePrompt || "",
     };
   }
-  const preset = fromPreset ? presetById(fromPreset) : null;
   return {
     id: null,
     brandId,
-    label: preset ? `My ${preset.label.toLowerCase()}` : "",
+    label: "",
     description: "",
-    sources: preset ? [{ type: "preset", ref: preset.id, label: preset.label, weight: 1 }] : [],
+    sources: [],
     fidelity: "essential",
     stylePrompt: "",
   };
@@ -68,9 +62,8 @@ export function mount(target, params, ctx) {
   const found = params.styleId ? getStyle(params.styleId) : null;
   const editing = found && found.brandId === params.id ? found : null;
   const brand = canEditBrand(params.id) ? getBrand(params.id) : null;
-  const fromPreset = new URLSearchParams(window.location.hash.split("?")[1] || "").get("from");
   const state = {
-    draft: draftFrom(editing, brand?.id, fromPreset),
+    draft: draftFrom(editing, brand?.id),
     test: null, // { status: "loading" | "done" | "error", seeds: [] }
     stale: false,
     errors: [],
@@ -90,15 +83,11 @@ export function mount(target, params, ctx) {
     });
 
   const renderSource = (s, i) => {
-    const media =
-      s.type === "image"
-        ? assetImg(s.ref, { className: "imst-source__media" })
-        : html`<img
-            class="imst-source__media"
-            src="${styleThumbUrl(presetById(s.ref), brand, { width: 400, height: 400 })}"
-            alt=""
-          />`;
-    const name = s.type === "image" ? getAsset(s.ref)?.name || "Reference image" : presetById(s.ref)?.label || s.label;
+    // An image is an upload (asset) or, for a seeded style, a URL with its colours.
+    const media = s.url
+      ? html`<img class="imst-source__media" src="${s.url}" alt="" />`
+      : assetImg(s.ref, { className: "imst-source__media" });
+    const name = s.name || getAsset(s.ref)?.name || "Reference image";
     return html`
       <li class="imst-source">
         ${media}
@@ -126,40 +115,6 @@ export function mount(target, params, ctx) {
           <i class="ap-icon-close" aria-hidden="true"></i>
         </button>
       </li>
-    `;
-  };
-
-  const renderPresetAdder = (count) => {
-    if (count >= CUSTOM_STYLE_LIMITS.presets)
-      return html`<p class="ap-caption">That's the maximum of ${CUSTOM_STYLE_LIMITS.presets} presets.</p>`;
-    const taken = new Set(state.draft.sources.filter((s) => s.type === "preset").map((s) => s.ref));
-    return html`
-      <details class="ap-select imst-select imst-preset-adder" data-imst-menu>
-        <summary class="ap-select-trigger" aria-label="Add a preset">
-          <i class="ap-icon-plus" aria-hidden="true"></i>
-          <span class="ap-select-value ap-select-placeholder">Add a preset</span>
-          <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
-        </summary>
-        <div class="ap-select-dropdown" role="listbox">
-          <div class="ap-select-options">
-            ${STYLE_FAMILIES.map((f) => {
-              // The DS group is a HEADER row: its options follow it as siblings.
-              const options = STYLE_PRESETS.filter((p) => p.family === f.id && !taken.has(p.id));
-              return options.length
-                ? html`<div class="ap-select-group"><span class="ap-select-group-label">${f.label}</span></div>
-                    ${options.map(
-                      (p) =>
-                        html`<div class="ap-select-option" role="option" tabindex="0" data-imst-add-preset="${p.id}">
-                          <span class="ap-select-option-text"
-                            ><span class="ap-select-option-title">${p.label}</span></span
-                          >
-                        </div>`,
-                    )}`
-                : "";
-            })}
-          </div>
-        </div>
-      </details>
     `;
   };
 
@@ -248,7 +203,6 @@ export function mount(target, params, ctx) {
     const restore = preserveFocus(target);
     const d = state.draft;
     const images = d.sources.map((s, i) => [s, i]).filter(([s]) => s.type === "image");
-    const presets = d.sources.map((s, i) => [s, i]).filter(([s]) => s.type === "preset");
     target.innerHTML = toString(
       renderFrame({
         body: html`
@@ -302,20 +256,8 @@ export function mount(target, params, ctx) {
                     })
                   : ""}
               </section>
-              <section class="ap-card imst-creator__card" aria-labelledby="imst-src-presets">
-                <header class="imst-section__head">
-                  <h2 class="ap-body-bold" id="imst-src-presets">Presets to mix</h2>
-                  <span class="ap-caption">${presets.length} of ${CUSTOM_STYLE_LIMITS.presets}</span>
-                </header>
-                ${presets.length
-                  ? html`<ul class="imst-sources">
-                      ${presets.map(([s, i]) => renderSource(s, i))}
-                    </ul>`
-                  : ""}
-                ${renderPresetAdder(presets.length)}
-              </section>
               <section class="ap-card imst-creator__card" aria-labelledby="imst-fidelity">
-                <h2 class="ap-body-bold" id="imst-fidelity">What to keep from the sources</h2>
+                <h2 class="ap-body-bold" id="imst-fidelity">What to keep from the images</h2>
                 <div class="imst-radio-row" role="radiogroup" aria-labelledby="imst-fidelity">
                   ${FIDELITY.map(
                     (f) =>
@@ -446,12 +388,6 @@ export function mount(target, params, ctx) {
     }),
     delegate(target, "change", "[data-imst-fidelity]", (_e, el) => {
       state.draft.fidelity = el.value;
-      state.stale = !!state.test;
-      paint();
-    }),
-    delegate(target, "click", "[data-imst-add-preset]", (_e, el) => {
-      const preset = presetById(el.dataset.imstAddPreset);
-      state.draft.sources.push({ type: "preset", ref: preset.id, label: preset.label, weight: 0.5 });
       state.stale = !!state.test;
       paint();
     }),
