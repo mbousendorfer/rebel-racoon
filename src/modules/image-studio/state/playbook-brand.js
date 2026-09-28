@@ -10,18 +10,18 @@
 // (/playbook/:id, src/playbook-brand-kit.js). Sub-brands don't exist: a variant
 // is a duplicated Playbook (docs/reference/CONCEPTS.md §1).
 
-import { getContextById, subscribe as subscribeContexts, updateContext } from "../../../contexts-store.js?v=1323";
-import { canEdit, usableContexts } from "../../../playbook-access.js?v=1323";
+import { getContextById, subscribe as subscribeContexts, updateContext } from "../../../contexts-store.js?v=1326";
+import { canEdit, usableContexts } from "../../../playbook-access.js?v=1326";
 import {
   getActivePlaybookId,
   isWorkspaceMode,
   playbookForNewWork,
   setActivePlaybook,
   subscribe as subscribeActive,
-} from "../../../active-playbook.js?v=1323";
-import { setHandoff } from "../../../handoff.js?v=1323";
-import { navigate } from "../../../router.js?v=1323";
-import { storageService as storage } from "../services/index.js?v=1323";
+} from "../../../active-playbook.js?v=1326";
+import { setHandoff } from "../../../handoff.js?v=1326";
+import { navigate } from "../../../router.js?v=1326";
+import { storageService as storage } from "../services/index.js?v=1326";
 
 // Which copy archetype the mocked copyService uses — guessed from the Playbook's words.
 function sectorKeyOf(ctx) {
@@ -190,5 +190,32 @@ export function subscribeBrands(fn) {
   return () => {
     a();
     b();
+  };
+}
+
+// "Use the Playbook" off: the same brand id (its catalogue and history stay
+// its own) but none of its identity — no logo, a neutral palette, the default
+// fonts, no moods or words to avoid. Colours are CONTENT here, not chrome.
+const NEUTRAL_PALETTE = [
+  { hex: "#2B2F36", name: "Graphite", role: "primary" },
+  { hex: "#C8A27A", name: "Sand", role: "accent" },
+  { hex: "#F4F1EC", name: "Paper", role: "background" },
+  { hex: "#8A94A6", name: "Slate", role: "secondary" },
+  { hex: "#1C1E22", name: "Ink", role: "text" },
+];
+
+export function unbranded(brand) {
+  if (!brand) return brand;
+  return {
+    ...brand,
+    unbranded: true,
+    logos: [],
+    defaultLogoUrl: "",
+    palette: NEUTRAL_PALETTE.map((c) => ({ ...c })),
+    fonts: [],
+    personality: "",
+    imageStyle: { moods: [], references: [] },
+    voice: { ...brand.voice, avoid: [], dos: [], donts: [] },
+    rules: { ...brand.rules, visualDos: [], visualDonts: [], forbiddenPairs: [] },
   };
 }

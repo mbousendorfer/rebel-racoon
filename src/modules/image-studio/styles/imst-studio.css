@@ -113,7 +113,13 @@
   align-self: flex-start;
 }
 
-/* Brand applied: the mark, the name, the palette as overlapping dots */
+/* Brand applied: the mark, the name, the palette as overlapping dots — and the switch to leave it out */
+.imst-ctl-brand-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+}
+
 .imst-ctl-brand {
   display: flex;
   align-items: center;
@@ -224,6 +230,30 @@
   padding-right: var(--ref-spacing-xxs);
   color: var(--ref-color-grey-80);
   white-space: nowrap;
+}
+
+/* The one-line variant: the headline, its Suggest inside the field */
+.imst-composer--line {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xxxs) var(--ref-spacing-xxxs) var(--ref-spacing-xs);
+}
+
+.imst-composer__line {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: var(--ref-spacing-lg);
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  font-size: var(--ref-font-size-sm);
+  color: var(--ref-color-grey-100);
+}
+
+.imst-composer__line::placeholder {
+  color: var(--ref-color-grey-60);
 }
 
 /* Style: pictures first — the name on the picture, the choice as a ring */
@@ -382,10 +412,22 @@
   line-height: 1.25;
 }
 
+.imst-seg__best {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  margin-top: var(--ref-spacing-xxxs);
+  color: var(--ref-color-grey-80);
+  line-height: 1.25;
+}
+
 .imst-seg__nets {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: var(--ref-spacing-xxxs);
-  color: var(--ref-color-grey-80);
   font-size: var(--ref-font-size-xs);
 }
 

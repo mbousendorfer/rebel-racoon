@@ -8,12 +8,12 @@
 //     (only colours, textures and mood are held);
 //   · reference images — their sampled colours tint the palette by their weight.
 
-import { prng } from "../lib/prng.js?v=1323";
-import { presetById } from "../config/style-presets.js?v=1323";
-import { generatorFor } from "./generators.js?v=1323";
-import { inkOn, resolvePalette } from "./palette.js?v=1323";
-import { fontStack } from "../config/fonts.js?v=1323";
-import { subjectPath } from "./subjects.js?v=1323";
+import { prng } from "../lib/prng.js?v=1326";
+import { presetById } from "../config/style-presets.js?v=1326";
+import { generatorFor } from "./generators.js?v=1326";
+import { inkOn, resolvePalette } from "./palette.js?v=1326";
+import { fontStack } from "../config/fonts.js?v=1326";
+import { subjectPath } from "./subjects.js?v=1326";
 
 let renderSeq = 0;
 

@@ -18,24 +18,25 @@
 //
 // Deep links: ?creation=<id> reopens a run · ?style=<id> / ?product=<id> preselect.
 
-import { html, toString } from "../lib/html.js?v=1323";
-import { delegate } from "../lib/delegate.js?v=1323";
-import { hashString } from "../lib/prng.js?v=1323";
-import { renderFrame } from "./frame.js?v=1323";
-import { renderEmpty } from "../ui/empty.js?v=1323";
-import { renderBrandPicker } from "../ui/brand-picker.js?v=1323";
-import { preserveFocus } from "../ui/fields.js?v=1323";
-import { toast } from "../ui/toast.js?v=1323";
-import { assetImg, hydrateAssets, logoUrl, warmAssetUrls } from "../ui/asset.js?v=1323";
-import { styleThumb } from "../ui/style-thumb.js?v=1323";
-import { openDialog } from "../ui/dialog.js?v=1323";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1323";
-import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1323";
-import { FORMAT_SHAPES, formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1323";
-import { networkById } from "../config/networks.js?v=1323";
-import { copyService, imageGenerationService } from "../services/index.js?v=1323";
-import { resolveLayers } from "../render/layout.js?v=1323";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1323";
+import { html, toString } from "../lib/html.js?v=1326";
+import { delegate } from "../lib/delegate.js?v=1326";
+import { hashString } from "../lib/prng.js?v=1326";
+import { renderFrame } from "./frame.js?v=1326";
+import { renderEmpty } from "../ui/empty.js?v=1326";
+import { renderBrandPicker } from "../ui/brand-picker.js?v=1326";
+import { preserveFocus } from "../ui/fields.js?v=1326";
+import { toast } from "../ui/toast.js?v=1326";
+import { assetImg, hydrateAssets, logoUrl, warmAssetUrls } from "../ui/asset.js?v=1326";
+import { styleThumb } from "../ui/style-thumb.js?v=1326";
+import { openDialog } from "../ui/dialog.js?v=1326";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1326";
+import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1326";
+import { FORMAT_SHAPES, formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1326";
+import { networkById } from "../config/networks.js?v=1326";
+import { copyService, imageGenerationService } from "../services/index.js?v=1326";
+import { unbranded } from "../state/playbook-brand.js?v=1326";
+import { resolveLayers } from "../render/layout.js?v=1326";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1326";
 import {
   getActiveBrand,
   getBrand,
@@ -44,7 +45,7 @@ import {
   getStyle,
   getStylesForBrand,
   subscribe,
-} from "../state/store.js?v=1323";
+} from "../state/store.js?v=1326";
 import {
   addBatch,
   deleteCreation,
@@ -52,7 +53,7 @@ import {
   replaceVariation,
   startCreation,
   toggleFavorite,
-} from "../state/creation-actions.js?v=1323";
+} from "../state/creation-actions.js?v=1326";
 
 // The presets offered first when the brand has few styles of its own — one per
 // family, the ones that read best at thumbnail size.
@@ -76,8 +77,12 @@ function defaultBrief(brand, network = null) {
     productId: null,
     formatIds: [firstShape?.formatId || "ig-post"],
     textMode: "layer",
+    useBrand: true,
   };
 }
+
+// What the image is drawn with: the Playbook, or — "Use the Playbook" off — a neutral look.
+const lookOf = (brand, brief) => (brief?.useBrand === false ? unbranded(brand) : brand);
 
 /**
  * @param {HTMLElement} target
@@ -137,7 +142,7 @@ export function mountStudio(target, { mode = "page", navigate = () => {}, draft 
   // ── Controls ───────────────────────────────────────────────────────────────
 
   const quickStyles = (brand) => {
-    const own = getStylesForBrand(brand.id).filter((s) => s.kind === "custom");
+    const own = state.brief.useBrand === false ? [] : getStylesForBrand(brand.id).filter((s) => s.kind === "custom");
     const list = [...own, ...QUICK_PRESETS.map(getStyle).filter(Boolean)].filter(
       (s, i, a) => a.findIndex((x) => x.id === s.id) === i,
     );
@@ -149,33 +154,47 @@ export function mountStudio(target, { mode = "page", navigate = () => {}, draft 
 
   const renderBrandRow = (brand) => {
     const logo = logoUrl(brand, "icon") || logoUrl(brand, "color");
+    const on = state.brief.useBrand !== false;
     return html`
-      <div class="imst-ctl-brand">
-        ${logo
-          ? html`<img class="imst-ctl-brand__logo" src="${logo}" alt="" />`
-          : html`<span class="imst-ctl-brand__logo imst-ctl-brand__logo--initial" aria-hidden="true"
-              >${brand.name.slice(0, 1)}</span
-            >`}
-        <div class="imst-ctl-brand__text">
-          <span class="ap-body-bold">${brand.name}</span>
-          ${inDraft ? html`<span class="ap-caption">This chat's Playbook</span>` : ""}
+      <div class="imst-ctl-brand-block">
+        <div class="imst-ctl-brand">
+          ${logo
+            ? html`<img class="imst-ctl-brand__logo" src="${logo}" alt="" />`
+            : html`<span class="imst-ctl-brand__logo imst-ctl-brand__logo--initial" aria-hidden="true"
+                >${brand.name.slice(0, 1)}</span
+              >`}
+          <div class="imst-ctl-brand__text">
+            <span class="ap-body-bold">${brand.name}</span>
+            <span class="ap-caption"
+              >${on
+                ? inDraft
+                  ? "This chat's Playbook"
+                  : "Applied to every image"
+                : "Off — neutral colours, no logo or brand rules"}</span
+            >
+          </div>
+          ${on
+            ? html`<span
+                class="imst-dots"
+                role="img"
+                aria-label="Brand colours: ${brand.palette.map((c) => c.name || c.hex).join(", ")}"
+                >${brand.palette
+                  .slice(0, 5)
+                  .map(
+                    (c) =>
+                      html`<span
+                        class="imst-dots__dot"
+                        style="--imst-swatch: ${c.hex}"
+                        data-tooltip="${c.name ? `${c.name} ${c.hex}` : c.hex}"
+                      ></span>`,
+                  )}</span
+              >`
+            : ""}
+          ${inDraft ? "" : renderBrandPicker()}
         </div>
-        <span
-          class="imst-dots"
-          role="img"
-          aria-label="Brand colours: ${brand.palette.map((c) => c.name || c.hex).join(", ")}"
-          >${brand.palette
-            .slice(0, 5)
-            .map(
-              (c) =>
-                html`<span
-                  class="imst-dots__dot"
-                  style="--imst-swatch: ${c.hex}"
-                  data-tooltip="${c.name ? `${c.name} ${c.hex}` : c.hex}"
-                ></span>`,
-            )}</span
-        >
-        ${inDraft ? "" : renderBrandPicker()}
+        <label class="ap-toggle-container imst-ctl__toggle">
+          <input type="checkbox" data-imst-usebrand ${on ? "checked" : ""} /><i></i><span>Use the Playbook</span>
+        </label>
       </div>
     `;
   };
@@ -237,7 +256,7 @@ ${b.prompt}</textarea
                     data-imst-style="${s.id}"
                     aria-label="${s.label}"
                   >
-                    ${styleThumb(s, brand, { className: "imst-tile__img", seed: hashString(s.id) })}
+                    ${styleThumb(s, lookOf(brand, b), { className: "imst-tile__img", seed: hashString(s.id) })}
                     <span class="imst-tile__name">${s.label}</span>
                     ${s.id === b.styleId
                       ? html`<span class="imst-tile__check" aria-hidden="true"><i class="ap-icon-check"></i></span>`
@@ -266,7 +285,9 @@ ${b.prompt}</textarea
                     role="radio"
                     aria-checked="${s.id === shape.id}"
                     data-imst-shape="${s.id}"
-                    aria-label="${s.label} ${s.ratio}"
+                    aria-label="${s.label} ${s.ratio}, best for ${s.networks
+                      .map((n) => networkById(n).label)
+                      .join(", ")}"
                   >
                     <span class="imst-seg__box"
                       ><span
@@ -276,11 +297,20 @@ ${b.prompt}</textarea
                     ></span>
                     <span class="imst-seg__name">${s.label}</span>
                     <span class="ap-caption imst-seg__ratio">${s.ratio}</span>
-                    ${inDraft
-                      ? ""
-                      : html`<span class="imst-seg__nets" aria-hidden="true"
-                          >${s.networks.map((n) => html`<i class="${networkById(n).icon}"></i>`)}</span
-                        >`}
+                    <span class="ap-caption imst-seg__best"
+                      >Best for
+                      <span class="imst-seg__nets"
+                        >${s.networks.map(
+                          (n) =>
+                            html`<i
+                              class="${networkById(n).icon}"
+                              role="img"
+                              aria-label="${networkById(n).label}"
+                              title="${networkById(n).label}"
+                            ></i>`,
+                        )}</span
+                      ></span
+                    >
                   </button>`,
               )}
             </div>
@@ -328,15 +358,26 @@ ${b.prompt}</textarea
               <h3 class="imst-ctl__label ap-body-bold" id="imst-ctl-text">Text on the image</h3>
               <span class="ap-caption imst-ctl__meta">Optional</span>
             </header>
-            <div class="ap-input-group">
+            <div class="imst-composer imst-composer--line">
               <input
                 type="text"
-                class="ap-input"
+                class="imst-composer__line"
                 data-imst-field="headline"
                 value="${b.headline}"
                 placeholder="A headline, e.g. Plans that name their signal"
                 aria-labelledby="imst-ctl-text"
               />
+              ${inDraft && draft.text
+                ? html`<button
+                    type="button"
+                    class="ap-button mermaid"
+                    data-imst-action="suggest-headline"
+                    aria-label="Suggest a headline from the post"
+                    data-tooltip="${b.headline ? "Another line from the post" : "A line from the post"}"
+                  >
+                    <i class="ap-icon-sparkles" aria-hidden="true"></i><span>Suggest</span>
+                  </button>`
+                : ""}
             </div>
             <label class="ap-toggle-container imst-ctl__toggle">
               <input
@@ -400,12 +441,15 @@ ${b.prompt}</textarea
               creation: pseudo,
               variation: { seed, bgSeed: seed ^ 91, subjectSeed: seed ^ 17 },
               formatId: format.id,
-              brand,
+              brand: lookOf(brand, b),
             })}<span class="ap-tag grey imst-stage2__badge"><span>Preview</span></span>`,
           "is-preview",
         )}
         <p class="ap-body imst-canvas-area__caption">
-          <span class="ap-body-bold">A preview of ${style.label} in ${brand.name}'s colours.</span>
+          <span class="ap-body-bold"
+            >A preview of
+            ${style.label}${b.useBrand === false ? ", in neutral colours" : ` in ${brand.name}'s colours`}.</span
+          >
           Describe what you want and generate — you'll get four variations to pick from.
         </p>
       </div>
@@ -527,7 +571,12 @@ ${b.prompt}</textarea
         </header>
         ${stageFrame(
           format,
-          html`${variationCanvas({ creation: c, variation: v, formatId: format.id, brand })}${busy
+          html`${variationCanvas({
+            creation: c,
+            variation: v,
+            formatId: format.id,
+            brand: lookOf(brand, c.brief),
+          })}${busy
             ? html`<span class="imst-stage2__status"
                 ><span class="ap-loader size-30"></span><span class="ap-body-bold">Regenerating…</span></span
               >`
@@ -545,7 +594,7 @@ ${b.prompt}</textarea
                 aria-label="Variation ${i + 1}"
                 style="aspect-ratio: ${format.width} / ${format.height}"
               >
-                ${variationCanvas({ creation: c, variation: x, formatId: format.id, brand })}
+                ${variationCanvas({ creation: c, variation: x, formatId: format.id, brand: lookOf(brand, c.brief) })}
                 ${(c.favoriteVariationIds || []).includes(x.id)
                   ? html`<i class="ap-icon-heart_fill imst-filmstrip__fav" aria-label="In favourites"></i>`
                   : ""}
@@ -583,7 +632,12 @@ ${b.prompt}</textarea
                             aria-label="${bt.label}, variation ${i + 1}"
                             style="aspect-ratio: ${format.width} / ${format.height}"
                           >
-                            ${variationCanvas({ creation: c, variation: x, formatId: format.id, brand })}
+                            ${variationCanvas({
+                              creation: c,
+                              variation: x,
+                              formatId: format.id,
+                              brand: lookOf(brand, c.brief),
+                            })}
                           </button>`,
                       )}
                     </div>
@@ -666,7 +720,7 @@ ${b.prompt}</textarea
 
   const request = (brand, brief = state.brief, style = getStyle(brief.styleId)) => ({
     brief,
-    brand,
+    brand: lookOf(brand, brief),
     style,
     product: brief.productId ? getProducts(brand.id).find((p) => p.id === brief.productId) : null,
     format: formatById(brief.formatIds[0]),
@@ -759,10 +813,10 @@ ${b.prompt}</textarea
     paint();
     try {
       const blob = await toPngBlob({
-        svg: variationSvg({ creation: c, variation: v, formatId: f.id, brand }),
+        svg: variationSvg({ creation: c, variation: v, formatId: f.id, brand: lookOf(brand, c.brief) }),
         width: f.width,
         height: f.height,
-        layers: resolveLayers(layersFor({ creation: c, formatId: f.id }), brand),
+        layers: resolveLayers(layersFor({ creation: c, formatId: f.id }), lookOf(brand, c.brief)),
       });
       const dataUrl = await new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -790,6 +844,19 @@ ${b.prompt}</textarea
     }
   }
 
+  async function suggestHeadline() {
+    try {
+      state.brief.headline = await copyService.headlineFromPost({
+        text: draft.text,
+        round: (state.headlineRound = (state.headlineRound ?? -1) + 1),
+      });
+      paint();
+      target.querySelector("[data-imst-field='headline']")?.focus();
+    } catch {
+      toast("No suggestion this time. Try again.", { variant: "error" });
+    }
+  }
+
   async function download() {
     const brand = brandNow();
     const c = currentCreation();
@@ -797,10 +864,10 @@ ${b.prompt}</textarea
     const f = formatById(c.brief.formatIds[0]);
     try {
       const blob = await toPngBlob({
-        svg: variationSvg({ creation: c, variation: v, formatId: f.id, brand }),
+        svg: variationSvg({ creation: c, variation: v, formatId: f.id, brand: lookOf(brand, c.brief) }),
         width: f.width,
         height: f.height,
-        layers: resolveLayers(layersFor({ creation: c, formatId: f.id }), brand),
+        layers: resolveLayers(layersFor({ creation: c, formatId: f.id }), lookOf(brand, c.brief)),
       });
       downloadBlob(blob, `${slug(c.title)}-${f.id}.png`);
       toast(`Downloaded ${f.width} × ${f.height} PNG.`);
@@ -842,7 +909,7 @@ ${b.prompt}</textarea
                 aria-pressed="${s.id === state.brief.styleId}"
                 data-imst-pick-style="${s.id}"
               >
-                ${styleThumb(s, brand, { seed: hashString(s.id) })}
+                ${styleThumb(s, lookOf(brand, state.brief), { seed: hashString(s.id) })}
                 <span class="imst-gallery__text"
                   ><span class="ap-body-bold">${s.label}</span><span class="ap-caption">${s.description}</span></span
                 >
@@ -930,6 +997,13 @@ ${b.prompt}</textarea
       leaveResults();
       paint();
     }),
+    delegate(target, "change", "[data-imst-usebrand]", (_e, el) => {
+      state.brief.useBrand = el.checked;
+      // The Playbook's own styles are its identity too: off, fall back to a preset.
+      if (!el.checked && getStyle(state.brief.styleId)?.kind === "custom") state.brief.styleId = "preset-lifestyle";
+      leaveResults();
+      paint();
+    }),
     delegate(target, "change", "[data-imst-textmode]", (_e, el) => {
       state.brief.textMode = el.checked ? "embedded" : "layer";
       state.warning = "";
@@ -960,6 +1034,7 @@ ${b.prompt}</textarea
       const a = el.dataset.imstAction;
       if (a === "generate") generate();
       else if (a === "suggest") suggestFromPost();
+      else if (a === "suggest-headline") suggestHeadline();
       else if (a === "all-styles") openStyleGallery();
     }),
     delegate(target, "click", "[data-imst-var]", (_e, el) => {

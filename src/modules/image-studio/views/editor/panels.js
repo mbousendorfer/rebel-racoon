@@ -1,13 +1,13 @@
 // Image Generator — the editor's panels: layers (left), properties + text
 // ideas (right), and the edit-in-words bar under the stage. Pure renderers.
 
-import { html } from "../../lib/html.js?v=1323";
-import { menu } from "../../ui/menu.js?v=1323";
-import { picker } from "../../ui/picker.js?v=1323";
-import { slider, toggle } from "../../ui/fields.js?v=1323";
-import { swatch } from "../../ui/swatch.js?v=1323";
-import { FONT_CHOICES } from "../../config/fonts.js?v=1323";
-import { resolvePalette } from "../../render/palette.js?v=1323";
+import { html } from "../../lib/html.js?v=1326";
+import { menu } from "../../ui/menu.js?v=1326";
+import { picker } from "../../ui/picker.js?v=1326";
+import { slider, toggle } from "../../ui/fields.js?v=1326";
+import { swatch } from "../../ui/swatch.js?v=1326";
+import { FONT_CHOICES } from "../../config/fonts.js?v=1326";
+import { resolvePalette } from "../../render/palette.js?v=1326";
 
 const ROLE_LABEL = {
   primary: "Primary",

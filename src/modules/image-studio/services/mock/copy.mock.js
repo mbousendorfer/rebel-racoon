@@ -7,10 +7,10 @@
 //   caption({ brand, brief, network, headline }) → Promise<string>   (within the network's limit)
 //   hashtags({ brand, brief, network }) → Promise<string[]>
 
-import { MOCK } from "../../config/mock.js?v=1323";
-import { COPY_LIMITS } from "../../config/copy-limits.js?v=1323";
-import { hashString, prng, shuffle } from "../../lib/prng.js?v=1323";
-import { wait } from "../../lib/delegate.js?v=1323";
+import { MOCK } from "../../config/mock.js?v=1326";
+import { COPY_LIMITS } from "../../config/copy-limits.js?v=1326";
+import { hashString, prng, shuffle } from "../../lib/prng.js?v=1326";
+import { wait } from "../../lib/delegate.js?v=1326";
 
 function delay(signal) {
   const [min, max] = MOCK.copy.delayMs;
@@ -161,4 +161,31 @@ export async function promptFromPost({ brand, text }, { signal } = {}) {
       : "one simple object that stands for the idea, on a plain background");
   const moods = (brand?.imageStyle?.moods || []).slice(0, 2).join(" and ");
   return `${scene[0].toUpperCase()}${scene.slice(1)}${moods ? `, ${moods}` : ""}. No text in the image.`;
+}
+
+// A headline for the image, lifted FROM the post: its clauses of three to eight
+// words, the post's own opening first. `round` walks the candidates, so asking
+// again offers the next line instead of the same one.
+export async function headlineFromPost({ text, round = 0 }, { signal } = {}) {
+  await delay(signal);
+  const clean = String(text || "")
+    .replace(/https?:\/\/\S+/g, "")
+    .replace(/#\w+/g, "")
+    .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  const clauses = clean
+    .split(/\s*(?:[,;:.!?…]|\s[—–-]\s)\s*/)
+    .map((c) => c.replace(/^(and|but|so|or|unless|because)\s+/i, "").trim())
+    .filter((c) => {
+      const n = c.split(" ").length;
+      return n >= 3 && n <= 8;
+    });
+  const unique = [...new Set(clauses)];
+  if (!unique.length) {
+    const words = clean.split(" ").slice(0, 6).join(" ");
+    return words ? words.charAt(0).toUpperCase() + words.slice(1) : "";
+  }
+  const line = unique[round % unique.length];
+  return line.charAt(0).toUpperCase() + line.slice(1);
 }
