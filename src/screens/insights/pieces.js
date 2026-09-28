@@ -8,12 +8,12 @@
 // Pure render helpers — strings in, strings out. No listeners: every action is
 // a `data-ins-*` hook the shell dispatches.
 
-import { escapeHtml as esc } from "../../utils.js?v=1369";
-import { renderTopPostCard } from "../../components/top-post-card.js?v=1369";
-import { getContexts } from "../../contexts-store.js?v=1369";
-import { isWorkspaceMode } from "../../active-playbook.js?v=1369";
-import { progressBar } from "./charts.js?v=1369";
-import { signedPct } from "./model.js?v=1369";
+import { escapeHtml as esc } from "../../utils.js?v=1370";
+import { renderTopPostCard } from "../../components/top-post-card.js?v=1370";
+import { getContexts } from "../../contexts-store.js?v=1370";
+import { isWorkspaceMode } from "../../active-playbook.js?v=1370";
+import { progressBar } from "./charts.js?v=1370";
+import { signedPct } from "./model.js?v=1370";
 
 // ── The page's head — the scope, worn as the heading ─────────────────────
 //

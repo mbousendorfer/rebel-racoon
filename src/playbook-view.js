@@ -14,7 +14,7 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1369";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1370";
 import {
   kitEnabled,
   renderColorRole,
@@ -28,18 +28,18 @@ import {
   handleKitInput,
   handleKitChange,
   kitSnapshot,
-} from "./playbook-brand-kit.js?v=1369";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1369";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1369";
-import { isFlagOn } from "./feature-flags.js?v=1369";
-import { parseHashParams } from "./url-state.js?v=1369";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1369";
+} from "./playbook-brand-kit.js?v=1370";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1370";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1370";
+import { isFlagOn } from "./feature-flags.js?v=1370";
+import { parseHashParams } from "./url-state.js?v=1370";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1370";
 // The Default look row offers the SAME three catalogues the Image Studio renders, from
 // the one place they are declared — REF_MODES' own header makes the argument: the label,
 // the hint and the brief clause "drift the moment they live apart". No cycle: the engine
 // imports only clip-formats / image-studio-canvas / feature-flags, and its module body
 // builds consts, so importing it here costs nothing at load.
-import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1369";
+import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1370";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2113,6 +2113,14 @@ function renderOverview(data) {
       ${overviewCard("competitors", "Who it competes with", rivals, { wide: true, index: 3 })}
     </div>
   `;
+}
+
+// Playbook 2.0: the Brand panel reads as two groups — what the brand IS (marks,
+// colours, type, personality) and what its images follow (moods, styles, rules).
+// Called by renderBrandPanel in EVERY mode: it must exist even with the flag off.
+function renderBrandGroup(title) {
+  if (!v2On() || !kitEnabled()) return "";
+  return `<h3 class="pb2-group">${esc(title)}</h3>`;
 }
 
 function renderActivePanel(data) {
