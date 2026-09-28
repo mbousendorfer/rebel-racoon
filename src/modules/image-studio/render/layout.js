@@ -3,10 +3,10 @@
 // everywhere" recomposes with these, it never crops: a wide format moves the
 // text to the left half, a story keeps everything out of the network's UI.
 
-import { createLayer } from "../model/schema.js?v=1308";
-import { fontStack } from "../config/fonts.js?v=1308";
-import { resolvePalette, inkOn } from "./palette.js?v=1308";
-import { assetUrlSync, logoUrl } from "../ui/asset.js?v=1308";
+import { createLayer } from "../model/schema.js?v=1317";
+import { fontStack } from "../config/fonts.js?v=1317";
+import { resolvePalette, inkOn } from "./palette.js?v=1317";
+import { assetUrlSync, logoUrl } from "../ui/asset.js?v=1317";
 
 export const ARCHETYPES = Object.freeze({
   square: { text: { x: 0.08, y: 0.62, w: 0.84, h: 0.2, size: 0.075 }, logo: { x: 0.72, y: 0.87, w: 0.2, h: 0.07 } },
@@ -24,13 +24,16 @@ export function defaultLayers({ layout = "square", headline = "", textMode = "la
       createLayer("text", {
         ...a.text,
         z: 2,
+        // On a band by default: a generated background is unpredictable, and a
+        // band in the brand's background colour keeps the text legible on all four.
         props: {
           content: headline,
           fontRole: "heading",
           colorRole: "text",
-          size: a.text.size,
+          size: fitTextSize(headline, a.text, a.text.size, ratio),
           align: "left",
-          band: false,
+          band: true,
+          bandRole: "background",
         },
       }),
     );

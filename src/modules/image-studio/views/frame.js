@@ -2,7 +2,7 @@
 // tabs (Generate · History · Styles · Catalog) and the body. Deep pages (the style creator, the
 // editor) swap the tabs for a back link to their section.
 
-import { html } from "../lib/html.js?v=1308";
+import { html } from "../lib/html.js?v=1317";
 
 export const SECTIONS = Object.freeze([
   // Generating is the product; History is what you generated. There is no
@@ -37,17 +37,18 @@ function renderTabs(active) {
 }
 
 /**
- * @param {{section?:string, back?:{path:string,label:string}, aside?:object, body:object}} opts
+ * @param {{section?:string, back?:{path:string,label:string}, aside?:object, body:object, fill?:boolean}} opts
+ *   fill: the page takes the whole content area (the studio) instead of the reading measure.
  *   aside: a fragment on the right of the bar (the brand picker).
  */
-export function renderFrame({ section, back, aside, body }) {
+export function renderFrame({ section, back, aside, body, fill = false }) {
   const bar = back
     ? html`<button type="button" class="ap-link imst-back" data-imst-nav="${back.path}">
         <i class="ap-icon-arrow-left" aria-hidden="true"></i><span>${back.label}</span>
       </button>`
     : renderTabs(section);
   return html`
-    <section class="imst" data-imst-root>
+    <section class="imst${fill ? " imst--fill" : ""}" data-imst-root>
       <div class="imst-page">
         <div class="imst-bar${back ? " imst-bar--back" : ""}">
           <div class="imst-bar__main">${bar}</div>

@@ -12,8 +12,8 @@ import {
   createStyle,
   createVariation,
   historyEntry,
-} from "../model/schema.js?v=1308";
-import { productShotSvg } from "../render/product-shot.js?v=1308";
+} from "../model/schema.js?v=1317";
+import { productShotSvg } from "../render/product-shot.js?v=1317";
 
 const ACME = "ctx-acme";
 const PAWTRACK = "ctx-pawtrack";

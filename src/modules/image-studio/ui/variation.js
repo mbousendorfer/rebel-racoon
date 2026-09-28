@@ -2,20 +2,30 @@
 // layers (text, logo…) laid over it in the DOM, exactly where the PNG export
 // will draw them. One function for the results grid, the editor and exports.
 
-import { html, raw } from "../lib/html.js?v=1308";
-import { formatById } from "../config/formats.js?v=1308";
-import { renderVisual, svgToDataUrl } from "../render/visual.js?v=1308";
-import { subjectKindFor } from "../render/subjects.js?v=1308";
-import { defaultLayers, resolveLayers } from "../render/layout.js?v=1308";
-import { storageService as storage } from "../services/index.js?v=1308";
-import { getAsset, getStyle } from "../state/store.js?v=1308";
-import { assetUrlSync } from "./asset.js?v=1308";
+import { html, raw } from "../lib/html.js?v=1317";
+import { formatById } from "../config/formats.js?v=1317";
+import { renderVisual, svgToDataUrl } from "../render/visual.js?v=1317";
+import { subjectKindFor } from "../render/subjects.js?v=1317";
+import { defaultLayers, resolveLayers } from "../render/layout.js?v=1317";
+import { storageService as storage } from "../services/index.js?v=1317";
+import { getAsset, getStyle } from "../state/store.js?v=1317";
+import { assetUrlSync } from "./asset.js?v=1317";
 
 export function productHref(productId) {
   if (!productId) return "";
   const product = storage.get("products", productId);
-  // Inline SVG always; an uploaded photo once warmed (warmAssetUrls).
-  return product?.imageAssetId ? assetUrlSync(product.imageAssetId) : "";
+  if (!product?.imageAssetId) return "";
+  // A drawn product (SVG) goes into the scene CUT OUT — its own studio backdrop
+  // and floor shadow removed — so it sits in the image, not pasted on it.
+  // An uploaded photo can't be cut out by the mock: it goes in as it is.
+  const asset = getAsset(product.imageAssetId);
+  if (asset?.svg) {
+    const cut = asset.svg
+      .replace(/<rect width="200" height="200"[^>]*\/>/, "")
+      .replace(/<ellipse cx="100" cy="182"[^>]*\/>/, "");
+    return storage.svgDataUrl(cut);
+  }
+  return assetUrlSync(product.imageAssetId);
 }
 
 function figureIn(text) {
@@ -81,8 +91,10 @@ export function overlayHtml(resolved, { interactive = false, selectedId = null }
             /[&<>"]/g,
             (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[ch],
           );
-          const band = l.band ? `background:${l.bandColor};box-shadow:0 0 0 0.3em ${l.bandColor};` : "";
-          return `<div class="imst-layer imst-layer--text${sel}" ${attrs} style="${box}font-family:${l.fontStack.replace(/"/g, "'")};color:${l.color};text-align:${l.align};font-size:${(l.size * 100).toFixed(2)}cqw;${band}"><span>${esc}</span>${handle}</div>`;
+          // The band hugs each line (the highlighter look), rather than a block
+          // over the whole box — the PNG export draws it the same way.
+          const band = l.band ? ` class="imst-layer__band" style="background:${l.bandColor}"` : "";
+          return `<div class="imst-layer imst-layer--text${sel}" ${attrs} style="${box}font-family:${l.fontStack.replace(/"/g, "'")};color:${l.color};text-align:${l.align};font-size:${(l.size * 100).toFixed(2)}cqw;"><span${band}>${esc}</span>${handle}</div>`;
         }
         if (l.type === "logo" || l.type === "asset") {
           return l.href

@@ -1,0 +1,524 @@
+/* Image Generator — the studio (Generate). The whole content area is the tool:
+ * a controls column with Generate always in reach, and a canvas that shows the
+ * image large — the live preview first, then the chosen variation.
+ */
+
+.imst--fill {
+  overflow: hidden;
+}
+
+.imst--fill .imst-page {
+  max-width: none;
+  height: 100%;
+  padding: var(--ref-spacing-sm) var(--ref-spacing-md) var(--ref-spacing-md);
+  gap: var(--ref-spacing-sm);
+}
+
+.imst--fill .imst-body {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.imst-studio {
+  display: grid;
+  grid-template-columns: calc(var(--ref-spacing-xxxl) * 6) minmax(0, 1fr);
+  gap: var(--ref-spacing-md);
+  height: 100%;
+  min-height: 0;
+}
+
+/* ── Controls column ─────────────────────────────────────────────────── */
+
+.imst-controls {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--ref-border-radius-md);
+  background: var(--ref-color-white);
+  overflow: hidden;
+}
+
+.imst-controls__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-md);
+  padding: var(--ref-spacing-md);
+}
+
+.imst-controls__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
+  border-top: 1px solid var(--ref-color-grey-20);
+  color: var(--ref-color-grey-80);
+}
+
+.imst-ctl {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  margin: 0;
+}
+
+.imst-ctl__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.imst-ctl__label {
+  margin: 0;
+  color: var(--ref-color-grey-100);
+}
+
+.imst-ctl__label .ap-caption {
+  color: var(--ref-color-grey-80);
+  font-weight: normal;
+}
+
+.imst-ctl-prompt textarea {
+  width: 100%;
+  resize: vertical;
+}
+
+.imst-ctl__warn {
+  display: inline-flex;
+  gap: var(--ref-spacing-xxxs);
+  align-items: center;
+  color: var(--ref-color-grey-100);
+}
+
+.imst-ctl-radios {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+}
+
+/* Brand applied */
+.imst-ctl-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  padding-bottom: var(--ref-spacing-sm);
+  border-bottom: 1px solid var(--ref-color-grey-20);
+}
+
+.imst-ctl-brand__logo {
+  width: var(--ref-spacing-lg);
+  height: var(--ref-spacing-lg);
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.imst-ctl-brand__text {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.imst-ctl-brand .imst-picker__name {
+  display: none;
+}
+
+/* Style: the chosen one, large; six quick picks; the gallery behind "All styles" */
+.imst-style-now {
+  display: flex;
+  gap: var(--ref-spacing-xs);
+  align-items: center;
+}
+
+.imst-style-now__thumb {
+  width: calc(var(--ref-spacing-xxxl) * 1.4);
+  height: calc(var(--ref-spacing-xxxl) * 1.4);
+  flex-shrink: 0;
+  border-radius: var(--ref-border-radius-md);
+  object-fit: cover;
+}
+
+.imst-style-now__text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xxxs);
+  color: var(--ref-color-grey-100);
+}
+
+.imst-style-now__text .ap-caption {
+  color: var(--ref-color-grey-80);
+}
+
+.imst-style-quick {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--ref-spacing-xs);
+}
+
+.imst-style-pick,
+.imst-product-pick,
+.imst-shape,
+.imst-gallery__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  padding: var(--ref-spacing-xxxs);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--ref-border-radius-md);
+  background: var(--ref-color-white);
+  font: inherit;
+  color: var(--ref-color-grey-100);
+  text-align: left;
+  cursor: pointer;
+}
+
+.imst-style-pick:hover,
+.imst-product-pick:hover,
+.imst-shape:hover,
+.imst-gallery__item:hover {
+  border-color: var(--ref-color-electric-blue-40);
+}
+
+.imst-style-pick[aria-checked="true"],
+.imst-product-pick[aria-checked="true"],
+.imst-shape[aria-checked="true"],
+.imst-gallery__item[aria-pressed="true"] {
+  border-color: var(--ref-color-electric-blue-100);
+  box-shadow: inset 0 0 0 1px var(--ref-color-electric-blue-100);
+}
+
+.imst-style-pick:focus-visible,
+.imst-product-pick:focus-visible,
+.imst-shape:focus-visible,
+.imst-gallery__item:focus-visible {
+  outline: 2px solid var(--sys-border-color-active);
+  outline-offset: 2px;
+}
+
+.imst-style-pick__thumb {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: var(--ref-border-radius-sm);
+}
+
+.imst-style-pick__name,
+.imst-product-pick__name {
+  padding: 0 var(--ref-spacing-xxxs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Shape, drawn to scale */
+.imst-shapes {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--ref-spacing-xxs);
+}
+
+.imst-shape {
+  align-items: center;
+  padding: var(--ref-spacing-xs) var(--ref-spacing-xxxs);
+  text-align: center;
+}
+
+.imst-shape__box {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: var(--ref-spacing-xl);
+}
+
+.imst-shape__frame {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  border: 2px solid var(--ref-color-grey-80);
+  border-radius: var(--ref-border-radius-sm);
+}
+
+.imst-shape[aria-checked="true"] .imst-shape__frame {
+  border-color: var(--ref-color-electric-blue-100);
+  background: var(--ref-color-electric-blue-05);
+}
+
+.imst-shape__nets {
+  display: flex;
+  gap: var(--ref-spacing-xxxs);
+  justify-content: center;
+  font-size: var(--ref-font-size-xs);
+}
+
+/* Product, as thumbnails */
+.imst-products {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--ref-spacing-xxs);
+}
+
+.imst-product-pick__thumb {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: var(--ref-border-radius-sm);
+  background: var(--ref-color-grey-05);
+  color: var(--ref-color-grey-80);
+  overflow: hidden;
+}
+
+.imst-product-pick__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ── Canvas column ───────────────────────────────────────────────────── */
+
+.imst-canvas-col {
+  min-height: 0;
+  min-width: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.imst-canvas-area {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+}
+
+.imst-canvas-area--center {
+  align-items: center;
+  justify-content: center;
+}
+
+.imst-canvas-area__caption {
+  margin: 0;
+  text-align: center;
+  color: var(--ref-color-grey-80);
+}
+
+.imst-canvas-area__caption .ap-body-bold {
+  display: block;
+  color: var(--ref-color-grey-100);
+}
+
+/* The stage: the image as large as the space allows, at its true ratio. */
+.imst-stage2 {
+  flex: 1 1 0;
+  /* The image keeps its size when earlier runs are listed below: the column scrolls instead. */
+  min-height: calc(var(--ref-spacing-xxxl) * 8);
+  container-type: size;
+  display: grid;
+  place-items: center;
+}
+
+.imst-stage2__frame {
+  position: relative;
+  width: min(100cqw, calc(100cqh * var(--imst-ratio)));
+  aspect-ratio: var(--imst-ratio);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--ref-border-radius-md);
+  overflow: hidden;
+  background: var(--ref-color-grey-05);
+}
+
+.imst-stage2__frame > .imst-canvas {
+  height: 100%;
+}
+
+.imst-stage2__badge {
+  position: absolute;
+  top: var(--ref-spacing-xs);
+  left: var(--ref-spacing-xs);
+}
+
+.imst-stage2__status {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ref-spacing-xs);
+  background: color-mix(in srgb, var(--ref-color-white) 55%, transparent);
+  color: var(--ref-color-grey-100);
+}
+
+.imst-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    var(--ref-color-grey-05) 30%,
+    var(--ref-color-grey-10) 50%,
+    var(--ref-color-grey-05) 70%
+  );
+  background-size: 200% 100%;
+  animation: imst-shimmer 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .imst-shimmer {
+    animation: none;
+  }
+}
+
+/* The chosen variation's actions, next to it */
+.imst-result-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-xs);
+}
+
+.imst-result-bar__what {
+  display: flex;
+  flex-direction: column;
+  color: var(--ref-color-grey-100);
+}
+
+.imst-result-bar__what .ap-caption {
+  color: var(--ref-color-grey-80);
+}
+
+.imst-result-bar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+}
+
+/* Filmstrip: the four, at their ratio */
+.imst-filmstrip {
+  display: flex;
+  justify-content: center;
+  gap: var(--ref-spacing-xs);
+}
+
+.imst-filmstrip__item {
+  position: relative;
+  height: calc(var(--ref-spacing-xxxl) * 1.6);
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: var(--ref-border-radius-md);
+  overflow: hidden;
+  background: var(--ref-color-grey-05);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.imst-filmstrip__item .imst-canvas {
+  height: 100%;
+}
+
+.imst-filmstrip__item:hover {
+  border-color: var(--ref-color-electric-blue-40);
+}
+
+.imst-filmstrip__item[aria-selected="true"] {
+  border-color: var(--ref-color-electric-blue-100);
+}
+
+.imst-filmstrip__item:focus-visible {
+  outline: 2px solid var(--sys-border-color-active);
+  outline-offset: 2px;
+}
+
+.imst-filmstrip__item.is-loading {
+  cursor: default;
+}
+
+.imst-filmstrip__item--small {
+  height: var(--ref-spacing-xxxl);
+}
+
+.imst-filmstrip__fav {
+  position: absolute;
+  top: var(--ref-spacing-xxxs);
+  right: var(--ref-spacing-xxxs);
+  color: var(--ref-color-white);
+}
+
+/* Refine in place */
+.imst-refine {
+  display: flex;
+  gap: var(--ref-spacing-xs);
+  width: 100%;
+  max-width: calc(var(--app-content) * 0.7);
+  align-self: center;
+}
+
+.imst-refine__input {
+  flex: 1 1 auto;
+}
+
+.imst-earlier {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  padding-top: var(--ref-spacing-sm);
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+
+.imst-earlier h3 {
+  margin: 0;
+}
+
+.imst-earlier__row {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+}
+
+.imst-earlier__label {
+  width: calc(var(--ref-spacing-xxxl) * 2.4);
+  flex-shrink: 0;
+  color: var(--ref-color-grey-80);
+}
+
+.imst-earlier__thumbs {
+  display: flex;
+  gap: var(--ref-spacing-xxs);
+}
+
+/* Style gallery dialog */
+.imst-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--ref-spacing-xxxl) * 2.6), 1fr));
+  gap: var(--ref-spacing-xs);
+}
+
+.imst-gallery__item .imst-thumb {
+  border-radius: var(--ref-border-radius-sm);
+}
+
+.imst-gallery__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  padding: var(--ref-spacing-xxxs);
+}
+
+.imst-gallery__text .ap-caption {
+  color: var(--ref-color-grey-80);
+}
+
+@media (max-width: 1024px) {
+  .imst-studio {
+    grid-template-columns: calc(var(--ref-spacing-xxxl) * 5) minmax(0, 1fr);
+    gap: var(--ref-spacing-sm);
+  }
+}

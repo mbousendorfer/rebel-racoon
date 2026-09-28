@@ -79,14 +79,18 @@ export async function drawLayers(ctx, layers, width, height) {
       ctx.textAlign = layer.align || "left";
       const lines = wrap(ctx, layer.content, w);
       const lineH = size * 1.2;
+      const ax = layer.align === "center" ? x + w / 2 : layer.align === "right" ? x + w : x;
       if (layer.band) {
+        // One band per line, fitted to it — same as .imst-layer__band on screen.
         ctx.fillStyle = layer.bandColor;
-        ctx.globalAlpha = 0.9;
-        ctx.fillRect(x - size * 0.4, y - size * 0.3, w + size * 0.8, lines.length * lineH + size * 0.6);
-        ctx.globalAlpha = 1;
+        const padX = size * 0.3;
+        lines.forEach((l, i) => {
+          const lw = ctx.measureText(l).width;
+          const left = layer.align === "center" ? ax - lw / 2 : layer.align === "right" ? ax - lw : ax;
+          ctx.fillRect(left - padX, y + i * lineH - size * 0.06, lw + padX * 2, lineH);
+        });
       }
       ctx.fillStyle = layer.color;
-      const ax = layer.align === "center" ? x + w / 2 : layer.align === "right" ? x + w : x;
       lines.forEach((l, i) => ctx.fillText(l, ax, y + i * lineH));
     }
     ctx.restore();

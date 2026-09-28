@@ -1,19 +1,19 @@
 // Image Generator — History, for the active Playbook: every generation run,
 // newest first — reopen it on Generate, or delete it.
 
-import { html, toString } from "../lib/html.js?v=1308";
-import { delegate } from "../lib/delegate.js?v=1308";
-import { renderFrame } from "./frame.js?v=1308";
-import { renderEmpty } from "../ui/empty.js?v=1308";
-import { renderBrandPicker } from "../ui/brand-picker.js?v=1308";
-import { confirmDialog } from "../ui/dialog.js?v=1308";
-import { toast } from "../ui/toast.js?v=1308";
-import { variationCanvas } from "../ui/variation.js?v=1308";
-import { storageService } from "../services/index.js?v=1308";
-import { formatById, formatRatio } from "../config/formats.js?v=1308";
-import { networkById } from "../config/networks.js?v=1308";
-import { deleteCreation } from "../state/creation-actions.js?v=1308";
-import { boot, getActiveBrand, getCreation, getCreations, getStyle, subscribe } from "../state/store.js?v=1308";
+import { html, toString } from "../lib/html.js?v=1317";
+import { delegate } from "../lib/delegate.js?v=1317";
+import { renderFrame } from "./frame.js?v=1317";
+import { renderEmpty } from "../ui/empty.js?v=1317";
+import { renderBrandPicker } from "../ui/brand-picker.js?v=1317";
+import { confirmDialog } from "../ui/dialog.js?v=1317";
+import { toast } from "../ui/toast.js?v=1317";
+import { variationCanvas } from "../ui/variation.js?v=1317";
+import { storageService } from "../services/index.js?v=1317";
+import { formatById, formatRatio } from "../config/formats.js?v=1317";
+import { networkById } from "../config/networks.js?v=1317";
+import { deleteCreation } from "../state/creation-actions.js?v=1317";
+import { boot, getActiveBrand, getCreation, getCreations, getStyle, subscribe } from "../state/store.js?v=1317";
 
 const day = (iso) =>
   iso ? new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "—";

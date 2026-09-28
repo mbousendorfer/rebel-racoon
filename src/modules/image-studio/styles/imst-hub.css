@@ -244,3 +244,12 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* A band behind the text, hugging each line (box-decoration-break clones the
+   padding on every wrapped line). The export draws the same shape per line. */
+.imst-layer__band {
+  padding: 0.06em 0.3em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  line-height: 1.2;
+}

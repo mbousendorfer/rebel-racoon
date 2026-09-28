@@ -80,3 +80,65 @@ export function formatRatio(format) {
   if (w > 40 || h > 40) return (format.width / format.height).toFixed(2) + ":1";
   return `${w}:${h}`;
 }
+
+/**
+ * The five SHAPES the generator offers — what a person picks is a shape, not
+ * one of eleven network formats. Each maps to the format the image is made in
+ * first (the master); "Adapt everywhere" in the editor makes the others.
+ * `networks` lists who uses that shape, shown as icons under it.
+ */
+export const FORMAT_SHAPES = Object.freeze([
+  {
+    id: "square",
+    label: "Square",
+    ratio: "1:1",
+    formatId: "ig-post",
+    w: 1,
+    h: 1,
+    networks: ["instagram", "facebook", "x", "linkedin"],
+  },
+  {
+    id: "portrait",
+    label: "Portrait",
+    ratio: "4:5",
+    formatId: "ig-portrait",
+    w: 4,
+    h: 5,
+    networks: ["instagram", "linkedin"],
+  },
+  {
+    id: "story",
+    label: "Story",
+    ratio: "9:16",
+    formatId: "ig-story",
+    w: 9,
+    h: 16,
+    networks: ["instagram", "facebook"],
+  },
+  { id: "landscape", label: "Landscape", ratio: "16:9", formatId: "x-landscape", w: 16, h: 9, networks: ["x"] },
+  {
+    id: "link",
+    label: "Link",
+    ratio: "1.91:1",
+    formatId: "li-link",
+    w: 1.91,
+    h: 1,
+    networks: ["linkedin", "facebook"],
+  },
+]);
+
+export function shapeForFormat(formatId) {
+  const f = formatById(formatId);
+  if (!f) return FORMAT_SHAPES[0];
+  return (
+    FORMAT_SHAPES.find((s) => s.formatId === formatId) ||
+    FORMAT_SHAPES.find(
+      (s) =>
+        s.id ===
+        { square: "square", portrait: "portrait", tall: "story", wide: f.mockup === "link" ? "link" : "landscape" }[
+          f.layout
+        ],
+    ) ||
+    FORMAT_SHAPES[0]
+  );
+}

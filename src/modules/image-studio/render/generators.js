@@ -9,7 +9,8 @@
 //         re-seeds one of the two without moving the other)
 //     id  a unique prefix for gradient / filter ids (four renders share a page)
 
-import { darken, inkOn, lighten, mix } from "./palette.js?v=1308";
+import { darken, inkOn, lighten, luminance, mix } from "./palette.js?v=1317";
+import { subjectDetail } from "./subjects.js?v=1317";
 
 const n = (v) => Math.round(v * 10) / 10;
 const pick = (r, list) => list[Math.floor(r() * list.length) % list.length];
@@ -20,11 +21,28 @@ function rect(x, y, w, h, fill, extra = "") {
 function circle(cx, cy, rad, fill, extra = "") {
   return `<circle cx="${n(cx)}" cy="${n(cy)}" r="${n(rad)}" fill="${fill}" ${extra}/>`;
 }
-function subject(c, fill, extra = "") {
-  return `<path d="${c.subject.d}" fill="${fill}" fill-rule="evenodd" ${extra}/>`;
+// The subject: its silhouette in the generator's own treatment, then its inner
+// lines in a tone of that fill — lighter on a dark fill, darker on a light one.
+// `detail: false` for the treatments that ARE outlines (line art) or blur it away.
+function subject(c, fill, extra = "", { detail = true } = {}) {
+  const { kind, cx, cy, s } = c.subject;
+  // With a product, the product IS the subject: its own picture, not a
+  // silhouette with the picture pasted on top.
+  if (c.productHref) return productImage(c, 0.9);
+  const base = `<path d="${c.subject.d}" fill="${fill}" fill-rule="evenodd" ${extra}/>`;
+  if (!detail) return base;
+  const plain = /^#[0-9a-f]{6}$/i.test(fill);
+  const tone = plain ? (luminance(fill) < 0.35 ? lighten(fill, 0.45) : darken(fill, 0.35)) : "#FFFFFF";
+  const width = c.W * 0.006;
+  return (
+    base +
+    `<path d="${subjectDetail(kind, cx, cy, s)}" fill="none" stroke="${tone}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round" opacity="${plain ? 0.9 : 0.55}"/>`
+  );
 }
 function productImage(c, scale = 1) {
-  if (!c.productHref) return "";
+  // Drawn once per render, whichever of subject() / the generator asks first.
+  if (!c.productHref || c.productDrawn) return "";
+  c.productDrawn = true;
   const { cx, cy, s } = c.subject;
   const size = s * scale;
   return `<image href="${c.productHref}" x="${n(cx - size / 2)}" y="${n(cy - size / 2)}" width="${n(size)}" height="${n(size)}" preserveAspectRatio="xMidYMid meet"/>`;
@@ -76,7 +94,13 @@ function lineArt(c) {
     rect(0, 0, W, H, lighten(p.background, 0.5)) +
     lines +
     circle(c.subject.cx + c.subject.s * 0.4, c.subject.cy - c.subject.s * 0.45, W * 0.03, p.accent) +
-    subject(c, "none", `stroke="${p.text}" stroke-width="${W * 0.006}" stroke-linejoin="round" stroke-linecap="round"`)
+    subject(
+      c,
+      "none",
+      `stroke="${p.text}" stroke-width="${W * 0.006}" stroke-linejoin="round" stroke-linecap="round"`,
+      { detail: false },
+    ) +
+    `<path d="${subjectDetail(c.subject.kind, c.subject.cx, c.subject.cy, c.subject.s)}" fill="none" stroke="${p.text}" stroke-width="${W * 0.004}" stroke-linecap="round"/>`
   );
 }
 

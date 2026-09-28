@@ -8,12 +8,12 @@
 //     (only colours, textures and mood are held);
 //   · reference images — their sampled colours tint the palette by their weight.
 
-import { prng } from "../lib/prng.js?v=1308";
-import { presetById } from "../config/style-presets.js?v=1308";
-import { generatorFor } from "./generators.js?v=1308";
-import { inkOn, resolvePalette } from "./palette.js?v=1308";
-import { fontStack } from "../config/fonts.js?v=1308";
-import { subjectPath } from "./subjects.js?v=1308";
+import { prng } from "../lib/prng.js?v=1317";
+import { presetById } from "../config/style-presets.js?v=1317";
+import { generatorFor } from "./generators.js?v=1317";
+import { inkOn, resolvePalette } from "./palette.js?v=1317";
+import { fontStack } from "../config/fonts.js?v=1317";
+import { subjectPath } from "./subjects.js?v=1317";
 
 let renderSeq = 0;
 
@@ -129,7 +129,8 @@ export function subjectPlacement(W, H, rs) {
   const ratio = H / W;
   const wide = ratio < 0.72;
   const tall = ratio > 1.5;
-  const s = wide ? H * (0.5 + rs() * 0.12) : W * (tall ? 0.52 + rs() * 0.1 : 0.4 + rs() * 0.08);
+  // A subject in a scene, not a sticker filling the frame.
+  const s = wide ? H * (0.48 + rs() * 0.1) : W * (tall ? 0.48 + rs() * 0.08 : 0.37 + rs() * 0.06);
   const cx = W * (wide ? 0.72 : 0.5 + (rs() - 0.5) * 0.14);
   const cy = H * (wide ? 0.5 : tall ? 0.3 : 0.36 + (rs() - 0.5) * 0.06);
   return { cx, cy, s };
