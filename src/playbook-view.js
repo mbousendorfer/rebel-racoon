@@ -14,7 +14,7 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1374";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1375";
 import {
   kitEnabled,
   renderColorRole,
@@ -28,18 +28,18 @@ import {
   handleKitInput,
   handleKitChange,
   kitSnapshot,
-} from "./playbook-brand-kit.js?v=1374";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1374";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1374";
-import { isFlagOn } from "./feature-flags.js?v=1374";
-import { parseHashParams } from "./url-state.js?v=1374";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1374";
+} from "./playbook-brand-kit.js?v=1375";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1375";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1375";
+import { isFlagOn } from "./feature-flags.js?v=1375";
+import { parseHashParams } from "./url-state.js?v=1375";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1375";
 // The Default look row offers the SAME three catalogues the Image Studio renders, from
 // the one place they are declared — REF_MODES' own header makes the argument: the label,
 // the hint and the brief clause "drift the moment they live apart". No cycle: the engine
 // imports only clip-formats / image-studio-canvas / feature-flags, and its module body
 // builds consts, so importing it here costs nothing at load.
-import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1374";
+import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1375";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -1694,6 +1694,11 @@ function renderCompetitorsPanel(data, edit) {
          </button>`
       : "";
 
+  // Playbook 2.0, reading: the tab's own head (lead + Discover + Edit), like the
+  // other tabs, and the cards in a block below — no panel head repeating it.
+  if (v2On() && !edit)
+    return `${pb2TabHead("competitors", discoverBtn)}
+      <section class="pb2-block pb2-block--bare" id="${section.id}">${body}</section>`;
   return `
     <section class="recap__panel ${edit ? "is-editing" : ""}" id="${section.id}" ${
       edit ? "data-recap-editing-card" : ""

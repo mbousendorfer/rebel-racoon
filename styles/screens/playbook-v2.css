@@ -927,3 +927,9 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* Competitors in read mode: the section's own layout (cards, suggestions) in a
+   plain block — its padding is the section's, not the block's. */
+.pb2-block--bare {
+  padding: var(--ref-spacing-xs) 0;
+}
