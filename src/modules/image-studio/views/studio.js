@@ -15,30 +15,30 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, "Refine" to iterate in place, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=1390";
-import { delegate } from "../lib/delegate.js?v=1390";
-import { hashString } from "../lib/prng.js?v=1390";
-import { renderEmpty } from "../ui/empty.js?v=1390";
-import { field, preserveFocus, textInput } from "../ui/fields.js?v=1390";
-import { toast } from "../ui/toast.js?v=1390";
-import { assetImg, hydrateAssets, logoUrl } from "../ui/asset.js?v=1390";
-import { styleThumb } from "../ui/style-thumb.js?v=1390";
-import { openDialog } from "../ui/dialog.js?v=1390";
-import { menu } from "../ui/menu.js?v=1390";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1390";
-import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1390";
-import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1390";
-import { networkById } from "../config/networks.js?v=1390";
-import { copyService, imageGenerationService } from "../services/index.js?v=1390";
-import { unbranded } from "../state/playbook-brand.js?v=1390";
-import { resolveLayers } from "../render/layout.js?v=1390";
-import { svgToDataUrl } from "../render/visual.js?v=1390";
-import { splitVisual } from "../render/split.js?v=1390";
-import { bakeDoc } from "../render/edit-export.js?v=1390";
-import { subjectKindFor } from "../render/subjects.js?v=1390";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1390";
-import { createEditor } from "./edit/editor.js?v=1390";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1390";
+import { html, raw, toString } from "../lib/html.js?v=1391";
+import { delegate } from "../lib/delegate.js?v=1391";
+import { hashString } from "../lib/prng.js?v=1391";
+import { renderEmpty } from "../ui/empty.js?v=1391";
+import { field, preserveFocus, textInput } from "../ui/fields.js?v=1391";
+import { toast } from "../ui/toast.js?v=1391";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1391";
+import { styleThumb } from "../ui/style-thumb.js?v=1391";
+import { openDialog } from "../ui/dialog.js?v=1391";
+import { menu } from "../ui/menu.js?v=1391";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1391";
+import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1391";
+import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1391";
+import { networkById } from "../config/networks.js?v=1391";
+import { copyService, imageGenerationService } from "../services/index.js?v=1391";
+import { unbranded } from "../state/playbook-brand.js?v=1391";
+import { resolveLayers } from "../render/layout.js?v=1391";
+import { svgToDataUrl } from "../render/visual.js?v=1391";
+import { splitVisual } from "../render/split.js?v=1391";
+import { bakeDoc } from "../render/edit-export.js?v=1391";
+import { subjectKindFor } from "../render/subjects.js?v=1391";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1391";
+import { createEditor } from "./edit/editor.js?v=1391";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1391";
 import {
   canEditBrand,
   forgetOneOffStyle,
@@ -49,15 +49,15 @@ import {
   getStylesForBrand,
   registerOneOffStyle,
   subscribe,
-} from "../state/store.js?v=1390";
-import { discardOneOff, oneOffStyleFrom, saveOneOffToPlaybook } from "../state/style-actions.js?v=1390";
+} from "../state/store.js?v=1391";
+import { discardOneOff, oneOffStyleFrom, saveOneOffToPlaybook } from "../state/style-actions.js?v=1391";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1390";
+} from "../state/creation-actions.js?v=1391";
 
 // The presets offered first when the brand has few styles of its own — one per
 // family, the ones that read best at thumbnail size.
@@ -491,41 +491,6 @@ export function mountStudio(
     });
   }
 
-  // The brand the image is made for: its mark, its name, its colours. Nothing
-  // to switch — the Playbook is always applied.
-  const renderBrandRow = (brand) => {
-    const logo = logoUrl(brand, "icon") || logoUrl(brand, "color");
-    return html`
-      <div class="imst-ctl-brand-block">
-        <div class="imst-ctl-brand">
-          ${logo
-            ? html`<img class="imst-ctl-brand__logo" src="${logo}" alt="" />`
-            : html`<span class="imst-ctl-brand__logo imst-ctl-brand__logo--initial" aria-hidden="true"
-                >${brand.name.slice(0, 1)}</span
-              >`}
-          <div class="imst-ctl-brand__text">
-            <span class="ap-body-bold">${brand.name}</span>
-          </div>
-          <span
-            class="imst-dots"
-            role="img"
-            aria-label="Brand colours: ${brand.palette.map((c) => c.name || c.hex).join(", ")}"
-            >${brand.palette
-              .slice(0, 5)
-              .map(
-                (c) =>
-                  html`<span
-                    class="imst-dots__dot"
-                    style="--imst-swatch: ${c.hex}"
-                    data-tooltip="${c.name ? `${c.name} ${c.hex}` : c.hex}"
-                  ></span>`,
-              )}</span
-          >
-        </div>
-      </div>
-    `;
-  };
-
   // "Best for" + the network's icon; its name goes in title / aria-label.
   const bestFor = (networks) =>
     html`<span class="ap-caption imst-best"
@@ -556,8 +521,6 @@ export function mountStudio(
     return html`
       <aside class="imst-controls" aria-label="Describe the image">
         <div class="imst-controls__scroll">
-          ${renderBrandRow(brand)}
-
           <section class="imst-ctl">
             <label class="imst-ctl__label ap-body-bold" for="imst-prompt">Describe the image</label>
             <div class="imst-composer${state.error ? " has-error" : ""}">

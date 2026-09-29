@@ -111,61 +111,6 @@
   color: var(--ref-color-grey-100);
 }
 
-/* Brand applied: the mark, the name, the palette as overlapping dots — and the switch to leave it out */
-.imst-ctl-brand-block {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xs);
-}
-
-.imst-ctl-brand {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-}
-
-.imst-ctl-brand__logo {
-  width: var(--ref-spacing-xl);
-  height: var(--ref-spacing-xl);
-  flex-shrink: 0;
-  border-radius: var(--app-radius-card);
-  object-fit: contain;
-}
-
-.imst-ctl-brand__logo--initial {
-  display: grid;
-  place-items: center;
-  background: var(--ref-color-grey-10);
-  color: var(--ref-color-grey-100);
-  font-weight: var(--ref-font-weight-bold);
-}
-
-.imst-ctl-brand__text {
-  flex: 1 1 auto;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  color: var(--ref-color-grey-100);
-}
-
-.imst-dots {
-  display: inline-flex;
-  flex-shrink: 0;
-  padding-left: var(--ref-spacing-xxxs);
-}
-
-.imst-dots__dot {
-  width: var(--ref-spacing-md);
-  height: var(--ref-spacing-md);
-  margin-left: calc(var(--ref-spacing-xxs) * -1);
-  border-radius: var(--app-radius-circle);
-  background: var(--imst-swatch);
-  /* The white ring separates overlapping dots; the hairline keeps a white colour visible. */
-  box-shadow:
-    0 0 0 2px var(--ref-color-white),
-    inset 0 0 0 1px var(--ref-color-grey-20);
-}
-
 /* The prompt: one composer, its tools inside it */
 .imst-composer {
   display: flex;
