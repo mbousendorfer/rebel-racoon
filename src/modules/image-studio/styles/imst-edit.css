@@ -1,0 +1,237 @@
+/* Image Generator — the Edit mode (views/edit/).
+ *
+ * Almost none of it is here: the canvas, the overlays, the text toolbar, the
+ * crop box, the tool palette and the composer are the Image Studio's own
+ * markup, drawn by styles/screens/image-studio-canvas.css (`.image-studio__*`)
+ * and image-studio-v2.css (`.isv2-*`). ⚠️ So the day the old studio goes,
+ * those two stylesheets stay — or move here.
+ *
+ * What IS here: the tabs in the dialog header, the host box, the base layer
+ * seen through its crop window, and the one new piece — the layers panel. */
+
+/* ── Generate | Edit, at the end of the header row ─────────────────────── */
+.imst-dialog__heading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  min-width: 0;
+}
+
+.imst-dialog__header--aside {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-md);
+}
+
+.imst-dialog__modes {
+  flex: 0 0 auto;
+}
+
+/* ── The host ───────────────────────────────────────────────────────────── */
+.imst-edit {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+  border-radius: var(--app-radius-modal);
+}
+
+.imst-edit--preparing {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ref-spacing-xs);
+  background-color: var(--app-bg);
+  color: var(--ref-color-grey-80);
+}
+
+/* The studio reserves the palette's width on BOTH sides, so the image stays on
+   the centre line; here the right side holds the layers panel, which is wider. */
+.imst-edit .isv2-stage-body.has-palette {
+  padding-inline: calc(var(--imst-layers-width) + 2 * var(--ref-spacing-lg));
+}
+
+.imst-edit {
+  --imst-layers-width: calc(var(--ref-spacing-xxxl) * 3.5); /* 210px */
+}
+
+/* The base, through its crop window: the frame is the window. */
+.imst-edit-base {
+  position: absolute;
+  display: block;
+  max-width: none;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* The background hidden: what's left is transparent, and says so. */
+.imst-edit-frame--nobase .isv2-frame-clip {
+  background-color: var(--ref-color-white);
+  background-image: conic-gradient(
+    var(--ref-color-grey-10) 25%,
+    transparent 0 50%,
+    var(--ref-color-grey-10) 0 75%,
+    transparent 0
+  );
+  background-size: var(--ref-spacing-sm) var(--ref-spacing-sm);
+}
+
+/* A locked layer is seen, not grabbed: the click falls through to the frame. */
+.imst-edit .imst-edit-overlays > .image-studio__overlay.is-locked {
+  pointer-events: none;
+}
+
+.imst-edited {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.imst-feed--edit {
+  align-self: flex-start;
+  max-height: 100%;
+  overflow-y: auto;
+}
+
+/* ── Layers — the palette's twin, on the right edge ─────────────────────── */
+.imst-layers {
+  position: absolute;
+  right: var(--ref-spacing-lg);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 4;
+  width: var(--imst-layers-width);
+  max-height: calc(100% - 2 * var(--ref-spacing-md));
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  padding: var(--ref-spacing-xxs);
+  background: var(--ref-color-white);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
+  box-shadow: var(--app-shadow-popover-lg);
+}
+
+.imst-layers__title {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  margin: 0;
+  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xxs);
+  color: var(--ref-color-grey-80);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  font-weight: var(--ref-font-weight-bold);
+}
+
+.imst-layers__list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.imst-layers__row {
+  display: grid;
+  grid-template-columns: var(--ref-spacing-md) minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  padding-left: var(--ref-spacing-xxs);
+  border-radius: var(--app-radius-md);
+  cursor: pointer;
+  color: var(--ref-color-grey-100);
+}
+
+.imst-layers__row:hover {
+  background-color: var(--ref-color-grey-05);
+}
+
+.imst-layers__row:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: -2px;
+}
+
+.imst-layers__row.is-selected {
+  background-color: var(--ref-color-electric-blue-10);
+}
+
+.imst-layers__row.is-hidden .imst-layers__name,
+.imst-layers__row.is-hidden .imst-layers__thumb {
+  opacity: 0.45;
+}
+
+.imst-layers__thumb {
+  display: grid;
+  place-items: center;
+  width: var(--ref-spacing-md);
+  height: var(--ref-spacing-md);
+  overflow: hidden;
+  border-radius: var(--app-radius-sm);
+  background-color: var(--ref-color-grey-05);
+  color: var(--ref-color-grey-80);
+}
+
+.imst-layers__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.imst-layers__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+}
+
+/* The base has no lock to toggle: it's pinned to the bottom. Same footprint. */
+.imst-layers__pin {
+  display: grid;
+  place-items: center;
+  width: calc(var(--ref-spacing-lg) + var(--ref-spacing-xxxs)); /* the icon button's 36px */
+  height: calc(var(--ref-spacing-lg) + var(--ref-spacing-xxxs));
+  color: var(--ref-color-grey-40);
+}
+
+.imst-layers__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--ref-spacing-xxxs);
+  padding-top: var(--ref-spacing-xxxs);
+  border-top: 1px solid var(--ref-color-grey-10);
+}
+
+/* The frame is its own stacking context (container-type: size), so the text
+   toolbar and the crop toolbar it holds would pass UNDER the side panels when
+   they overflow the image. While one of them is up, the frame comes first —
+   and only then: the palette's sheet flies over the image the rest of the time. */
+.imst-edit .isv2-frame--edit:has(.has-selection > .image-studio__overlay, .image-studio__crop-layer) {
+  z-index: 5;
+}
+
+/* The two overlay containers cover the frame; only the layers take the pointer. */
+.imst-edit .imst-edit-overlays {
+  pointer-events: none;
+}
+
+.imst-edit .imst-edit-overlays > .image-studio__overlay {
+  pointer-events: auto;
+}
+
+/* ONE stacking context for both containers, at the Image Studio's overlay
+   level (2): the crop layer (3), the busy veil (5) and the crop toolbar (6)
+   stay above however many layers there are. */
+.imst-edit .imst-edit-stack {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}

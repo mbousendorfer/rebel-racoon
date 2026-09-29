@@ -5,7 +5,7 @@
 // openDialog() returns { el, close, setBody }. Escape and the backdrop close it;
 // focus moves in on open and back to the opener on close.
 
-import { html, toString } from "../lib/html.js?v=1377";
+import { html, toString } from "../lib/html.js?v=1381";
 
 let open = [];
 
@@ -14,6 +14,11 @@ function onKey(event) {
   if (!top) return;
   if (event.key === "Escape") {
     event.stopPropagation();
+    // A dialog with its own layers of state (the studio's Edit) unwinds those first.
+    if (top.beforeEscape?.()) {
+      event.preventDefault();
+      return;
+    }
     top.close();
   } else if (event.key === "Tab") {
     trapFocus(top.el, event);
@@ -43,9 +48,21 @@ function trapFocus(root, event) {
 /**
  * @param {{title:string, subtitle?:string, body:object, footer?:object, size?:"sm"|"md"|"lg",
  *          role?:"dialog"|"alertdialog", onMount?:(el:HTMLElement, api:object)=>void|(()=>void),
- *          onClose?:()=>void}} opts
+ *          onClose?:()=>void, headerAside?:object}} opts
+ * `headerAside` sits at the end of the header row (the studio's Generate | Edit
+ * tabs); `api.beforeEscape`, when set, may swallow an Escape by returning true.
  */
-export function openDialog({ title, subtitle, body, footer, size = "md", role = "dialog", onMount, onClose }) {
+export function openDialog({
+  title,
+  subtitle,
+  body,
+  footer,
+  size = "md",
+  role = "dialog",
+  onMount,
+  onClose,
+  headerAside = null,
+}) {
   const opener = document.activeElement;
   const backdrop = document.createElement("div");
   backdrop.className = "app-modal-backdrop imst-backdrop open";
@@ -56,9 +73,12 @@ export function openDialog({ title, subtitle, body, footer, size = "md", role = 
   const titleId = `imst-dlg-${Math.random().toString(36).slice(2, 8)}`;
   el.setAttribute("aria-labelledby", titleId);
   el.innerHTML = toString(html`
-    <div class="ap-dialog-header">
-      <h2 class="ap-dialog-title" id="${titleId}">${title}</h2>
-      ${subtitle ? html`<span class="ap-dialog-subtitle">${subtitle}</span>` : ""}
+    <div class="ap-dialog-header${headerAside ? " imst-dialog__header--aside" : ""}">
+      <div class="imst-dialog__heading">
+        <h2 class="ap-dialog-title" id="${titleId}">${title}</h2>
+        ${subtitle ? html`<span class="ap-dialog-subtitle">${subtitle}</span>` : ""}
+      </div>
+      ${headerAside || ""}
     </div>
     <button type="button" class="ap-dialog-close" data-imst-dialog-close aria-label="Close">
       <i class="ap-icon-close" aria-hidden="true"></i>

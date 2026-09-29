@@ -15,32 +15,38 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, "Refine" to iterate in place, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=1377";
-import { delegate } from "../lib/delegate.js?v=1377";
-import { hashString } from "../lib/prng.js?v=1377";
-import { renderEmpty } from "../ui/empty.js?v=1377";
-import { preserveFocus } from "../ui/fields.js?v=1377";
-import { toast } from "../ui/toast.js?v=1377";
-import { hydrateAssets, logoUrl } from "../ui/asset.js?v=1377";
-import { styleThumb } from "../ui/style-thumb.js?v=1377";
-import { openDialog } from "../ui/dialog.js?v=1377";
-import { menu } from "../ui/menu.js?v=1377";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1377";
-import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1377";
-import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1377";
-import { networkById } from "../config/networks.js?v=1377";
-import { copyService, imageGenerationService } from "../services/index.js?v=1377";
-import { unbranded } from "../state/playbook-brand.js?v=1377";
-import { resolveLayers } from "../render/layout.js?v=1377";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1377";
-import { getBrand, getCreation, getProducts, getStyle, getStylesForBrand, subscribe } from "../state/store.js?v=1377";
+import { html, raw, toString } from "../lib/html.js?v=1381";
+import { delegate } from "../lib/delegate.js?v=1381";
+import { hashString } from "../lib/prng.js?v=1381";
+import { renderEmpty } from "../ui/empty.js?v=1381";
+import { preserveFocus } from "../ui/fields.js?v=1381";
+import { toast } from "../ui/toast.js?v=1381";
+import { hydrateAssets, logoUrl } from "../ui/asset.js?v=1381";
+import { styleThumb } from "../ui/style-thumb.js?v=1381";
+import { openDialog } from "../ui/dialog.js?v=1381";
+import { menu } from "../ui/menu.js?v=1381";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1381";
+import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1381";
+import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1381";
+import { networkById } from "../config/networks.js?v=1381";
+import { copyService, imageGenerationService } from "../services/index.js?v=1381";
+import { unbranded } from "../state/playbook-brand.js?v=1381";
+import { resolveLayers } from "../render/layout.js?v=1381";
+import { svgToDataUrl } from "../render/visual.js?v=1381";
+import { splitVisual } from "../render/split.js?v=1381";
+import { bakeDoc } from "../render/edit-export.js?v=1381";
+import { subjectKindFor } from "../render/subjects.js?v=1381";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1381";
+import { createEditor } from "./edit/editor.js?v=1381";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1381";
+import { getBrand, getCreation, getProducts, getStyle, getStylesForBrand, subscribe } from "../state/store.js?v=1381";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1377";
+} from "../state/creation-actions.js?v=1381";
 
 // The presets offered first when the brand has few styles of its own — one per
 // family, the ones that read best at thumbnail size.
@@ -81,8 +87,25 @@ const lookOf = (brand, brief) => (brief?.useBrand === false ? unbranded(brand) :
  * With `renderFeedPreview` (the draft's own card, from the shell), a result can
  * be seen In feed: the baked PNG — exactly what Use in draft puts in the post —
  * inside that card.
+ *
+ * Two modes, as in the Image Studio: Generate, and Edit — the chosen image as
+ * LAYERS (views/edit/). `modes` is where the tabs go (the dialog's header),
+ * `footerLeft` the footer's left slot (Edit's Undo), and `onEscape` hands the
+ * dialog a function that unwinds Edit before Escape closes anything.
  */
-export function mountStudio(target, { draft, onUse, onCancel = () => {}, footer = null, renderFeedPreview = null }) {
+export function mountStudio(
+  target,
+  {
+    draft,
+    onUse,
+    onCancel = () => {},
+    footer = null,
+    footerLeft = null,
+    modes = null,
+    onEscape = null,
+    renderFeedPreview = null,
+  },
+) {
   // The dialog's footer holds the final actions (DS: right-aligned); clicks are
   // delegated from the dialog so body and footer share one set of handlers.
   const root = target.closest(".ap-dialog") || target;
@@ -100,7 +123,15 @@ export function mountStudio(target, { draft, onUse, onCancel = () => {}, footer 
     error: "",
     abort: null,
     view: "image", // image | feed — how a result is shown
+    mode: "generate", // generate | edit
+    editKey: null, // which image Edit has open
   };
+  // Edit documents, one per image, kept for the life of the dialog: edits stick
+  // to the variation they were made on. key → { doc, history } (state/edit-doc.js)
+  const entries = new Map();
+  // What each generated document is drawn from, for Redraw. key → { creation, formatId, look }
+  const sources = new Map();
+  const editedUrls = new Map(); // docSignature → object URL (null while it bakes)
   // The PNG each variation bakes to for the In feed card, keyed by what draws it.
   const feedUrls = new Map(); // key → object URL, or null while it bakes
   let alive = true;
@@ -120,6 +151,223 @@ export function mountStudio(target, { draft, onUse, onCancel = () => {}, footer 
   const focused = (c) => {
     const current = batchVariations(c, latestBatch(c));
     return c.variations.find((v) => v.id === state.focusId) || current[0] || c.variations[0] || null;
+  };
+
+  // ── Edit: the chosen image as layers ─────────────────────────────────────
+
+  const variationKey = (c, v) => `${c.id}|${v.id}|${v.seed}`;
+
+  /** The image Edit works on: the focused variation, else the draft's own photo. */
+  const editSource = () => {
+    const c = currentCreation();
+    if (c?.variations.length && state.run.status !== "loading") {
+      const v = focused(c);
+      return { key: variationKey(c, v), creation: c, variation: v };
+    }
+    if (draft.imageUrl && state.run.status !== "loading") return { key: "current" };
+    return null;
+  };
+  const canEdit = () => !!brandNow() && !!editSource();
+  const editEntry = () => (state.mode === "edit" && state.editKey ? entries.get(state.editKey) || null : null);
+  const edited = (key) => !!entries.get(key)?.history.length;
+
+  const measure = (url) =>
+    new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve({ w: img.naturalWidth || 1080, h: img.naturalHeight || 1080 });
+      img.onerror = () => resolve({ w: 1080, h: 1080 });
+      img.src = url;
+    });
+
+  // A variation, lifted into layers: the render split in two (background ·
+  // subject), and the headline and the logo exactly where the generator put
+  // them — re-expressed in the Image Studio's overlay geometry.
+  async function buildGenerated(key, c, v) {
+    const brand = brandNow();
+    const look = lookOf(brand, c.brief);
+    const format = formatById(c.brief.formatIds[0]);
+    const W = format.width;
+    const H = format.height;
+    const split = splitVisual(variationSvg({ creation: c, variation: v, formatId: format.id, brand: look }));
+    const resolved = resolveLayers(layersFor({ creation: c, formatId: format.id }), look);
+    const t = resolved.find((l) => l.type === "text" && l.content);
+    let text = null;
+    if (t) {
+      // The generator sets the block from the top of its box: find its middle.
+      const perLine = Math.max(1, Math.floor(t.w / (t.size * 0.55)));
+      const lines = Math.ceil(String(t.content).length / perLine);
+      const heightF = (lines * t.size * 1.2 * W) / H;
+      text = {
+        text: t.content,
+        color: t.color,
+        fontFamily: look.fonts?.find((f) => f.role === "heading")?.family || "Helvetica Neue",
+        bold: true,
+        sizeF: (t.size * W) / H,
+        boxWF: t.w,
+        align: t.align || "left",
+        band: !!t.band,
+        bandColor: t.bandColor,
+        xF: t.x + t.w / 2,
+        yF: t.y + Math.min(t.h, heightF) / 2,
+        hidden: !!t.hidden,
+      };
+    }
+    const lg = resolved.find((l) => l.type === "logo" && l.href);
+    let logo = null;
+    if (lg) {
+      const nat = await measure(lg.href);
+      const ratio = nat.h / nat.w;
+      // Contained in its slot, as the generator draws it.
+      const wF = Math.min(lg.w, (lg.h * H) / ratio / W);
+      const hF = (wF * ratio * W) / H;
+      logo = {
+        url: lg.href,
+        ratio,
+        box: { x: lg.x + lg.w / 2 - wF / 2, y: lg.y + lg.h / 2 - hF / 2, w: wF, h: hF },
+      };
+    }
+    const doc = generatedDoc({
+      key,
+      w: W,
+      h: H,
+      seeds: { seed: v.seed, bgSeed: v.bgSeed, subjectSeed: v.subjectSeed },
+      split,
+      backgroundUrl: svgToDataUrl(split.background),
+      subjectUrl: split.subject ? svgToDataUrl(split.subject.svg) : "",
+      text,
+      logo,
+    });
+    const subject = doc.layers.find((l) => l.kind === "subject");
+    if (subject) subject.srcW = split.subject.box.w;
+    sources.set(key, { creation: c, formatId: format.id, look });
+    return entryOf(doc);
+  }
+
+  async function openEdit() {
+    const src = editSource();
+    if (!src || !brandNow()) return;
+    editor.finishEditing();
+    if (state.editKey !== src.key) editor.reset();
+    state.mode = "edit";
+    state.editKey = src.key;
+    paint();
+    if (entries.has(src.key)) return;
+    try {
+      const entry =
+        src.key === "current"
+          ? entryOf(photoDoc({ key: "current", url: draft.imageUrl, ...(await measure(draft.imageUrl)) }))
+          : await buildGenerated(src.key, src.creation, src.variation);
+      entries.set(src.key, entry);
+    } catch (error) {
+      state.mode = "generate";
+      toast(error.message || "The layers couldn't be separated.", { variant: "error" });
+    }
+    paint();
+  }
+
+  function leaveEdit() {
+    editor.finishEditing();
+    state.mode = "generate";
+    paint();
+  }
+
+  // Redraw ONE part: new seeds for the background or the subject, the same
+  // render split again, and only that layer's picture replaced — its place,
+  // its size and everything above it untouched. The prompt steers what the
+  // subject is when it names one (the mock reads kinds, not prose).
+  async function redrawEntry(entry, kinds, prompt) {
+    const src = sources.get(entry.doc.key);
+    if (!src) throw new Error("This image can't be redrawn.");
+    const seeds = { ...entry.doc.seeds };
+    const fresh = () => Math.floor(Math.random() * 2 ** 31);
+    if (kinds.includes("background")) seeds.bgSeed = fresh();
+    if (kinds.includes("subject")) seeds.subjectSeed = fresh();
+    const c = src.creation;
+    const kindPrompt = prompt && subjectKindFor(prompt) !== "object" ? prompt : c.brief.prompt;
+    const split = splitVisual(
+      variationSvg({
+        creation: { ...c, brief: { ...c.brief, prompt: kindPrompt } },
+        variation: seeds,
+        formatId: src.formatId,
+        brand: src.look,
+      }),
+    );
+    const doc = entry.doc;
+    doc.seeds = seeds;
+    if (kinds.includes("background")) doc.layers.find(isBase).url = svgToDataUrl(split.background);
+    const subject = doc.layers.find((l) => l.kind === "subject");
+    if (kinds.includes("subject") && subject && split.subject) {
+      const b = split.subject.box;
+      const f = formatById(src.formatId);
+      subject.wF = subject.wF * (b.w / (subject.srcW || b.w));
+      subject.srcW = b.w;
+      subject.ratio = (b.h * f.height) / (b.w * f.width);
+      subject.url = svgToDataUrl(split.subject.svg);
+    }
+  }
+
+  /** An edited variation, baked — what Generate shows and In feed / Use take. Null while it bakes. */
+  function editedUrl(key) {
+    const entry = entries.get(key);
+    const sig = docSignature(entry.doc);
+    if (!editedUrls.has(sig)) {
+      editedUrls.set(sig, null);
+      bakeDoc(entry.doc)
+        .then((blob) => {
+          if (!alive) return;
+          editedUrls.set(sig, URL.createObjectURL(blob));
+          paint();
+        })
+        .catch(() => editedUrls.delete(sig));
+    }
+    return editedUrls.get(sig);
+  }
+
+  const editor = createEditor({
+    getEntry: editEntry,
+    brand: () => {
+      const brand = brandNow();
+      const c = currentCreation();
+      return brand ? lookOf(brand, c?.brief || state.brief) : null;
+    },
+    network: draft.network ? networkById(draft.network) : null,
+    shapes,
+    renderFeedPreview,
+    repaint: () => paint(),
+    redraw: redrawEntry,
+    toast,
+  });
+
+  // Generate | Edit — the Image Studio's two peer modes, as DS tabs in the header.
+  const paintModes = () => {
+    if (!modes) return;
+    const can = canEdit();
+    const edit = state.mode === "edit";
+    modes.innerHTML = toString(
+      html`<div class="ap-tabs imst-modes">
+        <div class="ap-tabs-nav" role="tablist" aria-label="Studio mode">
+          <button
+            type="button"
+            class="ap-tabs-tab${edit ? "" : " active"}"
+            role="tab"
+            aria-selected="${!edit}"
+            data-imst-mode="generate"
+          >
+            <span>Generate</span>
+          </button>
+          <button
+            type="button"
+            class="ap-tabs-tab${edit ? " active" : ""}${can ? "" : " disabled"}"
+            role="tab"
+            aria-selected="${edit}"
+            data-imst-mode="edit"
+            ${can ? "" : raw('disabled title="Generate an image first"')}
+          >
+            <span>Edit</span>
+          </button>
+        </div>
+      </div>`,
+    );
   };
 
   // ── Controls ───────────────────────────────────────────────────────────────
@@ -467,7 +715,8 @@ ${b.prompt}</textarea
   // draft writes, so text and logo sit exactly where they will. A shimmer the
   // time it takes to bake (first view of a variation only).
   const renderFeed = (brand, c, v, netLabel, regenerating) => {
-    const url = state.busy.has(v.id) ? null : feedUrl(brand, c, v);
+    const key = variationKey(c, v);
+    const url = state.busy.has(v.id) ? null : edited(key) ? editedUrl(key) : feedUrl(brand, c, v);
     return html`
       <div class="imst-feed">
         <p class="ap-caption imst-feed__note">How this post looks${netLabel ? ` on ${netLabel}` : " in the feed"}</p>
@@ -481,6 +730,23 @@ ${b.prompt}</textarea
         </div>
       </div>
     `;
+  };
+
+  // A variation edited in Edit shows AS EDITED here — its layers baked — so
+  // the tab you come back to and the image Use in draft sends agree.
+  const renderEdited = (brand, c, v, format) => {
+    const entry = entries.get(variationKey(c, v));
+    const url = editedUrl(variationKey(c, v));
+    const shape = { ...format, width: entry.doc.w, height: entry.doc.h };
+    return stageFrame(
+      shape,
+      html`${url
+          ? html`<img class="imst-edited" src="${url}" alt="The edited image" />`
+          : variationCanvas({ creation: c, variation: v, formatId: format.id, brand: lookOf(brand, c.brief) })}<span
+          class="ap-tag blue imst-stage2__badge"
+          ><span>Edited</span></span
+        >`,
+    );
   };
 
   const renderResults = (brand, c) => {
@@ -505,7 +771,11 @@ ${b.prompt}</textarea
           ><span class="ap-loader size-30"></span><span class="ap-body-bold">Regenerating…</span></span
         >`
       : "";
-    const stage = feedView ? renderFeed(brand, c, v, netLabel, regenerating) : null;
+    const stage = feedView
+      ? renderFeed(brand, c, v, netLabel, regenerating)
+      : !busy && edited(variationKey(c, v))
+        ? renderEdited(brand, c, v, format)
+        : null;
     return html`
       <div class="imst-canvas-area">
         <header class="imst-result-bar">
@@ -654,8 +924,25 @@ ${b.prompt}</textarea
 
   // Cancel · Generate (orange: the AI action) · Use in draft (the final one, primary).
   // Once there is a result, Generate steps back to "Generate again".
+  const useLabel = () => (draft.imageUrl ? "Replace the draft's image" : "Use in draft");
   const paintFooter = () => {
     if (!footer) return;
+    if (footerLeft) footerLeft.innerHTML = state.mode === "edit" ? toString(editor.footerLeft()) : "";
+    if (state.mode === "edit") {
+      const ready = !!editEntry() && !editor.isBusy();
+      footer.innerHTML = toString(html`
+        <button type="button" class="ap-button stroked grey" data-imst-action="cancel">Cancel</button>
+        <button
+          type="button"
+          class="ap-button primary blue${state.using ? " loading" : ""}"
+          data-imst-var="use"
+          ${state.using || !ready ? "disabled" : ""}
+        >
+          <i class="ap-icon-check" aria-hidden="true"></i><span>${useLabel()}</span>
+        </button>
+      `);
+      return;
+    }
     const c = currentCreation();
     const running = state.run.status === "loading";
     const result = !!(c && c.variations.length) && state.run.status !== "error";
@@ -679,8 +966,7 @@ ${b.prompt}</textarea
             data-imst-var="use"
             ${state.using || running ? "disabled" : ""}
           >
-            <i class="ap-icon-check" aria-hidden="true"></i
-            ><span>${draft.imageUrl ? "Replace the draft's image" : "Use in draft"}</span>
+            <i class="ap-icon-check" aria-hidden="true"></i><span>${useLabel()}</span>
           </button>`
         : ""}
     `);
@@ -700,15 +986,20 @@ ${b.prompt}</textarea
         }),
       );
       paintFooter();
+      paintModes();
       return;
     }
+    if (state.mode === "edit" && !canEdit()) state.mode = "generate";
     target.innerHTML = toString(
-      html`<div class="imst-studio imst-studio--draft">
-        ${renderControls(brand)}
-        <main class="imst-canvas-col">${renderCanvas(brand)}</main>
-      </div>`,
+      state.mode === "edit"
+        ? editor.render()
+        : html`<div class="imst-studio imst-studio--draft">
+            ${renderControls(brand)}
+            <main class="imst-canvas-col">${renderCanvas(brand)}</main>
+          </div>`,
     );
     paintFooter();
+    paintModes();
     hydrateAssets(target);
     restore();
   };
@@ -859,17 +1150,22 @@ ${b.prompt}</textarea
   async function useInDraft() {
     const brand = brandNow();
     const c = currentCreation();
-    const v = focused(c);
     state.using = true;
     paint();
     try {
-      const blob = await bake(brand, c, v);
-      const dataUrl = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = () => reject(reader.error);
-        reader.readAsDataURL(blob);
-      });
+      let dataUrl;
+      if (state.mode === "edit") dataUrl = await editor.bake();
+      else {
+        const v = focused(c);
+        const key = variationKey(c, v);
+        const blob = edited(key) ? await bakeDoc(entries.get(key).doc) : await bake(brand, c, v);
+        dataUrl = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () => reject(reader.error);
+          reader.readAsDataURL(blob);
+        });
+      }
       onUse?.(dataUrl);
     } catch (error) {
       state.using = false;
@@ -1144,6 +1440,13 @@ ${b.prompt}</textarea
         paint();
       }
     }),
+    delegate(root, "click", "[data-imst-mode]", (_e, el) => {
+      if (el.disabled || editor.isBusy()) return;
+      if (el.dataset.imstMode === "edit") openEdit();
+      else if (state.mode === "edit") leaveEdit();
+    }),
+    delegate(root, "click", "[data-imst-edit-undo]", () => editor.undo()),
+    editor.bind(target, { onFooterChange: () => paintFooter() }),
     delegate(root, "click", "[data-imst-var]", (_e, el) => {
       const c = currentCreation();
       const v = focused(c);
@@ -1154,10 +1457,13 @@ ${b.prompt}</textarea
       else if (a === "use") useInDraft();
     }),
   ];
+  // Escape unwinds Edit first (popover → crop → typing → selection); only then does it close.
+  onEscape?.(() => state.mode === "edit" && editor.escape());
   return () => {
     alive = false;
     state.abort?.abort();
     feedUrls.forEach((url) => url && URL.revokeObjectURL(url));
+    editedUrls.forEach((url) => url && URL.revokeObjectURL(url));
     offs.forEach((off) => off());
   };
 }

@@ -4,14 +4,14 @@
 // Playbook is the brand, the draft's network sets the shapes, and "Use in
 // draft" hands the finished PNG back to the caller — the draft.
 
-import { html } from "../lib/html.js?v=1377";
-import { openDialog } from "./dialog.js?v=1377";
-import { installMenus } from "./menu.js?v=1377";
-import { toast } from "./toast.js?v=1377";
-import { mountStudio } from "../views/studio.js?v=1377";
-import { DRAFT_NETWORK } from "../config/formats.js?v=1377";
-import { networkById } from "../config/networks.js?v=1377";
-import { getActiveBrandId } from "../state/store.js?v=1377";
+import { html } from "../lib/html.js?v=1381";
+import { openDialog } from "./dialog.js?v=1381";
+import { installMenus } from "./menu.js?v=1381";
+import { toast } from "./toast.js?v=1381";
+import { mountStudio } from "../views/studio.js?v=1381";
+import { DRAFT_NETWORK } from "../config/formats.js?v=1381";
+import { networkById } from "../config/networks.js?v=1381";
+import { getActiveBrandId } from "../state/store.js?v=1381";
 
 /**
  * @param {{ brandId?: string, network?: string, text?: string, imageUrl?: string,
@@ -38,13 +38,18 @@ export function openDraftStudio({
     subtitle: excerpt ? `“${excerpt.length > 110 ? excerpt.slice(0, 107).trimEnd() + "…" : excerpt}”` : "",
     size: "studio",
     body: html`<div class="imst imst-draft-host" data-imst-draft-host></div>`,
-    footer: html`<div class="ap-dialog-footer-right" data-imst-draft-foot></div>`,
+    headerAside: html`<div class="imst-dialog__modes" data-imst-draft-modes></div>`,
+    footer: html`<div class="ap-dialog-footer-left" data-imst-draft-foot-left></div>
+      <div class="ap-dialog-footer-right" data-imst-draft-foot></div>`,
     onMount(el, api) {
       const host = el.querySelector("[data-imst-draft-host]");
       const offMenus = installMenus(host);
       const offStudio = mountStudio(host, {
         draft: { brandId: brandId || getActiveBrandId(), network: net, text: excerpt, imageUrl, slides },
         footer: el.querySelector("[data-imst-draft-foot]"),
+        footerLeft: el.querySelector("[data-imst-draft-foot-left]"),
+        modes: el.querySelector("[data-imst-draft-modes]"),
+        onEscape: (fn) => (api.beforeEscape = fn),
         renderFeedPreview,
         onCancel: () => api.close(),
         onUse(dataUrl) {

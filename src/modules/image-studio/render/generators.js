@@ -9,8 +9,8 @@
 //         re-seeds one of the two without moving the other)
 //     id  a unique prefix for gradient / filter ids (four renders share a page)
 
-import { darken, inkOn, lighten, luminance, mix } from "./palette.js?v=1377";
-import { subjectDetail } from "./subjects.js?v=1377";
+import { darken, inkOn, lighten, luminance, mix } from "./palette.js?v=1381";
+import { subjectDetail } from "./subjects.js?v=1381";
 
 const n = (v) => Math.round(v * 10) / 10;
 const pick = (r, list) => list[Math.floor(r() * list.length) % list.length];
@@ -21,6 +21,14 @@ function rect(x, y, w, h, fill, extra = "") {
 function circle(cx, cy, rad, fill, extra = "") {
   return `<circle cx="${n(cx)}" cy="${n(cy)}" r="${n(rad)}" fill="${fill}" ${extra}/>`;
 }
+// Everything that belongs to the subject is wrapped in this marker — a <g> that
+// draws nothing by itself — so the editor can lift the subject off the
+// background as its own layer (render/split.js). Shadows, halos and eyes that
+// travel with the subject are marked too; a generator that draws no subject
+// (Big number, Quote…) simply has no subject layer.
+export const SUBJECT_PART = "data-imst-part";
+const part = (markup) => (markup ? `<g ${SUBJECT_PART}="subject">${markup}</g>` : "");
+
 // The subject: its silhouette in the generator's own treatment, then its inner
 // lines in a tone of that fill — lighter on a dark fill, darker on a light one.
 // `detail: false` for the treatments that ARE outlines (line art) or blur it away.
@@ -30,13 +38,13 @@ function subject(c, fill, extra = "", { detail = true } = {}) {
   // silhouette with the picture pasted on top.
   if (c.productHref) return productImage(c, 0.9);
   const base = `<path d="${c.subject.d}" fill="${fill}" fill-rule="evenodd" ${extra}/>`;
-  if (!detail) return base;
+  if (!detail) return part(base);
   const plain = /^#[0-9a-f]{6}$/i.test(fill);
   const tone = plain ? (luminance(fill) < 0.35 ? lighten(fill, 0.45) : darken(fill, 0.35)) : "#FFFFFF";
   const width = c.W * 0.006;
-  return (
+  return part(
     base +
-    `<path d="${subjectDetail(kind, cx, cy, s)}" fill="none" stroke="${tone}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round" opacity="${plain ? 0.9 : 0.55}"/>`
+      `<path d="${subjectDetail(kind, cx, cy, s)}" fill="none" stroke="${tone}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round" opacity="${plain ? 0.9 : 0.55}"/>`,
   );
 }
 function productImage(c, scale = 1) {
@@ -45,7 +53,9 @@ function productImage(c, scale = 1) {
   c.productDrawn = true;
   const { cx, cy, s } = c.subject;
   const size = s * scale;
-  return `<image href="${c.productHref}" x="${n(cx - size / 2)}" y="${n(cy - size / 2)}" width="${n(size)}" height="${n(size)}" preserveAspectRatio="xMidYMid meet"/>`;
+  return part(
+    `<image href="${c.productHref}" x="${n(cx - size / 2)}" y="${n(cy - size / 2)}" width="${n(size)}" height="${n(size)}" preserveAspectRatio="xMidYMid meet"/>`,
+  );
 }
 function grain(c, opacity = 0.18) {
   return (
@@ -93,14 +103,16 @@ function lineArt(c) {
   return (
     rect(0, 0, W, H, lighten(p.background, 0.5)) +
     lines +
-    circle(c.subject.cx + c.subject.s * 0.4, c.subject.cy - c.subject.s * 0.45, W * 0.03, p.accent) +
+    part(circle(c.subject.cx + c.subject.s * 0.4, c.subject.cy - c.subject.s * 0.45, W * 0.03, p.accent)) +
     subject(
       c,
       "none",
       `stroke="${p.text}" stroke-width="${W * 0.006}" stroke-linejoin="round" stroke-linecap="round"`,
       { detail: false },
     ) +
-    `<path d="${subjectDetail(c.subject.kind, c.subject.cx, c.subject.cy, c.subject.s)}" fill="none" stroke="${p.text}" stroke-width="${W * 0.004}" stroke-linecap="round"/>`
+    part(
+      `<path d="${subjectDetail(c.subject.kind, c.subject.cx, c.subject.cy, c.subject.s)}" fill="none" stroke="${p.text}" stroke-width="${W * 0.004}" stroke-linecap="round"/>`,
+    )
   );
 }
 
@@ -118,7 +130,7 @@ function editorial(c) {
   return (
     rect(0, 0, W, H, mix(p.background, p.secondary, 0.25)) +
     shapes +
-    circle(c.subject.cx, c.subject.cy, c.subject.s * 0.62, p.accent, 'opacity="0.9"') +
+    part(circle(c.subject.cx, c.subject.cy, c.subject.s * 0.62, p.accent, 'opacity="0.9"')) +
     subject(c, p.text) +
     productImage(c, 0.7) +
     grain(c, 0.22)
@@ -188,7 +200,9 @@ function clay(c) {
     `<defs>${blobs}${blur(c, "soft", W * 0.012)}<linearGradient id="${c.id}-bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${lighten(p.background, 0.3)}"/><stop offset="1" stop-color="${mix(p.background, p.secondary, 0.18)}"/></linearGradient></defs>` +
     rect(0, 0, W, H, `url(#${c.id}-bg)`) +
     pills +
-    `<ellipse cx="${c.subject.cx}" cy="${n(c.subject.cy + c.subject.s * 0.52)}" rx="${n(c.subject.s * 0.42)}" ry="${n(c.subject.s * 0.08)}" fill="#000" opacity="0.14" filter="url(#${c.id}-soft)"/>` +
+    part(
+      `<ellipse cx="${c.subject.cx}" cy="${n(c.subject.cy + c.subject.s * 0.52)}" rx="${n(c.subject.s * 0.42)}" ry="${n(c.subject.s * 0.08)}" fill="#000" opacity="0.14" filter="url(#${c.id}-soft)"/>`,
+    ) +
     subject(
       c,
       `url(#${c.id}-c0)`,
@@ -206,10 +220,14 @@ function glossy(c) {
     `<linearGradient id="${c.id}-body" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${lighten(p.accent, 0.4)}"/><stop offset="0.5" stop-color="${p.accent}"/><stop offset="1" stop-color="${darken(p.accent, 0.45)}"/></linearGradient>` +
     `${blur(c, "soft", W * 0.02)}</defs>` +
     rect(0, 0, W, H, `url(#${c.id}-bg)`) +
-    `<ellipse cx="${cx}" cy="${n(cy + s * 0.55)}" rx="${n(s * 0.5)}" ry="${n(s * 0.07)}" fill="#000" opacity="0.4" filter="url(#${c.id}-soft)"/>` +
+    part(
+      `<ellipse cx="${cx}" cy="${n(cy + s * 0.55)}" rx="${n(s * 0.5)}" ry="${n(s * 0.07)}" fill="#000" opacity="0.4" filter="url(#${c.id}-soft)"/>`,
+    ) +
     subject(c, `url(#${c.id}-body)`) +
     productImage(c, 0.8) +
-    `<ellipse cx="${n(cx - s * 0.12)}" cy="${n(cy - s * 0.2)}" rx="${n(s * 0.07)}" ry="${n(s * 0.2)}" fill="#FFF" opacity="0.55" transform="rotate(-20 ${n(cx)} ${n(cy)})"/>` +
+    part(
+      `<ellipse cx="${n(cx - s * 0.12)}" cy="${n(cy - s * 0.2)}" rx="${n(s * 0.07)}" ry="${n(s * 0.2)}" fill="#FFF" opacity="0.55" transform="rotate(-20 ${n(cx)} ${n(cy)})"/>`,
+    ) +
     `<g transform="translate(0 ${n(cy * 2 + s * 1.1)}) scale(1 -1)" opacity="0.12">${subject(c, `url(#${c.id}-body)`)}</g>`
   );
 }
@@ -267,8 +285,10 @@ function toy(c) {
     rect(0, 0, W, H, lighten(p.accent, 0.75)) +
     blocks +
     subject(c, lighten(p.primary, 0.2), stroke) +
-    circle(c.subject.cx - c.subject.s * 0.08, c.subject.cy - c.subject.s * 0.05, W * 0.018, "#FFF", stroke) +
-    circle(c.subject.cx + c.subject.s * 0.08, c.subject.cy - c.subject.s * 0.05, W * 0.018, "#FFF", stroke)
+    part(
+      circle(c.subject.cx - c.subject.s * 0.08, c.subject.cy - c.subject.s * 0.05, W * 0.018, "#FFF", stroke) +
+        circle(c.subject.cx + c.subject.s * 0.08, c.subject.cy - c.subject.s * 0.05, W * 0.018, "#FFF", stroke),
+    )
   );
 }
 
@@ -305,7 +325,9 @@ function packshot(c) {
   return (
     `<defs><linearGradient id="${c.id}-sweep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${lighten(p.background, 0.2)}"/><stop offset="0.7" stop-color="${mix(p.background, p.secondary, 0.12)}"/><stop offset="1" stop-color="${lighten(p.background, 0.4)}"/></linearGradient>${blur(c, "soft", W * 0.015)}</defs>` +
     rect(0, 0, W, H, `url(#${c.id}-sweep)`) +
-    `<ellipse cx="${cx}" cy="${n(cy + s * 0.52)}" rx="${n(s * 0.4)}" ry="${n(s * 0.05)}" fill="#000" opacity="0.22" filter="url(#${c.id}-soft)"/>` +
+    part(
+      `<ellipse cx="${cx}" cy="${n(cy + s * 0.52)}" rx="${n(s * 0.4)}" ry="${n(s * 0.05)}" fill="#000" opacity="0.22" filter="url(#${c.id}-soft)"/>`,
+    ) +
     (c.productHref ? productImage(c, 1.05) : subject(c, p.primary))
   );
 }
@@ -458,7 +480,7 @@ function collage(c) {
     rect(0, 0, W, H, "#EFE7D6") +
     grain(c, 0.2) +
     scraps +
-    circle(c.subject.cx, c.subject.cy, c.subject.s * 0.55, `url(#${c.id}-dots)`) +
+    part(circle(c.subject.cx, c.subject.cy, c.subject.s * 0.55, `url(#${c.id}-dots)`)) +
     subject(c, p.primary, `filter="url(#${c.id}-drop)"`)
   );
 }
