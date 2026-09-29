@@ -15,30 +15,30 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, "Refine" to iterate in place, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=1391";
-import { delegate } from "../lib/delegate.js?v=1391";
-import { hashString } from "../lib/prng.js?v=1391";
-import { renderEmpty } from "../ui/empty.js?v=1391";
-import { field, preserveFocus, textInput } from "../ui/fields.js?v=1391";
-import { toast } from "../ui/toast.js?v=1391";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1391";
-import { styleThumb } from "../ui/style-thumb.js?v=1391";
-import { openDialog } from "../ui/dialog.js?v=1391";
-import { menu } from "../ui/menu.js?v=1391";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1391";
-import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1391";
-import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1391";
-import { networkById } from "../config/networks.js?v=1391";
-import { copyService, imageGenerationService } from "../services/index.js?v=1391";
-import { unbranded } from "../state/playbook-brand.js?v=1391";
-import { resolveLayers } from "../render/layout.js?v=1391";
-import { svgToDataUrl } from "../render/visual.js?v=1391";
-import { splitVisual } from "../render/split.js?v=1391";
-import { bakeDoc } from "../render/edit-export.js?v=1391";
-import { subjectKindFor } from "../render/subjects.js?v=1391";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1391";
-import { createEditor } from "./edit/editor.js?v=1391";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1391";
+import { html, raw, toString } from "../lib/html.js?v=1392";
+import { delegate } from "../lib/delegate.js?v=1392";
+import { hashString } from "../lib/prng.js?v=1392";
+import { renderEmpty } from "../ui/empty.js?v=1392";
+import { field, preserveFocus, textInput } from "../ui/fields.js?v=1392";
+import { toast } from "../ui/toast.js?v=1392";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1392";
+import { styleThumb } from "../ui/style-thumb.js?v=1392";
+import { openDialog } from "../ui/dialog.js?v=1392";
+import { menu } from "../ui/menu.js?v=1392";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1392";
+import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1392";
+import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1392";
+import { networkById } from "../config/networks.js?v=1392";
+import { copyService, imageGenerationService } from "../services/index.js?v=1392";
+import { unbranded } from "../state/playbook-brand.js?v=1392";
+import { resolveLayers } from "../render/layout.js?v=1392";
+import { svgToDataUrl } from "../render/visual.js?v=1392";
+import { splitVisual } from "../render/split.js?v=1392";
+import { bakeDoc } from "../render/edit-export.js?v=1392";
+import { subjectKindFor } from "../render/subjects.js?v=1392";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1392";
+import { createEditor } from "./edit/editor.js?v=1392";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1392";
 import {
   canEditBrand,
   forgetOneOffStyle,
@@ -49,15 +49,15 @@ import {
   getStylesForBrand,
   registerOneOffStyle,
   subscribe,
-} from "../state/store.js?v=1391";
-import { discardOneOff, oneOffStyleFrom, saveOneOffToPlaybook } from "../state/style-actions.js?v=1391";
+} from "../state/store.js?v=1392";
+import { discardOneOff, oneOffStyleFrom, saveOneOffToPlaybook } from "../state/style-actions.js?v=1392";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1391";
+} from "../state/creation-actions.js?v=1392";
 
 // The presets offered first when the brand has few styles of its own — one per
 // family, the ones that read best at thumbnail size.
@@ -1007,8 +1007,7 @@ ${b.prompt}</textarea
         </div>
       </div>
       <p class="ap-body imst-canvas-area__caption">
-        <span class="ap-body-bold">The draft's ${draft.slides > 1 ? "carousel" : "image"} as it is.</span>
-        Pick a style or describe a new one — a new image ${draft.slides > 1 ? "replaces the carousel" : "replaces it"}
+        Pick a style or describe a new one — a new image replaces the draft's ${draft.slides > 1 ? "carousel" : "image"}
         only when you choose.
       </p>
     </div>
