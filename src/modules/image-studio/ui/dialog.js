@@ -5,7 +5,7 @@
 // openDialog() returns { el, close, setBody }. Escape and the backdrop close it;
 // focus moves in on open and back to the opener on close.
 
-import { html, toString } from "../lib/html.js?v=1392";
+import { html, toString } from "../lib/html.js?v=1393";
 
 let open = [];
 
@@ -73,18 +73,18 @@ export function openDialog({
   const titleId = `imst-dlg-${Math.random().toString(36).slice(2, 8)}`;
   el.setAttribute("aria-labelledby", titleId);
   el.innerHTML = toString(html`
-    <div class="ap-dialog-header${headerAside ? " imst-dialog__header--aside" : ""}">
+    <div class="ap-dialog-header imst-dialog__header${headerAside ? " imst-dialog__header--aside" : ""}">
       <div class="imst-dialog__heading">
         <h2 class="ap-dialog-title" id="${titleId}">${title}</h2>
         ${subtitle ? html`<span class="ap-dialog-subtitle">${subtitle}</span>` : ""}
       </div>
       ${headerAside || ""}
     </div>
-    <button type="button" class="ap-dialog-close" data-imst-dialog-close aria-label="Close">
+    <button type="button" class="ap-dialog-close imst-dialog__close" data-imst-dialog-close aria-label="Close">
       <i class="ap-icon-close" aria-hidden="true"></i>
     </button>
     <div class="ap-dialog-content imst-dialog__content" data-imst-dialog-body>${body}</div>
-    ${footer ? html`<div class="ap-dialog-footer" data-imst-dialog-footer>${footer}</div>` : ""}
+    ${footer ? html`<div class="ap-dialog-footer imst-dialog__footer" data-imst-dialog-footer>${footer}</div>` : ""}
   `);
   document.body.append(backdrop, el);
   if (!open.length) document.addEventListener("keydown", onKey, true);

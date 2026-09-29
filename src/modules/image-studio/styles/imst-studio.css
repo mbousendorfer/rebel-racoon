@@ -801,11 +801,38 @@
   flex-direction: column;
 }
 
+/* The studio is a work surface, not a form: the DS dialog's airy defaults
+ * (32px header, 24/32px content, 16/32px footer) cost it a tenth of the height
+ * and width it has. One step down the spacing ladder everywhere (2026-09-29),
+ * on the module's own classes so the DS ones stay untouched. */
+.imst-dialog--studio .imst-dialog__header {
+  padding: var(--ref-spacing-sm) var(--ref-spacing-md) 0;
+  /* Clears the close button: its inset + its 36px + a breath. */
+  padding-right: calc(var(--ref-spacing-md) + var(--ref-spacing-xl) + var(--ref-spacing-xxxs));
+}
+
+.imst-dialog--studio .imst-dialog__close {
+  top: var(--ref-spacing-xs);
+  right: var(--ref-spacing-xs);
+}
+
 .imst-dialog--studio .imst-dialog__content {
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
-  padding-top: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-md) var(--ref-spacing-sm);
+}
+
+.imst-dialog--studio .imst-dialog__footer {
+  padding: var(--ref-spacing-xs) var(--ref-spacing-md);
+}
+
+.imst-draft-host .imst-controls__scroll {
+  gap: var(--ref-spacing-md);
+}
+
+.imst-draft-host .imst-canvas-col {
+  padding: var(--ref-spacing-sm);
 }
 
 .imst-draft-host {
@@ -816,6 +843,7 @@
 
 .imst-draft-host .imst-studio {
   height: 100%;
+  gap: var(--ref-spacing-sm);
 }
 
 /* The draft's current image keeps its own ratio: the frame hugs the picture. */
