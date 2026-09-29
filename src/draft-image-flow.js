@@ -16,17 +16,17 @@
 // The two reads from the post take as long as the real calls (4–8 s), so both
 // start the moment the flow does and are usually back before they are needed.
 
-import * as inlineQuestion from "./inline-question.js?v=1398";
-import { finishPending, postAssistantMessage, postUserTurn, startPending } from "./assistant.js?v=1398";
-import { attachImageToDraft, getPosts, updatePostContent } from "./posts-store.js?v=1398";
-import { getSessionById } from "./sessions-store.js?v=1398";
-import { escapeHtml } from "./utils.js?v=1398";
+import * as inlineQuestion from "./inline-question.js?v=1399";
+import { finishPending, postAssistantMessage, postUserTurn, startPending } from "./assistant.js?v=1399";
+import { attachImageToDraft, getPosts, updatePostContent } from "./posts-store.js?v=1399";
+import { getSessionById } from "./sessions-store.js?v=1399";
+import { escapeHtml } from "./utils.js?v=1399";
 import {
   generateQuickImage,
   quickImageChoices,
   suggestImageLine,
   suggestImageSubject,
-} from "./modules/image-studio/index.js?v=1398";
+} from "./modules/image-studio/index.js?v=1399";
 
 const STUDIO = "__studio";
 const NO_TEXT = "__none";
@@ -74,12 +74,11 @@ export function startDraftImageFlow(sessionId, postId, { openStudio, repaint }) 
       subtitle: `In ${escapeHtml(choices.brandName)}'s colours.`,
       stepLabel: `1 of ${total}`,
       variant: "cards",
-      cardCols: 3,
       skipLabel: "Not now",
       items: choices.styles.map((s) => ({
         value: s.id,
         label: escapeHtml(s.label),
-        caption: s.mine ? "Your Playbook's style" : "",
+        caption: s.mine ? "Your style" : "",
         preview: `<img class="draft-image-flow__style" src="${s.thumbUrl}" alt="" />`,
       })),
       footerAction: { value: STUDIO, label: "More options in the studio", icon: "ap-icon-image" },

@@ -20,15 +20,15 @@
 //     connectAccounts(ids) then fires onConfirm with the accounts that flipped.
 //   - Cancel / Esc / backdrop / close-X dismiss without connecting anything.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1398";
-import { escapeHtml as esc } from "../utils.js?v=1398";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1399";
+import { escapeHtml as esc } from "../utils.js?v=1399";
 import {
   getConnectableAccounts,
   connectAccounts,
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
   BRAND_INITIALS,
-} from "../social-profiles.js?v=1398";
+} from "../social-profiles.js?v=1399";
 
 const MODAL_ID = "connect-account";
 
