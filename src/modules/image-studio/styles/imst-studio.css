@@ -837,3 +837,40 @@
   max-height: 100cqh;
   object-fit: contain;
 }
+
+/* ── In feed: the result inside the draft's own card ────────────────────── */
+.imst-view-toggle {
+  display: flex;
+  gap: var(--ref-spacing-xxs);
+  margin-right: var(--ref-spacing-xs);
+}
+
+/* Its natural height, unlike the stage: a whole post is taller than the
+   canvas, so the column scrolls rather than the card sliding under the strip. */
+.imst-feed {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+}
+
+.imst-feed__note {
+  margin: 0;
+  color: var(--ref-color-grey-80);
+}
+
+/* The Drafts board's own width: the post wraps as it does there. */
+.imst-feed__card {
+  width: min(100%, 540px);
+}
+
+.imst-feed__pending {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 5;
+  border-radius: var(--app-radius-card);
+  background-color: var(--ref-color-white);
+}

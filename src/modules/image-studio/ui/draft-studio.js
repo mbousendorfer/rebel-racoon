@@ -4,20 +4,31 @@
 // Playbook is the brand, the draft's network sets the shapes, and "Use in
 // draft" hands the finished PNG back to the caller — the draft.
 
-import { html } from "../lib/html.js?v=1375";
-import { openDialog } from "./dialog.js?v=1375";
-import { installMenus } from "./menu.js?v=1375";
-import { toast } from "./toast.js?v=1375";
-import { mountStudio } from "../views/studio.js?v=1375";
-import { DRAFT_NETWORK } from "../config/formats.js?v=1375";
-import { networkById } from "../config/networks.js?v=1375";
-import { getActiveBrandId } from "../state/store.js?v=1375";
+import { html } from "../lib/html.js?v=1377";
+import { openDialog } from "./dialog.js?v=1377";
+import { installMenus } from "./menu.js?v=1377";
+import { toast } from "./toast.js?v=1377";
+import { mountStudio } from "../views/studio.js?v=1377";
+import { DRAFT_NETWORK } from "../config/formats.js?v=1377";
+import { networkById } from "../config/networks.js?v=1377";
+import { getActiveBrandId } from "../state/store.js?v=1377";
 
 /**
  * @param {{ brandId?: string, network?: string, text?: string, imageUrl?: string,
- *           slides?: number, onUse: (dataUrl: string) => void }} draft
+ *           slides?: number, onUse: (dataUrl: string) => void,
+ *           renderFeedPreview?: (imageUrl: string) => string }} draft
+ * `renderFeedPreview` is the draft's own card with another image — the shell's
+ * markup, handed in because the module imports no app component.
  */
-export function openDraftStudio({ brandId, network, text = "", imageUrl = "", slides = 0, onUse }) {
+export function openDraftStudio({
+  brandId,
+  network,
+  text = "",
+  imageUrl = "",
+  slides = 0,
+  onUse,
+  renderFeedPreview = null,
+}) {
   const net = DRAFT_NETWORK[network] || null;
   const label = net ? networkById(net).label : "";
   const excerpt = String(text).replace(/\s+/g, " ").trim();
@@ -34,6 +45,7 @@ export function openDraftStudio({ brandId, network, text = "", imageUrl = "", sl
       const offStudio = mountStudio(host, {
         draft: { brandId: brandId || getActiveBrandId(), network: net, text: excerpt, imageUrl, slides },
         footer: el.querySelector("[data-imst-draft-foot]"),
+        renderFeedPreview,
         onCancel: () => api.close(),
         onUse(dataUrl) {
           onUse(dataUrl);

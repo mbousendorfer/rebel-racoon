@@ -15,32 +15,32 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, "Refine" to iterate in place, earlier runs underneath
 
-import { html, toString } from "../lib/html.js?v=1375";
-import { delegate } from "../lib/delegate.js?v=1375";
-import { hashString } from "../lib/prng.js?v=1375";
-import { renderEmpty } from "../ui/empty.js?v=1375";
-import { preserveFocus } from "../ui/fields.js?v=1375";
-import { toast } from "../ui/toast.js?v=1375";
-import { hydrateAssets, logoUrl } from "../ui/asset.js?v=1375";
-import { styleThumb } from "../ui/style-thumb.js?v=1375";
-import { openDialog } from "../ui/dialog.js?v=1375";
-import { menu } from "../ui/menu.js?v=1375";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1375";
-import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1375";
-import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1375";
-import { networkById } from "../config/networks.js?v=1375";
-import { copyService, imageGenerationService } from "../services/index.js?v=1375";
-import { unbranded } from "../state/playbook-brand.js?v=1375";
-import { resolveLayers } from "../render/layout.js?v=1375";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1375";
-import { getBrand, getCreation, getProducts, getStyle, getStylesForBrand, subscribe } from "../state/store.js?v=1375";
+import { html, raw, toString } from "../lib/html.js?v=1377";
+import { delegate } from "../lib/delegate.js?v=1377";
+import { hashString } from "../lib/prng.js?v=1377";
+import { renderEmpty } from "../ui/empty.js?v=1377";
+import { preserveFocus } from "../ui/fields.js?v=1377";
+import { toast } from "../ui/toast.js?v=1377";
+import { hydrateAssets, logoUrl } from "../ui/asset.js?v=1377";
+import { styleThumb } from "../ui/style-thumb.js?v=1377";
+import { openDialog } from "../ui/dialog.js?v=1377";
+import { menu } from "../ui/menu.js?v=1377";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1377";
+import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1377";
+import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1377";
+import { networkById } from "../config/networks.js?v=1377";
+import { copyService, imageGenerationService } from "../services/index.js?v=1377";
+import { unbranded } from "../state/playbook-brand.js?v=1377";
+import { resolveLayers } from "../render/layout.js?v=1377";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1377";
+import { getBrand, getCreation, getProducts, getStyle, getStylesForBrand, subscribe } from "../state/store.js?v=1377";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1375";
+} from "../state/creation-actions.js?v=1377";
 
 // The presets offered first when the brand has few styles of its own — one per
 // family, the ones that read best at thumbnail size.
@@ -76,9 +76,13 @@ const lookOf = (brand, brief) => (brief?.useBrand === false ? unbranded(brand) :
 
 /**
  * @param {HTMLElement} target
- * @param {{ draft: { brandId, network, text, imageUrl, slides }, onUse: (dataUrl) => void }} opts
+ * @param {{ draft: { brandId, network, text, imageUrl, slides }, onUse: (dataUrl) => void,
+ *           renderFeedPreview?: (imageUrl: string) => string }} opts
+ * With `renderFeedPreview` (the draft's own card, from the shell), a result can
+ * be seen In feed: the baked PNG — exactly what Use in draft puts in the post —
+ * inside that card.
  */
-export function mountStudio(target, { draft, onUse, onCancel = () => {}, footer = null }) {
+export function mountStudio(target, { draft, onUse, onCancel = () => {}, footer = null, renderFeedPreview = null }) {
   // The dialog's footer holds the final actions (DS: right-aligned); clicks are
   // delegated from the dialog so body and footer share one set of handlers.
   const root = target.closest(".ap-dialog") || target;
@@ -95,7 +99,10 @@ export function mountStudio(target, { draft, onUse, onCancel = () => {}, footer 
     warning: "",
     error: "",
     abort: null,
+    view: "image", // image | feed — how a result is shown
   };
+  // The PNG each variation bakes to for the In feed card, keyed by what draws it.
+  const feedUrls = new Map(); // key → object URL, or null while it bakes
   let alive = true;
 
   const brandChanged = (brand) => {
@@ -456,6 +463,26 @@ ${b.prompt}</textarea
     </div>
   `;
 
+  // The draft's own card with the baked variation in it — the same PNG Use in
+  // draft writes, so text and logo sit exactly where they will. A shimmer the
+  // time it takes to bake (first view of a variation only).
+  const renderFeed = (brand, c, v, netLabel, regenerating) => {
+    const url = state.busy.has(v.id) ? null : feedUrl(brand, c, v);
+    return html`
+      <div class="imst-feed">
+        <p class="ap-caption imst-feed__note">How this post looks${netLabel ? ` on ${netLabel}` : " in the feed"}</p>
+        <div class="imst-feed__card">
+          ${url
+            ? raw(renderFeedPreview(url))
+            : html`<div class="imst-feed__pending" aria-busy="true">
+                <span class="imst-shimmer"></span>${regenerating ||
+                html`<span class="imst-stage2__status"><span class="ap-loader size-30"></span></span>`}
+              </div>`}
+        </div>
+      </div>
+    `;
+  };
+
   const renderResults = (brand, c) => {
     const format = formatById(c.brief.formatIds[0]);
     const v = focused(c);
@@ -469,6 +496,16 @@ ${b.prompt}</textarea
     const index = strip.findIndex((e) => e.x.id === v.id);
     const busy = state.busy.has(v.id);
     const style = c.styleSnapshot || getStyle(c.brief.styleId);
+    // null: no card to preview in (the studio opened without one).
+    const feedView = renderFeedPreview ? state.view === "feed" : null;
+    const net = draft.network ? networkById(draft.network) : null;
+    const netLabel = net?.label || "";
+    const regenerating = busy
+      ? html`<span class="imst-stage2__status"
+          ><span class="ap-loader size-30"></span><span class="ap-body-bold">Regenerating…</span></span
+        >`
+      : "";
+    const stage = feedView ? renderFeed(brand, c, v, netLabel, regenerating) : null;
     return html`
       <div class="imst-canvas-area">
         <header class="imst-result-bar">
@@ -481,6 +518,22 @@ ${b.prompt}</textarea
             >
           </div>
           <div class="imst-result-bar__actions">
+            ${feedView !== null
+              ? html`<div class="imst-view-toggle" role="group" aria-label="Show the result">
+                  <button type="button" class="ap-filter-chip" data-imst-view="image" aria-pressed="${!feedView}">
+                    <i class="ap-icon-image" aria-hidden="true"></i>Image
+                  </button>
+                  <button
+                    type="button"
+                    class="ap-filter-chip"
+                    data-imst-view="feed"
+                    aria-pressed="${feedView}"
+                    title="${netLabel ? `Preview on ${netLabel}` : "Preview in the feed"}"
+                  >
+                    ${net ? html`<i class="${net.icon}" aria-hidden="true"></i>` : ""}In feed
+                  </button>
+                </div>`
+              : ""}
             <button
               type="button"
               class="ap-icon-button transparent grey"
@@ -502,18 +555,15 @@ ${b.prompt}</textarea
             </button>
           </div>
         </header>
-        ${stageFrame(
+        ${stage ||
+        stageFrame(
           format,
           html`${variationCanvas({
             creation: c,
             variation: v,
             formatId: format.id,
             brand: lookOf(brand, c.brief),
-          })}${busy
-            ? html`<span class="imst-stage2__status"
-                ><span class="ap-loader size-30"></span><span class="ap-body-bold">Regenerating…</span></span
-              >`
-            : ""}`,
+          })}${regenerating}`,
         )}
         ${strip.length
           ? html` <div class="imst-filmstrip" role="listbox" aria-label="Variations" data-imst-strip>
@@ -770,21 +820,50 @@ ${b.prompt}</textarea
     paint();
   }
 
+  /** A variation as the PNG the draft gets: image, text and logo baked. */
+  function bake(brand, c, v) {
+    const f = formatById(c.brief.formatIds[0]);
+    return toPngBlob({
+      svg: variationSvg({ creation: c, variation: v, formatId: f.id, brand: lookOf(brand, c.brief) }),
+      width: f.width,
+      height: f.height,
+      layers: resolveLayers(layersFor({ creation: c, formatId: f.id }), lookOf(brand, c.brief)),
+    });
+  }
+
+  const feedKey = (brand, c, v) =>
+    `${c.id}|${v.id}|${v.seed}|${c.brief.formatIds[0]}|${c.brief.useBrand !== false}|${brand.id}`;
+
+  /** The In feed image of a variation, baked once, then served from the cache. */
+  function feedUrl(brand, c, v) {
+    const key = feedKey(brand, c, v);
+    if (feedUrls.has(key)) return feedUrls.get(key);
+    feedUrls.set(key, null);
+    bake(brand, c, v)
+      .then((blob) => {
+        if (!alive) return;
+        feedUrls.set(key, URL.createObjectURL(blob));
+        paint();
+      })
+      .catch(() => {
+        feedUrls.delete(key);
+        if (!alive) return;
+        state.view = "image";
+        toast("The feed preview couldn't be drawn.", { variant: "error" });
+        paint();
+      });
+    return null;
+  }
+
   /** Draft mode: the chosen variation, text and logo baked, into the post. */
   async function useInDraft() {
     const brand = brandNow();
     const c = currentCreation();
     const v = focused(c);
-    const f = formatById(c.brief.formatIds[0]);
     state.using = true;
     paint();
     try {
-      const blob = await toPngBlob({
-        svg: variationSvg({ creation: c, variation: v, formatId: f.id, brand: lookOf(brand, c.brief) }),
-        width: f.width,
-        height: f.height,
-        layers: resolveLayers(layersFor({ creation: c, formatId: f.id }), lookOf(brand, c.brief)),
-      });
+      const blob = await bake(brand, c, v);
       const dataUrl = await new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result);
@@ -1027,6 +1106,11 @@ ${b.prompt}</textarea
       state.warning = "";
       paint();
     }),
+    delegate(target, "click", "[data-imst-view]", (_e, el) => {
+      state.view = el.dataset.imstView === "feed" ? "feed" : "image";
+      paint();
+      target.querySelector(`[data-imst-view="${state.view}"]`)?.focus({ preventScroll: true });
+    }),
     delegate(target, "click", "[data-imst-focus]", (_e, el) => {
       state.focusId = el.dataset.imstFocus;
       paint();
@@ -1073,6 +1157,7 @@ ${b.prompt}</textarea
   return () => {
     alive = false;
     state.abort?.abort();
+    feedUrls.forEach((url) => url && URL.revokeObjectURL(url));
     offs.forEach((off) => off());
   };
 }

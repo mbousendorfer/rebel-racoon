@@ -980,3 +980,30 @@
 .posts__rewrite-menu[hidden] {
   display: none;
 }
+
+/* ── The draft as a picture: the Image Generator's "In feed" view ─────────
+   The same card the Drafts board draws, handed to the studio by
+   right-panel.js with the studio's image in it. The app's tooling around the
+   post (select, action stack, feedback strip, generation context, image
+   controls, character count, rewrite) is stripped: the preview shows the post
+   the network will show, not the app around it. */
+.posts__feed-preview .posts__row {
+  display: block;
+}
+
+.posts__feed-preview .posts__card-wrap {
+  width: 100%;
+}
+
+.posts__feed-preview .posts__row-check,
+.posts__feed-preview .posts__row-actions,
+.posts__feed-preview .posts__card-footrow,
+.posts__feed-preview .posts__gencontext-panel,
+.posts__feed-preview .posts__gencontext-check,
+.posts__feed-preview .posts__card-image-controls,
+.posts__feed-preview .posts__card-media-empty,
+.posts__feed-preview .posts__charcount,
+.posts__feed-preview .posts__rewrite,
+.posts__feed-preview .ap-infobox {
+  display: none;
+}
