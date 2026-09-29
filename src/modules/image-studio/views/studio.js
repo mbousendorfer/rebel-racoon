@@ -15,38 +15,38 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, "Refine" to iterate in place, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=1382";
-import { delegate } from "../lib/delegate.js?v=1382";
-import { hashString } from "../lib/prng.js?v=1382";
-import { renderEmpty } from "../ui/empty.js?v=1382";
-import { preserveFocus } from "../ui/fields.js?v=1382";
-import { toast } from "../ui/toast.js?v=1382";
-import { hydrateAssets, logoUrl } from "../ui/asset.js?v=1382";
-import { styleThumb } from "../ui/style-thumb.js?v=1382";
-import { openDialog } from "../ui/dialog.js?v=1382";
-import { menu } from "../ui/menu.js?v=1382";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1382";
-import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1382";
-import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1382";
-import { networkById } from "../config/networks.js?v=1382";
-import { copyService, imageGenerationService } from "../services/index.js?v=1382";
-import { unbranded } from "../state/playbook-brand.js?v=1382";
-import { resolveLayers } from "../render/layout.js?v=1382";
-import { svgToDataUrl } from "../render/visual.js?v=1382";
-import { splitVisual } from "../render/split.js?v=1382";
-import { bakeDoc } from "../render/edit-export.js?v=1382";
-import { subjectKindFor } from "../render/subjects.js?v=1382";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1382";
-import { createEditor } from "./edit/editor.js?v=1382";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1382";
-import { getBrand, getCreation, getProducts, getStyle, getStylesForBrand, subscribe } from "../state/store.js?v=1382";
+import { html, raw, toString } from "../lib/html.js?v=1383";
+import { delegate } from "../lib/delegate.js?v=1383";
+import { hashString } from "../lib/prng.js?v=1383";
+import { renderEmpty } from "../ui/empty.js?v=1383";
+import { preserveFocus } from "../ui/fields.js?v=1383";
+import { toast } from "../ui/toast.js?v=1383";
+import { hydrateAssets, logoUrl } from "../ui/asset.js?v=1383";
+import { styleThumb } from "../ui/style-thumb.js?v=1383";
+import { openDialog } from "../ui/dialog.js?v=1383";
+import { menu } from "../ui/menu.js?v=1383";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1383";
+import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1383";
+import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1383";
+import { networkById } from "../config/networks.js?v=1383";
+import { copyService, imageGenerationService } from "../services/index.js?v=1383";
+import { unbranded } from "../state/playbook-brand.js?v=1383";
+import { resolveLayers } from "../render/layout.js?v=1383";
+import { svgToDataUrl } from "../render/visual.js?v=1383";
+import { splitVisual } from "../render/split.js?v=1383";
+import { bakeDoc } from "../render/edit-export.js?v=1383";
+import { subjectKindFor } from "../render/subjects.js?v=1383";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1383";
+import { createEditor } from "./edit/editor.js?v=1383";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1383";
+import { getBrand, getCreation, getProducts, getStyle, getStylesForBrand, subscribe } from "../state/store.js?v=1383";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1382";
+} from "../state/creation-actions.js?v=1383";
 
 // The presets offered first when the brand has few styles of its own — one per
 // family, the ones that read best at thumbnail size.
@@ -396,9 +396,9 @@ export function mountStudio(
               >`}
           <div class="imst-ctl-brand__text">
             <span class="ap-body-bold">${brand.name}</span>
-            <span class="ap-caption"
-              >${on ? "This chat's Playbook · applied" : "Not applied — neutral colours, no logo"}</span
-            >
+            ${on
+              ? "" /* the logo, the colours and the switch already say it is applied */
+              : html`<span class="ap-caption">Not applied — neutral colours, no logo</span>`}
           </div>
           ${on
             ? html`<span
