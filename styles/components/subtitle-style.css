@@ -252,3 +252,17 @@
 .sub-preview--simple .sub-preview__line em {
   color: #ffffff;
 }
+
+/* ── Style pictures (draft-image-flow.js: "Generate an image" asked in chat) ── */
+/* The picker's preview slot is inline: widen it so the picture fills the card. */
+.analyse__card-preview:has(> .draft-image-flow__style) {
+  display: block;
+}
+
+.draft-image-flow__style {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: var(--app-radius-sm);
+}

@@ -230,3 +230,16 @@ export const STYLE_TEST_SUBJECTS = Object.freeze([
 ]);
 
 export const CUSTOM_STYLE_LIMITS = Object.freeze({ images: 10, presets: 5 });
+
+// The presets offered first when the brand has few styles of its own — one per
+// family, the ones that read best at thumbnail size. The studio's quick picks
+// and the chat's style question both start from these.
+export const QUICK_PRESETS = Object.freeze([
+  "preset-lifestyle",
+  "preset-clay",
+  "preset-flat",
+  "preset-big-number",
+  "preset-editorial",
+  "preset-packshot",
+  "preset-retro",
+]);
