@@ -8,23 +8,23 @@
 // composition" (+ framing, angle, layout). An optional style prompt. A test run
 // on three neutral subjects before saving. Saved FOR the active Playbook.
 
-import { html, toString } from "../lib/html.js?v=1385";
-import { delegate } from "../lib/delegate.js?v=1385";
-import { getPath } from "../../../router.js?v=1385";
-import { setTopbarActions } from "../../../components/topbar.js?v=1385";
-import { hashString, randomSeed } from "../lib/prng.js?v=1385";
-import { renderFrame } from "./frame.js?v=1385";
-import { renderEmpty } from "../ui/empty.js?v=1385";
-import { field, preserveFocus, slider, syncSlider, textArea, textInput } from "../ui/fields.js?v=1385";
-import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1385";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1385";
-import { toast } from "../ui/toast.js?v=1385";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1385";
-import { CUSTOM_STYLE_LIMITS, STYLE_TEST_SUBJECTS } from "../config/style-presets.js?v=1385";
-import { createStyle } from "../model/schema.js?v=1385";
-import { imageGenerationService } from "../services/index.js?v=1385";
-import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1385";
-import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1385";
+import { html, toString } from "../lib/html.js?v=1386";
+import { delegate } from "../lib/delegate.js?v=1386";
+import { getPath } from "../../../router.js?v=1386";
+import { setTopbarActions } from "../../../components/topbar.js?v=1386";
+import { hashString, randomSeed } from "../lib/prng.js?v=1386";
+import { renderFrame } from "./frame.js?v=1386";
+import { renderEmpty } from "../ui/empty.js?v=1386";
+import { field, preserveFocus, slider, syncSlider, textArea, textInput } from "../ui/fields.js?v=1386";
+import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1386";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1386";
+import { toast } from "../ui/toast.js?v=1386";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=1386";
+import { CUSTOM_STYLE_LIMITS, STYLE_TEST_SUBJECTS } from "../config/style-presets.js?v=1386";
+import { createStyle } from "../model/schema.js?v=1386";
+import { imageGenerationService } from "../services/index.js?v=1386";
+import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1386";
+import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1386";
 
 const FIDELITY = [
   { id: "essential", title: "Essential", body: "Colours, textures, strokes and mood." },

@@ -203,13 +203,6 @@
   padding: 0 var(--ref-spacing-xxs) var(--ref-spacing-xxs);
 }
 
-.imst-composer__hint {
-  margin-left: auto;
-  padding-right: var(--ref-spacing-xxs);
-  color: var(--ref-color-grey-80);
-  white-space: nowrap;
-}
-
 /* While a suggestion is on its way (4–8 s, like the real call): the field
  * shimmers behind its "Reading the post…" placeholder. */
 .imst-composer.is-suggesting {
