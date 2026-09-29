@@ -15,30 +15,30 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, "Refine" to iterate in place, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=1388";
-import { delegate } from "../lib/delegate.js?v=1388";
-import { hashString } from "../lib/prng.js?v=1388";
-import { renderEmpty } from "../ui/empty.js?v=1388";
-import { field, preserveFocus, textInput } from "../ui/fields.js?v=1388";
-import { toast } from "../ui/toast.js?v=1388";
-import { assetImg, hydrateAssets, logoUrl } from "../ui/asset.js?v=1388";
-import { styleThumb } from "../ui/style-thumb.js?v=1388";
-import { openDialog } from "../ui/dialog.js?v=1388";
-import { menu } from "../ui/menu.js?v=1388";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1388";
-import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1388";
-import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1388";
-import { networkById } from "../config/networks.js?v=1388";
-import { copyService, imageGenerationService } from "../services/index.js?v=1388";
-import { unbranded } from "../state/playbook-brand.js?v=1388";
-import { resolveLayers } from "../render/layout.js?v=1388";
-import { svgToDataUrl } from "../render/visual.js?v=1388";
-import { splitVisual } from "../render/split.js?v=1388";
-import { bakeDoc } from "../render/edit-export.js?v=1388";
-import { subjectKindFor } from "../render/subjects.js?v=1388";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1388";
-import { createEditor } from "./edit/editor.js?v=1388";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1388";
+import { html, raw, toString } from "../lib/html.js?v=1389";
+import { delegate } from "../lib/delegate.js?v=1389";
+import { hashString } from "../lib/prng.js?v=1389";
+import { renderEmpty } from "../ui/empty.js?v=1389";
+import { field, preserveFocus, textInput } from "../ui/fields.js?v=1389";
+import { toast } from "../ui/toast.js?v=1389";
+import { assetImg, hydrateAssets, logoUrl } from "../ui/asset.js?v=1389";
+import { styleThumb } from "../ui/style-thumb.js?v=1389";
+import { openDialog } from "../ui/dialog.js?v=1389";
+import { menu } from "../ui/menu.js?v=1389";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1389";
+import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1389";
+import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1389";
+import { networkById } from "../config/networks.js?v=1389";
+import { copyService, imageGenerationService } from "../services/index.js?v=1389";
+import { unbranded } from "../state/playbook-brand.js?v=1389";
+import { resolveLayers } from "../render/layout.js?v=1389";
+import { svgToDataUrl } from "../render/visual.js?v=1389";
+import { splitVisual } from "../render/split.js?v=1389";
+import { bakeDoc } from "../render/edit-export.js?v=1389";
+import { subjectKindFor } from "../render/subjects.js?v=1389";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1389";
+import { createEditor } from "./edit/editor.js?v=1389";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1389";
 import {
   canEditBrand,
   forgetOneOffStyle,
@@ -49,15 +49,15 @@ import {
   getStylesForBrand,
   registerOneOffStyle,
   subscribe,
-} from "../state/store.js?v=1388";
-import { discardOneOff, oneOffStyleFrom, saveOneOffToPlaybook } from "../state/style-actions.js?v=1388";
+} from "../state/store.js?v=1389";
+import { discardOneOff, oneOffStyleFrom, saveOneOffToPlaybook } from "../state/style-actions.js?v=1389";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1388";
+} from "../state/creation-actions.js?v=1389";
 
 // The presets offered first when the brand has few styles of its own — one per
 // family, the ones that read best at thumbnail size.
@@ -1120,11 +1120,35 @@ ${b.prompt}</textarea
     `);
   };
 
+  // Every paint rebuilds the body, and a rebuilt scroller starts at the top: a
+  // click low in the settings column threw the reader back to the prompt. So
+  // the scroll of each area that scrolls is read before and put back after —
+  // and the dialog's content box too, which a focus or a click can nudge.
+  const SCROLLERS = [".imst-controls__scroll", ".imst-canvas-col", ".imst-filmstrip", ".imst-layers__list"];
+  const keepScroll = () => {
+    const box = target.closest(".ap-dialog-content");
+    const saved = SCROLLERS.map((sel) => {
+      const el = target.querySelector(sel);
+      return el ? { sel, top: el.scrollTop, left: el.scrollLeft } : null;
+    }).filter(Boolean);
+    return () => {
+      saved.forEach(({ sel, top, left }) => {
+        const el = target.querySelector(sel);
+        if (el) {
+          el.scrollTop = top;
+          el.scrollLeft = left;
+        }
+      });
+      if (box) box.scrollTop = 0;
+    };
+  };
+
   const paint = () => {
     if (!alive) return;
     const brand = brandNow();
     if ((brand?.id || null) !== state.brandId) brandChanged(brand);
     const restore = preserveFocus(target);
+    const restoreScroll = keepScroll();
     if (!brand) {
       target.innerHTML = toString(
         renderEmpty({
@@ -1149,6 +1173,7 @@ ${b.prompt}</textarea
     paintFooter();
     paintModes();
     hydrateAssets(target);
+    restoreScroll();
     restore();
   };
 
