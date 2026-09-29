@@ -15,38 +15,38 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, "Refine" to iterate in place, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=1381";
-import { delegate } from "../lib/delegate.js?v=1381";
-import { hashString } from "../lib/prng.js?v=1381";
-import { renderEmpty } from "../ui/empty.js?v=1381";
-import { preserveFocus } from "../ui/fields.js?v=1381";
-import { toast } from "../ui/toast.js?v=1381";
-import { hydrateAssets, logoUrl } from "../ui/asset.js?v=1381";
-import { styleThumb } from "../ui/style-thumb.js?v=1381";
-import { openDialog } from "../ui/dialog.js?v=1381";
-import { menu } from "../ui/menu.js?v=1381";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1381";
-import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1381";
-import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1381";
-import { networkById } from "../config/networks.js?v=1381";
-import { copyService, imageGenerationService } from "../services/index.js?v=1381";
-import { unbranded } from "../state/playbook-brand.js?v=1381";
-import { resolveLayers } from "../render/layout.js?v=1381";
-import { svgToDataUrl } from "../render/visual.js?v=1381";
-import { splitVisual } from "../render/split.js?v=1381";
-import { bakeDoc } from "../render/edit-export.js?v=1381";
-import { subjectKindFor } from "../render/subjects.js?v=1381";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1381";
-import { createEditor } from "./edit/editor.js?v=1381";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1381";
-import { getBrand, getCreation, getProducts, getStyle, getStylesForBrand, subscribe } from "../state/store.js?v=1381";
+import { html, raw, toString } from "../lib/html.js?v=1382";
+import { delegate } from "../lib/delegate.js?v=1382";
+import { hashString } from "../lib/prng.js?v=1382";
+import { renderEmpty } from "../ui/empty.js?v=1382";
+import { preserveFocus } from "../ui/fields.js?v=1382";
+import { toast } from "../ui/toast.js?v=1382";
+import { hydrateAssets, logoUrl } from "../ui/asset.js?v=1382";
+import { styleThumb } from "../ui/style-thumb.js?v=1382";
+import { openDialog } from "../ui/dialog.js?v=1382";
+import { menu } from "../ui/menu.js?v=1382";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1382";
+import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1382";
+import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1382";
+import { networkById } from "../config/networks.js?v=1382";
+import { copyService, imageGenerationService } from "../services/index.js?v=1382";
+import { unbranded } from "../state/playbook-brand.js?v=1382";
+import { resolveLayers } from "../render/layout.js?v=1382";
+import { svgToDataUrl } from "../render/visual.js?v=1382";
+import { splitVisual } from "../render/split.js?v=1382";
+import { bakeDoc } from "../render/edit-export.js?v=1382";
+import { subjectKindFor } from "../render/subjects.js?v=1382";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1382";
+import { createEditor } from "./edit/editor.js?v=1382";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1382";
+import { getBrand, getCreation, getProducts, getStyle, getStylesForBrand, subscribe } from "../state/store.js?v=1382";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1381";
+} from "../state/creation-actions.js?v=1382";
 
 // The presets offered first when the brand has few styles of its own — one per
 // family, the ones that read best at thumbnail size.
@@ -554,28 +554,6 @@ ${b.prompt}</textarea
             </div>
           </section>
 
-          <section class="imst-ctl" aria-labelledby="imst-ctl-count">
-            <header class="imst-ctl__head imst-ctl__head--control">
-              <h3 class="imst-ctl__label ap-body-bold" id="imst-ctl-count">Variations</h3>
-              ${menu({
-                align: "end",
-                label: "How many variations",
-                trigger: {
-                  className: "ap-button stroked grey",
-                  label: `${variationsLabel(b.count)}. Change`,
-                  content: html`<span>${variationsLabel(b.count)}</span
-                    ><i class="ap-icon-chevron-down" aria-hidden="true"></i>`,
-                },
-                items: [1, 2, 3, 4].map((n) => ({
-                  action: "count",
-                  attrs: `data-imst-count="${n}"`,
-                  label: variationsLabel(n),
-                  selected: n === b.count,
-                })),
-              })}
-            </header>
-          </section>
-
           <section class="imst-ctl" aria-labelledby="imst-ctl-text">
             <header class="imst-ctl__head">
               <h3 class="imst-ctl__label ap-body-bold" id="imst-ctl-text">Text on the image</h3>
@@ -622,6 +600,30 @@ ${b.prompt}</textarea
                   ><i class="ap-icon-warning_fill" aria-hidden="true"></i> ${state.warning}</span
                 >`
               : ""}
+          </section>
+
+          <section class="imst-ctl" aria-labelledby="imst-ctl-count">
+            <header class="imst-ctl__head imst-ctl__head--control">
+              <h3 class="imst-ctl__label ap-body-bold" id="imst-ctl-count">Variations</h3>
+              <div class="ap-segmented-control" role="radiogroup" aria-labelledby="imst-ctl-count">
+                ${[1, 2, 3, 4].map(
+                  (n) =>
+                    html`<button
+                      type="button"
+                      class="ap-segmented-control__segment${n === b.count
+                        ? " ap-segmented-control__segment--selected"
+                        : ""}"
+                      role="radio"
+                      aria-checked="${n === b.count}"
+                      aria-label="${variationsLabel(n)}"
+                      data-imst-action="count"
+                      data-imst-count="${n}"
+                    >
+                      <span class="ap-segmented-control__label">${n}</span>
+                    </button>`,
+                )}
+              </div>
+            </header>
           </section>
         </div>
       </aside>

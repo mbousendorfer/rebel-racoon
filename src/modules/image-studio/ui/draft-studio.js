@@ -4,14 +4,13 @@
 // Playbook is the brand, the draft's network sets the shapes, and "Use in
 // draft" hands the finished PNG back to the caller — the draft.
 
-import { html } from "../lib/html.js?v=1381";
-import { openDialog } from "./dialog.js?v=1381";
-import { installMenus } from "./menu.js?v=1381";
-import { toast } from "./toast.js?v=1381";
-import { mountStudio } from "../views/studio.js?v=1381";
-import { DRAFT_NETWORK } from "../config/formats.js?v=1381";
-import { networkById } from "../config/networks.js?v=1381";
-import { getActiveBrandId } from "../state/store.js?v=1381";
+import { html } from "../lib/html.js?v=1382";
+import { openDialog } from "./dialog.js?v=1382";
+import { installMenus } from "./menu.js?v=1382";
+import { toast } from "./toast.js?v=1382";
+import { mountStudio } from "../views/studio.js?v=1382";
+import { DRAFT_NETWORK } from "../config/formats.js?v=1382";
+import { getActiveBrandId } from "../state/store.js?v=1382";
 
 /**
  * @param {{ brandId?: string, network?: string, text?: string, imageUrl?: string,
@@ -30,12 +29,12 @@ export function openDraftStudio({
   renderFeedPreview = null,
 }) {
   const net = DRAFT_NETWORK[network] || null;
-  const label = net ? networkById(net).label : "";
   const excerpt = String(text).replace(/\s+/g, " ").trim();
   let cleanup = null;
   const dialog = openDialog({
-    title: label ? `Image for this ${label} post` : "Image for this post",
-    subtitle: excerpt ? `“${excerpt.length > 110 ? excerpt.slice(0, 107).trimEnd() + "…" : excerpt}”` : "",
+    // Just the tool's name: the post is right behind the dialog, and quoting it
+    // here cost the header two lines.
+    title: "Image Studio v2",
     size: "studio",
     body: html`<div class="imst imst-draft-host" data-imst-draft-host></div>`,
     headerAside: html`<div class="imst-dialog__modes" data-imst-draft-modes></div>`,
