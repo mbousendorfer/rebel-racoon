@@ -95,6 +95,22 @@
   align-self: flex-start;
 }
 
+.imst-ctl__toggle-row {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+}
+
+.imst-ctl__info {
+  color: var(--ref-color-grey-60);
+  cursor: help;
+}
+
+.imst-ctl__info:hover,
+.imst-ctl__info:focus-visible {
+  color: var(--ref-color-grey-100);
+}
+
 /* Brand applied: the mark, the name, the palette as overlapping dots — and the switch to leave it out */
 .imst-ctl-brand-block {
   display: flex;
