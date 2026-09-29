@@ -61,11 +61,13 @@
   letter-spacing: -0.01em;
 }
 
+/* The facts line: glyph + words per item, a hairline between items (drawn on
+   the item, so a wrapped line never starts with one). */
 .pb2-meta {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--ref-spacing-xxxs) var(--ref-spacing-sm);
+  row-gap: var(--ref-spacing-xxs);
   color: var(--ref-color-grey-80);
   font-size: var(--ref-font-size-sm);
 }
@@ -74,6 +76,42 @@
   display: inline-flex;
   align-items: center;
   gap: var(--ref-spacing-xxs);
+  padding-right: var(--ref-spacing-sm);
+  margin-right: var(--ref-spacing-sm);
+  border-right: 1px solid var(--ref-color-grey-20);
+  line-height: var(--ref-spacing-sm);
+}
+
+.pb2-meta__item:last-child {
+  padding-right: 0;
+  margin-right: 0;
+  border-right: 0;
+}
+
+.pb2-meta__icon {
+  color: var(--ref-color-grey-60);
+  font-size: var(--sys-icon-css-sm);
+}
+
+/* The brand's own site, the one live item: it reads as the text around it
+   until it's pointed at. */
+.pb2-meta__link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  color: inherit;
+  text-decoration: none;
+}
+
+.pb2-meta__link:hover,
+.pb2-meta__link:focus-visible {
+  color: var(--ref-color-electric-blue-100);
+  text-decoration: underline;
+}
+
+.pb2-meta__link:hover .pb2-meta__icon,
+.pb2-meta__link:focus-visible .pb2-meta__icon {
+  color: inherit;
 }
 
 .pb2-hero__actions {

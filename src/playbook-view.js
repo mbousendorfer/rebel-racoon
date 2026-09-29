@@ -14,7 +14,7 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1393";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1396";
 import {
   kitEnabled,
   renderColorRole,
@@ -28,18 +28,18 @@ import {
   handleKitInput,
   handleKitChange,
   kitSnapshot,
-} from "./playbook-brand-kit.js?v=1393";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1393";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1393";
-import { isFlagOn } from "./feature-flags.js?v=1393";
-import { parseHashParams } from "./url-state.js?v=1393";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1393";
+} from "./playbook-brand-kit.js?v=1396";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1396";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1396";
+import { isFlagOn } from "./feature-flags.js?v=1396";
+import { parseHashParams } from "./url-state.js?v=1396";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1396";
 // The Default look row offers the SAME three catalogues the Image Studio renders, from
 // the one place they are declared — REF_MODES' own header makes the argument: the label,
 // the hint and the brief clause "drift the moment they live apart". No cycle: the engine
 // imports only clip-formats / image-studio-canvas / feature-flags, and its module body
 // builds consts, so importing it here costs nothing at load.
-import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1393";
+import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1396";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -1901,11 +1901,26 @@ function renderHeader2(data) {
   const domain = site?.domain || prettyUrl(data.websiteUrl);
   const usedIn = typeof data.usedIn === "number" ? data.usedIn : null;
   const langs = contextLanguages(data);
+  // One line of facts about the brand, each with its own glyph so the eye can
+  // pick one out without reading the row, thin rules between them. The site is
+  // the one live item: it opens the brand's own website.
+  // (ap-icon-link, not ap-icon-web: that one is a full-colour glyph and ignores the grey.)
+  const href = data.websiteUrl
+    ? /^https?:\/\//.test(data.websiteUrl)
+      ? data.websiteUrl
+      : `https://${data.websiteUrl}`
+    : domain
+      ? `https://${domain}`
+      : "";
+  const item = (icon, body, title = "") =>
+    `<span class="pb2-meta__item"${title ? ` title="${esc(title)}"` : ""}><i class="${icon} pb2-meta__icon" aria-hidden="true"></i>${body}</span>`;
   const meta = [
-    domain ? `<span class="pb2-meta__item"><i class="ap-icon-web" aria-hidden="true"></i>${esc(domain)}</span>` : "",
-    `<span class="pb2-meta__item">${esc(langs.join(" · "))}</span>`,
-    usedIn !== null ? `<span class="pb2-meta__item">Used in ${usedIn} ${usedIn === 1 ? "chat" : "chats"}</span>` : "",
-    data.updatedAt ? `<span class="pb2-meta__item">Updated ${esc(data.updatedAt)}</span>` : "",
+    domain
+      ? `<span class="pb2-meta__item"><a class="pb2-meta__link" href="${esc(href)}" target="_blank" rel="noopener noreferrer" title="Open ${esc(domain)} in a new tab"><i class="ap-icon-link pb2-meta__icon" aria-hidden="true"></i>${esc(domain)}</a></span>`
+      : "",
+    langs.length ? item("ap-icon-translate", esc(langs.join(" · ")), langs.length > 1 ? "Languages" : "Language") : "",
+    usedIn !== null ? item("ap-icon-single-chat-bubble", `Used in ${usedIn} ${usedIn === 1 ? "chat" : "chats"}`) : "",
+    data.updatedAt ? item("ap-icon-history", `Updated ${esc(data.updatedAt)}`) : "",
     cfg.ownership?.owner
       ? `<span class="pb2-meta__item"><span class="ap-avatar size-24" aria-hidden="true"><span class="ap-avatar-initials">${esc(
           cfg.ownership.initials || "?",
