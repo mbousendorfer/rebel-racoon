@@ -15,38 +15,49 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, "Refine" to iterate in place, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=1383";
-import { delegate } from "../lib/delegate.js?v=1383";
-import { hashString } from "../lib/prng.js?v=1383";
-import { renderEmpty } from "../ui/empty.js?v=1383";
-import { preserveFocus } from "../ui/fields.js?v=1383";
-import { toast } from "../ui/toast.js?v=1383";
-import { hydrateAssets, logoUrl } from "../ui/asset.js?v=1383";
-import { styleThumb } from "../ui/style-thumb.js?v=1383";
-import { openDialog } from "../ui/dialog.js?v=1383";
-import { menu } from "../ui/menu.js?v=1383";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1383";
-import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1383";
-import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1383";
-import { networkById } from "../config/networks.js?v=1383";
-import { copyService, imageGenerationService } from "../services/index.js?v=1383";
-import { unbranded } from "../state/playbook-brand.js?v=1383";
-import { resolveLayers } from "../render/layout.js?v=1383";
-import { svgToDataUrl } from "../render/visual.js?v=1383";
-import { splitVisual } from "../render/split.js?v=1383";
-import { bakeDoc } from "../render/edit-export.js?v=1383";
-import { subjectKindFor } from "../render/subjects.js?v=1383";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1383";
-import { createEditor } from "./edit/editor.js?v=1383";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1383";
-import { getBrand, getCreation, getProducts, getStyle, getStylesForBrand, subscribe } from "../state/store.js?v=1383";
+import { html, raw, toString } from "../lib/html.js?v=1385";
+import { delegate } from "../lib/delegate.js?v=1385";
+import { hashString } from "../lib/prng.js?v=1385";
+import { renderEmpty } from "../ui/empty.js?v=1385";
+import { field, preserveFocus, textInput } from "../ui/fields.js?v=1385";
+import { toast } from "../ui/toast.js?v=1385";
+import { assetImg, hydrateAssets, logoUrl } from "../ui/asset.js?v=1385";
+import { styleThumb } from "../ui/style-thumb.js?v=1385";
+import { openDialog } from "../ui/dialog.js?v=1385";
+import { menu } from "../ui/menu.js?v=1385";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1385";
+import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1385";
+import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1385";
+import { networkById } from "../config/networks.js?v=1385";
+import { copyService, imageGenerationService } from "../services/index.js?v=1385";
+import { unbranded } from "../state/playbook-brand.js?v=1385";
+import { resolveLayers } from "../render/layout.js?v=1385";
+import { svgToDataUrl } from "../render/visual.js?v=1385";
+import { splitVisual } from "../render/split.js?v=1385";
+import { bakeDoc } from "../render/edit-export.js?v=1385";
+import { subjectKindFor } from "../render/subjects.js?v=1385";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1385";
+import { createEditor } from "./edit/editor.js?v=1385";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1385";
+import {
+  canEditBrand,
+  forgetOneOffStyle,
+  getBrand,
+  getCreation,
+  getProducts,
+  getStyle,
+  getStylesForBrand,
+  registerOneOffStyle,
+  subscribe,
+} from "../state/store.js?v=1385";
+import { discardOneOff, oneOffStyleFrom, saveOneOffToPlaybook } from "../state/style-actions.js?v=1385";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1383";
+} from "../state/creation-actions.js?v=1385";
 
 // The presets offered first when the brand has few styles of its own — one per
 // family, the ones that read best at thumbnail size.
@@ -124,6 +135,8 @@ export function mountStudio(
     abort: null,
     view: "image", // image | feed — how a result is shown
     mode: "generate", // generate | edit
+    oneOff: null, // "From an image": the style read from the user's upload (state/store.js)
+    oneOffBusy: false,
     editKey: null, // which image Edit has open
   };
   // Edit documents, one per image, kept for the life of the dialog: edits stick
@@ -372,16 +385,110 @@ export function mountStudio(
 
   // ── Controls ───────────────────────────────────────────────────────────────
 
+  // Five styles after the "From an image" tile: the image the user brought
+  // first, then the Playbook's own, then one preset per family.
+  const QUICK = 5;
   const quickStyles = (brand) => {
     const own = state.brief.useBrand === false ? [] : getStylesForBrand(brand.id).filter((s) => s.kind === "custom");
-    const list = [...own, ...QUICK_PRESETS.map(getStyle).filter(Boolean)].filter(
-      (s, i, a) => a.findIndex((x) => x.id === s.id) === i,
-    );
+    const list = [
+      ...(state.oneOff ? [state.oneOff] : []),
+      ...own,
+      ...QUICK_PRESETS.map(getStyle).filter(Boolean),
+    ].filter((s, i, a) => a.findIndex((x) => x.id === s.id) === i);
     const selected = getStyle(state.brief.styleId);
-    const top = list.slice(0, 6);
-    if (selected && !top.some((s) => s.id === selected.id)) top[5] = selected;
+    const top = list.slice(0, QUICK);
+    if (selected && !top.some((s) => s.id === selected.id)) top[QUICK - 1] = selected;
     return top;
   };
+
+  // ── "From an image": a style read from the user's own pictures ─────────────
+
+  // Every one-off made while the dialog is open; the ones nobody saved lose
+  // their images when it closes (what was generated keeps its colours).
+  const oneOffsMade = [];
+
+  async function styleFromImages(files) {
+    const brand = brandNow();
+    if (!brand || state.oneOffBusy) return;
+    state.oneOffBusy = true;
+    paint();
+    try {
+      const style = await oneOffStyleFrom(brand.id, files);
+      if (!alive) return;
+      registerOneOffStyle(style);
+      oneOffsMade.push(style);
+      state.oneOff = style;
+      state.oneOffBusy = false;
+      setStyle(style.id);
+    } catch (error) {
+      state.oneOffBusy = false;
+      toast(error.message || "The image couldn't be read.", { variant: "error" });
+      paint();
+    }
+  }
+
+  function pickStyleImages() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.multiple = true;
+    input.addEventListener("change", () => input.files?.length && styleFromImages(input.files));
+    input.click();
+  }
+
+  // Promoting the one-off: a name, then it is the brand's — on the Playbook, in
+  // Brand › Image styles, for everyone who generates with this Playbook.
+  function saveOneOff() {
+    const style = state.oneOff;
+    const brand = brandNow();
+    if (!style || !brand || !canEditBrand(brand.id)) return;
+    const dialog = openDialog({
+      title: "Save as a Playbook style",
+      size: "sm",
+      body: html`<form class="imst-oneoff-save" data-imst-oneoff-form>
+        <p class="ap-body imst-dialog__text">
+          It joins ${brand.playbookName || brand.name}'s image styles, for every image made with this Playbook.
+        </p>
+        ${field({
+          label: "Name",
+          id: "imst-oneoff-name",
+          control: textInput({
+            path: "oneoff-name",
+            id: "imst-oneoff-name",
+            value: `${brand.name} · from an image`,
+            attrs: 'maxlength="60" autofocus required',
+          }),
+        })}
+      </form>`,
+      footer: html`<div class="ap-dialog-footer-right">
+        <button type="button" class="ap-button stroked grey" data-imst-oneoff="cancel">Cancel</button>
+        <button type="button" class="ap-button primary blue" data-imst-oneoff="save">Save style</button>
+      </div>`,
+      onMount(el) {
+        const save = () => {
+          const name = el.querySelector("#imst-oneoff-name").value.trim();
+          if (!name) return el.querySelector("#imst-oneoff-name").focus();
+          const saved = saveOneOffToPlaybook(style, name);
+          forgetOneOffStyle(style.id);
+          oneOffsMade.splice(oneOffsMade.indexOf(style), 1);
+          state.oneOff = null;
+          dialog.close();
+          setStyle(saved.id);
+          toast(`Saved to ${brand.playbookName || brand.name} — Brand › Image styles.`);
+        };
+        el.addEventListener("click", (event) => {
+          const btn = event.target.closest("[data-imst-oneoff]");
+          if (!btn) return;
+          if (btn.dataset.imstOneoff === "save") save();
+          else dialog.close();
+        });
+        el.querySelector("[data-imst-oneoff-form]").addEventListener("submit", (event) => {
+          event.preventDefault();
+          save();
+        });
+      },
+    });
+  }
 
   const renderBrandRow = (brand) => {
     const logo = logoUrl(brand, "icon") || logoUrl(brand, "color");
@@ -490,7 +597,22 @@ ${b.prompt}</textarea
               <h3 class="imst-ctl__label ap-body-bold" id="imst-ctl-style">Style</h3>
               <button type="button" class="ap-link" data-imst-action="all-styles">All ${styleCount} styles</button>
             </header>
-            <div class="imst-tiles" role="radiogroup" aria-labelledby="imst-ctl-style">
+            <div class="imst-tiles" role="radiogroup" aria-labelledby="imst-ctl-style" data-imst-style-drop>
+              <button
+                type="button"
+                class="imst-tile imst-tile--new${state.oneOffBusy ? " is-busy" : ""}"
+                data-imst-action="style-from-image"
+                aria-label="Use the style of an image — upload one"
+                data-tooltip="Upload or drop an image: its look becomes the style"
+                ${state.oneOffBusy ? "disabled" : ""}
+              >
+                <span class="imst-tile__new-art" aria-hidden="true"
+                  >${state.oneOffBusy
+                    ? html`<span class="ap-loader size-24"></span>`
+                    : html`<i class="ap-icon-upload"></i>`}</span
+                >
+                <span class="imst-tile__new-name ap-body-bold">From an image</span>
+              </button>
               ${quickStyles(brand).map(
                 (s) =>
                   html`<button
@@ -501,10 +623,15 @@ ${b.prompt}</textarea
                     data-imst-style="${s.id}"
                     aria-label="${s.label}"
                   >
-                    ${styleThumb(s, lookOf(brand, b), { className: "imst-tile__img", seed: hashString(s.id) })}
-                    ${s.kind === "custom"
-                      ? html`<span class="ap-tag grey mini imst-mine"><span>My style</span></span>`
-                      : ""}
+                    ${s.oneOff
+                      ? /* the user's own picture: it IS the style, and a drawn preset would hide that */
+                        assetImg(s.custom.sources[0].ref, { className: "imst-thumb imst-tile__img" })
+                      : styleThumb(s, lookOf(brand, b), { className: "imst-tile__img", seed: hashString(s.id) })}
+                    ${s.oneOff
+                      ? ""
+                      : s.kind === "custom"
+                        ? html`<span class="ap-tag grey mini imst-mine"><span>My style</span></span>`
+                        : ""}
                     <span class="imst-tile__name">${s.label}</span>
                     ${s.id === b.styleId
                       ? html`<span class="imst-tile__check" aria-hidden="true"><i class="ap-icon-check"></i></span>`
@@ -513,9 +640,17 @@ ${b.prompt}</textarea
               )}
             </div>
             <p class="ap-caption imst-ctl__note">
-              <span class="ap-body-bold">${style.label}</span>${style.kind === "custom"
-                ? html` · My style`
-                : ""}${style.description ? html` — ${style.description}` : ""}
+              <span class="ap-body-bold">${style.label}</span>${style.oneOff
+                ? html` · For this image
+                  only${canEditBrand(brand.id)
+                    ? html` —
+                        <button type="button" class="ap-link" data-imst-action="save-oneoff">
+                          Save as a Playbook style
+                        </button>`
+                    : ""}`
+                : html`${style.kind === "custom" ? html` · My style` : ""}${style.description
+                    ? html` — ${style.description}`
+                    : ""}`}
             </p>
           </section>
 
@@ -659,7 +794,9 @@ ${b.prompt}</textarea
         <p class="ap-body imst-canvas-area__caption">
           <span class="ap-body-bold"
             >A preview of
-            ${style.label}${b.useBrand === false ? ", in neutral colours" : ` in ${brand.name}'s colours`}.</span
+            ${style.oneOff ? "your image's style" : style.label}${b.useBrand === false
+              ? ", in neutral colours"
+              : ` in ${brand.name}'s colours`}.</span
           >
           Describe what you want and generate — you'll get
           ${b.count === 1 ? "one image" : `${b.count} variations to pick from`}.
@@ -1392,10 +1529,26 @@ ${b.prompt}</textarea
       leaveResults();
       paint();
     }),
+    // Dropping an image on the style grid does what the tile does.
+    delegate(target, "dragover", "[data-imst-style-drop]", (event, el) => {
+      if (![...(event.dataTransfer?.items || [])].some((i) => i.kind === "file")) return;
+      event.preventDefault();
+      el.classList.add("is-dragover");
+    }),
+    delegate(target, "dragleave", "[data-imst-style-drop]", (event, el) => {
+      if (!el.contains(event.relatedTarget)) el.classList.remove("is-dragover");
+    }),
+    delegate(target, "drop", "[data-imst-style-drop]", (event, el) => {
+      event.preventDefault();
+      el.classList.remove("is-dragover");
+      if (event.dataTransfer?.files?.length) styleFromImages(event.dataTransfer.files);
+    }),
     delegate(target, "change", "[data-imst-usebrand]", (_e, el) => {
       state.brief.useBrand = el.checked;
       // The Playbook's own styles are its identity too: off, fall back to a preset.
-      if (!el.checked && getStyle(state.brief.styleId)?.kind === "custom") state.brief.styleId = "preset-lifestyle";
+      // A one-off isn't the Playbook's — it came with the user's image, so it stays.
+      const current = getStyle(state.brief.styleId);
+      if (!el.checked && current?.kind === "custom" && !current.oneOff) state.brief.styleId = "preset-lifestyle";
       leaveResults();
       paint();
     }),
@@ -1437,6 +1590,8 @@ ${b.prompt}</textarea
       else if (a === "suggest") suggestFromPost(el);
       else if (a === "suggest-headline") suggestHeadline(el);
       else if (a === "all-styles") openStyleGallery();
+      else if (a === "style-from-image") pickStyleImages();
+      else if (a === "save-oneoff") saveOneOff();
       else if (a === "count") {
         state.brief.count = Number(el.dataset.imstCount) || 4;
         paint();
@@ -1466,6 +1621,10 @@ ${b.prompt}</textarea
     state.abort?.abort();
     feedUrls.forEach((url) => url && URL.revokeObjectURL(url));
     editedUrls.forEach((url) => url && URL.revokeObjectURL(url));
+    oneOffsMade.forEach((style) => {
+      forgetOneOffStyle(style.id);
+      discardOneOff(style);
+    });
     offs.forEach((off) => off());
   };
 }

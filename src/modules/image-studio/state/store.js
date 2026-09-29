@@ -3,11 +3,11 @@
 // brands, and the brand's own styles, are the Playbooks', read through the
 // adapter and re-exported here so views have one import.
 
-import { storageService as storage } from "../services/index.js?v=1383";
-import { STYLE_PRESETS } from "../config/style-presets.js?v=1383";
-import { findPlaybookStyle, getPlaybookStyles, subscribeBrands } from "./playbook-brand.js?v=1383";
+import { storageService as storage } from "../services/index.js?v=1385";
+import { STYLE_PRESETS } from "../config/style-presets.js?v=1385";
+import { findPlaybookStyle, getPlaybookStyles, subscribeBrands } from "./playbook-brand.js?v=1385";
 
-export { getActiveBrandId, getBrand, canEditBrand } from "./playbook-brand.js?v=1383";
+export { getActiveBrandId, getBrand, canEditBrand } from "./playbook-brand.js?v=1385";
 
 /** One subscription for everything a view shows: module storage + Playbooks. */
 export function subscribe(fn) {
@@ -27,7 +27,22 @@ export function getStylesForBrand(brandId) {
 }
 
 export function getStyle(id) {
-  return STYLE_PRESETS.find((p) => p.id === id) || findPlaybookStyle(id);
+  return STYLE_PRESETS.find((p) => p.id === id) || findPlaybookStyle(id) || oneOffs.get(id);
+}
+
+// ── One-off styles ────────────────────────────────────────────────────────────
+// "From an image" in a draft's studio: a style read from images the user just
+// uploaded, for THAT image only. Held in memory, never on the Playbook — it is
+// not the brand's until someone saves it there — and never listed by
+// getStylesForBrand. getStyle resolves it so the studio can draw with it.
+const oneOffs = new Map();
+
+export function registerOneOffStyle(style) {
+  oneOffs.set(style.id, style);
+}
+
+export function forgetOneOffStyle(id) {
+  oneOffs.delete(id);
 }
 
 // ── Everything else, scoped to a brand ───────────────────────────────────────

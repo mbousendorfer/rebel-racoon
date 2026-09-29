@@ -1,14 +1,14 @@
 // Image Generator — every write a custom style undergoes. A custom style is the
 // BRAND's: it lives on the Playbook and is listed first in the studio's picker.
 
-import { storageService as storage } from "../services/index.js?v=1383";
-import { createAsset, createStyle } from "../model/schema.js?v=1383";
-import { presetById, CUSTOM_STYLE_LIMITS } from "../config/style-presets.js?v=1383";
-import { sampleColors } from "../render/sample-colors.js?v=1383";
-import { uid } from "../lib/id.js?v=1383";
-import { lookFromColors } from "../render/visual.js?v=1383";
-import { getAsset } from "./store.js?v=1383";
-import { deletePlaybookStyle, findPlaybookStyle, savePlaybookStyle } from "./playbook-brand.js?v=1383";
+import { storageService as storage } from "../services/index.js?v=1385";
+import { createAsset, createStyle } from "../model/schema.js?v=1385";
+import { presetById, CUSTOM_STYLE_LIMITS } from "../config/style-presets.js?v=1385";
+import { sampleColors } from "../render/sample-colors.js?v=1385";
+import { uid } from "../lib/id.js?v=1385";
+import { lookFromColors } from "../render/visual.js?v=1385";
+import { getAsset } from "./store.js?v=1385";
+import { deletePlaybookStyle, findPlaybookStyle, savePlaybookStyle } from "./playbook-brand.js?v=1385";
 
 /** A custom style can write text into the image when the look read from its images can. */
 export function deriveEmbeddedText(sources) {
@@ -73,4 +73,49 @@ export async function uploadReference(brandId, file) {
     await storage.putBlob(asset.blobKey, file);
   }
   return storage.put("assets", asset);
+}
+
+// ── One-off styles (a draft's studio, "From an image") ───────────────────────
+
+/** A style read from uploaded images, for one image only (state/store.js). */
+export async function oneOffStyleFrom(brandId, files) {
+  const images = [...files].filter((f) => f.type.startsWith("image/")).slice(0, CUSTOM_STYLE_LIMITS.images);
+  if (!images.length) throw new Error("That isn't an image — drop a picture whose look you want.");
+  const assets = await Promise.all(images.map((f) => uploadReference(brandId, f)));
+  // The colours travel ON the source: the images behind a one-off are deleted
+  // when the studio closes, and what was generated with it still has to redraw.
+  const sources = assets.map((a) => ({ type: "image", ref: a.id, label: a.name, weight: 0.8, colors: a.colors || [] }));
+  const name = images[0].name.replace(/\.[a-z0-9]+$/i, "");
+  return createStyle({
+    id: uid("st"),
+    brandId,
+    oneOff: true,
+    label: images.length > 1 ? "Your images" : "Your image",
+    description: images.length > 1 ? `The look of ${images.length} images you added` : `The look of ${name}`,
+    supportsEmbeddedText: deriveEmbeddedText(sources),
+    custom: { sources, fidelity: "essential", stylePrompt: "" },
+  });
+}
+
+/** Makes a one-off the brand's: saved on the Playbook under `label`. Its images stay. */
+export function saveOneOffToPlaybook(style, label) {
+  return saveStyle({
+    id: null,
+    brandId: style.brandId,
+    label,
+    description: "",
+    sources: style.custom.sources.map(({ colors, ...s }) => s),
+    fidelity: style.custom.fidelity,
+    stylePrompt: "",
+  });
+}
+
+/** Deletes the reference images of one-offs nobody saved. */
+export async function discardOneOff(style) {
+  for (const s of style.custom.sources) {
+    const asset = getAsset(s.ref);
+    if (!asset) continue;
+    if (asset.blobKey) await storage.deleteBlob(asset.blobKey).catch(() => {});
+    storage.remove("assets", asset.id);
+  }
 }
