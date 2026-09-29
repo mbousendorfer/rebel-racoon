@@ -148,10 +148,6 @@
   color: var(--ref-color-grey-100);
 }
 
-.imst-ctl-brand__text .ap-caption {
-  color: var(--ref-color-grey-80);
-}
-
 .imst-dots {
   display: inline-flex;
   flex-shrink: 0;

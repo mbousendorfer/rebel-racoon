@@ -15,30 +15,30 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, "Refine" to iterate in place, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=1389";
-import { delegate } from "../lib/delegate.js?v=1389";
-import { hashString } from "../lib/prng.js?v=1389";
-import { renderEmpty } from "../ui/empty.js?v=1389";
-import { field, preserveFocus, textInput } from "../ui/fields.js?v=1389";
-import { toast } from "../ui/toast.js?v=1389";
-import { assetImg, hydrateAssets, logoUrl } from "../ui/asset.js?v=1389";
-import { styleThumb } from "../ui/style-thumb.js?v=1389";
-import { openDialog } from "../ui/dialog.js?v=1389";
-import { menu } from "../ui/menu.js?v=1389";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1389";
-import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1389";
-import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1389";
-import { networkById } from "../config/networks.js?v=1389";
-import { copyService, imageGenerationService } from "../services/index.js?v=1389";
-import { unbranded } from "../state/playbook-brand.js?v=1389";
-import { resolveLayers } from "../render/layout.js?v=1389";
-import { svgToDataUrl } from "../render/visual.js?v=1389";
-import { splitVisual } from "../render/split.js?v=1389";
-import { bakeDoc } from "../render/edit-export.js?v=1389";
-import { subjectKindFor } from "../render/subjects.js?v=1389";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1389";
-import { createEditor } from "./edit/editor.js?v=1389";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1389";
+import { html, raw, toString } from "../lib/html.js?v=1390";
+import { delegate } from "../lib/delegate.js?v=1390";
+import { hashString } from "../lib/prng.js?v=1390";
+import { renderEmpty } from "../ui/empty.js?v=1390";
+import { field, preserveFocus, textInput } from "../ui/fields.js?v=1390";
+import { toast } from "../ui/toast.js?v=1390";
+import { assetImg, hydrateAssets, logoUrl } from "../ui/asset.js?v=1390";
+import { styleThumb } from "../ui/style-thumb.js?v=1390";
+import { openDialog } from "../ui/dialog.js?v=1390";
+import { menu } from "../ui/menu.js?v=1390";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1390";
+import { STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1390";
+import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1390";
+import { networkById } from "../config/networks.js?v=1390";
+import { copyService, imageGenerationService } from "../services/index.js?v=1390";
+import { unbranded } from "../state/playbook-brand.js?v=1390";
+import { resolveLayers } from "../render/layout.js?v=1390";
+import { svgToDataUrl } from "../render/visual.js?v=1390";
+import { splitVisual } from "../render/split.js?v=1390";
+import { bakeDoc } from "../render/edit-export.js?v=1390";
+import { subjectKindFor } from "../render/subjects.js?v=1390";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1390";
+import { createEditor } from "./edit/editor.js?v=1390";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1390";
 import {
   canEditBrand,
   forgetOneOffStyle,
@@ -49,15 +49,15 @@ import {
   getStylesForBrand,
   registerOneOffStyle,
   subscribe,
-} from "../state/store.js?v=1389";
-import { discardOneOff, oneOffStyleFrom, saveOneOffToPlaybook } from "../state/style-actions.js?v=1389";
+} from "../state/store.js?v=1390";
+import { discardOneOff, oneOffStyleFrom, saveOneOffToPlaybook } from "../state/style-actions.js?v=1390";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1389";
+} from "../state/creation-actions.js?v=1390";
 
 // The presets offered first when the brand has few styles of its own — one per
 // family, the ones that read best at thumbnail size.
@@ -83,12 +83,13 @@ function defaultBrief(brand, network = null) {
     productId: null,
     formatIds: [firstShape?.formatId || "ig-post"],
     textMode: "layer",
-    useBrand: true,
     count: 4,
   };
 }
 
-// What the image is drawn with: the Playbook, or — "Use the Playbook" off — a neutral look.
+// What the image is drawn with: the Playbook. The "Use the Playbook" switch was
+// removed (2026-09-29) — an image made from a draft is always the brand's — but a
+// creation saved with it off still redraws in the neutral look it was made in.
 const lookOf = (brand, brief) => (brief?.useBrand === false ? unbranded(brand) : brand);
 
 /**
@@ -389,7 +390,7 @@ export function mountStudio(
   // first, then the Playbook's own, then one preset per family.
   const QUICK = 5;
   const quickStyles = (brand) => {
-    const own = state.brief.useBrand === false ? [] : getStylesForBrand(brand.id).filter((s) => s.kind === "custom");
+    const own = getStylesForBrand(brand.id).filter((s) => s.kind === "custom");
     const list = [
       ...(state.oneOff ? [state.oneOff] : []),
       ...own,
@@ -490,9 +491,10 @@ export function mountStudio(
     });
   }
 
+  // The brand the image is made for: its mark, its name, its colours. Nothing
+  // to switch — the Playbook is always applied.
   const renderBrandRow = (brand) => {
     const logo = logoUrl(brand, "icon") || logoUrl(brand, "color");
-    const on = state.brief.useBrand !== false;
     return html`
       <div class="imst-ctl-brand-block">
         <div class="imst-ctl-brand">
@@ -503,31 +505,22 @@ export function mountStudio(
               >`}
           <div class="imst-ctl-brand__text">
             <span class="ap-body-bold">${brand.name}</span>
-            ${on
-              ? "" /* the logo, the colours and the switch already say it is applied */
-              : html`<span class="ap-caption">Not applied — neutral colours, no logo</span>`}
           </div>
-          ${on
-            ? html`<span
-                class="imst-dots"
-                role="img"
-                aria-label="Brand colours: ${brand.palette.map((c) => c.name || c.hex).join(", ")}"
-                >${brand.palette
-                  .slice(0, 5)
-                  .map(
-                    (c) =>
-                      html`<span
-                        class="imst-dots__dot"
-                        style="--imst-swatch: ${c.hex}"
-                        data-tooltip="${c.name ? `${c.name} ${c.hex}` : c.hex}"
-                      ></span>`,
-                  )}</span
-              >`
-            : ""}
-          <label class="ap-toggle-container" data-tooltip="${on ? "Don't use the Playbook" : "Use the Playbook"}">
-            <input type="checkbox" data-imst-usebrand aria-label="Use the Playbook" ${on ? "checked" : ""} /><i></i
-            ><span></span>
-          </label>
+          <span
+            class="imst-dots"
+            role="img"
+            aria-label="Brand colours: ${brand.palette.map((c) => c.name || c.hex).join(", ")}"
+            >${brand.palette
+              .slice(0, 5)
+              .map(
+                (c) =>
+                  html`<span
+                    class="imst-dots__dot"
+                    style="--imst-swatch: ${c.hex}"
+                    data-tooltip="${c.name ? `${c.name} ${c.hex}` : c.hex}"
+                  ></span>`,
+              )}</span
+          >
         </div>
       </div>
     `;
@@ -802,10 +795,7 @@ ${b.prompt}</textarea
         )}
         <p class="ap-body imst-canvas-area__caption">
           <span class="ap-body-bold"
-            >A preview of
-            ${style.oneOff ? "your image's style" : style.label}${b.useBrand === false
-              ? ", in neutral colours"
-              : ` in ${brand.name}'s colours`}.</span
+            >A preview of ${style.oneOff ? "your image's style" : style.label} in ${brand.name}'s colours.</span
           >
           Describe what you want and generate — you'll get
           ${b.count === 1 ? "one image" : `${b.count} variations to pick from`}.
@@ -1576,15 +1566,6 @@ ${b.prompt}</textarea
       event.preventDefault();
       el.classList.remove("is-dragover");
       if (event.dataTransfer?.files?.length) styleFromImages(event.dataTransfer.files);
-    }),
-    delegate(target, "change", "[data-imst-usebrand]", (_e, el) => {
-      state.brief.useBrand = el.checked;
-      // The Playbook's own styles are its identity too: off, fall back to a preset.
-      // A one-off isn't the Playbook's — it came with the user's image, so it stays.
-      const current = getStyle(state.brief.styleId);
-      if (!el.checked && current?.kind === "custom" && !current.oneOff) state.brief.styleId = "preset-lifestyle";
-      leaveResults();
-      paint();
     }),
     delegate(target, "change", "[data-imst-textmode]", (_e, el) => {
       state.brief.textMode = el.checked ? "embedded" : "layer";
