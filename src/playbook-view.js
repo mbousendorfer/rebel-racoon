@@ -14,7 +14,7 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1401";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1403";
 import {
   kitEnabled,
   renderColorRole,
@@ -22,25 +22,24 @@ import {
   renderLogoVariants,
   renderVisualRules,
   renderImageStyles,
-  renderImageStyleStrip,
   handleImageStylesClick,
   handleKitClick,
   handleKitInput,
   handleKitChange,
   kitSnapshot,
-} from "./playbook-brand-kit.js?v=1401";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1401";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1401";
-import { isFlagOn } from "./feature-flags.js?v=1401";
-import { parseHashParams } from "./url-state.js?v=1401";
-import { showToast } from "./components/toast.js?v=1401";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1401";
+} from "./playbook-brand-kit.js?v=1403";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1403";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1403";
+import { isFlagOn } from "./feature-flags.js?v=1403";
+import { parseHashParams } from "./url-state.js?v=1403";
+import { showToast } from "./components/toast.js?v=1403";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1403";
 // The Default look row offers the SAME three catalogues the Image Studio renders, from
 // the one place they are declared — REF_MODES' own header makes the argument: the label,
 // the hint and the brief clause "drift the moment they live apart". No cycle: the engine
 // imports only clip-formats / image-studio-canvas / feature-flags, and its module body
 // builds consts, so importing it here costs nothing at load.
-import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1401";
+import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1403";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -158,7 +157,7 @@ let loadingTimer = null;
 let loadingStage = 0;
 let phase = "ready"; // "loading" | "ready"
 let scrollSpy = null; // IntersectionObserver for the section-nav active state
-let activeTab = "overview"; // Playbook 2.0 (flag playbook2): the tab on screen
+let activeTab = "goals"; // Playbook 2.0 (flag playbook2): the tab on screen
 
 // ── Public API ───────────────────────────────────────────────────────────
 
@@ -1864,12 +1863,12 @@ function renderCompetitorModal(data) {
 // The swap is wired by onLoadError().
 // ── Playbook 2.0 (flag playbook2) — the fiche in tabs ─────────────────────
 // The long single page (rail + four stacked panels) became one TAB per section,
-// plus an Overview that shows the brand at a glance. Only the saved Playbook's
+// opening on the first. (An Overview tab of four cards, one per section, was
+// DELETED: every card restated a tab — git log -S renderOverview.) Only the saved Playbook's
 // page (mode "library") changes; the onboarding recap keeps its reveal. The
 // section renderers are the SAME — a tab hosts one panel, edit mode included.
 
 const TABS = [
-  { id: "overview", title: "Overview" },
   { id: "goals", title: "Audience & goals" },
   { id: "voice", title: "Voice & style" },
   { id: "brand", title: "Brand" },
@@ -1892,7 +1891,7 @@ function v2On() {
 function tabFromUrl() {
   const q = parseHashParams();
   const wanted = q.get("tab") || q.get("section");
-  return TABS.some((t) => t.id === wanted) ? wanted : "overview";
+  return TABS.some((t) => t.id === wanted) ? wanted : TABS[0].id;
 }
 
 // The tab is the page's state, kept in the URL without a route change (the
@@ -1902,7 +1901,7 @@ function setTab(id) {
   const [path] = window.location.hash.slice(1).split("?");
   const q = parseHashParams();
   q.delete("section");
-  if (id === "overview") q.delete("tab");
+  if (id === TABS[0].id) q.delete("tab");
   else q.set("tab", id);
   const query = q.toString();
   history.replaceState(null, "", `#${path}${query ? `?${query}` : ""}`);
@@ -1988,27 +1987,6 @@ function renderTabs2(data) {
   `;
 }
 
-// An Overview card IS the door to its tab: the whole card opens it (blue border
-// on hover, the house's card hover), and the head names the section with its icon.
-function overviewCard(tab, title, body, { wide = false, index = 0 } = {}) {
-  const section = SECTIONS.find((x) => x.scope === tab);
-  const tabTitle = TABS.find((t) => t.id === tab).title;
-  return `
-    <section class="pb2-card${wide ? " pb2-card--wide" : ""}" style="--pb2-i:${index}" data-pb2-tab="${tab}"
-      aria-labelledby="pb2-ov-${tab}">
-      <header class="pb2-card__head">
-        <span class="pb2-card__icon" aria-hidden="true"><i class="${section.icon}"></i></span>
-        <h2 class="pb2-card__title" id="pb2-ov-${tab}">${esc(title)}</h2>
-        <button type="button" class="ap-icon-button transparent grey pb2-card__open" data-pb2-tab="${tab}"
-          aria-label="Open ${esc(tabTitle)}" data-tooltip="Open ${esc(tabTitle)}">
-          <i class="ap-icon-arrow-right" aria-hidden="true"></i>
-        </button>
-      </header>
-      <div class="pb2-card__body">${body}</div>
-    </section>
-  `;
-}
-
 const pb2Empty = (text) => `<p class="pb2-empty">${esc(text)}</p>`;
 // Static facts, so grey tags — blue is for what you can act on.
 const pb2Tags = (values) =>
@@ -2040,7 +2018,7 @@ function pb2Palette(data, { roles = false, max = 6 } = {}) {
       .join("")}</ul>`;
 }
 
-// ── The other tabs, in read mode — the same care as the Overview ─────────────
+// ── The tabs, in read mode ──────────────────────────────────────────────────
 // A tab reads as a spread of blocks; EDIT opens the section's own form (the
 // recap panel, unchanged), so every field, hint and save path stays one code.
 
@@ -2275,124 +2253,6 @@ function renderBrandRead2(data) {
   return `${pb2TabHead("brand")}<div class="pb2-grid">${blocks.join("")}</div>`;
 }
 
-function renderOverview(data) {
-  // ── How it looks — the hero: a brand-guidelines spread, in the brand's own colours.
-  const colors = visualColors(data);
-  const { headingFont, bodyFont } = brandFonts(data);
-  const moods = data.brandMoods || [];
-  const logos = brandLogoList(data).slice(0, 3);
-  const strip = renderImageStyleStrip(data, 3);
-  const marks = logos.length
-    ? `<div class="pb2-marks">${logos
-        .map(
-          (l, i) =>
-            `<span class="pb2-mark${i === 0 ? " pb2-mark--lead" : ""}${/revers|white|negative/i.test(l.label || "") ? " pb2-mark--dark" : ""}"><img src="${esc(l.url)}" alt="${esc(l.label || "Logo")}" /></span>`,
-        )
-        .join("")}</div>`
-    : `<span class="pb2-mark pb2-mark--lead pb2-mark--mono">${esc(initials(data.name))}</span>`;
-  const palette = colors.length ? pb2Palette(data) : pb2Empty("No colours captured yet.");
-  const type =
-    headingFont || bodyFont
-      ? `<div class="pb2-specimen">
-          <span class="pb2-specimen__glyphs" style="font-family:'${esc(headingFont || bodyFont)}', var(--sys-text-style-body-font-family);">Aa</span>
-          <dl class="pb2-specimen__roles">
-            <div><dt>Headings</dt><dd>${esc(headingFont || "—")}</dd></div>
-            <div><dt>Body</dt><dd>${esc(bodyFont || "—")}</dd></div>
-          </dl>
-        </div>`
-      : pb2Empty("No typography captured yet.");
-  const looks = `
-    <div class="pb2-looks">
-      <div class="pb2-looks__marks">${marks}</div>
-      <div class="pb2-looks__colour">
-        <h3 class="pb2-sub">Colour</h3>
-        ${palette}
-      </div>
-      <div class="pb2-looks__type">
-        <h3 class="pb2-sub">Type</h3>
-        ${type}
-      </div>
-    </div>
-    ${
-      strip || (moods.length && kitEnabled())
-        ? `<div class="pb2-looks__imagery">
-            ${strip ? `<div><h3 class="pb2-sub">Image styles</h3>${strip}</div>` : ""}
-            ${moods.length && kitEnabled() ? `<div><h3 class="pb2-sub">Moods</h3>${pb2Tags(moods)}</div>` : ""}
-          </div>`
-        : ""
-    }`;
-
-  // ── Who it's for
-  const audience = (data.audience || [])[0];
-  const goals = data.objective || [];
-  const who = [
-    data.businessSummary
-      ? `<p class="pb2-lead">${esc(data.businessSummary)}</p>`
-      : pb2Empty("No business summary yet."),
-    audience
-      ? `<div class="pb2-persona"><span class="pb2-persona__icon" aria-hidden="true"><i class="ap-icon-user"></i></span><div><span class="pb2-sub">Speaking to</span><p class="pb2-persona__text">${esc(audience)}</p></div></div>`
-      : "",
-    goals.length ? `<div><h3 class="pb2-sub">Goals</h3>${pb2Tags(goals)}</div>` : "",
-  ].join("");
-
-  // ── How it sounds — the voice as three words, then the lines it opens on.
-  const ve = voiceEntry(data);
-  const hooks = (ve.signatureHooks || []).filter(Boolean).slice(0, 3);
-  const traits = String(data.voiceProfile?.headline || "")
-    .split(/\s*[·•|,]\s*/)
-    .filter(Boolean)
-    .slice(0, 4);
-  const sounds = [
-    traits.length
-      ? `<p class="pb2-traits">${traits.map((t) => `<span class="pb2-trait">${esc(t.charAt(0).toUpperCase() + t.slice(1))}</span>`).join('<span class="pb2-trait__dot" aria-hidden="true"></span>')}</p>`
-      : "",
-    hooks.length
-      ? `<div><h3 class="pb2-sub">Opens with</h3><ul class="pb2-lines">${hooks
-          .map(
-            (h) => `<li class="pb2-line"><i class="ap-icon-quote" aria-hidden="true"></i><span>${esc(h)}</span></li>`,
-          )
-          .join("")}</ul></div>`
-      : "",
-    !traits.length && !hooks.length ? pb2Empty("No voice captured yet.") : "",
-  ].join("");
-
-  // ── Who it competes with
-  const cmps = competitorList(data).filter((c) => !c.suggested);
-  const pending = competitorList(data).length - cmps.length;
-  const rivals = cmps.length
-    ? `<ul class="pb2-rivals">${cmps
-        .slice(0, 8)
-        .map(
-          (c) =>
-            `<li class="pb2-rival"><span class="pb2-rival__logo">${renderCompetitorLogo(c, 36)}</span><span class="pb2-rival__text"><span class="pb2-rival__name">${esc(
-              c.name || competitorDomain(c),
-            )}</span><span class="pb2-rival__domain">${esc(competitorDomain(c))}</span></span></li>`,
-        )
-        .join("")}</ul>${cmps.length > 8 ? `<p class="pb2-more">and ${cmps.length - 8} more</p>` : ""}${
-        pending ? `<p class="pb2-more">${pending} suggested by Archie, waiting for your answer</p>` : ""
-      }`
-    : `<div class="pb2-void">
-        <span class="pb2-void__icon" aria-hidden="true"><i class="ap-icon-buildings"></i></span>
-        <div>
-          <p class="pb2-void__title">${pending ? `${pending} suggested by Archie` : "No competitors yet"}</p>
-          <p class="pb2-void__text">${
-            pending
-              ? "They're waiting for your answer — keep the ones that matter."
-              : "I can scan the market and suggest the brands this one is measured against."
-          }</p>
-        </div>
-      </div>`;
-
-  return `
-    <div class="pb2-overview">
-      ${overviewCard("brand", "How it looks", looks, { wide: true, index: 0 })}
-      ${overviewCard("goals", "Who it's for", who, { index: 1 })}
-      ${overviewCard("voice", "How it sounds", sounds, { index: 2 })}
-      ${overviewCard("competitors", "Who it competes with", rivals, { wide: true, index: 3 })}
-    </div>
-  `;
-}
-
 // Playbook 2.0: the Brand panel reads as two groups — what the brand IS (marks,
 // colours, type, personality) and what its images follow (moods, styles, rules).
 // Called by renderBrandPanel in EVERY mode: it must exist even with the flag off.
@@ -2404,12 +2264,11 @@ function renderBrandGroup(title) {
 function renderActivePanel(data) {
   const scope = editScope;
   // Editing opens the section's own form; reading gets the tab's spread.
-  if (activeTab === "goals") return scope === "goals" ? renderGoalsPanel(data, true) : renderGoalsRead2(data);
   if (activeTab === "voice")
     return scope === "voice" ? renderVoicePanel(data, true) : renderVoiceRead2(data, learnMenu());
   if (activeTab === "brand") return scope === "brand" ? renderBrandPanel(data, true) : renderBrandRead2(data);
   if (activeTab === "competitors") return renderCompetitorsPanel(data, scope === "competitors");
-  return renderOverview(data);
+  return scope === "goals" ? renderGoalsPanel(data, true) : renderGoalsRead2(data);
 }
 
 function renderHeaderMark(data, accent, primary) {

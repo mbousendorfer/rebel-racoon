@@ -1,6 +1,6 @@
 /* Playbook 2.0 (flag playbook2) — the saved Playbook's page, in tabs.
- * An identity header carrying the page's actions, DS tabs (sticky), then ONE
- * section per tab — or the Overview, the brand at a glance. The section panels
+ * An identity header, DS tabs (sticky), then ONE section per tab — the page's
+ * actions sit in the topbar. The section panels
  * are the recap's own (welcome.css); only the page around them changes here.
  */
 
@@ -162,46 +162,6 @@
   gap: var(--ref-spacing-lg);
 }
 
-/* ── Overview: the brand at a glance ─────────────────────────────────────
- * A brand-guidelines spread: the LOOK first and full width (marks, a continuous
- * palette strip, the type as a specimen, the brand's image styles), then who it
- * speaks to beside how it sounds, then who it competes with. Every card is the
- * door to its tab — the whole card, blue border on hover (the house's hover).
- * Brand colours are CONTENT here: they fill the strip, never the chrome. */
-
-.pb2-overview {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: var(--ref-spacing-md);
-}
-
-.pb2-card {
-  grid-column: span 6;
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-md);
-  padding: var(--ref-spacing-md) var(--ref-spacing-lg) var(--ref-spacing-lg);
-  border: 1px solid var(--ref-color-grey-20);
-  border-radius: var(--app-radius-card);
-  background: var(--ref-color-white);
-  cursor: pointer;
-  transition: border-color 0.15s ease;
-  animation: pb2-rise 0.32s cubic-bezier(0.2, 0.7, 0.2, 1) both;
-  animation-delay: calc(var(--pb2-i, 0) * 50ms);
-}
-
-.pb2-card--wide {
-  grid-column: 1 / -1;
-}
-
-.pb2-card:hover {
-  border-color: var(--ref-color-electric-blue-100);
-}
-
-.pb2-card:hover .pb2-card__open {
-  color: var(--ref-color-electric-blue-100);
-}
-
 @keyframes pb2-rise {
   from {
     opacity: 0;
@@ -213,18 +173,6 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .pb2-card {
-    animation: none;
-  }
-}
-
-.pb2-card__head {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-}
-
 .pb2-card__icon {
   display: inline-grid;
   place-items: center;
@@ -233,23 +181,6 @@
   flex-shrink: 0;
   border-radius: var(--ref-border-radius-md);
   background: var(--ref-color-grey-05);
-  color: var(--ref-color-grey-100);
-}
-
-.pb2-card__title {
-  flex: 1;
-  margin: 0;
-  font-family: var(--sys-text-style-subtitle-font-family);
-  font-size: var(--sys-text-style-subtitle-size);
-  line-height: var(--sys-text-style-subtitle-line-height);
-  font-weight: var(--ref-font-weight-bold);
-  color: var(--ref-color-grey-100);
-}
-
-.pb2-card__body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-md);
   color: var(--ref-color-grey-100);
 }
 
@@ -270,59 +201,6 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--ref-spacing-xxs);
-}
-
-.pb2-more {
-  margin: 0;
-  color: var(--ref-color-grey-80);
-  font-size: var(--ref-font-size-sm);
-}
-
-/* How it looks — three columns: the marks, the colour, the type. */
-.pb2-looks {
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.6fr) minmax(0, 1fr);
-  gap: var(--ref-spacing-lg);
-  align-items: start;
-}
-
-.pb2-marks {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--ref-spacing-xs);
-}
-
-.pb2-mark {
-  display: grid;
-  place-items: center;
-  aspect-ratio: 1;
-  padding: var(--ref-spacing-xs);
-  border-radius: var(--ref-border-radius-md);
-  background: var(--ref-color-grey-05);
-}
-
-.pb2-mark--lead {
-  grid-column: 1 / -1;
-  aspect-ratio: 2 / 1;
-  background: var(--ref-color-white);
-  box-shadow: inset 0 0 0 1px var(--ref-color-grey-20);
-}
-
-/* A reversed mark is made for a dark ground: give it one. */
-.pb2-mark--dark {
-  background: var(--ref-color-grey-100);
-}
-
-.pb2-mark img {
-  max-width: 78%;
-  max-height: 70%;
-  object-fit: contain;
-}
-
-.pb2-mark--mono {
-  font-size: var(--ref-font-size-xxxl);
-  font-weight: var(--ref-font-weight-bold);
-  color: var(--ref-color-grey-100);
 }
 
 /* The palette as ONE continuous strip, the way a guideline shows it. */
@@ -378,50 +256,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-.pb2-specimen {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xs);
-}
-
-.pb2-specimen__glyphs {
-  font-size: calc(var(--ref-font-size-xxxl) * 2.4);
-  line-height: 1;
-  font-weight: var(--ref-font-weight-bold);
-  letter-spacing: -0.03em;
-  color: var(--ref-color-grey-100);
-}
-
-.pb2-specimen__roles {
-  display: flex;
-  gap: var(--ref-spacing-md);
-  margin: 0;
-}
-
-.pb2-specimen__roles div {
-  display: flex;
-  flex-direction: column;
-}
-
-.pb2-specimen__roles dt {
-  font-size: var(--ref-font-size-xs);
-  color: var(--ref-color-grey-80);
-}
-
-.pb2-specimen__roles dd {
-  margin: 0;
-  font-weight: var(--ref-font-weight-bold);
-}
-
-.pb2-looks__imagery {
-  display: grid;
-  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
-  gap: var(--ref-spacing-lg);
-  padding-top: var(--ref-spacing-md);
-  border-top: 1px solid var(--ref-color-grey-20);
-}
-
-/* Who it's for */
+/* A lead paragraph, and the audience in its own inset. */
 .pb2-lead {
   margin: 0;
   font-size: var(--ref-font-size-md);
@@ -437,17 +272,6 @@
   background: var(--ref-color-grey-05);
 }
 
-.pb2-persona__icon {
-  display: inline-grid;
-  place-items: center;
-  width: var(--ref-spacing-lg);
-  height: var(--ref-spacing-lg);
-  flex-shrink: 0;
-  border-radius: var(--app-radius-circle);
-  background: var(--ref-color-white);
-  color: var(--ref-color-grey-100);
-}
-
 .pb2-persona .pb2-sub {
   margin: 0;
 }
@@ -458,7 +282,7 @@
   line-height: 1.45;
 }
 
-/* How it sounds — three words, large; then the lines it opens with. */
+/* The voice in three words, large; then the lines it opens and closes on. */
 .pb2-traits {
   display: flex;
   flex-wrap: wrap;
@@ -506,91 +330,6 @@
   margin-top: var(--ref-spacing-xxxs);
   color: var(--ref-color-grey-80);
   flex-shrink: 0;
-}
-
-/* Who it competes with — a row of logos, or a real empty state. */
-.pb2-rivals {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(calc(var(--ref-spacing-xxxl) * 3.4), 1fr));
-  gap: var(--ref-spacing-xs);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.pb2-rival {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  min-width: 0;
-  padding: var(--ref-spacing-xs);
-  border-radius: var(--ref-border-radius-md);
-  background: var(--ref-color-grey-05);
-}
-
-.pb2-rival__logo {
-  display: inline-flex;
-  flex-shrink: 0;
-}
-
-.pb2-rival__text {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.pb2-rival__name {
-  font-weight: var(--ref-font-weight-bold);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.pb2-rival__domain {
-  font-size: var(--ref-font-size-xs);
-  color: var(--ref-color-grey-80);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.pb2-void {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-sm);
-}
-
-.pb2-void__icon {
-  display: inline-grid;
-  place-items: center;
-  width: var(--ref-spacing-xl);
-  height: var(--ref-spacing-xl);
-  flex-shrink: 0;
-  border-radius: var(--app-radius-circle);
-  background: var(--ref-color-grey-05);
-  color: var(--ref-color-grey-80);
-  font-size: var(--ref-font-size-lg);
-}
-
-.pb2-void__title {
-  margin: 0;
-  font-weight: var(--ref-font-weight-bold);
-}
-
-.pb2-void__text {
-  margin: 0;
-  color: var(--ref-color-grey-80);
-}
-
-@media (max-width: 1100px) {
-  .pb2-card {
-    grid-column: 1 / -1;
-  }
-
-  .pb2-looks,
-  .pb2-looks__imagery {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }
 
 /* The Brand tab's two groups — Identity, Imagery. */

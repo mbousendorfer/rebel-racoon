@@ -9,14 +9,10 @@
 // the fiche's live data object, exactly like every other Brand row, and are
 // committed by the section's Save (snapshotEditable carries the fields).
 
-import { escapeHtml as esc } from "./utils.js?v=1401";
-import { isFlagOn } from "./feature-flags.js?v=1401";
-import { COLOR_ROLES, LOGO_VARIANTS, getContextById } from "./contexts-store.js?v=1401";
-import {
-  handlePlaybookStylesClick,
-  renderPlaybookStyleStrip,
-  renderPlaybookStyles,
-} from "./modules/image-studio/index.js?v=1401";
+import { escapeHtml as esc } from "./utils.js?v=1403";
+import { isFlagOn } from "./feature-flags.js?v=1403";
+import { COLOR_ROLES, LOGO_VARIANTS, getContextById } from "./contexts-store.js?v=1403";
+import { handlePlaybookStylesClick, renderPlaybookStyles } from "./modules/image-studio/index.js?v=1403";
 
 export const KIT_FLAG = "sexySquirrel";
 
@@ -311,12 +307,6 @@ export function handleKitChange(event, data) {
 export function renderImageStyles(data, canEdit) {
   if (!kitEnabled() || !data?.id || !getContextById(data.id)) return "";
   return renderPlaybookStyles(data.id, { canEdit });
-}
-
-/** The same styles as a strip of pictures, for the Playbook 2.0 Overview. */
-export function renderImageStyleStrip(data, max = 3) {
-  if (!kitEnabled() || !data?.id || !getContextById(data.id)) return "";
-  return renderPlaybookStyleStrip(data.id, max);
 }
 
 /** Always live, like Reference images: styles are managed outside the section's edit mode. */
