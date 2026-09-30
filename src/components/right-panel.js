@@ -1,8 +1,8 @@
-import { html, raw, escapeText, escapeAttr } from "../utils.js?v=1409";
-import { subscribe as subscribeThread } from "../assistant.js?v=1409";
-import { isFlagOn } from "../feature-flags.js?v=1409";
-import { getPath, navigate } from "../router.js?v=1409";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1409";
+import { html, raw } from "../utils.js?v=1410";
+import { subscribe as subscribeThread } from "../assistant.js?v=1410";
+import { isFlagOn } from "../feature-flags.js?v=1410";
+import { getPath, navigate } from "../router.js?v=1410";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1410";
 import {
   getPosts,
   removePost,
@@ -11,33 +11,28 @@ import {
   attachImageToDraft,
   updatePostClip,
   subscribe as subscribePostsStore,
-} from "../posts-store.js?v=1409";
-import { renderPostCard } from "./post-card.js?v=1409";
-import { renderTopPostEcho } from "./top-post-card.js?v=1409";
-import { renderClipCard } from "./clip-card.js?v=1409";
-import { onFeedbackClick } from "./feedback-control.js?v=1409";
+} from "../posts-store.js?v=1410";
+import { renderPostCard } from "./post-card.js?v=1410";
+import { onFeedbackClick } from "./feedback-control.js?v=1410";
 // Shared compact idea card — same component the standalone Ideas page uses.
-import { renderCompactIdeaCard } from "./idea-card-compact.js?v=1409";
-import { open as openVideoClipsModal } from "./video-clips-modal.js?v=1409";
-import { isSidebarCollapsed, setSidebarCollapsed, isAutoCollapsed } from "./sidebar.js?v=1409";
+import { open as openVideoClipsModal } from "./video-clips-modal.js?v=1410";
+import { isSidebarCollapsed, setSidebarCollapsed, isAutoCollapsed } from "./sidebar.js?v=1410";
 import {
   getSources as getStreamSources,
   subscribeSources,
   updateSourceClips,
   removeSources,
   renameSource,
-} from "../sources-stream.js?v=1409";
-import { open as openAddSourceModal } from "./add-source-modal.js?v=1409";
-import { open as openRenameModal } from "./rename-modal.js?v=1409";
-import { getConnectedConnectors } from "../connectors-store.js?v=1409";
-import { getSessionById } from "../sessions-store.js?v=1409";
-import { getContextById, getBrandKitGaps } from "../contexts-store.js?v=1409";
-import { quickGenerateUrl } from "../image-studio.js?v=1409";
-import { askConnector } from "../connector-ask.js?v=1409";
-import { renderConnectorLogo } from "../connectors-view.js?v=1409";
-import { open as openConnectorsModal } from "./connectors-modal.js?v=1409";
-import { addMention as addComposerMention } from "../composer-mentions.js?v=1409";
-import { getIdeas, removeIdeasForSources } from "../library.js?v=1409";
+} from "../sources-stream.js?v=1410";
+import { open as openAddSourceModal } from "./add-source-modal.js?v=1410";
+import { open as openRenameModal } from "./rename-modal.js?v=1410";
+import { getSessionById } from "../sessions-store.js?v=1410";
+import { getContextById, getBrandKitGaps } from "../contexts-store.js?v=1410";
+import { quickGenerateUrl } from "../image-studio.js?v=1410";
+import { askConnector } from "../connector-ask.js?v=1410";
+import { open as openConnectorsModal } from "./connectors-modal.js?v=1410";
+import { addMention as addComposerMention } from "../composer-mentions.js?v=1410";
+import { getIdeas, removeIdeasForSources } from "../library.js?v=1410";
 
 // The ideas of the chat the panel is looking at.
 //
@@ -48,18 +43,26 @@ import { getIdeas, removeIdeasForSources } from "../library.js?v=1409";
 // Resolved per call rather than cached: the panel outlives any single route,
 // and `activeSessionId()` is what tells it which chat is on screen. First-time
 // mode needs no special case — library.js seeds empty there.
-function sessionIdeas() {
+export function sessionIdeas() {
   const sid = activeSessionId();
   return sid ? getIdeas(sid) : [];
 }
-import { open as openNewScheduleModal } from "./schedule-modal.js?v=1409";
-import { open as openLegacyScheduleModal } from "./schedule-modal-legacy.js?v=1409";
-import { open as openImageStudio } from "./image-studio-v2/index.js?v=1409";
-import { openDraftStudio } from "../modules/image-studio/index.js?v=1409";
-import { startDraftImageFlow } from "../draft-image-flow.js?v=1409";
-import { open as openConfirmModal } from "./confirm-modal.js?v=1409";
-import { showToast } from "./toast.js?v=1409";
-import { networkMeta } from "../social-profiles.js?v=1409";
+import { open as openNewScheduleModal } from "./schedule-modal.js?v=1410";
+import { open as openLegacyScheduleModal } from "./schedule-modal-legacy.js?v=1410";
+import { open as openImageStudio } from "./image-studio-v2/index.js?v=1410";
+import { openDraftStudio } from "../modules/image-studio/index.js?v=1410";
+import { startDraftImageFlow } from "../draft-image-flow.js?v=1410";
+import { open as openConfirmModal } from "./confirm-modal.js?v=1410";
+import { showToast } from "./toast.js?v=1410";
+import { networkMeta } from "../social-profiles.js?v=1410";
+import { closeAllSourceMenus, renderSourcesView } from "./right-panel/sources-view.js?v=1410";
+import {
+  collectAllClips,
+  renderIdeasView,
+  toggleClipWhyInPlace,
+  toggleIdeaFeedback,
+  toggleWhyOpen,
+} from "./right-panel/ideas-view.js?v=1410";
 
 // Global Right Panel — slides in from the right edge of the viewport, overlays
 // the session workspace, hosts two modes:
@@ -86,34 +89,22 @@ const PANEL_MIN_WIDTH = 380;
 const PANEL_MAX_RIGHT_GAP = 400; // leave at least this much for sidebar+content
 const DRAFT_INLINE_EDIT_FLAG = "draftInlineEdit";
 
-// Idea kind taxonomy — handoff Ideas filter rail (§ 2.6). Order is the order
-// shown in the chip row. The .kind selector also drives the per-kind tag
-// color so each kind reads at a glance.
-const IDEA_KINDS = [
-  { id: "all", label: "All" },
-  { id: "hook", label: "Hooks" },
-  { id: "stat", label: "Stats" },
-  { id: "quote", label: "Quotes" },
-  { id: "story", label: "Stories" },
-  { id: "insight", label: "Insights" },
-];
-
 // Ideas-mode local UI state — filter chip + search query + sort axis +
 // the id of the single card currently expanded (accordion: only one open
 // at a time). Survives across renderPanel() calls but is reset when the
 // panel re-opens in a fresh session via renderIdeasBodyOnly().
-let ideasFilter = "all";
+export let ideasFilter = "all";
 
 // Outputs sub-view inside Ideas mode — "ideas" or "clips". Unifies the
 // two AI-extracted output types of a source under one persistent surface
 // so users keep their workflow continuity (PDF 06.B flow). When the
 // session's sources gain clips for the first time, the panel auto-flips
 // to the Clips tab so the result feels surfaced rather than buried.
-let outputsView = "ideas";
+export let outputsView = "ideas";
 
 // Per-clip selection inside the Clips tab — Set<clipId>. Multi-select
 // drives the sticky footer "Draft posts from N clips" CTA.
-let clipSelection = new Set();
+export let clipSelection = new Set();
 
 // Drafts-mode local UI state — Lot 21 rich-card view. Filter strip at the
 // top of the panel head drives both axes : status (all / needs_fixes /
@@ -739,7 +730,7 @@ export function init() {
       openVideoClipsModal(src, {
         onSaveClips: (id, nextClips) => updateSourceClips(id, nextClips),
         onUseClips: (selectedClips, source) => {
-          import("../screens/session/clip-draft-flow.js?v=1409").then(({ startClipDraftFlow }) => {
+          import("../screens/session/clip-draft-flow.js?v=1410").then(({ startClipDraftFlow }) => {
             startClipDraftFlow(
               sid,
               selectedClips.map((clip) => ({ clip, sourceName: source.filename, sourceId: source.id })),
@@ -920,7 +911,7 @@ export function init() {
       const sid = activeSessionId();
       if (!sid || !entry) return;
       const { clip, sourceName, sourceId } = entry;
-      import("../screens/session/clip-draft-flow.js?v=1409").then(({ startClipDraftFlow }) => {
+      import("../screens/session/clip-draft-flow.js?v=1410").then(({ startClipDraftFlow }) => {
         startClipDraftFlow(sid, [{ clip, sourceName, sourceId }]);
       });
       return;
@@ -938,7 +929,7 @@ export function init() {
       if (picked.length === 0) return;
       clipSelection = new Set();
       renderPanel();
-      import("../screens/session/clip-draft-flow.js?v=1409").then(({ startClipDraftFlow }) => {
+      import("../screens/session/clip-draft-flow.js?v=1410").then(({ startClipDraftFlow }) => {
         startClipDraftFlow(sid, picked);
       });
       return;
@@ -1173,7 +1164,7 @@ export function init() {
 // Inline close button — placed as the last item of a mode's first control
 // row so it aligns with the tabs / select on the row's flex baseline (no
 // absolute positioning, no custom surface — a plain DS icon-button).
-const RPANEL_CLOSE_INLINE = `
+export const RPANEL_CLOSE_INLINE = `
   <button
     type="button"
     class="ap-icon-button transparent rpanel-row-close"
@@ -1317,7 +1308,7 @@ function endResizeDrag() {
 // reflects the route, regardless of which assistant message kicked it
 // open. Falls back to the activeBatchRef session when the URL doesn't
 // match a session route.
-function activeSessionId() {
+export function activeSessionId() {
   const m = /^\/session\/([^/?]+)/.exec(getPath());
   if (m) return m[1];
   return state.activeBatchRef?.sessionId || null;
@@ -1591,7 +1582,7 @@ function onPostRewrite(postId, intent = "fresh") {
   // streaming → commit. Loaded lazily so the rewrite code is only
   // pulled in when the user actually triggers a regen. `intent` biases
   // the rewrite (shorter / longer / warmer / formal / fresh).
-  import("../draft-rewrite.js?v=1409").then(({ startRewrite }) => {
+  import("../draft-rewrite.js?v=1410").then(({ startRewrite }) => {
     startRewrite(sid, postId, intent);
   });
 }
@@ -1743,7 +1734,7 @@ function onSectionSave(network) {
   if (snapshot.length === 0) return;
   const count = snapshot.length;
   const draftWord = count === 1 ? "draft" : "drafts";
-  Promise.all([import("./save-folder-modal.js?v=1409"), import("../folders-store.js?v=1409")]).then(
+  Promise.all([import("./save-folder-modal.js?v=1410"), import("../folders-store.js?v=1410")]).then(
     ([{ open: openSaveModal }, { addDraftsToFolder }]) => {
       openSaveModal({
         count,
@@ -2052,7 +2043,7 @@ function parseEditorBody(raw) {
 // "Attach source" trigger — a DS <details> menu offering the three add
 // methods (Upload / URL / Paste text). Each item opens its own dedicated,
 // single-purpose add-source modal; there's no longer a tabbed picker.
-function renderAttachMenu(btnClass, label) {
+export function renderAttachMenu(btnClass, label) {
   return `
     <details class="ap-select rpanel-sources__attach">
       <summary class="ap-button ${btnClass} rpanel-sources__attach-trigger">
@@ -2074,587 +2065,17 @@ function renderAttachMenu(btnClass, label) {
     </details>`;
 }
 
-// Sources mode view — list of source rows for the active session + a
-// trailing "+ Attach" button. Each row carries kind icon, filename,
-// signal/idea-count meta, and per-row Open + Detach actions. The list
-// reads from sources-stream's per-session map and re-renders on every
-// notify from the session's sources subscription bound at init time.
-function renderSourcesView() {
-  const sid = activeSessionId();
-  if (!sid) {
-    return `
-      <div class="rpanel-sources">
-        <div class="app-right-panel__empty">
-          <div class="app-right-panel__empty-icon"><i class="ap-icon-file"></i></div>
-          <div class="app-right-panel__empty-title">Open a chat</div>
-          <div class="app-right-panel__empty-sub">Sources attach to a chat. Start or open one to manage its sources.</div>
-        </div>
-      </div>
-    `;
-  }
-  const sources = getStreamSources(sid);
-  const rows = sources.map((src) => renderSourceRow(src)).join("");
-  const head = `
-    <div class="rpanel-sources__head">
-      <div class="rpanel-sources__head-text">
-        <div class="rpanel-sources__count">${sources.length} source${sources.length === 1 ? "" : "s"} in this chat</div>
-        <div class="rpanel-sources__sub muted">These sources feed this chat's ideas.</div>
-      </div>
-      ${renderAttachMenu("stroked grey", "Attach source")}
-      ${RPANEL_CLOSE_INLINE}
-    </div>
-  `;
-  const liveBlock = renderLiveConnectors();
-  if (sources.length === 0) {
-    return `
-      <div class="rpanel-sources">
-        ${head}
-        ${liveBlock}
-        <div class="app-right-panel__empty rpanel-sources__empty">
-          <div class="app-right-panel__empty-icon"><i class="ap-icon-file"></i></div>
-          <div class="app-right-panel__empty-title">No sources yet</div>
-          <div class="app-right-panel__empty-sub">Attach a file or pick from a connector to start.</div>
-          <div class="app-right-panel__empty-action">
-            ${renderAttachMenu("primary orange", "Attach a source")}
-          </div>
-        </div>
-      </div>
-    `;
-  }
-  return `
-    <div class="rpanel-sources">
-      ${head}
-      ${liveBlock}
-      <div class="rpanel-sources__list">${rows}</div>
-    </div>
-  `;
-}
-
-// Connected connectors surface as LIVE sources at the top of the Sources view:
-// nothing is imported — clicking Ask queries the connector live in chat
-// (simulated MCP, see connector-ask.js). Distinct from the frozen file sources
-// listed below.
-function renderLiveConnectors() {
-  // Gated behind the connectors feature flag (default OFF).
-  if (!isFlagOn("connectors")) return "";
-  const connected = getConnectedConnectors();
-  const rows = connected
-    .map(
-      (c) => `
-      <div class="rpanel-sources__row rpanel-live-connector" data-connector-id="${escapeAttr(c.id)}">
-        <div class="rpanel-sources__card-head">
-          <span class="rpanel-live-connector__logo" aria-hidden="true">${renderConnectorLogo(c, 24)}</span>
-          <div class="rpanel-sources__row-name" title="${escapeAttr(c.name)}">${escapeText(c.name)}</div>
-          <span class="ap-tag blue rpanel-live-connector__badge">Live</span>
-          <button
-            type="button"
-            class="ap-button ghost blue rpanel-sources__row-mention"
-            data-rpanel-ask-connector="${escapeAttr(c.id)}"
-            aria-label="Start a chat with ${escapeAttr(c.name)}"
-            title="Start a chat"
-          >
-            <i class="ap-icon-single-chat-bubble"></i>
-            <span>Start a chat</span>
-          </button>
-        </div>
-      </div>`,
-    )
-    .join("");
-  // Always rendered (even with 0 connected) so the "Connect" entry point is
-  // available right here — opens the connectors modal scoped to this chat.
-  const body = connected.length
-    ? `<div class="rpanel-sources__list rpanel-live-connectors__list">${rows}</div>`
-    : `<div class="rpanel-live-connectors__empty muted">Connect a tool to query its content live in chat.</div>`;
-  return `
-    <div class="rpanel-live-connectors">
-      <div class="rpanel-live-connectors__head">
-        <span class="rpanel-live-connectors__title">Live connectors</span>
-        ${connected.length ? `<span class="ap-counter normal grey">${connected.length}</span>` : ""}
-        <button type="button" class="ap-button ghost blue rpanel-live-connectors__manage" data-rpanel-open-connectors>
-          <i class="ap-icon-plus"></i><span>Connect</span>
-        </button>
-      </div>
-      ${body}
-    </div>`;
-}
-
-const SOURCE_KIND_ICON = {
-  PDF: "ap-icon-file--pdf",
-  Word: "ap-icon-file--text",
-  Text: "ap-icon-file--text",
-  Video: "ap-icon-file--video",
-  Audio: "ap-icon-file",
-  Image: "ap-icon-file--image",
-  URL: "ap-icon-link",
-};
-
-// Close every open source-card kebab dropdown (except `except`), resetting the
-// trigger's aria-expanded. One menu open at a time.
-function closeAllSourceMenus(except) {
-  document.querySelectorAll(".rpanel-sources__more-menu:not([hidden])").forEach((menu) => {
-    if (menu === except) return;
-    menu.hidden = true;
-    const trigger = document.querySelector(`[aria-controls="${menu.id}"]`);
-    if (trigger) trigger.setAttribute("aria-expanded", "false");
-  });
-}
-
-export function renderSourceRow(src) {
-  // Explicit iconClass wins (e.g. a repurposed post's network logo), else map
-  // by kind, else the generic file glyph.
-  const icon = src.iconClass || SOURCE_KIND_ICON[src.kind] || "ap-icon-file";
-  const isProcessing = src.status !== "Processed";
-  // Only surface a status pill while the source is in-flight. Once
-  // Processed, the card stays uncluttered. Mermaid-tinted pill mirrors
-  // source-card's processing chip so the "AI is working" cue stays
-  // consistent across surfaces.
-  const stageLabel = isProcessing ? src.stage || "Processing" : "";
-  const statusEl = isProcessing
-    ? `<span class="source-card__processing-pill rpanel-sources__row-status" role="status">
-         <i class="ap-icon-archie-official"></i>
-         <span class="source-card__processing-pill-label">${escapeText(stageLabel)}…</span>
-       </span>`
-    : "";
-
-  // Ideas this source produced — each title is a link into the Outputs ›
-  // Ideas tab (focuses + pulses that card). Resolved from the same list the
-  // Ideas tab renders, so every link has a live target. Mirrors
-  // the idea/clip card grammar (card content → footer actions).
-  const sourceIdeas = sessionIdeas().filter((i) => Array.isArray(i.sourceIds) && i.sourceIds.includes(src.id));
-  const ideasList =
-    !isProcessing && sourceIdeas.length
-      ? `<ul class="rpanel-sources__ideas">
-          ${sourceIdeas
-            .map(
-              (i) => `
-              <li>
-                <button type="button" class="rpanel-sources__idea-link" data-rpanel-source-idea="${escapeAttr(i.id)}" title="${escapeAttr(i.title)}">
-                  <i class="ap-icon-archie-official rpanel-sources__idea-icon" aria-hidden="true"></i>
-                  <span class="rpanel-sources__idea-title">${escapeText(i.title)}</span>
-                  ${i.kind ? `<span class="rpanel-sources__idea-kind muted">${escapeText(i.kind)}</span>` : ""}
-                  <i class="ap-icon-chevron-right rpanel-sources__idea-chevron" aria-hidden="true"></i>
-                </button>
-              </li>`,
-            )
-            .join("")}
-        </ul>`
-      : "";
-
-  const mentionBtn = !isProcessing
-    ? `<button
-        type="button"
-        class="ap-button ghost blue rpanel-sources__row-mention"
-        data-rpanel-mention-source="${src.id}"
-        aria-label="Reference ${escapeAttr(src.filename)} in composer"
-        title="Reference"
-      >
-        <i class="ap-icon-at"></i>
-        <span>Reference</span>
-      </button>`
-    : "";
-  // Kebab menu (…) on the head row, to the right of Mention. DS
-  // .ap-action-dropdown; one menu open at a time (see closeAllSourceMenus +
-  // the document listeners in init). Always available — even while
-  // processing.
-  const menuId = `src-more-${src.id}`;
-  // Video sources expose a "View clips" entry that opens the Video Clips modal
-  // (browse mode) — every clip cut from this video, plus the "Add clip" CTA to
-  // create one manually. Count surfaced when clips already exist.
-  const isVideo = src.kind === "Video";
-  const clipCount = Array.isArray(src.clips) ? src.clips.length : 0;
-  const viewClipsItem = isVideo
-    ? `<button type="button" role="menuitem" class="ap-action-dropdown-item" data-rpanel-source-clips="${src.id}">
-          <i class="ap-icon-video"></i>
-          <div class="ap-action-dropdown-item-text">
-            <div class="ap-action-dropdown-item-label-container">
-              <span class="ap-action-dropdown-item-label">View clips${clipCount ? ` (${clipCount})` : ""}</span>
-            </div>
-          </div>
-        </button>`
-    : "";
-  const moreMenu = `
-    <div class="rpanel-sources__more-wrap">
-      <button
-        type="button"
-        class="ap-icon-button transparent rpanel-sources__row-more"
-        data-rpanel-source-more="${src.id}"
-        aria-haspopup="menu"
-        aria-expanded="false"
-        aria-controls="${menuId}"
-        aria-label="More actions for ${escapeAttr(src.filename)}"
-        title="More actions"
-      >
-        <i class="ap-icon-more"></i>
-      </button>
-      <div id="${menuId}" class="ap-action-dropdown rpanel-sources__more-menu" role="menu" hidden>
-        ${viewClipsItem}
-        <button type="button" role="menuitem" class="ap-action-dropdown-item" data-rpanel-source-rename="${src.id}">
-          <i class="ap-icon-pen"></i>
-          <div class="ap-action-dropdown-item-text">
-            <div class="ap-action-dropdown-item-label-container">
-              <span class="ap-action-dropdown-item-label">Edit name</span>
-            </div>
-          </div>
-        </button>
-        <button type="button" role="menuitem" class="ap-action-dropdown-item" data-rpanel-source-reanalyze="${src.id}">
-          <i class="ap-icon-refresh"></i>
-          <div class="ap-action-dropdown-item-text">
-            <div class="ap-action-dropdown-item-label-container">
-              <span class="ap-action-dropdown-item-label">Reanalyze</span>
-            </div>
-          </div>
-        </button>
-        <button type="button" role="menuitem" class="ap-action-dropdown-item red-mode" data-rpanel-sources-detach="${src.id}">
-          <i class="ap-icon-trash"></i>
-          <div class="ap-action-dropdown-item-text">
-            <div class="ap-action-dropdown-item-label-container">
-              <span class="ap-action-dropdown-item-label">Delete source</span>
-            </div>
-          </div>
-        </button>
-      </div>
-    </div>`;
-
-  // A repurposed top post renders the real winner card (renderTopPostEcho) in
-  // place of the generic icon + name + preview, so its Sources row matches the
-  // card the user picked it from.
-  const headMain = src.topPost
-    ? `<div class="rpanel-sources__toppost">${renderTopPostEcho(src.topPost)}</div>`
-    : `<span class="rpanel-sources__row-icon" aria-hidden="true">${
-        src.serviceLogo
-          ? `<img class="rpanel-sources__row-logo" src="${escapeAttr(src.serviceLogo)}" alt="" />`
-          : `<i class="${icon}"></i>`
-      }</span>
-        <div class="rpanel-sources__row-text">
-          <div class="rpanel-sources__row-name" title="${escapeAttr(src.filename)}">${escapeText(src.filename)}</div>
-          ${src.preview ? `<div class="rpanel-sources__row-preview" title="${escapeAttr(src.preview)}">${escapeText(src.preview)}</div>` : ""}
-        </div>`;
-
-  // A repurposed top post is a real stream source, so it gets the same card
-  // frame and Reference / kebab actions as a file source. The rich winner echo
-  // sits flush as the card body (its own border/shadow stripped in CSS) and the
-  // actions live in a footer bar below it — "content → footer actions", the same
-  // grammar as the idea/clip cards. No ideas list: it produced drafts, not
-  // extracted ideas (sourceIdeas is empty for it anyway).
-  if (src.topPost) {
-    return `
-      <div class="rpanel-sources__row rpanel-sources__row--toppost" data-source-id="${src.id}">
-        ${headMain}
-        <div class="rpanel-sources__toppost-foot">
-          ${statusEl}
-          ${mentionBtn}
-          ${moreMenu}
-        </div>
-      </div>
-    `;
-  }
-
-  return `
-    <div class="rpanel-sources__row" data-source-id="${src.id}">
-      <div class="rpanel-sources__card-head">
-        ${headMain}
-        ${statusEl}
-        ${mentionBtn}
-        ${moreMenu}
-      </div>
-      ${ideasList}
-    </div>
-  `;
-}
-
-function renderIdeasView() {
-  const ideaCount = sessionIdeas().length;
-  const clips = collectAllClips();
-  const clipCount = clips.length;
-  const ideasActive = outputsView === "ideas";
-
-  // Outputs tabs — Ideas | Clips. Always rendered so the user can
-  // discover the Clips surface even when empty; the Clips tab carries
-  // an empty state on its own when no clips have been extracted yet.
-  const tabs = `
-    <div class="ap-tabs rpanel-outputs__tabs">
-      <div class="ap-tabs-nav">
-        <button
-          type="button"
-          class="ap-tabs-tab ${ideasActive ? "active" : ""}"
-          data-rpanel-outputs-tab="ideas"
-          role="tab"
-          aria-selected="${ideasActive}"
-        >
-          <span>Ideas</span>
-          ${ideaCount > 0 ? `<span class="ap-counter normal ${ideasActive ? "blue" : "grey"}">${ideaCount}</span>` : ""}
-        </button>
-        <button
-          type="button"
-          class="ap-tabs-tab ${!ideasActive ? "active" : ""}"
-          data-rpanel-outputs-tab="clips"
-          role="tab"
-          aria-selected="${!ideasActive}"
-        >
-          <span>Clips</span>
-          ${clipCount > 0 ? `<span class="ap-counter normal ${!ideasActive ? "blue" : "grey"}">${clipCount}</span>` : ""}
-        </button>
-      </div>
-      ${RPANEL_CLOSE_INLINE}
-    </div>
-  `;
-
-  if (!ideasActive) {
-    return html`
-      <div class="rpanel-ideas">
-        ${raw(tabs)}
-        <div class="rpanel-ideas__body" data-rpanel-ideas-body>${raw(renderClipsList(clips))}</div>
-      </div>
-    `;
-  }
-
-  // Counts per kind for the filter chips — "All (12)" / "Stats (4)".
-  const totalCount = sessionIdeas().length;
-  const kindCounts = IDEA_KINDS.reduce((acc, k) => {
-    acc[k.id] = k.id === "all" ? totalCount : sessionIdeas().filter((i) => i.kind === k.id).length;
-    return acc;
-  }, {});
-
-  return html`
-    <div class="rpanel-ideas">
-      ${raw(tabs)}
-      <div class="rpanel-ideas__head">
-        <div class="rpanel-ideas__filters" role="tablist">
-          ${raw(
-            IDEA_KINDS.map(
-              (k) => `
-                <button
-                  type="button"
-                  class="ap-filter-chip"
-                  data-rpanel-ideas-filter="${k.id}"
-                  role="tab"
-                  aria-pressed="${ideasFilter === k.id}"
-                  aria-selected="${ideasFilter === k.id}"
-                >
-                  <span>${k.label}</span>
-                  <span class="ap-filter-chip-count">${kindCounts[k.id]}</span>
-                </button>
-              `,
-            ).join(""),
-          )}
-        </div>
-      </div>
-      <div class="rpanel-ideas__body" data-rpanel-ideas-body>${raw(renderIdeasList())}</div>
-    </div>
-  `;
-}
-
-// Walk all sources in the workspace and aggregate any attached clips with
-// their source attribution so the unified panel knows where each clip
-// came from. Returns a flat array of { clip, sourceName, sourceId }.
-function collectAllClips() {
-  const sid = activeSessionId();
-  if (!sid) return [];
-  const sources = getStreamSources(sid);
-  const out = [];
-  for (const src of sources) {
-    if (!Array.isArray(src.clips) || src.clips.length === 0) continue;
-    for (const clip of src.clips) {
-      out.push({
-        clip,
-        sourceName: src.filename || "Source",
-        sourceKind: src.kind || "Video",
-        sourceId: src.id,
-      });
-    }
-  }
-  return out;
-}
-
-function renderClipsList(entries) {
-  if (!Array.isArray(entries) || entries.length === 0) {
-    return html`
-      <div class="app-right-panel__empty rpanel-ideas__no-match">
-        <div class="app-right-panel__empty-icon"><i class="ap-icon-file--video"></i></div>
-        <div class="app-right-panel__empty-title">No clips yet</div>
-        <div class="app-right-panel__empty-sub">
-          Drop a video into the chat and pick <strong>Create clips</strong> to extract short segments here.
-        </div>
-      </div>
-    `;
-  }
-
-  const sid = activeSessionId();
-  const cards = entries
-    .map(({ clip, sourceName, sourceKind }) => {
-      const selected = clipSelection.has(clip.id);
-      // Checkbox in a left gutter OUTSIDE the card (mirrors the Drafts rows),
-      // then the clip card.
-      return `
-        <div class="rpanel-outputs__clip-row${selected ? " is-selected" : ""}">
-          <div class="rpanel-outputs__clip-check">
-            <label class="ap-checkbox-container" aria-label="Select clip">
-              <input type="checkbox" data-clip-select="${clip.id}" ${selected ? "checked" : ""} />
-              <i></i>
-            </label>
-          </div>
-          ${renderClipCard(clip, {
-            sourceName,
-            sourceKind,
-            sessionId: sid,
-            whyOpen: isClipWhyOpen(clip.id),
-            selected,
-          })}
-        </div>`;
-    })
-    .join("");
-
-  // Bulk band — mirrors the Drafts group band: a select-all checkbox + count,
-  // and (once a selection exists) auto-width actions to draft or delete the
-  // selected clips at once. Reuses the .rpanel-drafts__group-* chrome so the two
-  // surfaces read the same; no full-width footer button.
-  const total = entries.length;
-  const selectedCount = entries.filter(({ clip }) => clipSelection.has(clip.id)).length;
-  const selecting = selectedCount > 0;
-  const allSelected = total > 0 && selectedCount === total;
-  const indeterminate = selecting && !allSelected;
-  const countLabel = selecting ? `· ${selectedCount} selected` : `· ${total} clip${total > 1 ? "s" : ""}`;
-  const actions = selecting
-    ? `
-        <div class="rpanel-drafts__group-actions">
-          <button type="button" class="ap-button stroked blue" data-rpanel-clips-draft>
-            <i class="ap-icon-archie-official"></i>
-            <span>Draft ${selectedCount > 1 ? "posts" : "post"}</span>
-          </button>
-          <button type="button" class="ap-icon-button" data-rpanel-clips-delete aria-label="Delete ${selectedCount} selected clip${selectedCount > 1 ? "s" : ""}">
-            <i class="ap-icon-trash" aria-hidden="true"></i>
-          </button>
-        </div>`
-    : "";
-  const band = `
-    <div class="rpanel-drafts__group-header rpanel-outputs__band${selecting ? " is-selecting" : ""}">
-      <div class="rpanel-drafts__group-band">
-        <label class="ap-checkbox-container ${indeterminate ? "indeterminate" : ""}" aria-label="Select all clips">
-          <input type="checkbox" data-rpanel-clips-select-all ${allSelected ? "checked" : ""} />
-          <i></i>
-        </label>
-        <div class="rpanel-drafts__group-identity">
-          <i class="ap-icon-file--video rpanel-drafts__group-icon" aria-hidden="true"></i>
-          <span class="rpanel-drafts__group-label">Clips</span>
-          <span class="rpanel-drafts__group-count">${countLabel}</span>
-        </div>
-        ${actions}
-      </div>
-    </div>
-  `;
-
-  return `
-    ${band}
-    <div class="rpanel-outputs__clips">${cards}</div>
-  `;
-}
-
-function renderIdeasList() {
-  // Order matches the seed array (newest-first by convention in mocks);
-  // the active kind filter narrows the list.
-  const sorted = sessionIdeas().filter((i) => ideasFilter === "all" || i.kind === ideasFilter);
-  if (sorted.length === 0) {
-    return html`
-      <div class="app-right-panel__empty rpanel-ideas__no-match">
-        <div class="app-right-panel__empty-icon"><i class="ap-icon-archie-official"></i></div>
-        <div class="app-right-panel__empty-title">No ideas match</div>
-        <div class="app-right-panel__empty-sub">Switch to a different kind, or pick All to broaden the list.</div>
-        <div class="app-right-panel__empty-action">
-          <button type="button" class="ap-button stroked grey" data-rpanel-ideas-clear>Clear filters</button>
-        </div>
-      </div>
-    `;
-  }
-
-  return `<div class="rpanel-ideas__grid">${sorted.map((i) => renderIdeaCompact(i)).join("")}</div>`;
-}
-
-function renderIdeasBodyOnly() {
-  const body = document.querySelector("[data-rpanel-ideas-body]");
-  if (body) body.innerHTML = renderIdeasList();
-}
-
 // ── Card-level helper — thumbs feedback ─────────────────────────────
 //
 // Tracks the user's reaction per idea in a module-local Map so the
 // state survives renders without leaking onto the seeded mock object.
 // Clicking the same verdict again clears it (toggle off).
 
-const ideaFeedback = new Map(); // ideaId → 'up' | 'down'
+// ideaId → 'up' | 'down'
 
-function getIdeaFeedback(ideaId) {
-  return ideaFeedback.get(ideaId) || null;
-}
+// ideaId → boolean
 
-function toggleIdeaFeedback(ideaId, verdict) {
-  if (verdict !== "up" && verdict !== "down") return;
-  const current = ideaFeedback.get(ideaId);
-  if (current === verdict) ideaFeedback.delete(ideaId);
-  else ideaFeedback.set(ideaId, verdict);
-  renderIdeasBodyOnly();
-}
-
-// Per-idea collapse state for the "Why this idea" panel. Default
-// collapsed so a long list of idea cards stays scannable; the user
-// opts in per-card via the head toggle. Toggle persists for the
-// lifetime of the module so re-renders don't reset user intent.
-const ideaWhyOpen = new Map(); // ideaId → boolean
-
-function isWhyOpen(ideaId) {
-  const stored = ideaWhyOpen.get(ideaId);
-  return stored === undefined ? false : stored;
-}
-
-function toggleWhyOpen(ideaId) {
-  ideaWhyOpen.set(ideaId, !isWhyOpen(ideaId));
-  renderIdeasBodyOnly();
-}
-
-// Per-clip Why-open state — module-local mock (no persistence). The Map
-// survives re-renders so a future full repaint reflects the user's choice;
-// the in-place toggle helper below mutates the DOM directly to keep the
-// clips list's scroll position when the user expands a card mid-list.
-// (Clip thumbs/reasons feedback now lives in the shared feedback-store via
-// the feedback-control, so there is no clipFeedback Map here anymore.)
-const clipWhyOpen = new Map(); // clipId → boolean
-
-function isClipWhyOpen(clipId) {
-  const stored = clipWhyOpen.get(clipId);
-  return stored === undefined ? false : stored;
-}
-
-// In-place "Why this clip" toggle — flips state Map AND mutates the
-// section's open attribute, body hidden flag, chevron icon class, and
-// aria-expanded. No re-render → scroll stays put.
-function toggleClipWhyInPlace(clipId, headBtn) {
-  const next = !isClipWhyOpen(clipId);
-  clipWhyOpen.set(clipId, next);
-
-  const section = headBtn.closest(".rpanel-ideas__why");
-  if (section) section.setAttribute("data-why-open", next ? "true" : "false");
-  headBtn.setAttribute("aria-expanded", next ? "true" : "false");
-  const bodyId = headBtn.getAttribute("aria-controls");
-  const body = bodyId ? document.getElementById(bodyId) : null;
-  if (body) body.hidden = !next;
-  const chevron = headBtn.querySelector(".rpanel-ideas__why-chevron");
-  if (chevron) {
-    chevron.classList.toggle("ap-icon-chevron-down", !next);
-    chevron.classList.toggle("ap-icon-chevron-up", next);
-  }
-}
-
-function renderIdeaCompact(idea) {
-  // Resolve linked sources for the current session so the head shows real
-  // filenames + per-kind icons. The shared renderer owns the markup; the
-  // panel just feeds it the session sources + this card's feedback/why state.
-  const sid = activeSessionId();
-  const sessionSources = sid ? getStreamSources(sid) : [];
-  return renderCompactIdeaCard(idea, sessionSources, {
-    verdict: getIdeaFeedback(idea.id),
-    whyOpen: isWhyOpen(idea.id),
-    showMention: true,
-  });
-}
+// clipId → boolean
 
 // Closes the panel and hands off to the session screen's inline-question
 // picker: "How many drafts from this idea?". The picked count drives the
@@ -2665,7 +2086,7 @@ function useIdea(ideaId) {
   if (!idea) return;
   const sid = activeSessionId();
   if (!sid) return;
-  import("../screens/session/draft-questions.js?v=1409").then(({ askAngleQuestion }) => {
+  import("../screens/session/draft-questions.js?v=1410").then(({ askAngleQuestion }) => {
     askAngleQuestion(sid, ideaId);
   });
 }
