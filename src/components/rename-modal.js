@@ -15,7 +15,7 @@
 //   - Input is auto-focused + full text selected on open so the user
 //     can immediately overtype or accept.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1407";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1408";
 
 const MODAL_ID = "rename";
 

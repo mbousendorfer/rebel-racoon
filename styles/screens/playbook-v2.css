@@ -155,20 +155,22 @@
   border-top-right-radius: var(--ref-border-radius-md);
 }
 
+/* The same sentence, the same weight, as the read-mode tab head above it. */
 .pb2-panel-lead {
   margin: 0;
   flex: 1;
   min-width: 0;
-  color: var(--ref-color-grey-80);
-  font-size: var(--ref-font-size-sm);
+  color: var(--ref-color-grey-100);
+  font-size: var(--ref-font-size-lg);
+  line-height: var(--sys-text-style-h2-line-height);
 }
 
 .pb2__panel {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-sm);
-  /* + the body's 24 = 32 under the tabs; the 16 above ties the lead to its blocks. */
-  padding-top: var(--ref-spacing-xxs);
+  /* With the tab head's own 8 of padding: 32 under the tabs to the lead, 16
+     from the lead to its blocks — the lead stays tied to its tab's content. */
+  gap: var(--ref-spacing-xxs);
 }
 
 @keyframes pb2-rise {
@@ -345,17 +347,28 @@
 
 /* ── The other tabs, in read mode — a spread of blocks ──────────────────── */
 
+/* The tab's head sticks under the tabs, exactly where the edit bar (Cancel /
+ * Save) sticks once Edit is pressed: the button that opens the edit and the
+ * ones that close it live in the same place, always in reach. */
 .pb2-tabhead {
+  position: sticky;
+  top: var(--pb2-tabs-h, 0px);
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--ref-spacing-md);
+  padding: var(--ref-spacing-xxs) 0;
+  background: var(--app-bg);
 }
 
+/* The tab's sentence: full ink and a step up, regular so it never passes for
+   a bold block title. */
 .pb2-tabhead__lead {
   margin: 0;
-  color: var(--ref-color-grey-80);
-  font-size: var(--ref-font-size-md);
+  color: var(--ref-color-grey-100);
+  font-size: var(--ref-font-size-lg);
+  line-height: var(--sys-text-style-h2-line-height);
 }
 
 .pb2-tabhead__actions {
