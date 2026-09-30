@@ -324,15 +324,6 @@
   gap: var(--ref-spacing-xs);
 }
 
-/* The empty state's two actions: the button, then the link below it
-   (references/empty-states.md). */
-.topics-view__empty-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--ref-spacing-sm);
-}
-
 /* ── Load more ───────────────────────────────────────────────────────────── */
 
 .topics-view__more {

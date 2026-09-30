@@ -32,16 +32,16 @@
 // view. There is an explicit Load more too, and both do exactly the same thing —
 // an infinite list with no button is unusable by keyboard.
 
-import { html, raw, escapeAttr } from "../utils.js?v=1426";
-import { navigate, getPath } from "../router.js?v=1426";
-import { isFlagOn } from "../feature-flags.js?v=1426";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1426";
-import { renderTopbar } from "../components/topbar.js?v=1426";
-import { showToast } from "../components/toast.js?v=1426";
-import { renderEmptyState } from "../components/empty-state.js?v=1426";
-import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=1426";
-import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=1426";
-import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1426";
+import { html, raw, escapeAttr } from "../utils.js?v=1427";
+import { navigate, getPath } from "../router.js?v=1427";
+import { isFlagOn } from "../feature-flags.js?v=1427";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1427";
+import { renderTopbar } from "../components/topbar.js?v=1427";
+import { showToast } from "../components/toast.js?v=1427";
+import { renderEmptyState } from "../components/empty-state.js?v=1427";
+import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=1427";
+import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=1427";
+import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1427";
 import {
   getTopicsForFeed,
   groupTopicsByAge,
@@ -52,7 +52,7 @@ import {
   ignoreTopic,
   unignoreTopic,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=1426";
+} from "../topics-store.js?v=1427";
 import {
   TOPIC_SOURCES,
   TOPIC_KINDS,
@@ -61,13 +61,13 @@ import {
   findTopicSource,
   findCadence,
   isLiveSource,
-} from "../topics-catalog.js?v=1426";
-import { renderTopicCard } from "../components/topic-card.js?v=1426";
-import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=1426";
-import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=1426";
-import { openTopicHistory } from "../components/topic-history-modal.js?v=1426";
-import { useTopicInChat } from "../topic-flow.js?v=1426";
-import { canEdit } from "../playbook-access.js?v=1426";
+} from "../topics-catalog.js?v=1427";
+import { renderTopicCard } from "../components/topic-card.js?v=1427";
+import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=1427";
+import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=1427";
+import { openTopicHistory } from "../components/topic-history-modal.js?v=1427";
+import { useTopicInChat } from "../topic-flow.js?v=1427";
+import { canEdit } from "../playbook-access.js?v=1427";
 
 const PAGE = 10;
 // Long enough to read the scanning line, short enough that nobody waits for it
@@ -751,10 +751,10 @@ function renderList(shown, more, total, scanning, feed) {
 // Shown whether or not the Playbook already has influencers: it says a source
 // exists, not that one is missing. Only to the owner (canEdit), since the
 // action edits the Playbook; "Not now" hides it until the next load.
-function shouldInvite(pb, { ignoreDismiss = false } = {}) {
+function shouldInvite(pb) {
   if (!pb || !canEdit(pb)) return false;
   if (!isLiveSource("influencer-posts")) return false;
-  return ignoreDismiss || !dismissedInvites.has(pb.id);
+  return !dismissedInvites.has(pb.id);
 }
 
 function renderInfluencerInvite() {
@@ -856,26 +856,10 @@ function renderEmpty(total, feed) {
     });
   }
   if (total === 0) {
-    const refresh = findCadence(feed.cadence)?.adverb || "weekly";
-    // No Topic at all is the quietest week there is, so the invitation takes the
-    // empty state's one CTA; Feed settings drops to the link below it.
-    const owner = getContextById(feed.playbookId);
-    if (!(owner?.influencers || []).length && shouldInvite(owner, { ignoreDismiss: true })) {
-      return renderEmptyState({
-        icon: "ap-icon-antenna",
-        title: "Nothing has landed yet",
-        body: `I'm listening to this Playbook's competitors and I refresh ${refresh}. Add the creators your audience follows and I'll read their posts too.`,
-        actionHtml: `<div class="topics-view__empty-actions">
-          <button type="button" class="ap-button primary blue" data-topic-invite-add><i class="ap-icon-star"></i><span>Add influencers</span></button>
-          <button type="button" class="ap-link standalone" data-topic-settings>Feed settings</button>
-        </div>`,
-        wrapperClass: "topics-view__empty",
-      });
-    }
     return renderEmptyState({
       icon: "ap-icon-antenna",
       title: "Nothing has landed yet",
-      body: `I'm listening to this Playbook's competitors and I refresh ${refresh}. Switch on more sources and there'll be more to read.`,
+      body: `I'm listening to this Playbook's competitors and I refresh ${findCadence(feed.cadence)?.adverb || "weekly"}. Switch on more sources and there'll be more to read.`,
       actionHtml:
         '<button type="button" class="ap-button stroked grey" data-topic-settings><i class="ap-icon-cog"></i><span>Feed settings</span></button>',
       wrapperClass: "topics-view__empty",
