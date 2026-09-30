@@ -25,7 +25,9 @@
 // both. The shell calls destroyChartsIn(host) before every paint and on
 // teardown — layouts never destroy on their own.
 
-import Highcharts from "../../../vendor/highcharts/highcharts-12.4.0.esm.js?v=1406";
+import Highcharts from "../../../vendor/highcharts/highcharts-12.4.0.esm.js?v=1407";
+import { escapeAttr } from "../../utils.js?v=1407";
+import { MONTHS } from "./model.js?v=1407";
 
 // ── Tokens ────────────────────────────────────────────────────────────────
 
@@ -155,9 +157,7 @@ function compact(n, unit = "") {
   return `${s}${unit}`;
 }
 
-function esc(s) {
-  return String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
-}
+const esc = escapeAttr;
 
 function gradient(stroke) {
   return {
@@ -178,7 +178,6 @@ function floorNice(v) {
 
 // Highcharts' own %e space-pads the day ("Jun  4"), which reads as a typo in a
 // tick row. One formatter, used by the axis and the tooltips alike.
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 function dateLabel(ms) {
   const d = new Date(ms);

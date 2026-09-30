@@ -1,16 +1,17 @@
-import { html, raw, escapeText } from "../utils.js?v=1406";
-import { showToast } from "./toast.js?v=1406";
-import { getQueue, getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=1406";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1406";
+import { html, raw, escapeText } from "../utils.js?v=1407";
+import { showToast } from "./toast.js?v=1407";
+import { getQueue, getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=1407";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1407";
 import {
   renderProfileTag,
   profileForNetwork,
   NETWORK_LABEL,
   NETWORK_ICON_BY_PLATFORM,
-} from "../social-profiles.js?v=1406";
-import { getContextById } from "../contexts-store.js?v=1406";
-import { canEdit } from "../playbook-access.js?v=1406";
-import { getPreset, savePreset } from "../schedule-presets-store.js?v=1406";
+  normalizeNetwork,
+} from "../social-profiles.js?v=1407";
+import { getContextById } from "../contexts-store.js?v=1407";
+import { canEdit } from "../playbook-access.js?v=1407";
+import { getPreset, savePreset } from "../schedule-presets-store.js?v=1407";
 
 // Schedule modal — one column, result first.
 //   • Header   — "Schedule N drafts" + one line saying I already picked.
@@ -648,7 +649,7 @@ function formatTime(ts) {
 }
 
 function networkName(network) {
-  return NETWORK_LABEL[network === "twitter" ? "x" : network] || network;
+  return NETWORK_LABEL[normalizeNetwork(network)] || network;
 }
 
 // ── How I picked ──────────────────────────────────────────────────────
@@ -870,10 +871,7 @@ function reasonFor(slot) {
 // — the case that actually costs reach, so it's the one that turns orange.
 const CLASH_MS = 2 * 60 * 60 * 1000;
 
-function platformOf(network) {
-  const n = (network || "").toLowerCase();
-  return n === "twitter" ? "x" : n;
-}
+const platformOf = normalizeNetwork;
 
 function dayAgenda(slot) {
   const key = dayKey(slot.when);

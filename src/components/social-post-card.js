@@ -23,27 +23,8 @@
 // colours baked into the icon (they're SVG data-URI backgrounds, not font
 // glyphs), so nothing here has to hardcode a third-party hex.
 
-import { html, raw } from "../utils.js?v=1406";
-
-const NET_ICON = {
-  linkedin: "ap-icon-linkedin-official",
-  x: "ap-icon-twitter-official",
-  twitter: "ap-icon-twitter-official",
-  instagram: "ap-icon-instagram-official",
-  facebook: "ap-icon-facebook-official",
-  tiktok: "ap-icon-tiktok-official",
-  youtube: "ap-icon-youtube-official",
-};
-
-const NET_LABEL = {
-  linkedin: "LinkedIn",
-  x: "X",
-  twitter: "X",
-  instagram: "Instagram",
-  facebook: "Facebook",
-  tiktok: "TikTok",
-  youtube: "YouTube",
-};
+import { html, raw } from "../utils.js?v=1407";
+import { networkMeta } from "../social-profiles.js?v=1407";
 
 // Avatar tints the card knows how to paint (see social-post-card.css). An
 // unknown accent falls back to grey rather than rendering an unstyled circle —
@@ -70,11 +51,11 @@ function formatCompact(n) {
 }
 
 function iconFor(network) {
-  return NET_ICON[(network || "").toLowerCase()] || "ap-icon-share";
+  return networkMeta(network)?.icon || "ap-icon-share";
 }
 
 function labelFor(network) {
-  return NET_LABEL[(network || "").toLowerCase()] || network || "Social";
+  return networkMeta(network)?.label || network || "Social";
 }
 
 function accentFor(author) {

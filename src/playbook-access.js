@@ -22,10 +22,10 @@
 // surface asks here, and `revokedContextFor()` is the one place allowed to look
 // past the gate.
 
-import { getContexts, getContextById } from "./contexts-store.js?v=1406";
-import { isFlagOn } from "./feature-flags.js?v=1406";
-import { CURRENT_USER, isManager, memberName, getMember, hasProfileAccess } from "./org.js?v=1406";
-import { getConnectedProfiles } from "./social-profiles.js?v=1406";
+import { getContexts, getContextById } from "./contexts-store.js?v=1407";
+import { isFlagOn } from "./feature-flags.js?v=1407";
+import { CURRENT_USER, isManager, memberName, getMember, hasProfileAccess } from "./org.js?v=1407";
+import { getConnectedProfileById } from "./social-profiles.js?v=1407";
 
 // Single choke point. Flag OFF ⇒ the app behaves exactly as it did before
 // sharing existed: one implicit user, everything visible, everything editable.
@@ -63,7 +63,7 @@ function isMemberShared(ctx) {
 export function tiedProfile(ctx) {
   const id = ctx?.selectedProfileId;
   if (!id) return null;
-  return getConnectedProfiles().find((p) => p.id === id) || null;
+  return getConnectedProfileById(id) || null;
 }
 
 // Why this person can't be given the Playbook — `null` when they can. Returned

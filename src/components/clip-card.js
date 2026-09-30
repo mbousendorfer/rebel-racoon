@@ -24,19 +24,14 @@
 // card (defined in right-panel.css). Classes prefixed `clip-card__*`
 // own clip-specific bits (thumbnail, timeframe overlay).
 
-import { iconFor } from "../file-kinds.js?v=1406";
-import { escapeText, escapeAttr } from "../utils.js?v=1406";
-import { installMoreMenu } from "./more-menu.js?v=1406";
-import { renderFeedbackThumbs, renderFeedbackPanel } from "./feedback-control.js?v=1406";
-import { videoForClip } from "../clip-captions.js?v=1406";
-import { FORMATS } from "../clip-formats.js?v=1406";
+import { iconFor } from "../file-kinds.js?v=1407";
+import { escapeText, escapeAttr, formatClock } from "../utils.js?v=1407";
+import { installMoreMenu } from "./more-menu.js?v=1407";
+import { renderFeedbackThumbs, renderFeedbackPanel } from "./feedback-control.js?v=1407";
+import { videoForClip } from "../clip-captions.js?v=1407";
+import { FORMATS } from "../clip-formats.js?v=1407";
 
-function fmtTime(s) {
-  if (!Number.isFinite(s) || s < 0) return "0:00";
-  const m = Math.floor(s / 60);
-  const r = Math.floor(s % 60);
-  return `${m}:${String(r).padStart(2, "0")}`;
-}
+const fmtTime = (s) => formatClock(s);
 
 function thumbBackground(hue) {
   const h = hue ?? 24;

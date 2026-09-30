@@ -21,7 +21,7 @@
 // are pure DOM/CSS. Karaoke word-sweep is intentionally omitted; emphasis is
 // per-word marks + an optional static "phrase" highlight under the playhead.
 
-import { escapeHtml } from "./utils.js?v=1406";
+import { escapeHtml, formatClock } from "./utils.js?v=1407";
 import {
   PRESETS,
   presetById,
@@ -36,7 +36,7 @@ import {
   detectFillers,
   detectPauses,
   videoForClip,
-} from "./clip-captions.js?v=1406";
+} from "./clip-captions.js?v=1407";
 
 const FONT_FAMILIES = [
   "Montserrat, Roboto, sans-serif",
@@ -85,10 +85,7 @@ let resizeDrag = null; // caption-box resize state (null when not resizing)
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
-function fmt(t) {
-  const s = Math.max(0, Math.floor(t || 0));
-  return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
-}
+const fmt = (t) => formatClock(t);
 
 function $(sel) {
   return root ? root.querySelector(sel) : null;

@@ -20,14 +20,15 @@
 // Pure render + a pure reducer: the host owns the open/query UI state and the
 // draft, so this file holds no state and no listeners.
 
-import { escapeHtml as esc } from "../utils.js?v=1406";
+import { escapeHtml as esc } from "../utils.js?v=1407";
 import {
   NETWORK_LABEL,
   getConnectedProfiles,
   renderProfileTag,
   PROFILE_SEARCH_THRESHOLD,
-} from "../social-profiles.js?v=1406";
-import { isAdditiveMetric, metricLabel } from "../objective-measures.js?v=1406";
+  getConnectedProfileById,
+} from "../social-profiles.js?v=1407";
+import { isAdditiveMetric, metricLabel } from "../objective-measures.js?v=1407";
 
 function profilesFor(network) {
   return getConnectedProfiles().filter((p) => p.platform === network);
@@ -216,7 +217,7 @@ export function scopeFromClick(event, scope) {
   const prof = event.target.closest("[data-mscope-profile]");
   if (!prof) return null;
   const id = prof.dataset.mscopeProfile;
-  const picked = getConnectedProfiles().find((p) => p.id === id);
+  const picked = getConnectedProfileById(id);
   if (!picked) return null;
 
   // A profile from ANOTHER network moves the measure there rather than adding

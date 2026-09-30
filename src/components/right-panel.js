@@ -1,8 +1,8 @@
-import { html, raw, escapeText, escapeAttr } from "../utils.js?v=1406";
-import { subscribe as subscribeThread } from "../assistant.js?v=1406";
-import { isFlagOn } from "../feature-flags.js?v=1406";
-import { getPath, navigate } from "../router.js?v=1406";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1406";
+import { html, raw, escapeText, escapeAttr } from "../utils.js?v=1407";
+import { subscribe as subscribeThread } from "../assistant.js?v=1407";
+import { isFlagOn } from "../feature-flags.js?v=1407";
+import { getPath, navigate } from "../router.js?v=1407";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1407";
 import {
   getPosts,
   removePost,
@@ -11,33 +11,33 @@ import {
   attachImageToDraft,
   updatePostClip,
   subscribe as subscribePostsStore,
-} from "../posts-store.js?v=1406";
-import { renderPostCard } from "./post-card.js?v=1406";
-import { renderTopPostEcho } from "./top-post-card.js?v=1406";
-import { renderClipCard } from "./clip-card.js?v=1406";
-import { onFeedbackClick } from "./feedback-control.js?v=1406";
+} from "../posts-store.js?v=1407";
+import { renderPostCard } from "./post-card.js?v=1407";
+import { renderTopPostEcho } from "./top-post-card.js?v=1407";
+import { renderClipCard } from "./clip-card.js?v=1407";
+import { onFeedbackClick } from "./feedback-control.js?v=1407";
 // Shared compact idea card — same component the standalone Ideas page uses.
-import { renderCompactIdeaCard } from "./idea-card-compact.js?v=1406";
-import { open as openVideoClipsModal } from "./video-clips-modal.js?v=1406";
-import { isSidebarCollapsed, setSidebarCollapsed, isAutoCollapsed } from "./sidebar.js?v=1406";
+import { renderCompactIdeaCard } from "./idea-card-compact.js?v=1407";
+import { open as openVideoClipsModal } from "./video-clips-modal.js?v=1407";
+import { isSidebarCollapsed, setSidebarCollapsed, isAutoCollapsed } from "./sidebar.js?v=1407";
 import {
   getSources as getStreamSources,
   subscribeSources,
   updateSourceClips,
   removeSources,
   renameSource,
-} from "../sources-stream.js?v=1406";
-import { open as openAddSourceModal } from "./add-source-modal.js?v=1406";
-import { open as openRenameModal } from "./rename-modal.js?v=1406";
-import { getConnectedConnectors } from "../connectors-store.js?v=1406";
-import { getSessionById } from "../sessions-store.js?v=1406";
-import { getContextById, getBrandKitGaps } from "../contexts-store.js?v=1406";
-import { quickGenerateUrl } from "../image-studio.js?v=1406";
-import { askConnector } from "../connector-ask.js?v=1406";
-import { renderConnectorLogo } from "../connectors-view.js?v=1406";
-import { open as openConnectorsModal } from "./connectors-modal.js?v=1406";
-import { addMention as addComposerMention } from "../composer-mentions.js?v=1406";
-import { getIdeas, removeIdeasForSources } from "../library.js?v=1406";
+} from "../sources-stream.js?v=1407";
+import { open as openAddSourceModal } from "./add-source-modal.js?v=1407";
+import { open as openRenameModal } from "./rename-modal.js?v=1407";
+import { getConnectedConnectors } from "../connectors-store.js?v=1407";
+import { getSessionById } from "../sessions-store.js?v=1407";
+import { getContextById, getBrandKitGaps } from "../contexts-store.js?v=1407";
+import { quickGenerateUrl } from "../image-studio.js?v=1407";
+import { askConnector } from "../connector-ask.js?v=1407";
+import { renderConnectorLogo } from "../connectors-view.js?v=1407";
+import { open as openConnectorsModal } from "./connectors-modal.js?v=1407";
+import { addMention as addComposerMention } from "../composer-mentions.js?v=1407";
+import { getIdeas, removeIdeasForSources } from "../library.js?v=1407";
 
 // The ideas of the chat the panel is looking at.
 //
@@ -52,13 +52,14 @@ function sessionIdeas() {
   const sid = activeSessionId();
   return sid ? getIdeas(sid) : [];
 }
-import { open as openNewScheduleModal } from "./schedule-modal.js?v=1406";
-import { open as openLegacyScheduleModal } from "./schedule-modal-legacy.js?v=1406";
-import { open as openImageStudio } from "./image-studio-v2/index.js?v=1406";
-import { openDraftStudio } from "../modules/image-studio/index.js?v=1406";
-import { startDraftImageFlow } from "../draft-image-flow.js?v=1406";
-import { open as openConfirmModal } from "./confirm-modal.js?v=1406";
-import { showToast } from "./toast.js?v=1406";
+import { open as openNewScheduleModal } from "./schedule-modal.js?v=1407";
+import { open as openLegacyScheduleModal } from "./schedule-modal-legacy.js?v=1407";
+import { open as openImageStudio } from "./image-studio-v2/index.js?v=1407";
+import { openDraftStudio } from "../modules/image-studio/index.js?v=1407";
+import { startDraftImageFlow } from "../draft-image-flow.js?v=1407";
+import { open as openConfirmModal } from "./confirm-modal.js?v=1407";
+import { showToast } from "./toast.js?v=1407";
+import { networkMeta } from "../social-profiles.js?v=1407";
 
 // Global Right Panel — slides in from the right edge of the viewport, overlays
 // the session workspace, hosts two modes:
@@ -129,17 +130,9 @@ let draftsNetwork = "all";
 // project's "third-party brand colours live in JS" rule). The drafts band
 // no longer tints per-network (it uses the accent-blue selection wash), but
 // the colour stays available for other per-network surfaces.
-const NETWORK_META = {
-  linkedin: { icon: "ap-icon-linkedin-official", label: "LinkedIn", accent: "#0A66C2" },
-  twitter: { icon: "ap-icon-twitter-official", label: "X", accent: "#0F1419" },
-  instagram: { icon: "ap-icon-instagram-official", label: "Instagram", accent: "#E1306C" },
-  facebook: { icon: "ap-icon-facebook-official", label: "Facebook", accent: "#1877F2" },
-  tiktok: { icon: "ap-icon-tiktok-official", label: "TikTok", accent: "#FE2C55" },
-  youtube: { icon: "ap-icon-youtube-official", label: "YouTube", accent: "#FF0000" },
-};
 const NETWORK_ORDER = ["linkedin", "twitter", "instagram", "facebook", "tiktok", "youtube"];
 function networkMetaFor(network) {
-  return NETWORK_META[network] || { icon: "ap-icon-web", label: network || "Other", accent: "#6B7280" };
+  return networkMeta(network) || { icon: "ap-icon-web", label: network || "Other", accent: "#6B7280" };
 }
 
 // Multi-select state for bulk scheduling. Lives across renders inside the
@@ -746,7 +739,7 @@ export function init() {
       openVideoClipsModal(src, {
         onSaveClips: (id, nextClips) => updateSourceClips(id, nextClips),
         onUseClips: (selectedClips, source) => {
-          import("../screens/session/clip-draft-flow.js?v=1406").then(({ startClipDraftFlow }) => {
+          import("../screens/session/clip-draft-flow.js?v=1407").then(({ startClipDraftFlow }) => {
             startClipDraftFlow(
               sid,
               selectedClips.map((clip) => ({ clip, sourceName: source.filename, sourceId: source.id })),
@@ -927,7 +920,7 @@ export function init() {
       const sid = activeSessionId();
       if (!sid || !entry) return;
       const { clip, sourceName, sourceId } = entry;
-      import("../screens/session/clip-draft-flow.js?v=1406").then(({ startClipDraftFlow }) => {
+      import("../screens/session/clip-draft-flow.js?v=1407").then(({ startClipDraftFlow }) => {
         startClipDraftFlow(sid, [{ clip, sourceName, sourceId }]);
       });
       return;
@@ -945,7 +938,7 @@ export function init() {
       if (picked.length === 0) return;
       clipSelection = new Set();
       renderPanel();
-      import("../screens/session/clip-draft-flow.js?v=1406").then(({ startClipDraftFlow }) => {
+      import("../screens/session/clip-draft-flow.js?v=1407").then(({ startClipDraftFlow }) => {
         startClipDraftFlow(sid, picked);
       });
       return;
@@ -1598,7 +1591,7 @@ function onPostRewrite(postId, intent = "fresh") {
   // streaming → commit. Loaded lazily so the rewrite code is only
   // pulled in when the user actually triggers a regen. `intent` biases
   // the rewrite (shorter / longer / warmer / formal / fresh).
-  import("../draft-rewrite.js?v=1406").then(({ startRewrite }) => {
+  import("../draft-rewrite.js?v=1407").then(({ startRewrite }) => {
     startRewrite(sid, postId, intent);
   });
 }
@@ -1750,7 +1743,7 @@ function onSectionSave(network) {
   if (snapshot.length === 0) return;
   const count = snapshot.length;
   const draftWord = count === 1 ? "draft" : "drafts";
-  Promise.all([import("./save-folder-modal.js?v=1406"), import("../folders-store.js?v=1406")]).then(
+  Promise.all([import("./save-folder-modal.js?v=1407"), import("../folders-store.js?v=1407")]).then(
     ([{ open: openSaveModal }, { addDraftsToFolder }]) => {
       openSaveModal({
         count,
@@ -2672,7 +2665,7 @@ function useIdea(ideaId) {
   if (!idea) return;
   const sid = activeSessionId();
   if (!sid) return;
-  import("../screens/session.js?v=1406").then(({ askAngleQuestion }) => {
+  import("../screens/session.js?v=1407").then(({ askAngleQuestion }) => {
     askAngleQuestion(sid, ideaId);
   });
 }

@@ -19,10 +19,11 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw } from "../utils.js?v=1406";
-import { isPortraitFormat } from "../clip-formats.js?v=1406";
-import { presetById } from "../clip-captions.js?v=1406";
-import { renderFeedbackControl } from "./feedback-control.js?v=1406";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1407";
+import { isPortraitFormat } from "../clip-formats.js?v=1407";
+import { presetById } from "../clip-captions.js?v=1407";
+import { renderFeedbackControl } from "./feedback-control.js?v=1407";
+import { networkMeta } from "../social-profiles.js?v=1407";
 
 // The media slot of a draft that has no image yet — a real drop target
 // (`[data-post-drop]`, drag wiring in right-panel.js) at the height of an image.
@@ -170,7 +171,7 @@ export function renderPostCard(post, opts = {}) {
         aria-label="Edit post body"
         data-post-editor="${post.id}"
         spellcheck="true"
-      >${escapeForEditor(serializeBody(post))}</div>`;
+      >${escapeText(serializeBody(post))}</div>`;
   } else {
     editorBody = `<div class="posts__card-body">${bodyParagraphs} ${hashtags} ${cta}</div>`;
   }
@@ -525,19 +526,9 @@ function renderGenerationContextBody(post) {
   return `${headline}${source}`;
 }
 
-// Per-network character budgets + the full-colour DS logo used by the
-// count chip. `twitter` is the posts-store alias for `x`. Networks not
-// listed here render no chip (we don't know their limit).
-const NETWORK_CHAR_META = {
-  linkedin: { icon: "ap-icon-linkedin-official", limit: 3000, label: "LinkedIn" },
-  x: { icon: "ap-icon-x-official", limit: 280, label: "X" },
-  twitter: { icon: "ap-icon-x-official", limit: 280, label: "X" },
-  instagram: { icon: "ap-icon-instagram-official", limit: 2200, label: "Instagram" },
-  facebook: { icon: "ap-icon-facebook-official", limit: 63206, label: "Facebook" },
-  tiktok: { icon: "ap-icon-tiktok-official", limit: 2200, label: "TikTok" },
-  youtube: { icon: "ap-icon-youtube-official", limit: 5000, label: "YouTube" },
-};
-
+// Per-network character budgets + the full-colour DS logo used by the count
+// chip come from the shared NETWORKS table (`twitter` is the posts-store alias
+// for `x`). A network without a `limit` renders no chip.
 // Characters a post consumes against its network limit — body paragraphs,
 // hashtags, and the CTA, joined the way they'd publish (blank line between
 // blocks). Matches what the user sees in the rendered card.
@@ -552,7 +543,7 @@ function usedCharacters(post) {
 // CharacterCounts chip (DS component 3185:48434). Shows the remaining
 // characters for the draft's network; goes red + negative when over.
 function renderCharCount(post) {
-  const meta = NETWORK_CHAR_META[(post.network || "").toLowerCase()];
+  const meta = networkMeta(post.network);
   if (!meta) return "";
   const remaining = meta.limit - usedCharacters(post);
   const over = remaining < 0;
@@ -604,9 +595,6 @@ function serializeBody(post) {
 // HTML-escape user content before injecting into the contenteditable.
 // innerText reads back the literal characters, so escaping here avoids
 // the editor rendering injected markup on first paint.
-function escapeForEditor(s) {
-  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
 
 // ── Video clip player (faux) ────────────────────────────────────────
 //
@@ -674,11 +662,11 @@ function renderClipPlayer(post) {
       class="posts__card-clip-player ${aspectClass}"
       style="background-image: ${blob1}, ${blob2}, ${blob3}, ${bg}"
       role="img"
-      aria-label="Video preview from ${escapePlayerAttr(source)} (${formatPlayerTime(duration)})"
+      aria-label="Video preview from ${escapeAttr(source)} (${formatPlayerTime(duration)})"
     >
-      <span class="posts__card-clip-player-source" title="${escapePlayerAttr(source)}">
+      <span class="posts__card-clip-player-source" title="${escapeAttr(source)}">
         <i class="ap-icon-file--video" aria-hidden="true"></i>
-        <span>${escapePlayerText(source)}</span>
+        <span>${escapeText(source)}</span>
       </span>
       <span class="posts__card-clip-player-dur">${formatPlayerTime(duration)}</span>
       ${editBtn}
@@ -694,20 +682,4 @@ function renderClipPlayer(post) {
   `;
 }
 
-function formatPlayerTime(sec) {
-  const s = Math.max(0, Math.round(sec || 0));
-  const m = Math.floor(s / 60);
-  const rest = (s % 60).toString().padStart(2, "0");
-  return `${m}:${rest}`;
-}
-
-function escapePlayerText(s) {
-  return String(s == null ? "" : s)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
-
-function escapePlayerAttr(s) {
-  return escapePlayerText(s).replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-}
+const formatPlayerTime = (sec) => formatClock(sec, { round: true });

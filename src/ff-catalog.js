@@ -28,8 +28,9 @@ export const FLAGS = Object.freeze([
       "When ON, one Playbook is active at all times, chosen from the switcher " +
       "under the wordmark in the rail, and everything below it is that brand's " +
       "work: the chat list, a new chat, the Topic Feed and its count, Insights, " +
-      "the studios' drafts. The four pickers become static indicators — they " +
-      "still SAY which brand, they no longer ask.\n\nThe cost is stated in " +
+      "the studios' drafts. The six pickers that each asked the question " +
+      "(composer, feed toolbar, feed settings, batch / clip / repurpose) are " +
+      "gone: the rail names the brand, nothing else re-asks it.\n\nThe cost is stated in " +
       "active-playbook.js: a scope HIDES. There is deliberately no " +
       '"All playbooks" view, which is why the switcher is permanent and always ' +
       "prints the brand name — the scope is only safe while it is legible. " +
@@ -92,9 +93,9 @@ export const FLAGS = Object.freeze([
       "multilingualPlaybook \u2014 only the surfaces are gated.\n\nWhen ON, " +
       "Agorapulse listening assembles a TOPIC per feed \u2014 a headline, an " +
       "article in two sections, and the posts behind it \u2014 and /topics is the " +
-      "queue you triage it in: two segments (Ready to draft / Topics for later), " +
-      "a Filters dropdown, three age groups, and the article opening beside the " +
-      "list. A Topic offers exactly two verbs, Use in chat (which marks it Used " +
+      "queue you triage it in: one list of both lanes (To review and For " +
+      "later, told apart by a chip), a Filters panel to narrow by lane, answer " +
+      "or source, three age groups, and the article opening beside the list. A Topic offers exactly two verbs, Use in chat (which marks it Used " +
       "and opens a new chat with it attached as a Source) and Ignore (which asks " +
       "why, and is reversible).\n\nTHE INVARIANT IT RESTS ON: a Topic's review " +
       "status and its two attention signals are three separate things. Trending " +
@@ -103,18 +104,20 @@ export const FLAGS = Object.freeze([
   },
   {
     id: "playbookSharing",
-    label: "Playbook sharing (org-wide)",
+    label: "Playbook sharing",
     default: false,
     hides:
       "Whether a Playbook belongs to somebody. When OFF (default), there is " +
       "one implicit user: every Playbook is visible, editable and deletable, " +
       "exactly as before. The ownership data (owner, scope, change log) still " +
       "rides along in the seeds, like multilingualPlaybook. When ON, a Playbook " +
-      "is either personal or shared with the whole organisation — there is no " +
-      "named sharing. Its owner is the only one who can edit, delete, share or " +
-      "hand it over; everyone else may open it READ-ONLY, use it in a chat, and " +
-      "duplicate it into a Playbook of their own. A manager (Admin \u2192 Your " +
-      "role) gets the owner's rights on shared Playbooks only, and every action " +
+      "is personal, shared with named colleagues (a fixed list), or shared " +
+      "with the whole organisation (a dynamic one, joiners included). Its " +
+      "owner is the only one who can edit it; everyone it reaches may open it " +
+      "READ-ONLY, use it in a chat, and duplicate it into a Playbook of their " +
+      "own. A Playbook tied to a social profile only reaches people who can " +
+      "reach that profile. A manager (Admin \u2192 Your role) GOVERNS shared " +
+      "Playbooks — share, hand over, delete — but never edits their content, and every action " +
       "they take on someone else's notifies the owner and lands in the change " +
       "log. Losing access degrades the chats that used it: the drafts already " +
       "written can still be saved or scheduled, nothing new can be generated. " +
@@ -185,8 +188,9 @@ export const FLAGS = Object.freeze([
       "the three chat flows that draft FOR an account — draft from an idea, " +
       'draft from clips, and repurpose — each replace their "pick an account" ' +
       'step with a "connect an account" step in the same place, and resume ' +
-      "where they left off once the connect modal confirms. Every other profile " +
-      "surface (Clip Studio, Top Posts, Objectives, the analyze-profiles modal) " +
-      "simply renders its empty list until an account is connected.",
+      "where they left off once the connect modal confirms. The Clip Studio " +
+      "and Top Posts ask too (a picker must never render empty); surfaces that " +
+      "only LIST profiles (Objectives, the analyze-profiles modal) render their " +
+      "empty list until an account is connected.",
   },
 ]);

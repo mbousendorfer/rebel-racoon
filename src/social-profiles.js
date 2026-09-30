@@ -7,44 +7,78 @@
 // as the muted caption, and a DS avatar carrying the brand photo plus a
 // corner network badge.
 
-import { socialAccounts, demoManyProfiles } from "./mocks.js?v=1406";
-import { escapeHtml } from "./utils.js?v=1406";
-import { isFlagOn } from "./feature-flags.js?v=1406";
-import { createNotifier } from "./store-utils.js?v=1406";
+import { socialAccounts, demoManyProfiles } from "./mocks.js?v=1407";
+import { escapeHtml } from "./utils.js?v=1407";
+import { isFlagOn } from "./feature-flags.js?v=1407";
+import { createNotifier } from "./store-utils.js?v=1407";
 
-// Map our mock's `platform` slug to the DS's official full-color network
-// icon used by the .ap-avatar-network corner badge.
-export const NETWORK_ICON_BY_PLATFORM = {
-  facebook: "ap-icon-facebook-official",
-  instagram: "ap-icon-instagram-official",
-  linkedin: "ap-icon-linkedin-official",
-  x: "ap-icon-x-official",
-  tiktok: "ap-icon-tiktok-official",
-  youtube: "ap-icon-youtube-official",
-};
+// THE network table — every surface that names, badges, counts or colours a
+// network reads it, so a network is spelled one way everywhere. It replaced
+// eight local tables that had drifted apart (X was `ap-icon-x-official` in
+// three places and the old bird `ap-icon-twitter-official` in five, and
+// "X (Twitter)" here but "X" everywhere else).
+//   icon        the DS's full-colour network glyph (.ap-avatar-network badge)
+//   label       the network's name, as the product writes it
+//   connectKind what you connect ON it — the subtitle under each card of
+//               Agorapulse's "Add new social profiles" grid
+//   limit       the post's character budget (the drafts card's count chip)
+//   accent      the brand colour — data, not a DS token (third-party brand
+//               colours live in JS, per the project rule)
+export const NETWORKS = Object.freeze({
+  linkedin: {
+    icon: "ap-icon-linkedin-official",
+    label: "LinkedIn",
+    connectKind: "Profiles, company pages",
+    limit: 3000,
+    accent: "#0A66C2",
+  },
+  x: { icon: "ap-icon-x-official", label: "X", connectKind: "Profiles", limit: 280, accent: "#0F1419" },
+  instagram: {
+    icon: "ap-icon-instagram-official",
+    label: "Instagram",
+    connectKind: "Professional accounts",
+    limit: 2200,
+    accent: "#E1306C",
+  },
+  facebook: {
+    icon: "ap-icon-facebook-official",
+    label: "Facebook",
+    connectKind: "Pages",
+    limit: 63206,
+    accent: "#1877F2",
+  },
+  tiktok: { icon: "ap-icon-tiktok-official", label: "TikTok", connectKind: "Accounts", limit: 2200, accent: "#FE2C55" },
+  youtube: {
+    icon: "ap-icon-youtube-official",
+    label: "YouTube",
+    connectKind: "Channels",
+    limit: 5000,
+    accent: "#FF0000",
+  },
+});
 
-// Human label for a platform/network slug — fallback profile name when no
-// connected account resolves.
-export const NETWORK_LABEL = {
-  facebook: "Facebook",
-  instagram: "Instagram",
-  linkedin: "LinkedIn",
-  x: "X (Twitter)",
-  tiktok: "TikTok",
-  youtube: "YouTube",
-};
+// posts-store (and some seeds) spell X as `twitter`. One normaliser, so no
+// caller re-implements the alias.
+export function normalizeNetwork(network) {
+  const key = String(network || "").toLowerCase();
+  return key === "twitter" ? "x" : key;
+}
 
-// What you connect ON a network, in the product's own words — the subtitle
-// under each card of Agorapulse's "Add new social profiles" grid, which the
-// connect step reproduces. Keyed by platform slug.
-const NETWORK_CONNECT_KINDS = {
-  facebook: "Pages",
-  instagram: "Professional accounts",
-  linkedin: "Profiles, company pages",
-  x: "Profiles",
-  tiktok: "Accounts",
-  youtube: "Channels",
+/** The NETWORKS entry for a slug (either spelling of X), or null. */
+export function networkMeta(network) {
+  return NETWORKS[normalizeNetwork(network)] || null;
+}
+
+// Flat lookups derived from NETWORKS, `twitter` alias included, for the many
+// call sites that index by slug.
+const withAlias = (pick) => {
+  const out = Object.fromEntries(Object.entries(NETWORKS).map(([k, v]) => [k, pick(v)]));
+  out.twitter = out.x;
+  return Object.freeze(out);
 };
+export const NETWORK_ICON_BY_PLATFORM = withAlias((n) => n.icon);
+export const NETWORK_LABEL = withAlias((n) => n.label);
+const NETWORK_CONNECT_KINDS = withAlias((n) => n.connectKind);
 
 // Mock brand initials shown as the avatar fallback when no photo loads.
 export const BRAND_INITIALS = "NS";
@@ -54,14 +88,9 @@ export const BRAND_INITIALS = "NS";
 // (draft, clips, onboarding, repurpose) flips to search at the same count.
 export const PROFILE_SEARCH_THRESHOLD = 8;
 
-// Normalise a network slug (posts-store rewrites x → twitter; undo here).
-function normalizePlatform(network) {
-  return network === "twitter" ? "x" : network || "";
-}
-
 // Resolve a connected profile from a network/platform slug.
 export function profileForNetwork(network) {
-  const key = normalizePlatform(network);
+  const key = normalizeNetwork(network);
   if (!key) return null;
   // Through the same gate as getConnectedProfiles(), or the schedule modal and
   // the top-post cards would show a profile nobody has connected.
@@ -75,7 +104,7 @@ export function profileForNetwork(network) {
 // `account` is a socialAccounts entry (preferred); `network` is the slug
 // used to badge + label when no account is available.
 export function renderProfileTag(account, { network } = {}) {
-  const platform = account?.platform || normalizePlatform(network);
+  const platform = account?.platform || normalizeNetwork(network);
   const name = account?.handle || account?.platformLabel || NETWORK_LABEL[platform] || platform || "Profile";
   const networkIcon = NETWORK_ICON_BY_PLATFORM[platform];
   const avatarInner = account?.photo
@@ -96,7 +125,7 @@ export function renderProfileTag(account, { network } = {}) {
 // distinct @). Used by the chat "which account(s)?" echoes so profile picks
 // read like every other selection echo in the thread.
 export function renderProfileEchoCard(account, { network } = {}) {
-  const platform = account?.platform || normalizePlatform(network);
+  const platform = account?.platform || normalizeNetwork(network);
   const name = account?.name || account?.handle || NETWORK_LABEL[platform] || platform || "Profile";
   const handle = account?.handle || "";
   const meta =
@@ -158,6 +187,11 @@ function ensureSeeded() {
 export function getConnectedProfiles() {
   const ids = ensureSeeded();
   return ALL_ACCOUNTS.filter((p) => ids.has(p.id));
+}
+
+/** One connected profile by id — null when it isn't (or is no longer) connected. */
+export function getConnectedProfileById(id) {
+  return (id && getConnectedProfiles().find((p) => p.id === id)) || null;
 }
 
 // What the connect modal offers: the brand's own accounts that aren't connected

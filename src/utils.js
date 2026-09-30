@@ -46,3 +46,12 @@ export function html(strings, ...values) {
 export function raw(value) {
   return { __raw: true, value: value == null ? "" : String(value) };
 }
+
+// A duration or a playhead as m:ss. Two readings of the same number, kept
+// apart on purpose: a DURATION rounds (a 29.6s clip is "0:30"), a PLAYHEAD
+// floors (it reads 0:29 until the 30th second has actually passed).
+export function formatClock(seconds, { round = false } = {}) {
+  const n = Number.isFinite(seconds) ? seconds : 0;
+  const s = Math.max(0, round ? Math.round(n) : Math.floor(n));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}

@@ -20,13 +20,14 @@
 // faithful results; Reprompt is an honest preview (reseed). The committed url
 // rides back to the draft via attachImageToDraft (see the modal component).
 
-import { FORMATS, formatsForNetwork, defaultFormatFor, NETWORK_FORMATS } from "./clip-formats.js?v=1406";
+import { FORMATS, formatsForNetwork, defaultFormatFor, NETWORK_FORMATS } from "./clip-formats.js?v=1407";
 // Layering note: the only import this engine takes from the view side, and a
 // deliberate one — canvas.js is pure, UI-agnostic (its own header says so) and
 // already shared by both studio versions. "Text in image" is mocked by baking the
 // words into the generated pixels with the very same flattener the Edit overlays
 // use, so there is nothing to duplicate here.
-import { compositeOverlays } from "./image-studio-canvas.js?v=1406";
+import { compositeOverlays } from "./image-studio-canvas.js?v=1407";
+import { normalizeNetwork } from "./social-profiles.js?v=1407";
 
 const states = new Map(); // sessionId → state
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -54,7 +55,7 @@ const RENDER_TEXT_MAX_LINES = 4;
 const CAROUSEL_MAX = { linkedin: 20, instagram: 10 };
 export const SLIDE_CHOICES = [3, 4, 5, 6, 8, 10];
 export function carouselMaxFor(network) {
-  const net = network === "twitter" ? "x" : network || null;
+  const net = normalizeNetwork(network) || null;
   return CAROUSEL_MAX[net] || 0;
 }
 export function supportsCarousel(network) {
@@ -388,7 +389,7 @@ export function start(
   const collapsedGroups = new Set(["branding", "style", "format", "output"]);
   if (pbStyle) collapsedGroups.delete("style");
   // posts-store stores X as "twitter"; the format catalogue keys on "x".
-  const net = network === "twitter" ? "x" : network || null;
+  const net = normalizeNetwork(network) || null;
   const resolvedFormat = formatId || (net ? defaultFormatFor(net) : "1:1");
   // Opening straight into Edit on the draft's existing image (post card hover →
   // "Edit"): seed it as the working image so the Edit tab is unlocked + active.

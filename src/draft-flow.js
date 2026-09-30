@@ -14,11 +14,12 @@
 //   3. Creates one draft post per channel via posts-store.js.
 //   4. Posts a structured "Drafted N posts" result turn.
 
-import { postAssistantChoice, startPending, finishPending, postDraftResult } from "./assistant.js?v=1406";
-import { getIdeas } from "./library.js?v=1406";
-import { anglesByIdea } from "./mocks.js?v=1406";
-import { addPostDraft } from "./posts-store.js?v=1406";
-import { showToast } from "./components/toast.js?v=1406";
+import { postAssistantChoice, startPending, finishPending, postDraftResult } from "./assistant.js?v=1407";
+import { getIdeas } from "./library.js?v=1407";
+import { anglesByIdea } from "./mocks.js?v=1407";
+import { addPostDraft } from "./posts-store.js?v=1407";
+import { showToast } from "./components/toast.js?v=1407";
+import { networkMeta } from "./social-profiles.js?v=1407";
 
 // Simulated "generating drafts" delay shared by every draft flow.
 const DRAFT_DELAY_MS = 6000;
@@ -118,18 +119,8 @@ export function getAnglesForIdea(sessionId, ideaId) {
   return anglesByIdea[ideaId] || generateAngles(idea);
 }
 
-const CHANNEL_META = {
-  linkedin: { icon: "ap-icon-linkedin-official", label: "LinkedIn" },
-  x: { icon: "ap-icon-twitter-official", label: "X" },
-  twitter: { icon: "ap-icon-twitter-official", label: "X" },
-  instagram: { icon: "ap-icon-instagram-official", label: "Instagram" },
-  facebook: { icon: "ap-icon-facebook-official", label: "Facebook" },
-  tiktok: { icon: "ap-icon-tiktok-official", label: "TikTok" },
-  youtube: { icon: "ap-icon-youtube-official", label: "YouTube" },
-};
-
 function labelFor(channel) {
-  return CHANNEL_META[channel.toLowerCase()]?.label || channel;
+  return networkMeta(channel)?.label || channel;
 }
 
 export function startDraftFlow(sessionId, ideaId, count = 1, channelOverride = null, angle = null, language = null) {
@@ -149,7 +140,7 @@ export function startDraftFlow(sessionId, ideaId, count = 1, channelOverride = n
       return;
     }
 
-    const channels = (idea.channels || ["linkedin"]).filter((c) => CHANNEL_META[c.toLowerCase()]);
+    const channels = (idea.channels || ["linkedin"]).filter((c) => networkMeta(c));
 
     // When count > 1, the user has already committed to a batch size —
     // skip the channel picker entirely and draft on the idea's primary
@@ -163,7 +154,7 @@ export function startDraftFlow(sessionId, ideaId, count = 1, channelOverride = n
     const choices = channels.map((c) => ({
       value: c,
       label: labelFor(c),
-      icon: CHANNEL_META[c.toLowerCase()].icon,
+      icon: networkMeta(c).icon,
     }));
 
     postAssistantChoice(sessionId, {

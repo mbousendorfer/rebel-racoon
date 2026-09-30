@@ -12,29 +12,9 @@
 // render; no module-local state (the active sort lives in top-posts-flow's
 // picker state).
 
-import { html, raw } from "../utils.js?v=1406";
-import { profileForNetwork, NETWORK_ICON_BY_PLATFORM, BRAND_INITIALS } from "../social-profiles.js?v=1406";
-import { renderEmptyState } from "./empty-state.js?v=1406";
-
-const NET_ICON = {
-  linkedin: "ap-icon-linkedin-official",
-  x: "ap-icon-twitter-official",
-  twitter: "ap-icon-twitter-official",
-  instagram: "ap-icon-instagram-official",
-  facebook: "ap-icon-facebook-official",
-  tiktok: "ap-icon-tiktok-official",
-  youtube: "ap-icon-youtube-official",
-};
-
-const NET_LABEL = {
-  linkedin: "LinkedIn",
-  x: "X",
-  twitter: "X",
-  instagram: "Instagram",
-  facebook: "Facebook",
-  tiktok: "TikTok",
-  youtube: "YouTube",
-};
+import { html, raw } from "../utils.js?v=1407";
+import { profileForNetwork, NETWORK_ICON_BY_PLATFORM, BRAND_INITIALS, networkMeta } from "../social-profiles.js?v=1407";
+import { renderEmptyState } from "./empty-state.js?v=1407";
 
 // Sort options for the toolbar. `key` matches data-top-post-sort + the picker
 // state; `compare` sorts descending by the decision-useful value (recent sorts
@@ -93,11 +73,11 @@ function renderFilterSelect({ dataAttr, label, active, options }) {
 }
 
 function iconFor(network) {
-  return NET_ICON[(network || "").toLowerCase()] || "ap-icon-share";
+  return networkMeta(network)?.icon || "ap-icon-share";
 }
 
 function labelFor(network) {
-  return NET_LABEL[(network || "").toLowerCase()] || network;
+  return networkMeta(network)?.label || network;
 }
 
 // 41800 → "41.8K", 2030 → "2K", 940 → "940". Keeps reach scannable.

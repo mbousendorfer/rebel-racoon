@@ -31,21 +31,24 @@ import {
   postTopPostsWidget,
   postUserTurn,
   postUserProfilesTurn,
-} from "./assistant.js?v=1406";
-import { getTopPosts, getTopPost } from "./top-posts-store.js?v=1406";
-import { addPostDraft } from "./posts-store.js?v=1406";
-import { addReadySource } from "./sources-stream.js?v=1406";
+} from "./assistant.js?v=1407";
+import { getTopPosts, getTopPost } from "./top-posts-store.js?v=1407";
+import { addPostDraft } from "./posts-store.js?v=1407";
+import { addReadySource } from "./sources-stream.js?v=1407";
 import {
   getConnectedProfiles,
   BRAND_INITIALS,
   NETWORK_ICON_BY_PLATFORM,
   PROFILE_SEARCH_THRESHOLD,
-} from "./social-profiles.js?v=1406";
-import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=1406";
-import { SORTS, PERIODS } from "./components/top-post-card.js?v=1406";
-import { showToast } from "./components/toast.js?v=1406";
-import * as inlineQuestion from "./inline-question.js?v=1406";
-import { playbookForNewWork } from "./active-playbook.js?v=1406";
+  networkMeta,
+  normalizeNetwork,
+  getConnectedProfileById,
+} from "./social-profiles.js?v=1407";
+import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=1407";
+import { SORTS, PERIODS } from "./components/top-post-card.js?v=1407";
+import { showToast } from "./components/toast.js?v=1407";
+import * as inlineQuestion from "./inline-question.js?v=1407";
+import { playbookForNewWork } from "./active-playbook.js?v=1407";
 
 // Cap on drafts produced in one run — post × angle × channel can multiply fast
 // (e.g. 3 posts × 4 angles × 3 channels = 36). Keep the result turn scannable;
@@ -60,18 +63,8 @@ const GEN_DELAY_MS = 6000;
 // (step 1) and the winner board.
 const PROFILE_LOAD_MS = 1800;
 
-const CHANNEL_META = {
-  linkedin: { icon: "ap-icon-linkedin-official", label: "LinkedIn" },
-  x: { icon: "ap-icon-twitter-official", label: "X" },
-  twitter: { icon: "ap-icon-twitter-official", label: "X" },
-  instagram: { icon: "ap-icon-instagram-official", label: "Instagram" },
-  facebook: { icon: "ap-icon-facebook-official", label: "Facebook" },
-  tiktok: { icon: "ap-icon-tiktok-official", label: "TikTok" },
-  youtube: { icon: "ap-icon-youtube-official", label: "YouTube" },
-};
-
 function labelFor(network) {
-  return CHANNEL_META[(network || "").toLowerCase()]?.label || network;
+  return networkMeta(network)?.label || network;
 }
 
 // Shared chip lifecycle (mirrors draft-flow.withPendingChip): show the thinking
@@ -151,7 +144,7 @@ function firstSentence(text) {
 // post-card.js — a headline (the winner it was repurposed from) + the source
 // post's own copy.
 function repurposeContext(post) {
-  const meta = CHANNEL_META[normNet(post.network)] || {};
+  const meta = networkMeta(post.network) || {};
   return {
     kind: "repurpose",
     headline: {
@@ -250,7 +243,7 @@ export function setSort(sessionId, sort) {
 // known until the chosen profile's posts load.
 export function getProfileChoices() {
   return getConnectedProfiles().map((a) => {
-    const net = normNet(a.platform);
+    const net = normalizeNetwork(a.platform);
     return {
       value: a.id,
       network: net,
@@ -282,8 +275,8 @@ function accountPickerOpts({ title, subtitle, single = false, onAccount }) {
     searchable: choices.length > PROFILE_SEARCH_THRESHOLD,
     searchPlaceholder: "Search accounts by name, handle or network…",
     onPick: (accountId) => {
-      const account = getConnectedProfiles().find((a) => a.id === accountId) || null;
-      onAccount(account, account ? normNet(account.platform) : normNet(accountId));
+      const account = getConnectedProfileById(accountId) || null;
+      onAccount(account, account ? normalizeNetwork(account.platform) : normalizeNetwork(accountId));
     },
   };
 }
@@ -328,7 +321,7 @@ function openStage(sessionId, stage, profile = null) {
 export function chooseProfile(sessionId, network) {
   const s = pickerStates.get(sessionId);
   if (!s) return;
-  s.profile = normNet(network);
+  s.profile = normalizeNetwork(network);
   s.stage = "loading";
   notifyPicker(sessionId);
   setTimeout(() => {
@@ -421,7 +414,7 @@ export function startTopPostsInline(sessionId) {
 // in the conversation (matches the draft flow's profile echo).
 function echoAccount(sessionId, account, network) {
   if (account) postUserProfilesTurn(sessionId, [account]);
-  else postUserTurn(sessionId, labelFor(normNet(network)));
+  else postUserTurn(sessionId, labelFor(normalizeNetwork(network)));
 }
 
 // The recency window to pull winners from — the same periods the studio board
@@ -505,14 +498,14 @@ function echoRankPick(sessionId, sortKey) {
 // Metric chosen → brief "finding your winners" beat, then drop the interactive
 // selection widget into the thread scoped to that account, sorted by the metric.
 function presentWinners(sessionId, network, sortKey = "performance", period = "1m") {
-  const net = normNet(network);
+  const net = normalizeNetwork(network);
   const sort = SORTS.find((s) => s.key === sortKey) || SORTS[0];
   const window = PERIODS.find((p) => p.key === period) || PERIODS[0];
   const pendingId = startPending(sessionId, "Finding your top posts");
   setTimeout(() => {
     finishPending(sessionId, pendingId);
     const postIds = getTopPosts()
-      .filter((p) => normNet(p.network) === net && (p.daysAgo ?? 0) <= window.maxDays)
+      .filter((p) => normalizeNetwork(p.network) === net && (p.daysAgo ?? 0) <= window.maxDays)
       .sort(sort.compare)
       .map((p) => p.id);
     postAssistantMessage(
@@ -564,18 +557,11 @@ export function echoRepurposePicks(sessionId, postIds, { echo = true } = {}) {
   return posts.map((p) => p.id);
 }
 
-// Normalise a network/platform slug (top posts + social accounts both use "x",
-// but be defensive about a stray "twitter").
-function normNet(n) {
-  const s = (n || "").toLowerCase();
-  return s === "twitter" ? "x" : s;
-}
-
 // Unique source networks across the picked posts — the profiles the winner(s)
 // already live on, which the repurpose target picker excludes.
 function repurposeSourceNetworks(postIds) {
   const posts = (postIds || []).map(getTopPost).filter(Boolean);
-  return [...new Set(posts.map((p) => normNet(p.network)).filter((n) => CHANNEL_META[n]))];
+  return [...new Set(posts.map((p) => normalizeNetwork(p.network)).filter((n) => networkMeta(n)))];
 }
 
 // The connected profile account(s) the picked winner(s) already ran on — the
@@ -583,7 +569,7 @@ function repurposeSourceNetworks(postIds) {
 // specific account), so this resolves by matching the source network(s).
 function repurposeSourceProfiles(postIds) {
   const sourceNets = repurposeSourceNetworks(postIds);
-  return getConnectedProfiles().filter((p) => sourceNets.includes(normNet(p.platform)));
+  return getConnectedProfiles().filter((p) => sourceNets.includes(normalizeNetwork(p.platform)));
 }
 
 // Repurpose-target quick-picker items — the user's CONNECTED SOCIAL PROFILES,
@@ -597,7 +583,7 @@ function repurposeSourceProfiles(postIds) {
 export function repurposeProfileItems(postIds, { include = "other" } = {}) {
   const sourceNets = repurposeSourceNetworks(postIds);
   const connected = getConnectedProfiles();
-  const isSource = (p) => sourceNets.includes(normNet(p.platform));
+  const isSource = (p) => sourceNets.includes(normalizeNetwork(p.platform));
   let ordered;
   if (include === "source") ordered = connected.filter(isSource);
   else if (include === "all") ordered = [...connected.filter(isSource), ...connected.filter((p) => !isSource(p))];
@@ -620,7 +606,7 @@ export function repurposeProfileItems(postIds, { include = "other" } = {}) {
       avatar: {
         imageUrl: p.photo,
         initials: p.initials || BRAND_INITIALS,
-        networkIcon: NETWORK_ICON_BY_PLATFORM[normNet(p.platform)],
+        networkIcon: NETWORK_ICON_BY_PLATFORM[normalizeNetwork(p.platform)],
       },
     };
   });
@@ -641,7 +627,7 @@ function normalizeTargets(targets) {
   return (targets || [])
     .map((t) => (typeof t === "string" ? { network: t, count: 1 } : t || {}))
     .map((t) => ({ network: (t.network || "").toLowerCase(), count: Math.max(1, Math.floor(t.count) || 1) }))
-    .filter((t) => CHANNEL_META[t.network]);
+    .filter((t) => networkMeta(t.network));
 }
 
 // ---- Step 3: generate the adapted drafts ------------------------------
@@ -666,7 +652,7 @@ export function executeRepurpose(sessionId, postIds, targets) {
       // Each repurposed post becomes a ready source so the user can later find
       // which post fed these drafts (deduped by id in sources-stream).
       for (const post of posts) {
-        const meta = CHANNEL_META[normNet(post.network)] || {};
+        const meta = networkMeta(post.network) || {};
         addReadySource(sessionId, {
           id: `src-toppost-${post.id}`,
           filename: truncate(firstSentence(post.excerpt), 60),
