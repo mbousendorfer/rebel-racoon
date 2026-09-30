@@ -1,7 +1,7 @@
-import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=1413";
-import { getPath, navigate } from "../router.js?v=1413";
-import { parseHashParams } from "../url-state.js?v=1413";
-import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=1413";
+import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=1414";
+import { getPath, navigate } from "../router.js?v=1414";
+import { parseHashParams } from "../url-state.js?v=1414";
+import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=1414";
 // Lot 19 — topbar no longer carries its own sidebar-toggle button. The
 // sidebar head exposes the toggle in both expanded (chevron-left) and
 // collapsed (view-list) states, so the duplicate in the topbar was just
@@ -14,37 +14,37 @@ import {
   getMode as getRightPanelMode,
   getActiveBatchRef as getActiveDraftsBatchRef,
   subscribe as subscribeRightPanel,
-} from "./right-panel.js?v=1413";
-import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=1413";
-import { getThread, subscribe as subscribeThread } from "../assistant.js?v=1413";
-import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=1413";
-import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=1413";
+} from "./right-panel.js?v=1414";
+import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=1414";
+import { getThread, subscribe as subscribeThread } from "../assistant.js?v=1414";
+import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=1414";
+import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=1414";
 import {
   isEnabled as isStatusCardEnabled,
   toggle as toggleStatusCard,
   subscribeVisibility as subscribeStatusCardVisibility,
-} from "./conversation-status-card.js?v=1413";
-import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=1413";
-import { open as openRenameModal } from "./rename-modal.js?v=1413";
+} from "./conversation-status-card.js?v=1414";
+import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=1414";
+import { open as openRenameModal } from "./rename-modal.js?v=1414";
 import {
   subscribe as subscribeContexts,
   getContextById,
   getDefaultContext,
   getContexts,
-} from "../contexts-store.js?v=1413";
-import { isFlagOn } from "../feature-flags.js?v=1413";
-import { getActivePlaybook, isWorkspaceMode, isAccountScope, catalogueRoute } from "../active-playbook.js?v=1413";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1413";
-import { findCadence } from "../topics-catalog.js?v=1413";
+} from "../contexts-store.js?v=1414";
+import { isFlagOn } from "../feature-flags.js?v=1414";
+import { getActivePlaybook, isWorkspaceMode, isAccountScope, catalogueRoute } from "../active-playbook.js?v=1414";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1414";
+import { findCadence } from "../topics-catalog.js?v=1414";
 import {
   getPickerState as getTopPostsState,
   subscribePicker as subscribeTopPosts,
   backToProfiles as topPostsBackToProfiles,
-} from "../top-posts-flow.js?v=1413";
+} from "../top-posts-flow.js?v=1414";
 // The Insights view switch. Imported from views.js, NOT from the screen's
 // shell: the shell imports this module, so taking it from there would close a
 // cycle. views.js imports neither.
-import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=1413";
+import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=1414";
 
 // The playbook/context pill now lives in the composer (session.js
 // renderPlaybookControl) — selectable on a New Chat, then a static
@@ -70,10 +70,12 @@ import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=1413";
 // A page's own primary actions (DS: the header carries the title on the left and
 // the page's actions on the right). A screen hands them over for ITS path, so a
 // route change drops them on the next render even if the screen forgot to.
-let pageActions = null; // { path, markup }
+let pageActions = null; // { path, markup, left? }
 
-export function setTopbarActions(path, markup) {
-  pageActions = path && markup ? { path, markup } : null;
+// `left` (optional): the page's own left side — the DS Top bar pattern's
+// back · avatar · title · edit · custom slot — replacing the route title / back.
+export function setTopbarActions(path, markup, { left = "" } = {}) {
+  pageActions = path && markup ? { path, markup, left } : null;
   renderTopbar();
 }
 
@@ -115,7 +117,14 @@ export function renderTopbar(_options = {}) {
   // On the repurposing winner board (profile-first mode), the topbar leads with
   // a "Change profile" back — the app's standard back affordance — in place of
   // the session title.
-  const left = back ? renderBack(back) : isTopPostsBoard() ? renderTopPostsBack() : renderTitle(onSession);
+  const ownLeft = pageActions && pageActions.path === getPath() ? pageActions.left : "";
+  const left = ownLeft
+    ? ownLeft
+    : back
+      ? renderBack(back)
+      : isTopPostsBoard()
+        ? renderTopPostsBack()
+        : renderTitle(onSession);
   el.innerHTML = html`
     <div class="app-topbar__left">${raw(left)}</div>
     <div class="app-topbar__right">${raw(rightSide)}</div>
@@ -343,7 +352,7 @@ export function initTopbar() {
     // renderWelcomeAltExit() above. The wizard chrome no longer carries
     // its own Exit affordance; this is the only entry.
     if (event.target.closest("[data-topbar-welcome-alt-exit]")) {
-      import("./confirm-modal.js?v=1413").then(({ open }) => {
+      import("./confirm-modal.js?v=1414").then(({ open }) => {
         open({
           title: "Exit onboarding?",
           body: "Your progress so far will be discarded. You can start over anytime from the dashboard.",

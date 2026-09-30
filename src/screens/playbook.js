@@ -17,10 +17,10 @@
 // `loader` cfg, run the (mock) analysis on a timer, then `updateContext` with
 // the section patch — the loader flips to ready and paints the fresh data.
 
-import { navigate, getPath } from "../router.js?v=1413";
-import { escapeHtml as esc } from "../utils.js?v=1413";
-import { renderTopbar, setTopbarActions } from "../components/topbar.js?v=1413";
-import { isFlagOn } from "../feature-flags.js?v=1413";
+import { navigate, getPath } from "../router.js?v=1414";
+import { escapeHtml as esc } from "../utils.js?v=1414";
+import { renderTopbar, setTopbarActions } from "../components/topbar.js?v=1414";
+import { isFlagOn } from "../feature-flags.js?v=1414";
 import {
   getContextById,
   getContexts,
@@ -28,15 +28,15 @@ import {
   deleteContext,
   duplicateContext,
   appendHistory,
-} from "../contexts-store.js?v=1413";
-import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=1413";
-import { mount, snapshotEditable } from "../playbook-view.js?v=1413";
-import { open as openRenameModal } from "../components/rename-modal.js?v=1413";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=1413";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=1413";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=1413";
-import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=1413";
-import { sectionPatchFromAnalysis } from "../context-builder.js?v=1413";
+} from "../contexts-store.js?v=1414";
+import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=1414";
+import { mount, snapshotEditable } from "../playbook-view.js?v=1414";
+import { open as openRenameModal } from "../components/rename-modal.js?v=1414";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=1414";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=1414";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=1414";
+import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=1414";
+import { sectionPatchFromAnalysis } from "../context-builder.js?v=1414";
 import {
   canView,
   canEdit,
@@ -48,8 +48,8 @@ import {
   isMine,
   ownerOf,
   ownerName,
-} from "../playbook-access.js?v=1413";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=1413";
+} from "../playbook-access.js?v=1414";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=1414";
 
 const AUTOFILL_MS = 1500;
 
@@ -69,7 +69,7 @@ const STAGES = {
 };
 
 function toast(msg) {
-  import("../components/toast.js?v=1413").then(({ showToast }) => showToast(msg));
+  import("../components/toast.js?v=1414").then(({ showToast }) => showToast(msg));
 }
 
 function prettyUrl(url) {
@@ -112,6 +112,67 @@ function buildHeaderActions(ctx) {
       ? `<button type="button" class="ap-icon-button stroked grey" data-playbook-delete title="Delete" aria-label="Delete Playbook">
           <i class="ap-icon-trash"></i>
         </button>`
+      : "",
+  ].join("");
+}
+
+// Playbook 2.0: the page's head IS the DS Top bar (V2 Molecules › Top bar):
+// back · the brand's avatar · its name · the rename pen · a separator and a
+// custom slot on the left; stroked grey buttons, the primary LAST, then an icon
+// button on the right. The name moved up here, so the fiche's own header keeps
+// only its facts line.
+function buildTopbarLeft(ctx) {
+  const back = isWorkspaceMode() ? catalogueRoute() : "/contexts";
+  const backLabel = isWorkspaceMode() ? "Back to all playbooks" : "Back to Playbooks";
+  // The square tile wants the square mark — a wide lockup at 24px is a smudge.
+  const mark = (ctx.brandLogos || []).find((l) => /^icon$/i.test(l.label || ""))?.url || ctx.brandLogo;
+  const initials = (ctx.name || "?")
+    .split(/[\s·]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("");
+  const tag = accessLabel(ctx);
+  return `
+    <div class="pb2-topbar-left">
+      <button type="button" class="ap-icon-button" data-topbar-back="${esc(back)}" aria-label="${esc(backLabel)}" data-tooltip="${esc(backLabel)}">
+        <i class="ap-icon-arrow-left" aria-hidden="true"></i>
+      </button>
+      <div class="pb2-topbar-id">
+        <span class="ap-avatar size-24 square" aria-hidden="true">${
+          mark ? `<img src="${esc(mark)}" alt="" />` : `<span class="ap-avatar-initials">${esc(initials)}</span>`
+        }</span>
+        <h1 class="app-topbar__title">${esc(ctx.name || "Untitled Playbook")}</h1>
+        ${
+          canEdit(ctx)
+            ? `<button type="button" class="ap-icon-button stroked" data-pb2-rename aria-label="Rename Playbook" data-tooltip="Rename"><i class="ap-icon-pen" aria-hidden="true"></i></button>`
+            : ""
+        }
+      </div>
+      ${
+        tag
+          ? `<div class="pb2-topbar-custom"><span class="pb2-topbar-sep" aria-hidden="true"></span><span class="ap-tag grey">${esc(tag)}</span></div>`
+          : ""
+      }
+    </div>`;
+}
+
+function buildTopbarActions(ctx) {
+  const editable = canEdit(ctx);
+  return [
+    !editable
+      ? `<button type="button" class="ap-button stroked grey" data-playbook-duplicate><i class="ap-icon-copy"></i><span>Duplicate</span></button>`
+      : "",
+    canManageSharing(ctx)
+      ? `<button type="button" class="ap-button stroked grey" data-playbook-share><i class="ap-icon-share"></i><span>Share</span></button>`
+      : "",
+    editable
+      ? `<button type="button" class="ap-button stroked grey" data-fill-website><i class="ap-icon-refresh"></i><span>Re-analyze website</span></button>`
+      : "",
+    // Last and orange: starting a chat hands the brand to Archie — the AI action.
+    `<button type="button" class="ap-button primary orange" data-playbook-start><i class="ap-icon-double-chat-bubbles"></i><span>Start a chat</span></button>`,
+    canDelete(ctx)
+      ? `<button type="button" class="ap-icon-button" data-playbook-delete aria-label="Delete Playbook" data-tooltip="Delete"><i class="ap-icon-trash" aria-hidden="true"></i></button>`
       : "",
   ].join("");
 }
@@ -224,7 +285,8 @@ export function renderPlaybook(params, target) {
         ? () =>
             setTopbarActions(
               getPath(),
-              `<div class="pb2-topbar-actions" data-pb2-topbar-actions>${buildHeaderActions(getContextById(id))}</div>`,
+              `<div class="pb2-topbar-actions" data-pb2-topbar-actions>${buildTopbarActions(getContextById(id))}</div>`,
+              { left: buildTopbarLeft(getContextById(id)) },
             )
         : undefined,
       // The rename pencil and the voice re-analysis are both writes: withhold
@@ -446,6 +508,10 @@ export function renderPlaybook(params, target) {
   // listener — the same handler the in-page header used.
   const topbar = document.getElementById("topbar");
   const onTopbarClick = (event) => {
+    if (event.target.closest("[data-pb2-rename]")) {
+      if (canEdit(getContextById(id))) onEditName();
+      return;
+    }
     if (event.target.closest("[data-pb2-topbar-actions]")) onFooter(event);
   };
   if (v2) topbar?.addEventListener("click", onTopbarClick);

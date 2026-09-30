@@ -14,7 +14,7 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1413";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1414";
 import {
   kitEnabled,
   renderColorRole,
@@ -27,19 +27,19 @@ import {
   handleKitInput,
   handleKitChange,
   kitSnapshot,
-} from "./playbook-brand-kit.js?v=1413";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1413";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1413";
-import { isFlagOn } from "./feature-flags.js?v=1413";
-import { parseHashParams } from "./url-state.js?v=1413";
-import { showToast } from "./components/toast.js?v=1413";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1413";
+} from "./playbook-brand-kit.js?v=1414";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1414";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1414";
+import { isFlagOn } from "./feature-flags.js?v=1414";
+import { parseHashParams } from "./url-state.js?v=1414";
+import { showToast } from "./components/toast.js?v=1414";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1414";
 // The Default look row offers the SAME three catalogues the Image Studio renders, from
 // the one place they are declared — REF_MODES' own header makes the argument: the label,
 // the hint and the brief clause "drift the moment they live apart". No cycle: the engine
 // imports only clip-formats / image-studio-canvas / feature-flags, and its module body
 // builds consts, so importing it here costs nothing at load.
-import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1413";
+import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1414";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -1911,9 +1911,6 @@ function setTab(id) {
 }
 
 function renderHeader2(data) {
-  const colors = visualColors(data);
-  const accent = colors.find((c) => /accent/i.test(c.name))?.hex || colors[0]?.hex || "var(--ref-color-orange-100)";
-  const primary = colors[0]?.hex || accent;
   const site = brandSite(data);
   const domain = site?.domain || prettyUrl(data.websiteUrl);
   const usedIn = typeof data.usedIn === "number" ? data.usedIn : null;
@@ -1946,29 +1943,10 @@ function renderHeader2(data) {
   ]
     .filter(Boolean)
     .join("");
-  return `
-    <header class="pb2-hero">
-      <div class="pb2-hero__id">
-        <span class="pb2-hero__mark">${renderHeaderMark(data, accent, primary, { square: true })}</span>
-        <div class="pb2-hero__text">
-          <div class="pb2-hero__titlerow">
-            <h1 class="pb2-hero__name">${esc(data.name || "Untitled Playbook")}</h1>
-            ${
-              cfg.onEditName
-                ? `<button type="button" class="ap-icon-button transparent grey" data-recap-edit-name title="Rename" aria-label="Rename Playbook"><i class="ap-icon-pen"></i></button>`
-                : ""
-            }
-            ${
-              cfg.ownership?.tag
-                ? `<span class="ap-tag grey mini" title="${esc(cfg.ownership.tag)}"><span>${esc(cfg.ownership.tag)}</span></span>`
-                : ""
-            }
-          </div>
-          <div class="pb2-meta">${meta}</div>
-        </div>
-      </div>
-    </header>
-  `;
+  // The brand's mark, name, rename pen and ownership tag live in the topbar
+  // (screens/playbook.js › buildTopbarLeft, the DS Top bar pattern): this
+  // header keeps only the facts line, so nothing is said twice.
+  return `<header class="pb2-hero"><div class="pb2-meta">${meta}</div></header>`;
 }
 
 // The tab head (lead + Edit, or Cancel / Save) is sticky. At rest it needs no
@@ -2437,15 +2415,11 @@ function renderActivePanel(data) {
   return scope === "goals" ? renderGoalsEdit2(data) : renderGoalsRead2(data);
 }
 
-// `square`: the tile is square, and a wide lockup shrunk into it reads as an
-// empty box — so the brand's square mark (its "Icon" version) takes the tile
-// when it has one. The default logo stays the default everywhere else.
-function renderHeaderMark(data, accent, primary, { square = false } = {}) {
+function renderHeaderMark(data, accent, primary) {
   const tint = `--brand-accent:${esc(accent)}; --brand-primary:${esc(primary)};`;
   const mono = `<span class="recap__monogram${data.brandLogo ? " is-hidden" : ""}" style="${tint}">${esc(initials(data.name))}</span>`;
   if (!data.brandLogo) return mono;
-  const icon = square ? brandLogoList(data).find((l) => /^icon$/i.test(l.label || ""))?.url : "";
-  return `<span class="recap__monogram recap__monogram--mark"><img src="${esc(icon || data.brandLogo)}" alt="${esc(
+  return `<span class="recap__monogram recap__monogram--mark"><img src="${esc(data.brandLogo)}" alt="${esc(
     data.name || "Brand",
   )} logo" data-recap-brand-logo /></span>${mono}`;
 }
