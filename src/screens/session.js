@@ -1,32 +1,19 @@
-import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr } from "../utils.js?v=1408";
-import { navigate } from "../router.js?v=1408";
-import { renderTopbar } from "../components/topbar.js?v=1408";
-import { connectorDocs } from "../mocks.js?v=1408";
-import {
-  getConnectedProfiles,
-  buildConnectedProfileItems,
-  renderProfileEchoCard,
-  profileForNetwork,
-  PROFILE_SEARCH_THRESHOLD,
-  normalizeNetwork,
-  getConnectedProfileById,
-} from "../social-profiles.js?v=1408";
-import { getSessionById, getSessions } from "../sessions-store.js?v=1408";
-import { getContextById, getContexts, updateContext } from "../contexts-store.js?v=1408";
-import { playbookForNewWork, isWorkspaceMode, catalogueRoute } from "../active-playbook.js?v=1408";
-import { revokedContextFor, usableContexts, canView } from "../playbook-access.js?v=1408";
-import { isNewUser } from "../user-mode.js?v=1408";
+import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr } from "../utils.js?v=1409";
+import { navigate } from "../router.js?v=1409";
+import { renderTopbar } from "../components/topbar.js?v=1409";
+import { connectorDocs } from "../mocks.js?v=1409";
+import { getConnectedProfiles } from "../social-profiles.js?v=1409";
+import { getSessionById, getSessions } from "../sessions-store.js?v=1409";
+import { getContextById, getContexts, updateContext } from "../contexts-store.js?v=1409";
+import { playbookForNewWork, isWorkspaceMode } from "../active-playbook.js?v=1409";
+import { revokedContextFor, usableContexts, canView } from "../playbook-access.js?v=1409";
+import { isNewUser } from "../user-mode.js?v=1409";
 import {
   getThread,
   sendMessage,
   postAssistantMessage,
   postUserTurn,
-  postUserProfilesTurn,
   postSelectionEcho,
-  postExtractionResult,
-  postClipExtractionTurn,
-  startPending,
-  finishPending,
   subscribe,
   submitAssistantChoice,
   sendConnectorMessage,
@@ -35,50 +22,41 @@ import {
   answerTopPostsWidget,
   toggleTopicsWidgetPick,
   answerTopicsWidget,
-} from "../assistant.js?v=1408";
-import { iconFor as fileIconForKind } from "../file-kinds.js?v=1408";
-import { getSources, getIdeas, extractVideoIdeas, appendExtractedIdeas } from "../library.js?v=1408";
-import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=1408";
+} from "../assistant.js?v=1409";
+import { iconFor as fileIconForKind } from "../file-kinds.js?v=1409";
+import { getSources, getIdeas, appendExtractedIdeas } from "../library.js?v=1409";
+import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=1409";
 import {
   renderInto as renderComposerMentions,
   removeMention as removeComposerMention,
   subscribe as subscribeComposerMentions,
   addMention as addComposerMention,
-} from "../composer-mentions.js?v=1408";
-import { setSubtitleStyle } from "../posts-store.js?v=1408";
-import { startDraftFlow, executeDraft, executeDraftBatch, getAnglesForIdea } from "../draft-flow.js?v=1408";
-import * as topPostsFlow from "../top-posts-flow.js?v=1408";
-import {
-  renderTopPostsBoard,
-  renderTopPostEcho,
-  renderTopPostsWidget,
-  TOP_POSTS_LIMIT,
-} from "../components/top-post-card.js?v=1408";
-import { getTopPost } from "../top-posts-store.js?v=1408";
-import { renderEmptyState } from "../components/empty-state.js?v=1408";
-import { renderStarterCards } from "../components/starter-card.js?v=1408";
-import * as sidebarWizard from "../sidebar-wizard.js?v=1408";
-import * as inlineQuestion from "../inline-question.js?v=1408";
-import { requireConnectedProfiles, accountIdsForNetwork } from "../connect-profiles-flow.js?v=1408";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=1408";
-import * as clipStudio from "../clip-studio.js?v=1408";
-import * as batchStudio from "../batch-studio.js?v=1408";
-import { askConnector } from "../connector-ask.js?v=1408";
-import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=1408";
-import { renderConnectorLogo } from "../connectors-view.js?v=1408";
+} from "../composer-mentions.js?v=1409";
+import { setSubtitleStyle } from "../posts-store.js?v=1409";
+import { executeDraft } from "../draft-flow.js?v=1409";
+import * as topPostsFlow from "../top-posts-flow.js?v=1409";
+import { renderTopPostsBoard } from "../components/top-post-card.js?v=1409";
+import * as sidebarWizard from "../sidebar-wizard.js?v=1409";
+import * as inlineQuestion from "../inline-question.js?v=1409";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=1409";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=1409";
+import * as clipStudio from "../clip-studio.js?v=1409";
+import * as batchStudio from "../batch-studio.js?v=1409";
+import { askConnector } from "../connector-ask.js?v=1409";
+import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=1409";
+import { renderConnectorLogo } from "../connectors-view.js?v=1409";
 import {
   getActiveConnector,
   clearActiveConnector,
   subscribe as subscribeComposerConnector,
-} from "../composer-connector.js?v=1408";
-import { isFlagOn } from "../feature-flags.js?v=1408";
-import * as contextBuilder from "../context-builder.js?v=1408";
-import { renderPicker } from "./_analyse-common.js?v=1408";
-import { renderCompactIdeaCard } from "../components/idea-card-compact.js?v=1408";
-import { contentState, rerenderContentWorkspaceBody } from "../components/content-workspace.js?v=1408";
-import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=1408";
-import { open as openAddSourceModal } from "../components/add-source-modal.js?v=1408";
-import { open as openConnectorsModal } from "../components/connectors-modal.js?v=1408";
+} from "../composer-connector.js?v=1409";
+import { isFlagOn } from "../feature-flags.js?v=1409";
+import * as contextBuilder from "../context-builder.js?v=1409";
+import { renderPicker } from "./_analyse-common.js?v=1409";
+import { contentState, rerenderContentWorkspaceBody } from "../components/content-workspace.js?v=1409";
+import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=1409";
+import { open as openAddSourceModal } from "../components/add-source-modal.js?v=1409";
+import { open as openConnectorsModal } from "../components/connectors-modal.js?v=1409";
 import {
   classifyFile,
   startFileUpload,
@@ -88,49 +66,28 @@ import {
   pushScriptedSource,
   completeScriptedSource,
   updateSourceClips,
-  extractClipsForSource,
-  setSourceIdeaCount,
-} from "../sources-stream.js?v=1408";
-import { onFeedbackClick } from "../components/feedback-control.js?v=1408";
-import { showToast } from "../components/toast.js?v=1408";
+} from "../sources-stream.js?v=1409";
+import { onFeedbackClick } from "../components/feedback-control.js?v=1409";
+import { showToast } from "../components/toast.js?v=1409";
 import {
   openDrafts as openDraftsPanel,
   openIdeas as openIdeasPanel,
   openClips as openClipsPanel,
   getMode as getRightPanelMode,
   subscribe as subscribeRightPanel,
-} from "../components/right-panel.js?v=1408";
-import { setHandoff, consumeHandoff } from "../handoff.js?v=1408";
-import { attachTopicToChat, useTopicInChat, startTopicPickerInline, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=1408";
-import { startObjectiveChat, OBJECTIVE_CHAT_HANDOFF } from "../objective-flow.js?v=1408";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1408";
-import {
-  getFreshTopics,
-  countFresh,
-  getTopicById,
-  topicTitle,
-  markUsed,
-  subscribe as subscribeTopics,
-} from "../topics-store.js?v=1408";
-import { findTopicSource } from "../topics-catalog.js?v=1408";
-import { renderTopicCard, renderTopicsWidget } from "../components/topic-card.js?v=1408";
-import { openTopicArticle } from "../components/topic-picker-modal.js?v=1408";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1408";
-import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=1408";
-import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=1408";
-import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=1408";
+} from "../components/right-panel.js?v=1409";
+import { setHandoff, consumeHandoff } from "../handoff.js?v=1409";
+import { attachTopicToChat, useTopicInChat, startTopicPickerInline, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=1409";
+import { startObjectiveChat, OBJECTIVE_CHAT_HANDOFF } from "../objective-flow.js?v=1409";
+import { getTopicById, topicTitle, markUsed, subscribe as subscribeTopics } from "../topics-store.js?v=1409";
+import { openTopicArticle } from "../components/topic-picker-modal.js?v=1409";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1409";
+import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=1409";
+import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=1409";
+import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=1409";
 // Pure thread-turn renderers — shared with the component handoff gallery so
 // the previews there never drift from the app (handoff/components.html).
-import {
-  SWITCH_SKELETON_HTML,
-  renderMessageBubble,
-  renderSourceIntakeTurn,
-  renderChoiceTurn,
-  renderNotice,
-  renderSystemNotice,
-  renderExtractingNotice,
-  renderResultCard,
-} from "./session/thread-turns.js?v=1408";
+import { SWITCH_SKELETON_HTML } from "./session/thread-turns.js?v=1409";
 import {
   clipsToChat,
   finalizeClipStudio,
@@ -138,19 +95,45 @@ import {
   handleClipStudioUrl,
   openClipStudioEditor,
   renderClipStudio,
-} from "./session/clip-studio-view.js?v=1408";
+} from "./session/clip-studio-view.js?v=1409";
 import {
   handleBatchFiles,
   renderBatchStudio,
   repaintBatchRest,
   replayBatchSources,
   startBatchChat,
-} from "./session/batch-studio-view.js?v=1408";
-import { buildWorkflowFlow } from "./session/workflow-flow.js?v=1408";
+} from "./session/batch-studio-view.js?v=1409";
+import {
+  askRepurposeProfiles,
+  askVideoIntake,
+  startIdeaDraft,
+  startRepurposeFlow,
+} from "./session/draft-questions.js?v=1409";
+import {
+  extractionVerdict,
+  extractionWhyOpen,
+  findExtractionIdea,
+  renderThread,
+  repaintExtractionCard,
+} from "./session/thread-render.js?v=1409";
+import {
+  animateBannerIn,
+  animateBannerOut,
+  computeComposerStatus,
+  draftBannerFlowInner,
+  draftBanners,
+  ideaBannerFlowInner,
+  ideaBanners,
+  renderComposer,
+  renderComposerConnector,
+  renderComposerStatus,
+} from "./session/composer.js?v=1409";
+import { renderTopPostsPickerScreen } from "./session/top-posts-view.js?v=1409";
+import { renderEmptyHero } from "./session/empty-hero.js?v=1409";
 
 // Default composer placeholder — restored whenever no connector is attached.
 // A connected connector swaps it for "Ask {name} anything…".
-const COMPOSER_DEFAULT_PLACEHOLDER = "Ask a follow-up, or refine a draft…";
+export const COMPOSER_DEFAULT_PLACEHOLDER = "Ask a follow-up, or refine a draft…";
 
 // Session screen — persistent assistant panel on the left, workspace with
 // tabs on the right.
@@ -441,54 +424,6 @@ function renderAssistantPanel(session, attachedContext) {
 // working. The Clip Studio's stages live in session/clip-studio-view.js; its
 // state in clip-studio.js.
 
-// ⚠️ In workspace mode the in-flow Playbook pickers render NOTHING.
-//
-// Batch, Clip Studio and the repurpose board each asked "which Playbook governs
-// these drafts?" in their own select. The rail answered it before the flow
-// started, so the question is gone — and so is the control. It was a disabled
-// trigger for one commit, on the theory that the flow should still SAY which
-// brand: a greyed-out field that repeats what the rail prints two inches away
-// is chrome the reader has to rule out, not information. The commit rows are
-// `justify-content: flex-end`, so the CTA simply keeps its place.
-
-// Playbook picker for the top-posts step 1 (account screen) — the chosen
-// Playbook governs the voice of the repurposed drafts. Mirrors the batch / clip
-// playbook controls; routes through the `data-topposts-playbook-pick` delegate.
-function renderTopPostsPlaybookControl(ctx) {
-  if (isWorkspaceMode()) return "";
-  const playbooks = usableContexts();
-  const items = playbooks
-    .map((c) => {
-      const isSel = ctx && c.id === ctx.id;
-      return `
-        <div class="ap-select-option${isSel ? " selected" : ""}" data-topposts-playbook-pick="${escapeHtml(c.id)}" role="option" aria-selected="${isSel ? "true" : "false"}">
-          <span class="composer-context__dot" style="background: ${dotColorVar(c.color || "grey")};"></span>
-          <span class="ap-select-option-text">${escapeHtml(c.name)}</span>
-          ${isSel ? `<i class="ap-icon-check ap-select-option-check" aria-hidden="true"></i>` : ""}
-        </div>`;
-    })
-    .join("");
-  const valueMarkup = ctx
-    ? `<span class="ap-select-value">${escapeHtml(ctx.name)}</span>`
-    : `<span class="ap-select-value ap-select-placeholder">Select a playbook</span>`;
-  return `
-    <details class="ap-select studio-commit__playbook" data-topposts-playbook>
-      <summary class="ap-select-trigger" title="Choose the playbook for these drafts">
-        <span class="ap-select-inline-label">Playbook</span>
-        ${valueMarkup}
-        <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
-      </summary>
-      <div class="ap-select-dropdown" role="listbox" aria-label="Choose a playbook">
-        <div class="ap-select-options">${items}</div>
-      </div>
-    </details>`;
-}
-
-// Composer markup — extracted so it can be rendered either at the bottom
-// of the assistant panel (default) or inline inside the empty hero (when
-// the conversation hasn't started yet). The click handlers in bindSession
-// are delegated on #app, so the same markup works in both positions
-// without re-wiring.
 // context.color → DS color token for the pill dot (blue maps to the
 // electric-blue ramp, matching the [data-context-color] pill tints).
 const CONTEXT_DOT_TOKEN = { blue: "electric-blue" };
@@ -508,7 +443,7 @@ export function dotColorVar(colorName) {
 //   • workspace mode (flag playbookWorkspace) → nothing at all: the rail's
 //     switcher is the one place the brand is named and chosen.
 // Returns "" when there are no playbooks at all on a locked chat.
-function renderPlaybookControl(ctx, selectable) {
+export function renderPlaybookControl(ctx, selectable) {
   // Workspace mode: nothing. The rail names the brand permanently, one row of
   // chrome above this one, so a pill in the composer toolbar would be the same
   // sentence twice — and it could only ever be the disabled half of the
@@ -574,519 +509,6 @@ function renderPlaybookControl(ctx, selectable) {
       </div>
     </details>
   `;
-}
-
-// Composer "Add" menu — "Connected sources" is a nested submenu (Codex-style
-// "Modules d'extension ▸" flyout), not a first-level list. The flyout lists the
-// connected connectors as live sources you can query in chat (logo + name →
-// ask), and the only place to connect new ones — "Browse connectors" — sits at
-// the very bottom of that flyout.
-// ── The composer's way into the Topic Feed ─────────────────────────────────
-// A flat row in the Add menu, above the connectors submenu. Not a submenu of its
-// own: ADS ships no nested dropdown, and this is one destination, not a set. No
-// divider before it — it sits directly under "Top performing posts" as one more
-// source to pull in, not a separate group.
-function renderTopicPickerRow() {
-  if (!isFlagOn("topicFeed")) return "";
-  return `
-    <button type="button" class="ap-action-dropdown-item" data-add-source="topic" role="menuitem">
-      <i class="ap-icon-antenna"></i>
-      <div class="ap-action-dropdown-item-text">
-        <div class="ap-action-dropdown-item-label-container">
-          <span class="ap-action-dropdown-item-label">Pick from the Topic Feed</span>
-        </div>
-      </div>
-    </button>
-  `;
-}
-
-// ── "Fresh topics to review" ───────────────────────────────────────────────
-// The freshest to-review Topics from THIS chat's Playbook, at most six, BELOW the
-// workflow starters and in the same 3-column grid.
-//
-// ⚠️ It was a stack of full-width rows ABOVE the starters, on the argument that
-// proposals should come before verbs. Both halves were wrong in practice: six
-// rows ran ~500px tall and pushed all three workflow cards off the fold, so the
-// "proposal" buried the things it was supposed to precede. As a 3x2 grid of the
-// SAME card the feed uses, it takes two rows instead of six and the starters stay
-// visible.
-//
-// The card's body opens the Topic's article — reading comes before deciding — and
-// `withUse` adds the verb on the card face for the reader who already knows,
-// because a card sitting beside three workflow cards you click to start
-// something has to be actionable the same way.
-//
-// NO Playbook chip per row. Every Topic here belongs to the chat's own Playbook,
-// so a chip repeated identically six times, under a composer that already names
-// the same Playbook, labels nothing. The section header carries the scope once,
-// and only when the chat actually has a Playbook to name.
-//
-// The footer's total is every Topic under a week old WHATEVER its status, so it
-// describes the week rather than a to-do list: triaging a row moves N down and
-// leaves M where it was.
-//
-// Renders nothing at all when there is nothing to say, so a hero with no Topics
-// is byte-for-byte the hero this app has always had.
-function renderFreshTopics(session) {
-  if (!isFlagOn("topicFeed")) return "";
-  const pbId = session?.contextId || null;
-  const feed = pbId ? getFeedForPlaybook(pbId) : null;
-  if (!feed) return "";
-  const topics = getFreshTopics(feed.id);
-  if (!topics.length) return "";
-  const total = countFresh(feed.id);
-  const pb = getContextById(pbId);
-  const scopeHref = isWorkspaceMode() ? "#/topics" : `#/topics?pb=${encodeURIComponent(pbId)}`;
-
-  const cards = topics
-    .map((t) => renderTopicCard(t, { source: findTopicSource(t.sourceId), variant: "picker", withUse: true }))
-    .join("");
-
-  return html`
-    <h2 class="empty-chat__starter-label" id="freshTopicsLabel">
-      <span>Fresh topics to review</span>
-      ${raw(pb ? html`<span class="empty-chat__topics-scope">· ${pb.name}</span>` : "")}
-    </h2>
-    <div class="empty-chat__topics" role="group" aria-labelledby="freshTopicsLabel">
-      <div class="empty-chat__topics-grid">${raw(cards)}</div>
-      <footer class="empty-chat__topics-foot">
-        <span class="empty-chat__topics-count">${topics.length} out of ${total} shown</span>
-        <a class="ap-link standalone small" href="${raw(scopeHref)}"
-          >See more in your feed<i class="ap-icon-arrow-right" aria-hidden="true"></i
-        ></a>
-      </footer>
-    </div>
-  `;
-}
-
-function renderConnectorsSubmenu() {
-  // Connectors are gated behind a feature flag (default OFF) — when off, the
-  // composer Add menu is just the file/URL quick-actions.
-  if (!isFlagOn("connectors")) return "";
-  const connected = getConnectedConnectors();
-  const items = connected.length
-    ? connected
-        .map(
-          (c) => `
-          <button type="button" class="ap-action-dropdown-item assistant-attach__connector" data-attach-connector="${escapeHtml(
-            c.id,
-          )}" role="menuitem">
-            <span class="assistant-attach__connector-logo">${renderConnectorLogo(c, 18)}</span>
-            <div class="ap-action-dropdown-item-text">
-              <div class="ap-action-dropdown-item-label-container">
-                <span class="ap-action-dropdown-item-label">${escapeHtml(c.name)}</span>
-              </div>
-            </div>
-          </button>`,
-        )
-        .join("")
-    : `<div class="assistant-attach__menu-label">No sources connected yet</div>`;
-  return `
-    <div class="ap-action-dropdown-divider" role="separator"></div>
-    <div class="assistant-attach__submenu-wrap">
-      <button
-        type="button"
-        class="ap-action-dropdown-item assistant-attach__submenu-trigger"
-        aria-haspopup="menu"
-        role="menuitem"
-      >
-        <i class="ap-icon-stack"></i>
-        <div class="ap-action-dropdown-item-text">
-          <div class="ap-action-dropdown-item-label-container">
-            <span class="ap-action-dropdown-item-label">Connected sources</span>
-          </div>
-        </div>
-        <i class="ap-icon-chevron-right" aria-hidden="true"></i>
-      </button>
-      <div class="ap-action-dropdown assistant-attach__submenu" role="menu">
-        ${items}
-        <div class="ap-action-dropdown-divider" role="separator"></div>
-        <button type="button" class="ap-action-dropdown-item" data-open-connectors role="menuitem">
-          <i class="ap-icon-view-grid"></i>
-          <div class="ap-action-dropdown-item-text">
-            <div class="ap-action-dropdown-item-label-container">
-              <span class="ap-action-dropdown-item-label">Browse connectors</span>
-            </div>
-          </div>
-        </button>
-      </div>
-    </div>`;
-}
-
-// "Ready" status bars (DS .ap-status-card) glued to the top of the composer,
-// shown in addition to the transient snackbar when a batch lands. Keyed per-
-// session in module scope so they survive aside re-renders and screen re-mounts;
-// each is cleared when its panel opens (lifecycle: "until reviewed"). When both
-// are pending the most recent (by `at`) wins the single slot.
-//   draftBanners: sessionId → { batchId, count, at }  — cleared on Drafts panel
-//   ideaBanners:  sessionId → { count, at }            — cleared on Ideas panel
-const draftBanners = new Map();
-const ideaBanners = new Map();
-
-function draftBannerFlowInner(count) {
-  return `<span>${count} draft${count === 1 ? "" : "s"} ready</span> to review`;
-}
-
-function ideaBannerFlowInner(count) {
-  return `<span>${count} idea${count === 1 ? "" : "s"} ready</span>`;
-}
-
-function withEllipsis(s) {
-  return /…$/.test(s) ? s : `${s}…`;
-}
-
-// In-progress label for a loading thread message (adapted from the rule in
-// conversation-status-card.js; duplicated to keep the version cascade small).
-// Returns null for messages that aren't a distinct user-facing task. source-
-// intake is handled by the sources signal in computeComposerStatus (skipped
-// there) to avoid a double-count.
-function humanizeLoadingMessage(m) {
-  // The hidden assistant answer placeholder is the same operation as its
-  // reasoning pill — count the pill, not the empty answer slot, so a single
-  // reply reads "Thinking…" rather than "2 tasks running…".
-  if (m.hidden) return null;
-  if (m.role === "idea-extraction") return `Extracting ideas from ${m.filename || "source"}…`;
-  if (m.role === "clip-extraction") return `Extracting clips from ${m.filename || "source"}…`;
-  if (m.role === "assistant") return withEllipsis(m.meta && m.meta !== "Archie" ? m.meta : "Thinking");
-  if (m.role === "system" || m.role === "system-notice") {
-    return withEllipsis(m.meta && m.meta !== "System" ? m.meta : m.text || "Working");
-  }
-  // Generic busy marker (startPending) — drafts/ideas flows pass a meta label
-  // ("Extracting ideas", "Generating drafts"); fall back to "Working".
-  if (m.role === "pending") return withEllipsis(m.meta || "Working");
-  return "Working…";
-}
-
-// One unified descriptor for the composer status slot. `shape` drives the
-// reconcile (same shape → in-place text update; different → markup swap):
-//   { shape:"grey",   variant:"grey",  label, key }  — background work running
-//   { shape:"drafts", variant:"green", count, key }  — drafts ready
-//   { shape:"ideas",  variant:"green", count, key }  — ideas ready
-//   null                                             — idle
-// Grey (in-progress) wins over the green "ready" bars; among the two ready bars
-// the most recent (by `at`) wins the single slot, then yields to the other when
-// its panel is opened.
-function computeComposerStatus(sessionId) {
-  const labels = [];
-  // Sources analysing — the canonical background action and the source of
-  // truth (the matching source-intake thread turns are skipped below).
-  for (const s of getSources(sessionId)) {
-    if (s.status === "Processing") labels.push(`Analyzing ${s.filename || "source"}…`);
-  }
-  // Video clip extraction (when a normal composer is present).
-  const clip = clipStudio.getState(sessionId);
-  if (clip && clip.stage === "analyzing") {
-    labels.push(clip._stageLabel ? `${clip._stageLabel}…` : "Analyzing video…");
-  }
-  // Other loading thread turns: idea/clip extraction, draft generation, replies.
-  for (const m of getThread(sessionId)) {
-    if (m.status !== "loading") continue;
-    if (m.role === "source-intake") continue; // counted via getSources above
-    const label = humanizeLoadingMessage(m);
-    if (label) labels.push(label);
-  }
-  if (labels.length > 0) {
-    const label = labels.length === 1 ? labels[0] : `${labels.length} tasks running…`;
-    return { shape: "grey", variant: "grey", labels, label, key: `grey|${label}` };
-  }
-  const draft = draftBanners.get(sessionId);
-  const idea = ideaBanners.get(sessionId);
-  const draftDesc = draft && { shape: "drafts", variant: "green", count: draft.count, key: `drafts|${draft.count}` };
-  const ideaDesc = idea && { shape: "ideas", variant: "green", count: idea.count, key: `ideas|${idea.count}` };
-  if (draft && idea) return idea.at > draft.at ? ideaDesc : draftDesc;
-  return draftDesc || ideaDesc || null;
-}
-
-function renderComposerStatus(sessionId) {
-  // Losing the Playbook outranks every other banner: it's the reason the
-  // composer below is dead, and it has to be the thing you read first.
-  const revoked = revokedContextFor(getSessionById(sessionId));
-  if (revoked) {
-    return html`
-      <div class="ap-status-card red session__composer-status" data-status-key="revoked" role="status">
-        <div class="upper">
-          <i class="ap-icon-lock-on" aria-hidden="true"></i>
-          <div class="flow">
-            <span
-              >I can't write anything new here — this chat runs on <strong>${revoked.name}</strong>, and
-              ${revoked.ownerName} stopped sharing it. The drafts already in this chat are still yours to save or
-              schedule.</span
-            >
-          </div>
-        </div>
-      </div>
-    `;
-  }
-  const status = computeComposerStatus(sessionId);
-  if (!status) return "";
-  if (status.shape === "drafts") {
-    return html`
-      <div
-        class="ap-status-card green session__composer-status"
-        data-status-key="${status.key}"
-        data-status-shape="drafts"
-        role="status"
-      >
-        <div class="upper">
-          <i class="ap-icon-file" aria-hidden="true"></i>
-          <div class="flow">${raw(draftBannerFlowInner(status.count))}</div>
-          <button type="button" class="ap-link small standalone" data-draft-banner-review>Review</button>
-        </div>
-      </div>
-    `;
-  }
-  if (status.shape === "ideas") {
-    return html`
-      <div
-        class="ap-status-card green session__composer-status"
-        data-status-key="${status.key}"
-        data-status-shape="ideas"
-        role="status"
-      >
-        <div class="upper">
-          <i class="ap-icon-archie-official" aria-hidden="true"></i>
-          <div class="flow">${raw(ideaBannerFlowInner(status.count))}</div>
-          <button type="button" class="ap-link small standalone" data-idea-banner-view>View ideas</button>
-        </div>
-      </div>
-    `;
-  }
-  // Grey in-progress. The .ap-loader's branded SVG is auto-injected by
-  // archie-loader.js's observer on insert; ds-patches.css recolours it grey for
-  // this bar (the default would be orange).
-  return html`
-    <div
-      class="ap-status-card grey session__composer-status"
-      data-status-key="${status.key}"
-      data-status-shape="grey"
-      role="status"
-      aria-live="polite"
-    >
-      <div class="upper">
-        <span class="ap-loader grey size-16" aria-hidden="true"
-          ><svg>
-            <circle></circle>
-            <circle></circle></svg
-        ></span>
-        <div class="flow" data-status-label>${status.label}</div>
-      </div>
-    </div>
-  `;
-}
-
-// Enter animation for a freshly-inserted banner: collapse-reveal synced to the
-// element's real height (--status-h kills the max-height "dead time"), plus fade
-// + a short rise. Measured + class added in the same tick (before paint) so
-// there's no full-height flash. The reduced-motion guard in base.css collapses
-// it to instant. The class is self-removing so a later full-aside rebuild (which
-// re-renders the banner statically) doesn't replay the entrance.
-function animateBannerIn(el) {
-  if (!el) return;
-  el.style.setProperty("--status-h", `${el.offsetHeight}px`);
-  el.classList.add("is-entering");
-  const clear = () => el.classList.remove("is-entering");
-  el.addEventListener("animationend", clear, { once: true });
-  setTimeout(clear, 500);
-}
-
-// Exit animation: reverse the reveal (faster, accelerating), THEN remove the
-// node and run `done`. Callers that open the Drafts panel pass the open as
-// `done` so the panel opens only after the banner has left — opening writes the
-// URL hash, which can re-render the route and would otherwise cut the animation.
-function animateBannerOut(el, done) {
-  if (!el) {
-    if (done) done();
-    return;
-  }
-  if (el.classList.contains("is-leaving")) return;
-  el.style.setProperty("--status-h", `${el.offsetHeight}px`);
-  el.classList.remove("is-entering");
-  void el.offsetHeight; // reflow so an interrupted enter restarts cleanly
-  el.classList.add("is-leaving");
-  let finished = false;
-  const finish = () => {
-    if (finished) return;
-    finished = true;
-    el.remove();
-    if (done) done();
-  };
-  el.addEventListener("animationend", finish, { once: true });
-  setTimeout(finish, 500);
-}
-
-function renderComposer(attachedContext, session, selectable) {
-  // Nothing to @mention until the session has at least one ready source or
-  // extracted idea — disable the trigger so it doesn't open an empty picker.
-  const hasMentionable =
-    getSources(session.id).some((s) => s.status !== "Processing") || getIdeas(session.id).length > 0;
-  // No Playbook, no generation. The composer is the main affordance, so it says
-  // so plainly rather than swallowing the keystroke.
-  const revoked = revokedContextFor(session);
-  return `
-    <div class="session__composer">
-      <div class="session__composer-inner">
-        ${renderComposerStatus(session.id)}
-        <div class="session__composer-card">
-          <div
-            class="composer-mention-picker"
-            id="composerMentionPicker"
-            data-composer-mention-picker
-            role="listbox"
-            aria-label="Reference a source or idea"
-            hidden
-          ></div>
-          <div
-            class="session__composer-mentions"
-            data-composer-mentions
-            hidden
-          ></div>
-          <div class="session__composer-input-row">
-            <div
-              class="session__composer-connector"
-              data-composer-connector
-              hidden
-            ></div>
-            <textarea
-              class="session__composer-input-field"
-              id="assistantInput"
-              aria-label="Message Archie"
-              placeholder="${revoked ? "This chat can't generate any more" : COMPOSER_DEFAULT_PLACEHOLDER}"
-              rows="2"
-              ${revoked ? "readonly" : ""}
-            ></textarea>
-          </div>
-          <div class="session__composer-toolbar">
-            <div class="assistant-attach">
-              <button
-                type="button"
-                class="ap-button stroked grey assistant-attach__trigger"
-                aria-label="Add a source"
-                data-assistant-attach-toggle
-              >
-                <i class="ap-icon-plus"></i>
-                <span>Add</span>
-              </button>
-              <div class="ap-action-dropdown assistant-attach__menu" data-assistant-attach-menu hidden role="menu">
-                <button type="button" class="ap-action-dropdown-item" data-add-source="pdf" role="menuitem">
-                  <i class="ap-icon-file--pdf"></i>
-                  <div class="ap-action-dropdown-item-text">
-                    <div class="ap-action-dropdown-item-label-container">
-                      <span class="ap-action-dropdown-item-label">Add PDF</span>
-                    </div>
-                  </div>
-                </button>
-                <button type="button" class="ap-action-dropdown-item" data-add-source="video" role="menuitem">
-                  <i class="ap-icon-file--video"></i>
-                  <div class="ap-action-dropdown-item-text">
-                    <div class="ap-action-dropdown-item-label-container">
-                      <span class="ap-action-dropdown-item-label">Add video</span>
-                    </div>
-                  </div>
-                </button>
-                <button type="button" class="ap-action-dropdown-item" data-add-source="url" role="menuitem">
-                  <i class="ap-icon-link"></i>
-                  <div class="ap-action-dropdown-item-text">
-                    <div class="ap-action-dropdown-item-label-container">
-                      <span class="ap-action-dropdown-item-label">Add URL</span>
-                    </div>
-                  </div>
-                </button>
-                <button type="button" class="ap-action-dropdown-item" data-add-source="text" role="menuitem">
-                  <i class="ap-icon-file--text"></i>
-                  <div class="ap-action-dropdown-item-text">
-                    <div class="ap-action-dropdown-item-label-container">
-                      <span class="ap-action-dropdown-item-label">Paste text</span>
-                    </div>
-                  </div>
-                </button>
-                <div class="ap-action-dropdown-divider" aria-hidden="true"></div>
-                <button type="button" class="ap-action-dropdown-item" data-add-source="top-posts" role="menuitem">
-                  <i class="ap-icon-feature-analytics"></i>
-                  <div class="ap-action-dropdown-item-text">
-                    <div class="ap-action-dropdown-item-label-container">
-                      <span class="ap-action-dropdown-item-label">Top performing posts</span>
-                    </div>
-                  </div>
-                </button>
-                ${renderTopicPickerRow()}
-                ${renderConnectorsSubmenu()}
-              </div>
-            </div>
-            <button
-              type="button"
-              class="ap-button stroked grey composer-mention-trigger"
-              aria-label="Reference a source or idea"
-              aria-haspopup="listbox"
-              aria-expanded="false"
-              aria-controls="composerMentionPicker"
-              data-composer-mention-trigger
-              ${hasMentionable ? "" : 'disabled title="Add a source or extract an idea first"'}
-            >
-              <i class="ap-icon-at"></i>
-              <span>Reference</span>
-            </button>
-            ${renderPlaybookControl(attachedContext, selectable)}
-            <button
-              type="button"
-              class="ap-button primary orange session__composer-send"
-              aria-label="Send"
-              data-assistant-send
-              ${revoked ? "disabled" : ""}
-            >
-              <i class="ap-icon-arrow-up"></i>
-            </button>
-          </div>
-        </div>
-        <div class="session__composer-hint">
-          ${
-            revoked
-              ? `Save or schedule the drafts above, or <a class="ap-link" href="#${catalogueRoute()}">pick a Playbook you have access to</a>.`
-              : `<kbd>Enter</kbd> to send · <kbd>Shift</kbd>+<kbd>Enter</kbd> for new line · Drop a file to attach a source`
-          }
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-// ── Composer connector chip ───────────────────────────────────────────
-// When a connected connector is "asked", it's attached to the composer as a
-// chip (logo + name + ×). The next message is routed to the connector (live
-// MCP) by submitInput(). Rendering the chip also swaps the textarea placeholder
-// to "Ask {name} anything…" and (on attach) focuses the input.
-function renderComposerConnector(root, sessionId, { focus = false } = {}) {
-  const container = root.querySelector("[data-composer-connector]");
-  if (!container) return;
-  const input = root.querySelector("#assistantInput");
-  const id = getActiveConnector(sessionId);
-  const connector = id ? findConnector(id) : null;
-  if (!connector) {
-    container.innerHTML = "";
-    container.hidden = true;
-    if (input) input.placeholder = COMPOSER_DEFAULT_PLACEHOLDER;
-    return;
-  }
-  container.hidden = false;
-  // Same chip family as the @ mention pills: a DS .ap-tag with the
-  // connector logo as a 16px .ap-tag-avatar + an auto-styled close button.
-  container.innerHTML = `
-    <span class="ap-tag grey composer-mention composer-connector-chip">
-      <span class="ap-tag-avatar">${renderConnectorLogo(connector, 16)}</span>
-      <span class="composer-mention__label">${escapeHtmlAttr(connector.name)}</span>
-      <button
-        type="button"
-        class="composer-mention__remove"
-        data-composer-connector-remove
-        aria-label="Remove ${escapeHtmlAttr(connector.name)}"
-        title="Remove connector"
-      >
-        <i class="ap-icon-close"></i>
-      </button>
-    </span>`;
-  if (input) {
-    input.placeholder = `Ask ${connector.name} anything…`;
-    if (focus) input.focus();
-  }
 }
 
 // ── Composer mention picker ───────────────────────────────────────────
@@ -1306,58 +728,6 @@ function removeSlashToken(input) {
 // (The context pill that used to live here moved to the app header next
 // to the chat title — see components/topbar.js → renderContextPill.)
 
-// Empty-state hero — shown inside the assistant thread region when the user
-// hasn't sent a first message yet. Mirrors the handoff (Chat.jsx empty state):
-// hero question + sub-line + 2x2 grid of starter cards. Cards click → prefill
-// the composer textarea (handler in bindSession via [data-starter]).
-//
-// FIND-A4: the raw prompts in mocks.chatStarters use a `{{source}}` placeholder
-// that the previous version dropped into the textarea verbatim. Resolve it at
-// render time: if a source is attached we name it; otherwise we fall back to
-// "your source" so the prompt still reads cleanly for first-run users.
-//
-// Context decision: handled entirely by the composer picker (visible
-// inline inside this hero). The previous inline AI question flow
-// ("Quick — which context?") was removed — the composer picker is now
-// the single, always-visible context affordance.
-function renderEmptyHero(sessionId, composerMarkup = "", session = null) {
-  const sources = getStreamSources(sessionId);
-  const firstSource = sources.find((s) => s.status !== "Processing") || sources[0] || null;
-  const sourceLabel = firstSource ? `"${firstSource.filename}"` : "your source";
-  // `{{video-source}}` resolves to the first processed video source so the
-  // "Extract video clips" starter reads naturally even when the first
-  // overall source is a PDF.
-  const firstVideo = sources.find(
-    (s) => (s.kind || "").toLowerCase() === "video" && s.status === "Processed" && typeof s.durationSec === "number",
-  );
-  const videoLabel = firstVideo ? `"${firstVideo.filename}"` : "your video";
-  // The three cards come from components/starter-card.js — the home renders the
-  // same ones, so there is one renderer and two hosts.
-  const cards = renderStarterCards({ sourceLabel, videoLabel });
-  return html`
-    <div class="empty-chat" data-empty-chat>
-      <span class="empty-chat__logo" role="img" aria-label="Archie">
-        <img class="empty-chat__logo-word empty-chat__logo-word--a" src="assets/logos/archie-wordmark.svg" alt="" />
-        <img class="empty-chat__logo-mono" src="assets/logos/archie-mono.svg" alt="" />
-        <img class="empty-chat__logo-word empty-chat__logo-word--b" src="assets/logos/archie-alt-wordmark.svg" alt="" />
-      </span>
-      <div class="empty-chat__sub">
-        Drop a source — I'll turn it into a batch of ready-to-schedule posts, all from one chat.
-      </div>
-      ${raw(composerMarkup)}
-      <!-- Starters first, proposals second. The other way round was tried on the
-           argument that "what should I post today?" is the question someone
-           opening a blank chat actually has — true, but six full-width Topic rows
-           pushed all three workflow cards below the fold, so the proposal buried
-           the features it was meant to introduce. Both are card grids now, so the
-           Topics cost two rows instead of six and nothing is hidden. -->
-      <h2 class="empty-chat__starter-label" id="starterGridLabel">Jump into a workflow</h2>
-      <div class="starter-grid" role="group" aria-labelledby="starterGridLabel">${raw(cards)}</div>
-      ${raw(renderFreshTopics(session))}
-    </div>
-  `;
-}
-
 // Wizard chrome — replaces the normal thread + suggestions + composer when
 // sidebar-wizard is active. Reuses the analyse-* picker rendering and
 // keyboard binding so the UX is identical to the standalone /analyse routes.
@@ -1376,157 +746,6 @@ function renderAssistantPanelWizard(session) {
             <kbd>↑</kbd><kbd>↓</kbd> navigate · <kbd>1</kbd>–<kbd>9</kbd> pick · <kbd>Enter</kbd> submit ·
             <kbd>Esc</kbd> exit
           </p>
-        </div>
-      </div>
-    </aside>
-  `;
-}
-
-// Top-posts winner-selection screen — Archie's intro turn above a visual grid
-// of top-post cards (renderTopPostsGrid). Reuses the wizard chat shell so the
-// thread subscriber + scroll-pin + drag rebind in wireAssistantPanel keep
-// working; the grid sits in the scrollable chat area (no sticky picker bar —
-// clicking a card advances straight to the reuse-mode step).
-// Workflow header steps — mirrors the Batch / Clip studio intros so the
-// milker reads as a first-class workflow, not a bare grid.
-const TOP_POSTS_STEPS = [
-  {
-    tone: "in",
-    icon: "ap-icon-feature-analytics",
-    title: "Pick an account",
-    text: "Choose a connected account to pull your best-performing posts from.",
-  },
-  {
-    tone: "ai",
-    icon: "ap-icon-archie-official",
-    title: "See the winners",
-    text: "I rank its posts by engagement — pick one and a fresh angle.",
-  },
-  {
-    tone: "out",
-    icon: "ap-icon-stack",
-    title: "Reuse into drafts",
-    text: "I write fresh versions in your playbook's voice — ready to review and schedule.",
-  },
-];
-
-function renderTopPostsPickerScreen(session) {
-  const state = topPostsFlow.getPickerState(session.id);
-  if (!state) return "";
-  // No published history yet (new user) — the studio opens straight onto a
-  // dedicated empty state instead of the account chooser. A single "Back to
-  // chat" affordance (also Esc) is the only way out since there's nothing to
-  // pick.
-  if (state.stage === "empty") {
-    return html`
-      <aside
-        class="session__assistant session__assistant--wizard session__assistant--board"
-        aria-label="Assistant panel"
-      >
-        <div class="analyse__chat session__assistant-board-chat">
-          <div class="analyse__chat-inner session__assistant-board-inner">
-            <div class="top-posts-intro">
-              <span class="top-posts-intro__badge"
-                ><i class="ap-icon-feature-analytics" aria-hidden="true"></i>Top posts</span
-              >
-            </div>
-            ${raw(
-              renderEmptyState({
-                icon: "ap-icon-feature-analytics",
-                title: "No top posts to reuse yet",
-                body: "Once your posts start performing, I'll surface your winners here so you can spin fresh drafts out of what already works. Publish a few and come back.",
-                actionHtml:
-                  '<button type="button" class="ap-button stroked" data-topposts-exit><span>Back to chat</span></button>',
-              }),
-            )}
-          </div>
-        </div>
-      </aside>
-    `;
-  }
-  // A studio-style screen (like Batch / Clip): a centered intro header, then a
-  // stage-dependent body — profile chooser (step 1) → loading beat → winner
-  // board. Distinct container classes (not #inlineQuestionChat / wizard-chat) so
-  // the chat scroll-pin in wireAssistantPanel doesn't yank it to the bottom.
-  const account = state.profile ? profileForNetwork(state.profile) : null;
-  const profileName = account?.handle || "";
-
-  let intro;
-  let body;
-  if (state.stage === "profile") {
-    // Step 1 — pick which connected account to mine. This is the *exact* in-chat
-    // picker component (inlineQuestion.ask, armed by top-posts-flow when the
-    // profile stage opens): we render its chrome (handler "inline-question")
-    // inside the studio framing (workflow roadmap + a keyboard hint bar), so it
-    // reads — and behaves — like every other in-chat pick. Single-select:
-    // clicking a row (or pressing its digit) routes through the shared
-    // inline-question delegate → inlineQuestion.pick → chooseProfile.
-    intro =
-      "Pick a connected account and I'll surface its best-performing posts — reuse any into fresh drafts in your playbook's voice.";
-    const picker = renderPicker(inlineQuestion.renderChrome(session.id)?.picker);
-    // The Playbook whose voice the repurposed drafts will follow, chosen here on
-    // step 1 (defaults to the workspace default; persists through to generation).
-    const playbookCtx = getContextById(topPostsFlow.getContextId(session.id));
-    // The account is highlighted (not advanced) on click; "Next" confirms the
-    // account + Playbook together. Disabled until an account is selected.
-    const selectedAccount = inlineQuestion.getSelected(session.id);
-    body = html`
-      ${raw(buildWorkflowFlow(TOP_POSTS_STEPS))}
-      <div class="top-posts-account-picker">
-        ${raw(picker)}
-        <div class="studio-commit">
-          <div class="studio-commit__row">
-            ${raw(renderTopPostsPlaybookControl(playbookCtx))}
-            <button
-              type="button"
-              class="ap-button primary blue studio-commit__cta"
-              data-topposts-next
-              ${selectedAccount ? "" : "disabled"}
-            >
-              <span>Show my ${TOP_POSTS_LIMIT} top posts</span>
-            </button>
-          </div>
-          <p class="studio-commit__hint muted">I'll write the fresh drafts in this playbook's voice.</p>
-        </div>
-      </div>
-    `;
-  } else if (state.stage === "loading") {
-    intro = profileName ? `Loading your top posts from ${profileName}…` : "Loading your top posts…";
-    body = html`
-      <div class="top-posts-loading" role="status" aria-live="polite">
-        <span class="archie-loader" style="--archie-loader-size: 44px"></span>
-        <span class="top-posts-loading__label">Pulling ${profileName || "your"} winners…</span>
-      </div>
-    `;
-  } else {
-    intro = profileName
-      ? `Your top-performing posts on ${profileName} — pick one to spin fresh angles.`
-      : "Pick one of your best-performing posts to spin fresh angles.";
-    body = html`
-      ${raw(buildWorkflowFlow(TOP_POSTS_STEPS))}
-      ${raw(
-        renderTopPostsBoard({
-          posts: state.posts,
-          sort: state.sort,
-          profile: state.profile,
-          period: state.period,
-        }),
-      )}
-    `;
-  }
-
-  return html`
-    <aside class="session__assistant session__assistant--wizard session__assistant--board" aria-label="Assistant panel">
-      <div class="analyse__chat session__assistant-board-chat">
-        <div class="analyse__chat-inner session__assistant-board-inner">
-          <div class="top-posts-intro">
-            <span class="top-posts-intro__badge"
-              ><i class="ap-icon-feature-analytics" aria-hidden="true"></i>Top posts</span
-            >
-            <h1 class="top-posts-intro__title">Reuse your best-performing posts</h1>
-            <p class="top-posts-intro__sub">${intro}</p>
-          </div>
-          ${raw(body)}
         </div>
       </div>
     </aside>
@@ -1735,340 +954,6 @@ function defaultChatNameLocal() {
   return `Chat · ${fmt.format(new Date())}`;
 }
 
-// Build + show the "Which profile?" question, reached from every Draft Post
-// entry point. The chosen profile's platform becomes the draft's network so
-// the user gets posts on the surface they actually want to publish to. `count` is threaded through from the count
-// picker; `onBack` lets the second-step picker return to the first.
-// External entry to the draft-from-idea flow — echoes the chosen idea as a
-// selection card (so the pick stays visible) then opens the profile step.
-// Internal steps (count / angle / Back) call askProfileQuestion directly, so
-// the idea echo is posted exactly once, at selection time.
-// The Playbook languages backing this chat (primary first). Falls back to the
-// default Playbook + "English" so the flow always has a language to write in.
-function playbookLanguages(sessionId) {
-  const session = getSessionById(sessionId);
-  const ctx = session?.contextId ? getContextById(session.contextId) : playbookForNewWork();
-  const langs = ctx && Array.isArray(ctx.languages) && ctx.languages.length ? ctx.languages.slice() : null;
-  const primary = ctx?.primaryLanguage || (langs && langs[0]) || ctx?.language || "English";
-  return { languages: langs || [primary], primary };
-}
-
-// Language gate for the draft flow. When the Playbook publishes in more than
-// one language, ask which to write in (default = primary) and echo the pick;
-// otherwise skip silently. Posts are then generated in that language using its
-// native Voice examples — never a translation. `proceed(language)` continues.
-function askLanguageQuestion(sessionId, ideaId, proceed) {
-  const { languages, primary } = playbookLanguages(sessionId);
-  // Multilingual gated behind a flag (default OFF) — and skip when there's only
-  // one language to choose from anyway.
-  if (!isFlagOn("multilingualPlaybook") || languages.length <= 1) {
-    proceed(primary);
-    return;
-  }
-  postAssistantMessage(sessionId, "Which language should I write in?");
-  inlineQuestion.ask(sessionId, {
-    title: "Choose a language",
-    stepLabel: "Language",
-    items: languages.map((l) => ({
-      value: l,
-      label: l,
-      caption: l === primary ? "Primary — your Playbook default" : undefined,
-      icon: "ap-icon-web",
-    })),
-    onPick: (lang) => {
-      const chosen = languages.includes(lang) ? lang : primary;
-      postSelectionEcho(sessionId, { icon: "ap-icon-web", title: chosen, meta: "Language" });
-      proceed(chosen);
-    },
-    // A default always exists, so Skip writes in the primary language.
-    onSkip: () => proceed(primary),
-  });
-}
-
-function startIdeaDraft(sessionId, ideaId) {
-  const idea = getIdeas(sessionId).find((i) => i.id === ideaId);
-  if (idea) {
-    const srcName = (idea.sourceIds || []).length
-      ? getStreamSources(sessionId).find((s) => s.id === idea.sourceIds[0])?.filename
-      : "";
-    postSelectionEcho(sessionId, {
-      icon: "ap-icon-archie-official",
-      title: idea.title,
-      meta: srcName ? `Idea · from ${srcName}` : "Idea",
-    });
-  }
-  askLanguageQuestion(sessionId, ideaId, (language) => askProfileQuestion(sessionId, ideaId, { language }));
-}
-
-function askProfileQuestion(
-  sessionId,
-  ideaId,
-  { count = 1, angle = null, anglePicks = null, onBack = null, language = null } = {},
-) {
-  // Nothing connected (skipConnectProfiles) → ask for the connection in this
-  // very slot, then come back here. With an account connected this returns
-  // straight through, so the flow below is unchanged.
-  if (getConnectedProfiles().length === 0) {
-    requireConnectedProfiles(sessionId, {
-      stepLabel: "Profile",
-      onBack: onBack || undefined,
-      onReady: () => askProfileQuestion(sessionId, ideaId, { count, angle, anglePicks, onBack, language }),
-    });
-    return;
-  }
-  // Connected profiles + their picker presentation come from the shared
-  // social-profiles helper, so this picker proposes the exact same
-  // accounts (brand handle + avatar with network badge) as the Playbook
-  // onboarding profile step.
-  const connected = getConnectedProfiles();
-  postAssistantMessage(sessionId, "Which profile should I draft this for?");
-  const profileItems = buildConnectedProfileItems();
-  inlineQuestion.ask(sessionId, {
-    title: "Pick a connected social profile",
-    stepLabel: "Profile",
-    items: profileItems,
-    // With a lot of connected accounts, a flat list is slow to scan — add a
-    // live search box so the user can filter by name/handle/network.
-    searchable: profileItems.length > PROFILE_SEARCH_THRESHOLD,
-    searchPlaceholder: "Search profiles by name, handle or network…",
-    onPick: (accountId) => {
-      const account = connected.find((a) => a.id === accountId);
-      // Echo the pick as a visual profile chip (avatar + handle) so selecting a
-      // profile gives the same object-preview feedback as picking a post — not
-      // a plain text bubble. Mirrors the multi-account batch path below.
-      if (account) postUserProfilesTurn(sessionId, [account]);
-      const channels = account?.platform ? [account.platform] : null;
-      // Multi-angle batch (from the angle stepper) → one draft run that
-      // produces each angle's count. Otherwise the legacy single-angle path.
-      if (anglePicks && anglePicks.length) {
-        executeDraftBatch(sessionId, ideaId, channels, anglePicks, language);
-      } else {
-        startDraftFlow(sessionId, ideaId, count, channels, angle, language);
-      }
-    },
-    onBack: onBack || undefined,
-    onSkip: onBack ? undefined : () => {},
-  });
-}
-
-// ── Published-posts repurposing (top-posts flow) ──────────────────────
-// The winner board (top-posts-flow.js) hands off here once the user picks one or
-// more winners — via a card's "Repurpose" or the bulk bar. We echo the picks,
-// then go straight to the profiles step and generate the network-adapted drafts.
-function startRepurposeFlow(sessionId, postIds) {
-  const ids = topPostsFlow.echoRepurposePicks(sessionId, postIds);
-  if (!ids.length) return;
-  askRepurposeProfiles(sessionId, ids);
-}
-
-// Profile-selection — a SINGLE unified per-profile version stepper (no separate
-// "same vs other" scope step). Lists every connected profile: source-network
-// profiles first, tagged "· Source". Every profile starts at 0 — the user opts
-// in explicitly. "Generate N drafts" sums the counts and each draft is adapted
-// to its profile's network. This is the first (and only) step after the picks
-// are echoed — every repurpose entry point funnels here, so they all behave
-// identically.
-function askRepurposeProfiles(sessionId, postIds) {
-  // Every profile starts at 0 (fully opt-in); source profiles just lead the list.
-  const items = topPostsFlow.repurposeProfileItems(postIds, { include: "all" }).map((it) => ({ ...it, count: 0 }));
-  if (!items.length) {
-    // Same slot, same shape: ask for the account here, then re-enter with the
-    // list this step needs.
-    requireConnectedProfiles(sessionId, {
-      stepLabel: "Profile",
-      onReady: () => askRepurposeProfiles(sessionId, postIds),
-    });
-    return;
-  }
-  postAssistantMessage(sessionId, "Where should I repurpose these?");
-  inlineQuestion.ask(sessionId, {
-    title: "Pick the profiles to repurpose to",
-    subtitle: "Set how many versions I'll write for each profile — leave one at 0 to skip it.",
-    stepLabel: "Versions per profile",
-    // Per-profile version counter, capped so a single run stays scannable.
-    stepper: true,
-    countMin: 0,
-    countMax: 5,
-    submitCountLabel: (total) => `Generate ${total} draft${total === 1 ? "" : "s"}`,
-    items,
-    // Long profile lists get a live search box to filter down before setting counts.
-    searchable: items.length > PROFILE_SEARCH_THRESHOLD,
-    searchPlaceholder: "Search profiles by name, handle or network…",
-    onPick: ({ picks, total }) => {
-      // Each pick is { value: accountId, count } (count already > 0). Resolve
-      // to the account + its network, echo the chosen profiles as chips, then
-      // generate `count` versions per profile.
-      const targets = picks
-        .map((p) => ({ account: getConnectedProfileById(p.value) || null, count: p.count }))
-        .filter((t) => t.account);
-      postUserProfilesTurn(
-        sessionId,
-        targets.map((t) => t.account),
-      );
-      postUserTurn(
-        sessionId,
-        `${total} draft${total === 1 ? "" : "s"} · ${targets.length} profile${targets.length === 1 ? "" : "s"}`,
-      );
-      const networkTargets = targets.map((t) => ({
-        network: normalizeNetwork(t.account.platform),
-        count: t.count,
-      }));
-      topPostsFlow.executeRepurpose(sessionId, postIds, networkTargets);
-    },
-  });
-}
-
-// "Draft a post from this idea" — step 1: pick an angle. Triggered by the
-// right-panel Ideas card "Draft" button. Archie suggests 4 AI-generated
-// angles (title + short description) the idea could be reframed into; the
-// chosen angle is threaded through the rest of the flow (count → profile →
-// generate) so the produced drafts reflect it. Mirrors the screenshot
-// pattern by reusing the inline-question numbered-card picker.
-export function askAngleQuestion(sessionId, ideaId, { language = null } = {}) {
-  // Language gate first (once) — then re-enter with the chosen language so it
-  // threads through the angle → count → profile → generate chain.
-  if (language === null) {
-    askLanguageQuestion(sessionId, ideaId, (lang) => askAngleQuestion(sessionId, ideaId, { language: lang }));
-    return;
-  }
-  const angles = getAnglesForIdea(sessionId, ideaId);
-  // No resolvable idea / angles — fall back to the original count flow so
-  // the Draft button never dead-ends.
-  if (!angles.length) {
-    askDraftCountQuestion(sessionId, ideaId, { language });
-    return;
-  }
-  postAssistantMessage(sessionId, "Let's draft from these angles.");
-  // The quick picker shows a brand loader (~4s) while Archie "finds the
-  // angles", then swaps in the real angle stepper. Cancelling during the
-  // loader aborts the reveal.
-  inlineQuestion.ask(sessionId, {
-    loading: true,
-    title: "Suggested angles",
-    subtitle: "Finding the strongest angles for this idea…",
-    skipLabel: "Cancel",
-    onSkip: () => {},
-  });
-  window.setTimeout(() => {
-    if (!inlineQuestion.isActive(sessionId)) return;
-    inlineQuestion.ask(sessionId, {
-      title: "Suggested angles",
-      subtitle: "Set how many drafts I'll write for each angle — leave one at 0 to skip it.",
-      stepLabel: "Drafts per angle",
-      skipLabel: "Cancel",
-      // Stepper mode — each angle row carries its own drafts counter (0 to
-      // skip an angle). "Generate N drafts" sums every angle and advances
-      // straight to the profile step, where the whole batch is produced.
-      stepper: true,
-      defaultCount: 1,
-      countMin: 0,
-      countMax: 20,
-      submitCountLabel: (total) => `Generate ${total} draft${total === 1 ? "" : "s"}`,
-      items: angles.map((a) => ({
-        value: a.id,
-        label: a.title,
-        caption: a.description,
-      })),
-      onPick: ({ picks }) => {
-        // Map each picked angle id → its angle object + count.
-        const anglePicks = picks
-          .map((p) => ({ angle: angles.find((a) => a.id === p.value) || null, count: p.count }))
-          .filter((p) => p.angle && p.count > 0);
-        const total = anglePicks.reduce((sum, p) => sum + p.count, 0);
-        // Echo the batch as a user turn so it stays visible once the picker
-        // unmounts — e.g. "3 drafts · 2 angles".
-        postUserTurn(
-          sessionId,
-          `${total} draft${total === 1 ? "" : "s"} · ${anglePicks.length} angle${anglePicks.length === 1 ? "" : "s"}`,
-        );
-        askProfileQuestion(sessionId, ideaId, {
-          anglePicks,
-          language,
-          // ← Back returns to the angle picker so the user can re-choose.
-          onBack: () => askAngleQuestion(sessionId, ideaId, { language }),
-        });
-      },
-      // First step of the flow — no earlier question, so it's Cancel (not Back).
-      onSkip: () => {},
-    });
-  }, 4000);
-}
-
-// Step 2: how many drafts. Threads the chosen `angle` through to the
-// profile picker. When reached from the angle step (`onBack` set) the
-// picker shows a Back affordance; entered directly it shows Cancel.
-function askDraftCountQuestion(sessionId, ideaId, { angle = null, onBack = null, language = null } = {}) {
-  postAssistantMessage(sessionId, "How many drafts should I generate?");
-  const advance = (count) => {
-    // Clamp to a reasonable range — single-digit + custom typed numbers
-    // can land outside it (0, negative, NaN). 1 floors any nonsense.
-    const n = Math.max(1, Math.min(20, Math.floor(Number(count) || 1)));
-    // Echo the count as a user turn so the pick stays visible once the
-    // picker unmounts (covers both the preset chips and the custom input).
-    postUserTurn(sessionId, `${n} draft${n === 1 ? "" : "s"}`);
-    askProfileQuestion(sessionId, ideaId, {
-      count: n,
-      angle,
-      language,
-      // ← Back returns to the count picker so the user can change their mind.
-      onBack: () => askDraftCountQuestion(sessionId, ideaId, { angle, onBack, language }),
-    });
-  };
-  inlineQuestion.ask(sessionId, {
-    title: "How many drafts from this idea?",
-    stepLabel: "Drafts",
-    skipLabel: "Cancel",
-    items: [
-      { value: 1, label: "1 draft" },
-      { value: 3, label: "3 drafts" },
-      { value: 5, label: "5 drafts" },
-    ],
-    customPlaceholder: "Or type any number (1–20)",
-    onPick: advance,
-    onCustom: advance,
-    // When chained from the angle step, offer Back to it instead of Cancel.
-    onBack: onBack || undefined,
-    onSkip: onBack ? undefined : () => {},
-  });
-}
-
-// "What would you like to do with this video?" — asked via the quick picker
-// once a freshly-added video is processed (intake-lifecycle → onVideoReady).
-// Each option carries a caption explaining what it does; picking one echoes
-// it as a user turn and runs only that branch.
-function askVideoIntake(sessionId, sourceId, filename) {
-  postAssistantMessage(sessionId, "What would you like to do with this video?");
-  inlineQuestion.ask(sessionId, {
-    title: "Use this video",
-    stepLabel: "Video",
-    skipLabel: "Cancel",
-    items: [
-      {
-        value: "ideas",
-        label: "Analyze for ideas",
-        caption: "Pull the key themes and talking points into your Ideas to draft posts from.",
-        icon: "ap-icon-archie-official",
-      },
-      {
-        value: "clips",
-        label: "Extract & create clips",
-        caption: "Cut the video into short, post-ready clips you can caption and publish.",
-        icon: "ap-icon-video",
-      },
-    ],
-    onPick: (value) => {
-      if (value === "ideas") {
-        postUserTurn(sessionId, "Analyze for ideas");
-        runVideoIdeasChoice(sessionId, sourceId, filename);
-      } else if (value === "clips") {
-        postUserTurn(sessionId, "Extract & create clips");
-        runVideoClipsChoice(sessionId, sourceId, filename);
-      }
-    },
-    onSkip: () => {},
-  });
-}
-
 // ── The composer's Topic pick lands ────────────────────────────────────────
 // The inline "Pick from the Topic Feed" widget was confirmed. Mark the Topic Used
 // and attach it as a source to THIS chat — the same attachTopicToChat the handoff
@@ -2151,338 +1036,6 @@ function finishTopicPick(session, topicId) {
     },
     onSkip: () => {},
   });
-}
-
-// ── Video-intake choice branches ──────────────────────────────────────────
-// Run after the user answers "what to do with this video?" (intake-lifecycle).
-// Extraction is deferred at upload, so each branch produces only its output.
-
-// "Analyze for ideas" — brief thinking chip, inject the canned video ideas,
-// surface the source-intake "N ideas" pill, then post the rich extraction turn.
-function runVideoIdeasChoice(sessionId, sourceId, filename) {
-  const pendingId = startPending(sessionId, "Extracting ideas");
-  setTimeout(() => {
-    finishPending(sessionId, pendingId);
-    const ideas = extractVideoIdeas(sessionId, sourceId);
-    setSourceIdeaCount(sessionId, sourceId, ideas.length);
-    postExtractionResult(sessionId, { filename, ideas });
-  }, 1600);
-}
-
-// "Extract & create clips" — post the clip-extraction turn (renders pending,
-// cycling through explanatory stages while no clips exist yet), then kick off
-// the staged ~7.5s extraction. The ticker owns the timing and flips the turn to
-// "ready" (via clipExtractionStatus) once the clips are attached.
-function runVideoClipsChoice(sessionId, sourceId, filename) {
-  postClipExtractionTurn(sessionId, { sourceId, filename });
-  extractClipsForSource(sessionId, sourceId);
-}
-
-function renderThread(messages, sessionId) {
-  return messages.map((m) => renderTurn(m, sessionId)).join("");
-}
-
-function renderTurn(message, sessionId) {
-  // Hidden placeholders (pre-reply AI bubbles) don't render.
-  if (message.hidden) return "";
-
-  // Pending marker — renders the inline "Extracting" notice while loading,
-  // disappears once the caller flips status to "ready". Figma 25:1413.
-  if (message.role === "pending") {
-    if (message.status !== "loading") return "";
-    return renderExtractingNotice();
-  }
-
-  // Right-aligned "Source intake" turn — Figma 25:1127 / 25:1131.
-  if (message.role === "source-intake") {
-    const source = message.sourceId ? getStreamSources(sessionId).find((s) => s.id === message.sourceId) : null;
-    return renderSourceIntakeTurn(message, source);
-  }
-
-  // AI extraction result — Figma 25:1053.
-  if (message.role === "assistant" && message.variant === "extraction") {
-    return renderExtractionTurn(message, sessionId);
-  }
-
-  // Draft result — intentionally NOT rendered inline. Drafts can finish at any
-  // time (incl. while the user is doing something else), so a card here would
-  // interleave the conversation unpredictably. The message is kept in the thread
-  // only as the batch anchor for the Drafts panel; "ready" is surfaced via a
-  // toast + the persistent topbar Drafts count (see the offThread subscription).
-  if (message.role === "assistant" && message.variant === "draft") {
-    return "";
-  }
-
-  // Clip extraction — pending spinner pill that flips to a ready card with
-  // an "Open clips" action once the background extraction completes.
-  if (message.role === "assistant" && message.variant === "clip-extraction") {
-    return renderClipExtractionTurn(message, sessionId);
-  }
-
-  // Idea extraction (Flow A — "Extract themes"). Same chrome as clip
-  // extraction; flips to a "Themes ready · panel updated" notice when
-  // injectIdeasForSource lands.
-  if (message.role === "assistant" && message.variant === "idea-extraction") {
-    return renderIdeaExtractionTurn(message, sessionId);
-  }
-
-  // Profiles echo — right-aligned avatar (+ network badge) + handle chips,
-  // used when the user picks which account(s) to draft a clip for.
-  if (message.role === "user" && message.variant === "profiles") {
-    return renderProfilesTurn(message);
-  }
-
-  if (message.role === "user" && message.variant === "top-post-pick") {
-    return `
-      <div class="chat-turn chat-turn--user">
-        <span class="chat-turn-role">You</span>
-        ${renderTopPostEcho(message.post)}
-      </div>
-    `;
-  }
-
-  // Inline "top posts" selection widget — the Add-menu flow's in-chat board.
-  if (message.role === "assistant" && message.variant === "top-posts-widget") {
-    return renderTopPostsWidgetTurn(message);
-  }
-
-  // Inline "topics" selection widget — the Add menu's "Pick from the Topic Feed".
-  if (message.role === "assistant" && message.variant === "topics-widget") {
-    return renderTopicsWidgetTurn(message);
-  }
-
-  if (message.role === "user" && message.variant === "selection-echo") {
-    return renderSelectionEchoTurn(message.echo);
-  }
-
-  // Channel-picker choice turn — chip row + "Draft them" button.
-  if (message.role === "assistant-choice") {
-    return renderChoiceTurn(message);
-  }
-
-  // Drafting / system notices — mermaid status pill + optional detail body.
-  if (message.role === "system") {
-    return renderSystemNotice(message);
-  }
-
-  // "Connect this service first" prompt — shown when a pasted link points to a
-  // connector-backed service that isn't connected yet.
-  if (message.role === "connect-prompt") {
-    return renderConnectPromptTurn(message);
-  }
-
-  return renderMessageBubble(message);
-}
-
-// Inline "top posts" selection widget turn — an AI-side turn hosting the
-// interactive multi-select card (renderTopPostsWidget). Resolves the post ids to
-// live winners each render; selection + answered state live on the turn message.
-function renderTopPostsWidgetTurn(message) {
-  const posts = (message.postIds || []).map(getTopPost).filter(Boolean);
-  return `
-    <div class="chat-turn chat-turn--ai">
-      <i class="ap-icon-archie-official chat-turn-avatar" aria-hidden="true"></i>
-      ${renderTopPostsWidget({
-        network: message.network,
-        posts,
-        selected: message.selected || [],
-        answered: message.status === "answered",
-        group: message.id,
-      })}
-    </div>
-  `;
-}
-
-// Inline "topics" selection widget turn — the AI-side turn hosting the
-// single-select Topic cards (renderTopicsWidget). Resolves the Topic ids to live
-// Topics each render, so one that left the feed drops out; selection + answered
-// state live on the turn message, exactly like the top-posts widget.
-function renderTopicsWidgetTurn(message) {
-  const topics = (message.topicIds || []).map(getTopicById).filter(Boolean);
-  return `
-    <div class="chat-turn chat-turn--ai">
-      <i class="ap-icon-archie-official chat-turn-avatar" aria-hidden="true"></i>
-      ${renderTopicsWidget({
-        topics,
-        selected: message.selected || [],
-        answered: message.status === "answered",
-        group: message.id,
-      })}
-    </div>
-  `;
-}
-
-// Visual echo of the selected profiles — a right-aligned wrap of cards, each
-// styled like every other selection echo in the thread (rounded navy-tint card,
-// avatar + two lines: profile NAME, then the @handle / "Platform · Kind").
-// Canonical renderer: social-profiles.renderProfileEchoCard. The payload is the
-// raw socialAccounts entries picked in the accounts step.
-function renderProfilesTurn(message) {
-  const chips = (message.profiles || [])
-    .map((account) => renderProfileEchoCard(account, { network: account?.platform }))
-    .join("");
-  return `
-    <div class="chat-turn chat-turn--user">
-      <span class="chat-turn-role">You</span>
-      <div class="chat-profiles">${chips}</div>
-    </div>
-  `;
-}
-
-// Generic "you picked this object" echo — icon + title + meta chip. Posted via
-// assistant.postSelectionEcho when the user selects a source / idea / clip / …
-// so the pick stays visible in the thread.
-function renderSelectionEchoTurn(echo) {
-  if (!echo) return "";
-  return `
-    <div class="chat-turn chat-turn--user">
-      <span class="chat-turn-role">You</span>
-      <div class="selection-echo">
-        <span class="selection-echo__icon"><i class="${escapeHtml(echo.icon || "ap-icon-file")}" aria-hidden="true"></i></span>
-        <span class="selection-echo__body">
-          <span class="selection-echo__title">${escapeHtml(echo.title || "")}</span>
-          ${echo.meta ? `<span class="selection-echo__meta">${escapeHtml(echo.meta)}</span>` : ""}
-        </span>
-      </div>
-    </div>
-  `;
-}
-
-// "Connect this service first" prompt — Archie can't import a pasted link
-// because its backing connector (Slite, Notion, …) isn't connected. Renders an
-// AI turn with the explanation + a Connect (logo-branded) / Close action row.
-// The Connect click delegate connects the service and retries the import; the
-// turn then collapses to a one-line confirmation.
-function renderConnectPromptTurn(message) {
-  if (message.status === "dismissed") return "";
-
-  // Resolved — a standalone success status (green wash + filled check), not an
-  // AI chat reply. Mirrors the connect-card so the request → success reads as
-  // one coherent block.
-  if (message.status === "connected") {
-    return `
-      <div class="connect-status" role="status">
-        <i class="ap-icon-rounded-check_fill connect-status__icon" aria-hidden="true"></i>
-        <p class="connect-status__text">
-          <strong>${escapeHtml(message.connectorName)} connected</strong> — importing your ${escapeHtml(
-            message.noun,
-          )} now.
-        </p>
-      </div>
-    `;
-  }
-
-  // Standalone connection card (not a chat bubble) — reused for any "connect a
-  // service" or "grant an authorization" request. Header = connector logo tile
-  // + name + a state pill; one supporting line; primary Connect + ghost Cancel.
-  // The connector logo sits in a white rounded tile so a single-colour brand
-  // mark always reads on a light surface. Falls back to the Archie sparkle.
-  const name = escapeHtml(message.connectorName);
-  const logo = message.logo
-    ? `<img src="${escapeHtml(message.logo)}" alt="" />`
-    : `<i class="ap-icon-archie-official" aria-hidden="true"></i>`;
-  return `
-    <div class="connect-card" role="group" aria-label="Connect ${name}">
-      <div class="connect-card__head">
-        <span class="connect-card__logo" aria-hidden="true">${logo}</span>
-        <div class="connect-card__heading">
-          <span class="connect-card__title">${name}</span>
-          <span class="connect-card__sub">Connect to import this ${escapeHtml(
-            message.noun,
-          )} — I'll retry automatically.</span>
-        </div>
-        <span class="ap-status grey no-dot connect-card__state">Not connected</span>
-      </div>
-      <div class="connect-card__actions">
-        <button type="button" class="ap-button primary blue" data-connect-prompt-connect="${escapeHtml(message.id)}">
-          Connect ${name}
-        </button>
-        <button type="button" class="ap-button ghost grey" data-connect-prompt-dismiss="${escapeHtml(message.id)}">
-          Cancel
-        </button>
-      </div>
-    </div>
-  `;
-}
-
-// Inline "Extracting" notice (Figma 25:1413) — mermaid status pill + small
-// blue spinner, sits in the thread while a source extraction is in flight.
-// Wrapped in role=status + aria-label so screen readers announce that
-// extraction is running (the bare "Extracting" pill is meaningless out
-// of context).
-// Per-idea interaction state for the extraction-turn cards (the shared compact
-// idea card is a pure renderer, so the consumer owns this). Toggled by the
-// data-rpanel-* handlers in bindSession, which then repaint the single card.
-const extractionVerdict = new Map(); // ideaId → 'up' | 'down'
-const extractionWhyOpen = new Set(); // ideaIds with the Why panel expanded
-
-function renderExtractionTurn(message, sessionId) {
-  const count = message.count ?? (message.ideas ? message.ideas.length : 0);
-  // Render the EXACT shared idea card (renderCompactIdeaCard) used by the
-  // right-panel Ideas mode + the standalone Ideas page — feedback + Mention +
-  // Draft. The thread message only carries {id,title,body}, so resolve the full
-  // idea (kind / Source / rationale) from the library by id, like the panel does.
-  const sources = sessionId ? getStreamSources(sessionId) : [];
-  const byId = new Map((sessionId ? getIdeas(sessionId) : []).map((i) => [i.id, i]));
-  const cards = (message.ideas || [])
-    .map((m) => {
-      const idea = byId.get(m.id) || m;
-      return renderCompactIdeaCard(idea, sources, {
-        verdict: extractionVerdict.get(idea.id) || null,
-        whyOpen: extractionWhyOpen.has(idea.id),
-        showMention: true,
-      });
-    })
-    .join("");
-  return `
-    <div class="chat-turn chat-turn--ai chat-turn--extraction">
-      ${renderNotice({
-        variant: "mermaid",
-        label: `Extracted ${count} idea${count === 1 ? "" : "s"}`,
-        open: message.open !== false,
-        loading: message.status === "loading",
-        bodyHtml: `
-          <div class="extraction-turn__detail">
-            <div class="extraction-turn__analyzed-row">
-              <strong>Analyzed</strong>
-              <span>${message.filename}</span>
-            </div>
-            ${cards}
-          </div>
-        `,
-      })}
-    </div>
-  `;
-}
-
-// Resolve an extraction-turn idea by id (library first, then any extraction
-// turn in the thread) so the card handlers can read its title / data.
-function findExtractionIdea(sessionId, ideaId) {
-  const fromLib = getIdeas(sessionId).find((i) => i.id === ideaId);
-  if (fromLib) return fromLib;
-  for (const m of getThread(sessionId)) {
-    if (m.variant === "extraction" && Array.isArray(m.ideas)) {
-      const hit = m.ideas.find((i) => i.id === ideaId);
-      if (hit) return hit;
-    }
-  }
-  return null;
-}
-
-// Re-render a single extraction-turn idea card in place (after a feedback / Why
-// toggle) so the rest of the thread + scroll position stay put.
-function repaintExtractionCard(root, session, ideaId) {
-  const idea = findExtractionIdea(session.id, ideaId);
-  const article = root.querySelector(`.extraction-turn__detail [data-idea-id="${ideaId}"]`);
-  if (!idea || !article) return;
-  const tmp = document.createElement("div");
-  tmp.innerHTML = renderCompactIdeaCard(idea, getStreamSources(session.id), {
-    verdict: extractionVerdict.get(ideaId) || null,
-    whyOpen: extractionWhyOpen.has(ideaId),
-    showMention: true,
-  });
-  const fresh = tmp.firstElementChild;
-  if (fresh) article.replaceWith(fresh);
 }
 
 // Drag-and-drop a file anywhere on the assistant panel → kicks off the
@@ -3075,114 +1628,6 @@ function rerenderContentWorkspace(root, session) {
     ideasBulkBar: ideaSel && ideaSel.size > 0 ? renderIdeasBulkBar(ideaSel.size) : "",
     sessionId: session.id,
   });
-}
-
-// Channel-picker choice turn — chips toggle on click, "Draft them" submits.
-// Network → icon mapping — used both in the Drafts summary card network row
-// and (later) by the Drafts work-surface in Lot 4. Keep the slug list aligned
-// with mocks.socialAccounts so the visual surfaces never miss a network.
-// Pending → ready clip-extraction card. The turn carries only the sourceId
-// and filename; the renderer reads the live source from sources-stream, so the
-// same turn naturally flips state when extractClipsForSource lands its result
-// (the session view subscribes to subscribeSources, repainting the thread).
-function renderClipExtractionTurn(message, sessionId) {
-  const source = getStreamSources(sessionId).find((s) => s.id === message.sourceId);
-  const filename = escapeHtml(source?.filename || message.filename || "your video");
-
-  // Source was removed (e.g. user deleted it from /sources) — degrade to a
-  // muted "unavailable" card rather than leave a broken CTA.
-  if (!source) {
-    return `
-      <div class="chat-turn chat-turn--ai chat-turn--clip-extraction">
-        ${renderResultCard({
-          state: "unavailable",
-          icon: "ap-icon-file--video",
-          title: "Clips no longer available",
-          sub: `${filename} was removed.`,
-        })}
-      </div>
-    `;
-  }
-
-  const clipsCount = Array.isArray(source.clips) ? source.clips.length : 0;
-  const isReady = source.clipExtractionStatus === "ready" || clipsCount > 0;
-
-  if (!isReady) {
-    // Live stage label from the extraction ticker (sources-stream); falls back
-    // to a generic line before the first tick lands.
-    const stage = source.clipStage || "Cutting your clips";
-    return `
-      <div class="chat-turn chat-turn--ai chat-turn--clip-extraction">
-        ${renderResultCard({
-          state: "pending",
-          busyLabel: stage,
-          title: `${stage}…`,
-          sub: "Turning your video into post-ready clips — this takes a moment. You can keep chatting.",
-        })}
-      </div>
-    `;
-  }
-
-  const titleLabel = clipsCount === 1 ? "1 clip to review" : `${clipsCount} clips to review`;
-  return `
-    <div class="chat-turn chat-turn--ai chat-turn--clip-extraction">
-      ${renderResultCard({
-        state: "ready",
-        title: titleLabel,
-        sub: `From <span class="drafts-card__sub-quote">${filename}</span>`,
-        cta: { label: "Open clips" },
-        dataAttr: `data-clip-card-open="${source.id}"`,
-      })}
-    </div>
-  `;
-}
-
-// Pending → ready idea-extraction notice for the "Extract themes" branch.
-// Uses the shared renderResultCard so "ideas ready", "clips ready" and
-// "drafts to review" all read as one result-card family.
-function renderIdeaExtractionTurn(message, sessionId) {
-  const source = getStreamSources(sessionId).find((s) => s.id === message.sourceId);
-  const filename = escapeHtml(source?.filename || message.filename || "your video");
-
-  if (message.status === "loading") {
-    return `
-      <div class="chat-turn chat-turn--ai chat-turn--clip-extraction">
-        ${renderResultCard({
-          state: "pending",
-          busyLabel: "Reading video for ideas",
-          title: "Reading the video for ideas…",
-          sub: "About 15s. You can keep chatting.",
-        })}
-      </div>
-    `;
-  }
-
-  // Source removed before the user opened the ready card — degrade rather
-  // than crash on source.id.
-  if (!source) {
-    return `
-      <div class="chat-turn chat-turn--ai chat-turn--clip-extraction">
-        ${renderResultCard({
-          state: "unavailable",
-          icon: "ap-icon-file--video",
-          title: "Ideas no longer available",
-          sub: `${filename} was removed.`,
-        })}
-      </div>
-    `;
-  }
-
-  return `
-    <div class="chat-turn chat-turn--ai chat-turn--clip-extraction">
-      ${renderResultCard({
-        state: "ready",
-        title: "Ideas ready",
-        sub: `From <span class="drafts-card__sub-quote">${filename}</span>`,
-        cta: { label: "View ideas" },
-        dataAttr: `data-ideas-card-open="${source.id}"`,
-      })}
-    </div>
-  `;
 }
 
 // ─── Composer side state ─────────────────────────────────────────────────

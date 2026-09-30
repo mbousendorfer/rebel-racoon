@@ -12,27 +12,27 @@
 // The intake card lives OUTSIDE [data-batch-rest]; staging-loader ticks repaint
 // only the rest (list + commit), so the field is never clobbered mid-typing.
 
-import * as batchStudio from "../../batch-studio.js?v=1408";
-import { isFlagOn } from "../../feature-flags.js?v=1408";
-import { getConnectedConnectors } from "../../connectors-store.js?v=1408";
-import { escapeHtml, html, raw } from "../../utils.js?v=1408";
-import { dropzoneHTML } from "../../components/dropzone.js?v=1408";
-import { getContextById } from "../../contexts-store.js?v=1408";
-import { renderSourceCard } from "../../components/source-card.js?v=1408";
-import { isWorkspaceMode, playbookForNewWork } from "../../active-playbook.js?v=1408";
-import { usableContexts } from "../../playbook-access.js?v=1408";
+import * as batchStudio from "../../batch-studio.js?v=1409";
+import { isFlagOn } from "../../feature-flags.js?v=1409";
+import { getConnectedConnectors } from "../../connectors-store.js?v=1409";
+import { escapeHtml, html, raw } from "../../utils.js?v=1409";
+import { dropzoneHTML } from "../../components/dropzone.js?v=1409";
+import { getContextById } from "../../contexts-store.js?v=1409";
+import { renderSourceCard } from "../../components/source-card.js?v=1409";
+import { isWorkspaceMode, playbookForNewWork } from "../../active-playbook.js?v=1409";
+import { usableContexts } from "../../playbook-access.js?v=1409";
 import {
   classifyFile,
   startFileUpload,
   startUrlImport,
   startTextImport,
   startConnectorImport,
-} from "../../sources-stream.js?v=1408";
-import { showToast } from "../../components/toast.js?v=1408";
-import { setHashQuery } from "../../url-state.js?v=1408";
-import { navigate } from "../../router.js?v=1408";
-import { dotColorVar } from "../session.js?v=1408";
-import { buildWorkflowFlow } from "./workflow-flow.js?v=1408";
+} from "../../sources-stream.js?v=1409";
+import { showToast } from "../../components/toast.js?v=1409";
+import { setHashQuery } from "../../url-state.js?v=1409";
+import { navigate } from "../../router.js?v=1409";
+import { dotColorVar } from "../session.js?v=1409";
+import { buildWorkflowFlow } from "./workflow-flow.js?v=1409";
 
 // Origin sub-line for a staged batch source, shown in the source-card's meta row
 // (in place of the usual "N ideas · Processed · Added X").
@@ -202,6 +202,16 @@ function renderBatchRest(session) {
     </div>
   `;
 }
+
+// ⚠️ In workspace mode the in-flow Playbook pickers render NOTHING.
+//
+// Batch, Clip Studio and the repurpose board each asked "which Playbook governs
+// these drafts?" in their own select. The rail answered it before the flow
+// started, so the question is gone — and so is the control. It was a disabled
+// trigger for one commit, on the theory that the flow should still SAY which
+// brand: a greyed-out field that repeats what the rail prints two inches away
+// is chrome the reader has to rule out, not information. The commit rows are
+// `justify-content: flex-end`, so the CTA simply keeps its place.
 
 // Playbook picker for the Batch Studio commit group — same DS form-select shape
 // as the composer's renderPlaybookControl, but full-width and its picks route

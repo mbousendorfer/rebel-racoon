@@ -1,0 +1,442 @@
+// The store-coupled half of the thread: renderThread walks the session's turns
+// and dispatches each to its renderer, and the turns that must read a store
+// (extraction results, clip extraction, top posts / topics widgets, the connect
+// prompt) render here. The pure, dependency-free turns stay in thread-turns.js
+// (the handoff gallery imports that one). Moved out of session.js, unchanged.
+
+import {
+  renderExtractingNotice,
+  renderSourceIntakeTurn,
+  renderChoiceTurn,
+  renderSystemNotice,
+  renderMessageBubble,
+  renderNotice,
+  renderResultCard,
+} from "./thread-turns.js?v=1409";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1409";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1409";
+import { getTopPost } from "../../top-posts-store.js?v=1409";
+import { getTopicById } from "../../topics-store.js?v=1409";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=1409";
+import { renderProfileEchoCard } from "../../social-profiles.js?v=1409";
+import { escapeHtml } from "../../utils.js?v=1409";
+import { getIdeas } from "../../library.js?v=1409";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1409";
+import { getThread } from "../../assistant.js?v=1409";
+
+export function renderThread(messages, sessionId) {
+  return messages.map((m) => renderTurn(m, sessionId)).join("");
+}
+
+function renderTurn(message, sessionId) {
+  // Hidden placeholders (pre-reply AI bubbles) don't render.
+  if (message.hidden) return "";
+
+  // Pending marker — renders the inline "Extracting" notice while loading,
+  // disappears once the caller flips status to "ready". Figma 25:1413.
+  if (message.role === "pending") {
+    if (message.status !== "loading") return "";
+    return renderExtractingNotice();
+  }
+
+  // Right-aligned "Source intake" turn — Figma 25:1127 / 25:1131.
+  if (message.role === "source-intake") {
+    const source = message.sourceId ? getStreamSources(sessionId).find((s) => s.id === message.sourceId) : null;
+    return renderSourceIntakeTurn(message, source);
+  }
+
+  // AI extraction result — Figma 25:1053.
+  if (message.role === "assistant" && message.variant === "extraction") {
+    return renderExtractionTurn(message, sessionId);
+  }
+
+  // Draft result — intentionally NOT rendered inline. Drafts can finish at any
+  // time (incl. while the user is doing something else), so a card here would
+  // interleave the conversation unpredictably. The message is kept in the thread
+  // only as the batch anchor for the Drafts panel; "ready" is surfaced via a
+  // toast + the persistent topbar Drafts count (see the offThread subscription).
+  if (message.role === "assistant" && message.variant === "draft") {
+    return "";
+  }
+
+  // Clip extraction — pending spinner pill that flips to a ready card with
+  // an "Open clips" action once the background extraction completes.
+  if (message.role === "assistant" && message.variant === "clip-extraction") {
+    return renderClipExtractionTurn(message, sessionId);
+  }
+
+  // Idea extraction (Flow A — "Extract themes"). Same chrome as clip
+  // extraction; flips to a "Themes ready · panel updated" notice when
+  // injectIdeasForSource lands.
+  if (message.role === "assistant" && message.variant === "idea-extraction") {
+    return renderIdeaExtractionTurn(message, sessionId);
+  }
+
+  // Profiles echo — right-aligned avatar (+ network badge) + handle chips,
+  // used when the user picks which account(s) to draft a clip for.
+  if (message.role === "user" && message.variant === "profiles") {
+    return renderProfilesTurn(message);
+  }
+
+  if (message.role === "user" && message.variant === "top-post-pick") {
+    return `
+      <div class="chat-turn chat-turn--user">
+        <span class="chat-turn-role">You</span>
+        ${renderTopPostEcho(message.post)}
+      </div>
+    `;
+  }
+
+  // Inline "top posts" selection widget — the Add-menu flow's in-chat board.
+  if (message.role === "assistant" && message.variant === "top-posts-widget") {
+    return renderTopPostsWidgetTurn(message);
+  }
+
+  // Inline "topics" selection widget — the Add menu's "Pick from the Topic Feed".
+  if (message.role === "assistant" && message.variant === "topics-widget") {
+    return renderTopicsWidgetTurn(message);
+  }
+
+  if (message.role === "user" && message.variant === "selection-echo") {
+    return renderSelectionEchoTurn(message.echo);
+  }
+
+  // Channel-picker choice turn — chip row + "Draft them" button.
+  if (message.role === "assistant-choice") {
+    return renderChoiceTurn(message);
+  }
+
+  // Drafting / system notices — mermaid status pill + optional detail body.
+  if (message.role === "system") {
+    return renderSystemNotice(message);
+  }
+
+  // "Connect this service first" prompt — shown when a pasted link points to a
+  // connector-backed service that isn't connected yet.
+  if (message.role === "connect-prompt") {
+    return renderConnectPromptTurn(message);
+  }
+
+  return renderMessageBubble(message);
+}
+
+// Inline "top posts" selection widget turn — an AI-side turn hosting the
+// interactive multi-select card (renderTopPostsWidget). Resolves the post ids to
+// live winners each render; selection + answered state live on the turn message.
+function renderTopPostsWidgetTurn(message) {
+  const posts = (message.postIds || []).map(getTopPost).filter(Boolean);
+  return `
+    <div class="chat-turn chat-turn--ai">
+      <i class="ap-icon-archie-official chat-turn-avatar" aria-hidden="true"></i>
+      ${renderTopPostsWidget({
+        network: message.network,
+        posts,
+        selected: message.selected || [],
+        answered: message.status === "answered",
+        group: message.id,
+      })}
+    </div>
+  `;
+}
+
+// Inline "topics" selection widget turn — the AI-side turn hosting the
+// single-select Topic cards (renderTopicsWidget). Resolves the Topic ids to live
+// Topics each render, so one that left the feed drops out; selection + answered
+// state live on the turn message, exactly like the top-posts widget.
+function renderTopicsWidgetTurn(message) {
+  const topics = (message.topicIds || []).map(getTopicById).filter(Boolean);
+  return `
+    <div class="chat-turn chat-turn--ai">
+      <i class="ap-icon-archie-official chat-turn-avatar" aria-hidden="true"></i>
+      ${renderTopicsWidget({
+        topics,
+        selected: message.selected || [],
+        answered: message.status === "answered",
+        group: message.id,
+      })}
+    </div>
+  `;
+}
+
+// Visual echo of the selected profiles — a right-aligned wrap of cards, each
+// styled like every other selection echo in the thread (rounded navy-tint card,
+// avatar + two lines: profile NAME, then the @handle / "Platform · Kind").
+// Canonical renderer: social-profiles.renderProfileEchoCard. The payload is the
+// raw socialAccounts entries picked in the accounts step.
+function renderProfilesTurn(message) {
+  const chips = (message.profiles || [])
+    .map((account) => renderProfileEchoCard(account, { network: account?.platform }))
+    .join("");
+  return `
+    <div class="chat-turn chat-turn--user">
+      <span class="chat-turn-role">You</span>
+      <div class="chat-profiles">${chips}</div>
+    </div>
+  `;
+}
+
+// Generic "you picked this object" echo — icon + title + meta chip. Posted via
+// assistant.postSelectionEcho when the user selects a source / idea / clip / …
+// so the pick stays visible in the thread.
+function renderSelectionEchoTurn(echo) {
+  if (!echo) return "";
+  return `
+    <div class="chat-turn chat-turn--user">
+      <span class="chat-turn-role">You</span>
+      <div class="selection-echo">
+        <span class="selection-echo__icon"><i class="${escapeHtml(echo.icon || "ap-icon-file")}" aria-hidden="true"></i></span>
+        <span class="selection-echo__body">
+          <span class="selection-echo__title">${escapeHtml(echo.title || "")}</span>
+          ${echo.meta ? `<span class="selection-echo__meta">${escapeHtml(echo.meta)}</span>` : ""}
+        </span>
+      </div>
+    </div>
+  `;
+}
+
+// "Connect this service first" prompt — Archie can't import a pasted link
+// because its backing connector (Slite, Notion, …) isn't connected. Renders an
+// AI turn with the explanation + a Connect (logo-branded) / Close action row.
+// The Connect click delegate connects the service and retries the import; the
+// turn then collapses to a one-line confirmation.
+function renderConnectPromptTurn(message) {
+  if (message.status === "dismissed") return "";
+
+  // Resolved — a standalone success status (green wash + filled check), not an
+  // AI chat reply. Mirrors the connect-card so the request → success reads as
+  // one coherent block.
+  if (message.status === "connected") {
+    return `
+      <div class="connect-status" role="status">
+        <i class="ap-icon-rounded-check_fill connect-status__icon" aria-hidden="true"></i>
+        <p class="connect-status__text">
+          <strong>${escapeHtml(message.connectorName)} connected</strong> — importing your ${escapeHtml(
+            message.noun,
+          )} now.
+        </p>
+      </div>
+    `;
+  }
+
+  // Standalone connection card (not a chat bubble) — reused for any "connect a
+  // service" or "grant an authorization" request. Header = connector logo tile
+  // + name + a state pill; one supporting line; primary Connect + ghost Cancel.
+  // The connector logo sits in a white rounded tile so a single-colour brand
+  // mark always reads on a light surface. Falls back to the Archie sparkle.
+  const name = escapeHtml(message.connectorName);
+  const logo = message.logo
+    ? `<img src="${escapeHtml(message.logo)}" alt="" />`
+    : `<i class="ap-icon-archie-official" aria-hidden="true"></i>`;
+  return `
+    <div class="connect-card" role="group" aria-label="Connect ${name}">
+      <div class="connect-card__head">
+        <span class="connect-card__logo" aria-hidden="true">${logo}</span>
+        <div class="connect-card__heading">
+          <span class="connect-card__title">${name}</span>
+          <span class="connect-card__sub">Connect to import this ${escapeHtml(
+            message.noun,
+          )} — I'll retry automatically.</span>
+        </div>
+        <span class="ap-status grey no-dot connect-card__state">Not connected</span>
+      </div>
+      <div class="connect-card__actions">
+        <button type="button" class="ap-button primary blue" data-connect-prompt-connect="${escapeHtml(message.id)}">
+          Connect ${name}
+        </button>
+        <button type="button" class="ap-button ghost grey" data-connect-prompt-dismiss="${escapeHtml(message.id)}">
+          Cancel
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+// Inline "Extracting" notice (Figma 25:1413) — mermaid status pill + small
+// blue spinner, sits in the thread while a source extraction is in flight.
+// Wrapped in role=status + aria-label so screen readers announce that
+// extraction is running (the bare "Extracting" pill is meaningless out
+// of context).
+// Per-idea interaction state for the extraction-turn cards (the shared compact
+// idea card is a pure renderer, so the consumer owns this). Toggled by the
+// data-rpanel-* handlers in bindSession, which then repaint the single card.
+export const extractionVerdict = new Map();
+
+// ideaId → 'up' | 'down'
+export const extractionWhyOpen = new Set();
+
+function renderExtractionTurn(message, sessionId) {
+  const count = message.count ?? (message.ideas ? message.ideas.length : 0);
+  // Render the EXACT shared idea card (renderCompactIdeaCard) used by the
+  // right-panel Ideas mode + the standalone Ideas page — feedback + Mention +
+  // Draft. The thread message only carries {id,title,body}, so resolve the full
+  // idea (kind / Source / rationale) from the library by id, like the panel does.
+  const sources = sessionId ? getStreamSources(sessionId) : [];
+  const byId = new Map((sessionId ? getIdeas(sessionId) : []).map((i) => [i.id, i]));
+  const cards = (message.ideas || [])
+    .map((m) => {
+      const idea = byId.get(m.id) || m;
+      return renderCompactIdeaCard(idea, sources, {
+        verdict: extractionVerdict.get(idea.id) || null,
+        whyOpen: extractionWhyOpen.has(idea.id),
+        showMention: true,
+      });
+    })
+    .join("");
+  return `
+    <div class="chat-turn chat-turn--ai chat-turn--extraction">
+      ${renderNotice({
+        variant: "mermaid",
+        label: `Extracted ${count} idea${count === 1 ? "" : "s"}`,
+        open: message.open !== false,
+        loading: message.status === "loading",
+        bodyHtml: `
+          <div class="extraction-turn__detail">
+            <div class="extraction-turn__analyzed-row">
+              <strong>Analyzed</strong>
+              <span>${message.filename}</span>
+            </div>
+            ${cards}
+          </div>
+        `,
+      })}
+    </div>
+  `;
+}
+
+// Resolve an extraction-turn idea by id (library first, then any extraction
+// turn in the thread) so the card handlers can read its title / data.
+export function findExtractionIdea(sessionId, ideaId) {
+  const fromLib = getIdeas(sessionId).find((i) => i.id === ideaId);
+  if (fromLib) return fromLib;
+  for (const m of getThread(sessionId)) {
+    if (m.variant === "extraction" && Array.isArray(m.ideas)) {
+      const hit = m.ideas.find((i) => i.id === ideaId);
+      if (hit) return hit;
+    }
+  }
+  return null;
+}
+
+// Re-render a single extraction-turn idea card in place (after a feedback / Why
+// toggle) so the rest of the thread + scroll position stay put.
+export function repaintExtractionCard(root, session, ideaId) {
+  const idea = findExtractionIdea(session.id, ideaId);
+  const article = root.querySelector(`.extraction-turn__detail [data-idea-id="${ideaId}"]`);
+  if (!idea || !article) return;
+  const tmp = document.createElement("div");
+  tmp.innerHTML = renderCompactIdeaCard(idea, getStreamSources(session.id), {
+    verdict: extractionVerdict.get(ideaId) || null,
+    whyOpen: extractionWhyOpen.has(ideaId),
+    showMention: true,
+  });
+  const fresh = tmp.firstElementChild;
+  if (fresh) article.replaceWith(fresh);
+}
+
+// Channel-picker choice turn — chips toggle on click, "Draft them" submits.
+// Network → icon mapping — used both in the Drafts summary card network row
+// and (later) by the Drafts work-surface in Lot 4. Keep the slug list aligned
+// with mocks.socialAccounts so the visual surfaces never miss a network.
+// Pending → ready clip-extraction card. The turn carries only the sourceId
+// and filename; the renderer reads the live source from sources-stream, so the
+// same turn naturally flips state when extractClipsForSource lands its result
+// (the session view subscribes to subscribeSources, repainting the thread).
+function renderClipExtractionTurn(message, sessionId) {
+  const source = getStreamSources(sessionId).find((s) => s.id === message.sourceId);
+  const filename = escapeHtml(source?.filename || message.filename || "your video");
+
+  // Source was removed (e.g. user deleted it from /sources) — degrade to a
+  // muted "unavailable" card rather than leave a broken CTA.
+  if (!source) {
+    return `
+      <div class="chat-turn chat-turn--ai chat-turn--clip-extraction">
+        ${renderResultCard({
+          state: "unavailable",
+          icon: "ap-icon-file--video",
+          title: "Clips no longer available",
+          sub: `${filename} was removed.`,
+        })}
+      </div>
+    `;
+  }
+
+  const clipsCount = Array.isArray(source.clips) ? source.clips.length : 0;
+  const isReady = source.clipExtractionStatus === "ready" || clipsCount > 0;
+
+  if (!isReady) {
+    // Live stage label from the extraction ticker (sources-stream); falls back
+    // to a generic line before the first tick lands.
+    const stage = source.clipStage || "Cutting your clips";
+    return `
+      <div class="chat-turn chat-turn--ai chat-turn--clip-extraction">
+        ${renderResultCard({
+          state: "pending",
+          busyLabel: stage,
+          title: `${stage}…`,
+          sub: "Turning your video into post-ready clips — this takes a moment. You can keep chatting.",
+        })}
+      </div>
+    `;
+  }
+
+  const titleLabel = clipsCount === 1 ? "1 clip to review" : `${clipsCount} clips to review`;
+  return `
+    <div class="chat-turn chat-turn--ai chat-turn--clip-extraction">
+      ${renderResultCard({
+        state: "ready",
+        title: titleLabel,
+        sub: `From <span class="drafts-card__sub-quote">${filename}</span>`,
+        cta: { label: "Open clips" },
+        dataAttr: `data-clip-card-open="${source.id}"`,
+      })}
+    </div>
+  `;
+}
+
+// Pending → ready idea-extraction notice for the "Extract themes" branch.
+// Uses the shared renderResultCard so "ideas ready", "clips ready" and
+// "drafts to review" all read as one result-card family.
+function renderIdeaExtractionTurn(message, sessionId) {
+  const source = getStreamSources(sessionId).find((s) => s.id === message.sourceId);
+  const filename = escapeHtml(source?.filename || message.filename || "your video");
+
+  if (message.status === "loading") {
+    return `
+      <div class="chat-turn chat-turn--ai chat-turn--clip-extraction">
+        ${renderResultCard({
+          state: "pending",
+          busyLabel: "Reading video for ideas",
+          title: "Reading the video for ideas…",
+          sub: "About 15s. You can keep chatting.",
+        })}
+      </div>
+    `;
+  }
+
+  // Source removed before the user opened the ready card — degrade rather
+  // than crash on source.id.
+  if (!source) {
+    return `
+      <div class="chat-turn chat-turn--ai chat-turn--clip-extraction">
+        ${renderResultCard({
+          state: "unavailable",
+          icon: "ap-icon-file--video",
+          title: "Ideas no longer available",
+          sub: `${filename} was removed.`,
+        })}
+      </div>
+    `;
+  }
+
+  return `
+    <div class="chat-turn chat-turn--ai chat-turn--clip-extraction">
+      ${renderResultCard({
+        state: "ready",
+        title: "Ideas ready",
+        sub: `From <span class="drafts-card__sub-quote">${filename}</span>`,
+        cta: { label: "View ideas" },
+        dataAttr: `data-ideas-card-open="${source.id}"`,
+      })}
+    </div>
+  `;
+}
