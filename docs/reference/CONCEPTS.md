@@ -18,7 +18,7 @@ C'est le `CLAUDE.md` d'une marque : le document qu'on donnerait à un rédacteur
 
 ### Ce qu'il contient
 
-Cinq familles, détaillées champ par champ dans [`FEATURES.md` §9](FEATURES.md#9-playbooks) :
+Six familles, détaillées champ par champ dans [`FEATURES.md` §9](FEATURES.md#9-playbooks) :
 
 | Famille              | Répond à                                                                                                                                                                        |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -27,6 +27,7 @@ Cinq familles, détaillées champ par champ dans [`FEATURES.md` §9](FEATURES.md
 | **Voice & style**    | Comment ça sonne (hooks signature, closings, formatting, style visuel, **mots à éviter**)                                                                                       |
 | **Brand identity**   | À quoi ça ressemble (logos **et leur version**, couleurs **et leur rôle**, typo, personnalité, **moods**, images de réf., **look par défaut des images**, **règles visuelles**) |
 | **Competitors**      | Contre qui je me positionne                                                                                                                                                     |
+| **Influencers**      | Qui mon audience écoute déjà (les créateurs qu'elle suit)                                                                                                                       |
 
 ### Le test d'inclusion
 

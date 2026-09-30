@@ -362,6 +362,7 @@ export function renderContextCard(ctx) {
   // `suggested` entries are still pending proposals from Archie, not
   // competitors of this brand yet — they must not inflate the count.
   const competitorCount = Array.isArray(ctx.competitors) ? ctx.competitors.filter((c) => !c.suggested).length : 0;
+  const influencerCount = Array.isArray(ctx.influencers) ? ctx.influencers.filter((c) => !c.suggested).length : 0;
   const usedIn = ctx.usedIn || 0;
   // Brand color preview — first website's primary / accent / link from
   // imageVoice, up to 3 dots. Matches the "people avatars" affordance
@@ -462,6 +463,14 @@ export function renderContextCard(ctx) {
           ? `<span class="contexts-card__counter" title="${competitorCount} ${competitorCount === 1 ? "competitor" : "competitors"}">
               <i class="ap-icon-buildings"></i>
               <span>${competitorCount}</span>
+            </span>`
+          : ""
+      }
+      ${
+        influencerCount
+          ? `<span class="contexts-card__counter" title="${influencerCount} ${influencerCount === 1 ? "influencer" : "influencers"}">
+              <i class="ap-icon-star"></i>
+              <span>${influencerCount}</span>
             </span>`
           : ""
       }

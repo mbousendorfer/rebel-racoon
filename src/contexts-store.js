@@ -80,15 +80,16 @@ function freshId() {
   return `ctx-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 }
 
-// Competitors carry a nested socials array, so a shallow copy isn't enough —
-// clone both levels and stamp an id on entries that arrive without one (the
-// mock analysis and the mocks seed them without).
-let competitorSeq = 0;
-function normalizeCompetitors(list) {
+// Competitors and influencers carry a nested socials array, so a shallow copy
+// isn't enough — clone both levels and stamp an id on entries that arrive
+// without one (the mock analysis and the mocks seed them without). One shape
+// for both lists: the Playbook view renders them with the same card.
+let rosterSeq = 0;
+function normalizeRoster(list, prefix) {
   if (!Array.isArray(list)) return [];
   return list.map((c) => ({
     ...c,
-    id: c.id || `cmp-${(competitorSeq += 1)}`,
+    id: c.id || `${prefix}-${(rosterSeq += 1)}`,
     name: c.name || "",
     description: c.description || "",
     websiteUrl: c.websiteUrl || "",
@@ -96,6 +97,9 @@ function normalizeCompetitors(list) {
     socials: Array.isArray(c.socials) ? c.socials.map((s) => ({ ...s })) : [],
   }));
 }
+
+const normalizeCompetitors = (list) => normalizeRoster(list, "cmp");
+const normalizeInfluencers = (list) => normalizeRoster(list, "inf");
 
 // Brand logos — a SET of marks with one resolved default.
 //
@@ -427,6 +431,9 @@ export function addContext(ctx = {}) {
     //   user rejected so discovery never re-proposes them.
     competitors: normalizeCompetitors(ctx.competitors),
     dismissedCompetitors: Array.isArray(ctx.dismissedCompetitors) ? ctx.dismissedCompetitors.slice() : [],
+    // — influencers — same shape as competitors, no pending state: the
+    //   creators this brand's audience already listens to.
+    influencers: normalizeInfluencers(ctx.influencers),
     // — ownership (owner + scope + change log; see normalizeOwnership) —
     ...normalizeOwnership(ctx),
     // — meta —
@@ -521,6 +528,7 @@ export function updateContext(id, patch) {
   if (patch.competitors !== undefined) c.competitors = normalizeCompetitors(patch.competitors);
   if (patch.dismissedCompetitors !== undefined)
     c.dismissedCompetitors = Array.isArray(patch.dismissedCompetitors) ? patch.dismissedCompetitors.slice() : [];
+  if (patch.influencers !== undefined) c.influencers = normalizeInfluencers(patch.influencers);
   // — multilingual fields —
   if (patch.languages !== undefined)
     c.languages = Array.isArray(patch.languages) ? patch.languages.slice() : patch.languages;

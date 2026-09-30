@@ -173,7 +173,7 @@ function byRecency(a, b) {
   return ageMinutes(a.ageLabel) - ageMinutes(b.ageLabel);
 }
 
-// The LIVE sources, not every declared one. Seven of the eight in
+// The LIVE sources, not every declared one. Six of the eight in
 // topics-catalog.js are `live: false` — declared for the settings page, unable to
 // produce a Topic — and the Filters panel only offers the live ones. This has to
 // be the same set: "all sources" is what the panel can tick, so deriving it from

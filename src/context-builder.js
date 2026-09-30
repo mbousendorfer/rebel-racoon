@@ -90,6 +90,10 @@ function emptyDraft(overrides = {}) {
     // ones so discovery never proposes them again.
     competitors: [],
     dismissedCompetitors: [],
+    // Influencers — same shape as competitors, for the creators this brand's
+    // audience already follows. No pending state: what the analysis finds is
+    // added directly, as on the beta.
+    influencers: [],
     sourceType: null, // "website" | "documents" | "social"
     sourceUrl: "",
     sourceFile: null,
@@ -221,6 +225,12 @@ export function sectionPatchFromAnalysis(analysis) {
       ...c,
       socials: Array.isArray(c.socials) ? c.socials.map((x) => ({ ...x })) : [],
       suggested: true,
+    })),
+    // Creators Archie found — straight into the list, no suggestion tray
+    // (the beta's "…we found for your brand").
+    influencers: (s.influencers || []).map((c) => ({
+      ...c,
+      socials: Array.isArray(c.socials) ? c.socials.map((x) => ({ ...x })) : [],
     })),
   };
 }
@@ -801,6 +811,9 @@ export function save(sessionId) {
       ? d.competitors.map((c) => ({ ...c, socials: Array.isArray(c.socials) ? c.socials.map((s) => ({ ...s })) : [] }))
       : [],
     dismissedCompetitors: Array.isArray(d.dismissedCompetitors) ? d.dismissedCompetitors.slice() : [],
+    influencers: Array.isArray(d.influencers)
+      ? d.influencers.map((c) => ({ ...c, socials: Array.isArray(c.socials) ? c.socials.map((s) => ({ ...s })) : [] }))
+      : [],
     updatedAt: "just now",
   };
 

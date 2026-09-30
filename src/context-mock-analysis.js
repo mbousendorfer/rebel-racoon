@@ -160,6 +160,32 @@ const AGORAPULSE = {
         ],
       },
     ],
+    // Creators the brand's audience — social media managers — already follows:
+    // the three LinkedIn accounts behind the Agorapulse feed's influencer Topics.
+    // Added to the new Playbook directly — Influencers has no suggestion tray.
+    influencers: [
+      {
+        name: "Matt Navarra",
+        description:
+          "Weekly round-ups of platform changes, in under three minutes — Meta One pricing, Snap Specs, the EU's under-13 proposal. Also calls out Instagram labelling real photos as AI while generated images pass.",
+        websiteUrl: "",
+        socials: [{ network: "linkedin", url: "https://www.linkedin.com/in/mattnavarra/" }],
+      },
+      {
+        name: "Annie-Mai Hodge",
+        description:
+          "Weekly 'updates you need to know' posts for social media managers, often from what peers are reporting: Instagram caption links behind Meta One, Facebook pages capped at two link posts a month.",
+        websiteUrl: "",
+        socials: [{ network: "linkedin", url: "https://www.linkedin.com/in/anniemaihodge/" }],
+      },
+      {
+        name: "Michael Stelzner",
+        description:
+          "Hands-on AI production experiments, posted while building up Social Media Marketing World — recently, a raw video cut, captioned and reframed to vertical by Codex, with the crop following the speaker.",
+        websiteUrl: "",
+        socials: [{ network: "linkedin", url: "https://www.linkedin.com/in/stelzner/" }],
+      },
+    ],
     imageVoice: {
       websites: [
         {
@@ -288,6 +314,31 @@ const GENERIC = {
         name: "The niche specialist",
         description:
           "Narrower than you but excellent at one job. Comes up whenever a prospect cares most about that one thing.",
+        websiteUrl: "",
+        socials: [],
+      },
+    ],
+    // Placeholder influencer set — archetypes, not people, for the same reason
+    // the competitor placeholders are: an unknown site gives nothing to name.
+    influencers: [
+      {
+        name: "The industry voice",
+        description:
+          "The person your buyers quote in meetings. Sets the vocabulary of your category — worth sounding fluent next to.",
+        websiteUrl: "",
+        socials: [],
+      },
+      {
+        name: "The practitioner creator",
+        description:
+          "Does the job your audience does and posts about it daily. Their formats already work for the people you want to reach.",
+        websiteUrl: "",
+        socials: [],
+      },
+      {
+        name: "The niche educator",
+        description:
+          "Teaches one topic your product touches, in depth. A natural partner for a collaboration or a guest post.",
         websiteUrl: "",
         socials: [],
       },

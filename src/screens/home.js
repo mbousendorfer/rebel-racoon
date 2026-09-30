@@ -210,7 +210,7 @@ function renderTabBody() {
   if (visible.length === 0) return renderContextsEmpty(all, pageState);
   // On the home the Playbooks tab is a LIST of full-width rows, not a grid of
   // tiles. Two reasons, and the second is the one that matters: the numbers
-  // (chats, audiences, competitors) line up in a column you can read down —
+  // (chats, audiences, competitors, influencers) line up in a column you can read down —
   // a 3-up grid scatters them across nine positions — and a row is the shape
   // of the thing it now is, a door into a workspace, sitting beside the Chats
   // tab's own rows. Flag OFF the catalogue keeps its grid: it is a page for

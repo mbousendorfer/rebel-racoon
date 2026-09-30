@@ -328,13 +328,17 @@ function renderCadenceSelect(feed, active) {
 function renderSourceCard(ctx, feed, source, on) {
   const live = isLiveSource(source.id);
 
-  // The competitor-driven sources depend on a section of the Playbook, so their
-  // note LINKS there rather than just naming it. One link per card at most, and
+  // The competitor- and influencer-driven sources depend on a section of the
+  // Playbook, so their note LINKS there rather than just naming it. One link per card at most, and
   // only on the cards that have somewhere to send you — the fork put an arrow row
   // on all eight, including the five that read nothing the Playbook holds.
   const anchor = source.playbookAnchor
     ? html`<a class="ap-link topics-src__note" href="#/playbook/${ctx.id}?section=${source.playbookAnchor}">
-        <i class="ap-icon-buildings" aria-hidden="true"></i><span>Review this Playbook's ${source.playbookAnchor}</span>
+        <i
+          class="${source.playbookAnchor === "influencers" ? "ap-icon-star" : "ap-icon-buildings"}"
+          aria-hidden="true"
+        ></i
+        ><span>Review this Playbook's ${source.playbookAnchor}</span>
       </a>`
     : "";
 
