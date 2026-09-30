@@ -199,7 +199,7 @@
   justify-content: center;
   min-width: 28px;
   height: 18px;
-  padding: 0 4px;
+  padding: 0 var(--ref-spacing-xxxs);
   border-radius: var(--app-radius-sm);
   background: var(--ref-color-white);
   border: 1px solid var(--app-border);
@@ -735,7 +735,7 @@
   justify-content: center;
   min-width: 18px;
   height: 18px;
-  padding: 0 4px;
+  padding: 0 var(--ref-spacing-xxxs);
   border-radius: var(--app-radius-sm);
   background: var(--ref-color-grey-05);
   border: 1px solid var(--app-border);

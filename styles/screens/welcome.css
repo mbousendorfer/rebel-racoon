@@ -130,7 +130,7 @@
   color: var(--ref-color-grey-100);
   font-weight: var(--sys-text-style-marketing-weight);
   background: linear-gradient(180deg, transparent 65%, var(--ref-color-orange-10) 65%);
-  padding: 0 4px;
+  padding: 0 var(--ref-spacing-xxxs);
   border-radius: var(--app-radius-sm);
 }
 

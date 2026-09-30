@@ -1163,7 +1163,7 @@
   justify-content: center;
   min-width: 18px;
   height: 18px;
-  padding: 0 4px;
+  padding: 0 var(--ref-spacing-xxxs);
   border-radius: var(--app-radius-sm);
   background: var(--ref-color-grey-05);
   border: 1px solid var(--app-border);
@@ -1771,14 +1771,14 @@
 }
 
 .isv2-sheet-hint > i {
-  font-size: 14px;
+  font-size: var(--sys-text-style-body-size);
 }
 
 /* The ⓘ sits on the DS field label's own line, at the label's size rather than the
    16px it takes in a section header — next to 12px words it was the loudest thing
    in the row. */
 .isv2-textfield > label i {
-  font-size: 14px;
+  font-size: var(--sys-text-style-body-size);
   vertical-align: -2px;
 }
 

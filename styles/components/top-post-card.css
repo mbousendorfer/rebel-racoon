@@ -412,7 +412,7 @@
 }
 
 .top-post-card__type > i {
-  font-size: 16px;
+  font-size: var(--sys-icon-css-sm);
   line-height: 1;
 }
 
@@ -645,7 +645,7 @@
 }
 
 .top-post-view-on i {
-  font-size: 16px;
+  font-size: var(--sys-icon-css-sm);
 }
 
 .top-post-view-on:hover span {

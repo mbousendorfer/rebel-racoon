@@ -57,7 +57,7 @@
 }
 
 .selection-echo__icon i {
-  font-size: 16px;
+  font-size: var(--sys-icon-css-sm);
   color: var(--app-convo-navy-deep);
 }
 
@@ -213,7 +213,7 @@
   flex-direction: row;
   align-items: center;
   gap: var(--ref-spacing-xs);
-  padding: 6px 8px 6px var(--ref-spacing-xs);
+  padding: 6px var(--ref-spacing-xxs) 6px var(--ref-spacing-xs);
   background: var(--app-convo-navy-05);
   color: var(--app-convo-navy-deep);
   border: 1px solid var(--app-convo-navy-20);
@@ -286,8 +286,8 @@
 .chat-bubble-source-intake__pill {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 3px 8px 3px 10px;
+  gap: var(--ref-spacing-xxxs);
+  padding: 3px var(--ref-spacing-xxs) 3px 10px;
   background: var(--app-convo-navy);
   color: var(--ref-color-white);
   border: 0;
@@ -322,7 +322,7 @@
   color: var(--ref-color-green-100);
   font-size: var(--sys-icon-css-sm);
   flex-shrink: 0;
-  margin-right: 4px;
+  margin-right: var(--ref-spacing-xxxs);
 }
 
 .chat-bubble.is-loading {
@@ -813,7 +813,7 @@ span.chat-bubble-choice-chip {
   align-items: center;
   justify-content: center;
   min-height: 28px;
-  padding: 2px 8px;
+  padding: 2px var(--ref-spacing-xxs);
   border-radius: var(--ref-border-radius-sm);
   background: var(--ref-color-grey-100);
   color: var(--ref-color-white);

@@ -184,7 +184,7 @@
 }
 
 .video-clips-modal__file-tag i {
-  font-size: var(--sys-text-style-caption-size);
+  font-size: var(--sys-icon-css-xs);
   flex-shrink: 0;
 }
 
@@ -353,7 +353,7 @@
 }
 
 .vc-row__check-box i {
-  font-size: var(--sys-text-style-caption-size);
+  font-size: var(--sys-icon-css-xs);
 }
 
 .vc-row.is-on .vc-row__check-box i {
@@ -464,7 +464,7 @@
   font-weight: var(--sys-text-style-caption-bold-weight);
   color: var(--ref-color-orange-150);
   background: var(--ref-color-orange-10);
-  padding: 2px 8px;
+  padding: 2px var(--ref-spacing-xxs);
   border-radius: var(--ref-border-radius-sm);
   white-space: nowrap;
   align-self: flex-start;
@@ -499,7 +499,7 @@
 }
 
 .vc-row__why i {
-  font-size: var(--sys-text-style-caption-size);
+  font-size: var(--sys-icon-css-xs);
   margin-top: 2px;
   flex-shrink: 0;
   opacity: 0.7;
@@ -507,7 +507,7 @@
 
 .vc-row__tags {
   display: flex;
-  gap: 4px;
+  gap: var(--ref-spacing-xxxs);
   flex-wrap: wrap;
   margin-top: 2px;
 }
@@ -1022,7 +1022,7 @@
 }
 
 .vc-editor__label i {
-  font-size: var(--sys-text-style-caption-size);
+  font-size: var(--sys-icon-css-xs);
   opacity: 0.8;
 }
 
@@ -1050,7 +1050,7 @@
 .vc-editor__tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: var(--ref-spacing-xxxs);
 }
 
 .vc-editor__title-input {
@@ -1326,14 +1326,14 @@
    the resting values, so nothing is lost. */
 .vc-protrim__win-label--l {
   right: 100%;
-  margin-right: 4px;
+  margin-right: var(--ref-spacing-xxxs);
   opacity: 0;
   transition: opacity var(--ref-animation-short);
 }
 
 .vc-protrim__win-label--r {
   left: 100%;
-  margin-left: 4px;
+  margin-left: var(--ref-spacing-xxxs);
   opacity: 0;
   transition: opacity var(--ref-animation-short);
 }

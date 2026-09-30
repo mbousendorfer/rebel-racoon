@@ -65,7 +65,7 @@
   z-index: 1;
   min-width: 16px;
   height: 16px;
-  padding: 0 4px;
+  padding: 0 var(--ref-spacing-xxxs);
   display: inline-grid;
   place-items: center;
   border-radius: var(--app-radius-sm);
@@ -205,7 +205,7 @@
   color: #9aa0aa;
   background: #f3f4f6;
   border-radius: 7px;
-  padding: 3px 8px;
+  padding: 3px var(--ref-spacing-xxs);
 }
 .sub-preview--deep-diver .sub-preview__line em {
   color: #14161a;

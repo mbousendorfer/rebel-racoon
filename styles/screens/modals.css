@@ -626,7 +626,7 @@ body.has-modal {
 .bug-category-chip {
   display: inline-flex;
   align-items: center;
-  padding: 4px var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
   height: 28px;
   border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-pill);
@@ -668,7 +668,7 @@ body.has-modal {
   width: 100%;
   border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--ref-border-radius-md);
-  padding: 8px var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
   font-size: var(--sys-text-style-body-size);
   line-height: var(--sys-text-style-body-line-height);
   font-weight: var(--sys-text-style-body-weight);

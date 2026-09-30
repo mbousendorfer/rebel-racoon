@@ -54,7 +54,7 @@
 }
 
 .add-source__file-icon > i {
-  font-size: var(--sys-text-style-subtitle-size);
+  font-size: var(--sys-icon-css-sm);
 }
 
 .add-source__file-body {
@@ -91,7 +91,7 @@
 .add-source__file-progress {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--ref-spacing-xxxs);
   min-width: 140px;
 }
 

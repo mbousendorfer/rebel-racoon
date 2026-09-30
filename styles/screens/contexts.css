@@ -357,7 +357,7 @@
   gap: var(--ref-spacing-xxs);
   align-self: flex-start;
   max-width: 100%;
-  padding: 4px 10px;
+  padding: var(--ref-spacing-xxxs) 10px;
   border-radius: 999px;
   background: var(--ref-color-grey-05);
   color: var(--ref-color-grey-100);

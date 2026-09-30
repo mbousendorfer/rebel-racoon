@@ -929,7 +929,7 @@ body.playbook-revoked .session__composer-card {
   display: inline-flex;
   align-items: center;
   gap: var(--ref-spacing-xxs);
-  padding: 4px 0;
+  padding: var(--ref-spacing-xxxs) 0;
   background: transparent;
   border: 0;
   cursor: pointer;
@@ -1311,7 +1311,7 @@ body.playbook-revoked .session__composer-card {
   justify-content: center;
   min-width: 18px;
   height: 18px;
-  padding: 0 4px;
+  padding: 0 var(--ref-spacing-xxxs);
   border-radius: var(--app-radius-sm);
   background: var(--ref-color-grey-05);
   border: 1px solid var(--app-border);

@@ -186,7 +186,7 @@
 }
 
 .social-post-card__stat > i {
-  font-size: 16px;
+  font-size: var(--sys-icon-css-sm);
   width: 16px;
   height: 16px;
 }
