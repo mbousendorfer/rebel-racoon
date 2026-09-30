@@ -180,6 +180,18 @@
   }
 }
 
+/* Icon-only checkbox — keep the DS hit area, give back the 16px footprint.
+   ui-theme 22 gives a label-less .ap-checkbox-container `padding: 10px` plus a
+   grey-05 / blue-10 hover disc (icon-button style). Every such checkbox in the
+   app was laid out for the 16px box, so the new padding shifted each one 10px
+   off its column and squeezed the ones in narrow flex slots (the drafts panel's
+   per-card checkbox shrank to 20px). A matching negative margin keeps the DS's
+   36px hit area and hover disc but lays the control out at its old size. */
+.ap-checkbox-container:not(:has(> span:not(:empty))) {
+  margin: -10px;
+  flex-shrink: 0;
+}
+
 /* The DS .ap-link assumes an <a>. Buttons styled as links need their
    user-agent chrome (border / background / padding) reset so the
    link text renders without the native button box leaking through.

@@ -4,7 +4,7 @@
     {
       "name": "archie",
       "runtimeExecutable": "sh",
-      "runtimeArgs": ["-c", "python3 -m http.server $PORT"],
+      "runtimeArgs": ["-c", "python3 scripts/dev-server.py $PORT"],
       "autoPort": true
     },
     {
