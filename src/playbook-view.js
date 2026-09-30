@@ -14,7 +14,7 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1412";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1413";
 import {
   kitEnabled,
   renderColorRole,
@@ -27,19 +27,19 @@ import {
   handleKitInput,
   handleKitChange,
   kitSnapshot,
-} from "./playbook-brand-kit.js?v=1412";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1412";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1412";
-import { isFlagOn } from "./feature-flags.js?v=1412";
-import { parseHashParams } from "./url-state.js?v=1412";
-import { showToast } from "./components/toast.js?v=1412";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1412";
+} from "./playbook-brand-kit.js?v=1413";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1413";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1413";
+import { isFlagOn } from "./feature-flags.js?v=1413";
+import { parseHashParams } from "./url-state.js?v=1413";
+import { showToast } from "./components/toast.js?v=1413";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1413";
 // The Default look row offers the SAME three catalogues the Image Studio renders, from
 // the one place they are declared — REF_MODES' own header makes the argument: the label,
 // the hint and the brief clause "drift the moment they live apart". No cycle: the engine
 // imports only clip-formats / image-studio-canvas / feature-flags, and its module body
 // builds consts, so importing it here costs nothing at load.
-import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1412";
+import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1413";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -255,20 +255,18 @@ export function mount(target, config) {
   };
 }
 
+// Every repaint keeps the reader where they are. paint() rebuilds the whole
+// `.welcome-screen` (the scroll container), so its scrollTop resets to 0 — and
+// in edit mode nearly every click repaints (Add a logo, Add colour, a chip's ×,
+// a role picked…), which threw the page back to the top under the pointer. The
+// few moves that SHOULD land at the top (a tab switch) scroll there themselves
+// after the repaint; mount() paints fresh and starts at the top anyway.
 function repaint() {
-  if (mountTarget) paint();
-}
-
-// Repaint without losing the scroll position. paint() rebuilds the whole
-// `.welcome-screen` (the scroll container), so its scrollTop resets to 0 —
-// jarring for in-place toggles like the Voice language switcher. Capture the
-// scroll offset and restore it onto the freshly-rendered scroller.
-function repaintPreservingScroll() {
   if (!mountTarget) return;
   const top = mountTarget.querySelector(".welcome-screen")?.scrollTop ?? 0;
   paint();
   const next = mountTarget.querySelector(".welcome-screen");
-  if (next) next.scrollTop = top;
+  if (next && top) next.scrollTop = top;
 }
 
 function isReady() {
@@ -2739,7 +2737,7 @@ function startCompetitorScan() {
   stopCompetitorScan();
   cmpScanning = true;
   cmpScanFoundNone = false;
-  repaintPreservingScroll();
+  repaint();
   cmpScanTimer = window.setTimeout(() => {
     cmpScanTimer = null;
     cmpScanning = false;
@@ -2757,7 +2755,7 @@ function startCompetitorScan() {
     cmpScanFoundNone = added.length === 0;
     // Persist in library mode (no-op in onboarding, where the draft IS the data).
     if (added.length) cfg.commit?.();
-    repaintPreservingScroll();
+    repaint();
   }, CMP_SCAN_MS);
 }
 
@@ -2902,7 +2900,7 @@ function saveOnLeave() {
       label: "Undo",
       onClick: () => {
         revert?.(before);
-        repaintPreservingScroll();
+        repaint();
       },
     },
   });
@@ -2941,7 +2939,7 @@ function onClick(event) {
   if (!data) return;
 
   // Image styles (flag sexySquirrel) — live in and out of edit mode.
-  if (handleImageStylesClick(event, data, repaintPreservingScroll)) return;
+  if (handleImageStylesClick(event, data, repaint)) return;
 
   // Brand kit rows (flag sexySquirrel) — only live while a section is edited.
   if (editScope && handleKitClick(event, data)) {
@@ -2997,7 +2995,7 @@ function onClick(event) {
     delete c.suggested;
     cmpModalIndex = null;
     if (!editScope) cfg.commit?.(); // in edit mode the section's Save commits
-    repaintPreservingScroll();
+    repaint();
     return;
   }
 
@@ -3005,7 +3003,7 @@ function onClick(event) {
     pendingCompetitors(data).forEach((c) => delete c.suggested);
     cmpModalIndex = null;
     if (!editScope) cfg.commit?.();
-    repaintPreservingScroll();
+    repaint();
     return;
   }
 
@@ -3023,7 +3021,7 @@ function onClick(event) {
     list.splice(idx, 1);
     cmpModalIndex = null; // indices shifted — the open modal no longer means anything
     if (!editScope) cfg.commit?.();
-    repaintPreservingScroll();
+    repaint();
     return;
   }
 
@@ -3046,7 +3044,7 @@ function onClick(event) {
     const list = competitorList(data);
     if (idx >= 0 && idx < list.length) list.splice(idx, 1);
     cmpModalIndex = null; // the open modal's index no longer means anything
-    repaintPreservingScroll();
+    repaint();
     return;
   }
 
@@ -3123,7 +3121,7 @@ function onClick(event) {
   const voiceLang = event.target.closest("[data-recap-voice-lang]");
   if (voiceLang) {
     activeVoiceLang = voiceLang.dataset.recapVoiceLang;
-    repaintPreservingScroll();
+    repaint();
     return;
   }
 
@@ -3270,7 +3268,7 @@ function onClick(event) {
   const refOpen = event.target.closest("[data-recap-refimg-open]");
   if (refOpen) {
     refModalIndex = Number(refOpen.dataset.recapRefimgOpen);
-    repaintPreservingScroll();
+    repaint();
     return;
   }
   // Close the modal (× / Done button, or a click on the backdrop itself).
@@ -3278,7 +3276,7 @@ function onClick(event) {
   // separate commit here.
   if (event.target.closest("[data-recap-refimg-close]") || event.target.matches?.("[data-recap-refmodal-backdrop]")) {
     refModalIndex = null;
-    repaintPreservingScroll();
+    repaint();
     return;
   }
   const refImgRemove = event.target.closest("[data-recap-refimg-remove]");
@@ -3310,7 +3308,7 @@ function onClick(event) {
     if (img) {
       ensureRefTagsColors(img);
       img.tags.splice(Number(tagRm.dataset.recapTagIndex), 1);
-      repaintPreservingScroll();
+      repaint();
     }
     return;
   }
@@ -3321,7 +3319,7 @@ function onClick(event) {
     if (img) {
       ensureRefTagsColors(img);
       img.colors.splice(Number(colorRm.dataset.recapColorIndex), 1);
-      repaintPreservingScroll();
+      repaint();
     }
     return;
   }
@@ -3331,7 +3329,7 @@ function onClick(event) {
     if (img) {
       ensureRefTagsColors(img);
       img.colors.push("#3b4a6b");
-      repaintPreservingScroll();
+      repaint();
     }
     return;
   }
@@ -3498,7 +3496,7 @@ function onKeydown(event) {
     if (img) {
       ensureRefTagsColors(img);
       if (!img.tags.includes(value)) img.tags.push(value);
-      repaintPreservingScroll();
+      repaint();
       // Re-focus the (fresh) tag input so the user can keep adding.
       refModalHost?.querySelector("[data-recap-reftag-input]")?.focus();
     }
