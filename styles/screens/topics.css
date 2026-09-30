@@ -296,23 +296,45 @@
 
 /* ── The influencer invitation ───────────────────────────────────────────
    Rides in the list after the 4th Topic, like an in-feed ad, and wears the
-   Topic card's rows (screens/topics.js). Taller by one row: its two buttons,
-   grouped bottom-right like a footer. Nothing to open, so no hover border and
-   no pointer — the buttons are the only targets. */
-.topic-card--invite .topic-card__body {
-  cursor: default;
-}
-
-.topic-card--feed.topic-card--invite:hover,
-.topic-card--feed.topic-card--invite:focus-within {
-  border-color: var(--app-border);
-}
-
+   Topic card's rows (screens/topics.js): its body opens the pitch in the pane
+   like a Topic opens its article, so it keeps the card's hover and reading
+   states. Taller by one row — its two buttons, grouped bottom-right. */
 .topic-card__invite-actions {
   display: flex;
   justify-content: flex-end;
   gap: var(--ref-spacing-xs);
-  margin-top: var(--ref-spacing-xs);
+  padding: 0 var(--ref-spacing-sm) var(--ref-spacing-sm);
+}
+
+/* The pitch's three steps, in the article's own prose type. */
+.topics-invite-pane__steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  margin: 0;
+  padding-left: var(--ref-spacing-md);
+  list-style: decimal;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--sys-text-color-default);
+}
+
+.topics-invite-pane__preview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+}
+
+/* The loading skeleton's bars, held still: nothing is on its way. */
+.topic-ghost--static .topic-ghost__bar {
+  animation: none;
+  background: var(--ref-color-grey-10);
+}
+
+.topics-invite-pane__posts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--ref-spacing-xs);
 }
 
 /* The empty state's two actions: the button, then the link below it

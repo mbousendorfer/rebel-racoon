@@ -12,17 +12,17 @@ import {
   renderMessageBubble,
   renderNotice,
   renderResultCard,
-} from "./thread-turns.js?v=1423";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=1423";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1423";
-import { getTopPost } from "../../top-posts-store.js?v=1423";
-import { getTopicById } from "../../topics-store.js?v=1423";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=1423";
-import { renderProfileEchoCard } from "../../social-profiles.js?v=1423";
-import { escapeHtml } from "../../utils.js?v=1423";
-import { getIdeas } from "../../library.js?v=1423";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1423";
-import { getThread } from "../../assistant.js?v=1423";
+} from "./thread-turns.js?v=1425";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1425";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1425";
+import { getTopPost } from "../../top-posts-store.js?v=1425";
+import { getTopicById } from "../../topics-store.js?v=1425";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=1425";
+import { renderProfileEchoCard } from "../../social-profiles.js?v=1425";
+import { escapeHtml } from "../../utils.js?v=1425";
+import { getIdeas } from "../../library.js?v=1425";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1425";
+import { getThread } from "../../assistant.js?v=1425";
 
 export function renderThread(messages, sessionId) {
   return messages.map((m) => renderTurn(m, sessionId)).join("");

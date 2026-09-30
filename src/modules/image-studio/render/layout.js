@@ -3,10 +3,10 @@
 // format moves the text to the left half, a story keeps everything out of the
 // network's UI.
 
-import { createLayer } from "../model/schema.js?v=1423";
-import { fontStack } from "../config/fonts.js?v=1423";
-import { resolvePalette, inkOn } from "./palette.js?v=1423";
-import { assetUrlSync, logoUrl } from "../ui/asset.js?v=1423";
+import { createLayer } from "../model/schema.js?v=1425";
+import { fontStack } from "../config/fonts.js?v=1425";
+import { resolvePalette, inkOn } from "./palette.js?v=1425";
+import { assetUrlSync, logoUrl } from "../ui/asset.js?v=1425";
 
 const ARCHETYPES = Object.freeze({
   square: { text: { x: 0.08, y: 0.62, w: 0.84, h: 0.2, size: 0.075 }, logo: { x: 0.72, y: 0.87, w: 0.2, h: 0.07 } },
