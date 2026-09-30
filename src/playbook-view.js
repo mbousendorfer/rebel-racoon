@@ -14,7 +14,7 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1408";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1410";
 import {
   kitEnabled,
   renderColorRole,
@@ -27,19 +27,19 @@ import {
   handleKitInput,
   handleKitChange,
   kitSnapshot,
-} from "./playbook-brand-kit.js?v=1408";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1408";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1408";
-import { isFlagOn } from "./feature-flags.js?v=1408";
-import { parseHashParams } from "./url-state.js?v=1408";
-import { showToast } from "./components/toast.js?v=1408";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1408";
+} from "./playbook-brand-kit.js?v=1410";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1410";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1410";
+import { isFlagOn } from "./feature-flags.js?v=1410";
+import { parseHashParams } from "./url-state.js?v=1410";
+import { showToast } from "./components/toast.js?v=1410";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1410";
 // The Default look row offers the SAME three catalogues the Image Studio renders, from
 // the one place they are declared — REF_MODES' own header makes the argument: the label,
 // the hint and the brief clause "drift the moment they live apart". No cycle: the engine
 // imports only clip-formats / image-studio-canvas / feature-flags, and its module body
 // builds consts, so importing it here costs nothing at load.
-import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1408";
+import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1410";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -1348,15 +1348,12 @@ function learnMenu() {
     : "";
 }
 
-function renderBrandPanel(data, edit) {
-  const section = SECTIONS[2];
-  const colors = visualColors(data);
-  let body;
-  if (edit) {
-    const fonts = data.brandTypography || brandFonts(data);
-    const colorRows = (Array.isArray(data.brandColors) ? data.brandColors : [])
-      .map(
-        (c, i) => `
+// The brand's colours as editable rows — one per colour, plus "Add colour".
+// Shared by the recap panel and the Playbook 2.0 Colour block.
+function renderColorEditor(data) {
+  const colorRows = (Array.isArray(data.brandColors) ? data.brandColors : [])
+    .map(
+      (c, i) => `
         <div class="recap__color-row">
           <span class="recap__color-swatch" data-recap-color-swatch="${i}" style="background:${esc(c.hex || "#ffffff")};"></span>
           <input type="text" class="recap__color-name" data-recap-color-field="name" data-recap-color-index="${i}" value="${esc(c.name || "")}" placeholder="Name" aria-label="Colour name" />
@@ -1364,8 +1361,32 @@ function renderBrandPanel(data, edit) {
           ${renderColorRole(c, i)}
           <button type="button" class="ap-icon-button transparent grey" data-recap-color-remove="${i}" aria-label="Remove colour"><i class="ap-icon-close"></i></button>
         </div>`,
-      )
-      .join("");
+    )
+    .join("");
+  return `<div class="recap__colors" data-recap-colors>${colorRows}</div>
+    <button type="button" class="ap-button secondary blue recap__color-add" data-recap-color-add>
+      <i class="ap-icon-plus"></i><span>Add colour</span>
+    </button>`;
+}
+
+// Headings + body font, as two inputs. Shared like the colour editor.
+function renderTypoEditor(data) {
+  const fonts = data.brandTypography || brandFonts(data);
+  return `<div class="recap__typo-edit">
+      <div class="ap-input-group">
+        <input type="text" data-recap-typo="headingFont" value="${esc(fonts.headingFont || "")}" placeholder="Headings font" aria-label="Headings font" />
+      </div>
+      <div class="ap-input-group">
+        <input type="text" data-recap-typo="bodyFont" value="${esc(fonts.bodyFont || "")}" placeholder="Body font" aria-label="Body font" />
+      </div>
+    </div>`;
+}
+
+function renderBrandPanel(data, edit) {
+  const section = SECTIONS[2];
+  const colors = visualColors(data);
+  let body;
+  if (edit) {
     body = [
       renderSectionHint(SECTION_HINTS.brand),
       renderBrandGroup("Identity"),
@@ -1374,24 +1395,8 @@ function renderBrandPanel(data, edit) {
       renderRow("Logo", renderFieldHint(FIELD_HINTS.brandLogo) + renderBrandLogo(data, true)),
       // Brand kit (flag sexySquirrel) — which version each mark is.
       kitEnabled() ? renderRow("Logo versions", renderLogoVariants(data, true, data.brandLogos)) : "",
-      renderRow(
-        "Brand color",
-        `<div class="recap__colors" data-recap-colors>${colorRows}</div>
-         <button type="button" class="ap-button secondary blue recap__color-add" data-recap-color-add>
-           <i class="ap-icon-plus"></i><span>Add colour</span>
-         </button>`,
-      ),
-      renderRow(
-        "Typography",
-        `<div class="recap__typo-edit">
-           <div class="ap-input-group">
-             <input type="text" data-recap-typo="headingFont" value="${esc(fonts.headingFont || "")}" placeholder="Headings font" aria-label="Headings font" />
-           </div>
-           <div class="ap-input-group">
-             <input type="text" data-recap-typo="bodyFont" value="${esc(fonts.bodyFont || "")}" placeholder="Body font" aria-label="Body font" />
-           </div>
-         </div>`,
-      ),
+      renderRow("Brand color", renderColorEditor(data)),
+      renderRow("Typography", renderTypoEditor(data)),
       renderRow(
         "Personality",
         renderTextarea(
@@ -2035,16 +2040,163 @@ function pb2Block(title, body, { wide = false, caption = "", index = 0, icon = "
   `;
 }
 
-function pb2TabHead(scope, extra = "") {
+// `editing`: Cancel / Save take Edit's place — same bar, same spot, sticky.
+function pb2TabHead(scope, extra = "", { editing = false } = {}) {
   const edit = canEditView()
     ? `<button type="button" class="ap-button stroked blue" data-recap-edit-card="${scope}"><i class="ap-icon-pen" aria-hidden="true"></i><span>Edit</span></button>`
     : "";
   return `
     <header class="pb2-tabhead">
       <p class="pb2-tabhead__lead">${esc(SECTION_LEADS[scope] || "")}</p>
-      <div class="pb2-tabhead__actions">${extra}${edit}</div>
+      <div class="pb2-tabhead__actions">${editing ? editActionButtons() : `${extra}${edit}`}</div>
     </header>
   `;
+}
+
+// ── The tabs, in edit mode ───────────────────────────────────────────────
+// Editing is the SAME page as reading: the same blocks, titles, icons, widths
+// and order, each value swapped for its field. Only the head says you're
+// editing — Cancel / Save where Edit was. (It used to open the onboarding
+// recap's panel: one long card, labels in a left column, groups and a banner —
+// a second layout for the same content.)
+
+// A field's guidance, minus its question: the block title already asks it.
+const pb2Hint = (hint) => (hint?.a ? `<p class="pb2-hint">${esc(hint.a)}</p>` : "");
+
+function pb2EditGrid(scope, blocks, before = "") {
+  return `${pb2TabHead(scope, "", { editing: true })}${before}<div class="pb2-grid" data-recap-editing-card>${blocks
+    .filter(Boolean)
+    .join("")}</div>`;
+}
+
+function renderGoalsEdit2(data) {
+  const placeholder = (key) => GOAL_FIELDS.find((f) => f.key === key)?.placeholder || "";
+  const chips = (key) => pb2Hint(FIELD_HINTS[key]) + renderEditChips(key, data[key], placeholder(key));
+  return pb2EditGrid("goals", [
+    pb2Block(
+      "The business",
+      `${pb2Hint(FIELD_HINTS.businessSummary)}<div class="ap-textarea-field resizable">
+         <textarea data-recap-summary rows="4" placeholder="Describe your business in a few sentences…">${esc(data.businessSummary || "")}</textarea>
+       </div>
+       <div><span class="pb2-sub">Written in</span>${multilingualOn() ? pb2Hint(FIELD_HINTS.languages) : ""}${renderLanguagePicker(data)}</div>`,
+      { wide: true, index: 0, icon: "ap-icon-buildings" },
+    ),
+    pb2Block("Speaking to", pb2Hint(FIELD_HINTS.audience) + renderAudiencePicker(data), {
+      index: 1,
+      icon: "ap-icon-user",
+    }),
+    pb2Block("Content style", chips("contentStyle"), { index: 2, icon: "ap-icon-quote" }),
+    pb2Block("What posts should achieve", chips("objective"), { index: 3, icon: "ap-icon-target" }),
+    pb2Block("What readers should do", chips("contentAction"), { index: 4, icon: "ap-icon-arrow-right" }),
+    pb2Block("Where posts point to", pb2Hint(FIELD_HINTS.ctaLinks) + renderCtaEditor(data), {
+      wide: true,
+      index: 5,
+      icon: "ap-icon-link",
+    }),
+  ]);
+}
+
+function renderVoiceEdit2(data) {
+  const ve = voiceEntry(data);
+  const line = (key) => LINE_FIELDS.find((f) => f.key === key)?.placeholder || "";
+  const voice = pb2Block(
+    "The voice",
+    `${pb2VoiceHeadline(data)}<div><span class="pb2-sub">Written as</span>${renderVoiceModeToggle(data.voiceMode)}</div>`,
+    { wide: true, index: 0, icon: "ap-icon-quote" },
+  );
+  if (data.voiceMode === "manual")
+    return pb2EditGrid("voice", [
+      voice,
+      pb2Block(
+        "In your own words",
+        `<div class="ap-textarea-field resizable">
+           <textarea data-recap-text="voiceManual" rows="10" placeholder="Write your voice in your own words — how you open, your tone, the way you format posts, and anything to avoid…">${esc(data.voiceManual || "")}</textarea>
+         </div>`,
+        { wide: true, index: 1, icon: "ap-icon-quote" },
+      ),
+    ]);
+  return pb2EditGrid(
+    "voice",
+    [
+      voice,
+      pb2Block("Opens with", renderLineEditor("signatureHooks", ve.signatureHooks, line("signatureHooks")), {
+        index: 1,
+        caption: "Signature hooks",
+      }),
+      pb2Block("Closes with", renderLineEditor("closingPatterns", ve.closingPatterns, line("closingPatterns")), {
+        index: 2,
+        caption: "Closing patterns",
+      }),
+      pb2Block(
+        "Formatting",
+        renderTextarea(
+          "formattingStyle",
+          data.formattingStyle,
+          "How posts are structured — line breaks, lists, rhythm…",
+        ),
+        { index: 3 },
+      ),
+      pb2Block(
+        "Emoji & casing",
+        renderTextarea("visualStyle", data.visualStyle, "Emoji use, capitalisation, hashtags, links…"),
+        { index: 4 },
+      ),
+      kitEnabled()
+        ? pb2Block("Words to avoid", renderEditChips("voiceAvoid", data.voiceAvoid, "Add a word or phrase…"), {
+            wide: true,
+            index: 5,
+            icon: "ap-icon-ban",
+          })
+        : "",
+    ],
+    renderVoiceLangSwitcher(data),
+  );
+}
+
+function renderBrandEdit2(data) {
+  const blocks = [
+    pb2Block(
+      "Logos",
+      `${pb2Hint(FIELD_HINTS.brandLogo)}${renderBrandLogo(data, true)}${
+        kitEnabled()
+          ? `<div><span class="pb2-sub">Versions</span>${renderLogoVariants(data, true, data.brandLogos)}</div>`
+          : ""
+      }`,
+      { wide: true, index: 0, icon: "ap-icon-image" },
+    ),
+    pb2Block("Colour", renderColorEditor(data), { wide: true, index: 1 }),
+    pb2Block("Typography", renderTypoEditor(data), { index: 2 }),
+    pb2Block(
+      "Personality",
+      renderTextarea(
+        "brandPersonality",
+        data.brandPersonality,
+        "How the brand comes across — its character in a few sentences…",
+      ),
+      { index: 3 },
+    ),
+  ];
+  if (kitEnabled()) {
+    const styles = renderImageStyles(data, canEditView());
+    blocks.push(
+      pb2Block(
+        "Imagery",
+        `<div><span class="pb2-sub">Moods</span>${renderEditChips("brandMoods", data.brandMoods, "Add a mood…")}</div>
+         ${styles ? `<div><span class="pb2-sub">Image styles</span>${styles}</div>` : ""}`,
+        { wide: true, index: 4, icon: "ap-icon-image" },
+      ),
+      pb2Block("Visual rules", renderVisualRules(data, true), { wide: true, index: 5 }),
+    );
+  } else {
+    blocks.push(
+      pb2Block("Reference images", renderRefImages(data, canEditView()), { wide: true, index: 4 }),
+      pb2Block("Default look", pb2Hint(FIELD_HINTS.imageDefaults) + renderDefaultLook(data, true), {
+        wide: true,
+        index: 5,
+      }),
+    );
+  }
+  return pb2EditGrid("brand", blocks);
 }
 
 const pb2Text = (text, empty = "Not set yet.") => (text ? `<p class="pb2-prose">${esc(text)}</p>` : pb2Empty(empty));
@@ -2116,30 +2268,32 @@ function pb2Lines(values, icon = "ap-icon-quote") {
     .join("")}</ul>`;
 }
 
-function renderVoiceRead2(data, learnMenu) {
-  const ve = voiceEntry(data);
+// The voice as Archie heard it — three words, then the writing style. Read-only
+// in both modes: it's what the analysis found, not a field.
+function pb2VoiceHeadline(data) {
   const traits = String(data.voiceProfile?.headline || "")
     .split(/\s*[·•|,]\s*/)
     .filter(Boolean)
     .slice(0, 4);
+  return `${
+    traits.length
+      ? `<p class="pb2-traits">${traits
+          .map((t) => `<span class="pb2-trait">${esc(t.charAt(0).toUpperCase() + t.slice(1))}</span>`)
+          .join('<span class="pb2-trait__dot" aria-hidden="true"></span>')}</p>`
+      : ""
+  }${data.voiceProfile?.writingStyle ? `<p class="pb2-lead">${esc(data.voiceProfile.writingStyle)}</p>` : ""}${
+    !traits.length && !data.voiceProfile?.writingStyle ? pb2Empty("No voice captured yet.") : ""
+  }`;
+}
+
+function renderVoiceRead2(data, learnMenu) {
+  const ve = voiceEntry(data);
   const blocks = [];
   if (data.voiceMode === "manual") {
     blocks.push(pb2Block("In your own words", pb2Text(data.voiceManual), { wide: true, icon: "ap-icon-quote" }));
   } else {
     blocks.push(
-      pb2Block(
-        "The voice",
-        `${
-          traits.length
-            ? `<p class="pb2-traits">${traits
-                .map((t) => `<span class="pb2-trait">${esc(t.charAt(0).toUpperCase() + t.slice(1))}</span>`)
-                .join('<span class="pb2-trait__dot" aria-hidden="true"></span>')}</p>`
-            : ""
-        }${data.voiceProfile?.writingStyle ? `<p class="pb2-lead">${esc(data.voiceProfile.writingStyle)}</p>` : ""}${
-          !traits.length && !data.voiceProfile?.writingStyle ? pb2Empty("No voice captured yet.") : ""
-        }`,
-        { wide: true, index: 0, icon: "ap-icon-quote" },
-      ),
+      pb2Block("The voice", pb2VoiceHeadline(data), { wide: true, index: 0, icon: "ap-icon-quote" }),
       pb2Block("Opens with", pb2Lines(ve.signatureHooks), { index: 1, caption: "Signature hooks" }),
       pb2Block("Closes with", pb2Lines(ve.closingPatterns), { index: 2, caption: "Closing patterns" }),
       pb2Block("Formatting", pb2Text(data.formattingStyle), { index: 3 }),
@@ -2261,11 +2415,10 @@ function renderBrandGroup(title) {
 function renderActivePanel(data) {
   const scope = editScope;
   // Editing opens the section's own form; reading gets the tab's spread.
-  if (activeTab === "voice")
-    return scope === "voice" ? renderVoicePanel(data, true) : renderVoiceRead2(data, learnMenu());
-  if (activeTab === "brand") return scope === "brand" ? renderBrandPanel(data, true) : renderBrandRead2(data);
+  if (activeTab === "voice") return scope === "voice" ? renderVoiceEdit2(data) : renderVoiceRead2(data, learnMenu());
+  if (activeTab === "brand") return scope === "brand" ? renderBrandEdit2(data) : renderBrandRead2(data);
   if (activeTab === "competitors") return renderCompetitorsPanel(data, scope === "competitors");
-  return scope === "goals" ? renderGoalsPanel(data, true) : renderGoalsRead2(data);
+  return scope === "goals" ? renderGoalsEdit2(data) : renderGoalsRead2(data);
 }
 
 // `square`: the tile is square, and a wide lockup shrunk into it reads as an

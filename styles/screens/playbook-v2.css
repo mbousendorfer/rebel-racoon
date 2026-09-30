@@ -440,6 +440,21 @@
   font-size: var(--ref-font-size-sm);
 }
 
+/* The Guided / Write it yourself switch, inside a block: it keeps the recap
+   panel's own padding and rule otherwise, and sits indented under its label. */
+.pb2-block .recap__voice-mode {
+  padding: 0;
+  border-bottom: 0;
+}
+
+/* In edit, a field's guidance: the answer half of the hint (the block title
+   already asks the question), a step under the content. */
+.pb2-hint {
+  margin: 0;
+  color: var(--ref-color-grey-80);
+  font-size: var(--ref-font-size-sm);
+}
+
 .pb2-block__body {
   display: flex;
   flex-direction: column;
