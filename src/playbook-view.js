@@ -14,7 +14,7 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1404";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1405";
 import {
   kitEnabled,
   renderColorRole,
@@ -27,19 +27,19 @@ import {
   handleKitInput,
   handleKitChange,
   kitSnapshot,
-} from "./playbook-brand-kit.js?v=1404";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1404";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1404";
-import { isFlagOn } from "./feature-flags.js?v=1404";
-import { parseHashParams } from "./url-state.js?v=1404";
-import { showToast } from "./components/toast.js?v=1404";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1404";
+} from "./playbook-brand-kit.js?v=1405";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1405";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1405";
+import { isFlagOn } from "./feature-flags.js?v=1405";
+import { parseHashParams } from "./url-state.js?v=1405";
+import { showToast } from "./components/toast.js?v=1405";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1405";
 // The Default look row offers the SAME three catalogues the Image Studio renders, from
 // the one place they are declared — REF_MODES' own header makes the argument: the label,
 // the hint and the brief clause "drift the moment they live apart". No cycle: the engine
 // imports only clip-formats / image-studio-canvas / feature-flags, and its module body
 // builds consts, so importing it here costs nothing at load.
-import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1404";
+import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1405";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2026,7 +2026,7 @@ function pb2Block(title, body, { wide = false, caption = "", index = 0, icon = "
   return `
     <section class="pb2-block${wide ? " pb2-block--wide" : ""}" style="--pb2-i:${index}">
       <header class="pb2-block__head">
-        ${icon ? `<span class="pb2-card__icon" aria-hidden="true"><i class="${icon}"></i></span>` : ""}
+        ${icon ? `<i class="${icon} pb2-block__icon" aria-hidden="true"></i>` : ""}
         <h3 class="pb2-block__title">${esc(title)}</h3>
         ${caption ? `<span class="pb2-block__caption">${esc(caption)}</span>` : ""}
       </header>
@@ -2059,13 +2059,10 @@ function renderGoalsRead2(data) {
        <div class="pb2-inline"><span class="pb2-sub">Written in</span>${pb2Tags(contextLanguages(data))}</div>`,
       { wide: true, index: 0, icon: "ap-icon-buildings" },
     ),
-    pb2Block(
-      "Speaking to",
-      audience
-        ? `<div class="pb2-persona pb2-persona--lg"><p class="pb2-persona__text">${esc(audience)}</p></div>`
-        : pb2Empty("No audience set yet."),
-      { index: 1, icon: "ap-icon-user" },
-    ),
+    pb2Block("Speaking to", audience ? `<p class="pb2-lead">${esc(audience)}</p>` : pb2Empty("No audience set yet."), {
+      index: 1,
+      icon: "ap-icon-user",
+    }),
     pb2Block(
       "Content style",
       (data.contentStyle || []).length ? pb2Tags(data.contentStyle) : pb2Empty("No content style yet."),

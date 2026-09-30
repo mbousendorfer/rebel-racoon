@@ -6,12 +6,12 @@
 // images: its look is read from their colours (lookFromColors) and they tint
 // the palette. (Older styles that mixed presets still draw with them.)
 
-import { prng } from "../lib/prng.js?v=1404";
-import { presetById } from "../config/style-presets.js?v=1404";
-import { generatorFor } from "./generators.js?v=1404";
-import { inkOn, resolvePalette } from "./palette.js?v=1404";
-import { fontStack } from "../config/fonts.js?v=1404";
-import { subjectPath } from "./subjects.js?v=1404";
+import { prng } from "../lib/prng.js?v=1405";
+import { presetById } from "../config/style-presets.js?v=1405";
+import { generatorFor } from "./generators.js?v=1405";
+import { inkOn, resolvePalette } from "./palette.js?v=1405";
+import { fontStack } from "../config/fonts.js?v=1405";
+import { subjectPath } from "./subjects.js?v=1405";
 
 let renderSeq = 0;
 
