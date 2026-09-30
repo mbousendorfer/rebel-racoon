@@ -25,6 +25,49 @@
   flex-wrap: wrap;
 }
 
+/* Top-aligned: the mark lines up with the name, and stays put when the facts
+   line wraps instead of drifting to the middle of a taller block. */
+.pb2-hero__id {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ref-spacing-md);
+  min-width: 0;
+}
+
+.pb2-hero__mark {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.pb2-hero__mark .recap__monogram {
+  width: calc(var(--ref-spacing-xxxl) + var(--ref-spacing-xxxs));
+  height: calc(var(--ref-spacing-xxxl) + var(--ref-spacing-xxxs));
+  box-shadow: none;
+}
+
+.pb2-hero__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  min-width: 0;
+}
+
+.pb2-hero__titlerow {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+}
+
+.pb2-hero__name {
+  margin: 0;
+  font-family: var(--sys-text-style-h1-font-family);
+  font-size: var(--sys-text-style-h1-size);
+  line-height: var(--sys-text-style-h1-line-height);
+  font-weight: var(--sys-text-style-h1-weight);
+  color: var(--ref-color-grey-100);
+  letter-spacing: -0.01em;
+}
+
 /* The facts line: glyph + words per item, a hairline between items (drawn on
    the item, so a wrapped line never starts with one). */
 .pb2-meta {
@@ -76,36 +119,6 @@
 .pb2-meta__link:hover .pb2-meta__icon,
 .pb2-meta__link:focus-visible .pb2-meta__icon {
   color: inherit;
-}
-
-/* The DS Top bar pattern's left side (V2 Molecules › Top bar), handed to the
-   topbar by screens/playbook.js: back · avatar · title · pen, then a hairline
-   and the custom slot (the ownership tag). 8 inside the identity, 12 around. */
-.pb2-topbar-left {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  min-width: 0;
-}
-
-.pb2-topbar-id {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  min-width: 0;
-}
-
-.pb2-topbar-custom {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  margin-left: var(--ref-spacing-xxxs);
-}
-
-.pb2-topbar-sep {
-  width: 1px;
-  height: var(--ref-spacing-md);
-  background: var(--ref-color-grey-20);
 }
 
 /* The page's actions, handed to the topbar's right side (screens/playbook.js):

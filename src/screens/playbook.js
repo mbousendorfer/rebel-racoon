@@ -17,10 +17,10 @@
 // `loader` cfg, run the (mock) analysis on a timer, then `updateContext` with
 // the section patch — the loader flips to ready and paints the fresh data.
 
-import { navigate, getPath } from "../router.js?v=1414";
-import { escapeHtml as esc } from "../utils.js?v=1414";
-import { renderTopbar, setTopbarActions } from "../components/topbar.js?v=1414";
-import { isFlagOn } from "../feature-flags.js?v=1414";
+import { navigate, getPath } from "../router.js?v=1416";
+import { escapeHtml as esc } from "../utils.js?v=1416";
+import { renderTopbar, setTopbarActions } from "../components/topbar.js?v=1416";
+import { isFlagOn } from "../feature-flags.js?v=1416";
 import {
   getContextById,
   getContexts,
@@ -28,15 +28,15 @@ import {
   deleteContext,
   duplicateContext,
   appendHistory,
-} from "../contexts-store.js?v=1414";
-import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=1414";
-import { mount, snapshotEditable } from "../playbook-view.js?v=1414";
-import { open as openRenameModal } from "../components/rename-modal.js?v=1414";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=1414";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=1414";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=1414";
-import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=1414";
-import { sectionPatchFromAnalysis } from "../context-builder.js?v=1414";
+} from "../contexts-store.js?v=1416";
+import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=1416";
+import { mount, snapshotEditable } from "../playbook-view.js?v=1416";
+import { open as openRenameModal } from "../components/rename-modal.js?v=1416";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=1416";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=1416";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=1416";
+import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=1416";
+import { sectionPatchFromAnalysis } from "../context-builder.js?v=1416";
 import {
   canView,
   canEdit,
@@ -48,8 +48,8 @@ import {
   isMine,
   ownerOf,
   ownerName,
-} from "../playbook-access.js?v=1414";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=1414";
+} from "../playbook-access.js?v=1416";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=1416";
 
 const AUTOFILL_MS = 1500;
 
@@ -69,7 +69,7 @@ const STAGES = {
 };
 
 function toast(msg) {
-  import("../components/toast.js?v=1414").then(({ showToast }) => showToast(msg));
+  import("../components/toast.js?v=1416").then(({ showToast }) => showToast(msg));
 }
 
 function prettyUrl(url) {
@@ -116,45 +116,19 @@ function buildHeaderActions(ctx) {
   ].join("");
 }
 
-// Playbook 2.0: the page's head IS the DS Top bar (V2 Molecules › Top bar):
-// back · the brand's avatar · its name · the rename pen · a separator and a
-// custom slot on the left; stroked grey buttons, the primary LAST, then an icon
-// button on the right. The name moved up here, so the fiche's own header keeps
-// only its facts line.
-function buildTopbarLeft(ctx) {
+// Playbook 2.0: the topbar follows the DS Top bar (V2 Molecules › Top bar,
+// node 7016:21445) — the icon back on the left; stroked grey buttons, the
+// primary LAST, then an icon button on the right. ONE exception, the user's
+// call: the page's title (mark · name · pen · ownership tag) stays in the
+// fiche's own header with its facts line, not in the bar's avatar + main-text
+// slot — the facts line alone under the bar didn't hold as a header.
+function buildTopbarLeft() {
   const back = isWorkspaceMode() ? catalogueRoute() : "/contexts";
   const backLabel = isWorkspaceMode() ? "Back to all playbooks" : "Back to Playbooks";
-  // The square tile wants the square mark — a wide lockup at 24px is a smudge.
-  const mark = (ctx.brandLogos || []).find((l) => /^icon$/i.test(l.label || ""))?.url || ctx.brandLogo;
-  const initials = (ctx.name || "?")
-    .split(/[\s·]+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join("");
-  const tag = accessLabel(ctx);
   return `
-    <div class="pb2-topbar-left">
-      <button type="button" class="ap-icon-button" data-topbar-back="${esc(back)}" aria-label="${esc(backLabel)}" data-tooltip="${esc(backLabel)}">
-        <i class="ap-icon-arrow-left" aria-hidden="true"></i>
-      </button>
-      <div class="pb2-topbar-id">
-        <span class="ap-avatar size-24 square" aria-hidden="true">${
-          mark ? `<img src="${esc(mark)}" alt="" />` : `<span class="ap-avatar-initials">${esc(initials)}</span>`
-        }</span>
-        <h1 class="app-topbar__title">${esc(ctx.name || "Untitled Playbook")}</h1>
-        ${
-          canEdit(ctx)
-            ? `<button type="button" class="ap-icon-button stroked" data-pb2-rename aria-label="Rename Playbook" data-tooltip="Rename"><i class="ap-icon-pen" aria-hidden="true"></i></button>`
-            : ""
-        }
-      </div>
-      ${
-        tag
-          ? `<div class="pb2-topbar-custom"><span class="pb2-topbar-sep" aria-hidden="true"></span><span class="ap-tag grey">${esc(tag)}</span></div>`
-          : ""
-      }
-    </div>`;
+    <button type="button" class="ap-icon-button" data-topbar-back="${esc(back)}" aria-label="${esc(backLabel)}" data-tooltip="${esc(backLabel)}">
+      <i class="ap-icon-arrow-left" aria-hidden="true"></i>
+    </button>`;
 }
 
 function buildTopbarActions(ctx) {
@@ -286,7 +260,7 @@ export function renderPlaybook(params, target) {
             setTopbarActions(
               getPath(),
               `<div class="pb2-topbar-actions" data-pb2-topbar-actions>${buildTopbarActions(getContextById(id))}</div>`,
-              { left: buildTopbarLeft(getContextById(id)) },
+              { left: buildTopbarLeft() },
             )
         : undefined,
       // The rename pencil and the voice re-analysis are both writes: withhold
@@ -508,10 +482,6 @@ export function renderPlaybook(params, target) {
   // listener — the same handler the in-page header used.
   const topbar = document.getElementById("topbar");
   const onTopbarClick = (event) => {
-    if (event.target.closest("[data-pb2-rename]")) {
-      if (canEdit(getContextById(id))) onEditName();
-      return;
-    }
     if (event.target.closest("[data-pb2-topbar-actions]")) onFooter(event);
   };
   if (v2) topbar?.addEventListener("click", onTopbarClick);
