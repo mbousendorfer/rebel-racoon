@@ -2038,21 +2038,8 @@
 }
 
 /* SINGLE-SELECT, so the marker is a RADIO dot, not a tick — a tick promises you
-   can have several, and here picking one drops the last. Same 16px box the tick
-   sat in, made round and filled from the centre. */
-.isv2-ref-radio {
-  position: absolute;
-  left: 4px;
-  top: 4px;
-  display: grid;
-  place-items: center;
-  width: 16px;
-  height: 16px;
-  border: 1.5px solid var(--ref-color-white);
-  border-radius: var(--app-radius-circle);
-  background: transparent;
-}
-
+   can have several, and here picking one drops the last. Its box is shared with
+   .isv2-pickmark (§ The pick mark); only the ON state lives here. */
 .isv2-ref.is-used .isv2-ref-radio {
   border-color: var(--sys-color-accent-default-bg-default);
   background: var(--sys-color-accent-default-bg-default);

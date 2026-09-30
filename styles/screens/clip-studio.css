@@ -752,42 +752,17 @@
 .clip-studio__grid .rpanel-ideas__card-actions {
   display: none;
 }
-.clip-studio-pick__check {
+/* The per-clip checkbox is the DS checkbox (.ap-checkbox-container), pinned to
+   the thumbnail's corner. Icon-only, so the DS gives it a 36px hit area; the
+   margin reset lets that padding place the box inside the corner instead of
+   the app-wide -10px footprint patch pulling it outside (hence the extra
+   specificity: that patch is (0,2,1)). */
+.clip-studio-pick > .ap-checkbox-container.clip-studio-pick__check {
   position: absolute;
-  top: var(--ref-spacing-xs);
-  left: var(--ref-spacing-xs);
+  top: 0;
+  left: 0;
   z-index: 3;
-  display: inline-flex;
-  cursor: pointer;
-}
-.clip-studio-pick__check input {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-.clip-studio-pick__check i {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: var(--app-radius-sm);
-  background: var(--ref-color-white);
-  border: 1px solid var(--ref-color-grey-40);
-  box-shadow: var(--app-shadow-subtle);
-}
-.clip-studio-pick__check input:checked + i {
-  background: var(--ref-color-electric-blue-100);
-  border-color: var(--ref-color-electric-blue-100);
-}
-.clip-studio-pick__check input:checked + i::after {
-  content: "";
-  width: 6px;
-  height: 10px;
-  border: solid var(--ref-color-white);
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg) translateY(-1px);
+  margin: 0;
 }
 
 /* Sticky action bar (clips + profiles) */
@@ -850,40 +825,11 @@
 .clip-studio__profile.is-on {
   border-color: var(--ref-color-electric-blue-100);
 }
+/* The profile row's checkbox is the DS checkbox; the profile tag is its label. */
 .clip-studio__profile-pick {
-  display: inline-flex;
-  align-items: center;
   gap: var(--ref-spacing-xs);
-  cursor: pointer;
 }
-.clip-studio__profile-pick input {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-.clip-studio__profile-pick > i {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  border-radius: var(--app-radius-sm);
-  border: 1px solid var(--ref-color-grey-40);
-  background: var(--ref-color-white);
-}
-.clip-studio__profile-pick input:checked + i {
-  background: var(--ref-color-electric-blue-100);
-  border-color: var(--ref-color-electric-blue-100);
-}
-.clip-studio__profile-pick input:checked + i::after {
-  content: "";
-  width: 5px;
-  height: 9px;
-  border: solid var(--ref-color-white);
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg) translateY(-1px);
-}
+
 .clip-studio__profile-fmt {
   display: flex;
   align-items: center;

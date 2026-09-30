@@ -11,8 +11,8 @@
 // Interactive hooks are data-* attributes bound identically on each surface:
 //   data-connector-open|connect|disconnect|try, data-connectors-category|search
 
-import { escapeHtml } from "./utils.js?v=1416";
-import { getConnectors } from "./connectors-store.js?v=1416";
+import { escapeHtml } from "./utils.js?v=1418";
+import { getConnectors } from "./connectors-store.js?v=1418";
 
 // Category display order — anything unlisted falls to the end alphabetically.
 const CATEGORY_ORDER = ["Docs & wikis", "Storage", "Meetings & calls", "Dev & project", "Messaging", "CRM & support"];
@@ -61,7 +61,7 @@ function renderCategoryChip(value, label, active) {
   // panel; aria-pressed drives the selected state.
   return `<button type="button" class="ap-filter-chip" data-connectors-category="${escapeHtml(
     value,
-  )}" role="tab" aria-pressed="${active}" aria-selected="${active}"><span>${escapeHtml(label)}</span></button>`;
+  )}" aria-pressed="${active}"><span>${escapeHtml(label)}</span></button>`;
 }
 
 // One connector — a compact marketplace ROW (Codex-style): logo + name +
@@ -160,7 +160,7 @@ export function renderGalleryBody(view, { showHero = true } = {}) {
           aria-label="Search connectors"
         />
       </div>
-      <div class="connectors-view__categories" role="tablist" aria-label="Filter by category">${catChips}</div>
+      <div class="connectors-view__categories" role="group" aria-label="Filter by category">${catChips}</div>
     </div>
     ${list}
     ${empty}

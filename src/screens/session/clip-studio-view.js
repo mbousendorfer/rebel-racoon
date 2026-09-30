@@ -6,35 +6,35 @@
 // binding and the refreshAssistantAside node-swap keep working; state lives in
 // clip-studio.js.
 
-import * as clipStudio from "../../clip-studio.js?v=1416";
-import { isWorkspaceMode } from "../../active-playbook.js?v=1416";
-import { usableContexts } from "../../playbook-access.js?v=1416";
-import { escapeHtml, html, raw } from "../../utils.js?v=1416";
-import { getContextById } from "../../contexts-store.js?v=1416";
-import { dropzoneHTML } from "../../components/dropzone.js?v=1416";
-import { renderClipCard } from "../../components/clip-card.js?v=1416";
-import { connectableNetworkCards } from "../../connect-profiles-flow.js?v=1416";
-import { getConnectedProfiles, PROFILE_SEARCH_THRESHOLD, renderProfileTag } from "../../social-profiles.js?v=1416";
-import { defaultFormatFor, formatsForNetwork } from "../../clip-formats.js?v=1416";
+import * as clipStudio from "../../clip-studio.js?v=1418";
+import { isWorkspaceMode } from "../../active-playbook.js?v=1418";
+import { usableContexts } from "../../playbook-access.js?v=1418";
+import { escapeHtml, html, raw } from "../../utils.js?v=1418";
+import { getContextById } from "../../contexts-store.js?v=1418";
+import { dropzoneHTML } from "../../components/dropzone.js?v=1418";
+import { renderClipCard } from "../../components/clip-card.js?v=1418";
+import { connectableNetworkCards } from "../../connect-profiles-flow.js?v=1418";
+import { getConnectedProfiles, PROFILE_SEARCH_THRESHOLD, renderProfileTag } from "../../social-profiles.js?v=1418";
+import { defaultFormatFor, formatsForNetwork } from "../../clip-formats.js?v=1418";
 import {
   classifyFile,
   pushScriptedSource,
   completeScriptedSource,
   updateSourceClips,
-} from "../../sources-stream.js?v=1416";
-import { showToast } from "../../components/toast.js?v=1416";
-import { open as openVideoClipsModal } from "../../components/video-clips-modal.js?v=1416";
+} from "../../sources-stream.js?v=1418";
+import { showToast } from "../../components/toast.js?v=1418";
+import { open as openVideoClipsModal } from "../../components/video-clips-modal.js?v=1418";
 import {
   postAssistantMessage,
   postClipExtractionTurn,
   startPending,
   finishPending,
   postDraftResult,
-} from "../../assistant.js?v=1416";
-import { addPostDraft } from "../../posts-store.js?v=1416";
-import { clipContext } from "./clip-draft-flow.js?v=1416";
-import { dotColorVar } from "../session.js?v=1416";
-import { buildWorkflowFlow } from "./workflow-flow.js?v=1416";
+} from "../../assistant.js?v=1418";
+import { addPostDraft } from "../../posts-store.js?v=1418";
+import { clipContext } from "./clip-draft-flow.js?v=1418";
+import { dotColorVar } from "../session.js?v=1418";
+import { buildWorkflowFlow } from "./workflow-flow.js?v=1418";
 
 // Config catalogs for the upload/config screen.
 const CLIP_CAPTION_STYLES = [
@@ -351,7 +351,7 @@ function renderStudioClipCard(clip, st, sessionId) {
   const selected = (st.selectedClipIds || []).includes(clip.id);
   return `
     <div class="clip-studio-pick${selected ? " is-selected" : ""}">
-      <label class="clip-studio-pick__check">
+      <label class="ap-checkbox-container clip-studio-pick__check">
         <input type="checkbox" data-clip-select="${escapeHtml(clip.id)}" ${selected ? "checked" : ""} aria-label="Select clip" />
         <i aria-hidden="true"></i>
       </label>
@@ -488,7 +488,7 @@ function renderClipStudioProfiles(session, st) {
         .join("");
       return `
         <div class="clip-studio__profile${on ? " is-on" : ""}${hidden ? " is-hidden" : ""}" data-search="${escapeHtml(haystack)}">
-          <label class="clip-studio__profile-pick">
+          <label class="ap-checkbox-container clip-studio__profile-pick">
             <input type="checkbox" data-clip-profile="${escapeHtml(p.id)}" ${on ? "checked" : ""} aria-label="Select profile" />
             <i aria-hidden="true"></i>
             ${renderProfileTag(p)}
