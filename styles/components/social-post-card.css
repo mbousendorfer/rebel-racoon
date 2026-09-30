@@ -23,7 +23,7 @@
   flex-direction: column;
   gap: var(--ref-spacing-xs);
   padding: var(--ref-spacing-xs);
-  border: 1px solid var(--ref-color-grey-10);
+  border: 1px solid var(--app-border);
   border-radius: var(--ref-border-radius-md);
   background: var(--ref-color-white);
 }

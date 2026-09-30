@@ -206,7 +206,7 @@
   justify-content: flex-end;
   gap: var(--ref-spacing-xxxs);
   padding-top: var(--ref-spacing-xxxs);
-  border-top: 1px solid var(--ref-color-grey-10);
+  border-top: 1px solid var(--app-border);
 }
 
 /* The frame is its own stacking context (container-type: size), so the text

@@ -62,7 +62,7 @@
 
 .topic-card--feed {
   background: var(--app-surface);
-  border: 1px solid var(--app-border-soft);
+  border: 1px solid var(--app-border);
   border-radius: var(--app-radius-card);
 }
 
@@ -206,7 +206,7 @@
 
 .topic-card--picker {
   background: var(--app-surface);
-  border: 1px solid var(--app-border-soft);
+  border: 1px solid var(--app-border);
   border-radius: var(--app-radius-card);
 }
 
@@ -322,7 +322,7 @@
 .topic-card__reason {
   margin-top: var(--ref-spacing-xxxs);
   padding-top: var(--ref-spacing-xxs);
-  border-top: 1px solid var(--sys-border-color-default);
+  border-top: 1px solid var(--app-border);
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   color: var(--sys-text-color-light);
@@ -364,7 +364,7 @@
 .topic-card__act {
   display: flex;
   padding: var(--ref-spacing-xs) var(--ref-spacing-sm) var(--ref-spacing-sm);
-  border-top: 1px solid var(--app-border-soft);
+  border-top: 1px solid var(--app-border);
 }
 
 /* ── The in-chat picker widget (the composer's "Pick from the Topic Feed") ─────
@@ -380,7 +380,6 @@
   border: 1px solid var(--app-border);
   border-radius: var(--app-radius-card);
   background: var(--app-surface);
-  box-shadow: var(--app-shadow-low);
   overflow: hidden;
 }
 
@@ -411,8 +410,6 @@
   flex-shrink: 0;
   font-size: var(--sys-text-style-caption-size);
   font-weight: var(--sys-text-style-body-bold-weight);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
   color: var(--sys-text-color-light);
 }
 

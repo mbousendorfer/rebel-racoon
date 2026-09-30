@@ -16,7 +16,7 @@
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
   background: var(--app-bg);
-  border-right: 1px solid var(--app-border-soft);
+  border-right: 1px solid var(--app-border);
   overflow: hidden;
 }
 
@@ -152,7 +152,7 @@
   padding: var(--ref-spacing-xxs) var(--ref-spacing-sm);
   border-radius: var(--app-radius-pill);
   background: var(--app-surface);
-  border: 1px solid var(--app-border-soft);
+  border: 1px solid var(--app-border);
   color: var(--ref-color-grey-150);
   font-size: var(--sys-text-style-body-bold-size);
   line-height: var(--sys-text-style-body-bold-line-height);
@@ -671,7 +671,7 @@ body.playbook-revoked .session__composer-card {
   font-size: var(--sys-text-style-subtitle-size);
   line-height: var(--sys-text-style-subtitle-line-height);
   font-weight: var(--sys-text-style-subtitle-weight);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 /* Composer rendered inline INSIDE the empty hero (Figma 285:1164) uses
@@ -957,7 +957,7 @@ body.playbook-revoked .session__composer-card {
   margin-top: var(--ref-spacing-xxs);
   padding: var(--ref-spacing-xs);
   background: var(--ref-color-grey-05);
-  border: 1px solid var(--ref-color-grey-10);
+  border: 1px solid var(--app-border);
   border-radius: var(--app-radius-md);
   color: var(--ref-color-grey-80);
   font-size: var(--sys-text-style-caption-size);
@@ -1259,21 +1259,15 @@ body.playbook-revoked .session__composer-card {
   padding-left: var(--ref-spacing-xxs);
 }
 
-.session__composer-connector[hidden] {
-  display: none;
-}
-
-/* Send button — 32×32 square in the toolbar row, pushed to the far right
-   by margin-left:auto. Qualified with .ap-button to raise specificity to
-   (0,2,0) so it wins against the default DS .ap-button.primary box-model.
-   The DS ships --comp-button-height: 36px on .ap-button, so we override
-   both height and min-height to land on the handoff size. */
+/* Send button — a square in the toolbar row, pushed to the far right by
+   margin-left:auto. It keeps the DS button height (36px, pinned by the DS:
+   .ap-button has no size modifier) and only squares its width — the handoff's
+   32px was a size override the house rules don't allow. Qualified with
+   .ap-button to win against the DS .ap-button.primary box-model. */
 .ap-button.session__composer-send {
   margin-left: auto;
-  width: 32px;
-  min-width: 32px;
-  height: 32px;
-  min-height: 32px;
+  width: var(--comp-button-height);
+  min-width: var(--comp-button-height);
   padding: 0;
   border-radius: var(--sys-border-radius-lg);
   display: inline-flex;
@@ -1308,7 +1302,7 @@ body.playbook-revoked .session__composer-card {
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   font-weight: var(--sys-text-style-caption-weight);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 .session__composer-hint kbd {
@@ -1320,7 +1314,7 @@ body.playbook-revoked .session__composer-card {
   padding: 0 4px;
   border-radius: var(--app-radius-sm);
   background: var(--ref-color-grey-05);
-  border: 1px solid var(--app-border-soft);
+  border: 1px solid var(--app-border);
   font-family: inherit;
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);
@@ -1346,10 +1340,6 @@ body.playbook-revoked .session__composer-card {
   /* Let the "Connected sources" flyout escape — the DS .ap-action-dropdown
      clips overflow, which would hide the nested submenu. */
   overflow: visible;
-}
-
-.ap-action-dropdown.assistant-attach__menu[hidden] {
-  display: none;
 }
 
 /* ---------- "Connected sources" nested submenu (flyout) -------------- */
@@ -1431,10 +1421,6 @@ body.playbook-revoked .session__composer-card {
   z-index: var(--app-z-overlay);
 }
 
-.composer-mention-picker[hidden] {
-  display: none;
-}
-
 /* "/" command mode renders a DS .ap-action-dropdown, which brings its own
    surface/border/shadow — strip this wrapper's box so they don't double up.
    The wrapper is then just a positioning + scroll layer. */
@@ -1469,7 +1455,7 @@ body.playbook-revoked .session__composer-card {
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   font-weight: var(--sys-text-style-caption-weight);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
   padding: var(--ref-spacing-xxs) var(--ref-spacing-xs) 2px;
 }
 
@@ -1537,7 +1523,7 @@ body.playbook-revoked .session__composer-card {
   line-height: var(--sys-text-style-caption-line-height);
   font-weight: var(--sys-text-style-caption-weight);
   text-transform: lowercase;
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
   flex-shrink: 0;
 }
 

@@ -52,7 +52,7 @@
 
 .connectors-view__hero .ap-subtitle {
   margin: 0;
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 .connectors-view__count {
@@ -128,7 +128,7 @@
 }
 
 .connectors-card:hover {
-  border-color: var(--ref-color-grey-40);
+  border-color: var(--ref-color-electric-blue-100);
 }
 
 .connectors-card:focus-visible {
@@ -156,7 +156,7 @@
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   font-weight: var(--sys-text-style-caption-weight);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -177,7 +177,7 @@
 
 .connectors-card__add {
   background: var(--ref-color-grey-05);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 .connectors-card:hover .connectors-card__add {
@@ -338,7 +338,7 @@
 }
 
 .connectors-detail__example:hover {
-  border-color: var(--ref-color-grey-40);
+  border-color: var(--ref-color-electric-blue-100);
 }
 
 .connectors-detail__example:focus-visible {
@@ -357,7 +357,7 @@
 }
 
 .connectors-detail__example-go {
-  color: var(--ref-color-grey-40);
+  color: var(--ref-color-grey-80);
   flex-shrink: 0;
 }
 
@@ -415,8 +415,8 @@
   width: 22px;
   height: 22px;
   border-radius: var(--ref-border-radius-sm);
-  background: var(--ref-color-electric-blue-05);
-  color: var(--ref-color-electric-blue-150);
+  background: var(--ref-color-grey-05);
+  color: var(--ref-color-grey-100);
   font-size: var(--sys-icon-css-sm);
 }
 

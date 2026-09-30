@@ -14,7 +14,7 @@
   flex-direction: column;
   min-height: 0;
   background: var(--app-color-sidebar-bg);
-  border-right: 1px solid var(--app-border-soft);
+  border-right: 1px solid var(--app-border);
   overflow: hidden;
 }
 
@@ -75,7 +75,7 @@
   gap: var(--ref-spacing-xs);
   height: var(--app-topbar-height);
   padding: 0 var(--ref-spacing-sm);
-  border-bottom: 1px solid var(--app-border-soft);
+  border-bottom: 1px solid var(--app-border);
 }
 
 .app-sidebar__brand {
@@ -170,13 +170,13 @@
 }
 
 /* Active nav item — same visual treatment as the active conversation
-   row (filled surface bg + electric-blue label/icon). Keeps the
-   "you-are-here" cue consistent across the whole sidebar: nav and
-   conversations share one active style. */
+   row: the selected fill (electric-blue-05) + an electric-blue label/icon.
+   A fill, never a shadow (no elevation inside the rail) and never an edge
+   bar (house rules). Keeps the "you-are-here" cue consistent across the
+   whole sidebar: nav and conversations share one active style. */
 .app-sidebar__nav-item.is-active {
-  background: var(--app-bg);
+  background: var(--ref-color-electric-blue-05);
   color: var(--ref-color-electric-blue-100);
-  box-shadow: var(--app-shadow-subtle);
 }
 
 .app-sidebar__nav-item.is-active i {
@@ -202,7 +202,7 @@
   padding: 0 4px;
   border-radius: var(--app-radius-sm);
   background: var(--ref-color-white);
-  border: 1px solid var(--app-border-soft);
+  border: 1px solid var(--app-border);
   font-family: inherit;
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);
@@ -239,9 +239,7 @@
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);
   font-weight: var(--sys-text-style-caption-bold-weight);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -292,10 +290,6 @@
   z-index: var(--app-z-overlay);
 }
 
-.ap-action-dropdown.app-sidebar__organize-menu[hidden] {
-  display: none;
-}
-
 /* Quiet uppercase heading for each section (Group by / Sort by) — same
    micro-label treatment as the list group headings so the popover reads as
    structure, aligned with the option rows' text indent (DS item padding). */
@@ -304,9 +298,7 @@
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);
   font-weight: var(--sys-text-style-caption-bold-weight);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 .app-sidebar__organize-check {
@@ -344,8 +336,7 @@
 }
 
 .app-sidebar__row.is-active {
-  background: var(--app-bg);
-  box-shadow: var(--app-shadow-subtle);
+  background: var(--ref-color-electric-blue-05);
 }
 
 .app-sidebar__row-title {
@@ -537,13 +528,13 @@
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   font-weight: var(--sys-text-style-caption-weight);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 /* ── Footer ─────────────────────────────────────────────────────────── */
 
 .app-sidebar__foot {
-  border-top: 1px solid var(--app-border-soft);
+  border-top: 1px solid var(--app-border);
   padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
   background: var(--app-color-sidebar-bg);
 }
@@ -576,7 +567,7 @@
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   font-weight: var(--sys-text-style-caption-weight);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -601,7 +592,7 @@
   gap: var(--app-spacing-micro);
   padding: var(--app-spacing-micro);
   background: var(--app-surface-subtle);
-  border: 1px solid var(--app-border-soft);
+  border: 1px solid var(--app-border);
   border-radius: var(--app-radius-button-sm);
   flex-shrink: 0;
 }
@@ -642,10 +633,6 @@
   bottom: auto;
 }
 
-.ap-action-dropdown.app-sidebar__foot-popmenu[hidden] {
-  display: none;
-}
-
 /* ── Admin controls inside the cog popover (was the /settings page) ───────── */
 .admin-menu {
   display: flex;
@@ -662,9 +649,7 @@
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);
   font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-grey-60);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  color: var(--ref-color-grey-80);
 }
 .admin-menu__cards {
   display: flex;
@@ -693,7 +678,7 @@
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   font-weight: var(--sys-text-style-caption-weight);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 /* Feature-flag row — label/hint left, DS toggle pinned right. */
@@ -740,7 +725,7 @@
 }
 .admin-menu__doc i {
   flex-shrink: 0;
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 .app-sidebar__foot-kbd {
@@ -753,7 +738,7 @@
   padding: 0 4px;
   border-radius: var(--app-radius-sm);
   background: var(--ref-color-grey-05);
-  border: 1px solid var(--app-border-soft);
+  border: 1px solid var(--app-border);
   font-family: inherit;
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);

@@ -397,7 +397,7 @@
   justify-content: space-between;
   gap: var(--ref-spacing-xs);
   padding: var(--ref-spacing-xs) 0;
-  border-top: 1px solid var(--sys-border-color-default);
+  border-top: 1px solid var(--app-border);
 }
 
 .ins-read__fact:first-child {

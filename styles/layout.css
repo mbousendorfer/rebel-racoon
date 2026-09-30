@@ -152,7 +152,7 @@ body.account-scope .app-content {
   gap: var(--ref-spacing-sm);
   padding: 0 var(--ref-spacing-md);
   background: var(--app-surface);
-  border-bottom: 1px solid var(--app-border-soft);
+  border-bottom: 1px solid var(--app-border);
 }
 
 .app-topbar__left,

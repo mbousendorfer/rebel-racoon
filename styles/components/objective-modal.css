@@ -10,11 +10,6 @@
   padding: var(--ref-spacing-lg);
 }
 
-.objm__backdrop[hidden],
-.objc__backdrop[hidden] {
-  display: none;
-}
-
 .objm,
 .objc {
   width: min(640px, 100%);

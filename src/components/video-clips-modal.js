@@ -19,11 +19,11 @@
 //             the grid, source card dimmed.
 //   - Add   : a new 30s clip is inserted in the next gap and opened in edit.
 
-import { escapeHtml } from "../utils.js?v=1405";
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1405";
-import { FORMATS, NETWORK_FORMATS, CLIP_RATIO_ORDER, ratioNetworksMeta, ratioValue } from "../clip-formats.js?v=1405";
-import { iconFor } from "../file-kinds.js?v=1405";
-import { DEFAULT_PRESET, buildCaptions, videoForClip } from "../clip-captions.js?v=1405";
+import { escapeHtml } from "../utils.js?v=1406";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1406";
+import { FORMATS, NETWORK_FORMATS, CLIP_RATIO_ORDER, ratioNetworksMeta, ratioValue } from "../clip-formats.js?v=1406";
+import { iconFor } from "../file-kinds.js?v=1406";
+import { DEFAULT_PRESET, buildCaptions, videoForClip } from "../clip-captions.js?v=1406";
 
 const MODAL_ID = "videoClips";
 const MIN_CLIP = 5;
@@ -213,7 +213,7 @@ function renderFooter() {
       </div>
     </div>
     <div class="ap-dialog-footer-right">
-      <button type="button" class="ap-button transparent grey" data-vc-action="cancel">Cancel</button>
+      <button type="button" class="ap-button ghost grey" data-vc-action="cancel">Cancel</button>
       <button type="button" class="ap-button primary orange" data-vc-action="use-clips" ${n === 0 || editingId ? "disabled" : ""} title="${editingId ? "Finish editing the clip first" : ""}">
         <i class="ap-icon-archie-official"></i>
         <span>${ctaLabel}</span>
@@ -235,7 +235,7 @@ function renderFooterEdit() {
       </button>
     </div>
     <div class="ap-dialog-footer-right">
-      <button type="button" class="ap-button transparent grey" data-vc-action="cancel-edit">Cancel</button>
+      <button type="button" class="ap-button ghost grey" data-vc-action="cancel-edit">Cancel</button>
       <button type="button" class="ap-button primary orange" data-vc-action="save-edit">
         <i class="ap-icon-check"></i>
         <span>Save changes</span>
@@ -615,7 +615,7 @@ function renderOptions() {
     b.setAttribute("aria-selected", String(on));
   });
   if (editorTab === "subtitles") {
-    import("../caption-editor.js?v=1405").then(({ refreshControls }) => refreshControls());
+    import("../caption-editor.js?v=1406").then(({ refreshControls }) => refreshControls());
   }
 }
 
@@ -625,7 +625,7 @@ function renderOptions() {
 // onChange folds edits into the draft so Save persists them and Cancel discards.
 function syncCaptionMount() {
   const want = !!editingId;
-  import("../caption-editor.js?v=1405").then((mod) => {
+  import("../caption-editor.js?v=1406").then((mod) => {
     capMod = mod;
     if (want) {
       const shell = bodyEl && bodyEl.querySelector("[data-vc-editor]");
@@ -726,7 +726,7 @@ function onModalClick(event) {
     // without a confirm has no recovery path. Gate on confirm-modal —
     // same pattern as bulk-delete drafts in right-panel.
     const id = editingId;
-    import("./confirm-modal.js?v=1405").then(({ open }) => {
+    import("./confirm-modal.js?v=1406").then(({ open }) => {
       open({
         title: "Delete this clip?",
         body: "This removes the clip from the editor. You'll need to re-extract or re-create it manually.",
@@ -1282,7 +1282,7 @@ function close() {
   if (!initialized || !modal?.classList.contains("open")) return;
   // Tear down the embedded caption editor if it's mounted.
   if (captionMounted) {
-    import("../caption-editor.js?v=1405").then(({ unmount }) => unmount());
+    import("../caption-editor.js?v=1406").then(({ unmount }) => unmount());
     captionMounted = false;
   }
   modal.classList.remove("open");

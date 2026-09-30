@@ -97,10 +97,6 @@
   border-radius: var(--app-radius-button-sm);
 }
 
-.cap-ed__cleanup-bar[hidden] {
-  display: none;
-}
-
 .cap-ed-cleanup-bar__count {
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
@@ -154,10 +150,6 @@
   align-items: center;
   justify-content: center;
   font-size: 10px;
-}
-
-.cap-ed__cleanup-count[hidden] {
-  display: none;
 }
 
 .cap-ed__hint {
@@ -443,8 +435,6 @@
 .cap-ed-dz span {
   color: rgba(255, 130, 130, 0.92);
   font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
 }
 
 .cap-ed__transport {
@@ -761,8 +751,6 @@
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   font-weight: var(--sys-text-style-caption-bold-weight);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
   color: var(--app-vc-text-subtle);
   margin-bottom: var(--ref-spacing-xxxs);
 }

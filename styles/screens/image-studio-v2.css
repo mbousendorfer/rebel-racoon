@@ -220,7 +220,7 @@
 
 .isv2-bs.is-split .isv2-bs-preview {
   padding: var(--ref-spacing-sm) var(--ref-spacing-md);
-  border-left: 1px solid var(--sys-border-color-default);
+  border-left: 1px solid var(--app-border);
 }
 
 /* Two across even when split: the brief holds the flexible track now, so there is room
@@ -416,7 +416,7 @@
   padding: var(--ref-spacing-md);
   text-align: center;
   border-style: dashed;
-  border-color: var(--sys-border-color-default);
+  border-color: var(--app-border);
   background: transparent;
   color: var(--sys-text-color-light);
 }
@@ -443,7 +443,7 @@
 .isv2-bs-shot.is-busy {
   flex-direction: column;
   gap: var(--ref-spacing-xs);
-  border-color: var(--sys-border-color-default);
+  border-color: var(--app-border);
 }
 
 /* Same reasoning as `.is-empty` above: this box is ~600px square in a split stage, and
@@ -529,8 +529,6 @@
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   font-weight: var(--sys-text-style-caption-bold-weight);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
   color: var(--sys-text-color-light);
 }
 
@@ -560,7 +558,7 @@
   flex-direction: column;
   gap: 2px;
   padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
-  border: 1px solid var(--sys-border-color-default);
+  border: 1px solid var(--app-border);
   border-radius: var(--sys-settings-card-border-radius);
   background: var(--ref-color-white);
   cursor: text;
@@ -794,7 +792,7 @@
      pane scrolling. The pane is the scroller; the cards keep their own height. */
   flex: 0 0 auto;
   background: var(--ref-color-white);
-  border: 1px solid var(--ref-color-grey-10);
+  border: 1px solid var(--app-border);
   border-radius: var(--ref-border-radius-md);
   overflow: hidden;
 }
@@ -803,7 +801,7 @@
    (the pinned panel's row divider) must not draw a second line at grey-20 between two
    cards — restore the grey-10 card border it would otherwise override. */
 .isv2-opts .isv2-acc + .isv2-acc {
-  border-top: 1px solid var(--ref-color-grey-10);
+  border-top: 1px solid var(--app-border);
 }
 
 /* Inside a card the header can afford the DS accordion's own inline padding — and, at
@@ -1156,7 +1154,7 @@
   padding: 0 var(--ref-spacing-xxs);
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 .isv2-console-hint kbd {
@@ -1168,7 +1166,7 @@
   padding: 0 4px;
   border-radius: var(--app-radius-sm);
   background: var(--ref-color-grey-05);
-  border: 1px solid var(--sys-border-color-default);
+  border: 1px solid var(--app-border);
   font-family: inherit;
   font-size: var(--sys-text-style-caption-bold-size);
   font-weight: var(--sys-text-style-caption-bold-weight);
@@ -1186,7 +1184,7 @@
 }
 
 .isv2-acc + .isv2-acc {
-  border-top: 1px solid var(--sys-border-color-default);
+  border-top: 1px solid var(--app-border);
 }
 
 .isv2-acc-head {
@@ -1312,14 +1310,14 @@
    times. */
 .isv2-acc-info {
   flex: 0 0 auto;
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
   font-size: var(--sys-icon-css-sm, 16px);
   cursor: help;
 }
 
 .isv2-acc-head .ap-accordion-toggle {
   font-size: var(--sys-icon-css-nano, 10px);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 /* NO column override for the pinned panel. This rule used to say `repeat(2)` and was
@@ -1345,7 +1343,7 @@
 .isv2-footer {
   flex: 0 0 auto;
   background: var(--app-surface);
-  border-top-color: var(--sys-border-color-default);
+  border-top-color: var(--app-border);
 }
 
 /* ── Aspect-ratio glyph (the Format rows in the settings panel) ──────────── */
@@ -1869,7 +1867,7 @@
   align-self: flex-start;
   height: 44px;
   padding: var(--ref-spacing-xxs);
-  border: 1px solid var(--sys-border-color-default);
+  border: 1px solid var(--app-border);
   border-radius: var(--app-radius-md);
   background: var(--ref-color-white);
   box-sizing: border-box;
@@ -1995,7 +1993,7 @@
   position: relative;
   aspect-ratio: 1;
   padding: 0;
-  border: 1px solid var(--sys-border-color-default);
+  border: 1px solid var(--app-border);
   border-radius: var(--app-radius-md);
   background: var(--app-surface-subtle);
   overflow: hidden;

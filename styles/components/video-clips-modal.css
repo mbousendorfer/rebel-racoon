@@ -820,10 +820,6 @@
   gap: var(--ref-spacing-xs);
 }
 
-.vc-subpanel[hidden] {
-  display: none;
-}
-
 /* Single-clip body fills with the editor (so the VEED grid gets a height).
    Edit-from-browse (is-captions) gets the SAME edge-to-edge treatment as
    single-clip mode: zero the body gutter so the dark editor sits flush with

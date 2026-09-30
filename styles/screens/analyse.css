@@ -64,7 +64,7 @@
 .analyse__options {
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--app-border-soft);
+  border: 1px solid var(--app-border);
   border-radius: var(--app-radius-md);
   overflow: hidden;
   background: var(--app-surface);
@@ -83,7 +83,7 @@
   font-weight: var(--sys-text-style-body-weight);
   background: transparent;
   border: 0;
-  border-bottom: 1px solid var(--app-border-soft);
+  border-bottom: 1px solid var(--app-border);
   cursor: pointer;
   color: inherit;
   transition: background-color var(--ref-animation-short) var(--app-ease-out);
@@ -162,7 +162,7 @@
   padding: 2px var(--ref-spacing-xs);
   border-radius: var(--app-radius-pill);
   background: var(--ref-color-grey-05);
-  border: 1px solid var(--app-border-soft);
+  border: 1px solid var(--app-border);
   color: var(--sys-text-color-light);
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
@@ -197,7 +197,7 @@
   flex-direction: column;
   gap: var(--ref-spacing-xxxs);
   padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
-  border-bottom: 1px solid var(--app-border-soft);
+  border-bottom: 1px solid var(--app-border);
 }
 
 /* width:100% so the row + subtitle span the full header even where the
@@ -248,7 +248,7 @@
 }
 
 .analyse__picker-search .ap-icon-search {
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 .analyse__options--searchable .analyse__options-list {
@@ -256,7 +256,7 @@
   flex-direction: column;
   max-height: 320px;
   overflow-y: auto;
-  border-top: 1px solid var(--app-border-soft);
+  border-top: 1px solid var(--app-border);
 }
 
 /* The list owns the row separators when searchable, so the last visible row
@@ -284,7 +284,7 @@
   place-items: center;
   border-radius: var(--app-radius-sm);
   background: var(--ref-color-grey-05);
-  border: 1px solid var(--app-border-soft);
+  border: 1px solid var(--app-border);
   color: var(--sys-text-color-light);
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);
@@ -465,7 +465,7 @@
 .analyse__hints kbd {
   padding: var(--ref-spacing-xxxs) var(--ref-spacing-xxs);
   background: var(--ref-color-grey-05);
-  border: 1px solid var(--app-border-soft);
+  border: 1px solid var(--app-border);
   border-radius: var(--app-radius-sm);
   font-family: inherit;
   font-size: var(--sys-text-style-caption-size);

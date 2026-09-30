@@ -15,7 +15,7 @@
 //   - Registers with modal-coordinator so opening the dialog auto-closes
 //     any other overlay (drawer, modal, shortcut legend).
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1405";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1406";
 
 const MODAL_ID = "confirm";
 
@@ -45,7 +45,7 @@ const HTML = `
   </div>
   <div class="ap-dialog-footer">
     <div class="ap-dialog-footer-right">
-      <button type="button" class="ap-button transparent grey" id="confirmCancel">Cancel</button>
+      <button type="button" class="ap-button ghost grey" id="confirmCancel">Cancel</button>
       <button type="button" class="ap-button primary orange" id="confirmConfirm">Confirm</button>
     </div>
   </div>
@@ -98,10 +98,10 @@ export function open({
   bodyEl.textContent = body;
   confirmBtn.textContent = confirmLabel;
   cancelBtn.textContent = cancelLabel;
-  // Danger swaps the orange CTA for a red one (DS .danger modifier on
-  // ap-button). Non-danger uses the standard primary CTA.
-  confirmBtn.classList.toggle("danger", danger);
-  confirmBtn.classList.toggle("orange", !danger);
+  // The confirm is ALWAYS the orange primary, destructive or not: the DS has
+  // no primary red, and the verb on the button ("Delete chat") is what says
+  // what happens (design-guidelines, interaction-patterns §1 — Decided).
+  // `danger` only moves the initial focus to Cancel, below.
 
   pendingOnConfirm = onConfirm;
 

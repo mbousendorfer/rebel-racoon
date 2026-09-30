@@ -502,7 +502,7 @@
 .ins-chart__name {
   margin: 0;
   padding-bottom: var(--ref-spacing-xxs);
-  border-bottom: 1px solid var(--sys-border-color-default);
+  border-bottom: 1px solid var(--app-border);
   font-size: var(--sys-text-style-h4-size);
   line-height: var(--sys-text-style-h4-line-height);
   font-weight: var(--sys-text-style-h4-weight);

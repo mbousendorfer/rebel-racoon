@@ -37,7 +37,7 @@
 }
 
 .content-workspace__search .ap-icon-search {
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 .content-workspace__toolbar-right {
@@ -56,7 +56,7 @@
 }
 
 .content-workspace__view-tabs .ap-tabs-nav {
-  border-bottom: 1px solid var(--app-border-soft);
+  border-bottom: 1px solid var(--app-border);
 }
 
 .content-workspace__body {
@@ -80,7 +80,7 @@
   align-items: center;
   gap: var(--ref-spacing-xs);
   padding: var(--ref-spacing-xs);
-  border: 1px solid var(--ref-color-grey-10);
+  border: 1px solid var(--app-border);
   border-radius: var(--ref-border-radius-md);
   background: var(--ref-color-white);
 }
@@ -275,7 +275,7 @@
   gap: var(--ref-spacing-xxs);
   padding: var(--ref-spacing-sm) var(--ref-spacing-xs);
   background: var(--ref-color-white);
-  border: 1px solid var(--ref-color-grey-10);
+  border: 1px solid var(--app-border);
   border-radius: var(--ref-border-radius-md);
 }
 
@@ -353,7 +353,7 @@
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);
   font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
   margin-right: auto;
   padding-left: var(--ref-spacing-xxs);
 }
@@ -449,10 +449,6 @@
   flex-direction: column;
   gap: var(--ref-spacing-xxs);
   padding: var(--ref-spacing-xs);
-}
-
-.idea-card__source-info[hidden] {
-  display: none;
 }
 
 .idea-card__source-info-label {
@@ -555,10 +551,6 @@
   z-index: var(--app-z-content);
 }
 
-.ap-action-dropdown.idea-card__more-menu[hidden] {
-  display: none;
-}
-
 /* Draft Post button while a draft is being generated (1.5–2s thinking
    chip → posts created). Visually de-emphasizes the button and prevents
    double-clicks. The actual disabled attr is set in the click handler. */
@@ -622,7 +614,7 @@
 
 .content-workspace__bulk-count {
   font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--ref-color-electric-blue-150);
+  color: var(--ref-color-grey-100);
 }
 
 .content-workspace__bulk-actions {
@@ -681,10 +673,6 @@
   min-width: 200px;
   width: auto;
   z-index: var(--app-z-content);
-}
-
-.ap-action-dropdown.source-card__more-menu[hidden] {
-  display: none;
 }
 
 /* ---- Selection checkbox + highlight on idea cards (mirrors source-card) */

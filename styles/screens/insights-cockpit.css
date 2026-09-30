@@ -17,7 +17,7 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-  border-right: 1px solid var(--app-border-soft);
+  border-right: 1px solid var(--app-border);
   background: var(--app-surface);
 }
 
@@ -118,7 +118,7 @@
 
 .ins-cockpit-rail__foot {
   padding: var(--ref-spacing-xs) var(--ref-spacing-md);
-  border-top: 1px solid var(--sys-border-color-default);
+  border-top: 1px solid var(--app-border);
   font-size: var(--ref-font-size-xs);
   line-height: var(--ref-font-line-height-xs);
 }
@@ -209,7 +209,7 @@
 
 .ins-cockpit-readout > * + * {
   padding-left: var(--ref-spacing-md);
-  border-left: 1px solid var(--sys-border-color-default);
+  border-left: 1px solid var(--app-border);
 }
 
 /* ── Cards ──────────────────────────────────────────────────────────────── */
@@ -270,7 +270,7 @@
   .ins-cockpit-readout > *:first-child {
     grid-column: 1 / -1;
     padding-bottom: var(--ref-spacing-sm);
-    border-bottom: 1px solid var(--sys-border-color-default);
+    border-bottom: 1px solid var(--app-border);
   }
   .ins-cockpit-readout > *:nth-child(2) {
     padding-left: 0;
@@ -288,7 +288,7 @@
   }
   .ins-cockpit-rail {
     border-right: 0;
-    border-bottom: 1px solid var(--sys-border-color-default);
+    border-bottom: 1px solid var(--app-border);
   }
   .ins-cockpit-rail__list {
     flex-direction: row;

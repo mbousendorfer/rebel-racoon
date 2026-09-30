@@ -8,7 +8,7 @@
 
 .app-right-panel {
   background: var(--ref-color-white);
-  border-left: 1px solid var(--app-border-soft);
+  border-left: 1px solid var(--app-border);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -37,10 +37,6 @@
 .app-right-panel__resize:hover,
 .app-right-panel__resize:active {
   background: var(--ref-color-electric-blue-100);
-}
-
-.app-right-panel[hidden] {
-  display: none;
 }
 
 /* ── Body ─────────────────────────────────────────────────────────── */
@@ -123,7 +119,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xs);
-  border-bottom: 1px solid var(--app-border-soft);
+  border-bottom: 1px solid var(--app-border);
 }
 
 .rpanel-ideas__filters {
@@ -162,7 +158,7 @@
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   font-weight: var(--sys-text-style-caption-weight);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 /* ── Idea card — content + Why panel + actions ──────────────────────
@@ -183,7 +179,6 @@
   border: 1px solid var(--app-border);
   border-radius: var(--app-radius-card);
   /* Shared card elevation — every right-panel card uses --app-shadow-low. */
-  box-shadow: var(--app-shadow-low);
   display: flex;
   flex-direction: column;
   /* Cap the card width so idea / clip cards don't sprawl edge-to-edge on a
@@ -195,7 +190,7 @@
 }
 
 .rpanel-ideas__card:hover {
-  border-color: var(--ref-color-grey-40);
+  border-color: var(--ref-color-electric-blue-100);
 }
 
 /* Pulse highlight applied when the user clicks a composer pill's
@@ -349,13 +344,6 @@
   gap: var(--ref-spacing-xxs);
 }
 
-/* Re-assert the UA [hidden] behaviour — display: flex on the rule
-   above would otherwise win the specificity battle against the
-   browser's default `[hidden] { display: none }`. */
-.rpanel-ideas__why-body[hidden] {
-  display: none;
-}
-
 .rpanel-ideas__why-rationale {
   margin: 0;
   font-size: var(--sys-text-style-caption-size);
@@ -477,7 +465,7 @@
   gap: var(--ref-spacing-sm);
   /* Flush header, matching the Ideas tabs row's horizontal inset. */
   padding: 0 var(--ref-spacing-sm);
-  border-bottom: 1px solid var(--app-border-soft);
+  border-bottom: 1px solid var(--app-border);
 }
 
 /* DS .ap-tabs (and its nav) are width:100% by default; shrink-wrap them
@@ -571,7 +559,7 @@
   gap: var(--ref-spacing-xs);
   /* Full-width hairline so the section header reads as separate from the
      cards below; full-bleed band needs no corner radius. */
-  border-bottom: 1px solid var(--app-border-soft);
+  border-bottom: 1px solid var(--app-border);
   background: var(--app-surface);
   cursor: pointer;
   transition: background 120ms ease;
@@ -620,7 +608,7 @@
 .rpanel-drafts__group-count {
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
   white-space: nowrap;
 }
 
@@ -660,7 +648,7 @@
   flex-direction: row;
   align-items: center;
   padding: 0 var(--ref-spacing-sm);
-  border-bottom: 1px solid var(--ref-color-grey-10);
+  border-bottom: 1px solid var(--app-border);
   background: var(--ref-color-white);
 }
 
@@ -746,7 +734,7 @@
   align-items: center;
   gap: var(--ref-spacing-sm);
   padding-bottom: var(--ref-spacing-xs);
-  border-bottom: 1px solid var(--ref-color-grey-10);
+  border-bottom: 1px solid var(--app-border);
 }
 
 /* Text block fills the row so the Attach button + close group on the right,
@@ -810,7 +798,6 @@
   padding: var(--ref-spacing-xs);
   border: 1px solid var(--app-border);
   border-radius: var(--app-radius-card);
-  box-shadow: var(--app-shadow-low);
   background: var(--ref-color-white);
 }
 
@@ -872,7 +859,7 @@
 .rpanel-sources__row-preview {
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -926,10 +913,6 @@
   min-width: 200px;
   width: auto;
   z-index: var(--app-z-content);
-}
-
-.ap-action-dropdown.rpanel-sources__more-menu[hidden] {
-  display: none;
 }
 
 /* Ideas produced by this source — flat links into the Ideas tab, styled
@@ -992,13 +975,13 @@
   line-height: var(--sys-text-style-caption-line-height);
   font-weight: var(--sys-text-style-caption-weight);
   text-transform: lowercase;
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 .rpanel-sources__idea-chevron {
   flex-shrink: 0;
   font-size: var(--sys-icon-css-sm);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 /* Hover/focus → the whole row picks up the electric-blue accent, matching

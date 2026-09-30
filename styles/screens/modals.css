@@ -25,14 +25,6 @@
   }
 }
 
-/* `.ap-status { display: flex }` wins over the browser's default
- * `[hidden] { display: none }` rule via specificity. Force it back so
- * `hidden`-toggling status pills (Auto-captured / Capturing…) actually hide. */
-.bug-report-modal [hidden],
-.feedback-modal [hidden] {
-  display: none !important;
-}
-
 body.has-modal {
   overflow: hidden;
 }
@@ -65,7 +57,7 @@ body.has-modal {
   display: none;
   z-index: var(--app-z-modal);
   max-height: calc(100vh - 48px);
-  border: 1px solid var(--sys-border-color-default);
+  border: 1px solid var(--app-border);
   box-shadow: var(--app-shadow-popover-lg);
 }
 
@@ -170,7 +162,7 @@ body.has-modal {
 }
 
 .analyze-profiles-modal__search .ap-icon-search {
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 .analyze-profiles-modal__list,
@@ -201,7 +193,7 @@ body.has-modal {
 
 .analyze-profiles-modal__row:hover:not(.is-disabled),
 .connect-account-modal__row:hover {
-  border-color: var(--ref-color-grey-40);
+  border-color: var(--ref-color-electric-blue-100);
 }
 
 .analyze-profiles-modal__row:has(input:checked),
@@ -238,20 +230,20 @@ body.has-modal {
 
 .analyze-profiles-modal__caption {
   font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 .analyze-profiles-modal__note {
   flex-shrink: 0;
   font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-40);
+  color: var(--ref-color-grey-80);
 }
 
 .analyze-profiles-modal__empty,
 .connect-account-modal__empty {
   margin: 0;
   font-size: var(--sys-text-style-body-size);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 .analyze-profiles-modal__warn {
@@ -288,24 +280,18 @@ body.has-modal {
   color: var(--ref-color-grey-80);
 }
 
-/* The dropzone itself is now the shared `.ap-dropzone` (ds-patches.css).
- * Only the selected-file chip styling stays modal-specific. */
-.fill-document-modal__file[hidden] {
-  display: none;
-}
-
 .fill-document-modal__file {
   display: flex;
   align-items: center;
   gap: var(--ref-spacing-sm);
   padding: var(--ref-spacing-sm) var(--ref-spacing-md);
-  border: 1px solid var(--app-border-soft);
+  border: 1px solid var(--app-border);
   border-radius: var(--ref-border-radius-md);
 }
 
 .fill-document-modal__file > i {
   font-size: var(--sys-icon-css-md);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 .fill-document-modal__file-name {
@@ -329,7 +315,7 @@ body.has-modal {
   border: 0;
   border-radius: var(--app-radius-lg);
   background: transparent;
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
   cursor: pointer;
 }
 
@@ -343,7 +329,7 @@ body.has-modal {
   align-items: center;
   gap: var(--ref-spacing-sm);
   font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-40);
+  color: var(--ref-color-grey-80);
 }
 
 .fill-document-modal__or::before,
@@ -351,7 +337,7 @@ body.has-modal {
   content: "";
   flex: 1;
   height: 1px;
-  background: var(--app-border-soft);
+  background: var(--app-border);
 }
 
 .fill-document-modal__warn {
@@ -390,7 +376,7 @@ body.has-modal {
 
 .search-modal__header {
   padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
-  border-bottom: 1px solid var(--app-border-soft);
+  border-bottom: 1px solid var(--app-border);
 }
 
 .search-modal__input-row {
@@ -400,7 +386,7 @@ body.has-modal {
 }
 
 .search-modal__input-icon {
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
   font-size: var(--sys-icon-css-sm);
   flex-shrink: 0;
 }
@@ -432,7 +418,7 @@ body.has-modal {
   padding: 0 var(--ref-spacing-xxxs);
   border-radius: var(--app-radius-sm);
   background: var(--ref-color-grey-05);
-  border: 1px solid var(--app-border-soft);
+  border: 1px solid var(--app-border);
   font-family: inherit;
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);
@@ -447,7 +433,7 @@ body.has-modal {
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);
   font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 .search-modal__group-heading:first-child {
@@ -515,7 +501,7 @@ body.has-modal {
   padding: 0 var(--ref-spacing-xxxs);
   border-radius: var(--app-radius-sm);
   background: var(--ref-color-white);
-  border: 1px solid var(--app-border-soft);
+  border: 1px solid var(--app-border);
   font-family: inherit;
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
@@ -532,7 +518,7 @@ body.has-modal {
   font-size: var(--sys-text-style-body-size);
   line-height: var(--sys-text-style-body-line-height);
   font-weight: var(--sys-text-style-body-weight);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 .shortcut-legend {
@@ -740,7 +726,7 @@ body.has-modal {
   border-radius: var(--ref-border-radius-md);
   padding: var(--ref-spacing-md);
   text-align: center;
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   font-weight: var(--sys-text-style-caption-weight);
@@ -765,7 +751,7 @@ body.has-modal {
   height: 52px;
   object-fit: cover;
   border-radius: var(--ref-border-radius-sm);
-  border: 1px solid var(--sys-border-color-default);
+  border: 1px solid var(--app-border);
   flex-shrink: 0;
 }
 
@@ -800,7 +786,7 @@ body.has-modal {
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);
   font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-grey-40);
+  color: var(--ref-color-grey-80);
   margin-right: 2px;
 }
 
@@ -810,7 +796,7 @@ body.has-modal {
   padding: var(--ref-spacing-xxxs) var(--ref-spacing-xxs);
   border-radius: var(--ref-border-radius-sm);
   background: var(--ref-color-white);
-  border: 1px solid var(--sys-border-color-default);
+  border: 1px solid var(--app-border);
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   font-weight: var(--sys-text-style-caption-weight);
@@ -991,7 +977,7 @@ body.has-modal {
   align-items: center;
   gap: var(--ref-spacing-md);
   padding: var(--ref-spacing-xs) 0;
-  border-top: 1px solid var(--app-border-soft);
+  border-top: 1px solid var(--app-border);
 }
 
 .shortcut-legend__row:first-child {
@@ -1021,7 +1007,7 @@ body.has-modal {
   align-items: center;
   padding: var(--ref-spacing-xxxs) var(--ref-spacing-xxs);
   background: var(--ref-color-white);
-  border: 1px solid var(--app-border-soft);
+  border: 1px solid var(--app-border);
   border-bottom-width: 2px;
   border-radius: var(--app-radius-sm);
   font-family: inherit;
@@ -1053,9 +1039,6 @@ body.has-modal {
 .save-folder-modal__field {
   margin-top: calc(-1 * var(--ref-spacing-xxs));
 }
-.save-folder-modal__field[hidden] {
-  display: none;
-}
 
 /* The folder picker is a real dropdown: a .ap-select trigger (collapsed
    field) that opens the DS Selection Dropdown as a popover below it. The
@@ -1084,12 +1067,6 @@ body.has-modal {
   max-height: min(320px, 30vh);
 }
 
-/* The DS footer sets display:flex, which would beat the [hidden] attribute —
-   restore hide-when-hidden for the conditional "create" footer. */
-.save-folder-modal__dropdown .ap-selection-dropdown-footer[hidden] {
-  display: none;
-}
-
 /* Folder row mirrors the DS item: leading checkbox + name (no icon), with
    the draft count trailing. The DS item rule flexes every span — pin the
    checkbox + count and let the name take the room. */
@@ -1108,7 +1085,7 @@ body.has-modal {
 }
 .save-folder-modal__count {
   flex: 0 0 auto;
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
   font-size: var(--sys-text-style-caption-size);
 }
 
@@ -1366,7 +1343,7 @@ body.has-modal {
 }
 .share-playbook-modal__fold-glyph {
   font-size: var(--sys-icon-css-sm);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
   text-align: center;
 }
 .share-playbook-modal__fold-label {
@@ -1379,7 +1356,7 @@ body.has-modal {
 .share-playbook-modal__fold-chevron {
   flex: 0 0 auto;
   font-size: var(--sys-icon-css-sm);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
   transition: transform var(--ref-animation-short) ease;
 }
 .share-playbook-modal__fold[open] > summary > .share-playbook-modal__fold-chevron {
@@ -1437,7 +1414,7 @@ body.has-modal {
   flex: 0 0 auto;
   padding: var(--ref-spacing-md);
   padding-right: var(--ref-spacing-xl);
-  border-bottom: 1px solid var(--app-border-soft);
+  border-bottom: 1px solid var(--app-border);
 }
 
 /* On the article view the body IS the two-column split: no padding of its own
@@ -1693,10 +1670,6 @@ body.has-modal {
 
 .skip-connect__other {
   margin-top: var(--ref-spacing-xs);
-}
-
-.skip-connect__other[hidden] {
-  display: none;
 }
 
 .skip-connect__note {

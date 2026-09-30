@@ -344,7 +344,7 @@
   margin-top: var(--topic-group-offset);
   max-height: calc(100% - var(--topic-group-offset));
   background: var(--app-surface);
-  border: 1px solid var(--app-border-soft);
+  border: 1px solid var(--app-border);
   border-radius: var(--app-radius-card);
   overflow: hidden;
 }
@@ -363,7 +363,7 @@
 .topics-view__pane-head {
   flex: 0 0 auto;
   padding: var(--ref-spacing-sm) var(--ref-spacing-md);
-  border-bottom: 1px solid var(--app-border-soft);
+  border-bottom: 1px solid var(--app-border);
 }
 
 .topics-view__pane-body {
@@ -450,7 +450,7 @@
   padding: var(--ref-spacing-xs) var(--ref-spacing-sm) var(--ref-spacing-sm);
   /* The REAL card's frame and radius, so nothing shifts when the Topic lands. */
   background: var(--app-surface);
-  border: 1px solid var(--app-border-soft);
+  border: 1px solid var(--app-border);
   border-radius: var(--app-radius-card);
 }
 
@@ -542,7 +542,7 @@
     flex: 0 0 auto;
     width: 100%;
     border-right: 0;
-    border-bottom: 1px solid var(--app-border-soft);
+    border-bottom: 1px solid var(--app-border);
   }
 
   .topics-view__list,
@@ -927,7 +927,7 @@
   flex-direction: column;
   gap: var(--ref-spacing-xxxs);
   padding-top: var(--ref-spacing-xs);
-  border-top: 1px solid var(--app-border-soft);
+  border-top: 1px solid var(--app-border);
 }
 
 /* The <h3> carries no type of its own any more — `.ap-link standalone` on the
@@ -1211,7 +1211,7 @@
   /* A grey-05 band, not white: it reads as a distinct footer rail — and, when
      stuck, covers the scrolling prose behind it. */
   background: var(--app-surface-subtle);
-  border-top: 1px solid var(--app-border-soft);
+  border-top: 1px solid var(--app-border);
 }
 
 /* "Contributing posts N" — the disclosure toggle on the LEFT of the bar (the DS

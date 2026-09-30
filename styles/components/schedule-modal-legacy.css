@@ -218,7 +218,7 @@
   align-items: center;
   gap: var(--ref-spacing-sm);
   padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
-  border: 1px solid var(--app-border-soft);
+  border: 1px solid var(--app-border);
   border-radius: var(--app-radius-card);
   background: var(--app-surface);
 }
@@ -242,7 +242,7 @@
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   font-weight: var(--sys-text-style-caption-weight);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -355,7 +355,7 @@
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);
   font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 .schedule-modal-legacy__cal-grid {
@@ -469,7 +469,7 @@
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   font-weight: var(--sys-text-style-caption-weight);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 .schedule-modal-legacy__cal-legend-item {
@@ -499,7 +499,7 @@
 
 .schedule-modal-legacy__day-list {
   padding-top: var(--ref-spacing-xs);
-  border-top: 1px dashed var(--app-border-soft);
+  border-top: 1px dashed var(--app-border);
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xxs);
@@ -520,14 +520,14 @@
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   font-weight: var(--sys-text-style-caption-weight);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 .schedule-modal-legacy__day-list-empty {
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   font-weight: var(--sys-text-style-caption-weight);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
   padding: var(--ref-spacing-xs);
   background: var(--ref-color-grey-10);
   border-radius: var(--ref-border-radius-sm);
@@ -549,7 +549,7 @@
   gap: var(--ref-spacing-xxs);
   padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
   background: var(--app-surface);
-  border: 1px solid var(--app-border-soft);
+  border: 1px solid var(--app-border);
   border-radius: var(--ref-border-radius-sm);
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
@@ -592,7 +592,7 @@
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   font-weight: var(--sys-text-style-caption-weight);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 /* Inline error infobox shown at the top of the body when the confirm
@@ -627,7 +627,7 @@
   }
   .schedule-modal-legacy__right {
     border-left: 0;
-    border-top: 1px solid var(--app-border-soft);
+    border-top: 1px solid var(--app-border);
     padding-left: 0;
     padding-top: var(--ref-spacing-md);
   }

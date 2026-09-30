@@ -21,10 +21,10 @@
 // dismissal is ours to wire: events.js takes Escape in capture, before the
 // studio's own document-level Escape-to-close sees it.
 
-import { escapeHtml } from "../../utils.js?v=1405";
-import { showToast } from "../toast.js?v=1405";
-import { KEY } from "./context.js?v=1405";
-import * as imageStudio from "../../image-studio.js?v=1405";
+import { escapeHtml } from "../../utils.js?v=1406";
+import { showToast } from "../toast.js?v=1406";
+import { KEY } from "./context.js?v=1406";
+import * as imageStudio from "../../image-studio.js?v=1406";
 
 // What each guarded setting is called in the sentence, so the dialog names the
 // thing the user just clicked rather than saying "a setting".
@@ -73,12 +73,10 @@ export function promptGuardDialog(st) {
         </label>
       </div>
       <div class="ap-dialog-footer">
-        <div class="ap-dialog-footer-left">
-          <button type="button" class="ap-button stroked grey" data-img-guard-cancel>
+        <div class="ap-dialog-footer-right">
+          <button type="button" class="ap-button ghost grey" data-img-guard-cancel>
             <span>Cancel</span>
           </button>
-        </div>
-        <div class="ap-dialog-footer-right">
           <button type="button" class="ap-button primary orange" data-img-guard-confirm>
             <i class="ap-icon-sparkles-mermaid" aria-hidden="true"></i><span>${escapeHtml(copy.cta)}</span>
           </button>

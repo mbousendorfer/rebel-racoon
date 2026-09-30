@@ -9,8 +9,11 @@
   --app-bg: var(--ref-color-grey-bg);
   --app-surface: var(--ref-color-white);
   --app-surface-subtle: var(--ref-color-grey-05);
+  /* EVERY border, divider and hairline — the house rule (design-guidelines):
+     grey-20, never grey-10 (#EAECEF, what --sys-border-color-default resolves
+     to: it reads as no border) and never grey-40 (reads as a drawn line). There
+     is no "soft" border: --app-border-soft (grey-10) was folded in here. */
   --app-border: var(--ref-color-grey-20);
-  --app-border-soft: var(--ref-color-grey-10);
 
   /* ── The app's content measure ─────────────────────────────────────────
      ONE number for every full-width page. It is the PLAYBOOK fiche's measure

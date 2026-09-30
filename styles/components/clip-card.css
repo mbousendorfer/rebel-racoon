@@ -260,7 +260,3 @@
   min-width: 180px;
   width: auto;
 }
-
-.ap-action-dropdown.clip-card__more-menu[hidden] {
-  display: none;
-}

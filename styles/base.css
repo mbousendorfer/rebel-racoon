@@ -2,6 +2,15 @@
   box-sizing: border-box;
 }
 
+/* `hidden` always wins. DS classes set `display: flex` / `grid` (the action
+   dropdown, form messages, the dropzone…), which beats the UA's
+   `[hidden] { display: none }` on specificity — so toggling the attribute
+   silently did nothing, and 27 per-class `X[hidden] { display: none }`
+   patches had grown to compensate. One rule replaces them. */
+[hidden] {
+  display: none !important;
+}
+
 html,
 body {
   margin: 0;

@@ -36,7 +36,7 @@
   gap: var(--ref-spacing-xxs);
   padding: var(--ref-spacing-xs);
   background: var(--app-surface);
-  border: 1px solid var(--app-border-soft);
+  border: 1px solid var(--app-border);
   border-radius: var(--app-radius-md);
   text-align: left;
   font-family: inherit;
@@ -70,7 +70,7 @@
   place-items: center;
   border-radius: var(--app-radius-sm);
   background: color-mix(in srgb, var(--app-surface) 82%, transparent);
-  border: 1px solid var(--app-border-soft);
+  border: 1px solid var(--app-border);
   color: var(--sys-text-color-light);
   font-size: 11px;
   line-height: 1;
@@ -152,7 +152,7 @@
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: 1;
   font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-electric-blue-150);
+  color: var(--ref-color-grey-100);
   font-variant-numeric: tabular-nums;
   pointer-events: none;
 }

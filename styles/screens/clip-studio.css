@@ -46,7 +46,7 @@
   font-size: var(--sys-text-style-subtitle-size);
   line-height: var(--sys-text-style-subtitle-line-height);
   font-weight: var(--sys-text-style-subtitle-weight);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 .clip-studio__ai-badge {
@@ -172,7 +172,7 @@
   align-items: center;
   gap: var(--ref-spacing-sm);
   width: 100%;
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   font-weight: var(--sys-text-style-caption-weight);
@@ -260,7 +260,7 @@
 .clip-studio__seg-rec {
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);
-  color: var(--ref-color-electric-blue-150);
+  color: var(--ref-color-grey-100);
   font-weight: var(--sys-text-style-caption-bold-weight);
 }
 
@@ -284,7 +284,7 @@
   transition: border-color var(--ref-animation-short) var(--app-ease-standard);
 }
 .clip-studio__cap-card:hover {
-  border-color: var(--ref-color-grey-40);
+  border-color: var(--ref-color-electric-blue-100);
 }
 .clip-studio__cap-card.is-on {
   border-color: var(--ref-color-electric-blue-100);
@@ -301,7 +301,7 @@
   padding: 0 var(--ref-spacing-xxs);
 }
 .clip-studio__cap-none {
-  color: var(--ref-color-grey-40);
+  color: var(--ref-color-grey-80);
 }
 .clip-studio__cap-none i {
   font-size: var(--sys-icon-css-md);
@@ -349,7 +349,7 @@
   border: 1px solid var(--app-border);
   border-radius: var(--app-radius-md);
   background: var(--ref-color-white);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
   font-family: inherit;
   cursor: pointer;
   text-align: left;
@@ -358,7 +358,7 @@
     background var(--ref-animation-short) var(--app-ease-standard);
 }
 .clip-studio__fmtcard:hover {
-  border-color: var(--ref-color-grey-40);
+  border-color: var(--ref-color-electric-blue-100);
 }
 .clip-studio__fmtcard.is-on {
   border-color: var(--ref-color-electric-blue-100);
@@ -403,7 +403,7 @@
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   font-weight: var(--sys-text-style-caption-weight);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 .clip-studio__fmtcard-nets {
   display: inline-flex;
@@ -821,7 +821,7 @@
   margin-top: var(--ref-spacing-sm);
 }
 .clip-studio__profile-search .ap-icon-search {
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 .clip-studio__profiles {
   display: flex;

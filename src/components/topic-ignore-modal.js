@@ -23,9 +23,9 @@
 // destroyed and red would flag a danger that is not there. The primary slot is
 // deliberately empty — there is no action here worth spotlighting.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1405";
-import { escapeHtml } from "../utils.js?v=1405";
-import { getTopicById, topicTitle } from "../topics-store.js?v=1405";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1406";
+import { escapeHtml } from "../utils.js?v=1406";
+import { getTopicById, topicTitle } from "../topics-store.js?v=1406";
 
 const MODAL_ID = "topic-ignore";
 
@@ -74,7 +74,7 @@ const HTML = `
   </div>
   <div class="ap-dialog-footer">
     <div class="ap-dialog-footer-right">
-      <button type="button" class="ap-button transparent grey" id="topicIgnoreCancel">Cancel</button>
+      <button type="button" class="ap-button ghost grey" id="topicIgnoreCancel">Cancel</button>
       <button type="button" class="ap-button stroked grey" id="topicIgnoreSubmit">
         <i class="ap-icon-eye-off"></i><span>Ignore</span>
       </button>

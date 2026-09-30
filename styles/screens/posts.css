@@ -110,7 +110,6 @@
   gap: var(--ref-spacing-sm);
   min-width: 0;
   border-color: var(--ref-color-grey-20);
-  box-shadow: var(--app-shadow-low);
 }
 
 .posts__card-header {
@@ -685,7 +684,7 @@
   aspect-ratio: 4 / 3;
   object-fit: cover;
   border-radius: var(--app-radius-md);
-  border: 1px solid var(--app-border-soft);
+  border: 1px solid var(--app-border);
 }
 
 /* Engagement */
@@ -695,8 +694,8 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--ref-spacing-xxs) 0;
-  border-top: 1px solid var(--app-border-soft);
-  border-bottom: 1px solid var(--app-border-soft);
+  border-top: 1px solid var(--app-border);
+  border-bottom: 1px solid var(--app-border);
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   font-weight: var(--sys-text-style-caption-weight);
@@ -975,10 +974,6 @@
   top: 0;
   right: calc(100% + var(--ref-spacing-xxs));
   z-index: 20;
-}
-
-.posts__rewrite-menu[hidden] {
-  display: none;
 }
 
 /* ── The draft as a picture: the Image Generator's "In feed" view ─────────

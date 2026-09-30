@@ -42,13 +42,6 @@
 }
 
 /* ── Reason panel (revealed on a thumbs-down) ─────────────────────────── */
-/* `display: flex` would override the UA [hidden] rule, so the panel must
-   re-assert display:none while hidden — otherwise it shows on first paint
-   before any thumbs-down. */
-.fb__panel[hidden] {
-  display: none;
-}
-
 .fb__panel {
   display: flex;
   flex-direction: column;

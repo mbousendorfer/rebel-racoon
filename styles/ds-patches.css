@@ -180,30 +180,6 @@
   }
 }
 
-/* Danger CTA — confirm-modal opens with .danger=true. The DS doesn't
-   ship a .ap-button.danger variant, so this patch synthesises one from
-   the DS red palette. */
-.ap-button.danger {
-  background: var(--ref-color-red-100);
-  color: var(--ref-color-white);
-  border-color: var(--ref-color-red-100);
-}
-
-.ap-button.danger:hover {
-  background: var(--ref-color-red-150, var(--ref-color-red-100));
-  border-color: var(--ref-color-red-150, var(--ref-color-red-100));
-}
-
-.ap-button.stroked.danger {
-  background: transparent;
-  color: var(--ref-color-red-100);
-  border-color: var(--ref-color-red-100);
-}
-
-.ap-button.stroked.danger:hover {
-  background: var(--ref-color-red-05, rgba(220, 38, 38, 0.05));
-}
-
 /* The DS .ap-link assumes an <a>. Buttons styled as links need their
    user-agent chrome (border / background / padding) reset so the
    link text renders without the native button box leaking through.
@@ -288,7 +264,7 @@ button.ap-link {
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);
   font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
   font-variant-numeric: tabular-nums;
 }
 .ap-filter-chip[aria-pressed="true"] .ap-filter-chip-count {
@@ -297,14 +273,6 @@ button.ap-link {
 .ap-filter-chip:disabled .ap-filter-chip-count,
 .ap-filter-chip[aria-disabled="true"] .ap-filter-chip-count {
   color: var(--ref-color-grey-40);
-}
-
-/* `.ap-form-message` sets `display: flex`, which beats the UA `[hidden] {
- * display: none }` rule via specificity — so toggling the `hidden` attribute
- * to show/hide a field message in place (no re-render) would never hide it.
- * Restore the guard. */
-.ap-form-message[hidden] {
-  display: none;
 }
 
 /* `.ap-dropzone` — the shared "drop a file / browse" box. The DS has no
@@ -340,12 +308,6 @@ button.ap-link {
   border-color: var(--ref-color-electric-blue-100);
   background: var(--ref-color-electric-blue-10);
   transform: scale(1.01);
-  box-shadow: var(--app-shadow-popover-md);
-}
-/* `display: flex` beats the UA `[hidden] { display: none }` — restore it
- * so callers can toggle the dropzone hidden (e.g. swapping to a file chip). */
-.ap-dropzone[hidden] {
-  display: none;
 }
 /* Icon sits in a soft blue tile (the most prominent of the old dropzones,
  * promoted here as the shared treatment). */
@@ -376,7 +338,7 @@ button.ap-link {
 }
 .ap-dropzone__sub {
   font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 /* Compact — tight spaces, e.g. the bug-report box beside the screenshot. */
 .ap-dropzone--compact {
@@ -624,7 +586,7 @@ button.ap-link {
 
 /* The surface stays white; only the border and the content pale out. */
 .ap-segmented-control__segment:disabled {
-  border-color: var(--sys-border-color-default);
+  border-color: var(--app-border);
   color: var(--ref-color-grey-40);
   cursor: not-allowed;
 }
@@ -658,7 +620,7 @@ button.ap-link {
    The component's SCSS uses a --sys-color-* family that is NOT published yet
    (absent from ui-theme 22.0.17). Each line below carries
    the closest value on the ladder we do have:
-     color-border-default            #DFE3E8 → --sys-border-color-default #EAECEF
+     color-border-default            #DFE3E8 → grey-20  #D6DAE0 (house rule)
      color-text-interactive-default  #344563 → --sys-text-color-default (exact)
      color-text-interactive-disabled #C0C8D1 → grey-40  #AEB5C1
      radius-inner                    4px     → --app-radius-sm (exact)
@@ -688,7 +650,7 @@ button.ap-link {
 
 .ap-filter-dropdown__footer {
   padding: var(--ref-spacing-xxs) var(--ref-spacing-sm);
-  border-top: 1px solid var(--sys-border-color-default);
+  border-top: 1px solid var(--app-border);
 }
 
 .ap-filter-dropdown__footer--apply {
@@ -703,7 +665,7 @@ button.ap-link {
 }
 
 .ap-filter-leaf.with-border-bottom {
-  border-bottom: 1px solid var(--sys-border-color-default);
+  border-bottom: 1px solid var(--app-border);
 }
 
 .ap-filter-leaf__header {

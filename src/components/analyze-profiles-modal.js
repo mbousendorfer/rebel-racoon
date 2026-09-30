@@ -13,14 +13,14 @@
 //     it fires onConfirm(ids) then closes. A warning notes the overwrite.
 //   - Cancel / Esc / backdrop / close-X dismiss without firing.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1405";
-import { escapeHtml as esc } from "../utils.js?v=1405";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1406";
+import { escapeHtml as esc } from "../utils.js?v=1406";
 import {
   getConnectedProfiles,
   NETWORK_ICON_BY_PLATFORM,
   BRAND_INITIALS,
   PROFILE_SEARCH_THRESHOLD,
-} from "../social-profiles.js?v=1405";
+} from "../social-profiles.js?v=1406";
 
 const MODAL_ID = "analyze-profiles";
 
@@ -71,7 +71,7 @@ const HTML = `
   </div>
   <div class="ap-dialog-footer">
     <div class="ap-dialog-footer-right">
-      <button type="button" class="ap-button transparent grey" id="analyzeProfilesCancel">Cancel</button>
+      <button type="button" class="ap-button ghost grey" id="analyzeProfilesCancel">Cancel</button>
       <button type="button" class="ap-button primary orange" id="analyzeProfilesConfirm" disabled>
         <i class="ap-icon-archie-official"></i><span>Analyze &amp; fill</span>
       </button>

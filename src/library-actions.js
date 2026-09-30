@@ -30,11 +30,11 @@
 // underlying state stays in one place. The user-facing toast is fired here
 // (a single shared place for the wording).
 
-import { appendExtractedIdeas, removeIdeasForSources, removeIdeas, getIdeas } from "./library.js?v=1405";
-import { removeSources as streamRemoveSources, getSources as streamGetSources } from "./sources-stream.js?v=1405";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=1405";
-import { showToast } from "./components/toast.js?v=1405";
-import { addMention } from "./composer-mentions.js?v=1405";
+import { appendExtractedIdeas, removeIdeasForSources, removeIdeas, getIdeas } from "./library.js?v=1406";
+import { removeSources as streamRemoveSources, getSources as streamGetSources } from "./sources-stream.js?v=1406";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=1406";
+import { showToast } from "./components/toast.js?v=1406";
+import { addMention } from "./composer-mentions.js?v=1406";
 
 // ── Bulk-bar HTML renderers ──────────────────────────────────────────────
 
@@ -48,11 +48,11 @@ export function renderSourcesBulkBar(count) {
           <i class="ap-icon-archie-official"></i>
           <span>Extract more ideas</span>
         </button>
-        <button type="button" class="ap-button stroked danger" data-bulk-delete>
+        <button type="button" class="ap-button stroked grey" data-bulk-delete>
           <i class="ap-icon-trash"></i>
           <span>Delete</span>
         </button>
-        <button type="button" class="ap-button transparent grey" data-bulk-cancel>Cancel</button>
+        <button type="button" class="ap-button ghost grey" data-bulk-cancel>Cancel</button>
       </div>
     </div>
   `;
@@ -64,11 +64,11 @@ export function renderIdeasBulkBar(count) {
     <div class="content-workspace__bulk-bar" role="region" aria-label="Bulk idea actions">
       <span class="content-workspace__bulk-count">${count} ${noun} selected</span>
       <div class="content-workspace__bulk-actions">
-        <button type="button" class="ap-button stroked danger" data-bulk-idea-delete>
+        <button type="button" class="ap-button stroked grey" data-bulk-idea-delete>
           <i class="ap-icon-trash"></i>
           <span>Delete</span>
         </button>
-        <button type="button" class="ap-button transparent grey" data-bulk-idea-cancel>Cancel</button>
+        <button type="button" class="ap-button ghost grey" data-bulk-idea-cancel>Cancel</button>
       </div>
     </div>
   `;

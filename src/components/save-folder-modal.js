@@ -11,9 +11,9 @@
 //       object = file the drafts into it. New folders are created here
 //       (addFolder via the dropdown's create item) before the callback fires.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1405";
-import { getFolders, addFolder } from "../folders-store.js?v=1405";
-import { escapeHtml } from "../utils.js?v=1405";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1406";
+import { getFolders, addFolder } from "../folders-store.js?v=1406";
+import { escapeHtml } from "../utils.js?v=1406";
 
 const MODAL_ID = "saveFolder";
 
@@ -94,7 +94,7 @@ const HTML = `
   </div>
   <div class="ap-dialog-footer">
     <div class="ap-dialog-footer-right">
-      <button type="button" class="ap-button transparent grey" id="saveFolderCancel">Cancel</button>
+      <button type="button" class="ap-button ghost grey" id="saveFolderCancel">Cancel</button>
       <button type="button" class="ap-button primary blue" id="saveFolderSave">Save</button>
     </div>
   </div>

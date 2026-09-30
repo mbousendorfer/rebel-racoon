@@ -187,7 +187,6 @@
   line-height: var(--sys-text-style-h2-line-height);
   font-weight: var(--sys-text-style-h2-weight);
   letter-spacing: -0.02em;
-  box-shadow: var(--app-shadow-low);
 }
 
 /* The real logo instead of initials: white ground and no brand tint, because the
@@ -259,11 +258,11 @@
 
 .recap__meta-item i {
   font-size: var(--sys-icon-css-sm);
-  color: var(--ref-color-grey-40);
+  color: var(--ref-color-grey-80);
 }
 
 .recap__meta-dim {
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 /* Ownership mark, inline after the Playbook's name — it qualifies the title,
@@ -343,7 +342,7 @@
 
 .recap__nav-link i {
   font-size: var(--sys-icon-css-md);
-  color: var(--ref-color-grey-40);
+  color: var(--ref-color-grey-80);
   transition: color 160ms var(--app-ease-out);
 }
 
@@ -355,7 +354,7 @@
 .recap__nav-link.is-active {
   background: var(--app-surface);
   color: var(--ref-color-grey-100);
-  box-shadow: inset 0 0 0 1px var(--app-border-soft);
+  box-shadow: inset 0 0 0 1px var(--app-border);
 }
 
 .recap__nav-link.is-active i {
@@ -369,7 +368,7 @@
   gap: var(--ref-spacing-sm);
   padding: var(--ref-spacing-md);
   background: var(--app-surface);
-  border: 1px solid var(--app-border-soft);
+  border: 1px solid var(--app-border);
   border-radius: var(--ref-border-radius-md);
 }
 
@@ -382,7 +381,7 @@
 .recap__fact dt {
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 .recap__fact dd {
@@ -427,7 +426,7 @@
   display: flex;
   flex-direction: column;
   background: var(--app-surface);
-  border: 1px solid var(--app-border-soft);
+  border: 1px solid var(--app-border);
   border-radius: var(--ref-border-radius-md);
   scroll-margin-top: var(--ref-spacing-md);
 }
@@ -437,7 +436,7 @@
   align-items: center;
   gap: var(--ref-spacing-sm);
   padding: var(--ref-spacing-md) var(--ref-spacing-lg);
-  border-bottom: 1px solid var(--app-border-soft);
+  border-bottom: 1px solid var(--app-border);
 }
 
 .recap__panel-icon {
@@ -490,7 +489,7 @@
 }
 
 .recap__row + .recap__row {
-  border-top: 1px solid var(--app-border-soft);
+  border-top: 1px solid var(--app-border);
 }
 
 .recap__row-label {
@@ -498,7 +497,7 @@
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-body-line-height);
   font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 .recap__row-value {
@@ -519,7 +518,7 @@
   font-size: var(--sys-text-style-body-size);
   line-height: var(--sys-text-style-body-line-height);
   font-style: italic;
-  color: var(--ref-color-grey-40);
+  color: var(--ref-color-grey-80);
 }
 
 /* ── Edit-mode guidance ───────────────────────────────────────────────── */
@@ -541,7 +540,7 @@
 .recap__field-hint-a {
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 /* Section-level hint banner (Voice & style, Brand) — a subtle "captured by
@@ -551,7 +550,7 @@
   align-items: center;
   gap: var(--ref-spacing-sm);
   padding: var(--ref-spacing-sm) var(--ref-spacing-lg);
-  border-bottom: 1px solid var(--app-border-soft);
+  border-bottom: 1px solid var(--app-border);
   background: var(--app-butter);
 }
 
@@ -586,7 +585,7 @@
   display: flex;
   gap: var(--ref-spacing-xxs);
   padding: var(--ref-spacing-sm) var(--ref-spacing-lg);
-  border-bottom: 1px solid var(--app-border-soft);
+  border-bottom: 1px solid var(--app-border);
 }
 
 .recap__manual {
@@ -734,7 +733,7 @@ button.recap__logotile:hover {
   max-width: 100%;
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
   text-align: center;
   overflow-wrap: anywhere;
 }
@@ -743,7 +742,7 @@ button.recap__logotile:hover {
    state, this just names it once for anyone meeting the gallery for the first
    time. */
 .recap__logotile-tag {
-  color: var(--ref-color-electric-blue-100);
+  color: var(--ref-color-grey-100);
   font-weight: var(--ref-font-weight-bold);
 }
 
@@ -772,7 +771,7 @@ button.recap__logotile:hover {
   align-items: center;
   gap: var(--ref-spacing-xs);
   padding: var(--ref-spacing-xxs) var(--ref-spacing-sm) var(--ref-spacing-xxs) var(--ref-spacing-xxs);
-  border: 1px solid var(--app-border-soft);
+  border: 1px solid var(--app-border);
   border-radius: var(--app-radius-pill);
 }
 
@@ -798,7 +797,7 @@ button.recap__logotile:hover {
 
 .recap__swatch-hex {
   font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
   font-variant-numeric: tabular-nums;
   text-transform: uppercase;
 }
@@ -885,7 +884,6 @@ button.recap__logotile:hover {
 
 .recap__refcard-open:hover {
   border-color: var(--ref-color-electric-blue-100);
-  box-shadow: var(--app-shadow-subtle);
 }
 
 .recap__refcard-open img {
@@ -966,9 +964,7 @@ button.recap__logotile:hover {
 .recap__refedit-flabel {
   font-size: var(--sys-text-style-caption-size);
   font-weight: var(--ref-font-weight-bold);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 /* Compact icon-only network toggles (in the detail modal). */
@@ -1121,7 +1117,7 @@ button.recap__logotile:hover {
   width: 100%;
   height: 100%;
   padding: 0;
-  border: 1px solid var(--ref-color-grey-10);
+  border: 1px solid var(--app-border);
   border-radius: var(--app-radius-sm);
   background: none;
   cursor: pointer;
@@ -1166,7 +1162,7 @@ button.recap__logotile:hover {
   border: 1px dashed var(--ref-color-grey-20);
   border-radius: var(--app-radius-sm);
   background: none;
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
   cursor: pointer;
 }
 
@@ -1179,7 +1175,7 @@ button.recap__logotile:hover {
   width: 28px;
   height: 28px;
   border-radius: var(--app-radius-sm);
-  border: 1px solid var(--ref-color-grey-10);
+  border: 1px solid var(--app-border);
 }
 
 .recap__refmodal-note {
@@ -1192,7 +1188,7 @@ button.recap__logotile:hover {
 .recap__refmodal-empty {
   margin: 0;
   font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
   font-style: italic;
 }
 
@@ -1226,7 +1222,7 @@ button.recap__logotile:hover {
 
 .recap__cmpgroup--suggested {
   padding: var(--ref-spacing-sm);
-  border: 1px solid var(--app-border-soft);
+  border: 1px solid var(--app-border);
   border-radius: var(--app-radius-md);
   background: var(--ref-color-grey-05);
 }
@@ -1245,9 +1241,7 @@ button.recap__logotile:hover {
   font-size: var(--sys-text-style-caption-bold-size);
   font-weight: var(--sys-text-style-caption-bold-weight);
   line-height: var(--sys-text-style-caption-bold-line-height);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 .recap__cmpgroup--suggested .recap__cmpgroup-title > i {
@@ -1264,7 +1258,7 @@ button.recap__logotile:hover {
   margin: 0 0 var(--ref-spacing-xxs);
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 .recap__cmpgroup-act {
@@ -1364,7 +1358,7 @@ button.recap__logotile:hover {
 .recap__cmpcard-domain {
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1382,7 +1376,7 @@ button.recap__logotile:hover {
 }
 
 .recap__cmpcard-desc--empty {
-  color: var(--ref-color-grey-40);
+  color: var(--ref-color-grey-80);
   font-style: italic;
 }
 
@@ -1401,7 +1395,7 @@ button.recap__logotile:hover {
   gap: var(--ref-spacing-xxs);
   font-size: var(--ref-font-size-md);
   line-height: 1;
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 /* Provenance chip — "Archie found this one". */
@@ -1447,7 +1441,7 @@ button.recap__logotile:hover {
   font-size: var(--sys-text-style-body-size);
   line-height: var(--sys-text-style-body-line-height);
   font-style: italic;
-  color: var(--ref-color-grey-40);
+  color: var(--ref-color-grey-80);
 }
 
 .recap__cmp-note {
@@ -1457,7 +1451,7 @@ button.recap__logotile:hover {
   margin: 0;
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 /* Scan in flight — section-scoped, so the rest of the Playbook stays readable. */
@@ -1480,7 +1474,7 @@ button.recap__logotile:hover {
   flex-direction: column;
   gap: var(--ref-spacing-xs);
   padding: var(--ref-spacing-sm);
-  border: 1px solid var(--app-border-soft);
+  border: 1px solid var(--app-border);
   border-radius: var(--app-radius-md);
   background: var(--app-surface);
 }
@@ -1589,7 +1583,7 @@ button.recap__logotile:hover {
 .recap__cmpmodal-empty {
   margin: 0;
   font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
   font-style: italic;
 }
 
@@ -1690,7 +1684,7 @@ button.recap__logotile:hover {
 .recap__type-role {
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 .recap__type-name {
@@ -1781,7 +1775,7 @@ button.recap__logotile:hover {
 
 .recap__look--read .recap__look-label {
   padding-top: 0;
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 /* The picked value — the emphasis of the pair. Same ink as .recap__row-text so it
@@ -1828,8 +1822,6 @@ button.recap__logotile:hover {
   border-radius: var(--app-radius-sm);
   background: var(--ref-color-grey-10);
   font-size: 0.72em;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
   opacity: 0.75;
 }
 
@@ -1842,14 +1834,14 @@ button.recap__logotile:hover {
   flex-wrap: wrap;
   gap: var(--ref-spacing-sm);
   padding: var(--ref-spacing-sm) var(--ref-spacing-lg);
-  border-bottom: 1px solid var(--app-border-soft);
+  border-bottom: 1px solid var(--app-border);
 }
 
 .recap__voice-langs-label {
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);
   font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 /* The chips group tightly, like the segmented mode toggle. */
@@ -1873,7 +1865,7 @@ button.recap__logotile:hover {
   align-items: center;
   gap: var(--ref-spacing-xxs);
   padding: var(--ref-spacing-xxs) var(--ref-spacing-sm);
-  border: 1px solid var(--app-border-soft);
+  border: 1px solid var(--app-border);
   border-radius: var(--app-radius-pill);
   background: var(--app-surface);
   font-size: var(--sys-text-style-body-size);
@@ -1884,7 +1876,7 @@ button.recap__logotile:hover {
 
 .recap__cta i {
   font-size: var(--sys-icon-css-sm);
-  color: var(--ref-color-grey-40);
+  color: var(--ref-color-grey-80);
 }
 
 /* ── Loading sequence — centered Archie loader + staged copy ──────────── */
@@ -2094,10 +2086,10 @@ button.recap__logotile:hover {
   justify-content: center;
   width: 32px;
   height: 32px;
-  border: 1px solid var(--app-border-soft);
+  border: 1px solid var(--app-border);
   border-radius: var(--app-radius-lg);
   background: var(--app-surface);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
   cursor: pointer;
   transition:
     background 160ms var(--app-ease-out),

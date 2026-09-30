@@ -249,7 +249,7 @@
   grid-area: curve;
   min-width: 0;
   padding-top: var(--ref-spacing-sm);
-  border-top: 1px solid var(--sys-border-color-default);
+  border-top: 1px solid var(--app-border);
 }
 
 .ins-mob_index__curve > .ins-chart__node {

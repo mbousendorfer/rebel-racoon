@@ -16,15 +16,11 @@
   background: var(--app-bg);
 }
 
-.conversation-status-column[hidden] {
-  display: none;
-}
-
 /* Floating-card chrome — sits inside the white column with shadow +
    rounded corners so it reads as an info card pinned to the top. */
 .conversation-status-card {
   background: var(--app-surface);
-  border: 1px solid var(--app-border-soft);
+  border: 1px solid var(--app-border);
   border-radius: var(--ref-border-radius-md);
   box-shadow: var(--app-shadow-low);
   overflow: hidden;
@@ -88,7 +84,7 @@
 }
 
 .conversation-status-card__section + .conversation-status-card__section {
-  border-top: 1px solid var(--app-border-soft);
+  border-top: 1px solid var(--app-border);
   padding-top: var(--ref-spacing-xs);
 }
 
@@ -98,7 +94,7 @@
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);
   font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
   display: flex;
   align-items: center;
   gap: var(--ref-spacing-xxs);
@@ -243,10 +239,6 @@
   gap: var(--ref-spacing-xxxs);
 }
 
-.session__composer-mentions[hidden] {
-  display: none;
-}
-
 .composer-mention__label {
   max-width: 220px;
   overflow: hidden;
@@ -273,7 +265,7 @@
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   font-weight: var(--sys-text-style-caption-weight);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
   font-style: italic;
 }
 

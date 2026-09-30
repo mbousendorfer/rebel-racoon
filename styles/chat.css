@@ -366,7 +366,6 @@
   background: var(--ref-color-white);
   border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-card);
-  box-shadow: var(--app-shadow-card);
 }
 
 .connect-card__head {
@@ -386,7 +385,7 @@
   justify-content: center;
   border-radius: var(--app-radius-md);
   background: var(--ref-color-white);
-  border: 1px solid var(--ref-color-grey-10);
+  border: 1px solid var(--app-border);
 }
 
 .connect-card__logo img,
@@ -470,7 +469,7 @@
    bubble's own column-flex + gap-xxs, so no wrapper is needed. */
 .chat-bubble-card {
   background: var(--ref-color-grey-05);
-  border: 1px solid var(--ref-color-grey-10);
+  border: 1px solid var(--app-border);
   border-radius: var(--ref-border-radius-md);
   padding: var(--ref-spacing-xs);
   font-size: var(--sys-text-style-caption-size);
@@ -517,7 +516,7 @@
 .chat-bubble-choices-card {
   margin-top: var(--ref-spacing-xs);
   padding: var(--ref-spacing-sm);
-  border: 1px solid var(--app-border-soft);
+  border: 1px solid var(--app-border);
   border-radius: var(--app-radius-md);
   background: var(--app-surface);
 }
@@ -642,7 +641,7 @@ span.chat-bubble-choice-chip {
   /* Quiet resting surface — mirrors the nested idea cards so the card
      no longer shouts over the surrounding conversation. */
   background: var(--ref-color-grey-05);
-  border-color: var(--ref-color-grey-10);
+  border-color: var(--app-border);
   transition:
     border-color var(--ref-animation-short) var(--app-ease-standard),
     background-color var(--ref-animation-short) var(--app-ease-standard),
@@ -651,10 +650,9 @@ span.chat-bubble-choice-chip {
 
 .drafts-card:hover,
 .drafts-card:focus-visible {
-  /* Clickable-card convention: a light-blue wash on hover/focus (never
-     navy/black) — soft blue fill + a light blue border, not a hard outline. */
-  border-color: var(--ref-color-electric-blue-20);
-  background: var(--ref-color-electric-blue-05);
+  /* The house card hover: a blue border and nothing else — a blue fill reads
+     as SELECTED, not as "you can click this". */
+  border-color: var(--ref-color-electric-blue-100);
   outline: none;
 }
 
@@ -675,7 +673,7 @@ span.chat-bubble-choice-chip {
 
 .drafts-card--pending:hover,
 .drafts-card--unavailable:hover {
-  border-color: var(--ref-color-grey-10);
+  border-color: var(--app-border);
 }
 
 .drafts-card--unavailable {
@@ -823,7 +821,7 @@ span.chat-bubble-choice-chip {
 
 .chat-bubble-choice-preview--default {
   background: transparent;
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
   font-size: var(--sys-text-style-h2-size);
   line-height: var(--sys-text-style-h2-line-height);
   font-weight: var(--sys-text-style-h2-weight);

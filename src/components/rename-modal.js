@@ -15,7 +15,7 @@
 //   - Input is auto-focused + full text selected on open so the user
 //     can immediately overtype or accept.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1405";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1406";
 
 const MODAL_ID = "rename";
 
@@ -51,7 +51,7 @@ const HTML = `
   </div>
   <div class="ap-dialog-footer">
     <div class="ap-dialog-footer-right">
-      <button type="button" class="ap-button transparent grey" id="renameCancel">Cancel</button>
+      <button type="button" class="ap-button ghost grey" id="renameCancel">Cancel</button>
       <button type="button" class="ap-button primary orange" id="renameSave">Save</button>
     </div>
   </div>

@@ -58,7 +58,7 @@
   font-size: var(--sys-text-style-subtitle-size);
   line-height: var(--sys-text-style-subtitle-line-height);
   font-weight: var(--sys-text-style-subtitle-weight);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 .top-posts-board {
@@ -142,7 +142,7 @@
 /* "Source" marker in the repurpose profile picker caption — lifts it out of the
    muted "Network · Kind" prefix so the origin profile reads clearly. */
 .top-posts-source-tag {
-  color: var(--ref-color-electric-blue-150);
+  color: var(--ref-color-grey-100);
   font-weight: var(--sys-text-style-body-bold-weight);
 }
 
@@ -153,7 +153,7 @@
   align-items: center;
   gap: var(--ref-spacing-sm);
   padding: var(--ref-spacing-xxl) 0;
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 .top-posts-loading__label {
@@ -238,7 +238,7 @@
   gap: var(--ref-spacing-xxs);
   padding: var(--ref-spacing-xs);
   background: var(--ref-color-grey-05);
-  border-bottom: 1px solid var(--app-border-soft);
+  border-bottom: 1px solid var(--app-border);
   transition: background-color 160ms ease;
 }
 
@@ -433,7 +433,7 @@
   padding: var(--ref-spacing-xs);
   /* White (like the body); a grey-10 hairline is the only separator between the
      post content and its stats. */
-  border-top: 1px solid var(--app-border-soft);
+  border-top: 1px solid var(--app-border);
 }
 
 /* Metric strip — four equal columns, value stacked over its label, so the
@@ -548,7 +548,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
   font-size: 22px;
   background: linear-gradient(155deg, var(--ref-color-grey-10), var(--ref-color-grey-05));
 }
@@ -669,7 +669,6 @@
   border: 1px solid var(--app-border);
   border-radius: var(--app-radius-card);
   background: var(--app-surface);
-  box-shadow: var(--app-shadow-low);
   overflow: hidden;
 }
 
@@ -697,8 +696,6 @@
   flex-shrink: 0;
   font-size: var(--sys-text-style-caption-size);
   font-weight: var(--sys-text-style-body-bold-weight);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
   color: var(--sys-text-color-light);
 }
 

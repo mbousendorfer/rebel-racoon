@@ -3,7 +3,7 @@
 // toggle its visibility. No persistence — submitting shows a success flash
 // and resets on close.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1405";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1406";
 
 const MODAL_ID = "feedback";
 
@@ -58,7 +58,7 @@ const HTML = `
   </div>
   <div class="ap-dialog-footer">
     <div class="ap-dialog-footer-right">
-      <button type="button" class="ap-button transparent grey" id="cancelFeedbackBtn">Cancel</button>
+      <button type="button" class="ap-button ghost grey" id="cancelFeedbackBtn">Cancel</button>
       <button type="button" class="ap-button primary orange" id="submitFeedbackBtn">Send feedback</button>
     </div>
   </div>
