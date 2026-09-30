@@ -129,15 +129,22 @@
   background: var(--app-bg);
 }
 
-.pb2-tabs .ap-tabs-tab[aria-disabled="true"] {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
 /* ── A section in its tab: its lead sentence instead of a repeated title ── */
 
 .pb2-panel-head {
   justify-content: space-between;
+}
+
+/* In edit, the head carrying Cancel / Save sticks right under the tabs: a long
+ * section (Brand) no longer scrolls its only way out of sight. --pb2-tabs-h is
+ * measured on paint (playbook-view.js). */
+.pb2 .recap__panel.is-editing > .pb2-panel-head {
+  position: sticky;
+  top: var(--pb2-tabs-h, 0px);
+  z-index: 1;
+  background: var(--app-surface);
+  border-top-left-radius: var(--ref-border-radius-md);
+  border-top-right-radius: var(--ref-border-radius-md);
 }
 
 .pb2-panel-lead {

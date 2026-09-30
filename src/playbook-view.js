@@ -14,7 +14,7 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1399";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1400";
 import {
   kitEnabled,
   renderColorRole,
@@ -28,18 +28,19 @@ import {
   handleKitInput,
   handleKitChange,
   kitSnapshot,
-} from "./playbook-brand-kit.js?v=1399";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1399";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1399";
-import { isFlagOn } from "./feature-flags.js?v=1399";
-import { parseHashParams } from "./url-state.js?v=1399";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1399";
+} from "./playbook-brand-kit.js?v=1400";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1400";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1400";
+import { isFlagOn } from "./feature-flags.js?v=1400";
+import { parseHashParams } from "./url-state.js?v=1400";
+import { showToast } from "./components/toast.js?v=1400";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1400";
 // The Default look row offers the SAME three catalogues the Image Studio renders, from
 // the one place they are declared — REF_MODES' own header makes the argument: the label,
 // the hint and the brief clause "drift the moment they live apart". No cycle: the engine
 // imports only clip-formats / image-studio-canvas / feature-flags, and its module body
 // builds consts, so importing it here costs nothing at load.
-import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1399";
+import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1400";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -150,6 +151,7 @@ let cmpScanTimer = null; // the scan's pending timeout
 let cmpScanFoundNone = false; // last scan returned nothing new (show the note)
 let refModalHost = null; // body-level portal node for the open detail modal
 let snapshot = null; // deep copy of editable fields, for Cancel
+let editBaseline = null; // the same fields as JSON once the editor has painted — "anything changed?"
 let audienceCustom = false; // "Other…" picked in the Primary audience dropdown
 let activeVoiceLang = null; // which language the Voice & style panel is showing/editing
 let loadingTimer = null;
@@ -218,8 +220,20 @@ export function mount(target, config) {
   // doesn't bubble, so this listener has to run in the CAPTURE phase — that's
   // what lets us keep the repo's "delegated handlers, no inline on*" rule.
   target.addEventListener("error", onErrorH, true);
+  // A reload can't save (nothing persists across it), so it's the one exit
+  // that still has to ask — only while there is something to lose.
+  const onBeforeUnloadH = (e) => {
+    if (!v2On() || !editScope || !isDirty(cfg.getData())) return;
+    e.preventDefault();
+    e.returnValue = "";
+  };
+  window.addEventListener("beforeunload", onBeforeUnloadH);
 
   return () => {
+    // Leaving the fiche — a chat in the rail, Start a chat, any route — saves
+    // the open section rather than dropping it (Playbook 2.0).
+    if (v2On()) saveOnLeave();
+    window.removeEventListener("beforeunload", onBeforeUnloadH);
     stopLoading();
     stopCompetitorScan();
     detachScrollSpy();
@@ -238,6 +252,7 @@ export function mount(target, config) {
     cfg = null;
     editScope = null;
     snapshot = null;
+    editBaseline = null;
   };
 }
 
@@ -1958,15 +1973,13 @@ function renderHeader2(data) {
 function renderTabs2(data) {
   // Pending suggestions are not part of the Playbook: they are never counted.
   const cmpCount = competitorList(data).filter((c) => !c.suggested).length;
-  const locked = !!editScope;
   return `
     <div class="ap-tabs pb2-tabs">
       <div class="ap-tabs-nav" role="tablist" aria-label="Playbook sections">
         ${TABS.map((t) => {
           const on = t.id === activeTab;
-          const off = locked && !on;
           return `<button type="button" class="ap-tabs-tab${on ? " active" : ""}" role="tab" aria-selected="${on}"
-            data-pb2-tab="${t.id}" ${off ? 'aria-disabled="true" data-tooltip="Save or cancel your changes first"' : ""}>
+            data-pb2-tab="${t.id}">
             <span>${esc(t.title)}</span>
             ${t.id === "competitors" && cmpCount ? `<span class="ap-counter normal grey">${cmpCount}</span>` : ""}
           </button>`;
@@ -2566,6 +2579,9 @@ function paint() {
         </div>
       </section>
     `;
+    // The edit bar sticks right under the tabs, so it needs their height.
+    const tabsEl = mountTarget.querySelector(".pb2-tabs");
+    if (tabsEl) mountTarget.querySelector(".pb2")?.style.setProperty("--pb2-tabs-h", `${tabsEl.offsetHeight}px`);
     portalModal();
     return;
   }
@@ -2787,11 +2803,86 @@ const WRITE_HOOKS = [
   "[data-recap-kit-pair-remove]",
 ].join(",");
 
+// ── Edit lifecycle ───────────────────────────────────────────────────────
+
+function resetEdit() {
+  snapshot = null;
+  editBaseline = null;
+  editScope = null;
+  refModalIndex = null;
+  cmpModalIndex = null;
+  audienceCustom = false;
+}
+
+function isDirty(data) {
+  return !!data && editBaseline !== null && JSON.stringify(snapshotEditable(data)) !== editBaseline;
+}
+
+// Save — tidy what the editor left half-filled, persist, close the section.
+function commitEdit(data) {
+  if (typeof data.name === "string") data.name = data.name.trim();
+  if (Array.isArray(data.ctaLinks)) {
+    data.ctaLinks = data.ctaLinks.filter((c) => (c.label || "").trim() || (c.url || "").trim() || c.suggested);
+  }
+  // Drop empty lines from the flat mirror AND every per-language voice entry.
+  ["signatureHooks", "closingPatterns"].forEach((f) => {
+    if (Array.isArray(data[f])) data[f] = data[f].filter((s) => (s || "").trim());
+  });
+  if (data.voiceByLanguage && typeof data.voiceByLanguage === "object") {
+    Object.values(data.voiceByLanguage).forEach((entry) => {
+      ["signatureHooks", "closingPatterns"].forEach((f) => {
+        if (Array.isArray(entry[f])) entry[f] = entry[f].filter((s) => (s || "").trim());
+      });
+    });
+  }
+  // Drop competitors left completely blank (an "Add competitor" row the user
+  // opened and abandoned) and social rows with no URL. `suggested` is kept:
+  // an unaccepted proposal stays pending across a Save rather than being
+  // silently adopted into the Playbook.
+  if (Array.isArray(data.competitors)) {
+    data.competitors = data.competitors.filter(
+      (c) => (c.name || "").trim() || (c.websiteUrl || "").trim() || (c.description || "").trim(),
+    );
+    data.competitors.forEach((c) => {
+      c.socials = (Array.isArray(c.socials) ? c.socials : []).filter((s) => (s.url || "").trim());
+    });
+  }
+  cfg.commit?.();
+  resetEdit();
+}
+
+// Playbook 2.0: a section in edit is left by a tab or a route far more often
+// than by its own buttons — and a Save that scrolled out of sight got forgotten,
+// so the work went with it. Leaving now SAVES; the toast says so and carries the
+// way back. Nothing changed → the editor simply closes.
+function saveOnLeave() {
+  if (!editScope || !cfg) return;
+  const data = cfg.getData();
+  if (!isDirty(data)) {
+    resetEdit();
+    return;
+  }
+  const title = SECTIONS.find((x) => x.scope === editScope)?.title || "Playbook";
+  const before = snapshot;
+  const revert = cfg.revert;
+  commitEdit(data);
+  showToast(`${title} changes saved.`, {
+    action: {
+      label: "Undo",
+      onClick: () => {
+        revert?.(before);
+        repaintPreservingScroll();
+      },
+    },
+  });
+}
+
 function onClick(event) {
-  // Playbook 2.0 tabs — locked while a section is being edited.
+  // Playbook 2.0 tabs — never locked: leaving a section in edit saves it.
   const tab = event.target.closest("[data-pb2-tab]");
   if (tab) {
-    if (editScope && tab.dataset.pb2Tab !== activeTab) return;
+    if (tab.dataset.pb2Tab === activeTab) return;
+    saveOnLeave();
     setTab(tab.dataset.pb2Tab);
     repaint();
     mountTarget?.querySelector(".welcome-screen")?.scrollTo({ top: 0 });
@@ -2835,6 +2926,9 @@ function onClick(event) {
     editScope = penBtn.dataset.recapEditCard;
     audienceCustom = false;
     repaint();
+    // Taken AFTER the editor paints: rendering it seeds fields (a language's voice
+    // entry), which would otherwise read as an edit nobody made.
+    editBaseline = JSON.stringify(snapshotEditable(data));
     mountTarget
       ?.querySelector(
         "[data-recap-editing-card] input, [data-recap-editing-card] textarea, [data-recap-editing-card] select",
@@ -2845,49 +2939,13 @@ function onClick(event) {
 
   if (event.target.closest("[data-recap-cancel]")) {
     if (snapshot) cfg.revert?.(snapshot);
-    snapshot = null;
-    editScope = null;
-    refModalIndex = null;
-    cmpModalIndex = null;
-    audienceCustom = false;
+    resetEdit();
     repaint();
     return;
   }
 
   if (event.target.closest("[data-recap-save]")) {
-    if (typeof data.name === "string") data.name = data.name.trim();
-    if (Array.isArray(data.ctaLinks)) {
-      data.ctaLinks = data.ctaLinks.filter((c) => (c.label || "").trim() || (c.url || "").trim() || c.suggested);
-    }
-    // Drop empty lines from the flat mirror AND every per-language voice entry.
-    ["signatureHooks", "closingPatterns"].forEach((f) => {
-      if (Array.isArray(data[f])) data[f] = data[f].filter((s) => (s || "").trim());
-    });
-    if (data.voiceByLanguage && typeof data.voiceByLanguage === "object") {
-      Object.values(data.voiceByLanguage).forEach((entry) => {
-        ["signatureHooks", "closingPatterns"].forEach((f) => {
-          if (Array.isArray(entry[f])) entry[f] = entry[f].filter((s) => (s || "").trim());
-        });
-      });
-    }
-    // Drop competitors left completely blank (an "Add competitor" row the user
-    // opened and abandoned) and social rows with no URL. `suggested` is kept:
-    // an unaccepted proposal stays pending across a Save rather than being
-    // silently adopted into the Playbook.
-    if (Array.isArray(data.competitors)) {
-      data.competitors = data.competitors.filter(
-        (c) => (c.name || "").trim() || (c.websiteUrl || "").trim() || (c.description || "").trim(),
-      );
-      data.competitors.forEach((c) => {
-        c.socials = (Array.isArray(c.socials) ? c.socials : []).filter((s) => (s.url || "").trim());
-      });
-    }
-    cfg.commit?.();
-    snapshot = null;
-    editScope = null;
-    refModalIndex = null;
-    cmpModalIndex = null;
-    audienceCustom = false;
+    commitEdit(data);
     repaint();
     return;
   }
