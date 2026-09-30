@@ -14,7 +14,7 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1410";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1412";
 import {
   kitEnabled,
   renderColorRole,
@@ -27,19 +27,19 @@ import {
   handleKitInput,
   handleKitChange,
   kitSnapshot,
-} from "./playbook-brand-kit.js?v=1410";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1410";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1410";
-import { isFlagOn } from "./feature-flags.js?v=1410";
-import { parseHashParams } from "./url-state.js?v=1410";
-import { showToast } from "./components/toast.js?v=1410";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1410";
+} from "./playbook-brand-kit.js?v=1412";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1412";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1412";
+import { isFlagOn } from "./feature-flags.js?v=1412";
+import { parseHashParams } from "./url-state.js?v=1412";
+import { showToast } from "./components/toast.js?v=1412";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1412";
 // The Default look row offers the SAME three catalogues the Image Studio renders, from
 // the one place they are declared — REF_MODES' own header makes the argument: the label,
 // the hint and the brief clause "drift the moment they live apart". No cycle: the engine
 // imports only clip-formats / image-studio-canvas / feature-flags, and its module body
 // builds consts, so importing it here costs nothing at load.
-import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1410";
+import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1412";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -1973,11 +1973,29 @@ function renderHeader2(data) {
   `;
 }
 
+// The tab head (lead + Edit, or Cancel / Save) is sticky. At rest it needs no
+// edge; once content slides under it, a hairline says where the bar ends —
+// otherwise a card is simply guillotined by a band of the same grey as the page.
+// Wired per paint: paint() replaces the scroller, and its listener with it.
+function watchTabHeadStuck() {
+  const scroller = mountTarget?.querySelector(".welcome-screen.pb2");
+  const head = scroller?.querySelector(".pb2-tabhead");
+  const tabs = scroller?.querySelector(".pb2-tabs");
+  if (!head || !tabs) return;
+  const sync = () =>
+    head.classList.toggle(
+      "is-stuck",
+      scroller.scrollTop > 0 && head.getBoundingClientRect().top <= tabs.getBoundingClientRect().bottom + 0.5,
+    );
+  scroller.addEventListener("scroll", sync, { passive: true });
+  sync();
+}
+
 function renderTabs2(data) {
   // Pending suggestions are not part of the Playbook: they are never counted.
   const cmpCount = competitorList(data).filter((c) => !c.suggested).length;
   return `
-    <div class="ap-tabs pb2-tabs">
+    <div class="ap-tabs flush pb2-tabs">
       <div class="ap-tabs-nav" role="tablist" aria-label="Playbook sections">
         ${TABS.map((t) => {
           const on = t.id === activeTab;
@@ -2594,6 +2612,7 @@ function paint() {
     // The edit bar sticks right under the tabs, so it needs their height.
     const tabsEl = mountTarget.querySelector(".pb2-tabs");
     if (tabsEl) mountTarget.querySelector(".pb2")?.style.setProperty("--pb2-tabs-h", `${tabsEl.offsetHeight}px`);
+    watchTabHeadStuck();
     portalModal();
     return;
   }

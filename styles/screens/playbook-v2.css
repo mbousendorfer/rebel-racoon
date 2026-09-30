@@ -168,9 +168,9 @@
 .pb2__panel {
   display: flex;
   flex-direction: column;
-  /* With the tab head's own 8 of padding: 32 under the tabs to the lead, 16
-     from the lead to its blocks — the lead stays tied to its tab's content. */
-  gap: var(--ref-spacing-xxs);
+  /* With the tab head's own padding (8 above, 12 below): 32 under the tabs to
+     the lead, 16 from the lead to its blocks — tied to its tab's content. */
+  gap: var(--ref-spacing-xxxs);
 }
 
 @keyframes pb2-rise {
@@ -358,8 +358,15 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--ref-spacing-md);
-  padding: var(--ref-spacing-xxs) 0;
+  /* 12 under the controls: room between them and the hairline once stuck. */
+  padding: var(--ref-spacing-xxs) 0 var(--ref-spacing-xs);
   background: var(--app-bg);
+}
+
+/* Stuck: the hairline the page's borders use. Only the line toggles — a
+   padding change here would shift the page under the reader's scroll. */
+.pb2-tabhead.is-stuck {
+  box-shadow: inset 0 -1px 0 var(--ref-color-grey-20);
 }
 
 /* The tab's sentence: full ink and a step up, regular so it never passes for
