@@ -863,3 +863,26 @@ button.ap-link {
 .ap-radio-card > div > span.ap-radio-card-title {
   color: var(--ref-color-grey-100);
 }
+
+/* ── .ap-tabs.flush — a MISSING root modifier ────────────────────────────
+   The DS tab carries 16px of side padding (its hover / focus box), so the
+   first label sits 16px inside the edge every heading, sentence and card
+   below it aligns to. `.flush` outdents the row by that padding so the LABEL
+   lands on the content edge, keeps the rule where the content starts (drawn
+   by the root, not the shifted nav), and narrows the active indicator to the
+   label — an underline running 16px past the label on the left would now
+   overhang the rule. Hover / focus keep the full box: they're momentary.
+   First user: the Playbook 2.0 fiche's tabs. Delete if the DS ships it. */
+.ap-tabs.flush {
+  box-shadow: inset 0 -1px 0 var(--comp-tabs-border-color);
+}
+
+.ap-tabs.flush .ap-tabs-nav {
+  margin-inline: calc(-1 * var(--ref-spacing-sm));
+  border-bottom: 0;
+}
+
+.ap-tabs.flush .ap-tabs-tab.active::after {
+  left: var(--ref-spacing-sm);
+  right: var(--ref-spacing-sm);
+}

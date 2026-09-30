@@ -653,3 +653,11 @@
     animation: none;
   }
 }
+
+/* An objective's fiche hands its doors to the topbar (shell.js › syncTopbar):
+   View switch, Adjust, the chat — 8 apart, the DS Top bar's right side. */
+.ins-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+}

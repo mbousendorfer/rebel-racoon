@@ -1,7 +1,7 @@
-import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=1400";
-import { getPath, navigate } from "../router.js?v=1400";
-import { parseHashParams } from "../url-state.js?v=1400";
-import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=1400";
+import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=1401";
+import { getPath, navigate } from "../router.js?v=1401";
+import { parseHashParams } from "../url-state.js?v=1401";
+import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=1401";
 // Lot 19 — topbar no longer carries its own sidebar-toggle button. The
 // sidebar head exposes the toggle in both expanded (chevron-left) and
 // collapsed (view-list) states, so the duplicate in the topbar was just
@@ -14,37 +14,37 @@ import {
   getMode as getRightPanelMode,
   getActiveBatchRef as getActiveDraftsBatchRef,
   subscribe as subscribeRightPanel,
-} from "./right-panel.js?v=1400";
-import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=1400";
-import { getThread, subscribe as subscribeThread } from "../assistant.js?v=1400";
-import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=1400";
-import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=1400";
+} from "./right-panel.js?v=1401";
+import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=1401";
+import { getThread, subscribe as subscribeThread } from "../assistant.js?v=1401";
+import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=1401";
+import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=1401";
 import {
   isEnabled as isStatusCardEnabled,
   toggle as toggleStatusCard,
   subscribeVisibility as subscribeStatusCardVisibility,
-} from "./conversation-status-card.js?v=1400";
-import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=1400";
-import { open as openRenameModal } from "./rename-modal.js?v=1400";
+} from "./conversation-status-card.js?v=1401";
+import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=1401";
+import { open as openRenameModal } from "./rename-modal.js?v=1401";
 import {
   subscribe as subscribeContexts,
   getContextById,
   getDefaultContext,
   getContexts,
-} from "../contexts-store.js?v=1400";
-import { isFlagOn } from "../feature-flags.js?v=1400";
-import { getActivePlaybook, isWorkspaceMode, isAccountScope, catalogueRoute } from "../active-playbook.js?v=1400";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1400";
-import { findCadence } from "../topics-catalog.js?v=1400";
+} from "../contexts-store.js?v=1401";
+import { isFlagOn } from "../feature-flags.js?v=1401";
+import { getActivePlaybook, isWorkspaceMode, isAccountScope, catalogueRoute } from "../active-playbook.js?v=1401";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1401";
+import { findCadence } from "../topics-catalog.js?v=1401";
 import {
   getPickerState as getTopPostsState,
   subscribePicker as subscribeTopPosts,
   backToProfiles as topPostsBackToProfiles,
-} from "../top-posts-flow.js?v=1400";
+} from "../top-posts-flow.js?v=1401";
 // The Insights view switch. Imported from views.js, NOT from the screen's
 // shell: the shell imports this module, so taking it from there would close a
 // cycle. views.js imports neither.
-import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=1400";
+import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=1401";
 
 // The playbook/context pill now lives in the composer (session.js
 // renderPlaybookControl) — selectable on a New Chat, then a static
@@ -70,10 +70,12 @@ import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=1400";
 // A page's own primary actions (DS: the header carries the title on the left and
 // the page's actions on the right). A screen hands them over for ITS path, so a
 // route change drops them on the next render even if the screen forgot to.
-let pageActions = null; // { path, markup }
+let pageActions = null; // { path, markup, left? }
 
-export function setTopbarActions(path, markup) {
-  pageActions = path && markup ? { path, markup } : null;
+// `left` (optional): the page's own left side — the DS Top bar pattern's
+// back · avatar · title · edit · custom slot — replacing the route title / back.
+export function setTopbarActions(path, markup, { left = "" } = {}) {
+  pageActions = path && markup ? { path, markup, left } : null;
   renderTopbar();
 }
 
@@ -115,7 +117,14 @@ export function renderTopbar(_options = {}) {
   // On the repurposing winner board (profile-first mode), the topbar leads with
   // a "Change profile" back — the app's standard back affordance — in place of
   // the session title.
-  const left = back ? renderBack(back) : isTopPostsBoard() ? renderTopPostsBack() : renderTitle(onSession);
+  const ownLeft = pageActions && pageActions.path === getPath() ? pageActions.left : "";
+  const left = ownLeft
+    ? ownLeft
+    : back
+      ? renderBack(back)
+      : isTopPostsBoard()
+        ? renderTopPostsBack()
+        : renderTitle(onSession);
   el.innerHTML = html`
     <div class="app-topbar__left">${raw(left)}</div>
     <div class="app-topbar__right">${raw(rightSide)}</div>
@@ -343,7 +352,7 @@ export function initTopbar() {
     // renderWelcomeAltExit() above. The wizard chrome no longer carries
     // its own Exit affordance; this is the only entry.
     if (event.target.closest("[data-topbar-welcome-alt-exit]")) {
-      import("./confirm-modal.js?v=1400").then(({ open }) => {
+      import("./confirm-modal.js?v=1401").then(({ open }) => {
         open({
           title: "Exit onboarding?",
           body: "Your progress so far will be discarded. You can start over anytime from the dashboard.",
@@ -582,11 +591,12 @@ function backTargetFor(path) {
     // that tab, not to the home's default list.
     return { to: catalogueRoute(), label: "Back to all playbooks" };
   }
-  // Workspace mode: the ACTIVE brand's fiche is an in-workspace route, reached
-  // from the rail's own row — no crumb, and currentTitle() names it instead. A
-  // "Back to Playbooks" there would kick the reader out of the workspace.
+  // The active brand's fiche too: a bare "Playbook" title repeated the rail's
+  // lit row and the page's own h1, and said nothing about where to go next. It
+  // stays IN the workspace (the rail stays); the back simply leads up to the
+  // catalogue, worded like the other fiches' in workspace mode.
   if (/^\/playbook\//.test(path)) {
-    if (isWorkspaceMode()) return null;
+    if (isWorkspaceMode()) return { to: catalogueRoute(), label: "Back to all playbooks" };
     return { to: "/contexts", label: "Back to Playbooks" };
   }
   // Insights' fiche is a LEVEL, not a route: `?objective=` is what opens it, and
@@ -625,6 +635,15 @@ function isWelcomeAltSession() {
   return !!sid && sid.startsWith("welcome-alt-");
 }
 
+// The DS Top bar pattern's back (V2 Molecules › Top bar, 7016:21445): an icon
+// button, the destination in its tooltip and name. For pages that hand the
+// topbar their own left side (setTopbarActions … { left }).
+export function renderIconBack(to, label) {
+  return `<button type="button" class="ap-icon-button" data-topbar-back="${escapeAttr(to)}" aria-label="${escapeAttr(label)}" data-tooltip="${escapeAttr(label)}">
+      <i class="ap-icon-arrow-left" aria-hidden="true"></i>
+    </button>`;
+}
+
 // A sub-page leads with a back control in place of the route title.
 function renderBack({ to, label }) {
   return `
@@ -650,10 +669,6 @@ function currentTitle() {
   // renders), `/home` is the account's.
   if (path === "/" || path === "/home") return "Home";
   if (path === "/contexts") return "Playbooks";
-  // Only ever read in workspace mode, where the active brand's fiche renders no
-  // back control (see backTargetFor). The brand's own name is the page's h1, so
-  // the topbar names the SECTION — same rule as Insights.
-  if (path.startsWith("/playbook/")) return "Playbook";
   if (path === "/connectors") return "Connectors";
   if (path === "/topics") return "Topic Feed";
   // The topbar names the SECTION; the brand is named once, by the heading each

@@ -10,13 +10,13 @@
 // weights and a test on three subjects. The system presets are NOT shown here:
 // they belong to no Playbook, and the fiche lists only what is this brand's.
 
-import { html, toString } from "../lib/html.js?v=1400";
-import { navigate } from "../../../router.js?v=1400";
-import { styleThumb } from "../ui/style-thumb.js?v=1400";
-import { confirmDialog } from "../ui/dialog.js?v=1400";
-import { toast } from "../ui/toast.js?v=1400";
-import { canEditBrand, getBrand, getStyle, getStylesForBrand } from "../state/store.js?v=1400";
-import { deleteStyle, duplicateStyle } from "../state/style-actions.js?v=1400";
+import { html, toString } from "../lib/html.js?v=1401";
+import { navigate } from "../../../router.js?v=1401";
+import { styleThumb } from "../ui/style-thumb.js?v=1401";
+import { confirmDialog } from "../ui/dialog.js?v=1401";
+import { toast } from "../ui/toast.js?v=1401";
+import { canEditBrand, getBrand, getStyle, getStylesForBrand } from "../state/store.js?v=1401";
+import { deleteStyle, duplicateStyle } from "../state/style-actions.js?v=1401";
 
 const creatorPath = (playbookId, rest) => `/playbook/${encodeURIComponent(playbookId)}/styles/${rest}`;
 
@@ -101,28 +101,6 @@ export function renderPlaybookStyles(playbookId, { canEdit = true } = {}) {
       <div class="imst-pbstyles__grid">${newTile}${own.map((s) => styleCard(s, brand, editable))}</div>
     </div>
   `);
-}
-
-/** The brand's styles as a strip of pictures — the Playbook 2.0 Overview's "How it looks". */
-export function renderPlaybookStyleStrip(playbookId, max = 3) {
-  const brand = getBrand(playbookId);
-  if (!brand) return "";
-  const own = getStylesForBrand(playbookId).filter((s) => s.kind === "custom");
-  if (!own.length) return "";
-  return toString(
-    html`<ul class="imst-pbstrip">
-      ${own
-        .slice(0, max)
-        .map(
-          (s) =>
-            html`<li class="imst-pbstrip__item">
-              ${styleThumb(s, brand, { className: "imst-pbstrip__img" })}<span class="imst-pbstrip__name"
-                >${s.label}</span
-              >
-            </li>`,
-        )}
-    </ul>`,
-  );
 }
 
 /** The fiche's delegated click, for the row above. Returns true when it handled the click. */

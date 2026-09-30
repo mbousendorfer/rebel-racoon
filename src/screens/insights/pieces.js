@@ -8,12 +8,12 @@
 // Pure render helpers — strings in, strings out. No listeners: every action is
 // a `data-ins-*` hook the shell dispatches.
 
-import { escapeHtml as esc } from "../../utils.js?v=1400";
-import { renderTopPostCard } from "../../components/top-post-card.js?v=1400";
-import { getContexts } from "../../contexts-store.js?v=1400";
-import { isWorkspaceMode } from "../../active-playbook.js?v=1400";
-import { progressBar } from "./charts.js?v=1400";
-import { signedPct } from "./model.js?v=1400";
+import { escapeHtml as esc } from "../../utils.js?v=1401";
+import { renderTopPostCard } from "../../components/top-post-card.js?v=1401";
+import { getContexts } from "../../contexts-store.js?v=1401";
+import { isWorkspaceMode } from "../../active-playbook.js?v=1401";
+import { progressBar } from "./charts.js?v=1401";
+import { signedPct } from "./model.js?v=1401";
 
 // ── The page's head — the scope, worn as the heading ─────────────────────
 //
@@ -403,6 +403,23 @@ export function objectiveActions(entry) {
       <i class="ap-icon-pen" aria-hidden="true"></i><span>Adjust</span>
     </button>
   </div>`;
+}
+
+/**
+ * The same two doors on an objective's own fiche (Mob · Index), handed to the
+ * topbar in the DS Top bar order: routine first (Adjust, stroked grey), the
+ * primary LAST (the chat — orange, the AI door). At that level the page IS
+ * this objective, so its chat is the page's one primary; New objective belongs
+ * to the index, one click back.
+ */
+export function objectiveTopbarActions(entry) {
+  const chatLabel = entry.nextMove?.cta || "Work on this";
+  return `<button type="button" class="ap-button stroked grey" data-ins-adjust="${esc(entry.key)}">
+      <i class="ap-icon-pen" aria-hidden="true"></i><span>Adjust</span>
+    </button>
+    <button type="button" class="ap-button primary orange" data-ins-chat="${esc(entry.key)}">
+      <i class="ap-icon-sparkles" aria-hidden="true"></i><span>${esc(chatLabel)}</span>
+    </button>`;
 }
 
 // ── Numbers ───────────────────────────────────────────────────────────────

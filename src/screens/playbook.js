@@ -17,9 +17,10 @@
 // `loader` cfg, run the (mock) analysis on a timer, then `updateContext` with
 // the section patch — the loader flips to ready and paints the fresh data.
 
-import { navigate } from "../router.js?v=1400";
-import { escapeHtml as esc } from "../utils.js?v=1400";
-import { renderTopbar } from "../components/topbar.js?v=1400";
+import { navigate, getPath } from "../router.js?v=1401";
+import { escapeHtml as esc } from "../utils.js?v=1401";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../components/topbar.js?v=1401";
+import { isFlagOn } from "../feature-flags.js?v=1401";
 import {
   getContextById,
   getContexts,
@@ -27,15 +28,15 @@ import {
   deleteContext,
   duplicateContext,
   appendHistory,
-} from "../contexts-store.js?v=1400";
-import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=1400";
-import { mount, snapshotEditable } from "../playbook-view.js?v=1400";
-import { open as openRenameModal } from "../components/rename-modal.js?v=1400";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=1400";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=1400";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=1400";
-import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=1400";
-import { sectionPatchFromAnalysis } from "../context-builder.js?v=1400";
+} from "../contexts-store.js?v=1401";
+import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=1401";
+import { mount, snapshotEditable } from "../playbook-view.js?v=1401";
+import { open as openRenameModal } from "../components/rename-modal.js?v=1401";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=1401";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=1401";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=1401";
+import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=1401";
+import { sectionPatchFromAnalysis } from "../context-builder.js?v=1401";
 import {
   canView,
   canEdit,
@@ -47,8 +48,8 @@ import {
   isMine,
   ownerOf,
   ownerName,
-} from "../playbook-access.js?v=1400";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=1400";
+} from "../playbook-access.js?v=1401";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=1401";
 
 const AUTOFILL_MS = 1500;
 
@@ -68,7 +69,7 @@ const STAGES = {
 };
 
 function toast(msg) {
-  import("../components/toast.js?v=1400").then(({ showToast }) => showToast(msg));
+  import("../components/toast.js?v=1401").then(({ showToast }) => showToast(msg));
 }
 
 function prettyUrl(url) {
@@ -111,6 +112,38 @@ function buildHeaderActions(ctx) {
       ? `<button type="button" class="ap-icon-button stroked grey" data-playbook-delete title="Delete" aria-label="Delete Playbook">
           <i class="ap-icon-trash"></i>
         </button>`
+      : "",
+  ].join("");
+}
+
+// Playbook 2.0: the topbar follows the DS Top bar (V2 Molecules › Top bar,
+// node 7016:21445) — the icon back on the left; stroked grey buttons, the
+// primary LAST, then an icon button on the right. ONE exception, the user's
+// call: the page's title (mark · name · pen · ownership tag) stays in the
+// fiche's own header with its facts line, not in the bar's avatar + main-text
+// slot — the facts line alone under the bar didn't hold as a header.
+function buildTopbarLeft() {
+  const back = isWorkspaceMode() ? catalogueRoute() : "/contexts";
+  const backLabel = isWorkspaceMode() ? "Back to all playbooks" : "Back to Playbooks";
+  return renderIconBack(back, backLabel);
+}
+
+function buildTopbarActions(ctx) {
+  const editable = canEdit(ctx);
+  return [
+    !editable
+      ? `<button type="button" class="ap-button stroked grey" data-playbook-duplicate><i class="ap-icon-copy"></i><span>Duplicate</span></button>`
+      : "",
+    canManageSharing(ctx)
+      ? `<button type="button" class="ap-button stroked grey" data-playbook-share><i class="ap-icon-share"></i><span>Share</span></button>`
+      : "",
+    editable
+      ? `<button type="button" class="ap-button stroked grey" data-fill-website><i class="ap-icon-refresh"></i><span>Re-analyze website</span></button>`
+      : "",
+    // Last and orange: starting a chat hands the brand to Archie — the AI action.
+    `<button type="button" class="ap-button primary orange" data-playbook-start><i class="ap-icon-double-chat-bubbles"></i><span>Start a chat</span></button>`,
+    canDelete(ctx)
+      ? `<button type="button" class="ap-icon-button" data-playbook-delete aria-label="Delete Playbook" data-tooltip="Delete"><i class="ap-icon-trash" aria-hidden="true"></i></button>`
       : "",
   ].join("");
 }
@@ -172,6 +205,7 @@ export function renderPlaybook(params, target) {
   }
 
   let cleanup = null;
+  const v2 = isFlagOn("playbook2");
   // Auto-fill loader state (drives the engine's staged loader on re-analysis).
   let analyzing = false;
   let analysisReady = false;
@@ -213,7 +247,19 @@ export function renderPlaybook(params, target) {
       canEdit: canEdit(getContextById(id)),
       ownership: buildOwnership(getContextById(id)),
       notice: () => buildNotice(getContextById(id)),
-      headerActions: () => buildHeaderActions(getContextById(id)),
+      // Playbook 2.0 hands the page's actions to the topbar's right side (the DS
+      // header: title left, actions right), where they also stay in reach while
+      // the fiche scrolls. Repainted with the fiche, so a Share or a rename that
+      // changes what's allowed is reflected there too.
+      headerActions: v2 ? null : () => buildHeaderActions(getContextById(id)),
+      onPaint: v2
+        ? () =>
+            setTopbarActions(
+              getPath(),
+              `<div class="pb2-topbar-actions" data-pb2-topbar-actions>${buildTopbarActions(getContextById(id))}</div>`,
+              { left: buildTopbarLeft() },
+            )
+        : undefined,
       // The rename pencil and the voice re-analysis are both writes: withhold
       // the callback and playbook-view renders no affordance.
       onEditName: canEdit(getContextById(id)) ? onEditName : undefined,
@@ -429,10 +475,20 @@ export function renderPlaybook(params, target) {
   };
   document.addEventListener("click", onDocClick);
 
+  // The topbar lives outside `target`, so its handed-over actions need their own
+  // listener — the same handler the in-page header used.
+  const topbar = document.getElementById("topbar");
+  const onTopbarClick = (event) => {
+    if (event.target.closest("[data-pb2-topbar-actions]")) onFooter(event);
+  };
+  if (v2) topbar?.addEventListener("click", onTopbarClick);
+
   cleanup = mount(target, buildCfg());
 
   return () => {
     document.removeEventListener("click", onDocClick);
+    topbar?.removeEventListener("click", onTopbarClick);
     cleanup?.();
+    if (v2) setTopbarActions(null);
   };
 }
