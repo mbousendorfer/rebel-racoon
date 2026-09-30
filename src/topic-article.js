@@ -86,10 +86,10 @@
 // was flagged, and it could only ever show two clamped lines of an explanation
 // whose whole value is the detail.
 
-import { html, raw, escapeAttr } from "./utils.js?v=1399";
-import { topicTitle, topicStates } from "./topics-store.js?v=1399";
-import { findTopicState } from "./topics-catalog.js?v=1399";
-import { renderSocialPostCard } from "./components/social-post-card.js?v=1399";
+import { html, raw } from "./utils.js?v=1400";
+import { topicTitle, topicStates } from "./topics-store.js?v=1400";
+import { findTopicState } from "./topics-catalog.js?v=1400";
+import { renderSocialPostCard } from "./components/social-post-card.js?v=1400";
 
 /**
  * The object's identity: where it came from, then the claim as an h2 under it —
@@ -203,14 +203,14 @@ function renderArticleBottom(topic, { actions = "", posts = [] } = {}) {
   }
   const id = `topic-posts-${topic.id}`;
   const toggle = posts.length
-    ? html`<label class="ap-link standalone topic-article__posts-toggle" for="${escapeAttr(id)}">
+    ? html`<label class="ap-link standalone topic-article__posts-toggle" for="${id}">
         <span>Contributing posts</span>
         <span class="ap-counter normal grey">${String(posts.length)}</span>
         <i class="ap-icon-chevron-down topic-article__section-toggle" aria-hidden="true"></i>
       </label>`
     : "";
   return html`${raw(
-      posts.length ? html`<input type="checkbox" class="topic-article__section-check" id="${escapeAttr(id)}" />` : "",
+      posts.length ? html`<input type="checkbox" class="topic-article__section-check" id="${id}" />` : "",
     )}
     <div class="topic-article__actionbar">${raw(toggle)}${raw(actions)}</div>
     ${raw(
@@ -287,14 +287,14 @@ export function renderTopicPosts(topic, { collapsible = true } = {}) {
       ${raw(list)}`;
   }
   const id = `topic-posts-${topic.id}`;
-  return html`<input type="checkbox" class="topic-article__section-check" id="${escapeAttr(id)}" />
+  return html`<input type="checkbox" class="topic-article__section-check" id="${id}" />
     <!-- The <h3> stays, so the document outline does not lose a section to a
          label. The label inside it is what makes the whole ROW the target — the
          count, the chevron and every pixel of air between them, edge to edge, at a
          control's height. It was one 18px text line for a while: full width, so it
          looked right in the CSS, and still something you had to aim at. -->
     <h3 class="topic-article__section-head">
-      <label class="ap-link standalone topic-article__section-label" for="${escapeAttr(id)}">
+      <label class="ap-link standalone topic-article__section-label" for="${id}">
         <!-- "Contributing posts", not "Sources": a Source in this app is
              something you bring INTO a chat, and these are the evidence the
              analysis was written from. Naming them Sources put two different
@@ -525,7 +525,7 @@ function renderTopicMenu(topic, { open = false } = {}) {
     <button
       type="button"
       class="ap-icon-button transparent topic-article__more"
-      data-topic-trail-menu="${escapeAttr(topic.id)}"
+      data-topic-trail-menu="${topic.id}"
       aria-haspopup="menu"
       aria-expanded="${open ? "true" : "false"}"
       aria-label="More about this Topic"
@@ -535,12 +535,7 @@ function renderTopicMenu(topic, { open = false } = {}) {
     ${raw(
       open
         ? html`<div class="ap-action-dropdown topic-article__menu" role="menu">
-            <button
-              type="button"
-              role="menuitem"
-              class="ap-action-dropdown-item"
-              data-topic-trail="${escapeAttr(topic.id)}"
-            >
+            <button type="button" role="menuitem" class="ap-action-dropdown-item" data-topic-trail="${topic.id}">
               <i class="ap-icon-history"></i>
               <div class="ap-action-dropdown-item-text">
                 <div class="ap-action-dropdown-item-label-container">
@@ -593,14 +588,14 @@ export function renderTopicActions(topic, { close = "Close" } = {}) {
     )}
     ${raw(
       ignored
-        ? html`<button type="button" class="ap-button stroked grey" data-topic-unignore="${escapeAttr(topic.id)}">
+        ? html`<button type="button" class="ap-button stroked grey" data-topic-unignore="${topic.id}">
             <i class="ap-icon-eye-on"></i><span>Un-ignore</span>
           </button>`
-        : html`<button type="button" class="ap-button stroked grey" data-topic-ignore="${escapeAttr(topic.id)}">
+        : html`<button type="button" class="ap-button stroked grey" data-topic-ignore="${topic.id}">
             <i class="ap-icon-eye-off"></i><span>Ignore</span>
           </button>`,
     )}
-    <button type="button" class="ap-button primary orange" data-topic-use="${escapeAttr(topic.id)}">
+    <button type="button" class="ap-button primary orange" data-topic-use="${topic.id}">
       <i class="ap-icon-single-chat-bubble"></i><span>Use in chat</span>
     </button>
   </div>`;

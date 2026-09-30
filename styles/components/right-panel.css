@@ -847,7 +847,7 @@
   justify-content: center;
   width: 24px;
   height: 24px;
-  border-radius: var(--ref-border-radius-xs);
+  border-radius: var(--ref-border-radius-sm);
   background: var(--ref-color-grey-05);
   color: var(--ref-color-grey-80);
   font-size: var(--sys-icon-css-sm);

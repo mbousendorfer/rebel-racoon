@@ -197,14 +197,6 @@
   color: var(--sys-text-color-light);
 }
 
-/* ── Focus handoff ──────────────────────────────────────────────────────── */
-
-.insights [data-ins-objective].is-focused {
-  outline: 2px solid var(--ref-color-electric-blue-100);
-  outline-offset: var(--ref-spacing-xxxs);
-  transition: outline-color var(--ref-animation-long) var(--app-ease-standard);
-}
-
 /* ── The view switch — Insights' control, worn by the topbar ────────────────
    Rendered by topbar.js (renderInsightsView) but styled here, because it is
    PROTOTYPE chrome for this screen: the day one layout wins, the switch and

@@ -29,23 +29,23 @@
 // now does — and a row cannot without turning the list into a form. No save bar:
 // every control commits immediately through updateFeed.
 
-import { html, raw, escapeAttr } from "../utils.js?v=1399";
-import { navigate } from "../router.js?v=1399";
-import { parseHashParams } from "../url-state.js?v=1399";
-import { renderTopbar } from "../components/topbar.js?v=1399";
-import { renderEmptyState } from "../components/empty-state.js?v=1399";
-import { isFlagOn } from "../feature-flags.js?v=1399";
-import { getContextById, getDefaultContext } from "../contexts-store.js?v=1399";
+import { html, raw } from "../utils.js?v=1400";
+import { navigate } from "../router.js?v=1400";
+import { parseHashParams } from "../url-state.js?v=1400";
+import { renderTopbar } from "../components/topbar.js?v=1400";
+import { renderEmptyState } from "../components/empty-state.js?v=1400";
+import { isFlagOn } from "../feature-flags.js?v=1400";
+import { getContextById, getDefaultContext } from "../contexts-store.js?v=1400";
 import {
   getActivePlaybook,
   isWorkspaceMode,
   catalogueRoute,
   subscribe as subscribeScope,
-} from "../active-playbook.js?v=1399";
-import { editableContexts, canEdit } from "../playbook-access.js?v=1399";
-import { getFeedForPlaybook, updateFeed, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1399";
-import { TOPIC_SOURCES, CADENCES, findTopicSource, findCadence, isLiveSource } from "../topics-catalog.js?v=1399";
-import { open as openFeedback } from "../components/feedback-modal.js?v=1399";
+} from "../active-playbook.js?v=1400";
+import { editableContexts, canEdit } from "../playbook-access.js?v=1400";
+import { getFeedForPlaybook, updateFeed, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1400";
+import { TOPIC_SOURCES, CADENCES, findTopicSource, findCadence, isLiveSource } from "../topics-catalog.js?v=1400";
+import { open as openFeedback } from "../components/feedback-modal.js?v=1400";
 
 // Above this many Playbooks the picker earns a search field. Below it, a search
 // box over four rows is just noise.
@@ -203,7 +203,7 @@ function renderPage() {
                   <span aria-hidden="true">·</span>`
               : "",
           )}
-          <button type="button" class="ap-link" data-settings-playbook="${escapeAttr(ctx.id)}">
+          <button type="button" class="ap-link" data-settings-playbook="${ctx.id}">
             ${isWorkspaceMode() ? `Open ${ctx.name}` : "Open the Playbook"}
           </button>
         </p>
@@ -244,8 +244,8 @@ function renderPlaybookSelect(playbooks, active) {
       const isActive = c.id === active.id;
       return html`<div
         class="ap-select-option${raw(isActive ? " selected" : "")}"
-        data-settings-pb="${escapeAttr(c.id)}"
-        data-settings-pb-name="${escapeAttr(c.name.toLowerCase())}"
+        data-settings-pb="${c.id}"
+        data-settings-pb-name="${c.name.toLowerCase()}"
         role="option"
         aria-selected="${isActive ? "true" : "false"}"
       >
@@ -297,7 +297,7 @@ function renderCadenceSelect(feed, active) {
     const on = !!active && c.id === active.id;
     return html`<div
       class="ap-select-option${raw(on ? " selected" : "")}"
-      data-settings-cadence="${escapeAttr(`${feed ? feed.id : ""}::${c.id}`)}"
+      data-settings-cadence="${`${feed ? feed.id : ""}::${c.id}`}"
       role="option"
       aria-selected="${on ? "true" : "false"}"
     >
@@ -333,10 +333,7 @@ function renderSourceCard(ctx, feed, source, on) {
   // only on the cards that have somewhere to send you — the fork put an arrow row
   // on all eight, including the five that read nothing the Playbook holds.
   const anchor = source.playbookAnchor
-    ? html`<a
-        class="ap-link topics-src__note"
-        href="#/playbook/${escapeAttr(ctx.id)}?section=${escapeAttr(source.playbookAnchor)}"
-      >
+    ? html`<a class="ap-link topics-src__note" href="#/playbook/${ctx.id}?section=${source.playbookAnchor}">
         <i class="ap-icon-buildings" aria-hidden="true"></i><span>Review this Playbook's ${source.playbookAnchor}</span>
       </a>`
     : "";
@@ -362,11 +359,7 @@ function renderSourceCard(ctx, feed, source, on) {
               <!-- The one thing a reader can do about a source that is not live yet:
                    say how they would use it. Without this the card is a dead end
                    wearing a tag. -->
-              <button
-                type="button"
-                class="ap-link standalone small topics-src__need"
-                data-topics-need="${escapeAttr(source.id)}"
-              >
+              <button type="button" class="ap-link standalone small topics-src__need" data-topics-need="${source.id}">
                 Need this source?
               </button>
             </span>`,
@@ -374,10 +367,10 @@ function renderSourceCard(ctx, feed, source, on) {
       <label class="ap-toggle-container topics-src__switch">
         <input
           type="checkbox"
-          data-settings-toggle="${escapeAttr(`${feed ? feed.id : ""}::${source.id}`)}"
+          data-settings-toggle="${`${feed ? feed.id : ""}::${source.id}`}"
           ${raw(on ? "checked" : "")}
           ${raw(live ? "" : "disabled")}
-          aria-label="${escapeAttr(`${source.name} for ${ctx.name}`)}"
+          aria-label="${`${source.name} for ${ctx.name}`}"
         />
         <i aria-hidden="true"></i>
       </label>
@@ -398,18 +391,13 @@ function renderSiteList(feed) {
         html`<li class="topics-src__site">
           <div class="ap-input-group topics-src__site-field">
             <i class="ap-icon-link" aria-hidden="true"></i>
-            <input
-              type="url"
-              value="${escapeAttr(url)}"
-              data-settings-site="${escapeAttr(`${feed.id}::${i}`)}"
-              aria-label="Site to scan"
-            />
+            <input type="url" value="${url}" data-settings-site="${`${feed.id}::${i}`}" aria-label="Site to scan" />
           </div>
           <button
             type="button"
             class="ap-icon-button transparent grey"
-            data-settings-site-remove="${escapeAttr(`${feed.id}::${i}`)}"
-            aria-label="Remove ${escapeAttr(url)}"
+            data-settings-site-remove="${`${feed.id}::${i}`}"
+            aria-label="Remove ${url}"
           >
             <i class="ap-icon-close"></i>
           </button>
@@ -421,7 +409,7 @@ function renderSiteList(feed) {
     <ul class="topics-src__site-list">
       ${raw(rows)}
     </ul>
-    <button type="button" class="ap-link standalone small" data-settings-site-add="${escapeAttr(feed.id)}">
+    <button type="button" class="ap-link standalone small" data-settings-site-add="${feed.id}">
       <i class="ap-icon-plus" aria-hidden="true"></i><span>Add another site</span>
     </button>
   </div>`;

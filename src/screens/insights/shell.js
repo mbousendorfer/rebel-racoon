@@ -32,29 +32,25 @@
 // host is never repainted without `destroyChartsIn(host)` first — the one rule
 // that keeps a brand switch from leaking a chart per repaint.
 
-import { html, raw } from "../../utils.js?v=1399";
-import { renderTopbar } from "../../components/topbar.js?v=1399";
-import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=1399";
+import { html, raw } from "../../utils.js?v=1400";
+import { renderTopbar } from "../../components/topbar.js?v=1400";
+import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=1400";
 import {
   subscribe as subscribeScope,
   getActivePlaybook,
   getActivePlaybookId,
   setActivePlaybook,
-} from "../../active-playbook.js?v=1399";
-import { getPath, navigate } from "../../router.js?v=1399";
-import { isFlagOn } from "../../feature-flags.js?v=1399";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=1399";
-import { consumeHandoff } from "../../handoff.js?v=1399";
-import { open as openObjectiveModal } from "../../components/objective-modal.js?v=1399";
-import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=1399";
-import { renderEmptyState } from "../../components/empty-state.js?v=1399";
-import { playbookTitle } from "./pieces.js?v=1399";
-import { objectiveEntries, playbookRollup, entryByKey } from "./model.js?v=1399";
-import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=1399";
-import { DEFAULT_LAYOUT, readLayoutId, writeLayoutId, layoutById } from "./views.js?v=1399";
-
-/** Set by a Playbook's objectives block ("Open in Insights"); payload `${ctxId}::${label}`. */
-export const FOCUS_OBJECTIVE_HANDOFF = "focusObjective";
+} from "../../active-playbook.js?v=1400";
+import { getPath, navigate } from "../../router.js?v=1400";
+import { isFlagOn } from "../../feature-flags.js?v=1400";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=1400";
+import { open as openObjectiveModal } from "../../components/objective-modal.js?v=1400";
+import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=1400";
+import { renderEmptyState } from "../../components/empty-state.js?v=1400";
+import { playbookTitle } from "./pieces.js?v=1400";
+import { objectiveEntries, playbookRollup, entryByKey } from "./model.js?v=1400";
+import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=1400";
+import { DEFAULT_LAYOUT, readLayoutId, writeLayoutId, layoutById } from "./views.js?v=1400";
 
 // ── Module state ──────────────────────────────────────────────────────────
 
@@ -62,8 +58,6 @@ let host = null;
 let section = null;
 let layoutId = DEFAULT_LAYOUT;
 let layoutCleanup = null;
-let focusKey = null;
-let focused = false;
 let firstPaint = true;
 let raf = 0;
 // Survives teardown on purpose — it is how a remount tells itself apart from a
@@ -148,26 +142,13 @@ function paint() {
   }
 
   const rollup = playbookRollup(entries, ctx);
-  const selected = parseHashParams().get("objective") || focusKey;
+  const selected = parseHashParams().get("objective");
   // firstPaint gates the load reveal: a repaint replaces innerHTML, and a CSS
   // animation on fresh nodes restarts — so re-animating on every store notify
   // would flicker the page on a brand switch or an edited objective.
-  const vm = { entries, rollup, ctx, layoutId, focusKey, selectedKey: selected, local, firstPaint };
+  const vm = { entries, rollup, ctx, layoutId, selectedKey: selected, local, firstPaint };
   firstPaint = false;
   layoutCleanup = currentLayout().render(host, vm) || null;
-  focusOnce();
-}
-
-// The focus handoff scrolls to one objective once per mount — not on every
-// repaint, or a brand edit would yank the reader back to that card.
-function focusOnce() {
-  if (focused || !focusKey) return;
-  const node = host.querySelector(`[data-ins-objective="${cssEscape(focusKey)}"]`);
-  focused = true;
-  if (!node) return;
-  node.scrollIntoView({ block: "center", behavior: "smooth" });
-  node.classList.add("is-focused");
-  window.setTimeout(() => node.classList.remove("is-focused"), 1800);
 }
 
 function cssEscape(s) {
@@ -238,7 +219,6 @@ function onClick(event) {
     event.preventDefault();
     t.closest("[data-ins-scope]")?.removeAttribute("open");
     if (ds.insScopePick === getActivePlaybookId()) return;
-    focusKey = null;
     if (parseHashParams().get("objective")) setHashQuery(getPath(), {});
     setActivePlaybook(ds.insScopePick);
     return;
@@ -354,11 +334,6 @@ export function renderInsights(_params, target) {
   const mountKey = getActivePlaybookId() || "none";
   firstPaint = mountKey !== lastMountKey;
   lastMountKey = mountKey;
-  // ONLY the handoff highlights. `?objective=` is how a selection is expressed
-  // now, so reading it here flashed the arrival outline every time the reader
-  // switched objective — the highlight means "you were sent here", nothing else.
-  focusKey = consumeHandoff(FOCUS_OBJECTIVE_HANDOFF) || null;
-  focused = false;
 
   target.innerHTML = html`<section class="screen insights insights--${layoutId}">
     <div class="insights__host" data-ins-host></div>

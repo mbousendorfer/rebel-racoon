@@ -1421,7 +1421,7 @@ body.playbook-revoked .session__composer-card {
   background: var(--ref-color-white);
   border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--ref-border-radius-md);
-  box-shadow: var(--sys-shadow-lg, 0 8px 24px rgba(0, 0, 0, 0.08));
+  box-shadow: var(--app-shadow-popover-md);
   padding: var(--ref-spacing-xxs);
   display: flex;
   flex-direction: column;

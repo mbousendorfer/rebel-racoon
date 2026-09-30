@@ -73,10 +73,10 @@
 // Everything inside the body is a <span> for the same reason — a button may only
 // contain phrasing content, so no h3 and no p in there.
 
-import { html, raw, escapeAttr } from "../utils.js?v=1399";
-import { topicTitle } from "../topics-store.js?v=1399";
-import { renderTopicStates } from "../topic-article.js?v=1399";
-import { findTopicSource } from "../topics-catalog.js?v=1399";
+import { html, raw, escapeAttr } from "../utils.js?v=1400";
+import { topicTitle } from "../topics-store.js?v=1400";
+import { renderTopicStates } from "../topic-article.js?v=1400";
+import { findTopicSource } from "../topics-catalog.js?v=1400";
 
 // ── The state chips ───────────────────────────────────────────────────────
 // `renderTopicStates` comes from topic-article.js, which is where a Topic's
@@ -127,7 +127,7 @@ export function renderTopicCard(
   if (variant === "widget") {
     return html`<div
       class="topic-card topic-card--widget${raw(triaged ? " is-triaged" : "")}"
-      data-topic-id="${escapeAttr(topic.id)}"
+      data-topic-id="${topic.id}"
     >
       ${raw(renderTopicBody(topic, source, ignored))}
     </div>`;
@@ -137,12 +137,12 @@ export function renderTopicCard(
     class="topic-card topic-card--${raw(picker ? "picker" : "feed")}${raw(triaged ? " is-triaged" : "")}${raw(
       articleOpen ? " is-reading" : "",
     )}"
-    data-topic-id="${escapeAttr(topic.id)}"
+    data-topic-id="${topic.id}"
   >
     <button
       type="button"
       class="topic-card__body"
-      data-topic-read="${escapeAttr(topic.id)}"
+      data-topic-read="${topic.id}"
       ${raw(picker ? "" : `aria-expanded="${articleOpen ? "true" : "false"}"`)}
     >
       ${raw(renderTopicBody(topic, source, ignored))}
@@ -163,7 +163,7 @@ export function renderTopicCard(
                  one in the article's own header. Was secondary orange for a
                  commit; that spent the AI colour on a second-rank entry point.
                  NOTE no backticks in here - this is inside a template literal. -->
-            <button type="button" class="ap-button secondary blue" data-topic-use="${escapeAttr(topic.id)}">
+            <button type="button" class="ap-button secondary blue" data-topic-use="${topic.id}">
               <i class="ap-icon-single-chat-bubble"></i><span>Use in chat</span>
             </button>
           </div>`
@@ -222,9 +222,9 @@ function renderTopicSelectRow(topic, { source = null, selected = false, disabled
     <label class="ap-radio-card card topics-widget__row">
       <input
         type="radio"
-        name="topics-pick-${escapeAttr(group)}"
-        value="${escapeAttr(topic.id)}"
-        data-topics-widget-radio="${escapeAttr(topic.id)}"
+        name="topics-pick-${group}"
+        value="${topic.id}"
+        data-topics-widget-radio="${topic.id}"
         ${raw(selected ? "checked" : "")}
         ${raw(disabled ? "disabled" : "")}
       />
@@ -237,11 +237,7 @@ function renderTopicSelectRow(topic, { source = null, selected = false, disabled
          the same data-topic-read the hero's cards use, so the session's existing
          delegate opens the dialog with no new wiring. Reading stays available on a
          frozen widget too: the pick is made, the article is still worth a look. -->
-    <button
-      type="button"
-      class="ap-link standalone small topics-widget__more"
-      data-topic-read="${escapeAttr(topic.id)}"
-    >
+    <button type="button" class="ap-link standalone small topics-widget__more" data-topic-read="${topic.id}">
       View more
     </button>
   </div>`;
@@ -305,7 +301,7 @@ function renderKebab(topic, menuOpen) {
   return html`<button
       type="button"
       class="ap-icon-button transparent topic-card__more"
-      data-topic-more="${escapeAttr(topic.id)}"
+      data-topic-more="${topic.id}"
       aria-haspopup="menu"
       aria-expanded="${menuOpen ? "true" : "false"}"
       aria-label="More actions"

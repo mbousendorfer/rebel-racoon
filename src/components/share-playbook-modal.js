@@ -19,8 +19,8 @@
 //     • onDone() — fired after a committed change (scope or ownership), so the
 //       caller can repaint or bail out if it just handed away its own access.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1399";
-import { getContextById, updateContext, appendHistory } from "../contexts-store.js?v=1399";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1400";
+import { getContextById, updateContext, appendHistory } from "../contexts-store.js?v=1400";
 import {
   canTransfer,
   isMine,
@@ -29,10 +29,10 @@ import {
   recipientsOf,
   tiedProfile,
   profileBlockFor,
-} from "../playbook-access.js?v=1399";
-import { MEMBERS, ORG, CURRENT_USER, getMember, memberName } from "../org.js?v=1399";
-import { showToast } from "./toast.js?v=1399";
-import { html, raw, escapeHtml } from "../utils.js?v=1399";
+} from "../playbook-access.js?v=1400";
+import { MEMBERS, ORG, CURRENT_USER, getMember, memberName } from "../org.js?v=1400";
+import { showToast } from "./toast.js?v=1400";
+import { html, raw, escapeHtml } from "../utils.js?v=1400";
 
 const MODAL_ID = "sharePlaybook";
 
@@ -192,7 +192,7 @@ function renderPicker(ctx) {
             type="text"
             value="${query}"
             data-share-search
-            placeholder="Search ${escapeHtml(ORG.name)}…"
+            placeholder="Search ${ORG.name}…"
             aria-label="Search teammates"
             autocomplete="off"
           />
@@ -202,7 +202,7 @@ function renderPicker(ctx) {
           <!-- Always in the DOM, just hidden: typing filters rows in place
                instead of re-rendering, so there has to be a node to reveal. -->
           <div class="ap-selection-dropdown-empty" data-share-nomatch ${raw(visible ? "hidden" : "")}>
-            Nobody at ${escapeHtml(ORG.name)} matches your search.
+            Nobody at ${ORG.name} matches your search.
           </div>
         </div>
       </div>

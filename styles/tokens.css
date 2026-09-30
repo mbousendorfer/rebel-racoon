@@ -163,9 +163,11 @@
   --app-chart-target: var(--ref-color-grey-80); /* the dashed target line */
   /* Axis + grid: the values @agorapulse/ui-charts ships in
      `ChartOptions.DEFAULT_OPTIONS` — grid, axis LINES and ticks on grey-10,
-     labels on grey-85 — so a curve here is framed like a curve in Reports. */
+     labels on grey-85 in ui-charts. The DS token ramp has no grey-85 (it skips
+     from 80 to 100), so the labels take grey-80 — the lightest ink the house
+     rules allow. */
   --app-chart-grid: var(--ref-color-grey-10);
-  --app-chart-axis: var(--ref-color-grey-85);
+  --app-chart-axis: var(--ref-color-grey-80);
   --app-chart-axis-line: var(--ref-color-grey-10);
   /* The DS's own CATEGORICAL palette, in its fixed order: `ChartColors`
      (@agorapulse/ui-charts v22) → `DATA_COLORS`, read by position

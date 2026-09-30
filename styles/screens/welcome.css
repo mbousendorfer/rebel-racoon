@@ -30,7 +30,7 @@
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 60% 50% at 100% 0%, var(--ref-color-orange-05) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 50% at 100% 0%, var(--ref-color-orange-10) 0%, transparent 70%),
     radial-gradient(ellipse 50% 50% at 0% 100%, var(--ref-color-electric-blue-05) 0%, transparent 70%);
   z-index: 0;
 }

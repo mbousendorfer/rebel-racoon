@@ -25,7 +25,7 @@
 // both. The shell calls destroyChartsIn(host) before every paint and on
 // teardown — layouts never destroy on their own.
 
-import Highcharts from "../../../vendor/highcharts/highcharts-12.4.0.esm.js?v=1399";
+import Highcharts from "../../../vendor/highcharts/highcharts-12.4.0.esm.js?v=1400";
 
 // ── Tokens ────────────────────────────────────────────────────────────────
 
@@ -79,7 +79,7 @@ export function applyTheme() {
   themed = true;
   const font = token("--ref-font-family") || "Averta, sans-serif";
   const white = token("--ref-color-white") || "#FFFFFF";
-  const ink = token("--ref-color-grey-100") || "#212E44";
+  const ink = token("--ref-color-grey-100") || "#344563";
   Highcharts.setOptions({
     chart: {
       backgroundColor: "transparent",

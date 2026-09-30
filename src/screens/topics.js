@@ -32,16 +32,16 @@
 // view. There is an explicit Load more too, and both do exactly the same thing —
 // an infinite list with no button is unusable by keyboard.
 
-import { html, raw, escapeAttr } from "../utils.js?v=1399";
-import { navigate, getPath } from "../router.js?v=1399";
-import { isFlagOn } from "../feature-flags.js?v=1399";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1399";
-import { renderTopbar } from "../components/topbar.js?v=1399";
-import { showToast } from "../components/toast.js?v=1399";
-import { renderEmptyState } from "../components/empty-state.js?v=1399";
-import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=1399";
-import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=1399";
-import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1399";
+import { html, raw, escapeAttr } from "../utils.js?v=1400";
+import { navigate, getPath } from "../router.js?v=1400";
+import { isFlagOn } from "../feature-flags.js?v=1400";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1400";
+import { renderTopbar } from "../components/topbar.js?v=1400";
+import { showToast } from "../components/toast.js?v=1400";
+import { renderEmptyState } from "../components/empty-state.js?v=1400";
+import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=1400";
+import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=1400";
+import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1400";
 import {
   getTopicsForFeed,
   groupTopicsByAge,
@@ -52,7 +52,7 @@ import {
   ignoreTopic,
   unignoreTopic,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=1399";
+} from "../topics-store.js?v=1400";
 import {
   TOPIC_SOURCES,
   TOPIC_KINDS,
@@ -61,12 +61,12 @@ import {
   findTopicSource,
   findCadence,
   isLiveSource,
-} from "../topics-catalog.js?v=1399";
-import { renderTopicCard } from "../components/topic-card.js?v=1399";
-import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=1399";
-import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=1399";
-import { openTopicHistory } from "../components/topic-history-modal.js?v=1399";
-import { useTopicInChat } from "../topic-flow.js?v=1399";
+} from "../topics-catalog.js?v=1400";
+import { renderTopicCard } from "../components/topic-card.js?v=1400";
+import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=1400";
+import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=1400";
+import { openTopicHistory } from "../components/topic-history-modal.js?v=1400";
+import { useTopicInChat } from "../topic-flow.js?v=1400";
 
 const PAGE = 10;
 // Long enough to read the scanning line, short enough that nobody waits for it
@@ -375,7 +375,7 @@ function renderToolbar(pb, feed) {
       const on = !!pb && c.id === pb.id;
       return html`<div
         class="ap-select-option${raw(on ? " selected" : "")}"
-        data-topic-scope-pick="${escapeAttr(c.id)}"
+        data-topic-scope-pick="${c.id}"
         role="option"
         aria-selected="${on ? "true" : "false"}"
       >
@@ -535,13 +535,13 @@ function renderKindSelect() {
 // scroll and an open menu is free to overlay whatever sits below the panel.
 function renderMultiSelect(id, open, chipsHtml, placeholder, optionsHtml, label) {
   return html`<details class="ap-select topics-view__ms" ${raw(open ? "open" : "")}>
-    <summary class="ap-select-trigger" data-topic-ms-toggle="${escapeAttr(id)}" title="Choose ${escapeAttr(label)}">
+    <summary class="ap-select-trigger" data-topic-ms-toggle="${id}" title="Choose ${label}">
       <span class="topics-view__ms-chips">
         ${raw(chipsHtml || html`<span class="ap-select-placeholder">${placeholder}</span>`)}
       </span>
       <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
     </summary>
-    <div class="ap-select-dropdown" role="group" aria-label="${escapeAttr(label)}">
+    <div class="ap-select-dropdown" role="group" aria-label="${label}">
       <div class="ap-select-options">${raw(optionsHtml)}</div>
     </div>
   </details>`;
@@ -599,8 +599,8 @@ function filterCheckbox(group, id, label, checked, disabled = false) {
   return html`<label class="ap-select-option ap-checkbox-container${raw(disabled ? " disabled" : "")}">
     <input
       type="checkbox"
-      data-topic-filter="${escapeAttr(group)}"
-      value="${escapeAttr(id)}"
+      data-topic-filter="${group}"
+      value="${id}"
       ${raw(checked ? "checked" : "")}
       ${raw(disabled ? "disabled" : "")}
     />
