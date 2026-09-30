@@ -14,7 +14,7 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1403";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1404";
 import {
   kitEnabled,
   renderColorRole,
@@ -27,19 +27,19 @@ import {
   handleKitInput,
   handleKitChange,
   kitSnapshot,
-} from "./playbook-brand-kit.js?v=1403";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1403";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1403";
-import { isFlagOn } from "./feature-flags.js?v=1403";
-import { parseHashParams } from "./url-state.js?v=1403";
-import { showToast } from "./components/toast.js?v=1403";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1403";
+} from "./playbook-brand-kit.js?v=1404";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1404";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1404";
+import { isFlagOn } from "./feature-flags.js?v=1404";
+import { parseHashParams } from "./url-state.js?v=1404";
+import { showToast } from "./components/toast.js?v=1404";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1404";
 // The Default look row offers the SAME three catalogues the Image Studio renders, from
 // the one place they are declared — REF_MODES' own header makes the argument: the label,
 // the hint and the brief clause "drift the moment they live apart". No cycle: the engine
 // imports only clip-formats / image-studio-canvas / feature-flags, and its module body
 // builds consts, so importing it here costs nothing at load.
-import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1403";
+import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1404";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -1946,7 +1946,7 @@ function renderHeader2(data) {
   return `
     <header class="pb2-hero">
       <div class="pb2-hero__id">
-        <span class="pb2-hero__mark">${renderHeaderMark(data, accent, primary)}</span>
+        <span class="pb2-hero__mark">${renderHeaderMark(data, accent, primary, { square: true })}</span>
         <div class="pb2-hero__text">
           <div class="pb2-hero__titlerow">
             <h1 class="pb2-hero__name">${esc(data.name || "Untitled Playbook")}</h1>
@@ -2271,11 +2271,15 @@ function renderActivePanel(data) {
   return scope === "goals" ? renderGoalsPanel(data, true) : renderGoalsRead2(data);
 }
 
-function renderHeaderMark(data, accent, primary) {
+// `square`: the tile is square, and a wide lockup shrunk into it reads as an
+// empty box — so the brand's square mark (its "Icon" version) takes the tile
+// when it has one. The default logo stays the default everywhere else.
+function renderHeaderMark(data, accent, primary, { square = false } = {}) {
   const tint = `--brand-accent:${esc(accent)}; --brand-primary:${esc(primary)};`;
   const mono = `<span class="recap__monogram${data.brandLogo ? " is-hidden" : ""}" style="${tint}">${esc(initials(data.name))}</span>`;
   if (!data.brandLogo) return mono;
-  return `<span class="recap__monogram recap__monogram--mark"><img src="${esc(data.brandLogo)}" alt="${esc(
+  const icon = square ? brandLogoList(data).find((l) => /^icon$/i.test(l.label || ""))?.url : "";
+  return `<span class="recap__monogram recap__monogram--mark"><img src="${esc(icon || data.brandLogo)}" alt="${esc(
     data.name || "Brand",
   )} logo" data-recap-brand-logo /></span>${mono}`;
 }

@@ -2,11 +2,17 @@
  * An identity header, DS tabs (sticky), then ONE section per tab — the page's
  * actions sit in the topbar. The section panels
  * are the recap's own (welcome.css); only the page around them changes here.
- */
+ *
+ * Vertical rhythm — proximity says what belongs together, so no two
+ * neighbouring gaps are equal:
+ *   topbar ─32─ header (mark + name + facts) ─24─ tabs   = the page's head
+ *   tabs ─32─ tab lead ─16─ blocks (24 between them)     = the tab's content
+ * The lead used to sit 24 under the tabs and 32 over its own blocks, so it
+ * belonged to neither and floated between the two. */
 
 .pb2__body.welcome-screen__body.recap {
   gap: var(--ref-spacing-md);
-  padding-top: var(--ref-spacing-xl);
+  padding-top: var(--ref-spacing-lg);
 }
 
 /* ── Identity header ──────────────────────────────────────────────────── */
@@ -17,12 +23,13 @@
   justify-content: space-between;
   gap: var(--ref-spacing-md);
   flex-wrap: wrap;
-  padding-bottom: var(--ref-spacing-xs);
 }
 
+/* Top-aligned: the mark lines up with the name, and stays put when the facts
+   line wraps instead of drifting to the middle of a taller block. */
 .pb2-hero__id {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--ref-spacing-md);
   min-width: 0;
 }
@@ -159,7 +166,9 @@
 .pb2__panel {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-lg);
+  gap: var(--ref-spacing-sm);
+  /* + the body's 24 = 32 under the tabs; the 16 above ties the lead to its blocks. */
+  padding-top: var(--ref-spacing-xxs);
 }
 
 @keyframes pb2-rise {
