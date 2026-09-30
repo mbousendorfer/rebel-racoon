@@ -36,17 +36,7 @@
 // on the Insights side, while this catalogue parks them. Insights marks those
 // cards "via proxy" by resolving the label here — one story, two surfaces.
 
-import { NETWORK_LABEL, getConnectedProfiles } from "./social-profiles.js?v=1401";
-import { getContextById } from "./contexts-store.js?v=1401";
-
-// The connected profiles are GLOBAL (one demo account), but an objective
-// belongs to a brand — a Noba Fashion objective read on tiles named
-// "Northwind Studio" broke every demo. The tile carries the Playbook's own
-// brand name; the global profile still supplies id and network.
-function profileNameFor(p, contextId) {
-  const ctx = contextId ? getContextById(contextId) : null;
-  return ctx?.brandName || ctx?.name || p.name || p.handle;
-}
+import { NETWORK_LABEL, getConnectedProfiles } from "./social-profiles.js?v=1402";
 
 // The metric catalogue. Each metric names a concept, not a per-network field.
 // `type` — volume | rate | counter. A rate is scale-free (never split by
@@ -94,17 +84,8 @@ export function isAdditiveMetric(metricId) {
   return !!METRICS[metricId]?.additive;
 }
 
-export function metricType(metricId) {
+function metricType(metricId) {
   return METRICS[metricId]?.type || "volume";
-}
-
-// The same value, written the way a label is written. The type used to be
-// shouted (`.toUpperCase()`) at three call sites; sentence case leaves it a
-// fragment sitting next to capitalised neighbours, so it gets capitalised once
-// here rather than three times at the point of render.
-export function metricTypeLabel(metricId) {
-  const t = metricType(metricId);
-  return t.charAt(0).toUpperCase() + t.slice(1);
 }
 
 // The 8 catalogue families, for the measure picker and the catalog panel —
@@ -112,7 +93,7 @@ export function metricTypeLabel(metricId) {
 // `icon` is the family's mark in the catalogue — every name checked against
 // `ds/ap-icons.css`, because an `ap-icon-*` that doesn't exist paints NOTHING
 // and fails silently (there is no `ap-icon-eye`: the pair is `eye-on`/`eye-off`).
-export const FAMILIES = [
+const FAMILIES = [
   {
     id: "awareness",
     label: "Awareness",
@@ -150,7 +131,7 @@ export const WINDOWS = [
   { id: "fixed", label: "Window ending on" },
 ];
 
-export const DEFAULT_WINDOW = { type: "rolling" };
+const DEFAULT_WINDOW = { type: "rolling" };
 
 function normalizeWindow(window) {
   if (!window) return { ...DEFAULT_WINDOW };
@@ -160,7 +141,7 @@ function normalizeWindow(window) {
 
 // Rolling is the default and reads as no caption — only a FIXED window earns
 // a line on the cards and the Insights headers.
-export function windowLabel(window) {
+function windowLabel(window) {
   const w = normalizeWindow(window);
   if (w.type === "fixed") return w.date ? `Ends on ${formatDay(w.date)}` : "Ends on a date";
   return "";
@@ -185,7 +166,7 @@ function formatDay(iso) {
 
 // Where the suggested baseline comes from — tooltip copy, never an inline
 // mention: the row shows the figure, the provenance is one hover away.
-export function baselineHint(metricId) {
+function baselineHint(metricId) {
   return METRICS[metricId]?.growth
     ? "Suggested from your previous 30 days"
     : "Suggested from your trailing 30-day average";
@@ -370,7 +351,7 @@ export function metricLabel(metricId) {
   return METRICS[metricId]?.label || metricId;
 }
 
-export function baselineFor(metricId, contextId) {
+function baselineFor(metricId, contextId) {
   const perContext = BASELINES_BY_CONTEXT[contextId] || {};
   return perContext[metricId] || DEFAULT_BASELINES[metricId];
 }
@@ -483,7 +464,7 @@ const TRENDS_BY_CONTEXT = {
   "ctx-founder-voice": { reach: 3 },
 };
 
-export function trendFor(metricId, contextId) {
+function trendFor(metricId, contextId) {
   const pct = (TRENDS_BY_CONTEXT[contextId] || {})[metricId] ?? TRENDS[metricId] ?? 0;
   const dir = pct > 1 ? "up" : pct < -1 ? "down" : "flat";
   const label = dir === "up" ? "Up" : dir === "down" ? "Down" : "Flat";
@@ -491,7 +472,7 @@ export function trendFor(metricId, contextId) {
   return { dir, pct, label, tone };
 }
 
-export function paceFor(measure) {
+function paceFor(measure) {
   if (isRate(measure.metricId)) {
     const current = parseMetricValue(measure.baselineValue);
     const goal = parseMetricValue(measure.target);
@@ -650,7 +631,7 @@ export function resolveObjectives(labels, contextId, overrides = {}) {
 // and at least one off → Off track, anything else → At risk. An objective in
 // grace ("collecting") carries no verdict at all. Derived on every render,
 // never stored.
-export const MEASURE_TIER_FLOORS = { atRisk: 60, onTrack: 80 };
+const MEASURE_TIER_FLOORS = { atRisk: 60, onTrack: 80 };
 
 export function measureTier(progressPct) {
   if (progressPct == null) return null;

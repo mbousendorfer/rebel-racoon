@@ -7,12 +7,12 @@
 //
 // Swappable: a real backend only has to honour the same function signatures.
 
-import { createNotifier } from "../state/notifier.js?v=1401";
-import { SCHEMA_VERSION } from "../model/schema.js?v=1401";
+import { createNotifier } from "../state/notifier.js?v=1402";
+import { SCHEMA_VERSION } from "../model/schema.js?v=1402";
 
 const PREFIX = "imageStudio:v2:";
 // No "brands": the brand is the Playbook. Every entity carries `brandId`, a Playbook id.
-export const COLLECTIONS = Object.freeze(["styles", "products", "creations", "assets"]);
+const COLLECTIONS = Object.freeze(["styles", "products", "creations", "assets"]);
 
 // v1 kept its own brands; its keys are dropped rather than migrated — they
 // only ever held demo data.
@@ -86,7 +86,7 @@ export function put(collection, entity) {
   return stored;
 }
 
-export function putMany(collection, entities) {
+function putMany(collection, entities) {
   const items = load(collection).slice();
   for (const entity of entities) {
     const index = items.findIndex((item) => item.id === entity.id);
@@ -103,13 +103,6 @@ export function remove(collection, id) {
   );
 }
 
-export function removeWhere(collection, predicate) {
-  save(
-    collection,
-    load(collection).filter((item) => !predicate(item)),
-  );
-}
-
 export function subscribe(fn) {
   return notifier.subscribe(fn);
 }
@@ -120,7 +113,7 @@ export function getMeta() {
   return readJson("meta", { schemaVersion: SCHEMA_VERSION, seededAt: null, activePlaybookId: null });
 }
 
-export function setMeta(patch) {
+function setMeta(patch) {
   const next = { ...getMeta(), ...patch };
   writeJson("meta", next);
   notifier.notify({ collection: "meta" });
@@ -135,20 +128,6 @@ export function ensureSeeded(seed) {
   for (const collection of COLLECTIONS) if (data[collection]) putMany(collection, data[collection]);
   setMeta({ schemaVersion: SCHEMA_VERSION, seededAt: new Date().toISOString() });
   return true;
-}
-
-/** Wipes the module's metadata and blobs (History › Reset demo data). */
-export async function resetAll() {
-  for (const collection of [...COLLECTIONS, "meta"]) {
-    try {
-      window.localStorage.removeItem(key(collection));
-    } catch {
-      /* ignore */
-    }
-  }
-  cache.clear();
-  await clearBlobs();
-  notifier.notify({ collection: "*" });
 }
 
 // ── Blobs (IndexedDB) ────────────────────────────────────────────────────────
@@ -186,20 +165,12 @@ export function putBlob(blobKey, blob) {
   return tx("readwrite", (store) => store.put(blob, blobKey));
 }
 
-export function getBlob(blobKey) {
+function getBlob(blobKey) {
   return tx("readonly", (store) => store.get(blobKey));
 }
 
 export function deleteBlob(blobKey) {
   return tx("readwrite", (store) => store.delete(blobKey));
-}
-
-async function clearBlobs() {
-  try {
-    await tx("readwrite", (store) => store.clear());
-  } catch {
-    /* no database yet */
-  }
 }
 
 const objectUrls = new Map();

@@ -15,16 +15,16 @@ import {
   getContexts,
   subscribe as subscribeContexts,
   updateContext,
-} from "../../../contexts-store.js?v=1401";
-import { createStyle } from "../model/schema.js?v=1401";
-import { canEdit, usableContexts } from "../../../playbook-access.js?v=1401";
+} from "../../../contexts-store.js?v=1402";
+import { createStyle } from "../model/schema.js?v=1402";
+import { canEdit, usableContexts } from "../../../playbook-access.js?v=1402";
 import {
   getActivePlaybookId,
   isWorkspaceMode,
   playbookForNewWork,
   subscribe as subscribeActive,
-} from "../../../active-playbook.js?v=1401";
-import { storageService as storage } from "../services/index.js?v=1401";
+} from "../../../active-playbook.js?v=1402";
+import { storageService as storage } from "../services/index.js?v=1402";
 
 // Which copy archetype the mocked copyService uses — guessed from the Playbook's words.
 function sectorKeyOf(ctx) {
@@ -35,7 +35,7 @@ function sectorKeyOf(ctx) {
 }
 
 /** A Playbook, as the generator reads it. `null` for an unknown id. */
-export function toBrand(ctx) {
+function toBrand(ctx) {
   if (!ctx) return null;
   const t = ctx.brandTypography || {};
   const vp = ctx.voiceProfile || {};

@@ -1,18 +1,3 @@
-/* Image Generator — the module's UI primitives, composed from DS classes:
- * dialogs (.ap-dialog), menus (.ap-action-dropdown on <details>), swatches,
- * snackbars, the brand card and the brand picker. .imst- only; never an .ap-*
- * redeclaration (those belong to styles/ds-patches.css).
- */
-
-.imst-sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-}
-
 /* ── Dialog ─────────────────────────────────────────────────────────────── */
 
 .imst-dialog {

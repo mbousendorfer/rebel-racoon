@@ -21,7 +21,7 @@
 // observation rather than act on it. The verb is gone, and with it the set, the
 // notifier it existed to fire, and the entry's removed counts.
 
-import { getActivePlaybook } from "../../active-playbook.js?v=1401";
+import { getActivePlaybook } from "../../active-playbook.js?v=1402";
 import {
   resolveObjectives,
   objectiveVerdict,
@@ -32,14 +32,14 @@ import {
   parseMetricValue,
   formatLike,
   metricLabel,
-} from "../../objective-measures.js?v=1401";
-import { TIER_LABELS, TIER_STATUS_CLASS, TIER_ORDER } from "../../objective-scoring.js?v=1401";
-import { nextMoveFor } from "../../objective-flow.js?v=1401";
-import { objectivePosts, objectivePostPool, TOP_POST_TODAY, TOP_POST_IMAGES } from "../../mocks.js?v=1401";
-import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=1401";
+} from "../../objective-measures.js?v=1402";
+import { TIER_LABELS, TIER_STATUS_CLASS, TIER_ORDER } from "../../objective-scoring.js?v=1402";
+import { nextMoveFor } from "../../objective-flow.js?v=1402";
+import { objectivePosts, objectivePostPool, TOP_POST_TODAY, TOP_POST_IMAGES } from "../../mocks.js?v=1402";
+import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=1402";
 
 /** The mock "today" — one anchor for the series' x-axis and the posts' dates. */
-export const INSIGHTS_TODAY = TOP_POST_TODAY;
+const INSIGHTS_TODAY = TOP_POST_TODAY;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const WINDOW_DAYS = 30;
@@ -89,7 +89,7 @@ function dayAgoMs(daysAgo) {
 }
 
 /** "Jun 22" for a post N days before the mock today. */
-export function shortDate(daysAgo) {
+function shortDate(daysAgo) {
   const d = new Date(dayAgoMs(daysAgo));
   return `${MONTHS[d.getMonth()]} ${d.getDate()}`;
 }
@@ -323,7 +323,7 @@ function enrichMeasure(m, proxy = false) {
 const MEASURE_STATE_RANK = { off: 0, soft: 1, on: 2 };
 
 /** The measure deciding the verdict — worst state first, lowest progress inside it. */
-export function weakestMeasure(entry) {
+function weakestMeasure(entry) {
   const list = entry.measures || [];
   if (!list.length) return null;
   return [...list].sort(
@@ -412,7 +412,7 @@ export function entryByKey(key, entries = objectiveEntries()) {
   return entries.find((e) => e.key === key) || null;
 }
 
-export function sortEntries(entries, by = "risk") {
+function sortEntries(entries, by = "risk") {
   const list = [...entries];
   if (by === "label") return list.sort((a, b) => a.label.localeCompare(b.label));
   if (by === "progress") return list.sort((a, b) => a.progress - b.progress);

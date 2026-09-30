@@ -85,31 +85,6 @@
   gap: var(--ref-spacing-md);
 }
 
-/* The section's head: its title, and whatever control the section owns, on one
-   line. `[analytics-section] .title-wrapper`, same shape — the h3 truncates
-   rather than pushing the control off the row. */
-.ins-section__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ref-spacing-xxs);
-  min-width: 0;
-}
-
-.ins-section__head > .ins-section-title {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  min-width: 0;
-}
-
-/* `[analytics-section] .button-wrapper` — actions right-aligned at the foot. */
-.ins-section__actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--ref-spacing-xxs);
-}
-
 .insights__band {
   flex: 0 0 auto;
   background: var(--app-surface);
@@ -384,20 +359,6 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
-}
-
-/* Screen-reader-only text — the tab strip states each objective's verdict for
-   AT, where the tier icon alone says nothing. */
-.ins-visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
 }
 
 /* ── Typography helpers ─────────────────────────────────────────────────── */

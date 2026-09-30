@@ -1395,13 +1395,6 @@
   container-type: size;
 }
 
-.isv2-art__a,
-.isv2-art__b,
-.isv2-art__c {
-  position: absolute;
-  display: block;
-}
-
 /* ── Option art: the nine drawn previews of Type and Style ─────────────────
    `type-art.js` and `style-art.js` hold the geometry (one inline SVG per catalogue
    entry) and name their shapes; every colour lives here, so the tokens are where

@@ -7,10 +7,10 @@
 // as the muted caption, and a DS avatar carrying the brand photo plus a
 // corner network badge.
 
-import { socialAccounts, demoManyProfiles } from "./mocks.js?v=1401";
-import { escapeHtml } from "./utils.js?v=1401";
-import { isFlagOn } from "./feature-flags.js?v=1401";
-import { createNotifier } from "./store-utils.js?v=1401";
+import { socialAccounts, demoManyProfiles } from "./mocks.js?v=1402";
+import { escapeHtml } from "./utils.js?v=1402";
+import { isFlagOn } from "./feature-flags.js?v=1402";
+import { createNotifier } from "./store-utils.js?v=1402";
 
 // Map our mock's `platform` slug to the DS's official full-color network
 // icon used by the .ap-avatar-network corner badge.
@@ -37,7 +37,7 @@ export const NETWORK_LABEL = {
 // What you connect ON a network, in the product's own words — the subtitle
 // under each card of Agorapulse's "Add new social profiles" grid, which the
 // connect step reproduces. Keyed by platform slug.
-export const NETWORK_CONNECT_KINDS = {
+const NETWORK_CONNECT_KINDS = {
   facebook: "Pages",
   instagram: "Professional accounts",
   linkedin: "Profiles, company pages",

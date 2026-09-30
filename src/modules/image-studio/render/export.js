@@ -39,7 +39,7 @@ function wrap(ctx, text, maxWidth) {
  * Draws layers onto a canvas context. Layer coordinates are fractions of the
  * canvas (x, y, w, h in 0..1). Supported: text, logo / image (via `href`), shape.
  */
-export async function drawLayers(ctx, layers, width, height) {
+async function drawLayers(ctx, layers, width, height) {
   const fonts = layers
     .filter((l) => l.type === "text" && !l.hidden)
     .map((l) => `700 ${Math.round(l.size * width)}px ${l.fontStack}`);

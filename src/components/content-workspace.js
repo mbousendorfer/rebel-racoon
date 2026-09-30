@@ -30,10 +30,10 @@
 // Caller wires its own input/change listeners and calls
 // rerenderContentWorkspaceBody(...) on each tick.
 
-import { html, raw } from "../utils.js?v=1401";
-import { renderSourceCard } from "./source-card.js?v=1401";
-import { renderIdeaCard } from "./idea-card.js?v=1401";
-import { renderEmptyState } from "./empty-state.js?v=1401";
+import { html, raw } from "../utils.js?v=1402";
+import { renderSourceCard } from "./source-card.js?v=1402";
+import { renderIdeaCard } from "./idea-card.js?v=1402";
+import { renderEmptyState } from "./empty-state.js?v=1402";
 
 export const contentState = { q: "", sort: "potential" };
 
@@ -155,7 +155,7 @@ function renderContentToolbar(view, sourcesCount, ideasCount) {
 // `sourcesBulkBar` / `ideasBulkBar` — optional HTML rendered above the
 //                   matching view's cards, sticky, when the caller wants
 //                   to surface bulk actions for that selection.
-export function renderContentWorkspace({
+function renderContentWorkspace({
   sources,
   ideas,
   view,
@@ -238,17 +238,4 @@ export function rerenderContentWorkspaceBody(
   if (headerCount) {
     headerCount.textContent = `${sources.length} source${sources.length === 1 ? "" : "s"} · ${ideas.length} idea${ideas.length === 1 ? "" : "s"}`;
   }
-}
-
-// Default empty-state for "no sources, no ideas at all" — both screens
-// surface the same message before any content has been ingested. Pass
-// `actionHtml` to render a CTA underneath (e.g. "+ Add source"); callers
-// that don't have a primary action can omit it.
-export function renderContentEmptyState({ actionHtml = "" } = {}) {
-  return renderEmptyState({
-    icon: "ap-icon-feature-library",
-    title: "No content yet",
-    body: "Add a PDF, a video, or a URL to get started. Archie processes it and surfaces ideas you can publish.",
-    actionHtml,
-  });
 }

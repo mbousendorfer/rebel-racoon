@@ -2,7 +2,7 @@
 // .ap-textarea-field, .ap-select, .ap-toggle-container, .ap-tag). Every field carries
 // data-imst-field="<path>" so one delegated listener can write it back.
 
-import { html, raw } from "../lib/html.js?v=1401";
+import { html, raw } from "../lib/html.js?v=1402";
 
 export function field({ label, hint, control, id }) {
   return html`
@@ -94,39 +94,6 @@ export function toggle({ path, checked, label, disabled = false }) {
       <i></i>
       <span>${label}</span>
     </label>
-  `;
-}
-
-/** A list of words as removable DS tags + an add field. */
-export function tagList({ path, values, placeholder = "Add…", disabled = false }) {
-  return html`
-    <div class="imst-taglist" data-imst-taglist="${path}">
-      <div class="ap-tag-list imst-taglist__tags">
-        ${values.map(
-          (v, i) => html`
-            <span class="ap-tag grey">
-              <span>${v}</span>
-              ${disabled
-                ? ""
-                : html`<button type="button" aria-label="Remove ${v}" data-imst-tag-remove="${i}">
-                    <i class="ap-icon-close" aria-hidden="true"></i>
-                  </button>`}
-            </span>
-          `,
-        )}
-      </div>
-      ${disabled
-        ? ""
-        : html`<div class="ap-input-group imst-taglist__add">
-            <input
-              type="text"
-              class="ap-input"
-              placeholder="${placeholder}"
-              data-imst-tag-input
-              aria-label="${placeholder}"
-            />
-          </div>`}
-    </div>
   `;
 }
 

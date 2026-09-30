@@ -2,9 +2,9 @@
 // IndexedDB blobs resolve after render, so they go out with data-imst-asset and
 // hydrateAssets(root) fills their src.
 
-import { html } from "../lib/html.js?v=1401";
-import { storageService as storage } from "../services/index.js?v=1401";
-import { getAsset } from "../state/store.js?v=1401";
+import { html } from "../lib/html.js?v=1402";
+import { storageService as storage } from "../services/index.js?v=1402";
+import { getAsset } from "../state/store.js?v=1402";
 
 export function assetImg(assetOrId, { alt = "", className = "" } = {}) {
   const asset = typeof assetOrId === "string" ? getAsset(assetOrId) : assetOrId;
@@ -25,15 +25,6 @@ export function assetUrlSync(id) {
   if (asset.svg) return storage.svgDataUrl(asset.svg);
   if (asset.preview) return asset.preview;
   return urlCache.get(id) || "";
-}
-
-/** Resolves blob URLs for these assets so assetUrlSync can return them. */
-export async function warmAssetUrls(ids) {
-  for (const id of ids) {
-    if (!id || urlCache.has(id)) continue;
-    const url = await storage.assetUrl(getAsset(id));
-    if (url) urlCache.set(id, url);
-  }
 }
 
 export async function hydrateAssets(root) {

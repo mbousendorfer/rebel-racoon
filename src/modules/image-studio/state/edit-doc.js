@@ -16,7 +16,7 @@
 // draft's photo — and keeps its own undo stack. Edits stick to that image:
 // picking another variation opens (or reopens) that one's document.
 
-import { hashString } from "../lib/prng.js?v=1401";
+import { hashString } from "../lib/prng.js?v=1402";
 
 let seq = 0;
 const uid = (prefix) => `${prefix}-${(seq += 1).toString(36)}`;
@@ -30,7 +30,7 @@ export const LAYER_ICONS = Object.freeze({
   image: "ap-icon-file--image",
 });
 
-export const TEXT_DEFAULTS = Object.freeze({
+const TEXT_DEFAULTS = Object.freeze({
   text: "Your text",
   color: "#FFFFFF",
   outline: false,
@@ -147,12 +147,6 @@ export function moveLayer(doc, id, dir) {
   if (i < 1 || j < 1 || j >= doc.layers.length) return false;
   [doc.layers[i], doc.layers[j]] = [doc.layers[j], doc.layers[i]];
   return true;
-}
-
-export function bringToFront(doc, id) {
-  const i = doc.layers.findIndex((l) => l.id === id);
-  if (i < 1 || i === doc.layers.length - 1) return;
-  doc.layers.push(doc.layers.splice(i, 1)[0]);
 }
 
 export function removeLayer(doc, id) {

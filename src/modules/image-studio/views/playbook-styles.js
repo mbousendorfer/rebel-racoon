@@ -10,18 +10,18 @@
 // weights and a test on three subjects. The system presets are NOT shown here:
 // they belong to no Playbook, and the fiche lists only what is this brand's.
 
-import { html, toString } from "../lib/html.js?v=1401";
-import { navigate } from "../../../router.js?v=1401";
-import { styleThumb } from "../ui/style-thumb.js?v=1401";
-import { confirmDialog } from "../ui/dialog.js?v=1401";
-import { toast } from "../ui/toast.js?v=1401";
-import { canEditBrand, getBrand, getStyle, getStylesForBrand } from "../state/store.js?v=1401";
-import { deleteStyle, duplicateStyle } from "../state/style-actions.js?v=1401";
+import { html, toString } from "../lib/html.js?v=1402";
+import { navigate } from "../../../router.js?v=1402";
+import { styleThumb } from "../ui/style-thumb.js?v=1402";
+import { confirmDialog } from "../ui/dialog.js?v=1402";
+import { toast } from "../ui/toast.js?v=1402";
+import { canEditBrand, getBrand, getStyle, getStylesForBrand } from "../state/store.js?v=1402";
+import { deleteStyle, duplicateStyle } from "../state/style-actions.js?v=1402";
 
 const creatorPath = (playbookId, rest) => `/playbook/${encodeURIComponent(playbookId)}/styles/${rest}`;
 
 /** "3 reference images · Style & composition" — what a style is made of, in words. */
-export function sourcesSummary(style) {
+function sourcesSummary(style) {
   const images = (style.custom?.sources || []).filter((s) => s.type === "image").length;
   const keep = style.custom?.fidelity === "composition" ? "Style & composition" : "Essential";
   return [images ? `${images} reference image${images === 1 ? "" : "s"}` : "", keep].filter(Boolean).join(" · ");

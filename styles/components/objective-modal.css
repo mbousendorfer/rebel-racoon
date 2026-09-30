@@ -372,17 +372,6 @@
     justify-content: flex-start;
   }
 
-  /* The pair SHARES the line instead of stacking: `14,800` above `20,000` with
-     an arrow between them reads as two fields, not as one run. Fixed widths are
-     what align the arrow across cards, and there is no such column to align to
-     once the card is one column wide, so here they flex. */
-  .objm__cardbody .objm__from,
-  .objm__cardbody .objm__target {
-    width: auto;
-    flex: 1 1 0;
-    min-width: 0;
-  }
-
   /* On its own wrapped line the hint has no right edge to hold — the card's one
      column is the left one, so it joins it. Specificity, not order: the base
      rule's `margin-left: auto` is declared further down the file. */
@@ -499,35 +488,6 @@
 .objm__arrow {
   flex-shrink: 0;
   color: var(--ref-color-grey-40);
-}
-
-/* 104px, and the number is arithmetic rather than taste: the row has to hold
-   two fields, the glyph between them and the hint that follows, inside a 438px
-   control column — 2×104 + 12 + 2 gaps of 8 leaves 190 for a hint that measures
-   182. At 112 it was four pixels short and the hint wrapped, which is what made
-   the card 184px tall for 158px of content. It still wraps gracefully for a
-   longer run (the hint keeps the right edge on its own line), but the common
-   case fits on one.
-
-   Fixed rather than flexing, so the glyph between the two fields lands on the
-   same x in every card. */
-.objm__from,
-.objm__target {
-  width: 104px;
-}
-
-/* Tabular numerals are the ONE property on these inputs: same font, same size,
-   same weight as any DS input — only the digit advance is fixed, so two stacked
-   measures' figures line up instead of dancing as you type. */
-.objm__from input,
-.objm__target input {
-  width: 100%;
-  font-variant-numeric: tabular-nums;
-}
-
-.objm__spacer,
-.objc__spacer {
-  flex: 1;
 }
 
 /* ⚠️ Nothing here for the "Add a measure" affordance any more: it is a DS

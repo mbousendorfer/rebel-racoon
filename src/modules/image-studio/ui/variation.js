@@ -2,14 +2,14 @@
 // layers (text, logo…) laid over it in the DOM, exactly where the PNG export
 // will draw them. One function for the results grid, the editor and exports.
 
-import { html, raw } from "../lib/html.js?v=1401";
-import { formatById } from "../config/formats.js?v=1401";
-import { renderVisual, svgToDataUrl } from "../render/visual.js?v=1401";
-import { subjectKindFor } from "../render/subjects.js?v=1401";
-import { defaultLayers, resolveLayers } from "../render/layout.js?v=1401";
-import { storageService as storage } from "../services/index.js?v=1401";
-import { getAsset, getStyle } from "../state/store.js?v=1401";
-import { assetUrlSync } from "./asset.js?v=1401";
+import { html, raw } from "../lib/html.js?v=1402";
+import { formatById } from "../config/formats.js?v=1402";
+import { renderVisual, svgToDataUrl } from "../render/visual.js?v=1402";
+import { subjectKindFor } from "../render/subjects.js?v=1402";
+import { defaultLayers, resolveLayers } from "../render/layout.js?v=1402";
+import { storageService as storage } from "../services/index.js?v=1402";
+import { getAsset, getStyle } from "../state/store.js?v=1402";
+import { assetUrlSync } from "./asset.js?v=1402";
 
 export function productHref(productId) {
   if (!productId) return "";
@@ -71,7 +71,7 @@ export function layersFor({ creation, formatId, useMaster = false }) {
 }
 
 /** DOM overlay for resolved layers (skipping the image layer, which is the SVG itself). */
-export function overlayHtml(resolved, { interactive = false, selectedId = null } = {}) {
+function overlayHtml(resolved, { interactive = false, selectedId = null } = {}) {
   return raw(
     resolved
       .filter((l) => l.type !== "image" && !l.hidden)

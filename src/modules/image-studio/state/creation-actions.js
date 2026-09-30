@@ -2,11 +2,9 @@
 // as a creation straight away (that IS the history); opening a variation in the
 // editor gives it its layers.
 
-import { storageService as storage } from "../services/index.js?v=1401";
-import { createCreation, historyEntry } from "../model/schema.js?v=1401";
-import { formatById } from "../config/formats.js?v=1401";
-import { uid } from "../lib/id.js?v=1401";
-import { defaultLayers, recompose } from "../render/layout.js?v=1401";
+import { storageService as storage } from "../services/index.js?v=1402";
+import { createCreation, historyEntry } from "../model/schema.js?v=1402";
+import { uid } from "../lib/id.js?v=1402";
 
 function get(id) {
   return storage.get("creations", id);
@@ -70,73 +68,6 @@ export function replaceVariation(creationId, variationId, next) {
     ...c,
     variations: c.variations.map((v) => (v.id === variationId ? { ...next, id: v.id, batchId: v.batchId } : v)),
     history: [...c.history, historyEntry("regenerated", "One variation")],
-  });
-}
-
-/** Picks the variation to edit and lays out its first format. */
-export function openVariation(creationId, variationId) {
-  const c = get(creationId);
-  const formatId = c.brief.formatIds[0] || "ig-post";
-  const f = formatById(formatId);
-  const layout = f?.layout || "square";
-  const sameVariation = c.selectedVariationId === variationId && c.master.layers.length;
-  return save({
-    ...c,
-    selectedVariationId: variationId,
-    master: sameVariation
-      ? c.master
-      : {
-          formatId,
-          layers: defaultLayers({
-            layout,
-            headline: c.brief.headline,
-            textMode: c.brief.textMode,
-            ratio: f ? f.width / f.height : 1,
-          }),
-        },
-    history: sameVariation ? c.history : [...c.history, historyEntry("opened", "In the editor")],
-  });
-}
-
-/**
- * "Adapt everywhere": every picked format gets the master recomposed for its
- * shape (render/layout.js#recompose). The formats join the brief, so the
- * results and the history list them.
- */
-export function adaptEverywhere(creationId, formatIds) {
-  const c = get(creationId);
-  const adaptations = formatIds
-    .filter((f) => f !== c.master.formatId)
-    .map((formatId) => ({ formatId, layers: recompose(c.master.layers, formatById(formatId) || "square") }));
-  const kept = c.adaptations.filter((a) => !formatIds.includes(a.formatId));
-  const all = [c.master.formatId, ...new Set([...c.brief.formatIds, ...formatIds])].filter(
-    (f, i, arr) => arr.indexOf(f) === i,
-  );
-  return save({
-    ...c,
-    brief: { ...c.brief, formatIds: all },
-    adaptations: [...kept, ...adaptations],
-    history: [
-      ...c.history,
-      historyEntry("adapted", `${adaptations.length} format${adaptations.length === 1 ? "" : "s"}`),
-    ],
-  });
-}
-
-/** The caption + hashtags of one network's post. */
-export function setCaption(creationId, network, patch) {
-  const c = get(creationId);
-  const captions = { ...(c.copy?.captions || {}) };
-  captions[network] = { text: "", hashtags: [], ...(captions[network] || {}), ...patch };
-  return save({ ...c, copy: { ...(c.copy || {}), captions } });
-}
-
-export function removeAdaptation(creationId, formatId) {
-  const c = get(creationId);
-  return save({
-    ...c,
-    adaptations: c.adaptations.filter((a) => a.formatId !== formatId),
-    brief: { ...c.brief, formatIds: c.brief.formatIds.filter((f) => f !== formatId || f === c.master.formatId) },
   });
 }
 

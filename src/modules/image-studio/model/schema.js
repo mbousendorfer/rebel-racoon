@@ -5,17 +5,10 @@
 // state/playbook-brand.js. Everything below is scoped to one by `brandId`,
 // which is a Playbook (Context) id.
 
-import { uid, nowIso } from "../lib/id.js?v=1401";
+import { uid, nowIso } from "../lib/id.js?v=1402";
 
 // 2: brands moved to the Playbook (v1 had its own brands collection).
 export const SCHEMA_VERSION = 2;
-
-export const TEXT_MODES = Object.freeze([
-  { id: "layer", label: "Editable layer" },
-  { id: "embedded", label: "Built into the image" },
-]);
-
-export const LAYER_TYPES = Object.freeze(["image", "text", "logo", "shape", "asset"]);
 
 // ── Factories ────────────────────────────────────────────────────────────────
 
@@ -32,22 +25,6 @@ export function createStyle(partial = {}) {
     supportsEmbeddedText: false,
     render: { generator: "blend", variant: "custom" },
     custom: { sources: [], fidelity: "essential", stylePrompt: "" },
-    createdAt: at,
-    updatedAt: at,
-    ...partial,
-  };
-}
-
-export function createProduct(partial = {}) {
-  const at = nowIso();
-  return {
-    id: uid("pr"),
-    brandId: null,
-    name: "",
-    description: "",
-    url: "",
-    imageAssetId: null,
-    shotAssetIds: [],
     createdAt: at,
     updatedAt: at,
     ...partial,
@@ -134,10 +111,4 @@ export function colorByRole(brand, role) {
 
 export function fontByRole(brand, role) {
   return brand?.fonts?.find((f) => f.role === role)?.family || null;
-}
-
-const HEX = /^#[0-9a-f]{6}$/i;
-
-export function isHex(value) {
-  return HEX.test(value);
 }

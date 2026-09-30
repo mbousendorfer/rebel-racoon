@@ -20,14 +20,14 @@
 // Pure render + a pure reducer: the host owns the open/query UI state and the
 // draft, so this file holds no state and no listeners.
 
-import { escapeHtml as esc } from "../utils.js?v=1401";
+import { escapeHtml as esc } from "../utils.js?v=1402";
 import {
   NETWORK_LABEL,
   getConnectedProfiles,
   renderProfileTag,
   PROFILE_SEARCH_THRESHOLD,
-} from "../social-profiles.js?v=1401";
-import { isAdditiveMetric, metricLabel } from "../objective-measures.js?v=1401";
+} from "../social-profiles.js?v=1402";
+import { isAdditiveMetric, metricLabel } from "../objective-measures.js?v=1402";
 
 function profilesFor(network) {
   return getConnectedProfiles().filter((p) => p.platform === network);
@@ -56,7 +56,7 @@ function pickedIds(scope) {
 // The trigger says the NETWORK and the count — never a run of profile chips.
 // Two handles plus "+5" told the reader neither which network the measure is on
 // nor how many profiles it covers, which are the only two facts a scope has.
-export function scopeTriggerText(scope) {
+function scopeTriggerText(scope) {
   const all = getConnectedProfiles();
   if (!scope?.network) return `Every connected profile · ${all.length}`;
   const netName = NETWORK_LABEL[scope.network] || scope.network;

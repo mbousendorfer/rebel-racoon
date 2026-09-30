@@ -1,44 +1,43 @@
-import { html, raw, escapeText, escapeAttr } from "../utils.js?v=1401";
-import { getThread, subscribe as subscribeThread } from "../assistant.js?v=1401";
-import { isFlagOn } from "../feature-flags.js?v=1401";
-import { getPath, navigate } from "../router.js?v=1401";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1401";
-import { LANGUAGE_OPTIONS } from "../languages.js?v=1401";
+import { html, raw, escapeText, escapeAttr } from "../utils.js?v=1402";
+import { subscribe as subscribeThread } from "../assistant.js?v=1402";
+import { isFlagOn } from "../feature-flags.js?v=1402";
+import { getPath, navigate } from "../router.js?v=1402";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1402";
 import {
   getPosts,
   removePost,
   insertPost,
   updatePostContent,
   attachImageToDraft,
+  updatePostClip,
   subscribe as subscribePostsStore,
-} from "../posts-store.js?v=1401";
-import { renderPostCard } from "./post-card.js?v=1401";
-import { renderTopPostEcho } from "./top-post-card.js?v=1401";
-import { renderClipCard } from "./clip-card.js?v=1401";
-import { onFeedbackClick } from "./feedback-control.js?v=1401";
+} from "../posts-store.js?v=1402";
+import { renderPostCard } from "./post-card.js?v=1402";
+import { renderTopPostEcho } from "./top-post-card.js?v=1402";
+import { renderClipCard } from "./clip-card.js?v=1402";
+import { onFeedbackClick } from "./feedback-control.js?v=1402";
 // Shared compact idea card — same component the standalone Ideas page uses.
-import { renderCompactIdeaCard } from "./idea-card-compact.js?v=1401";
-import { open as openVideoClipsModal } from "./video-clips-modal.js?v=1401";
-import { isSidebarCollapsed, setSidebarCollapsed, isAutoCollapsed } from "./sidebar.js?v=1401";
+import { renderCompactIdeaCard } from "./idea-card-compact.js?v=1402";
+import { open as openVideoClipsModal } from "./video-clips-modal.js?v=1402";
+import { isSidebarCollapsed, setSidebarCollapsed, isAutoCollapsed } from "./sidebar.js?v=1402";
 import {
   getSources as getStreamSources,
   subscribeSources,
   updateSourceClips,
   removeSources,
   renameSource,
-} from "../sources-stream.js?v=1401";
-import { open as openAddSourceModal } from "./add-source-modal.js?v=1401";
-import { open as openRenameModal } from "./rename-modal.js?v=1401";
-import { getConnectedConnectors } from "../connectors-store.js?v=1401";
-import { getSessionById } from "../sessions-store.js?v=1401";
-import { getContextById, getBrandKitGaps } from "../contexts-store.js?v=1401";
-import { quickGenerateUrl } from "../image-studio.js?v=1401";
-import { askConnector } from "../connector-ask.js?v=1401";
-import { renderConnectorLogo } from "../connectors-view.js?v=1401";
-import { open as openConnectorsModal } from "./connectors-modal.js?v=1401";
-import { addMention as addComposerMention } from "../composer-mentions.js?v=1401";
-import { iconFor } from "../file-kinds.js?v=1401";
-import { getIdeas, removeIdeasForSources } from "../library.js?v=1401";
+} from "../sources-stream.js?v=1402";
+import { open as openAddSourceModal } from "./add-source-modal.js?v=1402";
+import { open as openRenameModal } from "./rename-modal.js?v=1402";
+import { getConnectedConnectors } from "../connectors-store.js?v=1402";
+import { getSessionById } from "../sessions-store.js?v=1402";
+import { getContextById, getBrandKitGaps } from "../contexts-store.js?v=1402";
+import { quickGenerateUrl } from "../image-studio.js?v=1402";
+import { askConnector } from "../connector-ask.js?v=1402";
+import { renderConnectorLogo } from "../connectors-view.js?v=1402";
+import { open as openConnectorsModal } from "./connectors-modal.js?v=1402";
+import { addMention as addComposerMention } from "../composer-mentions.js?v=1402";
+import { getIdeas, removeIdeasForSources } from "../library.js?v=1402";
 
 // The ideas of the chat the panel is looking at.
 //
@@ -53,12 +52,13 @@ function sessionIdeas() {
   const sid = activeSessionId();
   return sid ? getIdeas(sid) : [];
 }
-import { open as openNewScheduleModal } from "./schedule-modal.js?v=1401";
-import { open as openLegacyScheduleModal } from "./schedule-modal-legacy.js?v=1401";
-import { open as openImageStudio } from "./image-studio-v2/index.js?v=1401";
-import { openDraftStudio } from "../modules/image-studio/index.js?v=1401";
-import { startDraftImageFlow } from "../draft-image-flow.js?v=1401";
-import { open as openConfirmModal } from "./confirm-modal.js?v=1401";
+import { open as openNewScheduleModal } from "./schedule-modal.js?v=1402";
+import { open as openLegacyScheduleModal } from "./schedule-modal-legacy.js?v=1402";
+import { open as openImageStudio } from "./image-studio-v2/index.js?v=1402";
+import { openDraftStudio } from "../modules/image-studio/index.js?v=1402";
+import { startDraftImageFlow } from "../draft-image-flow.js?v=1402";
+import { open as openConfirmModal } from "./confirm-modal.js?v=1402";
+import { showToast } from "./toast.js?v=1402";
 
 // Global Right Panel — slides in from the right edge of the viewport, overlays
 // the session workspace, hosts two modes:
@@ -83,9 +83,6 @@ const PANEL_ID = "rightPanel";
 // every panel open so the formula reasserts as the canonical default.
 const PANEL_MIN_WIDTH = 380;
 const PANEL_MAX_RIGHT_GAP = 400; // leave at least this much for sidebar+content
-// Stale localStorage key from the pre-formula era — wiped on init so
-// upgrading users don't keep seeing the panel at their old custom width.
-const LEGACY_PANEL_WIDTH_KEY = "archie-rpanel-width";
 const DRAFT_INLINE_EDIT_FLAG = "draftInlineEdit";
 
 // Idea kind taxonomy — handoff Ideas filter rail (§ 2.6). Order is the order
@@ -155,15 +152,14 @@ let editingPostId = null;
 let editingOriginal = null; // { text:[], hashtags:[], cta:"" } | null
 
 let state = {
-  mode: null, // 'drafts' | 'ideas' | 'sources' | 'context-brief' | null
+  mode: null, // 'drafts' | 'ideas' | 'sources' | null
   activeBatchRef: null, // { sessionId, messageId } | null
 };
 
 // ── URL persistence ───────────────────────────────────────────────────
 // The user-facing panel modes (drafts / ideas / sources) are encoded in
 // the hash query as `?panel=<mode>` so the panel re-opens on reload and
-// deep-links work. `context-brief` is NOT persisted — it's driven by the
-// Playbooks navigation, not by a user-toggleable session control.
+// deep-links work.
 const VALID_URL_MODES = new Set(["drafts", "ideas", "sources"]);
 
 function writeUrlPanel(mode) {
@@ -370,10 +366,6 @@ export function openSources() {
 
 export function closePanel({ skipUrl = false } = {}) {
   const wasUserMode = VALID_URL_MODES.has(state.mode);
-  if (state.mode === "context-brief") {
-    contextBriefConfig?.onCancel?.();
-    contextBriefConfig = null;
-  }
   state = { ...state, mode: null };
   if (unsubscribeActiveThread) {
     unsubscribeActiveThread();
@@ -382,8 +374,6 @@ export function closePanel({ skipUrl = false } = {}) {
   renderPanel();
   notify();
   // Only clear the `panel` URL param if we were in a user-toggleable mode.
-  // context-brief isn't URL-persisted, so closing it shouldn't touch the
-  // hash query (which might happen to carry an unrelated panel value).
   // `skipUrl` is used when closing as a side-effect of navigating off a
   // session — the new route owns the URL, we mustn't rewrite it.
   if (wasUserMode && !skipUrl) writeUrlPanel(null);
@@ -398,62 +388,6 @@ function setMode(mode) {
   if (mode !== "drafts" && mode !== "ideas") return;
   state = { ...state, mode };
   rebindThread();
-  renderPanel();
-  notify();
-}
-
-// V1 brief-builder panel — opens a side-by-side scrollable form. Two
-// modes:
-//   - edit (default): caller owns the draft state and supplies callbacks
-//     for chips, CTA checkboxes, name, save, cancel.
-//   - read: read-only view of an existing Context. getCtx() returns the
-//     persisted Context. onEnterEdit fires when the user clicks "Edit"
-//     in the footer (typically routes through contextBuilder.startEdit).
-let contextBriefConfig = null;
-
-// Voice-profile UI state — survives the brief panel's frequent
-// re-renders triggered by `refreshContextBriefPanel`. Tracks the set
-// of subsection ids whose body has been expanded past the ~140-char
-// snippet via the per-card "Show more" link. Module-local so the
-// state doesn't bleed into the persisted Context.
-const voiceProfileExpanded = new Set();
-
-// CTA editor manage-mode state. Open → renders an editable sub-panel
-// beneath the compact list. Snapshot is taken when Manage opens so
-// Cancel can revert to the pre-edit ctaLinks.
-let ctaManageOpen = false;
-let ctaManageSnapshot = null;
-
-export function openContextBriefPanel(config = {}) {
-  const prev = state.mode;
-  if (prev === null) resetPanelWidthOverride();
-  snapshotFocusOnOpen(prev);
-  contextBriefConfig = { mode: "edit", ...config };
-  // Fresh open — collapse all expanded snippets so the user lands on
-  // a clean overview.
-  voiceProfileExpanded.clear();
-  ctaManageOpen = false;
-  ctaManageSnapshot = null;
-  state = { ...state, mode: "context-brief" };
-  maybeCollapseSidebarOnOpen(prev);
-  renderPanel();
-  notify();
-}
-function refreshContextBriefPanel() {
-  if (state.mode !== "context-brief") return;
-  // Preserve scroll across re-renders — chip toggles call this on every
-  // click, and a naïve innerHTML rewrite would snap the user back to the
-  // top.
-  const body = document.querySelector("#" + PANEL_ID + " .context-brief__body");
-  const scrollTop = body?.scrollTop || 0;
-  renderPanel();
-  const nextBody = document.querySelector("#" + PANEL_ID + " .context-brief__body");
-  if (nextBody && scrollTop) nextBody.scrollTop = scrollTop;
-}
-export function closeContextBriefPanelSilently() {
-  if (state.mode !== "context-brief") return;
-  contextBriefConfig = null;
-  state = { ...state, mode: null };
   renderPanel();
   notify();
 }
@@ -490,7 +424,6 @@ export function init() {
   }
   // Drop any leftover persisted width from the pre-formula era so the
   // (viewport − sidebar) / 2 default takes hold on first paint.
-  clearLegacyPanelWidth();
   resetPanelWidthOverride();
 
   // Resize handle — mousedown begins drag, document-level mousemove +
@@ -743,13 +676,11 @@ export function init() {
           updateSourceClips(srcId, nextClips);
           const edited = (nextClips || []).find((c) => c.id === ref.clipId);
           if (!edited) return;
-          import("../posts-store.js?v=1401").then(({ updatePostClip }) => {
-            updatePostClip(sid, pid, {
-              start: edited.start,
-              end: edited.end,
-              format: edited.format || null,
-              subtitleStyle: edited.captionsOn ? edited.captionStyle : "none",
-            });
+          updatePostClip(sid, pid, {
+            start: edited.start,
+            end: edited.end,
+            format: edited.format || null,
+            subtitleStyle: edited.captionsOn ? edited.captionStyle : "none",
           });
         },
       });
@@ -815,7 +746,7 @@ export function init() {
       openVideoClipsModal(src, {
         onSaveClips: (id, nextClips) => updateSourceClips(id, nextClips),
         onUseClips: (selectedClips, source) => {
-          import("../screens/session/clip-draft-flow.js?v=1401").then(({ startClipDraftFlow }) => {
+          import("../screens/session/clip-draft-flow.js?v=1402").then(({ startClipDraftFlow }) => {
             startClipDraftFlow(
               sid,
               selectedClips.map((clip) => ({ clip, sourceName: source.filename, sourceId: source.id })),
@@ -832,9 +763,7 @@ export function init() {
       closeAllSourceMenus();
       if (!sid) return;
       const src = getStreamSources(sid).find((s) => s.id === reanalyzeBtn.dataset.rpanelSourceReanalyze);
-      import("./toast.js?v=1401").then(({ showToast }) =>
-        showToast(`Reanalyzing ${src?.filename || "source"}…`, { duration: 2600 }),
-      );
+      showToast(`Reanalyzing ${src?.filename || "source"}…`, { duration: 2600 });
       return;
     }
     // Kebab → Edit name (rename the source via the shared rename modal —
@@ -998,7 +927,7 @@ export function init() {
       const sid = activeSessionId();
       if (!sid || !entry) return;
       const { clip, sourceName, sourceId } = entry;
-      import("../screens/session/clip-draft-flow.js?v=1401").then(({ startClipDraftFlow }) => {
+      import("../screens/session/clip-draft-flow.js?v=1402").then(({ startClipDraftFlow }) => {
         startClipDraftFlow(sid, [{ clip, sourceName, sourceId }]);
       });
       return;
@@ -1016,7 +945,7 @@ export function init() {
       if (picked.length === 0) return;
       clipSelection = new Set();
       renderPanel();
-      import("../screens/session/clip-draft-flow.js?v=1401").then(({ startClipDraftFlow }) => {
+      import("../screens/session/clip-draft-flow.js?v=1402").then(({ startClipDraftFlow }) => {
         startClipDraftFlow(sid, picked);
       });
       return;
@@ -1058,16 +987,14 @@ export function init() {
           }
           clipSelection = new Set();
           renderPanel();
-          import("./toast.js?v=1401").then(({ showToast }) => {
-            showToast(`${count} ${clipWord} deleted`, {
-              action: {
-                label: "Undo",
-                onClick: () => {
-                  for (const { srcId, clips } of snapshot) updateSourceClips(srcId, clips);
-                  renderPanel();
-                },
+          showToast(`${count} ${clipWord} deleted`, {
+            action: {
+              label: "Undo",
+              onClick: () => {
+                for (const { srcId, clips } of snapshot) updateSourceClips(srcId, clips);
+                renderPanel();
               },
-            });
+            },
           });
         },
       });
@@ -1112,125 +1039,6 @@ export function init() {
       toggleWhyOpen(whyBtn.dataset.rpanelIdeaWhyToggle);
       return;
     }
-
-    // --- V1 brief panel handlers ---
-    const briefChip = event.target.closest("[data-brief-chip-field]");
-    if (briefChip) {
-      contextBriefConfig?.onToggleChip?.(briefChip.dataset.briefChipField, briefChip.dataset.briefChipValue);
-      return;
-    }
-    const briefSingle = event.target.closest("[data-brief-single-field]");
-    if (briefSingle) {
-      contextBriefConfig?.onAnswer?.(briefSingle.dataset.briefSingleField, briefSingle.dataset.briefSingleValue);
-      return;
-    }
-    const briefColor = event.target.closest("[data-brief-color]");
-    if (briefColor) {
-      contextBriefConfig?.onAnswer?.("color", briefColor.dataset.briefColor);
-      return;
-    }
-    const briefOtherToggle = event.target.closest("[data-brief-other-toggle]");
-    if (briefOtherToggle) {
-      const field = briefOtherToggle.dataset.briefOtherToggle;
-      const wrap = el.querySelector(`[data-brief-other-wrap="${field}"]`);
-      if (wrap) {
-        wrap.hidden = !wrap.hidden;
-        if (!wrap.hidden) wrap.querySelector("input")?.focus();
-      }
-      return;
-    }
-    const briefOtherSubmit = event.target.closest("[data-brief-other-submit]");
-    if (briefOtherSubmit) {
-      const field = briefOtherSubmit.dataset.briefOtherSubmit;
-      const input = el.querySelector(`[data-brief-other-input="${field}"]`);
-      const v = (input?.value || "").trim();
-      if (!v) return;
-      contextBriefConfig?.onAddOther?.(field, v);
-      return;
-    }
-    const briefCta = event.target.closest("[data-brief-cta-toggle]");
-    if (briefCta) {
-      // The native checkbox toggles its own state; we just propagate.
-      contextBriefConfig?.onToggleCta?.(briefCta.dataset.briefCtaToggle);
-      return;
-    }
-    // New CTA editor — index-based toggle (URLs can change in manage
-    // mode so we keep identity stable via position in the list).
-    const briefCtaIdx = event.target.closest("[data-brief-cta-toggle-idx]");
-    if (briefCtaIdx) {
-      const idx = Number(briefCtaIdx.dataset.briefCtaToggleIdx);
-      contextBriefConfig?.onCtaToggleAt?.(idx);
-      return;
-    }
-    // Manage CTA panel open / close.
-    if (event.target.closest("[data-brief-cta-manage]")) {
-      event.preventDefault();
-      const draft = contextBriefConfig?.getDraft?.();
-      ctaManageSnapshot = JSON.parse(JSON.stringify(draft?.ctaLinks || []));
-      ctaManageOpen = true;
-      refreshContextBriefPanel?.();
-      return;
-    }
-    if (event.target.closest("[data-brief-cta-manage-done]")) {
-      event.preventDefault();
-      ctaManageOpen = false;
-      ctaManageSnapshot = null;
-      refreshContextBriefPanel?.();
-      return;
-    }
-    if (event.target.closest("[data-brief-cta-manage-cancel]")) {
-      event.preventDefault();
-      contextBriefConfig?.onCtaRestore?.(ctaManageSnapshot || []);
-      ctaManageOpen = false;
-      ctaManageSnapshot = null;
-      refreshContextBriefPanel?.();
-      return;
-    }
-    const briefCtaDelete = event.target.closest("[data-brief-cta-delete]");
-    if (briefCtaDelete) {
-      event.preventDefault();
-      contextBriefConfig?.onCtaDelete?.(Number(briefCtaDelete.dataset.briefCtaDelete));
-      refreshContextBriefPanel?.();
-      return;
-    }
-    if (event.target.closest("[data-brief-cta-add]")) {
-      event.preventDefault();
-      contextBriefConfig?.onCtaAdd?.();
-      refreshContextBriefPanel?.();
-      // Focus the newly-appended label input so the user can start typing.
-      setTimeout(() => {
-        const inputs = document.querySelectorAll("[data-brief-cta-label]");
-        inputs[inputs.length - 1]?.focus();
-      }, 0);
-      return;
-    }
-    // Voice profile: per-card "Show more" link toggles the snippet/full
-    // body for that subsection (module-local state, see voiceProfileExpanded).
-    const briefVoiceToggle = event.target.closest("[data-brief-voice-toggle]");
-    if (briefVoiceToggle) {
-      const id = briefVoiceToggle.dataset.briefVoiceToggle;
-      if (voiceProfileExpanded.has(id)) voiceProfileExpanded.delete(id);
-      else voiceProfileExpanded.add(id);
-      refreshContextBriefPanel?.();
-      return;
-    }
-    if (event.target.closest("[data-brief-save]")) {
-      contextBriefConfig?.onSave?.();
-      return;
-    }
-    if (event.target.closest("[data-brief-cancel]")) {
-      // Hosts that want to redirect (e.g. flip back to read mode in
-      // place) can return a truthy value from onCancel to suppress the
-      // default panel teardown. Everything else falls through to a
-      // full close.
-      const handled = contextBriefConfig?.onCancel?.();
-      if (!handled) closePanel();
-      return;
-    }
-    if (event.target.closest("[data-brief-edit-mode]")) {
-      contextBriefConfig?.onEnterEdit?.();
-      return;
-    }
   });
   el.addEventListener("change", (event) => {
     // Per-card multi-select checkbox.
@@ -1262,53 +1070,6 @@ export function init() {
       clipSelection = event.target.checked ? new Set(all) : new Set();
       renderPanel();
       return;
-    }
-  });
-  el.addEventListener("input", (event) => {
-    // --- V1 brief panel inputs ---
-    if (event.target.matches("[data-brief-name]")) {
-      contextBriefConfig?.onName?.(event.target.value);
-      const btn = el.querySelector("[data-brief-save]");
-      if (btn) {
-        const shouldDisable = !event.target.value.trim();
-        if (shouldDisable && !btn.hasAttribute("disabled")) btn.setAttribute("disabled", "");
-        else if (!shouldDisable && btn.hasAttribute("disabled")) btn.removeAttribute("disabled");
-      }
-      return;
-    }
-    if (event.target.matches("[data-brief-summary]")) {
-      // Pass-through without re-render so the textarea keeps focus.
-      contextBriefConfig?.onAnswer?.("businessSummary", event.target.value);
-      return;
-    }
-    if (event.target.matches("[data-brief-voice-input]")) {
-      // Voice-profile subsection textarea — pass-through without re-render.
-      contextBriefConfig?.onVoiceProfileChange?.(event.target.dataset.briefVoiceInput, event.target.value);
-      return;
-    }
-    if (event.target.matches("[data-brief-cta-label]")) {
-      // CTA label edit in manage panel — mutate draft without
-      // re-rendering so the input keeps focus mid-type.
-      contextBriefConfig?.onCtaUpdate?.(Number(event.target.dataset.briefCtaLabel), "label", event.target.value);
-      return;
-    }
-    if (event.target.matches("[data-brief-cta-url]")) {
-      // CTA URL edit in manage panel — same pass-through-without-render.
-      contextBriefConfig?.onCtaUpdate?.(Number(event.target.dataset.briefCtaUrl), "url", event.target.value);
-      return;
-    }
-  });
-  // Enter inside the "Other…" text input on a chip-multi-add question
-  // appends the chip — same affordance as clicking the + button.
-  el.addEventListener("keydown", (event) => {
-    // V1 brief panel — Enter-to-add affordance on Other inputs.
-    const briefOtherInput = event.target.matches("[data-brief-other-input]") ? event.target : null;
-    if (briefOtherInput && event.key === "Enter") {
-      event.preventDefault();
-      const field = briefOtherInput.dataset.briefOtherInput;
-      const v = briefOtherInput.value.trim();
-      if (!v) return;
-      contextBriefConfig?.onAddOther?.(field, v);
     }
   });
   // Inline-edit shortcuts — scoped to the active editor.
@@ -1456,28 +1217,11 @@ function renderPanel() {
     titleText = "Drafts";
   } else if (state.mode === "sources") {
     titleText = "Sources";
-  } else if (state.mode === "context-brief") {
-    if (contextBriefConfig?.mode === "read") {
-      const ctx = contextBriefConfig.getCtx?.();
-      titleText = ctx?.name || "Playbook";
-    } else {
-      const draft = contextBriefConfig?.getDraft?.();
-      titleText = draft?.name?.trim() || "Define your Playbook";
-    }
   }
-  // The context-brief view manages its own scrolling body + sticky footer
-  // (so Save sits flush at the bottom). Drafts/Ideas/Sources keep the
-  // historical .app-right-panel__body wrapper.
-  const bodyHtml =
-    state.mode === "context-brief"
-      ? renderContextBriefView()
-      : `<div class="app-right-panel__body">${
-          state.mode === "drafts"
-            ? renderDraftsView()
-            : state.mode === "sources"
-              ? renderSourcesView()
-              : renderIdeasView()
-        }</div>`;
+
+  const bodyHtml = `<div class="app-right-panel__body">${
+    state.mode === "drafts" ? renderDraftsView() : state.mode === "sources" ? renderSourcesView() : renderIdeasView()
+  }</div>`;
 
   // Preserve scrollTop across re-renders so flipping a filter chip or
   // selecting a draft doesn't yank the user back to the top of a long
@@ -1505,21 +1249,6 @@ function renderPanel() {
       aria-label="Resize panel"
       title="Drag to resize"
     ></div>
-    ${
-      // List modes render the close inline in their first control row (so
-      // it shares the row's flex baseline with the tabs / select). The
-      // context-brief has no such row + its content is centred, so it gets
-      // the corner-pinned close instead.
-      state.mode === "context-brief"
-        ? raw(`<button
-             type="button"
-             class="ap-icon-button transparent app-right-panel__close"
-             data-rpanel-close
-             aria-label="Close panel"
-             title="Close panel (Esc)"
-           ><i class="ap-icon-close"></i></button>`)
-        : ""
-    }
     ${raw(bodyHtml)}
   `;
 
@@ -1535,19 +1264,6 @@ function renderPanel() {
 }
 
 // --- Resize handle -----------------------------------------------------
-
-// Wipe any legacy persisted width left over from before the
-// (viewport − sidebar) / 2 formula. Pre-formula users had their
-// custom width in localStorage ; if we honored it the panel would
-// keep ignoring the formula on every reload.
-function clearLegacyPanelWidth() {
-  try {
-    localStorage.removeItem(LEGACY_PANEL_WIDTH_KEY);
-  } catch (_) {
-    // localStorage can throw in private mode / sandboxed contexts —
-    // not worth blocking init over.
-  }
-}
 
 // Drop any inline runtime override on the shell so the next render
 // resolves the grid column through the formula default. Called on
@@ -1882,7 +1598,7 @@ function onPostRewrite(postId, intent = "fresh") {
   // streaming → commit. Loaded lazily so the rewrite code is only
   // pulled in when the user actually triggers a regen. `intent` biases
   // the rewrite (shorter / longer / warmer / formal / fresh).
-  import("../draft-rewrite.js?v=1401").then(({ startRewrite }) => {
+  import("../draft-rewrite.js?v=1402").then(({ startRewrite }) => {
     startRewrite(sid, postId, intent);
   });
 }
@@ -1981,17 +1697,15 @@ function onSectionDelete(network) {
         selectedDraftIds.delete(post.id);
       }
       renderPanel();
-      import("./toast.js?v=1401").then(({ showToast }) => {
-        showToast(`${count} ${draftWord} deleted`, {
-          action: {
-            label: "Undo",
-            onClick: () => {
-              // Re-insert in ascending original index so positions line up.
-              for (const { post, idx } of snapshot) insertPost(sid, post, idx);
-              renderPanel();
-            },
+      showToast(`${count} ${draftWord} deleted`, {
+        action: {
+          label: "Undo",
+          onClick: () => {
+            // Re-insert in ascending original index so positions line up.
+            for (const { post, idx } of snapshot) insertPost(sid, post, idx);
+            renderPanel();
           },
-        });
+        },
       });
     },
   });
@@ -2036,7 +1750,7 @@ function onSectionSave(network) {
   if (snapshot.length === 0) return;
   const count = snapshot.length;
   const draftWord = count === 1 ? "draft" : "drafts";
-  Promise.all([import("./save-folder-modal.js?v=1401"), import("../folders-store.js?v=1401")]).then(
+  Promise.all([import("./save-folder-modal.js?v=1402"), import("../folders-store.js?v=1402")]).then(
     ([{ open: openSaveModal }, { addDraftsToFolder }]) => {
       openSaveModal({
         count,
@@ -2051,17 +1765,15 @@ function onSectionSave(network) {
           const message = folder
             ? `${count} ${draftWord} saved to “${folder.name}”`
             : `${count} ${draftWord} saved as draft`;
-          import("./toast.js?v=1401").then(({ showToast }) => {
-            showToast(message, {
-              action: {
-                label: "Undo",
-                onClick: () => {
-                  for (const { post, idx } of snapshot) insertPost(sid, post, idx);
-                  if (folder) addDraftsToFolder(folder.id, -count);
-                  renderPanel();
-                },
+          showToast(message, {
+            action: {
+              label: "Undo",
+              onClick: () => {
+                for (const { post, idx } of snapshot) insertPost(sid, post, idx);
+                if (folder) addDraftsToFolder(folder.id, -count);
+                renderPanel();
               },
-            });
+            },
           });
         },
       });
@@ -2079,16 +1791,14 @@ function onPostSaveAsDraft(postId) {
   removePost(sid, postId);
   selectedDraftIds.delete(postId);
   renderPanel();
-  import("./toast.js?v=1401").then(({ showToast }) => {
-    showToast("Saved as draft", {
-      action: {
-        label: "Undo",
-        onClick: () => {
-          insertPost(sid, post, idx);
-          renderPanel();
-        },
+  showToast("Saved as draft", {
+    action: {
+      label: "Undo",
+      onClick: () => {
+        insertPost(sid, post, idx);
+        renderPanel();
       },
-    });
+    },
   });
 }
 
@@ -2126,13 +1836,11 @@ function onPostDelete(postId) {
   selectedDraftIds.delete(postId);
   const removed = removePost(sid, postId);
   if (!removed) return;
-  import("./toast.js?v=1401").then(({ showToast }) => {
-    showToast("Draft deleted", {
-      action: {
-        label: "Undo",
-        onClick: () => insertPost(sid, removed, idx),
-      },
-    });
+  showToast("Draft deleted", {
+    action: {
+      label: "Undo",
+      onClick: () => insertPost(sid, removed, idx),
+    },
   });
 }
 
@@ -2247,7 +1955,7 @@ function onPostImageRemove(postId) {
   if (!sid) return;
   attachImageToDraft(sid, postId, null);
   renderPanel();
-  import("./toast.js?v=1401").then(({ showToast }) => showToast("Image removed"));
+  showToast("Image removed");
 }
 
 // --- Inline edit handlers ---------------------------------------------
@@ -2964,984 +2672,7 @@ function useIdea(ideaId) {
   if (!idea) return;
   const sid = activeSessionId();
   if (!sid) return;
-  import("../screens/session.js?v=1401").then(({ askAngleQuestion }) => {
+  import("../screens/session.js?v=1402").then(({ askAngleQuestion }) => {
     askAngleQuestion(sid, ideaId);
   });
-}
-
-// --- V1 Brief panel ---------------------------------------------------
-
-const COLOR_SWATCHES = ["orange", "blue", "green", "purple", "red", "yellow"];
-// LANGUAGE_OPTIONS now lives in src/languages.js (single source of truth).
-const STYLE_FALLBACKS = ["Educational with case studies", "Inspirational & aspirational", "Behind-the-scenes & human"];
-const OBJECTIVE_FALLBACKS = ["Drive traffic", "Community engagement", "Thought leadership", "Customer retention"];
-const ACTION_FALLBACKS = ["Visit the website", "Download a resource", "Join the community", "Contact sales"];
-
-// Composes the five editorial zones (Hero / Personality grid / Voice feature /
-// Essentials bar / Branding showcase) and joins them. Pulled out of
-// `renderContextBriefView` so both read and edit mode share one code path.
-function renderBriefSections(d, isRead, chipProps) {
-  return [
-    renderBriefHero(d, isRead),
-    renderBriefPersonalityGrid(d, isRead, chipProps),
-    renderBriefVoiceFeature(d, isRead),
-    renderBriefEssentialsBar(d, isRead),
-    renderBriefBrandingShowcase(d, isRead),
-  ]
-    .filter(Boolean)
-    .join("");
-}
-
-// ── Editorial zone renderers ─────────────────────────────────────────
-//
-// Each zone owns a slice of the playbook data and emits a single
-// `<section class="context-brief__<zone>">`. Empty zones return "" so
-// the body collapses gracefully when context data is partial (legacy
-// seeds, freshly-created drafts).
-
-// Hero — identity strip (color dot + name + business summary as an
-// editorial paragraph). Replaces the legacy intro + name + business
-// summary cards. In edit mode the name becomes an input + color
-// swatches inline, and the summary a textarea. The data attributes
-// (`data-brief-name`, `data-brief-color`, `data-brief-summary`) are
-// preserved verbatim — they are read by the panel-level input
-// handlers (`right-panel.js` ~lines 836-851).
-function renderBriefHero(d, isRead) {
-  const name = d?.name || "";
-  const colorValue = d?.color || "orange";
-  const colorVar = `var(--ref-color-${colorValue === "blue" ? "electric-blue" : colorValue}-100)`;
-  const summary = d?.businessSummary || "";
-
-  if (isRead) {
-    if (!name && !summary) return "";
-    return `
-      <section class="context-brief__hero" aria-label="Playbook identity">
-        <div class="context-brief__hero-identity">
-          <span
-            class="context-brief__hero-color"
-            style="background: ${colorVar};"
-            aria-hidden="true"
-          ></span>
-          <h2 class="context-brief__hero-name">${escapeText(name)}</h2>
-        </div>
-        ${
-          summary
-            ? `
-              ${d.websiteUrl ? `<p class="context-brief__hero-source"><i class="ap-icon-web"></i> ${escapeText(d.websiteUrl)}</p>` : ""}
-              <p class="context-brief__hero-summary">${escapeText(summary)}</p>
-            `
-            : ""
-        }
-      </section>
-    `;
-  }
-
-  // Edit mode — name input, inline color swatches, summary textarea.
-  const swatches = COLOR_SWATCHES.map((c) => {
-    const isSelected = c === colorValue;
-    return `
-      <button
-        type="button"
-        class="context-brief__color-swatch ${isSelected ? "is-selected" : ""}"
-        data-brief-color="${c}"
-        style="background: var(--ref-color-${c === "blue" ? "electric-blue" : c}-100);"
-        aria-label="${c}"
-        aria-pressed="${isSelected ? "true" : "false"}"
-      ></button>
-    `;
-  }).join("");
-
-  return `
-    <section class="context-brief__hero" aria-label="Playbook identity">
-      <div class="context-brief__hero-identity">
-        <div class="ap-input-group context-brief__hero-name-input">
-          <input
-            type="text"
-            data-brief-name
-            value="${escapeAttr(name)}"
-            placeholder="e.g. Acme · Q2 marketing"
-            aria-label="Context name"
-          />
-        </div>
-        <div class="context-brief__color-swatches context-brief__hero-swatches">${swatches}</div>
-      </div>
-      <div class="context-brief__hero-summary-wrap">
-        <div class="ap-textarea-field resizable">
-          <textarea
-            data-brief-summary
-            rows="4"
-            placeholder="Describe your business in a few sentences…"
-          >${escapeText(summary)}</textarea>
-        </div>
-      </div>
-    </section>
-  `;
-}
-
-// Personality grid — 2-column responsive grid that pairs the four chip
-// groups thematically: Audience ↔ Content style (who + how), and
-// Objective ↔ Content action (why + what next). Each cell reuses
-// `renderBriefChips` and the existing `.context-brief__section` markup;
-// CSS scoped to `.context-brief__personality .context-brief__section`
-// strips the card chrome so the grid reads as one cohesive zone with
-// hairline dividers.
-function renderBriefPersonalityGrid(d, isRead, chipProps) {
-  const cells = [
-    renderBriefChips(
-      chipProps({
-        field: "audience",
-        title: "Who is your primary audience?",
-        hint: "Archie will tailor post topics and framing to speak directly to them.",
-        fromWeb: true,
-        suggestions: d.suggestions?.audience || [],
-        fallback: [],
-        values: d.audience || [],
-        customs: d.customAdditions?.audience || [],
-        otherPlaceholder: "Describe your audience…",
-        warningCount: 0,
-      }),
-    ),
-    renderBriefChips(
-      chipProps({
-        field: "contentStyle",
-        title: "What content style fits your brand?",
-        hint: "This guides the structure and format of every post Archie writes.",
-        fromWeb: true,
-        suggestions: d.suggestions?.contentStyle || [],
-        fallback: STYLE_FALLBACKS,
-        values: d.contentStyle || [],
-        customs: d.customAdditions?.contentStyle || [],
-        otherPlaceholder: "Describe your style…",
-      }),
-    ),
-    renderBriefChips(
-      chipProps({
-        field: "objective",
-        title: "What's your primary social media objective?",
-        hint: "Archie will prioritize content angles that serve this goal.",
-        fromWeb: true,
-        suggestions: d.suggestions?.objective || [],
-        fallback: OBJECTIVE_FALLBACKS,
-        values: d.objective || [],
-        customs: d.customAdditions?.objective || [],
-        otherPlaceholder: "Describe your objective…",
-      }),
-    ),
-    renderBriefChips(
-      chipProps({
-        field: "contentAction",
-        title: "What action should your content drive?",
-        hint: "Archie will include relevant CTAs aligned with this action.",
-        fromWeb: true,
-        suggestions: d.suggestions?.contentAction || [],
-        fallback: ACTION_FALLBACKS,
-        values: d.contentAction || [],
-        customs: d.customAdditions?.contentAction || [],
-        otherPlaceholder: "Describe the action…",
-      }),
-    ),
-  ].filter(Boolean);
-
-  if (cells.length === 0) return "";
-
-  return `
-    <section class="context-brief__personality" aria-label="Audience and content">
-      ${cells.join("")}
-    </section>
-  `;
-}
-
-// Voice feature — soft mermaid-tinted surface around the existing
-// `renderBriefVoiceProfile`. The visual differentiation lives entirely
-// in CSS (`.context-brief__voice-profile` is repainted with mermaid-10
-// background + mermaid-20 border in the new layout). Returns "" when
-// there's nothing to show (empty voice data in read mode).
-function renderBriefVoiceFeature(d, isRead) {
-  return renderBriefVoiceProfile(d, isRead);
-}
-
-// Essentials bar — compact horizontal row combining language picker
-// and CTA links. In read mode the CTA list collapses behind a counter
-// chip (`<details>`); in edit mode the full CTA editor renders inline
-// below the row so the user never has to "open" a control to edit.
-function renderBriefEssentialsBar(d, isRead) {
-  // Multilingual Playbook — declared languages (primary first). Falls back to
-  // the legacy scalar `language` for un-normalized drafts. When the multilingual
-  // flag is OFF, collapse to the primary language alone.
-  const allLanguages =
-    Array.isArray(d?.languages) && d.languages.length ? d.languages : d?.language ? [d.language] : [];
-  const primaryLanguage = d?.primaryLanguage || allLanguages[0] || "";
-  const languages = isFlagOn("multilingualPlaybook") ? allLanguages : primaryLanguage ? [primaryLanguage] : [];
-  const ctas = Array.isArray(d?.ctaLinks) ? d.ctaLinks : [];
-
-  if (isRead) {
-    const activeCtas = ctas.filter((l) => l.checked);
-    if (!languages.length && activeCtas.length === 0) return "";
-    const langPill = languages.length
-      ? `
-        <span class="context-brief__essentials-item">
-          <span class="context-brief__essentials-label">${languages.length > 1 ? "Languages" : "Language"}</span>
-          ${languages
-            .map((l) => `<span class="ap-tag blue context-brief__chip-readonly">${escapeText(l)}</span>`)
-            .join("")}
-        </span>
-      `
-      : "";
-    const ctaBlock =
-      activeCtas.length > 0
-        ? `
-          <details class="context-brief__essentials-ctas">
-            <summary>
-              <span class="context-brief__essentials-label">CTA links</span>
-              <span class="ap-tag grey context-brief__essentials-cta-count">
-                ${activeCtas.length} ${activeCtas.length > 1 ? "links" : "link"}
-                <i class="ap-icon-chevron-down"></i>
-              </span>
-            </summary>
-            <ul class="context-brief__cta-readonly-list">
-              ${activeCtas
-                .map(
-                  (cta) => `
-                    <li class="context-brief__cta-readonly">
-                      <span class="context-brief__cta-label">${escapeText(cta.label)}</span>
-                      <span class="context-brief__cta-url">${escapeText(cta.url)}</span>
-                    </li>
-                  `,
-                )
-                .join("")}
-            </ul>
-          </details>
-        `
-        : "";
-    return `
-      <section class="context-brief__essentials" aria-label="Essentials">
-        <div class="context-brief__essentials-row">
-          ${langPill}
-          ${ctaBlock}
-        </div>
-      </section>
-    `;
-  }
-
-  // Edit mode — language picker as a single-pick chip row + full CTA
-  // editor visible below (never collapsed). Reuses the existing
-  // renderBriefSinglePick + renderBriefCtaList outputs; CSS resets the
-  // inner card chrome inside `.context-brief__essentials`.
-  const langPicker = renderBriefSinglePick({
-    field: "language",
-    title: "Select a language for ideas and posts",
-    hint: "Archie writes in this language. Add more later in the Playbook editor.",
-    options: LANGUAGE_OPTIONS,
-    value: primaryLanguage || "English",
-    suggested: d?.suggestions?.language || "",
-    isRead: false,
-  });
-  const ctaEditor = renderBriefCtaList(d, false);
-  return `
-    <section class="context-brief__essentials" aria-label="Essentials">
-      ${langPicker}
-      ${ctaEditor}
-    </section>
-  `;
-}
-
-// Branding showcase — horizontal strip combining the color tag
-// (read mode only) and the image-voice / mood-board block. Both inner
-// sections keep their existing markup; CSS scoped to
-// `.context-brief__showcase .context-brief__section` strips the card
-// chrome so they sit flush inside the showcase.
-function renderBriefBrandingShowcase(d, isRead) {
-  const color = isRead ? renderBriefColor(d, true) : "";
-  const moodBoard = renderBriefImageVoice(d);
-  if (!color && !moodBoard) return "";
-  return `
-    <section class="context-brief__showcase" aria-label="Branding">
-      ${color}
-      ${moodBoard}
-    </section>
-  `;
-}
-
-function renderContextBriefView() {
-  if (!contextBriefConfig) return "";
-  const isRead = contextBriefConfig.mode === "read";
-  // Read mode reads from a persisted Context; edit mode from the draft.
-  const d = isRead ? readBriefFromCtx(contextBriefConfig.getCtx?.()) : contextBriefConfig.getDraft?.() || {};
-  const chipProps = (cfg) => ({ ...cfg, isRead });
-  // Edit-mode-only: keep the intro infobox above the zones — it teaches
-  // the chip color semantics (menthol = suggested, blue = selected) that
-  // the rest of the panel relies on. Hero owns name + color in both modes.
-  const nonGroupedTop = [isRead ? "" : renderBriefIntro()].filter(Boolean);
-
-  const sections = [...nonGroupedTop, renderBriefSections(d, isRead, chipProps)].filter(Boolean);
-  // Callers can opt out of the read-mode footer (Close + Edit) via
-  // `hideFooter: true` on the config — used by the playbook editor,
-  // which has its own Cancel + Save controls and shouldn't show
-  // redundant panel-level navigation.
-  const footer = contextBriefConfig.hideFooter
-    ? ""
-    : isRead
-      ? `
-        <footer class="context-brief__footer">
-          <span class="context-brief__footer-spacer"></span>
-          <button type="button" class="ap-button stroked grey" data-rpanel-close>
-            <span>Close</span>
-          </button>
-          <button type="button" class="ap-button primary orange" data-brief-edit-mode>
-            <i class="ap-icon-pen"></i>
-            <span>Edit Playbook</span>
-          </button>
-        </footer>
-      `
-      : `
-        <footer class="context-brief__footer">
-          <button type="button" class="ap-button stroked grey" data-brief-cancel aria-label="Cancel">
-            <span>Cancel</span>
-          </button>
-          <button
-            type="button"
-            class="ap-button primary orange"
-            data-brief-save
-            ${(d.name || "").trim() ? "" : "disabled"}
-          >
-            <span>Save playbook</span>
-          </button>
-        </footer>
-      `;
-  return `
-    <div class="context-brief ${isRead ? "context-brief--read" : ""}">
-      <div class="context-brief__body">${sections.join("")}</div>
-      ${footer}
-    </div>
-  `;
-}
-
-// Map a persisted Context into the shape the brief renderer expects.
-// Legacy seeds may have briefSummary instead of businessSummary, or
-// audience as a string instead of an array — normalize both.
-function readBriefFromCtx(ctx) {
-  if (!ctx) return {};
-  return {
-    name: ctx.name || "",
-    websiteUrl: ctx.websiteUrl || "",
-    businessSummary: ctx.businessSummary || ctx.briefSummary || "",
-    audience: Array.isArray(ctx.audience) ? ctx.audience : ctx.audience ? [ctx.audience] : [],
-    audienceProblems: Array.isArray(ctx.audienceProblems) ? ctx.audienceProblems : [],
-    tones: Array.isArray(ctx.tones) ? ctx.tones : [],
-    contentStyle: Array.isArray(ctx.contentStyle) ? ctx.contentStyle : [],
-    objective: Array.isArray(ctx.objective) ? ctx.objective : [],
-    contentAction: Array.isArray(ctx.contentAction) ? ctx.contentAction : [],
-    ctaLinks: Array.isArray(ctx.ctaLinks)
-      ? ctx.ctaLinks
-      : ctx.cta
-        ? [{ label: ctx.cta, url: ctx.cta, checked: true }]
-        : [],
-    language: ctx.language || "English",
-    color: ctx.color || "orange",
-    voiceProfile: ctx.voiceProfile && typeof ctx.voiceProfile === "object" ? ctx.voiceProfile : null,
-    imageVoice: ctx.imageVoice && Array.isArray(ctx.imageVoice.websites) ? ctx.imageVoice : { websites: [] },
-    suggestions: {},
-    customAdditions: {},
-  };
-}
-
-function renderBriefIntro() {
-  return `
-    <section class="context-brief__intro">
-      <p class="context-brief__intro-text">Help Archie understand your brand so it generates posts that truly fit your voice and audience.</p>
-      <div class="ap-infobox info has-title">
-        <i class="ap-icon-info_fill"></i>
-        <div class="ap-infobox-content">
-          <div class="ap-infobox-texts">
-            <div class="ap-infobox-title">Pre-filled from your website</div>
-            <div class="ap-infobox-message">Green chips are Archie's suggestions. Click any to toggle off, or add your own via "Other…".</div>
-          </div>
-        </div>
-      </div>
-    </section>
-  `;
-}
-
-function renderBriefChips({
-  field,
-  title,
-  hint,
-  fromWeb,
-  suggestions,
-  fallback,
-  values,
-  customs,
-  otherPlaceholder,
-  warningCount,
-  isRead,
-}) {
-  // Read mode: only show the SELECTED values (chip pills, non-interactive).
-  // Hide the entire section if nothing is selected — keeps the read view
-  // honest about what's actually in this context.
-  if (isRead) {
-    if (!values || values.length === 0) return "";
-    const chips = values
-      .map((v) => `<span class="ap-tag blue context-brief__chip-readonly">${escapeText(v)}</span>`)
-      .join("");
-    return `
-      <section class="context-brief__section">
-        <h3 class="context-brief__title">${escapeText(title)}</h3>
-        <div class="context-brief__chips">${chips}</div>
-      </section>
-    `;
-  }
-  const valuesSet = new Set(values || []);
-  // Render order: suggestions first (menthol/green), then fallback (grey/blue), then customs (always blue).
-  const seen = new Set();
-  const chipNodes = [];
-  for (const v of suggestions || []) {
-    if (seen.has(v)) continue;
-    seen.add(v);
-    chipNodes.push(renderBriefChip(field, v, valuesSet.has(v), true));
-  }
-  for (const v of fallback || []) {
-    if (seen.has(v)) continue;
-    seen.add(v);
-    chipNodes.push(renderBriefChip(field, v, valuesSet.has(v), false));
-  }
-  for (const v of customs || []) {
-    if (seen.has(v)) continue;
-    seen.add(v);
-    chipNodes.push(renderBriefChip(field, v, valuesSet.has(v), false));
-  }
-  // Any value present in the draft but not in any list (defensive — e.g.
-  // legacy data) — render as custom.
-  for (const v of values || []) {
-    if (seen.has(v)) continue;
-    seen.add(v);
-    chipNodes.push(renderBriefChip(field, v, true, false));
-  }
-  chipNodes.push(
-    `<button type="button" class="ap-tag grey" data-brief-other-toggle="${escapeAttr(field)}"><i class="ap-icon-plus"></i><span>Other…</span></button>`,
-  );
-  const warning =
-    warningCount > 0
-      ? `
-        <div class="ap-infobox warning has-title">
-          <i class="ap-icon-warning_fill"></i>
-          <div class="ap-infobox-content">
-            <div class="ap-infobox-texts">
-              <div class="ap-infobox-title">${warningCount} suggestions — all audiences combined</div>
-              <div class="ap-infobox-message">Pick the pains that truly resonate. You'll get a sharper brief by narrowing down to 5–10.</div>
-            </div>
-          </div>
-        </div>
-      `
-      : "";
-  return `
-    <section class="context-brief__section">
-      <h3 class="context-brief__title">${escapeText(title)}</h3>
-      ${hint ? `<p class="context-brief__hint">${escapeText(hint)}</p>` : ""}
-      ${warning}
-      <div class="context-brief__chips" data-brief-field="${escapeAttr(field)}">${chipNodes.join("")}</div>
-      <div class="context-brief__other" data-brief-other-wrap="${escapeAttr(field)}" hidden>
-        <div class="ap-input-group">
-          <input
-            type="text"
-            data-brief-other-input="${escapeAttr(field)}"
-            placeholder="${escapeAttr(otherPlaceholder || "Add another…")}"
-          />
-          <button type="button" class="ap-button stroked grey" data-brief-other-submit="${escapeAttr(field)}">
-            <span>Add</span>
-          </button>
-        </div>
-      </div>
-    </section>
-  `;
-}
-
-function renderBriefChip(field, value, selected, suggested) {
-  // Color logic from the brief HTML:
-  //   suggested + unselected  → menthol
-  //   suggested + selected    → green
-  //   neutral   + unselected  → grey
-  //   neutral   + selected    → blue
-  let cls;
-  if (suggested) cls = selected ? "green" : "menthol";
-  else cls = selected ? "blue" : "grey";
-  return `
-    <button
-      type="button"
-      class="ap-tag ${cls}"
-      data-brief-chip-field="${escapeAttr(field)}"
-      data-brief-chip-value="${escapeAttr(value)}"
-      aria-pressed="${selected ? "true" : "false"}"
-    >${escapeText(value)}</button>
-  `;
-}
-
-function renderBriefCtaList(d, isRead) {
-  const ctas = d.ctaLinks || [];
-  if (isRead) {
-    const active = ctas.filter((l) => l.checked);
-    if (active.length === 0) return "";
-    const items = active
-      .map(
-        (cta) => `
-          <li class="context-brief__cta-readonly">
-            <span class="context-brief__cta-label">${escapeText(cta.label)}</span>
-            <span class="context-brief__cta-url">${escapeText(cta.url)}</span>
-          </li>
-        `,
-      )
-      .join("");
-    return `
-      <section class="context-brief__section">
-        <h3 class="context-brief__title">CTA links</h3>
-        <ul class="context-brief__cta-readonly-list">${items}</ul>
-      </section>
-    `;
-  }
-
-  // Edit mode — compact checkbox list on top + (when expanded) a Manage
-  // sub-panel with editable label / url inputs, delete affordance, and
-  // an "Add a CTA link" row. Manage state lives module-local
-  // (`ctaManageOpen` + `ctaManageSnapshot`) so it survives the panel's
-  // re-renders. Cancel restores the snapshot; Done just closes.
-  const compactRows = ctas
-    .map(
-      (cta, i) => `
-        <li class="context-brief__cta-row">
-          <label class="ap-checkbox-container">
-            <input
-              type="checkbox"
-              data-brief-cta-toggle-idx="${i}"
-              ${cta.checked ? "checked" : ""}
-            />
-            <i></i>
-          </label>
-          <span class="context-brief__cta-label">${escapeText(cta.label)}</span>
-          <span class="context-brief__cta-url">${escapeText(cta.url)}</span>
-        </li>
-      `,
-    )
-    .join("");
-
-  const compactList = compactRows
-    ? `<ul class="context-brief__cta-rows">${compactRows}</ul>`
-    : `<p class="context-brief__hint">No CTA links yet — click Manage to add one.</p>`;
-
-  const manageRows = ctas
-    .map(
-      (cta, i) => `
-        <li class="context-brief__cta-manage-row">
-          <label class="ap-checkbox-container">
-            <input
-              type="checkbox"
-              data-brief-cta-toggle-idx="${i}"
-              ${cta.checked ? "checked" : ""}
-            />
-            <i></i>
-          </label>
-          <div class="ap-input-group context-brief__cta-manage-label">
-            <input
-              type="text"
-              data-brief-cta-label="${i}"
-              value="${escapeAttr(cta.label)}"
-              placeholder="Label"
-              aria-label="CTA label"
-            />
-          </div>
-          <div class="ap-input-group context-brief__cta-manage-url">
-            <input
-              type="text"
-              data-brief-cta-url="${i}"
-              value="${escapeAttr(cta.url)}"
-              placeholder="https://…"
-              aria-label="CTA URL"
-            />
-          </div>
-          <button
-            type="button"
-            class="ap-icon-button transparent context-brief__cta-delete"
-            data-brief-cta-delete="${i}"
-            aria-label="Remove CTA"
-          >
-            <i class="ap-icon-trash"></i>
-          </button>
-        </li>
-      `,
-    )
-    .join("");
-
-  const managePanel = ctaManageOpen
-    ? `
-      <div class="context-brief__cta-manage">
-        <div class="context-brief__cta-manage-head">
-          <h4 class="context-brief__cta-manage-title">Manage CTA links</h4>
-          <div class="context-brief__cta-manage-actions">
-            <button type="button" class="ap-button ghost grey" data-brief-cta-manage-cancel>
-              <span>Cancel</span>
-            </button>
-            <button type="button" class="ap-button primary orange" data-brief-cta-manage-done>
-              <span>Done</span>
-            </button>
-          </div>
-        </div>
-        <ul class="context-brief__cta-manage-rows">${manageRows}</ul>
-        <button type="button" class="context-brief__cta-add" data-brief-cta-add>
-          <i class="ap-icon-plus"></i><span>Add a CTA link</span>
-        </button>
-      </div>
-    `
-    : "";
-
-  const manageBtn = ctaManageOpen
-    ? ""
-    : `
-      <button type="button" class="context-brief__cta-manage-btn" data-brief-cta-manage>
-        <i class="ap-icon-pen"></i><span>Manage</span>
-      </button>
-    `;
-
-  return `
-    <section class="context-brief__section context-brief__cta-section">
-      <div class="context-brief__cta-head">
-        <h3 class="context-brief__title context-brief__cta-title">CTA links</h3>
-        ${manageBtn}
-      </div>
-      ${compactList}
-      ${managePanel}
-    </section>
-  `;
-}
-
-function renderBriefSinglePick({ field, title, hint, options, value, suggested, isRead }) {
-  if (isRead) {
-    if (!value) return "";
-    return `
-      <section class="context-brief__section">
-        <h3 class="context-brief__title">${escapeText(title)}</h3>
-        <div class="context-brief__chips">
-          <span class="ap-tag blue context-brief__chip-readonly">${escapeText(value)}</span>
-        </div>
-      </section>
-    `;
-  }
-  const chips = options
-    .map((opt) => {
-      const isSelected = opt === value;
-      const isSuggested = opt === suggested;
-      let cls;
-      if (isSuggested) cls = isSelected ? "green" : "menthol";
-      else cls = isSelected ? "blue" : "grey";
-      return `
-        <button
-          type="button"
-          class="ap-tag ${cls}"
-          data-brief-single-field="${escapeAttr(field)}"
-          data-brief-single-value="${escapeAttr(opt)}"
-          aria-pressed="${isSelected ? "true" : "false"}"
-        >${escapeText(opt)}</button>
-      `;
-    })
-    .join("");
-  return `
-    <section class="context-brief__section">
-      <h3 class="context-brief__title">${escapeText(title)}</h3>
-      ${hint ? `<p class="context-brief__hint">${escapeText(hint)}</p>` : ""}
-      <div class="context-brief__chips">${chips}</div>
-    </section>
-  `;
-}
-
-function renderBriefColor(d, isRead) {
-  const value = d.color || "orange";
-  if (isRead) {
-    return `
-      <section class="context-brief__section">
-        <h3 class="context-brief__title">Color tag</h3>
-        <div class="context-brief__color-swatches">
-          <span
-            class="context-brief__color-swatch is-selected context-brief__color-swatch--readonly"
-            style="background: var(--ref-color-${value === "blue" ? "electric-blue" : value}-100);"
-            aria-label="${value}"
-          ></span>
-        </div>
-      </section>
-    `;
-  }
-  const swatches = COLOR_SWATCHES.map((c) => {
-    const isSelected = c === value;
-    return `
-      <button
-        type="button"
-        class="context-brief__color-swatch ${isSelected ? "is-selected" : ""}"
-        data-brief-color="${c}"
-        style="background: var(--ref-color-${c === "blue" ? "electric-blue" : c}-100);"
-        aria-label="${c}"
-        aria-pressed="${isSelected ? "true" : "false"}"
-      ></button>
-    `;
-  }).join("");
-  return `
-    <section class="context-brief__section">
-      <h3 class="context-brief__title">Pick a color for your context</h3>
-      <p class="context-brief__hint">Shown next to the context name in chats and listings.</p>
-      <div class="context-brief__color-swatches">${swatches}</div>
-    </section>
-  `;
-}
-
-// Image Voice — Brand visual identity extracted from the analysed website.
-// Read-only in both edit and read modes (colors / fonts / images / personality
-// come from the mock analysis, the user does not edit them in V1).
-// Section is hidden when no website was analysed (legacy seeds without
-// `imageVoice` keep the brief panel ending at the color picker).
-function renderBriefImageVoice(d) {
-  const websites = Array.isArray(d.imageVoice?.websites) ? d.imageVoice.websites : [];
-  if (websites.length === 0) return "";
-  const site = websites[0];
-  const colors = site.colors || {};
-  const typography = site.typography || {};
-  const images = site.images || {};
-  const buttons = site.buttons || {};
-  const personality = site.personality || {};
-
-  const colorRow = (label, hex) => {
-    if (!hex) return "";
-    return `
-      <div class="context-brief__iv-color">
-        <span class="context-brief__iv-swatch" style="background:${escapeAttr(hex)};"></span>
-        <span class="context-brief__iv-color-label">${escapeText(label)}</span>
-        <span class="context-brief__iv-color-hex">${escapeText(hex)}</span>
-      </div>
-    `;
-  };
-
-  const typoRow = (label, value) => {
-    if (!value) return "";
-    return `
-      <div class="context-brief__iv-typo-row">
-        <span class="context-brief__iv-typo-label">${escapeText(label)}</span>
-        <span class="context-brief__iv-typo-value">${escapeText(value)}</span>
-      </div>
-    `;
-  };
-
-  const fontStack = Array.isArray(typography.fontStack) ? typography.fontStack : [];
-  const fontChips = fontStack.map((f) => `<span class="context-brief__iv-font-chip">${escapeText(f)}</span>`).join("");
-
-  const imageTile = (asset) => {
-    if (!asset) return "";
-    return `
-      <div class="context-brief__iv-image">
-        <div class="context-brief__iv-image-thumb">
-          ${
-            asset.url
-              ? `<img src="${escapeAttr(asset.url)}" alt="${escapeAttr(asset.label || "")}" loading="lazy" />`
-              : `<span class="context-brief__iv-image-placeholder">${escapeText(asset.label || "")}</span>`
-          }
-        </div>
-        <span class="context-brief__iv-image-label">${escapeText(asset.label || "")}</span>
-      </div>
-    `;
-  };
-
-  const primaryBtn = buttons.primary || {};
-  const secondaryBtn = buttons.secondary || {};
-  const primaryBtnStyle = `background:${escapeAttr(primaryBtn.bg || "#212E44")};color:${escapeAttr(primaryBtn.color || "#fff")};`;
-  const secondaryBtnStyle = `background:${escapeAttr(secondaryBtn.bg || "#fff")};color:${escapeAttr(secondaryBtn.color || "#212E44")};border:1px solid ${escapeAttr(secondaryBtn.border || secondaryBtn.color || "#212E44")};`;
-
-  const personalityChips = ["tone", "energy", "audience"]
-    .map((key) => {
-      const v = personality[key];
-      if (!v) return "";
-      const label = key === "tone" ? "Tone" : key === "energy" ? "Energy" : "Audience";
-      return `<span class="ap-tag grey">${escapeText(label)}: ${escapeText(v)}</span>`;
-    })
-    .join("");
-
-  return `
-    <section class="context-brief__section context-brief__image-voice">
-      <header class="context-brief__iv-header">
-        <div class="context-brief__iv-heading">
-          <h3 class="context-brief__title">Visual identity</h3>
-          <p class="context-brief__hint">Pulled from your website</p>
-        </div>
-      </header>
-
-      <div class="context-brief__iv-site">
-        <span class="context-brief__iv-site-favicon"><i class="ap-icon-web"></i></span>
-        <div class="context-brief__iv-site-meta">
-          <span class="context-brief__iv-site-domain">${escapeText(site.domain || "")}</span>
-          <span class="context-brief__iv-site-url">${escapeText(site.url || "")}</span>
-        </div>
-      </div>
-
-      <div class="context-brief__iv-block">
-        <h4 class="context-brief__iv-subtitle">Colors</h4>
-        <div class="context-brief__iv-colors">
-          ${colorRow("Primary", colors.primary)}
-          ${colorRow("Accent", colors.accent)}
-          ${colorRow("Background", colors.background)}
-          ${colorRow("Body text", colors.textPrimary)}
-          ${colorRow("Link", colors.link)}
-        </div>
-      </div>
-
-      <div class="context-brief__iv-block">
-        <h4 class="context-brief__iv-subtitle">Typography</h4>
-        <div class="context-brief__iv-typo">
-          ${typoRow("Primary", typography.primaryFont)}
-          ${typoRow("Heading", typography.headingFont)}
-          ${typoRow("H1 size", typography.h1Size)}
-          ${typoRow("H2 size", typography.h2Size)}
-          ${typoRow("Body size", typography.bodySize)}
-        </div>
-        ${fontChips ? `<div class="context-brief__iv-font-stack">${fontChips}</div>` : ""}
-      </div>
-
-      <div class="context-brief__iv-block">
-        <h4 class="context-brief__iv-subtitle">Images</h4>
-        <div class="context-brief__iv-images">
-          ${imageTile(images.logo)}
-          ${imageTile(images.favicon)}
-          ${imageTile(images.ogImage)}
-        </div>
-      </div>
-
-      <div class="context-brief__iv-block">
-        <h4 class="context-brief__iv-subtitle">Buttons</h4>
-        <div class="context-brief__iv-buttons">
-          <span class="context-brief__iv-btn-preview" style="${primaryBtnStyle}">${escapeText(primaryBtn.label || "Primary")}</span>
-          <span class="context-brief__iv-btn-preview" style="${secondaryBtnStyle}">${escapeText(secondaryBtn.label || "Secondary")}</span>
-        </div>
-      </div>
-
-      ${
-        personalityChips
-          ? `
-        <div class="context-brief__iv-block">
-          <h4 class="context-brief__iv-subtitle">Personality</h4>
-          <div class="context-brief__iv-personality">${personalityChips}</div>
-        </div>
-      `
-          : ""
-      }
-    </section>
-  `;
-}
-
-// Voice profile — nested-card layout matching the design reference: a
-// grey-05 outer container holds a chevron-toggleable header
-// (chevron + megaphone + h3), a sparkle-prefixed headline pill, and a
-// stack of white sub-cards (one per subsection). Each sub-card carries:
-//   - a small DS icon + UPPERCASE label on the left
-//   - a per-card "Show more / less" toggle on the right when the body
-//     text is long enough to truncate
-//   - the body text below, truncated to ~140 chars with a per-card
-//     "Show more" toggle (or the full text when expanded). In edit
-//     mode each card's body becomes a textarea.
-//
-// Empty-state behaviour mirrors the reference: edit mode keeps all nine
-// cards visible so the user has a scaffold for what to fill in; read
-// mode collapses empty cards out so the playbook only shows what's
-// actually there.
-const VOICE_PROFILE_SECTIONS = [
-  { id: "writingStyle", label: "Writing style", icon: "ap-icon-pen" },
-  { id: "vocabulary", label: "Vocabulary", icon: "ap-icon-note" },
-  { id: "sentenceStructure", label: "Sentence structure", icon: "ap-icon-numbered-list" },
-  { id: "formality", label: "Formality", icon: "ap-icon-target" },
-  { id: "personality", label: "Personality", icon: "ap-icon-archie-official" },
-  { id: "rhetoricalDevices", label: "Rhetorical devices", icon: "ap-icon-megaphone" },
-  { id: "emotionalTone", label: "Emotional tone", icon: "ap-icon-heart" },
-  { id: "contentPatterns", label: "Content patterns", icon: "ap-icon-view-grid" },
-  { id: "uniqueTraits", label: "Unique traits", icon: "ap-icon-tag" },
-];
-
-const VOICE_SNIPPET_LIMIT = 140;
-
-function renderBriefVoiceProfile(d, isRead) {
-  const vp = d?.voiceProfile || {};
-  const hasAnyText = VOICE_PROFILE_SECTIONS.some((s) => typeof vp[s.id] === "string" && vp[s.id].trim().length > 0);
-  // Legacy seeds without voiceProfile keep a clean panel in read mode.
-  // Edit mode always renders the scaffold so the user can build it.
-  if (isRead && !hasAnyText && !vp.headline) return "";
-
-  const tones = Array.isArray(d?.tones) ? d.tones.filter(Boolean) : [];
-  const headline = vp.headline || (tones.length ? tones.join(" · ").toLowerCase() : "");
-
-  const headlinePill = headline
-    ? `
-        <div class="context-brief__voice-headline">
-          <i class="ap-icon-archie-official"></i>
-          <span>${escapeText(headline)}</span>
-        </div>
-      `
-    : `
-        <div class="context-brief__voice-headline is-empty">
-          <i class="ap-icon-archie-official"></i>
-          <span>No voice headline yet</span>
-        </div>
-      `;
-
-  const subSectionHtml = VOICE_PROFILE_SECTIONS.map((s) => {
-    const value = typeof vp[s.id] === "string" ? vp[s.id].trim() : "";
-    // Read mode hides empty subsections; edit mode keeps the scaffold.
-    if (isRead && !value) return "";
-
-    const isExpanded = voiceProfileExpanded.has(s.id);
-    const isTruncated = value.length > VOICE_SNIPPET_LIMIT;
-    const snippet =
-      isTruncated && !isExpanded ? value.slice(0, VOICE_SNIPPET_LIMIT).replace(/\s+\S*$/, "") + "…" : value;
-
-    let body;
-    if (isRead) {
-      body = value
-        ? `<p class="context-brief__vp-body">${escapeText(snippet)}</p>`
-        : `<p class="context-brief__vp-body is-empty">No description yet — click Add to write one.</p>`;
-    } else {
-      body = `
-        <div class="ap-textarea-field resizable">
-          <textarea
-            data-brief-voice-input="${escapeAttr(s.id)}"
-            rows="3"
-            placeholder="Describe the brand's ${escapeAttr(s.label.toLowerCase())}…"
-          >${escapeText(value)}</textarea>
-        </div>
-      `;
-    }
-
-    // Right-side affordance: "Show more / less" when the snippet
-    // truncates. Edit mode shows no link — the textarea itself is the
-    // affordance.
-    let actionLink = "";
-    if (isRead && isTruncated) {
-      actionLink = `
-        <button type="button" class="context-brief__vp-toggle" data-brief-voice-toggle="${escapeAttr(s.id)}">
-          ${isExpanded ? "Show less" : "Show more"}
-        </button>
-      `;
-    }
-
-    return `
-      <article class="context-brief__vp-section" data-voice-section="${escapeAttr(s.id)}">
-        <header class="context-brief__vp-section-head">
-          <i class="${escapeAttr(s.icon)}"></i>
-          <h4 class="context-brief__vp-section-label">${escapeText(s.label)}</h4>
-          ${actionLink}
-        </header>
-        ${body}
-      </article>
-    `;
-  })
-    .filter(Boolean)
-    .join("");
-
-  return `
-    <section class="context-brief__voice-feature" aria-label="Voice profile">
-      <header class="context-brief__voice-header">
-        <i class="ap-icon-megaphone context-brief__voice-icon"></i>
-        <h3 class="context-brief__voice-title">Voice profile</h3>
-      </header>
-      ${headlinePill}
-      <div class="context-brief__vp-sections">${subSectionHtml}</div>
-    </section>
-  `;
 }

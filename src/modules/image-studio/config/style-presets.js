@@ -218,10 +218,6 @@ export function presetById(id) {
   return STYLE_PRESETS.find((preset) => preset.id === id) || null;
 }
 
-export function presetsByFamily(familyId) {
-  return STYLE_PRESETS.filter((preset) => preset.family === familyId);
-}
-
 /** Neutral subjects for a custom style's test run (the brief asks for 3). */
 export const STYLE_TEST_SUBJECTS = Object.freeze([
   { id: "object", label: "An everyday object" },

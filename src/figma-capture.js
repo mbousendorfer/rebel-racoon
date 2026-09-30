@@ -5,7 +5,7 @@
 // two query params give the capture tool a way in:
 //
 //   ?openModal=add-source|bug|feedback|chat-picker|search  [&tab=upload|url|connectors]
-//   ?openPanel=drafts|ideas|sources|context                [&route=/session/<id>]
+//   ?openPanel=drafts|ideas|sources
 //
 // Note they are SEARCH params, not hash params — the hash belongs to the
 // router (url-state.js), and the capture tool drives both independently.
@@ -14,12 +14,12 @@
 // sequence: this is tooling, and it is the only reason those overlay modules
 // are imported twice in the app's graph.
 
-import * as addSourceModal from "./components/add-source-modal.js?v=1401";
-import * as bugReportModal from "./components/bug-report-modal.js?v=1401";
-import * as feedbackModal from "./components/feedback-modal.js?v=1401";
-import * as chatPickerModal from "./components/chat-picker-modal.js?v=1401";
-import * as searchModal from "./components/search-modal.js?v=1401";
-import { openDrafts, openIdeas, openSources, openContextBriefPanel } from "./components/right-panel.js?v=1401";
+import * as addSourceModal from "./components/add-source-modal.js?v=1402";
+import * as bugReportModal from "./components/bug-report-modal.js?v=1402";
+import * as feedbackModal from "./components/feedback-modal.js?v=1402";
+import * as chatPickerModal from "./components/chat-picker-modal.js?v=1402";
+import * as searchModal from "./components/search-modal.js?v=1402";
+import { openDrafts, openIdeas, openSources } from "./components/right-panel.js?v=1402";
 
 // Both are deferred: the screen has to mount before an overlay can sit on it.
 // The panel waits longer than the modal because a session screen seeds its
@@ -47,7 +47,7 @@ function openModal(which, tab) {
   }
 }
 
-function openPanel(panel, route) {
+function openPanel(panel) {
   switch (panel) {
     case "drafts":
       openDrafts();
@@ -58,11 +58,6 @@ function openPanel(panel, route) {
     case "sources":
       openSources();
       break;
-    case "context": {
-      const sessionId = /^\/session\/([^/?]+)/.exec(route || "")?.[1] || null;
-      if (sessionId) openContextBriefPanel({ sessionId, mode: "read" });
-      break;
-    }
   }
 }
 
@@ -86,7 +81,7 @@ export function initFigmaCapture() {
   if (panel) {
     window.setTimeout(() => {
       try {
-        openPanel(panel, params.get("route"));
+        openPanel(panel);
       } catch (err) {
         console.error("[capture] failed to open panel", panel, err);
       }

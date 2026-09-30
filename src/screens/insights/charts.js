@@ -25,7 +25,7 @@
 // both. The shell calls destroyChartsIn(host) before every paint and on
 // teardown — layouts never destroy on their own.
 
-import Highcharts from "../../../vendor/highcharts/highcharts-12.4.0.esm.js?v=1401";
+import Highcharts from "../../../vendor/highcharts/highcharts-12.4.0.esm.js?v=1402";
 
 // ── Tokens ────────────────────────────────────────────────────────────────
 
@@ -54,12 +54,12 @@ const TIER_TOKEN = {
 };
 
 /** A chart colour by name — "on-track" | "at-risk" | "off-track" | "neutral" | "target" | "grid" | "axis" | 1..6. */
-export function chartColor(name) {
+function chartColor(name) {
   return token(`--app-chart-${name}`);
 }
 
 /** The stroke + soft fill pair for a tier (unknown / null → neutral). */
-export function tierColor(tier) {
+function tierColor(tier) {
   const base = TIER_TOKEN[tier] || "neutral";
   return { stroke: chartColor(base), soft: chartColor(`${base}-soft`) };
 }
@@ -74,7 +74,7 @@ let themed = false;
 // a curve here is framed like a curve there. The package itself is Angular
 // components — unusable from a CSS-UI prototype — so this mirrors its options
 // rather than importing them; the divergences left are marked ⚠️ with a reason.
-export function applyTheme() {
+function applyTheme() {
   if (themed) return;
   themed = true;
   const font = token("--ref-font-family") || "Averta, sans-serif";
@@ -348,7 +348,7 @@ export function sparklineSpec(series, { tier, height = 36 } = {}) {
 const charts = new Map();
 
 /** Mount a spec into a node. The node must be in the DOM (Highcharts measures it). */
-export function renderChart(node, options) {
+function renderChart(node, options) {
   if (!node || !options) return null;
   applyTheme();
   const previous = charts.get(node);

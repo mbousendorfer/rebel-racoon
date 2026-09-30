@@ -33,15 +33,15 @@
 // `insights-read.css` and `read.js` say they are deletable as a block the day
 // one reading wins; that day is closer than it was.
 
-import { escapeHtml as esc } from "../../utils.js?v=1401";
-import * as cockpit from "./layouts/cockpit.js?v=1401";
-import * as mobIndex from "./layouts/mob_index.js?v=1401";
-import * as mobSide from "./layouts/mob_side.js?v=1401";
+import { escapeHtml as esc } from "../../utils.js?v=1402";
+import * as cockpit from "./layouts/cockpit.js?v=1402";
+import * as mobIndex from "./layouts/mob_index.js?v=1402";
+import * as mobSide from "./layouts/mob_side.js?v=1402";
 
 export const LAYOUTS = [cockpit, mobIndex, mobSide];
 
 /** localStorage — which layout the reader last chose. */
-export const INSIGHTS_LAYOUT_KEY = "archie-insights-layout";
+const INSIGHTS_LAYOUT_KEY = "archie-insights-layout";
 
 // Cockpit is what a first visit opens on: every objective is visible at once,
 // so "what needs me" is answered before anything is clicked, and the pane's

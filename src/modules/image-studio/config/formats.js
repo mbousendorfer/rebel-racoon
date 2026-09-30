@@ -56,8 +56,6 @@ export const FORMATS = Object.freeze([
   f("li-portrait", "linkedin", "Portrait 4:5", 1080, 1350, "portrait", NONE, "feed"),
 ]);
 
-export const DEFAULT_FORMAT_ID = "ig-post";
-
 export function formatById(id) {
   return FORMATS.find((format) => format.id === id) || null;
 }
@@ -71,23 +69,13 @@ export function formatSize(format) {
   return `${format.width} × ${format.height}`;
 }
 
-/** "4:5" — reduced ratio, or the conventional name when it isn't a small integer pair. */
-export function formatRatio(format) {
-  const gcd = (a, b) => (b ? gcd(b, a % b) : a);
-  const d = gcd(format.width, format.height);
-  const w = format.width / d;
-  const h = format.height / d;
-  if (w > 40 || h > 40) return (format.width / format.height).toFixed(2) + ":1";
-  return `${w}:${h}`;
-}
-
 /**
  * The five SHAPES the generator offers — what a person picks is a shape, not
  * one of eleven network formats. Each maps to the format the image is made in
  * first (the master); "Adapt everywhere" in the editor makes the others.
  * `networks` lists who uses that shape, shown as icons under it.
  */
-export const FORMAT_SHAPES = Object.freeze([
+const FORMAT_SHAPES = Object.freeze([
   {
     id: "square",
     label: "Square",

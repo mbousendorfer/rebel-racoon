@@ -6,12 +6,12 @@
 // images: its look is read from their colours (lookFromColors) and they tint
 // the palette. (Older styles that mixed presets still draw with them.)
 
-import { prng } from "../lib/prng.js?v=1401";
-import { presetById } from "../config/style-presets.js?v=1401";
-import { generatorFor } from "./generators.js?v=1401";
-import { inkOn, resolvePalette } from "./palette.js?v=1401";
-import { fontStack } from "../config/fonts.js?v=1401";
-import { subjectPath } from "./subjects.js?v=1401";
+import { prng } from "../lib/prng.js?v=1402";
+import { presetById } from "../config/style-presets.js?v=1402";
+import { generatorFor } from "./generators.js?v=1402";
+import { inkOn, resolvePalette } from "./palette.js?v=1402";
+import { fontStack } from "../config/fonts.js?v=1402";
+import { subjectPath } from "./subjects.js?v=1402";
 
 let renderSeq = 0;
 
@@ -61,7 +61,7 @@ export function lookFromColors(colors) {
 }
 
 /** The colours a style's reference images carry: sampled at upload, or given with the image. */
-export function styleImageColors(style, getAsset = () => null) {
+function styleImageColors(style, getAsset = () => null) {
   return (style?.custom?.sources || [])
     .filter((s) => s.type === "image" && s.weight > 0)
     .flatMap((s) => s.colors || getAsset(s.ref)?.colors || []);
@@ -170,7 +170,7 @@ function embeddedText(c, o) {
  * square / portrait keep the text in the lower third, stories just under the
  * middle, wide formats on the left half. Exported for the attention heatmap.
  */
-export function subjectPlacement(W, H, rs) {
+function subjectPlacement(W, H, rs) {
   const ratio = H / W;
   const wide = ratio < 0.72;
   const tall = ratio > 1.5;
@@ -179,14 +179,6 @@ export function subjectPlacement(W, H, rs) {
   const cx = W * (wide ? 0.72 : 0.5 + (rs() - 0.5) * 0.14);
   const cy = H * (wide ? 0.5 : tall ? 0.3 : 0.36 + (rs() - 0.5) * 0.06);
   return { cx, cy, s };
-}
-
-/** The subject's centre and size as fractions of the canvas — same maths as the render. */
-export function subjectFraction({ width, height, seed, subjectSeed }) {
-  const W = 1000;
-  const H = Math.round((1000 * height) / width);
-  const { cx, cy, s } = subjectPlacement(W, H, prng(subjectSeed ?? seed ^ 0x27d4eb2d));
-  return { x: cx / W, y: cy / H, r: s / 2 / W };
 }
 
 export function svgToDataUrl(svg) {
