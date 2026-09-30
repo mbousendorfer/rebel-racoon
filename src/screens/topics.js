@@ -32,16 +32,16 @@
 // view. There is an explicit Load more too, and both do exactly the same thing —
 // an infinite list with no button is unusable by keyboard.
 
-import { html, raw, escapeAttr } from "../utils.js?v=1425";
-import { navigate, getPath } from "../router.js?v=1425";
-import { isFlagOn } from "../feature-flags.js?v=1425";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1425";
-import { renderTopbar } from "../components/topbar.js?v=1425";
-import { showToast } from "../components/toast.js?v=1425";
-import { renderEmptyState } from "../components/empty-state.js?v=1425";
-import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=1425";
-import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=1425";
-import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1425";
+import { html, raw, escapeAttr } from "../utils.js?v=1426";
+import { navigate, getPath } from "../router.js?v=1426";
+import { isFlagOn } from "../feature-flags.js?v=1426";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1426";
+import { renderTopbar } from "../components/topbar.js?v=1426";
+import { showToast } from "../components/toast.js?v=1426";
+import { renderEmptyState } from "../components/empty-state.js?v=1426";
+import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=1426";
+import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=1426";
+import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1426";
 import {
   getTopicsForFeed,
   groupTopicsByAge,
@@ -52,7 +52,7 @@ import {
   ignoreTopic,
   unignoreTopic,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=1425";
+} from "../topics-store.js?v=1426";
 import {
   TOPIC_SOURCES,
   TOPIC_KINDS,
@@ -61,13 +61,13 @@ import {
   findTopicSource,
   findCadence,
   isLiveSource,
-} from "../topics-catalog.js?v=1425";
-import { renderTopicCard } from "../components/topic-card.js?v=1425";
-import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=1425";
-import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=1425";
-import { openTopicHistory } from "../components/topic-history-modal.js?v=1425";
-import { useTopicInChat } from "../topic-flow.js?v=1425";
-import { canEdit } from "../playbook-access.js?v=1425";
+} from "../topics-catalog.js?v=1426";
+import { renderTopicCard } from "../components/topic-card.js?v=1426";
+import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=1426";
+import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=1426";
+import { openTopicHistory } from "../components/topic-history-modal.js?v=1426";
+import { useTopicInChat } from "../topic-flow.js?v=1426";
+import { canEdit } from "../playbook-access.js?v=1426";
 
 const PAGE = 10;
 // Long enough to read the scanning line, short enough that nobody waits for it
@@ -789,11 +789,10 @@ function renderInfluencerInvite() {
 }
 
 // What the invitation opens: the pane dressed as an article that has not been
-// written yet. The real header rows (provenance, title), then the pitch where
-// the analysis would start — what the source is, the three steps, the way in —
-// then a STATIC ghost of an influencer Topic: its prose and its contributing
-// posts, drawn in the loading skeleton's bars but still, since nothing is on its
-// way until someone adds a creator.
+// written yet. The real header rows (provenance, title), the pitch where the
+// analysis would start, a STATIC ghost of an influencer Topic (its prose and its
+// contributing posts, the loading skeleton's bars held still since nothing is on
+// its way), and the pane's footer carrying the two actions.
 function renderInvitePane() {
   const bars = (widths, cls = "") =>
     widths.map((w) => html`<span class="topic-ghost__bar${raw(cls)}" style="width:${raw(w)}"></span>`).join("");
@@ -822,35 +821,23 @@ function renderInvitePane() {
             Your competitors show what the market ships. The creators your audience follows show what it talks about.
             Add a few to your Playbook and their posts become Topics here.
           </p>
-          <div class="topics-view__empty-actions">
-            <button type="button" class="ap-button primary blue" data-topic-invite-add>
-              <i class="ap-icon-star"></i><span>Add influencers</span>
-            </button>
-            <button type="button" class="ap-link standalone" data-topic-invite-dismiss>Not now</button>
-          </div>
         </div>
-        <div class="topic-article__body">
-          <h3 class="topic-article__subhead">How it works</h3>
-          <ol class="topics-invite-pane__steps">
-            <li>
-              <strong>You list the creators</strong> in your Playbook: their Instagram, Facebook Page or YouTube
-              channel.
-            </li>
-            <li><strong>Every week I read their new posts</strong> and keep the ones worth reacting to.</li>
-            <li>
-              <strong>Each one becomes a Topic</strong> with an angle for your brand, ready to use in chat like any
-              other.
-            </li>
-          </ol>
-        </div>
-        <section class="topics-invite-pane__preview" aria-label="Preview of an influencer Topic">
-          <h3 class="topic-article__subhead">What an influencer Topic looks like</h3>
-          <div class="topic-ghost topic-ghost--article topic-ghost--static" aria-hidden="true">
+        <div class="topics-invite-pane__preview" aria-hidden="true">
+          <div class="topic-ghost topic-ghost--article topic-ghost--static">
             ${raw(bars(["40%"], " topic-ghost__bar--head"))} ${raw(bars(["100%", "96%", "72%"]))}
             ${raw(bars(["34%"], " topic-ghost__bar--head"))} ${raw(bars(["100%", "88%", "92%", "60%"]))}
           </div>
-          <div class="topics-invite-pane__posts" aria-hidden="true">${raw(post())}${raw(post())}</div>
-        </section>
+          <div class="topics-invite-pane__posts">${raw(post())}${raw(post())}</div>
+        </div>
+        <!-- The pane's own footer, the band every Topic's verbs ride in. -->
+        <div class="topic-article__actionbar">
+          <div class="topic-article__actions">
+            <button type="button" class="ap-button stroked grey" data-topic-invite-dismiss>Not now</button>
+            <button type="button" class="ap-button primary blue" data-topic-invite-add>
+              <i class="ap-icon-star"></i><span>Add influencers</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </section>`;

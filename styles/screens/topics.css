@@ -306,19 +306,6 @@
   padding: 0 var(--ref-spacing-sm) var(--ref-spacing-sm);
 }
 
-/* The pitch's three steps, in the article's own prose type. */
-.topics-invite-pane__steps {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xs);
-  margin: 0;
-  padding-left: var(--ref-spacing-md);
-  list-style: decimal;
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  color: var(--sys-text-color-default);
-}
-
 .topics-invite-pane__preview {
   display: flex;
   flex-direction: column;

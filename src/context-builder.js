@@ -13,24 +13,24 @@
 // tones, contentStyle, objective, contentAction, ctaLinks, language, color,
 // suggestions, editingId, onComplete }.
 
-import * as inlineQuestion from "./inline-question.js?v=1425";
-import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=1425";
-import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=1425";
-import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=1425";
-import { showToast } from "./components/toast.js?v=1425";
-import { recordReasons } from "./feedback-store.js?v=1425";
-import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1425";
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1425";
-import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=1425";
-import { analyzeWebsite, analyzeBrandFiles } from "./context-mock-analysis.js?v=1425";
-import { connectors as connectorMocks } from "./mocks.js?v=1425";
+import * as inlineQuestion from "./inline-question.js?v=1426";
+import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=1426";
+import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=1426";
+import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=1426";
+import { showToast } from "./components/toast.js?v=1426";
+import { recordReasons } from "./feedback-store.js?v=1426";
+import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1426";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1426";
+import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=1426";
+import { analyzeWebsite, analyzeBrandFiles } from "./context-mock-analysis.js?v=1426";
+import { connectors as connectorMocks } from "./mocks.js?v=1426";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "./social-profiles.js?v=1425";
-import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=1425";
-import { isFlagOn } from "./feature-flags.js?v=1425";
+} from "./social-profiles.js?v=1426";
+import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=1426";
+import { isFlagOn } from "./feature-flags.js?v=1426";
 
 const drafts = new Map(); // sessionId → draft
 const subscribers = new Map(); // sessionId → Set<fn>
