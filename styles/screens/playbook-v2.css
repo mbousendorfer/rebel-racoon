@@ -270,12 +270,14 @@
   margin: 0;
 }
 
+/* THE exception to the block ladder (the user's call): the voice in three words
+   is the tab's headline, so it outranks its own title. */
 .pb2-trait {
   font-weight: var(--ref-font-weight-bold);
   line-height: 1.2;
   letter-spacing: -0.01em;
   color: var(--ref-color-grey-100);
-  font-size: var(--ref-font-size-md);
+  font-size: var(--ref-font-size-xxl);
 }
 
 .pb2-trait__dot {
@@ -370,8 +372,9 @@
 }
 
 /* The type ladder inside a block — the TITLE is always its largest text:
- *   title 18 bold (h2) › emphasis 16 (the business, the voice's three words,
- *   the personality) › content 14 (body) › captions 12.
+ *   title 18 bold (h2) › emphasis 16 (the business, the personality)
+ *   › content 14 (body) › captions 12. One exception: the voice's three words
+ *   (24 bold, .pb2-trait).
  * (A pass made the title a 14 label over 16 content: inverted, reverted.)
  * 24 all round, 12 from the title to the content. */
 .pb2-block {
