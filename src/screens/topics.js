@@ -32,16 +32,16 @@
 // view. There is an explicit Load more too, and both do exactly the same thing —
 // an infinite list with no button is unusable by keyboard.
 
-import { html, raw, escapeAttr } from "../utils.js?v=1422";
-import { navigate, getPath } from "../router.js?v=1422";
-import { isFlagOn } from "../feature-flags.js?v=1422";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1422";
-import { renderTopbar } from "../components/topbar.js?v=1422";
-import { showToast } from "../components/toast.js?v=1422";
-import { renderEmptyState } from "../components/empty-state.js?v=1422";
-import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=1422";
-import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=1422";
-import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1422";
+import { html, raw, escapeAttr } from "../utils.js?v=1423";
+import { navigate, getPath } from "../router.js?v=1423";
+import { isFlagOn } from "../feature-flags.js?v=1423";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1423";
+import { renderTopbar } from "../components/topbar.js?v=1423";
+import { showToast } from "../components/toast.js?v=1423";
+import { renderEmptyState } from "../components/empty-state.js?v=1423";
+import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=1423";
+import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=1423";
+import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1423";
 import {
   getTopicsForFeed,
   groupTopicsByAge,
@@ -52,7 +52,7 @@ import {
   ignoreTopic,
   unignoreTopic,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=1422";
+} from "../topics-store.js?v=1423";
 import {
   TOPIC_SOURCES,
   TOPIC_KINDS,
@@ -61,13 +61,13 @@ import {
   findTopicSource,
   findCadence,
   isLiveSource,
-} from "../topics-catalog.js?v=1422";
-import { renderTopicCard } from "../components/topic-card.js?v=1422";
-import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=1422";
-import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=1422";
-import { openTopicHistory } from "../components/topic-history-modal.js?v=1422";
-import { useTopicInChat } from "../topic-flow.js?v=1422";
-import { canEdit } from "../playbook-access.js?v=1422";
+} from "../topics-catalog.js?v=1423";
+import { renderTopicCard } from "../components/topic-card.js?v=1423";
+import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=1423";
+import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=1423";
+import { openTopicHistory } from "../components/topic-history-modal.js?v=1423";
+import { useTopicInChat } from "../topic-flow.js?v=1423";
+import { canEdit } from "../playbook-access.js?v=1423";
 
 const PAGE = 10;
 // Long enough to read the scanning line, short enough that nobody waits for it
@@ -748,19 +748,25 @@ function shouldInvite(pb, { ignoreDismiss = false } = {}) {
 }
 
 function renderInfluencerInvite() {
-  return html`<article class="ap-card topics-invite" aria-label="Add influencers">
-    <span class="topic-badge topic-badge--lg topic-badge--red" aria-hidden="true"><i class="ap-icon-star"></i></span>
-    <div class="topics-invite__text">
-      <h2 class="topics-invite__title">Hear from the creators your audience follows</h2>
-      <p class="topics-invite__body">
+  // The Topic card's own rows — meta run, headline, summary — so it reads as a
+  // member of the list, with the source slot saying what it is instead of where
+  // it came from. The body is a <div>, not the card's <button>: nothing to open.
+  return html`<article class="topic-card topic-card--feed topic-card--invite" aria-label="New Topic source">
+    <div class="topic-card__body">
+      <span class="topic-card__meta">
+        <span class="topic-badge topic-badge--red" aria-hidden="true"><i class="ap-icon-star"></i></span
+        ><span class="topic-card__source">New Topic Source?</span>
+      </span>
+      <span class="topic-card__headline">Hear from the creators your audience follows</span>
+      <span class="topic-card__summary">
         Add them to your Playbook and every week I'll turn what they post into Topics, in this feed next to your
         competitors'.
-      </p>
-      <div class="topics-invite__actions">
+      </span>
+      <div class="topic-card__invite-actions">
+        <button type="button" class="ap-button ghost grey" data-topic-invite-dismiss>Not now</button>
         <button type="button" class="ap-button primary blue" data-topic-invite-add>
           <i class="ap-icon-star"></i><span>Add influencers</span>
         </button>
-        <button type="button" class="ap-button ghost grey" data-topic-invite-dismiss>Not now</button>
       </div>
     </div>
   </article>`;

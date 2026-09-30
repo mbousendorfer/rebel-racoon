@@ -295,44 +295,24 @@
 }
 
 /* ── The influencer invitation ───────────────────────────────────────────
-   Rides in the list after the 4th Topic, like an in-feed ad. Not a Topic, so
-   none of its anatomy: a medallion beside a title, one sentence, two buttons.
-   Flat and static — nothing to hover, the buttons are the only targets. */
-.topics-invite {
+   Rides in the list after the 4th Topic, like an in-feed ad, and wears the
+   Topic card's rows (screens/topics.js). Taller by one row: its two buttons,
+   grouped bottom-right like a footer. Nothing to open, so no hover border and
+   no pointer — the buttons are the only targets. */
+.topic-card--invite .topic-card__body {
+  cursor: default;
+}
+
+.topic-card--feed.topic-card--invite:hover,
+.topic-card--feed.topic-card--invite:focus-within {
+  border-color: var(--app-border);
+}
+
+.topic-card__invite-actions {
   display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  gap: var(--ref-spacing-sm);
-  padding: var(--ref-spacing-md);
-  border: 1px solid var(--ref-color-grey-20);
-  box-shadow: none;
-}
-
-.topics-invite__text {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxxs);
-  min-width: 0;
-}
-
-.topics-invite__title {
-  margin: 0;
-  font-size: var(--sys-text-style-body-bold-size);
-  font-weight: var(--sys-text-style-body-bold-weight);
-  line-height: var(--sys-text-style-body-bold-line-height);
-  color: var(--ref-color-grey-100);
-}
-
-.topics-invite__body {
-  margin: 0;
-  color: var(--ref-color-grey-80);
-}
-
-.topics-invite__actions {
-  display: flex;
-  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: var(--ref-spacing-xs);
-  margin-top: var(--ref-spacing-sm);
+  margin-top: var(--ref-spacing-xs);
 }
 
 /* The empty state's two actions: the button, then the link below it
