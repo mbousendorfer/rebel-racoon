@@ -1,21 +1,21 @@
-import { html, raw, escapeText, escapeAttr } from "../utils.js?v=1402";
-import { renderTopbar } from "../components/topbar.js?v=1402";
+import { html, raw, escapeText, escapeAttr } from "../utils.js?v=1405";
+import { renderTopbar } from "../components/topbar.js?v=1405";
 import {
   getContexts,
   getContextById,
   subscribe as subscribeContexts,
   duplicateContext,
   deleteContext,
-} from "../contexts-store.js?v=1402";
-import { getSessions, getSessionById, subscribe as subscribeSessions } from "../sessions-store.js?v=1402";
-import { getSources, getIdeas } from "../library.js?v=1402";
-import { getPosts } from "../posts-store.js?v=1402";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1402";
-import { closePanel as closeRightPanel } from "../components/right-panel.js?v=1402";
-import { navigate, getPath } from "../router.js?v=1402";
-import { setHandoff } from "../handoff.js?v=1402";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=1402";
-import { renderEmptyState } from "../components/empty-state.js?v=1402";
+} from "../contexts-store.js?v=1405";
+import { getSessions, getSessionById, subscribe as subscribeSessions } from "../sessions-store.js?v=1405";
+import { getSources, getIdeas } from "../library.js?v=1405";
+import { getPosts } from "../posts-store.js?v=1405";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1405";
+import { closePanel as closeRightPanel } from "../components/right-panel.js?v=1405";
+import { navigate, getPath } from "../router.js?v=1405";
+import { setHandoff } from "../handoff.js?v=1405";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=1405";
+import { renderEmptyState } from "../components/empty-state.js?v=1405";
 import {
   visibleContexts,
   usableContexts,
@@ -25,16 +25,16 @@ import {
   canManageSharing,
   accessLabel,
   isMine,
-} from "../playbook-access.js?v=1402";
-import { isWorkspaceMode, getActivePlaybookId, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=1402";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=1402";
-import { installMoreMenu } from "../components/more-menu.js?v=1402";
-import { renderStarterCards } from "../components/starter-card.js?v=1402";
-import { isFlagOn } from "../feature-flags.js?v=1402";
-import { getConnectedConnectors } from "../connectors-store.js?v=1402";
-import { renderConnectorLogo } from "../connectors-view.js?v=1402";
-import { ownerOf } from "../playbook-access.js?v=1402";
-import { showToast } from "../components/toast.js?v=1402";
+} from "../playbook-access.js?v=1405";
+import { isWorkspaceMode, getActivePlaybookId, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=1405";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=1405";
+import { installMoreMenu } from "../components/more-menu.js?v=1405";
+import { renderStarterCards } from "../components/starter-card.js?v=1405";
+import { isFlagOn } from "../feature-flags.js?v=1405";
+import { getConnectedConnectors } from "../connectors-store.js?v=1405";
+import { renderConnectorLogo } from "../connectors-view.js?v=1405";
+import { ownerOf } from "../playbook-access.js?v=1405";
+import { showToast } from "../components/toast.js?v=1405";
 
 // The account HOME — and the Playbooks catalogue it merged with.
 //
@@ -235,7 +235,6 @@ function renderSearchField() {
       <i class="ap-icon-search"></i>
       <input
         type="search"
-        class="ap-input"
         placeholder="${chats ? "Search chats…" : "Search Playbooks…"}"
         value="${escapeAttr(pageState.query)}"
         data-contexts-search

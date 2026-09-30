@@ -429,7 +429,7 @@ Détail complet des formules de taille : [`SHELL-LAYOUT.md`](SHELL-LAYOUT.md).
 
 ## Voir aussi
 
-- [`DESIGN-SYSTEM.md`](DESIGN-SYSTEM.md) — workflow DS obligatoire + MCP `ds-css` + anti-patterns
+- [`DESIGN-SYSTEM.md`](DESIGN-SYSTEM.md) — workflow DS obligatoire (skill `/design-guidelines`) + `check:ds` + anti-patterns
 - [`FEATURES.md`](FEATURES.md) — où ces patterns sont utilisés (par feature)
 - [`SHELL-LAYOUT.md`](SHELL-LAYOUT.md) — formules de tailles sidebar / panel / status-card
 - [`../../CLAUDE.md`](../../CLAUDE.md) — résumé pour agents

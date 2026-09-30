@@ -11,8 +11,8 @@
 // Interactive hooks are data-* attributes bound identically on each surface:
 //   data-connector-open|connect|disconnect|try, data-connectors-category|search
 
-import { escapeHtml } from "./utils.js?v=1402";
-import { getConnectors } from "./connectors-store.js?v=1402";
+import { escapeHtml } from "./utils.js?v=1405";
+import { getConnectors } from "./connectors-store.js?v=1405";
 
 // Category display order — anything unlisted falls to the end alphabetically.
 const CATEGORY_ORDER = ["Docs & wikis", "Storage", "Meetings & calls", "Dev & project", "Messaging", "CRM & support"];
@@ -154,7 +154,6 @@ export function renderGalleryBody(view, { showHero = true } = {}) {
         <i class="ap-icon-search"></i>
         <input
           type="search"
-          class="ap-input"
           placeholder="Search connectors…"
           value="${escapeHtml(view.query || "")}"
           data-connectors-search

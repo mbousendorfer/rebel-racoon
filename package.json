@@ -13,19 +13,14 @@
   "license": "ISC",
   "scripts": {
     "start": "npx serve -p 8000",
-    "sync-ds": "node scripts/sync-ds.mjs",
-    "postinstall": "node scripts/sync-ds.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check:templates": "python3 scripts/check-template-comments.py",
     "prepare": "husky",
     "bump": "node scripts/cache-version.mjs bump",
     "check:versions": "node scripts/cache-version.mjs check",
-    "check:dead": "node scripts/find-dead-code.mjs"
-  },
-  "dependencies": {
-    "@agorapulse/ui-symbol": "^20.2.3",
-    "@agorapulse/ui-theme": "^20.3.5"
+    "check:dead": "node scripts/find-dead-code.mjs",
+    "check:ds": "node scripts/check-ds.mjs"
   },
   "devDependencies": {
     "husky": "^9.1.7",

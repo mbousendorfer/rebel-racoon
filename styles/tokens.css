@@ -1,5 +1,5 @@
 /* App-specific tokens not provided by the DS.
-   Everything else comes from ds/desktop_variables.css.
+   Everything else comes from the DS desktop_variables.css (jsDelivr @latest).
 
    Naming: --app-* (never --ref-* / --sys-* / --comp-* — those are DS-owned).
    When porting handoff designs, prefer DS tokens first; fall back to these
@@ -105,9 +105,9 @@
   --app-shadow-subtle: 0 1px 2px rgba(33, 46, 68, 0.06);
 
   /* DS "Shadow/Low (default)" — two-layer #34456326 drop shadow.
-     Mirrors the Figma V2 token (node 957-3); aliases the internal
-     --comp-select-shadow so app code never reaches a --comp-* directly. */
-  --app-shadow-low: 0px 4px 6px -2px rgba(52, 69, 99, 0.15), 0px 4px 25px -2px rgba(52, 69, 99, 0.15);
+     Mirrors the Figma V2 token (node 957-3); since ui-theme 22 the DS
+     publishes it as the semantic --sys-elevation-floating. */
+  --app-shadow-low: var(--sys-elevation-floating);
   --app-shadow-popover-md: 0 8px 24px rgba(33, 46, 68, 0.12);
   --app-shadow-popover-lg: 0 12px 32px rgba(33, 46, 68, 0.12);
   --app-shadow-drawer-left: -8px 0 32px rgba(33, 46, 68, 0.12);
@@ -175,17 +175,18 @@
      here — electric blue, purple, menthol… — are deprecated in the package
      ("Brand palette is being removed"), which is why the names below are the
      DS's data names and not ours. No orange, red or green tier colour is in
-     it, so a series is never mistaken for a verdict. */
-  --app-chart-data-1: #12aaba; /* data-cyan-100 */
-  --app-chart-data-2: #d98800; /* data-sun-100 */
-  --app-chart-data-3: #cc2878; /* data-peony-100 */
-  --app-chart-data-4: #42b85a; /* data-lime-100 */
-  --app-chart-data-5: #8a62cc; /* data-iris-100 */
-  --app-chart-data-6: #cc5040; /* data-cherry-100 */
-  --app-chart-data-7: #3a92e8; /* data-sky-100 */
-  --app-chart-data-8: #dc6a30; /* data-tangerine-100 */
-  --app-chart-data-9: #12a87a; /* data-emerald-100 */
-  --app-chart-data-10: #4a6acc; /* data-navy-100 */
+     it, so a series is never mistaken for a verdict. The tokens ship in
+     desktop_variables.css since ui-theme 22. */
+  --app-chart-data-1: var(--ref-color-data-cyan-100);
+  --app-chart-data-2: var(--ref-color-data-sun-100);
+  --app-chart-data-3: var(--ref-color-data-peony-100);
+  --app-chart-data-4: var(--ref-color-data-lime-100);
+  --app-chart-data-5: var(--ref-color-data-iris-100);
+  --app-chart-data-6: var(--ref-color-data-cherry-100);
+  --app-chart-data-7: var(--ref-color-data-sky-100);
+  --app-chart-data-8: var(--ref-color-data-tangerine-100);
+  --app-chart-data-9: var(--ref-color-data-emerald-100);
+  --app-chart-data-10: var(--ref-color-data-navy-100);
 
   /* ── App chrome sizing ────────────────────────────────────────────── */
   --app-topbar-height: 56px;

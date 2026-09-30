@@ -11,7 +11,7 @@ Fork autonome issu d'une branche du projet [probable-spoon](https://github.com/m
 ## Run it
 
 ```bash
-npm install   # installs the DS and syncs ds/ via the postinstall script
+npm install   # tooling only — the Design System is loaded from jsDelivr
 npm start     # runs `npx serve -p 8000` — open http://localhost:8000
 ```
 
@@ -32,7 +32,7 @@ npm run format          # prettier
 
 - **Vanilla JS** — no framework, no bundler, ES modules served straight from `src/`.
 - **Hash router** — `src/router.js`, route table in `src/app.js`.
-- **Agorapulse V2 DS** — `@agorapulse/ui-theme` + `@agorapulse/ui-symbol`, synced into `ds/` by `scripts/sync-ds.mjs` at install. UI uses `.ap-*` classes + DS tokens (`--ref-*`, `--sys-*`) — no raw hex or pixel values.
+- **Agorapulse V2 DS** — `@agorapulse/ui-theme` + `@agorapulse/ui-symbol`, loaded from jsDelivr at `@latest` (`index.html`); `npm run check:ds` verifies every name the app uses resolves against it. UI uses `.ap-*` classes + DS tokens (`--ref-*`, `--sys-*`) — no raw hex or pixel values.
 - **Mocks** — `src/mocks/`, one file per domain behind the `src/mocks.js` barrel. Hardcoded, no network, no persistence.
 
 ## Routes

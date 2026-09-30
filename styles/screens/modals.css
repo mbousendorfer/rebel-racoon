@@ -149,11 +149,6 @@ body.has-modal {
   gap: var(--ref-spacing-sm);
 }
 
-.topic-ignore__input {
-  width: 100%;
-  resize: vertical;
-}
-
 /* ── Analyze social profiles modal ─────────────────────────── */
 .analyze-profiles-modal {
   width: min(calc(100% - 32px), 480px);

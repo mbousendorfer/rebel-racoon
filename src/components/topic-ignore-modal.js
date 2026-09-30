@@ -23,9 +23,9 @@
 // destroyed and red would flag a danger that is not there. The primary slot is
 // deliberately empty — there is no action here worth spotlighting.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1402";
-import { escapeHtml } from "../utils.js?v=1402";
-import { getTopicById, topicTitle } from "../topics-store.js?v=1402";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1405";
+import { escapeHtml } from "../utils.js?v=1405";
+import { getTopicById, topicTitle } from "../topics-store.js?v=1405";
 
 const MODAL_ID = "topic-ignore";
 
@@ -51,10 +51,10 @@ const HTML = `
   </button>
   <div class="ap-dialog-content">
     <p class="topic-ignore__sub" id="topicIgnoreSub"></p>
-    <div class="ap-form-field">
+    <div class="ap-textarea-field resizable">
       <label for="topicIgnoreInput">What was off about it? (optional)</label>
       <textarea
-        class="ap-textarea topic-ignore__input"
+        class="topic-ignore__input"
         id="topicIgnoreInput"
         rows="3"
         placeholder="Wrong audience, already covered, not our tone…"

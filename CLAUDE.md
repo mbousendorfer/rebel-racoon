@@ -37,11 +37,11 @@ Then say, in the proposal itself: **which object the feature attaches to, and wh
 ## Running the prototype
 
 ```bash
-npm install   # installs the DS packages and syncs ds/ via the postinstall sync-ds script
+npm install   # tooling only (prettier / husky / lint-staged) — the DS comes from the CDN
 npm start     # runs `npx serve -p 8000` — open http://localhost:8000
 ```
 
-With Claude Code the dev server auto-launches via `.claude/launch.json` (server name `archie`, runs `python3 -m http.server`). There is **no test suite**; verify changes by running the app (see the verify/run skills) and the `ds-css` MCP `validate_css`.
+With Claude Code the dev server auto-launches via `.claude/launch.json` (server name `archie`, `python3 -m http.server` on an auto-assigned port). There is **no test suite**; verify changes by running the app (see the verify/run skills) and the checks: `npm run check:ds` (every token / icon / `.ap-*` class resolves against the DS the app loads), `check:dead`, `check:versions`, `check:templates`.
 
 ## Architecture
 
@@ -504,11 +504,11 @@ The split is measured with a **`@container` query on the row**, never a media qu
 
 ### The DS ports live in ds-patches.css
 
-`.ap-filter-dropdown` is a **transcription of an Angular-only DS component** from its own SCSS — it does not exist in `ds/css-ui`, so this is the missing-primitive case `ds-patches.css` is for, and the day it lands in the DS the block is a delete. It is the component the DS's own tie-breaker prescribes: grouped options behind a trigger → filter dropdown (not filter chips, which is right for a small flat always-visible set — what the magazine correctly used for its six sources).
+`.ap-filter-dropdown` is a **transcription of an Angular-only DS component** from its own SCSS — it does not exist in css-ui, so this is the missing-primitive case `ds-patches.css` is for, and the day it lands in the DS the block is a delete. It is the component the DS's own tie-breaker prescribes: grouped options behind a trigger → filter dropdown (not filter chips, which is right for a small flat always-visible set — what the magazine correctly used for its six sources).
 
 ⚠️ `.ap-segmented-control` was ported here for `/topics`' two-view switch and was **deleted** from there — it was the wrong component (the product uses TABS for that shape, and only one list was ever on screen). Then the `.ap-tabs` that replaced it went too. The `kind` axis (To review / For later) it carried now lives as the **Topics multi-select** inside the Filters panel — empty by default so both lanes show in one list, ticking a lane to narrow. `git log -S renderTabs` has the tabbed version, `git log -S ap-segmented-control` the one before it, `git log -S renderKindRadio` the one-lane radio between them. Don't re-port a page-level lane switch without a genuine 2–4 co-visible-views case — the select-in-panel is the answer here. The port itself is **back** in `ds-patches.css` (2026-09-29) for a different job, the Image Generator's Variations picker (1 · 2 · 3 · 4): a short set of values, all visible, one picked. That is its use; switching pages or lanes is still tabs.
 
-Every token substitution is commented with the value it stands in for, because the `--sys-color-*-interactive-*` family, `--sys-height-control` and `--sys-radius-inner` are **not in this repo's synced `ds/`** yet. Re-point them on the next `ds/` sync. ⚠️ The `--selected` double dash is the component's own — the DS wrote it that way against its own flat-modifier convention, and a port that "fixed" it would stop matching what it ports.
+Every token substitution is commented with the value it stands in for, because the `--sys-color-*-interactive-*` family, `--sys-height-control` and `--sys-radius-inner` are **not published yet** (absent from ui-theme 22.0.17). Re-point them the day they land. ⚠️ The `--selected` double dash is the component's own — the DS wrote it that way against its own flat-modifier convention, and a port that "fixed" it would stop matching what it ports.
 
 ### Routing & screen lifecycle
 
@@ -551,38 +551,40 @@ Never hand-edit a `?v=`. `scripts/cache-version.mjs` owns the number (it also co
 
 ⚠️ **A cached entry point pins the whole old import graph.** After a JS change, verify a _visible_ effect (a removed node, a changed class) in the browser: a CSS-only confirmation proves nothing about the JS.
 
-All deps are local; no CDN/`esm.sh` imports. `package.json` exists only for the two DS npm packages + tooling (prettier/husky/lint-staged). The pre-commit hook runs `check-template-comments.py`, `cache-version.mjs check`, and `prettier --write` on staged files.
+The **Design System is loaded from jsDelivr at `@latest`** (`index.html`: `@agorapulse/ui-theme` tokens + CSS-UI + Averta, `@agorapulse/ui-symbol` icons) and nothing of it is vendored — the published package is the only source, as the `design-guidelines` skill prescribes. Everything else is local: no other CDN / `esm.sh` import in app code (the bug-report modal lazy-loads html2canvas from cdnjs, the one exception). `package.json` holds tooling only (prettier/husky/lint-staged). The pre-commit hook runs `check-template-comments.py`, `cache-version.mjs check`, and `prettier --write` on staged files.
 
 ## Design System — READ FIRST before UI/CSS work
 
-This project is built on the official Agorapulse Design System (`@agorapulse/ui-theme` + `@agorapulse/ui-symbol`, synced into `ds/`). **Do not invent custom components, tokens, or icons when the DS already provides them.** Regressions from ad-hoc CSS overriding DS tokens are the #1 source of bugs in this repo.
+This project is built on the official Agorapulse Design System (`@agorapulse/ui-theme` + `@agorapulse/ui-symbol`, **loaded from jsDelivr `@latest`** — see `index.html`). **Do not invent custom components, tokens, or icons when the DS already provides them.** Regressions from ad-hoc CSS overriding DS tokens are the #1 source of bugs in this repo.
 
 ### Required workflow before writing any HTML/CSS
 
-1. **Check if a DS component exists** — `list_components` on the `ds-css` MCP; `get_component <name>` for variants/modifiers (`.stroked`, `.primary`, `.ghost`, `.transparent`, color classes).
-2. **Check for an existing icon** — `search_icons <keyword>` before adding any SVG. Use `<i class="ap-icon-{name}"></i>`.
-3. **Use DS tokens, not hardcoded values** — `search_tokens` + `recommend_token` on the MCP, or grep `ds/desktop_variables.css` for `--ref-*` / `--sys-*`. Never write `padding: 20px` when `var(--ref-spacing-sm)` exists, nor `#fff` when `var(--ref-color-white)` exists.
+**All DS work goes through the `/design-guidelines` skill** (`mode: html-prototype`) — it reads the specs from the `agorapulse/design` repo and the packages from the CDN, and carries the house rules the specs don't (ink grey-80…100, borders grey-20, blue = interactive, no nested elevation, no uppercase labels, no edge-accent bars, card hover = blue border, CTAs never full width, footers right-grouped). Generic design skills are a review checklist only. **Never the `ds-css` MCP** — it was removed from this repo.
+
+1. **Find the component by intent** (the skill's lookup), then its CSS-UI classes in the CDN's `css-ui/index.css`.
+2. **Check the icon exists** in `@agorapulse/ui-symbol@latest/icons/ap-icons.css` — match the full class (`ap-icon-eye` does not exist, `ap-icon-eye-on` does). Use `<i class="ap-icon-{name}"></i>`.
+3. **Use DS tokens, not hardcoded values** — every `--ref-*` / `--sys-*` / `--comp-*` must exist in `desktop_variables.css`. Grey steps are `05 · 10 · 20 · 40 · 60 · 80 · 100 · 150` only.
 4. **Prefer `--sys-*` over `--ref-*`** when a semantic token exists.
 5. **Custom CSS only if nothing in the DS fits** — pick the right file:
    - `styles/ds-patches.css` — the **only** place to extend a DS class with a missing variant or add a primitive the DS forgot (e.g. `.ap-filter-chip`, `.app-modal-backdrop`). It should shrink as the DS evolves.
    - `styles/screens/<screen>.css` — screen-specific styling.
    - `styles/components/<component>.css` — shared component styling.
    - **Never** redeclare a `.ap-*` class with overrides outside `ds-patches.css` — it flips the cascade silently. The one standing exception is `styles/components/archie-loader.css`, which claims `.ap-loader` on purpose: every spinner in the app is replaced by the animated Archie mark, and that is a brand decision, not a missing DS primitive. It says so at the top of the file. Don't add a second exception without the same kind of note.
-6. **Validate before committing** — `validate_css` on the ds-css MCP.
+6. **Validate before committing** — `npm run check:ds`. A name that doesn't exist fails silently (the declaration is dropped, the mask is empty), so this is the only thing that catches it.
 
 ### Brand color convention
 
 Per project preference: **orange = AI / spotlight actions** (Ask, Try in chat, primary AI CTA); **blue = routine list-page CTAs** (Connect, Create, navigation). Reuse shared primitives — e.g. filter chips use `.ap-filter-chip` (driven by `aria-pressed`), the same chip the Ideas panel uses.
 
-### DS files (in `ds/`, generated by `scripts/sync-ds.mjs` — do not edit by hand)
+### DS files (jsDelivr, `@latest` — nothing vendored)
 
 ```
-ds/
-  desktop_variables.css  — design tokens (--ref-* / --sys-* / --comp-*)
-  css-ui/font-face.css   — Averta font-face
-  css-ui/index.css       — all .ap-* component classes
-  ap-icons.css           — icon font (<i class="ap-icon-*">)
-  fonts/averta/          — OTF font files
+@agorapulse/ui-theme@latest/assets/
+  desktop_variables.css      — design tokens (--ref-* / --sys-* / --comp-*)
+  style/css-ui/font-face.css — Averta font-face (resolves ../../fonts/averta/ on the CDN)
+  style/css-ui/index.css     — all .ap-* component classes
+@agorapulse/ui-symbol@latest/icons/
+  ap-icons.css               — icons (mask-image on <i class="ap-icon-*">)
 ```
 
 ### App styles (in `styles/`)
@@ -637,6 +639,5 @@ All docs (except this file and `README.md`) live under [`docs/`](docs/). Start f
 
 ## MCP
 
-- `ds-css` — design-system tools: `validate_css`, `recommend_token`, `search_tokens`, `get_component`, `list_components`, `search_icons`, `get_text_style`, `get_layout_pattern`. (`.mcp.json` ships this server.)
 - `plugin:figma:figma` (when enabled) — design ↔ code: `use_figma`, `get_design_context`, `get_screenshot`, `generate_diagram`, etc.
 - A live browser **preview** is available for verification (navigate routes, click, screenshot, read console).

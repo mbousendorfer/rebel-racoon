@@ -41,7 +41,7 @@ function sourceFiles() {
 
 /* A module specifier in src/: `from "./x.js"` / `import("../y.js?v=3")`. */
 const JS_SPECIFIER = /((?:from |import\()\s*")(\.[^"]*?\.js)(?:\?v=\d+)?(")/g;
-/* An app asset in index.html: our own styles + the entry point. Never ds/. */
+/* An app asset in index.html: our own styles + the entry point. Never the DS, which is served by the CDN. */
 const HTML_ASSET = /((?:href|src)=")(\.\/(?:styles|src)\/[^"]*?\.(?:css|js))(?:\?v=\d+)?(")/g;
 
 function rewrite(file, version) {

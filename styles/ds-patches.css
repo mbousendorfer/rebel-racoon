@@ -509,7 +509,7 @@ button.ap-link {
    that SCSS transcribed — same names, same structure, same states — from
    libs/ui-components/segmented-control/src/segmented-control.component.{html,scss}.
 
-   Not a redeclaration: .ap-segmented-control does not exist in ds/css-ui, so
+   Not a redeclaration: .ap-segmented-control does not exist in css-ui (22.0.17), so
    this is the missing-primitive case ds-patches.css is for. The day the class
    lands in the DS this block is a delete and the markup is already right.
 
@@ -527,8 +527,8 @@ button.ap-link {
    ── Token substitutions, and why they are not laziness ───────────────────
    The component's SCSS uses --sys-color-border-interactive-*,
    --sys-color-text-interactive-*, --sys-height-control and --sys-radius-inner.
-   NONE of that family exists in this repo's synced ds/desktop_variables.css —
-   it is behind the DS. Each line below therefore carries the closest value on
+   NONE of that family is published yet — not even in ui-theme 22.0.17, which
+   the app loads at @latest. Each line below therefore carries the closest value on
    the ladder we do have, and every one is within a step of the real token:
      border-interactive-default  #C0C8D1 → grey-20  #D6DAE0
      border-interactive-hovered  #A6B1BE → grey-40  #AEB5C1
@@ -537,7 +537,7 @@ button.ap-link {
      text-interactive-default    #344563 → --sys-text-color-default (exact)
      height-control              36px    → --comp-button-height (exact)
      radius-inner                4px     → --app-radius-sm (exact)
-   Re-point them at the real names when ds/ is resynced.
+   Re-point them at the real names the day they land in desktop_variables.css.
 
    ── Three states this port gets RIGHT that its predecessor did not ────────
    The version this was taken from painted the HOVER border electric blue, which
@@ -655,14 +655,14 @@ button.ap-link {
    used a chip row, correctly, because its sources were one flat set of six.
 
    ── Token substitutions, and why they are not laziness ───────────────────
-   The component's SCSS uses a --sys-color-* family that is NOT in this repo's
-   synced ds/desktop_variables.css — it is behind the DS. Each line below carries
+   The component's SCSS uses a --sys-color-* family that is NOT published yet
+   (absent from ui-theme 22.0.17). Each line below carries
    the closest value on the ladder we do have:
      color-border-default            #DFE3E8 → --sys-border-color-default #EAECEF
      color-text-interactive-default  #344563 → --sys-text-color-default (exact)
      color-text-interactive-disabled #C0C8D1 → grey-40  #AEB5C1
      radius-inner                    4px     → --app-radius-sm (exact)
-   Re-point them at the real names when ds/ is resynced.
+   Re-point them at the real names the day they land in desktop_variables.css.
 
    Positioning is the CALLER'S: the DS anchors this through a CDK overlay, which
    does not exist here, so the host screen places it.
@@ -677,9 +677,7 @@ button.ap-link {
   max-height: min(90vh, 750px);
   background-color: var(--ref-color-white);
   border-radius: var(--app-radius-sm);
-  box-shadow:
-    0 4px 25px -2px rgba(52, 69, 99, 0.15),
-    0 4px 6px -2px rgba(52, 69, 99, 0.15);
+  box-shadow: var(--sys-elevation-floating);
   outline: none;
 }
 
@@ -826,7 +824,7 @@ button.ap-link {
 
 /* ── .ap-table.clickable-rows — a MISSING root modifier ───────────────────
    The DS's data-table pattern prescribes rows that navigate ("per-row overflow
-   menu and row actions", references/patterns.md), but `ds/css-ui` ships no
+   menu and row actions", references/patterns.md), but css-ui ships no
    affordance for it: no cursor, no hover, no focus ring on a row you can click.
    Screens were styling `tbody tr` themselves, which the component's own
    guideline forbids — "use root modifiers rather than styling individual

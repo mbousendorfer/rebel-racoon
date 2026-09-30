@@ -4,71 +4,93 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Archie</title>
-    <!-- Critical font preload — Averta Regular powers virtually every
-         text node, so let the browser kick its download in parallel with
-         the stylesheets instead of waiting on font-face.css to parse. -->
-    <link rel="preload" href="./ds/fonts/averta/AvertaStd-Regular.otf" as="font" type="font/otf" crossorigin />
-    <link rel="preload" href="./ds/fonts/averta/AvertaStd-Semibold.otf" as="font" type="font/otf" crossorigin />
-    <!-- Agorapulse Design System -->
-    <link rel="stylesheet" href="./ds/desktop_variables.css" />
-    <link rel="stylesheet" href="./ds/css-ui/font-face.css" />
-    <link rel="stylesheet" href="./ds/ap-icons.css" />
-    <link rel="stylesheet" href="./ds/css-ui/index.css" />
+    <!-- Agorapulse Design System — served by jsDelivr at @latest, never vendored:
+         the published package is the only source (design-guidelines skill).
+         Critical font preload first — Averta Regular powers virtually every
+         text node, so its download starts in parallel with the stylesheets. -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link
+      rel="preload"
+      href="https://cdn.jsdelivr.net/npm/@agorapulse/ui-theme@latest/assets/fonts/averta/AvertaStd-Regular.otf"
+      as="font"
+      type="font/otf"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="https://cdn.jsdelivr.net/npm/@agorapulse/ui-theme@latest/assets/fonts/averta/AvertaStd-Semibold.otf"
+      as="font"
+      type="font/otf"
+      crossorigin
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@agorapulse/ui-theme@latest/assets/desktop_variables.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@agorapulse/ui-theme@latest/assets/style/css-ui/font-face.css"
+    />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@agorapulse/ui-symbol@latest/icons/ap-icons.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@agorapulse/ui-theme@latest/assets/style/css-ui/index.css"
+    />
     <!-- Image Studio bundled display fonts (local @font-face, OFL) -->
-    <link rel="stylesheet" href="./styles/fonts.css?v=1402" />
+    <link rel="stylesheet" href="./styles/fonts.css?v=1405" />
     <!-- App styles -->
-    <link rel="stylesheet" href="./styles/tokens.css?v=1402" />
-    <link rel="stylesheet" href="./styles/base.css?v=1402" />
-    <link rel="stylesheet" href="./styles/layout.css?v=1402" />
-    <link rel="stylesheet" href="./styles/ds-patches.css?v=1402" />
-    <link rel="stylesheet" href="./styles/chat.css?v=1402" />
-    <link rel="stylesheet" href="./styles/screens/dashboard.css?v=1402" />
-    <link rel="stylesheet" href="./styles/screens/contexts.css?v=1402" />
-    <link rel="stylesheet" href="./styles/screens/home.css?v=1402" />
-    <link rel="stylesheet" href="./styles/screens/session.css?v=1402" />
-    <link rel="stylesheet" href="./styles/screens/clip-studio.css?v=1402" />
-    <link rel="stylesheet" href="./styles/screens/batch-studio.css?v=1402" />
-    <link rel="stylesheet" href="./styles/screens/image-studio-canvas.css?v=1402" />
-    <link rel="stylesheet" href="./styles/screens/image-studio-v2.css?v=1402" />
-    <link rel="stylesheet" href="./styles/screens/posts.css?v=1402" />
-    <link rel="stylesheet" href="./styles/screens/analyse.css?v=1402" />
-    <link rel="stylesheet" href="./styles/screens/modals.css?v=1402" />
-    <link rel="stylesheet" href="./styles/screens/welcome.css?v=1402" />
-    <link rel="stylesheet" href="./styles/screens/playbook-v2.css?v=1402" />
-    <link rel="stylesheet" href="./styles/screens/topics.css?v=1402" />
-    <link rel="stylesheet" href="./styles/screens/topics-settings.css?v=1402" />
-    <link rel="stylesheet" href="./styles/screens/connectors.css?v=1402" />
-    <link rel="stylesheet" href="./styles/components/sidebar.css?v=1402" />
-    <link rel="stylesheet" href="./styles/components/conversation-status-card.css?v=1402" />
-    <link rel="stylesheet" href="./styles/components/right-panel.css?v=1402" />
-    <link rel="stylesheet" href="./styles/components/schedule-modal.css?v=1402" />
-    <link rel="stylesheet" href="./styles/components/schedule-modal-legacy.css?v=1402" />
-    <link rel="stylesheet" href="./styles/components/add-source-modal.css?v=1402" />
-    <link rel="stylesheet" href="./styles/components/connectors-modal.css?v=1402" />
-    <link rel="stylesheet" href="./styles/components/video-clips-modal.css?v=1402" />
-    <link rel="stylesheet" href="./styles/screens/caption-editor.css?v=1402" />
-    <link rel="stylesheet" href="./styles/screens/insights.css?v=1402" />
-    <link rel="stylesheet" href="./styles/screens/insights-cockpit.css?v=1402" />
-    <link rel="stylesheet" href="./styles/screens/insights-read.css?v=1402" />
-    <link rel="stylesheet" href="./styles/screens/insights-mob_index.css?v=1402" />
-    <link rel="stylesheet" href="./styles/screens/insights-mob_side.css?v=1402" />
-    <link rel="stylesheet" href="./styles/components/objective-modal.css?v=1402" />
-    <link rel="stylesheet" href="./styles/components/clip-card.css?v=1402" />
-    <link rel="stylesheet" href="./styles/components/subtitle-style.css?v=1402" />
-    <link rel="stylesheet" href="./styles/components/feedback-control.css?v=1402" />
-    <link rel="stylesheet" href="./styles/components/workflow-flow.css?v=1402" />
-    <link rel="stylesheet" href="./styles/components/archie-loader.css?v=1402" />
-    <link rel="stylesheet" href="./styles/components/top-post-card.css?v=1402" />
-    <link rel="stylesheet" href="./styles/components/topic-badge.css?v=1402" />
-    <link rel="stylesheet" href="./styles/components/topic-card.css?v=1402" />
-    <link rel="stylesheet" href="./styles/components/social-post-card.css?v=1402" />
+    <link rel="stylesheet" href="./styles/tokens.css?v=1405" />
+    <link rel="stylesheet" href="./styles/base.css?v=1405" />
+    <link rel="stylesheet" href="./styles/layout.css?v=1405" />
+    <link rel="stylesheet" href="./styles/ds-patches.css?v=1405" />
+    <link rel="stylesheet" href="./styles/chat.css?v=1405" />
+    <link rel="stylesheet" href="./styles/screens/dashboard.css?v=1405" />
+    <link rel="stylesheet" href="./styles/screens/contexts.css?v=1405" />
+    <link rel="stylesheet" href="./styles/screens/home.css?v=1405" />
+    <link rel="stylesheet" href="./styles/screens/session.css?v=1405" />
+    <link rel="stylesheet" href="./styles/screens/clip-studio.css?v=1405" />
+    <link rel="stylesheet" href="./styles/screens/batch-studio.css?v=1405" />
+    <link rel="stylesheet" href="./styles/screens/image-studio-canvas.css?v=1405" />
+    <link rel="stylesheet" href="./styles/screens/image-studio-v2.css?v=1405" />
+    <link rel="stylesheet" href="./styles/screens/posts.css?v=1405" />
+    <link rel="stylesheet" href="./styles/screens/analyse.css?v=1405" />
+    <link rel="stylesheet" href="./styles/screens/modals.css?v=1405" />
+    <link rel="stylesheet" href="./styles/screens/welcome.css?v=1405" />
+    <link rel="stylesheet" href="./styles/screens/playbook-v2.css?v=1405" />
+    <link rel="stylesheet" href="./styles/screens/topics.css?v=1405" />
+    <link rel="stylesheet" href="./styles/screens/topics-settings.css?v=1405" />
+    <link rel="stylesheet" href="./styles/screens/connectors.css?v=1405" />
+    <link rel="stylesheet" href="./styles/components/sidebar.css?v=1405" />
+    <link rel="stylesheet" href="./styles/components/conversation-status-card.css?v=1405" />
+    <link rel="stylesheet" href="./styles/components/right-panel.css?v=1405" />
+    <link rel="stylesheet" href="./styles/components/schedule-modal.css?v=1405" />
+    <link rel="stylesheet" href="./styles/components/schedule-modal-legacy.css?v=1405" />
+    <link rel="stylesheet" href="./styles/components/add-source-modal.css?v=1405" />
+    <link rel="stylesheet" href="./styles/components/connectors-modal.css?v=1405" />
+    <link rel="stylesheet" href="./styles/components/video-clips-modal.css?v=1405" />
+    <link rel="stylesheet" href="./styles/screens/caption-editor.css?v=1405" />
+    <link rel="stylesheet" href="./styles/screens/insights.css?v=1405" />
+    <link rel="stylesheet" href="./styles/screens/insights-cockpit.css?v=1405" />
+    <link rel="stylesheet" href="./styles/screens/insights-read.css?v=1405" />
+    <link rel="stylesheet" href="./styles/screens/insights-mob_index.css?v=1405" />
+    <link rel="stylesheet" href="./styles/screens/insights-mob_side.css?v=1405" />
+    <link rel="stylesheet" href="./styles/components/objective-modal.css?v=1405" />
+    <link rel="stylesheet" href="./styles/components/clip-card.css?v=1405" />
+    <link rel="stylesheet" href="./styles/components/subtitle-style.css?v=1405" />
+    <link rel="stylesheet" href="./styles/components/feedback-control.css?v=1405" />
+    <link rel="stylesheet" href="./styles/components/workflow-flow.css?v=1405" />
+    <link rel="stylesheet" href="./styles/components/archie-loader.css?v=1405" />
+    <link rel="stylesheet" href="./styles/components/top-post-card.css?v=1405" />
+    <link rel="stylesheet" href="./styles/components/topic-badge.css?v=1405" />
+    <link rel="stylesheet" href="./styles/components/topic-card.css?v=1405" />
+    <link rel="stylesheet" href="./styles/components/social-post-card.css?v=1405" />
     <!-- Image Generator module (flag sexySquirrel) — its styles live with it -->
-    <link rel="stylesheet" href="./src/modules/image-studio/styles/imst-base.css?v=1402" />
-    <link rel="stylesheet" href="./src/modules/image-studio/styles/imst-ui.css?v=1402" />
-    <link rel="stylesheet" href="./src/modules/image-studio/styles/imst-styles.css?v=1402" />
-    <link rel="stylesheet" href="./src/modules/image-studio/styles/imst-hub.css?v=1402" />
-    <link rel="stylesheet" href="./src/modules/image-studio/styles/imst-studio.css?v=1402" />
-    <link rel="stylesheet" href="./src/modules/image-studio/styles/imst-edit.css?v=1402" />
+    <link rel="stylesheet" href="./src/modules/image-studio/styles/imst-base.css?v=1405" />
+    <link rel="stylesheet" href="./src/modules/image-studio/styles/imst-ui.css?v=1405" />
+    <link rel="stylesheet" href="./src/modules/image-studio/styles/imst-styles.css?v=1405" />
+    <link rel="stylesheet" href="./src/modules/image-studio/styles/imst-hub.css?v=1405" />
+    <link rel="stylesheet" href="./src/modules/image-studio/styles/imst-studio.css?v=1405" />
+    <link rel="stylesheet" href="./src/modules/image-studio/styles/imst-edit.css?v=1405" />
   </head>
   <body>
     <a class="skip-to-main" href="#app">Skip to main content</a>
@@ -78,6 +100,6 @@
       <main class="app-content" id="app" tabindex="-1"></main>
     </div>
     <div class="ap-snackbar-thread" id="toastRegion" role="status" aria-live="polite"></div>
-    <script type="module" src="./src/app.js?v=1402"></script>
+    <script type="module" src="./src/app.js?v=1405"></script>
   </body>
 </html>

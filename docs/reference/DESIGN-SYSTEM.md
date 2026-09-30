@@ -6,16 +6,18 @@
 
 ## Workflow obligatoire avant d'écrire du HTML / CSS
 
-1. **Vérifier qu'un composant DS existe** — `list_components` sur le MCP `ds-css` ; `get_component <name>` pour les variantes / modifiers (`.stroked`, `.primary`, `.ghost`, `.transparent`, classes de couleur).
-2. **Vérifier qu'une icône existe** — `search_icons <keyword>` avant d'ajouter du SVG inline. Usage : `<i class="ap-icon-{name}"></i>`.
-3. **Utiliser les tokens DS, pas des valeurs hardcodées** — `search_tokens` + `recommend_token` sur le MCP, ou grep `ds/desktop_variables.css` pour `--ref-*` / `--sys-*`. Jamais `padding: 20px` quand `var(--ref-spacing-sm)` existe. Jamais `#fff` quand `var(--ref-color-white)` existe.
+**Tout passe par le skill `/design-guidelines`** (`mode: html-prototype`) : il lit les specs du repo `agorapulse/design` et les packages sur le CDN, et porte les house rules que les specs ne disent pas. **Jamais le MCP `ds-css`**, retiré du repo.
+
+1. **Trouver le composant par intention** (lookup du skill), puis ses classes CSS-UI dans `css-ui/index.css` du CDN — variantes / modifiers (`.stroked`, `.primary`, `.ghost`, `.transparent`, classes de couleur).
+2. **Vérifier qu'une icône existe** dans `@agorapulse/ui-symbol@latest/icons/ap-icons.css`, classe complète (`ap-icon-eye` n'existe pas). Usage : `<i class="ap-icon-{name}"></i>`.
+3. **Utiliser les tokens DS, pas des valeurs hardcodées** — chaque `--ref-*` / `--sys-*` doit exister dans `desktop_variables.css`. Les gris : `05 · 10 · 20 · 40 · 60 · 80 · 100 · 150`, rien d'autre. Jamais `padding: 20px` quand `var(--ref-spacing-sm)` existe. Jamais `#fff` quand `var(--ref-color-white)` existe.
 4. **Préférer `--sys-*` à `--ref-*`** quand un token sémantique existe (text-color, border-color, état de composant).
 5. **CSS custom uniquement si rien dans le DS ne convient** — choisir le bon fichier :
    - `styles/ds-patches.css` — la **seule** place pour étendre une classe DS avec une variante manquante (ex. `.ap-filter-chip`, `.app-modal-backdrop`) ou porter un composant que le DS ne ship qu'en Angular (ex. `.ap-filter-dropdown`). Doit rétrécir au fil que le DS évolue — et ça arrive : le port de `.ap-segmented-control` a été supprimé le jour où `/topics` est passé aux tabs, qui existent en CSS-UI.
    - `styles/screens/<screen>.css` — styling spécifique à un écran.
    - `styles/components/<component>.css` — styling partagé entre écrans.
    - **Jamais** redéclarer une classe `.ap-*` avec des overrides hors `ds-patches.css` — ça flippe la cascade silencieusement.
-6. **Valider avant de commit** — `validate_css` sur le MCP `ds-css`.
+6. **Valider avant de commit** — `npm run check:ds` : tout token, icône et classe `.ap-*` doit se résoudre contre le DS `@latest`. Un nom inexistant échoue en silence.
 
 ## Tiers de tokens
 
@@ -36,18 +38,18 @@ Exception documentée : l'icône `sparklesMermaid` utilise un SVG inline pour so
 
 Réutiliser les primitives partagées : ex. tous les filter chips utilisent `.ap-filter-chip` (driven par `aria-pressed`), le même chip qu'utilise le Ideas panel.
 
-## Files DS (générés par `scripts/sync-ds.mjs` — ne pas éditer)
+## Files DS (jsDelivr `@latest` — rien n'est vendorisé)
 
 ```
-ds/
-  desktop_variables.css   — design tokens (--ref-*, --sys-*, --comp-*)
-  css-ui/font-face.css    — Averta font-face
-  css-ui/index.css        — toutes les classes .ap-*
-  ap-icons.css            — icon font (<i class="ap-icon-*">)
-  fonts/averta/           — OTF font files
+@agorapulse/ui-theme@latest/assets/
+  desktop_variables.css       — design tokens (--ref-*, --sys-*, --comp-*)
+  style/css-ui/font-face.css  — Averta font-face
+  style/css-ui/index.css      — toutes les classes .ap-*
+@agorapulse/ui-symbol@latest/icons/
+  ap-icons.css                — icônes (mask-image sur <i class="ap-icon-*">)
 ```
 
-Le dossier `ds/` est **gitignored** ; il est régénéré à chaque `npm install` via le `postinstall` hook (qui appelle `scripts/sync-ds.mjs`).
+Chargés par `index.html`. Il n'y a plus de dossier `ds/` ni de `scripts/sync-ds.mjs` (supprimés le 2026-09-30, passage en DS 22) : le package publié est la seule source, comme le veut le skill.
 
 ## Files app (en `styles/`)
 
@@ -82,7 +84,7 @@ styles/
 | `.ap-snackbar`               | —                                                               | Toasts (`toast.js`)                  |
 | `.ap-filter-chip`            | `aria-pressed` driven                                           | Filtres (extension `ds-patches.css`) |
 
-`list_components` sur le MCP `ds-css` pour la liste exhaustive.
+La liste exhaustive : le lookup du skill `/design-guidelines`, ou `css-ui/index.css` sur le CDN.
 
 ## Icônes
 
@@ -95,21 +97,12 @@ Pour les boutons icon-only, **mettre `aria-label` sur le bouton** et `aria-hidde
 - Redéclarer `.ap-icon-button`, `.ap-button` avec `border`/`background` custom → utiliser les modifiers DS (`.stroked`, `.transparent`, `.primary`, color variants).
 - Ajouter `padding: 20px` sur `.step-card`, `.source-header`, etc. dans un view file → ces classes sont déjà stylées centralement.
 - Couleurs hex, radii px-based, spacings px qui ne matchent pas les tokens.
-- Inventer une icône quand `search_icons` matche.
+- Inventer une icône quand `ap-icons.css` en a déjà une.
 - Mettre `!important` pour résoudre un conflit de cascade — c'est presque toujours le signe qu'une ap-\* est override hors `ds-patches.css`.
 
-## MCP outils
+## Vérification
 
-Le MCP `ds-css` (configuré dans `.mcp.json`) :
-
-- `list_components` — liste les `.ap-*`
-- `get_component <name>` — détail d'un composant + ses variantes
-- `search_icons <keyword>` — match d'icône
-- `search_tokens <keyword>` — match de token
-- `recommend_token` — propose le token pour une valeur donnée
-- `get_text_style` — styles de texte du DS
-- `get_layout_pattern` — patterns layout du DS
-- `validate_css <file>` — détecte les valeurs hardcodées qui devraient être des tokens
+`npm run check:ds` (`scripts/check-ds.mjs`) télécharge les trois fichiers du DS depuis jsDelivr `@latest` et vérifie que chaque token, icône et classe `.ap-*` utilisée dans `styles/`, `src/` et `index.html` y existe (ou est définie par l'app dans `styles/`). Il remplace l'ancien `validate_css` du MCP `ds-css`.
 
 ## Voir aussi
 

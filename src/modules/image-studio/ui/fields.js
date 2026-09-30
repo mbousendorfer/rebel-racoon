@@ -2,7 +2,7 @@
 // .ap-textarea-field, .ap-select, .ap-toggle-container, .ap-tag). Every field carries
 // data-imst-field="<path>" so one delegated listener can write it back.
 
-import { html, raw } from "../lib/html.js?v=1402";
+import { html, raw } from "../lib/html.js?v=1405";
 
 export function field({ label, hint, control, id }) {
   return html`
@@ -18,7 +18,6 @@ export function textInput({ path, value, placeholder = "", type = "text", id, at
     <div class="ap-input-group">
       <input
         type="${type}"
-        class="ap-input"
         ${id ? html`id="${id}"` : ""}
         data-imst-field="${path}"
         value="${value ?? ""}"

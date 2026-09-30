@@ -6,10 +6,19 @@
     <title>Archie — UI component handoff</title>
 
     <!-- Agorapulse Design System (variables → font → icons → ui-css) -->
-    <link rel="stylesheet" href="../ds/desktop_variables.css?v=3" />
-    <link rel="stylesheet" href="../ds/css-ui/font-face.css?v=3" />
-    <link rel="stylesheet" href="../ds/ap-icons.css?v=3" />
-    <link rel="stylesheet" href="../ds/css-ui/index.css?v=3" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@agorapulse/ui-theme@latest/assets/desktop_variables.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@agorapulse/ui-theme@latest/assets/style/css-ui/font-face.css"
+    />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@agorapulse/ui-symbol@latest/icons/ap-icons.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@agorapulse/ui-theme@latest/assets/style/css-ui/index.css"
+    />
 
     <!-- App tokens + base + chat styles (so previews render exactly as in app).
          ?v=N is bumped whenever the cascade changes (e.g. source-intake v2 ship)
@@ -438,8 +447,8 @@
         <div class="hd-note" style="margin-top: 16px">
           <strong>Design-system atoms are intentionally not documented here.</strong> Generic DS building blocks
           (buttons, inputs, tags, chips, infobox…) live in the Agorapulse Design System itself — use the
-          <code>ds-css</code> MCP (<code>list_components</code> / <code>get_component</code>) as their source of truth.
-          This page covers only what Archie composes on top.
+          <code>/design-guidelines</code> skill (it reads the specs of the <code>agorapulse/design</code> repo) as their
+          source of truth. This page covers only what Archie composes on top.
         </div>
         <div class="hd-meta">
           <span>
@@ -1455,7 +1464,8 @@
         <p>
           To open this file locally: <code>open handoff/components.html</code> or browse to
           <code>http://localhost:8000/handoff/components.html</code> when the dev server is running. Styles cascade from
-          the live <code>ds/</code> + <code>styles/</code> directories, so any token change is reflected here on reload.
+          the DS on jsDelivr (@latest) + the live <code>styles/</code> directory, so any token change is reflected here
+          on reload.
         </p>
       </footer>
     </main>

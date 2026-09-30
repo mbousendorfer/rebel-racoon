@@ -15,7 +15,7 @@
 //   - Input is auto-focused + full text selected on open so the user
 //     can immediately overtype or accept.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1402";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1405";
 
 const MODAL_ID = "rename";
 
@@ -43,7 +43,6 @@ const HTML = `
     <div class="ap-input-group">
       <input
         type="text"
-        class="ap-input"
         id="renameInput"
         placeholder="Name…"
         aria-label="New name"

@@ -20,15 +20,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-
-      - run: npm ci
-
       - uses: actions/configure-pages@v5
 
+      # No build: the app is static ES modules and the DS comes from jsDelivr.
       - uses: actions/upload-pages-artifact@v3
         with:
           path: .
