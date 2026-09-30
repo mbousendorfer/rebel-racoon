@@ -166,8 +166,9 @@ src/
                           (feedback/bug/shortcuts + Admin menu)
     sidebar/              playbook-switcher.js (flag `playbookWorkspace`) · recent-chats.js
                           (Sort & group, rows, pin / rename / delete)
-    right-panel.js        sliding panel shell (open / close / resize / URL) + the Drafts mode
-    right-panel/          sources-view.js · ideas-view.js (Ideas + Clips)
+    right-panel.js        sliding panel shell: open / close / resize / URL state + the delegated listeners
+    right-panel/          drafts-view.js (Drafts: feed, filters, actions, inline editor) ·
+                          sources-view.js · ideas-view.js (Ideas + Clips)
     conversation-status-card.js  floating in-progress card (sources/ideas/drafts counts)
     content-workspace.js  shared Sources+Ideas library layout (search / sort / By Source / All Ideas)
     source-card.js, idea-card.js, idea-card-compact.js, post-card.js, clip-card.js, empty-state.js
