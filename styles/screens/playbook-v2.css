@@ -271,11 +271,11 @@
 }
 
 .pb2-trait {
-  font-size: var(--ref-font-size-xxl);
   font-weight: var(--ref-font-weight-bold);
   line-height: 1.2;
   letter-spacing: -0.01em;
   color: var(--ref-color-grey-100);
+  font-size: var(--ref-font-size-md);
 }
 
 .pb2-trait__dot {
@@ -301,8 +301,8 @@
   padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
   border-radius: var(--ref-border-radius-md);
   background: var(--ref-color-grey-05);
-  font-size: var(--ref-font-size-md);
   line-height: 1.45;
+  font-size: var(--sys-text-style-body-size);
 }
 
 .pb2-line i {
@@ -369,9 +369,11 @@
   gap: var(--ref-spacing-md);
 }
 
-/* A block reads title → content in one glance: the title is a LABEL (14 bold),
- * the content is the reading size (16 regular) — never the same size and
- * weight, which is what made the two blur. 24 all round, 12 from the label. */
+/* The type ladder inside a block — the TITLE is always its largest text:
+ *   title 18 bold (h2) › emphasis 16 (the business, the voice's three words,
+ *   the personality) › content 14 (body) › captions 12.
+ * (A pass made the title a 14 label over 16 content: inverted, reverted.)
+ * 24 all round, 12 from the title to the content. */
 .pb2-block {
   display: flex;
   flex-direction: column;
@@ -410,11 +412,11 @@
 .pb2-block__title {
   flex: 1;
   margin: 0;
-  font-family: var(--sys-text-style-body-bold-font-family);
-  font-size: var(--sys-text-style-body-bold-size);
-  line-height: var(--sys-text-style-body-bold-line-height);
-  font-weight: var(--sys-text-style-body-bold-weight);
   color: var(--ref-color-grey-100);
+  font-family: var(--sys-text-style-h2-font-family);
+  font-size: var(--sys-text-style-h2-size);
+  line-height: var(--sys-text-style-h2-line-height);
+  font-weight: var(--sys-text-style-h2-weight);
 }
 
 .pb2-block__caption {
@@ -427,13 +429,13 @@
   flex-direction: column;
   gap: var(--ref-spacing-sm);
   color: var(--ref-color-grey-100);
-  font-size: var(--ref-font-size-md);
+  font-size: var(--sys-text-style-body-size);
 }
 
 .pb2-lead--xl {
-  font-size: var(--ref-font-size-lg);
   line-height: 1.55;
   max-width: 70ch;
+  font-size: var(--ref-font-size-md);
 }
 
 .pb2-prose {
@@ -443,9 +445,8 @@
 
 .pb2-statement {
   margin: 0;
-  font-size: var(--ref-font-size-lg);
   line-height: 1.5;
-  font-weight: var(--ref-font-weight-bold);
+  font-size: var(--ref-font-size-md);
 }
 
 .pb2-inline {
@@ -609,14 +610,14 @@
 .pb2-font__glyphs {
   display: inline-grid;
   place-items: center;
-  width: calc(var(--ref-spacing-xxxl) * 1.2);
   aspect-ratio: 1;
   flex-shrink: 0;
   border-radius: var(--ref-border-radius-md);
   background: var(--ref-color-grey-05);
-  font-size: var(--ref-font-size-xxxl);
   font-weight: var(--ref-font-weight-bold);
   color: var(--ref-color-grey-100);
+  font-size: var(--ref-font-size-md);
+  width: var(--ref-spacing-xxl);
 }
 
 .pb2-font__meta {
@@ -630,8 +631,8 @@
 }
 
 .pb2-font__name {
-  font-size: var(--ref-font-size-md);
   font-weight: var(--ref-font-weight-bold);
+  font-size: var(--sys-text-style-body-size);
 }
 
 .pb2-font__sample {
