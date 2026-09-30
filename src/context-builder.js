@@ -13,24 +13,24 @@
 // tones, contentStyle, objective, contentAction, ctaLinks, language, color,
 // suggestions, editingId, onComplete }.
 
-import * as inlineQuestion from "./inline-question.js?v=1418";
-import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=1418";
-import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=1418";
-import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=1418";
-import { showToast } from "./components/toast.js?v=1418";
-import { recordReasons } from "./feedback-store.js?v=1418";
-import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1418";
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1418";
-import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=1418";
-import { analyzeWebsite, analyzeBrandFiles } from "./context-mock-analysis.js?v=1418";
-import { connectors as connectorMocks } from "./mocks.js?v=1418";
+import * as inlineQuestion from "./inline-question.js?v=1419";
+import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=1419";
+import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=1419";
+import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=1419";
+import { showToast } from "./components/toast.js?v=1419";
+import { recordReasons } from "./feedback-store.js?v=1419";
+import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1419";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1419";
+import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=1419";
+import { analyzeWebsite, analyzeBrandFiles } from "./context-mock-analysis.js?v=1419";
+import { connectors as connectorMocks } from "./mocks.js?v=1419";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "./social-profiles.js?v=1418";
-import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=1418";
-import { isFlagOn } from "./feature-flags.js?v=1418";
+} from "./social-profiles.js?v=1419";
+import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=1419";
+import { isFlagOn } from "./feature-flags.js?v=1419";
 
 const drafts = new Map(); // sessionId → draft
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -226,12 +226,8 @@ export function sectionPatchFromAnalysis(analysis) {
       socials: Array.isArray(c.socials) ? c.socials.map((x) => ({ ...x })) : [],
       suggested: true,
     })),
-    // Creators Archie found — straight into the list, no suggestion tray
-    // (the beta's "…we found for your brand").
-    influencers: (s.influencers || []).map((c) => ({
-      ...c,
-      socials: Array.isArray(c.socials) ? c.socials.map((x) => ({ ...x })) : [],
-    })),
+    // No influencers: the analysis cannot propose creators (Google's grounding
+    // terms forbid keeping them), so the section opens on its empty state.
   };
 }
 

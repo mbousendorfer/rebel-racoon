@@ -30,10 +30,10 @@
 // Caller wires its own input/change listeners and calls
 // rerenderContentWorkspaceBody(...) on each tick.
 
-import { html, raw } from "../utils.js?v=1418";
-import { renderSourceCard } from "./source-card.js?v=1418";
-import { renderIdeaCard } from "./idea-card.js?v=1418";
-import { renderEmptyState } from "./empty-state.js?v=1418";
+import { html, raw } from "../utils.js?v=1419";
+import { renderSourceCard } from "./source-card.js?v=1419";
+import { renderIdeaCard } from "./idea-card.js?v=1419";
+import { renderEmptyState } from "./empty-state.js?v=1419";
 
 export const contentState = { q: "", sort: "potential" };
 

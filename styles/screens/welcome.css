@@ -2458,12 +2458,40 @@ button.recap__logotile:hover {
   min-width: 0;
 }
 
-.recap__inf-edit > .ap-input-group,
-.recap__infadd > .ap-input-group {
+.recap__inf-edit > .ap-input-group {
   width: 100%;
   min-width: 0;
 }
 
-.recap__infadd {
-  gap: var(--ref-spacing-xs);
+/* The section's empty state — a bounded region, so the medallion + H3 + body
+   tier, centred, text capped at 420px (references/empty-states.md). */
+.recap__inf-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ref-spacing-md);
+  padding: var(--ref-spacing-lg) var(--ref-spacing-md);
+  text-align: center;
+}
+
+.recap__inf-empty-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  max-width: 420px;
+}
+
+.recap__inf-empty-title {
+  margin: 0;
+  font-size: var(--sys-text-style-h3-size);
+  font-weight: var(--sys-text-style-h3-weight);
+  line-height: var(--sys-text-style-h3-line-height);
+  color: var(--ref-color-grey-100);
+}
+
+.recap__inf-empty-body {
+  margin: 0;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--ref-color-grey-80);
 }
