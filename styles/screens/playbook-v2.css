@@ -114,7 +114,8 @@
   color: inherit;
 }
 
-.pb2-hero__actions {
+/* The page's actions, handed to the topbar's right side (screens/playbook.js). */
+.pb2-topbar-actions {
   display: flex;
   align-items: center;
   gap: var(--ref-spacing-xs);
