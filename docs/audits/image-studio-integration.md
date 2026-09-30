@@ -1,5 +1,11 @@
 # Image Generator (module « Image Studio ») — audit d'intégration
 
+> **À lire comme un journal, pas comme l'état actuel.** §Contexte à §8 sont le rapport de phase 0 et son
+> audit final (2026-09-25) : ils décrivent un hub `/image-generator` avec marques, campagnes et éditeur
+> **qui n'existe plus**. L'état courant, c'est §9 à §12 (le studio remplace celui des drafts, on ne génère
+> que depuis un draft, les styles vivent sur le Playbook) et [`FEATURES.md`](../reference/FEATURES.md) §18.
+> Depuis le 2026-09-30 le DS vient du CDN (plus de `ds/` local, cf. §3).
+
 ## Contexte
 
 Le brief demande d'ajouter à Archie un **générateur d'images IA** autonome pour les posts sociaux (IA mockée). La marque n'est pas le produit : c'est le réglage, décrit une fois, qui rend chaque image générée conforme. Toute la construction se fait derrière le feature flag « Sexy Squirrel ».

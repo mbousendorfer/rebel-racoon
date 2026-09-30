@@ -36,17 +36,17 @@ Direction de l'écart :
 
 ## Table des matières
 
-1. [Vue d'ensemble — positionnement et architecture globale](#1-vue-densemble)
-2. [App shell — sidebar + topbar + composer chrome](#2-app-shell)
-3. [Dashboard / entry point](#3-dashboard)
-4. [Session de chat — le cœur](#4-session-de-chat)
-5. [Playbooks — liste + détail + édition](#5-playbooks)
+1. [Vue d'ensemble — positionnement et architecture globale](#1-vue-densemble--positionnement-et-architecture-globale)
+2. [App shell — sidebar + topbar + composer chrome](#2-app-shell--sidebar--topbar--composer-chrome)
+3. [Dashboard / entry point](#3-dashboard--entry-point)
+4. [Session de chat — le cœur](#4-session-de-chat--le-cœur)
+5. [Playbooks — liste + détail + édition](#5-playbooks--liste--détail--édition)
 6. [Ideas library](#6-ideas-library)
 7. [Connectors](#7-connectors)
 8. [Settings](#8-settings)
-9. [Onboarding — welcome-alt](#9-onboarding)
-10. [Bugs et défauts détectés](#10-bugs)
-11. [Synthèse — gaps prioritaires et recommandations](#11-synthèse)
+9. [Onboarding — welcome-alt](#9-onboarding--welcome-alt)
+10. [Bugs et défauts détectés](#10-bugs-et-défauts-détectés)
+11. [Synthèse — gaps prioritaires et recommandations](#11-synthèse--gaps-prioritaires-et-recommandations)
 
 ---
 
@@ -67,15 +67,15 @@ Direction de l'écart :
 
 ### Mental model
 
-| Concept            | Prod                                                                                                 | Proto                                                                                                                                                                                                           |
-| ------------------ | ---------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Conversation       | "Session" / "Conversation"                                                                           | "Session" / "Chat"                                                                                                                                                                                              |
-| Source (input)     | "Source" — PDF, URL, Video, Audio, Video Clip                                                        | "Source" — PDF, URL, Video, Audio, Video Clip + connectors (Notion, Slite, Drive, Slack)                                                                                                                        |
-| Idée extraite      | "Idea" (avec kind: Hook/Stat/Quote/Story/Insight)                                                    | "Idea" (même taxonomie + champ "potential" High/Medium/Low + draft action)                                                                                                                                      |
-| Draft              | "Draft" / "Post"                                                                                     | "Draft" / "Post"                                                                                                                                                                                                |
-| Brief réutilisable | **"Playbook"** (label UI), inclut **brand colors + typography + brand personality + voice analysis** | **"Playbook"** (UI doc) MAIS la base de code et toute l'UI lisible utilisent "Context" — voir [§5 Playbooks](#5-playbooks). Modèle : voice (tone) + audience + brief + DO/DON'T rules + default CTA + color tag |
-| Programmation      | Réutilise le Calendrier d'Agorapulse                                                                 | `schedule-store.js` interne (modal de scheduling propre)                                                                                                                                                        |
-| Compte social      | Réutilise l'inbox Agorapulse                                                                         | `social-profiles.js` standalone (mocks)                                                                                                                                                                         |
+| Concept            | Prod                                                                                                 | Proto                                                                                                                                                                                                                                   |
+| ------------------ | ---------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Conversation       | "Session" / "Conversation"                                                                           | "Session" / "Chat"                                                                                                                                                                                                                      |
+| Source (input)     | "Source" — PDF, URL, Video, Audio, Video Clip                                                        | "Source" — PDF, URL, Video, Audio, Video Clip + connectors (Notion, Slite, Drive, Slack)                                                                                                                                                |
+| Idée extraite      | "Idea" (avec kind: Hook/Stat/Quote/Story/Insight)                                                    | "Idea" (même taxonomie + champ "potential" High/Medium/Low + draft action)                                                                                                                                                              |
+| Draft              | "Draft" / "Post"                                                                                     | "Draft" / "Post"                                                                                                                                                                                                                        |
+| Brief réutilisable | **"Playbook"** (label UI), inclut **brand colors + typography + brand personality + voice analysis** | **"Playbook"** (UI doc) MAIS la base de code et toute l'UI lisible utilisent "Context" — voir [§5 Playbooks](#5-playbooks--liste--détail--édition). Modèle : voice (tone) + audience + brief + DO/DON'T rules + default CTA + color tag |
+| Programmation      | Réutilise le Calendrier d'Agorapulse                                                                 | `schedule-store.js` interne (modal de scheduling propre)                                                                                                                                                                                |
+| Compte social      | Réutilise l'inbox Agorapulse                                                                         | `social-profiles.js` standalone (mocks)                                                                                                                                                                                                 |
 
 🔴 **Bloquant ↔ Décision produit** — Le **modèle Playbook diffère fondamentalement** entre les deux. La prod a un Playbook "identité de marque visuelle" (couleurs, typo, voice extraite du site), le proto a un Playbook "règles éditoriales" (tone, DO/DON'T, audience, brief). Ces deux modèles ne sont pas opposés — ils sont complémentaires — mais aucune des deux implémentations ne couvre les deux dimensions. Il faut décider d'unifier les deux modèles (un seul Playbook qui contient brand visuel + règles éditoriales) ou de garder deux concepts séparés.
 

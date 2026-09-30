@@ -24,32 +24,32 @@
 //
 // The shell owns everything that is NOT painting: the topbar, the click
 // dispatch (every action is a `data-ins-*` hook every layout renders the same
-// way), the modal and chat doors, the post removal + Undo, the store subscriptions and the teardown.
+// way), the modal and chat doors, the store subscriptions and the teardown.
 // A layout is a pure `render(host, vm) → cleanup` and never binds a listener.
 //
 // Charts: Highcharts keeps a reference and a resize listener per chart, so the
 // host is never repainted without `destroyChartsIn(host)` first — the one rule
 // that keeps a brand switch from leaking a chart per repaint.
 
-import { html, raw } from "../../utils.js?v=1413";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=1413";
-import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=1413";
+import { html, raw } from "../../utils.js?v=1414";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=1414";
+import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=1414";
 import {
   subscribe as subscribeScope,
   getActivePlaybook,
   getActivePlaybookId,
   setActivePlaybook,
-} from "../../active-playbook.js?v=1413";
-import { getPath, navigate } from "../../router.js?v=1413";
-import { isFlagOn } from "../../feature-flags.js?v=1413";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=1413";
-import { open as openObjectiveModal } from "../../components/objective-modal.js?v=1413";
-import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=1413";
-import { renderEmptyState } from "../../components/empty-state.js?v=1413";
-import { playbookTitle, objectiveTopbarActions } from "./pieces.js?v=1413";
-import { objectiveEntries, playbookRollup, entryByKey } from "./model.js?v=1413";
-import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=1413";
-import { DEFAULT_LAYOUT, readLayoutId, writeLayoutId, layoutById, viewSwitch } from "./views.js?v=1413";
+} from "../../active-playbook.js?v=1414";
+import { getPath, navigate } from "../../router.js?v=1414";
+import { isFlagOn } from "../../feature-flags.js?v=1414";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=1414";
+import { open as openObjectiveModal } from "../../components/objective-modal.js?v=1414";
+import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=1414";
+import { renderEmptyState } from "../../components/empty-state.js?v=1414";
+import { playbookTitle, objectiveTopbarActions } from "./pieces.js?v=1414";
+import { objectiveEntries, playbookRollup, entryByKey } from "./model.js?v=1414";
+import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=1414";
+import { DEFAULT_LAYOUT, readLayoutId, writeLayoutId, layoutById, viewSwitch } from "./views.js?v=1414";
 
 // ── Module state ──────────────────────────────────────────────────────────
 

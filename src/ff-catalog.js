@@ -7,8 +7,8 @@ export const FLAGS = Object.freeze([
     default: false,
     hides:
       "When OFF, the Insights section disappears entirely. ON adds the active " +
-      "brand's objectives read two ways (Cockpit / Report, a select in the " +
-      "page bar): the counted verdict, a real trajectory toward target per " +
+      "brand's objectives, read in one of three layouts (Cockpit, a card " +
+      "index, a side column — the View switch in the topbar): the counted verdict, a real trajectory toward target per " +
       "measure, and the posts drafted with Archie that moved it. It is the one " +
       "analytics surface you choose to open, which is why a wall of figures is " +
       "legitimate here and nowhere else.",

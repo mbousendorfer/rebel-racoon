@@ -1,6 +1,6 @@
 # Docs — index
 
-Point d'entrée pour la documentation du proto Archie. **Toute la doc qui reste est à jour avec le code courant.** Les vieux audits, ux-audit, et autres docs obsolètes ont été supprimés (voir `git log` si besoin de les retrouver).
+Point d'entrée pour la documentation du proto Archie. **`reference/`, `specs/` et `copy/` décrivent le code courant** et se corrigent dans le même commit que lui. **`audits/` sont des instantanés datés** : ils décrivent le proto à leur date, lire la date avant de se fier à un détail.
 
 > **Pour les agents (Claude Code, Codex, …)** : commencer par [`../CLAUDE.md`](../CLAUDE.md) à la racine. Sa section **« Before you build a feature »** dit quoi lire selon la tâche — et ce n'est pas optionnel : une bonne partie de cette doc existe parce que l'idée inverse a été essayée puis retirée.
 
@@ -10,19 +10,20 @@ Point d'entrée pour la documentation du proto Archie. **Toute la doc qui reste 
 
 Documentation qui décrit l'état actuel du code. À maintenir à jour quand le code évolue.
 
-| Document                                                                 | Sujet                                                                                        |
-| ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- |
-| [`reference/CONCEPTS.md`](reference/CONCEPTS.md)                         | **Modèle conceptuel** : Playbook, session, contenu, Studios, frontière avec Agorapulse       |
-| [`reference/FEATURES.md`](reference/FEATURES.md)                         | **Catalogue fonctionnel** : toutes les features de l'app, leurs flows, états, entrées        |
-| [`reference/ARCHITECTURE.md`](reference/ARCHITECTURE.md)                 | Architecture du proto, lifecycle, source layout, patterns de fichiers                        |
-| [`reference/ROUTES.md`](reference/ROUTES.md)                             | Route table, handoffs cross-routes, URL state hash query                                     |
-| [`reference/STORES.md`](reference/STORES.md)                             | Stores : pattern de base, catalogue, persistence, invariants, singleton warning              |
-| [`reference/DESIGN-SYSTEM.md`](reference/DESIGN-SYSTEM.md)               | Workflow DS obligatoire (skill `/design-guidelines`, DS en CDN), tokens, `.ap-*`, `check:ds` |
-| [`reference/UI-PATTERNS.md`](reference/UI-PATTERNS.md)                   | **Usage concret du DS** : `ds-patches`, tokens app, patterns UI, loaders, couleur            |
-| [`reference/PANEL-SIDEBAR-RULES.md`](reference/PANEL-SIDEBAR-RULES.md)   | **Règles simples v1** sidebar + right panel (tailles & comportements), hors status-card      |
-| [`reference/SHELL-LAYOUT.md`](reference/SHELL-LAYOUT.md)                 | Détail technique complet : right panel / status-card / sidebar + formules de tailles         |
-| [`reference/SIDEBAR-PANEL-RECIPE.md`](reference/SIDEBAR-PANEL-RECIPE.md) | **Recette autonome** : recréer le comportement sidebar + right panel de zéro (sans code)     |
-| [`reference/GLOSSARY.md`](reference/GLOSSARY.md)                         | Vocabulaire produit, pipeline, ambiguïtés (Playbook ↔ Context)                               |
+| Document                                                                 | Sujet                                                                                               |
+| ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
+| [`reference/CONCEPTS.md`](reference/CONCEPTS.md)                         | **Modèle conceptuel** : Playbook, session, contenu, Studios, frontière avec Agorapulse              |
+| [`reference/FEATURES.md`](reference/FEATURES.md)                         | **Catalogue fonctionnel** : toutes les features de l'app, leurs flows, états, entrées               |
+| [`reference/DECISIONS.md`](reference/DECISIONS.md)                       | **Les arbitrages** derrière le code (partage, scope Playbook, Topic Feed, Image Studio…), en entier |
+| [`reference/ARCHITECTURE.md`](reference/ARCHITECTURE.md)                 | Architecture du proto, lifecycle, **arborescence complète**, patterns de fichiers                   |
+| [`reference/ROUTES.md`](reference/ROUTES.md)                             | Route table, handoffs cross-routes, URL state hash query                                            |
+| [`reference/STORES.md`](reference/STORES.md)                             | Stores : pattern de base, catalogue, persistence, invariants, singleton warning                     |
+| [`reference/DESIGN-SYSTEM.md`](reference/DESIGN-SYSTEM.md)               | Workflow DS obligatoire (skill `/design-guidelines`, DS en CDN), tokens, `.ap-*`, `check:ds`        |
+| [`reference/UI-PATTERNS.md`](reference/UI-PATTERNS.md)                   | **Usage concret du DS** : `ds-patches`, tokens app, patterns UI, loaders, couleur                   |
+| [`reference/PANEL-SIDEBAR-RULES.md`](reference/PANEL-SIDEBAR-RULES.md)   | **Règles simples v1** sidebar + right panel (tailles & comportements) — à lire en premier           |
+| [`reference/SHELL-LAYOUT.md`](reference/SHELL-LAYOUT.md)                 | Le même sujet en détail technique : right panel / status-card / sidebar + formules de tailles       |
+| [`reference/SIDEBAR-PANEL-RECIPE.md`](reference/SIDEBAR-PANEL-RECIPE.md) | Le même sujet en **recette autonome** : le recréer de zéro, sans code (ex. pour le fork Angular)    |
+| [`reference/GLOSSARY.md`](reference/GLOSSARY.md)                         | Vocabulaire produit, pipeline, ambiguïtés (Playbook ↔ Context)                                      |
 
 ---
 
@@ -36,13 +37,25 @@ Critères d'acceptation écrits **depuis l'app tournante** : chacun dit ce que l
 
 ---
 
-## 🔍 Audits — current
+## 🔍 Audits — instantanés datés
 
-| Document                                                     | Date       | Sujet                                                                                                      |
-| ------------------------------------------------------------ | ---------- | ---------------------------------------------------------------------------------------------------------- |
-| [`audits/PROD-VS-PROTOTYPE.md`](audits/PROD-VS-PROTOTYPE.md) | 2026-06-04 | Comparaison Studio (prod) ↔ Archie (proto) en 4 dimensions (visuel / fonctionnel / UX-copy / archi)        |
-| [`audits/PROD-CHANGES.md`](audits/PROD-CHANGES.md)           | 2026-06-05 | Plan priorisé des changements à appliquer côté prod pour se rapprocher du proto                            |
-| [`audits/ALPHA-FEEDBACK.md`](audits/ALPHA-FEEDBACK.md)       | 2026-06-10 | Retours des 12 sessions alpha (Mike Allton) : issues numérotées, statut dans le proto, solutions à choisir |
+| Document                                                                   | Date            | Sujet                                                                                                      |
+| -------------------------------------------------------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------- |
+| [`audits/PROD-VS-PROTOTYPE.md`](audits/PROD-VS-PROTOTYPE.md)               | 2026-06-04      | Comparaison Studio (prod) ↔ Archie (proto) en 4 dimensions (visuel / fonctionnel / UX-copy / archi)        |
+| [`audits/PROD-CHANGES.md`](audits/PROD-CHANGES.md)                         | 2026-06-05      | Plan priorisé des changements à appliquer côté prod pour se rapprocher du proto                            |
+| [`audits/ALPHA-FEEDBACK.md`](audits/ALPHA-FEEDBACK.md)                     | 2026-06-10      | Retours des 12 sessions alpha (Mike Allton) : issues numérotées, statut dans le proto, solutions à choisir |
+| [`audits/image-studio-integration.md`](audits/image-studio-integration.md) | 2026-09-25 → 28 | L'Image Generator : rapport de phase 0 puis son journal (§9-12 = l'état courant, cf. FEATURES §18)         |
+
+Les trois premiers précèdent le workspace Playbook, le Topic Feed, le partage, Insights et l'Image Generator ; `PROD-VS-PROTOTYPE` décrit encore `/settings`, supprimé depuis.
+
+---
+
+## 🎨 Figma
+
+| Document                                     | Sujet                                                                                        |
+| -------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| [`figma-coverage.md`](figma-coverage.md)     | Couverture Figma ⇄ app : ce que le fichier **Archie** couvre, et le backlog de ce qui manque |
+| [`figma-sync-map.json`](figma-sync-map.json) | Le mapping technique (fileKey, node-ids, routes, sources) lu par l'agent `figma-sync`        |
 
 ---
 
@@ -68,6 +81,7 @@ Critères d'acceptation écrits **depuis l'app tournante** : chacun dit ce que l
 | Comment se comportent sidebar + right panel (v1)                    | [`reference/PANEL-SIDEBAR-RULES.md`](reference/PANEL-SIDEBAR-RULES.md)   |
 | Recréer le comportement sidebar + right panel de zéro               | [`reference/SIDEBAR-PANEL-RECIPE.md`](reference/SIDEBAR-PANEL-RECIPE.md) |
 | Que veut dire "Playbook" / "Context" / "Finding" / "Idea" / "Draft" | [`reference/GLOSSARY.md`](reference/GLOSSARY.md)                         |
+| Pourquoi c'est fait comme ça (et ce qu'il ne faut pas reproposer)   | [`reference/DECISIONS.md`](reference/DECISIONS.md)                       |
 | Différences entre la prod Studio et le proto                        | [`audits/PROD-VS-PROTOTYPE.md`](audits/PROD-VS-PROTOTYPE.md)             |
 | Quels changements appliquer côté prod                               | [`audits/PROD-CHANGES.md`](audits/PROD-CHANGES.md)                       |
 | Que dire / pas dire dans les copy                                   | [`copy/copy-principles.md`](copy/copy-principles.md)                     |
@@ -82,6 +96,7 @@ Ce qui se vérifie tout seul (il n'y a pas de suite de tests) :
 npm run check:versions  # un seul ?v= dans tout le graphe — lancé par le hook pre-commit
 npm run check:templates # un backtick dans un commentaire HTML blanchit l'app — idem
 npm run check:dead      # audit : exports que personne ne nomme + classes CSS jamais émises
+npm run check:ds        # chaque token / icône / classe .ap-* résout contre le DS @latest (réseau requis)
 ```
 
 `check:dead` rapporte, il ne supprime pas : une classe ASSEMBLÉE (`isv2-art--${key}`) est
@@ -89,5 +104,5 @@ signalée `[built?]` et bien vivante. C'est l'outil qui a servi à la passe de n
 relancer avant d'écrire un nouvel écran évite d'hériter du mort de l'ancien.
 
 - **Quand tu modifies une convention** → mettre à jour à la fois [`CLAUDE.md`](../CLAUDE.md) ET le doc concerné dans `docs/reference/`.
-- **Quand tu produis un audit** → poser le doc dans `docs/audits/` avec date + portée en intro. S'il devient obsolète, le supprimer (l'historique git suffit).
+- **Quand tu produis un audit** → poser le doc dans `docs/audits/` avec date + portée en intro. Un audit est un instantané : quand le proto le dépasse, l'indexer comme tel (ou le supprimer — l'historique git suffit), jamais le laisser passer pour l'état courant.
 - **Quand tu trouves un doc qui contredit le code** → corriger le doc immédiatement, ou le supprimer s'il n'est pas récupérable. Pas de zone tampon "à jour plus tard".
