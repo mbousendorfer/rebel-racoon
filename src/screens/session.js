@@ -1,23 +1,21 @@
-import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr } from "../utils.js?v=1407";
-import { navigate } from "../router.js?v=1407";
-import { renderTopbar } from "../components/topbar.js?v=1407";
-import { socialAccounts, connectorDocs } from "../mocks.js?v=1407";
+import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr } from "../utils.js?v=1408";
+import { navigate } from "../router.js?v=1408";
+import { renderTopbar } from "../components/topbar.js?v=1408";
+import { connectorDocs } from "../mocks.js?v=1408";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
-  renderProfileTag,
   renderProfileEchoCard,
   profileForNetwork,
   PROFILE_SEARCH_THRESHOLD,
   normalizeNetwork,
   getConnectedProfileById,
-} from "../social-profiles.js?v=1407";
-import { formatsForNetwork, defaultFormatFor } from "../clip-formats.js?v=1407";
-import { getSessionById, getSessions } from "../sessions-store.js?v=1407";
-import { getContextById, getContexts, updateContext } from "../contexts-store.js?v=1407";
-import { playbookForNewWork, isWorkspaceMode, catalogueRoute } from "../active-playbook.js?v=1407";
-import { revokedContextFor, usableContexts, canView } from "../playbook-access.js?v=1407";
-import { isNewUser } from "../user-mode.js?v=1407";
+} from "../social-profiles.js?v=1408";
+import { getSessionById, getSessions } from "../sessions-store.js?v=1408";
+import { getContextById, getContexts, updateContext } from "../contexts-store.js?v=1408";
+import { playbookForNewWork, isWorkspaceMode, catalogueRoute } from "../active-playbook.js?v=1408";
+import { revokedContextFor, usableContexts, canView } from "../playbook-access.js?v=1408";
+import { isNewUser } from "../user-mode.js?v=1408";
 import {
   getThread,
   sendMessage,
@@ -25,7 +23,6 @@ import {
   postUserTurn,
   postUserProfilesTurn,
   postSelectionEcho,
-  postDraftResult,
   postExtractionResult,
   postClipExtractionTurn,
   startPending,
@@ -38,86 +35,75 @@ import {
   answerTopPostsWidget,
   toggleTopicsWidgetPick,
   answerTopicsWidget,
-} from "../assistant.js?v=1407";
-import { iconFor as fileIconForKind } from "../file-kinds.js?v=1407";
-import { getSources, getIdeas, extractVideoIdeas, appendExtractedIdeas } from "../library.js?v=1407";
-import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=1407";
+} from "../assistant.js?v=1408";
+import { iconFor as fileIconForKind } from "../file-kinds.js?v=1408";
+import { getSources, getIdeas, extractVideoIdeas, appendExtractedIdeas } from "../library.js?v=1408";
+import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=1408";
 import {
   renderInto as renderComposerMentions,
   removeMention as removeComposerMention,
   subscribe as subscribeComposerMentions,
   addMention as addComposerMention,
-} from "../composer-mentions.js?v=1407";
-import { addPostDraft, setSubtitleStyle } from "../posts-store.js?v=1407";
-import { startDraftFlow, executeDraft, executeDraftBatch, getAnglesForIdea } from "../draft-flow.js?v=1407";
-import * as topPostsFlow from "../top-posts-flow.js?v=1407";
+} from "../composer-mentions.js?v=1408";
+import { setSubtitleStyle } from "../posts-store.js?v=1408";
+import { startDraftFlow, executeDraft, executeDraftBatch, getAnglesForIdea } from "../draft-flow.js?v=1408";
+import * as topPostsFlow from "../top-posts-flow.js?v=1408";
 import {
   renderTopPostsBoard,
   renderTopPostEcho,
   renderTopPostsWidget,
   TOP_POSTS_LIMIT,
-} from "../components/top-post-card.js?v=1407";
-import { getTopPost } from "../top-posts-store.js?v=1407";
-import { renderEmptyState } from "../components/empty-state.js?v=1407";
-import { renderStarterCards } from "../components/starter-card.js?v=1407";
-import * as sidebarWizard from "../sidebar-wizard.js?v=1407";
-import * as inlineQuestion from "../inline-question.js?v=1407";
-import {
-  requireConnectedProfiles,
-  connectableNetworkCards,
-  accountIdsForNetwork,
-} from "../connect-profiles-flow.js?v=1407";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=1407";
-import * as clipStudio from "../clip-studio.js?v=1407";
-import * as batchStudio from "../batch-studio.js?v=1407";
-import { askConnector } from "../connector-ask.js?v=1407";
-import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=1407";
-import { renderConnectorLogo } from "../connectors-view.js?v=1407";
+} from "../components/top-post-card.js?v=1408";
+import { getTopPost } from "../top-posts-store.js?v=1408";
+import { renderEmptyState } from "../components/empty-state.js?v=1408";
+import { renderStarterCards } from "../components/starter-card.js?v=1408";
+import * as sidebarWizard from "../sidebar-wizard.js?v=1408";
+import * as inlineQuestion from "../inline-question.js?v=1408";
+import { requireConnectedProfiles, accountIdsForNetwork } from "../connect-profiles-flow.js?v=1408";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=1408";
+import * as clipStudio from "../clip-studio.js?v=1408";
+import * as batchStudio from "../batch-studio.js?v=1408";
+import { askConnector } from "../connector-ask.js?v=1408";
+import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=1408";
+import { renderConnectorLogo } from "../connectors-view.js?v=1408";
 import {
   getActiveConnector,
   clearActiveConnector,
   subscribe as subscribeComposerConnector,
-} from "../composer-connector.js?v=1407";
-import { isFlagOn } from "../feature-flags.js?v=1407";
-import * as contextBuilder from "../context-builder.js?v=1407";
-import { renderPicker } from "./_analyse-common.js?v=1407";
-import { renderSourceCard } from "../components/source-card.js?v=1407";
-import { renderCompactIdeaCard } from "../components/idea-card-compact.js?v=1407";
-import { contentState, rerenderContentWorkspaceBody } from "../components/content-workspace.js?v=1407";
-import { open as openVideoClipsModal } from "../components/video-clips-modal.js?v=1407";
-import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=1407";
-import { open as openAddSourceModal } from "../components/add-source-modal.js?v=1407";
-import { open as openConnectorsModal } from "../components/connectors-modal.js?v=1407";
-import { dropzoneHTML } from "../components/dropzone.js?v=1407";
+} from "../composer-connector.js?v=1408";
+import { isFlagOn } from "../feature-flags.js?v=1408";
+import * as contextBuilder from "../context-builder.js?v=1408";
+import { renderPicker } from "./_analyse-common.js?v=1408";
+import { renderCompactIdeaCard } from "../components/idea-card-compact.js?v=1408";
+import { contentState, rerenderContentWorkspaceBody } from "../components/content-workspace.js?v=1408";
+import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=1408";
+import { open as openAddSourceModal } from "../components/add-source-modal.js?v=1408";
+import { open as openConnectorsModal } from "../components/connectors-modal.js?v=1408";
 import {
   classifyFile,
   startFileUpload,
   startUrlImport,
-  startConnectorImport,
-  startTextImport,
   getSources as getStreamSources,
-  subscribeSources,
   subscribeUploads,
   pushScriptedSource,
   completeScriptedSource,
   updateSourceClips,
   extractClipsForSource,
   setSourceIdeaCount,
-} from "../sources-stream.js?v=1407";
-import { renderClipCard } from "../components/clip-card.js?v=1407";
-import { onFeedbackClick } from "../components/feedback-control.js?v=1407";
-import { showToast } from "../components/toast.js?v=1407";
+} from "../sources-stream.js?v=1408";
+import { onFeedbackClick } from "../components/feedback-control.js?v=1408";
+import { showToast } from "../components/toast.js?v=1408";
 import {
   openDrafts as openDraftsPanel,
   openIdeas as openIdeasPanel,
   openClips as openClipsPanel,
   getMode as getRightPanelMode,
   subscribe as subscribeRightPanel,
-} from "../components/right-panel.js?v=1407";
-import { setHandoff, consumeHandoff } from "../handoff.js?v=1407";
-import { attachTopicToChat, useTopicInChat, startTopicPickerInline, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=1407";
-import { startObjectiveChat, OBJECTIVE_CHAT_HANDOFF } from "../objective-flow.js?v=1407";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1407";
+} from "../components/right-panel.js?v=1408";
+import { setHandoff, consumeHandoff } from "../handoff.js?v=1408";
+import { attachTopicToChat, useTopicInChat, startTopicPickerInline, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=1408";
+import { startObjectiveChat, OBJECTIVE_CHAT_HANDOFF } from "../objective-flow.js?v=1408";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1408";
 import {
   getFreshTopics,
   countFresh,
@@ -125,15 +111,14 @@ import {
   topicTitle,
   markUsed,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=1407";
-import { findTopicSource } from "../topics-catalog.js?v=1407";
-import { renderTopicCard, renderTopicsWidget } from "../components/topic-card.js?v=1407";
-import { openTopicArticle } from "../components/topic-picker-modal.js?v=1407";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1407";
-import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=1407";
-import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=1407";
-import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=1407";
-import { clipContext } from "./session/clip-draft-flow.js?v=1407";
+} from "../topics-store.js?v=1408";
+import { findTopicSource } from "../topics-catalog.js?v=1408";
+import { renderTopicCard, renderTopicsWidget } from "../components/topic-card.js?v=1408";
+import { openTopicArticle } from "../components/topic-picker-modal.js?v=1408";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1408";
+import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=1408";
+import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=1408";
+import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=1408";
 // Pure thread-turn renderers — shared with the component handoff gallery so
 // the previews there never drift from the app (handoff/components.html).
 import {
@@ -145,7 +130,23 @@ import {
   renderSystemNotice,
   renderExtractingNotice,
   renderResultCard,
-} from "./session/thread-turns.js?v=1407";
+} from "./session/thread-turns.js?v=1408";
+import {
+  clipsToChat,
+  finalizeClipStudio,
+  handleClipStudioFile,
+  handleClipStudioUrl,
+  openClipStudioEditor,
+  renderClipStudio,
+} from "./session/clip-studio-view.js?v=1408";
+import {
+  handleBatchFiles,
+  renderBatchStudio,
+  repaintBatchRest,
+  replayBatchSources,
+  startBatchChat,
+} from "./session/batch-studio-view.js?v=1408";
+import { buildWorkflowFlow } from "./session/workflow-flow.js?v=1408";
 
 // Default composer placeholder — restored whenever no connector is attached.
 // A connected connector swaps it for "Ask {name} anything…".
@@ -434,249 +435,11 @@ function renderAssistantPanel(session, attachedContext) {
   `;
 }
 
-// ─── Clip Studio (dedicated "Extract video clips" flow) ────────────────────
-// Three full-page stages, all rooted on `.session__assistant` (+ a
-// `clip-studio--{stage}` modifier) so drag/drop binding and the
-// refreshAssistantAside node-swap keep working. See clip-studio.js for state.
-
-// Format a seconds count as a friendly "~2 min" / "45 sec" remaining label.
-// Config catalogs for the upload/config screen.
-const CLIP_CAPTION_STYLES = [
-  { value: "none", label: "None" },
-  { value: "bold", label: "Bold" },
-  { value: "clean", label: "Clean" },
-  { value: "caption", label: "Caption" },
-];
-const CLIP_CAPTION_SAMPLE = "Bring your story to life";
-const CLIP_NETWORKS = [
-  { id: "tiktok", label: "TikTok", icon: "ap-icon-tiktok-official" },
-  { id: "instagram", label: "Instagram", icon: "ap-icon-instagram-official" },
-  { id: "linkedin", label: "LinkedIn", icon: "ap-icon-linkedin-official" },
-  { id: "x", label: "X", icon: "ap-icon-x-official" },
-  { id: "facebook", label: "Facebook", icon: "ap-icon-facebook-official" },
-];
-const CLIP_NET_ICON = Object.fromEntries(CLIP_NETWORKS.map((n) => [n.id, n.icon]));
-// Output format is the real choice; the network icons are just an indication of
-// which networks each ratio suits best.
-const CLIP_FORMATS_UI = [
-  { id: "9:16", label: "Vertical", nets: ["tiktok", "instagram"] },
-  { id: "1:1", label: "Square", nets: ["linkedin", "facebook"] },
-  { id: "16:9", label: "Landscape", nets: ["x", "linkedin"] },
-  { id: "4:5", label: "Portrait", nets: ["instagram", "facebook"] },
-];
-// Clip duration — same idea: the network icons indicate which networks favour
-// that length (network = guidance, not a hard filter).
-const CLIP_DURATIONS_UI = [
-  { id: "auto", label: "Auto", sub: "Smart pick", nets: [] },
-  { id: "short", label: "≤ 30s", sub: "Shorts & Reels", nets: ["tiktok", "instagram"] },
-  { id: "medium", label: "30–60s", sub: "Feed clips", nets: ["instagram", "facebook"] },
-  { id: "long", label: "60–90s", sub: "Long-form", nets: ["linkedin", "x"] },
-];
-
-// Origin sub-line for a staged batch source, shown in the source-card's meta row
-// (in place of the usual "N ideas · Processed · Added X").
-function batchSourceSub(s) {
-  if (s.origin === "url") return "Public link";
-  if (s.origin === "text") return "Pasted text";
-  if (s.origin === "connector") {
-    return s.connector?.name ? `${s.connector.name}${s.kind ? ` · ${s.kind}` : ""}` : "Connected source";
-  }
-  return s.kind ? `${s.kind} · From your computer` : "From your computer";
-}
-
-// Batch Studio — single-stage source-intake screen. The hero is one unified
-// "drop & paste" card: drag/drop or browse files, AND a smart field where you
-// paste or type a link OR text (auto-detected on add — a bare URL becomes a
-// link, anything else becomes a pasted-text source; pasting files uploads them).
-// Below it: the staged-source list + a Playbook picker, and the CTA hands the
-// staged sources off to a fresh chat (see the batch wiring in bindSession).
-//
-// The intake card lives OUTSIDE [data-batch-rest]; staging-loader ticks repaint
-// only the rest (list + commit), so the field is never clobbered mid-typing.
-
-// Shared "How it works" flow block (styles/components/workflow-flow.css) — used
-// by both the Batch and Clip studios so the two workflows read identically. Each
-// step is a coloured icon chip + title + a sentence, laid on a gradient rail
-// (input → AI → output). Marketing-grade, icons + text only, no illustrations.
-// `tone` drives the chip colour: "in" (blue) · "ai" (mermaid gradient) · "out"
-// (green).
-function buildWorkflowFlow(steps) {
-  return `
-    <ol class="workflow-flow">
-      ${steps
-        .map(
-          (s) => `
-        <li class="workflow-flow__step workflow-flow__step--${s.tone}">
-          <span class="workflow-flow__head">
-            <span class="workflow-flow__chip workflow-flow__chip--${s.tone}">
-              <i class="${s.icon}" aria-hidden="true"></i>
-            </span>
-            <span class="workflow-flow__title">${s.title}</span>
-          </span>
-          <span class="workflow-flow__text">${s.text}</span>
-        </li>`,
-        )
-        .join("")}
-    </ol>`;
-}
-
-const BATCH_STUDIO_STEPS = [
-  {
-    tone: "in",
-    icon: "ap-icon-upload",
-    title: "Add your sources",
-    text: "Upload files, paste a link, or drop in text — add as many as you like.",
-  },
-  {
-    tone: "ai",
-    icon: "ap-icon-archie-official",
-    title: "I find the strongest ideas",
-    text: "I read every source and pull out the angles genuinely worth posting about.",
-  },
-  {
-    tone: "out",
-    icon: "ap-icon-stack",
-    title: "A batch of drafts",
-    text: "I draft a post for each idea in your playbook's voice — ready to review and schedule.",
-  },
-];
-
-function buildBatchStudioSteps() {
-  return buildWorkflowFlow(BATCH_STUDIO_STEPS);
-}
-
-function renderBatchStudio(session) {
-  const st = batchStudio.getState(session.id);
-  if (!st) return "";
-
-  // Connected connectors → a gated "Connected source" picker (only when the
-  // connectors feature flag is on AND at least one connector is connected).
-  const connectors = isFlagOn("connectors") ? getConnectedConnectors() : [];
-  const connectorMenu = connectors.length
-    ? `
-      <details class="ap-select batch-studio__connector" data-batch-connector>
-        <summary class="ap-button stroked grey batch-studio__method batch-studio__connector-trigger">
-          <i class="ap-icon-link" aria-hidden="true"></i><span>Connected source</span>
-        </summary>
-        <div class="ap-select-dropdown batch-studio__connector-dropdown" role="listbox" aria-label="Connected sources">
-          <div class="ap-select-options">
-            ${connectors
-              .map(
-                (c) => `
-              <div class="ap-select-option" data-batch-connector-pick="${escapeHtml(c.id)}" role="option">
-                <span class="ap-select-option-text">${escapeHtml(c.name)}</span>
-              </div>`,
-              )
-              .join("")}
-          </div>
-        </div>
-      </details>`
-    : "";
-
-  return html`
-    <aside class="session__assistant batch-studio batch-studio--upload" aria-label="Batch from a source">
-      <div class="batch-studio__scroll">
-        <div class="batch-studio__inner">
-          <div class="batch-studio__intro">
-            <span class="batch-studio__ai-badge"><i class="ap-icon-archie-official" aria-hidden="true"></i>Batch</span>
-            <h1 class="batch-studio__title">Turn your sources into a batch of posts</h1>
-            <p class="batch-studio__sub">
-              Drop files, paste a link, or paste any text — add as many sources as you like and I'll pull the strongest
-              ideas and draft a set of posts.
-            </p>
-          </div>
-
-          ${raw(buildBatchStudioSteps())}
-
-          <input
-            type="file"
-            accept=".pdf,.doc,.docx,.txt,.md,.mp4,.mov,.mp3,.wav,.m4a,.png,.jpg,.jpeg"
-            id="batchFileInput"
-            data-batch-file
-            multiple
-            hidden
-          />
-
-          <div class="batch-studio__dropzone">
-            ${raw(
-              dropzoneHTML({
-                lead: "Drag & drop files here",
-                sub: "PDF, Word, text, video, audio or images · up to 100MB each",
-                large: true,
-                withInput: false,
-                rootAttrs: "data-batch-dropzone",
-                ariaLabel: "Add files from your computer",
-                action: { label: "Browse files" },
-              }),
-            )}
-            <div class="batch-studio__dropzone-extra">
-              <span class="batch-studio__dropzone-extra-label">Or add another way</span>
-              <button type="button" class="ap-button stroked grey batch-studio__method" data-batch-link>
-                <i class="ap-icon-link" aria-hidden="true"></i><span>A link</span>
-              </button>
-              <button type="button" class="ap-button stroked grey batch-studio__method" data-batch-paste>
-                <i class="ap-icon-file--text" aria-hidden="true"></i><span>Pasted text</span>
-              </button>
-              ${raw(connectorMenu)}
-            </div>
-            <div class="batch-studio__dropzone-overlay" aria-hidden="true">
-              <i class="ap-icon-upload" aria-hidden="true"></i><span>Drop files to upload</span>
-            </div>
-          </div>
-
-          <div data-batch-rest>${raw(renderBatchRest(session))}</div>
-        </div>
-      </div>
-    </aside>
-  `;
-}
-
-// The repaint-on-staging-change region: staged-source list + Playbook + CTA.
-// Re-rendered wholesale on every batchStudio notify (add / remove / pick /
-// loader tick) while the intake card above stays put. Returns a trusted HTML
-// string (dynamic bits escaped by renderSourceCard / renderBatchPlaybookControl).
-function renderBatchRest(session) {
-  const st = batchStudio.getState(session.id);
-  if (!st) return "";
-  const ctx = st.contextId ? getContextById(st.contextId) : null;
-  const sources = st.sources || [];
-  const canStart = sources.length > 0;
-  const countLabel = sources.length === 1 ? "1 source" : `${sources.length} sources`;
-
-  const sourceList = sources.length
-    ? `
-      <div class="batch-studio__list" aria-label="Staged sources">
-        ${sources
-          .map((s) =>
-            renderSourceCard({ id: s.uid, filename: s.name, kind: s.kind, iconKey: s.iconKey, status: s.status }, [], {
-              staged: true,
-              removeValue: s.uid,
-              stagedSub: batchSourceSub(s),
-            }),
-          )
-          .join("")}
-      </div>`
-    : "";
-
-  return `
-    ${sourceList}
-    <div class="batch-studio__commit">
-      <div class="batch-studio__commit-row">
-        ${renderBatchPlaybookControl(ctx)}
-        <button
-          type="button"
-          class="ap-button primary orange batch-studio__start"
-          data-batch-start
-          ${canStart ? "" : "disabled"}
-        >
-          <i class="ap-icon-archie-official" aria-hidden="true"></i>
-          <span>Extract ideas${canStart ? ` · ${countLabel}` : ""}</span>
-        </button>
-      </div>
-      <p class="batch-studio__field-hint muted">I'll draft every post in this playbook's voice, audience, and CTAs.</p>
-    </div>
-  `;
-}
+// ─── Clip Studio / Batch studio ───────────────────────────────────────────
+// Full-page stages rooted on `.session__assistant` (+ a `clip-studio--{stage}`
+// modifier) so drag/drop binding and the refreshAssistantAside node-swap keep
+// working. The Clip Studio's stages live in session/clip-studio-view.js; its
+// state in clip-studio.js.
 
 // ⚠️ In workspace mode the in-flow Playbook pickers render NOTHING.
 //
@@ -687,123 +450,6 @@ function renderBatchRest(session) {
 // brand: a greyed-out field that repeats what the rail prints two inches away
 // is chrome the reader has to rule out, not information. The commit rows are
 // `justify-content: flex-end`, so the CTA simply keeps its place.
-
-// Playbook picker for the Batch Studio commit group — same DS form-select shape
-// as the composer's renderPlaybookControl, but full-width and its picks route
-// through the `data-batch-playbook-pick` delegate (→ batchStudio.setContext)
-// instead of mutating session.contextId.
-function renderBatchPlaybookControl(ctx) {
-  if (isWorkspaceMode()) return "";
-  const playbooks = usableContexts();
-  const items = playbooks
-    .map((c) => {
-      const isSel = ctx && c.id === ctx.id;
-      return `
-        <div
-          class="ap-select-option${isSel ? " selected" : ""}"
-          data-batch-playbook-pick="${escapeHtml(c.id)}"
-          role="option"
-          aria-selected="${isSel ? "true" : "false"}"
-        >
-          <span class="composer-context__dot" style="background: ${dotColorVar(c.color || "grey")};"></span>
-          <span class="ap-select-option-text">${escapeHtml(c.name)}</span>
-          ${isSel ? `<i class="ap-icon-check ap-select-option-check" aria-hidden="true"></i>` : ""}
-        </div>`;
-    })
-    .join("");
-  const valueMarkup = ctx
-    ? `<span class="ap-select-value">${escapeHtml(ctx.name)}</span>`
-    : `<span class="ap-select-value ap-select-placeholder">Select a playbook</span>`;
-  return `
-    <details class="ap-select batch-studio__playbook" data-batch-playbook>
-      <summary class="ap-select-trigger" title="Choose the playbook for this chat">
-        <span class="ap-select-inline-label">Playbook</span>
-        ${valueMarkup}
-        <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
-      </summary>
-      <div class="ap-select-dropdown" role="listbox" aria-label="Choose a playbook">
-        <div class="ap-select-options">${items}</div>
-      </div>
-    </details>
-  `;
-}
-
-function renderClipStudio(session, attachedContext) {
-  const st = clipStudio.getState(session.id);
-  if (!st) return "";
-  if (st.stage === "profiles") return renderClipStudioProfiles(session, st);
-  if (st.stage === "clips") return renderClipStudioClips(session, st);
-  if (st.stage === "analyzing") return renderClipStudioAnalyzing(st);
-  return renderClipStudioUpload(st);
-}
-
-// Output-format picker — single choice. Each option shows the networks it
-// suits as an indication (the network is guidance, not a target selector).
-// Shared between the setup screen and the clips-review screen (the format +
-// caption choice now lives on review; see renderClipStudioClips).
-function buildClipFormatCards(cfg) {
-  return CLIP_FORMATS_UI.map((f) => {
-    const on = cfg.format === f.id;
-    const nets = f.nets
-      .map((id) => `<i class="${CLIP_NET_ICON[id]} clip-studio__fmtcard-net" aria-hidden="true"></i>`)
-      .join("");
-    return `<button type="button" class="clip-studio__fmtcard${on ? " is-on" : ""}" data-clip-config="format" data-value="${f.id}" aria-pressed="${on}">
-      <span class="clip-studio__fmtcard-shape clip-studio__fmtcard-shape--${f.id.replace(":", "-")}"></span>
-      <span class="clip-studio__fmtcard-info">
-        <span class="clip-studio__fmtcard-ratio">${f.id}</span>
-        <span class="clip-studio__fmtcard-label">${f.label}</span>
-      </span>
-      <span class="clip-studio__fmtcard-nets">${nets}</span>
-    </button>`;
-  }).join("");
-}
-
-function buildClipCaptionCards(cfg) {
-  return CLIP_CAPTION_STYLES.map((c) => {
-    const on = cfg.captionStyle === c.value;
-    const preview =
-      c.value === "none"
-        ? `<span class="clip-studio__cap-none"><i class="ap-icon-close" aria-hidden="true"></i></span>`
-        : `<span class="clip-studio__cap-sample clip-studio__cap-sample--${c.value}">${CLIP_CAPTION_SAMPLE}</span>`;
-    return `<button type="button" class="clip-studio__cap-card${on ? " is-on" : ""}" data-clip-config="captionStyle" data-value="${c.value}" aria-pressed="${on}">
-      <span class="clip-studio__cap-preview">${preview}</span>
-      <span class="clip-studio__cap-label">${c.label}</span>
-    </button>`;
-  }).join("");
-}
-
-// Playbook picker for the clip-studio setup — the chosen Playbook governs the
-// voice/audience/CTAs of the drafts created from the clips. Mirrors the batch
-// playbook control; routes through the `data-clip-playbook-pick` delegate.
-function renderClipPlaybookControl(ctx) {
-  if (isWorkspaceMode()) return "";
-  const playbooks = usableContexts();
-  const items = playbooks
-    .map((c) => {
-      const isSel = ctx && c.id === ctx.id;
-      return `
-        <div class="ap-select-option${isSel ? " selected" : ""}" data-clip-playbook-pick="${escapeHtml(c.id)}" role="option" aria-selected="${isSel ? "true" : "false"}">
-          <span class="composer-context__dot" style="background: ${dotColorVar(c.color || "grey")};"></span>
-          <span class="ap-select-option-text">${escapeHtml(c.name)}</span>
-          ${isSel ? `<i class="ap-icon-check ap-select-option-check" aria-hidden="true"></i>` : ""}
-        </div>`;
-    })
-    .join("");
-  const valueMarkup = ctx
-    ? `<span class="ap-select-value">${escapeHtml(ctx.name)}</span>`
-    : `<span class="ap-select-value ap-select-placeholder">Select a playbook</span>`;
-  return `
-    <details class="ap-select clip-studio__select" data-clip-playbook>
-      <summary class="ap-select-trigger" title="Choose the playbook for these posts">
-        <span class="ap-select-inline-label">Playbook</span>
-        ${valueMarkup}
-        <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
-      </summary>
-      <div class="ap-select-dropdown" role="listbox" aria-label="Choose a playbook">
-        <div class="ap-select-options">${items}</div>
-      </div>
-    </details>`;
-}
 
 // Playbook picker for the top-posts step 1 (account screen) — the chosen
 // Playbook governs the voice of the repurposed drafts. Mirrors the batch / clip
@@ -838,400 +484,6 @@ function renderTopPostsPlaybookControl(ctx) {
     </details>`;
 }
 
-// Clip Studio "How it works" — same shared flow block as the Batch Studio.
-const CLIP_STUDIO_STEPS = [
-  {
-    tone: "in",
-    icon: "ap-icon-file--video",
-    title: "Add your video",
-    text: "Drop in a video file or paste a YouTube or Google Drive link — even a long one.",
-  },
-  {
-    tone: "ai",
-    icon: "ap-icon-archie-official",
-    title: "I find the highlights",
-    text: "I watch and transcribe the whole thing, then cut the strongest moments to the length you set.",
-  },
-  {
-    tone: "out",
-    icon: "ap-icon-closed-captions",
-    title: "Post-ready clips",
-    text: "Each clip comes captioned and drafted into a post in your playbook's voice — ready to schedule.",
-  },
-];
-
-function buildClipStudioFlow() {
-  return buildWorkflowFlow(CLIP_STUDIO_STEPS);
-}
-
-function renderClipStudioUpload(st) {
-  const cfg = st.config || {};
-  const ctx = st.contextId ? getContextById(st.contextId) : null;
-  const uploadState = st.uploadState;
-  const name = escapeHtml(st.sourceName || "your video");
-  const durLabelFor = (d) => (d.id === "auto" ? "Auto" : `${d.label} · ${d.sub}`);
-  const curDuration = CLIP_DURATIONS_UI.find((d) => d.id === cfg.duration) || CLIP_DURATIONS_UI[0];
-  const durationItems = CLIP_DURATIONS_UI.map((d) => {
-    const isSel = cfg.duration === d.id;
-    return `<div class="ap-select-option${isSel ? " selected" : ""}" data-clip-config="duration" data-value="${d.id}" role="option" aria-selected="${isSel ? "true" : "false"}">
-      <span class="ap-select-option-text">${durLabelFor(d)}</span>
-      ${isSel ? `<i class="ap-icon-check ap-select-option-check" aria-hidden="true"></i>` : ""}
-    </div>`;
-  }).join("");
-
-  // Left panel: idle dropzone, or — once a video is provided — a preview frame.
-  // Faux video still (inline SVG presenter scene) so the frame reads as actual
-  // video content behind the loader/play.
-  const frameArt = `<svg class="clip-studio__frame-art" viewBox="0 0 320 180" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
-    <rect width="320" height="180" fill="#26334d"/>
-    <rect x="24" y="22" width="56" height="42" rx="6" fill="#33425f"/>
-    <circle cx="268" cy="34" r="9" fill="#3a4a6b"/>
-    <rect x="244" y="54" width="54" height="50" rx="6" fill="#2f3e5b"/>
-    <rect x="96" y="124" width="128" height="78" rx="42" fill="#586a8c"/>
-    <ellipse cx="160" cy="76" rx="42" ry="26" fill="#3a2c24"/>
-    <circle cx="160" cy="96" r="36" fill="#cda484"/>
-  </svg>`;
-  const leftPanel = uploadState
-    ? `<div class="clip-studio__preview clip-studio__preview--${uploadState}">
-         <div class="clip-studio__frame" aria-hidden="true">
-           ${frameArt}
-           ${
-             uploadState === "processing"
-               ? `<span class="archie-loader clip-studio__frame-loader" style="--archie-loader-size: 40px"></span>
-                  <span class="clip-studio__frame-badge"><span class="clip-studio__frame-dot"></span>Analyzing</span>`
-               : `<span class="clip-studio__frame-play"><i class="ap-icon-video"></i></span>`
-           }
-         </div>
-         <div class="clip-studio__preview-foot">
-           <span class="clip-studio__preview-name" title="${name}">${name} · ${uploadState === "ready" ? "Analyzed" : "Analyzing…"}</span>
-           <button type="button" class="ap-button stroked grey" data-clip-studio-browse>
-             <i class="ap-icon-upload" aria-hidden="true"></i><span>Replace file</span>
-           </button>
-         </div>
-         <div class="clip-studio__or"><span>or paste a different link</span></div>
-         <form class="clip-studio__url" data-clip-studio-url-form>
-           <div class="ap-input-group">
-             <i class="ap-icon-link" aria-hidden="true"></i>
-             <input type="text" data-clip-studio-url placeholder="Paste a YouTube or Google Drive URL" aria-label="Replace with a video URL" />
-           </div>
-           <button type="submit" class="ap-button stroked grey">Import</button>
-         </form>
-       </div>`
-    : `${dropzoneHTML({
-        lead: "Drag & drop a video here",
-        sub: "MP4, MOV or WEBM · up to 100MB",
-        large: true,
-        withInput: false,
-        rootAttrs: "data-clip-studio-dropzone",
-        ariaLabel: "Upload a video",
-        action: { label: "Browse files", attrs: "data-clip-studio-browse" },
-      })}
-       <div class="clip-studio__or"><span>or</span></div>
-       <form class="clip-studio__url" data-clip-studio-url-form>
-         <div class="ap-input-group">
-           <i class="ap-icon-link" aria-hidden="true"></i>
-           <input type="text" data-clip-studio-url placeholder="Paste a YouTube or Google Drive URL" aria-label="Video URL" />
-         </div>
-         <button type="submit" class="ap-button stroked grey">Import</button>
-       </form>`;
-
-  return html`
-    <aside class="session__assistant clip-studio clip-studio--upload" aria-label="Extract video clips">
-      <div class="clip-studio__config">
-        <header class="clip-studio__intro">
-          <span class="clip-studio__ai-badge"
-            ><i class="ap-icon-archie-official" aria-hidden="true"></i>Auto Clips</span
-          >
-          <h1 class="clip-studio__title">Turn a video into post-ready clips</h1>
-          <p class="clip-studio__sub">
-            Drop in a long video and I'll find the moments worth posting — cut to length and ready to draft in your
-            playbook's voice. No editor required.
-          </p>
-        </header>
-
-        ${raw(buildClipStudioFlow())}
-
-        <input type="file" accept="video/*,.mp4,.mov,.webm" id="clipStudioFileInput" data-clip-studio-file hidden />
-
-        <div class="clip-studio__setup">
-          <section class="clip-studio__upload-area" aria-label="Add a video">${raw(leftPanel)}</section>
-
-          <section class="clip-studio__settings" aria-label="Clip settings">
-            <div class="clip-studio__field">
-              <span class="clip-studio__field-label">Clip duration</span>
-              <details class="ap-select clip-studio__select">
-                <summary class="ap-select-trigger">
-                  <span class="ap-select-value">${durLabelFor(curDuration)}</span>
-                  <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
-                </summary>
-                <div class="ap-select-dropdown" role="listbox" aria-label="Clip duration">
-                  <div class="ap-select-options">${raw(durationItems)}</div>
-                </div>
-              </details>
-            </div>
-
-            <div class="clip-studio__field">
-              <div class="clip-studio__field-row">
-                <label class="clip-studio__field-label" for="clipInstr">Additional instructions</label>
-                <button type="button" class="ap-link standalone small" data-clip-surprise>
-                  <i class="ap-icon-sparkles" aria-hidden="true"></i>Surprise me
-                </button>
-              </div>
-              <div class="ap-textarea-field">
-                <textarea
-                  id="clipInstr"
-                  rows="2"
-                  data-clip-config="instructions"
-                  placeholder="e.g. 'Don't include the intro' or 'Focus on the customer story.'"
-                >
-${cfg.instructions || ""}</textarea
-                >
-              </div>
-            </div>
-          </section>
-        </div>
-
-        <div class="clip-studio__cta">
-          ${raw(renderClipPlaybookControl(ctx))}
-          <button
-            type="button"
-            class="ap-button primary orange clip-studio__generate"
-            data-clip-create
-            ${st.videoProvided ? "" : "disabled"}
-          >
-            <i class="ap-icon-archie-official" aria-hidden="true"></i><span>Find clip ideas</span>
-          </button>
-        </div>
-      </div>
-    </aside>
-  `;
-}
-
-function renderClipStudioAnalyzing(st) {
-  // The loader animates purely in CSS over --extract-ms (kept in sync with
-  // EXTRACT_TOTAL_MS in clip-studio.js) so there are NO per-tick re-renders —
-  // the shimmer + progress bar stay perfectly smooth.
-  return html`
-    <aside class="session__assistant clip-studio clip-studio--analyzing" aria-label="Analyzing video">
-      <div class="clip-studio__center" style="--extract-ms: 8s">
-        <span class="clip-studio__ai-badge"><i class="ap-icon-archie-official" aria-hidden="true"></i>AI analysis</span>
-        <h1 class="clip-studio__title">Finding the best clips…</h1>
-        <div class="clip-studio__skeleton" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
-        <div class="source-card__progress clip-studio__progress" role="progressbar" aria-label="Cutting clips">
-          <div class="source-card__progress-fill clip-studio__progress-fill clip-studio__progress-fill--anim"></div>
-        </div>
-        <p class="clip-studio__stage clip-studio__stage-cycle" aria-live="polite">
-          <span>Transcribing audio</span><span>Finding highlights</span><span>Cutting clips</span><span>Polishing</span>
-        </p>
-        ${st.sourceName ? raw(`<p class="clip-studio__source muted">${escapeHtml(st.sourceName)}</p>`) : ""}
-        <button type="button" class="ap-button ghost grey clip-studio__cancel" data-clip-back-config>Cancel</button>
-      </div>
-    </aside>
-  `;
-}
-
-// Studio review card = the existing DS clip card (components/clip-card.js)
-// wrapped with a selection checkbox. Its kebab Edit/Remove + thumb open the
-// trimmer modal; the per-card footer is hidden in the studio (selection +
-// Continue replaces per-clip drafting — see clip-studio.css).
-function renderStudioClipCard(clip, st, sessionId) {
-  const selected = (st.selectedClipIds || []).includes(clip.id);
-  return `
-    <div class="clip-studio-pick${selected ? " is-selected" : ""}">
-      <label class="clip-studio-pick__check">
-        <input type="checkbox" data-clip-select="${escapeHtml(clip.id)}" ${selected ? "checked" : ""} aria-label="Select clip" />
-        <i aria-hidden="true"></i>
-      </label>
-      ${renderClipCard(clip, { sourceName: st.sourceName || "your video", sourceKind: "Video", sessionId })}
-    </div>
-  `;
-}
-
-function renderClipStudioClips(session, st) {
-  const cfg = st.config || {};
-  const clips = clipStudio.getClips(session.id);
-  const cards = clips.map((c) => renderStudioClipCard(c, st, session.id)).join("");
-  const selCount = (st.selectedClipIds || []).length;
-  const formatCards = buildClipFormatCards(cfg);
-  const captionCards = buildClipCaptionCards(cfg);
-  return html`
-    <aside class="session__assistant clip-studio clip-studio--clips" aria-label="Extracted clips">
-      <div class="clip-studio__scroll">
-        <div class="clip-studio__clips-head">
-          <button type="button" class="ap-button ghost grey clip-studio__back" data-clip-back-config>
-            <i class="ap-icon-arrow-left" aria-hidden="true"></i><span>Back to setup</span>
-          </button>
-          <span class="clip-studio__ai-badge"
-            ><i class="ap-icon-archie-official" aria-hidden="true"></i>Clips ready</span
-          >
-          <h1 class="clip-studio__title">${clips.length} clips from ${st.sourceName || "your video"}</h1>
-          <p class="clip-studio__sub muted">
-            Review and trim clips, pick the ones to keep, then set the format and captions.
-          </p>
-        </div>
-        <div class="clip-studio__review-settings">
-          <div class="clip-studio__field">
-            <span class="clip-studio__field-label">Output format</span>
-            <div class="clip-studio__fmtcards">${raw(formatCards)}</div>
-          </div>
-          <div class="clip-studio__field">
-            <span class="clip-studio__field-label">Caption style</span>
-            <div class="clip-studio__cap-grid">${raw(captionCards)}</div>
-          </div>
-        </div>
-        <div class="clip-studio__grid">${raw(cards)}</div>
-      </div>
-      <div class="clip-studio__bar">
-        <button type="button" class="ap-button stroked grey" data-clip-add-studio>
-          <i class="ap-icon-plus" aria-hidden="true"></i><span>Add clip</span>
-        </button>
-        <div class="clip-studio__bar-right">
-          <span class="clip-studio__bar-count">${selCount} selected</span>
-          <button type="button" class="ap-button primary orange" data-clip-continue ${selCount ? "" : "disabled"}>
-            <span>Continue</span><i class="ap-icon-arrow-right" aria-hidden="true"></i>
-          </button>
-        </div>
-      </div>
-    </aside>
-  `;
-}
-
-// The account step, when there is none to pick. Same cards as the in-chat
-// connect step (network glyph, name, what you connect on it), wearing the
-// studio's chrome instead of the Quickpicker's.
-function renderClipStudioConnect(session, st) {
-  const cards = connectableNetworkCards()
-    .map(
-      (net, i) => `
-        <button type="button" class="analyse__card" data-clip-connect="${escapeHtml(net.value)}">
-          <span class="analyse__card-shortcut" aria-hidden="true">${i + 1}</span>
-          ${net.preview}
-          <span class="analyse__card-text">
-            <span class="analyse__card-label">${escapeHtml(net.label)}</span>
-            <span class="analyse__card-caption muted">${escapeHtml(net.caption)}</span>
-          </span>
-        </button>`,
-    )
-    .join("");
-  const selClips = (st.selectedClipIds || []).length;
-  return html`
-    <aside class="session__assistant clip-studio clip-studio--profiles" aria-label="Connect an account">
-      <div class="clip-studio__scroll">
-        <div class="clip-studio__clips-head">
-          <button type="button" class="ap-button ghost grey clip-studio__back" data-clip-back>
-            <i class="ap-icon-arrow-left" aria-hidden="true"></i><span>Back to clips</span>
-          </button>
-          <h1 class="clip-studio__title">Connect an account to draft these</h1>
-          <p class="clip-studio__sub muted">
-            Drafts are written for the network they publish on — that's what sets the format and the length. Nothing
-            publishes yet.
-          </p>
-        </div>
-        <div class="analyse__options analyse__options--cards clip-studio__connect">
-          <div class="analyse__cards" style="--card-cols:4">${raw(cards)}</div>
-        </div>
-      </div>
-      <div class="clip-studio__bar">
-        <button type="button" class="ap-button ghost grey" data-clip-back><span>Back</span></button>
-        <div class="clip-studio__bar-right">
-          <span class="clip-studio__bar-count">${selClips} clips selected</span>
-        </div>
-      </div>
-    </aside>
-  `;
-}
-
-function renderClipStudioProfiles(session, st) {
-  const profiles = getConnectedProfiles();
-  // Nothing connected (skipConnectProfiles): this step has no profiles to pick
-  // and "Create N drafts" would sit disabled forever. Ask for the account HERE,
-  // inside the studio — the same network grid as the in-chat step. Connecting
-  // notifies, the studio re-renders, and the normal step below takes over.
-  if (profiles.length === 0) return renderClipStudioConnect(session, st);
-  const selectedProfiles = st.profileSelection || [];
-  const selClips = (st.selectedClipIds || []).length;
-  // Long profile lists get a live search box (same threshold as the in-chat
-  // profile Quickpickers). The query lives in clip-studio state so it survives
-  // the re-render a checkbox toggle triggers.
-  const searchable = profiles.length > PROFILE_SEARCH_THRESHOLD;
-  const q = (st.profileSearch || "").trim().toLowerCase();
-  const rows = profiles
-    .map((p) => {
-      const on = selectedProfiles.includes(p.id);
-      const haystack = [p.name, p.handle, p.platformLabel, p.kind].filter(Boolean).join(" ").toLowerCase();
-      const hidden = searchable && q && !haystack.includes(q);
-      const recId = defaultFormatFor(p.platform);
-      // Default each profile to the output format chosen up-front; the network's
-      // own recommended format is just marked "Recommended" (overridable).
-      const chosen = st.perNetworkFormat?.[p.platform] || st.config?.format || recId;
-      const fmts = formatsForNetwork(p.platform)
-        .map((f) => {
-          const fOn = f.id === chosen;
-          const rec = f.id === recId;
-          return `<button type="button" class="clip-studio__seg${fOn ? " is-on" : ""}" data-clip-netfmt="${escapeHtml(p.platform)}" data-value="${f.id}" aria-pressed="${fOn}">
-            <span class="clip-studio__seg-ratio">${f.tag}</span>${rec ? `<span class="clip-studio__seg-rec">Recommended</span>` : ""}
-          </button>`;
-        })
-        .join("");
-      return `
-        <div class="clip-studio__profile${on ? " is-on" : ""}${hidden ? " is-hidden" : ""}" data-search="${escapeHtml(haystack)}">
-          <label class="clip-studio__profile-pick">
-            <input type="checkbox" data-clip-profile="${escapeHtml(p.id)}" ${on ? "checked" : ""} aria-label="Select profile" />
-            <i aria-hidden="true"></i>
-            ${renderProfileTag(p)}
-          </label>
-          ${on ? `<div class="clip-studio__profile-fmt"><span class="clip-studio__seg-group" role="group" aria-label="Format for ${escapeHtml(p.platformLabel || p.platform)}">${fmts}</span></div>` : ""}
-        </div>
-      `;
-    })
-    .join("");
-  const draftCount = selClips * selectedProfiles.length;
-  return html`
-    <aside class="session__assistant clip-studio clip-studio--profiles" aria-label="Choose profiles">
-      <div class="clip-studio__scroll">
-        <div class="clip-studio__clips-head">
-          <button type="button" class="ap-button ghost grey clip-studio__back" data-clip-back>
-            <i class="ap-icon-arrow-left" aria-hidden="true"></i><span>Back to clips</span>
-          </button>
-          <h1 class="clip-studio__title">Where should I post these?</h1>
-          <p class="clip-studio__sub muted">
-            Pick the profiles to draft on. I've set the best video format per network — change any if you like.
-          </p>
-          ${searchable
-            ? html`
-                <div class="ap-input-group clip-studio__profile-search">
-                  <i class="ap-icon-search" aria-hidden="true"></i>
-                  <input
-                    type="search"
-                    data-clip-profile-search
-                    placeholder="Search profiles by name, handle or network…"
-                    value="${st.profileSearch || ""}"
-                    aria-label="Search profiles"
-                    autocomplete="off"
-                  />
-                </div>
-              `
-            : ""}
-        </div>
-        <div class="clip-studio__profiles">
-          ${raw(rows)}
-          <p class="clip-studio__profiles-empty muted" hidden>No profiles match your search.</p>
-        </div>
-      </div>
-      <div class="clip-studio__bar">
-        <button type="button" class="ap-button ghost grey" data-clip-back><span>Back</span></button>
-        <div class="clip-studio__bar-right">
-          <span class="clip-studio__bar-count">${selClips} clips · ${selectedProfiles.length} profiles</span>
-          <button type="button" class="ap-button primary orange" data-clip-finalize ${draftCount ? "" : "disabled"}>
-            <i class="ap-icon-archie-official" aria-hidden="true"></i
-            ><span>Create ${draftCount} draft${draftCount === 1 ? "" : "s"}</span>
-          </button>
-        </div>
-      </div>
-    </aside>
-  `;
-}
-
 // Composer markup — extracted so it can be rendered either at the bottom
 // of the assistant panel (default) or inline inside the empty hero (when
 // the conversation hasn't started yet). The click handlers in bindSession
@@ -1240,7 +492,7 @@ function renderClipStudioProfiles(session, st) {
 // context.color → DS color token for the pill dot (blue maps to the
 // electric-blue ramp, matching the [data-context-color] pill tints).
 const CONTEXT_DOT_TOKEN = { blue: "electric-blue" };
-function dotColorVar(colorName) {
+export function dotColorVar(colorName) {
   const token = CONTEXT_DOT_TOKEN[colorName] || colorName || "grey";
   return `var(--ref-color-${token}-100)`;
 }
@@ -3974,170 +3226,6 @@ function startPillFromKind(_root, session, kind) {
       ideaCount,
     });
   }, 6000);
-}
-
-// Clip Studio — upload-stage entry points. Picking a file / dropping / pasting a
-// URL starts the upload + analysis in the BACKGROUND right away, but the config
-// screen stays visible/editable. The user proceeds to the clips by pressing
-// "Create clips" (see the data-clip-create handler).
-function handleClipStudioFile(session, file) {
-  const classification = classifyFile(file);
-  if (!classification.ok) {
-    showToast(classification.reason);
-    return;
-  }
-  beginClipStudioBackground(session, file.name);
-}
-
-function handleClipStudioUrl(session, url) {
-  beginClipStudioBackground(session, url.replace(/^https?:\/\//, "").replace(/\/$/, ""));
-}
-
-// ── Batch Studio helpers ──────────────────────────────────────────────────────
-// Stage every accepted file; toast (once) when some are rejected.
-function handleBatchFiles(session, fileList) {
-  const rejected = [];
-  for (const file of Array.from(fileList)) {
-    const classification = classifyFile(file);
-    if (!classification.ok) {
-      rejected.push(file.name);
-      continue;
-    }
-    batchStudio.addFileSource(session.id, file, classification);
-  }
-  if (rejected.length) {
-    showToast(
-      rejected.length === 1 ? `Unsupported file: ${rejected[0]}` : `${rejected.length} files skipped (unsupported)`,
-    );
-  }
-}
-
-// Targeted repaint of the staged list + Playbook + CTA, leaving the upload box
-// (and the connector popover) untouched. Used by the batchStudio subscription so
-// staging-loader ticks don't tear down the whole intake.
-function repaintBatchRest(root, session) {
-  const rest = root.querySelector("[data-batch-rest]");
-  if (rest) rest.innerHTML = renderBatchRest(session);
-}
-
-// "Start drafting" — mint a fresh chat bound to the chosen Playbook, stash the
-// staged sources for it to replay on mount (the classic source → idea workflow),
-// then leave the batch screen. Files can't ride a sessionStorage handoff, so the
-// payload travels in batch-studio's in-memory pendingBatch slot.
-function startBatchChat(session) {
-  const st = batchStudio.getState(session.id);
-  if (!st || !st.sources.length) return;
-  const contextId = st.contextId || playbookForNewWork()?.id || "";
-  if (!batchStudio.stashPending(session.id)) return;
-  batchStudio.exit(session.id);
-  const newId = `new-${Date.now().toString(36)}`;
-  const path = `/session/${newId}`;
-  if (contextId) setHashQuery(path, { contextId });
-  else navigate(path);
-}
-
-// Replay batch-staged sources into the freshly mounted chat so each runs the
-// classic intake (loading → ready → ideas). Sources must be added AFTER mount —
-// the intake-lifecycle only posts intake turns for ids appearing past its
-// baseline snapshot. URLs/connectors process on their own timers; files run the
-// upload→processing pipeline.
-function replayBatchSources(sessionId, batch) {
-  for (const src of batch.sources) {
-    if (src.origin === "file" && src.file && src.classification) {
-      startFileUpload(src.file, src.classification, sessionId);
-    } else if (src.origin === "url" && src.url) {
-      startUrlImport(src.url, sessionId);
-    } else if (src.origin === "text" && src.text) {
-      startTextImport(src.text, sessionId);
-    } else if (src.origin === "connector" && src.connector && src.doc) {
-      startConnectorImport(src.connector, src.doc, sessionId);
-    }
-  }
-}
-
-// Create a REAL sources-stream video source (so the trimmer modal, right-panel
-// Clips/Drafts and draft creation all share one source) and kick off the
-// background analysis. pushScriptedSource + completeScriptedSource don't fire
-// the intake-lifecycle "what to do?" choice (that only triggers via
-// startFileUpload); the onVideoReady guard in bindSession also skips it while
-// the studio is active.
-function beginClipStudioBackground(session, sourceName) {
-  const name = sourceName || "your video";
-  const sourceId = pushScriptedSource({ filename: name, kind: "Video", sessionId: session.id });
-  completeScriptedSource(sourceId, { signal: "Medium signal", signalColor: "tagOrange", ideaCount: 0 });
-  clipStudio.beginProcessing(session.id, { sourceName: name, sourceId });
-}
-
-// Open a clip in the trimmer modal (edit/recut) or add a new clip, both
-// persisting back to the studio's real source via updateSourceClips.
-function openClipStudioEditor(session, opts) {
-  const src = clipStudio.currentSource(session.id);
-  if (!src) return;
-  openVideoClipsModal(src, {
-    ...opts,
-    onSaveClips: (sourceId, clips) => {
-      updateSourceClips(sourceId, clips);
-      clipStudio.refresh(session.id);
-    },
-  });
-}
-
-// Finalize — batch-create drafts for every selected clip × selected profile,
-// then leave the studio and land on the conversational session with the
-// classic Drafts panel open.
-// Hand the freshly generated clips off to the conversational chat. Skips the
-// full-page review grid + profiles screens entirely: the clips are already
-// cut and attached to the source, so we post a short Archie intro + the
-// standard "Clips ready" card (its "Open clips" CTA opens the right-panel
-// Clips surface) and exit the studio, dropping the user into the normal chat.
-function clipsToChat(session) {
-  const st = clipStudio.getState(session.id);
-  if (!st) return;
-  const clips = clipStudio.getClips(session.id) || [];
-  const sourceId = st.sourceId;
-  const sourceName = st.sourceName || "your video";
-  const n = clips.length;
-  postAssistantMessage(
-    session.id,
-    `I cut ${n} ${n === 1 ? "clip" : "clips"} from ${sourceName}. Open them to review and trim, then draft the ones you want to post.`,
-  );
-  postClipExtractionTurn(session.id, { sourceId, filename: sourceName });
-  // Leave the studio last — the session now renders as a normal chat with the
-  // turns above already in the thread.
-  clipStudio.exit(session.id);
-}
-
-function finalizeClipStudio(session) {
-  const st = clipStudio.getState(session.id);
-  if (!st) return;
-  const clips = clipStudio.getClips(session.id).filter((c) => (st.selectedClipIds || []).includes(c.id));
-  const profileIds = st.profileSelection || [];
-  const accounts = getConnectedProfiles().filter((p) => profileIds.includes(p.id));
-  if (!clips.length || !accounts.length) return;
-  const sourceName = st.sourceName || "your video";
-  const captionStyle = st.config?.captionStyle === "none" ? null : st.config?.captionStyle || null;
-  const perNet = st.perNetworkFormat || {};
-  clipStudio.exit(session.id);
-  const pendingId = startPending(session.id, "Generating drafts");
-  setTimeout(() => {
-    finishPending(session.id, pendingId);
-    const drafts = [];
-    for (const clip of clips) {
-      for (const a of accounts) {
-        const d = addPostDraft(session.id, {
-          network: a.platform,
-          text: [clip.title, clip.summary].filter(Boolean),
-          hashtags: (clip.tags || []).map((t) => `#${t}`),
-          clipRef: { start: clip.start, end: clip.end, sourceName, hue: clip.hue },
-          format: perNet[a.platform] || st.config?.format || clip.format || "9:16",
-          subtitleStyle: captionStyle,
-        });
-        d.generationContext = clipContext(clip, sourceName);
-        drafts.push(d);
-      }
-    }
-    postDraftResult(session.id, { ideaTitle: `Clips from ${sourceName}`, drafts });
-  }, 1600);
 }
 
 // Everything in a chat that PRODUCES something. When the chat's Playbook is
