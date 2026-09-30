@@ -38,7 +38,6 @@ body.has-modal {
 .add-source-modal,
 .connectors-modal,
 .topic-ignore,
-.influencer-add,
 .topic-history,
 .topic-picker,
 .confirm-modal,
@@ -140,88 +139,6 @@ body.has-modal {
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-sm);
-}
-
-/* Add influencers — a field, what it refused or staged, and a count in the
-   footer. As wide as Ignore: one field and a short list, no prose. */
-.influencer-add {
-  width: min(calc(100% - 32px), 520px);
-  flex-direction: column;
-}
-
-.influencer-add__content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-md);
-}
-
-.influencer-add__sub {
-  margin: 0;
-  color: var(--ref-color-grey-80);
-}
-
-.influencer-add__row {
-  display: flex;
-  gap: var(--ref-spacing-xs);
-}
-
-.influencer-add__row .ap-input-group {
-  flex: 1 1 auto;
-}
-
-.influencer-add__networks {
-  margin: 0;
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-80);
-}
-
-.influencer-add__staged {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxs);
-}
-
-.influencer-add__staged-label {
-  font-weight: var(--ref-font-weight-bold);
-  color: var(--ref-color-grey-100);
-}
-
-.influencer-add__list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  border: 1px solid var(--ref-color-grey-20);
-  border-radius: var(--ref-border-radius-md);
-}
-
-.influencer-add__item {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
-}
-
-.influencer-add__item + .influencer-add__item {
-  border-top: 1px solid var(--ref-color-grey-20);
-}
-
-.influencer-add__who {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.influencer-add__name {
-  font-weight: var(--ref-font-weight-bold);
-  color: var(--ref-color-grey-100);
-}
-
-.influencer-add__meta {
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-80);
 }
 
 /* ── Analyze social profiles modal ─────────────────────────── */
@@ -615,7 +532,6 @@ body.has-modal {
 .add-source-modal.open,
 .connectors-modal.open,
 .topic-ignore.open,
-.influencer-add.open,
 .topic-history.open,
 .topic-picker.open,
 .confirm-modal.open,

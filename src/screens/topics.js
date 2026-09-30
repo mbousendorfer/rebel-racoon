@@ -32,16 +32,16 @@
 // view. There is an explicit Load more too, and both do exactly the same thing —
 // an infinite list with no button is unusable by keyboard.
 
-import { html, raw, escapeAttr } from "../utils.js?v=1419";
-import { navigate, getPath } from "../router.js?v=1419";
-import { isFlagOn } from "../feature-flags.js?v=1419";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1419";
-import { renderTopbar } from "../components/topbar.js?v=1419";
-import { showToast } from "../components/toast.js?v=1419";
-import { renderEmptyState } from "../components/empty-state.js?v=1419";
-import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=1419";
-import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=1419";
-import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1419";
+import { html, raw, escapeAttr } from "../utils.js?v=1422";
+import { navigate, getPath } from "../router.js?v=1422";
+import { isFlagOn } from "../feature-flags.js?v=1422";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1422";
+import { renderTopbar } from "../components/topbar.js?v=1422";
+import { showToast } from "../components/toast.js?v=1422";
+import { renderEmptyState } from "../components/empty-state.js?v=1422";
+import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=1422";
+import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=1422";
+import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1422";
 import {
   getTopicsForFeed,
   groupTopicsByAge,
@@ -49,11 +49,10 @@ import {
   topicTitle,
   defaultFilters,
   narrowedGroupCount,
-  countFresh,
   ignoreTopic,
   unignoreTopic,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=1419";
+} from "../topics-store.js?v=1422";
 import {
   TOPIC_SOURCES,
   TOPIC_KINDS,
@@ -62,25 +61,23 @@ import {
   findTopicSource,
   findCadence,
   isLiveSource,
-} from "../topics-catalog.js?v=1419";
-import { renderTopicCard } from "../components/topic-card.js?v=1419";
-import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=1419";
-import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=1419";
-import { openTopicHistory } from "../components/topic-history-modal.js?v=1419";
-import { useTopicInChat } from "../topic-flow.js?v=1419";
-import { canEdit } from "../playbook-access.js?v=1419";
-import { openInfluencerAdd } from "../components/influencer-add-modal.js?v=1419";
-import { addInfluencersToPlaybook, takenKeys, INFLUENCER_SOURCE_ID } from "../influencer-flow.js?v=1419";
+} from "../topics-catalog.js?v=1422";
+import { renderTopicCard } from "../components/topic-card.js?v=1422";
+import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=1422";
+import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=1422";
+import { openTopicHistory } from "../components/topic-history-modal.js?v=1422";
+import { useTopicInChat } from "../topic-flow.js?v=1422";
+import { canEdit } from "../playbook-access.js?v=1422";
 
 const PAGE = 10;
 // Long enough to read the scanning line, short enough that nobody waits for it
 // in a demo. Same number the magazine used.
 const SCAN_MS = 1600;
 
-// Under this many Topics in the last seven days, the week reads as quiet and a
-// Playbook with no influencers is invited to add some. A count, not a ratio: a
-// brand with three competitors never gets past a handful, whatever it does.
-const QUIET_WEEK = 5;
+// The invitation rides in the list like an in-feed ad in an editorial feed:
+// after this many Topics, so it is met while scrolling and never sits above the
+// first age group.
+const INVITE_AFTER = 4;
 
 // Playbooks whose invitation was waved off, for as long as the app is open. Not
 // per visit (the view resets on every mount) and not persisted: "Not now" is
@@ -688,30 +685,34 @@ function renderList(shown, more, total, scanning, feed) {
   }
 
   const groups = groupTopicsByAge(shown);
-  const invite = feed && shouldInvite(getContextById(feed.playbookId), feed) ? renderInfluencerInvite() : "";
+  const invite = feed && shouldInvite(getContextById(feed.playbookId)) ? renderInfluencerInvite() : "";
+  // Counted across groups: the slot is the Nth card of the list, wherever the
+  // age separators fall. A list shorter than that gets it last.
+  let seen = 0;
+  const cardsOf = (list) =>
+    list
+      .map((t) => {
+        seen += 1;
+        const card = renderTopicCard(t, {
+          source: findTopicSource(t.sourceId),
+          menuOpen: view.menuTopicId === t.id,
+          articleOpen: view.openTopicId === t.id,
+        });
+        const slot = invite && (seen === INVITE_AFTER || (seen === shown.length && seen < INVITE_AFTER));
+        return slot ? card + invite : card;
+      })
+      .join("");
   const body = groups
     .map(
       (g) =>
         html`<section class="topics-view__group">
           <h2 class="topics-view__group-label">${g.group.label}</h2>
-          <div class="topics-view__group-cards">
-            ${raw(
-              g.topics
-                .map((t) =>
-                  renderTopicCard(t, {
-                    source: findTopicSource(t.sourceId),
-                    menuOpen: view.menuTopicId === t.id,
-                    articleOpen: view.openTopicId === t.id,
-                  }),
-                )
-                .join(""),
-            )}
-          </div>
+          <div class="topics-view__group-cards">${raw(cardsOf(g.topics))}</div>
         </section>`,
     )
     .join("");
 
-  return html`${raw(invite)}${raw(body)}
+  return html`${raw(body)}
   ${raw(
     more
       ? html`<div class="topics-view__more" data-topic-sentinel>
@@ -731,55 +732,38 @@ function renderList(shown, more, total, scanning, feed) {
 
 // ── The influencer invitation ─────────────────────────────────────────────
 // Archie cannot suggest creators (Google's grounding terms), so a Playbook's
-// Influencers section starts empty and stays that way unless someone goes back
-// to it — which nobody does once the Playbook is set up. This card is the way
-// back, shown where the gap is felt: a quiet week in the feed. It is NOT a
-// Topic, so it shares none of the Topic card's anatomy — no source line, no
-// age, no verbs — and it sits above the first age group rather than inside it.
+// Influencers section starts empty, and nobody reopens a Playbook once it is
+// set up. The feed is where the source's value shows, so this card promotes it
+// there, and sends to the Playbook — where the list lives and is edited, like
+// Competitors. It is NOT a Topic and shares none of its anatomy (no source
+// line, no age, no verbs); it sits in the list like an in-feed ad.
 //
-// Only the owner sees it (canEdit): adding influencers edits the Playbook.
-function shouldInvite(pb, feed, { ignoreDismiss = false } = {}) {
-  if (!pb || !feed || !canEdit(pb)) return false;
-  if ((pb.influencers || []).length) return false;
-  if (!isLiveSource(INFLUENCER_SOURCE_ID)) return false;
-  if (!ignoreDismiss && dismissedInvites.has(pb.id)) return false;
-  return countFresh(feed.id) < QUIET_WEEK;
+// Shown whether or not the Playbook already has influencers: it says a source
+// exists, not that one is missing. Only to the owner (canEdit), since the
+// action edits the Playbook; "Not now" hides it until the next load.
+function shouldInvite(pb, { ignoreDismiss = false } = {}) {
+  if (!pb || !canEdit(pb)) return false;
+  if (!isLiveSource("influencer-posts")) return false;
+  return ignoreDismiss || !dismissedInvites.has(pb.id);
 }
 
 function renderInfluencerInvite() {
   return html`<article class="ap-card topics-invite" aria-label="Add influencers">
     <span class="topic-badge topic-badge--lg topic-badge--red" aria-hidden="true"><i class="ap-icon-star"></i></span>
     <div class="topics-invite__text">
-      <h2 class="topics-invite__title">A quiet week? Hear from the creators your audience follows</h2>
+      <h2 class="topics-invite__title">Hear from the creators your audience follows</h2>
       <p class="topics-invite__body">
-        Only your competitors feed this list so far. Add a few influencers and every week I'll turn their posts into
-        Topics too.
+        Add them to your Playbook and every week I'll turn what they post into Topics, in this feed next to your
+        competitors'.
       </p>
       <div class="topics-invite__actions">
         <button type="button" class="ap-button primary blue" data-topic-invite-add>
-          <i class="ap-icon-plus"></i><span>Add influencers</span>
+          <i class="ap-icon-star"></i><span>Add influencers</span>
         </button>
         <button type="button" class="ap-button ghost grey" data-topic-invite-dismiss>Not now</button>
       </div>
     </div>
   </article>`;
-}
-
-function openInvite(target) {
-  const pb = scopedPlaybook();
-  if (!pb) return;
-  openInfluencerAdd({
-    playbookName: pb.name,
-    taken: takenKeys(pb.influencers || []),
-    onSubmit: (entries) => {
-      const n = entries.length;
-      addInfluencersToPlaybook(pb.id, entries);
-      showToast(
-        `${n === 1 ? entries[0].name : `${n} influencers`} added to ${pb.name}. I'll read their posts from the next run.`,
-      );
-      if (view) paint(target, scopedPlaybook());
-    },
-  });
 }
 
 // Two states, and they are NOT the same sentence. A feed that has found nothing
@@ -798,13 +782,14 @@ function renderEmpty(total, feed) {
     const refresh = findCadence(feed.cadence)?.adverb || "weekly";
     // No Topic at all is the quietest week there is, so the invitation takes the
     // empty state's one CTA; Feed settings drops to the link below it.
-    if (shouldInvite(getContextById(feed.playbookId), feed, { ignoreDismiss: true })) {
+    const owner = getContextById(feed.playbookId);
+    if (!(owner?.influencers || []).length && shouldInvite(owner, { ignoreDismiss: true })) {
       return renderEmptyState({
         icon: "ap-icon-antenna",
         title: "Nothing has landed yet",
         body: `I'm listening to this Playbook's competitors and I refresh ${refresh}. Add the creators your audience follows and I'll read their posts too.`,
         actionHtml: `<div class="topics-view__empty-actions">
-          <button type="button" class="ap-button primary blue" data-topic-invite-add><i class="ap-icon-plus"></i><span>Add influencers</span></button>
+          <button type="button" class="ap-button primary blue" data-topic-invite-add><i class="ap-icon-star"></i><span>Add influencers</span></button>
           <button type="button" class="ap-link standalone" data-topic-settings>Feed settings</button>
         </div>`,
         wrapperClass: "topics-view__empty",
@@ -1019,7 +1004,8 @@ function bind(target) {
     }
 
     if (event.target.closest("[data-topic-invite-add]")) {
-      openInvite(target);
+      const pb = scopedPlaybook();
+      if (pb) navigate(`/playbook/${encodeURIComponent(pb.id)}?section=influencers`);
       return;
     }
 

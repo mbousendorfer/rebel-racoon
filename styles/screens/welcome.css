@@ -2458,9 +2458,14 @@ button.recap__logotile:hover {
   min-width: 0;
 }
 
-.recap__inf-edit > .ap-input-group {
+.recap__inf-edit > .ap-input-group,
+.recap__infadd > .ap-input-group {
   width: 100%;
   min-width: 0;
+}
+
+.recap__infadd {
+  gap: var(--ref-spacing-xs);
 }
 
 /* The section's empty state — a bounded region, so the medallion + H3 + body

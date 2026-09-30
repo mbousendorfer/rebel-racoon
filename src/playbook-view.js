@@ -14,7 +14,7 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1419";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1422";
 import {
   kitEnabled,
   renderColorRole,
@@ -27,21 +27,19 @@ import {
   handleKitInput,
   handleKitChange,
   kitSnapshot,
-} from "./playbook-brand-kit.js?v=1419";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1419";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1419";
-import { isFlagOn } from "./feature-flags.js?v=1419";
-import { parseHashParams } from "./url-state.js?v=1419";
-import { showToast } from "./components/toast.js?v=1419";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1419";
-import { openInfluencerAdd } from "./components/influencer-add-modal.js?v=1419";
-import { takenKeys, toInfluencer } from "./influencer-flow.js?v=1419";
+} from "./playbook-brand-kit.js?v=1422";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1422";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1422";
+import { isFlagOn } from "./feature-flags.js?v=1422";
+import { parseHashParams } from "./url-state.js?v=1422";
+import { showToast } from "./components/toast.js?v=1422";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1422";
 // The Default look row offers the SAME three catalogues the Image Studio renders, from
 // the one place they are declared — REF_MODES' own header makes the argument: the label,
 // the hint and the brief clause "drift the moment they live apart". No cycle: the engine
 // imports only clip-formats / image-studio-canvas / feature-flags, and its module body
 // builds consts, so importing it here costs nothing at load.
-import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1419";
+import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1422";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -152,7 +150,7 @@ let rosterModal = null; // open competitor/influencer detail modal: { kind, inde
 let rosterScanning = null; // roster whose "Discover" scan is in flight ("competitors") or null — Influencers has no Discover
 let rosterScanTimer = null; // the scan's pending timeout
 let rosterFoundNone = null; // roster whose last scan returned nothing new (show the note) or null
-// the "Add an influencer" dialog's draft ({ name, websiteUrl, socials }), or null
+let infAdd = null; // the "Add an influencer" dialog's draft ({ name, websiteUrl, socials }), or null
 let refModalHost = null; // body-level portal node for the open detail modal
 let snapshot = null; // deep copy of editable fields, for Cancel
 let editBaseline = null; // the same fields as JSON once the editor has painted — "anything changed?"
@@ -199,6 +197,7 @@ export function mount(target, config) {
   rosterModal = null;
   rosterScanning = null;
   rosterFoundNone = null;
+  infAdd = null;
 
   if (cfg.loader && !cfg.skipLoader) {
     phase = "loading";
@@ -1931,9 +1930,8 @@ function renderRosterModal(data) {
 //   • read — one full-width row per influencer: name, a line of real links
 //     (website, then each profile with its network's icon and name), the
 //     description. The header carries "Add an influencer" beside the pencil.
-//   • add  — the shared "Add influencers" dialog (components/
-//     influencer-add-modal.js): a pasted profile link, checked, several in a
-//     row. Works from read mode and commits on submit.
+//   • add  — a dialog: name, website, then ONE fixed field per network.
+//     Works from read mode and commits on the spot, like the beta.
 //   • edit — the pencil turns every row into its own inline form (name,
 //     website, the fixed network fields) with a trash button; the description
 //     isn't editable and hides, exactly as it does there.
@@ -2090,6 +2088,55 @@ function renderInfluencersEmpty(edit) {
       </div>
       ${cta}
     </div>`;
+}
+
+function emptyInfluencerDraft() {
+  return { name: "", websiteUrl: "", socials: {} };
+}
+
+// The add dialog. Rendered with the recap body and portalled to <body> like
+// the other detail modals (portalModal matches .recap__cmpmodal-backdrop).
+function renderInfluencerAddModal() {
+  if (!infAdd) return "";
+  const r = ROSTERS.influencers;
+  const ready = infAdd.name.trim().length > 0;
+  return `
+  <div class="app-modal-backdrop recap__cmpmodal-backdrop" data-recap-infadd-backdrop data-recap-roster="${r.scope}">
+    <aside class="ap-dialog recap__cmpmodal" role="dialog" aria-modal="true" aria-label="Add an influencer">
+      <div class="ap-dialog-header"><span class="ap-dialog-title">Add an influencer</span></div>
+      <button type="button" class="ap-dialog-close" data-recap-infadd-close aria-label="Close"><i class="ap-icon-close"></i></button>
+      <div class="ap-dialog-content recap__cmpmodal-content recap__infadd">
+        <p class="recap__inf-intro">Enter the influencer's name, website and social profiles.</p>
+        <div class="ap-input-group">
+          <input type="text" data-recap-infadd-field="name" value="${esc(infAdd.name)}" placeholder="${esc(
+            r.namePlaceholder,
+          )}" aria-label="${esc(r.namePlaceholder)}" />
+        </div>
+        <div class="recap__inf-field">
+          <i class="ap-icon-web" aria-hidden="true"></i>
+          <div class="ap-input-group">
+            <input type="url" data-recap-infadd-field="websiteUrl" value="${esc(infAdd.websiteUrl)}" placeholder="${esc(
+              r.sitePlaceholder,
+            )}" aria-label="Website" spellcheck="false" />
+          </div>
+        </div>
+        <span class="recap__inf-label">Social profiles</span>
+        ${renderInfluencerSocialFields(
+          r,
+          (n) => infAdd.socials[n] || "",
+          (n) => `data-recap-infadd-social="${n}"`,
+        )}
+      </div>
+      <div class="ap-dialog-footer">
+        <div class="ap-dialog-footer-right">
+          <button type="button" class="ap-button ghost grey" data-recap-infadd-close><span>Cancel</span></button>
+          <button type="button" class="ap-button primary blue" data-recap-infadd-submit${ready ? "" : " disabled"}>
+            <i class="ap-icon-plus" aria-hidden="true"></i><span>Add influencer</span>
+          </button>
+        </div>
+      </div>
+    </aside>
+  </div>`;
 }
 
 // ── Header + rail ──────────────────────────────────────────────────────
@@ -2867,6 +2914,7 @@ function paint() {
     </div>
     ${renderRefModal(data)}
     ${renderRosterModal(data)}
+    ${renderInfluencerAddModal()}
   `;
 
   mountTarget.innerHTML = html`
@@ -3061,6 +3109,7 @@ const WRITE_HOOKS = [
   "[data-recap-cmp-dismiss]",
   "[data-recap-cmp-discover]",
   "[data-recap-infadd-open]",
+  "[data-recap-infadd-submit]",
   "[data-recap-refimg-add]",
   "[data-recap-refimg-remove]",
   "[data-recap-learn]",
@@ -3080,6 +3129,7 @@ function resetEdit() {
   editScope = null;
   refModalIndex = null;
   rosterModal = null;
+  infAdd = null;
   audienceCustom = false;
 }
 
@@ -3221,21 +3271,36 @@ function onClick(event) {
     return;
   }
 
-  // ── Add influencers (the shared dialog, from read mode) ──
-  // The dialog only checks and stages; the write stays here, on the draft, so
-  // a Playbook still being created gets its influencers with everything else.
+  // ── Add an influencer (dialog, from read mode) ──
   if (event.target.closest("[data-recap-infadd-open]")) {
+    infAdd = emptyInfluencerDraft();
+    repaint(); // the page stays on the section behind the dialog
+    document.querySelector("[data-recap-infadd-field='name']")?.focus();
+    return;
+  }
+  if (event.target.closest("[data-recap-infadd-close]") || event.target.matches?.("[data-recap-infadd-backdrop]")) {
+    infAdd = null;
+    repaint();
+    return;
+  }
+  if (event.target.closest("[data-recap-infadd-submit]")) {
+    if (!infAdd || !infAdd.name.trim()) return;
     const r = ROSTERS.influencers;
-    openInfluencerAdd({
-      playbookName: data.name || "",
-      taken: takenKeys(rosterList(data, r)),
-      onSubmit: (entries) => {
-        const list = rosterList(data, r);
-        entries.slice(0, r.max - list.length).forEach((e, i) => list.push(toInfluencer(e, list.length + i)));
-        cfg.commit?.();
-        repaint();
-      },
-    });
+    const list = rosterList(data, r);
+    if (list.length < r.max) {
+      list.push({
+        id: `${r.idPrefix}-new-${list.length + 1}-${Date.now().toString(36)}`,
+        name: infAdd.name.trim(),
+        description: "",
+        websiteUrl: infAdd.websiteUrl.trim(),
+        socials: r.networks
+          .map((network) => ({ network, url: (infAdd.socials[network] || "").trim() }))
+          .filter((x) => x.url),
+      });
+      cfg.commit?.();
+    }
+    infAdd = null;
+    repaint();
     return;
   }
 
@@ -3606,6 +3671,16 @@ function onClick(event) {
 // Text edits mutate the live data object WITHOUT a repaint so inputs keep
 // focus mid-type.
 function onInput(event) {
+  // The add dialog lives in READ mode, so it answers before the edit guard.
+  // No repaint: that would steal the caret — only the submit's state follows.
+  const addField = event.target.closest?.("[data-recap-infadd-field], [data-recap-infadd-social]");
+  if (addField && infAdd) {
+    if (addField.dataset.recapInfaddField) infAdd[addField.dataset.recapInfaddField] = addField.value;
+    else infAdd.socials[addField.dataset.recapInfaddSocial] = addField.value;
+    const submit = document.querySelector("[data-recap-infadd-submit]");
+    if (submit) submit.disabled = !infAdd.name.trim();
+    return;
+  }
   if (!editScope) return;
   const data = cfg.getData();
   if (!data) return;

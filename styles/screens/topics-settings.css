@@ -304,24 +304,6 @@
   min-width: 0;
 }
 
-/* The Influencers card's roster: who the source reads, one line each. */
-.topics-src__inf {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-}
-
-.topics-src__inf-name {
-  flex: 1 1 auto;
-  min-width: 0;
-  color: var(--ref-color-grey-100);
-}
-
-.topics-src__inf-empty {
-  margin: 0;
-  color: var(--ref-color-grey-80);
-}
-
 /* The footer holds two things on this card — the site list and, on the
    competitor sources, the note — so it stacks rather than sitting on one line. */
 .topics-src__foot {

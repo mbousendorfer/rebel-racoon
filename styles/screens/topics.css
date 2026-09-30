@@ -295,11 +295,12 @@
 }
 
 /* ── The influencer invitation ───────────────────────────────────────────
-   Not a Topic, so none of the Topic card's anatomy: a medallion, a title at the
-   size of a section rather than of a headline, one sentence, two buttons. Flat
-   and static — nothing to hover, the buttons are the only targets. */
+   Rides in the list after the 4th Topic, like an in-feed ad. Not a Topic, so
+   none of its anatomy: a medallion beside a title, one sentence, two buttons.
+   Flat and static — nothing to hover, the buttons are the only targets. */
 .topics-invite {
   display: flex;
+  flex-direction: row;
   align-items: flex-start;
   gap: var(--ref-spacing-sm);
   padding: var(--ref-spacing-md);

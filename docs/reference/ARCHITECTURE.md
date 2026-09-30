@@ -73,7 +73,7 @@ src/
   mocks.js              — barrel over mocks/ — the single import path for seed data
   mocks/                — ALL seed data, one file per domain: sessions, top-posts,
                           sources, ideas, playbooks, topics, posts, threads,
-                          schedule, connectors, social, objectives, influencer-lookup. Self-contained: no file
+                          schedule, connectors, social, objectives. Self-contained: no file
                           under mocks/ reads a sibling.
   image-studio.js       — Image Studio state engine (UI-agnostic) + all its mocks
   image-studio-canvas.js — pure canvas helpers: bake / crop / text metrics
@@ -115,7 +115,6 @@ src/
   connectors-view.js    — shared pure render helpers for the connectors gallery + detail
   connector-ask.js      — launches the in-chat "Ask a connector" flow (gallery + right panel)
   topic-article.js      — ONE article renderer: the feed's pane, the picker, the in-chat dialog
-  influencer-flow.js    — the check a pasted influencer profile goes through + the write (Playbook list, feed source on)
   topic-flow.js         — Use in chat: mark Used, then a new chat with the Topic as a Source;
                           plus the composer's INLINE picker (startTopicPickerInline)
 
@@ -188,7 +187,6 @@ src/
     connectors-modal.js   connectors gallery + detail overlay (from composer Add / Sources panel / page)
     topic-picker-modal.js one dialog, two views — the picker's list, and the article
     topic-ignore-modal.js "Why did this Topic miss the mark?" — the reason, kept
-    influencer-add-modal.js "Add influencers" — a pasted profile link, checked, staged; the one dialog of the three entry points
     skip-connect-modal.js "Skip connecting an account?" — reassures, then asks why
     topic-history-modal.js the Topic's two-sided trail: the scan's, then the reader's
     video-clips-modal.js (+ video-clips-modal/editor-pane.js), schedule-modal.js

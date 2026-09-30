@@ -29,27 +29,23 @@
 // now does — and a row cannot without turning the list into a form. No save bar:
 // every control commits immediately through updateFeed.
 
-import { html, raw } from "../utils.js?v=1419";
-import { navigate } from "../router.js?v=1419";
-import { parseHashParams } from "../url-state.js?v=1419";
-import { renderTopbar } from "../components/topbar.js?v=1419";
-import { renderEmptyState } from "../components/empty-state.js?v=1419";
-import { isFlagOn } from "../feature-flags.js?v=1419";
-import { getContextById, getDefaultContext, updateContext } from "../contexts-store.js?v=1419";
+import { html, raw } from "../utils.js?v=1422";
+import { navigate } from "../router.js?v=1422";
+import { parseHashParams } from "../url-state.js?v=1422";
+import { renderTopbar } from "../components/topbar.js?v=1422";
+import { renderEmptyState } from "../components/empty-state.js?v=1422";
+import { isFlagOn } from "../feature-flags.js?v=1422";
+import { getContextById, getDefaultContext } from "../contexts-store.js?v=1422";
 import {
   getActivePlaybook,
   isWorkspaceMode,
   catalogueRoute,
   subscribe as subscribeScope,
-} from "../active-playbook.js?v=1419";
-import { editableContexts, canEdit } from "../playbook-access.js?v=1419";
-import { getFeedForPlaybook, updateFeed, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1419";
-import { TOPIC_SOURCES, CADENCES, findTopicSource, findCadence, isLiveSource } from "../topics-catalog.js?v=1419";
-import { open as openFeedback } from "../components/feedback-modal.js?v=1419";
-import { openInfluencerAdd } from "../components/influencer-add-modal.js?v=1419";
-import { addInfluencersToPlaybook, takenKeys } from "../influencer-flow.js?v=1419";
-import { showToast } from "../components/toast.js?v=1419";
-import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=1419";
+} from "../active-playbook.js?v=1422";
+import { editableContexts, canEdit } from "../playbook-access.js?v=1422";
+import { getFeedForPlaybook, updateFeed, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1422";
+import { TOPIC_SOURCES, CADENCES, findTopicSource, findCadence, isLiveSource } from "../topics-catalog.js?v=1422";
+import { open as openFeedback } from "../components/feedback-modal.js?v=1422";
 
 // Above this many Playbooks the picker earns a search field. Below it, a search
 // box over four rows is just noise.
@@ -350,12 +346,8 @@ function renderSourceCard(ctx, feed, source, on) {
   // that value instead of only a description. A flag rather than an id check, so
   // a second value-carrying source would not need this renderer touched again.
   const sites = source.showsWebsites && feed ? renderSiteList(feed) : "";
-  const roster = source.playbookAnchor === "influencers" ? renderInfluencerRoster(ctx) : "";
 
-  const foot =
-    anchor || sites || roster
-      ? html`<footer class="topics-src__foot">${raw(roster)}${raw(anchor)}${raw(sites)}</footer>`
-      : "";
+  const foot = anchor || sites ? html`<footer class="topics-src__foot">${raw(anchor)}${raw(sites)}</footer>` : "";
 
   return html`<article class="ap-card topics-src${raw(on ? "" : " is-off")}">
     <header class="topics-src__head">
@@ -390,44 +382,6 @@ function renderSourceCard(ctx, feed, source, on) {
     <p class="topics-src__desc">${source.howItWorks}</p>
     ${raw(foot)}
   </article>`;
-}
-
-// Who the Influencers source reads, managed right here: the feed is where the
-// source's value shows, and the Playbook section is a page nobody reopens once
-// it is set up. The list still lives on the Playbook — this card writes to it
-// through the same dialog and the same check, and the link below it goes to
-// the full section (websites, descriptions, inline edit).
-function renderInfluencerRoster(ctx) {
-  const list = ctx.influencers || [];
-  const rows = list
-    .map((c, i) => {
-      const net = (c.socials || []).find((x) => NETWORK_ICON_BY_PLATFORM[x.network])?.network;
-      return html`<li class="topics-src__inf">
-        ${raw(net ? `<i class="${NETWORK_ICON_BY_PLATFORM[net]}" aria-hidden="true"></i>` : "")}
-        <span class="topics-src__inf-name">${c.name}</span>
-        <button
-          type="button"
-          class="ap-icon-button transparent grey"
-          data-settings-inf-remove="${String(i)}"
-          aria-label="Remove ${c.name}"
-        >
-          <i class="ap-icon-close"></i>
-        </button>
-      </li>`;
-    })
-    .join("");
-  return html`<div class="topics-src__sites">
-    ${raw(
-      list.length
-        ? html`<ul class="topics-src__site-list">
-            ${raw(rows)}
-          </ul>`
-        : html`<p class="topics-src__inf-empty">No influencers yet. Add the creators your audience follows.</p>`,
-    )}
-    <button type="button" class="ap-link standalone small" data-settings-inf-add>
-      <i class="ap-icon-plus" aria-hidden="true"></i><span>Add influencers</span>
-    </button>
-  </div>`;
 }
 
 // The sites the Brand-website source scans. Owned by the FEED, not by the
@@ -486,34 +440,6 @@ function bind(target) {
           placeholder: "How would you use this source?",
         },
       });
-      return;
-    }
-
-    if (event.target.closest("[data-settings-inf-add]")) {
-      const ctx = getContextById(activePlaybookId());
-      if (!ctx) return;
-      openInfluencerAdd({
-        playbookName: ctx.name,
-        taken: takenKeys(ctx.influencers || []),
-        onSubmit: (entries) => {
-          addInfluencersToPlaybook(ctx.id, entries);
-          const n = entries.length;
-          showToast(
-            `${n === 1 ? entries[0].name : `${n} influencers`} added. I'll read their posts from the next run.`,
-          );
-          paint(target);
-        },
-      });
-      return;
-    }
-
-    const infRemove = event.target.closest("[data-settings-inf-remove]");
-    if (infRemove) {
-      const ctx = getContextById(activePlaybookId());
-      if (!ctx) return;
-      const list = (ctx.influencers || []).filter((_, i) => i !== Number(infRemove.dataset.settingsInfRemove));
-      updateContext(ctx.id, { influencers: list });
-      paint(target);
       return;
     }
 
