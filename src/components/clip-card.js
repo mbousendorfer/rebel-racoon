@@ -24,12 +24,12 @@
 // card (defined in right-panel.css). Classes prefixed `clip-card__*`
 // own clip-specific bits (thumbnail, timeframe overlay).
 
-import { iconFor } from "../file-kinds.js?v=1410";
-import { escapeText, escapeAttr, formatClock } from "../utils.js?v=1410";
-import { installMoreMenu } from "./more-menu.js?v=1410";
-import { renderFeedbackThumbs, renderFeedbackPanel } from "./feedback-control.js?v=1410";
-import { videoForClip } from "../clip-captions.js?v=1410";
-import { FORMATS } from "../clip-formats.js?v=1410";
+import { iconFor } from "../file-kinds.js?v=1412";
+import { escapeText, escapeAttr, formatClock } from "../utils.js?v=1412";
+import { installMoreMenu } from "./more-menu.js?v=1412";
+import { renderFeedbackThumbs, renderFeedbackPanel } from "./feedback-control.js?v=1412";
+import { videoForClip } from "../clip-captions.js?v=1412";
+import { FORMATS } from "../clip-formats.js?v=1412";
 
 const fmtTime = (s) => formatClock(s);
 
@@ -112,7 +112,7 @@ export function renderClipCard(
         type="button"
         class="clip-card__thumb-btn"
         data-clip-edit="${escapeAttr(clip.id)}"
-        aria-label="Play clip: ${safeTitle}"
+        aria-label="Play clip: ${escapeAttr(clip.title || "Untitled clip")}"
       >
         <span class="clip-card__thumb" style="background-image: ${thumbBackground(clip.hue)}">
           <span class="clip-card__thumb-crop" style="aspect-ratio: ${fmt.ratio}">

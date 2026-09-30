@@ -1,17 +1,17 @@
-import { html, raw, escapeText } from "../utils.js?v=1410";
-import { showToast } from "./toast.js?v=1410";
-import { getQueue, getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=1410";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1410";
+import { html, raw, escapeText, escapeAttr } from "../utils.js?v=1412";
+import { showToast } from "./toast.js?v=1412";
+import { getQueue, getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=1412";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1412";
 import {
   renderProfileTag,
   profileForNetwork,
   NETWORK_LABEL,
   NETWORK_ICON_BY_PLATFORM,
   normalizeNetwork,
-} from "../social-profiles.js?v=1410";
-import { getContextById } from "../contexts-store.js?v=1410";
-import { canEdit } from "../playbook-access.js?v=1410";
-import { getPreset, savePreset } from "../schedule-presets-store.js?v=1410";
+} from "../social-profiles.js?v=1412";
+import { getContextById } from "../contexts-store.js?v=1412";
+import { canEdit } from "../playbook-access.js?v=1412";
+import { getPreset, savePreset } from "../schedule-presets-store.js?v=1412";
 
 // Schedule modal — one column, result first.
 //   • Header   — "Schedule N drafts" + one line saying I already picked.
@@ -709,7 +709,7 @@ function renderPresetAction() {
       ? `<button type="button" class="ap-button ghost blue schedule-modal__preset-save" data-schedule-save-preset data-tooltip="${tip}">
           <i class="ap-icon-bookmark" aria-hidden="true"></i><span>Save for this Playbook</span>
         </button>`
-      : `<span class="schedule-modal__preset-note" data-tooltip="${escapeText(`Only the owner of ${name} can save its posting rhythm.`)}">Only the owner can save it</span>`;
+      : `<span class="schedule-modal__preset-note" data-tooltip="${escapeAttr(`Only the owner of ${name} can save its posting rhythm.`)}">Only the owner can save it</span>`;
   }
   // 2 — the settings ARE the Playbook's rhythm.
   if (usingSavedPreset()) {
@@ -719,7 +719,7 @@ function renderPresetAction() {
   // way back to it (anyone), and the way to make this the new one (owner).
   // Changing a setting for one batch must never silently rewrite the brand's.
   return `
-    <span class="schedule-modal__preset-note" data-tooltip="${escapeText(`${name}'s rhythm: ${rhythmLabel(saved)}`)}">
+    <span class="schedule-modal__preset-note" data-tooltip="${escapeAttr(`${name}'s rhythm: ${rhythmLabel(saved)}`)}">
       Not this Playbook's rhythm ·
       <button type="button" class="ap-link small" data-schedule-restore-preset>Restore</button>
       ${owner ? `· <button type="button" class="ap-link small" data-schedule-save-preset>Update</button>` : ""}
@@ -779,11 +779,11 @@ function renderSelect({ label, value, options, attr }) {
     .join("");
   return `
     <details class="ap-select" data-select-key="${attr}">
-      <summary class="ap-select-trigger" aria-label="${escapeText(label)}">
+      <summary class="ap-select-trigger" aria-label="${escapeAttr(label)}">
         <span class="ap-select-value">${escapeText(value)}</span>
         <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
       </summary>
-      <div class="ap-select-dropdown" role="listbox" aria-label="${escapeText(label)}">
+      <div class="ap-select-dropdown" role="listbox" aria-label="${escapeAttr(label)}">
         <div class="ap-select-options">${items}</div>
       </div>
     </details>
@@ -929,7 +929,7 @@ function renderDayNote(slot, agenda) {
         data-schedule-peek="${id}"
         aria-expanded="${open ? "true" : "false"}"
         aria-controls="schedulePeek-${id}"
-        ${agenda.clash ? `data-tooltip="${escapeText(`${networkName(agenda.clash.network)} post at ${formatTime(agenda.clash.when)}`)}"` : ""}
+        ${agenda.clash ? `data-tooltip="${escapeAttr(`${networkName(agenda.clash.network)} post at ${formatTime(agenda.clash.when)}`)}"` : ""}
       >${escapeText(label)}</button>
     </span>`;
 }
@@ -1000,7 +1000,7 @@ function renderPeek(slot, agenda) {
     )
     .join("");
   return `
-    <div class="ap-action-dropdown schedule-modal__peek" id="schedulePeek-${id}" role="dialog" aria-label="Also on ${escapeText(formatDay(slot.when))}">
+    <div class="ap-action-dropdown schedule-modal__peek" id="schedulePeek-${id}" role="dialog" aria-label="Also on ${escapeAttr(formatDay(slot.when))}">
       <span class="schedule-modal__peek-head">${escapeText(formatDay(slot.when))}</span>
       <ul class="schedule-modal__peek-list">${rows}</ul>
     </div>`;
@@ -1023,7 +1023,7 @@ function renderTile(slot) {
   // "Set by you" instead.
   const reason = slot.pinned ? null : reasonFor(slot);
   const badge = reason
-    ? `<span class="schedule-modal__tile-badge" role="img" aria-label="${escapeText(reason)}" data-tooltip="${escapeText(reason)}">
+    ? `<span class="schedule-modal__tile-badge" role="img" aria-label="${escapeAttr(reason)}" data-tooltip="${escapeAttr(reason)}">
         <i class="ap-icon-sparkles ap-icon-xs" aria-hidden="true"></i>
       </span>`
     : "";
@@ -1061,13 +1061,13 @@ function renderWhen(slot) {
             type="button"
             class="schedule-modal__when-time"
             data-schedule-when="${id}"
-            aria-label="Change the publish time — ${escapeText(formatDay(slot.when))}, ${formatTime(slot.when)}"
+            aria-label="Change the publish time — ${escapeAttr(formatDay(slot.when))}, ${formatTime(slot.when)}"
           >${formatTime(slot.when)}</button>
           <button
             type="button"
             class="ap-icon-button schedule-modal__when-edit"
             data-schedule-when="${id}"
-            aria-label="Change the publish time — ${escapeText(formatDay(slot.when))}, ${formatTime(slot.when)}"
+            aria-label="Change the publish time — ${escapeAttr(formatDay(slot.when))}, ${formatTime(slot.when)}"
             data-tooltip="Change date or time"
             tabindex="-1"
           >
