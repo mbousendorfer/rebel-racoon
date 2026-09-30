@@ -32,26 +32,26 @@
 // host is never repainted without `destroyChartsIn(host)` first — the one rule
 // that keeps a brand switch from leaking a chart per repaint.
 
-import { html, raw } from "../../utils.js?v=1416";
-import { renderTopbar } from "../../components/topbar.js?v=1416";
-import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=1416";
+import { html, raw } from "../../utils.js?v=1417";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=1417";
+import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=1417";
 import {
   subscribe as subscribeScope,
   getActivePlaybook,
   getActivePlaybookId,
   setActivePlaybook,
-} from "../../active-playbook.js?v=1416";
-import { getPath, navigate } from "../../router.js?v=1416";
-import { isFlagOn } from "../../feature-flags.js?v=1416";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=1416";
-import { consumeHandoff } from "../../handoff.js?v=1416";
-import { open as openObjectiveModal } from "../../components/objective-modal.js?v=1416";
-import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=1416";
-import { renderEmptyState } from "../../components/empty-state.js?v=1416";
-import { playbookTitle } from "./pieces.js?v=1416";
-import { objectiveEntries, playbookRollup, entryByKey } from "./model.js?v=1416";
-import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=1416";
-import { DEFAULT_LAYOUT, readLayoutId, writeLayoutId, layoutById } from "./views.js?v=1416";
+} from "../../active-playbook.js?v=1417";
+import { getPath, navigate } from "../../router.js?v=1417";
+import { isFlagOn } from "../../feature-flags.js?v=1417";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=1417";
+import { consumeHandoff } from "../../handoff.js?v=1417";
+import { open as openObjectiveModal } from "../../components/objective-modal.js?v=1417";
+import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=1417";
+import { renderEmptyState } from "../../components/empty-state.js?v=1417";
+import { playbookTitle, objectiveTopbarActions } from "./pieces.js?v=1417";
+import { objectiveEntries, playbookRollup, entryByKey } from "./model.js?v=1417";
+import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=1417";
+import { DEFAULT_LAYOUT, readLayoutId, writeLayoutId, layoutById, viewSwitch } from "./views.js?v=1417";
 
 /** Set by a Playbook's objectives block ("Open in Insights"); payload `${ctxId}::${label}`. */
 export const FOCUS_OBJECTIVE_HANDOFF = "focusObjective";
@@ -126,6 +126,25 @@ function renderEmpty(ctx) {
 
 // ── Painting ──────────────────────────────────────────────────────────────
 
+// An objective's fiche (Mob · Index, `?objective=`) takes the DS Top bar: the
+// icon back to the index on the left; on the right the View switch, then the
+// objective's own doors, primary last. Everywhere else the topbar paints its
+// default Insights actions (View switch + New objective).
+let ficheTopbar = false;
+function syncTopbar(fiche) {
+  if (fiche) {
+    setTopbarActions(
+      getPath(),
+      `<div class="ins-topbar-actions">${viewSwitch(layoutId)}${objectiveTopbarActions(fiche)}</div>`,
+      { left: renderIconBack("/insights", "Back to objectives") },
+    );
+    ficheTopbar = true;
+  } else if (ficheTopbar) {
+    setTopbarActions(null);
+    ficheTopbar = false;
+  }
+}
+
 function currentLayout() {
   return layoutById(layoutId);
 }
@@ -144,6 +163,7 @@ function paint() {
 
   if (!ctx || !entries.length) {
     host.innerHTML = renderEmptyPage(ctx);
+    syncTopbar(null);
     return;
   }
 
@@ -155,6 +175,7 @@ function paint() {
   const vm = { entries, rollup, ctx, layoutId, focusKey, selectedKey: selected, local, firstPaint };
   firstPaint = false;
   layoutCleanup = currentLayout().render(host, vm) || null;
+  syncTopbar(layoutId === "mob_index" && selected ? entries.find((e) => e.key === selected) || null : null);
   focusOnce();
 }
 
@@ -405,6 +426,7 @@ function teardown() {
   topbarEl?.removeEventListener("keydown", onKeydown);
   topbarEl?.removeEventListener("toggle", onToggle, true);
   window.removeEventListener("resize", onResize);
+  syncTopbar(null);
   boundTarget = null;
   topbarEl = null;
   host = null;
