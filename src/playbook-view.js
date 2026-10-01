@@ -14,7 +14,7 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1427";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1428";
 import {
   kitEnabled,
   renderColorRole,
@@ -27,19 +27,19 @@ import {
   handleKitInput,
   handleKitChange,
   kitSnapshot,
-} from "./playbook-brand-kit.js?v=1427";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1427";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1427";
-import { isFlagOn } from "./feature-flags.js?v=1427";
-import { parseHashParams } from "./url-state.js?v=1427";
-import { showToast } from "./components/toast.js?v=1427";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1427";
+} from "./playbook-brand-kit.js?v=1428";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1428";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1428";
+import { isFlagOn } from "./feature-flags.js?v=1428";
+import { parseHashParams } from "./url-state.js?v=1428";
+import { showToast } from "./components/toast.js?v=1428";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1428";
 // The Default look row offers the SAME three catalogues the Image Studio renders, from
 // the one place they are declared — REF_MODES' own header makes the argument: the label,
 // the hint and the brief clause "drift the moment they live apart". No cycle: the engine
 // imports only clip-formats / image-studio-canvas / feature-flags, and its module body
 // builds consts, so importing it here costs nothing at load.
-import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1427";
+import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1428";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2161,6 +2161,7 @@ const TABS = [
   { id: "voice", title: "Voice & style" },
   { id: "brand", title: "Brand" },
   { id: "competitors", title: "Competitors" },
+  { id: "influencers", title: "Influencers" },
 ];
 
 // What each section is FOR, said once at the top of its tab — the tab already
@@ -2170,6 +2171,7 @@ const SECTION_LEADS = {
   voice: "How the brand sounds — the lines it opens and closes on, and its writing conventions.",
   brand: "How the brand looks — its marks, colours, type and the rules its images follow.",
   competitors: "Who the brand is measured against, so Archie can position it.",
+  influencers: "The creators the audience already listens to.",
 };
 
 function v2On() {
@@ -2276,7 +2278,7 @@ function watchTabHeadStuck() {
 
 function renderTabs2(data) {
   // Pending suggestions are not part of the Playbook: they are never counted.
-  const cmpCount = competitorList(data).filter((c) => !c.suggested).length;
+  const cmpCount = rosterList(data, ROSTERS.competitors).filter((c) => !c.suggested).length;
   return `
     <div class="ap-tabs flush pb2-tabs">
       <div class="ap-tabs-nav" role="tablist" aria-label="Playbook sections">
@@ -2718,7 +2720,8 @@ function renderActivePanel(data) {
   // Editing opens the section's own form; reading gets the tab's spread.
   if (activeTab === "voice") return scope === "voice" ? renderVoiceEdit2(data) : renderVoiceRead2(data, learnMenu());
   if (activeTab === "brand") return scope === "brand" ? renderBrandEdit2(data) : renderBrandRead2(data);
-  if (activeTab === "competitors") return renderCompetitorsPanel(data, scope === "competitors");
+  if (activeTab === "competitors") return renderRosterPanel(data, ROSTERS.competitors, scope === "competitors");
+  if (activeTab === "influencers") return renderInfluencersPanel(data, scope === "influencers");
   return scope === "goals" ? renderGoalsEdit2(data) : renderGoalsRead2(data);
 }
 
@@ -2888,7 +2891,7 @@ function paint() {
         <div class="welcome-screen__body recap pb2__body">
           ${raw(renderHeader2(data))} ${raw(cfg.notice?.() || "")} ${raw(renderTabs2(data))}
           <div class="pb2__panel" role="tabpanel">${raw(renderActivePanel(data))}</div>
-          ${raw(renderRefModal(data))} ${raw(renderCompetitorModal(data))}
+          ${raw(renderRefModal(data))} ${raw(renderRosterModal(data))} ${raw(renderInfluencerAddModal())}
         </div>
       </section>
     `;
