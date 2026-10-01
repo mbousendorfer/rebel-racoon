@@ -36,7 +36,7 @@
 // The whole module only ever runs under `skipConnectProfiles`: it is reached
 // from the one Skip that flag creates, so it needs no flag test of its own.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1429";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1430";
 
 const MODAL_ID = "skip-connect";
 
@@ -67,7 +67,7 @@ const ASSURANCES = [
   },
   {
     icon: "ap-icon-link",
-    claim: "You can disconnect anytime",
+    claim: "Disconnect anytime",
     detail: "One click, from your settings.",
   },
 ];
