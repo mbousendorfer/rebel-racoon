@@ -20,9 +20,8 @@
 // So the dialog does two jobs in the order the user needs them:
 //   1. REASSURE — what a connected account is actually used for, and what
 //      never happens. Most of the hesitation here is about publishing rights,
-//      so the three lines answer that before asking anything in return.
-//      Connecting belongs to Agorapulse, not to Archie (CONCEPTS.md §6), and
-//      the copy says so rather than implying Archie holds the accounts.
+//      so the three lines answer that before asking anything in return — the
+//      third one says the step can be undone.
 //   2. ASK — a multi-select, because the reasons genuinely stack (no rights
 //      AND someone else handles it AND they'd like to look around first).
 //
@@ -37,7 +36,7 @@
 // The whole module only ever runs under `skipConnectProfiles`: it is reached
 // from the one Skip that flag creates, so it needs no flag test of its own.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1428";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1429";
 
 const MODAL_ID = "skip-connect";
 
@@ -53,7 +52,7 @@ const MODAL_ID = "skip-connect";
 // Every detail is ≤ 29 characters, which is what holds ONE line in a 170px
 // column (33 wraps — measured, not guessed), so the three read as a tidy row
 // instead of 1-2-2. And each one ADDS a fact the claim doesn't state: what
-// never happens, what is read, where the accounts live. A caption that only
+// never happens, what is read, how to undo it. A caption that only
 // rephrases its claim is the padding this block was full of.
 const ASSURANCES = [
   {
@@ -67,9 +66,9 @@ const ASSURANCES = [
     detail: "Only what's already public.",
   },
   {
-    icon: "ap-icon-user",
-    claim: "Your accounts stay yours",
-    detail: "In Agorapulse, not in Archie.",
+    icon: "ap-icon-link",
+    claim: "You can disconnect anytime",
+    detail: "One click, from your settings.",
   },
 ];
 

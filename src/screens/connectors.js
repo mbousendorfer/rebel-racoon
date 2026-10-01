@@ -10,15 +10,15 @@
 // connectors-modal.js) rather than an in-page view, so the same focused
 // surface is reachable from chat contexts too.
 
-import { html, raw } from "../utils.js?v=1428";
-import { navigate } from "../router.js?v=1428";
-import { renderTopbar } from "../components/topbar.js?v=1428";
-import { showToast } from "../components/toast.js?v=1428";
-import { setHandoff } from "../handoff.js?v=1428";
-import { findConnector, setConnectorStatus, subscribe as subscribeConnectors } from "../connectors-store.js?v=1428";
-import { renderGalleryBody } from "../connectors-view.js?v=1428";
-import { open as openConnectorsModal } from "../components/connectors-modal.js?v=1428";
-import { isFlagOn } from "../feature-flags.js?v=1428";
+import { html, raw } from "../utils.js?v=1429";
+import { navigate } from "../router.js?v=1429";
+import { renderTopbar } from "../components/topbar.js?v=1429";
+import { showToast } from "../components/toast.js?v=1429";
+import { setHandoff } from "../handoff.js?v=1429";
+import { findConnector, setConnectorStatus, subscribe as subscribeConnectors } from "../connectors-store.js?v=1429";
+import { renderGalleryBody } from "../connectors-view.js?v=1429";
+import { open as openConnectorsModal } from "../components/connectors-modal.js?v=1429";
+import { isFlagOn } from "../feature-flags.js?v=1429";
 
 // Local view state (search + category filter).
 let view = { query: "", category: "all" };
