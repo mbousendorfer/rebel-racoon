@@ -734,7 +734,7 @@
 
 .imst-start__name {
   color: var(--ref-color-grey-100);
-  font-size: var(--ref-font-size-lg);
+  font-size: var(--ref-font-size-sm);
   font-weight: var(--ref-font-weight-bold);
   line-height: 1.25;
 }
