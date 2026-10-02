@@ -14,7 +14,7 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1458";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1459";
 import {
   kitEnabled,
   renderColorRole,
@@ -27,19 +27,35 @@ import {
   handleKitInput,
   handleKitChange,
   kitSnapshot,
-} from "./playbook-brand-kit.js?v=1458";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1458";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1458";
-import { isFlagOn } from "./feature-flags.js?v=1458";
-import { parseHashParams } from "./url-state.js?v=1458";
-import { showToast } from "./components/toast.js?v=1458";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1458";
+} from "./playbook-brand-kit.js?v=1459";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1459";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1459";
+import { isFlagOn } from "./feature-flags.js?v=1459";
+import { parseHashParams } from "./url-state.js?v=1459";
+import {
+  networkVoicesOn,
+  baseNetwork,
+  voiceNetworks,
+  networkEntry,
+  isOverridden,
+  maturity,
+  networkLabel,
+  networkIcon,
+} from "./network-voice.js?v=1459";
+import {
+  getSuggestions,
+  accept as acceptVoiceSuggestion,
+  dismiss as dismissVoiceSuggestion,
+} from "./voice-coach-store.js?v=1459";
+import { NETWORKS } from "./social-profiles.js?v=1459";
+import { showToast } from "./components/toast.js?v=1459";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1459";
 // The Default look row offers the SAME three catalogues the Image Studio renders, from
 // the one place they are declared — REF_MODES' own header makes the argument: the label,
 // the hint and the brief clause "drift the moment they live apart". No cycle: the engine
 // imports only clip-formats / image-studio-canvas / feature-flags, and its module body
 // builds consts, so importing it here costs nothing at load.
-import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1458";
+import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1459";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -156,6 +172,7 @@ let snapshot = null; // deep copy of editable fields, for Cancel
 let editBaseline = null; // the same fields as JSON once the editor has painted — "anything changed?"
 let audienceCustom = false; // "Other…" picked in the Primary audience dropdown
 let activeVoiceLang = null; // which language the Voice & style panel is showing/editing
+let activeNetwork = null; // flag networkVoices: the network voice the Voice tab shows (null = the base)
 let loadingTimer = null;
 let loadingStage = 0;
 let phase = "ready"; // "loading" | "ready"
@@ -191,6 +208,7 @@ export function mount(target, config) {
   cfg = config;
   mountTarget = target;
   activeTab = tabFromUrl();
+  activeNetwork = parseHashParams().get("net") || null;
   editScope = null;
   snapshot = null;
   audienceCustom = false;
@@ -474,6 +492,8 @@ export function snapshotEditable(d) {
       languages: d.languages || [],
       primaryLanguage: d.primaryLanguage || "",
       voiceByLanguage: d.voiceByLanguage || {},
+      voiceBaseNetwork: d.voiceBaseNetwork || "",
+      voiceByNetwork: d.voiceByNetwork || {},
       signatureHooks: d.signatureHooks || [],
       closingPatterns: d.closingPatterns || [],
       formattingStyle: d.formattingStyle || "",
@@ -2407,6 +2427,8 @@ function renderVoiceEdit2(data) {
     `${pb2VoiceHeadline(data)}<div><span class="pb2-sub">Written as</span>${renderVoiceModeToggle(data.voiceMode)}</div>`,
     { wide: true, index: 0, icon: "ap-icon-quote" },
   );
+  if (nvOn() && data.voiceMode !== "manual" && activeNetworkFor(data) !== baseNetwork(data))
+    return pb2EditGrid("voice", nvNetworkEditBlocks(data, activeNetworkFor(data)), renderNetworkSwitcher(data));
   if (data.voiceMode === "manual")
     return pb2EditGrid("voice", [
       voice,
@@ -2451,8 +2473,16 @@ function renderVoiceEdit2(data) {
             icon: "ap-icon-ban",
           })
         : "",
+      // The base network's learned rules, editable like the rest of its voice.
+      nvOn()
+        ? pb2Block(
+            "What I've learned",
+            renderLineEditor("rules", networkEntry(data, baseNetwork(data))?.rules || [], "A rule for this network…"),
+            { wide: true, index: 6, icon: "ap-icon-user-graduate", caption: `${networkLabel(baseNetwork(data))} only` },
+          )
+        : "",
     ],
-    renderVoiceLangSwitcher(data),
+    (nvOn() ? renderNetworkSwitcher(data) : "") + renderVoiceLangSwitcher(data),
   );
 }
 
@@ -2618,7 +2648,278 @@ function renderVoiceRead2(data, learnMenu) {
         ),
       );
   }
+  if (nvOn() && data.voiceMode !== "manual") {
+    const net = activeNetworkFor(data);
+    const grid = net === baseNetwork(data) ? nvBaseBlocks(data, blocks) : nvNetworkReadBlocks(data, net, ve);
+    return `${pb2TabHead("voice", learnMenu)}${renderNetworkSwitcher(data)}${renderVoiceLangSwitcher(data)}<div class="pb2-grid">${grid.join("")}</div>`;
+  }
   return `${pb2TabHead("voice", learnMenu)}${renderVoiceLangSwitcher(data)}<div class="pb2-grid">${blocks.join("")}</div>`;
+}
+
+// ── Voice per network (flag networkVoices, Playbook 2.0 only) ────────────────
+// The tab shows ONE network voice at a time: the base (learned at creation)
+// reads exactly as before; any other network reads as the base with its own
+// differences, the rules it learned, and what Archie proposes for it. The
+// proposals are not the Playbook — they come from voice-coach-store and only an
+// Add brings one in (CONCEPTS §1, "propose beside, never write inside").
+
+function nvOn() {
+  return v2On() && networkVoicesOn();
+}
+
+function activeNetworkFor(data) {
+  const nets = voiceNetworks(data);
+  return nets.includes(activeNetwork) ? activeNetwork : baseNetwork(data);
+}
+
+// The network entry an editor writes into, created on demand.
+function nvWritableEntry(data, net) {
+  if (!data.voiceByNetwork || typeof data.voiceByNetwork !== "object") data.voiceByNetwork = {};
+  if (!data.voiceByNetwork[net]) data.voiceByNetwork[net] = { rules: [] };
+  if (!Array.isArray(data.voiceByNetwork[net].rules)) data.voiceByNetwork[net].rules = [];
+  return data.voiceByNetwork[net];
+}
+
+// Where a line editor writes: a network's own lines (and every network's
+// rules, the base's included) go to voiceByNetwork; the rest stays per language.
+function editEntry(data, field) {
+  if (nvOn()) {
+    const net = activeNetworkFor(data);
+    if (field === "rules" || net !== baseNetwork(data)) return nvWritableEntry(data, net);
+  }
+  return voiceEntry(data);
+}
+
+function renderNetworkSwitcher(data) {
+  const base = baseNetwork(data);
+  const active = activeNetworkFor(data);
+  const nets = voiceNetworks(data);
+  const missing = Object.keys(NETWORKS).filter((n) => !nets.includes(n));
+  const add =
+    canEditView() && !editScope && missing.length
+      ? `<details class="recap__panel-menu" data-recap-learn-menu>
+          <summary class="ap-button ghost grey recap__panel-menu-toggle">
+            <i class="ap-icon-plus" aria-hidden="true"></i><span>Add a network</span>
+          </summary>
+          <div class="ap-action-dropdown recap__panel-menu-pop" role="menu" aria-label="Add a network voice">
+            ${missing
+              .map(
+                (n) => `<button type="button" class="ap-action-dropdown-item" data-nv-add="${n}" role="menuitem">
+                  <i class="${networkIcon(n)}" aria-hidden="true"></i>
+                  <div class="ap-action-dropdown-item-text"><div class="ap-action-dropdown-item-label-container"><span class="ap-action-dropdown-item-label">${esc(networkLabel(n))}</span></div></div>
+                </button>`,
+              )
+              .join("")}
+          </div>
+        </details>`
+      : "";
+  return `
+    <div class="pb2-netbar" role="group" aria-label="Voice per network">
+      <div class="pb2-netbar__chips">
+        ${nets
+          .map((n) => {
+            const pending = getSuggestions(data.id, { network: n }).length;
+            return `<button type="button" class="ap-filter-chip pb2-netbar__chip" aria-pressed="${n === active}" data-nv-net="${n}">
+              <i class="${networkIcon(n)}" aria-hidden="true"></i>
+              <span>${esc(networkLabel(n))}${n === base ? " · Base" : ""}</span>
+              ${pending ? `<span class="ap-counter normal grey" title="${pending} suggested by Archie">${pending}</span>` : ""}
+            </button>`;
+          })
+          .join("")}
+      </div>
+      ${add}
+    </div>`;
+}
+
+// Archie's pending proposals for one network — Add / Not now, footer-grouped.
+function nvSuggestionsBlock(data, net, index) {
+  const list = canEditView() ? getSuggestions(data.id, { network: net }) : [];
+  if (!list.length) return "";
+  return pb2Block(
+    "Suggested by Archie",
+    `<ul class="pb2-nv-suggestions">${list
+      .map(
+        (sg) => `<li class="pb2-nv-suggestion">
+          <div class="pb2-nv-suggestion__text">
+            <p class="pb2-nv-suggestion__rule">${esc(sg.text)}</p>
+            <p class="pb2-nv-suggestion__why">${esc(sg.why || "")}</p>
+          </div>
+          <div class="pb2-nv-suggestion__actions">
+            <button type="button" class="ap-button ghost grey" data-nv-dismiss="${esc(sg.id)}">Not now</button>
+            <button type="button" class="ap-button stroked blue" data-nv-accept="${esc(sg.id)}">Add</button>
+          </div>
+        </li>`,
+      )
+      .join("")}</ul>`,
+    { wide: true, index, icon: "ap-icon-sparkles", caption: "Nothing is added without your OK" },
+  );
+}
+
+function nvRulesBlock(data, net, index) {
+  const rules = networkEntry(data, net)?.rules || [];
+  return pb2Block(
+    "What I've learned",
+    rules.length
+      ? pb2Lines(rules, "ap-icon-check")
+      : pb2Empty(
+          `Nothing yet. Rework a ${networkLabel(net)} draft or tell me what was off, and I'll suggest rules here.`,
+        ),
+    { wide: true, index, icon: "ap-icon-user-graduate", caption: `${networkLabel(net)} only` },
+  );
+}
+
+// The base network: the voice as it always read, plus its proposals and rules.
+function nvBaseBlocks(data, blocks) {
+  const net = baseNetwork(data);
+  const [voice, ...rest] = blocks;
+  const m = maturity(data, net);
+  const head = voice.replace(
+    '<h3 class="pb2-block__title">The voice</h3>',
+    `<h3 class="pb2-block__title">The voice</h3><span class="pb2-block__caption">${esc(m.detail)} Other networks start from it.</span>`,
+  );
+  return [nvSuggestionsBlock(data, net, 0), head, ...rest, nvRulesBlock(data, net, rest.length + 1)].filter(Boolean);
+}
+
+const NV_CAPTION = (data, net, field) =>
+  isOverridden(data, net, field) ? `Adapted for ${networkLabel(net)}` : `Same as ${networkLabel(baseNetwork(data))}`;
+
+function nvNetworkReadBlocks(data, net, ve) {
+  const m = maturity(data, net);
+  const e = networkEntry(data, net) || {};
+  const val = (field, baseValue) => (e[field] !== undefined ? e[field] : baseValue);
+  return [
+    pb2Block(
+      `Your ${networkLabel(net)} voice`,
+      `<p class="pb2-nv-level"><strong>${esc(m.label)}</strong> · ${esc(m.detail)}</p>
+       <p class="pb2-prose">It speaks like your ${esc(networkLabel(baseNetwork(data)))} voice, except for what's adapted below.</p>`,
+      { wide: true, index: 0, icon: networkIcon(net) },
+    ),
+    nvSuggestionsBlock(data, net, 1),
+    nvRulesBlock(data, net, 2),
+    pb2Block("Opens with", pb2Lines(val("signatureHooks", ve.signatureHooks)), {
+      index: 3,
+      caption: NV_CAPTION(data, net, "signatureHooks"),
+    }),
+    pb2Block("Closes with", pb2Lines(val("closingPatterns", ve.closingPatterns)), {
+      index: 4,
+      caption: NV_CAPTION(data, net, "closingPatterns"),
+    }),
+    pb2Block("Formatting", pb2Text(val("formattingStyle", data.formattingStyle)), {
+      index: 5,
+      caption: NV_CAPTION(data, net, "formattingStyle"),
+    }),
+    pb2Block("Emoji & casing", pb2Text(val("visualStyle", data.visualStyle)), {
+      index: 6,
+      caption: NV_CAPTION(data, net, "visualStyle"),
+    }),
+  ].filter(Boolean);
+}
+
+// Edit, on a network that isn't the base: an inherited field reads as the
+// base's value with "Adapt for X"; an adapted one is its own editor with "Use
+// the base voice" to drop the difference.
+function nvNetworkEditBlocks(data, net) {
+  const ve = voiceEntry(data);
+  const e = networkEntry(data, net) || {};
+  const label = networkLabel(net);
+  const line = (key) => LINE_FIELDS.find((f) => f.key === key)?.placeholder || "";
+  const reset = (field) =>
+    `<button type="button" class="ap-button ghost grey pb2-nv-toggle" data-nv-reset="${field}"><i class="ap-icon-close" aria-hidden="true"></i><span>Use the ${esc(networkLabel(baseNetwork(data)))} voice</span></button>`;
+  const adapt = (field) =>
+    `<button type="button" class="ap-button stroked grey pb2-nv-toggle" data-nv-adapt="${field}"><i class="ap-icon-pen" aria-hidden="true"></i><span>Adapt for ${esc(label)}</span></button>`;
+  const listField = (field, baseValue) =>
+    e[field] !== undefined
+      ? renderLineEditor(field, e[field], line(field)) + reset(field)
+      : pb2Lines(baseValue) + adapt(field);
+  const textField = (field, baseValue, placeholder) =>
+    e[field] !== undefined
+      ? `<div class="ap-textarea-field resizable"><textarea data-nv-text="${field}" rows="3" placeholder="${esc(placeholder)}">${esc(e[field] || "")}</textarea></div>${reset(field)}`
+      : pb2Text(baseValue) + adapt(field);
+  return [
+    pb2Block("What I've learned", renderLineEditor("rules", e.rules || [], `A rule for ${label}…`), {
+      wide: true,
+      index: 0,
+      icon: "ap-icon-user-graduate",
+      caption: `${label} only`,
+    }),
+    pb2Block("Opens with", listField("signatureHooks", ve.signatureHooks), {
+      index: 1,
+      caption: NV_CAPTION(data, net, "signatureHooks"),
+    }),
+    pb2Block("Closes with", listField("closingPatterns", ve.closingPatterns), {
+      index: 2,
+      caption: NV_CAPTION(data, net, "closingPatterns"),
+    }),
+    pb2Block(
+      "Formatting",
+      textField("formattingStyle", data.formattingStyle, "How posts are structured on this network…"),
+      { index: 3, caption: NV_CAPTION(data, net, "formattingStyle") },
+    ),
+    pb2Block("Emoji & casing", textField("visualStyle", data.visualStyle, "Emoji, hashtags, links on this network…"), {
+      index: 4,
+      caption: NV_CAPTION(data, net, "visualStyle"),
+    }),
+  ];
+}
+
+function setNetworkInUrl(net) {
+  const [path] = window.location.hash.slice(1).split("?");
+  const q = parseHashParams();
+  q.set("net", net);
+  history.replaceState(null, "", `#${path}?${q.toString()}`);
+}
+
+function onNetworkVoiceClick(event) {
+  if (!nvOn()) return false;
+  const data = cfg.getData();
+  if (!data) return false;
+  const pick = event.target.closest("[data-nv-net]");
+  if (pick) {
+    activeNetwork = pick.dataset.nvNet;
+    setNetworkInUrl(activeNetwork);
+    repaint();
+    return true;
+  }
+  const add = event.target.closest("[data-nv-add]");
+  if (add) {
+    add.closest("details")?.removeAttribute("open");
+    nvWritableEntry(data, add.dataset.nvAdd);
+    activeNetwork = add.dataset.nvAdd;
+    setNetworkInUrl(activeNetwork);
+    cfg.commit?.();
+    showToast(`${networkLabel(activeNetwork)} voice added — it starts from your base voice.`);
+    repaint();
+    return true;
+  }
+  const yes = event.target.closest("[data-nv-accept]");
+  if (yes) {
+    acceptVoiceSuggestion(data.id, yes.dataset.nvAccept);
+    showToast(`Added to your ${networkLabel(activeNetworkFor(data))} voice.`);
+    repaint();
+    return true;
+  }
+  const no = event.target.closest("[data-nv-dismiss]");
+  if (no) {
+    dismissVoiceSuggestion(data.id, no.dataset.nvDismiss);
+    repaint();
+    return true;
+  }
+  const adapt = event.target.closest("[data-nv-adapt]");
+  if (adapt) {
+    const field = adapt.dataset.nvAdapt;
+    const base =
+      field === "signatureHooks" || field === "closingPatterns" ? voiceEntry(data)[field] || [] : data[field] || "";
+    nvWritableEntry(data, activeNetworkFor(data))[field] = Array.isArray(base) ? base.slice() : base;
+    repaint();
+    return true;
+  }
+  const reset = event.target.closest("[data-nv-reset]");
+  if (reset) {
+    delete nvWritableEntry(data, activeNetworkFor(data))[reset.dataset.nvReset];
+    repaint();
+    return true;
+  }
+  return false;
 }
 
 const PB2_LOGO_VERSIONS = { color: "Colour", white: "White", black: "Black", icon: "Icon only" };
@@ -3089,7 +3390,7 @@ function addLine(field) {
   if (!data) return;
   // Signature hooks / closing patterns are authored per language — write into
   // the active language's voice entry, not the flat mirror.
-  const entry = voiceEntry(data);
+  const entry = editEntry(data, field);
   const list = Array.isArray(entry[field]) ? entry[field].slice() : [];
   list.push("");
   entry[field] = list;
@@ -3122,6 +3423,11 @@ const WRITE_HOOKS = [
   "[data-recap-kit-line-remove]",
   "[data-recap-kit-pair-add]",
   "[data-recap-kit-pair-remove]",
+  "[data-nv-add]",
+  "[data-nv-accept]",
+  "[data-nv-dismiss]",
+  "[data-nv-adapt]",
+  "[data-nv-reset]",
 ].join(",");
 
 // ── Edit lifecycle ───────────────────────────────────────────────────────
@@ -3157,6 +3463,12 @@ function commitEdit(data) {
       });
     });
   }
+  // Same for every network voice — its own lines and its learned rules.
+  Object.values(data.voiceByNetwork || {}).forEach((entry) => {
+    ["signatureHooks", "closingPatterns", "rules"].forEach((f) => {
+      if (Array.isArray(entry[f])) entry[f] = entry[f].filter((s) => (s || "").trim());
+    });
+  });
   // Drop roster entries left completely blank (an "Add competitor" row the
   // user opened and abandoned) and social rows with no URL. `suggested` is
   // kept: an unaccepted proposal stays pending across a Save rather than
@@ -3212,6 +3524,7 @@ function onClick(event) {
     return;
   }
   if (!canEditView() && event.target.closest(WRITE_HOOKS)) return;
+  if (onNetworkVoiceClick(event)) return;
 
   // Section-nav — scroll the panel into view (buttons, not anchors, so the
   // hash router is never triggered).
@@ -3504,7 +3817,7 @@ function onClick(event) {
   if (lineRemove) {
     const field = lineRemove.dataset.recapLineList;
     const idx = Number(lineRemove.dataset.recapLineIndex);
-    const entry = voiceEntry(data);
+    const entry = editEntry(data, field);
     if (Array.isArray(entry[field])) entry[field] = entry[field].filter((_, i) => i !== idx);
     repaint();
     return;
@@ -3700,6 +4013,9 @@ function onInput(event) {
       ensureRefTagsColors(img);
       img.colors[Number(t.dataset.recapColorIndex)] = t.value;
     }
+  } else if (t.matches("[data-nv-text]")) {
+    const e = nvWritableEntry(data, activeNetworkFor(data));
+    e[t.dataset.nvText] = t.value;
   } else if (t.matches("[data-recap-text]")) {
     data[t.dataset.recapText] = t.value;
   } else if (t.matches("[data-recap-typo]")) {
@@ -3709,7 +4025,7 @@ function onInput(event) {
     const list = t.dataset.recapLineList;
     const idx = Number(t.dataset.recapLineIndex);
     // Voice examples are per language — mutate the active language's entry.
-    const entry = voiceEntry(data);
+    const entry = editEntry(data, list);
     if (Array.isArray(entry[list]) && entry[list][idx] !== undefined) entry[list][idx] = t.value;
   } else if (t.matches("[data-recap-cta-field]")) {
     const idx = Number(t.dataset.recapCtaIndex);

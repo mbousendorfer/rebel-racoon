@@ -1,0 +1,48 @@
+/* voice-coach — the in-chat proposal card for a network voice (flag
+   networkVoices). Same chassis as .connect-card: white, grey-20 hairline, no
+   shadow; actions grouped on the right, primary last. */
+.voice-suggestion {
+  align-self: flex-start;
+  width: 100%;
+  max-width: 460px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-md);
+  background: var(--ref-color-white);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-card);
+}
+
+.voice-suggestion__head {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+}
+
+.voice-suggestion__title {
+  font-weight: var(--ref-font-weight-bold);
+}
+
+.voice-suggestion__why,
+.voice-suggestion__rule {
+  margin: 0;
+}
+
+.voice-suggestion__why {
+  font-size: var(--ref-font-size-sm);
+}
+
+.voice-suggestion__rule {
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  border-radius: var(--ref-border-radius-md);
+  background: var(--ref-color-grey-05);
+}
+
+.voice-suggestion__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--ref-spacing-xs);
+  margin-top: var(--ref-spacing-xs);
+}

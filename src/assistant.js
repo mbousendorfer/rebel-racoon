@@ -6,10 +6,10 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1458";
-import { findConnector } from "./connectors-store.js?v=1458";
-import { createSessionNotifier } from "./store-utils.js?v=1458";
-import { showToast } from "./components/toast.js?v=1458";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1459";
+import { findConnector } from "./connectors-store.js?v=1459";
+import { createSessionNotifier } from "./store-utils.js?v=1459";
+import { showToast } from "./components/toast.js?v=1459";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -616,6 +616,28 @@ export function postDraftResult(sessionId, { ideaTitle, drafts }) {
     open: true,
     createdAt: Date.now(),
   });
+  notify(sessionId);
+}
+
+// A voice proposal card (flag networkVoices, voice-coach.js). The turn holds
+// only the ids: the suggestion lives in voice-coach-store, so accepting it
+// from the Playbook's tray reads the same here.
+export function postVoiceSuggestion(sessionId, { contextId, suggestionId }) {
+  getThread(sessionId).push({
+    id: newId(),
+    role: "assistant",
+    variant: "voice-suggestion",
+    meta: "Archie",
+    contextId,
+    suggestionId,
+    status: "ready",
+    createdAt: Date.now(),
+  });
+  notify(sessionId);
+}
+
+// Re-render the thread after the card's suggestion was answered.
+export function refreshThread(sessionId) {
   notify(sessionId);
 }
 

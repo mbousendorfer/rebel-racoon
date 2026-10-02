@@ -22,17 +22,18 @@
 // chooses "Save as global". updateContext is used by the section-edit flow
 // when scope is "Update everywhere".
 
-import { contexts as seed, sharedContexts } from "./mocks.js?v=1458";
-import { isNewUser } from "./user-mode.js?v=1458";
-import { CURRENT_USER } from "./org.js?v=1458";
-import { isFlagOn } from "./feature-flags.js?v=1458";
-import { createNotifier } from "./store-utils.js?v=1458";
+import { contexts as seed, sharedContexts } from "./mocks.js?v=1459";
+import { isNewUser } from "./user-mode.js?v=1459";
+import { CURRENT_USER } from "./org.js?v=1459";
+import { isFlagOn } from "./feature-flags.js?v=1459";
+import { createNotifier } from "./store-utils.js?v=1459";
 import {
   normalizeLanguages,
   mirrorPrimaryToTopLevel,
   syncTopLevelToPrimary,
   cloneVoiceByLanguage,
-} from "./languages.js?v=1458";
+} from "./languages.js?v=1459";
+import { cloneVoiceByNetwork } from "./network-voice.js?v=1459";
 
 // Lives up here, away from normalizeBrandLogos where it belongs, because the
 // seed below calls that normalizer at module-init time — a `let` declared beside
@@ -68,6 +69,7 @@ const contexts = isNewUser()
         ...normalizeBrandLogos(c),
         ...normalizeImageDefaults(c),
         ...normalizeBrandKit(c),
+        voiceByNetwork: cloneVoiceByNetwork(c.voiceByNetwork),
       }),
     );
 const notifier = createNotifier("contexts-store");
@@ -401,6 +403,9 @@ export function addContext(ctx = {}) {
     voiceByLanguage: ctx.voiceByLanguage ? cloneVoiceByLanguage(ctx.voiceByLanguage) : undefined,
     connectedSocials: Array.isArray(ctx.connectedSocials) ? ctx.connectedSocials.slice() : [],
     selectedProfileId: ctx.selectedProfileId || null,
+    // — voice per network (flag networkVoices; see network-voice.js) —
+    voiceBaseNetwork: ctx.voiceBaseNetwork || "",
+    voiceByNetwork: cloneVoiceByNetwork(ctx.voiceByNetwork),
     imageVoice:
       ctx.imageVoice && Array.isArray(ctx.imageVoice.websites)
         ? { websites: ctx.imageVoice.websites.map((w) => ({ ...w })) }
@@ -534,6 +539,8 @@ export function updateContext(id, patch) {
     c.languages = Array.isArray(patch.languages) ? patch.languages.slice() : patch.languages;
   if (patch.primaryLanguage !== undefined) c.primaryLanguage = patch.primaryLanguage;
   if (patch.voiceByLanguage !== undefined) c.voiceByLanguage = cloneVoiceByLanguage(patch.voiceByLanguage);
+  if (patch.voiceBaseNetwork !== undefined) c.voiceBaseNetwork = patch.voiceBaseNetwork || "";
+  if (patch.voiceByNetwork !== undefined) c.voiceByNetwork = cloneVoiceByNetwork(patch.voiceByNetwork);
   // Transitional single-language patch — map onto primaryLanguage + languages.
   if (patch.language !== undefined) {
     c.language = patch.language;
@@ -600,6 +607,8 @@ export function duplicateContext(id) {
     languages: Array.isArray(src.languages) ? src.languages.slice() : undefined,
     primaryLanguage: src.primaryLanguage || undefined,
     voiceByLanguage: src.voiceByLanguage ? cloneVoiceByLanguage(src.voiceByLanguage) : undefined,
+    voiceBaseNetwork: src.voiceBaseNetwork || "",
+    voiceByNetwork: cloneVoiceByNetwork(src.voiceByNetwork),
     signatureHooks: (src.signatureHooks || []).slice(),
     closingPatterns: (src.closingPatterns || []).slice(),
     formattingStyle: src.formattingStyle || "",

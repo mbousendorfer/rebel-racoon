@@ -212,6 +212,22 @@ export const contexts = [
       "Short paragraphs, one idea each. Opens on a hook line, then 2–3 lines of context. A tight three-item list when points are parallel, prose otherwise. Generous line breaks — no walls of text. Most posts top out around 90 words.",
     visualStyle:
       "No emoji. Sentence case throughout — no ALL-CAPS shouting. Numbers as digits ('3x', '40%'). One link, dropped in the first comment, never mid-sentence.",
+    // Voice per network (flag networkVoices) — the base was learned on LinkedIn;
+    // Instagram and X only say what differs. See network-voice.js.
+    voiceBaseNetwork: "linkedin",
+    connectedSocials: ["linkedin", "instagram", "x"],
+    voiceByNetwork: {
+      instagram: {
+        visualStyle:
+          "One or two emoji, at the end of a line, never mid-sentence. Three to five hashtags in the caption's last line.",
+        closingPatterns: ["Save this for your next planning session."],
+        rules: ["Lead with the outcome in the first 125 characters — that's all the feed shows."],
+      },
+      x: {
+        formattingStyle: "One idea, one post. Under 240 characters. A thread only when there are three or more steps.",
+        rules: [],
+      },
+    },
     brandPersonality:
       "Confident without bragging, helpful without performing. Speaks the way operators talk to each other — direct, specific, occasionally dry. Never hypey.",
     brandTypography: { headingFont: "Inter", bodyFont: "Inter" },
