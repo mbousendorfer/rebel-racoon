@@ -15,30 +15,30 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, "Refine" to iterate in place, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=1441";
-import { delegate } from "../lib/delegate.js?v=1441";
-import { hashString } from "../lib/prng.js?v=1441";
-import { renderEmpty } from "../ui/empty.js?v=1441";
-import { field, preserveFocus, textInput } from "../ui/fields.js?v=1441";
-import { toast } from "../ui/toast.js?v=1441";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1441";
-import { styleThumb } from "../ui/style-thumb.js?v=1441";
-import { openDialog } from "../ui/dialog.js?v=1441";
-import { menu } from "../ui/menu.js?v=1441";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1441";
-import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1441";
-import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1441";
-import { networkById } from "../config/networks.js?v=1441";
-import { copyService, imageGenerationService } from "../services/index.js?v=1441";
-import { unbranded } from "../state/playbook-brand.js?v=1441";
-import { resolveLayers } from "../render/layout.js?v=1441";
-import { svgToDataUrl } from "../render/visual.js?v=1441";
-import { splitVisual } from "../render/split.js?v=1441";
-import { bakeDoc } from "../render/edit-export.js?v=1441";
-import { subjectKindFor } from "../render/subjects.js?v=1441";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1441";
-import { createEditor } from "./edit/editor.js?v=1441";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1441";
+import { html, raw, toString } from "../lib/html.js?v=1443";
+import { delegate } from "../lib/delegate.js?v=1443";
+import { hashString } from "../lib/prng.js?v=1443";
+import { renderEmpty } from "../ui/empty.js?v=1443";
+import { field, preserveFocus, textInput } from "../ui/fields.js?v=1443";
+import { toast } from "../ui/toast.js?v=1443";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1443";
+import { styleThumb } from "../ui/style-thumb.js?v=1443";
+import { openDialog } from "../ui/dialog.js?v=1443";
+import { menu } from "../ui/menu.js?v=1443";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1443";
+import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1443";
+import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1443";
+import { networkById } from "../config/networks.js?v=1443";
+import { copyService, imageGenerationService } from "../services/index.js?v=1443";
+import { unbranded } from "../state/playbook-brand.js?v=1443";
+import { resolveLayers } from "../render/layout.js?v=1443";
+import { svgToDataUrl } from "../render/visual.js?v=1443";
+import { splitVisual } from "../render/split.js?v=1443";
+import { bakeDoc } from "../render/edit-export.js?v=1443";
+import { subjectKindFor } from "../render/subjects.js?v=1443";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1443";
+import { createEditor } from "./edit/editor.js?v=1443";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1443";
 import {
   canEditBrand,
   forgetOneOffStyle,
@@ -49,15 +49,15 @@ import {
   getStylesForBrand,
   registerOneOffStyle,
   subscribe,
-} from "../state/store.js?v=1441";
-import { discardOneOff, oneOffStyleFrom, saveOneOffToPlaybook } from "../state/style-actions.js?v=1441";
+} from "../state/store.js?v=1443";
+import { discardOneOff, oneOffStyleFrom, saveOneOffToPlaybook } from "../state/style-actions.js?v=1443";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1441";
+} from "../state/creation-actions.js?v=1443";
 
 const variationsLabel = (n) => (n === 1 ? "1 variation" : `${n} variations`);
 
@@ -614,12 +614,20 @@ export function mountStudio(
   // passing its look on, a sentence being typed.
   const chooserArt = (brand, id) => {
     const look = lookOf(brand, state.brief);
-    if (id === "style")
-      return html`<span class="imst-chooser__fan">
-        ${quickStyles(brand)
-          .slice(0, 3)
-          .map((s) => styleThumb(s, look, { className: "imst-chooser__fan-card", seed: hashString(s.id) }))}
-      </span>`;
+    if (id === "style") {
+      const own = getStylesForBrand(brand.id).filter((s) => s.kind === "custom").length;
+      return html`<span class="ap-tag grey imst-chooser__count"
+          ><span
+            >${own
+              ? `${own} ${brand.name} style${own === 1 ? "" : "s"}`
+              : `${STYLE_PRESETS.length} ready-made styles`}</span
+          ></span
+        ><span class="imst-chooser__fan">
+          ${quickStyles(brand)
+            .slice(0, 3)
+            .map((s) => styleThumb(s, look, { className: "imst-chooser__fan-card", seed: hashString(s.id) }))}
+        </span>`;
+    }
     if (id === "image") {
       const ref = getStyle("preset-lifestyle") || quickStyles(brand)[0];
       return html`<span class="imst-chooser__pass">
@@ -630,7 +638,7 @@ export function mountStudio(
         ></span>
         <i class="ap-icon-arrow-right imst-chooser__arrow" aria-hidden="true"></i>
         <span class="imst-chooser__out"
-          >${styleThumb(ref, look, { className: "imst-chooser__pass-img", seed: 41, kind: "person" })}</span
+          >${styleThumb(ref, look, { className: "imst-chooser__pass-img", seed: 41, kind: "place" })}</span
         >
       </span>`;
     }
@@ -639,34 +647,46 @@ export function mountStudio(
         >A watercolour of a lighthouse at dusk, soft light, a quiet sea<span class="imst-chooser__caret"></span
       ></span>
       <span class="imst-chooser__badge imst-chooser__badge--spark"><i class="ap-icon-sparkles"></i></span>
+      <span class="imst-chooser__free"
+        >${[0, 1, 2].map((i) =>
+          styleThumb(null, look, {
+            className: "imst-chooser__free-img",
+            seed: i,
+            kind: ["place", "object", "person"][i],
+          }),
+        )}</span
+      >
     </span>`;
   };
 
-  const renderChooser = (brand) => html`
-    <div class="imst-chooser">
-      <div class="imst-chooser__head">
-        <h2 class="ap-h2 imst-chooser__title" id="imst-chooser-title">How do you want to start?</h2>
-        <p class="ap-body imst-chooser__lead">
-          It decides where the image's look comes from. You can change it at any time.
-        </p>
+  let chooserShown = false;
+  const renderChooser = (brand) => {
+    const entering = !chooserShown;
+    chooserShown = true;
+    return html`
+      <div class="imst-chooser${entering ? " is-entering" : ""}">
+        <div class="imst-chooser__head">
+          <h2 class="ap-h2 imst-chooser__title" id="imst-chooser-title">How do you want to start?</h2>
+          <p class="ap-body imst-chooser__lead">
+            It decides where the image's look comes from. You can change it at any time.
+          </p>
+        </div>
+        <div class="imst-chooser__grid" role="list" aria-labelledby="imst-chooser-title">
+          ${SOURCES.map(
+            (o) =>
+              html`<button type="button" class="imst-chooser__card" role="listitem" data-imst-source="${o.id}">
+                <span class="imst-chooser__art" aria-hidden="true">${chooserArt(brand, o.id)}</span>
+                <span class="imst-chooser__body">
+                  <span class="imst-chooser__name">${o.title}</span>
+                  <span class="ap-body imst-chooser__text">${o.text}</span>
+                  <span class="ap-caption imst-chooser__when">${o.when}</span>
+                </span>
+              </button>`,
+          )}
+        </div>
       </div>
-      <div class="imst-chooser__grid" role="list" aria-labelledby="imst-chooser-title">
-        ${SOURCES.map(
-          (o) =>
-            html`<button type="button" class="imst-chooser__card" role="listitem" data-imst-source="${o.id}">
-              <span class="imst-chooser__art" aria-hidden="true">${chooserArt(brand, o.id)}</span>
-              <span class="imst-chooser__body">
-                <span class="imst-chooser__name"
-                  ><i class="${o.icon}" aria-hidden="true"></i><span class="ap-subtitle">${o.title}</span></span
-                >
-                <span class="ap-body imst-chooser__text">${o.text}</span>
-                <span class="ap-caption imst-chooser__when">${o.when}</span>
-              </span>
-            </button>`,
-        )}
-      </div>
-    </div>
-  `;
+    `;
+  };
 
   // In the controls: what was chosen, in one line, and the way back to the chooser.
   const renderSource = (brand, style, styleCount) => {
