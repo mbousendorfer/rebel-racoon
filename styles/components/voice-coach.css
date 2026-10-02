@@ -99,16 +99,28 @@ i.memory-mark {
   max-width: min(560px, 100%);
 }
 
-/* Kept, in the thread: one plain line, like a "memory updated" mark — no surface. */
+/* Kept, in the thread: one line in the shape of the thread's own status pill
+   (.ap-status.mermaid — "Extracted 2 ideas"): butter, 24px tall, round, 12px
+   text — the olive sparkles where the status has its dot. */
 .memory-line {
   align-self: flex-start;
   width: fit-content;
+  max-width: 100%;
   display: inline-flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--ref-spacing-xxs) var(--ref-spacing-xs);
-  max-width: 560px;
+  gap: 4px var(--ref-spacing-xxs);
+  box-sizing: border-box;
+  min-height: 24px;
   margin: 0;
+  padding: 2px var(--ref-spacing-xxs);
+  border-radius: 24px;
+  background: var(--app-butter);
   color: var(--ref-color-grey-100);
-  font-size: var(--ref-font-size-sm);
+  font-size: var(--ref-font-size-xs);
+}
+
+.memory-line > i.memory-mark {
+  width: 12px;
+  height: 12px;
 }
