@@ -389,6 +389,7 @@ Codifiée dans `tokens.css` (_« orange = primary/AI, blue = selected/info, red 
 
 - **Exemple le plus net** — [`connectors-view.js`](../../src/connectors-view.js) : action AI « Try » = `ap-button primary orange`, action routine « Connect » = `ap-button primary blue`, côte à côte.
 - **Orange (AI / generate / commit)** : Send composer, Batch/Clip studio Generate, Regenerate, Save recap, Generate-image, add-source Import/Add-URL/Add-text, welcome « Save and continue », Image Studio « Use this image », tuiles icône AI (`--ref-color-orange-10` + glyphe orange).
+- **Mermaid (mémoire)** : ce qu'Archie **retient** — les règles des voix réseau (flag `networkVoices`). Primitive `.memory-note` (`voice-coach.css`) : à retenir = filet dégradé mermaid sur blanc, retenu = fond `mermaid-10` ; glyphe `ap-icon-sparkles-mermaid` peint du dégradé (`i.memory-mark`). Réservé à la mémoire : ne pas s'en servir comme teinte « IA » générique.
 - **Bleu (routine / navigation / picker submit)** : Connect, « Create a Playbook », Ideas new, playbook Start, bulk-extract, top-post CTAs, **tous les submits Quickpicker**.
 - **Conversation navy** (`--app-convo-navy*`) : override l'electric-blue pour les accents du **thread** (bulle user, label « You », pill Ideas, chips source-intake, halos hover).
 

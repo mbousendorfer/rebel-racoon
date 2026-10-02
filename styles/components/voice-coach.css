@@ -1,46 +1,108 @@
-/* voice-coach — the in-chat proposal card for a network voice (flag
-   networkVoices). Same chassis as .connect-card: white, grey-20 hairline, no
-   shadow; actions grouped on the right, primary last. */
-.voice-suggestion {
-  align-self: flex-start;
-  width: 100%;
-  max-width: 460px;
+/* voice-coach — the visual language of what Archie REMEMBERS (flag
+   networkVoices). One primitive, .memory-note, used everywhere a voice rule
+   appears: the chat card, the coaching answer, the Playbook's tray and its
+   "What I've learned" list.
+
+   Memory owns the DS's mermaid family, which nothing else in the app paints
+   any more (orange = AI action, butter = work in progress, navy = the
+   conversation). Two states, read at a glance:
+     pending — white, a 1px mermaid-gradient hairline: Archie proposes, nothing
+               is kept yet.
+     kept    — the mermaid-10 wash, no hairline: it is in the voice.
+   The gradient glyph is the DS's own sparkles-mermaid mask, painted with the
+   gradient token. Ink stays grey-100; no shadow, no edge bar, no capitals. */
+
+.memory-note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ref-spacing-sm);
   box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-md);
-  background: var(--ref-color-white);
-  border: 1px solid var(--ref-color-grey-20);
+  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
   border-radius: var(--app-radius-card);
+  color: var(--ref-color-grey-100);
 }
 
-.voice-suggestion__head {
+.memory-note--pending {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--ref-color-white), var(--ref-color-white)) padding-box,
+    var(--ref-color-mermaid-gradient-background) border-box;
+}
+
+.memory-note--kept {
+  border: 1px solid transparent;
+  background: var(--ref-color-mermaid-10);
+}
+
+/* The memory mark — the sparkles-mermaid mask, which paints its background:
+   give it the gradient instead of ink. `i.` outranks the DS base rule and a
+   host's own icon colour (the Playbook block heads). */
+i.memory-mark {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  background: var(--ref-color-mermaid-gradient-background);
+}
+
+.memory-note > i.memory-mark {
+  margin-top: 2px;
+}
+
+.memory-note__body {
   display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
+  flex: 1;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  min-width: 0;
 }
 
-.voice-suggestion__title {
-  font-weight: var(--ref-font-weight-bold);
-}
-
-.voice-suggestion__why,
-.voice-suggestion__rule {
+.memory-note__text {
   margin: 0;
+  font-weight: var(--ref-font-weight-bold);
+  line-height: 1.45;
 }
 
-.voice-suggestion__why {
+.memory-note__meta {
+  margin: 0;
   font-size: var(--ref-font-size-sm);
 }
 
-.voice-suggestion__rule {
-  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
-  border-radius: var(--ref-border-radius-md);
-  background: var(--ref-color-grey-05);
+.memory-note__actions {
+  display: flex;
+  flex-shrink: 0;
+  align-self: center;
+  gap: var(--ref-spacing-xs);
 }
 
-.voice-suggestion__actions {
+.memory-notes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* In the thread — the note IS the turn, at the width of the other cards. */
+.memory-note--turn {
+  align-self: flex-start;
+  width: 100%;
+  max-width: 460px;
+  padding: var(--ref-spacing-md);
+}
+
+.memory-note--turn .memory-note__text {
+  font-size: var(--ref-font-size-md);
+}
+
+.memory-note__ask {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  margin: 0;
+}
+
+.memory-note__turn-actions {
   display: flex;
   justify-content: flex-end;
   gap: var(--ref-spacing-xs);
