@@ -16,9 +16,9 @@
 // flyout sheets these panel sections replaced. They dress the panel now. See
 // settings-view.js for the full note.
 
-import { escapeHtml } from "../../utils.js?v=1462";
-import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=1462";
-import * as imageStudio from "../../image-studio.js?v=1462";
+import { escapeHtml } from "../../utils.js?v=1463";
+import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=1463";
+import * as imageStudio from "../../image-studio.js?v=1463";
 
 // The two provenances a reference image can have. Shared by the group labels and
 // the collapsed header so the section can only ever call them the same thing.
