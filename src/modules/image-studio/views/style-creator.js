@@ -8,24 +8,24 @@
 // user's request, 2026-10-02: a new style keeps the essentials.) A test run
 // on three neutral subjects before saving. Saved FOR the active Playbook.
 
-import { html, toString } from "../lib/html.js?v=1490";
-import { delegate } from "../lib/delegate.js?v=1490";
-import { getPath } from "../../../router.js?v=1490";
-import { setTopbarActions } from "../../../components/topbar.js?v=1490";
-import { hashString, randomSeed } from "../lib/prng.js?v=1490";
-import { renderFrame } from "./frame.js?v=1490";
-import { renderEmpty } from "../ui/empty.js?v=1490";
-import { field, preserveFocus, textArea, textInput } from "../ui/fields.js?v=1490";
-import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1490";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1490";
-import { toast } from "../ui/toast.js?v=1490";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1490";
-import { CUSTOM_STYLE_LIMITS, STYLE_TEST_SUBJECTS, presetById } from "../config/style-presets.js?v=1490";
-import { createStyle } from "../model/schema.js?v=1490";
-import { copyService, imageGenerationService } from "../services/index.js?v=1490";
-import { lookFromColors } from "../render/visual.js?v=1490";
-import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1490";
-import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1490";
+import { html, toString } from "../lib/html.js?v=1491";
+import { delegate } from "../lib/delegate.js?v=1491";
+import { getPath } from "../../../router.js?v=1491";
+import { setTopbarActions } from "../../../components/topbar.js?v=1491";
+import { hashString, randomSeed } from "../lib/prng.js?v=1491";
+import { renderFrame } from "./frame.js?v=1491";
+import { renderEmpty } from "../ui/empty.js?v=1491";
+import { field, preserveFocus, textInput } from "../ui/fields.js?v=1491";
+import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1491";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1491";
+import { toast } from "../ui/toast.js?v=1491";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=1491";
+import { CUSTOM_STYLE_LIMITS, STYLE_TEST_SUBJECTS, presetById } from "../config/style-presets.js?v=1491";
+import { createStyle } from "../model/schema.js?v=1491";
+import { copyService, imageGenerationService } from "../services/index.js?v=1491";
+import { lookFromColors } from "../render/visual.js?v=1491";
+import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1491";
+import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1491";
 
 function draftFrom(style, brandId) {
   if (style) {
@@ -208,25 +208,39 @@ export function mount(target, params, ctx, { embed = null } = {}) {
       })}
     </section>`;
     const refs = html` <section class="${card}" aria-labelledby="imst-src-images">
-        <h2 class="ap-body-bold" id="imst-src-images">Reference images</h2>
-        ${images.length < CUSTOM_STYLE_LIMITS.images
-          ? dropzone({
-              id: "refs",
-              icon: "ap-icon-image",
-              title: state.uploading ? "Adding…" : "Drop images here or",
-              sub: `2 to ${CUSTOM_STYLE_LIMITS.images} images that share the look you want · ${images.length} added`,
-              compact: true,
-            })
-          : ""}
+        <div class="ap-form-field">
+          <label id="imst-src-images">Reference images</label>
+          ${images.length < CUSTOM_STYLE_LIMITS.images
+            ? dropzone({
+                id: "refs",
+                icon: "ap-icon-image",
+                title: state.uploading ? "Adding…" : "Drop images here or",
+                sub: `2 to ${CUSTOM_STYLE_LIMITS.images} images that share the look you want · ${images.length} added`,
+                compact: true,
+              })
+            : ""}
+        </div>
         ${images.length
           ? html`<ul class="imst-sources">
               ${images.map(([s, i]) => renderSource(s, i))}
             </ul>`
           : ""}
       </section>
-      <section class="${card}" aria-labelledby="imst-st-prompt-label">
-        <header class="imst-section__head">
-          <label class="ap-body-bold" id="imst-st-prompt-label" for="imst-st-prompt">Style prompt</label>
+      <section class="${card}">
+        <!-- The DS textarea field: its label inside it; Generate sits under the box. -->
+        <div class="ap-textarea-field resizable">
+          <label for="imst-st-prompt">Style prompt</label>
+          <textarea
+            id="imst-st-prompt"
+            data-imst-field="stylePrompt"
+            rows="4"
+            placeholder="Generate the prompt from your images, then edit it if you like."
+            ${state.promptBusy ? "disabled" : ""}
+          >
+${d.stylePrompt}</textarea
+          >
+        </div>
+        <div class="imst-creator__actions">
           <button
             type="button"
             class="ap-button ghost blue${state.promptBusy ? " loading" : ""}"
@@ -239,18 +253,10 @@ export function mount(target, params, ctx, { embed = null } = {}) {
                 ? "Reading your images…"
                 : d.stylePrompt
                   ? "Generate again"
-                  : "Generate the prompt"}</span
+                  : "Generate the prompt from the images"}</span
             >
           </button>
-        </header>
-        ${textArea({
-          path: "stylePrompt",
-          id: "imst-st-prompt",
-          value: d.stylePrompt,
-          rows: 4,
-          placeholder: "Generate the prompt from your images, then edit it if you like.",
-          disabled: state.promptBusy,
-        })}
+        </div>
       </section>`;
     target.innerHTML = toString(
       page(html`

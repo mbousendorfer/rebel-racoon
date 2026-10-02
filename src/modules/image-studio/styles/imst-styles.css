@@ -337,8 +337,6 @@ button.imst-style-card {
   margin: 0;
 }
 
-/* One label weight for the dialog's three groups (images, prompt, name). */
-.imst-creator__group .imst-field > label {
-  font-weight: var(--ref-font-weight-bold);
-  color: var(--ref-color-grey-100);
+.imst-creator__actions {
+  display: flex;
 }
