@@ -15,30 +15,30 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, "Refine" to iterate in place, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=1469";
-import { delegate } from "../lib/delegate.js?v=1469";
-import { hashString } from "../lib/prng.js?v=1469";
-import { renderEmpty } from "../ui/empty.js?v=1469";
-import { preserveFocus } from "../ui/fields.js?v=1469";
-import { toast } from "../ui/toast.js?v=1469";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1469";
-import { styleThumb } from "../ui/style-thumb.js?v=1469";
-import { openDialog } from "../ui/dialog.js?v=1469";
-import { menu } from "../ui/menu.js?v=1469";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1469";
-import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1469";
-import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1469";
-import { networkById } from "../config/networks.js?v=1469";
-import { copyService, imageGenerationService } from "../services/index.js?v=1469";
-import { unbranded } from "../state/playbook-brand.js?v=1469";
-import { resolveLayers } from "../render/layout.js?v=1469";
-import { svgToDataUrl } from "../render/visual.js?v=1469";
-import { splitVisual } from "../render/split.js?v=1469";
-import { bakeDoc } from "../render/edit-export.js?v=1469";
-import { subjectKindFor } from "../render/subjects.js?v=1469";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1469";
-import { createEditor } from "./edit/editor.js?v=1469";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1469";
+import { html, raw, toString } from "../lib/html.js?v=1470";
+import { delegate } from "../lib/delegate.js?v=1470";
+import { hashString } from "../lib/prng.js?v=1470";
+import { renderEmpty } from "../ui/empty.js?v=1470";
+import { preserveFocus } from "../ui/fields.js?v=1470";
+import { toast } from "../ui/toast.js?v=1470";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1470";
+import { styleThumb } from "../ui/style-thumb.js?v=1470";
+import { openDialog } from "../ui/dialog.js?v=1470";
+import { menu } from "../ui/menu.js?v=1470";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1470";
+import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1470";
+import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1470";
+import { networkById } from "../config/networks.js?v=1470";
+import { copyService, imageGenerationService } from "../services/index.js?v=1470";
+import { unbranded } from "../state/playbook-brand.js?v=1470";
+import { resolveLayers } from "../render/layout.js?v=1470";
+import { svgToDataUrl } from "../render/visual.js?v=1470";
+import { splitVisual } from "../render/split.js?v=1470";
+import { bakeDoc } from "../render/edit-export.js?v=1470";
+import { subjectKindFor } from "../render/subjects.js?v=1470";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1470";
+import { createEditor } from "./edit/editor.js?v=1470";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1470";
 import {
   forgetOneOffStyle,
   getBrand,
@@ -48,15 +48,15 @@ import {
   getStylesForBrand,
   registerOneOffStyle,
   subscribe,
-} from "../state/store.js?v=1469";
-import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1469";
+} from "../state/store.js?v=1470";
+import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1470";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1469";
+} from "../state/creation-actions.js?v=1470";
 
 const variationsLabel = (n) => (n === 1 ? "1 variation" : `${n} variations`);
 
@@ -698,8 +698,8 @@ export function mountStudio(
     const nets = shapes().map((x) => x.networks.join(","));
     const sharedNets = nets.every((n) => n === nets[0]) ? shapes()[0]?.networks : null;
     const styleCount = getStylesForBrand(brand.id).length || STYLE_PRESETS.length;
-    // "A style" needs no description: the post is the brief, and the text on
-    // the image takes its place at the top. The other two start from the words.
+    // A style and An image need no description: the post is the brief, and the
+    // text on the image takes its place. From scratch is the words alone.
     const describeSection = html` <section class="imst-ctl">
       <label class="imst-ctl__label ap-body-bold" for="imst-prompt">Describe the image</label>
       <div class="imst-composer${state.error ? " has-error" : ""}">
@@ -820,11 +820,7 @@ ${b.prompt}</textarea
       <aside class="imst-controls" aria-label="Image settings">
         <div class="imst-controls__scroll">
           ${renderSource(brand, style, styleCount)}
-          ${state.source === "style"
-            ? html`${textSection}${shapeSection}`
-            : state.source === "scratch"
-              ? html`${describeSection}${shapeSection}`
-              : html`${describeSection}${shapeSection}${textSection}`}
+          ${state.source === "scratch" ? html`${describeSection}${shapeSection}` : html`${textSection}${shapeSection}`}
           <section class="imst-ctl" aria-labelledby="imst-ctl-count">
             <header class="imst-ctl__head imst-ctl__head--control">
               <h3 class="imst-ctl__label ap-body-bold" id="imst-ctl-count">Variations</h3>
@@ -901,7 +897,7 @@ ${b.prompt}</textarea
               ? `From your words alone, in ${brand.name}'s colours.`
               : `A preview of ${style.oneOff ? "your image's style" : style.label} in ${brand.name}'s colours.`}</span
           >
-          ${state.source === "style" ? "Generate: I'll draw from the post" : "Describe what you want and generate"} —
+          ${state.source === "scratch" ? "Describe what you want and generate" : "Generate: I'll draw from the post"} —
           you'll get ${b.count === 1 ? "one image" : `${b.count} variations to pick from`}.
         </p>
       </div>
@@ -1296,7 +1292,7 @@ ${b.prompt}</textarea
 
   async function generate() {
     const brand = brandNow();
-    if (state.source !== "style" && !state.brief.prompt.trim()) {
+    if (state.source === "scratch" && !state.brief.prompt.trim()) {
       state.error = "Describe the image first.";
       paint();
       target.querySelector("#imst-prompt")?.focus();
@@ -1308,14 +1304,12 @@ ${b.prompt}</textarea
       paint();
       return;
     }
-    // "A style" has no description field: what the image shows comes from the post.
+    // A style / An image have no description field: what the image shows comes
+    // from the post. From scratch is the words alone: no text on the image.
     const brief =
-      state.source === "style"
-        ? { ...state.brief, prompt: state.brief.headline || String(draft.text || "").slice(0, 240) }
-        : state.source === "scratch"
-          ? // From scratch is the words alone: no text is laid on the image.
-            { ...state.brief, headline: "", textMode: "layer" }
-          : { ...state.brief };
+      state.source === "scratch"
+        ? { ...state.brief, headline: "", textMode: "layer" }
+        : { ...state.brief, prompt: state.brief.headline || String(draft.text || "").slice(0, 240) };
     const req = request(brand, brief);
     const creation = startCreation({ brand, brief, style: req.style });
     state.creationId = creation.id;

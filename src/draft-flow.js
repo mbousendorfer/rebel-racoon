@@ -14,13 +14,13 @@
 //   3. Creates one draft post per channel via posts-store.js.
 //   4. Posts a structured "Drafted N posts" result turn.
 
-import { postAssistantChoice, startPending, finishPending, postDraftResult } from "./assistant.js?v=1469";
-import { getIdeas } from "./library.js?v=1469";
-import { anglesByIdea } from "./mocks.js?v=1469";
-import { addPostDraft } from "./posts-store.js?v=1469";
-import { showToast } from "./components/toast.js?v=1469";
-import { networkMeta } from "./social-profiles.js?v=1469";
-import { coachAfterDraft } from "./voice-coach.js?v=1469";
+import { postAssistantChoice, startPending, finishPending, postDraftResult } from "./assistant.js?v=1470";
+import { getIdeas } from "./library.js?v=1470";
+import { anglesByIdea } from "./mocks.js?v=1470";
+import { addPostDraft } from "./posts-store.js?v=1470";
+import { showToast } from "./components/toast.js?v=1470";
+import { networkMeta } from "./social-profiles.js?v=1470";
+import { coachAfterDraft } from "./voice-coach.js?v=1470";
 
 // Simulated "generating drafts" delay shared by every draft flow.
 const DRAFT_DELAY_MS = 6000;
