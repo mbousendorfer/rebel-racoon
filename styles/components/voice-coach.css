@@ -1,47 +1,42 @@
 /* voice-coach — the visual language of what Archie REMEMBERS (flag
    networkVoices). One primitive, .memory-note, used everywhere a voice rule
-   appears: the chat card, the coaching answer, the Playbook's tray and its
-   "What I've learned" list.
+   appears: the chat card, the Playbook's tray and its "What I've learned"
+   list; kept in the thread, it shrinks to one line (.memory-line).
 
-   Memory owns the DS's mermaid family, which nothing else in the app paints
-   any more (orange = AI action, butter = work in progress, navy = the
-   conversation). Two states, read at a glance:
-     pending — white, a 1px mermaid-gradient hairline: Archie proposes, nothing
-               is kept yet.
-     kept    — the mermaid-10 wash, no hairline: it is in the voice.
-   The gradient glyph is the DS's own sparkles-mermaid mask, painted with the
-   gradient token. Ink stays grey-100; no shadow, no edge bar, no capitals. */
+   Memory speaks Archie's own colour, butter (tokens.css — the in-conversation
+   status pills already wear it). Two states, read at a glance:
+     pending — white, a 1px olive hairline: Archie proposes, nothing is kept.
+     kept    — the butter wash, no hairline: it is in the voice.
+   The mark is the DS sparkles glyph in olive. Ink stays grey-100; no shadow,
+   no edge bar, no capitals. */
 
 .memory-note {
   display: flex;
   align-items: flex-start;
-  gap: var(--ref-spacing-sm);
+  gap: var(--ref-spacing-xs);
   box-sizing: border-box;
-  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
-  border-radius: var(--app-radius-card);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  border-radius: var(--ref-border-radius-md);
   color: var(--ref-color-grey-100);
 }
 
 .memory-note--pending {
-  border: 1px solid transparent;
-  background:
-    linear-gradient(var(--ref-color-white), var(--ref-color-white)) padding-box,
-    var(--ref-color-mermaid-gradient-background) border-box;
+  border: 1px solid var(--app-butter-accent);
+  background: var(--ref-color-white);
 }
 
 .memory-note--kept {
   border: 1px solid transparent;
-  background: var(--ref-color-mermaid-10);
+  background: var(--app-butter);
 }
 
-/* The memory mark — the sparkles-mermaid mask, which paints its background:
-   give it the gradient instead of ink. `i.` outranks the DS base rule and a
-   host's own icon colour (the Playbook block heads). */
+/* The memory mark — the sparkles mask paints currentColor: olive. `i.`
+   outranks a host's own icon colour (the Playbook block heads). */
 i.memory-mark {
   flex-shrink: 0;
   width: 16px;
   height: 16px;
-  background: var(--ref-color-mermaid-gradient-background);
+  color: var(--app-butter-accent);
 }
 
 .memory-note > i.memory-mark {
@@ -52,14 +47,13 @@ i.memory-mark {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: var(--ref-spacing-xxs);
+  gap: 2px;
   min-width: 0;
 }
 
 .memory-note__text {
   margin: 0;
   font-weight: var(--ref-font-weight-bold);
-  line-height: 1.45;
 }
 
 .memory-note__meta {
@@ -67,44 +61,54 @@ i.memory-mark {
   font-size: var(--ref-font-size-sm);
 }
 
+.memory-note__meta > i {
+  width: 12px;
+  height: 12px;
+  vertical-align: -1px;
+}
+
 .memory-note__actions {
   display: flex;
   flex-shrink: 0;
   align-self: center;
-  gap: var(--ref-spacing-xs);
+  gap: var(--ref-spacing-xxs);
 }
 
 .memory-notes {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xs);
+  gap: var(--ref-spacing-xxs);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-/* In the thread — the note IS the turn, at the width of the other cards. */
+/* The thread stretches every turn to its width: this wrapper takes the
+   stretch, so the note inside can hug its content. */
+.memory-turn {
+  display: flex;
+}
+
+/* In the thread — hugs its content, never wider than the other cards. */
 .memory-note--turn {
   align-self: flex-start;
-  width: 100%;
-  max-width: 460px;
-  padding: var(--ref-spacing-md);
+  width: max-content;
+  max-width: min(560px, 100%);
 }
 
-.memory-note--turn .memory-note__text {
-  font-size: var(--ref-font-size-md);
-}
-
-.memory-note__ask {
-  display: flex;
+/* Kept, in the thread: one line, like a "memory updated" mark — a pill, not a card. */
+.memory-line {
+  align-self: flex-start;
+  width: fit-content;
+  display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--ref-spacing-xxs);
+  gap: var(--ref-spacing-xxs) var(--ref-spacing-xs);
+  max-width: 560px;
   margin: 0;
-}
-
-.memory-note__turn-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--ref-spacing-xs);
-  margin-top: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-sm);
+  border-radius: var(--ref-border-radius-md);
+  background: var(--app-butter);
+  color: var(--ref-color-grey-100);
+  font-size: var(--ref-font-size-sm);
 }
