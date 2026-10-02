@@ -695,7 +695,7 @@
 .imst-start__mini {
   position: relative;
   flex: none;
-  width: calc(var(--ref-spacing-xxxl) * 2);
+  width: calc(var(--ref-spacing-xxxl) * 1.4);
   aspect-ratio: 16 / 10;
   overflow: hidden;
   border-radius: var(--ref-border-radius-md);
@@ -709,13 +709,13 @@
   width: calc(var(--ref-spacing-xxxl) * 5.4);
   border-bottom: 0;
   /* Cropped in on the subject: the card's margins fall outside the thumbnail. */
-  transform: translate(-50%, -50%) scale(0.52);
+  transform: translate(-50%, -50%) scale(0.364);
   pointer-events: none;
 }
 
 /* The sentence is wider than the fan: it needs the whole width to stay a field. */
 .imst-start__mini-art:has(.imst-chooser__words) {
-  transform: translate(-50%, -50%) scale(0.4);
+  transform: translate(-50%, -50%) scale(0.28);
 }
 
 .imst-start__mini-art .ap-tag,
