@@ -15,30 +15,30 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, "Refine" to iterate in place, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=1445";
-import { delegate } from "../lib/delegate.js?v=1445";
-import { hashString } from "../lib/prng.js?v=1445";
-import { renderEmpty } from "../ui/empty.js?v=1445";
-import { field, preserveFocus, textInput } from "../ui/fields.js?v=1445";
-import { toast } from "../ui/toast.js?v=1445";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1445";
-import { styleThumb } from "../ui/style-thumb.js?v=1445";
-import { openDialog } from "../ui/dialog.js?v=1445";
-import { menu } from "../ui/menu.js?v=1445";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1445";
-import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1445";
-import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1445";
-import { networkById } from "../config/networks.js?v=1445";
-import { copyService, imageGenerationService } from "../services/index.js?v=1445";
-import { unbranded } from "../state/playbook-brand.js?v=1445";
-import { resolveLayers } from "../render/layout.js?v=1445";
-import { svgToDataUrl } from "../render/visual.js?v=1445";
-import { splitVisual } from "../render/split.js?v=1445";
-import { bakeDoc } from "../render/edit-export.js?v=1445";
-import { subjectKindFor } from "../render/subjects.js?v=1445";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1445";
-import { createEditor } from "./edit/editor.js?v=1445";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1445";
+import { html, raw, toString } from "../lib/html.js?v=1446";
+import { delegate } from "../lib/delegate.js?v=1446";
+import { hashString } from "../lib/prng.js?v=1446";
+import { renderEmpty } from "../ui/empty.js?v=1446";
+import { field, preserveFocus, textInput } from "../ui/fields.js?v=1446";
+import { toast } from "../ui/toast.js?v=1446";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1446";
+import { styleThumb } from "../ui/style-thumb.js?v=1446";
+import { openDialog } from "../ui/dialog.js?v=1446";
+import { menu } from "../ui/menu.js?v=1446";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1446";
+import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1446";
+import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1446";
+import { networkById } from "../config/networks.js?v=1446";
+import { copyService, imageGenerationService } from "../services/index.js?v=1446";
+import { unbranded } from "../state/playbook-brand.js?v=1446";
+import { resolveLayers } from "../render/layout.js?v=1446";
+import { svgToDataUrl } from "../render/visual.js?v=1446";
+import { splitVisual } from "../render/split.js?v=1446";
+import { bakeDoc } from "../render/edit-export.js?v=1446";
+import { subjectKindFor } from "../render/subjects.js?v=1446";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1446";
+import { createEditor } from "./edit/editor.js?v=1446";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1446";
 import {
   canEditBrand,
   forgetOneOffStyle,
@@ -49,15 +49,15 @@ import {
   getStylesForBrand,
   registerOneOffStyle,
   subscribe,
-} from "../state/store.js?v=1445";
-import { discardOneOff, oneOffStyleFrom, saveOneOffToPlaybook } from "../state/style-actions.js?v=1445";
+} from "../state/store.js?v=1446";
+import { discardOneOff, oneOffStyleFrom, saveOneOffToPlaybook } from "../state/style-actions.js?v=1446";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1445";
+} from "../state/creation-actions.js?v=1446";
 
 const variationsLabel = (n) => (n === 1 ? "1 variation" : `${n} variations`);
 
@@ -603,16 +603,24 @@ export function mountStudio(
               ? html`<span class="ap-form-message error" role="alert">${state.sourceError}</span>`
               : ""}`,
         );
+      // The picture itself, in the slot it was dropped in: it still takes a drop,
+      // and Replace sits on it — the upload stays where it was.
       return section(
-        html`<button type="button" class="ap-link" data-imst-action="style-from-image">Replace</button>`,
-        html`<p class="ap-caption imst-start__note">
-          Its colours and look, for this image
-          only.${canEditBrand(brand.id)
-            ? html` <button type="button" class="ap-link" data-imst-action="save-oneoff">
-                Save as a Playbook style
-              </button>`
-            : ""}
-        </p>`,
+        "",
+        html`<div class="imst-start__image" data-imst-style-drop>
+          ${assetImg(state.oneOff.custom.sources[0].ref, { className: "imst-thumb imst-start__image-img" })}
+          <div class="imst-start__image-text">
+            <span class="ap-caption">Its look, for this image only.</span>
+            ${canEditBrand(brand.id)
+              ? html`<button type="button" class="ap-link" data-imst-action="save-oneoff">
+                  Save as a Playbook style
+                </button>`
+              : ""}
+          </div>
+          <button type="button" class="ap-button stroked blue" data-imst-action="style-from-image">
+            <i class="ap-icon-upload" aria-hidden="true"></i><span>Replace</span>
+          </button>
+        </div>`,
       );
     }
     return "";

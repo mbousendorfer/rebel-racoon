@@ -764,6 +764,49 @@
   font-size: var(--ref-font-size-xl);
 }
 
+/* "Your image", once read: the picture in its slot, still a drop target. */
+.imst-start__image {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-xs);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-card);
+  background: var(--ref-color-white);
+  transition: border-color 0.15s ease;
+}
+
+.imst-start__image.is-dragover {
+  border-color: var(--ref-color-electric-blue-100);
+  background: var(--ref-color-electric-blue-05);
+}
+
+.imst-start__image-img {
+  flex: none;
+  width: calc(var(--ref-spacing-xxxl) * 1.2);
+  aspect-ratio: 1;
+  border-radius: var(--ref-border-radius-md);
+  object-fit: cover;
+}
+
+.imst-start__image-text {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xxs);
+  min-width: 0;
+  color: var(--ref-color-grey-80);
+}
+
+.imst-start__image-text .ap-link {
+  text-align: left;
+}
+
+.imst-start__image > .ap-button {
+  flex: none;
+}
+
 /* Shape: one track, each option drawn to scale */
 .imst-seg {
   display: flex;
