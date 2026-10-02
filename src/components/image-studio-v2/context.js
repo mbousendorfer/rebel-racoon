@@ -10,7 +10,7 @@
 // gone; the strings stayed because nothing outside this module reads their value —
 // KEY only has to be stable, and MODAL_ID only has to be unique among modals.
 
-import * as imageStudio from "../../image-studio.js?v=1495";
+import * as imageStudio from "../../image-studio.js?v=1497";
 
 export const MODAL_ID = "imageStudioV2";
 export const KEY = "studio-v2";

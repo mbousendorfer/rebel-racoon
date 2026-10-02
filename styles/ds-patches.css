@@ -352,6 +352,11 @@ button.ap-link {
   font-size: var(--sys-text-style-caption-size);
   color: var(--ref-color-grey-80);
 }
+/* Filled — a grey ground at rest, so the zone reads as a zone even among white
+ * fields (the style creator). Hover / drag still turn it blue. */
+.ap-dropzone--filled {
+  background: var(--ref-color-grey-05);
+}
 /* Disabled — full (the style creator at its 6 images): still there, still
  * saying why, but grey and inert. Never hidden: the limit stays readable. */
 .ap-dropzone[aria-disabled="true"] {

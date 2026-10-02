@@ -8,24 +8,24 @@
 // user's request, 2026-10-02: a new style keeps the essentials.) A test run
 // on three neutral subjects before saving. Saved FOR the active Playbook.
 
-import { html, toString } from "../lib/html.js?v=1495";
-import { delegate } from "../lib/delegate.js?v=1495";
-import { getPath } from "../../../router.js?v=1495";
-import { setTopbarActions } from "../../../components/topbar.js?v=1495";
-import { hashString, randomSeed } from "../lib/prng.js?v=1495";
-import { renderFrame } from "./frame.js?v=1495";
-import { renderEmpty } from "../ui/empty.js?v=1495";
-import { field, preserveFocus, textInput } from "../ui/fields.js?v=1495";
-import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1495";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1495";
-import { toast } from "../ui/toast.js?v=1495";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1495";
-import { CUSTOM_STYLE_LIMITS, STYLE_TEST_SUBJECTS, presetById } from "../config/style-presets.js?v=1495";
-import { createStyle } from "../model/schema.js?v=1495";
-import { copyService, imageGenerationService } from "../services/index.js?v=1495";
-import { lookFromColors } from "../render/visual.js?v=1495";
-import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1495";
-import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1495";
+import { html, toString } from "../lib/html.js?v=1497";
+import { delegate } from "../lib/delegate.js?v=1497";
+import { getPath } from "../../../router.js?v=1497";
+import { setTopbarActions } from "../../../components/topbar.js?v=1497";
+import { hashString, randomSeed } from "../lib/prng.js?v=1497";
+import { renderFrame } from "./frame.js?v=1497";
+import { renderEmpty } from "../ui/empty.js?v=1497";
+import { field, preserveFocus, textInput } from "../ui/fields.js?v=1497";
+import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1497";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1497";
+import { toast } from "../ui/toast.js?v=1497";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=1497";
+import { CUSTOM_STYLE_LIMITS, STYLE_TEST_SUBJECTS, presetById } from "../config/style-presets.js?v=1497";
+import { createStyle } from "../model/schema.js?v=1497";
+import { copyService, imageGenerationService } from "../services/index.js?v=1497";
+import { lookFromColors } from "../render/visual.js?v=1497";
+import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1497";
+import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1497";
 
 function draftFrom(style, brandId) {
   if (style) {
@@ -219,6 +219,7 @@ export function mount(target, params, ctx, { embed = null } = {}) {
                 ? `${CUSTOM_STYLE_LIMITS.images} images added, the most a style takes — remove one to add another`
                 : `2 to ${CUSTOM_STYLE_LIMITS.images} images that share the look you want · ${images.length} added`,
             compact: true,
+            filled: true,
             // Full, the zone stays and says so: disabled, never hidden.
             disabled: images.length >= CUSTOM_STYLE_LIMITS.images,
           })}

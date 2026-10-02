@@ -15,31 +15,31 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=1495";
-import { delegate } from "../lib/delegate.js?v=1495";
-import { hashString } from "../lib/prng.js?v=1495";
-import { renderEmpty } from "../ui/empty.js?v=1495";
-import { preserveFocus } from "../ui/fields.js?v=1495";
-import { toast } from "../ui/toast.js?v=1495";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1495";
-import { styleThumb } from "../ui/style-thumb.js?v=1495";
-import { openDialog } from "../ui/dialog.js?v=1495";
-import { menu } from "../ui/menu.js?v=1495";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1495";
-import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1495";
-import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1495";
-import { networkById } from "../config/networks.js?v=1495";
-import { copyService, imageGenerationService } from "../services/index.js?v=1495";
-import { unbranded } from "../state/playbook-brand.js?v=1495";
-import { resolveLayers } from "../render/layout.js?v=1495";
-import { svgToDataUrl } from "../render/visual.js?v=1495";
-import { splitVisual } from "../render/split.js?v=1495";
-import { bakeDoc } from "../render/edit-export.js?v=1495";
-import { subjectKindFor } from "../render/subjects.js?v=1495";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1495";
-import { createEditor } from "./edit/editor.js?v=1495";
-import { mount as mountStyleCreator } from "./style-creator.js?v=1495";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1495";
+import { html, raw, toString } from "../lib/html.js?v=1497";
+import { delegate } from "../lib/delegate.js?v=1497";
+import { hashString } from "../lib/prng.js?v=1497";
+import { renderEmpty } from "../ui/empty.js?v=1497";
+import { preserveFocus } from "../ui/fields.js?v=1497";
+import { toast } from "../ui/toast.js?v=1497";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1497";
+import { styleThumb } from "../ui/style-thumb.js?v=1497";
+import { openDialog } from "../ui/dialog.js?v=1497";
+import { menu } from "../ui/menu.js?v=1497";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1497";
+import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1497";
+import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1497";
+import { networkById } from "../config/networks.js?v=1497";
+import { copyService, imageGenerationService } from "../services/index.js?v=1497";
+import { unbranded } from "../state/playbook-brand.js?v=1497";
+import { resolveLayers } from "../render/layout.js?v=1497";
+import { svgToDataUrl } from "../render/visual.js?v=1497";
+import { splitVisual } from "../render/split.js?v=1497";
+import { bakeDoc } from "../render/edit-export.js?v=1497";
+import { subjectKindFor } from "../render/subjects.js?v=1497";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1497";
+import { createEditor } from "./edit/editor.js?v=1497";
+import { mount as mountStyleCreator } from "./style-creator.js?v=1497";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1497";
 import {
   canEditBrand,
   forgetOneOffStyle,
@@ -50,15 +50,15 @@ import {
   getStylesForBrand,
   registerOneOffStyle,
   subscribe,
-} from "../state/store.js?v=1495";
-import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1495";
+} from "../state/store.js?v=1497";
+import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1497";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1495";
+} from "../state/creation-actions.js?v=1497";
 
 const variationsLabel = (n) => (n === 1 ? "1 variation" : `${n} variations`);
 
@@ -488,7 +488,7 @@ export function mountStudio(
     target.addEventListener("scroll", placeNewStyle, true);
     window.addEventListener("resize", placeNewStyle);
     paint();
-    creatorPanel.querySelector("[data-imst-dropzone]")?.focus();
+    creatorPanel.querySelector("[data-imst-stylepop-close]")?.focus({ preventScroll: true });
   }
   function closeNewStyle() {
     creatorOff?.();
