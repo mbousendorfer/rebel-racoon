@@ -8,23 +8,23 @@
 // user's request, 2026-10-02: a new style keeps the essentials.) A test run
 // on three neutral subjects before saving. Saved FOR the active Playbook.
 
-import { html, toString } from "../lib/html.js?v=1479";
-import { delegate } from "../lib/delegate.js?v=1479";
-import { getPath } from "../../../router.js?v=1479";
-import { setTopbarActions } from "../../../components/topbar.js?v=1479";
-import { hashString, randomSeed } from "../lib/prng.js?v=1479";
-import { renderFrame } from "./frame.js?v=1479";
-import { renderEmpty } from "../ui/empty.js?v=1479";
-import { field, preserveFocus, slider, syncSlider, textArea, textInput } from "../ui/fields.js?v=1479";
-import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1479";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1479";
-import { toast } from "../ui/toast.js?v=1479";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1479";
-import { CUSTOM_STYLE_LIMITS, STYLE_TEST_SUBJECTS } from "../config/style-presets.js?v=1479";
-import { createStyle } from "../model/schema.js?v=1479";
-import { imageGenerationService } from "../services/index.js?v=1479";
-import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1479";
-import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1479";
+import { html, toString } from "../lib/html.js?v=1481";
+import { delegate } from "../lib/delegate.js?v=1481";
+import { getPath } from "../../../router.js?v=1481";
+import { setTopbarActions } from "../../../components/topbar.js?v=1481";
+import { hashString, randomSeed } from "../lib/prng.js?v=1481";
+import { renderFrame } from "./frame.js?v=1481";
+import { renderEmpty } from "../ui/empty.js?v=1481";
+import { field, preserveFocus, slider, syncSlider, textArea, textInput } from "../ui/fields.js?v=1481";
+import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1481";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1481";
+import { toast } from "../ui/toast.js?v=1481";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=1481";
+import { CUSTOM_STYLE_LIMITS, STYLE_TEST_SUBJECTS } from "../config/style-presets.js?v=1481";
+import { createStyle } from "../model/schema.js?v=1481";
+import { imageGenerationService } from "../services/index.js?v=1481";
+import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1481";
+import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1481";
 
 function draftFrom(style, brandId) {
   if (style) {
@@ -222,17 +222,6 @@ export function mount(target, params, ctx, { dialog = null } = {}) {
         }),
       })}
       ${field({
-        label: "Description",
-        id: "imst-st-desc",
-        hint: "Optional — shown under the name in the style picker.",
-        control: textInput({
-          path: "description",
-          id: "imst-st-desc",
-          value: d.description,
-          placeholder: "e.g. Warm window light over wood",
-        }),
-      })}
-      ${field({
         label: "Style prompt",
         id: "imst-st-prompt",
         hint: "Optional. Added to every image in this style.",
@@ -396,7 +385,7 @@ export function mount(target, params, ctx, { dialog = null } = {}) {
       } else state.draft[path] = el.value;
     }),
     delegate(target, "change", "[data-imst-field]", (_e, el) => {
-      if (el.dataset.imstField !== "label" && el.dataset.imstField !== "description") markStale();
+      if (el.dataset.imstField !== "label") markStale();
     }),
     delegate(target, "click", "[data-imst-action]", (_e, el) => {
       const action = el.dataset.imstAction;
