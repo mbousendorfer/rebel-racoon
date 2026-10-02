@@ -5,8 +5,8 @@
 
    Memory speaks Archie's own colour, butter (tokens.css — the in-conversation
    status pills already wear it). Two states, read at a glance:
-     pending — white, a 1px olive hairline: Archie proposes, nothing is kept.
-     kept    — the butter wash, no hairline: it is in the voice.
+     pending — the butter wash: Archie proposes, it asks for your attention.
+     kept    — plain text, the olive mark only: it is simply part of the voice.
    The mark is the DS sparkles glyph in olive. Ink stays grey-100; no shadow,
    no edge bar, no capitals. */
 
@@ -21,13 +21,16 @@
 }
 
 .memory-note--pending {
-  border: 1px solid var(--app-butter-accent);
-  background: var(--ref-color-white);
+  background: var(--app-butter);
 }
 
+/* Kept: no surface — the rule reads as ordinary text beside its mark. */
 .memory-note--kept {
-  border: 1px solid transparent;
-  background: var(--app-butter);
+  padding-inline: 0;
+}
+
+.memory-note--kept .memory-note__text {
+  font-weight: var(--ref-font-weight-regular);
 }
 
 /* The memory mark — the sparkles mask paints currentColor: olive. `i.`
@@ -96,7 +99,7 @@ i.memory-mark {
   max-width: min(560px, 100%);
 }
 
-/* Kept, in the thread: one line, like a "memory updated" mark — a pill, not a card. */
+/* Kept, in the thread: one plain line, like a "memory updated" mark — no surface. */
 .memory-line {
   align-self: flex-start;
   width: fit-content;
@@ -106,9 +109,6 @@ i.memory-mark {
   gap: var(--ref-spacing-xxs) var(--ref-spacing-xs);
   max-width: 560px;
   margin: 0;
-  padding: var(--ref-spacing-xxs) var(--ref-spacing-sm);
-  border-radius: var(--ref-border-radius-md);
-  background: var(--app-butter);
   color: var(--ref-color-grey-100);
   font-size: var(--ref-font-size-sm);
 }
