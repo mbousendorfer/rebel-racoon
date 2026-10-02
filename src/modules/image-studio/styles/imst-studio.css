@@ -283,19 +283,17 @@
   font-size: var(--ref-font-size-xs);
 }
 
-/* Start from: one question, three DS radio cards; the open answer's controls
- * sit right under its card, indented to the card's text. */
-.imst-start {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxs);
+/* Start from: the segmented control, the line saying what the pick does, then
+ * the pick's own controls. */
+.imst-start__hint {
+  margin: calc(var(--ref-spacing-xxs) * -1) 0 0;
+  color: var(--ref-color-grey-80);
 }
 
 .imst-start__body {
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xxs);
-  padding: var(--ref-spacing-xxs) 0 var(--ref-spacing-xs);
 }
 
 .imst-start__foot {

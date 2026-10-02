@@ -15,30 +15,30 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, "Refine" to iterate in place, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=1436";
-import { delegate } from "../lib/delegate.js?v=1436";
-import { hashString } from "../lib/prng.js?v=1436";
-import { renderEmpty } from "../ui/empty.js?v=1436";
-import { field, preserveFocus, textInput } from "../ui/fields.js?v=1436";
-import { toast } from "../ui/toast.js?v=1436";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1436";
-import { styleThumb } from "../ui/style-thumb.js?v=1436";
-import { openDialog } from "../ui/dialog.js?v=1436";
-import { menu } from "../ui/menu.js?v=1436";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1436";
-import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1436";
-import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1436";
-import { networkById } from "../config/networks.js?v=1436";
-import { copyService, imageGenerationService } from "../services/index.js?v=1436";
-import { unbranded } from "../state/playbook-brand.js?v=1436";
-import { resolveLayers } from "../render/layout.js?v=1436";
-import { svgToDataUrl } from "../render/visual.js?v=1436";
-import { splitVisual } from "../render/split.js?v=1436";
-import { bakeDoc } from "../render/edit-export.js?v=1436";
-import { subjectKindFor } from "../render/subjects.js?v=1436";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1436";
-import { createEditor } from "./edit/editor.js?v=1436";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1436";
+import { html, raw, toString } from "../lib/html.js?v=1437";
+import { delegate } from "../lib/delegate.js?v=1437";
+import { hashString } from "../lib/prng.js?v=1437";
+import { renderEmpty } from "../ui/empty.js?v=1437";
+import { field, preserveFocus, textInput } from "../ui/fields.js?v=1437";
+import { toast } from "../ui/toast.js?v=1437";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1437";
+import { styleThumb } from "../ui/style-thumb.js?v=1437";
+import { openDialog } from "../ui/dialog.js?v=1437";
+import { menu } from "../ui/menu.js?v=1437";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1437";
+import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1437";
+import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1437";
+import { networkById } from "../config/networks.js?v=1437";
+import { copyService, imageGenerationService } from "../services/index.js?v=1437";
+import { unbranded } from "../state/playbook-brand.js?v=1437";
+import { resolveLayers } from "../render/layout.js?v=1437";
+import { svgToDataUrl } from "../render/visual.js?v=1437";
+import { splitVisual } from "../render/split.js?v=1437";
+import { bakeDoc } from "../render/edit-export.js?v=1437";
+import { subjectKindFor } from "../render/subjects.js?v=1437";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1437";
+import { createEditor } from "./edit/editor.js?v=1437";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1437";
 import {
   canEditBrand,
   forgetOneOffStyle,
@@ -49,15 +49,15 @@ import {
   getStylesForBrand,
   registerOneOffStyle,
   subscribe,
-} from "../state/store.js?v=1436";
-import { discardOneOff, oneOffStyleFrom, saveOneOffToPlaybook } from "../state/style-actions.js?v=1436";
+} from "../state/store.js?v=1437";
+import { discardOneOff, oneOffStyleFrom, saveOneOffToPlaybook } from "../state/style-actions.js?v=1437";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1436";
+} from "../state/creation-actions.js?v=1437";
 
 const variationsLabel = (n) => (n === 1 ? "1 variation" : `${n} variations`);
 
@@ -510,16 +510,21 @@ export function mountStudio(
     {
       id: "style",
       icon: "ap-icon-bookmark",
-      title: "A style",
-      text: "Keeps every image consistent with the Playbook.",
+      title: "Style",
+      text: "A style keeps every image consistent with the Playbook.",
     },
     {
       id: "image",
       icon: "ap-icon-image",
-      title: "An image",
-      text: "Upload a picture you like: its look, for this image only.",
+      title: "Image",
+      text: "The look of a picture you upload, for this image only.",
     },
-    { id: "scratch", icon: "ap-icon-pen", title: "From scratch", text: "Your words alone, with no style applied." },
+    {
+      id: "scratch",
+      icon: "ap-icon-pen",
+      title: "Scratch",
+      text: "Your words alone, no style — name a medium, a light or a mood to steer it.",
+    },
   ];
 
   const styleTile = (brand, s) =>
@@ -594,40 +599,40 @@ export function mountStudio(
         </div>
       </div>`;
     }
-    return html`<div class="imst-start__body">
-      <p class="ap-caption imst-start__note">
-        I'll follow your description alone — name a medium, a light or a mood to steer it.
-      </p>
-    </div>`;
+    return "";
   };
 
-  const renderSource = (brand, style, styleCount) => html`
-    <section class="imst-ctl" aria-labelledby="imst-ctl-source">
-      <h3 class="imst-ctl__label ap-body-bold" id="imst-ctl-source">Start from</h3>
-      <div class="imst-start" role="radiogroup" aria-labelledby="imst-ctl-source">
-        ${SOURCES.map(
-          (o) =>
-            html`<label class="ap-radio-card card imst-start__card">
-                <input
-                  type="radio"
-                  name="imst-source"
-                  value="${o.id}"
-                  data-imst-source
-                  ${o.id === state.source ? "checked" : ""}
-                />
-                <div>
-                  <span class="ap-radio-card-header"
-                    ><i class="${o.icon}" aria-hidden="true"></i
-                    ><span class="ap-radio-card-title">${o.title}</span></span
-                  >
-                  <span>${o.text}</span>
-                </div>
-              </label>
-              ${o.id === state.source ? sourceBody(brand, style, styleCount) : ""}`,
-        )}
-      </div>
-    </section>
-  `;
+  // One question, three answers, one picked: the DS segmented control (port in
+  // ds-patches.css). The line under it says what the picked answer does; its
+  // controls follow.
+  const renderSource = (brand, style, styleCount) => {
+    const picked = SOURCES.find((o) => o.id === state.source);
+    return html`
+      <section class="imst-ctl" aria-labelledby="imst-ctl-source">
+        <h3 class="imst-ctl__label ap-body-bold" id="imst-ctl-source">Start from</h3>
+        <div class="ap-segmented-control imst-start__seg" role="radiogroup" aria-labelledby="imst-ctl-source">
+          ${SOURCES.map(
+            (o) =>
+              html`<button
+                type="button"
+                class="ap-segmented-control__segment${o.id === state.source
+                  ? " ap-segmented-control__segment--selected"
+                  : ""}"
+                role="radio"
+                aria-checked="${o.id === state.source}"
+                aria-describedby="${o.id === state.source ? "imst-start-hint" : ""}"
+                data-imst-source="${o.id}"
+              >
+                <i class="${o.icon}" aria-hidden="true"></i>
+                <span class="ap-segmented-control__label">${o.title}</span>
+              </button>`,
+          )}
+        </div>
+        <p class="ap-caption imst-start__hint" id="imst-start-hint">${picked.text}</p>
+        ${sourceBody(brand, style, styleCount)}
+      </section>
+    `;
+  };
 
   const renderControls = (brand) => {
     const b = state.brief;
@@ -1617,8 +1622,9 @@ ${b.prompt}</textarea
       el.classList.remove("is-dragover");
       if (event.dataTransfer?.files?.length) styleFromImages(event.dataTransfer.files);
     }),
-    delegate(target, "change", "[data-imst-source]", (_e, el) => {
-      state.source = el.value;
+    delegate(target, "click", "[data-imst-source]", (_e, el) => {
+      if (el.dataset.imstSource === state.source) return;
+      state.source = el.dataset.imstSource;
       state.sourceError = "";
       setStyle(
         state.source === "style" ? state.lastStyleId : state.source === "image" ? state.oneOff?.id || null : null,

@@ -115,7 +115,7 @@ Each of these was argued and several were reverted; read its section before touc
 - **[One article, three hosts](docs/reference/DECISIONS.md#one-article-three-hosts)** — `topic-article.js` is the single renderer (feed pane, picker dialog, in-chat dialog); `topic-card.js` emits two shapes, no third.
 - **[The master–detail: the list shrinks](docs/reference/DECISIONS.md#the-masterdetail-the-list-shrinks)** — the article pane is the fixed half, the list absorbs the rest, split measured by a `@container` query, never a media query.
 - **[Two verbs, and only two](docs/reference/DECISIONS.md#two-verbs-and-only-two)** — Use in chat (marks Used, attaches as a Source) and Ignore (asks why, reversible, the reason is kept). The composer's picker is the one inline exception.
-- **[The DS ports live in ds-patches.css](docs/reference/DECISIONS.md#the-ds-ports-live-in-ds-patchescss)** — `.ap-filter-dropdown` (and `.ap-segmented-control`, for the Image Generator's Variations only) are transcriptions of Angular-only DS components; their token substitutions are commented and wait for the DS to publish the real names.
+- **[The DS ports live in ds-patches.css](docs/reference/DECISIONS.md#the-ds-ports-live-in-ds-patchescss)** — `.ap-filter-dropdown` (and `.ap-segmented-control`, for the Image Generator's Variations and Start from only) are transcriptions of Angular-only DS components; their token substitutions are commented and wait for the DS to publish the real names.
 
 ### Routing & screen lifecycle
 
