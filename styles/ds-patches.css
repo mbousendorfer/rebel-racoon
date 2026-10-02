@@ -352,6 +352,27 @@ button.ap-link {
   font-size: var(--sys-text-style-caption-size);
   color: var(--ref-color-grey-80);
 }
+/* Disabled — full (the style creator at its 6 images): still there, still
+ * saying why, but grey and inert. Never hidden: the limit stays readable. */
+.ap-dropzone[aria-disabled="true"] {
+  cursor: not-allowed;
+  background: var(--ref-color-grey-05);
+  transform: none;
+}
+.ap-dropzone[aria-disabled="true"]:hover,
+.ap-dropzone[aria-disabled="true"]:focus-visible {
+  border-color: var(--ref-color-grey-20);
+  background: var(--ref-color-grey-05);
+}
+.ap-dropzone[aria-disabled="true"] .ap-dropzone__icon {
+  background: var(--ref-color-grey-10);
+  color: var(--ref-color-grey-60);
+}
+.ap-dropzone[aria-disabled="true"] .ap-dropzone__title,
+.ap-dropzone[aria-disabled="true"] .ap-dropzone__browse,
+.ap-dropzone[aria-disabled="true"] .ap-dropzone__sub {
+  color: var(--ref-color-grey-60);
+}
 /* Compact — tight spaces, e.g. the bug-report box beside the screenshot. */
 .ap-dropzone--compact {
   padding: var(--ref-spacing-md);

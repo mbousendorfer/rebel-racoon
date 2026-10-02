@@ -12,9 +12,9 @@
 //           layers with nothing (or a text) selected. The text and the logo are
 //           never redrawn: that is what having layers buys.
 
-import { html } from "../../lib/html.js?v=1493";
-import { IMAGE_PRESETS } from "../../config/edit.js?v=1493";
-import { LAYER_ICONS, isBase, layerName } from "../../state/edit-doc.js?v=1493";
+import { html } from "../../lib/html.js?v=1495";
+import { IMAGE_PRESETS } from "../../config/edit.js?v=1495";
+import { LAYER_ICONS, isBase, layerName } from "../../state/edit-doc.js?v=1495";
 
 // ── Tool palette (left) ─────────────────────────────────────────────────────
 

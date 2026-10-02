@@ -20,12 +20,12 @@
 // (it has its own sizing and is the container the overlays measure against) and
 // the busy / slide-badge overlays.
 
-import { escapeHtml } from "../../utils.js?v=1493";
-import { FORMATS, NETWORK_FORMATS } from "../../clip-formats.js?v=1493";
-import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=1493";
-import { KEY } from "./context.js?v=1493";
-import { outlineMetrics, shadowMetrics, cssFamily } from "../../image-studio-canvas.js?v=1493";
-import * as imageStudio from "../../image-studio.js?v=1493";
+import { escapeHtml } from "../../utils.js?v=1495";
+import { FORMATS, NETWORK_FORMATS } from "../../clip-formats.js?v=1495";
+import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=1495";
+import { KEY } from "./context.js?v=1495";
+import { outlineMetrics, shadowMetrics, cssFamily } from "../../image-studio-canvas.js?v=1495";
+import * as imageStudio from "../../image-studio.js?v=1495";
 
 // The working image is clipped inside .isv2-frame-clip while the frame itself is
 // overflow:visible, so on-element toolbars / popovers / handles can extend past
