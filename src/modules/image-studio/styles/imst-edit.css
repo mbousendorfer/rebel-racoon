@@ -248,3 +248,17 @@
 .imst-editbar__what {
   color: var(--ref-color-grey-80);
 }
+
+/* Edit's stage on the same work plane as Generate's canvas: grey-05, dotted.
+   The composer's dock rests on it, so it stays clear. */
+.imst-edit {
+  background-color: var(--ref-color-grey-05);
+  background-image: radial-gradient(var(--ref-color-grey-20) 1px, transparent 1px);
+  background-size: var(--ref-spacing-sm) var(--ref-spacing-sm);
+}
+
+.imst-edit .isv2-main-col,
+.imst-edit .isv2-stage,
+.imst-edit .isv2-dock {
+  background: transparent;
+}
