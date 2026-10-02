@@ -8,24 +8,24 @@
 // user's request, 2026-10-02: a new style keeps the essentials.) A test run
 // on three neutral subjects before saving. Saved FOR the active Playbook.
 
-import { html, toString } from "../lib/html.js?v=1484";
-import { delegate } from "../lib/delegate.js?v=1484";
-import { getPath } from "../../../router.js?v=1484";
-import { setTopbarActions } from "../../../components/topbar.js?v=1484";
-import { hashString, randomSeed } from "../lib/prng.js?v=1484";
-import { renderFrame } from "./frame.js?v=1484";
-import { renderEmpty } from "../ui/empty.js?v=1484";
-import { field, preserveFocus, textArea, textInput } from "../ui/fields.js?v=1484";
-import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1484";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1484";
-import { toast } from "../ui/toast.js?v=1484";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1484";
-import { CUSTOM_STYLE_LIMITS, STYLE_TEST_SUBJECTS, presetById } from "../config/style-presets.js?v=1484";
-import { createStyle } from "../model/schema.js?v=1484";
-import { copyService, imageGenerationService } from "../services/index.js?v=1484";
-import { lookFromColors } from "../render/visual.js?v=1484";
-import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1484";
-import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1484";
+import { html, toString } from "../lib/html.js?v=1486";
+import { delegate } from "../lib/delegate.js?v=1486";
+import { getPath } from "../../../router.js?v=1486";
+import { setTopbarActions } from "../../../components/topbar.js?v=1486";
+import { hashString, randomSeed } from "../lib/prng.js?v=1486";
+import { renderFrame } from "./frame.js?v=1486";
+import { renderEmpty } from "../ui/empty.js?v=1486";
+import { field, preserveFocus, textArea, textInput } from "../ui/fields.js?v=1486";
+import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1486";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1486";
+import { toast } from "../ui/toast.js?v=1486";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=1486";
+import { CUSTOM_STYLE_LIMITS, STYLE_TEST_SUBJECTS, presetById } from "../config/style-presets.js?v=1486";
+import { createStyle } from "../model/schema.js?v=1486";
+import { copyService, imageGenerationService } from "../services/index.js?v=1486";
+import { lookFromColors } from "../render/visual.js?v=1486";
+import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1486";
+import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1486";
 
 function draftFrom(style, brandId) {
   if (style) {
@@ -51,11 +51,12 @@ function draftFrom(style, brandId) {
 }
 
 /**
- * `dialog`: the same creator inside a dialog (the studio's "New style"): no page
- * frame or heading (the dialog's title says it), the actions in `dialog.footer`,
+ * `embed`: the same creator inside the studio (its "New style", in the settings
+ * column): no page frame, heading or test run (the studio's canvas previews the
+ * style instead, through `embed.onDraft(style, imageCount)`), the actions in `embed.footer`,
  * and `onSaved(style)` / `onCancel()` instead of going back to the fiche.
  */
-export function mount(target, params, ctx, { dialog = null } = {}) {
+export function mount(target, params, ctx, { embed = null } = {}) {
   // The Playbook is in the URL: a style belongs to one, and is edited in its colours.
   const found = params.styleId ? getStyle(params.styleId) : null;
   const editing = found && found.brandId === params.id ? found : null;
@@ -190,11 +191,11 @@ export function mount(target, params, ctx, { dialog = null } = {}) {
     const restore = preserveFocus(target);
     const d = state.draft;
     const images = d.sources.map((s, i) => [s, i]).filter(([s]) => s.type === "image");
-    const page = (body) => (dialog ? body : renderFrame({ body }));
-    // On the page, each group is a card; in the studio's dialog the dialog is
+    const page = (body) => (embed ? body : renderFrame({ body }));
+    // On the page, each group is a card; in the studio's column the groups are
     // already the surface, so the groups are plain stacks — and the images come
     // first, since they are what makes the style.
-    const card = dialog ? "imst-creator__group" : "ap-card imst-creator__card";
+    const card = embed ? "imst-creator__group" : "ap-card imst-creator__card";
     const identity = html` <section class="${card}">
       ${field({
         label: "Name",
@@ -254,7 +255,7 @@ export function mount(target, params, ctx, { dialog = null } = {}) {
       </section>`;
     target.innerHTML = toString(
       page(html`
-        ${dialog
+        ${embed
           ? ""
           : html`<header class="imst-creator__head">
               <h1 class="ap-h2">${editing ? `Edit ${editing.label}` : "New style"}</h1>
@@ -262,9 +263,9 @@ export function mount(target, params, ctx, { dialog = null } = {}) {
                 Part of ${brand.playbookName}'s brand. It comes first whenever an image is made for this Playbook.
               </p>
             </header>`}
-        <div class="imst-creator${dialog ? " imst-creator--dialog" : ""}">
-          <div class="imst-creator__form">${dialog ? html`${refs}${identity}` : html`${identity}${refs}`}</div>
-          ${dialog ? "" : renderPreview()}
+        <div class="imst-creator${embed ? " imst-creator--embed" : ""}">
+          <div class="imst-creator__form">${embed ? html`${refs}${identity}` : html`${identity}${refs}`}</div>
+          ${embed ? "" : renderPreview()}
         </div>
         ${state.errors.length
           ? html`<div class="ap-infobox error" role="alert">
@@ -278,6 +279,7 @@ export function mount(target, params, ctx, { dialog = null } = {}) {
     );
     hydrateAssets(target);
     restore();
+    embed?.onDraft?.(previewStyle(), images.length);
   };
 
   const markStale = () => {
@@ -340,26 +342,26 @@ export function mount(target, params, ctx, { dialog = null } = {}) {
     }
     const saved = saveStyle(state.draft);
     toast(editing ? `${saved.label} updated.` : `${saved.label} added to ${brand.playbookName}.`);
-    if (dialog) dialog.onSaved(saved);
+    if (embed) embed.onSaved(saved);
     else ctx.navigate(fiche);
   }
 
   paint();
   // The page's actions live in the topbar, right side (DS: the header carries them).
-  const topbar = dialog ? dialog.footer : document.getElementById("topbar");
-  const actions = html`<div class="${dialog ? "ap-dialog-footer-right" : "imst-topbar-actions"}">
-    <button type="button" class="ap-button ghost grey" data-imst-creator="cancel">Cancel</button>
+  const topbar = embed ? embed.footer : document.getElementById("topbar");
+  const buttons = html`<button type="button" class="ap-button ghost grey" data-imst-creator="cancel">Cancel</button>
     <button type="button" class="ap-button primary blue" data-imst-creator="save">
       ${editing ? "Save changes" : "Save style"}
-    </button>
-  </div>`;
-  if (brand && dialog) dialog.footer.innerHTML = toString(actions);
+    </button>`;
+  // In the studio, the buttons go straight into its footer (already right-grouped).
+  const actions = embed ? buttons : html`<div class="imst-topbar-actions">${buttons}</div>`;
+  if (brand && embed) embed.footer.innerHTML = toString(actions);
   else if (brand) setTopbarActions(getPath(), toString(actions));
   const offs = [
     topbar
       ? delegate(topbar, "click", "[data-imst-creator]", (_e, el) => {
           if (el.dataset.imstCreator === "save") save();
-          else if (dialog) dialog.onCancel();
+          else if (embed) embed.onCancel();
           else ctx.navigate(fiche);
         })
       : () => {},
@@ -406,6 +408,6 @@ export function mount(target, params, ctx, { dialog = null } = {}) {
     alive = false;
     state.abort?.abort();
     offs.forEach((off) => off());
-    if (!dialog) setTopbarActions(null);
+    if (!embed) setTopbarActions(null);
   };
 }

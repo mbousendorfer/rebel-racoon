@@ -200,13 +200,13 @@ button.imst-style-card {
   color: var(--ref-color-grey-80);
 }
 
-/* The reference images, under the drop zone: a row of tiles, six at most. */
+/* The reference images, under the drop zone: tiles, three a row (six at most). */
 .imst-sources {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--ref-spacing-xxs);
 }
 
@@ -317,13 +317,13 @@ button.imst-style-card {
   flex-shrink: 0;
 }
 
-/* In the studio's dialog: the form alone, no test run beside it, and no card
- * inside the dialog — the groups are plain stacks, set apart by space. */
-.imst-creator--dialog {
+/* In the studio's column: the form alone, no test run beside it, and no card
+ * inside the column — the groups are plain stacks, set apart by space. */
+.imst-creator--embed {
   grid-template-columns: minmax(0, 1fr);
 }
 
-.imst-creator--dialog .imst-creator__form {
+.imst-creator--embed .imst-creator__form {
   gap: var(--ref-spacing-lg);
 }
 

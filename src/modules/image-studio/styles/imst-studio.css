@@ -875,9 +875,31 @@
   color: var(--ref-color-grey-100);
 }
 
-/* The creator in its dialog: the page's two columns, without the page. */
-.imst-newstyle {
-  padding: var(--ref-spacing-xxxs);
+/* "New style" in the settings column: a way back, a title, then the creator. */
+.imst-newstyle__head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.imst-newstyle__back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  margin-bottom: var(--ref-spacing-xxs);
+}
+
+.imst-newstyle__title {
+  margin: 0;
+  color: var(--ref-color-grey-100);
+  font-size: var(--ref-font-size-lg);
+  font-weight: var(--ref-font-weight-bold);
+}
+
+.imst-newstyle__head .ap-caption {
+  margin: 0;
+  color: var(--ref-color-grey-80);
 }
 
 /* Shape: one track, each option drawn to scale */
