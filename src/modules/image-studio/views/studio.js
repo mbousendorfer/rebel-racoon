@@ -15,31 +15,31 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=1499";
-import { delegate } from "../lib/delegate.js?v=1499";
-import { hashString } from "../lib/prng.js?v=1499";
-import { renderEmpty } from "../ui/empty.js?v=1499";
-import { preserveFocus } from "../ui/fields.js?v=1499";
-import { toast } from "../ui/toast.js?v=1499";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1499";
-import { styleThumb } from "../ui/style-thumb.js?v=1499";
-import { openDialog } from "../ui/dialog.js?v=1499";
-import { menu } from "../ui/menu.js?v=1499";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1499";
-import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1499";
-import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1499";
-import { networkById } from "../config/networks.js?v=1499";
-import { copyService, imageGenerationService } from "../services/index.js?v=1499";
-import { unbranded } from "../state/playbook-brand.js?v=1499";
-import { resolveLayers } from "../render/layout.js?v=1499";
-import { svgToDataUrl } from "../render/visual.js?v=1499";
-import { splitVisual } from "../render/split.js?v=1499";
-import { bakeDoc } from "../render/edit-export.js?v=1499";
-import { subjectKindFor } from "../render/subjects.js?v=1499";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1499";
-import { createEditor } from "./edit/editor.js?v=1499";
-import { mount as mountStyleCreator } from "./style-creator.js?v=1499";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1499";
+import { html, raw, toString } from "../lib/html.js?v=1502";
+import { delegate } from "../lib/delegate.js?v=1502";
+import { hashString } from "../lib/prng.js?v=1502";
+import { renderEmpty } from "../ui/empty.js?v=1502";
+import { preserveFocus } from "../ui/fields.js?v=1502";
+import { toast } from "../ui/toast.js?v=1502";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1502";
+import { styleThumb } from "../ui/style-thumb.js?v=1502";
+import { openDialog } from "../ui/dialog.js?v=1502";
+import { menu } from "../ui/menu.js?v=1502";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1502";
+import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1502";
+import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1502";
+import { networkById } from "../config/networks.js?v=1502";
+import { copyService, imageGenerationService } from "../services/index.js?v=1502";
+import { unbranded } from "../state/playbook-brand.js?v=1502";
+import { resolveLayers } from "../render/layout.js?v=1502";
+import { svgToDataUrl } from "../render/visual.js?v=1502";
+import { splitVisual } from "../render/split.js?v=1502";
+import { bakeDoc } from "../render/edit-export.js?v=1502";
+import { subjectKindFor } from "../render/subjects.js?v=1502";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1502";
+import { createEditor } from "./edit/editor.js?v=1502";
+import { mount as mountStyleCreator } from "./style-creator.js?v=1502";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1502";
 import {
   canEditBrand,
   forgetOneOffStyle,
@@ -50,15 +50,15 @@ import {
   getStylesForBrand,
   registerOneOffStyle,
   subscribe,
-} from "../state/store.js?v=1499";
-import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1499";
+} from "../state/store.js?v=1502";
+import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1502";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1499";
+} from "../state/creation-actions.js?v=1502";
 
 const variationsLabel = (n) => (n === 1 ? "1 variation" : `${n} variations`);
 
@@ -347,35 +347,11 @@ export function mountStudio(
   });
 
   // Generate | Edit — the Image Studio's two peer modes, as DS tabs in the header.
+  // No Generate | Edit tabs any more (2026-10-02): Generate → Edit is the Edit
+  // button on the image itself; Edit → Generate is "Back to the variations"
+  // above the editor. The header slot stays empty.
   const paintModes = () => {
-    if (!modes) return;
-    const can = canEdit();
-    const edit = state.mode === "edit";
-    modes.innerHTML = toString(
-      html`<div class="ap-tabs imst-modes">
-        <div class="ap-tabs-nav" role="tablist" aria-label="Studio mode">
-          <button
-            type="button"
-            class="ap-tabs-tab${edit ? "" : " active"}"
-            role="tab"
-            aria-selected="${!edit}"
-            data-imst-mode="generate"
-          >
-            <span>Generate</span>
-          </button>
-          <button
-            type="button"
-            class="ap-tabs-tab${edit ? " active" : ""}${can ? "" : " disabled"}"
-            role="tab"
-            aria-selected="${edit}"
-            data-imst-mode="edit"
-            ${can ? "" : raw('disabled title="Generate an image first"')}
-          >
-            <span>Edit</span>
-          </button>
-        </div>
-      </div>`,
-    );
+    if (modes) modes.innerHTML = "";
   };
 
   // ── Controls ───────────────────────────────────────────────────────────────
@@ -741,6 +717,14 @@ export function mountStudio(
               </button>`,
           )}
         </div>
+        ${draft.imageUrl
+          ? html`<p class="ap-body imst-chooser__or">
+              Or keep the draft's ${draft.slides > 1 ? "carousel" : "image"} and change it:
+              <button type="button" class="ap-link standalone" data-imst-mode="edit">
+                <i class="ap-icon-pen" aria-hidden="true"></i><span>Edit the current image</span>
+              </button>
+            </p>`
+          : ""}
       </div>
     `;
   };
@@ -1217,6 +1201,24 @@ ${b.prompt}</textarea
     `;
   };
 
+  // Edit, with its way back and what is being edited, in words.
+  const renderEditing = () => {
+    const src = editSource();
+    const v = src?.variation;
+    const what = !v
+      ? `Editing the draft's ${draft.slides > 1 ? "first slide" : "image"}`
+      : `Editing variation ${src.creation.variations.indexOf(v) + 1} of ${src.creation.variations.length}`;
+    return html`<div class="imst-editwrap">
+      <div class="imst-editbar">
+        <button type="button" class="ap-button stroked blue" data-imst-mode="generate">
+          <i class="ap-icon-arrow-left" aria-hidden="true"></i><span>${v ? "Back to the variations" : "Back"}</span>
+        </button>
+        <span class="ap-caption imst-editbar__what">${what}</span>
+      </div>
+      ${editor.render()}
+    </div>`;
+  };
+
   const renderCurrent = () => html`
     <div class="imst-canvas-area imst-canvas-area--preview">
       <div class="imst-stage2">
@@ -1231,6 +1233,11 @@ ${b.prompt}</textarea
         Pick a style or describe a new one — a new image replaces the draft's ${draft.slides > 1 ? "carousel" : "image"}
         only when you choose.
       </p>
+      <div class="imst-current__actions">
+        <button type="button" class="ap-button stroked grey" data-imst-mode="edit">
+          <i class="ap-icon-pen" aria-hidden="true"></i><span>Edit this image</span>
+        </button>
+      </div>
     </div>
   `;
 
@@ -1343,7 +1350,7 @@ ${b.prompt}</textarea
     if (state.mode === "edit" && !canEdit()) state.mode = "generate";
     target.innerHTML = toString(
       state.mode === "edit"
-        ? editor.render()
+        ? renderEditing()
         : !state.source
           ? renderChooser(brand)
           : html`<div class="imst-studio imst-studio--draft">

@@ -4,15 +4,15 @@
 // the PNG export draws on, and the same engine as the studio — the Playbook's
 // styles, the network's shapes, the same renderer and services.
 
-import { QUICK_PRESETS } from "./config/style-presets.js?v=1499";
-import { DRAFT_NETWORK, formatById, shapesFor } from "./config/formats.js?v=1499";
-import { hashString } from "./lib/prng.js?v=1499";
-import { copyService, imageGenerationService } from "./services/index.js?v=1499";
-import { resolveLayers } from "./render/layout.js?v=1499";
-import { toPngBlob } from "./render/export.js?v=1499";
-import { styleThumbUrl } from "./ui/style-thumb.js?v=1499";
-import { layersFor, variationSvg } from "./ui/variation.js?v=1499";
-import { getBrand, getStyle, getStylesForBrand } from "./state/store.js?v=1499";
+import { QUICK_PRESETS } from "./config/style-presets.js?v=1502";
+import { DRAFT_NETWORK, formatById, shapesFor } from "./config/formats.js?v=1502";
+import { hashString } from "./lib/prng.js?v=1502";
+import { copyService, imageGenerationService } from "./services/index.js?v=1502";
+import { resolveLayers } from "./render/layout.js?v=1502";
+import { toPngBlob } from "./render/export.js?v=1502";
+import { styleThumbUrl } from "./ui/style-thumb.js?v=1502";
+import { layersFor, variationSvg } from "./ui/variation.js?v=1502";
+import { getBrand, getStyle, getStylesForBrand } from "./state/store.js?v=1502";
 
 const blobToDataUrl = (blob) =>
   new Promise((resolve, reject) => {

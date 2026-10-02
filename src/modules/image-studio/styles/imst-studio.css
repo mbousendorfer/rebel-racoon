@@ -1471,8 +1471,9 @@
   gap: var(--ref-spacing-lg);
 }
 
+/* The preview's inner margin matches the dialog's own (24px). */
 .imst-draft-host .imst-canvas-col {
-  padding: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-md);
 }
 
 .imst-draft-host {
@@ -1538,4 +1539,29 @@
   aspect-ratio: 4 / 5;
   border-radius: var(--app-radius-card);
   background-color: var(--ref-color-white);
+}
+
+/* The draft's own image: it can be edited without generating first. */
+.imst-current__actions {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--ref-spacing-xs);
+}
+
+/* The chooser's other way in: edit the draft's own image without generating. */
+.imst-chooser__or {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ref-spacing-xs);
+  margin: 0;
+  color: var(--ref-color-grey-80);
+}
+
+.imst-chooser__or .ap-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
 }
