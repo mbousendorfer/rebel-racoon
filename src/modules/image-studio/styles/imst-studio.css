@@ -875,31 +875,83 @@
   color: var(--ref-color-grey-100);
 }
 
-/* "New style" in the settings column: a way back, a title, then the creator. */
-.imst-newstyle__head {
+/* "Create a style": a popover over the preview area. The studio stays in view
+ * around it; the panel scrolls inside, its actions pinned at the bottom. */
+.imst-canvas-col {
+  position: relative;
+}
+
+.imst-stylepop {
+  position: absolute;
+  inset: var(--ref-spacing-sm);
+  z-index: 3;
   display: flex;
   flex-direction: column;
+  max-width: calc(var(--ref-spacing-xxxl) * 9);
+  margin-inline: auto;
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-card);
+  background: var(--ref-color-white);
+  /* No shadow: it is already inside a dialog (no nested elevation) — the
+     preview under it dims instead, so the panel reads as on top. */
+  animation: imst-stylepop-in 0.2s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.imst-canvas-col:has(.imst-stylepop)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--ref-color-grey-150) 35%, transparent);
+}
+
+.imst-stylepop__head {
+  display: flex;
   align-items: flex-start;
-  gap: var(--ref-spacing-xxxs);
+  justify-content: space-between;
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-md) var(--ref-spacing-md) var(--ref-spacing-sm);
 }
 
-.imst-newstyle__back {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
-  margin-bottom: var(--ref-spacing-xxs);
-}
-
-.imst-newstyle__title {
+.imst-stylepop__title {
   margin: 0;
   color: var(--ref-color-grey-100);
-  font-size: var(--ref-font-size-lg);
+  font-size: var(--ref-font-size-xl);
   font-weight: var(--ref-font-weight-bold);
 }
 
-.imst-newstyle__head .ap-caption {
-  margin: 0;
+.imst-stylepop__head .ap-caption {
+  margin: var(--ref-spacing-xxxs) 0 0;
   color: var(--ref-color-grey-80);
+}
+
+.imst-stylepop__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--ref-spacing-xs) var(--ref-spacing-md) var(--ref-spacing-md);
+}
+
+.imst-stylepop__foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+
+@keyframes imst-stylepop-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--ref-spacing-xs));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .imst-stylepop {
+    animation: none;
+  }
 }
 
 /* Shape: one track, each option drawn to scale */

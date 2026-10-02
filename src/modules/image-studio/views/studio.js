@@ -15,31 +15,31 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=1486";
-import { delegate } from "../lib/delegate.js?v=1486";
-import { hashString } from "../lib/prng.js?v=1486";
-import { renderEmpty } from "../ui/empty.js?v=1486";
-import { preserveFocus } from "../ui/fields.js?v=1486";
-import { toast } from "../ui/toast.js?v=1486";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1486";
-import { styleThumb } from "../ui/style-thumb.js?v=1486";
-import { openDialog } from "../ui/dialog.js?v=1486";
-import { menu } from "../ui/menu.js?v=1486";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1486";
-import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1486";
-import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1486";
-import { networkById } from "../config/networks.js?v=1486";
-import { copyService, imageGenerationService } from "../services/index.js?v=1486";
-import { unbranded } from "../state/playbook-brand.js?v=1486";
-import { resolveLayers } from "../render/layout.js?v=1486";
-import { svgToDataUrl } from "../render/visual.js?v=1486";
-import { splitVisual } from "../render/split.js?v=1486";
-import { bakeDoc } from "../render/edit-export.js?v=1486";
-import { subjectKindFor } from "../render/subjects.js?v=1486";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1486";
-import { createEditor } from "./edit/editor.js?v=1486";
-import { mount as mountStyleCreator } from "./style-creator.js?v=1486";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1486";
+import { html, raw, toString } from "../lib/html.js?v=1487";
+import { delegate } from "../lib/delegate.js?v=1487";
+import { hashString } from "../lib/prng.js?v=1487";
+import { renderEmpty } from "../ui/empty.js?v=1487";
+import { preserveFocus } from "../ui/fields.js?v=1487";
+import { toast } from "../ui/toast.js?v=1487";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1487";
+import { styleThumb } from "../ui/style-thumb.js?v=1487";
+import { openDialog } from "../ui/dialog.js?v=1487";
+import { menu } from "../ui/menu.js?v=1487";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1487";
+import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1487";
+import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1487";
+import { networkById } from "../config/networks.js?v=1487";
+import { copyService, imageGenerationService } from "../services/index.js?v=1487";
+import { unbranded } from "../state/playbook-brand.js?v=1487";
+import { resolveLayers } from "../render/layout.js?v=1487";
+import { svgToDataUrl } from "../render/visual.js?v=1487";
+import { splitVisual } from "../render/split.js?v=1487";
+import { bakeDoc } from "../render/edit-export.js?v=1487";
+import { subjectKindFor } from "../render/subjects.js?v=1487";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1487";
+import { createEditor } from "./edit/editor.js?v=1487";
+import { mount as mountStyleCreator } from "./style-creator.js?v=1487";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1487";
 import {
   canEditBrand,
   forgetOneOffStyle,
@@ -50,15 +50,15 @@ import {
   getStylesForBrand,
   registerOneOffStyle,
   subscribe,
-} from "../state/store.js?v=1486";
-import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1486";
+} from "../state/store.js?v=1487";
+import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1487";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1486";
+} from "../state/creation-actions.js?v=1487";
 
 const variationsLabel = (n) => (n === 1 ? "1 variation" : `${n} variations`);
 
@@ -130,7 +130,6 @@ export function mountStudio(
     lastStyleId: null, // the style picked under "A style", kept while another answer is open
     sourceError: "",
     editKey: null, // which image Edit has open
-    creating: false, // "New style" has the settings column
   };
   // Edit documents, one per image, kept for the life of the dialog: edits stick
   // to the variation they were made on. key → { doc, history } (state/edit-doc.js)
@@ -434,90 +433,42 @@ export function mountStudio(
     input.click();
   }
 
-  // "New style": the Playbook's style creator takes the settings column, in
-  // place — no dialog — and the canvas previews the style as images come in.
-  // Save puts it on the Playbook (Brand › Image styles) and picks it; Cancel
-  // gives the column back as it was.
+  // "New style": the Playbook's style creator in a popover over the preview
+  // area — not a dialog: the studio stays in view, the style grid beside it.
+  // The panel is one node kept across repaints (the studio redraws its body
+  // on every change; the creator owns its own DOM). Save puts the style on the
+  // Playbook (Brand › Image styles) and picks it; Cancel or × just closes.
+  let creatorPanel = null;
   let creatorOff = null;
   function openNewStyle() {
     const brand = brandNow();
-    if (!brand || !canEditBrand(brand.id) || state.creating) return;
-    state.creating = true;
-    paint();
-  }
-  function closeNewStyle() {
-    creatorOff?.();
-    creatorOff = null;
-    state.creating = false;
-  }
-
-  const renderCreatorPreview = (brand, style, count) => {
-    const format = formatById(state.brief.formatIds[0]);
-    if (!count)
-      return html`<div class="imst-canvas-area imst-canvas-area--preview">
-        ${stageFrame(
-          format,
-          html`<span class="imst-stage2__status"
-            ><i class="ap-icon-image imst-start__drop-icon" aria-hidden="true"></i
-            ><span class="ap-body-bold">Add images: I'll show the style here.</span></span
-          >`,
-          "is-preview",
-        )}
-      </div>`;
-    const seed = hashString(`${style.custom.sources.map((x) => x.ref).join("|")}`);
-    const pseudo = { title: "Preview", brief: { ...state.brief }, styleSnapshot: style, master: { layers: [] } };
-    return html`<div class="imst-canvas-area imst-canvas-area--preview">
-      ${stageFrame(
-        format,
-        html`${variationCanvas({
-            creation: pseudo,
-            variation: { seed, bgSeed: seed ^ 91, subjectSeed: seed ^ 17 },
-            formatId: format.id,
-            brand: lookOf(brand, state.brief),
-          })}<span class="ap-tag grey imst-stage2__badge"><span>Preview</span></span>`,
-        "is-preview",
-      )}
-      <p class="ap-body imst-canvas-area__caption">
-        <span class="ap-body-bold">Your new style, in ${brand.name}'s colours.</span>
-        It changes as you add or remove images.
-      </p>
-    </div>`;
-  };
-
-  // Mounts once; the creator then owns the column and the studio only redraws the canvas.
-  const paintCreator = (brand) => {
-    if (target.querySelector("[data-imst-creator-host]")) return;
-    target.innerHTML = toString(
-      html`<div class="imst-studio imst-studio--draft">
-        <aside class="imst-controls" aria-label="New style">
-          <div class="imst-controls__scroll">
-            <header class="imst-newstyle__head">
-              <button type="button" class="ap-link imst-newstyle__back" data-imst-creator-back>
-                <i class="ap-icon-arrow-left" aria-hidden="true"></i><span>Styles</span>
-              </button>
-              <h3 class="imst-newstyle__title">New style</h3>
-              <p class="ap-caption">
-                Part of ${brand.playbookName || brand.name}'s brand, for every image made with this Playbook.
-              </p>
-            </header>
-            <div data-imst-creator-host></div>
-          </div>
-        </aside>
-        <main class="imst-canvas-col" data-imst-creator-canvas></main>
-      </div>`,
-    );
-    if (footerLeft) footerLeft.innerHTML = "";
+    if (!brand || !canEditBrand(brand.id) || creatorPanel) return;
+    creatorPanel = document.createElement("section");
+    creatorPanel.className = "imst-stylepop";
+    creatorPanel.setAttribute("role", "dialog");
+    creatorPanel.setAttribute("aria-labelledby", "imst-stylepop-title");
+    creatorPanel.innerHTML = toString(html`
+      <header class="imst-stylepop__head">
+        <div>
+          <h3 class="imst-stylepop__title" id="imst-stylepop-title">Create a style</h3>
+          <p class="ap-caption">
+            Part of ${brand.playbookName || brand.name}'s brand, for every image made with this Playbook.
+          </p>
+        </div>
+        <button type="button" class="ap-icon-button transparent grey" data-imst-stylepop-close aria-label="Close">
+          <i class="ap-icon-close" aria-hidden="true"></i>
+        </button>
+      </header>
+      <div class="imst-stylepop__body" data-imst-creator-host></div>
+      <footer class="imst-stylepop__foot" data-imst-stylepop-foot></footer>
+    `);
     creatorOff = mountStyleCreator(
-      target.querySelector("[data-imst-creator-host]"),
+      creatorPanel.querySelector("[data-imst-creator-host]"),
       { id: brand.id },
       {},
       {
         embed: {
-          footer,
-          onDraft(style, count) {
-            const canvas = target.querySelector("[data-imst-creator-canvas]");
-            if (canvas) canvas.innerHTML = toString(renderCreatorPreview(brand, style, count));
-          },
+          footer: creatorPanel.querySelector("[data-imst-stylepop-foot]"),
           onSaved(style) {
             closeNewStyle();
             state.source = "style";
@@ -530,7 +481,15 @@ export function mountStudio(
         },
       },
     );
-  };
+    paint();
+    creatorPanel.querySelector("#imst-st-name, [data-imst-dropzone]")?.focus();
+  }
+  function closeNewStyle() {
+    creatorOff?.();
+    creatorOff = null;
+    creatorPanel?.remove();
+    creatorPanel = null;
+  }
 
   // "Best for" + the network's icon; its name goes in title / aria-label.
   const bestFor = (networks) =>
@@ -1263,7 +1222,7 @@ ${b.prompt}</textarea
   // Once there is a result, Generate steps back to "Generate again".
   const useLabel = () => (draft.imageUrl ? "Replace the draft's image" : "Use in draft");
   const paintFooter = () => {
-    if (!footer || state.creating) return;
+    if (!footer) return;
     if (footerLeft) footerLeft.innerHTML = state.mode === "edit" ? toString(editor.footerLeft()) : "";
     if (state.mode === "edit") {
       const ready = !!editEntry() && !editor.isBusy();
@@ -1356,11 +1315,6 @@ ${b.prompt}</textarea
       paintModes();
       return;
     }
-    if (state.creating) {
-      paintCreator(brand);
-      paintModes();
-      return;
-    }
     if (state.mode === "edit" && !canEdit()) state.mode = "generate";
     target.innerHTML = toString(
       state.mode === "edit"
@@ -1375,6 +1329,8 @@ ${b.prompt}</textarea
     paintFooter();
     paintModes();
     hydrateAssets(target);
+    // The style popover sits over the preview area, the same node every time.
+    if (creatorPanel) target.querySelector(".imst-canvas-col")?.append(creatorPanel);
     restoreScroll();
     restore();
   };
@@ -1812,12 +1768,12 @@ ${b.prompt}</textarea
         paint();
       }
     }),
-    delegate(root, "click", "[data-imst-creator-back]", () => {
+    delegate(root, "click", "[data-imst-stylepop-close]", () => {
       closeNewStyle();
       paint();
     }),
     delegate(root, "click", "[data-imst-mode]", (_e, el) => {
-      if (el.disabled || editor.isBusy() || state.creating) return;
+      if (el.disabled || editor.isBusy() || creatorPanel) return;
       if (el.dataset.imstMode === "edit") openEdit();
       else if (state.mode === "edit") leaveEdit();
     }),
@@ -1834,10 +1790,18 @@ ${b.prompt}</textarea
     }),
   ];
   // Escape unwinds Edit first (popover → crop → typing → selection); only then does it close.
-  onEscape?.(() => state.mode === "edit" && editor.escape());
+  // Escape unwinds the style popover first, then Edit, before the dialog closes.
+  onEscape?.(() => {
+    if (creatorPanel) {
+      closeNewStyle();
+      paint();
+      return true;
+    }
+    return state.mode === "edit" && editor.escape();
+  });
   return () => {
     alive = false;
-    creatorOff?.();
+    closeNewStyle();
     state.abort?.abort();
     feedUrls.forEach((url) => url && URL.revokeObjectURL(url));
     editedUrls.forEach((url) => url && URL.revokeObjectURL(url));
