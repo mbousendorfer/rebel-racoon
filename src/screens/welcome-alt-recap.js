@@ -4,11 +4,11 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { navigate } from "../router.js?v=1483";
-import { catalogueRoute } from "../active-playbook.js?v=1483";
-import { getDraft, isAnalysisReady, save, patchDraft, restoreDraft } from "../context-builder.js?v=1483";
-import { mount } from "../playbook-view.js?v=1483";
-import { open as openRenameModal } from "../components/rename-modal.js?v=1483";
+import { navigate } from "../router.js?v=1484";
+import { catalogueRoute } from "../active-playbook.js?v=1484";
+import { getDraft, isAnalysisReady, save, patchDraft, restoreDraft } from "../context-builder.js?v=1484";
+import { mount } from "../playbook-view.js?v=1484";
+import { open as openRenameModal } from "../components/rename-modal.js?v=1484";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";

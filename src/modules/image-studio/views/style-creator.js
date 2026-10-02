@@ -2,30 +2,30 @@
 // section (/playbook/:id/styles/new, /playbook/:id/styles/:styleId). The style is
 // saved ON that Playbook (imageStyles); the topbar's back returns to the fiche.
 //
-// Sources: up to 10 reference images, each with a weight — the look is read from
+// Sources: up to 6 reference images, all counted the same — the look is read from
 // them (no presets to mix: removed at the user's request, 2026-09-28).
 // An optional style prompt. (The "what to keep" choice was removed at the
 // user's request, 2026-10-02: a new style keeps the essentials.) A test run
 // on three neutral subjects before saving. Saved FOR the active Playbook.
 
-import { html, toString } from "../lib/html.js?v=1483";
-import { delegate } from "../lib/delegate.js?v=1483";
-import { getPath } from "../../../router.js?v=1483";
-import { setTopbarActions } from "../../../components/topbar.js?v=1483";
-import { hashString, randomSeed } from "../lib/prng.js?v=1483";
-import { renderFrame } from "./frame.js?v=1483";
-import { renderEmpty } from "../ui/empty.js?v=1483";
-import { field, preserveFocus, slider, syncSlider, textArea, textInput } from "../ui/fields.js?v=1483";
-import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1483";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1483";
-import { toast } from "../ui/toast.js?v=1483";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1483";
-import { CUSTOM_STYLE_LIMITS, STYLE_TEST_SUBJECTS, presetById } from "../config/style-presets.js?v=1483";
-import { createStyle } from "../model/schema.js?v=1483";
-import { copyService, imageGenerationService } from "../services/index.js?v=1483";
-import { lookFromColors } from "../render/visual.js?v=1483";
-import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1483";
-import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1483";
+import { html, toString } from "../lib/html.js?v=1484";
+import { delegate } from "../lib/delegate.js?v=1484";
+import { getPath } from "../../../router.js?v=1484";
+import { setTopbarActions } from "../../../components/topbar.js?v=1484";
+import { hashString, randomSeed } from "../lib/prng.js?v=1484";
+import { renderFrame } from "./frame.js?v=1484";
+import { renderEmpty } from "../ui/empty.js?v=1484";
+import { field, preserveFocus, textArea, textInput } from "../ui/fields.js?v=1484";
+import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1484";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1484";
+import { toast } from "../ui/toast.js?v=1484";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=1484";
+import { CUSTOM_STYLE_LIMITS, STYLE_TEST_SUBJECTS, presetById } from "../config/style-presets.js?v=1484";
+import { createStyle } from "../model/schema.js?v=1484";
+import { copyService, imageGenerationService } from "../services/index.js?v=1484";
+import { lookFromColors } from "../render/visual.js?v=1484";
+import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1484";
+import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1484";
 
 function draftFrom(style, brandId) {
   if (style) {
@@ -48,11 +48,6 @@ function draftFrom(style, brandId) {
     fidelity: "essential",
     stylePrompt: "",
   };
-}
-
-function share(draft, source) {
-  const total = draft.sources.reduce((sum, s) => sum + s.weight, 0) || 1;
-  return Math.round((source.weight / total) * 100);
 }
 
 /**
@@ -86,6 +81,8 @@ export function mount(target, params, ctx, { dialog = null } = {}) {
       custom: { ...state.draft, sources: state.draft.sources },
     });
 
+  // A reference image as a tile: the picture, and a way to take it out. Every
+  // image counts the same (no weights: removed at the user's request, 2026-10-02).
   const renderSource = (s, i) => {
     // An image is an upload (asset) or, for a seeded style, a URL with its colours.
     const media = s.url
@@ -93,25 +90,11 @@ export function mount(target, params, ctx, { dialog = null } = {}) {
       : assetImg(s.ref, { className: "imst-source__media" });
     const name = s.name || getAsset(s.ref)?.name || "Reference image";
     return html`
-      <li class="imst-source">
+      <li class="imst-source" title="${name}">
         ${media}
-        <div class="imst-source__body">
-          <span class="imst-source__name ap-body-bold">${name}</span>
-          <span class="imst-source__weight">
-            ${slider({
-              path: `sources.${i}.weight`,
-              value: s.weight,
-              min: 0.1,
-              max: 1,
-              step: 0.05,
-              label: `Weight of ${name}`,
-            })}
-            <span class="ap-caption imst-source__share" data-imst-share="${i}">Weight ${share(state.draft, s)}%</span>
-          </span>
-        </div>
         <button
           type="button"
-          class="ap-icon-button transparent grey"
+          class="ap-icon-button transparent grey imst-source__remove"
           data-imst-action="remove-source"
           data-index="${i}"
           aria-label="Remove ${name}"
@@ -226,11 +209,6 @@ export function mount(target, params, ctx, { dialog = null } = {}) {
     </section>`;
     const refs = html` <section class="${card}" aria-labelledby="imst-src-images">
         <h2 class="ap-body-bold" id="imst-src-images">Reference images</h2>
-        ${images.length
-          ? html`<ul class="imst-sources">
-              ${images.map(([s, i]) => renderSource(s, i))}
-            </ul>`
-          : ""}
         ${images.length < CUSTOM_STYLE_LIMITS.images
           ? dropzone({
               id: "refs",
@@ -239,6 +217,11 @@ export function mount(target, params, ctx, { dialog = null } = {}) {
               sub: `2 to ${CUSTOM_STYLE_LIMITS.images} images that share the look you want · ${images.length} added`,
               compact: true,
             })
+          : ""}
+        ${images.length
+          ? html`<ul class="imst-sources">
+              ${images.map(([s, i]) => renderSource(s, i))}
+            </ul>`
           : ""}
       </section>
       <section class="${card}" aria-labelledby="imst-st-prompt-label">
@@ -302,13 +285,6 @@ export function mount(target, params, ctx, { dialog = null } = {}) {
       state.stale = true;
       paint();
     }
-  };
-
-  const setShares = () => {
-    state.draft.sources.forEach((s, i) => {
-      const el = target.querySelector(`[data-imst-share="${i}"]`);
-      if (el) el.textContent = `Weight ${share(state.draft, s)}%`;
-    });
   };
 
   // "Generate the prompt": the images' look and palette, put in words — a draft to edit.
@@ -410,13 +386,7 @@ export function mount(target, params, ctx, { dialog = null } = {}) {
       paint();
     }),
     delegate(target, "input", "[data-imst-field]", (_e, el) => {
-      const path = el.dataset.imstField;
-      const m = /^sources\.(\d+)\.weight$/.exec(path);
-      if (m) {
-        state.draft.sources[Number(m[1])].weight = Number(el.value);
-        syncSlider(el);
-        setShares();
-      } else state.draft[path] = el.value;
+      state.draft[el.dataset.imstField] = el.value;
     }),
     delegate(target, "change", "[data-imst-field]", (_e, el) => {
       if (el.dataset.imstField !== "label") markStale();
