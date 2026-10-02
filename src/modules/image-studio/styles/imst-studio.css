@@ -840,6 +840,46 @@
   flex: none;
 }
 
+/* "New style" — the grid's first tile, the Playbook's "New style" card at
+ * tile size: an empty-state card that IS the button (solid border, blue on
+ * hover), so it reads as an action among pictures. Opens the creator dialog. */
+.imst-tile--new {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ref-spacing-xxs);
+  border: 1px solid var(--ref-color-grey-20);
+  background: var(--ref-color-white);
+  color: var(--ref-color-grey-80);
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.imst-tile--new:hover {
+  outline-color: transparent;
+  border-color: var(--ref-color-electric-blue-100);
+  color: var(--ref-color-electric-blue-100);
+}
+
+.imst-tile__new-art {
+  display: grid;
+  place-items: center;
+  font-size: var(--ref-font-size-xl);
+}
+
+.imst-tile__new-name {
+  font-size: var(--ref-font-size-xs);
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--ref-color-grey-100);
+}
+
+/* The creator in its dialog: the page's two columns, without the page. */
+.imst-newstyle {
+  padding: var(--ref-spacing-xxxs);
+}
+
 /* Shape: one track, each option drawn to scale */
 .imst-seg {
   display: flex;

@@ -8,23 +8,23 @@
 // composition" (+ framing, angle, layout). An optional style prompt. A test run
 // on three neutral subjects before saving. Saved FOR the active Playbook.
 
-import { html, toString } from "../lib/html.js?v=1473";
-import { delegate } from "../lib/delegate.js?v=1473";
-import { getPath } from "../../../router.js?v=1473";
-import { setTopbarActions } from "../../../components/topbar.js?v=1473";
-import { hashString, randomSeed } from "../lib/prng.js?v=1473";
-import { renderFrame } from "./frame.js?v=1473";
-import { renderEmpty } from "../ui/empty.js?v=1473";
-import { field, preserveFocus, slider, syncSlider, textArea, textInput } from "../ui/fields.js?v=1473";
-import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1473";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1473";
-import { toast } from "../ui/toast.js?v=1473";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1473";
-import { CUSTOM_STYLE_LIMITS, STYLE_TEST_SUBJECTS } from "../config/style-presets.js?v=1473";
-import { createStyle } from "../model/schema.js?v=1473";
-import { imageGenerationService } from "../services/index.js?v=1473";
-import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1473";
-import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1473";
+import { html, toString } from "../lib/html.js?v=1475";
+import { delegate } from "../lib/delegate.js?v=1475";
+import { getPath } from "../../../router.js?v=1475";
+import { setTopbarActions } from "../../../components/topbar.js?v=1475";
+import { hashString, randomSeed } from "../lib/prng.js?v=1475";
+import { renderFrame } from "./frame.js?v=1475";
+import { renderEmpty } from "../ui/empty.js?v=1475";
+import { field, preserveFocus, slider, syncSlider, textArea, textInput } from "../ui/fields.js?v=1475";
+import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1475";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1475";
+import { toast } from "../ui/toast.js?v=1475";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=1475";
+import { CUSTOM_STYLE_LIMITS, STYLE_TEST_SUBJECTS } from "../config/style-presets.js?v=1475";
+import { createStyle } from "../model/schema.js?v=1475";
+import { imageGenerationService } from "../services/index.js?v=1475";
+import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1475";
+import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1475";
 
 const FIDELITY = [
   { id: "essential", title: "Essential", body: "Colours, textures, strokes and mood." },
@@ -59,7 +59,12 @@ function share(draft, source) {
   return Math.round((source.weight / total) * 100);
 }
 
-export function mount(target, params, ctx) {
+/**
+ * `dialog`: the same creator inside a dialog (the studio's "New style"): no page
+ * frame or heading (the dialog's title says it), the actions in `dialog.footer`,
+ * and `onSaved(style)` / `onCancel()` instead of going back to the fiche.
+ */
+export function mount(target, params, ctx, { dialog = null } = {}) {
   // The Playbook is in the URL: a style belongs to one, and is edited in its colours.
   const found = params.styleId ? getStyle(params.styleId) : null;
   const editing = found && found.brandId === params.id ? found : null;
@@ -205,102 +210,103 @@ export function mount(target, params, ctx) {
     const restore = preserveFocus(target);
     const d = state.draft;
     const images = d.sources.map((s, i) => [s, i]).filter(([s]) => s.type === "image");
+    const page = (body) => (dialog ? body : renderFrame({ body }));
     target.innerHTML = toString(
-      renderFrame({
-        body: html`
-          <header class="imst-creator__head">
-            <h1 class="ap-h2">${editing ? `Edit ${editing.label}` : "New style"}</h1>
-            <p class="ap-body">
-              Part of ${brand.playbookName}'s brand. It comes first whenever an image is made for this Playbook.
-            </p>
-          </header>
-          <div class="imst-creator">
-            <div class="imst-creator__form">
-              <section class="ap-card imst-creator__card">
-                ${field({
-                  label: "Name",
+      page(html`
+        ${dialog
+          ? ""
+          : html`<header class="imst-creator__head">
+              <h1 class="ap-h2">${editing ? `Edit ${editing.label}` : "New style"}</h1>
+              <p class="ap-body">
+                Part of ${brand.playbookName}'s brand. It comes first whenever an image is made for this Playbook.
+              </p>
+            </header>`}
+        <div class="imst-creator">
+          <div class="imst-creator__form">
+            <section class="ap-card imst-creator__card">
+              ${field({
+                label: "Name",
+                id: "imst-st-name",
+                control: textInput({
+                  path: "label",
                   id: "imst-st-name",
-                  control: textInput({
-                    path: "label",
-                    id: "imst-st-name",
-                    value: d.label,
-                    placeholder: "e.g. Morning light",
-                  }),
-                })}
-                ${field({
-                  label: "Description",
+                  value: d.label,
+                  placeholder: "e.g. Morning light",
+                }),
+              })}
+              ${field({
+                label: "Description",
+                id: "imst-st-desc",
+                hint: "Optional — shown under the name in the style picker.",
+                control: textInput({
+                  path: "description",
                   id: "imst-st-desc",
-                  hint: "Optional — shown under the name in the style picker.",
-                  control: textInput({
-                    path: "description",
-                    id: "imst-st-desc",
-                    value: d.description,
-                    placeholder: "e.g. Warm window light over wood",
-                  }),
-                })}
-              </section>
-              <section class="ap-card imst-creator__card" aria-labelledby="imst-src-images">
-                <header class="imst-section__head">
-                  <h2 class="ap-body-bold" id="imst-src-images">Reference images</h2>
-                  <span class="ap-caption">${images.length} of ${CUSTOM_STYLE_LIMITS.images}</span>
-                </header>
-                ${images.length
-                  ? html`<ul class="imst-sources">
-                      ${images.map(([s, i]) => renderSource(s, i))}
-                    </ul>`
-                  : ""}
-                ${images.length < CUSTOM_STYLE_LIMITS.images
-                  ? dropzone({
-                      id: "refs",
-                      title: state.uploading ? "Adding…" : "Drop images whose look you want, or",
-                      sub: "PNG, JPG, SVG or WebP",
-                      compact: true,
-                    })
-                  : ""}
-              </section>
-              <section class="ap-card imst-creator__card" aria-labelledby="imst-fidelity">
-                <h2 class="ap-body-bold" id="imst-fidelity">What to keep from the images</h2>
-                <div class="imst-radio-row" role="radiogroup" aria-labelledby="imst-fidelity">
-                  ${FIDELITY.map(
-                    (f) =>
-                      html`<label class="ap-radio-card card">
-                        <input
-                          type="radio"
-                          name="imst-fidelity"
-                          value="${f.id}"
-                          ${d.fidelity === f.id ? "checked" : ""}
-                          data-imst-fidelity
-                        />
-                        <div><span class="ap-body-bold">${f.title}</span><span>${f.body}</span></div>
-                      </label>`,
-                  )}
-                </div>
-                ${field({
-                  label: "Style prompt",
+                  value: d.description,
+                  placeholder: "e.g. Warm window light over wood",
+                }),
+              })}
+            </section>
+            <section class="ap-card imst-creator__card" aria-labelledby="imst-src-images">
+              <header class="imst-section__head">
+                <h2 class="ap-body-bold" id="imst-src-images">Reference images</h2>
+                <span class="ap-caption">${images.length} of ${CUSTOM_STYLE_LIMITS.images}</span>
+              </header>
+              ${images.length
+                ? html`<ul class="imst-sources">
+                    ${images.map(([s, i]) => renderSource(s, i))}
+                  </ul>`
+                : ""}
+              ${images.length < CUSTOM_STYLE_LIMITS.images
+                ? dropzone({
+                    id: "refs",
+                    title: state.uploading ? "Adding…" : "Drop images whose look you want, or",
+                    sub: "PNG, JPG, SVG or WebP",
+                    compact: true,
+                  })
+                : ""}
+            </section>
+            <section class="ap-card imst-creator__card" aria-labelledby="imst-fidelity">
+              <h2 class="ap-body-bold" id="imst-fidelity">What to keep from the images</h2>
+              <div class="imst-radio-row" role="radiogroup" aria-labelledby="imst-fidelity">
+                ${FIDELITY.map(
+                  (f) =>
+                    html`<label class="ap-radio-card card">
+                      <input
+                        type="radio"
+                        name="imst-fidelity"
+                        value="${f.id}"
+                        ${d.fidelity === f.id ? "checked" : ""}
+                        data-imst-fidelity
+                      />
+                      <div><span class="ap-body-bold">${f.title}</span><span>${f.body}</span></div>
+                    </label>`,
+                )}
+              </div>
+              ${field({
+                label: "Style prompt",
+                id: "imst-st-prompt",
+                hint: "Optional. Added to every image in this style.",
+                control: textArea({
+                  path: "stylePrompt",
                   id: "imst-st-prompt",
-                  hint: "Optional. Added to every image in this style.",
-                  control: textArea({
-                    path: "stylePrompt",
-                    id: "imst-st-prompt",
-                    value: d.stylePrompt,
-                    rows: 2,
-                    placeholder: "e.g. Always a plain background, soft light",
-                  }),
-                })}
-              </section>
-            </div>
-            ${renderPreview()}
+                  value: d.stylePrompt,
+                  rows: 2,
+                  placeholder: "e.g. Always a plain background, soft light",
+                }),
+              })}
+            </section>
           </div>
-          ${state.errors.length
-            ? html`<div class="ap-infobox error" role="alert">
-                <i class="ap-icon-warning_fill" aria-hidden="true"></i>
-                <div class="ap-infobox-content">
-                  <div class="ap-infobox-texts"><div class="ap-infobox-message">${state.errors.join(" ")}</div></div>
-                </div>
-              </div>`
-            : ""}
-        `,
-      }),
+          ${renderPreview()}
+        </div>
+        ${state.errors.length
+          ? html`<div class="ap-infobox error" role="alert">
+              <i class="ap-icon-warning_fill" aria-hidden="true"></i>
+              <div class="ap-infobox-content">
+                <div class="ap-infobox-texts"><div class="ap-infobox-message">${state.errors.join(" ")}</div></div>
+              </div>
+            </div>`
+          : ""}
+      `),
     );
     hydrateAssets(target);
     restore();
@@ -355,28 +361,26 @@ export function mount(target, params, ctx) {
     }
     const saved = saveStyle(state.draft);
     toast(editing ? `${saved.label} updated.` : `${saved.label} added to ${brand.playbookName}.`);
-    ctx.navigate(fiche);
+    if (dialog) dialog.onSaved(saved);
+    else ctx.navigate(fiche);
   }
 
   paint();
   // The page's actions live in the topbar, right side (DS: the header carries them).
-  const topbar = document.getElementById("topbar");
-  if (brand)
-    setTopbarActions(
-      getPath(),
-      toString(
-        html`<div class="imst-topbar-actions">
-          <button type="button" class="ap-button ghost grey" data-imst-creator="cancel">Cancel</button>
-          <button type="button" class="ap-button primary blue" data-imst-creator="save">
-            ${editing ? "Save changes" : "Save style"}
-          </button>
-        </div>`,
-      ),
-    );
+  const topbar = dialog ? dialog.footer : document.getElementById("topbar");
+  const actions = html`<div class="${dialog ? "ap-dialog-footer-right" : "imst-topbar-actions"}">
+    <button type="button" class="ap-button ghost grey" data-imst-creator="cancel">Cancel</button>
+    <button type="button" class="ap-button primary blue" data-imst-creator="save">
+      ${editing ? "Save changes" : "Save style"}
+    </button>
+  </div>`;
+  if (brand && dialog) dialog.footer.innerHTML = toString(actions);
+  else if (brand) setTopbarActions(getPath(), toString(actions));
   const offs = [
     topbar
       ? delegate(topbar, "click", "[data-imst-creator]", (_e, el) => {
           if (el.dataset.imstCreator === "save") save();
+          else if (dialog) dialog.onCancel();
           else ctx.navigate(fiche);
         })
       : () => {},
@@ -433,6 +437,6 @@ export function mount(target, params, ctx) {
     alive = false;
     state.abort?.abort();
     offs.forEach((off) => off());
-    setTopbarActions(null);
+    if (!dialog) setTopbarActions(null);
   };
 }

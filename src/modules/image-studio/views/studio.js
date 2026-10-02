@@ -15,31 +15,33 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=1473";
-import { delegate } from "../lib/delegate.js?v=1473";
-import { hashString } from "../lib/prng.js?v=1473";
-import { renderEmpty } from "../ui/empty.js?v=1473";
-import { preserveFocus } from "../ui/fields.js?v=1473";
-import { toast } from "../ui/toast.js?v=1473";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1473";
-import { styleThumb } from "../ui/style-thumb.js?v=1473";
-import { openDialog } from "../ui/dialog.js?v=1473";
-import { menu } from "../ui/menu.js?v=1473";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1473";
-import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1473";
-import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1473";
-import { networkById } from "../config/networks.js?v=1473";
-import { copyService, imageGenerationService } from "../services/index.js?v=1473";
-import { unbranded } from "../state/playbook-brand.js?v=1473";
-import { resolveLayers } from "../render/layout.js?v=1473";
-import { svgToDataUrl } from "../render/visual.js?v=1473";
-import { splitVisual } from "../render/split.js?v=1473";
-import { bakeDoc } from "../render/edit-export.js?v=1473";
-import { subjectKindFor } from "../render/subjects.js?v=1473";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1473";
-import { createEditor } from "./edit/editor.js?v=1473";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1473";
+import { html, raw, toString } from "../lib/html.js?v=1475";
+import { delegate } from "../lib/delegate.js?v=1475";
+import { hashString } from "../lib/prng.js?v=1475";
+import { renderEmpty } from "../ui/empty.js?v=1475";
+import { preserveFocus } from "../ui/fields.js?v=1475";
+import { toast } from "../ui/toast.js?v=1475";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1475";
+import { styleThumb } from "../ui/style-thumb.js?v=1475";
+import { openDialog } from "../ui/dialog.js?v=1475";
+import { menu } from "../ui/menu.js?v=1475";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1475";
+import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1475";
+import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1475";
+import { networkById } from "../config/networks.js?v=1475";
+import { copyService, imageGenerationService } from "../services/index.js?v=1475";
+import { unbranded } from "../state/playbook-brand.js?v=1475";
+import { resolveLayers } from "../render/layout.js?v=1475";
+import { svgToDataUrl } from "../render/visual.js?v=1475";
+import { splitVisual } from "../render/split.js?v=1475";
+import { bakeDoc } from "../render/edit-export.js?v=1475";
+import { subjectKindFor } from "../render/subjects.js?v=1475";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1475";
+import { createEditor } from "./edit/editor.js?v=1475";
+import { mount as mountStyleCreator } from "./style-creator.js?v=1475";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1475";
 import {
+  canEditBrand,
   forgetOneOffStyle,
   getBrand,
   getCreation,
@@ -48,15 +50,15 @@ import {
   getStylesForBrand,
   registerOneOffStyle,
   subscribe,
-} from "../state/store.js?v=1473";
-import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1473";
+} from "../state/store.js?v=1475";
+import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1475";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1473";
+} from "../state/creation-actions.js?v=1475";
 
 const variationsLabel = (n) => (n === 1 ? "1 variation" : `${n} variations`);
 
@@ -387,8 +389,10 @@ export function mountStudio(
       (s, i, a) => a.findIndex((x) => x.id === s.id) === i,
     );
     const selected = getStyle(state.lastStyleId);
-    const top = list.slice(0, QUICK);
-    if (selected && !top.some((s) => s.id === selected.id)) top[QUICK - 1] = selected;
+    // The "New style" tile takes the first of the six places when the user can make one.
+    const room = canEditBrand(brand.id) ? QUICK - 1 : QUICK;
+    const top = list.slice(0, room);
+    if (selected && !top.some((s) => s.id === selected.id)) top[room - 1] = selected;
     return top;
   };
 
@@ -427,6 +431,38 @@ export function mountStudio(
     input.multiple = true;
     input.addEventListener("change", () => input.files?.length && styleFromImages(input.files));
     input.click();
+  }
+
+  // "New style": the Playbook's style creator, in a dialog over the studio. The
+  // style is saved on the Playbook (Brand › Image styles) and picked at once.
+  function openNewStyle() {
+    const brand = brandNow();
+    if (!brand || !canEditBrand(brand.id)) return;
+    const dialog = openDialog({
+      title: "New style",
+      subtitle: `Part of ${brand.playbookName || brand.name}'s brand, for every image made with this Playbook.`,
+      size: "lg",
+      body: html`<div class="imst-newstyle" data-imst-newstyle></div>`,
+      footer: html`<span></span>`, // filled by the creator: Cancel · Save style, on the right
+      onMount(el) {
+        return mountStyleCreator(
+          el.querySelector("[data-imst-newstyle]"),
+          { id: brand.id },
+          {},
+          {
+            dialog: {
+              footer: el.querySelector("[data-imst-dialog-footer]"),
+              onSaved(style) {
+                dialog.close();
+                state.source = "style";
+                setStyle(style.id);
+              },
+              onCancel: () => dialog.close(),
+            },
+          },
+        );
+      },
+    });
   }
 
   // "Best for" + the network's icon; its name goes in title / aria-label.
@@ -504,6 +540,12 @@ export function mountStudio(
           <button type="button" class="ap-link" data-imst-action="all-styles">All ${styleCount} styles</button>
         </header>
         <div class="imst-tiles" role="radiogroup" aria-labelledby="imst-ctl-style">
+          ${canEditBrand(brand.id)
+            ? html`<button type="button" class="imst-tile imst-tile--new" data-imst-action="new-style">
+                <span class="imst-tile__new-art" aria-hidden="true"><i class="ap-icon-plus"></i></span>
+                <span class="imst-tile__new-name">New style</span>
+              </button>`
+            : ""}
           ${quickStyles(brand).map((s) => styleTile(brand, s))}
         </div>
         <p class="ap-caption imst-start__note">
@@ -1686,6 +1728,7 @@ ${b.prompt}</textarea
       else if (a === "suggest") suggestFromPost(el);
       else if (a === "suggest-headline") suggestHeadline(el);
       else if (a === "all-styles") openStyleGallery();
+      else if (a === "new-style") openNewStyle();
       else if (a === "change-source") {
         state.source = null;
         paint();
