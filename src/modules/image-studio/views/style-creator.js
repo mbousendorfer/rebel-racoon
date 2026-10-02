@@ -8,24 +8,24 @@
 // user's request, 2026-10-02: a new style keeps the essentials.) A test run
 // on three neutral subjects before saving. Saved FOR the active Playbook.
 
-import { html, toString } from "../lib/html.js?v=1491";
-import { delegate } from "../lib/delegate.js?v=1491";
-import { getPath } from "../../../router.js?v=1491";
-import { setTopbarActions } from "../../../components/topbar.js?v=1491";
-import { hashString, randomSeed } from "../lib/prng.js?v=1491";
-import { renderFrame } from "./frame.js?v=1491";
-import { renderEmpty } from "../ui/empty.js?v=1491";
-import { field, preserveFocus, textInput } from "../ui/fields.js?v=1491";
-import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1491";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1491";
-import { toast } from "../ui/toast.js?v=1491";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1491";
-import { CUSTOM_STYLE_LIMITS, STYLE_TEST_SUBJECTS, presetById } from "../config/style-presets.js?v=1491";
-import { createStyle } from "../model/schema.js?v=1491";
-import { copyService, imageGenerationService } from "../services/index.js?v=1491";
-import { lookFromColors } from "../render/visual.js?v=1491";
-import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1491";
-import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1491";
+import { html, toString } from "../lib/html.js?v=1492";
+import { delegate } from "../lib/delegate.js?v=1492";
+import { getPath } from "../../../router.js?v=1492";
+import { setTopbarActions } from "../../../components/topbar.js?v=1492";
+import { hashString, randomSeed } from "../lib/prng.js?v=1492";
+import { renderFrame } from "./frame.js?v=1492";
+import { renderEmpty } from "../ui/empty.js?v=1492";
+import { field, preserveFocus, textInput } from "../ui/fields.js?v=1492";
+import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1492";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1492";
+import { toast } from "../ui/toast.js?v=1492";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=1492";
+import { CUSTOM_STYLE_LIMITS, STYLE_TEST_SUBJECTS, presetById } from "../config/style-presets.js?v=1492";
+import { createStyle } from "../model/schema.js?v=1492";
+import { copyService, imageGenerationService } from "../services/index.js?v=1492";
+import { lookFromColors } from "../render/visual.js?v=1492";
+import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1492";
+import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1492";
 
 function draftFrom(style, brandId) {
   if (style) {
@@ -94,7 +94,7 @@ export function mount(target, params, ctx, { embed = null } = {}) {
         ${media}
         <button
           type="button"
-          class="ap-icon-button transparent grey imst-source__remove"
+          class="ap-close-button imst-source__remove"
           data-imst-action="remove-source"
           data-index="${i}"
           aria-label="Remove ${name}"
@@ -227,9 +227,24 @@ export function mount(target, params, ctx, { embed = null } = {}) {
           : ""}
       </section>
       <section class="${card}">
-        <!-- The DS textarea field: its label inside it; Generate sits under the box. -->
-        <div class="ap-textarea-field resizable">
+        <!-- The DS textarea field, its label inside it; Generate is a standalone link on the label's line. -->
+        <div class="ap-textarea-field resizable imst-prompt-field">
           <label for="imst-st-prompt">Style prompt</label>
+          <button
+            type="button"
+            class="ap-link standalone imst-prompt-field__gen${!images.length || state.promptBusy ? " disabled" : ""}"
+            data-imst-action="generate-prompt"
+            aria-disabled="${!images.length || state.promptBusy}"
+          >
+            <i class="ap-icon-sparkles" aria-hidden="true"></i
+            ><span
+              >${state.promptBusy
+                ? "Reading your images…"
+                : d.stylePrompt
+                  ? "Generate again"
+                  : "Generate from the images"}</span
+            >
+          </button>
           <textarea
             id="imst-st-prompt"
             data-imst-field="stylePrompt"
@@ -239,23 +254,6 @@ export function mount(target, params, ctx, { embed = null } = {}) {
           >
 ${d.stylePrompt}</textarea
           >
-        </div>
-        <div class="imst-creator__actions">
-          <button
-            type="button"
-            class="ap-button ghost blue${state.promptBusy ? " loading" : ""}"
-            data-imst-action="generate-prompt"
-            ${!images.length || state.promptBusy ? "disabled" : ""}
-          >
-            <i class="ap-icon-sparkles" aria-hidden="true"></i
-            ><span
-              >${state.promptBusy
-                ? "Reading your images…"
-                : d.stylePrompt
-                  ? "Generate again"
-                  : "Generate the prompt from the images"}</span
-            >
-          </button>
         </div>
       </section>`;
     target.innerHTML = toString(
@@ -403,8 +401,9 @@ ${d.stylePrompt}</textarea
         state.draft.sources.splice(Number(el.dataset.index), 1);
         state.stale = !!state.test;
         paint();
-      } else if (action === "generate-prompt") generatePrompt();
-      else if (action === "test") runTest();
+      } else if (action === "generate-prompt") {
+        if (el.getAttribute("aria-disabled") !== "true") generatePrompt();
+      } else if (action === "test") runTest();
       else if (action === "save") save();
     }),
   ];

@@ -858,3 +858,44 @@ button.ap-link {
   left: var(--ref-spacing-sm);
   right: var(--ref-spacing-sm);
 }
+
+/* ── .ap-close-button — a PORT of the DS component ─────────────────────────
+   `@agorapulse/ui-components/close-button` is Angular only (<ap-close-button>);
+   CSS-UI ships its look only inside other components (.ap-infobox-close,
+   .ap-tag > button). Transcribed from close-button.component.scss — same
+   tokens (--comp-close-button-*), round, transparent at rest. The day the
+   class lands in the DS this block is a delete. Used by the style creator's
+   reference-image tiles (the Image Generator). */
+.ap-close-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: content-box;
+  width: var(--comp-close-button-size);
+  height: var(--comp-close-button-size);
+  margin: 0;
+  padding: var(--comp-close-button-padding);
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ref-color-grey-100);
+  cursor: pointer;
+  transition: background 0.25s;
+}
+
+.ap-close-button:hover {
+  background: var(--comp-close-button-hover-background);
+}
+
+.ap-close-button:active {
+  background: var(--comp-close-button-active-background);
+}
+
+.ap-close-button:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: 1px;
+}
+
+.ap-close-button > i {
+  font-size: var(--sys-icon-css-xs);
+}

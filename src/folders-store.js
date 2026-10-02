@@ -9,9 +9,9 @@
 //                                             accepts a negative n for Undo)
 //   subscribe(fn)             → unsubscribe
 
-import { draftFolders as seed } from "./mocks.js?v=1491";
-import { isNewUser } from "./user-mode.js?v=1491";
-import { createNotifier } from "./store-utils.js?v=1491";
+import { draftFolders as seed } from "./mocks.js?v=1492";
+import { isNewUser } from "./user-mode.js?v=1492";
+import { createNotifier } from "./store-utils.js?v=1492";
 
 const folders = isNewUser() ? [] : seed.map((f) => ({ ...f }));
 const notifier = createNotifier("folders-store");

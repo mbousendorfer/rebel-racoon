@@ -224,12 +224,17 @@ button.imst-style-card {
   object-fit: cover;
 }
 
-/* The close sits on the picture: a white chip, so it reads on any image. */
+/* The DS close button on the picture, on a white disc so it reads on any image. */
 .imst-source .imst-source__remove {
   position: absolute;
   top: var(--ref-spacing-xxxs);
   right: var(--ref-spacing-xxxs);
+  padding: var(--ref-spacing-xxxs);
   background: var(--ref-color-white);
+}
+
+.imst-source .imst-source__remove:hover {
+  background: var(--ref-color-grey-05);
 }
 
 @media (max-width: 1024px) {
@@ -337,6 +342,17 @@ button.imst-style-card {
   margin: 0;
 }
 
-.imst-creator__actions {
-  display: flex;
+/* Generate sits on the label's line, at its right (the label stays the DS one). */
+.imst-prompt-field {
+  position: relative;
+}
+
+.imst-prompt-field__gen {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
 }
