@@ -741,9 +741,7 @@
 
 .imst-start__change {
   flex: none;
-  color: var(--ref-color-electric-blue-100);
-  font-size: var(--ref-font-size-sm);
-  font-weight: var(--ref-font-weight-bold);
+  pointer-events: none;
 }
 
 /* Right after the pick, the thumbnail settles in — once, and only then. */
