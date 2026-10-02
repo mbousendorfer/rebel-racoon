@@ -15,30 +15,30 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, "Refine" to iterate in place, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=1445";
-import { delegate } from "../lib/delegate.js?v=1445";
-import { hashString } from "../lib/prng.js?v=1445";
-import { renderEmpty } from "../ui/empty.js?v=1445";
-import { field, preserveFocus, textInput } from "../ui/fields.js?v=1445";
-import { toast } from "../ui/toast.js?v=1445";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1445";
-import { styleThumb } from "../ui/style-thumb.js?v=1445";
-import { openDialog } from "../ui/dialog.js?v=1445";
-import { menu } from "../ui/menu.js?v=1445";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1445";
-import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1445";
-import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1445";
-import { networkById } from "../config/networks.js?v=1445";
-import { copyService, imageGenerationService } from "../services/index.js?v=1445";
-import { unbranded } from "../state/playbook-brand.js?v=1445";
-import { resolveLayers } from "../render/layout.js?v=1445";
-import { svgToDataUrl } from "../render/visual.js?v=1445";
-import { splitVisual } from "../render/split.js?v=1445";
-import { bakeDoc } from "../render/edit-export.js?v=1445";
-import { subjectKindFor } from "../render/subjects.js?v=1445";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1445";
-import { createEditor } from "./edit/editor.js?v=1445";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1445";
+import { html, raw, toString } from "../lib/html.js?v=1453";
+import { delegate } from "../lib/delegate.js?v=1453";
+import { hashString } from "../lib/prng.js?v=1453";
+import { renderEmpty } from "../ui/empty.js?v=1453";
+import { field, preserveFocus, textInput } from "../ui/fields.js?v=1453";
+import { toast } from "../ui/toast.js?v=1453";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1453";
+import { styleThumb } from "../ui/style-thumb.js?v=1453";
+import { openDialog } from "../ui/dialog.js?v=1453";
+import { menu } from "../ui/menu.js?v=1453";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1453";
+import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1453";
+import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1453";
+import { networkById } from "../config/networks.js?v=1453";
+import { copyService, imageGenerationService } from "../services/index.js?v=1453";
+import { unbranded } from "../state/playbook-brand.js?v=1453";
+import { resolveLayers } from "../render/layout.js?v=1453";
+import { svgToDataUrl } from "../render/visual.js?v=1453";
+import { splitVisual } from "../render/split.js?v=1453";
+import { bakeDoc } from "../render/edit-export.js?v=1453";
+import { subjectKindFor } from "../render/subjects.js?v=1453";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1453";
+import { createEditor } from "./edit/editor.js?v=1453";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1453";
 import {
   canEditBrand,
   forgetOneOffStyle,
@@ -49,15 +49,15 @@ import {
   getStylesForBrand,
   registerOneOffStyle,
   subscribe,
-} from "../state/store.js?v=1445";
-import { discardOneOff, oneOffStyleFrom, saveOneOffToPlaybook } from "../state/style-actions.js?v=1445";
+} from "../state/store.js?v=1453";
+import { discardOneOff, oneOffStyleFrom, saveOneOffToPlaybook } from "../state/style-actions.js?v=1453";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1445";
+} from "../state/creation-actions.js?v=1453";
 
 const variationsLabel = (n) => (n === 1 ? "1 variation" : `${n} variations`);
 
@@ -591,20 +591,13 @@ export function mountStudio(
           ${error}
         </div>`;
       return html`<div class="imst-start__body">
-        <div class="imst-start__image" data-imst-style-drop>
-          ${assetImg(state.oneOff.custom.sources[0].ref, { className: "imst-thumb imst-start__thumb" })}
-          <div class="imst-start__image-text">
-            <span class="ap-body-bold">Your image</span>
-            <span class="ap-caption">Its colours and look, for this image only.</span>
-            ${canEditBrand(brand.id)
-              ? html`<button type="button" class="ap-link" data-imst-action="save-oneoff">
-                  Save as a Playbook style
-                </button>`
-              : ""}
-          </div>
-          <button type="button" class="ap-button ghost grey" data-imst-action="style-from-image">
-            <span>Replace</span>
-          </button>
+        <div class="imst-start__foot" data-imst-style-drop>
+          ${canEditBrand(brand.id)
+            ? html`<button type="button" class="ap-link" data-imst-action="save-oneoff">
+                Save as a Playbook style
+              </button>`
+            : html`<span class="ap-caption imst-start__note">For this image only.</span>`}
+          <button type="button" class="ap-link" data-imst-action="style-from-image">Replace the image</button>
         </div>
       </div>`;
     }
@@ -615,7 +608,17 @@ export function mountStudio(
   // where the image's look comes from — before any control. Each answer is a
   // card that shows what it does: the brand's styles fanned out, a picture
   // passing its look on, a sentence being typed.
-  const chooserArt = (brand, id) => {
+  // `live`: the recall's copy, which shows the CURRENT pick — the chosen style
+  // in the middle of the fan, the user's own picture once it is read.
+  const fanStyles = (brand, live) => {
+    const list = quickStyles(brand).slice(0, 3);
+    const picked = live && getStyle(state.brief.styleId);
+    if (!picked) return list;
+    const rest = list.filter((s) => s.id !== picked.id);
+    return [rest[0], picked, rest[1]].filter(Boolean);
+  };
+
+  const chooserArt = (brand, id, { live = false } = {}) => {
     const look = lookOf(brand, state.brief);
     if (id === "style") {
       const own = getStylesForBrand(brand.id).filter((s) => s.kind === "custom").length;
@@ -626,22 +629,29 @@ export function mountStudio(
               : `${STYLE_PRESETS.length} ready-made styles`}</span
           ></span
         ><span class="imst-chooser__fan">
-          ${quickStyles(brand)
-            .slice(0, 3)
-            .map((s) => styleThumb(s, look, { className: "imst-chooser__fan-card", seed: hashString(s.id) }))}
+          ${fanStyles(brand, live).map((s) =>
+            styleThumb(s, look, { className: "imst-chooser__fan-card", seed: hashString(s.id) }),
+          )}
         </span>`;
     }
     if (id === "image") {
       const ref = getStyle("preset-lifestyle") || quickStyles(brand)[0];
+      const own = live && state.oneOff;
       return html`<span class="imst-chooser__pass">
         <span class="imst-chooser__ref"
-          >${styleThumb(ref, look, { className: "imst-chooser__pass-img", seed: 7 })}<span
+          >${own
+            ? assetImg(state.oneOff.custom.sources[0].ref, { className: "imst-thumb imst-chooser__pass-img" })
+            : styleThumb(ref, look, { className: "imst-chooser__pass-img", seed: 7 })}<span
             class="imst-chooser__badge imst-chooser__badge--upload"
             ><i class="ap-icon-upload"></i></span
         ></span>
         <i class="ap-icon-arrow-right imst-chooser__arrow" aria-hidden="true"></i>
         <span class="imst-chooser__out"
-          >${styleThumb(ref, look, { className: "imst-chooser__pass-img", seed: 41, kind: "place" })}</span
+          >${styleThumb(own ? state.oneOff : ref, look, {
+            className: "imst-chooser__pass-img",
+            seed: 41,
+            kind: "place",
+          })}</span
         >
       </span>`;
     }
@@ -685,13 +695,30 @@ export function mountStudio(
   // In the controls: what was chosen, in one line, and the way back to the chooser.
   const renderSource = (brand, style, styleCount) => {
     const picked = SOURCES.find((o) => o.id === state.source);
+    // The thumbnail lands once, right after the pick — the chooser's card, shrunk into the column.
+    const landing = state.justPicked;
+    state.justPicked = false;
     return html`
       <section class="imst-ctl" aria-labelledby="imst-ctl-source">
-        <header class="imst-ctl__head">
-          <h3 class="imst-ctl__label ap-body-bold" id="imst-ctl-source">${picked.label}</h3>
-          <button type="button" class="ap-link" data-imst-action="change-source">Change</button>
-        </header>
-        <p class="ap-caption imst-start__short">${picked.short}</p>
+        <h3 class="imst-start__sr" id="imst-ctl-source">Start from ${picked.title.toLowerCase()}</h3>
+        <button
+          type="button"
+          class="imst-start__recall${landing ? " is-landing" : ""}"
+          data-imst-action="change-source"
+          ${picked.id === "image" ? "data-imst-style-drop" : ""}
+          aria-label="Start from ${picked.title.toLowerCase()}. Change where the look comes from"
+        >
+          <span class="imst-start__mini" aria-hidden="true"
+            ><span class="imst-start__mini-art imst-chooser__art"
+              >${chooserArt(brand, picked.id, { live: true })}</span
+            ></span
+          >
+          <span class="imst-start__what">
+            <span class="imst-start__name">${picked.title}</span>
+            <span class="ap-caption">${picked.short}</span>
+          </span>
+          <span class="imst-start__change" aria-hidden="true">Change</span>
+        </button>
         ${sourceBody(brand, style, styleCount)}
       </section>
     `;
@@ -1695,6 +1722,7 @@ ${b.prompt}</textarea
     }),
     delegate(target, "click", "[data-imst-source]", (_e, el) => {
       if (el.dataset.imstSource === state.source) return;
+      state.justPicked = !!el.closest(".imst-chooser");
       state.source = el.dataset.imstSource;
       state.sourceError = "";
       setStyle(
