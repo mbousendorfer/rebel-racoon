@@ -6,11 +6,12 @@
 //   ctas({ brand, brief, round? }) → Promise<string[3]>
 //   caption({ brand, brief, network, headline }) → Promise<string>   (within the network's limit)
 //   hashtags({ brand, brief, network }) → Promise<string[]>
+//   promptFromImages({ colors, look }) → Promise<string>   (a style prompt read from reference images)
 
-import { MOCK } from "../../config/mock.js?v=1481";
-import { COPY_LIMITS } from "../../config/copy-limits.js?v=1481";
-import { hashString, prng, shuffle } from "../../lib/prng.js?v=1481";
-import { wait } from "../../lib/delegate.js?v=1481";
+import { MOCK } from "../../config/mock.js?v=1483";
+import { COPY_LIMITS } from "../../config/copy-limits.js?v=1483";
+import { hashString, prng, shuffle } from "../../lib/prng.js?v=1483";
+import { wait } from "../../lib/delegate.js?v=1483";
 
 function delay(signal, [min, max] = MOCK.copy.delayMs) {
   return wait(min + Math.random() * (max - min), signal);
@@ -187,4 +188,47 @@ export async function headlineFromPost({ text, round = 0 }, { signal } = {}) {
   }
   const line = unique[round % unique.length];
   return line.charAt(0).toUpperCase() + line.slice(1);
+}
+
+// A colour, in words: its hue and how light it is — what a model would say it sees.
+function colourWord(hex) {
+  const n = parseInt(String(hex).replace("#", ""), 16);
+  if (Number.isNaN(n)) return "";
+  const r = (n >> 16) / 255,
+    g = ((n >> 8) & 255) / 255,
+    b = (n & 255) / 255;
+  const max = Math.max(r, g, b),
+    min = Math.min(r, g, b),
+    l = (max + min) / 2,
+    d = max - min;
+  if (d < 0.08) return l > 0.85 ? "white" : l < 0.18 ? "black" : l > 0.6 ? "light grey" : "grey";
+  let h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  h = (h * 60 + 360) % 360;
+  const hue =
+    h < 15 || h >= 345
+      ? "red"
+      : h < 40
+        ? "orange"
+        : h < 65
+          ? "yellow"
+          : h < 160
+            ? "green"
+            : h < 200
+              ? "teal"
+              : h < 255
+                ? "blue"
+                : h < 290
+                  ? "purple"
+                  : "pink";
+  return l > 0.72 ? `pale ${hue}` : l < 0.3 ? `deep ${hue}` : hue;
+}
+
+/** A style prompt read from the reference images: their look (the preset their
+ * colours point to) and their palette, in words. As slow as the real call. */
+export async function promptFromImages({ colors = [], look = null }, { signal } = {}) {
+  await delay(signal, MOCK.suggest.delayMs);
+  const words = [...new Set(colors.map(colourWord).filter(Boolean))].slice(0, 3);
+  const base = (look?.description || "A consistent look across every image").replace(/\.$/, "");
+  const palette = words.length ? ` A palette of ${words.join(", ").replace(/, ([^,]*)$/, " and $1")}.` : "";
+  return `${base}.${palette} Soft, even light; one clear subject; an uncluttered background.`;
 }

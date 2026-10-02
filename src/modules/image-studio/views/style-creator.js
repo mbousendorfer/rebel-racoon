@@ -8,23 +8,24 @@
 // user's request, 2026-10-02: a new style keeps the essentials.) A test run
 // on three neutral subjects before saving. Saved FOR the active Playbook.
 
-import { html, toString } from "../lib/html.js?v=1481";
-import { delegate } from "../lib/delegate.js?v=1481";
-import { getPath } from "../../../router.js?v=1481";
-import { setTopbarActions } from "../../../components/topbar.js?v=1481";
-import { hashString, randomSeed } from "../lib/prng.js?v=1481";
-import { renderFrame } from "./frame.js?v=1481";
-import { renderEmpty } from "../ui/empty.js?v=1481";
-import { field, preserveFocus, slider, syncSlider, textArea, textInput } from "../ui/fields.js?v=1481";
-import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1481";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1481";
-import { toast } from "../ui/toast.js?v=1481";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1481";
-import { CUSTOM_STYLE_LIMITS, STYLE_TEST_SUBJECTS } from "../config/style-presets.js?v=1481";
-import { createStyle } from "../model/schema.js?v=1481";
-import { imageGenerationService } from "../services/index.js?v=1481";
-import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1481";
-import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1481";
+import { html, toString } from "../lib/html.js?v=1483";
+import { delegate } from "../lib/delegate.js?v=1483";
+import { getPath } from "../../../router.js?v=1483";
+import { setTopbarActions } from "../../../components/topbar.js?v=1483";
+import { hashString, randomSeed } from "../lib/prng.js?v=1483";
+import { renderFrame } from "./frame.js?v=1483";
+import { renderEmpty } from "../ui/empty.js?v=1483";
+import { field, preserveFocus, slider, syncSlider, textArea, textInput } from "../ui/fields.js?v=1483";
+import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1483";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1483";
+import { toast } from "../ui/toast.js?v=1483";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=1483";
+import { CUSTOM_STYLE_LIMITS, STYLE_TEST_SUBJECTS, presetById } from "../config/style-presets.js?v=1483";
+import { createStyle } from "../model/schema.js?v=1483";
+import { copyService, imageGenerationService } from "../services/index.js?v=1483";
+import { lookFromColors } from "../render/visual.js?v=1483";
+import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1483";
+import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1483";
 
 function draftFrom(style, brandId) {
   if (style) {
@@ -70,6 +71,7 @@ export function mount(target, params, ctx, { dialog = null } = {}) {
     stale: false,
     errors: [],
     uploading: 0,
+    promptBusy: false, // "Generate the prompt" is reading the images
     abort: null,
   };
 
@@ -221,38 +223,52 @@ export function mount(target, params, ctx, { dialog = null } = {}) {
           placeholder: "e.g. Morning light",
         }),
       })}
-      ${field({
-        label: "Style prompt",
-        id: "imst-st-prompt",
-        hint: "Optional. Added to every image in this style.",
-        control: textArea({
+    </section>`;
+    const refs = html` <section class="${card}" aria-labelledby="imst-src-images">
+        <h2 class="ap-body-bold" id="imst-src-images">Reference images</h2>
+        ${images.length
+          ? html`<ul class="imst-sources">
+              ${images.map(([s, i]) => renderSource(s, i))}
+            </ul>`
+          : ""}
+        ${images.length < CUSTOM_STYLE_LIMITS.images
+          ? dropzone({
+              id: "refs",
+              icon: "ap-icon-image",
+              title: state.uploading ? "Adding…" : "Drop images here or",
+              sub: `2 to ${CUSTOM_STYLE_LIMITS.images} images that share the look you want · ${images.length} added`,
+              compact: true,
+            })
+          : ""}
+      </section>
+      <section class="${card}" aria-labelledby="imst-st-prompt-label">
+        <header class="imst-section__head">
+          <label class="ap-body-bold" id="imst-st-prompt-label" for="imst-st-prompt">Style prompt</label>
+          <button
+            type="button"
+            class="ap-button ghost blue${state.promptBusy ? " loading" : ""}"
+            data-imst-action="generate-prompt"
+            ${!images.length || state.promptBusy ? "disabled" : ""}
+          >
+            <i class="ap-icon-sparkles" aria-hidden="true"></i
+            ><span
+              >${state.promptBusy
+                ? "Reading your images…"
+                : d.stylePrompt
+                  ? "Generate again"
+                  : "Generate the prompt"}</span
+            >
+          </button>
+        </header>
+        ${textArea({
           path: "stylePrompt",
           id: "imst-st-prompt",
           value: d.stylePrompt,
-          rows: 2,
-          placeholder: "e.g. Always a plain background, soft light",
-        }),
-      })}
-    </section>`;
-    const refs = html` <section class="${card}" aria-labelledby="imst-src-images">
-      <header class="imst-section__head">
-        <h2 class="ap-body-bold" id="imst-src-images">Reference images</h2>
-        <span class="ap-caption">${images.length} of ${CUSTOM_STYLE_LIMITS.images}</span>
-      </header>
-      ${images.length
-        ? html`<ul class="imst-sources">
-            ${images.map(([s, i]) => renderSource(s, i))}
-          </ul>`
-        : ""}
-      ${images.length < CUSTOM_STYLE_LIMITS.images
-        ? dropzone({
-            id: "refs",
-            title: state.uploading ? "Adding…" : "Drop images whose look you want, or",
-            sub: "PNG, JPG, SVG or WebP",
-            compact: true,
-          })
-        : ""}
-    </section>`;
+          rows: 4,
+          placeholder: "Generate the prompt from your images, then edit it if you like.",
+          disabled: state.promptBusy,
+        })}
+      </section>`;
     target.innerHTML = toString(
       page(html`
         ${dialog
@@ -294,6 +310,24 @@ export function mount(target, params, ctx, { dialog = null } = {}) {
       if (el) el.textContent = `Weight ${share(state.draft, s)}%`;
     });
   };
+
+  // "Generate the prompt": the images' look and palette, put in words — a draft to edit.
+  async function generatePrompt() {
+    const colors = state.draft.sources.flatMap((s) => s.colors || getAsset(s.ref)?.colors || []);
+    state.promptBusy = true;
+    paint();
+    try {
+      state.draft.stylePrompt = await copyService.promptFromImages({
+        colors,
+        look: presetById(lookFromColors(colors)),
+      });
+      state.stale = !!state.test;
+    } catch {
+      toast("I couldn't read the images. Try again.", { variant: "error" });
+    }
+    state.promptBusy = false;
+    paint();
+  }
 
   async function runTest() {
     state.test = { status: "loading", seeds: [] };
@@ -393,7 +427,8 @@ export function mount(target, params, ctx, { dialog = null } = {}) {
         state.draft.sources.splice(Number(el.dataset.index), 1);
         state.stale = !!state.test;
         paint();
-      } else if (action === "test") runTest();
+      } else if (action === "generate-prompt") generatePrompt();
+      else if (action === "test") runTest();
       else if (action === "save") save();
     }),
   ];

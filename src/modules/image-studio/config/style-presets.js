@@ -225,7 +225,8 @@ export const STYLE_TEST_SUBJECTS = Object.freeze([
   { id: "place", label: "A place" },
 ]);
 
-export const CUSTOM_STYLE_LIMITS = Object.freeze({ images: 10, presets: 5 });
+// Six images at most: past that, references start to disagree (2026-10-02).
+export const CUSTOM_STYLE_LIMITS = Object.freeze({ images: 6, presets: 5 });
 
 // The presets offered first when the brand has few styles of its own — one per
 // family, the ones that read best at thumbnail size. The studio's quick picks

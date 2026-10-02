@@ -1,9 +1,17 @@
 // Image Generator — a dropzone that really accepts a drop (DS port .ap-dropzone,
 // from ds-patches). Markup + binding; the module's own copy of the pattern.
 
-import { html } from "../lib/html.js?v=1481";
+import { html } from "../lib/html.js?v=1483";
 
-export function dropzone({ id, title, sub, accept = "image/*", multiple = true, compact = false }) {
+export function dropzone({
+  id,
+  title,
+  sub,
+  icon = "ap-icon-upload",
+  accept = "image/*",
+  multiple = true,
+  compact = false,
+}) {
   return html`
     <div
       class="ap-dropzone${compact ? " ap-dropzone--compact" : ""}"
@@ -12,7 +20,7 @@ export function dropzone({ id, title, sub, accept = "image/*", multiple = true, 
       tabindex="0"
       aria-label="${title} — browse files"
     >
-      <span class="ap-dropzone__icon"><i class="ap-icon-upload" aria-hidden="true"></i></span>
+      <span class="ap-dropzone__icon"><i class="${icon}" aria-hidden="true"></i></span>
       <span class="ap-dropzone__text">
         <span class="ap-dropzone__title">${title} <span class="ap-dropzone__browse">browse</span></span>
         ${sub ? html`<span class="ap-dropzone__sub">${sub}</span>` : ""}

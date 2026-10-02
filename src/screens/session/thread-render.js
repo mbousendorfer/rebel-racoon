@@ -12,19 +12,19 @@ import {
   renderMessageBubble,
   renderNotice,
   renderResultCard,
-} from "./thread-turns.js?v=1481";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=1481";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1481";
-import { getTopPost } from "../../top-posts-store.js?v=1481";
-import { getTopicById } from "../../topics-store.js?v=1481";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=1481";
-import { renderProfileEchoCard } from "../../social-profiles.js?v=1481";
-import { escapeHtml } from "../../utils.js?v=1481";
-import { getIdeas } from "../../library.js?v=1481";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1481";
-import { getThread } from "../../assistant.js?v=1481";
-import { getSuggestion } from "../../voice-coach-store.js?v=1481";
-import { networkLabel, networkIcon } from "../../network-voice.js?v=1481";
+} from "./thread-turns.js?v=1483";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1483";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1483";
+import { getTopPost } from "../../top-posts-store.js?v=1483";
+import { getTopicById } from "../../topics-store.js?v=1483";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=1483";
+import { renderProfileEchoCard } from "../../social-profiles.js?v=1483";
+import { escapeHtml } from "../../utils.js?v=1483";
+import { getIdeas } from "../../library.js?v=1483";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1483";
+import { getThread } from "../../assistant.js?v=1483";
+import { getSuggestion } from "../../voice-coach-store.js?v=1483";
+import { networkLabel, networkIcon } from "../../network-voice.js?v=1483";
 
 export function renderThread(messages, sessionId) {
   return messages.map((m) => renderTurn(m, sessionId)).join("");
