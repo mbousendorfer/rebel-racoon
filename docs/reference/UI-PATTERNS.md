@@ -29,7 +29,7 @@ Seul endroit légitime pour toucher `.ap-*`. Charte du fichier : _« the only le
 | `.ap-slider` | Le DS n'a pas de range input stylé : piste + pouce aux tokens, anneau de focus electric-blue-10. |
 | `.ap-textarea-field.narrow` | Le textarea DS impose `min-width: 256px` ; `.narrow` le lève pour les colonnes étroites. |
 | `.ap-segmented-control` | **Port** du composant Angular-only (aucune classe CSS-UI en 22.0.17), pour les Variations de l'Image Generator (1 · 2 · 3 · 4). Substitutions de tokens commentées dans le fichier. Pas pour changer de page ou de voie : c'est des tabs. |
-| `.ap-close-button` | **Port** du composant Angular-only `<ap-close-button>` (CSS-UI ne l'a que dans `.ap-infobox-close` / `.ap-tag > button`), pour les vignettes d'images de référence du créateur de style. Mêmes tokens `--comp-close-button-*`. |
+| `.ap-close-button` | **Port** du composant Angular-only `<ap-close-button>` (Figma : « Helper - Clear Button », V2 Atoms 7425:7023 — 20 × 20 tout compris) (CSS-UI ne l'a que dans `.ap-infobox-close` / `.ap-tag > button`), pour les vignettes d'images de référence du créateur de style. Mêmes tokens `--comp-close-button-*`. |
 | `.ap-filter-dropdown` / `.ap-filter-leaf` | **Port** du filter dropdown Angular-only, pour le panneau Filters du Topic Feed. Ombre = `--sys-elevation-floating` (DS 22) ; les autres substitutions attendent la famille `--sys-color-*-interactive-*`, non publiée. |
 | `.app-ring` / `.app-bar` | Anneau et barre de progression (tiers on-track / at-risk / off-track d'Insights) : le DS n'a aucun composant de progression. |
 

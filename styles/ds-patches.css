@@ -859,7 +859,7 @@ button.ap-link {
   right: var(--ref-spacing-sm);
 }
 
-/* ── .ap-close-button — a PORT of the DS component ─────────────────────────
+/* ── .ap-close-button — a PORT of the DS component (Figma: « Helper - Clear Button ») ──
    `@agorapulse/ui-components/close-button` is Angular only (<ap-close-button>);
    CSS-UI ships its look only inside other components (.ap-infobox-close,
    .ap-tag > button). Transcribed from close-button.component.scss — same
@@ -870,11 +870,13 @@ button.ap-link {
   display: flex;
   justify-content: center;
   align-items: center;
-  box-sizing: content-box;
+  /* 20 × 20 all in, as Figma's « Helper - Clear Button » (V2 Atoms 7425:7023);
+     the Angular SCSS's 10px padding would make it 40px in CSS-UI's box model. */
+  box-sizing: border-box;
   width: var(--comp-close-button-size);
   height: var(--comp-close-button-size);
   margin: 0;
-  padding: var(--comp-close-button-padding);
+  padding: 0;
   border: none;
   border-radius: 50%;
   background: transparent;

@@ -229,7 +229,6 @@ button.imst-style-card {
   position: absolute;
   top: var(--ref-spacing-xxxs);
   right: var(--ref-spacing-xxxs);
-  padding: var(--ref-spacing-xxxs);
   background: var(--ref-color-white);
 }
 
