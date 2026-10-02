@@ -518,21 +518,6 @@
   transform: rotate(-4deg);
 }
 
-/* From scratch — the same words, three free directions */
-.imst-chooser__free {
-  display: flex;
-  gap: var(--ref-spacing-xxs);
-  margin-top: var(--ref-spacing-xs);
-}
-
-.imst-chooser__free-img {
-  flex: 1 1 0;
-  min-width: 0;
-  aspect-ratio: 1;
-  border-radius: var(--ref-border-radius-md);
-  object-fit: cover;
-}
-
 /* The icon class masks its own element, so the white circle is the wrapper's. */
 .imst-chooser__badge {
   position: absolute;
@@ -632,55 +617,116 @@
   }
 }
 
-/* In the controls: what was chosen, and Change */
-.imst-start__picked {
+/* In the controls: the choice, as a small copy of its chooser card — its own
+ * picture shrunk to a thumbnail, its name, and Change. The whole row is the
+ * control that reopens the chooser: blue border on hover, like every card. */
+.imst-start__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.imst-start__recall {
   display: flex;
   align-items: center;
-  gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-xs);
+  gap: var(--ref-spacing-sm);
+  width: 100%;
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-sm) var(--ref-spacing-xxs) var(--ref-spacing-xxs);
   border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-card);
   background: var(--ref-color-white);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
 }
 
-.imst-start__icon {
-  display: grid;
+.imst-start__recall:hover,
+.imst-start__recall.is-dragover {
+  border-color: var(--ref-color-electric-blue-100);
+}
+
+.imst-start__recall:focus-visible {
+  outline: 2px solid var(--sys-border-color-active);
+  outline-offset: 2px;
+}
+
+/* The chooser's art is drawn for a ~320px card; here it is that same picture,
+ * scaled down and cropped to its subject, so it reads as the card it came from. */
+.imst-start__mini {
+  position: relative;
   flex: none;
-  place-items: center;
-  width: var(--ref-spacing-xl);
-  height: var(--ref-spacing-xl);
-  border-radius: var(--app-radius-circle);
+  width: calc(var(--ref-spacing-xxxl) * 2);
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: var(--ref-border-radius-md);
   background: var(--ref-color-grey-05);
-  color: var(--ref-color-grey-100);
+}
+
+.imst-start__mini-art {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(var(--ref-spacing-xxxl) * 5.4);
+  border-bottom: 0;
+  /* Cropped in on the subject: the card's margins fall outside the thumbnail. */
+  transform: translate(-50%, -50%) scale(0.52);
+  pointer-events: none;
+}
+
+/* The sentence is wider than the fan: it needs the whole width to stay a field. */
+.imst-start__mini-art:has(.imst-chooser__words) {
+  transform: translate(-50%, -50%) scale(0.4);
+}
+
+.imst-start__mini-art .ap-tag,
+.imst-start__mini-art .imst-chooser__caret {
+  display: none;
 }
 
 .imst-start__what {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
   min-width: 0;
   color: var(--ref-color-grey-80);
 }
 
-.imst-start__what .ap-body-bold {
+.imst-start__name {
   color: var(--ref-color-grey-100);
+  font-size: var(--ref-font-size-lg);
+  font-weight: var(--ref-font-weight-bold);
+  line-height: 1.25;
 }
 
-.imst-start__body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxs);
-}
-
-.imst-start__foot {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--ref-spacing-xs);
-}
-
-.imst-start__foot .ap-link {
+.imst-start__change {
   flex: none;
+  color: var(--ref-color-electric-blue-100);
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--ref-font-weight-bold);
+}
+
+/* Right after the pick, the thumbnail settles in — once, and only then. */
+.imst-start__recall.is-landing .imst-start__mini {
+  animation: imst-start-land 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes imst-start-land {
+  from {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .imst-start__recall.is-landing .imst-start__mini {
+    animation: none;
+  }
 }
 
 .imst-start__note {
@@ -716,43 +762,6 @@
 
 .imst-start__drop-icon {
   font-size: var(--ref-font-size-xl);
-}
-
-/* "An image", once read: the picture IS the style. */
-.imst-start__image {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-xxs);
-  border: 1px solid var(--ref-color-grey-20);
-  border-radius: var(--app-radius-card);
-  background: var(--ref-color-white);
-}
-
-.imst-start__image.is-dragover {
-  border-color: var(--ref-color-electric-blue-100);
-}
-
-.imst-start__thumb {
-  flex: none;
-  width: calc(var(--ref-spacing-xxxl) * 1.25);
-  aspect-ratio: 1;
-  border-radius: var(--ref-border-radius-md);
-  object-fit: cover;
-}
-
-.imst-start__image-text {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--ref-spacing-xxxs);
-  min-width: 0;
-  color: var(--ref-color-grey-80);
-}
-
-.imst-start__image-text .ap-link {
-  text-align: left;
 }
 
 /* Shape: one track, each option drawn to scale */
