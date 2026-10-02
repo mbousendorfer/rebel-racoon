@@ -31,25 +31,25 @@
 // host is never repainted without `destroyChartsIn(host)` first — the one rule
 // that keeps a brand switch from leaking a chart per repaint.
 
-import { html, raw } from "../../utils.js?v=1509";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=1509";
-import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=1509";
+import { html, raw } from "../../utils.js?v=1510";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=1510";
+import { subscribe as subscribeContexts, updateContext } from "../../contexts-store.js?v=1510";
 import {
   subscribe as subscribeScope,
   getActivePlaybook,
   getActivePlaybookId,
   setActivePlaybook,
-} from "../../active-playbook.js?v=1509";
-import { getPath, navigate } from "../../router.js?v=1509";
-import { isFlagOn } from "../../feature-flags.js?v=1509";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=1509";
-import { open as openObjectiveModal } from "../../components/objective-modal.js?v=1509";
-import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=1509";
-import { renderEmptyState } from "../../components/empty-state.js?v=1509";
-import { playbookTitle, objectiveTopbarActions } from "./pieces.js?v=1509";
-import { objectiveEntries, playbookRollup, entryByKey } from "./model.js?v=1509";
-import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=1509";
-import { DEFAULT_LAYOUT, readLayoutId, writeLayoutId, layoutById, viewSwitch } from "./views.js?v=1509";
+} from "../../active-playbook.js?v=1510";
+import { getPath, navigate } from "../../router.js?v=1510";
+import { isFlagOn } from "../../feature-flags.js?v=1510";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=1510";
+import { open as openObjectiveModal } from "../../components/objective-modal.js?v=1510";
+import { openObjectiveInChat, repurposePostInChat } from "../../objective-flow.js?v=1510";
+import { renderEmptyState } from "../../components/empty-state.js?v=1510";
+import { playbookTitle, objectiveTopbarActions } from "./pieces.js?v=1510";
+import { objectiveEntries, playbookRollup, entryByKey } from "./model.js?v=1510";
+import { destroyChartsIn, reflowChartsIn } from "./charts.js?v=1510";
+import { DEFAULT_LAYOUT, readLayoutId, writeLayoutId, layoutById, viewSwitch } from "./views.js?v=1510";
 
 // ── Module state ──────────────────────────────────────────────────────────
 

@@ -8,24 +8,24 @@
 // user's request, 2026-10-02: a new style keeps the essentials.) A test run
 // on three neutral subjects before saving. Saved FOR the active Playbook.
 
-import { html, toString } from "../lib/html.js?v=1509";
-import { delegate } from "../lib/delegate.js?v=1509";
-import { getPath } from "../../../router.js?v=1509";
-import { setTopbarActions } from "../../../components/topbar.js?v=1509";
-import { hashString, randomSeed } from "../lib/prng.js?v=1509";
-import { renderFrame } from "./frame.js?v=1509";
-import { renderEmpty } from "../ui/empty.js?v=1509";
-import { field, preserveFocus, textInput } from "../ui/fields.js?v=1509";
-import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1509";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1509";
-import { toast } from "../ui/toast.js?v=1509";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1509";
-import { CUSTOM_STYLE_LIMITS, STYLE_TEST_SUBJECTS, presetById } from "../config/style-presets.js?v=1509";
-import { createStyle } from "../model/schema.js?v=1509";
-import { copyService, imageGenerationService } from "../services/index.js?v=1509";
-import { lookFromColors } from "../render/visual.js?v=1509";
-import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1509";
-import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1509";
+import { html, toString } from "../lib/html.js?v=1510";
+import { delegate } from "../lib/delegate.js?v=1510";
+import { getPath } from "../../../router.js?v=1510";
+import { setTopbarActions } from "../../../components/topbar.js?v=1510";
+import { hashString, randomSeed } from "../lib/prng.js?v=1510";
+import { renderFrame } from "./frame.js?v=1510";
+import { renderEmpty } from "../ui/empty.js?v=1510";
+import { field, preserveFocus, textInput } from "../ui/fields.js?v=1510";
+import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1510";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1510";
+import { toast } from "../ui/toast.js?v=1510";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=1510";
+import { CUSTOM_STYLE_LIMITS, STYLE_TEST_SUBJECTS, presetById } from "../config/style-presets.js?v=1510";
+import { createStyle } from "../model/schema.js?v=1510";
+import { copyService, imageGenerationService } from "../services/index.js?v=1510";
+import { lookFromColors } from "../render/visual.js?v=1510";
+import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1510";
+import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1510";
 
 function draftFrom(style, brandId) {
   if (style) {

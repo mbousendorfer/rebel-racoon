@@ -111,7 +111,7 @@
   background: var(--ref-color-white);
   border: 1px solid var(--app-border);
   border-radius: var(--app-radius-lg);
-  box-shadow: var(--app-shadow-thin);
+  box-shadow: var(--sys-elevation-floating);
 }
 
 .imst-layers__title {
@@ -264,9 +264,9 @@
 }
 
 /* One thin elevation for everything that floats on Edit's plane — the tools,
-   the layers, the field under the image (--app-shadow-thin: a short, close
-   shadow, not the large popover one). The legacy Image Studio keeps its own. */
+   the layers, the field under the image (the DS "Shadow/Low (default)",
+   --sys-elevation-floating — V2 Style Guide 2.0 Tokens, node 3422:20165). The legacy Image Studio keeps its own. */
 .imst-edit .image-studio__palette,
 .imst-edit .imst-refine--edit {
-  box-shadow: var(--app-shadow-thin);
+  box-shadow: var(--sys-elevation-floating);
 }
