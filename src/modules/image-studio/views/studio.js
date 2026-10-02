@@ -15,30 +15,30 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, "Refine" to iterate in place, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=1471";
-import { delegate } from "../lib/delegate.js?v=1471";
-import { hashString } from "../lib/prng.js?v=1471";
-import { renderEmpty } from "../ui/empty.js?v=1471";
-import { preserveFocus } from "../ui/fields.js?v=1471";
-import { toast } from "../ui/toast.js?v=1471";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1471";
-import { styleThumb } from "../ui/style-thumb.js?v=1471";
-import { openDialog } from "../ui/dialog.js?v=1471";
-import { menu } from "../ui/menu.js?v=1471";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1471";
-import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1471";
-import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1471";
-import { networkById } from "../config/networks.js?v=1471";
-import { copyService, imageGenerationService } from "../services/index.js?v=1471";
-import { unbranded } from "../state/playbook-brand.js?v=1471";
-import { resolveLayers } from "../render/layout.js?v=1471";
-import { svgToDataUrl } from "../render/visual.js?v=1471";
-import { splitVisual } from "../render/split.js?v=1471";
-import { bakeDoc } from "../render/edit-export.js?v=1471";
-import { subjectKindFor } from "../render/subjects.js?v=1471";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1471";
-import { createEditor } from "./edit/editor.js?v=1471";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1471";
+import { html, raw, toString } from "../lib/html.js?v=1472";
+import { delegate } from "../lib/delegate.js?v=1472";
+import { hashString } from "../lib/prng.js?v=1472";
+import { renderEmpty } from "../ui/empty.js?v=1472";
+import { preserveFocus } from "../ui/fields.js?v=1472";
+import { toast } from "../ui/toast.js?v=1472";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1472";
+import { styleThumb } from "../ui/style-thumb.js?v=1472";
+import { openDialog } from "../ui/dialog.js?v=1472";
+import { menu } from "../ui/menu.js?v=1472";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1472";
+import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1472";
+import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1472";
+import { networkById } from "../config/networks.js?v=1472";
+import { copyService, imageGenerationService } from "../services/index.js?v=1472";
+import { unbranded } from "../state/playbook-brand.js?v=1472";
+import { resolveLayers } from "../render/layout.js?v=1472";
+import { svgToDataUrl } from "../render/visual.js?v=1472";
+import { splitVisual } from "../render/split.js?v=1472";
+import { bakeDoc } from "../render/edit-export.js?v=1472";
+import { subjectKindFor } from "../render/subjects.js?v=1472";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1472";
+import { createEditor } from "./edit/editor.js?v=1472";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1472";
 import {
   forgetOneOffStyle,
   getBrand,
@@ -48,15 +48,15 @@ import {
   getStylesForBrand,
   registerOneOffStyle,
   subscribe,
-} from "../state/store.js?v=1471";
-import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1471";
+} from "../state/store.js?v=1472";
+import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1472";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1471";
+} from "../state/creation-actions.js?v=1472";
 
 const variationsLabel = (n) => (n === 1 ? "1 variation" : `${n} variations`);
 
