@@ -8,24 +8,24 @@
 // user's request, 2026-10-02: a new style keeps the essentials.) A test run
 // on three neutral subjects before saving. Saved FOR the active Playbook.
 
-import { html, toString } from "../lib/html.js?v=1497";
-import { delegate } from "../lib/delegate.js?v=1497";
-import { getPath } from "../../../router.js?v=1497";
-import { setTopbarActions } from "../../../components/topbar.js?v=1497";
-import { hashString, randomSeed } from "../lib/prng.js?v=1497";
-import { renderFrame } from "./frame.js?v=1497";
-import { renderEmpty } from "../ui/empty.js?v=1497";
-import { field, preserveFocus, textInput } from "../ui/fields.js?v=1497";
-import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1497";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1497";
-import { toast } from "../ui/toast.js?v=1497";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1497";
-import { CUSTOM_STYLE_LIMITS, STYLE_TEST_SUBJECTS, presetById } from "../config/style-presets.js?v=1497";
-import { createStyle } from "../model/schema.js?v=1497";
-import { copyService, imageGenerationService } from "../services/index.js?v=1497";
-import { lookFromColors } from "../render/visual.js?v=1497";
-import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1497";
-import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1497";
+import { html, toString } from "../lib/html.js?v=1498";
+import { delegate } from "../lib/delegate.js?v=1498";
+import { getPath } from "../../../router.js?v=1498";
+import { setTopbarActions } from "../../../components/topbar.js?v=1498";
+import { hashString, randomSeed } from "../lib/prng.js?v=1498";
+import { renderFrame } from "./frame.js?v=1498";
+import { renderEmpty } from "../ui/empty.js?v=1498";
+import { field, preserveFocus, textInput } from "../ui/fields.js?v=1498";
+import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1498";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1498";
+import { toast } from "../ui/toast.js?v=1498";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=1498";
+import { CUSTOM_STYLE_LIMITS, STYLE_TEST_SUBJECTS, presetById } from "../config/style-presets.js?v=1498";
+import { createStyle } from "../model/schema.js?v=1498";
+import { copyService, imageGenerationService } from "../services/index.js?v=1498";
+import { lookFromColors } from "../render/visual.js?v=1498";
+import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1498";
+import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1498";
 
 function draftFrom(style, brandId) {
   if (style) {
@@ -233,7 +233,7 @@ export function mount(target, params, ctx, { embed = null } = {}) {
       <section class="${card}">
         <!-- The DS textarea field, its label inside it; Generate is a standalone link on the label's line. -->
         <div class="ap-textarea-field resizable imst-prompt-field">
-          <label for="imst-st-prompt">Style prompt</label>
+          <label for="imst-st-prompt">Style prompt <small>(optional)</small></label>
           <button
             type="button"
             class="ap-link standalone imst-prompt-field__gen${!images.length || state.promptBusy ? " disabled" : ""}"
@@ -286,6 +286,10 @@ ${d.stylePrompt}</textarea
     );
     hydrateAssets(target);
     restore();
+    // No saving while the prompt is being written: it would save without it.
+    (embed ? embed.footer : document.getElementById("topbar"))
+      ?.querySelector('[data-imst-creator="save"]')
+      ?.toggleAttribute("disabled", state.promptBusy);
   };
 
   const markStale = () => {
@@ -366,8 +370,9 @@ ${d.stylePrompt}</textarea
   const offs = [
     topbar
       ? delegate(topbar, "click", "[data-imst-creator]", (_e, el) => {
-          if (el.dataset.imstCreator === "save") save();
-          else if (embed) embed.onCancel();
+          if (el.dataset.imstCreator === "save") {
+            if (!el.disabled) save();
+          } else if (embed) embed.onCancel();
           else ctx.navigate(fiche);
         })
       : () => {},
