@@ -14,7 +14,7 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1461";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1462";
 import {
   kitEnabled,
   renderColorRole,
@@ -27,11 +27,11 @@ import {
   handleKitInput,
   handleKitChange,
   kitSnapshot,
-} from "./playbook-brand-kit.js?v=1461";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1461";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1461";
-import { isFlagOn } from "./feature-flags.js?v=1461";
-import { parseHashParams } from "./url-state.js?v=1461";
+} from "./playbook-brand-kit.js?v=1462";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1462";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1462";
+import { isFlagOn } from "./feature-flags.js?v=1462";
+import { parseHashParams } from "./url-state.js?v=1462";
 import {
   networkVoicesOn,
   baseNetwork,
@@ -41,21 +41,21 @@ import {
   maturity,
   networkLabel,
   networkIcon,
-} from "./network-voice.js?v=1461";
+} from "./network-voice.js?v=1462";
 import {
   getSuggestions,
   accept as acceptVoiceSuggestion,
   dismiss as dismissVoiceSuggestion,
-} from "./voice-coach-store.js?v=1461";
-import { NETWORKS } from "./social-profiles.js?v=1461";
-import { showToast } from "./components/toast.js?v=1461";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1461";
+} from "./voice-coach-store.js?v=1462";
+import { NETWORKS } from "./social-profiles.js?v=1462";
+import { showToast } from "./components/toast.js?v=1462";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1462";
 // The Default look row offers the SAME three catalogues the Image Studio renders, from
 // the one place they are declared — REF_MODES' own header makes the argument: the label,
 // the hint and the brief clause "drift the moment they live apart". No cycle: the engine
 // imports only clip-formats / image-studio-canvas / feature-flags, and its module body
 // builds consts, so importing it here costs nothing at load.
-import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1461";
+import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1462";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2478,7 +2478,7 @@ function renderVoiceEdit2(data) {
         ? pb2Block(
             "What I've learned",
             renderLineEditor("rules", networkEntry(data, baseNetwork(data))?.rules || [], "A rule for this network…"),
-            { wide: true, index: 6, icon: "ap-icon-user-graduate", caption: `${networkLabel(baseNetwork(data))} only` },
+            { wide: true, index: 6, icon: MEMORY_MARK, caption: `${networkLabel(baseNetwork(data))} only` },
           )
         : "",
     ],
@@ -2691,7 +2691,6 @@ function editEntry(data, field) {
 }
 
 function renderNetworkSwitcher(data) {
-  const base = baseNetwork(data);
   const active = activeNetworkFor(data);
   const nets = voiceNetworks(data);
   const missing = Object.keys(NETWORKS).filter((n) => !nets.includes(n));
@@ -2713,45 +2712,61 @@ function renderNetworkSwitcher(data) {
           </div>
         </details>`
       : "";
+  // DS tabs, a second row under the section tabs: one per network voice. The
+  // base is not flagged here — "The voice" block says where it was learned.
   return `
-    <div class="pb2-netbar" role="group" aria-label="Voice per network">
-      <div class="pb2-netbar__chips">
-        ${nets
-          .map((n) => {
-            const pending = getSuggestions(data.id, { network: n }).length;
-            return `<button type="button" class="ap-filter-chip pb2-netbar__chip" aria-pressed="${n === active}" data-nv-net="${n}">
-              <i class="${networkIcon(n)}" aria-hidden="true"></i>
-              <span>${esc(networkLabel(n))}${n === base ? " · Base" : ""}</span>
-              ${pending ? `<span class="ap-counter normal grey" title="${pending} suggested by Archie">${pending}</span>` : ""}
-            </button>`;
-          })
-          .join("")}
+    <div class="pb2-netbar">
+      <div class="ap-tabs pb2-nettabs">
+        <div class="ap-tabs-nav" role="tablist" aria-label="Voice per network">
+          ${nets
+            .map((n) => {
+              const on = n === active;
+              const pending = getSuggestions(data.id, { network: n }).length;
+              return `<button type="button" class="ap-tabs-tab${on ? " active" : ""}" role="tab" aria-selected="${on}" data-nv-net="${n}">
+                <i class="${networkIcon(n)}" aria-hidden="true"></i>
+                <span>${esc(networkLabel(n))}</span>
+                ${pending ? `<span class="ap-counter normal grey" title="${pending} for Archie to remember">${pending}</span>` : ""}
+              </button>`;
+            })
+            .join("")}
+        </div>
       </div>
       ${add}
     </div>`;
 }
 
 // Archie's pending proposals for one network — Add / Not now, footer-grouped.
+// A rule as a memory note (styles/components/voice-coach.css): pending =
+// the butter wash (Archie proposes), kept = plain text beside the mark (it's in the voice).
+const MEMORY_MARK = "ap-icon-sparkles memory-mark";
+
+function memoryNote(text, { kept = false, meta = "", actions = "" } = {}) {
+  return `<li class="memory-note memory-note--${kept ? "kept" : "pending"}">
+    <i class="${MEMORY_MARK}" aria-hidden="true"></i>
+    <div class="memory-note__body">
+      <p class="memory-note__text">${esc(text)}</p>
+      ${meta ? `<p class="memory-note__meta">${esc(meta)}</p>` : ""}
+    </div>
+    ${actions ? `<div class="memory-note__actions">${actions}</div>` : ""}
+  </li>`;
+}
+
+// What Archie wants to remember for one network — Not now / Remember.
 function nvSuggestionsBlock(data, net, index) {
   const list = canEditView() ? getSuggestions(data.id, { network: net }) : [];
   if (!list.length) return "";
   return pb2Block(
-    "Suggested by Archie",
-    `<ul class="pb2-nv-suggestions">${list
-      .map(
-        (sg) => `<li class="pb2-nv-suggestion">
-          <div class="pb2-nv-suggestion__text">
-            <p class="pb2-nv-suggestion__rule">${esc(sg.text)}</p>
-            <p class="pb2-nv-suggestion__why">${esc(sg.why || "")}</p>
-          </div>
-          <div class="pb2-nv-suggestion__actions">
-            <button type="button" class="ap-button ghost grey" data-nv-dismiss="${esc(sg.id)}">Not now</button>
-            <button type="button" class="ap-button stroked blue" data-nv-accept="${esc(sg.id)}">Add</button>
-          </div>
-        </li>`,
+    "Archie wants to remember",
+    `<ul class="memory-notes">${list
+      .map((sg) =>
+        memoryNote(sg.text, {
+          meta: sg.why || "",
+          actions: `<button type="button" class="ap-button ghost grey" data-nv-dismiss="${esc(sg.id)}">Not now</button>
+            <button type="button" class="ap-button stroked blue" data-nv-accept="${esc(sg.id)}">Remember</button>`,
+        }),
       )
       .join("")}</ul>`,
-    { wide: true, index, icon: "ap-icon-sparkles", caption: "Nothing is added without your OK" },
+    { wide: true, index, icon: MEMORY_MARK, caption: "Nothing is kept without your OK" },
   );
 }
 
@@ -2760,11 +2775,11 @@ function nvRulesBlock(data, net, index) {
   return pb2Block(
     "What I've learned",
     rules.length
-      ? pb2Lines(rules, "ap-icon-check")
+      ? `<ul class="memory-notes">${rules.map((r) => memoryNote(r, { kept: true })).join("")}</ul>`
       : pb2Empty(
-          `Nothing yet. Rework a ${networkLabel(net)} draft or tell me what was off, and I'll suggest rules here.`,
+          `Nothing yet. Rework a ${networkLabel(net)} draft or tell me what was off, and I'll suggest what to remember here.`,
         ),
-    { wide: true, index, icon: "ap-icon-user-graduate", caption: `${networkLabel(net)} only` },
+    { wide: true, index, icon: MEMORY_MARK, caption: `${networkLabel(net)} only` },
   );
 }
 
@@ -2839,7 +2854,7 @@ function nvNetworkEditBlocks(data, net) {
     pb2Block("What I've learned", renderLineEditor("rules", e.rules || [], `A rule for ${label}…`), {
       wide: true,
       index: 0,
-      icon: "ap-icon-user-graduate",
+      icon: MEMORY_MARK,
       caption: `${label} only`,
     }),
     pb2Block("Opens with", listField("signatureHooks", ve.signatureHooks), {
@@ -2894,7 +2909,7 @@ function onNetworkVoiceClick(event) {
   const yes = event.target.closest("[data-nv-accept]");
   if (yes) {
     acceptVoiceSuggestion(data.id, yes.dataset.nvAccept);
-    showToast(`Added to your ${networkLabel(activeNetworkFor(data))} voice.`);
+    showToast(`Remembered for your ${networkLabel(activeNetworkFor(data))} voice.`);
     repaint();
     return true;
   }

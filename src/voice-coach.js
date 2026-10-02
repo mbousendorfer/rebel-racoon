@@ -13,15 +13,15 @@
 // ponytail: the edit heuristics are a mock reading of one before/after pair.
 // The real thing compares many drafts per network before proposing.
 
-import { getSessionById } from "./sessions-store.js?v=1461";
-import { getContextById } from "./contexts-store.js?v=1461";
-import { playbookForNewWork } from "./active-playbook.js?v=1461";
-import { getPosts } from "./posts-store.js?v=1461";
-import { postVoiceSuggestion, postAssistantMessage, postSelectionEcho } from "./assistant.js?v=1461";
-import { ask, isActive } from "./inline-question.js?v=1461";
-import { propose, accept } from "./voice-coach-store.js?v=1461";
-import { normalizeNetwork } from "./social-profiles.js?v=1461";
-import { networkVoicesOn, baseNetwork, isOverridden, networkLabel, networkIcon } from "./network-voice.js?v=1461";
+import { getSessionById } from "./sessions-store.js?v=1462";
+import { getContextById } from "./contexts-store.js?v=1462";
+import { playbookForNewWork } from "./active-playbook.js?v=1462";
+import { getPosts } from "./posts-store.js?v=1462";
+import { postVoiceSuggestion, postSelectionEcho } from "./assistant.js?v=1462";
+import { ask, isActive } from "./inline-question.js?v=1462";
+import { propose, accept } from "./voice-coach-store.js?v=1462";
+import { normalizeNetwork } from "./social-profiles.js?v=1462";
+import { networkVoicesOn, baseNetwork, isOverridden, networkLabel, networkIcon } from "./network-voice.js?v=1462";
 
 function sessionPlaybook(sessionId) {
   const session = getSessionById(sessionId);
@@ -132,6 +132,8 @@ export function coachAfterDraft(sessionId, drafts = []) {
   asked.add(`${ctx.id}:${net}`);
   const label = networkLabel(net);
   const commit = (text) => {
+    postSelectionEcho(sessionId, { icon: networkIcon(net), title: text, meta: `${label} closing` });
+    // The answer is the explicit gesture: kept at once, shown as a kept memory note.
     const s = propose(ctx.id, {
       network: net,
       field: "closingPatterns",
@@ -139,9 +141,7 @@ export function coachAfterDraft(sessionId, drafts = []) {
       why: "You told me.",
       source: "coaching",
     });
-    if (s) accept(ctx.id, s.id);
-    postSelectionEcho(sessionId, { icon: networkIcon(net), title: text, meta: `${label} closing` });
-    postAssistantMessage(sessionId, `Got it. I'll close your ${label} posts like that from now on.`);
+    if (s && accept(ctx.id, s.id)) postVoiceSuggestion(sessionId, { contextId: ctx.id, suggestionId: s.id });
   };
   ask(sessionId, {
     intro: `Your ${label} voice still closes the way your ${networkLabel(base)} one does. Quick question so I get it right next time.`,

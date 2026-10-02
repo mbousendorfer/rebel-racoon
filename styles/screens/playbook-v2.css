@@ -749,63 +749,21 @@
 /* The network switcher: one chip per network voice, "Add a network" at the end. */
 .pb2-netbar {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   gap: var(--ref-spacing-sm);
   margin-bottom: var(--ref-spacing-md);
 }
 
-.pb2-netbar__chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ref-spacing-xs);
-}
-
-.pb2-netbar__chip {
-  gap: var(--ref-spacing-xxs);
+.pb2-nettabs {
+  flex: 1;
+  min-width: 0;
 }
 
 /* The level, named in words — weight carries it, never a lighter grey. */
 .pb2-nv-level {
   margin: 0 0 var(--ref-spacing-xs);
   font-size: var(--ref-font-size-md);
-}
-
-.pb2-nv-suggestions {
-  display: flex;
-  flex-direction: column;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.pb2-nv-suggestion {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ref-spacing-md);
-  padding: var(--ref-spacing-sm) 0;
-}
-
-.pb2-nv-suggestion + .pb2-nv-suggestion {
-  border-top: 1px solid var(--ref-color-grey-20);
-}
-
-.pb2-nv-suggestion__rule {
-  margin: 0;
-  font-weight: var(--ref-font-weight-bold);
-}
-
-.pb2-nv-suggestion__why {
-  margin: var(--ref-spacing-xxs) 0 0;
-  font-size: var(--ref-font-size-sm);
-}
-
-.pb2-nv-suggestion__actions {
-  display: flex;
-  flex-shrink: 0;
-  gap: var(--ref-spacing-xs);
 }
 
 /* "Adapt for X" / "Use the base voice" sit under the field they switch. */

@@ -12,19 +12,19 @@ import {
   renderMessageBubble,
   renderNotice,
   renderResultCard,
-} from "./thread-turns.js?v=1461";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=1461";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1461";
-import { getTopPost } from "../../top-posts-store.js?v=1461";
-import { getTopicById } from "../../topics-store.js?v=1461";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=1461";
-import { renderProfileEchoCard } from "../../social-profiles.js?v=1461";
-import { escapeHtml } from "../../utils.js?v=1461";
-import { getIdeas } from "../../library.js?v=1461";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1461";
-import { getThread } from "../../assistant.js?v=1461";
-import { getSuggestion } from "../../voice-coach-store.js?v=1461";
-import { networkLabel, networkIcon } from "../../network-voice.js?v=1461";
+} from "./thread-turns.js?v=1462";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1462";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1462";
+import { getTopPost } from "../../top-posts-store.js?v=1462";
+import { getTopicById } from "../../topics-store.js?v=1462";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=1462";
+import { renderProfileEchoCard } from "../../social-profiles.js?v=1462";
+import { escapeHtml } from "../../utils.js?v=1462";
+import { getIdeas } from "../../library.js?v=1462";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1462";
+import { getThread } from "../../assistant.js?v=1462";
+import { getSuggestion } from "../../voice-coach-store.js?v=1462";
+import { networkLabel, networkIcon } from "../../network-voice.js?v=1462";
 
 export function renderThread(messages, sessionId) {
   return messages.map((m) => renderTurn(m, sessionId)).join("");
@@ -200,38 +200,39 @@ function renderSelectionEchoTurn(echo) {
   `;
 }
 
-// Voice proposal (flag networkVoices) — a rule Archie noticed for one network
-// voice. Reads the suggestion's status from its store, so an Add made on the
-// Playbook's tray collapses this card too. Footer right-grouped, primary last.
+// Voice proposal (flag networkVoices) — what Archie wants to REMEMBER for one
+// network voice, drawn as a memory note (styles/components/voice-coach.css):
+// the butter wash while pending, one plain line once kept. Reads the
+// suggestion's status from its store, so a Remember made on the Playbook's
+// tray turns this card into the kept note too. Actions right, primary last.
 function renderVoiceSuggestionTurn(message) {
   const s = getSuggestion(message.contextId, message.suggestionId);
-  if (!s) return "";
+  if (!s || s.status === "dismissed") return "";
   const net = escapeHtml(networkLabel(s.network));
-  const ids = `${escapeHtml(message.contextId)}|${escapeHtml(s.id)}`;
+  const mark = `<i class="ap-icon-sparkles memory-mark" aria-hidden="true"></i>`;
+  // Kept — one line in the thread, like a "memory updated" line, not a card.
   if (s.status === "accepted") {
     return `
-      <div class="connect-status" role="status">
-        <i class="ap-icon-rounded-check_fill connect-status__icon" aria-hidden="true"></i>
-        <p class="connect-status__text">
-          <strong>Added to your ${net} voice.</strong>
-          <a class="ap-link standalone" href="#/playbook/${escapeHtml(message.contextId)}?tab=voice&amp;net=${escapeHtml(s.network)}">See the voice</a>
-        </p>
-      </div>`;
+      <div class="memory-turn"><p class="memory-line" role="status">
+        ${mark}
+        <span>Remembered for your ${net} voice: <strong>${escapeHtml(s.text)}</strong></span>
+        <a class="ap-link standalone small" href="#/playbook/${escapeHtml(message.contextId)}?tab=voice&amp;net=${escapeHtml(s.network)}">See the voice</a>
+      </p></div>`;
   }
-  if (s.status === "dismissed") return "";
+  const ids = `${escapeHtml(message.contextId)}|${escapeHtml(s.id)}`;
   return `
-    <div class="voice-suggestion" role="group" aria-label="Suggestion for your ${net} voice">
-      <div class="voice-suggestion__head">
-        <i class="${escapeHtml(networkIcon(s.network))} voice-suggestion__net" aria-hidden="true"></i>
-        <span class="voice-suggestion__title">A rule for your ${net} voice</span>
+    <div class="memory-turn"><div class="memory-note memory-note--pending memory-note--turn" role="group" aria-label="Remember this for your ${net} voice?">
+      ${mark}
+      <div class="memory-note__body">
+        <p class="memory-note__text">${escapeHtml(s.text)}</p>
+        <p class="memory-note__meta">For your
+          <i class="${escapeHtml(networkIcon(s.network))}" aria-hidden="true"></i> ${net} voice. ${escapeHtml(s.why || "")}</p>
       </div>
-      <p class="voice-suggestion__why">${escapeHtml(s.why || "")}</p>
-      <blockquote class="voice-suggestion__rule">${escapeHtml(s.text)}</blockquote>
-      <div class="voice-suggestion__actions">
+      <div class="memory-note__actions">
         <button type="button" class="ap-button ghost grey" data-voice-dismiss="${ids}">Not now</button>
-        <button type="button" class="ap-button primary blue" data-voice-accept="${ids}">Add to ${net} voice</button>
+        <button type="button" class="ap-button primary blue" data-voice-accept="${ids}">Remember</button>
       </div>
-    </div>`;
+    </div></div>`;
 }
 
 // "Connect this service first" prompt — Archie can't import a pasted link
