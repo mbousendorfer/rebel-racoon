@@ -111,7 +111,7 @@
   background: var(--ref-color-white);
   border: 1px solid var(--app-border);
   border-radius: var(--app-radius-lg);
-  box-shadow: var(--app-shadow-popover-lg);
+  box-shadow: var(--app-shadow-subtle);
 }
 
 .imst-layers__title {
@@ -261,4 +261,12 @@
 .imst-edit .isv2-stage,
 .imst-edit .isv2-dock {
   background: transparent;
+}
+
+/* One thin elevation for everything that floats on Edit's plane — the tools,
+   the layers, the field under the image (--app-shadow-subtle: 1px, barely
+   there). The legacy Image Studio keeps its own. */
+.imst-edit .image-studio__palette,
+.imst-edit .imst-refine--edit {
+  box-shadow: var(--app-shadow-subtle);
 }
