@@ -19,11 +19,11 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1498";
-import { isPortraitFormat } from "../clip-formats.js?v=1498";
-import { presetById } from "../clip-captions.js?v=1498";
-import { renderFeedbackControl } from "./feedback-control.js?v=1498";
-import { networkMeta } from "../social-profiles.js?v=1498";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1499";
+import { isPortraitFormat } from "../clip-formats.js?v=1499";
+import { presetById } from "../clip-captions.js?v=1499";
+import { renderFeedbackControl } from "./feedback-control.js?v=1499";
+import { networkMeta } from "../social-profiles.js?v=1499";
 
 // The media slot of a draft that has no image yet — a real drop target
 // (`[data-post-drop]`, drag wiring in right-panel.js) at the height of an image.

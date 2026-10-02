@@ -341,15 +341,20 @@ button.imst-style-card {
   margin: 0;
 }
 
-/* Generate sits on the label's line, at its right (the label stays the DS one). */
+/* Generate sits beside the DS label, its bottom on the label's last line
+ * ("(optional)"): the field becomes a two-column grid, the textarea under both. */
 .imst-prompt-field {
-  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  column-gap: var(--ref-spacing-sm);
+}
+
+.imst-prompt-field > textarea {
+  grid-column: 1 / -1;
 }
 
 .imst-prompt-field__gen {
-  position: absolute;
-  top: 0;
-  right: 0;
   padding: 0;
   border: 0;
   background: none;
