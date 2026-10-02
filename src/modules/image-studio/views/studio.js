@@ -15,30 +15,30 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, "Refine" to iterate in place, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=1444";
-import { delegate } from "../lib/delegate.js?v=1444";
-import { hashString } from "../lib/prng.js?v=1444";
-import { renderEmpty } from "../ui/empty.js?v=1444";
-import { field, preserveFocus, textInput } from "../ui/fields.js?v=1444";
-import { toast } from "../ui/toast.js?v=1444";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1444";
-import { styleThumb } from "../ui/style-thumb.js?v=1444";
-import { openDialog } from "../ui/dialog.js?v=1444";
-import { menu } from "../ui/menu.js?v=1444";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1444";
-import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1444";
-import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1444";
-import { networkById } from "../config/networks.js?v=1444";
-import { copyService, imageGenerationService } from "../services/index.js?v=1444";
-import { unbranded } from "../state/playbook-brand.js?v=1444";
-import { resolveLayers } from "../render/layout.js?v=1444";
-import { svgToDataUrl } from "../render/visual.js?v=1444";
-import { splitVisual } from "../render/split.js?v=1444";
-import { bakeDoc } from "../render/edit-export.js?v=1444";
-import { subjectKindFor } from "../render/subjects.js?v=1444";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1444";
-import { createEditor } from "./edit/editor.js?v=1444";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1444";
+import { html, raw, toString } from "../lib/html.js?v=1445";
+import { delegate } from "../lib/delegate.js?v=1445";
+import { hashString } from "../lib/prng.js?v=1445";
+import { renderEmpty } from "../ui/empty.js?v=1445";
+import { field, preserveFocus, textInput } from "../ui/fields.js?v=1445";
+import { toast } from "../ui/toast.js?v=1445";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1445";
+import { styleThumb } from "../ui/style-thumb.js?v=1445";
+import { openDialog } from "../ui/dialog.js?v=1445";
+import { menu } from "../ui/menu.js?v=1445";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1445";
+import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1445";
+import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1445";
+import { networkById } from "../config/networks.js?v=1445";
+import { copyService, imageGenerationService } from "../services/index.js?v=1445";
+import { unbranded } from "../state/playbook-brand.js?v=1445";
+import { resolveLayers } from "../render/layout.js?v=1445";
+import { svgToDataUrl } from "../render/visual.js?v=1445";
+import { splitVisual } from "../render/split.js?v=1445";
+import { bakeDoc } from "../render/edit-export.js?v=1445";
+import { subjectKindFor } from "../render/subjects.js?v=1445";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1445";
+import { createEditor } from "./edit/editor.js?v=1445";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1445";
 import {
   canEditBrand,
   forgetOneOffStyle,
@@ -49,15 +49,15 @@ import {
   getStylesForBrand,
   registerOneOffStyle,
   subscribe,
-} from "../state/store.js?v=1444";
-import { discardOneOff, oneOffStyleFrom, saveOneOffToPlaybook } from "../state/style-actions.js?v=1444";
+} from "../state/store.js?v=1445";
+import { discardOneOff, oneOffStyleFrom, saveOneOffToPlaybook } from "../state/style-actions.js?v=1445";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1444";
+} from "../state/creation-actions.js?v=1445";
 
 const variationsLabel = (n) => (n === 1 ? "1 variation" : `${n} variations`);
 
@@ -511,6 +511,7 @@ export function mountStudio(
       id: "style",
       icon: "ap-icon-bookmark",
       title: "A style",
+      label: "Start from a style",
       text: "Pick one of your Playbook's styles, or one of ours. Every image comes out in the same look.",
       when: "Good for posts that should look like the brand.",
       short: "Every image in the same look.",
@@ -519,6 +520,7 @@ export function mountStudio(
       id: "image",
       icon: "ap-icon-image",
       title: "An image",
+      label: "Start from an image",
       text: "Upload a picture whose look you like. The new image borrows its colours and feel, just this once.",
       when: "Good when you have a reference in mind.",
       short: "The look of your picture, just this once.",
@@ -527,6 +529,7 @@ export function mountStudio(
       id: "scratch",
       icon: "ap-icon-pen",
       title: "From scratch",
+      label: "Start from scratch",
       text: "No style at all. Describe the subject, the medium, the light, the mood: your words decide.",
       when: "Good for a one-off that shouldn't look like the rest.",
       short: "Your words alone, no style.",
@@ -684,16 +687,11 @@ export function mountStudio(
     const picked = SOURCES.find((o) => o.id === state.source);
     return html`
       <section class="imst-ctl" aria-labelledby="imst-ctl-source">
-        <div class="imst-start__picked">
-          <span class="imst-start__icon" aria-hidden="true"><i class="${picked.icon}"></i></span>
-          <span class="imst-start__what">
-            <span class="ap-body-bold" id="imst-ctl-source">${picked.title}</span>
-            <span class="ap-caption">${picked.short}</span>
-          </span>
-          <button type="button" class="ap-button ghost blue" data-imst-action="change-source">
-            <span>Change</span>
-          </button>
-        </div>
+        <header class="imst-ctl__head">
+          <h3 class="imst-ctl__label ap-body-bold" id="imst-ctl-source">${picked.label}</h3>
+          <button type="button" class="ap-link" data-imst-action="change-source">Change</button>
+        </header>
+        <p class="ap-caption imst-start__short">${picked.short}</p>
         ${sourceBody(brand, style, styleCount)}
       </section>
     `;

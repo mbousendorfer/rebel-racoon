@@ -617,38 +617,11 @@
   }
 }
 
-/* In the controls: what was chosen, and Change */
-.imst-start__picked {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-xs);
-  border: 1px solid var(--ref-color-grey-20);
-  border-radius: var(--app-radius-card);
-  background: var(--ref-color-white);
-}
-
-.imst-start__icon {
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: var(--ref-spacing-xl);
-  height: var(--ref-spacing-xl);
-  border-radius: var(--app-radius-circle);
-  background: var(--ref-color-grey-05);
-  color: var(--ref-color-grey-100);
-}
-
-.imst-start__what {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  min-width: 0;
+/* In the controls: the choice is the section's own heading, Change beside it
+ * like the column's other links — no box: the column has no cards. */
+.imst-start__short {
+  margin: calc(var(--ref-spacing-xs) * -1 + var(--ref-spacing-xxxs)) 0 0;
   color: var(--ref-color-grey-80);
-}
-
-.imst-start__what .ap-body-bold {
-  color: var(--ref-color-grey-100);
 }
 
 .imst-start__body {
