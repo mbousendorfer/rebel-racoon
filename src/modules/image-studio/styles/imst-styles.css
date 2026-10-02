@@ -250,12 +250,6 @@ button.imst-style-card {
   color: var(--ref-color-grey-80);
 }
 
-.imst-radio-row {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--ref-spacing-xs);
-}
-
 @media (max-width: 1024px) {
   .imst-creator {
     grid-template-columns: minmax(0, 1fr);
@@ -339,4 +333,9 @@ button.imst-style-card {
 .imst-pbstyle__actions {
   display: inline-flex;
   flex-shrink: 0;
+}
+
+/* In the studio's dialog: the form alone, no test run beside it. */
+.imst-creator--dialog {
+  grid-template-columns: minmax(0, 1fr);
 }

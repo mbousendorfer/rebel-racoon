@@ -4,32 +4,27 @@
 //
 // Sources: up to 10 reference images, each with a weight — the look is read from
 // them (no presets to mix: removed at the user's request, 2026-09-28).
-// Fidelity: "Essential" (colours, textures, strokes, mood) or "Style &
-// composition" (+ framing, angle, layout). An optional style prompt. A test run
+// An optional style prompt. (The "what to keep" choice was removed at the
+// user's request, 2026-10-02: a new style keeps the essentials.) A test run
 // on three neutral subjects before saving. Saved FOR the active Playbook.
 
-import { html, toString } from "../lib/html.js?v=1475";
-import { delegate } from "../lib/delegate.js?v=1475";
-import { getPath } from "../../../router.js?v=1475";
-import { setTopbarActions } from "../../../components/topbar.js?v=1475";
-import { hashString, randomSeed } from "../lib/prng.js?v=1475";
-import { renderFrame } from "./frame.js?v=1475";
-import { renderEmpty } from "../ui/empty.js?v=1475";
-import { field, preserveFocus, slider, syncSlider, textArea, textInput } from "../ui/fields.js?v=1475";
-import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1475";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1475";
-import { toast } from "../ui/toast.js?v=1475";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1475";
-import { CUSTOM_STYLE_LIMITS, STYLE_TEST_SUBJECTS } from "../config/style-presets.js?v=1475";
-import { createStyle } from "../model/schema.js?v=1475";
-import { imageGenerationService } from "../services/index.js?v=1475";
-import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1475";
-import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1475";
-
-const FIDELITY = [
-  { id: "essential", title: "Essential", body: "Colours, textures, strokes and mood." },
-  { id: "composition", title: "Style & composition", body: "All of that, plus framing, camera angle and layout." },
-];
+import { html, toString } from "../lib/html.js?v=1478";
+import { delegate } from "../lib/delegate.js?v=1478";
+import { getPath } from "../../../router.js?v=1478";
+import { setTopbarActions } from "../../../components/topbar.js?v=1478";
+import { hashString, randomSeed } from "../lib/prng.js?v=1478";
+import { renderFrame } from "./frame.js?v=1478";
+import { renderEmpty } from "../ui/empty.js?v=1478";
+import { field, preserveFocus, slider, syncSlider, textArea, textInput } from "../ui/fields.js?v=1478";
+import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1478";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1478";
+import { toast } from "../ui/toast.js?v=1478";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=1478";
+import { CUSTOM_STYLE_LIMITS, STYLE_TEST_SUBJECTS } from "../config/style-presets.js?v=1478";
+import { createStyle } from "../model/schema.js?v=1478";
+import { imageGenerationService } from "../services/index.js?v=1478";
+import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1478";
+import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1478";
 
 function draftFrom(style, brandId) {
   if (style) {
@@ -221,7 +216,7 @@ export function mount(target, params, ctx, { dialog = null } = {}) {
                 Part of ${brand.playbookName}'s brand. It comes first whenever an image is made for this Playbook.
               </p>
             </header>`}
-        <div class="imst-creator">
+        <div class="imst-creator${dialog ? " imst-creator--dialog" : ""}">
           <div class="imst-creator__form">
             <section class="ap-card imst-creator__card">
               ${field({
@@ -245,6 +240,18 @@ export function mount(target, params, ctx, { dialog = null } = {}) {
                   placeholder: "e.g. Warm window light over wood",
                 }),
               })}
+              ${field({
+                label: "Style prompt",
+                id: "imst-st-prompt",
+                hint: "Optional. Added to every image in this style.",
+                control: textArea({
+                  path: "stylePrompt",
+                  id: "imst-st-prompt",
+                  value: d.stylePrompt,
+                  rows: 2,
+                  placeholder: "e.g. Always a plain background, soft light",
+                }),
+              })}
             </section>
             <section class="ap-card imst-creator__card" aria-labelledby="imst-src-images">
               <header class="imst-section__head">
@@ -265,38 +272,8 @@ export function mount(target, params, ctx, { dialog = null } = {}) {
                   })
                 : ""}
             </section>
-            <section class="ap-card imst-creator__card" aria-labelledby="imst-fidelity">
-              <h2 class="ap-body-bold" id="imst-fidelity">What to keep from the images</h2>
-              <div class="imst-radio-row" role="radiogroup" aria-labelledby="imst-fidelity">
-                ${FIDELITY.map(
-                  (f) =>
-                    html`<label class="ap-radio-card card">
-                      <input
-                        type="radio"
-                        name="imst-fidelity"
-                        value="${f.id}"
-                        ${d.fidelity === f.id ? "checked" : ""}
-                        data-imst-fidelity
-                      />
-                      <div><span class="ap-body-bold">${f.title}</span><span>${f.body}</span></div>
-                    </label>`,
-                )}
-              </div>
-              ${field({
-                label: "Style prompt",
-                id: "imst-st-prompt",
-                hint: "Optional. Added to every image in this style.",
-                control: textArea({
-                  path: "stylePrompt",
-                  id: "imst-st-prompt",
-                  value: d.stylePrompt,
-                  rows: 2,
-                  placeholder: "e.g. Always a plain background, soft light",
-                }),
-              })}
-            </section>
           </div>
-          ${renderPreview()}
+          ${dialog ? "" : renderPreview()}
         </div>
         ${state.errors.length
           ? html`<div class="ap-infobox error" role="alert">
@@ -417,11 +394,6 @@ export function mount(target, params, ctx, { dialog = null } = {}) {
     }),
     delegate(target, "change", "[data-imst-field]", (_e, el) => {
       if (el.dataset.imstField !== "label" && el.dataset.imstField !== "description") markStale();
-    }),
-    delegate(target, "change", "[data-imst-fidelity]", (_e, el) => {
-      state.draft.fidelity = el.value;
-      state.stale = !!state.test;
-      paint();
     }),
     delegate(target, "click", "[data-imst-action]", (_e, el) => {
       const action = el.dataset.imstAction;
