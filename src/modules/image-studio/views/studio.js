@@ -15,30 +15,30 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, "Refine" to iterate in place, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=1454";
-import { delegate } from "../lib/delegate.js?v=1454";
-import { hashString } from "../lib/prng.js?v=1454";
-import { renderEmpty } from "../ui/empty.js?v=1454";
-import { field, preserveFocus, textInput } from "../ui/fields.js?v=1454";
-import { toast } from "../ui/toast.js?v=1454";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1454";
-import { styleThumb } from "../ui/style-thumb.js?v=1454";
-import { openDialog } from "../ui/dialog.js?v=1454";
-import { menu } from "../ui/menu.js?v=1454";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1454";
-import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1454";
-import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1454";
-import { networkById } from "../config/networks.js?v=1454";
-import { copyService, imageGenerationService } from "../services/index.js?v=1454";
-import { unbranded } from "../state/playbook-brand.js?v=1454";
-import { resolveLayers } from "../render/layout.js?v=1454";
-import { svgToDataUrl } from "../render/visual.js?v=1454";
-import { splitVisual } from "../render/split.js?v=1454";
-import { bakeDoc } from "../render/edit-export.js?v=1454";
-import { subjectKindFor } from "../render/subjects.js?v=1454";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1454";
-import { createEditor } from "./edit/editor.js?v=1454";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1454";
+import { html, raw, toString } from "../lib/html.js?v=1455";
+import { delegate } from "../lib/delegate.js?v=1455";
+import { hashString } from "../lib/prng.js?v=1455";
+import { renderEmpty } from "../ui/empty.js?v=1455";
+import { field, preserveFocus, textInput } from "../ui/fields.js?v=1455";
+import { toast } from "../ui/toast.js?v=1455";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1455";
+import { styleThumb } from "../ui/style-thumb.js?v=1455";
+import { openDialog } from "../ui/dialog.js?v=1455";
+import { menu } from "../ui/menu.js?v=1455";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1455";
+import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1455";
+import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1455";
+import { networkById } from "../config/networks.js?v=1455";
+import { copyService, imageGenerationService } from "../services/index.js?v=1455";
+import { unbranded } from "../state/playbook-brand.js?v=1455";
+import { resolveLayers } from "../render/layout.js?v=1455";
+import { svgToDataUrl } from "../render/visual.js?v=1455";
+import { splitVisual } from "../render/split.js?v=1455";
+import { bakeDoc } from "../render/edit-export.js?v=1455";
+import { subjectKindFor } from "../render/subjects.js?v=1455";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1455";
+import { createEditor } from "./edit/editor.js?v=1455";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1455";
 import {
   canEditBrand,
   forgetOneOffStyle,
@@ -49,15 +49,15 @@ import {
   getStylesForBrand,
   registerOneOffStyle,
   subscribe,
-} from "../state/store.js?v=1454";
-import { discardOneOff, oneOffStyleFrom, saveOneOffToPlaybook } from "../state/style-actions.js?v=1454";
+} from "../state/store.js?v=1455";
+import { discardOneOff, oneOffStyleFrom, saveOneOffToPlaybook } from "../state/style-actions.js?v=1455";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1454";
+} from "../state/creation-actions.js?v=1455";
 
 const variationsLabel = (n) => (n === 1 ? "1 variation" : `${n} variations`);
 
@@ -572,35 +572,48 @@ export function mountStudio(
         </p>
       </section>`;
     if (state.source === "image") {
-      const error = state.sourceError
-        ? html`<span class="ap-form-message error" role="alert">${state.sourceError}</span>`
-        : "";
+      // Its own section, titled like the column's others; the recall above shows the picture.
+      const section = (head, body) =>
+        html`<section class="imst-ctl" aria-labelledby="imst-ctl-image">
+          <header class="imst-ctl__head">
+            <h3 class="imst-ctl__label ap-body-bold" id="imst-ctl-image">Your image</h3>
+            ${head}
+          </header>
+          ${body}
+        </section>`;
       if (state.oneOffBusy)
-        return html`<div class="imst-start__body imst-start__drop" aria-busy="true">
-          <span class="ap-loader size-24"></span>
-          <span class="ap-body-bold">Reading your image…</span>
-        </div>`;
+        return section(
+          "",
+          html`<div class="imst-start__drop" aria-busy="true">
+            <span class="ap-loader size-24"></span>
+            <span class="ap-body-bold">Reading your image…</span>
+          </div>`,
+        );
       if (!state.oneOff)
-        return html`<div class="imst-start__body">
-          <div class="imst-start__drop${state.sourceError ? " has-error" : ""}" data-imst-style-drop>
-            <i class="ap-icon-upload imst-start__drop-icon" aria-hidden="true"></i>
-            <span class="ap-body">Drop an image here, or</span>
-            <button type="button" class="ap-button stroked blue" data-imst-action="style-from-image">
-              <span>Upload an image</span>
-            </button>
-          </div>
-          ${error}
-        </div>`;
-      return html`<div class="imst-start__body">
-        <div class="imst-start__foot" data-imst-style-drop>
-          ${canEditBrand(brand.id)
-            ? html`<button type="button" class="ap-link" data-imst-action="save-oneoff">
+        return section(
+          "",
+          html`<div class="imst-start__drop${state.sourceError ? " has-error" : ""}" data-imst-style-drop>
+              <i class="ap-icon-upload imst-start__drop-icon" aria-hidden="true"></i>
+              <span class="ap-body">Drop an image here, or</span>
+              <button type="button" class="ap-button stroked blue" data-imst-action="style-from-image">
+                <span>Upload an image</span>
+              </button>
+            </div>
+            ${state.sourceError
+              ? html`<span class="ap-form-message error" role="alert">${state.sourceError}</span>`
+              : ""}`,
+        );
+      return section(
+        html`<button type="button" class="ap-link" data-imst-action="style-from-image">Replace</button>`,
+        html`<p class="ap-caption imst-start__note">
+          Its colours and look, for this image
+          only.${canEditBrand(brand.id)
+            ? html` <button type="button" class="ap-link" data-imst-action="save-oneoff">
                 Save as a Playbook style
               </button>`
-            : html`<span class="ap-caption imst-start__note">For this image only.</span>`}
-          <button type="button" class="ap-link" data-imst-action="style-from-image">Replace the image</button>
-        </div>
-      </div>`;
+            : ""}
+        </p>`,
+      );
     }
     return "";
   };
@@ -720,9 +733,8 @@ export function mountStudio(
           </span>
           <span class="imst-start__change" aria-hidden="true">Change</span>
         </button>
-        ${state.source === "style" ? "" : sourceBody(brand, style, styleCount)}
       </section>
-      ${state.source === "style" ? sourceBody(brand, style, styleCount) : ""}
+      ${sourceBody(brand, style, styleCount)}
     `;
   };
 

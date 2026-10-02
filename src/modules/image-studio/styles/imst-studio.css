@@ -729,23 +729,6 @@
   }
 }
 
-.imst-start__body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxs);
-}
-
-.imst-start__foot {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--ref-spacing-xs);
-}
-
-.imst-start__foot .ap-link {
-  flex: none;
-}
-
 .imst-start__note {
   margin: 0;
   color: var(--ref-color-grey-80);
