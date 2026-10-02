@@ -15,30 +15,30 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, "Refine" to iterate in place, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=1468";
-import { delegate } from "../lib/delegate.js?v=1468";
-import { hashString } from "../lib/prng.js?v=1468";
-import { renderEmpty } from "../ui/empty.js?v=1468";
-import { preserveFocus } from "../ui/fields.js?v=1468";
-import { toast } from "../ui/toast.js?v=1468";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1468";
-import { styleThumb } from "../ui/style-thumb.js?v=1468";
-import { openDialog } from "../ui/dialog.js?v=1468";
-import { menu } from "../ui/menu.js?v=1468";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1468";
-import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1468";
-import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1468";
-import { networkById } from "../config/networks.js?v=1468";
-import { copyService, imageGenerationService } from "../services/index.js?v=1468";
-import { unbranded } from "../state/playbook-brand.js?v=1468";
-import { resolveLayers } from "../render/layout.js?v=1468";
-import { svgToDataUrl } from "../render/visual.js?v=1468";
-import { splitVisual } from "../render/split.js?v=1468";
-import { bakeDoc } from "../render/edit-export.js?v=1468";
-import { subjectKindFor } from "../render/subjects.js?v=1468";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1468";
-import { createEditor } from "./edit/editor.js?v=1468";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1468";
+import { html, raw, toString } from "../lib/html.js?v=1469";
+import { delegate } from "../lib/delegate.js?v=1469";
+import { hashString } from "../lib/prng.js?v=1469";
+import { renderEmpty } from "../ui/empty.js?v=1469";
+import { preserveFocus } from "../ui/fields.js?v=1469";
+import { toast } from "../ui/toast.js?v=1469";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1469";
+import { styleThumb } from "../ui/style-thumb.js?v=1469";
+import { openDialog } from "../ui/dialog.js?v=1469";
+import { menu } from "../ui/menu.js?v=1469";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1469";
+import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1469";
+import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1469";
+import { networkById } from "../config/networks.js?v=1469";
+import { copyService, imageGenerationService } from "../services/index.js?v=1469";
+import { unbranded } from "../state/playbook-brand.js?v=1469";
+import { resolveLayers } from "../render/layout.js?v=1469";
+import { svgToDataUrl } from "../render/visual.js?v=1469";
+import { splitVisual } from "../render/split.js?v=1469";
+import { bakeDoc } from "../render/edit-export.js?v=1469";
+import { subjectKindFor } from "../render/subjects.js?v=1469";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1469";
+import { createEditor } from "./edit/editor.js?v=1469";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1469";
 import {
   forgetOneOffStyle,
   getBrand,
@@ -48,15 +48,15 @@ import {
   getStylesForBrand,
   registerOneOffStyle,
   subscribe,
-} from "../state/store.js?v=1468";
-import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1468";
+} from "../state/store.js?v=1469";
+import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1469";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1468";
+} from "../state/creation-actions.js?v=1469";
 
 const variationsLabel = (n) => (n === 1 ? "1 variation" : `${n} variations`);
 
@@ -822,7 +822,9 @@ ${b.prompt}</textarea
           ${renderSource(brand, style, styleCount)}
           ${state.source === "style"
             ? html`${textSection}${shapeSection}`
-            : html`${describeSection}${shapeSection}${textSection}`}
+            : state.source === "scratch"
+              ? html`${describeSection}${shapeSection}`
+              : html`${describeSection}${shapeSection}${textSection}`}
           <section class="imst-ctl" aria-labelledby="imst-ctl-count">
             <header class="imst-ctl__head imst-ctl__head--control">
               <h3 class="imst-ctl__label ap-body-bold" id="imst-ctl-count">Variations</h3>
@@ -1310,7 +1312,10 @@ ${b.prompt}</textarea
     const brief =
       state.source === "style"
         ? { ...state.brief, prompt: state.brief.headline || String(draft.text || "").slice(0, 240) }
-        : { ...state.brief };
+        : state.source === "scratch"
+          ? // From scratch is the words alone: no text is laid on the image.
+            { ...state.brief, headline: "", textMode: "layer" }
+          : { ...state.brief };
     const req = request(brand, brief);
     const creation = startCreation({ brand, brief, style: req.style });
     state.creationId = creation.id;
