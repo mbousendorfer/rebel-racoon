@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Archie — overlay index</title>
+
+    <!-- Agorapulse Design System, same CDN load order as components.html
+         (variables → font → icons → ui-css). -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@agorapulse/ui-theme@latest/assets/desktop_variables.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@agorapulse/ui-theme@latest/assets/style/css-ui/font-face.css"
+    />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@agorapulse/ui-symbol@latest/icons/ap-icons.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@agorapulse/ui-theme@latest/assets/style/css-ui/index.css"
+    />
+
+    <style>
+      /* Page chrome only — every link below opens the REAL overlay in the app,
+         so there is nothing to re-style here. Same palette as components.html. */
+      :root {
+        --hd-bg: #fafbfc;
+        --hd-surface: #ffffff;
+        --hd-border: var(--ref-color-grey-20);
+        --hd-text: var(--ref-color-grey-100);
+        --hd-muted: var(--ref-color-grey-80);
+        --hd-code-bg: #f4f5f7;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 48px 24px 96px;
+        background: var(--hd-bg);
+        color: var(--hd-text);
+        font-family: var(--sys-text-style-body-font-family), system-ui, sans-serif;
+        font-size: var(--sys-text-style-body-size);
+        line-height: var(--sys-text-style-body-line-height);
+      }
+      .wrap {
+        max-width: 880px;
+        margin: 0 auto;
+      }
+      h1 {
+        font-size: var(--sys-text-style-h1-size);
+        line-height: var(--sys-text-style-h1-line-height);
+        margin: 0 0 8px;
+      }
+      .lead {
+        margin: 0 0 8px;
+        color: var(--hd-muted);
+      }
+      .lead code {
+        background: var(--hd-code-bg);
+        border-radius: 4px;
+        padding: 1px 5px;
+        font-size: 12px;
+      }
+      h2 {
+        font-size: var(--sys-text-style-h3-size);
+        line-height: var(--sys-text-style-h3-line-height);
+        margin: 40px 0 4px;
+      }
+      .section-hint {
+        margin: 0 0 16px;
+        color: var(--hd-muted);
+        font-size: var(--sys-text-style-caption-size);
+        line-height: var(--sys-text-style-caption-line-height);
+      }
+      .list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      /* One row per overlay. A whole row is the link — the id and the hint are
+         part of what you click, not decoration beside it. */
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 12px 16px;
+        background: var(--hd-surface);
+        border: 1px solid var(--hd-border);
+        border-radius: var(--ref-border-radius-md);
+        text-decoration: none;
+        color: inherit;
+        transition: border-color 0.15s ease-in-out;
+      }
+      /* House rule: card hover is a blue border — no shadow, no lift. */
+      a.row:hover {
+        border-color: var(--ref-color-electric-blue-100);
+      }
+      .row__text {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+        flex: 1;
+      }
+      .row__label {
+        font-size: var(--sys-text-style-body-bold-size);
+        font-weight: var(--sys-text-style-body-bold-weight);
+      }
+      .row__hint {
+        font-size: var(--sys-text-style-caption-size);
+        line-height: var(--sys-text-style-caption-line-height);
+        color: var(--hd-muted);
+      }
+      .row__id {
+        flex-shrink: 0;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12px;
+        color: var(--hd-muted);
+        background: var(--hd-code-bg);
+        border-radius: 4px;
+        padding: 3px 8px;
+      }
+      .row > i {
+        flex-shrink: 0;
+        color: var(--ref-color-grey-60);
+      }
+      .row--muted {
+        background: transparent;
+        border-style: dashed;
+      }
+      .copy {
+        flex-shrink: 0;
+        border: 1px solid var(--hd-border);
+        background: var(--hd-surface);
+        border-radius: var(--ref-border-radius-sm);
+        color: var(--hd-muted);
+        cursor: pointer;
+        font: inherit;
+        font-size: 12px;
+        padding: 4px 10px;
+      }
+      .copy:hover {
+        border-color: var(--ref-color-electric-blue-100);
+        color: var(--ref-color-electric-blue-100);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>Overlay index</h1>
+      <p class="lead">
+        Every modal and panel that has no URL of its own, each behind a shareable link. The link opens the app and fires
+        the overlay — <code>?openModal=&lt;id&gt;</code> and <code>?openPanel=&lt;id&gt;</code>, read by
+        <code>src/figma-capture.js</code>.
+      </p>
+      <p class="lead">
+        Flags matter: an overlay behind a feature flag needs it ON in Admin first, or the link lands on the app with
+        nothing open.
+      </p>
+
+      <h2>Modals</h2>
+      <p class="section-hint">Open from anywhere — these need no target.</p>
+      <div class="list" id="modals"></div>
+
+      <h2>Right panel</h2>
+      <p class="section-hint">The sliding panel's modes. They mount on a chat, so the link carries one.</p>
+      <div class="list" id="panels"></div>
+
+      <h2>Needs a target</h2>
+      <p class="section-hint">
+        These act ON something — a post, a Topic, a Playbook, a source — so there is nothing to show without one. Open
+        them from the app.
+      </p>
+      <div class="list" id="targeted"></div>
+    </div>
+
+    <script type="module">
+      // The modal list is READ FROM the dispatch map, so this page can never
+      // advertise a link that figma-capture.js can't honour.
+      import { OVERLAYS } from "../src/figma-capture.js?v=1218";
+
+      const PANELS = [
+        ["drafts", "Drafts", "Generated posts for this chat"],
+        ["ideas", "Ideas", "Extracted ideas"],
+        ["sources", "Sources", "What the chat was fed"],
+      ];
+
+      const TARGETED = [
+        ["Schedule a post", "Needs the drafts it schedules — open from a draft."],
+        ["Share a Playbook", "Needs a Playbook — open from its fiche (flag playbookSharing)."],
+        ["Topic article · Ignore · History", "Need a Topic — open from the Topic Feed (flag topicFeed)."],
+        ["Video clips", "Needs a video source — open from a source card."],
+        ["Image Studio", "Needs a draft — open from a draft's Generate an image."],
+        ["Confirm · Rename", "Generic dialogs — they render the caller's own words."],
+      ];
+
+      const appUrl = (qs) => new URL("../index.html?" + qs, location.href).href;
+
+      function row(href, label, hint, id) {
+        const a = document.createElement("a");
+        a.className = "row";
+        a.href = href;
+        a.target = "_blank";
+        a.rel = "noopener";
+        a.innerHTML =
+          '<span class="row__text"><span class="row__label"></span><span class="row__hint"></span></span>' +
+          '<span class="row__id"></span>' +
+          '<button class="copy" type="button">Copy link</button>' +
+          '<i class="ap-icon-external-link" aria-hidden="true"></i>';
+        a.querySelector(".row__label").textContent = label;
+        a.querySelector(".row__hint").textContent = hint;
+        a.querySelector(".row__id").textContent = id;
+        // The copy button sits inside the link, so it has to swallow the click.
+        const btn = a.querySelector(".copy");
+        btn.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          navigator.clipboard.writeText(a.href).then(() => {
+            btn.textContent = "Copied";
+            setTimeout(() => (btn.textContent = "Copy link"), 1200);
+          });
+        });
+        return a;
+      }
+
+      const modals = document.getElementById("modals");
+      for (const [id, o] of Object.entries(OVERLAYS)) {
+        modals.appendChild(row(appUrl("openModal=" + id), o.label, o.hint, "?openModal=" + id));
+      }
+
+      const panels = document.getElementById("panels");
+      for (const [id, label, hint] of PANELS) {
+        panels.appendChild(row(appUrl("openPanel=" + id), label, hint, "?openPanel=" + id));
+      }
+
+      const targeted = document.getElementById("targeted");
+      for (const [label, hint] of TARGETED) {
+        const d = document.createElement("div");
+        d.className = "row row--muted";
+        d.innerHTML = '<span class="row__text"><span class="row__label"></span><span class="row__hint"></span></span>';
+        d.querySelector(".row__label").textContent = label;
+        d.querySelector(".row__hint").textContent = hint;
+        targeted.appendChild(d);
+      }
+    </script>
+  </body>
+</html>
