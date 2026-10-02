@@ -1,17 +1,17 @@
-import { html, raw, escapeText, escapeAttr } from "../utils.js?v=1430";
-import { showToast } from "./toast.js?v=1430";
-import { getQueue, getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=1430";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1430";
+import { html, raw, escapeText, escapeAttr } from "../utils.js?v=1431";
+import { showToast } from "./toast.js?v=1431";
+import { getQueue, getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=1431";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1431";
 import {
   renderProfileTag,
   profileForNetwork,
   NETWORK_LABEL,
   NETWORK_ICON_BY_PLATFORM,
   normalizeNetwork,
-} from "../social-profiles.js?v=1430";
-import { getContextById } from "../contexts-store.js?v=1430";
-import { canEdit } from "../playbook-access.js?v=1430";
-import { getPreset, savePreset } from "../schedule-presets-store.js?v=1430";
+} from "../social-profiles.js?v=1431";
+import { getContextById } from "../contexts-store.js?v=1431";
+import { canEdit } from "../playbook-access.js?v=1431";
+import { getPreset, savePreset } from "../schedule-presets-store.js?v=1431";
 
 // Schedule modal — one column, result first.
 //   • Header   — "Schedule N drafts" + one line saying I already picked.
@@ -659,7 +659,11 @@ function rhythmSentence() {
   const s = state.strategy;
   const b = (t) => `<strong>${escapeText(t)}</strong>`;
   const tod = TIMES_OF_DAY.find((t) => t.id === s.timeOfDay) || TIMES_OF_DAY[0];
-  const at = s.timeOfDay ? `in the ${b(tod.label.toLowerCase())}` : `at ${b("each network's best time")}`;
+  // One network in the batch (the usual case) → name it; "each network's"
+  // only reads right when the batch mixes them.
+  const nets = [...new Set(state.posts.map((p) => networkName(networkOf(p))))];
+  const best = nets.length === 1 ? `${nets[0]}'s best time` : "each network's best time";
+  const at = s.timeOfDay ? `in the ${b(tod.label.toLowerCase())}` : `at ${b(best)}`;
   const skip = s.skip.length
     ? `, never on ${b(
         WEEKDAYS.filter((w) => s.skip.includes(w.dow))
@@ -1138,7 +1142,6 @@ function renderDraft(slot) {
         ${renderProfileTag(profileForNetwork(network), { network })}
         <p class="schedule-modal__draft-text">${escapeText(extractFirstLine(post))}</p>
       </div>
-      ${renderRowTools(slot)}
     </div>`;
 }
 
@@ -1175,6 +1178,11 @@ function renderRow(slot, i) {
     <li class="${classes}" style="--i: ${i}">
       ${renderDraft(slot)}
       ${renderWhen(slot)}
+      ${
+        // AFTER the date in the DOM, so Tab reaches "change the date" before
+        // "leave it out"; CSS puts it back in the draft's corner.
+        renderRowTools(slot)
+      }
     </li>`;
 }
 

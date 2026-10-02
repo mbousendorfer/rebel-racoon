@@ -305,24 +305,29 @@
   outline-offset: 2px;
 }
 
-/* The pen beside the time: its place is always kept (no shift), it shows on
-   the row you're on — and always on a touch screen. The 36px button
-   overhangs the 24px line rather than pushing the time down. */
+/* The pen beside the time, ALWAYS visible — editing the date is the modal's
+   main gesture after confirming, so it can't depend on hover. Quiet at rest
+   (grey-80), blue with the time once pointed at. The 36px button overhangs
+   the 24px line rather than pushing the time down. */
 .schedule-modal__when-edit {
   margin-block: -6px;
-  opacity: 0;
-  transition: opacity 120ms var(--app-ease-standard);
 }
 
-.schedule-modal__row:hover .schedule-modal__when-edit,
-.schedule-modal__row:focus-within .schedule-modal__when-edit {
-  opacity: 1;
+.schedule-modal__when-edit i {
+  color: var(--ref-color-grey-80);
 }
 
-@media (hover: none) {
-  .schedule-modal__when-edit {
-    opacity: 1;
-  }
+.schedule-modal__when-head:hover .schedule-modal__when-time,
+.schedule-modal__when-head:hover .schedule-modal__when-edit i {
+  color: var(--ref-color-electric-blue-100);
+}
+
+/* "+1 post that day" is 12px text: pad its hit area to 24px (WCAG 2.5.8)
+   and cancel the padding with a negative margin, so the row doesn't move. */
+.schedule-modal__when-note [data-schedule-peek] {
+  display: inline-block;
+  padding-block: var(--ref-spacing-xxxs);
+  margin-block: calc(-1 * var(--ref-spacing-xxxs));
 }
 
 .schedule-modal__tile-wrap[data-schedule-when] {
@@ -452,16 +457,16 @@
 }
 
 /* Leaving the draft out — the draft's own action, in the draft's top-right
-   corner, on the row you're on. On white, so the text under it doesn't show
-   through; no shadow (nothing floats IN a dialog). */
-.schedule-modal__draft {
-  position: relative;
-}
-
+   corner, on the row you're on. It comes AFTER the date in the DOM (keyboard
+   order) and is put back over the draft by sharing its grid area. On white,
+   so the text under it doesn't show through; no shadow. */
 .schedule-modal__row-tools {
-  position: absolute;
-  top: calc(var(--ref-spacing-xs) - 6px); /* 36px buttons centred on the first 24px line */
-  right: var(--ref-spacing-xxs);
+  grid-area: draft;
+  justify-self: end;
+  align-self: start;
+  position: relative;
+  z-index: 1;
+  margin: calc(var(--ref-spacing-xs) - 6px) var(--ref-spacing-xxs) 0 0; /* 36px button centred on the first 24px line */
   display: flex;
   gap: 2px;
   padding-left: var(--ref-spacing-xxs);
