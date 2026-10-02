@@ -15,31 +15,31 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=1502";
-import { delegate } from "../lib/delegate.js?v=1502";
-import { hashString } from "../lib/prng.js?v=1502";
-import { renderEmpty } from "../ui/empty.js?v=1502";
-import { preserveFocus } from "../ui/fields.js?v=1502";
-import { toast } from "../ui/toast.js?v=1502";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1502";
-import { styleThumb } from "../ui/style-thumb.js?v=1502";
-import { openDialog } from "../ui/dialog.js?v=1502";
-import { menu } from "../ui/menu.js?v=1502";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1502";
-import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1502";
-import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1502";
-import { networkById } from "../config/networks.js?v=1502";
-import { copyService, imageGenerationService } from "../services/index.js?v=1502";
-import { unbranded } from "../state/playbook-brand.js?v=1502";
-import { resolveLayers } from "../render/layout.js?v=1502";
-import { svgToDataUrl } from "../render/visual.js?v=1502";
-import { splitVisual } from "../render/split.js?v=1502";
-import { bakeDoc } from "../render/edit-export.js?v=1502";
-import { subjectKindFor } from "../render/subjects.js?v=1502";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1502";
-import { createEditor } from "./edit/editor.js?v=1502";
-import { mount as mountStyleCreator } from "./style-creator.js?v=1502";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1502";
+import { html, raw, toString } from "../lib/html.js?v=1504";
+import { delegate } from "../lib/delegate.js?v=1504";
+import { hashString } from "../lib/prng.js?v=1504";
+import { renderEmpty } from "../ui/empty.js?v=1504";
+import { preserveFocus } from "../ui/fields.js?v=1504";
+import { toast } from "../ui/toast.js?v=1504";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1504";
+import { styleThumb } from "../ui/style-thumb.js?v=1504";
+import { openDialog } from "../ui/dialog.js?v=1504";
+import { menu } from "../ui/menu.js?v=1504";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1504";
+import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1504";
+import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1504";
+import { networkById } from "../config/networks.js?v=1504";
+import { copyService, imageGenerationService } from "../services/index.js?v=1504";
+import { unbranded } from "../state/playbook-brand.js?v=1504";
+import { resolveLayers } from "../render/layout.js?v=1504";
+import { svgToDataUrl } from "../render/visual.js?v=1504";
+import { splitVisual } from "../render/split.js?v=1504";
+import { bakeDoc } from "../render/edit-export.js?v=1504";
+import { subjectKindFor } from "../render/subjects.js?v=1504";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1504";
+import { createEditor } from "./edit/editor.js?v=1504";
+import { mount as mountStyleCreator } from "./style-creator.js?v=1504";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1504";
 import {
   canEditBrand,
   forgetOneOffStyle,
@@ -50,15 +50,15 @@ import {
   getStylesForBrand,
   registerOneOffStyle,
   subscribe,
-} from "../state/store.js?v=1502";
-import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1502";
+} from "../state/store.js?v=1504";
+import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1504";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1502";
+} from "../state/creation-actions.js?v=1504";
 
 const variationsLabel = (n) => (n === 1 ? "1 variation" : `${n} variations`);
 
@@ -1120,7 +1120,7 @@ ${b.prompt}</textarea
                   </button>
                 </div>`
               : ""}
-            <!-- Into Edit on this variation: the same as the header's Edit tab. -->
+            <!-- Into Edit on this variation (the only way in from here: no tabs). -->
             <button type="button" class="ap-button stroked grey" data-imst-mode="edit" ${busy ? "disabled" : ""}>
               <i class="ap-icon-pen" aria-hidden="true"></i><span>Edit</span>
             </button>
@@ -1208,15 +1208,15 @@ ${b.prompt}</textarea
     const what = !v
       ? `Editing the draft's ${draft.slides > 1 ? "first slide" : "image"}`
       : `Editing variation ${src.creation.variations.indexOf(v) + 1} of ${src.creation.variations.length}`;
-    return html`<div class="imst-editwrap">
-      <div class="imst-editbar">
+    // In the stage, at its top — where Generate shows its result bar.
+    return editor.render({
+      top: html`<header class="imst-result-bar imst-editbar">
         <button type="button" class="ap-button stroked blue" data-imst-mode="generate">
           <i class="ap-icon-arrow-left" aria-hidden="true"></i><span>${v ? "Back to the variations" : "Back"}</span>
         </button>
         <span class="ap-caption imst-editbar__what">${what}</span>
-      </div>
-      ${editor.render()}
-    </div>`;
+      </header>`,
+    });
   };
 
   const renderCurrent = () => html`

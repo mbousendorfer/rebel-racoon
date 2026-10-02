@@ -16,10 +16,10 @@
 // caret, drop the slider under the pointer, or replay a popover's entrance.
 // Everything else goes change → repaint.
 
-import { html, raw } from "../../lib/html.js?v=1502";
-import { delegate, wait } from "../../lib/delegate.js?v=1502";
-import { IMAGE_PRESETS, REDRAW_MS, outlineMetrics, shadowMetrics } from "../../config/edit.js?v=1502";
-import { bakeDoc } from "../../render/edit-export.js?v=1502";
+import { html, raw } from "../../lib/html.js?v=1504";
+import { delegate, wait } from "../../lib/delegate.js?v=1504";
+import { IMAGE_PRESETS, REDRAW_MS, outlineMetrics, shadowMetrics } from "../../config/edit.js?v=1504";
+import { bakeDoc } from "../../render/edit-export.js?v=1504";
 import {
   cropDoc,
   docSignature,
@@ -32,9 +32,9 @@ import {
   removeLayer,
   textLayer,
   undo,
-} from "../../state/edit-doc.js?v=1502";
-import { editFrame, textStyle } from "./canvas.js?v=1502";
-import { composer, layersPanel, redrawTarget, toolPalette, viewToggle } from "./panels.js?v=1502";
+} from "../../state/edit-doc.js?v=1504";
+import { editFrame, textStyle } from "./canvas.js?v=1504";
+import { composer, layersPanel, redrawTarget, toolPalette, viewToggle } from "./panels.js?v=1504";
 
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
 const DEFAULT_CROP = { xF: 0.15, yF: 0.15, wF: 0.7, hF: 0.7 };
@@ -155,7 +155,8 @@ export function createEditor({ getEntry, brand, network, shapes, renderFeedPrevi
     </div>`;
   }
 
-  function render() {
+  // `top`: the host's own bar at the top of the stage (the studio's way back).
+  function render({ top = "" } = {}) {
     const d = doc();
     if (!d) {
       return html`<div class="imst-edit imst-edit--preparing" aria-busy="true">
@@ -168,7 +169,7 @@ export function createEditor({ getEntry, brand, network, shapes, renderFeedPrevi
     return html`<div class="imst-edit">
       <div class="isv2-main-col">
         <section class="isv2-stage" aria-label="Edit">
-          ${renderFeedPreview ? viewToggle(ui, network) : ""}
+          ${top} ${renderFeedPreview ? viewToggle(ui, network) : ""}
           <div class="isv2-stage-body${feed ? "" : " has-palette"}">
             ${feed
               ? feedCard(d)

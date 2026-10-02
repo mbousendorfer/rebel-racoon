@@ -236,25 +236,13 @@
   pointer-events: none;
 }
 
-/* The way back from Edit, and what is being edited — above the editor, where
-   the eye starts (the Generate | Edit tabs are gone). */
-.imst-editwrap {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xs);
-  height: 100%;
-  min-height: 0;
-}
-
-.imst-editwrap > .imst-edit {
-  flex: 1 1 auto;
-  height: auto;
-}
-
+/* The way back from Edit, and what is being edited — at the top of the stage,
+   where Generate shows its result bar (the Generate | Edit tabs are gone). */
 .imst-editbar {
-  display: flex;
-  align-items: center;
+  flex: 0 0 auto;
+  justify-content: flex-start;
   gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-md) var(--ref-spacing-md) 0;
 }
 
 .imst-editbar__what {

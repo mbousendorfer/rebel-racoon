@@ -2,7 +2,7 @@
 // .ap-textarea-field, .ap-select, .ap-toggle-container, .ap-tag). Every field carries
 // data-imst-field="<path>" so one delegated listener can write it back.
 
-import { html, raw } from "../lib/html.js?v=1502";
+import { html, raw } from "../lib/html.js?v=1504";
 
 export function field({ label, hint, control, id }) {
   return html`
