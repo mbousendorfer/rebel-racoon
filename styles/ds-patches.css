@@ -496,9 +496,7 @@ button.ap-link {
    ever on screen: tabs), and was deleted. It returned on 2026-09-29 for the
    Image Generator's "Variations" (1 · 2 · 3 · 4), at the user's request: a
    short set of values, all visible, one picked — the component's own job, and
-   not a view switch. Its second use (2026-10-02) is the studio's "Start from"
-   (Style · Image · Scratch): three exclusive answers to one question, the same
-   job. Don't use it to switch pages or lanes: that is still tabs.
+   not a view switch. Don't use it to switch pages or lanes: that is still tabs.
 
    ── Token substitutions, and why they are not laziness ───────────────────
    The component's SCSS uses --sys-color-border-interactive-*,

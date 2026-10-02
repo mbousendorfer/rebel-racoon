@@ -283,11 +283,297 @@
   font-size: var(--ref-font-size-xs);
 }
 
-/* Start from: the segmented control, the line saying what the pick does, then
- * the pick's own controls. */
-.imst-start__hint {
-  margin: calc(var(--ref-spacing-xxs) * -1) 0 0;
+/* ── The chooser: the dialog's first screen ──────────────────────────────
+ * One decision before any control. It sits on the canvas's own surface (the
+ * studio's work plane), three answers side by side, each a card that shows
+ * what it does before it says it. Hover = blue border, nothing else. */
+.imst-chooser {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ref-spacing-xl);
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--ref-spacing-xl) var(--ref-spacing-lg);
+  border-radius: var(--app-radius-modal);
+  background-color: var(--ref-color-grey-05);
+  background-image: radial-gradient(var(--ref-color-grey-20) 1px, transparent 1px);
+  background-size: var(--ref-spacing-sm) var(--ref-spacing-sm);
+}
+
+.imst-chooser__head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  text-align: center;
+}
+
+.imst-chooser__title {
+  margin: 0;
+  color: var(--ref-color-grey-100);
+  font-size: var(--ref-font-size-xxxl);
+  line-height: 1.2;
+}
+
+.imst-chooser__lead {
+  margin: 0;
   color: var(--ref-color-grey-80);
+  font-size: var(--ref-font-size-md);
+}
+
+.imst-chooser__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--ref-spacing-md);
+  width: 100%;
+  max-width: calc(var(--ref-spacing-xxxl) * 18);
+}
+
+.imst-chooser__card {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-card);
+  background: var(--ref-color-white);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.imst-chooser__card:hover {
+  border-color: var(--ref-color-electric-blue-100);
+}
+
+.imst-chooser__card:focus-visible {
+  outline: 2px solid var(--sys-border-color-active);
+  outline-offset: 2px;
+}
+
+.imst-chooser__art {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 10;
+  border-bottom: 1px solid var(--ref-color-grey-20);
+  background: var(--ref-color-grey-05);
+  overflow: hidden;
+}
+
+.imst-chooser__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-sm) var(--ref-spacing-md) var(--ref-spacing-md);
+}
+
+.imst-chooser__name {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  color: var(--ref-color-grey-100);
+}
+
+.imst-chooser__text {
+  color: var(--ref-color-grey-80);
+}
+
+.imst-chooser__when {
+  margin-top: var(--ref-spacing-xxs);
+  color: var(--ref-color-grey-80);
+}
+
+/* A style — the brand's styles, fanned like cards in a hand */
+.imst-chooser__fan {
+  position: relative;
+  width: 62%;
+  aspect-ratio: 1.5;
+}
+
+.imst-chooser__fan-card {
+  position: absolute;
+  top: 8%;
+  left: 50%;
+  width: 52%;
+  aspect-ratio: 1;
+  border: 3px solid var(--ref-color-white);
+  border-radius: var(--app-radius-card);
+  object-fit: cover;
+  transform-origin: 50% 110%;
+  transition: transform 0.25s ease;
+}
+
+.imst-chooser__fan-card:nth-child(1) {
+  transform: translateX(-50%) rotate(-14deg) translateX(-38%);
+}
+
+.imst-chooser__fan-card:nth-child(2) {
+  z-index: 1;
+  transform: translateX(-50%) translateY(-4%);
+}
+
+.imst-chooser__fan-card:nth-child(3) {
+  transform: translateX(-50%) rotate(14deg) translateX(38%);
+}
+
+.imst-chooser__card:hover .imst-chooser__fan-card:nth-child(1) {
+  transform: translateX(-50%) rotate(-18deg) translateX(-46%);
+}
+
+.imst-chooser__card:hover .imst-chooser__fan-card:nth-child(3) {
+  transform: translateX(-50%) rotate(18deg) translateX(46%);
+}
+
+/* An image — your picture passes its look on */
+.imst-chooser__pass {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  width: 78%;
+}
+
+.imst-chooser__ref,
+.imst-chooser__out {
+  position: relative;
+  flex: 1 1 0;
+  aspect-ratio: 1;
+  border: 3px solid var(--ref-color-white);
+  border-radius: var(--app-radius-card);
+  overflow: hidden;
+}
+
+.imst-chooser__ref {
+  transform: rotate(-4deg);
+}
+
+/* The icon class masks its own element, so the white circle is the wrapper's. */
+.imst-chooser__badge {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: var(--ref-spacing-lg);
+  height: var(--ref-spacing-lg);
+  border-radius: var(--app-radius-circle);
+  background: var(--ref-color-white);
+  color: var(--ref-color-grey-100);
+}
+
+.imst-chooser__badge--upload {
+  right: var(--ref-spacing-xxs);
+  bottom: var(--ref-spacing-xxs);
+}
+
+.imst-chooser__badge--spark {
+  top: calc(var(--ref-spacing-xs) * -1);
+  right: calc(var(--ref-spacing-xs) * -1);
+  border: 1px solid var(--ref-color-grey-20);
+}
+
+.imst-chooser__pass-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.imst-chooser__out .imst-chooser__pass-img {
+  filter: saturate(1.15);
+}
+
+.imst-chooser__arrow {
+  flex: none;
+  color: var(--ref-color-grey-80);
+  font-size: var(--ref-font-size-lg);
+}
+
+/* From scratch — a sentence being written, nothing else */
+.imst-chooser__words {
+  position: relative;
+  width: 78%;
+  padding: var(--ref-spacing-sm);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-card);
+  background: var(--ref-color-white);
+}
+
+.imst-chooser__line {
+  display: block;
+  color: var(--ref-color-grey-100);
+  font-size: var(--ref-font-size-sm);
+  line-height: 1.5;
+}
+
+.imst-chooser__caret {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  background: var(--ref-color-electric-blue-100);
+  animation: imst-caret 1.1s steps(1) infinite;
+}
+
+@keyframes imst-caret {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .imst-chooser__caret {
+    animation: none;
+  }
+
+  .imst-chooser__fan-card {
+    transition: none;
+  }
+}
+
+@media (max-width: 1100px) {
+  .imst-chooser__grid {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: calc(var(--ref-spacing-xxxl) * 7);
+  }
+}
+
+/* In the controls: what was chosen, and Change */
+.imst-start__picked {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xs);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-card);
+  background: var(--ref-color-white);
+}
+
+.imst-start__icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--ref-spacing-xl);
+  height: var(--ref-spacing-xl);
+  border-radius: var(--app-radius-circle);
+  background: var(--ref-color-grey-05);
+  color: var(--ref-color-grey-100);
+}
+
+.imst-start__what {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  color: var(--ref-color-grey-80);
+}
+
+.imst-start__what .ap-body-bold {
+  color: var(--ref-color-grey-100);
 }
 
 .imst-start__body {
