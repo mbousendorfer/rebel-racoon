@@ -518,21 +518,6 @@
   transform: rotate(-4deg);
 }
 
-/* From scratch — the same words, three free directions */
-.imst-chooser__free {
-  display: flex;
-  gap: var(--ref-spacing-xxs);
-  margin-top: var(--ref-spacing-xs);
-}
-
-.imst-chooser__free-img {
-  flex: 1 1 0;
-  min-width: 0;
-  aspect-ratio: 1;
-  border-radius: var(--ref-border-radius-md);
-  object-fit: cover;
-}
-
 /* The icon class masks its own element, so the white circle is the wrapper's. */
 .imst-chooser__badge {
   position: absolute;
