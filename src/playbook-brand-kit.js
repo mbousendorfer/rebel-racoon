@@ -9,10 +9,10 @@
 // the fiche's live data object, exactly like every other Brand row, and are
 // committed by the section's Save (snapshotEditable carries the fields).
 
-import { escapeHtml as esc } from "./utils.js?v=1443";
-import { isFlagOn } from "./feature-flags.js?v=1443";
-import { COLOR_ROLES, LOGO_VARIANTS, getContextById } from "./contexts-store.js?v=1443";
-import { handlePlaybookStylesClick, renderPlaybookStyles } from "./modules/image-studio/index.js?v=1443";
+import { escapeHtml as esc } from "./utils.js?v=1444";
+import { isFlagOn } from "./feature-flags.js?v=1444";
+import { COLOR_ROLES, LOGO_VARIANTS, getContextById } from "./contexts-store.js?v=1444";
+import { handlePlaybookStylesClick, renderPlaybookStyles } from "./modules/image-studio/index.js?v=1444";
 
 const KIT_FLAG = "sexySquirrel";
 

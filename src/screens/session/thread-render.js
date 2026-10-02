@@ -12,17 +12,19 @@ import {
   renderMessageBubble,
   renderNotice,
   renderResultCard,
-} from "./thread-turns.js?v=1443";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=1443";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1443";
-import { getTopPost } from "../../top-posts-store.js?v=1443";
-import { getTopicById } from "../../topics-store.js?v=1443";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=1443";
-import { renderProfileEchoCard } from "../../social-profiles.js?v=1443";
-import { escapeHtml } from "../../utils.js?v=1443";
-import { getIdeas } from "../../library.js?v=1443";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1443";
-import { getThread } from "../../assistant.js?v=1443";
+} from "./thread-turns.js?v=1444";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1444";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1444";
+import { getTopPost } from "../../top-posts-store.js?v=1444";
+import { getTopicById } from "../../topics-store.js?v=1444";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=1444";
+import { renderProfileEchoCard } from "../../social-profiles.js?v=1444";
+import { escapeHtml } from "../../utils.js?v=1444";
+import { getIdeas } from "../../library.js?v=1444";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1444";
+import { getThread } from "../../assistant.js?v=1444";
+import { getSuggestion } from "../../voice-coach-store.js?v=1444";
+import { networkLabel, networkIcon } from "../../network-voice.js?v=1444";
 
 export function renderThread(messages, sessionId) {
   return messages.map((m) => renderTurn(m, sessionId)).join("");
@@ -95,6 +97,10 @@ function renderTurn(message, sessionId) {
   // Inline "topics" selection widget — the Add menu's "Pick from the Topic Feed".
   if (message.role === "assistant" && message.variant === "topics-widget") {
     return renderTopicsWidgetTurn(message);
+  }
+
+  if (message.role === "assistant" && message.variant === "voice-suggestion") {
+    return renderVoiceSuggestionTurn(message);
   }
 
   if (message.role === "user" && message.variant === "selection-echo") {
@@ -192,6 +198,40 @@ function renderSelectionEchoTurn(echo) {
       </div>
     </div>
   `;
+}
+
+// Voice proposal (flag networkVoices) — a rule Archie noticed for one network
+// voice. Reads the suggestion's status from its store, so an Add made on the
+// Playbook's tray collapses this card too. Footer right-grouped, primary last.
+function renderVoiceSuggestionTurn(message) {
+  const s = getSuggestion(message.contextId, message.suggestionId);
+  if (!s) return "";
+  const net = escapeHtml(networkLabel(s.network));
+  const ids = `${escapeHtml(message.contextId)}|${escapeHtml(s.id)}`;
+  if (s.status === "accepted") {
+    return `
+      <div class="connect-status" role="status">
+        <i class="ap-icon-rounded-check_fill connect-status__icon" aria-hidden="true"></i>
+        <p class="connect-status__text">
+          <strong>Added to your ${net} voice.</strong>
+          <a class="ap-link standalone" href="#/playbook/${escapeHtml(message.contextId)}?tab=voice&amp;net=${escapeHtml(s.network)}">See the voice</a>
+        </p>
+      </div>`;
+  }
+  if (s.status === "dismissed") return "";
+  return `
+    <div class="voice-suggestion" role="group" aria-label="Suggestion for your ${net} voice">
+      <div class="voice-suggestion__head">
+        <i class="${escapeHtml(networkIcon(s.network))} voice-suggestion__net" aria-hidden="true"></i>
+        <span class="voice-suggestion__title">A rule for your ${net} voice</span>
+      </div>
+      <p class="voice-suggestion__why">${escapeHtml(s.why || "")}</p>
+      <blockquote class="voice-suggestion__rule">${escapeHtml(s.text)}</blockquote>
+      <div class="voice-suggestion__actions">
+        <button type="button" class="ap-button ghost grey" data-voice-dismiss="${ids}">Not now</button>
+        <button type="button" class="ap-button primary blue" data-voice-accept="${ids}">Add to ${net} voice</button>
+      </div>
+    </div>`;
 }
 
 // "Connect this service first" prompt — Archie can't import a pasted link

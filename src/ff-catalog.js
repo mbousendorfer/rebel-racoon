@@ -173,6 +173,25 @@ export const FLAGS = Object.freeze([
       "(from files, or by hand).",
   },
   {
+    id: "networkVoices",
+    label: "Voice per network, with coaching",
+    // OFF: lands dark. The data (voiceBaseNetwork / voiceByNetwork) rides
+    // along in the seeds either way, like multilingualPlaybook.
+    default: false,
+    hides:
+      "When OFF, a Playbook has one voice. ON gives it a BASE voice — learned " +
+      "from the network of the profile picked at creation — and an adaptation " +
+      "per network it publishes on: each network overrides only what differs " +
+      "(hooks, closings, formatting, emoji) and keeps the rules it was taught.\n\n" +
+      "Archie coaches it over time, and never writes it silently: when you " +
+      "rework a draft (needs draftInlineEdit), when you thumbs-down one with a " +
+      "reason, or by asking a question after drafting for a network whose " +
+      "voice is thin, it PROPOSES a rule — a card in the chat, and the " +
+      '"Suggested by Archie" tray on the Voice tab. Nothing enters the ' +
+      "Playbook without a click. Each network voice says how far along it is. " +
+      "The per-network view lives on the Playbook 2.0 page (flag playbook2).",
+  },
+  {
     id: "skipConnectProfiles",
     label: "Skip connecting profiles at setup",
     default: false,
