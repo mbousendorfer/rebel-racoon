@@ -14,7 +14,7 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1469";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1470";
 import {
   kitEnabled,
   renderColorRole,
@@ -27,11 +27,11 @@ import {
   handleKitInput,
   handleKitChange,
   kitSnapshot,
-} from "./playbook-brand-kit.js?v=1469";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1469";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1469";
-import { isFlagOn } from "./feature-flags.js?v=1469";
-import { parseHashParams } from "./url-state.js?v=1469";
+} from "./playbook-brand-kit.js?v=1470";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1470";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1470";
+import { isFlagOn } from "./feature-flags.js?v=1470";
+import { parseHashParams } from "./url-state.js?v=1470";
 import {
   networkVoicesOn,
   baseNetwork,
@@ -41,21 +41,21 @@ import {
   maturity,
   networkLabel,
   networkIcon,
-} from "./network-voice.js?v=1469";
+} from "./network-voice.js?v=1470";
 import {
   getSuggestions,
   accept as acceptVoiceSuggestion,
   dismiss as dismissVoiceSuggestion,
-} from "./voice-coach-store.js?v=1469";
-import { NETWORKS } from "./social-profiles.js?v=1469";
-import { showToast } from "./components/toast.js?v=1469";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1469";
+} from "./voice-coach-store.js?v=1470";
+import { NETWORKS } from "./social-profiles.js?v=1470";
+import { showToast } from "./components/toast.js?v=1470";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1470";
 // The Default look row offers the SAME three catalogues the Image Studio renders, from
 // the one place they are declared — REF_MODES' own header makes the argument: the label,
 // the hint and the brief clause "drift the moment they live apart". No cycle: the engine
 // imports only clip-formats / image-studio-canvas / feature-flags, and its module body
 // builds consts, so importing it here costs nothing at load.
-import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1469";
+import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1470";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2691,7 +2691,6 @@ function editEntry(data, field) {
 }
 
 function renderNetworkSwitcher(data) {
-  const base = baseNetwork(data);
   const active = activeNetworkFor(data);
   const nets = voiceNetworks(data);
   const missing = Object.keys(NETWORKS).filter((n) => !nets.includes(n));
@@ -2713,19 +2712,24 @@ function renderNetworkSwitcher(data) {
           </div>
         </details>`
       : "";
+  // DS tabs, a second row under the section tabs: one per network voice. The
+  // base is not flagged here — "The voice" block says where it was learned.
   return `
-    <div class="pb2-netbar" role="group" aria-label="Voice per network">
-      <div class="pb2-netbar__chips">
-        ${nets
-          .map((n) => {
-            const pending = getSuggestions(data.id, { network: n }).length;
-            return `<button type="button" class="ap-filter-chip pb2-netbar__chip" aria-pressed="${n === active}" data-nv-net="${n}">
-              <i class="${networkIcon(n)}" aria-hidden="true"></i>
-              <span>${esc(networkLabel(n))}${n === base ? " · Base" : ""}</span>
-              ${pending ? `<span class="ap-counter normal grey" title="${pending} suggested by Archie">${pending}</span>` : ""}
-            </button>`;
-          })
-          .join("")}
+    <div class="pb2-netbar">
+      <div class="ap-tabs pb2-nettabs">
+        <div class="ap-tabs-nav" role="tablist" aria-label="Voice per network">
+          ${nets
+            .map((n) => {
+              const on = n === active;
+              const pending = getSuggestions(data.id, { network: n }).length;
+              return `<button type="button" class="ap-tabs-tab${on ? " active" : ""}" role="tab" aria-selected="${on}" data-nv-net="${n}">
+                <i class="${networkIcon(n)}" aria-hidden="true"></i>
+                <span>${esc(networkLabel(n))}</span>
+                ${pending ? `<span class="ap-counter normal grey" title="${pending} for Archie to remember">${pending}</span>` : ""}
+              </button>`;
+            })
+            .join("")}
+        </div>
       </div>
       ${add}
     </div>`;

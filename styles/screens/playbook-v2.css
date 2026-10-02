@@ -749,21 +749,15 @@
 /* The network switcher: one chip per network voice, "Add a network" at the end. */
 .pb2-netbar {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   gap: var(--ref-spacing-sm);
   margin-bottom: var(--ref-spacing-md);
 }
 
-.pb2-netbar__chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ref-spacing-xs);
-}
-
-.pb2-netbar__chip {
-  gap: var(--ref-spacing-xxs);
+.pb2-nettabs {
+  flex: 1;
+  min-width: 0;
 }
 
 /* The level, named in words — weight carries it, never a lighter grey. */
