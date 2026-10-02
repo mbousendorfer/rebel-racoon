@@ -15,31 +15,31 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=1487";
-import { delegate } from "../lib/delegate.js?v=1487";
-import { hashString } from "../lib/prng.js?v=1487";
-import { renderEmpty } from "../ui/empty.js?v=1487";
-import { preserveFocus } from "../ui/fields.js?v=1487";
-import { toast } from "../ui/toast.js?v=1487";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1487";
-import { styleThumb } from "../ui/style-thumb.js?v=1487";
-import { openDialog } from "../ui/dialog.js?v=1487";
-import { menu } from "../ui/menu.js?v=1487";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1487";
-import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1487";
-import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1487";
-import { networkById } from "../config/networks.js?v=1487";
-import { copyService, imageGenerationService } from "../services/index.js?v=1487";
-import { unbranded } from "../state/playbook-brand.js?v=1487";
-import { resolveLayers } from "../render/layout.js?v=1487";
-import { svgToDataUrl } from "../render/visual.js?v=1487";
-import { splitVisual } from "../render/split.js?v=1487";
-import { bakeDoc } from "../render/edit-export.js?v=1487";
-import { subjectKindFor } from "../render/subjects.js?v=1487";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1487";
-import { createEditor } from "./edit/editor.js?v=1487";
-import { mount as mountStyleCreator } from "./style-creator.js?v=1487";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1487";
+import { html, raw, toString } from "../lib/html.js?v=1490";
+import { delegate } from "../lib/delegate.js?v=1490";
+import { hashString } from "../lib/prng.js?v=1490";
+import { renderEmpty } from "../ui/empty.js?v=1490";
+import { preserveFocus } from "../ui/fields.js?v=1490";
+import { toast } from "../ui/toast.js?v=1490";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1490";
+import { styleThumb } from "../ui/style-thumb.js?v=1490";
+import { openDialog } from "../ui/dialog.js?v=1490";
+import { menu } from "../ui/menu.js?v=1490";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1490";
+import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1490";
+import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1490";
+import { networkById } from "../config/networks.js?v=1490";
+import { copyService, imageGenerationService } from "../services/index.js?v=1490";
+import { unbranded } from "../state/playbook-brand.js?v=1490";
+import { resolveLayers } from "../render/layout.js?v=1490";
+import { svgToDataUrl } from "../render/visual.js?v=1490";
+import { splitVisual } from "../render/split.js?v=1490";
+import { bakeDoc } from "../render/edit-export.js?v=1490";
+import { subjectKindFor } from "../render/subjects.js?v=1490";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1490";
+import { createEditor } from "./edit/editor.js?v=1490";
+import { mount as mountStyleCreator } from "./style-creator.js?v=1490";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1490";
 import {
   canEditBrand,
   forgetOneOffStyle,
@@ -50,15 +50,15 @@ import {
   getStylesForBrand,
   registerOneOffStyle,
   subscribe,
-} from "../state/store.js?v=1487";
-import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1487";
+} from "../state/store.js?v=1490";
+import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1490";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1487";
+} from "../state/creation-actions.js?v=1490";
 
 const variationsLabel = (n) => (n === 1 ? "1 variation" : `${n} variations`);
 
@@ -433,13 +433,16 @@ export function mountStudio(
     input.click();
   }
 
-  // "New style": the Playbook's style creator in a popover over the preview
-  // area — not a dialog: the studio stays in view, the style grid beside it.
+  // "New style": the Playbook's style creator in a POPOVER anchored to the tile
+  // that opened it — it opens beside the tile, over the edge of the column and
+  // the preview, a caret pointing back at the tile; nothing is dimmed.
   // The panel is one node kept across repaints (the studio redraws its body
   // on every change; the creator owns its own DOM). Save puts the style on the
   // Playbook (Brand › Image styles) and picks it; Cancel or × just closes.
   let creatorPanel = null;
   let creatorOff = null;
+  // The panel grows as images come in: keep it inside the studio as it does.
+  const creatorResize = new ResizeObserver(() => placeNewStyle());
   function openNewStyle() {
     const brand = brandNow();
     if (!brand || !canEditBrand(brand.id) || creatorPanel) return;
@@ -481,14 +484,36 @@ export function mountStudio(
         },
       },
     );
+    creatorResize.observe(creatorPanel);
+    target.addEventListener("scroll", placeNewStyle, true);
+    window.addEventListener("resize", placeNewStyle);
     paint();
-    creatorPanel.querySelector("#imst-st-name, [data-imst-dropzone]")?.focus();
+    creatorPanel.querySelector("[data-imst-dropzone]")?.focus();
   }
   function closeNewStyle() {
     creatorOff?.();
     creatorOff = null;
+    creatorResize.disconnect();
     creatorPanel?.remove();
     creatorPanel = null;
+    target.removeEventListener("scroll", placeNewStyle, true);
+    window.removeEventListener("resize", placeNewStyle);
+  }
+  // Beside the New style tile, its top level with the tile's, kept inside the studio.
+  function placeNewStyle() {
+    const studio = target.querySelector(".imst-studio");
+    const tile = target.querySelector('[data-imst-action="new-style"]');
+    if (!creatorPanel || !studio || !tile) return;
+    if (creatorPanel.parentNode !== studio) studio.append(creatorPanel);
+    const sr = studio.getBoundingClientRect();
+    const tr = tile.getBoundingClientRect();
+    const gap = 12;
+    const h = creatorPanel.offsetHeight;
+    const top = Math.max(0, Math.min(tr.top - sr.top, sr.height - h));
+    creatorPanel.style.left = `${tr.right - sr.left + gap}px`;
+    creatorPanel.style.top = `${top}px`;
+    // The caret stays on the tile even when the panel had to move up.
+    creatorPanel.style.setProperty("--imst-caret-top", `${Math.max(16, tr.top - sr.top - top + tr.height / 2)}px`);
   }
 
   // "Best for" + the network's icon; its name goes in title / aria-label.
@@ -1329,8 +1354,8 @@ ${b.prompt}</textarea
     paintFooter();
     paintModes();
     hydrateAssets(target);
-    // The style popover sits over the preview area, the same node every time.
-    if (creatorPanel) target.querySelector(".imst-canvas-col")?.append(creatorPanel);
+    // The style popover: the same node every time, re-anchored to its tile.
+    placeNewStyle();
     restoreScroll();
     restore();
   };

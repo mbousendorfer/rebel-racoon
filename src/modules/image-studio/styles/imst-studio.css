@@ -875,35 +875,41 @@
   color: var(--ref-color-grey-100);
 }
 
-/* "Create a style": a popover over the preview area. The studio stays in view
- * around it; the panel scrolls inside, its actions pinned at the bottom. */
-.imst-canvas-col {
+/* "Create a style": a popover anchored to the New style tile — beside it, over
+ * the column's edge and the preview, a caret pointing back at the tile. It
+ * floats (popover elevation), nothing under it is dimmed. Placed in JS. */
+.imst-draft-host .imst-studio,
+.imst-studio {
   position: relative;
 }
 
 .imst-stylepop {
   position: absolute;
-  inset: var(--ref-spacing-sm);
-  z-index: 3;
+  z-index: 5;
   display: flex;
   flex-direction: column;
-  max-width: calc(var(--ref-spacing-xxxl) * 9);
-  margin-inline: auto;
+  width: min(calc(var(--ref-spacing-xxxl) * 8), 60vw);
+  max-height: 100%;
   border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-card);
   background: var(--ref-color-white);
-  /* No shadow: it is already inside a dialog (no nested elevation) — the
-     preview under it dims instead, so the panel reads as on top. */
-  animation: imst-stylepop-in 0.2s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  box-shadow: var(--app-shadow-popover-lg);
+  animation: imst-stylepop-in 0.18s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  transform-origin: left top;
 }
 
-.imst-canvas-col:has(.imst-stylepop)::before {
+/* The caret: a square turned 45°, its two outer edges the panel's border. */
+.imst-stylepop::before {
   content: "";
   position: absolute;
-  inset: 0;
-  z-index: 2;
-  border-radius: inherit;
-  background: color-mix(in srgb, var(--ref-color-grey-150) 35%, transparent);
+  top: var(--imst-caret-top, var(--ref-spacing-md));
+  left: calc(var(--ref-spacing-xxs) * -1 + -1px);
+  width: var(--ref-spacing-sm);
+  height: var(--ref-spacing-sm);
+  border-left: 1px solid var(--ref-color-grey-20);
+  border-bottom: 1px solid var(--ref-color-grey-20);
+  background: var(--ref-color-white);
+  transform: translateY(-50%) rotate(45deg);
 }
 
 .imst-stylepop__head {
@@ -911,13 +917,13 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--ref-spacing-sm);
-  padding: var(--ref-spacing-md) var(--ref-spacing-md) var(--ref-spacing-sm);
+  padding: var(--ref-spacing-sm) var(--ref-spacing-sm) var(--ref-spacing-xs) var(--ref-spacing-md);
 }
 
 .imst-stylepop__title {
   margin: 0;
   color: var(--ref-color-grey-100);
-  font-size: var(--ref-font-size-xl);
+  font-size: var(--ref-font-size-md);
   font-weight: var(--ref-font-weight-bold);
 }
 
@@ -930,21 +936,30 @@
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
-  padding: var(--ref-spacing-xs) var(--ref-spacing-md) var(--ref-spacing-md);
+  padding: 0 var(--ref-spacing-md) var(--ref-spacing-md);
+}
+
+.imst-stylepop__body .imst-creator__form {
+  gap: var(--ref-spacing-md);
+}
+
+/* Six images fit one row in the popover. */
+.imst-stylepop .imst-sources {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
 .imst-stylepop__foot {
   display: flex;
   justify-content: flex-end;
   gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-md);
   border-top: 1px solid var(--ref-color-grey-20);
 }
 
 @keyframes imst-stylepop-in {
   from {
     opacity: 0;
-    transform: translateY(var(--ref-spacing-xs));
+    transform: translateX(calc(var(--ref-spacing-xxs) * -1)) scale(0.98);
   }
 }
 
