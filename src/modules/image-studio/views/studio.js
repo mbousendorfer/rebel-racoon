@@ -15,30 +15,30 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, "Refine" to iterate in place, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=1466";
-import { delegate } from "../lib/delegate.js?v=1466";
-import { hashString } from "../lib/prng.js?v=1466";
-import { renderEmpty } from "../ui/empty.js?v=1466";
-import { preserveFocus } from "../ui/fields.js?v=1466";
-import { toast } from "../ui/toast.js?v=1466";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1466";
-import { styleThumb } from "../ui/style-thumb.js?v=1466";
-import { openDialog } from "../ui/dialog.js?v=1466";
-import { menu } from "../ui/menu.js?v=1466";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1466";
-import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1466";
-import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1466";
-import { networkById } from "../config/networks.js?v=1466";
-import { copyService, imageGenerationService } from "../services/index.js?v=1466";
-import { unbranded } from "../state/playbook-brand.js?v=1466";
-import { resolveLayers } from "../render/layout.js?v=1466";
-import { svgToDataUrl } from "../render/visual.js?v=1466";
-import { splitVisual } from "../render/split.js?v=1466";
-import { bakeDoc } from "../render/edit-export.js?v=1466";
-import { subjectKindFor } from "../render/subjects.js?v=1466";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1466";
-import { createEditor } from "./edit/editor.js?v=1466";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1466";
+import { html, raw, toString } from "../lib/html.js?v=1468";
+import { delegate } from "../lib/delegate.js?v=1468";
+import { hashString } from "../lib/prng.js?v=1468";
+import { renderEmpty } from "../ui/empty.js?v=1468";
+import { preserveFocus } from "../ui/fields.js?v=1468";
+import { toast } from "../ui/toast.js?v=1468";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1468";
+import { styleThumb } from "../ui/style-thumb.js?v=1468";
+import { openDialog } from "../ui/dialog.js?v=1468";
+import { menu } from "../ui/menu.js?v=1468";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1468";
+import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1468";
+import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1468";
+import { networkById } from "../config/networks.js?v=1468";
+import { copyService, imageGenerationService } from "../services/index.js?v=1468";
+import { unbranded } from "../state/playbook-brand.js?v=1468";
+import { resolveLayers } from "../render/layout.js?v=1468";
+import { svgToDataUrl } from "../render/visual.js?v=1468";
+import { splitVisual } from "../render/split.js?v=1468";
+import { bakeDoc } from "../render/edit-export.js?v=1468";
+import { subjectKindFor } from "../render/subjects.js?v=1468";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1468";
+import { createEditor } from "./edit/editor.js?v=1468";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1468";
 import {
   forgetOneOffStyle,
   getBrand,
@@ -48,15 +48,15 @@ import {
   getStylesForBrand,
   registerOneOffStyle,
   subscribe,
-} from "../state/store.js?v=1466";
-import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1466";
+} from "../state/store.js?v=1468";
+import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1468";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1466";
+} from "../state/creation-actions.js?v=1468";
 
 const variationsLabel = (n) => (n === 1 ? "1 variation" : `${n} variations`);
 
@@ -661,13 +661,13 @@ export function mountStudio(
     state.justPicked = false;
     return html`
       <section class="imst-ctl" aria-labelledby="imst-ctl-source">
-        <h3 class="imst-start__sr" id="imst-ctl-source">Start from ${picked.title.toLowerCase()}</h3>
+        <h3 class="imst-start__sr" id="imst-ctl-source">${picked.label}</h3>
         <button
           type="button"
           class="imst-start__recall${landing ? " is-landing" : ""}"
           data-imst-action="change-source"
           ${picked.id === "image" ? "data-imst-style-drop" : ""}
-          aria-label="Start from ${picked.title.toLowerCase()}. Change where the look comes from"
+          aria-label="${picked.label}. Change where the look comes from"
         >
           <span class="imst-start__mini" aria-hidden="true"
             ><span class="imst-start__mini-art imst-chooser__art"
@@ -698,131 +698,131 @@ export function mountStudio(
     const nets = shapes().map((x) => x.networks.join(","));
     const sharedNets = nets.every((n) => n === nets[0]) ? shapes()[0]?.networks : null;
     const styleCount = getStylesForBrand(brand.id).length || STYLE_PRESETS.length;
+    // "A style" needs no description: the post is the brief, and the text on
+    // the image takes its place at the top. The other two start from the words.
+    const describeSection = html` <section class="imst-ctl">
+      <label class="imst-ctl__label ap-body-bold" for="imst-prompt">Describe the image</label>
+      <div class="imst-composer${state.error ? " has-error" : ""}">
+        <textarea
+          id="imst-prompt"
+          class="imst-composer__input"
+          rows="4"
+          data-imst-field="prompt"
+          placeholder="${state.source === "scratch"
+            ? "Describe everything: the subject, the medium, the light, the mood…"
+            : "What should the image show? A scene, a subject, a mood…"}"
+          ${state.error ? html`aria-invalid="true" aria-describedby="imst-prompt-error"` : ""}
+        >
+${b.prompt}</textarea
+        >
+        <div class="imst-composer__bar">
+          ${draft.text
+            ? html`<button type="button" class="ap-button mermaid" data-imst-action="suggest">
+                <i class="ap-icon-sparkles" aria-hidden="true"></i><span>Suggest from the post</span>
+              </button>`
+            : ""}
+        </div>
+      </div>
+      ${state.error
+        ? html`<span class="ap-form-message error" id="imst-prompt-error" role="alert">${state.error}</span>`
+        : ""}
+    </section>`;
+    const shapeSection = html` <section class="imst-ctl" aria-labelledby="imst-ctl-shape">
+      <header class="imst-ctl__head">
+        <div class="imst-ctl__title">
+          <h3 class="imst-ctl__label ap-body-bold" id="imst-ctl-shape">Shape</h3>
+          ${sharedNets ? bestFor(sharedNets) : ""}
+        </div>
+        <span class="ap-caption imst-ctl__meta">${format.width} × ${format.height} px</span>
+      </header>
+      <div class="imst-seg" role="radiogroup" aria-labelledby="imst-ctl-shape">
+        ${shapes().map(
+          (s) =>
+            html`<button
+              type="button"
+              class="imst-seg__opt"
+              role="radio"
+              aria-checked="${s.id === shape.id}"
+              data-imst-shape="${s.id}"
+              aria-label="${s.label} ${s.ratio}, best for ${s.networks.map((n) => networkById(n).label).join(", ")}"
+            >
+              <span class="imst-seg__box"
+                ><span
+                  class="imst-seg__frame"
+                  style="aspect-ratio: ${s.w} / ${s.h}; ${s.w >= s.h ? "width: 100%" : "height: 100%"}"
+                ></span
+              ></span>
+              <span class="imst-seg__name">${s.label}</span>
+              <span class="ap-caption imst-seg__ratio">${s.ratio}</span>
+              ${sharedNets ? "" : bestFor(s.networks)}
+            </button>`,
+        )}
+      </div>
+    </section>`;
+    const textSection = html` <section class="imst-ctl" aria-labelledby="imst-ctl-text">
+      <header class="imst-ctl__head">
+        <h3 class="imst-ctl__label ap-body-bold" id="imst-ctl-text">Text on the image</h3>
+        <span class="ap-caption imst-ctl__meta">Optional</span>
+      </header>
+      <div class="imst-composer imst-composer--line">
+        <input
+          type="text"
+          class="imst-composer__line"
+          data-imst-field="headline"
+          value="${b.headline}"
+          placeholder="A headline, e.g. Plans that name their signal"
+          aria-labelledby="imst-ctl-text"
+        />
+        ${draft.text
+          ? html`<button
+              type="button"
+              class="ap-button mermaid"
+              data-imst-action="suggest-headline"
+              aria-label="Suggest a headline from the post"
+              data-tooltip="${b.headline ? "Another line from the post" : "A line from the post"}"
+            >
+              <i class="ap-icon-sparkles" aria-hidden="true"></i><span>Suggest</span>
+            </button>`
+          : ""}
+      </div>
+      <div class="imst-ctl__toggle-row">
+        <label class="ap-toggle-container imst-ctl__toggle">
+          <input
+            type="checkbox"
+            data-imst-textmode
+            ${b.textMode === "embedded" ? "checked" : ""}
+            ${canEmbed ? "" : "disabled"}
+          /><i></i><span>Write it into the image</span>
+        </label>
+        <!-- Beside the label, not in it: a click on the ⓘ must not flip the switch. -->
+        <i
+          class="ap-icon-info imst-ctl__info"
+          tabindex="0"
+          role="img"
+          aria-label="What writing the text into the image changes"
+          data-tooltip="Written in, the text is painted into the picture: it takes on the style's lettering and texture, but can't be edited or moved afterwards. Left off, it stays a layer you can change any time."
+        ></i>
+      </div>
+      <span class="ap-caption imst-ctl__note"
+        >${!canEmbed
+          ? `${style.label} can't write text, so it stays an editable layer you can move and restyle.`
+          : b.textMode === "embedded"
+            ? "Part of the picture — it won't be editable afterwards."
+            : "Otherwise it stays an editable layer you can move and restyle."}</span
+      >
+      ${state.warning
+        ? html`<span class="ap-caption imst-ctl__warn" role="status"
+            ><i class="ap-icon-warning_fill" aria-hidden="true"></i> ${state.warning}</span
+          >`
+        : ""}
+    </section>`;
     return html`
-      <aside class="imst-controls" aria-label="Describe the image">
+      <aside class="imst-controls" aria-label="Image settings">
         <div class="imst-controls__scroll">
           ${renderSource(brand, style, styleCount)}
-          <section class="imst-ctl">
-            <label class="imst-ctl__label ap-body-bold" for="imst-prompt">Describe the image</label>
-            <div class="imst-composer${state.error ? " has-error" : ""}">
-              <textarea
-                id="imst-prompt"
-                class="imst-composer__input"
-                rows="4"
-                data-imst-field="prompt"
-                placeholder="${state.source === "scratch"
-                  ? "Describe everything: the subject, the medium, the light, the mood…"
-                  : "What should the image show? A scene, a subject, a mood…"}"
-                ${state.error ? html`aria-invalid="true" aria-describedby="imst-prompt-error"` : ""}
-              >
-${b.prompt}</textarea
-              >
-              <div class="imst-composer__bar">
-                ${draft.text
-                  ? html`<button type="button" class="ap-button mermaid" data-imst-action="suggest">
-                      <i class="ap-icon-sparkles" aria-hidden="true"></i><span>Suggest from the post</span>
-                    </button>`
-                  : ""}
-              </div>
-            </div>
-            ${state.error
-              ? html`<span class="ap-form-message error" id="imst-prompt-error" role="alert">${state.error}</span>`
-              : ""}
-          </section>
-
-          <section class="imst-ctl" aria-labelledby="imst-ctl-shape">
-            <header class="imst-ctl__head">
-              <div class="imst-ctl__title">
-                <h3 class="imst-ctl__label ap-body-bold" id="imst-ctl-shape">Shape</h3>
-                ${sharedNets ? bestFor(sharedNets) : ""}
-              </div>
-              <span class="ap-caption imst-ctl__meta">${format.width} × ${format.height} px</span>
-            </header>
-            <div class="imst-seg" role="radiogroup" aria-labelledby="imst-ctl-shape">
-              ${shapes().map(
-                (s) =>
-                  html`<button
-                    type="button"
-                    class="imst-seg__opt"
-                    role="radio"
-                    aria-checked="${s.id === shape.id}"
-                    data-imst-shape="${s.id}"
-                    aria-label="${s.label} ${s.ratio}, best for ${s.networks
-                      .map((n) => networkById(n).label)
-                      .join(", ")}"
-                  >
-                    <span class="imst-seg__box"
-                      ><span
-                        class="imst-seg__frame"
-                        style="aspect-ratio: ${s.w} / ${s.h}; ${s.w >= s.h ? "width: 100%" : "height: 100%"}"
-                      ></span
-                    ></span>
-                    <span class="imst-seg__name">${s.label}</span>
-                    <span class="ap-caption imst-seg__ratio">${s.ratio}</span>
-                    ${sharedNets ? "" : bestFor(s.networks)}
-                  </button>`,
-              )}
-            </div>
-          </section>
-
-          <section class="imst-ctl" aria-labelledby="imst-ctl-text">
-            <header class="imst-ctl__head">
-              <h3 class="imst-ctl__label ap-body-bold" id="imst-ctl-text">Text on the image</h3>
-              <span class="ap-caption imst-ctl__meta">Optional</span>
-            </header>
-            <div class="imst-composer imst-composer--line">
-              <input
-                type="text"
-                class="imst-composer__line"
-                data-imst-field="headline"
-                value="${b.headline}"
-                placeholder="A headline, e.g. Plans that name their signal"
-                aria-labelledby="imst-ctl-text"
-              />
-              ${draft.text
-                ? html`<button
-                    type="button"
-                    class="ap-button mermaid"
-                    data-imst-action="suggest-headline"
-                    aria-label="Suggest a headline from the post"
-                    data-tooltip="${b.headline ? "Another line from the post" : "A line from the post"}"
-                  >
-                    <i class="ap-icon-sparkles" aria-hidden="true"></i><span>Suggest</span>
-                  </button>`
-                : ""}
-            </div>
-            <div class="imst-ctl__toggle-row">
-              <label class="ap-toggle-container imst-ctl__toggle">
-                <input
-                  type="checkbox"
-                  data-imst-textmode
-                  ${b.textMode === "embedded" ? "checked" : ""}
-                  ${canEmbed ? "" : "disabled"}
-                /><i></i><span>Write it into the image</span>
-              </label>
-              <!-- Beside the label, not in it: a click on the ⓘ must not flip the switch. -->
-              <i
-                class="ap-icon-info imst-ctl__info"
-                tabindex="0"
-                role="img"
-                aria-label="What writing the text into the image changes"
-                data-tooltip="Written in, the text is painted into the picture: it takes on the style's lettering and texture, but can't be edited or moved afterwards. Left off, it stays a layer you can change any time."
-              ></i>
-            </div>
-            <span class="ap-caption imst-ctl__note"
-              >${!canEmbed
-                ? `${style.label} can't write text, so it stays an editable layer you can move and restyle.`
-                : b.textMode === "embedded"
-                  ? "Part of the picture — it won't be editable afterwards."
-                  : "Otherwise it stays an editable layer you can move and restyle."}</span
-            >
-            ${state.warning
-              ? html`<span class="ap-caption imst-ctl__warn" role="status"
-                  ><i class="ap-icon-warning_fill" aria-hidden="true"></i> ${state.warning}</span
-                >`
-              : ""}
-          </section>
-
+          ${state.source === "style"
+            ? html`${textSection}${shapeSection}`
+            : html`${describeSection}${shapeSection}${textSection}`}
           <section class="imst-ctl" aria-labelledby="imst-ctl-count">
             <header class="imst-ctl__head imst-ctl__head--control">
               <h3 class="imst-ctl__label ap-body-bold" id="imst-ctl-count">Variations</h3>
@@ -899,8 +899,8 @@ ${b.prompt}</textarea
               ? `From your words alone, in ${brand.name}'s colours.`
               : `A preview of ${style.oneOff ? "your image's style" : style.label} in ${brand.name}'s colours.`}</span
           >
-          Describe what you want and generate — you'll get
-          ${b.count === 1 ? "one image" : `${b.count} variations to pick from`}.
+          ${state.source === "style" ? "Generate: I'll draw from the post" : "Describe what you want and generate"} —
+          you'll get ${b.count === 1 ? "one image" : `${b.count} variations to pick from`}.
         </p>
       </div>
     `;
@@ -1294,7 +1294,7 @@ ${b.prompt}</textarea
 
   async function generate() {
     const brand = brandNow();
-    if (!state.brief.prompt.trim()) {
+    if (state.source !== "style" && !state.brief.prompt.trim()) {
       state.error = "Describe the image first.";
       paint();
       target.querySelector("#imst-prompt")?.focus();
@@ -1306,8 +1306,13 @@ ${b.prompt}</textarea
       paint();
       return;
     }
-    const req = request(brand);
-    const creation = startCreation({ brand, brief: { ...state.brief }, style: req.style });
+    // "A style" has no description field: what the image shows comes from the post.
+    const brief =
+      state.source === "style"
+        ? { ...state.brief, prompt: state.brief.headline || String(draft.text || "").slice(0, 240) }
+        : { ...state.brief };
+    const req = request(brand, brief);
+    const creation = startCreation({ brand, brief, style: req.style });
     state.creationId = creation.id;
     state.focusId = null;
     state.run = { status: "loading" };
