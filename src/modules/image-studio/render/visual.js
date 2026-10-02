@@ -6,12 +6,12 @@
 // images: its look is read from their colours (lookFromColors) and they tint
 // the palette. (Older styles that mixed presets still draw with them.)
 
-import { prng } from "../lib/prng.js?v=1431";
-import { presetById } from "../config/style-presets.js?v=1431";
-import { generatorFor } from "./generators.js?v=1431";
-import { inkOn, resolvePalette } from "./palette.js?v=1431";
-import { fontStack } from "../config/fonts.js?v=1431";
-import { subjectPath } from "./subjects.js?v=1431";
+import { prng } from "../lib/prng.js?v=1436";
+import { QUICK_PRESETS, presetById } from "../config/style-presets.js?v=1436";
+import { generatorFor } from "./generators.js?v=1436";
+import { inkOn, resolvePalette } from "./palette.js?v=1436";
+import { fontStack } from "../config/fonts.js?v=1436";
+import { subjectPath } from "./subjects.js?v=1436";
 
 let renderSeq = 0;
 
@@ -69,7 +69,12 @@ function styleImageColors(style, getAsset = () => null) {
 
 /** Which generator a style draws with, for a given seed, plus the palette tint it asks for. */
 export function resolveStyleDrawing(style, seed, getAsset = () => null) {
-  if (!style) return { family: "illustration", variant: "flat", tint: [], tintWeight: 0 };
+  // From scratch — no style: each seed takes its own direction, the way a model
+  // left to the words alone would.
+  if (!style) {
+    const free = presetById(QUICK_PRESETS[(seed >>> 0) % QUICK_PRESETS.length]);
+    return { ...free.render, family: free.family, tint: [], tintWeight: 0 };
+  }
   if (style.kind !== "custom") return { ...style.render, family: style.family, tint: [], tintWeight: 0 };
   const sources = style.custom?.sources || [];
   // Older styles mixed presets; they still draw with them. A style is now made
