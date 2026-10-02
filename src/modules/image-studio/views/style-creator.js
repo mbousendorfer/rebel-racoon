@@ -8,23 +8,23 @@
 // user's request, 2026-10-02: a new style keeps the essentials.) A test run
 // on three neutral subjects before saving. Saved FOR the active Playbook.
 
-import { html, toString } from "../lib/html.js?v=1478";
-import { delegate } from "../lib/delegate.js?v=1478";
-import { getPath } from "../../../router.js?v=1478";
-import { setTopbarActions } from "../../../components/topbar.js?v=1478";
-import { hashString, randomSeed } from "../lib/prng.js?v=1478";
-import { renderFrame } from "./frame.js?v=1478";
-import { renderEmpty } from "../ui/empty.js?v=1478";
-import { field, preserveFocus, slider, syncSlider, textArea, textInput } from "../ui/fields.js?v=1478";
-import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1478";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1478";
-import { toast } from "../ui/toast.js?v=1478";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1478";
-import { CUSTOM_STYLE_LIMITS, STYLE_TEST_SUBJECTS } from "../config/style-presets.js?v=1478";
-import { createStyle } from "../model/schema.js?v=1478";
-import { imageGenerationService } from "../services/index.js?v=1478";
-import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1478";
-import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1478";
+import { html, toString } from "../lib/html.js?v=1479";
+import { delegate } from "../lib/delegate.js?v=1479";
+import { getPath } from "../../../router.js?v=1479";
+import { setTopbarActions } from "../../../components/topbar.js?v=1479";
+import { hashString, randomSeed } from "../lib/prng.js?v=1479";
+import { renderFrame } from "./frame.js?v=1479";
+import { renderEmpty } from "../ui/empty.js?v=1479";
+import { field, preserveFocus, slider, syncSlider, textArea, textInput } from "../ui/fields.js?v=1479";
+import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1479";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1479";
+import { toast } from "../ui/toast.js?v=1479";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=1479";
+import { CUSTOM_STYLE_LIMITS, STYLE_TEST_SUBJECTS } from "../config/style-presets.js?v=1479";
+import { createStyle } from "../model/schema.js?v=1479";
+import { imageGenerationService } from "../services/index.js?v=1479";
+import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1479";
+import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1479";
 
 function draftFrom(style, brandId) {
   if (style) {
@@ -206,6 +206,64 @@ export function mount(target, params, ctx, { dialog = null } = {}) {
     const d = state.draft;
     const images = d.sources.map((s, i) => [s, i]).filter(([s]) => s.type === "image");
     const page = (body) => (dialog ? body : renderFrame({ body }));
+    // On the page, each group is a card; in the studio's dialog the dialog is
+    // already the surface, so the groups are plain stacks — and the images come
+    // first, since they are what makes the style.
+    const card = dialog ? "imst-creator__group" : "ap-card imst-creator__card";
+    const identity = html` <section class="${card}">
+      ${field({
+        label: "Name",
+        id: "imst-st-name",
+        control: textInput({
+          path: "label",
+          id: "imst-st-name",
+          value: d.label,
+          placeholder: "e.g. Morning light",
+        }),
+      })}
+      ${field({
+        label: "Description",
+        id: "imst-st-desc",
+        hint: "Optional — shown under the name in the style picker.",
+        control: textInput({
+          path: "description",
+          id: "imst-st-desc",
+          value: d.description,
+          placeholder: "e.g. Warm window light over wood",
+        }),
+      })}
+      ${field({
+        label: "Style prompt",
+        id: "imst-st-prompt",
+        hint: "Optional. Added to every image in this style.",
+        control: textArea({
+          path: "stylePrompt",
+          id: "imst-st-prompt",
+          value: d.stylePrompt,
+          rows: 2,
+          placeholder: "e.g. Always a plain background, soft light",
+        }),
+      })}
+    </section>`;
+    const refs = html` <section class="${card}" aria-labelledby="imst-src-images">
+      <header class="imst-section__head">
+        <h2 class="ap-body-bold" id="imst-src-images">Reference images</h2>
+        <span class="ap-caption">${images.length} of ${CUSTOM_STYLE_LIMITS.images}</span>
+      </header>
+      ${images.length
+        ? html`<ul class="imst-sources">
+            ${images.map(([s, i]) => renderSource(s, i))}
+          </ul>`
+        : ""}
+      ${images.length < CUSTOM_STYLE_LIMITS.images
+        ? dropzone({
+            id: "refs",
+            title: state.uploading ? "Adding…" : "Drop images whose look you want, or",
+            sub: "PNG, JPG, SVG or WebP",
+            compact: true,
+          })
+        : ""}
+    </section>`;
     target.innerHTML = toString(
       page(html`
         ${dialog
@@ -217,62 +275,7 @@ export function mount(target, params, ctx, { dialog = null } = {}) {
               </p>
             </header>`}
         <div class="imst-creator${dialog ? " imst-creator--dialog" : ""}">
-          <div class="imst-creator__form">
-            <section class="ap-card imst-creator__card">
-              ${field({
-                label: "Name",
-                id: "imst-st-name",
-                control: textInput({
-                  path: "label",
-                  id: "imst-st-name",
-                  value: d.label,
-                  placeholder: "e.g. Morning light",
-                }),
-              })}
-              ${field({
-                label: "Description",
-                id: "imst-st-desc",
-                hint: "Optional — shown under the name in the style picker.",
-                control: textInput({
-                  path: "description",
-                  id: "imst-st-desc",
-                  value: d.description,
-                  placeholder: "e.g. Warm window light over wood",
-                }),
-              })}
-              ${field({
-                label: "Style prompt",
-                id: "imst-st-prompt",
-                hint: "Optional. Added to every image in this style.",
-                control: textArea({
-                  path: "stylePrompt",
-                  id: "imst-st-prompt",
-                  value: d.stylePrompt,
-                  rows: 2,
-                  placeholder: "e.g. Always a plain background, soft light",
-                }),
-              })}
-            </section>
-            <section class="ap-card imst-creator__card" aria-labelledby="imst-src-images">
-              <header class="imst-section__head">
-                <h2 class="ap-body-bold" id="imst-src-images">Reference images</h2>
-                <span class="ap-caption">${images.length} of ${CUSTOM_STYLE_LIMITS.images}</span>
-              </header>
-              ${images.length
-                ? html`<ul class="imst-sources">
-                    ${images.map(([s, i]) => renderSource(s, i))}
-                  </ul>`
-                : ""}
-              ${images.length < CUSTOM_STYLE_LIMITS.images
-                ? dropzone({
-                    id: "refs",
-                    title: state.uploading ? "Adding…" : "Drop images whose look you want, or",
-                    sub: "PNG, JPG, SVG or WebP",
-                    compact: true,
-                  })
-                : ""}
-            </section>
-          </div>
+          <div class="imst-creator__form">${dialog ? html`${refs}${identity}` : html`${identity}${refs}`}</div>
           ${dialog ? "" : renderPreview()}
         </div>
         ${state.errors.length

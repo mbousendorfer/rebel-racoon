@@ -335,7 +335,22 @@ button.imst-style-card {
   flex-shrink: 0;
 }
 
-/* In the studio's dialog: the form alone, no test run beside it. */
+/* In the studio's dialog: the form alone, no test run beside it, and no card
+ * inside the dialog — the groups are plain stacks, set apart by space. */
 .imst-creator--dialog {
   grid-template-columns: minmax(0, 1fr);
+}
+
+.imst-creator--dialog .imst-creator__form {
+  gap: var(--ref-spacing-lg);
+}
+
+.imst-creator__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+}
+
+.imst-creator__group h2 {
+  margin: 0;
 }
