@@ -1337,8 +1337,9 @@
   padding: var(--ref-spacing-xs) var(--ref-spacing-md);
 }
 
+/* The draft's dialog: 32px between sections, so each reads as its own block. */
 .imst-draft-host .imst-controls__scroll {
-  gap: var(--ref-spacing-md);
+  gap: var(--ref-spacing-lg);
 }
 
 .imst-draft-host .imst-canvas-col {
