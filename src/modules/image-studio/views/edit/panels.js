@@ -12,9 +12,9 @@
 //           layers with nothing (or a text) selected. The text and the logo are
 //           never redrawn: that is what having layers buys.
 
-import { html } from "../../lib/html.js?v=1471";
-import { IMAGE_PRESETS } from "../../config/edit.js?v=1471";
-import { LAYER_ICONS, isBase, layerName } from "../../state/edit-doc.js?v=1471";
+import { html } from "../../lib/html.js?v=1473";
+import { IMAGE_PRESETS } from "../../config/edit.js?v=1473";
+import { LAYER_ICONS, isBase, layerName } from "../../state/edit-doc.js?v=1473";
 
 // ── Tool palette (left) ─────────────────────────────────────────────────────
 
@@ -201,26 +201,22 @@ export function redrawTarget(doc, selectedId) {
 export function composer(ui, doc, { busy }) {
   const target = redrawTarget(doc, ui.selectedId);
   const off = busy || !target.kinds.length;
+  // The Generate tab's former Refine field, the one style for "say a change".
   return html`<div class="isv2-dock">
-    <div class="isv2-console-wrap">
-      <div class="isv2-console isv2-console--inline" role="group" aria-label="Edit the image">
-        <textarea
-          class="isv2-prompt"
-          data-img-edit-prompt
-          rows="1"
-          placeholder="${target.placeholder}"
-          aria-label="Describe a change for AI to apply"
-          ${off ? "disabled" : ""}
-        >
-${ui.prompt}</textarea
-        >
-        <div class="isv2-console-toolbar">
-          <button type="button" class="ap-button stroked grey" data-imst-redraw ${off ? "disabled" : ""}>
-            <i class="ap-icon-sparkles-mermaid"></i><span>Redraw</span>
-          </button>
-        </div>
-      </div>
-      <div class="isv2-console-hint"><kbd>Enter</kbd> to redraw · <kbd>Shift</kbd>+<kbd>Enter</kbd> for new line</div>
+    <div class="imst-refine imst-refine--edit" role="group" aria-label="Edit the image">
+      <i class="ap-icon-sparkles imst-refine__icon" aria-hidden="true"></i>
+      <input
+        type="text"
+        class="imst-refine__input"
+        data-img-edit-prompt
+        value="${ui.prompt}"
+        placeholder="${target.placeholder}"
+        aria-label="Describe a change for AI to apply"
+        ${off ? "disabled" : ""}
+      />
+      <button type="button" class="ap-button primary orange" data-imst-redraw ${off ? "disabled" : ""}>
+        <span>Redraw</span>
+      </button>
     </div>
   </div>`;
 }

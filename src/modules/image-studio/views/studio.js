@@ -13,32 +13,32 @@
 //       brand's colours, redrawn on every change: nothing is picked blind
 //     generating — the shape, shimmering, with what's being made in words
 //     after — the chosen variation LARGE, its actions beside it, the four as a
-//       filmstrip, "Refine" to iterate in place, earlier runs underneath
+//       filmstrip, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=1471";
-import { delegate } from "../lib/delegate.js?v=1471";
-import { hashString } from "../lib/prng.js?v=1471";
-import { renderEmpty } from "../ui/empty.js?v=1471";
-import { preserveFocus } from "../ui/fields.js?v=1471";
-import { toast } from "../ui/toast.js?v=1471";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1471";
-import { styleThumb } from "../ui/style-thumb.js?v=1471";
-import { openDialog } from "../ui/dialog.js?v=1471";
-import { menu } from "../ui/menu.js?v=1471";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1471";
-import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1471";
-import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1471";
-import { networkById } from "../config/networks.js?v=1471";
-import { copyService, imageGenerationService } from "../services/index.js?v=1471";
-import { unbranded } from "../state/playbook-brand.js?v=1471";
-import { resolveLayers } from "../render/layout.js?v=1471";
-import { svgToDataUrl } from "../render/visual.js?v=1471";
-import { splitVisual } from "../render/split.js?v=1471";
-import { bakeDoc } from "../render/edit-export.js?v=1471";
-import { subjectKindFor } from "../render/subjects.js?v=1471";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1471";
-import { createEditor } from "./edit/editor.js?v=1471";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1471";
+import { html, raw, toString } from "../lib/html.js?v=1473";
+import { delegate } from "../lib/delegate.js?v=1473";
+import { hashString } from "../lib/prng.js?v=1473";
+import { renderEmpty } from "../ui/empty.js?v=1473";
+import { preserveFocus } from "../ui/fields.js?v=1473";
+import { toast } from "../ui/toast.js?v=1473";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1473";
+import { styleThumb } from "../ui/style-thumb.js?v=1473";
+import { openDialog } from "../ui/dialog.js?v=1473";
+import { menu } from "../ui/menu.js?v=1473";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1473";
+import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1473";
+import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1473";
+import { networkById } from "../config/networks.js?v=1473";
+import { copyService, imageGenerationService } from "../services/index.js?v=1473";
+import { unbranded } from "../state/playbook-brand.js?v=1473";
+import { resolveLayers } from "../render/layout.js?v=1473";
+import { svgToDataUrl } from "../render/visual.js?v=1473";
+import { splitVisual } from "../render/split.js?v=1473";
+import { bakeDoc } from "../render/edit-export.js?v=1473";
+import { subjectKindFor } from "../render/subjects.js?v=1473";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1473";
+import { createEditor } from "./edit/editor.js?v=1473";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1473";
 import {
   forgetOneOffStyle,
   getBrand,
@@ -48,15 +48,15 @@ import {
   getStylesForBrand,
   registerOneOffStyle,
   subscribe,
-} from "../state/store.js?v=1471";
-import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1471";
+} from "../state/store.js?v=1473";
+import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1473";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1471";
+} from "../state/creation-actions.js?v=1473";
 
 const variationsLabel = (n) => (n === 1 ? "1 variation" : `${n} variations`);
 
@@ -117,7 +117,6 @@ export function mountStudio(
     focusId: null,
     run: { status: "idle" }, // idle | loading | error
     busy: new Set(), // variation ids being regenerated
-    refine: "",
     warning: "",
     error: "",
     abort: null,
@@ -1044,6 +1043,10 @@ ${b.prompt}</textarea
                   </button>
                 </div>`
               : ""}
+            <!-- Into Edit on this variation: the same as the header's Edit tab. -->
+            <button type="button" class="ap-button stroked grey" data-imst-mode="edit" ${busy ? "disabled" : ""}>
+              <i class="ap-icon-pen" aria-hidden="true"></i><span>Edit</span>
+            </button>
             <button
               type="button"
               class="ap-icon-button transparent grey"
@@ -1117,20 +1120,6 @@ ${b.prompt}</textarea
                   </button>`}
             </div>`
           : ""}
-        <form class="imst-refine" data-imst-form="refine">
-          <i class="ap-icon-sparkles imst-refine__icon" aria-hidden="true"></i>
-          <input
-            type="text"
-            class="imst-refine__input"
-            data-imst-field="refine"
-            value="${state.refine}"
-            placeholder="Refine this one — warmer light, a closer crop…"
-            aria-label="Refine this variation"
-          />
-          <button type="submit" class="ap-button primary orange" ${state.run.status === "loading" ? "disabled" : ""}>
-            <span>Refine</span>
-          </button>
-        </form>
       </div>
     `;
   };
@@ -1286,7 +1275,7 @@ ${b.prompt}</textarea
     format: formatById(brief.formatIds[0]),
     textMode: brief.textMode,
     text: { headline: brief.headline },
-    // The CURRENT choice, also for More like this / Refine on an earlier run.
+    // The CURRENT choice, also for More like this on an earlier run.
     count: state.brief.count || 4,
   });
 
@@ -1347,34 +1336,6 @@ ${b.prompt}</textarea
       toast("That one didn't come through. Try again.", { variant: "error" });
     }
     state.addingOne = false;
-    paint();
-  }
-
-  /** Refine: a new batch close to the focused variation. */
-  async function iterate(refinement = "") {
-    const brand = brandNow();
-    const c = currentCreation();
-    const base = focused(c);
-    const brief = refinement ? { ...c.brief, prompt: `${c.brief.prompt}. ${refinement}` } : c.brief;
-    const n =
-      batchVariations(c, c.batches?.find((x) => x.id === base.batchId) || latestBatch(c)).findIndex(
-        (x) => x.id === base.id,
-      ) + 1;
-    state.run = { status: "loading" };
-    paint();
-    try {
-      const vars = await imageGenerationService.similar(base, request(brand, brief, c.styleSnapshot), {});
-      addBatch(c.id, vars, {
-        label: refinement ? `Refined: ${refinement}` : `Like variation ${n}`,
-        parentVariationId: base.id,
-      });
-      state.focusId = null;
-      state.refine = "";
-      state.run = { status: "idle" };
-    } catch {
-      state.run = { status: "idle" };
-      toast("Those variations failed. Try again.", { variant: "error" });
-    }
     paint();
   }
 
@@ -1649,13 +1610,10 @@ ${b.prompt}</textarea
     subscribe(paint),
     delegate(target, "input", "[data-imst-field]", (_e, el) => {
       const f = el.dataset.imstField;
-      if (f === "refine") state.refine = el.value;
-      else {
-        state.brief[f] = el.value;
-        if (f === "prompt" && state.error) {
-          state.error = "";
-          target.querySelector(".imst-ctl .ap-form-message.error")?.remove();
-        }
+      state.brief[f] = el.value;
+      if (f === "prompt" && state.error) {
+        state.error = "";
+        target.querySelector(".imst-ctl .ap-form-message.error")?.remove();
       }
     }),
     // The preview follows the text on the image once you're done typing.
@@ -1720,14 +1678,6 @@ ${b.prompt}</textarea
       const next = items[(i + (event.key === "ArrowRight" ? 1 : -1) + items.length) % items.length];
       if (next) next.click();
       event.preventDefault();
-    }),
-    delegate(target, "submit", "[data-imst-form='refine']", (event) => {
-      event.preventDefault();
-      if (!state.refine.trim()) {
-        target.querySelector("[data-imst-field='refine']")?.focus();
-        return;
-      }
-      iterate(state.refine.trim());
     }),
     delegate(root, "click", "[data-imst-action]", (_e, el) => {
       const a = el.dataset.imstAction;
