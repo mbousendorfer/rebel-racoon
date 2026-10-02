@@ -1,14 +1,14 @@
 // Image Generator — every write a custom style undergoes. A custom style is the
 // BRAND's: it lives on the Playbook and is listed first in the studio's picker.
 
-import { storageService as storage } from "../services/index.js?v=1457";
-import { createAsset, createStyle } from "../model/schema.js?v=1457";
-import { presetById, CUSTOM_STYLE_LIMITS } from "../config/style-presets.js?v=1457";
-import { sampleColors } from "../render/sample-colors.js?v=1457";
-import { uid } from "../lib/id.js?v=1457";
-import { lookFromColors } from "../render/visual.js?v=1457";
-import { getAsset } from "./store.js?v=1457";
-import { deletePlaybookStyle, findPlaybookStyle, savePlaybookStyle } from "./playbook-brand.js?v=1457";
+import { storageService as storage } from "../services/index.js?v=1458";
+import { createAsset, createStyle } from "../model/schema.js?v=1458";
+import { presetById, CUSTOM_STYLE_LIMITS } from "../config/style-presets.js?v=1458";
+import { sampleColors } from "../render/sample-colors.js?v=1458";
+import { uid } from "../lib/id.js?v=1458";
+import { lookFromColors } from "../render/visual.js?v=1458";
+import { getAsset } from "./store.js?v=1458";
+import { deletePlaybookStyle, findPlaybookStyle, savePlaybookStyle } from "./playbook-brand.js?v=1458";
 
 /** A custom style can write text into the image when the look read from its images can. */
 function deriveEmbeddedText(sources) {
@@ -94,19 +94,6 @@ export async function oneOffStyleFrom(brandId, files) {
     description: images.length > 1 ? `The look of ${images.length} images you added` : `The look of ${name}`,
     supportsEmbeddedText: deriveEmbeddedText(sources),
     custom: { sources, fidelity: "essential", stylePrompt: "" },
-  });
-}
-
-/** Makes a one-off the brand's: saved on the Playbook under `label`. Its images stay. */
-export function saveOneOffToPlaybook(style, label) {
-  return saveStyle({
-    id: null,
-    brandId: style.brandId,
-    label,
-    description: "",
-    sources: style.custom.sources.map(({ colors, ...s }) => s),
-    fidelity: style.custom.fidelity,
-    stylePrompt: "",
   });
 }
 

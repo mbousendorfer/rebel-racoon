@@ -1,12 +1,12 @@
 // Image Generator — a style's thumbnail: the style drawn in the active brand's
 // palette, so the gallery previews what THIS brand would get.
 
-import { html } from "../lib/html.js?v=1457";
-import { hashString } from "../lib/prng.js?v=1457";
-import { renderVisual, resolveStyleDrawing, svgToDataUrl } from "../render/visual.js?v=1457";
-import { resolvePalette } from "../render/palette.js?v=1457";
-import { hasStyleArt, styleArtSvg } from "../render/style-art.js?v=1457";
-import { getAsset } from "../state/store.js?v=1457";
+import { html } from "../lib/html.js?v=1458";
+import { hashString } from "../lib/prng.js?v=1458";
+import { renderVisual, resolveStyleDrawing, svgToDataUrl } from "../render/visual.js?v=1458";
+import { resolvePalette } from "../render/palette.js?v=1458";
+import { hasStyleArt, styleArtSvg } from "../render/style-art.js?v=1458";
+import { getAsset } from "../state/store.js?v=1458";
 
 // A thumbnail is the style's own picture (render/style-art.js), drawn in the
 // brand's palette — a custom style shows its heaviest preset's, tinted by its

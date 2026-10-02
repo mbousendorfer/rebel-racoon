@@ -15,32 +15,31 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, "Refine" to iterate in place, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=1457";
-import { delegate } from "../lib/delegate.js?v=1457";
-import { hashString } from "../lib/prng.js?v=1457";
-import { renderEmpty } from "../ui/empty.js?v=1457";
-import { field, preserveFocus, textInput } from "../ui/fields.js?v=1457";
-import { toast } from "../ui/toast.js?v=1457";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1457";
-import { styleThumb } from "../ui/style-thumb.js?v=1457";
-import { openDialog } from "../ui/dialog.js?v=1457";
-import { menu } from "../ui/menu.js?v=1457";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1457";
-import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1457";
-import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1457";
-import { networkById } from "../config/networks.js?v=1457";
-import { copyService, imageGenerationService } from "../services/index.js?v=1457";
-import { unbranded } from "../state/playbook-brand.js?v=1457";
-import { resolveLayers } from "../render/layout.js?v=1457";
-import { svgToDataUrl } from "../render/visual.js?v=1457";
-import { splitVisual } from "../render/split.js?v=1457";
-import { bakeDoc } from "../render/edit-export.js?v=1457";
-import { subjectKindFor } from "../render/subjects.js?v=1457";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1457";
-import { createEditor } from "./edit/editor.js?v=1457";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1457";
+import { html, raw, toString } from "../lib/html.js?v=1458";
+import { delegate } from "../lib/delegate.js?v=1458";
+import { hashString } from "../lib/prng.js?v=1458";
+import { renderEmpty } from "../ui/empty.js?v=1458";
+import { preserveFocus } from "../ui/fields.js?v=1458";
+import { toast } from "../ui/toast.js?v=1458";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1458";
+import { styleThumb } from "../ui/style-thumb.js?v=1458";
+import { openDialog } from "../ui/dialog.js?v=1458";
+import { menu } from "../ui/menu.js?v=1458";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1458";
+import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1458";
+import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1458";
+import { networkById } from "../config/networks.js?v=1458";
+import { copyService, imageGenerationService } from "../services/index.js?v=1458";
+import { unbranded } from "../state/playbook-brand.js?v=1458";
+import { resolveLayers } from "../render/layout.js?v=1458";
+import { svgToDataUrl } from "../render/visual.js?v=1458";
+import { splitVisual } from "../render/split.js?v=1458";
+import { bakeDoc } from "../render/edit-export.js?v=1458";
+import { subjectKindFor } from "../render/subjects.js?v=1458";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1458";
+import { createEditor } from "./edit/editor.js?v=1458";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1458";
 import {
-  canEditBrand,
   forgetOneOffStyle,
   getBrand,
   getCreation,
@@ -49,15 +48,15 @@ import {
   getStylesForBrand,
   registerOneOffStyle,
   subscribe,
-} from "../state/store.js?v=1457";
-import { discardOneOff, oneOffStyleFrom, saveOneOffToPlaybook } from "../state/style-actions.js?v=1457";
+} from "../state/store.js?v=1458";
+import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1458";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1457";
+} from "../state/creation-actions.js?v=1458";
 
 const variationsLabel = (n) => (n === 1 ? "1 variation" : `${n} variations`);
 
@@ -431,61 +430,6 @@ export function mountStudio(
     input.click();
   }
 
-  // Promoting the one-off: a name, then it is the brand's — on the Playbook, in
-  // Brand › Image styles, for everyone who generates with this Playbook.
-  function saveOneOff() {
-    const style = state.oneOff;
-    const brand = brandNow();
-    if (!style || !brand || !canEditBrand(brand.id)) return;
-    const dialog = openDialog({
-      title: "Save as a Playbook style",
-      size: "sm",
-      body: html`<form class="imst-oneoff-save" data-imst-oneoff-form>
-        <p class="ap-body imst-dialog__text">
-          It joins ${brand.playbookName || brand.name}'s image styles, for every image made with this Playbook.
-        </p>
-        ${field({
-          label: "Name",
-          id: "imst-oneoff-name",
-          control: textInput({
-            path: "oneoff-name",
-            id: "imst-oneoff-name",
-            value: `${brand.name} · from an image`,
-            attrs: 'maxlength="60" autofocus required',
-          }),
-        })}
-      </form>`,
-      footer: html`<div class="ap-dialog-footer-right">
-        <button type="button" class="ap-button ghost grey" data-imst-oneoff="cancel">Cancel</button>
-        <button type="button" class="ap-button primary blue" data-imst-oneoff="save">Save style</button>
-      </div>`,
-      onMount(el) {
-        const save = () => {
-          const name = el.querySelector("#imst-oneoff-name").value.trim();
-          if (!name) return el.querySelector("#imst-oneoff-name").focus();
-          const saved = saveOneOffToPlaybook(style, name);
-          forgetOneOffStyle(style.id);
-          oneOffsMade.splice(oneOffsMade.indexOf(style), 1);
-          state.oneOff = null;
-          dialog.close();
-          state.source = "style";
-          setStyle(saved.id);
-          toast(`Saved to ${brand.playbookName || brand.name} — Brand › Image styles.`);
-        };
-        el.addEventListener("click", (event) => {
-          const btn = event.target.closest("[data-imst-oneoff]");
-          if (!btn) return;
-          if (btn.dataset.imstOneoff === "save") save();
-          else dialog.close();
-        });
-        el.querySelector("[data-imst-oneoff-form]").addEventListener("submit", (event) => {
-          event.preventDefault();
-          save();
-        });
-      },
-    });
-  }
-
   // "Best for" + the network's icon; its name goes in title / aria-label.
   const bestFor = (networks) =>
     html`<span class="ap-caption imst-best"
@@ -611,11 +555,6 @@ export function mountStudio(
           ${assetImg(state.oneOff.custom.sources[0].ref, { className: "imst-thumb imst-start__image-img" })}
           <div class="imst-start__image-text">
             <span class="ap-caption">Its look, for this image only.</span>
-            ${canEditBrand(brand.id)
-              ? html`<button type="button" class="ap-link" data-imst-action="save-oneoff">
-                  Save as a Playbook style
-                </button>`
-              : ""}
           </div>
           <button type="button" class="ap-button stroked blue" data-imst-action="style-from-image">
             <i class="ap-icon-upload" aria-hidden="true"></i><span>Replace</span>
@@ -1795,7 +1734,6 @@ ${b.prompt}</textarea
         paint();
         target.querySelector(".imst-chooser__card")?.focus();
       } else if (a === "style-from-image") pickStyleImages();
-      else if (a === "save-oneoff") saveOneOff();
       else if (a === "count") {
         state.brief.count = Number(el.dataset.imstCount) || 4;
         paint();
