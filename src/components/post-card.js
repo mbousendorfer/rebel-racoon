@@ -19,40 +19,38 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1570";
-import { isPortraitFormat } from "../clip-formats.js?v=1570";
-import { presetById } from "../clip-captions.js?v=1570";
-import { renderFeedbackControl } from "./feedback-control.js?v=1570";
-import { networkMeta } from "../social-profiles.js?v=1570";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1571";
+import { isPortraitFormat } from "../clip-formats.js?v=1571";
+import { presetById } from "../clip-captions.js?v=1571";
+import { renderFeedbackControl } from "./feedback-control.js?v=1571";
+import { networkMeta } from "../social-profiles.js?v=1571";
 
 // The media slot of a draft that has no image yet — a real drop target
 // (`[data-post-drop]`, drag wiring in right-panel.js) and, clicked anywhere, a
-// browse. THREE lines, in the order of what you are most likely to want
-// (2026-10-05, « beaucoup d'informations ») — they used to be six: a tile, an
-// "Upload an image" title, its sub, the button, the preset line, a studio line.
+// browse. THREE lines (2026-10-05, « beaucoup d'informations » — it was six):
 //
 //   1. Generate an image — `.ap-button.mermaid`, the DS's AI treatment (a
 //      gradient BORDER: the DS ships no filled AI button). ⚠️ Never a second
 //      button beside it: two outlined rectangles read as equals.
-//   2. What it will make (flag sexySquirrel, `opts.imagePreset` from the drafts
-//      panel — the card never reads the Playbook): the look's picture and name,
-//      this network's shape, and "Change it in the Image Studio" — the studio
-//      named in words, for THIS image (a bare "Change" hid it: rejected). The
-//      Playbook's default is changed on the Playbook, not from a draft. Without
-//      a preset, the line is just the studio: "Or pick the style and format…".
-//   3. Your own image — the dashed zone already says "drop here"; the line says
-//      it in words, once. Upload also lives in the card's action rail.
-function renderImagePreset(post, opts) {
-  const studio = (label) =>
-    `<button type="button" class="ap-link" data-post-studio="${escapeAttr(post.id)}">${label}</button>`;
+//   2. The shortcut it runs (flag sexySquirrel, `opts.imagePreset` from the
+//      drafts panel — the card never reads the Playbook): the look's picture and
+//      name and this network's shape. "Change" opens the PLAYBOOK, where that
+//      preset is set (Image generation tab) — ⚠️ NOT the Image Studio: the
+//      preset is a Playbook setting, the studio a separate tool (pointing Change
+//      at the studio was rejected). No preset: "I'll ask which style" + Set one.
+//   3. The other ways to an image: the Image Studio, named, and your own file.
+function renderImagePreset(opts) {
   const p = opts.imagePreset;
-  if (!p?.look)
-    return `<p class="posts__card-media-preset">Or pick the style and format in the ${studio("Image Studio")}.</p>`;
-  const shape = p.shape ? `, ${escapeText(p.shape.label.toLowerCase())} ${escapeText(p.shape.ratio)}` : "";
-  return `<p class="posts__card-media-preset">
-    <img class="posts__card-media-preset-thumb" src="${escapeAttr(p.look.thumbUrl)}" alt="" />
-    In ${escapeText(p.look.label)}${shape}. Change it in the ${studio("Image Studio")}.
-  </p>`;
+  if (!p || !opts.playbookId) return "";
+  const shape = p.shape ? `${escapeText(p.shape.label.toLowerCase())} ${escapeText(p.shape.ratio)}` : "";
+  const playbook = (label) =>
+    `<button type="button" class="ap-link" data-post-image-preset="${escapeAttr(opts.playbookId)}">${label}</button>`;
+  return p.look
+    ? `<p class="posts__card-media-preset">
+        <img class="posts__card-media-preset-thumb" src="${escapeAttr(p.look.thumbUrl)}" alt="" />
+        In ${escapeText(p.look.label)}${shape ? `, ${shape}` : ""}. ${playbook("Change")}
+      </p>`
+    : `<p class="posts__card-media-preset">I'll ask which style. ${playbook("Set a default")}</p>`;
 }
 
 // `opts.brandGaps` / `opts.playbookId` come from the host (the drafts panel) —
@@ -88,8 +86,11 @@ function renderEmptyMedia(post, opts) {
         <i class="ap-icon-archie-official"></i>
         <span>Generate an image</span>
       </button>
-      ${renderImagePreset(post, opts)}
-      <p class="posts__card-media-empty-sub">Or use your own: drop it here or browse.</p>
+      ${renderImagePreset(opts)}
+      <p class="posts__card-media-empty-sub">
+        Or open the <button type="button" class="ap-link" data-post-studio="${post.id}">Image Studio</button>, or drop
+        your own image here.
+      </p>
     </div>
     ${hint}
   </div>`;
