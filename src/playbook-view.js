@@ -14,7 +14,7 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1528";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1531";
 import {
   kitEnabled,
   renderColorRole,
@@ -27,11 +27,12 @@ import {
   handleKitInput,
   handleKitChange,
   kitSnapshot,
-} from "./playbook-brand-kit.js?v=1528";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1528";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1528";
-import { isFlagOn } from "./feature-flags.js?v=1528";
-import { parseHashParams } from "./url-state.js?v=1528";
+  renderImageryDefaults,
+} from "./playbook-brand-kit.js?v=1531";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1531";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1531";
+import { isFlagOn } from "./feature-flags.js?v=1531";
+import { parseHashParams } from "./url-state.js?v=1531";
 import {
   networkVoicesOn,
   baseNetwork,
@@ -41,21 +42,21 @@ import {
   maturity,
   networkLabel,
   networkIcon,
-} from "./network-voice.js?v=1528";
+} from "./network-voice.js?v=1531";
 import {
   getSuggestions,
   accept as acceptVoiceSuggestion,
   dismiss as dismissVoiceSuggestion,
-} from "./voice-coach-store.js?v=1528";
-import { NETWORKS } from "./social-profiles.js?v=1528";
-import { showToast } from "./components/toast.js?v=1528";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1528";
+} from "./voice-coach-store.js?v=1531";
+import { NETWORKS } from "./social-profiles.js?v=1531";
+import { showToast } from "./components/toast.js?v=1531";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1531";
 // The Default look row offers the SAME three catalogues the Image Studio renders, from
 // the one place they are declared — REF_MODES' own header makes the argument: the label,
 // the hint and the brief clause "drift the moment they live apart". No cycle: the engine
 // imports only clip-formats / image-studio-canvas / feature-flags, and its module body
 // builds consts, so importing it here costs nothing at load.
-import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1528";
+import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1531";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2515,7 +2516,8 @@ function renderBrandEdit2(data) {
       pb2Block(
         "Imagery",
         `<div><span class="pb2-sub">Moods</span>${renderEditChips("brandMoods", data.brandMoods, "Add a mood…")}</div>
-         ${styles ? `<div><span class="pb2-sub">Image styles</span>${styles}</div>` : ""}`,
+         ${styles ? `<div><span class="pb2-sub">Image styles</span>${styles}</div>` : ""}
+         ${renderImageryDefaults(data, true)}`,
         { wide: true, index: 4, icon: "ap-icon-image" },
       ),
       pb2Block("Visual rules", renderVisualRules(data, true), { wide: true, index: 5 }),
@@ -2995,7 +2997,8 @@ function renderBrandRead2(data) {
       pb2Block(
         "Imagery",
         `${(data.brandMoods || []).length ? `<div class="pb2-inline"><span class="pb2-sub">Moods</span>${pb2Tags(data.brandMoods)}</div>` : ""}
-         ${styles ? `<div><span class="pb2-sub">Image styles</span>${styles}</div>` : ""}`,
+         ${styles ? `<div><span class="pb2-sub">Image styles</span>${styles}</div>` : ""}
+         ${renderImageryDefaults(data, false)}`,
         { wide: true, index: 4, icon: "ap-icon-image" },
       ),
       pb2Block(
@@ -4081,7 +4084,7 @@ function onChange(event) {
   if (!editScope) return;
   const data = cfg.getData();
   if (!data) return;
-  if (handleKitChange(event, data)) return;
+  if (handleKitChange(event, data, repaint)) return;
   // Brand-logo upload — appended to the set, read as data URLs so they persist
   // with the Playbook (an object URL is ephemeral and wouldn't survive the store).
   if (event.target.matches("[data-recap-logo-input]")) {

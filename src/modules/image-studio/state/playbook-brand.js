@@ -15,16 +15,16 @@ import {
   getContexts,
   subscribe as subscribeContexts,
   updateContext,
-} from "../../../contexts-store.js?v=1528";
-import { createStyle } from "../model/schema.js?v=1528";
-import { canEdit, usableContexts } from "../../../playbook-access.js?v=1528";
+} from "../../../contexts-store.js?v=1531";
+import { createStyle } from "../model/schema.js?v=1531";
+import { canEdit, usableContexts } from "../../../playbook-access.js?v=1531";
 import {
   getActivePlaybookId,
   isWorkspaceMode,
   playbookForNewWork,
   subscribe as subscribeActive,
-} from "../../../active-playbook.js?v=1528";
-import { storageService as storage } from "../services/index.js?v=1528";
+} from "../../../active-playbook.js?v=1531";
+import { storageService as storage } from "../services/index.js?v=1531";
 
 // Which copy archetype the mocked copyService uses — guessed from the Playbook's words.
 function sectorKeyOf(ctx) {
@@ -32,6 +32,16 @@ function sectorKeyOf(ctx) {
   if (/coffee|café|cafe|roast|food|restaurant|bakery/.test(text)) return "coffee";
   if (/financ|bank|pay|invoice|saas|software|b2b|platform|tool|devrel|api|workspace/.test(text)) return "finance";
   return "lifestyle";
+}
+
+function imageryDefaultsOf(ctx) {
+  const d = ctx.imageryDefaults || {};
+  const style = d.look === "style" && (ctx.imageStyles || []).find((st) => st.id === d.styleId);
+  return {
+    styleId: style ? style.id : "",
+    referenceUrl: d.look === "reference" ? d.referenceUrl || "" : "",
+    formatByNetwork: { ...(d.formatByNetwork || {}) },
+  };
 }
 
 /** A Playbook, as the generator reads it. `null` for an unknown id. */
@@ -56,6 +66,9 @@ function toBrand(ctx) {
       t.bodyFont ? { family: t.bodyFont, role: "body" } : null,
     ].filter(Boolean),
     personality: ctx.brandPersonality || "",
+    // Where a new image starts (Brand › Imagery): resolved here, so a deleted
+    // style or an empty upload simply reads as no default.
+    defaults: imageryDefaultsOf(ctx),
     imageStyle: {
       moods: (ctx.brandMoods || []).slice(),
       // Not `imageDefaults` nor the loose `referenceImages`: both serve the old

@@ -144,6 +144,17 @@ export const DRAFT_NETWORK = Object.freeze({
  * The shapes a network publishes, each pointing at THAT network's format.
  * With no network, every shape with its default format.
  */
+/**
+ * The shapes a network publishes, the brand's preferred one first
+ * (Brand › Imagery › Default format, a shape id). Unknown or unset: as is.
+ */
+export function shapesForBrand(brand, network) {
+  const shapes = shapesFor(network);
+  const preferred = network && brand?.defaults?.formatByNetwork?.[network];
+  const i = shapes.findIndex((s) => s.id === preferred);
+  return i > 0 ? [shapes[i], ...shapes.slice(0, i), ...shapes.slice(i + 1)] : shapes;
+}
+
 export function shapesFor(network) {
   if (!network) return FORMAT_SHAPES;
   const byShape = {

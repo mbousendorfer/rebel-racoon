@@ -22,18 +22,18 @@
 // chooses "Save as global". updateContext is used by the section-edit flow
 // when scope is "Update everywhere".
 
-import { contexts as seed, sharedContexts } from "./mocks.js?v=1528";
-import { isNewUser } from "./user-mode.js?v=1528";
-import { CURRENT_USER } from "./org.js?v=1528";
-import { isFlagOn } from "./feature-flags.js?v=1528";
-import { createNotifier } from "./store-utils.js?v=1528";
+import { contexts as seed, sharedContexts } from "./mocks.js?v=1531";
+import { isNewUser } from "./user-mode.js?v=1531";
+import { CURRENT_USER } from "./org.js?v=1531";
+import { isFlagOn } from "./feature-flags.js?v=1531";
+import { createNotifier } from "./store-utils.js?v=1531";
 import {
   normalizeLanguages,
   mirrorPrimaryToTopLevel,
   syncTopLevelToPrimary,
   cloneVoiceByLanguage,
-} from "./languages.js?v=1528";
-import { cloneVoiceByNetwork } from "./network-voice.js?v=1528";
+} from "./languages.js?v=1531";
+import { cloneVoiceByNetwork } from "./network-voice.js?v=1531";
 
 // Lives up here, away from normalizeBrandLogos where it belongs, because the
 // seed below calls that normalizer at module-init time — a `let` declared beside
@@ -68,6 +68,7 @@ const contexts = isNewUser()
         ...normalizeOwnership(c),
         ...normalizeBrandLogos(c),
         ...normalizeImageDefaults(c),
+        ...normalizeImageryDefaults(c),
         ...normalizeBrandKit(c),
         voiceByNetwork: cloneVoiceByNetwork(c.voiceByNetwork),
       }),
@@ -231,9 +232,9 @@ function normalizeBrandKit(ctx) {
 // does removing the field change what Archie does on its own or on a cadence? For
 // `enabledSourceIds`/`cadence`, yes. For a style preset, no: nothing runs, nothing
 // is fetched, the value is read only at the instant a human opens a studio. What
-// stays out is the RUN config — format, single/carousel, variation count — which
-// answers "what job for this post?"; `formatId` already derives from the draft's
-// network, a better answer than a stored preference.
+// stays out is the RUN config — single/carousel, variation count — which
+// answers "what job for this post?". (The format left that list on 2026-10-05:
+// a preferred shape per network is identity — see `imageryDefaults` below.)
 //
 // Shaped after `brandTypography`, not `brandLogos`: a nested plain object, one
 // row in the Brand section, one line in each of the four wiring points. `""` means
@@ -254,6 +255,32 @@ function normalizeImageDefaults(ctx) {
   const d = ctx.imageDefaults && typeof ctx.imageDefaults === "object" ? ctx.imageDefaults : {};
   const s = (v) => (typeof v === "string" ? v.trim() : "");
   return { imageDefaults: { imageType: s(d.imageType), style: s(d.style), refMode: s(d.refMode) } };
+}
+
+// The brand's imagery defaults (flag sexySquirrel) — what the Image Generator
+// starts from: ONE default look, either one of the brand's own styles or a
+// reference image uploaded here, and a preferred shape per network. Identity,
+// like `imageStyles`: nothing runs off it, it is read the instant a studio opens.
+// `formatByNetwork` maps a generator network id to a shape id (config/formats.js
+// FORMAT_SHAPES); the generator checks the network publishes it, and an unset
+// network keeps the network's own first shape. A `styleId` whose style was
+// deleted reads as no default — resolved on read, no cascade.
+// Always four keys (snapshotEditable JSON-round-trips it). The network list is
+// inside the function: seeds normalise at module init, before a top-level const.
+function normalizeImageryDefaults(ctx) {
+  const d = ctx.imageryDefaults && typeof ctx.imageryDefaults === "object" ? ctx.imageryDefaults : {};
+  const s = (v) => (typeof v === "string" ? v.trim() : "");
+  const f = d.formatByNetwork && typeof d.formatByNetwork === "object" ? d.formatByNetwork : {};
+  const formatByNetwork = {};
+  for (const n of ["linkedin", "instagram", "facebook", "x"]) if (s(f[n])) formatByNetwork[n] = s(f[n]);
+  return {
+    imageryDefaults: {
+      look: ["style", "reference"].includes(d.look) ? d.look : "",
+      styleId: s(d.styleId),
+      referenceUrl: s(d.referenceUrl),
+      formatByNetwork,
+    },
+  };
 }
 
 // Ownership — who this Playbook belongs to and how far it reaches. Two scopes
@@ -427,6 +454,7 @@ export function addContext(ctx = {}) {
     // than stamp a placeholder.
     ...normalizeBrandLogos(ctx),
     ...normalizeImageDefaults(ctx),
+    ...normalizeImageryDefaults(ctx),
     referenceImages: Array.isArray(ctx.referenceImages)
       ? ctx.referenceImages.map((i) => ({ ...i, networks: Array.isArray(i.networks) ? [...i.networks] : [] }))
       : [],
@@ -517,6 +545,7 @@ export function updateContext(id, patch) {
   if (patch.imageStyles !== undefined) c.imageStyles = normalizeImageStyles(patch.imageStyles);
   // Re-normalised rather than assigned, so a partial patch still lands three keys.
   if (patch.imageDefaults !== undefined) Object.assign(c, normalizeImageDefaults(patch));
+  if (patch.imageryDefaults !== undefined) Object.assign(c, normalizeImageryDefaults(patch));
   // The set and its default are one fact, so they re-normalize together even
   // when only one of them is patched — otherwise a patch that drops the default
   // logo from the set would leave `brandLogo` pointing at a mark that's gone.
@@ -594,6 +623,12 @@ export function updateContext(id, patch) {
 export function duplicateContext(id) {
   const src = contexts.find((c) => c.id === id);
   if (!src) return null;
+  const styleIdMap = {};
+  const copiedStyles = (src.imageStyles || []).map((st) => {
+    const id = `${st.id}-${Math.random().toString(36).slice(2, 7)}`;
+    styleIdMap[st.id] = id;
+    return { ...structuredClone(st), id };
+  });
   return addContext({
     name: `${src.name} (copy)`,
     color: src.color,
@@ -621,10 +656,12 @@ export function duplicateContext(id) {
     voiceAvoid: (src.voiceAvoid || []).slice(),
     brandRules: structuredClone(src.brandRules || {}),
     // A copy's styles are its own: new ids, so editing one never edits the other's.
-    imageStyles: (src.imageStyles || []).map((st) => ({
-      ...structuredClone(st),
-      id: `${st.id}-${Math.random().toString(36).slice(2, 7)}`,
-    })),
+    imageStyles: copiedStyles,
+    // …and its default style follows the copy's ids.
+    imageryDefaults: {
+      ...structuredClone(src.imageryDefaults || {}),
+      styleId: styleIdMap[src.imageryDefaults?.styleId] || "",
+    },
     brandLogos: (src.brandLogos || []).map((l) => ({ ...l })),
     brandLogo: src.brandLogo || "",
     referenceImages: (src.referenceImages || []).map((i) => ({

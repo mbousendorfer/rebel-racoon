@@ -4,15 +4,15 @@
 // the PNG export draws on, and the same engine as the studio — the Playbook's
 // styles, the network's shapes, the same renderer and services.
 
-import { QUICK_PRESETS } from "./config/style-presets.js?v=1528";
-import { DRAFT_NETWORK, formatById, shapesFor } from "./config/formats.js?v=1528";
-import { hashString } from "./lib/prng.js?v=1528";
-import { copyService, imageGenerationService } from "./services/index.js?v=1528";
-import { resolveLayers } from "./render/layout.js?v=1528";
-import { toPngBlob } from "./render/export.js?v=1528";
-import { styleThumbUrl } from "./ui/style-thumb.js?v=1528";
-import { layersFor, variationSvg } from "./ui/variation.js?v=1528";
-import { getBrand, getStyle, getStylesForBrand } from "./state/store.js?v=1528";
+import { QUICK_PRESETS } from "./config/style-presets.js?v=1531";
+import { DRAFT_NETWORK, formatById, shapesForBrand } from "./config/formats.js?v=1531";
+import { hashString } from "./lib/prng.js?v=1531";
+import { copyService, imageGenerationService } from "./services/index.js?v=1531";
+import { resolveLayers } from "./render/layout.js?v=1531";
+import { toPngBlob } from "./render/export.js?v=1531";
+import { styleThumbUrl } from "./ui/style-thumb.js?v=1531";
+import { layersFor, variationSvg } from "./ui/variation.js?v=1531";
+import { getBrand, getStyle, getStylesForBrand } from "./state/store.js?v=1531";
 
 const blobToDataUrl = (blob) =>
   new Promise((resolve, reject) => {
@@ -30,7 +30,10 @@ const blobToDataUrl = (blob) =>
 export function quickImageChoices({ brandId, network }) {
   const brand = getBrand(brandId);
   if (!brand) return null;
-  const own = getStylesForBrand(brand.id).filter((s) => s.kind === "custom");
+  // The Playbook's default style first, then its own, then the presets.
+  const own = getStylesForBrand(brand.id)
+    .filter((s) => s.kind === "custom")
+    .sort((a, b) => (b.id === brand.defaults.styleId) - (a.id === brand.defaults.styleId));
   const styles = [...own, ...QUICK_PRESETS.map(getStyle).filter(Boolean)]
     .filter((s, i, a) => a.findIndex((x) => x.id === s.id) === i)
     .slice(0, 6)
@@ -38,10 +41,11 @@ export function quickImageChoices({ brandId, network }) {
       id: s.id,
       label: s.label,
       mine: s.kind === "custom",
+      isDefault: s.id === brand.defaults.styleId,
       description: s.description || "",
       thumbUrl: styleThumbUrl(s, brand, { seed: hashString(s.id) }),
     }));
-  const shapes = shapesFor(DRAFT_NETWORK[network] || null).map((s) => ({
+  const shapes = shapesForBrand(brand, DRAFT_NETWORK[network] || null).map((s) => ({
     id: s.id,
     label: s.label,
     ratio: s.ratio,

@@ -10,13 +10,13 @@
 // weights and a test on three subjects. The system presets are NOT shown here:
 // they belong to no Playbook, and the fiche lists only what is this brand's.
 
-import { html, toString } from "../lib/html.js?v=1528";
-import { navigate } from "../../../router.js?v=1528";
-import { styleThumb } from "../ui/style-thumb.js?v=1528";
-import { confirmDialog } from "../ui/dialog.js?v=1528";
-import { toast } from "../ui/toast.js?v=1528";
-import { canEditBrand, getBrand, getStyle, getStylesForBrand } from "../state/store.js?v=1528";
-import { deleteStyle, duplicateStyle } from "../state/style-actions.js?v=1528";
+import { html, toString } from "../lib/html.js?v=1531";
+import { navigate } from "../../../router.js?v=1531";
+import { styleThumb } from "../ui/style-thumb.js?v=1531";
+import { confirmDialog } from "../ui/dialog.js?v=1531";
+import { toast } from "../ui/toast.js?v=1531";
+import { canEditBrand, getBrand, getStyle, getStylesForBrand } from "../state/store.js?v=1531";
+import { deleteStyle, duplicateStyle } from "../state/style-actions.js?v=1531";
 
 const creatorPath = (playbookId, rest) => `/playbook/${encodeURIComponent(playbookId)}/styles/${rest}`;
 
@@ -27,6 +27,7 @@ function sourcesSummary(style) {
 }
 
 function styleCard(style, brand, canEdit) {
+  const isDefault = brand.defaults?.styleId === style.id;
   return html`
     <article class="ap-card imst-style-card imst-pbstyle">
       ${canEdit
@@ -42,7 +43,9 @@ function styleCard(style, brand, canEdit) {
         : html`<span class="imst-style-card__open">${styleThumb(style, brand)}</span>`}
       <div class="imst-style-card__body">
         <div class="imst-style-card__title">
-          <span class="ap-body-bold">${style.label}</span>
+          <span class="ap-body-bold"
+            >${style.label}${isDefault ? html` <span class="ap-tag grey mini"><span>Default</span></span>` : ""}</span
+          >
           ${canEdit
             ? html`<span class="imst-pbstyle__actions">
                 <button

@@ -771,3 +771,44 @@
   align-self: flex-start;
   margin-top: var(--ref-spacing-xs);
 }
+
+/* ── Imagery › Default look / Default format (flag sexySquirrel) ───────── */
+.recap__imagery-looks {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(calc(var(--ref-spacing-xxxl) * 4), 1fr));
+  gap: var(--ref-spacing-xs);
+  margin-bottom: var(--ref-spacing-sm);
+}
+
+.recap__imagery-ref {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+}
+
+.recap__imagery-ref img {
+  width: calc(var(--ref-spacing-xxxl) * 2);
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: var(--ref-border-radius-md);
+  border: 1px solid var(--ref-color-grey-20);
+}
+
+.recap__imagery-ref-actions {
+  display: flex;
+  gap: var(--ref-spacing-xs);
+}
+
+.pb2-facts dt > i {
+  vertical-align: middle;
+}
+
+.pb2-facts dd .recap__kit-select {
+  font-weight: var(--ref-font-weight-regular);
+}
+
+/* Directly under its sub-label: no rule above, unlike the Visual rules facts. */
+.pb2-facts.recap__imagery-formats {
+  border-top: 0;
+  padding-top: var(--ref-spacing-xxs);
+}

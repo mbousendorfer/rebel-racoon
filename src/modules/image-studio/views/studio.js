@@ -15,31 +15,31 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=1528";
-import { delegate } from "../lib/delegate.js?v=1528";
-import { hashString } from "../lib/prng.js?v=1528";
-import { renderEmpty } from "../ui/empty.js?v=1528";
-import { preserveFocus } from "../ui/fields.js?v=1528";
-import { toast } from "../ui/toast.js?v=1528";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1528";
-import { styleThumb } from "../ui/style-thumb.js?v=1528";
-import { openDialog } from "../ui/dialog.js?v=1528";
-import { menu } from "../ui/menu.js?v=1528";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1528";
-import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1528";
-import { formatById, shapeForFormat, shapesFor } from "../config/formats.js?v=1528";
-import { networkById } from "../config/networks.js?v=1528";
-import { copyService, imageGenerationService } from "../services/index.js?v=1528";
-import { unbranded } from "../state/playbook-brand.js?v=1528";
-import { resolveLayers } from "../render/layout.js?v=1528";
-import { svgToDataUrl } from "../render/visual.js?v=1528";
-import { splitVisual } from "../render/split.js?v=1528";
-import { bakeDoc } from "../render/edit-export.js?v=1528";
-import { subjectKindFor } from "../render/subjects.js?v=1528";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1528";
-import { createEditor } from "./edit/editor.js?v=1528";
-import { mount as mountStyleCreator } from "./style-creator.js?v=1528";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1528";
+import { html, raw, toString } from "../lib/html.js?v=1531";
+import { delegate } from "../lib/delegate.js?v=1531";
+import { hashString } from "../lib/prng.js?v=1531";
+import { renderEmpty } from "../ui/empty.js?v=1531";
+import { preserveFocus } from "../ui/fields.js?v=1531";
+import { toast } from "../ui/toast.js?v=1531";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1531";
+import { styleThumb } from "../ui/style-thumb.js?v=1531";
+import { openDialog } from "../ui/dialog.js?v=1531";
+import { menu } from "../ui/menu.js?v=1531";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1531";
+import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1531";
+import { formatById, shapeForFormat, shapesFor, shapesForBrand } from "../config/formats.js?v=1531";
+import { networkById } from "../config/networks.js?v=1531";
+import { copyService, imageGenerationService } from "../services/index.js?v=1531";
+import { unbranded } from "../state/playbook-brand.js?v=1531";
+import { resolveLayers } from "../render/layout.js?v=1531";
+import { svgToDataUrl } from "../render/visual.js?v=1531";
+import { splitVisual } from "../render/split.js?v=1531";
+import { bakeDoc } from "../render/edit-export.js?v=1531";
+import { subjectKindFor } from "../render/subjects.js?v=1531";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1531";
+import { createEditor } from "./edit/editor.js?v=1531";
+import { mount as mountStyleCreator } from "./style-creator.js?v=1531";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1531";
 import {
   canEditBrand,
   forgetOneOffStyle,
@@ -50,25 +50,26 @@ import {
   getStylesForBrand,
   registerOneOffStyle,
   subscribe,
-} from "../state/store.js?v=1528";
-import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1528";
+} from "../state/store.js?v=1531";
+import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1531";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1528";
+} from "../state/creation-actions.js?v=1531";
 
 const variationsLabel = (n) => (n === 1 ? "1 variation" : `${n} variations`);
 
 function defaultBrief(brand, network = null) {
+  // The Playbook's default style (Brand › Imagery), else its first own style.
   const own = getStylesForBrand(brand.id).find((s) => s.kind === "custom");
-  const firstShape = shapesFor(network)[0];
+  const firstShape = shapesForBrand(brand, network)[0];
   return {
     prompt: "",
     headline: "",
-    styleId: own?.id || "preset-lifestyle",
+    styleId: brand.defaults?.styleId || own?.id || "preset-lifestyle",
     productId: null,
     formatIds: [firstShape?.formatId || "ig-post"],
     textMode: "layer",
@@ -144,7 +145,9 @@ export function mountStudio(
   const brandChanged = (brand) => {
     state.brandId = brand?.id || null;
     state.brief = brand ? defaultBrief(brand, draft.network) : null;
-    state.source = null;
+    // A default look skips the chooser: the brand's style, or its reference image.
+    state.source = brand?.defaults?.styleId ? "style" : null;
+    if (brand?.defaults?.referenceUrl) styleFromPlaybookReference(brand.defaults.referenceUrl);
     state.lastStyleId = state.brief?.styleId || null;
     state.sourceError = "";
     // A draft that already has an image shows it first; any choice switches to the live preview.
@@ -397,6 +400,17 @@ export function mountStudio(
       state.oneOffBusy = false;
       toast(error.message || "The image couldn't be read.", { variant: "error" });
       paint();
+    }
+  }
+
+  // The Playbook's default reference image goes down the "From an image" path,
+  // a one-off like any upload (deleted when the studio closes).
+  async function styleFromPlaybookReference(url) {
+    try {
+      const blob = await (await fetch(url)).blob();
+      await styleFromImages([new File([blob], "Playbook reference", { type: blob.type })]);
+    } catch {
+      // An unreadable image leaves the chooser as it is.
     }
   }
 

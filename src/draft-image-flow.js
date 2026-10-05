@@ -16,17 +16,17 @@
 // The two reads from the post take as long as the real calls (4–8 s), so both
 // start the moment the flow does and are usually back before they are needed.
 
-import * as inlineQuestion from "./inline-question.js?v=1528";
-import { finishPending, postAssistantMessage, postUserTurn, startPending } from "./assistant.js?v=1528";
-import { attachImageToDraft, getPosts, updatePostContent } from "./posts-store.js?v=1528";
-import { getSessionById } from "./sessions-store.js?v=1528";
-import { escapeHtml } from "./utils.js?v=1528";
+import * as inlineQuestion from "./inline-question.js?v=1531";
+import { finishPending, postAssistantMessage, postUserTurn, startPending } from "./assistant.js?v=1531";
+import { attachImageToDraft, getPosts, updatePostContent } from "./posts-store.js?v=1531";
+import { getSessionById } from "./sessions-store.js?v=1531";
+import { escapeHtml } from "./utils.js?v=1531";
 import {
   generateQuickImage,
   quickImageChoices,
   suggestImageLine,
   suggestImageSubject,
-} from "./modules/image-studio/index.js?v=1528";
+} from "./modules/image-studio/index.js?v=1531";
 
 const STUDIO = "__studio";
 const NO_TEXT = "__none";
@@ -78,7 +78,7 @@ export function startDraftImageFlow(sessionId, postId, { openStudio, repaint }) 
       items: choices.styles.map((s) => ({
         value: s.id,
         label: escapeHtml(s.label),
-        caption: s.mine ? "Your style" : "",
+        caption: s.isDefault ? "Default style" : s.mine ? "Your style" : "",
         preview: `<img class="draft-image-flow__style" src="${s.thumbUrl}" alt="" />`,
       })),
       footerAction: { value: STUDIO, label: "More options in the studio", icon: "ap-icon-image" },

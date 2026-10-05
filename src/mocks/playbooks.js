@@ -234,6 +234,13 @@ export const contexts = [
     imageDefaults: { imageType: "visual-hook", style: "bold-editorial", refMode: "layout" },
     // Brand kit (Image Generator, flag sexySquirrel) — see contexts-store#normalizeBrandKit.
     brandMoods: ["confident", "precise", "high-contrast", "product-first"],
+    // Where a new image starts (Brand › Imagery) — see contexts-store#normalizeImageryDefaults.
+    imageryDefaults: {
+      look: "style",
+      styleId: "st_demo_acme_product",
+      referenceUrl: "",
+      formatByNetwork: { linkedin: "portrait", instagram: "portrait" },
+    },
     // The brand's own image styles (Image Generator) — identity, see contexts-store#normalizeImageStyles.
     imageStyles: [
       {
