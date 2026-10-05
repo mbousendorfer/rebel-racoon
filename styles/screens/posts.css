@@ -299,15 +299,11 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  /* The resting composition's own natural height, pinned so the dragover and
-     generating states match it exactly — the frame must not resize between the
-     three. Raise it if the resting content grows, or the slot will jump again.
-     Went 210 -> 254 when the Image Studio moved onto a row of its own, and 254 is
-     ARITHMETIC, not a round number: 48 padding + 60 tile + 24 title + 22 sub +
-     16 + 36 button + 12 + 36 studio. The sub was shortened to "Drop it here or
-     browse." precisely so it can never wrap — a two-line sub would push the
-     resting state past the pin and the frame would start jumping again. */
-  min-height: 254px;
+  /* Pinned so the dragover and generating states match the resting one — the
+     frame must not resize between them. ARITHMETIC: 48 padding + 36 button +
+     12 + 22 preset + 12 + 22 drop line = 152, rounded up for a wrapped line. */
+  min-height: 168px;
+  gap: var(--ref-spacing-xs);
   padding: var(--ref-spacing-md);
   border: 1.5px dashed var(--ref-color-grey-20);
   border-radius: var(--app-radius-md);
@@ -351,64 +347,14 @@
   background: transparent;
 }
 
-/* Neutral tile. It anchors the column without competing with the orange CTA. */
-.posts__card-media-empty-tile {
-  display: grid;
-  place-items: center;
-  width: 48px;
-  height: 48px;
-  margin-bottom: var(--ref-spacing-xs);
-  border-radius: var(--ref-border-radius-md);
-  background: var(--ref-color-grey-10);
-}
-
-.posts__card-media-empty-tile > i {
-  font-size: var(--sys-icon-css-md);
-  background: var(--ref-color-grey-80);
-}
-
-/* h3 over body — a real pair (16/700 over 14/400 plus an ink drop), where the
-   old body-bold over caption was a 2px step that separated nothing. Hierarchy
-   comes from size and weight, never from fading the second line to a lighter
-   grey than the ink scale allows. */
-.posts__card-media-empty-title {
-  margin: 0;
-  font-size: var(--sys-text-style-h3-size);
-  font-weight: var(--sys-text-style-h3-weight);
-  line-height: var(--sys-text-style-h3-line-height);
-  color: var(--ref-color-grey-100);
-}
-
 .posts__card-media-empty-sub {
-  margin: var(--ref-spacing-xxxs) 0 0;
+  margin: 0;
   font-size: var(--sys-text-style-body-size);
   font-weight: var(--sys-text-style-body-weight);
   line-height: var(--sys-text-style-body-line-height);
   color: var(--sys-text-color-light);
 }
 
-/* TWO TIERS, STACKED — not two controls on one row.
-   ⚠️ The Image Studio used to be an `.ap-link` sitting beside the button, and it
-   was invisible: next to a rectangle, the eye takes the rectangle and stops, so
-   no amount of size on the link would have fixed it. It gets a row of its own
-   instead. And it must NOT become a second button — two outlined rectangles read
-   as a pair of equals however they are labelled, which is the mistake this block
-   already made twice (see post-card.js#renderEmptyMedia).
-   A column, so the hierarchy is top-to-bottom and unambiguous. Auto-width;
-   buttons are never stretched. */
-.posts__card-media-empty-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  margin-top: var(--ref-spacing-sm);
-}
-
-/* The Image Studio's row. BODY size, not caption: it is the second of the two
-   routes out of this block, not a footnote about the first — and the sentence is
-   what sells it ("set the type, style and format"), because a bare product name
-   says nothing about why you would click it. Measure-capped so it wraps to two
-   tidy lines in the narrow drafts panel instead of running the slot's full width. */
 /* What Generate an image will use: the look's picture, its name, the shape. */
 .posts__card-media-preset {
   display: flex;
@@ -431,14 +377,6 @@
   height: var(--ref-spacing-md);
   border-radius: var(--ref-border-radius-sm);
   object-fit: cover;
-}
-
-.posts__card-media-empty-studio {
-  margin: 0;
-  max-width: 38ch;
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  color: var(--sys-text-color-light);
 }
 
 /* Generating: the loader and its line replace the column, still inside the same

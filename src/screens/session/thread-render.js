@@ -12,20 +12,20 @@ import {
   renderMessageBubble,
   renderNotice,
   renderResultCard,
-} from "./thread-turns.js?v=1567";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=1567";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1567";
-import { getTopPost } from "../../top-posts-store.js?v=1567";
-import { getTopicById } from "../../topics-store.js?v=1567";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=1567";
-import { renderProfileEchoCard } from "../../social-profiles.js?v=1567";
-import { escapeHtml } from "../../utils.js?v=1567";
-import { getIdeas } from "../../library.js?v=1567";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=1567";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1567";
-import { getThread } from "../../assistant.js?v=1567";
-import { getSuggestion } from "../../voice-coach-store.js?v=1567";
-import { networkLabel, networkIcon } from "../../network-voice.js?v=1567";
+} from "./thread-turns.js?v=1568";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1568";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1568";
+import { getTopPost } from "../../top-posts-store.js?v=1568";
+import { getTopicById } from "../../topics-store.js?v=1568";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=1568";
+import { renderProfileEchoCard } from "../../social-profiles.js?v=1568";
+import { escapeHtml } from "../../utils.js?v=1568";
+import { getIdeas } from "../../library.js?v=1568";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=1568";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1568";
+import { getThread } from "../../assistant.js?v=1568";
+import { getSuggestion } from "../../voice-coach-store.js?v=1568";
+import { networkLabel, networkIcon } from "../../network-voice.js?v=1568";
 
 export function renderThread(messages, sessionId) {
   return messages.map((m) => renderTurn(m, sessionId)).join("");

@@ -19,79 +19,45 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1567";
-import { isPortraitFormat } from "../clip-formats.js?v=1567";
-import { presetById } from "../clip-captions.js?v=1567";
-import { renderFeedbackControl } from "./feedback-control.js?v=1567";
-import { networkMeta } from "../social-profiles.js?v=1567";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1568";
+import { isPortraitFormat } from "../clip-formats.js?v=1568";
+import { presetById } from "../clip-captions.js?v=1568";
+import { renderFeedbackControl } from "./feedback-control.js?v=1568";
+import { networkMeta } from "../social-profiles.js?v=1568";
 
 // The media slot of a draft that has no image yet — a real drop target
-// (`[data-post-drop]`, drag wiring in right-panel.js) at the height of an image.
+// (`[data-post-drop]`, drag wiring in right-panel.js) and, clicked anywhere, a
+// browse. THREE lines, in the order of what you are most likely to want
+// (2026-10-05, « beaucoup d'informations ») — they used to be six: a tile, an
+// "Upload an image" title, its sub, the button, the preset line, a studio line.
 //
-// The hierarchy here is load-bearing and was got wrong three times, so it is
-// written down. Four strata, each one clearly above the next:
-//
-//   tile (neutral) -> title (h3) -> sub (body, light ink)
-//                  -> ONE mermaid button -> the Image Studio, on a row of its own
-//
-// 1. The one control is `.ap-button.mermaid` — the DS's AI treatment, and the
-//    user asked for it here by name. It is a gradient BORDER (gradient
-//    background + an ::after inset), NOT a filled button: the DS ships no filled
-//    AI button. That is the whole reason for rule 2.
-//    ⚠️ It used to be `.ap-button.primary.blue`, and before that `.primary.orange`.
-//    Do NOT "restore" either — mermaid is the current, explicit call. The blue
-//    also fought the electric-blue link beside it and the blue dragover tint.
-// 2. ⚠️ NEVER put a second button next to it. Two outlined rectangles read as a
-//    pair of equals however the labels are worded — that is what went wrong the
-//    first two times, when the mermaid button sat beside a `stroked grey` one.
-//    The Image Studio therefore earns its visibility from a ROW OF ITS OWN plus a
-//    sentence naming what it gives you, never from a second rectangle. Separation
-//    and explanation, not weight: a link crammed beside a button is invisible
-//    whatever size it is, because the eye takes the rectangle and stops.
-// 2b. The whole slot is clickable (browse), so the copy says so. A dashed box
-//    titled "Upload an image" that does nothing on click is the same broken
-//    promise the dashed border itself was. The zone gets no role/tabindex
-//    though: it contains real buttons, and a nested interactive would both
-//    duplicate a tab stop and put a fake button around real ones — the rail's
-//    Upload icon is the keyboard route.
-// 3. Only ONE accent in the block. The tile stays grey rather than borrowing the
-//    orange Archie tile from drafts-card__icon: a second accent would split the
-//    gravity the mermaid gradient is there to hold.
-// 4. No resting background. The dashed border alone says "drop a file here";
-//    a tint on top of it was a second weak signal competing with the first.
-//
-// Upload is NOT here. It would be a third action fighting for the same row, so
-// it lives in the card's action rail — which is also the only place it can work
-// once the draft HAS an image. Dragging a file onto this slot does the same job.
-//
+//   1. Generate an image — `.ap-button.mermaid`, the DS's AI treatment (a
+//      gradient BORDER: the DS ships no filled AI button). ⚠️ Never a second
+//      button beside it: two outlined rectangles read as equals.
+//   2. What it will make (flag sexySquirrel, `opts.imagePreset` from the drafts
+//      panel — the card never reads the Playbook): the look's picture and name,
+//      this network's shape, and Change → the Image Studio for THIS image. The
+//      Playbook's default is changed on the Playbook, not from a draft. Without
+//      a preset, the line is just the studio: "Or pick the style and format…".
+//   3. Your own image — the dashed zone already says "drop here"; the line says
+//      it in words, once. Upload also lives in the card's action rail.
+function renderImagePreset(post, opts) {
+  const studio = (label) =>
+    `<button type="button" class="ap-link" data-post-studio="${escapeAttr(post.id)}">${label}</button>`;
+  const p = opts.imagePreset;
+  if (!p?.look)
+    return `<p class="posts__card-media-preset">Or pick the style and format in the ${studio("Image Studio")}.</p>`;
+  const shape = p.shape ? `, ${escapeText(p.shape.label.toLowerCase())} ${escapeText(p.shape.ratio)}` : "";
+  return `<p class="posts__card-media-preset">
+    <img class="posts__card-media-preset-thumb" src="${escapeAttr(p.look.thumbUrl)}" alt="" />
+    <span>In ${escapeText(p.look.label)}${shape}.</span>
+    ${studio("Change")}
+  </p>`;
+}
+
 // `opts.brandGaps` / `opts.playbookId` come from the host (the drafts panel) —
 // the card never resolves a Context itself. A host that passes neither, like the
 // studio's own in-feed preview, simply gets no hint.
-// What Generate an image will use, right under it (flag sexySquirrel, passed by
-// the drafts panel as `opts.imagePreset`): the Playbook's look — a style or a
-// reference image, with its picture — and this network's shape. Without a look
-// the chat will ask, and the line says so. "Change" opens the Playbook's Image
-// generation tab, where both are set. A plain line, not a second rectangle
-// (rule 2 below).
-function renderImagePreset(opts) {
-  const p = opts.imagePreset;
-  if (!p || !opts.playbookId) return "";
-  const shape = p.shape ? `${escapeText(p.shape.label.toLowerCase())} ${escapeText(p.shape.ratio)}` : "";
-  const change = `<button type="button" class="ap-link small" data-post-image-preset="${escapeAttr(opts.playbookId)}">${
-    p.look ? "Change" : "Set a default"
-  }</button>`;
-  return p.look
-    ? `<p class="posts__card-media-preset">
-        <img class="posts__card-media-preset-thumb" src="${escapeAttr(p.look.thumbUrl)}" alt="" />
-        <span>In <strong>${escapeText(p.look.label)}</strong>${shape ? `, ${shape}` : ""}.</span>
-        ${change}
-      </p>`
-    : `<p class="posts__card-media-preset">
-        <span>I'll ask which style${shape ? `, ${shape}` : ""}.</span>
-        ${change}
-      </p>`;
-}
-
 function renderEmptyMedia(post, opts) {
   if (post.isGeneratingImage) {
     return `<div class="posts__card-media-empty">
@@ -118,20 +84,12 @@ function renderEmptyMedia(post, opts) {
 
   return `<div class="posts__card-media-empty">
     <div class="posts__card-media-empty-slot" data-post-drop="${post.id}">
-      <span class="posts__card-media-empty-tile" aria-hidden="true"><i class="ap-icon-upload"></i></span>
-      <p class="posts__card-media-empty-title">Upload an image</p>
-      <p class="posts__card-media-empty-sub">Drop it here or browse.</p>
-      <div class="posts__card-media-empty-actions">
-        <button type="button" class="ap-button mermaid" data-post-image="${post.id}">
-          <i class="ap-icon-archie-official"></i>
-          <span>Generate an image</span>
-        </button>
-        ${renderImagePreset(opts)}
-        <p class="posts__card-media-empty-studio">
-          Or <button type="button" class="ap-link" data-post-studio="${post.id}">open the Image Studio</button>
-          to set the type, style and format.
-        </p>
-      </div>
+      <button type="button" class="ap-button mermaid" data-post-image="${post.id}">
+        <i class="ap-icon-archie-official"></i>
+        <span>Generate an image</span>
+      </button>
+      ${renderImagePreset(post, opts)}
+      <p class="posts__card-media-empty-sub">Or use your own: drop it here or browse.</p>
     </div>
     ${hint}
   </div>`;
