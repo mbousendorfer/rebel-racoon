@@ -4,16 +4,16 @@
 // the PNG export draws on, and the same engine as the studio — the Playbook's
 // styles, the network's shapes, the same renderer and services.
 
-import { QUICK_PRESETS } from "./config/style-presets.js?v=1565";
-import { DRAFT_NETWORK, formatById, shapesForBrand } from "./config/formats.js?v=1565";
-import { hashString } from "./lib/prng.js?v=1565";
-import { copyService, imageGenerationService } from "./services/index.js?v=1565";
-import { resolveLayers } from "./render/layout.js?v=1565";
-import { toPngBlob } from "./render/export.js?v=1565";
-import { styleThumbUrl } from "./ui/style-thumb.js?v=1565";
-import { layersFor, variationSvg } from "./ui/variation.js?v=1565";
-import { getBrand, getStyle, getStylesForBrand, registerOneOffStyle } from "./state/store.js?v=1565";
-import { oneOffStyleFrom } from "./state/style-actions.js?v=1565";
+import { QUICK_PRESETS } from "./config/style-presets.js?v=1567";
+import { DRAFT_NETWORK, formatById, shapesForBrand } from "./config/formats.js?v=1567";
+import { hashString } from "./lib/prng.js?v=1567";
+import { copyService, imageGenerationService } from "./services/index.js?v=1567";
+import { resolveLayers } from "./render/layout.js?v=1567";
+import { toPngBlob } from "./render/export.js?v=1567";
+import { styleThumbUrl } from "./ui/style-thumb.js?v=1567";
+import { layersFor, variationSvg } from "./ui/variation.js?v=1567";
+import { getBrand, getStyle, getStylesForBrand, registerOneOffStyle } from "./state/store.js?v=1567";
+import { oneOffStyleFrom } from "./state/style-actions.js?v=1567";
 
 const blobToDataUrl = (blob) =>
   new Promise((resolve, reject) => {
@@ -95,6 +95,26 @@ export async function defaultQuickLook(brandId) {
     referenceLooks.delete(d.referenceUrl);
     return null;
   }
+}
+
+/**
+ * What "Generate an image" will use on a draft, before anyone clicks it: the
+ * Playbook's look (its default style or reference image, with a thumbnail) and
+ * the shape for this network. `look` is null when the Playbook has none — the
+ * chat then asks. `null` when there is no Playbook.
+ */
+export function quickImagePreset({ brandId, network }) {
+  const brand = getBrand(brandId);
+  if (!brand) return null;
+  const d = brand.defaults || {};
+  const shape = shapesForBrand(brand, DRAFT_NETWORK[network] || null)[0];
+  const style = d.styleId ? getStyle(d.styleId) : null;
+  const look = style
+    ? { label: style.label, thumbUrl: styleThumbUrl(style, brand) }
+    : d.referenceUrl
+      ? { label: d.referenceLabel || "your reference image", thumbUrl: d.referenceUrl }
+      : null;
+  return { look, shape: shape ? { label: shape.label, ratio: shape.ratio } : null };
 }
 
 /** A line for the image, lifted from the post (the studio's Suggest). As slow as the real call. */

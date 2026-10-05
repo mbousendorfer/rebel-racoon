@@ -19,11 +19,11 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1565";
-import { isPortraitFormat } from "../clip-formats.js?v=1565";
-import { presetById } from "../clip-captions.js?v=1565";
-import { renderFeedbackControl } from "./feedback-control.js?v=1565";
-import { networkMeta } from "../social-profiles.js?v=1565";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1567";
+import { isPortraitFormat } from "../clip-formats.js?v=1567";
+import { presetById } from "../clip-captions.js?v=1567";
+import { renderFeedbackControl } from "./feedback-control.js?v=1567";
+import { networkMeta } from "../social-profiles.js?v=1567";
 
 // The media slot of a draft that has no image yet — a real drop target
 // (`[data-post-drop]`, drag wiring in right-panel.js) at the height of an image.
@@ -67,6 +67,31 @@ import { networkMeta } from "../social-profiles.js?v=1565";
 // `opts.brandGaps` / `opts.playbookId` come from the host (the drafts panel) —
 // the card never resolves a Context itself. A host that passes neither, like the
 // studio's own in-feed preview, simply gets no hint.
+// What Generate an image will use, right under it (flag sexySquirrel, passed by
+// the drafts panel as `opts.imagePreset`): the Playbook's look — a style or a
+// reference image, with its picture — and this network's shape. Without a look
+// the chat will ask, and the line says so. "Change" opens the Playbook's Image
+// generation tab, where both are set. A plain line, not a second rectangle
+// (rule 2 below).
+function renderImagePreset(opts) {
+  const p = opts.imagePreset;
+  if (!p || !opts.playbookId) return "";
+  const shape = p.shape ? `${escapeText(p.shape.label.toLowerCase())} ${escapeText(p.shape.ratio)}` : "";
+  const change = `<button type="button" class="ap-link small" data-post-image-preset="${escapeAttr(opts.playbookId)}">${
+    p.look ? "Change" : "Set a default"
+  }</button>`;
+  return p.look
+    ? `<p class="posts__card-media-preset">
+        <img class="posts__card-media-preset-thumb" src="${escapeAttr(p.look.thumbUrl)}" alt="" />
+        <span>In <strong>${escapeText(p.look.label)}</strong>${shape ? `, ${shape}` : ""}.</span>
+        ${change}
+      </p>`
+    : `<p class="posts__card-media-preset">
+        <span>I'll ask which style${shape ? `, ${shape}` : ""}.</span>
+        ${change}
+      </p>`;
+}
+
 function renderEmptyMedia(post, opts) {
   if (post.isGeneratingImage) {
     return `<div class="posts__card-media-empty">
@@ -101,6 +126,7 @@ function renderEmptyMedia(post, opts) {
           <i class="ap-icon-archie-official"></i>
           <span>Generate an image</span>
         </button>
+        ${renderImagePreset(opts)}
         <p class="posts__card-media-empty-studio">
           Or <button type="button" class="ap-link" data-post-studio="${post.id}">open the Image Studio</button>
           to set the type, style and format.

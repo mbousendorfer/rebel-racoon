@@ -409,6 +409,30 @@
    what sells it ("set the type, style and format"), because a bare product name
    says nothing about why you would click it. Measure-capped so it wraps to two
    tidy lines in the narrow drafts panel instead of running the slot's full width. */
+/* What Generate an image will use: the look's picture, its name, the shape. */
+.posts__card-media-preset {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ref-spacing-xxs);
+  margin: 0;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--ref-color-grey-80);
+}
+
+.posts__card-media-preset strong {
+  color: var(--ref-color-grey-100);
+}
+
+.posts__card-media-preset-thumb {
+  width: var(--ref-spacing-md);
+  height: var(--ref-spacing-md);
+  border-radius: var(--ref-border-radius-sm);
+  object-fit: cover;
+}
+
 .posts__card-media-empty-studio {
   margin: 0;
   max-width: 38ch;
