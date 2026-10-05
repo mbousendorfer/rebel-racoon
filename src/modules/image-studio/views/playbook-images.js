@@ -13,12 +13,12 @@
 //
 // Everything here saves as it changes, like the styles always did: no Edit.
 
-import { html, raw, toString } from "../lib/html.js?v=1553";
-import { navigate } from "../../../router.js?v=1553";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1553";
-import { toast } from "../ui/toast.js?v=1553";
-import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=1553";
-import { shapesFor } from "../config/formats.js?v=1553";
+import { html, raw, toString } from "../lib/html.js?v=1554";
+import { navigate } from "../../../router.js?v=1554";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=1554";
+import { toast } from "../ui/toast.js?v=1554";
+import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=1554";
+import { shapesFor } from "../config/formats.js?v=1554";
 import {
   addPlaybookReferences,
   deletePlaybookReference,
@@ -27,8 +27,8 @@ import {
   getPlaybookReferences,
   setPlaybookDefaultLook,
   setPlaybookFormat,
-} from "../state/playbook-brand.js?v=1553";
-import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=1553";
+} from "../state/playbook-brand.js?v=1554";
+import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=1554";
 
 const creatorPath = (playbookId, rest) => `/playbook/${encodeURIComponent(playbookId)}/styles/${rest}`;
 const ownStyles = (playbookId) => getStylesForBrand(playbookId).filter((s) => s.kind === "custom");
@@ -203,28 +203,16 @@ export function renderImagesGenerate(playbookId, { canEdit = true } = {}) {
 
 // ── 4. Preferred formats ────────────────────────────────────────────────────
 
-// A frame's longer side is the same for every shape, so the ratios compare
-// true side by side (a Story is tall, a Link is wide, a Square is square).
-function frameSize(shape) {
-  const long = Math.max(shape.w, shape.h);
-  const r = (v) => Math.round((v / long) * 1000) / 1000;
-  return `width:calc(var(--imst-frame) * ${r(shape.w)});height:calc(var(--imst-frame) * ${r(shape.h)})`;
-}
-
 export function renderImagesFormats(playbookId, { canEdit = true } = {}) {
   if (!getBrand(playbookId)) return "";
   const editable = canEdit && canEditBrand(playbookId);
   const formats = getPlaybookFormats(playbookId);
-  // One row per network: its name, the shape drawn empty, the select.
+  // One row per network: its name, the select.
   const rows = NETWORKS.map((n) => {
     const all = shapesFor(n.id);
     const chosen = all.find((s) => s.id === formats[n.id]);
-    const shape = chosen || all[0];
     return html`<li class="imst-images-format">
       <span class="imst-images-format__net ap-body-bold"><i class="${n.icon}" aria-hidden="true"></i>${n.label}</span>
-      <span class="imst-images-format__stage" aria-hidden="true">
-        <span class="imst-images-format__shape" style="${frameSize(shape)}"></span>
-      </span>
       ${select({
         name: `format:${n.id}`,
         value: chosen ? chosen.id : "",

@@ -441,9 +441,8 @@ button.imst-style-card {
   background: var(--ref-color-white);
 }
 
-/* Preferred formats: one row per network — name, the shape drawn empty, select. */
+/* Preferred formats: one row per network — name, select. */
 .imst-images-formats {
-  --imst-frame: var(--ref-spacing-lg);
   list-style: none;
   margin: 0;
   padding: 0;
@@ -453,7 +452,7 @@ button.imst-style-card {
 
 .imst-images-format {
   display: grid;
-  grid-template-columns: calc(var(--ref-spacing-xxxl) * 3) var(--imst-frame) minmax(0, 1fr);
+  grid-template-columns: calc(var(--ref-spacing-xxxl) * 3) minmax(0, 1fr);
   align-items: center;
   gap: var(--ref-spacing-sm);
   padding: var(--ref-spacing-xs) 0;
@@ -468,28 +467,6 @@ button.imst-style-card {
   display: flex;
   align-items: center;
   gap: var(--ref-spacing-xxs);
-}
-
-.imst-images-format__stage {
-  display: grid;
-  place-items: center;
-  width: var(--imst-frame);
-  height: var(--imst-frame);
-}
-
-.imst-images-format__shape {
-  display: block;
-  border: 1.5px solid var(--ref-color-grey-80);
-  border-radius: 2px;
-  transition:
-    width 0.2s ease,
-    height 0.2s ease;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .imst-images-format__shape {
-    transition: none;
-  }
 }
 
 .imst-images__select {
