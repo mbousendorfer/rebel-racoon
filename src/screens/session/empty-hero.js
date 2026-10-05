@@ -1,16 +1,16 @@
 // A new chat's hero: the greeting, the workflow starters, and the "Fresh
 // topics to review" grid (flag topicFeed). Moved out of session.js, unchanged.
 
-import { isFlagOn } from "../../feature-flags.js?v=1563";
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=1563";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=1563";
-import { getContextById } from "../../contexts-store.js?v=1563";
-import { isWorkspaceMode } from "../../active-playbook.js?v=1563";
-import { renderTopicCard } from "../../components/topic-card.js?v=1563";
-import { findTopicSource } from "../../topics-catalog.js?v=1563";
-import { html, raw } from "../../utils.js?v=1563";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=1563";
-import { renderStarterCards } from "../../components/starter-card.js?v=1563";
+import { isFlagOn } from "../../feature-flags.js?v=1564";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=1564";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=1564";
+import { getContextById } from "../../contexts-store.js?v=1564";
+import { isWorkspaceMode } from "../../active-playbook.js?v=1564";
+import { renderTopicCard } from "../../components/topic-card.js?v=1564";
+import { findTopicSource } from "../../topics-catalog.js?v=1564";
+import { html, raw } from "../../utils.js?v=1564";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1564";
+import { renderStarterCards } from "../../components/starter-card.js?v=1564";
 
 // Composer "Add" menu — "Connected sources" is a nested submenu (Codex-style
 // "Modules d'extension ▸" flyout), not a first-level list. The flyout lists the

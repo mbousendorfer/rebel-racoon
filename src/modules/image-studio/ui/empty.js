@@ -1,15 +1,20 @@
 // Image Generator — empty state. The DS ships no empty-state class; this is the
-// composition Archie's own renderEmptyState uses (icon · subtitle · body · one
-// hug-width primary blue CTA), rewritten here so the module imports nothing.
+// house composition (design-guidelines, empty-states.md), rewritten here so the
+// module imports nothing: a bare icon (no medallion behind it), then the text —
+// a bounded region's H3 title and one Body sentence, 420px at most — then one
+// hug-width primary blue CTA. Gaps: icon↔text lg, title↔body xxxs, text↔action md.
 
-import { html } from "../lib/html.js?v=1563";
+import { html } from "../lib/html.js?v=1564";
 
 export function renderEmpty({ icon, title, body, action }) {
   return html`
     <div class="imst-empty">
-      <span class="imst-empty__icon" aria-hidden="true"><i class="${icon} ap-icon-xl"></i></span>
-      <h2 class="ap-subtitle imst-empty__title">${title}</h2>
-      ${body ? html`<p class="ap-body imst-empty__body">${body}</p>` : ""} ${action || ""}
+      <i class="${icon} ap-icon-xl imst-empty__icon" aria-hidden="true"></i>
+      <div class="imst-empty__text">
+        <h2 class="ap-h3 imst-empty__title">${title}</h2>
+        ${body ? html`<p class="ap-body imst-empty__body">${body}</p>` : ""}
+      </div>
+      ${action ? html`<div class="imst-empty__actions">${action}</div>` : ""}
     </div>
   `;
 }

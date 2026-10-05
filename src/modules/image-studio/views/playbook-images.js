@@ -13,13 +13,13 @@
 //
 // Everything here saves as it changes, like the styles always did: no Edit.
 
-import { html, raw, toString } from "../lib/html.js?v=1563";
-import { navigate } from "../../../router.js?v=1563";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1563";
-import { toast } from "../ui/toast.js?v=1563";
-import { renderEmpty } from "../ui/empty.js?v=1563";
-import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=1563";
-import { shapesFor } from "../config/formats.js?v=1563";
+import { html, raw, toString } from "../lib/html.js?v=1564";
+import { navigate } from "../../../router.js?v=1564";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=1564";
+import { toast } from "../ui/toast.js?v=1564";
+import { renderEmpty } from "../ui/empty.js?v=1564";
+import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=1564";
+import { shapesFor } from "../config/formats.js?v=1564";
 import {
   addPlaybookReferences,
   deletePlaybookReference,
@@ -28,8 +28,8 @@ import {
   getPlaybookReferences,
   setPlaybookDefaultLook,
   setPlaybookFormat,
-} from "../state/playbook-brand.js?v=1563";
-import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=1563";
+} from "../state/playbook-brand.js?v=1564";
+import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=1564";
 
 const creatorPath = (playbookId, rest) => `/playbook/${encodeURIComponent(playbookId)}/styles/${rest}`;
 const ownStyles = (playbookId) => getStylesForBrand(playbookId).filter((s) => s.kind === "custom");
@@ -77,9 +77,9 @@ export function renderImagesStyles(playbookId, { canEdit = true } = {}) {
         ? raw(renderPlaybookStyles(playbookId, { canEdit, newTile: false }))
         : emptyBlock({
             icon: "ap-icon-sparkles",
-            title: "No image style yet",
+            title: "Draw every image in your brand's look",
             body: editable
-              ? "Give me 2 to 6 images that share the look you want. I learn it, and every new image can be drawn in it."
+              ? "Give me 2 to 6 images that share the look you want, and I learn it."
               : "Nobody has created a style for this brand yet.",
             action: editable ? createStyleButton : "",
           }),
@@ -128,9 +128,9 @@ export function renderImagesReferences(playbookId, { canEdit = true } = {}) {
           </ul>`
         : emptyBlock({
             icon: "ap-icon-image",
-            title: "No reference image yet",
+            title: "Keep the pictures whose look you like",
             body: editable
-              ? "Add a picture whose look you like, as it is. A new image can take after it."
+              ? "Add one, and a new image can take after it."
               : "Nobody has added a reference image for this brand yet.",
             action: editable
               ? html`<button type="button" class="ap-button primary blue" data-imst-images="add-reference">
@@ -209,8 +209,8 @@ export function renderImagesGenerate(playbookId, { canEdit = true } = {}) {
             </div>`
           : emptyBlock({
               icon: "ap-icon-question",
-              title: "Nothing to pick yet",
-              body: "Create an image style or add a reference image above. Then pick one here, and Generate an image stops asking which style.",
+              title: "Skip the style question on every draft",
+              body: "Create an image style or add a reference image above, then pick it here.",
             }),
     }),
   );

@@ -69,23 +69,30 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--ref-spacing-sm);
   text-align: center;
 }
 
+/* A bare icon: no medallion, no background. */
 .imst-empty__icon {
-  display: grid;
-  place-items: center;
-  width: var(--ref-spacing-xxxl);
-  height: var(--ref-spacing-xxxl);
-  border-radius: var(--app-radius-lg);
-  background: var(--ref-color-grey-10);
   color: var(--ref-color-grey-80);
+  margin-bottom: var(--ref-spacing-lg);
+}
+
+.imst-empty__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  /* The guide's measure for an empty state's text: no token carries it. */
+  max-width: 420px;
 }
 
 .imst-empty__title,
 .imst-empty__body {
   margin: 0;
+}
+
+.imst-empty__actions {
+  margin-top: var(--ref-spacing-md);
 }
 
 /* Tablet: tighter gutters. */

@@ -404,10 +404,6 @@ button.imst-style-card {
   padding: var(--ref-spacing-lg) var(--ref-spacing-md);
 }
 
-.imst-images-empty .imst-empty__icon {
-  background: var(--ref-color-white);
-}
-
 .imst-images__used {
   align-self: flex-start;
 }
