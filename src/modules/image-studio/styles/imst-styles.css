@@ -569,7 +569,7 @@ button.imst-style-card {
   grid-template-columns: calc(var(--ref-spacing-xxxl) * 3) minmax(0, 1fr);
   align-items: center;
   gap: var(--ref-spacing-sm);
-  padding: var(--ref-spacing-xs) 0;
+  padding: var(--ref-spacing-xxs) 0;
   border-bottom: 1px solid var(--ref-color-grey-20);
 }
 
@@ -588,15 +588,22 @@ button.imst-style-card {
   justify-self: start;
 }
 
+/* One line per shape — frame, name, ratio side by side — so a row stays low. */
 .imst-seg--compact .imst-seg__opt {
   flex: 0 0 auto;
-  min-width: calc(var(--ref-spacing-xxxl) * 1.6);
+  flex-direction: row;
+  gap: var(--ref-spacing-xxs);
   padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
 }
 
 .imst-seg--compact .imst-seg__box {
-  width: var(--ref-spacing-md);
-  height: var(--ref-spacing-md);
+  width: var(--ref-spacing-sm);
+  height: var(--ref-spacing-sm);
+  margin-bottom: 0;
+}
+
+.imst-seg--compact .imst-seg__frame {
+  border-width: 1.5px;
 }
 
 .imst-seg--compact .imst-seg__opt:disabled {
