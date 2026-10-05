@@ -13,24 +13,24 @@
 // tones, contentStyle, objective, contentAction, ctaLinks, language, color,
 // suggestions, editingId, onComplete }.
 
-import * as inlineQuestion from "./inline-question.js?v=1535";
-import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=1535";
-import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=1535";
-import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=1535";
-import { showToast } from "./components/toast.js?v=1535";
-import { recordReasons } from "./feedback-store.js?v=1535";
-import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1535";
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1535";
-import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=1535";
-import { analyzeWebsite, analyzeBrandFiles } from "./context-mock-analysis.js?v=1535";
-import { connectors as connectorMocks } from "./mocks.js?v=1535";
+import * as inlineQuestion from "./inline-question.js?v=1536";
+import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=1536";
+import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=1536";
+import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=1536";
+import { showToast } from "./components/toast.js?v=1536";
+import { recordReasons } from "./feedback-store.js?v=1536";
+import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1536";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1536";
+import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=1536";
+import { analyzeWebsite, analyzeBrandFiles } from "./context-mock-analysis.js?v=1536";
+import { connectors as connectorMocks } from "./mocks.js?v=1536";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "./social-profiles.js?v=1535";
-import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=1535";
-import { isFlagOn } from "./feature-flags.js?v=1535";
+} from "./social-profiles.js?v=1536";
+import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=1536";
+import { isFlagOn } from "./feature-flags.js?v=1536";
 
 const drafts = new Map(); // sessionId → draft
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -80,7 +80,6 @@ function emptyDraft(overrides = {}) {
     imageDefaults: { imageType: "", style: "", refMode: "" },
     referenceImages: [], // Array<{ id, label, url, note?, networks? }> — note/networks = optional usage guidance
     // Brand kit (flag sexySquirrel) — see contexts-store#normalizeBrandKit.
-    brandMoods: [],
     voiceAvoid: [],
     brandRules: null,
     // Competitors — Array<{ id, name, description, websiteUrl, socials:[{network,url}], logo?, suggested? }>.
@@ -212,8 +211,7 @@ export function sectionPatchFromAnalysis(analysis) {
     brandTypography: s.brandTypography ? { ...s.brandTypography } : null,
     brandColors: (s.brandColors || []).map((c) => ({ ...c })),
     // Brand kit — only when the analysis has an opinion, so "Re-analyze website"
-    // never blanks moods or banned words someone typed.
-    ...(Array.isArray(s.brandMoods) ? { brandMoods: s.brandMoods.slice() } : {}),
+    // never blanks banned words someone typed.
     ...(Array.isArray(s.voiceAvoid) ? { voiceAvoid: s.voiceAvoid.slice() } : {}),
     // Marks the crawl turned up (imageVoice.websites[0].images.logos). The
     // first becomes the default; the user re-picks in the Brand section.
@@ -796,7 +794,6 @@ export function save(sessionId) {
     brandLogos: Array.isArray(d.brandLogos) ? d.brandLogos.map((l) => ({ ...l })) : [],
     brandLogo: d.brandLogo || "",
     imageDefaults: { ...(d.imageDefaults || {}) },
-    brandMoods: Array.isArray(d.brandMoods) ? d.brandMoods.slice() : [],
     voiceAvoid: Array.isArray(d.voiceAvoid) ? d.voiceAvoid.slice() : [],
     brandRules: d.brandRules ? structuredClone(d.brandRules) : null,
     referenceImages: Array.isArray(d.referenceImages)

@@ -451,7 +451,6 @@ export function analyzeBrandFiles(files = []) {
     { name: "Background", hex: hsl(hue, 30, 96), role: "background" },
     { name: "Text", hex: hsl(hue, 40, 14), role: "text" },
   ];
-  result.suggestions.brandMoods = ["crafted", "consistent", "recognisable"];
   const site = result.suggestions.imageVoice?.websites?.[0];
   if (site) {
     site.domain = "";

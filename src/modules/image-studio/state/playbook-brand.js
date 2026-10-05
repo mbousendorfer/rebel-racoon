@@ -17,16 +17,16 @@ import {
   getContexts,
   subscribe as subscribeContexts,
   updateContext,
-} from "../../../contexts-store.js?v=1535";
-import { createStyle } from "../model/schema.js?v=1535";
-import { canEdit, usableContexts } from "../../../playbook-access.js?v=1535";
+} from "../../../contexts-store.js?v=1536";
+import { createStyle } from "../model/schema.js?v=1536";
+import { canEdit, usableContexts } from "../../../playbook-access.js?v=1536";
 import {
   getActivePlaybookId,
   isWorkspaceMode,
   playbookForNewWork,
   subscribe as subscribeActive,
-} from "../../../active-playbook.js?v=1535";
-import { storageService as storage } from "../services/index.js?v=1535";
+} from "../../../active-playbook.js?v=1536";
+import { storageService as storage } from "../services/index.js?v=1536";
 
 // Which copy archetype the mocked copyService uses — guessed from the Playbook's words.
 function sectorKeyOf(ctx) {
@@ -73,7 +73,6 @@ function toBrand(ctx) {
     // style or an empty upload simply reads as no default.
     defaults: imageryDefaultsOf(ctx),
     imageStyle: {
-      moods: (ctx.brandMoods || []).slice(),
       // Not `imageDefaults`: it serves the old Image Studio. The brand's look is
       // its styles (imageStyles) and its reference images, `defaults` above.
     },

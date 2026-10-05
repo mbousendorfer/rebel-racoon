@@ -1,6 +1,6 @@
 // The brand kit rows of the Playbook's Brand section — what an AI image
 // generator needs on top of the logo, colours and fonts to stay on-brand:
-// which version each logo is, what each colour is for, the imagery's moods, the
+// which version each logo is, what each colour is for, the
 // words to avoid, and the visual rules. Gated by the `sexySquirrel` flag (the
 // Image Generator reads these fields; nothing else does yet).
 //
@@ -9,16 +9,16 @@
 // the fiche's live data object, exactly like every other Brand row, and are
 // committed by the section's Save (snapshotEditable carries the fields).
 
-import { escapeHtml as esc } from "./utils.js?v=1535";
-import { isFlagOn } from "./feature-flags.js?v=1535";
-import { COLOR_ROLES, LOGO_VARIANTS, getContextById } from "./contexts-store.js?v=1535";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1535";
+import { escapeHtml as esc } from "./utils.js?v=1536";
+import { isFlagOn } from "./feature-flags.js?v=1536";
+import { COLOR_ROLES, LOGO_VARIANTS, getContextById } from "./contexts-store.js?v=1536";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1536";
 import {
   handlePlaybookStylesClick,
   renderPlaybookReferences,
   renderPlaybookStyles,
   shapesFor,
-} from "./modules/image-studio/index.js?v=1535";
+} from "./modules/image-studio/index.js?v=1536";
 
 const KIT_FLAG = "sexySquirrel";
 
@@ -381,7 +381,6 @@ export function renderImageReferences(data, canEdit) {
 export function kitSnapshot(d) {
   return {
     formatByNetwork: { ...(d.formatByNetwork || {}) },
-    brandMoods: d.brandMoods || [],
     voiceAvoid: d.voiceAvoid || [],
     brandRules: d.brandRules || null,
   };

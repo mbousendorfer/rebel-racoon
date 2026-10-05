@@ -22,18 +22,18 @@
 // chooses "Save as global". updateContext is used by the section-edit flow
 // when scope is "Update everywhere".
 
-import { contexts as seed, sharedContexts } from "./mocks.js?v=1535";
-import { isNewUser } from "./user-mode.js?v=1535";
-import { CURRENT_USER } from "./org.js?v=1535";
-import { isFlagOn } from "./feature-flags.js?v=1535";
-import { createNotifier } from "./store-utils.js?v=1535";
+import { contexts as seed, sharedContexts } from "./mocks.js?v=1536";
+import { isNewUser } from "./user-mode.js?v=1536";
+import { CURRENT_USER } from "./org.js?v=1536";
+import { isFlagOn } from "./feature-flags.js?v=1536";
+import { createNotifier } from "./store-utils.js?v=1536";
 import {
   normalizeLanguages,
   mirrorPrimaryToTopLevel,
   syncTopLevelToPrimary,
   cloneVoiceByLanguage,
-} from "./languages.js?v=1535";
-import { cloneVoiceByNetwork } from "./network-voice.js?v=1535";
+} from "./languages.js?v=1536";
+import { cloneVoiceByNetwork } from "./network-voice.js?v=1536";
 
 // Lives up here, away from normalizeBrandLogos where it belongs, because the
 // seed below calls that normalizer at module-init time — a `let` declared beside
@@ -148,7 +148,6 @@ function normalizeBrandLogos(ctx) {
 //
 //   brandLogos[].variant  which version a mark is — colour / white / black / icon
 //   brandColors[].role    what a colour is FOR — primary / secondary / accent / background / text
-//   brandMoods            a few words for the imagery's atmosphere
 //   voiceAvoid            words and phrasings the brand never uses
 //   brandRules            visual do / don't, the logo's minimum size and clear
 //                         space, no distortion, and colour pairs that must never meet
@@ -216,7 +215,6 @@ function normalizeImageStyles(list) {
 function normalizeBrandKit(ctx) {
   return {
     brandColors: normalizeBrandColors(ctx.brandColors),
-    brandMoods: strings(ctx.brandMoods),
     voiceAvoid: strings(ctx.voiceAvoid),
     brandRules: normalizeBrandRules(ctx.brandRules),
     imageStyles: normalizeImageStyles(ctx.imageStyles),
@@ -444,7 +442,7 @@ export function addContext(ctx = {}) {
     voiceManual: ctx.voiceManual || "",
     brandPersonality: ctx.brandPersonality || "",
     brandTypography: ctx.brandTypography && typeof ctx.brandTypography === "object" ? { ...ctx.brandTypography } : null,
-    // brandColors, brandMoods, voiceAvoid, brandRules — see normalizeBrandKit.
+    // brandColors, voiceAvoid, brandRules — see normalizeBrandKit.
     ...normalizeBrandKit(ctx),
     // The brand marks + which one is the default (see normalizeBrandLogos).
     // Optional — a Playbook can have a voice and an audience without anyone
@@ -537,7 +535,6 @@ export function updateContext(id, patch) {
   if (patch.brandPersonality !== undefined) c.brandPersonality = patch.brandPersonality;
   if (patch.brandTypography !== undefined) c.brandTypography = patch.brandTypography;
   if (patch.brandColors !== undefined) c.brandColors = normalizeBrandColors(patch.brandColors);
-  if (patch.brandMoods !== undefined) c.brandMoods = strings(patch.brandMoods);
   if (patch.voiceAvoid !== undefined) c.voiceAvoid = strings(patch.voiceAvoid);
   if (patch.brandRules !== undefined) c.brandRules = normalizeBrandRules(patch.brandRules);
   if (patch.imageStyles !== undefined) c.imageStyles = normalizeImageStyles(patch.imageStyles);
@@ -653,7 +650,6 @@ export function duplicateContext(id) {
     brandTypography: src.brandTypography ? { ...src.brandTypography } : null,
     imageDefaults: { ...(src.imageDefaults || {}) },
     brandColors: (src.brandColors || []).map((c) => ({ ...c })),
-    brandMoods: (src.brandMoods || []).slice(),
     voiceAvoid: (src.voiceAvoid || []).slice(),
     brandRules: structuredClone(src.brandRules || {}),
     // A copy's styles are its own: new ids, so editing one never edits the other's.

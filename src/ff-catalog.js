@@ -168,7 +168,7 @@ export const FLAGS = Object.freeze([
       "Facebook, X, LinkedIn): describe the image or suggest it from the post, " +
       "pick a style, get up to four variations and put one in the draft. The " +
       "brand is the Playbook: ON also adds its brand kit (logo versions, colour " +
-      "roles, moods, words to avoid, visual rules, and the brand's own image " +
+      "roles, words to avoid, visual rules, and the brand's own image " +
       "styles) to the Playbook page, and two more ways to create a Playbook " +
       "(from files, or by hand).",
   },

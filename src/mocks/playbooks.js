@@ -233,7 +233,6 @@ export const contexts = [
     brandTypography: { headingFont: "Inter", bodyFont: "Inter" },
     imageDefaults: { imageType: "visual-hook", style: "bold-editorial", refMode: "layout" },
     // Brand kit (Image Generator, flag sexySquirrel) — see contexts-store#normalizeBrandKit.
-    brandMoods: ["confident", "precise", "high-contrast", "product-first"],
     // Where a new image starts (Brand › Imagery) — see contexts-store#normalizeImageryDefaults.
     defaultLook: { kind: "style", id: "st_demo_acme_product" },
     formatByNetwork: { linkedin: "portrait", instagram: "portrait" },
@@ -825,7 +824,6 @@ export const contexts = [
     brandTypography: { headingFont: "Poppins", bodyFont: "Inter" },
     imageDefaults: { imageType: "visual-hook", style: "photoreal", refMode: "style" },
     // Brand kit (Image Generator, flag sexySquirrel) — see contexts-store#normalizeBrandKit.
-    brandMoods: ["warm", "playful", "outdoors", "daylight"],
     imageStyles: [
       {
         id: "st_demo_pawtrack_daylight",
@@ -1589,7 +1587,6 @@ export const contexts = [
       bodyFont: "Averta",
     },
     // Brand kit (Image Generator, flag sexySquirrel) — see contexts-store#normalizeBrandKit.
-    brandMoods: ["clear", "human", "energetic", "no-nonsense"],
     voiceAvoid: ["revolutionary", "best-in-class", "leverage", "synergy"],
     brandRules: {
       visualDos: ["Show the product doing the job", "Plenty of white", "Real people, real teams"],
