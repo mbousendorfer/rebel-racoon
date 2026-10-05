@@ -117,7 +117,7 @@ export const threadsBySession = {
     {
       role: "assistant",
       meta: "Archie",
-      text: 'I drafted 4 posts grounded in "The three constraints that killed our first launch". Each is sized for its network and follows the Acme · Q2 marketing playbook. Two are ready; one is past LinkedIn\'s caption limit and one is missing image dimensions — both flagged in the Drafts panel.',
+      text: "I drafted 4 posts grounded in [[idea:idea-acme-1]]. Each is sized for its network and follows the Acme · Q2 marketing playbook. [[post:post-acme-1]] and [[post:post-acme-3]] are ready; [[post:post-acme-2]] is past LinkedIn's caption limit and [[post:post-acme-4]] has an image at the wrong dimensions.",
     },
     {
       role: "assistant",
@@ -226,7 +226,7 @@ export const threadsBySession = {
     {
       role: "assistant",
       meta: "Archie",
-      text: 'Drafted 5 posts grounded in "Riverside\'s 6-week onboarding rebuild". Each leads with a customer quote, names the metric, and closes with a link to the case study. One needs a longer LinkedIn body — flagged in Drafts.',
+      text: "Drafted 5 posts grounded in [[idea:idea-riv-1]]. Each leads with a customer quote, names the metric, and closes with a link to the case study. [[post:post-riv-3]] needs a longer LinkedIn body.",
     },
     {
       role: "assistant",
@@ -350,7 +350,7 @@ export const threadsBySession = {
     {
       role: "assistant",
       meta: "Archie",
-      text: 'The strongest signal is "73% of social managers say context-switching is their #1 blocker" — hard year-over-year delta, credible source. I drafted 2 posts: one long-form for LinkedIn, one scheduled mid-week for the founder account.',
+      text: "The strongest signal is [[idea:idea-sos-1]]: hard year-over-year delta, credible source. I drafted 2 posts: [[post:post-sos-1]], long-form for LinkedIn, and [[post:post-sos-2]], scheduled mid-week for the founder account.",
     },
     {
       role: "assistant",
@@ -418,7 +418,7 @@ export const threadsBySession = {
     {
       role: "assistant",
       meta: "Archie",
-      text: 'Drafted 1 LinkedIn post grounded in "What week 12 told us about Tuesday vs Thursday" — opens with the 2.3× delta and closes on the cheapest lever most teams stop testing.',
+      text: "Drafted [[post:post-weekly-1]] from [[idea:idea-weekly-1]]. It opens with the 2.3× delta and closes on the cheapest lever most teams stop testing.",
     },
     {
       role: "assistant",

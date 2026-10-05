@@ -16,17 +16,17 @@
 // The two reads from the post take as long as the real calls (4–8 s), so both
 // start the moment the flow does and are usually back before they are needed.
 
-import * as inlineQuestion from "./inline-question.js?v=1510";
-import { finishPending, postAssistantMessage, postUserTurn, startPending } from "./assistant.js?v=1510";
-import { attachImageToDraft, getPosts, updatePostContent } from "./posts-store.js?v=1510";
-import { getSessionById } from "./sessions-store.js?v=1510";
-import { escapeHtml } from "./utils.js?v=1510";
+import * as inlineQuestion from "./inline-question.js?v=1512";
+import { finishPending, postAssistantMessage, postUserTurn, startPending } from "./assistant.js?v=1512";
+import { attachImageToDraft, getPosts, updatePostContent } from "./posts-store.js?v=1512";
+import { getSessionById } from "./sessions-store.js?v=1512";
+import { escapeHtml } from "./utils.js?v=1512";
 import {
   generateQuickImage,
   quickImageChoices,
   suggestImageLine,
   suggestImageSubject,
-} from "./modules/image-studio/index.js?v=1510";
+} from "./modules/image-studio/index.js?v=1512";
 
 const STUDIO = "__studio";
 const NO_TEXT = "__none";
@@ -166,7 +166,7 @@ export function startDraftImageFlow(sessionId, postId, { openStudio, repaint }) 
       repaint();
       postAssistantMessage(
         sessionId,
-        `Done — it's in the draft, in ${escapeHtml(answers.style.label)}, ${escapeHtml(answers.shape.label.toLowerCase())}.`,
+        `Done — it's in [[post:${postId}]], in ${escapeHtml(answers.style.label)}, ${escapeHtml(answers.shape.label.toLowerCase())}.`,
       );
       askNext();
     } catch {

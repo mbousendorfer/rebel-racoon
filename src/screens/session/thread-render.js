@@ -12,19 +12,20 @@ import {
   renderMessageBubble,
   renderNotice,
   renderResultCard,
-} from "./thread-turns.js?v=1510";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=1510";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1510";
-import { getTopPost } from "../../top-posts-store.js?v=1510";
-import { getTopicById } from "../../topics-store.js?v=1510";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=1510";
-import { renderProfileEchoCard } from "../../social-profiles.js?v=1510";
-import { escapeHtml } from "../../utils.js?v=1510";
-import { getIdeas } from "../../library.js?v=1510";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1510";
-import { getThread } from "../../assistant.js?v=1510";
-import { getSuggestion } from "../../voice-coach-store.js?v=1510";
-import { networkLabel, networkIcon } from "../../network-voice.js?v=1510";
+} from "./thread-turns.js?v=1512";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1512";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1512";
+import { getTopPost } from "../../top-posts-store.js?v=1512";
+import { getTopicById } from "../../topics-store.js?v=1512";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=1512";
+import { renderProfileEchoCard } from "../../social-profiles.js?v=1512";
+import { escapeHtml } from "../../utils.js?v=1512";
+import { getIdeas } from "../../library.js?v=1512";
+import { renderRefs } from "../../chat-refs.js?v=1512";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1512";
+import { getThread } from "../../assistant.js?v=1512";
+import { getSuggestion } from "../../voice-coach-store.js?v=1512";
+import { networkLabel, networkIcon } from "../../network-voice.js?v=1512";
 
 export function renderThread(messages, sessionId) {
   return messages.map((m) => renderTurn(m, sessionId)).join("");
@@ -123,6 +124,11 @@ function renderTurn(message, sessionId) {
     return renderConnectPromptTurn(message);
   }
 
+  // Archie's `[[post:id]]` / `[[idea:id]]` / `[[source:id]]` tokens become inline
+  // references here — the store-coupled half — so thread-turns.js stays pure.
+  if (message.role === "assistant") {
+    return renderMessageBubble({ ...message, text: renderRefs(message.text, sessionId) });
+  }
   return renderMessageBubble(message);
 }
 

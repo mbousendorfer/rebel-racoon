@@ -1,0 +1,55 @@
+// Inline references in Archie's messages — the ONE way Archie names a draft, an
+// idea or a source it is talking about.
+//
+//   "I drafted [[post:post-acme-1]] from [[idea:idea-acme-1]]."
+//
+// The token carries the id only; the label is resolved from THIS session's
+// stores at render time, so a renamed idea reads right and a deleted draft
+// degrades to plain text instead of a dead link. Rendered as an underlined
+// inline button (`.chat-ref`): hover previews the object (ref-preview.js),
+// click opens it in the right panel (session.js → focusInPanel).
+
+import { getPosts } from "./posts-store.js?v=1512";
+import { getIdeas, getSources } from "./library.js?v=1512";
+import { networkLabel } from "./network-voice.js?v=1512";
+import { escapeHtml, escapeAttr } from "./utils.js?v=1512";
+
+const TOKEN = /\[\[(post|idea|source):([^\]\s]+)\]\]/g;
+const GONE = { post: "a deleted draft", idea: "a deleted idea", source: "a deleted source" };
+
+export function resolveRef(kind, id, sessionId) {
+  if (!sessionId) return null;
+  if (kind === "post") return getPosts(sessionId).find((p) => p.id === id) || null;
+  if (kind === "idea") return getIdeas(sessionId).find((i) => i.id === id) || null;
+  if (kind === "source") return getSources(sessionId).find((s) => s.id === id) || null;
+  return null;
+}
+
+function plain(s) {
+  return String(s || "")
+    .replace(/<[^>]*>/g, "")
+    .trim();
+}
+
+// Network + the opening words — two LinkedIn drafts must not read the same.
+function postLabel(post) {
+  const first = plain(Array.isArray(post.text) ? post.text[0] : post.text);
+  const words = first.length > 32 ? `${first.slice(0, 32).trimEnd()}…` : first;
+  const network = networkLabel(post.network);
+  return words ? `${network} · ${words}` : `${network} draft`;
+}
+
+export function refLabel(kind, obj) {
+  if (kind === "post") return postLabel(obj);
+  if (kind === "idea") return plain(obj.title) || "Untitled idea";
+  return plain(obj.filename || obj.title || obj.name) || "Source";
+}
+
+export function renderRefs(text, sessionId) {
+  if (typeof text !== "string" || !text.includes("[[")) return text;
+  return text.replace(TOKEN, (_, kind, id) => {
+    const obj = resolveRef(kind, id, sessionId);
+    if (!obj) return GONE[kind];
+    return `<button type="button" class="chat-ref" data-chat-ref="${escapeAttr(`${kind}:${id}`)}" data-chat-ref-session="${escapeAttr(sessionId)}">${escapeHtml(refLabel(kind, obj))}</button>`;
+  });
+}

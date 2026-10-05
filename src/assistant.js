@@ -6,10 +6,11 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1510";
-import { findConnector } from "./connectors-store.js?v=1510";
-import { createSessionNotifier } from "./store-utils.js?v=1510";
-import { showToast } from "./components/toast.js?v=1510";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1512";
+import { findConnector } from "./connectors-store.js?v=1512";
+import { createSessionNotifier } from "./store-utils.js?v=1512";
+import { addPostDraft } from "./posts-store.js?v=1512";
+import { showToast } from "./components/toast.js?v=1512";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -810,6 +811,15 @@ function mockConnectorReply(connector, prompt) {
   return { reasoning, text: body + sourcesBlock };
 }
 
+// "[[post:a]], [[post:b]] and 3 more" — names the first drafts of a batch
+// without turning the sentence into a list.
+function refList(posts, shown = 2) {
+  const refs = posts.slice(0, shown).map((p) => `[[post:${p.id}]]`);
+  const rest = posts.length - refs.length;
+  if (rest > 0) return `${refs.join(", ")} and ${rest} more`;
+  return refs.length > 1 ? `${refs.slice(0, -1).join(", ")} and ${refs.at(-1)}` : refs[0] || "";
+}
+
 // Scripted mock replies. Ported from the old prototype (src/mock-generators.js),
 // extended to return a { text, reasoning } pair — `reasoning` is shown in the
 // mermaid-accented "Drafting" collapsible above the answer.
@@ -845,13 +855,22 @@ function mockAiReply({ prompt, sessionId }) {
     /\b(batch|draft|repurpose|moments|pull|schedule|posts?)\b/i.test(prompt) ||
     /linkedin|twitter|\bx\b|instagram|facebook|tiktok/i.test(prompt);
 
+  // Archie names what it talks about with inline references (chat-refs.js):
+  // `[[idea:id]]` renders as the idea's underlined title, previewed on hover.
+  const lead = `[[idea:${leadIdea.id}]]`;
+
   if (isBatch) {
-    const batch = isLaunch ? launchBatch(leadIdea) : defaultBatch(leadIdea);
+    // The batch lands in posts-store, so the Drafts panel shows it and the
+    // reply can reference each draft it made.
+    const batch = (isLaunch ? launchBatch(leadIdea) : defaultBatch(leadIdea)).map((d) =>
+      addPostDraft(sessionId, { network: d.network, text: d.text }),
+    );
+    const named = refList(batch);
     return {
       reasoning: `Scanned ${ideaCount} extracted ideas, ranked by confidence and relevance. "${leadIdea.title}" came out on top (${leadIdea.confidence}% confidence) — composing a ${batch.length}-post batch grounded in its source.`,
       text: isLaunch
-        ? `Here's a ${batch.length}-day sequence built from "${leadIdea.title}" — one post per day, mixed networks. Open the Drafts panel to review and schedule.`
-        : `I drafted ${batch.length} posts grounded in "${leadIdea.title}". Each is sized for its network and follows the active playbook's tone rules.`,
+        ? `Here's a ${batch.length}-day sequence built from ${lead}, one post per day across networks: ${named}. Open the Drafts panel to review and schedule.`
+        : `I drafted ${batch.length} posts grounded in ${lead}: ${named}. Each is sized for its network and follows the active playbook's tone rules.`,
       batch,
     };
   }
@@ -861,14 +880,14 @@ function mockAiReply({ prompt, sessionId }) {
     const weaker = stronger.id === leadIdea.id ? otherIdea : leadIdea;
     return {
       reasoning: `Compared confidence + relevance between "${leadIdea.title}" (${leadIdea.confidence}%) and "${otherIdea.title}" (${otherIdea.confidence}%). Picked the higher-confidence, more specific angle to lead with.`,
-      text: `Between "${leadIdea.title}" and "${otherIdea.title}", I'd lead with "${stronger.title}" — clearer proof, higher confidence. Keep "${weaker.title}" as a follow-up draft.`,
+      text: `Between ${lead} and [[idea:${otherIdea.id}]], I'd lead with [[idea:${stronger.id}]]: clearer proof, higher confidence. Keep [[idea:${weaker.id}]] as a follow-up draft.`,
     };
   }
 
   if (/pin|priority|strongest|signal|actionable/i.test(prompt)) {
     return {
       reasoning: `Looked across ${ideaCount} ideas for the one closest to "specific, believable, publishable". "${leadIdea.title}" scored highest on all three.`,
-      text: `The strongest idea right now is "${leadIdea.title}" — specific, believable, close to publishable. I'd pin it, pressure-test it against one alternative, then draft the first post.`,
+      text: `The strongest idea right now is ${lead}: specific, believable, close to publishable. I'd pin it, pressure-test it against one alternative, then draft the first post.`,
     };
   }
 
@@ -882,6 +901,6 @@ function mockAiReply({ prompt, sessionId }) {
 
   return {
     reasoning: `Reviewed session state: ${ideaCount} ideas extracted, strongest being "${leadIdea.title}". No draft in progress.`,
-    text: `I can keep working in this chat. My recommendation: confirm the strongest idea in the Ideas panel, then generate a draft so the post stays grounded in the source. "${leadIdea.title}" is the one I'd start with.`,
+    text: `I can keep working in this chat. My recommendation: confirm the strongest idea in the Ideas panel, then generate a draft so the post stays grounded in the source. ${lead} is the one I'd start with.`,
   };
 }

@@ -188,6 +188,10 @@ DS `.ap-status` + `blue|green|grey|mermaid` (mermaid patché). Les états de tra
 
 Le « pick one of N » réutilisable. État dans [`inline-question.js`](../../src/inline-question.js), rendu par `renderPicker()` dans [`_analyse-common.js`](../../src/screens/_analyse-common.js) sous le chrome `session__assistant--wizard`. Modes : rows numérotées, `variant:"cards"`, `multi`, `single`, `stepper`, free-text, file. **Le CTA submit est bleu** (pas l'orange AI) — mémoire _quickpicker-primary-is-blue_ + _quickpicker-secondary-button-tiers_. Contrôles = vrai radio DS, fade-to-bg gris — mémoire _ds-controls-and-fade-bg_.
 
+### Références inline dans les messages d'Archie
+
+La seule façon de nommer un objet dans un message d'Archie : un jeton `[[post|idea|source:id]]` dans le texte, transformé par `renderRefs()` (`src/chat-refs.js`) en `<button class="chat-ref" data-chat-ref="kind:id">`. Pas de pill, pas de guillemets, pas de `**gras**`, pas de « #N ». `.chat-ref` (`styles/chat.css`) : inline (pas `.ap-link`, qui est `inline-flex` et casse le retour à la ligne), bleu lien, souligné **pointillé** au repos, plein au survol. La preview (`.chat-ref-preview`, montée sur `<body>` comme `tooltip.js`) réutilise le renderer du panneau — `renderPostCard` dans `.posts__feed-preview`, `renderCompactIdeaCard`, `renderSourceCard` — en `inert`. Un nouveau type d'objet = une entrée dans `resolveRef` / `refLabel` + un attribut dans `FOCUS_ATTR` (`right-panel.js`).
+
 ### Panneau de droite
 
 `.app-right-panel` (blanc, `border-left`), `__resize` (strip 6px, electric-blue au hover, largeur calculée par formule — non persistée, l'ancienne clé `archie-rpanel-width` est wipée au boot), `__close`, `__body` (`container-type: inline-size`), `__empty*`.

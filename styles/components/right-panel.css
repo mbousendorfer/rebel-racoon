@@ -1059,3 +1059,9 @@
   font-weight: var(--sys-text-style-caption-weight);
   padding: var(--ref-spacing-xxs) 0 var(--ref-spacing-xxs);
 }
+
+/* Pulse when a source is opened from an inline reference in chat (focusInPanel). */
+.rpanel-sources__row.is-focused {
+  animation: app-focus-pulse 1.6s ease;
+  border-color: var(--ref-color-electric-blue-100);
+}

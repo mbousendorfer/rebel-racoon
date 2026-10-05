@@ -833,3 +833,62 @@ span.chat-bubble-choice-chip {
   font-weight: var(--sys-text-style-caption-bold-weight);
   color: var(--ref-color-grey-100);
 }
+
+/* Inline reference in Archie's message (chat-refs.js) — the one way Archie names
+   a draft, an idea or a source. A link (blue = interactive): it opens the object
+   in the right panel; hovering previews it (.chat-ref-preview). Inline, not the
+   DS .ap-link (inline-flex), so a long label wraps with the sentence. */
+.chat-ref {
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--ref-color-electric-blue-150); /* = --comp-link-default-color */
+  /* Dotted at rest — reads as "there's more behind this word" without turning
+     the sentence into a row of links; solid on hover, where the click lands. */
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.chat-ref:hover {
+  color: var(--ref-color-electric-blue-80); /* = --comp-link-hover-color */
+  text-decoration-style: solid;
+}
+
+.chat-ref:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: 2px;
+  border-radius: var(--app-radius-sm);
+}
+
+/* The preview card — mounted on <body> by ref-preview.js, inert. */
+.chat-ref-preview {
+  position: absolute;
+  z-index: 1000;
+  width: 440px;
+  max-width: calc(100vw - 16px);
+  pointer-events: none;
+}
+
+.chat-ref-preview--idea,
+.chat-ref-preview--source {
+  width: 320px;
+}
+
+.chat-ref-preview > * {
+  box-shadow: var(--app-shadow-popover-md);
+}
+
+/* A glance, not the full card: the draft's media is capped so the preview never
+   outgrows the thread it floats over. */
+.chat-ref-preview .posts__card-image-wrap {
+  max-height: 180px;
+  overflow: hidden;
+}
+
+.chat-ref-preview .posts__card-image {
+  height: 180px;
+  object-fit: cover;
+}

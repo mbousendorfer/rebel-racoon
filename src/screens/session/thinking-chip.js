@@ -8,8 +8,8 @@
 //   updateLoadingWatchdog(sessionId) — call after every thread change
 //   stopThinkingTimer()              — call on session unmount
 
-import { getThread } from "../../assistant.js?v=1510";
-import { showToast } from "../../components/toast.js?v=1510";
+import { getThread } from "../../assistant.js?v=1512";
+import { showToast } from "../../components/toast.js?v=1512";
 
 const THINKING_TIMEOUT_MS = 30000;
 const timedOutMessageIds = new Set();
