@@ -9,11 +9,16 @@
 // the fiche's live data object, exactly like every other Brand row, and are
 // committed by the section's Save (snapshotEditable carries the fields).
 
-import { escapeHtml as esc } from "./utils.js?v=1532";
-import { isFlagOn } from "./feature-flags.js?v=1532";
-import { COLOR_ROLES, LOGO_VARIANTS, getContextById } from "./contexts-store.js?v=1532";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1532";
-import { handlePlaybookStylesClick, renderPlaybookStyles, shapesFor } from "./modules/image-studio/index.js?v=1532";
+import { escapeHtml as esc } from "./utils.js?v=1535";
+import { isFlagOn } from "./feature-flags.js?v=1535";
+import { COLOR_ROLES, LOGO_VARIANTS, getContextById } from "./contexts-store.js?v=1535";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1535";
+import {
+  handlePlaybookStylesClick,
+  renderPlaybookReferences,
+  renderPlaybookStyles,
+  shapesFor,
+} from "./modules/image-studio/index.js?v=1535";
 
 const KIT_FLAG = "sexySquirrel";
 
@@ -244,21 +249,11 @@ export function handleKitClick(event, data) {
     if (kind === "role" && data.brandColors?.[i]) data.brandColors[i].role = value;
     else if (kind === "variant" && data.brandLogos?.[i]) data.brandLogos[i].variant = value;
     else if (kind === "pair") pendingPair[i] = value;
-    else if (kind === "imagery-style") imagery(data).styleId = value;
     else if (kind === "imagery-format") {
-      const f = imagery(data).formatByNetwork;
       const net = pick.dataset.recapKitIndex;
-      if (value) f[net] = value;
-      else delete f[net];
+      if (value) formats(data)[net] = value;
+      else delete formats(data)[net];
     }
-    return true;
-  }
-  if (event.target.closest("[data-recap-imagery-ref-add]")) {
-    event.target.closest("[data-recap-imagery-ref]")?.querySelector("[data-recap-imagery-ref-input]")?.click();
-    return false; // nothing changed yet — no repaint, or the input would be gone
-  }
-  if (event.target.closest("[data-recap-imagery-ref-remove]")) {
-    imagery(data).referenceUrl = "";
     return true;
   }
   const lineAdd = event.target.closest("[data-recap-kit-line-add]");
@@ -308,28 +303,8 @@ export function handleKitInput(event, data) {
   return false;
 }
 
-/** `repaint` is for the async upload: the image lands after the change event. */
-export function handleKitChange(event, data, repaint = () => {}) {
+export function handleKitChange(event, data) {
   const t = event.target;
-  if (t.matches("[data-recap-imagery-look]")) {
-    const d = imagery(data);
-    d.look = t.value;
-    if (d.look === "style" && !d.styleId) d.styleId = brandStyles(data)[0]?.id || "";
-    repaint();
-    return true;
-  }
-  if (t.matches("[data-recap-imagery-ref-input]")) {
-    const file = [...(t.files || [])].find((f) => f.type.startsWith("image/"));
-    t.value = "";
-    if (!file) return true;
-    const reader = new FileReader();
-    reader.onload = () => {
-      imagery(data).referenceUrl = reader.result;
-      repaint();
-    };
-    reader.readAsDataURL(file);
-    return true;
-  }
   if (t.matches("[data-recap-kit-toggle]")) {
     rules(data)[t.dataset.recapKitToggle] = t.checked;
     return true;
@@ -351,136 +326,61 @@ export function handleImageStylesClick(event, data, onChange) {
   return handlePlaybookStylesClick(event, data.id, { onChange });
 }
 
-// ── Imagery defaults: one default look + a shape per network ─────────────
-// `imageryDefaults` (contexts-store.js#normalizeImageryDefaults). The look is
-// EITHER one of the brand's styles OR one reference image uploaded here; the
-// Image Generator starts from it. The format is a shape per network, "" =
-// automatic (the network's first shape).
+// ── Imagery › Default format: a preferred shape per network ──────────────
+// `formatByNetwork` (contexts-store.js#normalizeImageryDefaults), "" =
+// automatic (the network's first shape). The default LOOK is not here: it is
+// set on a style or reference image card, live (modules/image-studio).
 
 const IMAGERY_NETWORKS = ["linkedin", "instagram", "facebook", "x"];
 // The generator's network ids → Archie's, for the icon and label.
 const ARCHIE_NETWORK = { linkedin: "linkedin", instagram: "instagram", facebook: "facebook", x: "twitter" };
-const LOOK_OPTIONS = [
-  { value: "", title: "No default", body: "I'll start from the brand's first style." },
-  { value: "style", title: "One of the brand's styles", body: "Every new image starts in it." },
-  { value: "reference", title: "A reference image", body: "New images take after its look." },
-];
 
-function imagery(data) {
-  const d = data.imageryDefaults && typeof data.imageryDefaults === "object" ? data.imageryDefaults : {};
-  data.imageryDefaults = {
-    look: d.look || "",
-    styleId: d.styleId || "",
-    referenceUrl: d.referenceUrl || "",
-    formatByNetwork: { ...(d.formatByNetwork || {}) },
-  };
-  return data.imageryDefaults;
+function formats(data) {
+  data.formatByNetwork = data.formatByNetwork && typeof data.formatByNetwork === "object" ? data.formatByNetwork : {};
+  return data.formatByNetwork;
 }
 
-// The styles live on the store's Playbook (the creator writes them outside edit mode).
-const brandStyles = (data) => getContextById(data.id)?.imageStyles || data.imageStyles || [];
+const netLabel = (n) => NETWORK_LABEL[ARCHIE_NETWORK[n]] || n;
+const netName = (n) =>
+  `<i class="${NETWORK_ICON_BY_PLATFORM[ARCHIE_NETWORK[n]]}" aria-hidden="true"></i> ${esc(netLabel(n))}`;
 
-function netLabel(n) {
-  return NETWORK_LABEL[ARCHIE_NETWORK[n]] || n;
+function shapeLabels(network) {
+  return Object.fromEntries(shapesFor(network).map((sh) => [sh.id, `${sh.label} ${sh.ratio}`]));
 }
 
-function shapeLabel(network, shapeId) {
-  const shape = shapesFor(network).find((s) => s.id === shapeId);
-  return shape ? `${shape.label} ${shape.ratio}` : "";
-}
-
-function renderLookEdit(data) {
-  const d = imagery(data);
-  const styles = brandStyles(data);
-  const cards = LOOK_OPTIONS.map(
-    (o) => `
-    <label class="ap-radio-card card recap__imagery-look">
-      <input type="radio" name="recap-imagery-look" value="${o.value}" data-recap-imagery-look${d.look === o.value ? " checked" : ""}${
-        o.value === "style" && !styles.length ? " disabled" : ""
-      } />
-      <div>
-        <span class="ap-radio-card-title">${esc(o.title)}</span>
-        <span>${esc(o.value === "style" && !styles.length ? "Create a style first." : o.body)}</span>
-      </div>
-    </label>`,
-  ).join("");
-  let detail = "";
-  if (d.look === "style" && styles.length) {
-    const labels = Object.fromEntries(styles.map((st) => [st.id, st.label]));
-    detail = dsSelect({
-      kind: "imagery-style",
-      index: 0,
-      value: labels[d.styleId] ? d.styleId : "",
-      labels,
-      options: styles.map((st) => st.id),
-      placeholder: "Choose a style",
-      ariaLabel: "Default style",
-    });
-  } else if (d.look === "reference") {
-    detail = d.referenceUrl
-      ? `<div class="recap__imagery-ref">
-          <img src="${esc(d.referenceUrl)}" alt="Default reference image" />
-          <span class="recap__imagery-ref-actions">
-            <button type="button" class="ap-button stroked grey" data-recap-imagery-ref-add><i class="ap-icon-refresh"></i><span>Replace</span></button>
-            <button type="button" class="ap-button transparent grey" data-recap-imagery-ref-remove><i class="ap-icon-trash"></i><span>Remove</span></button>
-          </span>
-        </div>`
-      : `<button type="button" class="ap-button secondary blue" data-recap-imagery-ref-add><i class="ap-icon-plus"></i><span>Add reference image</span></button>`;
-    detail = `<div data-recap-imagery-ref>${detail}<input type="file" accept="image/*" hidden data-recap-imagery-ref-input /></div>`;
-  }
-  return `<div class="recap__imagery-looks" role="radiogroup" aria-label="Default look">${cards}</div>${detail}`;
-}
-
-function renderLookRead(data) {
-  const d = imagery(data);
-  const style = d.look === "style" ? brandStyles(data).find((st) => st.id === d.styleId) : null;
-  if (style) return `<p class="ap-body">${esc(style.label)}, one of the brand's styles.</p>`;
-  if (d.look === "reference" && d.referenceUrl)
-    return `<div class="recap__imagery-ref"><img src="${esc(d.referenceUrl)}" alt="Default reference image" /></div>`;
-  return `<p class="ap-body">No default — I'll start from the brand's first style.</p>`;
-}
-
-function renderFormatsEdit(data) {
-  const d = imagery(data);
-  return `<dl class="pb2-facts recap__imagery-formats">${IMAGERY_NETWORKS.map((n) => {
-    const shapes = shapesFor(n);
-    const labels = { "": "Automatic", ...Object.fromEntries(shapes.map((sh) => [sh.id, `${sh.label} ${sh.ratio}`])) };
-    const value = labels[d.formatByNetwork[n]] ? d.formatByNetwork[n] : "";
-    return `<div><dt><i class="${NETWORK_ICON_BY_PLATFORM[ARCHIE_NETWORK[n]]}" aria-hidden="true"></i> ${esc(netLabel(n))}</dt><dd>${dsSelect(
-      {
-        kind: "imagery-format",
-        index: n,
-        value,
-        labels,
-        options: ["", ...shapes.map((sh) => sh.id)],
-        placeholder: "Automatic",
-        ariaLabel: `Default format on ${netLabel(n)}`,
-      },
-    )}</dd></div>`;
-  }).join("")}</dl>`;
-}
-
-function renderFormatsRead(data) {
-  const d = imagery(data);
-  return `<dl class="pb2-facts recap__imagery-formats">${IMAGERY_NETWORKS.map(
-    (n) =>
-      `<div><dt><i class="${NETWORK_ICON_BY_PLATFORM[ARCHIE_NETWORK[n]]}" aria-hidden="true"></i> ${esc(netLabel(n))}</dt><dd>${esc(
-        shapeLabel(n, d.formatByNetwork[n]) || "Automatic",
-      )}</dd></div>`,
-  ).join("")}</dl>`;
-}
-
-/** The Imagery block's two default rows (flag sexySquirrel). */
-export function renderImageryDefaults(data, edit) {
+/** The Imagery block's Default format row (flag sexySquirrel). */
+export function renderImageFormats(data, edit) {
   if (!kitEnabled()) return "";
-  return `<div><span class="pb2-sub">Default look</span>${edit ? renderLookEdit(data) : renderLookRead(data)}</div>
-    <div><span class="pb2-sub">Default format</span>${edit ? renderFormatsEdit(data) : renderFormatsRead(data)}</div>`;
+  const f = formats(data);
+  const rows = IMAGERY_NETWORKS.map((n) => {
+    const labels = { "": "Automatic", ...shapeLabels(n) };
+    const value = labels[f[n]] ? f[n] : "";
+    const dd = edit
+      ? dsSelect({
+          kind: "imagery-format",
+          index: n,
+          value,
+          labels,
+          options: Object.keys(labels),
+          placeholder: "Automatic",
+          ariaLabel: `Default format on ${netLabel(n)}`,
+        })
+      : esc(labels[value]);
+    return `<div><dt>${netName(n)}</dt><dd>${dd}</dd></div>`;
+  }).join("");
+  return `<div><span class="pb2-sub">Default format</span><dl class="pb2-facts recap__imagery-formats">${rows}</dl></div>`;
+}
+
+/** The brand's reference images, beside its styles and built the same way. */
+export function renderImageReferences(data, canEdit) {
+  if (!kitEnabled() || !data?.id || !getContextById(data.id)) return "";
+  return renderPlaybookReferences(data.id, { canEdit });
 }
 
 /** Fields the fiche's snapshot must carry so Cancel restores them. */
 export function kitSnapshot(d) {
   return {
-    imageryDefaults: structuredClone(d.imageryDefaults || {}),
+    formatByNetwork: { ...(d.formatByNetwork || {}) },
     brandMoods: d.brandMoods || [],
     voiceAvoid: d.voiceAvoid || [],
     brandRules: d.brandRules || null,

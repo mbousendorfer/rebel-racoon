@@ -3,9 +3,11 @@
 // view every generator surface uses, resolves which Playbook is active, and
 // knows the two doors back into Archie (the Playbook page, Playbook creation).
 //
-// The generator writes a Playbook in ONE case only: the style creator
-// (/playbook/:id/styles/*), opened from the fiche's Brand section, saving the
-// brand's own image styles (`imageStyles`). That is a deliberate edit, the only
+// The generator writes a Playbook only from the fiche's Brand section: the
+// style creator (/playbook/:id/styles/*) saving the brand's image styles
+// (`imageStyles`), and the Imagery rows beside them — the reference images
+// (`referenceImages`) and which of either is the default (`defaultLook`).
+// Each is a deliberate edit, the only
 // way a Playbook may change (CONCEPTS §1); the rest of the kit is edited on the
 // Playbook page itself (src/playbook-brand-kit.js). Sub-brands don't exist: a variant
 // is a duplicated Playbook (docs/reference/CONCEPTS.md §1).
@@ -15,16 +17,16 @@ import {
   getContexts,
   subscribe as subscribeContexts,
   updateContext,
-} from "../../../contexts-store.js?v=1532";
-import { createStyle } from "../model/schema.js?v=1532";
-import { canEdit, usableContexts } from "../../../playbook-access.js?v=1532";
+} from "../../../contexts-store.js?v=1535";
+import { createStyle } from "../model/schema.js?v=1535";
+import { canEdit, usableContexts } from "../../../playbook-access.js?v=1535";
 import {
   getActivePlaybookId,
   isWorkspaceMode,
   playbookForNewWork,
   subscribe as subscribeActive,
-} from "../../../active-playbook.js?v=1532";
-import { storageService as storage } from "../services/index.js?v=1532";
+} from "../../../active-playbook.js?v=1535";
+import { storageService as storage } from "../services/index.js?v=1535";
 
 // Which copy archetype the mocked copyService uses — guessed from the Playbook's words.
 function sectorKeyOf(ctx) {
@@ -35,12 +37,13 @@ function sectorKeyOf(ctx) {
 }
 
 function imageryDefaultsOf(ctx) {
-  const d = ctx.imageryDefaults || {};
-  const style = d.look === "style" && (ctx.imageStyles || []).find((st) => st.id === d.styleId);
+  const d = ctx.defaultLook || {};
+  const style = d.kind === "style" && (ctx.imageStyles || []).find((st) => st.id === d.id);
+  const ref = d.kind === "reference" && (ctx.referenceImages || []).find((r) => r.id === d.id);
   return {
     styleId: style ? style.id : "",
-    referenceUrl: d.look === "reference" ? d.referenceUrl || "" : "",
-    formatByNetwork: { ...(d.formatByNetwork || {}) },
+    referenceUrl: ref ? ref.url : "",
+    formatByNetwork: { ...(ctx.formatByNetwork || {}) },
   };
 }
 
@@ -71,8 +74,8 @@ function toBrand(ctx) {
     defaults: imageryDefaultsOf(ctx),
     imageStyle: {
       moods: (ctx.brandMoods || []).slice(),
-      // Not `imageDefaults` nor the loose `referenceImages`: both serve the old
-      // Image Studio. The brand's look is its own styles (imageStyles).
+      // Not `imageDefaults`: it serves the old Image Studio. The brand's look is
+      // its styles (imageStyles) and its reference images, `defaults` above.
     },
     voice: {
       tone: [vp.headline, ...(ctx.tones || [])].filter(Boolean).join(" · "),
@@ -163,6 +166,48 @@ export function deletePlaybookStyle(id, styleId) {
   if (!ctx || !canEdit(ctx)) return false;
   updateContext(id, { imageStyles: (ctx.imageStyles || []).filter((s) => s.id !== styleId), updatedAt: "just now" });
   return true;
+}
+
+// ── The brand's reference images and its default look ───────────────────────
+// Brand › Imagery shows the reference images beside the styles, the same way
+// and as live: added and removed from their own row, outside the section's
+// edit mode. One of either may be the brand's default look (`defaultLook`).
+
+export function getPlaybookReferences(id) {
+  return (getContextById(id)?.referenceImages || []).map((r) => ({ id: r.id, label: r.label || "", url: r.url }));
+}
+
+/** Adds images (data URLs) to the Playbook's reference images. */
+export function addPlaybookReferences(id, images) {
+  const ctx = getContextById(id);
+  if (!ctx || !canEdit(ctx) || !images.length) return false;
+  const added = images.map((img, i) => ({
+    id: `ref-${Date.now().toString(36)}-${i}`,
+    label: img.label,
+    url: img.url,
+    networks: [],
+  }));
+  updateContext(id, { referenceImages: [...(ctx.referenceImages || []), ...added], updatedAt: "just now" });
+  return true;
+}
+
+export function deletePlaybookReference(id, refId) {
+  const ctx = getContextById(id);
+  if (!ctx || !canEdit(ctx)) return false;
+  updateContext(id, {
+    referenceImages: (ctx.referenceImages || []).filter((r) => r.id !== refId),
+    updatedAt: "just now",
+  });
+  return true;
+}
+
+/** Makes a style or a reference image the default look — or, if it already is, none. */
+export function togglePlaybookDefaultLook(id, kind, itemId) {
+  const ctx = getContextById(id);
+  if (!ctx || !canEdit(ctx)) return false;
+  const on = ctx.defaultLook?.kind === kind && ctx.defaultLook?.id === itemId;
+  updateContext(id, { defaultLook: on ? { kind: "", id: "" } : { kind, id: itemId }, updatedAt: "just now" });
+  return !on;
 }
 
 /** Repaint when a Playbook changes or the active one does. */

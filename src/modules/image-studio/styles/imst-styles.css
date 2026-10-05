@@ -321,6 +321,16 @@ button.imst-style-card {
   flex-shrink: 0;
 }
 
+/* The star of the brand's default look (a style or a reference image): an
+ * on/off toggle, blue when on — the interactive colour, on the control itself. */
+.imst-pbstyle__actions .is-default > i {
+  background-color: var(--ref-color-electric-blue-100);
+}
+
+.imst-style-card__meta .ap-tag {
+  margin-right: var(--ref-spacing-xxs);
+}
+
 /* In the studio's column: the form alone, no test run beside it, and no card
  * inside the column — the groups are plain stacks, set apart by space. */
 .imst-creator--embed {
