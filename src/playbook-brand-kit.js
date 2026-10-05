@@ -9,17 +9,17 @@
 // the fiche's live data object, exactly like every other Brand row, and are
 // committed by the section's Save (snapshotEditable carries the fields).
 
-import { escapeHtml as esc } from "./utils.js?v=1539";
-import { isFlagOn } from "./feature-flags.js?v=1539";
-import { COLOR_ROLES, LOGO_VARIANTS, getContextById } from "./contexts-store.js?v=1539";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1539";
+import { escapeHtml as esc } from "./utils.js?v=1541";
+import { isFlagOn } from "./feature-flags.js?v=1541";
+import { COLOR_ROLES, LOGO_VARIANTS, getContextById } from "./contexts-store.js?v=1541";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1541";
 import {
+  handlePlaybookLookClick,
   handlePlaybookStylesClick,
-  renderDefaultLook,
-  renderPlaybookReferences,
+  renderPlaybookLook,
   renderPlaybookStyles,
   shapesFor,
-} from "./modules/image-studio/index.js?v=1539";
+} from "./modules/image-studio/index.js?v=1541";
 
 const KIT_FLAG = "sexySquirrel";
 
@@ -306,11 +306,6 @@ export function handleKitInput(event, data) {
 
 export function handleKitChange(event, data) {
   const t = event.target;
-  if (t.matches("[data-recap-imagery-look]")) {
-    const [kind = "", ...rest] = t.value.split(":");
-    data.defaultLook = { kind, id: rest.join(":") };
-    return true;
-  }
   if (t.matches("[data-recap-kit-toggle]")) {
     rules(data)[t.dataset.recapKitToggle] = t.checked;
     return true;
@@ -329,13 +324,14 @@ export function renderImageStyles(data, canEdit) {
 /** Always live, like Reference images: styles are managed outside the section's edit mode. */
 export function handleImageStylesClick(event, data, onChange) {
   if (!kitEnabled() || !data?.id) return false;
-  return handlePlaybookStylesClick(event, data.id, { onChange });
+  return (
+    handlePlaybookLookClick(event, data.id, { onChange }) || handlePlaybookStylesClick(event, data.id, { onChange })
+  );
 }
 
 // ── Imagery › Default format: a preferred shape per network ──────────────
 // `formatByNetwork` (contexts-store.js#normalizeImageryDefaults), "" =
-// automatic (the network's first shape). The look's grid is the Image
-// Generator's (renderDefaultLook), it only reads the module's styles and images.
+// automatic (the network's first shape).
 
 const IMAGERY_NETWORKS = ["linkedin", "instagram", "facebook", "x"];
 // The generator's network ids → Archie's, for the icon and label.
@@ -378,29 +374,22 @@ function renderImageFormats(data, edit) {
 }
 
 /**
- * The "Generate image" block: the combination a draft's Generate image applies
- * without asking — ONE look (a style or a reference image) + a shape per
- * network. Edited with the section, so `defaultLook` is in the snapshot.
+ * The "Generate image" block: what a draft's Generate image applies without
+ * asking — the brand's LOOK (a style or a reference image, live: its own
+ * dialog saves it) + a shape per network (edited with the section).
  */
 export function renderGenerateDefaults(data, edit) {
   if (!kitEnabled() || !data?.id || !getContextById(data.id)) return "";
-  const look = renderDefaultLook(data.id, { edit, look: data.defaultLook || {} });
-  // What the block is for, said where it applies — it is why the look is one choice.
-  const lead = `<p class="ap-body recap__generate-lead">When you click <strong>Generate image</strong> on a draft, I make it right away with this look and format — no questions about style or shape.</p>`;
+  // What the block is for, said where it applies.
+  const lead = `<p class="ap-body recap__generate-lead">When you click <strong>Generate image</strong> on a draft, I make it right away in this look and format.</p>`;
+  const look = renderPlaybookLook(data.id);
   return `${lead}<div><span class="pb2-sub">Look</span>${look}</div>${renderImageFormats(data, edit)}`;
-}
-
-/** The brand's reference images, beside its styles and built the same way. */
-export function renderImageReferences(data, canEdit) {
-  if (!kitEnabled() || !data?.id || !getContextById(data.id)) return "";
-  return renderPlaybookReferences(data.id, { canEdit });
 }
 
 /** Fields the fiche's snapshot must carry so Cancel restores them. */
 export function kitSnapshot(d) {
   return {
     formatByNetwork: { ...(d.formatByNetwork || {}) },
-    defaultLook: { ...(d.defaultLook || {}) },
     voiceAvoid: d.voiceAvoid || [],
     brandRules: d.brandRules || null,
   };

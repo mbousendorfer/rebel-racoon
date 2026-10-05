@@ -14,7 +14,7 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1539";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1541";
 import {
   kitEnabled,
   renderColorRole,
@@ -28,12 +28,11 @@ import {
   handleKitChange,
   kitSnapshot,
   renderGenerateDefaults,
-  renderImageReferences,
-} from "./playbook-brand-kit.js?v=1539";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1539";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1539";
-import { isFlagOn } from "./feature-flags.js?v=1539";
-import { parseHashParams } from "./url-state.js?v=1539";
+} from "./playbook-brand-kit.js?v=1541";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1541";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1541";
+import { isFlagOn } from "./feature-flags.js?v=1541";
+import { parseHashParams } from "./url-state.js?v=1541";
 import {
   networkVoicesOn,
   baseNetwork,
@@ -43,21 +42,21 @@ import {
   maturity,
   networkLabel,
   networkIcon,
-} from "./network-voice.js?v=1539";
+} from "./network-voice.js?v=1541";
 import {
   getSuggestions,
   accept as acceptVoiceSuggestion,
   dismiss as dismissVoiceSuggestion,
-} from "./voice-coach-store.js?v=1539";
-import { NETWORKS } from "./social-profiles.js?v=1539";
-import { showToast } from "./components/toast.js?v=1539";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1539";
+} from "./voice-coach-store.js?v=1541";
+import { NETWORKS } from "./social-profiles.js?v=1541";
+import { showToast } from "./components/toast.js?v=1541";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1541";
 // The Default look row offers the SAME three catalogues the Image Studio renders, from
 // the one place they are declared — REF_MODES' own header makes the argument: the label,
 // the hint and the brief clause "drift the moment they live apart". No cycle: the engine
 // imports only clip-formats / image-studio-canvas / feature-flags, and its module body
 // builds consts, so importing it here costs nothing at load.
-import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1539";
+import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1541";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2512,19 +2511,11 @@ function renderBrandEdit2(data) {
     ),
   ];
   if (kitEnabled()) {
-    const styles = renderImageStyles(data, canEditView());
-    const refs = renderImageReferences(data, canEditView());
     blocks.push(
-      pb2Block(
-        "Imagery",
-        `${styles ? `<div><span class="pb2-sub">Image styles</span>${styles}</div>` : ""}
-         ${refs ? `<div><span class="pb2-sub">Reference images</span>${refs}</div>` : ""}`,
-        { wide: true, index: 4, icon: "ap-icon-image" },
-      ),
       pb2Block("Generate image", renderGenerateDefaults(data, true), {
         wide: true,
-        index: 5,
-        icon: "ap-icon-sparkles",
+        index: 4,
+        icon: "ap-icon-image",
       }),
       pb2Block("Visual rules", renderVisualRules(data, true), { wide: true, index: 6 }),
     );
@@ -2998,19 +2989,11 @@ function renderBrandRead2(data) {
     ),
   ];
   if (kitEnabled()) {
-    const styles = renderImageStyles(data, canEditView());
-    const refs = renderImageReferences(data, canEditView());
     blocks.push(
-      pb2Block(
-        "Imagery",
-        `${styles ? `<div><span class="pb2-sub">Image styles</span>${styles}</div>` : ""}
-         ${refs ? `<div><span class="pb2-sub">Reference images</span>${refs}</div>` : ""}`,
-        { wide: true, index: 4, icon: "ap-icon-image" },
-      ),
       pb2Block("Generate image", renderGenerateDefaults(data, false), {
         wide: true,
-        index: 5,
-        icon: "ap-icon-sparkles",
+        index: 4,
+        icon: "ap-icon-image",
       }),
       pb2Block(
         "Visual rules",
