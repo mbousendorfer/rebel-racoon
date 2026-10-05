@@ -117,7 +117,13 @@ export const threadsBySession = {
     {
       role: "assistant",
       meta: "Archie",
-      text: "I drafted 4 posts grounded in [[idea:idea-acme-1]]. Each is sized for its network and follows the Acme · Q2 marketing playbook. [[post:post-acme-1]] and [[post:post-acme-3]] are ready; [[post:post-acme-2]] is past LinkedIn's caption limit and [[post:post-acme-4]] has an image at the wrong dimensions.",
+      text: [
+        "I drafted 4 posts grounded in [[idea:idea-acme-1]], each sized for its network and following the Acme · Q2 marketing playbook:",
+        "- [[post:post-acme-1]], ready",
+        "- [[post:post-acme-3]], ready",
+        "- [[post:post-acme-2]], past LinkedIn's caption limit",
+        "- [[post:post-acme-4]], image at the wrong dimensions",
+      ].join("\n"),
     },
     {
       role: "assistant",
@@ -350,7 +356,11 @@ export const threadsBySession = {
     {
       role: "assistant",
       meta: "Archie",
-      text: "The strongest signal is [[idea:idea-sos-1]]: hard year-over-year delta, credible source. I drafted 2 posts: [[post:post-sos-1]], long-form for LinkedIn, and [[post:post-sos-2]], scheduled mid-week for the founder account.",
+      text: [
+        "The strongest signal is [[idea:idea-sos-1]]: hard year-over-year delta, credible source. I drafted 2 posts:",
+        "- [[post:post-sos-1]], long-form for LinkedIn",
+        "- [[post:post-sos-2]], scheduled mid-week for the founder account",
+      ].join("\n"),
     },
     {
       role: "assistant",

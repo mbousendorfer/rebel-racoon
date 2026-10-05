@@ -6,7 +6,7 @@
 // and returns an HTML string. No store reads, no DOM, no side effects: the
 // store-coupled turns (extraction / clip-extraction / source resolution) stay
 // in session.js and pass their resolved data in as arguments.
-import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=1512";
+import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=1514";
 
 // Chat-switch skeleton — shown for ~340ms inside .session__assistant-thread
 // when switching chats, then swapped for the real thread.
@@ -34,7 +34,7 @@ export function renderMessageBubble(message) {
     <div class="chat-turn ${turnClass}">
       ${header}
       <div class="chat-bubble ${bubbleClass}${loadingClass}">
-        <p class="chat-bubble-text">${message.text}</p>
+        <div class="chat-bubble-text">${message.text}</div>
       </div>
     </div>
   `;

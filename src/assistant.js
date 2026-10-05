@@ -6,11 +6,11 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1512";
-import { findConnector } from "./connectors-store.js?v=1512";
-import { createSessionNotifier } from "./store-utils.js?v=1512";
-import { addPostDraft } from "./posts-store.js?v=1512";
-import { showToast } from "./components/toast.js?v=1512";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1514";
+import { findConnector } from "./connectors-store.js?v=1514";
+import { createSessionNotifier } from "./store-utils.js?v=1514";
+import { addPostDraft } from "./posts-store.js?v=1514";
+import { showToast } from "./components/toast.js?v=1514";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -811,15 +811,6 @@ function mockConnectorReply(connector, prompt) {
   return { reasoning, text: body + sourcesBlock };
 }
 
-// "[[post:a]], [[post:b]] and 3 more" — names the first drafts of a batch
-// without turning the sentence into a list.
-function refList(posts, shown = 2) {
-  const refs = posts.slice(0, shown).map((p) => `[[post:${p.id}]]`);
-  const rest = posts.length - refs.length;
-  if (rest > 0) return `${refs.join(", ")} and ${rest} more`;
-  return refs.length > 1 ? `${refs.slice(0, -1).join(", ")} and ${refs.at(-1)}` : refs[0] || "";
-}
-
 // Scripted mock replies. Ported from the old prototype (src/mock-generators.js),
 // extended to return a { text, reasoning } pair — `reasoning` is shown in the
 // mermaid-accented "Drafting" collapsible above the answer.
@@ -865,12 +856,13 @@ function mockAiReply({ prompt, sessionId }) {
     const batch = (isLaunch ? launchBatch(leadIdea) : defaultBatch(leadIdea)).map((d) =>
       addPostDraft(sessionId, { network: d.network, text: d.text }),
     );
-    const named = refList(batch);
+    // One draft per line — a batch reads as a list, not a sentence.
+    const named = batch.map((d) => `\n- [[post:${d.id}]]`).join("");
     return {
       reasoning: `Scanned ${ideaCount} extracted ideas, ranked by confidence and relevance. "${leadIdea.title}" came out on top (${leadIdea.confidence}% confidence) — composing a ${batch.length}-post batch grounded in its source.`,
       text: isLaunch
-        ? `Here's a ${batch.length}-day sequence built from ${lead}, one post per day across networks: ${named}. Open the Drafts panel to review and schedule.`
-        : `I drafted ${batch.length} posts grounded in ${lead}: ${named}. Each is sized for its network and follows the active playbook's tone rules.`,
+        ? `Here's a ${batch.length}-day sequence built from ${lead}, one post per day across networks:${named}\nOpen the Drafts panel to review and schedule.`
+        : `I drafted ${batch.length} posts grounded in ${lead}, each sized for its network and following the active playbook's tone rules:${named}`,
       batch,
     };
   }

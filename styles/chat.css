@@ -892,3 +892,25 @@ span.chat-bubble-choice-chip {
   height: 180px;
   object-fit: cover;
 }
+
+/* A message that lists drafts (or ideas, sources) one per line — chat-refs.js
+   turns "- …" lines into this list, the running text around it into <p>. */
+.chat-bubble-text > p {
+  margin: 0;
+}
+
+.chat-bubble-text > p + p,
+.chat-bubble-text > p + .chat-bubble-list,
+.chat-bubble-text > .chat-bubble-list + p {
+  margin-top: var(--ref-spacing-xs);
+}
+
+.chat-bubble-list {
+  margin: 0;
+  padding-left: var(--ref-spacing-md);
+  list-style: disc;
+}
+
+.chat-bubble-list > li + li {
+  margin-top: var(--ref-spacing-xxs);
+}

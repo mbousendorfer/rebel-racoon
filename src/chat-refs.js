@@ -9,10 +9,10 @@
 // inline button (`.chat-ref`): hover previews the object (ref-preview.js),
 // click opens it in the right panel (session.js → focusInPanel).
 
-import { getPosts } from "./posts-store.js?v=1512";
-import { getIdeas, getSources } from "./library.js?v=1512";
-import { networkLabel } from "./network-voice.js?v=1512";
-import { escapeHtml, escapeAttr } from "./utils.js?v=1512";
+import { getPosts } from "./posts-store.js?v=1514";
+import { getIdeas, getSources } from "./library.js?v=1514";
+import { networkLabel } from "./network-voice.js?v=1514";
+import { escapeHtml, escapeAttr } from "./utils.js?v=1514";
 
 const TOKEN = /\[\[(post|idea|source):([^\]\s]+)\]\]/g;
 const GONE = { post: "a deleted draft", idea: "a deleted idea", source: "a deleted source" };
@@ -45,8 +45,31 @@ export function refLabel(kind, obj) {
   return plain(obj.filename || obj.title || obj.name) || "Source";
 }
 
+// A message may list objects one per line — "- [[post:a]], ready" — and those
+// lines become a bulleted list; everything else stays running text.
+function renderLines(text) {
+  if (!text.includes("\n")) return text;
+  const out = [];
+  let items = [];
+  const flush = () => {
+    if (items.length) out.push(`<ul class="chat-bubble-list">${items.map((i) => `<li>${i}</li>`).join("")}</ul>`);
+    items = [];
+  };
+  for (const line of text.split("\n")) {
+    if (line.startsWith("- ")) items.push(line.slice(2));
+    else {
+      flush();
+      if (line.trim()) out.push(`<p>${line}</p>`);
+    }
+  }
+  flush();
+  return out.join("");
+}
+
 export function renderRefs(text, sessionId) {
-  if (typeof text !== "string" || !text.includes("[[")) return text;
+  if (typeof text !== "string") return text;
+  text = renderLines(text);
+  if (!text.includes("[[")) return text;
   return text.replace(TOKEN, (_, kind, id) => {
     const obj = resolveRef(kind, id, sessionId);
     if (!obj) return GONE[kind];
