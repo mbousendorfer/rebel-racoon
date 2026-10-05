@@ -13,12 +13,12 @@
 //
 // Everything here saves as it changes, like the styles always did: no Edit.
 
-import { html, raw, toString } from "../lib/html.js?v=1549";
-import { navigate } from "../../../router.js?v=1549";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1549";
-import { toast } from "../ui/toast.js?v=1549";
-import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=1549";
-import { shapesFor } from "../config/formats.js?v=1549";
+import { html, raw, toString } from "../lib/html.js?v=1550";
+import { navigate } from "../../../router.js?v=1550";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=1550";
+import { toast } from "../ui/toast.js?v=1550";
+import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=1550";
+import { shapesFor } from "../config/formats.js?v=1550";
 import {
   addPlaybookReferences,
   deletePlaybookReference,
@@ -27,8 +27,8 @@ import {
   getPlaybookReferences,
   setPlaybookDefaultLook,
   setPlaybookFormat,
-} from "../state/playbook-brand.js?v=1549";
-import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=1549";
+} from "../state/playbook-brand.js?v=1550";
+import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=1550";
 
 const creatorPath = (playbookId, rest) => `/playbook/${encodeURIComponent(playbookId)}/styles/${rest}`;
 const ownStyles = (playbookId) => getStylesForBrand(playbookId).filter((s) => s.kind === "custom");
@@ -63,8 +63,8 @@ export function renderImagesStyles(playbookId, { canEdit = true } = {}) {
           A look I learn from a few of your images — light, colours, framing — and draw every new image in.
         </p>
         ${editable
-          ? html`<button type="button" class="ap-button primary orange" data-imst-images="new-style">
-              <i class="ap-icon-sparkles" aria-hidden="true"></i><span>Create a style</span>
+          ? html`<button type="button" class="ap-button primary blue" data-imst-images="new-style">
+              <i class="ap-icon-plus" aria-hidden="true"></i><span>Create a style</span>
             </button>`
           : ""}`,
       body: count

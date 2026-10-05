@@ -385,7 +385,7 @@ button.imst-style-card {
 
 /* In the tab, the style cards are a gallery, not posters. */
 .imst-images-section__body .imst-pbstyles__grid {
-  grid-template-columns: repeat(auto-fill, minmax(calc(var(--ref-spacing-xxxl) * 4.4), 1fr));
+  grid-template-columns: repeat(auto-fill, calc(var(--ref-spacing-xxxl) * 4));
 }
 
 .imst-images__lead {
