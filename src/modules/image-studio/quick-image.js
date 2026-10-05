@@ -4,15 +4,16 @@
 // the PNG export draws on, and the same engine as the studio — the Playbook's
 // styles, the network's shapes, the same renderer and services.
 
-import { QUICK_PRESETS } from "./config/style-presets.js?v=1536";
-import { DRAFT_NETWORK, formatById, shapesForBrand } from "./config/formats.js?v=1536";
-import { hashString } from "./lib/prng.js?v=1536";
-import { copyService, imageGenerationService } from "./services/index.js?v=1536";
-import { resolveLayers } from "./render/layout.js?v=1536";
-import { toPngBlob } from "./render/export.js?v=1536";
-import { styleThumbUrl } from "./ui/style-thumb.js?v=1536";
-import { layersFor, variationSvg } from "./ui/variation.js?v=1536";
-import { getBrand, getStyle, getStylesForBrand } from "./state/store.js?v=1536";
+import { QUICK_PRESETS } from "./config/style-presets.js?v=1539";
+import { DRAFT_NETWORK, formatById, shapesForBrand } from "./config/formats.js?v=1539";
+import { hashString } from "./lib/prng.js?v=1539";
+import { copyService, imageGenerationService } from "./services/index.js?v=1539";
+import { resolveLayers } from "./render/layout.js?v=1539";
+import { toPngBlob } from "./render/export.js?v=1539";
+import { styleThumbUrl } from "./ui/style-thumb.js?v=1539";
+import { layersFor, variationSvg } from "./ui/variation.js?v=1539";
+import { getBrand, getStyle, getStylesForBrand, registerOneOffStyle } from "./state/store.js?v=1539";
+import { oneOffStyleFrom } from "./state/style-actions.js?v=1539";
 
 const blobToDataUrl = (blob) =>
   new Promise((resolve, reject) => {
@@ -54,6 +55,46 @@ export function quickImageChoices({ brandId, network }) {
     h: s.h,
   }));
   return { brandName: brand.name, styles, shapes };
+}
+
+// One one-off per reference image, kept for the page's life: "Try another"
+// and the next draft reuse it instead of re-reading the image.
+// ponytail: never discarded (a few KB per image in storage); discard with the session if it matters.
+const referenceLooks = new Map(); // url → Promise<style>
+
+/**
+ * The Playbook's default look as a style "Generate image" can draw with — its
+ * default style, or a one-off read from its default reference image. `null`
+ * when the Playbook has none (the chat then asks), or the image can't be read.
+ * @returns {Promise<{ id: string, label: string } | null>}
+ */
+export async function defaultQuickLook(brandId) {
+  const brand = getBrand(brandId);
+  const d = brand?.defaults;
+  if (!d) return null;
+  if (d.styleId) {
+    const style = getStyle(d.styleId);
+    return style ? { id: style.id, label: style.label } : null;
+  }
+  if (!d.referenceUrl) return null;
+  if (!referenceLooks.has(d.referenceUrl))
+    referenceLooks.set(
+      d.referenceUrl,
+      fetch(d.referenceUrl)
+        .then((r) => r.blob())
+        .then((blob) => oneOffStyleFrom(brand.id, [new File([blob], "reference", { type: blob.type })]))
+        .then((style) => {
+          registerOneOffStyle(style);
+          return style;
+        }),
+    );
+  try {
+    const style = await referenceLooks.get(d.referenceUrl);
+    return { id: style.id, label: d.referenceLabel ? `the look of ${d.referenceLabel}` : "your reference image" };
+  } catch {
+    referenceLooks.delete(d.referenceUrl);
+    return null;
+  }
 }
 
 /** A line for the image, lifted from the post (the studio's Suggest). As slow as the real call. */

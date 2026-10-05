@@ -321,16 +321,6 @@ button.imst-style-card {
   flex-shrink: 0;
 }
 
-/* The star of the brand's default look (a style or a reference image): an
- * on/off toggle, blue when on — the interactive colour, on the control itself. */
-.imst-pbstyle__actions .is-default > i {
-  background-color: var(--ref-color-electric-blue-100);
-}
-
-.imst-style-card__meta .ap-tag {
-  margin-right: var(--ref-spacing-xxs);
-}
-
 /* In the studio's column: the form alone, no test run beside it, and no card
  * inside the column — the groups are plain stacks, set apart by space. */
 .imst-creator--embed {
@@ -369,4 +359,57 @@ button.imst-style-card {
   border: 0;
   background: none;
   cursor: pointer;
+}
+
+/* ── Brand › Generate image: the default look, one grid for both kinds ──── */
+.imst-look-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--ref-spacing-xxxl) * 2.6), 1fr));
+  gap: var(--ref-spacing-xs);
+}
+
+.imst-look-option__art {
+  display: block;
+  margin-bottom: var(--ref-spacing-xxs);
+  border-radius: var(--ref-border-radius-sm);
+  overflow: hidden;
+}
+
+/* "Ask me each time" has no picture: the same square, empty, so the row lines up. */
+.imst-look-option__art--ask {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  background: var(--ref-color-grey-05);
+  color: var(--ref-color-grey-80);
+  font-size: var(--ref-font-size-xl);
+}
+
+.imst-look-hint {
+  margin: var(--ref-spacing-xxs) 0 0;
+  color: var(--ref-color-grey-80);
+}
+
+.imst-look-chosen {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+}
+
+.imst-look-chosen__art {
+  width: calc(var(--ref-spacing-xxxl) * 1.6);
+  flex-shrink: 0;
+  border-radius: var(--ref-border-radius-md);
+  overflow: hidden;
+  border: 1px solid var(--ref-color-grey-20);
+}
+
+.imst-look-chosen__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.imst-look-chosen__text .ap-caption {
+  color: var(--ref-color-grey-80);
 }

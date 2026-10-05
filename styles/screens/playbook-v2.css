@@ -786,3 +786,8 @@
   border-top: 0;
   padding-top: var(--ref-spacing-xxs);
 }
+
+.recap__generate-lead {
+  margin: 0;
+  max-width: 64ch;
+}

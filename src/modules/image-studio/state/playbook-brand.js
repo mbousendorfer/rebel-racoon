@@ -6,7 +6,7 @@
 // The generator writes a Playbook only from the fiche's Brand section: the
 // style creator (/playbook/:id/styles/*) saving the brand's image styles
 // (`imageStyles`), and the Imagery rows beside them — the reference images
-// (`referenceImages`) and which of either is the default (`defaultLook`).
+// (`referenceImages`).
 // Each is a deliberate edit, the only
 // way a Playbook may change (CONCEPTS §1); the rest of the kit is edited on the
 // Playbook page itself (src/playbook-brand-kit.js). Sub-brands don't exist: a variant
@@ -17,16 +17,16 @@ import {
   getContexts,
   subscribe as subscribeContexts,
   updateContext,
-} from "../../../contexts-store.js?v=1536";
-import { createStyle } from "../model/schema.js?v=1536";
-import { canEdit, usableContexts } from "../../../playbook-access.js?v=1536";
+} from "../../../contexts-store.js?v=1539";
+import { createStyle } from "../model/schema.js?v=1539";
+import { canEdit, usableContexts } from "../../../playbook-access.js?v=1539";
 import {
   getActivePlaybookId,
   isWorkspaceMode,
   playbookForNewWork,
   subscribe as subscribeActive,
-} from "../../../active-playbook.js?v=1536";
-import { storageService as storage } from "../services/index.js?v=1536";
+} from "../../../active-playbook.js?v=1539";
+import { storageService as storage } from "../services/index.js?v=1539";
 
 // Which copy archetype the mocked copyService uses — guessed from the Playbook's words.
 function sectorKeyOf(ctx) {
@@ -43,6 +43,7 @@ function imageryDefaultsOf(ctx) {
   return {
     styleId: style ? style.id : "",
     referenceUrl: ref ? ref.url : "",
+    referenceLabel: ref ? ref.label || "" : "",
     formatByNetwork: { ...(ctx.formatByNetwork || {}) },
   };
 }
@@ -170,7 +171,8 @@ export function deletePlaybookStyle(id, styleId) {
 // ── The brand's reference images and its default look ───────────────────────
 // Brand › Imagery shows the reference images beside the styles, the same way
 // and as live: added and removed from their own row, outside the section's
-// edit mode. One of either may be the brand's default look (`defaultLook`).
+// edit mode. One of either may be the brand's default look (`defaultLook`),
+// picked in the fiche's "Generate image" block with the section's Edit.
 
 export function getPlaybookReferences(id) {
   return (getContextById(id)?.referenceImages || []).map((r) => ({ id: r.id, label: r.label || "", url: r.url }));
@@ -198,15 +200,6 @@ export function deletePlaybookReference(id, refId) {
     updatedAt: "just now",
   });
   return true;
-}
-
-/** Makes a style or a reference image the default look — or, if it already is, none. */
-export function togglePlaybookDefaultLook(id, kind, itemId) {
-  const ctx = getContextById(id);
-  if (!ctx || !canEdit(ctx)) return false;
-  const on = ctx.defaultLook?.kind === kind && ctx.defaultLook?.id === itemId;
-  updateContext(id, { defaultLook: on ? { kind: "", id: "" } : { kind, id: itemId }, updatedAt: "just now" });
-  return !on;
 }
 
 /** Repaint when a Playbook changes or the active one does. */

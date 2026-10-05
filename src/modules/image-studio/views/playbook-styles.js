@@ -10,19 +10,18 @@
 // weights and a test on three subjects. The system presets are NOT shown here:
 // they belong to no Playbook, and the fiche lists only what is this brand's.
 
-import { html, toString } from "../lib/html.js?v=1536";
-import { navigate } from "../../../router.js?v=1536";
-import { styleThumb } from "../ui/style-thumb.js?v=1536";
-import { confirmDialog } from "../ui/dialog.js?v=1536";
-import { toast } from "../ui/toast.js?v=1536";
-import { canEditBrand, getBrand, getStyle, getStylesForBrand } from "../state/store.js?v=1536";
-import { deleteStyle, duplicateStyle } from "../state/style-actions.js?v=1536";
+import { html, toString } from "../lib/html.js?v=1539";
+import { navigate } from "../../../router.js?v=1539";
+import { styleThumb } from "../ui/style-thumb.js?v=1539";
+import { confirmDialog } from "../ui/dialog.js?v=1539";
+import { toast } from "../ui/toast.js?v=1539";
+import { canEditBrand, getBrand, getStyle, getStylesForBrand } from "../state/store.js?v=1539";
+import { deleteStyle, duplicateStyle } from "../state/style-actions.js?v=1539";
 import {
   addPlaybookReferences,
   deletePlaybookReference,
   getPlaybookReferences,
-  togglePlaybookDefaultLook,
-} from "../state/playbook-brand.js?v=1536";
+} from "../state/playbook-brand.js?v=1539";
 
 const creatorPath = (playbookId, rest) => `/playbook/${encodeURIComponent(playbookId)}/styles/${rest}`;
 
@@ -32,26 +31,8 @@ function sourcesSummary(style) {
   return images ? `${images} reference image${images === 1 ? "" : "s"}` : "";
 }
 
-// The default look is ONE of the brand's styles or reference images: either
-// card carries the same star, and the one that is default says so.
-function defaultButton(kind, id, label, isDefault) {
-  return html`<button
-    type="button"
-    class="ap-icon-button transparent grey${isDefault ? " is-default" : ""}"
-    data-imst-pb-default="${kind}"
-    data-imst-item="${id}"
-    aria-pressed="${isDefault ? "true" : "false"}"
-    aria-label="${isDefault ? `Stop using ${label} by default` : `Use ${label} by default`}"
-    data-tooltip="${isDefault ? "Stop using by default" : "Use by default"}"
-  >
-    <i class="ap-icon-star" aria-hidden="true"></i>
-  </button>`;
-}
-
-const defaultTag = html`<span class="ap-tag grey mini"><span>Default</span></span>`;
-
 /** One card of either row: the picture, the name, what it is, its actions. */
-function itemCard({ art, label, meta, isDefault, actions, openAttrs }) {
+function itemCard({ art, label, meta, actions, openAttrs }) {
   return html`
     <article class="ap-card imst-style-card imst-pbstyle">
       ${openAttrs
@@ -64,7 +45,7 @@ function itemCard({ art, label, meta, isDefault, actions, openAttrs }) {
           <span class="ap-body-bold">${label}</span>
           ${actions ? html`<span class="imst-pbstyle__actions">${actions}</span>` : ""}
         </div>
-        <span class="ap-caption imst-style-card__meta">${isDefault ? defaultTag : ""}${meta}</span>
+        <span class="ap-caption imst-style-card__meta">${meta}</span>
       </div>
     </article>
   `;
@@ -82,17 +63,14 @@ const deleteButton = (attrs, label) =>
   </button>`;
 
 function styleCard(style, brand, canEdit) {
-  const isDefault = brand.defaults?.styleId === style.id;
   const id = html`data-imst-style="${style.id}"`;
   return itemCard({
     art: styleThumb(style, brand),
     label: style.label,
     meta: sourcesSummary(style),
-    isDefault,
     openAttrs: canEdit ? html`data-imst-pb-style="edit" ${id}` : null,
     actions: canEdit
-      ? html`${defaultButton("style", style.id, style.label, isDefault)}
-          <button
+      ? html`<button
             type="button"
             class="ap-icon-button transparent grey"
             data-imst-pb-style="duplicate"
@@ -109,17 +87,12 @@ function styleCard(style, brand, canEdit) {
 
 function referenceCard(ref, brand, canEdit) {
   const label = ref.label || "Reference image";
-  const isDefault = !!brand.defaults?.referenceUrl && brand.defaults.referenceUrl === ref.url;
   return itemCard({
     art: html`<img class="imst-thumb" src="${ref.url}" alt="" draggable="false" loading="lazy" />`,
     label,
     meta: "Reference image",
-    isDefault,
     openAttrs: null,
-    actions: canEdit
-      ? html`${defaultButton("reference", ref.id, label, isDefault)}
-        ${deleteButton(html`data-imst-pb-ref="delete" data-imst-item="${ref.id}"`, label)}`
-      : null,
+    actions: canEdit ? html`${deleteButton(html`data-imst-pb-ref="delete" data-imst-item="${ref.id}"`, label)}` : null,
   });
 }
 
@@ -200,17 +173,95 @@ function pickReferences(playbookId, onChange) {
   input.click();
 }
 
+// ── The default look: what "Generate image" on a draft starts from ─────────
+// ONE grid for both kinds, so the choice reads as what it is — one look, a
+// style OR a reference image — and "Ask me each time" is its first option. The
+// libraries above only manage; the pick is made here, with the section's Edit
+// (the radios carry `data-recap-imagery-look`, read by the fiche's onChange).
+
+const lookArt = (item) =>
+  item.kind === "style"
+    ? item.art
+    : html`<img class="imst-thumb" src="${item.url}" alt="" draggable="false" loading="lazy" />`;
+
+function lookItems(playbookId, brand) {
+  const styles = getStylesForBrand(playbookId)
+    .filter((s) => s.kind === "custom")
+    .map((s) => ({ kind: "style", id: s.id, label: s.label, kindLabel: "Image style", art: styleThumb(s, brand) }));
+  const refs = getPlaybookReferences(playbookId).map((r) => ({
+    kind: "reference",
+    id: r.id,
+    label: r.label || "Reference image",
+    kindLabel: "Reference image",
+    url: r.url,
+  }));
+  return [...styles, ...refs];
+}
+
+/**
+ * @param {string} playbookId
+ * @param {{ edit?: boolean, look?: { kind: string, id: string } }} opts — `look`
+ *   is the fiche's live value (it changes during the edit, before Save)
+ */
+export function renderDefaultLook(playbookId, { edit = false, look = {} } = {}) {
+  const brand = getBrand(playbookId);
+  if (!brand) return "";
+  const items = lookItems(playbookId, brand);
+  const current = items.find((i) => i.kind === look.kind && i.id === look.id) || null;
+  if (!edit)
+    return toString(
+      current
+        ? html`<div class="imst-look-chosen">
+            <span class="imst-look-chosen__art">${lookArt(current)}</span>
+            <span class="imst-look-chosen__text">
+              <span class="ap-body-bold">${current.label}</span>
+              <span class="ap-caption">${current.kindLabel}</span>
+            </span>
+          </div>`
+        : html`<p class="ap-body imst-pbstyles__empty">None — I ask which style each time.</p>`,
+    );
+  const option = (value, checked, body) =>
+    html`<label class="ap-radio-card card imst-look-option">
+      <input
+        type="radio"
+        name="imst-default-look"
+        value="${value}"
+        data-recap-imagery-look
+        ${checked ? "checked" : ""}
+      />
+      <div>${body}</div>
+    </label>`;
+  return toString(html`
+    <div class="imst-look-grid" role="radiogroup" aria-label="Default look">
+      ${option(
+        "",
+        !current,
+        html`<span class="imst-look-option__art imst-look-option__art--ask" aria-hidden="true"
+            ><i class="ap-icon-question"></i></span
+          ><span class="ap-radio-card-title">Ask me each time</span><span>I ask which style</span>`,
+      )}
+      ${items.map((i) =>
+        option(
+          `${i.kind}:${i.id}`,
+          current === i,
+          html`<span class="imst-look-option__art">${lookArt(i)}</span
+            ><span class="ap-radio-card-title">${i.label}</span><span>${i.kindLabel}</span>`,
+        ),
+      )}
+    </div>
+    ${items.length
+      ? ""
+      : html`<p class="ap-caption imst-look-hint">Add an image style or a reference image above to pick one.</p>`}
+  `);
+}
+
 /** The fiche's delegated click, for both rows. Returns true when it handled the click. */
 export function handlePlaybookStylesClick(event, playbookId, { onChange = () => {} } = {}) {
   if (!playbookId) return false;
-  const star = event.target.closest("[data-imst-pb-default]");
   const ref = event.target.closest("[data-imst-pb-ref]");
-  if (star || ref) {
+  if (ref) {
     if (!canEditBrand(playbookId)) return true;
-    if (star) {
-      togglePlaybookDefaultLook(playbookId, star.dataset.imstPbDefault, star.dataset.imstItem);
-      onChange();
-    } else if (ref.dataset.imstPbRef === "add") pickReferences(playbookId, onChange);
+    if (ref.dataset.imstPbRef === "add") pickReferences(playbookId, onChange);
     else if (ref.dataset.imstPbRef === "delete") {
       deletePlaybookReference(playbookId, ref.dataset.imstItem);
       toast("Reference image deleted.");

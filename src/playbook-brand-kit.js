@@ -9,16 +9,17 @@
 // the fiche's live data object, exactly like every other Brand row, and are
 // committed by the section's Save (snapshotEditable carries the fields).
 
-import { escapeHtml as esc } from "./utils.js?v=1536";
-import { isFlagOn } from "./feature-flags.js?v=1536";
-import { COLOR_ROLES, LOGO_VARIANTS, getContextById } from "./contexts-store.js?v=1536";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1536";
+import { escapeHtml as esc } from "./utils.js?v=1539";
+import { isFlagOn } from "./feature-flags.js?v=1539";
+import { COLOR_ROLES, LOGO_VARIANTS, getContextById } from "./contexts-store.js?v=1539";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1539";
 import {
   handlePlaybookStylesClick,
+  renderDefaultLook,
   renderPlaybookReferences,
   renderPlaybookStyles,
   shapesFor,
-} from "./modules/image-studio/index.js?v=1536";
+} from "./modules/image-studio/index.js?v=1539";
 
 const KIT_FLAG = "sexySquirrel";
 
@@ -305,6 +306,11 @@ export function handleKitInput(event, data) {
 
 export function handleKitChange(event, data) {
   const t = event.target;
+  if (t.matches("[data-recap-imagery-look]")) {
+    const [kind = "", ...rest] = t.value.split(":");
+    data.defaultLook = { kind, id: rest.join(":") };
+    return true;
+  }
   if (t.matches("[data-recap-kit-toggle]")) {
     rules(data)[t.dataset.recapKitToggle] = t.checked;
     return true;
@@ -328,8 +334,8 @@ export function handleImageStylesClick(event, data, onChange) {
 
 // ── Imagery › Default format: a preferred shape per network ──────────────
 // `formatByNetwork` (contexts-store.js#normalizeImageryDefaults), "" =
-// automatic (the network's first shape). The default LOOK is not here: it is
-// set on a style or reference image card, live (modules/image-studio).
+// automatic (the network's first shape). The look's grid is the Image
+// Generator's (renderDefaultLook), it only reads the module's styles and images.
 
 const IMAGERY_NETWORKS = ["linkedin", "instagram", "facebook", "x"];
 // The generator's network ids → Archie's, for the icon and label.
@@ -348,8 +354,8 @@ function shapeLabels(network) {
   return Object.fromEntries(shapesFor(network).map((sh) => [sh.id, `${sh.label} ${sh.ratio}`]));
 }
 
-/** The Imagery block's Default format row (flag sexySquirrel). */
-export function renderImageFormats(data, edit) {
+/** The Default format row (flag sexySquirrel). */
+function renderImageFormats(data, edit) {
   if (!kitEnabled()) return "";
   const f = formats(data);
   const rows = IMAGERY_NETWORKS.map((n) => {
@@ -368,7 +374,20 @@ export function renderImageFormats(data, edit) {
       : esc(labels[value]);
     return `<div><dt>${netName(n)}</dt><dd>${dd}</dd></div>`;
   }).join("");
-  return `<div><span class="pb2-sub">Default format</span><dl class="pb2-facts recap__imagery-formats">${rows}</dl></div>`;
+  return `<div><span class="pb2-sub">Format</span><dl class="pb2-facts recap__imagery-formats">${rows}</dl></div>`;
+}
+
+/**
+ * The "Generate image" block: the combination a draft's Generate image applies
+ * without asking — ONE look (a style or a reference image) + a shape per
+ * network. Edited with the section, so `defaultLook` is in the snapshot.
+ */
+export function renderGenerateDefaults(data, edit) {
+  if (!kitEnabled() || !data?.id || !getContextById(data.id)) return "";
+  const look = renderDefaultLook(data.id, { edit, look: data.defaultLook || {} });
+  // What the block is for, said where it applies — it is why the look is one choice.
+  const lead = `<p class="ap-body recap__generate-lead">When you click <strong>Generate image</strong> on a draft, I make it right away with this look and format — no questions about style or shape.</p>`;
+  return `${lead}<div><span class="pb2-sub">Look</span>${look}</div>${renderImageFormats(data, edit)}`;
 }
 
 /** The brand's reference images, beside its styles and built the same way. */
@@ -381,6 +400,7 @@ export function renderImageReferences(data, canEdit) {
 export function kitSnapshot(d) {
   return {
     formatByNetwork: { ...(d.formatByNetwork || {}) },
+    defaultLook: { ...(d.defaultLook || {}) },
     voiceAvoid: d.voiceAvoid || [],
     brandRules: d.brandRules || null,
   };

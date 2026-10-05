@@ -9,6 +9,9 @@
 //   2. Shape   only when the draft's network publishes more than one
 //   3. Text    a line lifted from the post, no text, or the user's own
 //
+// With a default look on the Playbook (Brand › Generate image — a style or a
+// reference image, plus a shape per network), 1 and 2 are not asked at all.
+//
 // What the image SHOWS is not asked: it is read from the post, like the studio's
 // "Suggest from the post". Then ONE image, straight into the draft, and a
 // last Quickpicker for what next (keep it · try another · refine in the studio).
@@ -16,17 +19,18 @@
 // The two reads from the post take as long as the real calls (4–8 s), so both
 // start the moment the flow does and are usually back before they are needed.
 
-import * as inlineQuestion from "./inline-question.js?v=1536";
-import { finishPending, postAssistantMessage, postUserTurn, startPending } from "./assistant.js?v=1536";
-import { attachImageToDraft, getPosts, updatePostContent } from "./posts-store.js?v=1536";
-import { getSessionById } from "./sessions-store.js?v=1536";
-import { escapeHtml } from "./utils.js?v=1536";
+import * as inlineQuestion from "./inline-question.js?v=1539";
+import { finishPending, postAssistantMessage, postUserTurn, startPending } from "./assistant.js?v=1539";
+import { attachImageToDraft, getPosts, updatePostContent } from "./posts-store.js?v=1539";
+import { getSessionById } from "./sessions-store.js?v=1539";
+import { escapeHtml } from "./utils.js?v=1539";
 import {
+  defaultQuickLook,
   generateQuickImage,
   quickImageChoices,
   suggestImageLine,
   suggestImageSubject,
-} from "./modules/image-studio/index.js?v=1536";
+} from "./modules/image-studio/index.js?v=1539";
 
 const STUDIO = "__studio";
 const NO_TEXT = "__none";
@@ -57,7 +61,8 @@ export function startDraftImageFlow(sessionId, postId, { openStudio, repaint }) 
   const subject = suggestImageSubject({ brandId, text }).catch(() => FALLBACK_SUBJECT);
   const line = suggestImageLine(text).catch(() => "");
   const askShapes = choices.shapes.length > 1;
-  const total = askShapes ? 3 : 2;
+  let total = askShapes ? 3 : 2;
+  let usedDefault = false; // the Playbook's default look answered style + shape
   const answers = { style: null, shape: choices.shapes[0], headline: "" };
   const cancel = () => postAssistantMessage(sessionId, "No problem — the draft stays as it is.");
 
@@ -142,7 +147,10 @@ export function startDraftImageFlow(sessionId, postId, { openStudio, repaint }) 
         postUserTurn(sessionId, answers.headline ? `“${escapeHtml(answers.headline)}”` : "No text");
         generate();
       },
-      onBack: () => (askShapes ? askShape({ announce: false }) : askStyle({ announce: false })),
+      // From the default look there is nothing to go back to — "Refine it in the studio" follows.
+      onBack: usedDefault
+        ? undefined
+        : () => (askShapes ? askShape({ announce: false }) : askStyle({ announce: false })),
     });
   }
 
@@ -210,5 +218,19 @@ export function startDraftImageFlow(sessionId, postId, { openStudio, repaint }) 
     });
   }
 
-  askStyle();
+  // The Playbook's default look (Brand › Generate image) answers the style AND
+  // the shape: its preferred shape for this network is already first. Only the
+  // text is asked — it is about this post, which no default can know.
+  (async () => {
+    const look = await defaultQuickLook(brandId);
+    if (!look) return askStyle();
+    answers.style = look;
+    total = 1;
+    postAssistantMessage(
+      sessionId,
+      `Let's make an image for this post — in ${escapeHtml(look.label)}, ${escapeHtml(answers.shape.label.toLowerCase())}, as the Playbook says.`,
+    );
+    usedDefault = true;
+    askText();
+  })();
 }

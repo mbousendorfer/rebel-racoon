@@ -14,7 +14,7 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1536";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1539";
 import {
   kitEnabled,
   renderColorRole,
@@ -27,13 +27,13 @@ import {
   handleKitInput,
   handleKitChange,
   kitSnapshot,
-  renderImageFormats,
+  renderGenerateDefaults,
   renderImageReferences,
-} from "./playbook-brand-kit.js?v=1536";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1536";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1536";
-import { isFlagOn } from "./feature-flags.js?v=1536";
-import { parseHashParams } from "./url-state.js?v=1536";
+} from "./playbook-brand-kit.js?v=1539";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1539";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1539";
+import { isFlagOn } from "./feature-flags.js?v=1539";
+import { parseHashParams } from "./url-state.js?v=1539";
 import {
   networkVoicesOn,
   baseNetwork,
@@ -43,21 +43,21 @@ import {
   maturity,
   networkLabel,
   networkIcon,
-} from "./network-voice.js?v=1536";
+} from "./network-voice.js?v=1539";
 import {
   getSuggestions,
   accept as acceptVoiceSuggestion,
   dismiss as dismissVoiceSuggestion,
-} from "./voice-coach-store.js?v=1536";
-import { NETWORKS } from "./social-profiles.js?v=1536";
-import { showToast } from "./components/toast.js?v=1536";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1536";
+} from "./voice-coach-store.js?v=1539";
+import { NETWORKS } from "./social-profiles.js?v=1539";
+import { showToast } from "./components/toast.js?v=1539";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1539";
 // The Default look row offers the SAME three catalogues the Image Studio renders, from
 // the one place they are declared — REF_MODES' own header makes the argument: the label,
 // the hint and the brief clause "drift the moment they live apart". No cycle: the engine
 // imports only clip-formats / image-studio-canvas / feature-flags, and its module body
 // builds consts, so importing it here costs nothing at load.
-import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1536";
+import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1539";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2352,9 +2352,6 @@ function pb2Palette(data, { roles = false, max = 6 } = {}) {
 // A tab reads as a spread of blocks; EDIT opens the section's own form (the
 // recap panel, unchanged), so every field, hint and save path stays one code.
 
-// The one line that says what the stars on the style and reference cards do.
-const IMAGERY_CAPTION = "Star one style or reference image: every new image starts from it.";
-
 function pb2Block(title, body, { wide = false, caption = "", index = 0, icon = "" } = {}) {
   return `
     <section class="pb2-block${wide ? " pb2-block--wide" : ""}" style="--pb2-i:${index}">
@@ -2521,11 +2518,15 @@ function renderBrandEdit2(data) {
       pb2Block(
         "Imagery",
         `${styles ? `<div><span class="pb2-sub">Image styles</span>${styles}</div>` : ""}
-         ${refs ? `<div><span class="pb2-sub">Reference images</span>${refs}</div>` : ""}
-         ${renderImageFormats(data, true)}`,
-        { wide: true, index: 4, icon: "ap-icon-image", caption: IMAGERY_CAPTION },
+         ${refs ? `<div><span class="pb2-sub">Reference images</span>${refs}</div>` : ""}`,
+        { wide: true, index: 4, icon: "ap-icon-image" },
       ),
-      pb2Block("Visual rules", renderVisualRules(data, true), { wide: true, index: 5 }),
+      pb2Block("Generate image", renderGenerateDefaults(data, true), {
+        wide: true,
+        index: 5,
+        icon: "ap-icon-sparkles",
+      }),
+      pb2Block("Visual rules", renderVisualRules(data, true), { wide: true, index: 6 }),
     );
   } else {
     blocks.push(
@@ -3003,10 +3004,14 @@ function renderBrandRead2(data) {
       pb2Block(
         "Imagery",
         `${styles ? `<div><span class="pb2-sub">Image styles</span>${styles}</div>` : ""}
-         ${refs ? `<div><span class="pb2-sub">Reference images</span>${refs}</div>` : ""}
-         ${renderImageFormats(data, false)}`,
-        { wide: true, index: 4, icon: "ap-icon-image", caption: IMAGERY_CAPTION },
+         ${refs ? `<div><span class="pb2-sub">Reference images</span>${refs}</div>` : ""}`,
+        { wide: true, index: 4, icon: "ap-icon-image" },
       ),
+      pb2Block("Generate image", renderGenerateDefaults(data, false), {
+        wide: true,
+        index: 5,
+        icon: "ap-icon-sparkles",
+      }),
       pb2Block(
         "Visual rules",
         `<div class="pb2-rules">
@@ -3019,7 +3024,7 @@ function renderBrandRead2(data) {
           <div><dt>Distortion</dt><dd>${r.noLogoDistortion === false ? "Allowed" : "Never stretch or skew"}</dd></div>
           <div><dt>Colours that never meet</dt><dd>${pairs.length ? `<span class="pb2-pairs">${pairs.join("")}</span>` : "None"}</dd></div>
         </dl>`,
-        { wide: true, index: 5 },
+        { wide: true, index: 6 },
       ),
     );
   } else {
