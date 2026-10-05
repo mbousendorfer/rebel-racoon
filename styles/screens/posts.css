@@ -356,12 +356,9 @@
 }
 
 /* What Generate an image will use: the look's picture, its name, the shape. */
+/* Running text — the picture sits in the line, so it wraps like a sentence. */
 .posts__card-media-preset {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: var(--ref-spacing-xxs);
+  max-width: 44ch;
   margin: 0;
   font-size: var(--sys-text-style-body-size);
   line-height: var(--sys-text-style-body-line-height);
@@ -373,6 +370,8 @@
 }
 
 .posts__card-media-preset-thumb {
+  margin-right: var(--ref-spacing-xxxs);
+  vertical-align: middle;
   width: var(--ref-spacing-md);
   height: var(--ref-spacing-md);
   border-radius: var(--ref-border-radius-sm);

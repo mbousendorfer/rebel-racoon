@@ -19,11 +19,11 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1568";
-import { isPortraitFormat } from "../clip-formats.js?v=1568";
-import { presetById } from "../clip-captions.js?v=1568";
-import { renderFeedbackControl } from "./feedback-control.js?v=1568";
-import { networkMeta } from "../social-profiles.js?v=1568";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1570";
+import { isPortraitFormat } from "../clip-formats.js?v=1570";
+import { presetById } from "../clip-captions.js?v=1570";
+import { renderFeedbackControl } from "./feedback-control.js?v=1570";
+import { networkMeta } from "../social-profiles.js?v=1570";
 
 // The media slot of a draft that has no image yet — a real drop target
 // (`[data-post-drop]`, drag wiring in right-panel.js) and, clicked anywhere, a
@@ -36,7 +36,8 @@ import { networkMeta } from "../social-profiles.js?v=1568";
 //      button beside it: two outlined rectangles read as equals.
 //   2. What it will make (flag sexySquirrel, `opts.imagePreset` from the drafts
 //      panel — the card never reads the Playbook): the look's picture and name,
-//      this network's shape, and Change → the Image Studio for THIS image. The
+//      this network's shape, and "Change it in the Image Studio" — the studio
+//      named in words, for THIS image (a bare "Change" hid it: rejected). The
 //      Playbook's default is changed on the Playbook, not from a draft. Without
 //      a preset, the line is just the studio: "Or pick the style and format…".
 //   3. Your own image — the dashed zone already says "drop here"; the line says
@@ -50,8 +51,7 @@ function renderImagePreset(post, opts) {
   const shape = p.shape ? `, ${escapeText(p.shape.label.toLowerCase())} ${escapeText(p.shape.ratio)}` : "";
   return `<p class="posts__card-media-preset">
     <img class="posts__card-media-preset-thumb" src="${escapeAttr(p.look.thumbUrl)}" alt="" />
-    <span>In ${escapeText(p.look.label)}${shape}.</span>
-    ${studio("Change")}
+    In ${escapeText(p.look.label)}${shape}. Change it in the ${studio("Image Studio")}.
   </p>`;
 }
 
