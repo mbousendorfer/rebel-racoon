@@ -13,12 +13,12 @@
 //
 // Everything here saves as it changes, like the styles always did: no Edit.
 
-import { html, raw, toString } from "../lib/html.js?v=1556";
-import { navigate } from "../../../router.js?v=1556";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1556";
-import { toast } from "../ui/toast.js?v=1556";
-import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=1556";
-import { shapesFor } from "../config/formats.js?v=1556";
+import { html, raw, toString } from "../lib/html.js?v=1558";
+import { navigate } from "../../../router.js?v=1558";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=1558";
+import { toast } from "../ui/toast.js?v=1558";
+import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=1558";
+import { shapesFor } from "../config/formats.js?v=1558";
 import {
   addPlaybookReferences,
   deletePlaybookReference,
@@ -27,8 +27,8 @@ import {
   getPlaybookReferences,
   setPlaybookDefaultLook,
   setPlaybookFormat,
-} from "../state/playbook-brand.js?v=1556";
-import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=1556";
+} from "../state/playbook-brand.js?v=1558";
+import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=1558";
 
 const creatorPath = (playbookId, rest) => `/playbook/${encodeURIComponent(playbookId)}/styles/${rest}`;
 const ownStyles = (playbookId) => getStylesForBrand(playbookId).filter((s) => s.kind === "custom");
@@ -122,46 +122,6 @@ export function renderImagesReferences(playbookId, { canEdit = true } = {}) {
 
 // ── 3. Generate image ───────────────────────────────────────────────────────
 
-// A DS single-select (.ap-select on <details>), live: an option writes on click.
-function select({ name, value, groups, placeholder, ariaLabel, disabled }) {
-  const all = groups.flatMap((g) => g.options);
-  const current = all.find((o) => o.value === value);
-  const option = (o) =>
-    html`<div
-      class="ap-select-option${o.value === value ? " selected" : ""}"
-      role="option"
-      tabindex="0"
-      aria-selected="${o.value === value ? "true" : "false"}"
-      data-imst-images-pick="${name}"
-      data-imst-value="${o.value}"
-    >
-      ${o.avatar ? html`<img class="ap-select-option-avatar imst-images__avatar" src="${o.avatar}" alt="" />` : ""}
-      <span class="ap-select-option-text"><span class="ap-select-option-title">${o.label}</span></span>
-      ${o.value === value ? html`<i class="ap-icon-check ap-select-option-check" aria-hidden="true"></i>` : ""}
-    </div>`;
-  return html`<details class="ap-select imst-images__select" data-imst-images-select ${disabled ? "inert" : ""}>
-    <summary class="ap-select-trigger" aria-label="${ariaLabel}">
-      ${current?.avatar
-        ? html`<img class="ap-select-avatar imst-images__avatar" src="${current.avatar}" alt="" />`
-        : ""}
-      <span class="ap-select-value${current ? "" : " ap-select-placeholder"}">${current?.label || placeholder}</span>
-      <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
-    </summary>
-    <div class="ap-select-dropdown" role="listbox">
-      <div class="ap-select-options">
-        ${groups
-          .filter((g) => g.options.length)
-          .map(
-            (g) =>
-              html`${g.label
-                ? html`<div class="ap-select-group"><span class="ap-select-group-label">${g.label}</span></div>`
-                : ""}${g.options.map(option)}`,
-          )}
-      </div>
-    </div>
-  </details>`;
-}
-
 export function renderImagesGenerate(playbookId, { canEdit = true } = {}) {
   const brand = getBrand(playbookId);
   if (!brand) return "";
@@ -234,34 +194,42 @@ export function renderImagesFormats(playbookId, { canEdit = true } = {}) {
   if (!getBrand(playbookId)) return "";
   const editable = canEdit && canEditBrand(playbookId);
   const formats = getPlaybookFormats(playbookId);
-  // One row per network: its name, the select.
+  // One row per network: its name, then its shapes as the studio shows them
+  // (.imst-seg, compact) — nothing set means the network's usual shape, first.
   const rows = NETWORKS.map((n) => {
     const all = shapesFor(n.id);
-    const chosen = all.find((s) => s.id === formats[n.id]);
+    const current = all.find((s) => s.id === formats[n.id]) || all[0];
     return html`<li class="imst-images-format">
       <span class="imst-images-format__net ap-body-bold"><i class="${n.icon}" aria-hidden="true"></i>${n.label}</span>
-      ${select({
-        name: `format:${n.id}`,
-        value: chosen ? chosen.id : "",
-        groups: [
-          {
-            label: "",
-            options: [
-              { value: "", label: `Automatic (${all[0].label} ${all[0].ratio})` },
-              ...all.map((s) => ({ value: s.id, label: `${s.label} ${s.ratio}` })),
-            ],
-          },
-        ],
-        placeholder: "Automatic",
-        ariaLabel: `Preferred format on ${n.label}`,
-        disabled: !editable,
-      })}
+      <div class="imst-seg imst-seg--compact" role="radiogroup" aria-label="Preferred format on ${n.label}">
+        ${all.map(
+          (s) =>
+            html`<button
+              type="button"
+              class="imst-seg__opt"
+              role="radio"
+              aria-checked="${s.id === current.id ? "true" : "false"}"
+              aria-label="${s.label} ${s.ratio}"
+              data-imst-images-format="${n.id}:${s.id}"
+              ${editable ? "" : "disabled"}
+            >
+              <span class="imst-seg__box"
+                ><span
+                  class="imst-seg__frame"
+                  style="aspect-ratio: ${s.w} / ${s.h}; ${s.w >= s.h ? "width: 100%" : "height: 100%"}"
+                ></span
+              ></span>
+              <span class="imst-seg__name">${s.label}</span>
+              <span class="ap-caption imst-seg__ratio">${s.ratio}</span>
+            </button>`,
+        )}
+      </div>
     </li>`;
   });
   return toString(
     section({
       aside: html`<p class="ap-body imst-images__lead">
-        The shape I make an image in for each network. Automatic is the shape that network uses most.
+        The shape I make an image in for each network. Until you pick one, it's the shape that network uses most.
       </p>`,
       body: html`<ul class="imst-images-formats">
         ${rows}
@@ -299,11 +267,6 @@ function addReferences(playbookId, onChange) {
 /** The fiche's delegated click, for the whole tab. Returns true when it handled the click. */
 export function handlePlaybookImagesClick(event, playbookId, { onChange = () => {} } = {}) {
   if (!playbookId) return false;
-  // One select open at a time; a click elsewhere closes them.
-  const inSelect = event.target.closest("[data-imst-images-select]");
-  for (const d of document.querySelectorAll("details[data-imst-images-select][open]"))
-    if (d !== inSelect) d.open = false;
-
   const lookItem = event.target.closest("[data-imst-images-look]");
   if (lookItem) {
     const [kind, ...rest] = lookItem.dataset.imstImagesLook.split(":");
@@ -313,12 +276,10 @@ export function handlePlaybookImagesClick(event, playbookId, { onChange = () => 
     }
     return true;
   }
-  const pick = event.target.closest("[data-imst-images-pick]");
-  if (pick) {
-    const name = pick.dataset.imstImagesPick;
-    const value = pick.dataset.imstValue;
-    setPlaybookFormat(playbookId, name.split(":")[1], value);
-    onChange();
+  const fmt = event.target.closest("[data-imst-images-format]");
+  if (fmt) {
+    const [network, shapeId] = fmt.dataset.imstImagesFormat.split(":");
+    if (setPlaybookFormat(playbookId, network, shapeId)) onChange();
     return true;
   }
   const el = event.target.closest("[data-imst-images]");
