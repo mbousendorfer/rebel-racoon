@@ -271,80 +271,60 @@
   }
 }
 
-/* Empty media slot — a real media dropzone at the height of an image.
-
-   Three strata, each clearly above the next: neutral tile -> h3 title -> body
-   sub in light ink -> ONE filled button. The rationale for each is in
-   post-card.js#renderEmptyMedia; the two that constrain this file:
-
-   ⚠️ NO resting background. The dashed border alone is the "drop a file here"
-   sign; a tint on top of it was a second weak signal competing with the first.
-   (`.is-dragover` still fills — that is transient feedback, not decoration.)
-
-   ⚠️ ONE accent only. The tile is grey, not the orange Archie tile from
-   `.drafts-card__icon`: a second orange would split the gravity the filled
-   primary exists to hold.
-
-   The height is pinned on the slot so the frame is identical at rest, on
-   dragover and while generating — nothing moves between states. It is
-   deliberately NOT `aspect-ratio`, which would tie the height to the format. */
+/* Empty media slot — split in two since 2026-10-05: a solid Generate tile and
+   the shared dashed dropzone (the only drop target), the Image Studio on a quiet
+   line under both. The rationale is in post-card.js#renderEmptyMedia.
+   ⚠️ ONE accent only: the mermaid button. The dropzone keeps the app's shared
+   look so it reads as the same thing as every other drop target. */
 .posts__card-media-empty {
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xxs);
 }
 
+/* Only the generating state still uses the one frame: the loader and its line,
+   at the height of the split it replaces, so nothing jumps. */
 .posts__card-media-empty-slot {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  /* Pinned so the dragover and generating states match the resting one — the
-     frame must not resize between them. ARITHMETIC: 48 padding + 36 button +
-     12 + 22 preset + 12 + 22 drop line = 152, rounded up for a wrapped line. */
-  min-height: 168px;
+  min-height: 128px;
   gap: var(--ref-spacing-xs);
   padding: var(--ref-spacing-md);
-  border: 1.5px dashed var(--ref-color-grey-20);
+  border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-md);
-  background: transparent;
   text-align: center;
-  /* The whole zone browses for a file (right-panel.js), so it says so. */
-  cursor: pointer;
-  transition:
-    border-color var(--ref-animation-short),
-    background var(--ref-animation-short);
 }
 
-/* Hover and dragover, in the same electric-blue gradation `.ap-dropzone` uses —
-   05 on hover, 10 while a file is actually over it — so a drop target behaves
-   like every other drop target in the app. These fills are transient feedback,
-   which is why they survive while the RESTING fill was removed. */
-/* ⚠️ Both states also hand the mermaid button their own fill. `.ap-button.mermaid`
-   paints its interior with an ::after that the DS hardcodes to white, so on a
-   tinted host the button reads as a white rectangle punched through the tint.
-   `--ap-mermaid-inner` (ds-patches.css) is the hook for exactly this. Hovering
-   the BUTTON still wins: the DS's own `:hover::after` is more specific. */
-.posts__card-media-empty-slot:hover {
-  --ap-mermaid-inner: var(--ref-color-electric-blue-05);
-  border-color: var(--ref-color-electric-blue-100);
-  background: var(--ref-color-electric-blue-05);
+/* The split: Generate (a solid tile — not a drop target) beside the shared
+   dropzone (dashed — the only drop target). They wrap one under the other
+   when the card is too narrow for both. */
+.posts__card-media-split {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: var(--ref-spacing-xs);
 }
 
-.posts__card-media-empty-slot.is-dragover {
-  --ap-mermaid-inner: var(--ref-color-electric-blue-10);
-  border-color: var(--ref-color-electric-blue-100);
-  background: var(--ref-color-electric-blue-10);
+.posts__card-media-generate {
+  flex: 3 1 calc(var(--ref-spacing-xxxl) * 3.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ref-spacing-xs);
+  min-height: 128px;
+  padding: var(--ref-spacing-md);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-md);
+  text-align: center;
 }
 
-/* The generating slot is not a drop target and not clickable. */
-.posts__card-media-empty-slot.is-generating {
-  cursor: default;
-}
-
-.posts__card-media-empty-slot.is-generating:hover {
-  border-color: var(--ref-color-grey-20);
-  background: transparent;
+.posts__card-media-split .ap-dropzone {
+  flex: 2 1 calc(var(--ref-spacing-xxxl) * 2.5);
+  width: auto;
+  justify-content: center;
 }
 
 .posts__card-media-empty-sub {
@@ -356,26 +336,23 @@
 }
 
 /* What Generate an image will use: the look's picture, its name, the shape. */
-/* Running text — the picture sits in the line, so it wraps like a sentence. */
+/* What Generate will use — a caption under the button, not a line of its own
+   weight: the button is the thing, this only says what it will make. */
 .posts__card-media-preset {
-  max-width: 44ch;
   margin: 0;
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
+  max-width: 36ch;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
   color: var(--ref-color-grey-80);
 }
 
-.posts__card-media-preset strong {
-  color: var(--ref-color-grey-100);
-}
-
-.posts__card-media-preset-thumb {
-  margin-right: var(--ref-spacing-xxxs);
-  vertical-align: middle;
-  width: var(--ref-spacing-md);
-  height: var(--ref-spacing-md);
-  border-radius: var(--ref-border-radius-sm);
-  object-fit: cover;
+/* The Image Studio: a separate tool, a quiet line under both. */
+.posts__card-media-studio {
+  margin: 0;
+  padding: 0 var(--ref-spacing-xxs);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
 }
 
 /* Generating: the loader and its line replace the column, still inside the same
