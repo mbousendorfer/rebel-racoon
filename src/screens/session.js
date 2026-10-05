@@ -1,19 +1,21 @@
-import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr } from "../utils.js?v=1523";
-import { navigate } from "../router.js?v=1523";
-import { renderTopbar } from "../components/topbar.js?v=1523";
-import { connectorDocs } from "../mocks.js?v=1523";
-import { getConnectedProfiles } from "../social-profiles.js?v=1523";
-import { getSessionById, getSessions } from "../sessions-store.js?v=1523";
-import { getContextById, getContexts, updateContext } from "../contexts-store.js?v=1523";
-import { playbookForNewWork, isWorkspaceMode } from "../active-playbook.js?v=1523";
-import { revokedContextFor, usableContexts, canView } from "../playbook-access.js?v=1523";
-import { isNewUser } from "../user-mode.js?v=1523";
+import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr } from "../utils.js?v=1526";
+import { navigate } from "../router.js?v=1526";
+import { renderTopbar } from "../components/topbar.js?v=1526";
+import { connectorDocs } from "../mocks.js?v=1526";
+import { getConnectedProfiles } from "../social-profiles.js?v=1526";
+import { getSessionById, getSessions } from "../sessions-store.js?v=1526";
+import { getContextById, getContexts, updateContext } from "../contexts-store.js?v=1526";
+import { playbookForNewWork, isWorkspaceMode } from "../active-playbook.js?v=1526";
+import { revokedContextFor, usableContexts, canView } from "../playbook-access.js?v=1526";
+import { isNewUser } from "../user-mode.js?v=1526";
 import {
   getThread,
   sendMessage,
   postAssistantMessage,
   postUserTurn,
   postSelectionEcho,
+  postSchedulePlan,
+  setSchedulePlanStatus,
   subscribe,
   submitAssistantChoice,
   sendConnectorMessage,
@@ -23,42 +25,47 @@ import {
   answerTopPostsWidget,
   toggleTopicsWidgetPick,
   answerTopicsWidget,
-} from "../assistant.js?v=1523";
-import { accept as acceptVoiceSuggestion, dismiss as dismissVoiceSuggestion } from "../voice-coach-store.js?v=1523";
-import { iconFor as fileIconForKind } from "../file-kinds.js?v=1523";
-import { getSources, getIdeas, appendExtractedIdeas } from "../library.js?v=1523";
-import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=1523";
+} from "../assistant.js?v=1526";
+import { accept as acceptVoiceSuggestion, dismiss as dismissVoiceSuggestion } from "../voice-coach-store.js?v=1526";
+import { iconFor as fileIconForKind } from "../file-kinds.js?v=1526";
+import { getSources, getIdeas, appendExtractedIdeas } from "../library.js?v=1526";
+import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=1526";
 import {
   renderInto as renderComposerMentions,
   removeMention as removeComposerMention,
   subscribe as subscribeComposerMentions,
   addMention as addComposerMention,
-} from "../composer-mentions.js?v=1523";
-import { setSubtitleStyle, getPosts, removePost } from "../posts-store.js?v=1523";
-import { executeDraft } from "../draft-flow.js?v=1523";
-import * as topPostsFlow from "../top-posts-flow.js?v=1523";
-import { renderTopPostsBoard } from "../components/top-post-card.js?v=1523";
-import * as sidebarWizard from "../sidebar-wizard.js?v=1523";
-import * as inlineQuestion from "../inline-question.js?v=1523";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=1523";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=1523";
-import * as clipStudio from "../clip-studio.js?v=1523";
-import * as batchStudio from "../batch-studio.js?v=1523";
-import { askConnector } from "../connector-ask.js?v=1523";
-import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=1523";
-import { renderConnectorLogo } from "../connectors-view.js?v=1523";
+} from "../composer-mentions.js?v=1526";
+import { setSubtitleStyle, getPosts, removePost } from "../posts-store.js?v=1526";
+import { executeDraft } from "../draft-flow.js?v=1526";
+import * as topPostsFlow from "../top-posts-flow.js?v=1526";
+import { renderTopPostsBoard } from "../components/top-post-card.js?v=1526";
+import * as sidebarWizard from "../sidebar-wizard.js?v=1526";
+import * as inlineQuestion from "../inline-question.js?v=1526";
+import { planSlots, defaultStrategy, CADENCES, queueEntries } from "../schedule-engine.js?v=1526";
+import { addToQueue } from "../schedule-store.js?v=1526";
+import { refLabel } from "../chat-refs.js?v=1526";
+import { networkLabel } from "../network-voice.js?v=1526";
+import { openScheduleForPosts } from "../components/right-panel/drafts-view.js?v=1526";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=1526";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=1526";
+import * as clipStudio from "../clip-studio.js?v=1526";
+import * as batchStudio from "../batch-studio.js?v=1526";
+import { askConnector } from "../connector-ask.js?v=1526";
+import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=1526";
+import { renderConnectorLogo } from "../connectors-view.js?v=1526";
 import {
   getActiveConnector,
   clearActiveConnector,
   subscribe as subscribeComposerConnector,
-} from "../composer-connector.js?v=1523";
-import { isFlagOn } from "../feature-flags.js?v=1523";
-import * as contextBuilder from "../context-builder.js?v=1523";
-import { renderPicker } from "./_analyse-common.js?v=1523";
-import { contentState, rerenderContentWorkspaceBody } from "../components/content-workspace.js?v=1523";
-import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=1523";
-import { open as openAddSourceModal } from "../components/add-source-modal.js?v=1523";
-import { open as openConnectorsModal } from "../components/connectors-modal.js?v=1523";
+} from "../composer-connector.js?v=1526";
+import { isFlagOn } from "../feature-flags.js?v=1526";
+import * as contextBuilder from "../context-builder.js?v=1526";
+import { renderPicker } from "./_analyse-common.js?v=1526";
+import { contentState, rerenderContentWorkspaceBody } from "../components/content-workspace.js?v=1526";
+import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=1526";
+import { open as openAddSourceModal } from "../components/add-source-modal.js?v=1526";
+import { open as openConnectorsModal } from "../components/connectors-modal.js?v=1526";
 import {
   classifyFile,
   startFileUpload,
@@ -68,9 +75,9 @@ import {
   pushScriptedSource,
   completeScriptedSource,
   updateSourceClips,
-} from "../sources-stream.js?v=1523";
-import { onFeedbackClick } from "../components/feedback-control.js?v=1523";
-import { showToast } from "../components/toast.js?v=1523";
+} from "../sources-stream.js?v=1526";
+import { onFeedbackClick } from "../components/feedback-control.js?v=1526";
+import { showToast } from "../components/toast.js?v=1526";
 import {
   openDrafts as openDraftsPanel,
   openIdeas as openIdeasPanel,
@@ -78,19 +85,19 @@ import {
   openClips as openClipsPanel,
   getMode as getRightPanelMode,
   subscribe as subscribeRightPanel,
-} from "../components/right-panel.js?v=1523";
-import { setHandoff, consumeHandoff } from "../handoff.js?v=1523";
-import { attachTopicToChat, useTopicInChat, startTopicPickerInline, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=1523";
-import { startObjectiveChat, OBJECTIVE_CHAT_HANDOFF } from "../objective-flow.js?v=1523";
-import { getTopicById, markUsed, subscribe as subscribeTopics } from "../topics-store.js?v=1523";
-import { openTopicArticle } from "../components/topic-picker-modal.js?v=1523";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1523";
-import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=1523";
-import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=1523";
-import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=1523";
+} from "../components/right-panel.js?v=1526";
+import { setHandoff, consumeHandoff } from "../handoff.js?v=1526";
+import { attachTopicToChat, useTopicInChat, startTopicPickerInline, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=1526";
+import { startObjectiveChat, OBJECTIVE_CHAT_HANDOFF } from "../objective-flow.js?v=1526";
+import { getTopicById, markUsed, subscribe as subscribeTopics } from "../topics-store.js?v=1526";
+import { openTopicArticle } from "../components/topic-picker-modal.js?v=1526";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1526";
+import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=1526";
+import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=1526";
+import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=1526";
 // Pure thread-turn renderers — shared with the component handoff gallery so
 // the previews there never drift from the app (handoff/components.html).
-import { SWITCH_SKELETON_HTML } from "./session/thread-turns.js?v=1523";
+import { SWITCH_SKELETON_HTML } from "./session/thread-turns.js?v=1526";
 import {
   clipsToChat,
   finalizeClipStudio,
@@ -98,27 +105,27 @@ import {
   handleClipStudioUrl,
   openClipStudioEditor,
   renderClipStudio,
-} from "./session/clip-studio-view.js?v=1523";
+} from "./session/clip-studio-view.js?v=1526";
 import {
   handleBatchFiles,
   renderBatchStudio,
   repaintBatchRest,
   replayBatchSources,
   startBatchChat,
-} from "./session/batch-studio-view.js?v=1523";
+} from "./session/batch-studio-view.js?v=1526";
 import {
   askRepurposeProfiles,
   askVideoIntake,
   startIdeaDraft,
   startRepurposeFlow,
-} from "./session/draft-questions.js?v=1523";
+} from "./session/draft-questions.js?v=1526";
 import {
   extractionVerdict,
   extractionWhyOpen,
   findExtractionIdea,
   renderThread,
   repaintExtractionCard,
-} from "./session/thread-render.js?v=1523";
+} from "./session/thread-render.js?v=1526";
 import {
   animateBannerIn,
   animateBannerOut,
@@ -130,9 +137,9 @@ import {
   renderComposer,
   renderComposerConnector,
   renderComposerStatus,
-} from "./session/composer.js?v=1523";
-import { renderTopPostsPickerScreen } from "./session/top-posts-view.js?v=1523";
-import { renderEmptyHero } from "./session/empty-hero.js?v=1523";
+} from "./session/composer.js?v=1526";
+import { renderTopPostsPickerScreen } from "./session/top-posts-view.js?v=1526";
+import { renderEmptyHero } from "./session/empty-hero.js?v=1526";
 
 // Default composer placeholder — restored whenever no connector is attached.
 // A connected connector swaps it for "Ask {name} anything…".
@@ -909,6 +916,95 @@ function confirmDeleteAllDrafts(sessionId, text) {
       for (const post of drafts) removePost(sessionId, post.id);
       const label = n === 1 ? "1 draft" : `${n} drafts`;
       postAssistantMessage(sessionId, `Done, I deleted ${label}.`);
+    },
+  });
+}
+
+// "Schedule all the drafts" — I don't schedule on a sentence: I lay out the plan
+// in the chat (each draft, the date I'd give it — the schedule modal's engine,
+// so the same dates it would open on), then ask. Schedule commits it as the
+// Drafts panel does; Adjust dates opens the modal on the same drafts.
+const SCHEDULE_ALL_DRAFTS = /\bschedule\b.*\bdrafts\b/i;
+
+const planDay = (ts) => new Date(ts).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+const planTime = (ts) => new Date(ts).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+const postsWord = (n) => (n === 1 ? "1 post" : `${n} posts`);
+
+function proposeScheduleAllDrafts(session, text) {
+  const sessionId = session.id;
+  postUserTurn(sessionId, text);
+  const drafts = getPosts(sessionId).filter((p) => p.status !== "scheduled");
+  const n = drafts.length;
+  if (!n) {
+    postAssistantMessage(sessionId, "There are no drafts in this chat to schedule.");
+    return;
+  }
+  const strategy = defaultStrategy(session.contextId);
+  const slots = planSlots(drafts, strategy).sort((a, b) => a.when - b.when);
+  const first = slots[0].when;
+  const last = slots[slots.length - 1].when;
+
+  // How I picked, in one sentence — the modal's closed-settings sentence.
+  const nets = [...new Set(drafts.map((p) => networkLabel(p.network)))];
+  const best = nets.length === 1 ? `${nets[0]}'s best time` : "each network's best time";
+  const cadence = (CADENCES.find((c) => c.id === strategy.cadence) || CADENCES[0]).label.toLowerCase();
+  const intro =
+    n === 1
+      ? `Here's when I'd post it: ${planDay(first)}, at ${best}.`
+      : `Here's when I'd post them: ${cadence} from ${planDay(strategy.startFrom)}, each at ${best}, around what's already scheduled.`;
+  const days = Math.round((new Date(last).setHours(0, 0, 0, 0) - new Date(first).setHours(0, 0, 0, 0)) / 86400000) + 1;
+  const summary =
+    n === 1
+      ? `<strong>${planDay(first)}</strong> at ${planTime(first)}`
+      : `<strong>${postsWord(n)} over ${days} ${days === 1 ? "day" : "days"}</strong> · ${planDay(first)} – ${planDay(last)}`;
+
+  const planId = postSchedulePlan(sessionId, {
+    intro,
+    summary,
+    rows: slots.map((s) => ({
+      postId: s.post.id,
+      network: s.post.network,
+      label: refLabel("post", s.post),
+      when: s.when,
+    })),
+  });
+
+  const done = (scheduledSlots) => {
+    setSchedulePlanStatus(sessionId, planId, "scheduled");
+    const sorted = [...(scheduledSlots || [])].sort((a, b) => a.when - b.when);
+    const firstAt = sorted[0]?.when;
+    postAssistantMessage(
+      sessionId,
+      firstAt
+        ? `Done, I scheduled ${postsWord(n)}. The first goes out ${planDay(firstAt)} at ${planTime(firstAt)}.`
+        : `Done, I scheduled ${postsWord(n)}.`,
+    );
+  };
+
+  inlineQuestion.ask(sessionId, {
+    title: `Schedule ${postsWord(n)}?`,
+    subtitle: "Posts will publish to your connected accounts.",
+    stepLabel: "Schedule",
+    items: [],
+    skipLabel: "Not now",
+    actions: [
+      { value: "adjust", label: "Adjust dates", stroked: true },
+      { value: "schedule", label: `Schedule ${postsWord(n)}`, primary: true },
+    ],
+    onPick: (choice) => {
+      postUserTurn(sessionId, choice === "schedule" ? `Schedule ${postsWord(n)}` : "Adjust dates");
+      if (choice === "adjust") {
+        postAssistantMessage(sessionId, "I opened the planner on the same dates. Change any of them, then schedule.");
+        openScheduleForPosts(sessionId, drafts, done);
+        return;
+      }
+      addToQueue(queueEntries(slots));
+      for (const post of drafts) removePost(sessionId, post.id);
+      done(slots);
+    },
+    onSkip: () => {
+      setSchedulePlanStatus(sessionId, planId, "dismissed");
+      postAssistantMessage(sessionId, "Okay, they stay in your drafts.");
     },
   });
 }
@@ -1795,6 +1891,8 @@ function bindSession(root, session) {
     const activeConnector = getActiveConnector(session.id);
     if (!activeConnector && DELETE_ALL_DRAFTS.test(text)) {
       confirmDeleteAllDrafts(session.id, text);
+    } else if (!activeConnector && SCHEDULE_ALL_DRAFTS.test(text)) {
+      proposeScheduleAllDrafts(session, text);
     } else if (activeConnector) {
       sendConnectorMessage(session.id, activeConnector, text);
       clearActiveConnector(session.id);

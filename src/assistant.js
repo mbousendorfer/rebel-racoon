@@ -6,11 +6,11 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1523";
-import { findConnector } from "./connectors-store.js?v=1523";
-import { createSessionNotifier } from "./store-utils.js?v=1523";
-import { addPostDraft } from "./posts-store.js?v=1523";
-import { showToast } from "./components/toast.js?v=1523";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1526";
+import { findConnector } from "./connectors-store.js?v=1526";
+import { createSessionNotifier } from "./store-utils.js?v=1526";
+import { addPostDraft } from "./posts-store.js?v=1526";
+import { showToast } from "./components/toast.js?v=1526";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -594,6 +594,35 @@ export function postClipExtractionTurn(sessionId, { sourceId, filename }) {
   });
   notify(sessionId);
   return id;
+}
+
+// "Schedule all the drafts" — my proposed plan, one row per draft (QUOI →
+// QUAND). Each row keeps a label snapshot: once scheduled, the draft leaves
+// posts-store and its reference can no longer resolve, but the plan must still
+// read. `status`: "proposed" → "scheduled" | "dismissed".
+export function postSchedulePlan(sessionId, { intro, rows, summary }) {
+  const thread = getThread(sessionId);
+  const id = newId();
+  thread.push({
+    id,
+    role: "assistant",
+    variant: "schedule-plan",
+    meta: "Archie",
+    text: intro,
+    rows,
+    summary,
+    status: "proposed",
+    createdAt: Date.now(),
+  });
+  notify(sessionId);
+  return id;
+}
+
+export function setSchedulePlanStatus(sessionId, id, status) {
+  const msg = getThread(sessionId).find((m) => m.id === id);
+  if (!msg) return;
+  msg.status = status;
+  notify(sessionId);
 }
 
 // Structured "Drafted N posts" result turn. Reuses the extraction-turn chrome

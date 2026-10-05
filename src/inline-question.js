@@ -25,7 +25,7 @@
 //   stepLabel         string  — small label on the top right (e.g. "Profile")
 //   skipLabel         string  — label on the Skip button (default "Skip")
 //   items             array   — [{ value, label, caption?, icon?, imgSrc?, counter? }]
-//   actions           array   — [{ value, label, primary?, danger? }] footer buttons,
+//   actions           array   — [{ value, label, primary?, stroked?, danger? }] footer buttons,
 //                               bottom-right, resolving via onPick(value) — a
 //                               confirm with no rows (items: [])
 //                               a row with `counter: true` carries an inline
@@ -73,8 +73,8 @@
 //   onSkip()          fn      — called when Skip / Esc; if omitted, no skip btn
 //   onBack()          fn      — called when ← Back is clicked; if omitted, no back btn
 
-import { chatTurn } from "./screens/_analyse-common.js?v=1523";
-import { createSessionNotifier } from "./store-utils.js?v=1523";
+import { chatTurn } from "./screens/_analyse-common.js?v=1526";
+import { createSessionNotifier } from "./store-utils.js?v=1526";
 
 const states = new Map(); // sessionId → opts
 const sessionNotifier = createSessionNotifier("inline-question");

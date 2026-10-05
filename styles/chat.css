@@ -929,3 +929,99 @@ span.chat-bubble-choice-chip {
 .chat-bubble-list > li + li {
   margin-top: var(--ref-spacing-xxs);
 }
+
+/* "Schedule all the drafts" — my plan, as a framed list (thread-render.js).
+   One row per draft, sorted by date, read QUOI → QUAND like the schedule
+   modal: the draft on the left, its date on the right in a column of fixed
+   width so the dates read top to bottom. Compact: it's a chat artefact. */
+.schedule-plan {
+  margin-top: var(--ref-spacing-xs);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
+  background: var(--ref-color-white);
+  overflow: hidden;
+}
+
+.schedule-plan__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.schedule-plan__row {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+}
+
+.schedule-plan__row + .schedule-plan__row {
+  border-top: 1px solid var(--app-border);
+}
+
+.schedule-plan__what {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  flex: 1;
+  min-width: 0;
+}
+
+.schedule-plan__network {
+  flex-shrink: 0;
+}
+
+.schedule-plan__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.schedule-plan__when {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: var(--ref-spacing-xs);
+  flex-shrink: 0;
+  width: 168px;
+  font-variant-numeric: tabular-nums;
+}
+
+.schedule-plan__day {
+  color: var(--ref-color-grey-100);
+  font-weight: var(--ref-font-weight-bold);
+}
+
+.schedule-plan__time {
+  color: var(--ref-color-grey-80);
+  min-width: 64px;
+  text-align: right;
+}
+
+.schedule-plan__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  border-top: 1px solid var(--app-border);
+  background: var(--ref-color-grey-05);
+  color: var(--ref-color-grey-80);
+  font-size: var(--sys-text-style-caption-size);
+}
+
+.schedule-plan__foot strong {
+  color: var(--ref-color-grey-100);
+}
+
+.schedule-plan__state {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  color: var(--ref-color-grey-100);
+}
+
+.schedule-plan__state--muted {
+  color: var(--ref-color-grey-80);
+}

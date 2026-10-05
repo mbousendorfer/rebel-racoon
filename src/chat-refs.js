@@ -9,10 +9,11 @@
 // inline button (`.chat-ref`): hover previews the object (ref-preview.js),
 // click opens it in the right panel (session.js → focusInPanel).
 
-import { getPosts } from "./posts-store.js?v=1523";
-import { getIdeas, getSources } from "./library.js?v=1523";
-import { networkLabel } from "./network-voice.js?v=1523";
-import { escapeHtml, escapeAttr } from "./utils.js?v=1523";
+import { getPosts } from "./posts-store.js?v=1526";
+import { getIdeas, getSources } from "./library.js?v=1526";
+import { networkLabel } from "./network-voice.js?v=1526";
+import { getQueue } from "./schedule-store.js?v=1526";
+import { escapeHtml, escapeAttr } from "./utils.js?v=1526";
 
 const TOKEN = /\[\[(post|idea|source):([^\]\s]+)\]\]/g;
 const GONE = { post: "a deleted draft", idea: "a deleted idea", source: "a deleted source" };
@@ -66,13 +67,22 @@ function renderLines(text) {
   return out.join("");
 }
 
+// A scheduled draft leaves posts-store for the calendar queue (schedule-store),
+// whose entry ids are `q-<postId>-<when>`. It isn't deleted: name it, say so.
+function scheduledLabel(postId) {
+  const entry = getQueue().find((e) => e.id.startsWith(`q-${postId}-`));
+  if (!entry) return "";
+  const day = new Date(entry.when).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+  return `${escapeHtml(postLabel(entry))} (scheduled for ${day})`;
+}
+
 export function renderRefs(text, sessionId) {
   if (typeof text !== "string") return text;
   text = renderLines(text);
   if (!text.includes("[[")) return text;
   return text.replace(TOKEN, (_, kind, id) => {
     const obj = resolveRef(kind, id, sessionId);
-    if (!obj) return GONE[kind];
+    if (!obj) return kind === "post" ? scheduledLabel(id) || GONE.post : GONE[kind];
     return `<button type="button" class="chat-ref" data-chat-ref="${escapeAttr(`${kind}:${id}`)}" data-chat-ref-session="${escapeAttr(sessionId)}">${escapeHtml(refLabel(kind, obj))}</button>`;
   });
 }

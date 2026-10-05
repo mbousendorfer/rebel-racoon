@@ -88,6 +88,8 @@ src/
   sources-stream.js     — sources PER SESSION + global uploads + processing state machine
   schedule-store.js     — scheduled-post queue (calendar)
   schedule-presets-store.js — GLOBAL: one posting-rhythm preset per Playbook (the schedule modal's Adjust)
+  schedule-engine.js    — the schedule spread (which date each draft gets): the modal and the chat's plan
+  chat-refs.js          — Archie's inline references ([[post|idea|source:id]] → underlined label)
   topic-feeds-store.js  — GLOBAL: one listening feed per Playbook (flag `topicFeed`)
   topics-store.js       — GLOBAL: the Topics + the triage, in two separate structures
   topics-catalog.js     — the eight listening sources, cadences, kinds, review

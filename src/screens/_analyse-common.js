@@ -112,7 +112,7 @@ export function renderPicker(picker) {
     // Card-grid footer action — { value, label, icon? }. Rendered as a
     // prominent bottom button that resolves like a pick (data-{handler}=value).
     footerAction = null,
-    // Footer-only answers — [{ value, label, primary?, danger? }]. A confirm
+    // Footer-only answers — [{ value, label, primary?, stroked?, danger? }]. A confirm
     // with no rows: the buttons sit bottom-right and resolve like a pick
     // (`data-{handler}="value"`). Secondary = ghost grey, primary = blue,
     // danger = the DS red button (stroked red — the DS ships no filled red).
@@ -426,7 +426,7 @@ export function renderPicker(picker) {
   const actionBtns = (actions || [])
     .map(
       (a) =>
-        `<button type="button" class="ap-button ${a.danger ? "stroked red" : a.primary ? "primary blue" : "ghost grey"}" data-${handler}="${a.value}"><span>${a.label}</span></button>`,
+        `<button type="button" class="ap-button ${a.danger ? "stroked red" : a.primary ? "primary blue" : a.stroked ? "stroked grey" : "ghost grey"}" data-${handler}="${a.value}"><span>${a.label}</span></button>`,
     )
     .join("");
   const rightCluster = `${skipBtn}${actionBtns}${primaryBtn}`;

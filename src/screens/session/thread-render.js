@@ -12,20 +12,20 @@ import {
   renderMessageBubble,
   renderNotice,
   renderResultCard,
-} from "./thread-turns.js?v=1523";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=1523";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1523";
-import { getTopPost } from "../../top-posts-store.js?v=1523";
-import { getTopicById } from "../../topics-store.js?v=1523";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=1523";
-import { renderProfileEchoCard } from "../../social-profiles.js?v=1523";
-import { escapeHtml } from "../../utils.js?v=1523";
-import { getIdeas } from "../../library.js?v=1523";
-import { renderRefs } from "../../chat-refs.js?v=1523";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1523";
-import { getThread } from "../../assistant.js?v=1523";
-import { getSuggestion } from "../../voice-coach-store.js?v=1523";
-import { networkLabel, networkIcon } from "../../network-voice.js?v=1523";
+} from "./thread-turns.js?v=1526";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1526";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1526";
+import { getTopPost } from "../../top-posts-store.js?v=1526";
+import { getTopicById } from "../../topics-store.js?v=1526";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=1526";
+import { renderProfileEchoCard } from "../../social-profiles.js?v=1526";
+import { escapeHtml } from "../../utils.js?v=1526";
+import { getIdeas } from "../../library.js?v=1526";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=1526";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1526";
+import { getThread } from "../../assistant.js?v=1526";
+import { getSuggestion } from "../../voice-coach-store.js?v=1526";
+import { networkLabel, networkIcon } from "../../network-voice.js?v=1526";
 
 export function renderThread(messages, sessionId) {
   return messages.map((m) => renderTurn(m, sessionId)).join("");
@@ -98,6 +98,10 @@ function renderTurn(message, sessionId) {
   // Inline "topics" selection widget — the Add menu's "Pick from the Topic Feed".
   if (message.role === "assistant" && message.variant === "topics-widget") {
     return renderTopicsWidgetTurn(message);
+  }
+
+  if (message.role === "assistant" && message.variant === "schedule-plan") {
+    return renderSchedulePlanTurn(message, sessionId);
   }
 
   if (message.role === "assistant" && message.variant === "voice-suggestion") {
@@ -484,6 +488,50 @@ function renderIdeaExtractionTurn(message, sessionId) {
         cta: { label: "View ideas" },
         dataAttr: `data-ideas-card-open="${source.id}"`,
       })}
+    </div>
+  `;
+}
+
+// "Schedule all the drafts" — my plan, readable at a glance: one row per draft,
+// sorted by date, the draft on the left (network glyph + its reference), its
+// date on the right in a column that reads top to bottom. A row whose draft has
+// left the store (scheduled) keeps its label as plain text.
+function renderSchedulePlanTurn(message, sessionId) {
+  const day = (ts) => new Date(ts).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+  const time = (ts) => new Date(ts).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  const rows = message.rows
+    .map((r) => {
+      const live = resolveRef("post", r.postId, sessionId);
+      const what = live ? renderRefs(`[[post:${r.postId}]]`, sessionId) : escapeHtml(r.label);
+      return `
+        <li class="schedule-plan__row">
+          <span class="schedule-plan__what">
+            <i class="${networkIcon(r.network)} schedule-plan__network" title="${escapeHtml(networkLabel(r.network))}" aria-label="${escapeHtml(networkLabel(r.network))}"></i>
+            <span class="schedule-plan__label">${what}</span>
+          </span>
+          <span class="schedule-plan__when">
+            <span class="schedule-plan__day">${day(r.when)}</span>
+            <span class="schedule-plan__time">${time(r.when)}</span>
+          </span>
+        </li>`;
+    })
+    .join("");
+  const state =
+    message.status === "scheduled"
+      ? `<span class="schedule-plan__state"><i class="ap-icon-check" aria-hidden="true"></i>Scheduled</span>`
+      : message.status === "dismissed"
+        ? `<span class="schedule-plan__state schedule-plan__state--muted">Not scheduled</span>`
+        : "";
+  return `
+    <div class="chat-turn chat-turn--ai">
+      <i class="ap-icon-archie-official chat-turn-avatar" aria-hidden="true"></i>
+      <div class="chat-bubble chat-bubble--ai">
+        <div class="chat-bubble-text">${renderRefs(message.text, sessionId)}</div>
+        <div class="schedule-plan">
+          <ol class="schedule-plan__list">${rows}</ol>
+          <div class="schedule-plan__foot"><span>${message.summary}</span>${state}</div>
+        </div>
+      </div>
     </div>
   `;
 }

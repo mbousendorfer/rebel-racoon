@@ -1,17 +1,27 @@
-import { html, raw, escapeText, escapeAttr } from "../utils.js?v=1523";
-import { showToast } from "./toast.js?v=1523";
-import { getQueue, getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=1523";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1523";
+import { html, raw, escapeText, escapeAttr } from "../utils.js?v=1526";
+import { showToast } from "./toast.js?v=1526";
+import { getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=1526";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1526";
 import {
   renderProfileTag,
   profileForNetwork,
   NETWORK_LABEL,
   NETWORK_ICON_BY_PLATFORM,
   normalizeNetwork,
-} from "../social-profiles.js?v=1523";
-import { getContextById } from "../contexts-store.js?v=1523";
-import { canEdit } from "../playbook-access.js?v=1523";
-import { getPreset, savePreset } from "../schedule-presets-store.js?v=1523";
+} from "../social-profiles.js?v=1526";
+import { getContextById } from "../contexts-store.js?v=1526";
+import { canEdit } from "../playbook-access.js?v=1526";
+import { getPreset, savePreset } from "../schedule-presets-store.js?v=1526";
+import {
+  CADENCES,
+  startOfDay,
+  defaultStartFrom,
+  defaultStrategy,
+  networkOf,
+  planSlots,
+  queueEntries,
+  firstLine as extractFirstLine,
+} from "../schedule-engine.js?v=1526";
 
 // Schedule modal — one column, result first.
 //   • Header   — "Schedule N drafts" + one line saying I already picked.
@@ -60,32 +70,6 @@ import { getPreset, savePreset } from "../schedule-presets-store.js?v=1523";
 // replacement point.
 
 const ROOT_ID = "scheduleModal";
-
-// Per-network suggested publishing windows. Each entry lists
-// { dow: [0..6 sunday-first], hours: [24h]} — mirrors the kind of static
-// benchmarks a publishing tool ships with out of the box.
-const PER_NETWORK_OPTIMAL = {
-  linkedin: { dow: [2, 3, 4], hours: [9, 12] },
-  twitter: { dow: [1, 2, 3, 4, 5], hours: [10, 14, 17] },
-  x: { dow: [1, 2, 3, 4, 5], hours: [10, 14, 17] },
-  instagram: { dow: [2, 4, 0], hours: [11, 19] },
-  facebook: { dow: [1, 3, 5], hours: [13, 16] },
-  tiktok: { dow: [2, 3, 4], hours: [18, 20, 22] },
-};
-
-const FALLBACK_OPTIMAL = { dow: [1, 2, 3, 4, 5], hours: [9, 13, 17] };
-
-// Posting rhythms. Each decides WHICH days a draft can land on; the
-// per-network map then decides the HOUR. `days` is a sunday-first dow set;
-// `every` spaces slots N days apart from the start; `weekly` repeats the
-// start day's weekday.
-const CADENCES = [
-  { id: "weekdays", label: "Every weekday", days: [1, 2, 3, 4, 5] },
-  { id: "thrice", label: "3 times a week", days: [1, 3, 5] },
-  { id: "twice", label: "Twice a week", days: [2, 4] },
-  { id: "alternate", label: "Every other day", every: 2 },
-  { id: "once", label: "Once a week", weekly: true },
-];
 
 // Time-of-day bias. `null` = each network's own best hour.
 const TIMES_OF_DAY = [
@@ -160,32 +144,6 @@ function isComputing() {
   return state.slots.some((s) => s.pending);
 }
 
-function startOfDay(ts) {
-  const d = new Date(ts);
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
-function defaultStartFrom() {
-  // Tomorrow — never schedule a batch in the past.
-  const d = startOfDay(Date.now());
-  d.setDate(d.getDate() + 1);
-  return d.getTime();
-}
-
-function pickHour(hours, timeOfDay) {
-  if (!hours || hours.length === 0) return 9;
-  const sorted = [...hours].sort((a, b) => a - b);
-  if (timeOfDay === "morning") return sorted[0];
-  if (timeOfDay === "evening") return sorted[sorted.length - 1];
-  if (timeOfDay === "afternoon") return sorted[Math.floor(sorted.length / 2)];
-  return sorted[0];
-}
-
-function networkOf(post) {
-  return (post.network || "linkedin").toLowerCase();
-}
-
 export function init() {
   let scrim = document.getElementById(`${ROOT_ID}Scrim`);
   let modal = document.getElementById(ROOT_ID);
@@ -235,7 +193,6 @@ export function open({ posts, onConfirm, playbookId = null }) {
   // up gets closed before we paint; it also snapshots the trigger for focus.
   requestOpen(ROOT_ID, close);
   const playbook = playbookId ? getContextById(playbookId) : null;
-  const preset = playbook ? getPreset(playbook.id) : null;
   state = {
     ...emptyState(),
     open: true,
@@ -243,10 +200,7 @@ export function open({ posts, onConfirm, playbookId = null }) {
     playbook,
     // The Playbook's saved rhythm when it has one — but never its start date:
     // a batch always starts tomorrow.
-    strategy: {
-      ...(preset || { cadence: "weekdays", timeOfDay: null, skip: [] }),
-      startFrom: defaultStartFrom(),
-    },
+    strategy: defaultStrategy(playbook?.id),
     onConfirm: typeof onConfirm === "function" ? onConfirm : null,
   };
   // Dates are proposed on open — the user waits for them, never asks for them.
@@ -272,85 +226,10 @@ function close() {
 }
 
 // ── The spread ────────────────────────────────────────────────────────
-// The days already carrying a post on one of THIS batch's networks. That is
-// what the spread avoids: a Facebook post doesn't crowd a LinkedIn one, so a
-// day busy on another network stays eligible — and its row says what's there.
-// (A batch is usually one network: the Drafts panel schedules per network.)
-function busyDaysForBatch() {
-  const networks = new Set(state.posts.map((p) => platformOf(networkOf(p))));
-  const keys = new Set();
-  for (const e of getQueue()) if (networks.has(platformOf(e.network))) keys.add(dayKey(e.when));
-  return keys;
-}
-
-// Walking from `startFrom`, collect the next `count` days that match the
-// rhythm, skipping the weekdays the user ticked, any day already carrying a
-// post on one of the batch's networks, and any day a pinned draft already
-// holds — so the new dates slot in around what's on the calendar. Bounded
-// look-ahead so a pathological pattern can't loop forever.
-function strategyDays(count, strategy, takenKeys) {
-  const start = startOfDay(strategy.startFrom || defaultStartFrom());
-  const single = state.posts.length === 1;
-  // One draft has no rhythm: any day qualifies, the network's best day wins below.
-  const cadence = single ? null : CADENCES.find((c) => c.id === strategy.cadence) || CADENCES[0];
-  const skip = new Set(strategy.skip);
-  const busy = busyDaysForBatch();
-  const startDow = start.getDay();
-  const days = [];
-  const cursor = new Date(start);
-  for (let guard = 0; days.length < count && guard < 400; guard++) {
-    const dow = cursor.getDay();
-    let qualifies = true;
-    if (cadence?.every) {
-      qualifies = Math.round((cursor - start) / 86400000) % cadence.every === 0;
-    } else if (cadence?.weekly) {
-      qualifies = dow === startDow;
-    } else if (cadence) {
-      qualifies = cadence.days.includes(dow);
-    }
-    const key = dayKey(cursor.getTime());
-    const taken = busy.has(key) || takenKeys.has(key);
-    if (qualifies && !skip.has(dow) && !taken) days.push(new Date(cursor));
-    cursor.setDate(cursor.getDate() + 1);
-  }
-  return days;
-}
-
-// A single draft goes to the first free day that is one of its network's
-// best days — "Best time for this post", not "the first free day".
-function singleDay(post, strategy) {
-  const map = PER_NETWORK_OPTIMAL[networkOf(post)] || FALLBACK_OPTIMAL;
-  const candidates = strategyDays(14, strategy, new Set());
-  return candidates.find((d) => map.dow.includes(d.getDay())) || candidates[0];
-}
-
-// Re-spread every draft that the user hasn't set by hand. Pinned rows keep
-// their date and their day counts as taken.
+// The engine lives in schedule-engine.js (the chat proposes the same dates).
+// Re-spread every draft the user hasn't set by hand; pinned rows keep theirs.
 function respread() {
-  const s = state.strategy;
-  const byPost = new Map(state.slots.map((slot) => [slot.post.id, slot]));
-  const pinned = state.posts.filter((p) => byPost.get(p.id)?.pinned);
-  const free = state.posts.filter((p) => !byPost.get(p.id)?.pinned);
-  const takenKeys = new Set(pinned.map((p) => dayKey(byPost.get(p.id).when)));
-  const days =
-    state.posts.length === 1 ? [singleDay(free[0] || state.posts[0], s)] : strategyDays(free.length, s, takenKeys);
-  const fallback = startOfDay(s.startFrom || defaultStartFrom());
-
-  let i = 0;
-  state.slots = state.posts.map((post) => {
-    const existing = byPost.get(post.id);
-    if (existing?.pinned) return existing;
-    const map = PER_NETWORK_OPTIMAL[networkOf(post)] || FALLBACK_OPTIMAL;
-    const hour = pickHour(map.hours, s.timeOfDay);
-    // If the rhythm couldn't yield enough distinct days, stack the remainder
-    // on the last day an hour apart so nothing silently drops.
-    const baseDay = days[i] || days[days.length - 1] || fallback;
-    const overflow = i >= days.length ? i - days.length + 1 : 0;
-    i++;
-    const when = new Date(baseDay);
-    when.setHours(hour + overflow, 0, 0, 0);
-    return { post, when: when.getTime(), pinned: false };
-  });
+  state.slots = planSlots(state.posts, state.strategy, state.slots);
 }
 
 // ── Events ────────────────────────────────────────────────────────────
@@ -491,14 +370,7 @@ function confirmSchedule() {
   const slots = state.slots.map((s) => ({ postId: s.post.id, when: s.when }));
 
   // Push into the live schedule queue before onConfirm, which may close the modal.
-  addToQueue(
-    state.slots.map((s) => ({
-      id: `q-${s.post.id}-${s.when}`,
-      network: s.post.network || "linkedin",
-      text: extractFirstLine(s.post),
-      when: s.when,
-    })),
-  );
+  addToQueue(queueEntries(state.slots));
 
   let result;
   try {
@@ -513,13 +385,6 @@ function confirmSchedule() {
   } else {
     onConfirmSucceeded(slots);
   }
-}
-
-function extractFirstLine(post) {
-  // post.text may be an array of paragraphs on real drafts.
-  if (Array.isArray(post.text) && post.text.length > 0) return post.text[0];
-  const text = (post.preview || post.text || "").toString();
-  return text.split("\n")[0] || text;
 }
 
 function onConfirmSucceeded(slots) {
