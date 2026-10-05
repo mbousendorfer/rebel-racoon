@@ -393,9 +393,19 @@ button.imst-style-card {
   color: var(--ref-color-grey-80);
 }
 
-.imst-images__empty {
-  margin: 0;
-  color: var(--ref-color-grey-80);
+/* An empty block: the module's empty state, compact, in a grey well. */
+.imst-images-empty {
+  border-radius: var(--ref-border-radius-md);
+  background: var(--ref-color-grey-05);
+}
+
+.imst-images-empty .imst-empty {
+  margin: 0 auto;
+  padding: var(--ref-spacing-lg) var(--ref-spacing-md);
+}
+
+.imst-images-empty .imst-empty__icon {
+  background: var(--ref-color-white);
 }
 
 .imst-images__used {

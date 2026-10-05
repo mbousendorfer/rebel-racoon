@@ -13,12 +13,13 @@
 //
 // Everything here saves as it changes, like the styles always did: no Edit.
 
-import { html, raw, toString } from "../lib/html.js?v=1561";
-import { navigate } from "../../../router.js?v=1561";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1561";
-import { toast } from "../ui/toast.js?v=1561";
-import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=1561";
-import { shapesFor } from "../config/formats.js?v=1561";
+import { html, raw, toString } from "../lib/html.js?v=1563";
+import { navigate } from "../../../router.js?v=1563";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=1563";
+import { toast } from "../ui/toast.js?v=1563";
+import { renderEmpty } from "../ui/empty.js?v=1563";
+import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=1563";
+import { shapesFor } from "../config/formats.js?v=1563";
 import {
   addPlaybookReferences,
   deletePlaybookReference,
@@ -27,8 +28,8 @@ import {
   getPlaybookReferences,
   setPlaybookDefaultLook,
   setPlaybookFormat,
-} from "../state/playbook-brand.js?v=1561";
-import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=1561";
+} from "../state/playbook-brand.js?v=1563";
+import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=1563";
 
 const creatorPath = (playbookId, rest) => `/playbook/${encodeURIComponent(playbookId)}/styles/${rest}`;
 const ownStyles = (playbookId) => getStylesForBrand(playbookId).filter((s) => s.kind === "custom");
@@ -49,9 +50,18 @@ const section = ({ aside, body }) =>
     <div class="imst-images-section__body">${body}</div>
   </div>`;
 
+// An empty block says what goes there and how to fill it, with its one action
+// (the aside then drops its own copy of that button). Read-only, no action.
+const emptyBlock = ({ icon, title, body, action }) =>
+  html`<div class="imst-images-empty">${renderEmpty({ icon, title, body, action })}</div>`;
+
 const usedTag = html`<span class="ap-tag grey mini imst-images__used"><span>Used by Generate image</span></span>`;
 
 // ── 1. Image styles ─────────────────────────────────────────────────────────
+
+const createStyleButton = html`<button type="button" class="ap-button primary blue" data-imst-images="new-style">
+  <i class="ap-icon-plus" aria-hidden="true"></i><span>Create a style</span>
+</button>`;
 
 export function renderImagesStyles(playbookId, { canEdit = true } = {}) {
   if (!getBrand(playbookId)) return "";
@@ -62,16 +72,17 @@ export function renderImagesStyles(playbookId, { canEdit = true } = {}) {
       aside: html`<p class="ap-body imst-images__lead">
           A look I learn from a few of your images — light, colours, framing — and draw every new image in.
         </p>
-        ${editable
-          ? html`<button type="button" class="ap-button primary blue" data-imst-images="new-style">
-              <i class="ap-icon-plus" aria-hidden="true"></i><span>Create a style</span>
-            </button>`
-          : ""}`,
+        ${editable && count ? createStyleButton : ""}`,
       body: count
         ? raw(renderPlaybookStyles(playbookId, { canEdit, newTile: false }))
-        : html`<p class="ap-body imst-images__empty">
-            No style yet. Create one from a few images whose look you want.
-          </p>`,
+        : emptyBlock({
+            icon: "ap-icon-sparkles",
+            title: "No image style yet",
+            body: editable
+              ? "Give me 2 to 6 images that share the look you want. I learn it, and every new image can be drawn in it."
+              : "Nobody has created a style for this brand yet.",
+            action: editable ? createStyleButton : "",
+          }),
     }),
   );
 }
@@ -89,7 +100,7 @@ export function renderImagesReferences(playbookId, { canEdit = true } = {}) {
       aside: html`<p class="ap-body imst-images__lead">
           Pictures whose look you like, as they are. A new image can take after one of them.
         </p>
-        ${editable
+        ${editable && refs.length
           ? html`<button type="button" class="ap-button stroked grey" data-imst-images="add-reference">
               <i class="ap-icon-plus" aria-hidden="true"></i><span>Add images</span>
             </button>`
@@ -115,7 +126,18 @@ export function renderImagesReferences(playbookId, { canEdit = true } = {}) {
                 </li>`,
             )}
           </ul>`
-        : html`<p class="ap-body imst-images__empty">No reference image yet.</p>`,
+        : emptyBlock({
+            icon: "ap-icon-image",
+            title: "No reference image yet",
+            body: editable
+              ? "Add a picture whose look you like, as it is. A new image can take after it."
+              : "Nobody has added a reference image for this brand yet.",
+            action: editable
+              ? html`<button type="button" class="ap-button primary blue" data-imst-images="add-reference">
+                  <i class="ap-icon-plus" aria-hidden="true"></i><span>Add images</span>
+                </button>`
+              : "",
+          }),
     }),
   );
 }
@@ -174,16 +196,22 @@ export function renderImagesGenerate(playbookId, { canEdit = true } = {}) {
           When you click <strong>Generate an image</strong> on a draft, I start from the one you pick here, without
           asking.
         </p>
-        <p class="ap-body-bold imst-images__ask">
-          ${value ? "Your default is checked." : "Pick one as the default."}
-        </p>`,
+        ${styles.length + refs.length
+          ? html`<p class="ap-body-bold imst-images__ask">
+              ${value ? "Your default is checked." : "Pick one as the default."}
+            </p>`
+          : ""}`,
       body:
         styles.length + refs.length
           ? html`<div class="imst-images-pick" role="radiogroup" aria-label="Default style or reference image">
               ${group("Image styles", "I draw the image in the style.", styles)}
               ${group("Reference images", "I make the image take after it.", refs)}
             </div>`
-          : html`<p class="ap-body imst-images__empty">Create a style or add a reference image first.</p>`,
+          : emptyBlock({
+              icon: "ap-icon-question",
+              title: "Nothing to pick yet",
+              body: "Create an image style or add a reference image above. Then pick one here, and Generate an image stops asking which style.",
+            }),
     }),
   );
 }
