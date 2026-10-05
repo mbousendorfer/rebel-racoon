@@ -8,24 +8,24 @@
 // user's request, 2026-10-02: a new style keeps the essentials.) A test run
 // on three neutral subjects before saving. Saved FOR the active Playbook.
 
-import { html, toString } from "../lib/html.js?v=1559";
-import { delegate } from "../lib/delegate.js?v=1559";
-import { getPath } from "../../../router.js?v=1559";
-import { setTopbarActions } from "../../../components/topbar.js?v=1559";
-import { hashString, randomSeed } from "../lib/prng.js?v=1559";
-import { renderFrame } from "./frame.js?v=1559";
-import { renderEmpty } from "../ui/empty.js?v=1559";
-import { field, preserveFocus, textInput } from "../ui/fields.js?v=1559";
-import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1559";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1559";
-import { toast } from "../ui/toast.js?v=1559";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1559";
-import { CUSTOM_STYLE_LIMITS, STYLE_TEST_SUBJECTS, presetById } from "../config/style-presets.js?v=1559";
-import { createStyle } from "../model/schema.js?v=1559";
-import { copyService, imageGenerationService } from "../services/index.js?v=1559";
-import { lookFromColors } from "../render/visual.js?v=1559";
-import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1559";
-import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1559";
+import { html, toString } from "../lib/html.js?v=1561";
+import { delegate } from "../lib/delegate.js?v=1561";
+import { getPath } from "../../../router.js?v=1561";
+import { setTopbarActions } from "../../../components/topbar.js?v=1561";
+import { hashString, randomSeed } from "../lib/prng.js?v=1561";
+import { renderFrame } from "./frame.js?v=1561";
+import { renderEmpty } from "../ui/empty.js?v=1561";
+import { field, preserveFocus, textInput } from "../ui/fields.js?v=1561";
+import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1561";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1561";
+import { toast } from "../ui/toast.js?v=1561";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=1561";
+import { CUSTOM_STYLE_LIMITS, STYLE_TEST_SUBJECTS, presetById } from "../config/style-presets.js?v=1561";
+import { createStyle } from "../model/schema.js?v=1561";
+import { copyService, imageGenerationService } from "../services/index.js?v=1561";
+import { lookFromColors } from "../render/visual.js?v=1561";
+import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1561";
+import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1561";
 
 function draftFrom(style, brandId) {
   if (style) {
@@ -37,6 +37,8 @@ function draftFrom(style, brandId) {
       sources: style.custom.sources.filter((s) => s.type === "image").map((s) => ({ ...s })),
       fidelity: style.custom.fidelity,
       stylePrompt: style.custom.stylePrompt || "",
+      dos: (style.custom.dos || []).join("\n"),
+      donts: (style.custom.donts || []).join("\n"),
     };
   }
   return {
@@ -47,6 +49,8 @@ function draftFrom(style, brandId) {
     sources: [],
     fidelity: "essential",
     stylePrompt: "",
+    dos: "",
+    donts: "",
   };
 }
 
@@ -258,6 +262,26 @@ export function mount(target, params, ctx, { embed = null } = {}) {
           >
 ${d.stylePrompt}</textarea
           >
+        </div>
+      </section>
+      <section class="${card}" aria-labelledby="imst-st-rules">
+        <h2 class="ap-body-bold imst-creator__rules-title" id="imst-st-rules">Visual rules</h2>
+        <p class="ap-caption imst-creator__rules-hint">
+          What every image in this style does, and never does. One rule per line.
+        </p>
+        <div class="imst-creator__rules">
+          <div class="ap-textarea-field">
+            <label for="imst-st-dos">Do</label>
+            <textarea id="imst-st-dos" data-imst-field="dos" rows="3" placeholder="One product moment per visual">
+${d.dos}</textarea
+            >
+          </div>
+          <div class="ap-textarea-field">
+            <label for="imst-st-donts">Don't</label>
+            <textarea id="imst-st-donts" data-imst-field="donts" rows="3" placeholder="No stock handshakes">
+${d.donts}</textarea
+            >
+          </div>
         </div>
       </section>`;
     target.innerHTML = toString(

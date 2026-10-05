@@ -263,13 +263,14 @@ export const contexts = [
           ],
           fidelity: "composition",
           stylePrompt: "Always a plain navy or white field, one product moment, lots of air.",
+          // Visual rules belong to the style (2026-10-05): the brand's logo rules stay on brandRules.
+          dos: ["One product moment per visual", "Dark navy or white as the field", "Orange only as the accent"],
+          donts: ["No stock handshakes", "No gradients across the logo", "Never orange text on navy below 24px"],
         },
       },
     ],
     voiceAvoid: ["synergy", "leverage", "10x", "game-changer", "excited to announce"],
     brandRules: {
-      visualDos: ["One product moment per visual", "Dark navy or white as the field", "Orange only as the accent"],
-      visualDonts: ["No stock handshakes", "No gradients across the logo", "Never orange text on navy below 24px"],
       logoMinPx: 40,
       clearSpace: 0.5,
       noLogoDistortion: true,
@@ -849,13 +850,13 @@ export const contexts = [
           ],
           fidelity: "essential",
           stylePrompt: "Outdoors, morning light, the dog is always the hero.",
+          dos: ["Real dogs, real owners", "Daylight, outside", "Violet as the accent, never the field"],
+          donts: ["No dogs in costumes", "No studio cut-outs", "Don't put the logo on a busy background"],
         },
       },
     ],
     voiceAvoid: ["fur baby", "pawsome", "cheap"],
     brandRules: {
-      visualDos: ["Real dogs, real owners", "Daylight, outside", "Violet as the accent, never the field"],
-      visualDonts: ["No dogs in costumes", "No studio cut-outs", "Don't put the logo on a busy background"],
       logoMinPx: 48,
       clearSpace: 0.5,
       noLogoDistortion: true,
@@ -1589,8 +1590,6 @@ export const contexts = [
     // Brand kit (Image Generator, flag sexySquirrel) — see contexts-store#normalizeBrandKit.
     voiceAvoid: ["revolutionary", "best-in-class", "leverage", "synergy"],
     brandRules: {
-      visualDos: ["Show the product doing the job", "Plenty of white", "Real people, real teams"],
-      visualDonts: ["No 3D mascots", "No neon", "Never stretch the logo"],
       logoMinPx: 48,
       clearSpace: 0.75,
       noLogoDistortion: true,

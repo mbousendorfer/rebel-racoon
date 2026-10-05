@@ -681,12 +681,6 @@
   white-space: nowrap;
 }
 
-.pb2-rules {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--ref-spacing-lg);
-}
-
 .pb2-facts {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -694,6 +688,12 @@
   margin: 0;
   padding-top: var(--ref-spacing-md);
   border-top: 1px solid var(--ref-color-grey-20);
+}
+
+/* Alone in its block (Visual rules): no rule above it. */
+.pb2-facts--alone {
+  padding-top: 0;
+  border-top: 0;
 }
 
 .pb2-facts dt {
@@ -729,8 +729,7 @@
 }
 
 @media (max-width: 1100px) {
-  .pb2-grid,
-  .pb2-rules {
+  .pb2-grid {
     grid-template-columns: minmax(0, 1fr);
   }
 

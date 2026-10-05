@@ -14,7 +14,7 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1559";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1561";
 import {
   kitEnabled,
   renderColorRole,
@@ -28,11 +28,11 @@ import {
   handleKitChange,
   kitSnapshot,
   renderImagesTab,
-} from "./playbook-brand-kit.js?v=1559";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1559";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1559";
-import { isFlagOn } from "./feature-flags.js?v=1559";
-import { parseHashParams } from "./url-state.js?v=1559";
+} from "./playbook-brand-kit.js?v=1561";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1561";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1561";
+import { isFlagOn } from "./feature-flags.js?v=1561";
+import { parseHashParams } from "./url-state.js?v=1561";
 import {
   networkVoicesOn,
   baseNetwork,
@@ -42,21 +42,21 @@ import {
   maturity,
   networkLabel,
   networkIcon,
-} from "./network-voice.js?v=1559";
+} from "./network-voice.js?v=1561";
 import {
   getSuggestions,
   accept as acceptVoiceSuggestion,
   dismiss as dismissVoiceSuggestion,
-} from "./voice-coach-store.js?v=1559";
-import { NETWORKS } from "./social-profiles.js?v=1559";
-import { showToast } from "./components/toast.js?v=1559";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1559";
+} from "./voice-coach-store.js?v=1561";
+import { NETWORKS } from "./social-profiles.js?v=1561";
+import { showToast } from "./components/toast.js?v=1561";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1561";
 // The Default look row offers the SAME three catalogues the Image Studio renders, from
 // the one place they are declared — REF_MODES' own header makes the argument: the label,
 // the hint and the brief clause "drift the moment they live apart". No cycle: the engine
 // imports only clip-formats / image-studio-canvas / feature-flags, and its module body
 // builds consts, so importing it here costs nothing at load.
-import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1559";
+import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1561";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2994,11 +2994,8 @@ function renderBrandRead2(data) {
     blocks.push(
       pb2Block(
         "Visual rules",
-        `<div class="pb2-rules">
-          <div><span class="pb2-sub">Do</span>${(r.visualDos || []).length ? pb2Checklist(r.visualDos) : pb2Empty("None yet.")}</div>
-          <div><span class="pb2-sub">Don't</span>${(r.visualDonts || []).length ? pb2Checklist(r.visualDonts, "ap-icon-close") : pb2Empty("None yet.")}</div>
-        </div>
-        <dl class="pb2-facts">
+        // Do / Don't moved into each image style (the style creator), 2026-10-05.
+        `<dl class="pb2-facts pb2-facts--alone">
           <div><dt>Logo minimum size</dt><dd>${esc(r.logoMinPx ?? 48)} px</dd></div>
           <div><dt>Clear space</dt><dd>${esc(r.clearSpace ?? 0.5)} × logo height</dd></div>
           <div><dt>Distortion</dt><dd>${r.noLogoDistortion === false ? "Allowed" : "Never stretch or skew"}</dd></div>
@@ -3443,8 +3440,6 @@ const WRITE_HOOKS = [
   "[data-recap-learn]",
   "[data-recap-look]",
   "[data-recap-kit-pick]",
-  "[data-recap-kit-line-add]",
-  "[data-recap-kit-line-remove]",
   "[data-recap-kit-pair-add]",
   "[data-recap-kit-pair-remove]",
   "[data-nv-add]",

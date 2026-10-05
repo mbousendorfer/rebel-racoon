@@ -732,3 +732,19 @@ button.imst-style-card {
   align-items: center;
   gap: var(--ref-spacing-xxs);
 }
+
+/* The creator's Visual rules: Do and Don't side by side. */
+.imst-creator__rules-title {
+  margin: 0;
+}
+
+.imst-creator__rules-hint {
+  margin: 0;
+  color: var(--ref-color-grey-80);
+}
+
+.imst-creator__rules {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(calc(var(--ref-spacing-xxxl) * 4), 1fr));
+  gap: var(--ref-spacing-sm);
+}

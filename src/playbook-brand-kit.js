@@ -9,9 +9,9 @@
 // the fiche's live data object, exactly like every other Brand row, and are
 // committed by the section's Save (snapshotEditable carries the fields).
 
-import { escapeHtml as esc } from "./utils.js?v=1559";
-import { isFlagOn } from "./feature-flags.js?v=1559";
-import { COLOR_ROLES, LOGO_VARIANTS, getContextById } from "./contexts-store.js?v=1559";
+import { escapeHtml as esc } from "./utils.js?v=1561";
+import { isFlagOn } from "./feature-flags.js?v=1561";
+import { COLOR_ROLES, LOGO_VARIANTS, getContextById } from "./contexts-store.js?v=1561";
 import {
   handlePlaybookImagesClick,
   renderImagesFormats,
@@ -19,7 +19,7 @@ import {
   renderImagesReferences,
   renderImagesStyles,
   renderPlaybookStyles,
-} from "./modules/image-studio/index.js?v=1559";
+} from "./modules/image-studio/index.js?v=1561";
 
 const KIT_FLAG = "sexySquirrel";
 
@@ -111,26 +111,6 @@ export function renderLogoVariants(data, edit, logos) {
 
 // ── Visual rules ─────────────────────────────────────────────────────────
 
-function lineList(field, values, placeholder) {
-  const rows = values
-    .map(
-      (v, i) => `
-      <div class="recap__line-edit">
-        <div class="ap-input-group recap__line-edit-field">
-          <input type="text" data-recap-kit-line="${field}" data-recap-kit-index="${i}" value="${esc(v)}" placeholder="${esc(placeholder)}" aria-label="${esc(placeholder)}" />
-        </div>
-        <button type="button" class="recap__cta-remove" data-recap-kit-line-remove="${field}" data-recap-kit-index="${i}" aria-label="Remove">
-          <i class="ap-icon-close"></i>
-        </button>
-      </div>`,
-    )
-    .join("");
-  return `<div class="recap__line-list">${rows}</div>
-    <button type="button" class="ap-button secondary blue recap__add-row" data-recap-kit-line-add="${field}">
-      <i class="ap-icon-plus"></i><span>Add a rule</span>
-    </button>`;
-}
-
 function pairSwatches(pair) {
   return `<span class="recap__kit-pair" aria-label="${esc(pair[0])} with ${esc(pair[1])}">
     <span class="recap__swatch-chip" style="background:${esc(pair[0])};"></span>
@@ -154,16 +134,8 @@ function colorPick(slot, colors) {
   });
 }
 
-function list(values) {
-  return values.length
-    ? `<ul class="recap__kit-rules">${values.map((v) => `<li>${esc(v)}</li>`).join("")}</ul>`
-    : `<span class="recap__row-empty">None yet</span>`;
-}
-
 export function renderVisualRules(data, edit) {
   const r = data.brandRules || {
-    visualDos: [],
-    visualDonts: [],
     logoMinPx: 48,
     clearSpace: 0.5,
     noLogoDistortion: true,
@@ -172,8 +144,6 @@ export function renderVisualRules(data, edit) {
   const colors = (Array.isArray(data.brandColors) ? data.brandColors : []).filter((c) => c.hex);
   if (!edit) {
     return `<dl class="recap__kit-facts">
-      <dt>Do</dt><dd>${list(r.visualDos)}</dd>
-      <dt>Don't</dt><dd>${list(r.visualDonts)}</dd>
       <dt>Logo minimum size</dt><dd>${esc(r.logoMinPx)} px</dd>
       <dt>Clear space around the logo</dt><dd>${esc(r.clearSpace)} × the logo's height</dd>
       <dt>Logo distortion</dt><dd>${r.noLogoDistortion ? "Never stretch or skew the logo" : "Allowed"}</dd>
@@ -185,8 +155,6 @@ export function renderVisualRules(data, edit) {
     </dl>`;
   }
   return `<div class="recap__kit-edit">
-    <div class="recap__kit-group"><span class="recap__look-label">Do</span>${lineList("visualDos", r.visualDos, "e.g. One product per visual")}</div>
-    <div class="recap__kit-group"><span class="recap__look-label">Don't</span>${lineList("visualDonts", r.visualDonts, "e.g. No stock handshakes")}</div>
     <div class="recap__kit-inline">
       <label class="recap__kit-num">
         <span class="recap__look-label">Logo minimum size</span>
@@ -230,8 +198,6 @@ export function renderVisualRules(data, edit) {
 function rules(data) {
   data.brandRules = data.brandRules && typeof data.brandRules === "object" ? data.brandRules : {};
   const r = data.brandRules;
-  r.visualDos ??= [];
-  r.visualDonts ??= [];
   r.forbiddenPairs ??= [];
   return r;
 }
@@ -250,18 +216,6 @@ export function handleKitClick(event, data) {
     if (kind === "role" && data.brandColors?.[i]) data.brandColors[i].role = value;
     else if (kind === "variant" && data.brandLogos?.[i]) data.brandLogos[i].variant = value;
     else if (kind === "pair") pendingPair[i] = value;
-    return true;
-  }
-  const lineAdd = event.target.closest("[data-recap-kit-line-add]");
-  if (lineAdd) {
-    rules(data)[lineAdd.dataset.recapKitLineAdd].push("");
-    return true;
-  }
-  const lineRemove = event.target.closest("[data-recap-kit-line-remove]");
-  if (lineRemove) {
-    const field = lineRemove.dataset.recapKitLineRemove;
-    const i = Number(lineRemove.dataset.recapKitIndex);
-    rules(data)[field] = rules(data)[field].filter((_, k) => k !== i);
     return true;
   }
   const pairRemove = event.target.closest("[data-recap-kit-pair-remove]");
@@ -286,11 +240,6 @@ export function handleKitClick(event, data) {
 /** Text + number inputs. Returns true when handled (no repaint needed while typing). */
 export function handleKitInput(event, data) {
   const t = event.target;
-  if (t.matches("[data-recap-kit-line]")) {
-    const r = rules(data);
-    r[t.dataset.recapKitLine][Number(t.dataset.recapKitIndex)] = t.value;
-    return true;
-  }
   if (t.matches("[data-recap-kit-num]")) {
     const n = Number(t.value);
     if (Number.isFinite(n)) rules(data)[t.dataset.recapKitNum] = n;

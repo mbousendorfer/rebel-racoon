@@ -22,18 +22,18 @@
 // chooses "Save as global". updateContext is used by the section-edit flow
 // when scope is "Update everywhere".
 
-import { contexts as seed, sharedContexts } from "./mocks.js?v=1559";
-import { isNewUser } from "./user-mode.js?v=1559";
-import { CURRENT_USER } from "./org.js?v=1559";
-import { isFlagOn } from "./feature-flags.js?v=1559";
-import { createNotifier } from "./store-utils.js?v=1559";
+import { contexts as seed, sharedContexts } from "./mocks.js?v=1561";
+import { isNewUser } from "./user-mode.js?v=1561";
+import { CURRENT_USER } from "./org.js?v=1561";
+import { isFlagOn } from "./feature-flags.js?v=1561";
+import { createNotifier } from "./store-utils.js?v=1561";
 import {
   normalizeLanguages,
   mirrorPrimaryToTopLevel,
   syncTopLevelToPrimary,
   cloneVoiceByLanguage,
-} from "./languages.js?v=1559";
-import { cloneVoiceByNetwork } from "./network-voice.js?v=1559";
+} from "./languages.js?v=1561";
+import { cloneVoiceByNetwork } from "./network-voice.js?v=1561";
 
 // Lives up here, away from normalizeBrandLogos where it belongs, because the
 // seed below calls that normalizer at module-init time — a `let` declared beside
@@ -189,8 +189,6 @@ function normalizeBrandRules(rules) {
   const r = rules && typeof rules === "object" ? rules : {};
   const num = (v, fallback) => (Number.isFinite(Number(v)) && v !== "" && v !== null ? Number(v) : fallback);
   return {
-    visualDos: strings(r.visualDos),
-    visualDonts: strings(r.visualDonts),
     logoMinPx: num(r.logoMinPx, 48),
     clearSpace: num(r.clearSpace, 0.5),
     noLogoDistortion: r.noLogoDistortion !== false,
@@ -208,7 +206,15 @@ function normalizeImageStyles(list) {
     .map((s) => ({
       ...s,
       kind: "custom",
-      custom: { fidelity: "essential", stylePrompt: "", ...(s.custom || {}), sources: [...(s.custom?.sources || [])] },
+      // `dos` / `donts`: the style's visual rules (they left brandRules on 2026-10-05).
+      custom: {
+        fidelity: "essential",
+        stylePrompt: "",
+        ...(s.custom || {}),
+        sources: [...(s.custom?.sources || [])],
+        dos: strings(s.custom?.dos),
+        donts: strings(s.custom?.donts),
+      },
     }));
 }
 
