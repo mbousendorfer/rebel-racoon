@@ -14,7 +14,7 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1558";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1559";
 import {
   kitEnabled,
   renderColorRole,
@@ -28,11 +28,11 @@ import {
   handleKitChange,
   kitSnapshot,
   renderImagesTab,
-} from "./playbook-brand-kit.js?v=1558";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1558";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1558";
-import { isFlagOn } from "./feature-flags.js?v=1558";
-import { parseHashParams } from "./url-state.js?v=1558";
+} from "./playbook-brand-kit.js?v=1559";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1559";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1559";
+import { isFlagOn } from "./feature-flags.js?v=1559";
+import { parseHashParams } from "./url-state.js?v=1559";
 import {
   networkVoicesOn,
   baseNetwork,
@@ -42,21 +42,21 @@ import {
   maturity,
   networkLabel,
   networkIcon,
-} from "./network-voice.js?v=1558";
+} from "./network-voice.js?v=1559";
 import {
   getSuggestions,
   accept as acceptVoiceSuggestion,
   dismiss as dismissVoiceSuggestion,
-} from "./voice-coach-store.js?v=1558";
-import { NETWORKS } from "./social-profiles.js?v=1558";
-import { showToast } from "./components/toast.js?v=1558";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1558";
+} from "./voice-coach-store.js?v=1559";
+import { NETWORKS } from "./social-profiles.js?v=1559";
+import { showToast } from "./components/toast.js?v=1559";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1559";
 // The Default look row offers the SAME three catalogues the Image Studio renders, from
 // the one place they are declared — REF_MODES' own header makes the argument: the label,
 // the hint and the brief clause "drift the moment they live apart". No cycle: the engine
 // imports only clip-formats / image-studio-canvas / feature-flags, and its module body
 // builds consts, so importing it here costs nothing at load.
-import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1558";
+import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1559";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2183,7 +2183,7 @@ const TABS = [
   { id: "brand", title: "Brand" },
   // How the brand's images are made (flag sexySquirrel) — kept apart from Brand,
   // which says what the brand looks like.
-  { id: "images", title: "Images", kit: true },
+  { id: "images", title: "Image generation", kit: true },
   { id: "competitors", title: "Competitors" },
   { id: "influencers", title: "Influencers" },
 ];

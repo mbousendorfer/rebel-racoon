@@ -13,13 +13,13 @@
 // through state/playbook-brand.js only, the Playbooks — the brand IS the
 // Playbook. See docs/audits/image-studio-integration.md.
 
-import { navigate } from "../../router.js?v=1558";
-import { isFlagOn } from "../../feature-flags.js?v=1558";
-import { renderTopbar } from "../../components/topbar.js?v=1558";
-import { delegate, disposer } from "./lib/delegate.js?v=1558";
-import { installMenus } from "./ui/menu.js?v=1558";
-import { closeAllDialogs } from "./ui/dialog.js?v=1558";
-import * as styleCreator from "./views/style-creator.js?v=1558";
+import { navigate } from "../../router.js?v=1559";
+import { isFlagOn } from "../../feature-flags.js?v=1559";
+import { renderTopbar } from "../../components/topbar.js?v=1559";
+import { delegate, disposer } from "./lib/delegate.js?v=1559";
+import { installMenus } from "./ui/menu.js?v=1559";
+import { closeAllDialogs } from "./ui/dialog.js?v=1559";
+import * as styleCreator from "./views/style-creator.js?v=1559";
 
 export const FLAG = "sexySquirrel";
 
@@ -56,20 +56,20 @@ export const ROUTES = Object.freeze([
   { pattern: "/playbook/:id/styles/:styleId", handler: screen(styleCreator.mount) },
 ]);
 
-export { openDraftStudio } from "./ui/draft-studio.js?v=1558";
+export { openDraftStudio } from "./ui/draft-studio.js?v=1559";
 export {
   defaultQuickLook,
   generateQuickImage,
   quickImageChoices,
   suggestImageLine,
   suggestImageSubject,
-} from "./quick-image.js?v=1558";
-export { renderPlaybookStyles, handlePlaybookStylesClick } from "./views/playbook-styles.js?v=1558";
+} from "./quick-image.js?v=1559";
+export { renderPlaybookStyles, handlePlaybookStylesClick } from "./views/playbook-styles.js?v=1559";
 export {
   renderImagesStyles,
   renderImagesReferences,
   renderImagesGenerate,
   renderImagesFormats,
   handlePlaybookImagesClick,
-} from "./views/playbook-images.js?v=1558";
-export { shapesFor } from "./config/formats.js?v=1558";
+} from "./views/playbook-images.js?v=1559";
+export { shapesFor } from "./config/formats.js?v=1559";
