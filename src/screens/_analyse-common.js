@@ -112,6 +112,11 @@ export function renderPicker(picker) {
     // Card-grid footer action — { value, label, icon? }. Rendered as a
     // prominent bottom button that resolves like a pick (data-{handler}=value).
     footerAction = null,
+    // Footer-only answers — [{ value, label, primary?, danger? }]. A confirm
+    // with no rows: the buttons sit bottom-right and resolve like a pick
+    // (`data-{handler}="value"`). Secondary = ghost grey, primary = blue,
+    // danger = the DS red button (stroked red — the DS ships no filled red).
+    actions = null,
     // Search field — render a live filter box above the rows (used for long
     // lists like "pick one of 40 connected profiles"). Rows carry a
     // `data-search` haystack that the global input delegate matches against;
@@ -283,7 +288,7 @@ export function renderPicker(picker) {
       return `
         <button
           type="button"
-          class="analyse__option${isPreset ? " is-selected" : ""}${isDisabled ? " analyse__option--disabled" : ""}${it.tone === "danger" ? " analyse__option--danger" : ""}${hiddenClass(it)}"
+          class="analyse__option${isPreset ? " is-selected" : ""}${isDisabled ? " analyse__option--disabled" : ""}${hiddenClass(it)}"
           data-${handler}="${it.value}"${searchAttr(it)}
           ${isDisabled ? `disabled aria-disabled="true"` : ""}
           ${selectable ? `aria-pressed="${isPreset ? "true" : "false"}"` : ""}
@@ -418,7 +423,13 @@ export function renderPicker(picker) {
       : hasCounterSubmit
         ? `<button type="button" class="ap-button primary blue" data-${handler}-counter-submit="${counterItem.value}"><span>Generate ${counterSubmitCount} draft${counterSubmitCount === 1 ? "" : "s"}</span></button>`
         : "";
-  const rightCluster = `${skipBtn}${primaryBtn}`;
+  const actionBtns = (actions || [])
+    .map(
+      (a) =>
+        `<button type="button" class="ap-button ${a.danger ? "stroked red" : a.primary ? "primary blue" : "ghost grey"}" data-${handler}="${a.value}"><span>${a.label}</span></button>`,
+    )
+    .join("");
+  const rightCluster = `${skipBtn}${actionBtns}${primaryBtn}`;
   const footer =
     backBtn || rightCluster
       ? `<div class="analyse__options-submit">${backBtn}<span class="analyse__footer-spacer" aria-hidden="true"></span>${rightCluster}</div>`

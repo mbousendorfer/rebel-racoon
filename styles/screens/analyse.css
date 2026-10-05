@@ -510,11 +510,3 @@
   font-size: 28px;
   line-height: 1;
 }
-
-/* The destructive answer of a confirm (`tone: "danger"`, e.g. "Delete 4
-   drafts"): only the glyph turns red — the label keeps the ink, the row keeps
-   the hover, so the danger reads without shouting. */
-.analyse__option--danger .analyse__option-icon {
-  background: var(--sys-color-error-light-bg);
-  color: var(--sys-color-error-text);
-}

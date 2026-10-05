@@ -8,11 +8,11 @@
 // uses, so the preview IS what a click opens. The card is inert: a picture of
 // the object, not a second set of its controls.
 
-import { resolveRef } from "../chat-refs.js?v=1519";
-import { getIdeas, getSources } from "../library.js?v=1519";
-import { renderPostCard } from "./post-card.js?v=1519";
-import { renderCompactIdeaCard } from "./idea-card-compact.js?v=1519";
-import { renderSourceCard } from "./source-card.js?v=1519";
+import { resolveRef } from "../chat-refs.js?v=1522";
+import { getIdeas, getSources } from "../library.js?v=1522";
+import { renderPostCard } from "./post-card.js?v=1522";
+import { renderCompactIdeaCard } from "./idea-card-compact.js?v=1522";
+import { renderSourceCard } from "./source-card.js?v=1522";
 
 const ANCHOR_SEL = "[data-chat-ref]";
 const DELAY = 250;
@@ -74,6 +74,16 @@ function show() {
   el.innerHTML = body(kind, obj, sessionId);
   document.body.appendChild(el);
   place();
+  watchAnchor();
+}
+
+// A thread re-render (a new turn lands) replaces the anchor without any
+// mouseout — the card would outlive what it points at. Checked per frame, only
+// while a card is open.
+function watchAnchor() {
+  if (!el) return;
+  if (!anchor?.isConnected) return hide();
+  requestAnimationFrame(watchAnchor);
 }
 
 export function hide() {

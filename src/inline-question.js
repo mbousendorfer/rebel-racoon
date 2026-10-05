@@ -24,9 +24,10 @@
 //   subtitle          string  — optional helper line under the title (what to do)
 //   stepLabel         string  — small label on the top right (e.g. "Profile")
 //   skipLabel         string  — label on the Skip button (default "Skip")
-//   items             array   — [{ value, label, caption?, icon?, imgSrc?, counter?, tone? }]
-//                               `tone: "danger"` tints the row's icon red — the
-//                               destructive answer of a confirm (e.g. delete all drafts)
+//   items             array   — [{ value, label, caption?, icon?, imgSrc?, counter? }]
+//   actions           array   — [{ value, label, primary?, danger? }] footer buttons,
+//                               bottom-right, resolving via onPick(value) — a
+//                               confirm with no rows (items: [])
 //                               a row with `counter: true` carries an inline
 //                               −/+ version stepper even in single-select mode;
 //                               clicking the row advances and onPick gets its
@@ -72,8 +73,8 @@
 //   onSkip()          fn      — called when Skip / Esc; if omitted, no skip btn
 //   onBack()          fn      — called when ← Back is clicked; if omitted, no back btn
 
-import { chatTurn } from "./screens/_analyse-common.js?v=1519";
-import { createSessionNotifier } from "./store-utils.js?v=1519";
+import { chatTurn } from "./screens/_analyse-common.js?v=1522";
+import { createSessionNotifier } from "./store-utils.js?v=1522";
 
 const states = new Map(); // sessionId → opts
 const sessionNotifier = createSessionNotifier("inline-question");
@@ -291,6 +292,7 @@ export function renderChrome(sessionId) {
     // Footer action — a prominent bottom button in the cards footer that
     // resolves like any pick (e.g. "No subtitles" under the style grid).
     footerAction: s.footerAction || null,
+    actions: s.actions || null,
     stepIndicator: s.stepLabel || null,
     skipLabel: s.onSkip ? s.skipLabel || "Skip" : null,
     showBack: !!s.onBack,
