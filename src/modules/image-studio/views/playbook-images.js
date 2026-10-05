@@ -13,12 +13,12 @@
 //
 // Everything here saves as it changes, like the styles always did: no Edit.
 
-import { html, raw, toString } from "../lib/html.js?v=1544";
-import { navigate } from "../../../router.js?v=1544";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1544";
-import { toast } from "../ui/toast.js?v=1544";
-import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=1544";
-import { shapesFor } from "../config/formats.js?v=1544";
+import { html, raw, toString } from "../lib/html.js?v=1549";
+import { navigate } from "../../../router.js?v=1549";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=1549";
+import { toast } from "../ui/toast.js?v=1549";
+import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=1549";
+import { shapesFor } from "../config/formats.js?v=1549";
 import {
   addPlaybookReferences,
   deletePlaybookReference,
@@ -27,8 +27,8 @@ import {
   getPlaybookReferences,
   setPlaybookDefaultLook,
   setPlaybookFormat,
-} from "../state/playbook-brand.js?v=1544";
-import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=1544";
+} from "../state/playbook-brand.js?v=1549";
+import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=1549";
 
 const creatorPath = (playbookId, rest) => `/playbook/${encodeURIComponent(playbookId)}/styles/${rest}`;
 const ownStyles = (playbookId) => getStylesForBrand(playbookId).filter((s) => s.kind === "custom");
@@ -40,67 +40,84 @@ const NETWORKS = [
   { id: "x", label: "X", icon: "ap-icon-x-official" },
 ];
 
+// Every block reads the same way: on the left, what it is and its one action;
+// on the right, the things themselves. Styles and reference images keep their
+// own shapes there (cards vs plain pictures) — they are different things.
+const section = ({ aside, body }) =>
+  html`<div class="imst-images-section">
+    <div class="imst-images-section__aside">${aside}</div>
+    <div class="imst-images-section__body">${body}</div>
+  </div>`;
+
+const usedTag = html`<span class="ap-tag grey mini imst-images__used"><span>Used by Generate image</span></span>`;
+
 // ── 1. Image styles ─────────────────────────────────────────────────────────
 
 export function renderImagesStyles(playbookId, { canEdit = true } = {}) {
   if (!getBrand(playbookId)) return "";
   const editable = canEdit && canEditBrand(playbookId);
   const count = ownStyles(playbookId).length;
-  return toString(html`
-    <div class="imst-images-styles">
-      <div class="imst-images-styles__head">
-        <p class="ap-body imst-images__lead">
-          A style is a look I learn from a few of your images — the light, the colours, the framing. Every image I make
-          for this brand can be drawn in it.
+  return toString(
+    section({
+      aside: html`<p class="ap-body imst-images__lead">
+          A look I learn from a few of your images — light, colours, framing — and draw every new image in.
         </p>
         ${editable
           ? html`<button type="button" class="ap-button primary orange" data-imst-images="new-style">
               <i class="ap-icon-sparkles" aria-hidden="true"></i><span>Create a style</span>
             </button>`
-          : ""}
-      </div>
-      ${count
-        ? html`${raw(renderPlaybookStyles(playbookId, { canEdit, newTile: false }))}`
-        : html`<p class="ap-body imst-pbstyles__empty">No style yet. Give me a few images whose look you want.</p>`}
-    </div>
-  `);
+          : ""}`,
+      body: count
+        ? raw(renderPlaybookStyles(playbookId, { canEdit, newTile: false }))
+        : html`<p class="ap-body imst-images__empty">
+            No style yet. Create one from a few images whose look you want.
+          </p>`,
+    }),
+  );
 }
 
 // ── 2. Reference images ─────────────────────────────────────────────────────
 
 export function renderImagesReferences(playbookId, { canEdit = true } = {}) {
-  if (!getBrand(playbookId)) return "";
+  const brand = getBrand(playbookId);
+  if (!brand) return "";
   const editable = canEdit && canEditBrand(playbookId);
   const refs = getPlaybookReferences(playbookId);
-  return toString(html`
-    <p class="ap-body imst-images__lead">Pictures whose look you like. A new image can take after one of them.</p>
-    <ul class="imst-images-refs">
-      ${editable
-        ? html`<li>
-            <button type="button" class="imst-images-refs__add" data-imst-images="add-reference">
-              <i class="ap-icon-plus" aria-hidden="true"></i><span class="ap-caption">Add images</span>
-            </button>
-          </li>`
-        : ""}
-      ${refs.map(
-        (r) =>
-          html`<li class="imst-images-refs__item">
-            <img src="${r.url}" alt="${r.label || "Reference image"}" loading="lazy" draggable="false" />
-            ${editable
-              ? html`<button
-                  type="button"
-                  class="ap-close-button imst-images-refs__remove"
-                  data-imst-images="delete-reference"
-                  data-imst-item="${r.id}"
-                  aria-label="Delete ${r.label || "this reference image"}"
-                >
-                  <i class="ap-icon-close" aria-hidden="true"></i>
-                </button>`
-              : ""}
-          </li>`,
-      )}
-    </ul>
-  `);
+  const used = brand.defaults?.referenceUrl;
+  return toString(
+    section({
+      aside: html`<p class="ap-body imst-images__lead">
+          Pictures whose look you like, as they are. A new image can take after one of them.
+        </p>
+        ${editable
+          ? html`<button type="button" class="ap-button stroked grey" data-imst-images="add-reference">
+              <i class="ap-icon-plus" aria-hidden="true"></i><span>Add images</span>
+            </button>`
+          : ""}`,
+      body: refs.length
+        ? html`<ul class="imst-images-refs">
+            ${refs.map(
+              (r) =>
+                html`<li class="imst-images-refs__item">
+                  <img src="${r.url}" alt="${r.label || "Reference image"}" loading="lazy" draggable="false" />
+                  ${r.url === used ? usedTag : ""}
+                  ${editable
+                    ? html`<button
+                        type="button"
+                        class="ap-close-button imst-images-refs__remove"
+                        data-imst-images="delete-reference"
+                        data-imst-item="${r.id}"
+                        aria-label="Delete ${r.label || "this reference image"}"
+                      >
+                        <i class="ap-icon-close" aria-hidden="true"></i>
+                      </button>`
+                    : ""}
+                </li>`,
+            )}
+          </ul>`
+        : html`<p class="ap-body imst-images__empty">No reference image yet.</p>`,
+    }),
+  );
 }
 
 // ── 3. Generate image ───────────────────────────────────────────────────────
@@ -145,6 +162,14 @@ function select({ name, value, groups, placeholder, ariaLabel, disabled }) {
   </details>`;
 }
 
+// A frame's longer side is the same for every shape, so the ratios compare
+// true side by side (a Story is tall, a Link is wide, a Square is square).
+function frameSize(shape) {
+  const long = Math.max(shape.w, shape.h);
+  const r = (v) => Math.round((v / long) * 1000) / 1000;
+  return `width:calc(var(--imst-frame) * ${r(shape.w)});height:calc(var(--imst-frame) * ${r(shape.h)})`;
+}
+
 export function renderImagesGenerate(playbookId, { canEdit = true } = {}) {
   const brand = getBrand(playbookId);
   if (!brand) return "";
@@ -160,21 +185,54 @@ export function renderImagesGenerate(playbookId, { canEdit = true } = {}) {
     label: r.label || "Reference image",
     avatar: r.url,
   }));
+  const lookValue = look.kind ? `${look.kind}:${look.id}` : "";
+  const picture = [...styles, ...refs].find((o) => o.value === lookValue)?.avatar || "";
   const formats = getPlaybookFormats(playbookId);
   const hasLooks = styles.length + refs.length > 0;
-  return toString(html`
-    <p class="ap-body imst-images__lead">
-      When you click <strong>Generate image</strong> on a draft, I use these right away — no questions about style or
-      shape.
-    </p>
-    <dl class="imst-images-settings">
-      <div class="imst-images-settings__row">
-        <dt class="ap-body-bold">Look</dt>
-        <dd>
+
+  // One frame per network, at the shape it will get, filled with the look:
+  // what Generate image makes there, before anyone clicks it.
+  const frames = NETWORKS.map((n) => {
+    const all = shapesFor(n.id);
+    const chosen = all.find((s) => s.id === formats[n.id]);
+    const shape = chosen || all[0];
+    const options = [
+      { value: "", label: "Automatic" },
+      ...all.map((s) => ({ value: s.id, label: `${s.label} ${s.ratio}` })),
+    ];
+    return html`<li class="imst-images-frame">
+      <span class="imst-images-frame__stage">
+        <span class="imst-images-frame__shape" style="${frameSize(shape)}">
+          ${picture
+            ? html`<img src="${picture}" alt="" draggable="false" />`
+            : html`<i class="ap-icon-image" aria-hidden="true"></i>`}
+        </span>
+      </span>
+      <span class="imst-images-frame__net ap-body-bold"><i class="${n.icon}" aria-hidden="true"></i>${n.label}</span>
+      ${select({
+        name: `format:${n.id}`,
+        value: chosen ? chosen.id : "",
+        groups: [{ label: "", options }],
+        placeholder: "Automatic",
+        ariaLabel: `Format on ${n.label}`,
+        disabled: !editable,
+      })}
+    </li>`;
+  });
+
+  return toString(
+    section({
+      aside: html`<p class="ap-body imst-images__lead">
+        When you click <strong>Generate image</strong> on a draft, I make it in this look and at its network's format,
+        without asking.
+      </p>`,
+      body: html`<div class="imst-images-generate">
+        <div class="imst-images-generate__look">
+          <span class="ap-body-bold">Look</span>
           ${hasLooks
             ? select({
                 name: "look",
-                value: look.kind ? `${look.kind}:${look.id}` : "",
+                value: lookValue,
                 groups: [
                   { label: "Image styles", options: styles },
                   { label: "Reference images", options: refs },
@@ -184,29 +242,13 @@ export function renderImagesGenerate(playbookId, { canEdit = true } = {}) {
                 disabled: !editable,
               })
             : html`<span class="ap-body">Create a style or add a reference image first.</span>`}
-        </dd>
-      </div>
-      ${NETWORKS.map((n) => {
-        const shapes = shapesFor(n.id).map((s) => ({ value: s.id, label: `${s.label} ${s.ratio}` }));
-        return html`<div class="imst-images-settings__row">
-          <dt class="ap-body-bold">
-            <i class="${n.icon}" aria-hidden="true"></i>
-            ${n.label} format
-          </dt>
-          <dd>
-            ${select({
-              name: `format:${n.id}`,
-              value: shapes.some((s) => s.value === formats[n.id]) ? formats[n.id] : "",
-              groups: [{ label: "", options: [{ value: "", label: "Automatic" }, ...shapes] }],
-              placeholder: "Automatic",
-              ariaLabel: `Format on ${n.label}`,
-              disabled: !editable,
-            })}
-          </dd>
-        </div>`;
-      })}
-    </dl>
-  `);
+        </div>
+        <ul class="imst-images-frames">
+          ${frames}
+        </ul>
+      </div>`,
+    }),
+  );
 }
 
 // ── Events ──────────────────────────────────────────────────────────────────

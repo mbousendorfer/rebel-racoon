@@ -11,13 +11,13 @@
 // weights and a test on three subjects. The system presets are NOT shown here:
 // they belong to no Playbook, and the fiche lists only what is this brand's.
 
-import { html, toString } from "../lib/html.js?v=1544";
-import { navigate } from "../../../router.js?v=1544";
-import { styleThumb } from "../ui/style-thumb.js?v=1544";
-import { confirmDialog } from "../ui/dialog.js?v=1544";
-import { toast } from "../ui/toast.js?v=1544";
-import { canEditBrand, getBrand, getStyle, getStylesForBrand } from "../state/store.js?v=1544";
-import { deleteStyle, duplicateStyle } from "../state/style-actions.js?v=1544";
+import { html, toString } from "../lib/html.js?v=1549";
+import { navigate } from "../../../router.js?v=1549";
+import { styleThumb } from "../ui/style-thumb.js?v=1549";
+import { confirmDialog } from "../ui/dialog.js?v=1549";
+import { toast } from "../ui/toast.js?v=1549";
+import { canEditBrand, getBrand, getStyle, getStylesForBrand } from "../state/store.js?v=1549";
+import { deleteStyle, duplicateStyle } from "../state/style-actions.js?v=1549";
 
 const creatorPath = (playbookId, rest) => `/playbook/${encodeURIComponent(playbookId)}/styles/${rest}`;
 
@@ -63,7 +63,11 @@ function styleCard(style, brand, canEdit) {
   return itemCard({
     art: styleThumb(style, brand),
     label: style.label,
-    meta: sourcesSummary(style),
+    // The style Generate image uses says so (the Images tab's third block sets it).
+    meta:
+      brand.defaults?.styleId === style.id
+        ? html`<span class="ap-tag grey mini imst-images__used"><span>Used by Generate image</span></span>`
+        : sourcesSummary(style),
     openAttrs: canEdit ? html`data-imst-pb-style="edit" ${id}` : null,
     actions: canEdit
       ? html`<button

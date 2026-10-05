@@ -362,34 +362,53 @@ button.imst-style-card {
 }
 
 /* ── The Playbook's Images tab ─────────────────────────────────────────── */
+/* Each block: what it is + its action on the left, the things on the right. */
+.imst-images-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-md) var(--ref-spacing-xl);
+}
+
+.imst-images-section__aside {
+  flex: 1 1 calc(var(--ref-spacing-xxxl) * 3.5);
+  max-width: calc(var(--ref-spacing-xxxl) * 4.5);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ref-spacing-sm);
+}
+
+.imst-images-section__body {
+  flex: 3 1 calc(var(--ref-spacing-xxxl) * 7);
+  min-width: 0;
+}
+
+/* In the tab, the style cards are a gallery, not posters. */
+.imst-images-section__body .imst-pbstyles__grid {
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--ref-spacing-xxxl) * 4.4), 1fr));
+}
+
 .imst-images__lead {
   margin: 0;
-  max-width: 64ch;
   color: var(--ref-color-grey-80);
 }
 
-/* Image styles: the lead, then the one primary action, on one line. */
-.imst-images-styles {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-md);
+.imst-images__empty {
+  margin: 0;
+  color: var(--ref-color-grey-80);
 }
 
-.imst-images-styles__head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--ref-spacing-md);
-  flex-wrap: wrap;
+.imst-images__used {
+  align-self: flex-start;
 }
 
-/* Reference images: just pictures, small — not the styles' cards. */
+/* Reference images: just pictures — not the styles' cards. */
 .imst-images-refs {
   list-style: none;
-  margin: var(--ref-spacing-sm) 0 0;
+  margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(calc(var(--ref-spacing-xxxl) * 1.6), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--ref-spacing-xxxl) * 1.8), 1fr));
   gap: var(--ref-spacing-xs);
 }
 
@@ -408,6 +427,13 @@ button.imst-style-card {
   object-fit: cover;
 }
 
+.imst-images-refs__item .imst-images__used {
+  position: absolute;
+  left: var(--ref-spacing-xxs);
+  bottom: var(--ref-spacing-xxs);
+  background: var(--ref-color-white);
+}
+
 .imst-images-refs__remove {
   position: absolute;
   top: var(--ref-spacing-xxs);
@@ -415,63 +441,82 @@ button.imst-style-card {
   background: var(--ref-color-white);
 }
 
-.imst-images-refs__add {
+/* Generate image: the look, then one frame per network at its real shape. */
+.imst-images-generate {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--ref-spacing-xxs);
-  width: 100%;
-  aspect-ratio: 1;
-  border: 1px solid var(--ref-color-grey-20);
-  border-radius: var(--ref-border-radius-md);
-  background: var(--ref-color-grey-05);
-  color: var(--ref-color-grey-80);
-  font: inherit;
-  cursor: pointer;
+  gap: var(--ref-spacing-md);
 }
 
-.imst-images-refs__add:hover {
-  border-color: var(--ref-color-electric-blue-100);
-  color: var(--ref-color-electric-blue-100);
-}
-
-/* Generate image: label / control rows. */
-.imst-images-settings {
-  margin: var(--ref-spacing-sm) 0 0;
+.imst-images-generate__look {
   display: flex;
-  flex-direction: column;
-}
-
-.imst-images-settings__row {
-  display: grid;
-  grid-template-columns: calc(var(--ref-spacing-xxxl) * 3) minmax(0, 1fr);
   align-items: center;
   gap: var(--ref-spacing-sm);
-  padding: var(--ref-spacing-xs) 0;
-  border-bottom: 1px solid var(--ref-color-grey-20);
 }
 
-.imst-images-settings__row:last-child {
-  border-bottom: 0;
+.imst-images-frames {
+  --imst-frame: calc(var(--ref-spacing-xxxl) * 1.9);
+  list-style: none;
+  margin: 0;
+  padding: var(--ref-spacing-md);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(calc(var(--ref-spacing-xxxl) * 2.6), 1fr));
+  gap: var(--ref-spacing-md) var(--ref-spacing-sm);
+  border-radius: var(--ref-border-radius-md);
+  background: var(--ref-color-grey-05);
 }
 
-.imst-images-settings__row dt {
+.imst-images-frame {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xs);
+  min-width: 0;
+}
+
+/* Every frame sits on the same baseline, whatever its ratio. */
+.imst-images-frame__stage {
+  display: flex;
+  align-items: flex-end;
+  height: var(--imst-frame);
+}
+
+.imst-images-frame__shape {
+  display: grid;
+  place-items: center;
+  border-radius: var(--ref-border-radius-sm);
+  overflow: hidden;
+  background: var(--ref-color-white);
+  border: 1px solid var(--ref-color-grey-20);
+  color: var(--ref-color-grey-60);
+  transition:
+    width 0.2s ease,
+    height 0.2s ease;
+}
+
+.imst-images-frame__shape img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.imst-images-frame .imst-images__select {
+  width: 100%;
+}
+
+.imst-images-frame__net {
   display: flex;
   align-items: center;
   gap: var(--ref-spacing-xxs);
-}
-
-.imst-images-settings__row dd {
-  margin: 0;
 }
 
 .imst-images__select {
   width: auto;
-  max-width: calc(var(--ref-spacing-xxxl) * 6);
+  max-width: 100%;
 }
 
-/* The list may be wider than its trigger: names and kinds stay on one line. */
+/* The list may be wider than its trigger: names stay on one line. */
 .imst-images__select .ap-select-dropdown {
   right: auto;
   min-width: 100%;
@@ -484,4 +529,10 @@ button.imst-style-card {
   height: var(--ref-spacing-md);
   border-radius: var(--ref-border-radius-sm);
   object-fit: cover;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .imst-images-frame__shape {
+    transition: none;
+  }
 }
