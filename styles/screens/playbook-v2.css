@@ -771,23 +771,3 @@
   align-self: flex-start;
   margin-top: var(--ref-spacing-xs);
 }
-
-/* ── Imagery › Default format (flag sexySquirrel) ──────────────────────── */
-.pb2-facts dt > i {
-  vertical-align: middle;
-}
-
-.pb2-facts dd .recap__kit-select {
-  font-weight: var(--ref-font-weight-regular);
-}
-
-/* Directly under its sub-label: no rule above, unlike the Visual rules facts. */
-.pb2-facts.recap__imagery-formats {
-  border-top: 0;
-  padding-top: var(--ref-spacing-xxs);
-}
-
-.recap__generate-lead {
-  margin: 0;
-  max-width: 64ch;
-}

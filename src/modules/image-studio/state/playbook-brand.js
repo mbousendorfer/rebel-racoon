@@ -17,16 +17,16 @@ import {
   getContexts,
   subscribe as subscribeContexts,
   updateContext,
-} from "../../../contexts-store.js?v=1541";
-import { createStyle } from "../model/schema.js?v=1541";
-import { canEdit, usableContexts } from "../../../playbook-access.js?v=1541";
+} from "../../../contexts-store.js?v=1544";
+import { createStyle } from "../model/schema.js?v=1544";
+import { canEdit, usableContexts } from "../../../playbook-access.js?v=1544";
 import {
   getActivePlaybookId,
   isWorkspaceMode,
   playbookForNewWork,
   subscribe as subscribeActive,
-} from "../../../active-playbook.js?v=1541";
-import { storageService as storage } from "../services/index.js?v=1541";
+} from "../../../active-playbook.js?v=1544";
+import { storageService as storage } from "../services/index.js?v=1544";
 
 // Which copy archetype the mocked copyService uses — guessed from the Playbook's words.
 function sectorKeyOf(ctx) {
@@ -171,8 +171,9 @@ export function deletePlaybookStyle(id, styleId) {
 // ── The brand's reference images and its default look ───────────────────────
 // Brand › Imagery shows the reference images beside the styles, the same way
 // and as live: added and removed from their own row, outside the section's
-// edit mode. One of either is the brand's look (`defaultLook`), picked in the
-// "Choose the look" dialog (views/playbook-look.js).
+// edit mode. One of either is the brand's look (`defaultLook`), and each
+// network may have a preferred shape (`formatByNetwork`) — the Playbook's
+// Images tab (views/playbook-images.js) sets both.
 
 export function getPlaybookReferences(id) {
   return (getContextById(id)?.referenceImages || []).map((r) => ({ id: r.id, label: r.label || "", url: r.url }));
@@ -207,11 +208,26 @@ export function getPlaybookDefaultLook(id) {
   return { kind: d.kind || "", id: d.id || "" };
 }
 
-/** The look "Use this look" saves — a style or a reference image, never both. */
+/** The look Generate image starts from — a style or a reference image, never both. */
 export function setPlaybookDefaultLook(id, look) {
   const ctx = getContextById(id);
   if (!ctx || !canEdit(ctx)) return false;
   updateContext(id, { defaultLook: { kind: look.kind, id: look.id }, updatedAt: "just now" });
+  return true;
+}
+
+export function getPlaybookFormats(id) {
+  return { ...(getContextById(id)?.formatByNetwork || {}) };
+}
+
+/** One network's preferred shape ("" = automatic, the network's first). */
+export function setPlaybookFormat(id, network, shapeId) {
+  const ctx = getContextById(id);
+  if (!ctx || !canEdit(ctx)) return false;
+  const next = { ...(ctx.formatByNetwork || {}) };
+  if (shapeId) next[network] = shapeId;
+  else delete next[network];
+  updateContext(id, { formatByNetwork: next, updatedAt: "just now" });
   return true;
 }
 

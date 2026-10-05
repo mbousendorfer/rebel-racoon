@@ -9,17 +9,16 @@
 // the fiche's live data object, exactly like every other Brand row, and are
 // committed by the section's Save (snapshotEditable carries the fields).
 
-import { escapeHtml as esc } from "./utils.js?v=1541";
-import { isFlagOn } from "./feature-flags.js?v=1541";
-import { COLOR_ROLES, LOGO_VARIANTS, getContextById } from "./contexts-store.js?v=1541";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1541";
+import { escapeHtml as esc } from "./utils.js?v=1544";
+import { isFlagOn } from "./feature-flags.js?v=1544";
+import { COLOR_ROLES, LOGO_VARIANTS, getContextById } from "./contexts-store.js?v=1544";
 import {
-  handlePlaybookLookClick,
-  handlePlaybookStylesClick,
-  renderPlaybookLook,
+  handlePlaybookImagesClick,
+  renderImagesGenerate,
+  renderImagesReferences,
+  renderImagesStyles,
   renderPlaybookStyles,
-  shapesFor,
-} from "./modules/image-studio/index.js?v=1541";
+} from "./modules/image-studio/index.js?v=1544";
 
 const KIT_FLAG = "sexySquirrel";
 
@@ -250,11 +249,6 @@ export function handleKitClick(event, data) {
     if (kind === "role" && data.brandColors?.[i]) data.brandColors[i].role = value;
     else if (kind === "variant" && data.brandLogos?.[i]) data.brandLogos[i].variant = value;
     else if (kind === "pair") pendingPair[i] = value;
-    else if (kind === "imagery-format") {
-      const net = pick.dataset.recapKitIndex;
-      if (value) formats(data)[net] = value;
-      else delete formats(data)[net];
-    }
     return true;
   }
   const lineAdd = event.target.closest("[data-recap-kit-line-add]");
@@ -324,72 +318,23 @@ export function renderImageStyles(data, canEdit) {
 /** Always live, like Reference images: styles are managed outside the section's edit mode. */
 export function handleImageStylesClick(event, data, onChange) {
   if (!kitEnabled() || !data?.id) return false;
-  return (
-    handlePlaybookLookClick(event, data.id, { onChange }) || handlePlaybookStylesClick(event, data.id, { onChange })
-  );
+  return handlePlaybookImagesClick(event, data.id, { onChange });
 }
 
-// ── Imagery › Default format: a preferred shape per network ──────────────
-// `formatByNetwork` (contexts-store.js#normalizeImageryDefaults), "" =
-// automatic (the network's first shape).
-
-const IMAGERY_NETWORKS = ["linkedin", "instagram", "facebook", "x"];
-// The generator's network ids → Archie's, for the icon and label.
-const ARCHIE_NETWORK = { linkedin: "linkedin", instagram: "instagram", facebook: "facebook", x: "twitter" };
-
-function formats(data) {
-  data.formatByNetwork = data.formatByNetwork && typeof data.formatByNetwork === "object" ? data.formatByNetwork : {};
-  return data.formatByNetwork;
-}
-
-const netLabel = (n) => NETWORK_LABEL[ARCHIE_NETWORK[n]] || n;
-const netName = (n) =>
-  `<i class="${NETWORK_ICON_BY_PLATFORM[ARCHIE_NETWORK[n]]}" aria-hidden="true"></i> ${esc(netLabel(n))}`;
-
-function shapeLabels(network) {
-  return Object.fromEntries(shapesFor(network).map((sh) => [sh.id, `${sh.label} ${sh.ratio}`]));
-}
-
-/** The Default format row (flag sexySquirrel). */
-function renderImageFormats(data, edit) {
-  if (!kitEnabled()) return "";
-  const f = formats(data);
-  const rows = IMAGERY_NETWORKS.map((n) => {
-    const labels = { "": "Automatic", ...shapeLabels(n) };
-    const value = labels[f[n]] ? f[n] : "";
-    const dd = edit
-      ? dsSelect({
-          kind: "imagery-format",
-          index: n,
-          value,
-          labels,
-          options: Object.keys(labels),
-          placeholder: "Automatic",
-          ariaLabel: `Default format on ${netLabel(n)}`,
-        })
-      : esc(labels[value]);
-    return `<div><dt>${netName(n)}</dt><dd>${dd}</dd></div>`;
-  }).join("");
-  return `<div><span class="pb2-sub">Format</span><dl class="pb2-facts recap__imagery-formats">${rows}</dl></div>`;
-}
-
-/**
- * The "Generate image" block: what a draft's Generate image applies without
- * asking — the brand's LOOK (a style or a reference image, live: its own
- * dialog saves it) + a shape per network (edited with the section).
- */
-export function renderGenerateDefaults(data, edit) {
-  if (!kitEnabled() || !data?.id || !getContextById(data.id)) return "";
-  // What the block is for, said where it applies.
-  const lead = `<p class="ap-body recap__generate-lead">When you click <strong>Generate image</strong> on a draft, I make it right away in this look and format.</p>`;
-  const look = renderPlaybookLook(data.id);
-  return `${lead}<div><span class="pb2-sub">Look</span>${look}</div>${renderImageFormats(data, edit)}`;
+// ── The Images tab (playbook2) — the module's, whole: styles, reference
+// images and the Generate image settings, all live (no Edit).
+export function renderImagesTab(data, canEdit) {
+  if (!kitEnabled() || !data?.id || !getContextById(data.id)) return null;
+  return {
+    styles: renderImagesStyles(data.id, { canEdit }),
+    references: renderImagesReferences(data.id, { canEdit }),
+    generate: renderImagesGenerate(data.id, { canEdit }),
+  };
 }
 
 /** Fields the fiche's snapshot must carry so Cancel restores them. */
 export function kitSnapshot(d) {
   return {
-    formatByNetwork: { ...(d.formatByNetwork || {}) },
     voiceAvoid: d.voiceAvoid || [],
     brandRules: d.brandRules || null,
   };

@@ -2,8 +2,8 @@
 // Three doors into Archie, and only three:
 //   · openDraftStudio — the draft's image studio (right panel): where images
 //     are generated, and the only place they are;
-//   · renderPlaybookLook / handlePlaybookLookClick — the brand's look (a style
-//     or a reference image) and its libraries, in the Playbook's Brand tab;
+//   · renderImages* / handlePlaybookImagesClick — the Playbook's Images tab:
+//     the brand's styles, reference images and Generate image settings;
 //     renderPlaybookStyles / handlePlaybookStylesClick — the styles row of the
 //     older fiche (playbook2 OFF) — both through playbook-brand-kit.js;
 //   · ROUTES — the style creator, a page reached from that section.
@@ -13,13 +13,13 @@
 // through state/playbook-brand.js only, the Playbooks — the brand IS the
 // Playbook. See docs/audits/image-studio-integration.md.
 
-import { navigate } from "../../router.js?v=1541";
-import { isFlagOn } from "../../feature-flags.js?v=1541";
-import { renderTopbar } from "../../components/topbar.js?v=1541";
-import { delegate, disposer } from "./lib/delegate.js?v=1541";
-import { installMenus } from "./ui/menu.js?v=1541";
-import { closeAllDialogs } from "./ui/dialog.js?v=1541";
-import * as styleCreator from "./views/style-creator.js?v=1541";
+import { navigate } from "../../router.js?v=1544";
+import { isFlagOn } from "../../feature-flags.js?v=1544";
+import { renderTopbar } from "../../components/topbar.js?v=1544";
+import { delegate, disposer } from "./lib/delegate.js?v=1544";
+import { installMenus } from "./ui/menu.js?v=1544";
+import { closeAllDialogs } from "./ui/dialog.js?v=1544";
+import * as styleCreator from "./views/style-creator.js?v=1544";
 
 export const FLAG = "sexySquirrel";
 
@@ -56,14 +56,19 @@ export const ROUTES = Object.freeze([
   { pattern: "/playbook/:id/styles/:styleId", handler: screen(styleCreator.mount) },
 ]);
 
-export { openDraftStudio } from "./ui/draft-studio.js?v=1541";
+export { openDraftStudio } from "./ui/draft-studio.js?v=1544";
 export {
   defaultQuickLook,
   generateQuickImage,
   quickImageChoices,
   suggestImageLine,
   suggestImageSubject,
-} from "./quick-image.js?v=1541";
-export { renderPlaybookStyles, handlePlaybookStylesClick } from "./views/playbook-styles.js?v=1541";
-export { renderPlaybookLook, handlePlaybookLookClick } from "./views/playbook-look.js?v=1541";
-export { shapesFor } from "./config/formats.js?v=1541";
+} from "./quick-image.js?v=1544";
+export { renderPlaybookStyles, handlePlaybookStylesClick } from "./views/playbook-styles.js?v=1544";
+export {
+  renderImagesStyles,
+  renderImagesReferences,
+  renderImagesGenerate,
+  handlePlaybookImagesClick,
+} from "./views/playbook-images.js?v=1544";
+export { shapesFor } from "./config/formats.js?v=1544";

@@ -14,7 +14,7 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1541";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1544";
 import {
   kitEnabled,
   renderColorRole,
@@ -27,12 +27,12 @@ import {
   handleKitInput,
   handleKitChange,
   kitSnapshot,
-  renderGenerateDefaults,
-} from "./playbook-brand-kit.js?v=1541";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1541";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1541";
-import { isFlagOn } from "./feature-flags.js?v=1541";
-import { parseHashParams } from "./url-state.js?v=1541";
+  renderImagesTab,
+} from "./playbook-brand-kit.js?v=1544";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1544";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1544";
+import { isFlagOn } from "./feature-flags.js?v=1544";
+import { parseHashParams } from "./url-state.js?v=1544";
 import {
   networkVoicesOn,
   baseNetwork,
@@ -42,21 +42,21 @@ import {
   maturity,
   networkLabel,
   networkIcon,
-} from "./network-voice.js?v=1541";
+} from "./network-voice.js?v=1544";
 import {
   getSuggestions,
   accept as acceptVoiceSuggestion,
   dismiss as dismissVoiceSuggestion,
-} from "./voice-coach-store.js?v=1541";
-import { NETWORKS } from "./social-profiles.js?v=1541";
-import { showToast } from "./components/toast.js?v=1541";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1541";
+} from "./voice-coach-store.js?v=1544";
+import { NETWORKS } from "./social-profiles.js?v=1544";
+import { showToast } from "./components/toast.js?v=1544";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1544";
 // The Default look row offers the SAME three catalogues the Image Studio renders, from
 // the one place they are declared — REF_MODES' own header makes the argument: the label,
 // the hint and the brief clause "drift the moment they live apart". No cycle: the engine
 // imports only clip-formats / image-studio-canvas / feature-flags, and its module body
 // builds consts, so importing it here costs nothing at load.
-import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1541";
+import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1544";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2181,6 +2181,9 @@ const TABS = [
   { id: "goals", title: "Audience & goals" },
   { id: "voice", title: "Voice & style" },
   { id: "brand", title: "Brand" },
+  // How the brand's images are made (flag sexySquirrel) — kept apart from Brand,
+  // which says what the brand looks like.
+  { id: "images", title: "Images", kit: true },
   { id: "competitors", title: "Competitors" },
   { id: "influencers", title: "Influencers" },
 ];
@@ -2191,9 +2194,12 @@ const SECTION_LEADS = {
   goals: "Who the posts are for, and what they should make happen.",
   voice: "How the brand sounds — the lines it opens and closes on, and its writing conventions.",
   brand: "How the brand looks — its marks, colours, type and the rules its images follow.",
+  images: "How I make this brand's images — the styles I draw them in, and what Generate image does on a draft.",
   competitors: "Who the brand is measured against, so Archie can position it.",
   influencers: "The creators the audience already listens to.",
 };
+
+const visibleTabs = () => TABS.filter((t) => !t.kit || kitEnabled());
 
 function v2On() {
   return cfg?.mode === "library" && isFlagOn("playbook2");
@@ -2202,7 +2208,7 @@ function v2On() {
 function tabFromUrl() {
   const q = parseHashParams();
   const wanted = q.get("tab") || q.get("section");
-  return TABS.some((t) => t.id === wanted) ? wanted : TABS[0].id;
+  return visibleTabs().some((t) => t.id === wanted) ? wanted : TABS[0].id;
 }
 
 // The tab is the page's state, kept in the URL without a route change (the
@@ -2303,14 +2309,16 @@ function renderTabs2(data) {
   return `
     <div class="ap-tabs flush pb2-tabs">
       <div class="ap-tabs-nav" role="tablist" aria-label="Playbook sections">
-        ${TABS.map((t) => {
-          const on = t.id === activeTab;
-          return `<button type="button" class="ap-tabs-tab${on ? " active" : ""}" role="tab" aria-selected="${on}"
+        ${visibleTabs()
+          .map((t) => {
+            const on = t.id === activeTab;
+            return `<button type="button" class="ap-tabs-tab${on ? " active" : ""}" role="tab" aria-selected="${on}"
             data-pb2-tab="${t.id}">
             <span>${esc(t.title)}</span>
             ${t.id === "competitors" && cmpCount ? `<span class="ap-counter normal grey">${cmpCount}</span>` : ""}
           </button>`;
-        }).join("")}
+          })
+          .join("")}
       </div>
     </div>
   `;
@@ -2365,10 +2373,11 @@ function pb2Block(title, body, { wide = false, caption = "", index = 0, icon = "
 }
 
 // `editing`: Cancel / Save take Edit's place — same bar, same spot, sticky.
-function pb2TabHead(scope, extra = "", { editing = false } = {}) {
-  const edit = canEditView()
-    ? `<button type="button" class="ap-button stroked blue" data-recap-edit-card="${scope}"><i class="ap-icon-pen" aria-hidden="true"></i><span>Edit</span></button>`
-    : "";
+function pb2TabHead(scope, extra = "", { editing = false, noEdit = false } = {}) {
+  const edit =
+    canEditView() && !noEdit
+      ? `<button type="button" class="ap-button stroked blue" data-recap-edit-card="${scope}"><i class="ap-icon-pen" aria-hidden="true"></i><span>Edit</span></button>`
+      : "";
   return `
     <header class="pb2-tabhead">
       <p class="pb2-tabhead__lead">${esc(SECTION_LEADS[scope] || "")}</p>
@@ -2511,14 +2520,7 @@ function renderBrandEdit2(data) {
     ),
   ];
   if (kitEnabled()) {
-    blocks.push(
-      pb2Block("Generate image", renderGenerateDefaults(data, true), {
-        wide: true,
-        index: 4,
-        icon: "ap-icon-image",
-      }),
-      pb2Block("Visual rules", renderVisualRules(data, true), { wide: true, index: 6 }),
-    );
+    blocks.push(pb2Block("Visual rules", renderVisualRules(data, true), { wide: true, index: 4 }));
   } else {
     blocks.push(
       pb2Block("Reference images", renderRefImages(data, canEditView()), { wide: true, index: 4 }),
@@ -2990,11 +2992,6 @@ function renderBrandRead2(data) {
   ];
   if (kitEnabled()) {
     blocks.push(
-      pb2Block("Generate image", renderGenerateDefaults(data, false), {
-        wide: true,
-        index: 4,
-        icon: "ap-icon-image",
-      }),
       pb2Block(
         "Visual rules",
         `<div class="pb2-rules">
@@ -3007,7 +3004,7 @@ function renderBrandRead2(data) {
           <div><dt>Distortion</dt><dd>${r.noLogoDistortion === false ? "Allowed" : "Never stretch or skew"}</dd></div>
           <div><dt>Colours that never meet</dt><dd>${pairs.length ? `<span class="pb2-pairs">${pairs.join("")}</span>` : "None"}</dd></div>
         </dl>`,
-        { wide: true, index: 6 },
+        { wide: true, index: 4 },
       ),
     );
   } else {
@@ -3028,11 +3025,25 @@ function renderBrandGroup(title) {
   return `<h3 class="pb2-group">${esc(title)}</h3>`;
 }
 
+// The Images tab saves as it changes (styles, reference images, Generate image
+// settings), so its head has no Edit. Image styles lead — making one is the
+// tab's main act.
+function renderImagesPanel(data) {
+  const parts = renderImagesTab(data, canEditView());
+  if (!parts) return "";
+  return `${pb2TabHead("images", "", { noEdit: true })}<div class="pb2-grid">${[
+    pb2Block("Image styles", parts.styles, { wide: true, index: 0, icon: "ap-icon-sparkles" }),
+    pb2Block("Reference images", parts.references, { wide: true, index: 1, icon: "ap-icon-image" }),
+    pb2Block("Generate image", parts.generate, { wide: true, index: 2, icon: "ap-icon-cog" }),
+  ].join("")}</div>`;
+}
+
 function renderActivePanel(data) {
   const scope = editScope;
   // Editing opens the section's own form; reading gets the tab's spread.
   if (activeTab === "voice") return scope === "voice" ? renderVoiceEdit2(data) : renderVoiceRead2(data, learnMenu());
   if (activeTab === "brand") return scope === "brand" ? renderBrandEdit2(data) : renderBrandRead2(data);
+  if (activeTab === "images") return renderImagesPanel(data);
   if (activeTab === "competitors") return renderRosterPanel(data, ROSTERS.competitors, scope === "competitors");
   if (activeTab === "influencers") return renderInfluencersPanel(data, scope === "influencers");
   return scope === "goals" ? renderGoalsEdit2(data) : renderGoalsRead2(data);

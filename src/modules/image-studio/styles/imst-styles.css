@@ -361,182 +361,61 @@ button.imst-style-card {
   cursor: pointer;
 }
 
-/* ── Brand › Generate image › Look: the chosen look, small ──────────────── */
-.imst-look {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-sm);
+/* ── The Playbook's Images tab ─────────────────────────────────────────── */
+.imst-images__lead {
+  margin: 0;
+  max-width: 64ch;
+  color: var(--ref-color-grey-80);
 }
 
-.imst-look__art {
-  width: calc(var(--ref-spacing-xxxl) * 1.4);
-  flex-shrink: 0;
+/* Image styles: the lead, then the one primary action, on one line. */
+.imst-images-styles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-md);
+}
+
+.imst-images-styles__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ref-spacing-md);
+  flex-wrap: wrap;
+}
+
+/* Reference images: just pictures, small — not the styles' cards. */
+.imst-images-refs {
+  list-style: none;
+  margin: var(--ref-spacing-sm) 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--ref-spacing-xxxl) * 1.6), 1fr));
+  gap: var(--ref-spacing-xs);
+}
+
+.imst-images-refs__item {
+  position: relative;
+  aspect-ratio: 1;
   border-radius: var(--ref-border-radius-md);
   overflow: hidden;
   border: 1px solid var(--ref-color-grey-20);
 }
 
-.imst-look__text {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxxs);
-  min-width: 0;
-}
-
-.imst-look__text .ap-caption {
-  color: var(--ref-color-grey-80);
-}
-
-.imst-look--empty {
-  flex-wrap: wrap;
-}
-
-.imst-look--empty .ap-body {
-  margin: 0;
-}
-
-/* ── "Choose the look": styles as a list, reference images as pictures ──── */
-.imst-lookpick .ap-tabs-panel {
-  padding-bottom: 0;
-}
-
-.imst-lookpick__intro {
-  margin: 0 0 var(--ref-spacing-sm);
-  color: var(--ref-color-grey-80);
-}
-
-.imst-lookpick__empty {
-  margin: 0 0 var(--ref-spacing-sm);
-}
-
-.imst-lookpick__list {
-  list-style: none;
-  margin: 0 0 var(--ref-spacing-sm);
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.imst-lookpick__row {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-xs) 0;
-  border-bottom: 1px solid var(--ref-color-grey-20);
-}
-
-.imst-lookpick__row:last-child {
-  border-bottom: 0;
-}
-
-.imst-lookpick__pick {
-  flex: 1;
-  min-width: 0;
-  gap: var(--ref-spacing-sm);
-}
-
-.imst-lookpick__thumb {
-  width: var(--ref-spacing-xxxl);
-  flex-shrink: 0;
-  border-radius: var(--ref-border-radius-sm);
-  overflow: hidden;
-}
-
-.imst-lookpick__text {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxxs);
-  min-width: 0;
-}
-
-.imst-lookpick__text .ap-caption {
-  color: var(--ref-color-grey-80);
-}
-
-.imst-lookpick__actions {
-  display: inline-flex;
-  flex-shrink: 0;
-}
-
-.imst-lookpick__grid {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(calc(var(--ref-spacing-xxxl) * 2), 1fr));
-  gap: var(--ref-spacing-xs);
-}
-
-.imst-lookpick__tile {
-  position: relative;
-}
-
-/* A picture IS the option: no radio dot, the frame and a check say it is picked. */
-.imst-lookpick__image {
-  position: relative;
-  display: block;
-  aspect-ratio: 1;
-  border-radius: var(--ref-border-radius-md);
-  overflow: hidden;
-  border: 2px solid transparent;
-  cursor: pointer;
-}
-
-.imst-lookpick__image > input {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.imst-lookpick__image img {
+.imst-images-refs__item img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.imst-lookpick__image:hover {
-  border-color: var(--ref-color-electric-blue-40);
-}
-
-.imst-lookpick__image:has(input:checked) {
-  border-color: var(--ref-color-electric-blue-100);
-}
-
-.imst-lookpick__image:has(input:focus-visible) {
-  outline: 2px solid var(--sys-border-color-active);
-  outline-offset: 2px;
-}
-
-.imst-lookpick__check {
-  position: absolute;
-  top: var(--ref-spacing-xxs);
-  left: var(--ref-spacing-xxs);
-  display: none;
-  place-items: center;
-  width: var(--ref-spacing-md);
-  height: var(--ref-spacing-md);
-  border-radius: 50%;
-  background: var(--ref-color-electric-blue-100);
-  color: var(--ref-color-white);
-}
-
-.imst-lookpick__image:has(input:checked) .imst-lookpick__check {
-  display: grid;
-}
-
-.imst-lookpick__check > i {
-  background-color: var(--ref-color-white);
-}
-
-.imst-lookpick__remove {
+.imst-images-refs__remove {
   position: absolute;
   top: var(--ref-spacing-xxs);
   right: var(--ref-spacing-xxs);
   background: var(--ref-color-white);
 }
 
-.imst-lookpick__upload {
+.imst-images-refs__add {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -552,7 +431,57 @@ button.imst-style-card {
   cursor: pointer;
 }
 
-.imst-lookpick__upload:hover {
+.imst-images-refs__add:hover {
   border-color: var(--ref-color-electric-blue-100);
   color: var(--ref-color-electric-blue-100);
+}
+
+/* Generate image: label / control rows. */
+.imst-images-settings {
+  margin: var(--ref-spacing-sm) 0 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.imst-images-settings__row {
+  display: grid;
+  grid-template-columns: calc(var(--ref-spacing-xxxl) * 3) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-xs) 0;
+  border-bottom: 1px solid var(--ref-color-grey-20);
+}
+
+.imst-images-settings__row:last-child {
+  border-bottom: 0;
+}
+
+.imst-images-settings__row dt {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+}
+
+.imst-images-settings__row dd {
+  margin: 0;
+}
+
+.imst-images__select {
+  width: auto;
+  max-width: calc(var(--ref-spacing-xxxl) * 6);
+}
+
+/* The list may be wider than its trigger: names and kinds stay on one line. */
+.imst-images__select .ap-select-dropdown {
+  right: auto;
+  min-width: 100%;
+  width: max-content;
+  max-width: calc(var(--ref-spacing-xxxl) * 8);
+}
+
+.imst-images__avatar {
+  width: var(--ref-spacing-md);
+  height: var(--ref-spacing-md);
+  border-radius: var(--ref-border-radius-sm);
+  object-fit: cover;
 }

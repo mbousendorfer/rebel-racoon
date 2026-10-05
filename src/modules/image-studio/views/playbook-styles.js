@@ -11,13 +11,13 @@
 // weights and a test on three subjects. The system presets are NOT shown here:
 // they belong to no Playbook, and the fiche lists only what is this brand's.
 
-import { html, toString } from "../lib/html.js?v=1541";
-import { navigate } from "../../../router.js?v=1541";
-import { styleThumb } from "../ui/style-thumb.js?v=1541";
-import { confirmDialog } from "../ui/dialog.js?v=1541";
-import { toast } from "../ui/toast.js?v=1541";
-import { canEditBrand, getBrand, getStyle, getStylesForBrand } from "../state/store.js?v=1541";
-import { deleteStyle, duplicateStyle } from "../state/style-actions.js?v=1541";
+import { html, toString } from "../lib/html.js?v=1544";
+import { navigate } from "../../../router.js?v=1544";
+import { styleThumb } from "../ui/style-thumb.js?v=1544";
+import { confirmDialog } from "../ui/dialog.js?v=1544";
+import { toast } from "../ui/toast.js?v=1544";
+import { canEditBrand, getBrand, getStyle, getStylesForBrand } from "../state/store.js?v=1544";
+import { deleteStyle, duplicateStyle } from "../state/style-actions.js?v=1544";
 
 const creatorPath = (playbookId, rest) => `/playbook/${encodeURIComponent(playbookId)}/styles/${rest}`;
 
@@ -93,20 +93,21 @@ function newTile(attrs, title, caption) {
 }
 
 /** The Brand section's "Image styles" row: the Playbook's own styles and New style. */
-export function renderPlaybookStyles(playbookId, { canEdit = true } = {}) {
+export function renderPlaybookStyles(playbookId, { canEdit = true, newTile: withTile = true } = {}) {
   const brand = getBrand(playbookId);
   if (!brand) return "";
   const editable = canEdit && canEditBrand(playbookId);
   const own = getStylesForBrand(playbookId).filter((s) => s.kind === "custom");
   // "New style" is the FIRST tile of the grid, an empty-state card that is the
   // button — always in reach at the left, however many styles follow.
-  const tile = editable
-    ? newTile(
-        html`data-imst-pb-style="new"`,
-        "New style",
-        own.length ? "From a few reference images" : "Give a few reference images whose look you want",
-      )
-    : "";
+  const tile =
+    editable && withTile
+      ? newTile(
+          html`data-imst-pb-style="new"`,
+          "New style",
+          own.length ? "From a few reference images" : "Give a few reference images whose look you want",
+        )
+      : "";
   if (!own.length && !editable)
     return toString(html`<p class="ap-body imst-pbstyles__empty">No style of this brand's own yet.</p>`);
   return toString(html`
