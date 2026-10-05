@@ -8,11 +8,11 @@
 // uses, so the preview IS what a click opens. The card is inert: a picture of
 // the object, not a second set of its controls.
 
-import { resolveRef } from "../chat-refs.js?v=1514";
-import { getIdeas, getSources } from "../library.js?v=1514";
-import { renderPostCard } from "./post-card.js?v=1514";
-import { renderCompactIdeaCard } from "./idea-card-compact.js?v=1514";
-import { renderSourceCard } from "./source-card.js?v=1514";
+import { resolveRef } from "../chat-refs.js?v=1516";
+import { getIdeas, getSources } from "../library.js?v=1516";
+import { renderPostCard } from "./post-card.js?v=1516";
+import { renderCompactIdeaCard } from "./idea-card-compact.js?v=1516";
+import { renderSourceCard } from "./source-card.js?v=1516";
 
 const ANCHOR_SEL = "[data-chat-ref]";
 const DELAY = 250;
@@ -87,9 +87,13 @@ export function hide() {
 // Above the reference, flipped below when there isn't room, clamped to the viewport.
 function place() {
   const a = anchor.getBoundingClientRect();
-  const t = el.getBoundingClientRect();
+  // offset*, not getBoundingClientRect: the entry animation's translate would skew it.
+  const t = { width: el.offsetWidth, height: el.offsetHeight };
   let top = a.top - t.height - GAP;
-  if (top < EDGE) top = Math.min(a.bottom + GAP, window.innerHeight - t.height - EDGE);
+  if (top < EDGE) {
+    top = Math.min(a.bottom + GAP, window.innerHeight - t.height - EDGE);
+    el.classList.add("is-below"); // so it rises from the reference, not into it
+  }
   const left = Math.min(Math.max(a.left, EDGE), Math.max(EDGE, window.innerWidth - t.width - EDGE));
   el.style.top = `${Math.round(Math.max(EDGE, top) + window.scrollY)}px`;
   el.style.left = `${Math.round(left + window.scrollX)}px`;

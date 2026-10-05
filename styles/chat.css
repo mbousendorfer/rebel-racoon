@@ -870,6 +870,21 @@ span.chat-bubble-choice-chip {
   width: 440px;
   max-width: calc(100vw - 16px);
   pointer-events: none;
+  /* Fades in and slides 4px away from the reference it belongs to. The global
+     reduced-motion guard (base.css) makes it instant. */
+  animation: chat-ref-preview-in 160ms var(--app-ease-out) both;
+  --chat-ref-preview-from: 4px;
+}
+
+.chat-ref-preview.is-below {
+  --chat-ref-preview-from: -4px;
+}
+
+@keyframes chat-ref-preview-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--chat-ref-preview-from));
+  }
 }
 
 .chat-ref-preview--idea,
