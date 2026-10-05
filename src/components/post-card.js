@@ -19,34 +19,38 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1575";
-import { isPortraitFormat } from "../clip-formats.js?v=1575";
-import { presetById } from "../clip-captions.js?v=1575";
-import { renderFeedbackControl } from "./feedback-control.js?v=1575";
-import { networkMeta } from "../social-profiles.js?v=1575";
-import { dropzoneHTML } from "./dropzone.js?v=1575";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1578";
+import { isPortraitFormat } from "../clip-formats.js?v=1578";
+import { presetById } from "../clip-captions.js?v=1578";
+import { renderFeedbackControl } from "./feedback-control.js?v=1578";
+import { networkMeta } from "../social-profiles.js?v=1578";
+import { dropzoneHTML } from "./dropzone.js?v=1578";
 
-// The media slot of a draft that has no image yet. Two ways in, SPLIT so each
-// looks like what it is (2026-10-05 — one dashed box holding a button, a
-// preset line and a studio sentence read as neither a button nor a dropzone,
-// and everything fought at the same level):
+// The media slot of a draft that has no image yet. Three ways to an image,
+// each looking like what it is (2026-10-05, after a single dashed box holding a
+// button, a preset line and a studio sentence read as neither a button nor a
+// dropzone, and the studio as a caption link was too easy to miss):
 //
-//   ┌ generate ───────────┐ ┌ ─ drop ─ ─ ─ ─ ┐
-//   │ [Generate an image] │   (icon)
-//   │ preset · Change     │   Drop your image, or browse
-//   └─────────────────────┘ └ ─ ─ ─ ─ ─ ─ ─ ─ ┘
-//   Or open the Image Studio …
+//   ┌ generate ────────────────────────────┐
+//   │        [Generate an image]           │   the shortcut, on top
+//   │   In <look>, <shape>. Change         │
+//   └──────────────────────────────────────┘
+//   ┌ Image Studio ─────┐ ┌ ─ your own ─ ─ ┐   two equal alternatives
+//   │  Open the Image   │   Drop your image,
+//   │  Studio           │   or browse
+//   └───────────────────┘ └ ─ ─ ─ ─ ─ ─ ─ ─ ┘
 //
-// • Generate — a SOLID tile (not a drop target): `.ap-button.mermaid`, the DS's
-//   AI treatment (a gradient BORDER: the DS ships no filled AI button), and
-//   under it, small, the shortcut it runs (flag sexySquirrel, `opts.imagePreset`
-//   from the drafts panel — the card never reads the Playbook): the look's name
-//   and this network's shape, no thumbnail. "Change" opens the PLAYBOOK, where
-//   that preset is set — ⚠️ NOT the Image Studio (rejected).
+// Solid = click, dashed = drop, here as everywhere in the app.
+// • Generate — `.ap-button.mermaid`, the DS's AI treatment (a gradient BORDER:
+//   the DS ships no filled AI button), and under it, small, the shortcut it runs
+//   (flag sexySquirrel, `opts.imagePreset` from the drafts panel — the card
+//   never reads the Playbook): the look's name and this network's shape, no
+//   thumbnail. "Change" opens the PLAYBOOK, where that preset is set — ⚠️ NOT
+//   the Image Studio (rejected): the preset is a setting, the studio a tool.
+// • The Image Studio — a tool apart, so a tile of its own (a real button).
 // • Your own image — the app's shared dropzone (components/dropzone.js), the
-//   ONLY drop target and the only click-to-browse: dashed means drop, here as
-//   everywhere else. Wired in right-panel.js on `[data-post-drop]`.
-// • The Image Studio — a separate tool, so a quiet line of its own under both.
+//   ONLY drop target and the only click-to-browse; wired in right-panel.js on
+//   `[data-post-drop]`.
 function renderImagePreset(opts) {
   const p = opts.imagePreset;
   if (!p || !opts.playbookId) return "";
@@ -86,26 +90,28 @@ function renderEmptyMedia(post, opts) {
       : "";
 
   return `<div class="posts__card-media-empty">
-    <div class="posts__card-media-split">
-      <div class="posts__card-media-generate">
-        <button type="button" class="ap-button mermaid" data-post-image="${post.id}">
-          <i class="ap-icon-archie-official"></i>
-          <span>Generate an image</span>
-        </button>
-        ${renderImagePreset(opts)}
-      </div>
+    <div class="posts__card-media-generate">
+      <button type="button" class="ap-button mermaid" data-post-image="${post.id}">
+        <i class="ap-icon-archie-official"></i>
+        <span>Generate an image</span>
+      </button>
+      ${renderImagePreset(opts)}
+    </div>
+    <div class="posts__card-media-alts">
+      <button type="button" class="posts__card-media-tile" data-post-studio="${escapeAttr(post.id)}">
+        <span class="posts__card-media-tile-icon" aria-hidden="true"><i class="ap-icon-image"></i></span>
+        <span class="posts__card-media-tile-title">Open the Image Studio</span>
+        <span class="posts__card-media-tile-sub">Set every option yourself</span>
+      </button>
       ${dropzoneHTML({
         compact: true,
         lead: "Drop your image, or",
+        sub: "Use a picture of your own",
         withInput: false,
         ariaLabel: "Upload your own image",
         rootAttrs: `data-post-drop="${escapeAttr(post.id)}"`,
       })}
     </div>
-    <p class="posts__card-media-studio">
-      Or open the <button type="button" class="ap-link small" data-post-studio="${escapeAttr(post.id)}">Image Studio</button>
-      to set every option yourself.
-    </p>
     ${hint}
   </div>`;
 }

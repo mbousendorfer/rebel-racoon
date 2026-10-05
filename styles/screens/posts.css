@@ -271,9 +271,10 @@
   }
 }
 
-/* Empty media slot — split in two since 2026-10-05: a solid Generate tile and
-   the shared dashed dropzone (the only drop target), the Image Studio on a quiet
-   line under both. The rationale is in post-card.js#renderEmptyMedia.
+/* Empty media slot — three ways to an image since 2026-10-05: the Generate
+   shortcut on top, then the Image Studio (solid tile) and the shared dashed
+   dropzone (the only drop target) side by side. The rationale is in
+   post-card.js#renderEmptyMedia.
    ⚠️ ONE accent only: the mermaid button. The dropzone keeps the app's shared
    look so it reads as the same thing as every other drop target. */
 .posts__card-media-empty {
@@ -283,13 +284,14 @@
 }
 
 /* Only the generating state still uses the one frame: the loader and its line,
-   at the height of the split it replaces, so nothing jumps. */
+   at the height of the three tiles it replaces (≈ 100 + 8 + 135), so nothing
+   jumps when Generate is clicked. */
 .posts__card-media-empty-slot {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 128px;
+  min-height: 242px;
   gap: var(--ref-spacing-xs);
   padding: var(--ref-spacing-md);
   border: 1px solid var(--ref-color-grey-20);
@@ -297,34 +299,77 @@
   text-align: center;
 }
 
-/* The split: Generate (a solid tile — not a drop target) beside the shared
-   dropzone (dashed — the only drop target). They wrap one under the other
-   when the card is too narrow for both. */
-.posts__card-media-split {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: stretch;
-  gap: var(--ref-spacing-xs);
-}
-
+/* The shortcut, on top and full width: a solid tile (not a drop target). */
 .posts__card-media-generate {
-  flex: 3 1 calc(var(--ref-spacing-xxxl) * 3.5);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: var(--ref-spacing-xs);
-  min-height: 128px;
-  padding: var(--ref-spacing-md);
-  border: 1px solid var(--ref-color-grey-20);
+  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
+  border: 1.5px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-md);
   text-align: center;
 }
 
-.posts__card-media-split .ap-dropzone {
-  flex: 2 1 calc(var(--ref-spacing-xxxl) * 2.5);
-  width: auto;
-  justify-content: center;
+/* The two alternatives, equal, side by side — they stack when the card is
+   narrow. A grid, so both tiles stretch to the same height without touching
+   the shared dropzone's own class. */
+.posts__card-media-alts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(calc(var(--ref-spacing-xxxl) * 2.6), 1fr));
+  gap: var(--ref-spacing-xs);
+}
+
+/* The Image Studio tile mirrors the compact dropzone beside it — same padding,
+   icon, type and hover — with a SOLID border: it is a button, not a drop. */
+.posts__card-media-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-md);
+  border: 1.5px solid var(--ref-color-grey-20);
+  border-radius: var(--ref-border-radius-md);
+  background: var(--ref-color-white);
+  font: inherit;
+  color: var(--ref-color-grey-100);
+  text-align: center;
+  cursor: pointer;
+  transition:
+    border-color var(--ref-animation-short),
+    background var(--ref-animation-short);
+}
+
+.posts__card-media-tile:hover,
+.posts__card-media-tile:focus-visible {
+  outline: none;
+  border-color: var(--ref-color-electric-blue-100);
+  background: var(--ref-color-electric-blue-05);
+}
+
+.posts__card-media-tile-icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--ref-border-radius-md);
+  background: var(--ref-color-electric-blue-10);
+  color: var(--ref-color-electric-blue-100);
+}
+
+.posts__card-media-tile-icon > i {
+  font-size: var(--sys-icon-css-md);
+}
+
+.posts__card-media-tile-title {
+  font-size: var(--sys-text-style-caption-size);
+  font-weight: var(--sys-text-style-body-bold-weight);
+}
+
+.posts__card-media-tile-sub {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
 }
 
 .posts__card-media-empty-sub {
@@ -341,15 +386,6 @@
 .posts__card-media-preset {
   margin: 0;
   max-width: 36ch;
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-80);
-}
-
-/* The Image Studio: a separate tool, a quiet line under both. */
-.posts__card-media-studio {
-  margin: 0;
-  padding: 0 var(--ref-spacing-xxs);
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   color: var(--ref-color-grey-80);
