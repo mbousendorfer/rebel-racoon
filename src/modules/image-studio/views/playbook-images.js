@@ -7,18 +7,18 @@
 //      tab's one primary action; the styles are the big cards.
 //   2. Reference images — pictures whose look an image can take after. Just
 //      pictures, so a plain picture grid — not the styles' cards.
-//   3. Generate image — what a draft's Generate image uses without asking: ONE
-//      look (a style OR a reference image: one select, grouped by kind) and a
-//      shape per network.
+//   3. Generate an image — the style OR reference image a draft's Generate
+//      image uses without asking: one select, grouped by kind.
+//   4. Preferred formats — a shape per network, apart: it holds whatever the look.
 //
 // Everything here saves as it changes, like the styles always did: no Edit.
 
-import { html, raw, toString } from "../lib/html.js?v=1550";
-import { navigate } from "../../../router.js?v=1550";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1550";
-import { toast } from "../ui/toast.js?v=1550";
-import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=1550";
-import { shapesFor } from "../config/formats.js?v=1550";
+import { html, raw, toString } from "../lib/html.js?v=1553";
+import { navigate } from "../../../router.js?v=1553";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=1553";
+import { toast } from "../ui/toast.js?v=1553";
+import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=1553";
+import { shapesFor } from "../config/formats.js?v=1553";
 import {
   addPlaybookReferences,
   deletePlaybookReference,
@@ -27,8 +27,8 @@ import {
   getPlaybookReferences,
   setPlaybookDefaultLook,
   setPlaybookFormat,
-} from "../state/playbook-brand.js?v=1550";
-import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=1550";
+} from "../state/playbook-brand.js?v=1553";
+import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=1553";
 
 const creatorPath = (playbookId, rest) => `/playbook/${encodeURIComponent(playbookId)}/styles/${rest}`;
 const ownStyles = (playbookId) => getStylesForBrand(playbookId).filter((s) => s.kind === "custom");
@@ -162,14 +162,6 @@ function select({ name, value, groups, placeholder, ariaLabel, disabled }) {
   </details>`;
 }
 
-// A frame's longer side is the same for every shape, so the ratios compare
-// true side by side (a Story is tall, a Link is wide, a Square is square).
-function frameSize(shape) {
-  const long = Math.max(shape.w, shape.h);
-  const r = (v) => Math.round((v / long) * 1000) / 1000;
-  return `width:calc(var(--imst-frame) * ${r(shape.w)});height:calc(var(--imst-frame) * ${r(shape.h)})`;
-}
-
 export function renderImagesGenerate(playbookId, { canEdit = true } = {}) {
   const brand = getBrand(playbookId);
   if (!brand) return "";
@@ -185,68 +177,80 @@ export function renderImagesGenerate(playbookId, { canEdit = true } = {}) {
     label: r.label || "Reference image",
     avatar: r.url,
   }));
-  const lookValue = look.kind ? `${look.kind}:${look.id}` : "";
-  const picture = [...styles, ...refs].find((o) => o.value === lookValue)?.avatar || "";
-  const formats = getPlaybookFormats(playbookId);
-  const hasLooks = styles.length + refs.length > 0;
+  return toString(
+    section({
+      aside: html`<p class="ap-body imst-images__lead">
+        When you click <strong>Generate an image</strong> on a draft, I make it in this style or after this image,
+        without asking.
+      </p>`,
+      body:
+        styles.length + refs.length
+          ? select({
+              name: "look",
+              value: look.kind ? `${look.kind}:${look.id}` : "",
+              groups: [
+                { label: "Image styles", options: styles },
+                { label: "Reference images", options: refs },
+              ],
+              placeholder: "None — I ask which style",
+              ariaLabel: "Preferred style or image",
+              disabled: !editable,
+            })
+          : html`<p class="ap-body imst-images__empty">Create a style or add a reference image first.</p>`,
+    }),
+  );
+}
 
-  // One frame per network, at the shape it will get, filled with the look:
-  // what Generate image makes there, before anyone clicks it.
-  const frames = NETWORKS.map((n) => {
+// ── 4. Preferred formats ────────────────────────────────────────────────────
+
+// A frame's longer side is the same for every shape, so the ratios compare
+// true side by side (a Story is tall, a Link is wide, a Square is square).
+function frameSize(shape) {
+  const long = Math.max(shape.w, shape.h);
+  const r = (v) => Math.round((v / long) * 1000) / 1000;
+  return `width:calc(var(--imst-frame) * ${r(shape.w)});height:calc(var(--imst-frame) * ${r(shape.h)})`;
+}
+
+export function renderImagesFormats(playbookId, { canEdit = true } = {}) {
+  if (!getBrand(playbookId)) return "";
+  const editable = canEdit && canEditBrand(playbookId);
+  const formats = getPlaybookFormats(playbookId);
+  // One row per network: its name, the shape drawn empty, the select.
+  const rows = NETWORKS.map((n) => {
     const all = shapesFor(n.id);
     const chosen = all.find((s) => s.id === formats[n.id]);
     const shape = chosen || all[0];
-    const options = [
-      { value: "", label: "Automatic" },
-      ...all.map((s) => ({ value: s.id, label: `${s.label} ${s.ratio}` })),
-    ];
-    return html`<li class="imst-images-frame">
-      <span class="imst-images-frame__stage">
-        <span class="imst-images-frame__shape" style="${frameSize(shape)}">
-          ${picture
-            ? html`<img src="${picture}" alt="" draggable="false" />`
-            : html`<i class="ap-icon-image" aria-hidden="true"></i>`}
-        </span>
+    return html`<li class="imst-images-format">
+      <span class="imst-images-format__net ap-body-bold"><i class="${n.icon}" aria-hidden="true"></i>${n.label}</span>
+      <span class="imst-images-format__stage" aria-hidden="true">
+        <span class="imst-images-format__shape" style="${frameSize(shape)}"></span>
       </span>
-      <span class="imst-images-frame__net ap-body-bold"><i class="${n.icon}" aria-hidden="true"></i>${n.label}</span>
       ${select({
         name: `format:${n.id}`,
         value: chosen ? chosen.id : "",
-        groups: [{ label: "", options }],
+        groups: [
+          {
+            label: "",
+            options: [
+              { value: "", label: `Automatic (${all[0].label} ${all[0].ratio})` },
+              ...all.map((s) => ({ value: s.id, label: `${s.label} ${s.ratio}` })),
+            ],
+          },
+        ],
         placeholder: "Automatic",
-        ariaLabel: `Format on ${n.label}`,
+        ariaLabel: `Preferred format on ${n.label}`,
         disabled: !editable,
       })}
     </li>`;
   });
-
   return toString(
     section({
       aside: html`<p class="ap-body imst-images__lead">
-        When you click <strong>Generate image</strong> on a draft, I make it in this look and at its network's format,
-        without asking.
+        The shape I make an image in for each network. Automatic is the shape that network uses most.
       </p>`,
-      body: html`<div class="imst-images-generate">
-        <div class="imst-images-generate__look">
-          <span class="ap-body-bold">Look</span>
-          ${hasLooks
-            ? select({
-                name: "look",
-                value: lookValue,
-                groups: [
-                  { label: "Image styles", options: styles },
-                  { label: "Reference images", options: refs },
-                ],
-                placeholder: "None — I ask which style",
-                ariaLabel: "Look for Generate image",
-                disabled: !editable,
-              })
-            : html`<span class="ap-body">Create a style or add a reference image first.</span>`}
-        </div>
-        <ul class="imst-images-frames">
-          ${frames}
-        </ul>
-      </div>`,
+      body: html`<ul class="imst-images-formats">
+        ${rows}
+      </ul>`,
     }),
   );
 }
