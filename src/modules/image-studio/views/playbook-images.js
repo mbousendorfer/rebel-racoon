@@ -13,12 +13,12 @@
 //
 // Everything here saves as it changes, like the styles always did: no Edit.
 
-import { html, raw, toString } from "../lib/html.js?v=1554";
-import { navigate } from "../../../router.js?v=1554";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1554";
-import { toast } from "../ui/toast.js?v=1554";
-import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=1554";
-import { shapesFor } from "../config/formats.js?v=1554";
+import { html, raw, toString } from "../lib/html.js?v=1556";
+import { navigate } from "../../../router.js?v=1556";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=1556";
+import { toast } from "../ui/toast.js?v=1556";
+import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=1556";
+import { shapesFor } from "../config/formats.js?v=1556";
 import {
   addPlaybookReferences,
   deletePlaybookReference,
@@ -27,8 +27,8 @@ import {
   getPlaybookReferences,
   setPlaybookDefaultLook,
   setPlaybookFormat,
-} from "../state/playbook-brand.js?v=1554";
-import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=1554";
+} from "../state/playbook-brand.js?v=1556";
+import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=1556";
 
 const creatorPath = (playbookId, rest) => `/playbook/${encodeURIComponent(playbookId)}/styles/${rest}`;
 const ownStyles = (playbookId) => getStylesForBrand(playbookId).filter((s) => s.kind === "custom");
@@ -177,25 +177,52 @@ export function renderImagesGenerate(playbookId, { canEdit = true } = {}) {
     label: r.label || "Reference image",
     avatar: r.url,
   }));
+  const value = look.kind ? `${look.kind}:${look.id}` : "";
+  // Both kinds, each under its own name, as small pictures — ONE radio group
+  // across the two, so exactly one is the default.
+  const item = (o) =>
+    html`<li>
+      <button
+        type="button"
+        class="imst-images-pick__item"
+        role="radio"
+        aria-checked="${o.value === value ? "true" : "false"}"
+        data-imst-images-look="${o.value}"
+        ${editable ? "" : "disabled"}
+      >
+        <span class="imst-images-pick__art">
+          <img src="${o.avatar}" alt="" draggable="false" loading="lazy" />
+          <span class="imst-images-pick__check" aria-hidden="true"><i class="ap-icon-check"></i></span>
+        </span>
+        <span class="ap-caption imst-images-pick__name">${o.label}</span>
+      </button>
+    </li>`;
+  const group = (title, hint, items) =>
+    items.length
+      ? html`<div class="imst-images-pick__group">
+          <span class="imst-images-pick__title"
+            ><span class="ap-body-bold">${title}</span> <span class="ap-caption">${hint}</span></span
+          >
+          <ul class="imst-images-pick__list">
+            ${items.map(item)}
+          </ul>
+        </div>`
+      : "";
   return toString(
     section({
       aside: html`<p class="ap-body imst-images__lead">
-        When you click <strong>Generate an image</strong> on a draft, I make it in this style or after this image,
-        without asking.
-      </p>`,
+          When you click <strong>Generate an image</strong> on a draft, I start from the one you pick here, without
+          asking.
+        </p>
+        <p class="ap-body-bold imst-images__ask">
+          ${value ? "Your default is checked." : "Pick one as the default."}
+        </p>`,
       body:
         styles.length + refs.length
-          ? select({
-              name: "look",
-              value: look.kind ? `${look.kind}:${look.id}` : "",
-              groups: [
-                { label: "Image styles", options: styles },
-                { label: "Reference images", options: refs },
-              ],
-              placeholder: "None — I ask which style",
-              ariaLabel: "Preferred style or image",
-              disabled: !editable,
-            })
+          ? html`<div class="imst-images-pick" role="radiogroup" aria-label="Default style or reference image">
+              ${group("Image styles", "I draw the image in the style.", styles)}
+              ${group("Reference images", "I make the image take after it.", refs)}
+            </div>`
           : html`<p class="ap-body imst-images__empty">Create a style or add a reference image first.</p>`,
     }),
   );
@@ -277,15 +304,20 @@ export function handlePlaybookImagesClick(event, playbookId, { onChange = () => 
   for (const d of document.querySelectorAll("details[data-imst-images-select][open]"))
     if (d !== inSelect) d.open = false;
 
+  const lookItem = event.target.closest("[data-imst-images-look]");
+  if (lookItem) {
+    const [kind, ...rest] = lookItem.dataset.imstImagesLook.split(":");
+    if (setPlaybookDefaultLook(playbookId, { kind, id: rest.join(":") })) {
+      toast(`${lookItem.textContent.trim()} is now the default for Generate an image.`);
+      onChange();
+    }
+    return true;
+  }
   const pick = event.target.closest("[data-imst-images-pick]");
   if (pick) {
     const name = pick.dataset.imstImagesPick;
     const value = pick.dataset.imstValue;
-    if (name === "look") {
-      const [kind, ...rest] = value.split(":");
-      setPlaybookDefaultLook(playbookId, { kind, id: rest.join(":") });
-      toast(`Generate image now starts from ${pick.textContent.trim()}.`);
-    } else setPlaybookFormat(playbookId, name.split(":")[1], value);
+    setPlaybookFormat(playbookId, name.split(":")[1], value);
     onChange();
     return true;
   }

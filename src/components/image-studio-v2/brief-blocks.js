@@ -15,9 +15,9 @@
 // (image-studio.js#commitBriefLine), which is what stops the next option change from
 // overwriting it.
 
-import { escapeHtml } from "../../utils.js?v=1554";
-import { KEY } from "./context.js?v=1554";
-import * as imageStudio from "../../image-studio.js?v=1554";
+import { escapeHtml } from "../../utils.js?v=1556";
+import { KEY } from "./context.js?v=1556";
+import * as imageStudio from "../../image-studio.js?v=1556";
 
 // The words on the image, as the lead block. This one edits `renderText` — the text
 // that actually gets set into the artwork — not the prompt's sentence about it. They
