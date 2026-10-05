@@ -12,20 +12,20 @@ import {
   renderMessageBubble,
   renderNotice,
   renderResultCard,
-} from "./thread-turns.js?v=1526";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=1526";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1526";
-import { getTopPost } from "../../top-posts-store.js?v=1526";
-import { getTopicById } from "../../topics-store.js?v=1526";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=1526";
-import { renderProfileEchoCard } from "../../social-profiles.js?v=1526";
-import { escapeHtml } from "../../utils.js?v=1526";
-import { getIdeas } from "../../library.js?v=1526";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=1526";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1526";
-import { getThread } from "../../assistant.js?v=1526";
-import { getSuggestion } from "../../voice-coach-store.js?v=1526";
-import { networkLabel, networkIcon } from "../../network-voice.js?v=1526";
+} from "./thread-turns.js?v=1528";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1528";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1528";
+import { getTopPost } from "../../top-posts-store.js?v=1528";
+import { getTopicById } from "../../topics-store.js?v=1528";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=1528";
+import { renderProfileEchoCard } from "../../social-profiles.js?v=1528";
+import { escapeHtml } from "../../utils.js?v=1528";
+import { getIdeas } from "../../library.js?v=1528";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=1528";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1528";
+import { getThread } from "../../assistant.js?v=1528";
+import { getSuggestion } from "../../voice-coach-store.js?v=1528";
+import { networkLabel, networkIcon } from "../../network-voice.js?v=1528";
 
 export function renderThread(messages, sessionId) {
   return messages.map((m) => renderTurn(m, sessionId)).join("");
@@ -499,6 +499,8 @@ function renderIdeaExtractionTurn(message, sessionId) {
 function renderSchedulePlanTurn(message, sessionId) {
   const day = (ts) => new Date(ts).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
   const time = (ts) => new Date(ts).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  // Until it's scheduled, a date is the quick way into the schedule modal.
+  const editable = message.status !== "scheduled";
   const rows = message.rows
     .map((r) => {
       const live = resolveRef("post", r.postId, sessionId);
@@ -509,10 +511,18 @@ function renderSchedulePlanTurn(message, sessionId) {
             <i class="${networkIcon(r.network)} schedule-plan__network" title="${escapeHtml(networkLabel(r.network))}" aria-label="${escapeHtml(networkLabel(r.network))}"></i>
             <span class="schedule-plan__label">${what}</span>
           </span>
-          <span class="schedule-plan__when">
-            <span class="schedule-plan__day">${day(r.when)}</span>
-            <span class="schedule-plan__time">${time(r.when)}</span>
-          </span>
+          ${
+            editable
+              ? `<button type="button" class="schedule-plan__when schedule-plan__when--edit" data-schedule-plan-edit="${message.id}" aria-label="Change the date — ${day(r.when)}, ${time(r.when)}" data-tooltip="Change date or time">
+                  <span class="schedule-plan__day">${day(r.when)}</span>
+                  <span class="schedule-plan__time">${time(r.when)}</span>
+                  <i class="ap-icon-pen schedule-plan__edit" aria-hidden="true"></i>
+                </button>`
+              : `<span class="schedule-plan__when">
+                  <span class="schedule-plan__day">${day(r.when)}</span>
+                  <span class="schedule-plan__time">${time(r.when)}</span>
+                </span>`
+          }
         </li>`;
     })
     .join("");

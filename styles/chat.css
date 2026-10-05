@@ -986,6 +986,7 @@ span.chat-bubble-choice-chip {
   flex-shrink: 0;
   width: 168px;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .schedule-plan__day {
@@ -1024,4 +1025,34 @@ span.chat-bubble-choice-chip {
 
 .schedule-plan__state--muted {
   color: var(--ref-color-grey-80);
+}
+
+/* Until the plan is scheduled, a date opens the schedule modal on its drafts:
+   the pencil is always there (as in the modal), the date turns blue on hover. */
+.schedule-plan__when--edit {
+  width: 192px;
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xxs) var(--ref-spacing-xxs) var(--ref-spacing-xs);
+  margin: calc(-1 * var(--ref-spacing-xxs)) calc(-1 * var(--ref-spacing-xxs)) calc(-1 * var(--ref-spacing-xxs)) 0;
+  border: 0;
+  border-radius: var(--app-radius-sm);
+  background: none;
+  font: inherit;
+  cursor: pointer;
+  align-items: center;
+}
+
+.schedule-plan__edit {
+  color: var(--ref-color-grey-80);
+  flex-shrink: 0;
+}
+
+.schedule-plan__when--edit:hover .schedule-plan__day,
+.schedule-plan__when--edit:hover .schedule-plan__time,
+.schedule-plan__when--edit:hover .schedule-plan__edit {
+  color: var(--ref-color-electric-blue-100);
+}
+
+.schedule-plan__when--edit:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: 0;
 }
