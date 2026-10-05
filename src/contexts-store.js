@@ -22,18 +22,18 @@
 // chooses "Save as global". updateContext is used by the section-edit flow
 // when scope is "Update everywhere".
 
-import { contexts as seed, sharedContexts } from "./mocks.js?v=1531";
-import { isNewUser } from "./user-mode.js?v=1531";
-import { CURRENT_USER } from "./org.js?v=1531";
-import { isFlagOn } from "./feature-flags.js?v=1531";
-import { createNotifier } from "./store-utils.js?v=1531";
+import { contexts as seed, sharedContexts } from "./mocks.js?v=1532";
+import { isNewUser } from "./user-mode.js?v=1532";
+import { CURRENT_USER } from "./org.js?v=1532";
+import { isFlagOn } from "./feature-flags.js?v=1532";
+import { createNotifier } from "./store-utils.js?v=1532";
 import {
   normalizeLanguages,
   mirrorPrimaryToTopLevel,
   syncTopLevelToPrimary,
   cloneVoiceByLanguage,
-} from "./languages.js?v=1531";
-import { cloneVoiceByNetwork } from "./network-voice.js?v=1531";
+} from "./languages.js?v=1532";
+import { cloneVoiceByNetwork } from "./network-voice.js?v=1532";
 
 // Lives up here, away from normalizeBrandLogos where it belongs, because the
 // seed below calls that normalizer at module-init time — a `let` declared beside
@@ -273,11 +273,15 @@ function normalizeImageryDefaults(ctx) {
   const f = d.formatByNetwork && typeof d.formatByNetwork === "object" ? d.formatByNetwork : {};
   const formatByNetwork = {};
   for (const n of ["linkedin", "instagram", "facebook", "x"]) if (s(f[n])) formatByNetwork[n] = s(f[n]);
+  // EITHER a style OR a reference image, never both: only the chosen look keeps
+  // its value. (While the section is edited, the fiche holds both, so switching
+  // back and forth loses nothing; Save lands here and drops the other.)
+  const look = ["style", "reference"].includes(d.look) ? d.look : "";
   return {
     imageryDefaults: {
-      look: ["style", "reference"].includes(d.look) ? d.look : "",
-      styleId: s(d.styleId),
-      referenceUrl: s(d.referenceUrl),
+      look,
+      styleId: look === "style" ? s(d.styleId) : "",
+      referenceUrl: look === "reference" ? s(d.referenceUrl) : "",
       formatByNetwork,
     },
   };
