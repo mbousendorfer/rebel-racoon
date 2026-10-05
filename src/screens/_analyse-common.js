@@ -283,7 +283,7 @@ export function renderPicker(picker) {
       return `
         <button
           type="button"
-          class="analyse__option${isPreset ? " is-selected" : ""}${isDisabled ? " analyse__option--disabled" : ""}${hiddenClass(it)}"
+          class="analyse__option${isPreset ? " is-selected" : ""}${isDisabled ? " analyse__option--disabled" : ""}${it.tone === "danger" ? " analyse__option--danger" : ""}${hiddenClass(it)}"
           data-${handler}="${it.value}"${searchAttr(it)}
           ${isDisabled ? `disabled aria-disabled="true"` : ""}
           ${selectable ? `aria-pressed="${isPreset ? "true" : "false"}"` : ""}

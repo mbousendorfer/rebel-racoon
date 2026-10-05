@@ -24,7 +24,9 @@
 //   subtitle          string  — optional helper line under the title (what to do)
 //   stepLabel         string  — small label on the top right (e.g. "Profile")
 //   skipLabel         string  — label on the Skip button (default "Skip")
-//   items             array   — [{ value, label, caption?, icon?, imgSrc?, counter? }]
+//   items             array   — [{ value, label, caption?, icon?, imgSrc?, counter?, tone? }]
+//                               `tone: "danger"` tints the row's icon red — the
+//                               destructive answer of a confirm (e.g. delete all drafts)
 //                               a row with `counter: true` carries an inline
 //                               −/+ version stepper even in single-select mode;
 //                               clicking the row advances and onPick gets its
@@ -70,8 +72,8 @@
 //   onSkip()          fn      — called when Skip / Esc; if omitted, no skip btn
 //   onBack()          fn      — called when ← Back is clicked; if omitted, no back btn
 
-import { chatTurn } from "./screens/_analyse-common.js?v=1516";
-import { createSessionNotifier } from "./store-utils.js?v=1516";
+import { chatTurn } from "./screens/_analyse-common.js?v=1519";
+import { createSessionNotifier } from "./store-utils.js?v=1519";
 
 const states = new Map(); // sessionId → opts
 const sessionNotifier = createSessionNotifier("inline-question");

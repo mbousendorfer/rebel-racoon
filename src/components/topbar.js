@@ -1,7 +1,7 @@
-import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=1516";
-import { getPath, navigate } from "../router.js?v=1516";
-import { parseHashParams } from "../url-state.js?v=1516";
-import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=1516";
+import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=1519";
+import { getPath, navigate } from "../router.js?v=1519";
+import { parseHashParams } from "../url-state.js?v=1519";
+import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=1519";
 // Lot 19 — topbar no longer carries its own sidebar-toggle button. The
 // sidebar head exposes the toggle in both expanded (chevron-left) and
 // collapsed (view-list) states, so the duplicate in the topbar was just
@@ -14,37 +14,37 @@ import {
   getMode as getRightPanelMode,
   getActiveBatchRef as getActiveDraftsBatchRef,
   subscribe as subscribeRightPanel,
-} from "./right-panel.js?v=1516";
-import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=1516";
-import { getThread, subscribe as subscribeThread } from "../assistant.js?v=1516";
-import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=1516";
-import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=1516";
+} from "./right-panel.js?v=1519";
+import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=1519";
+import { getThread, subscribe as subscribeThread } from "../assistant.js?v=1519";
+import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=1519";
+import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=1519";
 import {
   isEnabled as isStatusCardEnabled,
   toggle as toggleStatusCard,
   subscribeVisibility as subscribeStatusCardVisibility,
-} from "./conversation-status-card.js?v=1516";
-import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=1516";
-import { open as openRenameModal } from "./rename-modal.js?v=1516";
+} from "./conversation-status-card.js?v=1519";
+import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=1519";
+import { open as openRenameModal } from "./rename-modal.js?v=1519";
 import {
   subscribe as subscribeContexts,
   getContextById,
   getDefaultContext,
   getContexts,
-} from "../contexts-store.js?v=1516";
-import { isFlagOn } from "../feature-flags.js?v=1516";
-import { getActivePlaybook, isWorkspaceMode, isAccountScope, catalogueRoute } from "../active-playbook.js?v=1516";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1516";
-import { findCadence } from "../topics-catalog.js?v=1516";
+} from "../contexts-store.js?v=1519";
+import { isFlagOn } from "../feature-flags.js?v=1519";
+import { getActivePlaybook, isWorkspaceMode, isAccountScope, catalogueRoute } from "../active-playbook.js?v=1519";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1519";
+import { findCadence } from "../topics-catalog.js?v=1519";
 import {
   getPickerState as getTopPostsState,
   subscribePicker as subscribeTopPosts,
   backToProfiles as topPostsBackToProfiles,
-} from "../top-posts-flow.js?v=1516";
+} from "../top-posts-flow.js?v=1519";
 // The Insights view switch. Imported from views.js, NOT from the screen's
 // shell: the shell imports this module, so taking it from there would close a
 // cycle. views.js imports neither.
-import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=1516";
+import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=1519";
 
 // The playbook/context pill now lives in the composer (session.js
 // renderPlaybookControl) — selectable on a New Chat, then a static
@@ -352,7 +352,7 @@ export function initTopbar() {
     // renderWelcomeAltExit() above. The wizard chrome no longer carries
     // its own Exit affordance; this is the only entry.
     if (event.target.closest("[data-topbar-welcome-alt-exit]")) {
-      import("./confirm-modal.js?v=1516").then(({ open }) => {
+      import("./confirm-modal.js?v=1519").then(({ open }) => {
         open({
           title: "Exit onboarding?",
           body: "Your progress so far will be discarded. You can start over anytime from the dashboard.",
@@ -544,24 +544,13 @@ function sessionIdeaCount() {
   return getIdeas(sid).length;
 }
 
-// Count of drafts available in the active session's Drafts panel.
-// Sources, in order:
-//   1. posts-store — the canonical store the right-panel Drafts feed
-//      reads from. Includes seeded mock drafts AND anything the user
-//      drafted in this session, regardless of whether an assistant
-//      "Drafted N posts" turn was ever posted.
-//   2. The latest variant:"draft" assistant turn — kept as a fallback
-//      so flows that post the turn before the store is populated
-//      still light up the pill.
+// Count of drafts in the active session — posts-store, the store the Drafts
+// panel reads. (It used to fall back on the last "Drafted N posts" turn, for a
+// mock batch that never reached the store; every flow writes the store now, and
+// the fallback kept counting drafts after they were deleted.)
 function latestDraftCount() {
   const sessionId = currentSessionId();
-  if (!sessionId) return 0;
-  const storeCount = getPosts(sessionId).length;
-  if (storeCount > 0) return storeCount;
-  const thread = getThread(sessionId);
-  const latestDraft = [...thread].reverse().find((m) => m.variant === "draft");
-  if (!latestDraft) return 0;
-  return latestDraft.count ?? latestDraft.drafts?.length ?? 0;
+  return sessionId ? getPosts(sessionId).length : 0;
 }
 
 function isSessionRoute() {
