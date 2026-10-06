@@ -277,7 +277,8 @@
   padding: 3px 10px;
   background: color-mix(in srgb, var(--ref-color-white) 16%, transparent);
   color: var(--ref-color-white);
-  --archie-loader-color: var(--ref-color-white);
+  /* The loader stays Archie's brand orange, whatever the surface. */
+  --archie-loader-color: var(--ref-color-orange-100);
   border-radius: var(--app-radius-pill);
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);
@@ -285,13 +286,15 @@
   flex-shrink: 0;
 }
 
-/* (2) Ideas pill — white on the navy bubble, hover tints + chevron nudges 2px */
+/* (2) Ideas / clips pill — what Archie got out of your file, so it wears
+   Archie's butter on the navy bubble (navy ink, high contrast). Hover deepens
+   the butter toward its olive, the chevron nudges 2px. */
 .chat-bubble-source-intake__pill {
   display: inline-flex;
   align-items: center;
   gap: var(--ref-spacing-xxxs);
   padding: 3px var(--ref-spacing-xxs) 3px 10px;
-  background: var(--ref-color-white);
+  background: var(--app-butter);
   color: var(--app-convo-navy);
   border: 0;
   border-radius: var(--app-radius-pill);
@@ -306,12 +309,12 @@
 
 .chat-bubble-source-intake__pill:hover,
 .chat-bubble-source-intake__pill:focus-visible {
-  background: var(--app-convo-navy-10);
+  background: color-mix(in srgb, var(--app-butter) 75%, var(--app-butter-accent));
   outline: none;
 }
 
 .chat-bubble-source-intake__pill:focus-visible {
-  outline: 2px solid var(--ref-color-white);
+  outline: 2px solid var(--app-butter);
   outline-offset: 2px;
 }
 
@@ -685,7 +688,7 @@ span.chat-bubble-choice-chip {
 }
 
 /* Pending = Archie at work, so it wears Archie's butter (the status pills'
-   and the memory card's colour), the loader in olive on no tile. The card
+   and the memory card's colour), the brand-orange loader on no tile. The card
    turns grey-05 + orange tile once the result lands. */
 .drafts-card--pending,
 .drafts-card--pending:hover {
@@ -724,7 +727,6 @@ span.chat-bubble-choice-chip {
    NOTE: state modifiers live AFTER the base rule so they actually win. */
 .drafts-card__icon--spinner {
   background: transparent;
-  --archie-loader-color: var(--app-butter-accent);
 }
 
 .drafts-card__icon--muted {
