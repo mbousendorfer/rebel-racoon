@@ -5,27 +5,25 @@
 // Sources: up to 6 reference images, all counted the same — the look is read from
 // them (no presets to mix: removed at the user's request, 2026-09-28).
 // An optional style prompt. (The "what to keep" choice was removed at the
-// user's request, 2026-10-02: a new style keeps the essentials.) A test run
-// on three neutral subjects before saving. Saved FOR the active Playbook.
+// user's request, 2026-10-02: a new style keeps the essentials.) Saved FOR the
+// active Playbook. (A three-subject "Test run" column was removed at the user's
+// request, 2026-10-06: "ça n'a pas de sens".)
 
-import { html, toString } from "../lib/html.js?v=1588";
-import { delegate } from "../lib/delegate.js?v=1588";
-import { getPath } from "../../../router.js?v=1588";
-import { setTopbarActions } from "../../../components/topbar.js?v=1588";
-import { hashString, randomSeed } from "../lib/prng.js?v=1588";
-import { renderFrame } from "./frame.js?v=1588";
-import { renderEmpty } from "../ui/empty.js?v=1588";
-import { field, preserveFocus, textInput } from "../ui/fields.js?v=1588";
-import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1588";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1588";
-import { toast } from "../ui/toast.js?v=1588";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1588";
-import { CUSTOM_STYLE_LIMITS, STYLE_TEST_SUBJECTS, presetById } from "../config/style-presets.js?v=1588";
-import { createStyle } from "../model/schema.js?v=1588";
-import { copyService, imageGenerationService } from "../services/index.js?v=1588";
-import { lookFromColors } from "../render/visual.js?v=1588";
-import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1588";
-import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1588";
+import { html, toString } from "../lib/html.js?v=1589";
+import { delegate } from "../lib/delegate.js?v=1589";
+import { getPath } from "../../../router.js?v=1589";
+import { setTopbarActions } from "../../../components/topbar.js?v=1589";
+import { renderFrame } from "./frame.js?v=1589";
+import { renderEmpty } from "../ui/empty.js?v=1589";
+import { field, preserveFocus, textInput } from "../ui/fields.js?v=1589";
+import { dropzone, bindDropzones } from "../ui/dropzone.js?v=1589";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1589";
+import { toast } from "../ui/toast.js?v=1589";
+import { CUSTOM_STYLE_LIMITS, presetById } from "../config/style-presets.js?v=1589";
+import { copyService } from "../services/index.js?v=1589";
+import { lookFromColors } from "../render/visual.js?v=1589";
+import { canEditBrand, getAsset, getBrand, getStyle } from "../state/store.js?v=1589";
+import { saveStyle, uploadReference, validateStyleDraft } from "../state/style-actions.js?v=1589";
 
 function draftFrom(style, brandId) {
   if (style) {
@@ -52,7 +50,7 @@ function draftFrom(style, brandId) {
 
 /**
  * `embed`: the same creator inside the studio (its "New style" popover, over the
- * preview area): no page frame, heading or test run, the actions in `embed.footer`,
+ * preview area): no page frame or heading, the actions in `embed.footer`,
  * and `onSaved(style)` / `onCancel()` instead of going back to the fiche.
  */
 export function mount(target, params, ctx, { embed = null } = {}) {
@@ -62,24 +60,12 @@ export function mount(target, params, ctx, { embed = null } = {}) {
   const brand = canEditBrand(params.id) ? getBrand(params.id) : null;
   const state = {
     draft: draftFrom(editing, brand?.id),
-    test: null, // { status: "loading" | "done" | "error", seeds: [] }
-    stale: false,
     errors: [],
     uploading: 0,
     promptBusy: false, // "Generate the prompt" is reading the images
-    abort: null,
   };
 
   const fiche = `/playbook/${encodeURIComponent(params.id)}`;
-
-  // The style as it would be saved — what the preview renders with.
-  const previewStyle = () =>
-    createStyle({
-      id: state.draft.id || "st_preview",
-      brandId: state.draft.brandId,
-      label: state.draft.label,
-      custom: { ...state.draft, sources: state.draft.sources },
-    });
 
   // A reference image as a tile: the picture, and a way to take it out. Every
   // image counts the same (no weights: removed at the user's request, 2026-10-02).
@@ -102,71 +88,6 @@ export function mount(target, params, ctx, { embed = null } = {}) {
           <i class="ap-icon-close" aria-hidden="true"></i>
         </button>
       </li>
-    `;
-  };
-
-  const renderPreview = () => {
-    const t = state.test;
-    const tiles = STYLE_TEST_SUBJECTS.map((subject, i) => {
-      let inner;
-      if (!t) inner = html`<span class="imst-test-grid__empty ap-caption">${subject.label}</span>`;
-      else if (t.status === "loading")
-        inner = html`<span class="imst-test-grid__loading"><span class="ap-loader size-24"></span></span>`;
-      else if (t.status === "error") inner = html`<span class="imst-test-grid__empty ap-caption">—</span>`;
-      else
-        inner = html`<img
-          src="${styleThumbUrl(previewStyle(), brand, { seed: t.seeds[i], kind: subject.id })}"
-          alt="${subject.label}, in this style"
-        />`;
-      return html`<figure class="imst-test-grid__item">
-        <div class="imst-test-grid__frame">${inner}</div>
-        <figcaption class="ap-caption">${subject.label}</figcaption>
-      </figure>`;
-    });
-    return html`
-      <section
-        class="ap-card imst-creator__preview"
-        aria-labelledby="imst-test-title"
-        aria-busy="${t?.status === "loading"}"
-      >
-        <header class="imst-section__head">
-          <div>
-            <h2 class="ap-subtitle" id="imst-test-title">Test run</h2>
-            <p class="ap-caption">Three neutral subjects, in ${brand.name}'s colours.</p>
-          </div>
-          <button
-            type="button"
-            class="ap-button primary orange"
-            data-imst-action="test"
-            ${t?.status === "loading" || !state.draft.sources.length ? "disabled" : ""}
-          >
-            <i class="ap-icon-sparkles" aria-hidden="true"></i
-            ><span>${t?.status === "done" ? "Test again" : "Test the style"}</span>
-          </button>
-        </header>
-        ${state.stale && t?.status === "done"
-          ? html`<div class="ap-infobox info">
-              <i class="ap-icon-info_fill" aria-hidden="true"></i>
-              <div class="ap-infobox-content">
-                <div class="ap-infobox-texts">
-                  <div class="ap-infobox-message">You changed the style since this test. Test again to see it.</div>
-                </div>
-              </div>
-            </div>`
-          : ""}
-        ${t?.status === "error"
-          ? html`<div class="ap-infobox error" role="alert">
-              <i class="ap-icon-warning_fill" aria-hidden="true"></i>
-              <div class="ap-infobox-content">
-                <div class="ap-infobox-texts">
-                  <div class="ap-infobox-message">The test run failed. Try again.</div>
-                </div>
-                <button type="button" class="ap-button ghost blue" data-imst-action="test">Try again</button>
-              </div>
-            </div>`
-          : ""}
-        <div class="imst-test-grid">${tiles}</div>
-      </section>
     `;
   };
 
@@ -272,7 +193,6 @@ ${d.stylePrompt}</textarea
             </header>`}
         <div class="imst-creator${embed ? " imst-creator--embed" : ""}">
           <div class="imst-creator__form">${embed ? html`${refs}${identity}` : html`${identity}${refs}`}</div>
-          ${embed ? "" : renderPreview()}
         </div>
         ${state.errors.length
           ? html`<div class="ap-infobox error" role="alert">
@@ -292,13 +212,6 @@ ${d.stylePrompt}</textarea
       ?.toggleAttribute("disabled", state.promptBusy);
   };
 
-  const markStale = () => {
-    if (state.test?.status === "done" && !state.stale) {
-      state.stale = true;
-      paint();
-    }
-  };
-
   // "Generate the prompt": the images' look and palette, put in words — a draft to edit.
   async function generatePrompt() {
     const colors = state.draft.sources.flatMap((s) => s.colors || getAsset(s.ref)?.colors || []);
@@ -309,37 +222,10 @@ ${d.stylePrompt}</textarea
         colors,
         look: presetById(lookFromColors(colors)),
       });
-      state.stale = !!state.test;
     } catch {
       toast("I couldn't read the images. Try again.", { variant: "error" });
     }
     state.promptBusy = false;
-    paint();
-  }
-
-  async function runTest() {
-    state.test = { status: "loading", seeds: [] };
-    state.stale = false;
-    state.abort?.abort();
-    state.abort = new AbortController();
-    paint();
-    try {
-      await imageGenerationService.generate(
-        {
-          brief: { prompt: state.draft.stylePrompt || "style test" },
-          brand,
-          style: previewStyle(),
-          format: { width: 1080, height: 1080 },
-          textMode: "layer",
-        },
-        { signal: state.abort.signal },
-      );
-      const base = hashString(state.draft.label) ^ randomSeed();
-      state.test = { status: "done", seeds: [base, base + 97, base + 211] };
-    } catch (error) {
-      if (error.name === "AbortError") return;
-      state.test = { status: "error", seeds: [] };
-    }
     paint();
   }
 
@@ -395,30 +281,23 @@ ${d.stylePrompt}</textarea
         }
       }
       state.uploading -= 1;
-      state.stale = !!state.test;
       paint();
     }),
     delegate(target, "input", "[data-imst-field]", (_e, el) => {
       state.draft[el.dataset.imstField] = el.value;
     }),
-    delegate(target, "change", "[data-imst-field]", (_e, el) => {
-      if (el.dataset.imstField !== "label") markStale();
-    }),
     delegate(target, "click", "[data-imst-action]", (_e, el) => {
       const action = el.dataset.imstAction;
       if (action === "remove-source") {
         state.draft.sources.splice(Number(el.dataset.index), 1);
-        state.stale = !!state.test;
         paint();
       } else if (action === "generate-prompt") {
         if (el.getAttribute("aria-disabled") !== "true") generatePrompt();
-      } else if (action === "test") runTest();
-      else if (action === "save") save();
+      } else if (action === "save") save();
     }),
   ];
   return () => {
     alive = false;
-    state.abort?.abort();
     offs.forEach((off) => off());
     if (!embed) setTopbarActions(null);
   };

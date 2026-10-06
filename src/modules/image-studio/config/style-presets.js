@@ -218,13 +218,6 @@ export function presetById(id) {
   return STYLE_PRESETS.find((preset) => preset.id === id) || null;
 }
 
-/** Neutral subjects for a custom style's test run (the brief asks for 3). */
-export const STYLE_TEST_SUBJECTS = Object.freeze([
-  { id: "object", label: "An everyday object" },
-  { id: "person", label: "A person at work" },
-  { id: "place", label: "A place" },
-]);
-
 // Six images at most: past that, references start to disagree (2026-10-02).
 export const CUSTOM_STYLE_LIMITS = Object.freeze({ images: 6, presets: 5 });
 
