@@ -60,6 +60,7 @@ import {
   subscribe as subscribeComposerConnector,
 } from "../composer-connector.js?v=1596";
 import { isFlagOn } from "../feature-flags.js?v=1596";
+import { onChatGalleryClick } from "./session/chat-gallery.js?v=1596";
 import * as contextBuilder from "../context-builder.js?v=1596";
 import { renderPicker } from "./_analyse-common.js?v=1596";
 import { contentState, rerenderContentWorkspaceBody } from "../components/content-workspace.js?v=1596";
@@ -2053,6 +2054,15 @@ function bindSession(root, session) {
   root.addEventListener(
     "click",
     (event) => {
+      // "Show in chat" under the composer — the prototype's catalogue of what a
+      // chat can display. A typed ask goes through submitInput, like a real one.
+      const send = (text) => {
+        const input = getInput();
+        if (!input) return;
+        input.value = text;
+        submitInput();
+      };
+      if (onChatGalleryClick(event, root, session, send)) return;
       // Shared "how's this?" feedback control — wires the clip thumbs/reasons
       // rendered in the Clip Studio review grid (renderClipCard). Handled first
       // so the in-place thumb/chip/Send updates bail before other handlers.

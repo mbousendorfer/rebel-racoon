@@ -62,6 +62,7 @@ Rendu des turns : [`screens/session/thread-turns.js`](../../src/screens/session/
 - **Chip connecteur** : demander un connecteur attache un chip removable + swap placeholder _« Ask {name} anything… »_. ([`composer-connector.js`](../../src/composer-connector.js))
 - **Status bar** : un slot réconcilié au-dessus du composer. Gris in-progress (loader + label) prioritaire sur vert « ready » (_« N drafts ready to review »_ + **Review**, _« N ideas ready »_ + **View ideas**). Animations enter/exit, reduced-motion aware.
 - **Drag & drop** : déposer un fichier sur le panneau lance l'upload ; fichier non classable → modal Add-source.
+- **« Show in chat »** (outil de proto, 2026-10-06, [`chat-gallery.js`](../../src/screens/session/chat-gallery.js)) : un lien dans la ligne d'aide sous le composer, qui ouvre un `.ap-action-dropdown` vers le haut en trois sections — **Components** (un exemple de chaque turn que le fil sait afficher, posté directement via `assistant.js`), **Typed asks** (les demandes que le routage reconnaît, envoyées par le vrai submit du composer : batch, launch, compare, schedule all / some, delete, image for a draft…), **Flows** (les points d'entrée des flows : draft from an idea, top posts, Topic Feed, connecteur, video intake, connect an account, question de coaching de voix). Une entrée dont la condition manque (flag OFF, pas d'idée, pas de vidéo…) est désactivée et dit pourquoi. ⚠️ Le catalogue est tenu à la main : un nouveau variant de turn ou une nouvelle route s'y ajoute aussi.
 
 ### Flows conversationnels
 

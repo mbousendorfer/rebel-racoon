@@ -17,6 +17,7 @@ import { catalogueRoute } from "../../active-playbook.js?v=1596";
 import { getActiveConnector } from "../../composer-connector.js?v=1596";
 import { COMPOSER_DEFAULT_PLACEHOLDER, renderPlaybookControl } from "../session.js?v=1596";
 import { renderTopicPickerRow } from "./empty-hero.js?v=1596";
+import { renderChatGallery } from "./chat-gallery.js?v=1596";
 
 function renderConnectorsSubmenu() {
   // Connectors are gated behind a feature flag (default OFF) — when off, the
@@ -406,7 +407,7 @@ export function renderComposer(attachedContext, session, selectable) {
           ${
             revoked
               ? `Save or schedule the drafts above, or <a class="ap-link" href="#${catalogueRoute()}">pick a Playbook you have access to</a>.`
-              : `<kbd>Enter</kbd> to send · <kbd>Shift</kbd>+<kbd>Enter</kbd> for new line · Drop a file to attach a source`
+              : `<kbd>Enter</kbd> to send · <kbd>Shift</kbd>+<kbd>Enter</kbd> for new line · Drop a file to attach a source · ${renderChatGallery()}`
           }
         </div>
       </div>
