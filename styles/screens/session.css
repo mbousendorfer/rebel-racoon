@@ -1817,3 +1817,36 @@ body.playbook-revoked .session__composer-card {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* "Show in chat" — the prototype's catalogue of chat elements, a link in the
+   composer hint row whose DS action dropdown opens upward (chat-gallery.js). */
+.chat-gallery {
+  position: relative;
+  display: inline-flex;
+}
+
+.chat-gallery__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  font-size: inherit;
+}
+
+.chat-gallery__menu {
+  position: absolute;
+  bottom: calc(100% + var(--ref-spacing-xxs));
+  right: 0;
+  z-index: 30;
+  width: 300px;
+  max-height: 60vh;
+  overflow-y: auto;
+  text-align: left;
+}
+
+.chat-gallery__group {
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs) var(--app-spacing-micro);
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--sys-text-color-default);
+}
