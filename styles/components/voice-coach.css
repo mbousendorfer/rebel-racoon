@@ -1,37 +1,17 @@
 /* voice-coach — the visual language of what Archie REMEMBERS (flag
-   networkVoices). One primitive, .memory-note, used everywhere a voice rule
-   appears: the chat card, the Playbook's tray and its "What I've learned"
-   list; kept in the thread, it shrinks to one line (.memory-line).
+   networkVoices).
 
-   Memory speaks Archie's own colour, butter (tokens.css — the in-conversation
-   status pills already wear it). Two states, read at a glance:
-     pending — the butter wash: Archie proposes, it asks for your attention.
-     kept    — plain text, the olive mark only: it is simply part of the voice.
-   The mark is the DS sparkles glyph in olive. Ink stays grey-100; no shadow,
-   no edge bar, no capitals. */
+   .memory-card — a proposal (network-voice.js memoryCardHtml), in the chat and
+   on the Playbook's Voice tab. Two parts in one grey-20 card: the butter block
+   is Archie talking (the rule, why), the white row under it is your answer.
+   Saying Remember only changes that row — the question becomes "Remembered…"
+   in the same place, at the same height.
 
-.memory-note {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--ref-spacing-xs);
-  box-sizing: border-box;
-  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
-  border-radius: var(--ref-border-radius-md);
-  color: var(--ref-color-grey-100);
-}
+   .memory-note--kept — a rule already in the voice ("What I've learned"):
+   plain text beside the olive mark, no surface.
 
-.memory-note--pending {
-  background: var(--app-butter);
-}
-
-/* Kept: no surface — the rule reads as ordinary text beside its mark. */
-.memory-note--kept {
-  padding-inline: 0;
-}
-
-.memory-note--kept .memory-note__text {
-  font-weight: var(--ref-font-weight-regular);
-}
+   Butter is Archie's colour (tokens.css). The mark is the DS sparkles glyph in
+   olive. Ink stays grey-80…100; no shadow, no edge bar, no capitals. */
 
 /* The memory mark — the sparkles mask paints currentColor: olive. `i.`
    outranks a host's own icon colour (the Playbook block heads). */
@@ -42,39 +22,121 @@ i.memory-mark {
   color: var(--app-butter-accent);
 }
 
-.memory-note > i.memory-mark {
+/* ── The proposal card ─────────────────────────────────────────────────── */
+
+.memory-card {
+  width: min(520px, 100%);
+  box-sizing: border-box;
+  overflow: hidden;
+  border: 1px solid var(--app-border);
+  border-radius: var(--ref-border-radius-md);
+  background: var(--app-surface);
+  color: var(--ref-color-grey-100);
+}
+
+.memory-card__body {
+  display: grid;
+  grid-template-columns: 16px 1fr;
+  gap: 2px var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  background: var(--app-butter);
+}
+
+.memory-card__body > i.memory-mark {
   margin-top: 2px;
 }
 
-.memory-note__body {
+.memory-card__rule {
+  margin: 0;
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--ref-font-weight-bold);
+  line-height: 20px;
+}
+
+.memory-card__why {
+  grid-column: 2;
+  margin: 0;
+  font-size: var(--ref-font-size-xs);
+  line-height: 16px;
+  color: var(--ref-color-grey-80);
+}
+
+/* The answer row — the button cluster sits in an even 12px inset. */
+.memory-card__answer {
   display: flex;
-  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-xs) var(--ref-spacing-xs) var(--ref-spacing-sm);
+  border-top: 1px solid var(--app-border);
+}
+
+.memory-card__ask {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  font-size: var(--ref-font-size-sm);
+  color: var(--ref-color-grey-80);
+}
+
+.memory-card__ask > i {
+  width: 14px;
+  height: 14px;
+}
+
+.memory-card__ask > i.memory-card__done {
+  width: 16px;
+  height: 16px;
+  color: var(--app-butter-accent);
+}
+
+/* min-height = the DS button: the row keeps its height when Undo replaces the buttons. */
+.memory-card__actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  min-height: 36px;
+}
+
+/* Narrow hosts: the question above, the buttons under it, right-grouped. */
+@container (max-width: 440px) {
+  .memory-card__answer {
+    flex-wrap: wrap;
+  }
+  .memory-card__actions {
+    margin-left: auto;
+  }
+}
+
+.memory-cards {
+  display: flex;
   flex-direction: column;
-  gap: 2px;
-  min-width: 0;
+  gap: var(--ref-spacing-xs);
+  container-type: inline-size;
+}
+
+/* In the thread: the turn stretches to the thread's width, the card doesn't. */
+.memory-turn {
+  display: flex;
+  container-type: inline-size;
+}
+
+/* ── A rule already in the voice ───────────────────────────────────────── */
+
+.memory-note--kept {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xs);
+  color: var(--ref-color-grey-100);
+}
+
+.memory-note--kept > i.memory-mark {
+  margin-top: 2px;
 }
 
 .memory-note__text {
   margin: 0;
-  font-weight: var(--ref-font-weight-bold);
-}
-
-.memory-note__meta {
-  margin: 0;
-  font-size: var(--ref-font-size-sm);
-}
-
-.memory-note__meta > i {
-  width: 12px;
-  height: 12px;
-  vertical-align: -1px;
-}
-
-.memory-note__actions {
-  display: flex;
-  flex-shrink: 0;
-  align-self: center;
-  gap: var(--ref-spacing-xxs);
 }
 
 .memory-notes {
@@ -84,43 +146,4 @@ i.memory-mark {
   margin: 0;
   padding: 0;
   list-style: none;
-}
-
-/* The thread stretches every turn to its width: this wrapper takes the
-   stretch, so the note inside can hug its content. */
-.memory-turn {
-  display: flex;
-}
-
-/* In the thread — hugs its content, never wider than the other cards. */
-.memory-note--turn {
-  align-self: flex-start;
-  width: max-content;
-  max-width: min(560px, 100%);
-}
-
-/* Kept, in the thread: one line in the shape of the thread's own status pill
-   (.ap-status.mermaid — "Extracted 2 ideas"): butter, 24px tall, round, 12px
-   text — the olive sparkles where the status has its dot. */
-.memory-line {
-  align-self: flex-start;
-  width: fit-content;
-  max-width: 100%;
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px var(--ref-spacing-xxs);
-  box-sizing: border-box;
-  min-height: 24px;
-  margin: 0;
-  padding: 2px var(--ref-spacing-xxs);
-  border-radius: 24px;
-  background: var(--app-butter);
-  color: var(--ref-color-grey-100);
-  font-size: var(--ref-font-size-xs);
-}
-
-.memory-line > i.memory-mark {
-  width: 12px;
-  height: 12px;
 }

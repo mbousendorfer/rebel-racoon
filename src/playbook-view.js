@@ -14,7 +14,7 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1604";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1605";
 import {
   kitEnabled,
   renderColorRole,
@@ -28,11 +28,11 @@ import {
   handleKitChange,
   kitSnapshot,
   renderImagesTab,
-} from "./playbook-brand-kit.js?v=1604";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1604";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1604";
-import { isFlagOn } from "./feature-flags.js?v=1604";
-import { parseHashParams } from "./url-state.js?v=1604";
+} from "./playbook-brand-kit.js?v=1605";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1605";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1605";
+import { isFlagOn } from "./feature-flags.js?v=1605";
+import { parseHashParams } from "./url-state.js?v=1605";
 import {
   networkVoicesOn,
   baseNetwork,
@@ -42,22 +42,23 @@ import {
   maturity,
   networkLabel,
   networkIcon,
-} from "./network-voice.js?v=1604";
+  memoryCardHtml,
+} from "./network-voice.js?v=1605";
 import {
   getSuggestions,
   accept as acceptVoiceSuggestion,
   dismiss as dismissVoiceSuggestion,
-} from "./voice-coach-store.js?v=1604";
-import { NETWORKS } from "./social-profiles.js?v=1604";
-import { showToast } from "./components/toast.js?v=1604";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=1604";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1604";
+} from "./voice-coach-store.js?v=1605";
+import { NETWORKS } from "./social-profiles.js?v=1605";
+import { showToast } from "./components/toast.js?v=1605";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=1605";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1605";
 // The Default look row offers the SAME three catalogues the Image Studio renders, from
 // the one place they are declared — REF_MODES' own header makes the argument: the label,
 // the hint and the brief clause "drift the moment they live apart". No cycle: the engine
 // imports only clip-formats / image-studio-canvas / feature-flags, and its module body
 // builds consts, so importing it here costs nothing at load.
-import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1604";
+import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1605";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2737,37 +2738,26 @@ function renderNetworkSwitcher(data) {
     </div>`;
 }
 
-// Archie's pending proposals for one network — Add / Not now, footer-grouped.
-// A rule as a memory note (styles/components/voice-coach.css): pending =
-// the butter wash (Archie proposes), kept = plain text beside the mark (it's in the voice).
+// A rule already in the voice — plain text beside the olive mark
+// (styles/components/voice-coach.css). Proposals are memory cards.
 const MEMORY_MARK = "ap-icon-sparkles memory-mark";
 
-function memoryNote(text, { kept = false, meta = "", actions = "" } = {}) {
-  return `<li class="memory-note memory-note--${kept ? "kept" : "pending"}">
+function memoryNote(text) {
+  return `<li class="memory-note memory-note--kept">
     <i class="${MEMORY_MARK}" aria-hidden="true"></i>
-    <div class="memory-note__body">
-      <p class="memory-note__text">${esc(text)}</p>
-      ${meta ? `<p class="memory-note__meta">${esc(meta)}</p>` : ""}
-    </div>
-    ${actions ? `<div class="memory-note__actions">${actions}</div>` : ""}
+    <p class="memory-note__text">${esc(text)}</p>
   </li>`;
 }
 
-// What Archie wants to remember for one network — Not now / Remember.
+// What Archie wants to remember for one network — one memory card each.
+// A Remember moves the rule into "What I've learned" below, so the tray only
+// ever shows the pending ones.
 function nvSuggestionsBlock(data, net, index) {
   const list = canEditView() ? getSuggestions(data.id, { network: net }) : [];
   if (!list.length) return "";
   return pb2Block(
     "Archie wants to remember",
-    `<ul class="memory-notes">${list
-      .map((sg) =>
-        memoryNote(sg.text, {
-          meta: sg.why || "",
-          actions: `<button type="button" class="ap-button ghost grey" data-nv-dismiss="${esc(sg.id)}">Not now</button>
-            <button type="button" class="ap-button stroked blue" data-nv-accept="${esc(sg.id)}">Remember</button>`,
-        }),
-      )
-      .join("")}</ul>`,
+    `<div class="memory-cards">${list.map((sg) => memoryCardHtml(sg, { attr: "nv", value: sg.id })).join("")}</div>`,
     { wide: true, index, icon: MEMORY_MARK, caption: "Nothing is kept without your OK" },
   );
 }
@@ -2777,7 +2767,7 @@ function nvRulesBlock(data, net, index) {
   return pb2Block(
     "What I've learned",
     rules.length
-      ? `<ul class="memory-notes">${rules.map((r) => memoryNote(r, { kept: true })).join("")}</ul>`
+      ? `<ul class="memory-notes">${rules.map((r) => memoryNote(r)).join("")}</ul>`
       : pb2Empty(
           `Nothing yet. Rework a ${networkLabel(net)} draft or tell me what was off, and I'll suggest what to remember here.`,
         ),

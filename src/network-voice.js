@@ -17,8 +17,9 @@
 // ON an overridden hook is written in one language. Per-language × per-network
 // examples when a brand actually publishes in two languages on one network.
 
-import { isFlagOn } from "./feature-flags.js?v=1604";
-import { NETWORKS, normalizeNetwork, getConnectedProfileById } from "./social-profiles.js?v=1604";
+import { isFlagOn } from "./feature-flags.js?v=1605";
+import { escapeHtml } from "./utils.js?v=1605";
+import { NETWORKS, normalizeNetwork, getConnectedProfileById } from "./social-profiles.js?v=1605";
 
 export const NETWORK_FIELDS = ["signatureHooks", "closingPatterns", "formattingStyle", "visualStyle"];
 const LIST_FIELDS = new Set(["signatureHooks", "closingPatterns"]);
@@ -114,6 +115,47 @@ export function withSuggestion(ctx, s) {
   }
   all[net] = e;
   return all;
+}
+
+// The reverse of withSuggestion — what an Undo writes back.
+export function withoutSuggestion(ctx, s) {
+  const net = normalizeNetwork(s.network);
+  const all = structuredClone(ctx.voiceByNetwork || {});
+  const e = all[net];
+  if (!e) return all;
+  const key = s.field && LIST_FIELDS.has(s.field) ? s.field : "rules";
+  if (Array.isArray(e[key])) e[key] = e[key].filter((t) => t !== s.text);
+  return all;
+}
+
+// What Archie wants to remember, as one card (styles/components/voice-coach.css):
+// the butter block holds the rule and why; the white row under it holds the
+// question and, once answered, its answer — same place, same height.
+// `attr` names the host's delegation attributes (data-<attr>-accept / -dismiss / -undo).
+export function memoryCardHtml(s, { attr, value, undo = true }) {
+  const esc = escapeHtml;
+  const net = `<i class="${esc(networkIcon(s.network))}" aria-hidden="true"></i> ${esc(networkLabel(s.network))}`;
+  const kept = s.status === "accepted";
+  const answer = kept
+    ? `<div class="memory-card__answer" role="status">
+        <span class="memory-card__ask"><i class="ap-icon-check memory-card__done" aria-hidden="true"></i>Remembered for your ${net} voice</span>
+        <div class="memory-card__actions">${undo ? `<a class="ap-link standalone small" href="#" role="button" data-${attr}-undo="${esc(value)}">Undo</a>` : ""}</div>
+      </div>`
+    : `<div class="memory-card__answer">
+        <span class="memory-card__ask">Remember this for your ${net} voice?</span>
+        <div class="memory-card__actions">
+          <button type="button" class="ap-button ghost grey" data-${attr}-dismiss="${esc(value)}">Not now</button>
+          <button type="button" class="ap-button primary blue" data-${attr}-accept="${esc(value)}">Remember</button>
+        </div>
+      </div>`;
+  return `<div class="memory-card" role="group" aria-label="Remember this for your ${esc(networkLabel(s.network))} voice?">
+    <div class="memory-card__body">
+      <i class="ap-icon-sparkles memory-mark" aria-hidden="true"></i>
+      <p class="memory-card__rule">${esc(s.text)}</p>
+      ${s.why ? `<p class="memory-card__why">${esc(s.why)}</p>` : ""}
+    </div>
+    ${answer}
+  </div>`;
 }
 
 export function cloneVoiceByNetwork(v) {

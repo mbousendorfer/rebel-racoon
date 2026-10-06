@@ -11,15 +11,15 @@
 //   the same proposal never resurfaces.
 //
 // Public API: getSuggestions(ctxId, { network?, status? }) · getSuggestion(ctxId, id)
-//             propose(ctxId, s) → Suggestion | null · accept(ctxId, id) · dismiss(ctxId, id)
+//             propose(ctxId, s) → Suggestion | null · accept(ctxId, id) · undo(ctxId, id) · dismiss(ctxId, id)
 //             subscribe(fn)
 
-import { voiceSuggestionsByContext } from "./mocks.js?v=1604";
-import { isNewUser } from "./user-mode.js?v=1604";
-import { createNotifier } from "./store-utils.js?v=1604";
-import { getContextById, updateContext } from "./contexts-store.js?v=1604";
-import { withSuggestion } from "./network-voice.js?v=1604";
-import { normalizeNetwork } from "./social-profiles.js?v=1604";
+import { voiceSuggestionsByContext } from "./mocks.js?v=1605";
+import { isNewUser } from "./user-mode.js?v=1605";
+import { createNotifier } from "./store-utils.js?v=1605";
+import { getContextById, updateContext } from "./contexts-store.js?v=1605";
+import { withSuggestion, withoutSuggestion } from "./network-voice.js?v=1605";
+import { normalizeNetwork } from "./social-profiles.js?v=1605";
 
 const byCtx = new Map(); // contextId → Suggestion[]
 const notifier = createNotifier("voice-coach-store");
@@ -69,6 +69,17 @@ export function accept(ctxId, id) {
   if (!s || !ctx || s.status !== "pending") return null;
   updateContext(ctxId, { voiceByNetwork: withSuggestion(ctx, s), updatedAt: "just now" });
   s.status = "accepted";
+  notify();
+  return s;
+}
+
+// Undo a Remember: the rule leaves the Playbook, the proposal asks again.
+export function undo(ctxId, id) {
+  const s = getSuggestion(ctxId, id);
+  const ctx = getContextById(ctxId);
+  if (!s || !ctx || s.status !== "accepted") return null;
+  updateContext(ctxId, { voiceByNetwork: withoutSuggestion(ctx, s), updatedAt: "just now" });
+  s.status = "pending";
   notify();
   return s;
 }

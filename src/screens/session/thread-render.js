@@ -12,20 +12,20 @@ import {
   renderMessageBubble,
   renderNotice,
   renderResultCard,
-} from "./thread-turns.js?v=1604";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=1604";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1604";
-import { getTopPost } from "../../top-posts-store.js?v=1604";
-import { getTopicById } from "../../topics-store.js?v=1604";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=1604";
-import { renderProfileEchoCard } from "../../social-profiles.js?v=1604";
-import { escapeHtml } from "../../utils.js?v=1604";
-import { getIdeas } from "../../library.js?v=1604";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=1604";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1604";
-import { getThread } from "../../assistant.js?v=1604";
-import { getSuggestion } from "../../voice-coach-store.js?v=1604";
-import { networkLabel, networkIcon } from "../../network-voice.js?v=1604";
+} from "./thread-turns.js?v=1605";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1605";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1605";
+import { getTopPost } from "../../top-posts-store.js?v=1605";
+import { getTopicById } from "../../topics-store.js?v=1605";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=1605";
+import { renderProfileEchoCard } from "../../social-profiles.js?v=1605";
+import { escapeHtml } from "../../utils.js?v=1605";
+import { getIdeas } from "../../library.js?v=1605";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=1605";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1605";
+import { getThread } from "../../assistant.js?v=1605";
+import { getSuggestion } from "../../voice-coach-store.js?v=1605";
+import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=1605";
 
 export function renderThread(messages, sessionId) {
   return messages.map((m) => renderTurn(m, sessionId)).join("");
@@ -211,38 +211,13 @@ function renderSelectionEchoTurn(echo) {
 }
 
 // Voice proposal (flag networkVoices) — what Archie wants to REMEMBER for one
-// network voice, drawn as a memory note (styles/components/voice-coach.css):
-// the butter wash while pending, one plain line once kept. Reads the
-// suggestion's status from its store, so a Remember made on the Playbook's
-// tray turns this card into the kept note too. Actions right, primary last.
+// network voice, as a memory card (network-voice.js memoryCardHtml). Reads the
+// suggestion's status from its store, so a Remember made on the Playbook's tray
+// turns this card to its answered state too; Undo sends it back to the question.
 function renderVoiceSuggestionTurn(message) {
   const s = getSuggestion(message.contextId, message.suggestionId);
   if (!s || s.status === "dismissed") return "";
-  const net = escapeHtml(networkLabel(s.network));
-  const mark = `<i class="ap-icon-sparkles memory-mark" aria-hidden="true"></i>`;
-  // Kept — one line in the thread, like a "memory updated" line, not a card.
-  if (s.status === "accepted") {
-    return `
-      <div class="memory-turn"><p class="memory-line" role="status">
-        ${mark}
-        <span>Remembered for your ${net} voice: <strong>${escapeHtml(s.text)}</strong></span>
-        <a class="ap-link standalone small" href="#/playbook/${escapeHtml(message.contextId)}?tab=voice&amp;net=${escapeHtml(s.network)}">See the voice</a>
-      </p></div>`;
-  }
-  const ids = `${escapeHtml(message.contextId)}|${escapeHtml(s.id)}`;
-  return `
-    <div class="memory-turn"><div class="memory-note memory-note--pending memory-note--turn" role="group" aria-label="Remember this for your ${net} voice?">
-      ${mark}
-      <div class="memory-note__body">
-        <p class="memory-note__text">${escapeHtml(s.text)}</p>
-        <p class="memory-note__meta">For your
-          <i class="${escapeHtml(networkIcon(s.network))}" aria-hidden="true"></i> ${net} voice. ${escapeHtml(s.why || "")}</p>
-      </div>
-      <div class="memory-note__actions">
-        <button type="button" class="ap-button ghost grey" data-voice-dismiss="${ids}">Not now</button>
-        <button type="button" class="ap-button primary blue" data-voice-accept="${ids}">Remember</button>
-      </div>
-    </div></div>`;
+  return `<div class="memory-turn">${memoryCardHtml(s, { attr: "voice", value: `${message.contextId}|${s.id}` })}</div>`;
 }
 
 // "Connect this service first" prompt — Archie can't import a pasted link
