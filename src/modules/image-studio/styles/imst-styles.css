@@ -387,10 +387,6 @@ button.imst-style-card {
 }
 
 /* Generate an image: both kinds under their own names, one pick across them. */
-.imst-images__ask {
-  margin: 0;
-}
-
 .imst-images-pick {
   display: flex;
   flex-direction: column;
@@ -501,6 +497,40 @@ button.imst-style-card {
   gap: var(--ref-spacing-lg);
 }
 
+/* A part of the block — Look, Format: a 16 bold head (block title 18 › part
+   16 › group 14 bold › item 14/12), then its content. The second part is set
+   off by a hairline as well as space: it answers a different question. */
+.imst-images-part {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+}
+
+.imst-images-part + .imst-images-part {
+  padding-top: var(--ref-spacing-lg);
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+
+.imst-images-part__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.imst-images-part__title {
+  margin: 0;
+  font-family: var(--sys-text-style-subtitle-font-family);
+  font-size: var(--sys-text-style-subtitle-size);
+  line-height: var(--sys-text-style-subtitle-line-height);
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--ref-color-grey-100);
+}
+
+.imst-images-part__hint {
+  margin: 0;
+  color: var(--ref-color-grey-80);
+}
+
 /* Formats: one row per network — name, shapes. */
 .imst-images-formats {
   list-style: none;
@@ -557,10 +587,6 @@ button.imst-style-card {
 }
 
 /* Generate an image: both kinds under their own names, one pick across them. */
-.imst-images__ask {
-  margin: 0;
-}
-
 .imst-images-pick {
   display: flex;
   flex-direction: column;

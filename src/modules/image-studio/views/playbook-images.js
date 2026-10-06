@@ -14,14 +14,14 @@
 //
 // Everything here saves as it changes, like the styles always did: no Edit.
 
-import { html, raw, toString } from "../lib/html.js?v=1591";
-import { navigate } from "../../../router.js?v=1591";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1591";
-import { toast } from "../ui/toast.js?v=1591";
-import { renderEmpty } from "../ui/empty.js?v=1591";
-import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=1591";
-import { shapesFor } from "../config/formats.js?v=1591";
-import { STYLE_PRESETS } from "../config/style-presets.js?v=1591";
+import { html, raw, toString } from "../lib/html.js?v=1593";
+import { navigate } from "../../../router.js?v=1593";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=1593";
+import { toast } from "../ui/toast.js?v=1593";
+import { renderEmpty } from "../ui/empty.js?v=1593";
+import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=1593";
+import { shapesFor } from "../config/formats.js?v=1593";
+import { STYLE_PRESETS } from "../config/style-presets.js?v=1593";
 import {
   addPlaybookReferences,
   deletePlaybookReference,
@@ -30,8 +30,8 @@ import {
   getPlaybookReferences,
   setPlaybookDefaultLook,
   setPlaybookFormat,
-} from "../state/playbook-brand.js?v=1591";
-import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=1591";
+} from "../state/playbook-brand.js?v=1593";
+import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=1593";
 
 const creatorPath = (playbookId, rest) => `/playbook/${encodeURIComponent(playbookId)}/styles/${rest}`;
 const ownStyles = (playbookId) => getStylesForBrand(playbookId).filter((s) => s.kind === "custom");
@@ -204,31 +204,40 @@ export function renderImagesGenerate(playbookId, { canEdit = true } = {}) {
   return toString(
     section({
       aside: html`<p class="ap-body imst-images__lead">
-          When you click <strong>Generate an image</strong> on a draft, I start from the look you pick here, in the
-          shape each network takes — without asking.
-        </p>
-        <p class="ap-body-bold imst-images__ask">
-          ${value ? "Your default is checked." : "Pick one as the default."}
-        </p>`,
+        When you click <strong>Generate an image</strong> on a draft, I start from the look you pick here, in the shape
+        each network takes — without asking.
+      </p>`,
+      // Two questions, two parts — the look (ONE radio across its groups), then
+      // the format per network — each under its own 16 bold head, above the
+      // groups' 14 bold, so the block reads part › group › item instead of a
+      // flat run of same-weight labels.
       body: html`<div class="imst-images-generate">
-        <div class="imst-images-pick" role="radiogroup" aria-label="Default style or reference image">
-          ${group("Image styles", "I draw the image in the style.", styles)}
-          ${group("Reference images", "I make the image take after it.", refs)}
-          ${group(
-            "Ready-made styles",
-            styles.length + refs.length
-              ? "The studio's own looks."
-              : "Until you create a style or add a reference image above, start from one of mine.",
-            presets,
-          )}
-        </div>
-        <div class="imst-images-pick__group">
-          <span class="imst-images-pick__title"
-            ><span class="ap-body-bold">Formats</span>
-            <span class="ap-caption">The shape on each network — its usual one until you pick.</span></span
-          >
+        <section class="imst-images-part" aria-labelledby="imst-images-look">
+          <header class="imst-images-part__head">
+            <h3 class="imst-images-part__title" id="imst-images-look">Look</h3>
+            <p class="ap-caption imst-images-part__hint">
+              ${value ? "Your default is checked." : "Pick one as the default."}
+            </p>
+          </header>
+          <div class="imst-images-pick" role="radiogroup" aria-labelledby="imst-images-look">
+            ${group("Image styles", "I draw the image in the style.", styles)}
+            ${group("Reference images", "I make the image take after it.", refs)}
+            ${group(
+              "Ready-made styles",
+              styles.length + refs.length
+                ? "The studio's own looks."
+                : "Until you create a style or add a reference image above, start from one of mine.",
+              presets,
+            )}
+          </div>
+        </section>
+        <section class="imst-images-part" aria-labelledby="imst-images-format">
+          <header class="imst-images-part__head">
+            <h3 class="imst-images-part__title" id="imst-images-format">Format</h3>
+            <p class="ap-caption imst-images-part__hint">The shape on each network — its usual one until you pick.</p>
+          </header>
           ${formatsList(playbookId, editable)}
-        </div>
+        </section>
       </div>`,
     }),
   );
@@ -244,7 +253,7 @@ function formatsList(playbookId, editable) {
     const all = shapesFor(n.id);
     const current = all.find((s) => s.id === formats[n.id]) || all[0];
     return html`<li class="imst-images-format">
-      <span class="imst-images-format__net ap-body-bold"><i class="${n.icon}" aria-hidden="true"></i>${n.label}</span>
+      <span class="imst-images-format__net ap-body"><i class="${n.icon}" aria-hidden="true"></i>${n.label}</span>
       <div class="imst-seg imst-seg--compact" role="radiogroup" aria-label="Preferred format on ${n.label}">
         ${all.map(
           (s) =>
