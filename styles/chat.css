@@ -54,12 +54,14 @@
   height: 32px;
   flex-shrink: 0;
   border-radius: var(--app-radius-pill);
-  background: var(--ref-color-white);
+  /* A veil, not a white disc — the same 16 % white as the intake's
+     Uploading pill; the glyph in the secondary ink, like the intake's. */
+  background: color-mix(in srgb, var(--ref-color-white) 16%, transparent);
 }
 
 .selection-echo__icon i {
   font-size: var(--sys-icon-css-sm);
-  color: var(--app-convo-navy-deep);
+  color: var(--app-convo-navy-20);
 }
 
 .selection-echo__body {
@@ -235,7 +237,8 @@
 
 /* File-kind icon (pdf / video / url / etc.) — sits at the leading edge. */
 .chat-bubble-source-intake__kind {
-  color: var(--ref-color-white);
+  /* Secondary ink on navy: the glyph steps back so the filename leads. */
+  color: var(--app-convo-navy-20);
   font-size: var(--sys-icon-css-sm);
   flex-shrink: 0;
 }
