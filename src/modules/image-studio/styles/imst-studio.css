@@ -669,7 +669,7 @@
   align-items: center;
   gap: var(--ref-spacing-sm);
   width: 100%;
-  padding: var(--ref-spacing-xxs) var(--ref-spacing-sm) var(--ref-spacing-xxs) var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-sm);
   border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-card);
   background: var(--ref-color-white);

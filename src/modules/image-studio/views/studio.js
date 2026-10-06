@@ -15,31 +15,31 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=1596";
-import { delegate } from "../lib/delegate.js?v=1596";
-import { hashString } from "../lib/prng.js?v=1596";
-import { renderEmpty } from "../ui/empty.js?v=1596";
-import { preserveFocus } from "../ui/fields.js?v=1596";
-import { toast } from "../ui/toast.js?v=1596";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1596";
-import { styleThumb } from "../ui/style-thumb.js?v=1596";
-import { openDialog } from "../ui/dialog.js?v=1596";
-import { menu } from "../ui/menu.js?v=1596";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1596";
-import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1596";
-import { formatById, shapeForFormat, shapesFor, shapesForBrand } from "../config/formats.js?v=1596";
-import { networkById } from "../config/networks.js?v=1596";
-import { copyService, imageGenerationService } from "../services/index.js?v=1596";
-import { unbranded } from "../state/playbook-brand.js?v=1596";
-import { resolveLayers } from "../render/layout.js?v=1596";
-import { svgToDataUrl } from "../render/visual.js?v=1596";
-import { splitVisual } from "../render/split.js?v=1596";
-import { bakeDoc } from "../render/edit-export.js?v=1596";
-import { subjectKindFor } from "../render/subjects.js?v=1596";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1596";
-import { createEditor } from "./edit/editor.js?v=1596";
-import { mount as mountStyleCreator } from "./style-creator.js?v=1596";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1596";
+import { html, raw, toString } from "../lib/html.js?v=1597";
+import { delegate } from "../lib/delegate.js?v=1597";
+import { hashString } from "../lib/prng.js?v=1597";
+import { renderEmpty } from "../ui/empty.js?v=1597";
+import { preserveFocus } from "../ui/fields.js?v=1597";
+import { toast } from "../ui/toast.js?v=1597";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1597";
+import { styleThumb } from "../ui/style-thumb.js?v=1597";
+import { openDialog } from "../ui/dialog.js?v=1597";
+import { menu } from "../ui/menu.js?v=1597";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1597";
+import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1597";
+import { formatById, shapeForFormat, shapesFor, shapesForBrand } from "../config/formats.js?v=1597";
+import { networkById } from "../config/networks.js?v=1597";
+import { copyService, imageGenerationService } from "../services/index.js?v=1597";
+import { unbranded } from "../state/playbook-brand.js?v=1597";
+import { resolveLayers } from "../render/layout.js?v=1597";
+import { svgToDataUrl } from "../render/visual.js?v=1597";
+import { splitVisual } from "../render/split.js?v=1597";
+import { bakeDoc } from "../render/edit-export.js?v=1597";
+import { subjectKindFor } from "../render/subjects.js?v=1597";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1597";
+import { createEditor } from "./edit/editor.js?v=1597";
+import { mount as mountStyleCreator } from "./style-creator.js?v=1597";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1597";
 import {
   canEditBrand,
   forgetOneOffStyle,
@@ -50,15 +50,15 @@ import {
   getStylesForBrand,
   registerOneOffStyle,
   subscribe,
-} from "../state/store.js?v=1596";
-import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1596";
+} from "../state/store.js?v=1597";
+import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1597";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1596";
+} from "../state/creation-actions.js?v=1597";
 
 const variationsLabel = (n) => (n === 1 ? "1 variation" : `${n} variations`);
 
@@ -759,6 +759,10 @@ export function mountStudio(
           ${picked.id === "image" ? "data-imst-style-drop" : ""}
           aria-label="${picked.label}. Change where the look comes from"
         >
+          <!-- Looks like the DS icon button, a way back to the chooser; a span, since the whole row is the button. -->
+          <span class="ap-icon-button stroked imst-start__change" aria-hidden="true"
+            ><i class="ap-icon-arrow-left"></i
+          ></span>
           <span class="imst-start__mini" aria-hidden="true"
             ><span class="imst-start__mini-art imst-chooser__art"
               >${chooserArt(brand, picked.id, { live: true })}</span
@@ -768,10 +772,6 @@ export function mountStudio(
             <span class="imst-start__name">${picked.title}</span>
             <span class="ap-caption">${picked.short}</span>
           </span>
-          <!-- Looks like the DS icon button; a span, since the whole row is the button. -->
-          <span class="ap-icon-button stroked imst-start__change" aria-hidden="true"
-            ><i class="ap-icon-chevron-down"></i
-          ></span>
         </button>
       </section>
       ${sourceBody(brand, style, styleCount)}

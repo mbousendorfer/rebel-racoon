@@ -14,8 +14,8 @@
 // ponytail: the catalogue is a hand-kept list — a new turn variant or route has
 // to be added here too, or it won't show in the menu.
 
-import { escapeHtml } from "../../utils.js?v=1596";
-import { isFlagOn } from "../../feature-flags.js?v=1596";
+import { escapeHtml } from "../../utils.js?v=1597";
+import { isFlagOn } from "../../feature-flags.js?v=1597";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -30,21 +30,21 @@ import {
   postTopPostPickTurn,
   postConnectPrompt,
   postVoiceSuggestion,
-} from "../../assistant.js?v=1596";
-import { getSources, getIdeas } from "../../library.js?v=1596";
-import { getPosts } from "../../posts-store.js?v=1596";
-import { getTopPosts } from "../../top-posts-store.js?v=1596";
-import { getConnectedProfiles } from "../../social-profiles.js?v=1596";
-import { getConnectedConnectors } from "../../connectors-store.js?v=1596";
-import { detectUrlService } from "../../url-services.js?v=1596";
-import { propose, getSuggestions } from "../../voice-coach-store.js?v=1596";
-import * as inlineQuestion from "../../inline-question.js?v=1596";
-import { startTopPostsInline } from "../../top-posts-flow.js?v=1596";
-import { startTopicPickerInline } from "../../topic-flow.js?v=1596";
-import { askConnector } from "../../connector-ask.js?v=1596";
-import { coachAfterDraft } from "../../voice-coach.js?v=1596";
-import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=1596";
-import { startIdeaDraft, askVideoIntake } from "./draft-questions.js?v=1596";
+} from "../../assistant.js?v=1597";
+import { getSources, getIdeas } from "../../library.js?v=1597";
+import { getPosts } from "../../posts-store.js?v=1597";
+import { getTopPosts } from "../../top-posts-store.js?v=1597";
+import { getConnectedProfiles } from "../../social-profiles.js?v=1597";
+import { getConnectedConnectors } from "../../connectors-store.js?v=1597";
+import { detectUrlService } from "../../url-services.js?v=1597";
+import { propose, getSuggestions } from "../../voice-coach-store.js?v=1597";
+import * as inlineQuestion from "../../inline-question.js?v=1597";
+import { startTopPostsInline } from "../../top-posts-flow.js?v=1597";
+import { startTopicPickerInline } from "../../topic-flow.js?v=1597";
+import { askConnector } from "../../connector-ask.js?v=1597";
+import { coachAfterDraft } from "../../voice-coach.js?v=1597";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=1597";
+import { startIdeaDraft, askVideoIntake } from "./draft-questions.js?v=1597";
 
 const videoOf = (sid) => getSources(sid).find((s) => s.kind === "Video");
 const flagOff = (id) => (isFlagOn(id) ? null : `Turn on ${id} in Admin`);
