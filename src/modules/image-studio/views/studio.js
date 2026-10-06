@@ -15,31 +15,31 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=1594";
-import { delegate } from "../lib/delegate.js?v=1594";
-import { hashString } from "../lib/prng.js?v=1594";
-import { renderEmpty } from "../ui/empty.js?v=1594";
-import { preserveFocus } from "../ui/fields.js?v=1594";
-import { toast } from "../ui/toast.js?v=1594";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1594";
-import { styleThumb } from "../ui/style-thumb.js?v=1594";
-import { openDialog } from "../ui/dialog.js?v=1594";
-import { menu } from "../ui/menu.js?v=1594";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1594";
-import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1594";
-import { formatById, shapeForFormat, shapesFor, shapesForBrand } from "../config/formats.js?v=1594";
-import { networkById } from "../config/networks.js?v=1594";
-import { copyService, imageGenerationService } from "../services/index.js?v=1594";
-import { unbranded } from "../state/playbook-brand.js?v=1594";
-import { resolveLayers } from "../render/layout.js?v=1594";
-import { svgToDataUrl } from "../render/visual.js?v=1594";
-import { splitVisual } from "../render/split.js?v=1594";
-import { bakeDoc } from "../render/edit-export.js?v=1594";
-import { subjectKindFor } from "../render/subjects.js?v=1594";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1594";
-import { createEditor } from "./edit/editor.js?v=1594";
-import { mount as mountStyleCreator } from "./style-creator.js?v=1594";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1594";
+import { html, raw, toString } from "../lib/html.js?v=1595";
+import { delegate } from "../lib/delegate.js?v=1595";
+import { hashString } from "../lib/prng.js?v=1595";
+import { renderEmpty } from "../ui/empty.js?v=1595";
+import { preserveFocus } from "../ui/fields.js?v=1595";
+import { toast } from "../ui/toast.js?v=1595";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1595";
+import { styleThumb } from "../ui/style-thumb.js?v=1595";
+import { openDialog } from "../ui/dialog.js?v=1595";
+import { menu } from "../ui/menu.js?v=1595";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1595";
+import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1595";
+import { formatById, shapeForFormat, shapesFor, shapesForBrand } from "../config/formats.js?v=1595";
+import { networkById } from "../config/networks.js?v=1595";
+import { copyService, imageGenerationService } from "../services/index.js?v=1595";
+import { unbranded } from "../state/playbook-brand.js?v=1595";
+import { resolveLayers } from "../render/layout.js?v=1595";
+import { svgToDataUrl } from "../render/visual.js?v=1595";
+import { splitVisual } from "../render/split.js?v=1595";
+import { bakeDoc } from "../render/edit-export.js?v=1595";
+import { subjectKindFor } from "../render/subjects.js?v=1595";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1595";
+import { createEditor } from "./edit/editor.js?v=1595";
+import { mount as mountStyleCreator } from "./style-creator.js?v=1595";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1595";
 import {
   canEditBrand,
   forgetOneOffStyle,
@@ -50,15 +50,15 @@ import {
   getStylesForBrand,
   registerOneOffStyle,
   subscribe,
-} from "../state/store.js?v=1594";
-import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1594";
+} from "../state/store.js?v=1595";
+import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1595";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1594";
+} from "../state/creation-actions.js?v=1595";
 
 const variationsLabel = (n) => (n === 1 ? "1 variation" : `${n} variations`);
 

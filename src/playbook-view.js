@@ -14,7 +14,7 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1594";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1595";
 import {
   kitEnabled,
   renderColorRole,
@@ -28,11 +28,11 @@ import {
   handleKitChange,
   kitSnapshot,
   renderImagesTab,
-} from "./playbook-brand-kit.js?v=1594";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1594";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1594";
-import { isFlagOn } from "./feature-flags.js?v=1594";
-import { parseHashParams } from "./url-state.js?v=1594";
+} from "./playbook-brand-kit.js?v=1595";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1595";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1595";
+import { isFlagOn } from "./feature-flags.js?v=1595";
+import { parseHashParams } from "./url-state.js?v=1595";
 import {
   networkVoicesOn,
   baseNetwork,
@@ -42,21 +42,22 @@ import {
   maturity,
   networkLabel,
   networkIcon,
-} from "./network-voice.js?v=1594";
+} from "./network-voice.js?v=1595";
 import {
   getSuggestions,
   accept as acceptVoiceSuggestion,
   dismiss as dismissVoiceSuggestion,
-} from "./voice-coach-store.js?v=1594";
-import { NETWORKS } from "./social-profiles.js?v=1594";
-import { showToast } from "./components/toast.js?v=1594";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1594";
+} from "./voice-coach-store.js?v=1595";
+import { NETWORKS } from "./social-profiles.js?v=1595";
+import { showToast } from "./components/toast.js?v=1595";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=1595";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1595";
 // The Default look row offers the SAME three catalogues the Image Studio renders, from
 // the one place they are declared — REF_MODES' own header makes the argument: the label,
 // the hint and the brief clause "drift the moment they live apart". No cycle: the engine
 // imports only clip-formats / image-studio-canvas / feature-flags, and its module body
 // builds consts, so importing it here costs nothing at load.
-import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1594";
+import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1595";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -3504,10 +3505,10 @@ function commitEdit(data) {
   resetEdit();
 }
 
-// Playbook 2.0: a section in edit is left by a tab or a route far more often
-// than by its own buttons — and a Save that scrolled out of sight got forgotten,
-// so the work went with it. Leaving now SAVES; the toast says so and carries the
-// way back. Nothing changed → the editor simply closes.
+// Playbook 2.0: a section in edit left by a ROUTE (a chat in the rail, Start a
+// chat…) is SAVED — the page is going away, there is nowhere to ask; the toast
+// says so and carries the way back. A TAB switch asks instead (switchTab).
+// Nothing changed → the editor simply closes.
 function saveOnLeave() {
   if (!editScope || !cfg) return;
   const data = cfg.getData();
@@ -3530,15 +3531,44 @@ function saveOnLeave() {
   });
 }
 
-function onClick(event) {
-  // Playbook 2.0 tabs — never locked: leaving a section in edit saves it.
-  const tab = event.target.closest("[data-pb2-tab]");
-  if (tab) {
-    if (tab.dataset.pb2Tab === activeTab) return;
-    saveOnLeave();
-    setTab(tab.dataset.pb2Tab);
+// Changing tab with unsaved changes asks what to do with them (2026-10-06, the
+// user's call over the silent save): Save changes, Discard changes, or — the X
+// or Esc — stay on the edit. Nothing changed → the editor closes, no question.
+function switchTab(id) {
+  const go = () => {
+    setTab(id);
     repaint();
     mountTarget?.querySelector(".welcome-screen")?.scrollTo({ top: 0 });
+  };
+  const data = cfg?.getData();
+  if (!editScope || !isDirty(data)) {
+    if (editScope) resetEdit();
+    go();
+    return;
+  }
+  const title = SECTIONS.find((x) => x.scope === editScope)?.title || "this section";
+  openConfirmModal({
+    title: `Save your changes to ${title}?`,
+    body: "You're leaving this tab with changes you haven't saved.",
+    confirmLabel: "Save changes",
+    cancelLabel: "Discard changes",
+    onConfirm: () => {
+      commitEdit(cfg.getData());
+      go();
+    },
+    onCancel: () => {
+      if (snapshot) cfg.revert?.(snapshot);
+      resetEdit();
+      go();
+    },
+  });
+}
+
+function onClick(event) {
+  // Playbook 2.0 tabs — never locked; leaving a section with changes asks.
+  const tab = event.target.closest("[data-pb2-tab]");
+  if (tab) {
+    if (tab.dataset.pb2Tab !== activeTab) switchTab(tab.dataset.pb2Tab);
     return;
   }
   if (!canEditView() && event.target.closest(WRITE_HOOKS)) return;

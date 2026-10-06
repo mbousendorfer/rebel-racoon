@@ -5,23 +5,26 @@
 //
 // Public API:
 //   init()   — inject markup + bind once on app boot
-//   open({ title, body, confirmLabel?, cancelLabel?, danger?, onConfirm })
+//   open({ title, body, confirmLabel?, cancelLabel?, danger?, onConfirm, onCancel? })
 //
 // Behaviour:
 //   - Confirm button fires onConfirm() then closes.
+//   - Cancel button fires onCancel() (when given) then closes — a third
+//     outcome for "Save / Discard": the X, Esc and backdrop stay a plain close.
 //   - Cancel button or Esc / backdrop click just closes.
 //   - danger=true paints the confirm button red (ap-button danger),
 //     non-danger uses primary orange.
 //   - Registers with modal-coordinator so opening the dialog auto-closes
 //     any other overlay (drawer, modal, shortcut legend).
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1594";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1595";
 
 const MODAL_ID = "confirm";
 
 let backdrop, modal, titleEl, bodyEl, confirmBtn, cancelBtn, closeBtn;
 let initialized = false;
 let pendingOnConfirm = null;
+let pendingOnCancel = null;
 
 const HTML = `
 <div class="app-modal-backdrop confirm-modal__backdrop" id="confirmBackdrop" hidden></div>
@@ -65,7 +68,11 @@ function injectOnce() {
   cancelBtn = document.getElementById("confirmCancel");
   closeBtn = document.getElementById("confirmClose");
 
-  cancelBtn.addEventListener("click", close);
+  cancelBtn.addEventListener("click", () => {
+    const fn = pendingOnCancel;
+    close();
+    if (typeof fn === "function") fn();
+  });
   closeBtn.addEventListener("click", close);
   confirmBtn.addEventListener("click", () => {
     const fn = pendingOnConfirm;
@@ -90,6 +97,7 @@ export function open({
   cancelLabel = "Cancel",
   danger = false,
   onConfirm = null,
+  onCancel = null,
 } = {}) {
   injectOnce();
   requestOpen(MODAL_ID, close);
@@ -104,6 +112,7 @@ export function open({
   // `danger` only moves the initial focus to Cancel, below.
 
   pendingOnConfirm = onConfirm;
+  pendingOnCancel = onCancel;
 
   backdrop.hidden = false;
   backdrop.classList.add("open");
@@ -128,5 +137,6 @@ function close() {
   backdrop.hidden = true;
   document.body.classList.remove("has-modal");
   pendingOnConfirm = null;
+  pendingOnCancel = null;
   notifyClose(MODAL_ID);
 }
