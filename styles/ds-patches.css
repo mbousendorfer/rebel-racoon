@@ -951,3 +951,13 @@ button.ap-link {
 .ap-close-button > i {
   font-size: var(--sys-icon-css-xs);
 }
+
+/* ── .ap-icon-sparkles-mermaid — the gradient its name promises ──────────
+   The DS ships the glyph as a MASK painted in currentColor, like every icon,
+   so "mermaid" renders as plain grey: the gradient in its SVG is only alpha.
+   On its own (a block's title glyph), paint it with the DS's own mermaid
+   gradient token. Inside a button the button's ink wins — a white sparkle on
+   an orange primary stays white. Delete if the DS paints it itself. */
+:not(.ap-button) > .ap-icon-sparkles-mermaid {
+  background: var(--ref-color-mermaid-gradient-background);
+}

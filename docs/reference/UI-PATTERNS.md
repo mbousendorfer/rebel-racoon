@@ -35,6 +35,8 @@ Seul endroit légitime pour toucher `.ap-*`. Charte du fichier : _« the only le
 
 Retirés le 2026-09-30 : `.ap-button.danger` (une confirmation destructive est l'orange primaire portant le verbe, pattern Decided du skill), `.ap-divider` (le port n'existait plus), les patches `X[hidden] { display: none }` (remplacés par une seule règle `[hidden]` dans `base.css`), `.ap-infobox.feature-lock` (le DS 22 le livre).
 
+| `.ap-icon-sparkles-mermaid` (hors bouton) | Le DS livre le glyphe en masque peint en `currentColor` : « mermaid » sort gris. Hors d'un `.ap-button`, peint avec `--ref-color-mermaid-gradient-background` ; dans un bouton, l'encre du bouton gagne. 1er usage : le titre du bloc Generate an image. |
+
 Règle : **jamais** redéclarer une `.ap-*` hors ce fichier (ça flippe la cascade silencieusement).
 
 ---
