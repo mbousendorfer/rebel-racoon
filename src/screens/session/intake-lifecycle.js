@@ -17,8 +17,14 @@
 // so the caller can repaint the thread (intake turns derive
 // ideaCount/status live from sources-stream).
 
-import { subscribeSources, getSources as getStreamSources } from "../../sources-stream.js?v=1605";
-import { getThread, postSourceIntake, markSourceIntakeReady } from "../../assistant.js?v=1605";
+import { subscribeSources, getSources as getStreamSources } from "../../sources-stream.js?v=1606";
+import { getThread, postSourceIntake, markSourceIntakeReady } from "../../assistant.js?v=1606";
+
+// The intake turn always shows "Uploading" for at least this long, even when
+// the source is ready sooner — an upload that lands instantly reads as fake.
+// A video, the heavy one, holds longer.
+const MIN_LOADING_MS = 3000;
+const MIN_LOADING_MS_VIDEO = 6000;
 
 export function startIntakeLifecycle(sessionId, { onSourcesChange, onVideoReady, onSourceReady } = {}) {
   // seenSourceIds is a snapshot baseline of the session's sources at
@@ -32,12 +38,49 @@ export function startIntakeLifecycle(sessionId, { onSourcesChange, onVideoReady,
   const sentReadyForSourceIds = new Set();
   // Dedupe the per-video "what to do?" choice so it posts once per source.
   const askedVideoChoiceForSourceIds = new Set();
+  // sourceId → when its loading turn was posted, for the minimum loading time.
+  const postedAt = new Map();
+  let disposed = false;
+  let latest = [];
 
-  return subscribeSources(sessionId, (sources) => {
+  const flipReady = (sources) => {
+    const thread = getThread(sessionId);
+    for (const msg of thread) {
+      if (msg.role !== "source-intake") continue;
+      if (!msg.sourceId || msg.status === "ready") continue;
+      if (sentReadyForSourceIds.has(msg.sourceId)) continue;
+      const src = sources.find((s) => s.id === msg.sourceId);
+      if (!src || src.status !== "Processed") continue;
+      const min = src.kind === "Video" ? MIN_LOADING_MS_VIDEO : MIN_LOADING_MS;
+      const wait = (postedAt.get(src.id) ?? 0) + min - Date.now();
+      if (wait > 0) {
+        setTimeout(() => !disposed && flipReady(latest), wait);
+        continue;
+      }
+      sentReadyForSourceIds.add(msg.sourceId);
+      markSourceIntakeReady(sessionId, msg.sourceId);
+
+      // A freshly-processed video defers its extraction — let the session
+      // ask what to do with it (via the quick picker) before producing
+      // anything. The session owns the picker + branch handlers.
+      if (src.kind === "Video" && !askedVideoChoiceForSourceIds.has(src.id)) {
+        askedVideoChoiceForSourceIds.add(src.id);
+        onVideoReady?.(src.id, src.filename);
+      } else if (src.kind !== "Video") {
+        // Non-video sources extract their ideas during processing — surface
+        // the "N ideas ready" composer bar now that they've landed.
+        onSourceReady?.(src.id, src);
+      }
+    }
+  };
+
+  const unsubscribe = subscribeSources(sessionId, (sources) => {
+    latest = sources;
     // Post intake turns for any new source ids.
     for (const src of sources) {
       if (seenSourceIds.has(src.id)) continue;
       seenSourceIds.add(src.id);
+      postedAt.set(src.id, Date.now());
       // Every new source in this session is a fresh upload (no library
       // re-attach in the per-session model) → post a loading intake.
       postSourceIntake(sessionId, {
@@ -54,28 +97,10 @@ export function startIntakeLifecycle(sessionId, { onSourcesChange, onVideoReady,
     onSourcesChange?.();
 
     // Flip pending intake turns to ready as their source completes.
-    const thread = getThread(sessionId);
-    for (const msg of thread) {
-      if (msg.role !== "source-intake") continue;
-      if (!msg.sourceId || msg.status === "ready") continue;
-      if (sentReadyForSourceIds.has(msg.sourceId)) continue;
-      const src = sources.find((s) => s.id === msg.sourceId);
-      if (src && src.status === "Processed") {
-        sentReadyForSourceIds.add(msg.sourceId);
-        markSourceIntakeReady(sessionId, msg.sourceId);
-
-        // A freshly-processed video defers its extraction — let the session
-        // ask what to do with it (via the quick picker) before producing
-        // anything. The session owns the picker + branch handlers.
-        if (src.kind === "Video" && !askedVideoChoiceForSourceIds.has(src.id)) {
-          askedVideoChoiceForSourceIds.add(src.id);
-          onVideoReady?.(src.id, src.filename);
-        } else if (src.kind !== "Video") {
-          // Non-video sources extract their ideas during processing — surface
-          // the "N ideas ready" composer bar now that they've landed.
-          onSourceReady?.(src.id, src);
-        }
-      }
-    }
+    flipReady(sources);
   });
+  return () => {
+    disposed = true;
+    unsubscribe();
+  };
 }

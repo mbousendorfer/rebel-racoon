@@ -14,8 +14,8 @@
 // ponytail: the catalogue is a hand-kept list — a new turn variant or route has
 // to be added here too, or it won't show in the menu.
 
-import { escapeHtml } from "../../utils.js?v=1605";
-import { isFlagOn } from "../../feature-flags.js?v=1605";
+import { escapeHtml } from "../../utils.js?v=1606";
+import { isFlagOn } from "../../feature-flags.js?v=1606";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -23,6 +23,7 @@ import {
   startPending,
   finishPending,
   postSourceIntake,
+  markSourceIntakeReady,
   postExtractionResult,
   postClipExtractionTurn,
   postSelectionEcho,
@@ -30,21 +31,29 @@ import {
   postTopPostPickTurn,
   postConnectPrompt,
   postVoiceSuggestion,
-} from "../../assistant.js?v=1605";
-import { getSources, getIdeas } from "../../library.js?v=1605";
-import { getPosts } from "../../posts-store.js?v=1605";
-import { getTopPosts } from "../../top-posts-store.js?v=1605";
-import { getConnectedProfiles } from "../../social-profiles.js?v=1605";
-import { getConnectedConnectors } from "../../connectors-store.js?v=1605";
-import { detectUrlService } from "../../url-services.js?v=1605";
-import { propose, getSuggestions } from "../../voice-coach-store.js?v=1605";
-import * as inlineQuestion from "../../inline-question.js?v=1605";
-import { startTopPostsInline } from "../../top-posts-flow.js?v=1605";
-import { startTopicPickerInline } from "../../topic-flow.js?v=1605";
-import { askConnector } from "../../connector-ask.js?v=1605";
-import { coachAfterDraft } from "../../voice-coach.js?v=1605";
-import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=1605";
-import { startIdeaDraft, askVideoIntake } from "./draft-questions.js?v=1605";
+} from "../../assistant.js?v=1606";
+import { getSources, getIdeas } from "../../library.js?v=1606";
+import { getPosts } from "../../posts-store.js?v=1606";
+import { getTopPosts } from "../../top-posts-store.js?v=1606";
+import { getConnectedProfiles } from "../../social-profiles.js?v=1606";
+import { getConnectedConnectors } from "../../connectors-store.js?v=1606";
+import { detectUrlService } from "../../url-services.js?v=1606";
+import { propose, getSuggestions } from "../../voice-coach-store.js?v=1606";
+import * as inlineQuestion from "../../inline-question.js?v=1606";
+import { startTopPostsInline } from "../../top-posts-flow.js?v=1606";
+import { startTopicPickerInline } from "../../topic-flow.js?v=1606";
+import { askConnector } from "../../connector-ask.js?v=1606";
+import { coachAfterDraft } from "../../voice-coach.js?v=1606";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=1606";
+import { startIdeaDraft, askVideoIntake } from "./draft-questions.js?v=1606";
+
+// The intake sample plays the real lifecycle — loading, then ready — under a
+// sample id no source owns, so intake-lifecycle leaves it alone.
+function playIntake(sid, file, ms) {
+  const sourceId = `gallery-intake-${Date.now().toString(36)}`;
+  postSourceIntake(sid, { ...file, sourceId, status: "loading" });
+  setTimeout(() => markSourceIntakeReady(sid, sourceId), ms);
+}
 
 const videoOf = (sid) => getSources(sid).find((s) => s.kind === "Video");
 const flagOff = (id) => (isFlagOn(id) ? null : `Turn on ${id} in Admin`);
@@ -98,9 +107,15 @@ const COMPONENTS = [
     id: "intake",
     label: "Source intake",
     icon: "ap-icon-file--pdf",
-    hint: "A file landing in the chat",
-    run: (sid) =>
-      postSourceIntake(sid, { kind: "pdf", filename: "Q3 customer interviews.pdf", size: "1.2 MB", status: "ready" }),
+    hint: "A file landing in the chat: Uploading for 3 seconds, then ready",
+    run: (sid) => playIntake(sid, { kind: "pdf", filename: "Q3 customer interviews.pdf", size: "1.2 MB" }, 3000),
+  },
+  {
+    id: "intake-video",
+    label: "Video intake",
+    icon: "ap-icon-file--video",
+    hint: "A video landing in the chat: Uploading for 6 seconds, then ready",
+    run: (sid) => playIntake(sid, { kind: "video", filename: "Founder keynote.mp4", size: "84 MB" }, 6000),
   },
   {
     id: "extraction",

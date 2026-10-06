@@ -13,13 +13,13 @@
 // through state/playbook-brand.js only, the Playbooks — the brand IS the
 // Playbook. See docs/audits/image-studio-integration.md.
 
-import { navigate } from "../../router.js?v=1605";
-import { isFlagOn } from "../../feature-flags.js?v=1605";
-import { renderTopbar } from "../../components/topbar.js?v=1605";
-import { delegate, disposer } from "./lib/delegate.js?v=1605";
-import { installMenus } from "./ui/menu.js?v=1605";
-import { closeAllDialogs } from "./ui/dialog.js?v=1605";
-import * as styleCreator from "./views/style-creator.js?v=1605";
+import { navigate } from "../../router.js?v=1606";
+import { isFlagOn } from "../../feature-flags.js?v=1606";
+import { renderTopbar } from "../../components/topbar.js?v=1606";
+import { delegate, disposer } from "./lib/delegate.js?v=1606";
+import { installMenus } from "./ui/menu.js?v=1606";
+import { closeAllDialogs } from "./ui/dialog.js?v=1606";
+import * as styleCreator from "./views/style-creator.js?v=1606";
 
 export const FLAG = "sexySquirrel";
 
@@ -56,7 +56,7 @@ export const ROUTES = Object.freeze([
   { pattern: "/playbook/:id/styles/:styleId", handler: screen(styleCreator.mount) },
 ]);
 
-export { openDraftStudio } from "./ui/draft-studio.js?v=1605";
+export { openDraftStudio } from "./ui/draft-studio.js?v=1606";
 export {
   defaultQuickLook,
   generateQuickImage,
@@ -64,12 +64,12 @@ export {
   quickImagePreset,
   suggestImageLine,
   suggestImageSubject,
-} from "./quick-image.js?v=1605";
-export { renderPlaybookStyles, handlePlaybookStylesClick } from "./views/playbook-styles.js?v=1605";
+} from "./quick-image.js?v=1606";
+export { renderPlaybookStyles, handlePlaybookStylesClick } from "./views/playbook-styles.js?v=1606";
 export {
   renderImagesStyles,
   renderImagesReferences,
   renderImagesGenerate,
   handlePlaybookImagesClick,
-} from "./views/playbook-images.js?v=1605";
-export { shapesFor } from "./config/formats.js?v=1605";
+} from "./views/playbook-images.js?v=1606";
+export { shapesFor } from "./config/formats.js?v=1606";
