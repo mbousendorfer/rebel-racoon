@@ -867,7 +867,7 @@ span.chat-bubble-choice-chip {
 .chat-ref-preview {
   position: absolute;
   z-index: 1000;
-  width: 440px;
+  width: 400px;
   max-width: calc(100vw - 16px);
   pointer-events: none;
   /* Fades in and slides 4px away from the reference it belongs to. The global
@@ -894,18 +894,6 @@ span.chat-bubble-choice-chip {
 
 .chat-ref-preview > * {
   box-shadow: var(--app-shadow-popover-md);
-}
-
-/* A glance, not the full card: the draft's media is capped so the preview never
-   outgrows the thread it floats over. */
-.chat-ref-preview .posts__card-image-wrap {
-  max-height: 180px;
-  overflow: hidden;
-}
-
-.chat-ref-preview .posts__card-image {
-  height: 180px;
-  object-fit: cover;
 }
 
 /* A message that lists drafts (or ideas, sources) one per line — chat-refs.js
