@@ -13,13 +13,13 @@
 // through state/playbook-brand.js only, the Playbooks — the brand IS the
 // Playbook. See docs/audits/image-studio-integration.md.
 
-import { navigate } from "../../router.js?v=1585";
-import { isFlagOn } from "../../feature-flags.js?v=1585";
-import { renderTopbar } from "../../components/topbar.js?v=1585";
-import { delegate, disposer } from "./lib/delegate.js?v=1585";
-import { installMenus } from "./ui/menu.js?v=1585";
-import { closeAllDialogs } from "./ui/dialog.js?v=1585";
-import * as styleCreator from "./views/style-creator.js?v=1585";
+import { navigate } from "../../router.js?v=1587";
+import { isFlagOn } from "../../feature-flags.js?v=1587";
+import { renderTopbar } from "../../components/topbar.js?v=1587";
+import { delegate, disposer } from "./lib/delegate.js?v=1587";
+import { installMenus } from "./ui/menu.js?v=1587";
+import { closeAllDialogs } from "./ui/dialog.js?v=1587";
+import * as styleCreator from "./views/style-creator.js?v=1587";
 
 export const FLAG = "sexySquirrel";
 
@@ -56,7 +56,7 @@ export const ROUTES = Object.freeze([
   { pattern: "/playbook/:id/styles/:styleId", handler: screen(styleCreator.mount) },
 ]);
 
-export { openDraftStudio } from "./ui/draft-studio.js?v=1585";
+export { openDraftStudio } from "./ui/draft-studio.js?v=1587";
 export {
   defaultQuickLook,
   generateQuickImage,
@@ -64,13 +64,12 @@ export {
   quickImagePreset,
   suggestImageLine,
   suggestImageSubject,
-} from "./quick-image.js?v=1585";
-export { renderPlaybookStyles, handlePlaybookStylesClick } from "./views/playbook-styles.js?v=1585";
+} from "./quick-image.js?v=1587";
+export { renderPlaybookStyles, handlePlaybookStylesClick } from "./views/playbook-styles.js?v=1587";
 export {
   renderImagesStyles,
   renderImagesReferences,
   renderImagesGenerate,
-  renderImagesFormats,
   handlePlaybookImagesClick,
-} from "./views/playbook-images.js?v=1585";
-export { shapesFor } from "./config/formats.js?v=1585";
+} from "./views/playbook-images.js?v=1587";
+export { shapesFor } from "./config/formats.js?v=1587";

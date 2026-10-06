@@ -7,19 +7,21 @@
 //      tab's one primary action; the styles are the big cards.
 //   2. Reference images — pictures whose look an image can take after. Just
 //      pictures, so a plain picture grid — not the styles' cards.
-//   3. Generate an image — the style OR reference image a draft's Generate
-//      image uses without asking: one select, grouped by kind.
-//   4. Preferred formats — a shape per network, apart: it holds whatever the look.
+//   3. Generate an image — how a draft's Generate image starts without asking:
+//      the look (a style OR a reference image, one radio group) and the shape
+//      per network. One block: they answer one question. (Formats were a 4th
+//      block until 2026-10-06 — the user's call to merge them.)
 //
 // Everything here saves as it changes, like the styles always did: no Edit.
 
-import { html, raw, toString } from "../lib/html.js?v=1585";
-import { navigate } from "../../../router.js?v=1585";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1585";
-import { toast } from "../ui/toast.js?v=1585";
-import { renderEmpty } from "../ui/empty.js?v=1585";
-import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=1585";
-import { shapesFor } from "../config/formats.js?v=1585";
+import { html, raw, toString } from "../lib/html.js?v=1587";
+import { navigate } from "../../../router.js?v=1587";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=1587";
+import { toast } from "../ui/toast.js?v=1587";
+import { renderEmpty } from "../ui/empty.js?v=1587";
+import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=1587";
+import { shapesFor } from "../config/formats.js?v=1587";
+import { STYLE_PRESETS } from "../config/style-presets.js?v=1587";
 import {
   addPlaybookReferences,
   deletePlaybookReference,
@@ -28,8 +30,8 @@ import {
   getPlaybookReferences,
   setPlaybookDefaultLook,
   setPlaybookFormat,
-} from "../state/playbook-brand.js?v=1585";
-import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=1585";
+} from "../state/playbook-brand.js?v=1587";
+import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=1587";
 
 const creatorPath = (playbookId, rest) => `/playbook/${encodeURIComponent(playbookId)}/styles/${rest}`;
 const ownStyles = (playbookId) => getStylesForBrand(playbookId).filter((s) => s.kind === "custom");
@@ -160,6 +162,15 @@ export function renderImagesGenerate(playbookId, { canEdit = true } = {}) {
     avatar: r.url,
   }));
   const value = look.kind ? `${look.kind}:${look.id}` : "";
+  // The studio's ready-made styles, so a Playbook with nothing of its own can
+  // still pick a default. Shown only then — or while one IS the default, so it
+  // never vanishes from under its check once the brand makes its own (the fiche
+  // otherwise lists only the brand's styles, the 2026-09-28 rule).
+  const presetPicked = look.kind === "style" && STYLE_PRESETS.some((s) => s.id === look.id);
+  const presets =
+    (!styles.length && !refs.length) || presetPicked
+      ? STYLE_PRESETS.map((s) => ({ value: `style:${s.id}`, label: s.label, avatar: styleThumbUrl(s, brand) }))
+      : [];
   // Both kinds, each under its own name, as small pictures — ONE radio group
   // across the two, so exactly one is the default.
   const item = (o) =>
@@ -193,34 +204,39 @@ export function renderImagesGenerate(playbookId, { canEdit = true } = {}) {
   return toString(
     section({
       aside: html`<p class="ap-body imst-images__lead">
-          When you click <strong>Generate an image</strong> on a draft, I start from the one you pick here, without
-          asking.
+          When you click <strong>Generate an image</strong> on a draft, I start from the look you pick here, in the
+          shape each network takes — without asking.
         </p>
-        ${styles.length + refs.length
-          ? html`<p class="ap-body-bold imst-images__ask">
-              ${value ? "Your default is checked." : "Pick one as the default."}
-            </p>`
-          : ""}`,
-      body:
-        styles.length + refs.length
-          ? html`<div class="imst-images-pick" role="radiogroup" aria-label="Default style or reference image">
-              ${group("Image styles", "I draw the image in the style.", styles)}
-              ${group("Reference images", "I make the image take after it.", refs)}
-            </div>`
-          : emptyBlock({
-              icon: "ap-icon-question",
-              title: "Skip the style question on every draft",
-              body: "Create an image style or add a reference image above, then pick it here.",
-            }),
+        <p class="ap-body-bold imst-images__ask">
+          ${value ? "Your default is checked." : "Pick one as the default."}
+        </p>`,
+      body: html`<div class="imst-images-generate">
+        <div class="imst-images-pick" role="radiogroup" aria-label="Default style or reference image">
+          ${group("Image styles", "I draw the image in the style.", styles)}
+          ${group("Reference images", "I make the image take after it.", refs)}
+          ${group(
+            "Ready-made styles",
+            styles.length + refs.length
+              ? "The studio's own looks."
+              : "Until you create a style or add a reference image above, start from one of mine.",
+            presets,
+          )}
+        </div>
+        <div class="imst-images-pick__group">
+          <span class="imst-images-pick__title"
+            ><span class="ap-body-bold">Formats</span>
+            <span class="ap-caption">The shape on each network — its usual one until you pick.</span></span
+          >
+          ${formatsList(playbookId, editable)}
+        </div>
+      </div>`,
     }),
   );
 }
 
-// ── 4. Preferred formats ────────────────────────────────────────────────────
-
-export function renderImagesFormats(playbookId, { canEdit = true } = {}) {
-  if (!getBrand(playbookId)) return "";
-  const editable = canEdit && canEditBrand(playbookId);
+// The shape per network, inside Generate an image: the network's name, then its
+// shapes as the studio shows them. Nothing set = the network's usual shape, first.
+function formatsList(playbookId, editable) {
   const formats = getPlaybookFormats(playbookId);
   // One row per network: its name, then its shapes as the studio shows them
   // (.imst-seg, compact) — nothing set means the network's usual shape, first.
@@ -254,16 +270,9 @@ export function renderImagesFormats(playbookId, { canEdit = true } = {}) {
       </div>
     </li>`;
   });
-  return toString(
-    section({
-      aside: html`<p class="ap-body imst-images__lead">
-        The shape I make an image in for each network. Until you pick one, it's the shape that network uses most.
-      </p>`,
-      body: html`<ul class="imst-images-formats">
-        ${rows}
-      </ul>`,
-    }),
-  );
+  return html`<ul class="imst-images-formats">
+    ${rows}
+  </ul>`;
 }
 
 // ── Events ──────────────────────────────────────────────────────────────────

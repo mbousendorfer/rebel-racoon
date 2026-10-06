@@ -555,7 +555,14 @@ button.imst-style-card {
   color: var(--ref-color-grey-100);
 }
 
-/* Preferred formats: one row per network — name, select. */
+/* Generate an image: the look, then the formats under it — one block. */
+.imst-images-generate {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-lg);
+}
+
+/* Formats: one row per network — name, shapes. */
 .imst-images-formats {
   list-style: none;
   margin: 0;

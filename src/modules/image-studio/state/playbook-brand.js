@@ -17,16 +17,17 @@ import {
   getContexts,
   subscribe as subscribeContexts,
   updateContext,
-} from "../../../contexts-store.js?v=1585";
-import { createStyle } from "../model/schema.js?v=1585";
-import { canEdit, usableContexts } from "../../../playbook-access.js?v=1585";
+} from "../../../contexts-store.js?v=1587";
+import { createStyle } from "../model/schema.js?v=1587";
+import { STYLE_PRESETS } from "../config/style-presets.js?v=1587";
+import { canEdit, usableContexts } from "../../../playbook-access.js?v=1587";
 import {
   getActivePlaybookId,
   isWorkspaceMode,
   playbookForNewWork,
   subscribe as subscribeActive,
-} from "../../../active-playbook.js?v=1585";
-import { storageService as storage } from "../services/index.js?v=1585";
+} from "../../../active-playbook.js?v=1587";
+import { storageService as storage } from "../services/index.js?v=1587";
 
 // Which copy archetype the mocked copyService uses — guessed from the Playbook's words.
 function sectorKeyOf(ctx) {
@@ -38,7 +39,9 @@ function sectorKeyOf(ctx) {
 
 function imageryDefaultsOf(ctx) {
   const d = ctx.defaultLook || {};
-  const style = d.kind === "style" && (ctx.imageStyles || []).find((st) => st.id === d.id);
+  // The brand's own style, or one of the studio's presets (a Playbook with
+  // nothing of its own can still skip the question with a ready-made look).
+  const style = d.kind === "style" && [...(ctx.imageStyles || []), ...STYLE_PRESETS].find((st) => st.id === d.id);
   const ref = d.kind === "reference" && (ctx.referenceImages || []).find((r) => r.id === d.id);
   return {
     styleId: style ? style.id : "",
