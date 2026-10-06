@@ -676,6 +676,15 @@ span.chat-bubble-choice-chip {
   border-color: var(--app-border);
 }
 
+/* Pending = Archie at work, so it wears Archie's butter (the status pills'
+   and the memory card's colour), the loader in olive on no tile. The card
+   turns grey-05 + orange tile once the result lands. */
+.drafts-card--pending,
+.drafts-card--pending:hover {
+  background: var(--app-butter);
+  border-color: transparent;
+}
+
 .drafts-card--unavailable {
   opacity: 0.65;
 }
@@ -706,7 +715,8 @@ span.chat-bubble-choice-chip {
    orange via currentColor) sits on the same orange tile as the ready glyph.
    NOTE: state modifiers live AFTER the base rule so they actually win. */
 .drafts-card__icon--spinner {
-  background: var(--ref-color-orange-10);
+  background: transparent;
+  --archie-loader-color: var(--app-butter-accent);
 }
 
 .drafts-card__icon--muted {
