@@ -14,8 +14,8 @@
 // ponytail: the catalogue is a hand-kept list — a new turn variant or route has
 // to be added here too, or it won't show in the menu.
 
-import { escapeHtml } from "../../utils.js?v=1602";
-import { isFlagOn } from "../../feature-flags.js?v=1602";
+import { escapeHtml } from "../../utils.js?v=1603";
+import { isFlagOn } from "../../feature-flags.js?v=1603";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -30,21 +30,21 @@ import {
   postTopPostPickTurn,
   postConnectPrompt,
   postVoiceSuggestion,
-} from "../../assistant.js?v=1602";
-import { getSources, getIdeas } from "../../library.js?v=1602";
-import { getPosts } from "../../posts-store.js?v=1602";
-import { getTopPosts } from "../../top-posts-store.js?v=1602";
-import { getConnectedProfiles } from "../../social-profiles.js?v=1602";
-import { getConnectedConnectors } from "../../connectors-store.js?v=1602";
-import { detectUrlService } from "../../url-services.js?v=1602";
-import { propose, getSuggestions } from "../../voice-coach-store.js?v=1602";
-import * as inlineQuestion from "../../inline-question.js?v=1602";
-import { startTopPostsInline } from "../../top-posts-flow.js?v=1602";
-import { startTopicPickerInline } from "../../topic-flow.js?v=1602";
-import { askConnector } from "../../connector-ask.js?v=1602";
-import { coachAfterDraft } from "../../voice-coach.js?v=1602";
-import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=1602";
-import { startIdeaDraft, askVideoIntake } from "./draft-questions.js?v=1602";
+} from "../../assistant.js?v=1603";
+import { getSources, getIdeas } from "../../library.js?v=1603";
+import { getPosts } from "../../posts-store.js?v=1603";
+import { getTopPosts } from "../../top-posts-store.js?v=1603";
+import { getConnectedProfiles } from "../../social-profiles.js?v=1603";
+import { getConnectedConnectors } from "../../connectors-store.js?v=1603";
+import { detectUrlService } from "../../url-services.js?v=1603";
+import { propose, getSuggestions } from "../../voice-coach-store.js?v=1603";
+import * as inlineQuestion from "../../inline-question.js?v=1603";
+import { startTopPostsInline } from "../../top-posts-flow.js?v=1603";
+import { startTopicPickerInline } from "../../topic-flow.js?v=1603";
+import { askConnector } from "../../connector-ask.js?v=1603";
+import { coachAfterDraft } from "../../voice-coach.js?v=1603";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=1603";
+import { startIdeaDraft, askVideoIntake } from "./draft-questions.js?v=1603";
 
 const videoOf = (sid) => getSources(sid).find((s) => s.kind === "Video");
 const flagOff = (id) => (isFlagOn(id) ? null : `Turn on ${id} in Admin`);
@@ -364,7 +364,7 @@ export function renderChatGallery() {
 function renderItem(item, session) {
   const reason = item.when?.(session.id, session) || null;
   return `
-    <button type="button" class="ap-action-dropdown-item" role="menuitem" data-chat-gallery-item="${item.id}" ${reason ? "disabled" : ""}>
+    <button type="button" class="ap-action-dropdown-item has-description" role="menuitem" data-chat-gallery-item="${item.id}" ${reason ? "disabled" : ""}>
       <i class="${item.icon}" aria-hidden="true"></i>
       <div class="ap-action-dropdown-item-text">
         <div class="ap-action-dropdown-item-label-container">
