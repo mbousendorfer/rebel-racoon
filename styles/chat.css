@@ -657,10 +657,11 @@ span.chat-bubble-choice-chip {
   cursor: pointer;
   font-family: inherit;
   text-align: left;
-  /* Quiet resting surface — mirrors the nested idea cards so the card
-     no longer shouts over the surrounding conversation. */
-  background: var(--ref-color-grey-05);
-  border-color: var(--app-border);
+  /* Archie's card, so Archie's butter — working or done, same surface (only
+     the unavailable state goes grey). The border stays transparent so the
+     house hover (blue border) has somewhere to land. */
+  background: var(--app-butter);
+  border-color: transparent;
   transition:
     border-color var(--ref-animation-short) var(--app-ease-standard),
     background-color var(--ref-animation-short) var(--app-ease-standard),
@@ -690,19 +691,18 @@ span.chat-bubble-choice-chip {
   cursor: default;
 }
 
-.drafts-card--pending:hover,
+.drafts-card--pending:hover {
+  border-color: transparent;
+}
+
+.drafts-card--unavailable,
 .drafts-card--unavailable:hover {
+  background: var(--ref-color-grey-05);
   border-color: var(--app-border);
 }
 
-/* Pending = Archie at work, so it wears Archie's butter (the status pills'
-   and the memory card's colour), the brand-orange loader on no tile. The card
-   turns grey-05 + orange tile once the result lands. */
-.drafts-card--pending,
-.drafts-card--pending:hover {
-  background: var(--app-butter);
-  border-color: transparent;
-}
+/* Pending and ready share the butter surface and the bare icon slot: only
+   the slot's content swaps (orange loader → orange Archie mark). */
 
 /* Its line explains the wait — let it wrap rather than cut it off. */
 .drafts-card--pending .drafts-card__sub {
@@ -713,12 +713,8 @@ span.chat-bubble-choice-chip {
   opacity: 0.65;
 }
 
-/* Icon tile — Archie's brand identity: soft orange tile + flat orange glyph
-   (orange = AI per the app convention), the same paint as the thread's Archie
-   avatar and the brand loader. The tile is IDENTICAL across pending / ready /
-   unavailable so the card doesn't jump colors when the state flips — only the
-   tile's content swaps (loader → glyph). The archie mark is mask-based, so its
-   `background` paints the glyph itself. */
+/* Icon slot — the orange Archie mark (or the orange loader while pending),
+   bare on the butter card. Same 32px slot in every state so nothing jumps. */
 .drafts-card__icon {
   display: inline-flex;
   align-items: center;
@@ -726,7 +722,8 @@ span.chat-bubble-choice-chip {
   width: var(--ref-spacing-lg);
   height: var(--ref-spacing-lg);
   border-radius: var(--app-radius-button-sm);
-  background: var(--ref-color-orange-10);
+  /* No tile on butter — a peach tile on yellow muddies both. */
+  background: transparent;
   flex-shrink: 0;
 }
 
@@ -738,14 +735,6 @@ span.chat-bubble-choice-chip {
 /* Pending — the brand pixel-pop loader (injected by archie-loader.js, paints
    orange via currentColor) sits on the same orange tile as the ready glyph.
    NOTE: state modifiers live AFTER the base rule so they actually win. */
-.drafts-card__icon--spinner {
-  background: transparent;
-}
-
-.drafts-card__icon--muted {
-  background: var(--ref-color-grey-05);
-}
-
 .drafts-card__icon--muted > i {
   background: var(--ref-color-grey-100);
 }

@@ -14,14 +14,14 @@
 //
 // Everything here saves as it changes, like the styles always did: no Edit.
 
-import { html, raw, toString } from "../lib/html.js?v=1614";
-import { navigate } from "../../../router.js?v=1614";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1614";
-import { toast } from "../ui/toast.js?v=1614";
-import { renderEmpty } from "../ui/empty.js?v=1614";
-import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=1614";
-import { shapesFor } from "../config/formats.js?v=1614";
-import { STYLE_PRESETS } from "../config/style-presets.js?v=1614";
+import { html, raw, toString } from "../lib/html.js?v=1615";
+import { navigate } from "../../../router.js?v=1615";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=1615";
+import { toast } from "../ui/toast.js?v=1615";
+import { renderEmpty } from "../ui/empty.js?v=1615";
+import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=1615";
+import { shapesFor } from "../config/formats.js?v=1615";
+import { STYLE_PRESETS } from "../config/style-presets.js?v=1615";
 import {
   addPlaybookReferences,
   deletePlaybookReference,
@@ -30,8 +30,8 @@ import {
   getPlaybookReferences,
   setPlaybookDefaultLook,
   setPlaybookFormat,
-} from "../state/playbook-brand.js?v=1614";
-import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=1614";
+} from "../state/playbook-brand.js?v=1615";
+import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=1615";
 
 const creatorPath = (playbookId, rest) => `/playbook/${encodeURIComponent(playbookId)}/styles/${rest}`;
 const ownStyles = (playbookId) => getStylesForBrand(playbookId).filter((s) => s.kind === "custom");
