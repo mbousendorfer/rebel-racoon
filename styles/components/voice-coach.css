@@ -43,14 +43,15 @@ i.memory-mark {
 }
 
 .memory-card__body > i.memory-mark {
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
+/* The same title line as the result cards (body-bold, 14 / 18). */
 .memory-card__rule {
   margin: 0;
-  font-size: var(--ref-font-size-sm);
-  font-weight: var(--ref-font-weight-bold);
-  line-height: 20px;
+  font-size: var(--sys-text-style-body-bold-size);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  line-height: var(--sys-text-style-body-bold-line-height);
 }
 
 .memory-card__why {

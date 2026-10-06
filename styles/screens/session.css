@@ -1013,8 +1013,14 @@ body.playbook-revoked .session__composer-card {
 
 .chat-turn--clip-extraction {
   align-items: flex-start;
-  max-width: var(--app-chat-card);
   width: 100%;
+}
+
+/* The width lives on the card: the thread stretches every turn to its
+   740px column (.session__assistant-thread > *), which would win over a
+   max-width on the turn. Same width as the memory card. */
+.chat-turn--clip-extraction > .drafts-card {
+  max-width: var(--app-chat-card);
 }
 
 /* --- Extraction turn (Figma 25:1053) ---------------------------------- */

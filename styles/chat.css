@@ -197,6 +197,15 @@
 
 /* User bubble (Figma 25:1040) — solid navy.
    Corners 12 / 0 / 12 / 12 — sharp top-right corner points at the user avatar. */
+/* Light ink on navy renders heavier than the same weight on white:
+   grayscale antialiasing gives it back its drawn weight. */
+.chat-bubble--user,
+.chat-bubble--source-intake,
+.selection-echo {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 .chat-bubble--user {
   background: var(--app-convo-navy);
   color: var(--ref-color-white);
@@ -217,7 +226,8 @@
   flex-direction: row;
   align-items: center;
   gap: var(--ref-spacing-xs);
-  padding: 6px var(--ref-spacing-xxs) 6px var(--ref-spacing-xs);
+  /* An even 7px around the 22px trailing pills — top, right, bottom. */
+  padding: 7px 7px 7px var(--ref-spacing-xs);
   /* Inverted like the user's own message (.chat-bubble--user): navy, white
      ink — the file is something YOU sent. Its pills flip to light. */
   background: var(--app-convo-navy);
@@ -312,6 +322,7 @@
   font-weight: var(--sys-text-style-caption-bold-weight);
   cursor: pointer;
   flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
   transition: background var(--ref-animation-short) var(--app-ease-out);
 }
 
@@ -341,7 +352,8 @@
   color: var(--ref-color-green-100);
   font-size: var(--sys-icon-css-sm);
   flex-shrink: 0;
-  margin-right: var(--ref-spacing-xxxs);
+  /* 7px inset + 3px = 10px, the same as above and below the 16px check. */
+  margin-right: 3px;
 }
 
 .chat-bubble.is-loading {
@@ -652,7 +664,7 @@ span.chat-bubble-choice-chip {
      compose horizontally with a tighter gap for this list-item style. */
   flex-direction: row;
   align-items: center;
-  gap: var(--ref-spacing-sm);
+  gap: var(--ref-spacing-xs);
   width: 100%;
   /* The chat's card inset (12 / 16) — the user bubble, the echo and the
      memory card share it. */
@@ -717,15 +729,20 @@ span.chat-bubble-choice-chip {
 }
 
 /* Icon slot — the orange Archie mark (or the orange loader while pending),
-   bare on the butter card. Same 32px slot in every state so nothing jumps. */
+   bare on the butter card. It sits exactly where the memory card's mark
+   sits: a 16px column, 12px before the text, top-aligned on the title's
+   line (18px line, 16px glyph → 1px down). Nothing jumps between states,
+   and every Archie card starts its text at the same x. */
 .drafts-card__icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: var(--ref-spacing-lg);
-  height: var(--ref-spacing-lg);
-  border-radius: var(--app-radius-button-sm);
-  /* No tile on butter — a peach tile on yellow muddies both. */
+  align-self: flex-start;
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+  /* The loader is wider than the glyph: let it overhang, centred. */
+  overflow: visible;
   background: transparent;
   flex-shrink: 0;
 }
