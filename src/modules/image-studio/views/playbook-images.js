@@ -14,14 +14,14 @@
 //
 // Everything here saves as it changes, like the styles always did: no Edit.
 
-import { html, raw, toString } from "../lib/html.js?v=1599";
-import { navigate } from "../../../router.js?v=1599";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1599";
-import { toast } from "../ui/toast.js?v=1599";
-import { renderEmpty } from "../ui/empty.js?v=1599";
-import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=1599";
-import { shapesFor } from "../config/formats.js?v=1599";
-import { STYLE_PRESETS } from "../config/style-presets.js?v=1599";
+import { html, raw, toString } from "../lib/html.js?v=1600";
+import { navigate } from "../../../router.js?v=1600";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=1600";
+import { toast } from "../ui/toast.js?v=1600";
+import { renderEmpty } from "../ui/empty.js?v=1600";
+import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=1600";
+import { shapesFor } from "../config/formats.js?v=1600";
+import { STYLE_PRESETS } from "../config/style-presets.js?v=1600";
 import {
   addPlaybookReferences,
   deletePlaybookReference,
@@ -30,8 +30,8 @@ import {
   getPlaybookReferences,
   setPlaybookDefaultLook,
   setPlaybookFormat,
-} from "../state/playbook-brand.js?v=1599";
-import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=1599";
+} from "../state/playbook-brand.js?v=1600";
+import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=1600";
 
 const creatorPath = (playbookId, rest) => `/playbook/${encodeURIComponent(playbookId)}/styles/${rest}`;
 const ownStyles = (playbookId) => getStylesForBrand(playbookId).filter((s) => s.kind === "custom");
@@ -163,12 +163,13 @@ export function renderImagesGenerate(playbookId, { canEdit = true } = {}) {
   }));
   const value = look.kind ? `${look.kind}:${look.id}` : "";
   // The studio's ready-made styles stay pickable once the brand has its own
-  // (2026-10-06): always listed, in their own group, below a rule.
+  // (2026-10-06): always listed, in their own group right under the brand's
+  // styles — one scrolling row then, the default first so it is never hidden.
   const presets = STYLE_PRESETS.map((s) => ({
     value: `style:${s.id}`,
     label: s.label,
     avatar: styleThumbUrl(s, brand),
-  }));
+  })).sort((a, b) => (b.value === value) - (a.value === value));
   const hasOwn = styles.length + refs.length > 0;
   // Both kinds, each under its own name, as small pictures — ONE radio group
   // across the two, so exactly one is the default.
@@ -220,7 +221,6 @@ export function renderImagesGenerate(playbookId, { canEdit = true } = {}) {
           </header>
           <div class="imst-images-pick" role="radiogroup" aria-labelledby="imst-images-look">
             ${group("Image styles", "I draw the image in the style.", styles)}
-            ${group("Reference images", "I make the image take after it.", refs)}
             ${group(
               "Ready-made styles",
               hasOwn
@@ -229,6 +229,7 @@ export function renderImagesGenerate(playbookId, { canEdit = true } = {}) {
               presets,
               hasOwn ? " imst-images-pick__group--presets" : "",
             )}
+            ${group("Reference images", "I make the image take after it.", refs)}
           </div>
         </section>
         <section class="imst-images-part" aria-labelledby="imst-images-format">

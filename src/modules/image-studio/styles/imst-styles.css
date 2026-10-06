@@ -506,10 +506,17 @@ button.imst-style-card {
   gap: var(--ref-spacing-sm);
 }
 
-/* The ready-made styles under the brand's own: a rule keeps the two apart. */
-.imst-images-pick__group--presets {
-  padding-top: var(--ref-spacing-md);
-  border-top: 1px solid var(--ref-color-grey-20);
+/* The ready-made styles beside the brand's own: one row that scrolls, so 22
+ * looks don't push the brand's styles and images out of sight. */
+.imst-images-pick__group--presets .imst-images-pick__list {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  /* Room for the focus ring, which the scroller would clip. */
+  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xxxs) var(--ref-spacing-xs);
+}
+
+.imst-images-pick__group--presets .imst-images-pick__list > li {
+  flex: none;
 }
 
 .imst-images-part + .imst-images-part {
