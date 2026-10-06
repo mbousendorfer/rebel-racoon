@@ -8,11 +8,11 @@
 // uses, so the preview IS what a click opens. The card is inert: a picture of
 // the object, not a second set of its controls.
 
-import { resolveRef } from "../chat-refs.js?v=1580";
-import { getIdeas, getSources } from "../library.js?v=1580";
-import { renderPostEchoRow } from "./top-post-card.js?v=1580";
-import { renderCompactIdeaCard } from "./idea-card-compact.js?v=1580";
-import { renderSourceCard } from "./source-card.js?v=1580";
+import { resolveRef } from "../chat-refs.js?v=1581";
+import { getIdeas, getSources } from "../library.js?v=1581";
+import { renderPostEchoRow } from "./top-post-card.js?v=1581";
+import { renderCompactIdeaCard } from "./idea-card-compact.js?v=1581";
+import { renderSourceCard } from "./source-card.js?v=1581";
 
 const ANCHOR_SEL = "[data-chat-ref]";
 const DELAY = 250;
@@ -62,24 +62,12 @@ function body(kind, obj, sessionId) {
 
 // A draft, in the compact post row the thread already uses for a top post
 // (renderPostEchoRow): thumbnail, posting profile, two lines of copy. A draft has
-// no metrics, so the last line says where it stands instead.
+// no metrics, and its state (ready, needs fixes) isn't what a glance is for.
 function renderDraftRow(post) {
   const text = (Array.isArray(post.text) ? post.text.join(" ") : post.text || "").replace(/<[^>]*>/g, "");
   const image = post.imageUrl || (Array.isArray(post.carousel) ? post.carousel[0] : null);
   const mediaType = image ? "image" : post.clipRef ? "video" : "text";
-  const issues = post.errors?.length || 0;
-  const status =
-    post.status === "needs_fixes"
-      ? `<b>Needs fixes</b>${issues ? ` · ${issues} ${issues === 1 ? "issue" : "issues"}` : ""}`
-      : "<b>Ready</b> to schedule";
-  return renderPostEchoRow({
-    network: post.network,
-    when: "Draft",
-    excerpt: text,
-    mediaType,
-    image,
-    statsHtml: status,
-  });
+  return renderPostEchoRow({ network: post.network, when: "Draft", excerpt: text, mediaType, image });
 }
 
 function show() {

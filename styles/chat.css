@@ -1052,3 +1052,9 @@ span.chat-bubble-choice-chip {
 .chat-ref-preview .rpanel-ideas__card-actions {
   display: none;
 }
+
+/* A draft's preview has no stat line (no metrics, no state): drop the empty
+   slot so it leaves no gap under the copy. */
+.chat-ref-preview .top-post-echo__stats:empty {
+  display: none;
+}
