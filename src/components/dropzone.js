@@ -30,6 +30,9 @@ export function dropzoneHTML({
   icon = "ap-icon-upload",
   compact = false,
   large = false,
+  // One line — icon and text side by side, no icon tile, small type. For a
+  // drop that is the FALLBACK next to stronger actions (a draft's image slot).
+  inline = false,
   withInput = true,
   inputId = "",
   // Extra attributes spliced onto the root (e.g. "data-clip-studio-dropzone").
@@ -52,7 +55,9 @@ export function dropzoneHTML({
          <i class="${action.icon || "ap-icon-upload"}" aria-hidden="true"></i><span>${action.label || "Browse files"}</span>
        </button>`
     : "";
-  const modifiers = `${compact ? " ap-dropzone--compact" : ""}${large ? " ap-dropzone--lg" : ""}`;
+  const modifiers = `${compact ? " ap-dropzone--compact" : ""}${large ? " ap-dropzone--lg" : ""}${
+    inline ? " ap-dropzone--inline" : ""
+  }`;
   return `
   <div class="ap-dropzone${modifiers}" data-dropzone ${id ? `id="${id}"` : ""} role="button" tabindex="0" aria-label="${ariaLabel || `${lead} browse`}" ${rootAttrs}>
     <span class="ap-dropzone__icon"><i class="${icon}" aria-hidden="true"></i></span>

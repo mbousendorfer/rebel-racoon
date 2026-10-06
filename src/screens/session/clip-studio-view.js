@@ -6,35 +6,35 @@
 // binding and the refreshAssistantAside node-swap keep working; state lives in
 // clip-studio.js.
 
-import * as clipStudio from "../../clip-studio.js?v=1581";
-import { isWorkspaceMode } from "../../active-playbook.js?v=1581";
-import { usableContexts } from "../../playbook-access.js?v=1581";
-import { escapeHtml, html, raw } from "../../utils.js?v=1581";
-import { getContextById } from "../../contexts-store.js?v=1581";
-import { dropzoneHTML } from "../../components/dropzone.js?v=1581";
-import { renderClipCard } from "../../components/clip-card.js?v=1581";
-import { connectableNetworkCards } from "../../connect-profiles-flow.js?v=1581";
-import { getConnectedProfiles, PROFILE_SEARCH_THRESHOLD, renderProfileTag } from "../../social-profiles.js?v=1581";
-import { defaultFormatFor, formatsForNetwork } from "../../clip-formats.js?v=1581";
+import * as clipStudio from "../../clip-studio.js?v=1583";
+import { isWorkspaceMode } from "../../active-playbook.js?v=1583";
+import { usableContexts } from "../../playbook-access.js?v=1583";
+import { escapeHtml, html, raw } from "../../utils.js?v=1583";
+import { getContextById } from "../../contexts-store.js?v=1583";
+import { dropzoneHTML } from "../../components/dropzone.js?v=1583";
+import { renderClipCard } from "../../components/clip-card.js?v=1583";
+import { connectableNetworkCards } from "../../connect-profiles-flow.js?v=1583";
+import { getConnectedProfiles, PROFILE_SEARCH_THRESHOLD, renderProfileTag } from "../../social-profiles.js?v=1583";
+import { defaultFormatFor, formatsForNetwork } from "../../clip-formats.js?v=1583";
 import {
   classifyFile,
   pushScriptedSource,
   completeScriptedSource,
   updateSourceClips,
-} from "../../sources-stream.js?v=1581";
-import { showToast } from "../../components/toast.js?v=1581";
-import { open as openVideoClipsModal } from "../../components/video-clips-modal.js?v=1581";
+} from "../../sources-stream.js?v=1583";
+import { showToast } from "../../components/toast.js?v=1583";
+import { open as openVideoClipsModal } from "../../components/video-clips-modal.js?v=1583";
 import {
   postAssistantMessage,
   postClipExtractionTurn,
   startPending,
   finishPending,
   postDraftResult,
-} from "../../assistant.js?v=1581";
-import { addPostDraft } from "../../posts-store.js?v=1581";
-import { clipContext } from "./clip-draft-flow.js?v=1581";
-import { dotColorVar } from "../session.js?v=1581";
-import { buildWorkflowFlow } from "./workflow-flow.js?v=1581";
+} from "../../assistant.js?v=1583";
+import { addPostDraft } from "../../posts-store.js?v=1583";
+import { clipContext } from "./clip-draft-flow.js?v=1583";
+import { dotColorVar } from "../session.js?v=1583";
+import { buildWorkflowFlow } from "./workflow-flow.js?v=1583";
 
 // Config catalogs for the upload/config screen.
 const CLIP_CAPTION_STYLES = [
