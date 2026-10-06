@@ -173,6 +173,16 @@ export const FLAGS = Object.freeze([
       "(from files, or by hand).",
   },
   {
+    id: "brandTintedPresets",
+    label: "Ready-made styles in the brand's colours",
+    // OFF: every ready-made style's thumbnail is drawn in Acme's palette.
+    default: false,
+    hides:
+      "When OFF (default), the Image Generator's ready-made styles keep one " +
+      "palette, Acme's, on every Playbook. ON redraws their thumbnails in the " +
+      "active brand's colours, so the gallery previews what THIS brand would get.",
+  },
+  {
     id: "networkVoices",
     label: "Voice per network, with coaching",
     // OFF: lands dark. The data (voiceBaseNetwork / voiceByNetwork) rides
