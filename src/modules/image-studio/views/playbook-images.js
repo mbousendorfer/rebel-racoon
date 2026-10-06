@@ -14,14 +14,14 @@
 //
 // Everything here saves as it changes, like the styles always did: no Edit.
 
-import { html, raw, toString } from "../lib/html.js?v=1598";
-import { navigate } from "../../../router.js?v=1598";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1598";
-import { toast } from "../ui/toast.js?v=1598";
-import { renderEmpty } from "../ui/empty.js?v=1598";
-import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=1598";
-import { shapesFor } from "../config/formats.js?v=1598";
-import { STYLE_PRESETS } from "../config/style-presets.js?v=1598";
+import { html, raw, toString } from "../lib/html.js?v=1599";
+import { navigate } from "../../../router.js?v=1599";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=1599";
+import { toast } from "../ui/toast.js?v=1599";
+import { renderEmpty } from "../ui/empty.js?v=1599";
+import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=1599";
+import { shapesFor } from "../config/formats.js?v=1599";
+import { STYLE_PRESETS } from "../config/style-presets.js?v=1599";
 import {
   addPlaybookReferences,
   deletePlaybookReference,
@@ -30,8 +30,8 @@ import {
   getPlaybookReferences,
   setPlaybookDefaultLook,
   setPlaybookFormat,
-} from "../state/playbook-brand.js?v=1598";
-import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=1598";
+} from "../state/playbook-brand.js?v=1599";
+import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=1599";
 
 const creatorPath = (playbookId, rest) => `/playbook/${encodeURIComponent(playbookId)}/styles/${rest}`;
 const ownStyles = (playbookId) => getStylesForBrand(playbookId).filter((s) => s.kind === "custom");
@@ -162,15 +162,14 @@ export function renderImagesGenerate(playbookId, { canEdit = true } = {}) {
     avatar: r.url,
   }));
   const value = look.kind ? `${look.kind}:${look.id}` : "";
-  // The studio's ready-made styles, so a Playbook with nothing of its own can
-  // still pick a default. Shown only then — or while one IS the default, so it
-  // never vanishes from under its check once the brand makes its own (the fiche
-  // otherwise lists only the brand's styles, the 2026-09-28 rule).
-  const presetPicked = look.kind === "style" && STYLE_PRESETS.some((s) => s.id === look.id);
-  const presets =
-    (!styles.length && !refs.length) || presetPicked
-      ? STYLE_PRESETS.map((s) => ({ value: `style:${s.id}`, label: s.label, avatar: styleThumbUrl(s, brand) }))
-      : [];
+  // The studio's ready-made styles stay pickable once the brand has its own
+  // (2026-10-06): always listed, in their own group, below a rule.
+  const presets = STYLE_PRESETS.map((s) => ({
+    value: `style:${s.id}`,
+    label: s.label,
+    avatar: styleThumbUrl(s, brand),
+  }));
+  const hasOwn = styles.length + refs.length > 0;
   // Both kinds, each under its own name, as small pictures — ONE radio group
   // across the two, so exactly one is the default.
   const item = (o) =>
@@ -190,9 +189,9 @@ export function renderImagesGenerate(playbookId, { canEdit = true } = {}) {
         <span class="ap-caption imst-images-pick__name">${o.label}</span>
       </button>
     </li>`;
-  const group = (title, hint, items) =>
+  const group = (title, hint, items, extra = "") =>
     items.length
-      ? html`<div class="imst-images-pick__group">
+      ? html`<div class="imst-images-pick__group${extra}">
           <span class="imst-images-pick__title"
             ><span class="ap-body-bold">${title}</span> <span class="ap-caption">${hint}</span></span
           >
@@ -224,10 +223,11 @@ export function renderImagesGenerate(playbookId, { canEdit = true } = {}) {
             ${group("Reference images", "I make the image take after it.", refs)}
             ${group(
               "Ready-made styles",
-              styles.length + refs.length
-                ? "The studio's own looks."
+              hasOwn
+                ? "Mine, not your brand's — any Playbook can use them."
                 : "Until you create a style or add a reference image above, start from one of mine.",
               presets,
+              hasOwn ? " imst-images-pick__group--presets" : "",
             )}
           </div>
         </section>
