@@ -15,31 +15,31 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=1597";
-import { delegate } from "../lib/delegate.js?v=1597";
-import { hashString } from "../lib/prng.js?v=1597";
-import { renderEmpty } from "../ui/empty.js?v=1597";
-import { preserveFocus } from "../ui/fields.js?v=1597";
-import { toast } from "../ui/toast.js?v=1597";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1597";
-import { styleThumb } from "../ui/style-thumb.js?v=1597";
-import { openDialog } from "../ui/dialog.js?v=1597";
-import { menu } from "../ui/menu.js?v=1597";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1597";
-import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1597";
-import { formatById, shapeForFormat, shapesFor, shapesForBrand } from "../config/formats.js?v=1597";
-import { networkById } from "../config/networks.js?v=1597";
-import { copyService, imageGenerationService } from "../services/index.js?v=1597";
-import { unbranded } from "../state/playbook-brand.js?v=1597";
-import { resolveLayers } from "../render/layout.js?v=1597";
-import { svgToDataUrl } from "../render/visual.js?v=1597";
-import { splitVisual } from "../render/split.js?v=1597";
-import { bakeDoc } from "../render/edit-export.js?v=1597";
-import { subjectKindFor } from "../render/subjects.js?v=1597";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1597";
-import { createEditor } from "./edit/editor.js?v=1597";
-import { mount as mountStyleCreator } from "./style-creator.js?v=1597";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1597";
+import { html, raw, toString } from "../lib/html.js?v=1598";
+import { delegate } from "../lib/delegate.js?v=1598";
+import { hashString } from "../lib/prng.js?v=1598";
+import { renderEmpty } from "../ui/empty.js?v=1598";
+import { preserveFocus } from "../ui/fields.js?v=1598";
+import { toast } from "../ui/toast.js?v=1598";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1598";
+import { styleThumb } from "../ui/style-thumb.js?v=1598";
+import { openDialog } from "../ui/dialog.js?v=1598";
+import { menu } from "../ui/menu.js?v=1598";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1598";
+import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1598";
+import { formatById, shapeForFormat, shapesFor, shapesForBrand } from "../config/formats.js?v=1598";
+import { networkById } from "../config/networks.js?v=1598";
+import { copyService, imageGenerationService } from "../services/index.js?v=1598";
+import { unbranded, getPlaybookReferences } from "../state/playbook-brand.js?v=1598";
+import { resolveLayers } from "../render/layout.js?v=1598";
+import { svgToDataUrl } from "../render/visual.js?v=1598";
+import { splitVisual } from "../render/split.js?v=1598";
+import { bakeDoc } from "../render/edit-export.js?v=1598";
+import { subjectKindFor } from "../render/subjects.js?v=1598";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1598";
+import { createEditor } from "./edit/editor.js?v=1598";
+import { mount as mountStyleCreator } from "./style-creator.js?v=1598";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1598";
 import {
   canEditBrand,
   forgetOneOffStyle,
@@ -50,15 +50,15 @@ import {
   getStylesForBrand,
   registerOneOffStyle,
   subscribe,
-} from "../state/store.js?v=1597";
-import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1597";
+} from "../state/store.js?v=1598";
+import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1598";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1597";
+} from "../state/creation-actions.js?v=1598";
 
 const variationsLabel = (n) => (n === 1 ? "1 variation" : `${n} variations`);
 
@@ -126,6 +126,7 @@ export function mountStudio(
     view: "image", // image | feed — how a result is shown
     mode: "generate", // generate | edit
     oneOff: null, // "From an image": the style read from the user's upload (state/store.js)
+    refId: null, // the Playbook reference image the one-off was read from, if any
     oneOffBusy: false,
     source: null, // null (the chooser) | style | image | scratch — where the look comes from
     lastStyleId: null, // the style picked under "A style", kept while another answer is open
@@ -381,7 +382,7 @@ export function mountStudio(
   // their images when it closes (what was generated keeps its colours).
   const oneOffsMade = [];
 
-  async function styleFromImages(files) {
+  async function styleFromImages(files, refId = null) {
     const brand = brandNow();
     if (!brand || state.oneOffBusy) return;
     state.oneOffBusy = true;
@@ -392,6 +393,7 @@ export function mountStudio(
       registerOneOffStyle(style);
       oneOffsMade.push(style);
       state.oneOff = style;
+      state.refId = refId; // which of the Playbook's references it is, if any
       state.oneOffBusy = false;
       state.source = "image";
       state.sourceError = "";
@@ -408,7 +410,11 @@ export function mountStudio(
   async function styleFromPlaybookReference(url) {
     try {
       const blob = await (await fetch(url)).blob();
-      await styleFromImages([new File([blob], "Playbook reference", { type: blob.type })]);
+      const ref = getPlaybookReferences(brandNow()?.id).find((r) => r.url === url);
+      await styleFromImages(
+        [new File([blob], ref?.label || "Playbook reference", { type: blob.type })],
+        ref?.id || null,
+      );
     } catch {
       // An unreadable image leaves the chooser as it is.
     }
@@ -599,13 +605,36 @@ export function mountStudio(
       </section>`;
     if (state.source === "image") {
       // Its own section, titled like the column's others; the recall above shows the picture.
+      // The Playbook's reference images, one click away: each is read like an upload.
+      const refs = getPlaybookReferences(brand.id);
+      const refTiles = refs.length
+        ? html`<div class="imst-tiles" role="radiogroup" aria-label="From your Playbook">
+            ${refs.map(
+              (r) =>
+                html`<button
+                  type="button"
+                  class="imst-tile"
+                  role="radio"
+                  aria-checked="${r.id === state.refId}"
+                  data-imst-ref="${r.url}"
+                  aria-label="${r.label}"
+                >
+                  <img class="imst-tile__img" src="${r.url}" alt="" draggable="false" />
+                  ${r.label ? html`<span class="imst-tile__name">${r.label}</span>` : ""}
+                  ${r.id === state.refId
+                    ? html`<span class="imst-tile__check" aria-hidden="true"><i class="ap-icon-check"></i></span>`
+                    : ""}
+                </button>`,
+            )}
+          </div>`
+        : "";
       const section = (head, body) =>
         html`<section class="imst-ctl" aria-labelledby="imst-ctl-image">
           <header class="imst-ctl__head">
             <h3 class="imst-ctl__label ap-body-bold" id="imst-ctl-image">Your image</h3>
             ${head}
           </header>
-          ${body}
+          ${body} ${state.oneOffBusy ? "" : refTiles}
         </section>`;
       if (state.oneOffBusy)
         return section(
@@ -1744,6 +1773,7 @@ ${b.prompt}</textarea
       }
     }),
     delegate(target, "click", "[data-imst-style]", (_e, el) => setStyle(el.dataset.imstStyle)),
+    delegate(target, "click", "[data-imst-ref]", (_e, el) => styleFromPlaybookReference(el.dataset.imstRef)),
     delegate(target, "click", "[data-imst-shape]", (_e, el) => {
       state.brief.formatIds = [shapes().find((s) => s.id === el.dataset.imstShape).formatId];
       leaveResults();
