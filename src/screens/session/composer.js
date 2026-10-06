@@ -4,19 +4,19 @@
 // session.js, unchanged; the mention picker stays there, since bindSession
 // writes its highlight state.
 
-import { isFlagOn } from "../../feature-flags.js?v=1593";
-import { getConnectedConnectors, findConnector } from "../../connectors-store.js?v=1593";
-import { escapeHtml, html, raw, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=1593";
-import { renderConnectorLogo } from "../../connectors-view.js?v=1593";
-import { getSources, getIdeas } from "../../library.js?v=1593";
-import * as clipStudio from "../../clip-studio.js?v=1593";
-import { getThread } from "../../assistant.js?v=1593";
-import { revokedContextFor } from "../../playbook-access.js?v=1593";
-import { getSessionById } from "../../sessions-store.js?v=1593";
-import { catalogueRoute } from "../../active-playbook.js?v=1593";
-import { getActiveConnector } from "../../composer-connector.js?v=1593";
-import { COMPOSER_DEFAULT_PLACEHOLDER, renderPlaybookControl } from "../session.js?v=1593";
-import { renderTopicPickerRow } from "./empty-hero.js?v=1593";
+import { isFlagOn } from "../../feature-flags.js?v=1594";
+import { getConnectedConnectors, findConnector } from "../../connectors-store.js?v=1594";
+import { escapeHtml, html, raw, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=1594";
+import { renderConnectorLogo } from "../../connectors-view.js?v=1594";
+import { getSources, getIdeas } from "../../library.js?v=1594";
+import * as clipStudio from "../../clip-studio.js?v=1594";
+import { getThread } from "../../assistant.js?v=1594";
+import { revokedContextFor } from "../../playbook-access.js?v=1594";
+import { getSessionById } from "../../sessions-store.js?v=1594";
+import { catalogueRoute } from "../../active-playbook.js?v=1594";
+import { getActiveConnector } from "../../composer-connector.js?v=1594";
+import { COMPOSER_DEFAULT_PLACEHOLDER, renderPlaybookControl } from "../session.js?v=1594";
+import { renderTopicPickerRow } from "./empty-hero.js?v=1594";
 
 function renderConnectorsSubmenu() {
   // Connectors are gated behind a feature flag (default OFF) — when off, the
