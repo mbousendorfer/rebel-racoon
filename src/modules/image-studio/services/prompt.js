@@ -2,7 +2,7 @@
 // Pure, and shared by every implementation of imageGenerationService, so the
 // day a real API is plugged in it gets exactly the prompt the mock shows.
 
-import { colorByRole, fontByRole } from "../model/schema.js?v=1587";
+import { colorByRole, fontByRole } from "../model/schema.js?v=1588";
 
 function paletteText(brand) {
   return (brand?.palette || []).map((c) => `${c.role} ${c.hex}`).join(", ") || "neutral tones";
@@ -21,8 +21,6 @@ function styleFragment(style, brief, brand) {
       `in the style "${style.label}": blend of ${parts.join(", ")}`,
       fidelity,
       style.custom.stylePrompt,
-      style.custom.dos?.length ? `Always: ${style.custom.dos.join("; ")}` : "",
-      style.custom.donts?.length ? `Never: ${style.custom.donts.join("; ")}` : "",
     ]
       .filter(Boolean)
       .join(". ");

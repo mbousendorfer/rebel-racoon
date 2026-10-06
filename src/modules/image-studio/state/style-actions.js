@@ -1,14 +1,14 @@
 // Image Generator — every write a custom style undergoes. A custom style is the
 // BRAND's: it lives on the Playbook and is listed first in the studio's picker.
 
-import { storageService as storage } from "../services/index.js?v=1587";
-import { createAsset, createStyle } from "../model/schema.js?v=1587";
-import { presetById, CUSTOM_STYLE_LIMITS } from "../config/style-presets.js?v=1587";
-import { sampleColors } from "../render/sample-colors.js?v=1587";
-import { uid } from "../lib/id.js?v=1587";
-import { lookFromColors } from "../render/visual.js?v=1587";
-import { getAsset } from "./store.js?v=1587";
-import { deletePlaybookStyle, findPlaybookStyle, savePlaybookStyle } from "./playbook-brand.js?v=1587";
+import { storageService as storage } from "../services/index.js?v=1588";
+import { createAsset, createStyle } from "../model/schema.js?v=1588";
+import { presetById, CUSTOM_STYLE_LIMITS } from "../config/style-presets.js?v=1588";
+import { sampleColors } from "../render/sample-colors.js?v=1588";
+import { uid } from "../lib/id.js?v=1588";
+import { lookFromColors } from "../render/visual.js?v=1588";
+import { getAsset } from "./store.js?v=1588";
+import { deletePlaybookStyle, findPlaybookStyle, savePlaybookStyle } from "./playbook-brand.js?v=1588";
 
 /** A custom style can write text into the image when the look read from its images can. */
 function deriveEmbeddedText(sources) {
@@ -27,12 +27,6 @@ export function validateStyleDraft(draft) {
 
 // A custom style is the BRAND's — a field of its Playbook (imageStyles), written
 // through the adapter. Reference images stay in the module's asset store (pixels).
-// The creator's Do / Don't are textareas, one rule per line.
-const linesOf = (text) =>
-  String(text || "")
-    .split("\n")
-    .map((l) => l.trim())
-    .filter(Boolean);
 
 export function saveStyle(draft) {
   const base = draft.id ? findPlaybookStyle(draft.id) : null;
@@ -47,8 +41,6 @@ export function saveStyle(draft) {
       sources: draft.sources.filter((s) => s.type === "image").map((s) => ({ ...s })),
       fidelity: draft.fidelity,
       stylePrompt: draft.stylePrompt.trim(),
-      dos: linesOf(draft.dos),
-      donts: linesOf(draft.donts),
     },
     createdAt: base?.createdAt || new Date().toISOString(),
     updatedAt: new Date().toISOString(),

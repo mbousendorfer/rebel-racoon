@@ -5,7 +5,7 @@
 // state/playbook-brand.js. Everything below is scoped to one by `brandId`,
 // which is a Playbook (Context) id.
 
-import { uid, nowIso } from "../lib/id.js?v=1587";
+import { uid, nowIso } from "../lib/id.js?v=1588";
 
 // 2: brands moved to the Playbook (v1 had its own brands collection).
 export const SCHEMA_VERSION = 2;
@@ -24,7 +24,7 @@ export function createStyle(partial = {}) {
     promptTemplate: "",
     supportsEmbeddedText: false,
     render: { generator: "blend", variant: "custom" },
-    custom: { sources: [], fidelity: "essential", stylePrompt: "", dos: [], donts: [] },
+    custom: { sources: [], fidelity: "essential", stylePrompt: "" },
     createdAt: at,
     updatedAt: at,
     ...partial,

@@ -1,7 +1,7 @@
-import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=1587";
-import { getPath, navigate } from "../router.js?v=1587";
-import { parseHashParams } from "../url-state.js?v=1587";
-import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=1587";
+import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=1588";
+import { getPath, navigate } from "../router.js?v=1588";
+import { parseHashParams } from "../url-state.js?v=1588";
+import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=1588";
 // Lot 19 — topbar no longer carries its own sidebar-toggle button. The
 // sidebar head exposes the toggle in both expanded (chevron-left) and
 // collapsed (view-list) states, so the duplicate in the topbar was just
@@ -14,37 +14,37 @@ import {
   getMode as getRightPanelMode,
   getActiveBatchRef as getActiveDraftsBatchRef,
   subscribe as subscribeRightPanel,
-} from "./right-panel.js?v=1587";
-import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=1587";
-import { getThread, subscribe as subscribeThread } from "../assistant.js?v=1587";
-import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=1587";
-import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=1587";
+} from "./right-panel.js?v=1588";
+import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=1588";
+import { getThread, subscribe as subscribeThread } from "../assistant.js?v=1588";
+import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=1588";
+import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=1588";
 import {
   isEnabled as isStatusCardEnabled,
   toggle as toggleStatusCard,
   subscribeVisibility as subscribeStatusCardVisibility,
-} from "./conversation-status-card.js?v=1587";
-import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=1587";
-import { open as openRenameModal } from "./rename-modal.js?v=1587";
+} from "./conversation-status-card.js?v=1588";
+import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=1588";
+import { open as openRenameModal } from "./rename-modal.js?v=1588";
 import {
   subscribe as subscribeContexts,
   getContextById,
   getDefaultContext,
   getContexts,
-} from "../contexts-store.js?v=1587";
-import { isFlagOn } from "../feature-flags.js?v=1587";
-import { getActivePlaybook, isWorkspaceMode, isAccountScope, catalogueRoute } from "../active-playbook.js?v=1587";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1587";
-import { findCadence } from "../topics-catalog.js?v=1587";
+} from "../contexts-store.js?v=1588";
+import { isFlagOn } from "../feature-flags.js?v=1588";
+import { getActivePlaybook, isWorkspaceMode, isAccountScope, catalogueRoute } from "../active-playbook.js?v=1588";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1588";
+import { findCadence } from "../topics-catalog.js?v=1588";
 import {
   getPickerState as getTopPostsState,
   subscribePicker as subscribeTopPosts,
   backToProfiles as topPostsBackToProfiles,
-} from "../top-posts-flow.js?v=1587";
+} from "../top-posts-flow.js?v=1588";
 // The Insights view switch. Imported from views.js, NOT from the screen's
 // shell: the shell imports this module, so taking it from there would close a
 // cycle. views.js imports neither.
-import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=1587";
+import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=1588";
 
 // The playbook/context pill now lives in the composer (session.js
 // renderPlaybookControl) — selectable on a New Chat, then a static
@@ -352,7 +352,7 @@ export function initTopbar() {
     // renderWelcomeAltExit() above. The wizard chrome no longer carries
     // its own Exit affordance; this is the only entry.
     if (event.target.closest("[data-topbar-welcome-alt-exit]")) {
-      import("./confirm-modal.js?v=1587").then(({ open }) => {
+      import("./confirm-modal.js?v=1588").then(({ open }) => {
         open({
           title: "Exit onboarding?",
           body: "Your progress so far will be discarded. You can start over anytime from the dashboard.",
