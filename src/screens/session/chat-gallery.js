@@ -1,4 +1,4 @@
-// "Show in chat" — a prototype shortcut under the composer that lists every
+// "ADMIN MODE: DISPLAY IN CHAT" — a prototype shortcut under the composer that lists every
 // element a conversation can display and every trigger that produces one, and
 // plays any of them in the current chat.
 //
@@ -14,8 +14,8 @@
 // ponytail: the catalogue is a hand-kept list — a new turn variant or route has
 // to be added here too, or it won't show in the menu.
 
-import { escapeHtml } from "../../utils.js?v=1603";
-import { isFlagOn } from "../../feature-flags.js?v=1603";
+import { escapeHtml } from "../../utils.js?v=1604";
+import { isFlagOn } from "../../feature-flags.js?v=1604";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -30,21 +30,21 @@ import {
   postTopPostPickTurn,
   postConnectPrompt,
   postVoiceSuggestion,
-} from "../../assistant.js?v=1603";
-import { getSources, getIdeas } from "../../library.js?v=1603";
-import { getPosts } from "../../posts-store.js?v=1603";
-import { getTopPosts } from "../../top-posts-store.js?v=1603";
-import { getConnectedProfiles } from "../../social-profiles.js?v=1603";
-import { getConnectedConnectors } from "../../connectors-store.js?v=1603";
-import { detectUrlService } from "../../url-services.js?v=1603";
-import { propose, getSuggestions } from "../../voice-coach-store.js?v=1603";
-import * as inlineQuestion from "../../inline-question.js?v=1603";
-import { startTopPostsInline } from "../../top-posts-flow.js?v=1603";
-import { startTopicPickerInline } from "../../topic-flow.js?v=1603";
-import { askConnector } from "../../connector-ask.js?v=1603";
-import { coachAfterDraft } from "../../voice-coach.js?v=1603";
-import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=1603";
-import { startIdeaDraft, askVideoIntake } from "./draft-questions.js?v=1603";
+} from "../../assistant.js?v=1604";
+import { getSources, getIdeas } from "../../library.js?v=1604";
+import { getPosts } from "../../posts-store.js?v=1604";
+import { getTopPosts } from "../../top-posts-store.js?v=1604";
+import { getConnectedProfiles } from "../../social-profiles.js?v=1604";
+import { getConnectedConnectors } from "../../connectors-store.js?v=1604";
+import { detectUrlService } from "../../url-services.js?v=1604";
+import { propose, getSuggestions } from "../../voice-coach-store.js?v=1604";
+import * as inlineQuestion from "../../inline-question.js?v=1604";
+import { startTopPostsInline } from "../../top-posts-flow.js?v=1604";
+import { startTopicPickerInline } from "../../topic-flow.js?v=1604";
+import { askConnector } from "../../connector-ask.js?v=1604";
+import { coachAfterDraft } from "../../voice-coach.js?v=1604";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=1604";
+import { startIdeaDraft, askVideoIntake } from "./draft-questions.js?v=1604";
 
 const videoOf = (sid) => getSources(sid).find((s) => s.kind === "Video");
 const flagOff = (id) => (isFlagOn(id) ? null : `Turn on ${id} in Admin`);
@@ -354,7 +354,7 @@ export function renderChatGallery() {
   return `
     <span class="chat-gallery">
       <button type="button" class="ap-link chat-gallery__toggle" data-chat-gallery-toggle aria-haspopup="menu" aria-expanded="false">
-        Show in chat <i class="ap-icon-chevron-down" aria-hidden="true"></i>
+        <i class="ap-icon-illuminati" aria-hidden="true"></i> ADMIN MODE: DISPLAY IN CHAT <i class="ap-icon-chevron-down" aria-hidden="true"></i>
       </button>
       <div class="ap-action-dropdown chat-gallery__menu" data-chat-gallery-menu role="menu" hidden></div>
     </span>

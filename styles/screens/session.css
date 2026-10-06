@@ -1818,7 +1818,7 @@ body.playbook-revoked .session__composer-card {
   }
 }
 
-/* "Show in chat" — the prototype's catalogue of chat elements, a link in the
+/* "ADMIN MODE: DISPLAY IN CHAT" — the prototype's catalogue of chat elements, a link in the
    composer hint row whose DS action dropdown opens upward (chat-gallery.js). */
 .chat-gallery {
   position: relative;
