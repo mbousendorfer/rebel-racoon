@@ -1044,3 +1044,11 @@ span.chat-bubble-choice-chip {
   outline: 2px solid var(--ref-color-electric-blue-100);
   outline-offset: 0;
 }
+
+/* An idea's preview is a glance: kind, source, title, gist. "Why this idea"
+   and the actions (thumbs, Draft) can't be reached in a hover card — they
+   stay on the card in the panel, where the click lands. */
+.chat-ref-preview .rpanel-ideas__why,
+.chat-ref-preview .rpanel-ideas__card-actions {
+  display: none;
+}
