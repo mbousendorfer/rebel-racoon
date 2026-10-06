@@ -214,9 +214,11 @@
   align-items: center;
   gap: var(--ref-spacing-xs);
   padding: 6px var(--ref-spacing-xxs) 6px var(--ref-spacing-xs);
-  background: var(--app-convo-navy-05);
-  color: var(--app-convo-navy-deep);
-  border: 1px solid var(--app-convo-navy-20);
+  /* Inverted like the user's own message (.chat-bubble--user): navy, white
+     ink — the file is something YOU sent. Its pills flip to light. */
+  background: var(--app-convo-navy);
+  color: var(--ref-color-white);
+  border: 0;
   border-radius: var(--app-radius-xl);
   border-top-right-radius: 0;
   max-width: 480px;
@@ -231,7 +233,7 @@
 
 /* File-kind icon (pdf / video / url / etc.) — sits at the leading edge. */
 .chat-bubble-source-intake__kind {
-  color: var(--app-convo-navy);
+  color: var(--ref-color-white);
   font-size: var(--sys-icon-css-sm);
   flex-shrink: 0;
 }
@@ -249,7 +251,7 @@
 .chat-bubble-source-intake__name {
   margin: 0;
   font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--app-convo-navy-deep);
+  color: var(--ref-color-white);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -273,8 +275,9 @@
   align-items: center;
   gap: 6px;
   padding: 3px 10px;
-  background: var(--ref-color-grey-150);
+  background: color-mix(in srgb, var(--ref-color-white) 16%, transparent);
   color: var(--ref-color-white);
+  --archie-loader-color: var(--ref-color-white);
   border-radius: var(--app-radius-pill);
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);
@@ -282,14 +285,14 @@
   flex-shrink: 0;
 }
 
-/* (2) Ideas pill — solid navy, hover deepens + chevron nudges 2px */
+/* (2) Ideas pill — white on the navy bubble, hover tints + chevron nudges 2px */
 .chat-bubble-source-intake__pill {
   display: inline-flex;
   align-items: center;
   gap: var(--ref-spacing-xxxs);
   padding: 3px var(--ref-spacing-xxs) 3px 10px;
-  background: var(--app-convo-navy);
-  color: var(--ref-color-white);
+  background: var(--ref-color-white);
+  color: var(--app-convo-navy);
   border: 0;
   border-radius: var(--app-radius-pill);
   font: inherit;
@@ -303,8 +306,13 @@
 
 .chat-bubble-source-intake__pill:hover,
 .chat-bubble-source-intake__pill:focus-visible {
-  background: var(--app-convo-navy-deep);
+  background: var(--app-convo-navy-10);
   outline: none;
+}
+
+.chat-bubble-source-intake__pill:focus-visible {
+  outline: 2px solid var(--ref-color-white);
+  outline-offset: 2px;
 }
 
 .chat-bubble-source-intake__pill i {
