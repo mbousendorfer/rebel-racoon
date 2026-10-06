@@ -1,13 +1,13 @@
-import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr } from "../utils.js?v=1583";
-import { navigate } from "../router.js?v=1583";
-import { renderTopbar } from "../components/topbar.js?v=1583";
-import { connectorDocs } from "../mocks.js?v=1583";
-import { getConnectedProfiles } from "../social-profiles.js?v=1583";
-import { getSessionById, getSessions } from "../sessions-store.js?v=1583";
-import { getContextById, getContexts, updateContext } from "../contexts-store.js?v=1583";
-import { playbookForNewWork, isWorkspaceMode } from "../active-playbook.js?v=1583";
-import { revokedContextFor, usableContexts, canView } from "../playbook-access.js?v=1583";
-import { isNewUser } from "../user-mode.js?v=1583";
+import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr } from "../utils.js?v=1585";
+import { navigate } from "../router.js?v=1585";
+import { renderTopbar } from "../components/topbar.js?v=1585";
+import { connectorDocs } from "../mocks.js?v=1585";
+import { getConnectedProfiles } from "../social-profiles.js?v=1585";
+import { getSessionById, getSessions } from "../sessions-store.js?v=1585";
+import { getContextById, getContexts, updateContext } from "../contexts-store.js?v=1585";
+import { playbookForNewWork, isWorkspaceMode } from "../active-playbook.js?v=1585";
+import { revokedContextFor, usableContexts, canView } from "../playbook-access.js?v=1585";
+import { isNewUser } from "../user-mode.js?v=1585";
 import {
   getThread,
   sendMessage,
@@ -25,47 +25,47 @@ import {
   answerTopPostsWidget,
   toggleTopicsWidgetPick,
   answerTopicsWidget,
-} from "../assistant.js?v=1583";
-import { accept as acceptVoiceSuggestion, dismiss as dismissVoiceSuggestion } from "../voice-coach-store.js?v=1583";
-import { iconFor as fileIconForKind } from "../file-kinds.js?v=1583";
-import { getSources, getIdeas, appendExtractedIdeas } from "../library.js?v=1583";
-import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=1583";
+} from "../assistant.js?v=1585";
+import { accept as acceptVoiceSuggestion, dismiss as dismissVoiceSuggestion } from "../voice-coach-store.js?v=1585";
+import { iconFor as fileIconForKind } from "../file-kinds.js?v=1585";
+import { getSources, getIdeas, appendExtractedIdeas } from "../library.js?v=1585";
+import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=1585";
 import {
   renderInto as renderComposerMentions,
   removeMention as removeComposerMention,
   subscribe as subscribeComposerMentions,
   addMention as addComposerMention,
-} from "../composer-mentions.js?v=1583";
-import { setSubtitleStyle, getPosts, removePost } from "../posts-store.js?v=1583";
-import { executeDraft } from "../draft-flow.js?v=1583";
-import * as topPostsFlow from "../top-posts-flow.js?v=1583";
-import { renderTopPostsBoard } from "../components/top-post-card.js?v=1583";
-import * as sidebarWizard from "../sidebar-wizard.js?v=1583";
-import * as inlineQuestion from "../inline-question.js?v=1583";
-import { planSlots, defaultStrategy, CADENCES, queueEntries } from "../schedule-engine.js?v=1583";
-import { addToQueue } from "../schedule-store.js?v=1583";
-import { refLabel } from "../chat-refs.js?v=1583";
-import { networkLabel } from "../network-voice.js?v=1583";
-import { openScheduleForPosts } from "../components/right-panel/drafts-view.js?v=1583";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=1583";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=1583";
-import * as clipStudio from "../clip-studio.js?v=1583";
-import * as batchStudio from "../batch-studio.js?v=1583";
-import { askConnector } from "../connector-ask.js?v=1583";
-import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=1583";
-import { renderConnectorLogo } from "../connectors-view.js?v=1583";
+} from "../composer-mentions.js?v=1585";
+import { setSubtitleStyle, getPosts, removePost } from "../posts-store.js?v=1585";
+import { executeDraft } from "../draft-flow.js?v=1585";
+import * as topPostsFlow from "../top-posts-flow.js?v=1585";
+import { renderTopPostsBoard } from "../components/top-post-card.js?v=1585";
+import * as sidebarWizard from "../sidebar-wizard.js?v=1585";
+import * as inlineQuestion from "../inline-question.js?v=1585";
+import { planSlots, defaultStrategy, CADENCES, queueEntries } from "../schedule-engine.js?v=1585";
+import { addToQueue } from "../schedule-store.js?v=1585";
+import { refLabel } from "../chat-refs.js?v=1585";
+import { networkLabel, networkIcon } from "../network-voice.js?v=1585";
+import { openScheduleForPosts, onPostImage } from "../components/right-panel/drafts-view.js?v=1585";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=1585";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=1585";
+import * as clipStudio from "../clip-studio.js?v=1585";
+import * as batchStudio from "../batch-studio.js?v=1585";
+import { askConnector } from "../connector-ask.js?v=1585";
+import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=1585";
+import { renderConnectorLogo } from "../connectors-view.js?v=1585";
 import {
   getActiveConnector,
   clearActiveConnector,
   subscribe as subscribeComposerConnector,
-} from "../composer-connector.js?v=1583";
-import { isFlagOn } from "../feature-flags.js?v=1583";
-import * as contextBuilder from "../context-builder.js?v=1583";
-import { renderPicker } from "./_analyse-common.js?v=1583";
-import { contentState, rerenderContentWorkspaceBody } from "../components/content-workspace.js?v=1583";
-import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=1583";
-import { open as openAddSourceModal } from "../components/add-source-modal.js?v=1583";
-import { open as openConnectorsModal } from "../components/connectors-modal.js?v=1583";
+} from "../composer-connector.js?v=1585";
+import { isFlagOn } from "../feature-flags.js?v=1585";
+import * as contextBuilder from "../context-builder.js?v=1585";
+import { renderPicker } from "./_analyse-common.js?v=1585";
+import { contentState, rerenderContentWorkspaceBody } from "../components/content-workspace.js?v=1585";
+import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=1585";
+import { open as openAddSourceModal } from "../components/add-source-modal.js?v=1585";
+import { open as openConnectorsModal } from "../components/connectors-modal.js?v=1585";
 import {
   classifyFile,
   startFileUpload,
@@ -75,9 +75,9 @@ import {
   pushScriptedSource,
   completeScriptedSource,
   updateSourceClips,
-} from "../sources-stream.js?v=1583";
-import { onFeedbackClick } from "../components/feedback-control.js?v=1583";
-import { showToast } from "../components/toast.js?v=1583";
+} from "../sources-stream.js?v=1585";
+import { onFeedbackClick } from "../components/feedback-control.js?v=1585";
+import { showToast } from "../components/toast.js?v=1585";
 import {
   openDrafts as openDraftsPanel,
   openIdeas as openIdeasPanel,
@@ -85,19 +85,19 @@ import {
   openClips as openClipsPanel,
   getMode as getRightPanelMode,
   subscribe as subscribeRightPanel,
-} from "../components/right-panel.js?v=1583";
-import { setHandoff, consumeHandoff } from "../handoff.js?v=1583";
-import { attachTopicToChat, useTopicInChat, startTopicPickerInline, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=1583";
-import { startObjectiveChat, OBJECTIVE_CHAT_HANDOFF } from "../objective-flow.js?v=1583";
-import { getTopicById, markUsed, subscribe as subscribeTopics } from "../topics-store.js?v=1583";
-import { openTopicArticle } from "../components/topic-picker-modal.js?v=1583";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1583";
-import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=1583";
-import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=1583";
-import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=1583";
+} from "../components/right-panel.js?v=1585";
+import { setHandoff, consumeHandoff } from "../handoff.js?v=1585";
+import { attachTopicToChat, useTopicInChat, startTopicPickerInline, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=1585";
+import { startObjectiveChat, OBJECTIVE_CHAT_HANDOFF } from "../objective-flow.js?v=1585";
+import { getTopicById, markUsed, subscribe as subscribeTopics } from "../topics-store.js?v=1585";
+import { openTopicArticle } from "../components/topic-picker-modal.js?v=1585";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1585";
+import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=1585";
+import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=1585";
+import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=1585";
 // Pure thread-turn renderers — shared with the component handoff gallery so
 // the previews there never drift from the app (handoff/components.html).
-import { SWITCH_SKELETON_HTML } from "./session/thread-turns.js?v=1583";
+import { SWITCH_SKELETON_HTML } from "./session/thread-turns.js?v=1585";
 import {
   clipsToChat,
   finalizeClipStudio,
@@ -105,27 +105,27 @@ import {
   handleClipStudioUrl,
   openClipStudioEditor,
   renderClipStudio,
-} from "./session/clip-studio-view.js?v=1583";
+} from "./session/clip-studio-view.js?v=1585";
 import {
   handleBatchFiles,
   renderBatchStudio,
   repaintBatchRest,
   replayBatchSources,
   startBatchChat,
-} from "./session/batch-studio-view.js?v=1583";
+} from "./session/batch-studio-view.js?v=1585";
 import {
   askRepurposeProfiles,
   askVideoIntake,
   startIdeaDraft,
   startRepurposeFlow,
-} from "./session/draft-questions.js?v=1583";
+} from "./session/draft-questions.js?v=1585";
 import {
   extractionVerdict,
   extractionWhyOpen,
   findExtractionIdea,
   renderThread,
   repaintExtractionCard,
-} from "./session/thread-render.js?v=1583";
+} from "./session/thread-render.js?v=1585";
 import {
   animateBannerIn,
   animateBannerOut,
@@ -137,9 +137,9 @@ import {
   renderComposer,
   renderComposerConnector,
   renderComposerStatus,
-} from "./session/composer.js?v=1583";
-import { renderTopPostsPickerScreen } from "./session/top-posts-view.js?v=1583";
-import { renderEmptyHero } from "./session/empty-hero.js?v=1583";
+} from "./session/composer.js?v=1585";
+import { renderTopPostsPickerScreen } from "./session/top-posts-view.js?v=1585";
+import { renderEmptyHero } from "./session/empty-hero.js?v=1585";
 
 // Default composer placeholder — restored whenever no connector is attached.
 // A connected connector swaps it for "Ask {name} anything…".
@@ -879,18 +879,17 @@ function askWhatToKnow(sessionId, filename, sourceId = null) {
 // "Delete all the drafts" — a destructive, irreversible ask, so I confirm it in
 // the chat (Quickpicker) instead of acting on the sentence. Same set the Drafts
 // panel shows (scheduled posts have left it). No undo: the confirm is the guard.
-const DELETE_ALL_DRAFTS = /\b(delete|remove|clear|trash|erase)\b.*\bdrafts\b/i;
+const DELETE_DRAFTS = /\b(delete|remove|clear|trash|erase)\b.*\bdrafts?\b/i;
 
-function confirmDeleteAllDrafts(sessionId, text) {
-  postUserTurn(sessionId, text);
-  const drafts = getPosts(sessionId).filter((p) => p.status !== "scheduled");
+function confirmDeleteDrafts(sessionId, drafts, { all = false } = {}) {
   const n = drafts.length;
-  if (!n) {
-    postAssistantMessage(sessionId, "There are no drafts in this chat to delete.");
-    return;
-  }
-  const what = n === 1 ? "the only draft" : `all ${n} drafts`;
-  postAssistantMessage(sessionId, `This deletes ${what} in this chat. Should I go ahead?`);
+  // Every draft: a count says it. A selection: name them, one per line.
+  postAssistantMessage(
+    sessionId,
+    all
+      ? `This deletes ${n === 1 ? "the only draft" : `all ${n} drafts`} in this chat. Should I go ahead?`
+      : `This deletes ${n === 1 ? "this draft" : `these ${n} drafts`}:${drafts.map((d) => `\n- [[post:${d.id}]]`).join("")}`,
+  );
   inlineQuestion.ask(sessionId, {
     title: n === 1 ? "Delete this draft?" : `Delete ${n} drafts?`,
     subtitle: "This can't be undone.",
@@ -924,21 +923,111 @@ function confirmDeleteAllDrafts(sessionId, text) {
 // in the chat (each draft, the date I'd give it — the schedule modal's engine,
 // so the same dates it would open on), then ask. Schedule commits it as the
 // Drafts panel does; Adjust dates opens the modal on the same drafts.
-const SCHEDULE_ALL_DRAFTS = /\bschedule\b.*\bdrafts\b/i;
+const SCHEDULE_DRAFTS = /\bschedule\b.*\bdrafts?\b/i;
+const IMAGE_FOR_DRAFT = /\b(add|make|create|generate)\b.*\b(image|visual|picture)\b.*\b(draft|post)\b/i;
+// "all" / "every" names the whole set; anything else ("schedule some drafts",
+// "delete a draft") is a selection, so I ask which.
+const ALL_OF_THEM = /\b(all|every|each)\b/i;
+
+// The drafts asks I handle in the chat instead of the scripted reply. Returns
+// true when it took the message.
+function routeDraftsAsk(session, text) {
+  const intent = DELETE_DRAFTS.test(text)
+    ? "delete"
+    : SCHEDULE_DRAFTS.test(text)
+      ? "schedule"
+      : IMAGE_FOR_DRAFT.test(text)
+        ? "image"
+        : null;
+  if (!intent) return false;
+  const sessionId = session.id;
+  postUserTurn(sessionId, text);
+  const drafts = getPosts(sessionId).filter((p) => p.status !== "scheduled");
+  if (!drafts.length) {
+    postAssistantMessage(
+      sessionId,
+      `There are no drafts in this chat to ${intent === "image" ? "illustrate" : intent}.`,
+    );
+    return true;
+  }
+  const all = ALL_OF_THEM.test(text);
+  if (intent === "image") {
+    if (drafts.length === 1) imageForDraft(sessionId, drafts[0]);
+    else askWhichDrafts(sessionId, drafts, { verb: "image", onPick: ([d]) => imageForDraft(sessionId, d) });
+  } else if (all || drafts.length === 1) {
+    if (intent === "delete") confirmDeleteDrafts(sessionId, drafts, { all: true });
+    else proposeSchedule(session, drafts);
+  } else {
+    askWhichDrafts(sessionId, drafts, {
+      verb: intent,
+      onPick: (picked) =>
+        intent === "delete" ? confirmDeleteDrafts(sessionId, picked) : proposeSchedule(session, picked),
+    });
+  }
+  return true;
+}
+
+// "Which drafts?" — the posts Quickpicker: the drafts as the thread lists them
+// (network glyph + reference, previewed on hover), multi for schedule / delete,
+// single for an image. Nothing pre-selected.
+function askWhichDrafts(sessionId, drafts, { verb, onPick }) {
+  const multi = verb !== "image";
+  const copy = {
+    schedule: { q: "Which drafts should I schedule?", cta: "Schedule" },
+    delete: { q: "Which drafts should I delete?", cta: "Delete" },
+    image: { q: "Which draft should I make an image for?", cta: "Continue" },
+  }[verb];
+  postAssistantMessage(sessionId, copy.q);
+  inlineQuestion.ask(sessionId, {
+    title: copy.q,
+    subtitle: multi ? "Pick one or more." : null,
+    stepLabel: "Drafts",
+    variant: "posts",
+    multi,
+    single: !multi,
+    items: drafts.map((d) => ({
+      value: d.id,
+      label: escapeHtml(refLabel("post", d)),
+      icon: networkIcon(d.network),
+      sessionId,
+    })),
+    submitLabel: copy.cta,
+    skipLabel: "Not now",
+    onPick: (value) => {
+      const ids = Array.isArray(value) ? value : [value];
+      const picked = drafts.filter((d) => ids.includes(d.id));
+      if (!picked.length) return;
+      // The pick stays visible as what was picked — one echo card per draft
+      // (network glyph, its opening words, "<Network> draft"), not a sentence.
+      for (const d of picked) {
+        postSelectionEcho(sessionId, {
+          icon: networkIcon(d.network),
+          title: refLabel("post", d).split(" · ").slice(1).join(" · ") || refLabel("post", d),
+          meta: `${networkLabel(d.network)} draft`,
+        });
+      }
+      onPick(picked);
+    },
+    onSkip: () => postAssistantMessage(sessionId, "Okay, I'll leave them as they are."),
+  });
+}
+
+// An image for one draft — the Drafts panel's own image action, so the chat
+// and the panel make it the same way (the Image Generator's questions under
+// sexySquirrel, a one-click image otherwise).
+function imageForDraft(sessionId, draft) {
+  postAssistantMessage(sessionId, `Let's make an image for [[post:${draft.id}]].`);
+  focusInPanel("post", draft.id);
+  onPostImage(draft.id);
+}
 
 const planDay = (ts) => new Date(ts).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
 const planTime = (ts) => new Date(ts).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
 const postsWord = (n) => (n === 1 ? "1 post" : `${n} posts`);
 
-function proposeScheduleAllDrafts(session, text) {
+function proposeSchedule(session, drafts) {
   const sessionId = session.id;
-  postUserTurn(sessionId, text);
-  const drafts = getPosts(sessionId).filter((p) => p.status !== "scheduled");
   const n = drafts.length;
-  if (!n) {
-    postAssistantMessage(sessionId, "There are no drafts in this chat to schedule.");
-    return;
-  }
   const strategy = defaultStrategy(session.contextId);
   const slots = planSlots(drafts, strategy).sort((a, b) => a.when - b.when);
   const first = slots[0].when;
@@ -1904,10 +1993,8 @@ function bindSession(root, session) {
     // live source (simulated MCP) instead of the normal assistant thread, then
     // detaches itself so the next message is a normal follow-up.
     const activeConnector = getActiveConnector(session.id);
-    if (!activeConnector && DELETE_ALL_DRAFTS.test(text)) {
-      confirmDeleteAllDrafts(session.id, text);
-    } else if (!activeConnector && SCHEDULE_ALL_DRAFTS.test(text)) {
-      proposeScheduleAllDrafts(session, text);
+    if (!activeConnector && routeDraftsAsk(session, text)) {
+      // handled in the chat: a question, a plan or a confirm
     } else if (activeConnector) {
       sendConnectorMessage(session.id, activeConnector, text);
       clearActiveConnector(session.id);
@@ -2087,6 +2174,12 @@ function bindSession(root, session) {
           const wasSelected = inlineQuestionBtn.classList.contains("is-selected");
           inlineQuestionBtn.classList.toggle("is-selected", !wasSelected);
           inlineQuestionBtn.setAttribute("aria-pressed", !wasSelected ? "true" : "false");
+          // A post-pick row carries the DS checkbox: keep it in step.
+          const box = inlineQuestionBtn.querySelector("input[type=checkbox]");
+          if (box) {
+            box.checked = !wasSelected;
+            inlineQuestionBtn.setAttribute("aria-checked", String(!wasSelected));
+          }
           // Keep the primary disabled until at least one row is selected.
           const submit = opts.querySelector("[data-inline-question-submit]");
           if (submit) submit.disabled = !opts.querySelector("[data-inline-question].is-selected");
@@ -2101,6 +2194,13 @@ function bindSession(root, session) {
         } else {
           inlineQuestion.pick(session.id, inlineQuestionBtn.dataset.inlineQuestion);
         }
+        return;
+      }
+      // Single-select-with-confirm's own primary (the posts picker): confirm
+      // the highlighted row.
+      if (event.target.closest("[data-inline-question-single-submit]")) {
+        event.preventDefault();
+        inlineQuestion.submitSingle(session.id);
         return;
       }
       const inlineQuestionSubmitBtn = event.target.closest("[data-inline-question-submit]");

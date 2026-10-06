@@ -471,6 +471,36 @@ export function renderPicker(picker) {
     return `<div class="analyse__options analyse__options--cards">${header}<div class="analyse__cards"${gridStyle}>${cards}</div>${cardsFooter}</div>`;
   }
 
+  // Posts variant — picking drafts in the chat. The rows read like every list of
+  // posts in the thread (the schedule plan): one framed list, the network glyph
+  // and the draft's reference label — hover previews it (ref-preview.js). The
+  // control is the DS one: a checkbox in multi, a radio in single (`single`,
+  // the caller confirms). Nothing is pre-selected; the primary stays disabled
+  // until something is. Items: { value, label, icon, sessionId }.
+  if (variant === "posts") {
+    const isOn = (it) => (single ? it.value === selectedValue : preset.has(it.value));
+    const postRows = items
+      .map((it) => {
+        const on = isOn(it);
+        const control = multi
+          ? `<span class="ap-checkbox-container post-pick__control"><input type="checkbox" tabindex="-1" ${on ? "checked" : ""} /><i></i></span>`
+          : `<span class="ap-radio-container post-pick__control"><input type="radio" tabindex="-1" ${on ? "checked" : ""} /></span>`;
+        return `
+          <div class="post-pick__row${on ? " is-selected" : ""}" data-${handler}="${it.value}" role="${multi ? "checkbox" : "radio"}" aria-checked="${on}" aria-pressed="${on}" tabindex="0">
+            ${control}
+            <i class="${it.icon} post-pick__network" aria-hidden="true"></i>
+            <span class="chat-ref post-pick__label" data-chat-ref="post:${it.value}" data-chat-ref-session="${it.sessionId || ""}">${it.label}</span>
+          </div>`;
+      })
+      .join("");
+    const anyOn = items.some(isOn);
+    const submit = multi
+      ? `<button type="button" class="ap-button primary blue" data-${handler}-submit ${anyOn ? "" : "disabled"}><span>${submitLabel}</span></button>`
+      : `<button type="button" class="ap-button primary blue" data-${handler}-single-submit ${anyOn ? "" : "disabled"}><span>${submitLabel}</span></button>`;
+    const postsFooter = `<div class="analyse__options-submit">${backBtn}<span class="analyse__footer-spacer" aria-hidden="true"></span>${skipBtn}${submit}</div>`;
+    return `<div class="analyse__options analyse__options--posts" ${multi ? "data-multi" : "data-single"}>${header}<div class="post-pick" role="${multi ? "group" : "radiogroup"}">${postRows}</div>${postsFooter}</div>`;
+  }
+
   // Search field + scrollable list — only in searchable mode. The DS
   // `.ap-input-group` search field sits below the header; the rows move into a
   // capped-height scroll container so a 40-row list doesn't push the footer off
@@ -622,6 +652,13 @@ export function bindWizardKeyboard(
         }
         return;
       }
+    }
+
+    // Space on a post-pick row toggles it, as on the checkbox / radio it shows.
+    if (event.key === " " && document.activeElement?.matches?.(".post-pick__row")) {
+      event.preventDefault();
+      document.activeElement.click();
+      return;
     }
 
     // Digits — only when the user isn't typing into the input.

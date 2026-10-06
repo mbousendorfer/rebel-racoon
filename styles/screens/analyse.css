@@ -510,3 +510,52 @@
   font-size: 28px;
   line-height: 1;
 }
+
+/* Posts variant — picking drafts in the chat (renderPicker variant "posts").
+   The same framed list as the schedule plan (styles/chat.css .schedule-plan):
+   grey-20 frame, hairlines between rows, network glyph + the draft's
+   reference label. The row is the control; the DS checkbox / radio inside
+   only shows the state (its input takes no pointer). */
+.post-pick {
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
+  background: var(--ref-color-white);
+  overflow: hidden;
+}
+
+.post-pick__row {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  cursor: pointer;
+}
+
+.post-pick__row + .post-pick__row {
+  border-top: 1px solid var(--app-border);
+}
+
+.post-pick__row:hover {
+  background: var(--ref-color-grey-05);
+}
+
+.post-pick__row:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: -2px;
+}
+
+.post-pick__control {
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+.post-pick__network {
+  flex-shrink: 0;
+}
+
+.post-pick__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
