@@ -37,12 +37,13 @@
   align-self: flex-end;
   max-width: 420px;
   padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
-  border: 1px solid var(--app-convo-navy-20);
+  border: 0;
   border-radius: var(--app-radius-card, 12px);
-  /* User-side corner language: sharp top-right (12 / 0 / 12 / 12), same as
-     .chat-bubble--user, so every right-aligned response shares the shape. */
+  /* User-side language, like .chat-bubble--user and the source intake: navy,
+     white ink, sharp top-right (12 / 0 / 12 / 12) — what YOU said or picked. */
   border-top-right-radius: 0;
-  background: var(--app-convo-navy-05);
+  background: var(--app-convo-navy);
+  color: var(--ref-color-white);
 }
 
 .selection-echo__icon {
@@ -69,7 +70,7 @@
 
 .selection-echo__title {
   font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--app-convo-navy-deep);
+  color: var(--ref-color-white);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -77,7 +78,8 @@
 
 .selection-echo__meta {
   font-size: var(--sys-text-style-caption-size);
-  color: var(--app-convo-navy-70, var(--sys-text-color-light));
+  /* Secondary ink on navy — the light navy step, as grey-80 is on white. */
+  color: var(--app-convo-navy-20);
 }
 
 /* Visual profiles echo — right-aligned wrap of avatar + handle chips, used
@@ -250,6 +252,9 @@
    the renderer so the full filename is recoverable on hover / by SR. */
 .chat-bubble-source-intake__name {
   margin: 0;
+  /* Body size, like the user message; only the trailing pills stay 12. */
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
   font-weight: var(--sys-text-style-body-bold-weight);
   color: var(--ref-color-white);
   white-space: nowrap;
@@ -646,6 +651,9 @@ span.chat-bubble-choice-chip {
   align-items: center;
   gap: var(--ref-spacing-sm);
   width: 100%;
+  /* The chat's card inset (12 / 16) — the user bubble, the echo and the
+     memory card share it. */
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
   cursor: pointer;
   font-family: inherit;
   text-align: left;
@@ -694,6 +702,11 @@ span.chat-bubble-choice-chip {
 .drafts-card--pending:hover {
   background: var(--app-butter);
   border-color: transparent;
+}
+
+/* Its line explains the wait — let it wrap rather than cut it off. */
+.drafts-card--pending .drafts-card__sub {
+  white-space: normal;
 }
 
 .drafts-card--unavailable {
@@ -766,8 +779,10 @@ span.chat-bubble-choice-chip {
    so the citation reads as a proper noun. */
 .drafts-card__sub {
   display: block;
-  font: var(--sys-text-style-body-weight) var(--sys-text-style-body-size) / var(--sys-text-style-body-line-height)
-    var(--sys-text-style-body-font-family);
+  /* Secondary line at caption size (12 / 16), like the memory card's why
+     and the echo's meta: every chat card reads title 14 bold, then 12. */
+  font: var(--sys-text-style-caption-weight) var(--sys-text-style-caption-size) /
+    var(--sys-text-style-caption-line-height) var(--sys-text-style-caption-font-family);
   color: var(--sys-text-color-light);
   white-space: nowrap;
   overflow: hidden;

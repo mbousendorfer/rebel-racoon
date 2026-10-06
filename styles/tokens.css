@@ -33,6 +33,8 @@
      prose measure plus the gaps — so that the master–detail cannot break. A
      fixed number there is the bug that feature was ported to fix. */
   --app-content: 1080px;
+  /* One width for Archie's cards in the thread (result cards, memory card). */
+  --app-chat-card: 520px;
 
   /* ── Archie "butter" — brand accent for in-conversation status pills
      ("Extracting" / "Extracted N ideas" / "Drafting" / "Analyzing"). Replaces

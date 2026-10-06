@@ -25,7 +25,7 @@ i.memory-mark {
 /* ── The proposal card ─────────────────────────────────────────────────── */
 
 .memory-card {
-  width: min(520px, 100%);
+  width: min(var(--app-chat-card), 100%);
   box-sizing: border-box;
   overflow: hidden;
   border: 1px solid var(--app-border);
@@ -84,10 +84,11 @@ i.memory-mark {
   height: 14px;
 }
 
+/* Done = the DS success green, the same check the source intake shows. */
 .memory-card__ask > i.memory-card__done {
   width: 16px;
   height: 16px;
-  color: var(--app-butter-accent);
+  color: var(--ref-color-green-100);
 }
 
 /* min-height = the DS button: the row keeps its height when Undo replaces the buttons. */

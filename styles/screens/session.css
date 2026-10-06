@@ -1013,7 +1013,7 @@ body.playbook-revoked .session__composer-card {
 
 .chat-turn--clip-extraction {
   align-items: flex-start;
-  max-width: 420px;
+  max-width: var(--app-chat-card);
   width: 100%;
 }
 
