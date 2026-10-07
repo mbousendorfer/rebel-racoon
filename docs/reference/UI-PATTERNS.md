@@ -215,7 +215,8 @@ Quand Archie fait choisir des drafts, la question reprend **la liste des posts d
 `.posts__card-media-empty` ([`post-card.js`](../../src/components/post-card.js) `renderEmptyMedia`,
 CSS dans [`posts.css`](../../styles/screens/posts.css)) : `-slot[data-post-drop]` > `-tile` +
 `-title` + `-sub` + `-actions`, puis `-hint` **hors** du cadre.
-États : `.is-dragover`, `.is-generating`.
+État : `.is-dragover`. Pendant la génération, la fente laisse la place à la boîte de l'image elle-même
+(`.posts__card-media-generating`, 4:3) remplie par `<archie-pixels>` — voir § Le loader de génération d'image.
 
 Quatre strates, chacune nettement au-dessus de la suivante : pastille neutre → titre `h3` →
 sous-titre `body` en encre light → **un** bouton mermaid → **l'Image Studio sur sa propre ligne**.
@@ -437,6 +438,13 @@ Détail complet des formules de taille : [`SHELL-LAYOUT.md`](SHELL-LAYOUT.md).
 ⚠️ **Deux règles, apprises sur `/topics`.** (1) Le squelette doit être dans **les vrais cadres, aux vraies largeurs** — sinon la mise en page saute au moment du rendu, ce qui est exactement ce qu'il devait empêcher. Là-bas ça voulait dire garder le split à deux colonnes pendant l'attente au lieu de basculer sur un bloc pleine largeur. (2) Il ne **devine pas** un compte : cinq cartes fixes, parce que le nombre est inconnu pendant le scan et qu'un squelette qui annonce huit puis en rend trois a menti. Un état d'impasse (rien trouvé, filtre qui exclut tout) n'a rien à pré-dessiner et reste un état plein, pas un squelette.
 
 **Le loader (source unique)** : [`archie-loader.js`](../../src/archie-loader.js) + `styles/components/archie-loader.css`. Toutes les classes spinner (`.archie-loader`, `.ap-loader` + tailles, ~10 `*-spinner`) rendent **le même mark** : `initArchieLoader()` sweep le DOM + `MutationObserver` injecte `LOADER_SVG` (7 carrés arrondis en scale, stagger 0→0.686s) avec un `__MASKID__` unique. CSS possède la box (`--archie-loader-size`, `aspect-ratio 227.15/170.03`, `color: --archie-loader-color` défaut `--ref-color-orange-100`, `currentColor` blanc sur CTAs pleins). Inline SVG obligatoire (SMIL gèle en background/mask).
+
+**Le loader de génération d'image** : [`archie-pixels.js`](../../src/archie-pixels.js) + `styles/components/archie-pixels.css` — un custom element `<archie-pixels>` qui remplit son hôte positionné. Deux modes, le même élément :
+
+- **Attente** (sans attribut) : une trame de petits carrés (pas de 6px) dans la palette du Playbook (`data-colors`, sinon `--archie-pixels-ink`), en teinte légère ; seule leur **taille** bouge (dérive lente + un reflet diagonal). Sous le curseur, une loupe : les pixels gonflent et s'écartent. Un `.archie-pixels__label` (puce blanche, petit mark Archie) se niche dedans. Remplace le shimmer + spinner sur la fente média d'un draft (premier image ET Try another, par-dessus l'image courante), la scène et les tuiles de l'Image Studio.
+- **Reveal — l'éclosion Archie** (`data-reveal-at`, epoch ms) : posé **sur** l'`<img>` déjà rendue. Au centre, le mark Archie apparaît dessiné dans les pixels de l'image (son contour `MARK_PATH`, exporté par `archie-loader.js`), ses pixels éclatant dans l'ordre des 7 carrés du loader ; puis l'image éclot vers l'extérieur depuis le mark, chaque pixel avec un léger dépassement (`backOut`), et se dissout pixel par pixel dans l'image réelle (calques texte DOM compris). 1,6 s, puis l'élément se cache. L'hôte ne le rend que tant que `Date.now() - at < REVEAL_MS`.
+
+⚠️ Tout est fonction de l'horloge, jamais de la durée de vie de l'élément : les hôtes re-rendent en `innerHTML`, une copie neuve reprend là où l'ancienne était. ⚠️ Rejetés le 2026-10-07 : des blocs tramés (dither) de 10px puis 5px — « trop noisy, pixels trop gros » ; un reveal par cristallisation depuis le centre ; une vague de gauche à droite (« pas du tout ») ; puis, mis côte à côte, une « impression » (trame de l'image) et un ripple split-flap depuis le curseur — l'éclosion Archie a été retenue.
 
 ⚠️ **Toujours dimensionner par `--archie-loader-size`, jamais par `width` + `height`.** La variable est la **largeur** de la boîte ; la hauteur vient de l'`aspect-ratio` du viewBox. Fixer les deux neutralise l'`aspect-ratio` et écrase le glyphe en carré (c'était le cas du loader de prompt de l'Image Studio, à `28px × 28px`).
 

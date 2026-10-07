@@ -1264,10 +1264,6 @@
   opacity: 0.5;
 }
 
-.imst-filmstrip__add.is-loading > .ap-loader {
-  position: relative;
-}
-
 /* A new run (Refine) starts after a wider gap. */
 .imst-filmstrip__item.is-run-start {
   margin-left: var(--ref-spacing-sm);

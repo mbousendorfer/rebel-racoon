@@ -282,9 +282,9 @@
   gap: var(--ref-spacing-xxs);
 }
 
-/* Same frame for the generating state, at the same height, so nothing jumps
-   when Generate is clicked. Dashes and radius match the shared .ap-dropzone. */
-/* A one-column grid as wide as its widest row (Image Studio + Upload), so
+/* Dashes and radius match the shared .ap-dropzone. Generating swaps the slot
+   for the image's own box (.posts__card-media-generating, below).
+   A one-column grid as wide as its widest row (Image Studio + Upload), so
    Generate can take that row's width — see .posts__card-media-shortcut. */
 .posts__card-media-slot {
   display: grid;
@@ -345,18 +345,20 @@
   gap: var(--ref-spacing-xxs);
 }
 
-/* Generating: the archie loader and its line (archie-loader.js hosts the SVG). */
-.posts__card-media-slot.is-generating {
-  --archie-loader-size: 32px;
-  gap: var(--ref-spacing-xs);
-  border-style: solid;
+/* Generating: the image's own box (.posts__card-image's ratio, radius and
+   border), filled by the <archie-pixels> field — so the reveal lands where the
+   image stays. The element and its label: styles/components/archie-pixels.css. */
+.posts__card-media-generating {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-md);
+  overflow: hidden;
 }
 
-.posts__card-media-slot.is-generating .posts__card-media-empty-sub {
-  margin: 0;
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  color: var(--ref-color-grey-80);
+/* The reveal overlay over a fresh image: the image's corners. */
+.posts__card-image-wrap > archie-pixels {
+  border-radius: var(--app-radius-md);
 }
 
 /* The Playbook hint sits OUTSIDE the frame: it is about the Playbook, not about

@@ -202,7 +202,7 @@ styles/
                       image-studio-v2, insights (+ insights-cockpit / -mob_index /
                       -mob_side / -read, one per layout), modals, playbook-v2, posts,
                       session, topics, topics-settings, welcome
-  components/       — add-source-modal, archie-loader, clip-card, connectors-modal,
+  components/       — add-source-modal, archie-loader, archie-pixels, clip-card, connectors-modal,
                       conversation-status-card, feedback-control, objective-modal,
                       right-panel, schedule-modal (+ schedule-modal-legacy), sidebar,
                       social-post-card, subtitle-style, top-post-card, topic-badge,

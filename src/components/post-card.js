@@ -19,11 +19,12 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1699";
-import { isPortraitFormat } from "../clip-formats.js?v=1699";
-import { presetById } from "../clip-captions.js?v=1699";
-import { renderFeedbackControl } from "./feedback-control.js?v=1699";
-import { networkMeta } from "../social-profiles.js?v=1699";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1716";
+import { isPortraitFormat } from "../clip-formats.js?v=1716";
+import { presetById } from "../clip-captions.js?v=1716";
+import { renderFeedbackControl } from "./feedback-control.js?v=1716";
+import { networkMeta } from "../social-profiles.js?v=1716";
+import { REVEAL_MS } from "../archie-pixels.js?v=1716";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -60,17 +61,29 @@ function renderImagePreset(opts) {
     : `<p class="posts__card-media-preset">I'll ask which style. ${playbook("Set a default")}</p>`;
 }
 
+// The pixel loader / reveal (src/archie-pixels.js) in a draft's image box.
+// Generating — first image or Try another, over the current one — the field
+// in the Playbook's colours; just after, the reveal over the new <img>.
+function renderImagePixels(post, opts) {
+  if (post.isGeneratingImage) {
+    const colors = opts.imagePreset?.colors?.join(",") || "";
+    return `<archie-pixels role="status" aria-busy="true"${colors ? ` data-colors="${escapeAttr(colors)}"` : ""}>
+      <span class="archie-pixels__label"><span class="archie-loader" aria-hidden="true"></span>I'm making an image for this draft…</span>
+    </archie-pixels>`;
+  }
+  return post.imageRevealAt && Date.now() - post.imageRevealAt < REVEAL_MS
+    ? `<archie-pixels data-reveal-at="${post.imageRevealAt}"></archie-pixels>`
+    : "";
+}
+
 // `opts.brandGaps` / `opts.playbookId` come from the host (the drafts panel) —
 // the card never resolves a Context itself. A host that passes neither, like the
 // studio's own in-feed preview, simply gets no hint.
 function renderEmptyMedia(post, opts) {
+  // Generating: the image's own 4:3 box, filled by the pixel field — the
+  // reveal then lands exactly where the image stays.
   if (post.isGeneratingImage) {
-    return `<div class="posts__card-media-empty">
-      <div class="posts__card-media-slot is-generating" aria-busy="true">
-        <span class="archie-loader" aria-hidden="true"></span>
-        <p class="posts__card-media-empty-sub">I'm making an image for this draft…</p>
-      </div>
-    </div>`;
+    return `<div class="posts__card-media-generating">${renderImagePixels(post, opts)}</div>`;
   }
 
   const gaps = Array.isArray(opts.brandGaps) ? opts.brandGaps : [];
@@ -274,6 +287,7 @@ export function renderPostCard(post, opts = {}) {
       : post.imageUrl
         ? `<div class="posts__card-image-wrap">
           <img class="posts__card-image" src="${post.imageUrl}" alt="Image for this post" loading="lazy" />
+          ${renderImagePixels(post, opts)}
           <!-- Edit / Change / Remove. Edit was left out while "Generate an image"
                still opened the studio — back then it was a third near-equal grey
                competing with Change for no gain. Now that Generate produces an

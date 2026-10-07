@@ -63,7 +63,7 @@ styles/
   screens/          — analyse, batch-studio, caption-editor, clip-studio, connectors,
                       contexts, dashboard, image-studio-canvas, image-studio-v2,
                       modals, posts, session, topics, topics-settings, welcome
-  components/       — add-source-modal, archie-loader, clip-card, connectors-modal,
+  components/       — add-source-modal, archie-loader, archie-pixels, clip-card, connectors-modal,
                       conversation-status-card, feedback-control, right-panel,
                       schedule-modal, sidebar, social-post-card, subtitle-style,
                       top-post-card, topic-badge, topic-card, video-clips-modal,

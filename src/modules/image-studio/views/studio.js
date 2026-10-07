@@ -15,31 +15,33 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=1699";
-import { delegate } from "../lib/delegate.js?v=1699";
-import { hashString } from "../lib/prng.js?v=1699";
-import { renderEmpty } from "../ui/empty.js?v=1699";
-import { preserveFocus } from "../ui/fields.js?v=1699";
-import { toast } from "../ui/toast.js?v=1699";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1699";
-import { styleThumb } from "../ui/style-thumb.js?v=1699";
-import { openDialog } from "../ui/dialog.js?v=1699";
-import { menu } from "../ui/menu.js?v=1699";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1699";
-import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1699";
-import { formatById, shapeForFormat, shapesFor, shapesForBrand } from "../config/formats.js?v=1699";
-import { networkById } from "../config/networks.js?v=1699";
-import { copyService, imageGenerationService } from "../services/index.js?v=1699";
-import { unbranded, getPlaybookReferences } from "../state/playbook-brand.js?v=1699";
-import { resolveLayers } from "../render/layout.js?v=1699";
-import { svgToDataUrl } from "../render/visual.js?v=1699";
-import { splitVisual } from "../render/split.js?v=1699";
-import { bakeDoc } from "../render/edit-export.js?v=1699";
-import { subjectKindFor } from "../render/subjects.js?v=1699";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1699";
-import { createEditor } from "./edit/editor.js?v=1699";
-import { mount as mountStyleCreator } from "./style-creator.js?v=1699";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1699";
+import { html, raw, toString } from "../lib/html.js?v=1716";
+import { delegate } from "../lib/delegate.js?v=1716";
+import { hashString } from "../lib/prng.js?v=1716";
+import { renderEmpty } from "../ui/empty.js?v=1716";
+import { preserveFocus } from "../ui/fields.js?v=1716";
+import { toast } from "../ui/toast.js?v=1716";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1716";
+import { styleThumb } from "../ui/style-thumb.js?v=1716";
+import { openDialog } from "../ui/dialog.js?v=1716";
+import { menu } from "../ui/menu.js?v=1716";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1716";
+import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1716";
+import { formatById, shapeForFormat, shapesFor, shapesForBrand } from "../config/formats.js?v=1716";
+import { networkById } from "../config/networks.js?v=1716";
+import { copyService, imageGenerationService } from "../services/index.js?v=1716";
+import { unbranded, getPlaybookReferences } from "../state/playbook-brand.js?v=1716";
+import { resolveLayers } from "../render/layout.js?v=1716";
+import { svgToDataUrl } from "../render/visual.js?v=1716";
+import { resolvePalette } from "../render/palette.js?v=1716";
+import { REVEAL_MS } from "../../../archie-pixels.js?v=1716";
+import { splitVisual } from "../render/split.js?v=1716";
+import { bakeDoc } from "../render/edit-export.js?v=1716";
+import { subjectKindFor } from "../render/subjects.js?v=1716";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1716";
+import { createEditor } from "./edit/editor.js?v=1716";
+import { mount as mountStyleCreator } from "./style-creator.js?v=1716";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1716";
 import {
   canEditBrand,
   forgetOneOffStyle,
@@ -50,15 +52,15 @@ import {
   getStylesForBrand,
   registerOneOffStyle,
   subscribe,
-} from "../state/store.js?v=1699";
-import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1699";
+} from "../state/store.js?v=1716";
+import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1716";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1699";
+} from "../state/creation-actions.js?v=1716";
 
 const variationsLabel = (n) => (n === 1 ? "1 variation" : `${n} variations`);
 
@@ -1023,21 +1025,22 @@ ${b.prompt}</textarea
     `;
   };
 
-  const renderLoading = () => {
+  // Generating: the pixel field (src/archie-pixels.js) in the colours the
+  // image will be made of, on the stage and on each tile to come.
+  const renderLoading = (brand) => {
     const format = formatById(state.brief.formatIds[0]);
     const style = getStyle(state.brief.styleId);
+    const colors = resolvePalette(lookOf(brand, state.brief)).all.join(",");
     return html`
       <div class="imst-canvas-area" aria-live="polite" aria-busy="true">
         ${stageFrame(
           format,
-          html`<span class="imst-shimmer"></span
-            ><span class="imst-stage2__status"
-              ><span class="ap-loader size-30"></span
-              ><span class="ap-body-bold"
-                >Generating
-                ${variationsLabel(state.brief.count).toLowerCase()}${style ? ` in ${style.label}` : ""}…</span
-              ></span
-            >`,
+          html`<archie-pixels data-colors="${colors}"
+            ><span class="archie-pixels__label"
+              ><span class="ap-loader size-16"></span>Generating
+              ${variationsLabel(state.brief.count).toLowerCase()}${style ? ` in ${style.label}` : ""}…</span
+            ></archie-pixels
+          >`,
         )}
         <div class="imst-filmstrip">
           ${Array.from(
@@ -1046,12 +1049,19 @@ ${b.prompt}</textarea
               html`<span
                 class="imst-filmstrip__item is-loading"
                 style="aspect-ratio: ${format.width} / ${format.height}"
-                ><span class="imst-shimmer"></span
+                ><archie-pixels data-colors="${colors}"></archie-pixels
               ></span>`,
           )}
         </div>
       </div>
     `;
+  };
+
+  // The reveal over the images a run just made, one tile after the other.
+  const revealAt = (id) => {
+    const r = state.reveal;
+    const at = r && r.ids.includes(id) ? r.at + r.ids.indexOf(id) * 90 : 0;
+    return at && Date.now() - at < REVEAL_MS ? html`<archie-pixels data-reveal-at="${at}"></archie-pixels>` : "";
   };
 
   const renderError = () => html`
@@ -1196,7 +1206,7 @@ ${b.prompt}</textarea
             variation: v,
             formatId: format.id,
             brand: lookOf(brand, c.brief),
-          })}${regenerating}`,
+          })}${revealAt(v.id)}${regenerating}`,
         )}
         ${strip.length
           ? html` <div class="imst-filmstrip" role="listbox" aria-label="Variations" data-imst-strip>
@@ -1216,7 +1226,7 @@ ${b.prompt}</textarea
                       variation: x,
                       formatId: format.id,
                       brand: lookOf(brand, c.brief),
-                    })}
+                    })}${revealAt(x.id)}
                   </button>`,
               )}
               ${state.addingOne
@@ -1225,7 +1235,9 @@ ${b.prompt}</textarea
                     style="aspect-ratio: ${format.width} / ${format.height}"
                     role="status"
                     aria-label="Generating one more"
-                    ><span class="imst-shimmer"></span><span class="ap-loader size-16"></span
+                    ><archie-pixels
+                      data-colors="${resolvePalette(lookOf(brand, c.brief)).all.join(",")}"
+                    ></archie-pixels
                   ></span>`
                 : html`<button
                     type="button"
@@ -1285,7 +1297,7 @@ ${b.prompt}</textarea
   `;
 
   const renderCanvas = (brand) => {
-    if (state.run.status === "loading") return renderLoading();
+    if (state.run.status === "loading") return renderLoading(brand);
     if (state.run.status === "error") return renderError();
     const c = currentCreation();
     if (c && c.variations.length) return renderResults(brand, c);
@@ -1454,6 +1466,7 @@ ${b.prompt}</textarea
     try {
       const variations = await imageGenerationService.generate(req, { signal: state.abort.signal });
       addBatch(creation.id, variations, { label: variationsLabel(variations.length) });
+      state.reveal = { at: Date.now(), ids: variations.map((x) => x.id) };
       state.run = { status: "idle" };
     } catch (error) {
       if (error.name === "AbortError") return;
@@ -1476,6 +1489,7 @@ ${b.prompt}</textarea
         {},
       );
       appendVariations(c.id, [v]);
+      state.reveal = { at: Date.now(), ids: [v.id] };
       state.focusId = v.id;
     } catch {
       toast("That one didn't come through. Try again.", { variant: "error" });

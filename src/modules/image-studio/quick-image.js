@@ -4,16 +4,17 @@
 // the PNG export draws on, and the same engine as the studio — the Playbook's
 // styles, the network's shapes, the same renderer and services.
 
-import { QUICK_PRESETS } from "./config/style-presets.js?v=1699";
-import { DRAFT_NETWORK, formatById, shapesForBrand } from "./config/formats.js?v=1699";
-import { hashString } from "./lib/prng.js?v=1699";
-import { copyService, imageGenerationService } from "./services/index.js?v=1699";
-import { resolveLayers } from "./render/layout.js?v=1699";
-import { toPngBlob } from "./render/export.js?v=1699";
-import { styleThumbUrl } from "./ui/style-thumb.js?v=1699";
-import { layersFor, variationSvg } from "./ui/variation.js?v=1699";
-import { getBrand, getStyle, getStylesForBrand, registerOneOffStyle } from "./state/store.js?v=1699";
-import { oneOffStyleFrom } from "./state/style-actions.js?v=1699";
+import { QUICK_PRESETS } from "./config/style-presets.js?v=1716";
+import { DRAFT_NETWORK, formatById, shapesForBrand } from "./config/formats.js?v=1716";
+import { hashString } from "./lib/prng.js?v=1716";
+import { copyService, imageGenerationService } from "./services/index.js?v=1716";
+import { resolveLayers } from "./render/layout.js?v=1716";
+import { toPngBlob } from "./render/export.js?v=1716";
+import { resolvePalette } from "./render/palette.js?v=1716";
+import { styleThumbUrl } from "./ui/style-thumb.js?v=1716";
+import { layersFor, variationSvg } from "./ui/variation.js?v=1716";
+import { getBrand, getStyle, getStylesForBrand, registerOneOffStyle } from "./state/store.js?v=1716";
+import { oneOffStyleFrom } from "./state/style-actions.js?v=1716";
 
 const blobToDataUrl = (blob) =>
   new Promise((resolve, reject) => {
@@ -114,7 +115,8 @@ export function quickImagePreset({ brandId, network }) {
     : d.referenceUrl
       ? { label: d.referenceLabel || "your reference image", thumbUrl: d.referenceUrl }
       : null;
-  return { look, shape: shape ? { label: shape.label, ratio: shape.ratio } : null };
+  // `colors`: the Playbook's palette, which the slot's pixel loader draws in.
+  return { look, shape: shape ? { label: shape.label, ratio: shape.ratio } : null, colors: resolvePalette(brand).all };
 }
 
 /** A line for the image, lifted from the post (the studio's Suggest). As slow as the real call. */

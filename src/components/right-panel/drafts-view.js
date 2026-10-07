@@ -4,22 +4,22 @@
 // shell's delegated clicks write it through setDraftsFilter / setDraftsNetwork.
 // Moved out of right-panel.js, unchanged.
 
-import { networkMeta } from "../../social-profiles.js?v=1699";
-import { getPosts, removePost, insertPost, updatePostContent, attachImageToDraft } from "../../posts-store.js?v=1699";
-import { noticeDraftEdit } from "../../voice-coach.js?v=1699";
-import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=1699";
-import { getSessionById } from "../../sessions-store.js?v=1699";
-import { renderPostCard } from "../post-card.js?v=1699";
-import { html, raw } from "../../utils.js?v=1699";
-import { isFlagOn } from "../../feature-flags.js?v=1699";
-import { open as openNewScheduleModal } from "../schedule-modal.js?v=1699";
-import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=1699";
-import { open as openConfirmModal } from "../confirm-modal.js?v=1699";
-import { showToast } from "../toast.js?v=1699";
-import { addMention as addComposerMention } from "../../composer-mentions.js?v=1699";
-import { startDraftImageFlow } from "../../draft-image-flow.js?v=1699";
-import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=1699";
-import { RPANEL_CLOSE_INLINE, activeSessionId, canDraftInlineEdit, renderPanel } from "../right-panel.js?v=1699";
+import { networkMeta } from "../../social-profiles.js?v=1716";
+import { getPosts, removePost, insertPost, updatePostContent, attachImageToDraft } from "../../posts-store.js?v=1716";
+import { noticeDraftEdit } from "../../voice-coach.js?v=1716";
+import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=1716";
+import { getSessionById } from "../../sessions-store.js?v=1716";
+import { renderPostCard } from "../post-card.js?v=1716";
+import { html, raw } from "../../utils.js?v=1716";
+import { isFlagOn } from "../../feature-flags.js?v=1716";
+import { open as openNewScheduleModal } from "../schedule-modal.js?v=1716";
+import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=1716";
+import { open as openConfirmModal } from "../confirm-modal.js?v=1716";
+import { showToast } from "../toast.js?v=1716";
+import { addMention as addComposerMention } from "../../composer-mentions.js?v=1716";
+import { startDraftImageFlow } from "../../draft-image-flow.js?v=1716";
+import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=1716";
+import { RPANEL_CLOSE_INLINE, activeSessionId, canDraftInlineEdit, renderPanel } from "../right-panel.js?v=1716";
 
 // Drafts-mode local UI state — Lot 21 rich-card view. Filter strip at the
 // top of the panel head drives both axes : status (all / needs_fixes /
@@ -223,8 +223,12 @@ export function renderDraftsView() {
           brandGaps: p.id === firstGapPostId ? brandGaps : [],
           playbookId,
           // What Generate an image will use: the Playbook's look and this
-          // network's shape, shown before the click.
-          imagePreset: playbookId && !p.imageUrl ? quickImagePreset({ brandId: playbookId, network: p.network }) : null,
+          // network's shape, shown before the click — and its palette, which
+          // the pixel loader draws in while it generates (Try another included).
+          imagePreset:
+            playbookId && (!p.imageUrl || p.isGeneratingImage)
+              ? quickImagePreset({ brandId: playbookId, network: p.network })
+              : null,
         }),
       )
       .join("");
@@ -313,7 +317,7 @@ export function onPostRewrite(postId, intent = "fresh") {
   // streaming → commit. Loaded lazily so the rewrite code is only
   // pulled in when the user actually triggers a regen. `intent` biases
   // the rewrite (shorter / longer / warmer / formal / fresh).
-  import("../../draft-rewrite.js?v=1699").then(({ startRewrite }) => {
+  import("../../draft-rewrite.js?v=1716").then(({ startRewrite }) => {
     startRewrite(sid, postId, intent);
   });
 }
@@ -482,7 +486,7 @@ export function onSectionSave(network) {
   if (snapshot.length === 0) return;
   const count = snapshot.length;
   const draftWord = count === 1 ? "draft" : "drafts";
-  Promise.all([import("../save-folder-modal.js?v=1699"), import("../../folders-store.js?v=1699")]).then(
+  Promise.all([import("../save-folder-modal.js?v=1716"), import("../../folders-store.js?v=1716")]).then(
     ([{ open: openSaveModal }, { addDraftsToFolder }]) => {
       openSaveModal({
         count,

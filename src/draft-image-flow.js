@@ -19,18 +19,18 @@
 // The two reads from the post take as long as the real calls (4–8 s), so both
 // start the moment the flow does and are usually back before they are needed.
 
-import * as inlineQuestion from "./inline-question.js?v=1699";
-import { finishPending, postAssistantMessage, postUserTurn, startPending } from "./assistant.js?v=1699";
-import { attachImageToDraft, getPosts, updatePostContent } from "./posts-store.js?v=1699";
-import { getSessionById } from "./sessions-store.js?v=1699";
-import { escapeHtml } from "./utils.js?v=1699";
+import * as inlineQuestion from "./inline-question.js?v=1716";
+import { finishPending, postAssistantMessage, postUserTurn, startPending } from "./assistant.js?v=1716";
+import { attachImageToDraft, getPosts, updatePostContent } from "./posts-store.js?v=1716";
+import { getSessionById } from "./sessions-store.js?v=1716";
+import { escapeHtml } from "./utils.js?v=1716";
 import {
   defaultQuickLook,
   generateQuickImage,
   quickImageChoices,
   suggestImageLine,
   suggestImageSubject,
-} from "./modules/image-studio/index.js?v=1699";
+} from "./modules/image-studio/index.js?v=1716";
 
 const STUDIO = "__studio";
 const NO_TEXT = "__none";
@@ -170,7 +170,7 @@ export function startDraftImageFlow(sessionId, postId, { openStudio, repaint }) 
       finishPending(sessionId, pending);
       // The draft may have been deleted, or given an image, while this ran.
       if (getPosts(sessionId).some((p) => p.id === postId)) attachImageToDraft(sessionId, postId, url);
-      updatePostContent(sessionId, postId, { isGeneratingImage: false });
+      updatePostContent(sessionId, postId, { isGeneratingImage: false, imageRevealAt: Date.now() });
       repaint();
       postAssistantMessage(
         sessionId,

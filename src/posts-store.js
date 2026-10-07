@@ -7,9 +7,9 @@
 //   attachImageToDraft(sessionId, postId, imageUrl)
 //   subscribe(sessionId, fn)    → unsubscribe fn
 
-import { postsBySession as seedPostsBySession, allSeedSessions as seedRecentSessions } from "./mocks.js?v=1699";
-import { isNewUser } from "./user-mode.js?v=1699";
-import { createSessionNotifier } from "./store-utils.js?v=1699";
+import { postsBySession as seedPostsBySession, allSeedSessions as seedRecentSessions } from "./mocks.js?v=1716";
+import { isNewUser } from "./user-mode.js?v=1716";
+import { createSessionNotifier } from "./store-utils.js?v=1716";
 
 // Demo session ids — only these get the seeded posts mock. Brand-new
 // conversations start empty (cf. library.js for the same rationale).
@@ -159,7 +159,8 @@ export function attachCarouselToDraft(sessionId, postId, urls) {
 //
 // Also accepts the runtime regenerate flags driven by draft-rewrite.js
 // (`isRegenerating`, `regenerateStage`) and the one-click image flag set by
-// the drafts panel (`isGeneratingImage`). These never appear in seeded
+// the drafts panel (`isGeneratingImage`, then `imageRevealAt` — when the
+// pixel reveal started, read by post-card). These never appear in seeded
 // mocks — they're transient state set during a streaming / generating flow.
 // Pass `null` or `false` to clear them.
 export function updatePostContent(sessionId, postId, partial) {
@@ -172,6 +173,7 @@ export function updatePostContent(sessionId, postId, partial) {
   if (partial.isRegenerating !== undefined) post.isRegenerating = partial.isRegenerating;
   if (partial.regenerateStage !== undefined) post.regenerateStage = partial.regenerateStage;
   if (partial.isGeneratingImage !== undefined) post.isGeneratingImage = partial.isGeneratingImage;
+  if (partial.imageRevealAt !== undefined) post.imageRevealAt = partial.imageRevealAt;
   notify(sessionId);
 }
 
