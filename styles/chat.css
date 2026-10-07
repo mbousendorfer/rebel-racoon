@@ -1186,6 +1186,22 @@ span.chat-bubble-choice-chip {
   transform: none;
 }
 
+/* Archie's reasoning ("Thought for 6s" opened) reads the way Claude and
+   ChatGPT show thinking: no box, no fill — his own words, one step quieter
+   (grey-80, body size so it stays readable), hung under the status label
+   (avatar 24 + its 8px gap) so it reads as what that line unfolds. */
+.e-turn .assistant-notice__detail {
+  margin: var(--ref-spacing-xxs) 0 0 calc(24px + var(--ref-spacing-xxs));
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--ref-color-grey-80);
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  font-weight: var(--sys-text-style-body-weight);
+}
+
 /* The memory turn is a size container (its card wraps under 440px): a
    container takes no width from its content, so it must stretch to the
    column or it collapses to nothing. */
