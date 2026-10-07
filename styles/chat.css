@@ -1190,6 +1190,17 @@ span.chat-bubble-choice-chip {
   padding-left: var(--ref-spacing-sm);
 }
 
+/* A status that unfolds points right when closed, down when open — the
+   disclosure convention. The notice ships chevron-down (180° when open);
+   turned a quarter it IS chevron-right, with no markup fork for the flag. */
+.e-turn .assistant-notice__chevron {
+  transform: rotate(-90deg);
+}
+
+.e-turn .assistant-notice[open] .assistant-notice__chevron {
+  transform: none;
+}
+
 /* The memory turn is a size container (its card wraps under 440px): a
    container takes no width from its content, so it must stretch to the
    column or it collapses to nothing. */
