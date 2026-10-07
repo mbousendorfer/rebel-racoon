@@ -6,12 +6,12 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1690";
-import { findConnector } from "./connectors-store.js?v=1690";
-import { createSessionNotifier } from "./store-utils.js?v=1690";
-import { addPostDraft } from "./posts-store.js?v=1690";
-import { showToast } from "./components/toast.js?v=1690";
-import { isFlagOn } from "./feature-flags.js?v=1690";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1694";
+import { findConnector } from "./connectors-store.js?v=1694";
+import { createSessionNotifier } from "./store-utils.js?v=1694";
+import { addPostDraft } from "./posts-store.js?v=1694";
+import { showToast } from "./components/toast.js?v=1694";
+import { isFlagOn } from "./feature-flags.js?v=1694";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -102,7 +102,8 @@ export function sendMessage(sessionId, text, options = {}) {
   thread.push({
     id: reasoningId,
     role: "system",
-    meta: "Thinking…",
+    // Flag newConversationStyles: the prod copy, past tense once done. OFF = Monday.
+    meta: isFlagOn("newConversationStyles") ? "Thinking…" : "Thinking",
     variant: "mermaid",
     text: "Analyzing your request and sources…",
     open: false,
@@ -129,7 +130,8 @@ export function sendMessage(sessionId, text, options = {}) {
       reasoning.status = "ready";
       // Present tense while working, past tense once done — the same pair as
       // "Extracting" → "Extracted 2 ideas".
-      if (reasoning.meta === "Thinking…") reasoning.meta = `Thought for ${Math.round(delay / 1000)}s`;
+      if (reasoning.meta === "Thinking…" && isFlagOn("newConversationStyles"))
+        reasoning.meta = `Thought for ${Math.round(delay / 1000)}s`;
       reasoning.open = false; // collapse after the answer lands
     }
     const replyMsg = thread.find((m) => m.id === replyId);
@@ -208,7 +210,7 @@ export function sendConnectorMessage(sessionId, connectorId, text) {
     if (reasoning) {
       reasoning.text = reply.reasoning;
       reasoning.status = "ready";
-      reasoning.meta = `Queried ${connector.name} via MCP`;
+      if (isFlagOn("newConversationStyles")) reasoning.meta = `Queried ${connector.name} via MCP`;
       reasoning.open = false;
     }
     const replyMsg = thread.find((m) => m.id === replyId);

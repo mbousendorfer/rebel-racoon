@@ -133,7 +133,7 @@ The **Admin** popover in the sidebar footer cog (`admin-menu.js`) is the prototy
 - `playbookSharing` (OFF) — ownership, three scopes, governance, the profile gate; its two demo Playbooks and demo chat are seeded **only** under the flag. · `skipConnectProfiles` (OFF) — connecting an account becomes a choice, asked again in the draft flows.
 - `networkVoices` (OFF) — a base voice + an adaptation per network on the Playbook (`voiceByNetwork`); Archie coaches it by PROPOSING rules (chat card + the Voice tab's tray, `voice-coach-store`), never writing silently. Per-network view on Playbook 2.0.
 - `sexySquirrel` (OFF) — the Image Generator (`src/modules/image-studio/`), from a draft only, the brand's styles on the Playbook + the brand kit rows. · `playbook2` (OFF) — the saved Playbook's page in DS tabs. · `brandTintedPresets` (OFF) — ready-made style thumbnails in the brand's colours; OFF = Acme's palette everywhere.
-- `newScheduleModal` (**ON**) — the redesigned schedule modal; OFF reopens `schedule-modal-legacy.js`, a delete once the comparison ends. · `newConversationStyles` (OFF) — the thread in Figma's « two sides » style (§ E): Archie's butter disc (no name), You + avatar on the right, time on hover, white object chips; a wrap of the rendered turns in `renderTwoSides`. · `draftInlineEdit`, `conversationStatusCard`, `multilingualPlaybook` (OFF).
+- `newScheduleModal` (**ON**) — the redesigned schedule modal; OFF reopens `schedule-modal-legacy.js`, a delete once the comparison ends. · `newConversationStyles` (OFF) — the thread in Figma's « two sides » style (§ E): Archie's butter disc (no name), You + avatar on the right, time on hover, white object chips; a wrap of the rendered turns in `renderTwoSides`. It holds EVERY conversation restyle since Monday 2026-10-05 (before / after): OFF = the Monday thread, its values in `styles/chat-legacy.css` (`body:not(.conv-new)`, class set in `app.js`) + a few `isFlagOn` branches for the Monday markup — delete them all when the flag is baked. · `draftInlineEdit`, `conversationStatusCard`, `multilingualPlaybook` (OFF).
 
 **Removed flags — do not reintroduce as toggles:** `playbookDefault` (deleted), `statusActionSnackbars`, `playbookColors`, `manyProfiles`, `playbookCompetitors` (baked ON), `imageStudioAutoBrief`, `imageStudioSetupFirst`, `imageStudioV2`, `frontPage`, `topics` (deleted with what they switched).
 
@@ -196,6 +196,7 @@ styles/
   layout.css        — app shell (sidebar / topbar / content / panel chrome)
   ds-patches.css    — the only legitimate place to touch .ap-* selectors
   chat.css          — composer + thread chrome
+  chat-legacy.css   — the thread as of Monday 2026-10-05, flag newConversationStyles OFF only
   screens/          — analyse, batch-studio, caption-editor, clip-studio, connectors,
                       contexts (the catalogue + the home's page box), home (its hero,
                       tab toolbar and chats table), dashboard, image-studio-canvas,

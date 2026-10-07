@@ -13,22 +13,22 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=1690";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=1690";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1690";
-import { getTopPost } from "../../top-posts-store.js?v=1690";
-import { getTopicById } from "../../topics-store.js?v=1690";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=1690";
-import { renderProfileEchoCard } from "../../social-profiles.js?v=1690";
-import { escapeHtml } from "../../utils.js?v=1690";
-import { getIdeas } from "../../library.js?v=1690";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=1690";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1690";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=1690";
-import { getSuggestion } from "../../voice-coach-store.js?v=1690";
-import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=1690";
-import { isFlagOn } from "../../feature-flags.js?v=1690";
-import { CURRENT_USER } from "../../org.js?v=1690";
+} from "./thread-turns.js?v=1694";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1694";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1694";
+import { getTopPost } from "../../top-posts-store.js?v=1694";
+import { getTopicById } from "../../topics-store.js?v=1694";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=1694";
+import { renderProfileEchoCard } from "../../social-profiles.js?v=1694";
+import { escapeHtml } from "../../utils.js?v=1694";
+import { getIdeas } from "../../library.js?v=1694";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=1694";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1694";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=1694";
+import { getSuggestion } from "../../voice-coach-store.js?v=1694";
+import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=1694";
+import { isFlagOn } from "../../feature-flags.js?v=1694";
+import { CURRENT_USER } from "../../org.js?v=1694";
 
 export function renderThread(messages, sessionId) {
   const turns = messages.map((m) => [m, renderTurn(m, sessionId)]);
@@ -517,13 +517,15 @@ function renderClipExtractionTurn(message, sessionId) {
   if (!isReady) {
     // Live stage label from the extraction ticker (sources-stream); falls back
     // to a generic line before the first tick lands.
-    const stage = source.clipStage || "Cutting your clips…";
+    const convNew = isFlagOn("newConversationStyles");
+    const stage = source.clipStage || (convNew ? "Cutting your clips…" : "Cutting your clips");
     return `
       <div class="chat-turn chat-turn--ai chat-turn--clip-extraction">
         ${renderResultCard({
           state: "pending",
           busyLabel: stage,
-          title: stage,
+          // OFF (Monday): the stage carries no ellipsis, the title adds it.
+          title: convNew ? stage : `${stage}…`,
           sub: "Turning your video into post-ready clips — this takes a moment. You can keep chatting.",
         })}
       </div>
@@ -535,7 +537,7 @@ function renderClipExtractionTurn(message, sessionId) {
     <div class="chat-turn chat-turn--ai chat-turn--clip-extraction">
       ${renderResultCard({
         state: "ready",
-        icon: "ap-icon-video",
+        icon: isFlagOn("newConversationStyles") ? "ap-icon-video" : undefined,
         title: titleLabel,
         sub: `From <span class="drafts-card__sub-quote">${filename}</span>`,
         cta: { label: "Open clips" },
@@ -558,7 +560,7 @@ function renderIdeaExtractionTurn(message, sessionId) {
         ${renderResultCard({
           state: "pending",
           busyLabel: "Reading video for ideas",
-          title: "Extracting ideas from content…",
+          title: isFlagOn("newConversationStyles") ? "Extracting ideas from content…" : "Reading the video for ideas…",
           sub: "About 15s. You can keep chatting.",
         })}
       </div>

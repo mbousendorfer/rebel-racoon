@@ -27,6 +27,7 @@ const LOADER_SELECTOR = [
   ".archie-loader",
   ".ap-loader",
   ".chat-bubble-source-intake__spinner",
+  ".extracting-notice__spinner", // flag newConversationStyles OFF only
   ".drafts-card__spinner",
   ".session__composer-thinking-spinner",
   ".source-card__spinner",

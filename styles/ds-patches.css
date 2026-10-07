@@ -46,7 +46,8 @@
   animation: ap-status-working 1.2s ease-in-out infinite;
 }
 
-.ap-status.mermaid:not(.is-working)::before {
+/* Flag newConversationStyles only — OFF, a done pill keeps its dot (Monday). */
+body.conv-new .ap-status.mermaid:not(.is-working)::before {
   display: none;
 }
 

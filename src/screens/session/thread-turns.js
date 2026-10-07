@@ -6,7 +6,12 @@
 // and returns an HTML string. No store reads, no DOM, no side effects: the
 // store-coupled turns (extraction / clip-extraction / source resolution) stay
 // in session.js and pass their resolved data in as arguments.
-import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=1690";
+import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=1694";
+import { isFlagOn } from "../../feature-flags.js?v=1694";
+
+// The thread's restyle since Monday 2026-10-05 (flag newConversationStyles).
+// OFF renders the Monday markup; styles/chat-legacy.css holds its values.
+const convNew = () => isFlagOn("newConversationStyles");
 
 // Chat-switch skeleton — shown for ~340ms inside .session__assistant-thread
 // when switching chats, then swapped for the real thread.
@@ -94,6 +99,9 @@ export function renderSourceIntakeTurn(message, source = null) {
   //   ready + ideas  → solid electric-blue pill "N ideas ›" → Ideas panel
   //   ready + clips  → second pill "M clips ›" → Clips panel (Video only)
   //   ready, none    → bare green check icon
+  const pillClass = convNew()
+    ? "ap-link standalone small chat-bubble-source-intake__pill"
+    : "chat-bubble-source-intake__pill";
   let trailing;
   if (isLoading) {
     trailing = `
@@ -111,7 +119,7 @@ export function renderSourceIntakeTurn(message, source = null) {
       pills.push(`
         <button
           type="button"
-          class="ap-link standalone small chat-bubble-source-intake__pill"
+          class="${pillClass}"
           data-source-intake-open-ideas
           aria-label="Open ${ideasLabel} in Ideas panel"
         >
@@ -125,7 +133,7 @@ export function renderSourceIntakeTurn(message, source = null) {
       pills.push(`
         <button
           type="button"
-          class="ap-link standalone small chat-bubble-source-intake__pill"
+          class="${pillClass}"
           data-source-intake-open-clips
           aria-label="Open ${clipsLabel} in Clips panel"
         >
@@ -145,6 +153,17 @@ export function renderSourceIntakeTurn(message, source = null) {
   }
 
   const filename = message.filename || "";
+  if (!convNew())
+    return `
+    <div class="chat-turn chat-turn--user">
+      <span class="chat-turn-role">${message.meta || "Source intake"}</span>
+      <div class="chat-bubble chat-bubble--source-intake" data-intake-status="${message.status || "ready"}">
+        ${kindIcon}
+        <span class="chat-bubble-source-intake__name" title="${filename}">${filename}</span>
+        ${trailing}
+      </div>
+    </div>
+  `;
   return `
     <div class="chat-turn chat-turn--user">
       <span class="chat-turn-role">${message.meta || "Source intake"}</span>
@@ -273,7 +292,7 @@ export function renderNotice({
   const variantClass = variant === "mermaid" ? " assistant-notice--mermaid" : "";
   const loadingClass = loading ? " is-loading" : "";
   const openAttr = open ? " open" : "";
-  const statusClass = `${variant === "mermaid" ? "ap-status mermaid" : "ap-status grey"}${loading ? " is-working" : ""}`;
+  const statusClass = `${variant === "mermaid" ? "ap-status mermaid" : "ap-status grey"}${loading && convNew() ? " is-working" : ""}`;
   return `
     <details class="assistant-notice${variantClass}${loadingClass}"${openAttr}>
       <summary class="assistant-notice__toggle">
@@ -303,6 +322,15 @@ export function renderExtractingNotice(label) {
   // The prod's progress copy (studio i18n, chat.tool.progress.*): the flow
   // names what it is doing ("Generating post drafts…"); the default is the
   // extraction's.
+  if (!convNew())
+    return `
+    <div class="chat-turn chat-turn--ai chat-turn--extracting">
+      <div class="extracting-notice" role="status" aria-label="Extracting ideas from this source">
+        <span class="extracting-notice__spinner" aria-hidden="true"></span>
+        <span class="ap-status mermaid">Extracting</span>
+      </div>
+    </div>
+  `;
   const text = escapeHtml(label || "Extracting ideas from content…");
   return `
     <div class="chat-turn chat-turn--ai chat-turn--extracting">

@@ -185,7 +185,9 @@ export const FLAGS = Object.freeze([
   {
     id: "newConversationStyles",
     label: "New conversation styles",
-    // OFF: the thread as shipped (navy user bubble, bare Archie mark). Figma
+    // OFF: the thread as of Monday 2026-10-05 — every conversation restyle
+    // since then (Tuesday's card system included) is ON only; the Monday
+    // values live in styles/chat-legacy.css (body:not(.conv-new)). Figma
     // "Conversation styles" § E1–E4 is the reference for ON.
     default: false,
     hides:
@@ -195,7 +197,8 @@ export const FLAGS = Object.freeze([
       "line; your picks get a neutral pill ('Added a source', 'Picked 1 " +
       "account'). Your words lose the navy bubble and read like Archie's; " +
       "consecutive Archie messages fold into one turn; every object (source, " +
-      "pick, result) is the same white chip. Butter stays Archie's alone.",
+      "pick, result) is the same white chip. Butter stays Archie's alone. " +
+      "OFF shows the thread as it was on Monday 5 October, for a before / after.",
   },
   {
     id: "networkVoices",

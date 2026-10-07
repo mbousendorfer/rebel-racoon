@@ -17,9 +17,9 @@
 // ON an overridden hook is written in one language. Per-language × per-network
 // examples when a brand actually publishes in two languages on one network.
 
-import { isFlagOn } from "./feature-flags.js?v=1690";
-import { escapeHtml } from "./utils.js?v=1690";
-import { NETWORKS, normalizeNetwork, getConnectedProfileById } from "./social-profiles.js?v=1690";
+import { isFlagOn } from "./feature-flags.js?v=1694";
+import { escapeHtml } from "./utils.js?v=1694";
+import { NETWORKS, normalizeNetwork, getConnectedProfileById } from "./social-profiles.js?v=1694";
 
 export const NETWORK_FIELDS = ["signatureHooks", "closingPatterns", "formattingStyle", "visualStyle"];
 const LIST_FIELDS = new Set(["signatureHooks", "closingPatterns"]);
@@ -138,7 +138,7 @@ export function memoryCardHtml(s, { attr, value, undo = true }) {
   const kept = s.status === "accepted";
   const answer = kept
     ? `<div class="memory-card__answer" role="status">
-        <span class="memory-card__ask"><i class="ap-icon-rounded-check_fill memory-card__done" aria-hidden="true"></i>Remembered for your ${net} voice</span>
+        <span class="memory-card__ask"><i class="${isFlagOn("newConversationStyles") ? "ap-icon-rounded-check_fill" : "ap-icon-check"} memory-card__done" aria-hidden="true"></i>Remembered for your ${net} voice</span>
         <div class="memory-card__actions">${undo ? `<a class="ap-link standalone small" href="#" role="button" data-${attr}-undo="${esc(value)}">Undo</a>` : ""}</div>
       </div>`
     : `<div class="memory-card__answer">

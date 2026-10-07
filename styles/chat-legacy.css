@@ -1,0 +1,195 @@
+/* ─── The thread as of Monday 2026-10-05 (flag newConversationStyles OFF) ────
+   The conversation was restyled from Tuesday 17:10 on (butter / navy cards,
+   the source intake as an echo, the status pill's dot, the card system…). That
+   work now lives behind newConversationStyles, so OFF vs ON is a clean
+   before / after. This sheet puts the Monday values back when the flag is OFF
+   (`body:not(.conv-new)`, set in app.js); the current rules in chat.css and
+   friends stay as they are and only show with the flag ON.
+   ⚠️ Delete this file (and its `<link>`, the `conv-new` class and the
+   isFlagOn branches that render the Monday markup) when the flag is baked. */
+
+/* Your picks (selection echo): navy-05 card, white disc, navy ink. */
+body:not(.conv-new) .selection-echo {
+  border: 1px solid var(--app-convo-navy-20);
+  background: var(--app-convo-navy-05);
+  color: inherit;
+  -webkit-font-smoothing: auto;
+  -moz-osx-font-smoothing: auto;
+}
+
+body:not(.conv-new) .selection-echo__icon {
+  background: var(--ref-color-white);
+}
+
+body:not(.conv-new) .selection-echo__icon i {
+  color: var(--app-convo-navy-deep);
+}
+
+body:not(.conv-new) .selection-echo__title {
+  color: var(--app-convo-navy-deep);
+}
+
+body:not(.conv-new) .selection-echo__meta {
+  color: var(--app-convo-navy-70, var(--sys-text-color-light));
+}
+
+/* Source intake — the single-line navy-05 chip (thread-turns.js renders the
+   Monday markup when the flag is OFF). */
+body:not(.conv-new) .chat-bubble--source-intake {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  padding: 6px var(--ref-spacing-xxs) 6px var(--ref-spacing-xs);
+  background: var(--app-convo-navy-05);
+  color: var(--app-convo-navy-deep);
+  border: 1px solid var(--app-convo-navy-20);
+  border-radius: var(--app-radius-xl);
+  border-top-right-radius: 0;
+  max-width: 480px;
+  min-height: 36px;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  font-weight: var(--sys-text-style-caption-weight);
+}
+
+body:not(.conv-new) .chat-bubble-source-intake__kind {
+  color: var(--app-convo-navy);
+  font-size: var(--sys-icon-css-sm);
+  flex-shrink: 0;
+}
+
+body:not(.conv-new) .chat-bubble-source-intake__name {
+  margin: 0;
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--app-convo-navy-deep);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+body:not(.conv-new) .chat-bubble-source-intake__loading {
+  background: var(--ref-color-grey-150);
+  color: var(--ref-color-white);
+}
+
+body:not(.conv-new) .chat-bubble-source-intake__pill {
+  padding: 3px var(--ref-spacing-xxs) 3px 10px;
+  background: var(--app-convo-navy);
+  color: var(--ref-color-white);
+  border-radius: var(--app-radius-pill);
+  font: inherit;
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  font-variant-numeric: normal;
+  transition: background var(--ref-animation-short) var(--app-ease-out);
+}
+
+body:not(.conv-new) .chat-bubble-source-intake__pill:hover,
+body:not(.conv-new) .chat-bubble-source-intake__pill:focus-visible {
+  background: var(--app-convo-navy-deep);
+  outline: none;
+}
+
+body:not(.conv-new) .chat-bubble-source-intake__pill i {
+  font-size: var(--sys-icon-css-nano);
+}
+
+body:not(.conv-new) .chat-bubble-source-intake__check {
+  margin-right: var(--ref-spacing-xxxs);
+}
+
+/* Archie's result cards — grey-05 surface, the orange-10 tile behind the
+   orange mark, body-size secondary line, no fixed inset. */
+body:not(.conv-new) .drafts-card {
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-sm);
+  background: var(--ref-color-grey-05);
+  border-color: var(--app-border);
+}
+
+body:not(.conv-new) .drafts-card:hover,
+body:not(.conv-new) .drafts-card:focus-visible {
+  border-color: var(--ref-color-electric-blue-100);
+}
+
+body:not(.conv-new) .drafts-card.is-active {
+  border-color: var(--ref-color-electric-blue-40);
+  background: var(--ref-color-electric-blue-05);
+}
+
+body:not(.conv-new) .drafts-card--pending:hover,
+body:not(.conv-new) .drafts-card--unavailable:hover {
+  border-color: var(--app-border);
+}
+
+body:not(.conv-new) .drafts-card--pending .drafts-card__sub {
+  white-space: nowrap;
+}
+
+body:not(.conv-new) .drafts-card__icon {
+  align-self: auto;
+  width: var(--ref-spacing-lg);
+  height: var(--ref-spacing-lg);
+  margin-top: 0;
+  overflow: visible;
+  border-radius: var(--app-radius-button-sm);
+  background: var(--ref-color-orange-10);
+}
+
+body:not(.conv-new) .drafts-card__icon--muted {
+  background: var(--ref-color-grey-05);
+}
+
+body:not(.conv-new) .drafts-card__spinner {
+  --archie-loader-size: 22px;
+}
+
+body:not(.conv-new) .drafts-card__sub {
+  font: var(--sys-text-style-body-weight) var(--sys-text-style-body-size) / var(--sys-text-style-body-line-height)
+    var(--sys-text-style-body-font-family);
+}
+
+/* The clips card: full column width (Monday's 420px max-width on the turn
+   lost to the thread's 740px column rule, so it never applied). */
+body:not(.conv-new) .chat-turn--clip-extraction > .drafts-card {
+  max-width: none;
+}
+
+/* Memory card — 520px, olive check, the old title line. */
+body:not(.conv-new) .memory-card {
+  width: min(520px, 100%);
+}
+
+body:not(.conv-new) .memory-card__ask > i.memory-card__done {
+  color: var(--app-butter-accent);
+}
+
+body:not(.conv-new) .memory-card__body > i.memory-mark {
+  margin-top: 2px;
+}
+
+body:not(.conv-new) .memory-card__rule {
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--ref-font-weight-bold);
+  line-height: 20px;
+}
+
+/* Status pills — the whole pill fades while Archie thinks. (The "Extracting"
+   notice's spinner beside the pill is the Archie loader: archie-loader.css.) */
+@keyframes assistant-notice-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+body:not(.conv-new) .assistant-notice.is-loading .ap-status.mermaid {
+  animation: assistant-notice-pulse 1.4s ease-in-out infinite;
+}

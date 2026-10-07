@@ -8,11 +8,12 @@
 // The state machine timers live here (not inside the modal) so uploads
 // continue in background after the user closes the modal.
 
-import { sourcesBySession as seedByCsesssion } from "./mocks.js?v=1690";
-import { isNewUser } from "./user-mode.js?v=1690";
-import { createNotifier } from "./store-utils.js?v=1690";
-import { detectUrlService } from "./url-services.js?v=1690";
-import { showToast } from "./components/toast.js?v=1690";
+import { sourcesBySession as seedByCsesssion } from "./mocks.js?v=1694";
+import { isFlagOn } from "./feature-flags.js?v=1694";
+import { isNewUser } from "./user-mode.js?v=1694";
+import { createNotifier } from "./store-utils.js?v=1694";
+import { detectUrlService } from "./url-services.js?v=1694";
+import { showToast } from "./components/toast.js?v=1694";
 
 // Canned extraction output attached to every Processed Video source.
 // Generic enough to plausibly come from any keynote / talk / demo video.
@@ -410,11 +411,20 @@ const CLIP_EXTRACTION_STAGES = [
   { from: 0.65, label: "Cutting your clips…" },
   { from: 0.85, label: "Rendering your clips…" },
 ];
+// Flag newConversationStyles OFF: the stage labels as of Monday 2026-10-05.
+const CLIP_EXTRACTION_STAGES_MONDAY = [
+  { from: 0, label: "Transcribing audio" },
+  { from: 0.2, label: "Detecting highlights & hooks" },
+  { from: 0.45, label: "Scoring moments" },
+  { from: 0.7, label: "Cutting clips" },
+  { from: 0.9, label: "Generating captions" },
+];
 const CLIP_EXTRACTION_MS = 7500;
 
 function clipStageFor(progress) {
-  const stage = [...CLIP_EXTRACTION_STAGES].reverse().find((s) => progress >= s.from);
-  return stage ? stage.label : CLIP_EXTRACTION_STAGES[0].label;
+  const stages = isFlagOn("newConversationStyles") ? CLIP_EXTRACTION_STAGES : CLIP_EXTRACTION_STAGES_MONDAY;
+  const stage = [...stages].reverse().find((s) => progress >= s.from);
+  return stage ? stage.label : stages[0].label;
 }
 
 // Drive the extracting source through its stages every 200ms, then attach the
