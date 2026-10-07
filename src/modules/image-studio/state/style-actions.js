@@ -1,14 +1,14 @@
 // Image Generator — every write a custom style undergoes. A custom style is the
 // BRAND's: it lives on the Playbook and is listed first in the studio's picker.
 
-import { storageService as storage } from "../services/index.js?v=1649";
-import { createAsset, createStyle } from "../model/schema.js?v=1649";
-import { presetById, CUSTOM_STYLE_LIMITS } from "../config/style-presets.js?v=1649";
-import { sampleColors } from "../render/sample-colors.js?v=1649";
-import { uid } from "../lib/id.js?v=1649";
-import { lookFromColors } from "../render/visual.js?v=1649";
-import { getAsset } from "./store.js?v=1649";
-import { deletePlaybookStyle, findPlaybookStyle, savePlaybookStyle } from "./playbook-brand.js?v=1649";
+import { storageService as storage } from "../services/index.js?v=1650";
+import { createAsset, createStyle } from "../model/schema.js?v=1650";
+import { presetById, CUSTOM_STYLE_LIMITS } from "../config/style-presets.js?v=1650";
+import { sampleColors } from "../render/sample-colors.js?v=1650";
+import { uid } from "../lib/id.js?v=1650";
+import { lookFromColors } from "../render/visual.js?v=1650";
+import { getAsset } from "./store.js?v=1650";
+import { deletePlaybookStyle, findPlaybookStyle, savePlaybookStyle } from "./playbook-brand.js?v=1650";
 
 /** A custom style can write text into the image when the look read from its images can. */
 function deriveEmbeddedText(sources) {

@@ -50,47 +50,16 @@
   display: none;
 }
 
-/* New conversation styles (flag newConversationStyles): beside Archie's
-   avatar, work in progress is TYPE — his olive dot breathing + the words at
-   body size with a light passing through them. A finished action keeps the
-   butter pill ("Extracted 2 ideas"): butter marks what Archie has done. */
-.e-turn .ap-status.is-working {
-  padding: 0;
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-}
-
-.e-turn .ap-status.is-working {
-  color: transparent;
-  background: linear-gradient(
-      100deg,
-      var(--ref-color-grey-100) 40%,
-      var(--ref-color-grey-40) 50%,
-      var(--ref-color-grey-100) 60%
-    )
-    0 0 / 300% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  animation: e-status-sheen 2.4s linear infinite;
-}
-
-@keyframes e-status-sheen {
-  from {
-    background-position: 100% 0;
-  }
-  to {
-    background-position: 0 0;
-  }
+/* New conversation styles (flag newConversationStyles): while Archie works,
+   his avatar is the loader — so the pill drops its breathing dot (one moving
+   part, not two) and keeps its butter. */
+.e-turn .ap-status.is-working::before {
+  display: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .ap-status.is-working::before {
     animation: none;
-  }
-  .e-turn .ap-status.is-working {
-    animation: none;
-    color: var(--ref-color-grey-100);
-    background: transparent;
   }
 }
 
