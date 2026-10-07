@@ -284,11 +284,13 @@
 
 /* Same frame for the generating state, at the same height, so nothing jumps
    when Generate is clicked. Dashes and radius match the shared .ap-dropzone. */
+/* A one-column grid as wide as its widest row (Image Studio + Upload), so
+   Generate can take that row's width — see .posts__card-media-shortcut. */
 .posts__card-media-slot {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: grid;
+  grid-template-columns: max-content;
   justify-content: center;
+  align-content: center;
   min-height: 200px;
   gap: var(--ref-spacing-md);
   padding: var(--ref-spacing-md);
@@ -314,6 +316,14 @@
   flex-direction: column;
   align-items: center;
   gap: var(--ref-spacing-xxs);
+}
+
+/* ⚠️ The one exception to "a CTA is never full width" (asked 2026-10-07):
+   Generate spans the Image Studio + Upload row under it — the width of the
+   tier below, never the slot's — so the two tiers share both edges. */
+.posts__card-media-shortcut > .ap-button {
+  align-self: stretch;
+  justify-content: center;
 }
 
 /* What Generate will use — a caption under the button, not a line of its own

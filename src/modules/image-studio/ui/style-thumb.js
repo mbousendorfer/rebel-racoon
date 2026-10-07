@@ -1,14 +1,14 @@
 // Image Generator — a style's thumbnail: the style drawn in the active brand's
 // palette, so the gallery previews what THIS brand would get.
 
-import { html } from "../lib/html.js?v=1696";
-import { hashString } from "../lib/prng.js?v=1696";
-import { renderVisual, resolveStyleDrawing, svgToDataUrl } from "../render/visual.js?v=1696";
-import { resolvePalette } from "../render/palette.js?v=1696";
-import { hasStyleArt, styleArtSvg } from "../render/style-art.js?v=1696";
-import { getAsset } from "../state/store.js?v=1696";
-import { getBrand } from "../state/playbook-brand.js?v=1696";
-import { isFlagOn } from "../../../feature-flags.js?v=1696";
+import { html } from "../lib/html.js?v=1697";
+import { hashString } from "../lib/prng.js?v=1697";
+import { renderVisual, resolveStyleDrawing, svgToDataUrl } from "../render/visual.js?v=1697";
+import { resolvePalette } from "../render/palette.js?v=1697";
+import { hasStyleArt, styleArtSvg } from "../render/style-art.js?v=1697";
+import { getAsset } from "../state/store.js?v=1697";
+import { getBrand } from "../state/playbook-brand.js?v=1697";
+import { isFlagOn } from "../../../feature-flags.js?v=1697";
 
 // A ready-made style is drawn in ONE palette, Acme's, whatever the brand —
 // flag `brandTintedPresets` ON redraws it in the active brand's colours.
