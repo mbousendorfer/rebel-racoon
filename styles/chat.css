@@ -1068,6 +1068,21 @@ span.chat-bubble-choice-chip {
   margin-top: calc(var(--ref-spacing-sm) - var(--ref-spacing-md));
 }
 
+/* Status lines in a row ("Set Publishing Accounts", "Ran 3 tools · 3s")
+   stack 8px apart under the first one, pill on pill — aligned past the run's
+   one avatar (24 + its 8px gap). */
+.e-turn--stack {
+  margin-top: calc(var(--ref-spacing-xxs) - var(--ref-spacing-md));
+}
+
+.e-turn--stack > .e-turn__content {
+  padding-left: calc(24px + var(--ref-spacing-xxs));
+}
+
+.e-turn--stack .assistant-notice > :not(summary) {
+  margin-left: 0;
+}
+
 /* Archie's avatar: his mark in white on his own orange, a solid disc like an
    app icon. */
 .e-turn__mark {

@@ -13,22 +13,22 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=1675";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=1675";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1675";
-import { getTopPost } from "../../top-posts-store.js?v=1675";
-import { getTopicById } from "../../topics-store.js?v=1675";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=1675";
-import { renderProfileEchoCard } from "../../social-profiles.js?v=1675";
-import { escapeHtml } from "../../utils.js?v=1675";
-import { getIdeas } from "../../library.js?v=1675";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=1675";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1675";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=1675";
-import { getSuggestion } from "../../voice-coach-store.js?v=1675";
-import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=1675";
-import { isFlagOn } from "../../feature-flags.js?v=1675";
-import { CURRENT_USER } from "../../org.js?v=1675";
+} from "./thread-turns.js?v=1676";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1676";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1676";
+import { getTopPost } from "../../top-posts-store.js?v=1676";
+import { getTopicById } from "../../topics-store.js?v=1676";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=1676";
+import { renderProfileEchoCard } from "../../social-profiles.js?v=1676";
+import { escapeHtml } from "../../utils.js?v=1676";
+import { getIdeas } from "../../library.js?v=1676";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=1676";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1676";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=1676";
+import { getSuggestion } from "../../voice-coach-store.js?v=1676";
+import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=1676";
+import { isFlagOn } from "../../feature-flags.js?v=1676";
+import { CURRENT_USER } from "../../org.js?v=1676";
 
 export function renderThread(messages, sessionId) {
   const turns = messages.map((m) => [m, renderTurn(m, sessionId)]);
@@ -46,45 +46,52 @@ const clock = (ts) => (ts ? new Date(ts).toLocaleTimeString("en-US", { hour: "nu
 
 function renderTwoSides(turns) {
   const tpl = document.createElement("template");
-  let prev = null;
-  let out = "";
+  const mark = (working) =>
+    `<span class="e-turn__mark" aria-hidden="true">${
+      working
+        ? `<span class="archie-loader" role="status" aria-label="Working"></span>`
+        : `<i class="ap-icon-archie-official"></i>`
+    }</span>`;
+  const items = [];
+  let head = null; // the item that carries the avatar of Archie's current run
   for (const [m, html] of turns) {
     tpl.innerHTML = html.trim();
     const el = tpl.content.firstElementChild;
     if (!el) continue;
     const side = el.matches(".chat-turn--user") ? "user" : "ai";
     el.querySelectorAll(":scope > .chat-turn-avatar, :scope > .chat-turn-role").forEach((n) => n.remove());
-    // Archie goes on: one avatar for the run. A status line starts a new step.
+    const prev = items.at(-1);
     const status = side === "ai" ? el.querySelector(".assistant-notice__toggle, .extracting-notice") : null;
-    // While Archie works (a pending result card, a working status), his avatar
-    // IS the loader: the same disc, the mark animated in place.
+    // While Archie works (a pending result card, a working status) his avatar
+    // is the loader — the run's ONE avatar, wherever the work sits in the run.
     const working = side === "ai" && !!el.querySelector(".drafts-card--pending, .ap-status.is-working");
-    const cont = side === "ai" && prev === "ai" && !status && !working;
-    prev = side;
-    const time = clock(m.createdAt);
-    const timeHtml = time ? `<span class="e-turn__time">${time}</span>` : "";
-    const avatar =
-      side === "ai"
-        ? `<span class="e-turn__mark" aria-hidden="true">${
-            working
-              ? `<span class="archie-loader" role="status" aria-label="Working"></span>`
-              : `<i class="ap-icon-archie-official"></i>`
-          }</span>`
-        : `<span class="ap-avatar size-24" aria-hidden="true"><span class="ap-avatar-initials">${escapeHtml(CURRENT_USER.initials)}</span></span>`;
-    // The avatar heads the turn, on the same left (right) edge as what
-    // follows: in Archie's status line when he has one, else on its own line.
-    let head = "";
-    if (side === "user")
-      head = `<div class="e-turn__head">${timeHtml}<span class="e-turn__name">You</span>${avatar}</div>`;
-    else if (status) status.insertAdjacentHTML("afterbegin", avatar);
-    else if (!cont) head = `<div class="e-turn__head">${avatar}</div>`;
-    out += `
-      <div class="e-turn e-turn--${side}${cont ? " e-turn--cont" : ""}">
-        ${side === "ai" ? timeHtml : ""}
-        <div class="e-turn__content">${head}${el.outerHTML}</div>
-      </div>`;
+    // Archie goes on: one avatar per run. Status lines in a row stack under
+    // the first one (aligned on its pill); text after anything continues it;
+    // a status after his text starts a new step with its own avatar.
+    const stack = side === "ai" && prev?.side === "ai" && status && prev.status;
+    const cont = side === "ai" && prev?.side === "ai" && !status;
+    const item = { side, el, status, stack, cont, working, time: clock(m.createdAt) };
+    if (side === "ai" && !stack && !cont) head = item;
+    if (side === "ai" && working && head) head.working = true;
+    items.push(item);
   }
-  return out;
+  return items
+    .map((it) => {
+      const timeHtml = it.time ? `<span class="e-turn__time">${it.time}</span>` : "";
+      let headHtml = "";
+      if (it.side === "user")
+        headHtml = `<div class="e-turn__head">${timeHtml}<span class="e-turn__name">You</span><span class="ap-avatar size-24" aria-hidden="true"><span class="ap-avatar-initials">${escapeHtml(CURRENT_USER.initials)}</span></span></div>`;
+      else if (it.stack || it.cont) headHtml = "";
+      else if (it.status) it.status.insertAdjacentHTML("afterbegin", mark(it.working));
+      else headHtml = `<div class="e-turn__head">${mark(it.working)}</div>`;
+      const cls = it.stack ? " e-turn--stack" : it.cont ? " e-turn--cont" : "";
+      return `
+      <div class="e-turn e-turn--${it.side}${cls}">
+        ${it.side === "ai" ? timeHtml : ""}
+        <div class="e-turn__content">${headHtml}${it.el.outerHTML}</div>
+      </div>`;
+    })
+    .join("");
 }
 
 function renderTurn(message, sessionId) {
