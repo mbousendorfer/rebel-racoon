@@ -13,22 +13,22 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=1679";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=1679";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1679";
-import { getTopPost } from "../../top-posts-store.js?v=1679";
-import { getTopicById } from "../../topics-store.js?v=1679";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=1679";
-import { renderProfileEchoCard } from "../../social-profiles.js?v=1679";
-import { escapeHtml } from "../../utils.js?v=1679";
-import { getIdeas } from "../../library.js?v=1679";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=1679";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1679";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=1679";
-import { getSuggestion } from "../../voice-coach-store.js?v=1679";
-import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=1679";
-import { isFlagOn } from "../../feature-flags.js?v=1679";
-import { CURRENT_USER } from "../../org.js?v=1679";
+} from "./thread-turns.js?v=1680";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1680";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1680";
+import { getTopPost } from "../../top-posts-store.js?v=1680";
+import { getTopicById } from "../../topics-store.js?v=1680";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=1680";
+import { renderProfileEchoCard } from "../../social-profiles.js?v=1680";
+import { escapeHtml } from "../../utils.js?v=1680";
+import { getIdeas } from "../../library.js?v=1680";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=1680";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1680";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=1680";
+import { getSuggestion } from "../../voice-coach-store.js?v=1680";
+import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=1680";
+import { isFlagOn } from "../../feature-flags.js?v=1680";
+import { CURRENT_USER } from "../../org.js?v=1680";
 
 export function renderThread(messages, sessionId) {
   const turns = messages.map((m) => [m, renderTurn(m, sessionId)]);
@@ -217,31 +217,25 @@ function renderActivityTurn(message) {
   // Accounts", not "… · 0.0s") — the prod's tenths read as noise here.
   const sec = (ms) => Math.round(ms / 1000);
   const dur = (ms) => (sec(ms) > 0 ? ` · ${sec(ms)}s` : "");
-  // A tool call has its own look (assistant-notice--tools): the toolbox glyph
-  // leads an outlined pill, its run unfolds as a small card of rows.
-  const glyph = `<i class="ap-icon-toolbox assistant-notice__tool-glyph" aria-hidden="true"></i>`;
-  const asTools = (html) => html.replace('class="assistant-notice', 'class="assistant-notice assistant-notice--tools');
+  // The pill is a status like any other; what it unfolds — the tool calls —
+  // has its own look (assistant-notice__tools, a small card of rows).
   if (message.status === "loading") {
-    return asTools(
-      renderNotice({
-        variant: "mermaid",
-        label: `${glyph}<span>${escapeHtml(toolName(tools[0].tool))}…</span>`,
-        loading: true,
-        showChevron: false,
-        open: false,
-      }),
-    );
+    return renderNotice({
+      variant: "mermaid",
+      label: `${escapeHtml(toolName(tools[0].tool))}…`,
+      loading: true,
+      showChevron: false,
+      open: false,
+    });
   }
   const totalMs = tools.reduce((s, t) => s + (t.ms || 0), 0);
   if (tools.length === 1) {
-    return asTools(
-      renderNotice({
-        variant: "mermaid",
-        label: `${glyph}<span>${escapeHtml(toolName(tools[0].tool))}${dur(totalMs)}</span>`,
-        open: false,
-        bodyHtml: `<div class="assistant-notice__detail">${escapeHtml(toolDescription(tools[0].tool))}</div>`,
-      }),
-    );
+    return renderNotice({
+      variant: "mermaid",
+      label: `${escapeHtml(toolName(tools[0].tool))}${dur(totalMs)}`,
+      open: false,
+      bodyHtml: `<div class="assistant-notice__detail">${escapeHtml(toolDescription(tools[0].tool))}</div>`,
+    });
   }
   const rows = tools
     .map(
@@ -252,14 +246,12 @@ function renderActivityTurn(message) {
       </li>`,
     )
     .join("");
-  return asTools(
-    renderNotice({
-      variant: "mermaid",
-      label: `${glyph}<span>Ran ${tools.length} tools${dur(totalMs)}</span>`,
-      open: false,
-      bodyHtml: `<ul class="assistant-notice__detail assistant-notice__tools">${rows}</ul>`,
-    }),
-  );
+  return renderNotice({
+    variant: "mermaid",
+    label: `Ran ${tools.length} tools${dur(totalMs)}`,
+    open: false,
+    bodyHtml: `<ul class="assistant-notice__detail assistant-notice__tools">${rows}</ul>`,
+  });
 }
 
 // Inline "top posts" selection widget turn — an AI-side turn hosting the

@@ -1454,27 +1454,10 @@ span.chat-bubble-choice-chip {
   font-size: var(--sys-icon-css-sm);
 }
 
-/* Tool calls (renderActivityTurn, .assistant-notice--tools) — their own look,
-   apart from Archie's thoughts (plain grey text) and his statuses (filled
-   pills): an OUTLINED pill, white with a grey-20 edge, the toolbox glyph
-   leading the words — the mechanics of the work, drawn like an instrument
-   readout rather than a voice. Unfolded, the run is a small white card, one
-   row per tool: glyph, name in ink, duration right-aligned. */
-/* 0,4,0 + loaded after ds-patches: beats the done-status grey there. */
-.e-turn .assistant-notice--tools .assistant-notice__toggle .ap-status {
-  gap: var(--ref-spacing-xxxs);
-  padding: 0 var(--ref-spacing-xxs) 0 var(--ref-spacing-xxxs);
-  background-color: var(--app-surface);
-  box-shadow: inset 0 0 0 1px var(--app-border);
-  --e-sheen-fill: var(--app-surface);
-}
-
-.assistant-notice__tool-glyph {
-  flex-shrink: 0;
-  font-size: var(--sys-icon-css-sm);
-  color: var(--ref-color-grey-80);
-}
-
+/* Tool calls — what an activity pill unfolds (renderActivityTurn): their own
+   look, apart from Archie's thoughts (plain grey text). A small white card,
+   one row per tool: toolbox glyph, name in ink, duration right-aligned. The
+   pill itself stays a status like the others. */
 .e-turn .assistant-notice__tools {
   display: flex;
   flex-direction: column;
