@@ -12,22 +12,22 @@ import {
   renderMessageBubble,
   renderNotice,
   renderResultCard,
-} from "./thread-turns.js?v=1644";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=1644";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1644";
-import { getTopPost } from "../../top-posts-store.js?v=1644";
-import { getTopicById } from "../../topics-store.js?v=1644";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=1644";
-import { renderProfileEchoCard } from "../../social-profiles.js?v=1644";
-import { escapeHtml } from "../../utils.js?v=1644";
-import { getIdeas } from "../../library.js?v=1644";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=1644";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1644";
-import { getThread } from "../../assistant.js?v=1644";
-import { getSuggestion } from "../../voice-coach-store.js?v=1644";
-import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=1644";
-import { isFlagOn } from "../../feature-flags.js?v=1644";
-import { CURRENT_USER } from "../../org.js?v=1644";
+} from "./thread-turns.js?v=1645";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1645";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1645";
+import { getTopPost } from "../../top-posts-store.js?v=1645";
+import { getTopicById } from "../../topics-store.js?v=1645";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=1645";
+import { renderProfileEchoCard } from "../../social-profiles.js?v=1645";
+import { escapeHtml } from "../../utils.js?v=1645";
+import { getIdeas } from "../../library.js?v=1645";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=1645";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1645";
+import { getThread } from "../../assistant.js?v=1645";
+import { getSuggestion } from "../../voice-coach-store.js?v=1645";
+import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=1645";
+import { isFlagOn } from "../../feature-flags.js?v=1645";
+import { CURRENT_USER } from "../../org.js?v=1645";
 
 export function renderThread(messages, sessionId) {
   const turns = messages.map((m) => [m, renderTurn(m, sessionId)]);
@@ -461,6 +461,7 @@ function renderClipExtractionTurn(message, sessionId) {
     <div class="chat-turn chat-turn--ai chat-turn--clip-extraction">
       ${renderResultCard({
         state: "ready",
+        icon: "ap-icon-video",
         title: titleLabel,
         sub: `From <span class="drafts-card__sub-quote">${filename}</span>`,
         cta: { label: "Open clips" },

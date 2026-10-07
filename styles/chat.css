@@ -1215,9 +1215,16 @@ span.chat-bubble-choice-chip {
 }
 
 /* Archie's result cards keep their butter, without their own mark: the
-   avatar beside them already says Archie — and IS the loader while pending. */
-.e-turn .drafts-card__icon {
+   avatar beside them already says Archie — and IS the loader while pending.
+   A glyph that says WHAT the result is (the video of "5 clips to review")
+   stays, in ink. */
+.e-turn .drafts-card__icon--spinner,
+.e-turn .drafts-card__icon:has(> .ap-icon-archie-official) {
   display: none;
+}
+
+.e-turn .drafts-card__icon > i:not(.ap-icon-archie-official) {
+  background: var(--ref-color-grey-100);
 }
 
 /* A status pill's line IS the head line: same 24px row, no extra inset, so
