@@ -15,14 +15,14 @@
 // whole screen. clipContext is exported alongside because the clip-studio
 // finalize path in session.js builds the same generationContext object.
 
-import { FORMATS, clipFormatItems } from "../../clip-formats.js?v=1672";
-import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../../clip-subtitles.js?v=1672";
+import { FORMATS, clipFormatItems } from "../../clip-formats.js?v=1675";
+import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../../clip-subtitles.js?v=1675";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "../../social-profiles.js?v=1672";
-import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=1672";
+} from "../../social-profiles.js?v=1675";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=1675";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -31,9 +31,10 @@ import {
   postDraftResult,
   startPending,
   finishPending,
-} from "../../assistant.js?v=1672";
-import * as inlineQuestion from "../../inline-question.js?v=1672";
-import { addPostDraft } from "../../posts-store.js?v=1672";
+  GENERATION_TOOLS,
+} from "../../assistant.js?v=1675";
+import * as inlineQuestion from "../../inline-question.js?v=1675";
+import { addPostDraft } from "../../posts-store.js?v=1675";
 
 // The generationContext a clip-derived draft carries — the "why this draft
 // exists" header shown on the post card. Shared with session.js's clip-studio
@@ -157,7 +158,7 @@ function askClipAccounts(sessionId, entries, format, style) {
 // Each draft's clipRef carries sourceId + clipId so the post can later open
 // the source clip back in the Video Clips modal for editing.
 function generateClipDrafts(sessionId, entries, accounts, format, style) {
-  const pendingId = startPending(sessionId, "Generating post drafts…");
+  const pendingId = startPending(sessionId, "Generating post drafts…", GENERATION_TOOLS);
   setTimeout(() => {
     finishPending(sessionId, pendingId);
     const drafts = [];

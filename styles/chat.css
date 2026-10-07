@@ -1154,6 +1154,9 @@ span.chat-bubble-choice-chip {
    centred. */
 .session__assistant-thread:has(> .e-turn) {
   padding-inline: calc(var(--ref-spacing-xxxl) + var(--ref-spacing-xxxs));
+  /* The composer's 96px fade covers the thread's foot: the last turn stops
+     72px up, where the fade is still nearly clear. */
+  padding-bottom: calc(var(--ref-spacing-xxxl) + var(--ref-spacing-xs));
 }
 
 /* Archie's memory proposal (voice-coach.css .memory-card) takes the result
@@ -1434,4 +1437,33 @@ span.chat-bubble-choice-chip {
 
 .failed-card__retry > i {
   font-size: var(--sys-icon-css-sm);
+}
+
+/* The tools a step ran (renderActivityTurn) — one row per tool, as the prod
+   lists them: toolbox glyph, name, duration on the right. It unfolds under its
+   status like any reasoning (grey-80, body size, hung under the label). */
+.assistant-notice__tools {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  max-width: 360px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.assistant-notice__tool {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+}
+
+.assistant-notice__tool > i {
+  flex-shrink: 0;
+  font-size: var(--sys-icon-css-sm);
+}
+
+.assistant-notice__tool-duration {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
 }

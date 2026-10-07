@@ -13,22 +13,22 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=1672";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=1672";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1672";
-import { getTopPost } from "../../top-posts-store.js?v=1672";
-import { getTopicById } from "../../topics-store.js?v=1672";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=1672";
-import { renderProfileEchoCard } from "../../social-profiles.js?v=1672";
-import { escapeHtml } from "../../utils.js?v=1672";
-import { getIdeas } from "../../library.js?v=1672";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=1672";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1672";
-import { getThread } from "../../assistant.js?v=1672";
-import { getSuggestion } from "../../voice-coach-store.js?v=1672";
-import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=1672";
-import { isFlagOn } from "../../feature-flags.js?v=1672";
-import { CURRENT_USER } from "../../org.js?v=1672";
+} from "./thread-turns.js?v=1675";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1675";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1675";
+import { getTopPost } from "../../top-posts-store.js?v=1675";
+import { getTopicById } from "../../topics-store.js?v=1675";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=1675";
+import { renderProfileEchoCard } from "../../social-profiles.js?v=1675";
+import { escapeHtml } from "../../utils.js?v=1675";
+import { getIdeas } from "../../library.js?v=1675";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=1675";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1675";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=1675";
+import { getSuggestion } from "../../voice-coach-store.js?v=1675";
+import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=1675";
+import { isFlagOn } from "../../feature-flags.js?v=1675";
+import { CURRENT_USER } from "../../org.js?v=1675";
 
 export function renderThread(messages, sessionId) {
   const turns = messages.map((m) => [m, renderTurn(m, sessionId)]);
@@ -156,6 +156,10 @@ function renderTurn(message, sessionId) {
     return renderTopicsWidgetTurn(message);
   }
 
+  if (message.role === "assistant" && message.variant === "activity") {
+    return renderActivityTurn(message);
+  }
+
   if (message.role === "assistant" && message.variant === "failed") {
     return renderFailedTurn(message);
   }
@@ -194,6 +198,51 @@ function renderTurn(message, sessionId) {
     return renderMessageBubble({ ...message, text: renderRefs(message.text, sessionId) });
   }
   return renderMessageBubble(message);
+}
+
+// The tools a step ran, as the prod thread shows them (chat-thread.component
+// toActivityGroup): running → the current tool's name + "…"; done → one tool
+// "Name · 1.6s" unfolding its description, several "Ran 3 tools · 3.0s"
+// unfolding one row per tool (toolbox glyph, name, duration).
+function renderActivityTurn(message) {
+  const tools = message.tools || [];
+  // Whole seconds, and nothing at all for an instant step ("Set Publishing
+  // Accounts", not "… · 0.0s") — the prod's tenths read as noise here.
+  const sec = (ms) => Math.round(ms / 1000);
+  const dur = (ms) => (sec(ms) > 0 ? ` · ${sec(ms)}s` : "");
+  if (message.status === "loading") {
+    return renderNotice({
+      variant: "mermaid",
+      label: `${escapeHtml(toolName(tools[0].tool))}…`,
+      loading: true,
+      showChevron: false,
+      open: false,
+    });
+  }
+  const totalMs = tools.reduce((s, t) => s + (t.ms || 0), 0);
+  if (tools.length === 1) {
+    return renderNotice({
+      variant: "mermaid",
+      label: `${escapeHtml(toolName(tools[0].tool))}${dur(totalMs)}`,
+      open: false,
+      bodyHtml: `<div class="assistant-notice__detail">${escapeHtml(toolDescription(tools[0].tool))}</div>`,
+    });
+  }
+  const rows = tools
+    .map(
+      (t) => `<li class="assistant-notice__tool">
+        <i class="ap-icon-toolbox" aria-hidden="true"></i>
+        <span class="assistant-notice__tool-name">${escapeHtml(toolName(t.tool))}</span>
+        ${sec(t.ms || 0) > 0 ? `<span class="assistant-notice__tool-duration">${sec(t.ms)}s</span>` : ""}
+      </li>`,
+    )
+    .join("");
+  return renderNotice({
+    variant: "mermaid",
+    label: `Ran ${tools.length} tools${dur(totalMs)}`,
+    open: false,
+    bodyHtml: `<ul class="assistant-notice__detail assistant-notice__tools">${rows}</ul>`,
+  });
 }
 
 // Inline "top posts" selection widget turn — an AI-side turn hosting the

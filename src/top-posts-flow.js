@@ -32,10 +32,11 @@ import {
   postUserTurn,
   postUserProfilesTurn,
   reportDraftFailure,
-} from "./assistant.js?v=1672";
-import { getTopPosts, getTopPost } from "./top-posts-store.js?v=1672";
-import { addPostDraft } from "./posts-store.js?v=1672";
-import { addReadySource } from "./sources-stream.js?v=1672";
+  GENERATION_TOOLS,
+} from "./assistant.js?v=1675";
+import { getTopPosts, getTopPost } from "./top-posts-store.js?v=1675";
+import { addPostDraft } from "./posts-store.js?v=1675";
+import { addReadySource } from "./sources-stream.js?v=1675";
 import {
   getConnectedProfiles,
   BRAND_INITIALS,
@@ -44,11 +45,11 @@ import {
   networkMeta,
   normalizeNetwork,
   getConnectedProfileById,
-} from "./social-profiles.js?v=1672";
-import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=1672";
-import { SORTS, PERIODS } from "./components/top-post-card.js?v=1672";
-import * as inlineQuestion from "./inline-question.js?v=1672";
-import { playbookForNewWork } from "./active-playbook.js?v=1672";
+} from "./social-profiles.js?v=1675";
+import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=1675";
+import { SORTS, PERIODS } from "./components/top-post-card.js?v=1675";
+import * as inlineQuestion from "./inline-question.js?v=1675";
+import { playbookForNewWork } from "./active-playbook.js?v=1675";
 
 // Cap on drafts produced in one run — post × angle × channel can multiply fast
 // (e.g. 3 posts × 4 angles × 3 channels = 36). Keep the result turn scannable;
@@ -71,7 +72,7 @@ function labelFor(network) {
 // chip, wait out the simulated delay, clear it, run `work` inside try/catch so a
 // downstream failure still clears the chip and offers a Retry.
 function withPendingChip(sessionId, work, onError, meta = "Generating post drafts…") {
-  const pendingId = startPending(sessionId, meta);
+  const pendingId = startPending(sessionId, meta, GENERATION_TOOLS);
   setTimeout(() => {
     finishPending(sessionId, pendingId);
     try {

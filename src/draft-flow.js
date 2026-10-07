@@ -20,12 +20,17 @@ import {
   finishPending,
   postDraftResult,
   reportDraftFailure,
-} from "./assistant.js?v=1672";
-import { getIdeas } from "./library.js?v=1672";
-import { anglesByIdea } from "./mocks.js?v=1672";
-import { addPostDraft } from "./posts-store.js?v=1672";
-import { networkMeta } from "./social-profiles.js?v=1672";
-import { coachAfterDraft } from "./voice-coach.js?v=1672";
+  GENERATION_TOOLS,
+} from "./assistant.js?v=1675";
+import { getIdeas } from "./library.js?v=1675";
+import { anglesByIdea } from "./mocks.js?v=1675";
+import { addPostDraft } from "./posts-store.js?v=1675";
+import { networkMeta } from "./social-profiles.js?v=1675";
+import { coachAfterDraft } from "./voice-coach.js?v=1675";
+
+// The set-up pass before a draft (reading the brief and the voice) — logged as
+// its own tools, so the generation that follows isn't counted twice.
+const withSetupChip = (sessionId, work) => withPendingChip(sessionId, work, null, ["request_config", "analyze_tone"]);
 
 // Simulated "generating drafts" delay shared by every draft flow.
 const DRAFT_DELAY_MS = 6000;
@@ -35,8 +40,8 @@ const DRAFT_DELAY_MS = 6000;
 // is given, `work` runs inside a try/catch so a downstream failure (posts-store
 // throws, assistant push errors) still clears the chip and surfaces a retry
 // toast instead of leaving the chip ticking forever (FIND-D2).
-function withPendingChip(sessionId, work, onError) {
-  const pendingId = startPending(sessionId, "Generating post drafts…");
+function withPendingChip(sessionId, work, onError, tools = GENERATION_TOOLS) {
+  const pendingId = startPending(sessionId, "Generating post drafts…", tools);
   setTimeout(() => {
     finishPending(sessionId, pendingId);
     if (!onError) {
@@ -125,7 +130,7 @@ export function startDraftFlow(sessionId, ideaId, count = 1, channelOverride = n
   // turn by the pickers in session.js, so we no longer post a composite
   // "Draft N posts: …" echo here — that would duplicate the per-step
   // responses. Go straight to the thinking chip.
-  withPendingChip(sessionId, () => {
+  withSetupChip(sessionId, () => {
     // The caller picked a profile explicitly — honour it and skip the
     // channel picker. Used by the right-panel count+profile flow where
     // the user has already chosen which network to draft for.

@@ -4,10 +4,10 @@
 // Moved out of session.js, unchanged; askAngleQuestion is also the right
 // panel's entry point (it imports this module, not the whole screen).
 
-import { getSessionById } from "../../sessions-store.js?v=1672";
-import { getContextById } from "../../contexts-store.js?v=1672";
-import { playbookForNewWork } from "../../active-playbook.js?v=1672";
-import { isFlagOn } from "../../feature-flags.js?v=1672";
+import { getSessionById } from "../../sessions-store.js?v=1675";
+import { getContextById } from "../../contexts-store.js?v=1675";
+import { playbookForNewWork } from "../../active-playbook.js?v=1675";
+import { isFlagOn } from "../../feature-flags.js?v=1675";
 import {
   postAssistantMessage,
   postSelectionEcho,
@@ -15,26 +15,27 @@ import {
   postUserTurn,
   startPending,
   finishPending,
+  postActivity,
   postExtractionResult,
   postClipExtractionTurn,
-} from "../../assistant.js?v=1672";
-import * as inlineQuestion from "../../inline-question.js?v=1672";
-import { getIdeas, extractVideoIdeas } from "../../library.js?v=1672";
+} from "../../assistant.js?v=1675";
+import * as inlineQuestion from "../../inline-question.js?v=1675";
+import { getIdeas, extractVideoIdeas } from "../../library.js?v=1675";
 import {
   getSources as getStreamSources,
   setSourceIdeaCount,
   extractClipsForSource,
-} from "../../sources-stream.js?v=1672";
+} from "../../sources-stream.js?v=1675";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
   getConnectedProfileById,
   normalizeNetwork,
-} from "../../social-profiles.js?v=1672";
-import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=1672";
-import { executeDraftBatch, startDraftFlow, getAnglesForIdea } from "../../draft-flow.js?v=1672";
-import * as topPostsFlow from "../../top-posts-flow.js?v=1672";
+} from "../../social-profiles.js?v=1675";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=1675";
+import { executeDraftBatch, startDraftFlow, getAnglesForIdea } from "../../draft-flow.js?v=1675";
+import * as topPostsFlow from "../../top-posts-flow.js?v=1675";
 
 // Build + show the "Which profile?" question, reached from every Draft Post
 // entry point. The chosen profile's platform becomes the draft's network so
@@ -138,6 +139,7 @@ function askProfileQuestion(
       // profile gives the same object-preview feedback as picking a post — not
       // a plain text bubble. Mirrors the multi-account batch path below.
       if (account) postUserProfilesTurn(sessionId, [account]);
+      postActivity(sessionId, ["set_publishing_accounts"]);
       const channels = account?.platform ? [account.platform] : null;
       // Multi-angle batch (from the angle stepper) → one draft run that
       // produces each angle's count. Otherwise the legacy single-angle path.
@@ -239,6 +241,8 @@ export function askAngleQuestion(sessionId, ideaId, { language = null } = {}) {
     askDraftCountQuestion(sessionId, ideaId, { language });
     return;
   }
+  // The prod logs the set-up it ran before proposing angles.
+  postActivity(sessionId, ["request_config", "analyze_tone", "propose_angles"]);
   postAssistantMessage(sessionId, "Let's draft from these angles.");
   // The quick picker shows a brand loader (~4s) while Archie "finds the
   // angles", then swaps in the real angle stepper. Cancelling during the
@@ -282,6 +286,7 @@ export function askAngleQuestion(sessionId, ideaId, { language = null } = {}) {
           sessionId,
           `${total} draft${total === 1 ? "" : "s"} · ${anglePicks.length} angle${anglePicks.length === 1 ? "" : "s"}`,
         );
+        postActivity(sessionId, ["set_angle_mix"]);
         askProfileQuestion(sessionId, ideaId, {
           anglePicks,
           language,
@@ -377,7 +382,7 @@ export function askVideoIntake(sessionId, sourceId, filename) {
 // "Analyze for ideas" — brief thinking chip, inject the canned video ideas,
 // surface the source-intake "N ideas" pill, then post the rich extraction turn.
 function runVideoIdeasChoice(sessionId, sourceId, filename) {
-  const pendingId = startPending(sessionId, "Extracting ideas from content…");
+  const pendingId = startPending(sessionId, "Extracting ideas from content…", ["extract_ideas"]);
   setTimeout(() => {
     finishPending(sessionId, pendingId);
     const ideas = extractVideoIdeas(sessionId, sourceId);

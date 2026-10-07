@@ -6,12 +6,12 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1672";
-import { findConnector } from "./connectors-store.js?v=1672";
-import { createSessionNotifier } from "./store-utils.js?v=1672";
-import { addPostDraft } from "./posts-store.js?v=1672";
-import { showToast } from "./components/toast.js?v=1672";
-import { isFlagOn } from "./feature-flags.js?v=1672";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1675";
+import { findConnector } from "./connectors-store.js?v=1675";
+import { createSessionNotifier } from "./store-utils.js?v=1675";
+import { addPostDraft } from "./posts-store.js?v=1675";
+import { showToast } from "./components/toast.js?v=1675";
+import { isFlagOn } from "./feature-flags.js?v=1675";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -390,16 +390,32 @@ export function postExtractionResult(sessionId, { filename, ideas }) {
 // status bar (e.g. "Extracting ideas from content…", "Generating post drafts…" — the prod copy); it defaults to a
 // generic "Working". Returns an id so the caller can clear the marker when work
 // finishes.
-export function startPending(sessionId, meta = null) {
+export function startPending(sessionId, meta = null, tools = null) {
   const thread = getThread(sessionId);
   const id = newId();
-  thread.push({
-    id,
-    role: "pending",
-    status: "loading",
-    meta: meta || null,
-    createdAt: Date.now(),
-  });
+  // New conversation styles: the work shows the tools it runs, the way the prod
+  // thread does (chat-thread.component toActivityGroup) — "Extract Ideas…"
+  // while it runs, "Extract Ideas · 1.6s" / "Ran 3 tools · 3.0s" once done, and
+  // the activity stays in the thread. Otherwise the transient pending marker.
+  if (tools && isFlagOn("newConversationStyles")) {
+    thread.push({
+      id,
+      role: "assistant",
+      variant: "activity",
+      meta: meta || null,
+      tools: tools.map((tool) => ({ tool, ms: 0 })),
+      status: "loading",
+      createdAt: Date.now(),
+    });
+  } else {
+    thread.push({
+      id,
+      role: "pending",
+      status: "loading",
+      meta: meta || null,
+      createdAt: Date.now(),
+    });
+  }
   notify(sessionId);
   return id;
 }
@@ -409,9 +425,55 @@ export function finishPending(sessionId, id) {
   const msg = thread.find((m) => m.id === id);
   if (msg) {
     msg.status = "ready";
+    if (msg.variant === "activity") msg.tools.forEach((t) => (t.ms = TOOL_MS[t.tool] ?? 0));
   }
   notify(sessionId);
 }
+
+// A config step the prod logs as a finished tool at once ("Set Angle Mix ·
+// 0.0s", "Set Publishing Accounts · 0.0s"). Nothing to show without the flag.
+export function postActivity(sessionId, tools) {
+  if (!isFlagOn("newConversationStyles")) return;
+  finishPending(sessionId, startPending(sessionId, null, tools));
+}
+
+// Simulated durations (ms) — the prod reads them off the wire.
+const TOOL_MS = { extract_ideas: 1600, start_generation: 200, generate_drafts: 2400, check_post_quality: 400 };
+
+// The prod's tool vocabulary (studio i18n): hooks.toolNames.* for the chip,
+// chat.tool.progress.* for what a finished single tool unfolds; any other id
+// is de-snake-cased (tool-name.ts) / "Running {{tool}}…".
+const TOOL_NAMES = {
+  modify_post: "Modify Post",
+  check_post_quality: "Check Quality",
+  start_generation: "Generate Posts",
+  schedule_post: "Schedule Post",
+  answer_pdf_question: "Analyze Document",
+  extract_ideas: "Extract Ideas",
+  analyze_tone: "Analyze Tone",
+  generate_drafts: "Generate Drafts",
+  regenerate_posts: "Regenerate Posts",
+  request_config: "Configure",
+  score_quality: "Score Quality",
+  get_best_times: "Best Publishing Times",
+  fix_practices: "Fix Practices",
+};
+const TOOL_PROGRESS = {
+  analyze_context: "Analyzing context…",
+  analyze_tone: "Analyzing writing tone…",
+  answer_pdf_question: "Analyzing document…",
+  check_post_quality: "Checking best practices…",
+  extract_ideas: "Extracting ideas from content…",
+  generate_drafts: "Generating post drafts…",
+  modify_post: "Modifying post content…",
+  regenerate_posts: "Generating new posts…",
+  request_config: "Updating configuration…",
+  schedule_post: "Scheduling post…",
+  start_generation: "Starting post generation…",
+};
+export const toolName = (t) => TOOL_NAMES[t] || t.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+export const toolDescription = (t) => TOOL_PROGRESS[t] || `Running ${t}…`;
+export const GENERATION_TOOLS = ["start_generation", "generate_drafts", "check_post_quality"];
 
 // Push only a user bubble — no reasoning chip, no AI placeholder.
 // Used by the draft flow so the user sees their intent echoed without
