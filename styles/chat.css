@@ -1270,6 +1270,25 @@ span.chat-bubble-choice-chip {
   display: none;
 }
 
+/* Every Archie card in the thread wears the same edge: grey-20, like the
+   memory card whose white answer row needs one. A result card still turns
+   its edge blue on hover (the house card hover); a pending one doesn't. */
+.e-turn .drafts-card,
+.e-turn .drafts-card--pending:hover {
+  border-color: var(--app-border);
+}
+
+/* The idea cards of an extraction share the thread's card radius (md) —
+   their 12px is the Ideas panel's, which stays as it is. */
+.e-turn .rpanel-ideas__card {
+  border-radius: var(--ref-border-radius-md);
+}
+
+.e-turn .drafts-card:not(.drafts-card--pending):not(.drafts-card--unavailable):hover,
+.e-turn .drafts-card:focus-visible {
+  border-color: var(--ref-color-electric-blue-100);
+}
+
 .e-turn .drafts-card__icon > i:not(.ap-icon-archie-official) {
   background: var(--ref-color-grey-100);
 }
