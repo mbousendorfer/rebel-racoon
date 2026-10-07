@@ -12,22 +12,22 @@ import {
   renderMessageBubble,
   renderNotice,
   renderResultCard,
-} from "./thread-turns.js?v=1639";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=1639";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1639";
-import { getTopPost } from "../../top-posts-store.js?v=1639";
-import { getTopicById } from "../../topics-store.js?v=1639";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=1639";
-import { renderProfileEchoCard } from "../../social-profiles.js?v=1639";
-import { escapeHtml } from "../../utils.js?v=1639";
-import { getIdeas } from "../../library.js?v=1639";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=1639";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1639";
-import { getThread } from "../../assistant.js?v=1639";
-import { getSuggestion } from "../../voice-coach-store.js?v=1639";
-import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=1639";
-import { isFlagOn } from "../../feature-flags.js?v=1639";
-import { CURRENT_USER } from "../../org.js?v=1639";
+} from "./thread-turns.js?v=1641";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1641";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1641";
+import { getTopPost } from "../../top-posts-store.js?v=1641";
+import { getTopicById } from "../../topics-store.js?v=1641";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=1641";
+import { renderProfileEchoCard } from "../../social-profiles.js?v=1641";
+import { escapeHtml } from "../../utils.js?v=1641";
+import { getIdeas } from "../../library.js?v=1641";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=1641";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1641";
+import { getThread } from "../../assistant.js?v=1641";
+import { getSuggestion } from "../../voice-coach-store.js?v=1641";
+import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=1641";
+import { isFlagOn } from "../../feature-flags.js?v=1641";
+import { CURRENT_USER } from "../../org.js?v=1641";
 
 export function renderThread(messages, sessionId) {
   const turns = messages.map((m) => [m, renderTurn(m, sessionId)]);
@@ -55,13 +55,20 @@ function renderTwoSides(turns) {
     el.querySelectorAll(":scope > .chat-turn-avatar, :scope > .chat-turn-role").forEach((n) => n.remove());
     // Archie goes on: one disc for the run. A status pill starts a new step.
     const status = side === "ai" && el.querySelector(".assistant-notice__toggle, .extracting-notice");
-    const cont = side === "ai" && prev === "ai" && !status;
+    // While Archie works (a pending result card, a working status), his avatar
+    // IS the loader: the same disc, the mark animated in place.
+    const working = side === "ai" && !!el.querySelector(".drafts-card--pending, .ap-status.is-working");
+    const cont = side === "ai" && prev === "ai" && !status && !working;
     prev = side;
     const time = clock(m.createdAt);
     const timeHtml = time ? `<span class="e-turn__time">${time}</span>` : "";
     const author =
       side === "ai"
-        ? `<span class="e-turn__mark"><i class="ap-icon-archie-official"></i></span>`
+        ? `<span class="e-turn__mark">${
+            working
+              ? `<span class="archie-loader" role="status" aria-label="Working"></span>`
+              : `<i class="ap-icon-archie-official"></i>`
+          }</span>`
         : `<span class="ap-avatar size-24"><span class="ap-avatar-initials">${escapeHtml(CURRENT_USER.initials)}</span></span>`;
     const head =
       side === "user" ? `<div class="e-turn__head">${timeHtml}<span class="e-turn__name">You</span></div>` : "";

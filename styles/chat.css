@@ -1099,6 +1099,12 @@ span.chat-bubble-choice-chip {
   background: var(--ref-color-white);
 }
 
+/* Working: the white mark, animated (archie-loader.js injects it). */
+.e-turn__mark > .archie-loader {
+  --archie-loader-size: var(--sys-icon-css-sm);
+  --archie-loader-color: var(--ref-color-white);
+}
+
 /* Archie's first line sits on the disc's centre line (24px disc, 18px line). */
 .e-turn__content {
   display: flex;
@@ -1202,10 +1208,10 @@ span.chat-bubble-choice-chip {
   display: none;
 }
 
-/* Archie's results are objects too: white, not butter. */
-.e-turn .drafts-card {
-  background: var(--app-surface);
-  border-color: var(--app-border);
+/* Archie's result cards keep their butter, without their own mark: the
+   avatar beside them already says Archie — and IS the loader while pending. */
+.e-turn .drafts-card__icon {
+  display: none;
 }
 
 /* A status pill's line IS the head line: same 24px row, no extra inset, so
