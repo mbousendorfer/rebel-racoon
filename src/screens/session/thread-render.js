@@ -13,22 +13,22 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=1669";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=1669";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1669";
-import { getTopPost } from "../../top-posts-store.js?v=1669";
-import { getTopicById } from "../../topics-store.js?v=1669";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=1669";
-import { renderProfileEchoCard } from "../../social-profiles.js?v=1669";
-import { escapeHtml } from "../../utils.js?v=1669";
-import { getIdeas } from "../../library.js?v=1669";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=1669";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1669";
-import { getThread } from "../../assistant.js?v=1669";
-import { getSuggestion } from "../../voice-coach-store.js?v=1669";
-import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=1669";
-import { isFlagOn } from "../../feature-flags.js?v=1669";
-import { CURRENT_USER } from "../../org.js?v=1669";
+} from "./thread-turns.js?v=1671";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1671";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1671";
+import { getTopPost } from "../../top-posts-store.js?v=1671";
+import { getTopicById } from "../../topics-store.js?v=1671";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=1671";
+import { renderProfileEchoCard } from "../../social-profiles.js?v=1671";
+import { escapeHtml } from "../../utils.js?v=1671";
+import { getIdeas } from "../../library.js?v=1671";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=1671";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1671";
+import { getThread } from "../../assistant.js?v=1671";
+import { getSuggestion } from "../../voice-coach-store.js?v=1671";
+import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=1671";
+import { isFlagOn } from "../../feature-flags.js?v=1671";
+import { CURRENT_USER } from "../../org.js?v=1671";
 
 export function renderThread(messages, sessionId) {
   const turns = messages.map((m) => [m, renderTurn(m, sessionId)]);
@@ -95,7 +95,7 @@ function renderTurn(message, sessionId) {
   // disappears once the caller flips status to "ready". Figma 25:1413.
   if (message.role === "pending") {
     if (message.status !== "loading") return "";
-    return renderExtractingNotice();
+    return renderExtractingNotice(message.meta);
   }
 
   // Right-aligned "Source intake" turn — Figma 25:1127 / 25:1131.
@@ -452,13 +452,13 @@ function renderClipExtractionTurn(message, sessionId) {
   if (!isReady) {
     // Live stage label from the extraction ticker (sources-stream); falls back
     // to a generic line before the first tick lands.
-    const stage = source.clipStage || "Cutting your clips";
+    const stage = source.clipStage || "Cutting your clips…";
     return `
       <div class="chat-turn chat-turn--ai chat-turn--clip-extraction">
         ${renderResultCard({
           state: "pending",
           busyLabel: stage,
-          title: `${stage}…`,
+          title: stage,
           sub: "Turning your video into post-ready clips — this takes a moment. You can keep chatting.",
         })}
       </div>
@@ -493,7 +493,7 @@ function renderIdeaExtractionTurn(message, sessionId) {
         ${renderResultCard({
           state: "pending",
           busyLabel: "Reading video for ideas",
-          title: "Reading the video for ideas…",
+          title: "Extracting ideas from content…",
           sub: "About 15s. You can keep chatting.",
         })}
       </div>

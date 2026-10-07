@@ -6,12 +6,12 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1669";
-import { findConnector } from "./connectors-store.js?v=1669";
-import { createSessionNotifier } from "./store-utils.js?v=1669";
-import { addPostDraft } from "./posts-store.js?v=1669";
-import { showToast } from "./components/toast.js?v=1669";
-import { isFlagOn } from "./feature-flags.js?v=1669";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1671";
+import { findConnector } from "./connectors-store.js?v=1671";
+import { createSessionNotifier } from "./store-utils.js?v=1671";
+import { addPostDraft } from "./posts-store.js?v=1671";
+import { showToast } from "./components/toast.js?v=1671";
+import { isFlagOn } from "./feature-flags.js?v=1671";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -102,7 +102,7 @@ export function sendMessage(sessionId, text, options = {}) {
   thread.push({
     id: reasoningId,
     role: "system",
-    meta: "Thinking",
+    meta: "Thinking…",
     variant: "mermaid",
     text: "Analyzing your request and sources…",
     open: false,
@@ -129,7 +129,7 @@ export function sendMessage(sessionId, text, options = {}) {
       reasoning.status = "ready";
       // Present tense while working, past tense once done — the same pair as
       // "Extracting" → "Extracted 2 ideas".
-      if (reasoning.meta === "Thinking") reasoning.meta = `Thought for ${Math.round(delay / 1000)}s`;
+      if (reasoning.meta === "Thinking…") reasoning.meta = `Thought for ${Math.round(delay / 1000)}s`;
       reasoning.open = false; // collapse after the answer lands
     }
     const replyMsg = thread.find((m) => m.id === replyId);
@@ -387,7 +387,7 @@ export function postExtractionResult(sessionId, { filename, ideas }) {
 // is being extracted). Renders as an inline "Extracting" notice in the thread
 // (Figma 25:1413) and also drives the composer status bar via its
 // status === "loading" tag. `meta` is the human label shown on the composer
-// status bar (e.g. "Extracting ideas", "Generating drafts"); it defaults to a
+// status bar (e.g. "Extracting ideas from content…", "Generating post drafts…" — the prod copy); it defaults to a
 // generic "Working". Returns an id so the caller can clear the marker when work
 // finishes.
 export function startPending(sessionId, meta = null) {

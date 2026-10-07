@@ -4,20 +4,20 @@
 // session.js, unchanged; the mention picker stays there, since bindSession
 // writes its highlight state.
 
-import { isFlagOn } from "../../feature-flags.js?v=1669";
-import { getConnectedConnectors, findConnector } from "../../connectors-store.js?v=1669";
-import { escapeHtml, html, raw, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=1669";
-import { renderConnectorLogo } from "../../connectors-view.js?v=1669";
-import { getSources, getIdeas } from "../../library.js?v=1669";
-import * as clipStudio from "../../clip-studio.js?v=1669";
-import { getThread } from "../../assistant.js?v=1669";
-import { revokedContextFor } from "../../playbook-access.js?v=1669";
-import { getSessionById } from "../../sessions-store.js?v=1669";
-import { catalogueRoute } from "../../active-playbook.js?v=1669";
-import { getActiveConnector } from "../../composer-connector.js?v=1669";
-import { COMPOSER_DEFAULT_PLACEHOLDER, renderPlaybookControl } from "../session.js?v=1669";
-import { renderTopicPickerRow } from "./empty-hero.js?v=1669";
-import { renderChatGallery } from "./chat-gallery.js?v=1669";
+import { isFlagOn } from "../../feature-flags.js?v=1671";
+import { getConnectedConnectors, findConnector } from "../../connectors-store.js?v=1671";
+import { escapeHtml, html, raw, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=1671";
+import { renderConnectorLogo } from "../../connectors-view.js?v=1671";
+import { getSources, getIdeas } from "../../library.js?v=1671";
+import * as clipStudio from "../../clip-studio.js?v=1671";
+import { getThread } from "../../assistant.js?v=1671";
+import { revokedContextFor } from "../../playbook-access.js?v=1671";
+import { getSessionById } from "../../sessions-store.js?v=1671";
+import { catalogueRoute } from "../../active-playbook.js?v=1671";
+import { getActiveConnector } from "../../composer-connector.js?v=1671";
+import { COMPOSER_DEFAULT_PLACEHOLDER, renderPlaybookControl } from "../session.js?v=1671";
+import { renderTopicPickerRow } from "./empty-hero.js?v=1671";
+import { renderChatGallery } from "./chat-gallery.js?v=1671";
 
 function renderConnectorsSubmenu() {
   // Connectors are gated behind a feature flag (default OFF) — when off, the
@@ -113,7 +113,7 @@ function humanizeLoadingMessage(m) {
     return withEllipsis(m.meta && m.meta !== "System" ? m.meta : m.text || "Working");
   }
   // Generic busy marker (startPending) — drafts/ideas flows pass a meta label
-  // ("Extracting ideas", "Generating drafts"); fall back to "Working".
+  // ("Extracting ideas from content…", "Generating post drafts…"); fall back to "Working".
   if (m.role === "pending") return withEllipsis(m.meta || "Working");
   return "Working…";
 }

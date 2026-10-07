@@ -6,7 +6,7 @@
 // and returns an HTML string. No store reads, no DOM, no side effects: the
 // store-coupled turns (extraction / clip-extraction / source resolution) stay
 // in session.js and pass their resolved data in as arguments.
-import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=1669";
+import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=1671";
 
 // Chat-switch skeleton — shown for ~340ms inside .session__assistant-thread
 // when switching chats, then swapped for the real thread.
@@ -294,11 +294,15 @@ export function renderSystemNotice(message) {
 
 // Inline pill shown while a non-blocking extraction is running — its own dot
 // pulses (.is-working): the status indicator is the only moving part.
-export function renderExtractingNotice() {
+export function renderExtractingNotice(label) {
+  // The prod's progress copy (studio i18n, chat.tool.progress.*): the flow
+  // names what it is doing ("Generating post drafts…"); the default is the
+  // extraction's.
+  const text = escapeHtml(label || "Extracting ideas from content…");
   return `
     <div class="chat-turn chat-turn--ai chat-turn--extracting">
-      <div class="extracting-notice" role="status" aria-label="Extracting ideas from this source">
-        <span class="ap-status mermaid is-working">Extracting</span>
+      <div class="extracting-notice" role="status" aria-label="${text}">
+        <span class="ap-status mermaid is-working">${text}</span>
       </div>
     </div>
   `;

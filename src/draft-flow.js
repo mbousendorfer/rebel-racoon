@@ -20,12 +20,12 @@ import {
   finishPending,
   postDraftResult,
   reportDraftFailure,
-} from "./assistant.js?v=1669";
-import { getIdeas } from "./library.js?v=1669";
-import { anglesByIdea } from "./mocks.js?v=1669";
-import { addPostDraft } from "./posts-store.js?v=1669";
-import { networkMeta } from "./social-profiles.js?v=1669";
-import { coachAfterDraft } from "./voice-coach.js?v=1669";
+} from "./assistant.js?v=1671";
+import { getIdeas } from "./library.js?v=1671";
+import { anglesByIdea } from "./mocks.js?v=1671";
+import { addPostDraft } from "./posts-store.js?v=1671";
+import { networkMeta } from "./social-profiles.js?v=1671";
+import { coachAfterDraft } from "./voice-coach.js?v=1671";
 
 // Simulated "generating drafts" delay shared by every draft flow.
 const DRAFT_DELAY_MS = 6000;
@@ -36,7 +36,7 @@ const DRAFT_DELAY_MS = 6000;
 // throws, assistant push errors) still clears the chip and surfaces a retry
 // toast instead of leaving the chip ticking forever (FIND-D2).
 function withPendingChip(sessionId, work, onError) {
-  const pendingId = startPending(sessionId, "Generating drafts");
+  const pendingId = startPending(sessionId, "Generating post drafts…");
   setTimeout(() => {
     finishPending(sessionId, pendingId);
     if (!onError) {

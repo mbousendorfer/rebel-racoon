@@ -32,10 +32,10 @@ import {
   postUserTurn,
   postUserProfilesTurn,
   reportDraftFailure,
-} from "./assistant.js?v=1669";
-import { getTopPosts, getTopPost } from "./top-posts-store.js?v=1669";
-import { addPostDraft } from "./posts-store.js?v=1669";
-import { addReadySource } from "./sources-stream.js?v=1669";
+} from "./assistant.js?v=1671";
+import { getTopPosts, getTopPost } from "./top-posts-store.js?v=1671";
+import { addPostDraft } from "./posts-store.js?v=1671";
+import { addReadySource } from "./sources-stream.js?v=1671";
 import {
   getConnectedProfiles,
   BRAND_INITIALS,
@@ -44,11 +44,11 @@ import {
   networkMeta,
   normalizeNetwork,
   getConnectedProfileById,
-} from "./social-profiles.js?v=1669";
-import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=1669";
-import { SORTS, PERIODS } from "./components/top-post-card.js?v=1669";
-import * as inlineQuestion from "./inline-question.js?v=1669";
-import { playbookForNewWork } from "./active-playbook.js?v=1669";
+} from "./social-profiles.js?v=1671";
+import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=1671";
+import { SORTS, PERIODS } from "./components/top-post-card.js?v=1671";
+import * as inlineQuestion from "./inline-question.js?v=1671";
+import { playbookForNewWork } from "./active-playbook.js?v=1671";
 
 // Cap on drafts produced in one run — post × angle × channel can multiply fast
 // (e.g. 3 posts × 4 angles × 3 channels = 36). Keep the result turn scannable;
@@ -70,7 +70,7 @@ function labelFor(network) {
 // Shared chip lifecycle (mirrors draft-flow.withPendingChip): show the thinking
 // chip, wait out the simulated delay, clear it, run `work` inside try/catch so a
 // downstream failure still clears the chip and offers a Retry.
-function withPendingChip(sessionId, work, onError, meta = "Generating drafts") {
+function withPendingChip(sessionId, work, onError, meta = "Generating post drafts…") {
   const pendingId = startPending(sessionId, meta);
   setTimeout(() => {
     finishPending(sessionId, pendingId);
@@ -491,7 +491,7 @@ function presentWinners(sessionId, network, sortKey = "performance", period = "1
   const net = normalizeNetwork(network);
   const sort = SORTS.find((s) => s.key === sortKey) || SORTS[0];
   const window = PERIODS.find((p) => p.key === period) || PERIODS[0];
-  const pendingId = startPending(sessionId, "Finding your top posts");
+  const pendingId = startPending(sessionId, "Finding your top posts…");
   setTimeout(() => {
     finishPending(sessionId, pendingId);
     const postIds = getTopPosts()

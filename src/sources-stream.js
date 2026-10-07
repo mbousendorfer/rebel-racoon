@@ -8,11 +8,11 @@
 // The state machine timers live here (not inside the modal) so uploads
 // continue in background after the user closes the modal.
 
-import { sourcesBySession as seedByCsesssion } from "./mocks.js?v=1669";
-import { isNewUser } from "./user-mode.js?v=1669";
-import { createNotifier } from "./store-utils.js?v=1669";
-import { detectUrlService } from "./url-services.js?v=1669";
-import { showToast } from "./components/toast.js?v=1669";
+import { sourcesBySession as seedByCsesssion } from "./mocks.js?v=1671";
+import { isNewUser } from "./user-mode.js?v=1671";
+import { createNotifier } from "./store-utils.js?v=1671";
+import { detectUrlService } from "./url-services.js?v=1671";
+import { showToast } from "./components/toast.js?v=1671";
 
 // Canned extraction output attached to every Processed Video source.
 // Generic enough to plausibly come from any keynote / talk / demo video.
@@ -403,11 +403,12 @@ function attachVideoClips(src) {
 // simulated extraction window so the pending clip-extraction turn reads as real
 // AI work rather than a static spinner. Mirrors PROCESSING_STAGES.
 const CLIP_EXTRACTION_STAGES = [
-  { from: 0, label: "Transcribing audio" },
-  { from: 0.2, label: "Detecting highlights & hooks" },
-  { from: 0.45, label: "Scoring moments" },
-  { from: 0.7, label: "Cutting clips" },
-  { from: 0.9, label: "Generating captions" },
+  // The prod's own stage labels (studio i18n, panels.clips.processing.*).
+  { from: 0, label: "Preparing your video…" },
+  { from: 0.15, label: "Transcribing audio…" },
+  { from: 0.4, label: "Finding the best moments…" },
+  { from: 0.65, label: "Cutting your clips…" },
+  { from: 0.85, label: "Rendering your clips…" },
 ];
 const CLIP_EXTRACTION_MS = 7500;
 

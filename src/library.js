@@ -9,16 +9,16 @@
 //   appendExtractedIdeas(sessionId, sources)  bulk "extract more" flow
 //   removeIdeasForSources(sessionId, sourceIds)  cleanup after bulk-delete
 
-import { ideasBySession as seedIdeasBySession, allSeedSessions as seedRecentSessions } from "./mocks.js?v=1669";
-import { isNewUser } from "./user-mode.js?v=1669";
+import { ideasBySession as seedIdeasBySession, allSeedSessions as seedRecentSessions } from "./mocks.js?v=1671";
+import { isNewUser } from "./user-mode.js?v=1671";
 
 // Demo session ids — the recentSessions seed (s-acme-launch / s-riverside /
 // etc.). Only these sessions get the seeded ideas mock; brand-new
 // conversations (created at runtime via "+ New conversation") start empty
 // to match the user's mental model. Anything else looked-up — same path.
 const DEMO_SESSION_IDS = new Set(seedRecentSessions.map((s) => s.id));
-import { postExtractionResult, startPending, finishPending } from "./assistant.js?v=1669";
-import { setIdeasReader } from "./assistant.js?v=1669";
+import { postExtractionResult, startPending, finishPending } from "./assistant.js?v=1671";
+import { setIdeasReader } from "./assistant.js?v=1671";
 
 // Hand the assistant a way to read a session's ideas. The dependency only runs
 // this way — library imports assistant, never the reverse — so the mock replies
@@ -29,7 +29,7 @@ import {
   subscribeSources,
   pushScriptedSource,
   completeScriptedSource,
-} from "./sources-stream.js?v=1669";
+} from "./sources-stream.js?v=1671";
 
 // --- Module state -------------------------------------------------------
 
@@ -120,7 +120,7 @@ export function appendExtractedIdeas(sessionId, sources, onDone) {
   // "Extracting ideas…" (consistent with source analysis / drafting) rather
   // than completing in the same tick. onDone fires after the work lands so the
   // caller's confirmation toast doesn't contradict the in-progress bar.
-  const pendingId = startPending(sessionId, "Extracting ideas");
+  const pendingId = startPending(sessionId, "Extracting ideas from content…");
   setTimeout(() => {
     const created = [];
     sources.forEach((source, idx) => {
