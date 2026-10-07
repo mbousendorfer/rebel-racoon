@@ -57,6 +57,13 @@
   display: none;
 }
 
+/* Done, the status goes neutral: butter is kept for the work while it runs
+   and for what it produced (the result cards) — a finished "Thought for 3s"
+   is grey-10, not butter. */
+.e-turn .ap-status.mermaid:not(.is-working) {
+  background: var(--ref-color-grey-10);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ap-status.is-working::before {
     animation: none;

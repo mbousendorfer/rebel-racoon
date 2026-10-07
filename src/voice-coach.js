@@ -13,15 +13,15 @@
 // ponytail: the edit heuristics are a mock reading of one before/after pair.
 // The real thing compares many drafts per network before proposing.
 
-import { getSessionById } from "./sessions-store.js?v=1671";
-import { getContextById } from "./contexts-store.js?v=1671";
-import { playbookForNewWork } from "./active-playbook.js?v=1671";
-import { getPosts } from "./posts-store.js?v=1671";
-import { postVoiceSuggestion, postSelectionEcho } from "./assistant.js?v=1671";
-import { ask, isActive } from "./inline-question.js?v=1671";
-import { propose, accept } from "./voice-coach-store.js?v=1671";
-import { normalizeNetwork } from "./social-profiles.js?v=1671";
-import { networkVoicesOn, baseNetwork, isOverridden, networkLabel, networkIcon } from "./network-voice.js?v=1671";
+import { getSessionById } from "./sessions-store.js?v=1672";
+import { getContextById } from "./contexts-store.js?v=1672";
+import { playbookForNewWork } from "./active-playbook.js?v=1672";
+import { getPosts } from "./posts-store.js?v=1672";
+import { postVoiceSuggestion, postSelectionEcho } from "./assistant.js?v=1672";
+import { ask, isActive } from "./inline-question.js?v=1672";
+import { propose, accept } from "./voice-coach-store.js?v=1672";
+import { normalizeNetwork } from "./social-profiles.js?v=1672";
+import { networkVoicesOn, baseNetwork, isOverridden, networkLabel, networkIcon } from "./network-voice.js?v=1672";
 
 function sessionPlaybook(sessionId) {
   const session = getSessionById(sessionId);
