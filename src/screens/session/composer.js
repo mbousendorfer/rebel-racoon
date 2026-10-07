@@ -4,20 +4,20 @@
 // session.js, unchanged; the mention picker stays there, since bindSession
 // writes its highlight state.
 
-import { isFlagOn } from "../../feature-flags.js?v=1630";
-import { getConnectedConnectors, findConnector } from "../../connectors-store.js?v=1630";
-import { escapeHtml, html, raw, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=1630";
-import { renderConnectorLogo } from "../../connectors-view.js?v=1630";
-import { getSources, getIdeas } from "../../library.js?v=1630";
-import * as clipStudio from "../../clip-studio.js?v=1630";
-import { getThread } from "../../assistant.js?v=1630";
-import { revokedContextFor } from "../../playbook-access.js?v=1630";
-import { getSessionById } from "../../sessions-store.js?v=1630";
-import { catalogueRoute } from "../../active-playbook.js?v=1630";
-import { getActiveConnector } from "../../composer-connector.js?v=1630";
-import { COMPOSER_DEFAULT_PLACEHOLDER, renderPlaybookControl } from "../session.js?v=1630";
-import { renderTopicPickerRow } from "./empty-hero.js?v=1630";
-import { renderChatGallery } from "./chat-gallery.js?v=1630";
+import { isFlagOn } from "../../feature-flags.js?v=1631";
+import { getConnectedConnectors, findConnector } from "../../connectors-store.js?v=1631";
+import { escapeHtml, html, raw, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=1631";
+import { renderConnectorLogo } from "../../connectors-view.js?v=1631";
+import { getSources, getIdeas } from "../../library.js?v=1631";
+import * as clipStudio from "../../clip-studio.js?v=1631";
+import { getThread } from "../../assistant.js?v=1631";
+import { revokedContextFor } from "../../playbook-access.js?v=1631";
+import { getSessionById } from "../../sessions-store.js?v=1631";
+import { catalogueRoute } from "../../active-playbook.js?v=1631";
+import { getActiveConnector } from "../../composer-connector.js?v=1631";
+import { COMPOSER_DEFAULT_PLACEHOLDER, renderPlaybookControl } from "../session.js?v=1631";
+import { renderTopicPickerRow } from "./empty-hero.js?v=1631";
+import { renderChatGallery } from "./chat-gallery.js?v=1631";
 
 function renderConnectorsSubmenu() {
   // Connectors are gated behind a feature flag (default OFF) — when off, the
