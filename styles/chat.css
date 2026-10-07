@@ -1082,9 +1082,8 @@ span.chat-bubble-choice-chip {
   flex-shrink: 0;
 }
 
-/* Archie's disc carries all his butter: on the grey thread a flat butter disc
-   dissolves, so it gets a hairline in his own olive to hold its edge, and the
-   mark at its full 16px so the pixels stay crisp. */
+/* Archie's avatar: his mark in white on his own orange, a solid disc like an
+   app icon — it holds on the grey thread where a pale butter disc dissolved. */
 .e-turn__mark {
   display: inline-flex;
   align-items: center;
@@ -1092,13 +1091,12 @@ span.chat-bubble-choice-chip {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: var(--app-butter);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--app-butter-accent) 40%, transparent);
+  background: var(--app-archie-mark);
 }
 
 .e-turn__mark > i {
   font-size: var(--sys-icon-css-sm);
-  background: var(--app-archie-mark);
+  background: var(--ref-color-white);
 }
 
 /* Archie's first line sits on the disc's centre line (24px disc, 18px line). */
