@@ -56,9 +56,9 @@
 // and how it commits, what the preview shows in each of its four states — and this file
 // is the LAYOUT that hosts them.
 
-import { settingRowEntries } from "./settings-view.js?v=1622";
-import { briefBody, briefNote } from "./brief-blocks.js?v=1622";
-import { previewColumn } from "./preview-column.js?v=1622";
+import { settingRowEntries } from "./settings-view.js?v=1623";
+import { briefBody, briefNote } from "./brief-blocks.js?v=1623";
+import { previewColumn } from "./preview-column.js?v=1623";
 
 /** Is the brief reachable yet? It describes an image, so it needs one. */
 function briefReady(st) {

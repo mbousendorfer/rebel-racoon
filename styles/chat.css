@@ -37,13 +37,15 @@
   align-self: flex-end;
   max-width: 420px;
   padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
-  border: 0;
+  /* What you SENT or PICKED as an object (a source, a profile, a clip…):
+     a white card, grey-20 edge — light, so a row of them never weighs on the
+     thread. Navy stays for the words you type (.chat-bubble--user); your side
+     still shows in the sharp top-right corner (12 / 0 / 12 / 12). */
+  border: 1px solid var(--app-border);
   border-radius: var(--app-radius-card, 12px);
-  /* User-side language, like .chat-bubble--user and the source intake: navy,
-     white ink, sharp top-right (12 / 0 / 12 / 12) — what YOU said or picked. */
   border-top-right-radius: 0;
-  background: var(--app-convo-navy);
-  color: var(--ref-color-white);
+  background: var(--app-surface);
+  color: var(--ref-color-grey-100);
 }
 
 .selection-echo__icon {
@@ -54,15 +56,12 @@
   height: 32px;
   flex-shrink: 0;
   border-radius: var(--app-radius-pill);
-  /* An opaque light-navy disc, navy glyph: a crisp ~14:1 mark that reads
-     as an object on the bubble. (A translucent veil + light glyph turned
-     into grey on grey; pure white punched a hole in the navy.) */
-  background: var(--app-convo-navy-10);
+  background: var(--app-surface-subtle);
 }
 
 .selection-echo__icon i {
   font-size: var(--sys-icon-css-sm);
-  color: var(--app-convo-navy);
+  color: var(--ref-color-grey-100);
 }
 
 .selection-echo__body {
@@ -73,7 +72,7 @@
 
 .selection-echo__title {
   font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--ref-color-white);
+  color: var(--ref-color-grey-100);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -81,8 +80,7 @@
 
 .selection-echo__meta {
   font-size: var(--sys-text-style-caption-size);
-  /* Secondary ink on navy — the light navy step, as grey-80 is on white. */
-  color: var(--app-convo-navy-20);
+  color: var(--ref-color-grey-80);
 }
 
 /* Visual profiles echo — right-aligned wrap of avatar + handle chips, used
@@ -200,8 +198,7 @@
    Corners 12 / 0 / 12 / 12 — sharp top-right corner points at the user avatar. */
 /* Light ink on navy renders heavier than the same weight on white:
    grayscale antialiasing gives it back its drawn weight. */
-.chat-bubble--user,
-.selection-echo {
+.chat-bubble--user {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -256,8 +253,8 @@
   align-items: center;
   gap: 6px;
   padding: 3px 10px;
-  background: color-mix(in srgb, var(--ref-color-white) 16%, transparent);
-  color: var(--ref-color-white);
+  background: var(--app-surface-subtle);
+  color: var(--ref-color-grey-100);
   /* The loader stays Archie's brand orange, whatever the surface. */
   --archie-loader-color: var(--ref-color-orange-100);
   border-radius: var(--app-radius-pill);
@@ -296,7 +293,7 @@
 }
 
 .chat-bubble-source-intake__pill:focus-visible {
-  outline: 2px solid var(--app-butter);
+  outline: 2px solid var(--ref-color-electric-blue-100);
   outline-offset: 2px;
 }
 
