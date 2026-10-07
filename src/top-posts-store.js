@@ -13,8 +13,8 @@
 // Empty in new-alt mode — a brand-new user has no published history yet, so the
 // "Use top performing posts" flow shows an empty-state message instead.
 
-import { topPosts as seed } from "./mocks.js?v=1695";
-import { isNewUser } from "./user-mode.js?v=1695";
+import { topPosts as seed } from "./mocks.js?v=1696";
+import { isNewUser } from "./user-mode.js?v=1696";
 
 let posts = null;
 

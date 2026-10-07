@@ -294,6 +294,10 @@
   padding: var(--ref-spacing-md);
   border: 1.5px dashed var(--ref-color-grey-20);
   border-radius: var(--ref-border-radius-md);
+  /* Tinted so the slot reads as the image's place, not a gap in a white card
+     (2026-10-07). The mermaid button keeps its white inside on purpose: on the
+     tint it is the one filled surface, so the shortcut leads. */
+  background: var(--app-surface-subtle);
   text-align: center;
   transition:
     border-color var(--ref-animation-short),
