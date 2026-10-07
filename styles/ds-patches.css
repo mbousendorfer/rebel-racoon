@@ -25,6 +25,31 @@
   background: var(--app-butter-accent);
 }
 
+/* Working — the dot IS the status indicator: it breathes while Archie works,
+   and nothing else moves (no spinner beside the pill, no whole-pill fade).
+   Settles to a still dot once done; still under reduced motion. */
+@keyframes ap-status-working {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(0.7);
+  }
+}
+
+.ap-status.is-working::before {
+  animation: ap-status-working 1.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ap-status.is-working::before {
+    animation: none;
+  }
+}
+
 /* Archie logo mark — a dedicated, self-contained icon for the Archie "A"
    logotype (the assistant's identity). This is its OWN glyph, distinct from
    the DS .ap-icon-sparkles / .ap-icon-sparkles-mermaid (which keep their

@@ -6,7 +6,7 @@
 // and returns an HTML string. No store reads, no DOM, no side effects: the
 // store-coupled turns (extraction / clip-extraction / source resolution) stay
 // in session.js and pass their resolved data in as arguments.
-import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=1619";
+import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=1620";
 
 // Chat-switch skeleton — shown for ~340ms inside .session__assistant-thread
 // when switching chats, then swapped for the real thread.
@@ -230,7 +230,7 @@ export function renderNotice({
   const variantClass = variant === "mermaid" ? " assistant-notice--mermaid" : "";
   const loadingClass = loading ? " is-loading" : "";
   const openAttr = open ? " open" : "";
-  const statusClass = variant === "mermaid" ? "ap-status mermaid" : "ap-status grey";
+  const statusClass = `${variant === "mermaid" ? "ap-status mermaid" : "ap-status grey"}${loading ? " is-working" : ""}`;
   return `
     <details class="assistant-notice${variantClass}${loadingClass}"${openAttr}>
       <summary class="assistant-notice__toggle">
@@ -254,13 +254,13 @@ export function renderSystemNotice(message) {
   });
 }
 
-// Inline pill + spinner shown while a non-blocking extraction is running.
+// Inline pill shown while a non-blocking extraction is running — its own dot
+// pulses (.is-working): the status indicator is the only moving part.
 export function renderExtractingNotice() {
   return `
     <div class="chat-turn chat-turn--ai chat-turn--extracting">
       <div class="extracting-notice" role="status" aria-label="Extracting ideas from this source">
-        <span class="extracting-notice__spinner" aria-hidden="true"></span>
-        <span class="ap-status mermaid">Extracting</span>
+        <span class="ap-status mermaid is-working">Extracting</span>
       </div>
     </div>
   `;

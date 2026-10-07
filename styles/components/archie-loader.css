@@ -30,7 +30,6 @@
 .ap-loader.size-16,
 .ap-loader.size-24,
 .chat-bubble-source-intake__spinner,
-.extracting-notice__spinner,
 .drafts-card__spinner,
 .session__composer-thinking-spinner,
 .source-card__spinner,
@@ -60,7 +59,6 @@
 .archie-loader > svg,
 .ap-loader > svg,
 .chat-bubble-source-intake__spinner > svg,
-.extracting-notice__spinner > svg,
 .drafts-card__spinner > svg,
 .session__composer-thinking-spinner > svg,
 .source-card__spinner > svg,
@@ -88,7 +86,6 @@
 .schedule-modal__spinner {
   --archie-loader-size: 20px;
 }
-.extracting-notice__spinner,
 .source-card__spinner,
 .ap-loader.size-16 {
   --archie-loader-size: 22px;

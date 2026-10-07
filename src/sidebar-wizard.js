@@ -29,9 +29,9 @@
 // `body` is HTML (chat turns) and `picker` is the standard picker shape from
 // _analyse-common.js (items + handler + optional customPlaceholder).
 
-import { chatTurn, bulletsBlock, fieldsBlock } from "./screens/_analyse-common.js?v=1619";
-import { voiceAnalysis, strategyBrief, brandTheme } from "./mocks.js?v=1619";
-import { createSessionNotifier } from "./store-utils.js?v=1619";
+import { chatTurn, bulletsBlock, fieldsBlock } from "./screens/_analyse-common.js?v=1620";
+import { voiceAnalysis, strategyBrief, brandTheme } from "./mocks.js?v=1620";
+import { createSessionNotifier } from "./store-utils.js?v=1620";
 
 // ---- State -----------------------------------------------------------------
 
@@ -242,16 +242,15 @@ export function renderChrome(sessionId) {
   };
 }
 
-// Inline "Analyzing" notice — same chrome as renderExtractingNotice in
-// session.js (mermaid status pill + spinner) but with a different label.
+// Inline "Analyzing" notice — same chrome as renderExtractingNotice
+// (thread-turns.js): the butter status pill, its dot pulsing while it works.
 // The CSS classes (.chat-turn--extracting, .extracting-notice) live in
 // styles/chat.css and are framework-agnostic.
 function analyzingNoticeHtml() {
   return `
     <div class="chat-turn chat-turn--ai chat-turn--extracting">
       <div class="extracting-notice">
-        <span class="extracting-notice__spinner" aria-hidden="true"></span>
-        <span class="ap-status mermaid">Analyzing</span>
+        <span class="ap-status mermaid is-working">Analyzing</span>
       </div>
     </div>
   `;
