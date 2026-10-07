@@ -16,7 +16,7 @@
 // draft's photo — and keeps its own undo stack. Edits stick to that image:
 // picking another variation opens (or reopens) that one's document.
 
-import { hashString } from "../lib/prng.js?v=1620";
+import { hashString } from "../lib/prng.js?v=1621";
 
 let seq = 0;
 const uid = (prefix) => `${prefix}-${(seq += 1).toString(36)}`;

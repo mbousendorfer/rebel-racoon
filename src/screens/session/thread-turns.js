@@ -6,7 +6,7 @@
 // and returns an HTML string. No store reads, no DOM, no side effects: the
 // store-coupled turns (extraction / clip-extraction / source resolution) stay
 // in session.js and pass their resolved data in as arguments.
-import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=1620";
+import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=1621";
 
 // Chat-switch skeleton — shown for ~340ms inside .session__assistant-thread
 // when switching chats, then swapped for the real thread.
@@ -40,8 +40,9 @@ export function renderMessageBubble(message) {
   `;
 }
 
-// Right-aligned "Source intake" turn — a single-line compact chip with a kind
-// icon, filename (ellipsis-truncated), and a trailing status slot. The backing
+// Right-aligned "Source intake" turn — the same anatomy as every source the
+// user picks (the selection echo): the kind glyph in a veil disc, the filename
+// over its kind, then a trailing status slot. The backing
 // source is resolved by the caller (session.js reads sources-stream) and passed
 // in as `source` so this stays a pure renderer; pass `null` for the unresolved
 // case. Trailing states are driven by (status loading, ideaCount, clips).
@@ -64,6 +65,18 @@ export function renderSourceIntakeTurn(message, source = null) {
   // set by topic-flow's attachTopicToChat); that wins over the kind fallback.
   const icon = source?.iconClass || iconByKind[kindKey] || "ap-icon-file";
   const isLoading = message.status === "loading";
+  // The line under the filename — the same words a picked source's echo uses.
+  const kindLabels = {
+    pdf: "PDF",
+    video: "Video",
+    url: "Link",
+    word: "Document",
+    text: "Document",
+    image: "Image",
+    audio: "Audio",
+    topic: "Topic",
+  };
+  const kindLabel = `${kindLabels[kindKey] || "File"} source`;
 
   // A recognised link (YouTube, Drive, Notion, …) shows the service logo
   // instead of the generic link glyph. Falls back to the kind icon.
@@ -135,10 +148,13 @@ export function renderSourceIntakeTurn(message, source = null) {
   return `
     <div class="chat-turn chat-turn--user">
       <span class="chat-turn-role">${message.meta || "Source intake"}</span>
-      <div class="chat-bubble chat-bubble--source-intake" data-intake-status="${message.status || "ready"}">
-        ${kindIcon}
-        <span class="chat-bubble-source-intake__name" title="${filename}">${filename}</span>
-        ${trailing}
+      <div class="selection-echo selection-echo--intake" data-intake-status="${message.status || "ready"}">
+        <span class="selection-echo__icon">${kindIcon}</span>
+        <span class="selection-echo__body">
+          <span class="selection-echo__title" title="${filename}">${filename}</span>
+          <span class="selection-echo__meta">${kindLabel}</span>
+        </span>
+        <span class="selection-echo__trailing">${trailing}</span>
       </div>
     </div>
   `;
