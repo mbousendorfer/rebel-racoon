@@ -14,8 +14,8 @@
 // ponytail: the catalogue is a hand-kept list — a new turn variant or route has
 // to be added here too, or it won't show in the menu.
 
-import { escapeHtml } from "../../utils.js?v=1641";
-import { isFlagOn } from "../../feature-flags.js?v=1641";
+import { escapeHtml } from "../../utils.js?v=1642";
+import { isFlagOn } from "../../feature-flags.js?v=1642";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -33,21 +33,22 @@ import {
   postVoiceSuggestion,
   getThread,
   refreshThread,
-} from "../../assistant.js?v=1641";
-import { getSources, getIdeas } from "../../library.js?v=1641";
-import { getPosts } from "../../posts-store.js?v=1641";
-import { getTopPosts } from "../../top-posts-store.js?v=1641";
-import { getConnectedProfiles } from "../../social-profiles.js?v=1641";
-import { getConnectedConnectors } from "../../connectors-store.js?v=1641";
-import { detectUrlService } from "../../url-services.js?v=1641";
-import { propose, getSuggestions } from "../../voice-coach-store.js?v=1641";
-import * as inlineQuestion from "../../inline-question.js?v=1641";
-import { startTopPostsInline } from "../../top-posts-flow.js?v=1641";
-import { startTopicPickerInline } from "../../topic-flow.js?v=1641";
-import { askConnector } from "../../connector-ask.js?v=1641";
-import { coachAfterDraft } from "../../voice-coach.js?v=1641";
-import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=1641";
-import { startIdeaDraft, askVideoIntake } from "./draft-questions.js?v=1641";
+} from "../../assistant.js?v=1642";
+import { getSources, getIdeas } from "../../library.js?v=1642";
+import { getPosts } from "../../posts-store.js?v=1642";
+import { getTopPosts } from "../../top-posts-store.js?v=1642";
+import { getConnectedProfiles } from "../../social-profiles.js?v=1642";
+import { extractClipsForSource, updateSourceClips } from "../../sources-stream.js?v=1642";
+import { getConnectedConnectors } from "../../connectors-store.js?v=1642";
+import { detectUrlService } from "../../url-services.js?v=1642";
+import { propose, getSuggestions } from "../../voice-coach-store.js?v=1642";
+import * as inlineQuestion from "../../inline-question.js?v=1642";
+import { startTopPostsInline } from "../../top-posts-flow.js?v=1642";
+import { startTopicPickerInline } from "../../topic-flow.js?v=1642";
+import { askConnector } from "../../connector-ask.js?v=1642";
+import { coachAfterDraft } from "../../voice-coach.js?v=1642";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=1642";
+import { startIdeaDraft, askVideoIntake } from "./draft-questions.js?v=1642";
 
 // The intake sample plays the real lifecycle — loading, then ready — under a
 // sample id no source owns, so intake-lifecycle leaves it alone.
@@ -139,10 +140,15 @@ const COMPONENTS = [
     id: "clips",
     label: "Clip extraction",
     icon: "ap-icon-file--video",
-    hint: "The “Clips ready” card of a video",
+    hint: "A video cut into clips: its stages for ~7s, then the “Clips ready” card",
     when: (sid) => (videoOf(sid) ? null : "Needs a video source"),
+    // Replays the real extraction on the chat's video: its clips are dropped,
+    // then re-cut through the staged ticker (the same path as "Extract & create
+    // clips"), so the card walks its stages instead of landing ready.
     run: (sid) => {
       const v = videoOf(sid);
+      updateSourceClips(v.id, []);
+      extractClipsForSource(sid, v.id);
       postClipExtractionTurn(sid, { sourceId: v.id, filename: v.filename });
     },
   },
