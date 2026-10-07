@@ -1171,6 +1171,25 @@ span.chat-bubble-choice-chip {
   right: calc(100% + var(--ref-spacing-xs));
 }
 
+/* Archie's memory proposal (voice-coach.css .memory-card) takes the result
+   card's anatomy: the butter block on its 12 / 16 inset, a 16px glyph that
+   says WHAT it is (the memory sparkles, in ink like the clips card's video —
+   the avatar already says who), 12px, then the rule. The answer row keeps
+   the card's 16px inset: indented to the text edge, the question no longer
+   fits beside its two buttons at 520px. */
+.e-turn .memory-card__body {
+  gap: 2px var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+}
+
+.e-turn .memory-card__body > i.memory-mark {
+  color: var(--ref-color-grey-100);
+}
+
+.e-turn .memory-card__answer {
+  padding-left: var(--ref-spacing-sm);
+}
+
 /* The memory turn is a size container (its card wraps under 440px): a
    container takes no width from its content, so it must stretch to the
    column or it collapses to nothing. */
