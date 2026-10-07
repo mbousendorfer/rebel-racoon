@@ -226,7 +226,7 @@
 .selection-echo__trailing {
   display: inline-flex;
   align-items: center;
-  gap: var(--ref-spacing-xxs);
+  gap: var(--ref-spacing-sm);
   flex-shrink: 0;
 }
 
@@ -264,41 +264,30 @@
   flex-shrink: 0;
 }
 
-/* (2) Ideas / clips pill — what Archie got out of your file, so it wears
-   Archie's butter on the navy bubble (navy ink, high contrast). Hover deepens
-   the butter toward its olive, the chevron nudges 2px. */
+/* (2) Ideas / clips — the DS link (.ap-link standalone small, set in the
+   renderer), the same as the result cards' "Open clips ›": on your white
+   object card, blue is what you can click. This rule only resets the
+   <button> and keeps the chevron cue. */
 .chat-bubble-source-intake__pill {
   display: inline-flex;
   align-items: center;
   gap: var(--ref-spacing-xxxs);
-  padding: 3px var(--ref-spacing-xxs) 3px 10px;
-  background: var(--app-butter);
-  color: var(--app-convo-navy);
+  padding: 0;
+  background: none;
   border: 0;
-  border-radius: var(--app-radius-pill);
-  font: inherit;
-  font-size: var(--sys-text-style-caption-bold-size);
-  line-height: var(--sys-text-style-caption-bold-line-height);
-  font-weight: var(--sys-text-style-caption-bold-weight);
   cursor: pointer;
   flex-shrink: 0;
   font-variant-numeric: tabular-nums;
-  transition: background var(--ref-animation-short) var(--app-ease-out);
-}
-
-.chat-bubble-source-intake__pill:hover,
-.chat-bubble-source-intake__pill:focus-visible {
-  background: color-mix(in srgb, var(--app-butter) 75%, var(--app-butter-accent));
-  outline: none;
 }
 
 .chat-bubble-source-intake__pill:focus-visible {
   outline: 2px solid var(--ref-color-electric-blue-100);
   outline-offset: 2px;
+  border-radius: var(--app-radius-button-sm);
 }
 
 .chat-bubble-source-intake__pill i {
-  font-size: var(--sys-icon-css-nano);
+  font-size: var(--sys-icon-css-sm);
   transition: transform var(--ref-animation-short) var(--app-ease-out);
 }
 

@@ -6,7 +6,7 @@
 // and returns an HTML string. No store reads, no DOM, no side effects: the
 // store-coupled turns (extraction / clip-extraction / source resolution) stay
 // in session.js and pass their resolved data in as arguments.
-import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=1623";
+import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=1624";
 
 // Chat-switch skeleton — shown for ~340ms inside .session__assistant-thread
 // when switching chats, then swapped for the real thread.
@@ -111,7 +111,7 @@ export function renderSourceIntakeTurn(message, source = null) {
       pills.push(`
         <button
           type="button"
-          class="chat-bubble-source-intake__pill"
+          class="ap-link standalone small chat-bubble-source-intake__pill"
           data-source-intake-open-ideas
           aria-label="Open ${ideasLabel} in Ideas panel"
         >
@@ -125,7 +125,7 @@ export function renderSourceIntakeTurn(message, source = null) {
       pills.push(`
         <button
           type="button"
-          class="chat-bubble-source-intake__pill"
+          class="ap-link standalone small chat-bubble-source-intake__pill"
           data-source-intake-open-clips
           aria-label="Open ${clipsLabel} in Clips panel"
         >
