@@ -1192,13 +1192,10 @@ span.chat-bubble-choice-chip {
   border-top-right-radius: 0;
 }
 
-/* Everything you bring is a file tile, the way a desktop draws one: a tinted
-   square that names the kind before you read a word (PDF red, video purple,
-   image green, document menthol — the DS data hues, never the interactive
-   blue), the name over what it is, then — behind a hairline — what Archie
-   made of it. White card, grey-20 edge, radius md around a radius-sm tile.
-   The Sources panel (body.conv-e) draws the same tile, so a source looks the
-   same in the thread and in the panel. */
+/* Everything you bring is a file tile: the Sources panel's tile (grey-05
+   square, radius sm, grey-80 glyph) at the size of a two-line object, the
+   name over what it is, then — behind a hairline — what Archie made of it.
+   White card, grey-20 edge, radius md around the radius-sm tile. */
 .e-turn .selection-echo {
   gap: var(--ref-spacing-xs);
   max-width: var(--app-chat-card);
@@ -1206,46 +1203,16 @@ span.chat-bubble-choice-chip {
   border-radius: var(--ref-border-radius-md);
 }
 
-.e-turn .selection-echo__icon:not(.selection-echo__icon--avatar),
-.conv-e .rpanel-sources__row-icon {
+.e-turn .selection-echo__icon:not(.selection-echo__icon--avatar) {
   width: 40px;
   height: 40px;
   border-radius: var(--ref-border-radius-sm);
   background: var(--ref-color-grey-05);
-  color: var(--ref-color-grey-100);
 }
 
-.e-turn .selection-echo__icon:not(.selection-echo__icon--avatar) > i,
-.conv-e .rpanel-sources__row-icon > i {
+.e-turn .selection-echo__icon:not(.selection-echo__icon--avatar) > i {
   font-size: var(--sys-icon-css-md);
-}
-
-.e-turn .selection-echo__icon:has(> .ap-icon-file--pdf),
-.conv-e .rpanel-sources__row-icon:has(> .ap-icon-file--pdf) {
-  background: var(--ref-color-red-10);
-  color: var(--ref-color-red-150);
-}
-
-.e-turn .selection-echo__icon:has(> .ap-icon-file--video),
-.conv-e .rpanel-sources__row-icon:has(> .ap-icon-file--video) {
-  background: var(--ref-color-purple-10);
-  color: var(--ref-color-purple-100);
-}
-
-.e-turn .selection-echo__icon:has(> .ap-icon-file--image),
-.conv-e .rpanel-sources__row-icon:has(> .ap-icon-file--image) {
-  background: var(--ref-color-green-10);
-  color: var(--ref-color-green-150);
-}
-
-.e-turn .selection-echo__icon:has(> .ap-icon-file--text),
-.conv-e .rpanel-sources__row-icon:has(> .ap-icon-file--text) {
-  background: var(--ref-color-menthol-10);
-  color: var(--ref-color-menthol-150);
-}
-
-.e-turn .selection-echo__icon > i {
-  color: inherit;
+  color: var(--ref-color-grey-80);
 }
 
 /* What Archie made of it, set apart: a hairline, then the links. */

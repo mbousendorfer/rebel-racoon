@@ -47,7 +47,6 @@ import { renderWelcomeAltRecap } from "./screens/welcome-alt-recap.js?v=1648";
 import { renderPlaybook } from "./screens/playbook.js?v=1648";
 import { initFigmaCapture } from "./figma-capture.js?v=1648";
 import { ROUTES as IMAGE_GENERATOR_ROUTES } from "./modules/image-studio/index.js?v=1648";
-import { isFlagOn } from "./feature-flags.js?v=1648";
 
 // Route table.
 // Every screen is responsible for calling renderTopbar() itself so the crumb
@@ -159,11 +158,6 @@ setAfterRender((path) => {
   // the chrome of one. See active-playbook.js § Above the workspaces.
   document.body.classList.toggle("account-scope", isAccountScope(path));
 });
-
-// New conversation styles: the surfaces outside the thread that must draw an
-// object the way the thread does (the Sources panel) read this class. A flag
-// change reloads, so once at boot is enough.
-document.body.classList.toggle("conv-e", isFlagOn("newConversationStyles"));
 
 start();
 
