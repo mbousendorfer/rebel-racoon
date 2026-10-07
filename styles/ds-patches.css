@@ -50,15 +50,12 @@
   display: none;
 }
 
-/* New conversation styles (flag newConversationStyles): beside Archie's disc
-   the status is TYPE, not a second butter blob. Working = his olive dot
-   breathing + the words in grey-100 with a light passing through them; done =
-   the words alone, grey-80, beside their chevron. */
-.e-turn .ap-status {
+/* New conversation styles (flag newConversationStyles): beside Archie's
+   avatar, work in progress is TYPE — his olive dot breathing + the words at
+   body size with a light passing through them. A finished action keeps the
+   butter pill ("Extracted 2 ideas"): butter marks what Archie has done. */
+.e-turn .ap-status.is-working {
   padding: 0;
-  background: transparent;
-  color: var(--ref-color-grey-80);
-  /* The size of what Archie says: a status is a sentence of his, not a tag. */
   font-size: var(--sys-text-style-body-size);
   line-height: var(--sys-text-style-body-line-height);
 }
