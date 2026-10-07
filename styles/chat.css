@@ -1052,42 +1052,27 @@ span.chat-bubble-choice-chip {
 
 /* ─── New conversation styles (flag newConversationStyles) ────────────────
    Figma "Conversation styles" § E. renderTwoSides (thread-render.js) wraps
-   every turn. Archie: his 24px avatar, 8px, then what he says — his status
-   pill on the disc's line, his text centred on it; no name. You: your avatar,
-   8px, a head line (time · You) over your bubble or pick. The time shows on
-   hover (your head line; the gutter left of Archie's disc). 24px between
-   turns, 16px when Archie goes on. Objects are white chips on both sides. */
+   every turn: a head line, then the body on the SAME edge — no avatar column,
+   the avatar stands at the head like a byline. Archie: his avatar (+ his
+   status pill) on the left; you: time · You · your avatar on the right.
+   12px head → body, 24px between turns, 16px when Archie goes on (no head).
+   The time shows on hover. */
 
 .e-turn {
   position: relative;
-  display: flex;
-  align-items: flex-start;
-  gap: var(--ref-spacing-xxs);
 }
 
-.e-turn--user {
-  flex-direction: row-reverse;
-}
-
-/* Archie goes on: one disc for the run, but each message keeps its own
+/* Archie goes on: one head for the run, but each message keeps its own
    room (16px) and its own time on hover — they stay separate messages. */
 .e-turn--cont {
   margin-top: calc(var(--ref-spacing-sm) - var(--ref-spacing-md));
 }
 
-.e-turn--cont > .e-turn__author {
-  visibility: hidden;
-}
-
-.e-turn__author {
-  display: inline-flex;
-  flex-shrink: 0;
-}
-
 /* Archie's avatar: his mark in white on his own orange, a solid disc like an
-   app icon — it holds on the grey thread where a pale butter disc dissolved. */
+   app icon. */
 .e-turn__mark {
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
   width: 24px;
@@ -1107,38 +1092,30 @@ span.chat-bubble-choice-chip {
   --archie-loader-color: var(--ref-color-white);
 }
 
-/* Archie's first line sits on the disc's centre line (24px disc, 18px line). */
 .e-turn__content {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--ref-spacing-xxs);
-  flex: 1 1 auto;
+  gap: var(--ref-spacing-xs);
   min-width: 0;
-  padding-top: calc((24px - var(--sys-text-style-body-line-height)) / 2);
-}
-
-.e-turn--status > .e-turn__content,
-.e-turn--user > .e-turn__content {
-  padding-top: 0;
-}
-
-/* A result card starts flush with the avatar: card top = disc top (the
-   text-line offset is for words, not for a box). */
-.e-turn:has(> .e-turn__content > .chat-turn > .drafts-card) > .e-turn__content {
-  padding-top: 0;
 }
 
 .e-turn--user > .e-turn__content {
-  flex: 0 1 auto;
   align-items: flex-end;
   max-width: var(--app-chat-card);
+  margin-left: auto;
 }
 
 .e-turn__head {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: var(--ref-spacing-xxs);
+  min-height: 24px;
+}
+
+/* In a status line the avatar leads the pill (same 8px gap as the line). */
+.e-turn .assistant-notice__toggle,
+.e-turn .extracting-notice {
   min-height: 24px;
 }
 
@@ -1164,7 +1141,7 @@ span.chat-bubble-choice-chip {
   opacity: 1;
 }
 
-/* Archie's sits in the gutter, on his disc's line. */
+/* Archie's sits in the gutter, on his avatar's line. */
 .e-turn--ai > .e-turn__time {
   position: absolute;
   top: var(--ref-spacing-xxxs);
