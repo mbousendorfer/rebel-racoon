@@ -29,23 +29,23 @@
 // now does — and a row cannot without turning the list into a form. No save bar:
 // every control commits immediately through updateFeed.
 
-import { html, raw } from "../utils.js?v=1676";
-import { navigate } from "../router.js?v=1676";
-import { parseHashParams } from "../url-state.js?v=1676";
-import { renderTopbar } from "../components/topbar.js?v=1676";
-import { renderEmptyState } from "../components/empty-state.js?v=1676";
-import { isFlagOn } from "../feature-flags.js?v=1676";
-import { getContextById, getDefaultContext } from "../contexts-store.js?v=1676";
+import { html, raw } from "../utils.js?v=1679";
+import { navigate } from "../router.js?v=1679";
+import { parseHashParams } from "../url-state.js?v=1679";
+import { renderTopbar } from "../components/topbar.js?v=1679";
+import { renderEmptyState } from "../components/empty-state.js?v=1679";
+import { isFlagOn } from "../feature-flags.js?v=1679";
+import { getContextById, getDefaultContext } from "../contexts-store.js?v=1679";
 import {
   getActivePlaybook,
   isWorkspaceMode,
   catalogueRoute,
   subscribe as subscribeScope,
-} from "../active-playbook.js?v=1676";
-import { editableContexts, canEdit } from "../playbook-access.js?v=1676";
-import { getFeedForPlaybook, updateFeed, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1676";
-import { TOPIC_SOURCES, CADENCES, findTopicSource, findCadence, isLiveSource } from "../topics-catalog.js?v=1676";
-import { open as openFeedback } from "../components/feedback-modal.js?v=1676";
+} from "../active-playbook.js?v=1679";
+import { editableContexts, canEdit } from "../playbook-access.js?v=1679";
+import { getFeedForPlaybook, updateFeed, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1679";
+import { TOPIC_SOURCES, CADENCES, findTopicSource, findCadence, isLiveSource } from "../topics-catalog.js?v=1679";
+import { open as openFeedback } from "../components/feedback-modal.js?v=1679";
 
 // Above this many Playbooks the picker earns a search field. Below it, a search
 // box over four rows is just noise.

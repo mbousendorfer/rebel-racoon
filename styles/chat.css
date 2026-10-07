@@ -1079,7 +1079,7 @@ span.chat-bubble-choice-chip {
   padding-left: calc(24px + var(--ref-spacing-xxs));
 }
 
-.e-turn--stack .assistant-notice > :not(summary) {
+.e-turn.e-turn--stack .assistant-notice > :not(summary) {
   margin-left: 0;
 }
 
@@ -1454,17 +1454,42 @@ span.chat-bubble-choice-chip {
   font-size: var(--sys-icon-css-sm);
 }
 
-/* The tools a step ran (renderActivityTurn) — one row per tool, as the prod
-   lists them: toolbox glyph, name, duration on the right. It unfolds under its
-   status like any reasoning (grey-80, body size, hung under the label). */
-.assistant-notice__tools {
+/* Tool calls (renderActivityTurn, .assistant-notice--tools) — their own look,
+   apart from Archie's thoughts (plain grey text) and his statuses (filled
+   pills): an OUTLINED pill, white with a grey-20 edge, the toolbox glyph
+   leading the words — the mechanics of the work, drawn like an instrument
+   readout rather than a voice. Unfolded, the run is a small white card, one
+   row per tool: glyph, name in ink, duration right-aligned. */
+/* 0,4,0 + loaded after ds-patches: beats the done-status grey there. */
+.e-turn .assistant-notice--tools .assistant-notice__toggle .ap-status {
+  gap: var(--ref-spacing-xxxs);
+  padding: 0 var(--ref-spacing-xxs) 0 var(--ref-spacing-xxxs);
+  background-color: var(--app-surface);
+  box-shadow: inset 0 0 0 1px var(--app-border);
+  --e-sheen-fill: var(--app-surface);
+}
+
+.assistant-notice__tool-glyph {
+  flex-shrink: 0;
+  font-size: var(--sys-icon-css-sm);
+  color: var(--ref-color-grey-80);
+}
+
+.e-turn .assistant-notice__tools {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xxxs);
-  max-width: 360px;
-  margin: 0;
-  padding: 0;
+  gap: var(--ref-spacing-xxs);
+  width: 320px;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
   list-style: none;
+  border: 1px solid var(--app-border);
+  border-radius: var(--ref-border-radius-md);
+  background: var(--app-surface);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-100);
 }
 
 .assistant-notice__tool {
@@ -1476,9 +1501,11 @@ span.chat-bubble-choice-chip {
 .assistant-notice__tool > i {
   flex-shrink: 0;
   font-size: var(--sys-icon-css-sm);
+  color: var(--ref-color-grey-80);
 }
 
 .assistant-notice__tool-duration {
   margin-left: auto;
+  color: var(--ref-color-grey-80);
   font-variant-numeric: tabular-nums;
 }
