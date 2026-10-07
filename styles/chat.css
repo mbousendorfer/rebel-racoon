@@ -1213,9 +1213,9 @@ span.chat-bubble-choice-chip {
 }
 
 /* His own words about the work read as a different register from his
-   answer, not just a lighter shade of it: caption size, italic, grey-80 —
-   the DS "Caption - Italic" — hung under the status. Same for the
-   extraction's "Analyzed …" and a single tool's description. */
+   answer, not just a lighter shade of it: Caption (12 / 16), grey-80, hung
+   under the status. Same for the extraction's "Analyzed …" and a single
+   tool's description. No italic. */
 .e-turn .assistant-notice__detail,
 .e-turn .extraction-turn__analyzed-row {
   padding: 0;
@@ -1226,7 +1226,6 @@ span.chat-bubble-choice-chip {
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   font-weight: var(--sys-text-style-caption-weight);
-  font-style: italic;
 }
 
 .e-turn .extraction-turn__analyzed-row strong {
@@ -1463,7 +1462,6 @@ span.chat-bubble-choice-chip {
    longest tool, and written ("2s"); under half a second, neither. The
    pill itself stays a status like the others. */
 .e-turn .assistant-notice__tools {
-  font-style: normal;
   display: flex;
   flex-direction: column;
   width: 360px;
