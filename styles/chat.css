@@ -1051,16 +1051,11 @@ span.chat-bubble-choice-chip {
 }
 
 /* ─── New conversation styles (flag newConversationStyles) ────────────────
-   Figma "Conversation styles" § E. renderTwoSides (thread-render.js) wraps
-   every turn: [author disc] [head line + the turn]. Archie left, you right,
-   the same anatomy mirrored: 24px disc, 12px to the content, a 24px head line
-   (name body-bold, time caption grey-80, what happened in a pill), 8px to the
-   body, 32px between turns, 8px when Archie goes on. Butter is Archie's own:
-   his disc and his status pill — objects are white chips on both sides. */
-
-.session__assistant-thread:has(> .e-turn) {
-  gap: var(--ref-spacing-lg);
-}
+   Figma "Conversation styles" § E, simplified. renderTwoSides (thread-render.js)
+   wraps every turn. Archie: a 24px butter disc, 12px, then what he says — his
+   status pill on the disc's line, his text centred on it. You: your bubble or
+   your pick on the right, nothing else. 24px between turns, 8px when Archie
+   goes on. Butter is Archie's own; objects are white chips on both sides. */
 
 .e-turn {
   display: flex;
@@ -1069,11 +1064,11 @@ span.chat-bubble-choice-chip {
 }
 
 .e-turn--user {
-  flex-direction: row-reverse;
+  justify-content: flex-end;
 }
 
 .e-turn--cont {
-  margin-top: calc(var(--ref-spacing-xxs) - var(--ref-spacing-lg));
+  margin-top: calc(var(--ref-spacing-xxs) - var(--ref-spacing-md));
 }
 
 .e-turn--cont > .e-turn__author {
@@ -1100,43 +1095,25 @@ span.chat-bubble-choice-chip {
   background: var(--app-archie-mark);
 }
 
+/* Archie's first line sits on the disc's centre line (24px disc, 18px line). */
 .e-turn__content {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--ref-spacing-xxs);
   flex: 1 1 auto;
   min-width: 0;
+  padding-top: calc((24px - var(--sys-text-style-body-line-height)) / 2);
+}
+
+.e-turn--status > .e-turn__content,
+.e-turn--user > .e-turn__content {
+  padding-top: 0;
 }
 
 .e-turn--user > .e-turn__content {
   flex: 0 1 auto;
   align-items: flex-end;
   max-width: var(--app-chat-card);
-}
-
-.e-turn__head {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  min-height: 24px;
-}
-
-.e-turn--user .e-turn__head {
-  flex-direction: row-reverse;
-}
-
-.e-turn__name {
-  font-size: var(--sys-text-style-body-bold-size);
-  line-height: var(--sys-text-style-body-bold-line-height);
-  font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--ref-color-grey-100);
-}
-
-.e-turn__time {
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-80);
 }
 
 /* The wrapped turn gives its identity to the head line: no label, no width

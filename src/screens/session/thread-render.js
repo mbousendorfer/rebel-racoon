@@ -12,22 +12,21 @@ import {
   renderMessageBubble,
   renderNotice,
   renderResultCard,
-} from "./thread-turns.js?v=1628";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=1628";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1628";
-import { getTopPost } from "../../top-posts-store.js?v=1628";
-import { getTopicById } from "../../topics-store.js?v=1628";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=1628";
-import { renderProfileEchoCard } from "../../social-profiles.js?v=1628";
-import { escapeHtml } from "../../utils.js?v=1628";
-import { getIdeas } from "../../library.js?v=1628";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=1628";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1628";
-import { getThread } from "../../assistant.js?v=1628";
-import { getSuggestion } from "../../voice-coach-store.js?v=1628";
-import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=1628";
-import { isFlagOn } from "../../feature-flags.js?v=1628";
-import { CURRENT_USER } from "../../org.js?v=1628";
+} from "./thread-turns.js?v=1629";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1629";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1629";
+import { getTopPost } from "../../top-posts-store.js?v=1629";
+import { getTopicById } from "../../topics-store.js?v=1629";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=1629";
+import { renderProfileEchoCard } from "../../social-profiles.js?v=1629";
+import { escapeHtml } from "../../utils.js?v=1629";
+import { getIdeas } from "../../library.js?v=1629";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=1629";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1629";
+import { getThread } from "../../assistant.js?v=1629";
+import { getSuggestion } from "../../voice-coach-store.js?v=1629";
+import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=1629";
+import { isFlagOn } from "../../feature-flags.js?v=1629";
 
 export function renderThread(messages, sessionId) {
   const turns = messages.map((m) => [m, renderTurn(m, sessionId)]);
@@ -36,24 +35,14 @@ export function renderThread(messages, sessionId) {
 }
 
 // ─── New conversation styles (flag newConversationStyles) ───────────────────
-// Figma "Conversation styles" § E: one turn shape, mirrored. Each rendered turn
-// is wrapped — author disc + head line (name · time · what happened) + the
-// turn's own markup — and Archie's consecutive turns fold under one head.
+// Figma "Conversation styles" § E, simplified: the side says who speaks. Archie
+// = his butter disc beside what he says (his status pill sits on the disc's
+// line); you = your bubble or your pick on the right, nothing else. No names,
+// no avatar of yours; the time is on hover. Archie's consecutive turns share
+// one disc.
 // ponytail: wraps the finished HTML instead of changing ~15 renderers; move the
 // head into the renderers if the style ships.
 const clock = (ts) => (ts ? new Date(ts).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "");
-
-// What you did, in the neutral pill of your head line — only for the turns
-// that are an action rather than words.
-function userAction(m) {
-  if (m.role === "source-intake") return "Added a source";
-  if (m.variant === "profiles") {
-    const n = (m.profiles || []).length;
-    return `Picked ${n} account${n === 1 ? "" : "s"}`;
-  }
-  if (m.variant === "top-post-pick") return "Picked a top post";
-  return "";
-}
 
 function renderTwoSides(turns) {
   const tpl = document.createElement("template");
@@ -65,28 +54,19 @@ function renderTwoSides(turns) {
     if (!el) continue;
     const side = el.matches(".chat-turn--user") ? "user" : "ai";
     el.querySelectorAll(":scope > .chat-turn-avatar, :scope > .chat-turn-role").forEach((n) => n.remove());
-    // Archie's status pill (a notice, the Extracting pill) joins his head line.
-    const slot = side === "ai" ? el.querySelector(".assistant-notice__toggle, .extracting-notice") : null;
-    const cont = side === prev && side === "ai" && !slot;
+    // Archie goes on: one disc for the run. A status pill starts a new step.
+    const status = side === "ai" && el.querySelector(".assistant-notice__toggle, .extracting-notice");
+    const cont = side === "ai" && prev === "ai" && !status;
     prev = side;
     const time = clock(m.createdAt);
-    const action = side === "user" ? userAction(m) : "";
-    const head = `
-      <span class="e-turn__name">${side === "ai" ? "Archie" : "You"}</span>
-      ${time ? `<span class="e-turn__time">${time}</span>` : ""}
-      ${action ? `<span class="ap-status grey no-dot e-turn__action">${escapeHtml(action)}</span>` : ""}`;
-    if (slot) slot.insertAdjacentHTML("afterbegin", `<span class="e-turn__head">${head}</span>`);
     const author =
       side === "ai"
-        ? `<span class="e-turn__mark"><i class="ap-icon-archie-official" aria-hidden="true"></i></span>`
-        : `<span class="ap-avatar size-24"><span class="ap-avatar-initials">${escapeHtml(CURRENT_USER.initials)}</span></span>`;
+        ? `<span class="e-turn__author" aria-hidden="true"><span class="e-turn__mark"><i class="ap-icon-archie-official"></i></span></span>`
+        : "";
     out += `
-      <div class="e-turn e-turn--${side}${cont ? " e-turn--cont" : ""}">
-        <span class="e-turn__author" aria-hidden="true">${author}</span>
-        <div class="e-turn__content">
-          ${slot || cont ? "" : `<div class="e-turn__head">${head}</div>`}
-          ${el.outerHTML}
-        </div>
+      <div class="e-turn e-turn--${side}${cont ? " e-turn--cont" : ""}${status ? " e-turn--status" : ""}"${time ? ` title="${time}"` : ""}>
+        ${author}
+        <div class="e-turn__content">${el.outerHTML}</div>
       </div>`;
   }
   return out;

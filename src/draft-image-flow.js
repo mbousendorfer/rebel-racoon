@@ -19,18 +19,18 @@
 // The two reads from the post take as long as the real calls (4–8 s), so both
 // start the moment the flow does and are usually back before they are needed.
 
-import * as inlineQuestion from "./inline-question.js?v=1628";
-import { finishPending, postAssistantMessage, postUserTurn, startPending } from "./assistant.js?v=1628";
-import { attachImageToDraft, getPosts, updatePostContent } from "./posts-store.js?v=1628";
-import { getSessionById } from "./sessions-store.js?v=1628";
-import { escapeHtml } from "./utils.js?v=1628";
+import * as inlineQuestion from "./inline-question.js?v=1629";
+import { finishPending, postAssistantMessage, postUserTurn, startPending } from "./assistant.js?v=1629";
+import { attachImageToDraft, getPosts, updatePostContent } from "./posts-store.js?v=1629";
+import { getSessionById } from "./sessions-store.js?v=1629";
+import { escapeHtml } from "./utils.js?v=1629";
 import {
   defaultQuickLook,
   generateQuickImage,
   quickImageChoices,
   suggestImageLine,
   suggestImageSubject,
-} from "./modules/image-studio/index.js?v=1628";
+} from "./modules/image-studio/index.js?v=1629";
 
 const STUDIO = "__studio";
 const NO_TEXT = "__none";
