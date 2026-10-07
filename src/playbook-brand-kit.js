@@ -9,22 +9,15 @@
 // the fiche's live data object, exactly like every other Brand row, and are
 // committed by the section's Save (snapshotEditable carries the fields).
 
-import { escapeHtml as esc } from "./utils.js?v=1697";
-import { isFlagOn } from "./feature-flags.js?v=1697";
-import { COLOR_ROLES, LOGO_VARIANTS, getContextById } from "./contexts-store.js?v=1697";
+import { escapeHtml as esc } from "./utils.js?v=1699";
+import { COLOR_ROLES, LOGO_VARIANTS, getContextById } from "./contexts-store.js?v=1699";
 import {
   handlePlaybookImagesClick,
   renderImagesGenerate,
   renderImagesReferences,
   renderImagesStyles,
   renderPlaybookStyles,
-} from "./modules/image-studio/index.js?v=1697";
-
-const KIT_FLAG = "sexySquirrel";
-
-export function kitEnabled() {
-  return isFlagOn(KIT_FLAG);
-}
+} from "./modules/image-studio/index.js?v=1699";
 
 const ROLE_LABELS = {
   primary: "Primary",
@@ -61,7 +54,6 @@ function dsSelect({ kind, index, value, labels, options, placeholder, ariaLabel 
 
 /** The role picker appended to each colour row in edit mode. */
 export function renderColorRole(color, index) {
-  if (!kitEnabled()) return "";
   return dsSelect({
     kind: "role",
     index,
@@ -75,7 +67,7 @@ export function renderColorRole(color, index) {
 
 /** Read-mode caption under a swatch: its role, when it says more than the name. */
 export function colorRoleCaption(color) {
-  if (!kitEnabled() || !color.role) return "";
+  if (!color.role) return "";
   const label = ROLE_LABELS[color.role];
   return String(color.name || "").toLowerCase() === label.toLowerCase() ? "" : label;
 }
@@ -260,20 +252,20 @@ export function handleKitChange(event, data) {
 // module, which owns them (its style creator edits them). Only a SAVED Playbook
 // has any: a Playbook still being created has no page to come back to.
 export function renderImageStyles(data, canEdit) {
-  if (!kitEnabled() || !data?.id || !getContextById(data.id)) return "";
+  if (!data?.id || !getContextById(data.id)) return "";
   return renderPlaybookStyles(data.id, { canEdit });
 }
 
 /** Always live, like Reference images: styles are managed outside the section's edit mode. */
 export function handleImageStylesClick(event, data, onChange) {
-  if (!kitEnabled() || !data?.id) return false;
+  if (!data?.id) return false;
   return handlePlaybookImagesClick(event, data.id, { onChange });
 }
 
 // ── The Images tab (playbook2) — the module's, whole: styles, reference
 // images and the Generate image settings, all live (no Edit).
 export function renderImagesTab(data, canEdit) {
-  if (!kitEnabled() || !data?.id || !getContextById(data.id)) return null;
+  if (!data?.id || !getContextById(data.id)) return null;
   return {
     styles: renderImagesStyles(data.id, { canEdit }),
     references: renderImagesReferences(data.id, { canEdit }),

@@ -17,9 +17,9 @@
 // ON an overridden hook is written in one language. Per-language × per-network
 // examples when a brand actually publishes in two languages on one network.
 
-import { isFlagOn } from "./feature-flags.js?v=1697";
-import { escapeHtml } from "./utils.js?v=1697";
-import { NETWORKS, normalizeNetwork, getConnectedProfileById } from "./social-profiles.js?v=1697";
+import { isFlagOn } from "./feature-flags.js?v=1699";
+import { escapeHtml } from "./utils.js?v=1699";
+import { NETWORKS, normalizeNetwork, getConnectedProfileById } from "./social-profiles.js?v=1699";
 
 export const NETWORK_FIELDS = ["signatureHooks", "closingPatterns", "formattingStyle", "visualStyle"];
 const LIST_FIELDS = new Set(["signatureHooks", "closingPatterns"]);
@@ -65,11 +65,6 @@ export function networkEntry(ctx, n) {
 export function isOverridden(ctx, n, field) {
   const e = networkEntry(ctx, n);
   return !!e && e[field] !== undefined;
-}
-
-// What a field says on a network: its override, else the base voice.
-export function resolvedField(ctx, n, field, baseValue) {
-  return isOverridden(ctx, n, field) ? networkEntry(ctx, n)[field] : baseValue;
 }
 
 // How far along a network voice is — derived on read, never stored (it moves

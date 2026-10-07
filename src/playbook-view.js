@@ -14,9 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1697";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1699";
 import {
-  kitEnabled,
   renderColorRole,
   colorRoleCaption,
   renderLogoVariants,
@@ -28,11 +27,11 @@ import {
   handleKitChange,
   kitSnapshot,
   renderImagesTab,
-} from "./playbook-brand-kit.js?v=1697";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1697";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1697";
-import { isFlagOn } from "./feature-flags.js?v=1697";
-import { parseHashParams } from "./url-state.js?v=1697";
+} from "./playbook-brand-kit.js?v=1699";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1699";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1699";
+import { isFlagOn } from "./feature-flags.js?v=1699";
+import { parseHashParams } from "./url-state.js?v=1699";
 import {
   networkVoicesOn,
   baseNetwork,
@@ -43,22 +42,16 @@ import {
   networkLabel,
   networkIcon,
   memoryCardHtml,
-} from "./network-voice.js?v=1697";
+} from "./network-voice.js?v=1699";
 import {
   getSuggestions,
   accept as acceptVoiceSuggestion,
   dismiss as dismissVoiceSuggestion,
-} from "./voice-coach-store.js?v=1697";
-import { NETWORKS } from "./social-profiles.js?v=1697";
-import { showToast } from "./components/toast.js?v=1697";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=1697";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1697";
-// The Default look row offers the SAME three catalogues the Image Studio renders, from
-// the one place they are declared — REF_MODES' own header makes the argument: the label,
-// the hint and the brief clause "drift the moment they live apart". No cycle: the engine
-// imports only clip-formats / image-studio-canvas / feature-flags, and its module body
-// builds consts, so importing it here costs nothing at load.
-import { IMAGE_TYPES, STYLE_PRESETS, REF_MODES } from "./image-studio.js?v=1697";
+} from "./voice-coach-store.js?v=1699";
+import { NETWORKS } from "./social-profiles.js?v=1699";
+import { showToast } from "./components/toast.js?v=1699";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=1699";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1699";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -180,7 +173,7 @@ let loadingTimer = null;
 let loadingStage = 0;
 let phase = "ready"; // "loading" | "ready"
 let scrollSpy = null; // IntersectionObserver for the section-nav active state
-let activeTab = "goals"; // Playbook 2.0 (flag playbook2): the tab on screen
+let activeTab = "goals"; // Playbook 2.0: the tab on screen
 
 // ── Public API ───────────────────────────────────────────────────────────
 
@@ -424,62 +417,6 @@ function ensureBrand(data) {
   }
 }
 
-// ── Default look — the brand's starting point for a generated image ────────
-//
-// Three declarative criteria (image type, style preset, how to use a reference), all
-// single-select WITH toggle-off: pressing the picked chip again clears it, and "clear"
-// IS the "no preference" state — hence no "Any" chip, which would be a second way to
-// say the same thing. Same primitive as renderVoiceModeToggle, which is also what makes
-// this row look like the control it defaults (the brand-colour-dots argument).
-//
-// Chips and not the studio's thumbnails for Style, deliberately: those would be the
-// THIRD image grid in this section, competing with the logo gallery and the reference
-// tiles — and the studio's tiles are mocks, not real previews of these presets.
-//
-// refMode is rendered but DISABLED with its reason when there is no reference image: a
-// control that disappears leaves you wondering whether the option exists at all. The
-// reason points down at the Reference images row, which is why this row comes after it.
-function lookGroup(label, field, options, current, disabled, edit) {
-  // Read mode is an identity-sheet value, not a control: the picked label reads as
-  // plain grey-100 text beside a grey caption — never an electric-blue chip (blue is
-  // the ink of the interactive) and never a full-width box (a stretched .ap-tag reads
-  // as an empty button). Read mode never invents a value either: an empty refMode must
-  // NOT print "Blend" just because that is where the engine lands, or the fiche claims a
-  // decision nobody made.
-  if (!edit) {
-    const picked = options.find((o) => o.key === current);
-    const value = picked
-      ? `<span class="recap__look-value">${esc(picked.label)}</span>`
-      : `<span class="recap__row-empty">No preference</span>`;
-    return `<div class="recap__look-group">
-      <span class="recap__look-label">${esc(label)}</span>
-      ${value}
-    </div>`;
-  }
-  const chips = options
-    .map((o) => {
-      const on = current === o.key;
-      return `<button type="button" class="ap-filter-chip" aria-pressed="${on}" ${disabled ? "disabled" : ""}
-        data-recap-look="${esc(field)}" data-recap-look-value="${esc(o.key)}">${esc(o.label)}</button>`;
-    })
-    .join("");
-  return `<div class="recap__look-group">
-    <span class="recap__look-label">${esc(label)}</span>
-    <div class="recap__look-chips">${chips}</div>
-  </div>`;
-}
-
-function renderDefaultLook(data, edit) {
-  const d = data.imageDefaults || { imageType: "", style: "", refMode: "" };
-  const hasRefs = (Array.isArray(data.referenceImages) ? data.referenceImages : []).length > 0;
-  return `<div class="recap__look${edit ? "" : " recap__look--read"}">
-    ${lookGroup("Image type", "imageType", IMAGE_TYPES, d.imageType, false, edit)}
-    ${lookGroup("Style", "style", STYLE_PRESETS, d.style, false, edit)}
-    ${lookGroup("Use a reference", "refMode", REF_MODES, d.refMode, !hasRefs, edit)}
-    ${hasRefs ? "" : `<p class="recap__look-hint">Add a reference image below and I'll say how to use it.</p>`}
-  </div>`;
-}
-
 // Snapshot only the user-editable fields so Cancel can restore them.
 export function snapshotEditable(d) {
   return JSON.parse(
@@ -508,9 +445,6 @@ export function snapshotEditable(d) {
       brandColors: d.brandColors || [],
       brandLogos: d.brandLogos || [],
       brandLogo: d.brandLogo || "",
-      // Under the brand kit the reference images are live, like the styles (their
-      // own row writes them), so Cancel must not take an upload back.
-      ...(kitEnabled() ? {} : { referenceImages: d.referenceImages || [] }),
       imageDefaults: d.imageDefaults || { imageType: "", style: "", refMode: "" },
       competitors: d.competitors || [],
       dismissedCompetitors: d.dismissedCompetitors || [],
@@ -1024,34 +958,6 @@ function ensureRefTagsColors(img) {
   if (!Array.isArray(img.colors)) img.colors = refImageSignals(img).palette.slice();
 }
 
-// Gallery of reference-image thumbnails (read + edit). Cards stay a clean
-// thumbnail — all detail (extracted tags/colours, notes, target networks) lives
-// in the per-image modal opened on click. Edit mode adds a remove handle + Add.
-function renderRefImages(data, edit) {
-  const imgs = Array.isArray(data.referenceImages) ? data.referenceImages : [];
-  if (!imgs.length && !edit) return `<span class="recap__row-empty">None yet</span>`;
-  const cards = imgs
-    .map(
-      (img, i) => `
-      <div class="recap__refcard">
-        <button type="button" class="recap__refcard-open" data-recap-refimg-open="${i}" aria-label="${edit ? "Edit" : "View"} ${esc(img.label || "reference image")} details">
-          <img src="${esc(img.url)}" alt="${esc(img.label || "Reference image")}" loading="lazy" />
-          <span class="recap__refcard-overlay" aria-hidden="true"><i class="ap-icon-${edit ? "pen" : "info"}"></i><span>${edit ? "Edit details" : "View details"}</span></span>
-        </button>
-        ${edit ? `<button type="button" class="recap__refimg-remove recap__refcard-remove" data-recap-refimg-remove="${i}" aria-label="Remove image"><i class="ap-icon-close"></i></button>` : ""}
-      </div>`,
-    )
-    .join("");
-  const addBtn =
-    edit && imgs.length < MAX_REF_IMAGES
-      ? `<button type="button" class="ap-button secondary blue recap__refedit-add" data-recap-refimg-add>
-           <i class="ap-icon-plus"></i><span>Add reference image</span>
-         </button>
-         <input type="file" accept="image/*" multiple hidden data-recap-refimg-input />`
-      : "";
-  return `<div class="recap__refgallery">${cards}</div>${addBtn}`;
-}
-
 // Per-image detail modal — big preview + Archie's extracted indications, then
 // the usage notes + target networks (editable in edit mode, read-only otherwise).
 function renderRefModal(data) {
@@ -1324,9 +1230,7 @@ function renderVoicePanel(data, edit) {
             "Emoji & casing",
             renderTextarea("visualStyle", data.visualStyle, "Emoji use, capitalisation, hashtags, links…"),
           ),
-          kitEnabled()
-            ? renderRow("Words to avoid", renderEditChips("voiceAvoid", data.voiceAvoid, "Add a word or phrase…"))
-            : "",
+          renderRow("Words to avoid", renderEditChips("voiceAvoid", data.voiceAvoid, "Add a word or phrase…")),
         ].join("");
     body = renderSectionHint(SECTION_HINTS.voice) + renderVoiceModeToggle(data.voiceMode) + fields;
   } else if (manual) {
@@ -1338,7 +1242,7 @@ function renderVoicePanel(data, edit) {
       renderRow("Closing patterns", renderQuotes(ve.closingPatterns)),
       renderRow("Formatting", renderText(data.formattingStyle)),
       renderRow("Emoji & casing", renderText(data.visualStyle)),
-      kitEnabled() ? renderRow("Words to avoid", renderChips(data.voiceAvoid || [])) : "",
+      renderRow("Words to avoid", renderChips(data.voiceAvoid || [])),
     ].join("");
   }
   // "Learn from…" — a single DS dropdown that merges the old "Learn from my
@@ -1421,8 +1325,8 @@ function renderBrandPanel(data, edit) {
       // Logo first: it's the most concrete piece of the visual identity, and the
       // one thing the image generator stamps into the pixels.
       renderRow("Logo", renderFieldHint(FIELD_HINTS.brandLogo) + renderBrandLogo(data, true)),
-      // Brand kit (flag sexySquirrel) — which version each mark is.
-      kitEnabled() ? renderRow("Logo versions", renderLogoVariants(data, true, data.brandLogos)) : "",
+      // Which version each mark is.
+      renderRow("Logo versions", renderLogoVariants(data, true, data.brandLogos)),
       renderRow("Brand color", renderColorEditor(data)),
       renderRow("Typography", renderTypoEditor(data)),
       renderRow(
@@ -1437,35 +1341,22 @@ function renderBrandPanel(data, edit) {
       // Reference images live under Brand. They're always-editable (per-image
       // modal + remove + add) regardless of the Brand section's edit state —
       // but not when the fiche itself is read-only.
-      // Under sexySquirrel reference images belong to the brand's image STYLES
-      // (the row below), so the fiche no longer carries a loose set of them.
-      kitEnabled() ? "" : renderRow("Reference images", renderRefImages(data, canEditView())),
-      // Image styles (flag sexySquirrel): the brand's own, always live (managed
-      // outside the section's edit mode). They replace "Default look" and the loose
-      // Reference images, whose only reader — the
-      // old draft Image Studio — the flag swaps for the Image Generator's studio.
-      kitEnabled() ? imageStylesRow(data) : "",
-      // Last: Logo/colours/type/personality are the MATERIALS, Reference images the
-      // EXAMPLES, and this is the instruction on how to use all of them. An
-      // instruction before its materials is a control without a subject.
-      kitEnabled()
-        ? ""
-        : renderRow("Default look", renderFieldHint(FIELD_HINTS.imageDefaults) + renderDefaultLook(data, true)),
-      kitEnabled() ? renderRow("Visual rules", renderVisualRules(data, true)) : "",
+      // Image styles: the brand's own, always live (managed outside the section's
+      // edit mode).
+      imageStylesRow(data),
+      renderRow("Visual rules", renderVisualRules(data, true)),
     ].join("");
   } else {
     body = [
       renderBrandGroup("Identity"),
       renderRow("Logo", renderBrandLogo(data, false)),
-      kitEnabled() ? renderRow("Logo versions", renderLogoVariants(data, false, brandLogoList(data))) : "",
+      renderRow("Logo versions", renderLogoVariants(data, false, brandLogoList(data))),
       renderRow("Brand color", renderSwatches(colors)),
       renderRow("Typography", renderTypeSpecimen(data)),
       renderRow("Personality", renderText(data.brandPersonality)),
       renderBrandGroup("Imagery"),
-      kitEnabled() ? "" : renderRow("Reference images", renderRefImages(data, false)),
-      kitEnabled() ? imageStylesRow(data) : "",
-      kitEnabled() ? "" : renderRow("Default look", renderDefaultLook(data, false)),
-      kitEnabled() ? renderRow("Visual rules", renderVisualRules(data, false)) : "",
+      imageStylesRow(data),
+      renderRow("Visual rules", renderVisualRules(data, false)),
     ].join("");
   }
   return `
@@ -2172,7 +2063,7 @@ function renderInfluencerAddModal() {
 // renderRosterLogo uses, so a logo that can't load (a data URL from a file
 // the browser then rejected) falls back to the initials instead of an empty box.
 // The swap is wired by onLoadError().
-// ── Playbook 2.0 (flag playbook2) — the fiche in tabs ─────────────────────
+// ── Playbook 2.0 — the fiche in tabs ─────────────────────
 // The long single page (rail + four stacked panels) became one TAB per section,
 // opening on the first. (An Overview tab of four cards, one per section, was
 // DELETED: every card restated a tab — git log -S renderOverview.) Only the saved Playbook's
@@ -2185,7 +2076,7 @@ const TABS = [
   { id: "brand", title: "Brand" },
   // How the brand's images are made (flag sexySquirrel) — kept apart from Brand,
   // which says what the brand looks like.
-  { id: "images", title: "Image generation", kit: true },
+  { id: "images", title: "Image generation" },
   { id: "competitors", title: "Competitors" },
   { id: "influencers", title: "Influencers" },
 ];
@@ -2201,16 +2092,14 @@ const SECTION_LEADS = {
   influencers: "The creators the audience already listens to.",
 };
 
-const visibleTabs = () => TABS.filter((t) => !t.kit || kitEnabled());
-
 function v2On() {
-  return cfg?.mode === "library" && isFlagOn("playbook2");
+  return cfg?.mode === "library";
 }
 
 function tabFromUrl() {
   const q = parseHashParams();
   const wanted = q.get("tab") || q.get("section");
-  return visibleTabs().some((t) => t.id === wanted) ? wanted : TABS[0].id;
+  return TABS.some((t) => t.id === wanted) ? wanted : TABS[0].id;
 }
 
 // The tab is the page's state, kept in the URL without a route change (the
@@ -2311,16 +2200,14 @@ function renderTabs2(data) {
   return `
     <div class="ap-tabs flush pb2-tabs">
       <div class="ap-tabs-nav" role="tablist" aria-label="Playbook sections">
-        ${visibleTabs()
-          .map((t) => {
-            const on = t.id === activeTab;
-            return `<button type="button" class="ap-tabs-tab${on ? " active" : ""}" role="tab" aria-selected="${on}"
+        ${TABS.map((t) => {
+          const on = t.id === activeTab;
+          return `<button type="button" class="ap-tabs-tab${on ? " active" : ""}" role="tab" aria-selected="${on}"
             data-pb2-tab="${t.id}">
             <span>${esc(t.title)}</span>
             ${t.id === "competitors" && cmpCount ? `<span class="ap-counter normal grey">${cmpCount}</span>` : ""}
           </button>`;
-          })
-          .join("")}
+        }).join("")}
       </div>
     </div>
   `;
@@ -2478,13 +2365,11 @@ function renderVoiceEdit2(data) {
         renderTextarea("visualStyle", data.visualStyle, "Emoji use, capitalisation, hashtags, links…"),
         { index: 4 },
       ),
-      kitEnabled()
-        ? pb2Block("Words to avoid", renderEditChips("voiceAvoid", data.voiceAvoid, "Add a word or phrase…"), {
-            wide: true,
-            index: 5,
-            icon: "ap-icon-ban",
-          })
-        : "",
+      pb2Block("Words to avoid", renderEditChips("voiceAvoid", data.voiceAvoid, "Add a word or phrase…"), {
+        wide: true,
+        index: 5,
+        icon: "ap-icon-ban",
+      }),
       // The base network's learned rules, editable like the rest of its voice.
       nvOn()
         ? pb2Block(
@@ -2502,11 +2387,7 @@ function renderBrandEdit2(data) {
   const blocks = [
     pb2Block(
       "Logos",
-      `${pb2Hint(FIELD_HINTS.brandLogo)}${renderBrandLogo(data, true)}${
-        kitEnabled()
-          ? `<div><span class="pb2-sub">Versions</span>${renderLogoVariants(data, true, data.brandLogos)}</div>`
-          : ""
-      }`,
+      `${pb2Hint(FIELD_HINTS.brandLogo)}${renderBrandLogo(data, true)}<div><span class="pb2-sub">Versions</span>${renderLogoVariants(data, true, data.brandLogos)}</div>`,
       { wide: true, index: 0, icon: "ap-icon-image" },
     ),
     pb2Block("Colour", renderColorEditor(data), { wide: true, index: 1 }),
@@ -2521,17 +2402,7 @@ function renderBrandEdit2(data) {
       { index: 3 },
     ),
   ];
-  if (kitEnabled()) {
-    blocks.push(pb2Block("Visual rules", renderVisualRules(data, true), { wide: true, index: 4 }));
-  } else {
-    blocks.push(
-      pb2Block("Reference images", renderRefImages(data, canEditView()), { wide: true, index: 4 }),
-      pb2Block("Default look", pb2Hint(FIELD_HINTS.imageDefaults) + renderDefaultLook(data, true), {
-        wide: true,
-        index: 5,
-      }),
-    );
-  }
+  blocks.push(pb2Block("Visual rules", renderVisualRules(data, true), { wide: true, index: 4 }));
   return pb2EditGrid("brand", blocks);
 }
 
@@ -2635,21 +2506,20 @@ function renderVoiceRead2(data, learnMenu) {
       pb2Block("Formatting", pb2Text(data.formattingStyle), { index: 3 }),
       pb2Block("Emoji & casing", pb2Text(data.visualStyle), { index: 4 }),
     );
-    if (kitEnabled())
-      blocks.push(
-        pb2Block(
-          "Words to avoid",
-          (data.voiceAvoid || []).length
-            ? `<span class="pb2-tags">${data.voiceAvoid
-                .map(
-                  (w) =>
-                    `<span class="ap-tag grey pb2-avoid"><i class="ap-icon-ban" aria-hidden="true"></i><span>${esc(w)}</span></span>`,
-                )
-                .join("")}</span>`
-            : pb2Empty("None yet — add the words this brand never says."),
-          { wide: true, index: 5, icon: "ap-icon-ban" },
-        ),
-      );
+    blocks.push(
+      pb2Block(
+        "Words to avoid",
+        (data.voiceAvoid || []).length
+          ? `<span class="pb2-tags">${data.voiceAvoid
+              .map(
+                (w) =>
+                  `<span class="ap-tag grey pb2-avoid"><i class="ap-icon-ban" aria-hidden="true"></i><span>${esc(w)}</span></span>`,
+              )
+              .join("")}</span>`
+          : pb2Empty("None yet — add the words this brand never says."),
+        { wide: true, index: 5, icon: "ap-icon-ban" },
+      ),
+    );
   }
   if (nvOn() && data.voiceMode !== "manual") {
     const net = activeNetworkFor(data);
@@ -2950,7 +2820,7 @@ function renderBrandRead2(data) {
           (l) => `<li class="pb2-logo-tile">
             <span class="pb2-logo-tile__art${l.variant === "white" || /revers|white|negative/i.test(l.label || "") ? " is-dark" : ""}"><img src="${esc(l.url)}" alt="${esc(l.label || "Logo")}" /></span>
             <span class="pb2-logo-tile__name">${esc(l.label || "Logo")}${l.url === data.brandLogo ? ' <span class="ap-tag grey mini"><span>Default</span></span>' : ""}</span>
-            ${kitEnabled() && l.variant ? `<span class="pb2-logo-tile__version">${esc(PB2_LOGO_VERSIONS[l.variant] || "")}</span>` : ""}
+            ${l.variant ? `<span class="pb2-logo-tile__version">${esc(PB2_LOGO_VERSIONS[l.variant] || "")}</span>` : ""}
           </li>`,
         )
         .join("")}</ul>`
@@ -2981,35 +2851,27 @@ function renderBrandRead2(data) {
       { index: 3 },
     ),
   ];
-  if (kitEnabled()) {
-    blocks.push(
-      pb2Block(
-        "Visual rules",
-        // Do / Don't moved into each image style (the style creator), 2026-10-05.
-        `<dl class="pb2-facts pb2-facts--alone">
-          <div><dt>Logo minimum size</dt><dd>${esc(r.logoMinPx ?? 48)} px</dd></div>
-          <div><dt>Clear space</dt><dd>${esc(r.clearSpace ?? 0.5)} × logo height</dd></div>
-          <div><dt>Distortion</dt><dd>${r.noLogoDistortion === false ? "Allowed" : "Never stretch or skew"}</dd></div>
-          <div><dt>Colours that never meet</dt><dd>${pairs.length ? `<span class="pb2-pairs">${pairs.join("")}</span>` : "None"}</dd></div>
-        </dl>`,
-        { wide: true, index: 4 },
-      ),
-    );
-  } else {
-    // Without the brand kit, Reference images and Default look still belong here.
-    blocks.push(
-      pb2Block("Reference images", renderRefImages(data, canEditView()), { wide: true, index: 4 }),
-      pb2Block("Default look", renderDefaultLook(data, false), { wide: true, index: 5 }),
-    );
-  }
+  blocks.push(
+    pb2Block(
+      "Visual rules",
+      // Do / Don't moved into each image style (the style creator), 2026-10-05.
+      `<dl class="pb2-facts pb2-facts--alone">
+        <div><dt>Logo minimum size</dt><dd>${esc(r.logoMinPx ?? 48)} px</dd></div>
+        <div><dt>Clear space</dt><dd>${esc(r.clearSpace ?? 0.5)} × logo height</dd></div>
+        <div><dt>Distortion</dt><dd>${r.noLogoDistortion === false ? "Allowed" : "Never stretch or skew"}</dd></div>
+        <div><dt>Colours that never meet</dt><dd>${pairs.length ? `<span class="pb2-pairs">${pairs.join("")}</span>` : "None"}</dd></div>
+      </dl>`,
+      { wide: true, index: 4 },
+    ),
+  );
   return `${pb2TabHead("brand")}<div class="pb2-grid">${blocks.join("")}</div>`;
 }
 
 // Playbook 2.0: the Brand panel reads as two groups — what the brand IS (marks,
 // colours, type, personality) and what its images follow (styles, references, rules).
-// Called by renderBrandPanel in EVERY mode: it must exist even with the flag off.
+// Called by renderBrandPanel in EVERY mode: the recap (not v2) gets no group heads.
 function renderBrandGroup(title) {
-  if (!v2On() || !kitEnabled()) return "";
+  if (!v2On()) return "";
   return `<h3 class="pb2-group">${esc(title)}</h3>`;
 }
 

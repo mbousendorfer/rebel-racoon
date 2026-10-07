@@ -33,7 +33,6 @@ body.has-modal {
 
 .bug-report-modal,
 .feedback-modal,
-.isv2-modal,
 .chat-picker-modal,
 .add-source-modal,
 .connectors-modal,
@@ -527,7 +526,6 @@ body.has-modal {
 
 .bug-report-modal.open,
 .feedback-modal.open,
-.isv2-modal.open,
 .chat-picker-modal.open,
 .add-source-modal.open,
 .connectors-modal.open,

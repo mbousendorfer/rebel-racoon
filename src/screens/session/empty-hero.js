@@ -1,16 +1,15 @@
 // A new chat's hero: the greeting, the workflow starters, and the "Fresh
 // topics to review" grid (flag topicFeed). Moved out of session.js, unchanged.
 
-import { isFlagOn } from "../../feature-flags.js?v=1697";
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=1697";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=1697";
-import { getContextById } from "../../contexts-store.js?v=1697";
-import { isWorkspaceMode } from "../../active-playbook.js?v=1697";
-import { renderTopicCard } from "../../components/topic-card.js?v=1697";
-import { findTopicSource } from "../../topics-catalog.js?v=1697";
-import { html, raw } from "../../utils.js?v=1697";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=1697";
-import { renderStarterCards } from "../../components/starter-card.js?v=1697";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=1699";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=1699";
+import { getContextById } from "../../contexts-store.js?v=1699";
+import { isWorkspaceMode } from "../../active-playbook.js?v=1699";
+import { renderTopicCard } from "../../components/topic-card.js?v=1699";
+import { findTopicSource } from "../../topics-catalog.js?v=1699";
+import { html, raw } from "../../utils.js?v=1699";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1699";
+import { renderStarterCards } from "../../components/starter-card.js?v=1699";
 
 // Composer "Add" menu — "Connected sources" is a nested submenu (Codex-style
 // "Modules d'extension ▸" flyout), not a first-level list. The flyout lists the
@@ -23,7 +22,6 @@ import { renderStarterCards } from "../../components/starter-card.js?v=1697";
 // divider before it — it sits directly under "Top performing posts" as one more
 // source to pull in, not a separate group.
 export function renderTopicPickerRow() {
-  if (!isFlagOn("topicFeed")) return "";
   return `
     <button type="button" class="ap-action-dropdown-item" data-add-source="topic" role="menuitem">
       <i class="ap-icon-antenna"></i>
@@ -64,7 +62,6 @@ export function renderTopicPickerRow() {
 // Renders nothing at all when there is nothing to say, so a hero with no Topics
 // is byte-for-byte the hero this app has always had.
 function renderFreshTopics(session) {
-  if (!isFlagOn("topicFeed")) return "";
   const pbId = session?.contextId || null;
   const feed = pbId ? getFeedForPlaybook(pbId) : null;
   if (!feed) return "";

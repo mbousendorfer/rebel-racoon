@@ -17,10 +17,9 @@
 // `loader` cfg, run the (mock) analysis on a timer, then `updateContext` with
 // the section patch — the loader flips to ready and paints the fresh data.
 
-import { navigate, getPath } from "../router.js?v=1697";
-import { escapeHtml as esc } from "../utils.js?v=1697";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../components/topbar.js?v=1697";
-import { isFlagOn } from "../feature-flags.js?v=1697";
+import { navigate, getPath } from "../router.js?v=1699";
+import { escapeHtml as esc } from "../utils.js?v=1699";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../components/topbar.js?v=1699";
 import {
   getContextById,
   getContexts,
@@ -28,15 +27,15 @@ import {
   deleteContext,
   duplicateContext,
   appendHistory,
-} from "../contexts-store.js?v=1697";
-import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=1697";
-import { mount, snapshotEditable } from "../playbook-view.js?v=1697";
-import { open as openRenameModal } from "../components/rename-modal.js?v=1697";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=1697";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=1697";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=1697";
-import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=1697";
-import { sectionPatchFromAnalysis } from "../context-builder.js?v=1697";
+} from "../contexts-store.js?v=1699";
+import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=1699";
+import { mount, snapshotEditable } from "../playbook-view.js?v=1699";
+import { open as openRenameModal } from "../components/rename-modal.js?v=1699";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=1699";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=1699";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=1699";
+import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=1699";
+import { sectionPatchFromAnalysis } from "../context-builder.js?v=1699";
 import {
   canView,
   canEdit,
@@ -48,9 +47,9 @@ import {
   isMine,
   ownerOf,
   ownerName,
-} from "../playbook-access.js?v=1697";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=1697";
-import { showToast } from "../components/toast.js?v=1697";
+} from "../playbook-access.js?v=1699";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=1699";
+import { showToast } from "../components/toast.js?v=1699";
 
 const AUTOFILL_MS = 1500;
 
@@ -75,46 +74,6 @@ function toast(msg) {
 
 function prettyUrl(url) {
   return (url || "").replace(/^https?:\/\//, "").replace(/\/$/, "");
-}
-
-// "Re-analyze website" rebuilds every section from the site, so it's a
-// Playbook-wide action and lives in the header (a labelled stroked button — no
-// dropdown now that it's the only whole-Playbook source). Voice sources live in
-// the Voice & style "Learn from…" dropdown.
-function buildHeaderActions(ctx) {
-  // Using a Playbook is always on the table — that's what being shared one is
-  // for. Everything that WRITES depends on owning it (or managing the org).
-  // Duplicate is the recipient's real action: it turns reading into having.
-  const editable = canEdit(ctx);
-  return [
-    `<button type="button" class="ap-button primary blue" data-playbook-start>
-      <i class="ap-icon-double-chat-bubbles"></i>
-      <span>Start a chat</span>
-    </button>`,
-    !editable
-      ? `<button type="button" class="ap-button stroked blue" data-playbook-duplicate>
-          <i class="ap-icon-copy"></i>
-          <span>Duplicate</span>
-        </button>`
-      : "",
-    canManageSharing(ctx)
-      ? `<button type="button" class="ap-button stroked blue" data-playbook-share>
-          <i class="ap-icon-share"></i>
-          <span>Share</span>
-        </button>`
-      : "",
-    editable
-      ? `<button type="button" class="ap-button stroked blue" data-fill-website>
-          <i class="ap-icon-refresh"></i>
-          <span>Re-analyze website</span>
-        </button>`
-      : "",
-    canDelete(ctx)
-      ? `<button type="button" class="ap-icon-button stroked grey" data-playbook-delete title="Delete" aria-label="Delete Playbook">
-          <i class="ap-icon-trash"></i>
-        </button>`
-      : "",
-  ].join("");
 }
 
 // Playbook 2.0: the topbar follows the DS Top bar (V2 Molecules › Top bar,
@@ -206,7 +165,6 @@ export function renderPlaybook(params, target) {
   }
 
   let cleanup = null;
-  const v2 = isFlagOn("playbook2");
   // Auto-fill loader state (drives the engine's staged loader on re-analysis).
   let analyzing = false;
   let analysisReady = false;
@@ -252,15 +210,12 @@ export function renderPlaybook(params, target) {
       // header: title left, actions right), where they also stay in reach while
       // the fiche scrolls. Repainted with the fiche, so a Share or a rename that
       // changes what's allowed is reflected there too.
-      headerActions: v2 ? null : () => buildHeaderActions(getContextById(id)),
-      onPaint: v2
-        ? () =>
-            setTopbarActions(
-              getPath(),
-              `<div class="pb2-topbar-actions" data-pb2-topbar-actions>${buildTopbarActions(getContextById(id))}</div>`,
-              { left: buildTopbarLeft() },
-            )
-        : undefined,
+      onPaint: () =>
+        setTopbarActions(
+          getPath(),
+          `<div class="pb2-topbar-actions" data-pb2-topbar-actions>${buildTopbarActions(getContextById(id))}</div>`,
+          { left: buildTopbarLeft() },
+        ),
       // The rename pencil and the voice re-analysis are both writes: withhold
       // the callback and playbook-view renders no affordance.
       onEditName: canEdit(getContextById(id)) ? onEditName : undefined,
@@ -482,7 +437,7 @@ export function renderPlaybook(params, target) {
   const onTopbarClick = (event) => {
     if (event.target.closest("[data-pb2-topbar-actions]")) onFooter(event);
   };
-  if (v2) topbar?.addEventListener("click", onTopbarClick);
+  topbar?.addEventListener("click", onTopbarClick);
 
   cleanup = mount(target, buildCfg());
 
@@ -490,6 +445,6 @@ export function renderPlaybook(params, target) {
     document.removeEventListener("click", onDocClick);
     topbar?.removeEventListener("click", onTopbarClick);
     cleanup?.();
-    if (v2) setTopbarActions(null);
+    setTopbarActions(null);
   };
 }

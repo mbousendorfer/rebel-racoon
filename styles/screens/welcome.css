@@ -851,79 +851,6 @@ button.recap__logotile:hover {
   align-self: flex-start;
 }
 
-/* Reference-image gallery (#11) — thumbnails + add tile in the Visual
-   identity section (edit shows remove buttons + an Add tile). */
-/* ── Reference images: gallery of cards + per-image detail modal ─────────── */
-.recap__refgallery {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ref-spacing-sm);
-  margin-bottom: var(--ref-spacing-sm);
-}
-
-/* Clean square thumbnail — opens the detail modal on click. */
-.recap__refcard {
-  position: relative;
-}
-
-.recap__refcard-open {
-  position: relative;
-  display: block;
-  width: 108px;
-  height: 108px;
-  padding: 0;
-  border: 1px solid var(--app-border);
-  border-radius: var(--app-radius-md);
-  overflow: hidden;
-  background: var(--ref-color-grey-05);
-  cursor: pointer;
-  transition:
-    border-color var(--ref-animation-short) var(--app-ease-out),
-    box-shadow var(--ref-animation-short) var(--app-ease-out);
-}
-
-.recap__refcard-open:hover {
-  border-color: var(--ref-color-electric-blue-100);
-}
-
-.recap__refcard-open img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-/* Hover affordance — reveals that a card holds editable details. */
-.recap__refcard-overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--ref-spacing-xxs);
-  background: rgb(10 27 51 / 55%);
-  color: var(--ref-color-white);
-  font-size: var(--sys-text-style-caption-size);
-  font-weight: var(--ref-font-weight-bold);
-  opacity: 0;
-  transition: opacity var(--ref-animation-short) var(--app-ease-out);
-}
-
-.recap__refcard-open:hover .recap__refcard-overlay,
-.recap__refcard-open:focus-visible .recap__refcard-overlay {
-  opacity: 1;
-}
-
-.recap__refcard-overlay > i {
-  font-size: 18px;
-}
-
-/* Remove handle over the thumb (edit mode). */
-.recap__refcard-remove {
-  z-index: 1;
-}
-
 /* Network mini-badges (icons only) — cards + read-only modal. */
 .recap__refimg-nets {
   display: inline-flex;
@@ -953,11 +880,6 @@ button.recap__logotile:hover {
 
 .recap__refimg-remove:hover {
   background: rgb(0 0 0 / 75%);
-}
-
-/* Auto-width, left-aligned DS add button (never stretched). */
-.recap__refedit-add {
-  align-self: flex-start;
 }
 
 /* Small uppercase field label — de-emphasised so the controls lead. */
@@ -1744,12 +1666,6 @@ button.recap__logotile:hover {
   gap: var(--ref-spacing-sm);
 }
 
-.recap__look-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxs);
-}
-
 /* The de-emphasised half of a label/value pair, same treatment as
    .recap__lang-primary-label. */
 .recap__look-label {
@@ -1759,46 +1675,12 @@ button.recap__logotile:hover {
   color: var(--ref-color-grey-80);
 }
 
-/* Read mode is an identity-sheet spec, not a control panel: each criterion is a
-   caption → value pair on one aligned line, so the three picks scan as a block of
-   values rather than as three stretched blue buttons. */
-.recap__look--read {
-  gap: var(--ref-spacing-xs);
-}
-
-.recap__look--read .recap__look-group {
-  display: grid;
-  grid-template-columns: 120px minmax(0, 1fr);
-  align-items: baseline;
-  gap: var(--ref-spacing-sm);
-}
-
-.recap__look--read .recap__look-label {
-  padding-top: 0;
-  color: var(--ref-color-grey-80);
-}
-
 /* The picked value — the emphasis of the pair. Same ink as .recap__row-text so it
    reads exactly like the other read values in the panel (Personality, Business). */
 .recap__look-value {
   font-size: var(--sys-text-style-body-size);
   line-height: var(--sys-text-style-body-line-height);
   color: var(--ref-color-grey-100);
-}
-
-.recap__look-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ref-spacing-xs);
-}
-
-/* Why the reference-mode group is disabled. grey-80 is the ink floor — never grey-40,
-   which reads as broken rather than as unavailable. */
-.recap__look-hint {
-  margin: 0;
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-80);
 }
 
 .recap__lang-primary {
@@ -2291,11 +2173,6 @@ button.recap__logotile:hover {
 .recap__kit-facts dd {
   margin: 0;
   color: var(--ref-color-grey-100);
-}
-
-.recap__kit-rules {
-  margin: 0;
-  padding-left: var(--ref-spacing-sm);
 }
 
 .recap__kit-edit,

@@ -13,24 +13,24 @@
 // tones, contentStyle, objective, contentAction, ctaLinks, language, color,
 // suggestions, editingId, onComplete }.
 
-import * as inlineQuestion from "./inline-question.js?v=1697";
-import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=1697";
-import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=1697";
-import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=1697";
-import { showToast } from "./components/toast.js?v=1697";
-import { recordReasons } from "./feedback-store.js?v=1697";
-import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1697";
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1697";
-import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=1697";
-import { analyzeWebsite, analyzeBrandFiles } from "./context-mock-analysis.js?v=1697";
-import { connectors as connectorMocks } from "./mocks.js?v=1697";
+import * as inlineQuestion from "./inline-question.js?v=1699";
+import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=1699";
+import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=1699";
+import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=1699";
+import { showToast } from "./components/toast.js?v=1699";
+import { recordReasons } from "./feedback-store.js?v=1699";
+import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1699";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1699";
+import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=1699";
+import { analyzeWebsite, analyzeBrandFiles } from "./context-mock-analysis.js?v=1699";
+import { connectors as connectorMocks } from "./mocks.js?v=1699";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "./social-profiles.js?v=1697";
-import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=1697";
-import { isFlagOn } from "./feature-flags.js?v=1697";
+} from "./social-profiles.js?v=1699";
+import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=1699";
+import { isFlagOn } from "./feature-flags.js?v=1699";
 
 const drafts = new Map(); // sessionId → draft
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -79,7 +79,7 @@ function emptyDraft(overrides = {}) {
     // "" on each = no preference. See contexts-store#normalizeImageDefaults.
     imageDefaults: { imageType: "", style: "", refMode: "" },
     referenceImages: [], // Array<{ id, label, url, note?, networks? }> — note/networks = optional usage guidance
-    // Brand kit (flag sexySquirrel) — see contexts-store#normalizeBrandKit.
+    // Brand kit — see contexts-store#normalizeBrandKit.
     voiceAvoid: [],
     brandRules: null,
     // Competitors — Array<{ id, name, description, websiteUrl, socials:[{network,url}], logo?, suggested? }>.
@@ -297,22 +297,18 @@ export function startAlt(sessionId, { onComplete, prefilledUrl = "" } = {}) {
 }
 
 // The onboarding steps, in order, as they exist under the current flags — the
-// single place that knows which questions the flow asks. Two flags move it:
-// `multilingualPlaybook` inserts a language step after the URL, and
-// `skipConnectProfiles` does NOT remove the account step — it turns it into a
-// choice. The step is still asked, but it is optional (a Skip), and when
-// nothing is connected it offers to connect rather than listing profiles that
-// don't exist. Skipping is not a dead end: the chat flows that draft FOR an
-// account ask again at the moment it is needed (connect-profiles-flow.js).
+// single place that knows which questions the flow asks. `multilingualPlaybook`
+// inserts a language step after the URL. The account step is a choice (a Skip),
+// and when nothing is connected it offers to connect rather than listing
+// profiles that don't exist. Skipping is not a dead end: the chat flows that
+// draft FOR an account ask again at the moment it is needed
+// (connect-profiles-flow.js).
 // Labels are derived from this list, so adding or removing a step renumbers the
 // rest for free.
 function altSteps() {
   const steps = ["url"];
   if (isFlagOn("multilingualPlaybook")) steps.push("language");
   steps.push("profile", "documents");
-  // Image Generator (flag sexySquirrel): reference images belong to the brand's
-  // image STYLES now, made on the fiche — the Playbook no longer asks for loose ones.
-  if (!isFlagOn("sexySquirrel")) steps.push("images");
   return steps;
 }
 function altTotalSteps() {
@@ -338,7 +334,7 @@ function askAltAfterUrl(sessionId) {
   else askAltProfile(sessionId);
 }
 
-// Brand kit (flag sexySquirrel): the first step offers two more ways in beside
+// The first step offers two more ways in beside
 // the URL — from files (logo, past visuals, photos → a mocked analysis) and by
 // hand (no analysis; the empty fiche is the form). Same step, same count: only
 // its answers change, so every later step is untouched.
@@ -414,20 +410,15 @@ function startAltManually(sessionId) {
 }
 
 function askAltUrl(sessionId, prefilledUrl = "") {
-  const kit = isFlagOn("sexySquirrel");
   const intro = prefilledUrl
     ? "Here's the site I found — confirm it below to begin."
-    : kit
-      ? "Drop your website URL below to begin — or start from your files, or fill it in yourself."
-      : "Drop your website URL below to begin.";
+    : "Drop your website URL below to begin — or start from your files, or fill it in yourself.";
   postAssistantMessage(sessionId, intro);
   inlineQuestion.ask(sessionId, {
-    title: kit ? "How do you want to start?" : "What's your website URL?",
+    title: "How do you want to start?",
     stepLabel: altStepLabel("url"),
-    items: kit ? ALT_START_ITEMS : [],
-    onPick: kit
-      ? (value) => (value === "files" ? startAltFromFiles(sessionId) : startAltManually(sessionId))
-      : undefined,
+    items: ALT_START_ITEMS,
+    onPick: (value) => (value === "files" ? startAltFromFiles(sessionId) : startAltManually(sessionId)),
     customPlaceholder: "https://your-brand.com",
     customValue: prefilledUrl,
     onCustom: (value) => {
@@ -506,7 +497,7 @@ function commitAltProfiles(sessionId, profiles) {
 // question is asked once, and a second answer replaces the first.
 const SKIP_CONNECT_TARGET = "skip:connect-profiles";
 
-// The account step. Under `skipConnectProfiles` it is a CHOICE rather than a
+// The account step. It is a CHOICE rather than a
 // gate: optional either way, and shaped by what the user actually has.
 //   - nothing connected → offer to connect (the same rows and the same modal as
 //     the in-chat step), or Skip;
@@ -519,10 +510,9 @@ const SKIP_CONNECT_TARGET = "skip:connect-profiles";
 // BACK, not asked again, and re-posting its line would leave the thread saying
 // the same sentence twice for one question.
 function askAltProfile(sessionId, { announce = true } = {}) {
-  const optional = isFlagOn("skipConnectProfiles");
   const connectedProfiles = getConnectedProfiles();
 
-  if (optional && connectedProfiles.length === 0) {
+  if (connectedProfiles.length === 0) {
     if (announce) {
       postAssistantMessage(
         sessionId,
@@ -585,7 +575,7 @@ function askAltProfile(sessionId, { announce = true } = {}) {
   // draft profile picker stay identical.
   const items = buildConnectedProfileItems();
   inlineQuestion.ask(sessionId, {
-    title: optional ? "Which profile will publish? (optional)" : "Which profile will publish?",
+    title: "Which profile will publish? (optional)",
     stepLabel: altStepLabel("profile"),
     items,
     // With many connected profiles, filter the list live instead of scrolling.
@@ -599,16 +589,12 @@ function askAltProfile(sessionId, { announce = true } = {}) {
       notify(sessionId);
       askAltDocuments(sessionId);
     },
-    // Only skippable under the flag — without it the Playbook has always named
-    // a profile, and making it optional here would change the flag-off flow.
-    skipLabel: optional ? "Skip" : undefined,
-    onSkip: optional
-      ? () => {
-          inlineQuestion.exit(sessionId);
-          notify(sessionId);
-          askAltDocuments(sessionId);
-        }
-      : undefined,
+    skipLabel: "Skip",
+    onSkip: () => {
+      inlineQuestion.exit(sessionId);
+      notify(sessionId);
+      askAltDocuments(sessionId);
+    },
     // Back to the language picker (multilingual on) or the URL question — and
     // askAltPrevious re-renders question 1 with whatever URL the draft holds.
     onBack: () => askAltPrevious(sessionId, "profile"),

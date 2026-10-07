@@ -7,10 +7,9 @@
 // as the muted caption, and a DS avatar carrying the brand photo plus a
 // corner network badge.
 
-import { socialAccounts, demoManyProfiles } from "./mocks.js?v=1697";
-import { escapeHtml } from "./utils.js?v=1697";
-import { isFlagOn } from "./feature-flags.js?v=1697";
-import { createNotifier } from "./store-utils.js?v=1697";
+import { socialAccounts, demoManyProfiles } from "./mocks.js?v=1699";
+import { escapeHtml } from "./utils.js?v=1699";
+import { createNotifier } from "./store-utils.js?v=1699";
 
 // THE network table — every surface that names, badges, counts or colours a
 // network reads it, so a network is spelled one way everywhere. It replaced
@@ -155,11 +154,7 @@ export function renderProfileEchoCard(account, { network } = {}) {
 //
 // The mocks describe accounts; this Set describes the ones connected in this
 // browser session, so connecting one in a chat shows up everywhere afterwards.
-// Seeded lazily, once:
-//   flag OFF — every mock-connected account plus the whole demoManyProfiles
-//              set, i.e. the pre-flag behaviour byte for byte;
-//   flag ON  — EMPTY. Nothing is connected until the user connects it, which
-//              is the state the whole feature exists to make reachable.
+// Starts EMPTY: nothing is connected until the user connects it.
 // ---------------------------------------------------------------------------
 const notifier = createNotifier("social-profiles");
 export const subscribe = notifier.subscribe;
@@ -174,9 +169,7 @@ const ALL_ACCOUNTS = [...socialAccounts, ...demoManyProfiles];
 
 function ensureSeeded() {
   if (connectedIds) return connectedIds;
-  connectedIds = new Set(
-    isFlagOn("skipConnectProfiles") ? [] : ALL_ACCOUNTS.filter((p) => p.status === "connected").map((p) => p.id),
-  );
+  connectedIds = new Set();
   return connectedIds;
 }
 

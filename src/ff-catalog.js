@@ -81,28 +81,6 @@ export const FLAGS = Object.freeze([
       "data is preserved either way — only the surfaces are gated.",
   },
   {
-    id: "topicFeed",
-    label: "Topic Feed (listening)",
-    default: false,
-    hides:
-      "When OFF (default), hides everything the Topic Feed touches: the /topics " +
-      "route and its settings page, the sidebar nav row and its unread mark, the " +
-      '"Fresh topics to review" list on a new chat, and the composer Add menu\'s ' +
-      '"Pick from the Topic Feed". A stale deep link bounces to /. The seeded ' +
-      "feeds and Topics ride along in the data either way, like " +
-      "multilingualPlaybook \u2014 only the surfaces are gated.\n\nWhen ON, " +
-      "Agorapulse listening assembles a TOPIC per feed \u2014 a headline, an " +
-      "article in two sections, and the posts behind it \u2014 and /topics is the " +
-      "queue you triage it in: one list of both lanes (To review and For " +
-      "later, told apart by a chip), a Filters panel to narrow by lane, answer " +
-      "or source, three age groups, and the article opening beside the list. A Topic offers exactly two verbs, Use in chat (which marks it Used " +
-      "and opens a new chat with it attached as a Source) and Ignore (which asks " +
-      "why, and is reversible).\n\nTHE INVARIANT IT RESTS ON: a Topic's review " +
-      "status and its two attention signals are three separate things. Trending " +
-      "and Updated are never a status and never override the status filter \u2014 " +
-      "an ignored Topic that starts trending stays hidden.",
-  },
-  {
     id: "playbookSharing",
     label: "Playbook sharing",
     default: false,
@@ -141,36 +119,6 @@ export const FLAGS = Object.freeze([
       "modal: Optimal / Custom mode cards, cadence chips, a free-text " +
       "strategy, a Compute best times button that unlocks Schedule, and a " +
       "month calendar beside the list.",
-  },
-  {
-    id: "playbook2",
-    label: "Playbook 2.0 — the fiche in tabs",
-    // OFF: lands dark. Only the saved Playbook's page (/playbook/:id) changes;
-    // the onboarding recap keeps the long single-page reveal.
-    default: false,
-    hides:
-      "When OFF, a Playbook's page is one long scroll with a section rail. ON " +
-      "rebuilds it: an identity header with the page's actions, DS tabs — " +
-      "Overview, Audience & goals, Voice & style, Brand, Competitors — and an " +
-      "Overview that shows the brand at a glance (who it's for, how it sounds, " +
-      "how it looks, who it competes with), each card opening its tab.",
-  },
-  {
-    id: "sexySquirrel",
-    label: "Sexy Squirrel — AI Image Generator (from a draft)",
-    // OFF: lands dark. Gates the draft's studio (the old Image Studio opens
-    // instead), the style creator route, and the Playbook's brand-kit rows —
-    // Image styles included — plus two creation entries.
-    default: false,
-    hides:
-      "When OFF, the Image Generator disappears entirely. ON replaces a draft's " +
-      "image studio with an AI image generator for social posts (Instagram, " +
-      "Facebook, X, LinkedIn): describe the image or suggest it from the post, " +
-      "pick a style, get up to four variations and put one in the draft. The " +
-      "brand is the Playbook: ON also adds its brand kit (logo versions, colour " +
-      "roles, words to avoid, visual rules, and the brand's own image " +
-      "styles) to the Playbook page, and two more ways to create a Playbook " +
-      "(from files, or by hand).",
   },
   {
     id: "brandTintedPresets",
@@ -218,26 +166,5 @@ export const FLAGS = Object.freeze([
       '"Archie wants to remember" tray on the Voice tab, drawn as memory notes in Archie\'s butter. Nothing enters the ' +
       "Playbook without a click. Each network voice says how far along it is. " +
       "The per-network view lives on the Playbook 2.0 page (flag playbook2).",
-  },
-  {
-    id: "skipConnectProfiles",
-    label: "Skip connecting profiles at setup",
-    default: false,
-    hides:
-      "Whether connecting a social account is a REQUIREMENT or a choice. When OFF " +
-      "(default), creating a Playbook makes you pick which profile will publish " +
-      "before you can go on, and the ~40 demo accounts are connected from the " +
-      "start.\n\nWhen ON, nothing is connected to begin with (in both user " +
-      "modes) and the step becomes optional: it still asks — offering to connect " +
-      "an account when none is, or the usual profile pick when some are — but it " +
-      "carries a Skip, and the step count is unchanged. Skipping is not a dead " +
-      "end.\n\nThe ask comes back at the moment it is needed: " +
-      "the three chat flows that draft FOR an account — draft from an idea, " +
-      'draft from clips, and repurpose — each replace their "pick an account" ' +
-      'step with a "connect an account" step in the same place, and resume ' +
-      "where they left off once the connect modal confirms. The Clip Studio " +
-      "and Top Posts ask too (a picker must never render empty); surfaces that " +
-      "only LIST profiles (Objectives, the analyze-profiles modal) render their " +
-      "empty list until an account is connected.",
   },
 ]);

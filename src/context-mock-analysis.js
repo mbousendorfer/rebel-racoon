@@ -413,7 +413,7 @@ function deriveName(url) {
 
 /**
  * Mock-analyse a set of brand FILES (logo, past visuals, photos) — the "Start
- * from files" way into a Playbook (flag sexySquirrel). Nothing is parsed: the
+ * from files" way into a Playbook. Nothing is parsed: the
  * palette is derived from the file names so the same files always give the
  * same brand, and the first image is taken as the logo. Same shape as
  * analyzeWebsite.
