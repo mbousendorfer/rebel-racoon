@@ -66,6 +66,10 @@ export function renderPicker(picker) {
     customHandler = null,
     multi = false,
     submitLabel = "Continue",
+    // Blue by default (the Quickpicker's routine Continue). "orange" when the
+    // submit IS the flow's final, irreversible act (Schedule) — the AI /
+    // spotlight action of the house colour convention.
+    submitTone = "blue",
     title = null, // text shown at the top of the picker (mirrors the AI question)
     subtitle = null, // optional helper line under the title (what to do here)
     stepIndicator = null, // small label on the top right (e.g. "3 of 7")
@@ -417,16 +421,16 @@ export function renderPicker(picker) {
   // electric-blue selection/focus language. Both disable themselves when
   // there's nothing to submit — session.js keeps the multi button in sync.
   const primaryBtn = multi
-    ? `<button type="button" class="ap-button primary blue" data-${handler}-submit ${preset.size === 0 ? "disabled" : ""}><span>${submitLabel}</span></button>`
+    ? `<button type="button" class="ap-button primary ${submitTone}" data-${handler}-submit ${preset.size === 0 ? "disabled" : ""}><span>${submitLabel}</span></button>`
     : stepper
-      ? `<button type="button" class="ap-button primary blue" data-${handler}-generate ${stepTotal <= 0 ? "disabled" : ""}><span>${submitLabel}</span></button>`
+      ? `<button type="button" class="ap-button primary ${submitTone}" data-${handler}-generate ${stepTotal <= 0 ? "disabled" : ""}><span>${submitLabel}</span></button>`
       : hasCounterSubmit
         ? `<button type="button" class="ap-button primary blue" data-${handler}-counter-submit="${counterItem.value}"><span>Generate ${counterSubmitCount} draft${counterSubmitCount === 1 ? "" : "s"}</span></button>`
         : "";
   const actionBtns = (actions || [])
     .map(
       (a) =>
-        `<button type="button" class="ap-button ${a.danger ? "stroked red" : a.primary ? "primary blue" : a.stroked ? "stroked grey" : "ghost grey"}" data-${handler}="${a.value}"><span>${a.label}</span></button>`,
+        `<button type="button" class="ap-button ${a.danger ? "stroked red" : a.primary ? `primary ${a.tone || "blue"}` : a.stroked ? "stroked grey" : "ghost grey"}" data-${handler}="${a.value}"><span>${a.label}</span></button>`,
     )
     .join("");
   const rightCluster = `${skipBtn}${actionBtns}${primaryBtn}`;
@@ -495,8 +499,8 @@ export function renderPicker(picker) {
       .join("");
     const anyOn = items.some(isOn);
     const submit = multi
-      ? `<button type="button" class="ap-button primary blue" data-${handler}-submit ${anyOn ? "" : "disabled"}><span>${submitLabel}</span></button>`
-      : `<button type="button" class="ap-button primary blue" data-${handler}-single-submit ${anyOn ? "" : "disabled"}><span>${submitLabel}</span></button>`;
+      ? `<button type="button" class="ap-button primary ${submitTone}" data-${handler}-submit ${anyOn ? "" : "disabled"}><span>${submitLabel}</span></button>`
+      : `<button type="button" class="ap-button primary ${submitTone}" data-${handler}-single-submit ${anyOn ? "" : "disabled"}><span>${submitLabel}</span></button>`;
     const postsFooter = `<div class="analyse__options-submit">${backBtn}<span class="analyse__footer-spacer" aria-hidden="true"></span>${skipBtn}${submit}</div>`;
     return `<div class="analyse__options analyse__options--posts" ${multi ? "data-multi" : "data-single"}>${header}<div class="post-pick" role="${multi ? "group" : "radiogroup"}">${postRows}</div>${postsFooter}</div>`;
   }

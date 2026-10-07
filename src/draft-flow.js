@@ -20,12 +20,12 @@ import {
   finishPending,
   postDraftResult,
   reportDraftFailure,
-} from "./assistant.js?v=1662";
-import { getIdeas } from "./library.js?v=1662";
-import { anglesByIdea } from "./mocks.js?v=1662";
-import { addPostDraft } from "./posts-store.js?v=1662";
-import { networkMeta } from "./social-profiles.js?v=1662";
-import { coachAfterDraft } from "./voice-coach.js?v=1662";
+} from "./assistant.js?v=1664";
+import { getIdeas } from "./library.js?v=1664";
+import { anglesByIdea } from "./mocks.js?v=1664";
+import { addPostDraft } from "./posts-store.js?v=1664";
+import { networkMeta } from "./social-profiles.js?v=1664";
+import { coachAfterDraft } from "./voice-coach.js?v=1664";
 
 // Simulated "generating drafts" delay shared by every draft flow.
 const DRAFT_DELAY_MS = 6000;

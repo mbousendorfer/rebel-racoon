@@ -54,6 +54,8 @@
 //                               `selected` seeds the initial highlight.
 //   defaultSelected   array   — values to render pre-selected (multi mode only)
 //   submitLabel       string  — multi-select submit button label (default "Continue")
+//   submitTone        "blue" | "orange" — the submit's colour; orange only for a
+//                               flow's final act (Schedule), blue otherwise
 //   stepper           bool    — per-row count steppers; each row carries its
 //                               own count (0 opts it out) and the submit sums them
 //   defaultCount      number  — initial per-item count in stepper mode (default 1)
@@ -73,8 +75,8 @@
 //   onSkip()          fn      — called when Skip / Esc; if omitted, no skip btn
 //   onBack()          fn      — called when ← Back is clicked; if omitted, no back btn
 
-import { chatTurn } from "./screens/_analyse-common.js?v=1662";
-import { createSessionNotifier } from "./store-utils.js?v=1662";
+import { chatTurn } from "./screens/_analyse-common.js?v=1664";
+import { createSessionNotifier } from "./store-utils.js?v=1664";
 
 const states = new Map(); // sessionId → opts
 const sessionNotifier = createSessionNotifier("inline-question");
@@ -321,6 +323,7 @@ export function renderChrome(sessionId) {
         ? s.submitCountLabel(stepTotal)
         : `Generate ${stepTotal}`
       : s.submitLabel || "Continue",
+    submitTone: s.submitTone || "blue",
   };
   return { body, picker };
 }
