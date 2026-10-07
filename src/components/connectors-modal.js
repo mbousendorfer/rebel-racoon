@@ -14,13 +14,13 @@
 // Standard modal lifecycle via modal-coordinator (one overlay at a time, focus
 // restore, Esc / backdrop dismissal) — mirrors add-source-modal.js.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1650";
-import { navigate } from "../router.js?v=1650";
-import { showToast } from "./toast.js?v=1650";
-import { setHandoff } from "../handoff.js?v=1650";
-import { findConnector, setConnectorStatus, subscribe as subscribeConnectors } from "../connectors-store.js?v=1650";
-import { renderGalleryBody, renderDetailBody } from "../connectors-view.js?v=1650";
-import { askConnector } from "../connector-ask.js?v=1650";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1651";
+import { navigate } from "../router.js?v=1651";
+import { showToast } from "./toast.js?v=1651";
+import { setHandoff } from "../handoff.js?v=1651";
+import { findConnector, setConnectorStatus, subscribe as subscribeConnectors } from "../connectors-store.js?v=1651";
+import { renderGalleryBody, renderDetailBody } from "../connectors-view.js?v=1651";
+import { askConnector } from "../connector-ask.js?v=1651";
 
 const MODAL_ID = "connectors";
 

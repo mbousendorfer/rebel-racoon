@@ -1171,6 +1171,13 @@ span.chat-bubble-choice-chip {
   right: calc(100% + var(--ref-spacing-xs));
 }
 
+/* The memory turn is a size container (its card wraps under 440px): a
+   container takes no width from its content, so it must stretch to the
+   column or it collapses to nothing. */
+.e-turn__content > .memory-turn {
+  align-self: stretch;
+}
+
 /* The wrapped turn gives its identity to the head line: no label, no width
    of its own, the head→body gap only. */
 .e-turn .chat-turn {
