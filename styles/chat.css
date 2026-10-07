@@ -1228,6 +1228,25 @@ span.chat-bubble-choice-chip {
   font-weight: var(--sys-text-style-caption-weight);
 }
 
+/* Archie's reasoning hangs off a thin grey-20 rule under his avatar (centred
+   on the 24px disc), the way Claude marks its thinking: it reads as an aside
+   that belongs to the status above, not as part of the answer below. A quote
+   rule for his reasoning only — not an accent bar on a list item. */
+.e-turn .assistant-notice__detail:not(.assistant-notice__tools) {
+  position: relative;
+}
+
+.e-turn .assistant-notice__detail:not(.assistant-notice__tools)::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(-1 * (24px + var(--ref-spacing-xxs)) + 11px);
+  width: 2px;
+  border-radius: var(--app-radius-pill);
+  background: var(--app-border);
+}
+
 .e-turn .extraction-turn__analyzed-row strong {
   font-weight: inherit;
 }
