@@ -36,7 +36,7 @@
 // The whole module only ever runs under `skipConnectProfiles`: it is reached
 // from the one Skip that flag creates, so it needs no flag test of its own.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1633";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1635";
 
 const MODAL_ID = "skip-connect";
 

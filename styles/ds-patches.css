@@ -50,9 +50,50 @@
   display: none;
 }
 
+/* New conversation styles (flag newConversationStyles): beside Archie's disc
+   the status is TYPE, not a second butter blob. Working = his olive dot
+   breathing + the words in grey-100 with a light passing through them; done =
+   the words alone, grey-80, beside their chevron. */
+.e-turn .ap-status {
+  padding: 0;
+  background: transparent;
+  color: var(--ref-color-grey-80);
+  /* The size of what Archie says: a status is a sentence of his, not a tag. */
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+}
+
+.e-turn .ap-status.is-working {
+  color: transparent;
+  background: linear-gradient(
+      100deg,
+      var(--ref-color-grey-100) 40%,
+      var(--ref-color-grey-40) 50%,
+      var(--ref-color-grey-100) 60%
+    )
+    0 0 / 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: e-status-sheen 2.4s linear infinite;
+}
+
+@keyframes e-status-sheen {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ap-status.is-working::before {
     animation: none;
+  }
+  .e-turn .ap-status.is-working {
+    animation: none;
+    color: var(--ref-color-grey-100);
+    background: transparent;
   }
 }
 
