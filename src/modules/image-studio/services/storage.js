@@ -7,8 +7,8 @@
 //
 // Swappable: a real backend only has to honour the same function signatures.
 
-import { createNotifier } from "../state/notifier.js?v=1667";
-import { SCHEMA_VERSION } from "../model/schema.js?v=1667";
+import { createNotifier } from "../state/notifier.js?v=1669";
+import { SCHEMA_VERSION } from "../model/schema.js?v=1669";
 
 const PREFIX = "imageStudio:v2:";
 // No "brands": the brand is the Playbook. Every entity carries `brandId`, a Playbook id.

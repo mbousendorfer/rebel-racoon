@@ -1186,12 +1186,19 @@ span.chat-bubble-choice-chip {
   transform: none;
 }
 
-/* Archie's reasoning ("Thought for 6s" opened) reads the way Claude and
-   ChatGPT show thinking: no box, no fill — his own words, one step quieter
-   (grey-80, body size so it stays readable), hung under the status label
-   (avatar 24 + its 8px gap) so it reads as what that line unfolds. */
-.e-turn .assistant-notice__detail {
+/* Whatever a status line unfolds — his reasoning ("Thought for 6s"), an
+   extraction's "Analyzed …" and its idea cards — hangs under the status
+   label (avatar 24 + its 8px gap), 8px below the line: it reads as what that
+   line opens, the way Claude and ChatGPT show thinking. */
+.e-turn .assistant-notice > :not(summary) {
   margin: var(--ref-spacing-xxs) 0 0 calc(24px + var(--ref-spacing-xxs));
+}
+
+/* His own words about the work, one step quieter than his answer: no box,
+   grey-80, body size so it stays readable. The reasoning text and the
+   extraction's "Analyzed founder-keynote.mp4" are the same kind of line. */
+.e-turn .assistant-notice__detail,
+.e-turn .extraction-turn__analyzed-row {
   padding: 0;
   border: 0;
   border-radius: 0;
@@ -1200,6 +1207,74 @@ span.chat-bubble-choice-chip {
   font-size: var(--sys-text-style-body-size);
   line-height: var(--sys-text-style-body-line-height);
   font-weight: var(--sys-text-style-body-weight);
+}
+
+.e-turn .extraction-turn__analyzed-row strong {
+  font-weight: inherit;
+}
+
+/* The other cards a turn can hold join the thread's card: grey-20 edge,
+   radius md, 12 / 16 inset (audit 2026-10-07 — the picked top post wore
+   grey-10 and 16 / 16, the connect card radius 12 and 24 / 24). */
+.e-turn .top-post-echo {
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  border-color: var(--app-border);
+  border-radius: var(--ref-border-radius-md);
+  border-top-right-radius: var(--ref-border-radius-md);
+}
+
+.e-turn .connect-card {
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  border-radius: var(--ref-border-radius-md);
+}
+
+/* While Archie works, light passes through the words of his work: an orange
+   sheen sweeps the ink (the working status, a pending card's stage) — the
+   way Claude's "Thinking" shimmers, in Archie's own orange. The butter fill
+   stays: two background layers, the sheen clipped to the text. */
+@keyframes e-sheen {
+  from {
+    background-position:
+      100% 0,
+      0 0;
+  }
+  to {
+    background-position:
+      0 0,
+      0 0;
+  }
+}
+
+.e-turn .ap-status.is-working,
+.e-turn .drafts-card--pending .drafts-card__title {
+  color: transparent;
+  background-image:
+    linear-gradient(
+      100deg,
+      var(--ref-color-grey-100) 42%,
+      var(--ref-color-orange-100) 50%,
+      var(--ref-color-grey-100) 58%
+    ),
+    linear-gradient(var(--e-sheen-fill, transparent), var(--e-sheen-fill, transparent));
+  background-size:
+    300% 100%,
+    100% 100%;
+  -webkit-background-clip: text, padding-box;
+  background-clip: text, padding-box;
+  animation: e-sheen 2s linear infinite;
+}
+
+.e-turn .ap-status.is-working {
+  --e-sheen-fill: var(--app-butter);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .e-turn .ap-status.is-working,
+  .e-turn .drafts-card--pending .drafts-card__title {
+    animation: none;
+    color: var(--ref-color-grey-100);
+    background-image: linear-gradient(var(--e-sheen-fill, transparent), var(--e-sheen-fill, transparent));
+  }
 }
 
 /* The memory turn is a size container (its card wraps under 440px): a
