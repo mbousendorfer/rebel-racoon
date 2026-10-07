@@ -35,11 +35,11 @@ export function renderThread(messages, sessionId) {
 }
 
 // ─── New conversation styles (flag newConversationStyles) ───────────────────
-// Figma "Conversation styles" § E, read the way Claude / ChatGPT read: the side
-// says who speaks. Archie = his words on the full column, no avatar, no name,
-// his status a quiet line ("Thought for 3s ›"); you = your bubble or your pick
-// on the right. No timestamps on screen (on hover). Archie's consecutive turns
-// sit 8px apart.
+// Figma "Conversation styles" § E, simplified: the side says who speaks. Archie
+// = his butter disc beside what he says (his status pill sits on the disc's
+// line); you = your bubble or your pick on the right, nothing else. No names,
+// no avatar of yours; the time is on hover. Archie's consecutive turns share
+// one disc.
 // ponytail: wraps the finished HTML instead of changing ~15 renderers; move the
 // head into the renderers if the style ships.
 const clock = (ts) => (ts ? new Date(ts).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "");
@@ -54,13 +54,18 @@ function renderTwoSides(turns) {
     if (!el) continue;
     const side = el.matches(".chat-turn--user") ? "user" : "ai";
     el.querySelectorAll(":scope > .chat-turn-avatar, :scope > .chat-turn-role").forEach((n) => n.remove());
-    // Archie goes on: 8px, not a new turn. A status line starts a new step.
+    // Archie goes on: one disc for the run. A status pill starts a new step.
     const status = side === "ai" && el.querySelector(".assistant-notice__toggle, .extracting-notice");
     const cont = side === "ai" && prev === "ai" && !status;
     prev = side;
     const time = clock(m.createdAt);
+    const author =
+      side === "ai"
+        ? `<span class="e-turn__author" aria-hidden="true"><span class="e-turn__mark"><i class="ap-icon-archie-official"></i></span></span>`
+        : "";
     out += `
       <div class="e-turn e-turn--${side}${cont ? " e-turn--cont" : ""}${status ? " e-turn--status" : ""}"${time ? ` title="${time}"` : ""}>
+        ${author}
         <div class="e-turn__content">${el.outerHTML}</div>
       </div>`;
   }
