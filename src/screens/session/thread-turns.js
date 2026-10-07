@@ -6,7 +6,7 @@
 // and returns an HTML string. No store reads, no DOM, no side effects: the
 // store-coupled turns (extraction / clip-extraction / source resolution) stay
 // in session.js and pass their resolved data in as arguments.
-import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=1689";
+import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=1690";
 
 // Chat-switch skeleton — shown for ~340ms inside .session__assistant-thread
 // when switching chats, then swapped for the real thread.
@@ -233,22 +233,27 @@ export function renderChoiceTurn(message) {
 }
 
 // A job Archie couldn't finish (assistant.reportDraftFailure, flag
-// newConversationStyles): the result card's anatomy in the error hue — a
-// warning glyph, what failed, what it means, Retry on the right. Stays in the
-// thread until retried, unlike the toast it replaces.
+// newConversationStyles): the DS error infobox — title, what it means, Retry as
+// its action. Stays in the thread until retried, unlike the toast it replaces.
 export function renderFailedTurn(message) {
   return `
     <div class="chat-turn chat-turn--ai chat-turn--failed">
-      <div class="failed-card" role="alert">
-        <i class="ap-icon-warning_fill failed-card__icon" aria-hidden="true"></i>
-        <span class="failed-card__main">
-          <span class="failed-card__title">${escapeHtml(message.title || "Something went wrong")}</span>
-          ${message.text ? `<span class="failed-card__sub">${escapeHtml(message.text)}</span>` : ""}
-        </span>
-        <button type="button" class="ap-link standalone small failed-card__retry" data-failed-retry="${escapeHtmlAttr(message.id)}">
-          <i class="ap-icon-refresh" aria-hidden="true"></i>
-          <span>Retry</span>
-        </button>
+      <div class="ap-infobox error${message.text ? " has-title" : ""} failed-turn" role="alert">
+        <i class="ap-icon-error_fill" aria-hidden="true"></i>
+        <div class="ap-infobox-content">
+          <div class="ap-infobox-texts">
+            ${
+              message.text
+                ? `<span class="ap-infobox-title">${escapeHtml(message.title || "Something went wrong")}</span>
+            <span class="ap-infobox-message">${escapeHtml(message.text)}</span>`
+                : `<span class="ap-infobox-message">${escapeHtml(message.title || "Something went wrong")}</span>`
+            }
+          </div>
+          <button type="button" class="ap-button stroked grey" data-failed-retry="${escapeHtmlAttr(message.id)}">
+            <i class="ap-icon-refresh" aria-hidden="true"></i>
+            <span>Retry</span>
+          </button>
+        </div>
       </div>
     </div>
   `;
