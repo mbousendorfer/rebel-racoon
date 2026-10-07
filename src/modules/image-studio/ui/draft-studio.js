@@ -4,13 +4,13 @@
 // Playbook is the brand, the draft's network sets the shapes, and "Use in
 // draft" hands the finished PNG back to the caller — the draft.
 
-import { html } from "../lib/html.js?v=1647";
-import { openDialog } from "./dialog.js?v=1647";
-import { installMenus } from "./menu.js?v=1647";
-import { toast } from "./toast.js?v=1647";
-import { mountStudio } from "../views/studio.js?v=1647";
-import { DRAFT_NETWORK } from "../config/formats.js?v=1647";
-import { getActiveBrandId } from "../state/store.js?v=1647";
+import { html } from "../lib/html.js?v=1648";
+import { openDialog } from "./dialog.js?v=1648";
+import { installMenus } from "./menu.js?v=1648";
+import { toast } from "./toast.js?v=1648";
+import { mountStudio } from "../views/studio.js?v=1648";
+import { DRAFT_NETWORK } from "../config/formats.js?v=1648";
+import { getActiveBrandId } from "../state/store.js?v=1648";
 
 /**
  * @param {{ brandId?: string, network?: string, text?: string, imageUrl?: string,
