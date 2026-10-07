@@ -273,7 +273,7 @@
 
 /* Empty media slot — ONE dashed frame, the whole of it a drop target, two
    tiers inside (2026-10-07): Generate (mermaid) + what it will make, then the
-   Image Studio and Upload as one row of ghost grey buttons.
+   Image Studio and Upload as one row of stroked grey buttons.
    The rationale is in post-card.js#renderEmptyMedia.
    ⚠️ ONE accent only: the mermaid button. Blue appears only on dragover. */
 .posts__card-media-empty {

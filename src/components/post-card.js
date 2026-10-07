@@ -19,11 +19,11 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1688";
-import { isPortraitFormat } from "../clip-formats.js?v=1688";
-import { presetById } from "../clip-captions.js?v=1688";
-import { renderFeedbackControl } from "./feedback-control.js?v=1688";
-import { networkMeta } from "../social-profiles.js?v=1688";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1689";
+import { isPortraitFormat } from "../clip-formats.js?v=1689";
+import { presetById } from "../clip-captions.js?v=1689";
+import { renderFeedbackControl } from "./feedback-control.js?v=1689";
+import { networkMeta } from "../social-profiles.js?v=1689";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -32,8 +32,8 @@ import { networkMeta } from "../social-profiles.js?v=1688";
 //            [✦ Generate an image]              tier 1 — the shortcut (mermaid)
 //          In <look>, <shape>. Change              + what it will make
 //
-//        🖼 Image Studio     ⬆ Upload            tier 2 — doing it yourself,
-//   └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘    two ghost grey buttons
+//      [🖼 Image Studio] [⬆ Upload]            tier 2 — doing it yourself,
+//   └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘    two stroked grey buttons
 //
 // Tier 1: `.ap-button.mermaid`, the DS's AI treatment (a gradient BORDER: the
 //    DS ships no filled AI button). Under it, small, the shortcut it runs (flag
@@ -41,10 +41,11 @@ import { networkMeta } from "../social-profiles.js?v=1688";
 //    reads the Playbook): the look's name and this network's shape. "Change"
 //    opens the PLAYBOOK, where that preset is set — ⚠️ NOT the Image Studio
 //    (rejected): the preset is a setting, the studio a tool.
-// Tier 2: the Image Studio and Upload as one row of `ghost grey` buttons, a
-//    group-gap below Generate. Never beside Generate, never outlined like it
-//    (two outlined rectangles read as equals: rejected). Stacked one per row,
-//    four centred lines of different widths had no shared edge (2026-10-07).
+// Tier 2: the Image Studio and Upload as one row of `stroked grey` buttons, a
+//    group-gap below Generate — never BESIDE it (side by side, two outlined
+//    rectangles read as equals: rejected). Ghost, they floated in the dashed
+//    frame with nothing to hold them; stacked one per row, four centred lines
+//    of different widths had no shared edge (both 2026-10-07).
 // The WHOLE slot is the drop target (dashed = a real drop, wired in
 // right-panel.js on `[data-post-drop]`, drag events only); Upload reuses the
 // rail's `data-post-image-upload`.
@@ -96,11 +97,11 @@ function renderEmptyMedia(post, opts) {
         ${renderImagePreset(opts)}
       </div>
       <div class="posts__card-media-alt">
-        <button type="button" class="ap-button ghost grey" data-post-studio="${escapeAttr(post.id)}">
+        <button type="button" class="ap-button stroked grey" data-post-studio="${escapeAttr(post.id)}">
           <i class="ap-icon-image"></i>
           <span>Image Studio</span>
         </button>
-        <button type="button" class="ap-button ghost grey" data-post-image-upload="${escapeAttr(post.id)}" title="Or drop an image anywhere here">
+        <button type="button" class="ap-button stroked grey" data-post-image-upload="${escapeAttr(post.id)}" title="Or drop an image anywhere here">
           <i class="ap-icon-upload"></i>
           <span>Upload</span>
         </button>
