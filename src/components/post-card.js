@@ -19,24 +19,22 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1686";
-import { isPortraitFormat } from "../clip-formats.js?v=1686";
-import { presetById } from "../clip-captions.js?v=1686";
-import { renderFeedbackControl } from "./feedback-control.js?v=1686";
-import { networkMeta } from "../social-profiles.js?v=1686";
-import { dropzoneHTML } from "./dropzone.js?v=1686";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1687";
+import { isPortraitFormat } from "../clip-formats.js?v=1687";
+import { presetById } from "../clip-captions.js?v=1687";
+import { renderFeedbackControl } from "./feedback-control.js?v=1687";
+import { networkMeta } from "../social-profiles.js?v=1687";
 
-// The media slot of a draft that has no image yet. Three ways to an image, in
-// THIS order of priority — and the layout says so (2026-10-06):
+// The media slot of a draft that has no image yet. ONE dashed slot, three ways
+// to an image ranked inside it (2026-10-07 — it used to be a solid tile of two
+// outlined buttons plus a separate dashed strip: three frames for one slot):
 //
-//   ┌──────────────────────────────────────────┐
-//   │          [✦ Generate an image]           │  1. the shortcut — mermaid
-//   │   In <look>, <shape>. Change             │     + what it will make
-//   │                                          │
-//   │        [🖼 Open the Image Studio]        │  2. the full tool — stroked grey
-//   └──────────────────────────────────────────┘
-//   ┌ ─ ⬆ Or drop your own image here, or browse ─┐  3. the fallback — a one-line
-//                                                     dashed strip
+//   ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐
+//            [✦ Generate an image]              1. the shortcut — mermaid
+//          In <look>, <shape>. Change              + what it will make
+//               🖼 Image Studio                 2. the full tool — ghost grey
+//      ⬆ Drop an image here, or browse          3. your own file — caption
+//   └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
 //
 // 1. `.ap-button.mermaid`, the DS's AI treatment (a gradient BORDER: the DS
 //    ships no filled AI button). Under it, small, the shortcut it runs (flag
@@ -44,13 +42,13 @@ import { dropzoneHTML } from "./dropzone.js?v=1686";
 //    reads the Playbook): the look's name and this network's shape, no
 //    thumbnail. "Change" opens the PLAYBOOK, where that preset is set — ⚠️ NOT
 //    the Image Studio (rejected): the preset is a setting, the studio a tool.
-// 2. The Image Studio, a tool apart: a `stroked grey` button — the DS's next
-//    level down from a primary — UNDER Generate, never beside it (side by side,
-//    two outlined rectangles read as equals: rejected twice). As a caption link
-//    it was too easy to miss; as a tile equal to the upload it ranked too low.
-// 3. Your own image: the app's shared dropzone, `inline` — one dashed line of
-//    caption text, the ONLY drop target and the only click-to-browse (wired in
-//    right-panel.js on `[data-post-drop]`). Upload is also in the action rail.
+// 2. The Image Studio: a `ghost grey` button UNDER Generate — still a button
+//    (as a caption link it was missed), one level below the mermaid (side by
+//    side, or both outlined, they read as equals: rejected).
+// 3. Your own image: the WHOLE slot is the drop target (dashed = a real drop,
+//    wired in right-panel.js on `[data-post-drop]`, drag events only), and
+//    "browse" is a real link button (`data-post-browse`). Upload is also in the
+//    action rail.
 function renderImagePreset(opts) {
   const p = opts.imagePreset;
   if (!p || !opts.playbookId) return "";
@@ -68,7 +66,7 @@ function renderImagePreset(opts) {
 function renderEmptyMedia(post, opts) {
   if (post.isGeneratingImage) {
     return `<div class="posts__card-media-empty">
-      <div class="posts__card-media-empty-slot is-generating" aria-busy="true">
+      <div class="posts__card-media-slot is-generating" aria-busy="true">
         <span class="archie-loader" aria-hidden="true"></span>
         <p class="posts__card-media-empty-sub">I'm making an image for this draft…</p>
       </div>
@@ -90,7 +88,7 @@ function renderEmptyMedia(post, opts) {
       : "";
 
   return `<div class="posts__card-media-empty">
-    <div class="posts__card-media-generate">
+    <div class="posts__card-media-slot" data-post-drop="${escapeAttr(post.id)}">
       <div class="posts__card-media-shortcut">
         <button type="button" class="ap-button mermaid" data-post-image="${post.id}">
           <i class="ap-icon-archie-official"></i>
@@ -98,18 +96,15 @@ function renderEmptyMedia(post, opts) {
         </button>
         ${renderImagePreset(opts)}
       </div>
-      <button type="button" class="ap-button stroked grey" data-post-studio="${escapeAttr(post.id)}">
+      <button type="button" class="ap-button ghost grey" data-post-studio="${escapeAttr(post.id)}">
         <i class="ap-icon-image"></i>
-        <span>Open the Image Studio</span>
+        <span>Image Studio</span>
       </button>
+      <p class="posts__card-media-drop">
+        <i class="ap-icon-upload" aria-hidden="true"></i>
+        <span>Drop an image here, or <button type="button" class="ap-link small" data-post-browse="${escapeAttr(post.id)}">browse</button></span>
+      </p>
     </div>
-    ${dropzoneHTML({
-      inline: true,
-      lead: "Or drop your own image here, or",
-      withInput: false,
-      ariaLabel: "Upload your own image",
-      rootAttrs: `data-post-drop="${escapeAttr(post.id)}"`,
-    })}
     ${hint}
   </div>`;
 }

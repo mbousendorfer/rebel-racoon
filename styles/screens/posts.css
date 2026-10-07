@@ -271,46 +271,38 @@
   }
 }
 
-/* Empty media slot — three ways to an image, ranked (2026-10-06): Generate
-   (mermaid) then the Image Studio (stroked grey) in one solid tile, and the
-   shared dropzone as a one-line dashed fallback under it — the only drop target.
+/* Empty media slot — ONE dashed frame, the whole of it a drop target, three
+   ways to an image ranked inside (2026-10-07): Generate (mermaid) + what it will
+   make, the Image Studio (ghost grey), then "Drop an image here, or browse".
    The rationale is in post-card.js#renderEmptyMedia.
-   ⚠️ ONE accent only: the mermaid button. The dropzone keeps the app's shared
-   look so it reads as the same thing as every other drop target. */
+   ⚠️ ONE accent only: the mermaid button. Blue appears only on dragover. */
 .posts__card-media-empty {
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xxs);
 }
 
-/* Only the generating state still uses the one frame: the loader and its line,
-   at the height of what it replaces (the tile + the drop line), so nothing
-   jumps when Generate is clicked. */
-.posts__card-media-empty-slot {
+/* Same frame for the generating state, at the same height, so nothing jumps
+   when Generate is clicked. Dashes and radius match the shared .ap-dropzone. */
+.posts__card-media-slot {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 224px;
+  min-height: 200px;
   gap: var(--ref-spacing-xs);
   padding: var(--ref-spacing-md);
-  border: 1px solid var(--ref-color-grey-20);
-  border-radius: var(--app-radius-md);
+  border: 1.5px dashed var(--ref-color-grey-20);
+  border-radius: var(--ref-border-radius-md);
   text-align: center;
+  transition:
+    border-color var(--ref-animation-short),
+    background var(--ref-animation-short);
 }
 
-/* Generate and the Image Studio, in one solid tile (not a drop target): the
-   shortcut with its caption, then — a step apart — the studio's button. */
-.posts__card-media-generate {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--ref-spacing-md);
-  padding: var(--ref-spacing-md);
-  border: 1.5px solid var(--ref-color-grey-20);
-  border-radius: var(--app-radius-md);
-  text-align: center;
+.posts__card-media-slot.is-dragover {
+  border-color: var(--ref-color-electric-blue-100);
+  background: var(--ref-color-electric-blue-05);
 }
 
 .posts__card-media-shortcut {
@@ -320,15 +312,6 @@
   gap: var(--ref-spacing-xxs);
 }
 
-.posts__card-media-empty-sub {
-  margin: 0;
-  font-size: var(--sys-text-style-body-size);
-  font-weight: var(--sys-text-style-body-weight);
-  line-height: var(--sys-text-style-body-line-height);
-  color: var(--sys-text-color-light);
-}
-
-/* What Generate an image will use: the look's picture, its name, the shape. */
 /* What Generate will use — a caption under the button, not a line of its own
    weight: the button is the thing, this only says what it will make. */
 .posts__card-media-preset {
@@ -339,15 +322,31 @@
   color: var(--ref-color-grey-80);
 }
 
-/* Generating: the loader and its line replace the column, still inside the same
-   200px frame (archie-loader.js hosts the animated SVG automatically). */
-.posts__card-media-empty-slot.is-generating {
-  --archie-loader-size: 32px;
-  gap: var(--ref-spacing-xs);
+/* Your own file — the last way in, so caption size; a step below the studio. */
+.posts__card-media-drop {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  margin: var(--ref-spacing-xs) 0 0;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
 }
 
-.posts__card-media-empty-slot.is-generating .posts__card-media-empty-sub {
+.posts__card-media-drop > i {
+  font-size: var(--sys-icon-css-sm);
+}
+
+/* Generating: the archie loader and its line (archie-loader.js hosts the SVG). */
+.posts__card-media-slot.is-generating {
+  --archie-loader-size: 32px;
+  border-style: solid;
+}
+
+.posts__card-media-slot.is-generating .posts__card-media-empty-sub {
   margin: 0;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
   color: var(--ref-color-grey-80);
 }
 

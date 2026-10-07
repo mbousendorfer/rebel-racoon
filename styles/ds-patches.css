@@ -440,30 +440,6 @@ button.ap-link {
   font-weight: var(--sys-text-style-caption-weight);
 }
 
-/* Inline — one line, for a drop that is only the fallback beside stronger
- * actions (a draft's empty image slot): icon and text side by side, the icon
- * bare (no tile), caption type in grey-80. Still dashed, still a real drop. */
-.ap-dropzone--inline {
-  flex-direction: row;
-  justify-content: center;
-  gap: var(--ref-spacing-xxs);
-  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
-}
-.ap-dropzone--inline .ap-dropzone__icon {
-  width: auto;
-  height: auto;
-  background: none;
-  color: var(--ref-color-grey-80);
-}
-.ap-dropzone--inline .ap-dropzone__icon > i {
-  font-size: var(--sys-icon-css-sm);
-}
-.ap-dropzone--inline .ap-dropzone__title {
-  font-size: var(--sys-text-style-caption-size);
-  font-weight: var(--sys-text-style-caption-weight);
-  color: var(--ref-color-grey-80);
-}
-
 /* Large — the full-bleed studio upload surfaces (Clip Studio, Batch
  * Studio). Fills its column and reserves vertical room. */
 .ap-dropzone--lg {
