@@ -6,11 +6,11 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1624";
-import { findConnector } from "./connectors-store.js?v=1624";
-import { createSessionNotifier } from "./store-utils.js?v=1624";
-import { addPostDraft } from "./posts-store.js?v=1624";
-import { showToast } from "./components/toast.js?v=1624";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1625";
+import { findConnector } from "./connectors-store.js?v=1625";
+import { createSessionNotifier } from "./store-utils.js?v=1625";
+import { addPostDraft } from "./posts-store.js?v=1625";
+import { showToast } from "./components/toast.js?v=1625";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -74,7 +74,7 @@ export function sendMessage(sessionId, text, options = {}) {
       variant: options.variant || "grey",
       text: text.trim(),
       open: false,
-      status: "ready",
+      status: options.status || "ready",
       createdAt: Date.now(),
     });
     notify(sessionId);
@@ -126,6 +126,9 @@ export function sendMessage(sessionId, text, options = {}) {
     if (reasoning) {
       reasoning.text = reply.reasoning;
       reasoning.status = "ready";
+      // Present tense while working, past tense once done — the same pair as
+      // "Extracting" → "Extracted 2 ideas".
+      if (reasoning.meta === "Thinking") reasoning.meta = `Thought for ${Math.round(delay / 1000)}s`;
       reasoning.open = false; // collapse after the answer lands
     }
     const replyMsg = thread.find((m) => m.id === replyId);
@@ -204,6 +207,7 @@ export function sendConnectorMessage(sessionId, connectorId, text) {
     if (reasoning) {
       reasoning.text = reply.reasoning;
       reasoning.status = "ready";
+      reasoning.meta = `Queried ${connector.name} via MCP`;
       reasoning.open = false;
     }
     const replyMsg = thread.find((m) => m.id === replyId);

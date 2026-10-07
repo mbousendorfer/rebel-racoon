@@ -27,7 +27,9 @@
 
 /* Working — the dot IS the status indicator: it breathes while Archie works,
    and nothing else moves (no spinner beside the pill, no whole-pill fade).
-   Settles to a still dot once done; still under reduced motion. */
+   Once done the dot goes: a status that has nothing left to report is just
+   its words ("Extracted 2 ideas", "Thought for 6s"). Still under reduced
+   motion. */
 @keyframes ap-status-working {
   0%,
   100% {
@@ -42,6 +44,10 @@
 
 .ap-status.is-working::before {
   animation: ap-status-working 1.2s ease-in-out infinite;
+}
+
+.ap-status.mermaid:not(.is-working)::before {
+  display: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

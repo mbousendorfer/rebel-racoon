@@ -14,8 +14,8 @@
 // ponytail: the catalogue is a hand-kept list — a new turn variant or route has
 // to be added here too, or it won't show in the menu.
 
-import { escapeHtml } from "../../utils.js?v=1624";
-import { isFlagOn } from "../../feature-flags.js?v=1624";
+import { escapeHtml } from "../../utils.js?v=1625";
+import { isFlagOn } from "../../feature-flags.js?v=1625";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -31,21 +31,23 @@ import {
   postTopPostPickTurn,
   postConnectPrompt,
   postVoiceSuggestion,
-} from "../../assistant.js?v=1624";
-import { getSources, getIdeas } from "../../library.js?v=1624";
-import { getPosts } from "../../posts-store.js?v=1624";
-import { getTopPosts } from "../../top-posts-store.js?v=1624";
-import { getConnectedProfiles } from "../../social-profiles.js?v=1624";
-import { getConnectedConnectors } from "../../connectors-store.js?v=1624";
-import { detectUrlService } from "../../url-services.js?v=1624";
-import { propose, getSuggestions } from "../../voice-coach-store.js?v=1624";
-import * as inlineQuestion from "../../inline-question.js?v=1624";
-import { startTopPostsInline } from "../../top-posts-flow.js?v=1624";
-import { startTopicPickerInline } from "../../topic-flow.js?v=1624";
-import { askConnector } from "../../connector-ask.js?v=1624";
-import { coachAfterDraft } from "../../voice-coach.js?v=1624";
-import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=1624";
-import { startIdeaDraft, askVideoIntake } from "./draft-questions.js?v=1624";
+  getThread,
+  refreshThread,
+} from "../../assistant.js?v=1625";
+import { getSources, getIdeas } from "../../library.js?v=1625";
+import { getPosts } from "../../posts-store.js?v=1625";
+import { getTopPosts } from "../../top-posts-store.js?v=1625";
+import { getConnectedProfiles } from "../../social-profiles.js?v=1625";
+import { getConnectedConnectors } from "../../connectors-store.js?v=1625";
+import { detectUrlService } from "../../url-services.js?v=1625";
+import { propose, getSuggestions } from "../../voice-coach-store.js?v=1625";
+import * as inlineQuestion from "../../inline-question.js?v=1625";
+import { startTopPostsInline } from "../../top-posts-flow.js?v=1625";
+import { startTopicPickerInline } from "../../topic-flow.js?v=1625";
+import { askConnector } from "../../connector-ask.js?v=1625";
+import { coachAfterDraft } from "../../voice-coach.js?v=1625";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=1625";
+import { startIdeaDraft, askVideoIntake } from "./draft-questions.js?v=1625";
 
 // The intake sample plays the real lifecycle — loading, then ready — under a
 // sample id no source owns, so intake-lifecycle leaves it alone.
@@ -85,13 +87,21 @@ const COMPONENTS = [
     id: "thinking",
     label: "Thinking notice",
     icon: "ap-icon-sparkles",
-    hint: "The collapsible reasoning pill",
-    run: (sid) =>
+    hint: "The reasoning pill: Thinking (its dot pulsing) for 3 seconds, then Thought for 3s",
+    run: (sid) => {
       sendMessage(sid, "Ranked the ideas by confidence and picked the most specific one.", {
         role: "system",
         variant: "mermaid",
         meta: "Thinking",
-      }),
+        status: "loading",
+      });
+      const msg = getThread(sid).at(-1);
+      setTimeout(() => {
+        msg.status = "ready";
+        msg.meta = "Thought for 3s";
+        refreshThread(sid);
+      }, 3000);
+    },
   },
   {
     id: "pending",
