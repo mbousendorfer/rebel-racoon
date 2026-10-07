@@ -12,23 +12,84 @@ import {
   renderMessageBubble,
   renderNotice,
   renderResultCard,
-} from "./thread-turns.js?v=1625";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=1625";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1625";
-import { getTopPost } from "../../top-posts-store.js?v=1625";
-import { getTopicById } from "../../topics-store.js?v=1625";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=1625";
-import { renderProfileEchoCard } from "../../social-profiles.js?v=1625";
-import { escapeHtml } from "../../utils.js?v=1625";
-import { getIdeas } from "../../library.js?v=1625";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=1625";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1625";
-import { getThread } from "../../assistant.js?v=1625";
-import { getSuggestion } from "../../voice-coach-store.js?v=1625";
-import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=1625";
+} from "./thread-turns.js?v=1627";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1627";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1627";
+import { getTopPost } from "../../top-posts-store.js?v=1627";
+import { getTopicById } from "../../topics-store.js?v=1627";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=1627";
+import { renderProfileEchoCard } from "../../social-profiles.js?v=1627";
+import { escapeHtml } from "../../utils.js?v=1627";
+import { getIdeas } from "../../library.js?v=1627";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=1627";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1627";
+import { getThread } from "../../assistant.js?v=1627";
+import { getSuggestion } from "../../voice-coach-store.js?v=1627";
+import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=1627";
+import { isFlagOn } from "../../feature-flags.js?v=1627";
+import { CURRENT_USER } from "../../org.js?v=1627";
 
 export function renderThread(messages, sessionId) {
-  return messages.map((m) => renderTurn(m, sessionId)).join("");
+  const turns = messages.map((m) => [m, renderTurn(m, sessionId)]);
+  if (isFlagOn("newConversationStyles")) return renderTwoSides(turns);
+  return turns.map(([, html]) => html).join("");
+}
+
+// ─── New conversation styles (flag newConversationStyles) ───────────────────
+// Figma "Conversation styles" § E: one turn shape, mirrored. Each rendered turn
+// is wrapped — author disc + head line (name · time · what happened) + the
+// turn's own markup — and Archie's consecutive turns fold under one head.
+// ponytail: wraps the finished HTML instead of changing ~15 renderers; move the
+// head into the renderers if the style ships.
+const clock = (ts) => (ts ? new Date(ts).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "");
+
+// What you did, in the neutral pill of your head line — only for the turns
+// that are an action rather than words.
+function userAction(m) {
+  if (m.role === "source-intake") return "Added a source";
+  if (m.variant === "profiles") {
+    const n = (m.profiles || []).length;
+    return `Picked ${n} account${n === 1 ? "" : "s"}`;
+  }
+  if (m.variant === "top-post-pick") return "Picked a top post";
+  return "";
+}
+
+function renderTwoSides(turns) {
+  const tpl = document.createElement("template");
+  let prev = null;
+  let out = "";
+  for (const [m, html] of turns) {
+    tpl.innerHTML = html.trim();
+    const el = tpl.content.firstElementChild;
+    if (!el) continue;
+    const side = el.matches(".chat-turn--user") ? "user" : "ai";
+    el.querySelectorAll(":scope > .chat-turn-avatar, :scope > .chat-turn-role").forEach((n) => n.remove());
+    // Archie's status pill (a notice, the Extracting pill) joins his head line.
+    const slot = side === "ai" ? el.querySelector(".assistant-notice__toggle, .extracting-notice") : null;
+    const cont = side === prev && side === "ai" && !slot;
+    prev = side;
+    const time = clock(m.createdAt);
+    const action = side === "user" ? userAction(m) : "";
+    const head = `
+      <span class="e-turn__name">${side === "ai" ? "Archie" : "You"}</span>
+      ${time ? `<span class="e-turn__time">${time}</span>` : ""}
+      ${action ? `<span class="ap-status grey no-dot e-turn__action">${escapeHtml(action)}</span>` : ""}`;
+    if (slot) slot.insertAdjacentHTML("afterbegin", `<span class="e-turn__head">${head}</span>`);
+    const author =
+      side === "ai"
+        ? `<span class="e-turn__mark"><i class="ap-icon-archie-official" aria-hidden="true"></i></span>`
+        : `<span class="ap-avatar size-24"><span class="ap-avatar-initials">${escapeHtml(CURRENT_USER.initials)}</span></span>`;
+    out += `
+      <div class="e-turn e-turn--${side}${cont ? " e-turn--cont" : ""}">
+        <span class="e-turn__author" aria-hidden="true">${author}</span>
+        <div class="e-turn__content">
+          ${slot || cont ? "" : `<div class="e-turn__head">${head}</div>`}
+          ${el.outerHTML}
+        </div>
+      </div>`;
+  }
+  return out;
 }
 
 function renderTurn(message, sessionId) {

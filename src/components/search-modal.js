@@ -19,11 +19,11 @@
 //   - Subscribes to the sessions-store so the result list refreshes if a session
 //     is renamed / deleted from elsewhere while the modal is open.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1625";
-import { escapeHtml } from "../utils.js?v=1625";
-import { navigate } from "../router.js?v=1625";
-import { getSessions, subscribe as subscribeSessions } from "../sessions-store.js?v=1625";
-import { getContextById } from "../contexts-store.js?v=1625";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1627";
+import { escapeHtml } from "../utils.js?v=1627";
+import { navigate } from "../router.js?v=1627";
+import { getSessions, subscribe as subscribeSessions } from "../sessions-store.js?v=1627";
+import { getContextById } from "../contexts-store.js?v=1627";
 
 const MODAL_ID = "search";
 

@@ -183,6 +183,21 @@ export const FLAGS = Object.freeze([
       "active brand's colours, so the gallery previews what THIS brand would get.",
   },
   {
+    id: "newConversationStyles",
+    label: "New conversation styles",
+    // OFF: the thread as shipped (navy user bubble, bare Archie mark). Figma
+    // "Conversation styles" § E1–E4 is the reference for ON.
+    default: false,
+    hides:
+      "When ON, every turn of the chat takes one shape, mirrored: Archie on the " +
+      "left, you on the right, each with a 24px avatar disc and a head line " +
+      "(name, time, what happened). Archie's status pill moves into his head " +
+      "line; your picks get a neutral pill ('Added a source', 'Picked 1 " +
+      "account'). Your words lose the navy bubble and read like Archie's; " +
+      "consecutive Archie messages fold into one turn; every object (source, " +
+      "pick, result) is the same white chip. Butter stays Archie's alone.",
+  },
+  {
     id: "networkVoices",
     label: "Voice per network, with coaching",
     // OFF: lands dark. The data (voiceBaseNetwork / voiceByNetwork) rides

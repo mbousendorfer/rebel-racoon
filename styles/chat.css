@@ -1049,3 +1049,154 @@ span.chat-bubble-choice-chip {
 .chat-ref-preview .top-post-echo__stats:empty {
   display: none;
 }
+
+/* ─── New conversation styles (flag newConversationStyles) ────────────────
+   Figma "Conversation styles" § E. renderTwoSides (thread-render.js) wraps
+   every turn: [author disc] [head line + the turn]. Archie left, you right,
+   the same anatomy mirrored: 24px disc, 12px to the content, a 24px head line
+   (name body-bold, time caption grey-80, what happened in a pill), 8px to the
+   body, 32px between turns, 8px when Archie goes on. Butter is Archie's own:
+   his disc and his status pill — objects are white chips on both sides. */
+
+.session__assistant-thread:has(> .e-turn) {
+  gap: var(--ref-spacing-lg);
+}
+
+.e-turn {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xs);
+}
+
+.e-turn--user {
+  flex-direction: row-reverse;
+}
+
+.e-turn--cont {
+  margin-top: calc(var(--ref-spacing-xxs) - var(--ref-spacing-lg));
+}
+
+.e-turn--cont > .e-turn__author {
+  visibility: hidden;
+}
+
+.e-turn__author {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.e-turn__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--app-butter);
+}
+
+.e-turn__mark > i {
+  font-size: var(--sys-icon-css-xs);
+  background: var(--app-archie-mark);
+}
+
+.e-turn__content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xxs);
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.e-turn--user > .e-turn__content {
+  flex: 0 1 auto;
+  align-items: flex-end;
+  max-width: var(--app-chat-card);
+}
+
+.e-turn__head {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  min-height: 24px;
+}
+
+.e-turn--user .e-turn__head {
+  flex-direction: row-reverse;
+}
+
+.e-turn__name {
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.e-turn__time {
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
+}
+
+/* The wrapped turn gives its identity to the head line: no label, no width
+   of its own, the head→body gap only. */
+.e-turn .chat-turn {
+  gap: var(--ref-spacing-xxs);
+  max-width: 100%;
+  align-self: stretch;
+}
+
+.e-turn--user .chat-turn {
+  align-items: flex-end;
+}
+
+/* Your words read like Archie's: body-regular grey-100, no bubble. */
+.e-turn .chat-bubble--user {
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  -webkit-font-smoothing: auto;
+  -moz-osx-font-smoothing: auto;
+}
+
+.e-turn .chat-bubble--user .chat-bubble-text {
+  color: var(--ref-color-grey-100);
+}
+
+/* Every object is one chip: white, grey-20 edge, radius sm, 4 / 8 inset,
+   the glyph bare, the name in caption-bold — on either side. */
+.e-turn .selection-echo {
+  gap: var(--ref-spacing-xxs);
+  max-width: 100%;
+  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xxs);
+  border-radius: var(--ref-border-radius-sm);
+}
+
+.e-turn .selection-echo__icon:not(.selection-echo__icon--avatar) {
+  width: auto;
+  height: auto;
+  background: transparent;
+}
+
+.e-turn .selection-echo__title {
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+}
+
+.e-turn .selection-echo:not(.selection-echo--profile) .selection-echo__meta {
+  display: none;
+}
+
+/* Archie's results are objects too: white, not butter. */
+.e-turn .drafts-card {
+  background: var(--app-surface);
+  border-color: var(--app-border);
+}
+
+/* A status pill's line IS the head line: same 24px row, no extra inset, so
+   the disc and the name line up with every other turn. */
+.e-turn .assistant-notice__toggle {
+  min-height: 24px;
+  padding: 0;
+}
