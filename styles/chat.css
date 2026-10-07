@@ -1212,9 +1212,10 @@ span.chat-bubble-choice-chip {
   margin: var(--ref-spacing-xxs) 0 0 calc(24px + var(--ref-spacing-xxs));
 }
 
-/* His own words about the work, one step quieter than his answer: no box,
-   grey-80, body size so it stays readable. The reasoning text and the
-   extraction's "Analyzed founder-keynote.mp4" are the same kind of line. */
+/* His own words about the work read as a different register from his
+   answer, not just a lighter shade of it: caption size, italic, grey-80 —
+   the DS "Caption - Italic" — hung under the status. Same for the
+   extraction's "Analyzed …" and a single tool's description. */
 .e-turn .assistant-notice__detail,
 .e-turn .extraction-turn__analyzed-row {
   padding: 0;
@@ -1222,9 +1223,10 @@ span.chat-bubble-choice-chip {
   border-radius: 0;
   background: transparent;
   color: var(--ref-color-grey-80);
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  font-weight: var(--sys-text-style-body-weight);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  font-weight: var(--sys-text-style-caption-weight);
+  font-style: italic;
 }
 
 .e-turn .extraction-turn__analyzed-row strong {
@@ -1461,6 +1463,7 @@ span.chat-bubble-choice-chip {
    longest tool, and written ("2s"); under half a second, neither. The
    pill itself stays a status like the others. */
 .e-turn .assistant-notice__tools {
+  font-style: normal;
   display: flex;
   flex-direction: column;
   width: 360px;
