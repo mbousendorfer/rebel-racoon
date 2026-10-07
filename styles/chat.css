@@ -1168,11 +1168,12 @@ span.chat-bubble-choice-chip {
 }
 
 /* Your words are the one thing in the thread you wrote: they keep the navy
-   (the app's colour for your typed words), in a chat-app bubble — 8 / 16
-   inset, every corner round: you have no avatar for a corner to point at. */
+   (the app's colour for your typed words), in a tight chat bubble — 8 / 12
+   inset, radius md, the corner under your avatar squared. */
 .e-turn .chat-bubble--user {
-  padding: var(--ref-spacing-xxs) var(--ref-spacing-sm);
-  border-radius: var(--app-radius-xl);
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
+  border-radius: var(--ref-border-radius-md);
+  border-top-right-radius: 0;
 }
 
 /* Every object is one chip: white, grey-20 edge, radius sm, 4 / 8 inset,

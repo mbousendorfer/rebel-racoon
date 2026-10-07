@@ -9,11 +9,11 @@
 // inline button (`.chat-ref`): hover previews the object (ref-preview.js),
 // click opens it in the right panel (session.js → focusInPanel).
 
-import { getPosts } from "./posts-store.js?v=1632";
-import { getIdeas, getSources } from "./library.js?v=1632";
-import { networkLabel } from "./network-voice.js?v=1632";
-import { getQueue } from "./schedule-store.js?v=1632";
-import { escapeHtml, escapeAttr } from "./utils.js?v=1632";
+import { getPosts } from "./posts-store.js?v=1633";
+import { getIdeas, getSources } from "./library.js?v=1633";
+import { networkLabel } from "./network-voice.js?v=1633";
+import { getQueue } from "./schedule-store.js?v=1633";
+import { escapeHtml, escapeAttr } from "./utils.js?v=1633";
 
 const TOKEN = /\[\[(post|idea|source):([^\]\s]+)\]\]/g;
 const GONE = { post: "a deleted draft", idea: "a deleted idea", source: "a deleted source" };
