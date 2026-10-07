@@ -1121,6 +1121,16 @@ span.chat-bubble-choice-chip {
   padding-top: 0;
 }
 
+/* A result card (title + one line) is one block: the avatar sits on its
+   middle, not on its top edge. */
+.e-turn:has(> .e-turn__content > .chat-turn > .drafts-card) {
+  align-items: center;
+}
+
+.e-turn:has(> .e-turn__content > .chat-turn > .drafts-card) > .e-turn__content {
+  padding-top: 0;
+}
+
 .e-turn--user > .e-turn__content {
   flex: 0 1 auto;
   align-items: flex-end;

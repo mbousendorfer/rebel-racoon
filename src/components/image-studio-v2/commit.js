@@ -14,12 +14,12 @@
 // a contenteditable before its last `input` event fires, so the in-flight text
 // edit has to be folded into state before anything reads it.
 
-import { showToast } from "../toast.js?v=1642";
-import { attachImageToDraft, attachCarouselToDraft } from "../../posts-store.js?v=1642";
-import { KEY, ctx, state } from "./context.js?v=1642";
-import { compositeOverlays } from "../../image-studio-canvas.js?v=1642";
-import { syncEditingText } from "./inline-text.js?v=1642";
-import * as imageStudio from "../../image-studio.js?v=1642";
+import { showToast } from "../toast.js?v=1643";
+import { attachImageToDraft, attachCarouselToDraft } from "../../posts-store.js?v=1643";
+import { KEY, ctx, state } from "./context.js?v=1643";
+import { compositeOverlays } from "../../image-studio-canvas.js?v=1643";
+import { syncEditingText } from "./inline-text.js?v=1643";
+import * as imageStudio from "../../image-studio.js?v=1643";
 
 // Commit the working image to the origin draft, then close.
 export function useImage(close) {
