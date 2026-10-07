@@ -1141,11 +1141,13 @@ span.chat-bubble-choice-chip {
   opacity: 1;
 }
 
-/* Archie's sits in the gutter, on his avatar's line. */
+/* Archie's sits at the right end of his head line — the line his avatar
+   leaves empty. Not in the left gutter: the thread clips its overflow, so a
+   time outside the column was cut off. */
 .e-turn--ai > .e-turn__time {
   position: absolute;
   top: var(--ref-spacing-xxxs);
-  right: calc(100% + var(--ref-spacing-xs));
+  right: 0;
 }
 
 /* Archie's memory proposal (voice-coach.css .memory-card) takes the result
