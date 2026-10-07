@@ -1458,7 +1458,7 @@ span.chat-bubble-choice-chip {
    look, apart from Archie's thoughts (plain grey text). A white card, one
    tool per row, rows split by a grey-20 hairline. Each row: toolbox glyph,
    name in ink, then the time it took — drawn as a bar scaled to the run's
-   longest tool, and written ("2s", or "Instant" under half a second). The
+   longest tool, and written ("2s"); under half a second, neither. The
    pill itself stays a status like the others. */
 .e-turn .assistant-notice__tools {
   display: flex;
