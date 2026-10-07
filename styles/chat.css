@@ -1192,28 +1192,64 @@ span.chat-bubble-choice-chip {
   border-top-right-radius: 0;
 }
 
-/* Every object is one chip: white, grey-20 edge, radius sm, 4 / 8 inset,
-   the glyph bare, the name in caption-bold — on either side. */
+/* Everything you bring is a file tile, the way a desktop draws one: a tinted
+   square that names the kind before you read a word (PDF red, video purple,
+   image green, document menthol — the DS data hues, never the interactive
+   blue), the name over what it is, then — behind a hairline — what Archie
+   made of it. White card, grey-20 edge, radius md around a radius-sm tile. */
 .e-turn .selection-echo {
-  gap: var(--ref-spacing-xxs);
-  max-width: 100%;
-  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xxs);
-  border-radius: var(--ref-border-radius-sm);
+  gap: var(--ref-spacing-xs);
+  max-width: var(--app-chat-card);
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs) var(--ref-spacing-xxs) var(--ref-spacing-xxs);
+  border-radius: var(--ref-border-radius-md);
 }
 
 .e-turn .selection-echo__icon:not(.selection-echo__icon--avatar) {
-  width: auto;
-  height: auto;
-  background: transparent;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--ref-border-radius-sm);
+  background: var(--ref-color-grey-05);
 }
 
-.e-turn .selection-echo__title {
-  font-size: var(--sys-text-style-caption-bold-size);
-  line-height: var(--sys-text-style-caption-bold-line-height);
+.e-turn .selection-echo__icon:not(.selection-echo__icon--avatar) > i {
+  font-size: var(--sys-icon-css-md);
 }
 
-.e-turn .selection-echo:not(.selection-echo--profile) .selection-echo__meta {
-  display: none;
+.e-turn .selection-echo__icon:has(> .ap-icon-file--pdf) {
+  background: var(--ref-color-red-10);
+}
+.e-turn .selection-echo__icon > i.ap-icon-file--pdf {
+  color: var(--ref-color-red-150);
+}
+
+.e-turn .selection-echo__icon:has(> .ap-icon-file--video) {
+  background: var(--ref-color-purple-10);
+}
+.e-turn .selection-echo__icon > i.ap-icon-file--video {
+  color: var(--ref-color-purple-100);
+}
+
+.e-turn .selection-echo__icon:has(> .ap-icon-file--image) {
+  background: var(--ref-color-green-10);
+}
+.e-turn .selection-echo__icon > i.ap-icon-file--image {
+  color: var(--ref-color-green-150);
+}
+
+.e-turn .selection-echo__icon:has(> .ap-icon-file--text) {
+  background: var(--ref-color-menthol-10);
+}
+.e-turn .selection-echo__icon > i.ap-icon-file--text {
+  color: var(--ref-color-menthol-150);
+}
+
+/* What Archie made of it, set apart: a hairline, then the links. */
+.e-turn .selection-echo__trailing {
+  align-self: stretch;
+  gap: var(--ref-spacing-xs);
+  margin-left: var(--ref-spacing-xxs);
+  padding-left: var(--ref-spacing-xs);
+  border-left: 1px solid var(--app-border);
 }
 
 /* Archie's result cards keep their butter, without their own mark: the
