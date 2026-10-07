@@ -19,36 +19,35 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1687";
-import { isPortraitFormat } from "../clip-formats.js?v=1687";
-import { presetById } from "../clip-captions.js?v=1687";
-import { renderFeedbackControl } from "./feedback-control.js?v=1687";
-import { networkMeta } from "../social-profiles.js?v=1687";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1688";
+import { isPortraitFormat } from "../clip-formats.js?v=1688";
+import { presetById } from "../clip-captions.js?v=1688";
+import { renderFeedbackControl } from "./feedback-control.js?v=1688";
+import { networkMeta } from "../social-profiles.js?v=1688";
 
-// The media slot of a draft that has no image yet. ONE dashed slot, three ways
-// to an image ranked inside it (2026-10-07 — it used to be a solid tile of two
-// outlined buttons plus a separate dashed strip: three frames for one slot):
+// The media slot of a draft that has no image yet. ONE dashed slot, two tiers
+// (2026-10-07):
 //
 //   ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐
-//            [✦ Generate an image]              1. the shortcut — mermaid
+//            [✦ Generate an image]              tier 1 — the shortcut (mermaid)
 //          In <look>, <shape>. Change              + what it will make
-//               🖼 Image Studio                 2. the full tool — ghost grey
-//      ⬆ Drop an image here, or browse          3. your own file — caption
-//   └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
 //
-// 1. `.ap-button.mermaid`, the DS's AI treatment (a gradient BORDER: the DS
-//    ships no filled AI button). Under it, small, the shortcut it runs (flag
+//        🖼 Image Studio     ⬆ Upload            tier 2 — doing it yourself,
+//   └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘    two ghost grey buttons
+//
+// Tier 1: `.ap-button.mermaid`, the DS's AI treatment (a gradient BORDER: the
+//    DS ships no filled AI button). Under it, small, the shortcut it runs (flag
 //    sexySquirrel, `opts.imagePreset` from the drafts panel — the card never
-//    reads the Playbook): the look's name and this network's shape, no
-//    thumbnail. "Change" opens the PLAYBOOK, where that preset is set — ⚠️ NOT
-//    the Image Studio (rejected): the preset is a setting, the studio a tool.
-// 2. The Image Studio: a `ghost grey` button UNDER Generate — still a button
-//    (as a caption link it was missed), one level below the mermaid (side by
-//    side, or both outlined, they read as equals: rejected).
-// 3. Your own image: the WHOLE slot is the drop target (dashed = a real drop,
-//    wired in right-panel.js on `[data-post-drop]`, drag events only), and
-//    "browse" is a real link button (`data-post-browse`). Upload is also in the
-//    action rail.
+//    reads the Playbook): the look's name and this network's shape. "Change"
+//    opens the PLAYBOOK, where that preset is set — ⚠️ NOT the Image Studio
+//    (rejected): the preset is a setting, the studio a tool.
+// Tier 2: the Image Studio and Upload as one row of `ghost grey` buttons, a
+//    group-gap below Generate. Never beside Generate, never outlined like it
+//    (two outlined rectangles read as equals: rejected). Stacked one per row,
+//    four centred lines of different widths had no shared edge (2026-10-07).
+// The WHOLE slot is the drop target (dashed = a real drop, wired in
+// right-panel.js on `[data-post-drop]`, drag events only); Upload reuses the
+// rail's `data-post-image-upload`.
 function renderImagePreset(opts) {
   const p = opts.imagePreset;
   if (!p || !opts.playbookId) return "";
@@ -96,14 +95,16 @@ function renderEmptyMedia(post, opts) {
         </button>
         ${renderImagePreset(opts)}
       </div>
-      <button type="button" class="ap-button ghost grey" data-post-studio="${escapeAttr(post.id)}">
-        <i class="ap-icon-image"></i>
-        <span>Image Studio</span>
-      </button>
-      <p class="posts__card-media-drop">
-        <i class="ap-icon-upload" aria-hidden="true"></i>
-        <span>Drop an image here, or <button type="button" class="ap-link small" data-post-browse="${escapeAttr(post.id)}">browse</button></span>
-      </p>
+      <div class="posts__card-media-alt">
+        <button type="button" class="ap-button ghost grey" data-post-studio="${escapeAttr(post.id)}">
+          <i class="ap-icon-image"></i>
+          <span>Image Studio</span>
+        </button>
+        <button type="button" class="ap-button ghost grey" data-post-image-upload="${escapeAttr(post.id)}" title="Or drop an image anywhere here">
+          <i class="ap-icon-upload"></i>
+          <span>Upload</span>
+        </button>
+      </div>
     </div>
     ${hint}
   </div>`;

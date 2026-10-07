@@ -271,9 +271,9 @@
   }
 }
 
-/* Empty media slot — ONE dashed frame, the whole of it a drop target, three
-   ways to an image ranked inside (2026-10-07): Generate (mermaid) + what it will
-   make, the Image Studio (ghost grey), then "Drop an image here, or browse".
+/* Empty media slot — ONE dashed frame, the whole of it a drop target, two
+   tiers inside (2026-10-07): Generate (mermaid) + what it will make, then the
+   Image Studio and Upload as one row of ghost grey buttons.
    The rationale is in post-card.js#renderEmptyMedia.
    ⚠️ ONE accent only: the mermaid button. Blue appears only on dragover. */
 .posts__card-media-empty {
@@ -290,7 +290,7 @@
   align-items: center;
   justify-content: center;
   min-height: 200px;
-  gap: var(--ref-spacing-xs);
+  gap: var(--ref-spacing-md);
   padding: var(--ref-spacing-md);
   border: 1.5px dashed var(--ref-color-grey-20);
   border-radius: var(--ref-border-radius-md);
@@ -322,24 +322,19 @@
   color: var(--ref-color-grey-80);
 }
 
-/* Your own file — the last way in, so caption size; a step below the studio. */
-.posts__card-media-drop {
+/* Tier 2 — the Image Studio and Upload, side by side, a group-gap under
+   Generate's caption (the slot's gap) so the two tiers read apart. */
+.posts__card-media-alt {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: var(--ref-spacing-xxs);
-  margin: var(--ref-spacing-xs) 0 0;
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-80);
-}
-
-.posts__card-media-drop > i {
-  font-size: var(--sys-icon-css-sm);
 }
 
 /* Generating: the archie loader and its line (archie-loader.js hosts the SVG). */
 .posts__card-media-slot.is-generating {
   --archie-loader-size: 32px;
+  gap: var(--ref-spacing-xs);
   border-style: solid;
 }
 
