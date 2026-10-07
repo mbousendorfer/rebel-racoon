@@ -1051,16 +1051,14 @@ span.chat-bubble-choice-chip {
 }
 
 /* ─── New conversation styles (flag newConversationStyles) ────────────────
-   Figma "Conversation styles" § E, simplified. renderTwoSides (thread-render.js)
-   wraps every turn. Archie: a 24px butter disc, 12px, then what he says — his
-   status pill on the disc's line, his text centred on it. You: your bubble or
-   your pick on the right, nothing else. 24px between turns, 8px when Archie
-   goes on. Butter is Archie's own; objects are white chips on both sides. */
+   Figma "Conversation styles" § E, read the way Claude / ChatGPT read.
+   renderTwoSides (thread-render.js) wraps every turn. Archie: his words on the
+   full column — no avatar, no name, his status a quiet line (ds-patches.css).
+   You: your navy bubble, or your pick, on the right. 24px between turns, 8px
+   when Archie goes on. Objects are white chips on both sides. */
 
 .e-turn {
   display: flex;
-  align-items: flex-start;
-  gap: var(--ref-spacing-xs);
 }
 
 .e-turn--user {
@@ -1071,43 +1069,12 @@ span.chat-bubble-choice-chip {
   margin-top: calc(var(--ref-spacing-xxs) - var(--ref-spacing-md));
 }
 
-.e-turn--cont > .e-turn__author {
-  visibility: hidden;
-}
-
-.e-turn__author {
-  display: inline-flex;
-  flex-shrink: 0;
-}
-
-.e-turn__mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: var(--app-butter);
-}
-
-.e-turn__mark > i {
-  font-size: var(--sys-icon-css-xs);
-  background: var(--app-archie-mark);
-}
-
-/* Archie's first line sits on the disc's centre line (24px disc, 18px line). */
 .e-turn__content {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   flex: 1 1 auto;
   min-width: 0;
-  padding-top: calc((24px - var(--sys-text-style-body-line-height)) / 2);
-}
-
-.e-turn--status > .e-turn__content,
-.e-turn--user > .e-turn__content {
-  padding-top: 0;
 }
 
 .e-turn--user > .e-turn__content {
@@ -1129,12 +1096,11 @@ span.chat-bubble-choice-chip {
 }
 
 /* Your words are the one thing in the thread you wrote: they keep the navy
-   (the app's colour for your typed words), in a tighter bubble on the E
-   rhythm — 8 / 12 inset, radius md, the corner under your disc squared. */
+   (the app's colour for your typed words), in a chat-app bubble — 8 / 16
+   inset, every corner round: there is no avatar left to point at. */
 .e-turn .chat-bubble--user {
-  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
-  border-radius: var(--ref-border-radius-md);
-  border-top-right-radius: 0;
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-sm);
+  border-radius: var(--app-radius-xl);
 }
 
 /* Every object is one chip: white, grey-20 edge, radius sm, 4 / 8 inset,

@@ -50,6 +50,15 @@
   display: none;
 }
 
+/* New conversation styles (flag newConversationStyles): in the thread, Archie's
+   status is a quiet line — "Thought for 3s ›" the way chat apps write it — not
+   a pill. Working keeps its breathing olive dot, the one butter touch left. */
+.e-turn .ap-status {
+  padding: 0;
+  background: transparent;
+  color: var(--ref-color-grey-80);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ap-status.is-working::before {
     animation: none;
