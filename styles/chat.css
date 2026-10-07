@@ -1141,13 +1141,19 @@ span.chat-bubble-choice-chip {
   opacity: 1;
 }
 
-/* Archie's sits at the right end of his head line — the line his avatar
-   leaves empty. Not in the left gutter: the thread clips its overflow, so a
-   time outside the column was cut off. */
+/* Archie's sits in the gutter, on his avatar's line. */
 .e-turn--ai > .e-turn__time {
   position: absolute;
   top: var(--ref-spacing-xxxs);
-  right: 0;
+  right: calc(100% + var(--ref-spacing-xs));
+}
+
+/* The thread clips its overflow at its padding edge, so the gutter has to be
+   padding: wide enough for "11:31 AM" + its 12px (≈ 64px) when the column
+   runs edge to edge (a side panel open). Symmetric, so the column stays
+   centred. */
+.session__assistant-thread:has(> .e-turn) {
+  padding-inline: calc(var(--ref-spacing-xxxl) + var(--ref-spacing-xxxs));
 }
 
 /* Archie's memory proposal (voice-coach.css .memory-card) takes the result
