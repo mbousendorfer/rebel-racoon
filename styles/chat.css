@@ -1206,36 +1206,37 @@ span.chat-bubble-choice-chip {
   border-top-right-radius: 0;
 }
 
-/* Everything you bring is a file tile: the Sources panel's tile (grey-05
-   square, radius sm, grey-80 glyph) at the size of a two-line object, the
-   name over what it is, then — behind a hairline — what Archie made of it.
-   White card, grey-20 edge, radius md around the radius-sm tile. */
+/* Everything you bring is drawn like Archie's result cards: a bare 16px
+   glyph in ink, top-aligned on the title line, 12px, the name over what it
+   is, then what Archie made of it, right. Same 12 / 16 inset,
+   white card, grey-20 edge, radius md. One way to show an icon in a card. */
 .e-turn .selection-echo {
+  align-items: flex-start;
   gap: var(--ref-spacing-xs);
   max-width: var(--app-chat-card);
-  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs) var(--ref-spacing-xxs) var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
   border-radius: var(--ref-border-radius-md);
 }
 
 .e-turn .selection-echo__icon:not(.selection-echo__icon--avatar) {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--ref-border-radius-sm);
-  background: var(--ref-color-grey-05);
+  width: var(--sys-icon-css-sm);
+  height: var(--sys-icon-css-sm);
+  margin-top: 1px;
+  border-radius: 0;
+  background: transparent;
 }
 
 .e-turn .selection-echo__icon:not(.selection-echo__icon--avatar) > i {
-  font-size: var(--sys-icon-css-md);
-  color: var(--ref-color-grey-80);
+  font-size: var(--sys-icon-css-sm);
+  color: var(--ref-color-grey-100);
 }
 
-/* What Archie made of it, set apart: a hairline, then the links. */
+/* What Archie made of it sits right and centred, like a result card's
+   "Open clips ›" — no divider, the same blue links. */
 .e-turn .selection-echo__trailing {
-  align-self: stretch;
-  gap: var(--ref-spacing-xs);
-  margin-left: var(--ref-spacing-xxs);
-  padding-left: var(--ref-spacing-xs);
-  border-left: 1px solid var(--app-border);
+  align-self: center;
+  gap: var(--ref-spacing-sm);
+  margin-left: var(--ref-spacing-xs);
 }
 
 /* Archie's result cards keep their butter, without their own mark: the
