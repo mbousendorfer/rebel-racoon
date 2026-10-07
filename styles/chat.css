@@ -1121,12 +1121,8 @@ span.chat-bubble-choice-chip {
   padding-top: 0;
 }
 
-/* A result card (title + one line) is one block: the avatar sits on its
-   middle, not on its top edge. */
-.e-turn:has(> .e-turn__content > .chat-turn > .drafts-card) {
-  align-items: center;
-}
-
+/* A result card starts flush with the avatar: card top = disc top (the
+   text-line offset is for words, not for a box). */
 .e-turn:has(> .e-turn__content > .chat-turn > .drafts-card) > .e-turn__content {
   padding-top: 0;
 }
