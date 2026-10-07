@@ -14,13 +14,18 @@
 //   3. Creates one draft post per channel via posts-store.js.
 //   4. Posts a structured "Drafted N posts" result turn.
 
-import { postAssistantChoice, startPending, finishPending, postDraftResult } from "./assistant.js?v=1660";
-import { getIdeas } from "./library.js?v=1660";
-import { anglesByIdea } from "./mocks.js?v=1660";
-import { addPostDraft } from "./posts-store.js?v=1660";
-import { showToast } from "./components/toast.js?v=1660";
-import { networkMeta } from "./social-profiles.js?v=1660";
-import { coachAfterDraft } from "./voice-coach.js?v=1660";
+import {
+  postAssistantChoice,
+  startPending,
+  finishPending,
+  postDraftResult,
+  reportDraftFailure,
+} from "./assistant.js?v=1662";
+import { getIdeas } from "./library.js?v=1662";
+import { anglesByIdea } from "./mocks.js?v=1662";
+import { addPostDraft } from "./posts-store.js?v=1662";
+import { networkMeta } from "./social-profiles.js?v=1662";
+import { coachAfterDraft } from "./voice-coach.js?v=1662";
 
 // Simulated "generating drafts" delay shared by every draft flow.
 const DRAFT_DELAY_MS = 6000;
@@ -44,18 +49,6 @@ function withPendingChip(sessionId, work, onError) {
       onError(err);
     }
   }, DRAFT_DELAY_MS);
-}
-
-// Shared failure handler for the draft generators: log + an error toast whose
-// Retry re-enters the same generation (idempotent — same arguments).
-function draftError(err, retry) {
-  // eslint-disable-next-line no-console
-  console.error("draft-flow: draft generation failed", err);
-  showToast("Couldn't create those drafts. Try again?", {
-    variant: "error",
-    duration: 6000,
-    action: { label: "Retry", onClick: retry },
-  });
 }
 
 // An idea belongs to the session that produced it, so that session is the only
@@ -206,7 +199,10 @@ export function executeDraft(sessionId, ideaId, selectedChannels, count = 1, ang
       });
       coachAfterDraft(sessionId, drafts);
     },
-    (err) => draftError(err, () => executeDraft(sessionId, ideaId, selectedChannels, count, angle, language)),
+    (err) =>
+      reportDraftFailure(sessionId, err, () =>
+        executeDraft(sessionId, ideaId, selectedChannels, count, angle, language),
+      ),
   );
 }
 
@@ -242,6 +238,9 @@ export function executeDraftBatch(sessionId, ideaId, selectedChannels, anglePick
       postDraftResult(sessionId, { ideaTitle: idea.title, drafts });
       coachAfterDraft(sessionId, drafts);
     },
-    (err) => draftError(err, () => executeDraftBatch(sessionId, ideaId, selectedChannels, anglePicks, language)),
+    (err) =>
+      reportDraftFailure(sessionId, err, () =>
+        executeDraftBatch(sessionId, ideaId, selectedChannels, anglePicks, language),
+      ),
   );
 }

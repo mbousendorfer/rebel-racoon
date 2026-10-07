@@ -31,10 +31,11 @@ import {
   postTopPostsWidget,
   postUserTurn,
   postUserProfilesTurn,
-} from "./assistant.js?v=1660";
-import { getTopPosts, getTopPost } from "./top-posts-store.js?v=1660";
-import { addPostDraft } from "./posts-store.js?v=1660";
-import { addReadySource } from "./sources-stream.js?v=1660";
+  reportDraftFailure,
+} from "./assistant.js?v=1662";
+import { getTopPosts, getTopPost } from "./top-posts-store.js?v=1662";
+import { addPostDraft } from "./posts-store.js?v=1662";
+import { addReadySource } from "./sources-stream.js?v=1662";
 import {
   getConnectedProfiles,
   BRAND_INITIALS,
@@ -43,12 +44,11 @@ import {
   networkMeta,
   normalizeNetwork,
   getConnectedProfileById,
-} from "./social-profiles.js?v=1660";
-import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=1660";
-import { SORTS, PERIODS } from "./components/top-post-card.js?v=1660";
-import { showToast } from "./components/toast.js?v=1660";
-import * as inlineQuestion from "./inline-question.js?v=1660";
-import { playbookForNewWork } from "./active-playbook.js?v=1660";
+} from "./social-profiles.js?v=1662";
+import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=1662";
+import { SORTS, PERIODS } from "./components/top-post-card.js?v=1662";
+import * as inlineQuestion from "./inline-question.js?v=1662";
+import { playbookForNewWork } from "./active-playbook.js?v=1662";
 
 // Cap on drafts produced in one run — post × angle × channel can multiply fast
 // (e.g. 3 posts × 4 angles × 3 channels = 36). Keep the result turn scannable;
@@ -80,16 +80,6 @@ function withPendingChip(sessionId, work, onError, meta = "Generating drafts") {
       onError(err);
     }
   }, GEN_DELAY_MS);
-}
-
-function genError(err, retry) {
-  // eslint-disable-next-line no-console
-  console.error("top-posts-flow: draft generation failed", err);
-  showToast("Couldn't create those drafts. Try again?", {
-    variant: "error",
-    duration: 6000,
-    action: { label: "Retry", onClick: retry },
-  });
 }
 
 // The base body a winner is repurposed from — its own published copy. Repurposing
@@ -691,7 +681,7 @@ export function executeRepurpose(sessionId, postIds, targets) {
         drafts,
       });
     },
-    (err) => genError(err, () => executeRepurpose(sessionId, postIds, targets)),
+    (err) => reportDraftFailure(sessionId, err, () => executeRepurpose(sessionId, postIds, targets), "top-posts-flow"),
   );
 }
 

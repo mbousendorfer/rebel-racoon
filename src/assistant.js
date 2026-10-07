@@ -6,11 +6,12 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1660";
-import { findConnector } from "./connectors-store.js?v=1660";
-import { createSessionNotifier } from "./store-utils.js?v=1660";
-import { addPostDraft } from "./posts-store.js?v=1660";
-import { showToast } from "./components/toast.js?v=1660";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1662";
+import { findConnector } from "./connectors-store.js?v=1662";
+import { createSessionNotifier } from "./store-utils.js?v=1662";
+import { addPostDraft } from "./posts-store.js?v=1662";
+import { showToast } from "./components/toast.js?v=1662";
+import { isFlagOn } from "./feature-flags.js?v=1662";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -233,6 +234,48 @@ export function postAssistantMessage(sessionId, text, { meta = "Archie" } = {}) 
     createdAt: Date.now(),
   });
   notify(sessionId);
+}
+
+// A job Archie couldn't finish (draft generation threw). With the new
+// conversation styles it stays in the thread as a failed card — what failed,
+// what it means, Retry — instead of a toast that vanishes after 6s. Retry is a
+// closure, so it lives beside the thread, keyed by the turn id.
+const failedRetries = new Map();
+
+export function reportDraftFailure(sessionId, err, retry, source = "draft-flow") {
+  // eslint-disable-next-line no-console
+  console.error(`${source}: draft generation failed`, err);
+  if (!isFlagOn("newConversationStyles")) {
+    showToast("Couldn't create those drafts. Try again?", {
+      variant: "error",
+      duration: 6000,
+      action: { label: "Retry", onClick: retry },
+    });
+    return;
+  }
+  const id = newId();
+  failedRetries.set(id, retry);
+  getThread(sessionId).push({
+    id,
+    role: "assistant",
+    variant: "failed",
+    title: "Couldn't create those drafts",
+    text: "Something unexpected happened on my side. Nothing was lost.",
+    status: "failed",
+    createdAt: Date.now(),
+  });
+  notify(sessionId);
+}
+
+// Retry from the failed card: the card leaves the thread, the job runs again.
+export function retryFailedTurn(sessionId, id) {
+  const msg = getThread(sessionId).find((m) => m.id === id);
+  const retry = failedRetries.get(id);
+  if (!msg) return;
+  msg.hidden = true;
+  failedRetries.delete(id);
+  notify(sessionId);
+  retry?.();
 }
 
 // "Connect a service first" prompt — posted when the user pastes a link to a
