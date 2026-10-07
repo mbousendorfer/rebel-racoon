@@ -1051,20 +1051,22 @@ span.chat-bubble-choice-chip {
 }
 
 /* ─── New conversation styles (flag newConversationStyles) ────────────────
-   Figma "Conversation styles" § E, simplified. renderTwoSides (thread-render.js)
-   wraps every turn. Archie: a 24px butter disc, 12px, then what he says — his
-   status pill on the disc's line, his text centred on it. You: your bubble or
-   your pick on the right, nothing else. 24px between turns, 8px when Archie
-   goes on. Butter is Archie's own; objects are white chips on both sides. */
+   Figma "Conversation styles" § E. renderTwoSides (thread-render.js) wraps
+   every turn. Archie: a 24px butter disc, 12px, then what he says — his status
+   pill on the disc's line, his text centred on it; no name. You: your avatar,
+   12px, a head line (time · You) over your bubble or pick. The time shows on
+   hover (your head line; the gutter left of Archie's disc). 24px between
+   turns, 8px when Archie goes on. Objects are white chips on both sides. */
 
 .e-turn {
+  position: relative;
   display: flex;
   align-items: flex-start;
   gap: var(--ref-spacing-xs);
 }
 
 .e-turn--user {
-  justify-content: flex-end;
+  flex-direction: row-reverse;
 }
 
 .e-turn--cont {
@@ -1100,6 +1102,7 @@ span.chat-bubble-choice-chip {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  gap: var(--ref-spacing-xxs);
   flex: 1 1 auto;
   min-width: 0;
   padding-top: calc((24px - var(--sys-text-style-body-line-height)) / 2);
@@ -1114,6 +1117,42 @@ span.chat-bubble-choice-chip {
   flex: 0 1 auto;
   align-items: flex-end;
   max-width: var(--app-chat-card);
+}
+
+.e-turn__head {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  min-height: 24px;
+}
+
+.e-turn__name {
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+/* The time, on hover only: there when you look for it, quiet otherwise. */
+.e-turn__time {
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity var(--ref-animation-short) var(--app-ease-standard);
+}
+
+.e-turn:hover .e-turn__time,
+.e-turn:focus-within .e-turn__time {
+  opacity: 1;
+}
+
+/* Archie's sits in the gutter, on his disc's line. */
+.e-turn--ai > .e-turn__time {
+  position: absolute;
+  top: var(--ref-spacing-xxxs);
+  right: calc(100% + var(--ref-spacing-xs));
 }
 
 /* The wrapped turn gives its identity to the head line: no label, no width

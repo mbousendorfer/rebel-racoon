@@ -12,21 +12,22 @@ import {
   renderMessageBubble,
   renderNotice,
   renderResultCard,
-} from "./thread-turns.js?v=1631";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=1631";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1631";
-import { getTopPost } from "../../top-posts-store.js?v=1631";
-import { getTopicById } from "../../topics-store.js?v=1631";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=1631";
-import { renderProfileEchoCard } from "../../social-profiles.js?v=1631";
-import { escapeHtml } from "../../utils.js?v=1631";
-import { getIdeas } from "../../library.js?v=1631";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=1631";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1631";
-import { getThread } from "../../assistant.js?v=1631";
-import { getSuggestion } from "../../voice-coach-store.js?v=1631";
-import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=1631";
-import { isFlagOn } from "../../feature-flags.js?v=1631";
+} from "./thread-turns.js?v=1632";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1632";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1632";
+import { getTopPost } from "../../top-posts-store.js?v=1632";
+import { getTopicById } from "../../topics-store.js?v=1632";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=1632";
+import { renderProfileEchoCard } from "../../social-profiles.js?v=1632";
+import { escapeHtml } from "../../utils.js?v=1632";
+import { getIdeas } from "../../library.js?v=1632";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=1632";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1632";
+import { getThread } from "../../assistant.js?v=1632";
+import { getSuggestion } from "../../voice-coach-store.js?v=1632";
+import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=1632";
+import { isFlagOn } from "../../feature-flags.js?v=1632";
+import { CURRENT_USER } from "../../org.js?v=1632";
 
 export function renderThread(messages, sessionId) {
   const turns = messages.map((m) => [m, renderTurn(m, sessionId)]);
@@ -35,13 +36,11 @@ export function renderThread(messages, sessionId) {
 }
 
 // ─── New conversation styles (flag newConversationStyles) ───────────────────
-// Figma "Conversation styles" § E, simplified: the side says who speaks. Archie
-// = his butter disc beside what he says (his status pill sits on the disc's
-// line); you = your bubble or your pick on the right, nothing else. No names,
-// no avatar of yours; the time is on hover. Archie's consecutive turns share
-// one disc.
-// ponytail: wraps the finished HTML instead of changing ~15 renderers; move the
-// head into the renderers if the style ships.
+// Figma "Conversation styles" § E. Archie = his butter disc beside what he says
+// (his status pill on the disc's line), no name. You = a head line (time · You)
+// and your avatar, your bubble or pick under it. The time shows on hover — in
+// your head line, in the gutter left of Archie's disc. Archie's consecutive
+// turns share one disc.
 const clock = (ts) => (ts ? new Date(ts).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "");
 
 function renderTwoSides(turns) {
@@ -59,14 +58,18 @@ function renderTwoSides(turns) {
     const cont = side === "ai" && prev === "ai" && !status;
     prev = side;
     const time = clock(m.createdAt);
+    const timeHtml = time ? `<span class="e-turn__time">${time}</span>` : "";
     const author =
       side === "ai"
-        ? `<span class="e-turn__author" aria-hidden="true"><span class="e-turn__mark"><i class="ap-icon-archie-official"></i></span></span>`
-        : "";
+        ? `<span class="e-turn__mark"><i class="ap-icon-archie-official"></i></span>`
+        : `<span class="ap-avatar size-24"><span class="ap-avatar-initials">${escapeHtml(CURRENT_USER.initials)}</span></span>`;
+    const head =
+      side === "user" ? `<div class="e-turn__head">${timeHtml}<span class="e-turn__name">You</span></div>` : "";
     out += `
-      <div class="e-turn e-turn--${side}${cont ? " e-turn--cont" : ""}${status ? " e-turn--status" : ""}"${time ? ` title="${time}"` : ""}>
-        ${author}
-        <div class="e-turn__content">${el.outerHTML}</div>
+      <div class="e-turn e-turn--${side}${cont ? " e-turn--cont" : ""}${status ? " e-turn--status" : ""}">
+        ${side === "ai" && !cont ? timeHtml : ""}
+        <span class="e-turn__author" aria-hidden="true">${author}</span>
+        <div class="e-turn__content">${head}${el.outerHTML}</div>
       </div>`;
   }
   return out;
