@@ -12,22 +12,22 @@ import {
   renderMessageBubble,
   renderNotice,
   renderResultCard,
-} from "./thread-turns.js?v=1627";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=1627";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1627";
-import { getTopPost } from "../../top-posts-store.js?v=1627";
-import { getTopicById } from "../../topics-store.js?v=1627";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=1627";
-import { renderProfileEchoCard } from "../../social-profiles.js?v=1627";
-import { escapeHtml } from "../../utils.js?v=1627";
-import { getIdeas } from "../../library.js?v=1627";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=1627";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1627";
-import { getThread } from "../../assistant.js?v=1627";
-import { getSuggestion } from "../../voice-coach-store.js?v=1627";
-import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=1627";
-import { isFlagOn } from "../../feature-flags.js?v=1627";
-import { CURRENT_USER } from "../../org.js?v=1627";
+} from "./thread-turns.js?v=1628";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1628";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1628";
+import { getTopPost } from "../../top-posts-store.js?v=1628";
+import { getTopicById } from "../../topics-store.js?v=1628";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=1628";
+import { renderProfileEchoCard } from "../../social-profiles.js?v=1628";
+import { escapeHtml } from "../../utils.js?v=1628";
+import { getIdeas } from "../../library.js?v=1628";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=1628";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1628";
+import { getThread } from "../../assistant.js?v=1628";
+import { getSuggestion } from "../../voice-coach-store.js?v=1628";
+import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=1628";
+import { isFlagOn } from "../../feature-flags.js?v=1628";
+import { CURRENT_USER } from "../../org.js?v=1628";
 
 export function renderThread(messages, sessionId) {
   const turns = messages.map((m) => [m, renderTurn(m, sessionId)]);

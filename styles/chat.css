@@ -1151,17 +1151,13 @@ span.chat-bubble-choice-chip {
   align-items: flex-end;
 }
 
-/* Your words read like Archie's: body-regular grey-100, no bubble. */
+/* Your words are the one thing in the thread you wrote: they keep the navy
+   (the app's colour for your typed words), in a tighter bubble on the E
+   rhythm — 8 / 12 inset, radius md, the corner under your disc squared. */
 .e-turn .chat-bubble--user {
-  padding: 0;
-  border-radius: 0;
-  background: transparent;
-  -webkit-font-smoothing: auto;
-  -moz-osx-font-smoothing: auto;
-}
-
-.e-turn .chat-bubble--user .chat-bubble-text {
-  color: var(--ref-color-grey-100);
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
+  border-radius: var(--ref-border-radius-md);
+  border-top-right-radius: 0;
 }
 
 /* Every object is one chip: white, grey-20 edge, radius sm, 4 / 8 inset,
