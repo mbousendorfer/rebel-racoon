@@ -2,8 +2,8 @@
 // trim, captions tab). Pure render — it reads the modal's state, owned and
 // written by video-clips-modal.js. Moved out of it, unchanged.
 
-import { CLIP_RATIO_ORDER, FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=1680";
-import { escapeHtml } from "../../utils.js?v=1680";
+import { CLIP_RATIO_ORDER, FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=1682";
+import { escapeHtml } from "../../utils.js?v=1682";
 import {
   currentSource,
   draft,
@@ -12,7 +12,7 @@ import {
   fmtTime,
   optionsSubtab,
   trimMode,
-} from "../video-clips-modal.js?v=1680";
+} from "../video-clips-modal.js?v=1682";
 
 // Left options panel content — the ONLY part of the editor that swaps between
 // tabs. Clip → title/summary; Crop → export ratio + framing; Subtitles →

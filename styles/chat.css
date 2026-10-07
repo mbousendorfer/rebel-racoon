@@ -1455,30 +1455,34 @@ span.chat-bubble-choice-chip {
 }
 
 /* Tool calls — what an activity pill unfolds (renderActivityTurn): their own
-   look, apart from Archie's thoughts (plain grey text). A small white card,
-   one row per tool: toolbox glyph, name in ink, duration right-aligned. The
+   look, apart from Archie's thoughts (plain grey text). A white card, one
+   tool per row, rows split by a grey-20 hairline. Each row: toolbox glyph,
+   name in ink, then the time it took — drawn as a bar scaled to the run's
+   longest tool, and written ("2s", or "Instant" under half a second). The
    pill itself stays a status like the others. */
 .e-turn .assistant-notice__tools {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xxs);
-  width: 320px;
+  width: 360px;
   max-width: 100%;
   box-sizing: border-box;
-  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  padding: 0;
   list-style: none;
   border: 1px solid var(--app-border);
   border-radius: var(--ref-border-radius-md);
   background: var(--app-surface);
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
   color: var(--ref-color-grey-100);
 }
 
 .assistant-notice__tool {
   display: flex;
   align-items: center;
-  gap: var(--ref-spacing-xxs);
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
+}
+
+.assistant-notice__tool + .assistant-notice__tool {
+  border-top: 1px solid var(--app-border);
 }
 
 .assistant-notice__tool > i {
@@ -1487,8 +1491,40 @@ span.chat-bubble-choice-chip {
   color: var(--ref-color-grey-80);
 }
 
+.assistant-notice__tool-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+}
+
+/* The duration bar: a grey-10 track, a grey-40 fill (a shape fill, not a
+   line) as long as the tool took relative to the longest. */
+.assistant-notice__tool-bar {
+  flex: 0 0 64px;
+  height: 4px;
+  border-radius: var(--app-radius-pill);
+  background: var(--ref-color-grey-10);
+  overflow: hidden;
+}
+
+/* An instant tool has no bar to draw — its slot stays, so the times align. */
+.assistant-notice__tool.is-instant .assistant-notice__tool-bar {
+  visibility: hidden;
+}
+
+.assistant-notice__tool-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--ref-color-grey-40);
+}
+
 .assistant-notice__tool-duration {
-  margin-left: auto;
+  flex: 0 0 48px;
+  text-align: right;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
   color: var(--ref-color-grey-80);
   font-variant-numeric: tabular-nums;
 }

@@ -17,9 +17,9 @@
 // ON an overridden hook is written in one language. Per-language × per-network
 // examples when a brand actually publishes in two languages on one network.
 
-import { isFlagOn } from "./feature-flags.js?v=1680";
-import { escapeHtml } from "./utils.js?v=1680";
-import { NETWORKS, normalizeNetwork, getConnectedProfileById } from "./social-profiles.js?v=1680";
+import { isFlagOn } from "./feature-flags.js?v=1682";
+import { escapeHtml } from "./utils.js?v=1682";
+import { NETWORKS, normalizeNetwork, getConnectedProfileById } from "./social-profiles.js?v=1682";
 
 export const NETWORK_FIELDS = ["signatureHooks", "closingPatterns", "formattingStyle", "visualStyle"];
 const LIST_FIELDS = new Set(["signatureHooks", "closingPatterns"]);

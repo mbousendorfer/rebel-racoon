@@ -13,22 +13,22 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=1680";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=1680";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1680";
-import { getTopPost } from "../../top-posts-store.js?v=1680";
-import { getTopicById } from "../../topics-store.js?v=1680";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=1680";
-import { renderProfileEchoCard } from "../../social-profiles.js?v=1680";
-import { escapeHtml } from "../../utils.js?v=1680";
-import { getIdeas } from "../../library.js?v=1680";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=1680";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1680";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=1680";
-import { getSuggestion } from "../../voice-coach-store.js?v=1680";
-import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=1680";
-import { isFlagOn } from "../../feature-flags.js?v=1680";
-import { CURRENT_USER } from "../../org.js?v=1680";
+} from "./thread-turns.js?v=1682";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1682";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1682";
+import { getTopPost } from "../../top-posts-store.js?v=1682";
+import { getTopicById } from "../../topics-store.js?v=1682";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=1682";
+import { renderProfileEchoCard } from "../../social-profiles.js?v=1682";
+import { escapeHtml } from "../../utils.js?v=1682";
+import { getIdeas } from "../../library.js?v=1682";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=1682";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1682";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=1682";
+import { getSuggestion } from "../../voice-coach-store.js?v=1682";
+import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=1682";
+import { isFlagOn } from "../../feature-flags.js?v=1682";
+import { CURRENT_USER } from "../../org.js?v=1682";
 
 export function renderThread(messages, sessionId) {
   const turns = messages.map((m) => [m, renderTurn(m, sessionId)]);
@@ -237,14 +237,21 @@ function renderActivityTurn(message) {
       bodyHtml: `<div class="assistant-notice__detail">${escapeHtml(toolDescription(tools[0].tool))}</div>`,
     });
   }
+  // One row per tool, each on its own line of the card. How long it took is
+  // DRAWN, not only written: a bar scaled to the longest tool of the run, so
+  // the heavy step stands out and the instant ones read as instant.
+  const longest = Math.max(...tools.map((t) => t.ms || 0), 1);
   const rows = tools
-    .map(
-      (t) => `<li class="assistant-notice__tool">
+    .map((t) => {
+      const ms = t.ms || 0;
+      const instant = ms < 500;
+      return `<li class="assistant-notice__tool${instant ? " is-instant" : ""}">
         <i class="ap-icon-toolbox" aria-hidden="true"></i>
         <span class="assistant-notice__tool-name">${escapeHtml(toolName(t.tool))}</span>
-        ${sec(t.ms || 0) > 0 ? `<span class="assistant-notice__tool-duration">${sec(t.ms)}s</span>` : ""}
-      </li>`,
-    )
+        <span class="assistant-notice__tool-bar" aria-hidden="true"><span style="width: ${instant ? 0 : Math.round((ms / longest) * 100)}%"></span></span>
+        <span class="assistant-notice__tool-duration">${instant ? "Instant" : `${sec(ms)}s`}</span>
+      </li>`;
+    })
     .join("");
   return renderNotice({
     variant: "mermaid",
