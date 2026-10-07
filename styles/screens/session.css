@@ -467,7 +467,9 @@ body.playbook-revoked .session__composer-card {
 
 .session__assistant-thread {
   overflow-y: auto;
-  padding: var(--ref-spacing-md) var(--ref-spacing-md) var(--ref-spacing-lg);
+  /* Bottom: the composer's 96px fade (2 × 48) + 12px, so the last line of the
+     thread stops clear of the fade instead of dissolving into it. */
+  padding: var(--ref-spacing-md) var(--ref-spacing-md) calc(2 * var(--ref-spacing-xxl) + var(--ref-spacing-xs));
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-md);

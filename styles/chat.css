@@ -1169,9 +1169,6 @@ span.chat-bubble-choice-chip {
    centred. */
 .session__assistant-thread:has(> .e-turn) {
   padding-inline: calc(var(--ref-spacing-xxxl) + var(--ref-spacing-xxxs));
-  /* The composer's 96px fade covers the thread's foot: the last turn stops
-     72px up, where the fade is still nearly clear. */
-  padding-bottom: calc(var(--ref-spacing-xxxl) + var(--ref-spacing-xs));
 }
 
 /* Archie's memory proposal (voice-coach.css .memory-card) takes the result
