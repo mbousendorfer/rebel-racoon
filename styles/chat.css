@@ -54,14 +54,15 @@
   height: 32px;
   flex-shrink: 0;
   border-radius: var(--app-radius-pill);
-  /* A veil, not a white disc — the same 16 % white as the intake's
-     Uploading pill; the glyph in the secondary ink, like the intake's. */
-  background: color-mix(in srgb, var(--ref-color-white) 16%, transparent);
+  /* An opaque light-navy disc, navy glyph: a crisp ~14:1 mark that reads
+     as an object on the bubble. (A translucent veil + light glyph turned
+     into grey on grey; pure white punched a hole in the navy.) */
+  background: var(--app-convo-navy-10);
 }
 
 .selection-echo__icon i {
   font-size: var(--sys-icon-css-sm);
-  color: var(--app-convo-navy-20);
+  color: var(--app-convo-navy);
 }
 
 .selection-echo__body {
