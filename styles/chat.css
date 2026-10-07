@@ -1056,7 +1056,7 @@ span.chat-bubble-choice-chip {
    pill on the disc's line, his text centred on it; no name. You: your avatar,
    8px, a head line (time · You) over your bubble or pick. The time shows on
    hover (your head line; the gutter left of Archie's disc). 24px between
-   turns, 8px when Archie goes on. Objects are white chips on both sides. */
+   turns, 16px when Archie goes on. Objects are white chips on both sides. */
 
 .e-turn {
   position: relative;
@@ -1069,8 +1069,10 @@ span.chat-bubble-choice-chip {
   flex-direction: row-reverse;
 }
 
+/* Archie goes on: one disc for the run, but each message keeps its own
+   room (16px) and its own time on hover — they stay separate messages. */
 .e-turn--cont {
-  margin-top: calc(var(--ref-spacing-xxs) - var(--ref-spacing-md));
+  margin-top: calc(var(--ref-spacing-sm) - var(--ref-spacing-md));
 }
 
 .e-turn--cont > .e-turn__author {
