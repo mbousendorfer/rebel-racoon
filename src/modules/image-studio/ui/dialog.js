@@ -5,7 +5,7 @@
 // openDialog() returns { el, close, setBody }. Escape and the backdrop close it;
 // focus moves in on open and back to the opener on close.
 
-import { html, toString } from "../lib/html.js?v=1648";
+import { html, toString } from "../lib/html.js?v=1649";
 
 let open = [];
 
