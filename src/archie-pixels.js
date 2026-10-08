@@ -1,86 +1,45 @@
 // <archie-pixels> — the Image Generator's loader and reveal, one element.
 //
-// Waiting: a halftone of small square pixels on a fine grid, in the colours
-// the image will be made of (`data-colors`, the Playbook's palette; a grey ink
-// without one), light on a light base. Only their SIZE moves — a slow drift,
-// and a soft diagonal shimmer passing through — so it reads as quiet, not as
-// noise (dithered blocks were rejected as too coarse, 2026-10-07). Under the
-// cursor, a loupe: the pixels swell and part, trailing it softly. It is the
-// loader: no spinner over it, only a label the host may nest.
+// Waiting: a fine halftone — rounded squares on a 4px grid — in the colours
+// the image will be made of (`data-colors`, the Playbook's palette, blended
+// smoothly; a grey ink without one), light on a light base. Only the squares'
+// SIZE moves: a slow drift and a soft diagonal shimmer. Under the cursor, an
+// optical loupe: the field is magnified, squares bigger and further apart,
+// trailing the cursor softly. It is the loader: no spinner over it, only a
+// label the host may nest.
 //
-// Arriving (`data-reveal-at`, an epoch ms) — the Archie bloom: the overlay
-// covers the <img> its host already rendered beneath it; in its centre the
-// Archie mark appears drawn in the image's own pixels, popping in the
-// loader's order; then the image blooms outward from the mark, each pixel
-// landing with a small overshoot, and dissolves pixel by pixel into the real
-// image (its DOM text layers included). Picked 2026-10-07 over a left-to-right
-// wave, a "print" (halftone of the image) and a split-flap ripple.
+// Arriving (`data-reveal-at`, an epoch ms) — a quadtree: the overlay covers
+// the <img> its host already rendered beneath it and resolves into it by
+// recursive subdivision, each block the image's own average there (a mip
+// level), splitting EARLIER where the image has detail — faces and edges
+// sharpen first, flat walls last — with hairline seams and a glint on each
+// split of the big blocks; then it fades onto the real thing (its DOM text
+// layers included). Picked 2026-10-08 over a refined Archie bloom and a
+// diffusion-style focus pull; before that a left-to-right wave, a halftone
+// "print" and a split-flap ripple were turned down.
 //
-//   ·········      ····▪····      ··▪■■■▪··      ▪■■■■■■■▪
-//   ···▪ ▪···  →   ··■■■■■··  →   ▪■■■■■■■▪  →   (the photo)
-//   ·········      ····▪····      ··▪■■■▪··      ▪■■■■■■■▪
-//   halftone       the mark       the bloom      dissolved
+//   ┌───────┬───────┐   ┌───┬───┬───────┐   ┌─┬─┬─┬─┬───────┐
+//   │       │       │ → ├─┬─┼───┤       │ → ├─┼─┼─┼─┤ (flat) │ → the photo
+//   └───────┴───────┘   └─┴─┴───┴───────┘   └─┴─┴─┴─┴───────┘
 //
 // Everything is a function of the clock, never of how long the element has
-// lived: the hosts re-render by innerHTML, so a fresh copy picks the halftone
-// (or the bloom) up exactly where the one it replaced left it. A host renders
-// the reveal only while `Date.now() - at < REVEAL_MS`. Reduced motion: one
-// still frame, and no reveal at all.
+// lived: the hosts re-render by innerHTML, so a fresh copy picks the field (or
+// the reveal) up exactly where the one it replaced left it. A host renders the
+// reveal only while `Date.now() - at < REVEAL_MS`. Reduced motion: one still
+// frame, and no reveal at all.
 //
-// A 2D canvas drawn in device pixels (each square snapped, so edges stay
-// crisp): one Path2D per ink for the halftone, one for the image's pixels,
-// clipped over a one-pixel-per-cell copy of the image; one for the cells
-// already dissolved, erased.
+// One fragment shader, per device pixel (the 2D-canvas version, square by
+// square, was too coarse). ONE WebGL2 context for every instance — browsers
+// cap live contexts at ~16 and the studio re-renders often — drawn into a
+// shared canvas, then copied into each element's own 2D canvas. Without
+// WebGL2: a plain base colour, and no reveal.
 
-import { MARK_PATH } from "./archie-loader.js?v=1716";
-
-const PITCH = 6; // CSS px from one pixel to the next
-const FPS = 30; // the halftone's rate; the bloom runs every frame
-export const REVEAL_MS = 1600;
-const POP = 0.12; // one pixel's pop, as a share of REVEAL_MS
-const HALFTONE = 0; // the states of a cell during a reveal
-const IMAGE = 1;
-const GONE = 2;
-// The Archie mark (its outline from archie-loader.js) and the centres of the
-// loader's 7 squares in its viewBox — the order the mark's pixels pop in.
-const MARK = [
-  [99, 24],
-  [56, 64],
-  [20, 99],
-  [66, 144],
-  [113, 97],
-  [158, 53],
-  [204, 97],
-];
-const MARK_W = 227.15;
-const MARK_H = 170.03;
-const INK_ALPHA = 0.42; // the halftone is a tint, never the full ink
-const SHIMMER = 2.4; // s per pass
-const LENS = 56; // CSS px: the cursor's reach on the halftone
-
+const PITCH = 4; // CSS px from one square to the next
+export const REVEAL_MS = 1900;
+const INK_ALPHA = 0.45; // the halftone is a tint, never the full ink
+const SHIMMER = 2.6; // s per pass
+const LENS = 64; // CSS px: the loupe's radius
 const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
-const clamp01 = (x) => (x < 0 ? 0 : x > 1 ? 1 : x);
-const smooth = (x) => x * x * (3 - 2 * x);
-const backOut = (x) => 1 + 2.70158 * (x - 1) ** 3 + 1.70158 * (x - 1) ** 2; // overshoots ~10%, settles at 1
-
-function hash(x, y) {
-  let h = (Math.imul(x, 374761393) + Math.imul(y, 668265263)) | 0;
-  h = Math.imul(h ^ (h >>> 13), 1274126177);
-  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
-}
-
-// Value noise: smooth, cheap, enough for slow clouds.
-function noise(x, y) {
-  const xi = Math.floor(x);
-  const yi = Math.floor(y);
-  const u = smooth(x - xi);
-  const v = smooth(y - yi);
-  const a = hash(xi, yi);
-  const b = hash(xi + 1, yi);
-  const c = hash(xi, yi + 1);
-  const d = hash(xi + 1, yi + 1);
-  return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
-}
 
 // The cursor, shared by every instance — one listener, not one per element —
 // in client coordinates; null once it leaves the window.
@@ -90,19 +49,179 @@ addEventListener("pointerout", (e) => {
   if (!e.relatedTarget) pointer = null;
 });
 
-// The image as `object-fit: cover` draws it into a w × h box.
-function cover(ctx, img, w, h) {
-  const iw = img.naturalWidth || w;
-  const ih = img.naturalHeight || h;
-  const s = Math.max(w / iw, h / ih);
-  const sw = w / s;
-  const sh = h / s;
-  ctx.drawImage(img, (iw - sw) / 2, (ih - sh) / 2, sw, sh, 0, 0, w, h);
+const VERT = `#version 300 es
+in vec2 a;
+void main() { gl_Position = vec4(a, 0., 1.); }`;
+
+const FRAG = `#version 300 es
+precision highp float;
+uniform vec2 u_res;       // device px
+uniform vec2 u_page;      // the element's page offset, device px: the field lives in page space
+uniform float u_pitch;    // device px
+uniform float u_time;     // s
+uniform float u_shimmer;  // the diagonal's position, 0…1 across
+uniform vec3 u_lens;      // x, y (device px), strength 0…1
+uniform float u_lensR;
+uniform vec3 u_base, u_ink0, u_ink1, u_ink2;
+uniform float u_inkAlpha;
+uniform float u_T;        // reveal progress 0…1; < 0: none
+uniform sampler2D u_img;
+uniform vec2 u_uvScale, u_uvOffset;
+uniform float u_texel;    // image texels per device px
+out vec4 outColor;
+
+float hash(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
+float noise(vec2 p) {
+  vec2 i = floor(p), f = fract(p), u = f * f * (3. - 2. * f);
+  return mix(mix(hash(i), hash(i + vec2(1, 0)), u.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), u.x), u.y);
+}
+vec3 palette(float h) { return mix(mix(u_ink0, u_ink1, smoothstep(.25, .5, h)), u_ink2, smoothstep(.55, .8, h)); }
+vec3 image(vec2 p, float lod) { return textureLod(u_img, p / u_res * u_uvScale + u_uvOffset, lod).rgb; }
+float lodFor(float px) { return log2(max(px * u_texel, 1.)); }
+float luma(vec3 c) { return dot(c, vec3(.2126, .7152, .0722)); }
+// An anti-aliased rounded square: coverage at f (from its centre), half-size h, corner r; aa = px per unit.
+float box(vec2 f, float h, float r, float aa) {
+  vec2 d = abs(f) - vec2(h - r);
+  float sd = length(max(d, 0.)) + min(max(d.x, d.y), 0.) - r;
+  return clamp(.5 - sd * aa, 0., 1.);
+}
+
+// The loader's halftone at p (local device px), through the loupe.
+vec3 halftone(vec2 p, out float size) {
+  vec2 c = u_lens.xy;
+  float k = u_lens.z * exp(-pow(length(p - c) / u_lensR, 2.)) * .45;
+  vec2 q = c + (p - c) * (1. - k); // magnified around the cursor
+  vec2 g = (q + u_page) / u_pitch, cell = floor(g);
+  vec2 lc = (cell + .5) * u_pitch - u_page;
+  float drift = noise(cell * .07 + vec2(u_time * .09, -u_time * .06));
+  float sh = exp(-pow(((lc.x + .6 * lc.y) / (u_res.x + .6 * u_res.y) - u_shimmer) / .12, 2.));
+  size = clamp(.1 + .48 * smoothstep(0., 1., drift) + .36 * sh, 0., 1.) * .82;
+  float h = size * .5;
+  float a = box((fract(g) - .5) * u_pitch, h * u_pitch, h * u_pitch * .45, 1. - k);
+  vec3 ink = palette(noise(cell * .025 + vec2(u_time * .025 + 17.3, -u_time * .02 + 5.1)));
+  return mix(u_base, ink, a * u_inkAlpha);
+}
+
+// quadtree: blocks split where the image has detail first; hairline seams; a glint on each split.
+vec3 quadtree(vec2 p) {
+  float top = ceil(log2(max(u_res.x, u_res.y))) - 3.; // first blocks: ~1/8 of the long side
+  float L = top, split = 0., last = 0., size = 1.;
+  vec2 bc = p;
+  for (int i = 0; i < 14; i++) {
+    if (L < 0.) break;
+    size = exp2(L);
+    vec2 b = floor(p / size);
+    bc = (b + .5) * size;
+    vec3 m = image(bc, lodFor(size));
+    float d = 0.;
+    for (int c = 0; c < 4; c++) {
+      vec2 o = vec2(float(c & 1), float(c >> 1)) - .5;
+      d += length(image(bc + o * size * .5, lodFor(size * .5)) - m);
+    }
+    float depth = (top - L) / top; // 0 coarsest … 1 one device px
+    split = .03 + .78 * pow(depth, .8) - .14 * clamp(d * .7, 0., 1.) + .04 * hash(b + L * 17.); // time spent on the mid levels
+    if (u_T < split) break;
+    last = split;
+    L -= 1.;
+  }
+  if (L < 0.) return image(p, 0.);
+  vec3 col = image(bc, lodFor(size));
+  vec2 e = min(fract(p / size), 1. - fract(p / size)) * size; // device px to the block's edges
+  // Seams and glints on the big blocks only: on small ones they read as salt noise.
+  float big = smoothstep(8., 24., size);
+  float seam = (1. - smoothstep(0., 1., min(e.x, e.y))) * big;
+  col = mix(col, vec3(1.), seam * .3);
+  return col + .2 * (1. - smoothstep(0., .05, u_T - last)) * step(.001, last) * smoothstep(4., 16., size);
+}
+
+void main() {
+  vec2 p = vec2(gl_FragCoord.x, u_res.y - gl_FragCoord.y); // top-left origin, like the DOM
+  float s;
+  vec3 col;
+  if (u_T < 0.) col = halftone(p, s);
+  else col = mix(halftone(p, s), quadtree(p), smoothstep(0., .06, u_T));
+  float alpha = u_T < 0. ? 1. : 1. - smoothstep(.9, 1., u_T); // onto the real image
+  outColor = vec4(col * alpha, alpha);
+}`;
+
+const UNIFORMS = [
+  "u_res",
+  "u_page",
+  "u_pitch",
+  "u_time",
+  "u_shimmer",
+  "u_lens",
+  "u_lensR",
+  "u_base",
+  "u_ink0",
+  "u_ink1",
+  "u_ink2",
+  "u_inkAlpha",
+  "u_T",
+  "u_img",
+  "u_uvScale",
+  "u_uvOffset",
+  "u_texel",
+];
+
+// The one context, made on first use; null without WebGL2.
+let shared;
+function engine() {
+  if (shared !== undefined) return shared;
+  const canvas = document.createElement("canvas");
+  const gl = canvas.getContext("webgl2", { antialias: false, depth: false });
+  if (!gl) return (shared = null);
+  const shader = (type, src) => {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s));
+    return s;
+  };
+  const prog = gl.createProgram();
+  gl.attachShader(prog, shader(gl.VERTEX_SHADER, VERT));
+  gl.attachShader(prog, shader(gl.FRAGMENT_SHADER, FRAG));
+  gl.bindAttribLocation(prog, 0, "a");
+  gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return (shared = null);
+  gl.useProgram(prog);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]), gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(0);
+  gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+  const loc = Object.fromEntries(UNIFORMS.map((u) => [u, gl.getUniformLocation(prog, u)]));
+  gl.uniform1i(loc.u_img, 0);
+  // A 1×1 stand-in, so the samplers always have something bound.
+  const blank = texture(gl, 1, 1, gl.RGBA, new Uint8Array(4));
+  return (shared = { gl, canvas, loc, blank });
+}
+
+function texture(gl, w, h, format, data) {
+  const t = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, t);
+  gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+  gl.texImage2D(gl.TEXTURE_2D, 0, format === gl.RED ? gl.R8 : gl.RGBA, w, h, 0, format, gl.UNSIGNED_BYTE, data);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  return t;
+}
+
+// Any CSS colour → [r, g, b] in 0…1, by letting a canvas normalise it.
+let probe;
+function rgbOf(color) {
+  probe ||= document.createElement("canvas").getContext("2d");
+  probe.fillStyle = "#000";
+  probe.fillStyle = String(color).trim();
+  const s = probe.fillStyle;
+  const rgb = s[0] === "#" ? [1, 3, 5].map((i) => parseInt(s.slice(i, i + 2), 16)) : s.match(/[\d.]+/g).slice(0, 3);
+  return rgb.map((v) => Number(v) / 255);
 }
 
 class ArchiePixels extends HTMLElement {
-  hover = 0; // 0…1, the lens easing in and out
-  lx = 0; // the lens centre, in CSS px, trailing the cursor
+  hover = 0; // 0…1, the loupe easing in and out
+  lx = 0; // the loupe's centre, in CSS px, trailing the cursor
   ly = 0;
 
   connectedCallback() {
@@ -110,29 +229,28 @@ class ArchiePixels extends HTMLElement {
       this.canvas = document.createElement("canvas");
       this.canvas.setAttribute("aria-hidden", "true");
       this.prepend(this.canvas);
-      this.mosaic = document.createElement("canvas"); // the image, one pixel per cell
     }
     this.ctx = this.canvas.getContext("2d");
     const css = getComputedStyle(this);
-    this.base = css.getPropertyValue("--archie-pixels-base").trim();
-    // Each ink as a translucent fill over the base.
-    const probe = this.ctx;
-    this.inks = (
+    this.base = rgbOf(css.getPropertyValue("--archie-pixels-base"));
+    const inks = (
       this.dataset.colors ? this.dataset.colors.split(",") : [css.getPropertyValue("--archie-pixels-ink")]
-    ).map((c) => {
-      probe.fillStyle = "#000";
-      probe.fillStyle = c.trim();
-      return probe.fillStyle;
-    });
-
+    ).map(rgbOf);
+    this.inks = [0, 1, 2].map((i) => inks[Math.min(i, inks.length - 1)]);
     this.revealAt = Number(this.dataset.revealAt) || 0;
+
+    if (!engine()) {
+      if (this.revealAt) this.hidden = true;
+      else this.style.background = css.getPropertyValue("--archie-pixels-base");
+      return;
+    }
     if (this.revealAt) {
       this.img = this.parentElement?.querySelector("img");
       if (!this.img || reduced() || Date.now() - this.revealAt >= REVEAL_MS) return void (this.hidden = true);
       this.img.decode().then(
         () => {
           this.ready = true;
-          this.sample();
+          this.upload();
         },
         () => (this.hidden = true),
       );
@@ -145,6 +263,9 @@ class ArchiePixels extends HTMLElement {
   disconnectedCallback() {
     cancelAnimationFrame(this.raf);
     this.observer?.disconnect();
+    const gl = shared?.gl;
+    if (gl && this.tex) gl.deleteTexture(this.tex);
+    this.tex = null;
   }
 
   resize() {
@@ -156,43 +277,54 @@ class ArchiePixels extends HTMLElement {
     this.h = h;
     this.canvas.width = Math.round(w * this.dpr);
     this.canvas.height = Math.round(h * this.dpr);
-    this.cols = Math.ceil(w / PITCH);
-    this.rows = Math.ceil(h / PITCH);
-    // The halftone lives in page space: side by side (the stage and its
-    // tiles), each element is a window onto one field, not one picture twice.
+    // The field lives in page space: side by side (the stage and its tiles),
+    // each element is a window onto one field, not one picture twice.
     const box = this.getBoundingClientRect();
-    this.ox = Math.round(box.left / PITCH);
-    this.oy = Math.round(box.top / PITCH);
-    this.sample();
-    this.last = -1;
-    this.draw(performance.now());
+    this.page = [box.left * this.dpr, box.top * this.dpr];
+    this.upload();
+    this.render(performance.now());
   }
 
-  // The image's colour under each cell (the last, partial column and row
-  // included: the cover is stretched over whole cells, a < 1-cell error).
-  sample() {
+  // The image as a mipmapped texture (each mip level is its own average over
+  // blocks: the quadtree's blocks) and its cover crop.
+  upload() {
     if (!this.ready || !this.w) return;
-    this.mosaic.width = this.cols;
-    this.mosaic.height = this.rows;
-    cover(this.mosaic.getContext("2d"), this.img, this.cols, this.rows);
-    this.plan();
+    const { gl } = shared;
+    const W = this.canvas.width;
+    const H = this.canvas.height;
+    const iw = this.img.naturalWidth || W;
+    const ih = this.img.naturalHeight || H;
+    const box = W / H;
+    const pic = iw / ih;
+    const [sx, sy] = pic > box ? [box / pic, 1] : [1, pic / box];
+    this.uv = [sx, sy, (1 - sx) / 2, (1 - sy) / 2];
+    this.texel = (iw * sx) / W;
+    if (!this.tex) {
+      this.tex = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, this.tex);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.img);
+      gl.generateMipmap(gl.TEXTURE_2D);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    }
   }
 
   tick = (now) => {
     this.raf = requestAnimationFrame(this.tick);
-    if (!this.cols) return;
-    // The bloom and the lens run every frame; the halftone alone steps at FPS.
-    const lens = this.follow();
-    const frame = Math.floor(now / (1000 / FPS));
-    if (frame === this.last && !this.revealAt && !lens) return;
-    this.last = frame;
-    this.draw(now);
+    if (!this.w) return;
+    if (this.revealAt && Date.now() - this.revealAt >= REVEAL_MS) {
+      this.hidden = true;
+      return cancelAnimationFrame(this.raf);
+    }
+    this.follow();
+    this.render(now);
   };
 
-  // The lens: it eases in where the cursor comes near, trails it, and fades
-  // out when it leaves. True while it shows. Not during a reveal.
+  // The loupe eases in where the cursor comes near, trails it, and fades out
+  // when it leaves. Not during a reveal.
   follow() {
-    if (this.revealAt || (!pointer && !this.hover)) return false;
+    if (this.revealAt || (!pointer && !this.hover)) return;
     const box = this.getBoundingClientRect();
     const near =
       pointer &&
@@ -205,157 +337,47 @@ class ArchiePixels extends HTMLElement {
       const x = (pointer.x - box.left) * k;
       const y = (pointer.y - box.top) * k;
       if (this.hover < 0.02) [this.lx, this.ly] = [x, y]; // it appears where the cursor enters
-      this.lx += (x - this.lx) * 0.22;
-      this.ly += (y - this.ly) * 0.22;
+      this.lx += (x - this.lx) * 0.2;
+      this.ly += (y - this.ly) * 0.2;
     }
-    this.hover += ((near ? 1 : 0) - this.hover) * 0.1;
-    if (this.hover < 0.005) this.hover = 0;
-    return this.hover > 0;
+    this.hover += ((near ? 1 : 0) - this.hover) * 0.08;
+    if (this.hover < 0.003) this.hover = 0;
   }
 
-  // Each cell's timeline for the bloom — once per size, not per frame.
-  // Times are shares of REVEAL_MS.
-  plan() {
-    const { cols, rows, w, h } = this;
-    const n = cols * rows;
-    const at = (x) => (x + 0.5) * PITCH;
-    // The mark, centred, half the box: which cells it covers, and for each the
-    // loader square it belongs to (its pop order).
-    const scale = Math.min(0.5 * w, 0.5 * h * (MARK_W / MARK_H)) / MARK_W;
-    const x0 = (w - MARK_W * scale) / 2;
-    const y0 = (h - MARK_H * scale) / 2;
-    const glyph = new Path2D(MARK_PATH);
-    const probe = this.mosaic.getContext("2d");
-    const order = new Int8Array(n).fill(-1);
-    const marked = [];
-    for (let y = 0; y < rows; y++)
-      for (let x = 0; x < cols; x++) {
-        const u = (at(x) - x0) / scale;
-        const v = (at(y) - y0) / scale;
-        if (!probe.isPointInPath(glyph, u, v)) continue;
-        const k = y * cols + x;
-        let near = Infinity;
-        MARK.forEach(([mx, my], m) => {
-          const d = Math.hypot(u - mx, v - my);
-          if (d < near) [near, order[k]] = [d, m];
-        });
-        marked.push([x, y]);
-      }
-    // Every other cell: how far from the mark, which is when the bloom reaches it.
-    // ponytail: brute force, cells × mark cells (~3M on the studio's stage, once);
-    // a two-pass distance transform if it ever shows in a profile.
-    let far = 1;
-    const dist = new Float32Array(n);
-    for (let y = 0; y < rows; y++)
-      for (let x = 0; x < cols; x++) {
-        let best = Infinity;
-        for (const [mx, my] of marked) best = Math.min(best, (mx - x) ** 2 + (my - y) ** 2);
-        dist[y * cols + x] = Math.sqrt(best);
-        far = Math.max(far, dist[y * cols + x]);
-      }
-    this.delay = new Float32Array(n);
-    this.gone = new Float32Array(n);
-    for (let k = 0; k < n; k++) {
-      const j = hash(k, 5);
-      this.delay[k] = order[k] >= 0 ? 0.02 + order[k] * 0.04 + 0.02 * j : 0.34 + 0.38 * (dist[k] / far) + 0.03 * j;
-      this.gone[k] = Math.max(this.delay[k] + 0.2, 0.55) + 0.04 * j;
-    }
-  }
-
-  // One cell of the bloom at time T (0…1): HALFTONE, IMAGE (the image's
-  // colour, this.rs of the cell) or GONE (the photo shows).
-  cell(k, T) {
-    if (T >= this.gone[k]) return GONE;
-    const p = (T - this.delay[k]) / POP;
-    if (p <= 0) return HALFTONE;
-    this.rs = p >= 1 ? 1 : backOut(p); // a pop with an overshoot, like the loader's squares
-    return IMAGE;
-  }
-
-  draw(now) {
-    const e = Date.now() - this.revealAt;
-    if (this.revealAt && e >= REVEAL_MS) {
-      this.hidden = true;
-      return cancelAnimationFrame(this.raf);
-    }
-    const { ctx, cols, rows, ox, oy, w, h, dpr, inks, hover, lx, ly } = this;
+  render(now) {
+    const { gl, canvas, loc, blank } = shared;
+    const W = this.canvas.width;
+    const H = this.canvas.height;
+    if (canvas.width < W) canvas.width = W; // the shared canvas only grows
+    if (canvas.height < H) canvas.height = H;
     const t = reduced() ? 0 : now / 1000;
-    const T = this.revealAt && this.delay && e >= 0 ? e / REVEAL_MS : -1;
-    const pitch = PITCH * dpr;
-    const shimmerAt = ((t / SHIMMER) % 1) * 1.6 - 0.3; // the diagonal's position, 0…1 across
-    const halftone = inks.map(() => new Path2D());
-    const image = new Path2D();
-    const clear = new Path2D(); // where the photo shows
-
-    for (let y = 0; y < rows; y++)
-      for (let x = 0; x < cols; x++) {
-        // From the cell's own whole-pixel bounds, so full cells meet without a seam.
-        const left = Math.round(x * pitch);
-        const top = Math.round(y * pitch);
-        const cw = Math.round((x + 1) * pitch) - left;
-        const ch = Math.round((y + 1) * pitch) - top;
-        const state = T >= 0 ? this.cell(y * cols + x, T) : HALFTONE;
-        if (state === GONE) {
-          clear.rect(left, top, cw, ch);
-          continue;
-        }
-        let size; // 0…1 of the cell
-        let path;
-        let px = 0; // the lens's push, in device px
-        let py = 0;
-        if (state === IMAGE) {
-          size = this.rs;
-          path = image;
-        } else {
-          const cx = (x + 0.5) * PITCH;
-          const cy = (y + 0.5) * PITCH;
-          const i = x + ox;
-          const j = y + oy;
-          const drift = noise(i * 0.11 + t * 0.12, j * 0.11 - t * 0.08);
-          const u = (cx + 0.6 * cy) / (w + 0.6 * h);
-          const shimmer = Math.exp(-(((u - shimmerAt) / 0.12) ** 2));
-          // Under the cursor the pixels swell and part, like a loupe on a print.
-          let lens = 0;
-          if (hover) {
-            const dx = cx - lx;
-            const dy = cy - ly;
-            const d = Math.hypot(dx, dy) || 1;
-            lens = hover * Math.exp(-((d / LENS) ** 2));
-            // Pushed hardest mid-radius, not at the centre (that tore a hole).
-            const push = lens * Math.min(1, d / LENS) * 0.7 * pitch;
-            px = Math.round((dx / d) * push);
-            py = Math.round((dy / d) * push);
-          }
-          size = clamp01(0.1 + 0.42 * smooth(drift) + 0.4 * shimmer + 0.75 * lens) * ((PITCH - 1) / PITCH);
-          const ink = noise(i * 0.04 + t * 0.03 + 17.3, j * 0.04 - t * 0.02 + 5.1);
-          path = halftone[Math.min(inks.length - 1, Math.floor(clamp01((ink - 0.2) / 0.6) * inks.length))];
-        }
-        const sw = Math.round(size * cw);
-        const sh = Math.round(size * ch);
-        if (sw < 1 || sh < 1) continue;
-        path.rect(left + ((cw - sw) >> 1) + px, top + ((ch - sh) >> 1) + py, sw, sh);
-      }
-
-    ctx.setTransform(1, 0, 0, 1, 0, 0); // device pixels: every square lands on whole pixels
-    ctx.globalCompositeOperation = "source-over";
-    ctx.fillStyle = this.base;
-    ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    ctx.globalAlpha = INK_ALPHA;
-    halftone.forEach((path, k) => {
-      ctx.fillStyle = inks[k];
-      ctx.fill(path);
-    });
-    ctx.globalAlpha = 1;
-    if (T < 0) return;
-    // The photo where cells are done, then the image's pixels over it.
-    ctx.globalCompositeOperation = "destination-out";
-    ctx.fill(clear);
-    ctx.globalCompositeOperation = "source-over";
-    ctx.save();
-    ctx.clip(image);
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(this.mosaic, 0, 0, this.cols * pitch, this.rows * pitch);
-    ctx.restore();
+    const e = Date.now() - this.revealAt;
+    const T = this.revealAt && this.ready && e >= 0 ? e / REVEAL_MS : -1;
+    const dpr = this.dpr;
+    gl.viewport(0, 0, W, H);
+    gl.uniform2f(loc.u_res, W, H);
+    gl.uniform2f(loc.u_page, ...this.page);
+    gl.uniform1f(loc.u_pitch, PITCH * dpr);
+    gl.uniform1f(loc.u_time, t);
+    gl.uniform1f(loc.u_shimmer, ((t / SHIMMER) % 1) * 1.6 - 0.3);
+    gl.uniform3f(loc.u_lens, this.lx * dpr, this.ly * dpr, this.hover);
+    gl.uniform1f(loc.u_lensR, LENS * dpr);
+    gl.uniform3f(loc.u_base, ...this.base);
+    gl.uniform3f(loc.u_ink0, ...this.inks[0]);
+    gl.uniform3f(loc.u_ink1, ...this.inks[1]);
+    gl.uniform3f(loc.u_ink2, ...this.inks[2]);
+    gl.uniform1f(loc.u_inkAlpha, INK_ALPHA);
+    gl.uniform1f(loc.u_T, T);
+    const [sx, sy, ox, oy] = this.uv || [1, 1, 0, 0];
+    gl.uniform2f(loc.u_uvScale, sx, sy);
+    gl.uniform2f(loc.u_uvOffset, ox, oy);
+    gl.uniform1f(loc.u_texel, this.texel || 1);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, this.tex || blank);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+    // Copied in the same task, before the drawing buffer is presented and cleared.
+    this.ctx.clearRect(0, 0, W, H);
+    this.ctx.drawImage(canvas, 0, canvas.height - H, W, H, 0, 0, W, H);
   }
 }
 
