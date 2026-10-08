@@ -1412,7 +1412,6 @@
 }
 
 .imst-gallery-scroll {
-  height: var(--imst-gallery-h, auto);
   overflow-y: auto;
   scrollbar-width: thin;
   /* Room for the focus ring and the selected ring, which sit outside the cards. */

@@ -6,12 +6,12 @@
 // images: its look is read from their colours (lookFromColors) and they tint
 // the palette. (Older styles that mixed presets still draw with them.)
 
-import { prng } from "../lib/prng.js?v=1731";
-import { QUICK_PRESETS, presetById } from "../config/style-presets.js?v=1731";
-import { generatorFor } from "./generators.js?v=1731";
-import { inkOn, resolvePalette } from "./palette.js?v=1731";
-import { fontStack } from "../config/fonts.js?v=1731";
-import { subjectPath } from "./subjects.js?v=1731";
+import { prng } from "../lib/prng.js?v=1733";
+import { QUICK_PRESETS, presetById } from "../config/style-presets.js?v=1733";
+import { generatorFor } from "./generators.js?v=1733";
+import { inkOn, resolvePalette } from "./palette.js?v=1733";
+import { fontStack } from "../config/fonts.js?v=1733";
+import { subjectPath } from "./subjects.js?v=1733";
 
 let renderSeq = 0;
 
@@ -42,22 +42,22 @@ function hsl(hex) {
 /**
  * The look a style's reference images point to — what a real model would read
  * from them, mocked from their sampled colours: dark with one vivid colour → a
- * glossy hero shot; dark → a film still; vivid and light → flat illustration;
- * greyish → Swiss minimal or editorial; warm → lifestyle photography.
+ * glossy 3D render; dark or warm → a photograph; vivid and light → corporate
+ * flat; greyish → tech minimal or bold editorial; the rest → hand-drawn.
  */
 export function lookFromColors(colors) {
   const c = colors.map(hsl);
-  if (!c.length) return "preset-editorial";
+  if (!c.length) return "preset-bold-editorial";
   const avg = (k) => c.reduce((sum, x) => sum + x[k], 0) / c.length;
   const l = avg("l");
   const sat = avg("s");
   const vivid = c.some((x) => x.s > 0.6 && x.l > 0.35 && x.l < 0.75);
   const warm = c.filter((x) => x.s > 0.2 && (x.h < 60 || x.h > 330)).length / c.length;
-  if (l < 0.32) return vivid ? "preset-glossy" : "preset-cinematic";
-  if (sat > 0.55 && l > 0.45) return "preset-flat";
-  if (sat < 0.18) return l > 0.7 ? "preset-swiss" : "preset-editorial";
-  if (warm >= 0.5) return "preset-lifestyle";
-  return "preset-watercolor";
+  if (l < 0.32) return vivid ? "preset-3d-render" : "preset-photoreal";
+  if (sat > 0.55 && l > 0.45) return "preset-corporate";
+  if (sat < 0.18) return l > 0.7 ? "preset-tech-minimal" : "preset-bold-editorial";
+  if (warm >= 0.5) return "preset-photoreal";
+  return "preset-hand-drawn";
 }
 
 /** The colours a style's reference images carry: sampled at upload, or given with the image. */

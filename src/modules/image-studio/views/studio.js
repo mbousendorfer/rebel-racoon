@@ -15,33 +15,33 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=1731";
-import { delegate } from "../lib/delegate.js?v=1731";
-import { hashString } from "../lib/prng.js?v=1731";
-import { renderEmpty } from "../ui/empty.js?v=1731";
-import { preserveFocus } from "../ui/fields.js?v=1731";
-import { toast } from "../ui/toast.js?v=1731";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1731";
-import { styleThumb } from "../ui/style-thumb.js?v=1731";
-import { openDialog } from "../ui/dialog.js?v=1731";
-import { menu } from "../ui/menu.js?v=1731";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1731";
-import { QUICK_PRESETS, STYLE_FAMILIES, STYLE_PRESETS } from "../config/style-presets.js?v=1731";
-import { formatById, shapeForFormat, shapesFor, shapesForBrand } from "../config/formats.js?v=1731";
-import { networkById } from "../config/networks.js?v=1731";
-import { copyService, imageGenerationService } from "../services/index.js?v=1731";
-import { unbranded, getPlaybookReferences } from "../state/playbook-brand.js?v=1731";
-import { resolveLayers } from "../render/layout.js?v=1731";
-import { svgToDataUrl } from "../render/visual.js?v=1731";
-import { resolvePalette } from "../render/palette.js?v=1731";
-import { REVEAL_MS } from "../../../archie-pixels.js?v=1731";
-import { splitVisual } from "../render/split.js?v=1731";
-import { bakeDoc } from "../render/edit-export.js?v=1731";
-import { subjectKindFor } from "../render/subjects.js?v=1731";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1731";
-import { createEditor } from "./edit/editor.js?v=1731";
-import { mount as mountStyleCreator } from "./style-creator.js?v=1731";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1731";
+import { html, raw, toString } from "../lib/html.js?v=1733";
+import { delegate } from "../lib/delegate.js?v=1733";
+import { hashString } from "../lib/prng.js?v=1733";
+import { renderEmpty } from "../ui/empty.js?v=1733";
+import { preserveFocus } from "../ui/fields.js?v=1733";
+import { toast } from "../ui/toast.js?v=1733";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1733";
+import { styleThumb } from "../ui/style-thumb.js?v=1733";
+import { openDialog } from "../ui/dialog.js?v=1733";
+import { menu } from "../ui/menu.js?v=1733";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1733";
+import { QUICK_PRESETS, STYLE_PRESETS } from "../config/style-presets.js?v=1733";
+import { formatById, shapeForFormat, shapesFor, shapesForBrand } from "../config/formats.js?v=1733";
+import { networkById } from "../config/networks.js?v=1733";
+import { copyService, imageGenerationService } from "../services/index.js?v=1733";
+import { unbranded, getPlaybookReferences } from "../state/playbook-brand.js?v=1733";
+import { resolveLayers } from "../render/layout.js?v=1733";
+import { svgToDataUrl } from "../render/visual.js?v=1733";
+import { resolvePalette } from "../render/palette.js?v=1733";
+import { REVEAL_MS } from "../../../archie-pixels.js?v=1733";
+import { splitVisual } from "../render/split.js?v=1733";
+import { bakeDoc } from "../render/edit-export.js?v=1733";
+import { subjectKindFor } from "../render/subjects.js?v=1733";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1733";
+import { createEditor } from "./edit/editor.js?v=1733";
+import { mount as mountStyleCreator } from "./style-creator.js?v=1733";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1733";
 import {
   canEditBrand,
   forgetOneOffStyle,
@@ -52,15 +52,15 @@ import {
   getStylesForBrand,
   registerOneOffStyle,
   subscribe,
-} from "../state/store.js?v=1731";
-import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1731";
+} from "../state/store.js?v=1733";
+import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1733";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1731";
+} from "../state/creation-actions.js?v=1733";
 
 const variationsLabel = (n) => (n === 1 ? "1 variation" : `${n} variations`);
 
@@ -71,7 +71,7 @@ function defaultBrief(brand, network = null) {
   return {
     prompt: "",
     headline: "",
-    styleId: brand.defaults?.styleId || own?.id || "preset-lifestyle",
+    styleId: brand.defaults?.styleId || own?.id || "preset-photoreal",
     productId: null,
     formatIds: [firstShape?.formatId || "ig-post"],
     textMode: "layer",
@@ -363,7 +363,7 @@ export function mountStudio(
   // ── Controls ───────────────────────────────────────────────────────────────
 
   // Five styles after the "From an image" tile: the image the user brought
-  // first, then the Playbook's own, then one preset per family.
+  // first, then the Playbook's own, then the presets.
   const QUICK = 6;
   const quickStyles = (brand) => {
     const own = getStylesForBrand(brand.id).filter((s) => s.kind === "custom");
@@ -709,7 +709,7 @@ export function mountStudio(
         </span>`;
     }
     if (id === "image") {
-      const ref = getStyle("preset-lifestyle") || quickStyles(brand)[0];
+      const ref = getStyle("preset-photoreal") || quickStyles(brand)[0];
       const own = live && state.oneOff;
       return html`<span class="imst-chooser__pass">
         <span class="imst-chooser__ref"
@@ -1663,9 +1663,6 @@ ${b.prompt}</textarea
 
   function openStyleGallery() {
     const brand = brandNow();
-    let family = "all";
-    // Measured once on open: two and a half rows, then the height holds whatever the filter shows.
-    let galleryH = 0;
     const own = getStylesForBrand(brand.id).filter((s) => s.kind === "custom");
     const card = (s) =>
       html`<button
@@ -1684,58 +1681,24 @@ ${b.prompt}</textarea
           ><span class="ap-caption">${s.description || "Made from your references."}</span></span
         >
       </button>`;
-    const body = () => html`
-      <div class="imst-chips" role="group" aria-label="Filter styles">
-        ${[
-          { id: "all", label: "All" },
-          ...(own.length ? [{ id: "own", label: "My styles" }] : []),
-          ...STYLE_FAMILIES,
-        ].map(
-          (f) =>
-            html`<button
-              type="button"
-              class="ap-filter-chip"
-              aria-pressed="${family === f.id}"
-              data-imst-family="${f.id}"
-            >
-              ${f.label}
-            </button>`,
-        )}
-      </div>
-      <div class="imst-gallery-scroll" style="${galleryH ? `--imst-gallery-h: ${galleryH}px` : ""}">
-        ${family === "all" && own.length
+    // Six presets: one list, no filter (2026-10-08). The brand's own styles head it.
+    const body = html`
+      <div class="imst-gallery-scroll">
+        ${own.length
           ? html`<h3 class="ap-body-bold imst-gallery__group">My styles</h3>
               <div class="imst-gallery">${own.map(card)}</div>
               <h3 class="ap-body-bold imst-gallery__group">Presets</h3>
               <div class="imst-gallery">${STYLE_PRESETS.map(card)}</div>`
-          : html`<div class="imst-gallery">
-              ${(family === "own" ? own : STYLE_PRESETS.filter((s) => family === "all" || s.family === family)).map(
-                card,
-              )}
-            </div>`}
+          : html`<div class="imst-gallery">${STYLE_PRESETS.map(card)}</div>`}
       </div>
     `;
     const dialog = openDialog({
       title: "Styles",
       subtitle: `Every one drawn in ${brand.name}'s colours.`,
       size: "lg",
-      body: body(),
+      body,
       onMount(el) {
-        const scroller = el.querySelector(".imst-gallery-scroll");
-        const item = el.querySelector(".imst-gallery__item");
-        if (scroller && item) {
-          const gap = parseFloat(getComputedStyle(el.querySelector(".imst-gallery")).rowGap) || 0;
-          const pad = parseFloat(getComputedStyle(scroller).paddingTop) || 0;
-          galleryH = Math.round(item.offsetHeight * 2.5 + gap * 2 + pad);
-          scroller.style.setProperty("--imst-gallery-h", `${galleryH}px`);
-        }
         el.addEventListener("click", (event) => {
-          const chip = event.target.closest("[data-imst-family]");
-          if (chip) {
-            family = chip.dataset.imstFamily;
-            dialog.setBody(body());
-            return;
-          }
           const pick = event.target.closest("[data-imst-pick-style]");
           if (!pick) return;
           setStyle(pick.dataset.imstPickStyle);
