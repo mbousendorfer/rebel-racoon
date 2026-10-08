@@ -1,28 +1,17 @@
-// Image Generator — one image for a draft, without the studio (flag sexySquirrel).
-// The chat asks the minimum (style · shape · text) and calls these; the studio
-// stays one click away for everything else. Headless: no DOM beyond the canvas
-// the PNG export draws on, and the same engine as the studio — the Playbook's
-// styles, the network's shapes, the same renderer and services.
+// Image Generator — one image for a draft, without the studio. A draft's
+// "Generate an image" calls these without asking anything (draft-image-flow.js):
+// the Playbook's look, the network's shape. The studio stays one click away for
+// everything else. Headless, and the same services as the studio.
 
-import { QUICK_PRESETS } from "./config/style-presets.js?v=1729";
-import { DRAFT_NETWORK, formatById, shapesForBrand } from "./config/formats.js?v=1729";
-import { hashString } from "./lib/prng.js?v=1729";
-import { copyService, imageGenerationService } from "./services/index.js?v=1729";
-import { resolveLayers } from "./render/layout.js?v=1729";
-import { toPngBlob } from "./render/export.js?v=1729";
-import { resolvePalette } from "./render/palette.js?v=1729";
-import { styleThumbUrl } from "./ui/style-thumb.js?v=1729";
-import { layersFor, variationSvg } from "./ui/variation.js?v=1729";
-import { getBrand, getStyle, getStylesForBrand, registerOneOffStyle } from "./state/store.js?v=1729";
-import { oneOffStyleFrom } from "./state/style-actions.js?v=1729";
-
-const blobToDataUrl = (blob) =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(blob);
-  });
+import { QUICK_PRESETS } from "./config/style-presets.js?v=1730";
+import { MOCK } from "./config/mock.js?v=1730";
+import { DRAFT_NETWORK, formatById, shapesForBrand } from "./config/formats.js?v=1730";
+import { hashString } from "./lib/prng.js?v=1730";
+import { copyService, imageGenerationService } from "./services/index.js?v=1730";
+import { resolvePalette } from "./render/palette.js?v=1730";
+import { styleThumbUrl } from "./ui/style-thumb.js?v=1730";
+import { getBrand, getStyle, getStylesForBrand, registerOneOffStyle } from "./state/store.js?v=1730";
+import { oneOffStyleFrom } from "./state/style-actions.js?v=1730";
 
 /**
  * What the chat can offer: six styles (the Playbook's own first, then one
@@ -125,32 +114,20 @@ export function suggestImageSubject({ brandId, text }) {
 }
 
 /**
- * One generation, baked: the variation with its text and logo, as the PNG
- * "Use in draft" would write. Rejects when the (mocked) model fails.
- * @returns {Promise<string>} a PNG data URL
+ * One generation for a draft: the same mocked call as the studio (its wait, its
+ * failures), but what comes back is a detailed stock photo cropped to the
+ * shape (MOCK.photos), not the style render — so the loader's arrival shows.
+ * Rejects when the (mocked) model fails.
+ * ponytail: the photo ignores the style and the post; a real backend returns the generated image.
+ * @returns {Promise<string>} the image URL
  */
-export async function generateQuickImage({ brandId, prompt, styleId, formatId, headline = "" }) {
+export async function generateQuickImage({ brandId, prompt, styleId, formatId }) {
   const brand = getBrand(brandId);
   const style = getStyle(styleId);
   const format = formatById(formatId);
   if (!brand || !style || !format) throw new Error("I couldn't set up that image.");
-  const brief = { prompt, headline, styleId, productId: null, formatIds: [format.id], textMode: "layer", count: 1 };
-  const [variation] = await imageGenerationService.generate({
-    brief,
-    brand,
-    style,
-    product: null,
-    format,
-    textMode: "layer",
-    text: { headline },
-    count: 1,
-  });
-  const creation = { title: "Draft image", brief, styleSnapshot: style, master: { layers: [] } };
-  const blob = await toPngBlob({
-    svg: variationSvg({ creation, variation, formatId: format.id, brand }),
-    width: format.width,
-    height: format.height,
-    layers: resolveLayers(layersFor({ creation, formatId: format.id }), brand),
-  });
-  return blobToDataUrl(blob);
+  const brief = { prompt, headline: "", styleId, productId: null, formatIds: [format.id], textMode: "layer", count: 1 };
+  await imageGenerationService.generate({ brief, brand, style, product: null, format, textMode: "layer", count: 1 });
+  const id = MOCK.photos[Math.floor(Math.random() * MOCK.photos.length)];
+  return `https://images.unsplash.com/photo-${id}?w=${format.width}&h=${format.height}&fit=crop&crop=entropy&auto=format&q=80`;
 }

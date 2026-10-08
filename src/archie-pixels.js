@@ -5,8 +5,11 @@
 // Waiting: a blurred field of three soft clouds in the colours the image will
 // be made of (`data-colors`, the Playbook's palette; a grey ink without one),
 // drifting, under a fine dot matrix. The matrix is alive — a dot is bigger
-// where the colour is dense, a light wave runs through it — and it answers
-// the cursor: the dots swell under it, the field shifts in parallax. A line
+// where the colour is dense, a light wave runs through it — and it behaves like
+// water under the cursor (2026-10-08): a ripple equation runs on the dot grid,
+// the cursor stirs it as it moves (a slow bob when it rests), and the waves
+// spread, cross and fade — the dots swell on the crests and lean with the
+// slope, like light through a surface. The field shifts in parallax. A line
 // narrates the stages (`data-since`, an epoch ms, says when the work began, so
 // a re-rendered copy stays on the right stage).
 //
@@ -29,7 +32,10 @@ export const REVEAL_MS = 1400;
 const STAGES = ["Reading the post…", "Picking your colours…", "Composing the image…"];
 const STAGE_S = 1.6; // s per stage, for a real 6–12 s wait; the last one holds until the image lands
 const REFINING = "Refining the details…";
-const LENS = 46; // CSS px: the cursor's reach on the matrix
+const LENS = 46; // CSS px: how near the cursor must come to stir the matrix
+const STEP_MS = 1000 / 60; // the ripple equation's fixed step
+const DAMP = 0.982; // per step: a ripple fades over about a second
+const BEND = 2.6; // CSS px a dot leans per unit of slope
 const NARRATE_MIN = 220; // CSS px: narrower (a filmstrip tile) and there is no line
 
 const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -107,14 +113,25 @@ class ArchiePixels extends HTMLElement {
     ).map(hexOf);
     this.inks = [0, 1, 2].map((i) => inks[Math.min(i, inks.length - 1)]);
     if (this.revealAt) {
-      this.photo.src = this.source.currentSrc || this.source.src;
-      this.photo.decode().then(
-        () => {
-          this.ready = true;
-          this.sample();
-        },
-        () => (this.hidden = true),
-      );
+      // With CORS first, so the dots can read the image's colours; without it
+      // if the host refuses (the dots then stay white).
+      const src = this.source.currentSrc || this.source.src;
+      const cors = /^https?:/.test(src) && new URL(src).origin !== location.origin;
+      const load = (withCors) => {
+        if (withCors) this.photo.crossOrigin = "anonymous";
+        else this.photo.removeAttribute("crossorigin");
+        this.photo.src = src;
+        return this.photo.decode();
+      };
+      load(cors)
+        .catch(() => (cors ? load(false) : Promise.reject()))
+        .then(
+          () => {
+            this.ready = true;
+            this.sample();
+          },
+          () => (this.hidden = true),
+        );
     }
     this.observer = new ResizeObserver(() => this.resize());
     this.observer.observe(this);
@@ -166,6 +183,8 @@ class ArchiePixels extends HTMLElement {
     this.cols = Math.ceil(w / PITCH);
     this.rows = Math.ceil(h / PITCH);
     this.label.hidden = w < NARRATE_MIN;
+    this.surface = new Float32Array(this.cols * this.rows); // the water: a height per dot, now…
+    this.before = new Float32Array(this.cols * this.rows); // …and one step ago
     this.sample();
     this.render(performance.now());
   }
@@ -206,11 +225,14 @@ class ArchiePixels extends HTMLElement {
       return cancelAnimationFrame(this.raf);
     }
     this.follow();
+    this.flow(now);
     this.render(now);
   };
 
-  // The cursor's effect eases in where it comes near, trails it, fades out when it leaves.
+  // Where the cursor is: raw (cx, cy — what stirs the water; null when away) and
+  // eased (lx, ly, hover — what shifts the field in parallax).
   follow() {
+    this.cx = null;
     if (!pointer && !this.hover) return;
     const box = this.getBoundingClientRect();
     const near =
@@ -223,6 +245,7 @@ class ArchiePixels extends HTMLElement {
       const k = this.w / box.width || 1; // a modal still scaling in
       const x = (pointer.x - box.left) * k;
       const y = (pointer.y - box.top) * k;
+      [this.cx, this.cy] = [x, y];
       if (this.hover < 0.02) [this.lx, this.ly] = [x, y];
       this.lx += (x - this.lx) * 0.2;
       this.ly += (y - this.ly) * 0.2;
@@ -231,8 +254,60 @@ class ArchiePixels extends HTMLElement {
     if (this.hover < 0.003) this.hover = 0;
   }
 
+  // The water, in fixed steps whatever the frame rate (a paused tab doesn't catch up).
+  flow(now) {
+    if (!this.surface) return;
+    if (!this.stepAt || now - this.stepAt > 100) this.stepAt = now - STEP_MS;
+    for (; now - this.stepAt >= STEP_MS; this.stepAt += STEP_MS) {
+      this.stir(now);
+      this.ripple();
+    }
+  }
+
+  // The cursor stirs the surface along its path since the last step — deeper
+  // the faster it moves — and, resting, bobs gently where it is.
+  stir(now) {
+    if (this.cx == null) return void (this.was = null);
+    const [x0, y0] = this.was || [this.cx, this.cy];
+    const moved = Math.hypot(this.cx - x0, this.cy - y0);
+    const n = Math.max(1, Math.ceil(moved / (PITCH / 2)));
+    for (let s = 1; s <= n; s++)
+      this.splash(lerp(x0, this.cx, s / n), lerp(y0, this.cy, s / n), (0.4 * moved) / PITCH / n);
+    if (moved < 0.5) this.splash(this.cx, this.cy, 0.07 * Math.sin(now / 90));
+    this.was = [this.cx, this.cy];
+  }
+
+  splash(x, y, amount) {
+    const { cols, rows, surface } = this;
+    const ci = Math.round(x / PITCH - 0.5);
+    const cj = Math.round(y / PITCH - 0.5);
+    for (let dj = -1; dj <= 1; dj++)
+      for (let di = -1; di <= 1; di++) {
+        const i = ci + di;
+        const j = cj + dj;
+        if (i > 0 && j > 0 && i < cols - 1 && j < rows - 1)
+          surface[j * cols + i] += amount * (di && dj ? 0.25 : di || dj ? 0.5 : 1);
+      }
+  }
+
+  // One step of the ripple equation: each height becomes its neighbours' mean,
+  // doubled, minus what it was a step ago — then damped.
+  ripple() {
+    const { cols, rows } = this;
+    const now = this.surface;
+    const next = this.before;
+    for (let j = 1; j < rows - 1; j++)
+      for (let i = 1; i < cols - 1; i++) {
+        const k = j * cols + i;
+        next[k] = ((now[k - 1] + now[k + 1] + now[k - cols] + now[k + cols]) * 0.5 - next[k]) * DAMP;
+      }
+    this.surface = next;
+    this.before = now;
+  }
+
   render(now) {
     const { w, h, ctx, cols, rows } = this;
+    const water = this.surface;
     const t = reduced() ? 0 : now / 1000;
     const e = this.revealAt ? (Date.now() - this.revealAt) / REVEAL_MS : -1;
     const arriving = this.revealAt && this.ready && e >= 0;
@@ -263,21 +338,25 @@ class ArchiePixels extends HTMLElement {
     const far = Math.hypot(w, h) / 2;
     for (let j = 0; j < rows; j++)
       for (let i = 0; i < cols; i++) {
-        const x = (i + 0.5) * PITCH;
-        const y = (j + 0.5) * PITCH;
+        let x = (i + 0.5) * PITCH;
+        let y = (j + 0.5) * PITCH;
         const dense = density(cs, (x / w) * 100, (y / h) * 100);
         const wave = Math.max(0, Math.sin((x + 0.6 * y) / 38 - t * 2.6)) ** 6;
         let r = 0.45 + 1.7 * dense + 0.55 * wave;
         let a = 0.55 + 0.35 * dense + 0.2 * wave;
-        if (this.hover) {
-          const boost = this.hover * Math.exp(-((Math.hypot(x - this.lx, y - this.ly) / LENS) ** 2));
-          r += 1.6 * boost;
-          a = Math.min(1, a + 0.3 * boost);
+        // The water: swell on the crests, lean with the slope.
+        const k = j * cols + i;
+        const lift = clamp(water[k], -1.5, 1.5);
+        if (lift) {
+          r += 1.5 * lift;
+          a = Math.min(1, a + 0.35 * Math.abs(lift));
+          if (i > 0 && i < cols - 1) x += (water[k + 1] - water[k - 1]) * BEND;
+          if (j > 0 && j < rows - 1) y += (water[k + cols] - water[k - cols]) * BEND;
         }
         let rgb = "255,255,255";
         if (arriving) {
-          const k = (j * cols + i) * 4;
-          if (this.colors) rgb = [0, 1, 2].map((n) => Math.round(lerp(255, this.colors[k + n], take))).join(",");
+          const c = k * 4;
+          if (this.colors) rgb = [0, 1, 2].map((n) => Math.round(lerp(255, this.colors[c + n], take))).join(",");
           r = lerp(r, PITCH * 0.42, take);
           a = lerp(a, 1, take);
           const from = Math.hypot(x - w / 2, y - h / 2) / far;

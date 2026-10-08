@@ -15,15 +15,15 @@
 // starts at the click and its first stage is exactly that. No chat message: the
 // image appearing in the slot is the feedback; a failure says so in a toast.
 
-import { showToast } from "./components/toast.js?v=1729";
-import { attachImageToDraft, getPosts, updatePostContent } from "./posts-store.js?v=1729";
-import { getSessionById } from "./sessions-store.js?v=1729";
+import { showToast } from "./components/toast.js?v=1730";
+import { attachImageToDraft, getPosts, updatePostContent } from "./posts-store.js?v=1730";
+import { getSessionById } from "./sessions-store.js?v=1730";
 import {
   defaultQuickLook,
   generateQuickImage,
   quickImageChoices,
   suggestImageSubject,
-} from "./modules/image-studio/index.js?v=1729";
+} from "./modules/image-studio/index.js?v=1730";
 
 const FALLBACK_SUBJECT = "One simple object that stands for the idea, on a plain background. No text in the image.";
 
@@ -59,7 +59,6 @@ export async function startDraftImageFlow(sessionId, postId, { repaint }) {
       prompt,
       styleId: (look || choices.styles[0]).id,
       formatId: choices.shapes[0].formatId,
-      headline: "",
     });
     // The draft may have been deleted while this ran.
     if (!getPosts(sessionId).some((p) => p.id === postId)) return;
