@@ -55,16 +55,17 @@ archie-pixels > :not(.archie-pixels__label) {
   height: 0;
 }
 
-/* The narration: the conversation's working status, as is — the DS pill
-   (.ap-status), butter (.mermaid, ds-patches) — at the foot of the field. As in
-   the new conversation styles, no breathing dot: the sheen through its words
-   is the one moving part (chat.css, `.e-turn .ap-status.is-working`: same
-   gradient, same `e-sheen` keyframes). It replaced a white chip with four step
-   squares (2026-10-08). */
+/* The narration: the conversation's working status pill — the DS shape
+   (.ap-status), no breathing dot (as in the new conversation styles), an
+   orange sheen through its words (chat.css, `.e-turn .ap-status.is-working`:
+   the same `e-sheen` keyframes) — but on navy, the Agorapulse ink, with white
+   words: the sheen stands out far more than on butter (2026-10-08). It
+   replaced a white chip with four step squares. */
 .archie-pixels__label {
   position: absolute;
   inset: auto auto var(--ref-spacing-xs) var(--ref-spacing-xs);
   max-width: calc(100% - var(--ref-spacing-xs) * 2);
+  background: var(--ref-color-grey-150);
   white-space: nowrap;
 }
 
@@ -76,9 +77,9 @@ archie-pixels > :not(.archie-pixels__label) {
   color: transparent;
   background-image: linear-gradient(
     100deg,
-    var(--ref-color-grey-100) 42%,
+    var(--ref-color-white) 42%,
     var(--ref-color-orange-100) 50%,
-    var(--ref-color-grey-100) 58%
+    var(--ref-color-white) 58%
   );
   background-size: 300% 100%;
   -webkit-background-clip: text;
@@ -89,7 +90,7 @@ archie-pixels > :not(.archie-pixels__label) {
 @media (prefers-reduced-motion: reduce) {
   .archie-pixels__line {
     animation: none;
-    color: var(--ref-color-grey-100);
+    color: var(--ref-color-white);
     background-image: none;
   }
 }

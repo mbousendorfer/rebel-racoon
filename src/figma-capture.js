@@ -19,19 +19,19 @@
 // sequence: this is tooling, and it is the only reason those overlay modules
 // are imported twice in the app's graph.
 
-import * as addSourceModal from "./components/add-source-modal.js?v=1742";
-import * as bugReportModal from "./components/bug-report-modal.js?v=1742";
-import * as feedbackModal from "./components/feedback-modal.js?v=1742";
-import * as chatPickerModal from "./components/chat-picker-modal.js?v=1742";
-import * as searchModal from "./components/search-modal.js?v=1742";
-import * as skipConnectModal from "./components/skip-connect-modal.js?v=1742";
-import * as connectorsModal from "./components/connectors-modal.js?v=1742";
-import * as connectAccountModal from "./components/connect-account-modal.js?v=1742";
-import * as analyzeProfilesModal from "./components/analyze-profiles-modal.js?v=1742";
-import * as fillDocumentModal from "./components/fill-document-modal.js?v=1742";
-import * as saveFolderModal from "./components/save-folder-modal.js?v=1742";
-import * as shortcutLegend from "./components/shortcut-legend.js?v=1742";
-import { openDrafts, openIdeas, openSources } from "./components/right-panel.js?v=1742";
+import * as addSourceModal from "./components/add-source-modal.js?v=1744";
+import * as bugReportModal from "./components/bug-report-modal.js?v=1744";
+import * as feedbackModal from "./components/feedback-modal.js?v=1744";
+import * as chatPickerModal from "./components/chat-picker-modal.js?v=1744";
+import * as searchModal from "./components/search-modal.js?v=1744";
+import * as skipConnectModal from "./components/skip-connect-modal.js?v=1744";
+import * as connectorsModal from "./components/connectors-modal.js?v=1744";
+import * as connectAccountModal from "./components/connect-account-modal.js?v=1744";
+import * as analyzeProfilesModal from "./components/analyze-profiles-modal.js?v=1744";
+import * as fillDocumentModal from "./components/fill-document-modal.js?v=1744";
+import * as saveFolderModal from "./components/save-folder-modal.js?v=1744";
+import * as shortcutLegend from "./components/shortcut-legend.js?v=1744";
+import { openDrafts, openIdeas, openSources } from "./components/right-panel.js?v=1744";
 
 // Both are deferred: the screen has to mount before an overlay can sit on it.
 // The panel waits longer than the modal because a session screen seeds its

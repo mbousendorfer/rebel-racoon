@@ -9,9 +9,9 @@
 // slow random rhythm, mostly dim, a few bright, with a soft swell now and
 // then: contrast and life, but nothing travels (a diagonal light wave, a cursor
 // that made ripples, navy — as pixels, then as a cloud — and pixels sized by
-// the colour were all tried and dropped, 2026-10-08). A pill narrates the stages — the conversation's
-// working status itself (.ap-status.mermaid.is-working: butter, the DS shape),
-// an orange sheen passing through its words.
+// the colour were all tried and dropped, 2026-10-08). A pill narrates the
+// stages — the conversation's working status pill (the DS .ap-status shape),
+// on navy so the orange sheen passing through its white words stands out.
 // `data-since` (an epoch ms, when the work began) keeps a re-rendered copy on
 // the right stage.
 //
@@ -133,7 +133,7 @@ class ArchiePixels extends HTMLElement {
       <img class="archie-pixels__image" alt="" aria-hidden="true" />
       <div class="archie-pixels__vignette"></div>
       <canvas class="archie-pixels__dots" aria-hidden="true"></canvas>
-      <span class="ap-status mermaid is-working archie-pixels__label" hidden><span class="archie-pixels__line"></span></span>
+      <span class="ap-status is-working archie-pixels__label" hidden><span class="archie-pixels__line"></span></span>
       <svg class="archie-pixels__filter" aria-hidden="true"><filter id="${id}" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
         <feColorMatrix in="SourceGraphic" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="r"/><feOffset in="r" result="ro"/>
         <feColorMatrix in="SourceGraphic" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="g"/>
