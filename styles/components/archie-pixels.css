@@ -2,19 +2,15 @@
  * It fills its positioned host; the host clips it. The JS builds the layers
  * below and animates them; this file only lays them out.
  *   --archie-pixels-base     the field's ground
- *   --archie-pixels-cloud-*  its three clouds — Archie's colours, saturated:
- *                            orange, butter yellow (the DS yellow: the app's
- *                            butter is a pale tint), and a deep orange
- *   --archie-pixels-light / -dark  the pixels' two inks: white and navy
- *                            (grey-150, the Agorapulse ink)
+ *   --archie-pixels-cloud-*  its three clouds — Archie's warm colours,
+ *                            saturated: orange, butter yellow (the DS yellow:
+ *                            the app's butter is a pale tint), a deep orange
  */
 archie-pixels {
   --archie-pixels-base: var(--ref-color-yellow-40);
   --archie-pixels-cloud-1: var(--ref-color-orange-100);
   --archie-pixels-cloud-2: var(--ref-color-yellow-100);
   --archie-pixels-cloud-3: var(--ref-color-orange-150);
-  --archie-pixels-light: var(--ref-color-white);
-  --archie-pixels-dark: var(--ref-color-grey-150);
   position: absolute;
   inset: 0;
   display: block;
@@ -22,7 +18,8 @@ archie-pixels {
   border-radius: inherit;
 }
 
-archie-pixels > * {
+/* Every layer fills the element — but the pill, which keeps the DS's own shape. */
+archie-pixels > :not(.archie-pixels__label) {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -58,23 +55,21 @@ archie-pixels > * {
   height: 0;
 }
 
-/* The narration: a white chip at the foot; while it works, an orange sheen
-   passes through its words — the conversation's working style (chat.css,
-   `.e-turn .ap-status.is-working`: same gradient, same `e-sheen` keyframes).
-   It replaced four little step squares (2026-10-08). */
+/* The narration: the conversation's working status, as is — the DS pill
+   (.ap-status), butter (.mermaid, ds-patches) — at the foot of the field. As in
+   the new conversation styles, no breathing dot: the sheen through its words
+   is the one moving part (chat.css, `.e-turn .ap-status.is-working`: same
+   gradient, same `e-sheen` keyframes). It replaced a white chip with four step
+   squares (2026-10-08). */
 .archie-pixels__label {
+  position: absolute;
   inset: auto auto var(--ref-spacing-xs) var(--ref-spacing-xs);
-  display: inline-flex;
-  align-items: center;
-  width: auto;
-  height: auto;
   max-width: calc(100% - var(--ref-spacing-xs) * 2);
-  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
-  background: var(--ref-color-white);
-  border-radius: var(--ref-border-radius-md);
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
   white-space: nowrap;
+}
+
+.archie-pixels__label::before {
+  display: none;
 }
 
 .archie-pixels__line {
