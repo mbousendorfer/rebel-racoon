@@ -4,11 +4,11 @@
 //
 // Waiting: a blurred field of three soft clouds in the colours the image will
 // be made of (`data-colors`, the Playbook's palette; a grey ink without one),
-// drifting, under a fine matrix of square pixels. A pixel is bigger where the
-// colour is dense, and each one varies a little on its own — size and
-// opacity, at its own slow random rhythm — a quiet shimmer where nothing
-// travels (a diagonal light wave and a cursor that made ripples were both too
-// distracting, 2026-10-08). A line narrates the stages (`data-since`, an epoch
+// drifting, under a fine matrix of square pixels — all one size; only their
+// opacity moves, each pixel at its own random rhythm — mostly dim, a few bright
+// — with a sharp little flash now and then: contrast and life, but nothing
+// travels (a diagonal light wave, a cursor that made ripples, and pixels sized
+// by the colour were all too busy, 2026-10-08). A line narrates the stages (`data-since`, an epoch
 // ms, says when the work began, so a re-rendered copy stays on the right stage).
 //
 // Arriving (`data-reveal-at`, an epoch ms): the element covers the <img> its
@@ -26,7 +26,8 @@
 // and no reveal.
 
 const PITCH = 7; // CSS px between pixels
-export const REVEAL_MS = 2600; // slowed from 1.4 s: at that pace it went by unseen
+const SIZE = 3.4; // CSS px: every pixel's side while waiting — only their opacity moves
+export const REVEAL_MS = 1600; // 1.4 s went by unseen, 2.6 s dragged, 2 s still a touch slow
 const STAGES = ["Reading the post…", "Picking your colours…", "Composing the image…"];
 const STAGE_S = 1.6; // s per stage, for a real 6–12 s wait; the last one holds until the image lands
 const REFINING = "Refining the details…";
@@ -41,7 +42,13 @@ const smooth = (a, b, x) => {
 };
 const outCubic = (t) => 1 - (1 - t) ** 3;
 const backOut = (t, s) => 1 + (s + 1) * (t - 1) ** 3 + s * (t - 1) ** 2;
-const hash = (k) => ((Math.imul(k + 1, 2654435761) >>> 0) % 10007) / 10007;
+// 0…1 from an integer, neighbours independent (murmur3's finaliser): a plain
+// multiply-and-modulo left neighbouring pixels in step — it read as one in two.
+const hash = (k) => {
+  let h = Math.imul(k ^ 0x9e3779b9, 0x85ebca6b);
+  h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+};
 
 // Any CSS colour → "#rrggbb", by letting a canvas normalise it.
 let probe;
@@ -53,13 +60,13 @@ function hexOf(color) {
 }
 
 // The field: three clouds, drifting (t in s, absolute — continuous across
-// copies). Drawn by CSS, read back by the pixels.
+// copies), drawn by CSS.
 function clouds(t, inks) {
-  const a = t * 0.6;
+  const a = t * 0.85; // drifting a little faster than at first: the wait has some life
   return [
-    { x: 50 + 22 * Math.cos(a), y: 45 + 18 * Math.sin(a * 1.3), rx: 40, ry: 50, c: inks[1], k: 0.6 },
-    { x: 45 + 25 * Math.sin(a * 0.8), y: 60 + 15 * Math.cos(a), rx: 35, ry: 45, c: inks[2], k: 0.53 },
-    { x: 55 + 20 * Math.cos(a * 1.1 + 2), y: 50 + 20 * Math.sin(a * 0.7), rx: 45, ry: 55, c: inks[0], k: 0.47 },
+    { x: 50 + 22 * Math.cos(a), y: 45 + 18 * Math.sin(a * 1.3), rx: 40, ry: 50, c: inks[1], k: 0.78 },
+    { x: 45 + 25 * Math.sin(a * 0.8), y: 60 + 15 * Math.cos(a), rx: 35, ry: 45, c: inks[2], k: 0.7 },
+    { x: 55 + 20 * Math.cos(a * 1.1 + 2), y: 50 + 20 * Math.sin(a * 0.7), rx: 45, ry: 55, c: inks[0], k: 0.62 },
   ];
 }
 const cloudsCss = (cs) =>
@@ -69,8 +76,6 @@ const cloudsCss = (cs) =>
         `radial-gradient(${c.rx}% ${c.ry}% at ${c.x}% ${c.y}%, ${c.c}${Math.round(c.k * 255).toString(16)}, transparent)`,
     )
     .join(", ");
-const density = (cs, x, y) =>
-  clamp(cs.reduce((s, c) => s + c.k * Math.exp(-(((x - c.x) / c.rx) ** 2) - ((y - c.y) / c.ry) ** 2), 0));
 
 let filters = 0;
 
@@ -223,7 +228,8 @@ class ArchiePixels extends HTMLElement {
     this.vignette.style.opacity = arriving ? 1 - smooth(0.15, 0.85, p) : 0.55;
     this.style.opacity = 1 - smooth(0.85, 1, p); // onto the real image
 
-    // The matrix: square pixels, each varying on its own, then carrying the image's colours away.
+    // The matrix: square pixels of one size, each one's opacity on its own rhythm,
+    // then carrying the image's colours away.
     this.dots.style.transform = `scale(${1 + 0.18 * focus})`;
     ctx.clearRect(0, 0, w, h);
     const take = smooth(0, 0.3, p);
@@ -233,23 +239,27 @@ class ArchiePixels extends HTMLElement {
         const k = j * cols + i;
         const x = (i + 0.5) * PITCH;
         const y = (j + 0.5) * PITCH;
-        const dense = density(cs, (x / w) * 100, (y / h) * 100);
-        // Its own slow rhythm: a phase and a speed drawn once per pixel.
-        const own = 0.5 + 0.5 * Math.sin(t * (0.6 + 1.1 * hash(k)) + hash(k + 7919) * 6.283);
-        let r = (0.45 + 1.7 * dense) * (0.78 + 0.36 * own);
-        let a = (0.55 + 0.35 * dense) * (0.8 + 0.3 * own);
+        // Its own random rhythm — a speed and a phase drawn once per pixel —
+        // squared, so most pixels sit dim and a few come up bright: contrast.
+        const own = 0.5 + 0.5 * Math.sin(t * (1.2 + 2 * hash(k)) + hash(k + 7919) * 6.283);
+        // And now and then a flash: every 2–5 s, at its own moment, it lights up and fades fast.
+        const period = 2 + 3 * hash(k + 104729);
+        const since = (t + period * hash(k + 1299709)) % period;
+        const flash = since < 0.45 ? (1 - since / 0.45) ** 2 : 0;
+        let side = SIZE;
+        let a = Math.max(0.03 + 0.85 * own * own, flash * 0.95);
         let rgb = "255,255,255";
         if (arriving) {
           const c = k * 4;
           if (this.colors) rgb = [0, 1, 2].map((n) => Math.round(lerp(255, this.colors[c + n], take))).join(",");
-          r = lerp(r, PITCH * 0.42, take);
-          a = lerp(a, 1, take);
+          side = lerp(side, PITCH * 0.76, take);
+          a = lerp(a, 0.5 + 0.4 * own, take); // still twinkling as it carries the image
           const from = Math.hypot(x - w / 2, y - h / 2) / far;
-          r *= 1 - smooth(0.3 + 0.4 * from, 0.5 + 0.4 * from, p); // dissolving from the centre out
+          side *= 1 - smooth(0.3 + 0.4 * from, 0.5 + 0.4 * from, p); // dissolving from the centre out
         }
-        if (r < 0.2) continue;
-        const half = r * 0.9; // a square reads larger than a disc of the same radius
-        ctx.fillStyle = `rgba(${rgb},${Math.min(1, a) * 0.75})`;
+        if (side < 0.4) continue;
+        const half = side / 2;
+        ctx.fillStyle = `rgba(${rgb},${a})`;
         ctx.beginPath();
         ctx.roundRect(x - half, y - half, half * 2, half * 2, half * 0.25);
         ctx.fill();
