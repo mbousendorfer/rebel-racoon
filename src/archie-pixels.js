@@ -5,9 +5,10 @@
 // Waiting: a blurred field of three soft clouds in the colours the image will
 // be made of (`data-colors`, the Playbook's palette; a grey ink without one),
 // drifting, under a fine matrix of square pixels — all one size; only their
-// opacity moves, each pixel at its own random rhythm, a quiet shimmer where
-// nothing travels (a diagonal light wave, a cursor that made ripples, and
-// pixels sized by the colour were all too busy, 2026-10-08). A line narrates the stages (`data-since`, an epoch
+// opacity moves, each pixel at its own random rhythm — mostly dim, a few bright
+// — with a sharp little flash now and then: contrast and life, but nothing
+// travels (a diagonal light wave, a cursor that made ripples, and pixels sized
+// by the colour were all too busy, 2026-10-08). A line narrates the stages (`data-since`, an epoch
 // ms, says when the work began, so a re-rendered copy stays on the right stage).
 //
 // Arriving (`data-reveal-at`, an epoch ms): the element covers the <img> its
@@ -26,7 +27,7 @@
 
 const PITCH = 7; // CSS px between pixels
 const SIZE = 3.4; // CSS px: every pixel's side while waiting — only their opacity moves
-export const REVEAL_MS = 2000; // 1.4 s went by unseen, 2.6 s dragged
+export const REVEAL_MS = 1600; // 1.4 s went by unseen, 2.6 s dragged, 2 s still a touch slow
 const STAGES = ["Reading the post…", "Picking your colours…", "Composing the image…"];
 const STAGE_S = 1.6; // s per stage, for a real 6–12 s wait; the last one holds until the image lands
 const REFINING = "Refining the details…";
@@ -61,11 +62,11 @@ function hexOf(color) {
 // The field: three clouds, drifting (t in s, absolute — continuous across
 // copies), drawn by CSS.
 function clouds(t, inks) {
-  const a = t * 0.6;
+  const a = t * 0.85; // drifting a little faster than at first: the wait has some life
   return [
-    { x: 50 + 22 * Math.cos(a), y: 45 + 18 * Math.sin(a * 1.3), rx: 40, ry: 50, c: inks[1], k: 0.6 },
-    { x: 45 + 25 * Math.sin(a * 0.8), y: 60 + 15 * Math.cos(a), rx: 35, ry: 45, c: inks[2], k: 0.53 },
-    { x: 55 + 20 * Math.cos(a * 1.1 + 2), y: 50 + 20 * Math.sin(a * 0.7), rx: 45, ry: 55, c: inks[0], k: 0.47 },
+    { x: 50 + 22 * Math.cos(a), y: 45 + 18 * Math.sin(a * 1.3), rx: 40, ry: 50, c: inks[1], k: 0.78 },
+    { x: 45 + 25 * Math.sin(a * 0.8), y: 60 + 15 * Math.cos(a), rx: 35, ry: 45, c: inks[2], k: 0.7 },
+    { x: 55 + 20 * Math.cos(a * 1.1 + 2), y: 50 + 20 * Math.sin(a * 0.7), rx: 45, ry: 55, c: inks[0], k: 0.62 },
   ];
 }
 const cloudsCss = (cs) =>
@@ -238,16 +239,21 @@ class ArchiePixels extends HTMLElement {
         const k = j * cols + i;
         const x = (i + 0.5) * PITCH;
         const y = (j + 0.5) * PITCH;
-        // Its own random rhythm: a speed and a phase drawn once per pixel.
-        const own = 0.5 + 0.5 * Math.sin(t * (0.5 + 1.2 * hash(k)) + hash(k + 7919) * 6.283);
+        // Its own random rhythm — a speed and a phase drawn once per pixel —
+        // squared, so most pixels sit dim and a few come up bright: contrast.
+        const own = 0.5 + 0.5 * Math.sin(t * (1.2 + 2 * hash(k)) + hash(k + 7919) * 6.283);
+        // And now and then a flash: every 2–5 s, at its own moment, it lights up and fades fast.
+        const period = 2 + 3 * hash(k + 104729);
+        const since = (t + period * hash(k + 1299709)) % period;
+        const flash = since < 0.45 ? (1 - since / 0.45) ** 2 : 0;
         let side = SIZE;
-        let a = 0.08 + 0.62 * own;
+        let a = Math.max(0.03 + 0.85 * own * own, flash * 0.95);
         let rgb = "255,255,255";
         if (arriving) {
           const c = k * 4;
           if (this.colors) rgb = [0, 1, 2].map((n) => Math.round(lerp(255, this.colors[c + n], take))).join(",");
           side = lerp(side, PITCH * 0.76, take);
-          a = lerp(a, 0.75, take);
+          a = lerp(a, 0.5 + 0.4 * own, take); // still twinkling as it carries the image
           const from = Math.hypot(x - w / 2, y - h / 2) / far;
           side *= 1 - smooth(0.3 + 0.4 * from, 0.5 + 0.4 * from, p); // dissolving from the centre out
         }
