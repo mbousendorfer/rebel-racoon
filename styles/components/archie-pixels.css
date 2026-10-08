@@ -58,8 +58,9 @@ archie-pixels > :not(.archie-pixels__label) {
 /* The narration: the conversation's working status pill — the DS shape
    (.ap-status), no breathing dot (as in the new conversation styles), an
    orange sheen through its words (chat.css, `.e-turn .ap-status.is-working`:
-   the same `e-sheen` keyframes) — but on navy, the Agorapulse ink, with white
-   words: the sheen stands out far more than on butter (2026-10-08). It
+   the same `e-sheen` keyframes) — but on navy, the Agorapulse ink, with words
+   in Archie's butter: the sheen stands out far more than on a butter pill
+   (2026-10-08). It
    replaced a white chip with four step squares. */
 .archie-pixels__label {
   position: absolute;
@@ -77,9 +78,9 @@ archie-pixels > :not(.archie-pixels__label) {
   color: transparent;
   background-image: linear-gradient(
     100deg,
-    var(--ref-color-white) 42%,
+    var(--app-butter) 42%,
     var(--ref-color-orange-100) 50%,
-    var(--ref-color-white) 58%
+    var(--app-butter) 58%
   );
   background-size: 300% 100%;
   -webkit-background-clip: text;
@@ -90,7 +91,7 @@ archie-pixels > :not(.archie-pixels__label) {
 @media (prefers-reduced-motion: reduce) {
   .archie-pixels__line {
     animation: none;
-    color: var(--ref-color-white);
+    color: var(--app-butter);
     background-image: none;
   }
 }

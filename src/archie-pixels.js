@@ -11,7 +11,7 @@
 // that made ripples, navy — as pixels, then as a cloud — and pixels sized by
 // the colour were all tried and dropped, 2026-10-08). A pill narrates the
 // stages — the conversation's working status pill (the DS .ap-status shape),
-// on navy so the orange sheen passing through its white words stands out.
+// on navy so the orange sheen passing through its butter words stands out.
 // `data-since` (an epoch ms, when the work began) keeps a re-rendered copy on
 // the right stage.
 //
