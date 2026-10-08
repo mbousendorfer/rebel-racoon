@@ -25,12 +25,6 @@
   color: var(--ref-color-grey-80);
 }
 
-.imst-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ref-spacing-xxs);
-}
-
 .imst-style-card {
   padding: 0;
   gap: 0;
