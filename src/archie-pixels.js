@@ -8,20 +8,22 @@
 // trailing the cursor softly. It is the loader: no spinner over it, only a
 // label the host may nest.
 //
-// Arriving (`data-reveal-at`, an epoch ms) — a quadtree: the overlay covers
-// the <img> its host already rendered beneath it and resolves into it by
-// recursive subdivision, each block the image's own average there (a mip
-// level), splitting EARLIER where the image has detail — faces and edges
-// sharpen first, flat walls last — with hairline seams and a glint on each
-// split of the big blocks; then it fades onto the real thing (its DOM text
-// layers included). Picked 2026-10-08 over a refined Archie bloom and a
-// diffusion-style focus pull; before that a left-to-right wave, a halftone
-// "print" and a split-flap ripple were turned down.
+// Arriving (`data-reveal-at`, an epoch ms) — ink in water: the overlay
+// covers the <img> its host already rendered beneath it, and the image spreads
+// from five points (one near the centre first, four after, from places drawn
+// off the timestamp) with organic, slowly moving edges. Along each edge the
+// halftone's squares take the image's colours and grow toward the inside;
+// just inside, the picture is a touch soft, then sharp, with a faint light rim
+// at the front. Then it fades onto the real thing (its DOM text layers
+// included). Picked 2026-10-08 over a zoom out from the image's own pixels and
+// a 1-bit → true-colour "bit depth" load; turned down before that: a quadtree,
+// an Archie bloom, a diffusion focus, a left-to-right wave, a halftone "print"
+// and a split-flap ripple.
 //
-//   ┌───────┬───────┐   ┌───┬───┬───────┐   ┌─┬─┬─┬─┬───────┐
-//   │       │       │ → ├─┬─┼───┤       │ → ├─┼─┼─┼─┤ (flat) │ → the photo
-//   └───────┴───────┘   └─┴─┴───┴───────┘   └─┴─┴─┴─┴───────┘
-//
+//     · · · · · · ·        · ▪ ■ ■ ▪ · ·        ▪ ■ ███ ■ ▪ ·
+//     · · ▪ ■ ▪ · ·   →    ▪ ■ ███ ■ ▪ ·   →    ■ █████████ ■   →   the photo
+//     · · · · · · ·        · ▪ ■ ■ ▪ · ·        ▪ ■ ███ ■ ▪ ·
+
 // Everything is a function of the clock, never of how long the element has
 // lived: the hosts re-render by innerHTML, so a fresh copy picks the field (or
 // the reveal) up exactly where the one it replaced left it. A host renders the
@@ -68,6 +70,8 @@ uniform float u_T;        // reveal progress 0…1; < 0: none
 uniform sampler2D u_img;
 uniform vec2 u_uvScale, u_uvOffset;
 uniform float u_texel;    // image texels per device px
+uniform float u_dpr;
+uniform vec3 u_seeds[5];  // where the ink starts: x, y (0…1 of the box), start (share of the reveal)
 out vec4 outColor;
 
 float hash(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
@@ -78,7 +82,6 @@ float noise(vec2 p) {
 vec3 palette(float h) { return mix(mix(u_ink0, u_ink1, smoothstep(.25, .5, h)), u_ink2, smoothstep(.55, .8, h)); }
 vec3 image(vec2 p, float lod) { return textureLod(u_img, p / u_res * u_uvScale + u_uvOffset, lod).rgb; }
 float lodFor(float px) { return log2(max(px * u_texel, 1.)); }
-float luma(vec3 c) { return dot(c, vec3(.2126, .7152, .0722)); }
 // An anti-aliased rounded square: coverage at f (from its centre), half-size h, corner r; aa = px per unit.
 float box(vec2 f, float h, float r, float aa) {
   vec2 d = abs(f) - vec2(h - r);
@@ -102,44 +105,34 @@ vec3 halftone(vec2 p, out float size) {
   return mix(u_base, ink, a * u_inkAlpha);
 }
 
-// quadtree: blocks split where the image has detail first; hairline seams; a glint on each split.
-vec3 quadtree(vec2 p) {
-  float top = ceil(log2(max(u_res.x, u_res.y))) - 3.; // first blocks: ~1/8 of the long side
-  float L = top, split = 0., last = 0., size = 1.;
-  vec2 bc = p;
-  for (int i = 0; i < 14; i++) {
-    if (L < 0.) break;
-    size = exp2(L);
-    vec2 b = floor(p / size);
-    bc = (b + .5) * size;
-    vec3 m = image(bc, lodFor(size));
-    float d = 0.;
-    for (int c = 0; c < 4; c++) {
-      vec2 o = vec2(float(c & 1), float(c >> 1)) - .5;
-      d += length(image(bc + o * size * .5, lodFor(size * .5)) - m);
-    }
-    float depth = (top - L) / top; // 0 coarsest … 1 one device px
-    split = .03 + .78 * pow(depth, .8) - .14 * clamp(d * .7, 0., 1.) + .04 * hash(b + L * 17.); // time spent on the mid levels
-    if (u_T < split) break;
-    last = split;
-    L -= 1.;
+// ink: the image spreads from a few points like ink in water, its edges
+// organic; along them the halftone's squares take the image's colours and grow
+// toward the inside; a faint light rim at the front.
+vec3 ink(vec2 p, vec3 ht) {
+  float f = -1e9; // > 0 inside, device px
+  for (int i = 0; i < 5; i++) {
+    vec3 s = u_seeds[i];
+    float g = clamp((u_T - s.z) / (.8 - s.z), 0., 1.);
+    float d = length(p - s.xy * u_res);
+    d *= 1. + .4 * (noise(p / (80. * u_dpr) + float(i) * 7.1 + u_time * .2) - .5);
+    f = max(f, .7 * length(u_res) * g * g * (3. - 2. * g) - d);
   }
-  if (L < 0.) return image(p, 0.);
-  vec3 col = image(bc, lodFor(size));
-  vec2 e = min(fract(p / size), 1. - fract(p / size)) * size; // device px to the block's edges
-  // Seams and glints on the big blocks only: on small ones they read as salt noise.
-  float big = smoothstep(8., 24., size);
-  float seam = (1. - smoothstep(0., 1., min(e.x, e.y))) * big;
-  col = mix(col, vec3(1.), seam * .3);
-  return col + .2 * (1. - smoothstep(0., .05, u_T - last)) * step(.001, last) * smoothstep(4., 16., size);
+  float band = 40. * u_dpr;
+  if (f <= -band) return ht;
+  if (f >= 0.) return image(p, mix(2.5, 0., smoothstep(0., band * 2., f))) + .16 * (1. - smoothstep(0., 3. * u_dpr, f));
+  vec2 g = (p + u_page) / u_pitch;
+  vec2 cc = (floor(g) + .5) * u_pitch - u_page;
+  float sz = 1. + f / band; // 0 at the outer edge … 1 at the front
+  float h = sz * u_pitch * .52;
+  return mix(ht, image(cc, lodFor(u_pitch)), box((fract(g) - .5) * u_pitch, h, h * .45 * (1. - sz), 1.));
 }
 
 void main() {
   vec2 p = vec2(gl_FragCoord.x, u_res.y - gl_FragCoord.y); // top-left origin, like the DOM
   float s;
   vec3 col;
-  if (u_T < 0.) col = halftone(p, s);
-  else col = mix(halftone(p, s), quadtree(p), smoothstep(0., .06, u_T));
+  vec3 ht = halftone(p, s);
+  col = u_T < 0. ? ht : ink(p, ht);
   float alpha = u_T < 0. ? 1. : 1. - smoothstep(.9, 1., u_T); // onto the real image
   outColor = vec4(col * alpha, alpha);
 }`;
@@ -162,6 +155,8 @@ const UNIFORMS = [
   "u_uvScale",
   "u_uvOffset",
   "u_texel",
+  "u_dpr",
+  "u_seeds",
 ];
 
 // The one context, made on first use; null without WebGL2.
@@ -238,6 +233,13 @@ class ArchiePixels extends HTMLElement {
     ).map(rgbOf);
     this.inks = [0, 1, 2].map((i) => inks[Math.min(i, inks.length - 1)]);
     this.revealAt = Number(this.dataset.revealAt) || 0;
+    // Where the ink starts spreading — near the centre first, then four more, one after the other.
+    const rnd = (k) => (((Math.imul(this.revealAt % 1e6, 2654435761) + k * 40503) >>> 0) % 1000) / 1000;
+    this.seeds = [0, 1, 2, 3, 4].flatMap((k) =>
+      k === 0
+        ? [0.4 + 0.2 * rnd(1), 0.4 + 0.2 * rnd(2), 0]
+        : [0.12 + 0.76 * rnd(k * 3), 0.12 + 0.76 * rnd(k * 3 + 1), 0.05 + k * 0.05],
+    );
 
     if (!engine()) {
       if (this.revealAt) this.hidden = true;
@@ -286,7 +288,7 @@ class ArchiePixels extends HTMLElement {
   }
 
   // The image as a mipmapped texture (each mip level is its own average over
-  // blocks: the quadtree's blocks) and its cover crop.
+  // blocks: the halftone edge reads its cells from it) and its cover crop.
   upload() {
     if (!this.ready || !this.w) return;
     const { gl } = shared;
@@ -372,6 +374,8 @@ class ArchiePixels extends HTMLElement {
     gl.uniform2f(loc.u_uvScale, sx, sy);
     gl.uniform2f(loc.u_uvOffset, ox, oy);
     gl.uniform1f(loc.u_texel, this.texel || 1);
+    gl.uniform1f(loc.u_dpr, dpr);
+    gl.uniform3fv(loc.u_seeds, this.seeds);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, this.tex || blank);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
