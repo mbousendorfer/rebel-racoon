@@ -252,35 +252,3 @@
 .sub-preview--simple .sub-preview__line em {
   color: #ffffff;
 }
-
-/* ── Style pictures (draft-image-flow.js: "Generate an image" asked in chat) ── */
-/* Pictures to pick from, not panels to read: fixed small tracks (as many as the
-   chat is wide) instead of three columns stretched across it — at full width
-   each card was a 380px square. */
-.analyse__options--cards .analyse__cards:has(.draft-image-flow__style) {
-  grid-template-columns: repeat(auto-fill, minmax(88px, 112px));
-  gap: var(--ref-spacing-xs);
-}
-
-.analyse__card:has(.draft-image-flow__style) {
-  gap: var(--ref-spacing-xxxs);
-  padding: var(--ref-spacing-xxs);
-}
-
-.analyse__card:has(.draft-image-flow__style) .analyse__card-label {
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-}
-
-/* The picker's preview slot is inline: widen it so the picture fills the card. */
-.analyse__card-preview:has(> .draft-image-flow__style) {
-  display: block;
-}
-
-.draft-image-flow__style {
-  display: block;
-  width: 100%;
-  aspect-ratio: 1;
-  object-fit: cover;
-  border-radius: var(--app-radius-sm);
-}

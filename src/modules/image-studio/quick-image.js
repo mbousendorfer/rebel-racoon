@@ -4,17 +4,17 @@
 // the PNG export draws on, and the same engine as the studio — the Playbook's
 // styles, the network's shapes, the same renderer and services.
 
-import { QUICK_PRESETS } from "./config/style-presets.js?v=1728";
-import { DRAFT_NETWORK, formatById, shapesForBrand } from "./config/formats.js?v=1728";
-import { hashString } from "./lib/prng.js?v=1728";
-import { copyService, imageGenerationService } from "./services/index.js?v=1728";
-import { resolveLayers } from "./render/layout.js?v=1728";
-import { toPngBlob } from "./render/export.js?v=1728";
-import { resolvePalette } from "./render/palette.js?v=1728";
-import { styleThumbUrl } from "./ui/style-thumb.js?v=1728";
-import { layersFor, variationSvg } from "./ui/variation.js?v=1728";
-import { getBrand, getStyle, getStylesForBrand, registerOneOffStyle } from "./state/store.js?v=1728";
-import { oneOffStyleFrom } from "./state/style-actions.js?v=1728";
+import { QUICK_PRESETS } from "./config/style-presets.js?v=1729";
+import { DRAFT_NETWORK, formatById, shapesForBrand } from "./config/formats.js?v=1729";
+import { hashString } from "./lib/prng.js?v=1729";
+import { copyService, imageGenerationService } from "./services/index.js?v=1729";
+import { resolveLayers } from "./render/layout.js?v=1729";
+import { toPngBlob } from "./render/export.js?v=1729";
+import { resolvePalette } from "./render/palette.js?v=1729";
+import { styleThumbUrl } from "./ui/style-thumb.js?v=1729";
+import { layersFor, variationSvg } from "./ui/variation.js?v=1729";
+import { getBrand, getStyle, getStylesForBrand, registerOneOffStyle } from "./state/store.js?v=1729";
+import { oneOffStyleFrom } from "./state/style-actions.js?v=1729";
 
 const blobToDataUrl = (blob) =>
   new Promise((resolve, reject) => {
@@ -100,9 +100,9 @@ export async function defaultQuickLook(brandId) {
 
 /**
  * What "Generate an image" will use on a draft, before anyone clicks it: the
- * Playbook's look (its default style or reference image, with a thumbnail) and
- * the shape for this network. `look` is null when the Playbook has none — the
- * chat then asks. `null` when there is no Playbook.
+ * Playbook's look (its default style or reference image, else its first style
+ * or a preset — what the click uses, nothing is asked) and the shape for this
+ * network. `null` when there is no Playbook.
  */
 export function quickImagePreset({ brandId, network }) {
   const brand = getBrand(brandId);
@@ -114,14 +114,9 @@ export function quickImagePreset({ brandId, network }) {
     ? { label: style.label, thumbUrl: styleThumbUrl(style, brand) }
     : d.referenceUrl
       ? { label: d.referenceLabel || "your reference image", thumbUrl: d.referenceUrl }
-      : null;
+      : quickImageChoices({ brandId, network })?.styles[0] || null;
   // `colors`: the Playbook's palette, which the slot's pixel loader draws in.
   return { look, shape: shape ? { label: shape.label, ratio: shape.ratio } : null, colors: resolvePalette(brand).all };
-}
-
-/** A line for the image, lifted from the post (the studio's Suggest). As slow as the real call. */
-export function suggestImageLine(text, round = 0) {
-  return copyService.headlineFromPost({ text, round });
 }
 
 /** What the image shows, read from the post (the studio's "Suggest from the post"). */

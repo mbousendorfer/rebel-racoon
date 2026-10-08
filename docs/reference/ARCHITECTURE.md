@@ -111,7 +111,7 @@ src/
                           the NETWORKS table (icon / label / limit / accent) and the profile renderers
   connect-profiles-flow.js — requireConnectedProfiles(): the connect step every draft path asks
                           (flag `skipConnectProfiles`)
-  draft-image-flow.js   — "Generate an image" asked in chat (flag `sexySquirrel`)
+  draft-image-flow.js   — "Generate an image": one image straight into the draft, nothing asked
   objective-measures.js / objective-scoring.js / objective-flow.js — Insights' objectives: the
                           metric catalogue, the tiers, and the chat doors (flag `insightsHub`)
   clip-formats.js        — video aspect-ratio catalog
