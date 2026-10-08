@@ -19,12 +19,12 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1727";
-import { isPortraitFormat } from "../clip-formats.js?v=1727";
-import { presetById } from "../clip-captions.js?v=1727";
-import { renderFeedbackControl } from "./feedback-control.js?v=1727";
-import { networkMeta } from "../social-profiles.js?v=1727";
-import { REVEAL_MS } from "../archie-pixels.js?v=1727";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1728";
+import { isPortraitFormat } from "../clip-formats.js?v=1728";
+import { presetById } from "../clip-captions.js?v=1728";
+import { renderFeedbackControl } from "./feedback-control.js?v=1728";
+import { networkMeta } from "../social-profiles.js?v=1728";
+import { REVEAL_MS } from "../archie-pixels.js?v=1728";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -61,18 +61,17 @@ function renderImagePreset(opts) {
     : `<p class="posts__card-media-preset">I'll ask which style. ${playbook("Set a default")}</p>`;
 }
 
-// The pixel loader / reveal (src/archie-pixels.js) in a draft's image box.
-// Generating — first image or Try another, over the current one — the field
-// in the Playbook's colours; just after, the reveal over the new <img>.
+// The image loader / reveal (src/archie-pixels.js) in a draft's image box, in
+// the Playbook's colours. Generating — first image or Try another, over the
+// current one — the field and its narrated stages; just after, the arrival
+// over the new <img>. The element writes its own narration.
 function renderImagePixels(post, opts) {
-  if (post.isGeneratingImage) {
-    const colors = opts.imagePreset?.colors?.join(",") || "";
-    return `<archie-pixels role="status" aria-busy="true"${colors ? ` data-colors="${escapeAttr(colors)}"` : ""}>
-      <span class="archie-pixels__label"><span class="archie-loader" aria-hidden="true"></span>I'm making an image for this draft…</span>
-    </archie-pixels>`;
-  }
+  const colors = opts.imagePreset?.colors?.join(",") || "";
+  const tint = colors ? ` data-colors="${escapeAttr(colors)}"` : "";
+  if (post.isGeneratingImage)
+    return `<archie-pixels role="status" aria-busy="true" data-since="${post.imageGeneratingSince || ""}"${tint}></archie-pixels>`;
   return post.imageRevealAt && Date.now() - post.imageRevealAt < REVEAL_MS
-    ? `<archie-pixels data-reveal-at="${post.imageRevealAt}"></archie-pixels>`
+    ? `<archie-pixels data-reveal-at="${post.imageRevealAt}"${tint}></archie-pixels>`
     : "";
 }
 

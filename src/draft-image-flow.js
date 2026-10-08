@@ -19,18 +19,18 @@
 // The two reads from the post take as long as the real calls (4–8 s), so both
 // start the moment the flow does and are usually back before they are needed.
 
-import * as inlineQuestion from "./inline-question.js?v=1727";
-import { finishPending, postAssistantMessage, postUserTurn, startPending } from "./assistant.js?v=1727";
-import { attachImageToDraft, getPosts, updatePostContent } from "./posts-store.js?v=1727";
-import { getSessionById } from "./sessions-store.js?v=1727";
-import { escapeHtml } from "./utils.js?v=1727";
+import * as inlineQuestion from "./inline-question.js?v=1728";
+import { finishPending, postAssistantMessage, postUserTurn, startPending } from "./assistant.js?v=1728";
+import { attachImageToDraft, getPosts, updatePostContent } from "./posts-store.js?v=1728";
+import { getSessionById } from "./sessions-store.js?v=1728";
+import { escapeHtml } from "./utils.js?v=1728";
 import {
   defaultQuickLook,
   generateQuickImage,
   quickImageChoices,
   suggestImageLine,
   suggestImageSubject,
-} from "./modules/image-studio/index.js?v=1727";
+} from "./modules/image-studio/index.js?v=1728";
 
 const STUDIO = "__studio";
 const NO_TEXT = "__none";
@@ -157,7 +157,7 @@ export function startDraftImageFlow(sessionId, postId, { openStudio, repaint }) 
   // One image, into the draft; the slot shows it being made meanwhile.
   async function generate() {
     const pending = startPending(sessionId, `Making it in ${answers.style.label}…`);
-    updatePostContent(sessionId, postId, { isGeneratingImage: true });
+    updatePostContent(sessionId, postId, { isGeneratingImage: true, imageGeneratingSince: Date.now() });
     repaint();
     try {
       const url = await generateQuickImage({

@@ -1,42 +1,85 @@
-/* <archie-pixels> — the Image Generator's pixel loader and reveal
- * (src/archie-pixels.js). It fills its positioned host; the host clips it.
- * The two levers are read once by the JS when the element mounts:
- *   --archie-pixels-base  the light the field dithers up from
- *   --archie-pixels-ink   the colour when the host passes no `data-colors`
+/* <archie-pixels> — the Image Generator's loader and reveal (src/archie-pixels.js).
+ * It fills its positioned host; the host clips it. The JS builds the layers
+ * below and animates them; this file only lays them out.
+ *   --archie-pixels-base  the field's ground
+ *   --archie-pixels-ink   the clouds' colour when the host passes no `data-colors`
  */
 archie-pixels {
-  --archie-pixels-base: var(--ref-color-grey-05);
+  --archie-pixels-base: var(--ref-color-grey-10);
   --archie-pixels-ink: var(--ref-color-grey-40);
   position: absolute;
   inset: 0;
-  display: grid;
-  place-items: end center;
-  padding: var(--ref-spacing-xs);
+  display: block;
   overflow: hidden;
   border-radius: inherit;
 }
 
-archie-pixels > canvas {
+archie-pixels > * {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  image-rendering: pixelated;
 }
 
-/* What is being made, on a white chip at the foot of the field — the pixels
-   are the loader, so the chip carries only the small Archie mark and words. */
+/* The colour clouds, blurred past the edges so they never show a border. */
+.archie-pixels__field {
+  inset: calc(var(--ref-spacing-lg) * -1);
+  width: auto;
+  height: auto;
+  background-color: var(--archie-pixels-base);
+  filter: blur(26px);
+}
+
+/* The arrival plays on this copy of the host's image; the real one is beneath. */
+.archie-pixels__image {
+  object-fit: cover;
+  opacity: 0;
+}
+
+.archie-pixels__vignette {
+  background: radial-gradient(
+    75% 75% at 50% 50%,
+    transparent 55%,
+    color-mix(in srgb, var(--ref-color-grey-150) 38%, transparent)
+  );
+  opacity: 0;
+}
+
+.archie-pixels__filter {
+  width: 0;
+  height: 0;
+}
+
+/* The narration: a white chip at the foot, its stages as small squares. */
 .archie-pixels__label {
-  --archie-loader-size: 16px;
-  position: relative;
+  inset: auto auto var(--ref-spacing-xs) var(--ref-spacing-xs);
   display: inline-flex;
   align-items: center;
-  gap: var(--ref-spacing-xxs);
-  max-width: 100%;
+  gap: var(--ref-spacing-xs);
+  width: auto;
+  height: auto;
+  max-width: calc(100% - var(--ref-spacing-xs) * 2);
   padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
   background: var(--ref-color-white);
   border-radius: var(--ref-border-radius-md);
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
   color: var(--ref-color-grey-100);
+  white-space: nowrap;
+}
+
+.archie-pixels__steps {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.archie-pixels__steps > i {
+  width: 5px;
+  height: 5px;
+  border-radius: 1.5px;
+  background: var(--ref-color-grey-20);
+}
+
+.archie-pixels__steps > i.is-on {
+  background: var(--ref-color-orange-100);
 }

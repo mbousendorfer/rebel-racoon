@@ -70,7 +70,7 @@ src/
   file-kinds.js         — source kind → DS icon class
   figma-capture.js      — ?openModal= / ?openPanel= deep links for the Figma screen capture
   archie-loader.js      — swaps every spinner in the app for the animated Archie mark
-  archie-pixels.js      — <archie-pixels>: the image-generation loader (a WebGL halftone, cursor loupe) and its ink-in-water reveal
+  archie-pixels.js      — <archie-pixels>: the image-generation loader (brand-colour field, living dot matrix, narrated stages) and its focus-pull arrival
   mocks.js              — barrel over mocks/ — the single import path for seed data
   mocks/                — ALL seed data, one file per domain: sessions, top-posts,
                           sources, ideas, playbooks, topics, posts, threads,
