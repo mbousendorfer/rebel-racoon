@@ -19,12 +19,12 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1734";
-import { isPortraitFormat } from "../clip-formats.js?v=1734";
-import { presetById } from "../clip-captions.js?v=1734";
-import { renderFeedbackControl } from "./feedback-control.js?v=1734";
-import { networkMeta } from "../social-profiles.js?v=1734";
-import { REVEAL_MS } from "../archie-pixels.js?v=1734";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1736";
+import { isPortraitFormat } from "../clip-formats.js?v=1736";
+import { presetById } from "../clip-captions.js?v=1736";
+import { renderFeedbackControl } from "./feedback-control.js?v=1736";
+import { networkMeta } from "../social-profiles.js?v=1736";
+import { REVEAL_MS } from "../archie-pixels.js?v=1736";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -61,17 +61,15 @@ function renderImagePreset(opts) {
     : "";
 }
 
-// The image loader / reveal (src/archie-pixels.js) in a draft's image box, in
-// the Playbook's colours. Generating — first image or Try another, over the
-// current one — the field and its narrated stages; just after, the arrival
-// over the new <img>. The element writes its own narration.
-function renderImagePixels(post, opts) {
-  const colors = opts.imagePreset?.colors?.join(",") || "";
-  const tint = colors ? ` data-colors="${escapeAttr(colors)}"` : "";
+// The image loader / reveal (src/archie-pixels.js) in a draft's image box.
+// Generating — first image or Try another, over the current one — the field
+// and its narrated stages; just after, the arrival over the new <img>. The
+// element writes its own narration and holds its own (Archie's) colours.
+function renderImagePixels(post) {
   if (post.isGeneratingImage)
-    return `<archie-pixels role="status" aria-busy="true" data-since="${post.imageGeneratingSince || ""}"${tint}></archie-pixels>`;
+    return `<archie-pixels role="status" aria-busy="true" data-since="${post.imageGeneratingSince || ""}"></archie-pixels>`;
   return post.imageRevealAt && Date.now() - post.imageRevealAt < REVEAL_MS
-    ? `<archie-pixels data-reveal-at="${post.imageRevealAt}"${tint}></archie-pixels>`
+    ? `<archie-pixels data-reveal-at="${post.imageRevealAt}"></archie-pixels>`
     : "";
 }
 
@@ -82,7 +80,7 @@ function renderEmptyMedia(post, opts) {
   // Generating: the image's own 4:3 box, filled by the pixel field — the
   // reveal then lands exactly where the image stays.
   if (post.isGeneratingImage) {
-    return `<div class="posts__card-media-generating">${renderImagePixels(post, opts)}</div>`;
+    return `<div class="posts__card-media-generating">${renderImagePixels(post)}</div>`;
   }
 
   const gaps = Array.isArray(opts.brandGaps) ? opts.brandGaps : [];
@@ -286,7 +284,7 @@ export function renderPostCard(post, opts = {}) {
       : post.imageUrl
         ? `<div class="posts__card-image-wrap">
           <img class="posts__card-image" src="${post.imageUrl}" alt="Image for this post" loading="lazy" />
-          ${renderImagePixels(post, opts)}
+          ${renderImagePixels(post)}
           <!-- Edit / Change / Remove. Edit was left out while "Generate an image"
                still opened the studio — back then it was a third near-equal grey
                competing with Change for no gain. Now that Generate produces an

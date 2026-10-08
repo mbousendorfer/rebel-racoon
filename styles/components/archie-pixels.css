@@ -1,12 +1,16 @@
 /* <archie-pixels> — the Image Generator's loader and reveal (src/archie-pixels.js).
  * It fills its positioned host; the host clips it. The JS builds the layers
  * below and animates them; this file only lays them out.
- *   --archie-pixels-base  the field's ground
- *   --archie-pixels-ink   the clouds' colour when the host passes no `data-colors`
+ *   --archie-pixels-base     the field's ground
+ *   --archie-pixels-cloud-*  its three clouds — Archie's colours, saturated:
+ *                            orange, butter yellow (the DS yellow: the app's
+ *                            butter is a pale tint), and a deep orange for depth
  */
 archie-pixels {
-  --archie-pixels-base: var(--ref-color-grey-10);
-  --archie-pixels-ink: var(--ref-color-grey-40);
+  --archie-pixels-base: var(--ref-color-yellow-40);
+  --archie-pixels-cloud-1: var(--ref-color-orange-100);
+  --archie-pixels-cloud-2: var(--ref-color-yellow-100);
+  --archie-pixels-cloud-3: var(--ref-color-orange-150);
   position: absolute;
   inset: 0;
   display: block;

@@ -2,11 +2,12 @@
 // Picked 2026-10-08 ("1e") after a long exploration — every rejected direction
 // is listed in docs/reference/UI-PATTERNS.md, so it isn't proposed again.
 //
-// Waiting: a blurred field of three soft clouds in the colours the image will
-// be made of (`data-colors`, the Playbook's palette; a grey ink without one),
+// Waiting: a blurred field of three soft clouds in Archie's colours — orange,
+// butter yellow and a deep orange, saturated (2026-10-08: the Playbook's own
+// palette, navy and slate for Acme, read as dull grey; the CSS holds them),
 // drifting, under a fine matrix of square pixels — all one size; only their
-// opacity moves, each pixel at its own random rhythm — mostly dim, a few bright
-// — with a sharp little flash now and then: contrast and life, but nothing
+// opacity moves, each pixel at its own slow random rhythm — mostly dim, a few
+// bright — with a soft swell now and then: contrast and life, but nothing
 // travels (a diagonal light wave, a cursor that made ripples, and pixels sized
 // by the colour were all too busy, 2026-10-08). A line narrates the stages (`data-since`, an epoch
 // ms, says when the work began, so a re-rendered copy stays on the right stage).
@@ -64,9 +65,9 @@ function hexOf(color) {
 function clouds(t, inks) {
   const a = t * 0.85; // drifting a little faster than at first: the wait has some life
   return [
-    { x: 50 + 22 * Math.cos(a), y: 45 + 18 * Math.sin(a * 1.3), rx: 40, ry: 50, c: inks[1], k: 0.78 },
-    { x: 45 + 25 * Math.sin(a * 0.8), y: 60 + 15 * Math.cos(a), rx: 35, ry: 45, c: inks[2], k: 0.7 },
-    { x: 55 + 20 * Math.cos(a * 1.1 + 2), y: 50 + 20 * Math.sin(a * 0.7), rx: 45, ry: 55, c: inks[0], k: 0.62 },
+    { x: 50 + 22 * Math.cos(a), y: 45 + 18 * Math.sin(a * 1.3), rx: 40, ry: 50, c: inks[1], k: 0.9 },
+    { x: 45 + 25 * Math.sin(a * 0.8), y: 60 + 15 * Math.cos(a), rx: 35, ry: 45, c: inks[0], k: 0.9 },
+    { x: 55 + 20 * Math.cos(a * 1.1 + 2), y: 50 + 20 * Math.sin(a * 0.7), rx: 45, ry: 55, c: inks[2], k: 0.6 },
   ];
 }
 const cloudsCss = (cs) =>
@@ -89,10 +90,7 @@ class ArchiePixels extends HTMLElement {
     }
     if (!this.dots) this.build();
     const css = getComputedStyle(this);
-    const inks = (
-      this.dataset.colors ? this.dataset.colors.split(",") : [css.getPropertyValue("--archie-pixels-ink")]
-    ).map(hexOf);
-    this.inks = [0, 1, 2].map((i) => inks[Math.min(i, inks.length - 1)]);
+    this.inks = [1, 2, 3].map((n) => hexOf(css.getPropertyValue(`--archie-pixels-cloud-${n}`)));
     if (this.revealAt) {
       // With CORS first, so the pixels can read the image's colours; without it
       // if the host refuses (the pixels then stay white).
@@ -225,7 +223,7 @@ class ArchiePixels extends HTMLElement {
     this.photo.style.opacity = arriving ? smooth(0, 0.2, p) : 0;
     this.photo.style.filter = `${split > 0.05 ? this.chroma.url : ""} blur(${28 * (1 - focus)}px)`;
     this.photo.style.transform = `scale(${lerp(1.08, 1, backOut(p, 1.4))})`; // a hair past 1: the breath
-    this.vignette.style.opacity = arriving ? 1 - smooth(0.15, 0.85, p) : 0.55;
+    this.vignette.style.opacity = arriving ? 1 - smooth(0.15, 0.85, p) : 0; // the lens only: on the wait, it muddied the yellow
     this.style.opacity = 1 - smooth(0.85, 1, p); // onto the real image
 
     // The matrix: square pixels of one size, each one's opacity on its own rhythm,
@@ -241,13 +239,14 @@ class ArchiePixels extends HTMLElement {
         const y = (j + 0.5) * PITCH;
         // Its own random rhythm — a speed and a phase drawn once per pixel —
         // squared, so most pixels sit dim and a few come up bright: contrast.
-        const own = 0.5 + 0.5 * Math.sin(t * (1.2 + 2 * hash(k)) + hash(k + 7919) * 6.283);
-        // And now and then a flash: every 2–5 s, at its own moment, it lights up and fades fast.
-        const period = 2 + 3 * hash(k + 104729);
+        const own = 0.5 + 0.5 * Math.sin(t * (0.5 + 0.9 * hash(k)) + hash(k + 7919) * 6.283);
+        // And now and then a soft swell: every 4–9 s, at its own moment, it rises
+        // and falls over about a second (sharp flashes crackled, 2026-10-08).
+        const period = 4 + 5 * hash(k + 104729);
         const since = (t + period * hash(k + 1299709)) % period;
-        const flash = since < 0.45 ? (1 - since / 0.45) ** 2 : 0;
+        const flash = since < 1.2 ? Math.sin((Math.PI * since) / 1.2) ** 2 : 0;
         let side = SIZE;
-        let a = Math.max(0.03 + 0.85 * own * own, flash * 0.95);
+        let a = Math.max(0.03 + 0.85 * own * own, flash * 0.85);
         let rgb = "255,255,255";
         if (arriving) {
           const c = k * 4;
