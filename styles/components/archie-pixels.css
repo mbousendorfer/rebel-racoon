@@ -4,13 +4,17 @@
  *   --archie-pixels-base     the field's ground
  *   --archie-pixels-cloud-*  its three clouds — Archie's colours, saturated:
  *                            orange, butter yellow (the DS yellow: the app's
- *                            butter is a pale tint), and a deep orange for depth
+ *                            butter is a pale tint), and a deep orange
+ *   --archie-pixels-light / -dark  the pixels' two inks: white and navy
+ *                            (grey-150, the Agorapulse ink)
  */
 archie-pixels {
   --archie-pixels-base: var(--ref-color-yellow-40);
   --archie-pixels-cloud-1: var(--ref-color-orange-100);
   --archie-pixels-cloud-2: var(--ref-color-yellow-100);
   --archie-pixels-cloud-3: var(--ref-color-orange-150);
+  --archie-pixels-light: var(--ref-color-white);
+  --archie-pixels-dark: var(--ref-color-grey-150);
   position: absolute;
   inset: 0;
   display: block;
@@ -54,12 +58,14 @@ archie-pixels > * {
   height: 0;
 }
 
-/* The narration: a white chip at the foot, its stages as small squares. */
+/* The narration: a white chip at the foot; while it works, an orange sheen
+   passes through its words — the conversation's working style (chat.css,
+   `.e-turn .ap-status.is-working`: same gradient, same `e-sheen` keyframes).
+   It replaced four little step squares (2026-10-08). */
 .archie-pixels__label {
   inset: auto auto var(--ref-spacing-xs) var(--ref-spacing-xs);
   display: inline-flex;
   align-items: center;
-  gap: var(--ref-spacing-xs);
   width: auto;
   height: auto;
   max-width: calc(100% - var(--ref-spacing-xs) * 2);
@@ -68,22 +74,27 @@ archie-pixels > * {
   border-radius: var(--ref-border-radius-md);
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-100);
   white-space: nowrap;
 }
 
-.archie-pixels__steps {
-  display: inline-flex;
-  gap: 3px;
+.archie-pixels__line {
+  color: transparent;
+  background-image: linear-gradient(
+    100deg,
+    var(--ref-color-grey-100) 42%,
+    var(--ref-color-orange-100) 50%,
+    var(--ref-color-grey-100) 58%
+  );
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: e-sheen 2s linear infinite;
 }
 
-.archie-pixels__steps > i {
-  width: 5px;
-  height: 5px;
-  border-radius: 1.5px;
-  background: var(--ref-color-grey-20);
-}
-
-.archie-pixels__steps > i.is-on {
-  background: var(--ref-color-orange-100);
+@media (prefers-reduced-motion: reduce) {
+  .archie-pixels__line {
+    animation: none;
+    color: var(--ref-color-grey-100);
+    background-image: none;
+  }
 }

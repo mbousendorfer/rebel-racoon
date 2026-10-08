@@ -2,15 +2,17 @@
 // Picked 2026-10-08 ("1e") after a long exploration — every rejected direction
 // is listed in docs/reference/UI-PATTERNS.md, so it isn't proposed again.
 //
-// Waiting: a blurred field of three soft clouds in Archie's colours — orange,
-// butter yellow and a deep orange, saturated (2026-10-08: the Playbook's own
-// palette, navy and slate for Acme, read as dull grey; the CSS holds them),
-// drifting, under a fine matrix of square pixels — all one size; only their
-// opacity moves, each pixel at its own slow random rhythm — mostly dim, a few
-// bright — with a soft swell now and then: contrast and life, but nothing
-// travels (a diagonal light wave, a cursor that made ripples, and pixels sized
-// by the colour were all too busy, 2026-10-08). A line narrates the stages (`data-since`, an epoch
-// ms, says when the work began, so a re-rendered copy stays on the right stage).
+// Waiting: a blurred field of soft clouds in Archie's colours — orange, butter
+// yellow and a deep orange, saturated, drifting (the CSS holds them; the
+// Playbook's own palette read as dull grey) — under a fine matrix of square
+// pixels, white or navy, all one size. Only their opacity moves, each pixel at
+// its own slow random rhythm, mostly dim, a few bright, with a soft swell now
+// and then: contrast and life, but nothing travels (a diagonal light wave, a
+// cursor that made ripples, a navy cloud and pixels sized by the colour were
+// all tried and dropped, 2026-10-08). A line narrates the stages, an orange
+// sheen passing through its words — the conversation's working style.
+// `data-since` (an epoch ms, when the work began) keeps a re-rendered copy on
+// the right stage.
 //
 // Arriving (`data-reveal-at`, an epoch ms): the element covers the <img> its
 // host already rendered, and plays the arrival on its own copy of it, like a
@@ -32,6 +34,7 @@ export const REVEAL_MS = 1600; // 1.4 s went by unseen, 2.6 s dragged, 2 s still
 const STAGES = ["Reading the post…", "Picking your colours…", "Composing the image…"];
 const STAGE_S = 1.6; // s per stage, for a real 6–12 s wait; the last one holds until the image lands
 const REFINING = "Refining the details…";
+const DARK_SHARE = 0.35; // of the pixels, navy; the rest white
 const NARRATE_MIN = 220; // CSS px: narrower (a filmstrip tile) and there is no line
 
 const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -90,6 +93,12 @@ class ArchiePixels extends HTMLElement {
     }
     if (!this.dots) this.build();
     const css = getComputedStyle(this);
+    // The pixels: white or navy, drawn once per pixel — navy reads on the
+    // yellow, white on the orange (a navy cloud muddied the yellow to olive).
+    this.pixelInks = ["light", "dark"].map((n) => {
+      const hex = hexOf(css.getPropertyValue(`--archie-pixels-${n}`));
+      return [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+    });
     this.inks = [1, 2, 3].map((n) => hexOf(css.getPropertyValue(`--archie-pixels-cloud-${n}`)));
     if (this.revealAt) {
       // With CORS first, so the pixels can read the image's colours; without it
@@ -130,7 +139,7 @@ class ArchiePixels extends HTMLElement {
       <img class="archie-pixels__image" alt="" aria-hidden="true" />
       <div class="archie-pixels__vignette"></div>
       <canvas class="archie-pixels__dots" aria-hidden="true"></canvas>
-      <span class="archie-pixels__label" hidden><span class="archie-pixels__steps">${"<i></i>".repeat(4)}</span><span></span></span>
+      <span class="archie-pixels__label" hidden><span class="archie-pixels__line"></span></span>
       <svg class="archie-pixels__filter" aria-hidden="true"><filter id="${id}" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
         <feColorMatrix in="SourceGraphic" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="r"/><feOffset in="r" result="ro"/>
         <feColorMatrix in="SourceGraphic" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="g"/>
@@ -144,8 +153,7 @@ class ArchiePixels extends HTMLElement {
     this.dots = this.querySelector(".archie-pixels__dots");
     this.ctx = this.dots.getContext("2d");
     this.label = this.querySelector(".archie-pixels__label");
-    this.steps = [...this.label.querySelectorAll("i")];
-    this.line = this.label.lastElementChild;
+    this.line = this.label.firstElementChild;
     this.chroma = { url: `url(#${id})`, offsets: this.querySelectorAll("feOffset") };
   }
 
@@ -247,10 +255,11 @@ class ArchiePixels extends HTMLElement {
         const flash = since < 1.2 ? Math.sin((Math.PI * since) / 1.2) ** 2 : 0;
         let side = SIZE;
         let a = Math.max(0.03 + 0.85 * own * own, flash * 0.85);
-        let rgb = "255,255,255";
+        const ink = this.pixelInks[hash(k + 31337) < DARK_SHARE ? 1 : 0];
+        let rgb = ink.join(",");
         if (arriving) {
           const c = k * 4;
-          if (this.colors) rgb = [0, 1, 2].map((n) => Math.round(lerp(255, this.colors[c + n], take))).join(",");
+          if (this.colors) rgb = [0, 1, 2].map((n) => Math.round(lerp(ink[n], this.colors[c + n], take))).join(",");
           side = lerp(side, PITCH * 0.76, take);
           a = lerp(a, 0.5 + 0.4 * own, take); // still twinkling as it carries the image
           const from = Math.hypot(x - w / 2, y - h / 2) / far;
@@ -269,8 +278,6 @@ class ArchiePixels extends HTMLElement {
     const stage = Math.min(STAGES.length - 1, Math.floor((Date.now() - this.since) / 1000 / STAGE_S));
     const text = this.revealAt ? REFINING : STAGES[stage];
     if (this.line.textContent !== text) this.line.textContent = text;
-    const on = this.revealAt ? 4 : stage + 1;
-    this.steps.forEach((s, i) => s.classList.toggle("is-on", i < on));
     this.label.style.opacity = this.revealAt ? 1 - smooth(0.35, 0.5, p) : 1;
   }
 }
