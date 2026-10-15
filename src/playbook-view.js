@@ -14,7 +14,7 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1855";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1856";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -26,11 +26,11 @@ import {
   handleKitChange,
   kitSnapshot,
   renderImagesTab,
-} from "./playbook-brand-kit.js?v=1855";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1855";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1855";
-import { isFlagOn } from "./feature-flags.js?v=1855";
-import { parseHashParams } from "./url-state.js?v=1855";
+} from "./playbook-brand-kit.js?v=1856";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1856";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1856";
+import { isFlagOn } from "./feature-flags.js?v=1856";
+import { parseHashParams } from "./url-state.js?v=1856";
 import {
   networkVoicesOn,
   baseNetwork,
@@ -47,21 +47,22 @@ import {
   baseValue,
   partValue,
   cloneItems,
+  learnedItems,
   voiceItemsHtml,
   progressRingHtml,
   networkLabel,
   networkIcon,
   memoryCardHtml,
-} from "./network-voice.js?v=1855";
+} from "./network-voice.js?v=1856";
 import {
   getSuggestions,
   accept as acceptVoiceSuggestion,
   dismiss as dismissVoiceSuggestion,
-} from "./voice-coach-store.js?v=1855";
-import { showToast } from "./components/toast.js?v=1855";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=1855";
-import { open as openVoiceWizard } from "./components/voice-wizard-modal.js?v=1855";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1855";
+} from "./voice-coach-store.js?v=1856";
+import { showToast } from "./components/toast.js?v=1856";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=1856";
+import { open as openVoiceWizard } from "./components/voice-wizard-modal.js?v=1856";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1856";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2014,7 +2015,11 @@ function renderVoiceEdit2(data) {
     ]);
   return pb2EditGrid(
     "voice",
-    [nvOn() ? nvIdentityBlock(data, baseNetwork(data)) : "", ...pb2VoiceParts(data, { edit: true, lead: mode })],
+    [
+      nvOn() ? nvIdentityBlock(data, baseNetwork(data)) : "",
+      nvOn() ? nvLearnBlock(data, baseNetwork(data)) : "",
+      ...pb2VoiceParts(data, { edit: true, lead: mode }),
+    ],
     "",
     nvOn() ? renderNetworkSwitcher(data) : "",
   );
@@ -2368,16 +2373,36 @@ function nvReoptimizeButton(data, net) {
   return `<button type="button" class="ap-button stroked blue" data-nv-optimize="${net}" aria-label="Re-optimize your ${esc(networkLabel(net))} voice"><i class="ap-icon-sparkles" aria-hidden="true"></i><span>Re-optimize</span></button>`;
 }
 
-// What Archie wants to remember on one network — one memory card each,
-// Remember / Not now. A Remember moves the rule into the part it was proposed
-// for (Always, Never, Now and then), where it reads with Archie's mark. Only
-// there while something waits: an empty tray is not a part of the voice.
+// What Archie knows about one network, in ONE block, always there: on top,
+// what he wants to remember — one memory card each, Remember / Not now; under
+// them, the rules already kept, each naming the part it went into (Always,
+// Never, Now and then — where it also reads, with the same olive mark). A
+// Remember moves the rule from the cards to the list, in view. In edit, the
+// list only: a kept rule is edited in its part. (2026-10-15: shown only while
+// a proposal waited — "j'ai toujours besoin du What I've learned".)
 function nvLearnBlock(data, net) {
-  const pending = canEditView() ? getSuggestions(data.id, { network: net }) : [];
-  if (!pending.length) return "";
+  const pending = canEditView() && !editScope ? getSuggestions(data.id, { network: net }) : [];
+  const cards = pending.length
+    ? `<div class="memory-cards">${pending.map((sg) => memoryCardHtml(sg, { attr: "nv", value: sg.id })).join("")}</div>`
+    : "";
+  const kept = learnedItems(data, net);
+  const list = kept.length
+    ? `<ul class="memory-notes">${kept
+        .map(
+          ({ title, item }) => `<li class="memory-note memory-note--kept">
+            <i class="ap-icon-sparkles memory-mark" aria-hidden="true"></i>
+            <p class="memory-note__text">${esc(item.text)}</p>
+            <span class="ap-tag grey mini memory-note__part">${esc(title)}</span>
+          </li>`,
+        )
+        .join("")}</ul>`
+    : "";
   return pb2Block(
     "What I've learned",
-    `<div class="memory-cards">${pending.map((sg) => memoryCardHtml(sg, { attr: "nv", value: sg.id })).join("")}</div>`,
+    cards + list ||
+      pb2Empty(
+        `Nothing yet. Rework one of your ${networkLabel(net)} drafts or tell me what was off, and I'll suggest what to remember here.`,
+      ),
     { wide: true, index: 1, caption: `${networkLabel(net)} only`, className: "pb2-block--memory" },
   );
 }
@@ -2510,7 +2535,7 @@ function nvFieldEdit(data, net, field) {
 // Edit keeps the parts in a fixed order (a part must not jump when you adapt
 // it); the words to avoid read in Never and are edited on the base.
 function nvNetworkEditBlocks(data, net) {
-  return [nvIdentityBlock(data, net), ...pb2VoiceParts(data, { net, edit: true })];
+  return [nvIdentityBlock(data, net), nvLearnBlock(data, net), ...pb2VoiceParts(data, { net, edit: true })];
 }
 
 // The parts of a voice as [field, title] — from the one registry

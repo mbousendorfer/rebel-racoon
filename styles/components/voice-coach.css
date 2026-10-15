@@ -150,7 +150,14 @@ i.memory-mark {
 }
 
 .memory-note__text {
+  flex: 1;
+  min-width: 0;
   margin: 0;
+}
+
+/* The part a kept rule went into — said, not coloured. */
+.memory-note__part {
+  flex-shrink: 0;
 }
 
 /* "What I've learned" on the Voice tab — Archie's block, proposals and kept

@@ -28,9 +28,9 @@
 // examples are in one language. Per-language examples when a brand actually
 // publishes in two languages on one network.
 
-import { isFlagOn } from "./feature-flags.js?v=1855";
-import { escapeHtml } from "./utils.js?v=1855";
-import { NETWORKS, normalizeNetwork, getConnectedProfileById } from "./social-profiles.js?v=1855";
+import { isFlagOn } from "./feature-flags.js?v=1856";
+import { escapeHtml } from "./utils.js?v=1856";
+import { NETWORKS, normalizeNetwork, getConnectedProfileById } from "./social-profiles.js?v=1856";
 
 // `newWith` marks a part the product just added, behind that flag — the demo
 // (voiceNewSection) of how a voice says a part is new: an orange arc, a "New"
@@ -185,6 +185,18 @@ export function baseValue(ctx, field) {
 export function partValue(ctx, n, field) {
   const e = normalizeNetwork(n) === baseNetwork(ctx) ? null : networkEntry(ctx, n);
   return e?.[field] !== undefined ? e[field] : baseValue(ctx, field);
+}
+
+// What Archie learned on a network and someone kept (Remember): the rules
+// marked learned in its own parts — on the base, in the Playbook's. Each with
+// the part it sits in, for "What I've learned".
+export function learnedItems(ctx, n) {
+  const own = normalizeNetwork(n) === baseNetwork(ctx) ? ctx : networkEntry(ctx, n) || {};
+  return RULE_FIELDS.flatMap((field) =>
+    cloneItems(own[field])
+      .filter((i) => i.learned)
+      .map((item) => ({ field, title: partOf(field).title, item })),
+  );
 }
 
 // The Playbook patch a list edit produces on one network's part: the base
