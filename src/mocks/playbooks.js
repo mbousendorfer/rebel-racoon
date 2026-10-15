@@ -202,33 +202,111 @@ export const contexts = [
     contentStyle: ["Direct and actionable", "Data-driven with storytelling"],
     objective: ["Brand awareness", "Lead generation", "Thought leadership", "Video performance"],
     contentAction: ["Sign up for a free trial", "Book a demo"],
-    signatureHooks: [
-      "Most teams get this backwards:",
-      "Here's what actually moved the needle:",
-      "We cut [task] from days to minutes —",
+    voiceSummary:
+      "Direct, hook-first and benefit-led, in plain operator English. Posts speak as 'we' to 'you', lead with the outcome and back it with a number or a quote. Most resolve one idea in about 90 words.",
+    voiceAlways: [
+      {
+        text: "Open on a hook — a number, a contrarian beat or the outcome — never on the product.",
+        examples: ["Most teams get this backwards:", "Here's what actually moved the needle:"],
+      },
+      {
+        text: "Short paragraphs, one idea each, with air between them. Most posts top out around 90 words.",
+      },
+      {
+        text: "Numbers as digits, rounded honestly.",
+        examples: ["3x", "40%"],
+      },
+      {
+        text: "Sentence case throughout.",
+      },
     ],
-    closingPatterns: ["Try it free for 30 days — link in the comments.", "What's your take? Reply and tell me."],
-    formattingStyle:
-      "Short paragraphs, one idea each. Opens on a hook line, then 2–3 lines of context. A tight three-item list when points are parallel, prose otherwise. Generous line breaks — no walls of text. Most posts top out around 90 words.",
-    visualStyle:
-      "No emoji. Sentence case throughout — no ALL-CAPS shouting. Numbers as digits ('3x', '40%'). One link, dropped in the first comment, never mid-sentence.",
-    // Hashtags — the part simulated as "new" (flag voiceNewSection). Acme's base
-    // has it, so its networks show it to optimize; other Playbooks don't yet.
-    hashtagStyle: "Three at the end, never in the text.",
+    voiceNever: [
+      {
+        text: "Never use emoji in a B2B post.",
+      },
+      {
+        text: "Never put a link mid-sentence — it goes in the first comment.",
+      },
+      {
+        text: "Never end on a 'stay tuned' cliffhanger: every post resolves.",
+      },
+    ],
+    voiceByPost: [
+      {
+        when: "Launch or feature post",
+        text: "Lead with the time it saves, then what it is in one sentence. A three-item list only when the points are parallel. End on the free trial.",
+        examples: ["We cut onboarding from days to minutes —"],
+      },
+      {
+        when: "Customer outcome",
+        text: "Name the team and their role, give the before and after as numbers, and quote them once, word for word.",
+        examples: ["Their words, not ours."],
+      },
+      {
+        when: "Opinion or lesson",
+        text: "Open on the assumption you're contradicting, give the one example that proves it, close with a question to the reader.",
+        examples: ["Most teams get this backwards:"],
+      },
+    ],
+    voiceSometimes: [
+      {
+        text: "Close with an invitation to try it free.",
+        examples: ["Try it free for 30 days — link in the comments."],
+      },
+      {
+        text: "Close by asking for the reader's take.",
+        examples: ["What's your take? Reply and tell me."],
+      },
+      {
+        text: "Three hashtags at the very end, never in the text.",
+      },
+    ],
     // Voice per network (flag networkVoices) — the base was learned on LinkedIn;
     // Instagram and X only say what differs. See network-voice.js.
     voiceBaseNetwork: "linkedin",
     connectedSocials: ["linkedin", "instagram", "x"],
     voiceByNetwork: {
       instagram: {
-        visualStyle:
-          "One or two emoji, at the end of a line, never mid-sentence. Three to five hashtags in the caption's last line.",
-        closingPatterns: ["Save this for your next planning session."],
-        rules: ["Lead with the outcome in the first 125 characters — that's all the feed shows."],
+        voiceAlways: [
+          {
+            text: "Lead with the outcome in the first 125 characters — that's all the feed shows.",
+            learned: true,
+          },
+          {
+            text: "One or two emoji, at the end of a line, never mid-sentence.",
+          },
+          {
+            text: "Short paragraphs, one idea each.",
+          },
+        ],
+        voiceNever: [
+          {
+            text: "Never put a link in the caption — point to the link in bio.",
+          },
+          {
+            text: "Never end on a 'stay tuned' cliffhanger: every post resolves.",
+          },
+        ],
+        voiceSometimes: [
+          {
+            text: "Close by asking to save it.",
+            examples: ["Save this for your next planning session."],
+          },
+          {
+            text: "Three to five hashtags in the caption's last line.",
+          },
+        ],
       },
       x: {
-        formattingStyle: "One idea, one post. Under 240 characters. A thread only when there are three or more steps.",
-        rules: [],
+        voiceAlways: [
+          {
+            text: "One idea, one post, under 240 characters. A thread only when there are three or more steps.",
+          },
+          {
+            text: "Numbers as digits, rounded honestly.",
+            examples: ["3x", "40%"],
+          },
+        ],
       },
     },
     brandPersonality:
@@ -376,9 +454,10 @@ export const contexts = [
       { label: "30-day free trial", url: "acme.example.com/trial", checked: true, suggested: false },
       { label: "Book a demo", url: "acme.example.com/demo", checked: true, suggested: false },
     ],
-    // Multilingual Playbook — the flat signatureHooks/closingPatterns/cta above
-    // mirror the primary (English) entry. Voice examples are authored PER
-    // LANGUAGE; Archie selects the native set, never translates.
+    // Multilingual Playbook — the per-language entries (languages.js). Only the
+    // CTA reads from them now: the five-part voice above is language-agnostic
+    // (ponytail in network-voice.js), so the hooks / closings here are the old
+    // model's, kept for the multilingual plumbing.
     languages: ["English", "Français"],
     primaryLanguage: "English",
     voiceByLanguage: {
@@ -504,19 +583,55 @@ export const contexts = [
     contentStyle: ["Direct and actionable"],
     objective: ["Build personal brand", "Brand awareness", "Thought leadership", "Editorial resonance"],
     contentAction: ["Read more on the blog"],
-    signatureHooks: [
-      "Unpopular opinion:",
-      "I used to believe [X]. I was wrong.",
-      "Nobody tells you this when you start:",
+    voiceSummary:
+      "Conversational and pointed, like a strong founder DM: the opinion up front, lived context behind it, no marketing varnish. Always in the first person — the person is the brand.",
+    voiceAlways: [
+      {
+        text: "Write in the first person, the way you'd talk.",
+      },
+      {
+        text: "Open on a contrarian take or a specific moment.",
+        examples: ["Unpopular opinion:", "Nobody tells you this when you start:"],
+      },
+      {
+        text: "Very short lines and heavy line breaks; one idea per post.",
+      },
     ],
-    closingPatterns: [
-      "Curious if it's just me — or you've seen it too.",
-      "Still figuring this out. Tell me where I'm wrong.",
+    voiceNever: [
+      {
+        text: "No links, no product mentions, no call to action.",
+      },
+      {
+        text: "No emoji and no hashtags.",
+      },
+      {
+        text: "No lists or headers — it reads like a thought, not a doc.",
+      },
     ],
-    formattingStyle:
-      "Very short. Often a single line that lands. The occasional longer sentence to explain a counter-intuitive idea. Heavy line breaks for rhythm. No lists, no headers — reads like a thought, not a doc.",
-    visualStyle:
-      "No emoji, no hashtags. A lowercase opening is fine when it suits the cadence. First person always ('I', 'we'). Zero links or product mentions.",
+    voiceByPost: [
+      {
+        when: "A belief you changed",
+        text: "Say what you used to believe, then the moment it broke, then what you do now.",
+        examples: ["I used to believe [X]. I was wrong."],
+      },
+      {
+        when: "A lesson from building",
+        text: "One specific moment, one surprising number if there is one, then the reframe. No list of advice.",
+      },
+    ],
+    voiceSometimes: [
+      {
+        text: "End by inviting disagreement.",
+        examples: ["Still figuring this out. Tell me where I'm wrong."],
+      },
+      {
+        text: "End by asking whether others have seen it too.",
+        examples: ["Curious if it's just me — or you've seen it too."],
+      },
+      {
+        text: "Start in lowercase when the cadence calls for it.",
+      },
+    ],
     brandPersonality:
       "Opinionated, generous with credit, willing to be wrong out loud. Speaks from scar tissue, not theory. The human is the brand — readers follow the person, not a logo.",
     brandTypography: { headingFont: "System UI", bodyFont: "System UI" },
@@ -658,12 +773,53 @@ export const contexts = [
     contentStyle: ["Data-driven with storytelling"],
     objective: ["Brand awareness", "Lead generation", "Editorial resonance"],
     contentAction: ["Read the full customer story", "Book a demo"],
-    signatureHooks: ["When [Team] started, they were [problem].", "Here's what changed for [Customer]:"],
-    closingPatterns: ["See how teams like yours use Acme →", "Their words, not ours."],
-    formattingStyle:
-      "Story-shaped: a short hook line, 2–3 sentences of context, a pulled quote on its own line, then a closing line that names the result. Medium-length sentences. The quote is always set apart.",
-    visualStyle:
-      "No emoji. Names the customer and their role in full. Metrics as digits ('cut response time 60%'). One quote per post, verbatim — never paraphrased.",
+    voiceSummary:
+      "Story-shaped and grounded in fact: one team's arc — situation, change, result — told in their own words. Professional but warm; the customer is the hero.",
+    voiceAlways: [
+      {
+        text: "Follow the arc: a short hook line, two or three sentences of context, the quote on its own line, then the result.",
+        examples: ["Here's what changed for [Customer]:"],
+      },
+      {
+        text: "Name the customer and their role in full.",
+      },
+      {
+        text: "Metrics as digits, before and after.",
+        examples: ["cut response time 60%"],
+      },
+    ],
+    voiceNever: [
+      {
+        text: "Never paraphrase a quote — word for word, or not at all.",
+      },
+      {
+        text: "No emoji.",
+      },
+      {
+        text: "No generic testimonials like 'game changer' or 'love this'.",
+      },
+    ],
+    voiceByPost: [
+      {
+        when: "Interview-based story",
+        text: "Open on the team's problem in their words, then the change, then the number.",
+        examples: ["When [Team] started, they were [problem]."],
+      },
+      {
+        when: "Quote card with a visual",
+        text: "One line of context, then the quote. The result goes in the image, not repeated in the text.",
+      },
+    ],
+    voiceSometimes: [
+      {
+        text: "Close by pointing to more stories like it.",
+        examples: ["See how teams like yours use Acme →"],
+      },
+      {
+        text: "Hand the last word to the customer.",
+        examples: ["Their words, not ours."],
+      },
+    ],
     brandPersonality:
       "Trustworthy, attentive, occasionally surprised on the customer's behalf. Lets the customer be the hero and the numbers carry the emotion.",
     brandTypography: { headingFont: "Inter", bodyFont: "Inter" },
@@ -813,16 +969,55 @@ export const contexts = [
     contentStyle: ["Story-driven", "Warm and human"],
     objective: ["Brand awareness", "Community building", "Video performance"],
     contentAction: ["Shop the collar", "Read owner stories"],
-    signatureHooks: [
-      "She was gone eleven minutes.",
-      "The gate was open. Nobody knows how long.",
-      "Here's the part nobody tells you about a cat that goes out:",
+    voiceSummary:
+      "Warm, plain-spoken and never alarmist. Posts open on a real moment — a gate left open, a cat that didn't come in — and say what happened next. Specs appear only once they've earned it.",
+    voiceAlways: [
+      {
+        text: "Open on the moment, not the product.",
+        examples: ["She was gone eleven minutes.", "The gate was open. Nobody knows how long."],
+      },
+      {
+        text: "Name the animal, every time.",
+      },
+      {
+        text: "Two or three short paragraphs, one idea each; the turn of the story gets its own line. Around 80 words.",
+      },
+      {
+        text: "Distances in the local unit.",
+        examples: ["6km from camp"],
+      },
     ],
-    closingPatterns: ["Home in forty minutes. That's the whole point.", "Tell us about yours — we read all of them."],
-    formattingStyle:
-      "Opens on a one-line moment. Two or three short paragraphs, a single idea each. The turn in the story sits on its own line. Around 80 words. Emoji sparingly, and only ones an owner would actually use.",
-    visualStyle:
-      "Real owner photos, daylight, animals mid-motion — never a studio product shot as the hero. Sentence case. Distances in the local unit ('6km from camp'). The collar visible but not centred.",
+    voiceNever: [
+      {
+        text: "Never use fear-based statistics about lost pets.",
+      },
+      {
+        text: "Never imply the owner was careless.",
+      },
+      {
+        text: "Never call the collar a device or a solution.",
+      },
+    ],
+    voiceByPost: [
+      {
+        when: "Owner story",
+        text: "The moment, what we did, how it ended, the one thing that made it possible. The animal always comes home.",
+        examples: ["Home in forty minutes. That's the whole point."],
+      },
+      {
+        when: "Practical how-to",
+        text: "A short list of steps is fine here — and only here.",
+      },
+    ],
+    voiceSometimes: [
+      {
+        text: "Close by inviting owners to share their story.",
+        examples: ["Tell us about yours — we read all of them."],
+      },
+      {
+        text: "One emoji an owner would actually use.",
+      },
+    ],
     brandPersonality:
       "Steady and kind. Takes the fear seriously without dramatising it, is a little wry about animals being animals, and never makes an owner feel careless.",
     brandTypography: { headingFont: "Poppins", bodyFont: "Inter" },
@@ -1052,22 +1247,59 @@ export const contexts = [
     contentStyle: ["Educational", "Long-form"],
     objective: ["Brand awareness", "Lead generation", "Community building"],
     contentAction: ["Book a free intro class", "View the class schedule"],
-    signatureHooks: [
-      "Train Hard. Stay Humble.",
-      "Train with Purpose. Belong to Something Bigger.",
-      "Confidence for kids. Discipline for teens. Growth for adults.",
-      "No ego, no intimidation.",
-      "When something goes wrong, there's always another move to progress.",
+    voiceSummary:
+      "Calm, expert and safety-first. Posts answer a parent's real hesitation before selling anything, explain why grappling teaches control rather than aggression, and close on an invitation with no pressure.",
+    voiceAlways: [
+      {
+        text: "Open on the hesitation or the person, never on the academy.",
+        examples: ["No ego, no intimidation."],
+      },
+      {
+        text: "Name who the post is for — adults, teens, kids, women or the competition team. One audience per post.",
+      },
+      {
+        text: "Short declaratives in pairs: an imperative, then what it gets you.",
+        examples: ["Train Hard. Stay Humble.", "Train with Purpose. Belong to Something Bigger."],
+      },
+      {
+        text: "State the offer precisely: a 30-minute one-on-one intro first, then the trial.",
+      },
     ],
-    closingPatterns: [
-      "Schedule your free introduction.",
-      "Come train with us.",
-      "No pressure — just a chance to train.",
+    voiceNever: [
+      {
+        text: "Never frame training as fighting — no 'dominate', 'destroy' or 'killer instinct'.",
+      },
+      {
+        text: "No urgency language and no exclamation marks.",
+      },
+      {
+        text: "Never hype competition results.",
+      },
     ],
-    formattingStyle:
-      "Opens on the hesitation or the person, never on the academy. Two or three short lines, one idea each, with the em dash used to attach the payoff to the imperative. Names the audience explicitly. Closes on the free intro with no urgency language. At most one emoji, and no emoji strings or arrow stacks in long-form copy.",
-    visualStyle:
-      "Black backgrounds, one accent — the Alliance yellow — and nothing else. Condensed uppercase headings over light body text. Square edges: the site's buttons carry no radius. Photography is on the mats, in the gi, mid-instruction rather than posed; kids' and women's classes shot at eye level, not from the ceiling.",
+    voiceByPost: [
+      {
+        when: "Kids' program",
+        text: "Speak to the parent. Name the hesitation, explain what the milestone builds, then the intro.",
+        examples: ["Confidence for kids. Discipline for teens. Growth for adults."],
+      },
+      {
+        when: "Coach or instruction post",
+        text: "Name the coach and what the class teaches; a member's or a parent's quote as proof.",
+      },
+    ],
+    voiceSometimes: [
+      {
+        text: "Close on the free introduction.",
+        examples: ["Schedule your free introduction.", "No pressure — just a chance to train."],
+      },
+      {
+        text: "Attach the payoff to the imperative with an em dash.",
+        examples: ["When something goes wrong, there's always another move to progress."],
+      },
+      {
+        text: "At most one emoji.",
+      },
+    ],
     brandPersonality:
       "Expert, reassuring and disciplined. World-class credentials worn lightly — the lineage is stated once and then earned back through how the room is described.",
     brandTypography: {
@@ -1234,16 +1466,52 @@ export const contexts = [
     contentStyle: ["Editorial", "Product-led"],
     objective: ["Brand awareness", "Sales", "Traffic", "Reputation"],
     contentAction: ["Shop the collection", "Discover more"],
-    signatureHooks: [
-      "True style isn't loud or seasonal.",
-      "One hundred percent linen. That's the entire spec sheet.",
-      "Built to be worn next summer, and the one after that.",
+    voiceSummary:
+      "Quiet, confident and never salesy. Posts describe the garment — the fibre and what it does over time — and let the reader draw the conclusion. Around 60 words, one piece per post.",
+    voiceAlways: [
+      {
+        text: "Open on the piece or the fibre, and name the fibre every time.",
+        examples: ["One hundred percent linen. That's the entire spec sheet."],
+      },
+      {
+        text: "Short declaratives, one checkable claim each.",
+      },
+      {
+        text: "Sentence case throughout.",
+      },
     ],
-    closingPatterns: ["Dress with class, for less.", "Fewer pieces. Worn longer."],
-    formattingStyle:
-      "Opens on the piece or the fibre. Two or three short lines. No emoji strings, at most one. Never opens with a discount.",
-    visualStyle:
-      "Neutral and jewel tones, daylight, models in motion rather than posed. Full-look framing so the cut reads. Sentence case throughout.",
+    voiceNever: [
+      {
+        text: "Never open with a discount; no percentage-off language in organic posts.",
+      },
+      {
+        text: "No exclamation marks and no strings of emoji.",
+      },
+      {
+        text: "Never hype a drop — no 'must-have', 'grab yours' or 'last chance'.",
+      },
+    ],
+    voiceByPost: [
+      {
+        when: "Single piece",
+        text: "The material, what it does over time, how it's worn.",
+        examples: ["Built to be worn next summer, and the one after that."],
+      },
+      {
+        when: "Styling post",
+        text: "One piece styled several ways rather than several pieces once.",
+      },
+    ],
+    voiceSometimes: [
+      {
+        text: "Close on the brand line.",
+        examples: ["Dress with class, for less.", "Fewer pieces. Worn longer."],
+      },
+      {
+        text: "Open on the contrast between seasonal and lasting.",
+        examples: ["True style isn't loud or seasonal."],
+      },
+    ],
     brandPersonality:
       "Assured, understated and accessible. Confident enough not to shout, warm enough not to feel like a luxury house.",
     brandTypography: null,
@@ -1417,10 +1685,11 @@ export const contexts = [
     contentStyle: ["Data-driven with structural insights", "Problem-solution oriented"],
     objective: ["Brand awareness", "Lead generation", "Reputation"],
     contentAction: ["Contact us for inquiries", "Follow our LinkedIn page"],
-    signatureHooks: [],
-    closingPatterns: [],
-    formattingStyle: null,
-    visualStyle: null,
+    voiceSummary: "",
+    voiceAlways: [],
+    voiceNever: [],
+    voiceByPost: [],
+    voiceSometimes: [],
     brandPersonality: "engineering-led, plain-spoken, socially serious",
     brandTypography: null,
     brandColors: [],
@@ -1568,22 +1837,53 @@ export const contexts = [
     contentStyle: ["Direct and actionable", "Customer-centric storytelling", "Tool-driven and educational"],
     objective: ["Lead generation", "Product adoption", "Community building"],
     contentAction: ["Sign up for a free trial", "Book a personalized demo", "Try free social media tools"],
-    signatureHooks: [
-      "Keep tabs, without switching tabs.",
-      "Drive real impact on social media. From engagement to ROI.",
-      "The best time to post on social media isn't when you think.",
-      "Is your social media strategy failing? Here's why.",
-      "Save time, stay organized, and easily manage your social media.",
+    voiceSummary:
+      "Direct, practical and customer-first — a peer who has done the job. Posts open on the reader's problem or a customer's number, say what changes, and name the proof.",
+    voiceAlways: [
+      {
+        text: "Open on the reader's problem or a customer's number, never on the product.",
+        examples: [
+          "The best time to post on social media isn't when you think.",
+          "Is your social media strategy failing? Here's why.",
+        ],
+      },
+      {
+        text: "Two or three short sentences, then a three-item list of what it lets you do.",
+      },
+      {
+        text: "State numbers plainly, with the customer named beside them.",
+      },
     ],
-    closingPatterns: [
-      "Try for free now — 30 days, no card required.",
-      "See how teams like yours did it.",
-      "Book a demo and we'll walk your workflow.",
+    voiceNever: [
+      {
+        text: "Never lead with the product.",
+      },
+      {
+        text: "Never use the free trial as pressure — its terms always go with it.",
+      },
     ],
-    formattingStyle:
-      "Opens on the reader's problem or a customer's number, never on the product. Two or three short sentences, then a three-item list of what it lets you do. Headlines built on a reversal or a contradicted assumption. Numbers stated plainly — 50%, 30%, 96%, 30 minutes — with the customer named beside them. Free trial mentioned at the end, with the terms attached rather than as pressure.",
-    visualStyle:
-      "Navy text on white, orange for emphasis and blue for the action. Light peach and grey tints separate sections; nothing is dark. Product screenshots do the explaining — real dashboards and inboxes, not illustration. Sentence case in body copy, title case in headlines. Buttons are barely rounded.",
+    voiceByPost: [
+      {
+        when: "Feature post",
+        text: "A headline built on a reversal, the problem in one line, then what it lets you do in three items.",
+        examples: ["Keep tabs, without switching tabs."],
+      },
+      {
+        when: "Customer proof",
+        text: "The customer's number first, their name and role beside it, then how they did it.",
+        examples: ["See how teams like yours did it."],
+      },
+    ],
+    voiceSometimes: [
+      {
+        text: "Close on the free trial, with its terms.",
+        examples: ["Try for free now — 30 days, no card required."],
+      },
+      {
+        text: "Close on a demo offer.",
+        examples: ["Book a demo and we'll walk your workflow."],
+      },
+    ],
     brandPersonality:
       "Direct, practical and customer-first. A peer who has done the job, on the side of the social media manager rather than the buyer — and confident enough to name competitors and put its numbers next to theirs.",
     brandTypography: {
@@ -1889,11 +2189,45 @@ export const sharedContexts = [
     contentStyle: ["Technical deep-dive"],
     objective: ["Product adoption", "Thought leadership", "Traffic"],
     contentAction: ["Read the changelog", "Try it in the sandbox"],
-    signatureHooks: ["We changed how [thing] works.", "This one breaks something. Here's what:"],
-    closingPatterns: ["Full reference →", "Migration notes in the changelog."],
-    formattingStyle:
-      "Short declarative lines, one idea each. A payload or snippet where it replaces a paragraph. Version numbers spelled out.",
-    visualStyle: "No emoji. No exclamation marks. Endpoint names in backticks. Versions as digits.",
+    voiceSummary:
+      "Straight and unhurried, peer to peer. Posts say what changed, why, what it breaks and how to migrate — the enthusiasm is carried by the change itself, never by adjectives.",
+    voiceAlways: [
+      {
+        text: "Short declarative lines, one idea each.",
+        examples: ["We changed how [thing] works."],
+      },
+      {
+        text: "Endpoint names in backticks, versions as digits.",
+      },
+      {
+        text: "Link to the reference in every post.",
+      },
+    ],
+    voiceNever: [
+      {
+        text: "No emoji and no exclamation marks.",
+      },
+      {
+        text: "Never 'excited to announce'.",
+      },
+    ],
+    voiceByPost: [
+      {
+        when: "Breaking change",
+        text: "Say what breaks first, then why, then the migration in steps.",
+        examples: ["This one breaks something. Here's what:"],
+      },
+      {
+        when: "New endpoint",
+        text: "A payload or snippet where it replaces a paragraph.",
+      },
+    ],
+    voiceSometimes: [
+      {
+        text: "Close by pointing to the reference.",
+        examples: ["Full reference →", "Migration notes in the changelog."],
+      },
+    ],
     brandPersonality: "Straight, unhurried, willing to name what's still rough. Talks to peers, not prospects.",
     brandTypography: { headingFont: "Inter", bodyFont: "JetBrains Mono" },
     brandColors: [

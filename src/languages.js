@@ -15,9 +15,10 @@
 //       ctaLabels: { [ctaLinkUrl]: string },   // labels fork per language; url stays shared
 //     }
 //   }
-// The brand/strategy fields (audience, objective, tones, voiceProfile rules,
-// formattingStyle, visualStyle, brandColors, imageVoice, do/dont rules…) stay
-// language-agnostic at the top level.
+// The brand/strategy fields (audience, objective, tones, the five voice parts,
+// brandColors, imageVoice, do/dont rules…) stay language-agnostic at the top
+// level. Since the five-part voice (network-voice.js), nothing shows the
+// per-language hooks / closings any more: only the CTA is read per language.
 //
 // The flat legacy fields (signatureHooks / closingPatterns / cta /
 // ctaLinks[].label) are kept as a MIRROR of the primary language so every

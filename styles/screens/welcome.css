@@ -1258,24 +1258,7 @@ button.recap__logotile:hover {
   min-width: 0;
 }
 
-/* Voice & style + brand editors — line list + typography inputs */
-.recap__line-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xs);
-}
-
-.recap__line-edit {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-}
-
-.recap__line-edit-field {
-  flex: 1;
-  min-width: 0;
-}
-
+/* Brand editors — typography inputs */
 .recap__typo-edit {
   display: flex;
   flex-wrap: wrap;
@@ -1345,31 +1328,6 @@ button.recap__logotile:hover {
 .recap__panel-body > .pb2-netbar {
   margin-bottom: 0;
   padding: var(--ref-spacing-sm) var(--ref-spacing-lg) 0;
-}
-
-/* Voice examples — per-language switcher toolbar. Mirrors the Guided /
-   Write-it-yourself toggle (.recap__voice-mode): same padding + divider so it
-   aligns to the panel grid instead of floating flush-left. */
-.recap__voice-langs {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--ref-spacing-sm);
-  padding: var(--ref-spacing-sm) var(--ref-spacing-lg);
-  border-bottom: 1px solid var(--app-border);
-}
-
-.recap__voice-langs-label {
-  font-size: var(--sys-text-style-caption-bold-size);
-  line-height: var(--sys-text-style-caption-bold-line-height);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-grey-80);
-}
-
-/* The chips group tightly, like the segmented mode toggle. */
-.recap__voice-langs-group {
-  display: flex;
-  gap: var(--ref-spacing-xxs);
 }
 
 .recap__cta {

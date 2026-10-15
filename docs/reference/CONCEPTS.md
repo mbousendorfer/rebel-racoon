@@ -24,7 +24,7 @@ Six familles, détaillées champ par champ dans [`FEATURES.md` §9](FEATURES.md#
 | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Identité**         | Qui est cette marque ? (nom, site, business summary, langue(s))                                                                                                      |
 | **Audience & goals** | À qui je parle, quels problèmes ils ont, quel objectif je poursuis, quel CTA                                                                                         |
-| **Voice & style**    | Comment ça sonne (hooks signature, closings, formatting, style visuel, **mots à éviter**)                                                                            |
+| **Voice & style**    | Comment ça sonne — cinq parties : le résumé, **Always**, **Never** (+ **mots à éviter**), **Depending on the post**, **Now and then**                                |
 | **Brand identity**   | À quoi ça ressemble (logos **et leur version**, couleurs **et leur rôle**, typo, personnalité, images de réf., **look par défaut des images**, **règles visuelles**) |
 | **Competitors**      | Contre qui je me positionne                                                                                                                                          |
 | **Influencers**      | Qui mon audience écoute déjà (les créateurs qu'elle suit)                                                                                                            |

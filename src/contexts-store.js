@@ -22,18 +22,18 @@
 // chooses "Save as global". updateContext is used by the section-edit flow
 // when scope is "Update everywhere".
 
-import { contexts as seed, sharedContexts } from "./mocks.js?v=1851";
-import { isNewUser } from "./user-mode.js?v=1851";
-import { CURRENT_USER } from "./org.js?v=1851";
-import { isFlagOn } from "./feature-flags.js?v=1851";
-import { createNotifier } from "./store-utils.js?v=1851";
+import { contexts as seed, sharedContexts } from "./mocks.js?v=1855";
+import { isNewUser } from "./user-mode.js?v=1855";
+import { CURRENT_USER } from "./org.js?v=1855";
+import { isFlagOn } from "./feature-flags.js?v=1855";
+import { createNotifier } from "./store-utils.js?v=1855";
 import {
   normalizeLanguages,
   mirrorPrimaryToTopLevel,
   syncTopLevelToPrimary,
   cloneVoiceByLanguage,
-} from "./languages.js?v=1851";
-import { cloneVoiceByNetwork } from "./network-voice.js?v=1851";
+} from "./languages.js?v=1855";
+import { cloneVoiceByNetwork, cloneItems } from "./network-voice.js?v=1855";
 
 // Lives up here, away from normalizeBrandLogos where it belongs, because the
 // seed below calls that normalizer at module-init time — a `let` declared beside
@@ -439,12 +439,16 @@ export function addContext(ctx = {}) {
       ctx.imageVoice && Array.isArray(ctx.imageVoice.websites)
         ? { websites: ctx.imageVoice.websites.map((w) => ({ ...w })) }
         : { websites: [] },
-    // — 3-section model: voice & style + brand identity —
+    // — the voice, five parts (network-voice.js VOICE_PARTS) —
+    // The flat signatureHooks / closingPatterns stay only as the multilingual
+    // mirror (languages.js), which nothing shows any more.
     signatureHooks: Array.isArray(ctx.signatureHooks) ? ctx.signatureHooks.slice() : [],
     closingPatterns: Array.isArray(ctx.closingPatterns) ? ctx.closingPatterns.slice() : [],
-    formattingStyle: ctx.formattingStyle || "",
-    visualStyle: ctx.visualStyle || "",
-    hashtagStyle: ctx.hashtagStyle || "",
+    voiceSummary: ctx.voiceSummary || "",
+    voiceAlways: cloneItems(ctx.voiceAlways),
+    voiceNever: cloneItems(ctx.voiceNever),
+    voiceByPost: cloneItems(ctx.voiceByPost),
+    voiceSometimes: cloneItems(ctx.voiceSometimes),
     voiceMode: ctx.voiceMode === "manual" ? "manual" : "guided",
     voiceManual: ctx.voiceManual || "",
     brandPersonality: ctx.brandPersonality || "",
@@ -535,9 +539,9 @@ export function updateContext(id, patch) {
   if (patch.imageVoice !== undefined) c.imageVoice = patch.imageVoice;
   if (patch.signatureHooks !== undefined) c.signatureHooks = patch.signatureHooks;
   if (patch.closingPatterns !== undefined) c.closingPatterns = patch.closingPatterns;
-  if (patch.formattingStyle !== undefined) c.formattingStyle = patch.formattingStyle;
-  if (patch.visualStyle !== undefined) c.visualStyle = patch.visualStyle;
-  if (patch.hashtagStyle !== undefined) c.hashtagStyle = patch.hashtagStyle;
+  if (patch.voiceSummary !== undefined) c.voiceSummary = patch.voiceSummary;
+  for (const f of ["voiceAlways", "voiceNever", "voiceByPost", "voiceSometimes"])
+    if (patch[f] !== undefined) c[f] = cloneItems(patch[f]);
   if (patch.voiceMode !== undefined) c.voiceMode = patch.voiceMode;
   if (patch.voiceManual !== undefined) c.voiceManual = patch.voiceManual;
   if (patch.brandPersonality !== undefined) c.brandPersonality = patch.brandPersonality;
@@ -652,9 +656,11 @@ export function duplicateContext(id) {
     voiceByNetwork: cloneVoiceByNetwork(src.voiceByNetwork),
     signatureHooks: (src.signatureHooks || []).slice(),
     closingPatterns: (src.closingPatterns || []).slice(),
-    formattingStyle: src.formattingStyle || "",
-    visualStyle: src.visualStyle || "",
-    hashtagStyle: src.hashtagStyle || "",
+    voiceSummary: src.voiceSummary || "",
+    voiceAlways: cloneItems(src.voiceAlways),
+    voiceNever: cloneItems(src.voiceNever),
+    voiceByPost: cloneItems(src.voiceByPost),
+    voiceSometimes: cloneItems(src.voiceSometimes),
     brandPersonality: src.brandPersonality || "",
     brandTypography: src.brandTypography ? { ...src.brandTypography } : null,
     imageDefaults: { ...(src.imageDefaults || {}) },

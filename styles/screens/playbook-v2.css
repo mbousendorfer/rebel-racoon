@@ -297,30 +297,104 @@
   background: var(--ref-color-grey-40);
 }
 
-.pb2-lines {
+/* A voice part's rules (network-voice.js voiceItemsHtml) — one grey box each:
+   a case's kind of post in bold, the rule in ink, the examples from the
+   brand's posts under it, smaller. A learned rule leads with Archie's mark. */
+.nv-rules {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xxs);
+  gap: var(--ref-spacing-xs);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.pb2-line {
+.nv-rule {
   display: flex;
   align-items: flex-start;
   gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
   border-radius: var(--ref-border-radius-md);
   background: var(--ref-color-grey-05);
-  line-height: 1.45;
-  font-size: var(--sys-text-style-body-size);
 }
 
-.pb2-line i {
-  margin-top: var(--ref-spacing-xxxs);
-  color: var(--ref-color-grey-80);
+.nv-rule > .memory-mark {
   flex-shrink: 0;
+  margin-top: var(--ref-spacing-xxxs);
+}
+
+.nv-rule__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  min-width: 0;
+}
+
+.nv-rule__when,
+.nv-rule__text {
+  margin: 0;
+  font-size: var(--sys-text-style-body-size);
+  line-height: 1.45;
+  color: var(--ref-color-grey-100);
+}
+
+.nv-rule__when {
+  font-weight: var(--ref-font-weight-bold);
+}
+
+.nv-rule__examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxs) var(--ref-spacing-md);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nv-rule__examples li {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xxs);
+  font-size: var(--ref-font-size-sm);
+  line-height: 1.45;
+  color: var(--ref-color-grey-80);
+}
+
+.nv-rule__examples i {
+  flex-shrink: 0;
+  margin-top: var(--ref-spacing-xxxs);
+}
+
+/* Words to avoid, in the Never block, under its rules. */
+.pb2-avoid-row {
+  margin-top: var(--ref-spacing-md);
+}
+
+/* A part's rules, edited: one row each — the fields, then remove. */
+.pb2-rule-edits {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+}
+
+.pb2-rule-edit {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xs);
+}
+
+.pb2-rule-edit__fields {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  min-width: 0;
+}
+
+.pb2-rule-edit__examples {
+  margin: 0;
+  font-size: var(--ref-font-size-sm);
+  color: var(--ref-color-grey-80);
 }
 
 /* The Brand tab's two groups — Identity, Imagery. */
@@ -917,22 +991,21 @@
 
 /* A part not optimized yet reads DISABLED: the block on the page's grey, the
    base's version inside in grey-60 (the ink the house keeps for disabled),
-   lines unfilled. Its title stays grey-100 so the four still scan as one set;
+   rules unfilled. Its title stays grey-100 so the five still scan as one set;
    an optimized part stays white, filled, grey-100. */
 .pb2-block.pb2-nv-placeholder {
   background: var(--app-surface-subtle);
 }
 
-.pb2-nv-placeholder .pb2-line {
+.pb2-nv-placeholder .nv-rule {
   border: 1px solid var(--ref-color-grey-20);
   background: transparent;
-  color: var(--ref-color-grey-60);
 }
 
-.pb2-nv-placeholder .pb2-line i {
-  color: var(--ref-color-grey-60);
-}
-
+.pb2-nv-placeholder .nv-rule__when,
+.pb2-nv-placeholder .nv-rule__text,
+.pb2-nv-placeholder .nv-rule__examples li,
+.pb2-nv-placeholder .pb2-lead,
 .pb2-nv-placeholder .pb2-prose {
   color: var(--ref-color-grey-60);
 }

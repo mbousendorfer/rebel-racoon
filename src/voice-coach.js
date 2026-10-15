@@ -13,17 +13,17 @@
 // ponytail: the edit heuristics are a mock reading of one before/after pair.
 // The real thing compares many drafts per network before proposing.
 
-import { getSessionById } from "./sessions-store.js?v=1851";
-import { getContextById } from "./contexts-store.js?v=1851";
-import { playbookForNewWork } from "./active-playbook.js?v=1851";
-import { getPosts } from "./posts-store.js?v=1851";
-import { postVoiceSuggestion, postSelectionEcho, postAssistantMessage } from "./assistant.js?v=1851";
-import { startRewrite } from "./draft-rewrite.js?v=1851";
-import { escapeHtml } from "./utils.js?v=1851";
-import { ask, isActive } from "./inline-question.js?v=1851";
-import { propose, accept } from "./voice-coach-store.js?v=1851";
-import { normalizeNetwork } from "./social-profiles.js?v=1851";
-import { networkVoiceOptions } from "./context-mock-analysis.js?v=1851";
+import { getSessionById } from "./sessions-store.js?v=1855";
+import { getContextById } from "./contexts-store.js?v=1855";
+import { playbookForNewWork } from "./active-playbook.js?v=1855";
+import { getPosts } from "./posts-store.js?v=1855";
+import { postVoiceSuggestion, postSelectionEcho, postAssistantMessage } from "./assistant.js?v=1855";
+import { startRewrite } from "./draft-rewrite.js?v=1855";
+import { escapeHtml } from "./utils.js?v=1855";
+import { ask, isActive } from "./inline-question.js?v=1855";
+import { propose, accept } from "./voice-coach-store.js?v=1855";
+import { normalizeNetwork } from "./social-profiles.js?v=1855";
+import { networkClosings } from "./context-mock-analysis.js?v=1855";
 import {
   networkVoicesOn,
   baseNetwork,
@@ -31,7 +31,8 @@ import {
   networkLabel,
   networkIcon,
   followRules,
-} from "./network-voice.js?v=1851";
+  suggestionField,
+} from "./network-voice.js?v=1855";
 
 function sessionPlaybook(sessionId) {
   const session = getSessionById(sessionId);
@@ -55,10 +56,11 @@ function readEdit(before, after) {
   const bText = (before.text || []).join("\n");
   const aText = (after.text || []).join("\n");
   if (EMOJI.test(bText) && !EMOJI.test(aText))
-    return { text: "No emoji.", why: "You took every emoji out of this draft." };
+    return { text: "No emoji.", why: "You took every emoji out of this draft.", field: "voiceNever" };
   const bTags = (before.hashtags || []).length;
   const aTags = (after.hashtags || []).length;
-  if (bTags > 0 && aTags === 0) return { text: "No hashtags.", why: "You removed all the hashtags from this draft." };
+  if (bTags > 0 && aTags === 0)
+    return { text: "No hashtags.", why: "You removed all the hashtags from this draft.", field: "voiceNever" };
   if (bTags > 3 && aTags < bTags)
     return { text: `${aTags} hashtags at most.`, why: `You cut the hashtags from ${bTags} to ${aTags}.` };
   const bHook = words(before.text?.[0]);
@@ -142,8 +144,8 @@ export function noticeDraftFeedback(targetId, reasons = []) {
 }
 
 // Closings that read native on each network — the answers offered when a
-// network voice has none of its own yet. One table with the Optimize wizard's.
-const closingsFor = (n) => networkVoiceOptions(n)?.closingPatterns || null;
+// network voice has no "Now and then" of its own yet.
+const closingsFor = (n) => networkClosings(n);
 
 const asked = new Set(); // `${contextId}:${network}` — one question per network voice per visit
 
@@ -158,8 +160,8 @@ export function coachingTarget(sessionId, drafts = []) {
     (n) => n !== base && closingsFor(n),
   );
   if (!others.length) return { reason: `Needs a draft on a network other than ${networkLabel(base)}` };
-  const open = others.filter((n) => !isOverridden(ctx, n, "closingPatterns"));
-  if (!open.length) return { reason: "Every network here already has its own closing" };
+  const open = others.filter((n) => !isOverridden(ctx, n, "voiceSometimes"));
+  if (!open.length) return { reason: "Every network here already has its own Now and then" };
   const net = open.find((n) => !asked.has(`${ctx.id}:${n}`));
   return net ? { ctx, net } : { reason: "Already asked during this visit" };
 }
@@ -173,11 +175,12 @@ export function coachAfterDraft(sessionId, drafts = []) {
   const label = networkLabel(net);
   const commit = (text) => {
     postSelectionEcho(sessionId, { icon: networkIcon(net), title: text, meta: `${label} closing` });
-    // The answer is the explicit gesture: kept at once, shown as a kept memory note.
+    // The answer is the explicit gesture: kept at once, shown as a kept memory
+    // note — a habit, so it joins "Now and then".
     const s = propose(ctx.id, {
       network: net,
-      field: "closingPatterns",
-      text,
+      field: "voiceSometimes",
+      text: `Close with “${text}”`,
       why: "You told me.",
       source: "coaching",
     });
@@ -200,10 +203,10 @@ export function coachAfterDraft(sessionId, drafts = []) {
 // A kept rule changes the drafts Archie writes next (posts-store writes every
 // draft in its network voice). The drafts already in the chat were written
 // before it: these are the ones it can still rewrite — the rule's network, not
-// scheduled, not mid-rewrite, not already following it. Field proposals (a
-// closing) are not rules: they shape the next drafts only.
+// scheduled, not mid-rewrite, not already following it. A habit (Now and then,
+// a closing) is not a rule every draft breaks: it shapes the next drafts only.
 export function draftsToRewrite(sessionId, s) {
-  if (!s || s.field || s.status !== "accepted") return [];
+  if (!s || suggestionField(s) === "voiceSometimes" || s.status !== "accepted") return [];
   return getPosts(sessionId).filter(
     (p) =>
       normalizeNetwork(p.network) === s.network &&

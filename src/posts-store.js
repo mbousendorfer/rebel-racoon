@@ -7,13 +7,13 @@
 //   attachImageToDraft(sessionId, postId, imageUrl)
 //   subscribe(sessionId, fn)    → unsubscribe fn
 
-import { postsBySession as seedPostsBySession, allSeedSessions as seedRecentSessions } from "./mocks.js?v=1851";
-import { isNewUser } from "./user-mode.js?v=1851";
-import { createSessionNotifier } from "./store-utils.js?v=1851";
-import { getSessionById } from "./sessions-store.js?v=1851";
-import { getContextById } from "./contexts-store.js?v=1851";
-import { playbookForNewWork } from "./active-playbook.js?v=1851";
-import { networkVoicesOn, writeInVoice } from "./network-voice.js?v=1851";
+import { postsBySession as seedPostsBySession, allSeedSessions as seedRecentSessions } from "./mocks.js?v=1855";
+import { isNewUser } from "./user-mode.js?v=1855";
+import { createSessionNotifier } from "./store-utils.js?v=1855";
+import { getSessionById } from "./sessions-store.js?v=1855";
+import { getContextById } from "./contexts-store.js?v=1855";
+import { playbookForNewWork } from "./active-playbook.js?v=1855";
+import { networkVoicesOn, writeInVoice } from "./network-voice.js?v=1855";
 
 // Demo session ids — only these get the seeded posts mock. Brand-new
 // conversations start empty (cf. library.js for the same rationale).
@@ -95,12 +95,12 @@ export function addPostDraft(
     format: format || null,
   };
   // Voice per network: every generator lands here, so every draft is written
-  // in its network's voice — the hooks, closings and rules the Playbook holds
-  // for it. `voice` says which, for the card's generation context.
+  // in its network's voice — the rules it learned (network-voice.js
+  // writeInVoice). `voice` says which, for the card's generation context.
   if (networkVoicesOn()) {
     const session = getSessionById(sessionId);
     const ctx = session?.contextId ? getContextById(session.contextId) : playbookForNewWork();
-    if (ctx) Object.assign(draft, writeInVoice(ctx, network, { text: draft.text, hashtags, language }, posts.length));
+    if (ctx) Object.assign(draft, writeInVoice(ctx, network, { text: draft.text, hashtags }));
   }
   posts.unshift(draft);
   notify(sessionId);

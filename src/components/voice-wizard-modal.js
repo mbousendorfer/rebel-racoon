@@ -1,16 +1,16 @@
 // voice-wizard-modal — "Optimize your Instagram voice" (flag networkVoices).
 //
 // Every Optimize on the Voice tab opens it: the parts of a network voice, one
-// step each (Opens with · Closes with · Formatting · Emoji & casing …), then a
-// review. The header names the steps — the DS stepper (V2 Atoms, ported as
+// step each (How the brand sounds · Always · Never · Depending on the post ·
+// Now and then), then a review. The header names the steps — the DS stepper (V2 Atoms, ported as
 // .app-stepper), each one clickable.
 // A step: on the left, the choices — the job is to write this part for the
 // network, so they come first, with nothing pre-picked. While nothing is
 // picked the part keeps the base voice; a small note under the choices says
 // so; "Use default voice" in the footer, beside Next, puts the part back on
 // the base and moves on — the default is never offered as a choice.
-// For lines: "Your … lines", the ones
-// you keep, numbered in your order of preference (drag by the grip — the
+// For rules: "Your rules", the ones
+// you keep, numbered in your order (drag by the grip — the
 // shared drag-reorder.js — or ↑ ↓ on it; × gives a line back), write your own,
 // and under them, in the same list but lighter, his suggestions not kept yet
 // (one click adds one). For a
@@ -30,10 +30,10 @@
 //   result = { values: { [field]: value | undefined }, drafted: boolean }
 //   undefined = the part follows the base voice.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1851";
-import { bindReorder } from "../drag-reorder.js?v=1851";
-import { escapeHtml as esc } from "../utils.js?v=1851";
-import { networkVoiceOptions, networkGuidance, networkGuidanceUrl } from "../context-mock-analysis.js?v=1851";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1855";
+import { bindReorder } from "../drag-reorder.js?v=1855";
+import { escapeHtml as esc } from "../utils.js?v=1855";
+import { networkVoiceOptions, networkGuidance, networkGuidanceUrl } from "../context-mock-analysis.js?v=1855";
 import {
   networkFields,
   isNewPart,
@@ -41,49 +41,58 @@ import {
   networkIcon,
   baseNetwork,
   networkEntry,
-  resolvedVoice,
+  baseValue,
+  cloneItems,
+  itemLine,
+  itemsFromLines,
+  voiceItemsHtml,
   progressRingHtml,
-} from "../network-voice.js?v=1851";
+} from "../network-voice.js?v=1855";
 
 const MODAL_ID = "voiceWizard";
 
+// A rule step works on lines (a case reads "Kind of post: how it's written");
+// they go back to rules on the way out (itemsFromLines), keeping the examples
+// of a rule that was already there.
 const PARTS = {
-  signatureHooks: {
-    title: "Opens with",
-    noun: "openings",
+  voiceSummary: {
+    title: "How the brand sounds",
+    noun: "summary",
+    list: false,
+    ask: (n) => `How should the brand sound on ${n}?`,
+    add: "How the brand sounds on this network, in a few sentences…",
+  },
+  voiceAlways: {
+    title: "Always",
+    noun: "Always rules",
     list: true,
-    yours: "Your opening lines",
-    ask: (n) => `How do your posts open on ${n}?`,
-    add: "Write your own opening line…",
+    yours: "Your rules",
+    ask: (n) => `What does every post on ${n} do?`,
+    add: "Write your own rule…",
   },
-  closingPatterns: {
-    title: "Closes with",
-    noun: "closings",
+  voiceNever: {
+    title: "Never",
+    noun: "Never rules",
     list: true,
-    yours: "Your closing lines",
-    ask: (n) => `How do your posts end on ${n}?`,
-    add: "Write your own closing line…",
+    yours: "Your rules",
+    ask: (n) => `What does a post on ${n} never do?`,
+    add: "Write your own rule…",
   },
-  formattingStyle: {
-    title: "Formatting",
-    noun: "formatting",
-    list: false,
-    ask: (n) => `How should a post be laid out on ${n}?`,
-    add: "How posts are structured on this network…",
+  voiceByPost: {
+    title: "Depending on the post",
+    noun: "cases",
+    list: true,
+    yours: "Your cases",
+    ask: (n) => `How is each kind of post written on ${n}?`,
+    add: "Kind of post: how it's written…",
   },
-  hashtagStyle: {
-    title: "Hashtags",
-    noun: "hashtags",
-    list: false,
-    ask: (n) => `How do you use hashtags on ${n}?`,
-    add: "How many, where, which kind…",
-  },
-  visualStyle: {
-    title: "Emoji & casing",
-    noun: "emoji and capitals",
-    list: false,
-    ask: (n) => `How do you use emoji and capitals on ${n}?`,
-    add: "Emoji, capitalisation, hashtags, links…",
+  voiceSometimes: {
+    title: "Now and then",
+    noun: "habits",
+    list: true,
+    yours: "Your habits",
+    ask: (n) => `What comes back now and then on ${n}?`,
+    add: "Write your own habit…",
   },
 };
 
@@ -163,9 +172,15 @@ export function open({ data, network, part = null, onSave }) {
   const isBase = network === baseNetwork(data);
   const entry = isBase ? data : networkEntry(data, network) || {};
   const parts = {};
-  // The parts on screen when it opens (a flag can add one — voiceParts()).
+  const prev = {};
   const fields = networkFields().filter((f) => opts[f]);
-  for (const field of fields) parts[field] = initialPart(field, own(entry[field]), opts[field]);
+  for (const field of fields) {
+    const value = own(isBase ? baseValue(data, field) : entry[field]);
+    parts[field] = initialPart(field, value, opts[field]);
+    // The rules already written, here or on the base: a line kept as is keeps
+    // its examples and its learned mark.
+    if (PARTS[field].list) prev[field] = [...cloneItems(value), ...cloneItems(baseValue(data, field))];
+  }
   const firstLeft = isBase ? -1 : fields.findIndex((f) => entry[f] === undefined);
   const asked = part ? fields.indexOf(part) : -1;
   w = {
@@ -176,6 +191,7 @@ export function open({ data, network, part = null, onSave }) {
     opts,
     fields,
     parts,
+    prev,
     step: asked >= 0 ? asked : firstLeft >= 0 ? firstLeft : 0,
     leaving: false,
     onSave,
@@ -219,7 +235,7 @@ function own(value) {
 // otherwise (= it keeps the base voice). Archie's picks are suggestions to
 // choose, never pre-selected: a Next must not optimize a part behind your back.
 function initialPart(field, value, options) {
-  if (PARTS[field].list) return { lines: value === undefined ? [] : [...value] };
+  if (PARTS[field].list) return { lines: value === undefined ? [] : value.map((i) => itemLine(field, i)) };
   if (value === undefined) return { choice: null, own: "" };
   const i = options.indexOf(value);
   return i >= 0 ? { choice: i, own: "" } : { choice: "own", own: value };
@@ -234,7 +250,7 @@ function archiePart(field, options) {
 // A part's final value — undefined = it follows the base voice.
 function valueOf(field) {
   const p = w.parts[field];
-  if (PARTS[field].list) return p.lines.length ? [...p.lines] : undefined;
+  if (PARTS[field].list) return p.lines.length ? itemsFromLines(field, p.lines, w.prev[field]) : undefined;
   if (p.choice === null) return undefined;
   if (p.choice === "own") return p.own.trim() || undefined;
   return w.opts[field][p.choice];
@@ -242,7 +258,7 @@ function valueOf(field) {
 
 function isArchieDefault(field) {
   const p = w.parts[field];
-  if (PARTS[field].list) return (valueOf(field) || []).join("\n") === w.opts[field].slice(0, 2).join("\n");
+  if (PARTS[field].list) return p.lines.join("\n") === w.opts[field].slice(0, 2).join("\n");
   return p.choice === 0;
 }
 
@@ -254,7 +270,7 @@ function snapshot() {
 // network already had, not the ones changed in this wizard.
 function archieAll() {
   for (const field of w.fields) {
-    const had = w.isBase ? own(w.data[field]) : networkEntry(w.data, w.net)?.[field];
+    const had = w.isBase ? own(baseValue(w.data, field)) : networkEntry(w.data, w.net)?.[field];
     if (had !== undefined) continue;
     if (JSON.stringify(w.parts[field]) !== w.startParts[field]) continue;
     w.parts[field] = archiePart(field, w.opts[field]);
@@ -328,11 +344,6 @@ function paintFooter() {
     }`;
 }
 
-function baseValue(field) {
-  if (field === "signatureHooks" || field === "closingPatterns") return resolvedVoice(w.data, w.base)[field];
-  return w.data[field] || "";
-}
-
 // What the network itself recommends for this part — the reason behind
 // Archie's picks, in the right column beside the choices.
 function renderGuidance(field) {
@@ -364,7 +375,7 @@ function renderDefaultNote(field) {
   const what = `${networkLabel(w.base)} ${PARTS[field].noun}`;
   // Said while nothing is picked; going back to the base is the footer's
   // "Use default voice".
-  return `<p class="vw-default"${valueOf(field) === undefined ? "" : " hidden"}>Until you pick one, ${esc(
+  return `<p class="vw-default"${valueOf(field) === undefined ? "" : " hidden"}>Until you choose, ${esc(
     networkLabel(w.net),
   )} uses your ${esc(what)}.</p>`;
 }
@@ -386,7 +397,7 @@ function renderPart(field) {
         (line, i) => `<li class="vw-kept app-reorder__item">
           <button type="button" class="app-reorder__grip" data-vw-handle="${i}" title="Drag to reorder" aria-label="${esc(`Move “${line}” — ${i + 1} of ${n}. Use the up and down arrow keys.`)}"><i class="ap-icon-move"></i></button>
           <span class="vw-kept__rank" aria-hidden="true">${i + 1}</span>
-          <span class="vw-kept__text">“${esc(line)}”</span>
+          <span class="vw-kept__text">${esc(line)}</span>
           <button type="button" class="ap-icon-button transparent grey" data-vw-unadd="${i}" aria-label="${esc(`Remove “${line}”`)}"><i class="ap-icon-close"></i></button>
         </li>`,
       )
@@ -395,7 +406,7 @@ function renderPart(field) {
       .filter((o) => !p.lines.includes(o))
       .map(
         (o) => `<li><button type="button" class="vw-pick" data-vw-take="${esc(o)}" aria-label="${esc(`Add “${o}”`)}">
-          <span class="vw-pick__text">“${esc(o)}”</span>
+          <span class="vw-pick__text">${esc(o)}</span>
           <span class="vw-pick__add" aria-hidden="true"><i class="ap-icon-plus"></i>Add</span>
         </button></li>`,
       )
@@ -403,7 +414,7 @@ function renderPart(field) {
     return `${head}
       <section class="vw-section">
         <div class="vw-list-head"><span class="vw-list-head__title">${esc(P.yours)}</span>${
-          n > 1 ? `<span class="vw-list-head__hint">I lead with the first one. Drag to reorder.</span>` : ""
+          n > 1 ? `<span class="vw-list-head__hint">Drag to reorder.</span>` : ""
         }</div>
         ${n ? `<ol class="vw-stack app-reorder">${kept}</ol>` : ""}
         <div class="vw-add">
@@ -471,21 +482,16 @@ function renderReview() {
       : n === 0
         ? `Every part follows your ${baseLabel} voice.`
         : `${n} of ${review()} parts written for ${label}. The others follow your ${baseLabel} voice.`;
-  const lines = (list) =>
-    `<ul class="pb2-lines">${list
-      .filter(Boolean)
-      .map((l) => `<li class="pb2-line"><i class="ap-icon-quote" aria-hidden="true"></i><span>${esc(l)}</span></li>`)
-      .join("")}</ul>`;
   const blocks = w.fields
     .map((field, i) => {
       const v = valueOf(field);
       const borrowed = v === undefined && !w.isBase;
-      const shown = v === undefined ? baseValue(field) : v;
-      const empty = Array.isArray(shown) ? !shown.filter(Boolean).length : !String(shown || "").trim();
+      const shown = v === undefined ? baseValue(w.data, field) : v;
+      const empty = Array.isArray(shown) ? !cloneItems(shown).length : !String(shown || "").trim();
       const body = empty
         ? `<p class="pb2-empty">Not set yet.</p>`
         : Array.isArray(shown)
-          ? lines(shown)
+          ? voiceItemsHtml(shown)
           : `<p class="pb2-prose">${esc(shown)}</p>`;
       return `<section class="pb2-block vw-review__block${borrowed ? " pb2-nv-placeholder" : ""}">
         <header class="pb2-block__head">

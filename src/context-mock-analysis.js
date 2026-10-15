@@ -8,6 +8,8 @@
 // Suggested values become menthol chips (AI-suggested). Other static
 // option lists come from the brief panel renderer.
 
+import { networkFields, isListPart, isNewPart, itemsFromLines } from "./network-voice.js?v=1855";
+
 const AGORAPULSE = {
   name: "Agorapulse",
   businessSummary:
@@ -77,16 +79,53 @@ const AGORAPULSE = {
     contentStyle: ["Data-driven with storytelling", "Direct and actionable"],
     objective: ["Lead generation", "Brand awareness"],
     contentAction: ["Sign up for a free trial", "Book a demo"],
-    signatureHooks: [
-      "Stop juggling 8 tabs to run your social.",
-      "Here's what the data actually says:",
-      "Your team is losing hours to this:",
+    voiceSummary:
+      "Professional, data-grounded and action-oriented. Posts open with the value to the reader, back claims with measurable outcomes and close on one clear call to action.",
+    voiceAlways: [
+      {
+        text: "Open with a benefit-led headline, then short scannable paragraphs.",
+        examples: ["Stop juggling 8 tabs to run your social."],
+      },
+      {
+        text: "Back claims with numbers and percentages.",
+      },
+      {
+        text: "Speak to the reader directly — 'you', 'your team'.",
+      },
     ],
-    closingPatterns: ["Start your free trial — no card required.", "Book a demo and we'll map it to your workflow."],
-    formattingStyle:
-      "Benefit-led headline, then short scannable paragraphs. Bullet lists for capabilities. Numbers and percentages for proof. Closes on a single, clear call to action.",
-    visualStyle:
-      "Minimal emoji. Direct address ('you', 'your team'). Sentence case. Metrics as digits. One primary CTA per post.",
+    voiceNever: [
+      {
+        text: "Never more than one call to action per post.",
+      },
+      {
+        text: "No hype words like 'revolutionary' or 'game-changer'.",
+      },
+    ],
+    voiceByPost: [
+      {
+        when: "Feature post",
+        text: "Lead with the problem it removes, list the capabilities as bullets, close on the free trial.",
+        examples: ["Your team is losing hours to this:"],
+      },
+      {
+        when: "Data or report post",
+        text: "Open on the number, say what it means for the reader, then link the report.",
+        examples: ["Here's what the data actually says:"],
+      },
+    ],
+    voiceSometimes: [
+      {
+        text: "Close on the free trial.",
+        examples: ["Start your free trial — no card required."],
+      },
+      {
+        text: "Close on a demo offer.",
+        examples: ["Book a demo and we'll map it to your workflow."],
+      },
+      {
+        text: "Minimal emoji.",
+      },
+    ],
     brandPersonality:
       "Confident, helpful, results-focused. Speaks with the authority of a tool that has supported thousands of social teams, and stays empathetic to the chaos of multi-platform work.",
     brandTypography: { headingFont: "Averta", bodyFont: "Averta" },
@@ -249,11 +288,41 @@ const GENERIC = {
     contentStyle: ["Direct and actionable"],
     objective: ["Brand awareness"],
     contentAction: ["Visit the website"],
-    signatureHooks: ["Here's the problem most teams hit:", "What if you could [outcome]?"],
-    closingPatterns: ["Learn more on our site.", "Get started today."],
-    formattingStyle:
-      "Clear, concise paragraphs. A short list when explaining steps. One call to action per post. Edit this to match how you actually write.",
-    visualStyle: "Minimal emoji, sentence case, plain English. Edit to capture how your brand styles its posts.",
+    voiceSummary:
+      "Clear, professional and direct. Each post opens with the benefit and follows with the evidence. Edit this to say how your brand actually sounds.",
+    voiceAlways: [
+      {
+        text: "Open with the benefit to the reader.",
+        examples: ["Here's the problem most teams hit:"],
+      },
+      {
+        text: "Clear, concise paragraphs; a short list when explaining steps.",
+      },
+      {
+        text: "Sentence case and plain English.",
+      },
+    ],
+    voiceNever: [
+      {
+        text: "Never more than one call to action per post.",
+      },
+      {
+        text: "No jargon that hasn't been explained.",
+      },
+    ],
+    voiceByPost: [
+      {
+        when: "Product post",
+        text: "The problem, what changes, then one call to action.",
+        examples: ["What if you could [outcome]?"],
+      },
+    ],
+    voiceSometimes: [
+      {
+        text: "Close by pointing to the website.",
+        examples: ["Learn more on our site.", "Get started today."],
+      },
+    ],
     brandPersonality:
       "Trustworthy, helpful, and knowledgeable. Speaks to the reader as an equal who has done the homework. Edit to capture what makes your brand's personality distinctive.",
     brandTypography: { headingFont: "System UI", bodyFont: "System UI" },
@@ -354,143 +423,225 @@ export function analyzeSocialProfiles(profileIds = []) {
     contentStyle: ["Conversational", "Engagement-led"],
     objective: ["Brand awareness", "Build personal brand"],
     contentAction: ["Reply in the comments"],
-    signatureHooks: ["Quick one for you:", "Saw this come up again this week:"],
-    closingPatterns: ["Drop a comment if this helped.", "What would you add?"],
-    formattingStyle:
-      "Short, scroll-stopping opener, then a few punchy lines with line breaks. Emoji used sparingly for rhythm. Ends on a question or a light CTA to drive replies.",
-    visualStyle: "Casual sentence case, the occasional emoji, the odd hashtag — reads like a person, not a brand.",
+    voiceSummary:
+      "Approachable and quick — the voice that already performs on your feed: a scroll-stopping opener, a few punchy lines, a question at the end.",
+    voiceAlways: [
+      {
+        text: "Open on a short, scroll-stopping line.",
+        examples: ["Quick one for you:", "Saw this come up again this week:"],
+      },
+      {
+        text: "A few punchy lines with line breaks.",
+      },
+      {
+        text: "Casual sentence case — it reads like a person, not a brand.",
+      },
+    ],
+    voiceNever: [
+      {
+        text: "Never more than the odd hashtag.",
+      },
+      {
+        text: "Never a hard sell.",
+      },
+    ],
+    voiceByPost: [
+      {
+        when: "Tip or quick win",
+        text: "One line of setup, the tip, then a question.",
+      },
+    ],
+    voiceSometimes: [
+      {
+        text: "End on a question to drive replies.",
+        examples: ["Drop a comment if this helped.", "What would you add?"],
+      },
+      {
+        text: "An emoji for rhythm, sparingly.",
+      },
+    ],
     brandPersonality: "Approachable, quick, community-first — the voice that already performs on your feed.",
   });
   return result;
 }
 
 // How each network bends the base voice, as Archie would read it off that
-// network's posts — a version of each of the four parts, so any one of them
-// can be optimized on its own (the network voice's checklist).
-const NETWORK_ADAPTATIONS = {
+// network's posts — the Optimize wizard's options, part by part: two ways to
+// sound for the summary, three lines for each list (a case reads "Kind of
+// post: how it's written"). The first of each — the first two lines of a list
+// — is Archie's pick, what Optimize writes when nobody chooses
+// (analyzeNetworkVoices). `closings` feed the coaching question ("How do you
+// usually end a post on X?"), whose answer joins Now and then.
+const NETWORK_VOICE = {
   linkedin: {
-    signatureHooks: ["Here's what we learned the hard way:", "Most teams get this wrong:"],
-    closingPatterns: ["What's your take?", "Follow for the next one."],
-    formattingStyle:
-      "A first line strong enough to earn the « see more », then short paragraphs with air between them. Ends on a takeaway or a question.",
-    visualStyle: "Sentence case. Emoji rarely, as bullets at most. Three hashtags at the end, never in the text.",
+    voiceSummary: [
+      "Professional and conversational: a first line strong enough to earn the « see more », then short paragraphs that read like a peer sharing what worked.",
+      "Measured and expert: a lesson from experience told as a short story, ending on one plain takeaway.",
+    ],
+    voiceAlways: [
+      "Put the hook in the first line — it's all that shows before « see more ».",
+      "Short paragraphs with air between them.",
+      "End on a takeaway or a question.",
+    ],
+    voiceNever: [
+      "Never put the link in the post when it's about an idea — it goes in the comments.",
+      "No more than three hashtags.",
+      "Never open with « Excited to announce ».",
+    ],
+    voiceByPost: [
+      "Lesson or opinion: a one-line hook, a short story in three beats, then the lesson in one plain sentence.",
+      "Company news: what changed and why it matters to the reader, before any thank-you.",
+      "Document or carousel: one line that says what the reader will learn, then let the slides do the work.",
+    ],
+    voiceSometimes: [
+      "Close by asking for the reader's take.",
+      "Three hashtags at the end, never in the text.",
+      "Emoji as bullets in a list, never mid-sentence.",
+    ],
+    closings: ["What's your take?", "Follow for the next one.", "Link in the comments."],
   },
   instagram: {
-    signatureHooks: ["Save this before you scroll:", "Your week, but easier:"],
-    closingPatterns: ["Save this for later.", "Tag someone who needs this."],
-    formattingStyle:
-      "The hook sits in the first line, before the caption is cut. Short paragraphs, then the hashtags in one block at the very end.",
-    visualStyle:
-      "Emoji welcome — one or two to open a line, never mid-sentence. No link in the caption: point to the link in bio.",
+    voiceSummary: [
+      "Warm and visual: the caption frames the image, opens on a line worth stopping for and keeps the details for the carousel.",
+      "Casual and close: it talks to one person, with a few emoji and short lines that read on a phone.",
+    ],
+    voiceAlways: [
+      "Put the hook in the first line, before the caption is cut.",
+      "Short paragraphs, then the hashtags in one block at the very end.",
+      "Point to the link in bio for anything to click.",
+    ],
+    voiceNever: [
+      "Never put a link in the caption — it can't be clicked.",
+      "Never use emoji mid-sentence.",
+      "No hashtags in the body of the caption.",
+    ],
+    voiceByPost: [
+      "Carousel: the caption says why to swipe; the details live on the slides.",
+      "Reel: one line that says the hook again in words.",
+      "Single photo: one moment someone can picture, then one sentence of context.",
+    ],
+    voiceSometimes: [
+      "Close by asking to save the post.",
+      "Close by asking to tag someone.",
+      "One or two emoji to open a line.",
+    ],
+    closings: ["Save this for later.", "Tag someone who needs this.", "Tell me in the comments."],
   },
   x: {
-    signatureHooks: ["Hot take:", "Thread:"],
-    closingPatterns: ["Thoughts?", "More in the thread below."],
-    formattingStyle: "One idea per post, under 280 characters. Anything longer becomes a numbered thread.",
-    visualStyle: "One emoji at most. One hashtag at most. The link goes last.",
+    voiceSummary: [
+      "Short and dry: one idea per post, said the way you'd reply to a friend.",
+      "Punchy and opinionated: the take up front, the detail in a thread when it needs one.",
+    ],
+    voiceAlways: [
+      "One idea per post, under 280 characters.",
+      "Anything longer becomes a numbered thread.",
+      "The link goes last.",
+    ],
+    voiceNever: ["No more than one hashtag.", "No more than one emoji.", "Never a setup line before the point."],
+    voiceByPost: [
+      "Thread: a hook post that stands alone, then two to four replies, one step each.",
+      "Hot take: the opinion in the first five words, one reason after it.",
+      "Link share: say what the reader gets, then the link.",
+    ],
+    voiceSometimes: ["Close by asking « Thoughts? ».", "Open with « Hot take: » or « Thread: ».", "Lowercase is fine."],
+    closings: ["Thoughts?", "More in the thread below.", "Agree or disagree?"],
   },
   facebook: {
-    signatureHooks: ["Quick question for you:", "Here's something we noticed:"],
-    closingPatterns: ["What would you add?", "Share this with someone who needs it."],
-    formattingStyle:
-      "Two or three short paragraphs that read like a conversation, then a question to open the comments.",
-    visualStyle: "A few emoji are fine. Links stay in the post so the preview card shows.",
+    voiceSummary: [
+      "Friendly and conversational: two or three short paragraphs that read like a chat, ending on a question.",
+      "Warm and casual: one short paragraph and a clear link preview — the link does the work.",
+    ],
+    voiceAlways: [
+      "Two or three short paragraphs that read like a conversation.",
+      "Keep the link in the post so the preview card shows.",
+      "End on a question that opens the comments.",
+    ],
+    voiceNever: [
+      "No hashtags — they read as spam here.",
+      "Never post a link without saying what's behind it.",
+      "Never write like an ad.",
+    ],
+    voiceByPost: [
+      "Event: what, when and where in the first line, then who it's for.",
+      "Community question: ask one thing people can answer in a sentence.",
+      "Link share: one short paragraph, then the link preview.",
+    ],
+    voiceSometimes: [
+      "Close by asking what the reader would add.",
+      "Close by asking to share it.",
+      "An emoji to open the post.",
+    ],
+    closings: ["What would you add?", "Share this with someone who needs it.", "Link in the comments."],
   },
   tiktok: {
-    signatureHooks: ["Wait for it:", "Nobody tells you this:"],
-    closingPatterns: ["Follow for part 2.", "Save this one."],
-    formattingStyle: "The caption backs the video: one line that says the hook again in words.",
-    visualStyle: "Casual casing, emoji that fit the clip, two or three hashtags that match the video.",
+    voiceSummary: [
+      "Casual and fast: the caption backs the video with one line that says the hook again in words.",
+      "Playful and native: all lowercase, the caption asks the question the video answers.",
+    ],
+    voiceAlways: [
+      "One caption line that says the hook again in words.",
+      "Two or three hashtags that match the video.",
+      "Casual casing.",
+    ],
+    voiceNever: [
+      "Never explain the whole video in the caption.",
+      "No corporate wording.",
+      "No more than three hashtags.",
+    ],
+    voiceByPost: [
+      "Tutorial: the caption names the result, the video shows the steps.",
+      "Trend: the caption plays along in one line; the brand stays in the background.",
+      "Behind the scenes: one line of context, said like a person.",
+    ],
+    voiceSometimes: ["Close by asking to follow for part 2.", "Close by asking to save it.", "Open with « POV: »."],
+    closings: ["Follow for part 2.", "Save this one.", "Tell me in the comments."],
   },
   youtube: {
-    signatureHooks: ["In this video:", "Here's how we did it:"],
-    closingPatterns: ["Subscribe for the next one.", "Tell us in the comments."],
-    formattingStyle: "The title carries the hook. The description opens with what the video answers, then chapters.",
-    visualStyle: "No emoji in titles. Links and timestamps live in the description.",
-  },
-};
-
-// A second option for every part, so the Optimize wizard offers a real choice
-// (the first option of each part is NETWORK_ADAPTATIONS). The closings also
-// feed the coaching question ("How do you usually end a post on X?").
-const NETWORK_ALTERNATIVES = {
-  linkedin: {
-    signatureHooks: ["A lesson from this week:"],
-    closingPatterns: ["What's your take? Reply and tell me.", "Follow for more like this.", "Link in the comments."],
-    formattingStyle: "A one-line opener, a short story in three beats, then the lesson in one plain sentence.",
-    visualStyle: "No emoji at all. Sentence case. Two hashtags at most, at the end.",
-  },
-  instagram: {
-    signatureHooks: ["Real talk:"],
-    closingPatterns: ["Tell me in the comments.", "Link in bio."],
-    formattingStyle: "A one-line caption that frames the visual; the details live in the carousel.",
-    visualStyle: "Emoji as line bullets. Lowercase is fine. Up to five hashtags, in the caption.",
-  },
-  x: {
-    signatureHooks: ["Unpopular opinion:"],
-    closingPatterns: ["Agree or disagree?"],
-    formattingStyle: "A short hook post, then the detail as a reply thread of two to four posts.",
-    visualStyle: "No emoji. Lowercase welcome. No hashtags.",
-  },
-  facebook: {
-    signatureHooks: ["We need to talk about this:"],
-    closingPatterns: ["Link in the comments."],
-    formattingStyle: "One short paragraph and a clear link preview — the link does the work.",
-    visualStyle: "Warm and casual, an emoji to open the post. No hashtags.",
-  },
-  tiktok: {
-    signatureHooks: ["POV:"],
-    closingPatterns: ["Tell me in the comments."],
-    formattingStyle: "The caption asks the question the video answers.",
-    visualStyle: "All lowercase, one emoji, two niche hashtags.",
-  },
-  youtube: {
-    signatureHooks: ["The short version:"],
-    closingPatterns: ["Full video linked below."],
-    formattingStyle:
-      "The title asks a question; the description gives the answer in three short lines, main link first.",
-    visualStyle: "One emoji at most in the description. Title case for the title.",
+    voiceSummary: [
+      "Clear and helpful: the title carries the hook, the description opens with what the video answers, then chapters.",
+      "Plain and searchable: a title that asks a question, a description that answers it in three short lines.",
+    ],
+    voiceAlways: [
+      "The title carries the hook.",
+      "The description opens with what the video answers.",
+      "Links and timestamps live in the description.",
+    ],
+    voiceNever: [
+      "No emoji in titles.",
+      "Never bury the main link below the fold.",
+      "No clickbait the video doesn't deliver.",
+    ],
+    voiceByPost: [
+      "Tutorial: the title names the result, the description lists the steps as chapters.",
+      "Short: the title is the hook; the description is one line.",
+      "Interview: the guest's name and the one question that matters, in the title.",
+    ],
+    voiceSometimes: [
+      "Close by asking to subscribe.",
+      "Close by asking a question for the comments.",
+      "Three hashtags in the description; the first shows above the title.",
+    ],
+    closings: ["Subscribe for the next one.", "Tell us in the comments.", "Full video linked below."],
   },
 };
 
 /**
  * What Archie offers for each part of a network voice — the Optimize wizard's
- * options: 3 hooks, 3 closings, 2 formattings, 2 emoji & casing. The first of
- * each is what Optimize writes when nobody chooses (analyzeNetworkVoices).
+ * options, keyed by part (network-voice.js VOICE_PARTS).
  * @param {string} network
- * @returns {{ signatureHooks: string[], closingPatterns: string[], formattingStyle: string[], visualStyle: string[] } | null}
+ * @returns {{ [part: string]: string[] } | null}
  */
 export function networkVoiceOptions(network) {
-  const a = NETWORK_ADAPTATIONS[network];
-  const b = NETWORK_ALTERNATIVES[network];
-  if (!a || !b) return null;
-  const three = (list) => [...new Set(list)].slice(0, 3);
-  return {
-    signatureHooks: three([...a.signatureHooks, ...b.signatureHooks]),
-    closingPatterns: three([...a.closingPatterns, ...b.closingPatterns]),
-    formattingStyle: [a.formattingStyle, b.formattingStyle],
-    visualStyle: [a.visualStyle, b.visualStyle],
-    hashtagStyle: HASHTAG_OPTIONS[network] || null,
-  };
+  const v = NETWORK_VOICE[network];
+  if (!v) return null;
+  const { closings, ...parts } = v;
+  return clone(parts);
 }
 
-// Hashtags — the part the product "just added" (flag voiceNewSection). Kept out
-// of NETWORK_ADAPTATIONS on purpose: a Playbook created today doesn't get it
-// written, so the demo shows a part every network still has to do.
-const HASHTAG_OPTIONS = {
-  linkedin: ["Three at the end, never in the text.", "None — LinkedIn reach doesn't need them."],
-  instagram: [
-    "Three to five in the caption, only ones that match the topic.",
-    "One or two specific ones at the end of the caption.",
-  ],
-  x: ["One at most, only when it's the conversation's tag.", "None."],
-  facebook: ["None — they read as spam here.", "One branded hashtag at the end."],
-  tiktok: ["Two or three that relate to the video.", "Two niche ones that match the sound or trend."],
-  youtube: [
-    "Three in the description, the first one shows above the title.",
-    "One branded hashtag in the description.",
-  ],
-};
+/** Closings that read native on a network — the coaching question's answers. */
+export function networkClosings(network) {
+  return NETWORK_VOICE[network]?.closings?.slice() || null;
+}
 
 // What each network itself recommends, part by part — "What X says" in the
 // Optimize assistant's right column. Researched 2026-10-15 on the networks'
@@ -763,25 +914,39 @@ export function networkGuidanceUrl(network) {
   return NETWORK_GUIDANCE_URL[network] || "";
 }
 
+// NETWORK_GUIDANCE is filed by TOPIC (openings, closings, formatting, emoji,
+// hashtags — how the networks write it); a voice part reads the topics it
+// covers. Nothing official on the summary or on cases: the column says so.
+const GUIDANCE_TOPICS = {
+  voiceAlways: ["formattingStyle", "visualStyle"],
+  voiceSometimes: ["signatureHooks", "closingPatterns", "hashtagStyle"],
+};
+
 /** What the network says about one part: [{ text, source }] (may be empty). */
 export function networkGuidance(network, field) {
-  return NETWORK_GUIDANCE[network]?.[field] || [];
+  return (GUIDANCE_TOPICS[field] || []).flatMap((topic) => NETWORK_GUIDANCE[network]?.[topic] || []);
 }
 
 /**
  * Pretend to read the posts of each network the Playbook publishes on and
  * return how each one adapts the base voice — the voiceByNetwork a Playbook is
- * born with (flag networkVoices). The base network gets no entry: it IS the
- * base. `rules` start empty — those are what Archie learns later and the user
- * keeps.
+ * born with (flag networkVoices): Archie's pick for every part. The base
+ * network gets no entry: it IS the base. A part the product just added
+ * (voiceNewSection) is left to do — the demo of a new part.
  * @param {string[]} networks
  * @param {string} base
  */
 export function analyzeNetworkVoices(networks = [], base = "") {
   const out = {};
   for (const n of new Set(networks)) {
-    if (n === base || !NETWORK_ADAPTATIONS[n]) continue;
-    out[n] = { ...clone(NETWORK_ADAPTATIONS[n]), rules: [], drafted: true };
+    const opts = networkVoiceOptions(n);
+    if (n === base || !opts) continue;
+    const entry = { drafted: true };
+    for (const field of networkFields()) {
+      if (!opts[field] || isNewPart(field)) continue;
+      entry[field] = isListPart(field) ? itemsFromLines(field, opts[field].slice(0, 2)) : opts[field][0];
+    }
+    out[n] = entry;
   }
   return out;
 }

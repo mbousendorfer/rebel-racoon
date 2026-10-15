@@ -17,17 +17,17 @@ import {
   getContexts,
   subscribe as subscribeContexts,
   updateContext,
-} from "../../../contexts-store.js?v=1851";
-import { createStyle } from "../model/schema.js?v=1851";
-import { STYLE_PRESETS } from "../config/style-presets.js?v=1851";
-import { canEdit, usableContexts } from "../../../playbook-access.js?v=1851";
+} from "../../../contexts-store.js?v=1855";
+import { createStyle } from "../model/schema.js?v=1855";
+import { STYLE_PRESETS } from "../config/style-presets.js?v=1855";
+import { canEdit, usableContexts } from "../../../playbook-access.js?v=1855";
 import {
   getActivePlaybookId,
   isWorkspaceMode,
   playbookForNewWork,
   subscribe as subscribeActive,
-} from "../../../active-playbook.js?v=1851";
-import { storageService as storage } from "../services/index.js?v=1851";
+} from "../../../active-playbook.js?v=1855";
+import { storageService as storage } from "../services/index.js?v=1855";
 
 // Which copy archetype the mocked copyService uses — guessed from the Playbook's words.
 function sectorKeyOf(ctx) {
@@ -82,7 +82,11 @@ function toBrand(ctx) {
     },
     voice: {
       tone: [vp.headline, ...(ctx.tones || [])].filter(Boolean).join(" · "),
-      examples: [...(ctx.signatureHooks || []), ...(ctx.closingPatterns || [])].filter(Boolean).slice(0, 5),
+      // Lines from the brand's own posts, as its voice rules quote them.
+      examples: ["voiceAlways", "voiceSometimes"]
+        .flatMap((f) => (Array.isArray(ctx[f]) ? ctx[f] : []))
+        .flatMap((r) => r?.examples || [])
+        .slice(0, 5),
       avoid: (ctx.voiceAvoid || []).slice(),
       dos: (ctx.doRules || []).slice(),
       donts: (ctx.dontRules || []).slice(),

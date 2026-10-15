@@ -14,7 +14,7 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1851";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1855";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -26,11 +26,11 @@ import {
   handleKitChange,
   kitSnapshot,
   renderImagesTab,
-} from "./playbook-brand-kit.js?v=1851";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1851";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1851";
-import { isFlagOn } from "./feature-flags.js?v=1851";
-import { parseHashParams } from "./url-state.js?v=1851";
+} from "./playbook-brand-kit.js?v=1855";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1855";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1855";
+import { isFlagOn } from "./feature-flags.js?v=1855";
+import { parseHashParams } from "./url-state.js?v=1855";
 import {
   networkVoicesOn,
   baseNetwork,
@@ -38,25 +38,30 @@ import {
   networkEntry,
   isOverridden,
   isOptimized,
-  maturity,
   partsDone,
   partsNew,
   isNewPart,
+  isListPart,
   voiceParts,
+  networkFields,
+  baseValue,
+  partValue,
+  cloneItems,
+  voiceItemsHtml,
   progressRingHtml,
   networkLabel,
   networkIcon,
   memoryCardHtml,
-} from "./network-voice.js?v=1851";
+} from "./network-voice.js?v=1855";
 import {
   getSuggestions,
   accept as acceptVoiceSuggestion,
   dismiss as dismissVoiceSuggestion,
-} from "./voice-coach-store.js?v=1851";
-import { showToast } from "./components/toast.js?v=1851";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=1851";
-import { open as openVoiceWizard } from "./components/voice-wizard-modal.js?v=1851";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1851";
+} from "./voice-coach-store.js?v=1855";
+import { showToast } from "./components/toast.js?v=1855";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=1855";
+import { open as openVoiceWizard } from "./components/voice-wizard-modal.js?v=1855";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1855";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -64,12 +69,6 @@ const GOAL_FIELDS = [
   { key: "contentStyle", label: "Content style", placeholder: "Add a style…" },
   { key: "objective", label: "Primary goal", placeholder: "Add a goal…" },
   { key: "contentAction", label: "Content action", placeholder: "Add an action…" },
-];
-
-// Voice & style — line-list fields (quoted snippets).
-const LINE_FIELDS = [
-  { key: "signatureHooks", label: "Signature hooks", placeholder: "A line that often opens a post…" },
-  { key: "closingPatterns", label: "Closing patterns", placeholder: "A line that often ends a post…" },
 ];
 
 // Competitors and Influencers close the list on purpose: the panel renderers
@@ -98,7 +97,7 @@ const SECTIONS = [
 const FIELD_HINTS = {
   languages: {
     q: "Which languages do you publish in?",
-    a: "Pick one or more. I write posts in the language you choose — and use the native Voice examples for that language, never a translation.",
+    a: "Pick one or more. I write posts in the language you choose — natively, never a translation.",
   },
   businessSummary: {
     q: "Does this describe your business correctly?",
@@ -167,7 +166,6 @@ let refModalHost = null; // body-level portal node for the open detail modal
 let snapshot = null; // deep copy of editable fields, for Cancel
 let editBaseline = null; // the same fields as JSON once the editor has painted — "anything changed?"
 let audienceCustom = false; // "Other…" picked in the Primary audience dropdown
-let activeVoiceLang = null; // which language the Voice & style panel is showing/editing
 let activeNetwork = null; // flag networkVoices: the network voice the Voice tab shows (null = the base)
 let loadingTimer = null;
 let loadingStage = 0;
@@ -432,11 +430,11 @@ export function snapshotEditable(d) {
       voiceByLanguage: d.voiceByLanguage || {},
       voiceBaseNetwork: d.voiceBaseNetwork || "",
       voiceByNetwork: d.voiceByNetwork || {},
-      signatureHooks: d.signatureHooks || [],
-      closingPatterns: d.closingPatterns || [],
-      formattingStyle: d.formattingStyle || "",
-      visualStyle: d.visualStyle || "",
-      hashtagStyle: d.hashtagStyle || "",
+      voiceSummary: d.voiceSummary || "",
+      voiceAlways: d.voiceAlways || [],
+      voiceNever: d.voiceNever || [],
+      voiceByPost: d.voiceByPost || [],
+      voiceSometimes: d.voiceSometimes || [],
       voiceMode: d.voiceMode || "guided",
       voiceManual: d.voiceManual || "",
       brandPersonality: d.brandPersonality || "",
@@ -470,43 +468,6 @@ function contextLanguages(data) {
   const primary = data.primaryLanguage || (langs && langs[0]) || data.language || "English";
   if (!multilingualOn()) return [primary];
   return langs || [primary];
-}
-
-// The language the Voice & style panel currently shows/edits — kept valid
-// against the declared languages, defaulting to the primary.
-function currentVoiceLang(data) {
-  const langs = contextLanguages(data);
-  if (!activeVoiceLang || !langs.includes(activeVoiceLang)) {
-    activeVoiceLang = data.primaryLanguage && langs.includes(data.primaryLanguage) ? data.primaryLanguage : langs[0];
-  }
-  return activeVoiceLang;
-}
-
-// The per-language voice entry for the active language (created on demand).
-// Voice examples (signatureHooks / closingPatterns / cta) are authored per
-// language and NEVER machine-translated.
-//
-// When the entry is missing, the PRIMARY language seeds from the flat legacy
-// fields — a draft fresh from the website analysis has flat signatureHooks /
-// closingPatterns populated but no per-language map yet, so without this the
-// recap would read "Not set yet". Secondary languages start empty (authored
-// natively per language).
-function voiceEntry(data) {
-  const lang = currentVoiceLang(data);
-  if (!data.voiceByLanguage || typeof data.voiceByLanguage !== "object") data.voiceByLanguage = {};
-  if (!data.voiceByLanguage[lang]) {
-    const primary = data.primaryLanguage || contextLanguages(data)[0];
-    data.voiceByLanguage[lang] =
-      lang === primary
-        ? {
-            signatureHooks: Array.isArray(data.signatureHooks) ? data.signatureHooks.slice() : [],
-            closingPatterns: Array.isArray(data.closingPatterns) ? data.closingPatterns.slice() : [],
-            cta: data.cta || "",
-            ctaLabels: {},
-          }
-        : emptyVoiceEntry(data);
-  }
-  return data.voiceByLanguage[lang];
 }
 
 // ── Shared bits ──────────────────────────────────────────────────────────
@@ -717,29 +678,6 @@ function renderAudiencePicker(data) {
           : ``
       }
     </div>
-  `;
-}
-
-function renderLineEditor(field, values, placeholder) {
-  const list = Array.isArray(values) ? values : [];
-  const rows = list
-    .map(
-      (v, i) => `
-      <div class="recap__line-edit">
-        <div class="ap-input-group recap__line-edit-field">
-          <input type="text" data-recap-line-field data-recap-line-list="${field}" data-recap-line-index="${i}" value="${esc(v)}" placeholder="${esc(placeholder)}" aria-label="${esc(placeholder)}" />
-        </div>
-        <button type="button" class="recap__cta-remove" data-recap-line-remove data-recap-line-list="${field}" data-recap-line-index="${i}" aria-label="Remove line">
-          <i class="ap-icon-close"></i>
-        </button>
-      </div>`,
-    )
-    .join("");
-  return `
-    <div class="recap__line-list">${rows}</div>
-    <button type="button" class="ap-button secondary blue recap__add-row" data-recap-line-add="${field}">
-      <i class="ap-icon-plus"></i><span>Add line</span>
-    </button>
   `;
 }
 
@@ -1026,27 +964,6 @@ function renderVoiceModeToggle(mode) {
     <div class="recap__voice-mode" role="group" aria-label="Voice format">
       <button type="button" class="ap-filter-chip" aria-pressed="${!manual}" data-recap-voice-mode="guided">Guided</button>
       <button type="button" class="ap-filter-chip" aria-pressed="${manual}" data-recap-voice-mode="manual">Write it yourself</button>
-    </div>`;
-}
-
-// Per-language switcher for the guided Voice examples. Only shown when the
-// Playbook has more than one language — signature hooks + closing patterns are
-// authored natively per language, never translated.
-function renderVoiceLangSwitcher(data) {
-  const langs = contextLanguages(data);
-  if (langs.length < 2) return "";
-  const active = currentVoiceLang(data);
-  return `
-    <div class="recap__voice-langs" role="group" aria-label="Voice language">
-      <span class="recap__voice-langs-label">Examples for</span>
-      <div class="recap__voice-langs-group">
-        ${langs
-          .map(
-            (l) =>
-              `<button type="button" class="ap-filter-chip" aria-pressed="${l === active}" data-recap-voice-lang="${esc(l)}">${esc(l)}</button>`,
-          )
-          .join("")}
-      </div>
     </div>`;
 }
 
@@ -1826,7 +1743,7 @@ const TABS = [
 // names it, so the panel head carries the sentence instead of repeating the title.
 const SECTION_LEADS = {
   goals: "Who the posts are for, and what they should make happen.",
-  voice: "How the brand sounds — the lines it opens and closes on, and its writing conventions.",
+  voice: "How the brand sounds — what every post does, what none does, and what depends on the post.",
   brand: "How the brand looks — its marks, colours, type and the rules its images follow.",
   images: "How I make this brand's images — the styles I draw them in, and what Generate image does on a draft.",
   competitors: "Who the brand is measured against, so Archie can position it.",
@@ -2079,23 +1996,14 @@ function renderGoalsEdit2(data) {
 }
 
 function renderVoiceEdit2(data) {
-  const ve = voiceEntry(data);
-  const line = (key) => LINE_FIELDS.find((f) => f.key === key)?.placeholder || "";
-  const voice = pb2Block(
-    "The voice",
-    `${pb2VoiceHeadline(data)}<div><span class="pb2-sub">Written as</span>${renderVoiceModeToggle(data.voiceMode)}</div>`,
-    { wide: true, index: 0, icon: "ap-icon-quote" },
-  );
+  // The voice's traits and how it's written (guided parts, or your own words)
+  // ride on the first block; the parts follow, the same blocks as in read.
+  const mode = `<div><span class="pb2-sub">Written as</span>${renderVoiceModeToggle(data.voiceMode)}</div>`;
   if (nvOn() && data.voiceMode !== "manual" && activeNetworkFor(data) !== baseNetwork(data))
-    return pb2EditGrid(
-      "voice",
-      nvNetworkEditBlocks(data, activeNetworkFor(data)),
-      renderVoiceLangSwitcher(data),
-      renderNetworkSwitcher(data),
-    );
+    return pb2EditGrid("voice", nvNetworkEditBlocks(data, activeNetworkFor(data)), "", renderNetworkSwitcher(data));
   if (data.voiceMode === "manual")
     return pb2EditGrid("voice", [
-      voice,
+      pb2Block("The voice", `${pb2Traits(data)}${mode}`, { wide: true, index: 0, icon: "ap-icon-quote" }),
       pb2Block(
         "In your own words",
         `<div class="ap-textarea-field resizable">
@@ -2106,51 +2014,8 @@ function renderVoiceEdit2(data) {
     ]);
   return pb2EditGrid(
     "voice",
-    [
-      voice,
-      // The base network's learned rules, editable like the rest of its voice.
-      nvOn()
-        ? pb2Block(
-            "What I've learned",
-            renderLineEditor("rules", networkEntry(data, baseNetwork(data))?.rules || [], "A rule for this network…"),
-            { wide: true, index: 1, icon: MEMORY_MARK, caption: `${networkLabel(baseNetwork(data))} only` },
-          )
-        : "",
-      pb2Block("Opens with", renderLineEditor("signatureHooks", ve.signatureHooks, line("signatureHooks")), {
-        index: 1,
-        caption: "Signature hooks",
-      }),
-      pb2Block("Closes with", renderLineEditor("closingPatterns", ve.closingPatterns, line("closingPatterns")), {
-        index: 2,
-        caption: "Closing patterns",
-      }),
-      pb2Block(
-        "Formatting",
-        renderTextarea(
-          "formattingStyle",
-          data.formattingStyle,
-          "How posts are structured — line breaks, lists, rhythm…",
-        ),
-        { index: 3 },
-      ),
-      pb2Block(
-        "Emoji & casing",
-        renderTextarea("visualStyle", data.visualStyle, "Emoji use, capitalisation, hashtags, links…"),
-        { index: 4 },
-      ),
-      voiceParts().some((p) => p.field === "hashtagStyle")
-        ? pb2Block("Hashtags", renderTextarea("hashtagStyle", data.hashtagStyle, "How many, where, which kind…"), {
-            index: 4,
-          })
-        : "",
-      pb2Block("Words to avoid", renderEditChips("voiceAvoid", data.voiceAvoid, "Add a word or phrase…"), {
-        wide: true,
-        index: 5,
-        icon: "ap-icon-ban",
-        caption: nvOn() ? "Every network" : "",
-      }),
-    ],
-    renderVoiceLangSwitcher(data),
+    [nvOn() ? nvIdentityBlock(data, baseNetwork(data)) : "", ...pb2VoiceParts(data, { edit: true, lead: mode })],
+    "",
     nvOn() ? renderNetworkSwitcher(data) : "",
   );
 }
@@ -2239,75 +2104,149 @@ function pb2Checklist(values, icon = "ap-icon-check") {
     .join("")}</ul>`;
 }
 
-function pb2Lines(values, icon = "ap-icon-quote") {
-  const list = (values || []).filter(Boolean);
-  if (!list.length) return pb2Empty("None captured yet.");
-  return `<ul class="pb2-lines">${list
-    .map((h) => `<li class="pb2-line"><i class="${icon}" aria-hidden="true"></i><span>${esc(h)}</span></li>`)
-    .join("")}</ul>`;
-}
-
-// The voice as Archie heard it — three words, then the writing style. Read-only
-// in both modes: it's what the analysis found, not a field.
-function pb2VoiceHeadline(data) {
+// The voice as Archie heard it, in three or four words — read-only in both
+// modes: it's what the analysis found, not a field. Rides on the base's
+// "How the brand sounds".
+function pb2Traits(data) {
   const traits = String(data.voiceProfile?.headline || "")
     .split(/\s*[·•|,]\s*/)
     .filter(Boolean)
     .slice(0, 4);
-  return `${
-    traits.length
-      ? `<p class="pb2-traits">${traits
-          .map((t) => `<span class="pb2-trait">${esc(t.charAt(0).toUpperCase() + t.slice(1))}</span>`)
-          .join('<span class="pb2-trait__dot" aria-hidden="true"></span>')}</p>`
-      : ""
-  }${data.voiceProfile?.writingStyle ? `<p class="pb2-lead">${esc(data.voiceProfile.writingStyle)}</p>` : ""}${
-    !traits.length && !data.voiceProfile?.writingStyle ? pb2Empty("No voice captured yet.") : ""
-  }`;
+  return traits.length
+    ? `<p class="pb2-traits">${traits
+        .map((t) => `<span class="pb2-trait">${esc(t.charAt(0).toUpperCase() + t.slice(1))}</span>`)
+        .join('<span class="pb2-trait__dot" aria-hidden="true"></span>')}</p>`
+    : "";
 }
 
-// The words this brand never says — one list, true on every network.
-function pb2AvoidBlock(data, index, caption = "") {
-  return pb2Block(
-    "Words to avoid",
-    (data.voiceAvoid || []).length
-      ? `<span class="pb2-tags">${data.voiceAvoid
-          .map(
-            (w) =>
-              `<span class="ap-tag grey pb2-avoid"><i class="ap-icon-ban" aria-hidden="true"></i><span>${esc(w)}</span></span>`,
-          )
-          .join("")}</span>`
-      : pb2Empty("None yet — add the words this brand never says."),
-    { wide: true, index, icon: "ap-icon-ban", caption },
-  );
+// What each part says when it's empty, and what its editor asks.
+const PART_COPY = {
+  voiceSummary: {
+    empty: "Not set yet — say in a few sentences how the brand sounds.",
+    placeholder: "How the brand sounds, in a few sentences…",
+  },
+  voiceAlways: { empty: "No rules yet — what every post does.", placeholder: "A rule every post follows…" },
+  voiceNever: { empty: "Nothing yet — what no post does.", placeholder: "Something no post does…" },
+  voiceByPost: {
+    empty: "No cases yet — how each kind of post is written.",
+    placeholder: "How this kind of post is written…",
+  },
+  voiceSometimes: {
+    empty: "Nothing yet — the habits that come back now and then.",
+    placeholder: "A habit that comes back now and then…",
+  },
+};
+
+// A part, read: the summary as a lead paragraph, the others as rules.
+function pb2PartBody(field, value) {
+  if (!isListPart(field)) return value ? `<p class="pb2-lead">${esc(value)}</p>` : pb2Empty(PART_COPY[field].empty);
+  return cloneItems(value).length ? voiceItemsHtml(value) : pb2Empty(PART_COPY[field].empty);
 }
 
-// The four parts of a voice, read — from `index` on.
-function pb2VoiceFieldBlocks(data, ve, index) {
-  return [
-    pb2Block("Opens with", pb2Lines(ve.signatureHooks), { index, caption: "Signature hooks" }),
-    pb2Block("Closes with", pb2Lines(ve.closingPatterns), { index: index + 1, caption: "Closing patterns" }),
-    pb2Block("Formatting", pb2Text(data.formattingStyle), { index: index + 2 }),
-    pb2Block("Emoji & casing", pb2Text(data.visualStyle), { index: index + 3 }),
-    // A part the product added (flag voiceNewSection): until the brand fills it
-    // in, it says New and what to write.
-    ...(voiceParts().some((p) => p.field === "hashtagStyle")
-      ? [
-          pb2Block("Hashtags", pb2Text(data.hashtagStyle, "Not set yet — add how this brand uses hashtags."), {
-            index: index + 4,
-            aside: String(data.hashtagStyle || "").trim()
-              ? ""
-              : `<span class="ap-status orange pb2-nv-status">New</span>`,
-          }),
-        ]
-      : []),
-  ];
+// A part's editor: a paragraph, or its rules — one row each, a case with its
+// kind of post above the rule. The examples come from the brand's posts: shown
+// under the rule, kept as they are.
+function renderRuleEditor(field, items) {
+  const cases = field === "voiceByPost";
+  const rows = (Array.isArray(items) ? items : [])
+    .map(
+      (it, i) => `
+      <div class="pb2-rule-edit">
+        <div class="pb2-rule-edit__fields">
+          ${
+            cases
+              ? `<div class="ap-input-group"><input type="text" data-vr-list="${field}" data-vr-index="${i}" data-vr-key="when" value="${esc(it.when || "")}" placeholder="Kind of post" aria-label="Kind of post" /></div>`
+              : ""
+          }
+          <div class="ap-textarea-field resizable"><textarea rows="2" data-vr-list="${field}" data-vr-index="${i}" data-vr-key="text" placeholder="${esc(PART_COPY[field].placeholder)}" aria-label="${esc(PART_COPY[field].placeholder)}">${esc(it.text || "")}</textarea></div>
+          ${
+            it.examples?.length
+              ? `<p class="pb2-rule-edit__examples">From your posts: ${it.examples.map((x) => `“${esc(x)}”`).join(" · ")}</p>`
+              : ""
+          }
+        </div>
+        <button type="button" class="recap__cta-remove" data-vr-remove="${field}" data-vr-index="${i}" aria-label="Remove"><i class="ap-icon-close"></i></button>
+      </div>`,
+    )
+    .join("");
+  return `<div class="pb2-rule-edits">${rows}</div>
+    <button type="button" class="ap-button secondary blue recap__add-row" data-vr-add="${field}">
+      <i class="ap-icon-plus"></i><span>${cases ? "Add a case" : "Add a rule"}</span>
+    </button>`;
+}
+
+function renderPartEditor(field, value) {
+  return isListPart(field)
+    ? renderRuleEditor(field, value)
+    : renderTextarea(field, value, PART_COPY[field].placeholder);
+}
+
+// The words this brand never says — one list, true on every network, read
+// and edited in the Never block. Edited on the base only.
+function pb2AvoidRow(data, { edit = false, note = "" } = {}) {
+  const words = data.voiceAvoid || [];
+  if (!edit && !words.length) return "";
+  const body = edit
+    ? renderEditChips("voiceAvoid", words, "Add a word or phrase…")
+    : `<span class="pb2-tags">${words
+        .map(
+          (w) =>
+            `<span class="ap-tag grey pb2-avoid"><i class="ap-icon-ban" aria-hidden="true"></i><span>${esc(w)}</span></span>`,
+        )
+        .join("")}</span>`;
+  return `<div class="pb2-avoid-row"><span class="pb2-sub">Words to avoid${note ? ` · ${esc(note)}` : ""}</span>${body}</div>`;
+}
+
+// The five parts of a voice (VOICE_PARTS), in one order everywhere — read and
+// edit, the base and every network. `net`: a network that isn't the base —
+// its own parts read in full, a part it borrows reads as the base's on a grey
+// ground (pb2-nv-placeholder) with its own Optimize; in edit, a borrowed part
+// shows "Adapt for X". `lead`: trusted html on top of the first block.
+function pb2VoiceParts(data, { net = null, edit = false, lead = "", index = 2 } = {}) {
+  const base = baseNetwork(data);
+  const onBase = !net || net === base;
+  const fresh = partsNew(data, net || base);
+  return nvFields().map(([field, title], i) => {
+    const own = !onBase && isOverridden(data, net, field);
+    let body;
+    if (edit) {
+      body = onBase
+        ? renderPartEditor(field, field === "voiceSummary" ? baseValue(data, field) : data[field])
+        : nvFieldEdit(data, net, field);
+    } else {
+      body = pb2PartBody(field, partValue(data, net || base, field));
+      // A borrowed part carries its own way out: Optimize, the wizard on this part.
+      if (!onBase && !own && canEditView() && !editScope)
+        body += `<div class="pb2-nv-block-go"><button type="button" class="ap-button ghost blue" data-nv-optimize-part="${field}" aria-label="${esc(`Optimize ${title} for ${networkLabel(net)}`)}"><i class="ap-icon-sparkles" aria-hidden="true"></i><span>Optimize</span></button></div>`;
+    }
+    if (field === "voiceSummary") body = (onBase ? pb2Traits(data) : "") + body + (i === 0 ? lead : "");
+    if (field === "voiceNever")
+      body += pb2AvoidRow(data, {
+        edit: edit && onBase,
+        note: !nvOn() ? "" : onBase || !edit ? "every network" : `edit them on the ${networkLabel(base)} tab`,
+      });
+    // State: a network's part in edit says where it stands; a part the product
+    // just added says New until someone writes it.
+    const aside =
+      edit && !onBase
+        ? nvSourceBadge(data, net, field)
+        : fresh[i]
+          ? `<span class="ap-status orange pb2-nv-status">New</span>`
+          : "";
+    return pb2Block(title, body, {
+      wide: true,
+      index: index + i,
+      icon: field === "voiceSummary" ? "ap-icon-quote" : "",
+      aside,
+      className: !edit && !onBase && !own ? "pb2-nv-placeholder" : "",
+    });
+  });
 }
 
 function renderVoiceRead2(data, learnMenu) {
-  const ve = voiceEntry(data);
   if (data.voiceMode === "manual") {
     const own = pb2Block("In your own words", pb2Text(data.voiceManual), { wide: true, icon: "ap-icon-quote" });
-    return `${pb2TabHead("voice", learnMenu)}${renderVoiceLangSwitcher(data)}<div class="pb2-grid">${own}</div>`;
+    return `${pb2TabHead("voice", learnMenu)}<div class="pb2-grid">${own}</div>`;
   }
   if (nvAllView())
     return `${pb2TabHead("voice", "", { noEdit: true, below: renderNetworkSwitcher(data) })}${nvAllMatrix(data)}`;
@@ -2316,16 +2255,14 @@ function renderVoiceRead2(data, learnMenu) {
     // The network's actions — Learn from…, Optimize / Re-optimize — sit
     // together on its band, under the tabs; the head keeps Edit alone, as on
     // every other tab.
-    const grid =
-      net === baseNetwork(data) ? nvBaseBlocks(data, ve, learnMenu) : nvNetworkReadBlocks(data, net, learnMenu);
-    return `${pb2TabHead("voice", "", { below: renderNetworkSwitcher(data) })}${renderVoiceLangSwitcher(data)}<div class="pb2-grid">${grid.join("")}</div>`;
+    const grid = [
+      nvIdentityBlock(data, net, learnMenu),
+      nvLearnBlock(data, net),
+      ...pb2VoiceParts(data, { net: net === baseNetwork(data) ? null : net }),
+    ].filter(Boolean);
+    return `${pb2TabHead("voice", "", { below: renderNetworkSwitcher(data) })}<div class="pb2-grid">${grid.join("")}</div>`;
   }
-  const blocks = [
-    pb2Block("The voice", pb2VoiceHeadline(data), { wide: true, index: 0, icon: "ap-icon-quote" }),
-    ...pb2VoiceFieldBlocks(data, ve, 1),
-    pb2AvoidBlock(data, 5),
-  ];
-  return `${pb2TabHead("voice", learnMenu)}${renderVoiceLangSwitcher(data)}<div class="pb2-grid">${blocks.join("")}</div>`;
+  return `${pb2TabHead("voice", learnMenu)}<div class="pb2-grid">${pb2VoiceParts(data).join("")}</div>`;
 }
 
 // ── Voice per network (flag networkVoices, Playbook 2.0 only) ────────────────
@@ -2354,22 +2291,18 @@ function nvAllView() {
 // The network entry an editor writes into, created on demand.
 function nvWritableEntry(data, net) {
   if (!data.voiceByNetwork || typeof data.voiceByNetwork !== "object") data.voiceByNetwork = {};
-  if (!data.voiceByNetwork[net]) data.voiceByNetwork[net] = { rules: [] };
-  if (!Array.isArray(data.voiceByNetwork[net].rules)) data.voiceByNetwork[net].rules = [];
+  if (!data.voiceByNetwork[net]) data.voiceByNetwork[net] = {};
   // Every write goes through here from a click or a keystroke: the voice is
   // now yours, no longer only what Archie drafted.
   delete data.voiceByNetwork[net].drafted;
   return data.voiceByNetwork[net];
 }
 
-// Where a line editor writes: a network's own lines (and every network's
-// rules, the base's included) go to voiceByNetwork; the rest stays per language.
-function editEntry(data, field) {
-  if (nvOn()) {
-    const net = activeNetworkFor(data);
-    if (field === "rules" || net !== baseNetwork(data)) return nvWritableEntry(data, net);
-  }
-  return voiceEntry(data);
+// Where a part's editor writes: the base's parts are the Playbook's own
+// fields; another network's go to its entry in voiceByNetwork.
+function voiceTarget(data) {
+  if (nvOn() && activeNetworkFor(data) !== baseNetwork(data)) return nvWritableEntry(data, activeNetworkFor(data));
+  return data;
 }
 
 function renderNetworkSwitcher(data) {
@@ -2435,58 +2368,18 @@ function nvReoptimizeButton(data, net) {
   return `<button type="button" class="ap-button stroked blue" data-nv-optimize="${net}" aria-label="Re-optimize your ${esc(networkLabel(net))} voice"><i class="ap-icon-sparkles" aria-hidden="true"></i><span>Re-optimize</span></button>`;
 }
 
-// A rule already in the voice — plain text beside the olive mark
-// (styles/components/voice-coach.css). Proposals are memory cards.
-const MEMORY_MARK = "ap-icon-sparkles memory-mark";
-
-function memoryNote(text) {
-  return `<li class="memory-note memory-note--kept">
-    <i class="${MEMORY_MARK}" aria-hidden="true"></i>
-    <p class="memory-note__text">${esc(text)}</p>
-  </li>`;
-}
-
-// What Archie knows about one network, in ONE block (2026-10-15: the
-// proposals tray and "What I've learned" had the same purpose). On top, what
-// he wants to remember — one memory card each, Remember / Not now; under them,
-// the rules already kept. A Remember moves the rule from the cards to the list
-// inside the same block. The butter is the header band only.
-function nvRulesBlock(data, net, index) {
-  const rules = networkEntry(data, net)?.rules || [];
+// What Archie wants to remember on one network — one memory card each,
+// Remember / Not now. A Remember moves the rule into the part it was proposed
+// for (Always, Never, Now and then), where it reads with Archie's mark. Only
+// there while something waits: an empty tray is not a part of the voice.
+function nvLearnBlock(data, net) {
   const pending = canEditView() ? getSuggestions(data.id, { network: net }) : [];
-  const cards = pending.length
-    ? `<div class="memory-cards">${pending.map((sg) => memoryCardHtml(sg, { attr: "nv", value: sg.id })).join("")}</div>`
-    : "";
-  const kept = rules.length ? `<ul class="memory-notes">${rules.map((r) => memoryNote(r)).join("")}</ul>` : "";
+  if (!pending.length) return "";
   return pb2Block(
     "What I've learned",
-    cards + kept ||
-      pb2Empty(
-        `Nothing yet. Rework one of your ${networkLabel(net)} drafts or tell me what was off, and I'll suggest what to remember here.`,
-      ),
-    { wide: true, index, caption: `${networkLabel(net)} only`, className: "pb2-block--memory" },
+    `<div class="memory-cards">${pending.map((sg) => memoryCardHtml(sg, { attr: "nv", value: sg.id })).join("")}</div>`,
+    { wide: true, index: 1, caption: `${networkLabel(net)} only`, className: "pb2-block--memory" },
   );
-}
-
-// One order on every network voice, in read and in edit: who it is, what
-// Archie has learned and wants to remember (one block: a Remember moves the
-// rule from the cards to the list, in view), then its parts, then the words to avoid.
-
-// The base network: the voice as it always read, plus its proposals and rules.
-function nvBaseBlocks(data, ve, learn = "") {
-  const net = baseNetwork(data);
-  return [
-    nvIdentityBlock(data, net, learn),
-    pb2Block("The voice", pb2VoiceHeadline(data), {
-      wide: true,
-      index: 0,
-      icon: "ap-icon-quote",
-      caption: maturity(data, net).detail,
-    }),
-    nvRulesBlock(data, net, 2),
-    ...pb2VoiceFieldBlocks(data, ve, 3),
-    pb2AvoidBlock(data, 7, "Every network"),
-  ].filter(Boolean);
 }
 
 // State, everywhere, as the DS status pill (.ap-status: a dot and a word) —
@@ -2544,7 +2437,7 @@ function nvIdentityBlock(data, net, learn = "") {
   // the assistant (Optimize while parts are missing, Re-optimize after).
   const offer = nvOptimizeButton(data, net) || nvReoptimizeButton(data, net);
   const sub = isBase
-    ? "Every network starts from it."
+    ? `Learned from your ${label} posts. Every network starts from it.`
     : fresh.length
       ? `New in your voice: ${fresh.join(", ")}.`
       : done === nvFields().length
@@ -2600,90 +2493,24 @@ function nvAllMatrix(data) {
     <ul class="pb2-nv-lines">${rows}</ul>`;
 }
 
-// Another network: the difference is the content. What it adapted reads in
-// full; what it inherits folds into one block that names it and points at the
-// base — repeating the base word for word made every network look the same.
-function nvNetworkReadBlocks(data, net, learn = "") {
-  // The same four blocks as the base, in the same order and size. A part not
-  // optimized yet shows the base's version inside, as a placeholder — the block
-  // reads disabled (grey ground, grey-60 ink) under its "Same as LinkedIn" pill.
-  const parts = nvFields().map(([field, title], n) => {
-    const own = isOverridden(data, net, field);
-    const value = nvFieldValue(data, net, field);
-    const content = field === "signatureHooks" || field === "closingPatterns" ? pb2Lines(value) : pb2Text(value);
-    // A borrowed part carries its own way out: Optimize, the wizard on this part.
-    const go =
-      !own && canEditView() && !editScope
-        ? `<div class="pb2-nv-block-go"><button type="button" class="ap-button ghost blue" data-nv-optimize-part="${field}" aria-label="${esc(`Optimize ${title.toLowerCase()} for ${networkLabel(net)}`)}"><i class="ap-icon-sparkles" aria-hidden="true"></i><span>Optimize</span></button></div>`
-        : "";
-    return pb2Block(title, content + go, {
-      index: 3 + n,
-      // No pill on a read part: the grey ground already says "not optimized
-      // yet", the white one "done". Only a part the product just added says New.
-      aside: !own && isNewPart(field) ? `<span class="ap-status orange pb2-nv-status">New</span>` : "",
-      className: own ? "" : "pb2-nv-placeholder",
-    });
-  });
-  return [
-    nvIdentityBlock(data, net, learn),
-    nvRulesBlock(data, net, 2),
-    ...parts,
-    pb2AvoidBlock(data, 7, "Every network"),
-  ].filter(Boolean);
-}
-
-// Edit, on a network that isn't the base: an inherited field reads as the
-// base's value with "Adapt for X"; an adapted one is its own editor with "Use
-// the base voice" to drop the difference. `show` renders an inherited value in
-// the host's own vocabulary (Playbook 2.0 blocks, or the recap's rows).
-const NV_PLACEHOLDERS = {
-  formattingStyle: "How posts are structured on this network…",
-  visualStyle: "Emoji, hashtags, links on this network…",
-  hashtagStyle: "How many hashtags, where, which kind…",
-};
-
-function nvFieldEdit(data, net, field, show = { list: pb2Lines, text: pb2Text }) {
+// Edit, on a network that isn't the base: a borrowed part reads as the base's
+// with "Adapt for X"; an adapted one is its own editor with "Use the base
+// voice" to drop the difference.
+function nvFieldEdit(data, net, field) {
   const e = networkEntry(data, net) || {};
   const own = e[field] !== undefined;
   const btn = own
     ? `<button type="button" class="ap-button ghost grey pb2-nv-toggle" data-nv-reset="${field}"><i class="ap-icon-close" aria-hidden="true"></i><span>Use the ${esc(networkLabel(baseNetwork(data)))} voice</span></button>`
     : `<button type="button" class="ap-button stroked grey pb2-nv-toggle" data-nv-adapt="${field}"><i class="ap-icon-pen" aria-hidden="true"></i><span>Adapt for ${esc(networkLabel(net))}</span></button>`;
-  if (field === "signatureHooks" || field === "closingPatterns") {
-    const placeholder = LINE_FIELDS.find((f) => f.key === field)?.placeholder || "";
-    return (own ? renderLineEditor(field, e[field], placeholder) : show.list(voiceEntry(data)[field])) + btn;
-  }
-  return (
-    (own
-      ? `<div class="ap-textarea-field resizable"><textarea data-nv-text="${field}" rows="3" placeholder="${esc(NV_PLACEHOLDERS[field])}">${esc(e[field] || "")}</textarea></div>`
-      : show.text(data[field])) + btn
-  );
+  if (!own) return pb2PartBody(field, baseValue(data, field)) + btn;
+  if (isListPart(field)) return renderRuleEditor(field, e[field]) + btn;
+  return `<div class="ap-textarea-field resizable"><textarea data-nv-text="${field}" rows="3" placeholder="${esc(PART_COPY[field].placeholder)}">${esc(e[field] || "")}</textarea></div>${btn}`;
 }
 
-// What a network reads as: its own value where it adapted one, else the base's.
-function nvFieldValue(data, net, field) {
-  const e = networkEntry(data, net) || {};
-  if (e[field] !== undefined) return e[field];
-  return field === "signatureHooks" || field === "closingPatterns" ? voiceEntry(data)[field] : data[field];
-}
-
-// Edit keeps the four parts in a fixed order (a part must not jump when you
-// adapt it); the words to avoid read here and are edited on the base.
+// Edit keeps the parts in a fixed order (a part must not jump when you adapt
+// it); the words to avoid read in Never and are edited on the base.
 function nvNetworkEditBlocks(data, net) {
-  const e = networkEntry(data, net) || {};
-  const label = networkLabel(net);
-  return [
-    nvIdentityBlock(data, net),
-    pb2Block("What I've learned", renderLineEditor("rules", e.rules || [], `A rule for ${label}…`), {
-      wide: true,
-      index: 1,
-      icon: MEMORY_MARK,
-      caption: `${label} only`,
-    }),
-    ...nvFields().map(([field, title], i) =>
-      pb2Block(title, nvFieldEdit(data, net, field), { index: i + 2, aside: nvSourceBadge(data, net, field) }),
-    ),
-    pb2AvoidBlock(data, 6, `Edit it on the ${networkLabel(baseNetwork(data))} tab`),
-  ];
+  return [nvIdentityBlock(data, net), ...pb2VoiceParts(data, { net, edit: true })];
 }
 
 // The parts of a voice as [field, title] — from the one registry
@@ -2701,9 +2528,8 @@ function setNetworkInUrl(net) {
 
 // Adapt one part for the active network: it starts as a copy of the base's.
 function nvAdaptField(data, field) {
-  const base =
-    field === "signatureHooks" || field === "closingPatterns" ? voiceEntry(data)[field] || [] : data[field] || "";
-  nvWritableEntry(data, activeNetworkFor(data))[field] = Array.isArray(base) ? base.slice() : base;
+  const v = baseValue(data, field);
+  nvWritableEntry(data, activeNetworkFor(data))[field] = isListPart(field) ? cloneItems(v) : v;
 }
 
 function onNetworkVoiceClick(event) {
@@ -2721,15 +2547,11 @@ function onNetworkVoiceClick(event) {
       part: optimize.dataset.nvOptimizePart || null,
       onSave: ({ values, drafted }) => {
         // The base: the assistant rewrote the base voice itself.
-        // Hooks and closings live per language (voiceEntry) — the one the tab
-        // shows gets them, and the flat field mirrors it.
         if (net === baseNetwork(data)) {
-          const ve = voiceEntry(data);
           for (const [field] of nvFields()) {
             if (!(field in values)) continue;
             const v = values[field];
-            data[field] = Array.isArray(v) ? v.slice() : v === undefined ? (Array.isArray(data[field]) ? [] : "") : v;
-            if (field === "signatureHooks" || field === "closingPatterns") ve[field] = data[field].slice();
+            data[field] = v === undefined ? (isListPart(field) ? [] : "") : structuredClone(v);
           }
           cfg.commit?.();
           showToast(`${networkLabel(net)} voice saved. Every network that follows it changes too.`);
@@ -2741,7 +2563,7 @@ function onNetworkVoiceClick(event) {
         for (const [field] of nvFields()) {
           if (!(field in values)) continue; // a part the wizard didn't show
           if (values[field] === undefined) delete entry[field];
-          else entry[field] = Array.isArray(values[field]) ? values[field].slice() : values[field];
+          else entry[field] = structuredClone(values[field]);
         }
         if (drafted) entry.drafted = true;
         // The arcs this save completed fill once on the rings that show them.
@@ -3104,20 +2926,6 @@ function addAudienceCustom() {
   setAudience(val);
 }
 
-function addLine(field) {
-  const data = cfg.getData();
-  if (!data) return;
-  // Signature hooks / closing patterns are authored per language — write into
-  // the active language's voice entry, not the flat mirror.
-  const entry = editEntry(data, field);
-  const list = Array.isArray(entry[field]) ? entry[field].slice() : [];
-  list.push("");
-  entry[field] = list;
-  repaint();
-  const inputs = mountTarget?.querySelectorAll(`[data-recap-line-list="${field}"]`);
-  inputs?.[inputs.length - 1]?.focus();
-}
-
 // Every hook that writes to the Playbook. In read-only mode they're not rendered
 // — this list is the second line of defence, so a stale DOM node or a hook added
 // later without thinking can't slip a write past the gate.
@@ -3185,21 +2993,10 @@ function commitEdit(data) {
   if (Array.isArray(data.ctaLinks)) {
     data.ctaLinks = data.ctaLinks.filter((c) => (c.label || "").trim() || (c.url || "").trim() || c.suggested);
   }
-  // Drop empty lines from the flat mirror AND every per-language voice entry.
-  ["signatureHooks", "closingPatterns"].forEach((f) => {
-    if (Array.isArray(data[f])) data[f] = data[f].filter((s) => (s || "").trim());
-  });
-  if (data.voiceByLanguage && typeof data.voiceByLanguage === "object") {
-    Object.values(data.voiceByLanguage).forEach((entry) => {
-      ["signatureHooks", "closingPatterns"].forEach((f) => {
-        if (Array.isArray(entry[f])) entry[f] = entry[f].filter((s) => (s || "").trim());
-      });
-    });
-  }
-  // Same for every network voice — its own lines and its learned rules.
-  Object.values(data.voiceByNetwork || {}).forEach((entry) => {
-    ["signatureHooks", "closingPatterns", "rules"].forEach((f) => {
-      if (Array.isArray(entry[f])) entry[f] = entry[f].filter((s) => (s || "").trim());
+  // Drop the rules left blank — in the base voice and in every network's.
+  [data, ...Object.values(data.voiceByNetwork || {})].forEach((voice) => {
+    networkFields().forEach((f) => {
+      if (isListPart(f) && Array.isArray(voice[f])) voice[f] = cloneItems(voice[f]);
     });
   });
   // Drop roster entries left completely blank (an "Add competitor" row the
@@ -3504,7 +3301,6 @@ function onClick(event) {
       langs.splice(at, 1);
       if (data.voiceByLanguage) delete data.voiceByLanguage[lang];
       if (data.primaryLanguage === lang) data.primaryLanguage = langs[0];
-      if (activeVoiceLang === lang) activeVoiceLang = null;
     } else {
       langs.push(lang);
       if (!data.voiceByLanguage || typeof data.voiceByLanguage !== "object") data.voiceByLanguage = {};
@@ -3512,14 +3308,6 @@ function onClick(event) {
     }
     data.languages = langs;
     if (!data.primaryLanguage || !langs.includes(data.primaryLanguage)) data.primaryLanguage = langs[0];
-    repaint();
-    return;
-  }
-
-  // Voice & style — switch which language's examples are shown/edited.
-  const voiceLang = event.target.closest("[data-recap-voice-lang]");
-  if (voiceLang) {
-    activeVoiceLang = voiceLang.dataset.recapVoiceLang;
     repaint();
     return;
   }
@@ -3565,19 +3353,25 @@ function onClick(event) {
     return;
   }
 
-  // Line-list editor (signature hooks / closing patterns).
-  const lineRemove = event.target.closest("[data-recap-line-remove]");
-  if (lineRemove) {
-    const field = lineRemove.dataset.recapLineList;
-    const idx = Number(lineRemove.dataset.recapLineIndex);
-    const entry = editEntry(data, field);
-    if (Array.isArray(entry[field])) entry[field] = entry[field].filter((_, i) => i !== idx);
+  // A voice part's rules (rule-editor rows).
+  const ruleRemove = event.target.closest("[data-vr-remove]");
+  if (ruleRemove) {
+    const field = ruleRemove.dataset.vrRemove;
+    const idx = Number(ruleRemove.dataset.vrIndex);
+    const target = voiceTarget(data);
+    if (Array.isArray(target[field])) target[field] = target[field].filter((_, i) => i !== idx);
     repaint();
     return;
   }
-  const lineAdd = event.target.closest("[data-recap-line-add]");
-  if (lineAdd) {
-    addLine(lineAdd.dataset.recapLineAdd);
+  const ruleAdd = event.target.closest("[data-vr-add]");
+  if (ruleAdd) {
+    const field = ruleAdd.dataset.vrAdd;
+    const target = voiceTarget(data);
+    const list = Array.isArray(target[field]) ? target[field] : [];
+    target[field] = [...list, field === "voiceByPost" ? { when: "", text: "" } : { text: "" }];
+    repaint();
+    const inputs = mountTarget?.querySelectorAll(`[data-vr-list="${field}"]`);
+    inputs?.[field === "voiceByPost" ? inputs.length - 2 : inputs.length - 1]?.focus();
     return;
   }
 
@@ -3774,12 +3568,9 @@ function onInput(event) {
   } else if (t.matches("[data-recap-typo]")) {
     if (!data.brandTypography || typeof data.brandTypography !== "object") data.brandTypography = brandFonts(data);
     data.brandTypography[t.dataset.recapTypo] = t.value;
-  } else if (t.matches("[data-recap-line-field]")) {
-    const list = t.dataset.recapLineList;
-    const idx = Number(t.dataset.recapLineIndex);
-    // Voice examples are per language — mutate the active language's entry.
-    const entry = editEntry(data, list);
-    if (Array.isArray(entry[list]) && entry[list][idx] !== undefined) entry[list][idx] = t.value;
+  } else if (t.matches("[data-vr-list]")) {
+    const item = voiceTarget(data)[t.dataset.vrList]?.[Number(t.dataset.vrIndex)];
+    if (item) item[t.dataset.vrKey] = t.value;
   } else if (t.matches("[data-recap-cta-field]")) {
     const idx = Number(t.dataset.recapCtaIndex);
     const field = t.dataset.recapCtaField;
@@ -3906,9 +3697,6 @@ function onKeydown(event) {
   } else if (event.target.matches("[data-recap-chip-input]") && event.key === "Enter") {
     event.preventDefault();
     addChip(event.target.dataset.recapChipInput);
-  } else if (event.target.matches("[data-recap-line-field]") && event.key === "Enter") {
-    event.preventDefault();
-    addLine(event.target.dataset.recapLineList);
   } else if (event.target.matches("[data-recap-reftag-input]") && event.key === "Enter") {
     event.preventDefault();
     const value = event.target.value.trim();

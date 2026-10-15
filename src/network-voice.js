@@ -1,58 +1,66 @@
-// network-voice — a Playbook's voice, per network (flag `networkVoices`).
+// network-voice — a Playbook's voice, and its version per network.
 //
-// The model, stored on the Playbook (it's identity: how this brand sounds on
-// LinkedIn is true before the first post and after the hundredth):
+// A voice is FIVE parts (VOICE_PARTS, one registry, in reading order):
+//   voiceSummary    How the brand sounds — one paragraph
+//   voiceAlways     Always — rules every post follows
+//   voiceNever      Never — rules no post breaks (+ the brand-wide voiceAvoid
+//                   words, shown in the same block, never per network)
+//   voiceByPost     Depending on the post — one case per kind of post
+//   voiceSometimes  Now and then — habits that come back, not every time
+// A rule is { text, examples?: string[], learned?: true }; a case adds `when`
+// (the kind of post). `examples` are lines from the brand's own posts;
+// `learned` marks a rule Archie proposed and someone kept (Remember).
+//
+// The base fields live on the Playbook; the network versions, with the flag
+// networkVoices, live in:
 //   voiceBaseNetwork  "linkedin" — where the base voice was learned from (the
-//                     first network connected or picked at creation;
-//                     the others get an adaptation drafted then, see
-//                     analyzeNetworkVoices).
-//   voiceByNetwork    { [network]: { signatureHooks?, closingPatterns?,
-//                     formattingStyle?, visualStyle?, rules: string[],
-//                     drafted?: true } } — drafted: written by Archie (at
-//                     creation, Learn from, Optimize) and untouched since
+//                     network picked at creation; the others get an
+//                     adaptation drafted then, see analyzeNetworkVoices).
+//   voiceByNetwork    { [network]: { [part]?, drafted?: true } } — drafted:
+//                     written by Archie (at creation, Learn from, Optimize)
+//                     and untouched since
+// A network entry holds ONLY what differs from the base: an absent part
+// inherits the base's. Nothing here writes — the suggestions live in
+// voice-coach-store.js, outside the Playbook, and only an explicit Remember
+// moves one in (into Always or Never, learned: true).
 //
-// A network entry holds ONLY what differs from the base: an absent field
-// inherits the base voice. `rules` are what Archie learned and the user
-// accepted ("Keep the opening line short"). Nothing here writes — the
-// suggestions live in voice-coach-store.js, outside the Playbook, and only an
-// explicit Add moves one in.
-//
-// ponytail: network overrides are language-agnostic; with multilingualPlaybook
-// ON an overridden hook is written in one language. Per-language × per-network
-// examples when a brand actually publishes in two languages on one network.
+// ponytail: the parts are language-agnostic — with multilingualPlaybook ON the
+// examples are in one language. Per-language examples when a brand actually
+// publishes in two languages on one network.
 
-import { isFlagOn } from "./feature-flags.js?v=1851";
-import { escapeHtml } from "./utils.js?v=1851";
-import { NETWORKS, normalizeNetwork, getConnectedProfileById } from "./social-profiles.js?v=1851";
+import { isFlagOn } from "./feature-flags.js?v=1855";
+import { escapeHtml } from "./utils.js?v=1855";
+import { NETWORKS, normalizeNetwork, getConnectedProfileById } from "./social-profiles.js?v=1855";
 
-// The parts of a voice — ONE registry, in reading order. `isNew` marks a part
-// the product just added: a network that hasn't optimized it is told so (an
-// orange arc, a "New" pill). Hashtags is that part, simulated behind the flag
-// voiceNewSection — the demo of a section added to every Voice.
+// `newWith` marks a part the product just added, behind that flag — the demo
+// (voiceNewSection) of how a voice says a part is new: an orange arc, a "New"
+// pill, on every network (and the base) that hasn't written it yet.
 export const VOICE_PARTS = [
-  { field: "signatureHooks", title: "Opens with" },
-  { field: "closingPatterns", title: "Closes with" },
-  { field: "formattingStyle", title: "Formatting" },
-  { field: "visualStyle", title: "Emoji & casing" },
-  { field: "hashtagStyle", title: "Hashtags", isNew: true, flag: "voiceNewSection" },
+  { field: "voiceSummary", title: "How the brand sounds", kind: "text" },
+  { field: "voiceAlways", title: "Always", kind: "rules" },
+  { field: "voiceNever", title: "Never", kind: "rules" },
+  { field: "voiceByPost", title: "Depending on the post", kind: "cases", newWith: "voiceNewSection" },
+  { field: "voiceSometimes", title: "Now and then", kind: "rules" },
 ];
 
-// Every field a voice can carry, whatever the flags — what a copy must keep, so
-// turning a part off never erases what was written for it.
-export const ALL_NETWORK_FIELDS = VOICE_PARTS.map((p) => p.field);
+const ALL_NETWORK_FIELDS = VOICE_PARTS.map((p) => p.field);
 
-// The parts on screen now.
 export function voiceParts() {
-  return VOICE_PARTS.filter((p) => !p.flag || isFlagOn(p.flag));
+  return VOICE_PARTS;
 }
 
 export function networkFields() {
-  return voiceParts().map((p) => p.field);
+  return ALL_NETWORK_FIELDS;
 }
 
-const NEW_FIELDS = new Set(VOICE_PARTS.filter((p) => p.isNew).map((p) => p.field));
-export const isNewPart = (field) => NEW_FIELDS.has(field);
-const LIST_FIELDS = new Set(["signatureHooks", "closingPatterns"]);
+const partOf = (field) => VOICE_PARTS.find((p) => p.field === field);
+export const isListPart = (field) => !!partOf(field) && partOf(field).kind !== "text";
+export const isNewPart = (field) => !!partOf(field)?.newWith && isFlagOn(partOf(field).newWith);
+
+// The parts a Remember can write into: a kept rule is something always done or
+// never done; a kept habit (the coaching question's closing) comes now and then.
+const RULE_FIELDS = ["voiceAlways", "voiceNever", "voiceSometimes"];
+export const suggestionField = (s) => (RULE_FIELDS.includes(s?.field) ? s.field : "voiceAlways");
 
 export function networkVoicesOn() {
   return isFlagOn("networkVoices");
@@ -67,6 +75,69 @@ export function networkLabel(n) {
 export function networkIcon(n) {
   return NETWORKS[normalizeNetwork(n)]?.icon || "ap-icon-web";
 }
+
+// ── Items: a rule or a case ──────────────────────────────────────────────────
+
+// A list of rules / cases, deep-copied; a bare string (an older payload) is a
+// rule. Blank items are dropped.
+export function cloneItems(v) {
+  if (!Array.isArray(v)) return [];
+  return v
+    .map((i) => (typeof i === "string" ? { text: i } : i && typeof i === "object" ? structuredClone(i) : null))
+    .filter((i) => i && String(i.text || i.when || "").trim());
+}
+
+// An item as one line of text — how the Optimize wizard lists it (a case
+// reads "When: rule", the way the brand guidelines write it).
+export function itemLine(field, item) {
+  return partOf(field)?.kind === "cases" && item.when ? `${item.when}: ${item.text}` : item.text;
+}
+
+const capitalize = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+
+// Lines back into items: one already in `previous` keeps its examples and its
+// learned mark; a new one is parsed (a case splits on its first colon).
+export function itemsFromLines(field, lines, previous = []) {
+  const prev = new Map(previous.map((i) => [itemLine(field, i), i]));
+  return lines
+    .map((l) => String(l || "").trim())
+    .filter(Boolean)
+    .map((line) => {
+      if (prev.has(line)) return structuredClone(prev.get(line));
+      const at = line.indexOf(":");
+      return partOf(field)?.kind === "cases" && at > 0
+        ? { when: line.slice(0, at).trim(), text: capitalize(line.slice(at + 1).trim()) }
+        : { text: line };
+    });
+}
+
+// A part's items, read — the Voice tab and the Optimize review share it.
+// The rule in ink, a case's kind of post above it in bold, the examples under
+// it as quotes; a learned rule wears Archie's olive mark (voice-coach.css).
+export function voiceItemsHtml(items) {
+  const esc = escapeHtml;
+  const list = cloneItems(items);
+  return `<ul class="nv-rules">${list
+    .map(
+      (i) => `<li class="nv-rule">
+        ${i.learned ? `<i class="ap-icon-sparkles memory-mark" aria-hidden="true" title="Learned from your edits"></i>` : ""}
+        <div class="nv-rule__body">
+          ${i.when ? `<p class="nv-rule__when">${esc(i.when)}</p>` : ""}
+          <p class="nv-rule__text">${esc(i.text)}</p>
+          ${
+            i.examples?.length
+              ? `<ul class="nv-rule__examples" aria-label="Examples">${i.examples
+                  .map((x) => `<li><i class="ap-icon-quote" aria-hidden="true"></i><span>${esc(x)}</span></li>`)
+                  .join("")}</ul>`
+              : ""
+          }
+        </div>
+      </li>`,
+    )
+    .join("")}</ul>`;
+}
+
+// ── The base, and each network ───────────────────────────────────────────────
 
 // The network the base voice was learned from. Stored at creation; a legacy
 // Playbook falls back on its publishing profile, then on LinkedIn.
@@ -87,8 +158,7 @@ export function voiceNetworks(ctx) {
   return [...new Set(list.filter(Boolean))];
 }
 
-// Optimized = at least one part adapted to the network. Rules alone don't make
-// it: they were learned from use, the parts are what Optimize writes.
+// Optimized = at least one part adapted to the network.
 export function isOptimized(ctx, n) {
   const e = networkEntry(ctx, n);
   return !!e && networkFields().some((f) => e[f] !== undefined);
@@ -103,71 +173,45 @@ export function isOverridden(ctx, n, field) {
   return !!e && e[field] !== undefined;
 }
 
-// How far along a network voice is — derived on read, never stored (it moves
-// only when someone edits or accepts, which is what keeps it off the metrics
-// side of the Playbook's inclusion test). Always says its level in words.
-export function maturity(ctx, n) {
-  if (normalizeNetwork(n) === baseNetwork(ctx)) {
-    return { level: "base", label: "Base voice", detail: `Learned from your ${networkLabel(n)} posts.` };
-  }
-  const e = networkEntry(ctx, n) || {};
-  const adapted = networkFields().filter((f) => e[f] !== undefined).length;
-  const rules = (e.rules || []).length;
-  // Written by Archie (at creation, by Learn from, by Optimize) and not
-  // touched since: nothing has been learned from use yet, so it can't claim a
-  // level that only use earns. `drafted` drops at the first edit or Remember.
-  if (e.drafted && !rules) {
-    return {
-      level: "drafted",
-      label: "Optimized by Archie",
-      detail: `${adapted} of ${networkFields().length} parts adapted to how posts work on ${networkLabel(n)}. It moves on as you edit it and I learn.`,
-    };
-  }
-  const score = adapted + rules;
-  const level = score === 0 ? "new" : score <= 2 ? "learning" : score <= 4 ? "shaping" : "tuned";
-  const label = { new: "Not optimized", learning: "Learning", shaping: "Taking shape", tuned: "Tuned" }[level];
-  const parts = [];
-  if (rules) parts.push(`${rules} ${rules === 1 ? "rule" : "rules"} learned`);
-  if (adapted) parts.push(`${adapted} of ${networkFields().length} parts adapted`);
-  return {
-    level,
-    label,
-    detail: parts.length
-      ? `${parts.join(" · ")}.`
-      : `Writes like your ${networkLabel(baseNetwork(ctx))} voice for now.`,
-  };
+// A part of the base voice. The summary falls back on what the analysis heard
+// (voiceProfile.writingStyle) for a Playbook saved before it had its own.
+export function baseValue(ctx, field) {
+  if (field === "voiceSummary") return ctx?.voiceSummary || ctx?.voiceProfile?.writingStyle || "";
+  return Array.isArray(ctx?.[field]) ? ctx[field] : [];
 }
 
-// The voiceByNetwork a suggestion produces once accepted. A rule appends to the
-// network's rules; a list-field suggestion (a closing, a hook) adds a line to
-// that network's own list, seeded from the base so accepting never drops what
-// the network already inherited.
-export function withSuggestion(ctx, s) {
-  const net = normalizeNetwork(s.network);
-  const all = structuredClone(ctx.voiceByNetwork || {});
-  const e = all[net] || { rules: [] };
-  if (!Array.isArray(e.rules)) e.rules = [];
+// What a network reads as: its own version where it adapted the part, else
+// the base's.
+export function partValue(ctx, n, field) {
+  const e = normalizeNetwork(n) === baseNetwork(ctx) ? null : networkEntry(ctx, n);
+  return e?.[field] !== undefined ? e[field] : baseValue(ctx, field);
+}
+
+// The Playbook patch a list edit produces on one network's part: the base
+// writes its own field; another network writes its own version, seeded from
+// the base's so a kept rule never drops what the network already inherited.
+function patchPart(ctx, network, field, fn) {
+  const net = normalizeNetwork(network);
+  if (net === baseNetwork(ctx)) return { [field]: fn(cloneItems(ctx[field])) };
+  const all = cloneVoiceByNetwork(ctx.voiceByNetwork);
+  const e = all[net] || {};
   delete e.drafted; // a Remember is use
-  if (s.field && LIST_FIELDS.has(s.field)) {
-    const list = e[s.field] !== undefined ? e[s.field] : (ctx[s.field] || []).slice();
-    if (!list.includes(s.text)) list.unshift(s.text);
-    e[s.field] = list;
-  } else if (!e.rules.includes(s.text)) {
-    e.rules.push(s.text);
-  }
+  e[field] = fn(e[field] !== undefined ? e[field] : cloneItems(baseValue(ctx, field)));
   all[net] = e;
-  return all;
+  return { voiceByNetwork: all };
+}
+
+// The patch a suggestion produces once accepted: the rule joins the part it
+// was proposed for (Always by default), marked learned.
+export function withSuggestion(ctx, s) {
+  return patchPart(ctx, s.network, suggestionField(s), (list) =>
+    list.some((i) => i.text === s.text) ? list : [...list, { text: s.text, learned: true }],
+  );
 }
 
 // The reverse of withSuggestion — what an Undo writes back.
 export function withoutSuggestion(ctx, s) {
-  const net = normalizeNetwork(s.network);
-  const all = structuredClone(ctx.voiceByNetwork || {});
-  const e = all[net];
-  if (!e) return all;
-  const key = s.field && LIST_FIELDS.has(s.field) ? s.field : "rules";
-  if (Array.isArray(e[key])) e[key] = e[key].filter((t) => t !== s.text);
-  return all;
+  return patchPart(ctx, s.network, suggestionField(s), (list) => list.filter((i) => i.text !== s.text));
 }
 
 // What Archie wants to remember, as one card (styles/components/voice-coach.css):
@@ -222,9 +266,8 @@ export function partsDone(ctx, n) {
 // the network hasn't optimized — on the base, a new part it hasn't filled in.
 export function partsNew(ctx, n) {
   const onBase = normalizeNetwork(n) === baseNetwork(ctx);
-  return networkFields().map(
-    (f) => isNewPart(f) && (onBase ? !String(ctx?.[f] || "").trim() : !isOverridden(ctx, n, f)),
-  );
+  const empty = (f) => (isListPart(f) ? !cloneItems(ctx?.[f]).length : !String(ctx?.[f] || "").trim());
+  return networkFields().map((f) => isNewPart(f) && (onBase ? empty(f) : !isOverridden(ctx, n, f)));
 }
 
 // The progress ring: one arc per part of the voice around the network's logo —
@@ -266,11 +309,11 @@ export function cloneVoiceByNetwork(v) {
   const out = {};
   for (const [net, e] of Object.entries(v)) {
     if (!known(net) || !e || typeof e !== "object") continue;
-    const entry = { rules: Array.isArray(e.rules) ? e.rules.filter(Boolean) : [] };
+    const entry = {};
     if (e.drafted) entry.drafted = true;
     for (const f of ALL_NETWORK_FIELDS) {
       if (e[f] === undefined) continue;
-      entry[f] = LIST_FIELDS.has(f) ? (Array.isArray(e[f]) ? e[f].slice() : []) : String(e[f] ?? "");
+      entry[f] = isListPart(f) ? cloneItems(e[f]) : String(e[f] ?? "");
     }
     out[known(net)] = entry;
   }
@@ -278,20 +321,15 @@ export function cloneVoiceByNetwork(v) {
 }
 
 // ── Writing in a network voice ───────────────────────────────────────────────
-// What a draft for `network` is written with: the network's own parts where it
-// adapted them, the base's elsewhere (in the draft's language when the
-// Playbook has one for it), and the rules the network learned.
-export function resolvedVoice(ctx, network, language = null) {
+// What a draft for `network` follows: the rules Archie learned and someone kept
+// (Always and Never) — the ones a mock can carry out (RULE_ACTIONS). The other
+// rules are followed by the writer in the real thing.
+function learnedRules(ctx, network) {
   const net = known(network) || baseNetwork(ctx);
-  const lang = (language && ctx?.voiceByLanguage?.[language]) || null;
-  const base = (field) => (lang?.[field]?.length ? lang[field] : ctx?.[field] || []);
-  const e = networkEntry(ctx, net) || {};
-  return {
-    network: net,
-    signatureHooks: e.signatureHooks ?? base("signatureHooks"),
-    closingPatterns: e.closingPatterns ?? base("closingPatterns"),
-    rules: e.rules || [],
-  };
+  return ["voiceAlways", "voiceNever"]
+    .flatMap((f) => cloneItems(partValue(ctx, net, f)))
+    .filter((i) => i.learned)
+    .map((i) => i.text);
 }
 
 const EMOJI_ALL = /\p{Extended_Pictographic}️?/gu;
@@ -388,26 +426,13 @@ export function followRules(draft, rules = []) {
   return d;
 }
 
-// A fresh draft, written in the network voice: opens on one of its hooks,
-// closes on one of its closings, follows its rules. `seed` picks which hook
-// and closing — the favourite (first) one every other draft — so a batch
-// doesn't open five drafts the same way. Hooks with a
-// [placeholder] are templates for a person, not lines to publish.
-export function writeInVoice(ctx, network, draft, seed = 0) {
-  const v = resolvedVoice(ctx, network, draft.language);
-  const usable = (list) => list.filter((l) => l && !/\[[^\]]*\]/.test(l));
-  const hooks = usable(v.signatureHooks);
-  const closings = usable(v.closingPatterns);
-  // The lines are in preference order (the wizard's drag): the first one leads
-  // every other draft, the rest take turns.
-  const favour = (list) => (seed % 2 === 0 ? list[0] : list[seed % list.length]);
-  const text = [
-    ...(hooks.length ? [favour(hooks)] : []),
-    ...(draft.text || []),
-    ...(closings.length ? [favour(closings)] : []),
-  ];
+// A fresh draft, written in the network voice: it follows the network's learned
+// rules, and says which (the draft's Generation context lists them).
+export function writeInVoice(ctx, network, draft) {
+  const net = known(network) || baseNetwork(ctx);
+  const rules = learnedRules(ctx, net);
   return {
-    ...followRules({ text, hashtags: draft.hashtags }, v.rules),
-    voice: { network: v.network, rules: v.rules.slice() },
+    ...followRules({ text: draft.text, hashtags: draft.hashtags }, rules),
+    voice: { network: net, rules },
   };
 }

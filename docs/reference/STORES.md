@@ -146,7 +146,7 @@ Imports d'un module à état vers un autre (les imports de `mocks.js`, `store-ut
 - `composer-mentions.js` → `library.js`.
 - `assistant.js` → `connectors-store.js` (+ `components/toast.js`).
 - `topic-feeds-store.js` → `contexts-store.js` (+ config `topics-catalog.js`).
-- `voice-coach-store.js` → `contexts-store.js` (`accept` écrit la règle dans `voiceByNetwork`, `undo` l'en retire).
+- `voice-coach-store.js` → `contexts-store.js` (`accept` écrit la règle dans la partie Always / Never / Now and then du réseau — `voiceByNetwork`, ou la base elle-même —, `undo` l'en retire).
 - `topics-store.js` → aucun store (config `topics-catalog.js` seulement).
 - `active-playbook.js` → `contexts-store.js` + `feature-flags.js`.
 - `contexts-store.js` → `org.js` + `feature-flags.js` + `user-mode.js` + `languages.js`.

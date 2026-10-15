@@ -73,10 +73,9 @@ export const FLAGS = Object.freeze([
     default: false,
     hides:
       "When OFF (default), Playbooks are single-language: the Audience & goals " +
-      "language row is a plain English-only picker, the Voice & style panel has " +
-      "no per-language switcher, and the draft flow never asks which language to " +
+      "language row is a plain English-only picker, and the draft flow never asks which language to " +
       "write in. When ON, a Playbook holds several languages (languages[] / " +
-      "primaryLanguage / voiceByLanguage), the Voice examples are authored per " +
+      "primaryLanguage / voiceByLanguage), the CTA copy is authored per " +
       "language, and drafting asks the target language. Underlying multilingual " +
       "data is preserved either way — only the surfaces are gated.",
   },
@@ -157,28 +156,29 @@ export const FLAGS = Object.freeze([
     hides:
       "When OFF, a Playbook has one voice. ON gives it a BASE voice — learned " +
       "from the network of the profile picked at creation — and an adaptation " +
-      "per network it publishes on: each network overrides only what differs " +
-      "(hooks, closings, formatting, emoji) and keeps the rules it was taught.\n\n" +
+      "per network it publishes on: each network overrides only the parts that " +
+      "differ (How the brand sounds, Always, Never, Depending on the post, Now " +
+      "and then); a rule it was taught joins its Always or Never.\n\n" +
       "Archie coaches it over time, and never writes it silently: when you " +
       "rework a draft (needs draftInlineEdit), when you thumbs-down one with a " +
       "reason, or by asking a question after drafting for a network whose " +
       "voice is thin, it PROPOSES a rule — a card in the chat, and the " +
-      "\"What I've learned\" block on the Voice tab, under Archie's butter header. Nothing enters the " +
+      '"What I\'ve learned" block on the Voice tab. Nothing enters the ' +
       "Playbook without a click. Each network voice says how far along it is. " +
       "The per-network view lives on the Playbook 2.0 page (flag playbook2).",
   },
   {
     id: "voiceNewSection",
-    label: "Voice: simulate a new section (Hashtags)",
+    label: "Voice: simulate a new section (Depending on the post)",
     // A demo, not a feature: how the Voice tab tells a user the product added a
     // part to every voice. Needs networkVoices.
     default: false,
     hides:
-      "Adds a fifth part to every voice — Hashtags — marked New. A network that " +
-      "was fully optimized drops to 4 of 5 and says what's new: an orange arc on " +
+      "Marks Depending on the post as a part the product just added. Every " +
+      "network that hasn't written its own says what's new: an orange arc on " +
       'its ring, "1 new part" in its band, a dot on its tab, a New pill on the ' +
-      "Hashtags block, a New step in the Optimize wizard. On a Playbook whose " +
-      "base voice has no hashtags yet, the base asks for them too. Turn it off and " +
-      "the part disappears — what was written for it is kept. Needs networkVoices.",
+      "block, a New step in the Optimize wizard — and Optimize leaves it to do. " +
+      "On a Playbook whose base voice has no cases yet, the base asks for them " +
+      "too. Off, the part is an ordinary one. Needs networkVoices.",
   },
 ]);

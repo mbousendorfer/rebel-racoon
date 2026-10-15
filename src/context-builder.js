@@ -13,31 +13,32 @@
 // tones, contentStyle, objective, contentAction, ctaLinks, language, color,
 // suggestions, editingId, onComplete }.
 
-import * as inlineQuestion from "./inline-question.js?v=1851";
-import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=1851";
-import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=1851";
-import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=1851";
-import { showToast } from "./components/toast.js?v=1851";
-import { recordReasons } from "./feedback-store.js?v=1851";
-import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1851";
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1851";
-import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=1851";
-import { analyzeWebsite, analyzeBrandFiles, analyzeNetworkVoices } from "./context-mock-analysis.js?v=1851";
+import * as inlineQuestion from "./inline-question.js?v=1855";
+import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=1855";
+import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=1855";
+import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=1855";
+import { showToast } from "./components/toast.js?v=1855";
+import { recordReasons } from "./feedback-store.js?v=1855";
+import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1855";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1855";
+import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=1855";
+import { analyzeWebsite, analyzeBrandFiles, analyzeNetworkVoices } from "./context-mock-analysis.js?v=1855";
 import {
   networkVoicesOn,
   cloneVoiceByNetwork,
+  cloneItems,
   networkLabel,
   networkIcon,
   voiceNetworks,
-} from "./network-voice.js?v=1851";
-import { connectors as connectorMocks } from "./mocks.js?v=1851";
+} from "./network-voice.js?v=1855";
+import { connectors as connectorMocks } from "./mocks.js?v=1855";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "./social-profiles.js?v=1851";
-import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=1851";
-import { isFlagOn } from "./feature-flags.js?v=1851";
+} from "./social-profiles.js?v=1855";
+import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=1855";
+import { isFlagOn } from "./feature-flags.js?v=1855";
 
 const drafts = new Map(); // sessionId → draft
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -69,11 +70,14 @@ function emptyDraft(overrides = {}) {
     language: "English",
     color: "orange",
     voiceProfile: null,
-    // Voice & style — concrete patterns surfaced in the Playbook view.
+    // Voice & style — the five parts (network-voice.js VOICE_PARTS).
     signatureHooks: [],
     closingPatterns: [],
-    formattingStyle: "",
-    visualStyle: "",
+    voiceSummary: "",
+    voiceAlways: [],
+    voiceNever: [],
+    voiceByPost: [],
+    voiceSometimes: [],
     voiceMode: "guided", // "guided" (structured fields) | "manual" (free-form)
     voiceManual: "",
     // Brand — author-editable identity (seeded from the scraped site on first edit).
@@ -209,10 +213,11 @@ export function sectionPatchFromAnalysis(analysis) {
     language: s.language || "English",
     voiceProfile: s.voiceProfile ? { ...s.voiceProfile } : null,
     imageVoice: s.imageVoice || { websites: [] },
-    signatureHooks: (s.signatureHooks || []).slice(),
-    closingPatterns: (s.closingPatterns || []).slice(),
-    formattingStyle: s.formattingStyle || "",
-    visualStyle: s.visualStyle || "",
+    voiceSummary: s.voiceSummary || "",
+    voiceAlways: cloneItems(s.voiceAlways),
+    voiceNever: cloneItems(s.voiceNever),
+    voiceByPost: cloneItems(s.voiceByPost),
+    voiceSometimes: cloneItems(s.voiceSometimes),
     // A fresh analysis always produces structured voice — reset to guided.
     voiceMode: "guided",
     voiceManual: "",
@@ -936,11 +941,14 @@ export function save(sessionId) {
     cta: d.ctaLinks.find((l) => l.checked)?.url || "",
     voiceProfile: d.voiceProfile || null,
     imageVoice: d.imageVoice && Array.isArray(d.imageVoice.websites) ? d.imageVoice : { websites: [] },
-    // New 3-section model fields (previously dropped on save).
+    // The voice, five parts (network-voice.js VOICE_PARTS).
     signatureHooks: Array.isArray(d.signatureHooks) ? d.signatureHooks.filter((s) => (s || "").trim()) : [],
     closingPatterns: Array.isArray(d.closingPatterns) ? d.closingPatterns.filter((s) => (s || "").trim()) : [],
-    formattingStyle: d.formattingStyle || "",
-    visualStyle: d.visualStyle || "",
+    voiceSummary: d.voiceSummary || "",
+    voiceAlways: cloneItems(d.voiceAlways),
+    voiceNever: cloneItems(d.voiceNever),
+    voiceByPost: cloneItems(d.voiceByPost),
+    voiceSometimes: cloneItems(d.voiceSometimes),
     brandPersonality: d.brandPersonality || "",
     brandTypography: d.brandTypography ? { ...d.brandTypography } : null,
     brandColors: Array.isArray(d.brandColors) ? d.brandColors.map((c) => ({ ...c })) : [],

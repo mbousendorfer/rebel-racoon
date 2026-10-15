@@ -24,6 +24,7 @@ export const voiceSuggestionsByContext = {
       text: "No hashtags on X.",
       why: "You removed every hashtag from your last X drafts.",
       source: "edits",
+      field: "voiceNever",
     },
   ],
 };
