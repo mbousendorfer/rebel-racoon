@@ -17,8 +17,8 @@
 //     showMention — render the Mention button (default true; false where there
 //                   is no composer, e.g. the standalone Ideas page)
 
-import { iconFor } from "../file-kinds.js?v=1864";
-import { escapeText, escapeAttr } from "../utils.js?v=1864";
+import { iconFor } from "../file-kinds.js?v=1866";
+import { escapeText, escapeAttr } from "../utils.js?v=1866";
 
 export function renderCompactIdeaCard(
   idea,
@@ -89,7 +89,7 @@ export function renderCompactIdeaCard(
 
   const cardHead = `
     <div class="rpanel-ideas__card-head">
-      <span class="ap-tag rpanel-ideas__kind rpanel-ideas__kind--${kind}">${kind}</span>
+      <span class="ap-tag rpanel-ideas__kind rpanel-ideas__kind--${kind}">${kind.charAt(0).toUpperCase() + kind.slice(1)}</span>
       ${
         sourceTags
           ? `<div class="rpanel-ideas__head-source">
@@ -125,7 +125,7 @@ export function renderCompactIdeaCard(
           ${mentionBtn}
           <button type="button" class="ap-button secondary blue rpanel-ideas__use" data-rpanel-use-idea="${escapeAttr(idea.id)}">
             <i class="ap-icon-sparkles"></i>
-            <span>Draft</span>
+            <span>Draft post</span>
           </button>
         </div>
       </footer>

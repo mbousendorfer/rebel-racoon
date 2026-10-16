@@ -1,31 +1,31 @@
-import { html, raw } from "../utils.js?v=1864";
-import { subscribe as subscribeThread } from "../assistant.js?v=1864";
-import { isFlagOn } from "../feature-flags.js?v=1864";
-import { getPath, navigate } from "../router.js?v=1864";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1864";
+import { html, raw } from "../utils.js?v=1866";
+import { subscribe as subscribeThread } from "../assistant.js?v=1866";
+import { isFlagOn } from "../feature-flags.js?v=1866";
+import { getPath, navigate } from "../router.js?v=1866";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1866";
 import {
   getPosts,
   attachImageToDraft,
   updatePostClip,
   subscribe as subscribePostsStore,
-} from "../posts-store.js?v=1864";
-import { onFeedbackClick } from "./feedback-control.js?v=1864";
+} from "../posts-store.js?v=1866";
+import { onFeedbackClick } from "./feedback-control.js?v=1866";
 // Shared compact idea card — same component the standalone Ideas page uses.
-import { open as openVideoClipsModal } from "./video-clips-modal.js?v=1864";
-import { isSidebarCollapsed, setSidebarCollapsed, isAutoCollapsed } from "./sidebar.js?v=1864";
+import { open as openVideoClipsModal } from "./video-clips-modal.js?v=1866";
+import { isSidebarCollapsed, setSidebarCollapsed, isAutoCollapsed } from "./sidebar.js?v=1866";
 import {
   getSources as getStreamSources,
   subscribeSources,
   updateSourceClips,
   removeSources,
   renameSource,
-} from "../sources-stream.js?v=1864";
-import { open as openAddSourceModal } from "./add-source-modal.js?v=1864";
-import { open as openRenameModal } from "./rename-modal.js?v=1864";
-import { askConnector } from "../connector-ask.js?v=1864";
-import { open as openConnectorsModal } from "./connectors-modal.js?v=1864";
-import { addMention as addComposerMention } from "../composer-mentions.js?v=1864";
-import { getIdeas, removeIdeasForSources } from "../library.js?v=1864";
+} from "../sources-stream.js?v=1866";
+import { open as openAddSourceModal } from "./add-source-modal.js?v=1866";
+import { open as openRenameModal } from "./rename-modal.js?v=1866";
+import { askConnector } from "../connector-ask.js?v=1866";
+import { open as openConnectorsModal } from "./connectors-modal.js?v=1866";
+import { addMention as addComposerMention } from "../composer-mentions.js?v=1866";
+import { getIdeas, removeIdeasForSources } from "../library.js?v=1866";
 
 // The ideas of the chat the panel is looking at.
 //
@@ -40,16 +40,16 @@ export function sessionIdeas() {
   const sid = activeSessionId();
   return sid ? getIdeas(sid) : [];
 }
-import { open as openConfirmModal } from "./confirm-modal.js?v=1864";
-import { showToast } from "./toast.js?v=1864";
-import { closeAllSourceMenus, renderSourcesView } from "./right-panel/sources-view.js?v=1864";
+import { open as openConfirmModal } from "./confirm-modal.js?v=1866";
+import { showToast } from "./toast.js?v=1866";
+import { closeAllSourceMenus, renderSourcesView } from "./right-panel/sources-view.js?v=1866";
 import {
   collectAllClips,
   renderIdeasView,
   toggleClipWhyInPlace,
   toggleIdeaFeedback,
   toggleWhyOpen,
-} from "./right-panel/ideas-view.js?v=1864";
+} from "./right-panel/ideas-view.js?v=1866";
 import {
   cancelEdit,
   closeAllRewriteMenus,
@@ -75,7 +75,7 @@ import {
   setNetworkSelection,
   startEdit,
   visibleNetworkPosts,
-} from "./right-panel/drafts-view.js?v=1864";
+} from "./right-panel/drafts-view.js?v=1866";
 
 // Global Right Panel — slides in from the right edge of the viewport, overlays
 // the session workspace, hosts two modes:
@@ -727,7 +727,7 @@ export function init() {
       openVideoClipsModal(src, {
         onSaveClips: (id, nextClips) => updateSourceClips(id, nextClips),
         onUseClips: (selectedClips, source) => {
-          import("../screens/session/clip-draft-flow.js?v=1864").then(({ startClipDraftFlow }) => {
+          import("../screens/session/clip-draft-flow.js?v=1866").then(({ startClipDraftFlow }) => {
             startClipDraftFlow(
               sid,
               selectedClips.map((clip) => ({ clip, sourceName: source.filename, sourceId: source.id })),
@@ -779,8 +779,8 @@ export function init() {
       const ideaWarning =
         ideaN > 0 ? ` Its ${ideaN} associated idea${ideaN === 1 ? "" : "s"} will be deleted too.` : "";
       openConfirmModal({
-        title: "Delete this source?",
-        body: `“${src?.filename || "This source"}” will be removed from this chat.${ideaWarning} This can’t be undone.`,
+        title: "Delete source?",
+        body: `"${src?.filename || "This source"}" will be removed from this chat.${ideaWarning} This can't be undone.`,
         confirmLabel: "Delete source",
         danger: true,
         onConfirm: () => {
@@ -898,7 +898,7 @@ export function init() {
       const sid = activeSessionId();
       if (!sid || !entry) return;
       const { clip, sourceName, sourceId } = entry;
-      import("../screens/session/clip-draft-flow.js?v=1864").then(({ startClipDraftFlow }) => {
+      import("../screens/session/clip-draft-flow.js?v=1866").then(({ startClipDraftFlow }) => {
         startClipDraftFlow(sid, [{ clip, sourceName, sourceId }]);
       });
       return;
@@ -916,7 +916,7 @@ export function init() {
       if (picked.length === 0) return;
       clipSelection = new Set();
       renderPanel();
-      import("../screens/session/clip-draft-flow.js?v=1864").then(({ startClipDraftFlow }) => {
+      import("../screens/session/clip-draft-flow.js?v=1866").then(({ startClipDraftFlow }) => {
         startClipDraftFlow(sid, picked);
       });
       return;
@@ -943,7 +943,7 @@ export function init() {
       });
       openConfirmModal({
         title: `Delete ${count} ${clipWord}?`,
-        body: `${count === 1 ? "This clip" : `These ${count} clips`} will be removed from the session. You can undo right after.`,
+        body: `${count === 1 ? "This clip" : `These ${count} clips`} will be removed from this chat. You can undo right after.`,
         confirmLabel: `Delete ${count} ${clipWord}`,
         danger: true,
         onConfirm: () => {
@@ -1330,7 +1330,7 @@ function useIdea(ideaId) {
   if (!idea) return;
   const sid = activeSessionId();
   if (!sid) return;
-  import("../screens/session/draft-questions.js?v=1864").then(({ askAngleQuestion }) => {
+  import("../screens/session/draft-questions.js?v=1866").then(({ askAngleQuestion }) => {
     askAngleQuestion(sid, ideaId);
   });
 }

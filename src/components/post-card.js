@@ -19,12 +19,12 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1864";
-import { isPortraitFormat } from "../clip-formats.js?v=1864";
-import { presetById } from "../clip-captions.js?v=1864";
-import { renderFeedbackControl } from "./feedback-control.js?v=1864";
-import { networkMeta } from "../social-profiles.js?v=1864";
-import { REVEAL_MS } from "../archie-pixels.js?v=1864";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1866";
+import { isPortraitFormat } from "../clip-formats.js?v=1866";
+import { presetById } from "../clip-captions.js?v=1866";
+import { renderFeedbackControl } from "./feedback-control.js?v=1866";
+import { networkMeta } from "../social-profiles.js?v=1866";
+import { REVEAL_MS } from "../archie-pixels.js?v=1866";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -88,12 +88,14 @@ function renderEmptyMedia(post, opts) {
   // missing, because "your brand kit is incomplete" sends you hunting.
   const labels = gaps.map((g) => g.label);
   const gapList =
-    labels.length > 1 ? `${labels.slice(0, -1).join(", ")} and ${labels[labels.length - 1]}` : labels[0] || "";
+    labels.length > 1
+      ? `${labels.slice(0, -1).join(", ")}${labels.length > 2 ? "," : ""} and ${labels[labels.length - 1]}`
+      : labels[0] || "";
   const hint =
     gaps.length && opts.playbookId
       ? `<p class="posts__card-media-empty-hint muted">
           Add ${gapList} to the Playbook and I'll work them into every image I make.
-          <button type="button" class="ap-link small" data-post-playbook-gap="${opts.playbookId}">Open the Playbook</button>
+          <button type="button" class="ap-link small" data-post-playbook-gap="${opts.playbookId}">Open Playbook</button>
         </p>`
       : "";
 
@@ -113,7 +115,7 @@ function renderEmptyMedia(post, opts) {
         </button>
         <button type="button" class="ap-button stroked grey" data-post-image-upload="${escapeAttr(post.id)}" title="Or drop an image anywhere here">
           <i class="ap-icon-upload"></i>
-          <span>Upload</span>
+          <span>Add image</span>
         </button>
       </div>
     </div>
@@ -178,7 +180,7 @@ export function renderPostCard(post, opts = {}) {
         contenteditable="true"
         role="textbox"
         aria-multiline="true"
-        aria-label="Edit post body"
+        aria-label="Edit draft text"
         data-post-editor="${post.id}"
         spellcheck="true"
       >${escapeText(serializeBody(post))}</div>`;
@@ -220,7 +222,7 @@ export function renderPostCard(post, opts = {}) {
          ${feedbackStrip}
          <label class="posts__gencontext-toggle" for="gc-${post.id}">
            <i class="ap-icon-information-circle posts__gencontext-info" aria-hidden="true"></i>
-           <span class="posts__gencontext-toggle-label">Generation context</span>
+           <span class="posts__gencontext-toggle-label">Why this draft</span>
            <i class="ap-icon-chevron-down posts__gencontext-chevron" aria-hidden="true"></i>
          </label>
        </div>
@@ -244,7 +246,7 @@ export function renderPostCard(post, opts = {}) {
             </span>
             <span class="posts__card-reaction-count">${stats.likes || 0}</span>
           </span>
-          <span class="posts__card-meta muted">${stats.comments || 0} comments · ${stats.reposts || 0} reposts</span>
+          <span class="posts__card-meta muted">${stats.comments || 0} comment${stats.comments === 1 ? "" : "s"} · ${stats.reposts || 0} repost${stats.reposts === 1 ? "" : "s"}</span>
         </div>
       `
       : "";
@@ -295,15 +297,15 @@ export function renderPostCard(post, opts = {}) {
           <div class="posts__card-image-controls">
             <button type="button" class="ap-button ghost grey" data-post-image-edit="${post.id}">
               <i class="ap-icon-archie-official"></i>
-              <span>Edit</span>
+              <span>Edit image</span>
             </button>
             <button type="button" class="ap-button ghost grey" data-post-image-upload="${post.id}">
               <i class="ap-icon-upload"></i>
-              <span>Change</span>
+              <span>Replace image</span>
             </button>
             <button type="button" class="ap-button ghost red" data-post-image-remove="${post.id}">
               <i class="ap-icon-trash"></i>
-              <span>Remove</span>
+              <span>Remove image</span>
             </button>
           </div>
         </div>`
@@ -359,7 +361,7 @@ export function renderPostCard(post, opts = {}) {
         ${raw(belowCard)}
       </div>
 
-      <div class="posts__row-actions" aria-label="Post actions">
+      <div class="posts__row-actions" aria-label="Draft actions">
         <button
           type="button"
           class="ap-icon-button stroked blue"
@@ -375,7 +377,7 @@ export function renderPostCard(post, opts = {}) {
             ? `<button
                 type="button"
                 class="ap-icon-button stroked"
-                aria-label="Edit post"
+                aria-label="Edit draft"
                 title="Edit"
                 data-post-edit="${post.id}"
                 ${regenerating ? "disabled" : ""}
@@ -389,6 +391,7 @@ export function renderPostCard(post, opts = {}) {
             type="button"
             class="ap-icon-button stroked ${regenerating ? "loading" : ""}"
             aria-label="Regenerate draft"
+            title="Rewrite or regenerate"
             aria-haspopup="true"
             aria-expanded="false"
             data-post-rewrite-menu="${post.id}"
@@ -471,8 +474,8 @@ export function renderPostCard(post, opts = {}) {
         <button
           type="button"
           class="ap-icon-button stroked"
-          aria-label="Upload an image"
-          title="Upload"
+          aria-label="Add an image from your computer"
+          title="Add image"
           data-post-image-upload="${post.id}"
           ${regenerating ? "disabled" : ""}
         >
@@ -482,6 +485,7 @@ export function renderPostCard(post, opts = {}) {
           type="button"
           class="ap-icon-button stroked"
           aria-label="Save as draft"
+          title="Save as draft in Agorapulse — moves it out of this chat"
           data-post-save-draft="${post.id}"
           ${regenerating ? "disabled" : ""}
         >
@@ -490,7 +494,8 @@ export function renderPostCard(post, opts = {}) {
         <button
           type="button"
           class="ap-icon-button stroked"
-          aria-label="Schedule post"
+          aria-label="Schedule draft"
+          title="Schedule draft"
           data-post-schedule="${post.id}"
           ${regenerating ? "disabled" : ""}
         >
@@ -499,7 +504,8 @@ export function renderPostCard(post, opts = {}) {
         <button
           type="button"
           class="ap-icon-button stroked posts__row-action--danger"
-          aria-label="Delete post"
+          aria-label="Delete draft"
+          title="Delete draft"
           data-post-delete="${post.id}"
           ${regenerating ? "disabled" : ""}
         >
@@ -547,7 +553,7 @@ function renderVoiceContext(post) {
   const rules = v.rules || [];
   const detail = rules.length
     ? `<ul class="posts__gencontext-rules">${rules.map((r) => `<li>${escapeText(r)}</li>`).join("")}</ul>`
-    : `<p class="posts__gencontext-source-detail">Its hooks and closings. No rules learned for ${escapeText(label)} yet.</p>`;
+    : `<p class="posts__gencontext-source-detail">I haven't learned your ${escapeText(label)} rules yet — edit a few drafts and I'll pick up your hooks and closings.</p>`;
   return `<div class="posts__gencontext-source">
       <span class="posts__gencontext-source-head">
         <i class="${networkMeta(v.network)?.icon || "ap-icon-sparkles"}" aria-hidden="true"></i>
@@ -645,7 +651,7 @@ const SUBTITLE_LABEL = {
   clean: "Clean",
   caption: "Caption",
   // Clip-draft flow styles (align with the subtitle-style card grid).
-  karaoke: "Karaoké",
+  karaoke: "Karaoke",
   "deep-diver": "Deep Diver",
   youshaei: "Youshaei",
   popline: "PopLine",
@@ -683,7 +689,7 @@ function renderClipPlayer(post) {
   // its source clip (sourceId + clipId). Legacy / manual clipRefs omit them.
   const editBtn =
     clip.sourceId && clip.clipId
-      ? `<button type="button" class="posts__card-clip-edit" data-post-clip-edit="${post.id}" aria-label="Edit clip" title="Edit clip">
+      ? `<button type="button" class="posts__card-clip-edit" data-post-clip-edit="${post.id}" aria-label="Edit clip">
         <i class="ap-icon-pen" aria-hidden="true"></i>
         <span>Edit clip</span>
       </button>`

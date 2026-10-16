@@ -3,13 +3,13 @@
 // the panel shell (open / close / resize / URL state / delegated listeners)
 // stays there.
 
-import { getSources as getStreamSources } from "../../sources-stream.js?v=1864";
-import { isFlagOn } from "../../feature-flags.js?v=1864";
-import { getConnectedConnectors } from "../../connectors-store.js?v=1864";
-import { escapeAttr, escapeText } from "../../utils.js?v=1864";
-import { renderConnectorLogo } from "../../connectors-view.js?v=1864";
-import { renderTopPostEcho } from "../top-post-card.js?v=1864";
-import { RPANEL_CLOSE_INLINE, activeSessionId, sessionIdeas } from "../right-panel.js?v=1864";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1866";
+import { isFlagOn } from "../../feature-flags.js?v=1866";
+import { getConnectedConnectors } from "../../connectors-store.js?v=1866";
+import { escapeAttr, escapeText } from "../../utils.js?v=1866";
+import { renderConnectorLogo } from "../../connectors-view.js?v=1866";
+import { renderTopPostEcho } from "../top-post-card.js?v=1866";
+import { RPANEL_CLOSE_INLINE, activeSessionId, sessionIdeas } from "../right-panel.js?v=1866";
 
 // Sources mode view — list of source rows for the active session + a
 // trailing "+ Attach" button. Each row carries kind icon, filename,
@@ -37,7 +37,7 @@ export function renderSourcesView() {
         <div class="rpanel-sources__count">${sources.length} source${sources.length === 1 ? "" : "s"} in this chat</div>
         <div class="rpanel-sources__sub muted">These sources feed this chat's ideas.</div>
       </div>
-      ${renderAttachMenu("stroked grey", "Attach source")}
+      ${renderAttachMenu("stroked grey", "Attach a source")}
       ${RPANEL_CLOSE_INLINE}
     </div>
   `;
@@ -82,16 +82,16 @@ function renderLiveConnectors() {
         <div class="rpanel-sources__card-head">
           <span class="rpanel-live-connector__logo" aria-hidden="true">${renderConnectorLogo(c, 24)}</span>
           <div class="rpanel-sources__row-name" title="${escapeAttr(c.name)}">${escapeText(c.name)}</div>
-          <span class="ap-tag blue rpanel-live-connector__badge">Live</span>
+          <span class="ap-tag blue rpanel-live-connector__badge" title="Searched live — always up to date, nothing imported">Live</span>
           <button
             type="button"
             class="ap-button ghost blue rpanel-sources__row-mention"
             data-rpanel-ask-connector="${escapeAttr(c.id)}"
-            aria-label="Start a chat with ${escapeAttr(c.name)}"
-            title="Start a chat"
+            aria-label="Ask ${escapeAttr(c.name)} in this chat"
+            title="Search ${escapeAttr(c.name)} live in this chat"
           >
             <i class="ap-icon-single-chat-bubble"></i>
-            <span>Start a chat</span>
+            <span>Ask ${escapeText(c.name)}</span>
           </button>
         </div>
       </div>`,
@@ -105,7 +105,7 @@ function renderLiveConnectors() {
   return `
     <div class="rpanel-live-connectors">
       <div class="rpanel-live-connectors__head">
-        <span class="rpanel-live-connectors__title">Live connectors</span>
+        <span class="rpanel-live-connectors__title" title="Tools I can search during this chat. Nothing is imported.">Live connectors</span>
         ${connected.length ? `<span class="ap-counter normal grey">${connected.length}</span>` : ""}
         <button type="button" class="ap-button ghost blue rpanel-live-connectors__manage" data-rpanel-open-connectors>
           <i class="ap-icon-plus"></i><span>Connect</span>
@@ -168,7 +168,7 @@ function renderSourceRow(src) {
                 <button type="button" class="rpanel-sources__idea-link" data-rpanel-source-idea="${escapeAttr(i.id)}" title="${escapeAttr(i.title)}">
                   <i class="ap-icon-archie-official rpanel-sources__idea-icon" aria-hidden="true"></i>
                   <span class="rpanel-sources__idea-title">${escapeText(i.title)}</span>
-                  ${i.kind ? `<span class="rpanel-sources__idea-kind muted">${escapeText(i.kind)}</span>` : ""}
+                  ${i.kind ? `<span class="rpanel-sources__idea-kind muted">${escapeText(i.kind.charAt(0).toUpperCase() + i.kind.slice(1))}</span>` : ""}
                   <i class="ap-icon-chevron-right rpanel-sources__idea-chevron" aria-hidden="true"></i>
                 </button>
               </li>`,
@@ -182,8 +182,8 @@ function renderSourceRow(src) {
         type="button"
         class="ap-button ghost blue rpanel-sources__row-mention"
         data-rpanel-mention-source="${src.id}"
-        aria-label="Reference ${escapeAttr(src.filename)} in composer"
-        title="Reference"
+        aria-label="Reference ${escapeAttr(src.filename)} in your next message"
+        title="Add to your next message so I use it"
       >
         <i class="ap-icon-at"></i>
         <span>Reference</span>
@@ -229,7 +229,7 @@ function renderSourceRow(src) {
           <i class="ap-icon-pen"></i>
           <div class="ap-action-dropdown-item-text">
             <div class="ap-action-dropdown-item-label-container">
-              <span class="ap-action-dropdown-item-label">Edit name</span>
+              <span class="ap-action-dropdown-item-label">Rename</span>
             </div>
           </div>
         </button>
@@ -311,10 +311,10 @@ function renderAttachMenu(btnClass, label) {
       <div class="ap-select-dropdown" role="menu" aria-label="Add a source">
         <div class="ap-select-options">
           <div class="ap-select-option" data-rpanel-attach-method="upload" role="menuitem">
-            <i class="ap-icon-upload" aria-hidden="true"></i><span class="ap-select-option-text">Upload a file</span>
+            <i class="ap-icon-upload" aria-hidden="true"></i><span class="ap-select-option-text">Add file</span>
           </div>
           <div class="ap-select-option" data-rpanel-attach-method="url" role="menuitem">
-            <i class="ap-icon-link" aria-hidden="true"></i><span class="ap-select-option-text">Add a URL</span>
+            <i class="ap-icon-link" aria-hidden="true"></i><span class="ap-select-option-text">Add URL</span>
           </div>
           <div class="ap-select-option" data-rpanel-attach-method="pasteText" role="menuitem">
             <i class="ap-icon-pen" aria-hidden="true"></i><span class="ap-select-option-text">Paste text</span>

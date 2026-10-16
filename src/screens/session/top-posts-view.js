@@ -1,18 +1,18 @@
 // The Top posts repurpose screen as the session hosts it: its steps, the
 // winners picker, and its Playbook control. Moved out of session.js, unchanged.
 
-import { isWorkspaceMode } from "../../active-playbook.js?v=1864";
-import { usableContexts } from "../../playbook-access.js?v=1864";
-import { escapeHtml, html, raw } from "../../utils.js?v=1864";
-import * as topPostsFlow from "../../top-posts-flow.js?v=1864";
-import { renderEmptyState } from "../../components/empty-state.js?v=1864";
-import { profileForNetwork } from "../../social-profiles.js?v=1864";
-import { renderPicker } from "../_analyse-common.js?v=1864";
-import * as inlineQuestion from "../../inline-question.js?v=1864";
-import { getContextById } from "../../contexts-store.js?v=1864";
-import { buildWorkflowFlow } from "./workflow-flow.js?v=1864";
-import { TOP_POSTS_LIMIT, renderTopPostsBoard } from "../../components/top-post-card.js?v=1864";
-import { dotColorVar } from "../session.js?v=1864";
+import { isWorkspaceMode } from "../../active-playbook.js?v=1866";
+import { usableContexts } from "../../playbook-access.js?v=1866";
+import { escapeHtml, html, raw } from "../../utils.js?v=1866";
+import * as topPostsFlow from "../../top-posts-flow.js?v=1866";
+import { renderEmptyState } from "../../components/empty-state.js?v=1866";
+import { profileForNetwork } from "../../social-profiles.js?v=1866";
+import { renderPicker } from "../_analyse-common.js?v=1866";
+import * as inlineQuestion from "../../inline-question.js?v=1866";
+import { getContextById } from "../../contexts-store.js?v=1866";
+import { buildWorkflowFlow } from "./workflow-flow.js?v=1866";
+import { TOP_POSTS_LIMIT, renderTopPostsBoard } from "../../components/top-post-card.js?v=1866";
+import { dotColorVar } from "../session.js?v=1866";
 
 // Playbook picker for the top-posts step 1 (account screen) — the chosen
 // Playbook governs the voice of the repurposed drafts. Mirrors the batch / clip
@@ -33,7 +33,7 @@ function renderTopPostsPlaybookControl(ctx) {
     .join("");
   const valueMarkup = ctx
     ? `<span class="ap-select-value">${escapeHtml(ctx.name)}</span>`
-    : `<span class="ap-select-value ap-select-placeholder">Select a playbook</span>`;
+    : `<span class="ap-select-value ap-select-placeholder">Select a Playbook</span>`;
   return `
     <details class="ap-select studio-commit__playbook" data-topposts-playbook>
       <summary class="ap-select-trigger" title="Choose the playbook for these drafts">
@@ -64,14 +64,14 @@ const TOP_POSTS_STEPS = [
   {
     tone: "ai",
     icon: "ap-icon-archie-official",
-    title: "See the winners",
-    text: "I rank its posts by engagement — pick one and a fresh angle.",
+    title: "See your top posts",
+    text: "I rank them by how far they beat your average — pick one to repurpose.",
   },
   {
     tone: "out",
     icon: "ap-icon-stack",
     title: "Reuse into drafts",
-    text: "I write fresh versions in your playbook's voice — ready to review and schedule.",
+    text: "I write fresh drafts in your Playbook's voice — ready to review and schedule.",
   },
 ];
 
@@ -86,7 +86,7 @@ export function renderTopPostsPickerScreen(session) {
     return html`
       <aside
         class="session__assistant session__assistant--wizard session__assistant--board"
-        aria-label="Assistant panel"
+        aria-label="Chat with Archie"
       >
         <div class="analyse__chat session__assistant-board-chat">
           <div class="analyse__chat-inner session__assistant-board-inner">
@@ -99,7 +99,7 @@ export function renderTopPostsPickerScreen(session) {
               renderEmptyState({
                 icon: "ap-icon-feature-analytics",
                 title: "No top posts to reuse yet",
-                body: "Once your posts start performing, I'll surface your winners here so you can spin fresh drafts out of what already works. Publish a few and come back.",
+                body: "Once your posts start performing, I'll surface your top posts here so you can repurpose what already works. Publish a few and come back.",
                 actionHtml:
                   '<button type="button" class="ap-button stroked" data-topposts-exit><span>Back to chat</span></button>',
               }),
@@ -127,7 +127,7 @@ export function renderTopPostsPickerScreen(session) {
     // clicking a row (or pressing its digit) routes through the shared
     // inline-question delegate → inlineQuestion.pick → chooseProfile.
     intro =
-      "Pick a connected account and I'll surface its best-performing posts — reuse any into fresh drafts in your playbook's voice.";
+      "Pick a connected account and I'll surface its best-performing posts — repurpose any into fresh drafts in your Playbook's voice.";
     const picker = renderPicker(inlineQuestion.renderChrome(session.id)?.picker);
     // The Playbook whose voice the repurposed drafts will follow, chosen here on
     // step 1 (defaults to the workspace default; persists through to generation).
@@ -151,7 +151,7 @@ export function renderTopPostsPickerScreen(session) {
               <span>Show my ${TOP_POSTS_LIMIT} top posts</span>
             </button>
           </div>
-          <p class="studio-commit__hint muted">I'll write the fresh drafts in this playbook's voice.</p>
+          <p class="studio-commit__hint muted">I'll write the fresh drafts in this Playbook's voice.</p>
         </div>
       </div>
     `;
@@ -160,13 +160,13 @@ export function renderTopPostsPickerScreen(session) {
     body = html`
       <div class="top-posts-loading" role="status" aria-live="polite">
         <span class="archie-loader" style="--archie-loader-size: 44px"></span>
-        <span class="top-posts-loading__label">Pulling ${profileName || "your"} winners…</span>
+        <span class="top-posts-loading__label">Pulling ${profileName || "your"} top posts…</span>
       </div>
     `;
   } else {
     intro = profileName
-      ? `Your top-performing posts on ${profileName} — pick one to spin fresh angles.`
-      : "Pick one of your best-performing posts to spin fresh angles.";
+      ? `Your top-performing posts on ${profileName} — pick one to repurpose.`
+      : "Pick one of your top posts to repurpose.";
     body = html`
       ${raw(buildWorkflowFlow(TOP_POSTS_STEPS))}
       ${raw(
@@ -181,7 +181,10 @@ export function renderTopPostsPickerScreen(session) {
   }
 
   return html`
-    <aside class="session__assistant session__assistant--wizard session__assistant--board" aria-label="Assistant panel">
+    <aside
+      class="session__assistant session__assistant--wizard session__assistant--board"
+      aria-label="Chat with Archie"
+    >
       <div class="analyse__chat session__assistant-board-chat">
         <div class="analyse__chat-inner session__assistant-board-inner">
           <div class="top-posts-intro">

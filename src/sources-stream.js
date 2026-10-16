@@ -8,12 +8,12 @@
 // The state machine timers live here (not inside the modal) so uploads
 // continue in background after the user closes the modal.
 
-import { sourcesBySession as seedByCsesssion } from "./mocks.js?v=1864";
-import { isFlagOn } from "./feature-flags.js?v=1864";
-import { isNewUser } from "./user-mode.js?v=1864";
-import { createNotifier } from "./store-utils.js?v=1864";
-import { detectUrlService } from "./url-services.js?v=1864";
-import { showToast } from "./components/toast.js?v=1864";
+import { sourcesBySession as seedByCsesssion } from "./mocks.js?v=1866";
+import { isFlagOn } from "./feature-flags.js?v=1866";
+import { isNewUser } from "./user-mode.js?v=1866";
+import { createNotifier } from "./store-utils.js?v=1866";
+import { detectUrlService } from "./url-services.js?v=1866";
+import { showToast } from "./components/toast.js?v=1866";
 
 // Canned extraction output attached to every Processed Video source.
 // Generic enough to plausibly come from any keynote / talk / demo video.
@@ -202,8 +202,13 @@ const MAX_FILE_BYTES = 100 * 1024 * 1024;
 export function classifyFile(file) {
   const ext = (file.name.split(".").pop() || "").toLowerCase();
   const map = EXT_MAP[ext];
-  if (!map) return { ok: false, reason: `Unsupported file type: ${file.name}` };
-  if (file.size > MAX_FILE_BYTES) return { ok: false, reason: `File too large: ${file.name} (max 100MB)` };
+  if (!map)
+    return {
+      ok: false,
+      reason: `Couldn't add ${file.name} — that file type isn't supported. Use PDF, Word, text, video, audio, or images.`,
+    };
+  if (file.size > MAX_FILE_BYTES)
+    return { ok: false, reason: `${file.name} is over 100 MB. Compress or split it, then try again.` };
   return { ok: true, kind: map.kind, iconKey: map.iconKey };
 }
 

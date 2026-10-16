@@ -2,10 +2,10 @@
 // the per-card feedback and "why this idea" state. Moved out of right-panel.js,
 // unchanged; the filter state it reads is owned (and written) by the shell.
 
-import { html, raw } from "../../utils.js?v=1864";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=1864";
-import { renderClipCard } from "../clip-card.js?v=1864";
-import { renderCompactIdeaCard } from "../idea-card-compact.js?v=1864";
+import { html, raw } from "../../utils.js?v=1866";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1866";
+import { renderClipCard } from "../clip-card.js?v=1866";
+import { renderCompactIdeaCard } from "../idea-card-compact.js?v=1866";
 import {
   RPANEL_CLOSE_INLINE,
   activeSessionId,
@@ -13,18 +13,18 @@ import {
   ideasFilter,
   outputsView,
   sessionIdeas,
-} from "../right-panel.js?v=1864";
+} from "../right-panel.js?v=1866";
 
 // Idea kind taxonomy — handoff Ideas filter rail (§ 2.6). Order is the order
 // shown in the chip row. The .kind selector also drives the per-kind tag
 // color so each kind reads at a glance.
 const IDEA_KINDS = [
-  { id: "all", label: "All" },
-  { id: "hook", label: "Hooks" },
-  { id: "stat", label: "Stats" },
-  { id: "quote", label: "Quotes" },
-  { id: "story", label: "Stories" },
-  { id: "insight", label: "Insights" },
+  { id: "all", label: "All", hint: "Every idea I pulled from this chat's sources" },
+  { id: "hook", label: "Hooks", hint: "Opening lines that stop the scroll" },
+  { id: "stat", label: "Stats", hint: "Numbers worth quoting" },
+  { id: "quote", label: "Quotes", hint: "Lines someone said, word for word" },
+  { id: "story", label: "Stories", hint: "Anecdotes with a beginning and an end" },
+  { id: "insight", label: "Insights", hint: "Takeaways and points of view" },
 ];
 
 export function renderIdeasView() {
@@ -44,6 +44,7 @@ export function renderIdeasView() {
           class="ap-tabs-tab ${ideasActive ? "active" : ""}"
           data-rpanel-outputs-tab="ideas"
           role="tab"
+          title="Hooks, stats, and quotes I pulled from this chat's sources — draft one to get posts"
           aria-selected="${ideasActive}"
         >
           <span>Ideas</span>
@@ -54,6 +55,7 @@ export function renderIdeasView() {
           class="ap-tabs-tab ${!ideasActive ? "active" : ""}"
           data-rpanel-outputs-tab="clips"
           role="tab"
+          title="Short moments I cut from your videos, ready to post"
           aria-selected="${!ideasActive}"
         >
           <span>Clips</span>
@@ -93,6 +95,7 @@ export function renderIdeasView() {
                   class="ap-filter-chip"
                   data-rpanel-ideas-filter="${k.id}"
                   aria-pressed="${ideasFilter === k.id}"
+                  title="${k.hint}"
                 >
                   <span>${k.label}</span>
                   <span class="ap-filter-chip-count">${kindCounts[k.id]}</span>
@@ -136,7 +139,7 @@ function renderClipsList(entries) {
         <div class="app-right-panel__empty-icon"><i class="ap-icon-file--video"></i></div>
         <div class="app-right-panel__empty-title">No clips yet</div>
         <div class="app-right-panel__empty-sub">
-          Drop a video into the chat and pick <strong>Create clips</strong> to extract short segments here.
+          Drop a video into the chat and pick <strong>Cut into clips</strong> — I'll cut short moments you can post.
         </div>
       </div>
     `;
@@ -184,7 +187,7 @@ function renderClipsList(entries) {
             <i class="ap-icon-archie-official"></i>
             <span>Draft ${selectedCount > 1 ? "posts" : "post"}</span>
           </button>
-          <button type="button" class="ap-icon-button" data-rpanel-clips-delete aria-label="Delete ${selectedCount} selected clip${selectedCount > 1 ? "s" : ""}">
+          <button type="button" class="ap-icon-button" data-rpanel-clips-delete aria-label="Delete ${selectedCount} selected clip${selectedCount > 1 ? "s" : ""}" title="Delete selected clips">
             <i class="ap-icon-trash" aria-hidden="true"></i>
           </button>
         </div>`
@@ -216,14 +219,27 @@ function renderIdeasList() {
   // Order matches the seed array (newest-first by convention in mocks);
   // the active kind filter narrows the list.
   const sorted = sessionIdeas().filter((i) => ideasFilter === "all" || i.kind === ideasFilter);
+  // Nothing at all is not the same as nothing of this kind: the first needs a
+  // source, the second only a wider filter.
+  if (sessionIdeas().length === 0) {
+    return html`
+      <div class="app-right-panel__empty rpanel-ideas__no-match">
+        <div class="app-right-panel__empty-icon"><i class="ap-icon-archie-official"></i></div>
+        <div class="app-right-panel__empty-title">No ideas yet</div>
+        <div class="app-right-panel__empty-sub">
+          Attach a source — I'll pull hooks, stats, quotes, stories, and insights you can draft from.
+        </div>
+      </div>
+    `;
+  }
   if (sorted.length === 0) {
     return html`
       <div class="app-right-panel__empty rpanel-ideas__no-match">
         <div class="app-right-panel__empty-icon"><i class="ap-icon-archie-official"></i></div>
-        <div class="app-right-panel__empty-title">No ideas match</div>
-        <div class="app-right-panel__empty-sub">Switch to a different kind, or pick All to broaden the list.</div>
+        <div class="app-right-panel__empty-title">No ideas of this kind</div>
+        <div class="app-right-panel__empty-sub">Pick another kind, or All to see every idea.</div>
         <div class="app-right-panel__empty-action">
-          <button type="button" class="ap-button stroked grey" data-rpanel-ideas-clear>Clear filters</button>
+          <button type="button" class="ap-button stroked grey" data-rpanel-ideas-clear>Show all ideas</button>
         </div>
       </div>
     `;

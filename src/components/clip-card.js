@@ -24,12 +24,12 @@
 // card (defined in right-panel.css). Classes prefixed `clip-card__*`
 // own clip-specific bits (thumbnail, timeframe overlay).
 
-import { iconFor } from "../file-kinds.js?v=1864";
-import { escapeText, escapeAttr, formatClock } from "../utils.js?v=1864";
-import { installMoreMenu } from "./more-menu.js?v=1864";
-import { renderFeedbackThumbs, renderFeedbackPanel } from "./feedback-control.js?v=1864";
-import { videoForClip } from "../clip-captions.js?v=1864";
-import { FORMATS } from "../clip-formats.js?v=1864";
+import { iconFor } from "../file-kinds.js?v=1866";
+import { escapeText, escapeAttr, formatClock } from "../utils.js?v=1866";
+import { installMoreMenu } from "./more-menu.js?v=1866";
+import { renderFeedbackThumbs, renderFeedbackPanel } from "./feedback-control.js?v=1866";
+import { videoForClip } from "../clip-captions.js?v=1866";
+import { FORMATS } from "../clip-formats.js?v=1866";
 
 const fmtTime = (s) => formatClock(s);
 
@@ -112,7 +112,7 @@ export function renderClipCard(
         type="button"
         class="clip-card__thumb-btn"
         data-clip-edit="${escapeAttr(clip.id)}"
-        aria-label="Play clip: ${escapeAttr(clip.title || "Untitled clip")}"
+        aria-label="Edit clip: ${escapeAttr(clip.title || "Untitled clip")}"
       >
         <span class="clip-card__thumb" style="background-image: ${thumbBackground(clip.hue)}">
           <span class="clip-card__thumb-crop" style="aspect-ratio: ${fmt.ratio}">
@@ -143,7 +143,7 @@ export function renderClipCard(
 
       <div class="rpanel-ideas__card-content">
         <div class="clip-card__source-line">
-          <span class="ap-tag grey rpanel-ideas__kind clip-card__kind">clip</span>
+          <span class="ap-tag grey rpanel-ideas__kind clip-card__kind">Clip</span>
           ${
             sourceName
               ? `<span class="clip-card__source-name" title="${escapeAttr(sourceName)}">
@@ -216,7 +216,7 @@ export function renderClipCard(
             data-clip-draft="${escapeAttr(clip.id)}"
           >
             <i class="ap-icon-archie-official"></i>
-            <span>Draft</span>
+            <span>Draft post</span>
           </button>
         </div>
       </footer>

@@ -1,17 +1,17 @@
-import { html, raw, escapeText, escapeAttr } from "../utils.js?v=1864";
-import { showToast } from "./toast.js?v=1864";
-import { getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=1864";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1864";
+import { html, raw, escapeText, escapeAttr, formatTimeOfDay, formatClock } from "../utils.js?v=1866";
+import { showToast } from "./toast.js?v=1866";
+import { getQueueOn, dayKey, addToQueue, subscribe as subscribeQueue } from "../schedule-store.js?v=1866";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1866";
 import {
   renderProfileTag,
   profileForNetwork,
   NETWORK_LABEL,
   NETWORK_ICON_BY_PLATFORM,
   normalizeNetwork,
-} from "../social-profiles.js?v=1864";
-import { getContextById } from "../contexts-store.js?v=1864";
-import { canEdit } from "../playbook-access.js?v=1864";
-import { getPreset, savePreset } from "../schedule-presets-store.js?v=1864";
+} from "../social-profiles.js?v=1866";
+import { getContextById } from "../contexts-store.js?v=1866";
+import { canEdit } from "../playbook-access.js?v=1866";
+import { getPreset, savePreset } from "../schedule-presets-store.js?v=1866";
 import {
   CADENCES,
   startOfDay,
@@ -21,7 +21,7 @@ import {
   planSlots,
   queueEntries,
   firstLine as extractFirstLine,
-} from "../schedule-engine.js?v=1864";
+} from "../schedule-engine.js?v=1866";
 
 // Schedule modal — one column, result first.
 //   • Header   — "Schedule N drafts" + one line saying I already picked.
@@ -388,7 +388,7 @@ function confirmSchedule() {
 }
 
 function onConfirmSucceeded(slots) {
-  showToast(`${slots.length} ${slots.length === 1 ? "post" : "posts"} scheduled`);
+  showToast(`${slots.length} ${slots.length === 1 ? "draft" : "drafts"} scheduled`);
   close();
 }
 
@@ -447,12 +447,12 @@ function renderInner() {
       <span class="ap-dialog-subtitle">
         ${computing
           ? n === 1
-            ? "I'm finding the best time for this post, around what's already scheduled."
-            : "I'm finding the best time for each draft, around what's already scheduled."
+            ? "Finding the best time for this draft, around what's already scheduled…"
+            : "Finding the best time for each draft, around what's already scheduled…"
           : // Same words as the computing line, one verb apart: the two must wrap
             // the same, or the dialog's height jumps when the times land.
             n === 1
-            ? "I picked the best time for this post, around what's already scheduled."
+            ? "I picked the best time for this draft, around what's already scheduled."
             : "I picked the best time for each draft, around what's already scheduled."}
       </span>
     </div>
@@ -486,7 +486,7 @@ function renderInner() {
           ${busy
             ? raw(`<span class="schedule-modal__spinner" aria-hidden="true"></span><span>Scheduling…</span>`)
             : raw(
-                `<i class="ap-icon-calendar"></i><span>${state.status === "error" ? "Try again" : `Schedule ${n} ${n === 1 ? "post" : "posts"}`}</span>`,
+                `<i class="ap-icon-calendar"></i><span>${state.status === "error" ? "Try again" : `Schedule ${n} ${n === 1 ? "draft" : "drafts"}`}</span>`,
               )}
         </button>
       </div>
@@ -509,9 +509,7 @@ function formatShortDate(ts) {
   return new Date(ts).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
-function formatTime(ts) {
-  return new Date(ts).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-}
+const formatTime = formatTimeOfDay;
 
 function networkName(network) {
   return NETWORK_LABEL[normalizeNetwork(network)] || network;
@@ -576,7 +574,7 @@ function renderPresetAction() {
   if (!saved) {
     return owner
       ? `<button type="button" class="ap-button ghost blue schedule-modal__preset-save" data-schedule-save-preset data-tooltip="${tip}">
-          <i class="ap-icon-bookmark" aria-hidden="true"></i><span>Save for this Playbook</span>
+          <i class="ap-icon-bookmark" aria-hidden="true"></i><span>Save rhythm for this Playbook</span>
         </button>`
       : `<span class="schedule-modal__preset-note" data-tooltip="${escapeAttr(`Only the owner of ${name} can save its posting rhythm.`)}">Only the owner can save it</span>`;
   }
@@ -591,7 +589,7 @@ function renderPresetAction() {
     <span class="schedule-modal__preset-note" data-tooltip="${escapeAttr(`${name}'s rhythm: ${rhythmLabel(saved)}`)}">
       Not this Playbook's rhythm ·
       <button type="button" class="ap-link small" data-schedule-restore-preset>Restore</button>
-      ${owner ? `· <button type="button" class="ap-link small" data-schedule-save-preset>Update</button>` : ""}
+      ${owner ? `· <button type="button" class="ap-link small" data-schedule-save-preset>Update rhythm</button>` : ""}
     </span>`;
 }
 
@@ -772,7 +770,7 @@ function formatGap(ms) {
   if (min < 60) return `${min} min`;
   const h = Math.floor(min / 60);
   const m = min % 60;
-  return m ? `${h} h ${m}` : `${h} h`;
+  return m ? `${h}h ${m}m` : `${h}h`;
 }
 
 // The row's note: a link that names what's there and unfolds the day. Short
@@ -975,7 +973,7 @@ function renderThumb(post) {
     return `
       <span class="schedule-modal__thumb is-video" style="background: ${bg}" aria-label="Video clip, ${secs} seconds" role="img">
         <i class="ap-icon-play_fill" aria-hidden="true"></i>
-        <span class="schedule-modal__thumb-badge">0:${String(secs).padStart(2, "0")}</span>
+        <span class="schedule-modal__thumb-badge">${formatClock(secs)}</span>
       </span>`;
   }
   // A text-only post still fills the column — a neutral tile saying "text"

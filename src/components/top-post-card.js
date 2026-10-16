@@ -12,9 +12,9 @@
 // render; no module-local state (the active sort lives in top-posts-flow's
 // picker state).
 
-import { html, raw } from "../utils.js?v=1864";
-import { profileForNetwork, NETWORK_ICON_BY_PLATFORM, BRAND_INITIALS, networkMeta } from "../social-profiles.js?v=1864";
-import { renderEmptyState } from "./empty-state.js?v=1864";
+import { html, raw } from "../utils.js?v=1866";
+import { profileForNetwork, NETWORK_ICON_BY_PLATFORM, BRAND_INITIALS, networkMeta } from "../social-profiles.js?v=1866";
+import { renderEmptyState } from "./empty-state.js?v=1866";
 
 // Sort options for the toolbar. `key` matches data-top-post-sort + the picker
 // state; `compare` sorts descending by the decision-useful value (recent sorts
@@ -23,7 +23,7 @@ import { renderEmptyState } from "./empty-state.js?v=1864";
 export const SORTS = [
   { key: "performance", label: "Performance", compare: (a, b) => b.vsAvg - a.vsAvg },
   { key: "engagement", label: "Engagement", compare: (a, b) => b.engagementRate - a.engagementRate },
-  { key: "reach", label: "Reach", compare: (a, b) => b.impressions - a.impressions },
+  { key: "reach", label: "Impressions", compare: (a, b) => b.impressions - a.impressions },
 ];
 
 // Period filter — narrow the board to a recency window (spec: "filter by
@@ -223,7 +223,7 @@ export function renderTopPostCard(
       ? statsOverride
       : [
           [formatCompact(post.views), "Views"],
-          [formatCompact(post.impressions), "Reach"],
+          [formatCompact(post.impressions), "Impressions"],
           [formatCompact(post.reactions), "Reactions"],
           [formatCompact(secondaryVal), secondaryLabel],
         ]
@@ -363,7 +363,7 @@ export function renderTopPostEcho(post) {
     excerpt: post.excerpt,
     mediaType: post.mediaType,
     image: post.image,
-    statsHtml: `<b class="top-post-echo__avg">${post.vsAvg}×</b> vs avg · <b>${formatCompact(post.views)}</b> views · <b>${formatCompact(post.impressions)}</b> reach`,
+    statsHtml: `<b class="top-post-echo__avg">${post.vsAvg}×</b> vs avg · <b>${formatCompact(post.views)}</b> views · <b>${formatCompact(post.impressions)}</b> impressions`,
     actionHtml: renderViewOnLink(post),
   });
 }
@@ -428,7 +428,7 @@ export function renderTopPostsWidget({ network, posts = [], selected = [], answe
         </span>
         <span class="top-posts-widget__hint muted">Pick one</span>
       </div>
-      <div class="top-posts-widget__list" role="radiogroup" aria-label="Pick one post to reuse">${raw(rows)}</div>
+      <div class="top-posts-widget__list" role="radiogroup" aria-label="Pick one post to repurpose">${raw(rows)}</div>
       ${raw(footer)}
     </div>
   `;
@@ -461,8 +461,8 @@ export function renderTopPostsBoard({ posts, sort = "performance", profile = nul
     ? sorted.map((p) => renderTopPostCard(p)).join("")
     : renderEmptyState({
         icon: "ap-icon-feature-analytics",
-        title: "No best-performing posts in this window",
-        body: "None of your posts beat your average for this period. Widen the time range to look further back.",
+        title: "No top posts in this period",
+        body: "None of your posts beat your average in this period. Pick a longer one to look further back.",
         wrapperClass: "session__empty top-posts-empty",
       });
 

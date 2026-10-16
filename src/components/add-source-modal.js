@@ -9,23 +9,23 @@
 // upload state machines live outside in sources-stream.js so they
 // continue running even after the modal closes.
 
-import { html, raw, escapeHtml } from "../utils.js?v=1864";
-import { iconFor } from "../file-kinds.js?v=1864";
-import { connectorDocs } from "../mocks.js?v=1864";
+import { html, raw, escapeHtml } from "../utils.js?v=1866";
+import { iconFor } from "../file-kinds.js?v=1866";
+import { connectorDocs } from "../mocks.js?v=1866";
 import {
   getConnectors,
   findConnector,
   setConnectorStatus,
   subscribe as subscribeConnectors,
-} from "../connectors-store.js?v=1864";
-import { postConnectPrompt } from "../assistant.js?v=1864";
-import { URL_SERVICES, detectUrlService } from "../url-services.js?v=1864";
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1864";
-import { navigate } from "../router.js?v=1864";
-import { renderConnectorLogo } from "../connectors-view.js?v=1864";
-import { isFlagOn } from "../feature-flags.js?v=1864";
-import { showToast } from "./toast.js?v=1864";
-import { dropzoneHTML } from "./dropzone.js?v=1864";
+} from "../connectors-store.js?v=1866";
+import { postConnectPrompt } from "../assistant.js?v=1866";
+import { URL_SERVICES, detectUrlService } from "../url-services.js?v=1866";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1866";
+import { navigate } from "../router.js?v=1866";
+import { renderConnectorLogo } from "../connectors-view.js?v=1866";
+import { isFlagOn } from "../feature-flags.js?v=1866";
+import { showToast } from "./toast.js?v=1866";
+import { dropzoneHTML } from "./dropzone.js?v=1866";
 
 const MODAL_ID = "addSource";
 import {
@@ -37,7 +37,7 @@ import {
   cancelUpload,
   getUploads,
   subscribeUploads,
-} from "../sources-stream.js?v=1864";
+} from "../sources-stream.js?v=1866";
 
 let backdrop, modal, contentEl, footerEl, fileInput;
 let initialized = false;
@@ -61,7 +61,7 @@ function tabs() {
 // into one mode. The title names the method so the dialog reads as a
 // single-purpose surface rather than a picker.
 const TITLES = {
-  upload: "Upload a file",
+  upload: "Attach a file",
   url: "Add a URL",
   pasteText: "Paste text",
   connectors: "Add a source",
@@ -140,7 +140,7 @@ function renderUploadTab() {
       dropzoneHTML({
         id: "addSourceDropzone",
         lead: "Drop files here, or",
-        sub: "PDF, Word, text, video, audio, images · Up to 100MB per file",
+        sub: "PDF, Word, text, video, audio, or images · up to 100 MB each",
         // The hidden <input> stays at the modal root (stable across the
         // content re-renders); drag/drop is wired by delegation below.
         withInput: false,
@@ -195,7 +195,7 @@ function renderUploadRow(u) {
         ${right}
         ${
           showRemove
-            ? `<button type="button" class="ap-icon-button transparent grey" data-upload-cancel="${escapeHtml(u.id)}" aria-label="Remove">
+            ? `<button type="button" class="ap-icon-button transparent grey" data-upload-cancel="${escapeHtml(u.id)}" aria-label="Cancel upload">
           <i class="ap-icon-close"></i>
         </button>`
             : ""
@@ -248,12 +248,12 @@ function renderUrlTab() {
           role="alert"
           ${showUrlError ? "" : "hidden"}
         >
-          URL must start with http:// or https://
+          Enter a URL starting with http:// or https://.
         </p>
         <p class="add-source__sub muted" data-url-hint ${showUrlError ? "hidden" : ""}>
           ${raw(
             svc
-              ? `I recognised a <strong>${escapeHtml(svc.name)}</strong> link — I'll import it.`
+              ? `I recognized a <strong>${escapeHtml(svc.name)}</strong> link — I'll import it.`
               : "Public web pages, blog posts, YouTube videos, podcasts.",
           )}
         </p>
@@ -344,13 +344,15 @@ function renderPasteTextTab() {
           class="add-source__paste-input"
           data-paste-input
           rows="10"
-          placeholder="Paste a transcript, a blog draft, notes, an email — anything Archie should read."
+          placeholder="Paste a transcript, a blog draft, notes, an email — anything I should read."
         >
 ${state.pasteValue}</textarea
         >
         <div class="add-source__paste-row">
           <span class="add-source__sub muted"
-            >${count ? `${count} characters` : "No formatting needed — plain text is fine."}</span
+            >${count
+              ? `${count} character${count === 1 ? "" : "s"}`
+              : "No formatting needed — plain text is fine."}</span
           >
         </div>
       </div>
@@ -882,7 +884,7 @@ function onInput(event) {
     const meta = contentEl.querySelector(".add-source__paste-row .add-source__sub");
     if (meta) {
       meta.textContent = state.pasteValue.length
-        ? `${state.pasteValue.length} characters`
+        ? `${state.pasteValue.length} character${state.pasteValue.length === 1 ? "" : "s"}`
         : "No formatting needed — plain text is fine.";
     }
     renderFooter();
@@ -926,7 +928,7 @@ function updateUrlServiceAffix() {
   const hintEl = contentEl.querySelector("[data-url-hint]");
   if (hintEl) {
     hintEl.innerHTML = svc
-      ? `I recognised a <strong>${escapeHtml(svc.name)}</strong> link — I'll import it.`
+      ? `I recognized a <strong>${escapeHtml(svc.name)}</strong> link — I'll import it.`
       : "Public web pages, blog posts, YouTube videos, podcasts.";
   }
 }

@@ -4,22 +4,22 @@
 // shell's delegated clicks write it through setDraftsFilter / setDraftsNetwork.
 // Moved out of right-panel.js, unchanged.
 
-import { networkMeta } from "../../social-profiles.js?v=1864";
-import { getPosts, removePost, insertPost, updatePostContent, attachImageToDraft } from "../../posts-store.js?v=1864";
-import { noticeDraftEdit } from "../../voice-coach.js?v=1864";
-import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=1864";
-import { getSessionById } from "../../sessions-store.js?v=1864";
-import { renderPostCard } from "../post-card.js?v=1864";
-import { html, raw } from "../../utils.js?v=1864";
-import { isFlagOn } from "../../feature-flags.js?v=1864";
-import { open as openNewScheduleModal } from "../schedule-modal.js?v=1864";
-import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=1864";
-import { open as openConfirmModal } from "../confirm-modal.js?v=1864";
-import { showToast } from "../toast.js?v=1864";
-import { addMention as addComposerMention } from "../../composer-mentions.js?v=1864";
-import { startDraftImageFlow } from "../../draft-image-flow.js?v=1864";
-import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=1864";
-import { RPANEL_CLOSE_INLINE, activeSessionId, canDraftInlineEdit, renderPanel } from "../right-panel.js?v=1864";
+import { networkMeta } from "../../social-profiles.js?v=1866";
+import { getPosts, removePost, insertPost, updatePostContent, attachImageToDraft } from "../../posts-store.js?v=1866";
+import { noticeDraftEdit } from "../../voice-coach.js?v=1866";
+import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=1866";
+import { getSessionById } from "../../sessions-store.js?v=1866";
+import { renderPostCard } from "../post-card.js?v=1866";
+import { html, raw } from "../../utils.js?v=1866";
+import { isFlagOn } from "../../feature-flags.js?v=1866";
+import { open as openNewScheduleModal } from "../schedule-modal.js?v=1866";
+import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=1866";
+import { open as openConfirmModal } from "../confirm-modal.js?v=1866";
+import { showToast } from "../toast.js?v=1866";
+import { addMention as addComposerMention } from "../../composer-mentions.js?v=1866";
+import { startDraftImageFlow } from "../../draft-image-flow.js?v=1866";
+import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=1866";
+import { RPANEL_CLOSE_INLINE, activeSessionId, canDraftInlineEdit, renderPanel } from "../right-panel.js?v=1866";
 
 // Drafts-mode local UI state — Lot 21 rich-card view. Filter strip at the
 // top of the panel head drives both axes : status (all / needs_fixes /
@@ -243,9 +243,9 @@ export function renderDraftsView() {
           <div class="rpanel-drafts__group-actions">
             <button type="button" class="ap-button ghost blue" data-rpanel-section-save="${network}">Save as drafts</button>
             <button type="button" class="ap-button primary orange" data-rpanel-section-schedule="${network}">
-              <i class="ap-icon-calendar" aria-hidden="true"></i> Schedule
+              <i class="ap-icon-calendar" aria-hidden="true"></i> Schedule drafts
             </button>
-            <button type="button" class="ap-icon-button" data-rpanel-section-delete="${network}" aria-label="${delAria}">
+            <button type="button" class="ap-icon-button" data-rpanel-section-delete="${network}" aria-label="${delAria}" title="Delete selected drafts">
               <i class="ap-icon-trash" aria-hidden="true"></i>
             </button>
           </div>`
@@ -301,7 +301,7 @@ function renderDraftsEmpty() {
       <div class="app-right-panel__empty-icon"><i class="ap-icon-pen"></i></div>
       <div class="app-right-panel__empty-title">No drafts yet</div>
       <div class="app-right-panel__empty-sub">
-        Ask Archie for a batch — drafts will land here ready to review and schedule.
+        Ask me for a batch — drafts will land here ready to review and schedule.
       </div>
     </div>
   `;
@@ -314,7 +314,7 @@ export function onPostRewrite(postId, intent = "fresh") {
   // streaming → commit. Loaded lazily so the rewrite code is only
   // pulled in when the user actually triggers a regen. `intent` biases
   // the rewrite (shorter / longer / warmer / formal / fresh).
-  import("../../draft-rewrite.js?v=1864").then(({ startRewrite }) => {
+  import("../../draft-rewrite.js?v=1866").then(({ startRewrite }) => {
     startRewrite(sid, postId, intent);
   });
 }
@@ -404,7 +404,7 @@ export function onSectionDelete(network) {
   const draftWord = count === 1 ? "draft" : "drafts";
   openConfirmModal({
     title: `Delete ${count} ${draftWord}?`,
-    body: `${count === 1 ? "This draft" : `These ${count} drafts`} will be removed from the session. You can undo right after.`,
+    body: `${count === 1 ? "This draft" : `These ${count} drafts`} will be removed from this chat. You can undo right after.`,
     confirmLabel: `Delete ${count} ${draftWord}`,
     danger: true,
     onConfirm: () => {
@@ -483,7 +483,7 @@ export function onSectionSave(network) {
   if (snapshot.length === 0) return;
   const count = snapshot.length;
   const draftWord = count === 1 ? "draft" : "drafts";
-  Promise.all([import("../save-folder-modal.js?v=1864"), import("../../folders-store.js?v=1864")]).then(
+  Promise.all([import("../save-folder-modal.js?v=1866"), import("../../folders-store.js?v=1866")]).then(
     ([{ open: openSaveModal }, { addDraftsToFolder }]) => {
       openSaveModal({
         count,
@@ -496,8 +496,8 @@ export function onSectionSave(network) {
           if (folder) addDraftsToFolder(folder.id, count);
           renderPanel();
           const message = folder
-            ? `${count} ${draftWord} saved to “${folder.name}”`
-            : `${count} ${draftWord} saved as draft`;
+            ? `${count} ${draftWord} saved to "${folder.name}"`
+            : `${count} ${draftWord} saved to Agorapulse`;
           showToast(message, {
             action: {
               label: "Undo",
@@ -524,7 +524,7 @@ export function onPostSaveAsDraft(postId) {
   removePost(sid, postId);
   selectedDraftIds.delete(postId);
   renderPanel();
-  showToast("Saved as draft", {
+  showToast("Draft saved to Agorapulse", {
     action: {
       label: "Undo",
       onClick: () => {
