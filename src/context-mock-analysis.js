@@ -8,7 +8,7 @@
 // Suggested values become menthol chips (AI-suggested). Other static
 // option lists come from the brief panel renderer.
 
-import { networkFields, isListPart, isNewPart, itemsFromLines } from "./network-voice.js?v=1859";
+import { networkFields, isListPart, isNewPart, itemsFromLines } from "./network-voice.js?v=1860";
 
 const AGORAPULSE = {
   name: "Agorapulse",
@@ -62,7 +62,7 @@ const AGORAPULSE = {
       vocabulary:
         "Industry-specific marketing jargon balanced with plain-English: 'ROI', 'engagement', 'social inbox', 'reporting', 'workflow', alongside conversational terms like 'busy team', 'one place', 'in seconds'. Avoids hype words ('revolutionary', 'game-changer') in favour of measurable claims.",
       sentenceStructure:
-        "Mostly short to medium sentences. Headlines are punchy and benefit-led. Body copy occasionally extends for product feature explanations or case studies. Bullet lists are favoured over long paragraphs when explaining capabilities.",
+        "Mostly short to medium sentences. Headlines are punchy and benefit-led. Body copy occasionally extends for product feature explanations or case studies. Bullet lists are favored over long paragraphs when explaining capabilities.",
       formality:
         "Semi-formal. Direct address ('you', 'your team') keeps the brand approachable while remaining credible to enterprise buyers. Contractions are used freely, but the tone never drifts into slang or memes.",
       personality:
@@ -251,7 +251,7 @@ const AGORAPULSE = {
 const GENERIC = {
   name: "Untitled brand",
   businessSummary:
-    "This brand sells a product or service that solves a specific problem for a clearly defined audience. The website highlights the value proposition, key features, and credibility markers (case studies, testimonials, results). Edit this summary to match your business — Archie will use it to ground every post.",
+    "This brand sells a product or service that solves a specific problem for a clearly defined audience. The website highlights the value proposition, key features, and credibility markers (case studies, testimonials, results). Edit this summary to match your business — I'll use it to ground every post.",
   suggestions: {
     audience: [
       "Operations and marketing leads at growing B2B teams",
@@ -418,7 +418,7 @@ export function analyzeSocialProfiles(profileIds = []) {
   const result = clone(GENERIC);
   result.businessSummary = `Built from ${n || "your"} connected social ${
     n === 1 ? "profile" : "profiles"
-  }. Archie studied your recent posts — how you open, how you close, the formats you favour, and the tone that earns engagement — and mapped them into the sections below. Edit anything that's off.`;
+  }. I studied your recent posts — how you open, how you close, the formats you favor, and the tone that earns engagement — and mapped them into the sections below. Edit anything that's off.`;
   Object.assign(result.suggestions, {
     contentStyle: ["Conversational", "Engagement-led"],
     objective: ["Brand awareness", "Build personal brand"],
@@ -1030,7 +1030,7 @@ export function analyzeBrandFiles(files = []) {
   };
   const result = clone(GENERIC);
   result.name = name;
-  result.businessSummary = `Playbook built from your files (${list.length}). I took the colours and the look from them — edit each section to say what the brand does and who it's for.`;
+  result.businessSummary = `Built from your ${list.length} file${list.length === 1 ? "" : "s"}. I took the colors and the look from them — edit each section to say what the brand does and who it's for.`;
   result.suggestions.brandColors = [
     { name: "Primary", hex: hsl(hue, 62, 44), role: "primary" },
     { name: "Secondary", hex: hsl((hue + 150) % 360, 34, 42), role: "secondary" },
@@ -1064,7 +1064,7 @@ export function analyzeDocument(file) {
       .replace(/\b\w/g, (c) => c.toUpperCase()) || "Untitled brand";
 
   generic.name = prettyName;
-  generic.businessSummary = `Playbook built from your document "${filename}". Edit each section below to match what's actually in the file — Archie will then ground every post in your written brand guidance.`;
+  generic.businessSummary = `Playbook built from your document "${filename}". Edit each section below to match what's actually in the file — I'll ground every post in your written Brand guidance.`;
   generic.suggestions.voiceProfile = {
     ...generic.suggestions.voiceProfile,
     headline: "Professional · clear · helpful",

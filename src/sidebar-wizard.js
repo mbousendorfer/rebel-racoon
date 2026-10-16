@@ -29,10 +29,10 @@
 // `body` is HTML (chat turns) and `picker` is the standard picker shape from
 // _analyse-common.js (items + handler + optional customPlaceholder).
 
-import { chatTurn, bulletsBlock, fieldsBlock } from "./screens/_analyse-common.js?v=1859";
-import { voiceAnalysis, strategyBrief, brandTheme } from "./mocks.js?v=1859";
-import { createSessionNotifier } from "./store-utils.js?v=1859";
-import { isFlagOn } from "./feature-flags.js?v=1859";
+import { chatTurn, bulletsBlock, fieldsBlock } from "./screens/_analyse-common.js?v=1860";
+import { voiceAnalysis, strategyBrief, brandTheme } from "./mocks.js?v=1860";
+import { createSessionNotifier } from "./store-utils.js?v=1860";
+import { isFlagOn } from "./feature-flags.js?v=1860";
 
 // ---- State -----------------------------------------------------------------
 
@@ -112,7 +112,7 @@ export function answer(sessionId, value, custom = null) {
   // If they leave it blank, `name: null` falls back to the caller's default.
   if (state.awaitingMemorizeName) {
     const typed = (custom || (typeof value === "string" ? value : "") || "").trim();
-    state.history.push({ role: "user", text: typed || "(skipped — use default name)" });
+    state.history.push({ role: "user", text: typed || "Default name" });
     const onComplete = completionHandlers.get(sessionId);
     states.delete(sessionId);
     completionHandlers.delete(sessionId);
@@ -289,7 +289,7 @@ const MEMORIZE_PICKER = {
 const MEMORIZE_NAME_PICKER = {
   items: [],
   handler: "wizard-answer",
-  customPlaceholder: "Name this playbook (e.g. “Founder voice”)…",
+  customPlaceholder: 'Name this Playbook, e.g. "Founder voice"',
   title: "What should I call this playbook?",
   stepIndicator: "Name playbook",
 };
@@ -324,12 +324,12 @@ const VOICE_SOURCE = {
       icon: "ap-icon-linkedin-official",
       caption: "LinkedIn, X, Threads…",
     },
-    { value: "document", label: "Upload a document", icon: "ap-icon-file--text", caption: "PDF, DOCX, Markdown" },
+    { value: "document", label: "Attach a document", icon: "ap-icon-file--text", caption: "PDF, DOCX, Markdown" },
     { value: "done", label: "Use the sources already attached", icon: "ap-icon-archie-official" },
   ],
   handler: "wizard-answer",
   customPlaceholder: "Something else — type your answer…",
-  title: "Which profile should I analyze?",
+  title: "What should I learn your voice from?",
   stepIndicator: "Voice",
   skipLabel: "Skip",
 };
@@ -362,7 +362,7 @@ const VOICE_PROFILE = {
   handler: "wizard-answer",
   multi: true,
   submitLabel: "Analyze selected",
-  title: "Pick a profile to analyze:",
+  title: "Pick the accounts to analyze",
   stepIndicator: "Voice",
   skipLabel: "Skip",
 };
@@ -405,13 +405,13 @@ const voiceScript = {
     }
     if (step === "1") {
       return {
-        body: chatTurn({ role: "ai", text: "Which profile should I analyze?" }),
+        body: chatTurn({ role: "ai", text: "What should I learn your voice from?" }),
         picker: VOICE_SOURCE,
       };
     }
     if (step === "1.profile") {
       return {
-        body: chatTurn({ role: "ai", text: "Pick a profile to analyze:" }),
+        body: chatTurn({ role: "ai", text: "Pick the accounts to analyze" }),
         picker: VOICE_PROFILE,
       };
     }
@@ -462,7 +462,7 @@ const voiceScript = {
     if (step === "1") {
       const labelMap = {
         linkedin: "Select a social profile",
-        document: "Upload a document",
+        document: "Attach a document",
         done: "Use the sources already attached",
       };
       state.history.push({ role: "user", text: labelMap[value] || "Other" });
@@ -508,7 +508,7 @@ const BRIEF_INTAKE = {
   ],
   handler: "wizard-answer",
   customPlaceholder: "Something else — type your answer…",
-  title: "Want me to capture the brief? I'll set goals, audience, and brand voice for this chat.",
+  title: "Want me to capture the brief? I'll set the goals and audience for this Playbook.",
   stepIndicator: "Brief",
   skipLabel: "Skip",
 };
@@ -533,7 +533,7 @@ const briefScript = {
       return {
         body: chatTurn({
           role: "ai",
-          text: "Want me to capture the brief? I'll set goals, audience, and brand voice for this chat.",
+          text: "Want me to capture the brief? I'll set the goals and audience for this Playbook.",
         }),
         picker: BRIEF_INTAKE,
       };
@@ -589,7 +589,7 @@ const BRAND_INTAKE = {
 
 const BRAND_SUMMARY_PICKER = {
   items: [
-    { value: "yes", label: "Yes, that's the brand", icon: "ap-icon-rounded-check" },
+    { value: "yes", label: "Yes, that's the Brand", icon: "ap-icon-rounded-check" },
     { value: "no", label: "Refine Branding", icon: "ap-icon-refresh" },
   ],
   handler: "wizard-answer",

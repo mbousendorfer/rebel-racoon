@@ -53,7 +53,7 @@ export const threadsBySession = {
     },
     {
       role: "source-intake",
-      meta: "Source intake",
+      meta: "You",
       kind: "PDF",
       filename: "q2-strategy-offsite-notes.pdf",
       size: "1.2mb",
@@ -82,7 +82,7 @@ export const threadsBySession = {
     },
     {
       role: "source-intake",
-      meta: "Source intake",
+      meta: "You",
       kind: "Video",
       filename: "founder-keynote.mp4",
       size: "34mb",
@@ -168,7 +168,7 @@ export const threadsBySession = {
     },
     {
       role: "source-intake",
-      meta: "Source intake",
+      meta: "You",
       kind: "Audio",
       filename: "riverside-discovery-call.mp3",
       size: "18mb",
@@ -202,7 +202,7 @@ export const threadsBySession = {
     },
     {
       role: "source-intake",
-      meta: "Source intake",
+      meta: "You",
       kind: "PDF",
       filename: "riverside-case-study-draft.pdf",
       size: "0.8mb",
@@ -282,7 +282,7 @@ export const threadsBySession = {
     },
     {
       role: "source-intake",
-      meta: "Source intake",
+      meta: "You",
       kind: "PDF",
       filename: "state-of-social-2026-report.pdf",
       size: "3.4mb",
@@ -321,7 +321,7 @@ export const threadsBySession = {
     },
     {
       role: "source-intake",
-      meta: "Source intake",
+      meta: "You",
       kind: "Video",
       filename: "social-trends-keynote.mp4",
       size: "42mb",
@@ -393,7 +393,7 @@ export const threadsBySession = {
     },
     {
       role: "source-intake",
-      meta: "Source intake",
+      meta: "You",
       kind: "PDF",
       filename: "analytics-week-12.pdf",
       size: "0.4mb",

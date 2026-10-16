@@ -13,16 +13,16 @@
 // tones, contentStyle, objective, contentAction, ctaLinks, language, color,
 // suggestions, editingId, onComplete }.
 
-import * as inlineQuestion from "./inline-question.js?v=1859";
-import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=1859";
-import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=1859";
-import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=1859";
-import { showToast } from "./components/toast.js?v=1859";
-import { recordReasons } from "./feedback-store.js?v=1859";
-import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1859";
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1859";
-import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=1859";
-import { analyzeWebsite, analyzeBrandFiles, analyzeNetworkVoices } from "./context-mock-analysis.js?v=1859";
+import * as inlineQuestion from "./inline-question.js?v=1860";
+import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=1860";
+import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=1860";
+import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=1860";
+import { showToast } from "./components/toast.js?v=1860";
+import { recordReasons } from "./feedback-store.js?v=1860";
+import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1860";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1860";
+import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=1860";
+import { analyzeWebsite, analyzeBrandFiles, analyzeNetworkVoices } from "./context-mock-analysis.js?v=1860";
 import {
   networkVoicesOn,
   cloneVoiceByNetwork,
@@ -30,15 +30,15 @@ import {
   networkLabel,
   networkIcon,
   voiceNetworks,
-} from "./network-voice.js?v=1859";
-import { connectors as connectorMocks } from "./mocks.js?v=1859";
+} from "./network-voice.js?v=1860";
+import { connectors as connectorMocks } from "./mocks.js?v=1860";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "./social-profiles.js?v=1859";
-import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=1859";
-import { isFlagOn } from "./feature-flags.js?v=1859";
+} from "./social-profiles.js?v=1860";
+import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=1860";
+import { isFlagOn } from "./feature-flags.js?v=1860";
 
 const drafts = new Map(); // sessionId → draft
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -360,7 +360,7 @@ const ALT_START_ITEMS = [
   {
     value: "files",
     label: "Start from files instead",
-    caption: "Your logo, past visuals or photos",
+    caption: "Your logo, past visuals, or photos",
     icon: "ap-icon-upload",
   },
   {
@@ -616,7 +616,7 @@ function askAltProfile(sessionId, { announce = true } = {}) {
       items,
       multi: true,
       searchable: items.length > PROFILE_SEARCH_THRESHOLD,
-      searchPlaceholder: "Search profiles by name, handle or network…",
+      searchPlaceholder: "Search accounts by name, handle, or network…",
       onPick: (ids) => {
         if (!drafts.get(sessionId)) return;
         const picked = (ids || []).map((id) => connectedProfiles.find((p) => p.id === id)).filter(Boolean);
@@ -640,12 +640,12 @@ function askAltProfile(sessionId, { announce = true } = {}) {
     postAssistantMessage(sessionId, "Pick the profile to use for this Playbook. I'll tune tone and format for it.");
   }
   inlineQuestion.ask(sessionId, {
-    title: "Which profile will publish? (optional)",
+    title: "Which account will publish? (optional)",
     stepLabel: altStepLabel("profile"),
     items,
     // With many connected profiles, filter the list live instead of scrolling.
     searchable: items.length > PROFILE_SEARCH_THRESHOLD,
-    searchPlaceholder: "Search profiles by name, handle or network…",
+    searchPlaceholder: "Search accounts by name, handle, or network…",
     onPick: (id) => {
       const profile = connectedProfiles.find((p) => p.id === id);
       if (!drafts.get(sessionId)) return;
@@ -776,7 +776,7 @@ function askAltBaseNetwork(sessionId) {
 function askAltDocuments(sessionId) {
   postAssistantMessage(
     sessionId,
-    "Optional: connect documents that detail your Brand (brand book, brief, etc.). Or skip.",
+    "Connect the documents that describe your Brand — a brand book, guidelines, a strategy doc. Optional.",
   );
   // Onboarding keeps the choice tight — the four sources most people connect
   // first. The full catalogue lives on /connectors; the subtitle points there.
@@ -791,7 +791,7 @@ function askAltDocuments(sessionId) {
     }));
   inlineQuestion.ask(sessionId, {
     title: "Connect documents (optional)",
-    subtitle: "You can connect more sources later in Settings.",
+    subtitle: "You can connect more later from Connectors.",
     stepLabel: altStepLabel("documents"),
     items,
     multi: true,
@@ -799,7 +799,7 @@ function askAltDocuments(sessionId) {
     skipLabel: "Skip",
     onPick: (ids) => {
       if (ids?.length) {
-        const noun = ids.length === 1 ? "source" : "sources";
+        const noun = ids.length === 1 ? "connector" : "connectors";
         postUserTurn(sessionId, `${ids.length} ${noun} connected`);
       }
       inlineQuestion.exit(sessionId);
@@ -837,7 +837,7 @@ function askAltReferenceImages(sessionId) {
       {
         value: "add",
         label: "Add reference images",
-        caption: "Upload from your computer",
+        caption: "Choose files from your computer",
         icon: "ap-icon-multiple-images",
       },
     ],
