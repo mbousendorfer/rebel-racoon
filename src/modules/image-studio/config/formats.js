@@ -23,7 +23,7 @@ export const FORMATS = Object.freeze([
     "portrait",
     { top: 0, right: 0, bottom: 0, left: 0 },
     "feed",
-    "The profile grid shows the centre 3:4.",
+    "The profile grid shows the center 3:4.",
   ),
   f(
     "ig-story",

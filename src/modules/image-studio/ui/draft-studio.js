@@ -4,13 +4,13 @@
 // Playbook is the brand, the draft's network sets the shapes, and "Use in
 // draft" hands the finished PNG back to the caller — the draft.
 
-import { html } from "../lib/html.js?v=1866";
-import { openDialog } from "./dialog.js?v=1866";
-import { installMenus } from "./menu.js?v=1866";
-import { toast } from "./toast.js?v=1866";
-import { mountStudio } from "../views/studio.js?v=1866";
-import { DRAFT_NETWORK } from "../config/formats.js?v=1866";
-import { getActiveBrandId } from "../state/store.js?v=1866";
+import { html } from "../lib/html.js?v=1868";
+import { openDialog } from "./dialog.js?v=1868";
+import { installMenus } from "./menu.js?v=1868";
+import { toast } from "./toast.js?v=1868";
+import { mountStudio } from "../views/studio.js?v=1868";
+import { DRAFT_NETWORK } from "../config/formats.js?v=1868";
+import { getActiveBrandId } from "../state/store.js?v=1868";
 
 /**
  * @param {{ brandId?: string, network?: string, text?: string, imageUrl?: string,
@@ -34,7 +34,7 @@ export function openDraftStudio({
   const dialog = openDialog({
     // Just the tool's name: the post is right behind the dialog, and quoting it
     // here cost the header two lines.
-    title: "Image Studio v2",
+    title: "Image Studio",
     size: "studio",
     body: html`<div class="imst imst-draft-host" data-imst-draft-host></div>`,
     headerAside: html`<div class="imst-dialog__modes" data-imst-draft-modes></div>`,
@@ -54,7 +54,7 @@ export function openDraftStudio({
         onUse(dataUrl) {
           onUse(dataUrl);
           dialog.close();
-          toast(imageUrl ? "The draft's image was replaced." : "Image added to the draft.");
+          toast(imageUrl ? "Draft image replaced" : "Image added to draft");
         },
       });
       cleanup = () => {

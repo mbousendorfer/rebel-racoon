@@ -17,10 +17,10 @@ function subPreview(value) {
 
 export const CLIP_SUBTITLE_ITEMS = [
   { value: "none", label: "No subtitles", caption: "Clips without subtitles" },
-  { value: "karaoke", label: "Karaoké", caption: "Each word pops as it's spoken" },
+  { value: "karaoke", label: "Karaoke", caption: "Each word pops as it's spoken" },
   { value: "deep-diver", label: "Deep Diver", caption: "Active word on a clean pill" },
   { value: "youshaei", label: "Youshaei", caption: "Bold centered, mint active word" },
-  { value: "popline", label: "PopLine", caption: "Active word with a color underline" },
+  { value: "popline", label: "Popline", caption: "Active word with a color underline" },
   { value: "mozi", label: "Mozi", caption: "Bold caps, keywords in color" },
   { value: "thinkmedia", label: "ThinkMedia", caption: "Italic caps, popping keywords" },
   { value: "beasty", label: "Beasty", caption: "Glowing bubble text, color keywords" },

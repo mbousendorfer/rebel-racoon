@@ -14,9 +14,9 @@
 // ⚠️ Three class families are built by concatenation, as in the studio:
 // `__crop-handle--{nw,ne,sw,se}`, `__popover--{kind}`, `__tt-{kind}`.
 
-import { html, raw } from "../../lib/html.js?v=1866";
-import { EDIT_FONTS, TEXT_COLORS, outlineMetrics, shadowMetrics, textFamily } from "../../config/edit.js?v=1866";
-import { isBase, layerName } from "../../state/edit-doc.js?v=1866";
+import { html, raw } from "../../lib/html.js?v=1868";
+import { EDIT_FONTS, TEXT_COLORS, outlineMetrics, shadowMetrics, textFamily } from "../../config/edit.js?v=1868";
+import { isBase, layerName } from "../../state/edit-doc.js?v=1868";
 
 // ── The frame ───────────────────────────────────────────────────────────────
 
@@ -235,9 +235,9 @@ function textToolbar(l, ui, selected) {
         data-imst-popover-toggle="textColor"
         aria-haspopup="true"
         aria-expanded="${open("textColor")}"
-        aria-label="Text colour"
+        aria-label="Text color"
       >
-        <span class="image-studio__tt-swatch" style="--sw:${l.color || "#FFFFFF"}"></span><span>Colour</span>
+        <span class="image-studio__tt-swatch" style="--sw:${l.color || "#FFFFFF"}"></span><span>Color</span>
       </button>`,
       open("textColor") ? textColorPopover(l, ui) : "",
     )}
@@ -351,16 +351,16 @@ function textColorPopover(l, ui) {
     class="image-studio__popover image-studio__popover--textcolor"
     data-imst-popover
     role="menu"
-    aria-label="Text colour"
+    aria-label="Text color"
   >
-    <div class="image-studio__popover-head"><p class="image-studio__popover-title">Colour</p></div>
+    <div class="image-studio__popover-head"><p class="image-studio__popover-title">Color</p></div>
     <div class="image-studio__popover-body">
       ${swatchGrid({
         ui,
         selected: l.color,
         applyAttr: "data-imst-text-color",
         pickAttr: "data-imst-text-colorpick",
-        pickLabel: "Add text colour",
+        pickLabel: "Add text color",
       })}
     </div>
   </div>`;
@@ -405,7 +405,7 @@ function textOutlinePopover(l, ui) {
         selected: l.outlineColor,
         applyAttr: "data-imst-outline-color",
         pickAttr: "data-imst-outline-colorpick",
-        pickLabel: "Add outline colour",
+        pickLabel: "Add outline color",
       })}
     </div>
   </div>`;

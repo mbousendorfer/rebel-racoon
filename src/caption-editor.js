@@ -21,7 +21,7 @@
 // are pure DOM/CSS. Karaoke word-sweep is intentionally omitted; emphasis is
 // per-word marks + an optional static "phrase" highlight under the playhead.
 
-import { escapeHtml, formatClock } from "./utils.js?v=1866";
+import { escapeHtml, formatClock } from "./utils.js?v=1868";
 import {
   PRESETS,
   presetById,
@@ -36,7 +36,7 @@ import {
   detectFillers,
   detectPauses,
   videoForClip,
-} from "./clip-captions.js?v=1866";
+} from "./clip-captions.js?v=1868";
 
 const FONT_FAMILIES = [
   "Montserrat, Roboto, sans-serif",
@@ -400,7 +400,7 @@ function renderFontTab() {
        ${field("Uppercase", toggle("uppercase", "", s.uppercase))}`,
     )}
     ${group(
-      "Outline & shadow",
+      "Outline and shadow",
       `${field("Outline color", colorInput("strokeColor", s.strokeColor))}
        ${field("Outline width", `<input type="number" class="cap-ed-num" data-ce-set="strokeWidthPx" min="0" max="24" value="${s.strokeWidthPx}" />`)}
        ${field("Shadow", toggle("shadow", "", s.shadow))}
@@ -441,7 +441,7 @@ function renderEffectsTab() {
         ]),
       )}
        ${field(
-         "Lines",
+         "Max lines",
          segBtns("maxLines", s.maxLines, [
            { v: 1, label: "1" },
            { v: 2, label: "2" },
@@ -460,6 +460,7 @@ function renderEffectsTab() {
           { v: "reels", label: "Reels" },
           { v: "shorts", label: "Shorts" },
         ]),
+        "Shows where the app's buttons cover the video",
       ),
     )}
   `;
@@ -488,7 +489,7 @@ function renderCleanupBar() {
   }
   const anyPending = fillers.some((f) => !words[f.startIdx].removed) || pauses.some((p) => !pausesRemoved.has(p.idx));
   bar.innerHTML = `
-    <span class="cap-ed-cleanup-bar__count">${fillers.length} filler${fillers.length === 1 ? "" : "s"} · ${pauses.length} pause${pauses.length === 1 ? "" : "s"} — tap to remove</span>
+    <span class="cap-ed-cleanup-bar__count">${fillers.length} filler${fillers.length === 1 ? "" : "s"} · ${pauses.length} pause${pauses.length === 1 ? "" : "s"} — click to remove</span>
     <span class="cap-ed-cleanup-bar__actions">
       <button type="button" class="cap-ed-cleanup-bar__btn" data-ce-cleanup-all="${anyPending ? "remove" : "restore"}">${anyPending ? "Remove all" : "Restore all"}</button>
       <button type="button" class="cap-ed-cleanup-bar__btn cap-ed-cleanup-bar__btn--done" data-ce-cleanup-done>Done</button>
@@ -516,7 +517,7 @@ function updateReconcile() {
   const el = $("[data-ce-reconcile]");
   if (el) {
     const removed = words.filter((w) => w.removed).length + pausesRemoved.size;
-    el.textContent = `${cues.length} cues · ${words.length} words${removed ? ` · ${removed} cleaned` : ""}`;
+    el.textContent = `${cues.length} subtitle line${cues.length === 1 ? "" : "s"} · ${words.length} words${removed ? ` · ${removed} cleaned` : ""}`;
   }
   const cc = $("[data-ce-cleanup-count]");
   if (cc) {
@@ -679,7 +680,7 @@ function openWordMenu(wordIdx, anchorEl) {
     <button type="button" class="cap-ed-menu__item" data-ce-mark="">Clear emphasis</button>
     <div class="cap-ed-menu__sep"></div>
     <button type="button" class="cap-ed-menu__item" data-ce-word-remove="${wordIdx}">
-      <i class="ap-icon-eye-off"></i>${w.removed ? "Show in captions" : "Hide from captions"}
+      <i class="ap-icon-eye-off"></i>${w.removed ? "Show in subtitles" : "Hide from subtitles"}
     </button>`;
   // Append to document.body — position:fixed must resolve against the viewport,
   // and the modal's transform would otherwise capture it as the containing block.

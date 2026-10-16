@@ -14,14 +14,14 @@
 //
 // Everything here saves as it changes, like the styles always did: no Edit.
 
-import { html, raw, toString } from "../lib/html.js?v=1866";
-import { navigate } from "../../../router.js?v=1866";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1866";
-import { toast } from "../ui/toast.js?v=1866";
-import { renderEmpty } from "../ui/empty.js?v=1866";
-import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=1866";
-import { shapesFor } from "../config/formats.js?v=1866";
-import { STYLE_PRESETS } from "../config/style-presets.js?v=1866";
+import { html, raw, toString } from "../lib/html.js?v=1868";
+import { navigate } from "../../../router.js?v=1868";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=1868";
+import { toast } from "../ui/toast.js?v=1868";
+import { renderEmpty } from "../ui/empty.js?v=1868";
+import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=1868";
+import { shapesFor } from "../config/formats.js?v=1868";
+import { STYLE_PRESETS } from "../config/style-presets.js?v=1868";
 import {
   addPlaybookReferences,
   deletePlaybookReference,
@@ -30,8 +30,8 @@ import {
   getPlaybookReferences,
   setPlaybookDefaultLook,
   setPlaybookFormat,
-} from "../state/playbook-brand.js?v=1866";
-import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=1866";
+} from "../state/playbook-brand.js?v=1868";
+import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=1868";
 
 const creatorPath = (playbookId, rest) => `/playbook/${encodeURIComponent(playbookId)}/styles/${rest}`;
 const ownStyles = (playbookId) => getStylesForBrand(playbookId).filter((s) => s.kind === "custom");
@@ -57,7 +57,9 @@ const section = ({ aside, body }) =>
 const emptyBlock = ({ icon, title, body, action }) =>
   html`<div class="imst-images-empty">${renderEmpty({ icon, title, body, action })}</div>`;
 
-const usedTag = html`<span class="ap-tag grey mini imst-images__used"><span>Used by Generate image</span></span>`;
+const usedTag = html`<span class="ap-tag grey mini imst-images__used"
+  ><span>Default for Generate an image</span></span
+>`;
 
 // ── 1. Image styles ─────────────────────────────────────────────────────────
 
@@ -72,17 +74,17 @@ export function renderImagesStyles(playbookId, { canEdit = true } = {}) {
   return toString(
     section({
       aside: html`<p class="ap-body imst-images__lead">
-          A look I learn from a few of your images — light, colours, framing — and draw every new image in.
+          A look I learn from a few of your images — light, colors, framing — and draw every new image in.
         </p>
         ${editable && count ? createStyleButton : ""}`,
       body: count
         ? raw(renderPlaybookStyles(playbookId, { canEdit, newTile: false }))
         : emptyBlock({
             icon: "ap-icon-sparkles",
-            title: "Draw every image in your brand's look",
+            title: "Draw every image in your Brand's look",
             body: editable
-              ? "Give me 2 to 6 images that share the look you want, and I learn it."
-              : "Nobody has created a style for this brand yet.",
+              ? "Give me 2 to 6 images that share the look you want, and I'll learn it."
+              : "Nobody has created a style for this Brand yet. Ask the Playbook's owner to add one.",
             action: editable ? createStyleButton : "",
           }),
     }),
@@ -133,7 +135,7 @@ export function renderImagesReferences(playbookId, { canEdit = true } = {}) {
             title: "Keep the pictures whose look you like",
             body: editable
               ? "Add one, and a new image can take after it."
-              : "Nobody has added a reference image for this brand yet.",
+              : "Nobody has added a reference image for this Brand yet. Ask the Playbook's owner to add one.",
             action: editable
               ? html`<button type="button" class="ap-button primary blue" data-imst-images="add-reference">
                   <i class="ap-icon-plus" aria-hidden="true"></i><span>Add images</span>

@@ -6,24 +6,24 @@
 // binding and the refreshAssistantAside node-swap keep working; state lives in
 // clip-studio.js.
 
-import * as clipStudio from "../../clip-studio.js?v=1866";
-import { isWorkspaceMode } from "../../active-playbook.js?v=1866";
-import { usableContexts } from "../../playbook-access.js?v=1866";
-import { escapeHtml, html, raw } from "../../utils.js?v=1866";
-import { getContextById } from "../../contexts-store.js?v=1866";
-import { dropzoneHTML } from "../../components/dropzone.js?v=1866";
-import { renderClipCard } from "../../components/clip-card.js?v=1866";
-import { connectableNetworkCards } from "../../connect-profiles-flow.js?v=1866";
-import { getConnectedProfiles, PROFILE_SEARCH_THRESHOLD, renderProfileTag } from "../../social-profiles.js?v=1866";
-import { defaultFormatFor, formatsForNetwork } from "../../clip-formats.js?v=1866";
+import * as clipStudio from "../../clip-studio.js?v=1868";
+import { isWorkspaceMode } from "../../active-playbook.js?v=1868";
+import { usableContexts } from "../../playbook-access.js?v=1868";
+import { escapeHtml, html, raw } from "../../utils.js?v=1868";
+import { getContextById } from "../../contexts-store.js?v=1868";
+import { dropzoneHTML } from "../../components/dropzone.js?v=1868";
+import { renderClipCard } from "../../components/clip-card.js?v=1868";
+import { connectableNetworkCards } from "../../connect-profiles-flow.js?v=1868";
+import { getConnectedProfiles, PROFILE_SEARCH_THRESHOLD, renderProfileTag } from "../../social-profiles.js?v=1868";
+import { defaultFormatFor, formatsForNetwork } from "../../clip-formats.js?v=1868";
 import {
   classifyFile,
   pushScriptedSource,
   completeScriptedSource,
   updateSourceClips,
-} from "../../sources-stream.js?v=1866";
-import { showToast } from "../../components/toast.js?v=1866";
-import { open as openVideoClipsModal } from "../../components/video-clips-modal.js?v=1866";
+} from "../../sources-stream.js?v=1868";
+import { showToast } from "../../components/toast.js?v=1868";
+import { open as openVideoClipsModal } from "../../components/video-clips-modal.js?v=1868";
 import {
   postAssistantMessage,
   postClipExtractionTurn,
@@ -31,18 +31,18 @@ import {
   finishPending,
   GENERATION_TOOLS,
   postDraftResult,
-} from "../../assistant.js?v=1866";
-import { addPostDraft } from "../../posts-store.js?v=1866";
-import { clipContext } from "./clip-draft-flow.js?v=1866";
-import { dotColorVar } from "../session.js?v=1866";
-import { buildWorkflowFlow } from "./workflow-flow.js?v=1866";
+} from "../../assistant.js?v=1868";
+import { addPostDraft } from "../../posts-store.js?v=1868";
+import { clipContext } from "./clip-draft-flow.js?v=1868";
+import { dotColorVar } from "../session.js?v=1868";
+import { buildWorkflowFlow } from "./workflow-flow.js?v=1868";
 
 // Config catalogs for the upload/config screen.
 const CLIP_CAPTION_STYLES = [
   { value: "none", label: "None" },
   { value: "bold", label: "Bold" },
   { value: "clean", label: "Clean" },
-  { value: "caption", label: "Caption" },
+  { value: "caption", label: "Classic" },
 ];
 
 const CLIP_CAPTION_SAMPLE = "Bring your story to life";
@@ -69,8 +69,8 @@ const CLIP_FORMATS_UI = [
 // Clip duration — same idea: the network icons indicate which networks favour
 // that length (network = guidance, not a hard filter).
 const CLIP_DURATIONS_UI = [
-  { id: "auto", label: "Auto", sub: "Smart pick", nets: [] },
-  { id: "short", label: "≤ 30s", sub: "Shorts & Reels", nets: ["tiktok", "instagram"] },
+  { id: "auto", label: "Auto", sub: "I pick per clip", nets: [] },
+  { id: "short", label: "Up to 30s", sub: "Shorts & Reels", nets: ["tiktok", "instagram"] },
   { id: "medium", label: "30–60s", sub: "Feed clips", nets: ["instagram", "facebook"] },
   { id: "long", label: "60–90s", sub: "Long-form", nets: ["linkedin", "x"] },
 ];
@@ -138,10 +138,10 @@ function renderClipPlaybookControl(ctx) {
     .join("");
   const valueMarkup = ctx
     ? `<span class="ap-select-value">${escapeHtml(ctx.name)}</span>`
-    : `<span class="ap-select-value ap-select-placeholder">Select a playbook</span>`;
+    : `<span class="ap-select-value ap-select-placeholder">Select a Playbook</span>`;
   return `
     <details class="ap-select clip-studio__select" data-clip-playbook>
-      <summary class="ap-select-trigger" title="Choose the playbook for these posts">
+      <summary class="ap-select-trigger" title="Choose the Playbook for these drafts">
         <span class="ap-select-inline-label">Playbook</span>
         ${valueMarkup}
         <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
@@ -169,8 +169,8 @@ const CLIP_STUDIO_STEPS = [
   {
     tone: "out",
     icon: "ap-icon-closed-captions",
-    title: "Post-ready clips",
-    text: "Each clip comes captioned and drafted into a post in your playbook's voice — ready to schedule.",
+    title: "Clips ready to draft",
+    text: "Each clip comes subtitled and lands in the chat, ready to turn into posts in your Playbook's voice.",
   },
 ];
 
@@ -233,11 +233,11 @@ function renderClipStudioUpload(st) {
        </div>`
     : `${dropzoneHTML({
         lead: "Drag & drop a video here",
-        sub: "MP4, MOV or WEBM · up to 100MB",
+        sub: "MP4, MOV, or WEBM · up to 100 MB",
         large: true,
         withInput: false,
         rootAttrs: "data-clip-studio-dropzone",
-        ariaLabel: "Upload a video",
+        ariaLabel: "Add a video",
         action: { label: "Browse files", attrs: "data-clip-studio-browse" },
       })}
        <div class="clip-studio__or"><span>or</span></div>
@@ -254,12 +254,12 @@ function renderClipStudioUpload(st) {
       <div class="clip-studio__config">
         <header class="clip-studio__intro">
           <span class="clip-studio__ai-badge"
-            ><i class="ap-icon-archie-official" aria-hidden="true"></i>Auto Clips</span
+            ><i class="ap-icon-archie-official" aria-hidden="true"></i>Clip Studio</span
           >
           <h1 class="clip-studio__title">Turn a video into post-ready clips</h1>
           <p class="clip-studio__sub">
             Drop in a long video and I'll find the moments worth posting — cut to length and ready to draft in your
-            playbook's voice. No editor required.
+            Playbook's voice.
           </p>
         </header>
 
@@ -287,7 +287,12 @@ function renderClipStudioUpload(st) {
             <div class="clip-studio__field">
               <div class="clip-studio__field-row">
                 <label class="clip-studio__field-label" for="clipInstr">Additional instructions</label>
-                <button type="button" class="ap-link standalone small" data-clip-surprise>
+                <button
+                  type="button"
+                  class="ap-link standalone small"
+                  data-clip-surprise
+                  title="Fill in a suggested instruction"
+                >
                   <i class="ap-icon-sparkles" aria-hidden="true"></i>Surprise me
                 </button>
               </div>
@@ -313,7 +318,7 @@ ${cfg.instructions || ""}</textarea
             data-clip-create
             ${st.videoProvided ? "" : "disabled"}
           >
-            <i class="ap-icon-archie-official" aria-hidden="true"></i><span>Find clip ideas</span>
+            <i class="ap-icon-archie-official" aria-hidden="true"></i><span>Find clips</span>
           </button>
         </div>
       </div>
@@ -328,7 +333,7 @@ function renderClipStudioAnalyzing(st) {
   return html`
     <aside class="session__assistant clip-studio clip-studio--analyzing" aria-label="Analyzing video">
       <div class="clip-studio__center" style="--extract-ms: 8s">
-        <span class="clip-studio__ai-badge"><i class="ap-icon-archie-official" aria-hidden="true"></i>AI analysis</span>
+        <span class="clip-studio__ai-badge"><i class="ap-icon-archie-official" aria-hidden="true"></i>Clip Studio</span>
         <h1 class="clip-studio__title">Finding the best clips…</h1>
         <div class="clip-studio__skeleton" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
         <div class="source-card__progress clip-studio__progress" role="progressbar" aria-label="Cutting clips">
@@ -378,18 +383,20 @@ function renderClipStudioClips(session, st) {
           <span class="clip-studio__ai-badge"
             ><i class="ap-icon-archie-official" aria-hidden="true"></i>Clips ready</span
           >
-          <h1 class="clip-studio__title">${clips.length} clips from ${st.sourceName || "your video"}</h1>
+          <h1 class="clip-studio__title">
+            ${clips.length} clip${clips.length === 1 ? "" : "s"} from ${st.sourceName || "your video"}
+          </h1>
           <p class="clip-studio__sub muted">
-            Review and trim clips, pick the ones to keep, then set the format and captions.
+            Review and trim clips, pick the ones to keep, then set the format and subtitles. Both apply to every clip.
           </p>
         </div>
         <div class="clip-studio__review-settings">
           <div class="clip-studio__field">
-            <span class="clip-studio__field-label">Output format</span>
+            <span class="clip-studio__field-label">Format</span>
             <div class="clip-studio__fmtcards">${raw(formatCards)}</div>
           </div>
           <div class="clip-studio__field">
-            <span class="clip-studio__field-label">Caption style</span>
+            <span class="clip-studio__field-label">Subtitle style</span>
             <div class="clip-studio__cap-grid">${raw(captionCards)}</div>
           </div>
         </div>
@@ -448,7 +455,7 @@ function renderClipStudioConnect(session, st) {
       <div class="clip-studio__bar">
         <button type="button" class="ap-button ghost grey" data-clip-back><span>Back</span></button>
         <div class="clip-studio__bar-right">
-          <span class="clip-studio__bar-count">${selClips} clips selected</span>
+          <span class="clip-studio__bar-count">${selClips} clip${selClips === 1 ? "" : "s"} selected</span>
         </div>
       </div>
     </aside>
@@ -509,7 +516,7 @@ function renderClipStudioProfiles(session, st) {
           </button>
           <h1 class="clip-studio__title">Where should I post these?</h1>
           <p class="clip-studio__sub muted">
-            Pick the profiles to draft on. I've set the best video format per network — change any if you like.
+            Pick the accounts to draft for. I've set the best video format per network — change any if you like.
           </p>
           ${searchable
             ? html`
@@ -518,7 +525,7 @@ function renderClipStudioProfiles(session, st) {
                   <input
                     type="search"
                     data-clip-profile-search
-                    placeholder="Search profiles by name, handle or network…"
+                    placeholder="Search accounts by name, handle, or network…"
                     value="${st.profileSearch || ""}"
                     aria-label="Search profiles"
                     autocomplete="off"
@@ -535,7 +542,10 @@ function renderClipStudioProfiles(session, st) {
       <div class="clip-studio__bar">
         <button type="button" class="ap-button ghost grey" data-clip-back><span>Back</span></button>
         <div class="clip-studio__bar-right">
-          <span class="clip-studio__bar-count">${selClips} clips · ${selectedProfiles.length} profiles</span>
+          <span class="clip-studio__bar-count"
+            >${selClips} clip${selClips === 1 ? "" : "s"} · ${selectedProfiles.length}
+            account${selectedProfiles.length === 1 ? "" : "s"}</span
+          >
           <button type="button" class="ap-button primary orange" data-clip-finalize ${draftCount ? "" : "disabled"}>
             <i class="ap-icon-archie-official" aria-hidden="true"></i
             ><span>Create ${draftCount} draft${draftCount === 1 ? "" : "s"}</span>

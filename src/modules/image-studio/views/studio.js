@@ -15,32 +15,32 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=1866";
-import { delegate } from "../lib/delegate.js?v=1866";
-import { hashString } from "../lib/prng.js?v=1866";
-import { renderEmpty } from "../ui/empty.js?v=1866";
-import { preserveFocus } from "../ui/fields.js?v=1866";
-import { toast } from "../ui/toast.js?v=1866";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1866";
-import { styleThumb } from "../ui/style-thumb.js?v=1866";
-import { openDialog } from "../ui/dialog.js?v=1866";
-import { menu } from "../ui/menu.js?v=1866";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1866";
-import { QUICK_PRESETS, STYLE_PRESETS } from "../config/style-presets.js?v=1866";
-import { formatById, shapeForFormat, shapesFor, shapesForBrand } from "../config/formats.js?v=1866";
-import { networkById } from "../config/networks.js?v=1866";
-import { copyService, imageGenerationService } from "../services/index.js?v=1866";
-import { unbranded, getPlaybookReferences } from "../state/playbook-brand.js?v=1866";
-import { resolveLayers } from "../render/layout.js?v=1866";
-import { svgToDataUrl } from "../render/visual.js?v=1866";
-import { REVEAL_MS } from "../../../archie-pixels.js?v=1866";
-import { splitVisual } from "../render/split.js?v=1866";
-import { bakeDoc } from "../render/edit-export.js?v=1866";
-import { subjectKindFor } from "../render/subjects.js?v=1866";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1866";
-import { createEditor } from "./edit/editor.js?v=1866";
-import { mount as mountStyleCreator } from "./style-creator.js?v=1866";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1866";
+import { html, raw, toString } from "../lib/html.js?v=1868";
+import { delegate } from "../lib/delegate.js?v=1868";
+import { hashString } from "../lib/prng.js?v=1868";
+import { renderEmpty } from "../ui/empty.js?v=1868";
+import { preserveFocus } from "../ui/fields.js?v=1868";
+import { toast } from "../ui/toast.js?v=1868";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1868";
+import { styleThumb } from "../ui/style-thumb.js?v=1868";
+import { openDialog } from "../ui/dialog.js?v=1868";
+import { menu } from "../ui/menu.js?v=1868";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1868";
+import { QUICK_PRESETS, STYLE_PRESETS } from "../config/style-presets.js?v=1868";
+import { formatById, shapeForFormat, shapesFor, shapesForBrand } from "../config/formats.js?v=1868";
+import { networkById } from "../config/networks.js?v=1868";
+import { copyService, imageGenerationService } from "../services/index.js?v=1868";
+import { unbranded, getPlaybookReferences } from "../state/playbook-brand.js?v=1868";
+import { resolveLayers } from "../render/layout.js?v=1868";
+import { svgToDataUrl } from "../render/visual.js?v=1868";
+import { REVEAL_MS } from "../../../archie-pixels.js?v=1868";
+import { splitVisual } from "../render/split.js?v=1868";
+import { bakeDoc } from "../render/edit-export.js?v=1868";
+import { subjectKindFor } from "../render/subjects.js?v=1868";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1868";
+import { createEditor } from "./edit/editor.js?v=1868";
+import { mount as mountStyleCreator } from "./style-creator.js?v=1868";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1868";
 import {
   canEditBrand,
   forgetOneOffStyle,
@@ -51,15 +51,15 @@ import {
   getStylesForBrand,
   registerOneOffStyle,
   subscribe,
-} from "../state/store.js?v=1866";
-import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1866";
+} from "../state/store.js?v=1868";
+import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1868";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1866";
+} from "../state/creation-actions.js?v=1868";
 
 const variationsLabel = (n) => (n === 1 ? "1 variation" : `${n} variations`);
 
@@ -539,7 +539,7 @@ export function mountStudio(
       icon: "ap-icon-bookmark",
       title: "A style",
       label: "Start from a style",
-      text: "Pick one of your Playbook's styles, or one of ours. Every image comes out in the same look.",
+      text: "Pick one of your Playbook's styles, or a ready-made one. Every image comes out in the same look.",
       when: "Good for posts that should look like the brand.",
       short: "Every image in the same look.",
     },
@@ -548,7 +548,7 @@ export function mountStudio(
       icon: "ap-icon-image",
       title: "An image",
       label: "Start from an image",
-      text: "Upload a picture whose look you like. The new image borrows its colours and feel, just this once.",
+      text: "Add a picture whose look you like. The new image borrows its colors and feel, just this once.",
       when: "Good when you have a reference in mind.",
       short: "The look of your picture, just this once.",
     },
@@ -652,7 +652,7 @@ export function mountStudio(
               <i class="ap-icon-upload imst-start__drop-icon" aria-hidden="true"></i>
               <span class="ap-body">Drop an image here, or</span>
               <button type="button" class="ap-button stroked blue" data-imst-action="style-from-image">
-                <span>Upload an image</span>
+                <span>Add an image</span>
               </button>
             </div>
             ${state.sourceError
@@ -838,7 +838,7 @@ ${b.prompt}</textarea
         <div class="imst-composer__bar">
           ${draft.text
             ? html`<button type="button" class="ap-button mermaid" data-imst-action="suggest">
-                <i class="ap-icon-sparkles" aria-hidden="true"></i><span>Suggest from the post</span>
+                <i class="ap-icon-sparkles" aria-hidden="true"></i><span>Suggest from the draft</span>
               </button>`
             : ""}
         </div>
@@ -898,8 +898,8 @@ ${b.prompt}</textarea
               type="button"
               class="ap-button mermaid"
               data-imst-action="suggest-headline"
-              aria-label="Suggest a headline from the post"
-              data-tooltip="${b.headline ? "Another line from the post" : "A line from the post"}"
+              aria-label="Suggest a headline from the draft"
+              data-tooltip="${b.headline ? "Another line from the draft" : "A line from the draft"}"
             >
               <i class="ap-icon-sparkles" aria-hidden="true"></i><span>Suggest</span>
             </button>`
@@ -920,7 +920,7 @@ ${b.prompt}</textarea
           tabindex="0"
           role="img"
           aria-label="What writing the text into the image changes"
-          data-tooltip="Written in, the text is painted into the picture: it takes on the style's lettering and texture, but can't be edited or moved afterwards. Left off, it stays a layer you can change any time."
+          data-tooltip="Written in: painted into the picture in the style's lettering — it can't be edited later. Left off: a layer you can change anytime."
         ></i>
       </div>
       <span class="ap-caption imst-ctl__note"
@@ -990,7 +990,7 @@ ${b.prompt}</textarea
             format,
             html`<span class="imst-stage2__status"
               ><i class="ap-icon-image imst-start__drop-icon" aria-hidden="true"></i
-              ><span class="ap-body-bold">Add an image: its look becomes this image's.</span></span
+              ><span class="ap-body-bold">Add an image to borrow its look.</span></span
             >`,
             "is-preview",
           )}
@@ -1014,10 +1014,10 @@ ${b.prompt}</textarea
         <p class="ap-body imst-canvas-area__caption">
           <span class="ap-body-bold"
             >${!style
-              ? `From your words alone, in ${brand.name}'s colours.`
-              : `A preview of ${style.oneOff ? "your image's style" : style.label} in ${brand.name}'s colours.`}</span
+              ? `From your words alone, in ${brand.name}'s colors.`
+              : `A preview of ${style.oneOff ? "your image's style" : style.label} in ${brand.name}'s colors.`}</span
           >
-          ${state.source === "scratch" ? "Describe what you want and generate" : "Generate: I'll draw from the post"} —
+          ${state.source === "scratch" ? "Describe what you want and generate" : "Generate: I'll draw from the draft"} —
           you'll get ${b.count === 1 ? "one image" : `${b.count} variations to pick from`}.
         </p>
       </div>
@@ -1071,7 +1071,9 @@ ${b.prompt}</textarea
         <div class="ap-infobox-content">
           <div class="ap-infobox-texts">
             <div class="ap-infobox-title">Generation failed</div>
-            <div class="ap-infobox-message">Nothing was lost — your brief is still on the left.</div>
+            <div class="ap-infobox-message">
+              Nothing was lost — your description and settings are still on the left.
+            </div>
           </div>
           <button type="button" class="ap-button ghost blue" data-imst-action="generate">Try again</button>
         </div>
@@ -1393,7 +1395,7 @@ ${b.prompt}</textarea
         renderEmpty({
           icon: "ap-icon-image",
           title: "This chat has no Playbook",
-          body: "Images follow a brand, and the brand lives in the chat's Playbook. Pick one for this chat first.",
+          body: "Images follow a Brand, and the Brand lives in the chat's Playbook. Pick one for this chat first.",
         }),
       );
       paintFooter();
@@ -1490,7 +1492,7 @@ ${b.prompt}</textarea
       state.reveal = { at: Date.now(), ids: [v.id] };
       state.focusId = v.id;
     } catch {
-      toast("That one didn't come through. Try again.", { variant: "error" });
+      toast("Couldn't generate this variation. Try again.", { variant: "error" });
     }
     state.addingOne = false;
     paint();
@@ -1541,7 +1543,7 @@ ${b.prompt}</textarea
         feedUrls.delete(key);
         if (!alive) return;
         state.view = "image";
-        toast("The feed preview couldn't be drawn.", { variant: "error" });
+        toast("Couldn't draw the feed preview. Switch to Image and try again.", { variant: "error" });
         paint();
       });
     return null;
@@ -1611,7 +1613,7 @@ ${b.prompt}</textarea
         target.querySelector("#imst-prompt-error")?.remove();
       }
     } catch {
-      toast("No suggestion this time. Try again.", { variant: "error" });
+      toast("Couldn't suggest a description. Try again.", { variant: "error" });
     } finally {
       if (icon) spinner.replaceWith(icon);
       button.classList.remove("loading");
@@ -1651,7 +1653,7 @@ ${b.prompt}</textarea
       downloadBlob(blob, `${slug(c.title)}-${f.id}.png`);
       toast(`Downloaded ${f.width} × ${f.height} PNG.`);
     } catch (error) {
-      toast(error.message || "The download failed.", { variant: "error" });
+      toast(error.message || "Couldn't download the image. Try again.", { variant: "error" });
     }
   }
 
@@ -1688,7 +1690,7 @@ ${b.prompt}</textarea
     `;
     const dialog = openDialog({
       title: "Styles",
-      subtitle: `Every one drawn in ${brand.name}'s colours.`,
+      subtitle: `Every one drawn in ${brand.name}'s colors.`,
       size: "lg",
       body,
       onMount(el) {

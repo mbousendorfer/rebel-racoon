@@ -11,13 +11,13 @@
 // weights and a test on three subjects. The system presets are NOT shown here:
 // they belong to no Playbook, and the fiche lists only what is this brand's.
 
-import { html, toString } from "../lib/html.js?v=1866";
-import { navigate } from "../../../router.js?v=1866";
-import { styleThumb } from "../ui/style-thumb.js?v=1866";
-import { confirmDialog } from "../ui/dialog.js?v=1866";
-import { toast } from "../ui/toast.js?v=1866";
-import { canEditBrand, getBrand, getStyle, getStylesForBrand } from "../state/store.js?v=1866";
-import { deleteStyle, duplicateStyle } from "../state/style-actions.js?v=1866";
+import { html, toString } from "../lib/html.js?v=1868";
+import { navigate } from "../../../router.js?v=1868";
+import { styleThumb } from "../ui/style-thumb.js?v=1868";
+import { confirmDialog } from "../ui/dialog.js?v=1868";
+import { toast } from "../ui/toast.js?v=1868";
+import { canEditBrand, getBrand, getStyle, getStylesForBrand } from "../state/store.js?v=1868";
+import { deleteStyle, duplicateStyle } from "../state/style-actions.js?v=1868";
 
 const creatorPath = (playbookId, rest) => `/playbook/${encodeURIComponent(playbookId)}/styles/${rest}`;
 
@@ -53,7 +53,7 @@ const deleteButton = (attrs, label) =>
     class="ap-icon-button transparent grey"
     ${attrs}
     aria-label="Delete ${label}"
-    data-tooltip="Delete"
+    data-tooltip="Delete ${label}"
   >
     <i class="ap-icon-trash" aria-hidden="true"></i>
   </button>`;
@@ -66,7 +66,7 @@ function styleCard(style, brand, canEdit) {
     // The style Generate image uses says so (the Images tab's third block sets it).
     meta:
       brand.defaults?.styleId === style.id
-        ? html`<span class="ap-tag grey mini imst-images__used"><span>Used by Generate image</span></span>`
+        ? html`<span class="ap-tag grey mini imst-images__used"><span>Default for Generate an image</span></span>`
         : sourcesSummary(style),
     openAttrs: canEdit ? html`data-imst-pb-style="edit" ${id}` : null,
     actions: canEdit
@@ -113,7 +113,7 @@ export function renderPlaybookStyles(playbookId, { canEdit = true, newTile: with
         )
       : "";
   if (!own.length && !editable)
-    return toString(html`<p class="ap-body imst-pbstyles__empty">No style of this brand's own yet.</p>`);
+    return toString(html`<p class="ap-body imst-pbstyles__empty">No custom styles yet.</p>`);
   return toString(html`
     <div class="imst-pbstyles">
       <div class="imst-pbstyles__grid">${tile}${own.map((s) => styleCard(s, brand, editable))}</div>

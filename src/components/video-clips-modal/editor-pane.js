@@ -2,8 +2,8 @@
 // trim, captions tab). Pure render — it reads the modal's state, owned and
 // written by video-clips-modal.js. Moved out of it, unchanged.
 
-import { CLIP_RATIO_ORDER, FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=1866";
-import { escapeHtml } from "../../utils.js?v=1866";
+import { CLIP_RATIO_ORDER, FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=1868";
+import { escapeHtml } from "../../utils.js?v=1868";
 import {
   currentSource,
   draft,
@@ -12,7 +12,7 @@ import {
   fmtTime,
   optionsSubtab,
   trimMode,
-} from "../video-clips-modal.js?v=1866";
+} from "../video-clips-modal.js?v=1868";
 
 // Left options panel content — the ONLY part of the editor that swaps between
 // tabs. Clip → title/summary; Crop → export ratio + framing; Subtitles →
@@ -44,7 +44,7 @@ export function optionsHTML() {
 
     return `
       <div class="vc-editor__field">
-        <label class="vc-editor__label">Export ratio</label>
+        <label class="vc-editor__label">Format</label>
         <div class="vc-ratio">${tiles}</div>
       </div>`;
   }
@@ -68,7 +68,7 @@ export function optionsHTML() {
           <span class="cap-ed-group-label">Transcript</span>
           <span class="cap-ed__meta" data-ce-reconcile></span>
         </div>
-        <button type="button" class="cap-ed__cleanup-btn" data-ce="open-cleanup" aria-pressed="false">
+        <button type="button" class="cap-ed__cleanup-btn" data-ce="open-cleanup" aria-pressed="false" title="Find filler words and long pauses to cut from the subtitles">
           <i class="ap-icon-archie-official"></i><span>Speech cleanup</span>
           <span class="cap-ed__cleanup-count" data-ce-cleanup-count></span>
         </button>
@@ -148,13 +148,13 @@ export function editorPaneHTML() {
   // editor between the Clip (trim), Ratio and Subtitles sections.
   const railHTML = `
     <nav class="vc-rail" role="tablist" aria-label="Editor sections">
-      <button type="button" class="vc-rail__item${editorTab === "clip" ? " is-on" : ""}" data-vc-action="tab-clip" role="tab" aria-selected="${editorTab === "clip"}">
+      <button type="button" class="vc-rail__item${editorTab === "clip" ? " is-on" : ""}" data-vc-action="tab-clip" role="tab" aria-selected="${editorTab === "clip"}" title="Title and summary">
         <i class="ap-icon-video" aria-hidden="true"></i><span>Clip</span>
       </button>
-      <button type="button" class="vc-rail__item${editorTab === "ratio" ? " is-on" : ""}" data-vc-action="tab-ratio" role="tab" aria-selected="${editorTab === "ratio"}">
-        <i class="ap-icon-cropper" aria-hidden="true"></i><span>Ratio</span>
+      <button type="button" class="vc-rail__item${editorTab === "ratio" ? " is-on" : ""}" data-vc-action="tab-ratio" role="tab" aria-selected="${editorTab === "ratio"}" title="Shape of the exported video">
+        <i class="ap-icon-cropper" aria-hidden="true"></i><span>Format</span>
       </button>
-      <button type="button" class="vc-rail__item${editorTab === "subtitles" ? " is-on" : ""}" data-vc-action="tab-subtitles" role="tab" aria-selected="${editorTab === "subtitles"}">
+      <button type="button" class="vc-rail__item${editorTab === "subtitles" ? " is-on" : ""}" data-vc-action="tab-subtitles" role="tab" aria-selected="${editorTab === "subtitles"}" title="Subtitle style and transcript">
         <i class="ap-icon-closed-captions" aria-hidden="true"></i><span>Subtitles</span>
       </button>
     </nav>`;
@@ -195,7 +195,7 @@ export function editorPaneHTML() {
             <button type="button" class="cap-ed__icon-btn cap-ed__icon-btn--ghost" data-ce="back" aria-label="Back 5 seconds" title="Back 5s">
               <svg viewBox="0 0 24 24" width="18" height="18"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z" fill="currentColor"/></svg>
             </button>
-            <button type="button" class="cap-ed__icon-btn" data-ce="playpause" aria-label="Play / pause">
+            <button type="button" class="cap-ed__icon-btn" data-ce="playpause" aria-label="Play or pause" title="Play or pause (Space)">
               <svg viewBox="0 0 24 24" width="16" height="16" data-ce-playglyph><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
             </button>
             <button type="button" class="cap-ed__icon-btn cap-ed__icon-btn--ghost" data-ce="fwd" aria-label="Forward 5 seconds" title="Forward 5s">
@@ -206,16 +206,16 @@ export function editorPaneHTML() {
           </div>
           <div class="vc-editor__timeline-stepper">
             <span class="vc-stepper">
-              <span class="vc-stepper__label">In</span>
+              <span class="vc-stepper__label">Start</span>
               <input type="text" class="vc-stepper__input" data-vc-stepper="start" value="${fmtTime(draft.start)}" />
             </span>
             <span class="vc-stepper">
-              <span class="vc-stepper__label">Out</span>
+              <span class="vc-stepper__label">End</span>
               <input type="text" class="vc-stepper__input" data-vc-stepper="end" value="${fmtTime(draft.end)}" />
             </span>
             <span class="vc-editor__timeline-set">
-              <button type="button" class="vc-editor__set-btn" data-vc-action="set-in">Set IN</button>
-              <button type="button" class="vc-editor__set-btn" data-vc-action="set-out">Set OUT</button>
+              <button type="button" class="vc-editor__set-btn" data-vc-action="set-in" title="Start the clip at the playhead">Set start</button>
+              <button type="button" class="vc-editor__set-btn" data-vc-action="set-out" title="End the clip at the playhead">Set end</button>
             </span>
             <span class="vc-editor__timeline-hint">Drag handles to trim</span>
           </div>

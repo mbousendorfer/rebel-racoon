@@ -12,9 +12,9 @@
 //           layers with nothing (or a text) selected. The text and the logo are
 //           never redrawn: that is what having layers buys.
 
-import { html } from "../../lib/html.js?v=1866";
-import { IMAGE_PRESETS } from "../../config/edit.js?v=1866";
-import { LAYER_ICONS, isBase, layerName } from "../../state/edit-doc.js?v=1866";
+import { html } from "../../lib/html.js?v=1868";
+import { IMAGE_PRESETS } from "../../config/edit.js?v=1868";
+import { LAYER_ICONS, isBase, layerName } from "../../state/edit-doc.js?v=1868";
 
 // ── Tool palette (left) ─────────────────────────────────────────────────────
 
@@ -80,7 +80,7 @@ function logoSheet(ui, brandLogos) {
             <span class="isv2-sheet-divider" role="separator"></span>`
         : ""}
       <button type="button" class="ap-button stroked grey image-studio__logo-upload" data-imst-logo-upload>
-        <i class="ap-icon-upload" aria-hidden="true"></i><span>Upload an image</span>
+        <i class="ap-icon-upload" aria-hidden="true"></i><span>Add an image</span>
       </button>
       <span class="isv2-sheet-divider" role="separator"></span>
       <div class="image-studio__presets">
@@ -175,7 +175,7 @@ export function layersPanel(ui, doc, { busy }) {
         class="ap-icon-button transparent grey"
         data-imst-layer-delete="${sel && !isBase(sel) ? sel.id : ""}"
         aria-label="Delete layer"
-        data-tooltip="Delete"
+        data-tooltip="Delete layer"
         ${sel && !isBase(sel) && !busy ? "" : "disabled"}
       >
         <i class="ap-icon-trash" aria-hidden="true"></i>
@@ -211,7 +211,7 @@ export function composer(ui, doc, { busy }) {
         data-img-edit-prompt
         value="${ui.prompt}"
         placeholder="${target.placeholder}"
-        aria-label="Describe a change for AI to apply"
+        aria-label="Describe a change for me to redraw"
         ${off ? "disabled" : ""}
       />
       <button type="button" class="ap-button primary orange" data-imst-redraw ${off ? "disabled" : ""}>

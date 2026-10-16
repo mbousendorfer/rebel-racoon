@@ -12,27 +12,27 @@
 // The intake card lives OUTSIDE [data-batch-rest]; staging-loader ticks repaint
 // only the rest (list + commit), so the field is never clobbered mid-typing.
 
-import * as batchStudio from "../../batch-studio.js?v=1866";
-import { isFlagOn } from "../../feature-flags.js?v=1866";
-import { getConnectedConnectors } from "../../connectors-store.js?v=1866";
-import { escapeHtml, html, raw } from "../../utils.js?v=1866";
-import { dropzoneHTML } from "../../components/dropzone.js?v=1866";
-import { getContextById } from "../../contexts-store.js?v=1866";
-import { renderSourceCard } from "../../components/source-card.js?v=1866";
-import { isWorkspaceMode, playbookForNewWork } from "../../active-playbook.js?v=1866";
-import { usableContexts } from "../../playbook-access.js?v=1866";
+import * as batchStudio from "../../batch-studio.js?v=1868";
+import { isFlagOn } from "../../feature-flags.js?v=1868";
+import { getConnectedConnectors } from "../../connectors-store.js?v=1868";
+import { escapeHtml, html, raw } from "../../utils.js?v=1868";
+import { dropzoneHTML } from "../../components/dropzone.js?v=1868";
+import { getContextById } from "../../contexts-store.js?v=1868";
+import { renderSourceCard } from "../../components/source-card.js?v=1868";
+import { isWorkspaceMode, playbookForNewWork } from "../../active-playbook.js?v=1868";
+import { usableContexts } from "../../playbook-access.js?v=1868";
 import {
   classifyFile,
   startFileUpload,
   startUrlImport,
   startTextImport,
   startConnectorImport,
-} from "../../sources-stream.js?v=1866";
-import { showToast } from "../../components/toast.js?v=1866";
-import { setHashQuery } from "../../url-state.js?v=1866";
-import { navigate } from "../../router.js?v=1866";
-import { dotColorVar } from "../session.js?v=1866";
-import { buildWorkflowFlow } from "./workflow-flow.js?v=1866";
+} from "../../sources-stream.js?v=1868";
+import { showToast } from "../../components/toast.js?v=1868";
+import { setHashQuery } from "../../url-state.js?v=1868";
+import { navigate } from "../../router.js?v=1868";
+import { dotColorVar } from "../session.js?v=1868";
+import { buildWorkflowFlow } from "./workflow-flow.js?v=1868";
 
 // Origin sub-line for a staged batch source, shown in the source-card's meta row
 // (in place of the usual "N ideas · Processed · Added X").
@@ -40,7 +40,7 @@ function batchSourceSub(s) {
   if (s.origin === "url") return "Public link";
   if (s.origin === "text") return "Pasted text";
   if (s.origin === "connector") {
-    return s.connector?.name ? `${s.connector.name}${s.kind ? ` · ${s.kind}` : ""}` : "Connected source";
+    return s.connector?.name ? `${s.connector.name}${s.kind ? ` · ${s.kind}` : ""}` : "From a connector";
   }
   return s.kind ? `${s.kind} · From your computer` : "From your computer";
 }
@@ -50,19 +50,19 @@ const BATCH_STUDIO_STEPS = [
     tone: "in",
     icon: "ap-icon-upload",
     title: "Add your sources",
-    text: "Upload files, paste a link, or drop in text — add as many as you like.",
+    text: "Attach files, paste a link, or drop in text — add as many as you like.",
   },
   {
     tone: "ai",
     icon: "ap-icon-archie-official",
     title: "I find the strongest ideas",
-    text: "I read every source and pull out the angles genuinely worth posting about.",
+    text: "I read every source and pull out the ideas worth posting about.",
   },
   {
     tone: "out",
     icon: "ap-icon-stack",
     title: "A batch of drafts",
-    text: "I draft a post for each idea in your playbook's voice — ready to review and schedule.",
+    text: "I draft a post for each idea in your Playbook's voice — ready to review and schedule.",
   },
 ];
 
@@ -81,9 +81,9 @@ export function renderBatchStudio(session) {
     ? `
       <details class="ap-select batch-studio__connector" data-batch-connector>
         <summary class="ap-button stroked grey batch-studio__method batch-studio__connector-trigger">
-          <i class="ap-icon-link" aria-hidden="true"></i><span>Connected source</span>
+          <i class="ap-icon-link" aria-hidden="true"></i><span>Add from a connector</span>
         </summary>
-        <div class="ap-select-dropdown batch-studio__connector-dropdown" role="listbox" aria-label="Connected sources">
+        <div class="ap-select-dropdown batch-studio__connector-dropdown" role="listbox" aria-label="Connectors">
           <div class="ap-select-options">
             ${connectors
               .map(
@@ -99,15 +99,17 @@ export function renderBatchStudio(session) {
     : "";
 
   return html`
-    <aside class="session__assistant batch-studio batch-studio--upload" aria-label="Batch from a source">
+    <aside class="session__assistant batch-studio batch-studio--upload" aria-label="Batch Studio">
       <div class="batch-studio__scroll">
         <div class="batch-studio__inner">
           <div class="batch-studio__intro">
-            <span class="batch-studio__ai-badge"><i class="ap-icon-archie-official" aria-hidden="true"></i>Batch</span>
-            <h1 class="batch-studio__title">Turn your sources into a batch of posts</h1>
+            <span class="batch-studio__ai-badge"
+              ><i class="ap-icon-archie-official" aria-hidden="true"></i>Batch Studio</span
+            >
+            <h1 class="batch-studio__title">Turn your sources into a batch of drafts</h1>
             <p class="batch-studio__sub">
               Drop files, paste a link, or paste any text — add as many sources as you like and I'll pull the strongest
-              ideas and draft a set of posts.
+              ideas and draft a set of posts from them.
             </p>
           </div>
 
@@ -126,7 +128,7 @@ export function renderBatchStudio(session) {
             ${raw(
               dropzoneHTML({
                 lead: "Drag & drop files here",
-                sub: "PDF, Word, text, video, audio or images · up to 100MB each",
+                sub: "PDF, Word, text, video, audio, or images · up to 100 MB each",
                 large: true,
                 withInput: false,
                 rootAttrs: "data-batch-dropzone",
@@ -137,10 +139,10 @@ export function renderBatchStudio(session) {
             <div class="batch-studio__dropzone-extra">
               <span class="batch-studio__dropzone-extra-label">Or add another way</span>
               <button type="button" class="ap-button stroked grey batch-studio__method" data-batch-link>
-                <i class="ap-icon-link" aria-hidden="true"></i><span>A link</span>
+                <i class="ap-icon-link" aria-hidden="true"></i><span>Add link</span>
               </button>
               <button type="button" class="ap-button stroked grey batch-studio__method" data-batch-paste>
-                <i class="ap-icon-file--text" aria-hidden="true"></i><span>Pasted text</span>
+                <i class="ap-icon-file--text" aria-hidden="true"></i><span>Paste text</span>
               </button>
               ${raw(connectorMenu)}
             </div>
@@ -198,7 +200,7 @@ function renderBatchRest(session) {
           <span>Extract ideas${canStart ? ` · ${countLabel}` : ""}</span>
         </button>
       </div>
-      <p class="batch-studio__field-hint muted">I'll draft every post in this playbook's voice, audience, and CTAs.</p>
+      <p class="batch-studio__field-hint muted">I'll extract ideas first, then draft every post in this Playbook's voice, audience, and CTAs.</p>
     </div>
   `;
 }
@@ -238,10 +240,10 @@ function renderBatchPlaybookControl(ctx) {
     .join("");
   const valueMarkup = ctx
     ? `<span class="ap-select-value">${escapeHtml(ctx.name)}</span>`
-    : `<span class="ap-select-value ap-select-placeholder">Select a playbook</span>`;
+    : `<span class="ap-select-value ap-select-placeholder">Select a Playbook</span>`;
   return `
     <details class="ap-select batch-studio__playbook" data-batch-playbook>
-      <summary class="ap-select-trigger" title="Choose the playbook for this chat">
+      <summary class="ap-select-trigger" title="Choose the Playbook for this chat">
         <span class="ap-select-inline-label">Playbook</span>
         ${valueMarkup}
         <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
@@ -267,7 +269,9 @@ export function handleBatchFiles(session, fileList) {
   }
   if (rejected.length) {
     showToast(
-      rejected.length === 1 ? `Unsupported file: ${rejected[0]}` : `${rejected.length} files skipped (unsupported)`,
+      rejected.length === 1
+        ? `Couldn't add ${rejected[0]} — that file type isn't supported. Use PDF, Word, text, video, audio, or images.`
+        : `Skipped ${rejected.length} files — that type isn't supported. Use PDF, Word, text, video, audio, or images.`,
     );
   }
 }

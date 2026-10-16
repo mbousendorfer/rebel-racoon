@@ -101,7 +101,7 @@ const BASE_PRESET = {
 export const PRESETS = [
   {
     id: "karaoke",
-    label: "Karaoké",
+    label: "Karaoke",
     apply: {
       ...BASE_PRESET,
       fontFamily: "Montserrat, Roboto, sans-serif",
