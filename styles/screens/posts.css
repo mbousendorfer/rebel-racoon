@@ -187,6 +187,48 @@
   color: var(--ref-color-grey-150);
 }
 
+/* First comment — previewed under the post, below the engagement bar, the way
+ * the network shows it: a small author avatar, then the comment in a grey
+ * surface. Separated from the footer by the card's own hairline. */
+.posts__card-first-comment {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xs);
+  padding-top: var(--ref-spacing-sm);
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+
+.posts__card-avatar--small {
+  width: 24px;
+  height: 24px;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+}
+
+.posts__card-first-comment-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  background: var(--ref-color-grey-05);
+  border-radius: var(--ref-border-radius-md);
+}
+
+.posts__card-first-comment-label {
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-80);
+}
+
+.posts__card-first-comment-text {
+  margin: 0;
+  color: var(--ref-color-grey-100);
+  overflow-wrap: anywhere;
+}
+
 /* ── Regenerate flow ────────────────────────────────────────────────
    Drives the visual states owned by draft-rewrite.js: a 400ms
    "thinking" ghost shimmer, then the streamer empties the body and

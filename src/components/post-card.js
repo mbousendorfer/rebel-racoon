@@ -19,12 +19,12 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1887";
-import { isPortraitFormat } from "../clip-formats.js?v=1887";
-import { presetById } from "../clip-captions.js?v=1887";
-import { renderFeedbackControl } from "./feedback-control.js?v=1887";
-import { networkMeta } from "../social-profiles.js?v=1887";
-import { REVEAL_MS } from "../archie-pixels.js?v=1887";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1888";
+import { isPortraitFormat } from "../clip-formats.js?v=1888";
+import { presetById } from "../clip-captions.js?v=1888";
+import { renderFeedbackControl } from "./feedback-control.js?v=1888";
+import { networkMeta } from "../social-profiles.js?v=1888";
+import { REVEAL_MS } from "../archie-pixels.js?v=1888";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -357,6 +357,7 @@ export function renderPostCard(post, opts = {}) {
               <span>Send</span>
             </span>
           </footer>
+          ${raw(renderFirstComment(post, { hidden: editing || regenerating }))}
         </article>
         ${raw(belowCard)}
       </div>
@@ -579,6 +580,22 @@ function usedCharacters(post) {
 
 // CharacterCounts chip (DS component 3185:48434). Shows the remaining
 // characters for the draft's network; goes red + negative when over.
+// The first comment, previewed where it will appear: under the post, below the
+// engagement bar. Removable here; written from the chat ("add a first comment").
+function renderFirstComment(post, { hidden = false } = {}) {
+  if (!post.firstComment || hidden) return "";
+  return `<div class="posts__card-first-comment">
+    <div class="posts__card-avatar posts__card-avatar--small" aria-hidden="true">${post.author.initials}</div>
+    <div class="posts__card-first-comment-body">
+      <span class="posts__card-first-comment-label">First comment</span>
+      <p class="posts__card-first-comment-text">${escapeText(post.firstComment)}</p>
+    </div>
+    <button type="button" class="ap-icon-button transparent grey" data-post-first-comment-remove="${post.id}" aria-label="Remove the first comment" data-tooltip="Remove the first comment">
+      <i class="ap-icon-close"></i>
+    </button>
+  </div>`;
+}
+
 function renderCharCount(post) {
   const meta = networkMeta(post.network);
   if (!meta) return "";

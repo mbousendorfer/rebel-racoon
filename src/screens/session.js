@@ -1,14 +1,14 @@
-import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr, formatTimeOfDay } from "../utils.js?v=1887";
-import { conceptHint } from "../concepts.js?v=1887";
-import { navigate } from "../router.js?v=1887";
-import { renderTopbar } from "../components/topbar.js?v=1887";
-import { connectorDocs } from "../mocks.js?v=1887";
-import { getConnectedProfiles } from "../social-profiles.js?v=1887";
-import { getSessionById, getSessions } from "../sessions-store.js?v=1887";
-import { getContextById, getContexts, updateContext } from "../contexts-store.js?v=1887";
-import { playbookForNewWork, isWorkspaceMode } from "../active-playbook.js?v=1887";
-import { revokedContextFor, usableContexts, canView } from "../playbook-access.js?v=1887";
-import { isNewUser } from "../user-mode.js?v=1887";
+import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr, formatTimeOfDay } from "../utils.js?v=1888";
+import { conceptHint } from "../concepts.js?v=1888";
+import { navigate } from "../router.js?v=1888";
+import { renderTopbar } from "../components/topbar.js?v=1888";
+import { connectorDocs } from "../mocks.js?v=1888";
+import { getConnectedProfiles } from "../social-profiles.js?v=1888";
+import { getSessionById, getSessions } from "../sessions-store.js?v=1888";
+import { getContextById, getContexts, updateContext } from "../contexts-store.js?v=1888";
+import { playbookForNewWork, isWorkspaceMode } from "../active-playbook.js?v=1888";
+import { revokedContextFor, usableContexts, canView } from "../playbook-access.js?v=1888";
+import { isNewUser } from "../user-mode.js?v=1888";
 import {
   getThread,
   sendMessage,
@@ -27,54 +27,58 @@ import {
   answerTopPostsWidget,
   toggleTopicsWidgetPick,
   answerTopicsWidget,
-} from "../assistant.js?v=1887";
+  startPending,
+  finishPending,
+  postActivity,
+} from "../assistant.js?v=1888";
+import { startRewrite } from "../draft-rewrite.js?v=1888";
 import {
   accept as acceptVoiceSuggestion,
   dismiss as dismissVoiceSuggestion,
   undo as undoVoiceSuggestion,
   getSuggestion as getVoiceSuggestion,
-} from "../voice-coach-store.js?v=1887";
-import { rewriteDraftsWithRule } from "../voice-coach.js?v=1887";
-import { iconFor as fileIconForKind } from "../file-kinds.js?v=1887";
-import { getSources, getIdeas } from "../library.js?v=1887";
-import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=1887";
+} from "../voice-coach-store.js?v=1888";
+import { rewriteDraftsWithRule } from "../voice-coach.js?v=1888";
+import { iconFor as fileIconForKind } from "../file-kinds.js?v=1888";
+import { getSources, getIdeas } from "../library.js?v=1888";
+import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=1888";
 import {
   renderInto as renderComposerMentions,
   removeMention as removeComposerMention,
   subscribe as subscribeComposerMentions,
   addMention as addComposerMention,
-} from "../composer-mentions.js?v=1887";
-import { setSubtitleStyle, getPosts, removePost } from "../posts-store.js?v=1887";
-import { executeDraft } from "../draft-flow.js?v=1887";
-import * as topPostsFlow from "../top-posts-flow.js?v=1887";
-import { renderTopPostsBoard } from "../components/top-post-card.js?v=1887";
-import * as sidebarWizard from "../sidebar-wizard.js?v=1887";
-import * as inlineQuestion from "../inline-question.js?v=1887";
-import { planSlots, defaultStrategy, CADENCES, queueEntries } from "../schedule-engine.js?v=1887";
-import { addToQueue } from "../schedule-store.js?v=1887";
-import { refLabel } from "../chat-refs.js?v=1887";
-import { networkLabel, networkIcon } from "../network-voice.js?v=1887";
-import { openScheduleForPosts, onPostImage } from "../components/right-panel/drafts-view.js?v=1887";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=1887";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=1887";
-import * as clipStudio from "../clip-studio.js?v=1887";
-import * as batchStudio from "../batch-studio.js?v=1887";
-import { askConnector } from "../connector-ask.js?v=1887";
-import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=1887";
-import { renderConnectorLogo } from "../connectors-view.js?v=1887";
+} from "../composer-mentions.js?v=1888";
+import { setSubtitleStyle, getPosts, removePost, addPostDraft, updatePostContent } from "../posts-store.js?v=1888";
+import { executeDraft } from "../draft-flow.js?v=1888";
+import * as topPostsFlow from "../top-posts-flow.js?v=1888";
+import { renderTopPostsBoard } from "../components/top-post-card.js?v=1888";
+import * as sidebarWizard from "../sidebar-wizard.js?v=1888";
+import * as inlineQuestion from "../inline-question.js?v=1888";
+import { planSlots, defaultStrategy, CADENCES, queueEntries } from "../schedule-engine.js?v=1888";
+import { addToQueue } from "../schedule-store.js?v=1888";
+import { refLabel } from "../chat-refs.js?v=1888";
+import { networkLabel, networkIcon } from "../network-voice.js?v=1888";
+import { openScheduleForPosts, onPostImage } from "../components/right-panel/drafts-view.js?v=1888";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=1888";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=1888";
+import * as clipStudio from "../clip-studio.js?v=1888";
+import * as batchStudio from "../batch-studio.js?v=1888";
+import { askConnector } from "../connector-ask.js?v=1888";
+import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=1888";
+import { renderConnectorLogo } from "../connectors-view.js?v=1888";
 import {
   getActiveConnector,
   clearActiveConnector,
   subscribe as subscribeComposerConnector,
-} from "../composer-connector.js?v=1887";
-import { isFlagOn } from "../feature-flags.js?v=1887";
-import { onChatGalleryClick } from "./session/chat-gallery.js?v=1887";
-import * as contextBuilder from "../context-builder.js?v=1887";
-import { renderPicker } from "./_analyse-common.js?v=1887";
-import { contentState, rerenderContentWorkspaceBody } from "../components/content-workspace.js?v=1887";
-import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=1887";
-import { open as openAddSourceModal } from "../components/add-source-modal.js?v=1887";
-import { open as openConnectorsModal } from "../components/connectors-modal.js?v=1887";
+} from "../composer-connector.js?v=1888";
+import { isFlagOn } from "../feature-flags.js?v=1888";
+import { onChatGalleryClick } from "./session/chat-gallery.js?v=1888";
+import * as contextBuilder from "../context-builder.js?v=1888";
+import { renderPicker } from "./_analyse-common.js?v=1888";
+import { contentState, rerenderContentWorkspaceBody } from "../components/content-workspace.js?v=1888";
+import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=1888";
+import { open as openAddSourceModal } from "../components/add-source-modal.js?v=1888";
+import { open as openConnectorsModal } from "../components/connectors-modal.js?v=1888";
 import {
   classifyFile,
   startFileUpload,
@@ -84,9 +88,9 @@ import {
   pushScriptedSource,
   completeScriptedSource,
   updateSourceClips,
-} from "../sources-stream.js?v=1887";
-import { onFeedbackClick } from "../components/feedback-control.js?v=1887";
-import { showToast } from "../components/toast.js?v=1887";
+} from "../sources-stream.js?v=1888";
+import { onFeedbackClick } from "../components/feedback-control.js?v=1888";
+import { showToast } from "../components/toast.js?v=1888";
 import {
   openDrafts as openDraftsPanel,
   openIdeas as openIdeasPanel,
@@ -94,19 +98,19 @@ import {
   openClips as openClipsPanel,
   getMode as getRightPanelMode,
   subscribe as subscribeRightPanel,
-} from "../components/right-panel.js?v=1887";
-import { setHandoff, consumeHandoff } from "../handoff.js?v=1887";
-import { attachTopicToChat, useTopicInChat, startTopicPickerInline, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=1887";
-import { startObjectiveChat, OBJECTIVE_CHAT_HANDOFF } from "../objective-flow.js?v=1887";
-import { getTopicById, markUsed, subscribe as subscribeTopics } from "../topics-store.js?v=1887";
-import { openTopicArticle } from "../components/topic-picker-modal.js?v=1887";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1887";
-import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=1887";
-import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=1887";
-import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=1887";
+} from "../components/right-panel.js?v=1888";
+import { setHandoff, consumeHandoff } from "../handoff.js?v=1888";
+import { attachTopicToChat, useTopicInChat, startTopicPickerInline, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=1888";
+import { startObjectiveChat, OBJECTIVE_CHAT_HANDOFF } from "../objective-flow.js?v=1888";
+import { getTopicById, markUsed, subscribe as subscribeTopics } from "../topics-store.js?v=1888";
+import { openTopicArticle } from "../components/topic-picker-modal.js?v=1888";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1888";
+import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=1888";
+import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=1888";
+import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=1888";
 // Pure thread-turn renderers — shared with the component handoff gallery so
 // the previews there never drift from the app (handoff/components.html).
-import { SWITCH_SKELETON_HTML } from "./session/thread-turns.js?v=1887";
+import { SWITCH_SKELETON_HTML } from "./session/thread-turns.js?v=1888";
 import {
   clipsToChat,
   finalizeClipStudio,
@@ -114,27 +118,27 @@ import {
   handleClipStudioUrl,
   openClipStudioEditor,
   renderClipStudio,
-} from "./session/clip-studio-view.js?v=1887";
+} from "./session/clip-studio-view.js?v=1888";
 import {
   handleBatchFiles,
   renderBatchStudio,
   repaintBatchRest,
   replayBatchSources,
   startBatchChat,
-} from "./session/batch-studio-view.js?v=1887";
+} from "./session/batch-studio-view.js?v=1888";
 import {
   askRepurposeProfiles,
   askSourceUse,
   startIdeaDraft,
   startRepurposeFlow,
-} from "./session/draft-questions.js?v=1887";
+} from "./session/draft-questions.js?v=1888";
 import {
   extractionVerdict,
   extractionWhyOpen,
   findExtractionIdea,
   renderThread,
   repaintExtractionCard,
-} from "./session/thread-render.js?v=1887";
+} from "./session/thread-render.js?v=1888";
 import {
   animateBannerIn,
   animateBannerOut,
@@ -146,9 +150,9 @@ import {
   renderComposer,
   renderComposerConnector,
   renderComposerStatus,
-} from "./session/composer.js?v=1887";
-import { renderTopPostsPickerScreen } from "./session/top-posts-view.js?v=1887";
-import { renderEmptyHero } from "./session/empty-hero.js?v=1887";
+} from "./session/composer.js?v=1888";
+import { renderTopPostsPickerScreen } from "./session/top-posts-view.js?v=1888";
+import { renderEmptyHero } from "./session/empty-hero.js?v=1888";
 
 // Default composer placeholder — restored whenever no connector is attached.
 // A connected connector swaps it for "Ask {name} anything…".
@@ -944,20 +948,154 @@ const IMAGE_FOR_DRAFT = /\b(add|make|create|generate)\b.*\b(image|visual|picture
 // "delete a draft") is a selection, so I ask which.
 const ALL_OF_THEM = /\b(all|every|each)\b/i;
 
+// Editing drafts from the chat (prod modify_post / regenerate_posts /
+// manage_first_comment). A rewrite names its direction; the target is resolved
+// from the sentence ("post 2", "the LinkedIn one", "all of them", "it") or
+// asked for. Only when the sentence talks about existing drafts — "write a
+// longer post about X" is a new post, not an edit.
+const REWRITE_INTENTS = [
+  ["shorter", /\b(shorter|shorten|tighter|tighten|more concise|trim)\b/i],
+  ["longer", /\b(longer|lengthen|expand|more detail)\b/i],
+  ["warmer", /\b(warmer|friendlier|more casual|more human)\b/i],
+  ["formal", /\b(more formal|more professional|formal)\b/i],
+  ["fresh", /\b(rewrite|rephrase|another take|reword)\b/i],
+];
+const ABOUT_EXISTING_DRAFTS = /\b(post|posts|draft|drafts|it|them|these|this|that|one|ones)\b/i;
+const NEW_POST_ASK = /\b(write|draft|create|make)\b.*\b(a|an|new)\b.*\b(post|draft)\b.*\babout\b/i;
+const REGENERATE_DRAFTS = /\b(regenerate|more drafts|another batch|generate more|a few more|new drafts)\b/i;
+const FIRST_COMMENT = /\bfirst comment\b/i;
+const REWRITE_DONE = {
+  shorter: "shorter",
+  longer: "longer",
+  warmer: "warmer",
+  formal: "more formal",
+  fresh: "with a fresh take",
+};
+const ORDINALS = { first: 1, second: 2, third: 3, fourth: 4, fifth: 5, last: -1 };
+
+// Which drafts a sentence points at, or null when it doesn't say. `drafts` is
+// the panel order (newest first), so "post 2" is the second card.
+function draftsNamedIn(text, drafts) {
+  if (ALL_OF_THEM.test(text) || /\bthem\b|\bthese\b/i.test(text)) return drafts;
+  const num = text.match(/\b(?:post|draft)\s*#?(\d+)\b/i)?.[1];
+  const word = text.match(/\b(first|second|third|fourth|fifth|last)\b/i)?.[1]?.toLowerCase();
+  const index = num ? Number(num) : word ? ORDINALS[word] : null;
+  if (index) {
+    const d = index === -1 ? drafts[drafts.length - 1] : drafts[index - 1];
+    return d ? [d] : null;
+  }
+  const net = text.match(/\b(linkedin|instagram|facebook|tiktok|youtube|twitter|x)\b/i)?.[1]?.toLowerCase();
+  if (net) {
+    const network = net === "x" ? "twitter" : net;
+    const onNet = drafts.filter((d) => d.network === network);
+    if (onNet.length === 1 || (onNet.length && /\bones\b|\bposts\b|\bdrafts\b/i.test(text))) return onNet;
+    return null;
+  }
+  if (drafts.length === 1) return drafts;
+  return null;
+}
+
+function rewriteDrafts(sessionId, targets, intent) {
+  postActivity(sessionId, ["modify_post"]);
+  postAssistantMessage(
+    sessionId,
+    targets.length === 1
+      ? `Rewriting [[post:${targets[0].id}]] ${REWRITE_DONE[intent]}.`
+      : `Rewriting these ${targets.length} drafts ${REWRITE_DONE[intent]}:${targets.map((d) => `\n- [[post:${d.id}]]`).join("")}`,
+  );
+  focusInPanel("post", targets[0].id);
+  for (const d of targets) startRewrite(sessionId, d.id, intent);
+}
+
+// "Regenerate" adds drafts and keeps the ones you have (prod append=true): each
+// picked draft gets a fresh sibling on the same network, same context.
+function regenerateDrafts(sessionId, targets) {
+  const pendingId = startPending(sessionId, "Generating new posts…", ["regenerate_posts"]);
+  setTimeout(() => {
+    finishPending(sessionId, pendingId);
+    const made = targets.map((d) => {
+      const fresh = addPostDraft(sessionId, {
+        network: d.network,
+        text: [d.text[0], "Same idea, from another side: what changes for the reader, and why now."],
+        hashtags: d.hashtags,
+        language: d.language,
+      });
+      fresh.generationContext = d.generationContext || null;
+      return fresh;
+    });
+    postAssistantMessage(
+      sessionId,
+      `I added ${made.length === 1 ? "a new draft" : `${made.length} new drafts`} and kept the others:${made
+        .map((d) => `\n- [[post:${d.id}]]`)
+        .join("")}`,
+    );
+    focusInPanel("post", made[0].id);
+  }, 2400);
+}
+
+// A first comment: the CTA moves there when the draft has one (I ask), else I
+// write one that invites the conversation.
+function firstCommentFor(sessionId, draft) {
+  const write = (comment, { moveCta = false } = {}) => {
+    postActivity(sessionId, ["manage_first_comment"]);
+    updatePostContent(sessionId, draft.id, { firstComment: comment, ...(moveCta ? { cta: "" } : {}) });
+    focusInPanel("post", draft.id);
+    postAssistantMessage(sessionId, `I added a first comment to [[post:${draft.id}]].`);
+  };
+  const generic = "What would you add? I read every reply.";
+  if (!draft.cta) return write(generic);
+  postAssistantMessage(sessionId, `[[post:${draft.id}]] has a call to action. Where should it go?`);
+  inlineQuestion.ask(sessionId, {
+    title: null,
+    stepLabel: "First comment",
+    skipLabel: "No thanks",
+    items: [
+      {
+        value: "comment",
+        label: "In the first comment",
+        caption: "The post stays clean; the link sits right under it.",
+      },
+      {
+        value: "post",
+        label: "In the post",
+        caption: "Keep it where it is, and add a comment that starts the conversation.",
+      },
+    ],
+    onPick: (where) => {
+      postUserTurn(sessionId, where === "comment" ? "In the first comment" : "In the post");
+      if (where === "comment") write(draft.cta, { moveCta: true });
+      else write(generic);
+    },
+    onSkip: () => postAssistantMessage(sessionId, "Okay, I'll leave it as it is."),
+  });
+}
+
 // The drafts asks I handle in the chat instead of the scripted reply. Returns
 // true when it took the message.
 function routeDraftsAsk(session, text) {
+  const rewrite =
+    !NEW_POST_ASK.test(text) && ABOUT_EXISTING_DRAFTS.test(text)
+      ? REWRITE_INTENTS.find(([, re]) => re.test(text))?.[0]
+      : null;
   const intent = DELETE_DRAFTS.test(text)
     ? "delete"
     : SCHEDULE_DRAFTS.test(text)
       ? "schedule"
       : IMAGE_FOR_DRAFT.test(text)
         ? "image"
-        : null;
+        : FIRST_COMMENT.test(text)
+          ? "firstComment"
+          : REGENERATE_DRAFTS.test(text)
+            ? "regenerate"
+            : rewrite
+              ? "modify"
+              : null;
   if (!intent) return false;
   const sessionId = session.id;
-  postUserTurn(sessionId, text);
   const drafts = getPosts(sessionId).filter((p) => p.status !== "scheduled");
+  // An edit with nothing to edit isn't mine to answer — let the reply handle it.
+  if (!drafts.length && (intent === "modify" || intent === "regenerate" || intent === "firstComment")) return false;
+  postUserTurn(sessionId, text);
   if (!drafts.length) {
     postAssistantMessage(
       sessionId,
@@ -966,6 +1104,19 @@ function routeDraftsAsk(session, text) {
     return true;
   }
   const all = ALL_OF_THEM.test(text);
+  if (intent === "modify" || intent === "regenerate" || intent === "firstComment") {
+    const run = (picked) =>
+      intent === "modify"
+        ? rewriteDrafts(sessionId, picked, rewrite)
+        : intent === "regenerate"
+          ? regenerateDrafts(sessionId, picked)
+          : firstCommentFor(sessionId, picked[0]);
+    const named = draftsNamedIn(text, drafts);
+    const targets = intent === "firstComment" && named ? named.slice(0, 1) : named;
+    if (targets?.length) run(targets);
+    else askWhichDrafts(sessionId, drafts, { verb: intent, onPick: run });
+    return true;
+  }
   if (intent === "image") {
     if (drafts.length === 1) imageForDraft(sessionId, drafts[0]);
     else askWhichDrafts(sessionId, drafts, { verb: "image", onPick: ([d]) => imageForDraft(sessionId, d) });
@@ -986,11 +1137,14 @@ function routeDraftsAsk(session, text) {
 // (network glyph + reference, previewed on hover), multi for schedule / delete,
 // single for an image. Nothing pre-selected.
 function askWhichDrafts(sessionId, drafts, { verb, onPick }) {
-  const multi = verb !== "image";
+  const multi = verb !== "image" && verb !== "firstComment";
   const copy = {
     schedule: { q: "Which drafts should I schedule?", cta: "Schedule drafts", tone: "orange" },
     delete: { q: "Which drafts should I delete?", cta: "Delete drafts" },
     image: { q: "Which draft should I make an image for?", cta: "Make image" },
+    modify: { q: "Which drafts should I edit?", cta: "Edit drafts" },
+    regenerate: { q: "Which drafts should I write new ones for?", cta: "Write new drafts" },
+    firstComment: { q: "Which draft should get a first comment?", cta: "Add first comment" },
   }[verb];
   postAssistantMessage(sessionId, copy.q);
   inlineQuestion.ask(sessionId, {

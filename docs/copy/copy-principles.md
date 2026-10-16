@@ -388,7 +388,7 @@ The product's own words (Playbook, chat, Topic Feed, Topic, Source, Idea, Clip, 
 ### 6.3 Regeneration phrasing
 
 - The action: **`Regenerate`**.
-- After regeneration: `Regenerated. New drafts replaced the previous batch.`
+- After regeneration: `I added N new drafts and kept the others.` — regenerating adds, it never replaces (parity with prod `regenerate_posts` append).
 - During regeneration: `Regenerating…`.
 - Never `Re-mining`, `Re-deriving`, `Refreshing` (in this sense).
 

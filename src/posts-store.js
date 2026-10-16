@@ -7,13 +7,13 @@
 //   attachImageToDraft(sessionId, postId, imageUrl)
 //   subscribe(sessionId, fn)    → unsubscribe fn
 
-import { postsBySession as seedPostsBySession, allSeedSessions as seedRecentSessions } from "./mocks.js?v=1887";
-import { isNewUser } from "./user-mode.js?v=1887";
-import { createSessionNotifier } from "./store-utils.js?v=1887";
-import { getSessionById } from "./sessions-store.js?v=1887";
-import { getContextById } from "./contexts-store.js?v=1887";
-import { playbookForNewWork } from "./active-playbook.js?v=1887";
-import { networkVoicesOn, writeInVoice } from "./network-voice.js?v=1887";
+import { postsBySession as seedPostsBySession, allSeedSessions as seedRecentSessions } from "./mocks.js?v=1888";
+import { isNewUser } from "./user-mode.js?v=1888";
+import { createSessionNotifier } from "./store-utils.js?v=1888";
+import { getSessionById } from "./sessions-store.js?v=1888";
+import { getContextById } from "./contexts-store.js?v=1888";
+import { playbookForNewWork } from "./active-playbook.js?v=1888";
+import { networkVoicesOn, writeInVoice } from "./network-voice.js?v=1888";
 
 // Demo session ids — only these get the seeded posts mock. Brand-new
 // conversations start empty (cf. library.js for the same rationale).
@@ -65,6 +65,9 @@ export function addPostDraft(
     text: Array.isArray(text) ? text : [text],
     hashtags,
     cta: "",
+    // The comment published right under the post (prod `firstComment`) —
+    // where a CTA link often goes. Null = none. Set from the chat.
+    firstComment: null,
     hasImage: false,
     stats: { likes: 0, comments: 0, reposts: 0 },
     // Optional video-source reference — set by the Video Clips modal so the
@@ -183,6 +186,7 @@ export function updatePostContent(sessionId, postId, partial) {
   if (partial.text !== undefined) post.text = partial.text;
   if (partial.hashtags !== undefined) post.hashtags = partial.hashtags;
   if (partial.cta !== undefined) post.cta = partial.cta;
+  if (partial.firstComment !== undefined) post.firstComment = partial.firstComment;
   if (partial.voice !== undefined) post.voice = partial.voice;
   if (partial.isRegenerating !== undefined) post.isRegenerating = partial.isRegenerating;
   if (partial.regenerateStage !== undefined) post.regenerateStage = partial.regenerateStage;

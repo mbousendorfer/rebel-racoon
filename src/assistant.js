@@ -6,12 +6,12 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1887";
-import { findConnector } from "./connectors-store.js?v=1887";
-import { createSessionNotifier } from "./store-utils.js?v=1887";
-import { addPostDraft } from "./posts-store.js?v=1887";
-import { showToast } from "./components/toast.js?v=1887";
-import { isFlagOn } from "./feature-flags.js?v=1887";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1888";
+import { findConnector } from "./connectors-store.js?v=1888";
+import { createSessionNotifier } from "./store-utils.js?v=1888";
+import { addPostDraft } from "./posts-store.js?v=1888";
+import { showToast } from "./components/toast.js?v=1888";
+import { isFlagOn } from "./feature-flags.js?v=1888";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -459,6 +459,7 @@ const TOOL_NAMES = {
   score_quality: "Score Quality",
   get_best_times: "Best Publishing Times",
   fix_practices: "Fix Practices",
+  manage_first_comment: "First Comment",
 };
 const TOOL_PROGRESS = {
   analyze_context: "Analyzing context…",
@@ -468,6 +469,7 @@ const TOOL_PROGRESS = {
   extract_ideas: "Extracting ideas from content…",
   generate_drafts: "Generating post drafts…",
   modify_post: "Modifying post content…",
+  manage_first_comment: "Writing the first comment…",
   regenerate_posts: "Generating new posts…",
   request_config: "Updating configuration…",
   schedule_post: "Scheduling post…",
