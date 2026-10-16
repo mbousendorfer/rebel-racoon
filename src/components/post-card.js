@@ -19,13 +19,13 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1897";
-import { isPortraitFormat } from "../clip-formats.js?v=1897";
-import { presetById } from "../clip-captions.js?v=1897";
-import { renderFeedbackControl } from "./feedback-control.js?v=1897";
-import { networkMeta, normalizeNetwork, profileForNetwork, renderProfileTag } from "../social-profiles.js?v=1897";
-import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=1897";
-import { REVEAL_MS } from "../archie-pixels.js?v=1897";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1901";
+import { isPortraitFormat } from "../clip-formats.js?v=1901";
+import { presetById } from "../clip-captions.js?v=1901";
+import { renderFeedbackControl } from "./feedback-control.js?v=1901";
+import { networkMeta, normalizeNetwork, profileForNetwork, renderProfileTag } from "../social-profiles.js?v=1901";
+import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=1901";
+import { REVEAL_MS } from "../archie-pixels.js?v=1901";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -33,6 +33,7 @@ import { REVEAL_MS } from "../archie-pixels.js?v=1897";
 //   ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐
 //            [✦ Generate an image]              tier 1 — the shortcut (mermaid)
 //          In <look>, <shape>. Change              + what it will make
+//          (no look yet: "First, I'll ask how …'s images should look.")
 //
 //      [🖼 Image Studio] [⬆ Upload]            tier 2 — doing it yourself,
 //   └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘    two stroked grey buttons
@@ -57,6 +58,9 @@ function renderImagePreset(opts) {
   const shape = p.shape ? `${escapeText(p.shape.label.toLowerCase())} ${escapeText(p.shape.ratio)}` : "";
   const playbook = (label) =>
     `<button type="button" class="ap-link small" data-post-image-preset="${escapeAttr(opts.playbookId)}">${label}</button>`;
+  // No look yet: the first click asks for one (draft-image-flow.js requireImageLook).
+  if (p.ask)
+    return `<p class="posts__card-media-preset">First, I'll ask how ${escapeText(p.brandName)}'s images should look.</p>`;
   return p.look
     ? `<p class="posts__card-media-preset">In ${escapeText(p.look.label)}${shape ? `, ${shape}` : ""}. ${playbook("Change")}</p>`
     : "";

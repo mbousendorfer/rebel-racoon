@@ -13,24 +13,27 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=1897";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=1897";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1897";
-import { getTopPost } from "../../top-posts-store.js?v=1897";
-import { getTopicById } from "../../topics-store.js?v=1897";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=1897";
-import { renderProfileEchoCard } from "../../social-profiles.js?v=1897";
-import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=1897";
-import { getIdeas } from "../../library.js?v=1897";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=1897";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1897";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=1897";
-import { getSuggestion } from "../../voice-coach-store.js?v=1897";
-import { getPlans } from "../../post-plan-store.js?v=1897";
-import { draftsToRewrite } from "../../voice-coach.js?v=1897";
-import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=1897";
-import { isFlagOn } from "../../feature-flags.js?v=1897";
-import { CURRENT_USER } from "../../org.js?v=1897";
+} from "./thread-turns.js?v=1901";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1901";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1901";
+import { getTopPost } from "../../top-posts-store.js?v=1901";
+import { getTopicById } from "../../topics-store.js?v=1901";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=1901";
+import { renderProfileEchoCard } from "../../social-profiles.js?v=1901";
+import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=1901";
+import { getIdeas } from "../../library.js?v=1901";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=1901";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1901";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=1901";
+import { getSuggestion } from "../../voice-coach-store.js?v=1901";
+import { getPlans } from "../../post-plan-store.js?v=1901";
+import { draftsToRewrite } from "../../voice-coach.js?v=1901";
+import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=1901";
+import { isFlagOn } from "../../feature-flags.js?v=1901";
+import { CURRENT_USER } from "../../org.js?v=1901";
+import { getSessionById } from "../../sessions-store.js?v=1901";
+import { getContextById } from "../../contexts-store.js?v=1901";
+import { needsImageLook } from "../../modules/image-studio/index.js?v=1901";
 
 export function renderThread(messages, sessionId) {
   const turns = messages.map((m) => [m, renderTurn(m, sessionId)]);
@@ -123,8 +126,15 @@ function renderTurn(message, sessionId) {
   // interleave the conversation unpredictably. The message is kept in the thread
   // only as the batch anchor for the Drafts panel; "ready" is surfaced via a
   // toast + the persistent topbar Drafts count (see the offThread subscription).
+  // The one exception: the LAST batch of a chat whose Playbook has no image
+  // look yet carries a line offering to pick one — derived, so it is gone the
+  // moment a look exists, from here or from the Playbook.
   if (message.role === "assistant" && message.variant === "draft") {
-    return "";
+    return renderImageLookNudge(message, sessionId);
+  }
+
+  if (message.role === "assistant" && message.variant === "image-look-set") {
+    return renderImageLookSetTurn(message);
   }
 
   // Clip extraction — pending spinner pill that flips to a ready card with
@@ -320,6 +330,42 @@ function renderProfilesTurn(message) {
       <div class="chat-profiles">${chips}</div>
     </div>
   `;
+}
+
+// "Want an image on these?" — under the chat's last batch of drafts, while its
+// Playbook has no image look (draft-image-flow.js requireImageLook). Pick a
+// look runs the first Generate an image on the batch's first draft, so the
+// answer lands as an image straight away.
+function renderImageLookNudge(message, sessionId) {
+  const brandId = getSessionById(sessionId)?.contextId;
+  const first = message.drafts?.[0]?.id;
+  if (!first || !needsImageLook(brandId)) return "";
+  const last = getThread(sessionId).findLast((m) => m.variant === "draft");
+  if (last?.id !== message.id) return "";
+  return renderMessageBubble({
+    role: "assistant",
+    text: `Want an image on these? Pick a look once and I'll add one to any draft in a click.
+      <button type="button" class="ap-link" data-image-look-start="${escapeHtml(first)}">Pick a look</button>`,
+  });
+}
+
+// The look just set — a receipt with Undo, and where to change it. It reads the
+// Playbook: a look changed or undone since shows as such, not as still set.
+function renderImageLookSetTurn(message) {
+  const ctx = getContextById(message.contextId);
+  const label = escapeHtml(message.label);
+  const brand = escapeHtml(ctx?.brandName || ctx?.name || "this Brand");
+  const isSet = ctx?.defaultLook?.kind === "style" && ctx.defaultLook.id === message.styleId;
+  const playbook = `<button type="button" class="ap-link" data-image-look-playbook="${escapeHtml(message.contextId)}">the Playbook</button>`;
+  return renderMessageBubble({
+    role: "assistant",
+    text: isSet
+      ? `Done — ${brand}'s images start from <strong>${label}</strong> now. Change it any time in ${playbook}.
+        <button type="button" class="ap-link" data-image-look-undo="${escapeHtml(message.contextId)}">Undo</button>`
+      : ctx?.defaultLook?.kind
+        ? `${brand}'s images start from another look now — it changed in ${playbook}.`
+        : `${brand}'s images no longer start from ${label} — I'll ask the next time you generate one.`,
+  });
 }
 
 // Generic "you picked this object" echo — icon + title + meta chip. Posted via

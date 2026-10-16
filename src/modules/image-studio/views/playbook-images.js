@@ -14,14 +14,14 @@
 //
 // Everything here saves as it changes, like the styles always did: no Edit.
 
-import { html, raw, toString } from "../lib/html.js?v=1897";
-import { navigate } from "../../../router.js?v=1897";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1897";
-import { toast } from "../ui/toast.js?v=1897";
-import { renderEmpty } from "../ui/empty.js?v=1897";
-import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=1897";
-import { shapesFor } from "../config/formats.js?v=1897";
-import { STYLE_PRESETS } from "../config/style-presets.js?v=1897";
+import { html, raw, toString } from "../lib/html.js?v=1901";
+import { navigate } from "../../../router.js?v=1901";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=1901";
+import { toast } from "../ui/toast.js?v=1901";
+import { renderEmpty } from "../ui/empty.js?v=1901";
+import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=1901";
+import { shapesFor } from "../config/formats.js?v=1901";
+import { STYLE_PRESETS } from "../config/style-presets.js?v=1901";
 import {
   addPlaybookReferences,
   deletePlaybookReference,
@@ -30,8 +30,8 @@ import {
   getPlaybookReferences,
   setPlaybookDefaultLook,
   setPlaybookFormat,
-} from "../state/playbook-brand.js?v=1897";
-import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=1897";
+} from "../state/playbook-brand.js?v=1901";
+import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=1901";
 
 const creatorPath = (playbookId, rest) => `/playbook/${encodeURIComponent(playbookId)}/styles/${rest}`;
 const ownStyles = (playbookId) => getStylesForBrand(playbookId).filter((s) => s.kind === "custom");
@@ -148,6 +148,48 @@ export function renderImagesReferences(playbookId, { canEdit = true } = {}) {
 
 // ── 3. Generate image ───────────────────────────────────────────────────────
 
+// One look to pick, as a small picture with its name — a radio of the group.
+// `attr` is the data attribute its click is routed by.
+function pickItem(o, { value, editable = true, attr = "data-imst-images-look" }) {
+  return html`<li>
+    <button
+      type="button"
+      class="imst-images-pick__item"
+      role="radio"
+      aria-checked="${o.value === value ? "true" : "false"}"
+      ${raw(`${attr}="${o.value}"`)}
+      ${editable ? "" : "disabled"}
+    >
+      <span class="imst-images-pick__art">
+        <img src="${o.avatar}" alt="" draggable="false" loading="lazy" />
+        <span class="imst-images-pick__check" aria-hidden="true"><i class="ap-icon-check"></i></span>
+      </span>
+      <span class="ap-caption imst-images-pick__name">${o.label}</span>
+    </button>
+  </li>`;
+}
+
+/**
+ * The ready-made looks alone, for a Playbook not saved yet (the creation
+ * recap): presets are global, so one can be its default look before it has an
+ * id. The host owns the click (`data-pb-recap-look="style:<id>"`) and the write.
+ */
+export function renderPresetLookPicker({ palette = [], value = "" } = {}) {
+  const brand = { palette };
+  return toString(
+    html`<div class="imst-images-pick" role="radiogroup" aria-label="Ready-made styles">
+      <ul class="imst-images-pick__list">
+        ${STYLE_PRESETS.map((s) =>
+          pickItem(
+            { value: `style:${s.id}`, label: s.label, avatar: styleThumbUrl(s, brand) },
+            { value, attr: "data-pb-recap-look" },
+          ),
+        )}
+      </ul>
+    </div>`,
+  );
+}
+
 export function renderImagesGenerate(playbookId, { canEdit = true } = {}) {
   const brand = getBrand(playbookId);
   if (!brand) return "";
@@ -175,23 +217,7 @@ export function renderImagesGenerate(playbookId, { canEdit = true } = {}) {
   const hasOwn = styles.length + refs.length > 0;
   // Both kinds, each under its own name, as small pictures — ONE radio group
   // across the two, so exactly one is the default.
-  const item = (o) =>
-    html`<li>
-      <button
-        type="button"
-        class="imst-images-pick__item"
-        role="radio"
-        aria-checked="${o.value === value ? "true" : "false"}"
-        data-imst-images-look="${o.value}"
-        ${editable ? "" : "disabled"}
-      >
-        <span class="imst-images-pick__art">
-          <img src="${o.avatar}" alt="" draggable="false" loading="lazy" />
-          <span class="imst-images-pick__check" aria-hidden="true"><i class="ap-icon-check"></i></span>
-        </span>
-        <span class="ap-caption imst-images-pick__name">${o.label}</span>
-      </button>
-    </li>`;
+  const item = (o) => pickItem(o, { value, editable });
   const group = (title, hint, items, extra = "") =>
     items.length
       ? html`<div class="imst-images-pick__group${extra}">
@@ -207,7 +233,7 @@ export function renderImagesGenerate(playbookId, { canEdit = true } = {}) {
     section({
       aside: html`<p class="ap-body imst-images__lead">
         When you click <strong>Generate an image</strong> on a draft, I start from the look you pick here, in the shape
-        each network takes — without asking.
+        each network takes — without asking. Until you pick one, I ask the first time.
       </p>`,
       // Two questions, two parts — the look (ONE radio across its groups), then
       // the format per network — each under its own 16 bold head, above the
@@ -219,6 +245,11 @@ export function renderImagesGenerate(playbookId, { canEdit = true } = {}) {
             <h3 class="imst-images-part__title" id="imst-images-look">Look</h3>
             <p class="ap-caption imst-images-part__hint">
               ${value ? "Your default is checked." : "Pick one as the default."}
+              ${!value && editable
+                ? html`<button type="button" class="ap-link small" data-pb-image-look-chat>
+                    Help me pick in a chat
+                  </button>`
+                : ""}
             </p>
           </header>
           <div class="imst-images-pick" role="radiogroup" aria-labelledby="imst-images-look">

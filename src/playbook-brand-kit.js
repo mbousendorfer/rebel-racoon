@@ -9,14 +9,16 @@
 // the fiche's live data object, exactly like every other Brand row, and are
 // committed by the section's Save (snapshotEditable carries the fields).
 
-import { escapeHtml as esc } from "./utils.js?v=1897";
-import { COLOR_ROLES, LOGO_VARIANTS, getContextById } from "./contexts-store.js?v=1897";
+import { escapeHtml as esc } from "./utils.js?v=1901";
+import { openImageLookChat } from "./draft-image-flow.js?v=1901";
+import { COLOR_ROLES, LOGO_VARIANTS, getContextById } from "./contexts-store.js?v=1901";
 import {
   handlePlaybookImagesClick,
+  renderPresetLookPicker,
   renderImagesGenerate,
   renderImagesReferences,
   renderImagesStyles,
-} from "./modules/image-studio/index.js?v=1897";
+} from "./modules/image-studio/index.js?v=1901";
 
 const ROLE_LABELS = {
   primary: "Primary",
@@ -247,9 +249,37 @@ export function handleKitChange(event, data) {
   return false;
 }
 
+// ── The creation recap's image look ─────────────────────────────────────────
+// A Playbook being created has no Images tab (its styles need a saved id), but
+// a ready-made look needs none: picked here, it is the draft's `defaultLook`,
+// saved with the rest — and its first Generate an image asks nothing. Optional:
+// left empty, the first Generate asks (draft-image-flow.js requireImageLook).
+export function renderRecapLook(data) {
+  const d = data?.defaultLook || {};
+  return renderPresetLookPicker({
+    palette: (data?.brandColors || [])
+      .filter((c) => c.hex)
+      .map((c) => ({ hex: c.hex, name: c.name || "", role: c.role || "" })),
+    value: d.kind ? `${d.kind}:${d.id}` : "",
+  });
+}
+
+/** A second click on the picked look un-picks it — the block is optional. */
+export function handleRecapLookClick(event, data) {
+  const btn = event.target.closest("[data-pb-recap-look]");
+  if (!btn || !data) return false;
+  const [kind, id] = btn.dataset.pbRecapLook.split(":");
+  const d = data.defaultLook || {};
+  data.defaultLook = d.kind === kind && d.id === id ? { kind: "", id: "" } : { kind, id };
+  return true;
+}
+
 /** Always live, like Reference images: styles are managed outside the section's edit mode. */
 export function handleImageStylesClick(event, data, onChange) {
   if (!data?.id) return false;
+  // "Help me pick in a chat" — Archie's side of the block: the module only
+  // knows its Playbook adapter, the chat is ours (draft-image-flow.js).
+  if (event.target.closest("[data-pb-image-look-chat]")) return openImageLookChat(data.id);
   return handlePlaybookImagesClick(event, data.id, { onChange });
 }
 

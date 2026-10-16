@@ -6,12 +6,12 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1897";
-import { findConnector } from "./connectors-store.js?v=1897";
-import { createSessionNotifier } from "./store-utils.js?v=1897";
-import { addPostDraft } from "./posts-store.js?v=1897";
-import { showToast } from "./components/toast.js?v=1897";
-import { isFlagOn } from "./feature-flags.js?v=1897";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1901";
+import { findConnector } from "./connectors-store.js?v=1901";
+import { createSessionNotifier } from "./store-utils.js?v=1901";
+import { addPostDraft } from "./posts-store.js?v=1901";
+import { showToast } from "./components/toast.js?v=1901";
+import { isFlagOn } from "./feature-flags.js?v=1901";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -775,6 +775,24 @@ export function postDraftResult(sessionId, { ideaTitle, drafts }) {
     count: drafts.length,
     status: "ready",
     open: true,
+    createdAt: Date.now(),
+  });
+  notify(sessionId);
+}
+
+// The first image's look, just set (draft-image-flow.js requireImageLook) — a
+// receipt, not a proposal: the user picked it. The turn reads the Playbook to
+// know whether it still holds (Undo, or a change made on the Playbook).
+export function postImageLookSet(sessionId, { contextId, styleId, label }) {
+  getThread(sessionId).push({
+    id: newId(),
+    role: "assistant",
+    variant: "image-look-set",
+    meta: "Archie",
+    contextId,
+    styleId,
+    label,
+    status: "ready",
     createdAt: Date.now(),
   });
   notify(sessionId);

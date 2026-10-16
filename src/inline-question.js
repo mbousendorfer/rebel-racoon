@@ -69,15 +69,16 @@
 //   customFileLabel   string  — primary label on the dropzone row
 //   customFileHint    string  — small hint below the label ("PDF · DOCX · TXT")
 //   customFileIcon    string  — DS icon class (default "ap-icon-upload")
+//   customFileMultiple bool   — several files at once; onFile then gets an array
 //   onPick(value)     fn      — called with the chosen item's value (or array in multi mode)
 //   onCustom(value)   fn      — called with the free-text answer
-//   onFile(file)      fn      — called with the picked File object
+//   onFile(file)      fn      — called with the picked File object (File[] with customFileMultiple)
 //   onSkip()          fn      — called when Skip / Esc; if omitted, no skip btn
 //   skipDisabled      bool    — Skip shown disabled (its label says when it unlocks); Esc → Back
 //   onBack()          fn      — called when ← Back is clicked; if omitted, no back btn
 
-import { chatTurn } from "./screens/_analyse-common.js?v=1897";
-import { createSessionNotifier } from "./store-utils.js?v=1897";
+import { chatTurn } from "./screens/_analyse-common.js?v=1901";
+import { createSessionNotifier } from "./store-utils.js?v=1901";
 
 const states = new Map(); // sessionId → opts
 const sessionNotifier = createSessionNotifier("inline-question");
@@ -307,6 +308,7 @@ export function renderChrome(sessionId) {
     customFileLabel: s.customFileLabel || "Drop a file here, or browse",
     customFileHint: s.customFileHint || "",
     customFileIcon: s.customFileIcon || "ap-icon-upload",
+    customFileMultiple: s.customFileMultiple === true,
     multi: s.multi === true,
     // Single-select-with-confirm — selectable rows, one at a time; the caller
     // owns the submit. `selectedValue` drives the highlight.

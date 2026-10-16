@@ -83,6 +83,7 @@ export function renderPicker(picker) {
     customFileLabel = "Drop a file here, or click to browse",
     customFileHint = "",
     customFileIcon = "ap-icon-upload",
+    customFileMultiple = false,
     // When the wizard supports going back to a previous step, the
     // header renders a small ← back button on the left.
     showBack = false,
@@ -361,6 +362,7 @@ export function renderPicker(picker) {
           type="file"
           class="analyse__option-file-input"
           accept="${customFileAccept}"
+          ${customFileMultiple ? "multiple" : ""}
           data-${customHandler || handler}-custom-file
           aria-label="${customFileLabel}"
         />

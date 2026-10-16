@@ -1,16 +1,17 @@
 // Image Generator — one image for a draft, without the studio. A draft's
-// "Generate an image" calls these without asking anything (draft-image-flow.js):
-// the Playbook's look, the network's shape. The studio stays one click away for
+// "Generate an image" calls these (draft-image-flow.js): the Playbook's look,
+// the network's shape — asked once, the first time, when the Playbook has no look. The studio stays one click away for
 // everything else. Headless, and the same services as the studio.
 
-import { QUICK_PRESETS } from "./config/style-presets.js?v=1897";
-import { MOCK } from "./config/mock.js?v=1897";
-import { DRAFT_NETWORK, formatById, shapesForBrand } from "./config/formats.js?v=1897";
-import { hashString } from "./lib/prng.js?v=1897";
-import { copyService, imageGenerationService } from "./services/index.js?v=1897";
-import { styleThumbUrl } from "./ui/style-thumb.js?v=1897";
-import { getBrand, getStyle, getStylesForBrand, registerOneOffStyle } from "./state/store.js?v=1897";
-import { oneOffStyleFrom } from "./state/style-actions.js?v=1897";
+import { CUSTOM_STYLE_LIMITS, QUICK_PRESETS } from "./config/style-presets.js?v=1901";
+import { MOCK } from "./config/mock.js?v=1901";
+import { DRAFT_NETWORK, formatById, shapesForBrand } from "./config/formats.js?v=1901";
+import { hashString } from "./lib/prng.js?v=1901";
+import { copyService, imageGenerationService } from "./services/index.js?v=1901";
+import { styleThumbUrl } from "./ui/style-thumb.js?v=1901";
+import { canEditBrand, getBrand, getStyle, getStylesForBrand, registerOneOffStyle } from "./state/store.js?v=1901";
+import { oneOffStyleFrom, saveStyle, uploadReference } from "./state/style-actions.js?v=1901";
+import { setPlaybookDefaultLook } from "./state/playbook-brand.js?v=1901";
 
 /**
  * What the chat can offer: six styles (the Playbook's own first, then one
@@ -86,11 +87,51 @@ export async function defaultQuickLook(brandId) {
   }
 }
 
+// ── The first image: no look yet ─────────────────────────────────────────────
+// A Playbook with no default look asks ONCE how its images should look
+// (draft-image-flow.js requireImageLook); the answer is its `defaultLook`, and
+// every Generate after that goes straight to the loader.
+
+/** Generate an image asks first: the Playbook has no look yet, and you may give it one. */
+export function needsImageLook(brandId) {
+  const brand = getBrand(brandId);
+  return !!brand && !brand.defaults.styleId && !brand.defaults.referenceUrl && canEditBrand(brand.id);
+}
+
+/** Makes a style the Playbook's default look — or none, with `null` (Undo). */
+export function setImageLook(brandId, styleId) {
+  return setPlaybookDefaultLook(brandId, styleId ? { kind: "style", id: styleId } : { kind: "", id: "" });
+}
+
+/**
+ * A brand style learned from the user's own images, saved on the Playbook —
+ * the style creator's save, without its page: named after the brand, renamed
+ * on the Playbook if need be.
+ * @returns {Promise<{ id: string, label: string, thumbUrl: string }>}
+ */
+export async function styleFromImages(brandId, files) {
+  const brand = getBrand(brandId);
+  const images = [...files].filter((f) => f.type.startsWith("image/")).slice(0, CUSTOM_STYLE_LIMITS.images);
+  if (!brand || !images.length) throw new Error("Those aren't images.");
+  const assets = await Promise.all(images.map((f) => uploadReference(brand.id, f)));
+  const style = saveStyle({
+    brandId: brand.id,
+    label: `${brand.name} look`,
+    description: `Learned from ${images.length} of your images`,
+    sources: assets.map((a) => ({ type: "image", ref: a.id, label: a.name, weight: 0.8 })),
+    fidelity: "essential",
+    stylePrompt: "",
+  });
+  if (!style) throw new Error("I couldn't save that style.");
+  return { id: style.id, label: style.label, thumbUrl: styleThumbUrl(style, brand, { seed: hashString(style.id) }) };
+}
+
 /**
  * What "Generate an image" will use on a draft, before anyone clicks it: the
  * Playbook's look (its default style or reference image, else its first style
- * or a preset — what the click uses, nothing is asked) and the shape for this
- * network. `null` when there is no Playbook.
+ * or a preset — what the click uses), the shape for this network, and `ask`
+ * when there is no look yet and the first click will ask for one (then `look`
+ * is null). `null` when there is no Playbook.
  */
 export function quickImagePreset({ brandId, network }) {
   const brand = getBrand(brandId);
@@ -98,12 +139,17 @@ export function quickImagePreset({ brandId, network }) {
   const d = brand.defaults || {};
   const shape = shapesForBrand(brand, DRAFT_NETWORK[network] || null)[0];
   const style = d.styleId ? getStyle(d.styleId) : null;
+  // No look yet: the first click asks (needsImageLook) — the caption says so
+  // instead of naming a preset nobody chose.
+  const ask = needsImageLook(brand.id);
   const look = style
     ? { label: style.label, thumbUrl: styleThumbUrl(style, brand) }
     : d.referenceUrl
       ? { label: d.referenceLabel || "your reference image", thumbUrl: d.referenceUrl }
-      : quickImageChoices({ brandId, network })?.styles[0] || null;
-  return { look, shape: shape ? { label: shape.label, ratio: shape.ratio } : null };
+      : ask
+        ? null
+        : quickImageChoices({ brandId, network })?.styles[0] || null;
+  return { ask, brandName: brand.name, look, shape: shape ? { label: shape.label, ratio: shape.ratio } : null };
 }
 
 /** What the image shows, read from the post (the studio's "Suggest from the post"). */

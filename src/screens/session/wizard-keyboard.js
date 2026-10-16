@@ -11,10 +11,10 @@
 //   rebindWizardKeyboard(aside, sessionId) — call after every aside
 //     swap. No-op if no wizard is active.
 
-import * as sidebarWizard from "../../sidebar-wizard.js?v=1897";
-import * as inlineQuestion from "../../inline-question.js?v=1897";
-import * as topPostsFlow from "../../top-posts-flow.js?v=1897";
-import { bindWizardKeyboard, unbindWizardKeyboard } from "../_analyse-common.js?v=1897";
+import * as sidebarWizard from "../../sidebar-wizard.js?v=1901";
+import * as inlineQuestion from "../../inline-question.js?v=1901";
+import * as topPostsFlow from "../../top-posts-flow.js?v=1901";
+import { bindWizardKeyboard, unbindWizardKeyboard } from "../_analyse-common.js?v=1901";
 
 export function rebindWizardKeyboard(aside, sessionId) {
   if (!aside) return;
@@ -88,8 +88,8 @@ export function rebindWizardKeyboard(aside, sessionId) {
     const fileInput = aside.querySelector("[data-inline-question-custom-file]");
     if (fileInput) {
       fileInput.addEventListener("change", (event) => {
-        const file = event.target.files?.[0];
-        if (file) inlineQuestion.submitFile(sessionId, file);
+        const files = [...(event.target.files || [])];
+        if (files.length) inlineQuestion.submitFile(sessionId, fileInput.multiple ? files : files[0]);
       });
     }
     // When the question has only a free-text input (no `items`), focus

@@ -14,24 +14,26 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1897";
-import { conceptHint } from "./concepts.js?v=1897";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1901";
+import { conceptHint } from "./concepts.js?v=1901";
 import {
   renderColorRole,
   colorRoleCaption,
   renderLogoVariants,
   renderVisualRules,
   handleImageStylesClick,
+  handleRecapLookClick,
+  renderRecapLook,
   handleKitClick,
   handleKitInput,
   handleKitChange,
   kitSnapshot,
   renderImagesTab,
-} from "./playbook-brand-kit.js?v=1897";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1897";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1897";
-import { isFlagOn } from "./feature-flags.js?v=1897";
-import { parseHashParams } from "./url-state.js?v=1897";
+} from "./playbook-brand-kit.js?v=1901";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1901";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1901";
+import { isFlagOn } from "./feature-flags.js?v=1901";
+import { parseHashParams } from "./url-state.js?v=1901";
 import {
   networkVoicesOn,
   baseNetwork,
@@ -54,16 +56,16 @@ import {
   networkLabel,
   networkIcon,
   memoryCardHtml,
-} from "./network-voice.js?v=1897";
+} from "./network-voice.js?v=1901";
 import {
   getSuggestions,
   accept as acceptVoiceSuggestion,
   dismiss as dismissVoiceSuggestion,
-} from "./voice-coach-store.js?v=1897";
-import { showToast } from "./components/toast.js?v=1897";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=1897";
-import { open as openVoiceWizard } from "./components/voice-wizard-modal.js?v=1897";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1897";
+} from "./voice-coach-store.js?v=1901";
+import { showToast } from "./components/toast.js?v=1901";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=1901";
+import { open as openVoiceWizard } from "./components/voice-wizard-modal.js?v=1901";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1901";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2737,6 +2739,16 @@ function renderBrandRead2(data) {
       { wide: true, index: 4 },
     ),
   );
+  // The creation recap only: the image look, before the Playbook has an Images tab.
+  if (!isLibrary())
+    blocks.push(
+      pb2Block("How your images look", renderRecapLook(data), {
+        wide: true,
+        index: 5,
+        icon: "ap-icon-image",
+        hint: "Pick a look to start from — or leave it, and I'll ask the first time you generate an image.",
+      }),
+    );
   return `${pb2TabHead("brand")}<div class="pb2-grid">${blocks.join("")}</div>`;
 }
 
@@ -3162,6 +3174,10 @@ function onClick(event) {
 
   // Image styles (flag sexySquirrel) — live in and out of edit mode.
   if (handleImageStylesClick(event, data, repaint)) return;
+  if (!isLibrary() && handleRecapLookClick(event, data)) {
+    repaint();
+    return;
+  }
 
   // Brand kit rows (flag sexySquirrel) — only live while a section is edited.
   if (editScope && handleKitClick(event, data)) {

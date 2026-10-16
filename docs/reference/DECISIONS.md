@@ -210,6 +210,12 @@ But a surface that makes the user _pick_ one must never render an empty picker: 
 dead end, which is the exact failure this feature removes. Top Posts was gated for that reason after
 it was seen doing it.
 
+The same shape serves the first image's look (2026-10-16, `requireImageLook` in
+`draft-image-flow.js`): a Playbook with no image look is asked once, in the chat, the first time a
+draft's Generate an image runs — then the image is made and every later click is direct. Not now
+still makes the image, in a ready-made look. It is not a gate, and not the per-click questions
+removed on 2026-10-08.
+
 ## The listening config left the Playbook
 
 The magazine kept it as `ctx.topics`. It now lives in `topic-feeds-store.js`, keyed by Playbook: **one feed per Playbook**, provisioned lazily on read (`provisionMissingFeeds`), so a brand new to the app never meets a screen asking it to configure something first — and nothing can _delete_ a feed, since the next read would rebuild it.

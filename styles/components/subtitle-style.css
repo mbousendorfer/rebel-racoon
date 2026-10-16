@@ -1,5 +1,6 @@
-/* Card-grid picker variant + its two consumers: the clip aspect-ratio tiles
- * and the subtitle-style previews (in-chat "draft from clips" flow).
+/* Card-grid picker variant + its consumers: the clip aspect-ratio tiles, the
+ * subtitle-style previews (in-chat "draft from clips" flow) and the image-look
+ * pictures (the first "Generate an image").
  *
  * The grid lives inside the shared `.analyse__options` picker frame (border +
  * radius + header/footer) — see styles/screens/analyse.css. Cards reuse the
@@ -251,4 +252,36 @@
 /* Simple — clean bold white caps, no accent on the keyword. */
 .sub-preview--simple .sub-preview__line em {
   color: #ffffff;
+}
+
+/* ── Style pictures (draft-image-flow.js: the first image's look, asked once) ── */
+/* Pictures to pick from, not panels to read: fixed small tracks (as many as the
+   chat is wide) instead of three columns stretched across it — at full width
+   each card was a 380px square. */
+.analyse__options--cards .analyse__cards:has(.draft-image-flow__style) {
+  grid-template-columns: repeat(auto-fill, minmax(88px, 112px));
+  gap: var(--ref-spacing-xs);
+}
+
+.analyse__card:has(.draft-image-flow__style) {
+  gap: var(--ref-spacing-xxxs);
+  padding: var(--ref-spacing-xxs);
+}
+
+.analyse__card:has(.draft-image-flow__style) .analyse__card-label {
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+}
+
+/* The picker's preview slot is inline: widen it so the picture fills the card. */
+.analyse__card-preview:has(> .draft-image-flow__style) {
+  display: block;
+}
+
+.draft-image-flow__style {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: var(--app-radius-sm);
 }
