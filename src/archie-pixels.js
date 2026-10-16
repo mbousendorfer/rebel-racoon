@@ -32,7 +32,7 @@
 const PITCH = 7; // CSS px between pixels
 const SIZE = 3.4; // CSS px: every pixel's side while waiting — only their opacity moves
 export const REVEAL_MS = 1600; // 1.4 s went by unseen, 2.6 s dragged, 2 s still a touch slow
-const STAGES = ["Reading the post…", "Picking your colours…", "Composing the image…"];
+const STAGES = ["Reading the post…", "Picking your colors…", "Composing the image…"];
 const STAGE_S = 1.6; // s per stage, for a real 6–12 s wait; the last one holds until the image lands
 const REFINING = "Refining the details…";
 const NARRATE_MIN = 220; // CSS px: narrower (a filmstrip tile) and there is no line

@@ -89,7 +89,7 @@ export const FLAGS = Object.freeze([
       "exactly as before. The ownership data (owner, scope, change log) still " +
       "rides along in the seeds, like multilingualPlaybook. When ON, a Playbook " +
       "is personal, shared with named colleagues (a fixed list), or shared " +
-      "with the whole organisation (a dynamic one, joiners included). Its " +
+      "with the whole organization (a dynamic one, joiners included). Its " +
       "owner is the only one who can edit it; everyone it reaches may open it " +
       "READ-ONLY, use it in a chat, and duplicate it into a Playbook of their " +
       "own. A Playbook tied to a social profile only reaches people who can " +
@@ -121,13 +121,13 @@ export const FLAGS = Object.freeze([
   },
   {
     id: "brandTintedPresets",
-    label: "Ready-made styles in the brand's colours",
+    label: "Ready-made styles in the Brand's colors",
     // OFF: every ready-made style's thumbnail is drawn in Acme's palette.
     default: false,
     hides:
       "When OFF (default), the Image Generator's ready-made styles keep one " +
       "palette, Acme's, on every Playbook. ON redraws their thumbnails in the " +
-      "active brand's colours, so the gallery previews what THIS brand would get.",
+      "active Brand's colors, so the gallery previews what THIS brand would get.",
   },
   {
     id: "newConversationStyles",
