@@ -541,6 +541,14 @@
   font-size: var(--ref-font-size-sm);
 }
 
+/* What the block is for, in one line under its title — the caption's ink and
+   size, on its own row so it never crowds the title. */
+.pb2-block__hint {
+  margin: 0;
+  color: var(--ref-color-grey-80);
+  font-size: var(--ref-font-size-sm);
+}
+
 /* The Guided / Write it yourself switch, inside a block: it keeps the recap
    panel's own padding and rule otherwise, and sits indented under its label. */
 .pb2-block .recap__voice-mode {

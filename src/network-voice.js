@@ -28,9 +28,9 @@
 // examples are in one language. Per-language examples when a brand actually
 // publishes in two languages on one network.
 
-import { isFlagOn } from "./feature-flags.js?v=1860";
-import { escapeHtml } from "./utils.js?v=1860";
-import { NETWORKS, normalizeNetwork, getConnectedProfileById } from "./social-profiles.js?v=1860";
+import { isFlagOn } from "./feature-flags.js?v=1862";
+import { escapeHtml } from "./utils.js?v=1862";
+import { NETWORKS, normalizeNetwork, getConnectedProfileById } from "./social-profiles.js?v=1862";
 
 // `newWith` marks a part the product just added, behind that flag — the demo
 // (voiceNewSection) of how a voice says a part is new: an orange arc, a "New"
@@ -120,7 +120,7 @@ export function voiceItemsHtml(items) {
   return `<ul class="nv-rules">${list
     .map(
       (i) => `<li class="nv-rule">
-        ${i.learned ? `<i class="ap-icon-sparkles memory-mark" aria-hidden="true" title="Learned from your edits"></i>` : ""}
+        ${i.learned ? `<i class="ap-icon-sparkles memory-mark" aria-hidden="true" title="Learned from your drafts"></i>` : ""}
         <div class="nv-rule__body">
           ${i.when ? `<p class="nv-rule__when">${esc(i.when)}</p>` : ""}
           <p class="nv-rule__text">${esc(i.text)}</p>

@@ -72,7 +72,7 @@ export const FLAGS = Object.freeze([
     label: "Multilingual Playbooks",
     default: false,
     hides:
-      "When OFF (default), Playbooks are single-language: the Audience & goals " +
+      "When OFF (default), Playbooks are single-language: the Brief " +
       "language row is a plain English-only picker, and the draft flow never asks which language to " +
       "write in. When ON, a Playbook holds several languages (languages[] / " +
       "primaryLanguage / voiceByLanguage), the CTA copy is authored per " +

@@ -1,6 +1,6 @@
 // Shared Playbook view + per-section editor. Renders a product-grade detail
 // surface — a compact identity header, a sticky section-nav rail with quick
-// facts, and three section panels (Audience & goals · Voice & style · Brand) —
+// facts, and three section panels (Brief · Voice profile · Branding) —
 // plus the inline per-section edit machine. Driven by a `cfg` adapter so the
 // same surface powers two contexts:
 //   • onboarding (welcome-alt-recap) — a context-builder DRAFT, with a
@@ -14,7 +14,7 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1860";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1862";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -26,11 +26,11 @@ import {
   handleKitChange,
   kitSnapshot,
   renderImagesTab,
-} from "./playbook-brand-kit.js?v=1860";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1860";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1860";
-import { isFlagOn } from "./feature-flags.js?v=1860";
-import { parseHashParams } from "./url-state.js?v=1860";
+} from "./playbook-brand-kit.js?v=1862";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1862";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1862";
+import { isFlagOn } from "./feature-flags.js?v=1862";
+import { parseHashParams } from "./url-state.js?v=1862";
 import {
   networkVoicesOn,
   baseNetwork,
@@ -53,18 +53,18 @@ import {
   networkLabel,
   networkIcon,
   memoryCardHtml,
-} from "./network-voice.js?v=1860";
+} from "./network-voice.js?v=1862";
 import {
   getSuggestions,
   accept as acceptVoiceSuggestion,
   dismiss as dismissVoiceSuggestion,
-} from "./voice-coach-store.js?v=1860";
-import { showToast } from "./components/toast.js?v=1860";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=1860";
-import { open as openVoiceWizard } from "./components/voice-wizard-modal.js?v=1860";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1860";
+} from "./voice-coach-store.js?v=1862";
+import { showToast } from "./components/toast.js?v=1862";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=1862";
+import { open as openVoiceWizard } from "./components/voice-wizard-modal.js?v=1862";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1862";
 
-// Audience & goals — chip fields (multi-value), in display order.
+// Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
   { key: "audience", label: "Primary audience", placeholder: "Add an audience…" },
   { key: "contentStyle", label: "Content style", placeholder: "Add a style…" },
@@ -84,16 +84,16 @@ const GOAL_FIELDS = [
 // section: it was tried, and a grid of switches read as a settings panel wedged
 // into a profile.
 const SECTIONS = [
-  { id: "pbk-sec-goals", scope: "goals", icon: "ap-icon-target", title: "Audience & goals" },
-  { id: "pbk-sec-voice", scope: "voice", icon: "ap-icon-quote", title: "Voice & style" },
-  { id: "pbk-sec-brand", scope: "brand", icon: "ap-icon-image", title: "Brand" },
+  { id: "pbk-sec-goals", scope: "goals", icon: "ap-icon-target", title: "Brief" },
+  { id: "pbk-sec-voice", scope: "voice", icon: "ap-icon-quote", title: "Voice profile" },
+  { id: "pbk-sec-brand", scope: "brand", icon: "ap-icon-image", title: "Branding" },
   { id: "pbk-sec-competitors", scope: "competitors", icon: "ap-icon-buildings", title: "Competitors" },
   { id: "pbk-sec-influencers", scope: "influencers", icon: "ap-icon-star", title: "Influencers" },
 ];
 
 // Edit-mode guidance. Surfaced only while a section is being edited (one at a
-// time), so the read view stays clean. Audience & goals gets a per-field hint
-// (q = prompt, a = what Archie does with it); Voice & style and Brand each get
+// time), so the read view stays clean. Brief gets a per-field hint
+// (q = prompt, a = what Archie does with it); Voice profile and Brand each get
 // a single "captured by Archie" banner.
 const FIELD_HINTS = {
   languages: {
@@ -102,53 +102,53 @@ const FIELD_HINTS = {
   },
   businessSummary: {
     q: "Does this describe your business correctly?",
-    a: "Archie analysed your website and wrote this summary.",
+    a: "I wrote this from what I read about your business. Fix anything that's off.",
   },
   audience: {
     q: "Who is your primary audience?",
-    a: "Archie will tailor post topics and framing to speak directly to them.",
+    a: "I shape every post's angle and framing for them.",
   },
   contentStyle: {
     q: "What content style fits your brand?",
-    a: "This guides the structure and format of every post Archie writes.",
+    a: "I follow this for the structure and format of every post.",
   },
   objective: {
     q: "What's your primary social media objective?",
-    a: "Archie will prioritise content angles that serve this goal.",
+    a: "I favor angles that serve this goal.",
   },
   contentAction: {
     q: "What action should your content drive?",
-    a: "Archie will include relevant CTAs aligned with this action.",
+    a: "I end posts with a call to action that drives this.",
   },
   ctaLinks: {
     q: "Call to action",
-    a: "Archie surfaces these links when posts call for an action.",
+    a: "I add these links when a post calls for an action.",
   },
   brandLogo: {
-    q: "Which mark should I default to?",
+    q: "Which logo should I default to?",
     a: "I stamp the default bottom-right on the images I generate. The others stay available to place by hand.",
   },
   imageDefaults: {
     q: "What should generated images look like by default?",
-    a: "I start every image here. Change any of it per post in the Image Studio — nothing you do there comes back to this fiche.",
+    a: "I start every image here. Change any of it per post in the Image Studio — nothing you change there changes this Playbook.",
   },
 };
 
 const SECTION_HINTS = {
   voice: {
     q: "Voice profile",
-    a: "Archie captured this voice from your connected profile's recent posts.",
+    a: "I learned this voice from your account's recent posts.",
   },
   brand: {
     // "Your logo, plus…" because the logo is the one thing in this section Archie
     // can't find for you — a banner claiming it picked everything up from the site
     // would be contradicted by the very first row.
     q: "Visual identity",
-    a: "Your logo, plus the colours and type Archie picked up from your site — so visuals stay on-brand.",
+    a: "Your logo, plus the colors and fonts I found on your site — so visuals stay on-brand.",
   },
   competitors: {
     q: "Who you're up against",
-    a: "Archie scans your market and proposes competitors. Add the ones that matter — a dismissed suggestion won't come back.",
+    a: "I scan your market and suggest competitors. Add the ones that matter — I won't suggest a dismissed one again.",
   },
 };
 
@@ -195,7 +195,7 @@ let activeTab = "goals"; // Playbook 2.0: the tab on screen
 //   notice(): string,                  // html above the layout (read-only banner)
 //   headerActions(): string | null,    // html for the header action bar (library)
 //   onEditName(): void,                // header name pencil (rename)
-//   onAnalyzeVoice(): void,            // Voice & style → analyze social profiles
+//   onAnalyzeVoice(): void,            // Voice profile → analyze social profiles
 //   onFooter(event): boolean,          // catch-all click handler (header actions)
 // }
 export function mount(target, config) {
@@ -489,7 +489,7 @@ function canEditView() {
 }
 
 function panelPen(scope) {
-  return `<button type="button" class="ap-icon-button transparent recap__panel-edit" data-recap-edit-card="${scope}" title="Edit" aria-label="Edit section"><i class="ap-icon-pen"></i></button>`;
+  return `<button type="button" class="ap-icon-button transparent recap__panel-edit" data-recap-edit-card="${scope}" title="Edit section" aria-label="Edit section"><i class="ap-icon-pen"></i></button>`;
 }
 
 function panelEditActions() {
@@ -542,7 +542,7 @@ function renderBrandLogo(data, edit) {
       // Read mode is a recap — nothing is clickable, the badge just reports
       // which mark is in use. Edit mode makes each tile the pick control.
       const frame = edit
-        ? `<button type="button" class="recap__logotile${on ? " is-default" : ""}" aria-pressed="${on}" data-recap-logo-pick="${i}" title="${on ? "Default mark" : "Use as default"}">`
+        ? `<button type="button" class="recap__logotile${on ? " is-default" : ""}" aria-pressed="${on}" data-recap-logo-pick="${i}" title="${on ? "Default logo" : "Make default"}">`
         : `<span class="recap__logotile${on ? " is-default" : ""}">`;
       return `
       <div class="recap__logoslot">
@@ -845,10 +845,10 @@ function renderRefModal(data) {
         ${colors
           .map(
             (c, ci) =>
-              `<span class="recap__refcolor"><input type="color" class="recap__refcolor-input" value="${esc(c)}" data-recap-refcolor data-recap-refimg-index="${i}" data-recap-color-index="${ci}" aria-label="Colour ${ci + 1}" /><button type="button" class="recap__refcolor-x" data-recap-refcolor-remove data-recap-refimg-index="${i}" data-recap-color-index="${ci}" aria-label="Remove colour"><i class="ap-icon-close"></i></button></span>`,
+              `<span class="recap__refcolor"><input type="color" class="recap__refcolor-input" value="${esc(c)}" data-recap-refcolor data-recap-refimg-index="${i}" data-recap-color-index="${ci}" aria-label="Color ${ci + 1}" /><button type="button" class="recap__refcolor-x" data-recap-refcolor-remove data-recap-refimg-index="${i}" data-recap-color-index="${ci}" aria-label="Remove color"><i class="ap-icon-close"></i></button></span>`,
           )
           .join("")}
-        <button type="button" class="recap__refcolor-add" data-recap-refcolor-add data-recap-refimg-index="${i}" aria-label="Add colour"><i class="ap-icon-plus"></i></button>
+        <button type="button" class="recap__refcolor-add" data-recap-refcolor-add data-recap-refimg-index="${i}" aria-label="Add color"><i class="ap-icon-plus"></i></button>
       </div>`
     : `<div class="recap__refcolors">${
         colors
@@ -858,7 +858,7 @@ function renderRefModal(data) {
 
   const notes = edit
     ? `<div class="ap-textarea-field resizable">
-        <textarea data-recap-refnote data-recap-refimg-index="${i}" rows="3" placeholder="How &amp; when to use this image — do's &amp; don'ts, style notes…" aria-label="Usage guidance">${esc(img.note || "")}</textarea>
+        <textarea data-recap-refnote data-recap-refimg-index="${i}" rows="3" placeholder="When to use this image, do's and don'ts, style notes" aria-label="Usage guidance">${esc(img.note || "")}</textarea>
       </div>`
     : img.note && img.note.trim()
       ? `<p class="recap__refmodal-note">${esc(img.note)}</p>`
@@ -885,7 +885,7 @@ function renderRefModal(data) {
               ${tagsBlock}
             </div>
             <div class="recap__refmodal-sec">
-              <span class="recap__refedit-flabel">Dominant colours</span>
+              <span class="recap__refedit-flabel">Dominant colors</span>
               ${colorsBlock}
             </div>
             <div class="recap__refmodal-sec">
@@ -913,7 +913,7 @@ function renderRefModal(data) {
 // animation). Paints with currentColor so the banner can tint it brand orange.
 const ARCHIE_MARK_SVG = `<svg class="recap__panel-hint-icon" viewBox="0 0 227.15 170.03" aria-hidden="true"><path fill="currentColor" d="M227.15,81.98v29.37c0,4.69-3.81,8.5-8.5,8.5h-29.37c-4.69,0-8.5-3.81-8.5-8.5v-27.11c0-4.69-3.78-8.5-8.47-8.5h-27.45c-4.69,0-8.5,3.81-8.5,8.5v26.91c0,4.69-3.78,8.47-8.47,8.47h-28.92c-4.69,0-8.5,3.81-8.5,8.5v33.89c0,4.69-3.78,8.47-8.47,8.47h-32.67c-4.69,0-8.47-3.78-8.47-8.47v-34.03c0-4.69-3.81-8.47-8.5-8.47H8.47c-4.69,0-8.47-3.81-8.47-8.5v-23.86c0-4.69,3.78-8.47,8.47-8.47h23.89c4.69,0,8.5-3.81,8.5-8.5v-14.18c0-4.69,3.78-8.5,8.47-8.5h16.07c4.69,0,8.47-3.78,8.47-8.44V8.5C73.87,3.81,77.66,0,82.34,0h32.64C119.67,0,123.46,3.81,123.46,8.5v32.11c0,4.69-3.78,8.47-8.47,8.47h-32.64c-4.69,0-8.47,3.81-8.47,8.5v14.46c0,4.69-3.81,8.5-8.5,8.5h-16.04c-4.69,0-8.47,3.78-8.47,8.47v20.05c0,4.69,3.78,8.5,8.47,8.5h32.67c4.69,0,8.47-3.81,8.47-8.5v-26.83c0-4.72,3.81-8.5,8.5-8.5h30.38c3.87,0,7-3.13,7-7v-26.94c0-4.69,3.81-8.5,8.5-8.5h27.45c4.69,0,8.47,3.81,8.47,8.5v25.22c0,4.69,3.81,8.47,8.5,8.47h29.37c4.69,0,8.5,3.81,8.5,8.5Z"/></svg>`;
 
-// Section-level edit banner (Voice & style, Brand) — where Archie sourced it.
+// Section-level edit banner (Voice profile, Brand) — where Archie sourced it.
 // Butter background + the Archie mark in brand orange ("captured by Archie").
 function renderSectionHint(hint) {
   if (!hint) return "";
@@ -931,7 +931,7 @@ function renderSectionHint(hint) {
 
 // Edit view — toggle chips for language membership + a primary-language picker
 // when more than one is selected. Voice examples are then authored per language
-// in the Voice & style panel (never machine-translated).
+// in the Voice profile panel (never machine-translated).
 function renderLanguagePicker(data) {
   const selected = contextLanguages(data);
   const primary = data.primaryLanguage || selected[0];
@@ -958,18 +958,18 @@ function renderLanguagePicker(data) {
   return `<div class="recap__lang-picker" data-recap-langs>${chips}</div>${primaryPicker}`;
 }
 
-// Guided ⇄ Free-form switch for the Voice & style section (edit mode).
+// Guided ⇄ Free-form switch for the Voice profile section (edit mode).
 function renderVoiceModeToggle(mode) {
   const manual = mode === "manual";
   return `
     <div class="recap__voice-mode" role="group" aria-label="Voice format">
-      <button type="button" class="ap-filter-chip" aria-pressed="${!manual}" data-recap-voice-mode="guided">Guided</button>
-      <button type="button" class="ap-filter-chip" aria-pressed="${manual}" data-recap-voice-mode="manual">Write it yourself</button>
+      <button type="button" class="ap-filter-chip" aria-pressed="${!manual}" data-recap-voice-mode="guided">In five parts</button>
+      <button type="button" class="ap-filter-chip" aria-pressed="${manual}" data-recap-voice-mode="manual">In my own words</button>
     </div>`;
 }
 
 // "Learn from…" — a single DS dropdown that merges the old "Learn from my
-// posts" (social profiles) and document analysis, both scoped to Voice & style.
+// posts" (social profiles) and document analysis, both scoped to Voice profile.
 function learnMenu() {
   return cfg.onAnalyzeVoice
     ? `<details class="recap__panel-menu" data-recap-learn-menu>
@@ -1000,16 +1000,16 @@ function renderColorEditor(data) {
       (c, i) => `
         <div class="recap__color-row">
           <span class="recap__color-swatch" data-recap-color-swatch="${i}" style="background:${esc(c.hex || "#ffffff")};"></span>
-          <input type="text" class="recap__color-name" data-recap-color-field="name" data-recap-color-index="${i}" value="${esc(c.name || "")}" placeholder="Name" aria-label="Colour name" />
+          <input type="text" class="recap__color-name" data-recap-color-field="name" data-recap-color-index="${i}" value="${esc(c.name || "")}" placeholder="Name" aria-label="Color name" />
           <input type="text" class="recap__color-hex" data-recap-color-field="hex" data-recap-color-index="${i}" value="${esc(c.hex || "")}" placeholder="#1A1F36" aria-label="Hex value" spellcheck="false" />
           ${renderColorRole(c, i)}
-          <button type="button" class="ap-icon-button transparent grey" data-recap-color-remove="${i}" aria-label="Remove colour"><i class="ap-icon-close"></i></button>
+          <button type="button" class="ap-icon-button transparent grey" data-recap-color-remove="${i}" aria-label="Remove color"><i class="ap-icon-close"></i></button>
         </div>`,
     )
     .join("");
   return `<div class="recap__colors" data-recap-colors>${colorRows}</div>
     <button type="button" class="ap-button secondary blue recap__color-add" data-recap-color-add>
-      <i class="ap-icon-plus"></i><span>Add colour</span>
+      <i class="ap-icon-plus"></i><span>Add color</span>
     </button>`;
 }
 
@@ -1063,9 +1063,9 @@ const ROSTERS = {
     sitePlaceholder: "https://competitor.com",
     descPlaceholder: "How they position, who they win with, where you differ…",
     ownGroup: "Your competitors",
-    pendingEmpty: "None added yet — pick from Archie's suggestions below.",
-    emptyEdit: "No competitors yet. Add the ones you know — Archie can find the rest.",
-    emptyRead: "No competitors yet — Archie can scan your market and suggest a few.",
+    pendingEmpty: "None added yet — pick from my suggestions below.",
+    emptyEdit: "No competitors yet. Add the ones you know — I can find the rest.",
+    emptyRead: "No competitors yet. Select Discover competitors and I'll suggest a few.",
     scanning: "Scanning your market for competitors…",
     noneFound: "No new competitors found. Add one by hand instead.",
     discoverFirst: "Discover competitors",
@@ -1278,7 +1278,7 @@ function renderRosterPanel(data, r, edit) {
          <header class="recap__cmpgroup-head">
            <span class="recap__cmpgroup-title">
              <i class="ap-icon-sparkles" aria-hidden="true"></i>
-             <span>Suggested by Archie</span>
+             <span>My suggestions</span>
              <span class="ap-tag grey mini recap__cmpgroup-count">${pending.length}</span>
            </span>
            ${
@@ -1338,7 +1338,7 @@ function renderRosterPanel(data, r, edit) {
   // shared, and two skeleton panels at once would read as the page reloading.
   const discoverBtn =
     !edit && !rosterScanning && canEditView()
-      ? `<button type="button" class="ap-button ghost grey recap__panel-action" data-recap-cmp-discover>
+      ? `<button type="button" class="ap-button ghost grey recap__panel-action" data-recap-cmp-discover title="Scan your market for competitors to suggest">
            <i class="ap-icon-sparkles" aria-hidden="true"></i>
            <span>${esc(list.length ? "Discover more" : r.discoverFirst)}</span>
          </button>`
@@ -1657,7 +1657,7 @@ function renderInfluencersEmpty(edit) {
       <span class="topic-badge topic-badge--lg topic-badge--red" aria-hidden="true"><i class="ap-icon-star"></i></span>
       <div class="recap__inf-empty-text">
         <h3 class="recap__inf-empty-title">Turn what creators post into Topics</h3>
-        <p class="recap__inf-empty-body">Add the creators your audience already follows. Every week I read their new posts and bring the ones worth reacting to into your Topic Feed.</p>
+        <p class="recap__inf-empty-body">Add the creators your audience already follows. I read their new posts and bring the ones worth reacting to into your Topic Feed.</p>
       </div>
       ${cta}
     </div>`;
@@ -1679,7 +1679,7 @@ function renderInfluencerAddModal() {
       <div class="ap-dialog-header"><span class="ap-dialog-title">Add an influencer</span></div>
       <button type="button" class="ap-dialog-close" data-recap-infadd-close aria-label="Close"><i class="ap-icon-close"></i></button>
       <div class="ap-dialog-content recap__cmpmodal-content recap__infadd">
-        <p class="recap__inf-intro">Enter the influencer's name, website and social profiles.</p>
+        <p class="recap__inf-intro">Enter the influencer's name, website, and social profiles. Only the name is required.</p>
         <div class="ap-input-group">
           <input type="text" data-recap-infadd-field="name" value="${esc(infAdd.name)}" placeholder="${esc(
             r.namePlaceholder,
@@ -1704,7 +1704,7 @@ function renderInfluencerAddModal() {
         <div class="ap-dialog-footer-right">
           <button type="button" class="ap-button ghost grey" data-recap-infadd-close><span>Cancel</span></button>
           <button type="button" class="ap-button primary blue" data-recap-infadd-submit${ready ? "" : " disabled"}>
-            <i class="ap-icon-plus" aria-hidden="true"></i><span>Add influencer</span>
+            <i class="ap-icon-plus" aria-hidden="true"></i><span>Add an influencer</span>
           </button>
         </div>
       </div>
@@ -1730,9 +1730,9 @@ function renderInfluencerAddModal() {
 // section renderers are the SAME — a tab hosts one panel, edit mode included.
 
 const TABS = [
-  { id: "goals", title: "Audience & goals" },
-  { id: "voice", title: "Voice & style" },
-  { id: "brand", title: "Brand" },
+  { id: "goals", title: "Brief" },
+  { id: "voice", title: "Voice profile" },
+  { id: "brand", title: "Branding" },
   // How the brand's images are made (flag sexySquirrel) — kept apart from Brand,
   // which says what the brand looks like.
   { id: "images", title: "Image generation" },
@@ -1743,12 +1743,12 @@ const TABS = [
 // What each section is FOR, said once at the top of its tab — the tab already
 // names it, so the panel head carries the sentence instead of repeating the title.
 const SECTION_LEADS = {
-  goals: "Who the posts are for, and what they should make happen.",
-  voice: "How the brand sounds — what every post does, what none does, and what depends on the post.",
-  brand: "How the brand looks — its marks, colours, type and the rules its images follow.",
-  images: "How I make this brand's images — the styles I draw them in, and what Generate image does on a draft.",
-  competitors: "Who the brand is measured against, so Archie can position it.",
-  influencers: "The creators the audience already listens to.",
+  goals: "What the business is, who the posts are for, and what they should make happen.",
+  voice: "How the Brand sounds, in five parts — I follow them in every draft.",
+  brand: "How the Brand looks — its logos, colors, type, and the rules its images follow.",
+  images: "How I make this Brand's images — the styles I draw them in, and what Generate an image does on a draft.",
+  competitors: "Who the Brand is measured against, so I can position it.",
+  influencers: "The creators your audience listens to. I turn what they post into Topics in your Topic Feed.",
 };
 
 // The saved Playbook's page, as opposed to the creation recap: only there does
@@ -1826,7 +1826,7 @@ function renderHeader2(data) {
         <span class="pb2-hero__mark">${renderHeaderMark(data, accent, primary, { square: true })}</span>
         <div class="pb2-hero__text">
           <div class="pb2-hero__titlerow">
-            <h1 class="pb2-hero__name">${esc(data.name || "Untitled Playbook")}</h1>
+            <h1 class="pb2-hero__name">${esc(data.name || "New Playbook")}</h1>
             ${
               cfg.onEditName
                 ? `<button type="button" class="ap-icon-button transparent grey" data-recap-edit-name title="Rename" aria-label="Rename Playbook"><i class="ap-icon-pen"></i></button>`
@@ -1834,7 +1834,7 @@ function renderHeader2(data) {
             }
             ${
               cfg.ownership?.tag
-                ? `<span class="ap-tag grey mini" title="${esc(cfg.ownership.tag)}"><span>${esc(cfg.ownership.tag)}</span></span>`
+                ? `<span class="ap-tag grey mini" title="${esc(cfg.ownership.hint || cfg.ownership.tag)}"><span>${esc(cfg.ownership.tag)}</span></span>`
                 : ""
             }
           </div>
@@ -1902,14 +1902,14 @@ function pb2Palette(data, { roles = false, max = 6 } = {}) {
     else colors.push({ ...c });
   }
   colors.splice(max);
-  if (!colors.length) return pb2Empty("No colours captured yet.");
-  return `<div class="pb2-strip" role="img" aria-label="Brand colours: ${esc(colors.map((c) => c.name || c.hex).join(", "))}">
+  if (!colors.length) return pb2Empty("No colors found yet.");
+  return `<div class="pb2-strip" role="img" aria-label="Brand colors: ${esc(colors.map((c) => c.name || c.hex).join(", "))}">
       ${colors.map((c) => `<span class="pb2-strip__band" style="background:${esc(c.hex)}"></span>`).join("")}
     </div>
     <ul class="pb2-swatches">${colors
       .map((c) => {
         const role = roles ? colorRoleCaption(c) : "";
-        return `<li class="pb2-swatch"><span class="pb2-swatch__name">${esc(c.name || "Colour")}</span><span class="pb2-swatch__hex">${esc(
+        return `<li class="pb2-swatch"><span class="pb2-swatch__name">${esc(c.name || "Color")}</span><span class="pb2-swatch__hex">${esc(
           (c.hex || "").toUpperCase(),
         )}</span>${role ? `<span class="pb2-swatch__role">${esc(role)}</span>` : ""}</li>`;
       })
@@ -1922,7 +1922,11 @@ function pb2Palette(data, { roles = false, max = 6 } = {}) {
 
 // `aside`: trusted html in the caption's place (a badge, a tag) — for what a
 // caption would only say in words.
-function pb2Block(title, body, { wide = false, caption = "", aside = "", index = 0, icon = "", className = "" } = {}) {
+function pb2Block(
+  title,
+  body,
+  { wide = false, caption = "", hint = "", aside = "", index = 0, icon = "", className = "" } = {},
+) {
   return `
     <section class="pb2-block${wide ? " pb2-block--wide" : ""}${className ? ` ${className}` : ""}" style="--pb2-i:${index}">
       <header class="pb2-block__head">
@@ -1931,6 +1935,7 @@ function pb2Block(title, body, { wide = false, caption = "", aside = "", index =
         ${caption ? `<span class="pb2-block__caption">${esc(caption)}</span>` : ""}
         ${aside}
       </header>
+      ${hint ? `<p class="pb2-block__hint">${esc(hint)}</p>` : ""}
       <div class="pb2-block__body">${body}</div>
     </section>
   `;
@@ -2008,7 +2013,7 @@ function renderVoiceEdit2(data) {
       pb2Block(
         "In your own words",
         `<div class="ap-textarea-field resizable">
-           <textarea data-recap-text="voiceManual" rows="10" placeholder="Write your voice in your own words — how you open, your tone, the way you format posts, and anything to avoid…">${esc(data.voiceManual || "")}</textarea>
+           <textarea data-recap-text="voiceManual" rows="10" placeholder="How you open, your tone, formatting, what to avoid">${esc(data.voiceManual || "")}</textarea>
          </div>`,
         { wide: true, index: 1, icon: "ap-icon-quote" },
       ),
@@ -2032,7 +2037,7 @@ function renderBrandEdit2(data) {
       `${pb2Hint(FIELD_HINTS.brandLogo)}${renderBrandLogo(data, true)}<div><span class="pb2-sub">Versions</span>${renderLogoVariants(data, true, data.brandLogos)}</div>`,
       { wide: true, index: 0, icon: "ap-icon-image" },
     ),
-    pb2Block("Colour", renderColorEditor(data), { wide: true, index: 1 }),
+    pb2Block("Colors", renderColorEditor(data), { wide: true, index: 1 }),
     pb2Block("Typography", renderTypoEditor(data), { index: 2 }),
     pb2Block(
       "Personality",
@@ -2058,28 +2063,34 @@ function renderGoalsRead2(data) {
       "The business",
       `${data.businessSummary ? `<p class="pb2-lead pb2-lead--xl">${esc(data.businessSummary)}</p>` : pb2Empty("No business summary yet.")}
        <div class="pb2-inline"><span class="pb2-sub">Written in</span>${pb2Tags(contextLanguages(data))}</div>`,
-      { wide: true, index: 0, icon: "ap-icon-buildings" },
+      {
+        wide: true,
+        index: 0,
+        icon: "ap-icon-buildings",
+        hint: "What I know about the business, and the languages I write in.",
+      },
     ),
     pb2Block("Speaking to", audience ? `<p class="pb2-lead">${esc(audience)}</p>` : pb2Empty("No audience set yet."), {
       index: 1,
       icon: "ap-icon-user",
+      hint: "Who I write for.",
     }),
     pb2Block(
       "Content style",
       (data.contentStyle || []).length ? pb2Tags(data.contentStyle) : pb2Empty("No content style yet."),
-      { index: 2, icon: "ap-icon-quote" },
+      { index: 2, icon: "ap-icon-quote", hint: "The shape every post takes." },
     ),
     pb2Block(
       "What posts should achieve",
       (data.objective || []).length ? pb2Checklist(data.objective) : pb2Empty("No goal set yet."),
-      { index: 3, icon: "ap-icon-target" },
+      { index: 3, icon: "ap-icon-target", hint: "The goal I write toward." },
     ),
     pb2Block(
       "What readers should do",
       (data.contentAction || []).length
         ? pb2Checklist(data.contentAction, "ap-icon-arrow-right")
         : pb2Empty("No action set yet."),
-      { index: 4, icon: "ap-icon-arrow-right" },
+      { index: 4, icon: "ap-icon-arrow-right", hint: "The action I end posts on." },
     ),
     pb2Block(
       "Where posts point to",
@@ -2093,7 +2104,7 @@ function renderGoalsRead2(data) {
             )
             .join("")}</ul>`
         : pb2Empty("No links yet — add the pages a post can send readers to."),
-      { wide: true, index: 5, icon: "ap-icon-link" },
+      { wide: true, index: 5, icon: "ap-icon-link", hint: "Links I add when a post calls for an action." },
     ),
   ];
   return `${pb2TabHead("goals")}<div class="pb2-grid">${blocks.join("")}</div>`;
@@ -2127,16 +2138,27 @@ function pb2Traits(data) {
 // What each part says when it's empty, and what its editor asks.
 const PART_COPY = {
   voiceSummary: {
-    empty: "Not set yet — say in a few sentences how the brand sounds.",
+    hint: "The overall tone, in a few sentences.",
+    empty: "Not set yet — say in a few sentences how the Brand sounds.",
     placeholder: "How the brand sounds, in a few sentences…",
   },
-  voiceAlways: { empty: "No rules yet — what every post does.", placeholder: "A rule every post follows…" },
-  voiceNever: { empty: "Nothing yet — what no post does.", placeholder: "Something no post does…" },
+  voiceAlways: {
+    hint: "Rules every post follows.",
+    empty: "No rules yet — what every post does.",
+    placeholder: "A rule every post follows…",
+  },
+  voiceNever: {
+    hint: "What no post ever does, and the words I never use.",
+    empty: "Nothing yet — what no post does.",
+    placeholder: "Something no post does…",
+  },
   voiceByPost: {
+    hint: "How each kind of post is written — a launch, a hiring post, a recap.",
     empty: "No cases yet — how each kind of post is written.",
     placeholder: "How this kind of post is written…",
   },
   voiceSometimes: {
+    hint: "Habits I use sometimes, not in every post.",
     empty: "Nothing yet — the habits that come back now and then.",
     placeholder: "A habit that comes back now and then…",
   },
@@ -2240,6 +2262,7 @@ function pb2VoiceParts(data, { net = null, edit = false, lead = "", index = 2 } 
           : "";
     return pb2Block(title, body, {
       wide: true,
+      hint: PART_COPY[field]?.hint,
       index: index + i,
       icon: field === "voiceSummary" ? "ap-icon-quote" : "",
       aside,
@@ -2342,7 +2365,7 @@ function renderNetworkSwitcher(data) {
                     ? `<span class="pb2-nv-tab-new" title="New part to optimize" aria-label="New part to optimize"></span>`
                     : ""
                 }
-                ${pending ? `<span class="ap-counter normal grey" title="${pending} for Archie to remember">${pending}</span>` : ""}
+                ${pending ? `<span class="ap-counter normal grey" title="${pending} suggestion${pending === 1 ? "" : "s"} to review">${pending}</span>` : ""}
               </button>`;
             })
             .join("")}
@@ -2403,7 +2426,13 @@ function nvLearnBlock(data, net) {
       pb2Empty(
         `Nothing yet. Rework one of your ${networkLabel(net)} drafts or tell me what was off, and I'll suggest what to remember here.`,
       ),
-    { wide: true, index: 1, caption: `${networkLabel(net)} only`, className: "pb2-block--memory" },
+    {
+      wide: true,
+      index: 1,
+      caption: `${networkLabel(net)} only`,
+      hint: `Rules you kept from my suggestions for ${networkLabel(net)}.`,
+      className: "pb2-block--memory",
+    },
   );
 }
 
@@ -2467,7 +2496,7 @@ function nvIdentityBlock(data, net, learn = "") {
       ? `New in your voice: ${fresh.join(", ")}.`
       : done === nvFields().length
         ? `Every part is written for ${label}.`
-        : `The others follow your ${networkLabel(baseNetwork(data))} voice.`;
+        : `Parts you haven't optimized follow your ${networkLabel(baseNetwork(data))} voice.`;
   return `<div class="pb2-nv-progress" role="status">
       ${progressRingHtml(net, { done: partsDone(data, net), base: isBase, attention: isBase ? [] : partsNew(data, net), size: 48, fresh: nvFreshFor(net) })}
       <div class="pb2-nv-progress__text">
@@ -2514,7 +2543,7 @@ function nvAllMatrix(data) {
       </li>`;
     })
     .join("");
-  return `<p class="pb2-nv-intro">${optimizedNets} of ${nets.length - 1} networks fully optimized.</p>
+  return `<p class="pb2-nv-intro">${optimizedNets} of ${nets.length - 1} network${nets.length - 1 === 1 ? "" : "s"} fully optimized. Every network starts from your ${networkLabel(baseNetwork(data))} voice — optimize one to adapt any part for it.</p>
     <ul class="pb2-nv-lines">${rows}</ul>`;
 }
 
@@ -2641,7 +2670,7 @@ function onNetworkVoiceClick(event) {
   return false;
 }
 
-const PB2_LOGO_VERSIONS = { color: "Colour", white: "White", black: "Black", icon: "Icon only" };
+const PB2_LOGO_VERSIONS = { color: "Color", white: "White", black: "Black", icon: "Icon only" };
 
 function renderBrandRead2(data) {
   const logos = brandLogoList(data);
@@ -2666,14 +2695,14 @@ function renderBrandRead2(data) {
           </li>`,
         )
         .join("")}</ul>`
-    : pb2Empty("No logo yet — add the marks this brand uses.");
+    : pb2Empty("No logos yet. Select Edit to add the ones this Brand uses.");
   const pairs = (r.forbiddenPairs || []).map(
     ([a, b]) =>
       `<span class="pb2-pair"><span class="pb2-pair__chip" style="background:${esc(a)}"></span><span class="pb2-pair__chip" style="background:${esc(b)}"></span></span>`,
   );
   const blocks = [
     pb2Block("Logos", marks, { wide: true, index: 0, icon: "ap-icon-image" }),
-    pb2Block("Colour", pb2Palette(data, { roles: true, max: 8 }), { wide: true, index: 1 }),
+    pb2Block("Colors", pb2Palette(data, { roles: true, max: 8 }), { wide: true, index: 1 }),
     pb2Block(
       "Typography",
       headingFont || bodyFont
@@ -2699,9 +2728,9 @@ function renderBrandRead2(data) {
       // Do / Don't moved into each image style (the style creator), 2026-10-05.
       `<dl class="pb2-facts pb2-facts--alone">
         <div><dt>Logo minimum size</dt><dd>${esc(r.logoMinPx ?? 48)} px</dd></div>
-        <div><dt>Clear space</dt><dd>${esc(r.clearSpace ?? 0.5)} × logo height</dd></div>
-        <div><dt>Distortion</dt><dd>${r.noLogoDistortion === false ? "Allowed" : "Never stretch or skew"}</dd></div>
-        <div><dt>Colours that never meet</dt><dd>${pairs.length ? `<span class="pb2-pairs">${pairs.join("")}</span>` : "None"}</dd></div>
+        <div><dt>Clear space around the logo</dt><dd>${esc(r.clearSpace ?? 0.5)} × the logo's height</dd></div>
+        <div><dt>Logo distortion</dt><dd>${r.noLogoDistortion === false ? "Allowed" : "Never stretch or skew the logo"}</dd></div>
+        <div><dt>Color pairs to avoid</dt><dd>${pairs.length ? `<span class="pb2-pairs">${pairs.join("")}</span>` : "None"}</dd></div>
       </dl>`,
       { wide: true, index: 4 },
     ),
@@ -2761,7 +2790,7 @@ function renderLoading(stageIdx) {
   return `
     <div class="recap-loading">
       <span class="recap-loading__spinner archie-loader" aria-hidden="true"></span>
-      <span class="recap-loading__eyebrow"><i class="ap-icon-archie-official" aria-hidden="true"></i> Crafting your Playbook</span>
+      <span class="recap-loading__eyebrow"><i class="ap-icon-archie-official" aria-hidden="true"></i> Building your Playbook</span>
       <h1 class="recap-loading__title">${esc(stage.title)}</h1>
       <p class="recap-loading__sub">${esc(stage.sub)}</p>
       <div
@@ -3306,7 +3335,7 @@ function onClick(event) {
     return;
   }
 
-  // Voice & style: switch between the guided fields and a free-form textarea.
+  // Voice profile: switch between the guided fields and a free-form textarea.
   const voiceMode = event.target.closest("[data-recap-voice-mode]");
   if (voiceMode) {
     data.voiceMode = voiceMode.dataset.recapVoiceMode;
@@ -3315,7 +3344,7 @@ function onClick(event) {
     return;
   }
 
-  // Languages (Audience & goals) — toggle a language in/out of the Playbook.
+  // Languages (Brief) — toggle a language in/out of the Playbook.
   const langToggle = event.target.closest("[data-recap-lang-toggle]");
   if (langToggle) {
     const lang = langToggle.dataset.recapLangToggle;

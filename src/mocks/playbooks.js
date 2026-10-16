@@ -2251,7 +2251,7 @@ export const sharedContexts = [
     history: [
       { id: "h-seed-1", actorId: "u-sam", action: "created this Playbook", when: "3 weeks ago" },
       { id: "h-seed-2", actorId: "u-sam", action: "shared it with 2 people", when: "3 weeks ago" },
-      { id: "h-seed-3", actorId: "u-sam", action: "edited the Voice & style section", when: "yesterday" },
+      { id: "h-seed-3", actorId: "u-sam", action: "edited the Voice profile section", when: "yesterday" },
     ],
     analysis: { voice: null, brief: null, brand: null },
   },

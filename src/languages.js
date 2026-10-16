@@ -80,7 +80,7 @@ export function cloneVoiceByLanguage(vbl) {
 // primaryLanguage / voiceByLanguage change.
 //
 // Note: ctaLinks stay language-AGNOSTIC (shared url + label, edited in the
-// Audience & goals panel). Per-language CTA copy lives in entry.ctaLabels for
+// Brief panel). Per-language CTA copy lives in entry.ctaLabels for
 // generation, but we do NOT rewrite ctaLinks[].label here — that would clobber
 // the shared list on every save. Only the voice examples fork per language.
 export function mirrorPrimaryToTopLevel(ctx) {

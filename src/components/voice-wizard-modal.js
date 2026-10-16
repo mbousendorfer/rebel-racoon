@@ -30,10 +30,10 @@
 //   result = { values: { [field]: value | undefined }, drafted: boolean }
 //   undefined = the part follows the base voice.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1860";
-import { bindReorder } from "../drag-reorder.js?v=1860";
-import { escapeHtml as esc } from "../utils.js?v=1860";
-import { networkVoiceOptions, networkGuidance, networkGuidanceUrl } from "../context-mock-analysis.js?v=1860";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1862";
+import { bindReorder } from "../drag-reorder.js?v=1862";
+import { escapeHtml as esc } from "../utils.js?v=1862";
+import { networkVoiceOptions, networkGuidance, networkGuidanceUrl } from "../context-mock-analysis.js?v=1862";
 import {
   networkFields,
   isNewPart,
@@ -47,7 +47,7 @@ import {
   itemsFromLines,
   voiceItemsHtml,
   progressRingHtml,
-} from "../network-voice.js?v=1860";
+} from "../network-voice.js?v=1862";
 
 const MODAL_ID = "voiceWizard";
 
@@ -326,7 +326,7 @@ function paintFooter() {
   // Outlined blue: visible, set apart on the left, without a second primary
   // beside Next. (Ghost grey read as nothing; primary orange, two primaries.)
   footLeftEl.innerHTML = onPart
-    ? `<button type="button" class="ap-button stroked blue" data-vw-archie><i class="ap-icon-sparkles" aria-hidden="true"></i><span>Use all of Archie's picks</span></button>`
+    ? `<button type="button" class="ap-button stroked blue" data-vw-archie><i class="ap-icon-sparkles" aria-hidden="true"></i><span>Use all my suggestions</span></button>`
     : "";
   footRightEl.innerHTML = `
     ${w.step > 0 ? `<button type="button" class="ap-button stroked grey" data-vw-back><i class="ap-icon-arrow-left" aria-hidden="true"></i><span>Back</span></button>` : ""}
@@ -334,7 +334,7 @@ function paintFooter() {
       // The base voice for this part, then on — beside Next, where a skip
       // goes (ghost grey), never as a choice among the options.
       onPart && !w.isBase
-        ? `<button type="button" class="ap-button ghost grey" data-vw-skip>Use default voice</button>`
+        ? `<button type="button" class="ap-button ghost grey" data-vw-skip>Use ${esc(networkLabel(w.base))} voice</button>`
         : ""
     }
     ${
@@ -446,7 +446,7 @@ function renderPart(field) {
     radio(
       i,
       `<span class="vw-radio__option">${esc(w.opts[field][i])}</span>${
-        i === 0 ? `<span class="ap-status mermaid vw-radio__pick">Archie's pick</span>` : ""
+        i === 0 ? `<span class="ap-status mermaid vw-radio__pick">My pick</span>` : ""
       }`,
     );
   return `${head}

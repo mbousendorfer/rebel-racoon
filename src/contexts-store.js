@@ -22,18 +22,18 @@
 // chooses "Save as global". updateContext is used by the section-edit flow
 // when scope is "Update everywhere".
 
-import { contexts as seed, sharedContexts } from "./mocks.js?v=1860";
-import { isNewUser } from "./user-mode.js?v=1860";
-import { CURRENT_USER } from "./org.js?v=1860";
-import { isFlagOn } from "./feature-flags.js?v=1860";
-import { createNotifier } from "./store-utils.js?v=1860";
+import { contexts as seed, sharedContexts } from "./mocks.js?v=1862";
+import { isNewUser } from "./user-mode.js?v=1862";
+import { CURRENT_USER } from "./org.js?v=1862";
+import { isFlagOn } from "./feature-flags.js?v=1862";
+import { createNotifier } from "./store-utils.js?v=1862";
 import {
   normalizeLanguages,
   mirrorPrimaryToTopLevel,
   syncTopLevelToPrimary,
   cloneVoiceByLanguage,
-} from "./languages.js?v=1860";
-import { cloneVoiceByNetwork, cloneItems } from "./network-voice.js?v=1860";
+} from "./languages.js?v=1862";
+import { cloneVoiceByNetwork, cloneItems } from "./network-voice.js?v=1862";
 
 // Lives up here, away from normalizeBrandLogos where it belongs, because the
 // seed below calls that normalizer at module-init time — a `let` declared beside
@@ -338,7 +338,7 @@ function normalizeOwnership(ctx) {
 
 /**
  * Append one line to a Playbook's change log. Callers pass the sentence they
- * want read back ("shared it with the organisation", "edited the Voice & style
+ * want read back ("shared it with the organisation", "edited the Voice profile
  * section") — this store never infers it, because inferring would mean diffing,
  * and there is deliberately no diff.
  *

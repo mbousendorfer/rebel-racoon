@@ -9,14 +9,14 @@
 // the fiche's live data object, exactly like every other Brand row, and are
 // committed by the section's Save (snapshotEditable carries the fields).
 
-import { escapeHtml as esc } from "./utils.js?v=1860";
-import { COLOR_ROLES, LOGO_VARIANTS, getContextById } from "./contexts-store.js?v=1860";
+import { escapeHtml as esc } from "./utils.js?v=1862";
+import { COLOR_ROLES, LOGO_VARIANTS, getContextById } from "./contexts-store.js?v=1862";
 import {
   handlePlaybookImagesClick,
   renderImagesGenerate,
   renderImagesReferences,
   renderImagesStyles,
-} from "./modules/image-studio/index.js?v=1860";
+} from "./modules/image-studio/index.js?v=1862";
 
 const ROLE_LABELS = {
   primary: "Primary",
@@ -25,7 +25,7 @@ const ROLE_LABELS = {
   background: "Background",
   text: "Text",
 };
-const VARIANT_LABELS = { color: "Colour", white: "White", black: "Black", icon: "Icon only" };
+const VARIANT_LABELS = { color: "Color", white: "White", black: "Black", icon: "Icon only" };
 
 // A DS single-select (.ap-select on <details>). The option carries everything the
 // handler needs, so one delegated click resolves it.
@@ -60,7 +60,7 @@ export function renderColorRole(color, index) {
     labels: ROLE_LABELS,
     options: COLOR_ROLES,
     placeholder: "Role",
-    ariaLabel: `Role of ${color.name || "this colour"}`,
+    ariaLabel: `Role of ${color.name || "this color"}`,
   });
 }
 
@@ -92,7 +92,7 @@ export function renderLogoVariants(data, edit, logos) {
                 placeholder: "Which version?",
                 ariaLabel: `Version of ${l.label || "this logo"}`,
               })
-            : `<span class="recap__look-value">${esc(VARIANT_LABELS[l.variant] || "Not said")}</span>`
+            : `<span class="recap__look-value">${esc(VARIANT_LABELS[l.variant] || "Not set")}</span>`
         }
       </li>`,
     )
@@ -112,15 +112,15 @@ function pairSwatches(pair) {
 let pendingPair = ["", ""];
 
 function colorPick(slot, colors) {
-  const labels = Object.fromEntries(colors.map((c) => [c.hex, `${c.name || "Colour"} ${String(c.hex).toUpperCase()}`]));
+  const labels = Object.fromEntries(colors.map((c) => [c.hex, `${c.name || "Color"} ${String(c.hex).toUpperCase()}`]));
   return dsSelect({
     kind: "pair",
     index: slot,
     value: pendingPair[slot],
     labels,
     options: colors.map((c) => c.hex),
-    placeholder: slot === 0 ? "Colour" : "Never with",
-    ariaLabel: slot === 0 ? "First colour of the pair" : "Colour it must never meet",
+    placeholder: slot === 0 ? "Color" : "Never with",
+    ariaLabel: slot === 0 ? "First color of the pair" : "Color it must never meet",
   });
 }
 
@@ -137,7 +137,7 @@ export function renderVisualRules(data, edit) {
       <dt>Logo minimum size</dt><dd>${esc(r.logoMinPx)} px</dd>
       <dt>Clear space around the logo</dt><dd>${esc(r.clearSpace)} × the logo's height</dd>
       <dt>Logo distortion</dt><dd>${r.noLogoDistortion ? "Never stretch or skew the logo" : "Allowed"}</dd>
-      <dt>Colours that never meet</dt><dd>${
+      <dt>Color pairs to avoid</dt><dd>${
         r.forbiddenPairs.length
           ? `<div class="recap__kit-pairs">${r.forbiddenPairs.map(pairSwatches).join("")}</div>`
           : `<span class="recap__row-empty">None</span>`
@@ -160,7 +160,7 @@ export function renderVisualRules(data, edit) {
       <i></i><span>Never stretch or skew the logo</span>
     </label>
     <div class="recap__kit-group">
-      <span class="recap__look-label">Colours that never meet</span>
+      <span class="recap__look-label">Color pairs to avoid</span>
       ${
         r.forbiddenPairs.length
           ? `<ul class="recap__kit-pair-list">${r.forbiddenPairs
@@ -177,7 +177,7 @@ export function renderVisualRules(data, edit) {
               <button type="button" class="ap-button secondary blue" data-recap-kit-pair-add ${pendingPair[0] && pendingPair[1] && pendingPair[0] !== pendingPair[1] ? "" : "disabled"}>
                 <i class="ap-icon-plus"></i><span>Add pair</span>
               </button></div>`
-          : `<span class="recap__row-empty">Add two colours to set a pair</span>`
+          : `<span class="recap__row-empty">Add two colors to set a pair</span>`
       }
     </div>
   </div>`;

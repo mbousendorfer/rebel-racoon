@@ -19,8 +19,8 @@
 //     • onDone() — fired after a committed change (scope or ownership), so the
 //       caller can repaint or bail out if it just handed away its own access.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1860";
-import { getContextById, updateContext, appendHistory } from "../contexts-store.js?v=1860";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1862";
+import { getContextById, updateContext, appendHistory } from "../contexts-store.js?v=1862";
 import {
   canTransfer,
   isMine,
@@ -29,10 +29,10 @@ import {
   recipientsOf,
   tiedProfile,
   profileBlockFor,
-} from "../playbook-access.js?v=1860";
-import { MEMBERS, ORG, CURRENT_USER, getMember, memberName } from "../org.js?v=1860";
-import { showToast } from "./toast.js?v=1860";
-import { html, raw, escapeHtml } from "../utils.js?v=1860";
+} from "../playbook-access.js?v=1862";
+import { MEMBERS, ORG, CURRENT_USER, getMember, memberName } from "../org.js?v=1862";
+import { showToast } from "./toast.js?v=1862";
+import { html, raw, escapeHtml } from "../utils.js?v=1862";
 
 const MODAL_ID = "sharePlaybook";
 
@@ -172,7 +172,13 @@ function renderPicker(ctx) {
         ${raw(avatar(m))}
         <span class="share-playbook-modal__row-name">${m.name}</span>
         ${raw(
-          blocked ? html`<span class="ap-tag grey mini" data-tooltip="No access to ${account}">No access</span>` : "",
+          blocked
+            ? html`<span
+                class="ap-tag grey mini"
+                data-tooltip="Can't reach ${account} in Agorapulse, so can't use this Playbook"
+                >No access</span
+              >`
+            : "",
         )}
       </label>`;
     })
@@ -241,7 +247,7 @@ function peopleRows(ctx) {
             <span class="share-playbook-modal__row-name">${m.name}</span>
             ${raw(youChip(m.id))}
           </span>
-          <span class="share-playbook-modal__role">${raw(orgAccess ? "Invited" : "Can use")}</span>
+          <span class="share-playbook-modal__role">${raw("Can use")}</span>
           ${raw(
             orgAccess
               ? ""
@@ -283,10 +289,12 @@ function renderPeople(ctx) {
 // about the OWNER, and a manager governing Sam's Playbook still can't edit a
 // word of it (canEdit is the owner, full stop).
 function reachNote(ctx) {
-  if (pickedScope() === "personal") return "";
+  // Just me: nobody listed, nobody else — said, rather than an empty section.
+  if (pickedScope() === "personal")
+    return html`<p class="share-playbook-modal__note">Just you. Add people above to share it.</p>`;
   const who = isMine(ctx) ? "you" : escapeHtml(ownerName(ctx));
   return html`<p class="share-playbook-modal__note">
-    They can read it and write with it. Only ${raw(who)} can change what it says.
+    They can read it and use it in chats. Only ${raw(who)} can change what it says.
   </p>`;
 }
 
@@ -298,8 +306,8 @@ function renderGeneral(ctx) {
     {
       value: "invited",
       icon: "ap-icon-lock-on",
-      label: "Invited people only",
-      hint: `Nobody else at ${escapeHtml(ORG.name)} can open it.`,
+      label: "Specific people",
+      hint: `Only the people listed above can open it — nobody else at ${escapeHtml(ORG.name)}.`,
     },
     {
       value: "organization",
@@ -326,7 +334,7 @@ function renderGeneral(ctx) {
     .join("");
   return html`
     <section class="share-playbook-modal__section">
-      <h3 class="share-playbook-modal__section-title">General access</h3>
+      <h3 class="share-playbook-modal__section-title">Who else can open it</h3>
       <details class="ap-select share-playbook-modal__general" data-share-pop>
         <summary class="ap-select-trigger">
           <i class="${current.icon} share-playbook-modal__trigger-glyph" aria-hidden="true"></i>
@@ -443,7 +451,7 @@ function listNames(names) {
   if (safe.length === 1) return safe[0];
   if (safe.length === 2) return `${safe[0]} and ${safe[1]}`;
   const rest = safe.length - 2;
-  return `${safe[0]}, ${safe[1]} and ${rest} ${rest === 1 ? "other" : "others"}`;
+  return `${safe[0]}, ${safe[1]}, and ${rest} ${rest === 1 ? "other" : "others"}`;
 }
 
 // Everything below the rule is about the OBJECT rather than its reach: how it
@@ -497,11 +505,12 @@ function renderTransfer(ctx) {
             data-share-transfer
             ${raw(transferTo ? "" : "disabled")}
           >
-            <span>Transfer</span>
+            <span>Transfer ownership</span>
           </button>
         </div>
         <p class="share-playbook-modal__handover-note">
-          They become the only person who can edit it${raw(isMine(ctx) ? " — including instead of you" : "")}.
+          They become the owner and the only person who can edit
+          it${raw(isMine(ctx) ? ". You'll lose edit access" : "")}.
         </p>
       </div>
     </details>
@@ -622,8 +631,8 @@ function syncCommit(ctx) {
   // "Share with 2 people" for a Playbook already shared with exactly those two
   // — a disabled button describing what is already true reads as a failure.
   if (!dirty) saveBtn.textContent = "Save";
-  else if (target === "organization") saveBtn.textContent = "Share with the org";
-  else if (target === "personal") saveBtn.textContent = "Make it private";
+  else if (target === "organization") saveBtn.textContent = `Share with everyone at ${ORG.name}`;
+  else if (target === "personal") saveBtn.textContent = "Keep it to myself";
   else saveBtn.textContent = n === 1 ? "Share with 1 person" : `Share with ${n} people`;
 }
 
@@ -761,20 +770,20 @@ function commitScope() {
   let action;
   let toastText;
   if (target === "organization") {
-    action = "shared it with the organisation";
-    toastText = `Everyone at ${ORG.name} can now use “${ctx.name}”.`;
+    action = "shared it with the organization";
+    toastText = `Everyone at ${ORG.name} can now use "${ctx.name}".`;
   } else if (target === "personal") {
-    action = ctx.scope === "organization" ? "stopped sharing it with the organisation" : "stopped sharing it";
-    toastText = `“${ctx.name}” is yours alone again.`;
+    action = ctx.scope === "organization" ? "stopped sharing it with the organization" : "stopped sharing it";
+    toastText = `"${ctx.name}" is yours alone again.`;
   } else if (ctx.scope === "members") {
     // Same reach, different list. The log says a list changed and not what it
     // became, for the same reason it carries no diffs anywhere else.
     action = "changed who it's shared with";
-    toastText = `Updated who can use “${ctx.name}”.`;
+    toastText = `Updated who can use "${ctx.name}".`;
   } else {
     // `named` is already the person's name when there's exactly one of them.
     action = `shared it with ${named}`;
-    toastText = `${named} can now use “${ctx.name}”.`;
+    toastText = `${named} can now use "${ctx.name}".`;
   }
 
   record(ctx, action);
@@ -798,7 +807,7 @@ function commitTransfer() {
   updateContext(ctx.id, { ownerId: transferTo });
   const fn = pendingOnDone;
   close();
-  showToast(`“${ctx.name}” now belongs to ${to?.name || "a teammate"}.`);
+  showToast(`"${ctx.name}" now belongs to ${to?.name || "a teammate"}.`);
   if (typeof fn === "function") fn();
 }
 

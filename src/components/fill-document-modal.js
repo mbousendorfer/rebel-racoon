@@ -12,9 +12,9 @@
 //     it fires onConfirm({ file, url }) then closes. A warning notes the
 //     overwrite. Cancel / Esc / backdrop / close-X dismiss without firing.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1860";
-import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=1860";
-import { detectUrlService } from "../url-services.js?v=1860";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1862";
+import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=1862";
+import { detectUrlService } from "../url-services.js?v=1862";
 
 const MODAL_ID = "fill-document";
 const ACCEPT = ".pdf,.doc,.docx,.txt,.md,.rtf,.pptx,.csv";
@@ -38,14 +38,14 @@ const HTML = `
   aria-hidden="true"
 >
   <div class="ap-dialog-header">
-    <span class="ap-dialog-title" id="fillDocTitle">Fill from a document</span>
+    <span class="ap-dialog-title" id="fillDocTitle">Learn your voice from a document</span>
   </div>
   <button class="ap-dialog-close" type="button" id="fillDocClose" aria-label="Close">
     <i class="ap-icon-close"></i>
   </button>
   <div class="ap-dialog-content">
     <p class="fill-document-modal__lead">
-      Drop a brand doc or paste a link — I'll read it and rebuild every section of this Playbook.
+      Drop a Brand doc or paste a link — I'll read it and rewrite your Voice profile.
     </p>
     ${dropzoneHTML({
       id: "fillDocDrop",
@@ -71,7 +71,7 @@ const HTML = `
       <i class="ap-icon-info_fill" aria-hidden="true"></i>
       <div class="ap-infobox-content">
         <div class="ap-infobox-texts">
-          <span class="ap-infobox-message">This replaces all current sections of the Playbook.</span>
+          <span class="ap-infobox-message">This replaces your Voice profile.</span>
         </div>
       </div>
     </div>
@@ -80,7 +80,7 @@ const HTML = `
     <div class="ap-dialog-footer-right">
       <button type="button" class="ap-button ghost grey" id="fillDocCancel">Cancel</button>
       <button type="button" class="ap-button primary blue" id="fillDocConfirm" disabled>
-        <i class="ap-icon-archie-official"></i><span>Fill from document</span>
+        <i class="ap-icon-archie-official"></i><span>Learn from document</span>
       </button>
     </div>
   </div>

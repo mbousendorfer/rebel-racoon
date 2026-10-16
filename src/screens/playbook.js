@@ -10,17 +10,17 @@
 //   • ★ (next to the name)  — toggle this Playbook as the default
 //
 // Voice-only re-analysis:
-//   • Learn from…           — Voice & style section dropdown (my posts / docs),
+//   • Learn from…           — Voice profile section dropdown (my posts / docs),
 //                             scoped to the voice fields only
 //
 // Each re-analysis reuses the engine's staged loader: we re-mount with a
 // `loader` cfg, run the (mock) analysis on a timer, then `updateContext` with
 // the section patch — the loader flips to ready and paints the fresh data.
 
-import { navigate, getPath } from "../router.js?v=1860";
-import { parseHashParams } from "../url-state.js?v=1860";
-import { escapeHtml as esc } from "../utils.js?v=1860";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../components/topbar.js?v=1860";
+import { navigate, getPath } from "../router.js?v=1862";
+import { parseHashParams } from "../url-state.js?v=1862";
+import { escapeHtml as esc } from "../utils.js?v=1862";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../components/topbar.js?v=1862";
 import {
   getContextById,
   getContexts,
@@ -28,19 +28,19 @@ import {
   deleteContext,
   duplicateContext,
   appendHistory,
-} from "../contexts-store.js?v=1860";
-import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=1860";
-import { mount, snapshotEditable } from "../playbook-view.js?v=1860";
-import { open as openRenameModal } from "../components/rename-modal.js?v=1860";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=1860";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=1860";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=1860";
+} from "../contexts-store.js?v=1862";
+import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=1862";
+import { mount, snapshotEditable } from "../playbook-view.js?v=1862";
+import { open as openRenameModal } from "../components/rename-modal.js?v=1862";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=1862";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=1862";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=1862";
 import {
   analyzeWebsite,
   analyzeDocument,
   analyzeSocialProfiles,
   analyzeNetworkVoices,
-} from "../context-mock-analysis.js?v=1860";
+} from "../context-mock-analysis.js?v=1862";
 import {
   networkVoicesOn,
   baseNetwork,
@@ -48,8 +48,8 @@ import {
   networkLabel,
   cloneVoiceByNetwork,
   cloneItems,
-} from "../network-voice.js?v=1860";
-import { sectionPatchFromAnalysis } from "../context-builder.js?v=1860";
+} from "../network-voice.js?v=1862";
+import { sectionPatchFromAnalysis } from "../context-builder.js?v=1862";
 import {
   canView,
   canEdit,
@@ -61,24 +61,25 @@ import {
   isMine,
   ownerOf,
   ownerName,
-} from "../playbook-access.js?v=1860";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=1860";
-import { showToast } from "../components/toast.js?v=1860";
+} from "../playbook-access.js?v=1862";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=1862";
+import { showToast } from "../components/toast.js?v=1862";
 
 const AUTOFILL_MS = 1500;
 
 const STAGES = {
   website: [
-    { title: "Reading the website", sub: "Scanning pages, copy, and brand cues." },
+    { title: "Reading the website", sub: "Scanning pages, copy, and Brand cues." },
     { title: "Rebuilding your Playbook", sub: "Mapping it all into every section." },
   ],
+  // The two voice-only sources rewrite the Voice profile, never the whole Playbook.
   documents: [
-    { title: "Reading your document", sub: "Pulling voice, format, and brand cues." },
-    { title: "Rebuilding your Playbook", sub: "Mapping it all into every section." },
+    { title: "Reading your document", sub: "Pulling voice, format, and Brand cues." },
+    { title: "Updating your voice", sub: "Rewriting your Voice profile from what I read." },
   ],
   social: [
     { title: "Reading your posts", sub: "Learning how you open, close, and format." },
-    { title: "Rebuilding your Playbook", sub: "Mapping it all into every section." },
+    { title: "Updating your voice", sub: "Rewriting your Voice profile from what I read." },
   ],
 };
 
@@ -98,7 +99,7 @@ function prettyUrl(url) {
 // slot — the facts line alone under the bar didn't hold as a header.
 function buildTopbarLeft() {
   const back = isWorkspaceMode() ? catalogueRoute() : "/contexts";
-  const backLabel = isWorkspaceMode() ? "Back to all playbooks" : "Back to Playbooks";
+  const backLabel = isWorkspaceMode() ? "Back to all Playbooks" : "Back to Playbooks";
   return renderIconBack(back, backLabel);
 }
 
@@ -106,10 +107,10 @@ function buildTopbarActions(ctx) {
   const editable = canEdit(ctx);
   return [
     !editable
-      ? `<button type="button" class="ap-button stroked grey" data-playbook-duplicate><i class="ap-icon-copy"></i><span>Duplicate</span></button>`
+      ? `<button type="button" class="ap-button stroked grey" data-playbook-duplicate><i class="ap-icon-copy"></i><span>Duplicate Playbook</span></button>`
       : "",
     canManageSharing(ctx)
-      ? `<button type="button" class="ap-button stroked grey" data-playbook-share><i class="ap-icon-share"></i><span>Share</span></button>`
+      ? `<button type="button" class="ap-button stroked grey" data-playbook-share><i class="ap-icon-share"></i><span>Share Playbook</span></button>`
       : "",
     editable
       ? `<button type="button" class="ap-button stroked grey" data-fill-website><i class="ap-icon-refresh"></i><span>Re-analyze website</span></button>`
@@ -117,7 +118,7 @@ function buildTopbarActions(ctx) {
     // Last and orange: starting a chat hands the brand to Archie — the AI action.
     `<button type="button" class="ap-button primary orange" data-playbook-start><i class="ap-icon-double-chat-bubbles"></i><span>Start a chat</span></button>`,
     canDelete(ctx)
-      ? `<button type="button" class="ap-icon-button" data-playbook-delete aria-label="Delete Playbook" data-tooltip="Delete"><i class="ap-icon-trash" aria-hidden="true"></i></button>`
+      ? `<button type="button" class="ap-icon-button" data-playbook-delete aria-label="Delete Playbook" data-tooltip="Delete Playbook"><i class="ap-icon-trash" aria-hidden="true"></i></button>`
       : "",
   ].join("");
 }
@@ -130,6 +131,10 @@ function buildOwnership(ctx) {
   const owner = ownerOf(ctx);
   return {
     tag,
+    // The tag's tooltip: what the tag means for me, not the tag again.
+    hint: isMine(ctx)
+      ? "You own it — only you can edit it."
+      : `${ownerName(ctx)} owns it. You can use it, not edit it.`,
     owner: owner ? `${owner.name}${isMine(ctx) ? " (you)" : ""}` : ownerName(ctx),
     initials: owner?.initials || "?",
   };
@@ -148,11 +153,11 @@ function buildNotice(ctx) {
   // headline says which, because they are not the same promise: one follows the
   // org, the other is a list its owner wrote by hand.
   const headline = isOrgShared(ctx)
-    ? `${esc(ownerName(ctx))} shares this Playbook with your organisation`
+    ? `${esc(ownerName(ctx))} shared this Playbook with everyone in your organization`
     : `${esc(ownerName(ctx))} shared this Playbook with you`;
   const message = canGovern(ctx)
-    ? `You can read it and write with it, and manage it as a manager — share it, hand it over, delete it. What it SAYS is ${esc(ownerName(ctx))}'s: to change a word, duplicate it.`
-    : "You can read it and write with it. To change anything, duplicate it — the copy is yours.";
+    ? `You can use it in chats, share it, transfer ownership, or delete it. Only ${esc(ownerName(ctx))} can edit it — duplicate it to make your own version.`
+    : "You can read it and use it in chats. To change anything, duplicate it — the copy is yours.";
   return `
     <div class="ap-infobox info recap__notice">
       <i class="ap-icon-info" aria-hidden="true"></i>
@@ -256,7 +261,7 @@ export function renderPlaybook(params, target) {
     }, AUTOFILL_MS);
   }
 
-  // "Analyze social profiles" only rewrites Voice & style (the guided fields),
+  // "Analyze social profiles" only rewrites Voice profile (the guided fields),
   // so it lives on that section — not the whole-Playbook Auto-fill menu.
   function voicePatchFromAnalysis(analysis) {
     const p = sectionPatchFromAnalysis(analysis);
@@ -301,7 +306,7 @@ export function renderPlaybook(params, target) {
     }
     openAnalyzeProfilesModal({
       onConfirm: (ids) =>
-        runAutofill(STAGES.social, () => voicePatchFromAnalysis(analyzeSocialProfiles(ids)), "Voice & style updated."),
+        runAutofill(STAGES.social, () => voicePatchFromAnalysis(analyzeSocialProfiles(ids)), "Voice profile updated."),
     });
   }
 
@@ -309,16 +314,16 @@ export function renderPlaybook(params, target) {
     const ctx = getContextById(id);
     // Guard: every chat needs a Playbook, so never delete the last one.
     if (getContexts().length <= 1) {
-      toast("Can't delete the last Playbook — every chat needs one.");
+      toast("Can't delete your only Playbook. Every chat needs one — create another first.");
       return;
     }
     const shared = ctx?.scope === "organization";
     const n = ctx?.usedIn || 0;
     const body = shared
-      ? `“${esc(ctx?.name || "This Playbook")}” is shared with your organisation${
-          n ? ` and ${n === 1 ? "1 chat runs" : `${n} chats run`} on it` : ""
-        }. Those chats keep the drafts already written — they can still be saved or scheduled — but they won’t generate anything new. This can’t be undone.`
-      : `“${esc(ctx?.name || "This Playbook")}” will be removed. Chats using it will need a new Playbook. This can’t be undone.`;
+      ? `"${esc(ctx?.name || "This Playbook")}" is shared with everyone in your organization${
+          n ? `, and ${n === 1 ? "1 chat uses" : `${n} chats use`} it` : ""
+        }. They keep their drafts — those can still be saved or scheduled — but I can't draft anything new in them. This can't be undone.`
+      : `"${esc(ctx?.name || "This Playbook")}" will be removed. Chats using it will need a new Playbook. This can't be undone.`;
     openConfirmModal({
       title: "Delete Playbook?",
       body,
@@ -335,7 +340,7 @@ export function renderPlaybook(params, target) {
   }
 
   // "Learn from → Documents…" — a modal with a file dropzone + a document link
-  // (Google Docs / Drive). Scoped to Voice & style (same as "My posts"), so it
+  // (Google Docs / Drive). Scoped to Voice profile (same as "My posts"), so it
   // only rewrites the guided voice fields, never the whole Playbook.
   function docNameFromUrl(url) {
     if (/docs\.google/.test(url)) return "Google Doc";
@@ -353,7 +358,7 @@ export function renderPlaybook(params, target) {
         runAutofill(
           STAGES.documents,
           () => voicePatchFromAnalysis(analyzeDocument(fileLike)),
-          "Voice & style updated.",
+          "Voice profile updated.",
         );
       },
     });
@@ -422,7 +427,7 @@ export function renderPlaybook(params, target) {
       closeMenus();
       const copy = duplicateContext(id);
       if (copy) {
-        toast("Duplicated — this copy is yours to edit.");
+        toast("Playbook duplicated. The copy is yours to edit.");
         navigate(`/playbook/${copy.id}`);
       }
       return true;
@@ -434,8 +439,8 @@ export function renderPlaybook(params, target) {
       const domain = prettyUrl(ctx?.websiteUrl) || "the website";
       openConfirmModal({
         title: "Re-analyze website?",
-        body: `Every section will be rebuilt from ${esc(domain)}, replacing the current content.`,
-        confirmLabel: "Re-analyze",
+        body: `Every section will be rebuilt from ${esc(domain)}, replacing the current content. This can't be undone.`,
+        confirmLabel: "Re-analyze website",
         cancelLabel: "Cancel",
         onConfirm: () =>
           runAutofill(STAGES.website, () => sectionPatchFromAnalysis(analyzeWebsite(getContextById(id)?.websiteUrl))),
@@ -443,7 +448,7 @@ export function renderPlaybook(params, target) {
       return true;
     }
 
-    // Voice & style "Learn from…" dropdown — both sources are voice-scoped.
+    // Voice profile "Learn from…" dropdown — both sources are voice-scoped.
     const learn = event.target.closest("[data-recap-learn]");
     if (learn) {
       learn.closest("details")?.removeAttribute("open");

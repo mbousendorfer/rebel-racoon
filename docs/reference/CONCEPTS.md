@@ -20,14 +20,14 @@ C'est le `CLAUDE.md` d'une marque : le document qu'on donnerait à un rédacteur
 
 Six familles, détaillées champ par champ dans [`FEATURES.md` §9](FEATURES.md#9-playbooks) :
 
-| Famille              | Répond à                                                                                                                                                             |
-| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Identité**         | Qui est cette marque ? (nom, site, business summary, langue(s))                                                                                                      |
-| **Audience & goals** | À qui je parle, quels problèmes ils ont, quel objectif je poursuis, quel CTA                                                                                         |
-| **Voice & style**    | Comment ça sonne — cinq parties : le résumé, **Always**, **Never** (+ **mots à éviter**), **Depending on the post**, **Now and then**                                |
-| **Brand identity**   | À quoi ça ressemble (logos **et leur version**, couleurs **et leur rôle**, typo, personnalité, images de réf., **look par défaut des images**, **règles visuelles**) |
-| **Competitors**      | Contre qui je me positionne                                                                                                                                          |
-| **Influencers**      | Qui mon audience écoute déjà (les créateurs qu'elle suit)                                                                                                            |
+| Famille            | Répond à                                                                                                                                                             |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Identité**       | Qui est cette marque ? (nom, site, business summary, langue(s))                                                                                                      |
+| **Brief**          | À qui je parle, quels problèmes ils ont, quel objectif je poursuis, quel CTA                                                                                         |
+| **Voice profile**  | Comment ça sonne — cinq parties : le résumé, **Always**, **Never** (+ **mots à éviter**), **Depending on the post**, **Now and then**                                |
+| **Brand identity** | À quoi ça ressemble (logos **et leur version**, couleurs **et leur rôle**, typo, personnalité, images de réf., **look par défaut des images**, **règles visuelles**) |
+| **Competitors**    | Contre qui je me positionne                                                                                                                                          |
+| **Influencers**    | Qui mon audience écoute déjà (les créateurs qu'elle suit)                                                                                                            |
 
 ### Le test d'inclusion
 

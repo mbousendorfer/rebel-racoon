@@ -15,8 +15,8 @@
 //     it fires onConfirm(ids) then closes. A warning notes the overwrite.
 //   - Cancel / Esc / backdrop / close-X dismiss without firing.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1860";
-import { escapeHtml as esc } from "../utils.js?v=1860";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1862";
+import { escapeHtml as esc } from "../utils.js?v=1862";
 import {
   getConnectedProfiles,
   normalizeNetwork,
@@ -24,7 +24,7 @@ import {
   NETWORK_ICON_BY_PLATFORM,
   BRAND_INITIALS,
   PROFILE_SEARCH_THRESHOLD,
-} from "../social-profiles.js?v=1860";
+} from "../social-profiles.js?v=1862";
 
 const MODAL_ID = "analyze-profiles";
 
@@ -45,14 +45,14 @@ const HTML = `
   aria-hidden="true"
 >
   <div class="ap-dialog-header">
-    <span class="ap-dialog-title" id="analyzeProfilesTitle">Analyze social profiles</span>
+    <span class="ap-dialog-title" id="analyzeProfilesTitle">Learn your voice from your posts</span>
   </div>
   <button class="ap-dialog-close" type="button" id="analyzeProfilesClose" aria-label="Close">
     <i class="ap-icon-close"></i>
   </button>
   <div class="ap-dialog-content">
     <p class="analyze-profiles-modal__lead" id="analyzeProfilesLead">
-      Pick the profiles to learn from — I read their recent posts and rebuild your Voice &amp; style.
+      Pick the accounts to learn from — I read their recent posts and rewrite your Voice profile.
     </p>
     <div class="ap-input-group analyze-profiles-modal__search" id="analyzeProfilesSearchGroup" hidden>
       <i class="ap-icon-search" aria-hidden="true"></i>
@@ -65,12 +65,12 @@ const HTML = `
       />
     </div>
     <div class="analyze-profiles-modal__list" id="analyzeProfilesList" role="group" aria-label="Connected profiles"></div>
-    <p class="analyze-profiles-modal__empty" id="analyzeProfilesNoMatch" hidden>No profiles match your search.</p>
+    <p class="analyze-profiles-modal__empty" id="analyzeProfilesNoMatch" hidden>No accounts match your search.</p>
     <div class="ap-infobox warning analyze-profiles-modal__warn">
       <i class="ap-icon-info_fill" aria-hidden="true"></i>
       <div class="ap-infobox-content">
         <div class="ap-infobox-texts">
-          <span class="ap-infobox-message" id="analyzeProfilesWarn">This replaces your Voice &amp; style section.</span>
+          <span class="ap-infobox-message" id="analyzeProfilesWarn">This replaces your Voice profile.</span>
         </div>
       </div>
     </div>
@@ -79,7 +79,7 @@ const HTML = `
     <div class="ap-dialog-footer-right">
       <button type="button" class="ap-button ghost grey" id="analyzeProfilesCancel">Cancel</button>
       <button type="button" class="ap-button primary orange" id="analyzeProfilesConfirm" disabled>
-        <i class="ap-icon-archie-official"></i><span>Analyze &amp; fill</span>
+        <i class="ap-icon-archie-official"></i><span>Learn from posts</span>
       </button>
     </div>
   </div>
@@ -94,7 +94,7 @@ function renderList() {
   const profiles = profilesShown();
   if (!profiles.length) {
     const label = onlyNetwork ? `${networkMeta(onlyNetwork)?.label || onlyNetwork} ` : "";
-    listEl.innerHTML = `<p class="analyze-profiles-modal__empty">No connected ${esc(label)}profiles yet. Connect one from a chat when you draft a post, and I can learn from it here.</p>`;
+    listEl.innerHTML = `<p class="analyze-profiles-modal__empty">No connected ${esc(label)}accounts yet. Connect one from a chat when you draft a post, and I can learn from it here.</p>`;
     return;
   }
   // Row HTML is built from esc()'d values; assign directly (no escaping wrapper).
@@ -202,11 +202,11 @@ export function open({ onConfirm = null, network = null } = {}) {
   onlyNetwork = network ? normalizeNetwork(network) : null;
   const label = onlyNetwork ? networkMeta(onlyNetwork)?.label || onlyNetwork : "";
   leadEl.textContent = onlyNetwork
-    ? `Pick the profiles to learn from — I read their recent posts and rebuild how your voice adapts on ${label}.`
-    : "Pick the profiles to learn from — I read their recent posts and rebuild your Voice & style.";
+    ? `Pick the accounts to learn from — I read their recent posts and rebuild how your voice adapts on ${label}.`
+    : "Pick the accounts to learn from — I read their recent posts and rewrite your Voice profile.";
   warnEl.textContent = onlyNetwork
     ? `This replaces what's adapted for ${label}. What I've learned stays.`
-    : "This replaces your Voice & style section.";
+    : "This replaces your Voice profile.";
   renderList();
   syncConfirm();
   // Reset + reveal the search box only when the list is long enough to warrant it.
