@@ -5,7 +5,7 @@
 // two modals (with z-index races and Esc behaviour undefined).
 //
 // Usage:
-//   import { requestOpen, notifyClose } from "./modal-coordinator.js?v=1896";
+//   import { requestOpen, notifyClose } from "./modal-coordinator.js?v=1897";
 //
 //   export function open() {
 //     requestOpen("bugReport", close);   // closes the active overlay first
@@ -68,6 +68,22 @@ export function notifyClose(id) {
       }
     }
   }
+}
+
+// An Escape pressed while an overlay is open belongs to that overlay.
+// Snapshotted in the capture phase, before any bubble listener runs —
+// the overlay's own Esc handler may close it (and clear activeId) before
+// a later listener, like the right panel's, gets to ask.
+const overlayEscapes = new WeakSet();
+document.addEventListener(
+  "keydown",
+  (event) => {
+    if (event.key === "Escape" && activeId) overlayEscapes.add(event);
+  },
+  true,
+);
+export function isOverlayEscape(event) {
+  return overlayEscapes.has(event);
 }
 
 // bindOverlayDismissal wires the common dismissal patterns (Escape key,
