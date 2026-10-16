@@ -13,15 +13,15 @@
 // tones, contentStyle, objective, contentAction, ctaLinks, language, color,
 // suggestions, editingId, onComplete }.
 
-import * as inlineQuestion from "./inline-question.js?v=1884";
-import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=1884";
-import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=1884";
-import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=1884";
-import { showToast } from "./components/toast.js?v=1884";
-import { recordReasons } from "./feedback-store.js?v=1884";
-import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1884";
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1884";
-import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=1884";
+import * as inlineQuestion from "./inline-question.js?v=1885";
+import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=1885";
+import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=1885";
+import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=1885";
+import { showToast } from "./components/toast.js?v=1885";
+import { recordReasons } from "./feedback-store.js?v=1885";
+import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1885";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1885";
+import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=1885";
 import {
   analyzeWebsite,
   analyzeBrandFiles,
@@ -29,8 +29,8 @@ import {
   analyzeInterview,
   nextInterviewQuestion,
   INTERVIEW_OPENING,
-} from "./context-mock-analysis.js?v=1884";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=1884";
+} from "./context-mock-analysis.js?v=1885";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=1885";
 import {
   networkVoicesOn,
   cloneVoiceByNetwork,
@@ -38,17 +38,17 @@ import {
   networkLabel,
   networkIcon,
   voiceNetworks,
-} from "./network-voice.js?v=1884";
-import { connectors as connectorMocks } from "./mocks.js?v=1884";
+} from "./network-voice.js?v=1885";
+import { connectors as connectorMocks } from "./mocks.js?v=1885";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "./social-profiles.js?v=1884";
-import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=1884";
-import { isFlagOn } from "./feature-flags.js?v=1884";
-import { navigate } from "./router.js?v=1884";
-import { setHandoff } from "./handoff.js?v=1884";
+} from "./social-profiles.js?v=1885";
+import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=1885";
+import { isFlagOn } from "./feature-flags.js?v=1885";
+import { navigate } from "./router.js?v=1885";
+import { setHandoff } from "./handoff.js?v=1885";
 
 const drafts = new Map(); // sessionId → draft
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -388,18 +388,14 @@ const ALT_START_ITEMS = [
   },
 ];
 
-// Flag playbookNoWebsite (prod's content-studio-playbook-no-website): a third
-// way in, for a brand with no site to read — I interview the user instead.
+// Prod's content-studio-playbook-no-website (baked in 2026-10-16): a way in for
+// a brand with no site to read — I interview the user instead.
 const ALT_NO_WEBSITE_ITEM = {
   value: "noWebsite",
   label: "I don't have a website",
   caption: "Answer a few quick questions instead",
   icon: "ap-icon-single-chat-bubble",
 };
-
-function altStartItems() {
-  return isFlagOn("playbookNoWebsite") ? [...ALT_START_ITEMS, ALT_NO_WEBSITE_ITEM] : ALT_START_ITEMS;
-}
 
 // The no-website interview, in place of the URL question (same step, same
 // number). One question at a time, picked from the answers so far by
@@ -560,14 +556,12 @@ function startAltManually(sessionId) {
 function askAltUrl(sessionId, prefilledUrl = "") {
   const intro = prefilledUrl
     ? "Here's the site I found — confirm it below to begin."
-    : isFlagOn("playbookNoWebsite")
-      ? "Drop your website URL below to begin. No website? I'll ask you a few questions instead."
-      : "Drop your website URL below to begin — or start from your files, or fill it in yourself.";
+    : "Drop your website URL below to begin. No website? I'll ask you a few questions instead.";
   postAssistantMessage(sessionId, intro);
   inlineQuestion.ask(sessionId, {
     title: "How do you want to start?",
     stepLabel: altStepLabel("url"),
-    items: altStartItems(),
+    items: [...ALT_START_ITEMS, ALT_NO_WEBSITE_ITEM],
     onPick: (value) => {
       if (value === "noWebsite") startAltInterview(sessionId);
       else if (value === "files") startAltFromFiles(sessionId);

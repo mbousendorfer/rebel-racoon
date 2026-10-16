@@ -4,12 +4,12 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { navigate } from "../router.js?v=1884";
-import { catalogueRoute } from "../active-playbook.js?v=1884";
-import { getDraft, isAnalysisReady, save, patchDraft, restoreDraft } from "../context-builder.js?v=1884";
-import { mount } from "../playbook-view.js?v=1884";
-import { open as openRenameModal } from "../components/rename-modal.js?v=1884";
-import { networkLabel } from "../network-voice.js?v=1884";
+import { navigate } from "../router.js?v=1885";
+import { catalogueRoute } from "../active-playbook.js?v=1885";
+import { getDraft, isAnalysisReady, save, patchDraft, restoreDraft } from "../context-builder.js?v=1885";
+import { mount } from "../playbook-view.js?v=1885";
+import { open as openRenameModal } from "../components/rename-modal.js?v=1885";
+import { networkLabel } from "../network-voice.js?v=1885";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";
@@ -32,7 +32,7 @@ const FILE_LOADING_STAGES = [
   { title: "Building your Playbook", sub: "Turning it all into a Playbook every draft draws from." },
 ];
 
-// The no-website interview (flag playbookNoWebsite): the loader reads the
+// The no-website interview: the loader reads the
 // answers, and says the brand look comes later — there was nothing to sample.
 const INTERVIEW_LOADING_STAGES = [
   { title: "Reading your answers", sub: "Turning what you told me into a strategy brief." },

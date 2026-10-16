@@ -130,21 +130,6 @@ export const FLAGS = Object.freeze([
       "active Brand's colors, so the gallery previews what THIS brand would get.",
   },
   {
-    id: "playbookNoWebsite",
-    label: "Playbook creation without a website",
-    // Prod's content-studio-playbook-no-website. OFF: the first step offers the
-    // URL, files, or by hand — nothing else.
-    default: false,
-    hides:
-      "When OFF (default), creating a Playbook starts from a website, files, or " +
-      'by hand. ON adds "I don\'t have a website" to the first step: I ' +
-      "interview you instead, one question at a time — who you are, what you " +
-      "offer, who you want to reach, what social media should do for you; then, " +
-      "optionally, where posts send people and who else your audience looks at. " +
-      "A vague answer gets one follow-up, six answers at most, and the Playbook " +
-      "is written from your own words.",
-  },
-  {
     id: "newConversationStyles",
     label: "New conversation styles",
     // OFF: the thread as of Monday 2026-10-05 — every conversation restyle

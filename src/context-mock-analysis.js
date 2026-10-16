@@ -8,8 +8,8 @@
 // Suggested values become menthol chips (AI-suggested). Other static
 // option lists come from the brief panel renderer.
 
-import { networkFields, isListPart, isNewPart, itemsFromLines } from "./network-voice.js?v=1884";
-import { objectivesInText } from "./objective-measures.js?v=1884";
+import { networkFields, isListPart, isNewPart, itemsFromLines } from "./network-voice.js?v=1885";
+import { objectivesInText } from "./objective-measures.js?v=1885";
 
 const AGORAPULSE = {
   name: "Agorapulse",
@@ -1048,7 +1048,7 @@ export function analyzeBrandFiles(files = []) {
   return result;
 }
 
-// ── The "no website" interview (flag playbookNoWebsite) ──────────────────────
+// ── The "no website" interview ──────────────────────────────────────
 // Ported from prod's business-interview (content-studio-playbook-no-website):
 // without a site to read, Archie asks what a site would have told it, one
 // question at a time. Four CORE topics carry the brief and may not be skipped;
