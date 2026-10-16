@@ -75,8 +75,8 @@
 //   onSkip()          fn      — called when Skip / Esc; if omitted, no skip btn
 //   onBack()          fn      — called when ← Back is clicked; if omitted, no back btn
 
-import { chatTurn } from "./screens/_analyse-common.js?v=1858";
-import { createSessionNotifier } from "./store-utils.js?v=1858";
+import { chatTurn } from "./screens/_analyse-common.js?v=1859";
+import { createSessionNotifier } from "./store-utils.js?v=1859";
 
 const states = new Map(); // sessionId → opts
 const sessionNotifier = createSessionNotifier("inline-question");
@@ -302,7 +302,7 @@ export function renderChrome(sessionId) {
     customValue: s.customValue || "",
     customFile: s.customFile === true,
     customFileAccept: s.customFileAccept || "",
-    customFileLabel: s.customFileLabel || "Drop a file here, or click to browse",
+    customFileLabel: s.customFileLabel || "Drop a file here, or browse",
     customFileHint: s.customFileHint || "",
     customFileIcon: s.customFileIcon || "ap-icon-upload",
     multi: s.multi === true,
@@ -321,7 +321,7 @@ export function renderChrome(sessionId) {
     submitLabel: s.stepper
       ? s.submitCountLabel
         ? s.submitCountLabel(stepTotal)
-        : `Generate ${stepTotal}`
+        : `Draft ${stepTotal} post${stepTotal === 1 ? "" : "s"}`
       : s.submitLabel || "Continue",
     submitTone: s.submitTone || "blue",
   };

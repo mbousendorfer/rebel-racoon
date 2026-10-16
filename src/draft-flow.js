@@ -21,12 +21,12 @@ import {
   postDraftResult,
   reportDraftFailure,
   GENERATION_TOOLS,
-} from "./assistant.js?v=1858";
-import { getIdeas } from "./library.js?v=1858";
-import { anglesByIdea } from "./mocks.js?v=1858";
-import { addPostDraft } from "./posts-store.js?v=1858";
-import { networkMeta } from "./social-profiles.js?v=1858";
-import { coachAfterDraft } from "./voice-coach.js?v=1858";
+} from "./assistant.js?v=1859";
+import { getIdeas } from "./library.js?v=1859";
+import { anglesByIdea } from "./mocks.js?v=1859";
+import { addPostDraft } from "./posts-store.js?v=1859";
+import { networkMeta } from "./social-profiles.js?v=1859";
+import { coachAfterDraft } from "./voice-coach.js?v=1859";
 
 // The set-up pass before a draft (reading the brief and the voice) — logged as
 // its own tools, so the generation that follows isn't counted twice.
@@ -74,22 +74,22 @@ function generateAngles(idea) {
     {
       id: `angle-${idea.id}-1`,
       title: "The contrarian take",
-      description: `Challenge the common assumption behind “${title}” and argue the opposite.`,
+      description: `Challenge the common assumption behind "${title}" and argue the opposite.`,
     },
     {
       id: `angle-${idea.id}-2`,
       title: "A practical how-to",
-      description: `Turn “${title}” into a step-by-step playbook readers can act on today.`,
+      description: `Turn "${title}" into a step-by-step guide readers can act on today.`,
     },
     {
       id: `angle-${idea.id}-3`,
       title: "The behind-the-scenes story",
-      description: `Share the real story and the lessons behind “${title}”.`,
+      description: `Share the real story and the lessons behind "${title}".`,
     },
     {
       id: `angle-${idea.id}-4`,
       title: "The data-backed proof",
-      description: `Back “${title}” with concrete numbers and a result readers can trust.`,
+      description: `Back "${title}" with concrete numbers and a result readers can trust.`,
     },
   ];
 }
@@ -157,7 +157,7 @@ export function startDraftFlow(sessionId, ideaId, count = 1, channelOverride = n
     }));
 
     postAssistantChoice(sessionId, {
-      text: "Which channels should I draft for?",
+      text: "Which networks should I draft for?",
       choices,
       multi: true,
       handler: "draft-channels",

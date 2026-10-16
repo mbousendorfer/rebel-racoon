@@ -4,10 +4,10 @@
 // Moved out of session.js, unchanged; askAngleQuestion is also the right
 // panel's entry point (it imports this module, not the whole screen).
 
-import { getSessionById } from "../../sessions-store.js?v=1858";
-import { getContextById } from "../../contexts-store.js?v=1858";
-import { playbookForNewWork } from "../../active-playbook.js?v=1858";
-import { isFlagOn } from "../../feature-flags.js?v=1858";
+import { getSessionById } from "../../sessions-store.js?v=1859";
+import { getContextById } from "../../contexts-store.js?v=1859";
+import { playbookForNewWork } from "../../active-playbook.js?v=1859";
+import { isFlagOn } from "../../feature-flags.js?v=1859";
 import {
   postAssistantMessage,
   postSelectionEcho,
@@ -18,24 +18,24 @@ import {
   postActivity,
   postExtractionResult,
   postClipExtractionTurn,
-} from "../../assistant.js?v=1858";
-import * as inlineQuestion from "../../inline-question.js?v=1858";
-import { getIdeas, extractVideoIdeas } from "../../library.js?v=1858";
+} from "../../assistant.js?v=1859";
+import * as inlineQuestion from "../../inline-question.js?v=1859";
+import { getIdeas, extractVideoIdeas } from "../../library.js?v=1859";
 import {
   getSources as getStreamSources,
   setSourceIdeaCount,
   extractClipsForSource,
-} from "../../sources-stream.js?v=1858";
+} from "../../sources-stream.js?v=1859";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
   getConnectedProfileById,
   normalizeNetwork,
-} from "../../social-profiles.js?v=1858";
-import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=1858";
-import { executeDraftBatch, startDraftFlow, getAnglesForIdea } from "../../draft-flow.js?v=1858";
-import * as topPostsFlow from "../../top-posts-flow.js?v=1858";
+} from "../../social-profiles.js?v=1859";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=1859";
+import { executeDraftBatch, startDraftFlow, getAnglesForIdea } from "../../draft-flow.js?v=1859";
+import * as topPostsFlow from "../../top-posts-flow.js?v=1859";
 
 // Build + show the "Which profile?" question, reached from every Draft Post
 // entry point. The chosen profile's platform becomes the draft's network so
@@ -123,16 +123,16 @@ function askProfileQuestion(
   // accounts (brand handle + avatar with network badge) as the Playbook
   // onboarding profile step.
   const connected = getConnectedProfiles();
-  postAssistantMessage(sessionId, "Which profile should I draft this for?");
+  postAssistantMessage(sessionId, "Which account should I draft this for?");
   const profileItems = buildConnectedProfileItems();
   inlineQuestion.ask(sessionId, {
-    title: "Pick a connected social profile",
-    stepLabel: "Profile",
+    title: "Pick a connected account",
+    stepLabel: "Account",
     items: profileItems,
     // With a lot of connected accounts, a flat list is slow to scan — add a
     // live search box so the user can filter by name/handle/network.
     searchable: profileItems.length > PROFILE_SEARCH_THRESHOLD,
-    searchPlaceholder: "Search profiles by name, handle or network…",
+    searchPlaceholder: "Search accounts by name, handle, or network…",
     onPick: (accountId) => {
       const account = connected.find((a) => a.id === accountId);
       // Echo the pick as a visual profile chip (avatar + handle) so selecting a
@@ -186,8 +186,8 @@ export function askRepurposeProfiles(sessionId, postIds) {
   postAssistantMessage(sessionId, "Where should I repurpose these?");
   inlineQuestion.ask(sessionId, {
     title: "Pick the profiles to repurpose to",
-    subtitle: "Set how many versions I'll write for each profile — leave one at 0 to skip it.",
-    stepLabel: "Versions per profile",
+    subtitle: "Set how many drafts I'll write for each account — leave one at 0 to skip it.",
+    stepLabel: "Drafts per account",
     // Per-profile version counter, capped so a single run stays scannable.
     stepper: true,
     countMin: 0,
@@ -196,7 +196,7 @@ export function askRepurposeProfiles(sessionId, postIds) {
     items,
     // Long profile lists get a live search box to filter down before setting counts.
     searchable: items.length > PROFILE_SEARCH_THRESHOLD,
-    searchPlaceholder: "Search profiles by name, handle or network…",
+    searchPlaceholder: "Search accounts by name, handle, or network…",
     onPick: ({ picks, total }) => {
       // Each pick is { value: accountId, count } (count already > 0). Resolve
       // to the account + its network, echo the chosen profiles as chips, then
@@ -351,23 +351,23 @@ export function askVideoIntake(sessionId, sourceId, filename) {
     items: [
       {
         value: "ideas",
-        label: "Analyze for ideas",
-        caption: "Pull the key themes and talking points into your Ideas to draft posts from.",
+        label: "Extract ideas",
+        caption: "Pull hooks, quotes, and talking points into Ideas so you can draft from them.",
         icon: "ap-icon-archie-official",
       },
       {
         value: "clips",
-        label: "Extract & create clips",
-        caption: "Cut the video into short, post-ready clips you can caption and publish.",
+        label: "Cut into clips",
+        caption: "Cut the video into short clips with subtitles, ready to draft posts from.",
         icon: "ap-icon-video",
       },
     ],
     onPick: (value) => {
       if (value === "ideas") {
-        postUserTurn(sessionId, "Analyze for ideas");
+        postUserTurn(sessionId, "Extract ideas");
         runVideoIdeasChoice(sessionId, sourceId, filename);
       } else if (value === "clips") {
-        postUserTurn(sessionId, "Extract & create clips");
+        postUserTurn(sessionId, "Cut into clips");
         runVideoClipsChoice(sessionId, sourceId, filename);
       }
     },

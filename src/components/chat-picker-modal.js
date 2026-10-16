@@ -12,14 +12,14 @@
 //     onPick({ kind: "new" } | { kind: "existing", session })
 //   });
 
-import { recentSessions } from "../mocks.js?v=1858";
-import { getSources } from "../sources-stream.js?v=1858";
-import { getIdeas } from "../library.js?v=1858";
-import { getPosts } from "../posts-store.js?v=1858";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1858";
+import { recentSessions } from "../mocks.js?v=1859";
+import { getSources } from "../sources-stream.js?v=1859";
+import { getIdeas } from "../library.js?v=1859";
+import { getPosts } from "../posts-store.js?v=1859";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1859";
 
 const MODAL_ID = "chatPicker";
-import { renderPicker, bindWizardKeyboard, unbindWizardKeyboard } from "../screens/_analyse-common.js?v=1858";
+import { renderPicker, bindWizardKeyboard, unbindWizardKeyboard } from "../screens/_analyse-common.js?v=1859";
 
 let backdrop, modal, body;
 let initialized = false;
@@ -92,6 +92,10 @@ export function open(opts = {}) {
   if (!initialized) init();
   requestOpen(MODAL_ID, close);
   pendingPick = typeof opts.onPick === "function" ? opts.onPick : null;
+  // The question depends on what is being moved — a draft, or a question to ask.
+  modal.querySelector("#chatPickerTitle").textContent = opts.title || "Where should this draft go?";
+  modal.querySelector(".ap-dialog-subtitle").textContent =
+    opts.subtitle || "Drafts live inside chats. Pick one, or start fresh.";
   renderBody();
   backdrop.hidden = false;
   backdrop.classList.add("open");

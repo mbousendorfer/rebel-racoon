@@ -8,8 +8,8 @@
 //   updateLoadingWatchdog(sessionId) — call after every thread change
 //   stopThinkingTimer()              — call on session unmount
 
-import { getThread } from "../../assistant.js?v=1858";
-import { showToast } from "../../components/toast.js?v=1858";
+import { getThread } from "../../assistant.js?v=1859";
+import { showToast } from "../../components/toast.js?v=1859";
 
 const THINKING_TIMEOUT_MS = 30000;
 const timedOutMessageIds = new Set();
@@ -45,7 +45,7 @@ function startThinkingTimer(sessionId) {
     const elapsed = Date.now() - (loading.createdAt || Date.now());
     if (elapsed >= THINKING_TIMEOUT_MS && !timedOutMessageIds.has(loading.id)) {
       timedOutMessageIds.add(loading.id);
-      showToast("This is taking longer than expected. Hang tight, or refresh if it stays stuck.", {
+      showToast("This is taking longer than usual. Keep waiting, or reload the page if nothing changes in a minute.", {
         variant: "error",
         duration: 6000,
       });

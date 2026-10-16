@@ -6,12 +6,12 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1858";
-import { findConnector } from "./connectors-store.js?v=1858";
-import { createSessionNotifier } from "./store-utils.js?v=1858";
-import { addPostDraft } from "./posts-store.js?v=1858";
-import { showToast } from "./components/toast.js?v=1858";
-import { isFlagOn } from "./feature-flags.js?v=1858";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1859";
+import { findConnector } from "./connectors-store.js?v=1859";
+import { createSessionNotifier } from "./store-utils.js?v=1859";
+import { addPostDraft } from "./posts-store.js?v=1859";
+import { showToast } from "./components/toast.js?v=1859";
+import { isFlagOn } from "./feature-flags.js?v=1859";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -71,7 +71,7 @@ export function sendMessage(sessionId, text, options = {}) {
     thread.push({
       id: newId(),
       role: "system",
-      meta: options.meta || "System",
+      meta: options.meta || "Update",
       variant: options.variant || "grey",
       text: text.trim(),
       open: false,
@@ -186,7 +186,7 @@ export function sendConnectorMessage(sessionId, connectorId, text) {
   thread.push({
     id: reasoningId,
     role: "system",
-    meta: `Querying ${connector.name} via MCP`,
+    meta: `Searching ${connector.name}…`,
     variant: "mermaid",
     text: `Running ${mcpCallTrace(connector)}…`,
     open: true,
@@ -210,7 +210,7 @@ export function sendConnectorMessage(sessionId, connectorId, text) {
     if (reasoning) {
       reasoning.text = reply.reasoning;
       reasoning.status = "ready";
-      if (isFlagOn("newConversationStyles")) reasoning.meta = `Queried ${connector.name} via MCP`;
+      if (isFlagOn("newConversationStyles")) reasoning.meta = `Searched ${connector.name}`;
       reasoning.open = false;
     }
     const replyMsg = thread.find((m) => m.id === replyId);
@@ -248,7 +248,7 @@ export function reportDraftFailure(sessionId, err, retry, source = "draft-flow")
   // eslint-disable-next-line no-console
   console.error(`${source}: draft generation failed`, err);
   if (!isFlagOn("newConversationStyles")) {
-    showToast("Couldn't create those drafts. Try again?", {
+    showToast("Couldn't create those drafts.", {
       variant: "error",
       duration: 6000,
       action: { label: "Retry", onClick: retry },
@@ -330,7 +330,7 @@ export function postSourceIntake(sessionId, { kind, filename, size, sourceId, st
   thread.push({
     id: newId(),
     role: "source-intake",
-    meta: "Source intake",
+    meta: "You",
     kind,
     filename,
     size,
@@ -822,7 +822,7 @@ function seedThread(sessionId, { hasContext }) {
 
   const greeting = hasContext
     ? "Hi. Want me to compare ideas, pick the strongest one, or draft a post? You can also type a question or drop a source."
-    : "Hi. I'll help you pick sources, sharpen ideas, and draft posts. Attach a Playbook any time to make my suggestions sharper.";
+    : "Hi. I'll help you pick sources, sharpen ideas, and draft posts. Pick a Playbook any time so I write in your Brand's voice.";
 
   threads.set(sessionId, [
     {
@@ -969,8 +969,8 @@ function mockAiReply({ prompt, sessionId }) {
 
   if (!leadIdea) {
     return {
-      reasoning: "No sources attached in this session yet, so there's nothing to rank or draft from.",
-      text: "I don't have enough source material in this session yet. Add a source first and I can extract ideas, compare angles, or draft a post.",
+      reasoning: "No sources in this chat yet, so there's nothing to rank or draft from.",
+      text: "I don't have any sources in this chat yet. Add a source first and I can extract ideas, compare angles, or draft a post.",
     };
   }
 
@@ -1032,7 +1032,7 @@ function mockAiReply({ prompt, sessionId }) {
   }
 
   return {
-    reasoning: `Reviewed session state: ${ideaCount} ideas extracted, strongest being "${leadIdea.title}". No draft in progress.`,
+    reasoning: `Reviewed this chat: ${ideaCount} ideas extracted, strongest being "${leadIdea.title}". No draft in progress.`,
     text: `I can keep working in this chat. My recommendation: confirm the strongest idea in the Ideas panel, then generate a draft so the post stays grounded in the source. ${lead} is the one I'd start with.`,
   };
 }

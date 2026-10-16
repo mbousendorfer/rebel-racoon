@@ -16,8 +16,8 @@
 // the underlying stores mutate (assistant thread, sources-stream, library,
 // right-panel mode, sessions).
 
-import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=1858";
-import { getPath } from "../router.js?v=1858";
+import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=1859";
+import { getPath } from "../router.js?v=1859";
 import {
   openDrafts as openDraftsPanel,
   openIdeas as openIdeasPanel,
@@ -25,14 +25,14 @@ import {
   openSources as openSourcesPanel,
   getMode as getRightPanelMode,
   subscribe as subscribeRightPanel,
-} from "./right-panel.js?v=1858";
-import { getThread, subscribe as subscribeThread } from "../assistant.js?v=1858";
-import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=1858";
-import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=1858";
-import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=1858";
-import { subscribe as subscribeSessions } from "../sessions-store.js?v=1858";
-import { addMention } from "../composer-mentions.js?v=1858";
-import { isFlagOn } from "../feature-flags.js?v=1858";
+} from "./right-panel.js?v=1859";
+import { getThread, subscribe as subscribeThread } from "../assistant.js?v=1859";
+import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=1859";
+import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=1859";
+import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=1859";
+import { subscribe as subscribeSessions } from "../sessions-store.js?v=1859";
+import { addMention } from "../composer-mentions.js?v=1859";
+import { isFlagOn } from "../feature-flags.js?v=1859";
 
 // Two-level structure:
 //   .conversation-status-column   — fills grid column 3 with white bg
@@ -302,7 +302,7 @@ function renderSourcesSection(sources) {
       <section class="conversation-status-card__section">
         ${heading}
         <div class="conversation-status-card__empty conversation-status-card__empty--block">
-          None yet — attach a file or URL to get started
+          None yet — attach a file or link to get started.
         </div>
       </section>
     `;
@@ -318,7 +318,7 @@ function renderSourcesSection(sources) {
         type="button"
         class="conversation-status-card__row conversation-status-card__source"
         data-status-source-mention="${escapeAttr(name)}"
-        title="Click to reference in the composer"
+        title="Mention it in your message"
       >
         <span class="conversation-status-card__row-icons" aria-hidden="true">
           <i class="ap-icon-file conversation-status-card__row-icon-rest"></i>

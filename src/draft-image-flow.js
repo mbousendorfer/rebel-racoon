@@ -15,15 +15,15 @@
 // starts at the click and its first stage is exactly that. No chat message: the
 // image appearing in the slot is the feedback; a failure says so in a toast.
 
-import { showToast } from "./components/toast.js?v=1858";
-import { attachImageToDraft, getPosts, updatePostContent } from "./posts-store.js?v=1858";
-import { getSessionById } from "./sessions-store.js?v=1858";
+import { showToast } from "./components/toast.js?v=1859";
+import { attachImageToDraft, getPosts, updatePostContent } from "./posts-store.js?v=1859";
+import { getSessionById } from "./sessions-store.js?v=1859";
 import {
   defaultQuickLook,
   generateQuickImage,
   quickImageChoices,
   suggestImageSubject,
-} from "./modules/image-studio/index.js?v=1858";
+} from "./modules/image-studio/index.js?v=1859";
 
 const FALLBACK_SUBJECT = "One simple object that stands for the idea, on a plain background. No text in the image.";
 
@@ -40,7 +40,10 @@ export async function startDraftImageFlow(sessionId, postId, { repaint }) {
   const brandId = getSessionById(sessionId)?.contextId || null;
   const choices = quickImageChoices({ brandId, network: post.network });
   if (!choices || !choices.styles.length) {
-    showToast("This chat has no Playbook, so I don't know whose image to make.", { variant: "error" });
+    showToast(
+      "This chat has no Playbook, so I can't match an image to your Brand. Start a chat with a Playbook to add images.",
+      { variant: "error" },
+    );
     return;
   }
   updatePostContent(sessionId, postId, { isGeneratingImage: true, imageGeneratingSince: Date.now() });
@@ -66,9 +69,9 @@ export async function startDraftImageFlow(sessionId, postId, { repaint }) {
     done({ imageRevealAt: Date.now() });
   } catch {
     done({});
-    showToast("That image didn't come out.", {
+    showToast("Couldn't generate the image.", {
       variant: "error",
-      action: { label: "Try again", onClick: () => startDraftImageFlow(sessionId, postId, { repaint }) },
+      action: { label: "Retry", onClick: () => startDraftImageFlow(sessionId, postId, { repaint }) },
     });
   }
 }

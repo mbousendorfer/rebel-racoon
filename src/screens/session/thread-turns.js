@@ -6,8 +6,8 @@
 // and returns an HTML string. No store reads, no DOM, no side effects: the
 // store-coupled turns (extraction / clip-extraction / source resolution) stay
 // in session.js and pass their resolved data in as arguments.
-import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=1858";
-import { isFlagOn } from "../../feature-flags.js?v=1858";
+import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=1859";
+import { isFlagOn } from "../../feature-flags.js?v=1859";
 
 // The thread's restyle since Monday 2026-10-05 (flag newConversationStyles).
 // OFF renders the Monday markup; styles/chat-legacy.css holds its values.
@@ -105,9 +105,9 @@ export function renderSourceIntakeTurn(message, source = null) {
   let trailing;
   if (isLoading) {
     trailing = `
-      <span class="chat-bubble-source-intake__loading" role="status" aria-label="Uploading">
+      <span class="chat-bubble-source-intake__loading" role="status" aria-label="Adding">
         <span class="chat-bubble-source-intake__spinner" aria-hidden="true"></span>
-        <span>Uploading</span>
+        <span>Adding…</span>
       </span>
     `;
   } else if (message.sourceId) {
@@ -156,7 +156,7 @@ export function renderSourceIntakeTurn(message, source = null) {
   if (!convNew())
     return `
     <div class="chat-turn chat-turn--user">
-      <span class="chat-turn-role">${message.meta || "Source intake"}</span>
+      <span class="chat-turn-role">${message.meta || "You"}</span>
       <div class="chat-bubble chat-bubble--source-intake" data-intake-status="${message.status || "ready"}">
         ${kindIcon}
         <span class="chat-bubble-source-intake__name" title="${filename}">${filename}</span>
@@ -166,7 +166,7 @@ export function renderSourceIntakeTurn(message, source = null) {
   `;
   return `
     <div class="chat-turn chat-turn--user">
-      <span class="chat-turn-role">${message.meta || "Source intake"}</span>
+      <span class="chat-turn-role">${message.meta || "You"}</span>
       <div class="selection-echo selection-echo--intake" data-intake-status="${message.status || "ready"}">
         <span class="selection-echo__icon">${kindIcon}</span>
         <span class="selection-echo__body">
@@ -263,9 +263,9 @@ export function renderFailedTurn(message) {
           <div class="ap-infobox-texts">
             ${
               message.text
-                ? `<span class="ap-infobox-title">${escapeHtml(message.title || "Something went wrong")}</span>
+                ? `<span class="ap-infobox-title">${escapeHtml(message.title || "I couldn't finish this")}</span>
             <span class="ap-infobox-message">${escapeHtml(message.text)}</span>`
-                : `<span class="ap-infobox-message">${escapeHtml(message.title || "Something went wrong")}</span>`
+                : `<span class="ap-infobox-message">${escapeHtml(message.title || "I couldn't finish this")}</span>`
             }
           </div>
           <button type="button" class="ap-button stroked grey" data-failed-retry="${escapeHtmlAttr(message.id)}">
@@ -308,7 +308,7 @@ export function renderSystemNotice(message) {
   const hasDetail = !!message.text;
   return renderNotice({
     variant: message.variant === "mermaid" ? "mermaid" : "grey",
-    label: message.meta || "System",
+    label: message.meta || "Update",
     open: !!message.open,
     loading: message.status === "loading",
     showChevron: hasDetail,

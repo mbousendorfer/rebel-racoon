@@ -1,13 +1,13 @@
-import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr } from "../utils.js?v=1858";
-import { navigate } from "../router.js?v=1858";
-import { renderTopbar } from "../components/topbar.js?v=1858";
-import { connectorDocs } from "../mocks.js?v=1858";
-import { getConnectedProfiles } from "../social-profiles.js?v=1858";
-import { getSessionById, getSessions } from "../sessions-store.js?v=1858";
-import { getContextById, getContexts, updateContext } from "../contexts-store.js?v=1858";
-import { playbookForNewWork, isWorkspaceMode } from "../active-playbook.js?v=1858";
-import { revokedContextFor, usableContexts, canView } from "../playbook-access.js?v=1858";
-import { isNewUser } from "../user-mode.js?v=1858";
+import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr, formatTimeOfDay } from "../utils.js?v=1859";
+import { navigate } from "../router.js?v=1859";
+import { renderTopbar } from "../components/topbar.js?v=1859";
+import { connectorDocs } from "../mocks.js?v=1859";
+import { getConnectedProfiles } from "../social-profiles.js?v=1859";
+import { getSessionById, getSessions } from "../sessions-store.js?v=1859";
+import { getContextById, getContexts, updateContext } from "../contexts-store.js?v=1859";
+import { playbookForNewWork, isWorkspaceMode } from "../active-playbook.js?v=1859";
+import { revokedContextFor, usableContexts, canView } from "../playbook-access.js?v=1859";
+import { isNewUser } from "../user-mode.js?v=1859";
 import {
   getThread,
   sendMessage,
@@ -26,54 +26,54 @@ import {
   answerTopPostsWidget,
   toggleTopicsWidgetPick,
   answerTopicsWidget,
-} from "../assistant.js?v=1858";
+} from "../assistant.js?v=1859";
 import {
   accept as acceptVoiceSuggestion,
   dismiss as dismissVoiceSuggestion,
   undo as undoVoiceSuggestion,
   getSuggestion as getVoiceSuggestion,
-} from "../voice-coach-store.js?v=1858";
-import { rewriteDraftsWithRule } from "../voice-coach.js?v=1858";
-import { iconFor as fileIconForKind } from "../file-kinds.js?v=1858";
-import { getSources, getIdeas, appendExtractedIdeas } from "../library.js?v=1858";
-import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=1858";
+} from "../voice-coach-store.js?v=1859";
+import { rewriteDraftsWithRule } from "../voice-coach.js?v=1859";
+import { iconFor as fileIconForKind } from "../file-kinds.js?v=1859";
+import { getSources, getIdeas, appendExtractedIdeas } from "../library.js?v=1859";
+import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=1859";
 import {
   renderInto as renderComposerMentions,
   removeMention as removeComposerMention,
   subscribe as subscribeComposerMentions,
   addMention as addComposerMention,
-} from "../composer-mentions.js?v=1858";
-import { setSubtitleStyle, getPosts, removePost } from "../posts-store.js?v=1858";
-import { executeDraft } from "../draft-flow.js?v=1858";
-import * as topPostsFlow from "../top-posts-flow.js?v=1858";
-import { renderTopPostsBoard } from "../components/top-post-card.js?v=1858";
-import * as sidebarWizard from "../sidebar-wizard.js?v=1858";
-import * as inlineQuestion from "../inline-question.js?v=1858";
-import { planSlots, defaultStrategy, CADENCES, queueEntries } from "../schedule-engine.js?v=1858";
-import { addToQueue } from "../schedule-store.js?v=1858";
-import { refLabel } from "../chat-refs.js?v=1858";
-import { networkLabel, networkIcon } from "../network-voice.js?v=1858";
-import { openScheduleForPosts, onPostImage } from "../components/right-panel/drafts-view.js?v=1858";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=1858";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=1858";
-import * as clipStudio from "../clip-studio.js?v=1858";
-import * as batchStudio from "../batch-studio.js?v=1858";
-import { askConnector } from "../connector-ask.js?v=1858";
-import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=1858";
-import { renderConnectorLogo } from "../connectors-view.js?v=1858";
+} from "../composer-mentions.js?v=1859";
+import { setSubtitleStyle, getPosts, removePost } from "../posts-store.js?v=1859";
+import { executeDraft } from "../draft-flow.js?v=1859";
+import * as topPostsFlow from "../top-posts-flow.js?v=1859";
+import { renderTopPostsBoard } from "../components/top-post-card.js?v=1859";
+import * as sidebarWizard from "../sidebar-wizard.js?v=1859";
+import * as inlineQuestion from "../inline-question.js?v=1859";
+import { planSlots, defaultStrategy, CADENCES, queueEntries } from "../schedule-engine.js?v=1859";
+import { addToQueue } from "../schedule-store.js?v=1859";
+import { refLabel } from "../chat-refs.js?v=1859";
+import { networkLabel, networkIcon } from "../network-voice.js?v=1859";
+import { openScheduleForPosts, onPostImage } from "../components/right-panel/drafts-view.js?v=1859";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=1859";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=1859";
+import * as clipStudio from "../clip-studio.js?v=1859";
+import * as batchStudio from "../batch-studio.js?v=1859";
+import { askConnector } from "../connector-ask.js?v=1859";
+import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=1859";
+import { renderConnectorLogo } from "../connectors-view.js?v=1859";
 import {
   getActiveConnector,
   clearActiveConnector,
   subscribe as subscribeComposerConnector,
-} from "../composer-connector.js?v=1858";
-import { isFlagOn } from "../feature-flags.js?v=1858";
-import { onChatGalleryClick } from "./session/chat-gallery.js?v=1858";
-import * as contextBuilder from "../context-builder.js?v=1858";
-import { renderPicker } from "./_analyse-common.js?v=1858";
-import { contentState, rerenderContentWorkspaceBody } from "../components/content-workspace.js?v=1858";
-import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=1858";
-import { open as openAddSourceModal } from "../components/add-source-modal.js?v=1858";
-import { open as openConnectorsModal } from "../components/connectors-modal.js?v=1858";
+} from "../composer-connector.js?v=1859";
+import { isFlagOn } from "../feature-flags.js?v=1859";
+import { onChatGalleryClick } from "./session/chat-gallery.js?v=1859";
+import * as contextBuilder from "../context-builder.js?v=1859";
+import { renderPicker } from "./_analyse-common.js?v=1859";
+import { contentState, rerenderContentWorkspaceBody } from "../components/content-workspace.js?v=1859";
+import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=1859";
+import { open as openAddSourceModal } from "../components/add-source-modal.js?v=1859";
+import { open as openConnectorsModal } from "../components/connectors-modal.js?v=1859";
 import {
   classifyFile,
   startFileUpload,
@@ -83,9 +83,9 @@ import {
   pushScriptedSource,
   completeScriptedSource,
   updateSourceClips,
-} from "../sources-stream.js?v=1858";
-import { onFeedbackClick } from "../components/feedback-control.js?v=1858";
-import { showToast } from "../components/toast.js?v=1858";
+} from "../sources-stream.js?v=1859";
+import { onFeedbackClick } from "../components/feedback-control.js?v=1859";
+import { showToast } from "../components/toast.js?v=1859";
 import {
   openDrafts as openDraftsPanel,
   openIdeas as openIdeasPanel,
@@ -93,19 +93,19 @@ import {
   openClips as openClipsPanel,
   getMode as getRightPanelMode,
   subscribe as subscribeRightPanel,
-} from "../components/right-panel.js?v=1858";
-import { setHandoff, consumeHandoff } from "../handoff.js?v=1858";
-import { attachTopicToChat, useTopicInChat, startTopicPickerInline, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=1858";
-import { startObjectiveChat, OBJECTIVE_CHAT_HANDOFF } from "../objective-flow.js?v=1858";
-import { getTopicById, markUsed, subscribe as subscribeTopics } from "../topics-store.js?v=1858";
-import { openTopicArticle } from "../components/topic-picker-modal.js?v=1858";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1858";
-import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=1858";
-import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=1858";
-import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=1858";
+} from "../components/right-panel.js?v=1859";
+import { setHandoff, consumeHandoff } from "../handoff.js?v=1859";
+import { attachTopicToChat, useTopicInChat, startTopicPickerInline, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=1859";
+import { startObjectiveChat, OBJECTIVE_CHAT_HANDOFF } from "../objective-flow.js?v=1859";
+import { getTopicById, markUsed, subscribe as subscribeTopics } from "../topics-store.js?v=1859";
+import { openTopicArticle } from "../components/topic-picker-modal.js?v=1859";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1859";
+import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=1859";
+import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=1859";
+import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=1859";
 // Pure thread-turn renderers — shared with the component handoff gallery so
 // the previews there never drift from the app (handoff/components.html).
-import { SWITCH_SKELETON_HTML } from "./session/thread-turns.js?v=1858";
+import { SWITCH_SKELETON_HTML } from "./session/thread-turns.js?v=1859";
 import {
   clipsToChat,
   finalizeClipStudio,
@@ -113,27 +113,27 @@ import {
   handleClipStudioUrl,
   openClipStudioEditor,
   renderClipStudio,
-} from "./session/clip-studio-view.js?v=1858";
+} from "./session/clip-studio-view.js?v=1859";
 import {
   handleBatchFiles,
   renderBatchStudio,
   repaintBatchRest,
   replayBatchSources,
   startBatchChat,
-} from "./session/batch-studio-view.js?v=1858";
+} from "./session/batch-studio-view.js?v=1859";
 import {
   askRepurposeProfiles,
   askVideoIntake,
   startIdeaDraft,
   startRepurposeFlow,
-} from "./session/draft-questions.js?v=1858";
+} from "./session/draft-questions.js?v=1859";
 import {
   extractionVerdict,
   extractionWhyOpen,
   findExtractionIdea,
   renderThread,
   repaintExtractionCard,
-} from "./session/thread-render.js?v=1858";
+} from "./session/thread-render.js?v=1859";
 import {
   animateBannerIn,
   animateBannerOut,
@@ -145,9 +145,9 @@ import {
   renderComposer,
   renderComposerConnector,
   renderComposerStatus,
-} from "./session/composer.js?v=1858";
-import { renderTopPostsPickerScreen } from "./session/top-posts-view.js?v=1858";
-import { renderEmptyHero } from "./session/empty-hero.js?v=1858";
+} from "./session/composer.js?v=1859";
+import { renderTopPostsPickerScreen } from "./session/top-posts-view.js?v=1859";
+import { renderEmptyHero } from "./session/empty-hero.js?v=1859";
 
 // Default composer placeholder — restored whenever no connector is attached.
 // A connected connector swaps it for "Ask {name} anything…".
@@ -226,7 +226,7 @@ export function renderSession(params, target) {
 
   const session = mockedSession || {
     id: params.id,
-    name: q.title || (params.id === "new" ? "Untitled session" : "Session"),
+    name: q.title || (params.id === "new" ? "New chat" : "Untitled chat"),
     // New Chat starts pre-bound to the default playbook so the composer pill
     // shows a real selection (and the first send uses it instead of
     // auto-launching the create-a-playbook wizard). The user can swap it via
@@ -419,7 +419,7 @@ function renderAssistantPanel(session, attachedContext) {
   // on #app) keep working in both positions.
   const composerMarkup = renderComposer(attachedContext, session, isEmptyConversation);
   return html`
-    <aside class="session__assistant" aria-label="Assistant panel">
+    <aside class="session__assistant" aria-label="Chat with Archie">
       <div
         class="session__assistant-thread"
         id="assistantThread"
@@ -596,7 +596,7 @@ function renderMentionPickerInto(container, sessionId, mode = "mention") {
               )
               .join("")}
           </div>`
-        : `<div class="composer-mention-picker__empty muted">No connected connectors yet.</div>`;
+        : `<div class="composer-mention-picker__empty muted">No connectors yet — connect one in Connectors</div>`;
     return;
   }
 
@@ -664,7 +664,7 @@ function renderMentionPickerInto(container, sessionId, mode = "mention") {
   container.innerHTML =
     sourcesSection || ideasSection
       ? sourcesSection + ideasSection
-      : `<div class="composer-mention-picker__empty muted">No sources or ideas yet.</div>`;
+      : `<div class="composer-mention-picker__empty muted">Nothing to reference yet — attach a source first</div>`;
 }
 
 function openMentionPicker(root, sessionId, mode = "mention") {
@@ -753,7 +753,7 @@ function renderAssistantPanelWizard(session) {
   const chrome = sidebarWizard.renderChrome(session.id);
   if (!chrome) return "";
   return html`
-    <aside class="session__assistant session__assistant--wizard" aria-label="Assistant panel">
+    <aside class="session__assistant session__assistant--wizard" aria-label="Chat with Archie">
       <div class="session__assistant-wizard-chat analyse__chat" id="sidebarWizardChat">
         <div class="analyse__chat-inner">${raw(chrome.body)}</div>
       </div>
@@ -807,17 +807,17 @@ function renderAssistantPanelQuestion(session) {
           <div class="welcome-hero welcome-hero--alt">
             <span class="welcome-hero__eyebrow">
               <i class="ap-icon-archie-official" aria-hidden="true"></i>
-              Welcome
+              ${isNewUser() ? "Welcome" : "New Playbook"}
             </span>
-            <h1 class="welcome-hero__title">Let's understand<br />your brand.</h1>
+            <h1 class="welcome-hero__title">Let's understand<br />your Brand.</h1>
             <p class="welcome-hero__sub">
-              Point me at your website and I'll capture what makes your brand yours — then shape it into a Playbook that
-              guides every post toward your voice.
+              Point me at your website and I'll capture what makes your Brand yours — its voice, its audience, its look.
+              I'll keep it in a Playbook, and write every draft from it.
             </p>
             <ul class="welcome-alt-hero__chips" aria-hidden="true">
               <li class="welcome-alt-hero__chip">
                 <i class="ap-icon-single-chat-bubble" aria-hidden="true"></i>
-                Voice
+                Voice profile
               </li>
               <li class="welcome-alt-hero__chip">
                 <i class="ap-icon-multiple-users" aria-hidden="true"></i>
@@ -825,7 +825,7 @@ function renderAssistantPanelQuestion(session) {
               </li>
               <li class="welcome-alt-hero__chip">
                 <i class="ap-icon-image" aria-hidden="true"></i>
-                Brand colors
+                Visual identity
               </li>
             </ul>
           </div>
@@ -833,7 +833,7 @@ function renderAssistantPanelQuestion(session) {
       `
     : "";
   return html`
-    <aside class="session__assistant session__assistant--wizard" aria-label="Assistant panel">
+    <aside class="session__assistant session__assistant--wizard" aria-label="Chat with Archie">
       <div class="session__assistant-wizard-chat analyse__chat" id="inlineQuestionChat">
         ${raw(heroMarkup)}
         <div class="analyse__chat-inner">
@@ -981,9 +981,9 @@ function routeDraftsAsk(session, text) {
 function askWhichDrafts(sessionId, drafts, { verb, onPick }) {
   const multi = verb !== "image";
   const copy = {
-    schedule: { q: "Which drafts should I schedule?", cta: "Schedule", tone: "orange" },
-    delete: { q: "Which drafts should I delete?", cta: "Delete" },
-    image: { q: "Which draft should I make an image for?", cta: "Continue" },
+    schedule: { q: "Which drafts should I schedule?", cta: "Schedule drafts", tone: "orange" },
+    delete: { q: "Which drafts should I delete?", cta: "Delete drafts" },
+    image: { q: "Which draft should I make an image for?", cta: "Make image" },
   }[verb];
   postAssistantMessage(sessionId, copy.q);
   inlineQuestion.ask(sessionId, {
@@ -1031,7 +1031,7 @@ function imageForDraft(sessionId, draft) {
 }
 
 const planDay = (ts) => new Date(ts).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
-const planTime = (ts) => new Date(ts).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+const planTime = formatTimeOfDay;
 const postsWord = (n) => (n === 1 ? "1 post" : `${n} posts`);
 
 function proposeSchedule(session, drafts) {
@@ -1193,7 +1193,11 @@ function startAskFlowFromSession(sessionId, sourceId, filename) {
   if (getSessions().length === 0) {
     handoff({ kind: "new" });
   } else {
-    openChatPickerModal({ onPick: handoff });
+    openChatPickerModal({
+      title: "Which chat should I answer in?",
+      subtitle: "I'll read the source there. Pick a chat, or start fresh.",
+      onPick: handoff,
+    });
   }
 }
 
@@ -1227,7 +1231,7 @@ function defaultChatNameLocal() {
 function finishTopicPick(session, topicId) {
   const topic = topicId ? getTopicById(topicId) : null;
   if (!topic) {
-    postAssistantMessage(session.id, "That Topic isn't in the feed anymore.");
+    postAssistantMessage(session.id, "That Topic isn't in the Topic Feed anymore. Pick another one there.");
     return;
   }
   // The generating hooks' revoked-Playbook refusal is a click-CAPTURE guard on
@@ -1235,7 +1239,10 @@ function finishTopicPick(session, topicId) {
   // repeated here with the same words.
   const revoked = revokedContextFor(session);
   if (revoked) {
-    showToast(`I can't — ${revoked.ownerName} stopped sharing ${revoked.name}.`, { variant: "error" });
+    showToast(
+      `I can't draft here — ${revoked.ownerName} stopped sharing ${revoked.name}. Start a chat with another Playbook.`,
+      { variant: "error" },
+    );
     return;
   }
   markUsed(topic.id);
@@ -1257,7 +1264,7 @@ function finishTopicPick(session, topicId) {
       {
         value: "extract",
         label: "Extract ideas",
-        caption: "Pull the angles worth posting into your Ideas.",
+        caption: "Pull hooks, stats, and quotes you can post into Ideas.",
         icon: "ap-icon-sparkles",
       },
       {
@@ -1925,7 +1932,7 @@ function startPillFromKind(_root, session, kind) {
   const ideaCount = 3 + Math.floor(Math.random() * 6);
   setTimeout(() => {
     completeScriptedSource(sourceId, {
-      signal: "Medium signal",
+      signal: "Medium relevance",
       signalColor: "tagOrange",
       ideaCount,
     });
@@ -1971,7 +1978,10 @@ function bindSession(root, session) {
       event.stopPropagation();
       // error, not success: this is a refusal, and a green snackbar reads like
       // the click worked.
-      showToast(`I can't — ${revoked.ownerName} stopped sharing ${revoked.name}.`, { variant: "error" });
+      showToast(
+        `I can't draft here — ${revoked.ownerName} stopped sharing ${revoked.name}. Start a chat with another Playbook.`,
+        { variant: "error" },
+      );
     },
     { capture: true, signal },
   );

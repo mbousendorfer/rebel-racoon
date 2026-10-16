@@ -13,23 +13,23 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=1858";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=1858";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1858";
-import { getTopPost } from "../../top-posts-store.js?v=1858";
-import { getTopicById } from "../../topics-store.js?v=1858";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=1858";
-import { renderProfileEchoCard } from "../../social-profiles.js?v=1858";
-import { escapeHtml } from "../../utils.js?v=1858";
-import { getIdeas } from "../../library.js?v=1858";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=1858";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1858";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=1858";
-import { getSuggestion } from "../../voice-coach-store.js?v=1858";
-import { draftsToRewrite } from "../../voice-coach.js?v=1858";
-import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=1858";
-import { isFlagOn } from "../../feature-flags.js?v=1858";
-import { CURRENT_USER } from "../../org.js?v=1858";
+} from "./thread-turns.js?v=1859";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1859";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1859";
+import { getTopPost } from "../../top-posts-store.js?v=1859";
+import { getTopicById } from "../../topics-store.js?v=1859";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=1859";
+import { renderProfileEchoCard } from "../../social-profiles.js?v=1859";
+import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=1859";
+import { getIdeas } from "../../library.js?v=1859";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=1859";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1859";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=1859";
+import { getSuggestion } from "../../voice-coach-store.js?v=1859";
+import { draftsToRewrite } from "../../voice-coach.js?v=1859";
+import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=1859";
+import { isFlagOn } from "../../feature-flags.js?v=1859";
+import { CURRENT_USER } from "../../org.js?v=1859";
 
 export function renderThread(messages, sessionId) {
   const turns = messages.map((m) => [m, renderTurn(m, sessionId)]);
@@ -43,7 +43,7 @@ export function renderThread(messages, sessionId) {
 // no name. You = time · You · your avatar, on the right, your bubble or pick
 // under it. The time shows on hover — in your head line, in the gutter left
 // of Archie's avatar. Archie's consecutive turns share one head.
-const clock = (ts) => (ts ? new Date(ts).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "");
+const clock = (ts) => (ts ? formatTimeOfDay(ts) : "");
 
 function renderTwoSides(turns) {
   const tpl = document.createElement("template");
@@ -516,7 +516,7 @@ function renderClipExtractionTurn(message, sessionId) {
           state: "unavailable",
           icon: "ap-icon-file--video",
           title: "Clips no longer available",
-          sub: `${filename} was removed.`,
+          sub: `${filename} was removed from this chat's sources.`,
         })}
       </div>
     `;
@@ -587,7 +587,7 @@ function renderIdeaExtractionTurn(message, sessionId) {
           state: "unavailable",
           icon: "ap-icon-file--video",
           title: "Ideas no longer available",
-          sub: `${filename} was removed.`,
+          sub: `${filename} was removed from this chat's sources.`,
         })}
       </div>
     `;
@@ -612,7 +612,7 @@ function renderIdeaExtractionTurn(message, sessionId) {
 // left the store (scheduled) keeps its label as plain text.
 function renderSchedulePlanTurn(message, sessionId) {
   const day = (ts) => new Date(ts).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
-  const time = (ts) => new Date(ts).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  const time = formatTimeOfDay;
   // Until it's scheduled, a date is the quick way into the schedule modal.
   const editable = message.status !== "scheduled";
   const rows = message.rows

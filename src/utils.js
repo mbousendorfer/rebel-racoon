@@ -50,6 +50,14 @@ export function raw(value) {
 // A duration or a playhead as m:ss. Two readings of the same number, kept
 // apart on purpose: a DURATION rounds (a 29.6s clip is "0:30"), a PLAYHEAD
 // floors (it reads 0:29 until the 30th second has actually passed).
+// A time of day in the house style: "9am", "1:30pm" (copy-principles §5.6).
+export function formatTimeOfDay(ts) {
+  const d = new Date(ts);
+  const h = d.getHours();
+  const m = d.getMinutes();
+  return `${h % 12 || 12}${m ? `:${String(m).padStart(2, "0")}` : ""}${h < 12 ? "am" : "pm"}`;
+}
+
 export function formatClock(seconds, { round = false } = {}) {
   const n = Number.isFinite(seconds) ? seconds : 0;
   const s = Math.max(0, round ? Math.round(n) : Math.floor(n));

@@ -4,20 +4,20 @@
 // session.js, unchanged; the mention picker stays there, since bindSession
 // writes its highlight state.
 
-import { isFlagOn } from "../../feature-flags.js?v=1858";
-import { getConnectedConnectors, findConnector } from "../../connectors-store.js?v=1858";
-import { escapeHtml, html, raw, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=1858";
-import { renderConnectorLogo } from "../../connectors-view.js?v=1858";
-import { getSources, getIdeas } from "../../library.js?v=1858";
-import * as clipStudio from "../../clip-studio.js?v=1858";
-import { getThread } from "../../assistant.js?v=1858";
-import { revokedContextFor } from "../../playbook-access.js?v=1858";
-import { getSessionById } from "../../sessions-store.js?v=1858";
-import { catalogueRoute } from "../../active-playbook.js?v=1858";
-import { getActiveConnector } from "../../composer-connector.js?v=1858";
-import { COMPOSER_DEFAULT_PLACEHOLDER, renderPlaybookControl } from "../session.js?v=1858";
-import { renderTopicPickerRow } from "./empty-hero.js?v=1858";
-import { renderChatGallery } from "./chat-gallery.js?v=1858";
+import { isFlagOn } from "../../feature-flags.js?v=1859";
+import { getConnectedConnectors, findConnector } from "../../connectors-store.js?v=1859";
+import { escapeHtml, html, raw, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=1859";
+import { renderConnectorLogo } from "../../connectors-view.js?v=1859";
+import { getSources, getIdeas } from "../../library.js?v=1859";
+import * as clipStudio from "../../clip-studio.js?v=1859";
+import { getThread } from "../../assistant.js?v=1859";
+import { revokedContextFor } from "../../playbook-access.js?v=1859";
+import { getSessionById } from "../../sessions-store.js?v=1859";
+import { catalogueRoute } from "../../active-playbook.js?v=1859";
+import { getActiveConnector } from "../../composer-connector.js?v=1859";
+import { COMPOSER_DEFAULT_PLACEHOLDER, renderPlaybookControl } from "../session.js?v=1859";
+import { renderTopicPickerRow } from "./empty-hero.js?v=1859";
+import { renderChatGallery } from "./chat-gallery.js?v=1859";
 
 function renderConnectorsSubmenu() {
   // Connectors are gated behind a feature flag (default OFF) — when off, the
@@ -40,7 +40,7 @@ function renderConnectorsSubmenu() {
           </button>`,
         )
         .join("")
-    : `<div class="assistant-attach__menu-label">No sources connected yet</div>`;
+    : `<div class="assistant-attach__menu-label">No connectors yet</div>`;
   return `
     <div class="ap-action-dropdown-divider" role="separator"></div>
     <div class="assistant-attach__submenu-wrap">
@@ -53,7 +53,7 @@ function renderConnectorsSubmenu() {
         <i class="ap-icon-stack"></i>
         <div class="ap-action-dropdown-item-text">
           <div class="ap-action-dropdown-item-label-container">
-            <span class="ap-action-dropdown-item-label">Connected sources</span>
+            <span class="ap-action-dropdown-item-label">Connectors</span>
           </div>
         </div>
         <i class="ap-icon-chevron-right" aria-hidden="true"></i>
@@ -110,7 +110,7 @@ function humanizeLoadingMessage(m) {
   if (m.role === "clip-extraction") return `Extracting clips from ${m.filename || "source"}…`;
   if (m.role === "assistant") return withEllipsis(m.meta && m.meta !== "Archie" ? m.meta : "Thinking");
   if (m.role === "system" || m.role === "system-notice") {
-    return withEllipsis(m.meta && m.meta !== "System" ? m.meta : m.text || "Working");
+    return withEllipsis(m.meta && m.meta !== "Update" ? m.meta : m.text || "Working");
   }
   // Generic busy marker (startPending) — drafts/ideas flows pass a meta label
   // ("Extracting ideas from content…", "Generating post drafts…"); fall back to "Working".
@@ -147,7 +147,7 @@ export function computeComposerStatus(sessionId) {
     if (label) labels.push(label);
   }
   if (labels.length > 0) {
-    const label = labels.length === 1 ? labels[0] : `${labels.length} tasks running…`;
+    const label = labels.length === 1 ? labels[0] : `Working on ${labels.length} things…`;
     return { shape: "grey", variant: "grey", labels, label, key: `grey|${label}` };
   }
   const draft = draftBanners.get(sessionId);
@@ -191,7 +191,7 @@ export function renderComposerStatus(sessionId) {
         <div class="upper">
           <i class="ap-icon-file" aria-hidden="true"></i>
           <div class="flow">${raw(draftBannerFlowInner(status.count))}</div>
-          <button type="button" class="ap-link small standalone" data-draft-banner-review>Review</button>
+          <button type="button" class="ap-link small standalone" data-draft-banner-review>Review drafts</button>
         </div>
       </div>
     `;
@@ -316,7 +316,7 @@ export function renderComposer(attachedContext, session, selectable) {
               class="session__composer-input-field"
               id="assistantInput"
               aria-label="Message Archie"
-              placeholder="${revoked ? "This chat can't generate any more" : COMPOSER_DEFAULT_PLACEHOLDER}"
+              placeholder="${revoked ? "This Playbook isn't shared with you anymore — start a chat with another one" : COMPOSER_DEFAULT_PLACEHOLDER}"
               rows="2"
               ${revoked ? "readonly" : ""}
             ></textarea>
@@ -370,7 +370,7 @@ export function renderComposer(attachedContext, session, selectable) {
                   <i class="ap-icon-feature-analytics"></i>
                   <div class="ap-action-dropdown-item-text">
                     <div class="ap-action-dropdown-item-label-container">
-                      <span class="ap-action-dropdown-item-label">Top performing posts</span>
+                      <span class="ap-action-dropdown-item-label">Repurpose a top post</span>
                     </div>
                   </div>
                 </button>
@@ -386,7 +386,7 @@ export function renderComposer(attachedContext, session, selectable) {
               aria-expanded="false"
               aria-controls="composerMentionPicker"
               data-composer-mention-trigger
-              ${hasMentionable ? "" : 'disabled title="Add a source or extract an idea first"'}
+              ${hasMentionable ? 'title="Mention a source or idea so I use it (@)"' : 'disabled title="Attach a source or extract an idea first"'}
             >
               <i class="ap-icon-at"></i>
               <span>Reference</span>
@@ -396,6 +396,7 @@ export function renderComposer(attachedContext, session, selectable) {
               type="button"
               class="ap-button primary orange session__composer-send"
               aria-label="Send"
+              title="Send (Enter)"
               data-assistant-send
               ${revoked ? "disabled" : ""}
             >

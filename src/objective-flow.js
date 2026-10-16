@@ -21,11 +21,11 @@
 // module instances are shared — each holds per-session state in a module-local
 // Map, and a second copy at a different URL would hold its own.
 
-import { navigate } from "./router.js?v=1858";
-import { setHandoff } from "./handoff.js?v=1858";
-import { postAssistantMessage, sendMessage } from "./assistant.js?v=1858";
-import * as inlineQuestion from "./inline-question.js?v=1858";
-import { objectiveNextMoves } from "./mocks.js?v=1858";
+import { navigate } from "./router.js?v=1859";
+import { setHandoff } from "./handoff.js?v=1859";
+import { postAssistantMessage, sendMessage } from "./assistant.js?v=1859";
+import * as inlineQuestion from "./inline-question.js?v=1859";
+import { objectiveNextMoves } from "./mocks.js?v=1859";
 
 export const OBJECTIVE_CHAT_HANDOFF = "pendingObjectiveChat";
 
@@ -50,7 +50,7 @@ export function nextMoveFor(entry) {
   if (entry.collecting) {
     return {
       pitch: `Let's publish what feeds ${metric.toLowerCase()}, before the first verdict lands.`,
-      cta: "Brief me in a chat",
+      cta: "Plan it in a chat",
       opening: `"${entry.label}" is still in its collecting window — no verdict yet, which makes this the cheapest moment to act. Let's publish what feeds ${metric.toLowerCase()} so the first verdict lands with data behind it.`,
     };
   }
@@ -58,13 +58,13 @@ export function nextMoveFor(entry) {
     return {
       pitch: `Let's name what carries ${metric.toLowerCase()} and make more of it.`,
       cta: "Double down in a chat",
-      opening: `"${entry.label}" is on track. The useful question now is WHAT carries it — let's name what's working on ${metric.toLowerCase()} and make more of exactly that.`,
+      opening: `"${entry.label}" is on track. The useful question now is what carries it — let's name what's working on ${metric.toLowerCase()} and make more of exactly that.`,
     };
   }
   return {
     pitch: `Let's draft the posts that move ${metric.toLowerCase()}.`,
     cta: "Fix this in a chat",
-    opening: `We're here about "${entry.label}" — ${metric.toLowerCase()} is the measure deciding the verdict right now. Let's look at what you've published against it and draft what moves it.`,
+    opening: `This chat is about "${entry.label}" — ${metric.toLowerCase()} is the measure deciding the verdict right now. Let's look at what you've published against it and draft what moves it.`,
   };
 }
 
@@ -141,10 +141,10 @@ export function startObjectiveChat(sessionId, payload) {
     const p = payload.post;
     postAssistantMessage(
       sessionId,
-      `“${p.excerpt}” — your ${p.network} post from ${p.date}${p.contribution ? `, ${p.contribution}` : ""} on "${payload.label}". It worked; let's get more of it.`,
+      `"${p.excerpt}" — your ${p.network} post from ${p.date}${p.contribution ? `, ${p.contribution}` : ""} on "${payload.label}". It worked; let's get more of it.`,
     );
     inlineQuestion.ask(sessionId, {
-      title: "How do we build on it?",
+      title: "How should I build on it?",
       stepLabel: "Repurpose",
       items: POST_ANGLES.map((a) => ({ value: a.value, label: a.label, icon: "ap-icon-sparkles" })),
       customPlaceholder: "Tell me how you'd like to reuse it…",
@@ -157,11 +157,11 @@ export function startObjectiveChat(sessionId, payload) {
   const move = objectiveNextMoves[payload.key] || null;
   const opening =
     move?.opening ||
-    `We're here about "${payload.label}". Let's look at what you've published against it and draft what moves it.`;
+    `This chat is about "${payload.label}". Let's look at what you've published against it and draft what moves it.`;
   postAssistantMessage(sessionId, opening);
 
   inlineQuestion.ask(sessionId, {
-    title: "Where do we start?",
+    title: "Where should I start?",
     stepLabel: "Objective",
     items: (move?.angles || DEFAULT_ANGLES).map((a) => ({
       value: a.value,

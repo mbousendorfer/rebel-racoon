@@ -1,15 +1,15 @@
 // A new chat's hero: the greeting, the workflow starters, and the "Fresh
 // topics to review" grid (flag topicFeed). Moved out of session.js, unchanged.
 
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=1858";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=1858";
-import { getContextById } from "../../contexts-store.js?v=1858";
-import { isWorkspaceMode } from "../../active-playbook.js?v=1858";
-import { renderTopicCard } from "../../components/topic-card.js?v=1858";
-import { findTopicSource } from "../../topics-catalog.js?v=1858";
-import { html, raw } from "../../utils.js?v=1858";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=1858";
-import { renderStarterCards } from "../../components/starter-card.js?v=1858";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=1859";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=1859";
+import { getContextById } from "../../contexts-store.js?v=1859";
+import { isWorkspaceMode } from "../../active-playbook.js?v=1859";
+import { renderTopicCard } from "../../components/topic-card.js?v=1859";
+import { findTopicSource } from "../../topics-catalog.js?v=1859";
+import { html, raw } from "../../utils.js?v=1859";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1859";
+import { renderStarterCards } from "../../components/starter-card.js?v=1859";
 
 // Composer "Add" menu — "Connected sources" is a nested submenu (Codex-style
 // "Modules d'extension ▸" flyout), not a first-level list. The flyout lists the
@@ -77,15 +77,15 @@ function renderFreshTopics(session) {
 
   return html`
     <h2 class="empty-chat__starter-label" id="freshTopicsLabel">
-      <span>Fresh topics to review</span>
+      <span>Topics to review — what your listening surfaced</span>
       ${raw(pb ? html`<span class="empty-chat__topics-scope">· ${pb.name}</span>` : "")}
     </h2>
     <div class="empty-chat__topics" role="group" aria-labelledby="freshTopicsLabel">
       <div class="empty-chat__topics-grid">${raw(cards)}</div>
       <footer class="empty-chat__topics-foot">
-        <span class="empty-chat__topics-count">${topics.length} out of ${total} shown</span>
+        <span class="empty-chat__topics-count">${topics.length} of ${total} shown</span>
         <a class="ap-link standalone small" href="${raw(scopeHref)}"
-          >See more in your feed<i class="ap-icon-arrow-right" aria-hidden="true"></i
+          >Open Topic Feed<i class="ap-icon-arrow-right" aria-hidden="true"></i
         ></a>
       </footer>
     </div>
@@ -127,9 +127,7 @@ export function renderEmptyHero(sessionId, composerMarkup = "", session = null) 
         <img class="empty-chat__logo-mono" src="assets/logos/archie-mono.svg" alt="" />
         <img class="empty-chat__logo-word empty-chat__logo-word--b" src="assets/logos/archie-alt-wordmark.svg" alt="" />
       </span>
-      <div class="empty-chat__sub">
-        Drop a source — I'll turn it into a batch of ready-to-schedule posts, all from one chat.
-      </div>
+      <div class="empty-chat__sub">Drop a source — I'll turn it into drafts ready to schedule, all in this chat.</div>
       ${raw(composerMarkup)}
       <!-- Starters first, proposals second. The other way round was tried on the
            argument that "what should I post today?" is the question someone

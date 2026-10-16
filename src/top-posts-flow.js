@@ -33,10 +33,10 @@ import {
   postUserProfilesTurn,
   reportDraftFailure,
   GENERATION_TOOLS,
-} from "./assistant.js?v=1858";
-import { getTopPosts, getTopPost } from "./top-posts-store.js?v=1858";
-import { addPostDraft } from "./posts-store.js?v=1858";
-import { addReadySource } from "./sources-stream.js?v=1858";
+} from "./assistant.js?v=1859";
+import { getTopPosts, getTopPost } from "./top-posts-store.js?v=1859";
+import { addPostDraft } from "./posts-store.js?v=1859";
+import { addReadySource } from "./sources-stream.js?v=1859";
 import {
   getConnectedProfiles,
   BRAND_INITIALS,
@@ -45,11 +45,11 @@ import {
   networkMeta,
   normalizeNetwork,
   getConnectedProfileById,
-} from "./social-profiles.js?v=1858";
-import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=1858";
-import { SORTS, PERIODS } from "./components/top-post-card.js?v=1858";
-import * as inlineQuestion from "./inline-question.js?v=1858";
-import { playbookForNewWork } from "./active-playbook.js?v=1858";
+} from "./social-profiles.js?v=1859";
+import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=1859";
+import { SORTS, PERIODS } from "./components/top-post-card.js?v=1859";
+import * as inlineQuestion from "./inline-question.js?v=1859";
+import { playbookForNewWork } from "./active-playbook.js?v=1859";
 
 // Cap on drafts produced in one run — post × angle × channel can multiply fast
 // (e.g. 3 posts × 4 angles × 3 channels = 36). Keep the result turn scannable;
@@ -264,7 +264,7 @@ function accountPickerOpts({ title, subtitle, single = false, onAccount }) {
     subtitle,
     single,
     searchable: choices.length > PROFILE_SEARCH_THRESHOLD,
-    searchPlaceholder: "Search accounts by name, handle or network…",
+    searchPlaceholder: "Search accounts by name, handle, or network…",
     onPick: (accountId) => {
       const account = getConnectedProfileById(accountId) || null;
       onAccount(account, account ? normalizeNetwork(account.platform) : normalizeNetwork(accountId));
@@ -283,7 +283,7 @@ function armProfilePicker(sessionId) {
     sessionId,
     accountPickerOpts({
       title: "Pick an account",
-      subtitle: "I'll load its top posts, ranked by engagement.",
+      subtitle: "I'll load its top posts next.",
       single: true,
       onAccount: (_account, network) => chooseProfile(sessionId, network),
     }),
@@ -375,7 +375,7 @@ export function startTopPostsInline(sessionId) {
   if (!getTopPosts().length) {
     postAssistantMessage(
       sessionId,
-      "Once your posts start performing, I'll surface your winners here so you can spin new posts out of what already works. Publish a few and come back.",
+      "Once your posts start performing, I'll surface your top posts here so you can repurpose what already works. Publish a few and come back.",
     );
     return;
   }
@@ -387,7 +387,7 @@ export function startTopPostsInline(sessionId) {
   // Default the drafts' voice the same way the studio does (parity); the inline
   // flow keeps it implicit either way to stay short.
   repurposeContexts.set(sessionId, playbookForNewWork()?.id || null);
-  postAssistantMessage(sessionId, "Which account should I pull your winners from?");
+  postAssistantMessage(sessionId, "Which account should I pull your top posts from?");
   inlineQuestion.ask(
     sessionId,
     accountPickerOpts({
@@ -501,7 +501,7 @@ function presentWinners(sessionId, network, sortKey = "performance", period = "1
       .map((p) => p.id);
     postAssistantMessage(
       sessionId,
-      `Here are your top ${labelFor(net)} posts by ${sort.label.toLowerCase()} — pick the ones you'd like to reuse.`,
+      `Here are your top ${labelFor(net)} posts by ${sort.label.toLowerCase()} — pick one to repurpose.`,
     );
     postTopPostsWidget(sessionId, { network: net, postIds });
   }, PROFILE_LOAD_MS);
@@ -590,7 +590,7 @@ export function repurposeProfileItems(postIds, { include = "other" } = {}) {
       isSource: isSource(p),
       // "Source" is emphasised (own class) so it stands out from the muted
       // "Network · Kind" prefix. Caption is inserted raw by the picker renderer.
-      caption: tagSource && isSource(p) ? `${base} · <span class="top-posts-source-tag">Source</span>` : base,
+      caption: tagSource && isSource(p) ? `${base} · <span class="top-posts-source-tag">Original</span>` : base,
       // Plain-text haystack for the picker's live search (the caption carries
       // HTML, so build search text from the raw fields instead).
       search: [p.name, p.handle, p.platformLabel, p.kind].filter(Boolean).join(" "),

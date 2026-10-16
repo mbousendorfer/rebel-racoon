@@ -1,4 +1,4 @@
-// "ADMIN MODE: DISPLAY IN CHAT" — a prototype shortcut under the composer that lists every
+// "Admin: preview in chat" — a prototype shortcut under the composer that lists every
 // element a conversation can display and every trigger that produces one, and
 // plays any of them in the current chat.
 //
@@ -14,8 +14,8 @@
 // ponytail: the catalogue is a hand-kept list — a new turn variant or route has
 // to be added here too, or it won't show in the menu.
 
-import { escapeHtml } from "../../utils.js?v=1858";
-import { isFlagOn } from "../../feature-flags.js?v=1858";
+import { escapeHtml } from "../../utils.js?v=1859";
+import { isFlagOn } from "../../feature-flags.js?v=1859";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -34,22 +34,22 @@ import {
   reportDraftFailure,
   getThread,
   refreshThread,
-} from "../../assistant.js?v=1858";
-import { getSources, getIdeas } from "../../library.js?v=1858";
-import { getPosts } from "../../posts-store.js?v=1858";
-import { getTopPosts } from "../../top-posts-store.js?v=1858";
-import { getConnectedProfiles } from "../../social-profiles.js?v=1858";
-import { extractClipsForSource, updateSourceClips } from "../../sources-stream.js?v=1858";
-import { getConnectedConnectors } from "../../connectors-store.js?v=1858";
-import { detectUrlService } from "../../url-services.js?v=1858";
-import { propose, getSuggestions } from "../../voice-coach-store.js?v=1858";
-import * as inlineQuestion from "../../inline-question.js?v=1858";
-import { startTopPostsInline } from "../../top-posts-flow.js?v=1858";
-import { startTopicPickerInline } from "../../topic-flow.js?v=1858";
-import { askConnector } from "../../connector-ask.js?v=1858";
-import { coachAfterDraft, coachingTarget } from "../../voice-coach.js?v=1858";
-import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=1858";
-import { startIdeaDraft, askVideoIntake } from "./draft-questions.js?v=1858";
+} from "../../assistant.js?v=1859";
+import { getSources, getIdeas } from "../../library.js?v=1859";
+import { getPosts } from "../../posts-store.js?v=1859";
+import { getTopPosts } from "../../top-posts-store.js?v=1859";
+import { getConnectedProfiles } from "../../social-profiles.js?v=1859";
+import { extractClipsForSource, updateSourceClips } from "../../sources-stream.js?v=1859";
+import { getConnectedConnectors } from "../../connectors-store.js?v=1859";
+import { detectUrlService } from "../../url-services.js?v=1859";
+import { propose, getSuggestions } from "../../voice-coach-store.js?v=1859";
+import * as inlineQuestion from "../../inline-question.js?v=1859";
+import { startTopPostsInline } from "../../top-posts-flow.js?v=1859";
+import { startTopicPickerInline } from "../../topic-flow.js?v=1859";
+import { askConnector } from "../../connector-ask.js?v=1859";
+import { coachAfterDraft, coachingTarget } from "../../voice-coach.js?v=1859";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=1859";
+import { startIdeaDraft, askVideoIntake } from "./draft-questions.js?v=1859";
 
 // The intake sample plays the real lifecycle — loading, then ready — under a
 // sample id no source owns, so intake-lifecycle leaves it alone.
@@ -118,7 +118,7 @@ const COMPONENTS = [
   },
   {
     id: "intake",
-    label: "Source intake",
+    label: "You",
     icon: "ap-icon-file--pdf",
     hint: "A file landing in the chat: Uploading for 3 seconds, then ready",
     run: (sid) => playIntake(sid, { kind: "pdf", filename: "Q3 customer interviews.pdf", size: "1.2 MB" }, 3000),
@@ -402,7 +402,7 @@ export function renderChatGallery() {
   return `
     <span class="chat-gallery">
       <button type="button" class="ap-link chat-gallery__toggle" data-chat-gallery-toggle aria-haspopup="menu" aria-expanded="false">
-        <i class="ap-icon-illuminati" aria-hidden="true"></i> ADMIN MODE: DISPLAY IN CHAT <i class="ap-icon-chevron-down" aria-hidden="true"></i>
+        <i class="ap-icon-illuminati" aria-hidden="true"></i> Admin: preview in chat <i class="ap-icon-chevron-down" aria-hidden="true"></i>
       </button>
       <div class="ap-action-dropdown chat-gallery__menu" data-chat-gallery-menu role="menu" hidden></div>
     </span>

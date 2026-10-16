@@ -15,14 +15,14 @@
 // whole screen. clipContext is exported alongside because the clip-studio
 // finalize path in session.js builds the same generationContext object.
 
-import { FORMATS, clipFormatItems } from "../../clip-formats.js?v=1858";
-import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../../clip-subtitles.js?v=1858";
+import { FORMATS, clipFormatItems } from "../../clip-formats.js?v=1859";
+import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../../clip-subtitles.js?v=1859";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "../../social-profiles.js?v=1858";
-import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=1858";
+} from "../../social-profiles.js?v=1859";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=1859";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -32,9 +32,9 @@ import {
   startPending,
   finishPending,
   GENERATION_TOOLS,
-} from "../../assistant.js?v=1858";
-import * as inlineQuestion from "../../inline-question.js?v=1858";
-import { addPostDraft } from "../../posts-store.js?v=1858";
+} from "../../assistant.js?v=1859";
+import * as inlineQuestion from "../../inline-question.js?v=1859";
+import { addPostDraft } from "../../posts-store.js?v=1859";
 
 // The generationContext a clip-derived draft carries — the "why this draft
 // exists" header shown on the post card. Shared with session.js's clip-studio
@@ -69,10 +69,10 @@ export function startClipDraftFlow(sessionId, entries) {
 // by network). Items come from clip-formats.clipFormatItems() (shared with the
 // handoff gallery).
 function askClipFormat(sessionId, entries) {
-  postAssistantMessage(sessionId, "What aspect ratio would you like for the clips?");
+  postAssistantMessage(sessionId, "Which format should the clips use?");
   inlineQuestion.ask(sessionId, {
-    title: "Pick an export format",
-    stepLabel: "Ratio",
+    title: "Pick a format",
+    stepLabel: "Format",
     skipLabel: "Cancel",
     variant: "cards",
     items: clipFormatItems(),
@@ -89,7 +89,7 @@ function askClipFormat(sessionId, entries) {
 // as a 2-column card grid, each card CSS-rendering the style on a "MAKE IT POP"
 // mock; the pick echoes back as a selection card.
 function askClipSubtitle(sessionId, entries, format) {
-  postAssistantMessage(sessionId, "Choose a subtitle style — I'll generate and burn them into the video.");
+  postAssistantMessage(sessionId, "Choose a subtitle style — I'll write the subtitles and add them to the video.");
   inlineQuestion.ask(sessionId, {
     title: "Choose a subtitle style",
     stepLabel: "Subtitles",
@@ -122,7 +122,7 @@ function askClipAccounts(sessionId, entries, format, style) {
     return;
   }
   const connected = getConnectedProfiles();
-  postAssistantMessage(sessionId, "Which account(s) should I draft for?");
+  postAssistantMessage(sessionId, "Which accounts should I draft for?");
   const clipNets = new Set(entries.map((e) => e.clip.network));
   const preset = connected.filter((a) => clipNets.has(a.platform)).map((a) => a.id);
   // Destination picker (not an analysis step) — every connected account is a
@@ -137,7 +137,7 @@ function askClipAccounts(sessionId, entries, format, style) {
     submitLabel: "Continue",
     // A long list of destinations gets a live search box to narrow it down.
     searchable: clipProfileItems.length > PROFILE_SEARCH_THRESHOLD,
-    searchPlaceholder: "Search accounts by name, handle or network…",
+    searchPlaceholder: "Search accounts by name, handle, or network…",
     items: clipProfileItems,
     onPick: (ids) => {
       const accounts = (Array.isArray(ids) ? ids : [ids])
