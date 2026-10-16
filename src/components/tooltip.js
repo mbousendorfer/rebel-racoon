@@ -61,9 +61,18 @@ function onOut(event) {
   hide();
 }
 
+// A CONTROL that wraps an anchor (an icon inside a button) shows it on focus.
+// A container never does: the router focuses #app on every navigation, and
+// "contains an anchor" would then open the page's first tooltip and leave it up.
+const WRAPPING_CONTROL_SEL = "button, a[href], summary, [role='button'], [role='tab'], [role='menuitem']";
+
 function onFocusIn(event) {
   const host = event.target.closest?.("*");
-  const next = host?.matches(ANCHOR_SEL) ? host : host?.querySelector(ANCHOR_SEL);
+  const next = host?.matches(ANCHOR_SEL)
+    ? host
+    : host?.matches(WRAPPING_CONTROL_SEL)
+      ? host.querySelector(ANCHOR_SEL)
+      : null;
   if (next) show(next);
   else hide();
 }
