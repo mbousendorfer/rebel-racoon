@@ -11,7 +11,7 @@
 //   vsAvg              how many × the account's average engagement it did (the
 //                      headline decision metric + the relative bar)
 //   engagementRate     %, the "Engagement" sort
-//   impressions        reach, the "Reach" sort
+//   impressions        the "Impressions" sort
 //   reactions/comments/shares/saves  the raw breakdown
 //   perfBadge          percentile trust signal (e.g. "Top 3%")
 //   topic              short theme label (chip)

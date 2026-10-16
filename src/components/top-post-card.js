@@ -12,9 +12,9 @@
 // render; no module-local state (the active sort lives in top-posts-flow's
 // picker state).
 
-import { html, raw } from "../utils.js?v=1873";
-import { profileForNetwork, NETWORK_ICON_BY_PLATFORM, BRAND_INITIALS, networkMeta } from "../social-profiles.js?v=1873";
-import { renderEmptyState } from "./empty-state.js?v=1873";
+import { html, raw } from "../utils.js?v=1874";
+import { profileForNetwork, NETWORK_ICON_BY_PLATFORM, BRAND_INITIALS, networkMeta } from "../social-profiles.js?v=1874";
+import { renderEmptyState } from "./empty-state.js?v=1874";
 
 // Sort options for the toolbar. `key` matches data-top-post-sort + the picker
 // state; `compare` sorts descending by the decision-useful value (recent sorts
@@ -23,7 +23,7 @@ import { renderEmptyState } from "./empty-state.js?v=1873";
 export const SORTS = [
   { key: "performance", label: "Performance", compare: (a, b) => b.vsAvg - a.vsAvg },
   { key: "engagement", label: "Engagement", compare: (a, b) => b.engagementRate - a.engagementRate },
-  { key: "reach", label: "Impressions", compare: (a, b) => b.impressions - a.impressions },
+  { key: "impressions", label: "Impressions", compare: (a, b) => b.impressions - a.impressions },
 ];
 
 // Period filter — narrow the board to a recency window (spec: "filter by

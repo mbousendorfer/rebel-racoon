@@ -33,10 +33,10 @@ import {
   postUserProfilesTurn,
   reportDraftFailure,
   GENERATION_TOOLS,
-} from "./assistant.js?v=1873";
-import { getTopPosts, getTopPost } from "./top-posts-store.js?v=1873";
-import { addPostDraft } from "./posts-store.js?v=1873";
-import { addReadySource } from "./sources-stream.js?v=1873";
+} from "./assistant.js?v=1874";
+import { getTopPosts, getTopPost } from "./top-posts-store.js?v=1874";
+import { addPostDraft } from "./posts-store.js?v=1874";
+import { addReadySource } from "./sources-stream.js?v=1874";
 import {
   getConnectedProfiles,
   BRAND_INITIALS,
@@ -45,11 +45,11 @@ import {
   networkMeta,
   normalizeNetwork,
   getConnectedProfileById,
-} from "./social-profiles.js?v=1873";
-import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=1873";
-import { SORTS, PERIODS } from "./components/top-post-card.js?v=1873";
-import * as inlineQuestion from "./inline-question.js?v=1873";
-import { playbookForNewWork } from "./active-playbook.js?v=1873";
+} from "./social-profiles.js?v=1874";
+import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=1874";
+import { SORTS, PERIODS } from "./components/top-post-card.js?v=1874";
+import * as inlineQuestion from "./inline-question.js?v=1874";
+import { playbookForNewWork } from "./active-playbook.js?v=1874";
 
 // Cap on drafts produced in one run — post × angle × channel can multiply fast
 // (e.g. 3 posts × 4 angles × 3 channels = 36). Keep the result turn scannable;
@@ -448,11 +448,11 @@ function echoPeriodPick(sessionId, periodKey) {
 
 // Which metric ranks the winners — the same lenses the studio board sorts by
 // (SORTS), asked up front so the widget can surface the strongest posts for the
-// metric the user actually cares about (views / reach / engagement / recency).
+// metric the user actually cares about (performance / engagement / impressions).
 const RANK_CHOICES = [
   { value: "performance", label: "Performance", caption: "Highest vs your average.", icon: "ap-icon-data-increase" },
   { value: "engagement", label: "Engagement rate", caption: "Most reactions per view.", icon: "ap-icon-heart" },
-  { value: "reach", label: "Impressions", caption: "Shown in the most feeds.", icon: "ap-icon-eye-on" },
+  { value: "impressions", label: "Impressions", caption: "Shown in the most feeds.", icon: "ap-icon-eye-on" },
 ];
 
 // Window chosen → ask which metric to rank by before surfacing the winners.

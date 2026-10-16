@@ -5,7 +5,7 @@
 // state/playbook-brand.js. Everything below is scoped to one by `brandId`,
 // which is a Playbook (Context) id.
 
-import { uid, nowIso } from "../lib/id.js?v=1873";
+import { uid, nowIso } from "../lib/id.js?v=1874";
 
 // 2: brands moved to the Playbook (v1 had its own brands collection).
 export const SCHEMA_VERSION = 2;
