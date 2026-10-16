@@ -1,15 +1,15 @@
 // A new chat's hero: the greeting, the workflow starters, and the "Fresh
 // topics to review" grid (flag topicFeed). Moved out of session.js, unchanged.
 
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=1857";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=1857";
-import { getContextById } from "../../contexts-store.js?v=1857";
-import { isWorkspaceMode } from "../../active-playbook.js?v=1857";
-import { renderTopicCard } from "../../components/topic-card.js?v=1857";
-import { findTopicSource } from "../../topics-catalog.js?v=1857";
-import { html, raw } from "../../utils.js?v=1857";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=1857";
-import { renderStarterCards } from "../../components/starter-card.js?v=1857";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=1858";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=1858";
+import { getContextById } from "../../contexts-store.js?v=1858";
+import { isWorkspaceMode } from "../../active-playbook.js?v=1858";
+import { renderTopicCard } from "../../components/topic-card.js?v=1858";
+import { findTopicSource } from "../../topics-catalog.js?v=1858";
+import { html, raw } from "../../utils.js?v=1858";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1858";
+import { renderStarterCards } from "../../components/starter-card.js?v=1858";
 
 // Composer "Add" menu — "Connected sources" is a nested submenu (Codex-style
 // "Modules d'extension ▸" flyout), not a first-level list. The flyout lists the
@@ -137,7 +137,7 @@ export function renderEmptyHero(sessionId, composerMarkup = "", session = null) 
            pushed all three workflow cards below the fold, so the proposal buried
            the features it was meant to introduce. Both are card grids now, so the
            Topics cost two rows instead of six and nothing is hidden. -->
-      <h2 class="empty-chat__starter-label" id="starterGridLabel">Jump into a workflow</h2>
+      <h2 class="empty-chat__starter-label" id="starterGridLabel">Turn a source, a video, or a top post into drafts</h2>
       <div class="starter-grid" role="group" aria-labelledby="starterGridLabel">${raw(cards)}</div>
       ${raw(renderFreshTopics(session))}
     </div>

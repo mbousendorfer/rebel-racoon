@@ -1,7 +1,7 @@
-import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=1857";
-import { getPath, navigate } from "../router.js?v=1857";
-import { parseHashParams } from "../url-state.js?v=1857";
-import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=1857";
+import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=1858";
+import { getPath, navigate } from "../router.js?v=1858";
+import { parseHashParams } from "../url-state.js?v=1858";
+import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=1858";
 // Lot 19 — topbar no longer carries its own sidebar-toggle button. The
 // sidebar head exposes the toggle in both expanded (chevron-left) and
 // collapsed (view-list) states, so the duplicate in the topbar was just
@@ -14,37 +14,37 @@ import {
   getMode as getRightPanelMode,
   getActiveBatchRef as getActiveDraftsBatchRef,
   subscribe as subscribeRightPanel,
-} from "./right-panel.js?v=1857";
-import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=1857";
-import { getThread, subscribe as subscribeThread } from "../assistant.js?v=1857";
-import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=1857";
-import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=1857";
+} from "./right-panel.js?v=1858";
+import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=1858";
+import { getThread, subscribe as subscribeThread } from "../assistant.js?v=1858";
+import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=1858";
+import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=1858";
 import {
   isEnabled as isStatusCardEnabled,
   toggle as toggleStatusCard,
   subscribeVisibility as subscribeStatusCardVisibility,
-} from "./conversation-status-card.js?v=1857";
-import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=1857";
-import { open as openRenameModal } from "./rename-modal.js?v=1857";
+} from "./conversation-status-card.js?v=1858";
+import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=1858";
+import { open as openRenameModal } from "./rename-modal.js?v=1858";
 import {
   subscribe as subscribeContexts,
   getContextById,
   getDefaultContext,
   getContexts,
-} from "../contexts-store.js?v=1857";
-import { isFlagOn } from "../feature-flags.js?v=1857";
-import { getActivePlaybook, isWorkspaceMode, isAccountScope, catalogueRoute } from "../active-playbook.js?v=1857";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1857";
-import { findCadence } from "../topics-catalog.js?v=1857";
+} from "../contexts-store.js?v=1858";
+import { isFlagOn } from "../feature-flags.js?v=1858";
+import { getActivePlaybook, isWorkspaceMode, isAccountScope, catalogueRoute } from "../active-playbook.js?v=1858";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1858";
+import { findCadence } from "../topics-catalog.js?v=1858";
 import {
   getPickerState as getTopPostsState,
   subscribePicker as subscribeTopPosts,
   backToProfiles as topPostsBackToProfiles,
-} from "../top-posts-flow.js?v=1857";
+} from "../top-posts-flow.js?v=1858";
 // The Insights view switch. Imported from views.js, NOT from the screen's
 // shell: the shell imports this module, so taking it from there would close a
 // cycle. views.js imports neither.
-import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=1857";
+import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=1858";
 
 // The playbook/context pill now lives in the composer (session.js
 // renderPlaybookControl) — selectable on a New Chat, then a static
@@ -143,7 +143,7 @@ function isTopPostsBoard() {
 // repurposing board's back matches every other back in the app.
 function renderTopPostsBack() {
   return `
-    <button type="button" class="ap-button ghost grey app-topbar__back" data-topbar-topposts-back title="Change profile">
+    <button type="button" class="ap-button ghost grey app-topbar__back" data-topbar-topposts-back>
       <i class="ap-icon-arrow-left" aria-hidden="true"></i>
       <span>Change profile</span>
     </button>
@@ -223,7 +223,7 @@ function renderTopicsSettings() {
 function renderInsightsActions() {
   if (!isFlagOn("insightsHub")) return "";
   return `${viewSwitch(readLayoutId())}
-    <button type="button" class="ap-button primary blue" data-ins-new>
+    <button type="button" class="ap-button primary blue" data-ins-new title="Set a goal I'll track your posts against">
       <i class="ap-icon-plus" aria-hidden="true"></i><span>New objective</span>
     </button>`;
 }
@@ -351,12 +351,12 @@ export function initTopbar() {
     // renderWelcomeAltExit() above. The wizard chrome no longer carries
     // its own Exit affordance; this is the only entry.
     if (event.target.closest("[data-topbar-welcome-alt-exit]")) {
-      import("./confirm-modal.js?v=1857").then(({ open }) => {
+      import("./confirm-modal.js?v=1858").then(({ open }) => {
         open({
-          title: "Exit onboarding?",
-          body: "Your progress so far will be discarded. You can start over anytime from the dashboard.",
-          confirmLabel: "Exit",
-          cancelLabel: "Stay",
+          title: "Discard this Playbook?",
+          body: "Your answers so far will be lost. You can create a Playbook again anytime.",
+          confirmLabel: "Discard Playbook",
+          cancelLabel: "Keep going",
           danger: true,
           onConfirm: () => navigate("/"),
         });
@@ -494,7 +494,7 @@ function renderSessionPills(rpMode, draftCount, isEmpty, ideaCount) {
       data-topbar-sources
       ${sourcesDisabled ? "disabled" : ""}
       aria-pressed="${rpMode === "sources"}"
-      title="${sourcesDisabled ? "No sources attached yet — drop a file in the composer to add one" : "Toggle Sources panel"}"
+      title="${sourcesDisabled ? "No sources yet — attach a file or link in the composer" : "Files and links I'm working from in this chat"}"
     >
       <i class="ap-icon-file"></i>
       <span>Sources</span>
@@ -506,7 +506,7 @@ function renderSessionPills(rpMode, draftCount, isEmpty, ideaCount) {
       data-topbar-ideas
       ${ideasDisabled ? "disabled" : ""}
       aria-pressed="${rpMode === "ideas"}"
-      title="${ideasDisabled ? "No ideas yet — attach a source or send a message" : "Toggle Ideas panel"}"
+      title="${ideasDisabled ? "No ideas yet — attach a source and I'll pull some" : "Hooks, stats, and quotes I pulled from your sources"}"
     >
       <i class="ap-icon-sparkles"></i>
       <span>Ideas</span>
@@ -518,7 +518,7 @@ function renderSessionPills(rpMode, draftCount, isEmpty, ideaCount) {
       data-topbar-drafts
       ${draftsDisabled ? "disabled" : ""}
       aria-pressed="${rpMode === "drafts"}"
-      title="${draftsDisabled ? "No drafts in this chat yet" : "Toggle Drafts panel"}"
+      title="${draftsDisabled ? "No drafts yet — ask me for a post" : "Posts I drafted in this chat, ready to review"}"
     >
       <i class="ap-icon-pen"></i>
       <span>Drafts</span>
@@ -564,7 +564,7 @@ function backTargetFor(path) {
   if (styleOf) {
     const id = decodeURIComponent(styleOf[1]);
     const name = getContextById(id)?.name;
-    return { to: `/playbook/${styleOf[1]}`, label: name ? `Back to ${name}` : "Back to the Playbook" };
+    return { to: `/playbook/${styleOf[1]}`, label: name ? `Back to ${name}` : "Back to Playbook" };
   }
   // Account scope (see active-playbook.js): these routes sit above the
   // workspaces, so their back control leads back IN rather than to a sibling
@@ -573,18 +573,18 @@ function backTargetFor(path) {
   if (isAccountScope(path)) {
     if (path === "/home" || path === "/contexts") {
       const active = getActivePlaybook();
-      return { to: "/", label: active ? `Back to ${active.name}` : "Back to my work" };
+      return { to: "/", label: active ? `Back to ${active.name}` : "Back to chats" };
     }
     // Another brand's fiche, opened from the home's Playbooks tab — back to
     // that tab, not to the home's default list.
-    return { to: catalogueRoute(), label: "Back to all playbooks" };
+    return { to: catalogueRoute(), label: "Back to all Playbooks" };
   }
   // The active brand's fiche too: a bare "Playbook" title repeated the rail's
   // lit row and the page's own h1, and said nothing about where to go next. It
   // stays IN the workspace (the rail stays); the back simply leads up to the
   // catalogue, worded like the other fiches' in workspace mode.
   if (/^\/playbook\//.test(path)) {
-    if (isWorkspaceMode()) return { to: catalogueRoute(), label: "Back to all playbooks" };
+    if (isWorkspaceMode()) return { to: catalogueRoute(), label: "Back to all Playbooks" };
     return { to: "/contexts", label: "Back to Playbooks" };
   }
   // Insights' fiche is a LEVEL, not a route: `?objective=` is what opens it, and
@@ -605,7 +605,7 @@ function backTargetFor(path) {
   // has to be read from the hash here rather than taken from `path`.
   if (/^\/topics\/settings/.test(path)) {
     const pb = parseHashParams().get("pb");
-    return { to: pb ? `/topics?pb=${encodeURIComponent(pb)}` : "/topics", label: "Back to the feed" };
+    return { to: pb ? `/topics?pb=${encodeURIComponent(pb)}` : "/topics", label: "Back to Topic Feed" };
   }
   return null;
 }
@@ -635,7 +635,7 @@ export function renderIconBack(to, label) {
 // A sub-page leads with a back control in place of the route title.
 function renderBack({ to, label }) {
   return `
-    <button type="button" class="ap-button ghost grey app-topbar__back" data-topbar-back="${escapeAttr(to)}" title="${escapeAttr(label)}">
+    <button type="button" class="ap-button ghost grey app-topbar__back" data-topbar-back="${escapeAttr(to)}">
       <i class="ap-icon-arrow-left" aria-hidden="true"></i>
       <span>${escapeHtml(label)}</span>
     </button>

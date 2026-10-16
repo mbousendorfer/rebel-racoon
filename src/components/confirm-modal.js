@@ -17,7 +17,7 @@
 //   - Registers with modal-coordinator so opening the dialog auto-closes
 //     any other overlay (drawer, modal, shortcut legend).
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1857";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1858";
 
 const MODAL_ID = "confirm";
 
@@ -94,7 +94,7 @@ export function open({
   title = "Confirm action",
   body = "",
   confirmLabel = "Confirm",
-  cancelLabel = "Cancel",
+  cancelLabel,
   danger = false,
   onConfirm = null,
   onCancel = null,
@@ -105,7 +105,7 @@ export function open({
   titleEl.textContent = title;
   bodyEl.textContent = body;
   confirmBtn.textContent = confirmLabel;
-  cancelBtn.textContent = cancelLabel;
+  cancelBtn.textContent = cancelLabel || (danger ? "Keep" : "Cancel");
   // The confirm is ALWAYS the orange primary, destructive or not: the DS has
   // no primary red, and the verb on the button ("Delete chat") is what says
   // what happens (design-guidelines, interaction-patterns §1 — Decided).

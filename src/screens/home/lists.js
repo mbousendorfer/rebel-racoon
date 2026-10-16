@@ -11,16 +11,16 @@ import {
   canManageSharing,
   canDelete,
   canView,
-} from "../../playbook-access.js?v=1857";
-import { isFlagOn } from "../../feature-flags.js?v=1857";
-import { escapeAttr, escapeText } from "../../utils.js?v=1857";
-import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=1857";
-import { getSessions } from "../../sessions-store.js?v=1857";
-import { renderEmptyState } from "../../components/empty-state.js?v=1857";
-import { getSources, getIdeas } from "../../library.js?v=1857";
-import { getPosts } from "../../posts-store.js?v=1857";
-import { getContextById } from "../../contexts-store.js?v=1857";
-import { pageState } from "../home.js?v=1857";
+} from "../../playbook-access.js?v=1858";
+import { isFlagOn } from "../../feature-flags.js?v=1858";
+import { escapeAttr, escapeText } from "../../utils.js?v=1858";
+import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=1858";
+import { getSessions } from "../../sessions-store.js?v=1858";
+import { renderEmptyState } from "../../components/empty-state.js?v=1858";
+import { getSources, getIdeas } from "../../library.js?v=1858";
+import { getPosts } from "../../posts-store.js?v=1858";
+import { getContextById } from "../../contexts-store.js?v=1858";
+import { pageState } from "../home.js?v=1858";
 
 // The Playbooks tab — a TABLE, the same shape as the Chats tab beside it.
 //
@@ -47,7 +47,7 @@ export function renderPlaybooksTable(list) {
           <th scope="col">Playbook</th>
           ${sharing ? `<th scope="col">Owner</th><th scope="col">Access</th>` : ""}
           <th scope="col">Updated</th>
-          <th scope="col" class="right">Action</th>
+          <th scope="col" class="right">Actions</th>
         </tr>
       </thead>
       <tbody>${list.map(renderPlaybookRow).join("")}</tbody>
@@ -62,7 +62,7 @@ function renderPlaybookRow(ctx) {
   const sharing = isFlagOn("playbookSharing");
   const owner = sharing ? ownerOf(ctx) : null;
   const mine = isMine(ctx);
-  const accessTitle = accessLabel(ctx) || (canEdit(ctx) ? "You can edit this Playbook" : "Read-only");
+  const accessTitle = canEdit(ctx) ? "You can edit it" : `View only — ${owner?.name || "its owner"} edits it`;
   const title = startChatTitle(ctx);
   return `
     <tr
@@ -89,7 +89,7 @@ function renderPlaybookRow(ctx) {
           ? `<td>
               <div class="ap-table-cell-content home-playbooks__owner">
                 <span class="ap-avatar size-24"><span class="ap-avatar-initials">${escapeText(mine ? "MB" : owner?.initials || "?")}</span></span>
-                <span class="home-playbooks__owner-name">${escapeText(mine ? "You" : owner?.name || "a teammate")}</span>
+                <span class="home-playbooks__owner-name">${escapeText(mine ? "You" : owner?.name || "A teammate")}</span>
               </div>
             </td>
             <td>
@@ -99,7 +99,7 @@ function renderPlaybookRow(ctx) {
             </td>`
           : ""
       }
-      <td><div class="ap-table-cell-content">${escapeText(ctx.updatedAt || "recently")}</div></td>
+      <td><div class="ap-table-cell-content">${escapeText(ctx.updatedAt || "—")}</div></td>
       <td class="right">${playbookMoreMenu(ctx)}</td>
     </tr>
   `;
@@ -129,12 +129,12 @@ function playbookThumb(ctx) {
 
 function playbookBrief(ctx) {
   const summary = (ctx.businessSummary || ctx.briefSummary || "").trim();
-  return summary || "No brief yet — open this Playbook to add one.";
+  return summary || "No business summary yet — open this Playbook to add one.";
 }
 
 function defaultBadge(ctx) {
   return ctx.isDefault
-    ? `<span class="contexts-card__badge" title="Default Playbook"><i class="ap-icon-star_fill"></i></span>`
+    ? `<span class="contexts-card__badge" title="Default Playbook — new chats start with it"><i class="ap-icon-star_fill"></i></span>`
     : "";
 }
 
@@ -146,7 +146,7 @@ function startChatTitle(ctx) {
 
 function currentTagFor(ctx) {
   return isWorkspaceMode() && ctx.id === getActivePlaybookId()
-    ? `<span class="ap-tag blue mini contexts-card__current"><span>Current</span></span>`
+    ? `<span class="ap-tag blue mini contexts-card__current" title="The Playbook you're working in"><span>Current</span></span>`
     : "";
 }
 
@@ -184,10 +184,10 @@ function playbookMoreMenu(ctx) {
         <i class="ap-icon-more"></i>
       </button>
       <div class="ap-action-dropdown home-playbooks__more-menu" id="${menuId}" role="menu" hidden>
-        ${canManageSharing(ctx) ? item("data-contexts-share", "ap-icon-share", "Share") : ""}
-        ${canEdit(ctx) ? item("data-contexts-edit", "ap-icon-pen", "Open the Playbook") : ""}
-        ${item("data-contexts-duplicate", "ap-icon-copy", "Duplicate")}
-        ${canDelete(ctx) ? item("data-contexts-delete", "ap-icon-trash", "Delete", true) : ""}
+        ${canManageSharing(ctx) ? item("data-contexts-share", "ap-icon-share", "Share Playbook") : ""}
+        ${canEdit(ctx) ? item("data-contexts-edit", "ap-icon-pen", "Edit Playbook") : ""}
+        ${item("data-contexts-duplicate", "ap-icon-copy", "Duplicate Playbook")}
+        ${canDelete(ctx) ? item("data-contexts-delete", "ap-icon-trash", "Delete Playbook", true) : ""}
       </div>
     </div>
   `;
@@ -311,7 +311,7 @@ export function renderContextsEmpty(allContexts, pageState) {
     return renderEmptyState({
       icon: "ap-icon-target",
       title: "No Playbooks yet",
-      body: "Capture your brand, audience, brief, and tone of voice — I'll apply it to every draft.",
+      body: "A Playbook holds your Brand's voice, audience, and look — I write every draft from it.",
       actionHtml: `<button type="button" class="ap-button primary blue" data-contexts-new><i class="ap-icon-plus"></i><span>Create your first Playbook</span></button>`,
       wrapperClass: "contexts-view__empty contexts-view__empty--rich",
     });
@@ -327,8 +327,9 @@ export function renderContextsEmpty(allContexts, pageState) {
   }
   return renderEmptyState({
     icon: "ap-icon-target",
-    title: "No Playbooks to show",
-    body: "Create one to get started.",
+    title: "No Playbooks you can open",
+    body: "Playbooks shared with you will show here. Create your own to start drafting.",
+    actionHtml: `<button type="button" class="ap-button primary blue" data-contexts-new><i class="ap-icon-plus"></i><span>Create a Playbook</span></button>`,
     wrapperClass: "contexts-view__empty contexts-view__empty--rich",
   });
 }
@@ -344,7 +345,7 @@ export function renderContextsEmpty(allContexts, pageState) {
 // Triggers the same `data-contexts-new` handler as the header button.
 export function renderGhostCard() {
   return `
-    <button type="button" class="contexts-card contexts-card--ghost" data-contexts-new aria-label="Create a new Playbook">
+    <button type="button" class="contexts-card contexts-card--ghost" data-contexts-new aria-label="Create a Playbook">
       <span class="contexts-card--ghost__glyph"><i class="ap-icon-archie-official"></i></span>
       <span class="contexts-card--ghost__title">Create a Playbook</span>
       <span class="contexts-card--ghost__sub">One brand, one voice, one goal — I'll keep every draft aligned.</span>
@@ -395,20 +396,20 @@ export function renderContextCard(ctx) {
   // me that's Duplicate alone — the one move that turns reading into having.
   const actions = [
     canManageSharing(ctx)
-      ? `<button type="button" class="ap-icon-button transparent" data-contexts-share="${ctx.id}" title="Share" aria-label="Share">
+      ? `<button type="button" class="ap-icon-button transparent" data-contexts-share="${ctx.id}" title="Share Playbook" aria-label="Share Playbook">
           <i class="ap-icon-share"></i>
         </button>`
       : "",
     canEdit(ctx)
-      ? `<button type="button" class="ap-icon-button transparent" data-contexts-edit="${ctx.id}" title="Edit" aria-label="Edit">
+      ? `<button type="button" class="ap-icon-button transparent" data-contexts-edit="${ctx.id}" title="Edit Playbook" aria-label="Edit Playbook">
           <i class="ap-icon-pen"></i>
         </button>`
       : "",
-    `<button type="button" class="ap-icon-button transparent" data-contexts-duplicate="${ctx.id}" title="Duplicate" aria-label="Duplicate">
+    `<button type="button" class="ap-icon-button transparent" data-contexts-duplicate="${ctx.id}" title="Duplicate Playbook" aria-label="Duplicate Playbook">
       <i class="ap-icon-copy"></i>
     </button>`,
     canDelete(ctx)
-      ? `<button type="button" class="ap-icon-button transparent" data-contexts-delete="${ctx.id}" title="Delete" aria-label="Delete">
+      ? `<button type="button" class="ap-icon-button transparent" data-contexts-delete="${ctx.id}" title="Delete Playbook" aria-label="Delete Playbook">
           <i class="ap-icon-trash"></i>
         </button>`
       : "",
@@ -512,7 +513,7 @@ export function renderContextCard(ctx) {
         </div>
       </footer>
 
-      <div class="contexts-card__updated">Updated ${escapeText(ctx.updatedAt || "recently")}</div>
+      ${ctx.updatedAt ? `<div class="contexts-card__updated">Updated ${escapeText(ctx.updatedAt)}</div>` : ""}
     </article>
   `;
 }

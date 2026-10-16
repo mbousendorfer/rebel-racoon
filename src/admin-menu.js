@@ -6,22 +6,22 @@
 // the side-effecting actions wired by the sidebar's delegated listeners. Every
 // change reloads the app so the stores re-seed under the new mode / flag.
 
-import { html, raw, escapeHtml } from "./utils.js?v=1857";
-import { FLAGS } from "./ff-catalog.js?v=1857";
-import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=1857";
-import { getUserMode, setUserMode } from "./user-mode.js?v=1857";
-import { getRole, setRole, ORG } from "./org.js?v=1857";
+import { html, raw, escapeHtml } from "./utils.js?v=1858";
+import { FLAGS } from "./ff-catalog.js?v=1858";
+import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=1858";
+import { getUserMode, setUserMode } from "./user-mode.js?v=1858";
+import { getRole, setRole, ORG } from "./org.js?v=1858";
 
 // Which hat I'm wearing inside my organisation. Only meaningful once Playbooks
 // have owners, so the section only exists behind that flag.
 const ADMIN_ROLE_OPTIONS = [
   { value: "member", label: "Member", hint: "Own your Playbooks, read the shared ones" },
-  { value: "manager", label: "Manager", hint: "Edit, delete and hand over shared Playbooks" },
+  { value: "manager", label: "Manager", hint: "Share, transfer, and delete shared Playbooks" },
 ];
 
 const ADMIN_MODE_OPTIONS = [
   { value: "returning", label: "Returning user", hint: "Populated mocks (default)" },
-  { value: "new-alt", label: "Welcome - First Time XP", hint: "Visual picker + conversational chat" },
+  { value: "new-alt", label: "First-time user", hint: "Visual picker + conversational chat" },
 ];
 
 // Switch user mode: persist, land on a coherent screen for the target mode, then
@@ -125,7 +125,7 @@ export function renderAdminMenu() {
         <span class="admin-menu__section-title">Docs</span>
         <a class="admin-menu__doc" href="handoff/components.html" target="_blank" rel="noopener">
           <span class="admin-menu__opt-text">
-            <span class="admin-menu__opt-label">Conversation thread components</span>
+            <span class="admin-menu__opt-label">Chat thread components</span>
             <span class="admin-menu__opt-hint">Live HTML + tokens · dev handoff</span>
           </span>
           <i class="ap-icon-external-link" aria-hidden="true"></i>

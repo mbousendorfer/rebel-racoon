@@ -2,28 +2,28 @@
 // date buckets, the rows, and their pin / rename / delete. Moved out of
 // sidebar.js, unchanged.
 
-import { isWorkspaceMode, scopeSessions } from "../../active-playbook.js?v=1857";
+import { isWorkspaceMode, scopeSessions } from "../../active-playbook.js?v=1858";
 import {
   getSessions,
   getSessionById,
   togglePin as togglePinSession,
   updateSession,
   deleteSession,
-} from "../../sessions-store.js?v=1857";
-import { isNewUser } from "../../user-mode.js?v=1857";
-import { escapeHtml } from "../../utils.js?v=1857";
-import { getContextById } from "../../contexts-store.js?v=1857";
-import { canView } from "../../playbook-access.js?v=1857";
-import { showToast } from "../toast.js?v=1857";
-import { open as openRenameModal } from "../rename-modal.js?v=1857";
-import { open as openConfirmModal } from "../confirm-modal.js?v=1857";
-import { clearSession as clearAssistantSession } from "../../assistant.js?v=1857";
-import { clearSession as clearPostsSession } from "../../posts-store.js?v=1857";
-import { clearSession as clearLibrarySession } from "../../library.js?v=1857";
-import { clearSession as clearSourcesSession } from "../../sources-stream.js?v=1857";
-import { getPath, navigate } from "../../router.js?v=1857";
-import { closePanel as closeRightPanel } from "../right-panel.js?v=1857";
-import { getOrganizePrefs } from "../sidebar.js?v=1857";
+} from "../../sessions-store.js?v=1858";
+import { isNewUser } from "../../user-mode.js?v=1858";
+import { escapeHtml } from "../../utils.js?v=1858";
+import { getContextById } from "../../contexts-store.js?v=1858";
+import { canView } from "../../playbook-access.js?v=1858";
+import { showToast } from "../toast.js?v=1858";
+import { open as openRenameModal } from "../rename-modal.js?v=1858";
+import { open as openConfirmModal } from "../confirm-modal.js?v=1858";
+import { clearSession as clearAssistantSession } from "../../assistant.js?v=1858";
+import { clearSession as clearPostsSession } from "../../posts-store.js?v=1858";
+import { clearSession as clearLibrarySession } from "../../library.js?v=1858";
+import { clearSession as clearSourcesSession } from "../../sources-stream.js?v=1858";
+import { getPath, navigate } from "../../router.js?v=1858";
+import { closePanel as closeRightPanel } from "../right-panel.js?v=1858";
+import { getOrganizePrefs } from "../sidebar.js?v=1858";
 
 // "Sort & group" control — options for the two rows. Grouping is limited to the
 // dimensions the session record supports: Playbook (contextId) and Date
@@ -180,8 +180,8 @@ export function renderRecentLists(activeSessionId) {
         <div class="app-sidebar__empty-icon">
           <i class="ap-icon-single-chat-bubble" aria-hidden="true"></i>
         </div>
-        <span class="app-sidebar__empty-text">${scopedEmpty ? "No chats in this playbook" : "No chats yet"}</span>
-        <span class="app-sidebar__empty-hint">Start one with the New chat button above.</span>
+        <span class="app-sidebar__empty-text">${scopedEmpty ? "No chats in this Playbook yet" : "No chats yet"}</span>
+        <span class="app-sidebar__empty-hint">${scopedEmpty ? "Start one with New chat, or switch Playbooks above." : "Start one with New chat above."}</span>
       </div>
     `;
   }
@@ -291,8 +291,8 @@ function renderSessionRow(session, activeSessionId) {
       <details class="ap-select app-sidebar__row-menu" data-sidebar-row-menu>
         <summary
           class="app-sidebar__row-more"
-          aria-label="More actions"
-          title="More actions"
+          aria-label="Chat actions"
+          title="Chat actions"
         >
           <i class="ap-icon-more"></i>
         </summary>
@@ -301,7 +301,7 @@ function renderSessionRow(session, activeSessionId) {
             <i class="ap-icon-pen"></i>
             <div class="ap-action-dropdown-item-text">
               <div class="ap-action-dropdown-item-label-container">
-                <span class="ap-action-dropdown-item-label">Rename</span>
+                <span class="ap-action-dropdown-item-label">Rename chat</span>
               </div>
             </div>
           </button>
@@ -309,7 +309,7 @@ function renderSessionRow(session, activeSessionId) {
             <i class="ap-icon-pin"></i>
             <div class="ap-action-dropdown-item-text">
               <div class="ap-action-dropdown-item-label-container">
-                <span class="ap-action-dropdown-item-label">${isPinned ? "Unpin" : "Pin"}</span>
+                <span class="ap-action-dropdown-item-label">${isPinned ? "Unpin chat" : "Pin chat"}</span>
               </div>
             </div>
           </button>
@@ -317,7 +317,7 @@ function renderSessionRow(session, activeSessionId) {
             <i class="ap-icon-trash"></i>
             <div class="ap-action-dropdown-item-text">
               <div class="ap-action-dropdown-item-label-container">
-                <span class="ap-action-dropdown-item-label">Delete</span>
+                <span class="ap-action-dropdown-item-label">Delete chat</span>
               </div>
             </div>
           </button>

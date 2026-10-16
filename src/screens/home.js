@@ -1,23 +1,23 @@
-import { html, raw, escapeAttr } from "../utils.js?v=1857";
-import { renderTopbar } from "../components/topbar.js?v=1857";
+import { html, raw, escapeAttr } from "../utils.js?v=1858";
+import { renderTopbar } from "../components/topbar.js?v=1858";
 import {
   getContexts,
   subscribe as subscribeContexts,
   duplicateContext,
   deleteContext,
-} from "../contexts-store.js?v=1857";
-import { getSessions, getSessionById, subscribe as subscribeSessions } from "../sessions-store.js?v=1857";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1857";
-import { closePanel as closeRightPanel } from "../components/right-panel.js?v=1857";
-import { navigate, getPath } from "../router.js?v=1857";
-import { setHandoff } from "../handoff.js?v=1857";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=1857";
-import { visibleContexts, usableContexts } from "../playbook-access.js?v=1857";
-import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=1857";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=1857";
-import { installMoreMenu } from "../components/more-menu.js?v=1857";
-import { showToast } from "../components/toast.js?v=1857";
-import { pickedPlaybook, renderHeroPicker, renderHomeHero, renderHomeWorkflows } from "./home/hero.js?v=1857";
+} from "../contexts-store.js?v=1858";
+import { getSessions, getSessionById, subscribe as subscribeSessions } from "../sessions-store.js?v=1858";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1858";
+import { closePanel as closeRightPanel } from "../components/right-panel.js?v=1858";
+import { navigate, getPath } from "../router.js?v=1858";
+import { setHandoff } from "../handoff.js?v=1858";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=1858";
+import { visibleContexts, usableContexts } from "../playbook-access.js?v=1858";
+import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=1858";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=1858";
+import { installMoreMenu } from "../components/more-menu.js?v=1858";
+import { showToast } from "../components/toast.js?v=1858";
+import { pickedPlaybook, renderHeroPicker, renderHomeHero, renderHomeWorkflows } from "./home/hero.js?v=1858";
 import {
   chatPlaybook,
   renderChatsTab,
@@ -25,7 +25,7 @@ import {
   renderContextsEmpty,
   renderGhostCard,
   renderPlaybooksTable,
-} from "./home/lists.js?v=1857";
+} from "./home/lists.js?v=1858";
 
 // The account HOME — and the Playbooks catalogue it merged with.
 //
@@ -172,7 +172,10 @@ function renderPage() {
         <header class="contexts-view__head">
           <div class="contexts-view__head-text">
             <h1 class="contexts-view__title">Playbooks</h1>
-            <p class="contexts-view__sub">${all.length} Playbooks · applied across ${totalChats} chats</p>
+            <p class="contexts-view__sub">
+              ${all.length} Playbook${all.length === 1 ? "" : "s"} · used in ${totalChats}
+              chat${totalChats === 1 ? "" : "s"}
+            </p>
           </div>
           <div class="contexts-view__head-actions">${raw(renderSearchField())}${raw(renderCreateButton())}</div>
         </header>
@@ -280,8 +283,8 @@ function renderHomeTabs(playbookCount, chatCount, tab) {
 function renderHomeToolbar(tab, totalChats) {
   const hint =
     tab === "playbooks"
-      ? `<p class="home-toolbar__hint muted">Applied across ${totalChats} chats</p>`
-      : `<p class="home-toolbar__hint muted">Every chat, every Playbook.</p>`;
+      ? `<p class="home-toolbar__hint muted">Each Playbook holds a Brand's voice, audience, and look · used in ${totalChats} chat${totalChats === 1 ? "" : "s"}</p>`
+      : `<p class="home-toolbar__hint muted">Every chat, across all your Playbooks.</p>`;
   return `
     <div class="home-toolbar">
       ${hint}
@@ -310,13 +313,13 @@ function filter(list, { query }) {
 // how many chats and what survives — not just "this will be removed".
 function deleteBody(ctx) {
   if (ctx.scope !== "organization") {
-    return `"${ctx.name}" will be removed. Chats using it will need a new Playbook.`;
+    return `"${ctx.name}" will be removed. Chats using it will need a new Playbook. This can't be undone.`;
   }
   const n = ctx.usedIn || 0;
   const who = n === 1 ? "1 chat" : `${n} chats`;
   return n
-    ? `"${ctx.name}" is shared with your organisation and ${who} run on it. They keep the drafts already written — those can still be saved or scheduled — but they won't generate anything new.`
-    : `"${ctx.name}" is shared with your organisation. It disappears from everyone's list. Playbooks duplicated from it are their own and stay untouched.`;
+    ? `"${ctx.name}" is shared with everyone in your organization, and ${who} use it. They keep their drafts — those can still be saved or scheduled — but I can't draft anything new in them. This can't be undone.`
+    : `"${ctx.name}" is shared with everyone in your organization. It disappears from everyone's list. Copies duplicated from it stay untouched. This can't be undone.`;
 }
 
 function bind(root) {
@@ -454,7 +457,7 @@ function bind(root) {
       const ctx = getContexts().find((c) => c.id === delBtn.dataset.contextsDelete);
       if (!ctx) return;
       if (getContexts().length <= 1) {
-        showToast("Can't delete the last Playbook — every chat needs one.");
+        showToast("Can't delete your only Playbook. Every chat needs one — create another first.");
         return;
       }
       // FIND-C1: DS confirm-modal so the delete prompt is keyboard-

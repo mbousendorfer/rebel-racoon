@@ -2,14 +2,14 @@
 // the Playbook picker and the workflow starters. Reads the page state home.js
 // owns. Moved out of home.js, unchanged.
 
-import { usableContexts } from "../../playbook-access.js?v=1857";
-import { getActivePlaybookId } from "../../active-playbook.js?v=1857";
-import { isFlagOn } from "../../feature-flags.js?v=1857";
-import { getConnectedConnectors } from "../../connectors-store.js?v=1857";
-import { escapeAttr, escapeText } from "../../utils.js?v=1857";
-import { renderConnectorLogo } from "../../connectors-view.js?v=1857";
-import { renderStarterCards } from "../../components/starter-card.js?v=1857";
-import { pageState } from "../home.js?v=1857";
+import { usableContexts } from "../../playbook-access.js?v=1858";
+import { getActivePlaybookId } from "../../active-playbook.js?v=1858";
+import { isFlagOn } from "../../feature-flags.js?v=1858";
+import { getConnectedConnectors } from "../../connectors-store.js?v=1858";
+import { escapeAttr, escapeText } from "../../utils.js?v=1858";
+import { renderConnectorLogo } from "../../connectors-view.js?v=1858";
+import { renderStarterCards } from "../../components/starter-card.js?v=1858";
+import { pageState } from "../home.js?v=1858";
 
 // ── The hero — the reason this page exists ────────────────────────────────
 //
@@ -32,7 +32,7 @@ export function renderHomeHero() {
   const picked = pickedPlaybook();
   return `
     <section class="home-hero">
-      <h1 class="home-hero__title">What are we working on?</h1>
+      <h1 class="home-hero__title">What do you want to work on?</h1>
       <p class="home-hero__sub">Pick a Playbook, tell me what you need, and I'll open a chat on it.</p>
 
       <div class="home-hero__card">
@@ -50,7 +50,7 @@ export function renderHomeHero() {
             class="ap-button primary orange home-hero__send"
             data-home-send
             aria-label="Send"
-            title="Send"
+            title="Send — opens a new chat (Enter)"
             disabled
           >
             <i class="ap-icon-arrow-up"></i>
@@ -122,10 +122,10 @@ function renderHomeAdd() {
             </button>`,
           )
           .join("")
-      : `<div class="home-hero__menu-label">No sources connected yet</div>`;
+      : `<div class="home-hero__menu-label">No connectors yet</div>`;
     connectors = `
       ${divider}
-      <div class="home-hero__menu-label">Connected sources</div>
+      <div class="home-hero__menu-label">Connectors</div>
       ${rows}
       ${item('data-home-add="connectors"', "ap-icon-view-grid", "Browse connectors")}
     `;
@@ -137,6 +137,7 @@ function renderHomeAdd() {
         type="button"
         class="ap-button stroked grey"
         data-home-add-toggle
+        aria-label="Add a source"
         aria-haspopup="menu"
         aria-expanded="false"
       >
@@ -149,7 +150,7 @@ function renderHomeAdd() {
         ${item('data-home-add="url"', "ap-icon-link", "Add URL")}
         ${item('data-home-add="text"', "ap-icon-file--text", "Paste text")}
         ${divider}
-        ${item('data-home-add="top-posts"', "ap-icon-feature-analytics", "Top performing posts")}
+        ${item('data-home-add="top-posts"', "ap-icon-feature-analytics", "Repurpose a top post")}
         ${topics}
         ${connectors}
       </div>
@@ -181,7 +182,7 @@ export function renderHeroPicker(picked, options) {
     .join("");
   return `
     <details class="ap-select home-hero__pb" data-home-pb>
-      <summary class="ap-select-trigger" title="Playbook: ${escapeAttr(picked?.name || "")} — the brand this chat runs on">
+      <summary class="ap-select-trigger" title="Playbook: ${escapeAttr(picked?.name || "")} — the Brand I'll write for">
         <span class="app-sidebar__row-color-dot app-sidebar__row-color-dot--${escapeAttr(picked?.color || "grey")}" aria-hidden="true"></span>
         <span class="ap-select-inline-label">Playbook</span>
         <span class="ap-select-value">${escapeText(picked?.name || "Select a Playbook")}</span>
@@ -213,7 +214,7 @@ export function renderHomeWorkflows() {
   if (usableContexts().length === 0) return "";
   return `
     <section class="home-workflows">
-      <h2 class="home-workflows__label" id="homeStarterLabel">Jump into a workflow</h2>
+      <h2 class="home-workflows__label" id="homeStarterLabel">Turn a source, a video, or a top post into drafts</h2>
       <div class="starter-grid" role="group" aria-labelledby="homeStarterLabel">${renderStarterCards()}</div>
     </section>
   `;

@@ -2,11 +2,11 @@
 // active brand, the list to switch to, and what a switch re-points (see
 // switchPlaybook). Moved out of sidebar.js, unchanged.
 
-import { isWorkspaceMode, getActivePlaybook, setActivePlaybook } from "../../active-playbook.js?v=1857";
-import { escapeHtml } from "../../utils.js?v=1857";
-import { visibleContexts } from "../../playbook-access.js?v=1857";
-import { getPath, navigate } from "../../router.js?v=1857";
-import { closePanel as closeRightPanel } from "../right-panel.js?v=1857";
+import { isWorkspaceMode, getActivePlaybook, setActivePlaybook } from "../../active-playbook.js?v=1858";
+import { escapeHtml } from "../../utils.js?v=1858";
+import { visibleContexts } from "../../playbook-access.js?v=1858";
+import { getPath, navigate } from "../../router.js?v=1858";
+import { closePanel as closeRightPanel } from "../right-panel.js?v=1858";
 
 // Initials for the collapsed rail. Playbooks are named "Brand · framing", so
 // the part before the separator is the identity — "Acme · Q2 marketing" is an
@@ -54,8 +54,8 @@ export function renderPlaybookSwitcher({ collapsed }) {
           type="button"
           class="app-sidebar__pb-chip"
           data-sidebar-toggle
-          aria-label="Playbook: ${escapeHtml(active.name)} — expand to switch"
-          title="Playbook: ${escapeHtml(active.name)} — expand to switch"
+          aria-label="Playbook: ${escapeHtml(active.name)} — expand to switch. Chats, Topics, and Insights follow it."
+          title="Playbook: ${escapeHtml(active.name)} — expand to switch. Chats, Topics, and Insights follow it."
         >
           <span class="ap-avatar square size-24">
             <span class="ap-avatar-initials">${escapeHtml(playbookInitials(active.name))}</span>
@@ -74,7 +74,7 @@ export function renderPlaybookSwitcher({ collapsed }) {
       <div class="app-sidebar__pb">
         <button type="button" class="app-sidebar__nav-item app-sidebar__pb-empty" data-pb-switch-create>
           <i class="ap-icon-plus" aria-hidden="true"></i>
-          <span>Create a playbook</span>
+          <span>Create a Playbook</span>
         </button>
       </div>
     `;
@@ -103,23 +103,23 @@ export function renderPlaybookSwitcher({ collapsed }) {
       <details class="ap-select app-sidebar__pb-select" data-pb-switcher>
         <summary
           class="ap-select-trigger app-sidebar__pb-trigger"
-          title="Playbook: ${escapeHtml(active.name)} — switch"
+          title="Playbook: ${escapeHtml(active.name)} — switch. Chats, Topics, and Insights follow it."
         >
           <span class="${dotClass}" aria-hidden="true"></span>
           <span class="ap-select-inline-label">Playbook</span>
           <span class="ap-select-value">${escapeHtml(active.name)}</span>
           <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
         </summary>
-        <div class="ap-select-dropdown app-sidebar__pb-dropdown" role="listbox" aria-label="Switch playbook">
+        <div class="ap-select-dropdown app-sidebar__pb-dropdown" role="listbox" aria-label="Switch Playbook">
           <div class="ap-select-options">${options}</div>
           <div class="ap-select-footer">
             <button type="button" class="ap-select-create" data-pb-switch-manage>
               <i class="ap-icon-stack ap-select-create-icon" aria-hidden="true"></i>
-              <span>All playbooks</span>
+              <span>All Playbooks</span>
             </button>
             <button type="button" class="ap-select-create" data-pb-switch-create>
               <i class="ap-icon-plus ap-select-create-icon" aria-hidden="true"></i>
-              <span>Create a playbook</span>
+              <span>Create a Playbook</span>
             </button>
           </div>
         </div>
