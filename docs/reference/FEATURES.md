@@ -175,7 +175,7 @@ Store **per-session** [`posts-store.js`](../../src/posts-store.js). Draft = auth
   une ligne `.muted` sous la fente **nomme ce qui manque** et propose `Open the Playbook` (`.ap-link`,
   navigation → bleu, pas orange). Affichée **une seule fois par feed**, sur le premier draft sans
   média : ce qui manque est un fait du Playbook, pas de ce draft-là.
-- **Actions** : Reference · Edit (flag `draftInlineEdit`) · **Regenerate** (menu _Shorter/Longer/Warmer/More formal/Regenerate_) · Save as draft · Schedule · Delete. Toutes désactivées pendant régénération.
+- **Actions** : Reference · Edit (flag `draftInlineEdit`) · **Regenerate** (menu _Shorter/Longer/Warmer/More formal/Regenerate_) · Save as draft · **Assign for review** · Schedule · Delete. Toutes désactivées pendant régénération ; Assign et Schedule aussi tant que le draft ne passe pas `validatePost` (tooltip sur un wrapper).
 - **Inline edit** : corps → contenteditable, Save/Cancel, auto-commit outside-click, Esc annule, Cmd/Ctrl+Enter save.
 - **Validation dérivée, jamais stockée** ([`post-validation.js`](../../src/post-validation.js) `validatePost(post) → {errors, warnings}`, règles dans `NETWORKS` de [`social-profiles.js`](../../src/social-profiles.js)) : caractères au-delà de `limit` (texte + hashtags + CTA, `usedCharacters`), média requis (`requiresMedia` : Instagram et TikTok = image ou vidéo, YouTube = vidéo), titre YouTube au-delà de `titleLimit` (100) ; un carrousel X de plus de `maxImages` (4) n'est qu'un _warning_. Infobox rouge au-dessus de la carte, menée par le compte (`renderProfileTag`) ; un draft qui redevient valide dit _« Fixed — ready to publish. »_ (infobox verte, ~2,5 s, détecté par diff des ids invalides entre deux renders) puis rejoint les prêts. Tant qu'il est invalide, **Schedule** est désactivé et son wrapper porte le tooltip (un bouton désactivé ne survole pas). ⚠️ Les seeds `post-acme-2` (Instagram sans média) et `post-acme-4` (X à 305 caractères) échouent **pour de vrai** ; l'ancien `status: "needs_fixes"` + `errors[]` stockés mentaient sur les données (« exceeds 2,200 » sur 250 caractères). Strip feedback « How's this draft? ».
 
@@ -184,7 +184,16 @@ Store **per-session** [`posts-store.js`](../../src/posts-store.js). Draft = auth
 - **Onglets statut** : All drafts / Needs fixes — compteur et filtre **dérivés** de `validatePost`. **Dropdown network**. La barre bulk d'un réseau désactive _Schedule drafts_ tant que la sélection contient un draft invalide (tooltip : combien à corriger).
 - **Feed groupé par network** (LinkedIn, X, IG, FB, TikTok, YT). Chaque **band réseau** = header + toolbar bulk (click = select-all du réseau) → _Save as drafts / Schedule / Delete_. Bulk scheduling **scopé network** (batch toujours valide).
 - **Empty** : « No drafts yet » / filtré « No drafts match this filter ».
-- Handlers par carte : rewrite, save, schedule (→ modal, sort des Drafts au confirm), delete, image, « Edit clip » (rouvre le modal clips en mono-clip), mention.
+- Handlers par carte : rewrite, save, assign (→ modal, sort des Drafts au confirm), schedule (→ modal, sort des Drafts au confirm), delete, image, « Edit clip » (rouvre le modal clips en mono-clip), mention. La barre bulk d'un réseau : _Save as drafts_ · _Assign_ · _Schedule drafts_ · Delete.
+
+### Assign for review ([`assign-modal.js`](../../src/components/assign-modal.js))
+
+Le workflow d'approbation **Agorapulse** ([`CONCEPTS.md`](CONCEPTS.md) §6) — il s'attache au **Draft**, jamais au Playbook. Pas de flag.
+
+- **Modale** 480px : _« Assign N posts for review »_, sous-titre _« They leave this chat and wait for approval in Agorapulse. »_ ; **Reviewer** (`.ap-select` + DS Selection Dropdown avec recherche, deux groupes _Team members_ / _External users_, avatar d'initiales, sélection unique) ; **Due date · optional** (ghost blue _Add a due date_ → `datetime-local` caché ouvert par `showPicker()`, puis la date + _Change_ + ✕) ; **Comment · optional** (`.ap-textarea-field`). Footer : Cancel (ghost grey) · **Assign N posts** (primary blue, désactivé sans reviewer).
+- **Qui peut relire** ([`org.js`](../../src/org.js), CONFIG — livrée en `new-alt`) : `MEMBERS[].canApprove` (permission de rôle Agorapulse) + `EXTERNAL_REVIEWERS` (un client, une agence : relisent par lien, sans siège, donc sans porte de profil). Une ligne est **grisée et dit pourquoi** (`ap-tag grey mini` + tooltip, `reviewBlock(reviewer, posts)`) : _Can't approve_ sans `canApprove`, _No access_ si la personne n'atteint pas le profil connecté d'un des drafts (`hasProfileAccess`). Le picker n'est jamais vide : les externes sont toujours là. Moi (`CURRENT_USER`) n'y suis pas.
+- **Au confirm** : les drafts **sortent du chat** comme Schedule et Save, toast _« Sent N posts to {name} for review »_ + Undo (`insertPost` à leur place). Bloqué par la validation (feature ci-dessus).
+- **API pour le chat** ([`drafts-view.js`](../../src/components/right-panel/drafts-view.js)) : `openAssignForPosts(sid, posts, { reviewerId, onAssigned })` — la modale préremplie (un `reviewerId` qui ne peut pas relire est ignoré), le même commit + toast que le panneau, `onAssigned({ reviewer, dueAt, comment })` pour que le chat réponde. La modale seule : `open({ posts, onConfirm, reviewerId })` dans `assign-modal.js`.
 
 ---
 
