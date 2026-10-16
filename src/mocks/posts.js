@@ -94,8 +94,10 @@ export const postsBySession = {
     {
       id: "post-acme-2",
       author: AUTHOR_MC,
-      network: "linkedin",
-      status: "needs_fixes",
+      // Fails on purpose: Instagram won't publish without media
+      // (post-validation.js derives the error — nothing is stored here).
+      network: "instagram",
+      status: "ready",
       timeLabel: "6h",
       text: [
         "Short version of today's offsite: we stopped writing quarterly OKRs. Here's what replaced them and why the team ships faster now.",
@@ -106,20 +108,6 @@ export const postsBySession = {
       stats: { likes: 0, comments: 0, reposts: 0 },
       hasImage: false,
       generationContext: seedIdeaGen("The contrarian take", "Why we stopped writing quarterly OKRs"),
-      errors: [
-        {
-          id: "e-acme-2-1",
-          message: "Caption exceeds 2,200 characters for LinkedIn.",
-          field: "caption",
-          platform: "linkedin",
-        },
-        {
-          id: "e-acme-2-2",
-          message: "First comment requires at least one mention.",
-          field: "firstComment",
-          platform: "linkedin",
-        },
-      ],
     },
     {
       id: "post-acme-3",
@@ -147,27 +135,20 @@ export const postsBySession = {
     {
       id: "post-acme-4",
       author: AUTHOR_MC,
-      network: "linkedin",
-      status: "needs_fixes",
+      // Fails on purpose: over X's 280 characters (derived, not stored).
+      network: "twitter",
+      status: "ready",
       timeLabel: "3d",
       text: [
         "Behind-the-scenes on the founder keynote — including the parts that got cut. The cuts are more instructive than the keynote itself.",
+        "We dropped the product demo, the roadmap slide and the customer logos. What stayed: the three mistakes we made in year one, and what each one cost us.",
       ],
       hashtags: ["FounderKeynote", "BTS"],
       cta: "",
       stats: { likes: 0, comments: 0, reposts: 0 },
-      // Carries the image its "Image dimensions invalid" error is about.
       hasImage: true,
       imageUrl: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=640&h=360&q=70",
       generationContext: seedIdeaGen("The behind-the-scenes recap", "What a founder keynote looks like at 50 people"),
-      errors: [
-        {
-          id: "e-acme-4-1",
-          message: "Image dimensions invalid for LinkedIn (1200×627 recommended).",
-          field: "media",
-          platform: "linkedin",
-        },
-      ],
     },
   ],
   "s-riverside": [
@@ -207,7 +188,7 @@ export const postsBySession = {
       id: "post-riv-3",
       author: AUTHOR_MC,
       network: "linkedin",
-      status: "needs_fixes",
+      status: "ready",
       timeLabel: "yesterday",
       text: [
         "The metric Riverside cared about that we didn't track — until they told us. Sharing the reframe that flipped our roadmap.",
@@ -217,14 +198,6 @@ export const postsBySession = {
       stats: { likes: 0, comments: 0, reposts: 0 },
       hasImage: false,
       generationContext: seedIdeaGen("The reframe angle", "The metric Riverside cared about that we didn't track"),
-      errors: [
-        {
-          id: "e-riv-3-1",
-          message: "Post body is too short for LinkedIn's recommended length (200+ chars).",
-          field: "caption",
-          platform: "linkedin",
-        },
-      ],
     },
     {
       id: "post-riv-4",

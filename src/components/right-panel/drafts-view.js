@@ -4,26 +4,28 @@
 // shell's delegated clicks write it through setDraftsFilter / setDraftsNetwork.
 // Moved out of right-panel.js, unchanged.
 
-import { networkMeta } from "../../social-profiles.js?v=1888";
-import { getPosts, removePost, insertPost, updatePostContent, attachImageToDraft } from "../../posts-store.js?v=1888";
-import { noticeDraftEdit } from "../../voice-coach.js?v=1888";
-import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=1888";
-import { getSessionById } from "../../sessions-store.js?v=1888";
-import { renderPostCard } from "../post-card.js?v=1888";
-import { html, raw } from "../../utils.js?v=1888";
-import { isFlagOn } from "../../feature-flags.js?v=1888";
-import { open as openNewScheduleModal } from "../schedule-modal.js?v=1888";
-import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=1888";
-import { open as openConfirmModal } from "../confirm-modal.js?v=1888";
-import { showToast } from "../toast.js?v=1888";
-import { addMention as addComposerMention } from "../../composer-mentions.js?v=1888";
-import { startDraftImageFlow } from "../../draft-image-flow.js?v=1888";
-import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=1888";
-import { RPANEL_CLOSE_INLINE, activeSessionId, canDraftInlineEdit, renderPanel } from "../right-panel.js?v=1888";
+import { networkMeta } from "../../social-profiles.js?v=1889";
+import { getPosts, removePost, insertPost, updatePostContent, attachImageToDraft } from "../../posts-store.js?v=1889";
+import { noticeDraftEdit } from "../../voice-coach.js?v=1889";
+import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=1889";
+import { getSessionById } from "../../sessions-store.js?v=1889";
+import { renderPostCard } from "../post-card.js?v=1889";
+import { isPostValid } from "../../post-validation.js?v=1889";
+import { html, raw } from "../../utils.js?v=1889";
+import { isFlagOn } from "../../feature-flags.js?v=1889";
+import { open as openNewScheduleModal } from "../schedule-modal.js?v=1889";
+import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=1889";
+import { open as openConfirmModal } from "../confirm-modal.js?v=1889";
+import { showToast } from "../toast.js?v=1889";
+import { addMention as addComposerMention } from "../../composer-mentions.js?v=1889";
+import { startDraftImageFlow } from "../../draft-image-flow.js?v=1889";
+import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=1889";
+import { RPANEL_CLOSE_INLINE, activeSessionId, canDraftInlineEdit, renderPanel } from "../right-panel.js?v=1889";
 
 // Drafts-mode local UI state — Lot 21 rich-card view. Filter strip at the
-// top of the panel head drives both axes : status (all / needs_fixes /
-// scheduled) and network (all / linkedin / twitter). Survives across
+// top of the panel head drives both axes : status (all / needs_fixes) and
+// network (all / linkedin / twitter). « Needs fixes » is DERIVED
+// (post-validation.js), never a stored status. Survives across
 // open/close cycles so the user keeps their filter when they re-open.
 let draftsFilter = "all";
 
@@ -62,6 +64,31 @@ export let selectedDraftIds = new Set();
 // the original body fields powers the "no spurious save" check.
 export let editingPostId = null;
 
+// "Fixed — ready to publish": a draft that stopped failing validation since the
+// last render says so for a moment (and stays under « Needs fixes » meanwhile),
+// then settles among the ready ones. Detected by diffing the invalid ids from
+// one render to the next — nothing is stored on the post.
+const FIXED_MS = 2500;
+let lastInvalidIds = new Set();
+const justFixed = new Map(); // postId → timeout
+
+function trackFixes(posts) {
+  const invalidNow = new Set(posts.filter((p) => !isPostValid(p)).map((p) => p.id));
+  for (const id of lastInvalidIds) {
+    if (invalidNow.has(id) || justFixed.has(id) || !posts.some((p) => p.id === id)) continue;
+    justFixed.set(
+      id,
+      setTimeout(() => {
+        justFixed.delete(id);
+        renderPanel();
+      }, FIXED_MS),
+    );
+  }
+  lastInvalidIds = invalidNow;
+}
+
+const needsFixes = (p) => !isPostValid(p) || justFixed.has(p.id);
+
 let editingOriginal = null;
 
 export function renderDraftsView() {
@@ -77,6 +104,7 @@ export function renderDraftsView() {
   const sid = activeSessionId();
   const allPosts = sid ? getPosts(sid).filter((p) => p.status !== "scheduled") : [];
   if (!allPosts.length) return renderDraftsEmpty();
+  trackFixes(allPosts);
 
   // The "scheduled" status filter no longer exists — normalise any stale
   // state left over from an earlier render so the tabs stay in sync.
@@ -85,7 +113,7 @@ export function renderDraftsView() {
   // Counts per status — drive the filter rail badges.
   const filterCounts = {
     all: allPosts.length,
-    needs_fixes: allPosts.filter((p) => p.status === "needs_fixes").length,
+    needs_fixes: allPosts.filter((p) => !isPostValid(p)).length,
   };
 
   // The Playbook behind this chat, resolved ONCE for the whole feed: an
@@ -103,7 +131,7 @@ export function renderDraftsView() {
 
   // Apply both filter axes.
   const filtered = allPosts.filter((p) => {
-    if (draftsFilter === "needs_fixes" && p.status !== "needs_fixes") return false;
+    if (draftsFilter === "needs_fixes" && !needsFixes(p)) return false;
     if (draftsNetwork !== "all" && p.network !== draftsNetwork) return false;
     return true;
   });
@@ -220,6 +248,7 @@ export function renderDraftsView() {
           inlineEdit,
           selectable: true,
           selected: selectedDraftIds.has(p.id),
+          justFixed: justFixed.has(p.id),
           brandGaps: p.id === firstGapPostId ? brandGaps : [],
           playbookId,
           // What Generate an image will use: the Playbook's look and this
@@ -238,13 +267,22 @@ export function renderDraftsView() {
     // primary orange with calendar — the pipeline's final action, same
     // fill as the schedule modal's confirm — Delete = grey icon button. No idle
     // controls — no hairline, no "Select all" hint.
+    // A selection holding a draft that won't publish can't be scheduled: the
+    // button is disabled and its wrapper (a disabled button doesn't hover)
+    // says how many to fix.
+    const blocked = groupPosts.filter((p) => selectedDraftIds.has(p.id) && !isPostValid(p)).length;
+    const scheduleBtn = `<button type="button" class="ap-button primary orange" data-rpanel-section-schedule="${network}" ${blocked ? "disabled" : ""}>
+              <i class="ap-icon-calendar" aria-hidden="true"></i> Schedule drafts
+            </button>`;
     const actions = selecting
       ? `
           <div class="rpanel-drafts__group-actions">
             <button type="button" class="ap-button ghost blue" data-rpanel-section-save="${network}">Save as drafts</button>
-            <button type="button" class="ap-button primary orange" data-rpanel-section-schedule="${network}">
-              <i class="ap-icon-calendar" aria-hidden="true"></i> Schedule drafts
-            </button>
+            ${
+              blocked
+                ? `<span data-tooltip="${blocked} selected ${blocked === 1 ? "draft needs" : "drafts need"} fixing first. Fix or unselect ${blocked === 1 ? "it" : "them"} to schedule.">${scheduleBtn}</span>`
+                : scheduleBtn
+            }
             <button type="button" class="ap-icon-button" data-rpanel-section-delete="${network}" aria-label="${delAria}" title="Delete selected drafts">
               <i class="ap-icon-trash" aria-hidden="true"></i>
             </button>
@@ -314,7 +352,7 @@ export function onPostRewrite(postId, intent = "fresh") {
   // streaming → commit. Loaded lazily so the rewrite code is only
   // pulled in when the user actually triggers a regen. `intent` biases
   // the rewrite (shorter / longer / warmer / formal / fresh).
-  import("../../draft-rewrite.js?v=1888").then(({ startRewrite }) => {
+  import("../../draft-rewrite.js?v=1889").then(({ startRewrite }) => {
     startRewrite(sid, postId, intent);
   });
 }
@@ -344,7 +382,7 @@ export function onPostSchedule(postId) {
   const sid = activeSessionId();
   if (!sid) return;
   const post = getPosts(sid).find((p) => p.id === postId);
-  if (!post) return;
+  if (!post || !isPostValid(post)) return;
   openScheduleModal({
     posts: [post],
     // The chat's Playbook — whose saved posting rhythm the modal opens on.
@@ -367,7 +405,7 @@ export function visibleNetworkPosts(network) {
   return getPosts(sid).filter((p) => {
     if (p.status === "scheduled") return false;
     if (p.network !== network) return false;
-    if (draftsFilter === "needs_fixes" && p.status !== "needs_fixes") return false;
+    if (draftsFilter === "needs_fixes" && !needsFixes(p)) return false;
     if (draftsNetwork !== "all" && p.network !== draftsNetwork) return false;
     return true;
   });
@@ -434,7 +472,7 @@ export function onSectionSchedule(network) {
   const sid = activeSessionId();
   if (!sid) return;
   const target = sectionTargetSnapshot(sid, network).map(({ post }) => post);
-  if (target.length === 0) return;
+  if (target.length === 0 || !target.every(isPostValid)) return;
   openScheduleModal({
     posts: target,
     playbookId: getSessionById(sid)?.contextId || null,
@@ -483,7 +521,7 @@ export function onSectionSave(network) {
   if (snapshot.length === 0) return;
   const count = snapshot.length;
   const draftWord = count === 1 ? "draft" : "drafts";
-  Promise.all([import("../save-folder-modal.js?v=1888"), import("../../folders-store.js?v=1888")]).then(
+  Promise.all([import("../save-folder-modal.js?v=1889"), import("../../folders-store.js?v=1889")]).then(
     ([{ open: openSaveModal }, { addDraftsToFolder }]) => {
       openSaveModal({
         count,

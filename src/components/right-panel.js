@@ -1,31 +1,31 @@
-import { html, raw } from "../utils.js?v=1888";
-import { subscribe as subscribeThread } from "../assistant.js?v=1888";
-import { isFlagOn } from "../feature-flags.js?v=1888";
-import { getPath, navigate } from "../router.js?v=1888";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1888";
+import { html, raw } from "../utils.js?v=1889";
+import { subscribe as subscribeThread } from "../assistant.js?v=1889";
+import { isFlagOn } from "../feature-flags.js?v=1889";
+import { getPath, navigate } from "../router.js?v=1889";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1889";
 import {
   getPosts,
   attachImageToDraft,
   updatePostClip,
   subscribe as subscribePostsStore,
-} from "../posts-store.js?v=1888";
-import { onFeedbackClick } from "./feedback-control.js?v=1888";
+} from "../posts-store.js?v=1889";
+import { onFeedbackClick } from "./feedback-control.js?v=1889";
 // Shared compact idea card — same component the standalone Ideas page uses.
-import { open as openVideoClipsModal } from "./video-clips-modal.js?v=1888";
-import { isSidebarCollapsed, setSidebarCollapsed, isAutoCollapsed } from "./sidebar.js?v=1888";
+import { open as openVideoClipsModal } from "./video-clips-modal.js?v=1889";
+import { isSidebarCollapsed, setSidebarCollapsed, isAutoCollapsed } from "./sidebar.js?v=1889";
 import {
   getSources as getStreamSources,
   subscribeSources,
   updateSourceClips,
   removeSources,
   renameSource,
-} from "../sources-stream.js?v=1888";
-import { open as openAddSourceModal } from "./add-source-modal.js?v=1888";
-import { open as openRenameModal } from "./rename-modal.js?v=1888";
-import { askConnector } from "../connector-ask.js?v=1888";
-import { open as openConnectorsModal } from "./connectors-modal.js?v=1888";
-import { addMention as addComposerMention } from "../composer-mentions.js?v=1888";
-import { getIdeas, removeIdeasForSources } from "../library.js?v=1888";
+} from "../sources-stream.js?v=1889";
+import { open as openAddSourceModal } from "./add-source-modal.js?v=1889";
+import { open as openRenameModal } from "./rename-modal.js?v=1889";
+import { askConnector } from "../connector-ask.js?v=1889";
+import { open as openConnectorsModal } from "./connectors-modal.js?v=1889";
+import { addMention as addComposerMention } from "../composer-mentions.js?v=1889";
+import { getIdeas, removeIdeasForSources } from "../library.js?v=1889";
 
 // The ideas of the chat the panel is looking at.
 //
@@ -40,16 +40,16 @@ export function sessionIdeas() {
   const sid = activeSessionId();
   return sid ? getIdeas(sid) : [];
 }
-import { open as openConfirmModal } from "./confirm-modal.js?v=1888";
-import { showToast } from "./toast.js?v=1888";
-import { closeAllSourceMenus, renderSourcesView } from "./right-panel/sources-view.js?v=1888";
+import { open as openConfirmModal } from "./confirm-modal.js?v=1889";
+import { showToast } from "./toast.js?v=1889";
+import { closeAllSourceMenus, renderSourcesView } from "./right-panel/sources-view.js?v=1889";
 import {
   collectAllClips,
   renderIdeasView,
   toggleClipWhyInPlace,
   toggleIdeaFeedback,
   toggleWhyOpen,
-} from "./right-panel/ideas-view.js?v=1888";
+} from "./right-panel/ideas-view.js?v=1889";
 import {
   cancelEdit,
   closeAllRewriteMenus,
@@ -76,7 +76,7 @@ import {
   setNetworkSelection,
   startEdit,
   visibleNetworkPosts,
-} from "./right-panel/drafts-view.js?v=1888";
+} from "./right-panel/drafts-view.js?v=1889";
 
 // Global Right Panel — slides in from the right edge of the viewport, overlays
 // the session workspace, hosts two modes:
@@ -556,6 +556,14 @@ export function init() {
       cancelEdit(cancelBtn.dataset.postEditCancel);
       return;
     }
+    // The network's "…see more": unclamps the body in place, no re-render.
+    const readMore = event.target.closest("[data-post-readmore]");
+    if (readMore) {
+      const expanded = readMore.closest(".posts__card").classList.toggle("is-expanded");
+      readMore.setAttribute("aria-expanded", String(expanded));
+      readMore.textContent = expanded ? "Show less" : readMore.dataset.more;
+      return;
+    }
     const mentionBtn = event.target.closest("[data-post-mention]");
     if (mentionBtn) {
       onPostMention(mentionBtn.dataset.postMention);
@@ -733,7 +741,7 @@ export function init() {
       openVideoClipsModal(src, {
         onSaveClips: (id, nextClips) => updateSourceClips(id, nextClips),
         onUseClips: (selectedClips, source) => {
-          import("../screens/session/clip-draft-flow.js?v=1888").then(({ startClipDraftFlow }) => {
+          import("../screens/session/clip-draft-flow.js?v=1889").then(({ startClipDraftFlow }) => {
             startClipDraftFlow(
               sid,
               selectedClips.map((clip) => ({ clip, sourceName: source.filename, sourceId: source.id })),
@@ -904,7 +912,7 @@ export function init() {
       const sid = activeSessionId();
       if (!sid || !entry) return;
       const { clip, sourceName, sourceId } = entry;
-      import("../screens/session/clip-draft-flow.js?v=1888").then(({ startClipDraftFlow }) => {
+      import("../screens/session/clip-draft-flow.js?v=1889").then(({ startClipDraftFlow }) => {
         startClipDraftFlow(sid, [{ clip, sourceName, sourceId }]);
       });
       return;
@@ -922,7 +930,7 @@ export function init() {
       if (picked.length === 0) return;
       clipSelection = new Set();
       renderPanel();
-      import("../screens/session/clip-draft-flow.js?v=1888").then(({ startClipDraftFlow }) => {
+      import("../screens/session/clip-draft-flow.js?v=1889").then(({ startClipDraftFlow }) => {
         startClipDraftFlow(sid, picked);
       });
       return;
@@ -1336,7 +1344,7 @@ function useIdea(ideaId) {
   if (!idea) return;
   const sid = activeSessionId();
   if (!sid) return;
-  import("../screens/session/draft-questions.js?v=1888").then(({ askAngleQuestion }) => {
+  import("../screens/session/draft-questions.js?v=1889").then(({ askAngleQuestion }) => {
     askAngleQuestion(sid, ideaId);
   });
 }

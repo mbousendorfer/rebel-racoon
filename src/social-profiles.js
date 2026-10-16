@@ -7,9 +7,9 @@
 // as the muted caption, and a DS avatar carrying the brand photo plus a
 // corner network badge.
 
-import { socialAccounts, demoManyProfiles } from "./mocks.js?v=1888";
-import { escapeHtml } from "./utils.js?v=1888";
-import { createNotifier } from "./store-utils.js?v=1888";
+import { socialAccounts, demoManyProfiles } from "./mocks.js?v=1889";
+import { escapeHtml } from "./utils.js?v=1889";
+import { createNotifier } from "./store-utils.js?v=1889";
 
 // THE network table — every surface that names, badges, counts or colours a
 // network reads it, so a network is spelled one way everywhere. It replaced
@@ -21,6 +21,10 @@ import { createNotifier } from "./store-utils.js?v=1888";
 //   connectKind what you connect ON it — the subtitle under each card of
 //               Agorapulse's "Add new social profiles" grid
 //   limit       the post's character budget (the drafts card's count chip)
+//   requiresMedia  "media" = won't publish without an image or a video,
+//               "video" = a video only (post-validation.js derives the error)
+//   titleLimit  the publish title's character budget (YouTube)
+//   maxImages   the most images one post shows (a longer carousel warns)
 //   accent      the brand colour — data, not a DS token (third-party brand
 //               colours live in JS, per the project rule)
 export const NETWORKS = Object.freeze({
@@ -31,12 +35,13 @@ export const NETWORKS = Object.freeze({
     limit: 3000,
     accent: "#0A66C2",
   },
-  x: { icon: "ap-icon-x-official", label: "X", connectKind: "Profiles", limit: 280, accent: "#0F1419" },
+  x: { icon: "ap-icon-x-official", label: "X", connectKind: "Profiles", limit: 280, maxImages: 4, accent: "#0F1419" },
   instagram: {
     icon: "ap-icon-instagram-official",
     label: "Instagram",
     connectKind: "Professional accounts",
     limit: 2200,
+    requiresMedia: "media",
     accent: "#E1306C",
   },
   facebook: {
@@ -46,12 +51,21 @@ export const NETWORKS = Object.freeze({
     limit: 63206,
     accent: "#1877F2",
   },
-  tiktok: { icon: "ap-icon-tiktok-official", label: "TikTok", connectKind: "Accounts", limit: 2200, accent: "#FE2C55" },
+  tiktok: {
+    icon: "ap-icon-tiktok-official",
+    label: "TikTok",
+    connectKind: "Accounts",
+    limit: 2200,
+    requiresMedia: "media",
+    accent: "#FE2C55",
+  },
   youtube: {
     icon: "ap-icon-youtube-official",
     label: "YouTube",
     connectKind: "Channels",
     limit: 5000,
+    requiresMedia: "video",
+    titleLimit: 100,
     accent: "#FF0000",
   },
 });

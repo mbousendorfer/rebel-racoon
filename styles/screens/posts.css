@@ -990,3 +990,81 @@
 .posts__feed-preview .ap-infobox {
   display: none;
 }
+
+/* ── One card, six networks (post-card.js renderNetworkLayout) ─────────
+   Each network orders the same pieces its own way; these rules only adapt
+   the pieces — the compact header, the caption fold, the action bar. */
+
+/* "…see more": the body folds at 3 lines, like the networks' own feeds. The
+   toggle (right-panel.js, data-post-readmore) flips `.is-expanded`. */
+.posts__card:not(.is-expanded) .posts__card-body--clamp {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
+.posts__card-readmore {
+  align-self: flex-start;
+  margin-top: calc(-1 * var(--ref-spacing-xs));
+}
+
+/* Instagram / TikTok / YouTube: a 24px avatar and the handle on one line. */
+.posts__card-header--compact {
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+}
+
+.posts__card-caption-handle {
+  font-weight: var(--sys-text-style-body-bold-weight);
+}
+
+/* Instagram's feed is square; TikTok's image posts are portrait. */
+.posts__card--instagram .posts__card-image {
+  aspect-ratio: 1;
+}
+
+.posts__card--tiktok .posts__card-image {
+  aspect-ratio: 3 / 4;
+}
+
+/* Icon-only bars (X, Instagram, TikTok) sit left, Instagram's bookmark and
+   TikTok's sound at the far end; X spreads its five glyphs like the app. */
+.posts__card-footer--instagram,
+.posts__card-footer--tiktok,
+.posts__card-footer--youtube {
+  justify-content: flex-start;
+}
+
+.posts__card-footer--instagram .posts__card-action:last-child,
+.posts__card-footer--tiktok .posts__card-action:last-child {
+  margin-left: auto;
+}
+
+.posts__card-yt-title {
+  margin: 0;
+  color: var(--ref-color-grey-100);
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
+}
+
+.posts__card-shorts {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  margin: 0;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+}
+
+/* Validation (post-validation.js): the account the error is about leads it. */
+.posts__card-issue-account {
+  display: block;
+  margin-bottom: var(--ref-spacing-xxs);
+}
+
+/* A disabled rail action keeps a hoverable wrapper for its tooltip. */
+.posts__row-action-blocked {
+  display: inline-flex;
+}

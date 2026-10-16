@@ -148,9 +148,16 @@ Layout Sources+Ideas partagé (dashboard + onglet Content en session). Search _�
 
 Store **per-session** [`posts-store.js`](../../src/posts-store.js). Draft = author, network (X→"twitter"), status:"ready", language, text[], hashtags, CTA, stats, optionnel `clipRef` (PIP vidéo), `subtitleStyle`, `format`.
 
-### Post card ([`post-card.js`](../../src/components/post-card.js)) — preview LinkedIn-style
+### Post card ([`post-card.js`](../../src/components/post-card.js)) — preview fidèle au réseau
 
-- **Structure** : bloc auteur, provenance pill, corps + hashtags (liens `#tag`) + CTA, media, stats, footer déco « Like/Comment/Repost/Send » (non-interactif).
+- **Une carte, six réseaux** (`renderNetworkLayout`) : chaque réseau ordonne les mêmes pièces à sa façon et dessine son header et sa barre d'actions (déco, `aria-hidden`, glyphes DS `ap-icon-ns-*`) :
+  - **LinkedIn** : auteur (nom · 1st, titre, date · visibilité), corps, média, réactions, _Like / Comment / Repost / Send_.
+  - **Facebook** : auteur (nom, date · visibilité), corps, média, _Like / Comment / Share_.
+  - **X** : nom + `@handle · date` sur une ligne, corps, média, cinq glyphes sans libellé.
+  - **Instagram** : avatar 24px + handle, **le média d'abord** (carré), glyphes (signet à droite), puis la légende ouverte par le handle en gras.
+  - **TikTok** : idem, média portrait, _Original sound_ au bout de la barre.
+  - **YouTube** : la vidéo, puis **le titre** (`youtubeTitle` : `post.title`, sinon la première phrase), la chaîne, la description, _Like / Share_. Un clip vertical dit _« Vertical: publishes as a YouTube Short. »_ sous le lecteur.
+  - **Read more** : le corps se replie à 3 lignes (`-webkit-line-clamp`), avec le libellé du réseau (_…see more_, _See more_, _Show more_, _more_) ; le clic (`data-post-readmore`) bascule `.is-expanded` sans re-render. Affiché au-delà de ~180 caractères ou 3 paragraphes (heuristique, pas une mesure).
 - **Char counter** par network (LinkedIn 3000, X 280, IG 2200, FB 63206, TikTok 2200, YT 5000) → rouge si dépassé.
 - **Media** : clip (faux player, gradient, play, durée, scrubber 24%, badge sous-titres) / image
   (_Edit_ → studio · _Change_ → file picker · _Remove_) / **fente vide** (`.posts__card-media-empty`) :
@@ -169,11 +176,11 @@ Store **per-session** [`posts-store.js`](../../src/posts-store.js). Draft = auth
   média : ce qui manque est un fait du Playbook, pas de ce draft-là.
 - **Actions** : Reference · Edit (flag `draftInlineEdit`) · **Regenerate** (menu _Shorter/Longer/Warmer/More formal/Regenerate_) · Save as draft · Schedule · Delete. Toutes désactivées pendant régénération.
 - **Inline edit** : corps → contenteditable, Save/Cancel, auto-commit outside-click, Esc annule, Cmd/Ctrl+Enter save.
-- **needs_fixes** : infobox rouge listant `post.errors`. Strip feedback « How's this draft? ».
+- **Validation dérivée, jamais stockée** ([`post-validation.js`](../../src/post-validation.js) `validatePost(post) → {errors, warnings}`, règles dans `NETWORKS` de [`social-profiles.js`](../../src/social-profiles.js)) : caractères au-delà de `limit` (texte + hashtags + CTA, `usedCharacters`), média requis (`requiresMedia` : Instagram et TikTok = image ou vidéo, YouTube = vidéo), titre YouTube au-delà de `titleLimit` (100) ; un carrousel X de plus de `maxImages` (4) n'est qu'un _warning_. Infobox rouge au-dessus de la carte, menée par le compte (`renderProfileTag`) ; un draft qui redevient valide dit _« Fixed — ready to publish. »_ (infobox verte, ~2,5 s, détecté par diff des ids invalides entre deux renders) puis rejoint les prêts. Tant qu'il est invalide, **Schedule** est désactivé et son wrapper porte le tooltip (un bouton désactivé ne survole pas). ⚠️ Les seeds `post-acme-2` (Instagram sans média) et `post-acme-4` (X à 305 caractères) échouent **pour de vrai** ; l'ancien `status: "needs_fixes"` + `errors[]` stockés mentaient sur les données (« exceeds 2,200 » sur 250 caractères). Strip feedback « How's this draft? ».
 
 ### Panneau Drafts ([`right-panel.js`](../../src/components/right-panel.js) `renderDraftsView`)
 
-- **Onglets statut** : All drafts / Needs fixes. **Dropdown network**.
+- **Onglets statut** : All drafts / Needs fixes — compteur et filtre **dérivés** de `validatePost`. **Dropdown network**. La barre bulk d'un réseau désactive _Schedule drafts_ tant que la sélection contient un draft invalide (tooltip : combien à corriger).
 - **Feed groupé par network** (LinkedIn, X, IG, FB, TikTok, YT). Chaque **band réseau** = header + toolbar bulk (click = select-all du réseau) → _Save as drafts / Schedule / Delete_. Bulk scheduling **scopé network** (batch toujours valide).
 - **Empty** : « No drafts yet » / filtré « No drafts match this filter ».
 - Handlers par carte : rewrite, save, schedule (→ modal, sort des Drafts au confirm), delete, image, « Edit clip » (rouvre le modal clips en mono-clip), mention.
