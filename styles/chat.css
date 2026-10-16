@@ -909,6 +909,53 @@ span.chat-bubble-choice-chip {
   margin-top: var(--ref-spacing-xxs);
 }
 
+/* The post plan recap (thread-render.js renderPostPlanTurn) — the same framed
+   chat artefact as the schedule plan: topic + stage on top, then the plan's
+   lists, each named in text. */
+.post-plan {
+  margin-top: var(--ref-spacing-xs);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-sm);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-lg);
+  background: var(--ref-color-white);
+}
+
+.post-plan__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-sm);
+}
+
+.post-plan__topic {
+  min-width: 0;
+  color: var(--ref-color-grey-100);
+  font-weight: var(--ref-font-weight-bold);
+}
+
+.post-plan__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+}
+
+.post-plan__heading {
+  color: var(--ref-color-grey-100);
+  font-weight: var(--ref-font-weight-bold);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+}
+
+.post-plan__list {
+  margin: 0;
+  padding-left: var(--ref-spacing-md);
+  list-style: disc;
+  color: var(--ref-color-grey-80);
+}
+
 /* "Schedule all the drafts" — my plan, as a framed list (thread-render.js).
    One row per draft, sorted by date, read QUOI → QUAND like the schedule
    modal: the draft on the left, its date on the right in a column of fixed

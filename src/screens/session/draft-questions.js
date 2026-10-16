@@ -4,10 +4,10 @@
 // Moved out of session.js, unchanged; askAngleQuestion is also the right
 // panel's entry point (it imports this module, not the whole screen).
 
-import { getSessionById } from "../../sessions-store.js?v=1889";
-import { getContextById } from "../../contexts-store.js?v=1889";
-import { playbookForNewWork } from "../../active-playbook.js?v=1889";
-import { isFlagOn } from "../../feature-flags.js?v=1889";
+import { getSessionById } from "../../sessions-store.js?v=1";
+import { getContextById } from "../../contexts-store.js?v=1";
+import { playbookForNewWork } from "../../active-playbook.js?v=1";
+import { isFlagOn } from "../../feature-flags.js?v=1";
 import {
   postAssistantMessage,
   postSelectionEcho,
@@ -18,25 +18,25 @@ import {
   postActivity,
   postExtractionResult,
   postClipExtractionTurn,
-} from "../../assistant.js?v=1889";
-import * as inlineQuestion from "../../inline-question.js?v=1889";
-import { getIdeas, extractVideoIdeas, appendExtractedIdeas } from "../../library.js?v=1889";
+} from "../../assistant.js?v=1";
+import * as inlineQuestion from "../../inline-question.js?v=1";
+import { getIdeas, extractVideoIdeas, appendExtractedIdeas } from "../../library.js?v=1";
 import {
   getSources as getStreamSources,
   setSourceIdeaCount,
   setSourceUse,
   extractClipsForSource,
-} from "../../sources-stream.js?v=1889";
+} from "../../sources-stream.js?v=1";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
   getConnectedProfileById,
   normalizeNetwork,
-} from "../../social-profiles.js?v=1889";
-import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=1889";
-import { executeDraftBatch, startDraftFlow, getAnglesForIdea } from "../../draft-flow.js?v=1889";
-import * as topPostsFlow from "../../top-posts-flow.js?v=1889";
+} from "../../social-profiles.js?v=1";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=1";
+import { executeDraftBatch, startDraftFlow, getAnglesForIdea } from "../../draft-flow.js?v=1";
+import * as topPostsFlow from "../../top-posts-flow.js?v=1";
 
 // Build + show the "Which profile?" question, reached from every Draft Post
 // entry point. The chosen profile's platform becomes the draft's network so
@@ -470,7 +470,7 @@ function runWritePost(sessionId, srcs) {
 // The prod's source treatments (panels.treatment.*): what the post DOES with
 // the source — summarise it, argue with it, promote it… Config, not a mock, so
 // it lives with the flow. `body` is the mock draft line each one writes.
-export const SOURCE_TREATMENTS = [
+const SOURCE_TREATMENTS = [
   {
     value: "share",
     label: "Share its ideas",
