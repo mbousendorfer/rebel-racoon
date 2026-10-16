@@ -29,10 +29,10 @@
 // `body` is HTML (chat turns) and `picker` is the standard picker shape from
 // _analyse-common.js (items + handler + optional customPlaceholder).
 
-import { chatTurn, bulletsBlock, fieldsBlock } from "./screens/_analyse-common.js?v=1877";
-import { voiceAnalysis, strategyBrief, brandTheme } from "./mocks.js?v=1877";
-import { createSessionNotifier } from "./store-utils.js?v=1877";
-import { isFlagOn } from "./feature-flags.js?v=1877";
+import { chatTurn, bulletsBlock, fieldsBlock } from "./screens/_analyse-common.js?v=1880";
+import { voiceAnalysis, strategyBrief, brandTheme } from "./mocks.js?v=1880";
+import { createSessionNotifier } from "./store-utils.js?v=1880";
+import { isFlagOn } from "./feature-flags.js?v=1880";
 
 // ---- State -----------------------------------------------------------------
 
@@ -227,7 +227,7 @@ export function renderChrome(sessionId) {
         historyHtml +
         chatTurn({
           role: "ai",
-          text: "Saving this playbook so you can reuse it. Want to name it, or use the chat's title as the default?",
+          text: "Saving this Playbook so you can reuse it. Want to name it, or use the chat's title as the default?",
         }),
       picker: MEMORIZE_PICKER,
     };
@@ -279,8 +279,8 @@ const MEMORIZE_PICKER = {
     { value: "default", label: "Use the chat title", icon: "ap-icon-arrow-right" },
   ],
   handler: "wizard-answer",
-  title: "Saving this playbook so you can reuse it. Name it, or use the chat title?",
-  stepIndicator: "Save playbook",
+  title: "Saving this Playbook so you can reuse it. Name it, or use the chat title?",
+  stepIndicator: "Save Playbook",
 };
 
 // Custom-input-only picker — items=[] + customPlaceholder makes the input row
@@ -291,7 +291,7 @@ const MEMORIZE_NAME_PICKER = {
   handler: "wizard-answer",
   customPlaceholder: 'Name this Playbook, e.g. "Founder voice"',
   title: "What should I call this playbook?",
-  stepIndicator: "Name playbook",
+  stepIndicator: "Name Playbook",
 };
 
 // ---- Voice script ----------------------------------------------------------

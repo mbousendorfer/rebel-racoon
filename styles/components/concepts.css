@@ -1,0 +1,38 @@
+/* What each object IS (src/concepts.js): a sentence on the page that hosts it,
+   a "?" everywhere else. Ink stays in the grey-80 … grey-100 band (house rule):
+   the lead reads as body copy, the "?" brightens on hover/focus like the Image
+   Studio's info icons (.imst-ctl__info). */
+
+.concept-lead {
+  margin: 0;
+  max-width: 72ch;
+  color: var(--ref-color-grey-80);
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+}
+
+.concept-hint {
+  flex-shrink: 0;
+  color: var(--ref-color-grey-80);
+  font-size: var(--sys-icon-css-sm);
+  cursor: help;
+  vertical-align: middle;
+}
+
+.concept-hint:hover,
+.concept-hint:focus-visible {
+  color: var(--ref-color-grey-100);
+}
+
+/* Beside a heading the "?" sits one small step from the word it explains. */
+.app-topbar__title > .concept-hint {
+  margin-left: var(--ref-spacing-xxs);
+}
+
+/* A control and its "?" travel together, so a toolbar that pushes its last
+   item right (margin-left: auto) can't pull them apart. */
+.concept-group {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+}

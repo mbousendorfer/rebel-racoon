@@ -14,7 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1877";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1880";
+import { conceptHint } from "./concepts.js?v=1880";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -26,11 +27,11 @@ import {
   handleKitChange,
   kitSnapshot,
   renderImagesTab,
-} from "./playbook-brand-kit.js?v=1877";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1877";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1877";
-import { isFlagOn } from "./feature-flags.js?v=1877";
-import { parseHashParams } from "./url-state.js?v=1877";
+} from "./playbook-brand-kit.js?v=1880";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1880";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1880";
+import { isFlagOn } from "./feature-flags.js?v=1880";
+import { parseHashParams } from "./url-state.js?v=1880";
 import {
   networkVoicesOn,
   baseNetwork,
@@ -53,16 +54,16 @@ import {
   networkLabel,
   networkIcon,
   memoryCardHtml,
-} from "./network-voice.js?v=1877";
+} from "./network-voice.js?v=1880";
 import {
   getSuggestions,
   accept as acceptVoiceSuggestion,
   dismiss as dismissVoiceSuggestion,
-} from "./voice-coach-store.js?v=1877";
-import { showToast } from "./components/toast.js?v=1877";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=1877";
-import { open as openVoiceWizard } from "./components/voice-wizard-modal.js?v=1877";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1877";
+} from "./voice-coach-store.js?v=1880";
+import { showToast } from "./components/toast.js?v=1880";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=1880";
+import { open as openVoiceWizard } from "./components/voice-wizard-modal.js?v=1880";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1880";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -1827,6 +1828,7 @@ function renderHeader2(data) {
         <div class="pb2-hero__text">
           <div class="pb2-hero__titlerow">
             <h1 class="pb2-hero__name">${esc(data.name || "New Playbook")}</h1>
+            ${conceptHint("playbook")}
             ${
               cfg.onEditName
                 ? `<button type="button" class="ap-icon-button transparent grey" data-recap-edit-name title="Rename" aria-label="Rename Playbook"><i class="ap-icon-pen"></i></button>`

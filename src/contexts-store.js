@@ -22,18 +22,18 @@
 // chooses "Save as global". updateContext is used by the section-edit flow
 // when scope is "Update everywhere".
 
-import { contexts as seed, sharedContexts } from "./mocks.js?v=1877";
-import { isNewUser } from "./user-mode.js?v=1877";
-import { CURRENT_USER } from "./org.js?v=1877";
-import { isFlagOn } from "./feature-flags.js?v=1877";
-import { createNotifier } from "./store-utils.js?v=1877";
+import { contexts as seed, sharedContexts } from "./mocks.js?v=1880";
+import { isNewUser } from "./user-mode.js?v=1880";
+import { CURRENT_USER } from "./org.js?v=1880";
+import { isFlagOn } from "./feature-flags.js?v=1880";
+import { createNotifier } from "./store-utils.js?v=1880";
 import {
   normalizeLanguages,
   mirrorPrimaryToTopLevel,
   syncTopLevelToPrimary,
   cloneVoiceByLanguage,
-} from "./languages.js?v=1877";
-import { cloneVoiceByNetwork, cloneItems } from "./network-voice.js?v=1877";
+} from "./languages.js?v=1880";
+import { cloneVoiceByNetwork, cloneItems } from "./network-voice.js?v=1880";
 
 // Lives up here, away from normalizeBrandLogos where it belongs, because the
 // seed below calls that normalizer at module-init time — a `let` declared beside
@@ -395,7 +395,7 @@ export function addContext(ctx = {}) {
       : [];
   const next = {
     id: ctx.id || freshId(),
-    name: ctx.name || "Untitled playbook",
+    name: ctx.name || "New Playbook",
     color: ctx.color || "orange",
     isDefault: ctx.isDefault === true,
     // — legacy fields (kept for backwards compatibility with seeds + the

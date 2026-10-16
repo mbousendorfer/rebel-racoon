@@ -6,12 +6,12 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1877";
-import { findConnector } from "./connectors-store.js?v=1877";
-import { createSessionNotifier } from "./store-utils.js?v=1877";
-import { addPostDraft } from "./posts-store.js?v=1877";
-import { showToast } from "./components/toast.js?v=1877";
-import { isFlagOn } from "./feature-flags.js?v=1877";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1880";
+import { findConnector } from "./connectors-store.js?v=1880";
+import { createSessionNotifier } from "./store-utils.js?v=1880";
+import { addPostDraft } from "./posts-store.js?v=1880";
+import { showToast } from "./components/toast.js?v=1880";
+import { isFlagOn } from "./feature-flags.js?v=1880";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -1002,7 +1002,7 @@ function mockAiReply({ prompt, sessionId }) {
       reasoning: `Scanned ${ideaCount} extracted ideas, ranked by confidence and relevance. "${leadIdea.title}" came out on top (${leadIdea.confidence}% confidence) — composing a ${batch.length}-post batch grounded in its source.`,
       text: isLaunch
         ? `Here's a ${batch.length}-day sequence built from ${lead}, one post per day across networks:${named}\nOpen the Drafts panel to review and schedule.`
-        : `I drafted ${batch.length} posts grounded in ${lead}, each sized for its network and following the active playbook's tone rules:${named}`,
+        : `I drafted ${batch.length} posts grounded in ${lead}, each sized for its network and following the active Playbook's tone rules:${named}`,
       batch,
     };
   }

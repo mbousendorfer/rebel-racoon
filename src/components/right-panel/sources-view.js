@@ -3,13 +3,14 @@
 // the panel shell (open / close / resize / URL state / delegated listeners)
 // stays there.
 
-import { getSources as getStreamSources } from "../../sources-stream.js?v=1877";
-import { isFlagOn } from "../../feature-flags.js?v=1877";
-import { getConnectedConnectors } from "../../connectors-store.js?v=1877";
-import { escapeAttr, escapeText } from "../../utils.js?v=1877";
-import { renderConnectorLogo } from "../../connectors-view.js?v=1877";
-import { renderTopPostEcho } from "../top-post-card.js?v=1877";
-import { RPANEL_CLOSE_INLINE, activeSessionId, sessionIdeas } from "../right-panel.js?v=1877";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1880";
+import { isFlagOn } from "../../feature-flags.js?v=1880";
+import { getConnectedConnectors } from "../../connectors-store.js?v=1880";
+import { escapeAttr, escapeText } from "../../utils.js?v=1880";
+import { conceptText } from "../../concepts.js?v=1880";
+import { renderConnectorLogo } from "../../connectors-view.js?v=1880";
+import { renderTopPostEcho } from "../top-post-card.js?v=1880";
+import { RPANEL_CLOSE_INLINE, activeSessionId, sessionIdeas } from "../right-panel.js?v=1880";
 
 // Sources mode view — list of source rows for the active session + a
 // trailing "+ Attach" button. Each row carries kind icon, filename,
@@ -35,7 +36,7 @@ export function renderSourcesView() {
     <div class="rpanel-sources__head">
       <div class="rpanel-sources__head-text">
         <div class="rpanel-sources__count">${sources.length} source${sources.length === 1 ? "" : "s"} in this chat</div>
-        <div class="rpanel-sources__sub muted">These sources feed this chat's ideas.</div>
+        <div class="rpanel-sources__sub concept-lead">${escapeText(conceptText("source"))}</div>
       </div>
       ${renderAttachMenu("stroked grey", "Attach a source")}
       ${RPANEL_CLOSE_INLINE}

@@ -133,6 +133,14 @@ Don't echo a button label verbatim as a `<You>` bubble (`Skip`, `Continue`). Eit
 
 ---
 
+### Concepts — every object says what it is
+
+The product's own words (Playbook, chat, Topic Feed, Topic, Source, Idea, Clip, Draft, Connector, objective) are defined **once**, in [`src/concepts.js`](../../src/concepts.js), in my voice. A definition is never written by hand anywhere else.
+
+- **The page that hosts a concept shows its sentence**, visible, under the title (`.concept-lead`): the Playbooks list and its home tab, the Chats tab, the Topic Feed, the Sources panel, Connectors.
+- **Everywhere else the concept appears, a "?" carries the same sentence** (`conceptHint(id)` → `ap-icon-question` + the DS tooltip, opened on hover AND keyboard focus): the topbar title of a concept route, the composer's and the home's Playbook picker, a Playbook's name on its page. The topbar pills (Sources / Ideas / Drafts) and the Ideas / Clips tabs put it in their tooltip.
+- Pattern: `A {Concept} is {what it is}. {What I do with it / what you do next}.` Two sentences at most.
+
 ## 4. Copy patterns by family
 
 ### 4.1 Buttons / CTAs

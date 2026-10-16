@@ -1,24 +1,25 @@
-import { html, raw, escapeAttr } from "../utils.js?v=1877";
-import { renderTopbar } from "../components/topbar.js?v=1877";
+import { html, raw, escapeAttr } from "../utils.js?v=1880";
+import { conceptText } from "../concepts.js?v=1880";
+import { renderTopbar } from "../components/topbar.js?v=1880";
 import {
   getContexts,
   subscribe as subscribeContexts,
   duplicateContext,
   deleteContext,
-} from "../contexts-store.js?v=1877";
-import { getSessions, getSessionById, subscribe as subscribeSessions } from "../sessions-store.js?v=1877";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1877";
-import { closePanel as closeRightPanel } from "../components/right-panel.js?v=1877";
-import { navigate, getPath } from "../router.js?v=1877";
-import { setHandoff } from "../handoff.js?v=1877";
-import { openNewPlaybookFlow } from "../context-builder.js?v=1877";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=1877";
-import { visibleContexts, usableContexts } from "../playbook-access.js?v=1877";
-import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=1877";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=1877";
-import { installMoreMenu } from "../components/more-menu.js?v=1877";
-import { showToast } from "../components/toast.js?v=1877";
-import { pickedPlaybook, renderHeroPicker, renderHomeHero, renderHomeWorkflows } from "./home/hero.js?v=1877";
+} from "../contexts-store.js?v=1880";
+import { getSessions, getSessionById, subscribe as subscribeSessions } from "../sessions-store.js?v=1880";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1880";
+import { closePanel as closeRightPanel } from "../components/right-panel.js?v=1880";
+import { navigate, getPath } from "../router.js?v=1880";
+import { setHandoff } from "../handoff.js?v=1880";
+import { openNewPlaybookFlow } from "../context-builder.js?v=1880";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=1880";
+import { visibleContexts, usableContexts } from "../playbook-access.js?v=1880";
+import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=1880";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=1880";
+import { installMoreMenu } from "../components/more-menu.js?v=1880";
+import { showToast } from "../components/toast.js?v=1880";
+import { pickedPlaybook, renderHeroPicker, renderHomeHero, renderHomeWorkflows } from "./home/hero.js?v=1880";
 import {
   chatPlaybook,
   renderChatsTab,
@@ -26,7 +27,7 @@ import {
   renderContextsEmpty,
   renderGhostCard,
   renderPlaybooksTable,
-} from "./home/lists.js?v=1877";
+} from "./home/lists.js?v=1880";
 
 // The account HOME — and the Playbooks catalogue it merged with.
 //
@@ -173,10 +174,7 @@ function renderPage() {
         <header class="contexts-view__head">
           <div class="contexts-view__head-text">
             <h1 class="contexts-view__title">Playbooks</h1>
-            <p class="contexts-view__sub">
-              ${all.length} Playbook${all.length === 1 ? "" : "s"} · used in ${totalChats}
-              chat${totalChats === 1 ? "" : "s"}
-            </p>
+            <p class="contexts-view__sub concept-lead">${conceptText("playbook")}</p>
           </div>
           <div class="contexts-view__head-actions">${raw(renderSearchField())}${raw(renderCreateButton())}</div>
         </header>
@@ -284,8 +282,8 @@ function renderHomeTabs(playbookCount, chatCount, tab) {
 function renderHomeToolbar(tab, totalChats) {
   const hint =
     tab === "playbooks"
-      ? `<p class="home-toolbar__hint muted">Each Playbook holds a Brand's voice, audience, and look · used in ${totalChats} chat${totalChats === 1 ? "" : "s"}</p>`
-      : `<p class="home-toolbar__hint muted">Every chat, across all your Playbooks.</p>`;
+      ? `<p class="home-toolbar__hint concept-lead">${escapeAttr(conceptText("playbook"))}</p>`
+      : `<p class="home-toolbar__hint concept-lead">${escapeAttr(conceptText("chat"))}</p>`;
   return `
     <div class="home-toolbar">
       ${hint}

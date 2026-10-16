@@ -1,7 +1,8 @@
-import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=1877";
-import { getPath, navigate } from "../router.js?v=1877";
-import { parseHashParams } from "../url-state.js?v=1877";
-import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=1877";
+import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=1880";
+import { conceptHint, conceptText } from "../concepts.js?v=1880";
+import { getPath, navigate } from "../router.js?v=1880";
+import { parseHashParams } from "../url-state.js?v=1880";
+import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=1880";
 // Lot 19 — topbar no longer carries its own sidebar-toggle button. The
 // sidebar head exposes the toggle in both expanded (chevron-left) and
 // collapsed (view-list) states, so the duplicate in the topbar was just
@@ -14,37 +15,37 @@ import {
   getMode as getRightPanelMode,
   getActiveBatchRef as getActiveDraftsBatchRef,
   subscribe as subscribeRightPanel,
-} from "./right-panel.js?v=1877";
-import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=1877";
-import { getThread, subscribe as subscribeThread } from "../assistant.js?v=1877";
-import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=1877";
-import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=1877";
+} from "./right-panel.js?v=1880";
+import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=1880";
+import { getThread, subscribe as subscribeThread } from "../assistant.js?v=1880";
+import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=1880";
+import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=1880";
 import {
   isEnabled as isStatusCardEnabled,
   toggle as toggleStatusCard,
   subscribeVisibility as subscribeStatusCardVisibility,
-} from "./conversation-status-card.js?v=1877";
-import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=1877";
-import { open as openRenameModal } from "./rename-modal.js?v=1877";
+} from "./conversation-status-card.js?v=1880";
+import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=1880";
+import { open as openRenameModal } from "./rename-modal.js?v=1880";
 import {
   subscribe as subscribeContexts,
   getContextById,
   getDefaultContext,
   getContexts,
-} from "../contexts-store.js?v=1877";
-import { isFlagOn } from "../feature-flags.js?v=1877";
-import { getActivePlaybook, isWorkspaceMode, isAccountScope, catalogueRoute } from "../active-playbook.js?v=1877";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1877";
-import { findCadence } from "../topics-catalog.js?v=1877";
+} from "../contexts-store.js?v=1880";
+import { isFlagOn } from "../feature-flags.js?v=1880";
+import { getActivePlaybook, isWorkspaceMode, isAccountScope, catalogueRoute } from "../active-playbook.js?v=1880";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1880";
+import { findCadence } from "../topics-catalog.js?v=1880";
 import {
   getPickerState as getTopPostsState,
   subscribePicker as subscribeTopPosts,
   backToProfiles as topPostsBackToProfiles,
-} from "../top-posts-flow.js?v=1877";
+} from "../top-posts-flow.js?v=1880";
 // The Insights view switch. Imported from views.js, NOT from the screen's
 // shell: the shell imports this module, so taking it from there would close a
 // cycle. views.js imports neither.
-import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=1877";
+import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=1880";
 
 // The playbook/context pill now lives in the composer (session.js
 // renderPlaybookControl) — selectable on a New Chat, then a static
@@ -273,7 +274,13 @@ function renderTitle(onSession) {
       </button>
     `;
   }
-  return `<h1 class="app-topbar__title">${title}</h1>`;
+  const concept = {
+    "/contexts": "playbook",
+    "/topics": "topicFeed",
+    "/insights": "objective",
+    "/connectors": "connector",
+  }[getPath()];
+  return `<h1 class="app-topbar__title">${title}${concept ? conceptHint(concept) : ""}</h1>`;
 }
 
 function isEmptyConversation() {
@@ -351,7 +358,7 @@ export function initTopbar() {
     // renderWelcomeAltExit() above. The wizard chrome no longer carries
     // its own Exit affordance; this is the only entry.
     if (event.target.closest("[data-topbar-welcome-alt-exit]")) {
-      import("./confirm-modal.js?v=1877").then(({ open }) => {
+      import("./confirm-modal.js?v=1880").then(({ open }) => {
         open({
           title: "Discard this Playbook?",
           body: "Your answers so far will be lost. You can create a Playbook again anytime.",
@@ -494,7 +501,7 @@ function renderSessionPills(rpMode, draftCount, isEmpty, ideaCount) {
       data-topbar-sources
       ${sourcesDisabled ? "disabled" : ""}
       aria-pressed="${rpMode === "sources"}"
-      title="${sourcesDisabled ? "No sources yet — attach a file or link in the composer" : "Files and links I'm working from in this chat"}"
+      title="${sourcesDisabled ? "No sources yet — attach a file or link in the composer" : conceptText("source")}"
     >
       <i class="ap-icon-file"></i>
       <span>Sources</span>
@@ -506,7 +513,7 @@ function renderSessionPills(rpMode, draftCount, isEmpty, ideaCount) {
       data-topbar-ideas
       ${ideasDisabled ? "disabled" : ""}
       aria-pressed="${rpMode === "ideas"}"
-      title="${ideasDisabled ? "No ideas yet — attach a source and I'll pull some" : "Hooks, stats, and quotes I pulled from your sources"}"
+      title="${ideasDisabled ? "No ideas yet — attach a source and I'll pull some" : conceptText("idea")}"
     >
       <i class="ap-icon-sparkles"></i>
       <span>Ideas</span>
@@ -518,7 +525,7 @@ function renderSessionPills(rpMode, draftCount, isEmpty, ideaCount) {
       data-topbar-drafts
       ${draftsDisabled ? "disabled" : ""}
       aria-pressed="${rpMode === "drafts"}"
-      title="${draftsDisabled ? "No drafts yet — ask me for a post" : "Posts I drafted in this chat, ready to review"}"
+      title="${draftsDisabled ? "No drafts yet — ask me for a post" : conceptText("draft")}"
     >
       <i class="ap-icon-pen"></i>
       <span>Drafts</span>

@@ -107,9 +107,9 @@ export const chatStarters = [
     id: "starter-top-posts",
     icon: "ap-icon-feature-analytics",
     tone: "green",
-    title: "Use top performing posts",
+    title: "Repurpose a top post",
     subtitle: "Draw on your best-performing posts and turn what works into fresh drafts.",
-    cta: "Reuse a winner",
+    cta: "Repurpose a post",
     // Launches the in-chat "milk a top post" flow (top-posts-flow.js) via the
     // starter click delegation in session.js — same direct-action pattern as
     // "open-batch" / "open-video-clips". No prompt injection.

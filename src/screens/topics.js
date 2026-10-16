@@ -32,16 +32,17 @@
 // view. There is an explicit Load more too, and both do exactly the same thing —
 // an infinite list with no button is unusable by keyboard.
 
-import { html, raw, escapeAttr } from "../utils.js?v=1877";
-import { navigate, getPath } from "../router.js?v=1877";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1877";
-import { renderTopbar } from "../components/topbar.js?v=1877";
-import { showToast } from "../components/toast.js?v=1877";
-import { renderEmptyState } from "../components/empty-state.js?v=1877";
-import { openNewPlaybookFlow } from "../context-builder.js?v=1877";
-import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=1877";
-import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=1877";
-import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1877";
+import { html, raw, escapeAttr } from "../utils.js?v=1880";
+import { conceptText } from "../concepts.js?v=1880";
+import { navigate, getPath } from "../router.js?v=1880";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1880";
+import { renderTopbar } from "../components/topbar.js?v=1880";
+import { showToast } from "../components/toast.js?v=1880";
+import { renderEmptyState } from "../components/empty-state.js?v=1880";
+import { openNewPlaybookFlow } from "../context-builder.js?v=1880";
+import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=1880";
+import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=1880";
+import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1880";
 import {
   getTopicsForFeed,
   groupTopicsByAge,
@@ -52,7 +53,7 @@ import {
   ignoreTopic,
   unignoreTopic,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=1877";
+} from "../topics-store.js?v=1880";
 import {
   TOPIC_SOURCES,
   TOPIC_KINDS,
@@ -61,13 +62,13 @@ import {
   findTopicSource,
   findCadence,
   isLiveSource,
-} from "../topics-catalog.js?v=1877";
-import { renderTopicCard } from "../components/topic-card.js?v=1877";
-import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=1877";
-import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=1877";
-import { openTopicHistory } from "../components/topic-history-modal.js?v=1877";
-import { useTopicInChat } from "../topic-flow.js?v=1877";
-import { canEdit } from "../playbook-access.js?v=1877";
+} from "../topics-catalog.js?v=1880";
+import { renderTopicCard } from "../components/topic-card.js?v=1880";
+import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=1880";
+import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=1880";
+import { openTopicHistory } from "../components/topic-history-modal.js?v=1880";
+import { useTopicInChat } from "../topic-flow.js?v=1880";
+import { canEdit } from "../playbook-access.js?v=1880";
 
 const PAGE = 10;
 // Long enough to read the scanning line, short enough that nobody waits for it
@@ -400,61 +401,62 @@ function renderToolbar(pb, feed) {
     })
     .join("");
 
-  return html`<div class="topics-view__toolbar">
-    <!-- The label goes INSIDE the control, via the DS's own
+  return html`<p class="concept-lead topics-view__lead">${conceptText("topicFeed")}</p>
+    <div class="topics-view__toolbar">
+      <!-- The label goes INSIDE the control, via the DS's own
          .ap-select-inline-label — the "Creator | Select" shape the product uses
          in four of its five toolbars, and the one session.js already renders for
          the composer's Playbook picker. It was a bare select for one commit,
          which said nothing about what it scopes, and a <label> stacked above it
          before that, which is form chrome in a toolbar. -->
-    <!-- The scope select says which Playbook this feed reads for. The cog that
+      <!-- The scope select says which Playbook this feed reads for. The cog that
          configures that Playbook's listening now lives at the far right of the
          topbar (components/topbar.js), the app's canonical home for a page-level
          action. -->
-    ${raw(
-      // ⚠️ Workspace mode: no scope control here AT ALL. The rail re-points this
-      // page and prints the brand permanently, so this select could only be the
-      // disabled half of itself — and a greyed-out field in a bar whose other
-      // control (Filters) is live reads as something broken rather than as
-      // information. Filters keeps its place: the toolbar is a `flex: 0 0 auto`
-      // row, so it just loses a sibling.
-      isWorkspaceMode()
-        ? ""
-        : html`<div class="topics-view__scope-group">
-            <div class="topics-view__scope">
-              <details class="ap-select" id="topicScope" data-topic-scope>
-                <summary class="ap-select-trigger" title="Which Playbook this feed reads for">
-                  <span class="ap-select-inline-label">Playbook</span>
-                  <span class="ap-select-value">${raw(pb ? escapeAttr(pb.name) : "Choose a Playbook")}</span>
-                  <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
-                </summary>
-                <div class="ap-select-dropdown" role="listbox" aria-label="Playbook">
-                  <div class="ap-select-options">${raw(pbOptions)}</div>
-                </div>
-              </details>
-            </div>
-          </div>`,
-    )}
+      ${raw(
+        // ⚠️ Workspace mode: no scope control here AT ALL. The rail re-points this
+        // page and prints the brand permanently, so this select could only be the
+        // disabled half of itself — and a greyed-out field in a bar whose other
+        // control (Filters) is live reads as something broken rather than as
+        // information. Filters keeps its place: the toolbar is a `flex: 0 0 auto`
+        // row, so it just loses a sibling.
+        isWorkspaceMode()
+          ? ""
+          : html`<div class="topics-view__scope-group">
+              <div class="topics-view__scope">
+                <details class="ap-select" id="topicScope" data-topic-scope>
+                  <summary class="ap-select-trigger" title="Which Playbook this feed reads for">
+                    <span class="ap-select-inline-label">Playbook</span>
+                    <span class="ap-select-value">${raw(pb ? escapeAttr(pb.name) : "Choose a Playbook")}</span>
+                    <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
+                  </summary>
+                  <div class="ap-select-dropdown" role="listbox" aria-label="Playbook">
+                    <div class="ap-select-options">${raw(pbOptions)}</div>
+                  </div>
+                </details>
+              </div>
+            </div>`,
+      )}
 
-    <!-- LABELLED, with its count inline. The product never ships this as an icon
+      <!-- LABELLED, with its count inline. The product never ships this as an icon
          button — Inbox, Drafts and Analytics all write the word and put the
          number beside it. It was icon-only with an absolutely-positioned pip for
          one commit, which made the one control that says how much of the list is
          hidden the hardest one to find. -->
-    <div class="topics-view__filters">
-      <button
-        type="button"
-        class="ap-button stroked grey"
-        data-topic-filters-toggle
-        aria-haspopup="true"
-        aria-expanded="${view.filtersOpen ? "true" : "false"}"
-      >
-        <i class="ap-icon-filter"></i><span>Filters</span>
-        ${raw(badge ? html`<span class="ap-counter normal blue">${badge}</span>` : "")}
-      </button>
-      ${raw(view.filtersOpen ? renderFilters() : "")}
-    </div>
-  </div>`;
+      <div class="topics-view__filters">
+        <button
+          type="button"
+          class="ap-button stroked grey"
+          data-topic-filters-toggle
+          aria-haspopup="true"
+          aria-expanded="${view.filtersOpen ? "true" : "false"}"
+        >
+          <i class="ap-icon-filter"></i><span>Filters</span>
+          ${raw(badge ? html`<span class="ap-counter normal blue">${badge}</span>` : "")}
+        </button>
+        ${raw(view.filtersOpen ? renderFilters() : "")}
+      </div>
+    </div>`;
 }
 
 // ── The Filters panel — three groups, the product's Filter Dropdown ────────
