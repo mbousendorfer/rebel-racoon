@@ -11,16 +11,16 @@ import {
   canManageSharing,
   canDelete,
   canView,
-} from "../../playbook-access.js?v=1874";
-import { isFlagOn } from "../../feature-flags.js?v=1874";
-import { escapeAttr, escapeText } from "../../utils.js?v=1874";
-import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=1874";
-import { getSessions } from "../../sessions-store.js?v=1874";
-import { renderEmptyState } from "../../components/empty-state.js?v=1874";
-import { getSources, getIdeas } from "../../library.js?v=1874";
-import { getPosts } from "../../posts-store.js?v=1874";
-import { getContextById } from "../../contexts-store.js?v=1874";
-import { pageState } from "../home.js?v=1874";
+} from "../../playbook-access.js?v=1875";
+import { isFlagOn } from "../../feature-flags.js?v=1875";
+import { escapeAttr, escapeText } from "../../utils.js?v=1875";
+import { isWorkspaceMode, getActivePlaybookId } from "../../active-playbook.js?v=1875";
+import { getSessions } from "../../sessions-store.js?v=1875";
+import { renderEmptyState } from "../../components/empty-state.js?v=1875";
+import { getSources, getIdeas } from "../../library.js?v=1875";
+import { getPosts } from "../../posts-store.js?v=1875";
+import { getContextById } from "../../contexts-store.js?v=1875";
+import { pageState } from "../home.js?v=1875";
 
 // The Playbooks tab — a TABLE, the same shape as the Chats tab beside it.
 //
@@ -185,7 +185,13 @@ function playbookMoreMenu(ctx) {
       </button>
       <div class="ap-action-dropdown home-playbooks__more-menu" id="${menuId}" role="menu" hidden>
         ${canManageSharing(ctx) ? item("data-contexts-share", "ap-icon-share", "Share Playbook") : ""}
-        ${canEdit(ctx) ? item("data-contexts-edit", "ap-icon-pen", "Edit Playbook") : ""}
+        ${
+          canEdit(ctx)
+            ? item("data-contexts-edit", "ap-icon-pen", "Edit Playbook")
+            : canView(ctx)
+              ? item("data-contexts-edit", "ap-icon-eye-on", "Open Playbook")
+              : ""
+        }
         ${item("data-contexts-duplicate", "ap-icon-copy", "Duplicate Playbook")}
         ${canDelete(ctx) ? item("data-contexts-delete", "ap-icon-trash", "Delete Playbook", true) : ""}
       </div>
@@ -393,7 +399,9 @@ export function renderContextCard(ctx) {
       </span>`
     : "";
   // Only the actions I can actually take. For a Playbook someone shared with
-  // me that's Duplicate alone — the one move that turns reading into having.
+  // me that's Open (the fiche, read-only — the card itself starts a chat) and
+  // Duplicate, the one move that turns reading into having. Open rides the
+  // edit hook: both just navigate to the fiche, which gates editing itself.
   const actions = [
     canManageSharing(ctx)
       ? `<button type="button" class="ap-icon-button transparent" data-contexts-share="${ctx.id}" title="Share Playbook" aria-label="Share Playbook">
@@ -404,7 +412,11 @@ export function renderContextCard(ctx) {
       ? `<button type="button" class="ap-icon-button transparent" data-contexts-edit="${ctx.id}" title="Edit Playbook" aria-label="Edit Playbook">
           <i class="ap-icon-pen"></i>
         </button>`
-      : "",
+      : canView(ctx)
+        ? `<button type="button" class="ap-icon-button transparent" data-contexts-edit="${ctx.id}" title="Open Playbook" aria-label="Open Playbook">
+            <i class="ap-icon-eye-on"></i>
+          </button>`
+        : "",
     `<button type="button" class="ap-icon-button transparent" data-contexts-duplicate="${ctx.id}" title="Duplicate Playbook" aria-label="Duplicate Playbook">
       <i class="ap-icon-copy"></i>
     </button>`,
