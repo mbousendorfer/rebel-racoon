@@ -73,10 +73,10 @@
 // Everything inside the body is a <span> for the same reason — a button may only
 // contain phrasing content, so no h3 and no p in there.
 
-import { html, raw, escapeAttr } from "../utils.js?v=1862";
-import { topicTitle } from "../topics-store.js?v=1862";
-import { renderTopicStates } from "../topic-article.js?v=1862";
-import { findTopicSource } from "../topics-catalog.js?v=1862";
+import { html, raw, escapeAttr } from "../utils.js?v=1864";
+import { topicTitle } from "../topics-store.js?v=1864";
+import { renderTopicStates } from "../topic-article.js?v=1864";
+import { findTopicSource } from "../topics-catalog.js?v=1864";
 
 // ── The state chips ───────────────────────────────────────────────────────
 // `renderTopicStates` comes from topic-article.js, which is where a Topic's
@@ -238,7 +238,7 @@ function renderTopicSelectRow(topic, { source = null, selected = false, disabled
          delegate opens the dialog with no new wiring. Reading stays available on a
          frozen widget too: the pick is made, the article is still worth a look. -->
     <button type="button" class="ap-link standalone small topics-widget__more" data-topic-read="${topic.id}">
-      View more
+      Read Topic
     </button>
   </div>`;
 }
@@ -267,7 +267,7 @@ export function renderTopicsWidget({ topics = [], selected = [], answered = fals
           data-topics-widget-confirm
           ${raw(sel.size ? "" : "disabled")}
         >
-          <span>Use this topic</span>
+          <span>Use this Topic</span>
         </button>
       </div>`;
   return html`<div class="topics-widget${raw(answered ? " topics-widget--answered" : "")}" data-topics-widget>
@@ -314,7 +314,7 @@ function renderKebab(topic, menuOpen) {
             ${raw(menuRow(topic.id, "data-topic-use", "ap-icon-single-chat-bubble", "Use in chat"))}
             ${raw(
               ignored
-                ? menuRow(topic.id, "data-topic-unignore", "ap-icon-eye-on", "Un-ignore", "Back on this list to review")
+                ? menuRow(topic.id, "data-topic-unignore", "ap-icon-eye-on", "Restore", "Put it back in the feed")
                 : menuRow(
                     topic.id,
                     "data-topic-ignore",

@@ -32,15 +32,15 @@
 // view. There is an explicit Load more too, and both do exactly the same thing —
 // an infinite list with no button is unusable by keyboard.
 
-import { html, raw, escapeAttr } from "../utils.js?v=1862";
-import { navigate, getPath } from "../router.js?v=1862";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1862";
-import { renderTopbar } from "../components/topbar.js?v=1862";
-import { showToast } from "../components/toast.js?v=1862";
-import { renderEmptyState } from "../components/empty-state.js?v=1862";
-import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=1862";
-import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=1862";
-import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1862";
+import { html, raw, escapeAttr } from "../utils.js?v=1864";
+import { navigate, getPath } from "../router.js?v=1864";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1864";
+import { renderTopbar } from "../components/topbar.js?v=1864";
+import { showToast } from "../components/toast.js?v=1864";
+import { renderEmptyState } from "../components/empty-state.js?v=1864";
+import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=1864";
+import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=1864";
+import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1864";
 import {
   getTopicsForFeed,
   groupTopicsByAge,
@@ -51,7 +51,7 @@ import {
   ignoreTopic,
   unignoreTopic,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=1862";
+} from "../topics-store.js?v=1864";
 import {
   TOPIC_SOURCES,
   TOPIC_KINDS,
@@ -60,13 +60,13 @@ import {
   findTopicSource,
   findCadence,
   isLiveSource,
-} from "../topics-catalog.js?v=1862";
-import { renderTopicCard } from "../components/topic-card.js?v=1862";
-import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=1862";
-import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=1862";
-import { openTopicHistory } from "../components/topic-history-modal.js?v=1862";
-import { useTopicInChat } from "../topic-flow.js?v=1862";
-import { canEdit } from "../playbook-access.js?v=1862";
+} from "../topics-catalog.js?v=1864";
+import { renderTopicCard } from "../components/topic-card.js?v=1864";
+import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=1864";
+import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=1864";
+import { openTopicHistory } from "../components/topic-history-modal.js?v=1864";
+import { useTopicInChat } from "../topic-flow.js?v=1864";
+import { canEdit } from "../playbook-access.js?v=1864";
 
 const PAGE = 10;
 // Long enough to read the scanning line, short enough that nobody waits for it
@@ -487,12 +487,22 @@ function renderFilters() {
   return html`<div class="ap-filter-dropdown topics-view__filter-panel" role="menu" aria-label="Filter topics">
     <div class="ap-filter-dropdown__content">
       ${raw(
-        renderFilterLeaf("Topics", "Both lanes show by default — narrow to one if you want.", renderKindSelect(), true),
+        renderFilterLeaf(
+          "Topics",
+          "To review: ready to draft now. For later: kept, not enough to draft from yet. Both show until you pick one.",
+          renderKindSelect(),
+          true,
+        ),
       )}
       ${raw(
-        renderFilterLeaf("Marked as", "Topics you have already answered keep their mark.", renderMarkedSelect(), true),
+        renderFilterLeaf(
+          "Marked as",
+          "Show the Topics you already used in a chat or ignored.",
+          renderMarkedSelect(),
+          true,
+        ),
       )}
-      ${raw(renderFilterLeaf("Sources", "Where I found the topic.", renderSourceSelect(), false))}
+      ${raw(renderFilterLeaf("Sources", "Where I found the Topic. Pick at least one.", renderSourceSelect(), false))}
     </div>
     <div class="ap-filter-dropdown__footer">
       <div class="ap-filter-dropdown__footer--apply">
@@ -528,7 +538,7 @@ function renderKindSelect() {
     .map((k) => html`<span class="ap-tag grey"><span>${k.label}</span></span>`)
     .join("");
   const options = TOPIC_KINDS.map((k) => filterCheckbox("kind", k.id, k.label, picked.includes(k.id))).join("");
-  return renderMultiSelect("kind", view.kindOpen, chips, "Both lanes", options, "lanes");
+  return renderMultiSelect("kind", view.kindOpen, chips, "To review and For later", options, "what to show");
 }
 
 // ── The two multi-selects — the DS Select, chips in the trigger ────────────
@@ -578,7 +588,7 @@ function renderMarkedSelect() {
     const st = findTopicState(id);
     return filterCheckbox("marked", id, st.label, picked.includes(id));
   }).join("");
-  return renderMultiSelect("marked", view.markedOpen, chips, "None", options, "marked statuses");
+  return renderMultiSelect("marked", view.markedOpen, chips, "None", options, "what to show");
 }
 
 // Sources: each selected source shown as its provenance badge + name — the same
@@ -620,7 +630,7 @@ function filterCheckbox(group, id, label, checked, disabled = false) {
     />
     <i aria-hidden="true"></i>
     <span class="ap-select-option-text">${label}</span>
-    ${raw(disabled ? html`<span class="ap-tag grey mini">Coming soon</span>` : "")}
+    ${raw(disabled ? html`<span class="ap-tag grey mini">Not available yet</span>` : "")}
   </label>`;
 }
 
@@ -764,12 +774,11 @@ function renderInfluencerInvite() {
     <button type="button" class="topic-card__body" data-topic-invite-open aria-expanded="${open ? "true" : "false"}">
       <span class="topic-card__meta">
         <span class="topic-badge topic-badge--red" aria-hidden="true"><i class="ap-icon-star"></i></span
-        ><span class="topic-card__source">New Topic Source?</span>
+        ><span class="topic-card__source">New source for this feed</span>
       </span>
       <span class="topic-card__headline">Hear from the creators your audience follows</span>
       <span class="topic-card__summary">
-        Add them to your Playbook and every week I'll turn what they post into Topics, in this feed next to your
-        competitors'.
+        Add them to your Playbook and I'll turn what they post into Topics, in this feed next to your competitors'.
       </span>
     </button>
     <div class="topic-card__invite-actions">
@@ -798,7 +807,7 @@ function renderInvitePane() {
       <div class="topic-article__head">
         <div class="topic-article__provenance">
           <span class="topic-badge topic-badge--red" aria-hidden="true"><i class="ap-icon-star"></i></span
-          ><span class="topic-article__source">New Topic Source?</span>
+          ><span class="topic-article__source">New source for this feed</span>
         </div>
         <h2 class="topic-article__title">Hear from the creators your audience follows</h2>
       </div>
@@ -844,14 +853,14 @@ function renderEmpty(total, feed) {
     return renderEmptyState({
       icon: "ap-icon-antenna",
       title: "No Playbook to listen for",
-      body: "Create a Playbook and I'll start watching its competitors.",
+      body: "Create a Playbook from the switcher in the sidebar, and I'll start watching its competitors.",
       wrapperClass: "topics-view__empty",
     });
   }
   if (total === 0) {
     return renderEmptyState({
       icon: "ap-icon-antenna",
-      title: "Nothing has landed yet",
+      title: "No Topics yet",
       body: `I'm listening to this Playbook's competitors and I refresh ${findCadence(feed.cadence)?.adverb || "weekly"}. Switch on more sources and there'll be more to read.`,
       actionHtml:
         '<button type="button" class="ap-button stroked grey" data-topic-settings><i class="ap-icon-cog"></i><span>Feed settings</span></button>',
@@ -860,7 +869,7 @@ function renderEmpty(total, feed) {
   }
   return renderEmptyState({
     icon: "ap-icon-filter",
-    title: "Nothing matches these filters",
+    title: "No Topics match these filters",
     body: "Widen the filters or switch Playbook.",
     actionHtml: '<button type="button" class="ap-button stroked grey" data-topic-filters-reset>Reset filters</button>',
     wrapperClass: "topics-view__empty",
@@ -912,8 +921,8 @@ function renderPanePlaceholder() {
     ${raw(
       renderEmptyState({
         icon: "ap-icon-note",
-        title: "Nothing open",
-        body: "Pick a topic on the left and I'll show you what I found, and the posts I found it in.",
+        title: "No Topic open",
+        body: "Pick a Topic on the left to read my analysis and the posts behind it.",
         wrapperClass: "topics-view__pane-blank",
       }),
     )}
@@ -1138,7 +1147,7 @@ function bind(target) {
       const id = unignore.dataset.topicUnignore;
       view.menuTopicId = null;
       unignoreTopic(id);
-      showToast("Back on the list to review");
+      showToast("Topic restored to the feed");
       return;
     }
   };

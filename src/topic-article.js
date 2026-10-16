@@ -86,10 +86,10 @@
 // was flagged, and it could only ever show two clamped lines of an explanation
 // whose whole value is the detail.
 
-import { html, raw } from "./utils.js?v=1862";
-import { topicTitle, topicStates } from "./topics-store.js?v=1862";
-import { findTopicState } from "./topics-catalog.js?v=1862";
-import { renderSocialPostCard } from "./components/social-post-card.js?v=1862";
+import { html, raw } from "./utils.js?v=1864";
+import { topicTitle, topicStates } from "./topics-store.js?v=1864";
+import { findTopicState } from "./topics-catalog.js?v=1864";
+import { renderSocialPostCard } from "./components/social-post-card.js?v=1864";
 
 /**
  * The object's identity: where it came from, then the claim as an h2 under it —
@@ -204,7 +204,7 @@ function renderArticleBottom(topic, { actions = "", posts = [] } = {}) {
   const id = `topic-posts-${topic.id}`;
   const toggle = posts.length
     ? html`<label class="ap-link standalone topic-article__posts-toggle" for="${id}">
-        <span>Contributing posts</span>
+        <span>Source posts</span>
         <span class="ap-counter normal grey">${String(posts.length)}</span>
         <i class="ap-icon-chevron-down topic-article__section-toggle" aria-hidden="true"></i>
       </label>`
@@ -229,10 +229,10 @@ function renderArticleBottom(topic, { actions = "", posts = [] } = {}) {
 function renderLaterCallout() {
   return html`<div class="topic-article__later">
     <span class="topic-article__later-icon" aria-hidden="true"><i class="ap-icon-note"></i></span>
-    <h3 class="topic-article__later-title">Not enough data to write a detailed version yet</h3>
+    <h3 class="topic-article__later-title">Not enough to draft from yet</h3>
     <p class="topic-article__later-body">
-      There's not enough content or assets around this topic to create a draft yet. Use the topic in chat if you have
-      assets that fill the gaps, or leave it here and let a future run add more details.
+      This Topic is worth keeping, but there isn't enough around it for a draft yet. Use it in chat with your own
+      sources, or leave it here — my next scan may add more.
     </p>
   </div>`;
 }
@@ -281,7 +281,7 @@ export function renderTopicPosts(topic, { collapsible = true } = {}) {
   // the posts ARE the panel's content, so folding them away would leave it empty.
   if (!collapsible) {
     return html`<h3 class="topic-article__section-head topic-article__section-head--static">
-        <span>Contributing posts</span>
+        <span>Source posts</span>
         <span class="ap-counter normal grey">${String(posts.length)}</span>
       </h3>
       ${raw(list)}`;
@@ -299,7 +299,7 @@ export function renderTopicPosts(topic, { collapsible = true } = {}) {
              something you bring INTO a chat, and these are the evidence the
              analysis was written from. Naming them Sources put two different
              objects under one word on the same screen. -->
-        <span>Contributing posts</span>
+        <span>Source posts</span>
         <!-- The count is why folding these away costs nothing: it says how much
              evidence exists, so the section defers it rather than hiding it. -->
         <span class="ap-counter normal grey">${String(posts.length)}</span>
@@ -589,13 +589,18 @@ export function renderTopicActions(topic, { close = "Close" } = {}) {
     ${raw(
       ignored
         ? html`<button type="button" class="ap-button stroked grey" data-topic-unignore="${topic.id}">
-            <i class="ap-icon-eye-on"></i><span>Un-ignore</span>
+            <i class="ap-icon-eye-on"></i><span>Restore</span>
           </button>`
         : html`<button type="button" class="ap-button stroked grey" data-topic-ignore="${topic.id}">
-            <i class="ap-icon-eye-off"></i><span>Ignore</span>
+            <i class="ap-icon-eye-off"></i><span>Ignore Topic</span>
           </button>`,
     )}
-    <button type="button" class="ap-button primary orange" data-topic-use="${topic.id}">
+    <button
+      type="button"
+      class="ap-button primary orange"
+      data-topic-use="${topic.id}"
+      title="Opens a new chat with this Topic as a source"
+    >
       <i class="ap-icon-single-chat-bubble"></i><span>Use in chat</span>
     </button>
   </div>`;

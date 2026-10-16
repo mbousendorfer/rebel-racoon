@@ -23,9 +23,9 @@
 // destroyed and red would flag a danger that is not there. The primary slot is
 // deliberately empty — there is no action here worth spotlighting.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1862";
-import { escapeHtml } from "../utils.js?v=1862";
-import { getTopicById, topicTitle } from "../topics-store.js?v=1862";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1864";
+import { escapeHtml } from "../utils.js?v=1864";
+import { getTopicById, topicTitle } from "../topics-store.js?v=1864";
 
 const MODAL_ID = "topic-ignore";
 
@@ -44,7 +44,7 @@ const HTML = `
   aria-hidden="true"
 >
   <div class="ap-dialog-header">
-    <span class="ap-dialog-title" id="topicIgnoreTitle">Why did this Topic miss the mark?</span>
+    <span class="ap-dialog-title" id="topicIgnoreTitle">Ignore this Topic?</span>
   </div>
   <button class="ap-dialog-close" type="button" id="topicIgnoreClose" aria-label="Close">
     <i class="ap-icon-close"></i>
@@ -65,8 +65,8 @@ const HTML = `
       <div class="ap-infobox-content">
         <div class="ap-infobox-texts">
           <span class="ap-infobox-message"
-            >An ignored Topic stays off this list even if it starts trending or gets updated. Tick
-            <strong>Ignored</strong> in Filters to see it again.</span
+            >An ignored Topic stays off this list even if it starts trending or gets updated. To see it again,
+            tick <strong>Ignored</strong> under Filters › Marked as. Your reason stays on its card.</span
           >
         </div>
       </div>
@@ -76,7 +76,7 @@ const HTML = `
     <div class="ap-dialog-footer-right">
       <button type="button" class="ap-button ghost grey" id="topicIgnoreCancel">Cancel</button>
       <button type="button" class="ap-button stroked grey" id="topicIgnoreSubmit">
-        <i class="ap-icon-eye-off"></i><span>Ignore</span>
+        <i class="ap-icon-eye-off"></i><span>Ignore Topic</span>
       </button>
     </div>
   </div>
@@ -138,7 +138,7 @@ export function openIgnoreReason(topicId, onDone = null) {
   const topic = getTopicById(topicId);
   // Naming the Topic is what stops this reading as a generic prompt: the reader
   // came from a list, and the dialog has to say which row it is about.
-  subEl.innerHTML = topic ? `“${escapeHtml(topicTitle(topic))}”` : "";
+  subEl.innerHTML = topic ? `"${escapeHtml(topicTitle(topic))}"` : "";
   inputEl.value = "";
   pendingOnDone = onDone;
 

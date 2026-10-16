@@ -29,22 +29,22 @@
 // now does — and a row cannot without turning the list into a form. No save bar:
 // every control commits immediately through updateFeed.
 
-import { html, raw } from "../utils.js?v=1862";
-import { navigate } from "../router.js?v=1862";
-import { parseHashParams } from "../url-state.js?v=1862";
-import { renderTopbar } from "../components/topbar.js?v=1862";
-import { renderEmptyState } from "../components/empty-state.js?v=1862";
-import { getContextById, getDefaultContext } from "../contexts-store.js?v=1862";
+import { html, raw } from "../utils.js?v=1864";
+import { navigate } from "../router.js?v=1864";
+import { parseHashParams } from "../url-state.js?v=1864";
+import { renderTopbar } from "../components/topbar.js?v=1864";
+import { renderEmptyState } from "../components/empty-state.js?v=1864";
+import { getContextById, getDefaultContext } from "../contexts-store.js?v=1864";
 import {
   getActivePlaybook,
   isWorkspaceMode,
   catalogueRoute,
   subscribe as subscribeScope,
-} from "../active-playbook.js?v=1862";
-import { editableContexts, canEdit } from "../playbook-access.js?v=1862";
-import { getFeedForPlaybook, updateFeed, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1862";
-import { TOPIC_SOURCES, CADENCES, findTopicSource, findCadence, isLiveSource } from "../topics-catalog.js?v=1862";
-import { open as openFeedback } from "../components/feedback-modal.js?v=1862";
+} from "../active-playbook.js?v=1864";
+import { editableContexts, visibleContexts, canEdit } from "../playbook-access.js?v=1864";
+import { getFeedForPlaybook, updateFeed, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1864";
+import { TOPIC_SOURCES, CADENCES, findTopicSource, findCadence, isLiveSource } from "../topics-catalog.js?v=1864";
+import { open as openFeedback } from "../components/feedback-modal.js?v=1864";
 
 // Above this many Playbooks the picker earns a search field. Below it, a search
 // box over four rows is just noise.
@@ -136,9 +136,18 @@ function renderPage() {
       ${raw(
         renderEmptyState({
           icon: "ap-icon-target",
-          title: "No Playbooks yet",
-          body: "I listen on behalf of a Playbook. Create one and I'll show you what I can watch for it.",
-          actionHtml: `<button type="button" class="ap-button primary blue" data-settings-playbooks><i class="ap-icon-target"></i><span>Go to Playbooks</span></button>`,
+          // Shared Playbooks only: their feed is their owner's call, so say that
+          // rather than "none yet".
+          ...(visibleContexts().length
+            ? {
+                title: "No Playbooks you own",
+                body: "Only a Playbook's owner can change what its feed listens to. Create your own to set one up.",
+              }
+            : {
+                title: "No Playbooks yet",
+                body: "I listen on behalf of a Playbook. Create one and I'll show you what I can watch for it.",
+              }),
+          actionHtml: `<button type="button" class="ap-button primary blue" data-settings-playbooks><i class="ap-icon-plus"></i><span>Create a Playbook</span></button>`,
           wrapperClass: "topics-settings__empty",
         }),
       )}
@@ -197,7 +206,7 @@ function renderPage() {
               : "",
           )}
           <button type="button" class="ap-link" data-settings-playbook="${ctx.id}">
-            ${isWorkspaceMode() ? `Open ${ctx.name}` : "Open the Playbook"}
+            ${isWorkspaceMode() ? `Open ${ctx.name}` : "Open Playbook"}
           </button>
         </p>
       </header>
@@ -245,7 +254,7 @@ function renderPlaybookSelect(playbooks, active) {
         <span class="ap-select-option-content">
           <span class="ap-select-option-text">${c.name}</span>
           <span class="ap-select-option-caption"
-            >${on} of ${TOPIC_SOURCES.length} · ${feed ? feed.cadence : "weekly"}</span
+            >${on} of ${TOPIC_SOURCES.length} sources · ${findCadence(feed?.cadence)?.label || "Weekly"}</span
           >
         </span>
         ${raw(isActive ? `<i class="ap-icon-check ap-select-option-check" aria-hidden="true"></i>` : "")}
@@ -299,7 +308,7 @@ function renderCadenceSelect(feed, active) {
     </div>`;
   }).join("");
   return html`<details class="ap-select topics-settings__cadence">
-    <summary class="ap-select-trigger" title="How often this feed runs">
+    <summary class="ap-select-trigger" title="How often I check these sources for new Topics">
       <span class="ap-select-inline-label">Refresh</span>
       <span class="ap-select-value">${active ? active.label : "Weekly"}</span>
       <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
@@ -352,7 +361,7 @@ function renderSourceCard(ctx, feed, source, on) {
         live
           ? ""
           : html`<span class="topics-src__soon-group">
-              <span class="ap-tag grey mini topics-src__soon">Coming soon</span>
+              <span class="ap-tag grey mini topics-src__soon">Not available yet</span>
               <!-- The one thing a reader can do about a source that is not live yet:
                    say how they would use it. Without this the card is a dead end
                    wearing a tag. -->

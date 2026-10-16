@@ -49,9 +49,9 @@
 //   markUsed(id) / ignoreTopic(id, reason) / unignoreTopic(id)
 //   subscribe(fn)                      → unsubscribe
 
-import { topics as seed } from "./mocks.js?v=1862";
-import { isNewUser } from "./user-mode.js?v=1862";
-import { createNotifier } from "./store-utils.js?v=1862";
+import { topics as seed } from "./mocks.js?v=1864";
+import { isNewUser } from "./user-mode.js?v=1864";
+import { createNotifier } from "./store-utils.js?v=1864";
 import {
   DEFAULT_MARKED_IDS,
   MARKED_STATUS_IDS,
@@ -59,7 +59,7 @@ import {
   TOPIC_STATES,
   findTopicState,
   kindOf,
-} from "./topics-catalog.js?v=1862";
+} from "./topics-catalog.js?v=1864";
 
 const topics = isNewUser() ? [] : seed.map(cloneTopic);
 
@@ -129,7 +129,7 @@ export function ageMinutes(label) {
 // technicality.
 const AGE_GROUPS = Object.freeze([
   { id: "week", label: "Last 7 days", maxDays: 7 },
-  { id: "month", label: "Earlier this month", maxDays: 30 },
+  { id: "month", label: "Last 30 days", maxDays: 30 },
   { id: "earlier", label: "Earlier", maxDays: Infinity },
 ]);
 

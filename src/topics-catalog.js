@@ -88,11 +88,11 @@ export const TOPIC_SOURCES = Object.freeze([
     howItWorks:
       "Your website is scanned regularly for content worth leveraging — new blog " +
       "posts, product launches, customer success stories — and what turns up " +
-      "becomes topics you can post.",
+      "becomes Topics you can draft from.",
   },
   {
     id: "brand-feedback",
-    name: "Brand feedbacks",
+    name: "Brand feedback",
     icon: "ap-icon-double-chat-bubbles",
     accent: "menthol",
     live: false,
@@ -160,7 +160,7 @@ export const TOPIC_SOURCES = Object.freeze([
     howItWorks:
       "The docs and threads your team already writes — roadmaps, support notes, " +
       "launch briefs — are read for the things worth saying publicly that nobody " +
-      "got round to posting.",
+      "got around to posting.",
   },
 ]);
 
@@ -308,7 +308,7 @@ export const TOPIC_STATES = Object.freeze([
     icon: "ap-icon-arrow-up",
     chip: true,
     defaultOn: true,
-    hint: "Running well above its own median right now.",
+    hint: "Getting far more engagement than usual right now.",
   },
   {
     id: "updated",
@@ -345,7 +345,7 @@ export const TOPIC_STATES = Object.freeze([
     // "To review". Landing on a list that mixes draftable Topics with ones the
     // scan says are not draftable yet would bury the reason to be here.
     defaultOn: false,
-    hint: "A theme worth keeping — not enough around it to draft from yet.",
+    hint: "Worth keeping — not enough around it to draft from yet.",
   },
   {
     id: "ignored",

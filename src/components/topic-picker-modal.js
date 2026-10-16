@@ -22,18 +22,18 @@
 // header empty and titles itself inside the scrolling body. paint() also writes
 // the Topic's title into the dialog's aria-label.
 
-import { html, raw, escapeHtml } from "../utils.js?v=1862";
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1862";
+import { html, raw, escapeHtml } from "../utils.js?v=1864";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1864";
 import {
   renderTopicArticle,
   renderTopicActions,
   renderTopicTrail,
   renderTopicPosts,
   renderTopicHeader,
-} from "../topic-article.js?v=1862";
-import { getTopicById, topicTitle } from "../topics-store.js?v=1862";
-import { findTopicSource } from "../topics-catalog.js?v=1862";
-import { useTopicInChat } from "../topic-flow.js?v=1862";
+} from "../topic-article.js?v=1864";
+import { getTopicById, topicTitle } from "../topics-store.js?v=1864";
+import { findTopicSource } from "../topics-catalog.js?v=1864";
+import { useTopicInChat } from "../topic-flow.js?v=1864";
 
 const MODAL_ID = "topic-picker";
 
@@ -193,7 +193,7 @@ function paint() {
   // the verbs. Only when there is a trail to show — same gate the kebab used.
   const hasTrail = (openTopic?.history || []).length > 0;
   const historyBtn = hasTrail
-    ? `<button type="button" class="ap-button transparent grey" data-topic-trail="${openTopic.id}"><i class="ap-icon-history"></i><span>History</span></button>`
+    ? `<button type="button" class="ap-button transparent grey" data-topic-trail="${openTopic.id}"><i class="ap-icon-history"></i><span>Topic history</span></button>`
     : "";
   footEl.innerHTML = openTopic
     ? `<div class="ap-dialog-footer topic-picker__foot">
@@ -243,7 +243,7 @@ function renderHistoryView() {
   const topic = getTopicById(state.topicId);
   if (!topic) return "";
   return html`<button type="button" class="ap-link standalone small topic-picker__back" data-topic-history-back>
-      <i class="ap-icon-arrow-left" aria-hidden="true"></i><span>Back to the topic</span>
+      <i class="ap-icon-arrow-left" aria-hidden="true"></i><span>Back to Topic</span>
     </button>
     <div class="topic-picker__history">
       <h2 class="topic-picker__history-title">Topic history</h2>
