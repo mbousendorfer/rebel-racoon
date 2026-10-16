@@ -33,6 +33,31 @@ export const recentSessions = [
     lastActivity: "5 days ago",
     contextId: "ctx-acme",
     pinned: false,
+  }, // Three chats, one per state of the first image's look (draft-image-flow.js
+  // requireImageLook) — their drafts have no image yet, except where said:
+  //   NOBA      no look and no style of its own → the two questions
+  //   Pawtrack  one style of its own, no default → "which of your styles?"
+  //   Alliance  a look already picked in this chat → Generate goes straight to the loader
+  {
+    id: "s-noba-drop",
+    name: "NOBA spring drop → 3 posts",
+    lastActivity: "6 days ago",
+    contextId: "ctx-noba",
+    pinned: false,
+  },
+  {
+    id: "s-pawtrack-walks",
+    name: "Night walks with Pawtrack → 2 posts",
+    lastActivity: "a week ago",
+    contextId: "ctx-pawtrack",
+    pinned: false,
+  },
+  {
+    id: "s-alliance-open-mat",
+    name: "Saturday open mat → 2 posts",
+    lastActivity: "a week ago",
+    contextId: "ctx-alliance-bjj",
+    pinned: false,
   },
 ];
 

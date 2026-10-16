@@ -24,6 +24,22 @@ const AUTHOR_JT = {
   visibility: "Public",
 };
 
+const AUTHOR_NOBA = {
+  name: "NOBA",
+  title: "Fashion & lifestyle",
+  initials: "NO",
+  connection: "",
+  visibility: "Public",
+};
+const AUTHOR_PAW = { name: "Pawtrack", title: "Pet tech", initials: "PT", connection: "", visibility: "Public" };
+const AUTHOR_BJJ = {
+  name: "Alliance Jiu Jitsu Carlsbad",
+  title: "Martial arts school",
+  initials: "AJ",
+  connection: "",
+  visibility: "Public",
+};
+
 // Provenance stamped on every seeded draft so each card shows the collapsible
 // "Generation context" panel (post-card.js) — same shape draft-flow's
 // ideaContext produces for live idea drafts: the angle picked as the headline
@@ -288,6 +304,113 @@ export const postsBySession = {
       stats: { likes: 73, comments: 5, reposts: 3 },
       hasImage: false,
       generationContext: seedIdeaGen("The tactical breakdown", "What week 12 told us about Tuesday vs Thursday"),
+    },
+  ],
+  // The first image's look, three states (sessions.js) — see requireImageLook.
+  "s-noba-drop": [
+    {
+      id: "post-noba-1",
+      author: AUTHOR_NOBA,
+      network: "instagram",
+      status: "ready",
+      timeLabel: "6 days",
+      text: [
+        "Linen, but make it city. The spring drop lands Friday — five pieces, one palette, zero ironing.",
+        "Swipe for the full edit.",
+      ],
+      hashtags: ["SpringDrop", "NOBA"],
+      cta: "",
+      stats: { likes: 0, comments: 0, reposts: 0 },
+      hasImage: false,
+      generationContext: seedIdeaGen("The launch tease", "The spring drop, five pieces"),
+    },
+    {
+      id: "post-noba-2",
+      author: AUTHOR_NOBA,
+      network: "instagram",
+      status: "ready",
+      timeLabel: "6 days",
+      text: ["The sand overshirt is the piece we kept stealing back from the sample rail. Now it's yours."],
+      hashtags: ["Linen", "Overshirt"],
+      cta: "",
+      stats: { likes: 0, comments: 0, reposts: 0 },
+      hasImage: false,
+      generationContext: seedIdeaGen("The hero piece", "The sand overshirt"),
+    },
+    {
+      id: "post-noba-3",
+      author: AUTHOR_NOBA,
+      network: "facebook",
+      status: "ready",
+      timeLabel: "6 days",
+      text: ["Spring drop, Friday 10am. Members get an hour's head start — the link goes out Thursday night."],
+      hashtags: ["SpringDrop"],
+      cta: "",
+      stats: { likes: 0, comments: 0, reposts: 0 },
+      hasImage: false,
+      generationContext: seedIdeaGen("The members' early access", "Early access for members"),
+    },
+  ],
+  "s-pawtrack-walks": [
+    {
+      id: "post-paw-1",
+      author: AUTHOR_PAW,
+      network: "instagram",
+      status: "ready",
+      timeLabel: "1 week",
+      text: [
+        "11:48pm, one missed recall, and a dog who thinks squirrels are a lifestyle.",
+        "The map found him two streets over in four minutes.",
+      ],
+      hashtags: ["NightWalks", "Pawtrack"],
+      cta: "",
+      stats: { likes: 0, comments: 0, reposts: 0 },
+      hasImage: false,
+      generationContext: seedIdeaGen("The 2am moment", "Night walks, off the lead"),
+    },
+    {
+      id: "post-paw-2",
+      author: AUTHOR_PAW,
+      network: "facebook",
+      status: "ready",
+      timeLabel: "1 week",
+      text: ["Darker evenings, longer walks. Turn on Night mode and the collar light comes on by itself at dusk."],
+      hashtags: ["NightMode"],
+      cta: "",
+      stats: { likes: 0, comments: 0, reposts: 0 },
+      hasImage: false,
+      generationContext: seedIdeaGen("The feature tip", "Night mode on the collar"),
+    },
+  ],
+  "s-alliance-open-mat": [
+    {
+      id: "post-bjj-1",
+      author: AUTHOR_BJJ,
+      network: "instagram",
+      status: "ready",
+      timeLabel: "1 week",
+      text: ["Saturday open mat, 10am. Bring a partner, bring a question, leave with one thing that finally clicked."],
+      hashtags: ["OpenMat", "Carlsbad"],
+      cta: "",
+      stats: { likes: 0, comments: 0, reposts: 0 },
+      hasImage: true,
+      imageUrl: "https://images.unsplash.com/photo-1555597673-b21d5c935865?auto=format&fit=crop&w=1080&h=1080&q=80",
+      generationContext: seedIdeaGen("The invitation", "Saturday open mat"),
+    },
+    {
+      id: "post-bjj-2",
+      author: AUTHOR_BJJ,
+      network: "facebook",
+      status: "ready",
+      timeLabel: "1 week",
+      text: [
+        "Parents ask us if jiu jitsu makes kids aggressive. Saturday is the best answer we have: come and watch an open mat.",
+      ],
+      hashtags: ["KidsBJJ", "Parents"],
+      cta: "",
+      stats: { likes: 0, comments: 0, reposts: 0 },
+      hasImage: false,
+      generationContext: seedIdeaGen("The parent's worry", "Saturday open mat for parents"),
     },
   ],
 };

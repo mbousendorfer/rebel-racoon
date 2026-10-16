@@ -1211,6 +1211,8 @@ export const contexts = [
     brandName: "Alliance Jiu Jitsu Carlsbad",
     brandLogo: null,
     websiteUrl: "https://alliancecarlsbad.com/",
+    // Picked in the chat s-alliance-open-mat, on its first image (threads.js).
+    defaultLook: { kind: "style", id: "preset-photoreal" },
     audience: [
       "Active Carlsbad parents weighing martial arts for a child, and wary of programs that make kids aggressive",
       "Busy professionals and former practitioners returning to the mats after a multi-year break",

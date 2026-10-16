@@ -447,4 +447,132 @@ export const threadsBySession = {
       open: false,
     },
   ],
+  // The first image's look, three states (sessions.js) — see requireImageLook.
+  "s-noba-drop": [
+    {
+      role: "assistant",
+      meta: "Archie",
+      text: "Hi. Want me to compare ideas, pick the strongest one, or draft a post? You can also type a question or drop a source.",
+    },
+    {
+      role: "user",
+      meta: "You",
+      text: "Three posts for the spring drop — two on Instagram, one on Facebook. Keep it short.",
+    },
+    {
+      role: "assistant",
+      meta: "Archie",
+      text: "Drafted 3 posts for the spring drop: a tease, the hero piece, and the members' early access.",
+    },
+    {
+      role: "assistant",
+      variant: "draft",
+      meta: "Archie",
+      ideaTitle: "NOBA spring drop",
+      drafts: [
+        {
+          id: "post-noba-1",
+          network: "instagram",
+          preview: "Linen, but make it city. The spring drop lands Friday — five pieces, one palette, zero ironing.",
+        },
+        {
+          id: "post-noba-2",
+          network: "instagram",
+          preview: "The sand overshirt is the piece we kept stealing back from the sample rail.",
+        },
+        {
+          id: "post-noba-3",
+          network: "facebook",
+          preview: "Spring drop, Friday 10am. Members get an hour's head start.",
+        },
+      ],
+      count: 3,
+      open: false,
+    },
+  ],
+  "s-pawtrack-walks": [
+    {
+      role: "assistant",
+      meta: "Archie",
+      text: "Hi. Want me to compare ideas, pick the strongest one, or draft a post? You can also type a question or drop a source.",
+    },
+    { role: "user", meta: "You", text: "Two posts about night walks, now that the evenings are darker." },
+    {
+      role: "assistant",
+      meta: "Archie",
+      text: "Drafted 2 posts: one on the moment the collar mattered, one on Night mode.",
+    },
+    {
+      role: "assistant",
+      variant: "draft",
+      meta: "Archie",
+      ideaTitle: "Night walks",
+      drafts: [
+        {
+          id: "post-paw-1",
+          network: "instagram",
+          preview: "11:48pm, one missed recall, and a dog who thinks squirrels are a lifestyle.",
+        },
+        { id: "post-paw-2", network: "facebook", preview: "Darker evenings, longer walks. Turn on Night mode." },
+      ],
+      count: 2,
+      open: false,
+    },
+  ],
+  "s-alliance-open-mat": [
+    {
+      role: "assistant",
+      meta: "Archie",
+      text: "Hi. Want me to compare ideas, pick the strongest one, or draft a post? You can also type a question or drop a source.",
+    },
+    { role: "user", meta: "You", text: "Two posts to get people to Saturday's open mat — one for parents." },
+    {
+      role: "assistant",
+      meta: "Archie",
+      text: "Drafted 2 posts: an open invitation, and one that answers the parents' worry.",
+    },
+    {
+      role: "assistant",
+      variant: "draft",
+      meta: "Archie",
+      ideaTitle: "Saturday open mat",
+      drafts: [
+        {
+          id: "post-bjj-1",
+          network: "instagram",
+          preview: "Saturday open mat, 10am. Bring a partner, bring a question.",
+        },
+        { id: "post-bjj-2", network: "facebook", preview: "Parents ask us if jiu jitsu makes kids aggressive." },
+      ],
+      count: 2,
+      open: false,
+    },
+    // The look was picked here, on the first draft's first image — what
+    // requireImageLook leaves in a thread. The Playbook's defaultLook matches.
+    { role: "assistant", meta: "Archie", text: "Let's make an image for [[post:post-bjj-1]]." },
+    {
+      role: "assistant",
+      meta: "Archie",
+      text: "First image for Alliance Jiu Jitsu Carlsbad — how should its images look? I'll start every draft's image from your answer.",
+    },
+    {
+      role: "assistant",
+      meta: "Archie",
+      text: "Pick the one that fits Alliance Jiu Jitsu Carlsbad best. You can change it any time in the Playbook.",
+    },
+    {
+      role: "user",
+      variant: "selection-echo",
+      meta: "You",
+      echo: { icon: "ap-icon-image", title: "Photoreal", meta: "Image look" },
+    },
+    {
+      role: "assistant",
+      variant: "image-look-set",
+      meta: "Archie",
+      contextId: "ctx-alliance-bjj",
+      styleId: "preset-photoreal",
+      label: "Photoreal",
+    },
+  ],
 };
