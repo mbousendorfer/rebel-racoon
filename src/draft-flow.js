@@ -21,12 +21,12 @@ import {
   postDraftResult,
   reportDraftFailure,
   GENERATION_TOOLS,
-} from "./assistant.js?v=1886";
-import { getIdeas } from "./library.js?v=1886";
-import { anglesByIdea } from "./mocks.js?v=1886";
-import { addPostDraft } from "./posts-store.js?v=1886";
-import { networkMeta } from "./social-profiles.js?v=1886";
-import { coachAfterDraft } from "./voice-coach.js?v=1886";
+} from "./assistant.js?v=1887";
+import { getIdeas } from "./library.js?v=1887";
+import { anglesByIdea } from "./mocks.js?v=1887";
+import { addPostDraft } from "./posts-store.js?v=1887";
+import { networkMeta } from "./social-profiles.js?v=1887";
+import { coachAfterDraft } from "./voice-coach.js?v=1887";
 
 // The set-up pass before a draft (reading the brief and the voice) — logged as
 // its own tools, so the generation that follows isn't counted twice.
@@ -100,7 +100,8 @@ function generateAngles(idea) {
 function ideaContext(idea, angle) {
   return {
     kind: "idea",
-    headline: angle ? { icon: "ap-icon-target", text: `Angle · ${angle.description}` } : null,
+    // A source treatment (askTreatment) names itself; an angle quotes its line.
+    headline: angle ? { icon: "ap-icon-target", text: angle.contextLabel || `Angle · ${angle.description}` } : null,
     source: {
       icon: "ap-icon-sparkles",
       label: "1 source idea",

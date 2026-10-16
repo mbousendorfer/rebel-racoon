@@ -4,10 +4,10 @@
 // Moved out of session.js, unchanged; askAngleQuestion is also the right
 // panel's entry point (it imports this module, not the whole screen).
 
-import { getSessionById } from "../../sessions-store.js?v=1886";
-import { getContextById } from "../../contexts-store.js?v=1886";
-import { playbookForNewWork } from "../../active-playbook.js?v=1886";
-import { isFlagOn } from "../../feature-flags.js?v=1886";
+import { getSessionById } from "../../sessions-store.js?v=1887";
+import { getContextById } from "../../contexts-store.js?v=1887";
+import { playbookForNewWork } from "../../active-playbook.js?v=1887";
+import { isFlagOn } from "../../feature-flags.js?v=1887";
 import {
   postAssistantMessage,
   postSelectionEcho,
@@ -18,25 +18,25 @@ import {
   postActivity,
   postExtractionResult,
   postClipExtractionTurn,
-} from "../../assistant.js?v=1886";
-import * as inlineQuestion from "../../inline-question.js?v=1886";
-import { getIdeas, extractVideoIdeas, appendExtractedIdeas } from "../../library.js?v=1886";
+} from "../../assistant.js?v=1887";
+import * as inlineQuestion from "../../inline-question.js?v=1887";
+import { getIdeas, extractVideoIdeas, appendExtractedIdeas } from "../../library.js?v=1887";
 import {
   getSources as getStreamSources,
   setSourceIdeaCount,
   setSourceUse,
   extractClipsForSource,
-} from "../../sources-stream.js?v=1886";
+} from "../../sources-stream.js?v=1887";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
   getConnectedProfileById,
   normalizeNetwork,
-} from "../../social-profiles.js?v=1886";
-import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=1886";
-import { executeDraftBatch, startDraftFlow, getAnglesForIdea } from "../../draft-flow.js?v=1886";
-import * as topPostsFlow from "../../top-posts-flow.js?v=1886";
+} from "../../social-profiles.js?v=1887";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=1887";
+import { executeDraftBatch, startDraftFlow, getAnglesForIdea } from "../../draft-flow.js?v=1887";
+import * as topPostsFlow from "../../top-posts-flow.js?v=1887";
 
 // Build + show the "Which profile?" question, reached from every Draft Post
 // entry point. The chosen profile's platform becomes the draft's network so
@@ -462,7 +462,133 @@ function runWritePost(sessionId, srcs) {
     if (!idea) return;
     idea.sourceIds = ids;
     setSourceUse(sessionId, ids, "post");
-    startIdeaDraft(sessionId, idea.id);
+    askTreatment(sessionId, idea.id);
+  });
+}
+
+// ── How should I use this source? ─────────────────────────────────────────
+// The prod's source treatments (panels.treatment.*): what the post DOES with
+// the source — summarise it, argue with it, promote it… Config, not a mock, so
+// it lives with the flow. `body` is the mock draft line each one writes.
+export const SOURCE_TREATMENTS = [
+  {
+    value: "share",
+    label: "Share its ideas",
+    caption: "Pass on what it says, in your voice.",
+    body: "Here's what stood out to me — and why it matters for you.",
+  },
+  {
+    value: "summarize",
+    label: "Summarize it",
+    caption: "The gist, for people who won't read it.",
+    body: "Short on time? Here's the whole thing in three lines.",
+  },
+  {
+    value: "fact",
+    label: "Pull a key fact",
+    caption: "One number or finding, front and centre.",
+    body: "One number from this changes how I think about the problem.",
+  },
+  {
+    value: "example",
+    label: "Use it as an example",
+    caption: "A case that proves a point you make.",
+    body: "If you want proof this works, look at what they did.",
+  },
+  {
+    value: "build",
+    label: "Build on it",
+    caption: "Take its idea one step further.",
+    body: "They stopped one step short. Here's the step after.",
+  },
+  {
+    value: "contrast",
+    label: "Contrast with it",
+    caption: "Show how your take differs.",
+    body: "Same problem, opposite answer — here's ours.",
+  },
+  {
+    value: "promote",
+    label: "Promote it",
+    caption: "Send people to read or watch it.",
+    body: "Worth your next ten minutes. Here's why.",
+  },
+  {
+    value: "react",
+    label: "React to it",
+    caption: "Your honest first take.",
+    body: "I read this twice. My first reaction hasn't changed.",
+  },
+  {
+    value: "critique",
+    label: "Critique it",
+    caption: "Where it falls short, fairly.",
+    body: "Not everything here holds up. Here's where it falls short.",
+  },
+  {
+    value: "rebut",
+    label: "Rebut it",
+    caption: "Argue the opposite, with reasons.",
+    body: "I disagree, and here's the case for the other side.",
+  },
+];
+
+// Step 1 — the treatment, with a free-text row for anything else. Then how many
+// drafts, the language (when the Playbook has several) and the account — the
+// same tail as an angle pick, the treatment riding in as the angle.
+export function askTreatment(sessionId, ideaId, { onBack = null } = {}) {
+  postAssistantMessage(sessionId, "How should I use this source?");
+  const advance = (treatment) => {
+    postUserTurn(sessionId, treatment.label);
+    askTreatmentCount(sessionId, ideaId, treatment, () => askTreatment(sessionId, ideaId, { onBack }));
+  };
+  inlineQuestion.ask(sessionId, {
+    title: null,
+    stepLabel: "Treatment",
+    skipLabel: "Not now",
+    items: SOURCE_TREATMENTS.map(({ value, label, caption }) => ({ value, label, caption })),
+    customPlaceholder: "Or say how, in your words",
+    onPick: (value) => advance(SOURCE_TREATMENTS.find((t) => t.value === value)),
+    onCustom: (text) => {
+      const how = String(text || "").trim();
+      if (how) advance({ value: "custom", label: how, body: how });
+    },
+    onBack: onBack || undefined,
+    onSkip: onBack ? undefined : () => {},
+  });
+}
+
+function askTreatmentCount(sessionId, ideaId, treatment, onBack) {
+  postAssistantMessage(sessionId, "How many drafts should I write?");
+  const advance = (count) => {
+    const n = Math.max(1, Math.min(10, Math.floor(Number(count) || 1)));
+    postUserTurn(sessionId, `${n} draft${n === 1 ? "" : "s"}`);
+    const angle = {
+      id: `treatment-${treatment.value}`,
+      title: treatment.label,
+      description: treatment.body,
+      contextLabel: `Treatment · ${treatment.label}`,
+    };
+    askLanguageQuestion(sessionId, ideaId, (language) =>
+      askProfileQuestion(sessionId, ideaId, {
+        anglePicks: [{ angle, count: n }],
+        language,
+        onBack: () => askTreatmentCount(sessionId, ideaId, treatment, onBack),
+      }),
+    );
+  };
+  inlineQuestion.ask(sessionId, {
+    title: null,
+    stepLabel: "Drafts",
+    items: [
+      { value: 1, label: "1 draft" },
+      { value: 3, label: "3 drafts" },
+      { value: 5, label: "5 drafts" },
+    ],
+    customPlaceholder: "Or type any number (1–10)",
+    onPick: advance,
+    onCustom: advance,
+    onBack,
   });
 }
 
