@@ -1,23 +1,24 @@
-import { html, raw, escapeAttr } from "../utils.js?v=1875";
-import { renderTopbar } from "../components/topbar.js?v=1875";
+import { html, raw, escapeAttr } from "../utils.js?v=1876";
+import { renderTopbar } from "../components/topbar.js?v=1876";
 import {
   getContexts,
   subscribe as subscribeContexts,
   duplicateContext,
   deleteContext,
-} from "../contexts-store.js?v=1875";
-import { getSessions, getSessionById, subscribe as subscribeSessions } from "../sessions-store.js?v=1875";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1875";
-import { closePanel as closeRightPanel } from "../components/right-panel.js?v=1875";
-import { navigate, getPath } from "../router.js?v=1875";
-import { setHandoff } from "../handoff.js?v=1875";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=1875";
-import { visibleContexts, usableContexts } from "../playbook-access.js?v=1875";
-import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=1875";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=1875";
-import { installMoreMenu } from "../components/more-menu.js?v=1875";
-import { showToast } from "../components/toast.js?v=1875";
-import { pickedPlaybook, renderHeroPicker, renderHomeHero, renderHomeWorkflows } from "./home/hero.js?v=1875";
+} from "../contexts-store.js?v=1876";
+import { getSessions, getSessionById, subscribe as subscribeSessions } from "../sessions-store.js?v=1876";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1876";
+import { closePanel as closeRightPanel } from "../components/right-panel.js?v=1876";
+import { navigate, getPath } from "../router.js?v=1876";
+import { setHandoff } from "../handoff.js?v=1876";
+import { openNewPlaybookFlow } from "../context-builder.js?v=1876";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=1876";
+import { visibleContexts, usableContexts } from "../playbook-access.js?v=1876";
+import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=1876";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=1876";
+import { installMoreMenu } from "../components/more-menu.js?v=1876";
+import { showToast } from "../components/toast.js?v=1876";
+import { pickedPlaybook, renderHeroPicker, renderHomeHero, renderHomeWorkflows } from "./home/hero.js?v=1876";
 import {
   chatPlaybook,
   renderChatsTab,
@@ -25,7 +26,7 @@ import {
   renderContextsEmpty,
   renderGhostCard,
   renderPlaybooksTable,
-} from "./home/lists.js?v=1875";
+} from "./home/lists.js?v=1876";
 
 // The account HOME — and the Playbooks catalogue it merged with.
 //
@@ -422,18 +423,7 @@ function bind(root) {
       return;
     }
     if (event.target.closest("[data-contexts-new]")) {
-      // Launch the conversational Playbook flow (welcome-alt) integrated in
-      // the app shell: the `welcomeAltIntegrated` flag keeps the sidebar +
-      // topbar visible and the recap finishes by returning here (no
-      // switch-to-returning). A `welcome-alt-` session id gets the flow + hero.
-      try {
-        window.sessionStorage.setItem("welcomeAltIntegrated", "1");
-        window.sessionStorage.setItem("welcomeAltReturnTo", catalogueRoute());
-      } catch {
-        /* ignore */
-      }
-      setHandoff("pendingStartContextBuilder", { flow: "alt", prefilledUrl: "", returnTo: catalogueRoute() });
-      navigate(`/session/welcome-alt-${Date.now().toString(36)}`);
+      openNewPlaybookFlow(catalogueRoute());
       return;
     }
     if (event.target.closest("[data-contexts-clear-query]")) {
