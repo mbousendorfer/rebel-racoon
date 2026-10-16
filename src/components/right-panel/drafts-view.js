@@ -4,22 +4,29 @@
 // shell's delegated clicks write it through setDraftsFilter / setDraftsNetwork.
 // Moved out of right-panel.js, unchanged.
 
-import { networkMeta } from "../../social-profiles.js?v=1888";
-import { getPosts, removePost, insertPost, updatePostContent, attachImageToDraft } from "../../posts-store.js?v=1888";
-import { noticeDraftEdit } from "../../voice-coach.js?v=1888";
-import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=1888";
-import { getSessionById } from "../../sessions-store.js?v=1888";
-import { renderPostCard } from "../post-card.js?v=1888";
-import { html, raw } from "../../utils.js?v=1888";
-import { isFlagOn } from "../../feature-flags.js?v=1888";
-import { open as openNewScheduleModal } from "../schedule-modal.js?v=1888";
-import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=1888";
-import { open as openConfirmModal } from "../confirm-modal.js?v=1888";
-import { showToast } from "../toast.js?v=1888";
-import { addMention as addComposerMention } from "../../composer-mentions.js?v=1888";
-import { startDraftImageFlow } from "../../draft-image-flow.js?v=1888";
-import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=1888";
-import { RPANEL_CLOSE_INLINE, activeSessionId, canDraftInlineEdit, renderPanel } from "../right-panel.js?v=1888";
+import { networkMeta } from "../../social-profiles.js?v=1892";
+import {
+  getPosts,
+  removePost,
+  insertPost,
+  updatePostContent,
+  attachImageToDraft,
+  attachCarouselToDraft,
+} from "../../posts-store.js?v=1892";
+import { noticeDraftEdit } from "../../voice-coach.js?v=1892";
+import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=1892";
+import { getSessionById } from "../../sessions-store.js?v=1892";
+import { renderPostCard } from "../post-card.js?v=1892";
+import { html, raw } from "../../utils.js?v=1892";
+import { isFlagOn } from "../../feature-flags.js?v=1892";
+import { open as openNewScheduleModal } from "../schedule-modal.js?v=1892";
+import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=1892";
+import { open as openConfirmModal } from "../confirm-modal.js?v=1892";
+import { showToast } from "../toast.js?v=1892";
+import { addMention as addComposerMention } from "../../composer-mentions.js?v=1892";
+import { startDraftImageFlow } from "../../draft-image-flow.js?v=1892";
+import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=1892";
+import { RPANEL_CLOSE_INLINE, activeSessionId, canDraftInlineEdit, renderPanel } from "../right-panel.js?v=1892";
 
 // Drafts-mode local UI state — Lot 21 rich-card view. Filter strip at the
 // top of the panel head drives both axes : status (all / needs_fixes /
@@ -314,7 +321,7 @@ export function onPostRewrite(postId, intent = "fresh") {
   // streaming → commit. Loaded lazily so the rewrite code is only
   // pulled in when the user actually triggers a regen. `intent` biases
   // the rewrite (shorter / longer / warmer / formal / fresh).
-  import("../../draft-rewrite.js?v=1888").then(({ startRewrite }) => {
+  import("../../draft-rewrite.js?v=1892").then(({ startRewrite }) => {
     startRewrite(sid, postId, intent);
   });
 }
@@ -483,7 +490,7 @@ export function onSectionSave(network) {
   if (snapshot.length === 0) return;
   const count = snapshot.length;
   const draftWord = count === 1 ? "draft" : "drafts";
-  Promise.all([import("../save-folder-modal.js?v=1888"), import("../../folders-store.js?v=1888")]).then(
+  Promise.all([import("../save-folder-modal.js?v=1892"), import("../../folders-store.js?v=1892")]).then(
     ([{ open: openSaveModal }, { addDraftsToFolder }]) => {
       openSaveModal({
         count,
@@ -625,18 +632,19 @@ export function onPostStudio(postId) {
     network: post.network,
     text: Array.isArray(post.text) ? post.text.join("\n") : post.text || "",
     imageUrl: post.imageUrl || "",
-    slides: Array.isArray(post.carousel) ? post.carousel.length : 0,
+    carousel: Array.isArray(post.carousel) ? post.carousel : null,
     onUse: (dataUrl) => attachImageToDraft(sid, postId, dataUrl),
+    onUseCarousel: (urls) => attachCarouselToDraft(sid, postId, urls),
     // "In feed": this very draft as the Drafts board draws it, the studio's
     // image in place of its own. The module can't import post-card, so the
     // card comes from here; `inert` because it's a picture of the card, not
-    // a second set of its controls.
-    renderFeedPreview: (imageUrl) => {
+    // a second set of its controls. A carousel result keeps its slides.
+    renderFeedPreview: (imageUrl, carousel = null) => {
       const live = getPosts(sid).find((p) => p.id === postId) || post;
       return `<div class="posts__feed-preview" inert>${renderPostCard({
         ...live,
         imageUrl,
-        carousel: null,
+        carousel,
         clipRef: null,
         isRegenerating: false,
       })}</div>`;

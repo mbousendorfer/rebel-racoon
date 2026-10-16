@@ -270,3 +270,9 @@
 .imst-edit .imst-refine--edit {
   box-shadow: var(--sys-elevation-floating);
 }
+
+/* A carousel: previous / next slide, beside "Editing slide N / M". */
+.imst-editbar__steps {
+  display: flex;
+  gap: var(--ref-spacing-xxs);
+}

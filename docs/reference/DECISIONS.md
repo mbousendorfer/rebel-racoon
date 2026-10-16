@@ -50,67 +50,60 @@ so no card renderer needs to know sharing exists.
 
 ## The Image Studio is split by subject, and the engine holds no DOM
 
-`src/image-studio.js` is the state engine: a `Map(key → state)`, every mock, and **no DOM at all**.
-The views under `components/image-studio-v2/` hold no state of their own — a mutation notifies and the
-whole modal body is re-rendered. That one-way path is what makes the studio safe to change, so the
-exceptions are quarantined in **one** file, `inline-text.js`: typing in a text overlay, dragging a
-colour or a slider, and toggling outline/shadow all patch the DOM by hand, because a re-render would
-lose the caret, replace the input mid-drag, or remount an open popover so it replays its entrance
-animation. Nothing else in the studio may skip the render path.
+> Rewritten 2026-10-16. The earlier text described `src/image-studio.js`, `components/image-studio-v2/` and
+> `inline-text.js` — all deleted in `5364592a3` with the old Image Studio. What follows is the module that
+> replaced them, `src/modules/image-studio/`.
 
-The modules split by **subject**, not by size: `index.js` is the lifecycle, `events.js` every
-delegated listener, `commit.js` the paths that write to the draft, `prompt-guard.js` the
-confirmation that protects a hand-edited brief, then one view module per surface
-(`stage-view`, `setup-stage`, `settings-view`, `references-view`, `branding-view`, `brief-blocks`,
-`preview-column`, `composer-view`, `tools-view`, `edit-view`), plus `type-art.js` / `style-art.js`,
-the nine drawn option previews.
+**State has one home per lifetime.** What outlives the dialog — styles, products, creations, assets — is in
+`state/store.js` (read side + subscribe) and written by `state/creation-actions.js` / `state/style-actions.js`
+through `storageService`. What lives only while the dialog is open — the brief being built, the focused
+variation and slide, the run's status, the edit documents — is the `mountStudio()` closure in
+`views/studio.js` (`state`, `entries`, `sources`): no module-level map, nothing to clean up but the closure.
+The brand is the Playbook, read through `state/playbook-brand.js` only; the module imports **no Archie store**
+— the draft comes in as data and goes back through callbacks (`onUse`, `onUseCarousel`, `renderFeedPreview`).
 
-**The options come first, the brief comes last.** Generate is two halves for the whole loop — the
-seven option rows on the left, the image or its placeholder on the right — and **Generate is the
-form's submit**, in the footer. There is **no prose prompt field anywhere.** The brief is written AT
-generate time (`deriveNow`), not at open, and lives behind an **Advanced** tab beside Options that
-stays disabled until an image exists, because what it holds is the prompt that produced the image on
-screen rather than a draft of one. Every option rewrites the brief; typing in one of its blocks IS
-the takeover, after which an option change flags it stale instead of overwriting, and the guard names
-the option it is about to rewrite.
+**One render path.** A mutation calls `paint()`, which rebuilds the dialog body from state. The exceptions are
+quarantined in **one** place, the editor's **Silent** section (`views/edit/editor.js`): typing in a text
+layer, dragging a colour or a slider, and the live gestures patch the DOM by hand, because a re-render would
+lose the caret, replace the input mid-drag, or remount an open popover so it replays its entrance. The
+Suggest buttons' in-place fill (`suggestInto`) is the only other DOM write, for the same caret reason.
+Nothing else may skip `paint()`.
 
-⚠️ **Two earlier arrangements were DELETED, not flagged — don't propose either back.** A _classic_
-one landed on a prose brief in a bottom composer with the options pinned to the stage's left edge in
-a 284px inspector (`git log -S isv2-panel`), and an _auto-brief_ one made the written brief the hero
-of the stage with the options as a bar of popover modifiers under it (`git log -S isv2-bs-mod`). Both
-asked the user to face a brief before there was anything to brief about, and keeping three variants
-meant three code paths through one engine — `briefIsDerived()`, `isBriefStage()` and
-`afterLegacySetting()` existed only to reconcile them. Their flags (`imageStudioAutoBrief`,
-`imageStudioSetupFirst`) are gone with them: the surviving studio is the behaviour, not a variant of
-it.
+**The prompt is written at generate time** by `buildPrompt()` (`services/prompt.js`), pure and shared by every
+implementation of `imageGenerationService` — so a real API gets exactly the prompt the mock shows. There is
+**no prose brief to face first, and no Advanced tab**: the controls are the brief (Start from · style or image ·
+text on the image · shape · variations · slides), and Generate is the footer's submit.
 
-⚠️ A confirmation inside the studio must NOT be `confirm-modal.js`: it registers with
-`modal-coordinator`, whose `requestOpen` closes the active overlay — the studio — running `exit(KEY)`
-and deleting the session. Render it in the studio body from state instead, listen for its keys on
-`document` in capture, and pass `bindOverlayDismissal` an `isOpen` that stands down while it's up. Two stylesheets, for the same reason: `image-studio-v2.css` is the shell (`.isv2-*`),
-`image-studio-canvas.css` is everything that sits ON the image and must follow a precise pixel
-(`.image-studio__*`).
+**A carousel is one creation, many slides** (2026-10-16, parity with prod's `generateCarousel`). The Slides
+control (1–10) is RUN config on the brief, never on the Playbook. One run = one creation, one
+`styleSnapshot` — the Style Bible every slide shares — and each variation carries `slides[]` (its own seeds
+and a line of the post per slide). `slideOf(c, v, i)` turns a slide into an ordinary (creation, variation)
+pair, so drawing, baking, the editor and the edit keys (`variationKey`) work on slides unchanged: edits and
+undo stick to their slide, Redraw becomes "Apply to this slide", Regenerate replaces one slide. ⚠️ Don't
+model a carousel as N creations: the Style Bible is what makes it a carousel.
 
-Two naming legacies are deliberate, not oversights: the `image-studio-v2/` directory, the `.isv2-`
-prefix and `KEY = "studio-v2"` date from when a second studio was mounted beside this one behind the
-`imageStudioV2` flag (both removed). Renaming them would touch two stylesheets and fifteen modules
-for something no user can see. Likewise `isv2-sheet-label` / `-hint` / `-switch` were written for
-flyout sheets the settings panel replaced — `settings-view.js` carries the disclosure.
+⚠️ **Two earlier arrangements were DELETED, not flagged — don't propose either back.** A _classic_ one landed
+on a prose brief in a bottom composer with the options pinned in a 284px inspector (`git log -S isv2-panel`),
+and an _auto-brief_ one made the written brief the hero of the stage with the options as popover modifiers
+under it (`git log -S isv2-bs-mod`). Both asked the user to face a brief before there was anything to brief
+about. Their flags (`imageStudioAutoBrief`, `imageStudioSetupFirst`) are gone. **Nor the Generate | Edit
+tabs** (removed 2026-10-02): Edit is the button on the image, "Back to the variations / slides" leaves it.
 
-⚠️ Four class families are assembled by string concatenation and a rename breaks them silently:
-`.image-studio__crop-handle--{nw,ne,se,sw}`, `.image-studio__popover--{kind}`,
-`.image-studio__tt-{kind}`, and `.isv2-art--{key}` — now only the grey FALLBACK frame `typeArt()` /
-`styleArt()` return for a catalogue key with no drawing.
+⚠️ A confirmation inside the studio must NOT be `confirm-modal.js`: it registers with `modal-coordinator`,
+whose `requestOpen` closes the active overlay — the studio. Use the module's own `confirmDialog`
+(`ui/dialog.js`).
 
-The nine option previews (three Types, six Styles) are inline SVG — `type-art.js` and `style-art.js`,
-one drawing per `IMAGE_TYPES` / `STYLE_PRESETS` key, every colour in CSS as `.ta-*` / `.ta-stop-*`
-DS tokens (brand orange on navy for the Types, the user's call over the amber a first pass used).
-They replaced CSS-drawn spans: five shapes could only name a geometry, so "Illustration" was a circle,
-a square and a triangle. Rules that came out of drawing them: a Type shows a different SUBJECT each
-(backlit shot · data poster · flat landscape) while a Style holds ONE subject still and varies the
-TREATMENT; there is **one warm disc in the Type row**, the Illustration's sun — a sphere in the hook
-and a donut in the chart made three cards read as three sunsets; and `.isv2-option-art--dark` on a
-dark drawing turns the radio ring white (`:has()`), the hook, Corporate and Bold Editorial.
+Stylesheets: `src/modules/image-studio/styles/imst-*.css` are the module's (`.imst-*`); the editor reuses the
+old studio's markup, so `styles/screens/image-studio-v2.css` (`.isv2-*`) and `image-studio-canvas.css`
+(`.image-studio__*`, everything that sits ON the image and must follow a precise pixel) stay, and `.isv2-`
+is a naming legacy, not a second studio.
+
+⚠️ Class families assembled by string concatenation — a rename breaks them silently:
+`.image-studio__crop-handle--{nw,ne,se,sw}`, `.image-studio__popover--{kind}`, `.image-studio__tt-{kind}`,
+`.imst-dialog--{size}`, `.imst-menu--{align}`.
+
+The option previews are inline SVG drawn per style (`render/style-art.js`), every colour a DS token; a Style
+holds ONE subject still and varies the TREATMENT.
 
 ## Connectors as live, MCP-queryable sources
 

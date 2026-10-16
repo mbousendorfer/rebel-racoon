@@ -8,10 +8,10 @@
 //   hashtags({ brand, brief, network }) → Promise<string[]>
 //   promptFromImages({ colors, look }) → Promise<string>   (a style prompt read from reference images)
 
-import { MOCK } from "../../config/mock.js?v=1888";
-import { COPY_LIMITS } from "../../config/copy-limits.js?v=1888";
-import { hashString, prng, shuffle } from "../../lib/prng.js?v=1888";
-import { wait } from "../../lib/delegate.js?v=1888";
+import { MOCK } from "../../config/mock.js?v=1892";
+import { COPY_LIMITS } from "../../config/copy-limits.js?v=1892";
+import { hashString, prng, shuffle } from "../../lib/prng.js?v=1892";
+import { wait } from "../../lib/delegate.js?v=1892";
 
 function delay(signal, [min, max] = MOCK.copy.delayMs) {
   return wait(min + Math.random() * (max - min), signal);
@@ -168,26 +168,43 @@ export async function promptFromPost({ brand, text }, { signal } = {}) {
 // again offers the next line instead of the same one.
 export async function headlineFromPost({ text, round = 0 }, { signal } = {}) {
   await delay(signal, MOCK.suggest.delayMs);
-  const clean = String(text || "")
+  const unique = postClauses(text);
+  if (!unique.length) {
+    const words = cleanPost(text).split(" ").slice(0, 6).join(" ");
+    return words ? capital(words) : "";
+  }
+  return capital(unique[round % unique.length]);
+}
+
+// A carousel's text, one line per slide, in the post's order: slide 1 is the
+// headline when there is one. Past the post's last clause a slide has no text.
+// No wait of its own — it runs inside the generation's.
+export async function slideLinesFromPost({ text, count, first = "" }) {
+  const lines = postClauses(text).filter((c) => c.toLowerCase() !== first.toLowerCase());
+  const head = first || lines.shift() || "";
+  return Array.from({ length: count }, (_, i) => capital(i === 0 ? head : lines[i - 1] || ""));
+}
+
+const capital = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+
+function cleanPost(text) {
+  return String(text || "")
     .replace(/https?:\/\/\S+/g, "")
     .replace(/#\w+/g, "")
     .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "")
     .replace(/\s+/g, " ")
     .trim();
-  const clauses = clean
+}
+
+function postClauses(text) {
+  const clauses = cleanPost(text)
     .split(/\s*(?:[,;:.!?…]|\s[—–-]\s)\s*/)
     .map((c) => c.replace(/^(and|but|so|or|unless|because)\s+/i, "").trim())
     .filter((c) => {
       const n = c.split(" ").length;
       return n >= 3 && n <= 8;
     });
-  const unique = [...new Set(clauses)];
-  if (!unique.length) {
-    const words = clean.split(" ").slice(0, 6).join(" ");
-    return words ? words.charAt(0).toUpperCase() + words.slice(1) : "";
-  }
-  const line = unique[round % unique.length];
-  return line.charAt(0).toUpperCase() + line.slice(1);
+  return [...new Set(clauses)];
 }
 
 // A colour, in words: its hue and how light it is — what a model would say it sees.

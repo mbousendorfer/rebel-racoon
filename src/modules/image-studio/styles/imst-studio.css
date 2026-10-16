@@ -1560,3 +1560,25 @@
   background: none;
   cursor: pointer;
 }
+
+/* Slides: a DS single-select in the control's header row, sized to its longest value ("10 slides"). */
+.imst-slides-select {
+  flex: 0 0 auto;
+  width: calc(var(--ref-spacing-xxxl) * 2.5);
+}
+
+/* The control sits at the foot of a scrolling column: the list opens upward
+   (like .imst-menu--up), so the column's overflow never cuts it. */
+.imst-slides-select__pop {
+  top: auto;
+  bottom: 100%;
+  margin-top: 0;
+  margin-bottom: var(--ref-spacing-xxxs);
+}
+
+/* The draft's own slides in the strip: photos, at their own ratio. */
+.imst-filmstrip__item--photo img {
+  display: block;
+  width: auto;
+  height: 100%;
+}

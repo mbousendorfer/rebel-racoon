@@ -1,8 +1,8 @@
-import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=1888";
-import { conceptHint, conceptText } from "../concepts.js?v=1888";
-import { getPath, navigate } from "../router.js?v=1888";
-import { parseHashParams } from "../url-state.js?v=1888";
-import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=1888";
+import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=1892";
+import { conceptHint, conceptText } from "../concepts.js?v=1892";
+import { getPath, navigate } from "../router.js?v=1892";
+import { parseHashParams } from "../url-state.js?v=1892";
+import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=1892";
 // Lot 19 — topbar no longer carries its own sidebar-toggle button. The
 // sidebar head exposes the toggle in both expanded (chevron-left) and
 // collapsed (view-list) states, so the duplicate in the topbar was just
@@ -15,37 +15,37 @@ import {
   getMode as getRightPanelMode,
   getActiveBatchRef as getActiveDraftsBatchRef,
   subscribe as subscribeRightPanel,
-} from "./right-panel.js?v=1888";
-import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=1888";
-import { getThread, subscribe as subscribeThread } from "../assistant.js?v=1888";
-import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=1888";
-import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=1888";
+} from "./right-panel.js?v=1892";
+import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=1892";
+import { getThread, subscribe as subscribeThread } from "../assistant.js?v=1892";
+import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=1892";
+import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=1892";
 import {
   isEnabled as isStatusCardEnabled,
   toggle as toggleStatusCard,
   subscribeVisibility as subscribeStatusCardVisibility,
-} from "./conversation-status-card.js?v=1888";
-import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=1888";
-import { open as openRenameModal } from "./rename-modal.js?v=1888";
+} from "./conversation-status-card.js?v=1892";
+import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=1892";
+import { open as openRenameModal } from "./rename-modal.js?v=1892";
 import {
   subscribe as subscribeContexts,
   getContextById,
   getDefaultContext,
   getContexts,
-} from "../contexts-store.js?v=1888";
-import { isFlagOn } from "../feature-flags.js?v=1888";
-import { getActivePlaybook, isWorkspaceMode, isAccountScope, catalogueRoute } from "../active-playbook.js?v=1888";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1888";
-import { findCadence } from "../topics-catalog.js?v=1888";
+} from "../contexts-store.js?v=1892";
+import { isFlagOn } from "../feature-flags.js?v=1892";
+import { getActivePlaybook, isWorkspaceMode, isAccountScope, catalogueRoute } from "../active-playbook.js?v=1892";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=1892";
+import { findCadence } from "../topics-catalog.js?v=1892";
 import {
   getPickerState as getTopPostsState,
   subscribePicker as subscribeTopPosts,
   backToProfiles as topPostsBackToProfiles,
-} from "../top-posts-flow.js?v=1888";
+} from "../top-posts-flow.js?v=1892";
 // The Insights view switch. Imported from views.js, NOT from the screen's
 // shell: the shell imports this module, so taking it from there would close a
 // cycle. views.js imports neither.
-import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=1888";
+import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=1892";
 
 // The playbook/context pill now lives in the composer (session.js
 // renderPlaybookControl) — selectable on a New Chat, then a static
@@ -358,7 +358,7 @@ export function initTopbar() {
     // renderWelcomeAltExit() above. The wizard chrome no longer carries
     // its own Exit affordance; this is the only entry.
     if (event.target.closest("[data-topbar-welcome-alt-exit]")) {
-      import("./confirm-modal.js?v=1888").then(({ open }) => {
+      import("./confirm-modal.js?v=1892").then(({ open }) => {
         open({
           title: "Discard this Playbook?",
           body: "Your answers so far will be lost. You can create a Playbook again anytime.",

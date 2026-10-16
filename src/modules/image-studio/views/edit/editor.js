@@ -16,10 +16,10 @@
 // caret, drop the slider under the pointer, or replay a popover's entrance.
 // Everything else goes change → repaint.
 
-import { html, raw } from "../../lib/html.js?v=1888";
-import { delegate, wait } from "../../lib/delegate.js?v=1888";
-import { IMAGE_PRESETS, REDRAW_MS, outlineMetrics, shadowMetrics } from "../../config/edit.js?v=1888";
-import { bakeDoc } from "../../render/edit-export.js?v=1888";
+import { html, raw } from "../../lib/html.js?v=1892";
+import { delegate, wait } from "../../lib/delegate.js?v=1892";
+import { IMAGE_PRESETS, REDRAW_MS, outlineMetrics, shadowMetrics } from "../../config/edit.js?v=1892";
+import { bakeDoc } from "../../render/edit-export.js?v=1892";
 import {
   cropDoc,
   docSignature,
@@ -32,9 +32,9 @@ import {
   removeLayer,
   textLayer,
   undo,
-} from "../../state/edit-doc.js?v=1888";
-import { editFrame, textStyle } from "./canvas.js?v=1888";
-import { composer, layersPanel, redrawTarget, toolPalette, viewToggle } from "./panels.js?v=1888";
+} from "../../state/edit-doc.js?v=1892";
+import { editFrame, textStyle } from "./canvas.js?v=1892";
+import { composer, layersPanel, redrawTarget, toolPalette, viewToggle } from "./panels.js?v=1892";
 
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
 const DEFAULT_CROP = { xF: 0.15, yF: 0.15, wF: 0.7, hF: 0.7 };
@@ -80,9 +80,20 @@ const blobToDataUrl = (blob) =>
  * @param {{ getEntry: () => {doc, history} | null, brand: () => object, network: object|null,
  *           shapes: () => object[], renderFeedPreview: ((url: string) => string) | null,
  *           repaint: () => void, redraw: (entry, kinds: string[], prompt: string) => Promise<void>,
+ *           redrawLabel?: () => string,
  *           toast: (msg: string, opts?: object) => void }} deps
  */
-export function createEditor({ getEntry, brand, network, shapes, renderFeedPreview, repaint, redraw, toast }) {
+export function createEditor({
+  getEntry,
+  brand,
+  network,
+  shapes,
+  renderFeedPreview,
+  repaint,
+  redraw,
+  redrawLabel = () => "Redraw",
+  toast,
+}) {
   const fresh = () => ({
     selectedId: null,
     editingId: null,
@@ -177,7 +188,7 @@ export function createEditor({ getEntry, brand, network, shapes, renderFeedPrevi
                 ${toolPalette(ui, { busy: !!ui.busy, brandLogos: b.logos })} ${layersPanel(ui, d, { busy: !!ui.busy })}`}
           </div>
         </section>
-        ${feed ? "" : composer(ui, d, { busy: !!ui.busy })}
+        ${feed ? "" : composer(ui, d, { busy: !!ui.busy, label: redrawLabel() })}
       </div>
     </div>`;
   }

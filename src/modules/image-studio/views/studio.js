@@ -15,32 +15,32 @@
 //     after — the chosen variation LARGE, its actions beside it, the four as a
 //       filmstrip, earlier runs underneath
 
-import { html, raw, toString } from "../lib/html.js?v=1888";
-import { delegate } from "../lib/delegate.js?v=1888";
-import { hashString } from "../lib/prng.js?v=1888";
-import { renderEmpty } from "../ui/empty.js?v=1888";
-import { preserveFocus } from "../ui/fields.js?v=1888";
-import { toast } from "../ui/toast.js?v=1888";
-import { assetImg, hydrateAssets } from "../ui/asset.js?v=1888";
-import { styleThumb } from "../ui/style-thumb.js?v=1888";
-import { openDialog } from "../ui/dialog.js?v=1888";
-import { menu } from "../ui/menu.js?v=1888";
-import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1888";
-import { QUICK_PRESETS, STYLE_PRESETS } from "../config/style-presets.js?v=1888";
-import { formatById, shapeForFormat, shapesFor, shapesForBrand } from "../config/formats.js?v=1888";
-import { networkById } from "../config/networks.js?v=1888";
-import { copyService, imageGenerationService } from "../services/index.js?v=1888";
-import { unbranded, getPlaybookReferences } from "../state/playbook-brand.js?v=1888";
-import { resolveLayers } from "../render/layout.js?v=1888";
-import { svgToDataUrl } from "../render/visual.js?v=1888";
-import { REVEAL_MS } from "../../../archie-pixels.js?v=1888";
-import { splitVisual } from "../render/split.js?v=1888";
-import { bakeDoc } from "../render/edit-export.js?v=1888";
-import { subjectKindFor } from "../render/subjects.js?v=1888";
-import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1888";
-import { createEditor } from "./edit/editor.js?v=1888";
-import { mount as mountStyleCreator } from "./style-creator.js?v=1888";
-import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1888";
+import { html, raw, toString } from "../lib/html.js?v=1892";
+import { delegate } from "../lib/delegate.js?v=1892";
+import { hashString } from "../lib/prng.js?v=1892";
+import { renderEmpty } from "../ui/empty.js?v=1892";
+import { preserveFocus } from "../ui/fields.js?v=1892";
+import { toast } from "../ui/toast.js?v=1892";
+import { assetImg, hydrateAssets } from "../ui/asset.js?v=1892";
+import { styleThumb } from "../ui/style-thumb.js?v=1892";
+import { openDialog } from "../ui/dialog.js?v=1892";
+import { menu } from "../ui/menu.js?v=1892";
+import { variationCanvas, variationSvg, layersFor } from "../ui/variation.js?v=1892";
+import { QUICK_PRESETS, STYLE_PRESETS } from "../config/style-presets.js?v=1892";
+import { formatById, shapeForFormat, shapesFor, shapesForBrand } from "../config/formats.js?v=1892";
+import { networkById } from "../config/networks.js?v=1892";
+import { copyService, imageGenerationService } from "../services/index.js?v=1892";
+import { unbranded, getPlaybookReferences } from "../state/playbook-brand.js?v=1892";
+import { resolveLayers } from "../render/layout.js?v=1892";
+import { svgToDataUrl } from "../render/visual.js?v=1892";
+import { REVEAL_MS } from "../../../archie-pixels.js?v=1892";
+import { splitVisual } from "../render/split.js?v=1892";
+import { bakeDoc } from "../render/edit-export.js?v=1892";
+import { subjectKindFor } from "../render/subjects.js?v=1892";
+import { docSignature, entryOf, findLayer, generatedDoc, isBase, photoDoc } from "../state/edit-doc.js?v=1892";
+import { createEditor } from "./edit/editor.js?v=1892";
+import { mount as mountStyleCreator } from "./style-creator.js?v=1892";
+import { toPngBlob, downloadBlob, slug } from "../render/export.js?v=1892";
 import {
   canEditBrand,
   forgetOneOffStyle,
@@ -51,19 +51,22 @@ import {
   getStylesForBrand,
   registerOneOffStyle,
   subscribe,
-} from "../state/store.js?v=1888";
-import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1888";
+} from "../state/store.js?v=1892";
+import { discardOneOff, oneOffStyleFrom } from "../state/style-actions.js?v=1892";
 import {
   addBatch,
   appendVariations,
   deleteCreation,
   replaceVariation,
   startCreation,
-} from "../state/creation-actions.js?v=1888";
+} from "../state/creation-actions.js?v=1892";
 
 const variationsLabel = (n) => (n === 1 ? "1 variation" : `${n} variations`);
+const MAX_SLIDES = 10;
 
-function defaultBrief(brand, network = null) {
+// How many images a run makes for the post: 1, or a carousel of up to ten
+// slides. RUN config, kept on the brief — never on the Playbook.
+function defaultBrief(brand, network = null, slides = 1) {
   // The Playbook's default style (Brand › Imagery), else its first own style.
   const own = getStylesForBrand(brand.id).find((s) => s.kind === "custom");
   const firstShape = shapesForBrand(brand, network)[0];
@@ -75,7 +78,19 @@ function defaultBrief(brand, network = null) {
     formatIds: [firstShape?.formatId || "ig-post"],
     textMode: "layer",
     count: 4,
+    slides,
   };
+}
+
+const slideCount = (v) => v?.slides?.length || 1;
+
+// One slide of a carousel, as a variation of its own: the slide's seeds and
+// text, the carousel's Style Bible (its creation's style snapshot). Everything
+// that draws, bakes, edits or keys a variation takes this pair unchanged.
+function slideOf(c, v, i = 0) {
+  const s = v?.slides?.[i];
+  if (!s) return { c, v };
+  return { c: { ...c, brief: { ...c.brief, headline: s.headline } }, v: { ...v, ...s, id: `${v.id}~${i}` } };
 }
 
 // What the image is drawn with: the Playbook. The "Use the Playbook" switch was
@@ -85,8 +100,12 @@ const lookOf = (brand, brief) => (brief?.useBrand === false ? unbranded(brand) :
 
 /**
  * @param {HTMLElement} target
- * @param {{ draft: { brandId, network, text, imageUrl, slides }, onUse: (dataUrl) => void,
- *           renderFeedPreview?: (imageUrl: string) => string }} opts
+ * @param {{ draft: { brandId, network, text, imageUrl, carousel? }, onUse: (dataUrl) => void,
+ *           onUseCarousel?: (dataUrls: string[]) => void,
+ *           renderFeedPreview?: (imageUrl: string, carousel?: string[]) => string }} opts
+ * `draft.carousel`: the draft's slides (URLs), when it is a carousel — they all
+ * load, each editable on its own. A run of several slides comes back through
+ * `onUseCarousel`, every slide baked, in order.
  * With `renderFeedPreview` (the draft's own card, from the shell), a result can
  * be seen In feed: the baked PNG — exactly what Use in draft puts in the post —
  * inside that card.
@@ -101,6 +120,7 @@ export function mountStudio(
   {
     draft,
     onUse,
+    onUseCarousel = null,
     onCancel = () => {},
     footer = null,
     footerLeft = null,
@@ -114,6 +134,8 @@ export function mountStudio(
   const root = target.closest(".ap-dialog") || target;
   const brandNow = () => getBrand(draft.brandId);
   const shapes = () => shapesFor(draft.network);
+  // The draft's own carousel, when it has one (two slides or more).
+  const draftSlides = Array.isArray(draft.carousel) && draft.carousel.length > 1 ? draft.carousel : null;
   const state = {
     brandId: null,
     brief: null,
@@ -133,9 +155,11 @@ export function mountStudio(
     lastStyleId: null, // the style picked under "A style", kept while another answer is open
     sourceError: "",
     editKey: null, // which image Edit has open
+    slide: 0, // the slide shown — of the focused carousel, else of the draft's own
   };
   // Edit documents, one per image, kept for the life of the dialog: edits stick
-  // to the variation they were made on. key → { doc, history } (state/edit-doc.js)
+  // to the variation — the SLIDE, in a carousel — they were made on, each with
+  // its own undo. key → { doc, history } (state/edit-doc.js)
   const entries = new Map();
   // What each generated document is drawn from, for Redraw. key → { creation, formatId, look }
   const sources = new Map();
@@ -146,7 +170,9 @@ export function mountStudio(
 
   const brandChanged = (brand) => {
     state.brandId = brand?.id || null;
-    state.brief = brand ? defaultBrief(brand, draft.network) : null;
+    state.brief = brand
+      ? defaultBrief(brand, draft.network, draftSlides ? Math.min(MAX_SLIDES, draftSlides.length) : 1)
+      : null;
     // A default look skips the chooser: the brand's style, or its reference image.
     state.source = brand?.defaults?.styleId ? "style" : null;
     if (brand?.defaults?.referenceUrl) styleFromPlaybookReference(brand.defaults.referenceUrl);
@@ -156,6 +182,7 @@ export function mountStudio(
     state.showCurrent = !!draft.imageUrl;
     state.focusId = null;
     state.creationId = null;
+    state.slide = 0;
   };
 
   const currentCreation = () => (state.creationId ? getCreation(state.creationId) : null);
@@ -170,14 +197,20 @@ export function mountStudio(
 
   const variationKey = (c, v) => `${c.id}|${v.id}|${v.seed}`;
 
-  /** The image Edit works on: the focused variation, else the draft's own photo. */
+  /** The image Edit works on: the focused variation's slide, else the draft's own photo (or slide). */
   const editSource = () => {
+    if (state.run.status === "loading") return null;
     const c = currentCreation();
-    if (c?.variations.length && state.run.status !== "loading") {
-      const v = focused(c);
-      return { key: variationKey(c, v), creation: c, variation: v };
+    if (c?.variations.length) {
+      const carousel = focused(c);
+      const { c: sc, v } = slideOf(c, carousel, state.slide);
+      return { key: variationKey(sc, v), creation: sc, variation: v, carousel, of: slideCount(carousel) };
     }
-    if (draft.imageUrl && state.run.status !== "loading") return { key: "current" };
+    if (draftSlides) {
+      const i = Math.min(state.slide, draftSlides.length - 1);
+      return { key: `current~${i}`, url: draftSlides[i], of: draftSlides.length };
+    }
+    if (draft.imageUrl) return { key: "current", url: draft.imageUrl, of: 1 };
     return null;
   };
   const canEdit = () => !!brandNow() && !!editSource();
@@ -266,10 +299,9 @@ export function mountStudio(
     paint();
     if (entries.has(src.key)) return;
     try {
-      const entry =
-        src.key === "current"
-          ? entryOf(photoDoc({ key: "current", url: draft.imageUrl, ...(await measure(draft.imageUrl)) }))
-          : await buildGenerated(src.key, src.creation, src.variation);
+      const entry = src.url
+        ? entryOf(photoDoc({ key: src.key, url: src.url, ...(await measure(src.url)) }))
+        : await buildGenerated(src.key, src.creation, src.variation);
       entries.set(src.key, entry);
     } catch (error) {
       state.mode = "generate";
@@ -348,6 +380,8 @@ export function mountStudio(
     renderFeedPreview,
     repaint: () => paint(),
     redraw: redrawEntry,
+    // In a carousel, a redraw is scoped to the slide being edited, and says so.
+    redrawLabel: () => ((editSource()?.of || 1) > 1 ? "Apply to this slide" : "Redraw"),
     toast,
   });
 
@@ -763,9 +797,10 @@ export function mountStudio(
         </div>
         ${draft.imageUrl
           ? html`<p class="ap-body imst-chooser__or">
-              Or keep the draft's ${draft.slides > 1 ? "carousel" : "image"} and change it:
+              Or keep the draft's ${draftSlides ? "carousel" : "image"} and change it:
               <button type="button" class="ap-link standalone" data-imst-mode="edit">
-                <i class="ap-icon-pen" aria-hidden="true"></i><span>Edit the current image</span>
+                <i class="ap-icon-pen" aria-hidden="true"></i
+                ><span>${draftSlides ? `Edit its ${draftSlides.length} slides` : "Edit the current image"}</span>
               </button>
             </p>`
           : ""}
@@ -936,6 +971,46 @@ ${b.prompt}</textarea
           >`
         : ""}
     </section>`;
+    // A carousel: one run, several slides in one look. A DS single-select, since
+    // ten options don't fit a segmented control in the column.
+    const slides = b.slides || 1;
+    const slidesLabel = (n) => (n === 1 ? "1 image" : `${n} slides`);
+    const slidesSection = html`<section class="imst-ctl" aria-labelledby="imst-ctl-slides">
+      <header class="imst-ctl__head imst-ctl__head--control">
+        <h3 class="imst-ctl__label ap-body-bold" id="imst-ctl-slides">Slides</h3>
+        <details class="ap-select imst-slides-select">
+          <summary class="ap-select-trigger" aria-labelledby="imst-ctl-slides" aria-haspopup="listbox">
+            <span class="ap-select-value">${slidesLabel(slides)}</span>
+            <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
+          </summary>
+          <div class="ap-select-dropdown imst-slides-select__pop" role="listbox" aria-labelledby="imst-ctl-slides">
+            <div class="ap-select-options">
+              ${Array.from({ length: MAX_SLIDES }, (_, i) => i + 1).map(
+                (n) =>
+                  html`<div
+                    class="ap-select-option${n === slides ? " selected" : ""}"
+                    role="option"
+                    tabindex="0"
+                    aria-selected="${n === slides}"
+                    data-imst-action="slides"
+                    data-imst-slides="${n}"
+                  >
+                    <span class="ap-select-option-text"
+                      ><span class="ap-select-option-title">${slidesLabel(n)}</span></span
+                    >
+                    ${n === slides ? html`<i class="ap-icon-check ap-select-option-check" aria-hidden="true"></i>` : ""}
+                  </div>`,
+              )}
+            </div>
+          </div>
+        </details>
+      </header>
+      ${slides > 1
+        ? html`<span class="ap-caption imst-ctl__note"
+            >One carousel per variation: every slide in the same look, each with its own line from the post.</span
+          >`
+        : ""}
+    </section>`;
     return html`
       <aside class="imst-controls" aria-label="Image settings">
         <div class="imst-controls__scroll">
@@ -964,6 +1039,7 @@ ${b.prompt}</textarea
               </div>
             </header>
           </section>
+          ${slidesSection}
         </div>
       </aside>
     `;
@@ -1018,7 +1094,14 @@ ${b.prompt}</textarea
               : `A preview of ${style.oneOff ? "your image's style" : style.label} in ${brand.name}'s colors.`}</span
           >
           ${state.source === "scratch" ? "Describe what you want and generate" : "Generate: I'll draw from the draft"} —
-          you'll get ${b.count === 1 ? "one image" : `${b.count} variations to pick from`}.
+          you'll get
+          ${(b.slides || 1) > 1
+            ? b.count === 1
+              ? `one carousel of ${b.slides} slides`
+              : `${b.count} carousels of ${b.slides} slides to pick from`
+            : b.count === 1
+              ? "one image"
+              : `${b.count} variations to pick from`}.
         </p>
       </div>
     `;
@@ -1030,6 +1113,9 @@ ${b.prompt}</textarea
   const renderLoading = () => {
     const format = formatById(state.brief.formatIds[0]);
     const style = getStyle(state.brief.styleId);
+    const of = state.brief.slides || 1;
+    // A carousel's tiles are its slides to come; otherwise the variations.
+    const tiles = of > 1 ? of : state.brief.count > 1 ? state.brief.count : 0;
     return html`
       <div class="imst-canvas-area" aria-live="polite" aria-busy="true">
         ${stageFrame(
@@ -1042,9 +1128,14 @@ ${b.prompt}</textarea
             data-since="${state.run.since}"
           ></archie-pixels>`,
         )}
+        ${of > 1
+          ? html`<p class="ap-body-bold imst-canvas-area__caption" role="status">
+              Rendering slide ${state.run.slide || 1} of ${of}
+            </p>`
+          : ""}
         <div class="imst-filmstrip">
           ${Array.from(
-            { length: state.brief.count > 1 ? state.brief.count : 0 },
+            { length: tiles },
             () =>
               html`<span
                 class="imst-filmstrip__item is-loading"
@@ -1084,15 +1175,22 @@ ${b.prompt}</textarea
   // The draft's own card with the baked variation in it — the same PNG Use in
   // draft writes, so text and logo sit exactly where they will. A shimmer the
   // time it takes to bake (first view of a variation only).
-  const renderFeed = (brand, c, v, netLabel, regenerating) => {
+  // The PNG a slide (or a single image) bakes to, as edited if it was. Null while it bakes.
+  const slideUrl = (brand, c, v) => {
     const key = variationKey(c, v);
-    const url = state.busy.has(v.id) ? null : edited(key) ? editedUrl(key) : feedUrl(brand, c, v);
+    return edited(key) ? editedUrl(key) : feedUrl(brand, c, v);
+  };
+
+  // `pairs`: every slide of a carousel, so the card shows the whole set.
+  const renderFeed = (brand, c, v, netLabel, regenerating, pairs = null) => {
+    const urls = state.busy.has(v.id) ? [null] : (pairs || [{ c, v }]).map((p) => slideUrl(brand, p.c, p.v));
+    const url = urls.every(Boolean) ? urls[state.slide] || urls[0] : null;
     return html`
       <div class="imst-feed">
         <p class="ap-caption imst-feed__note">How this post looks${netLabel ? ` on ${netLabel}` : " in the feed"}</p>
         <div class="imst-feed__card">
           ${url
-            ? raw(renderFeedPreview(url))
+            ? raw(renderFeedPreview(url, urls.length > 1 ? urls : null))
             : html`<div class="imst-feed__pending" aria-busy="true">
                 <span class="imst-shimmer"></span>${regenerating ||
                 html`<span class="imst-stage2__status"><span class="ap-loader size-30"></span></span>`}
@@ -1119,9 +1217,32 @@ ${b.prompt}</textarea
     );
   };
 
+  // A carousel's own tiles: its slides (data-imst-slide), the cover of every
+  // other carousel (data-imst-focus). Single images: one tile per variation.
+  const stripTile = ({ c, v, focus, slide, selected, label, runStart, format, brand }) =>
+    html`<button
+      type="button"
+      class="imst-filmstrip__item${runStart ? " is-run-start" : ""}"
+      role="option"
+      aria-selected="${selected}"
+      ${slide === undefined ? html`data-imst-focus="${focus}"` : html`data-imst-slide="${slide}"`}
+      aria-label="${label}"
+      style="aspect-ratio: ${format.width} / ${format.height}"
+    >
+      ${edited(variationKey(c, v)) && editedUrl(variationKey(c, v))
+        ? html`<img class="imst-edited" src="${editedUrl(variationKey(c, v))}" alt="" draggable="false" />`
+        : variationCanvas({ creation: c, variation: v, formatId: format.id, brand: lookOf(brand, c.brief) })}${revealAt(
+        focus,
+      )}
+    </button>`;
+
   const renderResults = (brand, c) => {
     const format = formatById(c.brief.formatIds[0]);
-    const v = focused(c);
+    const carousel = focused(c);
+    const of = slideCount(carousel);
+    if (state.slide >= of) state.slide = 0;
+    const { c: sc, v } = slideOf(c, carousel, state.slide);
+    const pairs = of > 1 ? carousel.slides.map((_, i) => slideOf(c, carousel, i)) : null;
     // Every image of this session in ONE strip, oldest first, a gap between
     // runs — no "earlier" section and no batch jargon ("Like variation 2") —
     // and a "+" tile at the end that adds one more.
@@ -1129,7 +1250,7 @@ ${b.prompt}</textarea
     const strip = runs.flatMap((bt) => batchVariations(c, bt).map((x, i) => ({ x, runStart: i === 0 })));
     const shown = new Set(strip.map((e) => e.x.id));
     c.variations.filter((x) => !shown.has(x.id)).forEach((x, i) => strip.push({ x, runStart: i === 0 }));
-    const index = strip.findIndex((e) => e.x.id === v.id);
+    const index = strip.findIndex((e) => e.x.id === carousel.id);
     const busy = state.busy.has(v.id);
     const style = c.styleSnapshot || getStyle(c.brief.styleId);
     // null: no card to preview in (the studio opened without one).
@@ -1142,20 +1263,55 @@ ${b.prompt}</textarea
         >`
       : "";
     const stage = feedView
-      ? renderFeed(brand, c, v, netLabel, regenerating)
-      : !busy && edited(variationKey(c, v))
-        ? renderEdited(brand, c, v, format)
+      ? renderFeed(brand, sc, v, netLabel, regenerating, pairs)
+      : !busy && edited(variationKey(sc, v))
+        ? renderEdited(brand, sc, v, format)
         : null;
+    const kind = of > 1 ? "Carousel" : "Variation";
+    const title =
+      of > 1
+        ? `Slide ${state.slide + 1} / ${of}`
+        : strip.length > 1
+          ? `Variation ${index + 1} of ${strip.length}`
+          : "Your image";
+    const tiles = strip.flatMap(({ x, runStart }, i) => {
+      const n = slideCount(x);
+      if (x.id === carousel.id && n > 1)
+        return x.slides.map((_, j) => {
+          const p = slideOf(c, x, j);
+          return stripTile({
+            ...p,
+            focus: x.id,
+            slide: j,
+            selected: j === state.slide,
+            label: `Slide ${j + 1} of ${n}`,
+            runStart: j === 0 && i > 0,
+            format,
+            brand,
+          });
+        });
+      return [
+        stripTile({
+          c,
+          v: x,
+          focus: x.id,
+          selected: x.id === carousel.id,
+          label: n > 1 ? `Carousel ${i + 1}, ${n} slides` : `Variation ${i + 1}`,
+          runStart: (runStart || n > 1) && i > 0,
+          format,
+          brand,
+        }),
+      ];
+    });
     return html`
       <div class="imst-canvas-area">
         <header class="imst-result-bar">
           <div class="imst-result-bar__what">
-            <span class="ap-body-bold"
-              >${strip.length > 1 ? `Variation ${index + 1} of ${strip.length}` : "Your image"}</span
-            >
+            <span class="ap-body-bold">${title}</span>
             <span class="ap-caption"
-              >${style?.label || "From scratch"} · ${shapeForFormat(format.id).label}
-              ${shapeForFormat(format.id).ratio}</span
+              >${of > 1 && strip.length > 1 ? `${kind} ${index + 1} of ${strip.length} · ` : ""}${style?.label ||
+              "From scratch"}
+              · ${shapeForFormat(format.id).label} ${shapeForFormat(format.id).ratio}</span
             >
           </div>
           <div class="imst-result-bar__actions">
@@ -1175,16 +1331,16 @@ ${b.prompt}</textarea
                   </button>
                 </div>`
               : ""}
-            <!-- Into Edit on this variation (the only way in from here: no tabs). -->
+            <!-- Into Edit on this variation — this slide, in a carousel (the only way in from here: no tabs). -->
             <button type="button" class="ap-button stroked grey" data-imst-mode="edit" ${busy ? "disabled" : ""}>
-              <i class="ap-icon-pen" aria-hidden="true"></i><span>Edit</span>
+              <i class="ap-icon-pen" aria-hidden="true"></i><span>${of > 1 ? "Edit this slide" : "Edit"}</span>
             </button>
             <button
               type="button"
               class="ap-icon-button transparent grey"
               data-imst-var="regenerate"
-              aria-label="Regenerate this variation"
-              data-tooltip="Regenerate"
+              aria-label="${of > 1 ? "Regenerate this slide" : "Regenerate this variation"}"
+              data-tooltip="${of > 1 ? "Regenerate this slide" : "Regenerate"}"
               ${busy ? "disabled" : ""}
             >
               <i class="ap-icon-refresh" aria-hidden="true"></i>
@@ -1193,7 +1349,7 @@ ${b.prompt}</textarea
               type="button"
               class="ap-icon-button transparent grey"
               data-imst-var="download"
-              aria-label="Download as PNG"
+              aria-label="${of > 1 ? "Download this slide as PNG" : "Download as PNG"}"
               data-tooltip="Download PNG"
             >
               <i class="ap-icon-download" aria-hidden="true"></i>
@@ -1204,33 +1360,20 @@ ${b.prompt}</textarea
         stageFrame(
           format,
           html`${variationCanvas({
-            creation: c,
+            creation: sc,
             variation: v,
             formatId: format.id,
             brand: lookOf(brand, c.brief),
-          })}${revealAt(v.id)}${regenerating}`,
+          })}${revealAt(carousel.id)}${regenerating}`,
         )}
         ${strip.length
-          ? html` <div class="imst-filmstrip" role="listbox" aria-label="Variations" data-imst-strip>
-              ${strip.map(
-                ({ x, runStart }, i) =>
-                  html`<button
-                    type="button"
-                    class="imst-filmstrip__item${runStart && i > 0 ? " is-run-start" : ""}"
-                    role="option"
-                    aria-selected="${x.id === v.id}"
-                    data-imst-focus="${x.id}"
-                    aria-label="Variation ${i + 1}"
-                    style="aspect-ratio: ${format.width} / ${format.height}"
-                  >
-                    ${variationCanvas({
-                      creation: c,
-                      variation: x,
-                      formatId: format.id,
-                      brand: lookOf(brand, c.brief),
-                    })}${revealAt(x.id)}
-                  </button>`,
-              )}
+          ? html` <div
+              class="imst-filmstrip"
+              role="listbox"
+              aria-label="${of > 1 ? "Slides and carousels" : "Variations"}"
+              data-imst-strip
+            >
+              ${tiles}
               ${state.addingOne
                 ? html`<span
                     class="imst-filmstrip__item imst-filmstrip__add is-loading"
@@ -1243,7 +1386,7 @@ ${b.prompt}</textarea
                     type="button"
                     class="imst-filmstrip__item imst-filmstrip__add"
                     data-imst-var="add-one"
-                    aria-label="Generate one more"
+                    aria-label="${of > 1 ? "Generate one more carousel" : "Generate one more"}"
                     data-tooltip="One more"
                     style="aspect-ratio: ${format.width} / ${format.height}"
                     ${state.run.status === "loading" ? "disabled" : ""}
@@ -1260,41 +1403,102 @@ ${b.prompt}</textarea
   const renderEditing = () => {
     const src = editSource();
     const v = src?.variation;
-    const what = !v
-      ? `Editing the draft's ${draft.slides > 1 ? "first slide" : "image"}`
-      : `Editing variation ${src.creation.variations.indexOf(v) + 1} of ${src.creation.variations.length}`;
+    const of = src?.of || 1;
+    const what =
+      of > 1
+        ? `Editing slide ${state.slide + 1} / ${of}`
+        : !v
+          ? "Editing the draft's image"
+          : `Editing variation ${src.creation.variations.indexOf(src.carousel) + 1} of ${src.creation.variations.length}`;
+    // A carousel's slides are edited one at a time, each keeping its edits and
+    // its undo: the arrows step to the next without leaving Edit.
+    const step = (dir, icon, label, off) =>
+      html`<button
+        type="button"
+        class="ap-icon-button transparent grey"
+        data-imst-edit-slide="${dir}"
+        aria-label="${label}"
+        data-tooltip="${label}"
+        ${off ? "disabled" : ""}
+      >
+        <i class="${icon}" aria-hidden="true"></i>
+      </button>`;
     // In the stage, at its top — where Generate shows its result bar.
     return editor.render({
       top: html`<header class="imst-result-bar imst-editbar">
         <button type="button" class="ap-button stroked blue" data-imst-mode="generate">
-          <i class="ap-icon-arrow-left" aria-hidden="true"></i><span>${v ? "Back to the variations" : "Back"}</span>
+          <i class="ap-icon-arrow-left" aria-hidden="true"></i
+          ><span>${of > 1 ? "Back to the slides" : v ? "Back to the variations" : "Back"}</span>
         </button>
         <span class="ap-caption imst-editbar__what">${what}</span>
+        ${of > 1
+          ? html`<span class="imst-editbar__steps"
+              >${step(-1, "ap-icon-chevron-left", "Previous slide", state.slide === 0)}${step(
+                1,
+                "ap-icon-chevron-right",
+                "Next slide",
+                state.slide >= of - 1,
+              )}</span
+            >`
+          : ""}
       </header>`,
     });
   };
 
-  const renderCurrent = () => html`
-    <div class="imst-canvas-area imst-canvas-area--preview">
-      <div class="imst-stage2">
-        <div class="imst-current">
-          <img class="imst-current__img" src="${draft.imageUrl}" alt="The draft's current image" />
-          <span class="ap-tag grey imst-stage2__badge"
-            ><span>${draft.slides > 1 ? `Current carousel · slide 1 of ${draft.slides}` : "Current image"}</span></span
-          >
+  // The draft's own image — or every slide of its carousel, the strip moving between them.
+  const renderCurrent = () => {
+    const i = draftSlides ? Math.min(state.slide, draftSlides.length - 1) : 0;
+    const url = draftSlides ? draftSlides[i] : draft.imageUrl;
+    return html`
+      <div class="imst-canvas-area imst-canvas-area--preview">
+        <div class="imst-stage2">
+          <div class="imst-current">
+            <img
+              class="imst-current__img"
+              src="${url}"
+              alt="${draftSlides ? `The draft's slide ${i + 1}` : "The draft's current image"}"
+            />
+            <span class="ap-tag grey imst-stage2__badge"
+              ><span
+                >${draftSlides ? `Current carousel · slide ${i + 1} of ${draftSlides.length}` : "Current image"}</span
+              ></span
+            >
+          </div>
+        </div>
+        ${draftSlides
+          ? html`<div class="imst-filmstrip" role="listbox" aria-label="The draft's slides" data-imst-strip>
+              ${draftSlides.map(
+                (u, j) =>
+                  html`<button
+                    type="button"
+                    class="imst-filmstrip__item imst-filmstrip__item--photo"
+                    role="option"
+                    aria-selected="${j === i}"
+                    data-imst-slide="${j}"
+                    aria-label="Slide ${j + 1} of ${draftSlides.length}"
+                  >
+                    <img
+                      src="${edited(`current~${j}`) ? editedUrl(`current~${j}`) || u : u}"
+                      alt=""
+                      draggable="false"
+                    />
+                  </button>`,
+              )}
+            </div>`
+          : ""}
+        <p class="ap-body imst-canvas-area__caption">
+          Pick a style or describe a new one — a new image replaces the draft's ${draftSlides ? "carousel" : "image"}
+          only when you choose.
+        </p>
+        <div class="imst-current__actions">
+          <button type="button" class="ap-button stroked grey" data-imst-mode="edit">
+            <i class="ap-icon-pen" aria-hidden="true"></i
+            ><span>${draftSlides ? "Edit this slide" : "Edit this image"}</span>
+          </button>
         </div>
       </div>
-      <p class="ap-body imst-canvas-area__caption">
-        Pick a style or describe a new one — a new image replaces the draft's ${draft.slides > 1 ? "carousel" : "image"}
-        only when you choose.
-      </p>
-      <div class="imst-current__actions">
-        <button type="button" class="ap-button stroked grey" data-imst-mode="edit">
-          <i class="ap-icon-pen" aria-hidden="true"></i><span>Edit this image</span>
-        </button>
-      </div>
-    </div>
-  `;
+    `;
+  };
 
   const renderCanvas = (brand) => {
     if (state.run.status === "loading") return renderLoading();
@@ -1307,7 +1511,8 @@ ${b.prompt}</textarea
 
   // Cancel · Generate (orange: the AI action) · Use in draft (the final one, primary).
   // Once there is a result, Generate steps back to "Generate again".
-  const useLabel = () => (draft.imageUrl ? "Replace the draft's image" : "Use in draft");
+  const useLabel = () =>
+    draftSlides ? "Replace the draft's carousel" : draft.imageUrl ? "Replace the draft's image" : "Use in draft";
   const paintFooter = () => {
     if (!footer) return;
     if (footerLeft) footerLeft.innerHTML = state.mode === "edit" ? toString(editor.footerLeft()) : "";
@@ -1434,7 +1639,14 @@ ${b.prompt}</textarea
     text: { headline: brief.headline },
     // The CURRENT choice, also for More like this on an earlier run.
     count: state.brief.count || 4,
+    slides: brief.slides || 1,
   });
+
+  // A carousel's text, one line of the post per slide (none From scratch).
+  const slideTexts = (brief) =>
+    (brief.slides || 1) > 1 && state.source !== "scratch"
+      ? copyService.slideLinesFromPost({ text: draft.text, count: brief.slides, first: brief.headline })
+      : null;
 
   async function generate() {
     const brand = brandNow();
@@ -1460,11 +1672,21 @@ ${b.prompt}</textarea
     const creation = startCreation({ brand, brief, style: req.style });
     state.creationId = creation.id;
     state.focusId = null;
+    state.slide = 0;
     state.run = { status: "loading", since: Date.now() };
     state.abort = new AbortController();
     paint();
     try {
-      const variations = await imageGenerationService.generate(req, { signal: state.abort.signal });
+      req.slideTexts = await slideTexts(brief);
+      const variations = await imageGenerationService.generate(req, {
+        signal: state.abort.signal,
+        // "Rendering slide N of M" under the loader.
+        onProgress: (n) => {
+          if (!alive || state.creationId !== creation.id) return;
+          state.run.slide = n;
+          paint();
+        },
+      });
       addBatch(creation.id, variations, { label: variationsLabel(variations.length) });
       state.reveal = { at: Date.now(), ids: variations.map((x) => x.id) };
       state.run = { status: "idle" };
@@ -1484,13 +1706,13 @@ ${b.prompt}</textarea
     state.addingOne = true;
     paint();
     try {
-      const [v] = await imageGenerationService.generate(
-        { ...request(brandNow(), c.brief, c.styleSnapshot), count: 1 },
-        {},
-      );
+      const req = { ...request(brandNow(), c.brief, c.styleSnapshot), count: 1 };
+      req.slideTexts = await slideTexts(c.brief);
+      const [v] = await imageGenerationService.generate(req, {});
       appendVariations(c.id, [v]);
       state.reveal = { at: Date.now(), ids: [v.id] };
       state.focusId = v.id;
+      state.slide = 0;
     } catch {
       toast("Couldn't generate this variation. Try again.", { variant: "error" });
     }
@@ -1498,19 +1720,34 @@ ${b.prompt}</textarea
     paint();
   }
 
+  // In a carousel, only the slide on screen: a new layout and subject, the
+  // carousel's background family and text kept — the other slides untouched.
   async function regenerate() {
     const brand = brandNow();
     const c = currentCreation();
     const v = focused(c);
-    state.busy.add(v.id);
+    const i = state.slide;
+    const { c: sc, v: sv } = slideOf(c, v, i);
+    state.busy.add(sv.id);
     paint();
     try {
-      const next = await imageGenerationService.regenerate(v, "all", request(brand, c.brief, c.styleSnapshot));
-      replaceVariation(c.id, v.id, next);
+      const next = await imageGenerationService.regenerate(sv, "all", request(brand, sc.brief, c.styleSnapshot));
+      replaceVariation(
+        c.id,
+        v.id,
+        v.slides
+          ? {
+              ...v,
+              slides: v.slides.map((s, j) =>
+                j === i ? { ...s, seed: next.seed, subjectSeed: next.subjectSeed, prompt: next.prompt } : s,
+              ),
+            }
+          : next,
+      );
     } catch {
-      toast("That variation failed to regenerate. Try again.", { variant: "error" });
+      toast(`That ${v.slides ? "slide" : "variation"} failed to regenerate. Try again.`, { variant: "error" });
     }
-    state.busy.delete(v.id);
+    state.busy.delete(sv.id);
     paint();
   }
 
@@ -1549,27 +1786,43 @@ ${b.prompt}</textarea
     return null;
   }
 
-  /** Draft mode: the chosen variation, text and logo baked, into the post. */
+  const dataUrlOf = (blob) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(blob);
+    });
+
+  /** One slide (or the one image) as the draft gets it: edited if it was, else as generated / as it came. */
+  async function slideDataUrl(brand, src) {
+    if (state.mode === "edit" && src.key === state.editKey) return editor.bake();
+    if (edited(src.key)) return dataUrlOf(await bakeDoc(entries.get(src.key).doc));
+    return src.url || dataUrlOf(await bake(brand, src.c, src.v));
+  }
+
+  /** Draft mode: the chosen variation — every slide of it, in a carousel — text and logo baked, into the post. */
   async function useInDraft() {
     const brand = brandNow();
     const c = currentCreation();
     state.using = true;
     paint();
     try {
-      let dataUrl;
-      if (state.mode === "edit") dataUrl = await editor.bake();
-      else {
-        const v = focused(c);
-        const key = variationKey(c, v);
-        const blob = edited(key) ? await bakeDoc(entries.get(key).doc) : await bake(brand, c, v);
-        dataUrl = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result);
-          reader.onerror = () => reject(reader.error);
-          reader.readAsDataURL(blob);
-        });
-      }
-      onUse?.(dataUrl);
+      // What goes back: the focused carousel's slides, else the draft's own
+      // (Edit opened on them), else the one image.
+      const carousel = c?.variations.length ? focused(c) : null;
+      const srcs = carousel
+        ? Array.from({ length: slideCount(carousel) }, (_, i) => {
+            const p = slideOf(c, carousel, i);
+            return { key: variationKey(p.c, p.v), ...p };
+          })
+        : draftSlides
+          ? draftSlides.map((url, i) => ({ key: `current~${i}`, url }))
+          : [{ key: "current", url: draft.imageUrl }];
+      const urls = [];
+      for (const src of srcs) urls.push(await slideDataUrl(brand, src));
+      if (urls.length > 1 && onUseCarousel) onUseCarousel(urls);
+      else onUse?.(urls[0]);
     } catch (error) {
       state.using = false;
       toast(error.message || "The image couldn't be added.", { variant: "error" });
@@ -1640,8 +1893,7 @@ ${b.prompt}</textarea
 
   async function download() {
     const brand = brandNow();
-    const c = currentCreation();
-    const v = focused(c);
+    const { c, v } = slideOf(currentCreation(), focused(currentCreation()), state.slide);
     const f = formatById(c.brief.formatIds[0]);
     try {
       const blob = await toPngBlob({
@@ -1650,7 +1902,7 @@ ${b.prompt}</textarea
         height: f.height,
         layers: resolveLayers(layersFor({ creation: c, formatId: f.id }), lookOf(brand, c.brief)),
       });
-      downloadBlob(blob, `${slug(c.title)}-${f.id}.png`);
+      downloadBlob(blob, `${slug(c.title)}-${f.id}${v.slides ? `-slide-${state.slide + 1}` : ""}.png`);
       toast(`Downloaded ${f.width} × ${f.height} PNG.`);
     } catch (error) {
       toast(error.message || "Couldn't download the image. Try again.", { variant: "error" });
@@ -1792,12 +2044,27 @@ ${b.prompt}</textarea
     }),
     delegate(target, "click", "[data-imst-focus]", (_e, el) => {
       state.focusId = el.dataset.imstFocus;
+      state.slide = 0;
       paint();
-      target.querySelector(`[data-imst-focus="${state.focusId}"]`)?.focus({ preventScroll: true });
+      (
+        target.querySelector(`[data-imst-focus="${state.focusId}"]`) || target.querySelector('[data-imst-slide="0"]')
+      )?.focus({ preventScroll: true });
+    }),
+    delegate(target, "click", "[data-imst-slide]", (_e, el) => {
+      state.slide = Number(el.dataset.imstSlide) || 0;
+      paint();
+      target.querySelector(`[data-imst-slide="${state.slide}"]`)?.focus({ preventScroll: true });
+    }),
+    delegate(root, "click", "[data-imst-edit-slide]", (_e, el) => {
+      if (el.disabled || editor.isBusy()) return;
+      state.slide = Math.max(0, state.slide + Number(el.dataset.imstEditSlide));
+      openEdit();
     }),
     delegate(target, "keydown", "[data-imst-strip]", (event) => {
       if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
-      const items = [...target.querySelectorAll("[data-imst-strip] [data-imst-focus]")];
+      const items = [
+        ...target.querySelectorAll("[data-imst-strip] [data-imst-focus], [data-imst-strip] [data-imst-slide]"),
+      ];
       const i = items.findIndex((x) => x.getAttribute("aria-selected") === "true");
       const next = items[(i + (event.key === "ArrowRight" ? 1 : -1) + items.length) % items.length];
       if (next) next.click();
@@ -1819,6 +2086,10 @@ ${b.prompt}</textarea
       else if (a === "count") {
         state.brief.count = Number(el.dataset.imstCount) || 4;
         paint();
+      } else if (a === "slides") {
+        state.brief.slides = Number(el.dataset.imstSlides) || 1;
+        el.closest("details")?.removeAttribute("open");
+        paint();
       }
     }),
     delegate(root, "click", "[data-imst-stylepop-close]", () => {
@@ -1833,8 +2104,6 @@ ${b.prompt}</textarea
     delegate(root, "click", "[data-imst-edit-undo]", () => editor.undo()),
     editor.bind(target, { onFooterChange: () => paintFooter() }),
     delegate(root, "click", "[data-imst-var]", (_e, el) => {
-      const c = currentCreation();
-      const v = focused(c);
       const a = el.dataset.imstVar;
       if (a === "regenerate") regenerate();
       else if (a === "add-one") addOne();

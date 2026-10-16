@@ -4,16 +4,18 @@
 // Public API:
 //   getPosts(sessionId)         → Post[]  (seeds from mocks on first access)
 //   addPostDraft(sessionId, {network, text[], hashtags[]}) → Post
-//   attachImageToDraft(sessionId, postId, imageUrl)
+//   attachImageToDraft(sessionId, postId, imageUrl)        — one image; drops any carousel
+//   attachCarouselToDraft(sessionId, postId, urls[])       — the slides, urls[0] as the poster
+//     (the Image Generator's "Use in draft" on a run of several slides)
 //   subscribe(sessionId, fn)    → unsubscribe fn
 
-import { postsBySession as seedPostsBySession, allSeedSessions as seedRecentSessions } from "./mocks.js?v=1888";
-import { isNewUser } from "./user-mode.js?v=1888";
-import { createSessionNotifier } from "./store-utils.js?v=1888";
-import { getSessionById } from "./sessions-store.js?v=1888";
-import { getContextById } from "./contexts-store.js?v=1888";
-import { playbookForNewWork } from "./active-playbook.js?v=1888";
-import { networkVoicesOn, writeInVoice } from "./network-voice.js?v=1888";
+import { postsBySession as seedPostsBySession, allSeedSessions as seedRecentSessions } from "./mocks.js?v=1892";
+import { isNewUser } from "./user-mode.js?v=1892";
+import { createSessionNotifier } from "./store-utils.js?v=1892";
+import { getSessionById } from "./sessions-store.js?v=1892";
+import { getContextById } from "./contexts-store.js?v=1892";
+import { playbookForNewWork } from "./active-playbook.js?v=1892";
+import { networkVoicesOn, writeInVoice } from "./network-voice.js?v=1892";
 
 // Demo session ids — only these get the seeded posts mock. Brand-new
 // conversations start empty (cf. library.js for the same rationale).
@@ -156,7 +158,7 @@ export function attachImageToDraft(sessionId, postId, imageUrl) {
   }
 }
 
-// Attach a multi-slide carousel (generate mode, carousel output). Slide 0 doubles
+// Attach a multi-slide carousel — the Image Generator's carousel output. Slide 0 doubles
 // as the poster `imageUrl` so single-image render/attach paths keep working.
 export function attachCarouselToDraft(sessionId, postId, urls) {
   const posts = getPosts(sessionId);

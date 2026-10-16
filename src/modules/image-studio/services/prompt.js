@@ -2,7 +2,7 @@
 // Pure, and shared by every implementation of imageGenerationService, so the
 // day a real API is plugged in it gets exactly the prompt the mock shows.
 
-import { colorByRole, fontByRole } from "../model/schema.js?v=1888";
+import { colorByRole, fontByRole } from "../model/schema.js?v=1892";
 
 function paletteText(brand) {
   return (brand?.palette || []).map((c) => `${c.role} ${c.hex}`).join(", ") || "neutral tones";
@@ -32,11 +32,15 @@ function styleFragment(style, brief, brand) {
 }
 
 /**
- * @param {{brief, brand, style, product?, format, textMode, text?}} request
+ * @param {{brief, brand, style, product?, format, textMode, text?, slide?: {n, of}}} request
  * @returns {string}
  */
-export function buildPrompt({ brief, brand, style, product, format, textMode, text }) {
+export function buildPrompt({ brief, brand, style, product, format, textMode, text, slide }) {
   const lines = [styleFragment(style, brief, brand)];
+  if (slide)
+    lines.push(
+      `Slide ${slide.n} of ${slide.of} of one carousel: the same Style Bible as the other slides — palette, light, framing, type.`,
+    );
   if (product) lines.push(`Featuring the product "${product.name}": ${product.description}. Keep it recognisable.`);
   if (format) lines.push(`Aspect ${format.width}x${format.height}.`);
   if (textMode === "embedded" && text?.headline) {

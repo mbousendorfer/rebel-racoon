@@ -12,9 +12,9 @@
 //           layers with nothing (or a text) selected. The text and the logo are
 //           never redrawn: that is what having layers buys.
 
-import { html } from "../../lib/html.js?v=1888";
-import { IMAGE_PRESETS } from "../../config/edit.js?v=1888";
-import { LAYER_ICONS, isBase, layerName } from "../../state/edit-doc.js?v=1888";
+import { html } from "../../lib/html.js?v=1892";
+import { IMAGE_PRESETS } from "../../config/edit.js?v=1892";
+import { LAYER_ICONS, isBase, layerName } from "../../state/edit-doc.js?v=1892";
 
 // ── Tool palette (left) ─────────────────────────────────────────────────────
 
@@ -198,7 +198,7 @@ export function redrawTarget(doc, selectedId) {
   return { kinds, placeholder: "Describe a change and I'll redraw it…" };
 }
 
-export function composer(ui, doc, { busy }) {
+export function composer(ui, doc, { busy, label = "Redraw" }) {
   const target = redrawTarget(doc, ui.selectedId);
   const off = busy || !target.kinds.length;
   // The Generate tab's former Refine field, the one style for "say a change".
@@ -215,7 +215,7 @@ export function composer(ui, doc, { busy }) {
         ${off ? "disabled" : ""}
       />
       <button type="button" class="ap-button primary orange" data-imst-redraw ${off ? "disabled" : ""}>
-        <span>Redraw</span>
+        <span>${label}</span>
       </button>
     </div>
   </div>`;

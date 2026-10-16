@@ -4,6 +4,8 @@ export const MOCK = Object.freeze({
   generation: {
     delayMs: [2000, 4000],
     variations: 4,
+    // Each carousel slide after the first (which takes delayMs).
+    slideMs: 700,
     // Share of generations that fail with "Generation failed — try again".
     failRate: 0.1,
     // A brief containing this word always fails — to demo the error state on cue.
