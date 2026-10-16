@@ -4,20 +4,21 @@
 // session.js, unchanged; the mention picker stays there, since bindSession
 // writes its highlight state.
 
-import { isFlagOn } from "../../feature-flags.js?v=1888";
-import { getConnectedConnectors, findConnector } from "../../connectors-store.js?v=1888";
-import { escapeHtml, html, raw, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=1888";
-import { renderConnectorLogo } from "../../connectors-view.js?v=1888";
-import { getSources, getIdeas } from "../../library.js?v=1888";
-import * as clipStudio from "../../clip-studio.js?v=1888";
-import { getThread } from "../../assistant.js?v=1888";
-import { revokedContextFor } from "../../playbook-access.js?v=1888";
-import { getSessionById } from "../../sessions-store.js?v=1888";
-import { catalogueRoute } from "../../active-playbook.js?v=1888";
-import { getActiveConnector } from "../../composer-connector.js?v=1888";
-import { COMPOSER_DEFAULT_PLACEHOLDER, renderPlaybookControl } from "../session.js?v=1888";
-import { renderTopicPickerRow } from "./empty-hero.js?v=1888";
-import { renderChatGallery } from "./chat-gallery.js?v=1888";
+import { isFlagOn } from "../../feature-flags.js?v=1891";
+import { getConnectedConnectors, findConnector } from "../../connectors-store.js?v=1891";
+import { escapeHtml, html, raw, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=1891";
+import { renderConnectorLogo } from "../../connectors-view.js?v=1891";
+import { getSources, getIdeas } from "../../library.js?v=1891";
+import * as clipStudio from "../../clip-studio.js?v=1891";
+import { getThread } from "../../assistant.js?v=1891";
+import { getActivePlan, getPlans } from "../../post-plan-store.js?v=1891";
+import { revokedContextFor } from "../../playbook-access.js?v=1891";
+import { getSessionById } from "../../sessions-store.js?v=1891";
+import { catalogueRoute } from "../../active-playbook.js?v=1891";
+import { getActiveConnector } from "../../composer-connector.js?v=1891";
+import { COMPOSER_DEFAULT_PLACEHOLDER, renderPlaybookControl } from "../session.js?v=1891";
+import { renderTopicPickerRow } from "./empty-hero.js?v=1891";
+import { renderChatGallery } from "./chat-gallery.js?v=1891";
 
 function renderConnectorsSubmenu() {
   // Connectors are gated behind a feature flag (default OFF) — when off, the
@@ -123,6 +124,7 @@ function humanizeLoadingMessage(m) {
 //   { shape:"grey",   variant:"grey",  label, key }  — background work running
 //   { shape:"drafts", variant:"green", count, key }  — drafts ready
 //   { shape:"ideas",  variant:"green", count, key }  — ideas ready
+//   { shape:"plan",   variant:"grey",  label, key }  — the active post plan, at rest
 //   null                                             — idle
 // Grey (in-progress) wins over the green "ready" bars; among the two ready bars
 // the most recent (by `at`) wins the single slot, then yields to the other when
@@ -155,8 +157,28 @@ export function computeComposerStatus(sessionId) {
   const draftDesc = draft && { shape: "drafts", variant: "green", count: draft.count, key: `drafts|${draft.count}` };
   const ideaDesc = idea && { shape: "ideas", variant: "green", count: idea.count, key: `ideas|${idea.count}` };
   if (draft && idea) return idea.at > draft.at ? ideaDesc : draftDesc;
-  return draftDesc || ideaDesc || null;
+  if (draftDesc || ideaDesc) return draftDesc || ideaDesc;
+  // At rest, the chat's active post plan (post-plan-flow.js) and its stage.
+  const plan = getActivePlan(sessionId);
+  if (plan) {
+    const count = getPlans(sessionId).length;
+    return {
+      shape: "plan",
+      variant: "grey",
+      label: `Post plan: ${plan.topic} · ${PLAN_STAGE[plan.stage] || ""}`,
+      canSwitch: count > 1,
+      key: `plan|${plan.id}|${plan.stage}|${count}`,
+    };
+  }
+  return null;
 }
+
+const PLAN_STAGE = {
+  planning: "Being planned",
+  ready: "Ready",
+  writing: "Writing",
+  written: "Drafts written",
+};
 
 export function renderComposerStatus(sessionId) {
   // Losing the Playbook outranks every other banner: it's the reason the
@@ -208,6 +230,24 @@ export function renderComposerStatus(sessionId) {
           <i class="ap-icon-archie-official" aria-hidden="true"></i>
           <div class="flow">${raw(ideaBannerFlowInner(status.count))}</div>
           <button type="button" class="ap-link small standalone" data-idea-banner-view>View ideas</button>
+        </div>
+      </div>
+    `;
+  }
+  if (status.shape === "plan") {
+    return html`
+      <div
+        class="ap-status-card grey session__composer-status"
+        data-status-key="${status.key}"
+        data-status-shape="plan"
+        role="status"
+      >
+        <div class="upper">
+          <i class="ap-icon-file--text" aria-hidden="true"></i>
+          <div class="flow" data-status-label>${status.label}</div>
+          ${status.canSwitch
+            ? raw(`<button type="button" class="ap-link small standalone" data-post-plan-switch>Switch plan</button>`)
+            : ""}
         </div>
       </div>
     `;
