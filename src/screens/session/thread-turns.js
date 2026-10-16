@@ -6,8 +6,9 @@
 // and returns an HTML string. No store reads, no DOM, no side effects: the
 // store-coupled turns (extraction / clip-extraction / source resolution) stay
 // in session.js and pass their resolved data in as arguments.
-import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=1882";
-import { isFlagOn } from "../../feature-flags.js?v=1882";
+import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=1883";
+import { isFlagOn } from "../../feature-flags.js?v=1883";
+import { SOURCE_USE_LABEL, SOURCE_USE_TONE } from "../../sources-stream.js?v=1883";
 
 // The thread's restyle since Monday 2026-10-05 (flag newConversationStyles).
 // OFF renders the Monday markup; styles/chat-legacy.css holds its values.
@@ -144,6 +145,9 @@ export function renderSourceIntakeTurn(message, source = null) {
     }
     if (pills.length > 0) {
       trailing = pills.join("");
+    } else if (src?.use === "waiting" || src?.use === "set_aside" || src?.use === "post") {
+      // No output to open yet — say where the source stands instead of a check.
+      trailing = `<span class="ap-status ${SOURCE_USE_TONE[src.use]}">${SOURCE_USE_LABEL[src.use]}</span>`;
     } else {
       trailing = `<i class="ap-icon-rounded-check_fill chat-bubble-source-intake__check" aria-hidden="true"></i>`;
     }

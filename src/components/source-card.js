@@ -22,9 +22,10 @@
 //
 // Source shape: { id, filename, kind, status, ideaCount, addedAt, ... }
 
-import { iconFor } from "../file-kinds.js?v=1882";
-import { escapeHtml } from "../utils.js?v=1882";
-import { installMoreMenu } from "./more-menu.js?v=1882";
+import { iconFor } from "../file-kinds.js?v=1883";
+import { SOURCE_USE_LABEL } from "../sources-stream.js?v=1883";
+import { escapeHtml } from "../utils.js?v=1883";
+import { installMoreMenu } from "./more-menu.js?v=1883";
 
 // ── Overflow menu — one open at a time (shared behaviour) ──────────────
 // Per-row Extract / Delete close the menu after firing; the actions run via
@@ -72,7 +73,9 @@ export function renderSourceCard(
       ? hasTicker
         ? `${source.stage || "Processing"} · ${formatEta(source.etaSec)} left`
         : `Processing · Added ${source.addedAt}`
-      : `${totalIdeas} idea${totalIdeas === 1 ? "" : "s"} · ${source.status} · Added ${source.addedAt}`;
+      : SOURCE_USE_LABEL[source.use] && !(source.use === "ideas" && totalIdeas)
+        ? `${SOURCE_USE_LABEL[source.use]} · Added ${source.addedAt}`
+        : `${totalIdeas} idea${totalIdeas === 1 ? "" : "s"} · ${source.status} · Added ${source.addedAt}`;
   const progressBar = hasTicker
     ? `
       <div class="source-card__progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(source.progress * 100)}">

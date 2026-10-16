@@ -12,7 +12,7 @@
 // Pure: (variant, palette) → SVG markup, 400 × 400, no DOM. Rendered as an
 // <img>, so ids never collide between thumbnails and only system fonts apply.
 
-import { contrast, darken as D, lighten as L, mix as M } from "./palette.js?v=1882";
+import { contrast, darken as D, lighten as L, mix as M } from "./palette.js?v=1883";
 
 const SANS = "Helvetica Neue, Helvetica, Arial, sans-serif";
 const SERIF = "Georgia, 'Times New Roman', serif";

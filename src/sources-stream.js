@@ -8,12 +8,12 @@
 // The state machine timers live here (not inside the modal) so uploads
 // continue in background after the user closes the modal.
 
-import { sourcesBySession as seedByCsesssion } from "./mocks.js?v=1882";
-import { isFlagOn } from "./feature-flags.js?v=1882";
-import { isNewUser } from "./user-mode.js?v=1882";
-import { createNotifier } from "./store-utils.js?v=1882";
-import { detectUrlService } from "./url-services.js?v=1882";
-import { showToast } from "./components/toast.js?v=1882";
+import { sourcesBySession as seedByCsesssion } from "./mocks.js?v=1883";
+import { isFlagOn } from "./feature-flags.js?v=1883";
+import { isNewUser } from "./user-mode.js?v=1883";
+import { createNotifier } from "./store-utils.js?v=1883";
+import { detectUrlService } from "./url-services.js?v=1883";
+import { showToast } from "./components/toast.js?v=1883";
 
 // Canned extraction output attached to every Processed Video source.
 // Generic enough to plausibly come from any keynote / talk / demo video.
@@ -234,10 +234,6 @@ function randomSignal() {
   return SIGNALS[2];
 }
 
-function randomIdeas() {
-  return 2 + Math.floor(Math.random() * 5); // 2..6
-}
-
 function randomProcessingMs() {
   // Standardized 6s reasoning delay across the whole prototype.
   return 6000;
@@ -360,8 +356,6 @@ function startProcessingTicker(sessionId, sourceId, totalMs) {
 function transitionToDone(upload) {
   if (upload.status === "cancelled") return;
   upload.status = "done";
-  let ideaCount = 0;
-  let clipCount = 0;
   const list = sourcesBySession.get(upload.sessionId);
   const src = list && list.find((s) => s.id === upload.sourceId);
   if (src) {
@@ -372,25 +366,15 @@ function transitionToDone(upload) {
     src.progress = 1;
     src.stage = undefined;
     src.etaSec = undefined;
-    if (src.kind === "Video") {
-      // Defer idea extraction + clip creation until the user picks
-      // "Analyze for ideas" / "Extract clips" in the post-upload choice
-      // (posted by the intake lifecycle once the source is Processed).
-      src.ideaCount = 0;
-    } else {
-      src.ideaCount = randomIdeas();
-      ideaCount = src.ideaCount;
-    }
+    // Nothing is extracted on arrival: the source waits until the reader says
+    // what it's for ("What should I do with X?", asked by the intake lifecycle
+    // once it is Processed). Ideas only exist once they pick Find post ideas.
+    src.ideaCount = 0;
+    src.use = "waiting";
     notifySources(upload.sessionId);
   }
   notifyUploads();
-
-  const isVideo = !!(src && src.kind === "Video");
-  // The video "ready" ping names just the source (extraction defers to the
-  // analyze choice); the non-video one appends the extraction summary.
-  showToast(
-    isVideo ? `${upload.name} ready` : `${upload.name} ready · ${formatExtractionSummary(ideaCount, clipCount)}`,
-  );
+  showToast(`${upload.name} ready`);
 }
 
 // Hydrate a freshly-Processed Video source with the canned clip set so
@@ -487,6 +471,33 @@ export function extractClipsForSource(sessionId, sourceId, { animate = true } = 
   return 0;
 }
 
+// What the reader decided to do with a source in this chat. `status` stays
+// the binary Processing / Processed it has always been (read in many places);
+// the use is a separate fact, shown as a status on the source:
+//   waiting   — Processed, the "What should I do with X?" is still open
+//   ideas     — Find post ideas ran on it
+//   post      — a post was written from it
+//   clips     — cut into clips
+//   set_aside — Not now
+// undefined = a source that never went through the question (seeds, Topics,
+// repurposed top posts): it shows no use status.
+export const SOURCE_USE_LABEL = {
+  waiting: "Waiting for your answer",
+  ideas: "Used for ideas",
+  post: "Used in a post",
+  clips: "Used for clips",
+  set_aside: "Set aside",
+};
+export const SOURCE_USE_TONE = { waiting: "orange", ideas: "green", post: "green", clips: "green", set_aside: "grey" };
+
+export function setSourceUse(sessionId, sourceIds, use) {
+  const list = sourcesBySession.get(sessionId);
+  if (!list) return;
+  const ids = new Set([].concat(sourceIds));
+  for (const src of list) if (ids.has(src.id)) src.use = use;
+  notifySources(sessionId);
+}
+
 // Set a source's idea count post-hoc — used by the "Analyze for ideas"
 // branch so the source-intake "N ideas" pill appears after deferred extraction.
 export function setSourceIdeaCount(sessionId, sourceId, n) {
@@ -495,13 +506,6 @@ export function setSourceIdeaCount(sessionId, sourceId, n) {
   if (!src) return;
   src.ideaCount = n;
   notifySources(sessionId);
-}
-
-function formatExtractionSummary(ideaCount, clipCount) {
-  const parts = [];
-  parts.push(`${ideaCount} ${ideaCount === 1 ? "idea" : "ideas"}`);
-  if (clipCount > 0) parts.push(`${clipCount} ${clipCount === 1 ? "clip" : "clips"}`);
-  return `${parts.join(" · ")} extracted`;
 }
 
 // URL import skips the upload phase — straight into Processing.
@@ -692,7 +696,7 @@ export function pushScriptedSource({ filename, kind, sessionId }) {
   return sourceId;
 }
 
-export function completeScriptedSource(sourceId, { signal, signalColor, ideaCount }) {
+export function completeScriptedSource(sourceId, { signal, signalColor, use = "waiting" }) {
   const sessionId = findSourceOwner(sourceId);
   if (!sessionId) return;
   const src = sourcesBySession.get(sessionId).find((s) => s.id === sourceId);
@@ -700,19 +704,15 @@ export function completeScriptedSource(sourceId, { signal, signalColor, ideaCoun
   src.status = "Processed";
   src.signal = signal;
   src.signalColor = signalColor;
-  const isVideo = src.kind === "Video";
-  // Video defers idea extraction + clip creation to the post-upload
-  // "what to do?" choice; other kinds keep their immediate ideaCount.
-  src.ideaCount = isVideo ? 0 : ideaCount;
-  let clipCount = 0;
+  // Same rule as transitionToDone: nothing extracted until the reader answers.
+  src.ideaCount = 0;
+  src.use = use;
   notifySources(sessionId);
 
   // Symmetric toast with transitionToDone — the chat is no longer
   // blocked during analysis, so the user may be mid-typing when the
   // source completes and miss the inline bubble flip.
-  showToast(
-    isVideo ? `${src.filename} ready` : `${src.filename} ready · ${formatExtractionSummary(ideaCount, clipCount)}`,
-  );
+  showToast(`${src.filename} ready`);
 }
 
 // Cancel an in-flight upload. After Done it's a no-op.

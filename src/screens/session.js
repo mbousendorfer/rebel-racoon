@@ -1,14 +1,14 @@
-import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr, formatTimeOfDay } from "../utils.js?v=1882";
-import { conceptHint } from "../concepts.js?v=1882";
-import { navigate } from "../router.js?v=1882";
-import { renderTopbar } from "../components/topbar.js?v=1882";
-import { connectorDocs } from "../mocks.js?v=1882";
-import { getConnectedProfiles } from "../social-profiles.js?v=1882";
-import { getSessionById, getSessions } from "../sessions-store.js?v=1882";
-import { getContextById, getContexts, updateContext } from "../contexts-store.js?v=1882";
-import { playbookForNewWork, isWorkspaceMode } from "../active-playbook.js?v=1882";
-import { revokedContextFor, usableContexts, canView } from "../playbook-access.js?v=1882";
-import { isNewUser } from "../user-mode.js?v=1882";
+import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr, formatTimeOfDay } from "../utils.js?v=1883";
+import { conceptHint } from "../concepts.js?v=1883";
+import { navigate } from "../router.js?v=1883";
+import { renderTopbar } from "../components/topbar.js?v=1883";
+import { connectorDocs } from "../mocks.js?v=1883";
+import { getConnectedProfiles } from "../social-profiles.js?v=1883";
+import { getSessionById, getSessions } from "../sessions-store.js?v=1883";
+import { getContextById, getContexts, updateContext } from "../contexts-store.js?v=1883";
+import { playbookForNewWork, isWorkspaceMode } from "../active-playbook.js?v=1883";
+import { revokedContextFor, usableContexts, canView } from "../playbook-access.js?v=1883";
+import { isNewUser } from "../user-mode.js?v=1883";
 import {
   getThread,
   sendMessage,
@@ -27,54 +27,54 @@ import {
   answerTopPostsWidget,
   toggleTopicsWidgetPick,
   answerTopicsWidget,
-} from "../assistant.js?v=1882";
+} from "../assistant.js?v=1883";
 import {
   accept as acceptVoiceSuggestion,
   dismiss as dismissVoiceSuggestion,
   undo as undoVoiceSuggestion,
   getSuggestion as getVoiceSuggestion,
-} from "../voice-coach-store.js?v=1882";
-import { rewriteDraftsWithRule } from "../voice-coach.js?v=1882";
-import { iconFor as fileIconForKind } from "../file-kinds.js?v=1882";
-import { getSources, getIdeas, appendExtractedIdeas } from "../library.js?v=1882";
-import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=1882";
+} from "../voice-coach-store.js?v=1883";
+import { rewriteDraftsWithRule } from "../voice-coach.js?v=1883";
+import { iconFor as fileIconForKind } from "../file-kinds.js?v=1883";
+import { getSources, getIdeas } from "../library.js?v=1883";
+import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=1883";
 import {
   renderInto as renderComposerMentions,
   removeMention as removeComposerMention,
   subscribe as subscribeComposerMentions,
   addMention as addComposerMention,
-} from "../composer-mentions.js?v=1882";
-import { setSubtitleStyle, getPosts, removePost } from "../posts-store.js?v=1882";
-import { executeDraft } from "../draft-flow.js?v=1882";
-import * as topPostsFlow from "../top-posts-flow.js?v=1882";
-import { renderTopPostsBoard } from "../components/top-post-card.js?v=1882";
-import * as sidebarWizard from "../sidebar-wizard.js?v=1882";
-import * as inlineQuestion from "../inline-question.js?v=1882";
-import { planSlots, defaultStrategy, CADENCES, queueEntries } from "../schedule-engine.js?v=1882";
-import { addToQueue } from "../schedule-store.js?v=1882";
-import { refLabel } from "../chat-refs.js?v=1882";
-import { networkLabel, networkIcon } from "../network-voice.js?v=1882";
-import { openScheduleForPosts, onPostImage } from "../components/right-panel/drafts-view.js?v=1882";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=1882";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=1882";
-import * as clipStudio from "../clip-studio.js?v=1882";
-import * as batchStudio from "../batch-studio.js?v=1882";
-import { askConnector } from "../connector-ask.js?v=1882";
-import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=1882";
-import { renderConnectorLogo } from "../connectors-view.js?v=1882";
+} from "../composer-mentions.js?v=1883";
+import { setSubtitleStyle, getPosts, removePost } from "../posts-store.js?v=1883";
+import { executeDraft } from "../draft-flow.js?v=1883";
+import * as topPostsFlow from "../top-posts-flow.js?v=1883";
+import { renderTopPostsBoard } from "../components/top-post-card.js?v=1883";
+import * as sidebarWizard from "../sidebar-wizard.js?v=1883";
+import * as inlineQuestion from "../inline-question.js?v=1883";
+import { planSlots, defaultStrategy, CADENCES, queueEntries } from "../schedule-engine.js?v=1883";
+import { addToQueue } from "../schedule-store.js?v=1883";
+import { refLabel } from "../chat-refs.js?v=1883";
+import { networkLabel, networkIcon } from "../network-voice.js?v=1883";
+import { openScheduleForPosts, onPostImage } from "../components/right-panel/drafts-view.js?v=1883";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=1883";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=1883";
+import * as clipStudio from "../clip-studio.js?v=1883";
+import * as batchStudio from "../batch-studio.js?v=1883";
+import { askConnector } from "../connector-ask.js?v=1883";
+import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=1883";
+import { renderConnectorLogo } from "../connectors-view.js?v=1883";
 import {
   getActiveConnector,
   clearActiveConnector,
   subscribe as subscribeComposerConnector,
-} from "../composer-connector.js?v=1882";
-import { isFlagOn } from "../feature-flags.js?v=1882";
-import { onChatGalleryClick } from "./session/chat-gallery.js?v=1882";
-import * as contextBuilder from "../context-builder.js?v=1882";
-import { renderPicker } from "./_analyse-common.js?v=1882";
-import { contentState, rerenderContentWorkspaceBody } from "../components/content-workspace.js?v=1882";
-import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=1882";
-import { open as openAddSourceModal } from "../components/add-source-modal.js?v=1882";
-import { open as openConnectorsModal } from "../components/connectors-modal.js?v=1882";
+} from "../composer-connector.js?v=1883";
+import { isFlagOn } from "../feature-flags.js?v=1883";
+import { onChatGalleryClick } from "./session/chat-gallery.js?v=1883";
+import * as contextBuilder from "../context-builder.js?v=1883";
+import { renderPicker } from "./_analyse-common.js?v=1883";
+import { contentState, rerenderContentWorkspaceBody } from "../components/content-workspace.js?v=1883";
+import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=1883";
+import { open as openAddSourceModal } from "../components/add-source-modal.js?v=1883";
+import { open as openConnectorsModal } from "../components/connectors-modal.js?v=1883";
 import {
   classifyFile,
   startFileUpload,
@@ -84,9 +84,9 @@ import {
   pushScriptedSource,
   completeScriptedSource,
   updateSourceClips,
-} from "../sources-stream.js?v=1882";
-import { onFeedbackClick } from "../components/feedback-control.js?v=1882";
-import { showToast } from "../components/toast.js?v=1882";
+} from "../sources-stream.js?v=1883";
+import { onFeedbackClick } from "../components/feedback-control.js?v=1883";
+import { showToast } from "../components/toast.js?v=1883";
 import {
   openDrafts as openDraftsPanel,
   openIdeas as openIdeasPanel,
@@ -94,19 +94,19 @@ import {
   openClips as openClipsPanel,
   getMode as getRightPanelMode,
   subscribe as subscribeRightPanel,
-} from "../components/right-panel.js?v=1882";
-import { setHandoff, consumeHandoff } from "../handoff.js?v=1882";
-import { attachTopicToChat, useTopicInChat, startTopicPickerInline, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=1882";
-import { startObjectiveChat, OBJECTIVE_CHAT_HANDOFF } from "../objective-flow.js?v=1882";
-import { getTopicById, markUsed, subscribe as subscribeTopics } from "../topics-store.js?v=1882";
-import { openTopicArticle } from "../components/topic-picker-modal.js?v=1882";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1882";
-import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=1882";
-import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=1882";
-import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=1882";
+} from "../components/right-panel.js?v=1883";
+import { setHandoff, consumeHandoff } from "../handoff.js?v=1883";
+import { attachTopicToChat, useTopicInChat, startTopicPickerInline, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=1883";
+import { startObjectiveChat, OBJECTIVE_CHAT_HANDOFF } from "../objective-flow.js?v=1883";
+import { getTopicById, markUsed, subscribe as subscribeTopics } from "../topics-store.js?v=1883";
+import { openTopicArticle } from "../components/topic-picker-modal.js?v=1883";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1883";
+import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=1883";
+import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=1883";
+import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=1883";
 // Pure thread-turn renderers — shared with the component handoff gallery so
 // the previews there never drift from the app (handoff/components.html).
-import { SWITCH_SKELETON_HTML } from "./session/thread-turns.js?v=1882";
+import { SWITCH_SKELETON_HTML } from "./session/thread-turns.js?v=1883";
 import {
   clipsToChat,
   finalizeClipStudio,
@@ -114,27 +114,27 @@ import {
   handleClipStudioUrl,
   openClipStudioEditor,
   renderClipStudio,
-} from "./session/clip-studio-view.js?v=1882";
+} from "./session/clip-studio-view.js?v=1883";
 import {
   handleBatchFiles,
   renderBatchStudio,
   repaintBatchRest,
   replayBatchSources,
   startBatchChat,
-} from "./session/batch-studio-view.js?v=1882";
+} from "./session/batch-studio-view.js?v=1883";
 import {
   askRepurposeProfiles,
-  askVideoIntake,
+  askSourceUse,
   startIdeaDraft,
   startRepurposeFlow,
-} from "./session/draft-questions.js?v=1882";
+} from "./session/draft-questions.js?v=1883";
 import {
   extractionVerdict,
   extractionWhyOpen,
   findExtractionIdea,
   renderThread,
   repaintExtractionCard,
-} from "./session/thread-render.js?v=1882";
+} from "./session/thread-render.js?v=1883";
 import {
   animateBannerIn,
   animateBannerOut,
@@ -146,9 +146,9 @@ import {
   renderComposer,
   renderComposerConnector,
   renderComposerStatus,
-} from "./session/composer.js?v=1882";
-import { renderTopPostsPickerScreen } from "./session/top-posts-view.js?v=1882";
-import { renderEmptyHero } from "./session/empty-hero.js?v=1882";
+} from "./session/composer.js?v=1883";
+import { renderTopPostsPickerScreen } from "./session/top-posts-view.js?v=1883";
+import { renderEmptyHero } from "./session/empty-hero.js?v=1883";
 
 // Default composer placeholder — restored whenever no connector is attached.
 // A connected connector swaps it for "Ask {name} anything…".
@@ -1232,9 +1232,8 @@ function defaultChatNameLocal() {
 //
 // Mirrors the top-posts confirm (data-topposts-widget-confirm) in two ways: no
 // echo turn, because the frozen widget already shows the pick and the intake
-// card names the Topic again; and the tail is a Quickpicker, the same shape as
-// askVideoIntake, because a Topic that has just landed is a source the reader
-// has not yet said what to do with.
+// card names the Topic again; and the tail is askSourceUse, because a Topic that
+// has just landed is a source the reader has not yet said what to do with.
 function finishTopicPick(session, topicId) {
   const topic = topicId ? getTopicById(topicId) : null;
   if (!topic) {
@@ -1260,54 +1259,10 @@ function finishTopicPick(session, topicId) {
   if (already) showToast("Already in this chat's sources.");
   else attachTopicToChat(session.id, topic.id);
 
-  // The Topic is a source of this chat now, so it's named as one: an inline
-  // reference (chat-refs.js), previewed on hover.
-  postAssistantMessage(session.id, `[[source:${topic.id}]] is in this chat as a source. What should I do with it?`);
-  inlineQuestion.ask(session.id, {
-    title: "Next step",
-    stepLabel: "Topic",
-    skipLabel: "Not now",
-    items: [
-      {
-        value: "extract",
-        label: "Extract ideas",
-        caption: "Pull hooks, stats, and quotes you can post into Ideas.",
-        icon: "ap-icon-sparkles",
-      },
-      {
-        value: "draft",
-        label: "Draft a post",
-        caption: "Extract the lead idea and draft from it right away.",
-        icon: "ap-icon-pen",
-      },
-      {
-        value: "ask",
-        label: "Ask about it",
-        caption: "Question the Topic before deciding.",
-        icon: "ap-icon-single-chat-bubble",
-      },
-    ],
-    onPick: (value) => {
-      const src = getStreamSources(session.id).find((s) => s.id === topic.id);
-      if (!src) return;
-      if (value === "extract") {
-        // The source card's own "Extract more ideas", verbatim.
-        postUserTurn(session.id, "Extract ideas");
-        appendExtractedIdeas(session.id, [src]);
-      } else if (value === "draft") {
-        // There is no source-level draft entry — drafting starts from an IDEA
-        // (startIdeaDraft). One source yields exactly one idea, so extract, then
-        // draft from the idea it produced.
-        postUserTurn(session.id, "Draft a post");
-        appendExtractedIdeas(session.id, [src], (created) => {
-          if (created?.[0]) startIdeaDraft(session.id, created[0].id);
-        });
-      } else if (value === "ask") {
-        // askWhatToKnow posts its own selection echo.
-        askWhatToKnow(session.id, src.filename, src.id);
-      }
-    },
-    onSkip: () => {},
+  // The Topic is a source of this chat now, so it gets the question every
+  // source that lands gets — "What should I do with it?".
+  askSourceUse(session.id, [topic.id], {
+    onAsk: (src) => askWhatToKnow(session.id, src.filename, src.id),
   });
 }
 
@@ -1700,15 +1655,18 @@ function wireAssistantPanel(root, session, attachedContext) {
       // Processing state (keyed reconcile → no churn on per-tick progress).
       syncComposerStatus();
     },
-    // Clip Studio owns its own video source + UI — never pop the generic
-    // "what to do with this video?" intake choice for a studio session.
-    onVideoReady: (sourceId, filename) => {
+    // Every new source waits for "What should I do with it?" — one question
+    // per arrival. Clip Studio owns its own video source + UI — never pop the
+    // generic question for a studio session.
+    onSourcesReady: (sourceIds) => {
       if (clipStudio.isActive(session.id)) return;
-      askVideoIntake(session.id, sourceId, filename);
+      askSourceUse(session.id, sourceIds, {
+        onAsk: (src) => askWhatToKnow(session.id, src.filename, src.id),
+      });
     },
-    // A non-video source extracts its ideas during processing — surface the
-    // persistent green "N ideas ready" bar (in addition to the source's
-    // completion snackbar), same as the flow-based extractions.
+    // A source whose use was already decided and that carries ideas — surface
+    // the persistent green "N ideas ready" bar, same as the flow-based
+    // extractions.
     onSourceReady: (sourceId, src) => {
       const n = src.ideaCount || 0;
       if (n > 0 && getRightPanelMode() !== "ideas") {
@@ -1931,18 +1889,11 @@ function startPillFromKind(_root, session, kind) {
   if (!spec) return;
   const sessionId = session.id;
   // Uniform pipeline: push a Processing source, then flip it Processed
-  // after ~6s. Clips for Video sources are attached automatically by
-  // completeScriptedSource (see sources-stream.attachVideoClips). The
-  // chat stays interactive throughout — no follow-up picker, the user
-  // can keep typing and only sees the intake bubble + completion toast.
+  // after ~6s. The chat stays interactive throughout; once the source is
+  // in, the intake lifecycle asks what to do with it like any other source.
   const sourceId = pushScriptedSource({ filename: spec.filename, kind: spec.kindLabel, sessionId });
-  const ideaCount = 3 + Math.floor(Math.random() * 6);
   setTimeout(() => {
-    completeScriptedSource(sourceId, {
-      signal: "Medium relevance",
-      signalColor: "tagOrange",
-      ideaCount,
-    });
+    completeScriptedSource(sourceId, { signal: "Medium relevance", signalColor: "tagOrange" });
   }, 6000);
 }
 

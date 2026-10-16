@@ -1,13 +1,13 @@
 // The draft-FOR-whom questions a chat asks before it writes: language, profile
 // (and the connect step when none is), repurpose targets, angle, how many
-// drafts, and the video intake. Each is an inline Quickpicker in the thread.
+// drafts, and what to do with a source that just landed. Each is an inline Quickpicker in the thread.
 // Moved out of session.js, unchanged; askAngleQuestion is also the right
 // panel's entry point (it imports this module, not the whole screen).
 
-import { getSessionById } from "../../sessions-store.js?v=1882";
-import { getContextById } from "../../contexts-store.js?v=1882";
-import { playbookForNewWork } from "../../active-playbook.js?v=1882";
-import { isFlagOn } from "../../feature-flags.js?v=1882";
+import { getSessionById } from "../../sessions-store.js?v=1883";
+import { getContextById } from "../../contexts-store.js?v=1883";
+import { playbookForNewWork } from "../../active-playbook.js?v=1883";
+import { isFlagOn } from "../../feature-flags.js?v=1883";
 import {
   postAssistantMessage,
   postSelectionEcho,
@@ -18,24 +18,25 @@ import {
   postActivity,
   postExtractionResult,
   postClipExtractionTurn,
-} from "../../assistant.js?v=1882";
-import * as inlineQuestion from "../../inline-question.js?v=1882";
-import { getIdeas, extractVideoIdeas } from "../../library.js?v=1882";
+} from "../../assistant.js?v=1883";
+import * as inlineQuestion from "../../inline-question.js?v=1883";
+import { getIdeas, extractVideoIdeas, appendExtractedIdeas } from "../../library.js?v=1883";
 import {
   getSources as getStreamSources,
   setSourceIdeaCount,
+  setSourceUse,
   extractClipsForSource,
-} from "../../sources-stream.js?v=1882";
+} from "../../sources-stream.js?v=1883";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
   getConnectedProfileById,
   normalizeNetwork,
-} from "../../social-profiles.js?v=1882";
-import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=1882";
-import { executeDraftBatch, startDraftFlow, getAnglesForIdea } from "../../draft-flow.js?v=1882";
-import * as topPostsFlow from "../../top-posts-flow.js?v=1882";
+} from "../../social-profiles.js?v=1883";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=1883";
+import { executeDraftBatch, startDraftFlow, getAnglesForIdea } from "../../draft-flow.js?v=1883";
+import * as topPostsFlow from "../../top-posts-flow.js?v=1883";
 
 // Build + show the "Which profile?" question, reached from every Draft Post
 // entry point. The chosen profile's platform becomes the draft's network so
@@ -338,41 +339,147 @@ function askDraftCountQuestion(sessionId, ideaId, { angle = null, onBack = null,
   });
 }
 
-// "What would you like to do with this video?" — asked via the quick picker
-// once a freshly-added video is processed (intake-lifecycle → onVideoReady).
-// Each option carries a caption explaining what it does; picking one echoes
-// it as a user turn and runs only that branch.
-export function askVideoIntake(sessionId, sourceId, filename) {
-  postAssistantMessage(sessionId, "What would you like to do with this video?");
+// "What should I do with X?" — asked via the quick picker once freshly-added
+// sources are in (intake-lifecycle → onSourcesReady), for EVERY kind: nothing is
+// extracted on arrival, the source waits for this answer (its `use` reads
+// "Waiting for your answer" meanwhile). Sources that landed together are one
+// question; a video adds Cut into clips. Not now sets them aside — they stay in
+// the chat's Sources, ready for later.
+//
+// `onAsk(src)` (optional, one source only) adds "Ask about it" — the session
+// owns that question.
+export function askSourceUse(sessionId, sourceIds, { onAsk = null } = {}) {
+  const srcs = sourceIds.map((id) => getStreamSources(sessionId).find((s) => s.id === id)).filter(Boolean);
+  if (!srcs.length) return;
+  const single = srcs.length === 1 ? srcs[0] : null;
+  const isVideo = single?.kind === "Video";
+  const ids = srcs.map((s) => s.id);
+
+  postAssistantMessage(
+    sessionId,
+    single
+      ? `[[source:${single.id}]] is in. What should I do with it?`
+      : `${srcs.map((s) => `[[source:${s.id}]]`).join(", ")} are in. What should I do with them?`,
+  );
+
+  const items = single
+    ? [
+        {
+          value: "ideas",
+          label: "Find post ideas in it",
+          caption: "Pull hooks, stats, and quotes you can post into Ideas.",
+          icon: "ap-icon-sparkles",
+        },
+        isVideo && {
+          value: "clips",
+          label: "Cut it into clips",
+          caption: "Short clips with subtitles, ready to draft posts from.",
+          icon: "ap-icon-video",
+        },
+        {
+          value: "post",
+          label: "Write a post about it",
+          caption: "Go straight to drafting from what it says.",
+          icon: "ap-icon-pen",
+        },
+        {
+          value: "summary",
+          label: "Sum it up",
+          caption: "The gist in a few lines, here in the chat.",
+          icon: "ap-icon-file--text",
+        },
+        onAsk && {
+          value: "ask",
+          label: "Ask about it",
+          caption: "Question it before deciding.",
+          icon: "ap-icon-single-chat-bubble",
+        },
+      ].filter(Boolean)
+    : [
+        {
+          value: "ideas",
+          label: "Find post ideas in each",
+          caption: "Ideas from every source, side by side in Ideas.",
+          icon: "ap-icon-sparkles",
+        },
+        {
+          value: "post",
+          label: "Write a post using them all",
+          caption: "One post that draws on all of them.",
+          icon: "ap-icon-pen",
+        },
+      ];
+
   inlineQuestion.ask(sessionId, {
-    title: "Use this video",
-    stepLabel: "Video",
-    skipLabel: "Cancel",
-    items: [
-      {
-        value: "ideas",
-        label: "Extract ideas",
-        caption: "Pull hooks, quotes, and talking points into Ideas so you can draft from them.",
-        icon: "ap-icon-archie-official",
-      },
-      {
-        value: "clips",
-        label: "Cut into clips",
-        caption: "Cut the video into short clips with subtitles, ready to draft posts from.",
-        icon: "ap-icon-video",
-      },
-    ],
+    title: single ? "Use this source" : `Use these ${srcs.length} sources`,
+    stepLabel: single ? single.kind || "Source" : "Sources",
+    skipLabel: "Not now",
+    items,
     onPick: (value) => {
-      if (value === "ideas") {
-        postUserTurn(sessionId, "Extract ideas");
-        runVideoIdeasChoice(sessionId, sourceId, filename);
-      } else if (value === "clips") {
-        postUserTurn(sessionId, "Cut into clips");
-        runVideoClipsChoice(sessionId, sourceId, filename);
-      }
+      const label = items.find((i) => i.value === value)?.label;
+      if (value !== "ask" && label) postUserTurn(sessionId, label);
+      if (value === "ideas") runFindIdeas(sessionId, srcs);
+      else if (value === "clips") {
+        setSourceUse(sessionId, ids, "clips");
+        runVideoClipsChoice(sessionId, single.id, single.filename);
+      } else if (value === "post") runWritePost(sessionId, srcs);
+      else if (value === "summary") runSummary(sessionId, single);
+      else if (value === "ask") onAsk(single);
     },
-    onSkip: () => {},
+    onSkip: () => {
+      setSourceUse(sessionId, ids, "set_aside");
+      postAssistantMessage(
+        sessionId,
+        single
+          ? "Okay, I'll leave it in Sources for when you need it."
+          : "Okay, I'll leave them in Sources for when you need them.",
+      );
+    },
   });
+}
+
+// Find post ideas — a video keeps its canned idea set; any other source runs
+// the shared extraction (one extraction turn for the whole arrival).
+function runFindIdeas(sessionId, srcs) {
+  const ids = srcs.map((s) => s.id);
+  if (srcs.length === 1 && srcs[0].kind === "Video") {
+    runVideoIdeasChoice(sessionId, srcs[0].id, srcs[0].filename);
+    setSourceUse(sessionId, ids, "ideas");
+    return;
+  }
+  appendExtractedIdeas(sessionId, srcs, (created) => {
+    for (const s of srcs) setSourceIdeaCount(sessionId, s.id, created.filter((i) => i.sourceIds.includes(s.id)).length);
+    setSourceUse(sessionId, ids, "ideas");
+  });
+}
+
+// Write a post — drafting starts from an IDEA, so extract one first, then
+// draft from it. Several sources → that one idea draws on all of them.
+function runWritePost(sessionId, srcs) {
+  const ids = srcs.map((s) => s.id);
+  appendExtractedIdeas(sessionId, srcs.slice(0, 1), (created) => {
+    const idea = created?.[0];
+    if (!idea) return;
+    idea.sourceIds = ids;
+    setSourceUse(sessionId, ids, "post");
+    startIdeaDraft(sessionId, idea.id);
+  });
+}
+
+// Sum it up — the gist in the thread, nothing produced. A text source quotes
+// its own opening; anything else gets a generic three-line gist (mock).
+function runSummary(sessionId, src) {
+  const pendingId = startPending(sessionId, "Reading the source…", ["answer_pdf_question"]);
+  setTimeout(() => {
+    finishPending(sessionId, pendingId);
+    const lead = src.preview
+      ? `It opens with "${src.preview}"`
+      : `It's ${src.kind === "URL" ? "a page" : "a document"} about ${src.filename.replace(/\.[a-z0-9]+$/i, "")}`;
+    postAssistantMessage(
+      sessionId,
+      `Here's the gist of [[source:${src.id}]]:\n- ${lead}.\n- Its main point is the one worth posting about: what changes for the reader, and why now.\n- It backs that up with a few concrete examples you could quote.\n\nWant me to find post ideas in it, or write a post about it?`,
+    );
+  }, 1600);
 }
 
 // ── Video-intake choice branches ──────────────────────────────────────────

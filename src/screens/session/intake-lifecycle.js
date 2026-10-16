@@ -11,14 +11,18 @@
 // just the subscription + bookkeeping.
 //
 // Public API:
-//   startIntakeLifecycle(sessionId, { onSourcesChange }) → unsubscribe
+//   startIntakeLifecycle(sessionId, { onSourcesChange, onSourcesReady, onSourceReady }) → unsubscribe
+//
+// `onSourcesReady(ids[])` fires once per arrival with the sources that wait for
+// the reader's answer (use === "waiting"); `onSourceReady(id, src)` for a source
+// whose use was already decided.
 //
 // The `onSourcesChange` callback fires on every sources-stream notify
 // so the caller can repaint the thread (intake turns derive
 // ideaCount/status live from sources-stream).
 
-import { subscribeSources, getSources as getStreamSources } from "../../sources-stream.js?v=1882";
-import { getThread, postSourceIntake, markSourceIntakeReady } from "../../assistant.js?v=1882";
+import { subscribeSources, getSources as getStreamSources } from "../../sources-stream.js?v=1883";
+import { getThread, postSourceIntake, markSourceIntakeReady } from "../../assistant.js?v=1883";
 
 // The intake turn always shows "Uploading" for at least this long, even when
 // the source is ready sooner — an upload that lands instantly reads as fake.
@@ -26,7 +30,13 @@ import { getThread, postSourceIntake, markSourceIntakeReady } from "../../assist
 const MIN_LOADING_MS = 3000;
 const MIN_LOADING_MS_VIDEO = 6000;
 
-export function startIntakeLifecycle(sessionId, { onSourcesChange, onVideoReady, onSourceReady } = {}) {
+// Sources added within this window of each other are one arrival (a multi-file
+// drop, a batch replay): they get ONE "What should I do with these?" question
+// once the last of them is in — inlineQuestion holds one question per chat, so
+// a second, separate ask would silently replace the first.
+const SAME_ARRIVAL_MS = 2500;
+
+export function startIntakeLifecycle(sessionId, { onSourcesChange, onSourcesReady, onSourceReady } = {}) {
   // seenSourceIds is a snapshot baseline of the session's sources at
   // mount time. Any sourceId that appears AFTER this baseline counts
   // as a "new upload" — we post a loading intake turn for it. When the
@@ -36,12 +46,26 @@ export function startIntakeLifecycle(sessionId, { onSourcesChange, onVideoReady,
   // to ready, we don't re-fire on every notify.
   const seenSourceIds = new Set(getStreamSources(sessionId).map((s) => s.id));
   const sentReadyForSourceIds = new Set();
-  // Dedupe the per-video "what to do?" choice so it posts once per source.
-  const askedVideoChoiceForSourceIds = new Set();
+  // Sources already covered by a "what should I do?" question — asked once.
+  const askedSourceIds = new Set();
   // sourceId → when its loading turn was posted, for the minimum loading time.
   const postedAt = new Map();
   let disposed = false;
   let latest = [];
+
+  // A source waiting for an answer is asked about together with every other
+  // waiting source of the same arrival — and only once all of them are ready.
+  const askWhenArrivalIsIn = (src) => {
+    if (askedSourceIds.has(src.id)) return;
+    const at = postedAt.get(src.id) ?? 0;
+    const arrival = latest.filter(
+      (s) => !askedSourceIds.has(s.id) && postedAt.has(s.id) && Math.abs(postedAt.get(s.id) - at) <= SAME_ARRIVAL_MS,
+    );
+    if (arrival.some((s) => !sentReadyForSourceIds.has(s.id))) return; // the last one asks
+    const waiting = arrival.filter((s) => s.use === "waiting");
+    for (const s of arrival) askedSourceIds.add(s.id);
+    if (waiting.length) onSourcesReady?.(waiting.map((s) => s.id));
+  };
 
   const flipReady = (sources) => {
     const thread = getThread(sessionId);
@@ -60,17 +84,11 @@ export function startIntakeLifecycle(sessionId, { onSourcesChange, onVideoReady,
       sentReadyForSourceIds.add(msg.sourceId);
       markSourceIntakeReady(sessionId, msg.sourceId);
 
-      // A freshly-processed video defers its extraction — let the session
-      // ask what to do with it (via the quick picker) before producing
-      // anything. The session owns the picker + branch handlers.
-      if (src.kind === "Video" && !askedVideoChoiceForSourceIds.has(src.id)) {
-        askedVideoChoiceForSourceIds.add(src.id);
-        onVideoReady?.(src.id, src.filename);
-      } else if (src.kind !== "Video") {
-        // Non-video sources extract their ideas during processing — surface
-        // the "N ideas ready" composer bar now that they've landed.
-        onSourceReady?.(src.id, src);
-      }
+      // A source that waits for the reader's answer → the session asks what to
+      // do with it (it owns the picker + branches). Anything else already has
+      // its use decided — surface whatever it produced.
+      if (src.use === "waiting") askWhenArrivalIsIn(src);
+      else onSourceReady?.(src.id, src);
     }
   };
 
