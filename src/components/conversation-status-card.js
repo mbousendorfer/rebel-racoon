@@ -16,8 +16,8 @@
 // the underlying stores mutate (assistant thread, sources-stream, library,
 // right-panel mode, sessions).
 
-import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=1872";
-import { getPath } from "../router.js?v=1872";
+import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=1873";
+import { getPath } from "../router.js?v=1873";
 import {
   openDrafts as openDraftsPanel,
   openIdeas as openIdeasPanel,
@@ -25,14 +25,14 @@ import {
   openSources as openSourcesPanel,
   getMode as getRightPanelMode,
   subscribe as subscribeRightPanel,
-} from "./right-panel.js?v=1872";
-import { getThread, subscribe as subscribeThread } from "../assistant.js?v=1872";
-import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=1872";
-import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=1872";
-import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=1872";
-import { subscribe as subscribeSessions } from "../sessions-store.js?v=1872";
-import { addMention } from "../composer-mentions.js?v=1872";
-import { isFlagOn } from "../feature-flags.js?v=1872";
+} from "./right-panel.js?v=1873";
+import { getThread, subscribe as subscribeThread } from "../assistant.js?v=1873";
+import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=1873";
+import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=1873";
+import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=1873";
+import { subscribe as subscribeSessions } from "../sessions-store.js?v=1873";
+import { addMention } from "../composer-mentions.js?v=1873";
+import { isFlagOn } from "../feature-flags.js?v=1873";
 
 // Two-level structure:
 //   .conversation-status-column   — fills grid column 3 with white bg
@@ -432,6 +432,7 @@ function pendingProcesses(thread) {
   const labels = [];
   for (const m of thread) {
     if (m.status !== "loading") continue;
+    if (m.hidden) continue; // the reply placeholder — its reasoning turn already says what's going on
     if (m.role === "source-intake") continue; // surfaced via Sources row
     const label = humanizePendingMessage(m);
     if (label) labels.push(label);
@@ -443,8 +444,8 @@ function humanizePendingMessage(m) {
   if (m.role === "assistant") {
     return m.meta || "Thinking…";
   }
-  if (m.role === "system-notice") {
-    return m.meta || m.text || "Working…";
+  if (m.role === "system" || m.role === "system-notice") {
+    return m.meta || m.text || "Thinking…";
   }
   if (m.role === "idea-extraction") {
     return `Extracting ideas from ${m.filename || "source"}…`;
@@ -452,7 +453,7 @@ function humanizePendingMessage(m) {
   if (m.role === "clip-extraction") {
     return `Extracting clips from ${m.filename || "source"}…`;
   }
-  return "Working…";
+  return "Thinking…";
 }
 
 function currentSessionId() {
