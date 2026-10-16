@@ -4,22 +4,22 @@
 // shell's delegated clicks write it through setDraftsFilter / setDraftsNetwork.
 // Moved out of right-panel.js, unchanged.
 
-import { networkMeta } from "../../social-profiles.js?v=1856";
-import { getPosts, removePost, insertPost, updatePostContent, attachImageToDraft } from "../../posts-store.js?v=1856";
-import { noticeDraftEdit } from "../../voice-coach.js?v=1856";
-import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=1856";
-import { getSessionById } from "../../sessions-store.js?v=1856";
-import { renderPostCard } from "../post-card.js?v=1856";
-import { html, raw } from "../../utils.js?v=1856";
-import { isFlagOn } from "../../feature-flags.js?v=1856";
-import { open as openNewScheduleModal } from "../schedule-modal.js?v=1856";
-import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=1856";
-import { open as openConfirmModal } from "../confirm-modal.js?v=1856";
-import { showToast } from "../toast.js?v=1856";
-import { addMention as addComposerMention } from "../../composer-mentions.js?v=1856";
-import { startDraftImageFlow } from "../../draft-image-flow.js?v=1856";
-import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=1856";
-import { RPANEL_CLOSE_INLINE, activeSessionId, canDraftInlineEdit, renderPanel } from "../right-panel.js?v=1856";
+import { networkMeta } from "../../social-profiles.js?v=1857";
+import { getPosts, removePost, insertPost, updatePostContent, attachImageToDraft } from "../../posts-store.js?v=1857";
+import { noticeDraftEdit } from "../../voice-coach.js?v=1857";
+import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=1857";
+import { getSessionById } from "../../sessions-store.js?v=1857";
+import { renderPostCard } from "../post-card.js?v=1857";
+import { html, raw } from "../../utils.js?v=1857";
+import { isFlagOn } from "../../feature-flags.js?v=1857";
+import { open as openNewScheduleModal } from "../schedule-modal.js?v=1857";
+import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=1857";
+import { open as openConfirmModal } from "../confirm-modal.js?v=1857";
+import { showToast } from "../toast.js?v=1857";
+import { addMention as addComposerMention } from "../../composer-mentions.js?v=1857";
+import { startDraftImageFlow } from "../../draft-image-flow.js?v=1857";
+import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=1857";
+import { RPANEL_CLOSE_INLINE, activeSessionId, canDraftInlineEdit, renderPanel } from "../right-panel.js?v=1857";
 
 // Drafts-mode local UI state — Lot 21 rich-card view. Filter strip at the
 // top of the panel head drives both axes : status (all / needs_fixes /
@@ -235,13 +235,14 @@ export function renderDraftsView() {
 
     // Bulk actions live in the band and only render while a selection
     // exists (per Figma 1007:3335): Save = ghost-blue link, Schedule =
-    // stroked-blue with calendar, Delete = grey icon button. No idle
+    // primary orange with calendar — the pipeline's final action, same
+    // fill as the schedule modal's confirm — Delete = grey icon button. No idle
     // controls — no hairline, no "Select all" hint.
     const actions = selecting
       ? `
           <div class="rpanel-drafts__group-actions">
             <button type="button" class="ap-button ghost blue" data-rpanel-section-save="${network}">Save as drafts</button>
-            <button type="button" class="ap-button stroked blue" data-rpanel-section-schedule="${network}">
+            <button type="button" class="ap-button primary orange" data-rpanel-section-schedule="${network}">
               <i class="ap-icon-calendar" aria-hidden="true"></i> Schedule
             </button>
             <button type="button" class="ap-icon-button" data-rpanel-section-delete="${network}" aria-label="${delAria}">
@@ -313,7 +314,7 @@ export function onPostRewrite(postId, intent = "fresh") {
   // streaming → commit. Loaded lazily so the rewrite code is only
   // pulled in when the user actually triggers a regen. `intent` biases
   // the rewrite (shorter / longer / warmer / formal / fresh).
-  import("../../draft-rewrite.js?v=1856").then(({ startRewrite }) => {
+  import("../../draft-rewrite.js?v=1857").then(({ startRewrite }) => {
     startRewrite(sid, postId, intent);
   });
 }
@@ -482,7 +483,7 @@ export function onSectionSave(network) {
   if (snapshot.length === 0) return;
   const count = snapshot.length;
   const draftWord = count === 1 ? "draft" : "drafts";
-  Promise.all([import("../save-folder-modal.js?v=1856"), import("../../folders-store.js?v=1856")]).then(
+  Promise.all([import("../save-folder-modal.js?v=1857"), import("../../folders-store.js?v=1857")]).then(
     ([{ open: openSaveModal }, { addDraftsToFolder }]) => {
       openSaveModal({
         count,
