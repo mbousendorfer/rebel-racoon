@@ -32,16 +32,16 @@
 // view. There is an explicit Load more too, and both do exactly the same thing —
 // an infinite list with no button is unusable by keyboard.
 
-import { html, raw, escapeAttr } from "../utils.js?v=1876";
-import { navigate, getPath } from "../router.js?v=1876";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1876";
-import { renderTopbar } from "../components/topbar.js?v=1876";
-import { showToast } from "../components/toast.js?v=1876";
-import { renderEmptyState } from "../components/empty-state.js?v=1876";
-import { openNewPlaybookFlow } from "../context-builder.js?v=1876";
-import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=1876";
-import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=1876";
-import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1876";
+import { html, raw, escapeAttr } from "../utils.js?v=1877";
+import { navigate, getPath } from "../router.js?v=1877";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1877";
+import { renderTopbar } from "../components/topbar.js?v=1877";
+import { showToast } from "../components/toast.js?v=1877";
+import { renderEmptyState } from "../components/empty-state.js?v=1877";
+import { openNewPlaybookFlow } from "../context-builder.js?v=1877";
+import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=1877";
+import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=1877";
+import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=1877";
 import {
   getTopicsForFeed,
   groupTopicsByAge,
@@ -52,7 +52,7 @@ import {
   ignoreTopic,
   unignoreTopic,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=1876";
+} from "../topics-store.js?v=1877";
 import {
   TOPIC_SOURCES,
   TOPIC_KINDS,
@@ -61,13 +61,13 @@ import {
   findTopicSource,
   findCadence,
   isLiveSource,
-} from "../topics-catalog.js?v=1876";
-import { renderTopicCard } from "../components/topic-card.js?v=1876";
-import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=1876";
-import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=1876";
-import { openTopicHistory } from "../components/topic-history-modal.js?v=1876";
-import { useTopicInChat } from "../topic-flow.js?v=1876";
-import { canEdit } from "../playbook-access.js?v=1876";
+} from "../topics-catalog.js?v=1877";
+import { renderTopicCard } from "../components/topic-card.js?v=1877";
+import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=1877";
+import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=1877";
+import { openTopicHistory } from "../components/topic-history-modal.js?v=1877";
+import { useTopicInChat } from "../topic-flow.js?v=1877";
+import { canEdit } from "../playbook-access.js?v=1877";
 
 const PAGE = 10;
 // Long enough to read the scanning line, short enough that nobody waits for it
@@ -503,7 +503,14 @@ function renderFilters() {
           true,
         ),
       )}
-      ${raw(renderFilterLeaf("Sources", "Where I found the Topic. Pick at least one.", renderSourceSelect(), false))}
+      ${raw(
+        renderFilterLeaf(
+          "Sources",
+          "Where I found the Topic. All of them show until you pick one.",
+          renderSourceSelect(),
+          false,
+        ),
+      )}
     </div>
     <div class="ap-filter-dropdown__footer">
       <div class="ap-filter-dropdown__footer--apply">
@@ -612,7 +619,7 @@ function renderSourceSelect() {
   const options = TOPIC_SOURCES.map((s) =>
     filterCheckbox("source", s.id, s.name, picked.includes(s.id), !isLiveSource(s.id)),
   ).join("");
-  return renderMultiSelect("sources", view.sourcesOpen, chips, "No sources", options, "sources");
+  return renderMultiSelect("sources", view.sourcesOpen, chips, "All sources", options, "sources");
 }
 
 // One checkbox row inside a multi-select's dropdown. `.ap-select-option` gives the

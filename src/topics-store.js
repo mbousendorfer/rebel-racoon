@@ -49,9 +49,9 @@
 //   markUsed(id) / ignoreTopic(id, reason) / unignoreTopic(id)
 //   subscribe(fn)                      → unsubscribe
 
-import { topics as seed } from "./mocks.js?v=1876";
-import { isNewUser } from "./user-mode.js?v=1876";
-import { createNotifier } from "./store-utils.js?v=1876";
+import { topics as seed } from "./mocks.js?v=1877";
+import { isNewUser } from "./user-mode.js?v=1877";
+import { createNotifier } from "./store-utils.js?v=1877";
 import {
   DEFAULT_MARKED_IDS,
   MARKED_STATUS_IDS,
@@ -59,7 +59,7 @@ import {
   TOPIC_STATES,
   findTopicState,
   kindOf,
-} from "./topics-catalog.js?v=1876";
+} from "./topics-catalog.js?v=1877";
 
 const topics = isNewUser() ? [] : seed.map(cloneTopic);
 
@@ -192,7 +192,8 @@ const ALL_SOURCE_IDS = LIVE_SOURCE_IDS.slice();
  *           a-time radio.
  *   marked  the answered statuses opted into on top of the To-review baseline:
  *           Already used at rest, Ignored not
- *   sources the source checkboxes: every live source at rest
+ *   sources the source checkboxes: every live source at rest. Unticking them
+ *           all is the same as ticking them all — empty passes every source
  *
  * `new` is not a field here: it is the baseline every lane shows, so the list
  * always shows its To-review Topics and `marked` only ever ADDS the answered
@@ -243,7 +244,9 @@ export function narrowedGroupCount(filters = defaultFilters()) {
   let n = 0;
   if ((filters.kind || []).length > 0) n++;
   if (!sameSet(filters.marked || [], DEFAULT_MARKED_IDS)) n++;
-  if (!sameSet(filters.sources || [], ALL_SOURCE_IDS)) n++;
+  // Empty means every source (matchesFilters), so it is not a narrowing either.
+  const sources = filters.sources || [];
+  if (sources.length && !sameSet(sources, ALL_SOURCE_IDS)) n++;
   return n;
 }
 
@@ -252,7 +255,9 @@ export function narrowedGroupCount(filters = defaultFilters()) {
 //
 // THREE orthogonal gates, ANDed — source, then lane, then answered-status:
 //
-//   1. source   the Topic's source is ticked in the Sources group.
+//   1. source   EMPTY passes every source, the same rule as the lane: unticking
+//               the last source must not blank the list. A non-empty set
+//               requires the Topic's source to be ticked.
 //   2. kind     EMPTY passes every lane — both To review and For later show in
 //               one list at rest. A non-empty set narrows to the ticked lane(s),
 //               so it is a set membership test, not the old one-lane `===`.
@@ -272,7 +277,7 @@ export function narrowedGroupCount(filters = defaultFilters()) {
 // reports the three independently is untouched.
 function matchesFilters(t, filters) {
   const { kind = [], marked = [], sources = [] } = filters;
-  if (!sources.includes(t.sourceId)) return false;
+  if (sources.length && !sources.includes(t.sourceId)) return false;
   if (kind.length && !kind.includes(kindOf(t))) return false;
   if (t.status === "new") return true;
   return marked.includes(t.status);
