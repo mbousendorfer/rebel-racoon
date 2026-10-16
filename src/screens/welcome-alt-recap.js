@@ -4,12 +4,12 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { navigate } from "../router.js?v=1883";
-import { catalogueRoute } from "../active-playbook.js?v=1883";
-import { getDraft, isAnalysisReady, save, patchDraft, restoreDraft } from "../context-builder.js?v=1883";
-import { mount } from "../playbook-view.js?v=1883";
-import { open as openRenameModal } from "../components/rename-modal.js?v=1883";
-import { networkLabel } from "../network-voice.js?v=1883";
+import { navigate } from "../router.js?v=1886";
+import { catalogueRoute } from "../active-playbook.js?v=1886";
+import { getDraft, isAnalysisReady, save, patchDraft, restoreDraft } from "../context-builder.js?v=1886";
+import { mount } from "../playbook-view.js?v=1886";
+import { open as openRenameModal } from "../components/rename-modal.js?v=1886";
+import { networkLabel } from "../network-voice.js?v=1886";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";
@@ -30,6 +30,14 @@ const FILE_LOADING_STAGES = [
   { title: "Picking out your colors", sub: "Sampling the palette your visuals already use." },
   { title: "Mapping your audience", sub: "Working out who you're for — and what moves them." },
   { title: "Building your Playbook", sub: "Turning it all into a Playbook every draft draws from." },
+];
+
+// The no-website interview: the loader reads the
+// answers, and says the brand look comes later — there was nothing to sample.
+const INTERVIEW_LOADING_STAGES = [
+  { title: "Reading your answers", sub: "Turning what you told me into a strategy brief." },
+  { title: "Setting up your brand", sub: "You can add your logo and colors to the Playbook later." },
+  { title: "Drafting your Playbook", sub: "Audience, goals and voice, from your own words." },
 ];
 
 // Voice per network: when Archie adapted the voice for other networks, the
@@ -88,7 +96,12 @@ export function renderWelcomeAltRecap(_params, target) {
     onPaint: () => {
       if (isAnalysisReady(sid)) persistDraft(sid);
     },
-    loader: source === "documents" ? FILE_LOADING_STAGES : withNetworkStage(LOADING_STAGES, getDraft(sid)),
+    loader:
+      source === "documents"
+        ? FILE_LOADING_STAGES
+        : source === "interview"
+          ? INTERVIEW_LOADING_STAGES
+          : withNetworkStage(LOADING_STAGES, getDraft(sid)),
     skipLoader,
     onIntroDone: () => {
       introDoneSid = sid;

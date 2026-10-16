@@ -8,7 +8,8 @@
 // Suggested values become menthol chips (AI-suggested). Other static
 // option lists come from the brief panel renderer.
 
-import { networkFields, isListPart, isNewPart, itemsFromLines } from "./network-voice.js?v=1883";
+import { networkFields, isListPart, isNewPart, itemsFromLines } from "./network-voice.js?v=1886";
+import { objectivesInText } from "./objective-measures.js?v=1886";
 
 const AGORAPULSE = {
   name: "Agorapulse",
@@ -1044,6 +1045,159 @@ export function analyzeBrandFiles(files = []) {
     site.url = "";
     site.images = { ...(site.images || {}), logos: list[0] ? [{ label: "Logo", url: list[0].url }] : [] };
   }
+  return result;
+}
+
+// ── The "no website" interview ──────────────────────────────────────
+// Ported from prod's business-interview (content-studio-playbook-no-website):
+// without a site to read, Archie asks what a site would have told it, one
+// question at a time. Four CORE topics carry the brief and may not be skipped;
+// two OPTIONAL ones (where posts send people, who else the audience looks at)
+// may. A vague answer gets ONE follow-up. Six answers at most — skips don't
+// count. Prod asks a model; here the order is scripted and the follow-up is a
+// word-count heuristic.
+// A turn: { topic, question, answer, skipped?, followUp? }.
+
+export const INTERVIEW_OPENING = "Who are you, and what do you do? It can be a business or just you.";
+const MAX_INTERVIEW_ANSWERS = 6;
+
+const INTERVIEW_TOPICS = [
+  { id: "who", core: true },
+  { id: "offer", core: true },
+  { id: "audience", core: true },
+  { id: "goals", core: true },
+  { id: "cta", core: false },
+  { id: "rivals", core: false },
+];
+
+// [business, person] — the brand can be a company or someone building a
+// personal brand, and the words change with it ("customers" vs "clients").
+const INTERVIEW_QUESTIONS = {
+  offer: [
+    "What do you offer, and why do people pick you over someone else?",
+    "What do you offer — services, expertise, content — and why do people come to you?",
+  ],
+  audience: [
+    "Who are your customers? Describe one or two typical people you sell to.",
+    "Who do you want to reach — clients, followers, recruiters? Describe one or two typical people.",
+  ],
+  goals: [
+    "What should social media do for you — awareness, leads, sales, bookings?",
+    "What should social media do for you — a following, new clients, a new job?",
+  ],
+  cta: [
+    "Where should people go after reading a post? A shop, a booking page, a newsletter… Paste the link if you have one.",
+    "Where should people go after reading a post? Your portfolio, a link-in-bio, your email… Paste the link if you have one.",
+  ],
+  rivals: [
+    "Who else does your audience look at? Name a few businesses in your space.",
+    "Who else does your audience look at? Name a few people in your space.",
+  ],
+};
+
+const INTERVIEW_FOLLOW_UPS = {
+  who: 'Tell me a bit more: what do you do, day to day? For example "I run a bakery in Lyon".',
+  offer: "Can you be more specific? Name one or two things you offer, and what makes them worth it.",
+  audience: "Picture one real person who'd love what you do. What's their job or situation, and what do they want?",
+  goals: "If social media worked perfectly a year from now, what would have changed for you?",
+};
+
+const VAGUE_ANSWER = /\b(stuff|things|everyone|everybody|anyone|idk|i don'?t know|not sure|no idea|whatever)\b/i;
+function isVagueAnswer(answer) {
+  const words = String(answer || "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  return words.length < 4 || (words.length < 8 && VAGUE_ANSWER.test(answer));
+}
+
+function isPersonalBrand(turns) {
+  const first = turns.find((t) => t.topic === "who" && !t.skipped)?.answer || "";
+  if (/\b(we|we're|our|us)\b/i.test(first)) return false;
+  return /\b(i|i'm|i am|my|me)\b/i.test(first);
+}
+
+/**
+ * The next interview question, or `{ done: true }` once the answers can carry
+ * a brief. `coreLeft` counts the core topics still uncovered, this question's
+ * included (0 on an optional one) — the Skip label says when Skip unlocks.
+ * @returns {{done:true} | {done:false, topic, question, optional, coreLeft, followUp?}}
+ */
+export function nextInterviewQuestion(turns = []) {
+  const answered = turns.filter((t) => !t.skipped).length;
+  if (answered >= MAX_INTERVIEW_ANSWERS) return { done: true };
+  // A topic is covered by a usable answer, by its follow-up (whatever it
+  // says — one nudge, never two), or by a skip. An optional topic is covered by
+  // any answer: it never gets a follow-up.
+  const isCore = (id) => INTERVIEW_TOPICS.some((t) => t.id === id && t.core);
+  const covered = new Set(
+    turns.filter((t) => t.skipped || t.followUp || !isCore(t.topic) || !isVagueAnswer(t.answer)).map((t) => t.topic),
+  );
+  const coreLeft = INTERVIEW_TOPICS.filter((t) => t.core && !covered.has(t.id)).length;
+  const last = turns[turns.length - 1];
+  if (last && !last.skipped && !last.followUp && !covered.has(last.topic)) {
+    return {
+      done: false,
+      topic: last.topic,
+      question: INTERVIEW_FOLLOW_UPS[last.topic],
+      optional: false,
+      coreLeft,
+      followUp: true,
+    };
+  }
+  const next = INTERVIEW_TOPICS.find((t) => !covered.has(t.id));
+  if (!next) return { done: true };
+  const question = next.id === "who" ? INTERVIEW_OPENING : INTERVIEW_QUESTIONS[next.id][isPersonalBrand(turns) ? 1 : 0];
+  return { done: false, topic: next.id, question, optional: !next.core, coreLeft: next.core ? coreLeft : 0 };
+}
+
+/**
+ * The Playbook draft written from the interview answers instead of a crawled
+ * site. Same shape as analyzeWebsite. Uses only what the user said: no URL it
+ * didn't give, no logo or colours (they're added on the Playbook later), no
+ * competitor it didn't name. Voice and style stay the generic template — the
+ * account step is where a voice is learned.
+ */
+export function analyzeInterview(turns = []) {
+  // A topic's last answer: a follow-up supersedes the vague one it asked about.
+  const said = (topic) => (turns.filter((t) => t.topic === topic && !t.skipped).pop()?.answer || "").trim();
+  const sentence = (s) => (s && !/[.!?…]$/.test(s) ? `${s}.` : s);
+  const short = (s, n) => (s.length > n ? `${s.slice(0, n - 1).trimEnd()}…` : s);
+  const person = isPersonalBrand(turns);
+  const who = said("who");
+
+  const result = clone(GENERIC);
+  // "I'm Jane Doe, …" / "We're Bloom Bakery, …" — else a placeholder to rename.
+  const named = who.match(
+    /\b(?:[Ii]'m|[Ii] am|[Ww]e're|[Ww]e are|[Mm]y name is|[Tt]his is|[Ii]t's)\s+([A-Z][\w'&-]*(?:\s+[A-Z][\w'&-]*){0,3})/,
+  );
+  result.name = named ? named[1] : person ? "My personal brand" : "My brand";
+  result.businessSummary = [who, said("offer")].map(sentence).filter(Boolean).join(" ");
+
+  const s = result.suggestions;
+  const audience = said("audience");
+  s.audience = audience ? [short(audience, 140)] : [];
+  s.audienceProblems = [];
+  const goals = said("goals");
+  const objectives = objectivesInText(goals);
+  s.objective = objectives.length ? objectives : goals ? [short(goals, 60)] : [];
+  const links = said("cta").match(/(https?:\/\/[^\s,]+|[\w-]+(?:\.[\w-]+)+\/?[^\s,]*)/g) || [];
+  s.ctaLinks = links.map((url, i) => ({
+    label: i === 0 ? "Main link" : "Link",
+    url,
+    checked: i === 0,
+    suggested: true,
+  }));
+  s.contentAction = links.length ? ["Visit the link"] : [];
+  s.competitors = said("rivals")
+    .split(/,|;|\band\b|\n/i)
+    .map((n) => n.trim().replace(/[.!]+$/, ""))
+    .filter((n) => n && n.split(/\s+/).length <= 5)
+    .slice(0, 5)
+    .map((name) => ({ name, description: "You named them in the interview.", websiteUrl: "", socials: [] }));
+  s.brandColors = [];
+  s.brandTypography = null;
+  s.imageVoice = { websites: [] };
   return result;
 }
 

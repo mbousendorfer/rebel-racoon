@@ -73,10 +73,11 @@
 //   onCustom(value)   fn      — called with the free-text answer
 //   onFile(file)      fn      — called with the picked File object
 //   onSkip()          fn      — called when Skip / Esc; if omitted, no skip btn
+//   skipDisabled      bool    — Skip shown disabled (its label says when it unlocks); Esc → Back
 //   onBack()          fn      — called when ← Back is clicked; if omitted, no back btn
 
-import { chatTurn } from "./screens/_analyse-common.js?v=1883";
-import { createSessionNotifier } from "./store-utils.js?v=1883";
+import { chatTurn } from "./screens/_analyse-common.js?v=1886";
+import { createSessionNotifier } from "./store-utils.js?v=1886";
 
 const states = new Map(); // sessionId → opts
 const sessionNotifier = createSessionNotifier("inline-question");
@@ -234,7 +235,7 @@ export function skip(sessionId) {
   // skip (e.g. the URL / file / profile input steps that need *something*
   // from the user — Back returns to the previous step rather than
   // leaving the wizard in a dangling state).
-  const cb = s.onSkip || s.onBack;
+  const cb = (!s.skipDisabled && s.onSkip) || s.onBack;
   states.delete(sessionId);
   notify(sessionId);
   cb?.();
@@ -297,6 +298,7 @@ export function renderChrome(sessionId) {
     actions: s.actions || null,
     stepIndicator: s.stepLabel || null,
     skipLabel: s.onSkip ? s.skipLabel || "Skip" : null,
+    skipDisabled: s.skipDisabled === true,
     showBack: !!s.onBack,
     customPlaceholder: s.customPlaceholder || null,
     customValue: s.customValue || "",

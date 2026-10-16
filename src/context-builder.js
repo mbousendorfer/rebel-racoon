@@ -13,16 +13,24 @@
 // tones, contentStyle, objective, contentAction, ctaLinks, language, color,
 // suggestions, editingId, onComplete }.
 
-import * as inlineQuestion from "./inline-question.js?v=1883";
-import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=1883";
-import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=1883";
-import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=1883";
-import { showToast } from "./components/toast.js?v=1883";
-import { recordReasons } from "./feedback-store.js?v=1883";
-import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1883";
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1883";
-import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=1883";
-import { analyzeWebsite, analyzeBrandFiles, analyzeNetworkVoices } from "./context-mock-analysis.js?v=1883";
+import * as inlineQuestion from "./inline-question.js?v=1886";
+import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=1886";
+import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=1886";
+import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=1886";
+import { showToast } from "./components/toast.js?v=1886";
+import { recordReasons } from "./feedback-store.js?v=1886";
+import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1886";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1886";
+import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=1886";
+import {
+  analyzeWebsite,
+  analyzeBrandFiles,
+  analyzeNetworkVoices,
+  analyzeInterview,
+  nextInterviewQuestion,
+  INTERVIEW_OPENING,
+} from "./context-mock-analysis.js?v=1886";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=1886";
 import {
   networkVoicesOn,
   cloneVoiceByNetwork,
@@ -30,17 +38,17 @@ import {
   networkLabel,
   networkIcon,
   voiceNetworks,
-} from "./network-voice.js?v=1883";
-import { connectors as connectorMocks } from "./mocks.js?v=1883";
+} from "./network-voice.js?v=1886";
+import { connectors as connectorMocks } from "./mocks.js?v=1886";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "./social-profiles.js?v=1883";
-import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=1883";
-import { isFlagOn } from "./feature-flags.js?v=1883";
-import { navigate } from "./router.js?v=1883";
-import { setHandoff } from "./handoff.js?v=1883";
+} from "./social-profiles.js?v=1886";
+import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=1886";
+import { isFlagOn } from "./feature-flags.js?v=1886";
+import { navigate } from "./router.js?v=1886";
+import { setHandoff } from "./handoff.js?v=1886";
 
 const drafts = new Map(); // sessionId → draft
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -106,7 +114,8 @@ function emptyDraft(overrides = {}) {
     // audience already follows. No pending state: what the analysis finds is
     // added directly, as on the beta.
     influencers: [],
-    sourceType: null, // "website" | "documents" | "social"
+    sourceType: null, // "website" | "documents" | "social" | "manual" | "interview"
+    interview: [], // the no-website answers: Array<{ topic, question, answer, skipped?, followUp? }>
     sourceUrl: "",
     sourceFile: null,
     sourcePlatform: null,
@@ -345,6 +354,12 @@ function askAltPrevious(sessionId, stepId) {
   else if (prev === "profile") askAltProfile(sessionId);
   else if (prev === "network") askAltBaseNetwork(sessionId);
   else if (prev === "documents") askAltDocuments(sessionId);
+  // After the interview, Back leaves it (as in prod); keeping the answers puts
+  // this step back.
+  else if (d?.sourceType === "interview")
+    leaveInterview(sessionId, () =>
+      stepId === "language" ? askAltLanguage(sessionId) : askAltProfile(sessionId, { announce: false }),
+    );
   else askAltUrl(sessionId, d?.sourceUrl || d?.websiteUrl || "");
 }
 // The step after the URL question — the language picker when multilingual is
@@ -372,6 +387,115 @@ const ALT_START_ITEMS = [
     icon: "ap-icon-pen",
   },
 ];
+
+// Prod's content-studio-playbook-no-website (baked in 2026-10-16): a way in for
+// a brand with no site to read — I interview the user instead.
+const ALT_NO_WEBSITE_ITEM = {
+  value: "noWebsite",
+  label: "I don't have a website",
+  caption: "Answer a few quick questions instead",
+  icon: "ap-icon-single-chat-bubble",
+};
+
+// The no-website interview, in place of the URL question (same step, same
+// number). One question at a time, picked from the answers so far by
+// nextInterviewQuestion; each answered question joins the thread as Archie's
+// line + the user's answer. When the answers can carry a brief, the Playbook is
+// written from them in the background and the flow moves on to the account.
+function startAltInterview(sessionId) {
+  const d = drafts.get(sessionId);
+  if (!d) return;
+  Object.assign(d, { sourceType: "interview", sourceUrl: "", websiteUrl: "", sourceFile: null, interview: [] });
+  postUserTurn(sessionId, ALT_NO_WEBSITE_ITEM.label);
+  postAssistantMessage(sessionId, "No problem. I'll ask you a few quick questions instead. Answer in your own words.");
+  inlineQuestion.exit(sessionId);
+  notify(sessionId);
+  askAltInterview(sessionId, nextInterviewQuestion([]));
+}
+
+// The Skip label says when Skip unlocks: the core questions carry the brief.
+function interviewSkipLabel(step) {
+  if (step.optional) return "Skip this question";
+  if (step.coreLeft <= 1) return "Skip available after this question";
+  return `Skip available in ${step.coreLeft} questions`;
+}
+
+function askAltInterview(sessionId, step) {
+  const d = drafts.get(sessionId);
+  if (!d) return;
+  if (step.done) {
+    finishAltInterview(sessionId);
+    return;
+  }
+  const record = (turn, echo) => {
+    const dd = drafts.get(sessionId);
+    if (!dd) return;
+    dd.interview = [...dd.interview, { topic: step.topic, question: step.question, ...turn }];
+    postAssistantMessage(sessionId, step.question);
+    postUserTurn(sessionId, echo);
+    inlineQuestion.exit(sessionId);
+    notify(sessionId);
+    // Prod asks a model for the next question: a beat of "thinking" first.
+    inlineQuestion.ask(sessionId, {
+      title: "Thinking about the next question…",
+      stepLabel: altStepLabel("url"),
+      items: [],
+      loading: true,
+    });
+    window.setTimeout(() => {
+      const now = drafts.get(sessionId);
+      if (now?.sourceType === "interview") askAltInterview(sessionId, nextInterviewQuestion(now.interview));
+    }, 900);
+  };
+  inlineQuestion.ask(sessionId, {
+    title: step.question,
+    stepLabel: altStepLabel("url"),
+    items: [],
+    customPlaceholder: "Type your answer…",
+    onCustom: (value) => {
+      const answer = (value || "").trim();
+      if (!answer) return askAltInterview(sessionId, step);
+      record({ answer, ...(step.followUp ? { followUp: true } : {}) }, answer);
+    },
+    skipLabel: interviewSkipLabel(step),
+    skipDisabled: !step.optional,
+    onSkip: () => record({ answer: "", skipped: true }, "Skipped"),
+    onBack: () => leaveInterview(sessionId, () => askAltInterview(sessionId, step)),
+  });
+}
+
+function finishAltInterview(sessionId) {
+  postAssistantMessage(sessionId, "Thanks, that's what I needed. I'm putting your answers together while we finish.");
+  // Same background timing as the files analysis: the brief is ready by the
+  // time the remaining steps are done.
+  window.setTimeout(() => {
+    const dd = drafts.get(sessionId);
+    if (dd?.sourceType !== "interview") return;
+    applyAnalysisToDraft(dd, analyzeInterview(dd.interview));
+    notify(sessionId);
+  }, 4000);
+  askAltAfterUrl(sessionId);
+}
+
+// Back to "How do you want to start?" drops the answers — confirmed first when
+// there are some. `stay` puts the current step back.
+function leaveInterview(sessionId, stay) {
+  const reset = () => {
+    const d = drafts.get(sessionId);
+    if (d) Object.assign(d, { sourceType: "website", interview: [] });
+    askAltUrl(sessionId, "");
+  };
+  if (!drafts.get(sessionId)?.interview?.length) return reset();
+  openConfirmModal({
+    title: "Discard your answers?",
+    body: "Going back to the website question drops the answers you gave me.",
+    confirmLabel: "Discard",
+    cancelLabel: "Keep my answers",
+    danger: true,
+    onConfirm: reset,
+    onCancel: stay,
+  });
+}
 
 function startAltFromFiles(sessionId) {
   const input = document.createElement("input");
@@ -432,13 +556,17 @@ function startAltManually(sessionId) {
 function askAltUrl(sessionId, prefilledUrl = "") {
   const intro = prefilledUrl
     ? "Here's the site I found — confirm it below to begin."
-    : "Drop your website URL below to begin — or start from your files, or fill it in yourself.";
+    : "Drop your website URL below to begin. No website? I'll ask you a few questions instead.";
   postAssistantMessage(sessionId, intro);
   inlineQuestion.ask(sessionId, {
     title: "How do you want to start?",
     stepLabel: altStepLabel("url"),
-    items: ALT_START_ITEMS,
-    onPick: (value) => (value === "files" ? startAltFromFiles(sessionId) : startAltManually(sessionId)),
+    items: [...ALT_START_ITEMS, ALT_NO_WEBSITE_ITEM],
+    onPick: (value) => {
+      if (value === "noWebsite") startAltInterview(sessionId);
+      else if (value === "files") startAltFromFiles(sessionId);
+      else startAltManually(sessionId);
+    },
     customPlaceholder: "https://your-brand.com",
     customValue: prefilledUrl,
     onCustom: (value) => {
@@ -495,10 +623,7 @@ function askAltLanguage(sessionId) {
       notify(sessionId);
       askAltProfile(sessionId);
     },
-    onBack: () => {
-      const dd = drafts.get(sessionId);
-      askAltUrl(sessionId, dd?.sourceUrl || dd?.websiteUrl || "");
-    },
+    onBack: () => askAltPrevious(sessionId, "language"),
   });
 }
 
