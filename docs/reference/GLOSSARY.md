@@ -77,7 +77,9 @@ L'UI **devrait** utiliser **`Playbook`** partout (label canonique) mais en prati
 
 Cf. [`../audits/PROD-CHANGES.md`](../audits/PROD-CHANGES.md) §P0-1 pour le plan de fix.
 
-**Règle de comm** : dans les nouveaux écrans / nouveau copy, **toujours dire "Playbook"** dans l'UI. Ne pas renommer le code (refactor plus large).
+**Règle de comm** : dans les nouveaux écrans / nouveau copy, **toujours dire "Playbook"** dans l'UI — **toujours avec la capitale**, boutons compris (`Create a Playbook`, `Delete Playbook?`). Ne pas renommer le code (refactor plus large).
+
+**Les onglets d'un Playbook** (arbitré le 2026-10-16) : **Brief** · **Voice profile** · **Branding** · Image generation · Competitors · Influencers. Les trois premiers s'appelaient _Audience & goals_ · _Voice & style_ · _Brand_ — les ids de code (`goals`, `voice`, `brand`) ne changent pas. **Visual identity** reste une sous-partie de Branding.
 
 ### Source
 
@@ -154,7 +156,7 @@ Une **source live MCP-queryable** (Notion, Slite, Google Drive, Slack, …) que 
 
 ### Studio (⚠️ deux sens)
 
-**« Studio » seul = le produit en prod côté Agorapulse.** L'atelier, lui, se nomme toujours en entier : **Image Studio**, **Clip Studio**, **Batch Studio** — un plein écran dédié à **un artefact**, dont on ressort en le rattachant à un draft, et où rien ne survit qui ne soit commité. Ne jamais écrire « le Studio » pour un atelier. Voir [`CONCEPTS.md` §5](CONCEPTS.md#5-les-studios--un-atelier-plein-écran-pour-un-artefact).
+**« Studio » seul = le produit en prod côté Agorapulse.** L'atelier, lui, se nomme toujours en entier : **Image Studio**, **Clip Studio**, **Batch Studio** — un plein écran dédié à **un artefact**, dont on ressort en le rattachant à un draft, et où rien ne survit qui ne soit commité. Ne jamais écrire « le Studio » pour un atelier. Le module `modules/image-studio/` s'appelle « Image Generator » dans le code et les docs, mais **Image Studio** dans l'UI (arbitré le 2026-10-16 ; ni « Image Generator » ni « Image Studio v2 » à l'écran). Voir [`CONCEPTS.md` §5](CONCEPTS.md#5-les-studios--un-atelier-plein-écran-pour-un-artefact).
 
 ### Clip
 
@@ -199,16 +201,20 @@ Switch UI : popover Admin (cog en pied de sidebar). Un reload est forcé pour qu
 
 ## Vocabulaire UI à éviter
 
-| Mauvais                           | Bon                                 | Pourquoi                                                                                |
-| --------------------------------- | ----------------------------------- | --------------------------------------------------------------------------------------- |
-| "Context" (UI label)              | "Playbook"                          | Label canonique, voir plus haut                                                         |
-| "Archie did X"                    | "I did X"                           | Archie parle en 1ère personne                                                           |
-| "AI-powered", "magic", "seamless" | concret                             | voir [`../copy/copy-principles.md`](../copy/copy-principles.md) — voice anchor = Linear |
-| "Project"                         | "Session" / "Chat" / "Conversation" | "Project" est un terme historique probable-spoon, supprimé                              |
-| "Composer"                        | "Archie"                            | "Composer" était un nom interne pré-rebrand                                             |
-| "Studio"                          | "Archie" (proto) / "Studio" (prod)  | "Studio" est le label prod côté Agorapulse — le proto reste "Archie standalone"         |
-| "le Studio" pour un atelier       | "l'Image Studio", "le Clip Studio"  | Collision avec le nom du produit prod — toujours nommer l'atelier en entier             |
-| "posts" comme terme parapluie     | "content"                           | "post" veut dire trois choses (draft / publié / post d'un tiers) — voir plus haut       |
+| Mauvais                                | Bon                                 | Pourquoi                                                                                |
+| -------------------------------------- | ----------------------------------- | --------------------------------------------------------------------------------------- |
+| "Context" (UI label)                   | "Playbook"                          | Label canonique, voir plus haut                                                         |
+| "Archie did X"                         | "I did X"                           | Archie parle en 1ère personne                                                           |
+| "AI-powered", "magic", "seamless"      | concret                             | voir [`../copy/copy-principles.md`](../copy/copy-principles.md) — voice anchor = Linear |
+| "Project"                              | "Session" / "Chat" / "Conversation" | "Project" est un terme historique probable-spoon, supprimé                              |
+| "Composer"                             | "Archie"                            | "Composer" était un nom interne pré-rebrand                                             |
+| "Studio"                               | "Archie" (proto) / "Studio" (prod)  | "Studio" est le label prod côté Agorapulse — le proto reste "Archie standalone"         |
+| "le Studio" pour un atelier            | "l'Image Studio", "le Clip Studio"  | Collision avec le nom du produit prod — toujours nommer l'atelier en entier             |
+| "posts" comme terme parapluie          | "content"                           | "post" veut dire trois choses (draft / publié / post d'un tiers) — voir plus haut       |
+| "Connected sources" pour un connecteur | "Connectors"                        | Une Source vit dans un chat ; un connecteur est interrogé en direct                     |
+| "channel", "profile" (qui publie)      | "account"                           | Le compte social qui publie ; le réseau reste "network"                                 |
+| "Reuse", "winners"                     | "Repurpose", "top posts"            | Voir Repurpose plus haut                                                                |
+| "captions", "ratio", "shape"           | "subtitles", "format"               | Un seul mot par notion dans les studios                                                 |
 
 ## Voir aussi
 
