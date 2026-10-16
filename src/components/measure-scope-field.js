@@ -20,15 +20,15 @@
 // Pure render + a pure reducer: the host owns the open/query UI state and the
 // draft, so this file holds no state and no listeners.
 
-import { escapeHtml as esc } from "../utils.js?v=1868";
+import { escapeHtml as esc } from "../utils.js?v=1870";
 import {
   NETWORK_LABEL,
   getConnectedProfiles,
   renderProfileTag,
   PROFILE_SEARCH_THRESHOLD,
   getConnectedProfileById,
-} from "../social-profiles.js?v=1868";
-import { isAdditiveMetric, metricLabel } from "../objective-measures.js?v=1868";
+} from "../social-profiles.js?v=1870";
+import { isAdditiveMetric, metricLabel } from "../objective-measures.js?v=1870";
 
 function profilesFor(network) {
   return getConnectedProfiles().filter((p) => p.platform === network);
@@ -101,7 +101,7 @@ export function renderScopeField({ metricId, scope, i, open = false, query = "" 
   // `renderProfileTag` (DS avatar + corner network badge) every other profile
   // surface uses.
   if (all.length <= 1) {
-    return `<span class="objm__scopeone">${all[0] ? renderProfileTag(all[0]) : "no profile connected"}</span>`;
+    return `<span class="objm__scopeone">${all[0] ? renderProfileTag(all[0]) : "No account connected"}</span>`;
   }
 
   const additive = isAdditiveMetric(metricId);
@@ -174,7 +174,7 @@ export function renderScopeField({ metricId, scope, i, open = false, query = "" 
   const note =
     additive || groups.length < 2
       ? ""
-      : `<p class="objm__scopenote">${esc(metricLabel(metricId))} can’t be summed across networks — picking a profile from another one moves the measure there.</p>`;
+      : `<p class="objm__scopenote">${esc(metricLabel(metricId))} can't be summed across networks — picking a profile from another one moves the measure there.</p>`;
 
   const searchable = all.length > PROFILE_SEARCH_THRESHOLD;
 

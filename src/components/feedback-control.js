@@ -20,10 +20,10 @@
 // list scroll position survives — same rationale as the clip/idea thumbs it
 // replaces.
 
-import { escapeAttr, escapeText } from "../utils.js?v=1868";
-import { showToast } from "./toast.js?v=1868";
-import { getFeedback, setVerdict, recordDetail } from "../feedback-store.js?v=1868";
-import { noticeDraftFeedback } from "../voice-coach.js?v=1868";
+import { escapeAttr, escapeText } from "../utils.js?v=1870";
+import { showToast } from "./toast.js?v=1870";
+import { getFeedback, setVerdict, recordDetail } from "../feedback-store.js?v=1870";
+import { noticeDraftFeedback } from "../voice-coach.js?v=1870";
 
 // "What was off?" reasons per element kind. value = stable key, label = UI.
 const REASONS = {
@@ -112,7 +112,7 @@ export function renderFeedbackPanel(targetId, { kind } = {}) {
         placeholder="Anything else? (optional)"
       >${escapeText(rec?.comment || "")}</textarea>
       <div class="fb__panel-actions">
-        <button type="button" class="ap-button primary blue fb__send" data-fb-send="${tid}">Send</button>
+        <button type="button" class="ap-button primary blue fb__send" data-fb-send="${tid}">Send feedback</button>
       </div>
     </div>`;
 }
@@ -150,7 +150,7 @@ export function onFeedbackClick(event) {
       }
     } else {
       if (panel) panel.hidden = true;
-      if (rec?.verdict === "up") showToast("Glad it landed — thanks!", { duration: 2600 });
+      if (rec?.verdict === "up") showToast("Thanks — noted.", { duration: 2600 });
     }
     return true;
   }

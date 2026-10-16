@@ -22,8 +22,8 @@
 // chart the headline measure and leave the others as 96px sparklines in the
 // table, which meant an objective's second measure had no curve anywhere.
 
-import { readingFor } from "../model.js?v=1868";
-import { trendSpec, sparklineSpec, ringSvg, progressBar, mountCharts } from "../charts.js?v=1868";
+import { readingFor } from "../model.js?v=1870";
+import { trendSpec, sparklineSpec, ringSvg, progressBar, mountCharts } from "../charts.js?v=1870";
 import {
   tierCounts,
   statusPill,
@@ -40,7 +40,7 @@ import {
   playbookTitle,
   pageTitle,
   esc,
-} from "../pieces.js?v=1868";
+} from "../pieces.js?v=1870";
 
 export const id = "cockpit";
 export const label = "Cockpit";
@@ -99,7 +99,7 @@ function renderRail(entries, rollup, selected, ctx) {
     </header>
     <ul class="ins-cockpit-rail__list" aria-label="Objectives">${rows}</ul>
     <footer class="ins-cockpit-rail__foot">
-      <span class="ins-muted">${rollup.posts} post${rollup.posts === 1 ? "" : "s"} drafted with Archie</span>
+      <span class="ins-muted">${rollup.posts} post${rollup.posts === 1 ? "" : "s"} I drafted</span>
     </footer>
   </aside>`;
 }
@@ -154,7 +154,7 @@ function renderPane(entry, local, specs, firstPaint) {
       if (m.series) specs.set(sparkId, sparklineSpec(m.series, { tier: m.tier, height: 30 }));
       return `<tr${m === shown ? ' class="selected"' : ""}>
         <th scope="row">
-          <span class="ins-cockpit-table__metric">${esc(m.metricLabel)}${m.proxy ? ` <span class="ap-badge blue">proxy</span>` : ""}</span>
+          <span class="ins-cockpit-table__metric">${esc(m.metricLabel)}${m.proxy ? ` <span class="ap-badge blue" title="A stand-in metric until the real one can be connected">Stand-in</span>` : ""}</span>
           <span class="ins-muted">${esc(m.scopeLabel || "All networks")}</span>
         </th>
         <td class="right ins-num">${esc(m.currentLabel)}</td>
@@ -214,7 +214,7 @@ function renderPane(entry, local, specs, firstPaint) {
     </section>
 
     <section class="ap-card ins-section ins-cockpit-card">
-      <h3 class="ins-section-title">Posts drafted with Archie <span class="ap-counter normal grey">${entry.posts.length}</span></h3>
+      <h3 class="ins-section-title">Posts I drafted <span class="ap-counter normal grey">${entry.posts.length}</span></h3>
       ${entry.posts.length ? `<div class="ins-postlist top-posts-grid">${entry.posts.map((p) => postCard(p, entry)).join("")}</div>` : postsEmpty()}
     </section>
   </main>`;

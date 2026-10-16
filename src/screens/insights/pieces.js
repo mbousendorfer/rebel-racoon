@@ -8,12 +8,12 @@
 // Pure render helpers — strings in, strings out. No listeners: every action is
 // a `data-ins-*` hook the shell dispatches.
 
-import { escapeHtml as esc } from "../../utils.js?v=1868";
-import { renderTopPostCard } from "../../components/top-post-card.js?v=1868";
-import { getContexts } from "../../contexts-store.js?v=1868";
-import { isWorkspaceMode } from "../../active-playbook.js?v=1868";
-import { progressBar } from "./charts.js?v=1868";
-import { signedPct } from "./model.js?v=1868";
+import { escapeHtml as esc } from "../../utils.js?v=1870";
+import { renderTopPostCard } from "../../components/top-post-card.js?v=1870";
+import { getContexts } from "../../contexts-store.js?v=1870";
+import { isWorkspaceMode } from "../../active-playbook.js?v=1870";
+import { progressBar } from "./charts.js?v=1870";
+import { signedPct } from "./model.js?v=1870";
 
 // ── The page's head — the scope, worn as the heading ─────────────────────
 //
@@ -186,7 +186,7 @@ export function tierCounts(rollup) {
 export function postsMovedLine(rollup, { className = "" } = {}) {
   const n = rollup.posts;
   if (!n) return "";
-  return `<p class="ins-postsline${className ? ` ${className}` : ""}">${n} post${n === 1 ? "" : "s"} drafted with Archie moved them over the window.</p>`;
+  return `<p class="ins-postsline${className ? ` ${className}` : ""}">${n} post${n === 1 ? "" : "s"} I drafted moved these objectives this period.</p>`;
 }
 
 // ── Verdict ───────────────────────────────────────────────────────────────
@@ -199,7 +199,7 @@ export function statusPill(entry, { dot = true } = {}) {
 /** A measure's own state as a smaller pill (on / soft / off → the tier words). */
 export function measurePill(m) {
   const cls = { "on-track": "green", "at-risk": "tagOrange", "off-track": "red" }[m.tier] || "grey";
-  const label = { "on-track": "On track", "at-risk": "At risk", "off-track": "Off track" }[m.tier] || "Pending";
+  const label = { "on-track": "On track", "at-risk": "At risk", "off-track": "Off track" }[m.tier] || "Collecting";
   return `<span class="ap-status ${cls} no-dot">${label}</span>`;
 }
 
@@ -238,7 +238,7 @@ const TREND_ICON = { up: "ap-icon-data-increase", down: "ap-icon-data-decrease",
 export function trendGlyph(m, { label = false } = {}) {
   const t = m.trend || { dir: "flat", pct: 0 };
   const good = t.dir === "up";
-  return `<span class="ins-trend ${good ? "ins-trend--up" : ""}" title="${esc(t.label)} ${signedPct(t.pct)} over the window">
+  return `<span class="ins-trend ${good ? "ins-trend--up" : ""}" title="${esc(t.label)} ${signedPct(t.pct)} this period">
     <i class="${TREND_ICON[t.dir] || TREND_ICON.flat} ap-icon-sm" aria-hidden="true"></i><span>${signedPct(t.pct)}</span>${label ? `<span class="ins-trend__label">over the window</span>` : ""}
   </span>`;
 }
@@ -357,7 +357,7 @@ export function postCard(post, entry) {
   const unit = c.unit || post.metricLabel || "";
   const stats = [
     [esc(c.amount || "—"), esc(unit.charAt(0).toUpperCase() + unit.slice(1))],
-    [c.share != null ? `${Math.round(c.share * 100)}%` : "—", "of the measure"],
+    [c.share != null ? `${Math.round(c.share * 100)}%` : "—", "share of the gain"],
   ]
     .map(
       ([v, l]) =>
@@ -379,7 +379,7 @@ export function postCard(post, entry) {
 
 /** The empty case under an objective — no posts drafted with Archie yet. */
 export function postsEmpty() {
-  return `<p class="ins-posts-empty">No post drafted with Archie has moved this objective yet.</p>`;
+  return `<p class="ins-posts-empty">No post I drafted has moved this objective yet. Start a chat about it to draft some.</p>`;
 }
 
 // ── Actions ───────────────────────────────────────────────────────────────
@@ -394,13 +394,13 @@ export function postsEmpty() {
  * is. Orange stays: this is the AI door.
  */
 export function objectiveActions(entry) {
-  const chatLabel = entry.nextMove?.cta || "Work on this";
+  const chatLabel = entry.nextMove?.cta || "Open a chat about it";
   return `<div class="ins-actions">
     <button type="button" class="ap-button secondary orange" data-ins-chat="${esc(entry.key)}">
       <i class="ap-icon-sparkles" aria-hidden="true"></i><span>${esc(chatLabel)}</span>
     </button>
     <button type="button" class="ap-button stroked grey" data-ins-adjust="${esc(entry.key)}">
-      <i class="ap-icon-pen" aria-hidden="true"></i><span>Adjust</span>
+      <i class="ap-icon-pen" aria-hidden="true"></i><span>Adjust objective</span>
     </button>
   </div>`;
 }
@@ -413,9 +413,9 @@ export function objectiveActions(entry) {
  * to the index, one click back.
  */
 export function objectiveTopbarActions(entry) {
-  const chatLabel = entry.nextMove?.cta || "Work on this";
+  const chatLabel = entry.nextMove?.cta || "Open a chat about it";
   return `<button type="button" class="ap-button stroked grey" data-ins-adjust="${esc(entry.key)}">
-      <i class="ap-icon-pen" aria-hidden="true"></i><span>Adjust</span>
+      <i class="ap-icon-pen" aria-hidden="true"></i><span>Adjust objective</span>
     </button>
     <button type="button" class="ap-button primary orange" data-ins-chat="${esc(entry.key)}">
       <i class="ap-icon-sparkles" aria-hidden="true"></i><span>${esc(chatLabel)}</span>

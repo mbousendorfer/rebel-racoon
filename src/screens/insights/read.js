@@ -33,8 +33,8 @@
 // Pure render helpers — strings in, strings out, no listeners. Every action is
 // a `data-ins-*` hook the shell dispatches (shell.js § Actions).
 
-import { readingFor } from "./model.js?v=1868";
-import { trendSpec } from "./charts.js?v=1868";
+import { readingFor } from "./model.js?v=1870";
+import { trendSpec } from "./charts.js?v=1870";
 import {
   statusPill,
   measurePill,
@@ -47,7 +47,7 @@ import {
   objectiveActions,
   tierCounts,
   esc,
-} from "./pieces.js?v=1868";
+} from "./pieces.js?v=1870";
 
 // ── The hero ──────────────────────────────────────────────────────────────
 //
@@ -184,25 +184,25 @@ function measureCard(entry, m, i, specs, { idPrefix, height }) {
   const overlay = entry.collecting
     ? `<div class="ins-chart-overlay">
         <span class="ap-status grey">Collecting</span>
-        <span class="ins-muted">day ${entry.grace?.day ?? 1} of ${entry.grace?.of ?? 7}</span>
+        <span class="ins-muted" title="I need ${entry.grace?.of ?? 7} days of data before I can say whether it's on track">day ${entry.grace?.day ?? 1} of ${entry.grace?.of ?? 7}</span>
       </div>`
     : "";
 
   const hasPct = m.progress != null;
   const cells = [
     hasPct
-      ? leadCell("Progress", `${m.progress}<span class="ins-score__unit">%</span>`)
+      ? leadCell("Progress toward target", `${m.progress}<span class="ins-score__unit">%</span>`)
       : leadCell("Current", esc(m.currentLabel || "—")),
     hasPct ? synthCell("Current", `<span class="ins-num">${esc(m.currentLabel || "—")}</span>`) : "",
     synthCell(m.isRate ? "Hold above" : "Target", `<span class="ins-num">${esc(m.targetLabel || "—")}</span>`),
-    synthCell("Variation", trendGlyph(m)),
+    synthCell("Change this period", trendGlyph(m)),
   ].filter(Boolean);
 
   return `<section class="ap-card ins-read__report">
     <header class="ins-read__reportband">
       <div class="ins-read__mhead">
         <h3 class="ins-read__mtitle">${esc(m.metricLabel)}</h3>
-        ${m.proxy ? `<span class="ap-badge blue">proxy</span>` : ""}
+        ${m.proxy ? `<span class="ap-badge blue" title="A stand-in metric until the real one can be connected">Stand-in</span>` : ""}
         ${measurePill(m)}
       </div>
       <p class="ins-read__mscope">${esc(m.scopeLabel || "All networks")}</p>
@@ -210,7 +210,7 @@ function measureCard(entry, m, i, specs, { idPrefix, height }) {
     </header>
     <div class="ins-read__reportbody">
       <div class="ins-chart ins-chart--read">
-        ${m.series ? `<div class="ins-chart__node" data-ins-chart="${esc(id)}" style="height:${height}px"></div>` : `<p class="ins-posts-empty">No series for this measure.</p>`}
+        ${m.series ? `<div class="ins-chart__node" data-ins-chart="${esc(id)}" style="height:${height}px"></div>` : `<p class="ins-posts-empty">No data for this measure yet.</p>`}
         ${overlay}
       </div>
     </div>
@@ -238,7 +238,7 @@ export function readMeasures(entry, specs, { idPrefix = "read", height = 260 } =
 
 export function readPosts(entry) {
   return `<section class="ap-card ins-section ins-read__card">
-    <h3 class="ins-section-title">Posts drafted with Archie <span class="ap-counter normal grey">${entry.posts.length}</span></h3>
+    <h3 class="ins-section-title">Posts I drafted <span class="ap-counter normal grey">${entry.posts.length}</span></h3>
     ${entry.posts.length ? `<div class="ins-postlist top-posts-grid">${entry.posts.map((p) => postCard(p, entry)).join("")}</div>` : postsEmpty()}
   </section>`;
 }
@@ -254,13 +254,17 @@ export function readFacts(entry, rollup) {
   const c = entry.counts;
   const row = (name, value) =>
     `<div class="ins-read__fact"><span class="ins-read__factname">${esc(name)}</span><span class="ins-read__factvalue">${value}</span></div>`;
-  const breakdown = [c.on ? `${c.on} on` : "", c.soft ? `${c.soft} at risk` : "", c.off ? `${c.off} off` : ""]
+  const breakdown = [
+    c.on ? `${c.on} on track` : "",
+    c.soft ? `${c.soft} at risk` : "",
+    c.off ? `${c.off} off track` : "",
+  ]
     .filter(Boolean)
     .join(" · ");
   return `<aside class="ap-card ins-section ins-read__facts" aria-label="Objective facts">
-    ${row("Verdict", statusPill(entry))}
-    ${row("Window", `<span class="ins-read__facttext">${esc(windowLine(entry))}</span>`)}
-    ${row("Origin", originMark(entry, { short: true }))}
+    ${row("Status", statusPill(entry))}
+    ${row("Period", `<span class="ins-read__facttext">${esc(windowLine(entry))}</span>`)}
+    ${row("Set by", originMark(entry, { short: true }))}
     ${row("Measures", `<span class="ins-read__facttext">${c.measures}${breakdown ? ` <span class="ins-muted">· ${esc(breakdown)}</span>` : ""}</span>`)}
     ${row("Posts", `<span class="ins-read__facttext">${c.posts}</span>`)}
     ${entry.parked ? proxyNote(entry) : ""}

@@ -14,9 +14,9 @@
 // On submit we simulate a ~1.4s round-trip and flash a success state; the
 // modal then closes itself. Nothing is actually posted.
 
-import { escapeHtml } from "../utils.js?v=1868";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1868";
-import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=1868";
+import { escapeHtml, formatTimeOfDay } from "../utils.js?v=1870";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1870";
+import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=1870";
 
 const MODAL_ID = "bugReport";
 
@@ -51,7 +51,7 @@ const HTML = `
 >
   <div class="ap-dialog-header">
     <span class="ap-dialog-title" id="bugReportTitle">Report a bug</span>
-    <span class="ap-dialog-subtitle" id="bugReportDescription">Share what happened. Archie attaches the screen context.</span>
+    <span class="ap-dialog-subtitle" id="bugReportDescription">Share what happened. I'll attach a screenshot and the page you're on.</span>
   </div>
   <button class="ap-dialog-close" type="button" id="closeBugReportBtn" aria-label="Close">
     <i class="ap-icon-close"></i>
@@ -122,7 +122,7 @@ const HTML = `
       </svg>
     </div>
     <h3>Bug reported</h3>
-    <p>Thanks for helping improve Archie. Every report gets read.</p>
+    <p>Thanks for helping me improve. Every report gets read.</p>
   </div>
 </aside>`;
 
@@ -228,24 +228,20 @@ function currentContext() {
   const [path, qs] = hash.replace(/^#/, "").split("?");
   const params = new URLSearchParams(qs || "");
   let area = "Dashboard";
-  if (path.startsWith("/session/")) area = "Session";
+  if (path.startsWith("/session/")) area = "Chat";
 
   const tab = params.get("tab") || params.get("view");
   const focus = tab ? `${tab}` : path === "/" || path === "" ? "Home" : path.split("/").pop();
 
-  const time = new Date().toLocaleString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const now = new Date();
+  const time = `${now.toLocaleDateString("en-US", { month: "short", day: "numeric" })} · ${formatTimeOfDay(now)}`;
   return { area, focus, time };
 }
 
 function populateContext() {
   const { area, focus, time } = currentContext();
   contextBar.innerHTML = `
-    <span class="bug-context__label">Context</span>
+    <span class="bug-context__label" title="Sent with your report so the team can reproduce it">Attached</span>
     <span class="bug-context__pill">${escapeHtml(area)}</span>
     <span class="bug-context__pill">${escapeHtml(focus)}</span>
     <span class="bug-context__pill">${escapeHtml(time)}</span>

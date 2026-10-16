@@ -3,7 +3,7 @@
 // toggle its visibility. No persistence — submitting shows a success flash
 // and resets on close.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1868";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1870";
 
 const MODAL_ID = "feedback";
 
@@ -69,7 +69,7 @@ const HTML = `
       </svg>
     </div>
     <h3>Feedback sent</h3>
-    <p>Every message feeds into Archie's improvements.</p>
+    <p>I read every message — it shapes what I get better at.</p>
   </div>
 </aside>`;
 

@@ -21,7 +21,7 @@
 // observation rather than act on it. The verb is gone, and with it the set, the
 // notifier it existed to fire, and the entry's removed counts.
 
-import { getActivePlaybook } from "../../active-playbook.js?v=1868";
+import { getActivePlaybook } from "../../active-playbook.js?v=1870";
 import {
   resolveObjectives,
   objectiveVerdict,
@@ -32,11 +32,11 @@ import {
   parseMetricValue,
   formatLike,
   metricLabel,
-} from "../../objective-measures.js?v=1868";
-import { TIER_LABELS, TIER_STATUS_CLASS, TIER_ORDER } from "../../objective-scoring.js?v=1868";
-import { nextMoveFor } from "../../objective-flow.js?v=1868";
-import { objectivePosts, objectivePostPool, TOP_POST_TODAY, TOP_POST_IMAGES } from "../../mocks.js?v=1868";
-import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=1868";
+} from "../../objective-measures.js?v=1870";
+import { TIER_LABELS, TIER_STATUS_CLASS, TIER_ORDER } from "../../objective-scoring.js?v=1870";
+import { nextMoveFor } from "../../objective-flow.js?v=1870";
+import { objectivePosts, objectivePostPool, TOP_POST_TODAY, TOP_POST_IMAGES } from "../../mocks.js?v=1870";
+import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=1870";
 
 /** The mock "today" — one anchor for the series' x-axis and the posts' dates. */
 const INSIGHTS_TODAY = TOP_POST_TODAY;
@@ -355,7 +355,7 @@ function buildEntry(ctx, resolved) {
     resolved,
     verdict,
     tier,
-    tierLabel: STATE_LABELS[tier] || "Pending",
+    tierLabel: STATE_LABELS[tier] || "Collecting",
     statusClass: STATE_CLASS[tier] || "grey",
     collecting,
     parked,
@@ -470,8 +470,8 @@ export function readingFor(entry) {
   const is = /(?:s|shares)$/i.test(m.metricLabel) && !/rate|score|time/i.test(m.metricLabel) ? "are" : "is";
   if (m.isRate) {
     const rel = m.current != null && m.targetNum != null && m.current >= m.targetNum ? "holding above" : "below";
-    return `${m.metricLabel} ${is} ${rel} its ${m.targetLabel} target, ${move} over the window.`;
+    return `${m.metricLabel} ${is} ${rel} its ${m.targetLabel} target, ${move} this period.`;
   }
-  if (m.progress == null) return `${m.metricLabel} ${is} at ${m.currentLabel}, ${move} over the window.`;
-  return `${m.metricLabel} ${is} at ${m.progress}% of target, ${move} over the window.`;
+  if (m.progress == null) return `${m.metricLabel} ${is} at ${m.currentLabel}, ${move} this period.`;
+  return `${m.metricLabel} ${is} at ${m.progress}% of target, ${move} this period.`;
 }

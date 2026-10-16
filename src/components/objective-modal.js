@@ -21,12 +21,12 @@
 // Replaces objective-editor-modal (the field-stack editor): the sentence form
 // is the editor now. Body-level, modal-coordinator, closes on route change.
 
-import { escapeHtml as esc } from "../utils.js?v=1868";
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1868";
-import { getContexts } from "../contexts-store.js?v=1868";
-import { getActivePlaybookId } from "../active-playbook.js?v=1868";
-import { createCatalogFlow, searchSelectorFor } from "./objective-catalog-panel.js?v=1868";
-import { renderScopeField, scopeFromClick } from "./measure-scope-field.js?v=1868";
+import { escapeHtml as esc } from "../utils.js?v=1870";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1870";
+import { getContexts } from "../contexts-store.js?v=1870";
+import { getActivePlaybookId } from "../active-playbook.js?v=1870";
+import { createCatalogFlow, searchSelectorFor } from "./objective-catalog-panel.js?v=1870";
+import { renderScopeField, scopeFromClick } from "./measure-scope-field.js?v=1870";
 import {
   resolveObjectives,
   materializeMeasureEntries,
@@ -35,7 +35,7 @@ import {
   scopedBaselineFor,
   proposeTargetFrom,
   WINDOWS,
-} from "../objective-measures.js?v=1868";
+} from "../objective-measures.js?v=1870";
 
 const MODAL_ID = "objectiveModal";
 
@@ -298,7 +298,7 @@ function renderForm() {
         // is missing.
         hasMeasures
           ? ""
-          : `<p class="objm__caption">Its status — on track, watch, or at risk — is read from these measures. Nothing else to set.</p>`
+          : `<p class="objm__caption">Its status — on track, at risk, or off track — comes from these measures. Nothing else to set.</p>`
       }
       ${hasMeasures ? `<div class="objm__measures">${draft.measures.map((entry, i) => renderMeasureCard(entry, i)).join("")}</div>` : ""}
       <div class="objm__addrow">

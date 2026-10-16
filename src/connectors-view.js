@@ -11,8 +11,8 @@
 // Interactive hooks are data-* attributes bound identically on each surface:
 //   data-connector-open|connect|disconnect|try, data-connectors-category|search
 
-import { escapeHtml } from "./utils.js?v=1868";
-import { getConnectors } from "./connectors-store.js?v=1868";
+import { escapeHtml } from "./utils.js?v=1870";
+import { getConnectors } from "./connectors-store.js?v=1870";
 
 // Category display order — anything unlisted falls to the end alphabetically.
 const CATEGORY_ORDER = ["Docs & wikis", "Storage", "Meetings & calls", "Dev & project", "Messaging", "CRM & support"];
@@ -133,8 +133,10 @@ export function renderGalleryBody(view, { showHero = true } = {}) {
     ? ""
     : `<div class="connectors-empty">
          <div class="connectors-empty__icon"><i class="ap-icon-search"></i></div>
-         <div class="connectors-empty__title">No connectors match "${escapeHtml(view.query || "")}"</div>
-         <div class="connectors-empty__sub muted">Try a different search or clear the filters.</div>
+         <div class="connectors-empty__title">${
+           view.query ? `No connectors match "${escapeHtml(view.query)}"` : "No connectors in this category"
+         }</div>
+         <div class="connectors-empty__sub muted">Try a different search, or pick All.</div>
        </div>`;
 
   const hero = showHero
@@ -186,7 +188,7 @@ export function renderDetailBody(c) {
 
   const actions = isConnected
     ? `<button type="button" class="ap-button primary orange" data-connector-try="${escapeHtml(c.id)}">
-         <i class="ap-icon-single-chat-bubble"></i><span>Start a chat</span>
+         <i class="ap-icon-single-chat-bubble"></i><span>Ask ${escapeHtml(c.name)} in chat</span>
        </button>
        <button type="button" class="ap-button ghost grey" data-connector-disconnect="${escapeHtml(c.id)}">Disconnect</button>`
     : `<button type="button" class="ap-button primary blue" data-connector-connect="${escapeHtml(c.id)}">
@@ -223,7 +225,7 @@ export function renderDetailBody(c) {
   const meta = isConnected
     ? `<p class="connectors-detail__meta muted">Connected${
         c.account ? ` as <strong>${escapeHtml(c.account)}</strong>` : ""
-      }${c.lastSync ? ` · Last sync: ${escapeHtml(c.lastSync)}` : ""}</p>`
+      }</p>`
     : "";
 
   return `
@@ -245,12 +247,12 @@ export function renderDetailBody(c) {
       </div>
 
       <div class="ap-card connectors-detail__card">
-        <h2 class="connectors-detail__section-title">What I can do over MCP</h2>
+        <h2 class="connectors-detail__section-title">What I can look up in ${escapeHtml(c.name)}</h2>
         <p class="muted connectors-detail__section-sub">
           ${
             isConnected
-              ? `I query ${escapeHtml(c.name)} live over MCP — these are the tools I'll call.`
-              : `Once connected, I'll query ${escapeHtml(c.name)} live over MCP — these are the tools I'll call.`
+              ? `I search ${escapeHtml(c.name)} live while we chat — here's what I can look up.`
+              : `Once connected, I'll search ${escapeHtml(c.name)} live while we chat — here's what I can look up.`
           }
         </p>
         <ul class="connectors-detail__caps">${caps}</ul>

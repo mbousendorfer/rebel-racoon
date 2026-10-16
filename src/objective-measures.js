@@ -36,7 +36,7 @@
 // on the Insights side, while this catalogue parks them. Insights marks those
 // cards "via proxy" by resolving the label here — one story, two surfaces.
 
-import { NETWORK_LABEL, getConnectedProfiles } from "./social-profiles.js?v=1868";
+import { NETWORK_LABEL, getConnectedProfiles } from "./social-profiles.js?v=1870";
 
 // The metric catalogue. Each metric names a concept, not a per-network field.
 // `type` — volume | rate | counter. A rate is scale-free (never split by
@@ -55,7 +55,7 @@ const METRICS = {
   followersNet: { label: "Followers net growth", type: "counter", additive: true, growth: true },
   engagementRate: { label: "Engagement rate", type: "rate" },
   comments: { label: "Comments received", type: "counter", additive: true },
-  savesShares: { label: "Saves & shares", type: "counter", additive: true },
+  savesShares: { label: "Saves and shares", type: "counter", additive: true },
   videoViews: { label: "Video views", type: "volume" },
   videoCompletion: { label: "Completion rate", type: "rate" },
   sentiment: { label: "Sentiment score", type: "rate" },
@@ -108,7 +108,12 @@ const FAMILIES = [
     metricIds: ["engagementRate", "comments", "savesShares"],
   },
   { id: "video", label: "Video", icon: "ap-icon-video", metricIds: ["videoViews", "videoCompletion"] },
-  { id: "care", label: "Reputation & care", icon: "ap-icon-star", metricIds: ["sentiment", "responseTime", "reviews"] },
+  {
+    id: "care",
+    label: "Reputation and care",
+    icon: "ap-icon-star",
+    metricIds: ["sentiment", "responseTime", "reviews"],
+  },
   { id: "traffic", label: "Traffic", icon: "ap-icon-link", metricIds: ["clicks"] },
   { id: "paid", label: "Paid", icon: "ap-icon-dollar-sign", metricIds: ["paidReach"] },
   {
@@ -127,7 +132,7 @@ const FAMILIES = [
 // date" made the sentence read "over a ends on a date"; the date field that
 // follows it now completes the clause instead.
 export const WINDOWS = [
-  { id: "rolling", label: "Rolling 30-day window" },
+  { id: "rolling", label: "Rolling 30 days" },
   { id: "fixed", label: "Window ending on" },
 ];
 
@@ -155,7 +160,7 @@ export function windowPhrase(window, { form = "long" } = {}) {
     const day = w.date ? formatDay(w.date) : "a date";
     return form === "short" ? `ends ${day}` : `fixed · ends ${day}`;
   }
-  return form === "short" ? "rolling 30d" : "rolling 30-day window";
+  return form === "short" ? "rolling 30d" : "rolling 30 days";
 }
 
 function formatDay(iso) {
@@ -306,7 +311,7 @@ const PARKED = {
     proxy: "clicks",
   },
   "App downloads": {
-    soon: "Store analytics are not connected yet.",
+    soon: "Store analytics aren't connected yet. Connect them to track this.",
     proxy: "clicks",
   },
   "Net Promoter Score": {
@@ -338,7 +343,7 @@ const ALIASES = [
 ];
 
 const GENERIC_PARKED = {
-  soon: "Not in the native metric catalog yet.",
+  soon: "I can't measure this yet — I'll track it with Engagement rate meanwhile.",
   proxy: "engagementRate",
 };
 
