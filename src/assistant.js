@@ -6,12 +6,12 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1892";
-import { findConnector } from "./connectors-store.js?v=1892";
-import { createSessionNotifier } from "./store-utils.js?v=1892";
-import { addPostDraft } from "./posts-store.js?v=1892";
-import { showToast } from "./components/toast.js?v=1892";
-import { isFlagOn } from "./feature-flags.js?v=1892";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1894";
+import { findConnector } from "./connectors-store.js?v=1894";
+import { createSessionNotifier } from "./store-utils.js?v=1894";
+import { addPostDraft } from "./posts-store.js?v=1894";
+import { showToast } from "./components/toast.js?v=1894";
+import { isFlagOn } from "./feature-flags.js?v=1894";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -460,6 +460,7 @@ const TOOL_NAMES = {
   get_best_times: "Best Publishing Times",
   fix_practices: "Fix Practices",
   manage_first_comment: "First Comment",
+  update_post_brief: "Post Plan",
 };
 const TOOL_PROGRESS = {
   analyze_context: "Analyzing context…",
@@ -470,6 +471,7 @@ const TOOL_PROGRESS = {
   generate_drafts: "Generating post drafts…",
   modify_post: "Modifying post content…",
   manage_first_comment: "Writing the first comment…",
+  update_post_brief: "Updating the post plan…",
   regenerate_posts: "Generating new posts…",
   request_config: "Updating configuration…",
   schedule_post: "Scheduling post…",
@@ -729,6 +731,21 @@ export function postSchedulePlan(sessionId, { intro, rows, summary }) {
   });
   notify(sessionId);
   return id;
+}
+
+// A post plan recap (post-plan-flow.js). The turn holds only the id: the plan
+// lives in post-plan-store, so its stage reads the same here and in the
+// composer's status slot.
+export function postPostPlan(sessionId, { planId }) {
+  getThread(sessionId).push({
+    id: newId(),
+    role: "assistant",
+    variant: "post-plan",
+    meta: "Archie",
+    planId,
+    createdAt: Date.now(),
+  });
+  notify(sessionId);
 }
 
 export function setSchedulePlanStatus(sessionId, id, status) {

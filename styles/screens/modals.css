@@ -43,6 +43,7 @@ body.has-modal {
 .rename-modal,
 .save-folder-modal,
 .share-playbook-modal,
+.assign-modal,
 .analyze-profiles-modal,
 .connect-account-modal,
 .skip-connect,
@@ -536,6 +537,7 @@ body.has-modal {
 .rename-modal.open,
 .save-folder-modal.open,
 .share-playbook-modal.open,
+.assign-modal.open,
 .analyze-profiles-modal.open,
 .connect-account-modal.open,
 .skip-connect.open,
@@ -1672,4 +1674,94 @@ body.has-modal {
 
 .skip-connect__note {
   margin: 0;
+}
+
+/* ── Assign for review (assign-modal.js) ─────────────────────────────
+   Short form, so the dialog lets the reviewer dropdown escape it rather than
+   scrolling (the save-folder dialog's choice). */
+.assign-modal {
+  width: 480px;
+  max-width: calc(100vw - 2 * var(--ref-spacing-lg));
+  overflow: visible;
+}
+
+.assign-modal__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-md);
+  overflow: visible;
+}
+
+.assign-modal__optional {
+  color: var(--ref-color-grey-80);
+}
+
+.assign-modal__picker {
+  width: 100%;
+}
+
+.assign-modal__picker > .ap-select-trigger > .ap-select-value {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+}
+
+.assign-modal__pop {
+  max-height: 320px;
+}
+
+/* The DS item rule flexes every span with an ellipsis — pin the checkbox, the
+   avatar and the reason tag, and let the name take the room. */
+.assign-modal__row > .ap-checkbox-container,
+.assign-modal__row > .ap-avatar,
+.assign-modal__row > .ap-tag {
+  flex: 0 0 auto;
+}
+
+.assign-modal__row-name {
+  flex: 1 1 auto;
+}
+
+.assign-modal__row-org {
+  flex: 0 1 auto;
+  color: var(--ref-color-grey-80);
+  font-size: var(--sys-text-style-caption-size);
+}
+
+/* Can't review these drafts: the disabled ink on the row the DS draws, the
+   reason tag still hoverable for its tooltip. */
+.assign-modal__row.is-disabled {
+  color: var(--ref-color-grey-60);
+  cursor: default;
+}
+
+.assign-modal__row.is-disabled > :not(.ap-tag) {
+  pointer-events: none;
+}
+
+.assign-modal__row.is-hidden {
+  display: none;
+}
+
+.assign-modal__due {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+}
+
+.assign-modal__due-value {
+  color: var(--ref-color-grey-100);
+  font-weight: var(--sys-text-style-body-bold-weight);
+}
+
+/* Opened by showPicker() from the button — never seen, never tabbed to. */
+.assign-modal__due-input {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
 }

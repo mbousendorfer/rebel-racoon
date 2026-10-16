@@ -22,21 +22,36 @@ export const CURRENT_USER = { id: "u-me", name: "Matt Bousendorfer", initials: "
 // permission, not an Archie one (CONCEPTS.md §6: the account catalogue belongs
 // to Agorapulse), and the only reason it lives here is that a Playbook tied to
 // a profile can't be shared with someone who can't see that profile (doc §7).
+// `canApprove` — an Agorapulse role permission: whether a draft can be assigned
+// to this person for review (assign-modal.js greys out the others, with why).
 export const MEMBERS = [
-  { ...CURRENT_USER, profiles: "all" },
-  { id: "u-sam", name: "Sam Rivera", initials: "SR", profiles: ["fb-page", "ig", "li"] },
-  { id: "u-lea", name: "Léa Mercier", initials: "LM", profiles: "all" },
-  { id: "u-jonas", name: "Jonas Beck", initials: "JB", profiles: ["li", "x"] },
-  { id: "u-nina", name: "Nina Kowalski", initials: "NK", profiles: ["li", "ig"] },
-  { id: "u-tom", name: "Tom Ellery", initials: "TE", profiles: ["fb-page"] },
-  { id: "u-priya", name: "Priya Raman", initials: "PR", profiles: "all" },
-  { id: "u-marc", name: "Marc Aubert", initials: "MA", profiles: ["x"] },
-  { id: "u-dara", name: "Dara Okonkwo", initials: "DO", profiles: ["li"] },
+  { ...CURRENT_USER, profiles: "all", canApprove: true },
+  { id: "u-sam", name: "Sam Rivera", initials: "SR", profiles: ["fb-page", "ig", "li"], canApprove: true },
+  { id: "u-lea", name: "Léa Mercier", initials: "LM", profiles: "all", canApprove: true },
+  { id: "u-jonas", name: "Jonas Beck", initials: "JB", profiles: ["li", "x"], canApprove: true },
+  { id: "u-nina", name: "Nina Kowalski", initials: "NK", profiles: ["li", "ig"], canApprove: true },
+  { id: "u-tom", name: "Tom Ellery", initials: "TE", profiles: ["fb-page"], canApprove: false },
+  { id: "u-priya", name: "Priya Raman", initials: "PR", profiles: "all", canApprove: true },
+  { id: "u-marc", name: "Marc Aubert", initials: "MA", profiles: ["x"], canApprove: true },
+  { id: "u-dara", name: "Dara Okonkwo", initials: "DO", profiles: ["li"], canApprove: false },
   // A new joiner, with nothing assigned yet — the row that proves the gate.
-  { id: "u-hugo", name: "Hugo Vasseur", initials: "HV", profiles: [] },
-  { id: "u-yuki", name: "Yuki Tanaka", initials: "YT", profiles: ["ig", "li"] },
-  { id: "u-ines", name: "Inès Ferrand", initials: "IF", profiles: ["fb-page", "li"] },
+  { id: "u-hugo", name: "Hugo Vasseur", initials: "HV", profiles: [], canApprove: false },
+  { id: "u-yuki", name: "Yuki Tanaka", initials: "YT", profiles: ["ig", "li"], canApprove: true },
+  { id: "u-ines", name: "Inès Ferrand", initials: "IF", profiles: ["fb-page", "li"], canApprove: true },
 ];
+
+// People outside the org who review through Agorapulse's external approval link
+// (a client, an agency partner). No seat, so no profile gate: anyone here can be
+// sent drafts. CONFIG like MEMBERS — ships in new-alt.
+export const EXTERNAL_REVIEWERS = [
+  { id: "x-julie", name: "Julie Moreau", initials: "JM", org: "Acme · client", external: true },
+  { id: "x-ben", name: "Ben Ashford", initials: "BA", org: "Northwind Agency", external: true },
+];
+
+/** A member or an external reviewer, by id. */
+export function getReviewer(id) {
+  return getMember(id) || EXTERNAL_REVIEWERS.find((r) => r.id === id) || null;
+}
 
 // Can this person reach that social profile? No profile asked about ⇒ yes,
 // which is what keeps the gate invisible for the Playbooks (most of them) that

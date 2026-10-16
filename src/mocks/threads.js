@@ -112,7 +112,7 @@ export const threadsBySession = {
     {
       role: "user",
       meta: "You",
-      text: "Pull the strongest ideas from these and draft 4 posts across LinkedIn and X.",
+      text: "Pull the strongest ideas from these and draft 4 posts across LinkedIn, X and Instagram.",
     },
     {
       role: "assistant",
@@ -121,8 +121,8 @@ export const threadsBySession = {
         "I drafted 4 posts grounded in [[idea:idea-acme-1]], each sized for its network and following the Acme · Q2 marketing playbook:",
         "- [[post:post-acme-1]], ready",
         "- [[post:post-acme-3]], ready",
-        "- [[post:post-acme-2]], past LinkedIn's caption limit",
-        "- [[post:post-acme-4]], image at the wrong dimensions",
+        "- [[post:post-acme-2]], needs an image before Instagram will publish it",
+        "- [[post:post-acme-4]], over X's 280 characters",
       ].join("\n"),
     },
     {
@@ -139,7 +139,7 @@ export const threadsBySession = {
         },
         {
           id: "post-acme-2",
-          network: "linkedin",
+          network: "instagram",
           preview:
             "Short version of today's offsite: we stopped writing quarterly OKRs. Here's what replaced them and why the team ships faster now.",
         },
@@ -151,7 +151,7 @@ export const threadsBySession = {
         },
         {
           id: "post-acme-4",
-          network: "linkedin",
+          network: "twitter",
           preview:
             "Behind-the-scenes on the founder keynote — including the parts that got cut. The cuts are more instructive than the keynote itself.",
         },
@@ -232,7 +232,7 @@ export const threadsBySession = {
     {
       role: "assistant",
       meta: "Archie",
-      text: "Drafted 5 posts grounded in [[idea:idea-riv-1]]. Each leads with a customer quote, names the metric, and closes with a link to the case study. [[post:post-riv-3]] needs a longer LinkedIn body.",
+      text: "Drafted 5 posts grounded in [[idea:idea-riv-1]]. Each leads with a customer quote, names the metric, and closes with a link to the case study.",
     },
     {
       role: "assistant",

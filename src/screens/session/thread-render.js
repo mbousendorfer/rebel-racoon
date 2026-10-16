@@ -13,23 +13,24 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=1892";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=1892";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1892";
-import { getTopPost } from "../../top-posts-store.js?v=1892";
-import { getTopicById } from "../../topics-store.js?v=1892";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=1892";
-import { renderProfileEchoCard } from "../../social-profiles.js?v=1892";
-import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=1892";
-import { getIdeas } from "../../library.js?v=1892";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=1892";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1892";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=1892";
-import { getSuggestion } from "../../voice-coach-store.js?v=1892";
-import { draftsToRewrite } from "../../voice-coach.js?v=1892";
-import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=1892";
-import { isFlagOn } from "../../feature-flags.js?v=1892";
-import { CURRENT_USER } from "../../org.js?v=1892";
+} from "./thread-turns.js?v=1894";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1894";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=1894";
+import { getTopPost } from "../../top-posts-store.js?v=1894";
+import { getTopicById } from "../../topics-store.js?v=1894";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=1894";
+import { renderProfileEchoCard } from "../../social-profiles.js?v=1894";
+import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=1894";
+import { getIdeas } from "../../library.js?v=1894";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=1894";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=1894";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=1894";
+import { getSuggestion } from "../../voice-coach-store.js?v=1894";
+import { getPlans } from "../../post-plan-store.js?v=1894";
+import { draftsToRewrite } from "../../voice-coach.js?v=1894";
+import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=1894";
+import { isFlagOn } from "../../feature-flags.js?v=1894";
+import { CURRENT_USER } from "../../org.js?v=1894";
 
 export function renderThread(messages, sessionId) {
   const turns = messages.map((m) => [m, renderTurn(m, sessionId)]);
@@ -174,6 +175,10 @@ function renderTurn(message, sessionId) {
 
   if (message.role === "assistant" && message.variant === "schedule-plan") {
     return renderSchedulePlanTurn(message, sessionId);
+  }
+
+  if (message.role === "assistant" && message.variant === "post-plan") {
+    return renderPostPlanTurn(message, sessionId);
   }
 
   if (message.role === "assistant" && message.variant === "voice-suggestion") {
@@ -602,6 +607,60 @@ function renderIdeaExtractionTurn(message, sessionId) {
         cta: { label: "View ideas" },
         dataAttr: `data-ideas-card-open="${source.id}"`,
       })}
+    </div>
+  `;
+}
+
+// The post plan recap (post-plan-flow.js) — read live from post-plan-store, so
+// its stage follows the plan. Three lists in the prod's order: what I'll
+// assume, what I won't invent because it wasn't given, what you asked me to
+// leave out (only when there is something). A plan without a single fact gets
+// the prod's "likely generic" warning.
+const PLAN_STAGE_LABEL = {
+  planning: "Being planned",
+  ready: "Ready",
+  writing: "Writing",
+  written: "Drafts written",
+};
+
+function renderPostPlanTurn(message, sessionId) {
+  const plan = getPlans(sessionId).find((p) => p.id === message.planId);
+  if (!plan) return "";
+  const list = (title, items) =>
+    items.length
+      ? `<div class="post-plan__section">
+          <span class="post-plan__heading">${title}</span>
+          <ul class="post-plan__list">${items.map((i) => `<li>${escapeHtml(i)}</li>`).join("")}</ul>
+        </div>`
+      : "";
+  const generic = plan.generic
+    ? `<div class="ap-infobox warning">
+        <i class="ap-icon-warning_fill" aria-hidden="true"></i>
+        <div class="ap-infobox-content">
+          <div class="ap-infobox-texts">
+            <span class="ap-infobox-message">With no fact to build on, these drafts will likely read generic. Add one and I'll use it.</span>
+          </div>
+        </div>
+      </div>`
+    : "";
+  const tone = plan.stage === "written" ? "green" : plan.stage === "writing" ? "orange" : "grey";
+  return `
+    <div class="chat-turn chat-turn--ai">
+      <i class="ap-icon-archie-official chat-turn-avatar" aria-hidden="true"></i>
+      <div class="chat-bubble chat-bubble--ai">
+        <div class="chat-bubble-text">Here's the post plan (${plan.perProfile} drafts per account).</div>
+        <div class="post-plan">
+          <div class="post-plan__head">
+            <span class="post-plan__topic">${escapeHtml(plan.topic.charAt(0).toUpperCase() + plan.topic.slice(1))}</span>
+            <span class="ap-status ${tone}">${PLAN_STAGE_LABEL[plan.stage] || ""}</span>
+          </div>
+          ${plan.facts.length ? list("Built on", plan.facts) : ""}
+          ${list("I'll assume this", plan.assumptions)}
+          ${list("Not given yet, so I won't invent it", plan.missing)}
+          ${list("Left out, as you asked", plan.leftOut)}
+          ${generic}
+        </div>
+      </div>
     </div>
   `;
 }

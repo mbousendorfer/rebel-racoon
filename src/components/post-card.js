@@ -19,12 +19,13 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1892";
-import { isPortraitFormat } from "../clip-formats.js?v=1892";
-import { presetById } from "../clip-captions.js?v=1892";
-import { renderFeedbackControl } from "./feedback-control.js?v=1892";
-import { networkMeta } from "../social-profiles.js?v=1892";
-import { REVEAL_MS } from "../archie-pixels.js?v=1892";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1894";
+import { isPortraitFormat } from "../clip-formats.js?v=1894";
+import { presetById } from "../clip-captions.js?v=1894";
+import { renderFeedbackControl } from "./feedback-control.js?v=1894";
+import { networkMeta, normalizeNetwork, profileForNetwork, renderProfileTag } from "../social-profiles.js?v=1894";
+import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=1894";
+import { REVEAL_MS } from "../archie-pixels.js?v=1894";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -143,7 +144,14 @@ export function renderPostCard(post, opts = {}) {
       : ""
   }</div>`;
 
-  const bodyParagraphs = post.text.map((p) => `<p class="posts__card-paragraph">${p}</p>`).join("");
+  const net = normalizeNetwork(post.network);
+  const handle = authorHandle(post);
+  // Instagram and TikTok open the caption with the account's handle, in bold.
+  const captionLead =
+    net === "instagram" || net === "tiktok" ? `<strong class="posts__card-caption-handle">${handle}</strong> ` : "";
+  const bodyParagraphs = post.text
+    .map((p, i) => `<p class="posts__card-paragraph">${i === 0 ? captionLead : ""}${p}</p>`)
+    .join("");
 
   const hashtags = post.hashtags.length
     ? `<p class="posts__card-hashtags">${post.hashtags.map((h) => `<a>#${h}</a>`).join(" ")}</p>`
@@ -185,7 +193,16 @@ export function renderPostCard(post, opts = {}) {
         spellcheck="true"
       >${escapeText(serializeBody(post))}</div>`;
   } else {
-    editorBody = `<div class="posts__card-body">${bodyParagraphs} ${hashtags} ${cta}</div>`;
+    // Clamped at 3 lines like the network's own fold; the toggle flips
+    // `.is-expanded` on the card (right-panel.js, data-post-readmore).
+    // ponytail: shown on a length heuristic, not a measured overflow — a short
+    // post never clamps, a borderline one may show a toggle that reveals little.
+    const clamps = usedCharacters(post) > 180 || post.text.length > 2;
+    editorBody = `<div class="posts__card-body${clamps ? " posts__card-body--clamp" : ""}">${bodyParagraphs} ${hashtags} ${cta}</div>${
+      clamps
+        ? `<button type="button" class="ap-link small posts__card-readmore" data-post-readmore="${post.id}" aria-expanded="false" data-more="${READ_MORE[net] || "See more"}">${READ_MORE[net] || "See more"}</button>`
+        : ""
+    }`;
   }
 
   // Per-network character count (alpha feedback #3 — Mari wanted an
@@ -231,7 +248,7 @@ export function renderPostCard(post, opts = {}) {
 
   const stats = post.stats || {};
   const engagement =
-    stats.likes || stats.comments || stats.reposts
+    net === "linkedin" && (stats.likes || stats.comments || stats.reposts)
       ? `
         <div class="posts__card-engagement">
           <span
@@ -319,44 +336,18 @@ export function renderPostCard(post, opts = {}) {
     >
       ${raw(checkbox)}
       <div class="posts__card-wrap">
-        ${raw(renderPostErrors(post))}
-        <article class="ap-card posts__card ${editing ? "is-editing" : ""}">
-          <header class="posts__card-header">
-            <div class="posts__card-avatar" aria-hidden="true">${post.author.initials}</div>
-            <div class="posts__card-author">
-              <div class="row posts__card-author-row">
-                <span class="posts__card-name">${post.author.name}</span>
-                <span class="muted">· ${post.author.connection}</span>
-              </div>
-              <div class="muted posts__card-title">${post.author.title}</div>
-              <div class="muted posts__card-meta">${post.timeLabel} · ${post.author.visibility}</div>
-            </div>
-          </header>
-
-          ${raw(editorBody)} ${raw(charCount)} ${raw(editActions)} ${raw(mediaBlock)} ${raw(engagement)}
-
-          <!-- Footer is a non-interactive LinkedIn-style preview of the
-               engagement bar — decoration only, not real actions (see
-               aria-hidden). The actionable controls live in the
-               .posts__row-actions stack to the right of the card. -->
-          <footer class="posts__card-footer" aria-hidden="true">
-            <span class="posts__card-action">
-              <i class="ap-icon-thumb-up"></i>
-              <span>Like</span>
-            </span>
-            <span class="posts__card-action">
-              <i class="ap-icon-single-chat-bubble"></i>
-              <span>Comment</span>
-            </span>
-            <span class="posts__card-action">
-              <i class="ap-icon-repost"></i>
-              <span>Repost</span>
-            </span>
-            <span class="posts__card-action">
-              <i class="ap-icon-paper-plane"></i>
-              <span>Send</span>
-            </span>
-          </footer>
+        ${raw(renderPostIssues(post, opts))}
+        <article class="ap-card posts__card posts__card--${net} ${editing ? "is-editing" : ""}">
+          ${raw(
+            renderNetworkLayout(net, {
+              header: renderNetworkHeader(post, net, handle),
+              body: `${editorBody} ${charCount} ${editActions}`,
+              media: `${mediaBlock}${net === "youtube" ? renderShortsNotice(post) : ""}`,
+              engagement,
+              title: net === "youtube" ? `<h3 class="posts__card-yt-title">${escapeText(youtubeTitle(post))}</h3>` : "",
+              footer: renderNetworkFooter(net),
+            }),
+          )}
           ${raw(renderFirstComment(post, { hidden: editing || regenerating }))}
         </article>
         ${raw(belowCard)}
@@ -492,16 +483,20 @@ export function renderPostCard(post, opts = {}) {
         >
           <i class="ap-icon-bookmark"></i>
         </button>
-        <button
-          type="button"
-          class="ap-icon-button stroked"
-          aria-label="Schedule draft"
-          title="Schedule draft"
-          data-post-schedule="${post.id}"
-          ${regenerating ? "disabled" : ""}
-        >
-          <i class="ap-icon-calendar"></i>
-        </button>
+        ${raw(
+          renderBlockedAction(post, regenerating, {
+            label: "Assign for review",
+            icon: "ap-icon-user--arrow-right",
+            attr: "data-post-assign",
+          }),
+        )}
+        ${raw(
+          renderBlockedAction(post, regenerating, {
+            label: "Schedule draft",
+            icon: "ap-icon-calendar",
+            attr: "data-post-schedule",
+          }),
+        )}
         <button
           type="button"
           class="ap-icon-button stroked posts__row-action--danger"
@@ -566,17 +561,8 @@ function renderVoiceContext(post) {
 
 // Per-network character budgets + the full-colour DS logo used by the count
 // chip come from the shared NETWORKS table (`twitter` is the posts-store alias
-// for `x`). A network without a `limit` renders no chip.
-// Characters a post consumes against its network limit — body paragraphs,
-// hashtags, and the CTA, joined the way they'd publish (blank line between
-// blocks). Matches what the user sees in the rendered card.
-function usedCharacters(post) {
-  const blocks = [];
-  if (post.text?.length) blocks.push(post.text.join("\n\n"));
-  if (post.hashtags?.length) blocks.push(post.hashtags.map((h) => `#${h}`).join(" "));
-  if (post.cta) blocks.push(post.cta);
-  return blocks.join("\n\n").length;
-}
+// for `x`). A network without a `limit` renders no chip. The count itself is
+// post-validation.js's `usedCharacters` — the same number the error is built on.
 
 // CharacterCounts chip (DS component 3185:48434). Shows the remaining
 // characters for the draft's network; goes red + negative when over.
@@ -614,24 +600,158 @@ function renderCharCount(post) {
   `;
 }
 
-// "needs_fixes" notice — sits above the card. Surfaces every error from
-// post.errors[], single-line for one error, bulleted list for multiple.
-function renderPostErrors(post) {
-  if (!post.errors?.length) return "";
-  const body =
-    post.errors.length === 1
-      ? post.errors[0].message
-      : `<ul class="posts__card-errors-list">${post.errors.map((e) => `<li>${e.message}</li>`).join("")}</ul>`;
-  return `
-    <div class="ap-infobox error" role="alert">
-      <i class="ap-icon-error_fill" aria-hidden="true"></i>
-      <div class="ap-infobox-content">
-        <div class="ap-infobox-texts">
-          <span class="ap-infobox-message">${body}</span>
-        </div>
+// What stops this draft from publishing, above the card — DERIVED by
+// validatePost on every render, never read from the post. Led by the account it
+// would publish to (renderProfileTag), since the rule is that network's. A
+// draft fixed a moment ago (`opts.justFixed`, held by the drafts panel) says so
+// in green before it settles back among the ready ones.
+function renderPostIssues(post, opts = {}) {
+  if (opts.justFixed) return infobox("success", "ap-icon-rounded-check_fill", "Fixed — ready to publish.", "status");
+  const { errors, warnings } = validatePost(post);
+  const list = (items) =>
+    items.length === 1
+      ? escapeText(items[0].message)
+      : `<ul class="posts__card-errors-list">${items.map((e) => `<li>${escapeText(e.message)}</li>`).join("")}</ul>`;
+  const account = renderProfileTag(profileForNetwork(post.network), { network: post.network });
+  return [
+    errors.length
+      ? infobox(
+          "error",
+          "ap-icon-error_fill",
+          `<span class="posts__card-issue-account">${account}</span>${list(errors)}`,
+          "alert",
+        )
+      : "",
+    warnings.length ? infobox("warning", "ap-icon-warning_fill", list(warnings)) : "",
+  ].join("");
+}
+
+function infobox(tone, icon, body, role = "") {
+  return `<div class="ap-infobox ${tone} posts__card-issue"${role ? ` role="${role}"` : ""}>
+    <i class="${icon}" aria-hidden="true"></i>
+    <div class="ap-infobox-content">
+      <div class="ap-infobox-texts">
+        <div class="ap-infobox-message">${body}</div>
       </div>
     </div>
-  `;
+  </div>`;
+}
+
+// A rail action that can't run on a draft that won't publish (Assign, Schedule).
+// The tooltip sits on a wrapper: a disabled button gets no pointer events, so it
+// could never show its own.
+function renderBlockedAction(post, regenerating, { label, icon, attr }) {
+  const blocker = validatePost(post).errors[0];
+  const button = `<button type="button" class="ap-icon-button stroked" aria-label="${label}" ${
+    blocker ? "" : `title="${label}"`
+  } ${attr}="${post.id}" ${regenerating || blocker ? "disabled" : ""}><i class="${icon}"></i></button>`;
+  return blocker
+    ? `<span class="posts__row-action-blocked" data-tooltip="Fix this draft first: ${escapeAttr(blocker.message)}">${button}</span>`
+    : button;
+}
+
+// ── The network's own chrome ────────────────────────────────────────
+// One card, six layouts: each network orders the same pieces its own way and
+// draws its own header and (decorative) action bar, so the preview is the post
+// as it will look there — not a LinkedIn post wearing another logo.
+
+const READ_MORE = {
+  linkedin: "…see more",
+  facebook: "See more",
+  instagram: "more",
+  x: "Show more",
+  tiktok: "more",
+  youtube: "…more",
+};
+
+// Icon + label per network, in the network's order. X, Instagram and TikTok
+// show glyphs only, like the apps do.
+const FOOTERS = {
+  linkedin: [
+    ["ns-linkedin_like", "Like"],
+    ["ns-linkedin_comment", "Comment"],
+    ["ns-linkedin_repost", "Repost"],
+    ["ns-linkedin_share", "Send"],
+  ],
+  facebook: [
+    ["ns-facebook_like", "Like"],
+    ["ns-facebook_comment", "Comment"],
+    ["ns-facebook_share", "Share"],
+  ],
+  x: [["ns-x_comment"], ["ns-x_repost"], ["ns-x_like"], ["ns-x_view"], ["ns-x_bookmark"]],
+  instagram: [["ns-instagram_like"], ["ns-instagram_comment"], ["ns-instagram_share"], ["ns-instagram_bookmark"]],
+  tiktok: [["ns-tiktok_like"], ["ns-tiktok_comment"], ["ns-tiktok_share"], ["ns-tiktok_melody", "Original sound"]],
+  youtube: [["ns-youtube-shorts_like", "Like"], ["ns-youtube-shorts_dislike"], ["ns-youtube-shorts_share", "Share"]],
+};
+
+function authorHandle(post) {
+  const account = profileForNetwork(post.network);
+  if (account?.handle) return escapeText(account.handle.replace(/^@/, ""));
+  return escapeText((post.author?.name || "you").toLowerCase().replace(/[^a-z0-9]/g, ""));
+}
+
+function renderNetworkHeader(post, net, handle) {
+  const a = post.author;
+  if (net === "instagram" || net === "tiktok" || net === "youtube")
+    return `<header class="posts__card-header posts__card-header--compact">
+      <div class="posts__card-avatar posts__card-avatar--small" aria-hidden="true">${a.initials}</div>
+      <span class="posts__card-name">${net === "youtube" ? a.name : handle}</span>
+    </header>`;
+  if (net === "x")
+    return `<header class="posts__card-header">
+      <div class="posts__card-avatar" aria-hidden="true">${a.initials}</div>
+      <div class="row posts__card-author-row">
+        <span class="posts__card-name">${a.name}</span>
+        <span class="muted">@${handle} · ${post.timeLabel}</span>
+      </div>
+    </header>`;
+  if (net === "facebook")
+    return `<header class="posts__card-header">
+      <div class="posts__card-avatar" aria-hidden="true">${a.initials}</div>
+      <div class="posts__card-author">
+        <span class="posts__card-name">${a.name}</span>
+        <div class="muted posts__card-meta">${post.timeLabel} · ${a.visibility}</div>
+      </div>
+    </header>`;
+  return `<header class="posts__card-header">
+    <div class="posts__card-avatar" aria-hidden="true">${a.initials}</div>
+    <div class="posts__card-author">
+      <div class="row posts__card-author-row">
+        <span class="posts__card-name">${a.name}</span>
+        <span class="muted">· ${a.connection}</span>
+      </div>
+      <div class="muted posts__card-title">${a.title}</div>
+      <div class="muted posts__card-meta">${post.timeLabel} · ${a.visibility}</div>
+    </div>
+  </header>`;
+}
+
+// Decoration only (aria-hidden): the actionable controls are the rail's.
+function renderNetworkFooter(net) {
+  const items = FOOTERS[net] || FOOTERS.linkedin;
+  return `<footer class="posts__card-footer posts__card-footer--${net}" aria-hidden="true">${items
+    .map(
+      ([icon, label]) =>
+        `<span class="posts__card-action"><i class="ap-icon-${icon}"></i>${label ? `<span>${label}</span>` : ""}</span>`,
+    )
+    .join("")}</footer>`;
+}
+
+// Media-led networks put the picture first and the caption under the action
+// bar; YouTube puts the video, then its title, then the channel.
+function renderNetworkLayout(net, p) {
+  if (net === "instagram" || net === "tiktok") return `${p.header}${p.media}${p.footer}${p.body}`;
+  if (net === "youtube") return `${p.media}${p.title}${p.header}${p.body}${p.footer}`;
+  return `${p.header}${p.body}${p.media}${p.engagement}${p.footer}`;
+}
+
+// A vertical clip publishes to YouTube as a Short — said under the player, since
+// it changes where the post appears.
+function renderShortsNotice(post) {
+  const portrait = post.clipRef && (post.format ? isPortraitFormat(post.format) : false);
+  return portrait
+    ? `<p class="posts__card-shorts muted"><i class="ap-icon-youtube" aria-hidden="true"></i>Vertical: publishes as a YouTube Short.</p>`
+    : "";
 }
 
 // Build the editable plain-text body shown inside the contenteditable

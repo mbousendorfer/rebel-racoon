@@ -1,14 +1,14 @@
-import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr, formatTimeOfDay } from "../utils.js?v=1892";
-import { conceptHint } from "../concepts.js?v=1892";
-import { navigate } from "../router.js?v=1892";
-import { renderTopbar } from "../components/topbar.js?v=1892";
-import { connectorDocs } from "../mocks.js?v=1892";
-import { getConnectedProfiles } from "../social-profiles.js?v=1892";
-import { getSessionById, getSessions } from "../sessions-store.js?v=1892";
-import { getContextById, getContexts, updateContext } from "../contexts-store.js?v=1892";
-import { playbookForNewWork, isWorkspaceMode } from "../active-playbook.js?v=1892";
-import { revokedContextFor, usableContexts, canView } from "../playbook-access.js?v=1892";
-import { isNewUser } from "../user-mode.js?v=1892";
+import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr, formatTimeOfDay } from "../utils.js?v=1894";
+import { conceptHint } from "../concepts.js?v=1894";
+import { navigate } from "../router.js?v=1894";
+import { renderTopbar } from "../components/topbar.js?v=1894";
+import { connectorDocs } from "../mocks.js?v=1894";
+import { getConnectedProfiles } from "../social-profiles.js?v=1894";
+import { getSessionById, getSessions } from "../sessions-store.js?v=1894";
+import { getContextById, getContexts, updateContext } from "../contexts-store.js?v=1894";
+import { playbookForNewWork, isWorkspaceMode } from "../active-playbook.js?v=1894";
+import { revokedContextFor, usableContexts, canView } from "../playbook-access.js?v=1894";
+import { isNewUser } from "../user-mode.js?v=1894";
 import {
   getThread,
   sendMessage,
@@ -30,55 +30,62 @@ import {
   startPending,
   finishPending,
   postActivity,
-} from "../assistant.js?v=1892";
-import { startRewrite } from "../draft-rewrite.js?v=1892";
+} from "../assistant.js?v=1894";
+import { startRewrite } from "../draft-rewrite.js?v=1894";
+import { startPostPlan } from "../post-plan-flow.js?v=1894";
+import {
+  getPlans as getPostPlans,
+  getActivePlan as getActivePostPlan,
+  setActivePlan as setActivePostPlan,
+  subscribe as subscribePostPlans,
+} from "../post-plan-store.js?v=1894";
 import {
   accept as acceptVoiceSuggestion,
   dismiss as dismissVoiceSuggestion,
   undo as undoVoiceSuggestion,
   getSuggestion as getVoiceSuggestion,
-} from "../voice-coach-store.js?v=1892";
-import { rewriteDraftsWithRule } from "../voice-coach.js?v=1892";
-import { iconFor as fileIconForKind } from "../file-kinds.js?v=1892";
-import { getSources, getIdeas } from "../library.js?v=1892";
-import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=1892";
+} from "../voice-coach-store.js?v=1894";
+import { rewriteDraftsWithRule } from "../voice-coach.js?v=1894";
+import { iconFor as fileIconForKind } from "../file-kinds.js?v=1894";
+import { getSources, getIdeas } from "../library.js?v=1894";
+import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=1894";
 import {
   renderInto as renderComposerMentions,
   removeMention as removeComposerMention,
   subscribe as subscribeComposerMentions,
   addMention as addComposerMention,
-} from "../composer-mentions.js?v=1892";
-import { setSubtitleStyle, getPosts, removePost, addPostDraft, updatePostContent } from "../posts-store.js?v=1892";
-import { executeDraft } from "../draft-flow.js?v=1892";
-import * as topPostsFlow from "../top-posts-flow.js?v=1892";
-import { renderTopPostsBoard } from "../components/top-post-card.js?v=1892";
-import * as sidebarWizard from "../sidebar-wizard.js?v=1892";
-import * as inlineQuestion from "../inline-question.js?v=1892";
-import { planSlots, defaultStrategy, CADENCES, queueEntries } from "../schedule-engine.js?v=1892";
-import { addToQueue } from "../schedule-store.js?v=1892";
-import { refLabel } from "../chat-refs.js?v=1892";
-import { networkLabel, networkIcon } from "../network-voice.js?v=1892";
-import { openScheduleForPosts, onPostImage } from "../components/right-panel/drafts-view.js?v=1892";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=1892";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=1892";
-import * as clipStudio from "../clip-studio.js?v=1892";
-import * as batchStudio from "../batch-studio.js?v=1892";
-import { askConnector } from "../connector-ask.js?v=1892";
-import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=1892";
-import { renderConnectorLogo } from "../connectors-view.js?v=1892";
+} from "../composer-mentions.js?v=1894";
+import { setSubtitleStyle, getPosts, removePost, addPostDraft, updatePostContent } from "../posts-store.js?v=1894";
+import { executeDraft } from "../draft-flow.js?v=1894";
+import * as topPostsFlow from "../top-posts-flow.js?v=1894";
+import { renderTopPostsBoard } from "../components/top-post-card.js?v=1894";
+import * as sidebarWizard from "../sidebar-wizard.js?v=1894";
+import * as inlineQuestion from "../inline-question.js?v=1894";
+import { planSlots, defaultStrategy, CADENCES, queueEntries } from "../schedule-engine.js?v=1894";
+import { addToQueue } from "../schedule-store.js?v=1894";
+import { refLabel } from "../chat-refs.js?v=1894";
+import { networkLabel, networkIcon } from "../network-voice.js?v=1894";
+import { openScheduleForPosts, onPostImage } from "../components/right-panel/drafts-view.js?v=1894";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=1894";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=1894";
+import * as clipStudio from "../clip-studio.js?v=1894";
+import * as batchStudio from "../batch-studio.js?v=1894";
+import { askConnector } from "../connector-ask.js?v=1894";
+import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=1894";
+import { renderConnectorLogo } from "../connectors-view.js?v=1894";
 import {
   getActiveConnector,
   clearActiveConnector,
   subscribe as subscribeComposerConnector,
-} from "../composer-connector.js?v=1892";
-import { isFlagOn } from "../feature-flags.js?v=1892";
-import { onChatGalleryClick } from "./session/chat-gallery.js?v=1892";
-import * as contextBuilder from "../context-builder.js?v=1892";
-import { renderPicker } from "./_analyse-common.js?v=1892";
-import { contentState, rerenderContentWorkspaceBody } from "../components/content-workspace.js?v=1892";
-import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=1892";
-import { open as openAddSourceModal } from "../components/add-source-modal.js?v=1892";
-import { open as openConnectorsModal } from "../components/connectors-modal.js?v=1892";
+} from "../composer-connector.js?v=1894";
+import { isFlagOn } from "../feature-flags.js?v=1894";
+import { onChatGalleryClick } from "./session/chat-gallery.js?v=1894";
+import * as contextBuilder from "../context-builder.js?v=1894";
+import { renderPicker } from "./_analyse-common.js?v=1894";
+import { contentState, rerenderContentWorkspaceBody } from "../components/content-workspace.js?v=1894";
+import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=1894";
+import { open as openAddSourceModal } from "../components/add-source-modal.js?v=1894";
+import { open as openConnectorsModal } from "../components/connectors-modal.js?v=1894";
 import {
   classifyFile,
   startFileUpload,
@@ -88,9 +95,9 @@ import {
   pushScriptedSource,
   completeScriptedSource,
   updateSourceClips,
-} from "../sources-stream.js?v=1892";
-import { onFeedbackClick } from "../components/feedback-control.js?v=1892";
-import { showToast } from "../components/toast.js?v=1892";
+} from "../sources-stream.js?v=1894";
+import { onFeedbackClick } from "../components/feedback-control.js?v=1894";
+import { showToast } from "../components/toast.js?v=1894";
 import {
   openDrafts as openDraftsPanel,
   openIdeas as openIdeasPanel,
@@ -98,19 +105,19 @@ import {
   openClips as openClipsPanel,
   getMode as getRightPanelMode,
   subscribe as subscribeRightPanel,
-} from "../components/right-panel.js?v=1892";
-import { setHandoff, consumeHandoff } from "../handoff.js?v=1892";
-import { attachTopicToChat, useTopicInChat, startTopicPickerInline, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=1892";
-import { startObjectiveChat, OBJECTIVE_CHAT_HANDOFF } from "../objective-flow.js?v=1892";
-import { getTopicById, markUsed, subscribe as subscribeTopics } from "../topics-store.js?v=1892";
-import { openTopicArticle } from "../components/topic-picker-modal.js?v=1892";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1892";
-import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=1892";
-import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=1892";
-import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=1892";
+} from "../components/right-panel.js?v=1894";
+import { setHandoff, consumeHandoff } from "../handoff.js?v=1894";
+import { attachTopicToChat, useTopicInChat, startTopicPickerInline, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=1894";
+import { startObjectiveChat, OBJECTIVE_CHAT_HANDOFF } from "../objective-flow.js?v=1894";
+import { getTopicById, markUsed, subscribe as subscribeTopics } from "../topics-store.js?v=1894";
+import { openTopicArticle } from "../components/topic-picker-modal.js?v=1894";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1894";
+import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=1894";
+import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=1894";
+import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=1894";
 // Pure thread-turn renderers — shared with the component handoff gallery so
 // the previews there never drift from the app (handoff/components.html).
-import { SWITCH_SKELETON_HTML } from "./session/thread-turns.js?v=1892";
+import { SWITCH_SKELETON_HTML } from "./session/thread-turns.js?v=1894";
 import {
   clipsToChat,
   finalizeClipStudio,
@@ -118,27 +125,27 @@ import {
   handleClipStudioUrl,
   openClipStudioEditor,
   renderClipStudio,
-} from "./session/clip-studio-view.js?v=1892";
+} from "./session/clip-studio-view.js?v=1894";
 import {
   handleBatchFiles,
   renderBatchStudio,
   repaintBatchRest,
   replayBatchSources,
   startBatchChat,
-} from "./session/batch-studio-view.js?v=1892";
+} from "./session/batch-studio-view.js?v=1894";
 import {
   askRepurposeProfiles,
   askSourceUse,
   startIdeaDraft,
   startRepurposeFlow,
-} from "./session/draft-questions.js?v=1892";
+} from "./session/draft-questions.js?v=1894";
 import {
   extractionVerdict,
   extractionWhyOpen,
   findExtractionIdea,
   renderThread,
   repaintExtractionCard,
-} from "./session/thread-render.js?v=1892";
+} from "./session/thread-render.js?v=1894";
 import {
   animateBannerIn,
   animateBannerOut,
@@ -150,9 +157,9 @@ import {
   renderComposer,
   renderComposerConnector,
   renderComposerStatus,
-} from "./session/composer.js?v=1892";
-import { renderTopPostsPickerScreen } from "./session/top-posts-view.js?v=1892";
-import { renderEmptyHero } from "./session/empty-hero.js?v=1892";
+} from "./session/composer.js?v=1894";
+import { renderTopPostsPickerScreen } from "./session/top-posts-view.js?v=1894";
+import { renderEmptyHero } from "./session/empty-hero.js?v=1894";
 
 // Default composer placeholder — restored whenever no connector is attached.
 // A connected connector swaps it for "Ask {name} anything…".
@@ -1070,6 +1077,41 @@ function firstCommentFor(sessionId, draft) {
   });
 }
 
+// Every typed ask I answer in the chat instead of the scripted reply: the
+// drafts asks, then a post with no source to write from (post-plan-flow.js).
+// Returns true when one took the message.
+function routeTypedAsk(session, text) {
+  if (routeDraftsAsk(session, text)) return true;
+  // A post plan is for a chat with nothing to write from yet — once a source is
+  // in, "write a post about…" drafts from it as before.
+  if (!getSources(session.id).length && startPostPlan(session.id, text)) return true;
+  return false;
+}
+
+function askSwitchPostPlan(sessionId) {
+  const plans = getPostPlans(sessionId);
+  const active = getActivePostPlan(sessionId);
+  postAssistantMessage(sessionId, "Which post plan should I work from?");
+  inlineQuestion.ask(sessionId, {
+    title: null,
+    stepLabel: "Post plan",
+    items: plans.map((p) => ({
+      value: p.id,
+      label: p.topic,
+      caption: p.id === active?.id ? "Current plan" : null,
+    })),
+    onPick: (id) => {
+      const plan = plans.find((p) => p.id === id);
+      if (!plan) return;
+      postUserTurn(sessionId, plan.topic);
+      setActivePostPlan(sessionId, id);
+      postAssistantMessage(sessionId, `Okay, back to the plan about ${plan.topic}.`);
+    },
+    skipLabel: "Not now",
+    onSkip: () => {},
+  });
+}
+
 // The drafts asks I handle in the chat instead of the scripted reply. Returns
 // true when it took the message.
 function routeDraftsAsk(session, text) {
@@ -1576,6 +1618,12 @@ function wireAssistantPanel(root, session, attachedContext) {
     }
     if (existing && !existing.classList.contains("is-leaving")) {
       if (existing.dataset.statusKey === status.key) return; // unchanged → no-op
+      // The post plan strip's Switch link comes and goes with the plan count —
+      // re-render it whole rather than patch its text.
+      if (status.shape === "plan" || existing.dataset.statusShape === "plan") {
+        existing.outerHTML = renderComposerStatus(session.id);
+        return;
+      }
       if (existing.dataset.statusShape === status.shape) {
         // Same shape, new text — update in place, no re-entrance.
         if (status.shape === "drafts") {
@@ -1802,6 +1850,9 @@ function wireAssistantPanel(root, session, attachedContext) {
   };
 
   // Intake-turn lifecycle (loading → ready) — see intake-lifecycle.js.
+  // The post plan strip follows the chat's plans (stage, switch).
+  const offPostPlans = subscribePostPlans(session.id, () => syncComposerStatus());
+
   const offComposerSources = startIntakeLifecycle(session.id, {
     onSourcesChange: () => {
       repaintThreadFromSources();
@@ -1873,7 +1924,10 @@ function wireAssistantPanel(root, session, attachedContext) {
   // re-post it.
   const pendingHomePrompt = consumeHandoff("pendingHomePrompt");
   if (pendingHomePrompt?.text) {
-    setTimeout(() => sendMessage(session.id, pendingHomePrompt.text), 100);
+    setTimeout(
+      () => routeTypedAsk(session, pendingHomePrompt.text) || sendMessage(session.id, pendingHomePrompt.text),
+      100,
+    );
   }
 
   // Hand-off from the account home's Add menu. The home can't run an intake —
@@ -1967,6 +2021,7 @@ function wireAssistantPanel(root, session, attachedContext) {
     offClipStudio();
     offBatchStudio();
     offComposerSources();
+    offPostPlans();
     offComposerUploads();
     unsubMentions();
     unsubConnector();
@@ -2124,7 +2179,7 @@ function bindSession(root, session) {
     // live source (simulated MCP) instead of the normal assistant thread, then
     // detaches itself so the next message is a normal follow-up.
     const activeConnector = getActiveConnector(session.id);
-    if (!activeConnector && routeDraftsAsk(session, text)) {
+    if (!activeConnector && routeTypedAsk(session, text)) {
       // handled in the chat: a question, a plan or a confirm
     } else if (activeConnector) {
       sendConnectorMessage(session.id, activeConnector, text);
@@ -2907,6 +2962,12 @@ function bindSession(root, session) {
         draftBanners.delete(session.id);
         const open = () => openDraftsPanel({ sessionId: session.id, messageId: ref });
         animateBannerOut(root.querySelector(".session__composer-status"), open);
+        return;
+      }
+
+      // Post plan strip "Switch plan" → pick which of the chat's plans is active.
+      if (event.target.closest("[data-post-plan-switch]")) {
+        askSwitchPostPlan(session.id);
         return;
       }
 
