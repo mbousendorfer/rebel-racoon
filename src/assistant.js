@@ -6,12 +6,12 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1894";
-import { findConnector } from "./connectors-store.js?v=1894";
-import { createSessionNotifier } from "./store-utils.js?v=1894";
-import { addPostDraft } from "./posts-store.js?v=1894";
-import { showToast } from "./components/toast.js?v=1894";
-import { isFlagOn } from "./feature-flags.js?v=1894";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=1896";
+import { findConnector } from "./connectors-store.js?v=1896";
+import { createSessionNotifier } from "./store-utils.js?v=1896";
+import { addPostDraft } from "./posts-store.js?v=1896";
+import { showToast } from "./components/toast.js?v=1896";
+import { isFlagOn } from "./feature-flags.js?v=1896";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -461,6 +461,7 @@ const TOOL_NAMES = {
   fix_practices: "Fix Practices",
   manage_first_comment: "First Comment",
   update_post_brief: "Post Plan",
+  assign_posts: "Assign Posts",
 };
 const TOOL_PROGRESS = {
   analyze_context: "Analyzing context…",
