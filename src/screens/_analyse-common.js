@@ -74,6 +74,7 @@ export function renderPicker(picker) {
     subtitle = null, // optional helper line under the title (what to do here)
     stepIndicator = null, // small label on the top right (e.g. "3 of 7")
     skipLabel = null, // when set, render a "Skip" button next to Submit
+    skipDisabled = false, // Skip shown but not available yet (its label says when)
     // File-upload variant: when `customFile: true`, the trailing row swaps
     // from a text input to a clickable dropzone with a hidden <input
     // type="file">. Wired by session.js — change → inlineQuestion.submitFile.
@@ -410,7 +411,7 @@ export function renderPicker(picker) {
        </button>`
     : "";
   const skipBtn = skipLabel
-    ? `<button type="button" class="ap-button ghost grey" data-${handler}-skip><span>${skipLabel}</span></button>`
+    ? `<button type="button" class="ap-button ghost grey" data-${handler}-skip ${skipDisabled ? "disabled" : ""}><span>${skipLabel}</span></button>`
     : "";
   // Primary — one blue button whose label + handler depend on the mode:
   //   multi   → Continue   (data-{handler}-submit; gathers the selected rows;
