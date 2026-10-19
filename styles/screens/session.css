@@ -923,6 +923,19 @@ body.playbook-revoked .session__composer-card {
   gap: var(--ref-spacing-md);
 }
 
+/* Headline + sub-line read as one block, tighter than the hero's gap. */
+.empty-chat__intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+}
+
+/* One line under the headline: the 440px cap left "in this chat." alone. */
+.empty-chat--rows .empty-chat__sub {
+  max-width: 640px;
+}
+
 .empty-chat__headline {
   display: inline-flex;
   align-items: center;
