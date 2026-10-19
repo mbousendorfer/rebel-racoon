@@ -1,15 +1,16 @@
 // A new chat's hero: the greeting, the workflow starters, and the "Fresh
 // topics to review" grid (flag topicFeed). Moved out of session.js, unchanged.
 
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=1907";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=1907";
-import { getContextById } from "../../contexts-store.js?v=1907";
-import { isWorkspaceMode } from "../../active-playbook.js?v=1907";
-import { renderTopicCard } from "../../components/topic-card.js?v=1907";
-import { findTopicSource } from "../../topics-catalog.js?v=1907";
-import { html, raw } from "../../utils.js?v=1907";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=1907";
-import { renderStarterCards } from "../../components/starter-card.js?v=1907";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=1913";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=1913";
+import { getContextById } from "../../contexts-store.js?v=1913";
+import { isWorkspaceMode } from "../../active-playbook.js?v=1913";
+import { renderTopicCard } from "../../components/topic-card.js?v=1913";
+import { findTopicSource } from "../../topics-catalog.js?v=1913";
+import { html, raw } from "../../utils.js?v=1913";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=1913";
+import { renderStarterCards } from "../../components/starter-card.js?v=1913";
+import { isFlagOn } from "../../feature-flags.js?v=1913";
 
 // Composer "Add" menu — "Connected sources" is a nested submenu (Codex-style
 // "Modules d'extension ▸" flyout), not a first-level list. The flyout lists the
@@ -119,6 +120,23 @@ export function renderEmptyHero(sessionId, composerMarkup = "", session = null) 
   const videoLabel = firstVideo ? `"${firstVideo.filename}"` : "your video";
   // The three cards come from components/starter-card.js — the home renders the
   // same ones, so there is one renderer and two hosts.
+  // Flag newChatHero: one question, the composer, the three workflows as rows
+  // under it (the composer and the rows share its 740px column).
+  if (isFlagOn("newChatHero")) {
+    return html`
+      <div class="empty-chat empty-chat--rows" data-empty-chat>
+        <h1 class="empty-chat__headline">
+          What are we posting today?
+          <img class="empty-chat__headline-mark" src="assets/logos/archie-mono.svg" alt="" />
+        </h1>
+        ${raw(composerMarkup)}
+        <div class="starter-rows" role="group" aria-label="Start from a workflow">
+          ${raw(renderStarterCards({ sourceLabel, videoLabel, rows: true }))}
+        </div>
+        ${raw(renderFreshTopics(session))}
+      </div>
+    `;
+  }
   const cards = renderStarterCards({ sourceLabel, videoLabel });
   return html`
     <div class="empty-chat" data-empty-chat>
