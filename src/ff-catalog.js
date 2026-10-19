@@ -146,9 +146,9 @@ export const FLAGS = Object.freeze([
     default: false,
     hides:
       'When ON, a new chat opens on one question — "What are we posting ' +
-      'today?" and its one-line explanation — with the composer under it and the three workflows ' +
+      'today?" — with the composer under it and the three workflows ' +
       "(batch from a source, clip a video, repurpose a top post) as a short " +
-      "list of one-line rows aligned on the composer, instead of three big " +
+      "list of rows (title + its description) aligned on the composer, instead of three big " +
       "cards. The Topics to review grid below is unchanged.",
   },
   {

@@ -14,8 +14,8 @@
 // and its tones), free-standing rather than scoped under `.empty-chat`, which is
 // what lets the home render the same markup.
 
-import { chatStarters } from "../mocks.js?v=1910";
-import { escapeHtml } from "../utils.js?v=1910";
+import { chatStarters } from "../mocks.js?v=1912";
+import { escapeHtml } from "../utils.js?v=1912";
 
 /**
  * The starter cards' markup, ready to drop inside a `.starter-grid`.
@@ -39,9 +39,12 @@ export function renderStarterCards({ sourceLabel = "your source", videoLabel = "
           .replace(/\{\{video-source\}\}/g, videoLabel);
         const rowAction = s.action ? ` data-starter-action="${s.action}"` : "";
         return `
-          <button type="button" class="starter-row" data-starter="${s.id}"${rowAction} data-starter-prompt="${escapeHtml(rowPrompt)}" title="${escapeHtml(s.subtitle)}">
+          <button type="button" class="starter-row" data-starter="${s.id}"${rowAction} data-starter-prompt="${escapeHtml(rowPrompt)}">
             <span class="starter-row__icon starter-card--${tone}" aria-hidden="true"><i class="${s.icon}"></i></span>
-            <span class="starter-row__label">${s.title}</span>
+            <span class="starter-row__text">
+              <span class="starter-row__label">${s.title}</span>
+              <span class="starter-row__desc">${s.subtitle}</span>
+            </span>
             <i class="starter-row__arrow ap-icon-arrow-right" aria-hidden="true"></i>
           </button>
         `;
