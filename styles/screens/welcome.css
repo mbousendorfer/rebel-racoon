@@ -164,7 +164,7 @@
 .welcome-intro__lede {
   display: flex;
   flex-direction: column;
-  padding: var(--ref-spacing-lg) clamp(var(--ref-spacing-md), 6vw, 96px);
+  padding: var(--ref-spacing-lg) clamp(var(--ref-spacing-md), 4vw, 64px);
 }
 
 .welcome-intro__wordmark {
@@ -737,12 +737,18 @@
   resize: vertical;
 }
 
+/* Back alone on the left, the way forward on the right (Skip, then the
+   primary) — the column's two edges, so the two directions never touch. */
 .welcome-flow__actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--ref-spacing-xxs);
+  gap: var(--ref-spacing-xs);
   margin-top: var(--ref-spacing-lg);
+}
+
+.welcome-flow__actions > [data-flow-back] {
+  margin-right: auto;
 }
 
 /* Building: the stages tick, the current one says what it's doing. */
