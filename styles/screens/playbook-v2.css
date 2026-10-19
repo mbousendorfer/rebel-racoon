@@ -1048,3 +1048,75 @@
   align-self: flex-start;
   margin-top: var(--ref-spacing-xs);
 }
+
+/* The audience as a list (cfg.audienceList — the onboarding review): one row
+   per option, a DS radio as its mark; the row is the control. */
+.recap__audience-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+}
+
+.recap__audience-option {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  width: 100%;
+  min-height: 48px;
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-sm);
+  background: var(--app-surface);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-card);
+  font: inherit;
+  text-align: left;
+  color: var(--ref-color-grey-100);
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.recap__audience-option:hover,
+.recap__audience-option:has(input:focus-visible),
+.recap__audience-option.is-selected {
+  border-color: var(--ref-color-electric-blue-100);
+}
+
+.recap__audience-option-text {
+  flex: 1 1 auto;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+}
+
+.recap__audience-option.is-selected .recap__audience-option-text {
+  font-weight: var(--sys-text-style-body-bold-weight);
+}
+
+/* "In my own words": the row and its textarea, always open. */
+.recap__audience-own {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+}
+
+.recap__audience-own .ap-textarea-field,
+.recap__audience-own textarea {
+  width: 100%;
+}
+
+/* The chip cloud (cfg.chipCloud): toggles that wrap, the add field under them. */
+.recap__chips--cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxs);
+  margin-bottom: var(--ref-spacing-xs);
+}
+
+.recap__chips--cloud .ap-filter-chip i {
+  font-size: var(--sys-icon-css-sm);
+}
+
+/* Inline kit choices (a logo's version, a colour's role) — chips in the row. */
+.recap__kit-choices {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxxs);
+}

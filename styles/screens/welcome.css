@@ -962,13 +962,10 @@
   display: flex;
   flex-direction: column;
   width: min(720px, calc(100% - 2 * var(--ref-spacing-lg)));
-  max-height: calc(100% - 2 * var(--ref-spacing-md));
-  min-height: 0;
+  margin: var(--ref-spacing-md) 0;
 }
 
 .welcome-flow__sheet-body {
-  min-height: 0;
-  overflow-y: auto;
   /* Room under the front card for the backs that peek out of it. */
   padding: var(--ref-spacing-xs) var(--ref-spacing-xs) var(--ref-spacing-lg);
 }
@@ -1010,8 +1007,8 @@
   display: flex;
   flex-direction: column;
   gap: 0;
-  /* One steady size, so the stack doesn't jump from a short card to a tall one. */
-  min-height: 340px;
+  /* Each card is as tall as its content — never a scroll inside a card; the
+     move between two cards is animated, so a change of height reads fine. */
   padding: var(--ref-spacing-lg);
   background: var(--app-surface);
   border: none;

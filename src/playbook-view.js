@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1969";
-import { conceptHint } from "./concepts.js?v=1969";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1977";
+import { conceptHint } from "./concepts.js?v=1977";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -29,11 +29,12 @@ import {
   handleKitChange,
   kitSnapshot,
   renderImagesTab,
-} from "./playbook-brand-kit.js?v=1969";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1969";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1969";
-import { isFlagOn } from "./feature-flags.js?v=1969";
-import { parseHashParams } from "./url-state.js?v=1969";
+  setInlineChoices,
+} from "./playbook-brand-kit.js?v=1977";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1977";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1977";
+import { isFlagOn } from "./feature-flags.js?v=1977";
+import { parseHashParams } from "./url-state.js?v=1977";
 import {
   networkVoicesOn,
   baseNetwork,
@@ -56,16 +57,16 @@ import {
   networkLabel,
   networkIcon,
   memoryCardHtml,
-} from "./network-voice.js?v=1969";
+} from "./network-voice.js?v=1977";
 import {
   getSuggestions,
   accept as acceptVoiceSuggestion,
   dismiss as dismissVoiceSuggestion,
-} from "./voice-coach-store.js?v=1969";
-import { showToast } from "./components/toast.js?v=1969";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=1969";
-import { open as openVoiceWizard } from "./components/voice-wizard-modal.js?v=1969";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1969";
+} from "./voice-coach-store.js?v=1977";
+import { showToast } from "./components/toast.js?v=1977";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=1977";
+import { open as openVoiceWizard } from "./components/voice-wizard-modal.js?v=1977";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1977";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -197,6 +198,8 @@ let activeTab = "goals"; // Playbook 2.0: the tab on screen
 //   } | null,
 //   notice(): string,                  // html above the layout (read-only banner)
 //   headerActions(): string | null,    // html for the header action bar (library)
+//   audienceList: boolean,             // the audience as a list of rows, not a dropdown
+//   chipCloud: boolean,                // chip fields as a cloud of toggles (found + common)
 //   onEditName(): void,                // header name pencil (rename)
 //   onAnalyzeVoice(): void,            // Voice profile → analyze social profiles
 //   onFooter(event): boolean,          // catch-all click handler (header actions)
@@ -204,6 +207,7 @@ let activeTab = "goals"; // Playbook 2.0: the tab on screen
 export function mount(target, config) {
   cfg = config;
   mountTarget = target;
+  setInlineChoices(cfg.chipCloud);
   activeTab = tabFromUrl();
   activeNetwork = parseHashParams().get("net") || null;
   editScope = null;
@@ -577,6 +581,7 @@ function renderBrandLogo(data, edit) {
 // ── Edit-mode field renderers ──────────────────────────────────────────
 
 function renderEditChips(field, values, placeholder) {
+  if (cfg?.chipCloud && CHIP_SUGGESTIONS[field]) return renderChipCloud(field, values, placeholder);
   const list = Array.isArray(values) ? values : [];
   const chips = list
     .map(
@@ -644,6 +649,7 @@ function audienceOptionPool(data) {
 function renderAudiencePicker(data) {
   const pool = audienceOptionPool(data);
   const selected = Array.isArray(data.audience) && data.audience.length ? data.audience[0] : "";
+  if (cfg?.audienceList) return renderAudienceList(pool, selected);
   const options = pool
     .map((v, i) => {
       const on = !audienceCustom && v.toLowerCase() === selected.toLowerCase();
@@ -682,6 +688,94 @@ function renderAudiencePicker(data) {
           : ``
       }
     </div>
+  `;
+}
+
+// `audienceList` (the onboarding review, welcome-alt-review.js): the same choice
+// laid out IN the card — one row per option, a DS radio, and "In my own words"
+// with its field — instead of a dropdown that hides the options. Same hooks
+// (data-recap-audience-pick / -input / -add), so the handlers are the dropdown's.
+function renderAudienceList(pool, selected) {
+  // A label around the real DS radio: native, keyboard-reachable, valid HTML.
+  // A click lands on the label and on its input — the handler is idempotent.
+  const row = (pick, label, on) => `
+    <label class="recap__audience-option${on ? " is-selected" : ""}" data-recap-audience-pick="${pick}">
+      <span class="ap-radio-container"><input type="radio" name="recap-audience" ${on ? "checked" : ""} /></span>
+      <span class="recap__audience-option-text">${esc(label)}</span>
+    </label>`;
+  const isPool = pool.some((v) => v.toLowerCase() === selected.toLowerCase());
+  const own = audienceCustom || (!!selected && !isPool);
+  // "In my own words" is always open: its row, then a full textarea under it.
+  // Typing writes the audience as you go (onInput, no repaint — the caret stays).
+  return `
+    <div class="recap__audience-list" role="radiogroup" aria-label="Primary audience">
+      ${pool.map((v, i) => row(i, v, !own && v.toLowerCase() === selected.toLowerCase())).join("")}
+      <div class="recap__audience-own${own ? " is-selected" : ""}">
+        ${row("other", "In my own words", own)}
+        <div class="ap-textarea-field resizable">
+          <textarea rows="3" data-recap-audience-text placeholder="Who do you write for? Busy parents who cook at home, small-team founders…" aria-label="Your audience, in your own words">${esc(own && !isPool ? selected : "")}</textarea>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// `chipCloud` (the onboarding review): a field's chips as a cloud — the values
+// found first, ticked, then the common ones for that field, unticked — each a
+// toggle; your own still go in through the field after them.
+const CHIP_SUGGESTIONS = {
+  contentStyle: [
+    "Direct and actionable",
+    "Storytelling",
+    "Educational how-tos",
+    "Behind the scenes",
+    "Data and proof",
+    "Conversational",
+    "Opinion and hot takes",
+    "Short and punchy",
+    "Customer stories",
+    "Lists and tips",
+  ],
+  objective: [
+    "Brand awareness",
+    "Lead generation",
+    "Sales",
+    "Community engagement",
+    "Website traffic",
+    "Thought leadership",
+    "Recruiting",
+    "Customer loyalty",
+  ],
+  contentAction: [
+    "Visit the website",
+    "Book a demo",
+    "Sign up",
+    "Buy now",
+    "Comment and share",
+    "Follow the page",
+    "Download a guide",
+    "Contact us",
+  ],
+};
+
+function renderChipCloud(field, values, placeholder) {
+  const picked = Array.isArray(values) ? values : [];
+  const low = new Set(picked.map((v) => v.toLowerCase()));
+  const rest = (CHIP_SUGGESTIONS[field] || []).filter((v) => !low.has(v.toLowerCase()));
+  const chip = (v, on) =>
+    `<button type="button" class="ap-filter-chip" aria-pressed="${on}" data-recap-chip-toggle="${field}" data-recap-chip-value="${esc(v)}">${on ? `<i class="ap-icon-check" aria-hidden="true"></i>` : ""}<span>${esc(v)}</span></button>`;
+  return `
+    <div class="recap__chips recap__chips--cloud">
+      ${[...picked.map((v) => chip(v, true)), ...rest.map((v) => chip(v, false))].join("")}
+    </div>
+    <span class="recap__chip-add">
+      <div class="ap-input-group recap__chip-add-field">
+        <input type="text" data-recap-chip-input="${field}" placeholder="${esc(placeholder)}" aria-label="${esc(placeholder)}" />
+      </div>
+      <button type="button" class="ap-icon-button stroked grey recap__chip-add-btn" data-recap-chip-add="${field}" aria-label="Add">
+        <i class="ap-icon-plus"></i>
+      </button>
+    </span>
   `;
 }
 
@@ -3402,7 +3496,7 @@ function onClick(event) {
     if (val === "other") {
       audienceCustom = true;
       repaint();
-      mountTarget?.querySelector("[data-recap-audience-input]")?.focus();
+      mountTarget?.querySelector("[data-recap-audience-input], [data-recap-audience-text]")?.focus();
     } else {
       audienceCustom = false;
       const pool = audienceOptionPool(data);
@@ -3415,6 +3509,19 @@ function onClick(event) {
   // Confirm a custom value typed under the "Other…" option.
   if (event.target.closest("[data-recap-audience-add]")) {
     addAudienceCustom();
+    return;
+  }
+
+  // Chip cloud (cfg.chipCloud): a toggle per value — ticked joins the field,
+  // unticked leaves it.
+  const chipToggle = event.target.closest("[data-recap-chip-toggle]");
+  if (chipToggle) {
+    const field = chipToggle.dataset.recapChipToggle;
+    const value = chipToggle.dataset.recapChipValue;
+    const list = Array.isArray(data[field]) ? data[field] : [];
+    const has = list.some((v) => v.toLowerCase() === value.toLowerCase());
+    data[field] = has ? list.filter((v) => v.toLowerCase() !== value.toLowerCase()) : [...list, value];
+    repaint();
     return;
   }
 
@@ -3625,6 +3732,25 @@ function onInput(event) {
     return;
   }
   if (!editScope) return;
+  // The audience in your own words (cfg.audienceList): written as you type,
+  // and the radios follow without a repaint.
+  if (event.target.matches?.("[data-recap-audience-text]")) {
+    const d = cfg.getData();
+    const t = event.target.value.trim();
+    if (d && t) {
+      d.audience = [t];
+      audienceCustom = true;
+      const list = event.target.closest(".recap__audience-list");
+      list?.querySelectorAll("[data-recap-audience-pick]").forEach((row) => {
+        const on = row.dataset.recapAudiencePick === "other";
+        row.classList.toggle("is-selected", on);
+        const radio = row.querySelector("input");
+        if (radio) radio.checked = on;
+      });
+      list?.querySelector(".recap__audience-own")?.classList.add("is-selected");
+    }
+    return;
+  }
   const data = cfg.getData();
   if (!data) return;
   const t = event.target;

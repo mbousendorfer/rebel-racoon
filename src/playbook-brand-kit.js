@@ -9,16 +9,16 @@
 // the fiche's live data object, exactly like every other Brand row, and are
 // committed by the section's Save (snapshotEditable carries the fields).
 
-import { escapeHtml as esc } from "./utils.js?v=1969";
-import { openImageLookChat } from "./draft-image-flow.js?v=1969";
-import { COLOR_ROLES, LOGO_VARIANTS, getContextById } from "./contexts-store.js?v=1969";
+import { escapeHtml as esc } from "./utils.js?v=1977";
+import { openImageLookChat } from "./draft-image-flow.js?v=1977";
+import { COLOR_ROLES, LOGO_VARIANTS, getContextById } from "./contexts-store.js?v=1977";
 import {
   handlePlaybookImagesClick,
   renderPresetLookPicker,
   renderImagesGenerate,
   renderImagesReferences,
   renderImagesStyles,
-} from "./modules/image-studio/index.js?v=1969";
+} from "./modules/image-studio/index.js?v=1977";
 
 const ROLE_LABELS = {
   primary: "Primary",
@@ -29,10 +29,26 @@ const ROLE_LABELS = {
 };
 const VARIANT_LABELS = { color: "Color", white: "White", black: "Black", icon: "Icon only" };
 
+// Inline choices (the onboarding review, playbook-view cfg.chipCloud): a short
+// pick — a logo's version, a colour's role — laid out as chips in the row
+// instead of a dropdown. Same data-recap-kit-* hooks, so the same handler.
+let inlineChoices = false;
+export function setInlineChoices(on) {
+  inlineChoices = !!on;
+}
+
 // A DS single-select (.ap-select on <details>). The option carries everything the
 // handler needs, so one delegated click resolves it.
 function dsSelect({ kind, index, value, labels, options, placeholder, ariaLabel }) {
   const current = labels[value];
+  if (inlineChoices && kind !== "pair") {
+    return `<span class="recap__kit-choices" role="radiogroup" aria-label="${esc(ariaLabel)}">${options
+      .map(
+        (o) =>
+          `<button type="button" class="ap-filter-chip" aria-pressed="${o === value}" data-recap-kit-pick="${kind}" data-recap-kit-index="${index}" data-recap-kit-value="${esc(o)}">${esc(labels[o])}</button>`,
+      )
+      .join("")}</span>`;
+  }
   const opts = options
     .map(
       (o) => `

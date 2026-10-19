@@ -20,13 +20,13 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=1969";
-import { navigate } from "../router.js?v=1969";
-import { getDraft, patchDraft } from "../context-builder.js?v=1969";
-import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=1969";
-import { parseHashParams } from "../url-state.js?v=1969";
-import { mountShell } from "./welcome-alt-shell.js?v=1969";
-import { enterArchie } from "./welcome-alt-recap.js?v=1969";
+import { html, raw } from "../utils.js?v=1977";
+import { navigate } from "../router.js?v=1977";
+import { getDraft, patchDraft } from "../context-builder.js?v=1977";
+import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=1977";
+import { parseHashParams } from "../url-state.js?v=1977";
+import { mountShell } from "./welcome-alt-shell.js?v=1977";
+import { enterArchie } from "./welcome-alt-recap.js?v=1977";
 
 const MOVE_MS = 220; // the card's exit, before the next one comes in
 
@@ -69,7 +69,7 @@ export function renderReview(target, sid, config) {
           const here = t.id === current();
           const mark = done.has(t.id)
             ? `<span class="welcome-review__check" title="Done"><i class="ap-icon-check" aria-hidden="true"></i></span>`
-            : here && count
+            : here && count > 1
               ? `<span class="welcome-review__count">${index + 1} of ${count}</span>`
               : "";
           return html`
@@ -113,7 +113,13 @@ export function renderReview(target, sid, config) {
   navEl.className = "welcome-review__nav";
   navEl.setAttribute("aria-label", "Cards");
   shell.sheet.append(navEl);
-  const unmount = mount(body, { ...config, showTop: false, headerActions: () => null });
+  const unmount = mount(body, {
+    ...config,
+    showTop: false,
+    headerActions: () => null,
+    audienceList: true,
+    chipCloud: true,
+  });
 
   // The part's cards: its blocks in edit, else the edited panel (a roster), else
   // whatever the part shows when it has nothing to edit.
@@ -160,12 +166,16 @@ export function renderReview(target, sid, config) {
       >
         <i class="ap-icon-arrow-left" aria-hidden="true"></i>
       </button>
-      <ol class="welcome-review__dots" aria-label="Card ${index + 1} of ${count} in ${partOf(current()).title}">
-        ${Array.from(
-          { length: count },
-          (_, i) => html`<li class="${i < index ? "is-done" : i === index ? "is-current" : ""}"></li>`,
-        )}
-      </ol>
+      ${count > 1 /* one card has no progress to show */
+        ? raw(html`
+            <ol class="welcome-review__dots" aria-label="Card ${index + 1} of ${count} in ${partOf(current()).title}">
+              ${Array.from(
+                { length: count },
+                (_, i) => html`<li class="${i < index ? "is-done" : i === index ? "is-current" : ""}"></li>`,
+              )}
+            </ol>
+          `)
+        : ""}
       <button type="button" class="welcome-review__navbtn" data-review-next ${upNext ? "" : raw("disabled")}>
         <span>${upNext || "Last card"}</span><i class="ap-icon-arrow-right" aria-hidden="true"></i>
       </button>
@@ -270,10 +280,13 @@ export function renderReview(target, sid, config) {
     <div class="welcome-review__intro-card is-done">
       <span class="welcome-review__intro-tile is-all"><i class="ap-icon-check" aria-hidden="true"></i></span>
       <span class="welcome-review__intro-title">Your Playbook is all set.</span>
-      <span class="welcome-review__intro-lead">Every part is confirmed. Start writing whenever you're ready.</span>
+      <span class="welcome-review__intro-lead">Every part is confirmed — I'll write every draft from it.</span>
       <span class="welcome-review__intro-actions">
         <button type="button" class="ap-button stroked grey" data-review-again="${RECAP_SECTIONS[0].id}">
           Review it again
+        </button>
+        <button type="button" class="ap-button primary orange" data-review-start>
+          <span>Start writing</span><i class="ap-icon-arrow-right"></i>
         </button>
       </span>
     </div>
