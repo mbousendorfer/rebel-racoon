@@ -1134,7 +1134,8 @@
 }
 
 /* The card's hierarchy, top to bottom:
-     the part — a small caption (icon + name, grey), where you are, not what it is;
+     the part — the card's header band (a grey strip, a hairline under it):
+       where you are, apart from what the card says;
      the block's title — the card's one heading, display weight;
      its sentence — what it's for, in plain grey, under the title;
      the fields — a step below, with room around them. */
@@ -1142,16 +1143,23 @@
   display: flex;
   align-items: center;
   gap: var(--ref-spacing-xxs);
-  margin-bottom: var(--ref-spacing-md);
+  /* Edge to edge across the card's top: out of its padding, under its corners. */
+  margin: calc(var(--ref-spacing-lg) * -1) calc(var(--ref-spacing-lg) * -1) var(--ref-spacing-lg);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-lg);
+  background: var(--app-surface-subtle);
+  border-bottom: 1px solid var(--ref-color-grey-20);
+  border-radius: 20px 20px 0 0;
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);
   font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-grey-80);
+  color: var(--ref-color-grey-100);
 }
 
+/* A bare glyph in the band — a tile in a strip would be a box in a box. */
 .welcome-review__kicker .welcome-flow__glyph {
-  width: 24px;
-  height: 24px;
+  width: auto;
+  height: auto;
+  background: none;
   font-size: var(--sys-icon-css-sm);
 }
 
