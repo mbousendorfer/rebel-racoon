@@ -635,6 +635,38 @@
   border-color: var(--ref-color-electric-blue-100);
 }
 
+/* The row the screen leads to (the reveal's Start writing): a size up, in the
+   AI orange — its border, a light orange ground, an orange tile and glyph. */
+.welcome-flow__option.is-featured {
+  min-height: 72px;
+  padding-block: var(--ref-spacing-sm);
+  border-color: var(--ref-color-orange-100);
+  background: var(--ref-color-orange-10);
+}
+
+.welcome-flow__option.is-featured:hover,
+.welcome-flow__option.is-featured:focus-visible {
+  border-color: var(--ref-color-orange-150);
+}
+
+.welcome-flow__option.is-featured .welcome-flow__glyph {
+  width: 40px;
+  height: 40px;
+  background: var(--ref-color-orange-100);
+  color: var(--ref-color-white);
+  font-size: var(--sys-icon-css-md);
+}
+
+.welcome-flow__option.is-featured .welcome-flow__option-title {
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
+}
+
+.welcome-flow__option.is-featured .welcome-flow__option-add {
+  color: var(--ref-color-orange-150);
+}
+
 .welcome-flow__option.is-static {
   cursor: default;
   background: var(--app-surface-subtle);

@@ -17,10 +17,10 @@
 // `loader` cfg, run the (mock) analysis on a timer, then `updateContext` with
 // the section patch — the loader flips to ready and paints the fresh data.
 
-import { navigate, getPath } from "../router.js?v=1993";
-import { parseHashParams } from "../url-state.js?v=1993";
-import { escapeHtml as esc } from "../utils.js?v=1993";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../components/topbar.js?v=1993";
+import { navigate, getPath } from "../router.js?v=1994";
+import { parseHashParams } from "../url-state.js?v=1994";
+import { escapeHtml as esc } from "../utils.js?v=1994";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../components/topbar.js?v=1994";
 import {
   getContextById,
   getContexts,
@@ -28,19 +28,19 @@ import {
   deleteContext,
   duplicateContext,
   appendHistory,
-} from "../contexts-store.js?v=1993";
-import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=1993";
-import { mount, snapshotEditable } from "../playbook-view.js?v=1993";
-import { open as openRenameModal } from "../components/rename-modal.js?v=1993";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=1993";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=1993";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=1993";
+} from "../contexts-store.js?v=1994";
+import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=1994";
+import { mount, snapshotEditable } from "../playbook-view.js?v=1994";
+import { open as openRenameModal } from "../components/rename-modal.js?v=1994";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=1994";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=1994";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=1994";
 import {
   analyzeWebsite,
   analyzeDocument,
   analyzeSocialProfiles,
   analyzeNetworkVoices,
-} from "../context-mock-analysis.js?v=1993";
+} from "../context-mock-analysis.js?v=1994";
 import {
   networkVoicesOn,
   baseNetwork,
@@ -48,8 +48,8 @@ import {
   networkLabel,
   cloneVoiceByNetwork,
   cloneItems,
-} from "../network-voice.js?v=1993";
-import { sectionPatchFromAnalysis } from "../context-builder.js?v=1993";
+} from "../network-voice.js?v=1994";
+import { sectionPatchFromAnalysis } from "../context-builder.js?v=1994";
 import {
   canView,
   canEdit,
@@ -61,9 +61,9 @@ import {
   isMine,
   ownerOf,
   ownerName,
-} from "../playbook-access.js?v=1993";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=1993";
-import { showToast } from "../components/toast.js?v=1993";
+} from "../playbook-access.js?v=1994";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=1994";
+import { showToast } from "../components/toast.js?v=1994";
 
 const AUTOFILL_MS = 1500;
 

@@ -8,17 +8,17 @@
 // A Playbook filled by hand has nothing to build: straight to the reveal, and
 // its way out is filling it in.
 
-import { html, raw } from "../utils.js?v=1993";
-import { navigate } from "../router.js?v=1993";
-import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=1993";
+import { html, raw } from "../utils.js?v=1994";
+import { navigate } from "../router.js?v=1994";
+import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=1994";
 import {
   LOADING_STAGES,
   FILE_LOADING_STAGES,
   INTERVIEW_LOADING_STAGES,
   withNetworkStage,
   enterArchie,
-} from "./welcome-alt-recap.js?v=1993";
-import { ensureFlowDraft, goBack, mountShell } from "./welcome-alt-shell.js?v=1993";
+} from "./welcome-alt-recap.js?v=1994";
+import { ensureFlowDraft, goBack, mountShell } from "./welcome-alt-shell.js?v=1994";
 
 const STAGE_MS = 1300; // each stage holds at least this long, so the work reads as work
 const started = new Map(); // sid → when this screen first showed it (a re-render doesn't restart it)
@@ -29,13 +29,13 @@ function stagesFor(d) {
   return withNetworkStage(LOADING_STAGES, d);
 }
 
-// The way out: Start writing is the END of the run, so it is the primary, where
-// every step's Continue sits (bottom right, orange = AI). Going through the
-// Playbook first is the one option above it, a row like every step's choices —
-// a full-weight way in, not a stroked "Review the details" (2026-10-19).
-const choice = ({ hook, icon, title, desc }) => `
+// The way out: two rows like every step's choices — a full-weight way into the
+// Playbook, not a stroked "Review the details" (2026-10-19) — and Start
+// writing FEATURED among them: it is where the run ends, so its row is taller,
+// in the AI orange (border, a light orange ground, an orange tile).
+const choice = ({ hook, icon, title, desc, featured = false }) => `
   <li>
-    <button type="button" class="welcome-flow__option" ${hook}>
+    <button type="button" class="welcome-flow__option${featured ? " is-featured" : ""}" ${hook}>
       <span class="welcome-flow__glyph is-icon"><i class="${icon}" aria-hidden="true"></i></span>
       <span class="welcome-flow__option-text">
         <span class="welcome-flow__option-title">${title}</span>
@@ -46,17 +46,11 @@ const choice = ({ hook, icon, title, desc }) => `
   </li>`;
 
 // Back stays, whatever the state: the run is never one-way.
-const actions = (primary = "") =>
-  raw(`<div class="welcome-flow__actions">
+const back = raw(`<div class="welcome-flow__actions">
   <button type="button" class="ap-button ghost grey" data-flow-back>
     <i class="ap-icon-arrow-left"></i><span>Back</span>
-  </button>${primary}
+  </button>
 </div>`);
-const back = actions();
-const START = `
-  <button type="button" class="ap-button primary orange" data-ready-start>
-    <span>Start writing</span><i class="ap-icon-arrow-right"></i>
-  </button>`;
 
 export function renderWelcomeAltReady(_params, target) {
   const sid = ensureFlowDraft();
@@ -99,8 +93,19 @@ export function renderWelcomeAltReady(_params, target) {
               desc: manual ? "Part by part, card by card." : "Check and edit every part before your first post.",
             }),
           )}
+          ${manual
+            ? ""
+            : raw(
+                choice({
+                  hook: "data-ready-start",
+                  icon: "ap-icon-sparkles",
+                  featured: true,
+                  title: "Start writing",
+                  desc: "Your first post now. The Playbook stays editable.",
+                }),
+              )}
         </ul>
-        ${manual ? back : actions(START)}
+        ${back}
       `;
     }
     return html`
