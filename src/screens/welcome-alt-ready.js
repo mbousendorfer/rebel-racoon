@@ -3,22 +3,22 @@
 // Two beats on one screen. Building: the stages of the analysis tick on the
 // left (the recap's own stage lists, by source) while the card on the right
 // fills with what's learned. Then the reveal: "Your Playbook is ready." and the
-// way out — Start writing (saves and enters Archie, the recap's enterArchie),
-// or Review the details (the full, editable Playbook page, /welcome-alt/recap).
+// way out — Go through my Playbook (the review, /welcome-alt/recap) or Start
+// writing (saves and enters Archie, the recap's enterArchie). Back, always.
 // A Playbook filled by hand has nothing to build: straight to the reveal, and
 // its way out is filling it in.
 
-import { html, raw } from "../utils.js?v=1991";
-import { navigate } from "../router.js?v=1991";
-import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=1991";
+import { html, raw } from "../utils.js?v=1992";
+import { navigate } from "../router.js?v=1992";
+import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=1992";
 import {
   LOADING_STAGES,
   FILE_LOADING_STAGES,
   INTERVIEW_LOADING_STAGES,
   withNetworkStage,
   enterArchie,
-} from "./welcome-alt-recap.js?v=1991";
-import { ensureFlowDraft, goBack, mountShell } from "./welcome-alt-shell.js?v=1991";
+} from "./welcome-alt-recap.js?v=1992";
+import { ensureFlowDraft, goBack, mountShell } from "./welcome-alt-shell.js?v=1992";
 
 const STAGE_MS = 1300; // each stage holds at least this long, so the work reads as work
 const started = new Map(); // sid → when this screen first showed it (a re-render doesn't restart it)
@@ -28,6 +28,30 @@ function stagesFor(d) {
   if (d?.sourceType === "interview") return INTERVIEW_LOADING_STAGES;
   return withNetworkStage(LOADING_STAGES, d);
 }
+
+// The way out is a choice between two equals — the same rows as every step's
+// choices, so neither reads as the afterthought (a stroked "Review the
+// details" beside an orange button did, 2026-10-19). Start writing keeps the
+// AI orange on its tile.
+const AI_TINT = "--part-tint: var(--ref-color-orange-20); --part-ink: var(--ref-color-orange-150)";
+const choice = ({ hook, icon, ai = false, title, desc }) => `
+  <li>
+    <button type="button" class="welcome-flow__option" ${hook}>
+      <span class="welcome-flow__glyph is-icon${ai ? " is-tinted" : ""}"${ai ? ` style="${AI_TINT}"` : ""}><i class="${icon}" aria-hidden="true"></i></span>
+      <span class="welcome-flow__option-text">
+        <span class="welcome-flow__option-title">${title}</span>
+        <span class="welcome-flow__option-desc">${desc}</span>
+      </span>
+      <i class="ap-icon-arrow-right welcome-flow__option-add" aria-hidden="true"></i>
+    </button>
+  </li>`;
+
+// Back stays, whatever the state: the run is never one-way.
+const back = raw(`<div class="welcome-flow__actions">
+  <button type="button" class="ap-button ghost grey" data-flow-back>
+    <i class="ap-icon-arrow-left"></i><span>Back</span>
+  </button>
+</div>`);
 
 export function renderWelcomeAltReady(_params, target) {
   const sid = ensureFlowDraft();
@@ -59,18 +83,30 @@ export function renderWelcomeAltReady(_params, target) {
         <p class="welcome-intro__sub">
           ${manual
             ? "Tell me how your brand sounds and who it speaks to — every draft I write starts there."
-            : "Every draft I write starts from it. You can change anything, any time, from your Playbook."}
+            : "Every draft I write starts from it. Go through it now, or start writing and change it any time."}
         </p>
-        <div class="welcome-flow__actions is-reveal">
+        <ul class="welcome-flow__options">
+          ${raw(
+            choice({
+              hook: "data-ready-review",
+              icon: "ap-icon-pen",
+              title: manual ? "Fill in my Playbook" : "Go through my Playbook",
+              desc: manual ? "Part by part, card by card." : "Check and edit every part, card by card.",
+            }),
+          )}
           ${manual
-            ? raw(`<button type="button" class="ap-button primary orange" data-ready-review>
-                <span>Fill in my Playbook</span><i class="ap-icon-arrow-right"></i>
-              </button>`)
-            : raw(`<button type="button" class="ap-button stroked grey" data-ready-review>Review the details</button>
-              <button type="button" class="ap-button primary orange" data-ready-start>
-                <span>Start writing</span><i class="ap-icon-arrow-right"></i>
-              </button>`)}
-        </div>
+            ? ""
+            : raw(
+                choice({
+                  hook: "data-ready-start",
+                  icon: "ap-icon-sparkles",
+                  ai: true,
+                  title: "Start writing",
+                  desc: "Your first post now. The Playbook stays editable.",
+                }),
+              )}
+        </ul>
+        ${back}
       `;
     }
     return html`
@@ -91,11 +127,7 @@ export function renderWelcomeAltReady(_params, target) {
           `,
         )}
       </ol>
-      <div class="welcome-flow__actions">
-        <button type="button" class="ap-button ghost grey" data-flow-back>
-          <i class="ap-icon-arrow-left"></i><span>Back</span>
-        </button>
-      </div>
+      ${back}
     `;
   };
 
