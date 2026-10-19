@@ -163,7 +163,8 @@ class ArchiePixels extends HTMLElement {
     this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     this.cols = Math.ceil(w / PITCH);
     this.rows = Math.ceil(h / PITCH);
-    this.label.hidden = w < NARRATE_MIN;
+    // `data-quiet`: the field alone, no narration (a backdrop, not a wait).
+    this.label.hidden = this.hasAttribute("data-quiet") || w < NARRATE_MIN;
     this.sample();
     this.render(performance.now());
   }

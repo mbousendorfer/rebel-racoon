@@ -140,7 +140,7 @@ export const FLAGS = Object.freeze([
   },
   {
     id: "newChatHero",
-    label: "New chat: workflow rows",
+    label: "UP-New chat: workflow rows",
     // OFF: the three big starter cards. Same three workflows, same handlers
     // either way.
     default: false,
@@ -184,5 +184,21 @@ export const FLAGS = Object.freeze([
       "block, a New step in the Optimize wizard — and Optimize leaves it to do. " +
       "On a Playbook whose base voice has no cases yet, the base asks for them " +
       "too. Off, the part is an ordinary one. Needs networkVoices.",
+  },
+  {
+    id: "connectFirst",
+    label: "UP-Onboarding: connect profiles first",
+    // OFF: a new user lands straight in the onboarding chat, where connecting
+    // an account is the step after the website URL.
+    default: false,
+    hides:
+      "When ON, the first-time run is a series of screens instead of the chat. " +
+      "First the plan — the steps ahead, in order — then one screen per step, " +
+      "all in the same split: the step on the left, and on the right Archie's " +
+      "stage where the Playbook card fills in with the real answers (the " +
+      "connected profiles, the site's name, voice, audience, colours). " +
+      "Profiles come first (Skip stays, its reasons optional); the website is " +
+      "a field, prefilled, with files, a short interview or by hand as other " +
+      "ways in. It ends on a reveal — Start writing, or review the details.",
   },
 ]);

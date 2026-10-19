@@ -7,9 +7,9 @@
 // as the muted caption, and a DS avatar carrying the brand photo plus a
 // corner network badge.
 
-import { socialAccounts, demoManyProfiles } from "./mocks.js?v=1930";
-import { escapeHtml } from "./utils.js?v=1930";
-import { createNotifier } from "./store-utils.js?v=1930";
+import { socialAccounts, demoManyProfiles } from "./mocks.js?v=1931";
+import { escapeHtml } from "./utils.js?v=1931";
+import { createNotifier } from "./store-utils.js?v=1931";
 
 // THE network table — every surface that names, badges, counts or colours a
 // network reads it, so a network is spelled one way everywhere. It replaced
@@ -168,12 +168,15 @@ export function renderProfileEchoCard(account, { network } = {}) {
 //
 // The mocks describe accounts; this Set describes the ones connected in this
 // browser session, so connecting one in a chat shows up everywhere afterwards.
-// Starts EMPTY: nothing is connected until the user connects it.
+// Starts EMPTY: nothing is connected until the user connects it. Kept in
+// sessionStorage so a reload — the one that ends onboarding included — doesn't
+// disconnect them; switching user mode clears it with the rest of the session.
 // ---------------------------------------------------------------------------
 const notifier = createNotifier("social-profiles");
 export const subscribe = notifier.subscribe;
 
 let connectedIds = null;
+const STORAGE_KEY = "archie-connected-profiles";
 
 // Every account the user could connect, mock-connected or not — the brand's
 // own accounts, one per network. demoManyProfiles stays out: those ~36 exist to
@@ -183,7 +186,13 @@ const ALL_ACCOUNTS = [...socialAccounts, ...demoManyProfiles];
 
 function ensureSeeded() {
   if (connectedIds) return connectedIds;
-  connectedIds = new Set();
+  let saved = [];
+  try {
+    saved = JSON.parse(window.sessionStorage.getItem(STORAGE_KEY) || "[]");
+  } catch {
+    /* ignore */
+  }
+  connectedIds = new Set(Array.isArray(saved) ? saved : []);
   return connectedIds;
 }
 
@@ -246,7 +255,13 @@ export function connectAccounts(accountIds) {
     ids.add(id);
     added.push(account);
   }
-  if (added.length) notifier.notify(getConnectedProfiles());
+  if (!added.length) return added;
+  try {
+    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify([...ids]));
+  } catch {
+    /* ignore */
+  }
+  notifier.notify(getConnectedProfiles());
   return added;
 }
 

@@ -10,9 +10,14 @@
 // here; user feedback was that ALT should be conversational from the
 // first screen — the profile pick is now question 2 of 3 inside the
 // chat, alongside URL (q1) and Documents (q3, skippable).
+//
+// Flag connectFirst: the run is a series of screens instead of the chat —
+// /welcome-alt/intro first (welcome-alt-intro.js), then the shell's steps
+// (welcome-alt-shell.js, -connect, -steps, -ready).
 
-import { navigate } from "../router.js?v=1930";
-import { setHandoff } from "../handoff.js?v=1930";
+import { navigate } from "../router.js?v=1931";
+import { setHandoff } from "../handoff.js?v=1931";
+import { isFlagOn } from "../feature-flags.js?v=1931";
 
 // Mock URL — the brand site is supposed to be collected by an earlier
 // step that lives outside the prototype. We hardcode a believable value
@@ -21,6 +26,16 @@ import { setHandoff } from "../handoff.js?v=1930";
 const PREFILLED_URL = "https://nicesoap.com";
 
 export function renderWelcomeAlt(_params, _target) {
+  if (isFlagOn("connectFirst")) {
+    // replace, so Back from the connect screen doesn't bounce here and forward again.
+    window.location.replace("#/welcome-alt/intro");
+    return () => {};
+  }
+  startOnboardingChat();
+  return () => {};
+}
+
+function startOnboardingChat() {
   // First-time onboarding is full-bleed: make sure no leftover
   // "integrated" flag (from a previous New-Playbook run) keeps the app
   // shell visible here.
@@ -39,5 +54,4 @@ export function renderWelcomeAlt(_params, _target) {
     prefilledUrl: PREFILLED_URL,
   });
   navigate(`/session/${sid}`);
-  return () => {};
 }

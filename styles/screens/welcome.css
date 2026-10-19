@@ -5,6 +5,9 @@
    Surfaces:
      /session/welcome-alt-* → the conversational Playbook builder runs in
                               the existing session shell.
+     /welcome-alt/intro     → what the setup will ask (flag connectFirst).
+     /welcome-alt/connect…ready → the run as screens, in the same split
+                              (.welcome-flow, flag connectFirst).
      /welcome-alt/recap     → the curated Playbook reveal (styles below).
 
    The shared `.welcome-screen*` chrome + `.welcome-hero` base also back
@@ -132,6 +135,750 @@
   background: linear-gradient(180deg, transparent 65%, var(--ref-color-orange-10) 65%);
   padding: 0 var(--ref-spacing-xxxs);
   border-radius: var(--app-radius-sm);
+}
+
+/* ---------- /welcome-alt/intro — the app's first screen (flag connectFirst) ----------
+   Split, full-bleed. Left: the headline and the steps ahead. Right: Archie's
+   warm pixel field with the Playbook those steps build, assembling itself.
+   ONE load sequence: step --i lights up at --t, as its line lands on the card.
+   Every element's resting style is its FINAL state; the keyframes start from
+   the "not yet" state — so reduced motion simply shows the finished screen. */
+
+.welcome-intro {
+  --step-gap: 0.7s;
+  --start: 0.6s;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  height: 100%;
+  min-height: 0;
+  background: var(--app-surface);
+  overflow-y: auto;
+}
+
+.welcome-intro [style*="--i"] {
+  --t: calc(var(--start) + var(--i) * var(--step-gap));
+}
+
+/* Left: the lede */
+.welcome-intro__lede {
+  display: flex;
+  flex-direction: column;
+  padding: var(--ref-spacing-lg) clamp(var(--ref-spacing-md), 6vw, 96px);
+}
+
+.welcome-intro__wordmark {
+  display: block;
+  height: 22px;
+  width: auto;
+  align-self: flex-start;
+}
+
+.welcome-intro__copy {
+  display: flex;
+  flex-direction: column;
+  max-width: 480px;
+  margin: auto 0;
+  padding: var(--ref-spacing-xl) 0;
+}
+
+/* The one display size of the app — above the DS scale (marketing tops out at
+   24px), because this is the first thing a new user reads. */
+.welcome-intro__title {
+  margin: 0;
+  font-family: var(--sys-text-style-marketing-font-family);
+  font-size: clamp(36px, 3.4vw, 52px);
+  line-height: 1.06;
+  font-weight: var(--sys-text-style-marketing-weight);
+  letter-spacing: -0.025em;
+  color: var(--ref-color-grey-100);
+  text-wrap: balance;
+}
+
+.welcome-intro__sub {
+  margin: var(--ref-spacing-sm) 0 0;
+  max-width: 46ch;
+  text-wrap: pretty;
+  font-size: var(--sys-text-style-subtitle-size);
+  line-height: var(--sys-text-style-subtitle-line-height);
+  color: var(--ref-color-grey-80);
+}
+
+/* The steps — a real sequence, so numbered, on a rail that fills as they light. */
+.welcome-intro__steps {
+  margin: var(--ref-spacing-lg) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.welcome-intro__step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  column-gap: var(--ref-spacing-sm);
+  padding-bottom: var(--ref-spacing-sm);
+}
+
+.welcome-intro__step:last-child {
+  padding-bottom: 0;
+}
+
+/* The rail: grey-20 underneath, olive drawn over it from one step to the next. */
+.welcome-intro__step:not(:last-child)::before,
+.welcome-intro__step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 13px;
+  top: 30px;
+  bottom: 2px;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--ref-color-grey-20);
+}
+
+.welcome-intro__step:not(:last-child)::after {
+  background: var(--app-butter-accent);
+  transform-origin: top;
+  animation: welcome-intro-rail var(--step-gap) linear var(--t) both;
+}
+
+.welcome-intro__num {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--app-butter-accent);
+  background: var(--app-butter);
+  color: var(--ref-color-grey-100);
+  font-size: var(--sys-text-style-caption-bold-size);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  line-height: 1;
+  animation: welcome-intro-disc 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) var(--t) both;
+}
+
+.welcome-intro__text {
+  display: flex;
+  flex-direction: column;
+  padding-top: 3px;
+}
+
+.welcome-intro__step-title {
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.welcome-intro__step-desc {
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--ref-color-grey-80);
+}
+
+.welcome-intro__actions {
+  display: flex;
+  margin-top: var(--ref-spacing-lg);
+}
+
+/* Right: the stage */
+.welcome-intro__stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  margin: var(--ref-spacing-sm);
+  min-height: 0;
+  border-radius: 24px;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.welcome-intro__card {
+  position: relative;
+  z-index: 1;
+  width: min(440px, calc(100% - 2 * var(--ref-spacing-lg)));
+  padding: var(--ref-spacing-md) var(--ref-spacing-md) var(--ref-spacing-sm);
+  background: var(--app-surface);
+  border-radius: 16px;
+  box-shadow: var(--app-shadow-popover-lg);
+  animation: welcome-intro-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+}
+
+.welcome-intro__card-head {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  padding-bottom: var(--ref-spacing-sm);
+  border-bottom: 1px solid var(--ref-color-grey-20);
+}
+
+.welcome-intro__brand {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--app-radius-lg);
+  background: var(--app-surface-subtle);
+  color: var(--ref-color-grey-100);
+  font-size: var(--sys-icon-css-md);
+}
+
+.welcome-intro__card-title {
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.welcome-intro__rows {
+  margin: 0;
+}
+
+.welcome-intro__row {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  min-height: 52px;
+  padding: var(--ref-spacing-xxs) 0;
+  border-bottom: 1px solid var(--ref-color-grey-20);
+  animation: welcome-intro-land 0.5s cubic-bezier(0.22, 1, 0.36, 1) var(--t) both;
+}
+
+.welcome-intro__row dt {
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
+}
+
+.welcome-intro__row dd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  margin: 0;
+}
+
+/* Inside a line, its pieces land one after the other. */
+.welcome-intro__row dd > * {
+  animation: welcome-intro-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: calc(var(--t) + 0.12s);
+}
+.welcome-intro__row dd > :nth-child(2) {
+  animation-delay: calc(var(--t) + 0.2s);
+}
+.welcome-intro__row dd > :nth-child(3) {
+  animation-delay: calc(var(--t) + 0.28s);
+}
+.welcome-intro__row dd > :nth-child(4) {
+  animation-delay: calc(var(--t) + 0.36s);
+}
+
+.welcome-intro__net {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-lg);
+  font-size: var(--sys-icon-css-sm);
+}
+
+.welcome-intro__trait {
+  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
+  border-radius: var(--app-radius-pill);
+  background: var(--app-butter);
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.welcome-intro__plain {
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.welcome-intro__swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+.welcome-intro__card-foot {
+  display: flex;
+  padding-top: var(--ref-spacing-sm);
+  animation: welcome-intro-land 0.5s cubic-bezier(0.22, 1, 0.36, 1) var(--t) both;
+}
+
+@keyframes welcome-intro-rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.98);
+  }
+}
+@keyframes welcome-intro-land {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes welcome-intro-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+@keyframes welcome-intro-rail {
+  from {
+    transform: scaleY(0);
+  }
+}
+/* A step lights as its line lands: white → butter, with a small swell. */
+@keyframes welcome-intro-disc {
+  0% {
+    background: var(--app-surface);
+    border-color: var(--ref-color-grey-20);
+    transform: scale(1);
+  }
+  60% {
+    transform: scale(1.15);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .welcome-intro *,
+  .welcome-intro *::after {
+    /* The finished screen, at once. */
+    animation: none !important;
+  }
+}
+
+/* Narrow: one column — the lede, then the stage under it. */
+@media (max-width: 900px) {
+  .welcome-intro {
+    grid-template-columns: minmax(0, 1fr);
+    height: auto;
+    min-height: 100%;
+  }
+  .welcome-intro__stage {
+    min-height: 420px;
+  }
+  .welcome-intro__copy {
+    margin: 0;
+    padding-top: var(--ref-spacing-md);
+  }
+}
+
+/* Phone: a card line stacks its label over its value. */
+@media (max-width: 480px) {
+  .welcome-intro__row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--ref-spacing-xxs);
+    padding: var(--ref-spacing-xs) 0;
+  }
+}
+
+/* ---------- The run: /welcome-alt/connect → /ready (flag connectFirst) ----------
+   The intro's split, reused (welcome-alt-shell.js): the step on the left, the
+   stage on the right where the card fills with real answers. Unlike the intro
+   there is no load sequence — the card is already there from one step to the
+   next, and only a line that has just been FILLED lands (.is-new). */
+
+.welcome-flow {
+  --t: 0s;
+}
+
+.welcome-flow .welcome-intro__card,
+.welcome-flow .welcome-intro__card-foot,
+.welcome-flow__row:not(.is-new),
+.welcome-flow__row:not(.is-new) dd > * {
+  animation: none;
+}
+
+.welcome-flow__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-sm);
+}
+
+/* Progress: done = butter + check, current = butter ring, ahead = white. */
+.welcome-flow__progress {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+}
+
+.welcome-flow__dots {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.welcome-flow__dot {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--ref-color-grey-20);
+  background: var(--app-surface);
+  color: var(--ref-color-grey-100);
+  font-size: var(--sys-text-style-caption-bold-size);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  line-height: 1;
+}
+
+.welcome-flow__dot + .welcome-flow__dot {
+  margin-left: var(--ref-spacing-sm);
+}
+
+/* The line between two dots. */
+.welcome-flow__dot + .welcome-flow__dot::before {
+  content: "";
+  position: absolute;
+  right: 100%;
+  width: calc(var(--ref-spacing-sm) + 2px);
+  height: 2px;
+  background: var(--ref-color-grey-20);
+}
+
+.welcome-flow__dot.is-done,
+.welcome-flow__dot.is-current {
+  background: var(--app-butter);
+  border-color: var(--app-butter-accent);
+}
+
+.welcome-flow__dot.is-done + .welcome-flow__dot::before {
+  background: var(--app-butter-accent);
+}
+
+.welcome-flow__dot.is-current {
+  box-shadow: 0 0 0 3px var(--app-butter);
+}
+
+.welcome-flow__dot i {
+  font-size: var(--sys-icon-css-sm);
+}
+
+.welcome-flow__count {
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
+  white-space: nowrap;
+}
+
+/* The step's title: a size under the intro's display, the same voice. */
+.welcome-flow__title {
+  margin: 0;
+  font-family: var(--sys-text-style-marketing-font-family);
+  font-size: clamp(30px, 2.8vw, 40px);
+  line-height: 1.1;
+  font-weight: var(--sys-text-style-marketing-weight);
+  letter-spacing: -0.02em;
+  color: var(--ref-color-grey-100);
+  text-wrap: balance;
+}
+
+.welcome-flow__title.is-question {
+  font-size: clamp(24px, 2.2vw, 32px);
+  line-height: 1.2;
+}
+
+.welcome-flow__kicker {
+  margin: 0 0 var(--ref-spacing-xxs);
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-80);
+}
+
+/* Choices: one row per option — the row is the control. */
+.welcome-flow__options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  margin: var(--ref-spacing-md) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.welcome-flow__options.is-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.welcome-flow__options.is-compact {
+  margin-top: var(--ref-spacing-xs);
+}
+
+.welcome-flow__option {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  width: 100%;
+  min-height: 56px;
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-sm);
+  background: var(--app-surface);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-card);
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.welcome-flow__options.is-compact .welcome-flow__option {
+  min-height: 48px;
+}
+
+.welcome-flow__option:hover,
+.welcome-flow__option:focus-visible,
+.welcome-flow__option:has(input:checked),
+.welcome-flow__option:has(input:focus-visible) {
+  border-color: var(--ref-color-electric-blue-100);
+}
+
+.welcome-flow__option.is-static {
+  cursor: default;
+  background: var(--app-surface-subtle);
+  border-color: transparent;
+}
+
+.welcome-flow__glyph {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  font-size: var(--sys-icon-css-md);
+  line-height: 1;
+}
+
+.welcome-flow__glyph img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.welcome-flow__glyph.is-icon {
+  border-radius: var(--app-radius-lg);
+  background: var(--app-surface-subtle);
+  color: var(--ref-color-grey-100);
+  font-size: var(--sys-icon-css-sm);
+}
+
+.welcome-flow__option-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.welcome-flow__option-title {
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.welcome-flow__option-desc {
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
+}
+
+.welcome-flow__option-add {
+  flex-shrink: 0;
+  color: var(--ref-color-electric-blue-100);
+}
+
+.welcome-flow__connected {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  flex-shrink: 0;
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.welcome-flow__connected i {
+  color: var(--app-butter-accent);
+}
+
+/* The website: one field, prefilled, and the action beside it. */
+.welcome-flow__url {
+  display: flex;
+  gap: var(--ref-spacing-xxs);
+  margin-top: var(--ref-spacing-md);
+}
+
+.welcome-flow__url-field {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.welcome-flow__url > .ap-button {
+  flex-shrink: 0;
+}
+
+.welcome-flow__or {
+  margin: var(--ref-spacing-lg) 0 0;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--ref-color-grey-80);
+}
+
+.welcome-flow__answer {
+  margin-top: var(--ref-spacing-md);
+}
+
+.welcome-flow__textarea {
+  width: 100%;
+  min-height: 120px;
+  resize: vertical;
+}
+
+.welcome-flow__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  margin-top: var(--ref-spacing-lg);
+}
+
+/* Building: the stages tick, the current one says what it's doing. */
+.welcome-flow__stages {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+  margin: var(--ref-spacing-lg) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.welcome-flow__stage {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  column-gap: var(--ref-spacing-sm);
+  align-items: start;
+}
+
+.welcome-flow__stage-mark {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--ref-color-grey-20);
+  background: var(--app-surface);
+}
+
+.welcome-flow__stage.is-done .welcome-flow__stage-mark {
+  background: var(--app-butter);
+  border-color: var(--app-butter-accent);
+}
+
+.welcome-flow__stage-mark i {
+  font-size: var(--sys-icon-css-sm);
+  color: var(--ref-color-grey-100);
+}
+
+/* The one at work: an olive dot breathing in a butter disc. */
+.welcome-flow__stage.is-current .welcome-flow__stage-mark {
+  background: var(--app-butter);
+  border-color: var(--app-butter-accent);
+}
+
+.welcome-flow__stage.is-current .welcome-flow__stage-mark::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--app-butter-accent);
+  animation: ap-status-working 1.2s ease-in-out infinite;
+}
+
+/* The live card */
+.welcome-flow__card-name {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.welcome-flow__card-sub {
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
+}
+
+.welcome-intro__brand img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.welcome-flow__line {
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--ref-color-grey-100);
+}
+
+/* Not answered yet: a quiet bar. Being learned: the same bar, breathing butter. */
+.welcome-flow__placeholder {
+  display: block;
+  width: 60%;
+  height: 10px;
+  border-radius: 5px;
+  background: var(--app-surface-subtle);
+}
+
+.welcome-flow__row.is-pending .welcome-flow__placeholder {
+  background: var(--app-butter);
+  animation: welcome-flow-breathe 1.4s ease-in-out infinite;
+}
+
+@keyframes welcome-flow-breathe {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.welcome-flow__foot:empty {
+  display: none;
+}
+
+/* The reveal: the card takes a breath. */
+.welcome-flow__card.is-revealed {
+  animation: welcome-flow-reveal 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes welcome-flow-reveal {
+  40% {
+    transform: scale(1.03);
+  }
+}
+
+@media (max-width: 480px) {
+  .welcome-flow__options.is-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .welcome-flow__url {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .welcome-flow__url-field {
+    width: 100%;
+  }
 }
 
 /* ---------- /welcome-alt/recap — Playbook reveal ----------

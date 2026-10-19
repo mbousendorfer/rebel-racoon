@@ -186,24 +186,37 @@ Two rules this rests on:
   measurement (the widest string is 162px); `auto-fit` is banned here because two tiles plus an
   orphan third was invisible as a band and is glaring as separate shapes. Then a
   multi-select "Why not now?". ⚠️ **No margin-top anywhere in this dialog** — `.ap-dialog-content`
-  gaps its children by `--ref-spacing-md` and every margin added a second one. ⚠️ **Answering is REQUIRED** here, unlike
-  `topic-ignore-modal`'s optional reason: this is the only thing the step gets back, and the user
-  meets the dialog once. What keeps that honest is that LEAVING is free — Back, Esc, backdrop and X
-  all put the network grid back rather than skipping, so the gate sits on the skip and never on the
-  exit. Reasons land in `feedback-store` via `recordReasons` (key `skip:connect-profiles`), the one
+  gaps its children by `--ref-spacing-md` and every margin added a second one. Answering is **optional**
+  (2026-10-19 — it was REQUIRED: a gate on the skip was one more friction on the app's very first
+  screen, and a forced tick is a noisy answer). Leaving is free too — Back, Esc, backdrop and X all
+  put the network grid back rather than skipping; only an actual answer is recorded. Reasons land in `feedback-store` via `recordReasons` (key `skip:connect-profiles`), the one
   store function that records an answer with no verdict. Skipping the _pick_ of an already-connected
   profile is a different gesture and is NOT intercepted.
 - **A step that a dialog hands control back to is put BACK, not asked again.** `askAltProfile` takes
   `{ announce }`, false from both `onDismiss` paths — without it the thread printed its own question
   twice for one step (a pre-existing blemish on the connect dialog's cancel, doubled the day the skip
   dialog became a second caller).
-- **`social-profiles.js` now holds state.** A module-level `Set` of connected ids, seeded once from
-  the mocks (flag off) or empty (flag on), with `connectAccounts()` writing to it and a notifier so
+- **`social-profiles.js` now holds state.** A module-level `Set` of connected ids, empty at first
+  and kept in sessionStorage (`archie-connected-profiles`, 2026-10-19) so a reload — the one that ends
+  onboarding included — doesn't disconnect them, with `connectAccounts()` writing to it and a notifier so
   every surface agrees. `profileForNetwork()` goes through the SAME gate — otherwise the schedule
   modal and the top-post cards would show a profile nobody connected. `getConnectableAccounts()`
   filters on `handle`, not `status`: the mock's disconnected entries include bare network stubs
   (`{ id: "tt", platformLabel: "TikTok" }`) that have nothing to connect to and would render as
   "undefined" rows.
+
+**Connect first (flag `connectFirst`, 2026-10-19).** A new user can be asked to connect BEFORE
+anything else — `/welcome-alt/connect`, modelled on prod's Archie signup step — without breaking
+this rule: the ask moves to the front, it doesn't become a gate. The screen keeps the same two beats
+(a network row asks, `connect-account-modal` consents) and the same Skip (`skip-connect-modal`,
+same feedback key). Under the flag the whole first-time run is **screens, not the chat**: the plan
+(`/welcome-alt/intro`), then one screen per step in one shell — the step on the left, the Playbook
+card filling with the real answers on the right (`welcome-alt-shell.js`) — then a reveal
+(`/welcome-alt/ready`) that ends on Start writing, with the editable page one click away. The steps'
+effects on the draft are context-builder's (`createAltDraft`, `readAltWebsite`, `readAltFiles`,
+`writeAltManually`, `analyzeAltInterview`) — the chat calls the same functions, so there is one
+implementation and two hosts. Every list of steps (the plan, the progress) comes from `altSteps()`,
+so no screen announces a step the run won't ask.
 
 ⚠️ A surface that merely _lists_ profiles is out of scope on purpose — it renders its empty list.
 But a surface that makes the user _pick_ one must never render an empty picker: that is a silent

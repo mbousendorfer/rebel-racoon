@@ -4,19 +4,19 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { navigate } from "../router.js?v=1930";
-import { catalogueRoute } from "../active-playbook.js?v=1930";
-import { getDraft, isAnalysisReady, save, patchDraft, restoreDraft } from "../context-builder.js?v=1930";
-import { mount } from "../playbook-view.js?v=1930";
-import { open as openRenameModal } from "../components/rename-modal.js?v=1930";
-import { networkLabel } from "../network-voice.js?v=1930";
+import { navigate } from "../router.js?v=1931";
+import { catalogueRoute } from "../active-playbook.js?v=1931";
+import { getDraft, isAnalysisReady, save, patchDraft, restoreDraft } from "../context-builder.js?v=1931";
+import { mount } from "../playbook-view.js?v=1931";
+import { open as openRenameModal } from "../components/rename-modal.js?v=1931";
+import { networkLabel } from "../network-voice.js?v=1931";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";
 const WELCOME_ALT_INTEGRATED_KEY = "welcomeAltIntegrated";
 const WELCOME_ALT_RETURN_KEY = "welcomeAltReturnTo";
 
-const LOADING_STAGES = [
+export const LOADING_STAGES = [
   { title: "Reading your website", sub: "Scanning your pages, copy, and brand cues." },
   { title: "Learning your voice", sub: "Capturing your tone, vocabulary, and rhythm." },
   { title: "Mapping your audience", sub: "Working out who you're for — and what moves them." },
@@ -25,7 +25,7 @@ const LOADING_STAGES = [
 
 // Brand kit (flag sexySquirrel): a Playbook started from files says so, instead
 // of claiming to read a website nobody gave.
-const FILE_LOADING_STAGES = [
+export const FILE_LOADING_STAGES = [
   { title: "Reading your files", sub: "Looking at your logo, past visuals, and photos." },
   { title: "Picking out your colors", sub: "Sampling the palette your visuals already use." },
   { title: "Mapping your audience", sub: "Working out who you're for — and what moves them." },
@@ -34,7 +34,7 @@ const FILE_LOADING_STAGES = [
 
 // The no-website interview: the loader reads the
 // answers, and says the brand look comes later — there was nothing to sample.
-const INTERVIEW_LOADING_STAGES = [
+export const INTERVIEW_LOADING_STAGES = [
   { title: "Reading your answers", sub: "Turning what you told me into a strategy brief." },
   { title: "Setting up your brand", sub: "You can add your logo and colors to the Playbook later." },
   { title: "Drafting your Playbook", sub: "Audience, goals and voice, from your own words." },
@@ -42,7 +42,7 @@ const INTERVIEW_LOADING_STAGES = [
 
 // Voice per network: when Archie adapted the voice for other networks, the
 // loader says so right after learning it — the work the reveal then shows.
-function withNetworkStage(stages, draft) {
+export function withNetworkStage(stages, draft) {
   const nets = Object.keys(draft?.voiceByNetwork || {}).map(networkLabel);
   if (!nets.length) return stages;
   const list =
@@ -84,7 +84,13 @@ export function renderWelcomeAltRecap(_params, target) {
 
   // "Fill it in myself" has nothing to analyse: no loader, straight to the fiche.
   const source = getDraft(sid)?.sourceType;
-  const skipLoader = restored || source === "manual" || (introDoneSid === sid && isAnalysisReady(sid));
+  // `revealed`: the onboarding's own reveal (/welcome-alt/ready, flag
+  // connectFirst) already showed the building — the details open straight.
+  const skipLoader =
+    restored ||
+    source === "manual" ||
+    getDraft(sid)?.revealed === true ||
+    (introDoneSid === sid && isAnalysisReady(sid));
   if (skipLoader) introDoneSid = sid;
 
   return mount(target, {
@@ -156,7 +162,7 @@ function finishIntegrated(sid) {
 // returning user and reload into the populated app. The recap owns this
 // (rather than the draft's onComplete) so it still works after a reload,
 // where the in-memory onComplete is gone.
-function enterArchie(sid) {
+export function enterArchie(sid) {
   patchDraft(sid, { onComplete: null });
   const saved = save(sid);
   if (!saved) return;
@@ -174,7 +180,7 @@ function enterArchie(sid) {
 
 // ── sessionStorage bridges ─────────────────────────────────────────────
 
-function readSessionId() {
+export function readSessionId() {
   try {
     return window.sessionStorage.getItem(WELCOME_ALT_KEY);
   } catch {
@@ -192,7 +198,7 @@ function clearSessionId() {
 
 // Draft persistence — so a page reload stays on the recap. JSON.stringify
 // drops the onComplete function automatically.
-function persistDraft(sid) {
+export function persistDraft(sid) {
   try {
     const d = getDraft(sid);
     if (!d) return;
@@ -202,7 +208,7 @@ function persistDraft(sid) {
   }
 }
 
-function readPersistedDraft(sid) {
+export function readPersistedDraft(sid) {
   try {
     const raw = window.sessionStorage.getItem(WELCOME_ALT_DRAFT_KEY);
     if (!raw) return null;
