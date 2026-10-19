@@ -252,39 +252,141 @@
   color: var(--ref-color-grey-100);
 }
 
-/* /welcome-alt/intro — the steps ahead, numbered, in the same card. */
-.welcome-intro__steps {
+/* Phone width: the panel stacks under the network card. */
+@media (max-width: 760px) {
+  .welcome-connect__layout {
+    flex-direction: column;
+    align-items: center;
+  }
+  .welcome-connect__panel {
+    max-width: 520px;
+  }
+}
+
+/* ---------- /welcome-alt/intro — the app's first screen (flag connectFirst) ----------
+   Split, full-bleed. Left: the headline and the steps ahead. Right: Archie's
+   warm pixel field with the Playbook those steps build, assembling itself.
+   ONE load sequence: step --i lights up at --t, as its line lands on the card.
+   Every element's resting style is its FINAL state; the keyframes start from
+   the "not yet" state — so reduced motion simply shows the finished screen. */
+
+.welcome-intro {
+  --step-gap: 0.7s;
+  --start: 0.6s;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  height: 100%;
+  min-height: 0;
+  background: var(--app-surface);
+  overflow-y: auto;
+}
+
+.welcome-intro [style*="--i"] {
+  --t: calc(var(--start) + var(--i) * var(--step-gap));
+}
+
+/* Left: the lede */
+.welcome-intro__lede {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-lg) clamp(var(--ref-spacing-md), 6vw, 96px);
+}
+
+.welcome-intro__wordmark {
+  display: block;
+  height: 22px;
+  width: auto;
+  align-self: flex-start;
+}
+
+.welcome-intro__copy {
+  display: flex;
+  flex-direction: column;
+  max-width: 480px;
+  margin: auto 0;
+  padding: var(--ref-spacing-xl) 0;
+}
+
+/* The one display size of the app — above the DS scale (marketing tops out at
+   24px), because this is the first thing a new user reads. */
+.welcome-intro__title {
   margin: 0;
-  padding: var(--ref-spacing-xxs) 0 0;
+  font-family: var(--sys-text-style-marketing-font-family);
+  font-size: clamp(36px, 3.4vw, 52px);
+  line-height: 1.06;
+  font-weight: var(--sys-text-style-marketing-weight);
+  letter-spacing: -0.025em;
+  color: var(--ref-color-grey-100);
+  text-wrap: balance;
+}
+
+.welcome-intro__sub {
+  margin: var(--ref-spacing-sm) 0 0;
+  max-width: 46ch;
+  text-wrap: pretty;
+  font-size: var(--sys-text-style-subtitle-size);
+  line-height: var(--sys-text-style-subtitle-line-height);
+  color: var(--ref-color-grey-80);
+}
+
+/* The steps — a real sequence, so numbered, on a rail that fills as they light. */
+.welcome-intro__steps {
+  margin: var(--ref-spacing-lg) 0 0;
+  padding: 0;
   list-style: none;
 }
 
 .welcome-intro__step {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--ref-spacing-xs);
+  position: relative;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  column-gap: var(--ref-spacing-sm);
+  padding-bottom: var(--ref-spacing-sm);
+}
+
+.welcome-intro__step:last-child {
+  padding-bottom: 0;
+}
+
+/* The rail: grey-20 underneath, olive drawn over it from one step to the next. */
+.welcome-intro__step:not(:last-child)::before,
+.welcome-intro__step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 13px;
+  top: 30px;
+  bottom: 2px;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--ref-color-grey-20);
+}
+
+.welcome-intro__step:not(:last-child)::after {
+  background: var(--app-butter-accent);
+  transform-origin: top;
+  animation: welcome-intro-rail var(--step-gap) linear var(--t) both;
 }
 
 .welcome-intro__num {
+  position: relative;
   display: grid;
   place-items: center;
-  flex-shrink: 0;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  background: var(--app-surface-subtle);
-  font-size: var(--sys-text-style-caption-bold-size);
-  line-height: 1;
-  font-weight: var(--sys-text-style-caption-bold-weight);
+  border: 1px solid var(--app-butter-accent);
+  background: var(--app-butter);
   color: var(--ref-color-grey-100);
+  font-size: var(--sys-text-style-caption-bold-size);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  line-height: 1;
+  animation: welcome-intro-disc 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) var(--t) both;
 }
 
 .welcome-intro__text {
   display: flex;
   flex-direction: column;
+  padding-top: 3px;
 }
 
 .welcome-intro__step-title {
@@ -295,19 +397,213 @@
 }
 
 .welcome-intro__step-desc {
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--ref-color-grey-80);
+}
+
+.welcome-intro__actions {
+  display: flex;
+  margin-top: var(--ref-spacing-lg);
+}
+
+/* Right: the stage */
+.welcome-intro__stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  margin: var(--ref-spacing-sm);
+  min-height: 0;
+  border-radius: 24px;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.welcome-intro__card {
+  position: relative;
+  z-index: 1;
+  width: min(440px, calc(100% - 2 * var(--ref-spacing-lg)));
+  padding: var(--ref-spacing-md) var(--ref-spacing-md) var(--ref-spacing-sm);
+  background: var(--app-surface);
+  border-radius: 16px;
+  box-shadow: var(--app-shadow-popover-lg);
+  animation: welcome-intro-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+}
+
+.welcome-intro__card-head {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  padding-bottom: var(--ref-spacing-sm);
+  border-bottom: 1px solid var(--ref-color-grey-20);
+}
+
+.welcome-intro__brand {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--app-radius-lg);
+  background: var(--app-surface-subtle);
+  color: var(--ref-color-grey-100);
+  font-size: var(--sys-icon-css-md);
+}
+
+.welcome-intro__card-title {
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.welcome-intro__rows {
+  margin: 0;
+}
+
+.welcome-intro__row {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  min-height: 52px;
+  padding: var(--ref-spacing-xxs) 0;
+  border-bottom: 1px solid var(--ref-color-grey-20);
+  animation: welcome-intro-land 0.5s cubic-bezier(0.22, 1, 0.36, 1) var(--t) both;
+}
+
+.welcome-intro__row dt {
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   color: var(--ref-color-grey-80);
 }
 
-/* Phone width: the panel stacks under the network card. */
-@media (max-width: 760px) {
-  .welcome-connect__layout {
-    flex-direction: column;
-    align-items: center;
+.welcome-intro__row dd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  margin: 0;
+}
+
+/* Inside a line, its pieces land one after the other. */
+.welcome-intro__row dd > * {
+  animation: welcome-intro-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: calc(var(--t) + 0.12s);
+}
+.welcome-intro__row dd > :nth-child(2) {
+  animation-delay: calc(var(--t) + 0.2s);
+}
+.welcome-intro__row dd > :nth-child(3) {
+  animation-delay: calc(var(--t) + 0.28s);
+}
+.welcome-intro__row dd > :nth-child(4) {
+  animation-delay: calc(var(--t) + 0.36s);
+}
+
+.welcome-intro__net {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-lg);
+  font-size: var(--sys-icon-css-sm);
+}
+
+.welcome-intro__trait {
+  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
+  border-radius: var(--app-radius-pill);
+  background: var(--app-butter);
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.welcome-intro__plain {
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.welcome-intro__swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+.welcome-intro__card-foot {
+  display: flex;
+  padding-top: var(--ref-spacing-sm);
+  animation: welcome-intro-land 0.5s cubic-bezier(0.22, 1, 0.36, 1) var(--t) both;
+}
+
+@keyframes welcome-intro-rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.98);
   }
-  .welcome-connect__panel {
-    max-width: 520px;
+}
+@keyframes welcome-intro-land {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes welcome-intro-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+@keyframes welcome-intro-rail {
+  from {
+    transform: scaleY(0);
+  }
+}
+/* A step lights as its line lands: white → butter, with a small swell. */
+@keyframes welcome-intro-disc {
+  0% {
+    background: var(--app-surface);
+    border-color: var(--ref-color-grey-20);
+    transform: scale(1);
+  }
+  60% {
+    transform: scale(1.15);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .welcome-intro *,
+  .welcome-intro *::after {
+    /* The finished screen, at once. */
+    animation: none !important;
+  }
+}
+
+/* Narrow: one column — the lede, then the stage under it. */
+@media (max-width: 900px) {
+  .welcome-intro {
+    grid-template-columns: minmax(0, 1fr);
+    height: auto;
+    min-height: 100%;
+  }
+  .welcome-intro__stage {
+    min-height: 420px;
+  }
+  .welcome-intro__copy {
+    margin: 0;
+    padding-top: var(--ref-spacing-md);
+  }
+}
+
+/* Phone: a card line stacks its label over its value. */
+@media (max-width: 480px) {
+  .welcome-intro__row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--ref-spacing-xxs);
+    padding: var(--ref-spacing-xs) 0;
   }
 }
 

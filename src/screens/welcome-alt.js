@@ -13,12 +13,12 @@
 //
 // Flag connectFirst: first a screen that says what the setup will ask
 // (/welcome-alt/intro), then connecting social profiles (/welcome-alt/connect),
-// both in welcome-alt-connect.js, which hands over to the chat through
+// (welcome-alt-intro.js, welcome-alt-connect.js), which hands over to the chat through
 // startOnboardingChat() — and the chat no longer asks for an account.
 
-import { navigate } from "../router.js?v=1916";
-import { setHandoff } from "../handoff.js?v=1916";
-import { isFlagOn } from "../feature-flags.js?v=1916";
+import { navigate } from "../router.js?v=1922";
+import { setHandoff } from "../handoff.js?v=1922";
+import { isFlagOn } from "../feature-flags.js?v=1922";
 
 // Mock URL — the brand site is supposed to be collected by an earlier
 // step that lives outside the prototype. We hardcode a believable value

@@ -21,15 +21,15 @@ import {
   postActivity,
   postDraftResult,
   GENERATION_TOOLS,
-} from "./assistant.js?v=1916";
-import * as inlineQuestion from "./inline-question.js?v=1916";
-import { addPostDraft } from "./posts-store.js?v=1916";
-import { getSessionById } from "./sessions-store.js?v=1916";
-import { getContextById } from "./contexts-store.js?v=1916";
-import { playbookForNewWork } from "./active-playbook.js?v=1916";
-import { getConnectedProfiles, buildConnectedProfileItems } from "./social-profiles.js?v=1916";
-import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=1916";
-import { createPlan, updatePlan, getPlans } from "./post-plan-store.js?v=1916";
+} from "./assistant.js?v=1922";
+import * as inlineQuestion from "./inline-question.js?v=1922";
+import { addPostDraft } from "./posts-store.js?v=1922";
+import { getSessionById } from "./sessions-store.js?v=1922";
+import { getContextById } from "./contexts-store.js?v=1922";
+import { playbookForNewWork } from "./active-playbook.js?v=1922";
+import { getConnectedProfiles, buildConnectedProfileItems } from "./social-profiles.js?v=1922";
+import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=1922";
+import { createPlan, updatePlan, getPlans } from "./post-plan-store.js?v=1922";
 
 // "write / draft / create a post about X" — the ask this flow answers. The
 // topic is everything after "about".

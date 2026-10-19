@@ -24,9 +24,9 @@
 // The verbs stay in the head, never in the column: a 300px column grows
 // full-width buttons, and a button is never full-width here.
 
-import { playbookTitle, objectiveTitle, objectiveActions, esc } from "../pieces.js?v=1916";
-import { mountCharts } from "../charts.js?v=1916";
-import { readLede, readNotice, readMeasures, readPosts, readFacts } from "../read.js?v=1916";
+import { playbookTitle, objectiveTitle, objectiveActions, esc } from "../pieces.js?v=1922";
+import { mountCharts } from "../charts.js?v=1922";
+import { readLede, readNotice, readMeasures, readPosts, readFacts } from "../read.js?v=1922";
 
 export const id = "mob_side";
 export const label = "Mob · Side";
