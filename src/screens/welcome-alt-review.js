@@ -3,51 +3,45 @@
 // The WHOLE Playbook, every block — dealt as a stack of cards, one block at a
 // time, instead of a wall. Each part (Brief, Voice profile, Branding,
 // Competitors, Influencers) opens straight in edit — the real Playbook view,
-// playbook-view, its hero, tabs and tab head hidden — and only its front block
-// shows, the ones still to come stacked behind it. Everything is already filled
-// in by me, so each card is a glance and a click:
-//   - the card names its part on top (the part's icon, as in the list — one
-//     icon per part, not per block), and its footer says where you are
-//     ("2 of 6") with Back and
-//     Looks good — Save as soon as a field on it changed;
-//   - the card flies off and the next one comes forward; the last card of a
-//     part closes the part (the view's own Save), checks it in the list, and
-//     the next part deals its first card;
-//   - the list on the left says each part in one sentence, shows where the
-//     current one stands, and jumps to any part.
+// playbook-view, its hero, tabs, tab head and panel Cancel / Save hidden — and
+// only its front block shows, the ones still to come stacked behind it.
+// Everything is already filled in by me, so it's browsing, not validating:
+//   - edits apply as you type (the draft is the live source);
+//   - arrows on the card — and the keyboard's, outside a field — go to the
+//     next / previous card, across parts; the card says which part it's in
+//     (the part's icon, one segment per card) and what's next;
+//   - a part gets its check in the list once each of its cards has been seen.
 // Start writing lives on the left, the whole time — never on a card.
 //
 // The view repaints its whole DOM on most edits (a chip added…), so the stack
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=1955";
-import { navigate } from "../router.js?v=1955";
-import { getDraft, patchDraft } from "../context-builder.js?v=1955";
-import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=1955";
-import { parseHashParams } from "../url-state.js?v=1955";
-import { mountShell } from "./welcome-alt-shell.js?v=1955";
-import { enterArchie } from "./welcome-alt-recap.js?v=1955";
+import { html, raw, escapeHtml } from "../utils.js?v=1957";
+import { navigate } from "../router.js?v=1957";
+import { getDraft, patchDraft } from "../context-builder.js?v=1957";
+import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=1957";
+import { parseHashParams } from "../url-state.js?v=1957";
+import { mountShell } from "./welcome-alt-shell.js?v=1957";
+import { enterArchie } from "./welcome-alt-recap.js?v=1957";
 
-const NEXT_MS = 520; // the stamp lands, then the card swipes off
-const PREV_MS = 240;
-const STAMP = `<span class="welcome-review__stamp" aria-hidden="true"><i class="ap-icon-check"></i></span>`;
+const MOVE_MS = 220; // the card's exit, before the next one comes in
 
 export function renderReview(target, sid, config) {
   const reviewed = () => new Set(getDraft(sid)?.reviewedParts || []);
   const current = () => parseHashParams().get("tab") || RECAP_SECTIONS[0].id;
   const partOf = (id) => RECAP_SECTIONS.find((t) => t.id === id) || RECAP_SECTIONS[0];
-  const allDone = () => RECAP_SECTIONS.every((t) => reviewed().has(t.id));
 
   let index = 0; // the front card, within the current part
   let count = 0; // how many cards the current part deals
-  let dirty = false; // a field on the front card changed → Save, not Looks good
 
   const left = () => {
     const done = reviewed();
     return html`
       <h1 class="welcome-flow__title" id="welcomeFlowTitle">Review your Playbook</h1>
-      <p class="welcome-intro__sub">I've filled in every card. Glance at each one, fix what's off, and move on.</p>
+      <p class="welcome-intro__sub">
+        I've filled in every card. Browse them with the arrows and fix anything that's off — changes save as you type.
+      </p>
       <ul class="welcome-flow__options is-compact">
         ${RECAP_SECTIONS.map((t) => {
           const here = t.id === current();
@@ -121,19 +115,34 @@ export function renderReview(target, sid, config) {
     `;
   };
 
-  // The footer says what comes next — the next card, or the next part — so the
-  // button is never a leap in the dark. Every card keeps Back and Looks good.
+  // The footer: arrows, and what's on either side — browse, don't validate.
   const footer = (list) => {
     const at = RECAP_SECTIONS.findIndex((t) => t.id === current());
     const nextPart = RECAP_SECTIONS[at + 1];
-    const upNext =
-      index < count - 1 ? `Next: ${cardTitle(list[index + 1])}` : nextPart ? `Next: ${nextPart.title}` : "Last card";
+    const prevPart = RECAP_SECTIONS[at - 1];
+    const upNext = index < count - 1 ? cardTitle(list[index + 1]) : nextPart ? nextPart.title : "";
+    const atStart = index === 0 && !prevPart;
     return html`
       <div class="welcome-review__cardfoot">
-        <span class="welcome-review__next">${upNext}</span>
-        <button type="button" class="ap-button stroked grey" data-review-prev>Back</button>
-        <button type="button" class="ap-button primary blue" data-review-ok>
-          <i class="ap-icon-check"></i><span data-review-ok-label>${dirty ? "Save" : "Looks good"}</span>
+        <button
+          type="button"
+          class="ap-icon-button stroked"
+          data-review-prev
+          aria-label="Previous card"
+          ${atStart ? raw("disabled") : ""}
+        >
+          <i class="ap-icon-arrow-left"></i>
+        </button>
+        <span class="welcome-review__pos">${index + 1} of ${count}</span>
+        ${upNext ? raw(`<span class="welcome-review__next">${escapeHtml(upNext)}</span>`) : ""}
+        <button
+          type="button"
+          class="ap-icon-button blue"
+          data-review-next
+          aria-label="${upNext ? `Next: ${upNext}` : "Last card"}"
+          ${upNext ? "" : raw("disabled")}
+        >
+          <i class="ap-icon-arrow-right"></i>
         </button>
       </div>
     `;
@@ -160,8 +169,9 @@ export function renderReview(target, sid, config) {
     });
     list[index]?.insertAdjacentHTML("afterbegin", kicker());
     list[index]?.insertAdjacentHTML("beforeend", footer(list));
-    shell.paint();
     applying = false;
+    markSeen();
+    shell.paint();
   };
   const observer = new MutationObserver(() => {
     if (!applying) applyStack();
@@ -174,76 +184,67 @@ export function renderReview(target, sid, config) {
     body.querySelector(`[data-pb2-tab="${id}"]`)?.click();
     body.querySelector("[data-recap-edit-card]")?.click();
     index = fromEnd ? Number.MAX_SAFE_INTEGER : 0;
-    dirty = false;
     applyStack({ enter });
     body.querySelector(".welcome-screen")?.scrollTo?.({ top: 0 });
   };
 
   const finishPart = () => {
-    body.querySelector("[data-recap-save]")?.click();
-    const done = reviewed();
-    done.add(current());
-    patchDraft(sid, { reviewedParts: [...done] });
     const at = RECAP_SECTIONS.findIndex((t) => t.id === current());
-    // The next part still to review; once all are, simply the next one in order.
-    const next =
-      RECAP_SECTIONS.slice(at + 1).find((t) => !done.has(t.id)) ||
-      RECAP_SECTIONS.find((t) => !done.has(t.id)) ||
-      RECAP_SECTIONS[at + 1];
+    const next = RECAP_SECTIONS[at + 1];
     if (next) openPart(next.id);
-    else {
-      // The very last card: it comes back, still editable — Start writing is on the left.
-      openPart(current(), { fromEnd: true });
-    }
   };
 
-  // Looks good: a check stamps the card, it swipes off tilting, and the next one
-  // rises from the stack. Back: the card sinks into the stack, the previous one
-  // slides back in from the side.
+  // Next: the card swipes off and the next one rises from the stack. Previous:
+  // the card sinks into the stack, the one before slides back in from the side.
+  // Crossing the end of a part moves into the next (or previous) one.
   let moving = false;
-  const advance = (step) => {
+  const move = (step) => {
     if (moving) return;
-    const front = cards()[index];
-    if (step < 0 && index === 0 && RECAP_SECTIONS.findIndex((t) => t.id === current()) === 0) return;
+    const at = RECAP_SECTIONS.findIndex((t) => t.id === current());
+    if (step < 0 && index === 0 && at === 0) return;
+    if (step > 0 && index >= count - 1 && at === RECAP_SECTIONS.length - 1) return;
     moving = true;
-    if (step > 0) front?.insertAdjacentHTML("beforeend", STAMP);
+    const front = cards()[index];
     front?.classList.add(step > 0 ? "is-leave-next" : "is-leave-prev");
-    window.setTimeout(
-      () => {
-        moving = false;
-        dirty = false;
-        if (step > 0 && index >= count - 1) return finishPart();
-        if (step < 0 && index === 0) {
-          const at = RECAP_SECTIONS.findIndex((t) => t.id === current());
-          return openPart(RECAP_SECTIONS[at - 1].id, { fromEnd: true, enter: "prev" });
-        }
-        index += step;
-        applyStack({ enter: step > 0 ? "next" : "prev" });
-      },
-      step > 0 ? NEXT_MS : PREV_MS,
-    );
+    window.setTimeout(() => {
+      moving = false;
+      if (step > 0 && index >= count - 1) return finishPart();
+      if (step < 0 && index === 0) return openPart(RECAP_SECTIONS[at - 1].id, { fromEnd: true, enter: "prev" });
+      index += step;
+      applyStack({ enter: step > 0 ? "next" : "prev" });
+    }, MOVE_MS);
   };
 
-  const markDirty = (e) => {
-    if (dirty || !e.target.closest(".welcome-review__card.is-front")) return;
-    dirty = true;
-    const label = body.querySelector("[data-review-ok-label]");
-    if (label) label.textContent = "Save";
+  // A part is done once each of its cards has been on top.
+  const seen = new Map(); // part id → Set of card indexes seen
+  const markSeen = () => {
+    const id = current();
+    if (!seen.has(id)) seen.set(id, new Set());
+    seen.get(id).add(index);
+    if (count && seen.get(id).size >= count && !reviewed().has(id)) {
+      patchDraft(sid, { reviewedParts: [...reviewed(), id] });
+      shell.paint();
+    }
   };
 
   const onClick = (e) => {
     const part = e.target.closest("[data-review-part]")?.dataset.reviewPart;
     if (part) return openPart(part);
-    if (e.target.closest("[data-review-ok]")) return advance(1);
-    if (e.target.closest("[data-review-prev]")) return advance(-1);
+    if (e.target.closest("[data-review-next]")) return move(1);
+    if (e.target.closest("[data-review-prev]")) return move(-1);
     if (e.target.closest("[data-review-start]")) return enterArchie(sid);
     if (e.target.closest("[data-flow-back]")) return navigate("/welcome-alt/ready");
   };
   target.addEventListener("click", onClick);
-  // Capture phase: the view repaints on some edits, which would detach the
-  // field before a bubbling listener could tell which card it was on.
-  body.addEventListener("input", markDirty, true);
-  body.addEventListener("change", markDirty, true);
+  // The keyboard's arrows browse too — unless you're typing in a field.
+  const onKey = (e) => {
+    if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+    if (e.target.closest?.("input, textarea, select, [contenteditable]")) return;
+    if (document.querySelector(".app-modal-backdrop:not([hidden]), body.has-modal")) return;
+    e.preventDefault();
+    move(e.key === "ArrowRight" ? 1 : -1);
+  };
+  document.addEventListener("keydown", onKey);
 
   openPart(current());
 
@@ -252,7 +253,6 @@ export function renderReview(target, sid, config) {
     unmount?.();
     shell.cleanup();
     target.removeEventListener("click", onClick);
-    body.removeEventListener("input", markDirty, true);
-    body.removeEventListener("change", markDirty, true);
+    document.removeEventListener("keydown", onKey);
   };
 }
