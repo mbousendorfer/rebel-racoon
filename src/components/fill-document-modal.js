@@ -12,9 +12,9 @@
 //     it fires onConfirm({ file, url }) then closes. A warning notes the
 //     overwrite. Cancel / Esc / backdrop / close-X dismiss without firing.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1940";
-import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=1940";
-import { detectUrlService } from "../url-services.js?v=1940";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=1945";
+import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=1945";
+import { detectUrlService } from "../url-services.js?v=1945";
 
 const MODAL_ID = "fill-document";
 const ACCEPT = ".pdf,.doc,.docx,.txt,.md,.rtf,.pptx,.csv";

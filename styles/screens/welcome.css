@@ -938,16 +938,18 @@
   width: 40%;
 }
 
-/* The review: the same stage; the card holds the part being checked — head,
-   fields, and a footer that walks to the next part. */
+/* The review: the same stage; the card holds the real Playbook, one part at
+   a time, and a footer that walks to the next part. */
 .welcome-flow.is-review {
-  grid-template-columns: minmax(340px, 0.85fr) minmax(0, 1.3fr);
+  grid-template-columns: minmax(340px, 0.75fr) minmax(0, 1.4fr);
 }
 
 .welcome-flow .welcome-flow__sheet {
   display: flex;
   flex-direction: column;
-  width: min(620px, calc(100% - 2 * var(--ref-spacing-lg)));
+  width: min(900px, calc(100% - 2 * var(--ref-spacing-md)));
+  height: calc(100% - 2 * var(--ref-spacing-md));
+  max-height: none;
   padding: 0;
   overflow: hidden;
   animation: welcome-intro-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -960,96 +962,36 @@
 .welcome-flow__sheet-body {
   flex: 1 1 auto;
   min-height: 0;
-  overflow-y: auto;
-  padding: var(--ref-spacing-md) var(--ref-spacing-md) var(--ref-spacing-lg);
 }
 
-/* Each part lands as it opens. */
-.welcome-review__part {
-  animation: welcome-intro-land 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.welcome-review__head {
-  align-items: flex-start;
-}
-
-.welcome-review__fields {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-md);
-  margin-top: var(--ref-spacing-md);
-}
-
-.welcome-review__fields .welcome-flow__options {
-  margin-top: 0;
-}
-
-.welcome-review__field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxs);
-}
-
-.welcome-review__label {
-  font-size: var(--sys-text-style-body-bold-size);
-  line-height: var(--sys-text-style-body-bold-line-height);
-  font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--ref-color-grey-100);
-}
-
-.welcome-review__textarea {
-  width: 100%;
-  resize: vertical;
-  font-family: inherit;
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  color: var(--ref-color-grey-100);
-}
-
-.welcome-review__colors {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: var(--ref-spacing-xxs);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.welcome-review__color {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-xs);
+/* The Playbook view, on the card's white — no page grey inside a card. */
+.welcome-flow__sheet .welcome-screen {
   background: var(--app-surface);
-  border: 1px solid var(--ref-color-grey-20);
-  border-radius: var(--app-radius-card);
-  cursor: pointer;
 }
 
-.welcome-review__color:hover,
-.welcome-review__color:has(input:focus-visible) {
+/* Its sticky section head too — it paints the page grey to hide what scrolls under it. */
+.welcome-flow__sheet .pb2-tabhead {
+  background: var(--app-surface);
+}
+
+/* The list on the left drives the parts; the view's own tabs would say it twice. */
+.welcome-flow__sheet .pb2-tabs {
+  display: none;
+}
+
+/* Reading: every block is the way into editing it. */
+.welcome-flow__sheet .pb2:not(.is-editing) .pb2-block {
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.welcome-flow__sheet .pb2:not(.is-editing) .pb2-block:hover {
   border-color: var(--ref-color-electric-blue-100);
 }
 
-/* The native colour picker, shaped as a swatch. */
-.welcome-review__color input[type="color"] {
-  flex-shrink: 0;
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  border: none;
-  border-radius: 50%;
-  background: none;
-  cursor: pointer;
-}
-
-.welcome-review__color input[type="color"]::-webkit-color-swatch-wrapper {
-  padding: 0;
-}
-
-.welcome-review__color input[type="color"]::-webkit-color-swatch {
-  border: 1px solid var(--ref-color-grey-20);
-  border-radius: 50%;
+/* Editing has its own Cancel / Save — the walk waits until it's done. */
+.welcome-flow__sheet:has(.pb2.is-editing) .welcome-flow__sheet-foot {
+  display: none;
 }
 
 .welcome-flow__sheet-foot {

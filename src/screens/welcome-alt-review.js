@@ -1,158 +1,53 @@
 // /welcome-alt/recap under flag connectFirst — the review, the run's last screen.
 //
-// Only what a new user needs to check before the first draft, nothing more:
-// four parts, one at a time, edited in place (no Edit / Save mode — every field
-// writes the draft as you type). The rest of the Playbook (competitors,
-// influencers, content style, links, Always / Never…) is there later, on the
-// Playbook's own page; showing it here was a wall of things to read.
-//
-// Left: the parts, each checked once the user says it looks good, and the way
-// out (Start writing is never gated). Right: the current part, plainly — and a
-// footer that walks to the next one.
+// The WHOLE Playbook, every block — but walked, not dumped. One part at a time
+// (Brief, Voice profile, Branding, Competitors, Influencers) in the floating
+// card on Archie's stage, the real Playbook view inside it (playbook-view, its
+// own tabs hidden: the list on the left drives them). Everything is already
+// filled in by me, so the job is to skim and confirm:
+//   - click any block to edit it — the part opens in edit, that block's field
+//     focused (no hunting for the Edit button);
+//   - "Looks good" checks the part off in the list and opens the next one;
+//   - all checked, the card takes the reveal's breath and offers Start writing.
+// Start writing is never gated: it's on the left the whole time.
 
-import { html, raw, escapeHtml } from "../utils.js?v=1940";
-import { navigate } from "../router.js?v=1940";
-import { getDraft, patchDraft } from "../context-builder.js?v=1940";
-import { mountShell } from "./welcome-alt-shell.js?v=1940";
-import { enterArchie } from "./welcome-alt-recap.js?v=1940";
+import { html, raw } from "../utils.js?v=1945";
+import { navigate } from "../router.js?v=1945";
+import { getDraft, patchDraft } from "../context-builder.js?v=1945";
+import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=1945";
+import { parseHashParams } from "../url-state.js?v=1945";
+import { mountShell } from "./welcome-alt-shell.js?v=1945";
+import { enterArchie } from "./welcome-alt-recap.js?v=1945";
 
-const traitsOf = (d) =>
-  (d?.voiceProfile?.headline || "")
-    .split(/\s*·\s*/)
-    .filter(Boolean)
-    .slice(0, 4);
+// What can take the focus inside a block in edit — its field, else its control.
+const FOCUSABLE = 'input:not([type=hidden]), textarea, select, button, [tabindex]:not([tabindex="-1"])';
 
-const PARTS = [
-  {
-    id: "brand",
-    icon: "ap-icon-buildings",
-    title: "Your brand",
-    lead: "What I know about the business. I use it to ground every post.",
-    body: (d) => html`
-      <label class="welcome-review__field">
-        <span class="welcome-review__label">Name</span>
-        <span class="ap-input-group"><input type="text" value="${d.name || ""}" data-review-field="name" /></span>
-      </label>
-      <label class="welcome-review__field">
-        <span class="welcome-review__label">What you do</span>
-        <textarea class="ap-textarea-field welcome-review__textarea" rows="5" data-review-field="businessSummary">
-${d.businessSummary || ""}</textarea
-        >
-      </label>
-    `,
-  },
-  {
-    id: "audience",
-    icon: "ap-icon-multiple-users",
-    title: "Who it's for",
-    lead: "The people your posts speak to. Pick the closest, or say it your way.",
-    body: (d) => {
-      const current = d.audience?.[0] || "";
-      const options = [...new Set([current, ...(d.suggestions?.audience || [])].filter(Boolean))];
-      return html`
-        <ul class="welcome-flow__options">
-          ${options.map(
-            (o) => html`
-              <li>
-                <label class="welcome-flow__option is-choice">
-                  <span class="welcome-flow__option-text">
-                    <span class="welcome-flow__option-title">${o}</span>
-                  </span>
-                  <span class="ap-radio-container"
-                    ><input type="radio" name="audience" value="${o}" ${o === current ? raw("checked") : ""}
-                  /></span>
-                </label>
-              </li>
-            `,
-          )}
-        </ul>
-        <label class="welcome-review__field">
-          <span class="welcome-review__label">Or in your words</span>
-          <span class="ap-input-group"
-            ><input type="text" placeholder="Busy parents who cook at home" data-review-audience
-          /></span>
-        </label>
-      `;
-    },
-  },
-  {
-    id: "voice",
-    icon: "ap-icon-single-chat-bubble",
-    title: "How you sound",
-    lead: "How every post reads. Say it the way you'd brief a new writer.",
-    body: (d) => {
-      const traits = traitsOf(d);
-      return html`
-        ${traits.length
-          ? raw(
-              `<span class="welcome-flow__chips">${traits.map((t) => `<span class="welcome-intro__trait">${escapeHtml(t)}</span>`).join("")}</span>`,
-            )
-          : ""}
-        <label class="welcome-review__field">
-          <span class="welcome-review__label">Your voice, in a few sentences</span>
-          <textarea class="ap-textarea-field welcome-review__textarea" rows="5" data-review-field="voiceSummary">
-${d.voiceSummary || ""}</textarea
-          >
-        </label>
-      `;
-    },
-  },
-  {
-    id: "look",
-    icon: "ap-icon-image",
-    title: "Your look",
-    lead: "The colours I use when I make your images.",
-    body: (d) => {
-      const colors = d.brandColors || [];
-      if (!colors.length) {
-        return html`<p class="welcome-intro__sub">
-          No colours yet. Add your logo and colours from your Playbook whenever you like — I'll use them from then on.
-        </p>`;
-      }
-      return html`
-        <ul class="welcome-review__colors">
-          ${colors.map(
-            (c, i) => html`
-              <li>
-                <label class="welcome-review__color">
-                  <input type="color" value="${c.hex}" data-review-color="${i}" aria-label="${c.name || "Colour"}" />
-                  <span class="welcome-flow__option-text">
-                    <span class="welcome-flow__option-title">${c.name || "Colour"}</span>
-                    <span class="welcome-flow__option-desc" data-review-hex="${i}">${String(c.hex).toUpperCase()}</span>
-                  </span>
-                </label>
-              </li>
-            `,
-          )}
-        </ul>
-      `;
-    },
-  },
-];
-
-export function renderReview(target, sid) {
+export function renderReview(target, sid, config) {
   const reviewed = () => new Set(getDraft(sid)?.reviewedParts || []);
-  let current = PARTS.find((p) => !reviewed().has(p.id))?.id || PARTS[0].id;
+  const current = () => parseHashParams().get("tab") || RECAP_SECTIONS[0].id;
+  const allDone = () => RECAP_SECTIONS.every((t) => reviewed().has(t.id));
 
   const left = () => {
     const done = reviewed();
     return html`
       <h1 class="welcome-flow__title" id="welcomeFlowTitle">Review your Playbook</h1>
-      <p class="welcome-intro__sub">Four things to check. Change anything — you can fine-tune the rest later.</p>
+      <p class="welcome-intro__sub">
+        I've filled in every part. Skim each one, and click anything that's off to fix it.
+      </p>
       <ul class="welcome-flow__options is-compact">
-        ${PARTS.map(
-          (p) => html`
+        ${RECAP_SECTIONS.map(
+          (t) => html`
             <li>
               <button
                 type="button"
                 class="welcome-flow__option"
-                data-review-part="${p.id}"
-                aria-current="${p.id === current ? "true" : "false"}"
+                data-review-part="${t.id}"
+                aria-current="${t.id === current() ? "true" : "false"}"
               >
                 <span class="welcome-flow__option-text">
-                  <span class="welcome-flow__option-title">${p.title}</span>
+                  <span class="welcome-flow__option-title">${t.title}</span>
                 </span>
-                ${done.has(p.id)
+                ${done.has(t.id)
                   ? raw(
                       `<span class="welcome-review__check" title="Looks good"><i class="ap-icon-check" aria-hidden="true"></i></span>`,
                     )
@@ -164,8 +59,8 @@ export function renderReview(target, sid) {
       </ul>
       <div class="welcome-flow__actions">
         <button type="button" class="ap-button stroked grey" data-flow-back>Back</button>
-        ${PARTS.every((p) => done.has(p.id))
-          ? "" /* the footer says it now — once is enough */
+        ${allDone()
+          ? "" /* the card's footer says it now — once is enough */
           : raw(`<button type="button" class="ap-button primary orange" data-review-start>
               <span>Start writing</span><i class="ap-icon-arrow-right"></i>
             </button>`)}
@@ -176,36 +71,21 @@ export function renderReview(target, sid) {
   const shell = mountShell(target, { step: "recap", sid, left, sheet: true });
   const body = shell.sheet.querySelector("[data-flow-sheet-body]");
   const foot = shell.sheet.querySelector("[data-flow-sheet-foot]");
+  const unmount = mount(body, { ...config, showTop: false, headerActions: () => null });
 
-  const paintPart = () => {
-    const d = getDraft(sid) || {};
-    const part = PARTS.find((p) => p.id === current);
+  const paintFoot = () => {
     const done = reviewed();
-    const allDone = PARTS.every((p) => done.has(p.id));
-    body.innerHTML = html`
-      <section class="welcome-review__part" aria-labelledby="welcomeReviewPart">
-        <header class="welcome-intro__card-head welcome-review__head">
-          <span class="welcome-intro__brand"><i class="${part.icon}" aria-hidden="true"></i></span>
-          <span class="welcome-flow__card-name">
-            <span class="welcome-intro__card-title" id="welcomeReviewPart">${part.title}</span>
-            <span class="welcome-flow__card-sub">${part.lead}</span>
-          </span>
-        </header>
-        <div class="welcome-review__fields">${raw(part.body(d))}</div>
-      </section>
-    `;
-    // Where the review stands, in four pips: checked = butter, here = ring.
     const pips = html`
-      <ol class="welcome-review__pips" aria-label="${done.size} of ${PARTS.length} checked">
-        ${PARTS.map(
-          (p) => html`<li class="${done.has(p.id) ? "is-done" : ""} ${p.id === current ? "is-current" : ""}"></li>`,
+      <ol class="welcome-review__pips" aria-label="${done.size} of ${RECAP_SECTIONS.length} checked">
+        ${RECAP_SECTIONS.map(
+          (t) => html`<li class="${done.has(t.id) ? "is-done" : ""} ${t.id === current() ? "is-current" : ""}"></li>`,
         )}
       </ol>
     `;
-    foot.innerHTML = allDone
+    foot.innerHTML = allDone()
       ? html`
           ${raw(pips)}
-          <span class="welcome-review__foot-text">All four look good.</span>
+          <span class="welcome-review__foot-text">Every part looks good.</span>
           <button type="button" class="ap-button primary orange" data-review-start>
             <span>Start writing</span><i class="ap-icon-arrow-right"></i>
           </button>
@@ -216,62 +96,57 @@ export function renderReview(target, sid) {
             <i class="ap-icon-check"></i><span>Looks good</span>
           </button>
         `;
-    // Everything checked: the card takes the reveal's breath.
-    shell.sheet.classList.toggle("is-revealed", allDone);
+    shell.sheet.classList.toggle("is-revealed", allDone());
   };
-  const paint = () => {
+  const repaint = () => {
     shell.paint();
-    paintPart();
+    paintFoot();
   };
-  paintPart();
+  paintFoot();
 
-  // Typing writes the draft — no Save step. (The draft notifies; nothing here
-  // repaints on it, so the field keeps its focus.)
-  const onInput = (e) => {
-    const field = e.target.dataset.reviewField;
-    if (field) return patchDraft(sid, { [field]: e.target.value });
-    if (e.target.matches("[data-review-audience]")) {
-      const v = e.target.value.trim();
-      if (v) {
-        patchDraft(sid, { audience: [v] });
-        body.querySelectorAll('input[name="audience"]').forEach((r) => (r.checked = false));
-      }
-      return;
-    }
-    const ci = e.target.dataset.reviewColor;
-    if (ci !== undefined) {
-      const colors = (getDraft(sid)?.brandColors || []).map((c) => ({ ...c }));
-      if (colors[ci]) colors[ci].hex = e.target.value;
-      patchDraft(sid, { brandColors: colors });
-      const hex = body.querySelector(`[data-review-hex="${ci}"]`);
-      if (hex) hex.textContent = e.target.value.toUpperCase();
-    }
+  const openPart = (id) => {
+    body.querySelector(`[data-pb2-tab="${id}"]`)?.click();
+    body.querySelector(".welcome-screen")?.scrollTo?.({ top: 0 });
+    repaint();
   };
-  const onChange = (e) => {
-    if (e.target.name === "audience") patchDraft(sid, { audience: [e.target.value] });
-  };
+
   const onClick = (e) => {
     const part = e.target.closest("[data-review-part]")?.dataset.reviewPart;
-    if (part) {
-      current = part;
-      paint();
-    } else if (e.target.closest("[data-review-ok]")) {
+    if (part) return openPart(part);
+    if (e.target.closest("[data-review-ok]")) {
       const done = reviewed();
-      done.add(current);
+      done.add(current());
       patchDraft(sid, { reviewedParts: [...done] });
-      // On to the next part not checked yet — or stay, with the way out below.
-      current = PARTS.find((p) => !done.has(p.id))?.id || current;
-      paint();
-    } else if (e.target.closest("[data-review-start]")) enterArchie(sid);
-    else if (e.target.closest("[data-flow-back]")) navigate("/welcome-alt/ready");
+      const next = RECAP_SECTIONS.find((t) => !done.has(t.id));
+      return next ? openPart(next.id) : repaint();
+    }
+    if (e.target.closest("[data-review-start]")) return enterArchie(sid);
+    if (e.target.closest("[data-flow-back]")) return navigate("/welcome-alt/ready");
+
+    // Click a block to edit it: the part opens in edit (the view's own Edit),
+    // and the same block's first field takes the focus. Only from reading, and
+    // never on a control the block already has.
+    const block = e.target.closest(".pb2-block");
+    if (!block || !body.contains(block) || body.querySelector(".pb2.is-editing")) return;
+    if (e.target.closest("button, a, input, textarea, select, label")) return;
+    // Matched by title, not position: edit mode can add a block before it.
+    const title = block.querySelector(".pb2-block__title")?.textContent.trim();
+    const edit = body.querySelector("[data-recap-edit-card]");
+    if (!edit) return;
+    edit.click();
+    const same = [...body.querySelectorAll(".pb2-block")].find(
+      (b) => b.querySelector(".pb2-block__title")?.textContent.trim() === title,
+    );
+    // The view focuses the part's first field on its own; the clicked block wins.
+    const field = same?.querySelector(FOCUSABLE);
+    if (field) field.focus({ preventScroll: true });
+    else document.activeElement?.blur();
+    same?.scrollIntoView({ block: "center" });
   };
-  target.addEventListener("input", onInput);
-  target.addEventListener("change", onChange);
   target.addEventListener("click", onClick);
   return () => {
+    unmount?.();
     shell.cleanup();
-    target.removeEventListener("input", onInput);
-    target.removeEventListener("change", onChange);
     target.removeEventListener("click", onClick);
   };
 }
