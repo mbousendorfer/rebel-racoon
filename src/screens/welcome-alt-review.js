@@ -18,27 +18,34 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=1963";
-import { navigate } from "../router.js?v=1963";
-import { getDraft, patchDraft } from "../context-builder.js?v=1963";
-import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=1963";
-import { parseHashParams } from "../url-state.js?v=1963";
-import { mountShell } from "./welcome-alt-shell.js?v=1963";
-import { enterArchie } from "./welcome-alt-recap.js?v=1963";
+import { html, raw } from "../utils.js?v=1965";
+import { navigate } from "../router.js?v=1965";
+import { getDraft, patchDraft } from "../context-builder.js?v=1965";
+import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=1965";
+import { parseHashParams } from "../url-state.js?v=1965";
+import { mountShell } from "./welcome-alt-shell.js?v=1965";
+import { enterArchie } from "./welcome-alt-recap.js?v=1965";
 
 const MOVE_MS = 220; // the card's exit, before the next one comes in
 
 // Each part's tint — its card's header band and its tile in the list share it,
 // so the colour says which part you're in (asked for explicitly, 2026-10-19).
 // Soft DS tints only, and never electric blue: blue stays the interactive colour.
+// Each tint comes with its own dark shade for the part's glyph (the -150 of the
+// same ramp), so the icon carries the colour too instead of a flat grey.
 const PART_TINT = {
-  goals: "--ref-color-orange-20",
-  voice: "--ref-color-mermaid-20",
-  brand: "--ref-color-menthol-20",
-  competitors: "--ref-color-yellow-20",
-  influencers: "--ref-color-soft-blue-20",
+  goals: "orange",
+  voice: "purple",
+  brand: "menthol",
+  competitors: "yellow",
+  influencers: "soft-blue",
 };
-const tint = (id) => `--part-tint: var(${PART_TINT[id] || "--app-surface-subtle"})`;
+const tint = (id) =>
+  PART_TINT[id]
+    ? `--part-tint: var(--ref-color-${PART_TINT[id]}-20); --part-ink: var(--ref-color-${PART_TINT[id]}-150)`
+    : "";
+const OUT_MS = 240; // the part's stack leaves
+const INTRO_MS = 900; // the next part says its name
 
 export function renderReview(target, sid, config) {
   const reviewed = () => new Set(getDraft(sid)?.reviewedParts || []);
@@ -95,6 +102,11 @@ export function renderReview(target, sid, config) {
 
   const shell = mountShell(target, { step: "recap", sid, left, sheet: true });
   const body = shell.sheet.querySelector("[data-flow-sheet-body]");
+  // The part's own moment, between two parts: its tile, name and sentence.
+  const introEl = document.createElement("div");
+  introEl.className = "welcome-review__intro";
+  introEl.setAttribute("aria-live", "polite");
+  shell.sheet.append(introEl);
   const navEl = document.createElement("nav");
   navEl.className = "welcome-review__nav";
   navEl.setAttribute("aria-label", "Cards");
@@ -171,7 +183,7 @@ export function renderReview(target, sid, config) {
     list.forEach((el, i) => {
       el.classList.add("welcome-review__card");
       el.classList.toggle("is-front", i === index);
-      el.classList.remove("is-enter-next", "is-enter-prev", "is-leave-next", "is-leave-prev");
+      el.classList.remove("is-enter-next", "is-enter-prev", "is-leave-next", "is-leave-prev", "is-dealt");
       if (enter && i === index) el.classList.add(`is-enter-${enter}`);
       el.dataset.behind = i === index ? String(Math.min(2, count - 1 - index)) : "";
       el.querySelectorAll(":scope > .welcome-review__kicker").forEach((n) => n.remove());
@@ -197,10 +209,40 @@ export function renderReview(target, sid, config) {
     body.querySelector(".welcome-screen")?.scrollTo?.({ top: 0 });
   };
 
+  // Changing part is its own beat, unlike moving between cards: the whole stack
+  // leaves, the new part says its name (its tinted tile, title, sentence), and
+  // its cards are dealt onto the stack.
+  const switchPart = (id, opts = {}) => {
+    if (moving) return;
+    moving = true;
+    shell.sheet.classList.add("is-part-out");
+    window.setTimeout(() => {
+      openPart(id, { ...opts, enter: "" });
+      shell.sheet.classList.remove("is-part-out");
+      const part = partOf(id);
+      introEl.innerHTML = html`
+        <div class="welcome-review__intro-card" style="${tint(id)}">
+          <span class="welcome-review__intro-tile"><i class="${part.icon}" aria-hidden="true"></i></span>
+          <span class="welcome-review__intro-title">${part.title}</span>
+          <span class="welcome-review__intro-lead">${part.lead}</span>
+        </div>
+      `;
+      shell.sheet.classList.add("is-part-intro");
+      window.setTimeout(() => {
+        shell.sheet.classList.remove("is-part-intro");
+        introEl.innerHTML = "";
+        cards()[index]?.classList.add("is-dealt");
+        navEl.classList.add("is-dealt");
+        window.setTimeout(() => navEl.classList.remove("is-dealt"), 500);
+        moving = false;
+      }, INTRO_MS);
+    }, OUT_MS);
+  };
+
   const finishPart = () => {
     const at = RECAP_SECTIONS.findIndex((t) => t.id === current());
     const next = RECAP_SECTIONS[at + 1];
-    if (next) openPart(next.id);
+    if (next) switchPart(next.id);
   };
 
   // Next: the card swipes off and the next one rises from the stack. Previous:
@@ -218,7 +260,7 @@ export function renderReview(target, sid, config) {
     window.setTimeout(() => {
       moving = false;
       if (step > 0 && index >= count - 1) return finishPart();
-      if (step < 0 && index === 0) return openPart(RECAP_SECTIONS[at - 1].id, { fromEnd: true, enter: "prev" });
+      if (step < 0 && index === 0) return switchPart(RECAP_SECTIONS[at - 1].id, { fromEnd: true });
       index += step;
       applyStack({ enter: step > 0 ? "next" : "prev" });
     }, MOVE_MS);
@@ -238,7 +280,7 @@ export function renderReview(target, sid, config) {
 
   const onClick = (e) => {
     const part = e.target.closest("[data-review-part]")?.dataset.reviewPart;
-    if (part) return openPart(part);
+    if (part) return part === current() ? undefined : switchPart(part);
     if (e.target.closest("[data-review-next]")) return move(1);
     if (e.target.closest("[data-review-prev]")) return move(-1);
     if (e.target.closest("[data-review-start]")) return enterArchie(sid);
