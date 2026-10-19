@@ -13,11 +13,16 @@
 // The card is an illustration, not data: the Playbook's real parts (Voice
 // profile, Branding…) filled with example values.
 
-import "../archie-pixels.js?v=1996";
-import { html, raw } from "../utils.js?v=1996";
-import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=1996";
-import { navigate } from "../router.js?v=1996";
-import { flowSteps, startFlow, STEP_TEXT, playbookCard } from "./welcome-alt-shell.js?v=1996";
+import "../archie-pixels.js?v=1999";
+import { html, raw } from "../utils.js?v=1999";
+import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=1999";
+import { navigate } from "../router.js?v=1999";
+import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=1999";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=1999";
+
+// What a Playbook holds, shown rather than told: the parts the card on the
+// right fills, under their Playbook names, glyphs and tints.
+const PARTS = ["goals", "voice", "brand", "competitors"];
 
 const glyph = (net) =>
   `<span class="welcome-intro__net"><i class="${NETWORK_ICON_BY_PLATFORM[net]}" aria-hidden="true"></i></span>`;
@@ -79,14 +84,17 @@ export function renderWelcomeAltIntro(_params, target) {
         <img class="welcome-intro__wordmark" src="assets/logos/archie-wordmark.svg" alt="Archie" />
         <div class="welcome-intro__copy">
           <h1 class="welcome-intro__title" id="welcomeIntroTitle">Let's build your Playbook together.</h1>
-          <p class="welcome-intro__sub">
-            Your Playbook is what I know about your brand: what you do, who you speak to, how you sound and how you
-            look. Every post I write starts from it — so it sounds like you from the first draft.
-          </p>
-          <p class="welcome-intro__plan">
-            <strong>${steps.length} short steps, a few minutes.</strong> Skip anything optional — you review it all
-            before I write a word.
-          </p>
+          <p class="welcome-intro__sub">Everything I know about your brand. Every post I write starts from it.</p>
+          <ul class="welcome-intro__parts" aria-label="What a Playbook holds">
+            ${PARTS.map((t) => {
+              const part = RECAP_SECTIONS.find((sec) => sec.id === t);
+              return html`
+                <li class="welcome-intro__part-pill" style="${tint(t)}">
+                  <i class="${part?.icon || ""}" aria-hidden="true"></i>${part?.title || ""}
+                </li>
+              `;
+            })}
+          </ul>
           <ol class="welcome-intro__steps">
             ${steps.map(
               (id, i) => html`
@@ -105,6 +113,7 @@ export function renderWelcomeAltIntro(_params, target) {
               <span>Let's go</span>
               <i class="ap-icon-arrow-right"></i>
             </button>
+            <span class="welcome-intro__time">${steps.length} steps, a few minutes</span>
           </div>
         </div>
       </section>

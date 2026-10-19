@@ -195,24 +195,50 @@
   text-wrap: balance;
 }
 
-/* The plan, under the "what & why": how long, and what can be skipped — a step
-   down from the sub, its first sentence in bold, right over the steps it counts. */
-.welcome-intro__plan {
-  margin: var(--ref-spacing-lg) 0 0;
-  max-width: 52ch;
-  text-wrap: pretty;
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  color: var(--ref-color-grey-80);
+/* What a Playbook holds: its parts as tinted pills, the card's own colours —
+   seen at a glance, matched on the right. */
+.welcome-intro__parts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxs);
+  margin: var(--ref-spacing-md) 0 0;
+  padding: 0;
+  list-style: none;
 }
 
-.welcome-intro__plan strong {
-  font-weight: var(--sys-text-style-body-bold-weight);
+.welcome-intro__part-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
+  border-radius: var(--app-radius-pill);
+  background: var(--part-tint);
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
   color: var(--ref-color-grey-100);
+  animation: welcome-intro-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
-.welcome-intro__plan + .welcome-intro__steps {
-  margin-top: var(--ref-spacing-sm);
+.welcome-intro__part-pill:nth-child(2) {
+  animation-delay: 0.08s;
+}
+.welcome-intro__part-pill:nth-child(3) {
+  animation-delay: 0.16s;
+}
+.welcome-intro__part-pill:nth-child(4) {
+  animation-delay: 0.24s;
+}
+
+.welcome-intro__part-pill i {
+  font-size: var(--sys-icon-css-xs);
+  color: var(--part-ink);
+}
+
+.welcome-intro__time {
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
 }
 
 .welcome-intro__sub {
@@ -299,6 +325,8 @@
 
 .welcome-intro__actions {
   display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
   margin-top: var(--ref-spacing-lg);
 }
 
