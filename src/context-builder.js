@@ -13,15 +13,15 @@
 // tones, contentStyle, objective, contentAction, ctaLinks, language, color,
 // suggestions, editingId, onComplete }.
 
-import * as inlineQuestion from "./inline-question.js?v=1913";
-import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=1913";
-import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=1913";
-import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=1913";
-import { showToast } from "./components/toast.js?v=1913";
-import { recordReasons } from "./feedback-store.js?v=1913";
-import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1913";
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1913";
-import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=1913";
+import * as inlineQuestion from "./inline-question.js?v=1914";
+import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=1914";
+import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=1914";
+import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=1914";
+import { showToast } from "./components/toast.js?v=1914";
+import { recordReasons } from "./feedback-store.js?v=1914";
+import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1914";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1914";
+import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=1914";
 import {
   analyzeWebsite,
   analyzeBrandFiles,
@@ -29,8 +29,8 @@ import {
   analyzeInterview,
   nextInterviewQuestion,
   INTERVIEW_OPENING,
-} from "./context-mock-analysis.js?v=1913";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=1913";
+} from "./context-mock-analysis.js?v=1914";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=1914";
 import {
   networkVoicesOn,
   cloneVoiceByNetwork,
@@ -38,17 +38,17 @@ import {
   networkLabel,
   networkIcon,
   voiceNetworks,
-} from "./network-voice.js?v=1913";
-import { connectors as connectorMocks } from "./mocks.js?v=1913";
+} from "./network-voice.js?v=1914";
+import { connectors as connectorMocks } from "./mocks.js?v=1914";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "./social-profiles.js?v=1913";
-import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=1913";
-import { isFlagOn } from "./feature-flags.js?v=1913";
-import { navigate } from "./router.js?v=1913";
-import { setHandoff } from "./handoff.js?v=1913";
+} from "./social-profiles.js?v=1914";
+import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=1914";
+import { isFlagOn } from "./feature-flags.js?v=1914";
+import { navigate } from "./router.js?v=1914";
+import { setHandoff } from "./handoff.js?v=1914";
 
 const drafts = new Map(); // sessionId → draft
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -333,7 +333,8 @@ export function startAlt(sessionId, { onComplete, prefilledUrl = "" } = {}) {
 // (connect-profiles-flow.js).
 // Labels are derived from this list, so adding or removing a step renumbers the
 // rest for free.
-function altSteps() {
+// Exported for the intro screen (/welcome-alt/intro), which announces them.
+export function altSteps() {
   const steps = ["url"];
   if (isFlagOn("multilingualPlaybook")) steps.push("language");
   // Flag connectFirst: the accounts are asked on the screen before the chat.

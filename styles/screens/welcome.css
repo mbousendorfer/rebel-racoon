@@ -5,6 +5,7 @@
    Surfaces:
      /session/welcome-alt-* → the conversational Playbook builder runs in
                               the existing session shell.
+     /welcome-alt/intro     → what the setup will ask (flag connectFirst).
      /welcome-alt/connect   → connect the profiles first (flag connectFirst).
      /welcome-alt/recap     → the curated Playbook reveal (styles below).
 
@@ -249,6 +250,54 @@
   line-height: var(--sys-text-style-h3-line-height);
   font-weight: var(--sys-text-style-h3-weight);
   color: var(--ref-color-grey-100);
+}
+
+/* /welcome-alt/intro — the steps ahead, numbered, in the same card. */
+.welcome-intro__steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+  margin: 0;
+  padding: var(--ref-spacing-xxs) 0 0;
+  list-style: none;
+}
+
+.welcome-intro__step {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xs);
+}
+
+.welcome-intro__num {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--app-surface-subtle);
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: 1;
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.welcome-intro__text {
+  display: flex;
+  flex-direction: column;
+}
+
+.welcome-intro__step-title {
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.welcome-intro__step-desc {
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
 }
 
 /* Phone width: the panel stacks under the network card. */

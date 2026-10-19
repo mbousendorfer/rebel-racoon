@@ -192,7 +192,8 @@ export const FLAGS = Object.freeze([
     // an account is the step after the website URL.
     default: false,
     hides:
-      "When ON, a new user's first screen is connecting their social profiles — " +
+      "When ON, a new user first sees the plan — the steps the setup will ask, " +
+      "in order — then connects their social profiles, " +
       "before the chat, the website or anything else — like Agorapulse's own " +
       "Archie signup step: one row per network, the connected profiles beside " +
       'them, and "Start using Archie" once one is connected. "Skip for now" ' +

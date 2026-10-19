@@ -1,5 +1,6 @@
-// /welcome-alt/connect — a new user's first screen under flag connectFirst:
-// connect the social profiles before anything else, then the onboarding chat.
+// Flag connectFirst — a new user's first two screens, before the onboarding chat:
+//   /welcome-alt/intro    what the setup will ask, in order, and what comes out of it;
+//   /welcome-alt/connect  connect the social profiles.
 //
 // Modelled on Agorapulse's own Archie signup step (core-mfe archie-connect-page):
 // one row per network, the connected profiles beside them, "Start using Archie"
@@ -8,20 +9,21 @@
 // stays possible — behind the same skip-with-reasons dialog as the chat step —
 // so the ask comes first without becoming a prerequisite.
 
-import { html, raw } from "../utils.js?v=1913";
+import { html, raw } from "../utils.js?v=1914";
 import {
   getConnectedProfiles,
   getConnectableNetworks,
   renderProfileTag,
   subscribe,
-} from "../social-profiles.js?v=1913";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=1913";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=1913";
-import { open as openSkipConnectModal } from "../components/skip-connect-modal.js?v=1913";
-import { recordReasons } from "../feedback-store.js?v=1913";
-import { showToast } from "../components/toast.js?v=1913";
-import { SKIP_CONNECT_TARGET } from "../context-builder.js?v=1913";
-import { startOnboardingChat } from "./welcome-alt.js?v=1913";
+} from "../social-profiles.js?v=1914";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=1914";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=1914";
+import { open as openSkipConnectModal } from "../components/skip-connect-modal.js?v=1914";
+import { recordReasons } from "../feedback-store.js?v=1914";
+import { showToast } from "../components/toast.js?v=1914";
+import { SKIP_CONNECT_TARGET, altSteps } from "../context-builder.js?v=1914";
+import { navigate } from "../router.js?v=1914";
+import { startOnboardingChat } from "./welcome-alt.js?v=1914";
 
 function networkRow(net) {
   return html`
@@ -112,4 +114,59 @@ export function renderWelcomeAltConnect(_params, target) {
     unsubscribe();
     target.removeEventListener("click", onClick);
   };
+}
+
+// ---------------------------------------------------------------------------
+// /welcome-alt/intro — what to expect, before anything starts. The list is the
+// real run: the account screen, then the chat's own steps (altSteps(), so a
+// flag that adds or drops a question changes this list too), then the recap.
+// ---------------------------------------------------------------------------
+const STEP_COPY = {
+  connect: ["Connect your social profiles", "So I write for the networks you publish on."],
+  url: ["Show me your brand", "Your website, a few files, or a handful of questions — I'll learn your voice from it."],
+  language: ["Pick your language", "The one I'll write your posts in."],
+  network: ["Choose your main network", "I'll build your main voice for it."],
+  documents: ["Add documents (optional)", "A brand book or guidelines, if you have them."],
+  recap: ["Review your Playbook", "Everything I learned, on one page you can edit before we start."],
+};
+
+export function renderWelcomeAltIntro(_params, target) {
+  const steps = ["connect", ...altSteps().filter((id) => STEP_COPY[id]), "recap"];
+  target.innerHTML = html`
+    <div class="welcome-screen welcome-connect">
+      <div class="welcome-connect__layout">
+        <section class="welcome-connect__card" aria-labelledby="welcomeIntroTitle">
+          <h1 class="welcome-connect__title" id="welcomeIntroTitle">Before we start, here's the plan</h1>
+          <p class="welcome-connect__sub">
+            I'll ask you a few things to get to know your brand. It takes a few minutes, and you can skip anything
+            optional.
+          </p>
+          <ol class="welcome-intro__steps">
+            ${steps.map(
+              (id, i) => html`
+                <li class="welcome-intro__step">
+                  <span class="welcome-intro__num" aria-hidden="true">${i + 1}</span>
+                  <span class="welcome-intro__text">
+                    <span class="welcome-intro__step-title">${STEP_COPY[id][0]}</span>
+                    <span class="welcome-intro__step-desc">${STEP_COPY[id][1]}</span>
+                  </span>
+                </li>
+              `,
+            )}
+          </ol>
+          <div class="welcome-connect__footer">
+            <button type="button" class="ap-button primary orange" data-welcome-begin>
+              <span>Let's go</span>
+              <i class="ap-icon-arrow-right"></i>
+            </button>
+          </div>
+        </section>
+      </div>
+    </div>
+  `;
+  const onClick = (event) => {
+    if (event.target.closest("[data-welcome-begin]")) navigate("/welcome-alt/connect");
+  };
+  target.addEventListener("click", onClick);
+  return () => target.removeEventListener("click", onClick);
 }

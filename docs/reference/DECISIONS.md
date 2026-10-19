@@ -211,7 +211,9 @@ anything else — `/welcome-alt/connect`, modelled on prod's Archie signup step 
 this rule: the ask moves to the front, it doesn't become a gate. The screen keeps the same two beats
 (a network row asks, `connect-account-modal` consents) and the same non-silent Skip
 (`skip-connect-modal`, same feedback key). The chat that follows drops its account step rather than
-asking twice, and `startAlt` takes the connected accounts into the draft as they are.
+asking twice, and `startAlt` takes the connected accounts into the draft as they are. Before both, `/welcome-alt/intro`
+says what the setup will ask; its list is built from `altSteps()`, so it can't announce a step the
+run won't ask.
 
 ⚠️ A surface that merely _lists_ profiles is out of scope on purpose — it renders its empty list.
 But a surface that makes the user _pick_ one must never render an empty picker: that is a silent

@@ -11,13 +11,14 @@
 // first screen — the profile pick is now question 2 of 3 inside the
 // chat, alongside URL (q1) and Documents (q3, skippable).
 //
-// Flag connectFirst: the first screen is connecting social profiles
-// (/welcome-alt/connect, welcome-alt-connect.js), which hands over to the
-// chat through startOnboardingChat() — and the chat no longer asks for one.
+// Flag connectFirst: first a screen that says what the setup will ask
+// (/welcome-alt/intro), then connecting social profiles (/welcome-alt/connect),
+// both in welcome-alt-connect.js, which hands over to the chat through
+// startOnboardingChat() — and the chat no longer asks for an account.
 
-import { navigate } from "../router.js?v=1913";
-import { setHandoff } from "../handoff.js?v=1913";
-import { isFlagOn } from "../feature-flags.js?v=1913";
+import { navigate } from "../router.js?v=1914";
+import { setHandoff } from "../handoff.js?v=1914";
+import { isFlagOn } from "../feature-flags.js?v=1914";
 
 // Mock URL — the brand site is supposed to be collected by an earlier
 // step that lives outside the prototype. We hardcode a believable value
@@ -28,7 +29,7 @@ const PREFILLED_URL = "https://nicesoap.com";
 export function renderWelcomeAlt(_params, _target) {
   if (isFlagOn("connectFirst")) {
     // replace, so Back from the connect screen doesn't bounce here and forward again.
-    window.location.replace("#/welcome-alt/connect");
+    window.location.replace("#/welcome-alt/intro");
     return () => {};
   }
   startOnboardingChat();
