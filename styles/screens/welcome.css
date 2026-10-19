@@ -1065,11 +1065,30 @@
   }
 }
 
-/* Where the card stands in its part: one segment per card. */
+/* The navigation, floating under the stack — out of the card, so a card is
+   only its content. ← · the part's progress (one segment per card, the one
+   indicator) · what's next →. */
+.welcome-review__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+  flex-shrink: 0;
+  align-self: center;
+  margin-top: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xxs) var(--ref-spacing-xxs) var(--ref-spacing-xxs);
+  background: var(--app-surface);
+  border-radius: var(--app-radius-pill);
+  box-shadow: var(--app-shadow-popover-lg);
+}
+
+.welcome-review__nav:empty {
+  display: none;
+}
+
 .welcome-review__segs {
   display: flex;
   gap: var(--ref-spacing-xxxs);
-  margin: 0 0 0 auto;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
@@ -1107,30 +1126,6 @@
 
 .welcome-review__card .pb2-block__icon {
   display: none;
-}
-
-/* The card's footer: ← and → at its ends, where you are, and what's next. */
-.welcome-review__cardfoot {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  margin-top: var(--ref-spacing-md);
-  padding-top: var(--ref-spacing-sm);
-  border-top: 1px solid var(--ref-color-grey-20);
-}
-
-.welcome-review__pos {
-  margin-right: auto;
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  color: var(--ref-color-grey-80);
-}
-
-.welcome-review__next {
-  font-size: var(--sys-text-style-body-bold-size);
-  line-height: var(--sys-text-style-body-bold-line-height);
-  font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--ref-color-grey-100);
 }
 
 .welcome-review__count {

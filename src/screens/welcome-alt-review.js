@@ -7,9 +7,10 @@
 // only its front block shows, the ones still to come stacked behind it.
 // Everything is already filled in by me, so it's browsing, not validating:
 //   - edits apply as you type (the draft is the live source);
-//   - arrows on the card — and the keyboard's, outside a field — go to the
-//     next / previous card, across parts; the card says which part it's in
-//     (the part's icon, one segment per card) and what's next;
+//   - a floating bar under the stack — and the keyboard's arrows, outside a
+//     field — goes to the next / previous card, across parts; it holds the one
+//     progress indicator (a segment per card of the part) and names what's next;
+//     the card itself only says which part it's in (the part's icon);
 //   - a part gets its check in the list once each of its cards has been seen.
 // Start writing lives on the left, the whole time — never on a card.
 //
@@ -17,13 +18,13 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw, escapeHtml } from "../utils.js?v=1957";
-import { navigate } from "../router.js?v=1957";
-import { getDraft, patchDraft } from "../context-builder.js?v=1957";
-import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=1957";
-import { parseHashParams } from "../url-state.js?v=1957";
-import { mountShell } from "./welcome-alt-shell.js?v=1957";
-import { enterArchie } from "./welcome-alt-recap.js?v=1957";
+import { html, raw } from "../utils.js?v=1958";
+import { navigate } from "../router.js?v=1958";
+import { getDraft, patchDraft } from "../context-builder.js?v=1958";
+import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=1958";
+import { parseHashParams } from "../url-state.js?v=1958";
+import { mountShell } from "./welcome-alt-shell.js?v=1958";
+import { enterArchie } from "./welcome-alt-recap.js?v=1958";
 
 const MOVE_MS = 220; // the card's exit, before the next one comes in
 
@@ -80,6 +81,10 @@ export function renderReview(target, sid, config) {
 
   const shell = mountShell(target, { step: "recap", sid, left, sheet: true });
   const body = shell.sheet.querySelector("[data-flow-sheet-body]");
+  const navEl = document.createElement("nav");
+  navEl.className = "welcome-review__nav";
+  navEl.setAttribute("aria-label", "Cards");
+  shell.sheet.append(navEl);
   const unmount = mount(body, { ...config, showTop: false, headerActions: () => null });
 
   // The part's cards: its blocks in edit, else the edited panel (a roster), else
@@ -97,58 +102,47 @@ export function renderReview(target, sid, config) {
   const cardTitle = (el) =>
     el?.querySelector(".pb2-block__title, .recap__panel-title")?.textContent.trim() || partOf(current()).title;
 
-  // The card's head: its part (icon + name, the list's tile) and, on the right,
-  // where it stands in the part — one segment per card, done ones olive.
+  // The card's head: its part — icon + name, the list's tile.
   const kicker = () => {
     const part = partOf(current());
     return html`
       <div class="welcome-review__kicker">
         <span class="welcome-flow__glyph is-icon"><i class="${part.icon}" aria-hidden="true"></i></span>
         <span class="welcome-review__kicker-name">${part.title}</span>
-        <ol class="welcome-review__segs" aria-label="Card ${index + 1} of ${count}">
-          ${Array.from(
-            { length: count },
-            (_, i) => html`<li class="${i < index ? "is-done" : i === index ? "is-current" : ""}"></li>`,
-          )}
-        </ol>
       </div>
     `;
   };
 
-  // The footer: arrows, and what's on either side — browse, don't validate.
-  const footer = (list) => {
+  // The navigation floats under the stack, out of the card: ← · where you are
+  // in the part (one segment per card — the only progress shown) · what's next →.
+  const nav = (list) => {
     const at = RECAP_SECTIONS.findIndex((t) => t.id === current());
     const nextPart = RECAP_SECTIONS[at + 1];
-    const prevPart = RECAP_SECTIONS[at - 1];
     const upNext = index < count - 1 ? cardTitle(list[index + 1]) : nextPart ? nextPart.title : "";
-    const atStart = index === 0 && !prevPart;
+    const atStart = index === 0 && at === 0;
     return html`
-      <div class="welcome-review__cardfoot">
-        <button
-          type="button"
-          class="ap-icon-button stroked"
-          data-review-prev
-          aria-label="Previous card"
-          ${atStart ? raw("disabled") : ""}
-        >
-          <i class="ap-icon-arrow-left"></i>
-        </button>
-        <span class="welcome-review__pos">${index + 1} of ${count}</span>
-        ${upNext ? raw(`<span class="welcome-review__next">${escapeHtml(upNext)}</span>`) : ""}
-        <button
-          type="button"
-          class="ap-icon-button blue"
-          data-review-next
-          aria-label="${upNext ? `Next: ${upNext}` : "Last card"}"
-          ${upNext ? "" : raw("disabled")}
-        >
-          <i class="ap-icon-arrow-right"></i>
-        </button>
-      </div>
+      <button
+        type="button"
+        class="ap-icon-button stroked"
+        data-review-prev
+        aria-label="Previous card"
+        ${atStart ? raw("disabled") : ""}
+      >
+        <i class="ap-icon-arrow-left"></i>
+      </button>
+      <ol class="welcome-review__segs" aria-label="Card ${index + 1} of ${count} in ${partOf(current()).title}">
+        ${Array.from(
+          { length: count },
+          (_, i) => html`<li class="${i < index ? "is-done" : i === index ? "is-current" : ""}"></li>`,
+        )}
+      </ol>
+      <button type="button" class="ap-button ghost blue" data-review-next ${upNext ? "" : raw("disabled")}>
+        <span>${upNext || "Last card"}</span><i class="ap-icon-arrow-right"></i>
+      </button>
     `;
   };
 
-  // Deal the stack: the front card shows (head + footer), up to two backs peek
+  // Deal the stack: the front card shows (with its part on top), up to two backs peek
   // under it, the rest is out of the way. `enter`: how the front one arrives —
   // "next" rises from the back of the stack, "prev" slides back in from the side.
   let applying = false;
@@ -163,12 +157,10 @@ export function renderReview(target, sid, config) {
       el.classList.remove("is-enter-next", "is-enter-prev", "is-leave-next", "is-leave-prev");
       if (enter && i === index) el.classList.add(`is-enter-${enter}`);
       el.dataset.behind = i === index ? String(Math.min(2, count - 1 - index)) : "";
-      el.querySelectorAll(
-        ":scope > .welcome-review__cardfoot, :scope > .welcome-review__kicker, :scope > .welcome-review__stamp",
-      ).forEach((n) => n.remove());
+      el.querySelectorAll(":scope > .welcome-review__kicker").forEach((n) => n.remove());
     });
     list[index]?.insertAdjacentHTML("afterbegin", kicker());
-    list[index]?.insertAdjacentHTML("beforeend", footer(list));
+    navEl.innerHTML = count ? nav(list) : "";
     applying = false;
     markSeen();
     shell.paint();
