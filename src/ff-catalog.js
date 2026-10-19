@@ -140,7 +140,7 @@ export const FLAGS = Object.freeze([
   },
   {
     id: "newChatHero",
-    label: "New chat: headline + workflow rows",
+    label: "UP-New chat: headline + workflow rows",
     // OFF: the hero as it was — the animated wordmark, the sub-line and the
     // three big starter cards. Same three workflows, same handlers either way.
     default: false,
@@ -187,7 +187,7 @@ export const FLAGS = Object.freeze([
   },
   {
     id: "connectFirst",
-    label: "Onboarding: connect profiles first",
+    label: "UP-Onboarding: connect profiles first",
     // OFF: a new user lands straight in the onboarding chat, where connecting
     // an account is the step after the website URL.
     default: false,
