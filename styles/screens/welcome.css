@@ -300,61 +300,125 @@
   width: min(580px, calc(100% - 2 * var(--ref-spacing-lg)));
   max-height: calc(100% - 2 * var(--ref-spacing-lg));
   overflow-y: auto;
-  padding: var(--ref-spacing-md) var(--ref-spacing-md) var(--ref-spacing-sm);
+  padding: var(--ref-spacing-md);
   background: var(--app-surface);
   border-radius: 16px;
   box-shadow: var(--app-shadow-popover-lg);
   animation: welcome-intro-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
 }
 
+/* The Playbook card, three levels (playbookCard in welcome-alt-shell.js):
+   WHO — the head: the brand's mark, its name at h1, the site and where it
+   publishes under it, the status on the right; WHAT — About, the lead, the one
+   paragraph a size up; then the PARTS, each under its Playbook name and tinted
+   glyph, a hairline between them. Field labels only inside a part that holds
+   several — caption, grey-80: the smallest, quietest thing on the card. */
 .welcome-intro__card-head {
   display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  padding-bottom: var(--ref-spacing-sm);
-  border-bottom: 1px solid var(--ref-color-grey-20);
+  align-items: flex-start;
+  gap: var(--ref-spacing-sm);
 }
 
 .welcome-intro__brand {
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: var(--app-radius-lg);
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--app-radius-card);
   background: var(--app-surface-subtle);
   color: var(--ref-color-grey-100);
-  font-size: var(--sys-icon-css-md);
+  font-size: var(--sys-text-style-h1-size);
+  font-weight: var(--sys-text-style-h1-weight);
+}
+
+.welcome-intro__brand i {
+  font-size: var(--sys-icon-css-lg);
 }
 
 .welcome-intro__card-title {
-  font-size: var(--sys-text-style-h3-size);
-  line-height: var(--sys-text-style-h3-line-height);
-  font-weight: var(--sys-text-style-h3-weight);
+  font-size: var(--sys-text-style-h1-size);
+  line-height: var(--sys-text-style-h1-line-height);
+  font-weight: var(--sys-text-style-h1-weight);
   color: var(--ref-color-grey-100);
 }
 
-.welcome-intro__rows {
+.welcome-intro__card-status {
+  flex-shrink: 0;
+  margin-left: auto;
+  animation: welcome-intro-land 0.5s cubic-bezier(0.22, 1, 0.36, 1) var(--t) both;
+}
+
+.welcome-intro__publish {
+  margin: var(--ref-spacing-xs) 0 0;
+}
+
+.welcome-intro__lead {
+  margin: var(--ref-spacing-md) 0 var(--ref-spacing-sm);
+}
+
+.welcome-intro__lead .welcome-flow__line {
+  font-size: var(--sys-text-style-subtitle-size);
+  line-height: var(--sys-text-style-subtitle-line-height);
+  color: var(--ref-color-grey-100);
+}
+
+.welcome-intro__part {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  column-gap: var(--ref-spacing-xs);
+  align-items: center;
+  padding: var(--ref-spacing-sm) 0;
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+
+.welcome-intro__part:last-child {
+  padding-bottom: 0;
+}
+
+.welcome-intro__part-tile.welcome-flow__glyph {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--ref-border-radius-md);
+  font-size: var(--sys-icon-css-xs);
+}
+
+.welcome-intro__part-name {
   margin: 0;
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.welcome-intro__fields {
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  margin: var(--ref-spacing-xxs) 0 0;
 }
 
 .welcome-intro__row {
-  display: grid;
-  grid-template-columns: 112px minmax(0, 1fr);
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  min-height: 52px;
-  padding: var(--ref-spacing-xxs) 0;
-  border-bottom: 1px solid var(--ref-color-grey-20);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
   animation: welcome-intro-land 0.5s cubic-bezier(0.22, 1, 0.36, 1) var(--t) both;
 }
 
 .welcome-intro__row dt {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   color: var(--ref-color-grey-80);
+}
+
+.welcome-intro__hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .welcome-intro__row dd {
@@ -412,11 +476,6 @@
   height: 24px;
   border-radius: 50%;
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
-}
-.welcome-intro__card-foot {
-  display: flex;
-  padding-top: var(--ref-spacing-sm);
-  animation: welcome-intro-land 0.5s cubic-bezier(0.22, 1, 0.36, 1) var(--t) both;
 }
 
 @keyframes welcome-intro-rise {
@@ -478,15 +537,6 @@
   }
 }
 
-/* Phone: a card line stacks its label over its value. */
-@media (max-width: 480px) {
-  .welcome-intro__row {
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--ref-spacing-xxs);
-    padding: var(--ref-spacing-xs) 0;
-  }
-}
-
 /* ---------- The run: /welcome-alt/connect → /ready (flag connectFirst) ----------
    The intro's split, reused (welcome-alt-shell.js): the step on the left, the
    stage on the right where the card fills with real answers. Unlike the intro
@@ -498,7 +548,7 @@
 }
 
 .welcome-flow .welcome-intro__card,
-.welcome-flow .welcome-intro__card-foot,
+.welcome-flow .welcome-intro__card-status,
 .welcome-flow__row:not(.is-new),
 .welcome-flow__row:not(.is-new) dd > * {
   animation: none;
@@ -849,8 +899,8 @@
 }
 
 .welcome-intro__brand img {
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   object-fit: contain;
 }
 
@@ -878,10 +928,6 @@
   50% {
     opacity: 0.45;
   }
-}
-
-.welcome-flow__foot:empty {
-  display: none;
 }
 
 /* The reveal: the card takes a breath. */
@@ -1374,14 +1420,6 @@
   line-height: var(--sys-text-style-caption-bold-line-height);
   font-weight: var(--sys-text-style-caption-bold-weight);
   color: var(--ref-color-grey-100);
-}
-
-/* A card row's label wears its part's tile, a size down from the list's. */
-.welcome-flow__glyph.welcome-flow__row-tile {
-  width: 24px;
-  height: 24px;
-  border-radius: var(--ref-border-radius-md);
-  font-size: var(--sys-icon-css-xs);
 }
 
 /* The list's tile for a part: its tint, and its glyph in the tint's dark shade. */

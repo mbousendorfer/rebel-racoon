@@ -9,10 +9,10 @@
 // the session id the recap already uses (`welcomeAltSessionId`), and persisted
 // on every change so a reload lands on the same step with the same answers.
 
-import "../archie-pixels.js?v=1994";
-import { html, raw, escapeHtml } from "../utils.js?v=1994";
-import { navigate } from "../router.js?v=1994";
-import { isFlagOn } from "../feature-flags.js?v=1994";
+import "../archie-pixels.js?v=1995";
+import { html, raw, escapeHtml } from "../utils.js?v=1995";
+import { navigate } from "../router.js?v=1995";
+import { isFlagOn } from "../feature-flags.js?v=1995";
 import {
   altSteps,
   createAltDraft,
@@ -20,16 +20,17 @@ import {
   isAnalysisReady,
   restoreDraft,
   subscribeDraft,
-} from "../context-builder.js?v=1994";
+} from "../context-builder.js?v=1995";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
   getConnectedProfiles,
   renderProfileTag,
   subscribe as subscribeProfiles,
-} from "../social-profiles.js?v=1994";
-import { networkVoicesOn } from "../network-voice.js?v=1994";
-import { readSessionId, persistDraft, readPersistedDraft } from "./welcome-alt-recap.js?v=1994";
+} from "../social-profiles.js?v=1995";
+import { networkVoicesOn } from "../network-voice.js?v=1995";
+import { readSessionId, persistDraft, readPersistedDraft } from "./welcome-alt-recap.js?v=1995";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=1995";
 
 const PREFILLED_URL = "https://nicesoap.com";
 const SESSION_KEY = "welcomeAltSessionId";
@@ -120,33 +121,72 @@ export const tint = (id) =>
     : "";
 
 // The card's rows by label (the intro's example card uses the same labels),
-// IN THE PLAYBOOK'S ORDER — Brief, Voice, Branding, Competitors — each with the
-// part it fills and the glyph of the Playbook block it previews (playbook-view's
-// pb2Block icons: The business, Speaking to, What posts should achieve, The
-// voice, Logos, the Competitors section). Publishes on is the account, not a
-// part of the Playbook: first, as the run asks it first, and untinted.
-const ROW_LOOK = {
-  "Publishes on": ["", "ap-icon-share"],
-  About: ["goals", "ap-icon-buildings"],
-  "Writes in": ["goals", "ap-icon-web"],
-  "Speaks to": ["goals", "ap-icon-user"],
-  Goal: ["goals", "ap-icon-target"],
-  Voice: ["voice", "ap-icon-quote"],
-  "Main voice": ["voice", "ap-icon-quote"],
-  Branding: ["brand", "ap-icon-image"],
-  "Up against": ["competitors", "ap-icon-buildings"],
+// IN THE PLAYBOOK'S ORDER, each with the part it fills. Publishes on is the
+// account, not a part of the Playbook: it sits in the card's head, with the
+// brand; About is the brand's lead, under its name.
+const ROW_PART = {
+  "Publishes on": "",
+  About: "",
+  "Writes in": "goals",
+  "Speaks to": "goals",
+  Goal: "goals",
+  Voice: "voice",
+  "Main voice": "voice",
+  Branding: "brand",
+  "Up against": "competitors",
 };
-const ROW_ORDER = Object.keys(ROW_LOOK);
-export const inPlaybookOrder = (rows) =>
-  [...rows].sort((a, b) => ROW_ORDER.indexOf(a.label) - ROW_ORDER.indexOf(b.label));
-// The row carries the tint (its tile and its tags read it); the label gets the tile.
-export const rowTint = (label) => tint((ROW_LOOK[label] || [])[0]);
-export function rowLabel(label) {
-  const icon = (ROW_LOOK[label] || [])[1];
-  const tile = icon
-    ? `<span class="welcome-flow__glyph is-icon is-tinted welcome-flow__row-tile"><i class="${icon}" aria-hidden="true"></i></span>`
-    : "";
-  return raw(`${tile}<span>${escapeHtml(label)}</span>`);
+const ROW_ORDER = Object.keys(ROW_PART);
+const inPlaybookOrder = (rows) => [...rows].sort((a, b) => ROW_ORDER.indexOf(a.label) - ROW_ORDER.indexOf(b.label));
+
+// The Playbook card — the live one on every step and the intro's example.
+// Three levels, one per kind of thing: WHO (the head: the brand's mark, its
+// name at h1, where it is and where it publishes, the status on the right),
+// WHAT (About, the lead: the one paragraph set a size up), and the PARTS the
+// Playbook will hold, each under its own name and glyph from the Playbook
+// (RECAP_SECTIONS: Brief, Voice profile, Branding, Competitors) in its tint.
+// Inside a part, a field is named only when the part holds more than one.
+//   rows: [{ label, html, cls?, style? }] — html is the field's content
+//   (a value, or its placeholder bars); cls / style ride on the field.
+export function playbookCard({ mark, name, sub = "", status = "", rows }) {
+  const ordered = inPlaybookOrder(rows);
+  const field = (r, { named = true, cls = "" } = {}) => `
+    <div class="welcome-intro__row ${cls} ${r.cls || ""}" style="${r.style || ""}">
+      <dt class="${named ? "" : "welcome-intro__hidden"}">${escapeHtml(r.label)}</dt>
+      <dd>${r.html}</dd>
+    </div>`;
+  const publish = ordered.find((r) => r.label === "Publishes on");
+  const about = ordered.find((r) => r.label === "About");
+  const parts = [];
+  for (const r of ordered) {
+    const part = ROW_PART[r.label];
+    if (!part) continue;
+    if (parts.at(-1)?.id !== part) parts.push({ id: part, rows: [] });
+    parts.at(-1).rows.push(r);
+  }
+  return `
+    <div class="welcome-intro__card-head">
+      <span class="welcome-intro__brand">${mark}</span>
+      <div class="welcome-flow__card-name">
+        <span class="welcome-intro__card-title">${escapeHtml(name)}</span>
+        ${sub ? `<span class="welcome-flow__card-sub">${escapeHtml(sub)}</span>` : ""}
+        ${publish ? `<dl class="welcome-intro__publish">${field(publish, { named: false })}</dl>` : ""}
+      </div>
+      ${status}
+    </div>
+    ${about ? `<dl class="welcome-intro__lead">${field(about, { named: false })}</dl>` : ""}
+    ${parts
+      .map((p) => {
+        const head = RECAP_SECTIONS.find((t) => t.id === p.id);
+        const named = p.rows.length > 1;
+        return `
+          <section class="welcome-intro__part" style="${tint(p.id)}">
+            <span class="welcome-flow__glyph is-icon is-tinted welcome-intro__part-tile" aria-hidden="true"><i class="${head?.icon || ""}"></i></span>
+            <h3 class="welcome-intro__part-name">${escapeHtml(head?.title || "")}</h3>
+            <dl class="welcome-intro__fields">${p.rows.map((r) => field(r, { named })).join("")}</dl>
+          </section>`;
+      })
+      .join("")}
+  `;
 }
 
 // ── The live card ─────────────────────────────────────────────────────────
@@ -247,7 +287,7 @@ function cardRows(d, sid) {
 
 function renderCard(sid) {
   const d = getDraft(sid);
-  const rows = inPlaybookOrder(cardRows(d, sid).rows);
+  const { rows } = cardRows(d, sid);
   // "Ready" belongs to the reveal (/welcome-alt/ready sets `revealed`); until
   // then a read source is still being learned, whatever has landed already.
   const ready = d?.revealed === true;
@@ -263,43 +303,28 @@ function renderCard(sid) {
     : d?.name && d.name !== "New Playbook"
       ? escapeHtml(d.name.slice(0, 1).toUpperCase())
       : `<i class="ap-icon-buildings" aria-hidden="true"></i>`;
-  return html`
-    <div class="welcome-intro__card-head">
-      <span class="welcome-intro__brand">${raw(mark)}</span>
-      <span class="welcome-flow__card-name">
-        <span class="welcome-intro__card-title">${name}</span>
-        ${domain ? raw(`<span class="welcome-flow__card-sub">${escapeHtml(domain)}</span>`) : ""}
-      </span>
-    </div>
-    <dl class="welcome-intro__rows">
-      ${shownRows.map((r) => {
-        const id = `${sid}:${r.key}`;
-        const fresh = r.state === "filled" && !landed.has(id);
-        if (r.state === "filled") landed.add(id);
-        else landed.delete(id);
-        return html`
-          <div
-            class="welcome-intro__row welcome-flow__row is-${r.state} ${fresh ? "is-new" : ""}"
-            style="${rowTint(r.label)}"
-          >
-            <dt>${rowLabel(r.label)}</dt>
-            <dd>
-              ${r.state === "filled"
-                ? raw(r.value)
-                : raw(`<span class="welcome-flow__placeholder"></span>`.repeat(r.lines || 1))}
-            </dd>
-          </div>
-        `;
-      })}
-    </dl>
-    <div class="welcome-intro__card-foot welcome-flow__foot">
-      ${ready
-        ? raw(`<span class="ap-status mermaid">Ready to write</span>`)
-        : learning
-          ? raw(`<span class="ap-status mermaid is-working">Learning your brand…</span>`)
-          : ""}
-    </div>
-  `;
+  const status = ready
+    ? `<span class="ap-status mermaid welcome-intro__card-status">Ready to write</span>`
+    : learning
+      ? `<span class="ap-status mermaid is-working welcome-intro__card-status">Learning your brand…</span>`
+      : "";
+  return playbookCard({
+    mark,
+    name,
+    sub: domain,
+    status,
+    rows: shownRows.map((r) => {
+      const id = `${sid}:${r.key}`;
+      const fresh = r.state === "filled" && !landed.has(id);
+      if (r.state === "filled") landed.add(id);
+      else landed.delete(id);
+      return {
+        label: r.label,
+        cls: `welcome-flow__row is-${r.state}${fresh ? " is-new" : ""}`,
+        html: r.state === "filled" ? r.value : `<span class="welcome-flow__placeholder"></span>`.repeat(r.lines || 1),
+      };
+    }),
+  });
 }
 
 function renderProgress(step) {

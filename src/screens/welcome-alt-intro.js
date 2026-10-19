@@ -11,11 +11,11 @@
 // The card is an illustration, not data: the Playbook's real parts (Voice
 // profile, Branding…) filled with example values.
 
-import "../archie-pixels.js?v=1994";
-import { html, raw } from "../utils.js?v=1994";
-import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=1994";
-import { navigate } from "../router.js?v=1994";
-import { flowSteps, startFlow, STEP_TEXT, rowLabel, rowTint, inPlaybookOrder } from "./welcome-alt-shell.js?v=1994";
+import "../archie-pixels.js?v=1995";
+import { html, raw } from "../utils.js?v=1995";
+import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=1995";
+import { navigate } from "../router.js?v=1995";
+import { flowSteps, startFlow, STEP_TEXT, playbookCard } from "./welcome-alt-shell.js?v=1995";
 
 const glyph = (net) =>
   `<span class="welcome-intro__net"><i class="${NETWORK_ICON_BY_PLATFORM[net]}" aria-hidden="true"></i></span>`;
@@ -68,7 +68,7 @@ const ROWS = [
 
 export function renderWelcomeAltIntro(_params, target) {
   const steps = flowSteps();
-  const rows = inPlaybookOrder(ROWS.filter((r) => steps.includes(r.step)));
+  const rows = ROWS.filter((r) => steps.includes(r.step));
   const last = steps.length - 1;
 
   target.innerHTML = html`
@@ -105,25 +105,19 @@ export function renderWelcomeAltIntro(_params, target) {
       <div class="welcome-intro__stage" aria-hidden="true">
         <archie-pixels data-quiet></archie-pixels>
         <div class="welcome-intro__card">
-          <div class="welcome-intro__card-head">
-            <span class="welcome-intro__brand"><i class="ap-icon-buildings"></i></span>
-            <span class="welcome-intro__card-title">Your Playbook</span>
-          </div>
-          <dl class="welcome-intro__rows">
-            ${rows.map((r) => {
+          ${raw(
+            playbookCard({
+              mark: `<i class="ap-icon-buildings" aria-hidden="true"></i>`,
+              name: "Your Playbook",
+              status: `<span class="ap-status mermaid welcome-intro__card-status" style="--i: ${last}">Ready to write</span>`,
               // Several lines from one step land one after the other.
-              const j = rows.filter((o) => o.step === r.step).indexOf(r);
-              return html`
-                <div class="welcome-intro__row" style="--i: ${steps.indexOf(r.step) + j * 0.18}; ${rowTint(r.label)}">
-                  <dt>${rowLabel(r.label)}</dt>
-                  <dd>${raw(r.value)}</dd>
-                </div>
-              `;
-            })}
-          </dl>
-          <div class="welcome-intro__card-foot" style="--i: ${last}">
-            <span class="ap-status mermaid">Ready to write</span>
-          </div>
+              rows: rows.map((r) => ({
+                label: r.label,
+                html: r.value,
+                style: `--i: ${steps.indexOf(r.step) + rows.filter((o) => o.step === r.step).indexOf(r) * 0.18}`,
+              })),
+            }),
+          )}
         </div>
       </div>
     </div>
