@@ -13,16 +13,39 @@
 // The card is an illustration, not data: the Playbook's real parts (Voice
 // profile, Branding…) filled with example values.
 
-import "../archie-pixels.js?v=1999";
-import { html, raw } from "../utils.js?v=1999";
-import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=1999";
-import { navigate } from "../router.js?v=1999";
-import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=1999";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=1999";
+import "../archie-pixels.js?v=2000";
+import { html, raw } from "../utils.js?v=2000";
+import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=2000";
+import { navigate } from "../router.js?v=2000";
+import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2000";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2000";
 
 // What a Playbook holds, shown rather than told: the parts the card on the
 // right fills, under their Playbook names, glyphs and tints.
 const PARTS = ["goals", "voice", "brand", "competitors"];
+
+// Why each step is asked: what it fills, shown with the parts' own tiles (the
+// pills above name them) instead of a sentence per step. The account step
+// fills no part — it shows the networks; Meet your Playbook fills nothing new.
+const STEP_FILLS = {
+  connect: { networks: ["linkedin", "instagram", "facebook", "x"] },
+  url: { parts: ["goals", "voice", "brand", "competitors"] },
+  language: { parts: ["goals"] },
+  network: { parts: ["voice"] },
+  documents: { parts: ["voice", "brand"], optional: true },
+};
+
+function fills(id) {
+  const f = STEP_FILLS[id];
+  if (!f) return "";
+  const tiles = f.networks
+    ? f.networks.map(glyph)
+    : f.parts.map((p) => {
+        const part = RECAP_SECTIONS.find((sec) => sec.id === p);
+        return `<span class="welcome-intro__fill" style="${tint(p)}" title="${part?.title || ""}"><i class="${part?.icon || ""}" aria-hidden="true"></i><span class="welcome-intro__hidden">${part?.title || ""}</span></span>`;
+      });
+  return `<span class="welcome-intro__fills">${tiles.join("")}</span>`;
+}
 
 const glyph = (net) =>
   `<span class="welcome-intro__net"><i class="${NETWORK_ICON_BY_PLATFORM[net]}" aria-hidden="true"></i></span>`;
@@ -101,8 +124,11 @@ export function renderWelcomeAltIntro(_params, target) {
                 <li class="welcome-intro__step" style="--i: ${i}">
                   <span class="welcome-intro__num" aria-hidden="true">${i + 1}</span>
                   <span class="welcome-intro__text">
-                    <span class="welcome-intro__step-title">${STEP_TEXT[id].title}</span>
-                    <span class="welcome-intro__step-desc">${STEP_TEXT[id].desc}</span>
+                    <span class="welcome-intro__step-title">
+                      ${STEP_TEXT[id].title}
+                      ${STEP_FILLS[id]?.optional ? raw(`<span class="welcome-intro__optional">Optional</span>`) : ""}
+                    </span>
+                    ${raw(fills(id))}
                   </span>
                 </li>
               `,

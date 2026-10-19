@@ -317,6 +317,38 @@
   color: var(--ref-color-grey-100);
 }
 
+/* What a step fills: the parts' tiles, the colours of the pills above. */
+.welcome-intro__fills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxxs);
+  margin-top: var(--ref-spacing-xxs);
+}
+
+.welcome-intro__fill {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--ref-border-radius-md);
+  background: var(--part-tint);
+  color: var(--part-ink);
+  font-size: var(--sys-icon-css-xs);
+}
+
+.welcome-intro__fills .welcome-intro__net {
+  width: 24px;
+  height: 24px;
+  font-size: var(--sys-icon-css-xs);
+}
+
+.welcome-intro__optional {
+  margin-left: var(--ref-spacing-xxs);
+  font-size: var(--sys-text-style-caption-size);
+  font-weight: var(--sys-text-style-caption-weight);
+  color: var(--ref-color-grey-80);
+}
+
 .welcome-intro__step-desc {
   font-size: var(--sys-text-style-body-size);
   line-height: var(--sys-text-style-body-line-height);
