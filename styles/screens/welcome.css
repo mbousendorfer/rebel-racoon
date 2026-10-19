@@ -1146,13 +1146,19 @@
   /* Edge to edge across the card's top: out of its padding, under its corners. */
   margin: calc(var(--ref-spacing-lg) * -1) calc(var(--ref-spacing-lg) * -1) var(--ref-spacing-lg);
   padding: var(--ref-spacing-xs) var(--ref-spacing-lg);
-  background: var(--app-surface-subtle);
+  /* The part's tint (PART_TINT in welcome-alt-review.js), shared with its tile in the list. */
+  background: var(--part-tint, var(--app-surface-subtle));
   border-bottom: 1px solid var(--ref-color-grey-20);
   border-radius: 20px 20px 0 0;
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);
   font-weight: var(--sys-text-style-caption-bold-weight);
   color: var(--ref-color-grey-100);
+}
+
+/* The list's tile for a part: its tint. */
+.welcome-flow__glyph.is-tinted {
+  background: var(--part-tint);
 }
 
 /* A bare glyph in the band — a tile in a strip would be a box in a box. */

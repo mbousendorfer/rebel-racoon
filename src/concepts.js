@@ -7,7 +7,7 @@
 // a definition can never say two different things on two screens.
 // docs/copy/copy-principles.md § Concepts.
 
-import { escapeAttr } from "./utils.js?v=1961";
+import { escapeAttr } from "./utils.js?v=1963";
 
 export const CONCEPTS = {
   playbook: {

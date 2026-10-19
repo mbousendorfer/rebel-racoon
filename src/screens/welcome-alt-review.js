@@ -18,15 +18,27 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=1961";
-import { navigate } from "../router.js?v=1961";
-import { getDraft, patchDraft } from "../context-builder.js?v=1961";
-import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=1961";
-import { parseHashParams } from "../url-state.js?v=1961";
-import { mountShell } from "./welcome-alt-shell.js?v=1961";
-import { enterArchie } from "./welcome-alt-recap.js?v=1961";
+import { html, raw } from "../utils.js?v=1963";
+import { navigate } from "../router.js?v=1963";
+import { getDraft, patchDraft } from "../context-builder.js?v=1963";
+import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=1963";
+import { parseHashParams } from "../url-state.js?v=1963";
+import { mountShell } from "./welcome-alt-shell.js?v=1963";
+import { enterArchie } from "./welcome-alt-recap.js?v=1963";
 
 const MOVE_MS = 220; // the card's exit, before the next one comes in
+
+// Each part's tint — its card's header band and its tile in the list share it,
+// so the colour says which part you're in (asked for explicitly, 2026-10-19).
+// Soft DS tints only, and never electric blue: blue stays the interactive colour.
+const PART_TINT = {
+  goals: "--ref-color-orange-20",
+  voice: "--ref-color-mermaid-20",
+  brand: "--ref-color-menthol-20",
+  competitors: "--ref-color-yellow-20",
+  influencers: "--ref-color-soft-blue-20",
+};
+const tint = (id) => `--part-tint: var(${PART_TINT[id] || "--app-surface-subtle"})`;
 
 export function renderReview(target, sid, config) {
   const reviewed = () => new Set(getDraft(sid)?.reviewedParts || []);
@@ -59,7 +71,9 @@ export function renderReview(target, sid, config) {
                 data-review-part="${t.id}"
                 aria-current="${here ? "true" : "false"}"
               >
-                <span class="welcome-flow__glyph is-icon"><i class="${t.icon}" aria-hidden="true"></i></span>
+                <span class="welcome-flow__glyph is-icon is-tinted" style="${tint(t.id)}"
+                  ><i class="${t.icon}" aria-hidden="true"></i
+                ></span>
                 <span class="welcome-flow__option-text">
                   <span class="welcome-flow__option-title">${t.title}</span>
                   <span class="welcome-flow__option-desc">${t.lead}</span>
@@ -106,7 +120,7 @@ export function renderReview(target, sid, config) {
   const kicker = () => {
     const part = partOf(current());
     return html`
-      <div class="welcome-review__kicker">
+      <div class="welcome-review__kicker" style="${tint(current())}">
         <span class="welcome-flow__glyph is-icon"><i class="${part.icon}" aria-hidden="true"></i></span>
         <span class="welcome-review__kicker-name">${part.title}</span>
       </div>

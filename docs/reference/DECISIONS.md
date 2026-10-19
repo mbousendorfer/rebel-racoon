@@ -217,7 +217,10 @@ split and on the stage: EVERY block of the Playbook, never a sorted subset (2026
 explicitly), dealt as a stack of cards on the stage — one block per card, already in edit, browsed with
 arrows (← →, the keyboard's too) and edited on the fly — no per-card Looks good: 20-odd confirmations
 was a chore (2026-10-19). A wall of blocks and a separate Confirm head were both tried
-the same day and dropped: the head and the view's sticky Cancel / Save read as two stray bars. The steps'
+the same day and dropped: the head and the view's sticky Cancel / Save read as two stray bars. Each part has its own tint (its cards' header band
+and its tile in the list) — a deliberate exception to "group by structure, not colour", asked for
+explicitly (2026-10-19) so the colour says which part you're in; soft DS tints only, never electric
+blue, which stays the interactive colour. The steps'
 effects on the draft are context-builder's (`createAltDraft`, `readAltWebsite`, `readAltFiles`,
 `writeAltManually`, `analyzeAltInterview`) — the chat calls the same functions, so there is one
 implementation and two hosts. Every list of steps (the plan, the progress) comes from `altSteps()`,
