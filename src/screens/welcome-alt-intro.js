@@ -13,17 +13,17 @@
 // The card is an illustration, not data: the Playbook's real parts (Voice
 // profile, Branding…) filled with example values.
 
-import "../archie-pixels.js?v=2002";
-import { html, raw } from "../utils.js?v=2002";
+import "../archie-pixels.js?v=2004";
+import { html, raw, escapeHtml } from "../utils.js?v=2004";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORKS,
   getConnectedProfiles,
   getConnectableNetworks,
-} from "../social-profiles.js?v=2002";
-import { navigate } from "../router.js?v=2002";
-import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2002";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2002";
+} from "../social-profiles.js?v=2004";
+import { navigate } from "../router.js?v=2004";
+import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2004";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2004";
 
 // What a Playbook holds, shown rather than told: the parts the card on the
 // right fills, under their Playbook names, glyphs and tints.
@@ -33,7 +33,15 @@ const PARTS = ["goals", "voice", "brand", "competitors"];
 // gets a line only where its title doesn't say why it's asked; the documents
 // step is marked Optional instead.
 const STEP_HINT = {
-  connect: () => `For now: ${supportedNetworks()}.`,
+  connect: () =>
+    raw(
+      `<span class="welcome-intro__nets"><span>For now:</span><span class="welcome-intro__nets" role="list" aria-label="Supported networks">${supportedNetworks()
+        .map(
+          (n) =>
+            `<span class="welcome-intro__net-name" role="listitem"><i class="${n.icon}" aria-hidden="true"></i>${escapeHtml(n.label)}</span>`,
+        )
+        .join("")}</span></span>`,
+    ),
   url: "Your website is enough. No site? A few questions.",
   network: "I build your main voice for it.",
 };
@@ -46,10 +54,9 @@ function supportedNetworks() {
     ...getConnectedProfiles().map((p) => p.platform),
     ...getConnectableNetworks().map((n) => n.platform),
   ]);
-  const labels = Object.keys(NETWORKS)
+  return Object.keys(NETWORKS)
     .filter((id) => ids.has(id))
-    .map((id) => NETWORKS[id].label);
-  return new Intl.ListFormat("en", { type: "conjunction" }).format(labels);
+    .map((id) => NETWORKS[id]);
 }
 
 const glyph = (net) =>
