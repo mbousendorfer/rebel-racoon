@@ -10,11 +10,11 @@
 // out (Start writing is never gated). Right: the current part, plainly — and a
 // footer that walks to the next one.
 
-import { html, raw, escapeHtml } from "../utils.js?v=1938";
-import { navigate } from "../router.js?v=1938";
-import { getDraft, patchDraft } from "../context-builder.js?v=1938";
-import { mountShell } from "./welcome-alt-shell.js?v=1938";
-import { enterArchie } from "./welcome-alt-recap.js?v=1938";
+import { html, raw, escapeHtml } from "../utils.js?v=1940";
+import { navigate } from "../router.js?v=1940";
+import { getDraft, patchDraft } from "../context-builder.js?v=1940";
+import { mountShell } from "./welcome-alt-shell.js?v=1940";
+import { enterArchie } from "./welcome-alt-recap.js?v=1940";
 
 const traitsOf = (d) =>
   (d?.voiceProfile?.headline || "")
@@ -25,6 +25,7 @@ const traitsOf = (d) =>
 const PARTS = [
   {
     id: "brand",
+    icon: "ap-icon-buildings",
     title: "Your brand",
     lead: "What I know about the business. I use it to ground every post.",
     body: (d) => html`
@@ -42,6 +43,7 @@ ${d.businessSummary || ""}</textarea
   },
   {
     id: "audience",
+    icon: "ap-icon-multiple-users",
     title: "Who it's for",
     lead: "The people your posts speak to. Pick the closest, or say it your way.",
     body: (d) => {
@@ -75,6 +77,7 @@ ${d.businessSummary || ""}</textarea
   },
   {
     id: "voice",
+    icon: "ap-icon-single-chat-bubble",
     title: "How you sound",
     lead: "How every post reads. Say it the way you'd brief a new writer.",
     body: (d) => {
@@ -96,6 +99,7 @@ ${d.voiceSummary || ""}</textarea
   },
   {
     id: "look",
+    icon: "ap-icon-image",
     title: "Your look",
     lead: "The colours I use when I make your images.",
     body: (d) => {
@@ -176,29 +180,44 @@ export function renderReview(target, sid) {
   const paintPart = () => {
     const d = getDraft(sid) || {};
     const part = PARTS.find((p) => p.id === current);
-    const at = PARTS.indexOf(part);
+    const done = reviewed();
+    const allDone = PARTS.every((p) => done.has(p.id));
     body.innerHTML = html`
       <section class="welcome-review__part" aria-labelledby="welcomeReviewPart">
-        <h2 class="welcome-review__title" id="welcomeReviewPart">${part.title}</h2>
-        <p class="welcome-intro__sub">${part.lead}</p>
+        <header class="welcome-intro__card-head welcome-review__head">
+          <span class="welcome-intro__brand"><i class="${part.icon}" aria-hidden="true"></i></span>
+          <span class="welcome-flow__card-name">
+            <span class="welcome-intro__card-title" id="welcomeReviewPart">${part.title}</span>
+            <span class="welcome-flow__card-sub">${part.lead}</span>
+          </span>
+        </header>
         <div class="welcome-review__fields">${raw(part.body(d))}</div>
       </section>
     `;
-    const done = reviewed();
-    const allDone = PARTS.every((p) => done.has(p.id));
+    // Where the review stands, in four pips: checked = butter, here = ring.
+    const pips = html`
+      <ol class="welcome-review__pips" aria-label="${done.size} of ${PARTS.length} checked">
+        ${PARTS.map(
+          (p) => html`<li class="${done.has(p.id) ? "is-done" : ""} ${p.id === current ? "is-current" : ""}"></li>`,
+        )}
+      </ol>
+    `;
     foot.innerHTML = allDone
       ? html`
+          ${raw(pips)}
           <span class="welcome-review__foot-text">All four look good.</span>
           <button type="button" class="ap-button primary orange" data-review-start>
             <span>Start writing</span><i class="ap-icon-arrow-right"></i>
           </button>
         `
       : html`
-          <span class="welcome-review__foot-text">${at + 1} of ${PARTS.length}</span>
+          ${raw(pips)}
           <button type="button" class="ap-button primary blue" data-review-ok>
             <i class="ap-icon-check"></i><span>Looks good</span>
           </button>
         `;
+    // Everything checked: the card takes the reveal's breath.
+    shell.sheet.classList.toggle("is-revealed", allDone);
   };
   const paint = () => {
     shell.paint();

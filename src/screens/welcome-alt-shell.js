@@ -9,10 +9,10 @@
 // the session id the recap already uses (`welcomeAltSessionId`), and persisted
 // on every change so a reload lands on the same step with the same answers.
 
-import "../archie-pixels.js?v=1938";
-import { html, raw, escapeHtml } from "../utils.js?v=1938";
-import { navigate } from "../router.js?v=1938";
-import { isFlagOn } from "../feature-flags.js?v=1938";
+import "../archie-pixels.js?v=1940";
+import { html, raw, escapeHtml } from "../utils.js?v=1940";
+import { navigate } from "../router.js?v=1940";
+import { isFlagOn } from "../feature-flags.js?v=1940";
 import {
   altSteps,
   createAltDraft,
@@ -20,16 +20,16 @@ import {
   isAnalysisReady,
   restoreDraft,
   subscribeDraft,
-} from "../context-builder.js?v=1938";
+} from "../context-builder.js?v=1940";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
   getConnectedProfiles,
   renderProfileTag,
   subscribe as subscribeProfiles,
-} from "../social-profiles.js?v=1938";
-import { networkVoicesOn } from "../network-voice.js?v=1938";
-import { readSessionId, persistDraft, readPersistedDraft } from "./welcome-alt-recap.js?v=1938";
+} from "../social-profiles.js?v=1940";
+import { networkVoicesOn } from "../network-voice.js?v=1940";
+import { readSessionId, persistDraft, readPersistedDraft } from "./welcome-alt-recap.js?v=1940";
 
 const PREFILLED_URL = "https://nicesoap.com";
 const SESSION_KEY = "welcomeAltSessionId";
@@ -276,8 +276,8 @@ function renderProgress(step) {
 
 // Paint the shell into `target` once; `left()` is repainted by `paint()`, the
 // card on every change to the draft or to the connected accounts.
-// `sheet`: the review (/welcome-alt/recap) — no stage: the right half is the
-// whole Playbook, plain, with a footer; the caller fills both.
+// `sheet`: the review (/welcome-alt/recap) — the same stage, the card holding
+// the part being checked and a footer; the caller fills both.
 // Returns { paint, sheet, cleanup }.
 export function mountShell(target, { step, sid, left, sheet = false }) {
   target.innerHTML = html`
@@ -289,15 +289,15 @@ export function mountShell(target, { step, sid, left, sheet = false }) {
           <div data-flow-left></div>
         </div>
       </section>
-      ${sheet
-        ? raw(`<div class="welcome-flow__sheet" data-flow-sheet>
-            <div class="welcome-flow__sheet-body" data-flow-sheet-body></div>
-            <div class="welcome-flow__sheet-foot" data-flow-sheet-foot></div>
-          </div>`)
-        : raw(`<div class="welcome-intro__stage" aria-hidden="true">
-            <archie-pixels data-quiet></archie-pixels>
-            <div class="welcome-intro__card welcome-flow__card" data-flow-card></div>
-          </div>`)}
+      <div class="welcome-intro__stage" ${sheet ? "" : raw('aria-hidden="true"')}>
+        <archie-pixels data-quiet></archie-pixels>
+        ${sheet
+          ? raw(`<div class="welcome-intro__card welcome-flow__card welcome-flow__sheet" data-flow-sheet>
+              <div class="welcome-flow__sheet-body" data-flow-sheet-body></div>
+              <div class="welcome-flow__sheet-foot" data-flow-sheet-foot></div>
+            </div>`)
+          : raw(`<div class="welcome-intro__card welcome-flow__card" data-flow-card></div>`)}
+      </div>
     </div>
   `;
   const leftEl = target.querySelector("[data-flow-left]");

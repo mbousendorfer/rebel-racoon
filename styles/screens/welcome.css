@@ -938,39 +938,39 @@
   width: 40%;
 }
 
-/* The review: no stage — the right half is the part being checked, plainly,
-   on the conversation grey, with its footer. */
+/* The review: the same stage; the card holds the part being checked — head,
+   fields, and a footer that walks to the next part. */
 .welcome-flow.is-review {
-  grid-template-columns: minmax(340px, 0.8fr) minmax(0, 1.2fr);
+  grid-template-columns: minmax(340px, 0.85fr) minmax(0, 1.3fr);
 }
 
-.welcome-flow__sheet {
+.welcome-flow .welcome-flow__sheet {
   display: flex;
   flex-direction: column;
-  min-height: 0;
-  background: var(--app-bg);
-  border-left: 1px solid var(--ref-color-grey-20);
+  width: min(620px, calc(100% - 2 * var(--ref-spacing-lg)));
+  padding: 0;
+  overflow: hidden;
+  animation: welcome-intro-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.welcome-flow .welcome-flow__sheet.is-revealed {
+  animation: welcome-flow-reveal 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 .welcome-flow__sheet-body {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
-  padding: var(--ref-spacing-xl) clamp(var(--ref-spacing-md), 5vw, 80px);
+  padding: var(--ref-spacing-md) var(--ref-spacing-md) var(--ref-spacing-lg);
 }
 
+/* Each part lands as it opens. */
 .welcome-review__part {
-  max-width: 640px;
-  margin: auto 0;
   animation: welcome-intro-land 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.welcome-review__title {
-  margin: 0 0 var(--ref-spacing-xxs);
-  font-size: var(--sys-text-style-h1-size);
-  line-height: var(--sys-text-style-h1-line-height);
-  font-weight: var(--sys-text-style-h1-weight);
-  color: var(--ref-color-grey-100);
+.welcome-review__head {
+  align-items: flex-start;
 }
 
 .welcome-review__fields {
@@ -1000,6 +1000,10 @@
 .welcome-review__textarea {
   width: 100%;
   resize: vertical;
+  font-family: inherit;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--ref-color-grey-100);
 }
 
 .welcome-review__colors {
@@ -1053,15 +1057,41 @@
   align-items: center;
   justify-content: flex-end;
   gap: var(--ref-spacing-sm);
-  padding: var(--ref-spacing-sm) clamp(var(--ref-spacing-md), 5vw, 80px);
-  background: var(--app-surface);
+  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
   border-top: 1px solid var(--ref-color-grey-20);
 }
 
 .welcome-review__foot-text {
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
-  color: var(--ref-color-grey-80);
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+/* Four pips, pushed left: checked = butter, here = olive ring. */
+.welcome-review__pips {
+  display: flex;
+  gap: var(--ref-spacing-xxxs);
+  margin: 0 auto 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.welcome-review__pips li {
+  width: 24px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--app-surface-subtle);
+  transition: background-color 0.3s ease;
+}
+
+.welcome-review__pips li.is-done {
+  background: var(--app-butter-accent);
+}
+
+.welcome-review__pips li.is-current:not(.is-done) {
+  background: var(--app-butter);
+  box-shadow: inset 0 0 0 1px var(--app-butter-accent);
 }
 
 /* A part the user said looks good: the run's own done mark. */
@@ -1087,10 +1117,8 @@
   .welcome-flow.is-review {
     grid-template-columns: minmax(0, 1fr);
   }
-  .welcome-flow__sheet {
-    min-height: 80vh;
-    border-left: none;
-    border-top: 1px solid var(--ref-color-grey-20);
+  .welcome-flow .welcome-flow__sheet {
+    max-height: none;
   }
 }
 
