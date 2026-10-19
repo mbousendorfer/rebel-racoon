@@ -17,8 +17,29 @@
 //     showMention — render the Mention button (default true; false where there
 //                   is no composer, e.g. the standalone Ideas page)
 
-import { iconFor } from "../file-kinds.js?v=1914";
-import { escapeText, escapeAttr } from "../utils.js?v=1914";
+import { iconFor } from "../file-kinds.js?v=1915";
+import { escapeText, escapeAttr } from "../utils.js?v=1915";
+
+// The whole card is the Draft target. Its hover border says "clickable", and
+// FullStory showed people clicking the idea's text and getting nothing (dead
+// clicks on the body, then a hunt for the Draft button). A click anywhere on
+// the card that isn't a control, the Why panel or the footer forwards to the
+// card's own Draft button, so every host's existing data-rpanel-use-idea
+// wiring runs unchanged. The Draft button stays the keyboard / screen-reader
+// path. Skipped while the reader is selecting text (people copy ideas out) and
+// inside the inert hover preview. ES modules run once, so this is installed once.
+document.addEventListener("click", (event) => {
+  const card = event.target.closest(".rpanel-ideas__card");
+  if (!card || card.closest("[inert]")) return;
+  if (
+    event.target.closest("button, a, input, label, select, textarea, .rpanel-ideas__why, .rpanel-ideas__card-actions")
+  )
+    return;
+  const selection = window.getSelection();
+  if (selection && !selection.isCollapsed && card.contains(selection.anchorNode)) return;
+  const draftBtn = card.querySelector("[data-rpanel-use-idea]");
+  if (draftBtn && !draftBtn.disabled) draftBtn.click();
+});
 
 export function renderCompactIdeaCard(
   idea,

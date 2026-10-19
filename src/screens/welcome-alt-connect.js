@@ -9,21 +9,21 @@
 // stays possible — behind the same skip-with-reasons dialog as the chat step —
 // so the ask comes first without becoming a prerequisite.
 
-import { html, raw } from "../utils.js?v=1914";
+import { html, raw } from "../utils.js?v=1915";
 import {
   getConnectedProfiles,
   getConnectableNetworks,
   renderProfileTag,
   subscribe,
-} from "../social-profiles.js?v=1914";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=1914";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=1914";
-import { open as openSkipConnectModal } from "../components/skip-connect-modal.js?v=1914";
-import { recordReasons } from "../feedback-store.js?v=1914";
-import { showToast } from "../components/toast.js?v=1914";
-import { SKIP_CONNECT_TARGET, altSteps } from "../context-builder.js?v=1914";
-import { navigate } from "../router.js?v=1914";
-import { startOnboardingChat } from "./welcome-alt.js?v=1914";
+} from "../social-profiles.js?v=1915";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=1915";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=1915";
+import { open as openSkipConnectModal } from "../components/skip-connect-modal.js?v=1915";
+import { recordReasons } from "../feedback-store.js?v=1915";
+import { showToast } from "../components/toast.js?v=1915";
+import { SKIP_CONNECT_TARGET, altSteps } from "../context-builder.js?v=1915";
+import { navigate } from "../router.js?v=1915";
+import { startOnboardingChat } from "./welcome-alt.js?v=1915";
 
 function networkRow(net) {
   return html`

@@ -138,7 +138,7 @@ Store **per-session** [`library.js`](../../src/library.js). Idée = title, hook/
 ### Cartes idée
 
 - **Full** ([`idea-card.js`](../../src/components/idea-card.js)) : pill potential (High ≥80 vert / Medium ≥60 orange / Low grey), badge kind, hook, hashtags (max 4), toggle « Sources », menu **Pin/Unpin**, **Draft post**, **Reference**.
-- **Compact** ([`idea-card-compact.js`](../../src/components/idea-card-compact.js)) : tag kind, chip « Source: », « Why this idea », feedback pouce, Reference, Draft.
+- **Compact** ([`idea-card-compact.js`](../../src/components/idea-card-compact.js)) : tag kind, chip « Source: », « Why this idea », feedback pouce, Reference, Draft. **Toute la carte est cliquable** (2026-10-19) : un clic hors des contrôles, du « Why this idea » et du pied déclenche le **Draft** de la carte (même câblage `data-rpanel-use-idea` dans chaque hôte : panneau Ideas, carte d'extraction du fil). Rien si le lecteur sélectionne du texte (on copie les idées) ni dans la preview `inert`. Pourquoi : FullStory, 30 j — jusqu'à 27 des 76 utilisateurs qui cliquent une idée font un dead click sur son texte, la bordure bleue de survol promettant une action que seul le bouton tenait. Le bouton Draft reste le chemin clavier / lecteur d'écran.
 
 ### Content workspace ([`content-workspace.js`](../../src/components/content-workspace.js))
 

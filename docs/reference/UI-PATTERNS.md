@@ -115,6 +115,7 @@ Appliqué sur `.topic-card--feed` / `--picker`. ⚠️ **Pas encore balayé aill
 
 - `.drafts-card:hover` → `border-color: --ref-color-electric-blue-20` + `background: --ref-color-electric-blue-05`. Actif = `.is-active` (electric-blue-40).
 - `.top-post-card:hover`, `.clip-card` sélectionné → `border-color: --ref-color-electric-blue-100`.
+- **Une carte qui prend la bordure bleue au survol doit répondre au clic.** Le survol promet une action : si seuls ses boutons agissent, on clique le texte et rien ne se passe (dead clicks mesurés sur la carte Idée, 2026-10-19). Soit la carte entière déclenche son action principale (en déléguant au bouton, pour garder un seul câblage et le chemin clavier), soit elle ne prend pas la bordure bleue.
 - Radius carte = `--app-radius-card` (12). Tuiles icône AI/brand = fond `--ref-color-orange-10` + glyphe orange.
 - ⛔️ **Jamais de liseré d'accent coloré sur un bord de carte** (`border-left: 3px solid …`). Règle catégorique de Matt. **L'état d'une carte va dans son contenu, pas sur son cadre** — un marqueur explicite (point + mot, ex. « • New ») dit la même chose sans repeindre la bordure. Un seul cas existait dans l'app (unseen sur `.topic-card`) et il a été retiré ; les `border-left`/`border-right` restants sont des séparateurs de panneau 1px dans la ramp sombre video-clips, pas des accents.
 - Cartes in-bubble : `.chat-bubble-card` (grey-05, border grey-10) via `bulletsBlock()` (`_analyse-common.js`).
