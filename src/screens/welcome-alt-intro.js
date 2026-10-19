@@ -13,17 +13,17 @@
 // The card is an illustration, not data: the Playbook's real parts (Voice
 // profile, Branding…) filled with example values.
 
-import "../archie-pixels.js?v=2004";
-import { html, raw, escapeHtml } from "../utils.js?v=2004";
+import "../archie-pixels.js?v=2005";
+import { html, raw, escapeHtml } from "../utils.js?v=2005";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORKS,
   getConnectedProfiles,
   getConnectableNetworks,
-} from "../social-profiles.js?v=2004";
-import { navigate } from "../router.js?v=2004";
-import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2004";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2004";
+} from "../social-profiles.js?v=2005";
+import { navigate } from "../router.js?v=2005";
+import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2005";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2005";
 
 // What a Playbook holds, shown rather than told: the parts the card on the
 // right fills, under their Playbook names, glyphs and tints.
@@ -119,7 +119,10 @@ export function renderWelcomeAltIntro(_params, target) {
         <img class="welcome-intro__wordmark" src="assets/logos/archie-wordmark.svg" alt="Archie" />
         <div class="welcome-intro__copy">
           <h1 class="welcome-intro__title" id="welcomeIntroTitle">Let's build your Playbook together.</h1>
-          <p class="welcome-intro__sub">Everything I know about your brand. Every post I write starts from it.</p>
+          <p class="welcome-intro__sub">
+            A Playbook is the guide I write from — what your brand does, how it sounds and how it looks — so every post
+            sounds like you.
+          </p>
           <ul class="welcome-intro__parts" aria-label="What a Playbook holds">
             ${PARTS.map((t) => {
               const part = RECAP_SECTIONS.find((sec) => sec.id === t);
