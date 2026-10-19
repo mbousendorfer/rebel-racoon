@@ -20,13 +20,13 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=1978";
-import { navigate } from "../router.js?v=1978";
-import { getDraft, patchDraft } from "../context-builder.js?v=1978";
-import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=1978";
-import { parseHashParams } from "../url-state.js?v=1978";
-import { mountShell } from "./welcome-alt-shell.js?v=1978";
-import { enterArchie } from "./welcome-alt-recap.js?v=1978";
+import { html, raw } from "../utils.js?v=1981";
+import { navigate } from "../router.js?v=1981";
+import { getDraft, patchDraft } from "../context-builder.js?v=1981";
+import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=1981";
+import { parseHashParams } from "../url-state.js?v=1981";
+import { mountShell } from "./welcome-alt-shell.js?v=1981";
+import { enterArchie } from "./welcome-alt-recap.js?v=1981";
 
 const MOVE_MS = 220; // the card's exit, before the next one comes in
 
@@ -124,6 +124,7 @@ export function renderReview(target, sid, config) {
     headerActions: () => null,
     audienceList: true,
     chipCloud: true,
+    rosterPicker: true,
   });
 
   // The part's cards: its blocks in edit, else the edited panel (a roster), else

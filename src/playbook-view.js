@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1978";
-import { conceptHint } from "./concepts.js?v=1978";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1981";
+import { conceptHint } from "./concepts.js?v=1981";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,11 +30,11 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=1978";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1978";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1978";
-import { isFlagOn } from "./feature-flags.js?v=1978";
-import { parseHashParams } from "./url-state.js?v=1978";
+} from "./playbook-brand-kit.js?v=1981";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1981";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1981";
+import { isFlagOn } from "./feature-flags.js?v=1981";
+import { parseHashParams } from "./url-state.js?v=1981";
 import {
   networkVoicesOn,
   baseNetwork,
@@ -57,16 +57,16 @@ import {
   networkLabel,
   networkIcon,
   memoryCardHtml,
-} from "./network-voice.js?v=1978";
+} from "./network-voice.js?v=1981";
 import {
   getSuggestions,
   accept as acceptVoiceSuggestion,
   dismiss as dismissVoiceSuggestion,
-} from "./voice-coach-store.js?v=1978";
-import { showToast } from "./components/toast.js?v=1978";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=1978";
-import { open as openVoiceWizard } from "./components/voice-wizard-modal.js?v=1978";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1978";
+} from "./voice-coach-store.js?v=1981";
+import { showToast } from "./components/toast.js?v=1981";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=1981";
+import { open as openVoiceWizard } from "./components/voice-wizard-modal.js?v=1981";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1981";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -200,6 +200,7 @@ let activeTab = "goals"; // Playbook 2.0: the tab on screen
 //   headerActions(): string | null,    // html for the header action bar (library)
 //   audienceList: boolean,             // the audience as a list of rows, not a dropdown
 //   chipCloud: boolean,                // chip fields as a cloud of toggles (found + common)
+//   rosterPicker: boolean,             // competitors / influencers as one list to tick
 //   onEditName(): void,                // header name pencil (rename)
 //   onAnalyzeVoice(): void,            // Voice profile → analyze social profiles
 //   onFooter(event): boolean,          // catch-all click handler (header actions)
@@ -1356,6 +1357,74 @@ function renderRosterScan(r) {
     <div class="recap__cmpgrid">${skeletons}</div>`;
 }
 
+// `rosterPicker` (the onboarding review): the roster as ONE list to pick from,
+// the way every other choice in the review is made — each entry a tile (logo,
+// name, its description in full), ticked = in the Playbook, in a stable order.
+// Unticking sends an entry
+// back to the suggestions (nothing is lost); "Add someone else" is the manual
+// add. Same hooks as the tray (accept / accept-all / add), plus unaccept.
+const PICKER_COPY = {
+  competitors: {
+    title: "Who you're up against",
+    hint: "I found these in your market. Tick the ones you're measured against.",
+    empty: "I didn't find anyone yet. Add the competitors you know.",
+    add: "Add another competitor",
+  },
+  influencers: {
+    title: "Who your audience follows",
+    hint: "The creators your audience listens to — I turn what they post into Topics.",
+    empty: "No one yet. Add the creators your audience already follows.",
+    add: "Add an influencer",
+  },
+};
+
+function renderRosterPicker(data, r) {
+  const copy = PICKER_COPY[r.scope] || PICKER_COPY.competitors;
+  const list = rosterList(data, r);
+  const indexed = list.map((c, i) => ({ c, i }));
+  // A stable order: a tile ticked stays where it is (moving it under the cursor
+  // would lose the reader).
+  const ordered = indexed;
+  const pending = indexed.filter(({ c }) => c.suggested).length;
+  const tile = ({ c, i }) => {
+    const on = !c.suggested;
+    const desc = (c.description || "").trim();
+    const domain = rosterDomain(c);
+    // A label around the real DS checkbox: one click toggles, keyboard-reachable.
+    return `
+      <label class="recap__pick${on ? " is-picked" : ""}" data-recap-cmp-${on ? "unaccept" : "accept"}="${i}">
+        ${renderRosterLogo(c, 40)}
+        <span class="recap__pick-text">
+          <span class="recap__pick-name">${esc(c.name || r.untitled)}${
+            domain ? `<span class="recap__pick-domain">${esc(domain)}</span>` : ""
+          }</span>
+          ${desc ? `<span class="recap__pick-desc">${esc(desc)}</span>` : ""}
+        </span>
+        <span class="ap-checkbox-container"><input type="checkbox" ${on ? "checked" : ""} aria-label="${esc(
+          c.name || r.untitled,
+        )} in my Playbook" /><i></i></span>
+      </label>`;
+  };
+  return `
+    <div class="recap__picker" data-recap-roster="${r.scope}">
+      <header class="pb2-block__head"><h3 class="pb2-block__title">${esc(copy.title)}</h3></header>
+      <p class="pb2-block__hint">${esc(list.length ? copy.hint : copy.empty)}</p>
+      ${ordered.length ? `<div class="recap__pick-list">${ordered.map(tile).join("")}</div>` : ""}
+      <div class="recap__pick-foot">
+        ${
+          list.length < r.max
+            ? `<button type="button" class="ap-button ghost blue" data-recap-cmp-add><i class="ap-icon-plus"></i><span>${esc(copy.add)}</span></button>`
+            : ""
+        }
+        ${
+          pending > 1
+            ? `<button type="button" class="ap-button ghost grey" data-recap-cmp-accept-all><i class="ap-icon-check"></i><span>Select all</span></button>`
+            : ""
+        }
+      </div>
+    </div>`;
+}
+
 function renderRosterPanel(data, r, edit) {
   const section = SECTIONS.find((s) => s.scope === r.scope);
   const list = rosterList(data, r);
@@ -1397,6 +1466,8 @@ function renderRosterPanel(data, r, edit) {
   let inner;
   if (rosterScanning === r.scope) {
     inner = renderRosterScan(r);
+  } else if (cfg?.rosterPicker && edit) {
+    inner = renderRosterPicker(data, r);
   } else {
     const activeEmpty = `<p class="recap__cmp-empty">${esc(
       pending.length ? r.pendingEmpty : edit ? r.emptyEdit : r.emptyRead,
@@ -3107,6 +3178,7 @@ const WRITE_HOOKS = [
   "[data-recap-cmp-remove]",
   "[data-recap-cmp-accept]",
   "[data-recap-cmp-accept-all]",
+  "[data-recap-cmp-unaccept]",
   "[data-recap-cmp-dismiss]",
   "[data-recap-cmp-discover]",
   "[data-recap-infadd-open]",
@@ -3361,6 +3433,17 @@ function onClick(event) {
     delete c.suggested;
     rosterModal = null;
     if (!editScope) cfg.commit?.(); // in edit mode the section's Save commits
+    repaint();
+    return;
+  }
+
+  // Picker (cfg.rosterPicker): untick — back to my suggestions, nothing lost.
+  const cmpUnaccept = event.target.closest("[data-recap-cmp-unaccept]");
+  if (cmpUnaccept) {
+    const c = rosterList(data, rosterOf(cmpUnaccept))[Number(cmpUnaccept.dataset.recapCmpUnaccept)];
+    if (!c) return;
+    c.suggested = true;
+    rosterModal = null;
     repaint();
     return;
   }

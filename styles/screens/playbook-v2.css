@@ -1120,3 +1120,84 @@
   flex-wrap: wrap;
   gap: var(--ref-spacing-xxxs);
 }
+
+/* The roster as a picker (cfg.rosterPicker — the onboarding review): one list
+   of tiles, ticked = in the Playbook (blue edge, the selected state), my
+   suggestions unticked under them; the manual add and Select all as quiet
+   ghosts at the foot. */
+.recap__picker {
+  display: flex;
+  flex-direction: column;
+}
+
+.recap__pick-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+}
+
+.recap__pick {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-sm);
+  background: var(--app-surface);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-card);
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.recap__pick:hover,
+.recap__pick:has(input:focus-visible),
+.recap__pick.is-picked {
+  border-color: var(--ref-color-electric-blue-100);
+}
+
+.recap__pick-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.recap__pick-name {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxs);
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.recap__pick-domain {
+  font-size: var(--sys-text-style-caption-size);
+  font-weight: var(--sys-text-style-caption-weight);
+  color: var(--ref-color-grey-80);
+}
+
+.recap__pick-desc {
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--ref-color-grey-80);
+}
+
+.recap__pick .ap-checkbox-container {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.recap__pick-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--ref-spacing-xs);
+  margin-top: var(--ref-spacing-sm);
+}
+
+.recap__pick-foot:empty {
+  display: none;
+}
