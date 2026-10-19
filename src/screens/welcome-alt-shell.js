@@ -9,10 +9,10 @@
 // the session id the recap already uses (`welcomeAltSessionId`), and persisted
 // on every change so a reload lands on the same step with the same answers.
 
-import "../archie-pixels.js?v=1935";
-import { html, raw, escapeHtml } from "../utils.js?v=1935";
-import { navigate } from "../router.js?v=1935";
-import { isFlagOn } from "../feature-flags.js?v=1935";
+import "../archie-pixels.js?v=1936";
+import { html, raw, escapeHtml } from "../utils.js?v=1936";
+import { navigate } from "../router.js?v=1936";
+import { isFlagOn } from "../feature-flags.js?v=1936";
 import {
   altSteps,
   createAltDraft,
@@ -20,16 +20,16 @@ import {
   isAnalysisReady,
   restoreDraft,
   subscribeDraft,
-} from "../context-builder.js?v=1935";
+} from "../context-builder.js?v=1936";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
   getConnectedProfiles,
   renderProfileTag,
   subscribe as subscribeProfiles,
-} from "../social-profiles.js?v=1935";
-import { networkVoicesOn } from "../network-voice.js?v=1935";
-import { readSessionId, persistDraft, readPersistedDraft } from "./welcome-alt-recap.js?v=1935";
+} from "../social-profiles.js?v=1936";
+import { networkVoicesOn } from "../network-voice.js?v=1936";
+import { readSessionId, persistDraft, readPersistedDraft } from "./welcome-alt-recap.js?v=1936";
 
 const PREFILLED_URL = "https://nicesoap.com";
 const SESSION_KEY = "welcomeAltSessionId";
@@ -269,7 +269,7 @@ function renderProgress(step) {
           `,
         )}
       </ol>
-      <span class="welcome-flow__count">${at + 1} of ${steps.length}</span>
+      <span class="welcome-flow__count">Step ${at + 1} of ${steps.length}</span>
     </div>
   `;
 }
@@ -283,11 +283,11 @@ export function mountShell(target, { step, sid, left, sheet = false }) {
   target.innerHTML = html`
     <div class="welcome-intro welcome-flow ${sheet ? "is-review" : ""}">
       <section class="welcome-intro__lede" aria-labelledby="welcomeFlowTitle">
-        <div class="welcome-flow__top">
-          <img class="welcome-intro__wordmark" src="assets/logos/archie-wordmark.svg" alt="Archie" />
+        <img class="welcome-intro__wordmark" src="assets/logos/archie-wordmark.svg" alt="Archie" />
+        <div class="welcome-intro__copy welcome-flow__copy">
           ${raw(renderProgress(step))}
+          <div data-flow-left></div>
         </div>
-        <div class="welcome-intro__copy welcome-flow__copy" data-flow-left></div>
       </section>
       <div class="welcome-intro__stage" ${sheet ? "" : raw('aria-hidden="true"')}>
         <archie-pixels data-quiet></archie-pixels>

@@ -4,16 +4,16 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { navigate } from "../router.js?v=1935";
-import { catalogueRoute } from "../active-playbook.js?v=1935";
-import { getDraft, isAnalysisReady, save, patchDraft, restoreDraft } from "../context-builder.js?v=1935";
-import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=1935";
-import { html, raw } from "../utils.js?v=1935";
-import { parseHashParams } from "../url-state.js?v=1935";
-import { isFlagOn } from "../feature-flags.js?v=1935";
-import { mountShell } from "./welcome-alt-shell.js?v=1935";
-import { open as openRenameModal } from "../components/rename-modal.js?v=1935";
-import { networkLabel } from "../network-voice.js?v=1935";
+import { navigate } from "../router.js?v=1936";
+import { catalogueRoute } from "../active-playbook.js?v=1936";
+import { getDraft, isAnalysisReady, save, patchDraft, restoreDraft } from "../context-builder.js?v=1936";
+import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=1936";
+import { html, raw } from "../utils.js?v=1936";
+import { parseHashParams } from "../url-state.js?v=1936";
+import { isFlagOn } from "../feature-flags.js?v=1936";
+import { mountShell } from "./welcome-alt-shell.js?v=1936";
+import { open as openRenameModal } from "../components/rename-modal.js?v=1936";
+import { networkLabel } from "../network-voice.js?v=1936";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";

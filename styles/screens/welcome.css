@@ -501,18 +501,13 @@
   animation: none;
 }
 
-.welcome-flow__top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ref-spacing-sm);
-}
-
-/* Progress: done = butter + check, current = butter ring, ahead = white. */
+/* Progress: done = butter + check, current = butter ring, ahead = white.
+   It sits right above the step's title — in the reading path, not in a corner. */
 .welcome-flow__progress {
   display: flex;
   align-items: center;
-  gap: var(--ref-spacing-xs);
+  gap: var(--ref-spacing-sm);
+  margin-bottom: var(--ref-spacing-md);
 }
 
 .welcome-flow__dots {
@@ -527,8 +522,8 @@
   position: relative;
   display: grid;
   place-items: center;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   border: 1px solid var(--ref-color-grey-20);
   background: var(--app-surface);
@@ -571,9 +566,10 @@
 }
 
 .welcome-flow__count {
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--ref-color-grey-80);
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
   white-space: nowrap;
 }
 
