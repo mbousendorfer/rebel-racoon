@@ -20,10 +20,10 @@
 // list scroll position survives — same rationale as the clip/idea thumbs it
 // replaces.
 
-import { escapeAttr, escapeText } from "../utils.js?v=1950";
-import { showToast } from "./toast.js?v=1950";
-import { getFeedback, setVerdict, recordDetail } from "../feedback-store.js?v=1950";
-import { noticeDraftFeedback } from "../voice-coach.js?v=1950";
+import { escapeAttr, escapeText } from "../utils.js?v=1952";
+import { showToast } from "./toast.js?v=1952";
+import { getFeedback, setVerdict, recordDetail } from "../feedback-store.js?v=1952";
+import { noticeDraftFeedback } from "../voice-coach.js?v=1952";
 
 // "What was off?" reasons per element kind. value = stable key, label = UI.
 const REASONS = {

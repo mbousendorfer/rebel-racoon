@@ -21,13 +21,13 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=1950";
-import { navigate } from "../router.js?v=1950";
-import { getDraft, patchDraft } from "../context-builder.js?v=1950";
-import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=1950";
-import { parseHashParams } from "../url-state.js?v=1950";
-import { mountShell } from "./welcome-alt-shell.js?v=1950";
-import { enterArchie } from "./welcome-alt-recap.js?v=1950";
+import { html, raw } from "../utils.js?v=1952";
+import { navigate } from "../router.js?v=1952";
+import { getDraft, patchDraft } from "../context-builder.js?v=1952";
+import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=1952";
+import { parseHashParams } from "../url-state.js?v=1952";
+import { mountShell } from "./welcome-alt-shell.js?v=1952";
+import { enterArchie } from "./welcome-alt-recap.js?v=1952";
 
 const LEAVE_MS = 220;
 
@@ -107,25 +107,17 @@ export function renderReview(target, sid, config) {
     `;
   };
 
-  const footer = () => {
-    if (allDone()) {
-      return html`
-        <div class="welcome-review__cardfoot">
-          <span class="welcome-review__where">Every card is done. Start writing whenever you're ready.</span>
-        </div>
-      `;
-    }
-    const part = partOf(current());
-    return html`
-      <div class="welcome-review__cardfoot">
-        <span class="welcome-review__where">${index + 1} of ${count}</span>
-        <button type="button" class="ap-button stroked grey" data-review-prev>Back</button>
-        <button type="button" class="ap-button primary blue" data-review-ok>
-          <i class="ap-icon-check"></i><span data-review-ok-label>${dirty ? "Save" : "Looks good"}</span>
-        </button>
-      </div>
-    `;
-  };
+  // Every card keeps its way back and forward — done or not, a card can always
+  // be revisited and changed.
+  const footer = () => html`
+    <div class="welcome-review__cardfoot">
+      <span class="welcome-review__where">${index + 1} of ${count}${allDone() ? " · all reviewed" : ""}</span>
+      <button type="button" class="ap-button stroked grey" data-review-prev>Back</button>
+      <button type="button" class="ap-button primary blue" data-review-ok>
+        <i class="ap-icon-check"></i><span data-review-ok-label>${dirty ? "Save" : "Looks good"}</span>
+      </button>
+    </div>
+  `;
 
   // Deal the stack: the front card shows (with its footer), up to two backs
   // peek under it, the rest is out of the way.
@@ -171,14 +163,16 @@ export function renderReview(target, sid, config) {
     done.add(current());
     patchDraft(sid, { reviewedParts: [...done] });
     const at = RECAP_SECTIONS.findIndex((t) => t.id === current());
+    // The next part still to review; once all are, simply the next one in order.
     const next =
-      RECAP_SECTIONS.slice(at + 1).find((t) => !done.has(t.id)) || RECAP_SECTIONS.find((t) => !done.has(t.id));
+      RECAP_SECTIONS.slice(at + 1).find((t) => !done.has(t.id)) ||
+      RECAP_SECTIONS.find((t) => !done.has(t.id)) ||
+      RECAP_SECTIONS[at + 1];
     if (next) openPart(next.id);
     else {
-      // Every part done: the last part stays on screen, its card now offering
-      // Start writing, and the stack takes the reveal's breath.
-      index = 0;
-      applyStack({ entering: true });
+      // The very last card: it stays, still editable, and the stack takes the
+      // reveal's breath — Start writing is on the left.
+      openPart(current(), { fromEnd: true });
       shell.sheet.classList.add("is-revealed");
     }
   };
@@ -217,8 +211,10 @@ export function renderReview(target, sid, config) {
     if (e.target.closest("[data-flow-back]")) return navigate("/welcome-alt/ready");
   };
   target.addEventListener("click", onClick);
-  target.addEventListener("input", markDirty);
-  target.addEventListener("change", markDirty);
+  // Capture phase: the view repaints on some edits, which would detach the
+  // field before a bubbling listener could tell which card it was on.
+  body.addEventListener("input", markDirty, true);
+  body.addEventListener("change", markDirty, true);
 
   openPart(current());
 
@@ -227,7 +223,7 @@ export function renderReview(target, sid, config) {
     unmount?.();
     shell.cleanup();
     target.removeEventListener("click", onClick);
-    target.removeEventListener("input", markDirty);
-    target.removeEventListener("change", markDirty);
+    body.removeEventListener("input", markDirty, true);
+    body.removeEventListener("change", markDirty, true);
   };
 }
