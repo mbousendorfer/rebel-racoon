@@ -1,23 +1,26 @@
 // /welcome-alt/recap under flag connectFirst — the review, the run's last screen.
 //
 // The WHOLE Playbook, every block — but walked, not dumped. One part at a time
-// (Brief, Voice profile, Branding, Competitors, Influencers) in the floating
-// card on Archie's stage, the real Playbook view inside it (playbook-view, its
-// own tabs hidden: the list on the left drives them). Everything is already
+// (Brief, Voice profile, Branding, Competitors, Influencers), its blocks
+// floating straight on Archie's stage (no card around them, no identity header:
+// the real Playbook view, playbook-view, with its hero, tabs and tab head
+// hidden — the list on the left drives the parts). Everything is already
 // filled in by me, so the job is to skim and confirm:
+//   - the head names the part, says what it holds, and asks for it by name:
+//     "Confirm Brief" — confirmed, a check by its title and in the list, and
+//     the next part opens;
 //   - click any block to edit it — the part opens in edit, that block's field
-//     focused (no hunting for the Edit button);
-//   - "Looks good" checks the part off in the list and opens the next one;
-//   - all checked, the card takes the reveal's breath and offers Start writing.
+//     focused (no hunting for an Edit button);
+//   - all confirmed, the head takes the reveal's breath.
 // Start writing is never gated: it's on the left the whole time.
 
-import { html, raw } from "../utils.js?v=1945";
-import { navigate } from "../router.js?v=1945";
-import { getDraft, patchDraft } from "../context-builder.js?v=1945";
-import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=1945";
-import { parseHashParams } from "../url-state.js?v=1945";
-import { mountShell } from "./welcome-alt-shell.js?v=1945";
-import { enterArchie } from "./welcome-alt-recap.js?v=1945";
+import { html, raw } from "../utils.js?v=1947";
+import { navigate } from "../router.js?v=1947";
+import { getDraft, patchDraft } from "../context-builder.js?v=1947";
+import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=1947";
+import { parseHashParams } from "../url-state.js?v=1947";
+import { mountShell } from "./welcome-alt-shell.js?v=1947";
+import { enterArchie } from "./welcome-alt-recap.js?v=1947";
 
 // What can take the focus inside a block in edit — its field, else its control.
 const FOCUSABLE = 'input:not([type=hidden]), textarea, select, button, [tabindex]:not([tabindex="-1"])';
@@ -46,10 +49,11 @@ export function renderReview(target, sid, config) {
               >
                 <span class="welcome-flow__option-text">
                   <span class="welcome-flow__option-title">${t.title}</span>
+                  <span class="welcome-flow__option-desc">${t.lead}</span>
                 </span>
                 ${done.has(t.id)
                   ? raw(
-                      `<span class="welcome-review__check" title="Looks good"><i class="ap-icon-check" aria-hidden="true"></i></span>`,
+                      `<span class="welcome-review__check" title="Confirmed"><i class="ap-icon-check" aria-hidden="true"></i></span>`,
                     )
                   : ""}
               </button>
@@ -59,50 +63,47 @@ export function renderReview(target, sid, config) {
       </ul>
       <div class="welcome-flow__actions">
         <button type="button" class="ap-button stroked grey" data-flow-back>Back</button>
-        ${allDone()
-          ? "" /* the card's footer says it now — once is enough */
-          : raw(`<button type="button" class="ap-button primary orange" data-review-start>
-              <span>Start writing</span><i class="ap-icon-arrow-right"></i>
-            </button>`)}
+        <button type="button" class="ap-button primary orange" data-review-start>
+          <span>Start writing</span><i class="ap-icon-arrow-right"></i>
+        </button>
       </div>
     `;
   };
 
   const shell = mountShell(target, { step: "recap", sid, left, sheet: true });
+  const head = shell.sheet.querySelector("[data-flow-sheet-head]");
   const body = shell.sheet.querySelector("[data-flow-sheet-body]");
-  const foot = shell.sheet.querySelector("[data-flow-sheet-foot]");
   const unmount = mount(body, { ...config, showTop: false, headerActions: () => null });
 
-  const paintFoot = () => {
-    const done = reviewed();
-    const pips = html`
-      <ol class="welcome-review__pips" aria-label="${done.size} of ${RECAP_SECTIONS.length} checked">
-        ${RECAP_SECTIONS.map(
-          (t) => html`<li class="${done.has(t.id) ? "is-done" : ""} ${t.id === current() ? "is-current" : ""}"></li>`,
-        )}
-      </ol>
+  // The part's head: its name, what it holds, and the ask — by name.
+  const paintHead = () => {
+    const part = RECAP_SECTIONS.find((t) => t.id === current()) || RECAP_SECTIONS[0];
+    const ok = reviewed().has(part.id);
+    head.innerHTML = html`
+      <div class="welcome-review__head-text">
+        <h2 class="welcome-review__head-title">
+          ${part.title}
+          ${ok
+            ? raw(
+                `<span class="welcome-review__check" title="Confirmed"><i class="ap-icon-check" aria-hidden="true"></i></span>`,
+              )
+            : ""}
+        </h2>
+        <p class="welcome-review__head-lead">${part.lead}</p>
+      </div>
+      ${ok
+        ? raw(`<span class="welcome-review__confirmed">Confirmed</span>`)
+        : raw(`<button type="button" class="ap-button primary blue" data-review-ok>
+            <i class="ap-icon-check"></i><span>Confirm ${part.title}</span>
+          </button>`)}
     `;
-    foot.innerHTML = allDone()
-      ? html`
-          ${raw(pips)}
-          <span class="welcome-review__foot-text">Every part looks good.</span>
-          <button type="button" class="ap-button primary orange" data-review-start>
-            <span>Start writing</span><i class="ap-icon-arrow-right"></i>
-          </button>
-        `
-      : html`
-          ${raw(pips)}
-          <button type="button" class="ap-button primary blue" data-review-ok>
-            <i class="ap-icon-check"></i><span>Looks good</span>
-          </button>
-        `;
     shell.sheet.classList.toggle("is-revealed", allDone());
   };
   const repaint = () => {
     shell.paint();
-    paintFoot();
+    paintHead();
   };
-  paintFoot();
+  paintHead();
 
   const openPart = (id) => {
     body.querySelector(`[data-pb2-tab="${id}"]`)?.click();
@@ -141,7 +142,12 @@ export function renderReview(target, sid, config) {
     const field = same?.querySelector(FOCUSABLE);
     if (field) field.focus({ preventScroll: true });
     else document.activeElement?.blur();
-    same?.scrollIntoView({ block: "center" });
+    // Into view inside the part's own scroll — scrollIntoView would move the page too.
+    const scroller = body.querySelector(".welcome-screen");
+    if (same && scroller) {
+      const top = same.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop;
+      scroller.scrollTo({ top: Math.max(0, top - scroller.clientHeight / 3) });
+    }
   };
   target.addEventListener("click", onClick);
   return () => {

@@ -9,10 +9,10 @@
 // the session id the recap already uses (`welcomeAltSessionId`), and persisted
 // on every change so a reload lands on the same step with the same answers.
 
-import "../archie-pixels.js?v=1945";
-import { html, raw, escapeHtml } from "../utils.js?v=1945";
-import { navigate } from "../router.js?v=1945";
-import { isFlagOn } from "../feature-flags.js?v=1945";
+import "../archie-pixels.js?v=1947";
+import { html, raw, escapeHtml } from "../utils.js?v=1947";
+import { navigate } from "../router.js?v=1947";
+import { isFlagOn } from "../feature-flags.js?v=1947";
 import {
   altSteps,
   createAltDraft,
@@ -20,16 +20,16 @@ import {
   isAnalysisReady,
   restoreDraft,
   subscribeDraft,
-} from "../context-builder.js?v=1945";
+} from "../context-builder.js?v=1947";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
   getConnectedProfiles,
   renderProfileTag,
   subscribe as subscribeProfiles,
-} from "../social-profiles.js?v=1945";
-import { networkVoicesOn } from "../network-voice.js?v=1945";
-import { readSessionId, persistDraft, readPersistedDraft } from "./welcome-alt-recap.js?v=1945";
+} from "../social-profiles.js?v=1947";
+import { networkVoicesOn } from "../network-voice.js?v=1947";
+import { readSessionId, persistDraft, readPersistedDraft } from "./welcome-alt-recap.js?v=1947";
 
 const PREFILLED_URL = "https://nicesoap.com";
 const SESSION_KEY = "welcomeAltSessionId";
@@ -276,8 +276,8 @@ function renderProgress(step) {
 
 // Paint the shell into `target` once; `left()` is repainted by `paint()`, the
 // card on every change to the draft or to the connected accounts.
-// `sheet`: the review (/welcome-alt/recap) — the same stage, the card holding
-// the part being checked and a footer; the caller fills both.
+// `sheet`: the review (/welcome-alt/recap) — the same stage, no card: a head
+// (the part, and its Confirm) and the part's blocks, floating on the pixels.
 // Returns { paint, sheet, cleanup }.
 export function mountShell(target, { step, sid, left, sheet = false }) {
   target.innerHTML = html`
@@ -292,9 +292,9 @@ export function mountShell(target, { step, sid, left, sheet = false }) {
       <div class="welcome-intro__stage" ${sheet ? "" : raw('aria-hidden="true"')}>
         <archie-pixels data-quiet></archie-pixels>
         ${sheet
-          ? raw(`<div class="welcome-intro__card welcome-flow__card welcome-flow__sheet" data-flow-sheet>
+          ? raw(`<div class="welcome-flow__sheet" data-flow-sheet>
+              <div class="welcome-flow__sheet-head" data-flow-sheet-head></div>
               <div class="welcome-flow__sheet-body" data-flow-sheet-body></div>
-              <div class="welcome-flow__sheet-foot" data-flow-sheet-foot></div>
             </div>`)
           : raw(`<div class="welcome-intro__card welcome-flow__card" data-flow-card></div>`)}
       </div>

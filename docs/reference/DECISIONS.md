@@ -214,7 +214,8 @@ same feedback key). Under the flag the whole first-time run is **screens, not th
 card filling with the real answers on the right (`welcome-alt-shell.js`) — then a reveal
 (`/welcome-alt/ready`) that ends on Start writing, with the editable page one click away — in the same
 split and on the stage: EVERY block of the Playbook, never a sorted subset (2026-10-19, asked
-explicitly), walked one part at a time — click a block to edit it, Looks good checks the part off. The steps'
+explicitly), walked one part at a time, its blocks floating on the stage with no card around them — a
+head names the part and asks for it by name (Confirm Brief), and a block click edits it. The steps'
 effects on the draft are context-builder's (`createAltDraft`, `readAltWebsite`, `readAltFiles`,
 `writeAltManually`, `analyzeAltInterview`) — the chat calls the same functions, so there is one
 implementation and two hosts. Every list of steps (the plan, the progress) comes from `altSteps()`,

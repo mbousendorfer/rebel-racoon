@@ -938,25 +938,70 @@
   width: 40%;
 }
 
-/* The review: the same stage; the card holds the real Playbook, one part at
-   a time, and a footer that walks to the next part. */
+/* The review: the same stage, and no card — the part's head and its blocks
+   float straight on the pixels (a card around cards read as a background). */
 .welcome-flow.is-review {
   grid-template-columns: minmax(340px, 0.75fr) minmax(0, 1.4fr);
 }
 
-.welcome-flow .welcome-flow__sheet {
+.welcome-flow__sheet {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
+  gap: var(--ref-spacing-sm);
   width: min(900px, calc(100% - 2 * var(--ref-spacing-md)));
   height: calc(100% - 2 * var(--ref-spacing-md));
-  max-height: none;
-  padding: 0;
-  overflow: hidden;
-  animation: welcome-intro-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  min-height: 0;
 }
 
-.welcome-flow .welcome-flow__sheet.is-revealed {
+/* The head: which part, what it holds, and its Confirm. One elevated surface,
+   like every block under it — side by side on the pixels, never nested. */
+.welcome-flow__sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-md);
+  flex-shrink: 0;
+  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
+  background: var(--app-surface);
+  border-radius: var(--app-radius-card);
+  box-shadow: var(--app-shadow-popover-lg);
+  animation: welcome-intro-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.welcome-flow__sheet.is-revealed .welcome-flow__sheet-head {
   animation: welcome-flow-reveal 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.welcome-review__head-title {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  margin: 0;
+  font-size: var(--sys-text-style-h1-size);
+  line-height: var(--sys-text-style-h1-line-height);
+  font-weight: var(--sys-text-style-h1-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.welcome-review__head-lead {
+  margin: var(--ref-spacing-xxxs) 0 0;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--ref-color-grey-80);
+}
+
+.welcome-flow__sheet-head > .ap-button {
+  flex-shrink: 0;
+}
+
+.welcome-review__confirmed {
+  flex-shrink: 0;
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
 }
 
 .welcome-flow__sheet-body {
@@ -964,19 +1009,60 @@
   min-height: 0;
 }
 
-/* The Playbook view, on the card's white — no page grey inside a card. */
+/* The Playbook view, see-through: the pixels behind its blocks. */
 .welcome-flow__sheet .welcome-screen {
-  background: var(--app-surface);
+  background: transparent;
 }
 
-/* Its sticky section head too — it paints the page grey to hide what scrolls under it. */
-.welcome-flow__sheet .pb2-tabhead {
-  background: var(--app-surface);
+.welcome-flow__sheet .pb2__body.welcome-screen__body.recap {
+  gap: var(--ref-spacing-sm);
+  padding: 0 0 var(--ref-spacing-md);
 }
 
-/* The list on the left drives the parts; the view's own tabs would say it twice. */
-.welcome-flow__sheet .pb2-tabs {
+/* What the review doesn't need: the identity header (rename lives in its
+   block), the tabs (the list drives them), the tab head's lead (the head above
+   says it) and Edit (a block click edits). In edit, the tab head comes back with
+   Cancel / Save only. */
+.welcome-flow__sheet .pb2-hero,
+.welcome-flow__sheet .pb2-tabs,
+.welcome-flow__sheet .pb2-tabhead__lead,
+.welcome-flow__sheet .pb2:not(.is-editing) .pb2-tabhead__actions {
   display: none;
+}
+
+.welcome-flow__sheet .pb2:not(.is-editing) .pb2-tabhead:not(.pb2-tabhead--stacked) {
+  display: none;
+}
+
+.welcome-flow__sheet .pb2-tabhead {
+  justify-content: flex-end;
+  padding: var(--ref-spacing-xs) var(--ref-spacing-md);
+  background: var(--app-surface);
+  border-radius: var(--app-radius-card);
+  box-shadow: var(--app-shadow-popover-lg);
+}
+
+/* Compact blocks: more of the Playbook on screen at once. */
+.welcome-flow__sheet .pb2-grid {
+  gap: var(--ref-spacing-sm);
+}
+
+.welcome-flow__sheet .pb2-block {
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
+  box-shadow: var(--app-shadow-popover-md);
+  border-color: transparent;
+}
+
+.welcome-flow__sheet .pb2-block__title {
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+}
+
+.welcome-flow__sheet .pb2-block__hint {
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
 }
 
 /* Reading: every block is the way into editing it. */
@@ -987,53 +1073,6 @@
 
 .welcome-flow__sheet .pb2:not(.is-editing) .pb2-block:hover {
   border-color: var(--ref-color-electric-blue-100);
-}
-
-/* Editing has its own Cancel / Save — the walk waits until it's done. */
-.welcome-flow__sheet:has(.pb2.is-editing) .welcome-flow__sheet-foot {
-  display: none;
-}
-
-.welcome-flow__sheet-foot {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--ref-spacing-sm);
-  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
-  border-top: 1px solid var(--ref-color-grey-20);
-}
-
-.welcome-review__foot-text {
-  font-size: var(--sys-text-style-body-bold-size);
-  line-height: var(--sys-text-style-body-bold-line-height);
-  font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--ref-color-grey-100);
-}
-
-/* Four pips, pushed left: checked = butter, here = olive ring. */
-.welcome-review__pips {
-  display: flex;
-  gap: var(--ref-spacing-xxxs);
-  margin: 0 auto 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.welcome-review__pips li {
-  width: 24px;
-  height: 6px;
-  border-radius: 3px;
-  background: var(--app-surface-subtle);
-  transition: background-color 0.3s ease;
-}
-
-.welcome-review__pips li.is-done {
-  background: var(--app-butter-accent);
-}
-
-.welcome-review__pips li.is-current:not(.is-done) {
-  background: var(--app-butter);
-  box-shadow: inset 0 0 0 1px var(--app-butter-accent);
 }
 
 /* A part the user said looks good: the run's own done mark. */
