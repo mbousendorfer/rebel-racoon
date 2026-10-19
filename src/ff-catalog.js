@@ -185,4 +185,18 @@ export const FLAGS = Object.freeze([
       "On a Playbook whose base voice has no cases yet, the base asks for them " +
       "too. Off, the part is an ordinary one. Needs networkVoices.",
   },
+  {
+    id: "connectFirst",
+    label: "Onboarding: connect profiles first",
+    // OFF: a new user lands straight in the onboarding chat, where connecting
+    // an account is the step after the website URL.
+    default: false,
+    hides:
+      "When ON, a new user's first screen is connecting their social profiles — " +
+      "before the chat, the website or anything else — like Agorapulse's own " +
+      "Archie signup step: one row per network, the connected profiles beside " +
+      'them, and "Start using Archie" once one is connected. "Skip for now" ' +
+      "stays, behind the usual skip-with-reasons dialog. The onboarding chat " +
+      "then starts on the website and no longer asks for an account.",
+  },
 ]);

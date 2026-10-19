@@ -5,6 +5,7 @@
    Surfaces:
      /session/welcome-alt-* → the conversational Playbook builder runs in
                               the existing session shell.
+     /welcome-alt/connect   → connect the profiles first (flag connectFirst).
      /welcome-alt/recap     → the curated Playbook reveal (styles below).
 
    The shared `.welcome-screen*` chrome + `.welcome-hero` base also back
@@ -132,6 +133,133 @@
   background: linear-gradient(180deg, transparent 65%, var(--ref-color-orange-10) 65%);
   padding: 0 var(--ref-spacing-xxxs);
   border-radius: var(--app-radius-sm);
+}
+
+/* ---------- /welcome-alt/connect — profiles first (flag connectFirst) ----------
+   A new user's first screen, modelled on Agorapulse's Archie signup step: a
+   card of network rows, the connected profiles in a second card beside it.
+   Two sibling cards on the grey canvas — never one inside the other. */
+
+.welcome-connect {
+  padding: var(--ref-spacing-xl) var(--ref-spacing-md);
+}
+
+.welcome-connect__layout {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: var(--ref-spacing-md);
+  width: 100%;
+  /* Centred vertically, but never cut off at the top when it overflows. */
+  margin: auto 0;
+}
+
+.welcome-connect__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+  width: 100%;
+  max-width: 520px;
+  padding: var(--ref-spacing-lg);
+  background: var(--app-surface);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-card);
+}
+
+.welcome-connect__title {
+  margin: 0;
+  font-family: var(--sys-text-style-h1-font-family);
+  font-size: var(--sys-text-style-h1-size);
+  line-height: var(--sys-text-style-h1-line-height);
+  font-weight: var(--sys-text-style-h1-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.welcome-connect__sub {
+  margin: 0;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--ref-color-grey-80);
+}
+
+.welcome-connect__networks,
+.welcome-connect__profiles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* The row is the control: picking a network opens its consent dialog. */
+.welcome-connect__network {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  width: 100%;
+  min-height: 48px;
+  padding: 0 var(--ref-spacing-sm);
+  background: var(--app-surface);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-lg);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.welcome-connect__network:hover,
+.welcome-connect__network:focus-visible {
+  border-color: var(--ref-color-electric-blue-100);
+}
+
+.welcome-connect__glyph {
+  display: grid;
+  place-items: center;
+  font-size: var(--sys-icon-css-md);
+  line-height: 1;
+}
+
+.welcome-connect__network-name {
+  flex: 1 1 auto;
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.welcome-connect__network-add {
+  color: var(--ref-color-electric-blue-100);
+}
+
+.welcome-connect__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--ref-spacing-xxs);
+  padding-top: var(--ref-spacing-xs);
+}
+
+.welcome-connect__panel {
+  max-width: 360px;
+}
+
+.welcome-connect__panel-title {
+  margin: 0;
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
+  color: var(--ref-color-grey-100);
+}
+
+/* Phone width: the panel stacks under the network card. */
+@media (max-width: 760px) {
+  .welcome-connect__layout {
+    flex-direction: column;
+    align-items: center;
+  }
+  .welcome-connect__panel {
+    max-width: 520px;
+  }
 }
 
 /* ---------- /welcome-alt/recap — Playbook reveal ----------

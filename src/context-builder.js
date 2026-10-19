@@ -13,15 +13,15 @@
 // tones, contentStyle, objective, contentAction, ctaLinks, language, color,
 // suggestions, editingId, onComplete }.
 
-import * as inlineQuestion from "./inline-question.js?v=1912";
-import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=1912";
-import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=1912";
-import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=1912";
-import { showToast } from "./components/toast.js?v=1912";
-import { recordReasons } from "./feedback-store.js?v=1912";
-import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1912";
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1912";
-import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=1912";
+import * as inlineQuestion from "./inline-question.js?v=1913";
+import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=1913";
+import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=1913";
+import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=1913";
+import { showToast } from "./components/toast.js?v=1913";
+import { recordReasons } from "./feedback-store.js?v=1913";
+import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1913";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1913";
+import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=1913";
 import {
   analyzeWebsite,
   analyzeBrandFiles,
@@ -29,8 +29,8 @@ import {
   analyzeInterview,
   nextInterviewQuestion,
   INTERVIEW_OPENING,
-} from "./context-mock-analysis.js?v=1912";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=1912";
+} from "./context-mock-analysis.js?v=1913";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=1913";
 import {
   networkVoicesOn,
   cloneVoiceByNetwork,
@@ -38,17 +38,17 @@ import {
   networkLabel,
   networkIcon,
   voiceNetworks,
-} from "./network-voice.js?v=1912";
-import { connectors as connectorMocks } from "./mocks.js?v=1912";
+} from "./network-voice.js?v=1913";
+import { connectors as connectorMocks } from "./mocks.js?v=1913";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "./social-profiles.js?v=1912";
-import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=1912";
-import { isFlagOn } from "./feature-flags.js?v=1912";
-import { navigate } from "./router.js?v=1912";
-import { setHandoff } from "./handoff.js?v=1912";
+} from "./social-profiles.js?v=1913";
+import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=1913";
+import { isFlagOn } from "./feature-flags.js?v=1913";
+import { navigate } from "./router.js?v=1913";
+import { setHandoff } from "./handoff.js?v=1913";
 
 const drafts = new Map(); // sessionId → draft
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -317,6 +317,9 @@ export function startAlt(sessionId, { onComplete, prefilledUrl = "" } = {}) {
       sourceUrl: url,
     }),
   );
+  // Flag connectFirst: the accounts were connected on the screen before this
+  // chat (/welcome-alt/connect), so the Playbook takes them as they are.
+  if (isFlagOn("connectFirst")) commitAltProfiles(sessionId, getConnectedProfiles(), { echo: false });
   notify(sessionId);
   askAltUrl(sessionId, url);
 }
@@ -333,7 +336,8 @@ export function startAlt(sessionId, { onComplete, prefilledUrl = "" } = {}) {
 function altSteps() {
   const steps = ["url"];
   if (isFlagOn("multilingualPlaybook")) steps.push("language");
-  steps.push("profile");
+  // Flag connectFirst: the accounts are asked on the screen before the chat.
+  if (!isFlagOn("connectFirst")) steps.push("profile");
   // Voice per network: which network the main (base) voice is built for.
   if (networkVoicesOn()) steps.push("network");
   steps.push("documents");
@@ -634,7 +638,10 @@ function askAltLanguage(sessionId) {
 // `add` (flag networkVoices) keeps what an earlier connect already recorded: a
 // network connected after the first one joins the Playbook instead of
 // replacing it.
-function commitAltProfiles(sessionId, profiles, { add = false } = {}) {
+//
+// `echo: false` records without a user turn — the accounts were connected
+// before the chat began (flag connectFirst), so there is no answer to echo.
+function commitAltProfiles(sessionId, profiles, { add = false, echo = true } = {}) {
   const d = drafts.get(sessionId);
   if (!d || !profiles.length) return;
   const keep = add && d.selectedProfileId;
@@ -645,12 +652,12 @@ function commitAltProfiles(sessionId, profiles, { add = false } = {}) {
   // Archie's first adaptation, reviewed on the recap.
   d.voiceBaseNetwork = d.connectedSocials[0];
   d.voiceByNetwork = networkVoicesOn() ? analyzeNetworkVoices(d.connectedSocials, d.voiceBaseNetwork) : {};
-  postUserProfilesTurn(sessionId, profiles);
+  if (echo) postUserProfilesTurn(sessionId, profiles);
 }
 
 // The feedback-store key for the skip reasons. One key, not one per user: the
 // question is asked once, and a second answer replaces the first.
-const SKIP_CONNECT_TARGET = "skip:connect-profiles";
+export const SKIP_CONNECT_TARGET = "skip:connect-profiles";
 
 // The account step. It is a CHOICE rather than a
 // gate: optional either way, and shaped by what the user actually has.
@@ -665,6 +672,12 @@ const SKIP_CONNECT_TARGET = "skip:connect-profiles";
 // BACK, not asked again, and re-posting its line would leave the thread saying
 // the same sentence twice for one question.
 function askAltProfile(sessionId, { announce = true } = {}) {
+  // No account step in this run (flag connectFirst): every way in lands on the
+  // step that follows it instead.
+  if (!altSteps().includes("profile")) {
+    afterAltProfile(sessionId);
+    return;
+  }
   const connectedProfiles = getConnectedProfiles();
 
   if (connectedProfiles.length === 0) {

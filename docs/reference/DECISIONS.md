@@ -197,13 +197,21 @@ Two rules this rests on:
   `{ announce }`, false from both `onDismiss` paths — without it the thread printed its own question
   twice for one step (a pre-existing blemish on the connect dialog's cancel, doubled the day the skip
   dialog became a second caller).
-- **`social-profiles.js` now holds state.** A module-level `Set` of connected ids, seeded once from
-  the mocks (flag off) or empty (flag on), with `connectAccounts()` writing to it and a notifier so
+- **`social-profiles.js` now holds state.** A module-level `Set` of connected ids, empty at first
+  and kept in sessionStorage (`archie-connected-profiles`, 2026-10-19) so a reload — the one that ends
+  onboarding included — doesn't disconnect them, with `connectAccounts()` writing to it and a notifier so
   every surface agrees. `profileForNetwork()` goes through the SAME gate — otherwise the schedule
   modal and the top-post cards would show a profile nobody connected. `getConnectableAccounts()`
   filters on `handle`, not `status`: the mock's disconnected entries include bare network stubs
   (`{ id: "tt", platformLabel: "TikTok" }`) that have nothing to connect to and would render as
   "undefined" rows.
+
+**Connect first (flag `connectFirst`, 2026-10-19).** A new user can be asked to connect BEFORE
+anything else — `/welcome-alt/connect`, modelled on prod's Archie signup step — without breaking
+this rule: the ask moves to the front, it doesn't become a gate. The screen keeps the same two beats
+(a network row asks, `connect-account-modal` consents) and the same non-silent Skip
+(`skip-connect-modal`, same feedback key). The chat that follows drops its account step rather than
+asking twice, and `startAlt` takes the connected accounts into the draft as they are.
 
 ⚠️ A surface that merely _lists_ profiles is out of scope on purpose — it renders its empty list.
 But a surface that makes the user _pick_ one must never render an empty picker: that is a silent
