@@ -1071,16 +1071,15 @@
 }
 
 /* The navigation, floating under the stack — out of the card, so a card is
-   only its content — in three separate pieces: ← alone on the left (a white
-   disc), the page dots in the middle (their own capsule), Next on the right. */
+   only its content — three separate pieces grouped and centred under it:
+   ← (a white disc) · the page dots (their own capsule) · Next. */
 .welcome-review__nav {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  display: flex;
   align-items: center;
-  gap: var(--ref-spacing-sm);
+  justify-content: center;
+  gap: var(--ref-spacing-xs);
   flex-shrink: 0;
   margin-top: var(--ref-spacing-sm);
-  padding: 0 var(--ref-spacing-xs);
 }
 
 .welcome-review__nav:empty {
@@ -1088,7 +1087,6 @@
 }
 
 .welcome-review__navchip {
-  justify-self: start;
   display: grid;
   place-items: center;
   width: 44px;
@@ -1099,7 +1097,6 @@
 }
 
 .welcome-review__nav > .ap-button {
-  justify-self: end;
   box-shadow: var(--app-shadow-popover-md);
 }
 
