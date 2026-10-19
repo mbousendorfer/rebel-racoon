@@ -148,7 +148,8 @@
   --step-gap: 0.7s;
   --start: 0.6s;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  /* The stage is the larger half: the Playbook is what this is all about. */
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.3fr);
   height: 100%;
   min-height: 0;
   background: var(--app-surface);
@@ -296,7 +297,9 @@
 .welcome-intro__card {
   position: relative;
   z-index: 1;
-  width: min(440px, calc(100% - 2 * var(--ref-spacing-lg)));
+  width: min(580px, calc(100% - 2 * var(--ref-spacing-lg)));
+  max-height: calc(100% - 2 * var(--ref-spacing-lg));
+  overflow-y: auto;
   padding: var(--ref-spacing-md) var(--ref-spacing-md) var(--ref-spacing-sm);
   background: var(--app-surface);
   border-radius: 16px;
@@ -336,7 +339,7 @@
 
 .welcome-intro__row {
   display: grid;
-  grid-template-columns: 96px minmax(0, 1fr);
+  grid-template-columns: 112px minmax(0, 1fr);
   align-items: center;
   gap: var(--ref-spacing-xs);
   min-height: 52px;
@@ -609,9 +612,10 @@
   list-style: none;
 }
 
+/* Two columns when the column allows, one when it doesn't. */
 .welcome-flow__options.is-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
 }
 
 .welcome-flow__options.is-compact {
@@ -878,6 +882,102 @@
   }
   .welcome-flow__url-field {
     width: 100%;
+  }
+}
+
+/* The live card's richer lines: a summary, chips, a sentence under them. */
+.welcome-flow__stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  min-width: 0;
+}
+
+.welcome-flow__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxs);
+}
+
+/* Static facts: grey, like the Playbook's own tags — blue is for what you act on. */
+.welcome-flow__chip {
+  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
+  border-radius: var(--app-radius-pill);
+  background: var(--app-surface-subtle);
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.welcome-flow__row .welcome-flow__line {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.welcome-flow__font {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--ref-spacing-xxs);
+  margin-left: var(--ref-spacing-xs);
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+
+.welcome-flow__font > span {
+  font-size: var(--sys-text-style-h3-size);
+  font-weight: var(--sys-text-style-h3-weight);
+  color: var(--ref-color-grey-100);
+}
+
+/* Several placeholder bars stack like the lines they stand for. */
+.welcome-flow__row dd:has(.welcome-flow__placeholder) {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.welcome-flow__placeholder + .welcome-flow__placeholder {
+  width: 40%;
+}
+
+/* The review: the stage holds the whole Playbook, the left lists its parts. */
+.welcome-flow.is-review {
+  grid-template-columns: minmax(340px, 0.6fr) minmax(0, 1.4fr);
+}
+
+.welcome-flow.is-review .welcome-intro__lede {
+  padding-inline: clamp(var(--ref-spacing-md), 3vw, 64px);
+}
+
+.welcome-flow__sheet {
+  position: relative;
+  z-index: 1;
+  width: calc(100% - 2 * var(--ref-spacing-md));
+  height: calc(100% - 2 * var(--ref-spacing-md));
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--app-bg);
+  box-shadow: var(--app-shadow-popover-lg);
+  animation: welcome-intro-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* The list on the left drives the sections; the sheet's own tabs would say it twice. */
+.welcome-flow__sheet .pb2-tabs {
+  display: none;
+}
+
+.welcome-flow__option[aria-current="true"] {
+  border-color: var(--ref-color-electric-blue-100);
+}
+
+@media (max-width: 900px) {
+  .welcome-flow.is-review {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .welcome-flow__sheet {
+    height: 80vh;
   }
 }
 

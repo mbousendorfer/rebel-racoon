@@ -212,7 +212,8 @@ this rule: the ask moves to the front, it doesn't become a gate. The screen keep
 same feedback key). Under the flag the whole first-time run is **screens, not the chat**: the plan
 (`/welcome-alt/intro`), then one screen per step in one shell — the step on the left, the Playbook
 card filling with the real answers on the right (`welcome-alt-shell.js`) — then a reveal
-(`/welcome-alt/ready`) that ends on Start writing, with the editable page one click away. The steps'
+(`/welcome-alt/ready`) that ends on Start writing, with the editable page one click away — in the same
+split, the whole Playbook on the stage, its sections listed on the left. The steps'
 effects on the draft are context-builder's (`createAltDraft`, `readAltWebsite`, `readAltFiles`,
 `writeAltManually`, `analyzeAltInterview`) — the chat calls the same functions, so there is one
 implementation and two hosts. Every list of steps (the plan, the progress) comes from `altSteps()`,

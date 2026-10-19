@@ -11,45 +11,64 @@
 // The card is an illustration, not data: the Playbook's real parts (Voice
 // profile, Branding…) filled with example values.
 
-import "../archie-pixels.js?v=1930";
-import { html, raw } from "../utils.js?v=1930";
-import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=1930";
-import { navigate } from "../router.js?v=1930";
-import { flowSteps, startFlow, STEP_TEXT } from "./welcome-alt-shell.js?v=1930";
+import "../archie-pixels.js?v=1934";
+import { html, raw } from "../utils.js?v=1934";
+import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=1934";
+import { navigate } from "../router.js?v=1934";
+import { flowSteps, startFlow, STEP_TEXT } from "./welcome-alt-shell.js?v=1934";
 
 const glyph = (net) =>
   `<span class="welcome-intro__net"><i class="${NETWORK_ICON_BY_PLATFORM[net]}" aria-hidden="true"></i></span>`;
 
-// Per step: the example line of the Playbook it builds (the names are STEP_TEXT).
-const STEPS = {
-  connect: {
-    label: "Publishes on",
-    value: ["linkedin", "instagram", "facebook", "x"].map(glyph).join(""),
+const chips = (list, cls = "welcome-flow__chip") =>
+  `<span class="welcome-flow__chips">${list.map((t) => `<span class="${cls}">${t}</span>`).join("")}</span>`;
+const line = (t) => `<span class="welcome-flow__line">${t}</span>`;
+
+// The example card, line by line — each line belongs to the step that builds
+// it, and lands when that step lights up (the step names are STEP_TEXT). The
+// Playbook's real parts, filled with an example brand.
+const ROWS = [
+  { step: "connect", label: "Publishes on", value: ["linkedin", "instagram", "facebook", "x"].map(glyph).join("") },
+  {
+    step: "url",
+    label: "About",
+    value: line("Small-batch soap, made by hand in Lyon with plant oils and nothing you can't pronounce."),
   },
-  url: {
+  {
+    step: "url",
     label: "Voice",
-    value: ["Warm", "Witty", "Never salesy"].map((t) => `<span class="welcome-intro__trait">${t}</span>`).join(""),
+    value: `<span class="welcome-flow__stack">${chips(["Warm", "Witty", "Never salesy"], "welcome-intro__trait")}${line(
+      "Talks like a friend who knows their stuff — short sentences, one idea per post.",
+    )}</span>`,
   },
-  language: {
-    label: "Writes in",
-    value: `<span class="welcome-intro__plain">English</span>`,
+  {
+    step: "url",
+    label: "Speaks to",
+    value: `<span class="welcome-flow__stack">${line("People who read the label")}${chips([
+      "Sensitive skin",
+      "Less plastic",
+    ])}</span>`,
   },
-  network: {
+  { step: "url", label: "Goal", value: chips(["Brand awareness", "Visit the shop"]) },
+  { step: "language", label: "Writes in", value: `<span class="welcome-intro__plain">English</span>` },
+  {
+    step: "network",
     label: "Main voice",
     value: `${glyph("linkedin")}<span class="welcome-intro__plain">LinkedIn</span>`,
   },
-  documents: {
+  {
+    step: "documents",
     label: "Branding",
     // An example brand palette.
     value: ["--app-convo-navy", "--ref-color-orange-100", "--ref-color-yellow-40", "--app-surface-subtle"]
       .map((token) => `<span class="welcome-intro__swatch" style="background: var(${token})"></span>`)
       .join(""),
   },
-};
+];
 
 export function renderWelcomeAltIntro(_params, target) {
   const steps = flowSteps();
-  const rows = steps.filter((id) => STEPS[id]?.label);
+  const rows = ROWS.filter((r) => steps.includes(r.step));
   const last = steps.length - 1;
 
   target.innerHTML = html`
@@ -91,14 +110,16 @@ export function renderWelcomeAltIntro(_params, target) {
             <span class="welcome-intro__card-title">Your Playbook</span>
           </div>
           <dl class="welcome-intro__rows">
-            ${rows.map(
-              (id) => html`
-                <div class="welcome-intro__row" style="--i: ${steps.indexOf(id)}">
-                  <dt>${STEPS[id].label}</dt>
-                  <dd>${raw(STEPS[id].value)}</dd>
+            ${rows.map((r) => {
+              // Several lines from one step land one after the other.
+              const j = rows.filter((o) => o.step === r.step).indexOf(r);
+              return html`
+                <div class="welcome-intro__row" style="--i: ${steps.indexOf(r.step) + j * 0.18}">
+                  <dt>${r.label}</dt>
+                  <dd>${raw(r.value)}</dd>
                 </div>
-              `,
-            )}
+              `;
+            })}
           </dl>
           <div class="welcome-intro__card-foot" style="--i: ${last}">
             <span class="ap-status mermaid">Ready to write</span>

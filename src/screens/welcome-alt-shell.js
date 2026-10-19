@@ -9,10 +9,10 @@
 // the session id the recap already uses (`welcomeAltSessionId`), and persisted
 // on every change so a reload lands on the same step with the same answers.
 
-import "../archie-pixels.js?v=1930";
-import { html, raw, escapeHtml } from "../utils.js?v=1930";
-import { navigate } from "../router.js?v=1930";
-import { isFlagOn } from "../feature-flags.js?v=1930";
+import "../archie-pixels.js?v=1934";
+import { html, raw, escapeHtml } from "../utils.js?v=1934";
+import { navigate } from "../router.js?v=1934";
+import { isFlagOn } from "../feature-flags.js?v=1934";
 import {
   altSteps,
   createAltDraft,
@@ -20,16 +20,16 @@ import {
   isAnalysisReady,
   restoreDraft,
   subscribeDraft,
-} from "../context-builder.js?v=1930";
+} from "../context-builder.js?v=1934";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
-  BRAND_INITIALS,
   getConnectedProfiles,
+  renderProfileTag,
   subscribe as subscribeProfiles,
-} from "../social-profiles.js?v=1930";
-import { networkVoicesOn } from "../network-voice.js?v=1930";
-import { readSessionId, persistDraft, readPersistedDraft } from "./welcome-alt-recap.js?v=1930";
+} from "../social-profiles.js?v=1934";
+import { networkVoicesOn } from "../network-voice.js?v=1934";
+import { readSessionId, persistDraft, readPersistedDraft } from "./welcome-alt-recap.js?v=1934";
 
 const PREFILLED_URL = "https://nicesoap.com";
 const SESSION_KEY = "welcomeAltSessionId";
@@ -115,28 +115,26 @@ const domainOf = (url) =>
 const glyph = (net) =>
   `<span class="welcome-intro__net" title="${escapeHtml(NETWORK_LABEL[net] || net)}"><i class="${NETWORK_ICON_BY_PLATFORM[net]}" aria-hidden="true"></i></span>`;
 
-function avatar(p) {
-  const inner = p.photo
-    ? `<img src="${escapeHtml(p.photo)}" alt="" />`
-    : `<span class="ap-avatar-initials">${escapeHtml(p.initials || BRAND_INITIALS)}</span>`;
-  const badge = NETWORK_ICON_BY_PLATFORM[p.platform]
-    ? `<span class="ap-avatar-network"><i class="${NETWORK_ICON_BY_PLATFORM[p.platform]}"></i></span>`
-    : "";
-  return `<span class="ap-avatar size-32" title="${escapeHtml(p.name || p.handle || "")}">${inner}${badge}</span>`;
-}
+const chip = (t, cls = "welcome-flow__chip") => `<span class="${cls}">${escapeHtml(t)}</span>`;
+const stack = (...parts) => `<span class="welcome-flow__stack">${parts.filter(Boolean).join("")}</span>`;
+const chips = (list, cls) =>
+  list.length ? `<span class="welcome-flow__chips">${list.map((t) => chip(t, cls)).join("")}</span>` : "";
+const text = (t) => (t ? `<span class="welcome-flow__line">${escapeHtml(t)}</span>` : "");
 
-// Each line of the card: empty (a quiet placeholder), pending (being learned)
-// or filled.
+// Each line of the card — the Playbook's own parts, as they're learned: empty
+// (a quiet placeholder), pending (being learned) or filled.
 function cardRows(d, sid) {
   const pending = Boolean(d?.analysisStartedAt) && !isAnalysisReady(sid);
   const state = (filled) => (filled ? "filled" : pending ? "pending" : "empty");
   const rows = [];
+  const summary = d?.businessSummary || "";
+  rows.push({ key: "summary", label: "About", state: state(Boolean(summary)), value: text(summary), lines: 3 });
   const profiles = getConnectedProfiles();
   rows.push({
     key: "profiles",
     label: "Publishes on",
     state: profiles.length ? "filled" : "empty",
-    value: profiles.map(avatar).join(""),
+    value: `<span class="welcome-flow__chips">${profiles.map((p) => renderProfileTag(p)).join("")}</span>`,
   });
   const traits = (d?.voiceProfile?.headline || "")
     .split(/\s*·\s*/)
@@ -147,15 +145,19 @@ function cardRows(d, sid) {
     key: "voice",
     label: "Voice",
     state: state(voice.length),
-    value: voice.map((t) => `<span class="welcome-intro__trait">${escapeHtml(t)}</span>`).join(""),
+    value: stack(chips(voice, "welcome-intro__trait"), text(d?.voiceSummary)),
+    lines: 2,
   });
   const audience = d?.audience?.[0];
   rows.push({
     key: "audience",
     label: "Speaks to",
     state: state(Boolean(audience)),
-    value: audience ? `<span class="welcome-flow__line">${escapeHtml(audience)}</span>` : "",
+    value: stack(text(audience), chips((d?.audienceProblems || []).slice(0, 2))),
+    lines: 2,
   });
+  const goal = [d?.objective?.[0], d?.contentAction?.[0]].filter(Boolean);
+  rows.push({ key: "goal", label: "Goal", state: state(goal.length), value: chips(goal) });
   if (isFlagOn("multilingualPlaybook")) {
     const lang = d?.primaryLanguage || (d?.languages || [])[0];
     rows.push({
@@ -177,14 +179,22 @@ function cardRows(d, sid) {
     });
   }
   const colors = [...new Set((d?.brandColors || []).map((c) => c.hex).filter(Boolean))].slice(0, 5);
+  const font = d?.brandTypography?.headingFont;
   rows.push({
     key: "branding",
     label: "Branding",
     state: state(colors.length),
-    value: colors
-      .map((hex) => `<span class="welcome-intro__swatch" style="background: ${escapeHtml(hex)}"></span>`)
-      .join(""),
+    value:
+      colors
+        .map((hex) => `<span class="welcome-intro__swatch" style="background: ${escapeHtml(hex)}"></span>`)
+        .join("") +
+      (font ? `<span class="welcome-flow__font"><span aria-hidden="true">Aa</span>${escapeHtml(font)}</span>` : ""),
   });
+  const competitors = (d?.competitors || [])
+    .map((c) => c.name)
+    .filter(Boolean)
+    .slice(0, 3);
+  rows.push({ key: "competitors", label: "Up against", state: state(competitors.length), value: chips(competitors) });
   return { rows };
 }
 
@@ -223,7 +233,11 @@ function renderCard(sid) {
         return html`
           <div class="welcome-intro__row welcome-flow__row is-${r.state} ${fresh ? "is-new" : ""}">
             <dt>${r.label}</dt>
-            <dd>${r.state === "filled" ? raw(r.value) : raw(`<span class="welcome-flow__placeholder"></span>`)}</dd>
+            <dd>
+              ${r.state === "filled"
+                ? raw(r.value)
+                : raw(`<span class="welcome-flow__placeholder"></span>`.repeat(r.lines || 1))}
+            </dd>
           </div>
         `;
       })}
@@ -262,10 +276,12 @@ function renderProgress(step) {
 
 // Paint the shell into `target` once; `left()` is repainted by `paint()`, the
 // card on every change to the draft or to the connected accounts.
-// Returns { paint, cleanup }.
-export function mountShell(target, { step, sid, left }) {
+// `sheet`: the review (/welcome-alt/recap) — the stage holds the whole
+// Playbook instead of the card; the caller mounts it into `sheet`.
+// Returns { paint, sheet, cleanup }.
+export function mountShell(target, { step, sid, left, sheet = false }) {
   target.innerHTML = html`
-    <div class="welcome-intro welcome-flow">
+    <div class="welcome-intro welcome-flow ${sheet ? "is-review" : ""}">
       <section class="welcome-intro__lede" aria-labelledby="welcomeFlowTitle">
         <div class="welcome-flow__top">
           <img class="welcome-intro__wordmark" src="assets/logos/archie-wordmark.svg" alt="Archie" />
@@ -273,16 +289,18 @@ export function mountShell(target, { step, sid, left }) {
         </div>
         <div class="welcome-intro__copy welcome-flow__copy" data-flow-left></div>
       </section>
-      <div class="welcome-intro__stage" aria-hidden="true">
+      <div class="welcome-intro__stage" ${sheet ? "" : raw('aria-hidden="true"')}>
         <archie-pixels data-quiet></archie-pixels>
-        <div class="welcome-intro__card welcome-flow__card" data-flow-card></div>
+        ${sheet
+          ? raw(`<div class="welcome-flow__sheet" data-flow-sheet></div>`)
+          : raw(`<div class="welcome-intro__card welcome-flow__card" data-flow-card></div>`)}
       </div>
     </div>
   `;
   const leftEl = target.querySelector("[data-flow-left]");
   const cardEl = target.querySelector("[data-flow-card]");
   const paintCard = () => {
-    cardEl.innerHTML = renderCard(sid);
+    if (cardEl) cardEl.innerHTML = renderCard(sid);
   };
   const paint = () => {
     leftEl.innerHTML = left();
@@ -296,7 +314,7 @@ export function mountShell(target, { step, sid, left }) {
   const offProfiles = subscribeProfiles(paintCard);
   return {
     paint,
-    paintCard,
+    sheet: target.querySelector("[data-flow-sheet]"),
     cleanup: () => {
       offDraft();
       offProfiles();

@@ -4,12 +4,16 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { navigate } from "../router.js?v=1930";
-import { catalogueRoute } from "../active-playbook.js?v=1930";
-import { getDraft, isAnalysisReady, save, patchDraft, restoreDraft } from "../context-builder.js?v=1930";
-import { mount } from "../playbook-view.js?v=1930";
-import { open as openRenameModal } from "../components/rename-modal.js?v=1930";
-import { networkLabel } from "../network-voice.js?v=1930";
+import { navigate } from "../router.js?v=1934";
+import { catalogueRoute } from "../active-playbook.js?v=1934";
+import { getDraft, isAnalysisReady, save, patchDraft, restoreDraft } from "../context-builder.js?v=1934";
+import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=1934";
+import { html, raw } from "../utils.js?v=1934";
+import { parseHashParams } from "../url-state.js?v=1934";
+import { isFlagOn } from "../feature-flags.js?v=1934";
+import { mountShell } from "./welcome-alt-shell.js?v=1934";
+import { open as openRenameModal } from "../components/rename-modal.js?v=1934";
+import { networkLabel } from "../network-voice.js?v=1934";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";
@@ -93,7 +97,7 @@ export function renderWelcomeAltRecap(_params, target) {
     (introDoneSid === sid && isAnalysisReady(sid));
   if (skipLoader) introDoneSid = sid;
 
-  return mount(target, {
+  const config = {
     mode: "onboarding",
     getData: () => getDraft(sid),
     isReady: () => isAnalysisReady(sid),
@@ -141,7 +145,62 @@ export function renderWelcomeAltRecap(_params, target) {
       }
       return false;
     },
-  });
+  };
+  // Flag connectFirst: the review is the run's last screen, in its split.
+  if (isFlagOn("connectFirst") && !integrated) return renderReview(target, sid, config);
+  return mount(target, config);
+}
+
+// The review (flag connectFirst): the run's split, the stage now holding the
+// whole Playbook — the card grown into the page. On the left, its sections
+// (the sheet's own tabs are hidden: the list drives them) and the way out.
+function renderReview(target, sid, config) {
+  const current = () => parseHashParams().get("tab") || RECAP_SECTIONS[0].id;
+  const left = () => html`
+    <h1 class="welcome-flow__title" id="welcomeFlowTitle">Review your Playbook</h1>
+    <p class="welcome-intro__sub">My first take on your brand. Change anything — click a part to edit it.</p>
+    <ul class="welcome-flow__options is-compact">
+      ${RECAP_SECTIONS.map(
+        (t) => html`
+          <li>
+            <button
+              type="button"
+              class="welcome-flow__option"
+              data-review-section="${t.id}"
+              aria-current="${t.id === current() ? "true" : "false"}"
+            >
+              <span class="welcome-flow__option-text">
+                <span class="welcome-flow__option-title">${t.title}</span>
+                ${t.id === current() ? raw(`<span class="welcome-flow__option-desc">${t.lead}</span>`) : ""}
+              </span>
+            </button>
+          </li>
+        `,
+      )}
+    </ul>
+    <div class="welcome-flow__actions">
+      <button type="button" class="ap-button stroked grey" data-flow-back>Back</button>
+      <button type="button" class="ap-button primary orange" data-welcome-done>
+        <span>Start writing</span><i class="ap-icon-arrow-right"></i>
+      </button>
+    </div>
+  `;
+  const shell = mountShell(target, { step: "recap", sid, left, sheet: true });
+  const unmount = mount(shell.sheet, { ...config, showTop: false, headerActions: () => null });
+  const onClick = (event) => {
+    const section = event.target.closest("[data-review-section]")?.dataset.reviewSection;
+    if (section) {
+      shell.sheet.querySelector(`[data-pb2-tab="${section}"]`)?.click();
+      shell.paint();
+    } else if (event.target.closest("[data-flow-back]")) navigate("/welcome-alt/ready");
+    else if (event.target.closest(".welcome-intro__lede [data-welcome-done]")) enterArchie(sid);
+  };
+  target.addEventListener("click", onClick);
+  return () => {
+    unmount?.();
+    shell.cleanup();
+    target.removeEventListener("click", onClick);
+  };
 }
 
 // New Playbook (integrated) finish — persist the Playbook and return to the
