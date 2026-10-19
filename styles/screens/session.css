@@ -915,31 +915,10 @@ body.playbook-revoked .session__composer-card {
   }
 }
 
-/* ── Flag newChatHero — headline + workflow rows ─────────────────────────
-   One question, the composer under it, the three workflows as one-line rows
+/* ── Flag newChatHero — workflow rows ────────────────────────────────────
+   The usual wordmark + sub-line and composer, then the three workflows as rows
    in the composer's 740px column (instead of the 1040px card grid). The
    Topics grid below keeps its own width. */
-.empty-chat--rows {
-  gap: var(--ref-spacing-md);
-}
-
-.empty-chat__headline {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  margin: 0;
-  font-size: var(--sys-text-style-h1-size);
-  line-height: var(--sys-text-style-h1-line-height);
-  font-weight: var(--sys-text-style-h1-weight);
-  letter-spacing: -0.01em;
-  color: var(--ref-color-grey-100);
-}
-
-.empty-chat__headline-mark {
-  height: 1em;
-  width: auto;
-}
-
 .starter-rows {
   display: flex;
   flex-direction: column;

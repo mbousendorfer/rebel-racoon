@@ -140,16 +140,16 @@ export const FLAGS = Object.freeze([
   },
   {
     id: "newChatHero",
-    label: "UP-New chat: headline + workflow rows",
-    // OFF: the hero as it was — the animated wordmark, the sub-line and the
-    // three big starter cards. Same three workflows, same handlers either way.
+    label: "UP-New chat: workflow rows",
+    // OFF: the three big starter cards. Same three workflows, same handlers
+    // either way.
     default: false,
     hides:
-      'When ON, a new chat opens on one question — "What are we posting ' +
-      'today?" — with the composer under it and the three workflows ' +
-      "(batch from a source, clip a video, repurpose a top post) as a short " +
-      "list of rows (title + its description) aligned on the composer, instead of three big " +
-      "cards. The Topics to review grid below is unchanged.",
+      "When ON, a new chat keeps its wordmark, sub-line and composer, and the " +
+      "three workflows (batch from a source, clip a video, repurpose a top " +
+      "post) become a short list of rows (title + its description) aligned " +
+      "on the composer, instead of three big cards. The Topics to review " +
+      "grid below is unchanged.",
   },
   {
     id: "networkVoices",

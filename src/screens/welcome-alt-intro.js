@@ -11,11 +11,11 @@
 // The card is an illustration, not data: the Playbook's real parts (Voice
 // profile, Branding…) filled with example values.
 
-import "../archie-pixels.js?v=1934";
-import { html, raw } from "../utils.js?v=1934";
-import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=1934";
-import { navigate } from "../router.js?v=1934";
-import { flowSteps, startFlow, STEP_TEXT } from "./welcome-alt-shell.js?v=1934";
+import "../archie-pixels.js?v=1935";
+import { html, raw } from "../utils.js?v=1935";
+import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=1935";
+import { navigate } from "../router.js?v=1935";
+import { flowSteps, startFlow, STEP_TEXT } from "./welcome-alt-shell.js?v=1935";
 
 const glyph = (net) =>
   `<span class="welcome-intro__net"><i class="${NETWORK_ICON_BY_PLATFORM[net]}" aria-hidden="true"></i></span>`;
