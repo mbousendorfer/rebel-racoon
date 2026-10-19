@@ -1201,3 +1201,51 @@
 .recap__pick-foot:empty {
   display: none;
 }
+
+/* Typography, labelled (cfg.chipCloud — the onboarding review): each font with
+   an "Aa" set in it, its name above its field. */
+.recap__typo-edit.is-labelled {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+}
+
+.recap__typo-field {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+}
+
+.recap__typo-aa {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--app-radius-card);
+  background: var(--app-surface-subtle);
+  font-size: 26px;
+  line-height: 1;
+  color: var(--ref-color-grey-100);
+}
+
+/* The row layout's flex: 1 would collapse a field in this column. */
+.recap__typo-edit.is-labelled .ap-input-group {
+  flex: none;
+  min-width: 0;
+}
+
+.recap__typo-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.recap__typo-label {
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-grey-80);
+}

@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1981";
-import { conceptHint } from "./concepts.js?v=1981";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1985";
+import { conceptHint } from "./concepts.js?v=1985";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,11 +30,11 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=1981";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1981";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1981";
-import { isFlagOn } from "./feature-flags.js?v=1981";
-import { parseHashParams } from "./url-state.js?v=1981";
+} from "./playbook-brand-kit.js?v=1985";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1985";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1985";
+import { isFlagOn } from "./feature-flags.js?v=1985";
+import { parseHashParams } from "./url-state.js?v=1985";
 import {
   networkVoicesOn,
   baseNetwork,
@@ -57,16 +57,16 @@ import {
   networkLabel,
   networkIcon,
   memoryCardHtml,
-} from "./network-voice.js?v=1981";
+} from "./network-voice.js?v=1985";
 import {
   getSuggestions,
   accept as acceptVoiceSuggestion,
   dismiss as dismissVoiceSuggestion,
-} from "./voice-coach-store.js?v=1981";
-import { showToast } from "./components/toast.js?v=1981";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=1981";
-import { open as openVoiceWizard } from "./components/voice-wizard-modal.js?v=1981";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1981";
+} from "./voice-coach-store.js?v=1985";
+import { showToast } from "./components/toast.js?v=1985";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=1985";
+import { open as openVoiceWizard } from "./components/voice-wizard-modal.js?v=1985";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1985";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -1036,6 +1036,9 @@ function renderLanguagePicker(data) {
   // Single-language mode (flag OFF) — a plain picker fixed to the primary
   // language, matching the pre-multilingual behaviour.
   if (!multilingualOn()) {
+    // The review (cfg.chipCloud): one language can't be changed here — say it
+    // as the fact it is, not as a dropdown with a single option.
+    if (cfg?.chipCloud) return `<span class="ap-tag grey"><span>${esc(primary)}</span></span>`;
     return `<select class="ap-native-select recap__lang-select" data-recap-primary-language aria-label="Language">
       <option value="${esc(primary)}" selected>${esc(primary)}</option>
     </select>`;
@@ -1114,6 +1117,18 @@ function renderColorEditor(data) {
 // Headings + body font, as two inputs. Shared like the colour editor.
 function renderTypoEditor(data) {
   const fonts = data.brandTypography || brandFonts(data);
+  // The review (cfg.chipCloud): each font named, with an "Aa" set in it.
+  if (cfg?.chipCloud) {
+    const field = (key, label) => `
+      <label class="recap__typo-field">
+        <span class="recap__typo-aa" style="font-family: ${esc(fonts[key] || "inherit")}, sans-serif" aria-hidden="true">Aa</span>
+        <span class="recap__typo-text">
+          <span class="recap__typo-label">${label}</span>
+          <div class="ap-input-group"><input type="text" data-recap-typo="${key}" value="${esc(fonts[key] || "")}" placeholder="${label} font" aria-label="${label} font" /></div>
+        </span>
+      </label>`;
+    return `<div class="recap__typo-edit is-labelled">${field("headingFont", "Headings")}${field("bodyFont", "Body")}</div>`;
+  }
   return `<div class="recap__typo-edit">
       <div class="ap-input-group">
         <input type="text" data-recap-typo="headingFont" value="${esc(fonts.headingFont || "")}" placeholder="Headings font" aria-label="Headings font" />
@@ -1378,7 +1393,7 @@ const PICKER_COPY = {
   },
 };
 
-function renderRosterPicker(data, r) {
+function renderRosterPicker(data, r, { addHook = "data-recap-cmp-add" } = {}) {
   const copy = PICKER_COPY[r.scope] || PICKER_COPY.competitors;
   const list = rosterList(data, r);
   const indexed = list.map((c, i) => ({ c, i }));
@@ -1413,7 +1428,7 @@ function renderRosterPicker(data, r) {
       <div class="recap__pick-foot">
         ${
           list.length < r.max
-            ? `<button type="button" class="ap-button ghost blue" data-recap-cmp-add><i class="ap-icon-plus"></i><span>${esc(copy.add)}</span></button>`
+            ? `<button type="button" class="ap-button ghost blue" ${addHook}><i class="ap-icon-plus"></i><span>${esc(copy.add)}</span></button>`
             : ""
         }
         ${
@@ -1764,6 +1779,15 @@ function renderInfluencersPanel(data, edit) {
   const r = ROSTERS.influencers;
   const section = SECTIONS.find((s) => s.scope === r.scope);
   const list = rosterList(data, r);
+
+  // The review (cfg.rosterPicker): the same picker as Competitors; an influencer
+  // is added through its own dialog (data-recap-infadd-open), as on the page.
+  if (cfg?.rosterPicker) {
+    return `
+      <section class="recap__panel" id="${section.id}" data-recap-roster="${r.scope}" data-recap-editing-card>
+        <div class="recap__panel-body">${renderRosterPicker(data, r, { addHook: "data-recap-infadd-open" })}</div>
+      </section>`;
+  }
 
   let rows;
   if (!list.length) {
