@@ -18,13 +18,13 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=1958";
-import { navigate } from "../router.js?v=1958";
-import { getDraft, patchDraft } from "../context-builder.js?v=1958";
-import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=1958";
-import { parseHashParams } from "../url-state.js?v=1958";
-import { mountShell } from "./welcome-alt-shell.js?v=1958";
-import { enterArchie } from "./welcome-alt-recap.js?v=1958";
+import { html, raw } from "../utils.js?v=1959";
+import { navigate } from "../router.js?v=1959";
+import { getDraft, patchDraft } from "../context-builder.js?v=1959";
+import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=1959";
+import { parseHashParams } from "../url-state.js?v=1959";
+import { mountShell } from "./welcome-alt-shell.js?v=1959";
+import { enterArchie } from "./welcome-alt-recap.js?v=1959";
 
 const MOVE_MS = 220; // the card's exit, before the next one comes in
 
@@ -113,30 +113,33 @@ export function renderReview(target, sid, config) {
     `;
   };
 
-  // The navigation floats under the stack, out of the card: ← · where you are
-  // in the part (one segment per card — the only progress shown) · what's next →.
+  // The navigation floats under the stack, out of the card, in three separate
+  // pieces: ← on its own, the part's progress (page dots — the one indicator),
+  // and Next — named after what's coming — on the right.
   const nav = (list) => {
     const at = RECAP_SECTIONS.findIndex((t) => t.id === current());
     const nextPart = RECAP_SECTIONS[at + 1];
     const upNext = index < count - 1 ? cardTitle(list[index + 1]) : nextPart ? nextPart.title : "";
     const atStart = index === 0 && at === 0;
     return html`
-      <button
-        type="button"
-        class="ap-icon-button stroked"
-        data-review-prev
-        aria-label="Previous card"
-        ${atStart ? raw("disabled") : ""}
-      >
-        <i class="ap-icon-arrow-left"></i>
-      </button>
-      <ol class="welcome-review__segs" aria-label="Card ${index + 1} of ${count} in ${partOf(current()).title}">
+      <span class="welcome-review__navchip">
+        <button
+          type="button"
+          class="ap-icon-button transparent grey"
+          data-review-prev
+          aria-label="Previous card"
+          ${atStart ? raw("disabled") : ""}
+        >
+          <i class="ap-icon-arrow-left"></i>
+        </button>
+      </span>
+      <ol class="welcome-review__dots" aria-label="Card ${index + 1} of ${count} in ${partOf(current()).title}">
         ${Array.from(
           { length: count },
           (_, i) => html`<li class="${i < index ? "is-done" : i === index ? "is-current" : ""}"></li>`,
         )}
       </ol>
-      <button type="button" class="ap-button ghost blue" data-review-next ${upNext ? "" : raw("disabled")}>
+      <button type="button" class="ap-button primary blue" data-review-next ${upNext ? "" : raw("disabled")}>
         <span>${upNext || "Last card"}</span><i class="ap-icon-arrow-right"></i>
       </button>
     `;
