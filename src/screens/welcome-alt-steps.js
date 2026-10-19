@@ -15,8 +15,8 @@
 // Enter submits; nothing on these screens leaves the run by accident (no Esc
 // exit); Back always keeps what was answered.
 
-import { html, raw, escapeHtml } from "../utils.js?v=1986";
-import { navigate } from "../router.js?v=1986";
+import { html, raw, escapeHtml } from "../utils.js?v=1987";
+import { navigate } from "../router.js?v=1987";
 import {
   getDraft,
   patchDraft,
@@ -24,13 +24,13 @@ import {
   readAltFiles,
   writeAltManually,
   analyzeAltInterview,
-} from "../context-builder.js?v=1986";
-import { nextInterviewQuestion, analyzeNetworkVoices } from "../context-mock-analysis.js?v=1986";
-import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=1986";
-import { voiceNetworks } from "../network-voice.js?v=1986";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "../social-profiles.js?v=1986";
-import { connectors as connectorMocks } from "../mocks.js?v=1986";
-import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT } from "./welcome-alt-shell.js?v=1986";
+} from "../context-builder.js?v=1987";
+import { nextInterviewQuestion, analyzeNetworkVoices } from "../context-mock-analysis.js?v=1987";
+import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=1987";
+import { voiceNetworks } from "../network-voice.js?v=1987";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "../social-profiles.js?v=1987";
+import { connectors as connectorMocks } from "../mocks.js?v=1987";
+import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT } from "./welcome-alt-shell.js?v=1987";
 
 // Wire one screen: the shell, a click handler, an optional submit / change.
 function screen(target, { step, left, onClick, onSubmit, onChange, onInput, onKeydown }) {
@@ -145,7 +145,7 @@ export function renderWelcomeAltBrand(_params, target) {
           </button>
         </form>
         <p class="welcome-flow__or">Or start another way</p>
-        <ul class="welcome-flow__options is-compact">
+        <ul class="welcome-flow__options">
           ${OTHER_WAYS.map(
             (w) => html`
               <li>
@@ -262,6 +262,8 @@ export function renderWelcomeAltInterview(_params, target) {
 
 // ── /welcome-alt/language ────────────────────────────────────────────────
 
+const LANGUAGE_IN_ENGLISH = { Français: "French", Español: "Spanish" };
+
 function optionRow({ name, value, checked, type = "radio", lead, title, desc = "" }) {
   const control =
     type === "radio"
@@ -299,6 +301,7 @@ export function renderWelcomeAltLanguage(_params, target) {
                 checked: l === current,
                 lead: `<span class="welcome-flow__glyph is-icon"><i class="ap-icon-web" aria-hidden="true"></i></span>`,
                 title: l,
+                desc: `Posts in ${LANGUAGE_IN_ENGLISH[l] || l}`,
               }),
             )}
           </ul>
@@ -330,7 +333,7 @@ export function renderWelcomeAltNetwork(_params, target) {
           I'll build your main voice for it. The others start from it — you tune each one later.
         </p>
         <form data-choice-form novalidate>
-          <ul class="welcome-flow__options is-grid">
+          <ul class="welcome-flow__options">
             ${order.map((n) =>
               optionRow({
                 name: "network",
@@ -338,7 +341,7 @@ export function renderWelcomeAltNetwork(_params, target) {
                 checked: n === current,
                 lead: `<span class="welcome-flow__glyph"><i class="${NETWORK_ICON_BY_PLATFORM[n]}" aria-hidden="true"></i></span>`,
                 title: NETWORK_LABEL[n] || n,
-                desc: connected.includes(n) ? "Connected" : "",
+                desc: connected.includes(n) ? "Connected" : "Not connected yet",
               }),
             )}
           </ul>
@@ -361,7 +364,15 @@ export function renderWelcomeAltNetwork(_params, target) {
 
 // ── /welcome-alt/documents ───────────────────────────────────────────────
 
+// Every step lists its choices the same way: one row under another, a title and
+// what it is for. Here, what I'd read in each.
 const DOC_CONNECTORS = ["slite", "notion", "gdrive", "slack"];
+const DOC_READS = {
+  slite: "Your brand book and wiki pages",
+  notion: "Brand pages and guidelines",
+  gdrive: "Brand books, decks and PDFs",
+  slack: "The channels where the brand gets discussed",
+};
 
 export function renderWelcomeAltDocuments(_params, target) {
   return screen(target, {
@@ -375,7 +386,7 @@ export function renderWelcomeAltDocuments(_params, target) {
           A brand book or guidelines help me get the details right. Optional — you can connect more later.
         </p>
         <form data-choice-form novalidate>
-          <ul class="welcome-flow__options is-grid">
+          <ul class="welcome-flow__options">
             ${items.map((c) =>
               optionRow({
                 type: "checkbox",
@@ -384,10 +395,11 @@ export function renderWelcomeAltDocuments(_params, target) {
                 checked: picked.has(c.id),
                 lead: `<span class="welcome-flow__glyph"><img src="${escapeHtml(c.logo)}" alt="" /></span>`,
                 title: c.name,
+                desc: DOC_READS[c.id],
               }),
             )}
           </ul>
-          ${actions(continueButton(), { skip: "Skip" })}
+          ${actions(continueButton(), { skip: "Skip for now" })}
         </form>
       `;
     },

@@ -20,13 +20,13 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=1986";
-import { navigate } from "../router.js?v=1986";
-import { getDraft, patchDraft } from "../context-builder.js?v=1986";
-import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=1986";
-import { parseHashParams } from "../url-state.js?v=1986";
-import { mountShell } from "./welcome-alt-shell.js?v=1986";
-import { enterArchie } from "./welcome-alt-recap.js?v=1986";
+import { html, raw } from "../utils.js?v=1987";
+import { navigate } from "../router.js?v=1987";
+import { getDraft, patchDraft } from "../context-builder.js?v=1987";
+import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=1987";
+import { parseHashParams } from "../url-state.js?v=1987";
+import { mountShell } from "./welcome-alt-shell.js?v=1987";
+import { enterArchie } from "./welcome-alt-recap.js?v=1987";
 
 const MOVE_MS = 220; // the card's exit, before the next one comes in
 
@@ -65,7 +65,7 @@ export function renderReview(target, sid, config) {
       <p class="welcome-intro__sub">
         I've filled in every card. Browse them with the arrows and fix anything that's off — changes save as you type.
       </p>
-      <ul class="welcome-flow__options is-compact">
+      <ul class="welcome-flow__options">
         ${RECAP_SECTIONS.map((t) => {
           const here = t.id === current();
           const mark = done.has(t.id)

@@ -608,16 +608,6 @@
   list-style: none;
 }
 
-/* Two columns when the column allows, one when it doesn't. */
-.welcome-flow__options.is-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-}
-
-.welcome-flow__options.is-compact {
-  margin-top: var(--ref-spacing-xs);
-}
-
 .welcome-flow__option {
   display: flex;
   align-items: center;
@@ -633,10 +623,6 @@
   color: inherit;
   cursor: pointer;
   transition: border-color 0.15s ease;
-}
-
-.welcome-flow__options.is-compact .welcome-flow__option {
-  min-height: 48px;
 }
 
 .welcome-flow__option:hover,
@@ -869,9 +855,6 @@
 }
 
 @media (max-width: 480px) {
-  .welcome-flow__options.is-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
   .welcome-flow__url {
     flex-direction: column;
     align-items: flex-start;
