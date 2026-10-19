@@ -182,10 +182,10 @@ Store **per-session** [`posts-store.js`](../../src/posts-store.js). Draft = auth
 
 ### Panneau Drafts ([`right-panel.js`](../../src/components/right-panel.js) `renderDraftsView`)
 
-- **Onglets statut** : All drafts / Needs fixes — compteur et filtre **dérivés** de `validatePost`. **Dropdown network**. La barre bulk d'un réseau désactive _Schedule drafts_ tant que la sélection contient un draft invalide (tooltip : combien à corriger).
+- **Onglets statut** : All drafts / Needs fixes — compteur et filtre **dérivés** de `validatePost`. **Dropdown network**. La barre bulk d'un réseau désactive _Schedule_ tant que la sélection contient un draft invalide (tooltip : combien à corriger).
 - **Feed groupé par network** (LinkedIn, X, IG, FB, TikTok, YT). Chaque **band réseau** = header + toolbar bulk (click = select-all du réseau) → _Save as drafts / Schedule / Delete_. Bulk scheduling **scopé network** (batch toujours valide).
 - **Empty** : « No drafts yet » / filtré « No drafts match this filter ».
-- Handlers par carte : rewrite, save, assign (→ modal, sort des Drafts au confirm), schedule (→ modal, sort des Drafts au confirm), delete, image, « Edit clip » (rouvre le modal clips en mono-clip), mention. La barre bulk d'un réseau : _Save as drafts_ · _Assign_ · _Schedule drafts_ · Delete.
+- Handlers par carte : rewrite, save, assign (→ modal, sort des Drafts au confirm), schedule (→ modal, sort des Drafts au confirm), delete, image, « Edit clip » (rouvre le modal clips en mono-clip), mention. La barre bulk d'un réseau : _Save as drafts_ · _Schedule_ · Delete (l'assignation reste par carte et dans le chat).
 
 ### Assign for review ([`assign-modal.js`](../../src/components/assign-modal.js))
 
