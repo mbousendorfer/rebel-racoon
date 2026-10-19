@@ -880,6 +880,24 @@
   flex-shrink: 0;
 }
 
+/* A list split in groups (the network step: connected / not connected yet),
+   each under its name. */
+.welcome-flow__group {
+  margin: var(--ref-spacing-md) 0 0;
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.welcome-flow__options.is-grouped {
+  margin-top: var(--ref-spacing-xxs);
+}
+
+.welcome-flow__option .welcome-flow__connected + .ap-radio-container {
+  margin-left: var(--ref-spacing-xs);
+}
+
 .welcome-flow__or {
   margin: var(--ref-spacing-lg) 0 0;
   font-size: var(--sys-text-style-body-size);

@@ -20,13 +20,13 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=2006";
-import { navigate } from "../router.js?v=2006";
-import { getDraft, patchDraft } from "../context-builder.js?v=2006";
-import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2006";
-import { parseHashParams } from "../url-state.js?v=2006";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2006";
-import { enterArchie } from "./welcome-alt-recap.js?v=2006";
+import { html, raw } from "../utils.js?v=2007";
+import { navigate } from "../router.js?v=2007";
+import { getDraft, patchDraft } from "../context-builder.js?v=2007";
+import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2007";
+import { parseHashParams } from "../url-state.js?v=2007";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2007";
+import { enterArchie } from "./welcome-alt-recap.js?v=2007";
 
 const MOVE_MS = 220; // the card's exit, before the next one comes in
 
