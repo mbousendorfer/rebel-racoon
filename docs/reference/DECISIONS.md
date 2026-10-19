@@ -213,7 +213,8 @@ same feedback key). Under the flag the whole first-time run is **screens, not th
 (`/welcome-alt/intro`), then one screen per step in one shell — the step on the left, the Playbook
 card filling with the real answers on the right (`welcome-alt-shell.js`) — then a reveal
 (`/welcome-alt/ready`) that ends on Start writing, with the editable page one click away — in the same
-split, the whole Playbook on the stage, its sections listed on the left. The steps'
+split, but only the four parts a new user must check (brand, audience, voice, look), edited in
+place and checked off one by one; the rest of the Playbook waits for its own page. The steps'
 effects on the draft are context-builder's (`createAltDraft`, `readAltWebsite`, `readAltFiles`,
 `writeAltManually`, `analyzeAltInterview`) — the chat calls the same functions, so there is one
 implementation and two hosts. Every list of steps (the plan, the progress) comes from `altSteps()`,

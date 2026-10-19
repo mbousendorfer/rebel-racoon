@@ -33,10 +33,10 @@
 // `insights-read.css` and `read.js` say they are deletable as a block the day
 // one reading wins; that day is closer than it was.
 
-import { escapeHtml as esc } from "../../utils.js?v=1936";
-import * as cockpit from "./layouts/cockpit.js?v=1936";
-import * as mobIndex from "./layouts/mob_index.js?v=1936";
-import * as mobSide from "./layouts/mob_side.js?v=1936";
+import { escapeHtml as esc } from "../../utils.js?v=1938";
+import * as cockpit from "./layouts/cockpit.js?v=1938";
+import * as mobIndex from "./layouts/mob_index.js?v=1938";
+import * as mobSide from "./layouts/mob_side.js?v=1938";
 
 export const LAYOUTS = [cockpit, mobIndex, mobSide];
 

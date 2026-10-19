@@ -938,30 +938,145 @@
   width: 40%;
 }
 
-/* The review: the stage holds the whole Playbook, the left lists its parts. */
+/* The review: no stage — the right half is the part being checked, plainly,
+   on the conversation grey, with its footer. */
 .welcome-flow.is-review {
-  grid-template-columns: minmax(340px, 0.6fr) minmax(0, 1.4fr);
-}
-
-.welcome-flow.is-review .welcome-intro__lede {
-  padding-inline: clamp(var(--ref-spacing-md), 3vw, 64px);
+  grid-template-columns: minmax(340px, 0.8fr) minmax(0, 1.2fr);
 }
 
 .welcome-flow__sheet {
-  position: relative;
-  z-index: 1;
-  width: calc(100% - 2 * var(--ref-spacing-md));
-  height: calc(100% - 2 * var(--ref-spacing-md));
-  border-radius: 16px;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   background: var(--app-bg);
-  box-shadow: var(--app-shadow-popover-lg);
-  animation: welcome-intro-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  border-left: 1px solid var(--ref-color-grey-20);
 }
 
-/* The list on the left drives the sections; the sheet's own tabs would say it twice. */
-.welcome-flow__sheet .pb2-tabs {
-  display: none;
+.welcome-flow__sheet-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--ref-spacing-xl) clamp(var(--ref-spacing-md), 5vw, 80px);
+}
+
+.welcome-review__part {
+  max-width: 640px;
+  margin: auto 0;
+  animation: welcome-intro-land 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.welcome-review__title {
+  margin: 0 0 var(--ref-spacing-xxs);
+  font-size: var(--sys-text-style-h1-size);
+  line-height: var(--sys-text-style-h1-line-height);
+  font-weight: var(--sys-text-style-h1-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.welcome-review__fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-md);
+  margin-top: var(--ref-spacing-md);
+}
+
+.welcome-review__fields .welcome-flow__options {
+  margin-top: 0;
+}
+
+.welcome-review__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+}
+
+.welcome-review__label {
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.welcome-review__textarea {
+  width: 100%;
+  resize: vertical;
+}
+
+.welcome-review__colors {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--ref-spacing-xxs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.welcome-review__color {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xs);
+  background: var(--app-surface);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-card);
+  cursor: pointer;
+}
+
+.welcome-review__color:hover,
+.welcome-review__color:has(input:focus-visible) {
+  border-color: var(--ref-color-electric-blue-100);
+}
+
+/* The native colour picker, shaped as a swatch. */
+.welcome-review__color input[type="color"] {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+}
+
+.welcome-review__color input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.welcome-review__color input[type="color"]::-webkit-color-swatch {
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: 50%;
+}
+
+.welcome-flow__sheet-foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-sm) clamp(var(--ref-spacing-md), 5vw, 80px);
+  background: var(--app-surface);
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+
+.welcome-review__foot-text {
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--ref-color-grey-80);
+}
+
+/* A part the user said looks good: the run's own done mark. */
+.welcome-review__check {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--app-butter-accent);
+  background: var(--app-butter);
+  color: var(--ref-color-grey-100);
+  font-size: var(--sys-icon-css-sm);
+  animation: welcome-intro-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 .welcome-flow__option[aria-current="true"] {
@@ -973,7 +1088,9 @@
     grid-template-columns: minmax(0, 1fr);
   }
   .welcome-flow__sheet {
-    height: 80vh;
+    min-height: 80vh;
+    border-left: none;
+    border-top: 1px solid var(--ref-color-grey-20);
   }
 }
 
