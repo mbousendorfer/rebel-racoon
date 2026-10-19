@@ -8,17 +8,17 @@
 // A Playbook filled by hand has nothing to build: straight to the reveal, and
 // its way out is filling it in.
 
-import { html, raw } from "../utils.js?v=1992";
-import { navigate } from "../router.js?v=1992";
-import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=1992";
+import { html, raw } from "../utils.js?v=1993";
+import { navigate } from "../router.js?v=1993";
+import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=1993";
 import {
   LOADING_STAGES,
   FILE_LOADING_STAGES,
   INTERVIEW_LOADING_STAGES,
   withNetworkStage,
   enterArchie,
-} from "./welcome-alt-recap.js?v=1992";
-import { ensureFlowDraft, goBack, mountShell } from "./welcome-alt-shell.js?v=1992";
+} from "./welcome-alt-recap.js?v=1993";
+import { ensureFlowDraft, goBack, mountShell } from "./welcome-alt-shell.js?v=1993";
 
 const STAGE_MS = 1300; // each stage holds at least this long, so the work reads as work
 const started = new Map(); // sid → when this screen first showed it (a re-render doesn't restart it)
@@ -29,15 +29,14 @@ function stagesFor(d) {
   return withNetworkStage(LOADING_STAGES, d);
 }
 
-// The way out is a choice between two equals — the same rows as every step's
-// choices, so neither reads as the afterthought (a stroked "Review the
-// details" beside an orange button did, 2026-10-19). Start writing keeps the
-// AI orange on its tile.
-const AI_TINT = "--part-tint: var(--ref-color-orange-20); --part-ink: var(--ref-color-orange-150)";
-const choice = ({ hook, icon, ai = false, title, desc }) => `
+// The way out: Start writing is the END of the run, so it is the primary, where
+// every step's Continue sits (bottom right, orange = AI). Going through the
+// Playbook first is the one option above it, a row like every step's choices —
+// a full-weight way in, not a stroked "Review the details" (2026-10-19).
+const choice = ({ hook, icon, title, desc }) => `
   <li>
     <button type="button" class="welcome-flow__option" ${hook}>
-      <span class="welcome-flow__glyph is-icon${ai ? " is-tinted" : ""}"${ai ? ` style="${AI_TINT}"` : ""}><i class="${icon}" aria-hidden="true"></i></span>
+      <span class="welcome-flow__glyph is-icon"><i class="${icon}" aria-hidden="true"></i></span>
       <span class="welcome-flow__option-text">
         <span class="welcome-flow__option-title">${title}</span>
         <span class="welcome-flow__option-desc">${desc}</span>
@@ -47,11 +46,17 @@ const choice = ({ hook, icon, ai = false, title, desc }) => `
   </li>`;
 
 // Back stays, whatever the state: the run is never one-way.
-const back = raw(`<div class="welcome-flow__actions">
+const actions = (primary = "") =>
+  raw(`<div class="welcome-flow__actions">
   <button type="button" class="ap-button ghost grey" data-flow-back>
     <i class="ap-icon-arrow-left"></i><span>Back</span>
-  </button>
+  </button>${primary}
 </div>`);
+const back = actions();
+const START = `
+  <button type="button" class="ap-button primary orange" data-ready-start>
+    <span>Start writing</span><i class="ap-icon-arrow-right"></i>
+  </button>`;
 
 export function renderWelcomeAltReady(_params, target) {
   const sid = ensureFlowDraft();
@@ -83,7 +88,7 @@ export function renderWelcomeAltReady(_params, target) {
         <p class="welcome-intro__sub">
           ${manual
             ? "Tell me how your brand sounds and who it speaks to — every draft I write starts there."
-            : "Every draft I write starts from it. Go through it now, or start writing and change it any time."}
+            : "Every draft I write starts from it. Start writing now — or go through it first, part by part."}
         </p>
         <ul class="welcome-flow__options">
           ${raw(
@@ -91,22 +96,11 @@ export function renderWelcomeAltReady(_params, target) {
               hook: "data-ready-review",
               icon: "ap-icon-pen",
               title: manual ? "Fill in my Playbook" : "Go through my Playbook",
-              desc: manual ? "Part by part, card by card." : "Check and edit every part, card by card.",
+              desc: manual ? "Part by part, card by card." : "Check and edit every part before your first post.",
             }),
           )}
-          ${manual
-            ? ""
-            : raw(
-                choice({
-                  hook: "data-ready-start",
-                  icon: "ap-icon-sparkles",
-                  ai: true,
-                  title: "Start writing",
-                  desc: "Your first post now. The Playbook stays editable.",
-                }),
-              )}
         </ul>
-        ${back}
+        ${manual ? back : actions(START)}
       `;
     }
     return html`
