@@ -1461,56 +1461,6 @@
   padding: 0;
 }
 
-/* Colors: one colour per entry, two lines — the swatch (its picker) beside
-   the name and the hex, the roles on the line under them, a hairline between. */
-.welcome-review__card .recap__colors {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.welcome-review__card .recap__color-row {
-  display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) 120px 32px;
-  grid-template-areas:
-    "swatch name hex remove"
-    "swatch roles roles roles";
-  align-items: center;
-  column-gap: var(--ref-spacing-xs);
-  row-gap: var(--ref-spacing-xxs);
-  padding: var(--ref-spacing-xs) 0;
-  border-bottom: 1px solid var(--ref-color-grey-20);
-}
-
-.welcome-review__card .recap__color-row:last-child {
-  border-bottom: none;
-}
-
-.welcome-review__card .recap__color-swatch {
-  grid-area: swatch;
-  align-self: start;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
-}
-
-.welcome-review__card .recap__color-name {
-  grid-area: name;
-}
-
-.welcome-review__card .recap__color-hex {
-  grid-area: hex;
-}
-
-.welcome-review__card .recap__color-row .recap__kit-choices {
-  grid-area: roles;
-}
-
-.welcome-review__card .recap__color-row > .ap-icon-button {
-  grid-area: remove;
-}
-
 /* Links: a "Label" / "Link" header over the rows (the rows' inputs are full,
    so their placeholders never show). */
 .welcome-review__card .recap__cta-edit-list {

@@ -9,16 +9,16 @@
 // the fiche's live data object, exactly like every other Brand row, and are
 // committed by the section's Save (snapshotEditable carries the fields).
 
-import { escapeHtml as esc } from "./utils.js?v=1985";
-import { openImageLookChat } from "./draft-image-flow.js?v=1985";
-import { COLOR_ROLES, LOGO_VARIANTS, getContextById } from "./contexts-store.js?v=1985";
+import { escapeHtml as esc } from "./utils.js?v=1986";
+import { openImageLookChat } from "./draft-image-flow.js?v=1986";
+import { COLOR_ROLES, LOGO_VARIANTS, getContextById } from "./contexts-store.js?v=1986";
 import {
   handlePlaybookImagesClick,
   renderPresetLookPicker,
   renderImagesGenerate,
   renderImagesReferences,
   renderImagesStyles,
-} from "./modules/image-studio/index.js?v=1985";
+} from "./modules/image-studio/index.js?v=1986";
 
 const ROLE_LABELS = {
   primary: "Primary",
@@ -29,9 +29,9 @@ const ROLE_LABELS = {
 };
 const VARIANT_LABELS = { color: "Color", white: "White", black: "Black", icon: "Icon only" };
 
-// Inline choices (the onboarding review, playbook-view cfg.chipCloud): a short
-// pick — a logo's version, a colour's role — laid out as chips in the row
-// instead of a dropdown. Same data-recap-kit-* hooks, so the same handler.
+// Inline choices (the onboarding review, playbook-view cfg.chipCloud): a logo's
+// version laid out as chips in the row instead of a dropdown. A colour's role
+// stays a select — five chips per colour row crushed the row (2026-10-19). Same data-recap-kit-* hooks, so the same handler.
 let inlineChoices = false;
 export function setInlineChoices(on) {
   inlineChoices = !!on;
@@ -41,7 +41,7 @@ export function setInlineChoices(on) {
 // handler needs, so one delegated click resolves it.
 function dsSelect({ kind, index, value, labels, options, placeholder, ariaLabel }) {
   const current = labels[value];
-  if (inlineChoices && kind !== "pair") {
+  if (inlineChoices && kind === "variant") {
     return `<span class="recap__kit-choices" role="radiogroup" aria-label="${esc(ariaLabel)}">${options
       .map(
         (o) =>
