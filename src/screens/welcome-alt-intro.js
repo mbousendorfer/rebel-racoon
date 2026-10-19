@@ -13,39 +13,26 @@
 // The card is an illustration, not data: the Playbook's real parts (Voice
 // profile, Branding…) filled with example values.
 
-import "../archie-pixels.js?v=2000";
-import { html, raw } from "../utils.js?v=2000";
-import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=2000";
-import { navigate } from "../router.js?v=2000";
-import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2000";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2000";
+import "../archie-pixels.js?v=2001";
+import { html, raw } from "../utils.js?v=2001";
+import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=2001";
+import { navigate } from "../router.js?v=2001";
+import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2001";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2001";
 
 // What a Playbook holds, shown rather than told: the parts the card on the
 // right fills, under their Playbook names, glyphs and tints.
 const PARTS = ["goals", "voice", "brand", "competitors"];
 
-// Why each step is asked: what it fills, shown with the parts' own tiles (the
-// pills above name them) instead of a sentence per step. The account step
-// fills no part — it shows the networks; Meet your Playbook fills nothing new.
-const STEP_FILLS = {
-  connect: { networks: ["linkedin", "instagram", "facebook", "x"] },
-  url: { parts: ["goals", "voice", "brand", "competitors"] },
-  language: { parts: ["goals"] },
-  network: { parts: ["voice"] },
-  documents: { parts: ["voice", "brand"], optional: true },
+// The rail stays quiet — the colour lives once, in the parts above. A step
+// gets a line only where its title doesn't say why it's asked; the documents
+// step is marked Optional instead.
+const STEP_HINT = {
+  connect: "So I write for the networks you publish on.",
+  url: "Your website is enough. No site? A few questions.",
+  network: "I build your main voice for it.",
 };
-
-function fills(id) {
-  const f = STEP_FILLS[id];
-  if (!f) return "";
-  const tiles = f.networks
-    ? f.networks.map(glyph)
-    : f.parts.map((p) => {
-        const part = RECAP_SECTIONS.find((sec) => sec.id === p);
-        return `<span class="welcome-intro__fill" style="${tint(p)}" title="${part?.title || ""}"><i class="${part?.icon || ""}" aria-hidden="true"></i><span class="welcome-intro__hidden">${part?.title || ""}</span></span>`;
-      });
-  return `<span class="welcome-intro__fills">${tiles.join("")}</span>`;
-}
+const OPTIONAL = new Set(["documents"]);
 
 const glyph = (net) =>
   `<span class="welcome-intro__net"><i class="${NETWORK_ICON_BY_PLATFORM[net]}" aria-hidden="true"></i></span>`;
@@ -126,9 +113,9 @@ export function renderWelcomeAltIntro(_params, target) {
                   <span class="welcome-intro__text">
                     <span class="welcome-intro__step-title">
                       ${STEP_TEXT[id].title}
-                      ${STEP_FILLS[id]?.optional ? raw(`<span class="welcome-intro__optional">Optional</span>`) : ""}
+                      ${OPTIONAL.has(id) ? raw(`<span class="welcome-intro__optional">Optional</span>`) : ""}
                     </span>
-                    ${raw(fills(id))}
+                    ${STEP_HINT[id] ? raw(`<span class="welcome-intro__step-desc">${STEP_HINT[id]}</span>`) : ""}
                   </span>
                 </li>
               `,
