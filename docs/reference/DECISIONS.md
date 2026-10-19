@@ -220,7 +220,8 @@ was a chore (2026-10-19). A wall of blocks and a separate Confirm head were both
 the same day and dropped: the head and the view's sticky Cancel / Save read as two stray bars. Each part has its own tint (its cards' header band
 and its tile in the list) — a deliberate exception to "group by structure, not colour", asked for
 explicitly (2026-10-19) so the colour says which part you're in; soft DS tints only, never electric
-blue, which stays the interactive colour. The steps'
+blue, which stays the interactive colour. The nav's three pills are a second, smaller exception (`.welcome-review__navbtn`
+instead of `.ap-button`): one shape and one height for all three, asked for the same day. The steps'
 effects on the draft are context-builder's (`createAltDraft`, `readAltWebsite`, `readAltFiles`,
 `writeAltManually`, `analyzeAltInterview`) — the chat calls the same functions, so there is one
 implementation and two hosts. Every list of steps (the plan, the progress) comes from `altSteps()`,

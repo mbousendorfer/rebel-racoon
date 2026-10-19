@@ -11,20 +11,22 @@
 //     field — goes to the next / previous card, across parts; it holds the one
 //     progress indicator (a segment per card of the part) and names what's next;
 //     the card itself only says which part it's in (the part's icon);
-//   - a part gets its check in the list once each of its cards has been seen.
+//   - at the end of a part, the interstitial asks to confirm it ("Brief look
+//     right?" — Back to Brief / Confirm Brief); confirming checks it in the
+//     list and deals the next part. The last one ends on "all set".
 // Start writing lives on the left, the whole time — never on a card.
 //
 // The view repaints its whole DOM on most edits (a chip added…), so the stack
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=1965";
-import { navigate } from "../router.js?v=1965";
-import { getDraft, patchDraft } from "../context-builder.js?v=1965";
-import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=1965";
-import { parseHashParams } from "../url-state.js?v=1965";
-import { mountShell } from "./welcome-alt-shell.js?v=1965";
-import { enterArchie } from "./welcome-alt-recap.js?v=1965";
+import { html, raw } from "../utils.js?v=1969";
+import { navigate } from "../router.js?v=1969";
+import { getDraft, patchDraft } from "../context-builder.js?v=1969";
+import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=1969";
+import { parseHashParams } from "../url-state.js?v=1969";
+import { mountShell } from "./welcome-alt-shell.js?v=1969";
+import { enterArchie } from "./welcome-alt-recap.js?v=1969";
 
 const MOVE_MS = 220; // the card's exit, before the next one comes in
 
@@ -139,34 +141,33 @@ export function renderReview(target, sid, config) {
     `;
   };
 
-  // The navigation floats under the stack, out of the card, in three separate
-  // pieces: ← on its own, the part's progress (page dots — the one indicator),
-  // and Next — named after what's coming — on the right.
+  // The navigation floats under the stack, out of the card: three pieces of one
+  // shape — white 44px pills — ← · the part's progress (page dots, the one
+  // indicator) · Next, named after what's coming. A deliberate visual exception
+  // to the DS buttons (2026-10-19): a blue rectangle among white pills broke it.
   const nav = (list) => {
     const at = RECAP_SECTIONS.findIndex((t) => t.id === current());
     const nextPart = RECAP_SECTIONS[at + 1];
-    const upNext = index < count - 1 ? cardTitle(list[index + 1]) : nextPart ? nextPart.title : "";
+    const upNext = index < count - 1 ? cardTitle(list[index + 1]) : nextPart ? nextPart.title : "Finish";
     const atStart = index === 0 && at === 0;
     return html`
-      <span class="welcome-review__navchip">
-        <button
-          type="button"
-          class="ap-icon-button transparent grey"
-          data-review-prev
-          aria-label="Previous card"
-          ${atStart ? raw("disabled") : ""}
-        >
-          <i class="ap-icon-arrow-left"></i>
-        </button>
-      </span>
+      <button
+        type="button"
+        class="welcome-review__navbtn is-icon"
+        data-review-prev
+        aria-label="Previous card"
+        ${atStart ? raw("disabled") : ""}
+      >
+        <i class="ap-icon-arrow-left" aria-hidden="true"></i>
+      </button>
       <ol class="welcome-review__dots" aria-label="Card ${index + 1} of ${count} in ${partOf(current()).title}">
         ${Array.from(
           { length: count },
           (_, i) => html`<li class="${i < index ? "is-done" : i === index ? "is-current" : ""}"></li>`,
         )}
       </ol>
-      <button type="button" class="ap-button primary blue" data-review-next ${upNext ? "" : raw("disabled")}>
-        <span>${upNext || "Last card"}</span><i class="ap-icon-arrow-right"></i>
+      <button type="button" class="welcome-review__navbtn" data-review-next ${upNext ? "" : raw("disabled")}>
+        <span>${upNext || "Last card"}</span><i class="ap-icon-arrow-right" aria-hidden="true"></i>
       </button>
     `;
   };
@@ -191,7 +192,6 @@ export function renderReview(target, sid, config) {
     list[index]?.insertAdjacentHTML("afterbegin", kicker());
     navEl.innerHTML = count ? nav(list) : "";
     applying = false;
-    markSeen();
     shell.paint();
   };
   const observer = new MutationObserver(() => {
@@ -239,10 +239,92 @@ export function renderReview(target, sid, config) {
     }, OUT_MS);
   };
 
+  // The end of a part: the interstitial asks to confirm it before the next
+  // one is dealt — the part's check in the list comes from that answer.
+  const confirmCard = (from, to) => {
+    const part = partOf(from);
+    const next = to ? partOf(to) : null;
+    return html`
+      <div class="welcome-review__intro-card is-confirm" style="${tint(from)}">
+        <span class="welcome-review__intro-tile">
+          <i class="${part.icon}" aria-hidden="true"></i>
+          <span class="welcome-review__intro-done"><i class="ap-icon-check" aria-hidden="true"></i></span>
+        </span>
+        <span class="welcome-review__intro-title">${part.title} look right?</span>
+        <span class="welcome-review__intro-lead">
+          ${next ? `Confirm it and I'll move on to ${next.title}.` : "Confirm it and your Playbook is all set."} You can
+          still change anything later, from your Playbook.
+        </span>
+        <span class="welcome-review__intro-actions">
+          <button type="button" class="ap-button stroked grey" data-review-again="${from}">
+            Back to ${part.title}
+          </button>
+          <button type="button" class="ap-button primary blue" data-review-confirm="${from}">
+            <i class="ap-icon-check"></i><span>Confirm ${part.title}</span>
+          </button>
+        </span>
+      </div>
+    `;
+  };
+  const doneCard = () => html`
+    <div class="welcome-review__intro-card is-done">
+      <span class="welcome-review__intro-tile is-all"><i class="ap-icon-check" aria-hidden="true"></i></span>
+      <span class="welcome-review__intro-title">Your Playbook is all set.</span>
+      <span class="welcome-review__intro-lead">Every part is confirmed. Start writing whenever you're ready.</span>
+      <span class="welcome-review__intro-actions">
+        <button type="button" class="ap-button stroked grey" data-review-again="${RECAP_SECTIONS[0].id}">
+          Review it again
+        </button>
+      </span>
+    </div>
+  `;
+
+  const showIntro = (markup) => {
+    introEl.innerHTML = markup;
+    shell.sheet.classList.add("is-part-intro", "is-asking");
+    introEl.querySelector("[data-review-confirm], [data-review-again]")?.focus({ preventScroll: true });
+  };
+  const hideIntro = () => {
+    shell.sheet.classList.remove("is-part-intro", "is-asking");
+    introEl.innerHTML = "";
+  };
+
   const finishPart = () => {
     const at = RECAP_SECTIONS.findIndex((t) => t.id === current());
-    const next = RECAP_SECTIONS[at + 1];
-    if (next) switchPart(next.id);
+    const from = current();
+    const to = RECAP_SECTIONS[at + 1]?.id || null;
+    moving = true;
+    shell.sheet.classList.add("is-part-out");
+    window.setTimeout(() => {
+      shell.sheet.classList.remove("is-part-out");
+      showIntro(confirmCard(from, to));
+      moving = false;
+    }, OUT_MS);
+  };
+
+  // Confirmed: the part is checked, and the next one is dealt (or, the last
+  // one, the Playbook is all set).
+  const confirmPart = (from) => {
+    patchDraft(sid, { reviewedParts: [...new Set([...reviewed(), from])] });
+    const at = RECAP_SECTIONS.findIndex((t) => t.id === from);
+    const to = RECAP_SECTIONS[at + 1];
+    if (!to) {
+      showIntro(doneCard());
+      shell.paint();
+      return;
+    }
+    hideIntro();
+    openPart(to.id, { enter: "" });
+    cards()[index]?.classList.add("is-dealt");
+    navEl.classList.add("is-dealt");
+    window.setTimeout(() => navEl.classList.remove("is-dealt"), 500);
+  };
+
+  // Not yet: back into the part, on its last card.
+  const reviewAgain = (id) => {
+    hideIntro();
+    openPart(id, { fromEnd: id === current(), enter: "" });
+    cards()[index]?.classList.add("is-dealt");
   };
 
   // Next: the card swipes off and the next one rises from the stack. Previous:
@@ -253,7 +335,6 @@ export function renderReview(target, sid, config) {
     if (moving) return;
     const at = RECAP_SECTIONS.findIndex((t) => t.id === current());
     if (step < 0 && index === 0 && at === 0) return;
-    if (step > 0 && index >= count - 1 && at === RECAP_SECTIONS.length - 1) return;
     moving = true;
     const front = cards()[index];
     front?.classList.add(step > 0 ? "is-leave-next" : "is-leave-prev");
@@ -266,21 +347,19 @@ export function renderReview(target, sid, config) {
     }, MOVE_MS);
   };
 
-  // A part is done once each of its cards has been on top.
-  const seen = new Map(); // part id → Set of card indexes seen
-  const markSeen = () => {
-    const id = current();
-    if (!seen.has(id)) seen.set(id, new Set());
-    seen.get(id).add(index);
-    if (count && seen.get(id).size >= count && !reviewed().has(id)) {
-      patchDraft(sid, { reviewedParts: [...reviewed(), id] });
-      shell.paint();
-    }
-  };
-
   const onClick = (e) => {
     const part = e.target.closest("[data-review-part]")?.dataset.reviewPart;
-    if (part) return part === current() ? undefined : switchPart(part);
+    if (part) {
+      if (shell.sheet.classList.contains("is-asking")) {
+        hideIntro();
+        return part === current() ? reviewAgain(part) : switchPart(part);
+      }
+      return part === current() ? undefined : switchPart(part);
+    }
+    const confirm = e.target.closest("[data-review-confirm]")?.dataset.reviewConfirm;
+    if (confirm) return confirmPart(confirm);
+    const again = e.target.closest("[data-review-again]")?.dataset.reviewAgain;
+    if (again) return reviewAgain(again);
     if (e.target.closest("[data-review-next]")) return move(1);
     if (e.target.closest("[data-review-prev]")) return move(-1);
     if (e.target.closest("[data-review-start]")) return enterArchie(sid);
@@ -292,6 +371,7 @@ export function renderReview(target, sid, config) {
     if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
     if (e.target.closest?.("input, textarea, select, [contenteditable]")) return;
     if (document.querySelector(".app-modal-backdrop:not([hidden]), body.has-modal")) return;
+    if (shell.sheet.classList.contains("is-asking")) return;
     e.preventDefault();
     move(e.key === "ArrowRight" ? 1 : -1);
   };

@@ -944,6 +944,18 @@
   grid-template-columns: minmax(340px, 0.75fr) minmax(0, 1.4fr);
 }
 
+/* The stage's one column never grows to its content: a long, unwrapped line in
+   a card (a suggestion's description) would widen it past the stage and push
+   the stack off centre. */
+.welcome-flow.is-review .welcome-intro__stage {
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+}
+
+.welcome-flow__sheet {
+  min-width: 0;
+}
+
 .welcome-flow__sheet {
   position: relative;
   z-index: 1;
@@ -1143,6 +1155,52 @@
   color: var(--ref-color-grey-80);
 }
 
+/* The end of a part: the same cover, asking — "Brief look right?" with Back to
+   Brief and Confirm Brief. It takes clicks, unlike the passing cover. */
+.welcome-review__intro-card.is-confirm,
+.welcome-review__intro-card.is-done {
+  pointer-events: auto;
+  width: min(460px, 100%);
+}
+
+.welcome-review__intro-tile {
+  position: relative;
+}
+
+/* The finished part's tile wears its check. */
+.welcome-review__intro-done {
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--app-surface);
+  background: var(--app-butter-accent);
+  color: var(--app-surface);
+  font-size: var(--sys-icon-css-sm);
+  animation: welcome-intro-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.25s both;
+}
+
+.welcome-review__intro-tile.is-all {
+  background: var(--app-butter);
+  color: var(--app-butter-accent);
+}
+
+.welcome-review__intro-card.is-done {
+  background: linear-gradient(180deg, var(--app-butter) 0, var(--app-surface) 120px);
+}
+
+.welcome-review__intro-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--ref-spacing-xs);
+  margin-top: var(--ref-spacing-sm);
+}
+
 /* The new part's front card is dealt onto the stack; the nav follows. */
 .welcome-review__card.is-dealt {
   animation: welcome-review-deal 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -1189,18 +1247,55 @@
   display: none;
 }
 
-.welcome-review__navchip {
-  display: grid;
-  place-items: center;
-  width: 44px;
+/* The nav's buttons — one shape for all three pieces: a white pill, 44px tall,
+   the same shadow. A visual exception to .ap-button, asked for (2026-10-19):
+   among white pills on the pixels, the DS's blue rectangle read as a fourth
+   kind of thing. Blue stays — in the label and the arrow, the interactive part. */
+.welcome-review__navbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ref-spacing-xxs);
   height: 44px;
-  border-radius: 50%;
+  padding: 0 var(--ref-spacing-md);
+  border: none;
+  border-radius: var(--app-radius-pill);
   background: var(--app-surface);
   box-shadow: var(--app-shadow-popover-md);
+  font: inherit;
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: 1;
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-electric-blue-100);
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
-.welcome-review__nav > .ap-button {
-  box-shadow: var(--app-shadow-popover-md);
+.welcome-review__navbtn.is-icon {
+  width: 44px;
+  padding: 0;
+  color: var(--ref-color-grey-100);
+}
+
+.welcome-review__navbtn i {
+  font-size: var(--sys-icon-css-md);
+}
+
+.welcome-review__navbtn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: var(--app-shadow-popover-lg);
+}
+
+.welcome-review__navbtn:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: 2px;
+}
+
+.welcome-review__navbtn:disabled {
+  cursor: default;
+  opacity: 0.45;
 }
 
 /* Page dots: seen = olive, here = a wide butter capsule, ahead = grey. */
@@ -1208,8 +1303,9 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  height: 44px;
   margin: 0;
-  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  padding: 0 var(--ref-spacing-md);
   list-style: none;
   background: var(--app-surface);
   border-radius: var(--app-radius-pill);
@@ -1300,6 +1396,72 @@
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-sm);
+}
+
+/* A roster card (Competitors, Influencers), flattened: one surface, no box in
+   it. The panel's own head (its sentence repeats the band and the list), the
+   explainer banner, the counts and the suggestions' tray go; each suggestion is a row — logo, name, one line of
+   description, Add / Dismiss on the right — between hairlines. */
+.welcome-review__card .recap__panel-head,
+.welcome-review__card .recap__panel-hint,
+.welcome-review__card .recap__cmpgroup-count {
+  display: none;
+}
+
+.welcome-review__card .recap__cmpgroup--suggested {
+  padding: 0;
+  border: none;
+  background: none;
+}
+
+.welcome-review__card .recap__cmpgrid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.welcome-review__card .recap__cmpcard,
+.welcome-review__card .recap__cmpcard--suggested {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+  border: none;
+  border-bottom: 1px solid var(--ref-color-grey-20);
+  border-radius: 0;
+  background: none;
+}
+
+.welcome-review__card .recap__cmpcard:last-child {
+  border-bottom: none;
+}
+
+.welcome-review__card .recap__cmpcard-open {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+  min-width: 0;
+  padding: var(--ref-spacing-xs) 0;
+  border: none;
+  background: none;
+}
+
+.welcome-review__card .recap__cmpcard-head {
+  flex-shrink: 0;
+}
+
+.welcome-review__card .recap__cmpcard-desc {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: unset;
+  display: block;
+}
+
+.welcome-review__card .recap__cmpcard-actions {
+  flex-shrink: 0;
+  padding: 0;
 }
 
 /* A pen to "edit" a card that is already editable says nothing. */
