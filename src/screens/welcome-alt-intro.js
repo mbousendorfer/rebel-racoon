@@ -1,5 +1,7 @@
 // /welcome-alt/intro — flag connectFirst: the very first screen of the app for a
-// new user. It says what the setup will ask, and shows what comes out of it.
+// new user. It says what we build together (a Playbook), what one is and why
+// it's needed (every post starts from it), then what the setup will ask — and
+// shows what comes out of it.
 //
 // Left, the steps, in the order the run will ask them: the account screen, the
 // chat's own steps (altSteps(), so a flag that adds or drops a question changes
@@ -11,11 +13,11 @@
 // The card is an illustration, not data: the Playbook's real parts (Voice
 // profile, Branding…) filled with example values.
 
-import "../archie-pixels.js?v=1995";
-import { html, raw } from "../utils.js?v=1995";
-import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=1995";
-import { navigate } from "../router.js?v=1995";
-import { flowSteps, startFlow, STEP_TEXT, playbookCard } from "./welcome-alt-shell.js?v=1995";
+import "../archie-pixels.js?v=1996";
+import { html, raw } from "../utils.js?v=1996";
+import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=1996";
+import { navigate } from "../router.js?v=1996";
+import { flowSteps, startFlow, STEP_TEXT, playbookCard } from "./welcome-alt-shell.js?v=1996";
 
 const glyph = (net) =>
   `<span class="welcome-intro__net"><i class="${NETWORK_ICON_BY_PLATFORM[net]}" aria-hidden="true"></i></span>`;
@@ -76,9 +78,14 @@ export function renderWelcomeAltIntro(_params, target) {
       <section class="welcome-intro__lede" aria-labelledby="welcomeIntroTitle">
         <img class="welcome-intro__wordmark" src="assets/logos/archie-wordmark.svg" alt="Archie" />
         <div class="welcome-intro__copy">
-          <h1 class="welcome-intro__title" id="welcomeIntroTitle">Let's get to know your brand.</h1>
+          <h1 class="welcome-intro__title" id="welcomeIntroTitle">Let's build your Playbook together.</h1>
           <p class="welcome-intro__sub">
-            ${steps.length} short steps, a few minutes. Skip anything optional: you review it all before I write a word.
+            Your Playbook is what I know about your brand: what you do, who you speak to, how you sound and how you
+            look. Every post I write starts from it — so it sounds like you from the first draft.
+          </p>
+          <p class="welcome-intro__plan">
+            <strong>${steps.length} short steps, a few minutes.</strong> Skip anything optional — you review it all
+            before I write a word.
           </p>
           <ol class="welcome-intro__steps">
             ${steps.map(

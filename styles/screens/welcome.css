@@ -195,6 +195,26 @@
   text-wrap: balance;
 }
 
+/* The plan, under the "what & why": how long, and what can be skipped — a step
+   down from the sub, its first sentence in bold, right over the steps it counts. */
+.welcome-intro__plan {
+  margin: var(--ref-spacing-lg) 0 0;
+  max-width: 52ch;
+  text-wrap: pretty;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--ref-color-grey-80);
+}
+
+.welcome-intro__plan strong {
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.welcome-intro__plan + .welcome-intro__steps {
+  margin-top: var(--ref-spacing-sm);
+}
+
 .welcome-intro__sub {
   margin: var(--ref-spacing-sm) 0 0;
   max-width: 46ch;
