@@ -193,6 +193,15 @@
   border-color: var(--ref-color-electric-blue-100);
 }
 
+/* An idea card answers its hover: a click outside its controls drafts from it
+   (idea-card-compact.js). The Why panel and the footer keep their own cursor. */
+.rpanel-ideas__card:has([data-rpanel-use-idea]) .rpanel-ideas__card-content {
+  cursor: pointer;
+}
+.rpanel-ideas__card .rpanel-ideas__why {
+  cursor: auto;
+}
+
 /* Pulse highlight applied when the user clicks a composer pill's
    "N nouvelles idées" tag — same animation used by the focus-on-idea
    path on the Content tab (app-focus-pulse, defined in base.css). */
