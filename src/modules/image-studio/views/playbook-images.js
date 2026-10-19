@@ -12,16 +12,17 @@
 //      per network. One block: they answer one question. (Formats were a 4th
 //      block until 2026-10-06 — the user's call to merge them.)
 //
-// Everything here saves as it changes, like the styles always did: no Edit.
+// Styles and reference images save as they change, like the styles always did:
+// no Edit. The Generate block's look and formats wait for its Save changes.
 
-import { html, raw, toString } from "../lib/html.js?v=1903";
-import { navigate } from "../../../router.js?v=1903";
-import { styleThumbUrl } from "../ui/style-thumb.js?v=1903";
-import { toast } from "../ui/toast.js?v=1903";
-import { renderEmpty } from "../ui/empty.js?v=1903";
-import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=1903";
-import { shapesFor } from "../config/formats.js?v=1903";
-import { STYLE_PRESETS } from "../config/style-presets.js?v=1903";
+import { html, raw, toString } from "../lib/html.js?v=1904";
+import { navigate } from "../../../router.js?v=1904";
+import { styleThumbUrl } from "../ui/style-thumb.js?v=1904";
+import { toast } from "../ui/toast.js?v=1904";
+import { renderEmpty } from "../ui/empty.js?v=1904";
+import { canEditBrand, getBrand, getStylesForBrand } from "../state/store.js?v=1904";
+import { shapesFor } from "../config/formats.js?v=1904";
+import { STYLE_PRESETS } from "../config/style-presets.js?v=1904";
 import {
   addPlaybookReferences,
   deletePlaybookReference,
@@ -30,8 +31,8 @@ import {
   getPlaybookReferences,
   setPlaybookDefaultLook,
   setPlaybookFormat,
-} from "../state/playbook-brand.js?v=1903";
-import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=1903";
+} from "../state/playbook-brand.js?v=1904";
+import { handlePlaybookStylesClick, renderPlaybookStyles } from "./playbook-styles.js?v=1904";
 
 const creatorPath = (playbookId, rest) => `/playbook/${encodeURIComponent(playbookId)}/styles/${rest}`;
 const ownStyles = (playbookId) => getStylesForBrand(playbookId).filter((s) => s.kind === "custom");
@@ -190,11 +191,45 @@ export function renderPresetLookPicker({ palette = [], value = "" } = {}) {
   );
 }
 
+// The Generate block's picks wait for Save changes (2026-10-19, on request): a
+// look or a format clicked here is pending until saved, and Discard changes
+// drops it. A pick put back to what is saved stops being a change.
+// ponytail: one Playbook at a time, kept for the page's life, no leave guard —
+// add one if leaving with unsaved picks turns out to lose work people care about.
+let pending = null; // { playbookId, look: "kind:id" | null, formats: { [network]: shapeId } }
+
+const pendingFor = (id) => (pending?.playbookId === id ? pending : null);
+const isDirty = (p) => !!p && (p.look !== null || Object.keys(p.formats).length > 0);
+const savedLook = (id) => {
+  const l = getPlaybookDefaultLook(id);
+  return l.kind ? `${l.kind}:${l.id}` : "";
+};
+// A network's saved shape — nothing set means its usual one, the first.
+const savedFormat = (id, network) => getPlaybookFormats(id)[network] || shapesFor(network)[0]?.id;
+
+function editPending(id) {
+  if (!pendingFor(id)) pending = { playbookId: id, look: null, formats: {} };
+  return pending;
+}
+
+function saveGenerate(id) {
+  const p = pendingFor(id);
+  if (!isDirty(p)) return false;
+  if (p.look !== null) {
+    const [kind, ...rest] = p.look.split(":");
+    setPlaybookDefaultLook(id, { kind, id: rest.join(":") });
+  }
+  for (const [network, shapeId] of Object.entries(p.formats)) setPlaybookFormat(id, network, shapeId);
+  pending = null;
+  return true;
+}
+
 export function renderImagesGenerate(playbookId, { canEdit = true } = {}) {
   const brand = getBrand(playbookId);
   if (!brand) return "";
   const editable = canEdit && canEditBrand(playbookId);
-  const look = getPlaybookDefaultLook(playbookId);
+  const p = pendingFor(playbookId);
+  const saved = savedLook(playbookId);
   const styles = ownStyles(playbookId).map((s) => ({
     value: `style:${s.id}`,
     label: s.label,
@@ -205,7 +240,8 @@ export function renderImagesGenerate(playbookId, { canEdit = true } = {}) {
     label: r.label || "Reference image",
     avatar: r.url,
   }));
-  const value = look.kind ? `${look.kind}:${look.id}` : "";
+  // What is checked: the pending pick, else the saved look.
+  const value = p?.look ?? saved;
   // The studio's ready-made styles stay pickable once the brand has its own
   // (2026-10-06): always listed, in their own group right under the brand's
   // styles — one scrolling row then, the default first so it is never hidden.
@@ -213,7 +249,7 @@ export function renderImagesGenerate(playbookId, { canEdit = true } = {}) {
     value: `style:${s.id}`,
     label: s.label,
     avatar: styleThumbUrl(s, brand),
-  })).sort((a, b) => (b.value === value) - (a.value === value));
+  })).sort((a, b) => (b.value === saved) - (a.value === saved));
   const hasOwn = styles.length + refs.length > 0;
   // Both kinds, each under its own name, as small pictures — ONE radio group
   // across the two, so exactly one is the default.
@@ -244,8 +280,8 @@ export function renderImagesGenerate(playbookId, { canEdit = true } = {}) {
           <header class="imst-images-part__head">
             <h3 class="imst-images-part__title" id="imst-images-look">Look</h3>
             <p class="ap-caption imst-images-part__hint">
-              ${value ? "Your default is checked." : "Pick one as the default."}
-              ${!value && editable
+              ${saved ? "Your default is checked." : "Pick one as the default."}
+              ${!saved && editable
                 ? html`<button type="button" class="ap-link small" data-pb-image-look-chat>
                     Help me pick in a chat
                   </button>`
@@ -270,8 +306,28 @@ export function renderImagesGenerate(playbookId, { canEdit = true } = {}) {
             <h3 class="imst-images-part__title" id="imst-images-format">Format</h3>
             <p class="ap-caption imst-images-part__hint">The shape on each network — its usual one until you pick.</p>
           </header>
-          ${formatsList(playbookId, editable)}
+          ${formatsList(playbookId, editable, p?.formats)}
         </section>
+        ${editable
+          ? html`<footer class="imst-images-generate__footer">
+              <button
+                type="button"
+                class="ap-button ghost grey"
+                data-imst-images="discard-generate"
+                ${isDirty(p) ? "" : "disabled"}
+              >
+                <span>Discard changes</span>
+              </button>
+              <button
+                type="button"
+                class="ap-button primary blue"
+                data-imst-images="save-generate"
+                ${isDirty(p) ? "" : "disabled"}
+              >
+                <span>Save changes</span>
+              </button>
+            </footer>`
+          : ""}
       </div>`,
     }),
   );
@@ -279,8 +335,8 @@ export function renderImagesGenerate(playbookId, { canEdit = true } = {}) {
 
 // The shape per network, inside Generate an image: the network's name, then its
 // shapes as the studio shows them. Nothing set = the network's usual shape, first.
-function formatsList(playbookId, editable) {
-  const formats = getPlaybookFormats(playbookId);
+function formatsList(playbookId, editable, pendingFormats = {}) {
+  const formats = { ...getPlaybookFormats(playbookId), ...pendingFormats };
   // One row per network: its name, then its shapes as the studio shows them
   // (.imst-seg, compact) — nothing set means the network's usual shape, first.
   const rows = NETWORKS.map((n) => {
@@ -347,26 +403,36 @@ function addReferences(playbookId, onChange) {
 /** The fiche's delegated click, for the whole tab. Returns true when it handled the click. */
 export function handlePlaybookImagesClick(event, playbookId, { onChange = () => {} } = {}) {
   if (!playbookId) return false;
+  // The Generate block: a look or a format waits for Save changes.
   const lookItem = event.target.closest("[data-imst-images-look]");
   if (lookItem) {
-    const [kind, ...rest] = lookItem.dataset.imstImagesLook.split(":");
-    if (setPlaybookDefaultLook(playbookId, { kind, id: rest.join(":") })) {
-      toast(`${lookItem.textContent.trim()} is now the default for Generate an image.`);
-      onChange();
-    }
+    if (!canEditBrand(playbookId)) return true;
+    const value = lookItem.dataset.imstImagesLook;
+    editPending(playbookId).look = value === savedLook(playbookId) ? null : value;
+    onChange();
     return true;
   }
   const fmt = event.target.closest("[data-imst-images-format]");
   if (fmt) {
+    if (!canEditBrand(playbookId)) return true;
     const [network, shapeId] = fmt.dataset.imstImagesFormat.split(":");
-    if (setPlaybookFormat(playbookId, network, shapeId)) onChange();
+    const formats = editPending(playbookId).formats;
+    if (shapeId === savedFormat(playbookId, network)) delete formats[network];
+    else formats[network] = shapeId;
+    onChange();
     return true;
   }
   const el = event.target.closest("[data-imst-images]");
   if (el) {
     if (!canEditBrand(playbookId)) return true;
     const action = el.dataset.imstImages;
-    if (action === "new-style") navigate(creatorPath(playbookId, "new"));
+    if (action === "save-generate") {
+      if (saveGenerate(playbookId)) toast("Changes saved. Generate an image starts from them now.");
+      onChange();
+    } else if (action === "discard-generate") {
+      pending = null;
+      onChange();
+    } else if (action === "new-style") navigate(creatorPath(playbookId, "new"));
     else if (action === "add-reference") addReferences(playbookId, onChange);
     else if (action === "delete-reference") {
       deletePlaybookReference(playbookId, el.dataset.imstItem);

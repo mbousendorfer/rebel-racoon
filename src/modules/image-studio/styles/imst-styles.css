@@ -724,3 +724,13 @@ button.imst-style-card {
   align-items: center;
   gap: var(--ref-spacing-xxs);
 }
+
+/* The Generate block's Save changes / Discard changes — the block's own footer,
+   grouped on the right under a grey-20 rule like the parts above it. */
+.imst-images-generate__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--ref-spacing-xs);
+  padding-top: var(--ref-spacing-lg);
+  border-top: 1px solid var(--ref-color-grey-20);
+}
