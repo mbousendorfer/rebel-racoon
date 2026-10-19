@@ -19,13 +19,13 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1905";
-import { isPortraitFormat } from "../clip-formats.js?v=1905";
-import { presetById } from "../clip-captions.js?v=1905";
-import { renderFeedbackControl } from "./feedback-control.js?v=1905";
-import { networkMeta, normalizeNetwork, profileForNetwork, renderProfileTag } from "../social-profiles.js?v=1905";
-import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=1905";
-import { REVEAL_MS } from "../archie-pixels.js?v=1905";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=1906";
+import { isPortraitFormat } from "../clip-formats.js?v=1906";
+import { presetById } from "../clip-captions.js?v=1906";
+import { renderFeedbackControl } from "./feedback-control.js?v=1906";
+import { networkMeta, normalizeNetwork, profileForNetwork, renderProfileTag } from "../social-profiles.js?v=1906";
+import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=1906";
+import { REVEAL_MS } from "../archie-pixels.js?v=1906";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -357,6 +357,9 @@ export function renderPostCard(post, opts = {}) {
         ${raw(belowCard)}
       </div>
 
+      <!-- The rail is prod's (studio-mfe post-card-actions), in its order:
+           Reference · Schedule · Edit · Save as draft · Assign · Delete.
+           Rewriting is asked in the chat; images live in the media block. -->
       <div class="posts__row-actions" aria-label="Draft actions">
         <button
           type="button"
@@ -368,6 +371,13 @@ export function renderPostCard(post, opts = {}) {
         >
           <i class="ap-icon-at"></i>
         </button>
+        ${raw(
+          renderBlockedAction(post, regenerating, {
+            label: "Schedule draft",
+            icon: "ap-icon-calendar",
+            attr: "data-post-schedule",
+          }),
+        )}
         ${raw(
           inlineEdit
             ? `<button
@@ -382,101 +392,6 @@ export function renderPostCard(post, opts = {}) {
               </button>`
             : "",
         )}
-        <div class="posts__rewrite">
-          <button
-            type="button"
-            class="ap-icon-button stroked ${regenerating ? "loading" : ""}"
-            aria-label="Regenerate draft"
-            title="Rewrite or regenerate"
-            aria-haspopup="true"
-            aria-expanded="false"
-            data-post-rewrite-menu="${post.id}"
-            ${regenerating ? "disabled" : ""}
-          >
-            <i class="ap-icon-sparkles"></i>
-          </button>
-          <div
-            class="ap-action-dropdown posts__rewrite-menu"
-            data-post-rewrite-menu-for="${post.id}"
-            role="menu"
-            hidden
-          >
-            ${raw(
-              [
-                { intent: "shorter", label: "Shorter", icon: "ap-icon-shorten" },
-                { intent: "longer", label: "Longer", icon: "ap-icon-lenghten" },
-                { intent: "warmer", label: "Warmer", icon: "ap-icon-heart" },
-                { intent: "formal", label: "More formal", icon: "ap-icon-user-graduate" },
-              ]
-                .map(
-                  ({ intent, label, icon }) => html`
-                    <button
-                      type="button"
-                      class="ap-action-dropdown-item"
-                      role="menuitem"
-                      data-post-rewrite-intent="${intent}"
-                      data-post-id="${post.id}"
-                    >
-                      <i class="${icon}" aria-hidden="true"></i>
-                      <div class="ap-action-dropdown-item-text">
-                        <div class="ap-action-dropdown-item-label-container">
-                          <span class="ap-action-dropdown-item-label">${label}</span>
-                        </div>
-                      </div>
-                    </button>
-                  `,
-                )
-                .join(""),
-            )}
-            <div class="ap-action-dropdown-divider" role="separator"></div>
-            <button
-              type="button"
-              class="ap-action-dropdown-item"
-              role="menuitem"
-              data-post-rewrite-intent="fresh"
-              data-post-id="${post.id}"
-            >
-              <i class="ap-icon-sparkles" aria-hidden="true"></i>
-              <div class="ap-action-dropdown-item-text">
-                <div class="ap-action-dropdown-item-label-container">
-                  <span class="ap-action-dropdown-item-label">Regenerate</span>
-                </div>
-              </div>
-            </button>
-          </div>
-        </div>
-        <!-- Image Studio. It lives in the rail rather than in the media block
-             because it is the ONE entry that has to work in every media state:
-             no image (steer a generation instead of the one-click Generate), a
-             single image (open it in Edit), or a carousel (reopen the set). The
-             media block's own controls are contextual and partly hover-only, so
-             on an image-less draft nothing reached the studio at all. -->
-        <button
-          type="button"
-          class="ap-icon-button stroked"
-          aria-label="Open the Image Studio"
-          title="Image Studio"
-          data-post-studio="${post.id}"
-          ${regenerating ? "disabled" : ""}
-        >
-          <i class="ap-icon-image"></i>
-        </button>
-        <!-- Upload. It is in the rail and NOT in the empty slot because the slot
-             holds exactly one filled primary plus one link — a third action
-             there flattened the hierarchy every time it was tried. The rail is
-             also the only place it can work once the draft HAS an image, and it
-             is the keyboard route to a file: dragging onto the slot cannot be
-             the sole way in. Same handler as the slot's old link. -->
-        <button
-          type="button"
-          class="ap-icon-button stroked"
-          aria-label="Add an image from your computer"
-          title="Add image"
-          data-post-image-upload="${post.id}"
-          ${regenerating ? "disabled" : ""}
-        >
-          <i class="ap-icon-upload"></i>
-        </button>
         <button
           type="button"
           class="ap-icon-button stroked"
@@ -485,20 +400,13 @@ export function renderPostCard(post, opts = {}) {
           data-post-save-draft="${post.id}"
           ${regenerating ? "disabled" : ""}
         >
-          <i class="ap-icon-bookmark"></i>
+          <i class="ap-icon-file--text"></i>
         </button>
         ${raw(
           renderBlockedAction(post, regenerating, {
             label: "Assign for review",
-            icon: "ap-icon-user--arrow-right",
+            icon: "ap-icon-user--plus",
             attr: "data-post-assign",
-          }),
-        )}
-        ${raw(
-          renderBlockedAction(post, regenerating, {
-            label: "Schedule draft",
-            icon: "ap-icon-calendar",
-            attr: "data-post-schedule",
           }),
         )}
         <button

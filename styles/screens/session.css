@@ -432,8 +432,6 @@
 body.playbook-revoked [data-bulk-extract],
 body.playbook-revoked [data-source-extract-one],
 body.playbook-revoked [data-idea-generate],
-body.playbook-revoked [data-post-rewrite-menu],
-body.playbook-revoked [data-post-rewrite-intent],
 body.playbook-revoked [data-post-image],
 body.playbook-revoked [data-post-image-edit],
 body.playbook-revoked [data-clip-draft] {

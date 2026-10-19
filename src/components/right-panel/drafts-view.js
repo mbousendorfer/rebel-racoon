@@ -4,7 +4,7 @@
 // shell's delegated clicks write it through setDraftsFilter / setDraftsNetwork.
 // Moved out of right-panel.js, unchanged.
 
-import { networkMeta } from "../../social-profiles.js?v=1905";
+import { networkMeta } from "../../social-profiles.js?v=1906";
 import {
   getPosts,
   removePost,
@@ -12,23 +12,23 @@ import {
   updatePostContent,
   attachImageToDraft,
   attachCarouselToDraft,
-} from "../../posts-store.js?v=1905";
-import { noticeDraftEdit } from "../../voice-coach.js?v=1905";
-import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=1905";
-import { getSessionById } from "../../sessions-store.js?v=1905";
-import { renderPostCard } from "../post-card.js?v=1905";
-import { isPostValid } from "../../post-validation.js?v=1905";
-import { html, raw } from "../../utils.js?v=1905";
-import { isFlagOn } from "../../feature-flags.js?v=1905";
-import { open as openNewScheduleModal } from "../schedule-modal.js?v=1905";
-import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=1905";
-import { open as openConfirmModal } from "../confirm-modal.js?v=1905";
-import { open as openAssignModal } from "../assign-modal.js?v=1905";
-import { showToast } from "../toast.js?v=1905";
-import { addMention as addComposerMention } from "../../composer-mentions.js?v=1905";
-import { startDraftImageFlow } from "../../draft-image-flow.js?v=1905";
-import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=1905";
-import { RPANEL_CLOSE_INLINE, activeSessionId, canDraftInlineEdit, renderPanel } from "../right-panel.js?v=1905";
+} from "../../posts-store.js?v=1906";
+import { noticeDraftEdit } from "../../voice-coach.js?v=1906";
+import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=1906";
+import { getSessionById } from "../../sessions-store.js?v=1906";
+import { renderPostCard } from "../post-card.js?v=1906";
+import { isPostValid } from "../../post-validation.js?v=1906";
+import { html, raw } from "../../utils.js?v=1906";
+import { isFlagOn } from "../../feature-flags.js?v=1906";
+import { open as openNewScheduleModal } from "../schedule-modal.js?v=1906";
+import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=1906";
+import { open as openConfirmModal } from "../confirm-modal.js?v=1906";
+import { open as openAssignModal } from "../assign-modal.js?v=1906";
+import { showToast } from "../toast.js?v=1906";
+import { addMention as addComposerMention } from "../../composer-mentions.js?v=1906";
+import { startDraftImageFlow } from "../../draft-image-flow.js?v=1906";
+import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=1906";
+import { RPANEL_CLOSE_INLINE, activeSessionId, renderPanel } from "../right-panel.js?v=1906";
 
 // Drafts-mode local UI state — Lot 21 rich-card view. Filter strip at the
 // top of the panel head drives both axes : status (all / needs_fixes) and
@@ -100,11 +100,6 @@ const needsFixes = (p) => !isPostValid(p) || justFixed.has(p.id);
 let editingOriginal = null;
 
 export function renderDraftsView() {
-  const inlineEdit = canDraftInlineEdit();
-  if (!inlineEdit && editingPostId) {
-    editingPostId = null;
-    editingOriginal = null;
-  }
   // Scheduling and "Save as draft" both move a post out of this workspace,
   // so the panel only ever shows live drafts — there is no "scheduled" tab
   // anymore. Filter scheduled posts out defensively (covers any seeded
@@ -253,7 +248,7 @@ export function renderDraftsView() {
       .map((p) =>
         renderPostCard(p, {
           editing: p.id === editingPostId,
-          inlineEdit,
+          inlineEdit: true,
           selectable: true,
           selected: selectedDraftIds.has(p.id),
           justFixed: justFixed.has(p.id),
@@ -349,28 +344,6 @@ function renderDraftsEmpty() {
       </div>
     </div>
   `;
-}
-
-export function onPostRewrite(postId, intent = "fresh") {
-  const sid = activeSessionId();
-  if (!sid) return;
-  // draft-rewrite.js owns the full visual flow: ghost skeleton →
-  // streaming → commit. Loaded lazily so the rewrite code is only
-  // pulled in when the user actually triggers a regen. `intent` biases
-  // the rewrite (shorter / longer / warmer / formal / fresh).
-  import("../../draft-rewrite.js?v=1905").then(({ startRewrite }) => {
-    startRewrite(sid, postId, intent);
-  });
-}
-
-// Close every open regenerate dropdown and reset its trigger's aria state.
-export function closeAllRewriteMenus() {
-  document.querySelectorAll(".posts__rewrite-menu:not([hidden])").forEach((menu) => {
-    menu.hidden = true;
-    const id = menu.getAttribute("data-post-rewrite-menu-for");
-    if (id)
-      document.querySelector(`[data-post-rewrite-menu="${cssEscape(id)}"]`)?.setAttribute("aria-expanded", "false");
-  });
 }
 
 export function cssEscape(value) {
@@ -572,7 +545,7 @@ export function onSectionSave(network) {
   if (snapshot.length === 0) return;
   const count = snapshot.length;
   const draftWord = count === 1 ? "draft" : "drafts";
-  Promise.all([import("../save-folder-modal.js?v=1905"), import("../../folders-store.js?v=1905")]).then(
+  Promise.all([import("../save-folder-modal.js?v=1906"), import("../../folders-store.js?v=1906")]).then(
     ([{ open: openSaveModal }, { addDraftsToFolder }]) => {
       openSaveModal({
         count,
@@ -764,7 +737,6 @@ export function onPostImageRemove(postId) {
 }
 
 export function startEdit(postId) {
-  if (!canDraftInlineEdit()) return;
   if (editingPostId === postId) return;
   if (editingPostId) commitEdit(editingPostId); // auto-save the previous card
   const sid = activeSessionId();
@@ -792,7 +764,6 @@ export function startEdit(postId) {
 }
 
 export function commitEdit(postId) {
-  if (!canDraftInlineEdit()) return;
   if (editingPostId !== postId) return;
   const sid = activeSessionId();
   const editor = document.querySelector(`[data-post-editor="${postId}"]`);
@@ -819,7 +790,6 @@ export function commitEdit(postId) {
 }
 
 export function cancelEdit(postId) {
-  if (!canDraftInlineEdit()) return;
   if (editingPostId !== postId) return;
   editingPostId = null;
   editingOriginal = null;

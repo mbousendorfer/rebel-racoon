@@ -40,15 +40,6 @@ export const FLAGS = Object.freeze([
       "listing every chat, all brands.",
   },
   {
-    id: "draftInlineEdit",
-    label: "Inline edit on draft posts",
-    default: false,
-    hides:
-      "Inline editing affordance + handler for draft post cards in the " +
-      "right panel (introduit par le commit 1e3076e — feat(rpanel): " +
-      "inline editing for draft posts).",
-  },
-  {
     id: "connectors",
     label: "Connectors (live MCP sources)",
     default: false,
@@ -160,7 +151,7 @@ export const FLAGS = Object.freeze([
       "differ (How the brand sounds, Always, Never, Depending on the post, Now " +
       "and then); a rule it was taught joins its Always or Never.\n\n" +
       "Archie coaches it over time, and never writes it silently: when you " +
-      "rework a draft (needs draftInlineEdit), when you thumbs-down one with a " +
+      "rework a draft, when you thumbs-down one with a " +
       "reason, or by asking a question after drafting for a network whose " +
       "voice is thin, it PROPOSES a rule — a card in the chat, and the " +
       '"What I\'ve learned" block on the Voice tab. Nothing enters the ' +

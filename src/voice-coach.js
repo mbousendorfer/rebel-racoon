@@ -2,7 +2,7 @@
 // (flag networkVoices). Three signals, each ending in a PROPOSAL, never a
 // silent write (CONCEPTS §1 — "propose beside, never write inside"):
 //
-//   noticeDraftEdit      a draft reworked by hand (Drafts panel, draftInlineEdit)
+//   noticeDraftEdit      a draft reworked by hand (Drafts panel)
 //   noticeDraftFeedback  a thumbs-down with a voice-shaped reason
 //   coachAfterDraft      a question, after drafting for a network whose voice
 //                        is still thin — the answer IS the explicit gesture
@@ -13,17 +13,17 @@
 // ponytail: the edit heuristics are a mock reading of one before/after pair.
 // The real thing compares many drafts per network before proposing.
 
-import { getSessionById } from "./sessions-store.js?v=1905";
-import { getContextById } from "./contexts-store.js?v=1905";
-import { playbookForNewWork } from "./active-playbook.js?v=1905";
-import { getPosts } from "./posts-store.js?v=1905";
-import { postVoiceSuggestion, postSelectionEcho, postAssistantMessage } from "./assistant.js?v=1905";
-import { startRewrite } from "./draft-rewrite.js?v=1905";
-import { escapeHtml } from "./utils.js?v=1905";
-import { ask, isActive } from "./inline-question.js?v=1905";
-import { propose, accept } from "./voice-coach-store.js?v=1905";
-import { normalizeNetwork } from "./social-profiles.js?v=1905";
-import { networkClosings } from "./context-mock-analysis.js?v=1905";
+import { getSessionById } from "./sessions-store.js?v=1906";
+import { getContextById } from "./contexts-store.js?v=1906";
+import { playbookForNewWork } from "./active-playbook.js?v=1906";
+import { getPosts } from "./posts-store.js?v=1906";
+import { postVoiceSuggestion, postSelectionEcho, postAssistantMessage } from "./assistant.js?v=1906";
+import { startRewrite } from "./draft-rewrite.js?v=1906";
+import { escapeHtml } from "./utils.js?v=1906";
+import { ask, isActive } from "./inline-question.js?v=1906";
+import { propose, accept } from "./voice-coach-store.js?v=1906";
+import { normalizeNetwork } from "./social-profiles.js?v=1906";
+import { networkClosings } from "./context-mock-analysis.js?v=1906";
 import {
   networkVoicesOn,
   baseNetwork,
@@ -32,7 +32,7 @@ import {
   networkIcon,
   followRules,
   suggestionField,
-} from "./network-voice.js?v=1905";
+} from "./network-voice.js?v=1906";
 
 function sessionPlaybook(sessionId) {
   const session = getSessionById(sessionId);

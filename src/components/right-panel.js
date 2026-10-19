@@ -1,31 +1,30 @@
-import { html, raw } from "../utils.js?v=1905";
-import { subscribe as subscribeThread } from "../assistant.js?v=1905";
-import { isFlagOn } from "../feature-flags.js?v=1905";
-import { getPath, navigate } from "../router.js?v=1905";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=1905";
+import { html, raw } from "../utils.js?v=1906";
+import { subscribe as subscribeThread } from "../assistant.js?v=1906";
+import { getPath, navigate } from "../router.js?v=1906";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=1906";
 import {
   getPosts,
   attachImageToDraft,
   updatePostClip,
   subscribe as subscribePostsStore,
-} from "../posts-store.js?v=1905";
-import { onFeedbackClick } from "./feedback-control.js?v=1905";
+} from "../posts-store.js?v=1906";
+import { onFeedbackClick } from "./feedback-control.js?v=1906";
 // Shared compact idea card — same component the standalone Ideas page uses.
-import { open as openVideoClipsModal } from "./video-clips-modal.js?v=1905";
-import { isSidebarCollapsed, setSidebarCollapsed, isAutoCollapsed } from "./sidebar.js?v=1905";
+import { open as openVideoClipsModal } from "./video-clips-modal.js?v=1906";
+import { isSidebarCollapsed, setSidebarCollapsed, isAutoCollapsed } from "./sidebar.js?v=1906";
 import {
   getSources as getStreamSources,
   subscribeSources,
   updateSourceClips,
   removeSources,
   renameSource,
-} from "../sources-stream.js?v=1905";
-import { open as openAddSourceModal } from "./add-source-modal.js?v=1905";
-import { open as openRenameModal } from "./rename-modal.js?v=1905";
-import { askConnector } from "../connector-ask.js?v=1905";
-import { open as openConnectorsModal } from "./connectors-modal.js?v=1905";
-import { addMention as addComposerMention } from "../composer-mentions.js?v=1905";
-import { getIdeas, removeIdeasForSources } from "../library.js?v=1905";
+} from "../sources-stream.js?v=1906";
+import { open as openAddSourceModal } from "./add-source-modal.js?v=1906";
+import { open as openRenameModal } from "./rename-modal.js?v=1906";
+import { askConnector } from "../connector-ask.js?v=1906";
+import { open as openConnectorsModal } from "./connectors-modal.js?v=1906";
+import { addMention as addComposerMention } from "../composer-mentions.js?v=1906";
+import { getIdeas, removeIdeasForSources } from "../library.js?v=1906";
 
 // The ideas of the chat the panel is looking at.
 //
@@ -40,20 +39,19 @@ export function sessionIdeas() {
   const sid = activeSessionId();
   return sid ? getIdeas(sid) : [];
 }
-import { open as openConfirmModal } from "./confirm-modal.js?v=1905";
-import { showToast } from "./toast.js?v=1905";
-import { isOverlayEscape } from "../modal-coordinator.js?v=1905";
-import { closeAllSourceMenus, renderSourcesView } from "./right-panel/sources-view.js?v=1905";
+import { open as openConfirmModal } from "./confirm-modal.js?v=1906";
+import { showToast } from "./toast.js?v=1906";
+import { isOverlayEscape } from "../modal-coordinator.js?v=1906";
+import { closeAllSourceMenus, renderSourcesView } from "./right-panel/sources-view.js?v=1906";
 import {
   collectAllClips,
   renderIdeasView,
   toggleClipWhyInPlace,
   toggleIdeaFeedback,
   toggleWhyOpen,
-} from "./right-panel/ideas-view.js?v=1905";
+} from "./right-panel/ideas-view.js?v=1906";
 import {
   cancelEdit,
-  closeAllRewriteMenus,
   commitEdit,
   cssEscape,
   editingPostId,
@@ -64,7 +62,6 @@ import {
   onPostImageRemove,
   onPostImageUpload,
   onPostMention,
-  onPostRewrite,
   onPostSaveAsDraft,
   onPostSchedule,
   onPostStudio,
@@ -78,7 +75,7 @@ import {
   setNetworkSelection,
   startEdit,
   visibleNetworkPosts,
-} from "./right-panel/drafts-view.js?v=1905";
+} from "./right-panel/drafts-view.js?v=1906";
 
 // Global Right Panel — slides in from the right edge of the viewport, overlays
 // the session workspace, hosts two modes:
@@ -103,7 +100,6 @@ const PANEL_ID = "rightPanel";
 // every panel open so the formula reasserts as the canonical default.
 const PANEL_MIN_WIDTH = 380;
 const PANEL_MAX_RIGHT_GAP = 400; // leave at least this much for sidebar+content
-const DRAFT_INLINE_EDIT_FLAG = "draftInlineEdit";
 
 // Ideas-mode local UI state — filter chip + search query + sort axis +
 // the id of the single card currently expanded (accordion: only one open
@@ -180,10 +176,6 @@ const subs = new Set();
 
 function notify() {
   for (const fn of subs) fn(state);
-}
-
-export function canDraftInlineEdit() {
-  return isFlagOn(DRAFT_INLINE_EDIT_FLAG);
 }
 
 export function getMode() {
@@ -473,15 +465,11 @@ export function init() {
     // current editor + its Save/Cancel buttons. Falls through so a click
     // on another card's pen icon (or any other action) still routes
     // through the normal handlers below.
-    if (canDraftInlineEdit() && editingPostId) {
+    if (editingPostId) {
       const insideCurrent = event.target.closest(
         `[data-post-editor="${editingPostId}"], [data-post-edit-save="${editingPostId}"], [data-post-edit-cancel="${editingPostId}"]`,
       );
       if (!insideCurrent) commitEdit(editingPostId);
-    }
-    // Dismiss any open regenerate dropdown (#14) on an outside click.
-    if (!event.target.closest("[data-post-rewrite-menu], .posts__rewrite-menu")) {
-      closeAllRewriteMenus();
     }
     // Shared "how's this?" feedback control (drafts + clip thumbs/reasons).
     // Handled first so the thumb/chip/Send clicks update in place and bail
@@ -548,17 +536,17 @@ export function init() {
     }
     // Per-card actions on a single draft (Lot 21 rich PostCard).
     const editBtn = event.target.closest("[data-post-edit]");
-    if (canDraftInlineEdit() && editBtn) {
+    if (editBtn) {
       startEdit(editBtn.dataset.postEdit);
       return;
     }
     const saveBtn = event.target.closest("[data-post-edit-save]");
-    if (canDraftInlineEdit() && saveBtn) {
+    if (saveBtn) {
       commitEdit(saveBtn.dataset.postEditSave);
       return;
     }
     const cancelBtn = event.target.closest("[data-post-edit-cancel]");
-    if (canDraftInlineEdit() && cancelBtn) {
+    if (cancelBtn) {
       cancelEdit(cancelBtn.dataset.postEditCancel);
       return;
     }
@@ -573,26 +561,6 @@ export function init() {
     const mentionBtn = event.target.closest("[data-post-mention]");
     if (mentionBtn) {
       onPostMention(mentionBtn.dataset.postMention);
-      return;
-    }
-    // Regenerate dropdown (#14) — the sparkles button toggles a menu of
-    // rewrite intents (shorter / longer / warmer / more formal / regenerate).
-    const rewriteMenuBtn = event.target.closest("[data-post-rewrite-menu]");
-    if (rewriteMenuBtn) {
-      const id = rewriteMenuBtn.dataset.postRewriteMenu;
-      const menu = document.querySelector(`[data-post-rewrite-menu-for="${cssEscape(id)}"]`);
-      const willOpen = menu && menu.hidden;
-      closeAllRewriteMenus();
-      if (menu && willOpen) {
-        menu.hidden = false;
-        rewriteMenuBtn.setAttribute("aria-expanded", "true");
-      }
-      return;
-    }
-    const rewriteIntentBtn = event.target.closest("[data-post-rewrite-intent]");
-    if (rewriteIntentBtn) {
-      closeAllRewriteMenus();
-      onPostRewrite(rewriteIntentBtn.dataset.postId, rewriteIntentBtn.dataset.postRewriteIntent);
       return;
     }
     const saveDraftBtn = event.target.closest("[data-post-save-draft]");
@@ -752,7 +720,7 @@ export function init() {
       openVideoClipsModal(src, {
         onSaveClips: (id, nextClips) => updateSourceClips(id, nextClips),
         onUseClips: (selectedClips, source) => {
-          import("../screens/session/clip-draft-flow.js?v=1905").then(({ startClipDraftFlow }) => {
+          import("../screens/session/clip-draft-flow.js?v=1906").then(({ startClipDraftFlow }) => {
             startClipDraftFlow(
               sid,
               selectedClips.map((clip) => ({ clip, sourceName: source.filename, sourceId: source.id })),
@@ -923,7 +891,7 @@ export function init() {
       const sid = activeSessionId();
       if (!sid || !entry) return;
       const { clip, sourceName, sourceId } = entry;
-      import("../screens/session/clip-draft-flow.js?v=1905").then(({ startClipDraftFlow }) => {
+      import("../screens/session/clip-draft-flow.js?v=1906").then(({ startClipDraftFlow }) => {
         startClipDraftFlow(sid, [{ clip, sourceName, sourceId }]);
       });
       return;
@@ -941,7 +909,7 @@ export function init() {
       if (picked.length === 0) return;
       clipSelection = new Set();
       renderPanel();
-      import("../screens/session/clip-draft-flow.js?v=1905").then(({ startClipDraftFlow }) => {
+      import("../screens/session/clip-draft-flow.js?v=1906").then(({ startClipDraftFlow }) => {
         startClipDraftFlow(sid, picked);
       });
       return;
@@ -1072,7 +1040,7 @@ export function init() {
   // Esc cancels (and stops propagation so the document handler below
   // doesn't also close the panel) ; Cmd/Ctrl+Enter saves.
   el.addEventListener("keydown", (event) => {
-    if (!canDraftInlineEdit() || !editingPostId) return;
+    if (!editingPostId) return;
     const editor = event.target.closest(`[data-post-editor="${editingPostId}"]`);
     if (!editor) return;
     if (event.key === "Escape") {
@@ -1087,7 +1055,7 @@ export function init() {
   // Focus moving outside the panel (Tab, click on topbar, etc.) commits
   // any in-progress edit.
   document.addEventListener("focusin", (event) => {
-    if (!canDraftInlineEdit() || !editingPostId) return;
+    if (!editingPostId) return;
     if (el.contains(event.target)) return;
     commitEdit(editingPostId);
   });
@@ -1357,7 +1325,7 @@ function useIdea(ideaId) {
   if (!idea) return;
   const sid = activeSessionId();
   if (!sid) return;
-  import("../screens/session/draft-questions.js?v=1905").then(({ askAngleQuestion }) => {
+  import("../screens/session/draft-questions.js?v=1906").then(({ askAngleQuestion }) => {
     askAngleQuestion(sid, ideaId);
   });
 }
