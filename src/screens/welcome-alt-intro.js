@@ -11,11 +11,11 @@
 // The card is an illustration, not data: the Playbook's real parts (Voice
 // profile, Branding…) filled with example values.
 
-import "../archie-pixels.js?v=1987";
-import { html, raw } from "../utils.js?v=1987";
-import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=1987";
-import { navigate } from "../router.js?v=1987";
-import { flowSteps, startFlow, STEP_TEXT } from "./welcome-alt-shell.js?v=1987";
+import "../archie-pixels.js?v=1990";
+import { html, raw } from "../utils.js?v=1990";
+import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=1990";
+import { navigate } from "../router.js?v=1990";
+import { flowSteps, startFlow, STEP_TEXT, rowLabel, rowTint, inPlaybookOrder } from "./welcome-alt-shell.js?v=1990";
 
 const glyph = (net) =>
   `<span class="welcome-intro__net"><i class="${NETWORK_ICON_BY_PLATFORM[net]}" aria-hidden="true"></i></span>`;
@@ -68,7 +68,7 @@ const ROWS = [
 
 export function renderWelcomeAltIntro(_params, target) {
   const steps = flowSteps();
-  const rows = ROWS.filter((r) => steps.includes(r.step));
+  const rows = inPlaybookOrder(ROWS.filter((r) => steps.includes(r.step)));
   const last = steps.length - 1;
 
   target.innerHTML = html`
@@ -114,8 +114,8 @@ export function renderWelcomeAltIntro(_params, target) {
               // Several lines from one step land one after the other.
               const j = rows.filter((o) => o.step === r.step).indexOf(r);
               return html`
-                <div class="welcome-intro__row" style="--i: ${steps.indexOf(r.step) + j * 0.18}">
-                  <dt>${r.label}</dt>
+                <div class="welcome-intro__row" style="--i: ${steps.indexOf(r.step) + j * 0.18}; ${rowTint(r.label)}">
+                  <dt>${rowLabel(r.label)}</dt>
                   <dd>${raw(r.value)}</dd>
                 </div>
               `;

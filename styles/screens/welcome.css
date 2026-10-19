@@ -349,6 +349,9 @@
 }
 
 .welcome-intro__row dt {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   color: var(--ref-color-grey-80);
@@ -390,7 +393,7 @@
 .welcome-intro__trait {
   padding: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
   border-radius: var(--app-radius-pill);
-  background: var(--app-butter);
+  background: var(--part-tint, var(--app-butter));
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);
   font-weight: var(--sys-text-style-caption-bold-weight);
@@ -882,7 +885,7 @@
 .welcome-flow__chip {
   padding: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
   border-radius: var(--app-radius-pill);
-  background: var(--app-surface-subtle);
+  background: var(--part-tint, var(--app-surface-subtle));
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);
   font-weight: var(--sys-text-style-caption-bold-weight);
@@ -1335,9 +1338,17 @@
   color: var(--ref-color-grey-100);
 }
 
+/* A card row's label wears its part's tile, a size down from the list's. */
+.welcome-flow__glyph.welcome-flow__row-tile {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--ref-border-radius-md);
+  font-size: var(--sys-icon-css-xs);
+}
+
 /* The list's tile for a part: its tint, and its glyph in the tint's dark shade. */
 .welcome-flow__glyph.is-tinted {
-  background: var(--part-tint);
+  background: var(--part-tint, var(--app-surface-subtle));
   color: var(--part-ink, var(--ref-color-grey-100));
 }
 

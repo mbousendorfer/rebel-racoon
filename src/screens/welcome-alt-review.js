@@ -20,32 +20,19 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=1987";
-import { navigate } from "../router.js?v=1987";
-import { getDraft, patchDraft } from "../context-builder.js?v=1987";
-import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=1987";
-import { parseHashParams } from "../url-state.js?v=1987";
-import { mountShell } from "./welcome-alt-shell.js?v=1987";
-import { enterArchie } from "./welcome-alt-recap.js?v=1987";
+import { html, raw } from "../utils.js?v=1990";
+import { navigate } from "../router.js?v=1990";
+import { getDraft, patchDraft } from "../context-builder.js?v=1990";
+import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=1990";
+import { parseHashParams } from "../url-state.js?v=1990";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=1990";
+import { enterArchie } from "./welcome-alt-recap.js?v=1990";
 
 const MOVE_MS = 220; // the card's exit, before the next one comes in
 
-// Each part's tint — its card's header band and its tile in the list share it,
-// so the colour says which part you're in (asked for explicitly, 2026-10-19).
-// Soft DS tints only, and never electric blue: blue stays the interactive colour.
-// Each tint comes with its own dark shade for the part's glyph (the -150 of the
-// same ramp), so the icon carries the colour too instead of a flat grey.
-const PART_TINT = {
-  goals: "orange",
-  voice: "purple",
-  brand: "menthol",
-  competitors: "yellow",
-  influencers: "soft-blue",
-};
-const tint = (id) =>
-  PART_TINT[id]
-    ? `--part-tint: var(--ref-color-${PART_TINT[id]}-20); --part-ink: var(--ref-color-${PART_TINT[id]}-150)`
-    : "";
+// Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
+// its card's header band and its tile in the list, so the colour says which
+// part you're in (asked for explicitly, 2026-10-19).
 const OUT_MS = 240; // the part's stack leaves
 const INTRO_MS = 900; // the next part says its name
 

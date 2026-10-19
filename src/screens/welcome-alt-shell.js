@@ -9,10 +9,10 @@
 // the session id the recap already uses (`welcomeAltSessionId`), and persisted
 // on every change so a reload lands on the same step with the same answers.
 
-import "../archie-pixels.js?v=1987";
-import { html, raw, escapeHtml } from "../utils.js?v=1987";
-import { navigate } from "../router.js?v=1987";
-import { isFlagOn } from "../feature-flags.js?v=1987";
+import "../archie-pixels.js?v=1990";
+import { html, raw, escapeHtml } from "../utils.js?v=1990";
+import { navigate } from "../router.js?v=1990";
+import { isFlagOn } from "../feature-flags.js?v=1990";
 import {
   altSteps,
   createAltDraft,
@@ -20,16 +20,16 @@ import {
   isAnalysisReady,
   restoreDraft,
   subscribeDraft,
-} from "../context-builder.js?v=1987";
+} from "../context-builder.js?v=1990";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
   getConnectedProfiles,
   renderProfileTag,
   subscribe as subscribeProfiles,
-} from "../social-profiles.js?v=1987";
-import { networkVoicesOn } from "../network-voice.js?v=1987";
-import { readSessionId, persistDraft, readPersistedDraft } from "./welcome-alt-recap.js?v=1987";
+} from "../social-profiles.js?v=1990";
+import { networkVoicesOn } from "../network-voice.js?v=1990";
+import { readSessionId, persistDraft, readPersistedDraft } from "./welcome-alt-recap.js?v=1990";
 
 const PREFILLED_URL = "https://nicesoap.com";
 const SESSION_KEY = "welcomeAltSessionId";
@@ -100,6 +100,53 @@ export function ensureFlowDraft() {
     return sid;
   }
   return startFlow();
+}
+
+// ── The parts' colours ────────────────────────────────────────────────────
+
+// One tint per Playbook part, shared by the review (its list tiles, its card
+// bands) and the card's row labels: a row wears the colour of the part it
+// fills. The -20 for the tile, the -150 for its glyph; never electric blue.
+const PART_TINT = {
+  goals: "orange",
+  voice: "purple",
+  brand: "menthol",
+  competitors: "yellow",
+  influencers: "soft-blue",
+};
+export const tint = (id) =>
+  PART_TINT[id]
+    ? `--part-tint: var(--ref-color-${PART_TINT[id]}-20); --part-ink: var(--ref-color-${PART_TINT[id]}-150)`
+    : "";
+
+// The card's rows by label (the intro's example card uses the same labels),
+// IN THE PLAYBOOK'S ORDER — Brief, Voice, Branding, Competitors — each with the
+// part it fills and the glyph of the Playbook block it previews (playbook-view's
+// pb2Block icons: The business, Speaking to, What posts should achieve, The
+// voice, Logos, the Competitors section). Publishes on is the account, not a
+// part of the Playbook: first, as the run asks it first, and untinted.
+const ROW_LOOK = {
+  "Publishes on": ["", "ap-icon-share"],
+  About: ["goals", "ap-icon-buildings"],
+  "Writes in": ["goals", "ap-icon-web"],
+  "Speaks to": ["goals", "ap-icon-user"],
+  Goal: ["goals", "ap-icon-target"],
+  Voice: ["voice", "ap-icon-quote"],
+  "Main voice": ["voice", "ap-icon-quote"],
+  Branding: ["brand", "ap-icon-image"],
+  "Up against": ["competitors", "ap-icon-buildings"],
+};
+const ROW_ORDER = Object.keys(ROW_LOOK);
+export const inPlaybookOrder = (rows) =>
+  [...rows].sort((a, b) => ROW_ORDER.indexOf(a.label) - ROW_ORDER.indexOf(b.label));
+// The row carries the tint (its tile and its tags read it); the label gets the tile.
+export const rowTint = (label) => tint((ROW_LOOK[label] || [])[0]);
+export function rowLabel(label) {
+  const icon = (ROW_LOOK[label] || [])[1];
+  const tile = icon
+    ? `<span class="welcome-flow__glyph is-icon is-tinted welcome-flow__row-tile"><i class="${icon}" aria-hidden="true"></i></span>`
+    : "";
+  return raw(`${tile}<span>${escapeHtml(label)}</span>`);
 }
 
 // ── The live card ─────────────────────────────────────────────────────────
@@ -200,7 +247,7 @@ function cardRows(d, sid) {
 
 function renderCard(sid) {
   const d = getDraft(sid);
-  const { rows } = cardRows(d, sid);
+  const rows = inPlaybookOrder(cardRows(d, sid).rows);
   // "Ready" belongs to the reveal (/welcome-alt/ready sets `revealed`); until
   // then a read source is still being learned, whatever has landed already.
   const ready = d?.revealed === true;
@@ -231,8 +278,11 @@ function renderCard(sid) {
         if (r.state === "filled") landed.add(id);
         else landed.delete(id);
         return html`
-          <div class="welcome-intro__row welcome-flow__row is-${r.state} ${fresh ? "is-new" : ""}">
-            <dt>${r.label}</dt>
+          <div
+            class="welcome-intro__row welcome-flow__row is-${r.state} ${fresh ? "is-new" : ""}"
+            style="${rowTint(r.label)}"
+          >
+            <dt>${rowLabel(r.label)}</dt>
             <dd>
               ${r.state === "filled"
                 ? raw(r.value)
