@@ -174,11 +174,14 @@
   align-self: flex-start;
 }
 
+/* Centred in its half, both ways — on a wide screen the column no longer
+   hugs the left edge; the text inside stays left-aligned. */
 .welcome-intro__copy {
   display: flex;
   flex-direction: column;
+  width: 100%;
   max-width: 480px;
-  margin: auto 0;
+  margin: auto;
   padding: var(--ref-spacing-xl) 0;
 }
 

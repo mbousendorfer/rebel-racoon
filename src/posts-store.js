@@ -9,13 +9,13 @@
 //     (the Image Generator's "Use in draft" on a run of several slides)
 //   subscribe(sessionId, fn)    → unsubscribe fn
 
-import { postsBySession as seedPostsBySession, allSeedSessions as seedRecentSessions } from "./mocks.js?v=2005";
-import { isNewUser } from "./user-mode.js?v=2005";
-import { createSessionNotifier } from "./store-utils.js?v=2005";
-import { getSessionById } from "./sessions-store.js?v=2005";
-import { getContextById } from "./contexts-store.js?v=2005";
-import { playbookForNewWork } from "./active-playbook.js?v=2005";
-import { networkVoicesOn, writeInVoice } from "./network-voice.js?v=2005";
+import { postsBySession as seedPostsBySession, allSeedSessions as seedRecentSessions } from "./mocks.js?v=2006";
+import { isNewUser } from "./user-mode.js?v=2006";
+import { createSessionNotifier } from "./store-utils.js?v=2006";
+import { getSessionById } from "./sessions-store.js?v=2006";
+import { getContextById } from "./contexts-store.js?v=2006";
+import { playbookForNewWork } from "./active-playbook.js?v=2006";
+import { networkVoicesOn, writeInVoice } from "./network-voice.js?v=2006";
 
 // Demo session ids — only these get the seeded posts mock. Brand-new
 // conversations start empty (cf. library.js for the same rationale).
