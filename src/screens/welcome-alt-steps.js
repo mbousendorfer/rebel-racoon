@@ -15,8 +15,8 @@
 // Enter submits; nothing on these screens leaves the run by accident (no Esc
 // exit); Back always keeps what was answered.
 
-import { html, raw, escapeHtml } from "../utils.js?v=1949";
-import { navigate } from "../router.js?v=1949";
+import { html, raw, escapeHtml } from "../utils.js?v=1950";
+import { navigate } from "../router.js?v=1950";
 import {
   getDraft,
   patchDraft,
@@ -24,13 +24,13 @@ import {
   readAltFiles,
   writeAltManually,
   analyzeAltInterview,
-} from "../context-builder.js?v=1949";
-import { nextInterviewQuestion, analyzeNetworkVoices } from "../context-mock-analysis.js?v=1949";
-import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=1949";
-import { voiceNetworks } from "../network-voice.js?v=1949";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "../social-profiles.js?v=1949";
-import { connectors as connectorMocks } from "../mocks.js?v=1949";
-import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT } from "./welcome-alt-shell.js?v=1949";
+} from "../context-builder.js?v=1950";
+import { nextInterviewQuestion, analyzeNetworkVoices } from "../context-mock-analysis.js?v=1950";
+import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=1950";
+import { voiceNetworks } from "../network-voice.js?v=1950";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "../social-profiles.js?v=1950";
+import { connectors as connectorMocks } from "../mocks.js?v=1950";
+import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT } from "./welcome-alt-shell.js?v=1950";
 
 // Wire one screen: the shell, a click handler, an optional submit / change.
 function screen(target, { step, left, onClick, onSubmit, onChange, onInput, onKeydown }) {

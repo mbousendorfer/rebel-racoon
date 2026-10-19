@@ -1038,6 +1038,23 @@
   }
 }
 
+/* The card's part, on top: its icon tile and name (the list's tile). The
+   block's own glyph goes — one icon per part, so the part reads first. */
+.welcome-review__kicker {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  margin-bottom: var(--ref-spacing-sm);
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.welcome-review__card .pb2-block__icon {
+  display: none;
+}
+
 /* The card's footer: where you are, Back, and Looks good / Save — right-grouped. */
 .welcome-review__cardfoot {
   display: flex;

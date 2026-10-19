@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=1949";
-import { conceptHint } from "./concepts.js?v=1949";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=1950";
+import { conceptHint } from "./concepts.js?v=1950";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -29,11 +29,11 @@ import {
   handleKitChange,
   kitSnapshot,
   renderImagesTab,
-} from "./playbook-brand-kit.js?v=1949";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1949";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1949";
-import { isFlagOn } from "./feature-flags.js?v=1949";
-import { parseHashParams } from "./url-state.js?v=1949";
+} from "./playbook-brand-kit.js?v=1950";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=1950";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1950";
+import { isFlagOn } from "./feature-flags.js?v=1950";
+import { parseHashParams } from "./url-state.js?v=1950";
 import {
   networkVoicesOn,
   baseNetwork,
@@ -56,16 +56,16 @@ import {
   networkLabel,
   networkIcon,
   memoryCardHtml,
-} from "./network-voice.js?v=1949";
+} from "./network-voice.js?v=1950";
 import {
   getSuggestions,
   accept as acceptVoiceSuggestion,
   dismiss as dismissVoiceSuggestion,
-} from "./voice-coach-store.js?v=1949";
-import { showToast } from "./components/toast.js?v=1949";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=1949";
-import { open as openVoiceWizard } from "./components/voice-wizard-modal.js?v=1949";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1949";
+} from "./voice-coach-store.js?v=1950";
+import { showToast } from "./components/toast.js?v=1950";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=1950";
+import { open as openVoiceWizard } from "./components/voice-wizard-modal.js?v=1950";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=1950";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -1756,7 +1756,11 @@ const SECTION_LEADS = {
 
 // The recap's sections with what each holds — the onboarding review walks
 // through them one by one (flag connectFirst, welcome-alt-review.js).
-export const RECAP_SECTIONS = TABS.filter((t) => t.id !== "images").map((t) => ({ ...t, lead: SECTION_LEADS[t.id] }));
+export const RECAP_SECTIONS = TABS.filter((t) => t.id !== "images").map((t) => ({
+  ...t,
+  lead: SECTION_LEADS[t.id],
+  icon: SECTIONS.find((sec) => sec.scope === t.id)?.icon || "",
+}));
 
 // The saved Playbook's page, as opposed to the creation recap: only there does
 // leaving save an open section, or a reload ask first. Both pages share ONE
