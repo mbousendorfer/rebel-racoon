@@ -8,17 +8,17 @@
 // A Playbook filled by hand has nothing to build: straight to the reveal, and
 // its way out is filling it in.
 
-import { html, raw } from "../utils.js?v=1977";
-import { navigate } from "../router.js?v=1977";
-import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=1977";
+import { html, raw } from "../utils.js?v=1978";
+import { navigate } from "../router.js?v=1978";
+import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=1978";
 import {
   LOADING_STAGES,
   FILE_LOADING_STAGES,
   INTERVIEW_LOADING_STAGES,
   withNetworkStage,
   enterArchie,
-} from "./welcome-alt-recap.js?v=1977";
-import { ensureFlowDraft, goBack, mountShell } from "./welcome-alt-shell.js?v=1977";
+} from "./welcome-alt-recap.js?v=1978";
+import { ensureFlowDraft, goBack, mountShell } from "./welcome-alt-shell.js?v=1978";
 
 const STAGE_MS = 1300; // each stage holds at least this long, so the work reads as work
 const started = new Map(); // sid → when this screen first showed it (a re-render doesn't restart it)
@@ -92,7 +92,9 @@ export function renderWelcomeAltReady(_params, target) {
         )}
       </ol>
       <div class="welcome-flow__actions">
-        <button type="button" class="ap-button stroked grey" data-flow-back>Back</button>
+        <button type="button" class="ap-button ghost grey" data-flow-back>
+          <i class="ap-icon-arrow-left"></i><span>Back</span>
+        </button>
       </div>
     `;
   };

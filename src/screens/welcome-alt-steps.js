@@ -15,8 +15,8 @@
 // Enter submits; nothing on these screens leaves the run by accident (no Esc
 // exit); Back always keeps what was answered.
 
-import { html, raw, escapeHtml } from "../utils.js?v=1977";
-import { navigate } from "../router.js?v=1977";
+import { html, raw, escapeHtml } from "../utils.js?v=1978";
+import { navigate } from "../router.js?v=1978";
 import {
   getDraft,
   patchDraft,
@@ -24,13 +24,13 @@ import {
   readAltFiles,
   writeAltManually,
   analyzeAltInterview,
-} from "../context-builder.js?v=1977";
-import { nextInterviewQuestion, analyzeNetworkVoices } from "../context-mock-analysis.js?v=1977";
-import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=1977";
-import { voiceNetworks } from "../network-voice.js?v=1977";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "../social-profiles.js?v=1977";
-import { connectors as connectorMocks } from "../mocks.js?v=1977";
-import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT } from "./welcome-alt-shell.js?v=1977";
+} from "../context-builder.js?v=1978";
+import { nextInterviewQuestion, analyzeNetworkVoices } from "../context-mock-analysis.js?v=1978";
+import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=1978";
+import { voiceNetworks } from "../network-voice.js?v=1978";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "../social-profiles.js?v=1978";
+import { connectors as connectorMocks } from "../mocks.js?v=1978";
+import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT } from "./welcome-alt-shell.js?v=1978";
 
 // Wire one screen: the shell, a click handler, an optional submit / change.
 function screen(target, { step, left, onClick, onSubmit, onChange, onInput, onKeydown }) {
@@ -61,7 +61,9 @@ function screen(target, { step, left, onClick, onSubmit, onChange, onInput, onKe
 const actions = (primary, { skip = "" } = {}) =>
   raw(html`
     <div class="welcome-flow__actions">
-      <button type="button" class="ap-button stroked grey" data-flow-back>Back</button>
+      <button type="button" class="ap-button ghost grey" data-flow-back>
+        <i class="ap-icon-arrow-left"></i><span>Back</span>
+      </button>
       ${skip
         ? raw(`<button type="button" class="ap-button ghost grey" data-flow-skip>${escapeHtml(skip)}</button>`)
         : ""}

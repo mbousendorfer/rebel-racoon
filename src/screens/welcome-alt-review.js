@@ -20,13 +20,13 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 
-import { html, raw } from "../utils.js?v=1977";
-import { navigate } from "../router.js?v=1977";
-import { getDraft, patchDraft } from "../context-builder.js?v=1977";
-import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=1977";
-import { parseHashParams } from "../url-state.js?v=1977";
-import { mountShell } from "./welcome-alt-shell.js?v=1977";
-import { enterArchie } from "./welcome-alt-recap.js?v=1977";
+import { html, raw } from "../utils.js?v=1978";
+import { navigate } from "../router.js?v=1978";
+import { getDraft, patchDraft } from "../context-builder.js?v=1978";
+import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=1978";
+import { parseHashParams } from "../url-state.js?v=1978";
+import { mountShell } from "./welcome-alt-shell.js?v=1978";
+import { enterArchie } from "./welcome-alt-recap.js?v=1978";
 
 const MOVE_MS = 220; // the card's exit, before the next one comes in
 
@@ -55,6 +55,7 @@ export function renderReview(target, sid, config) {
   const partOf = (id) => RECAP_SECTIONS.find((t) => t.id === id) || RECAP_SECTIONS[0];
 
   let index = 0; // the front card, within the current part
+  let allSet = false; // the "all set" card is up (it carries Start writing)
   let count = 0; // how many cards the current part deals
 
   const left = () => {
@@ -94,10 +95,14 @@ export function renderReview(target, sid, config) {
         })}
       </ul>
       <div class="welcome-flow__actions">
-        <button type="button" class="ap-button stroked grey" data-flow-back>Back</button>
-        <button type="button" class="ap-button primary orange" data-review-start>
-          <span>Start writing</span><i class="ap-icon-arrow-right"></i>
+        <button type="button" class="ap-button ghost grey" data-flow-back>
+          <i class="ap-icon-arrow-left"></i><span>Back</span>
         </button>
+        ${allSet /* the "all set" card offers it — once is enough */
+          ? ""
+          : raw(`<button type="button" class="ap-button primary orange" data-review-start>
+              <span>Start writing</span><i class="ap-icon-arrow-right"></i>
+            </button>`)}
       </div>
     `;
   };
@@ -300,6 +305,10 @@ export function renderReview(target, sid, config) {
   const hideIntro = () => {
     shell.sheet.classList.remove("is-part-intro", "is-asking");
     introEl.innerHTML = "";
+    if (allSet) {
+      allSet = false;
+      shell.paint();
+    }
   };
 
   const finishPart = () => {
@@ -322,6 +331,7 @@ export function renderReview(target, sid, config) {
     const at = RECAP_SECTIONS.findIndex((t) => t.id === from);
     const to = RECAP_SECTIONS[at + 1];
     if (!to) {
+      allSet = true;
       showIntro(doneCard());
       shell.paint();
       return;

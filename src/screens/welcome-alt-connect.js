@@ -7,7 +7,7 @@
 // stays possible behind skip-connect-modal (its reasons are optional), so the
 // ask comes first without becoming a prerequisite.
 
-import { html, raw, escapeHtml } from "../utils.js?v=1977";
+import { html, raw, escapeHtml } from "../utils.js?v=1978";
 import {
   getConnectedProfiles,
   getConnectableNetworks,
@@ -15,13 +15,13 @@ import {
   NETWORK_LABEL,
   BRAND_INITIALS,
   subscribe as subscribeProfiles,
-} from "../social-profiles.js?v=1977";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=1977";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=1977";
-import { open as openSkipConnectModal } from "../components/skip-connect-modal.js?v=1977";
-import { recordReasons } from "../feedback-store.js?v=1977";
-import { SKIP_CONNECT_TARGET, syncAltProfiles } from "../context-builder.js?v=1977";
-import { ensureFlowDraft, goBack, goNext, mountShell } from "./welcome-alt-shell.js?v=1977";
+} from "../social-profiles.js?v=1978";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=1978";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=1978";
+import { open as openSkipConnectModal } from "../components/skip-connect-modal.js?v=1978";
+import { recordReasons } from "../feedback-store.js?v=1978";
+import { SKIP_CONNECT_TARGET, syncAltProfiles } from "../context-builder.js?v=1978";
+import { ensureFlowDraft, goBack, goNext, mountShell } from "./welcome-alt-shell.js?v=1978";
 
 function connectedRow(p) {
   const inner = p.photo
@@ -67,7 +67,9 @@ function left() {
       ${connected.map(connectedRow)} ${networks.map(networkRow)}
     </ul>
     <div class="welcome-flow__actions">
-      <button type="button" class="ap-button stroked grey" data-flow-back>Back</button>
+      <button type="button" class="ap-button ghost grey" data-flow-back>
+        <i class="ap-icon-arrow-left"></i><span>Back</span>
+      </button>
       ${none ? raw(`<button type="button" class="ap-button ghost grey" data-welcome-skip>Skip for now</button>`) : ""}
       <button type="button" class="ap-button primary blue" data-flow-next ${none ? raw("disabled") : ""}>
         <span>Continue</span>
