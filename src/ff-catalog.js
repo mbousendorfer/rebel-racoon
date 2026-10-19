@@ -192,12 +192,13 @@ export const FLAGS = Object.freeze([
     // an account is the step after the website URL.
     default: false,
     hides:
-      "When ON, a new user first sees the plan — the steps the setup will ask, " +
-      "in order — then connects their social profiles, " +
-      "before the chat, the website or anything else — like Agorapulse's own " +
-      "Archie signup step: one row per network, the connected profiles beside " +
-      'them, and "Start using Archie" once one is connected. "Skip for now" ' +
-      "stays, behind the usual skip-with-reasons dialog. The onboarding chat " +
-      "then starts on the website and no longer asks for an account.",
+      "When ON, the first-time run is a series of screens instead of the chat. " +
+      "First the plan — the steps ahead, in order — then one screen per step, " +
+      "all in the same split: the step on the left, and on the right Archie's " +
+      "stage where the Playbook card fills in with the real answers (the " +
+      "connected profiles, the site's name, voice, audience, colours). " +
+      "Profiles come first (Skip stays, its reasons optional); the website is " +
+      "a field, prefilled, with files, a short interview or by hand as other " +
+      "ways in. It ends on a reveal — Start writing, or review the details.",
   },
 ]);

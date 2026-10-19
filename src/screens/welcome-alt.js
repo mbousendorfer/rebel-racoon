@@ -11,14 +11,13 @@
 // first screen — the profile pick is now question 2 of 3 inside the
 // chat, alongside URL (q1) and Documents (q3, skippable).
 //
-// Flag connectFirst: first a screen that says what the setup will ask
-// (/welcome-alt/intro), then connecting social profiles (/welcome-alt/connect),
-// (welcome-alt-intro.js, welcome-alt-connect.js), which hands over to the chat through
-// startOnboardingChat() — and the chat no longer asks for an account.
+// Flag connectFirst: the run is a series of screens instead of the chat —
+// /welcome-alt/intro first (welcome-alt-intro.js), then the shell's steps
+// (welcome-alt-shell.js, -connect, -steps, -ready).
 
-import { navigate } from "../router.js?v=1922";
-import { setHandoff } from "../handoff.js?v=1922";
-import { isFlagOn } from "../feature-flags.js?v=1922";
+import { navigate } from "../router.js?v=1930";
+import { setHandoff } from "../handoff.js?v=1930";
+import { isFlagOn } from "../feature-flags.js?v=1930";
 
 // Mock URL — the brand site is supposed to be collected by an earlier
 // step that lives outside the prototype. We hardcode a believable value
@@ -36,7 +35,7 @@ export function renderWelcomeAlt(_params, _target) {
   return () => {};
 }
 
-export function startOnboardingChat() {
+function startOnboardingChat() {
   // First-time onboarding is full-bleed: make sure no leftover
   // "integrated" flag (from a previous New-Playbook run) keeps the app
   // shell visible here.

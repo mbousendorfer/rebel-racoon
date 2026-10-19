@@ -25,18 +25,17 @@
 //   2. ASK — a multi-select, because the reasons genuinely stack (no rights
 //      AND someone else handles it AND they'd like to look around first).
 //
-// ⚠️ Answering is REQUIRED: Skip stays disabled until a box is ticked. That is
-// a deliberate departure from topic-ignore-modal, whose reason is optional —
-// there, the reason is a bonus on an action the reader already owns; here it is
-// the only thing the step gets back for letting the user through, and the same
-// user meets this dialog once in their life. Backing out is always free (Back,
+// Answering is OPTIONAL (2026-10-19, was required): a gate on the skip was one
+// more friction on the very first screen of the app, and a forced tick is a
+// noisy answer anyway. The question stays — most people who skip will say why
+// when asked plainly. Backing out is always free (Back,
 // Esc, the backdrop, the X), and it returns to the network grid rather than
 // skipping — so the gate is on the SKIP, never on leaving the dialog.
 //
 // The whole module only ever runs under `skipConnectProfiles`: it is reached
 // from the one Skip that flag creates, so it needs no flag test of its own.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1922";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=1930";
 
 const MODAL_ID = "skip-connect";
 
@@ -121,7 +120,7 @@ const HTML = `
     </ul>
     <div class="ap-form-field skip-connect__question">
       <label class="skip-connect__label" id="skipConnectReasonsLabel">Why not now?</label>
-      <p class="skip-connect__hint">Tick everything that applies — at least one.</p>
+      <p class="skip-connect__hint">Tick anything that applies — optional.</p>
       <div class="skip-connect__reasons" id="skipConnectReasons" role="group" aria-labelledby="skipConnectReasonsLabel">
         ${REASONS.map(
           (r) => `
@@ -148,7 +147,7 @@ const HTML = `
   <div class="ap-dialog-footer">
     <div class="ap-dialog-footer-right">
       <button type="button" class="ap-button transparent grey" id="skipConnectBack">Back</button>
-      <button type="button" class="ap-button primary blue" id="skipConnectSkip" disabled>Skip</button>
+      <button type="button" class="ap-button primary blue" id="skipConnectSkip">Skip</button>
     </div>
   </div>
 </aside>`;
@@ -165,10 +164,6 @@ function syncOther() {
   otherField.hidden = !on;
   if (!on) otherInput.value = "";
   else otherInput.focus({ preventScroll: true });
-}
-
-function syncSkip() {
-  skipBtn.disabled = selectedReasons().length === 0;
 }
 
 function injectOnce() {
@@ -199,12 +194,11 @@ function injectOnce() {
   listEl.addEventListener("change", (event) => {
     if (!event.target.matches("[data-skip-reason]")) return;
     if (event.target.value === "other") syncOther();
-    syncSkip();
   });
 
   // Enter in the free-text row submits, the way it would in a one-field form.
   otherInput.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" && !skipBtn.disabled) {
+    if (event.key === "Enter") {
       event.preventDefault();
       submit();
     }
@@ -215,7 +209,6 @@ function injectOnce() {
 
 function submit() {
   const reasons = selectedReasons();
-  if (!reasons.length) return;
   const comment = otherInput.value.trim();
   const fn = pendingOnSkip;
   pendingOnSkip = null;
@@ -240,7 +233,6 @@ export function open({ onSkip = null, onDismiss = null } = {}) {
   });
   otherInput.value = "";
   otherField.hidden = true;
-  syncSkip();
 
   backdrop.hidden = false;
   backdrop.classList.add("open");

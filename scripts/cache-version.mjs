@@ -39,8 +39,9 @@ function sourceFiles() {
   return out;
 }
 
-/* A module specifier in src/: `from "./x.js"` / `import("../y.js?v=3")`. */
-const JS_SPECIFIER = /((?:from |import\()\s*")(\.[^"]*?\.js)(?:\?v=\d+)?(")/g;
+/* A module specifier in src/: `from "./x.js"` / `import("../y.js?v=3")` /
+   a side-effect `import "./z.js"` (missed before 2026-10-19 — it kept its old number). */
+const JS_SPECIFIER = /((?:from |import\(|import )\s*")(\.[^"]*?\.js)(?:\?v=\d+)?(")/g;
 /* An app asset in index.html: our own styles + the entry point. Never the DS, which is served by the CDN. */
 const HTML_ASSET = /((?:href|src)=")(\.\/(?:styles|src)\/[^"]*?\.(?:css|js))(?:\?v=\d+)?(")/g;
 

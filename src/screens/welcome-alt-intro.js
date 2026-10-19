@@ -11,59 +11,45 @@
 // The card is an illustration, not data: the Playbook's real parts (Voice
 // profile, Branding…) filled with example values.
 
-import "../archie-pixels.js?v=1916";
-import { html, raw } from "../utils.js?v=1922";
-import { altSteps } from "../context-builder.js?v=1922";
-import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=1922";
-import { navigate } from "../router.js?v=1922";
+import "../archie-pixels.js?v=1930";
+import { html, raw } from "../utils.js?v=1930";
+import { NETWORK_ICON_BY_PLATFORM } from "../social-profiles.js?v=1930";
+import { navigate } from "../router.js?v=1930";
+import { flowSteps, startFlow, STEP_TEXT } from "./welcome-alt-shell.js?v=1930";
 
 const glyph = (net) =>
   `<span class="welcome-intro__net"><i class="${NETWORK_ICON_BY_PLATFORM[net]}" aria-hidden="true"></i></span>`;
 
-// Per step: what the list says, and the line of the Playbook it builds.
+// Per step: the example line of the Playbook it builds (the names are STEP_TEXT).
 const STEPS = {
   connect: {
-    title: "Connect your social profiles",
-    desc: "So I write for the networks you publish on.",
     label: "Publishes on",
     value: ["linkedin", "instagram", "facebook", "x"].map(glyph).join(""),
   },
   url: {
-    title: "Show me your brand",
-    desc: "Your website, a few files, or a handful of questions.",
     label: "Voice",
     value: ["Warm", "Witty", "Never salesy"].map((t) => `<span class="welcome-intro__trait">${t}</span>`).join(""),
   },
   language: {
-    title: "Pick your language",
-    desc: "The one I'll write your posts in.",
     label: "Writes in",
     value: `<span class="welcome-intro__plain">English</span>`,
   },
   network: {
-    title: "Choose your main network",
-    desc: "Your main voice is built for it.",
     label: "Main voice",
     value: `${glyph("linkedin")}<span class="welcome-intro__plain">LinkedIn</span>`,
   },
   documents: {
-    title: "Add your documents",
-    desc: "Optional — a brand book or guidelines.",
     label: "Branding",
     // An example brand palette.
     value: ["--app-convo-navy", "--ref-color-orange-100", "--ref-color-yellow-40", "--app-surface-subtle"]
       .map((token) => `<span class="welcome-intro__swatch" style="background: var(${token})"></span>`)
       .join(""),
   },
-  recap: {
-    title: "Review your Playbook",
-    desc: "Everything I learned, on one page you can edit.",
-  },
 };
 
 export function renderWelcomeAltIntro(_params, target) {
-  const steps = ["connect", ...altSteps().filter((id) => STEPS[id]), "recap"];
-  const rows = steps.filter((id) => STEPS[id].label);
+  const steps = flowSteps();
+  const rows = steps.filter((id) => STEPS[id]?.label);
   const last = steps.length - 1;
 
   target.innerHTML = html`
@@ -81,8 +67,8 @@ export function renderWelcomeAltIntro(_params, target) {
                 <li class="welcome-intro__step" style="--i: ${i}">
                   <span class="welcome-intro__num" aria-hidden="true">${i + 1}</span>
                   <span class="welcome-intro__text">
-                    <span class="welcome-intro__step-title">${STEPS[id].title}</span>
-                    <span class="welcome-intro__step-desc">${STEPS[id].desc}</span>
+                    <span class="welcome-intro__step-title">${STEP_TEXT[id].title}</span>
+                    <span class="welcome-intro__step-desc">${STEP_TEXT[id].desc}</span>
                   </span>
                 </li>
               `,
@@ -123,7 +109,9 @@ export function renderWelcomeAltIntro(_params, target) {
   `;
 
   const onClick = (event) => {
-    if (event.target.closest("[data-welcome-begin]")) navigate("/welcome-alt/connect");
+    if (!event.target.closest("[data-welcome-begin]")) return;
+    startFlow();
+    navigate("/welcome-alt/connect");
   };
   target.addEventListener("click", onClick);
   return () => target.removeEventListener("click", onClick);

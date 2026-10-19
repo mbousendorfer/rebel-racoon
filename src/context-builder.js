@@ -13,15 +13,15 @@
 // tones, contentStyle, objective, contentAction, ctaLinks, language, color,
 // suggestions, editingId, onComplete }.
 
-import * as inlineQuestion from "./inline-question.js?v=1922";
-import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=1922";
-import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=1922";
-import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=1922";
-import { showToast } from "./components/toast.js?v=1922";
-import { recordReasons } from "./feedback-store.js?v=1922";
-import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1922";
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1922";
-import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=1922";
+import * as inlineQuestion from "./inline-question.js?v=1930";
+import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=1930";
+import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=1930";
+import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=1930";
+import { showToast } from "./components/toast.js?v=1930";
+import { recordReasons } from "./feedback-store.js?v=1930";
+import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=1930";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=1930";
+import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=1930";
 import {
   analyzeWebsite,
   analyzeBrandFiles,
@@ -29,8 +29,8 @@ import {
   analyzeInterview,
   nextInterviewQuestion,
   INTERVIEW_OPENING,
-} from "./context-mock-analysis.js?v=1922";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=1922";
+} from "./context-mock-analysis.js?v=1930";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=1930";
 import {
   networkVoicesOn,
   cloneVoiceByNetwork,
@@ -38,17 +38,17 @@ import {
   networkLabel,
   networkIcon,
   voiceNetworks,
-} from "./network-voice.js?v=1922";
-import { connectors as connectorMocks } from "./mocks.js?v=1922";
+} from "./network-voice.js?v=1930";
+import { connectors as connectorMocks } from "./mocks.js?v=1930";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "./social-profiles.js?v=1922";
-import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=1922";
-import { isFlagOn } from "./feature-flags.js?v=1922";
-import { navigate } from "./router.js?v=1922";
-import { setHandoff } from "./handoff.js?v=1922";
+} from "./social-profiles.js?v=1930";
+import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=1930";
+import { isFlagOn } from "./feature-flags.js?v=1930";
+import { navigate } from "./router.js?v=1930";
+import { setHandoff } from "./handoff.js?v=1930";
 
 const drafts = new Map(); // sessionId → draft
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -145,6 +145,14 @@ function emptyDraft(overrides = {}) {
     onComplete: null,
     ...overrides,
   };
+}
+
+// Repaint hook for surfaces that show a draft as it fills (the onboarding
+// screens under flag connectFirst). Returns the unsubscribe.
+export function subscribeDraft(sessionId, fn) {
+  if (!subscribers.has(sessionId)) subscribers.set(sessionId, new Set());
+  subscribers.get(sessionId).add(fn);
+  return () => subscribers.get(sessionId)?.delete(fn);
 }
 
 export function getDraft(sessionId) {
@@ -307,21 +315,101 @@ export function isAnalysisReady(sessionId) {
 // lives outside the prototype — the chat surface uses it to pre-populate
 // the URL question card so the user just confirms instead of typing.
 export function startAlt(sessionId, { onComplete, prefilledUrl = "" } = {}) {
+  createAltDraft(sessionId, { onComplete, prefilledUrl });
+  askAltUrl(sessionId, (prefilledUrl || "").trim());
+}
+
+// ── The onboarding's moves, without the chat ─────────────────────────────
+// Each step's effect on the draft, shared by the chat above and by the
+// dedicated onboarding screens (flag connectFirst, screens/welcome-alt-*.js):
+// one implementation, two hosts.
+
+export function createAltDraft(sessionId, { onComplete = null, prefilledUrl = "" } = {}) {
   const url = (prefilledUrl || "").trim();
-  drafts.set(
-    sessionId,
-    emptyDraft({
-      onComplete,
-      sourceType: "website",
-      websiteUrl: url,
-      sourceUrl: url,
-    }),
-  );
-  // Flag connectFirst: the accounts were connected on the screen before this
-  // chat (/welcome-alt/connect), so the Playbook takes them as they are.
-  if (isFlagOn("connectFirst")) commitAltProfiles(sessionId, getConnectedProfiles(), { echo: false });
+  drafts.set(sessionId, emptyDraft({ onComplete, sourceType: "website", websiteUrl: url, sourceUrl: url }));
+  // The accounts already connected are the ones the Playbook publishes from.
+  syncAltProfiles(sessionId);
   notify(sessionId);
-  askAltUrl(sessionId, url);
+  return drafts.get(sessionId);
+}
+
+// Take the connected accounts as the Playbook's, as they stand now.
+export function syncAltProfiles(sessionId) {
+  commitAltProfiles(sessionId, getConnectedProfiles(), { echo: false });
+  notify(sessionId);
+}
+
+// Read a website: the analysis runs in the background while the next steps are
+// answered, and lands on the draft when it's done.
+export function readAltWebsite(sessionId, url) {
+  const d = drafts.get(sessionId);
+  if (!d) return;
+  Object.assign(d, {
+    sourceType: "website",
+    sourceUrl: (url || "").trim(),
+    websiteUrl: (url || "").trim(),
+    sourceFile: null,
+    interview: [],
+    analysisStartedAt: Date.now(),
+  });
+  notify(sessionId);
+  window.setTimeout(() => {
+    const dd = drafts.get(sessionId);
+    if (!dd || dd.sourceType !== "website") return;
+    applyAnalysisToDraft(dd, analyzeWebsite(dd.sourceUrl || dd.websiteUrl));
+    notify(sessionId);
+  }, 6000);
+}
+
+// Read brand files ({ name, url } data URLs): same background analysis.
+export function readAltFiles(sessionId, list) {
+  const d = drafts.get(sessionId);
+  if (!d || !list?.length) return;
+  Object.assign(d, {
+    sourceType: "documents",
+    sourceFile: list[0].name,
+    sourceUrl: "",
+    websiteUrl: "",
+    analysisStartedAt: Date.now(),
+  });
+  notify(sessionId);
+  window.setTimeout(() => {
+    const dd = drafts.get(sessionId);
+    if (!dd || dd.sourceType !== "documents") return;
+    applyAnalysisToDraft(dd, analyzeBrandFiles(list));
+    // Every file is a reference; the first one is taken as the logo.
+    dd.referenceImages = list.map((f, i) => ({ id: `ref-file-${i}`, label: f.name, url: f.url }));
+    notify(sessionId);
+  }, 4000);
+}
+
+// No analysis: the empty fiche is the form.
+export function writeAltManually(sessionId) {
+  const d = drafts.get(sessionId);
+  if (!d) return;
+  Object.assign(d, { sourceType: "manual", sourceUrl: "", websiteUrl: "", name: d.name || "New Playbook" });
+  notify(sessionId);
+}
+
+// The interview's answers → the Playbook, in the background.
+export function analyzeAltInterview(sessionId, interview) {
+  const d = drafts.get(sessionId);
+  if (!d) return;
+  Object.assign(d, {
+    sourceType: "interview",
+    sourceUrl: "",
+    websiteUrl: "",
+    sourceFile: null,
+    interview,
+    analysisStartedAt: Date.now(),
+  });
+  notify(sessionId);
+  window.setTimeout(() => {
+    const dd = drafts.get(sessionId);
+    if (dd?.sourceType !== "interview") return;
+    applyAnalysisToDraft(dd, analyzeInterview(dd.interview));
+    notify(sessionId);
+  }, 4000);
 }
 
 // The onboarding steps, in order, as they exist under the current flags — the
@@ -473,12 +561,7 @@ function finishAltInterview(sessionId) {
   postAssistantMessage(sessionId, "Thanks, that's what I needed. I'm putting your answers together while we finish.");
   // Same background timing as the files analysis: the brief is ready by the
   // time the remaining steps are done.
-  window.setTimeout(() => {
-    const dd = drafts.get(sessionId);
-    if (dd?.sourceType !== "interview") return;
-    applyAnalysisToDraft(dd, analyzeInterview(dd.interview));
-    notify(sessionId);
-  }, 4000);
+  analyzeAltInterview(sessionId, drafts.get(sessionId)?.interview || []);
   askAltAfterUrl(sessionId);
 }
 
@@ -521,24 +604,11 @@ function startAltFromFiles(sessionId) {
     );
     Promise.all(read).then((loaded) => {
       const list = loaded.filter(Boolean);
-      const d = drafts.get(sessionId);
-      if (!d || !list.length) return;
-      d.sourceType = "documents";
-      d.sourceFile = list[0].name;
-      d.sourceUrl = "";
-      d.websiteUrl = "";
+      if (!drafts.get(sessionId) || !list.length) return;
       postUserTurn(sessionId, `${list.length} ${list.length === 1 ? "file" : "files"} added`);
       inlineQuestion.exit(sessionId);
-      notify(sessionId);
       // Same background timing as the website analysis, for the same reason.
-      window.setTimeout(() => {
-        const dd = drafts.get(sessionId);
-        if (!dd) return;
-        applyAnalysisToDraft(dd, analyzeBrandFiles(list));
-        // Every file is a reference; the first one is taken as the logo.
-        dd.referenceImages = list.map((f, i) => ({ id: `ref-file-${i}`, label: f.name, url: f.url }));
-        notify(sessionId);
-      }, 4000);
+      readAltFiles(sessionId, list);
       askAltAfterUrl(sessionId);
     });
   });
@@ -546,15 +616,10 @@ function startAltFromFiles(sessionId) {
 }
 
 function startAltManually(sessionId) {
-  const d = drafts.get(sessionId);
-  if (!d) return;
-  d.sourceType = "manual";
-  d.sourceUrl = "";
-  d.websiteUrl = "";
-  d.name = d.name || "New Playbook";
+  if (!drafts.get(sessionId)) return;
   postUserTurn(sessionId, "I'll fill it in myself");
   inlineQuestion.exit(sessionId);
-  notify(sessionId);
+  writeAltManually(sessionId);
   askAltAfterUrl(sessionId);
 }
 
@@ -575,23 +640,14 @@ function askAltUrl(sessionId, prefilledUrl = "") {
     customPlaceholder: "https://your-brand.com",
     customValue: prefilledUrl,
     onCustom: (value) => {
-      const d = drafts.get(sessionId);
-      if (!d) return;
-      d.sourceUrl = (value || "").trim();
-      d.websiteUrl = d.sourceUrl;
-      postUserTurn(sessionId, d.sourceUrl);
+      if (!drafts.get(sessionId)) return;
+      postUserTurn(sessionId, (value || "").trim());
       inlineQuestion.exit(sessionId);
-      notify(sessionId);
       // Kick off the website analysis in the background. It runs while
       // the user moves through questions 2 and 3 — by the time they
       // finish, the draft is hydrated and the brief panel can render
       // without an additional pending state.
-      window.setTimeout(() => {
-        const dd = drafts.get(sessionId);
-        if (!dd) return;
-        applyAnalysisToDraft(dd, analyzeWebsite(dd.sourceUrl || dd.websiteUrl));
-        notify(sessionId);
-      }, 6000);
+      readAltWebsite(sessionId, value);
       askAltAfterUrl(sessionId);
     },
   });
@@ -723,7 +779,10 @@ function askAltProfile(sessionId, { announce = true } = {}) {
       onSkip: () => {
         openSkipConnectModal({
           onSkip: (reasons, comment) => {
-            recordReasons(SKIP_CONNECT_TARGET, { reasons, comment }, { kind: "skip", step: "connect-profiles" });
+            // The reasons are optional: record only an actual answer.
+            if (reasons.length || comment) {
+              recordReasons(SKIP_CONNECT_TARGET, { reasons, comment }, { kind: "skip", step: "connect-profiles" });
+            }
             showToast("Noted — I'll ask again when I write your first draft.");
             inlineQuestion.exit(sessionId);
             notify(sessionId);
