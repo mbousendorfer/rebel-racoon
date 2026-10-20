@@ -8,12 +8,13 @@
 // The state machine timers live here (not inside the modal) so uploads
 // continue in background after the user closes the modal.
 
-import { sourcesBySession as seedByCsesssion } from "./mocks.js?v=2054";
-import { isFlagOn } from "./feature-flags.js?v=2054";
-import { isNewUser } from "./user-mode.js?v=2054";
-import { createNotifier } from "./store-utils.js?v=2054";
-import { detectUrlService } from "./url-services.js?v=2054";
-import { showToast } from "./components/toast.js?v=2054";
+import { sourcesBySession as seedByCsesssion, DEMO_CLIPS } from "./mocks.js?v=2055";
+import { isDemo } from "./demo-mode.js?v=2055";
+import { isFlagOn } from "./feature-flags.js?v=2055";
+import { isNewUser } from "./user-mode.js?v=2055";
+import { createNotifier } from "./store-utils.js?v=2055";
+import { detectUrlService } from "./url-services.js?v=2055";
+import { showToast } from "./components/toast.js?v=2055";
 
 // Canned extraction output attached to every Processed Video source.
 // Generic enough to plausibly come from any keynote / talk / demo video.
@@ -73,7 +74,8 @@ const EXTRACTED_CLIPS_TEMPLATE = [
 // Stable ids derived from the source id so downstream stores can
 // reference clips reliably.
 export function buildClipsForSource(sourceId) {
-  return EXTRACTED_CLIPS_TEMPLATE.map((c, i) => ({
+  // The demo brand's sample video (flag demoMode) has its own moments.
+  return (isDemo() ? DEMO_CLIPS : EXTRACTED_CLIPS_TEMPLATE).map((c, i) => ({
     ...c,
     id: `clip_${sourceId}_${i}`,
   }));

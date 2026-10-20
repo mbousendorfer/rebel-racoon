@@ -49,9 +49,10 @@
 //   markUsed(id) / ignoreTopic(id, reason) / unignoreTopic(id)
 //   subscribe(fn)                      → unsubscribe
 
-import { topics as seed } from "./mocks.js?v=2054";
-import { isNewUser } from "./user-mode.js?v=2054";
-import { createNotifier } from "./store-utils.js?v=2054";
+import { topics as seed, DEMO_TOPICS } from "./mocks.js?v=2055";
+import { isDemo } from "./demo-mode.js?v=2055";
+import { isNewUser } from "./user-mode.js?v=2055";
+import { createNotifier } from "./store-utils.js?v=2055";
 import {
   DEFAULT_MARKED_IDS,
   MARKED_STATUS_IDS,
@@ -59,9 +60,10 @@ import {
   TOPIC_STATES,
   findTopicState,
   kindOf,
-} from "./topics-catalog.js?v=2054";
+} from "./topics-catalog.js?v=2055";
 
-const topics = isNewUser() ? [] : seed.map(cloneTopic);
+// The demo brand (flag demoMode) comes with three fresh Topics.
+const topics = (isNewUser() ? (isDemo() ? DEMO_TOPICS : []) : seed).map(cloneTopic);
 
 // topicId → { status, reason }. Seeded from the Topic's own `seedStatus` so the
 // feed shows a realistic spread instead of thirty identical To-review rows.

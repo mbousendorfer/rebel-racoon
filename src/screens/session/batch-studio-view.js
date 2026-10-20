@@ -12,27 +12,28 @@
 // The intake card lives OUTSIDE [data-batch-rest]; staging-loader ticks repaint
 // only the rest (list + commit), so the field is never clobbered mid-typing.
 
-import * as batchStudio from "../../batch-studio.js?v=2054";
-import { isFlagOn } from "../../feature-flags.js?v=2054";
-import { getConnectedConnectors } from "../../connectors-store.js?v=2054";
-import { escapeHtml, html, raw } from "../../utils.js?v=2054";
-import { dropzoneHTML } from "../../components/dropzone.js?v=2054";
-import { getContextById } from "../../contexts-store.js?v=2054";
-import { renderSourceCard } from "../../components/source-card.js?v=2054";
-import { isWorkspaceMode, playbookForNewWork } from "../../active-playbook.js?v=2054";
-import { usableContexts } from "../../playbook-access.js?v=2054";
+import { renderDemoSample } from "../../demo-flow.js?v=2055";
+import * as batchStudio from "../../batch-studio.js?v=2055";
+import { isFlagOn } from "../../feature-flags.js?v=2055";
+import { getConnectedConnectors } from "../../connectors-store.js?v=2055";
+import { escapeHtml, html, raw } from "../../utils.js?v=2055";
+import { dropzoneHTML } from "../../components/dropzone.js?v=2055";
+import { getContextById } from "../../contexts-store.js?v=2055";
+import { renderSourceCard } from "../../components/source-card.js?v=2055";
+import { isWorkspaceMode, playbookForNewWork } from "../../active-playbook.js?v=2055";
+import { usableContexts } from "../../playbook-access.js?v=2055";
 import {
   classifyFile,
   startFileUpload,
   startUrlImport,
   startTextImport,
   startConnectorImport,
-} from "../../sources-stream.js?v=2054";
-import { showToast } from "../../components/toast.js?v=2054";
-import { setHashQuery } from "../../url-state.js?v=2054";
-import { navigate } from "../../router.js?v=2054";
-import { dotColorVar } from "../session.js?v=2054";
-import { buildWorkflowFlow } from "./workflow-flow.js?v=2054";
+} from "../../sources-stream.js?v=2055";
+import { showToast } from "../../components/toast.js?v=2055";
+import { setHashQuery } from "../../url-state.js?v=2055";
+import { navigate } from "../../router.js?v=2055";
+import { dotColorVar } from "../session.js?v=2055";
+import { buildWorkflowFlow } from "./workflow-flow.js?v=2055";
 
 // Origin sub-line for a staged batch source, shown in the source-card's meta row
 // (in place of the usual "N ideas · Processed · Added X").
@@ -144,7 +145,7 @@ export function renderBatchStudio(session) {
               <button type="button" class="ap-button stroked grey batch-studio__method" data-batch-paste>
                 <i class="ap-icon-file--text" aria-hidden="true"></i><span>Paste text</span>
               </button>
-              ${raw(connectorMenu)}
+              ${raw(connectorMenu)} ${raw(renderDemoSample("batch"))}
             </div>
             <div class="batch-studio__dropzone-overlay" aria-hidden="true">
               <i class="ap-icon-upload" aria-hidden="true"></i><span>Drop files to upload</span>
