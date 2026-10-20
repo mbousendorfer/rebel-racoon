@@ -1176,7 +1176,7 @@
   gap: 0;
   /* Each card is as tall as its content — never a scroll inside a card; the
      move between two cards is animated, so a change of height reads fine. */
-  padding: var(--ref-spacing-lg);
+  padding: var(--ref-spacing-md); /* 24 — the review's compact rhythm (2026-10-20) */
   background: var(--app-surface);
   border: none;
   border-radius: 20px;
@@ -1511,8 +1511,8 @@
   align-items: center;
   gap: var(--ref-spacing-xxs);
   /* Edge to edge across the card's top: out of its padding, under its corners. */
-  margin: calc(var(--ref-spacing-lg) * -1) calc(var(--ref-spacing-lg) * -1) var(--ref-spacing-lg);
-  padding: var(--ref-spacing-xs) var(--ref-spacing-lg);
+  margin: calc(var(--ref-spacing-md) * -1) calc(var(--ref-spacing-md) * -1) var(--ref-spacing-sm);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-md);
   /* The part's tint (PART_TINT in welcome-alt-review.js), shared with its tile in the list. */
   background: var(--part-tint, var(--app-surface-subtle));
   border-bottom: 1px solid var(--ref-color-grey-20);
@@ -1539,7 +1539,8 @@
 }
 
 .welcome-review__card .pb2-block__head {
-  margin-bottom: var(--ref-spacing-xxs);
+  /* The title sits on its subtitle: one unit, then air before the fields. */
+  margin-bottom: var(--ref-spacing-xxxs);
 }
 
 .welcome-flow__sheet .welcome-review__card .pb2-block__title {
@@ -1551,13 +1552,42 @@
   color: var(--ref-color-grey-100);
 }
 
+/* The block's sentence is its subtitle — the DS subtitle style (16/20). */
 .welcome-flow__sheet .welcome-review__card .pb2-block__hint,
 .welcome-review__card .pb2-panel-lead {
   max-width: 52ch;
-  margin: 0 0 var(--ref-spacing-md);
-  font-size: var(--sys-text-style-body-size);
-  line-height: var(--sys-text-style-body-line-height);
+  margin: 0 0 var(--ref-spacing-sm);
+  font-family: var(--sys-text-style-subtitle-font-family);
+  font-size: var(--sys-text-style-subtitle-size);
+  line-height: var(--sys-text-style-subtitle-line-height);
+  font-weight: var(--sys-text-style-subtitle-weight);
   color: var(--ref-color-grey-80);
+}
+
+/* An edited block's sentence (.pb2-hint) sits in the body, not the head: the
+   same subtitle, and with the body's gap the same 16 before the fields. */
+.welcome-flow__sheet .welcome-review__card .pb2-hint {
+  margin: 0 0 var(--ref-spacing-xxxs);
+  font-family: var(--sys-text-style-subtitle-font-family);
+  font-size: var(--sys-text-style-subtitle-size);
+  line-height: var(--sys-text-style-subtitle-line-height);
+  font-weight: var(--sys-text-style-subtitle-weight);
+  color: var(--ref-color-grey-80);
+}
+
+/* Inside the card, one step of air between pieces (12), never two stacked:
+   the rows' own padding halves, the add button and a sub-section (Words to
+   avoid) ride on the body's gap instead of adding their own margin on top. */
+.welcome-flow__sheet .welcome-review__card .pb2-block__body {
+  gap: var(--ref-spacing-xs);
+}
+
+.welcome-flow__sheet .welcome-review__card .pb2-rule-edit {
+  padding-block: var(--ref-spacing-xxs);
+}
+
+.welcome-flow__sheet .welcome-review__card .pb2-avoid-row {
+  margin-top: var(--ref-spacing-xxxs);
 }
 
 .welcome-review__card .pb2-block__body {
@@ -1700,7 +1730,7 @@
 }
 
 .welcome-review__card .recap__add-row {
-  margin-top: var(--ref-spacing-xs);
+  margin-top: 0; /* the body's gap is the air */
 }
 
 /* A pen to "edit" a card that is already editable says nothing. */
@@ -1783,7 +1813,7 @@
   padding-block: 50cqh;
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-lg);
+  gap: var(--ref-spacing-md);
 }
 
 /* Dimming follows the scroll, frame by frame (--focus, 0 → 1, set by the

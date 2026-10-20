@@ -26,14 +26,14 @@
 // the column — ↑ · the dots, vertical · ↓ — and steps through them; the index
 // follows the scroll. At the bottom, one button confirms the part.
 
-import { html, raw } from "../utils.js?v=2022";
-import { navigate } from "../router.js?v=2022";
-import { getDraft, patchDraft } from "../context-builder.js?v=2022";
-import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2022";
-import { parseHashParams } from "../url-state.js?v=2022";
-import { isFlagOn } from "../feature-flags.js?v=2022";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2022";
-import { enterArchie } from "./welcome-alt-recap.js?v=2022";
+import { html, raw } from "../utils.js?v=2025";
+import { navigate } from "../router.js?v=2025";
+import { getDraft, patchDraft } from "../context-builder.js?v=2025";
+import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2025";
+import { parseHashParams } from "../url-state.js?v=2025";
+import { isFlagOn } from "../feature-flags.js?v=2025";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2025";
+import { enterArchie } from "./welcome-alt-recap.js?v=2025";
 
 const MOVE_MS = 220; // the card's exit, before the next one comes in
 
