@@ -1,8 +1,8 @@
-import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=2070";
-import { conceptHint, conceptText } from "../concepts.js?v=2070";
-import { getPath, navigate } from "../router.js?v=2070";
-import { parseHashParams } from "../url-state.js?v=2070";
-import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=2070";
+import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=2071";
+import { conceptHint, conceptText } from "../concepts.js?v=2071";
+import { getPath, navigate } from "../router.js?v=2071";
+import { parseHashParams } from "../url-state.js?v=2071";
+import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=2071";
 // Lot 19 — topbar no longer carries its own sidebar-toggle button. The
 // sidebar head exposes the toggle in both expanded (chevron-left) and
 // collapsed (view-list) states, so the duplicate in the topbar was just
@@ -11,43 +11,45 @@ import {
   openDrafts as openDraftsPanel,
   openIdeas as openIdeasPanel,
   openSources as openSourcesPanel,
-  openLastMode as openLastPanelMode,
+  openTab as openContentTab,
+  getContentTab,
+  renderContentTabs,
   closePanel as closeRightPanel,
   getMode as getRightPanelMode,
   getActiveBatchRef as getActiveDraftsBatchRef,
   subscribe as subscribeRightPanel,
-} from "./right-panel.js?v=2070";
-import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=2070";
-import { contentCounts } from "./right-panel/overview-view.js?v=2070";
-import { getThread, subscribe as subscribeThread } from "../assistant.js?v=2070";
-import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=2070";
-import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=2070";
+} from "./right-panel.js?v=2071";
+import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=2071";
+import { contentCounts } from "./right-panel/overview-view.js?v=2071";
+import { getThread, subscribe as subscribeThread } from "../assistant.js?v=2071";
+import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=2071";
+import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=2071";
 import {
   isEnabled as isStatusCardEnabled,
   toggle as toggleStatusCard,
   subscribeVisibility as subscribeStatusCardVisibility,
-} from "./conversation-status-card.js?v=2070";
-import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=2070";
-import { open as openRenameModal } from "./rename-modal.js?v=2070";
+} from "./conversation-status-card.js?v=2071";
+import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=2071";
+import { open as openRenameModal } from "./rename-modal.js?v=2071";
 import {
   subscribe as subscribeContexts,
   getContextById,
   getDefaultContext,
   getContexts,
-} from "../contexts-store.js?v=2070";
-import { isFlagOn } from "../feature-flags.js?v=2070";
-import { getActivePlaybook, isWorkspaceMode, isAccountScope, catalogueRoute } from "../active-playbook.js?v=2070";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=2070";
-import { findCadence } from "../topics-catalog.js?v=2070";
+} from "../contexts-store.js?v=2071";
+import { isFlagOn } from "../feature-flags.js?v=2071";
+import { getActivePlaybook, isWorkspaceMode, isAccountScope, catalogueRoute } from "../active-playbook.js?v=2071";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=2071";
+import { findCadence } from "../topics-catalog.js?v=2071";
 import {
   getPickerState as getTopPostsState,
   subscribePicker as subscribeTopPosts,
   backToProfiles as topPostsBackToProfiles,
-} from "../top-posts-flow.js?v=2070";
+} from "../top-posts-flow.js?v=2071";
 // The Insights view switch. Imported from views.js, NOT from the screen's
 // shell: the shell imports this module, so taking it from there would close a
 // cycle. views.js imports neither.
-import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=2070";
+import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=2071";
 
 // The playbook/context pill now lives in the composer (session.js
 // renderPlaybookControl) — selectable on a New Chat, then a static
@@ -109,7 +111,7 @@ export function renderTopbar(_options = {}) {
     !isFlagOn("contentPanel") &&
     (sessionSourceCount() > 0 || ideaCount > 0 || draftCount > 0);
   const sessionActions = isFlagOn("contentPanel")
-    ? renderContentButton(rpMode, isEmpty)
+    ? renderContentTabsHere(isEmpty)
     : renderSessionPills(rpMode, draftCount, isEmpty, ideaCount);
   const ownActions = pageActions && pageActions.path === getPath() ? pageActions.markup : "";
   const rightSide = ownActions
@@ -349,9 +351,15 @@ export function initTopbar() {
       }
       return;
     }
-    if (event.target.closest("[data-topbar-content]")) {
-      if (getRightPanelMode()) closeRightPanel();
-      else openLastPanelMode();
+    // The panel's tabs (flag contentPanel): the open one closes, any other opens.
+    const contentTab = event.target.closest(".app-topbar__content [data-rpanel-goto]");
+    if (contentTab) {
+      if (contentTab.dataset.rpanelGoto === getContentTab()) closeRightPanel();
+      else openContentTab(contentTab.dataset.rpanelGoto);
+      return;
+    }
+    if (event.target.closest(".app-topbar__content [data-rpanel-close]")) {
+      closeRightPanel();
       return;
     }
     if (event.target.closest("[data-topbar-ideas]")) {
@@ -371,7 +379,7 @@ export function initTopbar() {
     // renderWelcomeAltExit() above. The wizard chrome no longer carries
     // its own Exit affordance; this is the only entry.
     if (event.target.closest("[data-topbar-welcome-alt-exit]")) {
-      import("./confirm-modal.js?v=2070").then(({ open }) => {
+      import("./confirm-modal.js?v=2071").then(({ open }) => {
         open({
           title: "Discard this Playbook?",
           body: "Your answers so far will be lost. You can create a Playbook again anytime.",
@@ -547,45 +555,24 @@ function renderSessionPills(rpMode, draftCount, isEmpty, ideaCount) {
   `;
 }
 
-// Flag contentPanel — the three pills become one way into the side panel,
-// which names its own tabs. No summed count (sources + ideas + drafts is not a
-// number anyone can read): a blue dot says something new landed since the
-// panel was last open in this chat.
-const seenTotals = new Map(); // sessionId → ideas + clips + drafts when last seen
-function contentTotal(sid) {
-  const c = contentCounts(sid);
-  return c.ideas + c.clips + c.drafts;
-}
-function renderContentButton(rpMode, isEmpty) {
+// Flag contentPanel — the panel's own tabs, up here: Overview · Sources ›
+// Ideas, Clips › Drafts with their counts, the active one underlined on the
+// topbar's edge, right above the panel. Clicking a tab opens the panel on it,
+// clicking the open one closes it. A blue dot on a tab = its count grew since
+// you last looked at it (the Overview counts as looking at everything).
+const seen = new Map(); // sessionId → { sources, ideas, clips, drafts } last seen
+function renderContentTabsHere(isEmpty) {
   const sid = currentSessionId();
-  const total = sid ? contentTotal(sid) : 0;
-  const open = !!rpMode;
-  // A brand-new chat has nothing to show — disabled, like the pills it replaces.
-  const disabled = !open && isEmpty && total === 0 && !(sid && contentCounts(sid).sources);
-  if (sid && (open || !seenTotals.has(sid))) seenTotals.set(sid, total);
-  const unseen = sid && !open && total > (seenTotals.get(sid) ?? total);
-  const label = unseen ? "Content — new since you last looked" : "Content";
-  return `
-    <button
-      type="button"
-      class="ap-button ${open ? "stroked blue" : "ghost grey"} app-topbar__content"
-      data-topbar-content
-      ${disabled ? "disabled" : ""}
-      aria-pressed="${open}"
-      aria-label="${label}"
-      title="${
-        open
-          ? "Close the side panel"
-          : disabled
-            ? "Nothing here yet — attach a source or ask me for a post"
-            : "Sources, ideas and drafts of this chat"
-      }"
-    >
-      <i class="ap-icon-view-list" aria-hidden="true"></i>
-      <span>Content</span>
-      ${unseen ? `<span class="app-topbar__content-dot" aria-hidden="true"></span>` : ""}
-    </button>
-  `;
+  const counts = contentCounts(sid);
+  if (!seen.has(sid)) seen.set(sid, { ...counts });
+  const last = seen.get(sid);
+  const tab = getContentTab();
+  if (tab === "overview") Object.assign(last, counts);
+  else if (tab) last[tab] = counts[tab];
+  const unseen = new Set(Object.keys(counts).filter((k) => counts[k] > last[k]));
+  // A brand-new chat has nothing to show yet — like the pills they replace.
+  const disabled = !tab && isEmpty && !counts.sources && !counts.ideas && !counts.drafts;
+  return `<div class="app-topbar__content">${renderContentTabs({ sessionId: sid, unseen, disabled })}</div>`;
 }
 
 // Resolve the count of sources attached to the active session. Drives

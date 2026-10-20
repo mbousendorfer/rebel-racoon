@@ -1075,42 +1075,43 @@
   border-color: var(--ref-color-electric-blue-100);
 }
 
-/* ── Panel header + Overview (flag contentPanel) ─────────────────────
-   The header names where you are: Overview, then the chat's pipeline
-   Sources › Ideas › Drafts as DS tabs with their counts, and the one
-   close. The Overview (right-panel/overview-view.js) shows the chat's
+/* ── Panel tabs + Overview (flag contentPanel) ───────────────────────
+   The tabs name where you are: Overview, then the chat's pipeline
+   Sources › Ideas, Clips › Drafts as DS tabs with their counts, and the
+   one close — in the topbar. The Overview (right-panel/overview-view.js) shows the chat's
    real content, not counters: my next step as the DS infobox, then one section
    per object — rows for sources and ideas, a filmstrip for clips, post
    excerpts for drafts. Sections are separated by space and a hairline,
    never boxed: only the drafts, which are posts, read as cards. */
 
-.rpanel-header {
+/* The tabs live in the topbar (.app-topbar__content): they fill its height
+   so the active underline lands on the topbar's bottom edge, right above
+   the panel — one row of chrome, not two. */
+.app-topbar__content {
   display: flex;
   align-items: center;
   gap: var(--ref-spacing-xxs);
-  flex: 0 0 auto;
-  min-height: 52px;
-  padding: 0 var(--ref-spacing-xs) 0 var(--ref-spacing-md);
-  border-bottom: 1px solid var(--ref-color-grey-20);
-  background: var(--ref-color-white);
+  align-self: stretch;
+  min-width: 0;
 }
 
-.rpanel-header__tabs {
-  flex: 1 1 auto;
-  min-width: 0;
+.rpanel-tabs {
   flex-direction: row;
   align-self: stretch;
+  min-width: 0;
 }
 
-.rpanel-header__tabs .ap-tabs-nav {
+.rpanel-tabs .ap-tabs-nav {
   align-items: stretch;
   gap: var(--ref-spacing-xxs);
   padding: 0;
+  border-bottom: 0;
   overflow-x: auto;
   scrollbar-width: none;
 }
 
-.rpanel-header__tabs .ap-tabs-tab {
+.rpanel-tabs .ap-tabs-tab {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -1118,16 +1119,24 @@
   padding-inline: var(--ref-spacing-xxs);
 }
 
+/* Something new on that tab since you last looked. */
+.rpanel-tabs__new {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--app-radius-circle);
+  background: var(--ref-color-electric-blue-100);
+}
+
 /* The pipeline reads left to right: a quiet chevron between its steps,
    and a hairline that sets the Overview apart from them. */
-.rpanel-header__step {
+.rpanel-tabs__step {
   align-self: center;
   flex: 0 0 auto;
   font-size: var(--sys-icon-css-xs);
   background: var(--ref-color-grey-40);
 }
 
-.rpanel-header__divider {
+.rpanel-tabs__divider {
   align-self: center;
   flex: 0 0 auto;
   width: 1px;
@@ -1465,38 +1474,38 @@
    when it came in, then the ideas it gave — each with its kind tag, the
    same tag as in the Overview and on the idea cards. */
 
-.app-right-panel.has-header:not([data-rpanel-last-mode="overview"]) .app-right-panel__body {
+.app-right-panel.is-content:not([data-rpanel-last-mode="overview"]) .app-right-panel__body {
   background: var(--ref-color-grey-05);
 }
 
-.app-right-panel.has-header .rpanel-sources {
+.app-right-panel.is-content .rpanel-sources {
   gap: var(--ref-spacing-sm);
   padding: var(--ref-spacing-md);
 }
 
-.app-right-panel.has-header .rpanel-sources__head {
+.app-right-panel.is-content .rpanel-sources__head {
   align-items: flex-start;
   padding: 0 0 var(--ref-spacing-xxs);
   border-bottom: 0;
 }
 
-.app-right-panel.has-header .rpanel-sources__sub {
+.app-right-panel.is-content .rpanel-sources__sub {
   font-size: var(--sys-text-style-body-size);
   line-height: var(--sys-text-style-body-line-height);
   color: var(--ref-color-grey-80);
   text-wrap: pretty;
 }
 
-.app-right-panel.has-header .rpanel-sources__row {
+.app-right-panel.is-content .rpanel-sources__row {
   gap: var(--ref-spacing-sm);
   padding: var(--ref-spacing-md);
 }
 
-.app-right-panel.has-header .rpanel-sources__card-head {
+.app-right-panel.is-content .rpanel-sources__card-head {
   gap: var(--ref-spacing-sm);
 }
 
-.app-right-panel.has-header .rpanel-sources__row-icon {
+.app-right-panel.is-content .rpanel-sources__row-icon {
   width: 40px;
   height: 40px;
   border: 1px solid var(--ref-color-grey-20);
@@ -1505,11 +1514,11 @@
   font-size: 20px;
 }
 
-.app-right-panel.has-header .rpanel-sources__row-icon i:not([class*="-official"]) {
+.app-right-panel.is-content .rpanel-sources__row-icon i:not([class*="-official"]) {
   background-color: var(--ref-color-grey-100);
 }
 
-.app-right-panel.has-header .rpanel-sources__row-name {
+.app-right-panel.is-content .rpanel-sources__row-name {
   font-size: var(--sys-text-style-body-bold-size);
   line-height: var(--sys-text-style-body-bold-line-height);
   font-weight: var(--sys-text-style-body-bold-weight);
@@ -1531,21 +1540,21 @@
 }
 
 /* The ideas it gave — under a hairline, each led by its kind. */
-.app-right-panel.has-header .rpanel-sources__ideas {
+.app-right-panel.is-content .rpanel-sources__ideas {
   gap: 2px;
   margin: 0 calc(-1 * var(--ref-spacing-xs));
   padding-top: var(--ref-spacing-xs);
   border-top: 1px solid var(--ref-color-grey-20);
 }
 
-.app-right-panel.has-header .rpanel-sources__idea-link {
+.app-right-panel.is-content .rpanel-sources__idea-link {
   gap: var(--ref-spacing-sm);
   min-height: 40px;
   padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
   border-radius: var(--app-radius-lg);
 }
 
-.app-right-panel.has-header .rpanel-sources__idea-icon {
+.app-right-panel.is-content .rpanel-sources__idea-icon {
   display: none;
 }
 
@@ -1559,70 +1568,70 @@
 /* Ideas — no sub-tabs nor kind filters (Clips is a header tab): the cards
    straight on the canvas, at the panel's full width. The card says where an idea came from with
    the file chip alone; Why this idea is a quiet line, not a grey block. */
-.app-right-panel.has-header .rpanel-ideas__body {
+.app-right-panel.is-content .rpanel-ideas__body {
   gap: var(--ref-spacing-sm);
   padding: var(--ref-spacing-md);
 }
 
-.app-right-panel.has-header .rpanel-ideas__grid {
+.app-right-panel.is-content .rpanel-ideas__grid {
   align-items: stretch;
 }
 
-.app-right-panel.has-header .rpanel-ideas__card {
+.app-right-panel.is-content .rpanel-ideas__card {
   max-width: none;
   border-color: var(--ref-color-grey-20);
 }
 
-.app-right-panel.has-header .rpanel-ideas__source-label {
+.app-right-panel.is-content .rpanel-ideas__source-label {
   display: none;
 }
 
-.app-right-panel.has-header .rpanel-ideas__why {
+.app-right-panel.is-content .rpanel-ideas__why {
   padding: 0;
   background: transparent;
 }
 
-.app-right-panel.has-header .rpanel-ideas__why-head {
+.app-right-panel.is-content .rpanel-ideas__why-head {
   justify-content: flex-start;
   width: auto;
 }
 
-.app-right-panel.has-header .rpanel-ideas__why-title {
+.app-right-panel.is-content .rpanel-ideas__why-title {
   flex: 0 0 auto;
   font-weight: var(--sys-text-style-caption-weight);
   color: var(--ref-color-grey-80);
 }
 
-.app-right-panel.has-header .rpanel-ideas__why-info,
-.app-right-panel.has-header .rpanel-ideas__why-chevron {
+.app-right-panel.is-content .rpanel-ideas__why-info,
+.app-right-panel.is-content .rpanel-ideas__why-chevron {
   font-size: var(--sys-icon-css-xs);
 }
 
-.app-right-panel.has-header .rpanel-ideas__card-actions {
+.app-right-panel.is-content .rpanel-ideas__card-actions {
   border-top: 1px solid var(--ref-color-grey-20);
 }
 
 /* Drafts — the filters on the white toolbar; each network's band is the
    canvas itself (opaque, it stays sticky over the cards), its name in
    bold, and the posts float on it as white cards. */
-.app-right-panel.has-header .rpanel-drafts__filters {
+.app-right-panel.is-content .rpanel-drafts__filters {
   padding-inline: var(--ref-spacing-md) var(--ref-spacing-sm);
   background: var(--ref-color-white);
   border-bottom-color: var(--ref-color-grey-20);
 }
 
-.app-right-panel.has-header .rpanel-drafts__group-header:not(.is-selecting) .rpanel-drafts__group-band:not(:hover) {
+.app-right-panel.is-content .rpanel-drafts__group-header:not(.is-selecting) .rpanel-drafts__group-band:not(:hover) {
   background: var(--ref-color-grey-05);
 }
 
-.app-right-panel.has-header .rpanel-drafts__group-band {
+.app-right-panel.is-content .rpanel-drafts__group-band {
   border-bottom: 0;
 }
 
-.app-right-panel.has-header .rpanel-drafts__group-icon {
+.app-right-panel.is-content .rpanel-drafts__group-icon {
   font-size: 20px;
 }
 
-.app-right-panel.has-header .rpanel-drafts__feed .posts__card {
+.app-right-panel.is-content .rpanel-drafts__feed .posts__card {
   border-color: var(--ref-color-grey-20);
 }

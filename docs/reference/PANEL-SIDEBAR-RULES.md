@@ -37,10 +37,7 @@ overlays : `sidebar | contenu | right panel`.
    précédent/suivant.
 7. **Fermeture** : bouton de fermeture du panel, ou **Échap** (Échap ferme
    d'abord un menu contextuel ouvert, puis le panel).
-   7b. **Flag `contentPanel`** : une seule entrée dans la topbar (**Content**,
-   rouvre le dernier onglet, Overview la première fois ; désactivée sur un chat
-   vide) et un **en-tête** dans le panel — onglets Overview │ Sources › Ideas, Clips (s'il y en a) › Drafts avec leurs compteurs, et le seul bouton fermer. Le panel ne s'ouvre
-   jamais tout seul : les cartes du fil l'ouvrent sur leurs objets.
+   7b. **Flag `contentPanel`** : les onglets du panel sont **dans la topbar**, juste au-dessus de lui (Overview │ Sources › Ideas, Clips (s'il y en a) › Drafts, avec leurs compteurs, puis le close quand il est ouvert ; désactivés sur un chat vide) — le panel n'a pas de rangée d'en-tête. Un onglet l'ouvre sur lui, l'onglet ouvert le ferme. Le panel ne s'ouvre jamais tout seul : les cartes du fil l'ouvrent sur leurs objets.
 
 ---
 

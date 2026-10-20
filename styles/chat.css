@@ -1590,11 +1590,3 @@ span.chat-bubble-choice-chip {
   border-color: var(--ref-color-electric-blue-40);
   background: var(--ref-color-electric-blue-05);
 }
-
-/* The topbar's Content button: a blue dot when something new landed. */
-.app-topbar__content-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: var(--app-radius-circle);
-  background: var(--ref-color-electric-blue-100);
-}
