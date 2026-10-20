@@ -1768,9 +1768,9 @@
      a viewport unit here overflowed the stage and pushed every card off the
      middle. */
   container-type: size;
-  /* Each side keeps room for the nav's column (44px + air), so it never sits
+  /* Each side keeps room for the nav's column (28px + air), so it never sits
      on a card, and the column stays centred. */
-  padding: 0 max(calc(44px + 2 * var(--ref-spacing-lg)), calc((100% - 720px) / 2));
+  padding: 0 max(calc(28px + 2 * var(--ref-spacing-lg)), calc((100% - 720px) / 2));
   mask-image: linear-gradient(180deg, transparent 0, #000 96px, #000 calc(100% - 140px), transparent 100%);
 }
 
@@ -1818,33 +1818,63 @@
 
 /* The nav stands in the middle of the stage — vertically on the reading line
    (50%, the focused card's centre), horizontally in the middle of the margin
-   left of the column — ↑ · the dots, vertical · ↓ — the same white pieces as
-   the stack's. */
+   RIGHT of the column (2026-10-20: on the left it sat between the list and
+   the cards). One compact white capsule, 28px wide — ↑ · the dots · ↓ — half
+   the stack's three 44px pieces. */
 .welcome-flow__sheet.is-scroll .welcome-review__nav {
   position: absolute;
-  inset: 0 auto 0 max(var(--ref-spacing-lg), calc(((100% - 720px) / 2 - 44px) / 2));
+  inset: 0 max(var(--ref-spacing-lg), calc(((100% - 720px) / 2 - 28px) / 2)) 0 auto;
   z-index: 2;
   flex-direction: column;
+  gap: 0;
   height: fit-content;
   margin: auto 0;
+  padding: 2px 0;
+  background: var(--app-surface);
+  border-radius: var(--app-radius-pill);
+  box-shadow: var(--app-shadow-popover-md);
+}
+
+.welcome-flow__sheet.is-scroll .welcome-review__navbtn.is-icon {
+  width: 28px;
+  height: 28px;
+  background: none;
+  box-shadow: none;
+}
+
+.welcome-flow__sheet.is-scroll .welcome-review__navbtn i {
+  font-size: var(--sys-icon-css-sm);
+}
+
+.welcome-flow__sheet.is-scroll .welcome-review__navbtn:hover:not(:disabled) {
+  transform: none;
+  box-shadow: none;
+  color: var(--ref-color-electric-blue-100);
 }
 
 .welcome-flow__sheet.is-scroll .welcome-review__dots {
   flex-direction: column;
-  width: 44px;
+  gap: 4px;
+  width: 28px;
   height: auto;
-  padding: var(--ref-spacing-sm) 0;
+  padding: var(--ref-spacing-xxs) 0;
+  background: none;
+  box-shadow: none;
 }
 
 .welcome-flow__sheet.is-scroll .welcome-review__dots li {
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
   transition:
     height 0.3s cubic-bezier(0.22, 1, 0.36, 1),
     background-color 0.3s ease;
 }
 
 .welcome-flow__sheet.is-scroll .welcome-review__dots li.is-current {
-  width: 8px;
-  height: 28px;
+  width: 6px;
+  height: 18px;
+  box-shadow: inset 0 0 0 1px var(--app-butter-accent);
 }
 
 /* The part's confirm: one button at the bottom of the stage, over the scroll. */

@@ -211,7 +211,7 @@ export const FLAGS = Object.freeze([
       "a part's cards are dealt as a stack: only the front one shows. ON, they " +
       "line up one under the other and you scroll through them — the one in " +
       "the middle is in focus, the others a step back — while a navigation " +
-      "in the middle of the screen, left of the cards, steps through them by " +
+      "in the middle of the screen, right of the cards, steps through them by " +
       "hand (↑ · the dots · ↓). One button at the bottom confirms the part; " +
       "the next one arrives with its cover.",
   },
