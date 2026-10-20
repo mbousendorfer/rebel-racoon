@@ -71,9 +71,9 @@ import {
   trendGlyph,
   postsMovedLine,
   esc,
-} from "../pieces.js?v=2035";
-import { trendSpec, mountCharts } from "../charts.js?v=2035";
-import { readHero, readNotice, readMeasures, readPosts } from "../read.js?v=2035";
+} from "../pieces.js?v=2038";
+import { trendSpec, mountCharts } from "../charts.js?v=2038";
+import { readHero, readNotice, readMeasures, readPosts } from "../read.js?v=2038";
 
 export const id = "mob_index";
 export const label = "Mob · Index";

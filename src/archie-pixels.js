@@ -94,6 +94,10 @@ class ArchiePixels extends HTMLElement {
     if (!this.dots) this.build();
     const css = getComputedStyle(this);
     this.inks = [1, 2, 3].map((n) => hexOf(css.getPropertyValue(`--archie-pixels-cloud-${n}`)));
+    // `--archie-pixels-ink`: the matrix's colour while waiting — white by default
+    // (on the saturated clouds); a host on a pale ground sets a tint so it shows.
+    const ink = css.getPropertyValue("--archie-pixels-ink").trim();
+    this.ink = ink ? (hexOf(ink).match(/[0-9a-f]{2}/gi) || []).map((h) => parseInt(h, 16)).join(",") : "255,255,255";
     if (this.revealAt) {
       // With CORS first, so the pixels can read the image's colours; without it
       // if the host refuses (the pixels then stay white).
@@ -250,7 +254,7 @@ class ArchiePixels extends HTMLElement {
         const flash = since < 1.2 ? Math.sin((Math.PI * since) / 1.2) ** 2 : 0;
         let side = SIZE;
         let a = Math.max(0.03 + 0.85 * own * own, flash * 0.85);
-        let rgb = "255,255,255";
+        let rgb = this.ink;
         if (arriving) {
           const c = k * 4;
           if (this.colors) rgb = [0, 1, 2].map((n) => Math.round(lerp(255, this.colors[c + n], take))).join(",");

@@ -161,7 +161,8 @@ export const FLAGS = Object.freeze([
       "When ON, a new chat keeps its wordmark, sub-line and composer, and the " +
       "three workflows (batch from a source, clip a video, repurpose a top " +
       "post) become a short list of rows (title + its description) aligned " +
-      "on the composer, instead of three big cards. Below them, one row of " +
+      "on the composer, instead of three big cards. A soft halo of Archie's " +
+      "pixels frames the composer and wakes when you type or drop a file. Below, one row of " +
       "three Topics to review instead of six.",
   },
   {

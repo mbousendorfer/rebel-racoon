@@ -1022,6 +1022,74 @@ body.playbook-revoked .session__composer-card {
   transform: none;
 }
 
+/* The pixel halo (flag newChatHero) — the FUX's <archie-pixels> field with no
+   panel around it: pale clouds on the conversation's own ground, the white
+   pixel matrix twinkling over them, and a radial mask that dissolves it into
+   the page, so there is no edge anywhere. It replaces the orange orb. On load it
+   blooms out from behind the wordmark once; then it only answers you — it
+   wakes when the composer has focus and when a file is dragged over. */
+.empty-chat--rows::before {
+  display: none;
+}
+
+/* The halo hangs on the composer (its wrapper), so it follows the composer
+   wherever the hero's rhythm puts it: a flat ellipse 440px wider than it, its
+   dense core hidden under the white card, so what shows is two wings of
+   pixels on either side — and almost nothing behind the text above and below. */
+.empty-chat__lead {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.empty-chat__lead > .session__composer {
+  position: relative;
+  z-index: 1;
+}
+
+.session__assistant-thread:has(> .empty-chat--rows) {
+  overflow-x: hidden;
+}
+
+.empty-chat__pixels {
+  --archie-pixels-base: var(--app-bg);
+  --archie-pixels-cloud-1: var(--ref-color-orange-10);
+  --archie-pixels-cloud-2: var(--ref-color-yellow-10);
+  --archie-pixels-cloud-3: var(--ref-color-orange-20);
+  --archie-pixels-ink: var(--ref-color-orange-60);
+}
+
+archie-pixels.empty-chat__pixels {
+  position: absolute;
+  z-index: 0;
+  inset: auto;
+  top: 50%;
+  left: 50%;
+  width: calc(100% + 440px);
+  height: 360px;
+  translate: -50% -50%;
+  border-radius: 0;
+  pointer-events: none;
+  opacity: 0.8;
+  -webkit-mask: radial-gradient(closest-side, #000 30%, transparent) center / 100% 100% no-repeat;
+  mask: radial-gradient(closest-side, #000 30%, transparent) center / 100% 100% no-repeat;
+  animation: empty-chat-bloom 1600ms var(--app-ease-out) both;
+  transition: opacity var(--ref-animation-long) var(--app-ease-out);
+}
+
+.empty-chat__lead:has(.session__composer-card:focus-within) > .empty-chat__pixels,
+.session__assistant.is-drop-target .empty-chat__pixels {
+  opacity: 1;
+}
+
+@keyframes empty-chat-bloom {
+  from {
+    opacity: 0;
+    -webkit-mask-size: 30% 30%;
+    mask-size: 30% 30%;
+  }
+}
+
 /* The composer leads: one line for the sub-line, more air under it, a taller
    field. The keyboard hint is gone from the hero (composer.js). */
 .empty-chat--rows .empty-chat__sub {

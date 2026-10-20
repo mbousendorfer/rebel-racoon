@@ -6,11 +6,11 @@
 // the side-effecting actions wired by the sidebar's delegated listeners. Every
 // change reloads the app so the stores re-seed under the new mode / flag.
 
-import { html, raw, escapeHtml } from "./utils.js?v=2035";
-import { FLAGS, FLAG_GROUPS } from "./ff-catalog.js?v=2035";
-import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=2035";
-import { getUserMode, setUserMode } from "./user-mode.js?v=2035";
-import { getRole, setRole, ORG } from "./org.js?v=2035";
+import { html, raw, escapeHtml } from "./utils.js?v=2038";
+import { FLAGS, FLAG_GROUPS } from "./ff-catalog.js?v=2038";
+import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=2038";
+import { getUserMode, setUserMode } from "./user-mode.js?v=2038";
+import { getRole, setRole, ORG } from "./org.js?v=2038";
 
 // Which hat I'm wearing inside my organisation. Only meaningful once Playbooks
 // have owners, so the section only exists behind that flag.
