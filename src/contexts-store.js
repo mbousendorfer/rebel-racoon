@@ -22,18 +22,18 @@
 // chooses "Save as global". updateContext is used by the section-edit flow
 // when scope is "Update everywhere".
 
-import { contexts as seed, sharedContexts } from "./mocks.js?v=2015";
-import { isNewUser } from "./user-mode.js?v=2015";
-import { CURRENT_USER } from "./org.js?v=2015";
-import { isFlagOn } from "./feature-flags.js?v=2015";
-import { createNotifier } from "./store-utils.js?v=2015";
+import { contexts as seed, sharedContexts } from "./mocks.js?v=2017";
+import { isNewUser } from "./user-mode.js?v=2017";
+import { CURRENT_USER } from "./org.js?v=2017";
+import { isFlagOn } from "./feature-flags.js?v=2017";
+import { createNotifier } from "./store-utils.js?v=2017";
 import {
   normalizeLanguages,
   mirrorPrimaryToTopLevel,
   syncTopLevelToPrimary,
   cloneVoiceByLanguage,
-} from "./languages.js?v=2015";
-import { cloneVoiceByNetwork, cloneItems } from "./network-voice.js?v=2015";
+} from "./languages.js?v=2017";
+import { cloneVoiceByNetwork, cloneItems } from "./network-voice.js?v=2017";
 
 // Lives up here, away from normalizeBrandLogos where it belongs, because the
 // seed below calls that normalizer at module-init time — a `let` declared beside

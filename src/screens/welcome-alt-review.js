@@ -26,14 +26,14 @@
 // the column — ↑ · the dots, vertical · ↓ — and steps through them; the index
 // follows the scroll. At the bottom, one button confirms the part.
 
-import { html, raw } from "../utils.js?v=2015";
-import { navigate } from "../router.js?v=2015";
-import { getDraft, patchDraft } from "../context-builder.js?v=2015";
-import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2015";
-import { parseHashParams } from "../url-state.js?v=2015";
-import { isFlagOn } from "../feature-flags.js?v=2015";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2015";
-import { enterArchie } from "./welcome-alt-recap.js?v=2015";
+import { html, raw } from "../utils.js?v=2017";
+import { navigate } from "../router.js?v=2017";
+import { getDraft, patchDraft } from "../context-builder.js?v=2017";
+import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2017";
+import { parseHashParams } from "../url-state.js?v=2017";
+import { isFlagOn } from "../feature-flags.js?v=2017";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2017";
+import { enterArchie } from "./welcome-alt-recap.js?v=2017";
 
 const MOVE_MS = 220; // the card's exit, before the next one comes in
 
@@ -57,6 +57,10 @@ export function renderReview(target, sid, config) {
   let index = 0; // the front card, within the current part
   let allSet = false; // the "all set" card is up (it carries Draft my first post)
   let count = 0; // how many cards the current part deals
+  // The part just confirmed: its check pops in once, for the length of the pop
+  // (the list can repaint twice in a frame). The list repaints on every move,
+  // so a check that always animated replayed on every click (2026-10-20).
+  let justChecked = null;
   const scroll = isFlagOn("reviewScroll");
 
   const left = () => {
@@ -72,7 +76,7 @@ export function renderReview(target, sid, config) {
         ${RECAP_SECTIONS.map((t) => {
           const here = t.id === current();
           const mark = done.has(t.id)
-            ? `<span class="welcome-review__check" title="Done"><i class="ap-icon-check" aria-hidden="true"></i></span>`
+            ? `<span class="welcome-review__check${t.id === justChecked ? " is-new" : ""}" title="Done"><i class="ap-icon-check" aria-hidden="true"></i></span>`
             : here && count > 1
               ? `<span class="welcome-review__count">${index + 1} of ${count}</span>`
               : "";
@@ -464,6 +468,10 @@ export function renderReview(target, sid, config) {
   // Confirmed: the part is checked, and the next one is dealt (or, the last
   // one, the Playbook is all set).
   const confirmPart = (from) => {
+    if (!reviewed().has(from)) {
+      justChecked = from;
+      window.setTimeout(() => (justChecked = null), 400);
+    }
     patchDraft(sid, { reviewedParts: [...new Set([...reviewed(), from])] });
     const at = RECAP_SECTIONS.findIndex((t) => t.id === from);
     const to = RECAP_SECTIONS[at + 1];
