@@ -24,16 +24,18 @@
 // under the other in a scroll — the one at the reading line is in focus (the
 // others dimmed). The nav stands in the middle of the stage, at the left of
 // the column — ↑ · the dots, vertical · ↓ — and steps through them; the index
-// follows the scroll. At the bottom, one button confirms the part.
+// follows the scroll. At the bottom, one button confirms the part. The part's
+// cover (tile, name, sentence) is the column's first card — not a passing beat
+// between parts (2026-10-20) — and isn't counted in the dots.
 
-import { html, raw } from "../utils.js?v=2025";
-import { navigate } from "../router.js?v=2025";
-import { getDraft, patchDraft } from "../context-builder.js?v=2025";
-import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2025";
-import { parseHashParams } from "../url-state.js?v=2025";
-import { isFlagOn } from "../feature-flags.js?v=2025";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2025";
-import { enterArchie } from "./welcome-alt-recap.js?v=2025";
+import { html, raw } from "../utils.js?v=2026";
+import { navigate } from "../router.js?v=2026";
+import { getDraft, patchDraft } from "../context-builder.js?v=2026";
+import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2026";
+import { parseHashParams } from "../url-state.js?v=2026";
+import { isFlagOn } from "../feature-flags.js?v=2026";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2026";
+import { enterArchie } from "./welcome-alt-recap.js?v=2026";
 
 const MOVE_MS = 220; // the card's exit, before the next one comes in
 
@@ -164,6 +166,20 @@ export function renderReview(target, sid, config) {
     `;
   };
 
+  // Scroll mode: the part's cover, heading its column — the same tile, name
+  // and sentence as the stack's passing cover, as a card that stays.
+  const coverEl = () => body.querySelector(".welcome-review__cover");
+  const cover = () => {
+    const part = partOf(current());
+    return html`
+      <section class="welcome-review__cover" data-part="${part.id}" style="${tint(part.id)}">
+        <span class="welcome-review__intro-tile"><i class="${part.icon}" aria-hidden="true"></i></span>
+        <h2 class="welcome-review__intro-title">${part.title}</h2>
+        <p class="welcome-review__cover-lead">${part.lead}</p>
+      </section>
+    `;
+  };
+
   // The navigation floats under the stack, out of the card: three pieces of one
   // shape — white 44px pills — ← · the part's progress (page dots, the one
   // indicator) · Next, named after what's coming. A deliberate visual exception
@@ -256,6 +272,14 @@ export function renderReview(target, sid, config) {
       el.querySelectorAll(":scope > .welcome-review__kicker").forEach((n) => n.remove());
     });
     if (!scroll) list[index]?.insertAdjacentHTML("afterbegin", kicker());
+    // The cover heads the column — re-laid after a repaint, swapped with the part.
+    if (scroll && list[0]) {
+      const head = list[0].previousElementSibling;
+      if (!head?.matches(".welcome-review__cover") || head.dataset.part !== current()) {
+        coverEl()?.remove();
+        list[0].insertAdjacentHTML("beforebegin", cover());
+      }
+    }
     navEl.innerHTML = count ? nav(list) : "";
     if (scroll) {
       const part = partOf(current());
@@ -336,6 +360,12 @@ export function renderReview(target, sid, config) {
     const line = body.getBoundingClientRect().top + body.clientHeight * 0.5;
     let best = index;
     let dist = Infinity;
+    const head = coverEl();
+    if (head) {
+      const r = head.getBoundingClientRect();
+      const d = line < r.top ? r.top - line : line > r.bottom ? line - r.bottom : 0;
+      head.style.setProperty("--focus", (1 - Math.min(1, d / 280)).toFixed(3));
+    }
     cards().forEach((el, i) => {
       const r = el.getBoundingClientRect();
       const d = line < r.top ? r.top - line : line > r.bottom ? line - r.bottom : 0;
@@ -367,6 +397,8 @@ export function renderReview(target, sid, config) {
       el.style.setProperty("--deal", Math.abs(i - index));
       el.classList.add("is-dealt");
     });
+    coverEl()?.style.setProperty("--deal", index + 1);
+    coverEl()?.classList.add("is-dealt");
   };
 
   // Changing part is its own beat, unlike moving between cards: the whole stack
@@ -379,6 +411,14 @@ export function renderReview(target, sid, config) {
     window.setTimeout(() => {
       openPart(id, { ...opts, enter: "" });
       shell.sheet.classList.remove("is-part-out");
+      // Scroll mode: the cover is the column's first card — no passing beat.
+      if (scroll) {
+        deal();
+        navEl.classList.add("is-dealt");
+        window.setTimeout(() => navEl.classList.remove("is-dealt"), 500);
+        moving = false;
+        return;
+      }
       const part = partOf(id);
       introEl.innerHTML = html`
         <div class="welcome-review__intro-card" style="${tint(id)}">
