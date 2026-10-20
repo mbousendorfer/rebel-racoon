@@ -26,14 +26,14 @@
 // the column — ↑ · the dots, vertical · ↓ — and steps through them; the index
 // follows the scroll. At the bottom, one button confirms the part.
 
-import { html, raw } from "../utils.js?v=2017";
-import { navigate } from "../router.js?v=2017";
-import { getDraft, patchDraft } from "../context-builder.js?v=2017";
-import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2017";
-import { parseHashParams } from "../url-state.js?v=2017";
-import { isFlagOn } from "../feature-flags.js?v=2017";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2017";
-import { enterArchie } from "./welcome-alt-recap.js?v=2017";
+import { html, raw } from "../utils.js?v=2020";
+import { navigate } from "../router.js?v=2020";
+import { getDraft, patchDraft } from "../context-builder.js?v=2020";
+import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2020";
+import { parseHashParams } from "../url-state.js?v=2020";
+import { isFlagOn } from "../feature-flags.js?v=2020";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2020";
+import { enterArchie } from "./welcome-alt-recap.js?v=2020";
 
 const MOVE_MS = 220; // the card's exit, before the next one comes in
 
@@ -286,8 +286,9 @@ export function renderReview(target, sid, config) {
     if (scroll) centre({ instant: true });
   };
 
-  // Scroll mode: bring the current card to the reading line (a bit above the
-  // middle — the nav floats at the bottom). A card taller than the scroll
+  // Scroll mode: bring the current card to the reading line — the middle of
+  // the stage, where the nav stands (2026-10-20: at 45% the nav read as
+  // off-centre). A card taller than the scroll
   // starts at its top. The glide is ours, not the browser's smooth scroll
   // (too short, too abrupt): a slow ease-in-out, the snap off while it runs
   // (it would catch the scroll on the way). While it glides, the scroll
@@ -301,7 +302,7 @@ export function renderReview(target, sid, config) {
     if (!el) return;
     const box = body.getBoundingClientRect();
     const r = el.getBoundingClientRect();
-    const room = body.clientHeight * 0.45;
+    const room = body.clientHeight * 0.5;
     const max = body.scrollHeight - body.clientHeight;
     const to = Math.max(0, Math.min(max, body.scrollTop + r.top - box.top - Math.max(24, room - r.height / 2)));
     window.cancelAnimationFrame(glideFrame);
@@ -332,7 +333,7 @@ export function renderReview(target, sid, config) {
   // follows the scroll instead of switching. The card under the line is the
   // current one.
   const focus = () => {
-    const line = body.getBoundingClientRect().top + body.clientHeight * 0.45;
+    const line = body.getBoundingClientRect().top + body.clientHeight * 0.5;
     let best = index;
     let dist = Infinity;
     cards().forEach((el, i) => {

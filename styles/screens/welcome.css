@@ -1762,14 +1762,15 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   scroll-snap-type: y proximity;
-  /* The snap centres a card on the reading line (45%, JS's too), not on 50%. */
-  scroll-padding-block: 0 10%;
   scrollbar-width: none;
-  /* The column is the stack's width; the first card starts near the reading
-     line, the last can climb up to it, clear of the nav. */
+  /* The column is the stack's width. The scroll is a size container: the
+     column's room above and below is half ITS height (50cqh, on the grid) —
+     a viewport unit here overflowed the stage and pushed every card off the
+     middle. */
+  container-type: size;
   /* Each side keeps room for the nav's column (44px + air), so it never sits
      on a card, and the column stays centred. */
-  padding: 22vh max(calc(44px + 2 * var(--ref-spacing-lg)), calc((100% - 720px) / 2)) 48vh;
+  padding: 0 max(calc(44px + 2 * var(--ref-spacing-lg)), calc((100% - 720px) / 2));
   mask-image: linear-gradient(180deg, transparent 0, #000 96px, #000 calc(100% - 140px), transparent 100%);
 }
 
@@ -1778,6 +1779,8 @@
 }
 
 .welcome-flow__sheet.is-scroll .pb2-grid {
+  /* Half the scroll above the first card and below the last: both can reach the middle. */
+  padding-block: 50cqh;
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-lg);
@@ -1813,12 +1816,13 @@
   }
 }
 
-/* The nav stands in the middle of the stage, centred on the reading line
-   (45%, hence the bottom inset), at the left of the column — ↑ · the dots,
-   vertical · ↓ — the same white pieces as the stack's. */
+/* The nav stands in the middle of the stage — vertically on the reading line
+   (50%, the focused card's centre), horizontally in the middle of the margin
+   left of the column — ↑ · the dots, vertical · ↓ — the same white pieces as
+   the stack's. */
 .welcome-flow__sheet.is-scroll .welcome-review__nav {
   position: absolute;
-  inset: 0 auto 10% max(var(--ref-spacing-lg), calc((100% - 720px) / 2 - 44px - var(--ref-spacing-lg)));
+  inset: 0 auto 0 max(var(--ref-spacing-lg), calc(((100% - 720px) / 2 - 44px) / 2));
   z-index: 2;
   flex-direction: column;
   height: fit-content;
