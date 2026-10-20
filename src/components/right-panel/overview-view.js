@@ -6,16 +6,16 @@
 // and a link row to the full tab. Render-only; the shell (right-panel.js)
 // owns the delegated clicks (data-rpanel-goto / data-rpanel-focus).
 
-import { escapeAttr, escapeText } from "../../utils.js?v=2064";
-import { getThread } from "../../assistant.js?v=2064";
-import { getSources } from "../../sources-stream.js?v=2064";
-import { getIdeas } from "../../library.js?v=2064";
-import { getPosts } from "../../posts-store.js?v=2064";
-import { isPostValid } from "../../post-validation.js?v=2064";
-import { networkIcon, networkLabel } from "../../network-voice.js?v=2064";
-import { pendingProcesses } from "../conversation-status-card.js?v=2064";
-import { SOURCE_KIND_ICON } from "./sources-view.js?v=2064";
-import { activeSessionId } from "../right-panel.js?v=2064";
+import { escapeAttr, escapeText } from "../../utils.js?v=2065";
+import { getThread } from "../../assistant.js?v=2065";
+import { getSources } from "../../sources-stream.js?v=2065";
+import { getIdeas } from "../../library.js?v=2065";
+import { getPosts } from "../../posts-store.js?v=2065";
+import { isPostValid } from "../../post-validation.js?v=2065";
+import { networkIcon, networkLabel } from "../../network-voice.js?v=2065";
+import { pendingProcesses } from "../conversation-status-card.js?v=2065";
+import { SOURCE_KIND_ICON } from "./sources-view.js?v=2065";
+import { activeSessionId } from "../right-panel.js?v=2065";
 
 // Live drafts only — the Drafts tab hides scheduled ones, so does its count.
 const liveDrafts = (sid) => getPosts(sid).filter((p) => p.status !== "scheduled");

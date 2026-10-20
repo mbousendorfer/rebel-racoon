@@ -13,17 +13,17 @@
 // ponytail: the edit heuristics are a mock reading of one before/after pair.
 // The real thing compares many drafts per network before proposing.
 
-import { getSessionById } from "./sessions-store.js?v=2064";
-import { getContextById } from "./contexts-store.js?v=2064";
-import { playbookForNewWork } from "./active-playbook.js?v=2064";
-import { getPosts } from "./posts-store.js?v=2064";
-import { postVoiceSuggestion, postSelectionEcho, postAssistantMessage } from "./assistant.js?v=2064";
-import { startRewrite } from "./draft-rewrite.js?v=2064";
-import { escapeHtml } from "./utils.js?v=2064";
-import { ask, isActive } from "./inline-question.js?v=2064";
-import { propose, accept } from "./voice-coach-store.js?v=2064";
-import { normalizeNetwork } from "./social-profiles.js?v=2064";
-import { networkClosings } from "./context-mock-analysis.js?v=2064";
+import { getSessionById } from "./sessions-store.js?v=2065";
+import { getContextById } from "./contexts-store.js?v=2065";
+import { playbookForNewWork } from "./active-playbook.js?v=2065";
+import { getPosts } from "./posts-store.js?v=2065";
+import { postVoiceSuggestion, postSelectionEcho, postAssistantMessage } from "./assistant.js?v=2065";
+import { startRewrite } from "./draft-rewrite.js?v=2065";
+import { escapeHtml } from "./utils.js?v=2065";
+import { ask, isActive } from "./inline-question.js?v=2065";
+import { propose, accept } from "./voice-coach-store.js?v=2065";
+import { normalizeNetwork } from "./social-profiles.js?v=2065";
+import { networkClosings } from "./context-mock-analysis.js?v=2065";
 import {
   networkVoicesOn,
   baseNetwork,
@@ -32,7 +32,7 @@ import {
   networkIcon,
   followRules,
   suggestionField,
-} from "./network-voice.js?v=2064";
+} from "./network-voice.js?v=2065";
 
 function sessionPlaybook(sessionId) {
   const session = getSessionById(sessionId);
