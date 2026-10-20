@@ -1079,7 +1079,7 @@
    The header names where you are: Overview, then the chat's pipeline
    Sources › Ideas › Drafts as DS tabs with their counts, and the one
    close. The Overview (right-panel/overview-view.js) shows the chat's
-   real content, not counters: my next step on butter, then one section
+   real content, not counters: my next step as the DS infobox, then one section
    per object — rows for sources and ideas, a filmstrip for clips, post
    excerpts for drafts. Sections are separated by space and a hairline,
    never boxed: only the drafts, which are posts, read as cards. */
@@ -1161,48 +1161,9 @@
   padding: var(--ref-spacing-md) var(--ref-spacing-md) var(--ref-spacing-xl);
 }
 
-/* My next step — Archie's butter, his mark, one sentence, one action. */
+/* My next step — the DS infobox; only its place in the column is ours. */
 .rpanel-ov__next {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--ref-spacing-sm);
   margin-bottom: var(--ref-spacing-lg);
-  padding: var(--ref-spacing-md);
-  border-radius: var(--app-radius-card);
-  background: var(--app-butter);
-}
-
-.rpanel-ov__next-mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-  width: 32px;
-  height: 32px;
-  border-radius: var(--app-radius-circle);
-  background: var(--ref-color-white);
-}
-
-.rpanel-ov__next-mark i {
-  font-size: var(--sys-icon-css-sm);
-}
-
-.rpanel-ov__next-body {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--ref-spacing-sm);
-  min-width: 0;
-  padding-top: 5px;
-}
-
-.rpanel-ov__next-line {
-  margin: 0;
-  font-size: var(--sys-text-style-subtitle-size, 16px);
-  line-height: 22px;
-  font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--ref-color-grey-100);
-  text-wrap: pretty;
 }
 
 /* A section: title, its numbers in words, the way to its tab. */

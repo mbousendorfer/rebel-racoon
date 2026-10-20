@@ -1,23 +1,23 @@
 // The right panel's Overview (flag contentPanel) — the chat at a glance, and
 // what the conversation status card became. Not a dashboard of counters: the
 // chat's actual content, in the pipeline's order. On top, my next step (the
-// one thing worth doing now, in Archie's butter); then the sources as file
+// one thing worth doing now, as the DS infobox); then the sources as file
 // tiles, the first ideas with their kind, the clips as a filmstrip of their
 // thumbnails, the drafts as excerpts with their status. Each section names its
 // numbers in words and links to its tab. Render-only; the shell
 // (right-panel.js) owns the delegated clicks (data-rpanel-goto / -focus).
 
-import { escapeAttr, escapeText, formatClock } from "../../utils.js?v=2068";
-import { getThread } from "../../assistant.js?v=2068";
-import { getSources } from "../../sources-stream.js?v=2068";
-import { getIdeas } from "../../library.js?v=2068";
-import { getPosts } from "../../posts-store.js?v=2068";
-import { isPostValid } from "../../post-validation.js?v=2068";
-import { networkIcon, networkLabel } from "../../network-voice.js?v=2068";
-import { iconFor } from "../../file-kinds.js?v=2068";
-import { thumbBackground } from "../clip-card.js?v=2068";
-import { pendingProcesses } from "../conversation-status-card.js?v=2068";
-import { activeSessionId } from "../right-panel.js?v=2068";
+import { escapeAttr, escapeText, formatClock } from "../../utils.js?v=2069";
+import { getThread } from "../../assistant.js?v=2069";
+import { getSources } from "../../sources-stream.js?v=2069";
+import { getIdeas } from "../../library.js?v=2069";
+import { getPosts } from "../../posts-store.js?v=2069";
+import { isPostValid } from "../../post-validation.js?v=2069";
+import { networkIcon, networkLabel } from "../../network-voice.js?v=2069";
+import { iconFor } from "../../file-kinds.js?v=2069";
+import { thumbBackground } from "../clip-card.js?v=2069";
+import { pendingProcesses } from "../conversation-status-card.js?v=2069";
+import { activeSessionId } from "../right-panel.js?v=2069";
 
 // Live drafts only — the Drafts tab hides scheduled ones, so does its count.
 const liveDrafts = (sid) => getPosts(sid).filter((p) => p.status !== "scheduled");
@@ -77,47 +77,57 @@ function section(id, title, metric, link, body) {
 const emptyLine = (text) => `<p class="rpanel-ov__empty">${text}</p>`;
 
 // ── My next step ────────────────────────────────────────────────────────────
-// The one thing worth doing now, said once, in my voice. Work in progress
-// first (nothing to decide yet), then what blocks a post from going out, then
-// what's ready, then what's waiting.
+// The one thing worth doing now, said once, as the DS infobox — its type says
+// how it stands: work in progress (info, with the loader), drafts that can't
+// go out yet (warning), drafts ready (success), ideas waiting (info). The
+// action sits in the infobox's content, like the failed turn's Retry.
 
 function renderNextStep({ sources, ideas, drafts, pending }) {
-  let line = "";
-  let cta = null;
   const toFix = drafts.filter((p) => !isPostValid(p)).length;
   const waiting = ideas.filter((i) => !(i.used > 0)).length;
+  let box = null;
   if (pending.length) {
-    line = `${escapeText(pending[0].replace(/…$/, ""))}…`;
+    box = { type: "info", line: `${escapeText(pending[0].replace(/…$/, ""))}…` };
   } else if (toFix) {
-    line = `${plural(toFix, "draft")} ${toFix === 1 ? "needs a fix before it can" : "need a fix before they can"} go out.`;
-    cta = { to: "drafts", label: "Review drafts" };
+    box = {
+      type: "warning",
+      line: `${plural(toFix, "draft")} ${toFix === 1 ? "needs a fix before it can" : "need a fix before they can"} go out.`,
+      cta: { to: "drafts", label: "Review drafts" },
+    };
   } else if (drafts.length) {
-    line = `${plural(drafts.length, "draft")} ${drafts.length === 1 ? "is" : "are"} ready to schedule.`;
-    cta = { to: "drafts", label: "Review drafts" };
+    box = {
+      type: "success",
+      line: `${plural(drafts.length, "draft")} ${drafts.length === 1 ? "is" : "are"} ready to schedule.`,
+      cta: { to: "drafts", label: "Review drafts" },
+    };
   } else if (waiting) {
-    line = `${plural(waiting, "idea")} ${waiting === 1 ? "is" : "are"} waiting. Pick one and I'll draft it.`;
-    cta = { to: "ideas", label: "See ideas" };
+    box = {
+      type: "info",
+      line: `${plural(waiting, "idea")} ${waiting === 1 ? "is" : "are"} waiting. Pick one and I'll draft it.`,
+      cta: { to: "ideas", label: "See ideas" },
+    };
   } else if (sources.length) {
-    line = "I've read your sources. Ask me for a post whenever you're ready.";
+    box = { type: "info", line: "I've read your sources. Ask me for a post whenever you're ready." };
   } else {
     return "";
   }
+  const icon = pending.length
+    ? `<span class="ap-loader size-16" aria-hidden="true"><svg><circle></circle><circle></circle></svg></span>`
+    : `<i class="${NEXT_ICON[box.type]}" aria-hidden="true"></i>`;
   return `
-    <div class="rpanel-ov__next" role="status">
-      <span class="rpanel-ov__next-mark" aria-hidden="true">
-        ${
-          pending.length
-            ? `<span class="ap-loader size-16"><svg><circle></circle><circle></circle></svg></span>`
-            : `<i class="ap-icon-archie-official"></i>`
-        }
-      </span>
-      <div class="rpanel-ov__next-body">
-        <p class="rpanel-ov__next-line">${line}</p>
-        ${cta ? `<button type="button" class="ap-button primary blue" data-rpanel-goto="${cta.to}">${cta.label}</button>` : ""}
+    <div class="ap-infobox ${box.type} rpanel-ov__next" role="status">
+      ${icon}
+      <div class="ap-infobox-content">
+        <div class="ap-infobox-texts">
+          <span class="ap-infobox-message">${box.line}</span>
+        </div>
+        ${box.cta ? `<button type="button" class="ap-button stroked grey" data-rpanel-goto="${box.cta.to}">${box.cta.label}</button>` : ""}
       </div>
     </div>
   `;
 }
+
+const NEXT_ICON = { info: "ap-icon-info_fill", warning: "ap-icon-warning_fill", success: "ap-icon-rounded-check_fill" };
 
 // ── Sources — file tiles ────────────────────────────────────────────────────
 

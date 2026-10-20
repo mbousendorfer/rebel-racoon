@@ -17,8 +17,8 @@
 //     showMention — render the Mention button (default true; false where there
 //                   is no composer, e.g. the standalone Ideas page)
 
-import { iconFor } from "../file-kinds.js?v=2068";
-import { escapeText, escapeAttr } from "../utils.js?v=2068";
+import { iconFor } from "../file-kinds.js?v=2069";
+import { escapeText, escapeAttr } from "../utils.js?v=2069";
 
 // The whole card is the Draft target. Its hover border says "clickable", and
 // FullStory showed people clicking the idea's text and getting nothing (dead
