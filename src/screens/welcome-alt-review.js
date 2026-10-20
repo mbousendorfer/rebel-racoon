@@ -28,14 +28,14 @@
 // cover (tile, name, sentence) is the column's first card — not a passing beat
 // between parts (2026-10-20) — and isn't counted in the dots.
 
-import { html, raw } from "../utils.js?v=2026";
-import { navigate } from "../router.js?v=2026";
-import { getDraft, patchDraft } from "../context-builder.js?v=2026";
-import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2026";
-import { parseHashParams } from "../url-state.js?v=2026";
-import { isFlagOn } from "../feature-flags.js?v=2026";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2026";
-import { enterArchie } from "./welcome-alt-recap.js?v=2026";
+import { html, raw } from "../utils.js?v=2027";
+import { navigate } from "../router.js?v=2027";
+import { getDraft, patchDraft } from "../context-builder.js?v=2027";
+import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2027";
+import { parseHashParams } from "../url-state.js?v=2027";
+import { isFlagOn } from "../feature-flags.js?v=2027";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2027";
+import { enterArchie } from "./welcome-alt-recap.js?v=2027";
 
 const MOVE_MS = 220; // the card's exit, before the next one comes in
 
@@ -412,7 +412,12 @@ export function renderReview(target, sid, config) {
       openPart(id, { ...opts, enter: "" });
       shell.sheet.classList.remove("is-part-out");
       // Scroll mode: the cover is the column's first card — no passing beat.
+      // The snap stays off while the cascade lands: it follows a card's
+      // transform, so it chased each rising card and the column slid back
+      // under them (2026-10-20).
       if (scroll) {
+        body.classList.add("is-settling");
+        window.setTimeout(() => body.classList.remove("is-settling"), 950);
         deal();
         navEl.classList.add("is-dealt");
         window.setTimeout(() => navEl.classList.remove("is-dealt"), 500);

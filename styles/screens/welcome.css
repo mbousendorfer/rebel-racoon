@@ -1830,8 +1830,10 @@
   cursor: pointer;
 }
 
-/* Our glide runs the scroll; the snap would catch it on the way. */
-.welcome-flow__sheet.is-scroll .welcome-flow__sheet-body.is-gliding {
+/* Our glide runs the scroll, and a new part's cascade lands: the snap would
+   catch both on the way. */
+.welcome-flow__sheet.is-scroll .welcome-flow__sheet-body.is-gliding,
+.welcome-flow__sheet.is-scroll .welcome-flow__sheet-body.is-settling {
   scroll-snap-type: none;
 }
 
