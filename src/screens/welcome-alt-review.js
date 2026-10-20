@@ -26,14 +26,14 @@
 // the column — ↑ · the dots, vertical · ↓ — and steps through them; the index
 // follows the scroll. At the bottom, one button confirms the part.
 
-import { html, raw } from "../utils.js?v=2012";
-import { navigate } from "../router.js?v=2012";
-import { getDraft, patchDraft } from "../context-builder.js?v=2012";
-import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2012";
-import { parseHashParams } from "../url-state.js?v=2012";
-import { isFlagOn } from "../feature-flags.js?v=2012";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2012";
-import { enterArchie } from "./welcome-alt-recap.js?v=2012";
+import { html, raw } from "../utils.js?v=2013";
+import { navigate } from "../router.js?v=2013";
+import { getDraft, patchDraft } from "../context-builder.js?v=2013";
+import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2013";
+import { parseHashParams } from "../url-state.js?v=2013";
+import { isFlagOn } from "../feature-flags.js?v=2013";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2013";
+import { enterArchie } from "./welcome-alt-recap.js?v=2013";
 
 const MOVE_MS = 220; // the card's exit, before the next one comes in
 
@@ -249,7 +249,7 @@ export function renderReview(target, sid, config) {
       const part = partOf(current());
       barEl.innerHTML = html`
         <button type="button" class="ap-button primary blue" data-review-confirm="${part.id}">
-          <i class="ap-icon-check"></i><span>Confirm ${part.title}</span>
+          <i class="ap-icon-check"></i><span>All good for ${part.title}</span>
         </button>
       `;
     }

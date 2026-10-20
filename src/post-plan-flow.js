@@ -21,15 +21,15 @@ import {
   postActivity,
   postDraftResult,
   GENERATION_TOOLS,
-} from "./assistant.js?v=2012";
-import * as inlineQuestion from "./inline-question.js?v=2012";
-import { addPostDraft } from "./posts-store.js?v=2012";
-import { getSessionById } from "./sessions-store.js?v=2012";
-import { getContextById } from "./contexts-store.js?v=2012";
-import { playbookForNewWork } from "./active-playbook.js?v=2012";
-import { getConnectedProfiles, buildConnectedProfileItems } from "./social-profiles.js?v=2012";
-import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=2012";
-import { createPlan, updatePlan, getPlans } from "./post-plan-store.js?v=2012";
+} from "./assistant.js?v=2013";
+import * as inlineQuestion from "./inline-question.js?v=2013";
+import { addPostDraft } from "./posts-store.js?v=2013";
+import { getSessionById } from "./sessions-store.js?v=2013";
+import { getContextById } from "./contexts-store.js?v=2013";
+import { playbookForNewWork } from "./active-playbook.js?v=2013";
+import { getConnectedProfiles, buildConnectedProfileItems } from "./social-profiles.js?v=2013";
+import { requireConnectedProfiles } from "./connect-profiles-flow.js?v=2013";
+import { createPlan, updatePlan, getPlans } from "./post-plan-store.js?v=2013";
 
 // "write / draft / create a post about X" — the ask this flow answers. The
 // topic is everything after "about".
