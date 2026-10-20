@@ -14,12 +14,14 @@
 //   - blockInDemo(): every way to schedule asks for a real brand instead.
 //   - exitDemo(): wipes it all and goes back to the real setup.
 
-import { DEMO_ACCOUNTS, DEMO_PLAYBOOK, DEMO_SAMPLES } from "./mocks.js?v=2056";
-import { isDemo, isDemoDone, markDemoDone, writeDemo } from "./demo-mode.js?v=2056";
-import { postAssistantMessage, postUserTurn } from "./assistant.js?v=2056";
-import * as inlineQuestion from "./inline-question.js?v=2056";
-import { getPosts, subscribe as subscribePosts } from "./posts-store.js?v=2056";
-import { open as openConfirm } from "./components/confirm-modal.js?v=2056";
+import { DEMO_ACCOUNTS, DEMO_PLAYBOOK, DEMO_SAMPLES } from "./mocks.js?v=2058";
+import { isDemo, isDemoDone, markDemoDone, writeDemo } from "./demo-mode.js?v=2058";
+import { postAssistantMessage, postUserTurn } from "./assistant.js?v=2058";
+import * as inlineQuestion from "./inline-question.js?v=2058";
+import { getPosts, subscribe as subscribePosts } from "./posts-store.js?v=2058";
+import { open as openConfirm } from "./components/confirm-modal.js?v=2058";
+import { showToast } from "./components/toast.js?v=2058";
+import { pushScriptedSource, completeScriptedSource } from "./sources-stream.js?v=2058";
 
 const PROFILES_KEY = "archie-connected-profiles";
 
@@ -90,9 +92,58 @@ export function renderDemoCard() {
     </div>`;
 }
 
+// Nothing of the user's own comes into the demo: no file, no link, no pasted
+// text — only the brand's demo content. The ways in that matter are disabled
+// or turned into "demo" ones where they're drawn (composer, studios); this is
+// the net under all the others (the Playbook's logos and references, the Image
+// Generator, a drop on the chat…): every file picker, drop and pasted file is
+// refused, and said so. The bug report keeps its screenshots.
+const NO_OWN_CONTENT = "In the demo I only work with demo content — your own files stay out.";
+const exempt = (target) => !!target?.closest?.(".bug-report-modal");
+
 // body.demo is what hides every way to create a Playbook (styles/layout.css).
 export function initDemoMode() {
-  if (isDemo()) document.body.classList.add("demo");
+  if (!isDemo()) return;
+  document.body.classList.add("demo");
+  const refuse = (event, say) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (say) showToast(NO_OWN_CONTENT);
+  };
+  document.addEventListener(
+    "click",
+    (event) => {
+      if (event.target.matches?.('input[type="file"]') && !exempt(event.target)) refuse(event, true);
+    },
+    true,
+  );
+  for (const type of ["dragenter", "dragover", "drop"]) {
+    document.addEventListener(
+      type,
+      (event) => {
+        if (!event.dataTransfer?.types?.includes("Files") || exempt(event.target)) return;
+        refuse(event, type === "drop");
+      },
+      true,
+    );
+  }
+  document.addEventListener(
+    "paste",
+    (event) => {
+      if (event.clipboardData?.files?.length && !exempt(event.target)) refuse(event, true);
+    },
+    true,
+  );
+}
+
+// The demo's own sources — what Add demo PDF / video / URL / text attach, and
+// what any other "add a source" (the Sources panel, the Content tab) hands over
+// instead of opening the upload modal. Same scripted pipeline as the composer's.
+const DEMO_KIND_LABEL = { pdf: "PDF", video: "Video", url: "URL", text: "Text" };
+export function addDemoSource(sessionId, kind = "pdf") {
+  if (!DEMO_SAMPLES[kind]) return;
+  const sourceId = pushScriptedSource({ filename: DEMO_SAMPLES[kind], kind: DEMO_KIND_LABEL[kind], sessionId });
+  setTimeout(() => completeScriptedSource(sourceId, { signal: "Medium relevance", signalColor: "tagOrange" }), 6000);
 }
 
 // The studios ask for a file the demo user doesn't have: hand them the brand's.

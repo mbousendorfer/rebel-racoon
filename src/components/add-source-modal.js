@@ -9,23 +9,25 @@
 // upload state machines live outside in sources-stream.js so they
 // continue running even after the modal closes.
 
-import { html, raw, escapeHtml } from "../utils.js?v=2056";
-import { iconFor } from "../file-kinds.js?v=2056";
-import { connectorDocs } from "../mocks.js?v=2056";
+import { html, raw, escapeHtml } from "../utils.js?v=2058";
+import { iconFor } from "../file-kinds.js?v=2058";
+import { connectorDocs } from "../mocks.js?v=2058";
 import {
   getConnectors,
   findConnector,
   setConnectorStatus,
   subscribe as subscribeConnectors,
-} from "../connectors-store.js?v=2056";
-import { postConnectPrompt } from "../assistant.js?v=2056";
-import { URL_SERVICES, detectUrlService } from "../url-services.js?v=2056";
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2056";
-import { navigate } from "../router.js?v=2056";
-import { renderConnectorLogo } from "../connectors-view.js?v=2056";
-import { isFlagOn } from "../feature-flags.js?v=2056";
-import { showToast } from "./toast.js?v=2056";
-import { dropzoneHTML } from "./dropzone.js?v=2056";
+} from "../connectors-store.js?v=2058";
+import { postConnectPrompt } from "../assistant.js?v=2058";
+import { URL_SERVICES, detectUrlService } from "../url-services.js?v=2058";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2058";
+import { navigate } from "../router.js?v=2058";
+import { renderConnectorLogo } from "../connectors-view.js?v=2058";
+import { isFlagOn } from "../feature-flags.js?v=2058";
+import { showToast } from "./toast.js?v=2058";
+import { dropzoneHTML } from "./dropzone.js?v=2058";
+import { isDemo } from "../demo-mode.js?v=2058";
+import { addDemoSource } from "../demo-flow.js?v=2058";
 
 const MODAL_ID = "addSource";
 import {
@@ -37,7 +39,7 @@ import {
   cancelUpload,
   getUploads,
   subscribeUploads,
-} from "../sources-stream.js?v=2056";
+} from "../sources-stream.js?v=2058";
 
 let backdrop, modal, contentEl, footerEl, fileInput;
 let initialized = false;
@@ -975,6 +977,13 @@ function onKeydown(event) {
 // ─── Open / close ────────────────────────────────────────────────────────
 
 export function open(opts = {}) {
+  // The demo (flag demoMode) takes no source of the user's own: the chat gets
+  // the matching demo content instead of the upload modal.
+  if (isDemo()) {
+    const sid = opts.currentSessionId || (window.location.hash.match(/^#\/session\/([^?/]+)/) || [])[1];
+    if (sid) addDemoSource(sid, { url: "url", pasteText: "text" }[opts.tab] || "pdf");
+    return;
+  }
   if (!initialized) init();
   requestOpen(MODAL_ID, close);
   state.activeTab = opts.tab && tabs().find((t) => t.id === opts.tab) ? opts.tab : "upload";

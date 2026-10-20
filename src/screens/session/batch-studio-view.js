@@ -12,28 +12,29 @@
 // The intake card lives OUTSIDE [data-batch-rest]; staging-loader ticks repaint
 // only the rest (list + commit), so the field is never clobbered mid-typing.
 
-import { renderDemoSample } from "../../demo-flow.js?v=2056";
-import * as batchStudio from "../../batch-studio.js?v=2056";
-import { isFlagOn } from "../../feature-flags.js?v=2056";
-import { getConnectedConnectors } from "../../connectors-store.js?v=2056";
-import { escapeHtml, html, raw } from "../../utils.js?v=2056";
-import { dropzoneHTML } from "../../components/dropzone.js?v=2056";
-import { getContextById } from "../../contexts-store.js?v=2056";
-import { renderSourceCard } from "../../components/source-card.js?v=2056";
-import { isWorkspaceMode, playbookForNewWork } from "../../active-playbook.js?v=2056";
-import { usableContexts } from "../../playbook-access.js?v=2056";
+import { isDemo } from "../../demo-mode.js?v=2058";
+import { renderDemoSample } from "../../demo-flow.js?v=2058";
+import * as batchStudio from "../../batch-studio.js?v=2058";
+import { isFlagOn } from "../../feature-flags.js?v=2058";
+import { getConnectedConnectors } from "../../connectors-store.js?v=2058";
+import { escapeHtml, html, raw } from "../../utils.js?v=2058";
+import { dropzoneHTML } from "../../components/dropzone.js?v=2058";
+import { getContextById } from "../../contexts-store.js?v=2058";
+import { renderSourceCard } from "../../components/source-card.js?v=2058";
+import { isWorkspaceMode, playbookForNewWork } from "../../active-playbook.js?v=2058";
+import { usableContexts } from "../../playbook-access.js?v=2058";
 import {
   classifyFile,
   startFileUpload,
   startUrlImport,
   startTextImport,
   startConnectorImport,
-} from "../../sources-stream.js?v=2056";
-import { showToast } from "../../components/toast.js?v=2056";
-import { setHashQuery } from "../../url-state.js?v=2056";
-import { navigate } from "../../router.js?v=2056";
-import { dotColorVar } from "../session.js?v=2056";
-import { buildWorkflowFlow } from "./workflow-flow.js?v=2056";
+} from "../../sources-stream.js?v=2058";
+import { showToast } from "../../components/toast.js?v=2058";
+import { setHashQuery } from "../../url-state.js?v=2058";
+import { navigate } from "../../router.js?v=2058";
+import { dotColorVar } from "../session.js?v=2058";
+import { buildWorkflowFlow } from "./workflow-flow.js?v=2058";
 
 // Origin sub-line for a staged batch source, shown in the source-card's meta row
 // (in place of the usual "N ideas · Processed · Added X").
@@ -72,6 +73,8 @@ function buildBatchStudioSteps() {
 }
 
 export function renderBatchStudio(session) {
+  // The demo (flag demoMode) takes demo content only: its own ways in are off.
+  const off = isDemo() ? "disabled" : "";
   const st = batchStudio.getState(session.id);
   if (!st) return "";
 
@@ -134,18 +137,19 @@ export function renderBatchStudio(session) {
                 withInput: false,
                 rootAttrs: "data-batch-dropzone",
                 ariaLabel: "Add files from your computer",
-                action: { label: "Browse files" },
+                // The demo (flag demoMode) takes demo content only.
+                action: { label: "Browse files", attrs: isDemo() ? "disabled" : "" },
               }),
             )}
             <div class="batch-studio__dropzone-extra">
               <span class="batch-studio__dropzone-extra-label">Or add another way</span>
-              <button type="button" class="ap-button stroked grey batch-studio__method" data-batch-link>
+              <button type="button" class="ap-button stroked grey batch-studio__method" data-batch-link ${raw(off)}>
                 <i class="ap-icon-link" aria-hidden="true"></i><span>Add link</span>
               </button>
-              <button type="button" class="ap-button stroked grey batch-studio__method" data-batch-paste>
+              <button type="button" class="ap-button stroked grey batch-studio__method" data-batch-paste ${raw(off)}>
                 <i class="ap-icon-file--text" aria-hidden="true"></i><span>Paste text</span>
               </button>
-              ${raw(connectorMenu)} ${raw(renderDemoSample("batch"))}
+              ${raw(isDemo() ? "" : connectorMenu)} ${raw(renderDemoSample("batch"))}
             </div>
             <div class="batch-studio__dropzone-overlay" aria-hidden="true">
               <i class="ap-icon-upload" aria-hidden="true"></i><span>Drop files to upload</span>

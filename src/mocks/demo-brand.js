@@ -274,6 +274,7 @@ export const DEMO_SAMPLES = {
   pdf: "Autumn menu.pdf",
   video: "Roastery tour.mp4",
   url: "brambleandbean.example/journal/autumn-blend",
+  text: "Barista tasting notes",
 };
 
 // One idea per source (library.js appendExtractedIdeas), {filename} filled in.

@@ -6,26 +6,26 @@
 // binding and the refreshAssistantAside node-swap keep working; state lives in
 // clip-studio.js.
 
-import { isDemo } from "../../demo-mode.js?v=2056";
-import { renderDemoSample } from "../../demo-flow.js?v=2056";
-import * as clipStudio from "../../clip-studio.js?v=2056";
-import { isWorkspaceMode } from "../../active-playbook.js?v=2056";
-import { usableContexts } from "../../playbook-access.js?v=2056";
-import { escapeHtml, html, raw } from "../../utils.js?v=2056";
-import { getContextById } from "../../contexts-store.js?v=2056";
-import { dropzoneHTML } from "../../components/dropzone.js?v=2056";
-import { renderClipCard } from "../../components/clip-card.js?v=2056";
-import { connectableNetworkCards } from "../../connect-profiles-flow.js?v=2056";
-import { getConnectedProfiles, PROFILE_SEARCH_THRESHOLD, renderProfileTag } from "../../social-profiles.js?v=2056";
-import { defaultFormatFor, formatsForNetwork } from "../../clip-formats.js?v=2056";
+import { isDemo } from "../../demo-mode.js?v=2058";
+import { renderDemoSample } from "../../demo-flow.js?v=2058";
+import * as clipStudio from "../../clip-studio.js?v=2058";
+import { isWorkspaceMode } from "../../active-playbook.js?v=2058";
+import { usableContexts } from "../../playbook-access.js?v=2058";
+import { escapeHtml, html, raw } from "../../utils.js?v=2058";
+import { getContextById } from "../../contexts-store.js?v=2058";
+import { dropzoneHTML } from "../../components/dropzone.js?v=2058";
+import { renderClipCard } from "../../components/clip-card.js?v=2058";
+import { connectableNetworkCards } from "../../connect-profiles-flow.js?v=2058";
+import { getConnectedProfiles, PROFILE_SEARCH_THRESHOLD, renderProfileTag } from "../../social-profiles.js?v=2058";
+import { defaultFormatFor, formatsForNetwork } from "../../clip-formats.js?v=2058";
 import {
   classifyFile,
   pushScriptedSource,
   completeScriptedSource,
   updateSourceClips,
-} from "../../sources-stream.js?v=2056";
-import { showToast } from "../../components/toast.js?v=2056";
-import { open as openVideoClipsModal } from "../../components/video-clips-modal.js?v=2056";
+} from "../../sources-stream.js?v=2058";
+import { showToast } from "../../components/toast.js?v=2058";
+import { open as openVideoClipsModal } from "../../components/video-clips-modal.js?v=2058";
 import {
   postAssistantMessage,
   postClipExtractionTurn,
@@ -33,11 +33,11 @@ import {
   finishPending,
   GENERATION_TOOLS,
   postDraftResult,
-} from "../../assistant.js?v=2056";
-import { addPostDraft } from "../../posts-store.js?v=2056";
-import { clipContext } from "./clip-draft-flow.js?v=2056";
-import { dotColorVar } from "../session.js?v=2056";
-import { buildWorkflowFlow } from "./workflow-flow.js?v=2056";
+} from "../../assistant.js?v=2058";
+import { addPostDraft } from "../../posts-store.js?v=2058";
+import { clipContext } from "./clip-draft-flow.js?v=2058";
+import { dotColorVar } from "../session.js?v=2058";
+import { buildWorkflowFlow } from "./workflow-flow.js?v=2058";
 
 // Config catalogs for the upload/config screen.
 const CLIP_CAPTION_STYLES = [
@@ -184,6 +184,8 @@ function renderClipStudioUpload(st) {
   const cfg = st.config || {};
   const ctx = st.contextId ? getContextById(st.contextId) : null;
   const uploadState = st.uploadState;
+  // The demo (flag demoMode) takes demo content only: its own ways in are off.
+  const off = isDemo() ? "disabled" : "";
   const name = escapeHtml(st.sourceName || "your video");
   const durLabelFor = (d) => (d.id === "auto" ? "Auto" : `${d.label} · ${d.sub}`);
   const curDuration = CLIP_DURATIONS_UI.find((d) => d.id === cfg.duration) || CLIP_DURATIONS_UI[0];
@@ -220,7 +222,7 @@ function renderClipStudioUpload(st) {
          </div>
          <div class="clip-studio__preview-foot">
            <span class="clip-studio__preview-name" title="${name}">${name} · ${uploadState === "ready" ? "Analyzed" : "Analyzing…"}</span>
-           <button type="button" class="ap-button stroked grey" data-clip-studio-browse>
+           <button type="button" class="ap-button stroked grey" data-clip-studio-browse ${off}>
              <i class="ap-icon-upload" aria-hidden="true"></i><span>Replace file</span>
            </button>
          </div>
@@ -228,9 +230,9 @@ function renderClipStudioUpload(st) {
          <form class="clip-studio__url" data-clip-studio-url-form>
            <div class="ap-input-group">
              <i class="ap-icon-link" aria-hidden="true"></i>
-             <input type="text" data-clip-studio-url placeholder="Paste a YouTube or Google Drive URL" aria-label="Replace with a video URL" />
+             <input type="text" data-clip-studio-url placeholder="Paste a YouTube or Google Drive URL" aria-label="Replace with a video URL" ${off} />
            </div>
-           <button type="submit" class="ap-button stroked grey">Import</button>
+           <button type="submit" class="ap-button stroked grey" ${off}>Import</button>
          </form>
        </div>`
     : `${dropzoneHTML({
@@ -240,15 +242,15 @@ function renderClipStudioUpload(st) {
         withInput: false,
         rootAttrs: "data-clip-studio-dropzone",
         ariaLabel: "Add a video",
-        action: { label: "Browse files", attrs: "data-clip-studio-browse" },
+        action: { label: "Browse files", attrs: `data-clip-studio-browse ${off}` },
       })}
        <div class="clip-studio__or"><span>or</span></div>
        <form class="clip-studio__url" data-clip-studio-url-form>
          <div class="ap-input-group">
            <i class="ap-icon-link" aria-hidden="true"></i>
-           <input type="text" data-clip-studio-url placeholder="Paste a YouTube or Google Drive URL" aria-label="Video URL" />
+           <input type="text" data-clip-studio-url placeholder="Paste a YouTube or Google Drive URL" aria-label="Video URL" ${off} />
          </div>
-         <button type="submit" class="ap-button stroked grey">Import</button>
+         <button type="submit" class="ap-button stroked grey" ${off}>Import</button>
        </form>
        ${isDemo() ? `<div class="clip-studio__sample">${renderDemoSample("clip")}</div>` : ""}`;
 
