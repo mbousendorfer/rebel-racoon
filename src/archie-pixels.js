@@ -37,10 +37,21 @@ const STAGE_S = 1.6; // s per stage, for a real 6–12 s wait; the last one hold
 const REFINING = "Refining the details…";
 const NARRATE_MIN = 220; // CSS px: narrower (a filmstrip tile) and there is no line
 // `data-ripple`: a click sends a ring out through the matrix.
-const RIPPLE_SPEED = 650; // CSS px / s
-const RIPPLE_LIFE = 1.8; // s, until it has faded out
-const RIPPLE_WIDTH = 44; // CSS px: the crest's half-thickness
+const RIPPLE_SPEED = 300; // CSS px / s — slow: 650 read as a shockwave (2026-10-20)
+const RIPPLE_LIFE = 3.2; // s, until it has faded out
+const RIPPLE_WIDTH = 70; // CSS px: the crest's half-thickness — wide, so it diffuses
 const RIPPLE_MAX = 4; // rings alive at once — older ones give way
+const RIPPLE_WOBBLE = 0.22; // how far the ring strays from a circle, ± of its radius
+
+// A ring's shape: a few harmonics around the circle, drawn at random per click
+// and drifting as it spreads, so no two rings share an outline and none is round.
+const wobble = () =>
+  [2, 3, 5, 7].map((n) => ({
+    n,
+    amp: (0.35 + 0.65 * Math.random()) / n ** 0.6,
+    phase: Math.random() * 6.283,
+    drift: (Math.random() - 0.5) * 3,
+  }));
 
 const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
@@ -144,7 +155,7 @@ class ArchiePixels extends HTMLElement {
         const x = e.clientX - r.left;
         const y = e.clientY - r.top;
         if (x < 0 || y < 0 || x > r.width || y > r.height) return;
-        this.ripples = [...this.ripples, { x, y, at: performance.now() }].slice(-RIPPLE_MAX);
+        this.ripples = [...this.ripples, { x, y, at: performance.now(), shape: wobble() }].slice(-RIPPLE_MAX);
         this.toggleAttribute("data-rippling", true); // a host can lift the field while a ring runs
       };
       window.addEventListener("pointerdown", this.onPress, { passive: true });
@@ -274,7 +285,15 @@ class ArchiePixels extends HTMLElement {
     for (const r of this.ripples || []) {
       const age = (now - r.at) / 1000;
       if (age < RIPPLE_LIFE)
-        waves.push({ x: r.x, y: r.y, radius: RIPPLE_SPEED * age, k: (1 - age / RIPPLE_LIFE) ** 2 });
+        waves.push({
+          x: r.x,
+          y: r.y,
+          age,
+          shape: r.shape,
+          radius: RIPPLE_SPEED * age,
+          // Eases in, then out over most of its life: a swell, not a hit.
+          k: smooth(0, 0.35, age) * (1 - smooth(0.2 * RIPPLE_LIFE, RIPPLE_LIFE, age)),
+        });
     }
     if (this.ripples?.length && !waves.length) {
       this.ripples = [];
@@ -298,14 +317,31 @@ class ArchiePixels extends HTMLElement {
         let rgb = this.ink;
         if (waves.length) {
           let g = 0;
+          let trough = 0;
           for (const v of waves) {
-            const off = (Math.hypot(x - v.x, y - v.y) - v.radius) / RIPPLE_WIDTH;
-            if (off > -3 && off < 3) g = Math.max(g, v.k * Math.exp(-off * off));
+            const dx = x - v.x;
+            const dy = y - v.y;
+            const d = Math.hypot(dx, dy);
+            if (Math.abs(d - v.radius) > v.radius * RIPPLE_WOBBLE * 1.6 + RIPPLE_WIDTH * 3) continue;
+            // The radius in this pixel's direction: the harmonics, then a grain of
+            // its own so the crest is ragged at the scale of the matrix.
+            const angle = Math.atan2(dy, dx);
+            let bend = 0;
+            for (const h of v.shape) bend += h.amp * Math.sin(h.n * angle + h.phase + h.drift * v.age);
+            const reach = v.radius * (1 + RIPPLE_WOBBLE * bend * 0.6) + (hash(k + 15485863) - 0.5) * RIPPLE_WIDTH * 0.5;
+            const off = (d - reach) / RIPPLE_WIDTH;
+            if (off > -4 && off < 3) {
+              g = Math.max(g, v.k * Math.exp(-off * off));
+              // The trough just behind the crest goes quiet, the way water does —
+              // the twinkle is already contrasted, so a crest alone barely reads.
+              trough = Math.max(trough, v.k * Math.exp(-((off + 1.8) ** 2) / 0.8));
+            }
           }
+          if (trough > 0.01) a *= 1 - 0.45 * trough;
           if (g > 0.01) {
-            a = lerp(a, 0.6 + 0.4 * own, g);
-            side *= 1 + 0.35 * g;
-            rgb = this.inkRgb.map((c, n) => Math.round(lerp(c, this.glowRgb[n], g))).join(",");
+            a = lerp(a, 0.5 + 0.4 * own, g);
+            side *= 1 + 0.25 * g;
+            rgb = this.inkRgb.map((c, n) => Math.round(lerp(c, this.glowRgb[n], 0.75 * g))).join(",");
           }
         }
         if (arriving) {
