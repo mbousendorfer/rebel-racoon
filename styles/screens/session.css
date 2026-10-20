@@ -1079,16 +1079,19 @@ archie-pixels.empty-chat__pixels {
   translate: -50% -50%;
   border-radius: 0;
   pointer-events: none;
-  opacity: 0.55;
+  opacity: 0.8;
   -webkit-mask: radial-gradient(closest-side, #000 20%, transparent) center / 100% 100% no-repeat;
   mask: radial-gradient(closest-side, #000 20%, transparent) center / 100% 100% no-repeat;
-  animation: empty-chat-bloom 1600ms var(--app-ease-out) both;
+  /* backwards, not both: a held end state would pin the opacity and kill the
+     focus / drop / ripple lifts below. */
+  animation: empty-chat-bloom 1600ms var(--app-ease-out) backwards;
   transition: opacity var(--ref-animation-long) var(--app-ease-out);
 }
 
 .empty-chat__lead:has(.session__composer-card:focus-within) > .empty-chat__pixels,
+.empty-chat__pixels[data-rippling],
 .session__assistant.is-drop-target .empty-chat__pixels {
-  opacity: 0.85;
+  opacity: 1;
 }
 
 @keyframes empty-chat-bloom {

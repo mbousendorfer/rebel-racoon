@@ -36,7 +36,11 @@ const STAGES = ["Reading the post…", "Picking your colors…", "Composing the 
 const STAGE_S = 1.6; // s per stage, for a real 6–12 s wait; the last one holds until the image lands
 const REFINING = "Refining the details…";
 const NARRATE_MIN = 220; // CSS px: narrower (a filmstrip tile) and there is no line
-const HOVER_R = 150; // CSS px: `data-hover`, the radius of the light under the cursor
+// `data-ripple`: a click sends a ring out through the matrix.
+const RIPPLE_SPEED = 650; // CSS px / s
+const RIPPLE_LIFE = 1.8; // s, until it has faded out
+const RIPPLE_WIDTH = 44; // CSS px: the crest's half-thickness
+const RIPPLE_MAX = 4; // rings alive at once — older ones give way
 
 const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
@@ -100,7 +104,7 @@ class ArchiePixels extends HTMLElement {
     const ink = css.getPropertyValue("--archie-pixels-ink").trim();
     const rgbOf = (c) => (hexOf(c).match(/[0-9a-f]{2}/gi) || []).map((h) => parseInt(h, 16));
     this.ink = ink ? rgbOf(ink).join(",") : "255,255,255";
-    // `--archie-pixels-glow` (`data-hover`): the colour the light takes the
+    // `--archie-pixels-glow` (`data-ripple`): the colour the wave takes the
     // pixels to — the ink's own when unset.
     const glow = css.getPropertyValue("--archie-pixels-glow").trim();
     this.inkRgb = ink ? rgbOf(ink) : [255, 255, 255];
@@ -128,18 +132,22 @@ class ArchiePixels extends HTMLElement {
     }
     this.observer = new ResizeObserver(() => this.resize());
     this.observer.observe(this);
-    // `data-hover` (a backdrop the reader moves over — the new chat's halo): the
-    // pixels near the cursor come up, a soft light that follows a little behind
-    // and fades when it leaves. Opacity only, like everything else here. Read
-    // from the window, because a backdrop takes no pointer events itself.
-    this.lit = 0;
-    if (this.hasAttribute("data-hover") && !reduced()) {
-      this.onMove = (e) => {
-        this.pointer = { x: e.clientX, y: e.clientY };
+    // `data-ripple` (a backdrop the reader clicks around — the new chat's halo):
+    // a press anywhere over the element sends a ring out from that point, the
+    // pixels on its crest coming up and swelling as it passes, fading as it
+    // spreads. Read from the window, because a backdrop takes no pointer events
+    // itself — so a click in the composer above it starts one too.
+    this.ripples = [];
+    if (this.hasAttribute("data-ripple") && !reduced()) {
+      this.onPress = (e) => {
+        const r = this.getBoundingClientRect();
+        const x = e.clientX - r.left;
+        const y = e.clientY - r.top;
+        if (x < 0 || y < 0 || x > r.width || y > r.height) return;
+        this.ripples = [...this.ripples, { x, y, at: performance.now() }].slice(-RIPPLE_MAX);
+        this.toggleAttribute("data-rippling", true); // a host can lift the field while a ring runs
       };
-      this.onOut = () => (this.pointer = null);
-      window.addEventListener("pointermove", this.onMove, { passive: true });
-      document.documentElement.addEventListener("pointerleave", this.onOut);
+      window.addEventListener("pointerdown", this.onPress, { passive: true });
     }
     if (!reduced()) this.raf = requestAnimationFrame(this.tick);
   }
@@ -147,23 +155,7 @@ class ArchiePixels extends HTMLElement {
   disconnectedCallback() {
     cancelAnimationFrame(this.raf);
     this.observer?.disconnect();
-    if (this.onMove) {
-      window.removeEventListener("pointermove", this.onMove);
-      document.documentElement.removeEventListener("pointerleave", this.onOut);
-    }
-  }
-
-  // The light's position (element px) and strength, eased toward the cursor.
-  follow() {
-    const r = this.getBoundingClientRect();
-    const p = this.pointer;
-    const x = p ? p.x - r.left : 0;
-    const y = p ? p.y - r.top : 0;
-    const inside = p && x >= 0 && y >= 0 && x <= r.width && y <= r.height;
-    if (inside && this.lit < 0.02)
-      this.hover = { x, y }; // light up where you are, never fly in
-    else if (inside) this.hover = { x: lerp(this.hover.x, x, 0.12), y: lerp(this.hover.y, y, 0.12) };
-    this.lit = lerp(this.lit, inside ? 1 : 0, 0.06);
+    if (this.onPress) window.removeEventListener("pointerdown", this.onPress);
   }
 
   build() {
@@ -268,7 +260,8 @@ class ArchiePixels extends HTMLElement {
     this.photo.style.filter = `${split > 0.05 ? this.chroma.url : ""} blur(${28 * (1 - focus)}px)`;
     this.photo.style.transform = `scale(${lerp(1.08, 1, backOut(p, 1.4))})`; // a hair past 1: the breath
     this.vignette.style.opacity = arriving ? 1 - smooth(0.15, 0.85, p) : 0; // the lens only: on the wait, it muddied the yellow
-    this.style.opacity = 1 - smooth(0.85, 1, p); // onto the real image
+    // onto the real image — only while arriving, so a host's CSS opacity holds on a wait
+    if (this.revealAt) this.style.opacity = 1 - smooth(0.85, 1, p);
 
     // The matrix: square pixels of one size, each one's opacity on its own rhythm,
     // then carrying the image's colours away.
@@ -276,8 +269,17 @@ class ArchiePixels extends HTMLElement {
     ctx.clearRect(0, 0, w, h);
     const take = smooth(0, 0.3, p);
     const far = Math.hypot(w, h) / 2;
-    if (this.onMove) this.follow();
-    const lit = this.lit > 0.01 ? this.lit : 0;
+    // The live rings: how far each has gone, how strong it still is.
+    const waves = [];
+    for (const r of this.ripples || []) {
+      const age = (now - r.at) / 1000;
+      if (age < RIPPLE_LIFE)
+        waves.push({ x: r.x, y: r.y, radius: RIPPLE_SPEED * age, k: (1 - age / RIPPLE_LIFE) ** 2 });
+    }
+    if (this.ripples?.length && !waves.length) {
+      this.ripples = [];
+      this.removeAttribute("data-rippling");
+    }
     for (let j = 0; j < rows; j++)
       for (let i = 0; i < cols; i++) {
         const k = j * cols + i;
@@ -294,11 +296,16 @@ class ArchiePixels extends HTMLElement {
         let side = SIZE;
         let a = Math.max(0.03 + 0.85 * own * own, flash * 0.85);
         let rgb = this.ink;
-        if (lit) {
-          const g = lit * (1 - smooth(0, HOVER_R, Math.hypot(x - this.hover.x, y - this.hover.y)));
+        if (waves.length) {
+          let g = 0;
+          for (const v of waves) {
+            const off = (Math.hypot(x - v.x, y - v.y) - v.radius) / RIPPLE_WIDTH;
+            if (off > -3 && off < 3) g = Math.max(g, v.k * Math.exp(-off * off));
+          }
           if (g > 0.01) {
-            a = lerp(a, 0.55 + 0.45 * own, g);
-            rgb = this.inkRgb.map((v, n) => Math.round(lerp(v, this.glowRgb[n], g))).join(",");
+            a = lerp(a, 0.6 + 0.4 * own, g);
+            side *= 1 + 0.35 * g;
+            rgb = this.inkRgb.map((c, n) => Math.round(lerp(c, this.glowRgb[n], g))).join(",");
           }
         }
         if (arriving) {

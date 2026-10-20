@@ -162,7 +162,7 @@ export const FLAGS = Object.freeze([
       "three workflows (batch from a source, clip a video, repurpose a top " +
       "post) become a short list of rows (title + its description) aligned " +
       "on the composer, instead of three big cards. A soft halo of Archie's " +
-      "pixels frames the composer and wakes when you type or drop a file. Below, one row of " +
+      "pixels frames the composer; a click sends a ripple through it. Below, one row of " +
       "three Topics to review instead of six.",
   },
   {
