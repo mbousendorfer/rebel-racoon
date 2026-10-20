@@ -19,14 +19,20 @@
 // The view repaints its whole DOM on most edits (a chip added…), so the stack
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
+//
+// Flag reviewScroll: the same parts, covers and confirms, but a part's cards
+// line up one under the other in a scroll — the one at the reading line is in
+// focus (the others dimmed), and the floating nav still steps through them
+// (↑ / ↓ scroll the next one to the middle). The index follows the scroll.
 
-import { html, raw } from "../utils.js?v=2008";
-import { navigate } from "../router.js?v=2008";
-import { getDraft, patchDraft } from "../context-builder.js?v=2008";
-import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2008";
-import { parseHashParams } from "../url-state.js?v=2008";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2008";
-import { enterArchie } from "./welcome-alt-recap.js?v=2008";
+import { html, raw } from "../utils.js?v=2010";
+import { navigate } from "../router.js?v=2010";
+import { getDraft, patchDraft } from "../context-builder.js?v=2010";
+import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2010";
+import { parseHashParams } from "../url-state.js?v=2010";
+import { isFlagOn } from "../feature-flags.js?v=2010";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2010";
+import { enterArchie } from "./welcome-alt-recap.js?v=2010";
 
 const MOVE_MS = 220; // the card's exit, before the next one comes in
 
@@ -44,6 +50,7 @@ export function renderReview(target, sid, config) {
   let index = 0; // the front card, within the current part
   let allSet = false; // the "all set" card is up (it carries Start writing)
   let count = 0; // how many cards the current part deals
+  const scroll = isFlagOn("reviewScroll");
 
   const left = () => {
     const done = reviewed();
@@ -157,7 +164,7 @@ export function renderReview(target, sid, config) {
         aria-label="Previous card"
         ${atStart ? raw("disabled") : ""}
       >
-        <i class="ap-icon-arrow-left" aria-hidden="true"></i>
+        <i class="${scroll ? "ap-icon-arrow-up" : "ap-icon-arrow-left"}" aria-hidden="true"></i>
       </button>
       ${count > 1 /* one card has no progress to show */
         ? raw(html`
@@ -170,7 +177,8 @@ export function renderReview(target, sid, config) {
           `)
         : ""}
       <button type="button" class="welcome-review__navbtn" data-review-next ${upNext ? "" : raw("disabled")}>
-        <span>${upNext || "Last card"}</span><i class="ap-icon-arrow-right" aria-hidden="true"></i>
+        <span>${upNext || "Last card"}</span
+        ><i class="${scroll ? "ap-icon-arrow-down" : "ap-icon-arrow-right"}" aria-hidden="true"></i>
       </button>
     `;
   };
@@ -186,13 +194,19 @@ export function renderReview(target, sid, config) {
     index = Math.min(index, Math.max(0, count - 1));
     list.forEach((el, i) => {
       el.classList.add("welcome-review__card");
+      if (scroll) {
+        // Every card wears its part's band; the one at the reading line is in focus.
+        el.classList.toggle("is-active", i === index);
+        if (!el.querySelector(":scope > .welcome-review__kicker")) el.insertAdjacentHTML("afterbegin", kicker());
+        return;
+      }
       el.classList.toggle("is-front", i === index);
       el.classList.remove("is-enter-next", "is-enter-prev", "is-leave-next", "is-leave-prev", "is-dealt");
       if (enter && i === index) el.classList.add(`is-enter-${enter}`);
       el.dataset.behind = i === index ? String(Math.min(2, count - 1 - index)) : "";
       el.querySelectorAll(":scope > .welcome-review__kicker").forEach((n) => n.remove());
     });
-    list[index]?.insertAdjacentHTML("afterbegin", kicker());
+    if (!scroll) list[index]?.insertAdjacentHTML("afterbegin", kicker());
     navEl.innerHTML = count ? nav(list) : "";
     applying = false;
     shell.paint();
@@ -210,6 +224,57 @@ export function renderReview(target, sid, config) {
     index = fromEnd ? Number.MAX_SAFE_INTEGER : 0;
     applyStack({ enter });
     body.querySelector(".welcome-screen")?.scrollTo?.({ top: 0 });
+    if (scroll) centre({ instant: true });
+  };
+
+  // Scroll mode: bring the current card to the reading line (a bit above the
+  // middle — the nav floats at the bottom). A card taller than the scroll
+  // starts at its top. While it glides, the scroll doesn't pick the index.
+  let gliding = 0;
+  const centre = ({ instant = false } = {}) => {
+    const el = cards()[index];
+    if (!el) return;
+    const box = body.getBoundingClientRect();
+    const r = el.getBoundingClientRect();
+    const room = body.clientHeight * 0.45;
+    const top = body.scrollTop + r.top - box.top - Math.max(24, room - r.height / 2);
+    window.clearTimeout(gliding);
+    gliding = window.setTimeout(() => (gliding = 0), instant ? 0 : 700);
+    body.scrollTo({ top, behavior: instant ? "instant" : "smooth" });
+  };
+
+  // Scroll mode: the card under the reading line is the current one.
+  let frame = 0;
+  const onScroll = () => {
+    if (gliding || frame) return;
+    frame = window.requestAnimationFrame(() => {
+      frame = 0;
+      const line = body.getBoundingClientRect().top + body.clientHeight * 0.45;
+      let best = index;
+      let dist = Infinity;
+      cards().forEach((el, i) => {
+        const r = el.getBoundingClientRect();
+        const d = line < r.top ? r.top - line : line > r.bottom ? line - r.bottom : 0;
+        if (d < dist) [best, dist] = [i, d];
+      });
+      if (best === index) return;
+      index = best;
+      applyStack();
+    });
+  };
+  if (scroll) {
+    shell.sheet.classList.add("is-scroll");
+    body.addEventListener("scroll", onScroll, { passive: true });
+  }
+
+  // A part's cards arrive: the front one is dealt onto the stack — in a
+  // scroll, they all cascade in, the nearest first.
+  const deal = () => {
+    if (!scroll) return cards()[index]?.classList.add("is-dealt");
+    cards().forEach((el, i) => {
+      el.style.setProperty("--deal", Math.abs(i - index));
+      el.classList.add("is-dealt");
+    });
   };
 
   // Changing part is its own beat, unlike moving between cards: the whole stack
@@ -234,7 +299,7 @@ export function renderReview(target, sid, config) {
       window.setTimeout(() => {
         shell.sheet.classList.remove("is-part-intro");
         introEl.innerHTML = "";
-        cards()[index]?.classList.add("is-dealt");
+        deal();
         navEl.classList.add("is-dealt");
         window.setTimeout(() => navEl.classList.remove("is-dealt"), 500);
         moving = false;
@@ -326,7 +391,7 @@ export function renderReview(target, sid, config) {
     }
     hideIntro();
     openPart(to.id, { enter: "" });
-    cards()[index]?.classList.add("is-dealt");
+    deal();
     navEl.classList.add("is-dealt");
     window.setTimeout(() => navEl.classList.remove("is-dealt"), 500);
   };
@@ -335,7 +400,7 @@ export function renderReview(target, sid, config) {
   const reviewAgain = (id) => {
     hideIntro();
     openPart(id, { fromEnd: id === current(), enter: "" });
-    cards()[index]?.classList.add("is-dealt");
+    deal();
   };
 
   // Next: the card swipes off and the next one rises from the stack. Previous:
@@ -346,6 +411,13 @@ export function renderReview(target, sid, config) {
     if (moving) return;
     const at = RECAP_SECTIONS.findIndex((t) => t.id === current());
     if (step < 0 && index === 0 && at === 0) return;
+    if (scroll) {
+      if (step > 0 && index >= count - 1) return finishPart();
+      if (step < 0 && index === 0) return switchPart(RECAP_SECTIONS[at - 1].id, { fromEnd: true });
+      index += step;
+      applyStack();
+      return centre();
+    }
     moving = true;
     const front = cards()[index];
     front?.classList.add(step > 0 ? "is-leave-next" : "is-leave-prev");
@@ -371,6 +443,13 @@ export function renderReview(target, sid, config) {
     if (confirm) return confirmPart(confirm);
     const again = e.target.closest("[data-review-again]")?.dataset.reviewAgain;
     if (again) return reviewAgain(again);
+    // Scroll mode: a dimmed card comes into focus — the click still reaches its field.
+    const dimmed = scroll && e.target.closest(".welcome-review__card:not(.is-active)");
+    if (dimmed) {
+      index = cards().indexOf(dimmed);
+      applyStack();
+      centre();
+    }
     if (e.target.closest("[data-review-next]")) return move(1);
     if (e.target.closest("[data-review-prev]")) return move(-1);
     if (e.target.closest("[data-review-start]")) return enterArchie(sid);
@@ -379,12 +458,13 @@ export function renderReview(target, sid, config) {
   target.addEventListener("click", onClick);
   // The keyboard's arrows browse too — unless you're typing in a field.
   const onKey = (e) => {
-    if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+    const keys = scroll ? ["ArrowDown", "ArrowUp"] : ["ArrowRight", "ArrowLeft"];
+    if (!keys.includes(e.key)) return;
     if (e.target.closest?.("input, textarea, select, [contenteditable]")) return;
     if (document.querySelector(".app-modal-backdrop:not([hidden]), body.has-modal")) return;
     if (shell.sheet.classList.contains("is-asking")) return;
     e.preventDefault();
-    move(e.key === "ArrowRight" ? 1 : -1);
+    move(e.key === keys[0] ? 1 : -1);
   };
   document.addEventListener("keydown", onKey);
 
@@ -392,6 +472,9 @@ export function renderReview(target, sid, config) {
 
   return () => {
     observer.disconnect();
+    body.removeEventListener("scroll", onScroll);
+    window.cancelAnimationFrame(frame);
+    window.clearTimeout(gliding);
     unmount?.();
     shell.cleanup();
     target.removeEventListener("click", onClick);

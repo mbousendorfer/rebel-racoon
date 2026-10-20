@@ -1162,13 +1162,14 @@
   display: block;
 }
 
-.welcome-review__card:not(.is-front) {
+.welcome-flow__sheet:not(.is-scroll) .welcome-review__card:not(.is-front) {
   display: none;
 }
 
 /* The front card, and the cards still to come as backs under it — drawn with
    its own shadows, so they need no DOM and no nested elevation. */
-.welcome-review__card.is-front {
+.welcome-review__card.is-front,
+.welcome-flow__sheet.is-scroll .welcome-review__card {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -1737,6 +1738,97 @@
 
 .welcome-flow__option[aria-current="true"] {
   border-color: var(--ref-color-electric-blue-100);
+}
+
+/* ---------- Flag reviewScroll: the part's cards as a scroll ----------
+   The same cards, one under the other, in a column that scrolls over the
+   pixels. The card at the reading line is in focus; the others step back
+   (dimmed, a touch smaller) and come forward as they reach it. The edges of
+   the scroll dissolve into the stage — never a hard cut, never a white fade.
+   The nav floats at the bottom of the stage, over the scroll. */
+.welcome-flow__sheet.is-scroll {
+  position: absolute;
+  inset: 0;
+  width: auto;
+  margin: 0;
+}
+
+.welcome-flow__sheet.is-scroll .welcome-flow__sheet-body {
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-snap-type: y proximity;
+  /* The snap centres a card on the reading line (45%, JS's too), not on 50%. */
+  scroll-padding-block: 0 10%;
+  scrollbar-width: none;
+  /* The column is the stack's width; the first card starts near the reading
+     line, the last can climb up to it, clear of the nav. */
+  padding: 22vh max(var(--ref-spacing-lg), calc((100% - 720px) / 2)) 48vh;
+  mask-image: linear-gradient(180deg, transparent 0, #000 96px, #000 calc(100% - 140px), transparent 100%);
+}
+
+.welcome-flow__sheet.is-scroll .welcome-flow__sheet-body::-webkit-scrollbar {
+  display: none;
+}
+
+.welcome-flow__sheet.is-scroll .pb2-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-lg);
+}
+
+.welcome-flow__sheet.is-scroll .welcome-review__card {
+  scroll-snap-align: center;
+  opacity: 0.5;
+  transform: scale(0.96);
+  transition:
+    opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.welcome-flow__sheet.is-scroll .welcome-review__card:not(.is-active) {
+  cursor: pointer;
+}
+
+.welcome-flow__sheet.is-scroll .welcome-review__card:not(.is-active):hover {
+  opacity: 0.72;
+}
+
+.welcome-flow__sheet.is-scroll .welcome-review__card.is-active {
+  opacity: 1;
+  transform: none;
+}
+
+/* A part's cards arrive in a cascade, the nearest first. */
+.welcome-flow__sheet.is-scroll .welcome-review__card.is-dealt {
+  animation: welcome-review-cascade 0.55s cubic-bezier(0.22, 1, 0.36, 1) calc(min(var(--deal, 0), 4) * 70ms) both;
+}
+
+@keyframes welcome-review-cascade {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.94);
+  }
+}
+
+.welcome-flow__sheet.is-scroll .welcome-review__nav {
+  position: absolute;
+  inset: auto 0 var(--ref-spacing-lg);
+  z-index: 2;
+  margin: 0;
+  pointer-events: none;
+}
+
+.welcome-flow__sheet.is-scroll .welcome-review__nav > * {
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .welcome-flow__sheet.is-scroll .welcome-review__card,
+  .welcome-flow__sheet.is-scroll .welcome-review__card.is-dealt {
+    transition: none;
+    animation: none;
+  }
 }
 
 @media (max-width: 900px) {

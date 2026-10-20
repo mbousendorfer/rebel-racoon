@@ -8,17 +8,17 @@
 // A Playbook filled by hand has nothing to build: straight to the reveal, and
 // its way out is filling it in.
 
-import { html, raw } from "../utils.js?v=2008";
-import { navigate } from "../router.js?v=2008";
-import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2008";
+import { html, raw } from "../utils.js?v=2010";
+import { navigate } from "../router.js?v=2010";
+import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2010";
 import {
   LOADING_STAGES,
   FILE_LOADING_STAGES,
   INTERVIEW_LOADING_STAGES,
   withNetworkStage,
   enterArchie,
-} from "./welcome-alt-recap.js?v=2008";
-import { ensureFlowDraft, goBack, mountShell } from "./welcome-alt-shell.js?v=2008";
+} from "./welcome-alt-recap.js?v=2010";
+import { ensureFlowDraft, goBack, mountShell } from "./welcome-alt-shell.js?v=2010";
 
 const STAGE_MS = 1300; // each stage holds at least this long, so the work reads as work
 const started = new Map(); // sid → when this screen first showed it (a re-render doesn't restart it)

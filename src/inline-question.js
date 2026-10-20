@@ -77,8 +77,8 @@
 //   skipDisabled      bool    — Skip shown disabled (its label says when it unlocks); Esc → Back
 //   onBack()          fn      — called when ← Back is clicked; if omitted, no back btn
 
-import { chatTurn } from "./screens/_analyse-common.js?v=2008";
-import { createSessionNotifier } from "./store-utils.js?v=2008";
+import { chatTurn } from "./screens/_analyse-common.js?v=2010";
+import { createSessionNotifier } from "./store-utils.js?v=2010";
 
 const states = new Map(); // sessionId → opts
 const sessionNotifier = createSessionNotifier("inline-question");

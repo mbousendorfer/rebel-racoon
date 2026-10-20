@@ -3,14 +3,14 @@
 // the panel shell (open / close / resize / URL state / delegated listeners)
 // stays there.
 
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2008";
-import { isFlagOn } from "../../feature-flags.js?v=2008";
-import { getConnectedConnectors } from "../../connectors-store.js?v=2008";
-import { escapeAttr, escapeText } from "../../utils.js?v=2008";
-import { conceptText } from "../../concepts.js?v=2008";
-import { renderConnectorLogo } from "../../connectors-view.js?v=2008";
-import { renderTopPostEcho } from "../top-post-card.js?v=2008";
-import { RPANEL_CLOSE_INLINE, activeSessionId, sessionIdeas } from "../right-panel.js?v=2008";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2010";
+import { isFlagOn } from "../../feature-flags.js?v=2010";
+import { getConnectedConnectors } from "../../connectors-store.js?v=2010";
+import { escapeAttr, escapeText } from "../../utils.js?v=2010";
+import { conceptText } from "../../concepts.js?v=2010";
+import { renderConnectorLogo } from "../../connectors-view.js?v=2010";
+import { renderTopPostEcho } from "../top-post-card.js?v=2010";
+import { RPANEL_CLOSE_INLINE, activeSessionId, sessionIdeas } from "../right-panel.js?v=2010";
 
 // Sources mode view — list of source rows for the active session + a
 // trailing "+ Attach" button. Each row carries kind icon, filename,
