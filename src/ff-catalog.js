@@ -81,8 +81,9 @@ export const FLAGS = Object.freeze([
       "When ON, the topbar's Sources / Ideas / Drafts pills become the side " +
       "panel's own tabs — Overview · Sources › Ideas, Clips › Drafts with " +
       "their counts and a dot on a tab with something new — right above " +
-      "the panel, which has no header row. The Overview replaces the " +
-      "conversation status card: the chat's real content. In the " +
+      "the panel, which has no header row. Its Overview tab is the " +
+      "conversation status card's other form — with that flag ON the card " +
+      "stays and the tab is gone. In the " +
       "thread, every source, ideas batch, clips batch and drafts batch is " +
       "a card that opens the panel on those objects; no toast nor green " +
       "composer bar announces them, and the panel never opens by itself." +

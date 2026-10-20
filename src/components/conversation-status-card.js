@@ -16,8 +16,8 @@
 // the underlying stores mutate (assistant thread, sources-stream, library,
 // right-panel mode, sessions).
 
-import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=2072";
-import { getPath } from "../router.js?v=2072";
+import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=2073";
+import { getPath } from "../router.js?v=2073";
 import {
   openDrafts as openDraftsPanel,
   openIdeas as openIdeasPanel,
@@ -25,14 +25,14 @@ import {
   openSources as openSourcesPanel,
   getMode as getRightPanelMode,
   subscribe as subscribeRightPanel,
-} from "./right-panel.js?v=2072";
-import { getThread, subscribe as subscribeThread } from "../assistant.js?v=2072";
-import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=2072";
-import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=2072";
-import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=2072";
-import { subscribe as subscribeSessions } from "../sessions-store.js?v=2072";
-import { addMention } from "../composer-mentions.js?v=2072";
-import { isFlagOn } from "../feature-flags.js?v=2072";
+} from "./right-panel.js?v=2073";
+import { getThread, subscribe as subscribeThread } from "../assistant.js?v=2073";
+import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=2073";
+import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=2073";
+import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=2073";
+import { subscribe as subscribeSessions } from "../sessions-store.js?v=2073";
+import { addMention } from "../composer-mentions.js?v=2073";
+import { isFlagOn } from "../feature-flags.js?v=2073";
 
 // Two-level structure:
 //   .conversation-status-column   — fills grid column 3 with white bg
@@ -177,8 +177,10 @@ export function render() {
   if (!initialized) return;
   // Feature-switched off entirely — never reserve the column or render the
   // card (the topbar toggle is hidden in lockstep, cf. topbar.js).
-  // Under contentPanel the card lives on as the side panel's Overview.
-  if (!isFlagOn("conversationStatusCard") || isFlagOn("contentPanel")) {
+  // Under contentPanel too: the card and the panel's Overview tab are one or
+  // the other — this flag ON keeps the card and drops the tab (right-panel.js
+  // hasOverview).
+  if (!isFlagOn("conversationStatusCard")) {
     hideCard();
     return;
   }
@@ -212,7 +214,7 @@ export function render() {
   // closes, the subscribeRightPanel listener re-renders and the card
   // reappears if it was enabled.
   const rpMode = getRightPanelMode();
-  if (rpMode === "drafts" || rpMode === "ideas" || rpMode === "sources") {
+  if (rpMode) {
     hideCard();
     return;
   }
