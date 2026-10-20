@@ -1,28 +1,28 @@
-import { html, raw } from "../utils.js?v=2055";
-import { navigate, getPath } from "../router.js?v=2055";
-import { open as openBugReportModal } from "./bug-report-modal.js?v=2055";
-import { open as openFeedbackModal } from "./feedback-modal.js?v=2055";
-import { open as openSearchModal } from "./search-modal.js?v=2055";
-import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=2055";
-import { renderAdminMenu, applyUserMode, applyOrgRole, toggleFlag } from "../admin-menu.js?v=2055";
-import { subscribe as subscribeSessions } from "../sessions-store.js?v=2055";
-import { isFlagOn } from "../feature-flags.js?v=2055";
-import { subscribe as subscribeContexts } from "../contexts-store.js?v=2055";
+import { html, raw } from "../utils.js?v=2056";
+import { navigate, getPath } from "../router.js?v=2056";
+import { open as openBugReportModal } from "./bug-report-modal.js?v=2056";
+import { open as openFeedbackModal } from "./feedback-modal.js?v=2056";
+import { open as openSearchModal } from "./search-modal.js?v=2056";
+import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=2056";
+import { renderAdminMenu, applyUserMode, applyOrgRole, toggleFlag } from "../admin-menu.js?v=2056";
+import { subscribe as subscribeSessions } from "../sessions-store.js?v=2056";
+import { isFlagOn } from "../feature-flags.js?v=2056";
+import { subscribe as subscribeContexts } from "../contexts-store.js?v=2056";
 import {
   getActivePlaybook,
   isWorkspaceMode,
   playbookForNewWork,
   catalogueRoute,
   subscribe as subscribeScope,
-} from "../active-playbook.js?v=2055";
-import { setHandoff } from "../handoff.js?v=2055";
+} from "../active-playbook.js?v=2056";
+import { setHandoff } from "../handoff.js?v=2056";
 // A Playbook nobody shared with me must not surface here either — the store
 // still holds it (see playbook-access.js), the sidebar just doesn't name it.
-import { visibleContexts } from "../playbook-access.js?v=2055";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=2055";
-import { countToReview, subscribe as subscribeTopics } from "../topics-store.js?v=2055";
-import { getConnectedConnectors, subscribe as subscribeConnectors } from "../connectors-store.js?v=2055";
-import { closePanel as closeRightPanel } from "./right-panel.js?v=2055";
+import { visibleContexts } from "../playbook-access.js?v=2056";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=2056";
+import { countToReview, subscribe as subscribeTopics } from "../topics-store.js?v=2056";
+import { getConnectedConnectors, subscribe as subscribeConnectors } from "../connectors-store.js?v=2056";
+import { closePanel as closeRightPanel } from "./right-panel.js?v=2056";
 import {
   deleteSidebarSession,
   matchSessionId,
@@ -30,8 +30,9 @@ import {
   renderRecentLists,
   startRenameSidebar,
   togglePinSidebar,
-} from "./sidebar/recent-chats.js?v=2055";
-import { renderPlaybookSwitcher, switchPlaybook } from "./sidebar/playbook-switcher.js?v=2055";
+} from "./sidebar/recent-chats.js?v=2056";
+import { renderPlaybookSwitcher, switchPlaybook } from "./sidebar/playbook-switcher.js?v=2056";
+import { renderDemoCard, confirmExitDemo } from "../demo-flow.js?v=2056";
 
 // Global app sidebar — Brand / + New conversation / Recent chats / User footer.
 // Rendered once at boot into #sidebar; re-rendered on every route change so the
@@ -170,6 +171,10 @@ export function initSidebar() {
   if (shell && isSidebarCollapsed()) shell.classList.add("is-sidebar-collapsed");
 
   el.addEventListener("click", (event) => {
+    if (event.target.closest("[data-demo-exit]")) {
+      confirmExitDemo();
+      return;
+    }
     if (event.target.closest("[data-sidebar-toggle]")) {
       toggleSidebar();
       return;
@@ -525,6 +530,7 @@ export function renderSidebar() {
     <div class="app-sidebar__list" aria-label="Recent chats">${raw(renderRecentLists(activeSessionId))}</div>
 
     <div class="app-sidebar__foot">
+      ${raw(renderDemoCard())}
       <div class="app-sidebar__user">
         <div class="ap-avatar size-32">MB</div>
         <div class="app-sidebar__user-meta">

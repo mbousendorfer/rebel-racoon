@@ -5,7 +5,7 @@
 //     reloads into a NEW CHAT — the real one: hero, starters, Topics, composer.
 //     The stores swap to Bramble & Bean material at load (isDemo()), so every
 //     way in finds something: top posts, Topics, sample files, coffee ideas.
-//     Nothing here scripts the chat; a banner above the shell says it's a demo.
+//     Nothing here scripts the chat; a card at the bottom of the sidebar says it's a demo.
 //     No Playbook can be created in the demo (its buttons are hidden under
 //     body.demo, and session.js refuses the builder's handoff).
 //   - one wave: the first drafts, in any chat of the demo (the studios open
@@ -14,12 +14,12 @@
 //   - blockInDemo(): every way to schedule asks for a real brand instead.
 //   - exitDemo(): wipes it all and goes back to the real setup.
 
-import { DEMO_ACCOUNTS, DEMO_PLAYBOOK, DEMO_SAMPLES } from "./mocks.js?v=2055";
-import { isDemo, isDemoDone, markDemoDone, writeDemo } from "./demo-mode.js?v=2055";
-import { postAssistantMessage, postUserTurn } from "./assistant.js?v=2055";
-import * as inlineQuestion from "./inline-question.js?v=2055";
-import { getPosts, subscribe as subscribePosts } from "./posts-store.js?v=2055";
-import { open as openConfirm } from "./components/confirm-modal.js?v=2055";
+import { DEMO_ACCOUNTS, DEMO_PLAYBOOK, DEMO_SAMPLES } from "./mocks.js?v=2056";
+import { isDemo, isDemoDone, markDemoDone, writeDemo } from "./demo-mode.js?v=2056";
+import { postAssistantMessage, postUserTurn } from "./assistant.js?v=2056";
+import * as inlineQuestion from "./inline-question.js?v=2056";
+import { getPosts, subscribe as subscribePosts } from "./posts-store.js?v=2056";
+import { open as openConfirm } from "./components/confirm-modal.js?v=2056";
 
 const PROFILES_KEY = "archie-connected-profiles";
 
@@ -71,28 +71,28 @@ export function blockInDemo() {
   return true;
 }
 
-// The demo banner: above the whole shell, on every screen of the demo, so it
-// can't be missed — the DS Infobox (the lookup's "banner"), with the way out.
-// One listener on its own root; app.js mounts it at boot.
-export function initDemoBanner() {
-  if (!isDemo()) return;
-  document.body.classList.add("demo");
-  const bar = document.createElement("div");
-  bar.className = "demo-banner";
-  bar.innerHTML = `
-    <div class="ap-infobox info" role="status">
+// The demo is said in a card at the bottom of the sidebar, above the user row —
+// always on screen, never in the way (a full-width banner was tried and
+// dropped on 2026-10-20). The DS Infobox with a title; the way out is a link in
+// it. sidebar.js renders it and wires [data-demo-exit].
+export function renderDemoCard() {
+  if (!isDemo()) return "";
+  return `
+    <div class="ap-infobox info has-title app-sidebar__demo" role="status">
       <i class="ap-icon-info_fill" aria-hidden="true"></i>
       <div class="ap-infobox-content">
         <div class="ap-infobox-texts">
-          <span class="ap-infobox-message"><strong>Demo</strong> — you're trying me on ${DEMO_PLAYBOOK.brandName}, a coffee roaster I made up. Nothing you make here gets posted.</span>
+          <span class="ap-infobox-title">You're in a demo</span>
+          <span class="ap-infobox-message">${DEMO_PLAYBOOK.brandName} is a coffee roaster I made up. Nothing you make here gets posted.</span>
+          <button type="button" class="ap-link" data-demo-exit>Exit demo</button>
         </div>
-        <button type="button" class="ap-button stroked grey" data-demo-exit>Exit demo</button>
       </div>
     </div>`;
-  bar.addEventListener("click", (event) => {
-    if (event.target.closest("[data-demo-exit]")) confirmExitDemo();
-  });
-  document.body.insertBefore(bar, document.getElementById("appShell"));
+}
+
+// body.demo is what hides every way to create a Playbook (styles/layout.css).
+export function initDemoMode() {
+  if (isDemo()) document.body.classList.add("demo");
 }
 
 // The studios ask for a file the demo user doesn't have: hand them the brand's.

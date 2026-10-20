@@ -539,6 +539,11 @@
   background: var(--app-color-sidebar-bg);
 }
 
+/* The demo card (flag demoMode, demo-flow.js renderDemoCard), above the user row. */
+.app-sidebar__demo {
+  margin-bottom: var(--ref-spacing-xs);
+}
+
 .app-sidebar__user {
   display: flex;
   align-items: center;

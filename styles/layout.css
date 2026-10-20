@@ -296,27 +296,7 @@ button.app-topbar__title--rename:focus-visible .app-topbar__title-pen {
   color: var(--ref-color-grey-100);
 }
 
-/* ---------- Demo mode (flag demoMode) ----------
-   The banner (demo-flow.js initDemoBanner) sits above the shell on every
-   screen; the shell takes the rest of the viewport instead of 100vh. */
-body.demo {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-}
-
-body.demo .app-shell {
-  flex: 1;
-  min-height: 0;
-  height: auto;
-}
-
-.demo-banner {
-  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xxs);
-  background: var(--app-bg);
-  border-bottom: 1px solid var(--ref-color-grey-20);
-}
-
+/* ---------- Demo mode (flag demoMode) ---------- */
 /* No Playbook is created, duplicated or deleted in the demo: one brand, made up. */
 body.demo [data-contexts-new],
 body.demo [data-playbook-create],
