@@ -25,14 +25,14 @@
 // focus (the others dimmed), and the floating nav still steps through them
 // (↑ / ↓ scroll the next one to the middle). The index follows the scroll.
 
-import { html, raw } from "../utils.js?v=2010";
-import { navigate } from "../router.js?v=2010";
-import { getDraft, patchDraft } from "../context-builder.js?v=2010";
-import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2010";
-import { parseHashParams } from "../url-state.js?v=2010";
-import { isFlagOn } from "../feature-flags.js?v=2010";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2010";
-import { enterArchie } from "./welcome-alt-recap.js?v=2010";
+import { html, raw } from "../utils.js?v=2011";
+import { navigate } from "../router.js?v=2011";
+import { getDraft, patchDraft } from "../context-builder.js?v=2011";
+import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2011";
+import { parseHashParams } from "../url-state.js?v=2011";
+import { isFlagOn } from "../feature-flags.js?v=2011";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2011";
+import { enterArchie } from "./welcome-alt-recap.js?v=2011";
 
 const MOVE_MS = 220; // the card's exit, before the next one comes in
 
@@ -198,6 +198,7 @@ export function renderReview(target, sid, config) {
         // Every card wears its part's band; the one at the reading line is in focus.
         el.classList.toggle("is-active", i === index);
         if (!el.querySelector(":scope > .welcome-review__kicker")) el.insertAdjacentHTML("afterbegin", kicker());
+        if (!el.style.getPropertyValue("--focus")) el.style.setProperty("--focus", i === index ? "1" : "0");
         return;
       }
       el.classList.toggle("is-front", i === index);
@@ -212,7 +213,9 @@ export function renderReview(target, sid, config) {
     shell.paint();
   };
   const observer = new MutationObserver(() => {
-    if (!applying) applyStack();
+    if (applying) return;
+    applyStack();
+    if (scroll) focus(); // the repainted cards keep their dimming
   });
   observer.observe(body, { childList: true });
 
@@ -229,37 +232,69 @@ export function renderReview(target, sid, config) {
 
   // Scroll mode: bring the current card to the reading line (a bit above the
   // middle — the nav floats at the bottom). A card taller than the scroll
-  // starts at its top. While it glides, the scroll doesn't pick the index.
-  let gliding = 0;
+  // starts at its top. The glide is ours, not the browser's smooth scroll
+  // (too short, too abrupt): a slow ease-in-out, the snap off while it runs
+  // (it would catch the scroll on the way). While it glides, the scroll
+  // doesn't pick the index.
+  const GLIDE_MS = 720;
+  const easeInOut = (p) => (p < 0.5 ? 4 * p ** 3 : 1 - (-2 * p + 2) ** 3 / 2);
+  let gliding = false;
+  let glideFrame = 0;
   const centre = ({ instant = false } = {}) => {
     const el = cards()[index];
     if (!el) return;
     const box = body.getBoundingClientRect();
     const r = el.getBoundingClientRect();
     const room = body.clientHeight * 0.45;
-    const top = body.scrollTop + r.top - box.top - Math.max(24, room - r.height / 2);
-    window.clearTimeout(gliding);
-    gliding = window.setTimeout(() => (gliding = 0), instant ? 0 : 700);
-    body.scrollTo({ top, behavior: instant ? "instant" : "smooth" });
+    const max = body.scrollHeight - body.clientHeight;
+    const to = Math.max(0, Math.min(max, body.scrollTop + r.top - box.top - Math.max(24, room - r.height / 2)));
+    window.cancelAnimationFrame(glideFrame);
+    if (instant || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      gliding = false;
+      body.classList.remove("is-gliding");
+      body.scrollTop = to;
+      return focus();
+    }
+    const from = body.scrollTop;
+    const t0 = performance.now();
+    gliding = true;
+    body.classList.add("is-gliding");
+    const step = (now) => {
+      const p = Math.min(1, (now - t0) / GLIDE_MS);
+      body.scrollTop = from + (to - from) * easeInOut(p);
+      if (p < 1) glideFrame = window.requestAnimationFrame(step);
+      else {
+        gliding = false;
+        body.classList.remove("is-gliding");
+      }
+    };
+    glideFrame = window.requestAnimationFrame(step);
   };
 
-  // Scroll mode: the card under the reading line is the current one.
+  // Scroll mode: how in focus each card is — 1 on the reading line, easing to 0
+  // a card's height away — drives its dimming continuously (--focus), so it
+  // follows the scroll instead of switching. The card under the line is the
+  // current one.
+  const focus = () => {
+    const line = body.getBoundingClientRect().top + body.clientHeight * 0.45;
+    let best = index;
+    let dist = Infinity;
+    cards().forEach((el, i) => {
+      const r = el.getBoundingClientRect();
+      const d = line < r.top ? r.top - line : line > r.bottom ? line - r.bottom : 0;
+      el.style.setProperty("--focus", (1 - Math.min(1, d / 280)).toFixed(3));
+      if (d < dist) [best, dist] = [i, d];
+    });
+    if (gliding || best === index) return;
+    index = best;
+    applyStack();
+  };
   let frame = 0;
   const onScroll = () => {
-    if (gliding || frame) return;
+    if (frame) return;
     frame = window.requestAnimationFrame(() => {
       frame = 0;
-      const line = body.getBoundingClientRect().top + body.clientHeight * 0.45;
-      let best = index;
-      let dist = Infinity;
-      cards().forEach((el, i) => {
-        const r = el.getBoundingClientRect();
-        const d = line < r.top ? r.top - line : line > r.bottom ? line - r.bottom : 0;
-        if (d < dist) [best, dist] = [i, d];
-      });
-      if (best === index) return;
-      index = best;
-      applyStack();
+      focus();
     });
   };
   if (scroll) {
@@ -474,7 +509,7 @@ export function renderReview(target, sid, config) {
     observer.disconnect();
     body.removeEventListener("scroll", onScroll);
     window.cancelAnimationFrame(frame);
-    window.clearTimeout(gliding);
+    window.cancelAnimationFrame(glideFrame);
     unmount?.();
     shell.cleanup();
     target.removeEventListener("click", onClick);

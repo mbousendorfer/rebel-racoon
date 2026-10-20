@@ -1777,26 +1777,22 @@
   gap: var(--ref-spacing-lg);
 }
 
+/* Dimming follows the scroll, frame by frame (--focus, 0 → 1, set by the
+   JS from the distance to the reading line): no transition, no switch. A card
+   out of focus only steps back a little — it stays readable. */
 .welcome-flow__sheet.is-scroll .welcome-review__card {
   scroll-snap-align: center;
-  opacity: 0.5;
-  transform: scale(0.96);
-  transition:
-    opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  opacity: calc(0.82 + 0.18 * var(--focus, 1));
+  transform: scale(calc(0.985 + 0.015 * var(--focus, 1)));
 }
 
 .welcome-flow__sheet.is-scroll .welcome-review__card:not(.is-active) {
   cursor: pointer;
 }
 
-.welcome-flow__sheet.is-scroll .welcome-review__card:not(.is-active):hover {
-  opacity: 0.72;
-}
-
-.welcome-flow__sheet.is-scroll .welcome-review__card.is-active {
-  opacity: 1;
-  transform: none;
+/* Our glide runs the scroll; the snap would catch it on the way. */
+.welcome-flow__sheet.is-scroll .welcome-flow__sheet-body.is-gliding {
+  scroll-snap-type: none;
 }
 
 /* A part's cards arrive in a cascade, the nearest first. */
@@ -1824,9 +1820,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .welcome-flow__sheet.is-scroll .welcome-review__card,
   .welcome-flow__sheet.is-scroll .welcome-review__card.is-dealt {
-    transition: none;
     animation: none;
   }
 }
