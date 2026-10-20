@@ -1180,6 +1180,10 @@
   border: none;
   border-radius: 20px;
   box-shadow: var(--app-shadow-popover-lg);
+  /* The view repaints its whole DOM on most edits (a radio, a chip…): the
+     block's own entrance (pb2-rise) would replay and the card jump. The deck
+     moves below are the only motion a card has. */
+  animation: none;
 }
 
 .welcome-review__card.is-front[data-behind="1"] {
