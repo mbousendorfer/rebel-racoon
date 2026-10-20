@@ -4,21 +4,22 @@
 // session.js, unchanged; the mention picker stays there, since bindSession
 // writes its highlight state.
 
-import { isFlagOn } from "../../feature-flags.js?v=2061";
-import { getConnectedConnectors, findConnector } from "../../connectors-store.js?v=2061";
-import { escapeHtml, html, raw, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=2061";
-import { renderConnectorLogo } from "../../connectors-view.js?v=2061";
-import { getSources, getIdeas } from "../../library.js?v=2061";
-import * as clipStudio from "../../clip-studio.js?v=2061";
-import { getThread } from "../../assistant.js?v=2061";
-import { getActivePlan, getPlans } from "../../post-plan-store.js?v=2061";
-import { revokedContextFor } from "../../playbook-access.js?v=2061";
-import { getSessionById } from "../../sessions-store.js?v=2061";
-import { catalogueRoute } from "../../active-playbook.js?v=2061";
-import { getActiveConnector } from "../../composer-connector.js?v=2061";
-import { COMPOSER_DEFAULT_PLACEHOLDER, renderPlaybookControl } from "../session.js?v=2061";
-import { renderTopicPickerRow } from "./empty-hero.js?v=2061";
-import { renderChatGallery } from "./chat-gallery.js?v=2061";
+import { isFlagOn } from "../../feature-flags.js?v=2069";
+import { getConnectedConnectors, findConnector } from "../../connectors-store.js?v=2069";
+import { escapeHtml, html, raw, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=2069";
+import { renderConnectorLogo } from "../../connectors-view.js?v=2069";
+import { getSources, getIdeas } from "../../library.js?v=2069";
+import * as clipStudio from "../../clip-studio.js?v=2069";
+import { getThread } from "../../assistant.js?v=2069";
+import { getActivePlan, getPlans } from "../../post-plan-store.js?v=2069";
+import { revokedContextFor } from "../../playbook-access.js?v=2069";
+import { getSessionById } from "../../sessions-store.js?v=2069";
+import { catalogueRoute } from "../../active-playbook.js?v=2069";
+import { getActiveConnector } from "../../composer-connector.js?v=2069";
+import { isDemo } from "../../demo-mode.js?v=2069";
+import { COMPOSER_DEFAULT_PLACEHOLDER, renderPlaybookControl } from "../session.js?v=2069";
+import { renderTopicPickerRow } from "./empty-hero.js?v=2069";
+import { renderChatGallery } from "./chat-gallery.js?v=2069";
 
 function renderConnectorsSubmenu() {
   // Connectors are gated behind a feature flag (default OFF) — when off, the
@@ -321,6 +322,8 @@ export function animateBannerOut(el, done) {
 // are delegated on #app, so the same markup works in both positions
 // without re-wiring.
 export function renderComposer(attachedContext, session, selectable) {
+  // The demo (flag demoMode) hands over the brand's own files: say so.
+  const demo = isDemo();
   // Nothing to @mention until the session has at least one ready source or
   // extracted idea — disable the trigger so it doesn't open an empty picker.
   const hasMentionable =
@@ -384,7 +387,7 @@ export function renderComposer(attachedContext, session, selectable) {
                   <i class="ap-icon-file--pdf"></i>
                   <div class="ap-action-dropdown-item-text">
                     <div class="ap-action-dropdown-item-label-container">
-                      <span class="ap-action-dropdown-item-label">Add PDF</span>
+                      <span class="ap-action-dropdown-item-label">Add ${demo ? "demo " : ""}PDF</span>
                     </div>
                   </div>
                 </button>
@@ -392,7 +395,7 @@ export function renderComposer(attachedContext, session, selectable) {
                   <i class="ap-icon-file--video"></i>
                   <div class="ap-action-dropdown-item-text">
                     <div class="ap-action-dropdown-item-label-container">
-                      <span class="ap-action-dropdown-item-label">Add video</span>
+                      <span class="ap-action-dropdown-item-label">Add ${demo ? "demo " : ""}video</span>
                     </div>
                   </div>
                 </button>
@@ -400,7 +403,7 @@ export function renderComposer(attachedContext, session, selectable) {
                   <i class="ap-icon-link"></i>
                   <div class="ap-action-dropdown-item-text">
                     <div class="ap-action-dropdown-item-label-container">
-                      <span class="ap-action-dropdown-item-label">Add URL</span>
+                      <span class="ap-action-dropdown-item-label">Add ${demo ? "demo " : ""}URL</span>
                     </div>
                   </div>
                 </button>

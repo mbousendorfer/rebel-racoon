@@ -49,31 +49,66 @@ export const DEMO_ACCOUNTS = [
   },
 ];
 
+// Filled in full, every section a returning user's Playbook has (Acme is the
+// model): the demo is where someone learns what a Playbook IS, so an empty
+// part would teach them it's optional. The name says it's a demo wherever a
+// Playbook is listed; the copy that talks ABOUT the brand uses `brandName`.
+const COFFEE = (id) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=480&h=480&q=70`;
+
 export const DEMO_PLAYBOOK = {
   id: "ctx-demo-bramble",
-  name: "Bramble & Bean",
+  name: "Demo: Bramble & Bean",
   color: "orange",
   isDefault: true,
   brandName: "Bramble & Bean",
-  websiteUrl: "",
+  brandLogos: [
+    { id: "bb-logo", label: "Logo", url: "assets/logos/brands/bramble-bean.svg" },
+    { id: "bb-logo-icon", label: "Icon", url: "assets/logos/brands/bramble-bean-icon.svg" },
+  ],
+  brandLogo: "assets/logos/brands/bramble-bean.svg",
+  websiteUrl: "https://brambleandbean.example",
   audience: ["Neighbours and regulars", "Home brewers", "People working from the café"],
+  audienceProblems: [
+    "Supermarket coffee tastes flat, and they don't know what to buy instead",
+    "They want a place to work for an hour that isn't a chain",
+  ],
   businessSummary:
-    "A small coffee roaster and café. Roasts in small batches on site, sells beans in the shop and online, and runs a weekend brunch.",
+    "A neighbourhood coffee roaster and café. Roasts in small batches on site every morning, sells beans in the shop and online, and runs a weekend brunch. Known for its seasonal blends and for knowing regulars by name.",
   briefSummary:
-    "A small coffee roaster and café. Roasts in small batches on site, sells beans in the shop and online, and runs a weekend brunch.",
-  tones: ["Warm", "Plain-spoken"],
-  contentStyle: ["Friendly and conversational"],
-  objective: ["Brand awareness", "Community engagement"],
-  contentAction: ["Visit the shop"],
+    "A neighbourhood coffee roaster and café. Roasts in small batches on site every morning, sells beans in the shop and online, and runs a weekend brunch. Known for its seasonal blends and for knowing regulars by name.",
+  tones: ["Warm", "Plain-spoken", "A little playful"],
+  voiceProfile: {
+    headline: "Warm · plain-spoken · a little playful",
+    writingStyle:
+      "Short, friendly sentences that sound like the person behind the counter. Every post names something real — a coffee, a dish, a time — and ends with a reason to drop by.",
+    vocabulary:
+      "Everyday words and coffee words people already know: 'roast', 'blend', 'flat white', 'cup'. No trade jargon without a one-line explanation, no corporate words.",
+    sentenceStructure: "Mostly short sentences, sometimes a fragment for rhythm. One idea per post.",
+    formality: "Informal. 'We' and 'you', contractions always. Reads like a note on the café's chalkboard.",
+    personality: "Warm and welcoming, proud of the craft without being precious about it. Gently funny.",
+    rhetoricalDevices: "Taste notes as the hook, a sensory detail, then the practical bit: when, where, how much.",
+    emotionalTone: "Cosy and upbeat. Never pushy, never 'limited time only'.",
+    contentPatterns: "Hook (a taste or a moment) → the detail that makes it real → when to come or how to get it.",
+    uniqueTraits:
+      "Always names the coffee and its origin. A pun now and then, never two in a post. Up to two emoji, at the end of a line.",
+  },
+  contentStyle: ["Friendly and conversational", "Behind the scenes"],
+  objective: ["Brand awareness", "Community engagement", "Foot traffic"],
+  contentAction: ["Visit the shop", "Order beans online"],
   voiceSummary:
     "Warm, plain-spoken and a little playful, like the barista who knows your order. Short posts that talk to one person, name the coffee, and end with a reason to drop by.",
   voiceAlways: [
     { text: "Name the coffee and where it comes from.", examples: ["Our Huila, Colombia —"] },
     { text: "Talk to one person, not a crowd: 'you', never 'customers'." },
+    {
+      text: "Give the practical detail: when, where, or how much.",
+      examples: ["Saturday 9–1.", "In the shop from today."],
+    },
   ],
   voiceNever: [
     { text: "Never use corporate words like 'leverage' or 'solutions'." },
     { text: "Never more than two emoji in a post." },
+    { text: "Never 'limited time only' or countdown pressure." },
   ],
   voiceByPost: [
     {
@@ -81,8 +116,150 @@ export const DEMO_PLAYBOOK = {
       text: "Lead with how it tastes, then where it's from, then when it's in the shop.",
       examples: ["Think dark chocolate and a bit of cherry."],
     },
+    {
+      when: "Behind the scenes",
+      text: "One moment, told plainly: the time, what's happening, who's doing it.",
+      examples: ["6am. The drum's warm and Inès is on the first batch."],
+    },
+    {
+      when: "Event or brunch",
+      text: "The dish, the coffee it goes with, the day and the hours. Nothing else.",
+      examples: ["Cardamom buns and a flat white, Saturday 9–1."],
+    },
   ],
-  voiceSometimes: [{ text: "Close with a small coffee pun.", examples: ["Have a latte fun this weekend."] }],
+  voiceSometimes: [
+    { text: "Close with a small coffee pun.", examples: ["Have a latte fun this weekend."] },
+    { text: "Ask regulars for their order.", examples: ["What's your usual? Tell us below."] },
+  ],
+  voiceAvoid: ["solutions", "leverage", "artisanal journey", "limited time only"],
+  voiceBaseNetwork: "instagram",
+  voiceByNetwork: {
+    linkedin: {
+      voiceAlways: [
+        { text: "Talk about the business behind the café: sourcing, the team, small-batch choices." },
+        { text: "One number when there is one.", examples: ["Thirty kilos at a time."] },
+      ],
+      voiceNever: [{ text: "Never more than one emoji." }],
+    },
+    facebook: {
+      voiceAlways: [{ text: "Lead with the date and the hours for anything happening in the shop." }],
+      voiceSometimes: [{ text: "Thank the neighbourhood by name of the street." }],
+    },
+  },
+  brandPersonality:
+    "The café on the corner that knows your name. Proud of its coffee, generous with its time, never stuffy.",
+  brandTypography: { headingFont: "Averta", bodyFont: "Averta" },
+  brandColors: [
+    { name: "Primary", hex: "#6B3A22" },
+    { name: "Secondary", hex: "#C8874E" },
+    { name: "Accent", hex: "#7A8F4E" },
+    { name: "Background", hex: "#F7EFE5" },
+    { name: "Text", hex: "#3B2416" },
+  ],
+  brandRules: { logoMinPx: 32, clearSpace: 0.5, noLogoDistortion: true },
+  imageDefaults: { imageType: "photo", style: "warm-natural", refMode: "mood" },
+  defaultLook: { kind: "style", id: "st_demo_bramble_warm" },
+  formatByNetwork: { instagram: "portrait", facebook: "landscape", linkedin: "landscape" },
+  imageStyles: [
+    {
+      id: "st_demo_bramble_warm",
+      label: "Warm counter light",
+      description: "Natural morning light on wood and ceramic, one cup or one dish.",
+      supportsEmbeddedText: false,
+      custom: {
+        sources: [
+          {
+            type: "image",
+            name: "Latte on the counter",
+            url: COFFEE("photo-1495474472287-4d71bcdd2085"),
+            colors: ["#6B3A22", "#C8874E", "#F7EFE5"],
+            weight: 0.7,
+          },
+          {
+            type: "image",
+            name: "Beans, close",
+            url: COFFEE("photo-1442512595331-e89e73853f31"),
+            colors: ["#3B2416", "#6B3A22", "#C8874E"],
+            weight: 0.5,
+          },
+        ],
+        fidelity: "composition",
+        stylePrompt: "Morning light from the side, warm wood, one subject, a little steam. Never staged.",
+        dos: ["One cup or one dish per image", "Natural light only", "Real hands, real counter"],
+        donts: ["No stock-photo smiles", "No heavy filters", "No text over the coffee"],
+      },
+    },
+  ],
+  referenceImages: [
+    {
+      id: "bb-ref-1",
+      label: "The cup",
+      url: COFFEE("photo-1509042239860-f550ce710b93"),
+      note: "Product posts: one cup, natural light, the wood counter in frame.",
+      networks: ["instagram", "facebook"],
+    },
+    {
+      id: "bb-ref-2",
+      label: "The beans",
+      url: COFFEE("photo-1447933601403-0c6688de566e"),
+      note: "Roastery and sourcing posts. Close, textured, no filters.",
+      networks: ["instagram", "linkedin"],
+    },
+    {
+      id: "bb-ref-3",
+      label: "The café",
+      url: COFFEE("photo-1501339847302-ac426a4a7cbb"),
+      note: "Brunch and events: the room with people in it, never empty.",
+      networks: ["facebook"],
+    },
+  ],
+  competitors: [
+    {
+      id: "bb-cmp-1",
+      name: "Northside Coffee",
+      description: "The café two streets up. Strong on offers and community posts, lighter on the coffee itself.",
+      websiteUrl: "https://northsidecoffee.example",
+      socials: [{ network: "instagram", url: "https://instagram.com/northsidecoffee" }],
+    },
+    {
+      id: "bb-cmp-2",
+      name: "Ember Roasters",
+      description: "A bigger roaster across town. Great craft content, sells mostly online.",
+      websiteUrl: "https://emberroasters.example",
+      socials: [
+        { network: "instagram", url: "https://instagram.com/emberroasters" },
+        { network: "linkedin", url: "https://linkedin.com/company/emberroasters" },
+      ],
+    },
+    {
+      id: "bb-cmp-3",
+      name: "Crumb & Co",
+      description: "The bakery next door. Not coffee, but it competes for the same weekend morning.",
+      websiteUrl: "https://crumbandco.example",
+      socials: [{ network: "facebook", url: "https://facebook.com/crumbandco" }],
+    },
+  ],
+  influencers: [
+    {
+      id: "bb-inf-1",
+      name: "The Morning Pour",
+      description: "Home-brewing tips for beginners. Friendly, practical, followed by exactly our home brewers.",
+      socials: [{ network: "instagram", url: "https://instagram.com/themorningpour" }],
+    },
+    {
+      id: "bb-inf-2",
+      name: "Eat the Neighbourhood",
+      description: "Local food guide. One mention fills the weekend brunch.",
+      socials: [{ network: "instagram", url: "https://instagram.com/eattheneighbourhood" }],
+    },
+  ],
+  ctaLinks: [
+    { label: "Order beans online", url: "brambleandbean.example/shop", checked: true, suggested: false },
+    { label: "Find the café", url: "brambleandbean.example/visit", checked: true, suggested: false },
+  ],
+  doRules: ["Name the coffee and its origin", "Give the day and the hours", "Talk to one person"],
+  dontRules: ["No corporate words", "No more than two emoji"],
+  cta: "Come by for a cup — or order the beans online.",
   connectedSocials: DEMO_ACCOUNTS.map((a) => a.id),
 };
 
