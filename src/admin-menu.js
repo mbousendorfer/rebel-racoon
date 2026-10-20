@@ -6,11 +6,11 @@
 // the side-effecting actions wired by the sidebar's delegated listeners. Every
 // change reloads the app so the stores re-seed under the new mode / flag.
 
-import { html, raw, escapeHtml } from "./utils.js?v=2027";
-import { FLAGS } from "./ff-catalog.js?v=2027";
-import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=2027";
-import { getUserMode, setUserMode } from "./user-mode.js?v=2027";
-import { getRole, setRole, ORG } from "./org.js?v=2027";
+import { html, raw, escapeHtml } from "./utils.js?v=2028";
+import { FLAGS, FLAG_GROUPS } from "./ff-catalog.js?v=2028";
+import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=2028";
+import { getUserMode, setUserMode } from "./user-mode.js?v=2028";
+import { getRole, setRole, ORG } from "./org.js?v=2028";
 
 // Which hat I'm wearing inside my organisation. Only meaningful once Playbooks
 // have owners, so the section only exists behind that flag.
@@ -90,18 +90,26 @@ export function renderAdminMenu() {
     `;
   }).join("");
 
-  const flagRows = FLAGS.map((flag) => {
-    const enabled = !!flags[flag.id];
-    return `
-      <label class="admin-menu__row admin-menu__flag" data-admin-flag="${escapeHtml(flag.id)}">
+  // One section per group; the row's tooltip says what the flag does.
+  const flagRow = (flag) => `
+      <label class="admin-menu__row admin-menu__flag" data-admin-flag="${escapeHtml(flag.id)}" data-tooltip="${escapeHtml(flag.tip)}">
         <span class="admin-menu__opt-label">${escapeHtml(flag.label)}</span>
         <span class="ap-toggle-container admin-menu__toggle" aria-hidden="true">
-          <input type="checkbox" ${enabled ? "checked" : ""} tabindex="-1" />
+          <input type="checkbox" ${flags[flag.id] ? "checked" : ""} tabindex="-1" />
           <i></i>
         </span>
       </label>
     `;
-  }).join("");
+  const flagSections = FLAG_GROUPS.map(
+    (group) => `
+      <div class="admin-menu__section">
+        <span class="admin-menu__section-title">${escapeHtml(group)}</span>
+        <div class="admin-menu__flags">${FLAGS.filter((f) => f.group === group)
+          .map(flagRow)
+          .join("")}</div>
+      </div>
+    `,
+  ).join("");
 
   return html`
     <div class="admin-menu">
@@ -117,10 +125,7 @@ export function renderAdminMenu() {
             </div>`
           : "",
       )}
-      <div class="admin-menu__section">
-        <span class="admin-menu__section-title">Feature flags</span>
-        <div class="admin-menu__flags">${raw(flagRows)}</div>
-      </div>
+      ${raw(flagSections)}
       <div class="admin-menu__section">
         <span class="admin-menu__section-title">Docs</span>
         <a class="admin-menu__doc" href="handoff/components.html" target="_blank" rel="noopener">

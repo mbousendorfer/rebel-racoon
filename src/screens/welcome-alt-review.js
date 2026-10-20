@@ -28,14 +28,14 @@
 // cover (tile, name, sentence) is the column's first card — not a passing beat
 // between parts (2026-10-20) — and isn't counted in the dots.
 
-import { html, raw } from "../utils.js?v=2027";
-import { navigate } from "../router.js?v=2027";
-import { getDraft, patchDraft } from "../context-builder.js?v=2027";
-import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2027";
-import { parseHashParams } from "../url-state.js?v=2027";
-import { isFlagOn } from "../feature-flags.js?v=2027";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2027";
-import { enterArchie } from "./welcome-alt-recap.js?v=2027";
+import { html, raw } from "../utils.js?v=2028";
+import { navigate } from "../router.js?v=2028";
+import { getDraft, patchDraft } from "../context-builder.js?v=2028";
+import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2028";
+import { parseHashParams } from "../url-state.js?v=2028";
+import { isFlagOn } from "../feature-flags.js?v=2028";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2028";
+import { enterArchie } from "./welcome-alt-recap.js?v=2028";
 
 const MOVE_MS = 220; // the card's exit, before the next one comes in
 

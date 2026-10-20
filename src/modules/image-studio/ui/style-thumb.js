@@ -1,20 +1,17 @@
 // Image Generator — a style's thumbnail: the style drawn in the active brand's
-// palette, so the gallery previews what THIS brand would get.
+// palette (a ready-made one in Acme's), so the gallery previews what it gets.
 
-import { html } from "../lib/html.js?v=2027";
-import { hashString } from "../lib/prng.js?v=2027";
-import { renderVisual, resolveStyleDrawing, svgToDataUrl } from "../render/visual.js?v=2027";
-import { resolvePalette } from "../render/palette.js?v=2027";
-import { hasStyleArt, styleArtSvg } from "../render/style-art.js?v=2027";
-import { getAsset } from "../state/store.js?v=2027";
-import { getBrand } from "../state/playbook-brand.js?v=2027";
-import { isFlagOn } from "../../../feature-flags.js?v=2027";
+import { html } from "../lib/html.js?v=2028";
+import { hashString } from "../lib/prng.js?v=2028";
+import { renderVisual, resolveStyleDrawing, svgToDataUrl } from "../render/visual.js?v=2028";
+import { resolvePalette } from "../render/palette.js?v=2028";
+import { hasStyleArt, styleArtSvg } from "../render/style-art.js?v=2028";
+import { getAsset } from "../state/store.js?v=2028";
+import { getBrand } from "../state/playbook-brand.js?v=2028";
 
-// A ready-made style is drawn in ONE palette, Acme's, whatever the brand —
-// flag `brandTintedPresets` ON redraws it in the active brand's colours.
+// A ready-made style is drawn in ONE palette, Acme's, whatever the brand.
 const PRESET_PALETTE_BRAND = "ctx-acme";
-const paletteBrand = (style, brand) =>
-  style?.kind === "preset" && !isFlagOn("brandTintedPresets") ? getBrand(PRESET_PALETTE_BRAND) || brand : brand;
+const paletteBrand = (style, brand) => (style?.kind === "preset" ? getBrand(PRESET_PALETTE_BRAND) || brand : brand);
 
 // A thumbnail is the style's own picture (render/style-art.js), drawn in the
 // brand's palette — a custom style shows its heaviest preset's, tinted by its

@@ -1,6 +1,13 @@
+// The admin menu lists the flags under these headings, in this order. Every
+// flag names one in `group`; `tip` is its one-line tooltip there (`hides` is
+// the long form, for the docs).
+export const FLAG_GROUPS = Object.freeze(["New surfaces", "Playbook", "Voice", "Chat & drafts", "Onboarding"]);
+
 export const FLAGS = Object.freeze([
   {
     id: "insightsHub",
+    group: "New surfaces",
+    tip: "Adds /insights: the brand's objectives, their trajectory toward target, and the posts that moved them.",
     label: "Insights hub (/insights)",
     // OFF: the feature lands dark. The flag gates the ROUTE as well as the nav
     // row — a typed /insights bounces home while the switch is off.
@@ -15,6 +22,8 @@ export const FLAGS = Object.freeze([
   },
   {
     id: "playbookWorkspace",
+    group: "Playbook",
+    tip: "One active Playbook, picked in the rail, scopes everything below it. Off: each chat picks its own Playbook.",
     label: "Playbook as a workspace (rail switcher)",
     // OFF: byte-for-byte the per-chat model — the Playbook is a field on a
     // session, asked in the composer on a fresh chat and fixed after that.
@@ -41,6 +50,8 @@ export const FLAGS = Object.freeze([
   },
   {
     id: "connectors",
+    group: "New surfaces",
+    tip: "Adds live MCP connectors: the /connectors gallery, and connected sources in the composer and the Sources panel.",
     label: "Connectors (live MCP sources)",
     default: false,
     hides:
@@ -51,6 +62,8 @@ export const FLAGS = Object.freeze([
   },
   {
     id: "conversationStatusCard",
+    group: "New surfaces",
+    tip: 'A floating card that sums up the chat (sources, ideas, clips, drafts), with its "i" toggle in the topbar.',
     label: "Conversation status card",
     default: false,
     hides:
@@ -60,6 +73,8 @@ export const FLAGS = Object.freeze([
   },
   {
     id: "multilingualPlaybook",
+    group: "Playbook",
+    tip: "A Playbook holds several languages, and drafting asks which one to write in. Off: English only.",
     label: "Multilingual Playbooks",
     default: false,
     hides:
@@ -72,6 +87,8 @@ export const FLAGS = Object.freeze([
   },
   {
     id: "playbookSharing",
+    group: "Playbook",
+    tip: "Playbooks get an owner and a scope (personal, named members, whole organization). Others read only; a manager governs.",
     label: "Playbook sharing",
     default: false,
     hides:
@@ -94,6 +111,8 @@ export const FLAGS = Object.freeze([
   },
   {
     id: "newScheduleModal",
+    group: "Chat & drafts",
+    tip: "The redesigned schedule modal: dates proposed on open, one list with what's already planned and clashes. Off: the previous modal.",
     label: "New SM (schedule modal)",
     // ON: the redesigned schedule modal. OFF: the previous one, kept whole in
     // schedule-modal-legacy.js for comparison.
@@ -111,17 +130,9 @@ export const FLAGS = Object.freeze([
       "month calendar beside the list.",
   },
   {
-    id: "brandTintedPresets",
-    label: "Ready-made styles in the Brand's colors",
-    // OFF: every ready-made style's thumbnail is drawn in Acme's palette.
-    default: false,
-    hides:
-      "When OFF (default), the Image Generator's ready-made styles keep one " +
-      "palette, Acme's, on every Playbook. ON redraws their thumbnails in the " +
-      "active Brand's colors, so the gallery previews what THIS brand would get.",
-  },
-  {
     id: "newConversationStyles",
+    group: "Chat & drafts",
+    tip: "The thread mirrored: Archie on the left, you on the right, avatars, head lines and white object chips. Off: the thread as of Oct 5.",
     label: "New conversation styles",
     // OFF: the thread as of Monday 2026-10-05 — every conversation restyle
     // since then (Tuesday's card system included) is ON only; the Monday
@@ -140,6 +151,8 @@ export const FLAGS = Object.freeze([
   },
   {
     id: "newChatHero",
+    group: "Chat & drafts",
+    tip: "On a new chat, the three workflows become rows (title + description) instead of three big cards.",
     label: "UP-New chat: workflow rows",
     // OFF: the three big starter cards. Same three workflows, same handlers
     // either way.
@@ -153,6 +166,8 @@ export const FLAGS = Object.freeze([
   },
   {
     id: "networkVoices",
+    group: "Voice",
+    tip: "A base voice plus one adaptation per network. Rules are proposed in the chat as drafts get reworked, never written silently.",
     label: "Voice per network, with coaching",
     // OFF: lands dark. The data (voiceBaseNetwork / voiceByNetwork) rides
     // along in the seeds either way, like multilingualPlaybook.
@@ -173,6 +188,8 @@ export const FLAGS = Object.freeze([
   },
   {
     id: "voiceNewSection",
+    group: "Voice",
+    tip: 'Demo: marks "Depending on the post" as a part the product just added (orange arc, New pills). Pairs with Voice per network.',
     label: "Voice: simulate a new section (Depending on the post)",
     // A demo, not a feature: how the Voice tab tells a user the product added a
     // part to every voice. Needs networkVoices.
@@ -187,6 +204,8 @@ export const FLAGS = Object.freeze([
   },
   {
     id: "connectFirst",
+    group: "Onboarding",
+    tip: "The first-time run as screens: profiles first, the Playbook card filling in on the right, then a reveal.",
     label: "UP-Onboarding: connect profiles first",
     // OFF: a new user lands straight in the onboarding chat, where connecting
     // an account is the step after the website URL.
@@ -203,6 +222,8 @@ export const FLAGS = Object.freeze([
   },
   {
     id: "reviewScroll",
+    group: "Onboarding",
+    tip: "The run's final review as a scroll with a ↑ · dots · ↓ nav, instead of a card stack. Needs Onboarding: connect profiles first.",
     label: "UP-Onboarding: review as a scroll",
     // OFF: the review deals a part's cards as a stack, one at a time.
     default: false,
