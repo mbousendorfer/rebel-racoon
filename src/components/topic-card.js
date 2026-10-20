@@ -73,10 +73,10 @@
 // Everything inside the body is a <span> for the same reason — a button may only
 // contain phrasing content, so no h3 and no p in there.
 
-import { html, raw, escapeAttr } from "../utils.js?v=2034";
-import { topicTitle } from "../topics-store.js?v=2034";
-import { renderTopicStates } from "../topic-article.js?v=2034";
-import { findTopicSource } from "../topics-catalog.js?v=2034";
+import { html, raw, escapeAttr } from "../utils.js?v=2035";
+import { topicTitle } from "../topics-store.js?v=2035";
+import { renderTopicStates } from "../topic-article.js?v=2035";
+import { findTopicSource } from "../topics-catalog.js?v=2035";
 
 // ── The state chips ───────────────────────────────────────────────────────
 // `renderTopicStates` comes from topic-article.js, which is where a Topic's
@@ -111,7 +111,7 @@ function renderMeta(topic, source) {
  */
 export function renderTopicCard(
   topic,
-  { source = null, variant = "feed", menuOpen = false, articleOpen = false, withUse = false } = {},
+  { source = null, variant = "feed", menuOpen = false, articleOpen = false, withUse = false, useAsLink = false } = {},
 ) {
   if (!topic) return "";
   const picker = variant === "picker";
@@ -154,20 +154,29 @@ export function renderTopicCard(
          The body still opens the article, so "read before you choose" keeps its
          door; this is the second one, for the reader who already knows. -->
     ${raw(
-      withUse
-        ? html`<div class="topic-card__act">
-            <!-- secondary + blue, a DS-shipped variant: electric-blue-10 fill,
+      withUse && useAsLink
+        ? html`<div class="topic-card__act topic-card__act--link">
+            <!-- useAsLink (the new chat's hero, flag newChatHero): the same verb
+                 as a standalone link, so three tinted buttons stop outweighing
+                 the composer above them. -->
+            <button type="button" class="ap-link standalone small" data-topic-use="${topic.id}">
+              <i class="ap-icon-single-chat-bubble"></i><span>Use in chat</span>
+            </button>
+          </div>`
+        : withUse
+          ? html`<div class="topic-card__act">
+              <!-- secondary + blue, a DS-shipped variant: electric-blue-10 fill,
                  electric-blue-100 ink. Blue because this is the SECONDARY door
                  into a chat - blue is the interactive/navigation colour in this
                  app, and orange is kept for the spotlight primary, which is the
                  one in the article's own header. Was secondary orange for a
                  commit; that spent the AI colour on a second-rank entry point.
                  NOTE no backticks in here - this is inside a template literal. -->
-            <button type="button" class="ap-button secondary blue" data-topic-use="${topic.id}">
-              <i class="ap-icon-single-chat-bubble"></i><span>Use in chat</span>
-            </button>
-          </div>`
-        : "",
+              <button type="button" class="ap-button secondary blue" data-topic-use="${topic.id}">
+                <i class="ap-icon-single-chat-bubble"></i><span>Use in chat</span>
+              </button>
+            </div>`
+          : "",
     )}
   </article>`;
 }

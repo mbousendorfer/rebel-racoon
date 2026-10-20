@@ -933,7 +933,9 @@ body.playbook-revoked .session__composer-card {
   align-items: center;
   gap: var(--ref-spacing-xs);
   width: 100%;
-  padding: var(--ref-spacing-xs);
+  /* Inline = the composer card's border + its 8px inset, so each icon tile
+     starts on the same vertical as the Add button above it. */
+  padding: var(--ref-spacing-xs) calc(var(--ref-spacing-xxs) + 1px);
   border: 0;
   border-radius: var(--app-radius-md);
   background: transparent;
@@ -964,6 +966,16 @@ body.playbook-revoked .session__composer-card {
   border-radius: var(--app-radius-sm);
   background: var(--card-tint);
   color: var(--card-accent);
+  transition:
+    background-color var(--ref-animation-short) var(--app-ease-standard),
+    color var(--ref-animation-short) var(--app-ease-standard);
+}
+
+/* Hover: the tile lights up in its own tone, the glyph turns white. */
+.starter-row:hover .starter-row__icon,
+.starter-row:focus-visible .starter-row__icon {
+  background: var(--card-accent);
+  color: var(--ref-color-white);
 }
 
 .starter-row__icon i {
@@ -997,12 +1009,28 @@ body.playbook-revoked .session__composer-card {
   font-size: var(--sys-icon-css-sm);
   color: var(--ref-color-electric-blue-100);
   opacity: 0;
-  transition: opacity var(--ref-animation-short) var(--app-ease-standard);
+  transform: translateX(-4px);
+  transition:
+    opacity var(--ref-animation-short) var(--app-ease-standard),
+    transform var(--ref-animation-short) var(--app-ease-out);
 }
 
+/* …and the arrow slides in 4px toward where the row leads. */
 .starter-row:hover .starter-row__arrow,
 .starter-row:focus-visible .starter-row__arrow {
   opacity: 1;
+  transform: none;
+}
+
+/* The composer leads: one line for the sub-line, more air under it, a taller
+   field. The keyboard hint is gone from the hero (composer.js). */
+.empty-chat--rows .empty-chat__sub {
+  max-width: 600px;
+  margin-bottom: var(--ref-spacing-sm);
+}
+
+.empty-chat--rows .session__composer-input-field {
+  min-height: 76px;
 }
 
 /* Flag newChatHero — Topics under the rows: a title and a one-line lede, the way out on the
