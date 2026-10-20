@@ -1,8 +1,8 @@
-import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=2060";
-import { conceptHint, conceptText } from "../concepts.js?v=2060";
-import { getPath, navigate } from "../router.js?v=2060";
-import { parseHashParams } from "../url-state.js?v=2060";
-import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=2060";
+import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=2064";
+import { conceptHint, conceptText } from "../concepts.js?v=2064";
+import { getPath, navigate } from "../router.js?v=2064";
+import { parseHashParams } from "../url-state.js?v=2064";
+import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=2064";
 // Lot 19 — topbar no longer carries its own sidebar-toggle button. The
 // sidebar head exposes the toggle in both expanded (chevron-left) and
 // collapsed (view-list) states, so the duplicate in the topbar was just
@@ -11,41 +11,43 @@ import {
   openDrafts as openDraftsPanel,
   openIdeas as openIdeasPanel,
   openSources as openSourcesPanel,
+  openLastMode as openLastPanelMode,
   closePanel as closeRightPanel,
   getMode as getRightPanelMode,
   getActiveBatchRef as getActiveDraftsBatchRef,
   subscribe as subscribeRightPanel,
-} from "./right-panel.js?v=2060";
-import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=2060";
-import { getThread, subscribe as subscribeThread } from "../assistant.js?v=2060";
-import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=2060";
-import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=2060";
+} from "./right-panel.js?v=2064";
+import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=2064";
+import { contentCounts } from "./right-panel/overview-view.js?v=2064";
+import { getThread, subscribe as subscribeThread } from "../assistant.js?v=2064";
+import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=2064";
+import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=2064";
 import {
   isEnabled as isStatusCardEnabled,
   toggle as toggleStatusCard,
   subscribeVisibility as subscribeStatusCardVisibility,
-} from "./conversation-status-card.js?v=2060";
-import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=2060";
-import { open as openRenameModal } from "./rename-modal.js?v=2060";
+} from "./conversation-status-card.js?v=2064";
+import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=2064";
+import { open as openRenameModal } from "./rename-modal.js?v=2064";
 import {
   subscribe as subscribeContexts,
   getContextById,
   getDefaultContext,
   getContexts,
-} from "../contexts-store.js?v=2060";
-import { isFlagOn } from "../feature-flags.js?v=2060";
-import { getActivePlaybook, isWorkspaceMode, isAccountScope, catalogueRoute } from "../active-playbook.js?v=2060";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=2060";
-import { findCadence } from "../topics-catalog.js?v=2060";
+} from "../contexts-store.js?v=2064";
+import { isFlagOn } from "../feature-flags.js?v=2064";
+import { getActivePlaybook, isWorkspaceMode, isAccountScope, catalogueRoute } from "../active-playbook.js?v=2064";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=2064";
+import { findCadence } from "../topics-catalog.js?v=2064";
 import {
   getPickerState as getTopPostsState,
   subscribePicker as subscribeTopPosts,
   backToProfiles as topPostsBackToProfiles,
-} from "../top-posts-flow.js?v=2060";
+} from "../top-posts-flow.js?v=2064";
 // The Insights view switch. Imported from views.js, NOT from the screen's
 // shell: the shell imports this module, so taking it from there would close a
 // cycle. views.js imports neither.
-import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=2060";
+import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=2064";
 
 // The playbook/context pill now lives in the composer (session.js
 // renderPlaybookControl) — selectable on a New Chat, then a static
@@ -102,14 +104,20 @@ export function renderTopbar(_options = {}) {
   // Gated behind the conversationStatusCard flag: when OFF, the whole card —
   // and this topbar toggle — disappears (matches conversation-status-card.render).
   const statusCardAvailable =
-    onSession && isFlagOn("conversationStatusCard") && (sessionSourceCount() > 0 || ideaCount > 0 || draftCount > 0);
+    onSession &&
+    isFlagOn("conversationStatusCard") &&
+    !isFlagOn("contentPanel") &&
+    (sessionSourceCount() > 0 || ideaCount > 0 || draftCount > 0);
+  const sessionActions = isFlagOn("contentPanel")
+    ? renderContentButton(rpMode, isEmpty)
+    : renderSessionPills(rpMode, draftCount, isEmpty, ideaCount);
   const ownActions = pageActions && pageActions.path === getPath() ? pageActions.markup : "";
   const rightSide = ownActions
     ? ownActions
     : onWelcomeAlt
       ? renderWelcomeAltExit()
       : onSession
-        ? `${renderSessionPills(rpMode, draftCount, isEmpty, ideaCount)}${renderStatusCardToggle(statusCardAvailable)}`
+        ? `${sessionActions}${renderStatusCardToggle(statusCardAvailable)}`
         : getPath() === "/topics"
           ? renderTopicsSettings()
           : getPath().startsWith("/insights")
@@ -341,6 +349,11 @@ export function initTopbar() {
       }
       return;
     }
+    if (event.target.closest("[data-topbar-content]")) {
+      if (getRightPanelMode()) closeRightPanel();
+      else openLastPanelMode();
+      return;
+    }
     if (event.target.closest("[data-topbar-ideas]")) {
       const mode = getRightPanelMode();
       if (mode === "ideas") closeRightPanel();
@@ -358,7 +371,7 @@ export function initTopbar() {
     // renderWelcomeAltExit() above. The wizard chrome no longer carries
     // its own Exit affordance; this is the only entry.
     if (event.target.closest("[data-topbar-welcome-alt-exit]")) {
-      import("./confirm-modal.js?v=2060").then(({ open }) => {
+      import("./confirm-modal.js?v=2064").then(({ open }) => {
         open({
           title: "Discard this Playbook?",
           body: "Your answers so far will be lost. You can create a Playbook again anytime.",
@@ -530,6 +543,47 @@ function renderSessionPills(rpMode, draftCount, isEmpty, ideaCount) {
       <i class="ap-icon-pen"></i>
       <span>Drafts</span>
       ${draftBadge}
+    </button>
+  `;
+}
+
+// Flag contentPanel — the three pills become one way into the side panel,
+// which names its own tabs. No summed count (sources + ideas + drafts is not a
+// number anyone can read): a blue dot says something new landed since the
+// panel was last open in this chat.
+const seenTotals = new Map(); // sessionId → ideas + clips + drafts when last seen
+function contentTotal(sid) {
+  const c = contentCounts(sid);
+  return c.ideas + c.clips + c.drafts;
+}
+function renderContentButton(rpMode, isEmpty) {
+  const sid = currentSessionId();
+  const total = sid ? contentTotal(sid) : 0;
+  const open = !!rpMode;
+  // A brand-new chat has nothing to show — disabled, like the pills it replaces.
+  const disabled = !open && isEmpty && total === 0 && !(sid && contentCounts(sid).sources);
+  if (sid && (open || !seenTotals.has(sid))) seenTotals.set(sid, total);
+  const unseen = sid && !open && total > (seenTotals.get(sid) ?? total);
+  const label = unseen ? "Content — new since you last looked" : "Content";
+  return `
+    <button
+      type="button"
+      class="ap-button ${open ? "stroked blue" : "ghost grey"} app-topbar__content"
+      data-topbar-content
+      ${disabled ? "disabled" : ""}
+      aria-pressed="${open}"
+      aria-label="${label}"
+      title="${
+        open
+          ? "Close the side panel"
+          : disabled
+            ? "Nothing here yet — attach a source or ask me for a post"
+            : "Sources, ideas and drafts of this chat"
+      }"
+    >
+      <i class="ap-icon-view-list" aria-hidden="true"></i>
+      <span>Content</span>
+      ${unseen ? `<span class="app-topbar__content-dot" aria-hidden="true"></span>` : ""}
     </button>
   `;
 }

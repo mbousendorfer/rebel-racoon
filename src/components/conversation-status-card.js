@@ -16,8 +16,8 @@
 // the underlying stores mutate (assistant thread, sources-stream, library,
 // right-panel mode, sessions).
 
-import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=2060";
-import { getPath } from "../router.js?v=2060";
+import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=2064";
+import { getPath } from "../router.js?v=2064";
 import {
   openDrafts as openDraftsPanel,
   openIdeas as openIdeasPanel,
@@ -25,14 +25,14 @@ import {
   openSources as openSourcesPanel,
   getMode as getRightPanelMode,
   subscribe as subscribeRightPanel,
-} from "./right-panel.js?v=2060";
-import { getThread, subscribe as subscribeThread } from "../assistant.js?v=2060";
-import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=2060";
-import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=2060";
-import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=2060";
-import { subscribe as subscribeSessions } from "../sessions-store.js?v=2060";
-import { addMention } from "../composer-mentions.js?v=2060";
-import { isFlagOn } from "../feature-flags.js?v=2060";
+} from "./right-panel.js?v=2064";
+import { getThread, subscribe as subscribeThread } from "../assistant.js?v=2064";
+import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=2064";
+import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=2064";
+import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=2064";
+import { subscribe as subscribeSessions } from "../sessions-store.js?v=2064";
+import { addMention } from "../composer-mentions.js?v=2064";
+import { isFlagOn } from "../feature-flags.js?v=2064";
 
 // Two-level structure:
 //   .conversation-status-column   — fills grid column 3 with white bg
@@ -177,7 +177,8 @@ export function render() {
   if (!initialized) return;
   // Feature-switched off entirely — never reserve the column or render the
   // card (the topbar toggle is hidden in lockstep, cf. topbar.js).
-  if (!isFlagOn("conversationStatusCard")) {
+  // Under contentPanel the card lives on as the side panel's Overview.
+  if (!isFlagOn("conversationStatusCard") || isFlagOn("contentPanel")) {
     hideCard();
     return;
   }
@@ -428,7 +429,7 @@ function sessionDraftCount(sessionId, thread) {
 // loading messages that have a meta label (e.g. "Generating drafts…",
 // "Extracting ideas…") — source-intake uploading bubbles are excluded
 // because they're already surfaced inline as the source row.
-function pendingProcesses(thread) {
+export function pendingProcesses(thread) {
   const labels = [];
   for (const m of thread) {
     if (m.status !== "loading") continue;

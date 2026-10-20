@@ -72,6 +72,23 @@ export const FLAGS = Object.freeze([
       "button in the session topbar.",
   },
   {
+    id: "contentPanel",
+    group: "New surfaces",
+    tip: "One Content button opens the side panel on an Overview of the chat; every result in the thread is a card that opens the panel on it.",
+    label: "Content panel",
+    default: false,
+    hides:
+      "When ON, the topbar's Sources / Ideas / Drafts pills become one " +
+      "Content button (a blue dot when something new landed). The side " +
+      "panel gets a header — Overview · Sources › Ideas › Drafts tabs with " +
+      "their counts — and the Overview replaces the conversation status " +
+      "card: stacked cards per object, each with its breakdown. In the " +
+      "thread, every source, ideas batch, clips batch and drafts batch is " +
+      "a card that opens the panel on those objects; no toast nor green " +
+      "composer bar announces them, and the panel never opens by itself." +
+      "\n\nWhen OFF, the three pills, the untitled panel, the toast + bar.",
+  },
+  {
     id: "multilingualPlaybook",
     group: "Playbook",
     tip: "A Playbook holds several languages, and drafting asks which one to write in. Off: English only.",

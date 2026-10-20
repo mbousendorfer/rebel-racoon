@@ -3,9 +3,9 @@
 // `message`-shaped object (or opts) and returns an HTML string. No store reads, no DOM, no side effects: the
 // store-coupled turns (extraction / clip-extraction / source resolution) stay
 // in session.js and pass their resolved data in as arguments.
-import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=2060";
-import { isFlagOn } from "../../feature-flags.js?v=2060";
-import { SOURCE_USE_LABEL, SOURCE_USE_TONE } from "../../sources-stream.js?v=2060";
+import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=2064";
+import { isFlagOn } from "../../feature-flags.js?v=2064";
+import { SOURCE_USE_LABEL, SOURCE_USE_TONE } from "../../sources-stream.js?v=2064";
 
 // The thread's restyle since Monday 2026-10-05 (flag newConversationStyles).
 // OFF renders the Monday markup; styles/chat-legacy.css holds its values.
@@ -49,7 +49,9 @@ export function renderMessageBubble(message) {
 // source is resolved by the caller (session.js reads sources-stream) and passed
 // in as `source` so this stays a pure renderer; pass `null` for the unresolved
 // case. Trailing states are driven by (status loading, ideaCount, clips).
-export function renderSourceIntakeTurn(message, source = null) {
+// `focusable` (flag contentPanel): the file itself is a button to that source
+// in the side panel; `active` while the panel was opened from this echo.
+export function renderSourceIntakeTurn(message, source = null, { focusable = false, active = false } = {}) {
   // Kind icon — map the raw kind label (from sources-stream) to the DS
   // icon name. Lowercased so "PDF" / "Video" / "URL" / "Word" / "Image"
   // / "Audio" all resolve.
@@ -154,6 +156,28 @@ export function renderSourceIntakeTurn(message, source = null) {
   }
 
   const filename = message.filename || "";
+  const canFocus = focusable && message.sourceId && !isLoading;
+  const intakeAttrs = `data-intake-status="${message.status || "ready"}"${
+    message.sourceId ? ` data-intake-source="${escapeHtmlAttr(message.sourceId)}"` : ""
+  }`;
+  if (canFocus) {
+    const echoClass = "selection-echo selection-echo--intake";
+    return `
+    <div class="chat-turn chat-turn--user">
+      <span class="chat-turn-role">${message.meta || "You"}</span>
+      <div class="${echoClass} is-focusable${active ? " is-active" : ""}" ${intakeAttrs}>
+        <button type="button" class="source-echo__open" data-source-focus="${escapeHtmlAttr(message.sourceId)}" title="Show in Sources">
+          <span class="selection-echo__icon">${kindIcon}</span>
+          <span class="selection-echo__body">
+            <span class="selection-echo__title" title="${escapeHtmlAttr(filename)}">${escapeHtml(filename)}</span>
+            <span class="selection-echo__meta">${kindLabel}</span>
+          </span>
+        </button>
+        <span class="selection-echo__trailing">${trailing}</span>
+      </div>
+    </div>
+  `;
+  }
   if (!convNew())
     return `
     <div class="chat-turn chat-turn--user">

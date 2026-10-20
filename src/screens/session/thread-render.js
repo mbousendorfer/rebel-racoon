@@ -13,27 +13,45 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=2060";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2060";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2060";
-import { getTopPost } from "../../top-posts-store.js?v=2060";
-import { getTopicById } from "../../topics-store.js?v=2060";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=2060";
-import { renderProfileEchoCard } from "../../social-profiles.js?v=2060";
-import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2060";
-import { getIdeas } from "../../library.js?v=2060";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=2060";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2060";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=2060";
-import { getSuggestion } from "../../voice-coach-store.js?v=2060";
-import { getPlans } from "../../post-plan-store.js?v=2060";
-import { draftsToRewrite } from "../../voice-coach.js?v=2060";
-import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=2060";
-import { isFlagOn } from "../../feature-flags.js?v=2060";
-import { CURRENT_USER } from "../../org.js?v=2060";
-import { getSessionById } from "../../sessions-store.js?v=2060";
-import { getContextById } from "../../contexts-store.js?v=2060";
-import { needsImageLook } from "../../modules/image-studio/index.js?v=2060";
+} from "./thread-turns.js?v=2064";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2064";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2064";
+import { getTopPost } from "../../top-posts-store.js?v=2064";
+import { getTopicById } from "../../topics-store.js?v=2064";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=2064";
+import { renderProfileEchoCard } from "../../social-profiles.js?v=2064";
+import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2064";
+import { getIdeas } from "../../library.js?v=2064";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=2064";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2064";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=2064";
+import { getSuggestion } from "../../voice-coach-store.js?v=2064";
+import { getPlans } from "../../post-plan-store.js?v=2064";
+import { draftsToRewrite } from "../../voice-coach.js?v=2064";
+import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=2064";
+import { isFlagOn } from "../../feature-flags.js?v=2064";
+import { CURRENT_USER } from "../../org.js?v=2064";
+import { getSessionById } from "../../sessions-store.js?v=2064";
+import { getContextById } from "../../contexts-store.js?v=2064";
+import { needsImageLook } from "../../modules/image-studio/index.js?v=2064";
+import { getFocusKey } from "../../components/right-panel.js?v=2064";
+
+// Flag contentPanel — every result in the thread is a card that opens the side
+// panel on its own objects (data-content-card="kind:key:ids"), and stays
+// .is-active while the panel shows them. Claude's artifact card, in short.
+const contentCards = () => isFlagOn("contentPanel");
+const plural = (n, one) => `${n} ${one}${n === 1 ? "" : "s"}`;
+function contentCard({ kind, key, ids, title, sub, cta, icon }) {
+  return renderResultCard({
+    state: "ready",
+    icon,
+    title,
+    sub,
+    cta: { label: cta },
+    active: getFocusKey() === key,
+    dataAttr: `data-content-card="${escapeHtml(kind)}" data-content-key="${escapeHtml(key)}" data-content-ids="${escapeHtml(ids.join(","))}"`,
+  });
+}
 
 export function renderThread(messages, sessionId) {
   const turns = messages.map((m) => [m, renderTurn(m, sessionId)]);
@@ -113,7 +131,10 @@ function renderTurn(message, sessionId) {
   // Right-aligned "Source intake" turn — Figma 25:1127 / 25:1131.
   if (message.role === "source-intake") {
     const source = message.sourceId ? getStreamSources(sessionId).find((s) => s.id === message.sourceId) : null;
-    return renderSourceIntakeTurn(message, source);
+    return renderSourceIntakeTurn(message, source, {
+      focusable: contentCards(),
+      active: getFocusKey() === `source:${message.sourceId}`,
+    });
   }
 
   // AI extraction result — Figma 25:1053.
@@ -130,7 +151,7 @@ function renderTurn(message, sessionId) {
   // look yet carries a line offering to pick one — derived, so it is gone the
   // moment a look exists, from here or from the Playbook.
   if (message.role === "assistant" && message.variant === "draft") {
-    return renderImageLookNudge(message, sessionId);
+    return (contentCards() ? renderDraftsCardTurn(message) : "") + renderImageLookNudge(message, sessionId);
   }
 
   if (message.role === "assistant" && message.variant === "image-look-set") {
@@ -477,8 +498,48 @@ export const extractionVerdict = new Map();
 // ideaId → 'up' | 'down'
 export const extractionWhyOpen = new Set();
 
+// A drafts batch as one card: how many, on which networks (icon + name).
+function renderDraftsCardTurn(message) {
+  const drafts = message.drafts || [];
+  const count = message.count ?? drafts.length;
+  if (!count) return "";
+  const networks = [...new Set(drafts.map((d) => d.network).filter(Boolean))];
+  return `
+    <div class="chat-turn chat-turn--ai chat-turn--clip-extraction">
+      ${contentCard({
+        kind: "post",
+        key: `drafts:${message.id}`,
+        ids: drafts.map((d) => d.id),
+        icon: "ap-icon-pen",
+        title: `${plural(count, "draft")} to review`,
+        sub: networks
+          .map(
+            (n) =>
+              `<span class="drafts-card__network"><i class="${networkIcon(n)}" aria-hidden="true"></i>${escapeHtml(networkLabel(n))}</span>`,
+          )
+          .join(""),
+        cta: "Review drafts",
+      })}
+    </div>
+  `;
+}
+
 function renderExtractionTurn(message, sessionId) {
   const count = message.count ?? (message.ideas ? message.ideas.length : 0);
+  if (contentCards() && message.status !== "loading" && count) {
+    return `
+      <div class="chat-turn chat-turn--ai chat-turn--extraction">
+        ${contentCard({
+          kind: "idea",
+          key: `ideas:${message.id}`,
+          ids: (message.ideas || []).map((i) => i.id),
+          title: `${plural(count, "idea")} ready`,
+          sub: `From <span class="drafts-card__sub-quote">${escapeHtml(message.filename || "your source")}</span>`,
+          cta: "View ideas",
+        })}
+      </div>
+    `;
+  }
   // Render the EXACT shared idea card (renderCompactIdeaCard) used by the
   // right-panel Ideas mode + the standalone Ideas page — feedback + Mention +
   // Draft. The thread message only carries {id,title,body}, so resolve the full
@@ -595,6 +656,21 @@ function renderClipExtractionTurn(message, sessionId) {
   }
 
   const titleLabel = clipsCount === 1 ? "1 clip to review" : `${clipsCount} clips to review`;
+  if (contentCards()) {
+    return `
+      <div class="chat-turn chat-turn--ai chat-turn--clip-extraction">
+        ${contentCard({
+          kind: "clip",
+          key: `clips:${source.id}`,
+          ids: source.clips.map((c) => c.id),
+          icon: "ap-icon-video",
+          title: titleLabel,
+          sub: `From <span class="drafts-card__sub-quote">${filename}</span>`,
+          cta: "Open clips",
+        })}
+      </div>
+    `;
+  }
   return `
     <div class="chat-turn chat-turn--ai chat-turn--clip-extraction">
       ${renderResultCard({
@@ -644,6 +720,23 @@ function renderIdeaExtractionTurn(message, sessionId) {
     `;
   }
 
+  if (contentCards()) {
+    const ids = getIdeas(sessionId)
+      .filter((i) => i.sourceIds?.includes(source.id))
+      .map((i) => i.id);
+    return `
+      <div class="chat-turn chat-turn--ai chat-turn--clip-extraction">
+        ${contentCard({
+          kind: "idea",
+          key: `ideas:${message.id}`,
+          ids,
+          title: ids.length ? `${plural(ids.length, "idea")} ready` : "Ideas ready",
+          sub: `From <span class="drafts-card__sub-quote">${filename}</span>`,
+          cta: "View ideas",
+        })}
+      </div>
+    `;
+  }
   return `
     <div class="chat-turn chat-turn--ai chat-turn--clip-extraction">
       ${renderResultCard({

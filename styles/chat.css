@@ -1540,3 +1540,61 @@ span.chat-bubble-choice-chip {
   color: var(--ref-color-grey-80);
   font-variant-numeric: tabular-nums;
 }
+
+/* ── Flag contentPanel — the thread's objects open the side panel ──────
+   A drafts batch reads its networks (icon + name); a source echo's file is
+   a button to that source; the card the panel was opened from stays
+   .is-active (.drafts-card already has it). */
+.drafts-card__network {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  margin-right: var(--ref-spacing-xs);
+}
+
+/* Network logos are -official (full-colour images): size only, no tint. */
+.drafts-card__network i {
+  font-size: var(--sys-icon-css-xs);
+}
+
+.source-echo__open {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  min-width: 0;
+  flex: 1 1 auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+}
+
+.source-echo__open:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: 2px;
+  border-radius: var(--app-radius-sm, 6px);
+}
+
+.selection-echo.is-focusable {
+  transition: border-color var(--ref-animation-short) var(--app-ease-standard);
+}
+
+.selection-echo.is-focusable:has(.source-echo__open:hover) {
+  border-color: var(--ref-color-electric-blue-100);
+}
+
+.selection-echo.is-active {
+  border-color: var(--ref-color-electric-blue-40);
+  background: var(--ref-color-electric-blue-05);
+}
+
+/* The topbar's Content button: a blue dot when something new landed. */
+.app-topbar__content-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--app-radius-circle);
+  background: var(--ref-color-electric-blue-100);
+}

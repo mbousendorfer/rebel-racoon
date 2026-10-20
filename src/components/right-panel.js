@@ -1,30 +1,32 @@
-import { html, raw } from "../utils.js?v=2060";
-import { subscribe as subscribeThread } from "../assistant.js?v=2060";
-import { getPath, navigate } from "../router.js?v=2060";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=2060";
+import { html, raw, escapeHtml } from "../utils.js?v=2064";
+import { conceptText } from "../concepts.js?v=2064";
+import { subscribe as subscribeThread } from "../assistant.js?v=2064";
+import { getPath, navigate } from "../router.js?v=2064";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=2064";
 import {
   getPosts,
   attachImageToDraft,
   updatePostClip,
   subscribe as subscribePostsStore,
-} from "../posts-store.js?v=2060";
-import { onFeedbackClick } from "./feedback-control.js?v=2060";
+} from "../posts-store.js?v=2064";
+import { onFeedbackClick } from "./feedback-control.js?v=2064";
 // Shared compact idea card — same component the standalone Ideas page uses.
-import { open as openVideoClipsModal } from "./video-clips-modal.js?v=2060";
-import { isSidebarCollapsed, setSidebarCollapsed, isAutoCollapsed } from "./sidebar.js?v=2060";
+import { open as openVideoClipsModal } from "./video-clips-modal.js?v=2064";
+import { isSidebarCollapsed, setSidebarCollapsed, isAutoCollapsed } from "./sidebar.js?v=2064";
 import {
   getSources as getStreamSources,
   subscribeSources,
   updateSourceClips,
   removeSources,
   renameSource,
-} from "../sources-stream.js?v=2060";
-import { open as openAddSourceModal } from "./add-source-modal.js?v=2060";
-import { open as openRenameModal } from "./rename-modal.js?v=2060";
-import { askConnector } from "../connector-ask.js?v=2060";
-import { open as openConnectorsModal } from "./connectors-modal.js?v=2060";
-import { addMention as addComposerMention } from "../composer-mentions.js?v=2060";
-import { getIdeas, removeIdeasForSources } from "../library.js?v=2060";
+} from "../sources-stream.js?v=2064";
+import { open as openAddSourceModal } from "./add-source-modal.js?v=2064";
+import { open as openRenameModal } from "./rename-modal.js?v=2064";
+import { askConnector } from "../connector-ask.js?v=2064";
+import { open as openConnectorsModal } from "./connectors-modal.js?v=2064";
+import { addMention as addComposerMention } from "../composer-mentions.js?v=2064";
+import { getIdeas, removeIdeasForSources } from "../library.js?v=2064";
+import { isFlagOn } from "../feature-flags.js?v=2064";
 
 // The ideas of the chat the panel is looking at.
 //
@@ -39,17 +41,18 @@ export function sessionIdeas() {
   const sid = activeSessionId();
   return sid ? getIdeas(sid) : [];
 }
-import { open as openConfirmModal } from "./confirm-modal.js?v=2060";
-import { showToast } from "./toast.js?v=2060";
-import { isOverlayEscape } from "../modal-coordinator.js?v=2060";
-import { closeAllSourceMenus, renderSourcesView } from "./right-panel/sources-view.js?v=2060";
+import { open as openConfirmModal } from "./confirm-modal.js?v=2064";
+import { showToast } from "./toast.js?v=2064";
+import { isOverlayEscape } from "../modal-coordinator.js?v=2064";
+import { closeAllSourceMenus, renderSourcesView } from "./right-panel/sources-view.js?v=2064";
+import { contentCounts, onOverviewToggle, renderOverviewView } from "./right-panel/overview-view.js?v=2064";
 import {
   collectAllClips,
   renderIdeasView,
   toggleClipWhyInPlace,
   toggleIdeaFeedback,
   toggleWhyOpen,
-} from "./right-panel/ideas-view.js?v=2060";
+} from "./right-panel/ideas-view.js?v=2064";
 import {
   cancelEdit,
   commitEdit,
@@ -75,7 +78,7 @@ import {
   setNetworkSelection,
   startEdit,
   visibleNetworkPosts,
-} from "./right-panel/drafts-view.js?v=2060";
+} from "./right-panel/drafts-view.js?v=2064";
 
 // Global Right Panel — slides in from the right edge of the viewport, overlays
 // the session workspace, hosts two modes:
@@ -119,7 +122,7 @@ export let outputsView = "ideas";
 export let clipSelection = new Set();
 
 let state = {
-  mode: null, // 'drafts' | 'ideas' | 'sources' | null
+  mode: null, // 'overview' | 'drafts' | 'ideas' | 'sources' | null
   activeBatchRef: null, // { sessionId, messageId } | null
 };
 
@@ -127,7 +130,8 @@ let state = {
 // The user-facing panel modes (drafts / ideas / sources) are encoded in
 // the hash query as `?panel=<mode>` so the panel re-opens on reload and
 // deep-links work.
-const VALID_URL_MODES = new Set(["drafts", "ideas", "sources"]);
+// `overview` exists only under the contentPanel flag (overview-view.js).
+const VALID_URL_MODES = new Set(["overview", "drafts", "ideas", "sources"]);
 
 function writeUrlPanel(mode) {
   const params = parseHashParams();
@@ -159,7 +163,8 @@ function syncFromUrl() {
   }
   const urlMode = readUrlPanel();
   if (urlMode === state.mode) return;
-  if (urlMode === "drafts") openDrafts(null);
+  if (urlMode === "overview" && isFlagOn("contentPanel")) openOverview();
+  else if (urlMode === "drafts") openDrafts(null);
   else if (urlMode === "ideas") openIdeas();
   else if (urlMode === "sources") openSources();
   else if (state.mode && VALID_URL_MODES.has(state.mode)) closePanel();
@@ -318,25 +323,73 @@ export function openClips() {
 // source is an INPUT to the conversation, not an AI-generated output.
 // An inline reference in Archie's message (chat-refs.js) was clicked: open the
 // panel on the object's own surface, then pulse + scroll to its card.
-const FOCUS_ATTR = { post: "data-post-id", idea: "data-idea-id", source: "data-source-id" };
+const FOCUS_ATTR = {
+  post: "data-post-id",
+  idea: "data-idea-id",
+  source: "data-source-id",
+  clip: "data-clip-id",
+};
 export function focusInPanel(kind, id) {
-  if (!FOCUS_ATTR[kind]) return;
-  if (kind === "post") openDrafts();
-  else if (kind === "idea") openIdeas();
-  else openSources();
-  pulseInPanel(`[${FOCUS_ATTR[kind]}="${CSS.escape(id)}"]`);
+  focusManyInPanel(kind, [id]);
 }
 
-// Wait for the panel re-render, then pulse the target card (`.is-focused`).
+// Which thread card the panel was opened from (flag contentPanel) — that card
+// shows .is-active while the panel stays on it. Cleared on close and on any
+// move inside the panel.
+let focusKey = null;
+export function getFocusKey() {
+  return state.mode ? focusKey : null;
+}
+
+// A whole batch (the ideas of one source, the drafts of one turn…): open the
+// object's surface, pulse every card of it, scroll to the first. `key` names
+// the thread card it came from.
+export function focusManyInPanel(kind, ids, key = null) {
+  if (!FOCUS_ATTR[kind]) return;
+  focusKey = key;
+  if (kind === "post") openDrafts();
+  else if (kind === "idea") openIdeas();
+  else if (kind === "clip") openClips();
+  else openSources();
+  pulseInPanel(ids.map((id) => `[${FOCUS_ATTR[kind]}="${CSS.escape(id)}"]`).join(","));
+}
+
+// Wait for the panel re-render, then pulse the target cards (`.is-focused`).
 function pulseInPanel(selector) {
+  if (!selector) return;
   requestAnimationFrame(() => {
-    const card = document.querySelector(".app-right-panel")?.querySelector(selector);
-    if (!card) return;
-    card.classList.remove("is-focused");
-    void card.offsetWidth;
-    card.classList.add("is-focused");
-    card.scrollIntoView({ behavior: "smooth", block: "center" });
+    const cards = [...(document.querySelector(".app-right-panel")?.querySelectorAll(selector) || [])];
+    if (!cards.length) return;
+    for (const card of cards) {
+      card.classList.remove("is-focused");
+      void card.offsetWidth;
+      card.classList.add("is-focused");
+    }
+    cards[0].scrollIntoView({ behavior: "smooth", block: "center" });
   });
+}
+
+// The chat at a glance (flag contentPanel) — what the status card used to be.
+export function openOverview() {
+  const prev = state.mode;
+  if (prev === null) resetPanelWidthOverride();
+  snapshotFocusOnOpen(prev);
+  state = { ...state, mode: "overview" };
+  maybeCollapseSidebarOnOpen(prev);
+  rebindThread();
+  renderPanel();
+  notify();
+  writeUrlPanel("overview");
+}
+
+// The topbar's Content button: back to the tab the user last had open in
+// this visit, the Overview the first time.
+let lastMode = "overview";
+export function openLastMode() {
+  if (lastMode === "drafts") openDrafts(null);
+  else if (lastMode === "ideas") openIdeas();
+  else if (lastMode === "sources") openSources();
+  else openOverview();
 }
 
 export function openSources() {
@@ -351,6 +404,7 @@ export function openSources() {
 }
 
 export function closePanel({ skipUrl = false } = {}) {
+  focusKey = null;
   const wasUserMode = VALID_URL_MODES.has(state.mode);
   state = { ...state, mode: null };
   if (unsubscribeActiveThread) {
@@ -385,6 +439,12 @@ function rebindThread() {
   if (unsubscribeActiveThread) {
     unsubscribeActiveThread();
     unsubscribeActiveThread = null;
+  }
+  // The Overview lists the work in progress — it follows the chat's thread.
+  if (state.mode === "overview") {
+    const sid = activeSessionId();
+    if (sid) unsubscribeActiveThread = subscribeThread(sid, () => state.mode === "overview" && renderPanel());
+    return;
   }
   if (state.mode !== "drafts" || !state.activeBatchRef?.sessionId) return;
   unsubscribeActiveThread = subscribeThread(state.activeBatchRef.sessionId, () => {
@@ -460,6 +520,9 @@ export function init() {
     renderPanel();
   });
 
+  // <details> toggles don't bubble — capture them for the Overview's folds.
+  el.addEventListener("toggle", onOverviewToggle, true);
+
   el.addEventListener("click", (event) => {
     // Auto-commit any in-progress edit when the click lands outside the
     // current editor + its Save/Cancel buttons. Falls through so a click
@@ -477,6 +540,24 @@ export function init() {
     if (onFeedbackClick(event)) return;
     if (event.target.closest("[data-rpanel-close]")) {
       closePanel();
+      return;
+    }
+    // Header tabs + Overview links (flag contentPanel).
+    const goto = event.target.closest("[data-rpanel-goto]");
+    if (goto) {
+      focusKey = null;
+      const to = goto.dataset.rpanelGoto;
+      if (to === "overview") openOverview();
+      else if (to === "sources") openSources();
+      else if (to === "ideas") openIdeas();
+      else if (to === "clips") openClips();
+      else if (to === "drafts") openDrafts(null);
+      return;
+    }
+    const focus = event.target.closest("[data-rpanel-focus]");
+    if (focus) {
+      const [kind, id] = focus.dataset.rpanelFocus.split(/:(.*)/s);
+      focusInPanel(kind, id);
       return;
     }
     const tab = event.target.closest("[data-rpanel-tab]");
@@ -720,7 +801,7 @@ export function init() {
       openVideoClipsModal(src, {
         onSaveClips: (id, nextClips) => updateSourceClips(id, nextClips),
         onUseClips: (selectedClips, source) => {
-          import("../screens/session/clip-draft-flow.js?v=2060").then(({ startClipDraftFlow }) => {
+          import("../screens/session/clip-draft-flow.js?v=2064").then(({ startClipDraftFlow }) => {
             startClipDraftFlow(
               sid,
               selectedClips.map((clip) => ({ clip, sourceName: source.filename, sourceId: source.id })),
@@ -891,7 +972,7 @@ export function init() {
       const sid = activeSessionId();
       if (!sid || !entry) return;
       const { clip, sourceName, sourceId } = entry;
-      import("../screens/session/clip-draft-flow.js?v=2060").then(({ startClipDraftFlow }) => {
+      import("../screens/session/clip-draft-flow.js?v=2064").then(({ startClipDraftFlow }) => {
         startClipDraftFlow(sid, [{ clip, sourceName, sourceId }]);
       });
       return;
@@ -909,7 +990,7 @@ export function init() {
       if (picked.length === 0) return;
       clipSelection = new Set();
       renderPanel();
-      import("../screens/session/clip-draft-flow.js?v=2060").then(({ startClipDraftFlow }) => {
+      import("../screens/session/clip-draft-flow.js?v=2064").then(({ startClipDraftFlow }) => {
         startClipDraftFlow(sid, picked);
       });
       return;
@@ -1103,7 +1184,7 @@ export function init() {
     lastClipCount = sid ? collectAllClips().length : 0;
     if (sid) {
       unsubscribeSources = subscribeSources(sid, () => {
-        if (state.mode === "sources" || state.mode === "ideas") {
+        if (state.mode === "sources" || state.mode === "ideas" || state.mode === "overview") {
           const next = collectAllClips().length;
           if (state.mode === "ideas" && next > lastClipCount && lastClipCount === 0) {
             outputsView = "clips";
@@ -1146,7 +1227,13 @@ export function init() {
 // Inline close button — placed as the last item of a mode's first control
 // row so it aligns with the tabs / select on the row's flex baseline (no
 // absolute positioning, no custom surface — a plain DS icon-button).
-export const RPANEL_CLOSE_INLINE = `
+// Under contentPanel the panel header carries the one close button, so the
+// views' first rows drop theirs.
+export function closeInline() {
+  return isFlagOn("contentPanel") ? "" : RPANEL_CLOSE_INLINE;
+}
+
+const RPANEL_CLOSE_INLINE = `
   <button
     type="button"
     class="ap-icon-button transparent rpanel-row-close"
@@ -1155,6 +1242,32 @@ export const RPANEL_CLOSE_INLINE = `
     title="Close panel (Esc)"
   ><i class="ap-icon-close"></i></button>
 `;
+
+// The panel header (flag contentPanel): Overview, then the chat's pipeline —
+// Sources › Ideas › Drafts — as DS tabs with their counts, and the one close.
+function renderPanelHeader() {
+  const counts = contentCounts(activeSessionId());
+  const tab = (mode, label, count) => {
+    const on = state.mode === mode;
+    return `<button type="button" class="ap-tabs-tab${on ? " active" : ""}" role="tab" aria-selected="${on}"
+      data-rpanel-goto="${mode}"${mode === "overview" ? "" : ` title="${escapeHtml(conceptText(mode === "drafts" ? "draft" : mode.slice(0, -1)))}"`}>
+      <span>${label}</span>${count > 0 ? `<span class="ap-counter normal ${on ? "blue" : "grey"}">${count}</span>` : ""}
+    </button>`;
+  };
+  const step = `<i class="ap-icon-chevron-right rpanel-header__step" aria-hidden="true"></i>`;
+  return `
+    <div class="rpanel-header">
+      <div class="ap-tabs rpanel-header__tabs">
+        <div class="ap-tabs-nav" role="tablist" aria-label="Content of this chat">
+          ${tab("overview", "Overview", 0)}
+          <span class="rpanel-header__divider" aria-hidden="true"></span>
+          ${tab("sources", "Sources", counts.sources)}${step}${tab("ideas", "Ideas", counts.ideas)}${step}${tab("drafts", "Drafts", counts.drafts)}
+        </div>
+      </div>
+      ${RPANEL_CLOSE_INLINE}
+    </div>
+  `;
+}
 
 export function renderPanel() {
   const el = document.getElementById(PANEL_ID);
@@ -1183,11 +1296,22 @@ export function renderPanel() {
     titleText = "Drafts";
   } else if (state.mode === "sources") {
     titleText = "Sources";
+  } else if (state.mode === "overview") {
+    titleText = "Content";
   }
+  lastMode = state.mode;
 
-  const bodyHtml = `<div class="app-right-panel__body">${
-    state.mode === "drafts" ? renderDraftsView() : state.mode === "sources" ? renderSourcesView() : renderIdeasView()
-  }</div>`;
+  const withHeader = isFlagOn("contentPanel");
+  el.classList.toggle("has-header", withHeader);
+  const view =
+    state.mode === "drafts"
+      ? renderDraftsView()
+      : state.mode === "sources"
+        ? renderSourcesView()
+        : state.mode === "overview"
+          ? renderOverviewView()
+          : renderIdeasView();
+  const bodyHtml = `${withHeader ? renderPanelHeader() : ""}<div class="app-right-panel__body">${view}</div>`;
 
   // Preserve scrollTop across re-renders so flipping a filter chip or
   // selecting a draft doesn't yank the user back to the top of a long
@@ -1217,6 +1341,11 @@ export function renderPanel() {
     ></div>
     ${raw(bodyHtml)}
   `;
+
+  // A new tab fades in; a re-render of the same tab (a store change) doesn't.
+  if (withHeader && previousMode !== state.mode) {
+    el.querySelector(".app-right-panel__body")?.classList.add("is-entering");
+  }
 
   if (previousMode === state.mode && previousScroll > 0) {
     const nextBody = el.querySelector(".app-right-panel__body");
@@ -1311,7 +1440,8 @@ function rebindPostsStore() {
   lastPostsSubscriptionSessionId = sid;
   if (sid) {
     unsubscribePosts = subscribePostsStore(sid, () => {
-      if (state.mode === "drafts") renderPanel();
+      // Under contentPanel every tab shows the Drafts count in its header.
+      if (state.mode === "drafts" || (state.mode && isFlagOn("contentPanel"))) renderPanel();
     });
   }
 }
@@ -1325,7 +1455,7 @@ function useIdea(ideaId) {
   if (!idea) return;
   const sid = activeSessionId();
   if (!sid) return;
-  import("../screens/session/draft-questions.js?v=2060").then(({ askAngleQuestion }) => {
+  import("../screens/session/draft-questions.js?v=2064").then(({ askAngleQuestion }) => {
     askAngleQuestion(sid, ideaId);
   });
 }

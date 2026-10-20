@@ -1074,3 +1074,287 @@
   animation: app-focus-pulse 1.6s ease;
   border-color: var(--ref-color-electric-blue-100);
 }
+
+/* ── Panel header + Overview (flag contentPanel) ─────────────────────
+   The header names where you are: Overview, then the chat's pipeline
+   Sources › Ideas › Drafts as DS tabs with their counts, and the one
+   close. The Overview (right-panel/overview-view.js) is the status card
+   reborn: stacked cards that fold under their title, a proportion bar
+   with a named legend, a link to the full tab. Flat cards on the white
+   panel — grey-20 edge, no shadow. */
+
+.rpanel-header {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  flex: 0 0 auto;
+  padding: 0 var(--ref-spacing-xs) 0 var(--ref-spacing-sm);
+  border-bottom: 1px solid var(--ref-color-grey-20);
+  background: var(--ref-color-white);
+}
+
+.rpanel-header__tabs {
+  flex: 1 1 auto;
+  min-width: 0;
+  flex-direction: row;
+}
+
+.rpanel-header__tabs .ap-tabs-nav {
+  align-items: center;
+  padding: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.rpanel-header__tabs .ap-tabs-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  flex: 0 0 auto;
+}
+
+/* The pipeline reads left to right: a quiet chevron between its steps,
+   and a hairline that sets the Overview apart from them. */
+.rpanel-header__step {
+  flex: 0 0 auto;
+  font-size: var(--sys-icon-css-xs);
+  background: var(--ref-color-grey-60);
+}
+
+.rpanel-header__divider {
+  flex: 0 0 auto;
+  width: 1px;
+  height: 16px;
+  margin: 0 var(--ref-spacing-xxs);
+  background: var(--ref-color-grey-20);
+}
+
+/* Under the header the views' own first rows drop their top border
+   weight — the header already draws the line. */
+.app-right-panel.has-header .rpanel-outputs__tabs {
+  padding-top: var(--ref-spacing-xxs);
+}
+
+.app-right-panel__body.is-entering {
+  animation: rpanel-enter var(--ref-animation-normal) var(--app-ease-out);
+}
+
+@keyframes rpanel-enter {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-right-panel__body.is-entering {
+    animation: none;
+  }
+}
+
+.rpanel-ov {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-sm);
+}
+
+.rpanel-ov__card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-card, 12px);
+  background: var(--ref-color-white);
+}
+
+.rpanel-ov__head {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-sm);
+  cursor: pointer;
+  list-style: none;
+}
+
+.rpanel-ov__head::-webkit-details-marker {
+  display: none;
+}
+
+.rpanel-ov__head--static {
+  cursor: default;
+  padding-bottom: var(--ref-spacing-xxs);
+}
+
+.rpanel-ov__head:focus-visible,
+.rpanel-ov__card--link:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: 2px;
+}
+
+.rpanel-ov__title {
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.rpanel-ov__chevron {
+  font-size: var(--sys-icon-css-xs);
+  background: var(--ref-color-grey-80);
+  transition: transform var(--ref-animation-short) var(--app-ease-standard);
+}
+
+.rpanel-ov__card:not([open]) > .rpanel-ov__head .rpanel-ov__chevron {
+  transform: rotate(-90deg);
+}
+
+.rpanel-ov__metric {
+  margin-left: auto;
+  color: var(--ref-color-grey-80);
+  white-space: nowrap;
+}
+
+.rpanel-ov__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  padding: 0 var(--ref-spacing-sm) var(--ref-spacing-sm);
+}
+
+/* A card that is only a way in (Clips ›): the whole card is the button —
+   the house card hover, a blue border. */
+.rpanel-ov__card--link {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-sm);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--ref-animation-short) var(--app-ease-standard);
+}
+
+.rpanel-ov__card--link:hover {
+  border-color: var(--ref-color-electric-blue-100);
+}
+
+/* Proportion bar — every segment is named in the legend below it. */
+.rpanel-ov__bar {
+  display: flex;
+  gap: 2px;
+  height: 6px;
+  border-radius: var(--app-radius-pill);
+  overflow: hidden;
+}
+
+.rpanel-ov__seg {
+  flex: 1 1 0;
+  min-width: 4px;
+}
+
+.rpanel-ov__seg--done {
+  background: var(--app-chart-data-1);
+}
+
+.rpanel-ov__seg--rest {
+  background: var(--ref-color-grey-40);
+}
+
+.rpanel-ov__seg--ready {
+  background: var(--app-chart-on-track);
+}
+
+.rpanel-ov__seg--fix {
+  background: var(--app-chart-at-risk);
+}
+
+.rpanel-ov__legend,
+.rpanel-ov__rows {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rpanel-ov__legend-row {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xxxs) 0;
+  color: var(--ref-color-grey-100);
+}
+
+.rpanel-ov__swatch {
+  flex: 0 0 auto;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.rpanel-ov__legend-count {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  color: var(--ref-color-grey-80);
+}
+
+/* Rows — a source (a button to it in Sources) or a network (static). */
+.rpanel-ov__rows--split {
+  padding-top: var(--ref-spacing-xs);
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+
+.rpanel-ov__row {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  margin: 0 calc(-1 * var(--ref-spacing-xxs));
+  padding: var(--ref-spacing-xxs);
+  width: calc(100% + 2 * var(--ref-spacing-xxs));
+  border: 0;
+  border-radius: var(--app-radius-sm, 6px);
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  color: var(--ref-color-grey-100);
+}
+
+button.rpanel-ov__row {
+  cursor: pointer;
+}
+
+button.rpanel-ov__row:hover {
+  background: var(--ref-color-grey-05);
+}
+
+.rpanel-ov__row-icon {
+  flex: 0 0 auto;
+  font-size: var(--sys-icon-css-sm);
+}
+
+/* Glyphs take the ink; network logos (-official) keep their own colours. */
+.rpanel-ov__row-icon:not([class*="-official"]) {
+  background-color: var(--ref-color-grey-100);
+}
+
+.rpanel-ov__row-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.rpanel-ov__row-meta {
+  flex: 0 0 auto;
+  color: var(--ref-color-grey-80);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+}
+
+.rpanel-ov__foot {
+  align-self: flex-start;
+}
+
+.rpanel-ov__empty {
+  margin: 0;
+  color: var(--ref-color-grey-80);
+}

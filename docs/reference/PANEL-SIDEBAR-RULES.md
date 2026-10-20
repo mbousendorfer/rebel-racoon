@@ -27,15 +27,21 @@ overlays : `sidebar | contenu | right panel`.
 ## Right panel
 
 4. **Une seule chose à la fois** : le panel a un seul contenu actif parmi
-   **Drafts**, **Ideas** (avec sous-onglet Clips) et **Sources**. Ouvrir un mode
-   remplace le précédent.
+   **Drafts**, **Ideas** (avec sous-onglet Clips) et **Sources** — plus
+   **Overview** sous le flag `contentPanel`. Ouvrir un mode remplace le
+   précédent.
 5. **Lié à la session** : le panel n'existe que sur une page de session. Quitter
    la session (Playbooks, Connectors, Dashboard, changement de chat…) le ferme.
 6. **Deep-link & retour navigateur** : le mode ouvert est encodé dans l'URL
-   (`?panel=drafts|ideas|sources`), donc partageable et restauré au
+   (`?panel=overview|drafts|ideas|sources`), donc partageable et restauré au
    précédent/suivant.
 7. **Fermeture** : bouton de fermeture du panel, ou **Échap** (Échap ferme
    d'abord un menu contextuel ouvert, puis le panel).
+   7b. **Flag `contentPanel`** : une seule entrée dans la topbar (**Content**,
+   rouvre le dernier onglet, Overview la première fois ; désactivée sur un chat
+   vide) et un **en-tête** dans le panel — onglets Overview │ Sources › Ideas ›
+   Drafts avec leurs compteurs, et le seul bouton fermer. Le panel ne s'ouvre
+   jamais tout seul : les cartes du fil l'ouvrent sur leurs objets.
 
 ---
 
