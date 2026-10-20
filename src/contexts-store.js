@@ -22,18 +22,19 @@
 // chooses "Save as global". updateContext is used by the section-edit flow
 // when scope is "Update everywhere".
 
-import { contexts as seed, sharedContexts } from "./mocks.js?v=2045";
-import { isNewUser } from "./user-mode.js?v=2045";
-import { CURRENT_USER } from "./org.js?v=2045";
-import { isFlagOn } from "./feature-flags.js?v=2045";
-import { createNotifier } from "./store-utils.js?v=2045";
+import { contexts as seed, sharedContexts, DEMO_PLAYBOOK } from "./mocks.js?v=2046";
+import { isDemo } from "./demo-mode.js?v=2046";
+import { isNewUser } from "./user-mode.js?v=2046";
+import { CURRENT_USER } from "./org.js?v=2046";
+import { isFlagOn } from "./feature-flags.js?v=2046";
+import { createNotifier } from "./store-utils.js?v=2046";
 import {
   normalizeLanguages,
   mirrorPrimaryToTopLevel,
   syncTopLevelToPrimary,
   cloneVoiceByLanguage,
-} from "./languages.js?v=2045";
-import { cloneVoiceByNetwork, cloneItems } from "./network-voice.js?v=2045";
+} from "./languages.js?v=2046";
+import { cloneVoiceByNetwork, cloneItems } from "./network-voice.js?v=2046";
 
 // Lives up here, away from normalizeBrandLogos where it belongs, because the
 // seed below calls that normalizer at module-init time — a `let` declared beside
@@ -60,19 +61,19 @@ export const COLOR_ROLES = Object.freeze(["primary", "secondary", "accent", "bac
 // is one implicit user, so a Playbook owned by a colleague — let alone one
 // deliberately out of reach — would just be a stray card.
 const allSeeds = isFlagOn("playbookSharing") ? [...seed, ...sharedContexts] : seed;
-const contexts = isNewUser()
-  ? []
-  : allSeeds.map((c) =>
-      normalizeLanguages({
-        ...c,
-        ...normalizeOwnership(c),
-        ...normalizeBrandLogos(c),
-        ...normalizeImageDefaults(c),
-        ...normalizeImageryDefaults(c),
-        ...normalizeBrandKit(c),
-        voiceByNetwork: cloneVoiceByNetwork(c.voiceByNetwork),
-      }),
-    );
+// A new user starts with none — or, in the demo, with the demo brand alone.
+const firstRunSeeds = isDemo() ? [DEMO_PLAYBOOK] : [];
+const contexts = (isNewUser() ? firstRunSeeds : allSeeds).map((c) =>
+  normalizeLanguages({
+    ...c,
+    ...normalizeOwnership(c),
+    ...normalizeBrandLogos(c),
+    ...normalizeImageDefaults(c),
+    ...normalizeImageryDefaults(c),
+    ...normalizeBrandKit(c),
+    voiceByNetwork: cloneVoiceByNetwork(c.voiceByNetwork),
+  }),
+);
 const notifier = createNotifier("contexts-store");
 
 export const subscribe = notifier.subscribe;

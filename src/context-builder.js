@@ -13,15 +13,15 @@
 // tones, contentStyle, objective, contentAction, ctaLinks, language, color,
 // suggestions, editingId, onComplete }.
 
-import * as inlineQuestion from "./inline-question.js?v=2045";
-import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=2045";
-import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=2045";
-import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=2045";
-import { showToast } from "./components/toast.js?v=2045";
-import { recordReasons } from "./feedback-store.js?v=2045";
-import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=2045";
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2045";
-import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=2045";
+import * as inlineQuestion from "./inline-question.js?v=2046";
+import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=2046";
+import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=2046";
+import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=2046";
+import { showToast } from "./components/toast.js?v=2046";
+import { recordReasons } from "./feedback-store.js?v=2046";
+import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=2046";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2046";
+import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=2046";
 import {
   analyzeWebsite,
   analyzeBrandFiles,
@@ -29,8 +29,8 @@ import {
   analyzeInterview,
   nextInterviewQuestion,
   INTERVIEW_OPENING,
-} from "./context-mock-analysis.js?v=2045";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2045";
+} from "./context-mock-analysis.js?v=2046";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2046";
 import {
   networkVoicesOn,
   cloneVoiceByNetwork,
@@ -38,17 +38,18 @@ import {
   networkLabel,
   networkIcon,
   voiceNetworks,
-} from "./network-voice.js?v=2045";
-import { connectors as connectorMocks } from "./mocks.js?v=2045";
+} from "./network-voice.js?v=2046";
+import { connectors as connectorMocks } from "./mocks.js?v=2046";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "./social-profiles.js?v=2045";
-import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=2045";
-import { isFlagOn } from "./feature-flags.js?v=2045";
-import { navigate } from "./router.js?v=2045";
-import { setHandoff } from "./handoff.js?v=2045";
+} from "./social-profiles.js?v=2046";
+import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=2046";
+import { isFlagOn } from "./feature-flags.js?v=2046";
+import { startDemo } from "./demo-flow.js?v=2046";
+import { navigate } from "./router.js?v=2046";
+import { setHandoff } from "./handoff.js?v=2046";
 
 const drafts = new Map(); // sessionId → draft
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -490,6 +491,15 @@ const ALT_NO_WEBSITE_ITEM = {
   icon: "ap-icon-single-chat-bubble",
 };
 
+// Flag demoMode: try me on a made-up brand before setting up your own
+// (demo-flow.js). Leaves the onboarding for the demo chat.
+const ALT_DEMO_ITEM = {
+  value: "demo",
+  label: "Try it with a demo brand",
+  caption: "Bramble & Bean, a coffee roaster I made up — nothing gets posted",
+  icon: "ap-icon-play",
+};
+
 // The no-website interview, in place of the URL question (same step, same
 // number). One question at a time, picked from the answers so far by
 // nextInterviewQuestion; each answered question joins the thread as Archie's
@@ -631,9 +641,10 @@ function askAltUrl(sessionId, prefilledUrl = "") {
   inlineQuestion.ask(sessionId, {
     title: "How do you want to start?",
     stepLabel: altStepLabel("url"),
-    items: [...ALT_START_ITEMS, ALT_NO_WEBSITE_ITEM],
+    items: [...ALT_START_ITEMS, ALT_NO_WEBSITE_ITEM, ...(isFlagOn("demoMode") ? [ALT_DEMO_ITEM] : [])],
     onPick: (value) => {
-      if (value === "noWebsite") startAltInterview(sessionId);
+      if (value === "demo") startDemo();
+      else if (value === "noWebsite") startAltInterview(sessionId);
       else if (value === "files") startAltFromFiles(sessionId);
       else startAltManually(sessionId);
     },
