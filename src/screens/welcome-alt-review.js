@@ -20,19 +20,20 @@
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
 //
-// Flag reviewScroll: the same parts, covers and confirms, but a part's cards
-// line up one under the other in a scroll — the one at the reading line is in
-// focus (the others dimmed), and the floating nav still steps through them
-// (↑ / ↓ scroll the next one to the middle). The index follows the scroll.
+// Flag reviewScroll: the same parts and covers, but a part's cards line up one
+// under the other in a scroll — the one at the reading line is in focus (the
+// others dimmed). The nav stands in the middle of the stage, at the left of
+// the column — ↑ · the dots, vertical · ↓ — and steps through them; the index
+// follows the scroll. At the bottom, one button confirms the part.
 
-import { html, raw } from "../utils.js?v=2011";
-import { navigate } from "../router.js?v=2011";
-import { getDraft, patchDraft } from "../context-builder.js?v=2011";
-import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2011";
-import { parseHashParams } from "../url-state.js?v=2011";
-import { isFlagOn } from "../feature-flags.js?v=2011";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2011";
-import { enterArchie } from "./welcome-alt-recap.js?v=2011";
+import { html, raw } from "../utils.js?v=2012";
+import { navigate } from "../router.js?v=2012";
+import { getDraft, patchDraft } from "../context-builder.js?v=2012";
+import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2012";
+import { parseHashParams } from "../url-state.js?v=2012";
+import { isFlagOn } from "../feature-flags.js?v=2012";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2012";
+import { enterArchie } from "./welcome-alt-recap.js?v=2012";
 
 const MOVE_MS = 220; // the card's exit, before the next one comes in
 
@@ -112,6 +113,10 @@ export function renderReview(target, sid, config) {
   navEl.className = "welcome-review__nav";
   navEl.setAttribute("aria-label", "Cards");
   shell.sheet.append(navEl);
+  // Scroll mode: the part's confirm, at the bottom of the stage.
+  const barEl = document.createElement("div");
+  barEl.className = "welcome-review__bar";
+  if (scroll) shell.sheet.append(barEl);
   const unmount = mount(body, {
     ...config,
     showTop: false,
@@ -156,6 +161,38 @@ export function renderReview(target, sid, config) {
     const nextPart = RECAP_SECTIONS[at + 1];
     const upNext = index < count - 1 ? cardTitle(list[index + 1]) : nextPart ? nextPart.title : "Finish";
     const atStart = index === 0 && at === 0;
+    if (scroll) {
+      return html`
+        <button
+          type="button"
+          class="welcome-review__navbtn is-icon"
+          data-review-prev
+          aria-label="Previous card"
+          ${atStart ? raw("disabled") : ""}
+        >
+          <i class="ap-icon-arrow-up" aria-hidden="true"></i>
+        </button>
+        ${count > 1
+          ? raw(html`
+              <ol class="welcome-review__dots" aria-label="Card ${index + 1} of ${count} in ${partOf(current()).title}">
+                ${Array.from(
+                  { length: count },
+                  (_, i) => html`<li class="${i < index ? "is-done" : i === index ? "is-current" : ""}"></li>`,
+                )}
+              </ol>
+            `)
+          : ""}
+        <button
+          type="button"
+          class="welcome-review__navbtn is-icon"
+          data-review-next
+          aria-label="Next: ${upNext}"
+          ${index >= count - 1 /* the part goes on through its confirm, below */ ? raw("disabled") : ""}
+        >
+          <i class="ap-icon-arrow-down" aria-hidden="true"></i>
+        </button>
+      `;
+    }
     return html`
       <button
         type="button"
@@ -164,7 +201,7 @@ export function renderReview(target, sid, config) {
         aria-label="Previous card"
         ${atStart ? raw("disabled") : ""}
       >
-        <i class="${scroll ? "ap-icon-arrow-up" : "ap-icon-arrow-left"}" aria-hidden="true"></i>
+        <i class="ap-icon-arrow-left" aria-hidden="true"></i>
       </button>
       ${count > 1 /* one card has no progress to show */
         ? raw(html`
@@ -177,8 +214,7 @@ export function renderReview(target, sid, config) {
           `)
         : ""}
       <button type="button" class="welcome-review__navbtn" data-review-next ${upNext ? "" : raw("disabled")}>
-        <span>${upNext || "Last card"}</span
-        ><i class="${scroll ? "ap-icon-arrow-down" : "ap-icon-arrow-right"}" aria-hidden="true"></i>
+        <span>${upNext || "Last card"}</span><i class="ap-icon-arrow-right" aria-hidden="true"></i>
       </button>
     `;
   };
@@ -209,6 +245,14 @@ export function renderReview(target, sid, config) {
     });
     if (!scroll) list[index]?.insertAdjacentHTML("afterbegin", kicker());
     navEl.innerHTML = count ? nav(list) : "";
+    if (scroll) {
+      const part = partOf(current());
+      barEl.innerHTML = html`
+        <button type="button" class="ap-button primary blue" data-review-confirm="${part.id}">
+          <i class="ap-icon-check"></i><span>Confirm ${part.title}</span>
+        </button>
+      `;
+    }
     applying = false;
     shell.paint();
   };
@@ -425,6 +469,8 @@ export function renderReview(target, sid, config) {
       return;
     }
     hideIntro();
+    // Scroll mode: the next part gets its cover, then its cards cascade in.
+    if (scroll) return switchPart(to.id);
     openPart(to.id, { enter: "" });
     deal();
     navEl.classList.add("is-dealt");
@@ -447,7 +493,7 @@ export function renderReview(target, sid, config) {
     const at = RECAP_SECTIONS.findIndex((t) => t.id === current());
     if (step < 0 && index === 0 && at === 0) return;
     if (scroll) {
-      if (step > 0 && index >= count - 1) return finishPart();
+      if (step > 0 && index >= count - 1) return; // the confirm, at the bottom, moves on
       if (step < 0 && index === 0) return switchPart(RECAP_SECTIONS[at - 1].id, { fromEnd: true });
       index += step;
       applyStack();

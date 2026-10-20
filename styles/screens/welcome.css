@@ -1763,7 +1763,9 @@
   scrollbar-width: none;
   /* The column is the stack's width; the first card starts near the reading
      line, the last can climb up to it, clear of the nav. */
-  padding: 22vh max(var(--ref-spacing-lg), calc((100% - 720px) / 2)) 48vh;
+  /* Each side keeps room for the nav's column (44px + air), so it never sits
+     on a card, and the column stays centred. */
+  padding: 22vh max(calc(44px + 2 * var(--ref-spacing-lg)), calc((100% - 720px) / 2)) 48vh;
   mask-image: linear-gradient(180deg, transparent 0, #000 96px, #000 calc(100% - 140px), transparent 100%);
 }
 
@@ -1807,12 +1809,56 @@
   }
 }
 
+/* The nav stands in the middle of the stage, centred on the reading line
+   (45%, hence the bottom inset), at the left of the column — ↑ · the dots,
+   vertical · ↓ — the same white pieces as the stack's. */
 .welcome-flow__sheet.is-scroll .welcome-review__nav {
+  position: absolute;
+  inset: 0 auto 10% max(var(--ref-spacing-lg), calc((100% - 720px) / 2 - 44px - var(--ref-spacing-lg)));
+  z-index: 2;
+  flex-direction: column;
+  height: fit-content;
+  margin: auto 0;
+}
+
+.welcome-flow__sheet.is-scroll .welcome-review__dots {
+  flex-direction: column;
+  width: 44px;
+  height: auto;
+  padding: var(--ref-spacing-sm) 0;
+}
+
+.welcome-flow__sheet.is-scroll .welcome-review__dots li {
+  transition:
+    height 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.3s ease;
+}
+
+.welcome-flow__sheet.is-scroll .welcome-review__dots li.is-current {
+  width: 8px;
+  height: 28px;
+}
+
+/* The part's confirm: one button at the bottom of the stage, over the scroll. */
+.welcome-review__bar {
   position: absolute;
   inset: auto 0 var(--ref-spacing-lg);
   z-index: 2;
-  margin: 0;
+  display: flex;
+  justify-content: center;
   pointer-events: none;
+}
+
+.welcome-review__bar > * {
+  pointer-events: auto;
+}
+
+.welcome-flow__sheet.is-part-out .welcome-review__bar {
+  animation: welcome-review-part-out 0.24s ease-in both;
+}
+
+.welcome-flow__sheet.is-part-intro .welcome-review__bar {
+  visibility: hidden;
 }
 
 .welcome-flow__sheet.is-scroll .welcome-review__nav > * {
