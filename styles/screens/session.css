@@ -1036,23 +1036,34 @@ body.playbook-revoked .session__composer-card {
    wherever the hero's rhythm puts it: a flat ellipse 440px wider than it, its
    dense core hidden under the white card, so what shows is two wings of
    pixels on either side — and almost nothing behind the text above and below. */
-.empty-chat__lead {
+/* The wrapper must NOT be a stacking context: the halo is taller than the
+   composer, and inside a context of its own (the hero's z-index 1 + its rise
+   animation) its ground painted over the logo and sub-line — and raising those
+   instead put them over the composer's menus (2026-10-20). So the wrapper only
+   positions the halo; the halo sits at 0, under every hero child (1), and the
+   composer, with its upward Add / Playbook menus, sits over all of them (3). */
+.empty-chat > .empty-chat__lead {
+  position: relative;
+  z-index: auto;
   width: 100%;
   display: flex;
   justify-content: center;
+  animation: none;
 }
 
 .empty-chat__lead > .session__composer {
   position: relative;
-  z-index: 1;
+  z-index: 3;
+  animation: empty-rise var(--ref-animation-long) var(--app-ease-out) 160ms both;
 }
 
-/* The halo is taller than the composer and its wrapper comes after the logo
-   and the sub-line, so its stacking context would paint the field's ground
-   over them: they stay a level above. */
-.empty-chat--rows > .empty-chat__logo,
-.empty-chat--rows > .empty-chat__sub {
-  z-index: 2;
+/* In the hero the composer sits near the top with the page below it, so the
+   Add and Playbook menus open DOWN (at the foot of a thread they open up):
+   opening up, their first rows went off the top of the screen. */
+.empty-chat--rows .composer-playbook__dropdown,
+.empty-chat--rows .ap-action-dropdown.assistant-attach__menu {
+  top: calc(100% + var(--ref-spacing-xxs));
+  bottom: auto;
 }
 
 .session__assistant-thread:has(> .empty-chat--rows) {
