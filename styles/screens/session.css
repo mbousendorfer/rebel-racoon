@@ -915,38 +915,119 @@ body.playbook-revoked .session__composer-card {
   }
 }
 
-/* ── Flag newChatHero — workflow rows ────────────────────────────────────
-   The usual wordmark + sub-line and composer, then the three workflows as rows
-   in the composer's 740px column (instead of the 1040px card grid). The
-   Topics grid below keeps its own width. */
-.starter-rows {
+/* ── Flag newChatHero — the composer on Archie's stage ─────────────────
+   The FUX's stage (welcome.css, .welcome-intro__stage): a rounded panel filled
+   with the quiet <archie-pixels> field, and white things floating on it. Here
+   the white things are the composer and the three workflows — everything that
+   starts a chat. The wordmark and sub-line stay above it on the plain ground,
+   the Topics below it: one warm zone, the rest quiet.
+   The soft orange / blue washes and the orb are dropped under this flag — the
+   stage is the only colour on the page. */
+.session__assistant:has(.empty-chat--stage) {
+  background: var(--app-bg);
+}
+
+.empty-chat--stage::before {
+  display: none;
+}
+
+.empty-chat--stage {
+  gap: var(--ref-spacing-xs);
+  padding-block: var(--ref-spacing-lg);
+}
+
+/* A touch more room under the sub-line than between logo and sub-line: the
+   two read as one lockup, the stage as the next thing. */
+.empty-chat--stage .empty-chat__sub {
+  max-width: 600px;
+  margin-bottom: var(--ref-spacing-sm);
+}
+
+.hero-stage {
+  position: relative;
+  width: 100%;
+  max-width: 1040px;
+  border-radius: 24px;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.hero-stage__body {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xl) var(--ref-spacing-md);
+}
+
+/* The composer keeps its own chrome; on the stage it loses the side padding
+   it uses at the foot of a thread (the stage already insets it). */
+.hero-stage .session__composer {
+  padding: 0;
+}
+
+/* The keyboard hint would sit on the pixels — a white veil keeps grey-80 at
+   AA wherever the field is brightest. */
+.hero-stage .session__composer-hint {
+  width: fit-content;
+  margin: var(--ref-spacing-xxs) auto 0;
+  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xxs);
+  border-radius: var(--app-radius-card);
+  background: color-mix(in srgb, var(--ref-color-white) 82%, transparent);
+}
+
+/* Dragging a file over the panel: the stage is where it lands, so it wakes —
+   the field brightens and the frame draws the drop edge. The panel-wide orange
+   tint is dropped here: the stage already says it. */
+.session__assistant.is-drop-target:has(.empty-chat--stage) {
+  background: var(--app-bg);
+  outline: none;
+}
+
+.hero-stage archie-pixels {
+  transition: filter var(--ref-animation-long) var(--app-ease-out);
+}
+
+.session__assistant.is-drop-target .hero-stage archie-pixels {
+  filter: saturate(1.35) brightness(1.06);
+}
+
+.session__assistant.is-drop-target .hero-stage {
+  outline: 2px dashed var(--ref-color-orange-150);
+  outline-offset: -8px;
+}
+
+/* The three workflows, white tiles on the stage in the composer's column:
+   tinted icon tile, title over its description. Card hover = blue border. */
+.starter-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--ref-spacing-xs);
   width: 100%;
   max-width: 740px;
-  /* Pulls the rows up under the composer: they read as its suggestions. */
-  margin-top: calc(-1 * var(--ref-spacing-xs));
 }
 
 .starter-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--ref-spacing-xs);
   width: 100%;
   padding: var(--ref-spacing-xs);
-  border: 0;
-  border-radius: var(--app-radius-md);
-  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--app-radius-card);
+  background: var(--ref-color-white);
   font-family: inherit;
   text-align: left;
   cursor: pointer;
-  transition: background-color var(--ref-animation-short) var(--app-ease-standard);
+  transition: border-color var(--ref-animation-short) var(--app-ease-standard);
 }
 
 .starter-row:hover,
 .starter-row:focus-visible {
   outline: none;
-  background: var(--ref-color-grey-05);
+  border-color: var(--ref-color-electric-blue-100);
 }
 
 .starter-row:focus-visible {
@@ -961,7 +1042,7 @@ body.playbook-revoked .session__composer-card {
   justify-content: center;
   width: 32px;
   height: 32px;
-  border-radius: var(--app-radius-sm);
+  border-radius: var(--app-radius-lg);
   background: var(--card-tint);
   color: var(--card-accent);
 }
@@ -970,12 +1051,13 @@ body.playbook-revoked .session__composer-card {
   font-size: var(--sys-icon-css-sm);
 }
 
-/* Title over its one-line description: weight carries the hierarchy, both
-   inks stay in grey-80…100. */
+/* Title over its description: weight carries the hierarchy, both inks stay
+   in grey-80…100. */
 .starter-row__text {
   display: flex;
   flex: 1;
   flex-direction: column;
+  gap: 2px;
   min-width: 0;
 }
 
@@ -993,16 +1075,51 @@ body.playbook-revoked .session__composer-card {
   color: var(--ref-color-grey-80);
 }
 
+/* The arrow would crowd a 240px tile: the blue border is the hover. */
 .starter-row__arrow {
-  font-size: var(--sys-icon-css-sm);
-  color: var(--ref-color-electric-blue-100);
-  opacity: 0;
-  transition: opacity var(--ref-animation-short) var(--app-ease-standard);
+  display: none;
 }
 
-.starter-row:hover .starter-row__arrow,
-.starter-row:focus-visible .starter-row__arrow {
-  opacity: 1;
+@media (max-width: 900px) {
+  .starter-tiles {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .hero-stage__body {
+    padding: var(--ref-spacing-md) var(--ref-spacing-xs);
+  }
+  .empty-chat__topics--staged .empty-chat__topics-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Topics under the stage: a title and a one-line lede, the way out on the
+   right of the same line; one row of three cards. */
+.empty-chat__topics--staged {
+  margin-top: var(--ref-spacing-md);
+}
+
+.empty-chat__topics-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--ref-spacing-sm);
+  margin-bottom: var(--ref-spacing-xs);
+}
+
+.empty-chat__topics-title {
+  margin: 0;
+  font-size: var(--sys-text-style-h4-size);
+  line-height: var(--sys-text-style-h4-line-height);
+  font-weight: var(--sys-text-style-h4-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.empty-chat__topics-lede {
+  margin: 0;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
 }
 
 /* Assistant notice (Figma 25:1043 / 25:1054) — a mermaid `.ap-status` pill
