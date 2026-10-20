@@ -2,11 +2,11 @@
 // the per-card feedback and "why this idea" state. Moved out of right-panel.js,
 // unchanged; the filter state it reads is owned (and written) by the shell.
 
-import { html, raw } from "../../utils.js?v=2058";
-import { conceptText } from "../../concepts.js?v=2058";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2058";
-import { renderClipCard } from "../clip-card.js?v=2058";
-import { renderCompactIdeaCard } from "../idea-card-compact.js?v=2058";
+import { html, raw } from "../../utils.js?v=2059";
+import { conceptText } from "../../concepts.js?v=2059";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2059";
+import { renderClipCard } from "../clip-card.js?v=2059";
+import { renderCompactIdeaCard } from "../idea-card-compact.js?v=2059";
 import {
   RPANEL_CLOSE_INLINE,
   activeSessionId,
@@ -14,7 +14,7 @@ import {
   ideasFilter,
   outputsView,
   sessionIdeas,
-} from "../right-panel.js?v=2058";
+} from "../right-panel.js?v=2059";
 
 // Idea kind taxonomy — handoff Ideas filter rail (§ 2.6). Order is the order
 // shown in the chip row. The .kind selector also drives the per-kind tag

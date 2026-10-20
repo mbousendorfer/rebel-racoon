@@ -19,7 +19,7 @@ export const DEMO_ACCOUNTS = [
     logo: "assets/logos/social/instagram.svg",
     status: "connected",
     token: "ok",
-    postCount: 0,
+    postCount: 184,
   },
   {
     id: "demo-bb-li",
@@ -32,7 +32,7 @@ export const DEMO_ACCOUNTS = [
     logo: "assets/logos/social/linkedin.svg",
     status: "connected",
     token: "ok",
-    postCount: 0,
+    postCount: 62,
   },
   {
     id: "demo-bb-fb",
@@ -45,7 +45,7 @@ export const DEMO_ACCOUNTS = [
     logo: "assets/logos/social/facebook.svg",
     status: "connected",
     token: "ok",
-    postCount: 0,
+    postCount: 97,
   },
 ];
 
