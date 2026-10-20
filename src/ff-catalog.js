@@ -154,15 +154,16 @@ export const FLAGS = Object.freeze([
     group: "Chat & drafts",
     tip: "On a new chat, the three workflows become rows (title + description) instead of three big cards.",
     label: "UP-New chat: workflow rows",
-    // OFF: the three big starter cards. Same three workflows, same handlers
-    // either way.
+    // OFF: the three big starter cards and six Topics. Same three workflows,
+    // same handlers either way.
     default: false,
     hides:
       "When ON, a new chat keeps its wordmark, sub-line and composer, and the " +
       "three workflows (batch from a source, clip a video, repurpose a top " +
       "post) become a short list of rows (title + its description) aligned " +
-      "on the composer, instead of three big cards. The Topics to review " +
-      "grid below is unchanged.",
+      "on the composer, instead of three big cards. A soft halo of Archie's " +
+      "pixels frames the composer and wakes when you type or drop a file. Below, one row of " +
+      "three Topics to review instead of six.",
   },
   {
     id: "networkVoices",

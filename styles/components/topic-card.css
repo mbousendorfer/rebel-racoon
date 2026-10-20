@@ -367,6 +367,13 @@
   border-top: 1px solid var(--app-border);
 }
 
+/* The verb as a link (useAsLink, the new chat's hero): no band, it closes the
+   card's text instead of sitting on a footer of its own. */
+.topic-card__act--link {
+  padding-top: 0;
+  border-top: 0;
+}
+
 /* ── The in-chat picker widget (the composer's "Pick from the Topic Feed") ─────
    The same "app card in a conversation turn" the top-posts widget is
    (top-post-card.css .top-posts-widget): a head, a single-select list of DS
