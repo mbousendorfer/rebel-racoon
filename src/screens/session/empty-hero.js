@@ -1,17 +1,16 @@
 // A new chat's hero: the greeting, the workflow starters, and the "Fresh
 // topics to review" grid (flag topicFeed). Moved out of session.js, unchanged.
 
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2033";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=2033";
-import { getContextById } from "../../contexts-store.js?v=2033";
-import { isWorkspaceMode } from "../../active-playbook.js?v=2033";
-import { renderTopicCard } from "../../components/topic-card.js?v=2033";
-import { findTopicSource } from "../../topics-catalog.js?v=2033";
-import { html, raw } from "../../utils.js?v=2033";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2033";
-import { renderStarterCards } from "../../components/starter-card.js?v=2033";
-import { isFlagOn } from "../../feature-flags.js?v=2033";
-import "../../archie-pixels.js?v=2033";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2034";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=2034";
+import { getContextById } from "../../contexts-store.js?v=2034";
+import { isWorkspaceMode } from "../../active-playbook.js?v=2034";
+import { renderTopicCard } from "../../components/topic-card.js?v=2034";
+import { findTopicSource } from "../../topics-catalog.js?v=2034";
+import { html, raw } from "../../utils.js?v=2034";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2034";
+import { renderStarterCards } from "../../components/starter-card.js?v=2034";
+import { isFlagOn } from "../../feature-flags.js?v=2034";
 
 // Composer "Add" menu — "Connected sources" is a nested submenu (Codex-style
 // "Modules d'extension ▸" flyout), not a first-level list. The flyout lists the
@@ -146,14 +145,11 @@ export function renderEmptyHero(sessionId, composerMarkup = "", session = null) 
   // same ones, so there is one renderer and two hosts.
   // Flag newChatHero: the same wordmark + sub-line, the composer, then the
   // three workflows as rows under it (they share the composer's 740px column).
-  //
-  // The composer and the three workflows sit on Archie's pixel stage — the
-  // FUX's stage (welcome-alt-shell), here as the place you start: everything
-  // that begins a chat is on it, what Archie found (Topics) is below it on the
-  // plain ground. The whole panel takes drops, so the stage wakes on drag-over.
+  // Flag newChatHero: the same wordmark + sub-line, the composer, then the
+  // three workflows as rows under it (they share the composer's 740px column).
   if (isFlagOn("newChatHero")) {
     return html`
-      <div class="empty-chat empty-chat--stage" data-empty-chat>
+      <div class="empty-chat empty-chat--rows" data-empty-chat>
         <span class="empty-chat__logo" role="img" aria-label="Archie">
           <img class="empty-chat__logo-word empty-chat__logo-word--a" src="assets/logos/archie-wordmark.svg" alt="" />
           <img class="empty-chat__logo-mono" src="assets/logos/archie-mono.svg" alt="" />
@@ -164,14 +160,9 @@ export function renderEmptyHero(sessionId, composerMarkup = "", session = null) 
           />
         </span>
         <div class="empty-chat__sub">Drop a source — I'll turn it into drafts ready to schedule, all in this chat.</div>
-        <div class="hero-stage">
-          <archie-pixels data-quiet aria-hidden="true"></archie-pixels>
-          <div class="hero-stage__body">
-            ${raw(composerMarkup)}
-            <div class="starter-tiles" role="group" aria-label="Start from a workflow">
-              ${raw(renderStarterCards({ sourceLabel, videoLabel, rows: true }))}
-            </div>
-          </div>
+        ${raw(composerMarkup)}
+        <div class="starter-rows" role="group" aria-label="Start from a workflow">
+          ${raw(renderStarterCards({ sourceLabel, videoLabel, rows: true }))}
         </div>
         ${raw(renderFreshTopics(session, { staged: true }))}
       </div>

@@ -152,17 +152,17 @@ export const FLAGS = Object.freeze([
   {
     id: "newChatHero",
     group: "Chat & drafts",
-    tip: "On a new chat, the composer and the three workflows sit on Archie's pixel stage, with one row of Topics below.",
-    label: "UP-New chat: the stage",
+    tip: "On a new chat, the three workflows become rows (title + description) instead of three big cards.",
+    label: "UP-New chat: workflow rows",
     // OFF: the three big starter cards and six Topics. Same three workflows,
     // same handlers either way.
     default: false,
     hides:
-      "When ON, a new chat keeps its wordmark and sub-line, then puts the " +
-      "composer and the three workflows (batch from a source, clip a video, " +
-      "repurpose a top post) as white tiles on Archie's pixel stage — the one " +
-      "from the first-time run. Dragging a file over the chat wakes the stage. " +
-      "Below it, one row of three Topics to review instead of six.",
+      "When ON, a new chat keeps its wordmark, sub-line and composer, and the " +
+      "three workflows (batch from a source, clip a video, repurpose a top " +
+      "post) become a short list of rows (title + its description) aligned " +
+      "on the composer, instead of three big cards. Below them, one row of " +
+      "three Topics to review instead of six.",
   },
   {
     id: "networkVoices",
