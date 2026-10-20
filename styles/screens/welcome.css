@@ -1162,97 +1162,26 @@
   display: block;
 }
 
-.welcome-flow__sheet:not(.is-scroll) .welcome-review__card:not(.is-front) {
-  display: none;
-}
-
-/* The front card, and the cards still to come as backs under it — drawn with
-   its own shadows, so they need no DOM and no nested elevation. */
-.welcome-review__card.is-front,
+/* A card of the column: one Playbook block, in edit. */
 .welcome-flow__sheet.is-scroll .welcome-review__card {
   position: relative;
   display: flex;
   flex-direction: column;
   gap: 0;
-  /* Each card is as tall as its content — never a scroll inside a card; the
-     move between two cards is animated, so a change of height reads fine. */
+  /* Each card is as tall as its content — never a scroll inside a card. */
   padding: var(--ref-spacing-md); /* 24 — the review's compact rhythm (2026-10-20) */
   background: var(--app-surface);
   border: none;
   border-radius: 20px;
   box-shadow: var(--app-shadow-popover-lg);
   /* The view repaints its whole DOM on most edits (a radio, a chip…): the
-     block's own entrance (pb2-rise) would replay and the card jump. The deck
-     moves below are the only motion a card has. */
+     block's own entrance (pb2-rise) would replay and the card jump. A new
+     part's cascade is the only motion a card has. */
   animation: none;
 }
 
-.welcome-review__card.is-front[data-behind="1"] {
-  box-shadow:
-    var(--app-shadow-popover-lg),
-    0 12px 0 -6px var(--app-surface),
-    0 14px 18px -8px rgba(33, 46, 68, 0.16);
-}
-
-.welcome-review__card.is-front[data-behind="2"] {
-  box-shadow:
-    var(--app-shadow-popover-lg),
-    0 12px 0 -6px var(--app-surface),
-    0 14px 18px -8px rgba(33, 46, 68, 0.16),
-    0 24px 0 -12px rgba(255, 255, 255, 0.8),
-    0 26px 18px -14px rgba(33, 46, 68, 0.12);
-}
-
-/* The deck's motion — one gesture per move. Next: the card swipes off to the
-   side, tilting; the next one rises from where the backs sit. Previous: the
-   card sinks into the stack; the one before slides back in from the side. */
-.welcome-review__card.is-enter-next {
-  animation: welcome-review-rise 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.welcome-review__card.is-enter-prev {
-  animation: welcome-review-return 0.36s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.welcome-review__card.is-leave-next {
-  animation: welcome-review-swipe 0.22s cubic-bezier(0.55, 0, 0.75, 0.2) both;
-}
-
-.welcome-review__card.is-leave-prev {
-  animation: welcome-review-sink 0.22s ease-in both;
-}
-
-@keyframes welcome-review-rise {
-  from {
-    opacity: 0.4;
-    transform: translateY(22px) scale(0.94);
-  }
-}
-
-@keyframes welcome-review-return {
-  from {
-    opacity: 0;
-    transform: translateX(-42%) rotate(-7deg);
-  }
-}
-
-@keyframes welcome-review-swipe {
-  to {
-    opacity: 0;
-    transform: translateX(-46%) translateY(-12px) rotate(-8deg);
-  }
-}
-
-@keyframes welcome-review-sink {
-  to {
-    opacity: 0;
-    transform: translateY(22px) scale(0.94);
-  }
-}
-
-/* Changing part — its own beat, apart from moving between cards: the whole
-   stack and its nav leave downwards, the new part says its name in the middle
-   of the stage (tinted tile, title, sentence), then its cards are dealt. */
+/* Changing part: the column and its nav leave downwards, then the new part's
+   column cascades in. While "all set" is up, they're hidden under it. */
 .welcome-flow__sheet.is-part-out .welcome-flow__sheet-body,
 .welcome-flow__sheet.is-part-out .welcome-review__nav {
   animation: welcome-review-part-out 0.24s ease-in both;
@@ -1323,9 +1252,7 @@
   color: var(--ref-color-grey-80);
 }
 
-/* The end of a part: the same cover, asking — "Brief look right?" with Back to
-   Brief and Confirm Brief. It takes clicks, unlike the passing cover. */
-.welcome-review__intro-card.is-confirm,
+/* The end of the run — "all set" — takes clicks. */
 .welcome-review__intro-card.is-done {
   pointer-events: auto;
   width: min(460px, 100%);
@@ -1333,23 +1260,6 @@
 
 .welcome-review__intro-tile {
   position: relative;
-}
-
-/* The finished part's tile wears its check. */
-.welcome-review__intro-done {
-  position: absolute;
-  right: -6px;
-  bottom: -6px;
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 2px solid var(--app-surface);
-  background: var(--app-butter-accent);
-  color: var(--app-surface);
-  font-size: var(--sys-icon-css-sm);
-  animation: welcome-intro-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.25s both;
 }
 
 .welcome-review__intro-tile.is-all {
@@ -1369,11 +1279,7 @@
   margin-top: var(--ref-spacing-sm);
 }
 
-/* The new part's front card is dealt onto the stack; the nav follows. */
-.welcome-review__card.is-dealt {
-  animation: welcome-review-deal 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
+/* A new part's nav lands with its column. */
 .welcome-review__nav.is-dealt {
   animation: welcome-intro-land 0.4s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
 }
@@ -1392,68 +1298,46 @@
   }
 }
 
-@keyframes welcome-review-deal {
-  from {
-    opacity: 0;
-    transform: translateY(-56px) rotate(-3deg) scale(0.96);
-  }
-}
-
-/* The navigation, floating under the stack — out of the card, so a card is
-   only its content — three separate pieces grouped and centred under it:
-   ← (a white disc) · the page dots (their own capsule) · Next. */
+/* The nav stands in the middle of the stage — vertically on the reading line
+   (50%, the focused card's centre), horizontally in the middle of the margin
+   right of the column (on the left it sat between the list and the cards,
+   2026-10-20). One compact white capsule, 28px wide: ↑ · the dots · ↓. */
 .welcome-review__nav {
+  position: absolute;
+  inset: 0 max(var(--ref-spacing-lg), calc(((100% - 720px) / 2 - 28px) / 2)) 0 auto;
+  z-index: 2;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: var(--ref-spacing-xs);
-  flex-shrink: 0;
-  margin-top: var(--ref-spacing-sm);
+  height: fit-content;
+  margin: auto 0;
+  padding: 2px 0;
+  background: var(--app-surface);
+  border-radius: var(--app-radius-pill);
+  box-shadow: var(--app-shadow-popover-md);
 }
 
 .welcome-review__nav:empty {
   display: none;
 }
 
-/* The nav's buttons — one shape for all three pieces: a white pill, 44px tall,
-   the same shadow. A visual exception to .ap-button, asked for (2026-10-19):
-   among white pills on the pixels, the DS's blue rectangle read as a fourth
-   kind of thing. Blue stays — in the label and the arrow, the interactive part. */
+/* Its arrows: bare, grey ink, blue on hover — the interactive colour. */
 .welcome-review__navbtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--ref-spacing-xxs);
-  height: 44px;
-  padding: 0 var(--ref-spacing-md);
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
   border: none;
   border-radius: var(--app-radius-pill);
-  background: var(--app-surface);
-  box-shadow: var(--app-shadow-popover-md);
-  font: inherit;
-  font-size: var(--sys-text-style-body-bold-size);
-  line-height: 1;
-  font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--ref-color-electric-blue-100);
-  cursor: pointer;
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
-}
-
-.welcome-review__navbtn.is-icon {
-  width: 44px;
-  padding: 0;
+  background: none;
   color: var(--ref-color-grey-100);
-}
-
-.welcome-review__navbtn i {
-  font-size: var(--sys-icon-css-md);
+  font-size: var(--sys-icon-css-sm);
+  cursor: pointer;
 }
 
 .welcome-review__navbtn:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: var(--app-shadow-popover-lg);
+  color: var(--ref-color-electric-blue-100);
 }
 
 .welcome-review__navbtn:focus-visible {
@@ -1466,27 +1350,25 @@
   opacity: 0.45;
 }
 
-/* Page dots: seen = olive, here = a wide butter capsule, ahead = grey. */
+/* Page dots, vertical: seen = olive, here = a tall butter capsule, ahead = grey. */
 .welcome-review__dots {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 6px;
-  height: 44px;
+  gap: 4px;
+  width: 28px;
   margin: 0;
-  padding: 0 var(--ref-spacing-md);
+  padding: var(--ref-spacing-xxs) 0;
   list-style: none;
-  background: var(--app-surface);
-  border-radius: var(--app-radius-pill);
-  box-shadow: var(--app-shadow-popover-md);
 }
 
 .welcome-review__dots li {
-  width: 8px;
-  height: 8px;
-  border-radius: 4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
   background: var(--ref-color-grey-20);
   transition:
-    width 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.3s cubic-bezier(0.22, 1, 0.36, 1),
     background-color 0.3s ease;
 }
 
@@ -1495,9 +1377,9 @@
 }
 
 .welcome-review__dots li.is-current {
-  width: 28px;
+  height: 18px;
   background: var(--app-butter);
-  box-shadow: inset 0 0 0 1.5px var(--app-butter-accent);
+  box-shadow: inset 0 0 0 1px var(--app-butter-accent);
 }
 
 /* The card's hierarchy, top to bottom:
@@ -1774,7 +1656,7 @@
   border-color: var(--ref-color-electric-blue-100);
 }
 
-/* ---------- Flag reviewScroll: the part's cards as a scroll ----------
+/* ---------- The review: a part's cards as a scroll (the stack it replaced was deleted, 2026-10-20) ----------
    The same cards, one under the other, in a column that scrolls over the
    pixels. The card at the reading line is in focus; the others step back
    (dimmed, a touch smaller) and come forward as they reach it. The edges of
@@ -1880,67 +1762,6 @@
   }
 }
 
-/* The nav stands in the middle of the stage — vertically on the reading line
-   (50%, the focused card's centre), horizontally in the middle of the margin
-   RIGHT of the column (2026-10-20: on the left it sat between the list and
-   the cards). One compact white capsule, 28px wide — ↑ · the dots · ↓ — half
-   the stack's three 44px pieces. */
-.welcome-flow__sheet.is-scroll .welcome-review__nav {
-  position: absolute;
-  inset: 0 max(var(--ref-spacing-lg), calc(((100% - 720px) / 2 - 28px) / 2)) 0 auto;
-  z-index: 2;
-  flex-direction: column;
-  gap: 0;
-  height: fit-content;
-  margin: auto 0;
-  padding: 2px 0;
-  background: var(--app-surface);
-  border-radius: var(--app-radius-pill);
-  box-shadow: var(--app-shadow-popover-md);
-}
-
-.welcome-flow__sheet.is-scroll .welcome-review__navbtn.is-icon {
-  width: 28px;
-  height: 28px;
-  background: none;
-  box-shadow: none;
-}
-
-.welcome-flow__sheet.is-scroll .welcome-review__navbtn i {
-  font-size: var(--sys-icon-css-sm);
-}
-
-.welcome-flow__sheet.is-scroll .welcome-review__navbtn:hover:not(:disabled) {
-  transform: none;
-  box-shadow: none;
-  color: var(--ref-color-electric-blue-100);
-}
-
-.welcome-flow__sheet.is-scroll .welcome-review__dots {
-  flex-direction: column;
-  gap: 4px;
-  width: 28px;
-  height: auto;
-  padding: var(--ref-spacing-xxs) 0;
-  background: none;
-  box-shadow: none;
-}
-
-.welcome-flow__sheet.is-scroll .welcome-review__dots li {
-  width: 6px;
-  height: 6px;
-  border-radius: 3px;
-  transition:
-    height 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-    background-color 0.3s ease;
-}
-
-.welcome-flow__sheet.is-scroll .welcome-review__dots li.is-current {
-  width: 6px;
-  height: 18px;
-  box-shadow: inset 0 0 0 1px var(--app-butter-accent);
-}
-
 /* The part's confirm: one button at the bottom of the stage, over the scroll. */
 .welcome-review__bar {
   position: absolute;
@@ -1961,10 +1782,6 @@
 
 .welcome-flow__sheet.is-part-intro .welcome-review__bar {
   visibility: hidden;
-}
-
-.welcome-flow__sheet.is-scroll .welcome-review__nav > * {
-  pointer-events: auto;
 }
 
 @media (prefers-reduced-motion: reduce) {

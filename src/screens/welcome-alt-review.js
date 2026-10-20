@@ -1,78 +1,69 @@
 // /welcome-alt/recap under flag connectFirst — the review, the run's last screen.
 //
-// The WHOLE Playbook, every block — dealt as a stack of cards, one block at a
-// time, instead of a wall. Each part (Brief, Voice profile, Branding,
-// Competitors, Influencers) opens straight in edit — the real Playbook view,
-// playbook-view, its hero, tabs, tab head and panel Cancel / Save hidden — and
-// only its front block shows, the ones still to come stacked behind it.
-// Everything is already filled in by me, so it's browsing, not validating:
+// The WHOLE Playbook, every block, part by part (Brief, Voice profile,
+// Branding, Competitors, Influencers). Each part opens straight in edit — the
+// real Playbook view, playbook-view, its hero, tabs, tab head and panel
+// Cancel / Save hidden — and its blocks line up one under the other in a
+// column that scrolls over the stage. Everything is already filled in by me,
+// so it's browsing, not validating:
 //   - edits apply as you type (the draft is the live source);
-//   - a floating bar under the stack — and the keyboard's arrows, outside a
-//     field — goes to the next / previous card, across parts; it holds the one
-//     progress indicator (a segment per card of the part) and names what's next;
-//     the card itself only says which part it's in (the part's icon);
-//   - at the end of a part, the interstitial asks to confirm it ("Brief look
-//     right?" — Back to Brief / Confirm Brief); confirming checks it in the
-//     list and deals the next part. The last one ends on "all set".
+//   - the card at the reading line (the middle of the stage) is in focus, the
+//     others a step back — a dimming that follows the scroll (--focus);
+//   - the nav stands in the middle of the stage, right of the column — one
+//     compact capsule, ↑ · the dots · ↓ (and the keyboard's ↑ / ↓, outside a
+//     field) glide the next card to the middle; the index follows the scroll;
+//   - the part's cover (tile, name, sentence) is the column's first card, not
+//     counted in the dots;
+//   - one button at the bottom confirms the part ("Looks good — on to …"): it
+//     checks it in the list and the next part's column cascades in. The last
+//     one ends on "all set".
 // Draft my first post lives on the left, the whole time — never on a card.
+// (2026-10-20: this replaced the stack — one card at a time, a passing cover
+// and a confirm interstitial between parts — deleted with its flag.)
 //
-// The view repaints its whole DOM on most edits (a chip added…), so the stack
+// The view repaints its whole DOM on most edits (a chip added…), so the column
 // is re-applied after every paint (a MutationObserver on the host) — the card
 // index lives here, not in the DOM.
-//
-// Flag reviewScroll: the same parts and covers, but a part's cards line up one
-// under the other in a scroll — the one at the reading line is in focus (the
-// others dimmed). The nav stands in the middle of the stage, at the left of
-// the column — ↑ · the dots, vertical · ↓ — and steps through them; the index
-// follows the scroll. At the bottom, one button confirms the part. The part's
-// cover (tile, name, sentence) is the column's first card — not a passing beat
-// between parts (2026-10-20) — and isn't counted in the dots.
 
-import { html, raw } from "../utils.js?v=2027";
-import { navigate } from "../router.js?v=2027";
-import { getDraft, patchDraft } from "../context-builder.js?v=2027";
-import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2027";
-import { parseHashParams } from "../url-state.js?v=2027";
-import { isFlagOn } from "../feature-flags.js?v=2027";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2027";
-import { enterArchie } from "./welcome-alt-recap.js?v=2027";
-
-const MOVE_MS = 220; // the card's exit, before the next one comes in
+import { html, raw } from "../utils.js?v=2028";
+import { navigate } from "../router.js?v=2028";
+import { getDraft, patchDraft } from "../context-builder.js?v=2028";
+import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2028";
+import { parseHashParams } from "../url-state.js?v=2028";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2028";
+import { enterArchie } from "./welcome-alt-recap.js?v=2028";
 
 // Each part's tint (`tint`, welcome-alt-shell.js — the card's rows share it):
-// its card's header band and its tile in the list, so the colour says which
-// part you're in (asked for explicitly, 2026-10-19).
-const OUT_MS = 240; // the part's stack leaves
-const INTRO_MS = 900; // the next part says its name
+// its cards' header band, its cover and its tile in the list, so the colour
+// says which part you're in (asked for explicitly, 2026-10-19).
+const OUT_MS = 240; // the part's column leaves
+const GLIDE_MS = 720; // a card glides to the middle
 
 export function renderReview(target, sid, config) {
   const reviewed = () => new Set(getDraft(sid)?.reviewedParts || []);
   const current = () => parseHashParams().get("tab") || RECAP_SECTIONS[0].id;
   const partOf = (id) => RECAP_SECTIONS.find((t) => t.id === id) || RECAP_SECTIONS[0];
-  // The part's yes, in both modes: it says where it leads — the next part, or
-  // the end (2026-10-20: "Confirm Brief" read as admin).
+  // The part's yes says where it leads — the next part, or the end
+  // (2026-10-20: "Confirm Brief" read as admin).
   const looksGood = (id) => {
     const next = RECAP_SECTIONS[RECAP_SECTIONS.findIndex((t) => t.id === id) + 1];
     return next ? `Looks good — on to ${next.title}` : "Looks good — finish";
   };
 
-  let index = 0; // the front card, within the current part
+  let index = 0; // the card in focus, within the current part
   let allSet = false; // the "all set" card is up (it carries Draft my first post)
-  let count = 0; // how many cards the current part deals
+  let count = 0; // how many cards the current part has
   // The part just confirmed: its check pops in once, for the length of the pop
   // (the list can repaint twice in a frame). The list repaints on every move,
   // so a check that always animated replayed on every click (2026-10-20).
   let justChecked = null;
-  const scroll = isFlagOn("reviewScroll");
 
   const left = () => {
     const done = reviewed();
     return html`
       <h1 class="welcome-flow__title" id="welcomeFlowTitle">Review your Playbook</h1>
       <p class="welcome-intro__sub">
-        ${scroll
-          ? "I've filled in every card. Scroll through and fix anything that's off — changes save as you type."
-          : "I've filled in every card. Browse them with the arrows and fix anything that's off — changes save as you type."}
+        I've filled in every card. Scroll through and fix anything that's off — changes save as you type.
       </p>
       <ul class="welcome-flow__options">
         ${RECAP_SECTIONS.map((t) => {
@@ -117,8 +108,9 @@ export function renderReview(target, sid, config) {
   };
 
   const shell = mountShell(target, { step: "recap", sid, left, sheet: true });
+  shell.sheet.classList.add("is-scroll");
   const body = shell.sheet.querySelector("[data-flow-sheet-body]");
-  // The part's own moment, between two parts: its tile, name and sentence.
+  // The end of the run: "all set", over the stage.
   const introEl = document.createElement("div");
   introEl.className = "welcome-review__intro";
   introEl.setAttribute("aria-live", "polite");
@@ -127,10 +119,10 @@ export function renderReview(target, sid, config) {
   navEl.className = "welcome-review__nav";
   navEl.setAttribute("aria-label", "Cards");
   shell.sheet.append(navEl);
-  // Scroll mode: the part's confirm, at the bottom of the stage.
+  // The part's confirm, at the bottom of the stage.
   const barEl = document.createElement("div");
   barEl.className = "welcome-review__bar";
-  if (scroll) shell.sheet.append(barEl);
+  shell.sheet.append(barEl);
   const unmount = mount(body, {
     ...config,
     showTop: false,
@@ -149,8 +141,6 @@ export function renderReview(target, sid, config) {
     return panel ? [panel] : [];
   };
 
-  // Which part this card belongs to: the part's icon and name, the same tile as
-  // in the list — the part, not the block, is what tells you where you are.
   // A card's own name: its block title, else (a roster panel) its part's.
   const cardTitle = (el) =>
     el?.querySelector(".pb2-block__title, .recap__panel-title")?.textContent.trim() || partOf(current()).title;
@@ -166,8 +156,7 @@ export function renderReview(target, sid, config) {
     `;
   };
 
-  // Scroll mode: the part's cover, heading its column — the same tile, name
-  // and sentence as the stack's passing cover, as a card that stays.
+  // The part's cover, heading its column: its tile, name and sentence.
   const coverEl = () => body.querySelector(".welcome-review__cover");
   const cover = () => {
     const part = partOf(current());
@@ -180,56 +169,22 @@ export function renderReview(target, sid, config) {
     `;
   };
 
-  // The navigation floats under the stack, out of the card: three pieces of one
-  // shape — white 44px pills — ← · the part's progress (page dots, the one
-  // indicator) · Next, named after what's coming. A deliberate visual exception
-  // to the DS buttons (2026-10-19): a blue rectangle among white pills broke it.
+  // The nav: one compact white capsule — ↑ · the part's progress (page dots,
+  // the one indicator) · ↓. ↓ goes dark on the part's last card: the confirm,
+  // below, is the way on.
   const nav = (list) => {
     const at = RECAP_SECTIONS.findIndex((t) => t.id === current());
-    const nextPart = RECAP_SECTIONS[at + 1];
-    const upNext = index < count - 1 ? cardTitle(list[index + 1]) : nextPart ? nextPart.title : "Finish";
+    const upNext = index < count - 1 ? cardTitle(list[index + 1]) : "";
     const atStart = index === 0 && at === 0;
-    if (scroll) {
-      return html`
-        <button
-          type="button"
-          class="welcome-review__navbtn is-icon"
-          data-review-prev
-          aria-label="Previous card"
-          ${atStart ? raw("disabled") : ""}
-        >
-          <i class="ap-icon-arrow-up" aria-hidden="true"></i>
-        </button>
-        ${count > 1
-          ? raw(html`
-              <ol class="welcome-review__dots" aria-label="Card ${index + 1} of ${count} in ${partOf(current()).title}">
-                ${Array.from(
-                  { length: count },
-                  (_, i) => html`<li class="${i < index ? "is-done" : i === index ? "is-current" : ""}"></li>`,
-                )}
-              </ol>
-            `)
-          : ""}
-        <button
-          type="button"
-          class="welcome-review__navbtn is-icon"
-          data-review-next
-          aria-label="Next: ${upNext}"
-          ${index >= count - 1 /* the part goes on through its confirm, below */ ? raw("disabled") : ""}
-        >
-          <i class="ap-icon-arrow-down" aria-hidden="true"></i>
-        </button>
-      `;
-    }
     return html`
       <button
         type="button"
-        class="welcome-review__navbtn is-icon"
+        class="welcome-review__navbtn"
         data-review-prev
         aria-label="Previous card"
         ${atStart ? raw("disabled") : ""}
       >
-        <i class="ap-icon-arrow-left" aria-hidden="true"></i>
+        <i class="ap-icon-arrow-up" aria-hidden="true"></i>
       </button>
       ${count > 1 /* one card has no progress to show */
         ? raw(html`
@@ -241,39 +196,34 @@ export function renderReview(target, sid, config) {
             </ol>
           `)
         : ""}
-      <button type="button" class="welcome-review__navbtn" data-review-next ${upNext ? "" : raw("disabled")}>
-        <span>${upNext || "Last card"}</span><i class="ap-icon-arrow-right" aria-hidden="true"></i>
+      <button
+        type="button"
+        class="welcome-review__navbtn"
+        data-review-next
+        aria-label="${upNext ? `Next: ${upNext}` : "Next card"}"
+        ${upNext ? "" : raw("disabled")}
+      >
+        <i class="ap-icon-arrow-down" aria-hidden="true"></i>
       </button>
     `;
   };
 
-  // Deal the stack: the front card shows (with its part on top), up to two backs peek
-  // under it, the rest is out of the way. `enter`: how the front one arrives —
-  // "next" rises from the back of the stack, "prev" slides back in from the side.
+  // Lay the column out: every card wears its part's band, the one in focus is
+  // marked, the cover heads the column (re-laid after a repaint, swapped with
+  // the part), the nav and the confirm follow the index.
   let applying = false;
-  const applyStack = ({ enter = "" } = {}) => {
+  const applyColumn = () => {
     applying = true;
     const list = cards();
     count = list.length;
     index = Math.min(index, Math.max(0, count - 1));
     list.forEach((el, i) => {
       el.classList.add("welcome-review__card");
-      if (scroll) {
-        // Every card wears its part's band; the one at the reading line is in focus.
-        el.classList.toggle("is-active", i === index);
-        if (!el.querySelector(":scope > .welcome-review__kicker")) el.insertAdjacentHTML("afterbegin", kicker());
-        if (!el.style.getPropertyValue("--focus")) el.style.setProperty("--focus", i === index ? "1" : "0");
-        return;
-      }
-      el.classList.toggle("is-front", i === index);
-      el.classList.remove("is-enter-next", "is-enter-prev", "is-leave-next", "is-leave-prev", "is-dealt");
-      if (enter && i === index) el.classList.add(`is-enter-${enter}`);
-      el.dataset.behind = i === index ? String(Math.min(2, count - 1 - index)) : "";
-      el.querySelectorAll(":scope > .welcome-review__kicker").forEach((n) => n.remove());
+      el.classList.toggle("is-active", i === index);
+      if (!el.querySelector(":scope > .welcome-review__kicker")) el.insertAdjacentHTML("afterbegin", kicker());
+      if (!el.style.getPropertyValue("--focus")) el.style.setProperty("--focus", i === index ? "1" : "0");
     });
-    if (!scroll) list[index]?.insertAdjacentHTML("afterbegin", kicker());
-    // The cover heads the column — re-laid after a repaint, swapped with the part.
-    if (scroll && list[0]) {
+    if (list[0]) {
       const head = list[0].previousElementSibling;
       if (!head?.matches(".welcome-review__cover") || head.dataset.part !== current()) {
         coverEl()?.remove();
@@ -281,43 +231,38 @@ export function renderReview(target, sid, config) {
       }
     }
     navEl.innerHTML = count ? nav(list) : "";
-    if (scroll) {
-      const part = partOf(current());
-      barEl.innerHTML = html`
-        <button type="button" class="ap-button primary blue" data-review-confirm="${part.id}">
-          <i class="ap-icon-check"></i><span>${looksGood(part.id)}</span>
-        </button>
-      `;
-    }
+    const part = partOf(current());
+    barEl.innerHTML = html`
+      <button type="button" class="ap-button primary blue" data-review-confirm="${part.id}">
+        <i class="ap-icon-check"></i><span>${looksGood(part.id)}</span>
+      </button>
+    `;
     applying = false;
     shell.paint();
   };
   const observer = new MutationObserver(() => {
     if (applying) return;
-    applyStack();
-    if (scroll) focus(); // the repainted cards keep their dimming
+    applyColumn();
+    focus(); // the repainted cards keep their dimming
   });
   observer.observe(body, { childList: true });
 
   // Open a part: its tab, in edit, from its first card (or its last, going back).
-  const openPart = (id, { fromEnd = false, enter = "next" } = {}) => {
+  const openPart = (id, { fromEnd = false } = {}) => {
     if (body.querySelector(".pb2.is-editing")) body.querySelector("[data-recap-save]")?.click();
     body.querySelector(`[data-pb2-tab="${id}"]`)?.click();
     body.querySelector("[data-recap-edit-card]")?.click();
     index = fromEnd ? Number.MAX_SAFE_INTEGER : 0;
-    applyStack({ enter });
-    body.querySelector(".welcome-screen")?.scrollTo?.({ top: 0 });
-    if (scroll) centre({ instant: true });
+    applyColumn();
+    centre({ instant: true });
   };
 
-  // Scroll mode: bring the current card to the reading line — the middle of
-  // the stage, where the nav stands (2026-10-20: at 45% the nav read as
-  // off-centre). A card taller than the scroll
-  // starts at its top. The glide is ours, not the browser's smooth scroll
-  // (too short, too abrupt): a slow ease-in-out, the snap off while it runs
-  // (it would catch the scroll on the way). While it glides, the scroll
-  // doesn't pick the index.
-  const GLIDE_MS = 720;
+  // Bring the current card to the reading line — the middle of the stage,
+  // where the nav stands (2026-10-20: at 45% the nav read as off-centre). A
+  // card taller than the scroll starts at its top. The glide is ours, not the
+  // browser's smooth scroll (too short, too abrupt): a slow ease-in-out, the
+  // snap off while it runs (it would catch the scroll on the way). While it
+  // glides, the scroll doesn't pick the index.
   const easeInOut = (p) => (p < 0.5 ? 4 * p ** 3 : 1 - (-2 * p + 2) ** 3 / 2);
   let gliding = false;
   let glideFrame = 0;
@@ -352,29 +297,27 @@ export function renderReview(target, sid, config) {
     glideFrame = window.requestAnimationFrame(step);
   };
 
-  // Scroll mode: how in focus each card is — 1 on the reading line, easing to 0
-  // a card's height away — drives its dimming continuously (--focus), so it
-  // follows the scroll instead of switching. The card under the line is the
-  // current one.
+  // How in focus each card is — 1 on the reading line, easing to 0 a card's
+  // height away — drives its dimming continuously (--focus), so it follows the
+  // scroll instead of switching. The card under the line is the current one.
+  const focusOf = (el, line) => {
+    const r = el.getBoundingClientRect();
+    const d = line < r.top ? r.top - line : line > r.bottom ? line - r.bottom : 0;
+    el.style.setProperty("--focus", (1 - Math.min(1, d / 280)).toFixed(3));
+    return d;
+  };
   const focus = () => {
     const line = body.getBoundingClientRect().top + body.clientHeight * 0.5;
     let best = index;
     let dist = Infinity;
-    const head = coverEl();
-    if (head) {
-      const r = head.getBoundingClientRect();
-      const d = line < r.top ? r.top - line : line > r.bottom ? line - r.bottom : 0;
-      head.style.setProperty("--focus", (1 - Math.min(1, d / 280)).toFixed(3));
-    }
+    if (coverEl()) focusOf(coverEl(), line);
     cards().forEach((el, i) => {
-      const r = el.getBoundingClientRect();
-      const d = line < r.top ? r.top - line : line > r.bottom ? line - r.bottom : 0;
-      el.style.setProperty("--focus", (1 - Math.min(1, d / 280)).toFixed(3));
+      const d = focusOf(el, line);
       if (d < dist) [best, dist] = [i, d];
     });
     if (gliding || best === index) return;
     index = best;
-    applyStack();
+    applyColumn();
   };
   let frame = 0;
   const onScroll = () => {
@@ -384,15 +327,11 @@ export function renderReview(target, sid, config) {
       focus();
     });
   };
-  if (scroll) {
-    shell.sheet.classList.add("is-scroll");
-    body.addEventListener("scroll", onScroll, { passive: true });
-  }
+  body.addEventListener("scroll", onScroll, { passive: true });
 
-  // A part's cards arrive: the front one is dealt onto the stack — in a
-  // scroll, they all cascade in, the nearest first.
+  // A part's column arrives: its cards cascade in, the nearest first, the cover
+  // with them.
   const deal = () => {
-    if (!scroll) return cards()[index]?.classList.add("is-dealt");
     cards().forEach((el, i) => {
       el.style.setProperty("--deal", Math.abs(i - index));
       el.classList.add("is-dealt");
@@ -401,75 +340,27 @@ export function renderReview(target, sid, config) {
     coverEl()?.classList.add("is-dealt");
   };
 
-  // Changing part is its own beat, unlike moving between cards: the whole stack
-  // leaves, the new part says its name (its tinted tile, title, sentence), and
-  // its cards are dealt onto the stack.
+  // Changing part: the column leaves, the new one cascades in. The snap stays
+  // off while the cascade lands: it follows a card's transform, so it chased
+  // each rising card and the column slid back under them (2026-10-20).
+  let moving = false;
   const switchPart = (id, opts = {}) => {
     if (moving) return;
     moving = true;
     shell.sheet.classList.add("is-part-out");
     window.setTimeout(() => {
-      openPart(id, { ...opts, enter: "" });
+      openPart(id, opts);
       shell.sheet.classList.remove("is-part-out");
-      // Scroll mode: the cover is the column's first card — no passing beat.
-      // The snap stays off while the cascade lands: it follows a card's
-      // transform, so it chased each rising card and the column slid back
-      // under them (2026-10-20).
-      if (scroll) {
-        body.classList.add("is-settling");
-        window.setTimeout(() => body.classList.remove("is-settling"), 950);
-        deal();
-        navEl.classList.add("is-dealt");
-        window.setTimeout(() => navEl.classList.remove("is-dealt"), 500);
-        moving = false;
-        return;
-      }
-      const part = partOf(id);
-      introEl.innerHTML = html`
-        <div class="welcome-review__intro-card" style="${tint(id)}">
-          <span class="welcome-review__intro-tile"><i class="${part.icon}" aria-hidden="true"></i></span>
-          <span class="welcome-review__intro-title">${part.title}</span>
-          <span class="welcome-review__intro-lead">${part.lead}</span>
-        </div>
-      `;
-      shell.sheet.classList.add("is-part-intro");
-      window.setTimeout(() => {
-        shell.sheet.classList.remove("is-part-intro");
-        introEl.innerHTML = "";
-        deal();
-        navEl.classList.add("is-dealt");
-        window.setTimeout(() => navEl.classList.remove("is-dealt"), 500);
-        moving = false;
-      }, INTRO_MS);
+      body.classList.add("is-settling");
+      window.setTimeout(() => body.classList.remove("is-settling"), 950);
+      deal();
+      navEl.classList.add("is-dealt");
+      window.setTimeout(() => navEl.classList.remove("is-dealt"), 500);
+      moving = false;
     }, OUT_MS);
   };
 
-  // The end of a part: the interstitial asks to confirm it before the next
-  // one is dealt — the part's check in the list comes from that answer.
-  const confirmCard = (from) => {
-    const part = partOf(from);
-    const plural = /s$/.test(part.title); // Competitors, Influencers
-    return html`
-      <div class="welcome-review__intro-card is-confirm" style="${tint(from)}">
-        <span class="welcome-review__intro-tile">
-          <i class="${part.icon}" aria-hidden="true"></i>
-          <span class="welcome-review__intro-done"><i class="ap-icon-check" aria-hidden="true"></i></span>
-        </span>
-        <span class="welcome-review__intro-title"> ${plural ? "Do" : "Does"} the ${part.title} look right? </span>
-        <span class="welcome-review__intro-lead">
-          You can change ${plural ? "them" : "it"} anytime from your Playbook.
-        </span>
-        <span class="welcome-review__intro-actions">
-          <button type="button" class="ap-button stroked grey" data-review-again="${from}">
-            Back to ${part.title}
-          </button>
-          <button type="button" class="ap-button primary blue" data-review-confirm="${from}">
-            <i class="ap-icon-check"></i><span>${looksGood(from)}</span>
-          </button>
-        </span>
-      </div>
-    `;
-  };
+  // The end of the run: every part confirmed.
   const doneCard = () => html`
     <div class="welcome-review__intro-card is-done">
       <span class="welcome-review__intro-tile is-all"><i class="ap-icon-check" aria-hidden="true"></i></span>
@@ -485,13 +376,14 @@ export function renderReview(target, sid, config) {
       </span>
     </div>
   `;
-
-  const showIntro = (markup) => {
-    introEl.innerHTML = markup;
+  const showDone = () => {
+    allSet = true;
+    introEl.innerHTML = doneCard();
     shell.sheet.classList.add("is-part-intro", "is-asking");
-    introEl.querySelector("[data-review-confirm], [data-review-again]")?.focus({ preventScroll: true });
+    introEl.querySelector("[data-review-again]")?.focus({ preventScroll: true });
+    shell.paint();
   };
-  const hideIntro = () => {
+  const hideDone = () => {
     shell.sheet.classList.remove("is-part-intro", "is-asking");
     introEl.innerHTML = "";
     if (allSet) {
@@ -500,94 +392,56 @@ export function renderReview(target, sid, config) {
     }
   };
 
-  const finishPart = () => {
-    const from = current();
-    moving = true;
-    shell.sheet.classList.add("is-part-out");
-    window.setTimeout(() => {
-      shell.sheet.classList.remove("is-part-out");
-      showIntro(confirmCard(from));
-      moving = false;
-    }, OUT_MS);
-  };
-
-  // Confirmed: the part is checked, and the next one is dealt (or, the last
-  // one, the Playbook is all set).
+  // Confirmed: the part is checked, and the next one cascades in (or, the
+  // last one, the Playbook is all set).
   const confirmPart = (from) => {
     if (!reviewed().has(from)) {
       justChecked = from;
       window.setTimeout(() => (justChecked = null), 400);
     }
     patchDraft(sid, { reviewedParts: [...new Set([...reviewed(), from])] });
-    const at = RECAP_SECTIONS.findIndex((t) => t.id === from);
-    const to = RECAP_SECTIONS[at + 1];
-    if (!to) {
-      allSet = true;
-      showIntro(doneCard());
-      shell.paint();
-      return;
-    }
-    hideIntro();
-    // Scroll mode: the next part gets its cover, then its cards cascade in.
-    if (scroll) return switchPart(to.id);
-    openPart(to.id, { enter: "" });
-    deal();
-    navEl.classList.add("is-dealt");
-    window.setTimeout(() => navEl.classList.remove("is-dealt"), 500);
+    const to = RECAP_SECTIONS[RECAP_SECTIONS.findIndex((t) => t.id === from) + 1];
+    if (!to) return showDone();
+    switchPart(to.id);
   };
 
-  // Not yet: back into the part, on its last card.
-  const reviewAgain = (id) => {
-    hideIntro();
-    openPart(id, { fromEnd: id === current(), enter: "" });
-    deal();
-  };
-
-  // Next: the card swipes off and the next one rises from the stack. Previous:
-  // the card sinks into the stack, the one before slides back in from the side.
-  // Crossing the end of a part moves into the next (or previous) one.
-  let moving = false;
+  // ↑ / ↓: the neighbour glides to the middle. Above a part's first card is
+  // the previous part (from its end); below its last, nothing — the confirm is
+  // the way on.
   const move = (step) => {
     if (moving) return;
     const at = RECAP_SECTIONS.findIndex((t) => t.id === current());
-    if (step < 0 && index === 0 && at === 0) return;
-    if (scroll) {
-      if (step > 0 && index >= count - 1) return; // the confirm, at the bottom, moves on
-      if (step < 0 && index === 0) return switchPart(RECAP_SECTIONS[at - 1].id, { fromEnd: true });
-      index += step;
-      applyStack();
-      return centre();
+    if (step < 0 && index === 0) {
+      if (at > 0) switchPart(RECAP_SECTIONS[at - 1].id, { fromEnd: true });
+      return;
     }
-    moving = true;
-    const front = cards()[index];
-    front?.classList.add(step > 0 ? "is-leave-next" : "is-leave-prev");
-    window.setTimeout(() => {
-      moving = false;
-      if (step > 0 && index >= count - 1) return finishPart();
-      if (step < 0 && index === 0) return switchPart(RECAP_SECTIONS[at - 1].id, { fromEnd: true });
-      index += step;
-      applyStack({ enter: step > 0 ? "next" : "prev" });
-    }, MOVE_MS);
+    if (step > 0 && index >= count - 1) return;
+    index += step;
+    applyColumn();
+    centre();
   };
 
   const onClick = (e) => {
     const part = e.target.closest("[data-review-part]")?.dataset.reviewPart;
     if (part) {
-      if (shell.sheet.classList.contains("is-asking")) {
-        hideIntro();
-        return part === current() ? reviewAgain(part) : switchPart(part);
-      }
-      return part === current() ? undefined : switchPart(part);
+      const asking = shell.sheet.classList.contains("is-asking");
+      if (asking) hideDone();
+      if (part !== current()) return switchPart(part);
+      if (asking) openPart(part);
+      return;
     }
     const confirm = e.target.closest("[data-review-confirm]")?.dataset.reviewConfirm;
     if (confirm) return confirmPart(confirm);
     const again = e.target.closest("[data-review-again]")?.dataset.reviewAgain;
-    if (again) return reviewAgain(again);
-    // Scroll mode: a dimmed card comes into focus — the click still reaches its field.
-    const dimmed = scroll && e.target.closest(".welcome-review__card:not(.is-active)");
+    if (again) {
+      hideDone();
+      return again === current() ? openPart(again) : switchPart(again);
+    }
+    // A dimmed card comes into focus — the click still reaches its field.
+    const dimmed = e.target.closest(".welcome-review__card:not(.is-active)");
     if (dimmed) {
       index = cards().indexOf(dimmed);
-      applyStack();
+      applyColumn();
       centre();
     }
     if (e.target.closest("[data-review-next]")) return move(1);
@@ -596,15 +450,14 @@ export function renderReview(target, sid, config) {
     if (e.target.closest("[data-flow-back]")) return navigate("/welcome-alt/ready");
   };
   target.addEventListener("click", onClick);
-  // The keyboard's arrows browse too — unless you're typing in a field.
+  // The keyboard's ↑ / ↓ browse too — unless you're typing in a field.
   const onKey = (e) => {
-    const keys = scroll ? ["ArrowDown", "ArrowUp"] : ["ArrowRight", "ArrowLeft"];
-    if (!keys.includes(e.key)) return;
+    if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
     if (e.target.closest?.("input, textarea, select, [contenteditable]")) return;
     if (document.querySelector(".app-modal-backdrop:not([hidden]), body.has-modal")) return;
     if (shell.sheet.classList.contains("is-asking")) return;
     e.preventDefault();
-    move(e.key === keys[0] ? 1 : -1);
+    move(e.key === "ArrowDown" ? 1 : -1);
   };
   document.addEventListener("keydown", onKey);
 

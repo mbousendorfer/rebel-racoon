@@ -201,18 +201,4 @@ export const FLAGS = Object.freeze([
       "a field, prefilled, with files, a short interview or by hand as other " +
       "ways in. It ends on a reveal — Start writing, or review the details.",
   },
-  {
-    id: "reviewScroll",
-    label: "UP-Onboarding: review as a scroll",
-    // OFF: the review deals a part's cards as a stack, one at a time.
-    default: false,
-    hides:
-      "The review at the end of the first-time run (needs connectFirst). OFF, " +
-      "a part's cards are dealt as a stack: only the front one shows. ON, they " +
-      "line up one under the other and you scroll through them — the one in " +
-      "the middle is in focus, the others a step back — while a navigation " +
-      "in the middle of the screen, right of the cards, steps through them by " +
-      "hand (↑ · the dots · ↓). One button at the bottom confirms the part; " +
-      "the next one arrives with its cover.",
-  },
 ]);
