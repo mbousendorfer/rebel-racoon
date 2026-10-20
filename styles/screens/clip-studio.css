@@ -185,6 +185,12 @@
   background: var(--app-border);
 }
 
+/* The demo's sample video (flag demoMode): hug width, never the column's. */
+.clip-studio__sample {
+  display: flex;
+  justify-content: center;
+}
+
 .clip-studio__url {
   display: flex;
   align-items: stretch;

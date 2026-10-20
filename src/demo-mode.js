@@ -5,10 +5,10 @@
 // chat on Bramble & Bean (mocks/demo-brand.js): the Playbook and the pretend
 // accounts are seeded at load whenever this state is on, so the start and a
 // reload take the same path. Kept in sessionStorage under `archie-demo` as
-// { sessionId, done }; switching user mode clears it with the rest of the
+// { done }; switching user mode clears it with the rest of the
 // session, and leaving the demo removes it.
 
-import { isFlagOn } from "./feature-flags.js?v=2048";
+import { isFlagOn } from "./feature-flags.js?v=2050";
 
 export const DEMO_KEY = "archie-demo";
 
@@ -31,10 +31,6 @@ export function writeDemo(state) {
 
 export function isDemo() {
   return isFlagOn("demoMode") && !!read();
-}
-
-export function demoSessionId() {
-  return isDemo() ? read().sessionId : null;
 }
 
 // The first wave of drafts has landed: the drafts stay, nothing new is written.

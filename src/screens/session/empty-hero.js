@@ -1,17 +1,19 @@
 // A new chat's hero: the greeting, the workflow starters, and the "Fresh
 // topics to review" grid (flag topicFeed). Moved out of session.js, unchanged.
 
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2048";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=2048";
-import { getContextById } from "../../contexts-store.js?v=2048";
-import { isWorkspaceMode } from "../../active-playbook.js?v=2048";
-import { renderTopicCard } from "../../components/topic-card.js?v=2048";
-import { findTopicSource } from "../../topics-catalog.js?v=2048";
-import { html, raw } from "../../utils.js?v=2048";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2048";
-import { renderStarterCards } from "../../components/starter-card.js?v=2048";
-import { isFlagOn } from "../../feature-flags.js?v=2048";
-import "../../archie-pixels.js?v=2048";
+import { isDemo } from "../../demo-mode.js?v=2050";
+import { renderDemoHeroLine } from "../../demo-flow.js?v=2050";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2050";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=2050";
+import { getContextById } from "../../contexts-store.js?v=2050";
+import { isWorkspaceMode } from "../../active-playbook.js?v=2050";
+import { renderTopicCard } from "../../components/topic-card.js?v=2050";
+import { findTopicSource } from "../../topics-catalog.js?v=2050";
+import { html, raw } from "../../utils.js?v=2050";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2050";
+import { renderStarterCards } from "../../components/starter-card.js?v=2050";
+import { isFlagOn } from "../../feature-flags.js?v=2050";
+import "../../archie-pixels.js?v=2050";
 
 // Composer "Add" menu — "Connected sources" is a nested submenu (Codex-style
 // "Modules d'extension ▸" flyout), not a first-level list. The flyout lists the
@@ -134,6 +136,10 @@ function renderFreshTopics(session, { staged = false } = {}) {
 // ("Quick — which context?") was removed — the composer picker is now
 // the single, always-visible context affordance.
 export function renderEmptyHero(sessionId, composerMarkup = "", session = null) {
+  // In the demo (flag demoMode) the sub-line is where I say it's one.
+  const heroLine = isDemo()
+    ? renderDemoHeroLine()
+    : "Drop a source — I'll turn it into drafts ready to schedule, all in this chat.";
   const sources = getStreamSources(sessionId);
   const firstSource = sources.find((s) => s.status !== "Processing") || sources[0] || null;
   const sourceLabel = firstSource ? `"${firstSource.filename}"` : "your source";
@@ -162,7 +168,7 @@ export function renderEmptyHero(sessionId, composerMarkup = "", session = null) 
             alt=""
           />
         </span>
-        <div class="empty-chat__sub">Drop a source — I'll turn it into drafts ready to schedule, all in this chat.</div>
+        <div class="empty-chat__sub">${raw(heroLine)}</div>
         <div class="empty-chat__lead">
           <!-- The FUX's pixel field without its box: pale, masked into the
                ground, a wide halo on both sides of the composer. -->
@@ -184,7 +190,7 @@ export function renderEmptyHero(sessionId, composerMarkup = "", session = null) 
         <img class="empty-chat__logo-mono" src="assets/logos/archie-mono.svg" alt="" />
         <img class="empty-chat__logo-word empty-chat__logo-word--b" src="assets/logos/archie-alt-wordmark.svg" alt="" />
       </span>
-      <div class="empty-chat__sub">Drop a source — I'll turn it into drafts ready to schedule, all in this chat.</div>
+      <div class="empty-chat__sub">${raw(heroLine)}</div>
       ${raw(composerMarkup)}
       <!-- Starters first, proposals second. The other way round was tried on the
            argument that "what should I post today?" is the question someone

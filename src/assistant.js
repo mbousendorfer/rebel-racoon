@@ -6,12 +6,12 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2048";
-import { findConnector } from "./connectors-store.js?v=2048";
-import { createSessionNotifier } from "./store-utils.js?v=2048";
-import { addPostDraft } from "./posts-store.js?v=2048";
-import { showToast } from "./components/toast.js?v=2048";
-import { isFlagOn } from "./feature-flags.js?v=2048";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2050";
+import { findConnector } from "./connectors-store.js?v=2050";
+import { createSessionNotifier } from "./store-utils.js?v=2050";
+import { addPostDraft } from "./posts-store.js?v=2050";
+import { showToast } from "./components/toast.js?v=2050";
+import { isFlagOn } from "./feature-flags.js?v=2050";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -832,9 +832,8 @@ function seedThread(sessionId, { hasContext }) {
   // seed it empty regardless of which read (topbar / status card / panel)
   // triggers the seed first — otherwise the chat opens with a stray greeting
   // above the onboarding message. Clip Studio sessions (clip-studio-*) own
-  // their own full-page flow and want the same empty open above the grid. The
-  // demo chat (demo-*, demo-flow.js) owns its intro too.
-  if (sessionId.startsWith("welcome-alt-") || sessionId.startsWith("clip-studio-") || sessionId.startsWith("demo-")) {
+  // their own full-page flow and want the same empty open above the grid.
+  if (sessionId.startsWith("welcome-alt-") || sessionId.startsWith("clip-studio-")) {
     threads.set(sessionId, []);
     return;
   }

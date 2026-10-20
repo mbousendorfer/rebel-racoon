@@ -30,17 +30,19 @@
 //     cadence,             — a CADENCES id; copy, never a timer
 //     websites: string[] } — the sites the Brand-website source scans
 
-import { topicFeeds as seed } from "./mocks.js?v=2048";
-import { getContexts } from "./contexts-store.js?v=2048";
-import { isNewUser } from "./user-mode.js?v=2048";
-import { createNotifier } from "./store-utils.js?v=2048";
-import { DEFAULT_ENABLED_IDS, DEFAULT_CADENCE, findCadence, findTopicSource } from "./topics-catalog.js?v=2048";
+import { topicFeeds as seed, DEMO_TOPIC_FEED } from "./mocks.js?v=2050";
+import { isDemo } from "./demo-mode.js?v=2050";
+import { getContexts } from "./contexts-store.js?v=2050";
+import { isNewUser } from "./user-mode.js?v=2050";
+import { createNotifier } from "./store-utils.js?v=2050";
+import { DEFAULT_ENABLED_IDS, DEFAULT_CADENCE, findCadence, findTopicSource } from "./topics-catalog.js?v=2050";
 
 // First-time user mode starts with no seeded feed, so /topics renders its
 // nothing-found-yet state. Returning user keeps the seed. Same guard as
 // contexts-store and library. Note that provisionMissingFeeds() below still runs
 // in `new-alt` — a Playbook created at 10am must have a feed at noon.
-const feeds = isNewUser() ? [] : seed.map(normalizeFeed);
+// The demo brand (flag demoMode) comes with its own feed.
+const feeds = (isNewUser() ? (isDemo() ? [DEMO_TOPIC_FEED] : []) : seed).map(normalizeFeed);
 
 const notifier = createNotifier("topic-feeds-store");
 export const subscribe = notifier.subscribe;

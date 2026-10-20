@@ -1,10 +1,10 @@
-import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=2048";
-import { conceptHint, conceptText } from "../concepts.js?v=2048";
-import { getPath, navigate } from "../router.js?v=2048";
-import { parseHashParams } from "../url-state.js?v=2048";
-import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=2048";
-import { demoSessionId } from "../demo-mode.js?v=2048";
-import { confirmExitDemo } from "../demo-flow.js?v=2048";
+import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=2050";
+import { conceptHint, conceptText } from "../concepts.js?v=2050";
+import { getPath, navigate } from "../router.js?v=2050";
+import { parseHashParams } from "../url-state.js?v=2050";
+import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=2050";
+import { isDemo } from "../demo-mode.js?v=2050";
+import { confirmExitDemo } from "../demo-flow.js?v=2050";
 // Lot 19 — topbar no longer carries its own sidebar-toggle button. The
 // sidebar head exposes the toggle in both expanded (chevron-left) and
 // collapsed (view-list) states, so the duplicate in the topbar was just
@@ -17,37 +17,37 @@ import {
   getMode as getRightPanelMode,
   getActiveBatchRef as getActiveDraftsBatchRef,
   subscribe as subscribeRightPanel,
-} from "./right-panel.js?v=2048";
-import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=2048";
-import { getThread, subscribe as subscribeThread } from "../assistant.js?v=2048";
-import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=2048";
-import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=2048";
+} from "./right-panel.js?v=2050";
+import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=2050";
+import { getThread, subscribe as subscribeThread } from "../assistant.js?v=2050";
+import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=2050";
+import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=2050";
 import {
   isEnabled as isStatusCardEnabled,
   toggle as toggleStatusCard,
   subscribeVisibility as subscribeStatusCardVisibility,
-} from "./conversation-status-card.js?v=2048";
-import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=2048";
-import { open as openRenameModal } from "./rename-modal.js?v=2048";
+} from "./conversation-status-card.js?v=2050";
+import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=2050";
+import { open as openRenameModal } from "./rename-modal.js?v=2050";
 import {
   subscribe as subscribeContexts,
   getContextById,
   getDefaultContext,
   getContexts,
-} from "../contexts-store.js?v=2048";
-import { isFlagOn } from "../feature-flags.js?v=2048";
-import { getActivePlaybook, isWorkspaceMode, isAccountScope, catalogueRoute } from "../active-playbook.js?v=2048";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=2048";
-import { findCadence } from "../topics-catalog.js?v=2048";
+} from "../contexts-store.js?v=2050";
+import { isFlagOn } from "../feature-flags.js?v=2050";
+import { getActivePlaybook, isWorkspaceMode, isAccountScope, catalogueRoute } from "../active-playbook.js?v=2050";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=2050";
+import { findCadence } from "../topics-catalog.js?v=2050";
 import {
   getPickerState as getTopPostsState,
   subscribePicker as subscribeTopPosts,
   backToProfiles as topPostsBackToProfiles,
-} from "../top-posts-flow.js?v=2048";
+} from "../top-posts-flow.js?v=2050";
 // The Insights view switch. Imported from views.js, NOT from the screen's
 // shell: the shell imports this module, so taking it from there would close a
 // cycle. views.js imports neither.
-import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=2048";
+import { readLayoutId, viewSwitch } from "../screens/insights/views.js?v=2050";
 
 // The playbook/context pill now lives in the composer (session.js
 // renderPlaybookControl) — selectable on a New Chat, then a static
@@ -111,7 +111,7 @@ export function renderTopbar(_options = {}) {
     : onWelcomeAlt
       ? renderWelcomeAltExit()
       : onSession
-        ? `${currentSessionId() === demoSessionId() ? renderDemoExit() : ""}${renderSessionPills(rpMode, draftCount, isEmpty, ideaCount)}${renderStatusCardToggle(statusCardAvailable)}`
+        ? `${isDemo() ? renderDemoExit() : ""}${renderSessionPills(rpMode, draftCount, isEmpty, ideaCount)}${renderStatusCardToggle(statusCardAvailable)}`
         : getPath() === "/topics"
           ? renderTopicsSettings()
           : getPath().startsWith("/insights")
@@ -174,7 +174,8 @@ function renderWelcomeAltExit() {
   `;
 }
 
-// The demo chat (flag demoMode): says it's a demo, and is the one way out of it.
+// Any chat of the demo (flag demoMode), once it has started — the hero says it
+// before that: it's a demo, and the way out of it.
 function renderDemoExit() {
   return `
     <span class="ap-tag grey">Demo</span>
@@ -375,7 +376,7 @@ export function initTopbar() {
       return;
     }
     if (event.target.closest("[data-topbar-welcome-alt-exit]")) {
-      import("./confirm-modal.js?v=2048").then(({ open }) => {
+      import("./confirm-modal.js?v=2050").then(({ open }) => {
         open({
           title: "Discard this Playbook?",
           body: "Your answers so far will be lost. You can create a Playbook again anytime.",

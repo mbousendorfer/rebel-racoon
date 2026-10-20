@@ -9,16 +9,22 @@
 //   appendExtractedIdeas(sessionId, sources)  bulk "extract more" flow
 //   removeIdeasForSources(sessionId, sourceIds)  cleanup after bulk-delete
 
-import { ideasBySession as seedIdeasBySession, allSeedSessions as seedRecentSessions } from "./mocks.js?v=2048";
-import { isNewUser } from "./user-mode.js?v=2048";
+import {
+  ideasBySession as seedIdeasBySession,
+  allSeedSessions as seedRecentSessions,
+  DEMO_IDEA_TEMPLATES,
+  DEMO_VIDEO_IDEAS,
+} from "./mocks.js?v=2050";
+import { isDemo } from "./demo-mode.js?v=2050";
+import { isNewUser } from "./user-mode.js?v=2050";
 
 // Demo session ids — the recentSessions seed (s-acme-launch / s-riverside /
 // etc.). Only these sessions get the seeded ideas mock; brand-new
 // conversations (created at runtime via "+ New conversation") start empty
 // to match the user's mental model. Anything else looked-up — same path.
 const DEMO_SESSION_IDS = new Set(seedRecentSessions.map((s) => s.id));
-import { postExtractionResult, startPending, finishPending } from "./assistant.js?v=2048";
-import { setIdeasReader } from "./assistant.js?v=2048";
+import { postExtractionResult, startPending, finishPending } from "./assistant.js?v=2050";
+import { setIdeasReader } from "./assistant.js?v=2050";
 
 // Hand the assistant a way to read a session's ideas. The dependency only runs
 // this way — library imports assistant, never the reverse — so the mock replies
@@ -29,7 +35,7 @@ import {
   subscribeSources,
   pushScriptedSource,
   completeScriptedSource,
-} from "./sources-stream.js?v=2048";
+} from "./sources-stream.js?v=2050";
 
 // --- Module state -------------------------------------------------------
 
@@ -124,7 +130,9 @@ export function appendExtractedIdeas(sessionId, sources, onDone) {
   setTimeout(() => {
     const created = [];
     sources.forEach((source, idx) => {
-      const template = EXTRA_IDEA_TEMPLATES[(idx + created.length) % EXTRA_IDEA_TEMPLATES.length];
+      // The demo brand (flag demoMode) mines coffee ideas, not the SaaS ones.
+      const templates = isDemo() ? DEMO_IDEA_TEMPLATES : EXTRA_IDEA_TEMPLATES;
+      const template = templates[(idx + created.length) % templates.length];
       created.push({
         id: newId("idea"),
         title: template.title.replace("{filename}", source.filename),
@@ -197,7 +205,7 @@ export function injectIdeasForSource(sessionId, sourceId, ideas) {
 // ideas land in both the per-session store and the global seed list. Returns
 // the created ideas so the caller can post the "Extracted N ideas" turn.
 export function extractVideoIdeas(sessionId, sourceId) {
-  return injectIdeasForSource(sessionId, sourceId, SCRIPTS.video.ideas);
+  return injectIdeasForSource(sessionId, sourceId, isDemo() ? DEMO_VIDEO_IDEAS : SCRIPTS.video.ideas);
 }
 
 // Bulk-delete ideas by id. Used by the "All ideas" view's bulk-action bar.
