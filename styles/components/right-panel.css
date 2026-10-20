@@ -1087,6 +1087,12 @@
 /* The tabs live in the topbar (.app-topbar__content): they fill its height
    so the active underline lands on the topbar's bottom edge, right above
    the panel — one row of chrome, not two. */
+/* The topbar's right cluster is centred (48px in 56) — holding the tabs, it
+   takes the full height instead, or the underline floats 4px off the edge. */
+.app-topbar__right:has(> .app-topbar__content) {
+  align-self: stretch;
+}
+
 .app-topbar__content {
   display: flex;
   align-items: center;
