@@ -15,14 +15,14 @@
 // whole screen. clipContext is exported alongside because the clip-studio
 // finalize path in session.js builds the same generationContext object.
 
-import { FORMATS, clipFormatItems } from "../../clip-formats.js?v=2059";
-import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../../clip-subtitles.js?v=2059";
+import { FORMATS, clipFormatItems } from "../../clip-formats.js?v=2060";
+import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../../clip-subtitles.js?v=2060";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "../../social-profiles.js?v=2059";
-import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2059";
+} from "../../social-profiles.js?v=2060";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2060";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -32,9 +32,9 @@ import {
   startPending,
   finishPending,
   GENERATION_TOOLS,
-} from "../../assistant.js?v=2059";
-import * as inlineQuestion from "../../inline-question.js?v=2059";
-import { addPostDraft } from "../../posts-store.js?v=2059";
+} from "../../assistant.js?v=2060";
+import * as inlineQuestion from "../../inline-question.js?v=2060";
+import { addPostDraft } from "../../posts-store.js?v=2060";
 
 // The generationContext a clip-derived draft carries — the "why this draft
 // exists" header shown on the post card. Shared with session.js's clip-studio
@@ -66,8 +66,7 @@ export function startClipDraftFlow(sessionId, entries) {
 
 // Step 1 — which aspect ratio? All export formats are offered as visual
 // proportion tiles (the target accounts aren't picked yet, so we don't filter
-// by network). Items come from clip-formats.clipFormatItems() (shared with the
-// handoff gallery).
+// by network). Items come from clip-formats.clipFormatItems().
 function askClipFormat(sessionId, entries) {
   postAssistantMessage(sessionId, "Which format should the clips use?");
   inlineQuestion.ask(sessionId, {

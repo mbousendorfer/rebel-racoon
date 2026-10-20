@@ -1,14 +1,11 @@
 // Pure, dependency-free renderers for the conversation-thread turns on
-// /session/:id. Extracted from screens/session.js so the SAME markup powers
-// both the live app and the component handoff gallery (handoff/components.html)
-// — the handoff imports straight from here, so its previews can never drift
-// from the app. Every export takes a plain `message`-shaped object (or opts)
-// and returns an HTML string. No store reads, no DOM, no side effects: the
+// /session/:id, extracted from screens/session.js. Every export takes a plain
+// `message`-shaped object (or opts) and returns an HTML string. No store reads, no DOM, no side effects: the
 // store-coupled turns (extraction / clip-extraction / source resolution) stay
 // in session.js and pass their resolved data in as arguments.
-import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=2059";
-import { isFlagOn } from "../../feature-flags.js?v=2059";
-import { SOURCE_USE_LABEL, SOURCE_USE_TONE } from "../../sources-stream.js?v=2059";
+import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=2060";
+import { isFlagOn } from "../../feature-flags.js?v=2060";
+import { SOURCE_USE_LABEL, SOURCE_USE_TONE } from "../../sources-stream.js?v=2060";
 
 // The thread's restyle since Monday 2026-10-05 (flag newConversationStyles).
 // OFF renders the Monday markup; styles/chat-legacy.css holds its values.

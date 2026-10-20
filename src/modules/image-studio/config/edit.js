@@ -3,7 +3,7 @@
 // nothing of Archie's. Same fonts, same swatches, same stamps, so the two Edit
 // modes offer the same things.
 
-import { FONT_CHOICES } from "./fonts.js?v=2059";
+import { FONT_CHOICES } from "./fonts.js?v=2060";
 
 // `family: null` is the app default (Averta); the rest are bundled locally
 // (styles/fonts.css), so the canvas bake can draw them offline.

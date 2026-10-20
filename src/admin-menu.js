@@ -6,11 +6,11 @@
 // the side-effecting actions wired by the sidebar's delegated listeners. Every
 // change reloads the app so the stores re-seed under the new mode / flag.
 
-import { html, raw, escapeHtml } from "./utils.js?v=2059";
-import { FLAGS, FLAG_GROUPS } from "./ff-catalog.js?v=2059";
-import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=2059";
-import { getUserMode, setUserMode } from "./user-mode.js?v=2059";
-import { getRole, setRole, ORG } from "./org.js?v=2059";
+import { html, raw, escapeHtml } from "./utils.js?v=2060";
+import { FLAGS, FLAG_GROUPS } from "./ff-catalog.js?v=2060";
+import { getFlags, setFlag, isFlagOn } from "./feature-flags.js?v=2060";
+import { getUserMode, setUserMode } from "./user-mode.js?v=2060";
+import { getRole, setRole, ORG } from "./org.js?v=2060";
 
 // Which hat I'm wearing inside my organisation. Only meaningful once Playbooks
 // have owners, so the section only exists behind that flag.
@@ -128,13 +128,6 @@ export function renderAdminMenu() {
       ${raw(flagSections)}
       <div class="admin-menu__section">
         <span class="admin-menu__section-title">Docs</span>
-        <a class="admin-menu__doc" href="handoff/components.html" target="_blank" rel="noopener">
-          <span class="admin-menu__opt-text">
-            <span class="admin-menu__opt-label">Chat thread components</span>
-            <span class="admin-menu__opt-hint">Live HTML + tokens · dev handoff</span>
-          </span>
-          <i class="ap-icon-external-link" aria-hidden="true"></i>
-        </a>
         <a class="admin-menu__doc" href="handoff/overlays.html" target="_blank" rel="noopener">
           <span class="admin-menu__opt-text">
             <span class="admin-menu__opt-label">Overlay index</span>

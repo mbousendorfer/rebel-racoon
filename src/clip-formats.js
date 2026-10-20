@@ -1,4 +1,4 @@
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=2059";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=2060";
 
 // Shared aspect-ratio catalog for video clips.
 //
@@ -50,9 +50,8 @@ export function ratioValue(id) {
 }
 
 // ── Clip-draft "pick an export format" quick-picker items ────────────────
-// The aspect-ratio step of the draft-from-clip flow (screens/session.js) and
-// the handoff gallery both build the card-grid picker from this — one shared
-// source so the two never drift.
+// The aspect-ratio step of the draft-from-clip flow (screens/session.js)
+// builds its card-grid picker from this.
 
 // Order the aspect-ratio tiles the way creators think of them: landscape,
 // vertical, then the squarer ratios.

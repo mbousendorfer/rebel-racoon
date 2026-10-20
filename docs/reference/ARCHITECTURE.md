@@ -150,7 +150,7 @@ src/
     session/
       intake-lifecycle.js — flips source-intake turns loading→ready as sources process
       thinking-chip.js    — animated "thinking…" composer chip + elapsed/credit counter
-      thread-turns.js     — the PURE thread turns (the handoff gallery imports this one)
+      thread-turns.js     — the PURE thread turns
       thread-render.js    — renderThread + the turns that read a store (extraction, widgets…)
       composer.js         — the composer, its Add menu, the connector chip, the status banner
       draft-questions.js  — language / profile / repurpose / angle / count / video-intake questions
