@@ -34,8 +34,17 @@
 //
 // The whole module only ever runs under `skipConnectProfiles`: it is reached
 // from the one Skip that flag creates, so it needs no flag test of its own.
+//
+// Flag demoMode: "I want to see what Archie does before connecting" is the
+// reason the demo exists for, so ticking it — in the first-time run — opens a
+// row under it offering exactly that (demo-flow.js). Same contract as the
+// "Something else" field: it belongs to its tick. Taking it leaves the run for
+// the demo chat; the Skip stays the Skip.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2046";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2048";
+import { isFlagOn } from "../feature-flags.js?v=2048";
+import { isNewUser } from "../user-mode.js?v=2048";
+import { startDemo } from "../demo-flow.js?v=2048";
 
 const MODAL_ID = "skip-connect";
 
@@ -83,7 +92,7 @@ const REASONS = [
   { value: "other", label: "Something else" },
 ];
 
-let backdrop, modal, listEl, otherField, otherInput, skipBtn, backBtn, closeBtn;
+let backdrop, modal, listEl, otherField, otherInput, demoRow, skipBtn, backBtn, closeBtn;
 let initialized = false;
 let pendingOnSkip = null;
 let pendingOnDismiss = null;
@@ -128,7 +137,15 @@ const HTML = `
           <input type="checkbox" value="${r.value}" data-skip-reason />
           <i></i>
           <span>${r.label}</span>
-        </label>`,
+        </label>${
+          r.value === "try-first"
+            ? `
+        <div class="skip-connect__demo" id="skipConnectDemo" hidden>
+          <span>Try me on a made-up brand first — nothing gets posted.</span>
+          <button type="button" class="ap-button stroked grey" id="skipConnectDemoBtn">Try the demo</button>
+        </div>`
+            : ""
+        }`,
         ).join("")}
       </div>
       <div class="ap-input-group skip-connect__other" id="skipConnectOtherField" hidden>
@@ -166,6 +183,13 @@ function syncOther() {
   else otherInput.focus({ preventScroll: true });
 }
 
+// The demo offer belongs to the "try first" tick — first-time run only, where
+// the demo is the first screen's own way in.
+function syncDemo() {
+  const on = listEl.querySelector('[data-skip-reason][value="try-first"]')?.checked;
+  demoRow.hidden = !(on && isFlagOn("demoMode") && isNewUser());
+}
+
 function injectOnce() {
   if (initialized) return;
   const wrapper = document.createElement("div");
@@ -177,6 +201,7 @@ function injectOnce() {
   listEl = document.getElementById("skipConnectReasons");
   otherField = document.getElementById("skipConnectOtherField");
   otherInput = document.getElementById("skipConnectOther");
+  demoRow = document.getElementById("skipConnectDemo");
   skipBtn = document.getElementById("skipConnectSkip");
   backBtn = document.getElementById("skipConnectBack");
   closeBtn = document.getElementById("skipConnectClose");
@@ -184,6 +209,12 @@ function injectOnce() {
   backBtn.addEventListener("click", close);
   closeBtn.addEventListener("click", close);
   skipBtn.addEventListener("click", submit);
+  // Not a skip and not a back-out: the run is left for the demo (a reload).
+  document.getElementById("skipConnectDemoBtn").addEventListener("click", () => {
+    pendingOnSkip = null;
+    close();
+    startDemo();
+  });
 
   // Escape + backdrop go through the shared helper, which binds Escape on
   // `document`: nothing inside this dialog holds focus on open (the first
@@ -194,6 +225,7 @@ function injectOnce() {
   listEl.addEventListener("change", (event) => {
     if (!event.target.matches("[data-skip-reason]")) return;
     if (event.target.value === "other") syncOther();
+    if (event.target.value === "try-first") syncDemo();
   });
 
   // Enter in the free-text row submits, the way it would in a one-field form.
@@ -233,6 +265,7 @@ export function open({ onSkip = null, onDismiss = null } = {}) {
   });
   otherInput.value = "";
   otherField.hidden = true;
+  demoRow.hidden = true;
 
   backdrop.hidden = false;
   backdrop.classList.add("open");

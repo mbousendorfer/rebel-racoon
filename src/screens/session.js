@@ -1,16 +1,16 @@
-import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr, formatTimeOfDay } from "../utils.js?v=2046";
-import { conceptHint } from "../concepts.js?v=2046";
-import { navigate } from "../router.js?v=2046";
-import { setImageLook } from "../modules/image-studio/index.js?v=2046";
-import { IMAGE_LOOK_CHAT_HANDOFF, startImageLookChat } from "../draft-image-flow.js?v=2046";
-import { renderTopbar } from "../components/topbar.js?v=2046";
-import { connectorDocs } from "../mocks.js?v=2046";
-import { getConnectedProfiles } from "../social-profiles.js?v=2046";
-import { getSessionById, getSessions } from "../sessions-store.js?v=2046";
-import { getContextById, getContexts, updateContext } from "../contexts-store.js?v=2046";
-import { playbookForNewWork, isWorkspaceMode } from "../active-playbook.js?v=2046";
-import { revokedContextFor, usableContexts, canView } from "../playbook-access.js?v=2046";
-import { isNewUser } from "../user-mode.js?v=2046";
+import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr, formatTimeOfDay } from "../utils.js?v=2048";
+import { conceptHint } from "../concepts.js?v=2048";
+import { navigate } from "../router.js?v=2048";
+import { setImageLook } from "../modules/image-studio/index.js?v=2048";
+import { IMAGE_LOOK_CHAT_HANDOFF, startImageLookChat } from "../draft-image-flow.js?v=2048";
+import { renderTopbar } from "../components/topbar.js?v=2048";
+import { connectorDocs } from "../mocks.js?v=2048";
+import { getConnectedProfiles } from "../social-profiles.js?v=2048";
+import { getSessionById, getSessions } from "../sessions-store.js?v=2048";
+import { getContextById, getContexts, updateContext } from "../contexts-store.js?v=2048";
+import { playbookForNewWork, isWorkspaceMode } from "../active-playbook.js?v=2048";
+import { revokedContextFor, usableContexts, canView } from "../playbook-access.js?v=2048";
+import { isNewUser } from "../user-mode.js?v=2048";
 import {
   getThread,
   sendMessage,
@@ -32,70 +32,70 @@ import {
   startPending,
   finishPending,
   postActivity,
-} from "../assistant.js?v=2046";
-import { startRewrite } from "../draft-rewrite.js?v=2046";
-import { startPostPlan } from "../post-plan-flow.js?v=2046";
+} from "../assistant.js?v=2048";
+import { startRewrite } from "../draft-rewrite.js?v=2048";
+import { startPostPlan } from "../post-plan-flow.js?v=2048";
 import {
   getPlans as getPostPlans,
   getActivePlan as getActivePostPlan,
   setActivePlan as setActivePostPlan,
   subscribe as subscribePostPlans,
-} from "../post-plan-store.js?v=2046";
+} from "../post-plan-store.js?v=2048";
 import {
   accept as acceptVoiceSuggestion,
   dismiss as dismissVoiceSuggestion,
   undo as undoVoiceSuggestion,
   getSuggestion as getVoiceSuggestion,
-} from "../voice-coach-store.js?v=2046";
-import { rewriteDraftsWithRule } from "../voice-coach.js?v=2046";
-import { iconFor as fileIconForKind } from "../file-kinds.js?v=2046";
-import { getSources, getIdeas } from "../library.js?v=2046";
-import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=2046";
+} from "../voice-coach-store.js?v=2048";
+import { rewriteDraftsWithRule } from "../voice-coach.js?v=2048";
+import { iconFor as fileIconForKind } from "../file-kinds.js?v=2048";
+import { getSources, getIdeas } from "../library.js?v=2048";
+import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=2048";
 import {
   renderInto as renderComposerMentions,
   removeMention as removeComposerMention,
   subscribe as subscribeComposerMentions,
   addMention as addComposerMention,
-} from "../composer-mentions.js?v=2046";
-import { setSubtitleStyle, getPosts, removePost, addPostDraft, updatePostContent } from "../posts-store.js?v=2046";
-import { executeDraft } from "../draft-flow.js?v=2046";
-import * as topPostsFlow from "../top-posts-flow.js?v=2046";
-import { renderTopPostsBoard } from "../components/top-post-card.js?v=2046";
-import * as sidebarWizard from "../sidebar-wizard.js?v=2046";
-import * as inlineQuestion from "../inline-question.js?v=2046";
-import { planSlots, defaultStrategy, CADENCES, queueEntries } from "../schedule-engine.js?v=2046";
-import { addToQueue } from "../schedule-store.js?v=2046";
-import { refLabel } from "../chat-refs.js?v=2046";
-import { networkLabel, networkIcon } from "../network-voice.js?v=2046";
+} from "../composer-mentions.js?v=2048";
+import { setSubtitleStyle, getPosts, removePost, addPostDraft, updatePostContent } from "../posts-store.js?v=2048";
+import { executeDraft } from "../draft-flow.js?v=2048";
+import * as topPostsFlow from "../top-posts-flow.js?v=2048";
+import { renderTopPostsBoard } from "../components/top-post-card.js?v=2048";
+import * as sidebarWizard from "../sidebar-wizard.js?v=2048";
+import * as inlineQuestion from "../inline-question.js?v=2048";
+import { planSlots, defaultStrategy, CADENCES, queueEntries } from "../schedule-engine.js?v=2048";
+import { addToQueue } from "../schedule-store.js?v=2048";
+import { refLabel } from "../chat-refs.js?v=2048";
+import { networkLabel, networkIcon } from "../network-voice.js?v=2048";
 import {
   openScheduleForPosts,
   onPostImage,
   openAssignForPosts,
   commitAssigned,
-} from "../components/right-panel/drafts-view.js?v=2046";
-import { MEMBERS, EXTERNAL_REVIEWERS, CURRENT_USER } from "../org.js?v=2046";
-import { isPostValid } from "../post-validation.js?v=2046";
-import { reviewBlock } from "../components/assign-modal.js?v=2046";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2046";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2046";
-import * as clipStudio from "../clip-studio.js?v=2046";
-import * as batchStudio from "../batch-studio.js?v=2046";
-import { askConnector } from "../connector-ask.js?v=2046";
-import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=2046";
-import { renderConnectorLogo } from "../connectors-view.js?v=2046";
+} from "../components/right-panel/drafts-view.js?v=2048";
+import { MEMBERS, EXTERNAL_REVIEWERS, CURRENT_USER } from "../org.js?v=2048";
+import { isPostValid } from "../post-validation.js?v=2048";
+import { reviewBlock } from "../components/assign-modal.js?v=2048";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2048";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2048";
+import * as clipStudio from "../clip-studio.js?v=2048";
+import * as batchStudio from "../batch-studio.js?v=2048";
+import { askConnector } from "../connector-ask.js?v=2048";
+import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=2048";
+import { renderConnectorLogo } from "../connectors-view.js?v=2048";
 import {
   getActiveConnector,
   clearActiveConnector,
   subscribe as subscribeComposerConnector,
-} from "../composer-connector.js?v=2046";
-import { isFlagOn } from "../feature-flags.js?v=2046";
-import { onChatGalleryClick } from "./session/chat-gallery.js?v=2046";
-import * as contextBuilder from "../context-builder.js?v=2046";
-import { renderPicker } from "./_analyse-common.js?v=2046";
-import { contentState, rerenderContentWorkspaceBody } from "../components/content-workspace.js?v=2046";
-import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=2046";
-import { open as openAddSourceModal } from "../components/add-source-modal.js?v=2046";
-import { open as openConnectorsModal } from "../components/connectors-modal.js?v=2046";
+} from "../composer-connector.js?v=2048";
+import { isFlagOn } from "../feature-flags.js?v=2048";
+import { onChatGalleryClick } from "./session/chat-gallery.js?v=2048";
+import * as contextBuilder from "../context-builder.js?v=2048";
+import { renderPicker } from "./_analyse-common.js?v=2048";
+import { contentState, rerenderContentWorkspaceBody } from "../components/content-workspace.js?v=2048";
+import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=2048";
+import { open as openAddSourceModal } from "../components/add-source-modal.js?v=2048";
+import { open as openConnectorsModal } from "../components/connectors-modal.js?v=2048";
 import {
   classifyFile,
   startFileUpload,
@@ -105,9 +105,9 @@ import {
   pushScriptedSource,
   completeScriptedSource,
   updateSourceClips,
-} from "../sources-stream.js?v=2046";
-import { onFeedbackClick } from "../components/feedback-control.js?v=2046";
-import { showToast } from "../components/toast.js?v=2046";
+} from "../sources-stream.js?v=2048";
+import { onFeedbackClick } from "../components/feedback-control.js?v=2048";
+import { showToast } from "../components/toast.js?v=2048";
 import {
   openDrafts as openDraftsPanel,
   openIdeas as openIdeasPanel,
@@ -115,21 +115,21 @@ import {
   openClips as openClipsPanel,
   getMode as getRightPanelMode,
   subscribe as subscribeRightPanel,
-} from "../components/right-panel.js?v=2046";
-import { setHandoff, consumeHandoff } from "../handoff.js?v=2046";
-import { isDemoDone, demoSessionId } from "../demo-mode.js?v=2046";
-import { blockInDemo, runDemoChat, answerAfterDemo } from "../demo-flow.js?v=2046";
-import { attachTopicToChat, useTopicInChat, startTopicPickerInline, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=2046";
-import { startObjectiveChat, OBJECTIVE_CHAT_HANDOFF } from "../objective-flow.js?v=2046";
-import { getTopicById, markUsed, subscribe as subscribeTopics } from "../topics-store.js?v=2046";
-import { openTopicArticle } from "../components/topic-picker-modal.js?v=2046";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=2046";
-import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=2046";
-import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=2046";
-import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=2046";
+} from "../components/right-panel.js?v=2048";
+import { setHandoff, consumeHandoff } from "../handoff.js?v=2048";
+import { isDemoDone, demoSessionId } from "../demo-mode.js?v=2048";
+import { blockInDemo, runDemoChat, answerAfterDemo } from "../demo-flow.js?v=2048";
+import { attachTopicToChat, useTopicInChat, startTopicPickerInline, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=2048";
+import { startObjectiveChat, OBJECTIVE_CHAT_HANDOFF } from "../objective-flow.js?v=2048";
+import { getTopicById, markUsed, subscribe as subscribeTopics } from "../topics-store.js?v=2048";
+import { openTopicArticle } from "../components/topic-picker-modal.js?v=2048";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=2048";
+import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=2048";
+import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=2048";
+import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=2048";
 // Pure thread-turn renderers — shared with the component handoff gallery so
 // the previews there never drift from the app (handoff/components.html).
-import { SWITCH_SKELETON_HTML } from "./session/thread-turns.js?v=2046";
+import { SWITCH_SKELETON_HTML } from "./session/thread-turns.js?v=2048";
 import {
   clipsToChat,
   finalizeClipStudio,
@@ -137,27 +137,27 @@ import {
   handleClipStudioUrl,
   openClipStudioEditor,
   renderClipStudio,
-} from "./session/clip-studio-view.js?v=2046";
+} from "./session/clip-studio-view.js?v=2048";
 import {
   handleBatchFiles,
   renderBatchStudio,
   repaintBatchRest,
   replayBatchSources,
   startBatchChat,
-} from "./session/batch-studio-view.js?v=2046";
+} from "./session/batch-studio-view.js?v=2048";
 import {
   askRepurposeProfiles,
   askSourceUse,
   startIdeaDraft,
   startRepurposeFlow,
-} from "./session/draft-questions.js?v=2046";
+} from "./session/draft-questions.js?v=2048";
 import {
   extractionVerdict,
   extractionWhyOpen,
   findExtractionIdea,
   renderThread,
   repaintExtractionCard,
-} from "./session/thread-render.js?v=2046";
+} from "./session/thread-render.js?v=2048";
 import {
   animateBannerIn,
   animateBannerOut,
@@ -169,9 +169,9 @@ import {
   renderComposer,
   renderComposerConnector,
   renderComposerStatus,
-} from "./session/composer.js?v=2046";
-import { renderTopPostsPickerScreen } from "./session/top-posts-view.js?v=2046";
-import { renderEmptyHero } from "./session/empty-hero.js?v=2046";
+} from "./session/composer.js?v=2048";
+import { renderTopPostsPickerScreen } from "./session/top-posts-view.js?v=2048";
+import { renderEmptyHero } from "./session/empty-hero.js?v=2048";
 
 // Default composer placeholder — restored whenever no connector is attached.
 // A connected connector swaps it for "Ask {name} anything…".
