@@ -1,7 +1,7 @@
 // voice-wizard-modal — "Optimize your Instagram voice" (flag networkVoices).
 //
 // Every Optimize on the Voice tab opens it: the parts of a network voice, one
-// step each (How the brand sounds · Always · Never · Depending on the post ·
+// step each (How the Brand sounds · Always · Never · Depending on the post ·
 // Now and then), then a review. The header names the steps — the DS stepper (V2 Atoms, ported as
 // .app-stepper), each one clickable.
 // A step: on the left, the choices — the job is to write this part for the
@@ -30,10 +30,10 @@
 //   result = { values: { [field]: value | undefined }, drafted: boolean }
 //   undefined = the part follows the base voice.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2013";
-import { bindReorder } from "../drag-reorder.js?v=2013";
-import { escapeHtml as esc } from "../utils.js?v=2013";
-import { networkVoiceOptions, networkGuidance, networkGuidanceUrl } from "../context-mock-analysis.js?v=2013";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2015";
+import { bindReorder } from "../drag-reorder.js?v=2015";
+import { escapeHtml as esc } from "../utils.js?v=2015";
+import { networkVoiceOptions, networkGuidance, networkGuidanceUrl } from "../context-mock-analysis.js?v=2015";
 import {
   networkFields,
   isNewPart,
@@ -47,7 +47,7 @@ import {
   itemsFromLines,
   voiceItemsHtml,
   progressRingHtml,
-} from "../network-voice.js?v=2013";
+} from "../network-voice.js?v=2015";
 
 const MODAL_ID = "voiceWizard";
 
@@ -56,11 +56,11 @@ const MODAL_ID = "voiceWizard";
 // of a rule that was already there.
 const PARTS = {
   voiceSummary: {
-    title: "How the brand sounds",
+    title: "How the Brand sounds",
     noun: "summary",
     list: false,
     ask: (n) => `How should the brand sound on ${n}?`,
-    add: "How the brand sounds on this network, in a few sentences…",
+    add: "How the Brand sounds on this network, in a few sentences…",
   },
   voiceAlways: {
     title: "Always",

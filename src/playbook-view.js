@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2013";
-import { conceptHint } from "./concepts.js?v=2013";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2015";
+import { conceptHint } from "./concepts.js?v=2015";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,11 +30,11 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2013";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2013";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2013";
-import { isFlagOn } from "./feature-flags.js?v=2013";
-import { parseHashParams } from "./url-state.js?v=2013";
+} from "./playbook-brand-kit.js?v=2015";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2015";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2015";
+import { isFlagOn } from "./feature-flags.js?v=2015";
+import { parseHashParams } from "./url-state.js?v=2015";
 import {
   networkVoicesOn,
   baseNetwork,
@@ -57,16 +57,16 @@ import {
   networkLabel,
   networkIcon,
   memoryCardHtml,
-} from "./network-voice.js?v=2013";
+} from "./network-voice.js?v=2015";
 import {
   getSuggestions,
   accept as acceptVoiceSuggestion,
   dismiss as dismissVoiceSuggestion,
-} from "./voice-coach-store.js?v=2013";
-import { showToast } from "./components/toast.js?v=2013";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2013";
-import { open as openVoiceWizard } from "./components/voice-wizard-modal.js?v=2013";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=2013";
+} from "./voice-coach-store.js?v=2015";
+import { showToast } from "./components/toast.js?v=2015";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2015";
+import { open as openVoiceWizard } from "./components/voice-wizard-modal.js?v=2015";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=2015";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -130,7 +130,23 @@ const FIELD_HINTS = {
   },
   brandLogo: {
     q: "Which logo should I default to?",
-    a: "I stamp the default bottom-right on the images I generate. The others stay available to place by hand.",
+    a: "I place the default logo bottom-right on the images I make. The others are there when you want to place one yourself.",
+  },
+  brandColors: {
+    q: "Which colors does the Brand use?",
+    a: "I use these in every image I make — the role says where each one goes.",
+  },
+  brandType: {
+    q: "Which fonts does the Brand use?",
+    a: "The fonts I set your text in.",
+  },
+  brandPersonality: {
+    q: "How should the Brand's images feel?",
+    a: "How your images should feel.",
+  },
+  visualRules: {
+    q: "What should images never do?",
+    a: "What I never do with your logo and colors.",
   },
   imageDefaults: {
     q: "What should generated images look like by default?",
@@ -1064,7 +1080,7 @@ function renderVoiceModeToggle(mode) {
   const manual = mode === "manual";
   return `
     <div class="recap__voice-mode" role="group" aria-label="Voice format">
-      <button type="button" class="ap-filter-chip" aria-pressed="${!manual}" data-recap-voice-mode="guided">In five parts</button>
+      <button type="button" class="ap-filter-chip" aria-pressed="${!manual}" data-recap-voice-mode="guided">Part by part</button>
       <button type="button" class="ap-filter-chip" aria-pressed="${manual}" data-recap-voice-mode="manual">In my own words</button>
     </div>`;
 }
@@ -2180,21 +2196,21 @@ function renderGoalsEdit2(data) {
   const chips = (key) => pb2Hint(FIELD_HINTS[key]) + renderEditChips(key, data[key], placeholder(key));
   return pb2EditGrid("goals", [
     pb2Block(
-      "The business",
+      "Your business",
       `${pb2Hint(FIELD_HINTS.businessSummary)}<div class="ap-textarea-field resizable">
          <textarea data-recap-summary rows="4" placeholder="Describe your business in a few sentences…">${esc(data.businessSummary || "")}</textarea>
        </div>
        <div><span class="pb2-sub">Written in</span>${multilingualOn() ? pb2Hint(FIELD_HINTS.languages) : ""}${renderLanguagePicker(data)}</div>`,
       { wide: true, index: 0, icon: "ap-icon-buildings" },
     ),
-    pb2Block("Speaking to", pb2Hint(FIELD_HINTS.audience) + renderAudiencePicker(data), {
+    pb2Block("Who you write for", pb2Hint(FIELD_HINTS.audience) + renderAudiencePicker(data), {
       index: 1,
       icon: "ap-icon-user",
     }),
     pb2Block("Content style", chips("contentStyle"), { index: 2, icon: "ap-icon-quote" }),
-    pb2Block("What posts should achieve", chips("objective"), { index: 3, icon: "ap-icon-target" }),
-    pb2Block("What readers should do", chips("contentAction"), { index: 4, icon: "ap-icon-arrow-right" }),
-    pb2Block("Where posts point to", pb2Hint(FIELD_HINTS.ctaLinks) + renderCtaEditor(data), {
+    pb2Block("Goal", chips("objective"), { index: 3, icon: "ap-icon-target" }),
+    pb2Block("Call to action", chips("contentAction"), { index: 4, icon: "ap-icon-arrow-right" }),
+    pb2Block("Links", pb2Hint(FIELD_HINTS.ctaLinks) + renderCtaEditor(data), {
       wide: true,
       index: 5,
       icon: "ap-icon-link",
@@ -2205,7 +2221,7 @@ function renderGoalsEdit2(data) {
 function renderVoiceEdit2(data) {
   // The voice's traits and how it's written (guided parts, or your own words)
   // ride on the first block; the parts follow, the same blocks as in read.
-  const mode = `<div><span class="pb2-sub">Written as</span>${renderVoiceModeToggle(data.voiceMode)}</div>`;
+  const mode = `<div><span class="pb2-sub">Describe it</span>${renderVoiceModeToggle(data.voiceMode)}</div>`;
   if (nvOn() && data.voiceMode !== "manual" && activeNetworkFor(data) !== baseNetwork(data))
     return pb2EditGrid("voice", nvNetworkEditBlocks(data, activeNetworkFor(data)), "", renderNetworkSwitcher(data));
   if (data.voiceMode === "manual")
@@ -2238,19 +2254,25 @@ function renderBrandEdit2(data) {
       `${pb2Hint(FIELD_HINTS.brandLogo)}${renderBrandLogo(data, true)}<div><span class="pb2-sub">Versions</span>${renderLogoVariants(data, true, data.brandLogos)}</div>`,
       { wide: true, index: 0, icon: "ap-icon-image" },
     ),
-    pb2Block("Colors", renderColorEditor(data), { wide: true, index: 1 }),
-    pb2Block("Typography", renderTypoEditor(data), { index: 2 }),
+    pb2Block("Colors", pb2Hint(FIELD_HINTS.brandColors) + renderColorEditor(data), { wide: true, index: 1 }),
+    pb2Block("Typography", pb2Hint(FIELD_HINTS.brandType) + renderTypoEditor(data), { index: 2 }),
     pb2Block(
       "Personality",
-      renderTextarea(
-        "brandPersonality",
-        data.brandPersonality,
-        "How the brand comes across — its character in a few sentences…",
-      ),
+      pb2Hint(FIELD_HINTS.brandPersonality) +
+        renderTextarea(
+          "brandPersonality",
+          data.brandPersonality,
+          "How the Brand comes across — its character in a few sentences…",
+        ),
       { index: 3 },
     ),
   ];
-  blocks.push(pb2Block("Visual rules", renderVisualRules(data, true), { wide: true, index: 4 }));
+  blocks.push(
+    pb2Block("Visual rules", pb2Hint(FIELD_HINTS.visualRules) + renderVisualRules(data, true), {
+      wide: true,
+      index: 4,
+    }),
+  );
   return pb2EditGrid("brand", blocks);
 }
 
@@ -2261,7 +2283,7 @@ function renderGoalsRead2(data) {
   const ctas = (Array.isArray(data.ctaLinks) ? data.ctaLinks : []).filter((l) => l.checked);
   const blocks = [
     pb2Block(
-      "The business",
+      "Your business",
       `${data.businessSummary ? `<p class="pb2-lead pb2-lead--xl">${esc(data.businessSummary)}</p>` : pb2Empty("No business summary yet.")}
        <div class="pb2-inline"><span class="pb2-sub">Written in</span>${pb2Tags(contextLanguages(data))}</div>`,
       {
@@ -2271,30 +2293,34 @@ function renderGoalsRead2(data) {
         hint: "What I know about the business, and the languages I write in.",
       },
     ),
-    pb2Block("Speaking to", audience ? `<p class="pb2-lead">${esc(audience)}</p>` : pb2Empty("No audience set yet."), {
-      index: 1,
-      icon: "ap-icon-user",
-      hint: "Who I write for.",
-    }),
+    pb2Block(
+      "Who you write for",
+      audience ? `<p class="pb2-lead">${esc(audience)}</p>` : pb2Empty("No audience set yet."),
+      {
+        index: 1,
+        icon: "ap-icon-user",
+        hint: "The people every post is for.",
+      },
+    ),
     pb2Block(
       "Content style",
       (data.contentStyle || []).length ? pb2Tags(data.contentStyle) : pb2Empty("No content style yet."),
       { index: 2, icon: "ap-icon-quote", hint: "The shape every post takes." },
     ),
+    pb2Block("Goal", (data.objective || []).length ? pb2Checklist(data.objective) : pb2Empty("No goal set yet."), {
+      index: 3,
+      icon: "ap-icon-target",
+      hint: "The goal I write toward.",
+    }),
     pb2Block(
-      "What posts should achieve",
-      (data.objective || []).length ? pb2Checklist(data.objective) : pb2Empty("No goal set yet."),
-      { index: 3, icon: "ap-icon-target", hint: "The goal I write toward." },
-    ),
-    pb2Block(
-      "What readers should do",
+      "Call to action",
       (data.contentAction || []).length
         ? pb2Checklist(data.contentAction, "ap-icon-arrow-right")
         : pb2Empty("No action set yet."),
       { index: 4, icon: "ap-icon-arrow-right", hint: "The action I end posts on." },
     ),
     pb2Block(
-      "Where posts point to",
+      "Links",
       ctas.length
         ? `<ul class="pb2-links">${ctas
             .map(
@@ -2323,7 +2349,7 @@ function pb2Checklist(values, icon = "ap-icon-check") {
 
 // The voice as Archie heard it, in three or four words — read-only in both
 // modes: it's what the analysis found, not a field. Rides on the base's
-// "How the brand sounds".
+// "How the Brand sounds".
 function pb2Traits(data) {
   const traits = String(data.voiceProfile?.headline || "")
     .split(/\s*[·•|,]\s*/)
@@ -2341,7 +2367,7 @@ const PART_COPY = {
   voiceSummary: {
     hint: "The overall tone, in a few sentences.",
     empty: "Not set yet — say in a few sentences how the Brand sounds.",
-    placeholder: "How the brand sounds, in a few sentences…",
+    placeholder: "How the Brand sounds, in a few sentences…",
   },
   voiceAlways: {
     hint: "Rules every post follows.",

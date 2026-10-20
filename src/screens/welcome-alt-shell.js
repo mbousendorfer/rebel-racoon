@@ -9,10 +9,10 @@
 // the session id the recap already uses (`welcomeAltSessionId`), and persisted
 // on every change so a reload lands on the same step with the same answers.
 
-import "../archie-pixels.js?v=2013";
-import { html, raw, escapeHtml } from "../utils.js?v=2013";
-import { navigate } from "../router.js?v=2013";
-import { isFlagOn } from "../feature-flags.js?v=2013";
+import "../archie-pixels.js?v=2015";
+import { html, raw, escapeHtml } from "../utils.js?v=2015";
+import { navigate } from "../router.js?v=2015";
+import { isFlagOn } from "../feature-flags.js?v=2015";
 import {
   altSteps,
   createAltDraft,
@@ -20,17 +20,17 @@ import {
   isAnalysisReady,
   restoreDraft,
   subscribeDraft,
-} from "../context-builder.js?v=2013";
+} from "../context-builder.js?v=2015";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
   getConnectedProfiles,
   renderProfileTag,
   subscribe as subscribeProfiles,
-} from "../social-profiles.js?v=2013";
-import { networkVoicesOn } from "../network-voice.js?v=2013";
-import { readSessionId, persistDraft, readPersistedDraft } from "./welcome-alt-recap.js?v=2013";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2013";
+} from "../social-profiles.js?v=2015";
+import { networkVoicesOn } from "../network-voice.js?v=2015";
+import { readSessionId, persistDraft, readPersistedDraft } from "./welcome-alt-recap.js?v=2015";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2015";
 
 const PREFILLED_URL = "https://nicesoap.com";
 const SESSION_KEY = "welcomeAltSessionId";
@@ -38,12 +38,12 @@ const SESSION_KEY = "welcomeAltSessionId";
 // What each step is called, everywhere it's named (the intro's list, the
 // progress, each screen's title).
 export const STEP_TEXT = {
-  connect: { title: "Connect your social profiles", desc: "So I write for the networks you publish on." },
-  url: { title: "Show me your brand", desc: "Your website, a few files, or a handful of questions." },
+  connect: { title: "Connect your accounts", desc: "So I write for the networks you publish on." },
+  url: { title: "Show me your Brand", desc: "Your website, a few files, or a handful of questions." },
   language: { title: "Pick your language", desc: "The one I'll write your posts in." },
   network: { title: "Choose your main network", desc: "Your main voice is built for it." },
-  documents: { title: "Add your documents", desc: "Optional — a brand book or guidelines." },
-  recap: { title: "Meet your Playbook", desc: "Everything I learned, before I write a word." },
+  documents: { title: "Add brand documents", desc: "Optional — a brand book or guidelines." },
+  recap: { title: "Review your Playbook", desc: "Everything I learned, before I write a word." },
 };
 
 const ROUTE = {
@@ -128,11 +128,11 @@ const ROW_PART = {
   "Publishes on": "",
   About: "",
   "Writes in": "goals",
-  "Speaks to": "goals",
+  "Who you write for": "goals",
   Goal: "goals",
   Voice: "voice",
   "Main voice": "voice",
-  Branding: "brand",
+  "Colors & type": "brand",
   "Up against": "competitors",
 };
 const ROW_ORDER = Object.keys(ROW_PART);
@@ -238,7 +238,7 @@ function cardRows(d, sid) {
   const audience = d?.audience?.[0];
   rows.push({
     key: "audience",
-    label: "Speaks to",
+    label: "Who you write for",
     state: state(Boolean(audience)),
     value: stack(text(audience), chips((d?.audienceProblems || []).slice(0, 2))),
     lines: 2,
@@ -269,7 +269,7 @@ function cardRows(d, sid) {
   const font = d?.brandTypography?.headingFont;
   rows.push({
     key: "branding",
-    label: "Branding",
+    label: "Colors & type",
     state: state(colors.length),
     value:
       colors
@@ -306,7 +306,7 @@ function renderCard(sid) {
   const status = ready
     ? `<span class="ap-status mermaid welcome-intro__card-status">Ready to write</span>`
     : learning
-      ? `<span class="ap-status mermaid is-working welcome-intro__card-status">Learning your brand…</span>`
+      ? `<span class="ap-status mermaid is-working welcome-intro__card-status">Learning your Brand…</span>`
       : "";
   return playbookCard({
     mark,

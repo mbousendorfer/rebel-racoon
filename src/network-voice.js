@@ -1,7 +1,7 @@
 // network-voice — a Playbook's voice, and its version per network.
 //
 // A voice is FIVE parts (VOICE_PARTS, one registry, in reading order):
-//   voiceSummary    How the brand sounds — one paragraph
+//   voiceSummary    How the Brand sounds — one paragraph
 //   voiceAlways     Always — rules every post follows
 //   voiceNever      Never — rules no post breaks (+ the brand-wide voiceAvoid
 //                   words, shown in the same block, never per network)
@@ -28,15 +28,15 @@
 // examples are in one language. Per-language examples when a brand actually
 // publishes in two languages on one network.
 
-import { isFlagOn } from "./feature-flags.js?v=2013";
-import { escapeHtml } from "./utils.js?v=2013";
-import { NETWORKS, normalizeNetwork, getConnectedProfileById } from "./social-profiles.js?v=2013";
+import { isFlagOn } from "./feature-flags.js?v=2015";
+import { escapeHtml } from "./utils.js?v=2015";
+import { NETWORKS, normalizeNetwork, getConnectedProfileById } from "./social-profiles.js?v=2015";
 
 // `newWith` marks a part the product just added, behind that flag — the demo
 // (voiceNewSection) of how a voice says a part is new: an orange arc, a "New"
 // pill, on every network (and the base) that hasn't written it yet.
 export const VOICE_PARTS = [
-  { field: "voiceSummary", title: "How the brand sounds", kind: "text" },
+  { field: "voiceSummary", title: "How the Brand sounds", kind: "text" },
   { field: "voiceAlways", title: "Always", kind: "rules" },
   { field: "voiceNever", title: "Never", kind: "rules" },
   { field: "voiceByPost", title: "Depending on the post", kind: "cases", newWith: "voiceNewSection" },

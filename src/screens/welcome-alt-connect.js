@@ -7,7 +7,7 @@
 // stays possible behind skip-connect-modal (its reasons are optional), so the
 // ask comes first without becoming a prerequisite.
 
-import { html, raw, escapeHtml } from "../utils.js?v=2013";
+import { html, raw, escapeHtml } from "../utils.js?v=2015";
 import {
   getConnectedProfiles,
   getConnectableNetworks,
@@ -15,13 +15,13 @@ import {
   NETWORK_LABEL,
   BRAND_INITIALS,
   subscribe as subscribeProfiles,
-} from "../social-profiles.js?v=2013";
-import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2013";
-import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2013";
-import { open as openSkipConnectModal } from "../components/skip-connect-modal.js?v=2013";
-import { recordReasons } from "../feedback-store.js?v=2013";
-import { SKIP_CONNECT_TARGET, syncAltProfiles } from "../context-builder.js?v=2013";
-import { ensureFlowDraft, goBack, goNext, mountShell } from "./welcome-alt-shell.js?v=2013";
+} from "../social-profiles.js?v=2015";
+import { accountIdsForNetwork } from "../connect-profiles-flow.js?v=2015";
+import { open as openConnectAccountModal } from "../components/connect-account-modal.js?v=2015";
+import { open as openSkipConnectModal } from "../components/skip-connect-modal.js?v=2015";
+import { recordReasons } from "../feedback-store.js?v=2015";
+import { SKIP_CONNECT_TARGET, syncAltProfiles } from "../context-builder.js?v=2015";
+import { ensureFlowDraft, goBack, goNext, mountShell } from "./welcome-alt-shell.js?v=2015";
 
 function connectedRow(p) {
   const inner = p.photo
@@ -61,7 +61,7 @@ function left() {
   const networks = getConnectableNetworks();
   const none = connected.length === 0;
   return html`
-    <h1 class="welcome-flow__title" id="welcomeFlowTitle">Connect your social profiles</h1>
+    <h1 class="welcome-flow__title" id="welcomeFlowTitle">Connect your accounts</h1>
     <p class="welcome-intro__sub">I'll write for the networks you publish on. Nothing gets posted without your OK.</p>
     <ul class="welcome-flow__options">
       ${connected.map(connectedRow)} ${networks.map(networkRow)}

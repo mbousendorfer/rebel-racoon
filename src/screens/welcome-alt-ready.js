@@ -8,17 +8,17 @@
 // A Playbook filled by hand has nothing to build: straight to the reveal, and
 // its way out is filling it in.
 
-import { html, raw } from "../utils.js?v=2013";
-import { navigate } from "../router.js?v=2013";
-import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2013";
+import { html, raw } from "../utils.js?v=2015";
+import { navigate } from "../router.js?v=2015";
+import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2015";
 import {
   LOADING_STAGES,
   FILE_LOADING_STAGES,
   INTERVIEW_LOADING_STAGES,
   withNetworkStage,
   enterArchie,
-} from "./welcome-alt-recap.js?v=2013";
-import { ensureFlowDraft, goBack, mountShell } from "./welcome-alt-shell.js?v=2013";
+} from "./welcome-alt-recap.js?v=2015";
+import { ensureFlowDraft, goBack, mountShell } from "./welcome-alt-shell.js?v=2015";
 
 const STAGE_MS = 1300; // each stage holds at least this long, so the work reads as work
 const started = new Map(); // sid → when this screen first showed it (a re-render doesn't restart it)
@@ -77,12 +77,12 @@ export function renderWelcomeAltReady(_params, target) {
     if (done) {
       return html`
         <h1 class="welcome-flow__title" id="welcomeFlowTitle">
-          ${manual ? "Your Playbook is ready to fill." : "Your Playbook is ready."}
+          ${manual ? "Your Playbook is set up." : "Your Playbook is ready."}
         </h1>
         <p class="welcome-intro__sub">
           ${manual
             ? "Tell me how your brand sounds and who it speaks to — every draft I write starts there."
-            : "Every draft I write starts from it. Start writing now — or go through it first, part by part."}
+            : "Every draft I write starts from it. Draft your first post now — or go through it first, part by part."}
         </p>
         <ul class="welcome-flow__options">
           ${raw(
@@ -100,8 +100,8 @@ export function renderWelcomeAltReady(_params, target) {
                   hook: "data-ready-start",
                   icon: "ap-icon-sparkles",
                   featured: true,
-                  title: "Start writing",
-                  desc: "Your first post now. The Playbook stays editable.",
+                  title: "Draft my first post",
+                  desc: "I'll write it now. You can edit the Playbook anytime.",
                 }),
               )}
         </ul>

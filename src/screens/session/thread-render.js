@@ -13,27 +13,27 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=2013";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2013";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2013";
-import { getTopPost } from "../../top-posts-store.js?v=2013";
-import { getTopicById } from "../../topics-store.js?v=2013";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=2013";
-import { renderProfileEchoCard } from "../../social-profiles.js?v=2013";
-import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2013";
-import { getIdeas } from "../../library.js?v=2013";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=2013";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2013";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=2013";
-import { getSuggestion } from "../../voice-coach-store.js?v=2013";
-import { getPlans } from "../../post-plan-store.js?v=2013";
-import { draftsToRewrite } from "../../voice-coach.js?v=2013";
-import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=2013";
-import { isFlagOn } from "../../feature-flags.js?v=2013";
-import { CURRENT_USER } from "../../org.js?v=2013";
-import { getSessionById } from "../../sessions-store.js?v=2013";
-import { getContextById } from "../../contexts-store.js?v=2013";
-import { needsImageLook } from "../../modules/image-studio/index.js?v=2013";
+} from "./thread-turns.js?v=2015";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2015";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2015";
+import { getTopPost } from "../../top-posts-store.js?v=2015";
+import { getTopicById } from "../../topics-store.js?v=2015";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=2015";
+import { renderProfileEchoCard } from "../../social-profiles.js?v=2015";
+import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2015";
+import { getIdeas } from "../../library.js?v=2015";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=2015";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2015";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=2015";
+import { getSuggestion } from "../../voice-coach-store.js?v=2015";
+import { getPlans } from "../../post-plan-store.js?v=2015";
+import { draftsToRewrite } from "../../voice-coach.js?v=2015";
+import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=2015";
+import { isFlagOn } from "../../feature-flags.js?v=2015";
+import { CURRENT_USER } from "../../org.js?v=2015";
+import { getSessionById } from "../../sessions-store.js?v=2015";
+import { getContextById } from "../../contexts-store.js?v=2015";
+import { needsImageLook } from "../../modules/image-studio/index.js?v=2015";
 
 export function renderThread(messages, sessionId) {
   const turns = messages.map((m) => [m, renderTurn(m, sessionId)]);

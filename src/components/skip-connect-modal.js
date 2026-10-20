@@ -35,7 +35,7 @@
 // The whole module only ever runs under `skipConnectProfiles`: it is reached
 // from the one Skip that flag creates, so it needs no flag test of its own.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2013";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2015";
 
 const MODAL_ID = "skip-connect";
 
@@ -67,7 +67,7 @@ const ASSURANCES = [
   {
     icon: "ap-icon-link",
     claim: "Disconnect anytime",
-    detail: "One click, from your settings.",
+    detail: "One click, whenever you want.",
   },
 ];
 
@@ -106,7 +106,7 @@ const HTML = `
   </button>
   <div class="ap-dialog-content">
     <p class="skip-connect__lead">
-      A connected account is what tells me the format, the length and where a draft gets scheduled.
+      With an account connected, I know which format and length to write, and where to schedule each draft.
     </p>
     <ul class="skip-connect__assurances">
       ${ASSURANCES.map(
@@ -120,7 +120,7 @@ const HTML = `
     </ul>
     <div class="ap-form-field skip-connect__question">
       <label class="skip-connect__label" id="skipConnectReasonsLabel">Why not now?</label>
-      <p class="skip-connect__hint">Tick anything that applies — optional.</p>
+      <p class="skip-connect__hint">Optional — tick anything that applies.</p>
       <div class="skip-connect__reasons" id="skipConnectReasons" role="group" aria-labelledby="skipConnectReasonsLabel">
         ${REASONS.map(
           (r) => `

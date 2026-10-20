@@ -14,7 +14,7 @@
 //   - at the end of a part, the interstitial asks to confirm it ("Brief look
 //     right?" — Back to Brief / Confirm Brief); confirming checks it in the
 //     list and deals the next part. The last one ends on "all set".
-// Start writing lives on the left, the whole time — never on a card.
+// Draft my first post lives on the left, the whole time — never on a card.
 //
 // The view repaints its whole DOM on most edits (a chip added…), so the stack
 // is re-applied after every paint (a MutationObserver on the host) — the card
@@ -26,14 +26,14 @@
 // the column — ↑ · the dots, vertical · ↓ — and steps through them; the index
 // follows the scroll. At the bottom, one button confirms the part.
 
-import { html, raw } from "../utils.js?v=2013";
-import { navigate } from "../router.js?v=2013";
-import { getDraft, patchDraft } from "../context-builder.js?v=2013";
-import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2013";
-import { parseHashParams } from "../url-state.js?v=2013";
-import { isFlagOn } from "../feature-flags.js?v=2013";
-import { mountShell, tint } from "./welcome-alt-shell.js?v=2013";
-import { enterArchie } from "./welcome-alt-recap.js?v=2013";
+import { html, raw } from "../utils.js?v=2015";
+import { navigate } from "../router.js?v=2015";
+import { getDraft, patchDraft } from "../context-builder.js?v=2015";
+import { mount, RECAP_SECTIONS } from "../playbook-view.js?v=2015";
+import { parseHashParams } from "../url-state.js?v=2015";
+import { isFlagOn } from "../feature-flags.js?v=2015";
+import { mountShell, tint } from "./welcome-alt-shell.js?v=2015";
+import { enterArchie } from "./welcome-alt-recap.js?v=2015";
 
 const MOVE_MS = 220; // the card's exit, before the next one comes in
 
@@ -47,9 +47,15 @@ export function renderReview(target, sid, config) {
   const reviewed = () => new Set(getDraft(sid)?.reviewedParts || []);
   const current = () => parseHashParams().get("tab") || RECAP_SECTIONS[0].id;
   const partOf = (id) => RECAP_SECTIONS.find((t) => t.id === id) || RECAP_SECTIONS[0];
+  // The part's yes, in both modes: it says where it leads — the next part, or
+  // the end (2026-10-20: "Confirm Brief" read as admin).
+  const looksGood = (id) => {
+    const next = RECAP_SECTIONS[RECAP_SECTIONS.findIndex((t) => t.id === id) + 1];
+    return next ? `Looks good — on to ${next.title}` : "Looks good — finish";
+  };
 
   let index = 0; // the front card, within the current part
-  let allSet = false; // the "all set" card is up (it carries Start writing)
+  let allSet = false; // the "all set" card is up (it carries Draft my first post)
   let count = 0; // how many cards the current part deals
   const scroll = isFlagOn("reviewScroll");
 
@@ -58,7 +64,9 @@ export function renderReview(target, sid, config) {
     return html`
       <h1 class="welcome-flow__title" id="welcomeFlowTitle">Review your Playbook</h1>
       <p class="welcome-intro__sub">
-        I've filled in every card. Browse them with the arrows and fix anything that's off — changes save as you type.
+        ${scroll
+          ? "I've filled in every card. Scroll through and fix anything that's off — changes save as you type."
+          : "I've filled in every card. Browse them with the arrows and fix anything that's off — changes save as you type."}
       </p>
       <ul class="welcome-flow__options">
         ${RECAP_SECTIONS.map((t) => {
@@ -96,7 +104,7 @@ export function renderReview(target, sid, config) {
         ${allSet /* the "all set" card offers it — once is enough */
           ? ""
           : raw(`<button type="button" class="ap-button primary orange" data-review-start>
-              <span>Start writing</span><i class="ap-icon-arrow-right"></i>
+              <span>Draft my first post</span><i class="ap-icon-arrow-right"></i>
             </button>`)}
       </div>
     `;
@@ -249,7 +257,7 @@ export function renderReview(target, sid, config) {
       const part = partOf(current());
       barEl.innerHTML = html`
         <button type="button" class="ap-button primary blue" data-review-confirm="${part.id}">
-          <i class="ap-icon-check"></i><span>All good for ${part.title}</span>
+          <i class="ap-icon-check"></i><span>${looksGood(part.id)}</span>
         </button>
       `;
     }
@@ -388,26 +396,25 @@ export function renderReview(target, sid, config) {
 
   // The end of a part: the interstitial asks to confirm it before the next
   // one is dealt — the part's check in the list comes from that answer.
-  const confirmCard = (from, to) => {
+  const confirmCard = (from) => {
     const part = partOf(from);
-    const next = to ? partOf(to) : null;
+    const plural = /s$/.test(part.title); // Competitors, Influencers
     return html`
       <div class="welcome-review__intro-card is-confirm" style="${tint(from)}">
         <span class="welcome-review__intro-tile">
           <i class="${part.icon}" aria-hidden="true"></i>
           <span class="welcome-review__intro-done"><i class="ap-icon-check" aria-hidden="true"></i></span>
         </span>
-        <span class="welcome-review__intro-title">${part.title} look right?</span>
+        <span class="welcome-review__intro-title"> ${plural ? "Do" : "Does"} the ${part.title} look right? </span>
         <span class="welcome-review__intro-lead">
-          ${next ? `Confirm it and I'll move on to ${next.title}.` : "Confirm it and your Playbook is all set."} You can
-          still change anything later, from your Playbook.
+          You can change ${plural ? "them" : "it"} anytime from your Playbook.
         </span>
         <span class="welcome-review__intro-actions">
           <button type="button" class="ap-button stroked grey" data-review-again="${from}">
             Back to ${part.title}
           </button>
           <button type="button" class="ap-button primary blue" data-review-confirm="${from}">
-            <i class="ap-icon-check"></i><span>Confirm ${part.title}</span>
+            <i class="ap-icon-check"></i><span>${looksGood(from)}</span>
           </button>
         </span>
       </div>
@@ -423,7 +430,7 @@ export function renderReview(target, sid, config) {
           Review it again
         </button>
         <button type="button" class="ap-button primary orange" data-review-start>
-          <span>Start writing</span><i class="ap-icon-arrow-right"></i>
+          <span>Draft my first post</span><i class="ap-icon-arrow-right"></i>
         </button>
       </span>
     </div>
@@ -444,14 +451,12 @@ export function renderReview(target, sid, config) {
   };
 
   const finishPart = () => {
-    const at = RECAP_SECTIONS.findIndex((t) => t.id === current());
     const from = current();
-    const to = RECAP_SECTIONS[at + 1]?.id || null;
     moving = true;
     shell.sheet.classList.add("is-part-out");
     window.setTimeout(() => {
       shell.sheet.classList.remove("is-part-out");
-      showIntro(confirmCard(from, to));
+      showIntro(confirmCard(from));
       moving = false;
     }, OUT_MS);
   };

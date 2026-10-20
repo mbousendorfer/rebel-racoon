@@ -161,7 +161,7 @@ export const FLAGS = Object.freeze([
       "When OFF, a Playbook has one voice. ON gives it a BASE voice — learned " +
       "from the network of the profile picked at creation — and an adaptation " +
       "per network it publishes on: each network overrides only the parts that " +
-      "differ (How the brand sounds, Always, Never, Depending on the post, Now " +
+      "differ (How the Brand sounds, Always, Never, Depending on the post, Now " +
       "and then); a rule it was taught joins its Always or Never.\n\n" +
       "Archie coaches it over time, and never writes it silently: when you " +
       "rework a draft, when you thumbs-down one with a " +

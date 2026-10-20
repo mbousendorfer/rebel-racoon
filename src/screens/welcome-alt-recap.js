@@ -4,14 +4,14 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { navigate } from "../router.js?v=2013";
-import { catalogueRoute } from "../active-playbook.js?v=2013";
-import { getDraft, isAnalysisReady, save, patchDraft, restoreDraft } from "../context-builder.js?v=2013";
-import { mount } from "../playbook-view.js?v=2013";
-import { isFlagOn } from "../feature-flags.js?v=2013";
-import { renderReview } from "./welcome-alt-review.js?v=2013";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2013";
-import { networkLabel } from "../network-voice.js?v=2013";
+import { navigate } from "../router.js?v=2015";
+import { catalogueRoute } from "../active-playbook.js?v=2015";
+import { getDraft, isAnalysisReady, save, patchDraft, restoreDraft } from "../context-builder.js?v=2015";
+import { mount } from "../playbook-view.js?v=2015";
+import { isFlagOn } from "../feature-flags.js?v=2015";
+import { renderReview } from "./welcome-alt-review.js?v=2015";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2015";
+import { networkLabel } from "../network-voice.js?v=2015";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";
@@ -22,7 +22,7 @@ export const LOADING_STAGES = [
   { title: "Reading your website", sub: "Scanning your pages, copy, and brand cues." },
   { title: "Learning your voice", sub: "Capturing your tone, vocabulary, and rhythm." },
   { title: "Mapping your audience", sub: "Working out who you're for — and what moves them." },
-  { title: "Building your Playbook", sub: "Turning it all into a Playbook every draft draws from." },
+  { title: "Putting it together", sub: "Turning it all into a Playbook every draft draws from." },
 ];
 
 // Brand kit (flag sexySquirrel): a Playbook started from files says so, instead
@@ -31,15 +31,15 @@ export const FILE_LOADING_STAGES = [
   { title: "Reading your files", sub: "Looking at your logo, past visuals, and photos." },
   { title: "Picking out your colors", sub: "Sampling the palette your visuals already use." },
   { title: "Mapping your audience", sub: "Working out who you're for — and what moves them." },
-  { title: "Building your Playbook", sub: "Turning it all into a Playbook every draft draws from." },
+  { title: "Putting it together", sub: "Turning it all into a Playbook every draft draws from." },
 ];
 
 // The no-website interview: the loader reads the
 // answers, and says the brand look comes later — there was nothing to sample.
 export const INTERVIEW_LOADING_STAGES = [
-  { title: "Reading your answers", sub: "Turning what you told me into a strategy brief." },
-  { title: "Setting up your brand", sub: "You can add your logo and colors to the Playbook later." },
-  { title: "Drafting your Playbook", sub: "Audience, goals and voice, from your own words." },
+  { title: "Reading your answers", sub: "Turning what you told me into your Brief." },
+  { title: "Setting up your Brand", sub: "You can add your logo and colors to the Playbook later." },
+  { title: "Drafting your Playbook", sub: "Audience, goals, and voice, from your own words." },
 ];
 
 // Voice per network: when Archie adapted the voice for other networks, the

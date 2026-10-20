@@ -13,17 +13,17 @@
 // The card is an illustration, not data: the Playbook's real parts (Voice
 // profile, Branding…) filled with example values.
 
-import "../archie-pixels.js?v=2013";
-import { html, raw, escapeHtml } from "../utils.js?v=2013";
+import "../archie-pixels.js?v=2015";
+import { html, raw, escapeHtml } from "../utils.js?v=2015";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORKS,
   getConnectedProfiles,
   getConnectableNetworks,
-} from "../social-profiles.js?v=2013";
-import { navigate } from "../router.js?v=2013";
-import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2013";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2013";
+} from "../social-profiles.js?v=2015";
+import { navigate } from "../router.js?v=2015";
+import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2015";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2015";
 
 // What a Playbook holds, shown rather than told: the parts the card on the
 // right fills, under their Playbook names, glyphs and tints.
@@ -35,14 +35,14 @@ const PARTS = ["goals", "voice", "brand", "competitors"];
 const STEP_HINT = {
   connect: () =>
     raw(
-      `<span class="welcome-intro__nets"><span>For now:</span><span class="welcome-intro__nets" role="list" aria-label="Supported networks">${supportedNetworks()
+      `<span class="welcome-intro__nets"><span>Works with</span><span class="welcome-intro__nets" role="list" aria-label="Supported networks">${supportedNetworks()
         .map(
           (n) =>
             `<span class="welcome-intro__net-name" role="listitem"><i class="${n.icon}" aria-hidden="true"></i>${escapeHtml(n.label)}</span>`,
         )
         .join("")}</span></span>`,
     ),
-  url: "Your website is enough. No site? A few questions.",
+  url: "Your website is all I need. No website? I'll ask a few questions.",
   network: "I build your main voice for it.",
 };
 const OPTIONAL = new Set(["documents"]);
@@ -85,7 +85,7 @@ const ROWS = [
   },
   {
     step: "url",
-    label: "Speaks to",
+    label: "Who you write for",
     value: `<span class="welcome-flow__stack">${line("People who read the label")}${chips([
       "Sensitive skin",
       "Less plastic",
@@ -100,7 +100,7 @@ const ROWS = [
   },
   {
     step: "documents",
-    label: "Branding",
+    label: "Colors & type",
     // An example brand palette.
     value: ["--app-convo-navy", "--ref-color-orange-100", "--ref-color-yellow-40", "--app-surface-subtle"]
       .map((token) => `<span class="welcome-intro__swatch" style="background: var(${token})"></span>`)
@@ -120,8 +120,8 @@ export function renderWelcomeAltIntro(_params, target) {
         <div class="welcome-intro__copy">
           <h1 class="welcome-intro__title" id="welcomeIntroTitle">Let's build your Playbook together.</h1>
           <p class="welcome-intro__sub">
-            A Playbook is the guide I write from — what your brand does, how it sounds and how it looks — so every post
-            sounds like you.
+            A Playbook is the guide I write from — what your Brand does, how it sounds, and how it looks — so every post
+            feels like yours.
           </p>
           <ul class="welcome-intro__parts" aria-label="What a Playbook holds">
             ${PARTS.map((t) => {
@@ -157,10 +157,10 @@ export function renderWelcomeAltIntro(_params, target) {
           </ol>
           <div class="welcome-intro__actions">
             <button type="button" class="ap-button primary orange" data-welcome-begin>
-              <span>Let's go</span>
+              <span>Build my Playbook</span>
               <i class="ap-icon-arrow-right"></i>
             </button>
-            <span class="welcome-intro__time">${steps.length} steps, a few minutes</span>
+            <span class="welcome-intro__time">${steps.length} steps · about 3 min</span>
           </div>
         </div>
       </section>

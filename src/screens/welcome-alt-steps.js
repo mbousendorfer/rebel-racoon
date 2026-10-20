@@ -15,8 +15,8 @@
 // Enter submits; nothing on these screens leaves the run by accident (no Esc
 // exit); Back always keeps what was answered.
 
-import { html, raw, escapeHtml } from "../utils.js?v=2013";
-import { navigate } from "../router.js?v=2013";
+import { html, raw, escapeHtml } from "../utils.js?v=2015";
+import { navigate } from "../router.js?v=2015";
 import {
   getDraft,
   patchDraft,
@@ -24,13 +24,13 @@ import {
   readAltFiles,
   writeAltManually,
   analyzeAltInterview,
-} from "../context-builder.js?v=2013";
-import { nextInterviewQuestion, analyzeNetworkVoices } from "../context-mock-analysis.js?v=2013";
-import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2013";
-import { voiceNetworks } from "../network-voice.js?v=2013";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, getConnectedProfiles } from "../social-profiles.js?v=2013";
-import { connectors as connectorMocks } from "../mocks.js?v=2013";
-import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT } from "./welcome-alt-shell.js?v=2013";
+} from "../context-builder.js?v=2015";
+import { nextInterviewQuestion, analyzeNetworkVoices } from "../context-mock-analysis.js?v=2015";
+import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2015";
+import { voiceNetworks } from "../network-voice.js?v=2015";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, getConnectedProfiles } from "../social-profiles.js?v=2015";
+import { connectors as connectorMocks } from "../mocks.js?v=2015";
+import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT } from "./welcome-alt-shell.js?v=2015";
 
 // Wire one screen: the shell, a click handler, an optional submit / change.
 function screen(target, { step, left, onClick, onSubmit, onChange, onInput, onKeydown }) {
@@ -83,8 +83,13 @@ const OTHER_WAYS = [
     title: "I don't have a website",
     desc: "Answer a few quick questions instead.",
   },
-  { value: "files", icon: "ap-icon-upload", title: "Start from files", desc: "Your logo, past visuals or photos." },
-  { value: "manual", icon: "ap-icon-pen", title: "Fill it in myself", desc: "No analysis — you write the Playbook." },
+  { value: "files", icon: "ap-icon-upload", title: "Start from files", desc: "Your logo, past visuals, or photos." },
+  {
+    value: "manual",
+    icon: "ap-icon-pen",
+    title: "Fill it in myself",
+    desc: "Write the Playbook yourself, part by part.",
+  },
 ];
 
 function normalizeUrl(value) {
@@ -125,7 +130,9 @@ export function renderWelcomeAltBrand(_params, target) {
       const url = (d?.websiteUrl || "").replace(/^https?:\/\//i, "").replace(/\/$/, "");
       return html`
         <h1 class="welcome-flow__title" id="welcomeFlowTitle">${STEP_TEXT.url.title}</h1>
-        <p class="welcome-intro__sub">I'll read your website to learn your voice, who you speak to and your look.</p>
+        <p class="welcome-intro__sub">
+          I'll read your website to learn how you sound, who you speak to, and how you look.
+        </p>
         <form class="welcome-flow__url" data-brand-form novalidate>
           <div class="ap-input-group welcome-flow__url-field">
             <i class="ap-icon-link" aria-hidden="true"></i>
@@ -391,8 +398,8 @@ const DOC_CONNECTORS = ["slite", "notion", "gdrive", "slack"];
 const DOC_READS = {
   slite: "Your brand book and wiki pages",
   notion: "Brand pages and guidelines",
-  gdrive: "Brand books, decks and PDFs",
-  slack: "The channels where the brand gets discussed",
+  gdrive: "Brand books, decks, and PDFs",
+  slack: "Channels where your team talks about the Brand",
 };
 
 export function renderWelcomeAltDocuments(_params, target) {
