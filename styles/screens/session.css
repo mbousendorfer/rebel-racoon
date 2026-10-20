@@ -1047,6 +1047,14 @@ body.playbook-revoked .session__composer-card {
   z-index: 1;
 }
 
+/* The halo is taller than the composer and its wrapper comes after the logo
+   and the sub-line, so its stacking context would paint the field's ground
+   over them: they stay a level above. */
+.empty-chat--rows > .empty-chat__logo,
+.empty-chat--rows > .empty-chat__sub {
+  z-index: 2;
+}
+
 .session__assistant-thread:has(> .empty-chat--rows) {
   overflow-x: hidden;
 }
@@ -1056,7 +1064,8 @@ body.playbook-revoked .session__composer-card {
   --archie-pixels-cloud-1: var(--ref-color-orange-10);
   --archie-pixels-cloud-2: var(--ref-color-yellow-10);
   --archie-pixels-cloud-3: var(--ref-color-orange-20);
-  --archie-pixels-ink: var(--ref-color-orange-60);
+  --archie-pixels-ink: var(--ref-color-orange-40);
+  --archie-pixels-glow: var(--ref-color-orange-100);
 }
 
 archie-pixels.empty-chat__pixels {
@@ -1065,21 +1074,21 @@ archie-pixels.empty-chat__pixels {
   inset: auto;
   top: 50%;
   left: 50%;
-  width: calc(100% + 440px);
-  height: 360px;
+  width: calc(100% + 720px);
+  height: 560px;
   translate: -50% -50%;
   border-radius: 0;
   pointer-events: none;
-  opacity: 0.8;
-  -webkit-mask: radial-gradient(closest-side, #000 30%, transparent) center / 100% 100% no-repeat;
-  mask: radial-gradient(closest-side, #000 30%, transparent) center / 100% 100% no-repeat;
+  opacity: 0.55;
+  -webkit-mask: radial-gradient(closest-side, #000 20%, transparent) center / 100% 100% no-repeat;
+  mask: radial-gradient(closest-side, #000 20%, transparent) center / 100% 100% no-repeat;
   animation: empty-chat-bloom 1600ms var(--app-ease-out) both;
   transition: opacity var(--ref-animation-long) var(--app-ease-out);
 }
 
 .empty-chat__lead:has(.session__composer-card:focus-within) > .empty-chat__pixels,
 .session__assistant.is-drop-target .empty-chat__pixels {
-  opacity: 1;
+  opacity: 0.85;
 }
 
 @keyframes empty-chat-bloom {

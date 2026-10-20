@@ -1,17 +1,17 @@
 // A new chat's hero: the greeting, the workflow starters, and the "Fresh
 // topics to review" grid (flag topicFeed). Moved out of session.js, unchanged.
 
-import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2038";
-import { getFreshTopics, countFresh } from "../../topics-store.js?v=2038";
-import { getContextById } from "../../contexts-store.js?v=2038";
-import { isWorkspaceMode } from "../../active-playbook.js?v=2038";
-import { renderTopicCard } from "../../components/topic-card.js?v=2038";
-import { findTopicSource } from "../../topics-catalog.js?v=2038";
-import { html, raw } from "../../utils.js?v=2038";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2038";
-import { renderStarterCards } from "../../components/starter-card.js?v=2038";
-import { isFlagOn } from "../../feature-flags.js?v=2038";
-import "../../archie-pixels.js?v=2038";
+import { getFeedForPlaybook } from "../../topic-feeds-store.js?v=2041";
+import { getFreshTopics, countFresh } from "../../topics-store.js?v=2041";
+import { getContextById } from "../../contexts-store.js?v=2041";
+import { isWorkspaceMode } from "../../active-playbook.js?v=2041";
+import { renderTopicCard } from "../../components/topic-card.js?v=2041";
+import { findTopicSource } from "../../topics-catalog.js?v=2041";
+import { html, raw } from "../../utils.js?v=2041";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2041";
+import { renderStarterCards } from "../../components/starter-card.js?v=2041";
+import { isFlagOn } from "../../feature-flags.js?v=2041";
+import "../../archie-pixels.js?v=2041";
 
 // Composer "Add" menu — "Connected sources" is a nested submenu (Codex-style
 // "Modules d'extension ▸" flyout), not a first-level list. The flyout lists the
@@ -166,7 +166,7 @@ export function renderEmptyHero(sessionId, composerMarkup = "", session = null) 
         <div class="empty-chat__lead">
           <!-- The FUX's pixel field without its box: pale, masked into the
                ground, a wide halo on both sides of the composer. -->
-          <archie-pixels class="empty-chat__pixels" data-quiet aria-hidden="true"></archie-pixels>
+          <archie-pixels class="empty-chat__pixels" data-quiet data-hover aria-hidden="true"></archie-pixels>
           ${raw(composerMarkup)}
         </div>
         <div class="starter-rows" role="group" aria-label="Start from a workflow">

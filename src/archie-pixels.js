@@ -36,6 +36,7 @@ const STAGES = ["Reading the post…", "Picking your colors…", "Composing the 
 const STAGE_S = 1.6; // s per stage, for a real 6–12 s wait; the last one holds until the image lands
 const REFINING = "Refining the details…";
 const NARRATE_MIN = 220; // CSS px: narrower (a filmstrip tile) and there is no line
+const HOVER_R = 150; // CSS px: `data-hover`, the radius of the light under the cursor
 
 const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
@@ -97,7 +98,13 @@ class ArchiePixels extends HTMLElement {
     // `--archie-pixels-ink`: the matrix's colour while waiting — white by default
     // (on the saturated clouds); a host on a pale ground sets a tint so it shows.
     const ink = css.getPropertyValue("--archie-pixels-ink").trim();
-    this.ink = ink ? (hexOf(ink).match(/[0-9a-f]{2}/gi) || []).map((h) => parseInt(h, 16)).join(",") : "255,255,255";
+    const rgbOf = (c) => (hexOf(c).match(/[0-9a-f]{2}/gi) || []).map((h) => parseInt(h, 16));
+    this.ink = ink ? rgbOf(ink).join(",") : "255,255,255";
+    // `--archie-pixels-glow` (`data-hover`): the colour the light takes the
+    // pixels to — the ink's own when unset.
+    const glow = css.getPropertyValue("--archie-pixels-glow").trim();
+    this.inkRgb = ink ? rgbOf(ink) : [255, 255, 255];
+    this.glowRgb = glow ? rgbOf(glow) : this.inkRgb;
     if (this.revealAt) {
       // With CORS first, so the pixels can read the image's colours; without it
       // if the host refuses (the pixels then stay white).
@@ -121,12 +128,42 @@ class ArchiePixels extends HTMLElement {
     }
     this.observer = new ResizeObserver(() => this.resize());
     this.observer.observe(this);
+    // `data-hover` (a backdrop the reader moves over — the new chat's halo): the
+    // pixels near the cursor come up, a soft light that follows a little behind
+    // and fades when it leaves. Opacity only, like everything else here. Read
+    // from the window, because a backdrop takes no pointer events itself.
+    this.lit = 0;
+    if (this.hasAttribute("data-hover") && !reduced()) {
+      this.onMove = (e) => {
+        this.pointer = { x: e.clientX, y: e.clientY };
+      };
+      this.onOut = () => (this.pointer = null);
+      window.addEventListener("pointermove", this.onMove, { passive: true });
+      document.documentElement.addEventListener("pointerleave", this.onOut);
+    }
     if (!reduced()) this.raf = requestAnimationFrame(this.tick);
   }
 
   disconnectedCallback() {
     cancelAnimationFrame(this.raf);
     this.observer?.disconnect();
+    if (this.onMove) {
+      window.removeEventListener("pointermove", this.onMove);
+      document.documentElement.removeEventListener("pointerleave", this.onOut);
+    }
+  }
+
+  // The light's position (element px) and strength, eased toward the cursor.
+  follow() {
+    const r = this.getBoundingClientRect();
+    const p = this.pointer;
+    const x = p ? p.x - r.left : 0;
+    const y = p ? p.y - r.top : 0;
+    const inside = p && x >= 0 && y >= 0 && x <= r.width && y <= r.height;
+    if (inside && this.lit < 0.02)
+      this.hover = { x, y }; // light up where you are, never fly in
+    else if (inside) this.hover = { x: lerp(this.hover.x, x, 0.12), y: lerp(this.hover.y, y, 0.12) };
+    this.lit = lerp(this.lit, inside ? 1 : 0, 0.06);
   }
 
   build() {
@@ -239,6 +276,8 @@ class ArchiePixels extends HTMLElement {
     ctx.clearRect(0, 0, w, h);
     const take = smooth(0, 0.3, p);
     const far = Math.hypot(w, h) / 2;
+    if (this.onMove) this.follow();
+    const lit = this.lit > 0.01 ? this.lit : 0;
     for (let j = 0; j < rows; j++)
       for (let i = 0; i < cols; i++) {
         const k = j * cols + i;
@@ -255,6 +294,13 @@ class ArchiePixels extends HTMLElement {
         let side = SIZE;
         let a = Math.max(0.03 + 0.85 * own * own, flash * 0.85);
         let rgb = this.ink;
+        if (lit) {
+          const g = lit * (1 - smooth(0, HOVER_R, Math.hypot(x - this.hover.x, y - this.hover.y)));
+          if (g > 0.01) {
+            a = lerp(a, 0.55 + 0.45 * own, g);
+            rgb = this.inkRgb.map((v, n) => Math.round(lerp(v, this.glowRgb[n], g))).join(",");
+          }
+        }
         if (arriving) {
           const c = k * 4;
           if (this.colors) rgb = [0, 1, 2].map((n) => Math.round(lerp(255, this.colors[c + n], take))).join(",");
