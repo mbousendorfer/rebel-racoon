@@ -1672,6 +1672,16 @@ body.has-modal {
   margin-top: var(--ref-spacing-xs);
 }
 
+/* The demo offer under the "try first" tick (flag demoMode) — indented to the
+   checkbox's label so it reads as that row's answer. */
+.skip-connect__demo {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+  padding-left: calc(var(--ref-spacing-md) + var(--ref-spacing-xxxs)); /* the checkbox + its gap */
+  color: var(--ref-color-grey-80);
+}
+
 .skip-connect__note {
   margin: 0;
 }
