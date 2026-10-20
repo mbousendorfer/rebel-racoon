@@ -1556,20 +1556,9 @@
   min-width: 60px;
 }
 
-/* Ideas — the kind filters on the white toolbar, the cards on the canvas,
-   at the panel's full width. The card says where an idea came from with
+/* Ideas — no sub-tabs nor kind filters (Clips is a header tab): the cards
+   straight on the canvas, at the panel's full width. The card says where an idea came from with
    the file chip alone; Why this idea is a quiet line, not a grey block. */
-.app-right-panel.has-header .rpanel-ideas__head {
-  padding: var(--ref-spacing-xs) var(--ref-spacing-md);
-  background: var(--ref-color-white);
-  border-bottom-color: var(--ref-color-grey-20);
-}
-
-.app-right-panel.has-header .rpanel-outputs__tabs {
-  padding-inline: var(--ref-spacing-md);
-  border-bottom-color: var(--ref-color-grey-20);
-}
-
 .app-right-panel.has-header .rpanel-ideas__body {
   gap: var(--ref-spacing-sm);
   padding: var(--ref-spacing-md);

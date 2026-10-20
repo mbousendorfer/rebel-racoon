@@ -39,8 +39,7 @@ overlays : `sidebar | contenu | right panel`.
    d'abord un menu contextuel ouvert, puis le panel).
    7b. **Flag `contentPanel`** : une seule entrée dans la topbar (**Content**,
    rouvre le dernier onglet, Overview la première fois ; désactivée sur un chat
-   vide) et un **en-tête** dans le panel — onglets Overview │ Sources › Ideas ›
-   Drafts avec leurs compteurs, et le seul bouton fermer. Le panel ne s'ouvre
+   vide) et un **en-tête** dans le panel — onglets Overview │ Sources › Ideas, Clips (s'il y en a) › Drafts avec leurs compteurs, et le seul bouton fermer. Le panel ne s'ouvre
    jamais tout seul : les cartes du fil l'ouvrent sur leurs objets.
 
 ---

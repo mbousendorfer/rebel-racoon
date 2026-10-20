@@ -2,12 +2,12 @@
 // the per-card feedback and "why this idea" state. Moved out of right-panel.js,
 // unchanged; the filter state it reads is owned (and written) by the shell.
 
-import { html, raw } from "../../utils.js?v=2069";
-import { conceptText } from "../../concepts.js?v=2069";
-import { isFlagOn } from "../../feature-flags.js?v=2069";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2069";
-import { renderClipCard } from "../clip-card.js?v=2069";
-import { renderCompactIdeaCard } from "../idea-card-compact.js?v=2069";
+import { html, raw } from "../../utils.js?v=2070";
+import { conceptText } from "../../concepts.js?v=2070";
+import { isFlagOn } from "../../feature-flags.js?v=2070";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2070";
+import { renderClipCard } from "../clip-card.js?v=2070";
+import { renderCompactIdeaCard } from "../idea-card-compact.js?v=2070";
 import {
   closeInline,
   activeSessionId,
@@ -15,7 +15,7 @@ import {
   ideasFilter,
   outputsView,
   sessionIdeas,
-} from "../right-panel.js?v=2069";
+} from "../right-panel.js?v=2070";
 
 // Idea kind taxonomy — handoff Ideas filter rail (§ 2.6). Order is the order
 // shown in the chip row. The .kind selector also drives the per-kind tag
@@ -67,6 +67,19 @@ export function renderIdeasView() {
       ${closeInline()}
     </div>
   `;
+
+  // Under contentPanel the panel header carries Ideas and Clips as tabs, and
+  // there is no kind filter: just the list.
+  const bare = isFlagOn("contentPanel");
+  if (bare) {
+    return html`
+      <div class="rpanel-ideas">
+        <div class="rpanel-ideas__body" data-rpanel-ideas-body>
+          ${raw(ideasActive ? renderIdeasList() : renderClipsList(clips))}
+        </div>
+      </div>
+    `;
+  }
 
   if (!ideasActive) {
     return html`
