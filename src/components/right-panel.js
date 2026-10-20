@@ -1,32 +1,32 @@
-import { html, raw, escapeHtml } from "../utils.js?v=2065";
-import { conceptText } from "../concepts.js?v=2065";
-import { subscribe as subscribeThread } from "../assistant.js?v=2065";
-import { getPath, navigate } from "../router.js?v=2065";
-import { parseHashParams } from "../url-state.js?v=2065";
+import { html, raw, escapeHtml } from "../utils.js?v=2068";
+import { conceptText } from "../concepts.js?v=2068";
+import { subscribe as subscribeThread } from "../assistant.js?v=2068";
+import { getPath, navigate } from "../router.js?v=2068";
+import { parseHashParams } from "../url-state.js?v=2068";
 import {
   getPosts,
   attachImageToDraft,
   updatePostClip,
   subscribe as subscribePostsStore,
-} from "../posts-store.js?v=2065";
-import { onFeedbackClick } from "./feedback-control.js?v=2065";
+} from "../posts-store.js?v=2068";
+import { onFeedbackClick } from "./feedback-control.js?v=2068";
 // Shared compact idea card — same component the standalone Ideas page uses.
-import { open as openVideoClipsModal } from "./video-clips-modal.js?v=2065";
-import { isSidebarCollapsed, setSidebarCollapsed, isAutoCollapsed } from "./sidebar.js?v=2065";
+import { open as openVideoClipsModal } from "./video-clips-modal.js?v=2068";
+import { isSidebarCollapsed, setSidebarCollapsed, isAutoCollapsed } from "./sidebar.js?v=2068";
 import {
   getSources as getStreamSources,
   subscribeSources,
   updateSourceClips,
   removeSources,
   renameSource,
-} from "../sources-stream.js?v=2065";
-import { open as openAddSourceModal } from "./add-source-modal.js?v=2065";
-import { open as openRenameModal } from "./rename-modal.js?v=2065";
-import { askConnector } from "../connector-ask.js?v=2065";
-import { open as openConnectorsModal } from "./connectors-modal.js?v=2065";
-import { addMention as addComposerMention } from "../composer-mentions.js?v=2065";
-import { getIdeas, removeIdeasForSources } from "../library.js?v=2065";
-import { isFlagOn } from "../feature-flags.js?v=2065";
+} from "../sources-stream.js?v=2068";
+import { open as openAddSourceModal } from "./add-source-modal.js?v=2068";
+import { open as openRenameModal } from "./rename-modal.js?v=2068";
+import { askConnector } from "../connector-ask.js?v=2068";
+import { open as openConnectorsModal } from "./connectors-modal.js?v=2068";
+import { addMention as addComposerMention } from "../composer-mentions.js?v=2068";
+import { getIdeas, removeIdeasForSources } from "../library.js?v=2068";
+import { isFlagOn } from "../feature-flags.js?v=2068";
 
 // The ideas of the chat the panel is looking at.
 //
@@ -41,18 +41,18 @@ export function sessionIdeas() {
   const sid = activeSessionId();
   return sid ? getIdeas(sid) : [];
 }
-import { open as openConfirmModal } from "./confirm-modal.js?v=2065";
-import { showToast } from "./toast.js?v=2065";
-import { isOverlayEscape } from "../modal-coordinator.js?v=2065";
-import { closeAllSourceMenus, renderSourcesView } from "./right-panel/sources-view.js?v=2065";
-import { contentCounts, onOverviewToggle, renderOverviewView } from "./right-panel/overview-view.js?v=2065";
+import { open as openConfirmModal } from "./confirm-modal.js?v=2068";
+import { showToast } from "./toast.js?v=2068";
+import { isOverlayEscape } from "../modal-coordinator.js?v=2068";
+import { closeAllSourceMenus, renderSourcesView } from "./right-panel/sources-view.js?v=2068";
+import { contentCounts, renderOverviewView } from "./right-panel/overview-view.js?v=2068";
 import {
   collectAllClips,
   renderIdeasView,
   toggleClipWhyInPlace,
   toggleIdeaFeedback,
   toggleWhyOpen,
-} from "./right-panel/ideas-view.js?v=2065";
+} from "./right-panel/ideas-view.js?v=2068";
 import {
   cancelEdit,
   commitEdit,
@@ -78,7 +78,7 @@ import {
   setNetworkSelection,
   startEdit,
   visibleNetworkPosts,
-} from "./right-panel/drafts-view.js?v=2065";
+} from "./right-panel/drafts-view.js?v=2068";
 
 // Global Right Panel — slides in from the right edge of the viewport, overlays
 // the session workspace, hosts two modes:
@@ -526,9 +526,6 @@ export function init() {
     renderPanel();
   });
 
-  // <details> toggles don't bubble — capture them for the Overview's folds.
-  el.addEventListener("toggle", onOverviewToggle, true);
-
   el.addEventListener("click", (event) => {
     // Auto-commit any in-progress edit when the click lands outside the
     // current editor + its Save/Cancel buttons. Falls through so a click
@@ -807,7 +804,7 @@ export function init() {
       openVideoClipsModal(src, {
         onSaveClips: (id, nextClips) => updateSourceClips(id, nextClips),
         onUseClips: (selectedClips, source) => {
-          import("../screens/session/clip-draft-flow.js?v=2065").then(({ startClipDraftFlow }) => {
+          import("../screens/session/clip-draft-flow.js?v=2068").then(({ startClipDraftFlow }) => {
             startClipDraftFlow(
               sid,
               selectedClips.map((clip) => ({ clip, sourceName: source.filename, sourceId: source.id })),
@@ -978,7 +975,7 @@ export function init() {
       const sid = activeSessionId();
       if (!sid || !entry) return;
       const { clip, sourceName, sourceId } = entry;
-      import("../screens/session/clip-draft-flow.js?v=2065").then(({ startClipDraftFlow }) => {
+      import("../screens/session/clip-draft-flow.js?v=2068").then(({ startClipDraftFlow }) => {
         startClipDraftFlow(sid, [{ clip, sourceName, sourceId }]);
       });
       return;
@@ -996,7 +993,7 @@ export function init() {
       if (picked.length === 0) return;
       clipSelection = new Set();
       renderPanel();
-      import("../screens/session/clip-draft-flow.js?v=2065").then(({ startClipDraftFlow }) => {
+      import("../screens/session/clip-draft-flow.js?v=2068").then(({ startClipDraftFlow }) => {
         startClipDraftFlow(sid, picked);
       });
       return;
@@ -1257,7 +1254,7 @@ function renderPanelHeader() {
     const on = state.mode === mode;
     return `<button type="button" class="ap-tabs-tab${on ? " active" : ""}" role="tab" aria-selected="${on}"
       data-rpanel-goto="${mode}"${mode === "overview" ? "" : ` title="${escapeHtml(conceptText(mode === "drafts" ? "draft" : mode.slice(0, -1)))}"`}>
-      <span>${label}</span>${count > 0 ? `<span class="ap-counter normal ${on ? "blue" : "grey"}">${count}</span>` : ""}
+      <span>${label}</span>${count > 0 ? `<span class="ap-counter normal ${on ? "blue" : "grey no-bg"}">${count}</span>` : ""}
     </button>`;
   };
   const step = `<i class="ap-icon-chevron-right rpanel-header__step" aria-hidden="true"></i>`;
@@ -1461,7 +1458,7 @@ function useIdea(ideaId) {
   if (!idea) return;
   const sid = activeSessionId();
   if (!sid) return;
-  import("../screens/session/draft-questions.js?v=2065").then(({ askAngleQuestion }) => {
+  import("../screens/session/draft-questions.js?v=2068").then(({ askAngleQuestion }) => {
     askAngleQuestion(sid, ideaId);
   });
 }

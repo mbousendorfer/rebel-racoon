@@ -24,16 +24,16 @@
 // card (defined in right-panel.css). Classes prefixed `clip-card__*`
 // own clip-specific bits (thumbnail, timeframe overlay).
 
-import { iconFor } from "../file-kinds.js?v=2065";
-import { escapeText, escapeAttr, formatClock } from "../utils.js?v=2065";
-import { installMoreMenu } from "./more-menu.js?v=2065";
-import { renderFeedbackThumbs, renderFeedbackPanel } from "./feedback-control.js?v=2065";
-import { videoForClip } from "../clip-captions.js?v=2065";
-import { FORMATS } from "../clip-formats.js?v=2065";
+import { iconFor } from "../file-kinds.js?v=2068";
+import { escapeText, escapeAttr, formatClock } from "../utils.js?v=2068";
+import { installMoreMenu } from "./more-menu.js?v=2068";
+import { renderFeedbackThumbs, renderFeedbackPanel } from "./feedback-control.js?v=2068";
+import { videoForClip } from "../clip-captions.js?v=2068";
+import { FORMATS } from "../clip-formats.js?v=2068";
 
 const fmtTime = (s) => formatClock(s);
 
-function thumbBackground(hue) {
+export function thumbBackground(hue) {
   const h = hue ?? 24;
   const bg = `linear-gradient(135deg, oklch(0.32 0.08 ${h}) 0%, oklch(0.18 0.05 ${h}) 100%)`;
   const blob1 = `radial-gradient(circle at 28% 38%, oklch(0.72 0.18 ${h}) 0%, transparent 42%)`;

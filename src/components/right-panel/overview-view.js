@@ -1,25 +1,27 @@
 // The right panel's Overview (flag contentPanel) — the chat at a glance, and
-// what the conversation status card became: one stacked card per object of
-// the pipeline (in progress · sources · ideas · clips · drafts), each with the
-// numbers that say where it stands. Modelled on the Claude Code side pane:
-// cards that fold under their title, a proportion bar with a named legend,
-// and a link row to the full tab. Render-only; the shell (right-panel.js)
-// owns the delegated clicks (data-rpanel-goto / data-rpanel-focus).
+// what the conversation status card became. Not a dashboard of counters: the
+// chat's actual content, in the pipeline's order. On top, my next step (the
+// one thing worth doing now, in Archie's butter); then the sources as file
+// tiles, the first ideas with their kind, the clips as a filmstrip of their
+// thumbnails, the drafts as excerpts with their status. Each section names its
+// numbers in words and links to its tab. Render-only; the shell
+// (right-panel.js) owns the delegated clicks (data-rpanel-goto / -focus).
 
-import { escapeAttr, escapeText } from "../../utils.js?v=2065";
-import { getThread } from "../../assistant.js?v=2065";
-import { getSources } from "../../sources-stream.js?v=2065";
-import { getIdeas } from "../../library.js?v=2065";
-import { getPosts } from "../../posts-store.js?v=2065";
-import { isPostValid } from "../../post-validation.js?v=2065";
-import { networkIcon, networkLabel } from "../../network-voice.js?v=2065";
-import { pendingProcesses } from "../conversation-status-card.js?v=2065";
-import { SOURCE_KIND_ICON } from "./sources-view.js?v=2065";
-import { activeSessionId } from "../right-panel.js?v=2065";
+import { escapeAttr, escapeText, formatClock } from "../../utils.js?v=2068";
+import { getThread } from "../../assistant.js?v=2068";
+import { getSources } from "../../sources-stream.js?v=2068";
+import { getIdeas } from "../../library.js?v=2068";
+import { getPosts } from "../../posts-store.js?v=2068";
+import { isPostValid } from "../../post-validation.js?v=2068";
+import { networkIcon, networkLabel } from "../../network-voice.js?v=2068";
+import { iconFor } from "../../file-kinds.js?v=2068";
+import { thumbBackground } from "../clip-card.js?v=2068";
+import { pendingProcesses } from "../conversation-status-card.js?v=2068";
+import { activeSessionId } from "../right-panel.js?v=2068";
 
 // Live drafts only — the Drafts tab hides scheduled ones, so does its count.
 const liveDrafts = (sid) => getPosts(sid).filter((p) => p.status !== "scheduled");
-const clipsOf = (sources) => sources.reduce((n, s) => n + (Array.isArray(s.clips) ? s.clips.length : 0), 0);
+const allClips = (sources) => sources.flatMap((s) => (Array.isArray(s.clips) ? s.clips : []));
 
 // One count per tab — read by the panel header and the topbar Content button.
 export function contentCounts(sid) {
@@ -28,22 +30,14 @@ export function contentCounts(sid) {
   return {
     sources: sources.length,
     ideas: getIdeas(sid).length,
-    clips: clipsOf(sources),
+    clips: allClips(sources).length,
     drafts: liveDrafts(sid).length,
   };
 }
 
-// A card the user folded stays folded across the re-renders every store
-// change triggers. Fed by the panel's capturing `toggle` listener.
-const folded = new Set();
-export function onOverviewToggle(event) {
-  const card = event.target.closest?.("[data-ov-card]");
-  if (!card) return;
-  if (card.open) folded.delete(card.dataset.ovCard);
-  else folded.add(card.dataset.ovCard);
-}
-
 const plural = (n, one, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
+const IDEAS_SHOWN = 3;
+const DRAFTS_SHOWN = 4;
 
 export function renderOverviewView() {
   const sid = activeSessionId();
@@ -51,173 +45,205 @@ export function renderOverviewView() {
   const sources = getSources(sid);
   const ideas = getIdeas(sid);
   const drafts = liveDrafts(sid);
-  const clipCount = clipsOf(sources);
+  const clips = allClips(sources);
   const pending = pendingProcesses(getThread(sid));
   return `
     <div class="rpanel-ov">
-      ${renderPending(pending)}
-      ${renderSourcesCard(sources)}
-      ${renderIdeasCard(ideas)}
-      ${clipCount ? renderLinkCard("clips", "Clips", plural(clipCount, "clip")) : ""}
-      ${renderDraftsCard(drafts)}
+      ${renderNextStep({ sources, ideas, drafts, pending })}
+      ${renderSources(sources)}
+      ${renderIdeas(ideas)}
+      ${clips.length ? renderClips(clips) : ""}
+      ${renderDrafts(drafts)}
     </div>
   `;
 }
 
-// ── Building blocks ─────────────────────────────────────────────────────────
+// ── Section chrome ──────────────────────────────────────────────────────────
 
-function card(id, title, metric, body) {
+// Title, the section's numbers in words, and the way to its tab.
+function section(id, title, metric, link, body) {
   return `
-    <details class="rpanel-ov__card" data-ov-card="${id}" ${folded.has(id) ? "" : "open"}>
-      <summary class="rpanel-ov__head">
-        <span class="rpanel-ov__title">${title}</span>
-        <i class="ap-icon-chevron-down rpanel-ov__chevron" aria-hidden="true"></i>
-        <span class="rpanel-ov__metric">${metric}</span>
-      </summary>
-      <div class="rpanel-ov__body">${body}</div>
-    </details>
-  `;
-}
-
-// The link at the foot of a card — always says where it goes.
-const footLink = (mode, label) => `
-  <button type="button" class="ap-link standalone small rpanel-ov__foot" data-rpanel-goto="${mode}">
-    <span>${label}</span><i class="ap-icon-chevron-right" aria-hidden="true"></i>
-  </button>
-`;
-
-// Proportion bar + its legend: every segment named, with its count.
-function renderSplit(parts) {
-  const total = parts.reduce((n, p) => n + p.count, 0);
-  if (!total) return "";
-  const bar = parts
-    .filter((p) => p.count)
-    .map((p) => `<span class="rpanel-ov__seg rpanel-ov__seg--${p.tone}" style="flex-grow:${p.count}"></span>`)
-    .join("");
-  const legend = parts
-    .map(
-      (p) => `
-      <li class="rpanel-ov__legend-row">
-        <span class="rpanel-ov__swatch rpanel-ov__seg--${p.tone}" aria-hidden="true"></span>
-        <span class="rpanel-ov__legend-label">${p.label}</span>
-        <span class="rpanel-ov__legend-count">${p.count}</span>
-      </li>`,
-    )
-    .join("");
-  return `
-    <div class="rpanel-ov__bar" role="img" aria-label="${escapeAttr(parts.map((p) => `${p.count} ${p.label}`).join(", "))}">${bar}</div>
-    <ul class="rpanel-ov__legend">${legend}</ul>
+    <section class="rpanel-ov__section" aria-labelledby="rpanel-ov-${id}">
+      <header class="rpanel-ov__section-head">
+        <h3 class="rpanel-ov__title" id="rpanel-ov-${id}">${title}</h3>
+        ${metric ? `<span class="rpanel-ov__metric">${metric}</span>` : ""}
+        ${link ? `<button type="button" class="ap-link standalone small rpanel-ov__link" data-rpanel-goto="${id}">${link}</button>` : ""}
+      </header>
+      ${body}
+    </section>
   `;
 }
 
 const emptyLine = (text) => `<p class="rpanel-ov__empty">${text}</p>`;
 
-// ── Cards ───────────────────────────────────────────────────────────────────
+// ── My next step ────────────────────────────────────────────────────────────
+// The one thing worth doing now, said once, in my voice. Work in progress
+// first (nothing to decide yet), then what blocks a post from going out, then
+// what's ready, then what's waiting.
 
-function renderPending(pending) {
-  if (!pending.length) return "";
-  const rows = pending
-    .map(
-      (label) => `
-      <li class="rpanel-ov__row rpanel-ov__row--static">
-        <span class="ap-loader blue size-16" aria-hidden="true"><svg><circle></circle><circle></circle></svg></span>
-        <span class="rpanel-ov__row-label">${escapeText(label)}</span>
-      </li>`,
-    )
-    .join("");
+function renderNextStep({ sources, ideas, drafts, pending }) {
+  let line = "";
+  let cta = null;
+  const toFix = drafts.filter((p) => !isPostValid(p)).length;
+  const waiting = ideas.filter((i) => !(i.used > 0)).length;
+  if (pending.length) {
+    line = `${escapeText(pending[0].replace(/…$/, ""))}…`;
+  } else if (toFix) {
+    line = `${plural(toFix, "draft")} ${toFix === 1 ? "needs a fix before it can" : "need a fix before they can"} go out.`;
+    cta = { to: "drafts", label: "Review drafts" };
+  } else if (drafts.length) {
+    line = `${plural(drafts.length, "draft")} ${drafts.length === 1 ? "is" : "are"} ready to schedule.`;
+    cta = { to: "drafts", label: "Review drafts" };
+  } else if (waiting) {
+    line = `${plural(waiting, "idea")} ${waiting === 1 ? "is" : "are"} waiting. Pick one and I'll draft it.`;
+    cta = { to: "ideas", label: "See ideas" };
+  } else if (sources.length) {
+    line = "I've read your sources. Ask me for a post whenever you're ready.";
+  } else {
+    return "";
+  }
   return `
-    <section class="rpanel-ov__card rpanel-ov__card--live" role="status">
-      <div class="rpanel-ov__head rpanel-ov__head--static">
-        <span class="rpanel-ov__title">In progress</span>
+    <div class="rpanel-ov__next" role="status">
+      <span class="rpanel-ov__next-mark" aria-hidden="true">
+        ${
+          pending.length
+            ? `<span class="ap-loader size-16"><svg><circle></circle><circle></circle></svg></span>`
+            : `<i class="ap-icon-archie-official"></i>`
+        }
+      </span>
+      <div class="rpanel-ov__next-body">
+        <p class="rpanel-ov__next-line">${line}</p>
+        ${cta ? `<button type="button" class="ap-button primary blue" data-rpanel-goto="${cta.to}">${cta.label}</button>` : ""}
       </div>
-      <ul class="rpanel-ov__rows">${rows}</ul>
-    </section>
+    </div>
   `;
 }
 
-function renderSourcesCard(sources) {
+// ── Sources — file tiles ────────────────────────────────────────────────────
+
+function renderSources(sources) {
   if (!sources.length) {
-    return card("sources", "Sources", "None yet", emptyLine("Attach a file or a link and I'll pull ideas from it."));
+    return section("sources", "Sources", "", "", emptyLine("Attach a file or a link and I'll pull ideas from it."));
   }
   const rows = sources
     .map((s) => {
-      const icon = s.iconClass || SOURCE_KIND_ICON[s.kind] || "ap-icon-file";
+      const reading = s.status !== "Processed";
       const clips = Array.isArray(s.clips) ? s.clips.length : 0;
-      const meta =
-        s.status !== "Processed"
-          ? "Reading…"
-          : [s.ideaCount ? plural(s.ideaCount, "idea") : "", clips ? plural(clips, "clip") : ""]
-              .filter(Boolean)
-              .join(" · ") || "No ideas yet";
+      const tile = s.serviceLogo
+        ? `<img src="${escapeAttr(s.serviceLogo)}" alt="" />`
+        : `<i class="${s.iconClass || iconFor(s.kind)}" aria-hidden="true"></i>`;
+      const meta = reading
+        ? "Reading…"
+        : [s.ideaCount ? plural(s.ideaCount, "idea") : "No ideas yet", clips ? plural(clips, "clip") : ""]
+            .filter(Boolean)
+            .join(", ");
       return `
         <li>
-          <button type="button" class="rpanel-ov__row" data-rpanel-focus="source:${escapeAttr(s.id)}" title="Show in Sources">
-            <i class="${icon} rpanel-ov__row-icon" aria-hidden="true"></i>
-            <span class="rpanel-ov__row-label">${escapeText(s.filename || "Untitled")}</span>
-            <span class="rpanel-ov__row-meta">${meta}</span>
+          <button type="button" class="rpanel-ov__item" data-rpanel-focus="source:${escapeAttr(s.id)}">
+            <span class="rpanel-ov__tile">${tile}</span>
+            <span class="rpanel-ov__item-text">
+              <span class="rpanel-ov__item-title">${escapeText(s.filename || "Untitled")}</span>
+              <span class="rpanel-ov__item-meta">${meta}</span>
+            </span>
           </button>
         </li>`;
     })
     .join("");
-  return card(
+  return section(
     "sources",
     "Sources",
-    `${plural(sources.length, "source")} in this chat`,
-    `<ul class="rpanel-ov__rows">${rows}</ul>${footLink("sources", "Manage sources")}`,
+    plural(sources.length, "source"),
+    "Manage",
+    `<ul class="rpanel-ov__list">${rows}</ul>`,
   );
 }
 
-function renderIdeasCard(ideas) {
+// ── Ideas — kind + title, how many made it to a draft ───────────────────────
+
+function renderIdeas(ideas) {
   if (!ideas.length) {
-    return card("ideas", "Ideas", "None yet", emptyLine("I pull ideas from your sources — attach one to get some."));
+    return section("ideas", "Ideas", "", "", emptyLine("I pull ideas from your sources. Attach one to get some."));
   }
   const drafted = ideas.filter((i) => i.used > 0).length;
-  return card(
+  // Not drafted yet first: that's where the next post comes from.
+  const shown = [...ideas].sort((a, b) => (a.used > 0) - (b.used > 0)).slice(0, IDEAS_SHOWN);
+  const rows = shown
+    .map((i) => {
+      const kind = i.kind || "insight";
+      return `
+        <li>
+          <button type="button" class="rpanel-ov__item rpanel-ov__item--idea" data-rpanel-focus="idea:${escapeAttr(i.id)}">
+            <span class="ap-tag rpanel-ideas__kind rpanel-ideas__kind--${kind} rpanel-ov__kind">${kind.charAt(0).toUpperCase() + kind.slice(1)}</span>
+            <span class="rpanel-ov__item-title">${escapeText(i.title)}</span>
+            ${i.used > 0 ? `<span class="ap-status green rpanel-ov__state">Drafted</span>` : ""}
+          </button>
+        </li>`;
+    })
+    .join("");
+  const progress = `
+    <span class="rpanel-ov__progress" aria-hidden="true">
+      <span class="rpanel-ov__progress-fill" style="width:${Math.round((drafted / ideas.length) * 100)}%"></span>
+    </span>`;
+  return section(
     "ideas",
     "Ideas",
-    plural(ideas.length, "idea"),
-    `${renderSplit([
-      { label: "Drafted", count: drafted, tone: "done" },
-      { label: "Not drafted yet", count: ideas.length - drafted, tone: "rest" },
-    ])}${footLink("ideas", "See all ideas")}`,
+    `${progress}<span>${drafted} of ${ideas.length} drafted</span>`,
+    ideas.length > IDEAS_SHOWN ? `See all ${ideas.length}` : "Open",
+    `<ul class="rpanel-ov__list">${rows}</ul>`,
   );
 }
 
-function renderDraftsCard(drafts) {
-  if (!drafts.length) {
-    return card("drafts", "Drafts", "None yet", emptyLine("Ask me for a post, or draft one from an idea."));
-  }
-  const toFix = drafts.filter((p) => !isPostValid(p)).length;
-  const byNetwork = new Map();
-  for (const p of drafts) byNetwork.set(p.network, (byNetwork.get(p.network) || 0) + 1);
-  const networks = [...byNetwork]
+// ── Clips — a filmstrip of their thumbnails ─────────────────────────────────
+
+function renderClips(clips) {
+  const frames = clips
     .map(
-      ([n, count]) => `
-      <li class="rpanel-ov__row rpanel-ov__row--static">
-        <i class="${networkIcon(n)} rpanel-ov__row-icon" aria-hidden="true"></i>
-        <span class="rpanel-ov__row-label">${escapeText(networkLabel(n))}</span>
-        <span class="rpanel-ov__row-meta">${plural(count, "draft")}</span>
+      (c) => `
+      <li>
+        <button type="button" class="rpanel-ov__frame" data-rpanel-focus="clip:${escapeAttr(c.id)}">
+          <span class="rpanel-ov__frame-thumb" style="background-image:${thumbBackground(c.hue)}">
+            <span class="rpanel-ov__frame-time">${formatClock((c.end || 0) - (c.start || 0))}</span>
+          </span>
+          <span class="rpanel-ov__frame-title">${escapeText(c.title || "Clip")}</span>
+        </button>
       </li>`,
     )
     .join("");
-  return card(
-    "drafts",
-    "Drafts",
-    plural(drafts.length, "draft"),
-    `${renderSplit([
-      { label: "Ready", count: drafts.length - toFix, tone: "ready" },
-      { label: "Needs fixes", count: toFix, tone: "fix" },
-    ])}<ul class="rpanel-ov__rows rpanel-ov__rows--split">${networks}</ul>${footLink("drafts", "Review drafts")}`,
-  );
+  return section("clips", "Clips", plural(clips.length, "clip"), "Open", `<ul class="rpanel-ov__strip">${frames}</ul>`);
 }
 
-// A card that is only a way in — Claude's « Connecteurs › 10 à reconnecter ».
-function renderLinkCard(mode, title, metric) {
-  return `
-    <button type="button" class="rpanel-ov__card rpanel-ov__card--link" data-rpanel-goto="${mode}">
-      <span class="rpanel-ov__title">${title}</span>
-      <i class="ap-icon-chevron-right rpanel-ov__chevron" aria-hidden="true"></i>
-      <span class="rpanel-ov__metric">${metric}</span>
-    </button>
-  `;
+// ── Drafts — the post itself, where it goes, whether it can ─────────────────
+
+function renderDrafts(drafts) {
+  if (!drafts.length) {
+    return section("drafts", "Drafts", "", "", emptyLine("Ask me for a post, or draft one from an idea."));
+  }
+  const toFix = drafts.filter((p) => !isPostValid(p)).length;
+  const rows = drafts
+    .slice(0, DRAFTS_SHOWN)
+    .map((p) => {
+      const ok = isPostValid(p);
+      const text = Array.isArray(p.text) ? p.text.join(" ") : p.text || "";
+      const label = escapeAttr(networkLabel(p.network));
+      return `
+        <li>
+          <button type="button" class="rpanel-ov__draft" data-rpanel-focus="post:${escapeAttr(p.id)}">
+            <i class="${networkIcon(p.network)} rpanel-ov__draft-network" title="${label}" aria-label="${label}"></i>
+            <span class="rpanel-ov__draft-body">
+              <span class="rpanel-ov__draft-text">${escapeText(text)}</span>
+              <span class="ap-status ${ok ? "green" : "orange"} rpanel-ov__state">${ok ? "Ready" : "Needs a fix"}</span>
+            </span>
+            ${p.imageUrl ? `<img class="rpanel-ov__draft-media" src="${escapeAttr(p.imageUrl)}" alt="" loading="lazy" />` : ""}
+          </button>
+        </li>`;
+    })
+    .join("");
+  const metric = toFix ? `${drafts.length - toFix} ready, ${toFix} to fix` : `${drafts.length} ready`;
+  return section(
+    "drafts",
+    "Drafts",
+    metric,
+    drafts.length > DRAFTS_SHOWN ? `See all ${drafts.length}` : "Review",
+    `<ul class="rpanel-ov__list rpanel-ov__list--drafts">${rows}</ul>`,
+  );
 }

@@ -2,11 +2,12 @@
 // the per-card feedback and "why this idea" state. Moved out of right-panel.js,
 // unchanged; the filter state it reads is owned (and written) by the shell.
 
-import { html, raw } from "../../utils.js?v=2065";
-import { conceptText } from "../../concepts.js?v=2065";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2065";
-import { renderClipCard } from "../clip-card.js?v=2065";
-import { renderCompactIdeaCard } from "../idea-card-compact.js?v=2065";
+import { html, raw } from "../../utils.js?v=2068";
+import { conceptText } from "../../concepts.js?v=2068";
+import { isFlagOn } from "../../feature-flags.js?v=2068";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2068";
+import { renderClipCard } from "../clip-card.js?v=2068";
+import { renderCompactIdeaCard } from "../idea-card-compact.js?v=2068";
 import {
   closeInline,
   activeSessionId,
@@ -14,7 +15,7 @@ import {
   ideasFilter,
   outputsView,
   sessionIdeas,
-} from "../right-panel.js?v=2065";
+} from "../right-panel.js?v=2068";
 
 // Idea kind taxonomy — handoff Ideas filter rail (§ 2.6). Order is the order
 // shown in the chip row. The .kind selector also drives the per-kind tag
@@ -89,8 +90,10 @@ export function renderIdeasView() {
       <div class="rpanel-ideas__head">
         <div class="rpanel-ideas__filters" role="group" aria-label="Filter ideas by kind">
           ${raw(
-            IDEA_KINDS.map(
-              (k) => `
+            // Under contentPanel a kind with no idea isn't offered as a filter.
+            IDEA_KINDS.filter((k) => !isFlagOn("contentPanel") || k.id === "all" || kindCounts[k.id] > 0)
+              .map(
+                (k) => `
                 <button
                   type="button"
                   class="ap-filter-chip"
@@ -102,7 +105,8 @@ export function renderIdeasView() {
                   <span class="ap-filter-chip-count">${kindCounts[k.id]}</span>
                 </button>
               `,
-            ).join(""),
+              )
+              .join(""),
           )}
         </div>
       </div>

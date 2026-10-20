@@ -3,14 +3,14 @@
 // the panel shell (open / close / resize / URL state / delegated listeners)
 // stays there.
 
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2065";
-import { isFlagOn } from "../../feature-flags.js?v=2065";
-import { getConnectedConnectors } from "../../connectors-store.js?v=2065";
-import { escapeAttr, escapeText } from "../../utils.js?v=2065";
-import { conceptText } from "../../concepts.js?v=2065";
-import { renderConnectorLogo } from "../../connectors-view.js?v=2065";
-import { renderTopPostEcho } from "../top-post-card.js?v=2065";
-import { closeInline, activeSessionId, sessionIdeas } from "../right-panel.js?v=2065";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2068";
+import { isFlagOn } from "../../feature-flags.js?v=2068";
+import { getConnectedConnectors } from "../../connectors-store.js?v=2068";
+import { escapeAttr, escapeText } from "../../utils.js?v=2068";
+import { conceptText } from "../../concepts.js?v=2068";
+import { renderConnectorLogo } from "../../connectors-view.js?v=2068";
+import { renderTopPostEcho } from "../top-post-card.js?v=2068";
+import { closeInline, activeSessionId, sessionIdeas } from "../right-panel.js?v=2068";
 
 // Sources mode view — list of source rows for the active session + a
 // trailing "+ Attach" button. Each row carries kind icon, filename,
@@ -32,10 +32,11 @@ export function renderSourcesView() {
   }
   const sources = getStreamSources(sid);
   const rows = sources.map((src) => renderSourceRow(src)).join("");
+  // Under contentPanel the header's Sources tab carries the count.
   const head = `
     <div class="rpanel-sources__head">
       <div class="rpanel-sources__head-text">
-        <div class="rpanel-sources__count">${sources.length} source${sources.length === 1 ? "" : "s"} in this chat</div>
+        ${isFlagOn("contentPanel") ? "" : `<div class="rpanel-sources__count">${sources.length} source${sources.length === 1 ? "" : "s"} in this chat</div>`}
         <div class="rpanel-sources__sub concept-lead">${escapeText(conceptText("source"))}</div>
       </div>
       ${renderAttachMenu("stroked grey", "Attach a source")}
@@ -116,7 +117,18 @@ function renderLiveConnectors() {
     </div>`;
 }
 
-export const SOURCE_KIND_ICON = {
+// The words under a source's name (flag contentPanel).
+const KIND_LABEL = {
+  PDF: "PDF",
+  Word: "Document",
+  Text: "Text",
+  Video: "Video",
+  Audio: "Audio",
+  Image: "Image",
+  URL: "Link",
+};
+
+const SOURCE_KIND_ICON = {
   PDF: "ap-icon-file--pdf",
   Word: "ap-icon-file--text",
   Text: "ap-icon-file--text",
@@ -169,7 +181,13 @@ function renderSourceRow(src) {
                 <button type="button" class="rpanel-sources__idea-link" data-rpanel-source-idea="${escapeAttr(i.id)}" title="${escapeAttr(i.title)}">
                   <i class="ap-icon-archie-official rpanel-sources__idea-icon" aria-hidden="true"></i>
                   <span class="rpanel-sources__idea-title">${escapeText(i.title)}</span>
-                  ${i.kind ? `<span class="rpanel-sources__idea-kind muted">${escapeText(i.kind.charAt(0).toUpperCase() + i.kind.slice(1))}</span>` : ""}
+                  ${
+                    !i.kind
+                      ? ""
+                      : isFlagOn("contentPanel")
+                        ? `<span class="ap-tag rpanel-ideas__kind rpanel-ideas__kind--${escapeAttr(i.kind)} rpanel-sources__idea-tag">${escapeText(i.kind.charAt(0).toUpperCase() + i.kind.slice(1))}</span>`
+                        : `<span class="rpanel-sources__idea-kind muted">${escapeText(i.kind.charAt(0).toUpperCase() + i.kind.slice(1))}</span>`
+                  }
                   <i class="ap-icon-chevron-right rpanel-sources__idea-chevron" aria-hidden="true"></i>
                 </button>
               </li>`,
@@ -265,7 +283,13 @@ function renderSourceRow(src) {
       }</span>
         <div class="rpanel-sources__row-text">
           <div class="rpanel-sources__row-name" title="${escapeAttr(src.filename)}">${escapeText(src.filename)}</div>
-          ${src.preview ? `<div class="rpanel-sources__row-preview" title="${escapeAttr(src.preview)}">${escapeText(src.preview)}</div>` : ""}
+          ${
+            isFlagOn("contentPanel")
+              ? `<div class="rpanel-sources__row-meta">${escapeText([KIND_LABEL[src.kind] || src.kind || "File", src.addedAt ? `added ${src.addedAt}` : ""].filter(Boolean).join(", "))}</div>`
+              : src.preview
+                ? `<div class="rpanel-sources__row-preview" title="${escapeAttr(src.preview)}">${escapeText(src.preview)}</div>`
+                : ""
+          }
         </div>`;
 
   // A repurposed top post is a real stream source, so it gets the same card
@@ -287,6 +311,9 @@ function renderSourceRow(src) {
     `;
   }
 
+  // Under contentPanel the excerpt reads as the card's body, under its head.
+  const excerpt =
+    isFlagOn("contentPanel") && src.preview ? `<p class="rpanel-sources__excerpt">${escapeText(src.preview)}</p>` : "";
   return `
     <div class="rpanel-sources__row" data-source-id="${src.id}">
       <div class="rpanel-sources__card-head">
@@ -295,6 +322,7 @@ function renderSourceRow(src) {
         ${mentionBtn}
         ${moreMenu}
       </div>
+      ${excerpt}
       ${ideasList}
     </div>
   `;
