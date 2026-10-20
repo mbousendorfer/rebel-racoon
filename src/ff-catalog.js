@@ -220,4 +220,18 @@ export const FLAGS = Object.freeze([
       "a field, prefilled, with files, a short interview or by hand as other " +
       "ways in. It ends on a reveal — Start writing, or review the details.",
   },
+  {
+    id: "demoMode",
+    group: "Onboarding",
+    tip: "From the first screen, try Archie on a made-up brand (Bramble & Bean) with pretend accounts — one wave of drafts, nothing can be scheduled.",
+    label: "UP-Onboarding: demo brand",
+    default: false,
+    hides:
+      "When ON, the first screen of the first-time run offers Try it with a " +
+      "demo brand: a chat on Bramble & Bean, a coffee roaster I made up, with " +
+      "a generic voice and three pretend accounts already connected. I write " +
+      "one wave of real drafts, then the demo stops (the drafts stay to look " +
+      "at and edit). Scheduling opens a This is a demo dialog instead; Exit " +
+      "demo in the topbar wipes it all and goes back to the real setup.",
+  },
 ]);

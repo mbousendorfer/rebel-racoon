@@ -239,6 +239,7 @@
 }
 
 .welcome-intro__time {
+  white-space: nowrap;
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   color: var(--ref-color-grey-80);
@@ -355,6 +356,7 @@
 
 .welcome-intro__actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--ref-spacing-sm);
   margin-top: var(--ref-spacing-lg);
