@@ -11,13 +11,13 @@
 //   - blockInDemo(): every way to schedule asks for a real brand instead.
 //   - exitDemo(): wipes it all and goes back to the real setup.
 
-import { DEMO_ACCOUNTS, DEMO_PLAYBOOK } from "./mocks.js?v=2049";
-import { isDemo, isDemoDone, markDemoDone, writeDemo } from "./demo-mode.js?v=2049";
-import { postAssistantMessage, postUserTurn } from "./assistant.js?v=2049";
-import * as inlineQuestion from "./inline-question.js?v=2049";
-import { startPostPlan } from "./post-plan-flow.js?v=2049";
-import { getPosts, subscribe as subscribePosts } from "./posts-store.js?v=2049";
-import { open as openConfirm } from "./components/confirm-modal.js?v=2049";
+import { DEMO_ACCOUNTS, DEMO_PLAYBOOK } from "./mocks.js?v=2051";
+import { isDemo, isDemoDone, markDemoDone, writeDemo } from "./demo-mode.js?v=2051";
+import { postAssistantMessage, postUserTurn } from "./assistant.js?v=2051";
+import * as inlineQuestion from "./inline-question.js?v=2051";
+import { startPostPlan } from "./post-plan-flow.js?v=2051";
+import { getPosts, subscribe as subscribePosts } from "./posts-store.js?v=2051";
+import { open as openConfirm } from "./components/confirm-modal.js?v=2051";
 
 const PROFILES_KEY = "archie-connected-profiles";
 

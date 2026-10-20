@@ -37,9 +37,9 @@ const STAGE_S = 1.6; // s per stage, for a real 6–12 s wait; the last one hold
 const REFINING = "Refining the details…";
 const NARRATE_MIN = 220; // CSS px: narrower (a filmstrip tile) and there is no line
 // `data-ripple`: a click sends a ring out through the matrix.
-const RIPPLE_SPEED = 650; // CSS px / s
-const RIPPLE_LIFE = 1.8; // s, until it has faded out
-const RIPPLE_WIDTH = 44; // CSS px: the crest's half-thickness
+const RIPPLE_SPEED = 300; // CSS px / s — slow: 650 read as a shockwave (2026-10-20)
+const RIPPLE_LIFE = 3.2; // s, until it has faded out
+const RIPPLE_WIDTH = 70; // CSS px: the crest's half-thickness — wide, so it diffuses
 const RIPPLE_MAX = 4; // rings alive at once — older ones give way
 const RIPPLE_WOBBLE = 0.22; // how far the ring strays from a circle, ± of its radius
 
@@ -291,7 +291,8 @@ class ArchiePixels extends HTMLElement {
           age,
           shape: r.shape,
           radius: RIPPLE_SPEED * age,
-          k: (1 - age / RIPPLE_LIFE) ** 2,
+          // Eases in, then out over most of its life: a swell, not a hit.
+          k: smooth(0, 0.35, age) * (1 - smooth(0.2 * RIPPLE_LIFE, RIPPLE_LIFE, age)),
         });
     }
     if (this.ripples?.length && !waves.length) {
@@ -327,7 +328,7 @@ class ArchiePixels extends HTMLElement {
             const angle = Math.atan2(dy, dx);
             let bend = 0;
             for (const h of v.shape) bend += h.amp * Math.sin(h.n * angle + h.phase + h.drift * v.age);
-            const reach = v.radius * (1 + RIPPLE_WOBBLE * bend * 0.6) + (hash(k + 15485863) - 0.5) * RIPPLE_WIDTH;
+            const reach = v.radius * (1 + RIPPLE_WOBBLE * bend * 0.6) + (hash(k + 15485863) - 0.5) * RIPPLE_WIDTH * 0.5;
             const off = (d - reach) / RIPPLE_WIDTH;
             if (off > -4 && off < 3) {
               g = Math.max(g, v.k * Math.exp(-off * off));
@@ -336,11 +337,11 @@ class ArchiePixels extends HTMLElement {
               trough = Math.max(trough, v.k * Math.exp(-((off + 1.8) ** 2) / 0.8));
             }
           }
-          if (trough > 0.01) a *= 1 - 0.85 * trough;
+          if (trough > 0.01) a *= 1 - 0.45 * trough;
           if (g > 0.01) {
-            a = lerp(a, 0.9 + 0.1 * own, g);
-            side *= 1 + 0.5 * g;
-            rgb = this.inkRgb.map((c, n) => Math.round(lerp(c, this.glowRgb[n], g))).join(",");
+            a = lerp(a, 0.5 + 0.4 * own, g);
+            side *= 1 + 0.25 * g;
+            rgb = this.inkRgb.map((c, n) => Math.round(lerp(c, this.glowRgb[n], 0.75 * g))).join(",");
           }
         }
         if (arriving) {
