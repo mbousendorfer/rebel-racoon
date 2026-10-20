@@ -4,10 +4,10 @@
 // Moved out of session.js, unchanged; askAngleQuestion is also the right
 // panel's entry point (it imports this module, not the whole screen).
 
-import { getSessionById } from "../../sessions-store.js?v=2078";
-import { getContextById } from "../../contexts-store.js?v=2078";
-import { playbookForNewWork } from "../../active-playbook.js?v=2078";
-import { isFlagOn } from "../../feature-flags.js?v=2078";
+import { getSessionById } from "../../sessions-store.js?v=2079";
+import { getContextById } from "../../contexts-store.js?v=2079";
+import { playbookForNewWork } from "../../active-playbook.js?v=2079";
+import { isFlagOn } from "../../feature-flags.js?v=2079";
 import {
   postAssistantMessage,
   postSelectionEcho,
@@ -18,25 +18,25 @@ import {
   postActivity,
   postExtractionResult,
   postClipExtractionTurn,
-} from "../../assistant.js?v=2078";
-import * as inlineQuestion from "../../inline-question.js?v=2078";
-import { getIdeas, extractVideoIdeas, appendExtractedIdeas } from "../../library.js?v=2078";
+} from "../../assistant.js?v=2079";
+import * as inlineQuestion from "../../inline-question.js?v=2079";
+import { getIdeas, extractVideoIdeas, appendExtractedIdeas } from "../../library.js?v=2079";
 import {
   getSources as getStreamSources,
   setSourceIdeaCount,
   setSourceUse,
   extractClipsForSource,
-} from "../../sources-stream.js?v=2078";
+} from "../../sources-stream.js?v=2079";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
   getConnectedProfileById,
   normalizeNetwork,
-} from "../../social-profiles.js?v=2078";
-import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2078";
-import { executeDraftBatch, startDraftFlow, getAnglesForIdea } from "../../draft-flow.js?v=2078";
-import * as topPostsFlow from "../../top-posts-flow.js?v=2078";
+} from "../../social-profiles.js?v=2079";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2079";
+import { executeDraftBatch, startDraftFlow, getAnglesForIdea } from "../../draft-flow.js?v=2079";
+import * as topPostsFlow from "../../top-posts-flow.js?v=2079";
 
 // Build + show the "Which profile?" question, reached from every Draft Post
 // entry point. The chosen profile's platform becomes the draft's network so
@@ -125,7 +125,9 @@ function askProfileQuestion(
   // onboarding profile step.
   const connected = getConnectedProfiles();
   postAssistantMessage(sessionId, "Which account should I draft this for?");
-  const profileItems = buildConnectedProfileItems();
+  // The account is where the draft will go, not posts to analyse: every
+  // connected account is a valid pick, history or not.
+  const profileItems = buildConnectedProfileItems({ requirePosts: false });
   inlineQuestion.ask(sessionId, {
     title: "Pick a connected account",
     stepLabel: "Account",
