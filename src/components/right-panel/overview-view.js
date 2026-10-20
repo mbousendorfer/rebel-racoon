@@ -7,17 +7,17 @@
 // numbers in words and links to its tab. Render-only; the shell
 // (right-panel.js) owns the delegated clicks (data-rpanel-goto / -focus).
 
-import { escapeAttr, escapeText, formatClock } from "../../utils.js?v=2074";
-import { getThread } from "../../assistant.js?v=2074";
-import { getSources } from "../../sources-stream.js?v=2074";
-import { getIdeas } from "../../library.js?v=2074";
-import { getPosts } from "../../posts-store.js?v=2074";
-import { isPostValid } from "../../post-validation.js?v=2074";
-import { networkIcon, networkLabel } from "../../network-voice.js?v=2074";
-import { iconFor } from "../../file-kinds.js?v=2074";
-import { thumbBackground } from "../clip-card.js?v=2074";
-import { pendingProcesses } from "../conversation-status-card.js?v=2074";
-import { activeSessionId } from "../right-panel.js?v=2074";
+import { escapeAttr, escapeText, formatClock } from "../../utils.js?v=2078";
+import { getThread } from "../../assistant.js?v=2078";
+import { getSources } from "../../sources-stream.js?v=2078";
+import { getIdeas } from "../../library.js?v=2078";
+import { getPosts } from "../../posts-store.js?v=2078";
+import { isPostValid } from "../../post-validation.js?v=2078";
+import { networkIcon, networkLabel } from "../../network-voice.js?v=2078";
+import { iconFor } from "../../file-kinds.js?v=2078";
+import { thumbBackground } from "../clip-card.js?v=2078";
+import { pendingProcesses } from "../conversation-status-card.js?v=2078";
+import { activeSessionId } from "../right-panel.js?v=2078";
 
 // Live drafts only — the Drafts tab hides scheduled ones, so does its count.
 const liveDrafts = (sid) => getPosts(sid).filter((p) => p.status !== "scheduled");

@@ -274,3 +274,25 @@
   font-style: normal;
   line-height: var(--sys-text-style-body-line-height);
 }
+
+/* Working — Archie's mark turns in the row's icon slot (same box as the
+   glyph it stands in for, so nothing shifts) and the row says what it's
+   doing. One animation per row: the words stay plain ink to be read. */
+.conversation-status-card__mark {
+  /* The mark is wider than tall (22 × 16 at size-16): let it overhang the
+     16px glyph column evenly so the label starts where the others do. */
+  margin-inline: -3px;
+  flex-shrink: 0;
+}
+
+.conversation-status-card__row.is-working .conversation-status-card__row-label {
+  color: var(--ref-color-grey-100);
+}
+
+.conversation-status-card__working {
+  flex-shrink: 0;
+  margin-left: auto;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
+}

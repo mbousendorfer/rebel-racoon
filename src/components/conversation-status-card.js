@@ -16,8 +16,8 @@
 // the underlying stores mutate (assistant thread, sources-stream, library,
 // right-panel mode, sessions).
 
-import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=2074";
-import { getPath } from "../router.js?v=2074";
+import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=2078";
+import { getPath } from "../router.js?v=2078";
 import {
   openDrafts as openDraftsPanel,
   openIdeas as openIdeasPanel,
@@ -25,14 +25,14 @@ import {
   openSources as openSourcesPanel,
   getMode as getRightPanelMode,
   subscribe as subscribeRightPanel,
-} from "./right-panel.js?v=2074";
-import { getThread, subscribe as subscribeThread } from "../assistant.js?v=2074";
-import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=2074";
-import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=2074";
-import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=2074";
-import { subscribe as subscribeSessions } from "../sessions-store.js?v=2074";
-import { addMention } from "../composer-mentions.js?v=2074";
-import { isFlagOn } from "../feature-flags.js?v=2074";
+} from "./right-panel.js?v=2078";
+import { getThread, subscribe as subscribeThread } from "../assistant.js?v=2078";
+import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=2078";
+import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=2078";
+import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=2078";
+import { subscribe as subscribeSessions } from "../sessions-store.js?v=2078";
+import { addMention } from "../composer-mentions.js?v=2078";
+import { isFlagOn } from "../feature-flags.js?v=2078";
 
 // Two-level structure:
 //   .conversation-status-column   — fills grid column 3 with white bg
@@ -248,9 +248,14 @@ export function render() {
   // status anchor (and discovers the affordance to access Drafts/Outputs
   // panels even on a brand-new chat).
 
+  // Work in progress shows ON the row it feeds (Archie's mark turning in the
+  // icon slot, the row saying what it's doing); only work no row owns stays
+  // in the In progress section.
+  const work = workByRow(thread, sources);
   innerEl.innerHTML = html`
-    ${raw(renderPendingSection(pending))} ${raw(renderSourcesSection(sources))} ${raw(renderOutputsRow(ideas.length))}
-    ${raw(renderClipsRow(clipCount))} ${raw(renderDraftsRow(draftCount))}
+    ${raw(renderPendingSection(work.rest))} ${raw(renderSourcesSection(sources))}
+    ${raw(renderOutputsRow(ideas.length, work.ideas))} ${raw(renderClipsRow(clipCount, work.clips))}
+    ${raw(renderDraftsRow(draftCount, work.drafts))}
   `;
   rootEl.hidden = false;
   setShellLayout(true);
@@ -279,9 +284,7 @@ function renderPendingSection(pending) {
     .map(
       (p) => `
     <div class="conversation-status-card__pending">
-      <span class="ap-loader blue size-16" aria-hidden="true">
-        <svg><circle></circle><circle></circle></svg>
-      </span>
+      ${WORKING_MARK}
       <span class="conversation-status-card__pending-label">${escapeHtml(p)}</span>
     </div>
   `,
@@ -317,6 +320,15 @@ function renderSourcesSection(sources) {
       // Two stacked icons in the leading slot — file at rest, copy on
       // hover. The CSS swap-on-hover lives in
       // styles/components/conversation-status-card.css.
+      if (s.status && s.status !== "Processed") {
+        return `
+      <div class="conversation-status-card__row conversation-status-card__row--static is-working" role="status">
+        ${WORKING_MARK}
+        <span class="conversation-status-card__row-label">${escapeHtml(name)}</span>
+        <span class="conversation-status-card__working">Reading…</span>
+      </div>
+    `;
+      }
       return `
       <button
         type="button"
@@ -341,78 +353,94 @@ function renderSourcesSection(sources) {
   `;
 }
 
-function renderOutputsRow(ideaCount) {
-  // Non-clickable static row when empty (nothing to show in the panel).
-  // The "None yet" trailing label carries the empty-state signal.
-  if (ideaCount === 0) {
+// One row per output — Ideas, Clips, Drafts. Three states:
+//   working  — Archie's mark turns in the icon slot and the row says what
+//              it's doing ("Extracting ideas…"); still opens the panel when
+//              there's already something to see.
+//   none yet — static, "None yet".
+//   ready    — a button to its panel, with the count.
+function renderOutputRow({ icon, label, count, counterColor, attr, title, working }) {
+  const lead = working ? WORKING_MARK : `<i class="${icon}" aria-hidden="true"></i>`;
+  const text = working ? escapeHtml(working) : label;
+  const cls = `conversation-status-card__row${working ? " is-working" : ""}`;
+  if (count === 0) {
     return `
       <section class="conversation-status-card__section">
-        <div class="conversation-status-card__row conversation-status-card__row--static">
-          <i class="ap-icon-archie-official" aria-hidden="true"></i>
-          <span class="conversation-status-card__row-label">Ideas</span>
-          <span class="conversation-status-card__empty">None yet</span>
+        <div class="${cls} conversation-status-card__row--static"${working ? ' role="status"' : ""}>
+          ${lead}
+          <span class="conversation-status-card__row-label">${text}</span>
+          ${working ? "" : `<span class="conversation-status-card__empty">None yet</span>`}
         </div>
       </section>
     `;
   }
   return `
     <section class="conversation-status-card__section">
-      <button type="button" class="conversation-status-card__row" data-status-ideas title="Open Ideas panel">
-        <i class="ap-icon-archie-official" aria-hidden="true"></i>
-        <span class="conversation-status-card__row-label">Ideas</span>
-        <span class="ap-counter normal blue">${ideaCount}</span>
+      <button type="button" class="${cls}" ${attr} title="${title}">
+        ${lead}
+        <span class="conversation-status-card__row-label">${text}</span>
+        <span class="ap-counter normal ${counterColor}">${count}</span>
       </button>
     </section>
   `;
 }
 
-// Clips row — mirrors renderOutputsRow / renderDraftsRow exactly:
-// static "None yet" when count is 0, clickable button (opens the right-
-// panel Outputs surface on the Clips sub-tab) when count > 0.
-function renderClipsRow(clipCount) {
-  if (clipCount === 0) {
-    return `
-      <section class="conversation-status-card__section">
-        <div class="conversation-status-card__row conversation-status-card__row--static">
-          <i class="ap-icon-video" aria-hidden="true"></i>
-          <span class="conversation-status-card__row-label">Clips</span>
-          <span class="conversation-status-card__empty">None yet</span>
-        </div>
-      </section>
-    `;
-  }
-  return `
-    <section class="conversation-status-card__section">
-      <button type="button" class="conversation-status-card__row" data-status-clips title="Open Clips panel">
-        <i class="ap-icon-video" aria-hidden="true"></i>
-        <span class="conversation-status-card__row-label">Clips</span>
-        <span class="ap-counter normal blue">${clipCount}</span>
-      </button>
-    </section>
-  `;
-}
+const renderOutputsRow = (count, working) =>
+  renderOutputRow({
+    icon: "ap-icon-archie-official",
+    label: "Ideas",
+    count,
+    counterColor: "blue",
+    attr: "data-status-ideas",
+    title: "Open Ideas panel",
+    working,
+  });
 
-function renderDraftsRow(draftCount) {
-  if (draftCount === 0) {
-    return `
-      <section class="conversation-status-card__section">
-        <div class="conversation-status-card__row conversation-status-card__row--static">
-          <i class="ap-icon-pen" aria-hidden="true"></i>
-          <span class="conversation-status-card__row-label">Drafts</span>
-          <span class="conversation-status-card__empty">None yet</span>
-        </div>
-      </section>
-    `;
+const renderClipsRow = (count, working) =>
+  renderOutputRow({
+    icon: "ap-icon-video",
+    label: "Clips",
+    count,
+    counterColor: "blue",
+    attr: "data-status-clips",
+    title: "Open Clips panel",
+    working,
+  });
+
+const renderDraftsRow = (count, working) =>
+  renderOutputRow({
+    icon: "ap-icon-pen",
+    label: "Drafts",
+    count,
+    counterColor: "orange",
+    attr: "data-status-drafts",
+    title: "Open Drafts panel",
+    working,
+  });
+
+// Archie's animated mark (archie-loader.js injects it into any .ap-loader).
+const WORKING_MARK = `<span class="ap-loader size-16 conversation-status-card__mark" aria-hidden="true"></span>`;
+
+// Which row each piece of running work belongs to, from its thread marker
+// (the startPending labels: "Extracting ideas from content…", "Generating
+// post drafts…") and the sources' own state (clips being cut). The row says it
+// in its own short words — the card is narrow. Work no row owns ("Thinking…",
+// "Finding your top posts…") stays in `rest`, in full.
+const WORKING_LABEL = { ideas: "Extracting ideas…", clips: "Cutting clips…", drafts: "Writing drafts…" };
+function workByRow(thread, sources) {
+  const work = { ideas: null, clips: null, drafts: null, rest: [] };
+  for (const m of thread) {
+    if (m.status !== "loading" || m.hidden || m.role === "source-intake") continue;
+    const label = humanizePendingMessage(m);
+    if (m.role === "idea-extraction" || /\bideas?\b/i.test(label)) work.ideas = WORKING_LABEL.ideas;
+    else if (m.role === "clip-extraction" || /\bclips?\b/i.test(label)) work.clips = WORKING_LABEL.clips;
+    // Drafts are being written — not "Finding your top posts…", which reads posts.
+    else if (/\bdrafts?\b|\b(generat|writ|rewrit)\w*\b.*\bposts?\b/i.test(label)) work.drafts = WORKING_LABEL.drafts;
+    else if (label) work.rest.push(label);
   }
-  return `
-    <section class="conversation-status-card__section">
-      <button type="button" class="conversation-status-card__row" data-status-drafts title="Open Drafts panel">
-        <i class="ap-icon-pen" aria-hidden="true"></i>
-        <span class="conversation-status-card__row-label">Drafts</span>
-        <span class="ap-counter normal orange">${draftCount}</span>
-      </button>
-    </section>
-  `;
+  const cutting = sources.find((s) => s.clipExtractionStatus === "extracting");
+  if (cutting) work.clips = WORKING_LABEL.clips;
+  return work;
 }
 
 // Draft count for the active session — same precedence as the topbar
@@ -445,6 +473,10 @@ export function pendingProcesses(thread) {
 }
 
 function humanizePendingMessage(m) {
+  // startPending's marker carries its own label ("Generating post drafts…").
+  if (m.role === "pending") return m.meta || "Working…";
+  if (m.variant === "idea-extraction" || m.variant === "extraction") return "Extracting ideas…";
+  if (m.variant === "clip-extraction") return "Cutting your clips…";
   if (m.role === "assistant") {
     return m.meta || "Thinking…";
   }
