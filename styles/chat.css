@@ -1302,7 +1302,7 @@ span.chat-bubble-choice-chip {
   padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
   border-color: var(--app-border);
   border-radius: var(--ref-border-radius-md);
-  border-top-right-radius: var(--ref-border-radius-md);
+  border-top-right-radius: 0;
 }
 
 .e-turn .connect-card {
@@ -1390,13 +1390,16 @@ span.chat-bubble-choice-chip {
 /* Everything you bring is drawn like Archie's result cards: a bare 16px
    glyph in ink, top-aligned on the title line, 12px, the name over what it
    is, then what Archie made of it, right. Same 12 / 16 inset,
-   white card, grey-20 edge, radius md. One way to show an icon in a card. */
+   white card, grey-20 edge, radius md with your side's corner (top-right)
+   squared. One way to show an icon in a card. */
 .e-turn .selection-echo {
   align-items: flex-start;
   gap: var(--ref-spacing-xs);
   max-width: var(--app-chat-card);
   padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
   border-radius: var(--ref-border-radius-md);
+  /* Your side's corner, like your bubble and your source chip. */
+  border-top-right-radius: 0;
 }
 
 .e-turn .selection-echo__icon:not(.selection-echo__icon--avatar) {
@@ -1636,7 +1639,8 @@ span.chat-bubble-choice-chip {
   font-weight: var(--sys-text-style-body-bold-weight);
 }
 
-/* The wait — "Uploading N%" + its bar, then "Extracting…". Nested in the
+/* The wait — "Uploading N%" + its bar, then "Extracting…" led by the Archie
+   loader. On butter, Archie's colour for work in progress. Nested in the
    chip's 4px inset, so its radius is the chip's minus the inset (sm). */
 .source-chip__status {
   flex-shrink: 0;
@@ -1645,18 +1649,23 @@ span.chat-bubble-choice-chip {
   gap: var(--ref-spacing-xxs);
   padding: var(--ref-spacing-xxxs) var(--ref-spacing-xxs);
   border-radius: var(--ref-border-radius-sm);
-  background: var(--app-surface-subtle);
+  background: var(--app-butter);
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
 }
 
-/* The bar: a grey-10 track (a shape fill), its fill in ink. */
+/* The loader at the caption's height (archie-loader.css sizes the slot). */
+.source-chip__status > .chat-bubble-source-intake__spinner {
+  --archie-loader-size: var(--sys-icon-css-sm);
+}
+
+/* The bar: a white track on the butter (a shape fill), its fill in ink. */
 .source-chip__progress {
   width: var(--ref-spacing-xl);
   height: var(--ref-spacing-xxxs);
   overflow: hidden;
   border-radius: var(--app-radius-pill);
-  background: var(--ref-color-grey-10);
+  background: var(--ref-color-white);
 }
 
 .source-chip__progress-fill {
