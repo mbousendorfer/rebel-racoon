@@ -1659,13 +1659,14 @@ span.chat-bubble-choice-chip {
   --archie-loader-size: var(--sys-icon-css-sm);
 }
 
-/* The bar: a white track on the butter (a shape fill), its fill in ink. */
+/* The bar: a grey-20 track (prod's; white vanished on the butter), its
+   fill in ink. */
 .source-chip__progress {
   width: var(--ref-spacing-xl);
   height: var(--ref-spacing-xxxs);
   overflow: hidden;
   border-radius: var(--app-radius-pill);
-  background: var(--ref-color-white);
+  background: var(--ref-color-grey-20);
 }
 
 .source-chip__progress-fill {
