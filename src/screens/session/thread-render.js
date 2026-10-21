@@ -13,28 +13,28 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=2090";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2090";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2090";
-import { getTopPost } from "../../top-posts-store.js?v=2090";
-import { getTopicById } from "../../topics-store.js?v=2090";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=2090";
-import { renderProfileEchoCard } from "../../social-profiles.js?v=2090";
-import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2090";
-import { getIdeas } from "../../library.js?v=2090";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=2090";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2090";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=2090";
-import { getSuggestion } from "../../voice-coach-store.js?v=2090";
-import { getPlans } from "../../post-plan-store.js?v=2090";
-import { draftsToRewrite } from "../../voice-coach.js?v=2090";
-import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=2090";
-import { isFlagOn } from "../../feature-flags.js?v=2090";
-import { CURRENT_USER } from "../../org.js?v=2090";
-import { getSessionById } from "../../sessions-store.js?v=2090";
-import { getContextById } from "../../contexts-store.js?v=2090";
-import { needsImageLook } from "../../modules/image-studio/index.js?v=2090";
-import { getFocusKey } from "../../components/right-panel.js?v=2090";
+} from "./thread-turns.js?v=2091";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2091";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2091";
+import { getTopPost } from "../../top-posts-store.js?v=2091";
+import { getTopicById } from "../../topics-store.js?v=2091";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=2091";
+import { renderProfileEchoCard } from "../../social-profiles.js?v=2091";
+import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2091";
+import { getIdeas } from "../../library.js?v=2091";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=2091";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2091";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=2091";
+import { getSuggestion } from "../../voice-coach-store.js?v=2091";
+import { getPlans } from "../../post-plan-store.js?v=2091";
+import { draftsToRewrite } from "../../voice-coach.js?v=2091";
+import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=2091";
+import { isFlagOn } from "../../feature-flags.js?v=2091";
+import { CURRENT_USER } from "../../org.js?v=2091";
+import { getSessionById } from "../../sessions-store.js?v=2091";
+import { getContextById } from "../../contexts-store.js?v=2091";
+import { needsImageLook } from "../../modules/image-studio/index.js?v=2091";
+import { getFocusKey } from "../../components/right-panel.js?v=2091";
 
 // Flag contentPanel — every result in the thread is a card that opens the side
 // panel on its own objects (data-content-card="kind:key:ids"), and stays
@@ -76,11 +76,20 @@ function renderTwoSides(turns) {
         : `<i class="ap-icon-archie-official"></i>`
     }</span>`;
   const items = [];
+  // A long job still running on a video (clips, ideas) is not a turn: as in
+  // prod (ap-clip-processing-card, projected after the messages), its card
+  // stays at the very end of the thread, below the latest message, with no
+  // avatar — its own loader says it works. Once ready it is a turn again.
+  const trailing = [];
   let head = null; // the item that carries the avatar of Archie's current run
   for (const [m, html] of turns) {
     tpl.innerHTML = html.trim();
     const el = tpl.content.firstElementChild;
     if (!el) continue;
+    if (el.matches(".chat-turn--clip-extraction") && el.querySelector(".drafts-card--pending")) {
+      trailing.push(el.outerHTML);
+      continue;
+    }
     const side = el.matches(".chat-turn--user") ? "user" : "ai";
     el.querySelectorAll(":scope > .chat-turn-avatar, :scope > .chat-turn-role").forEach((n) => n.remove());
     const prev = items.at(-1);
@@ -114,6 +123,9 @@ function renderTwoSides(turns) {
         <div class="e-turn__content">${headHtml}${it.el.outerHTML}</div>
       </div>`;
     })
+    .concat(
+      trailing.map((html) => `<div class="e-turn e-turn--trailing"><div class="e-turn__content">${html}</div></div>`),
+    )
     .join("");
 }
 

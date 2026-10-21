@@ -28,9 +28,9 @@
 // examples are in one language. Per-language examples when a brand actually
 // publishes in two languages on one network.
 
-import { isFlagOn } from "./feature-flags.js?v=2090";
-import { escapeHtml } from "./utils.js?v=2090";
-import { NETWORKS, normalizeNetwork, getConnectedProfileById } from "./social-profiles.js?v=2090";
+import { isFlagOn } from "./feature-flags.js?v=2091";
+import { escapeHtml } from "./utils.js?v=2091";
+import { NETWORKS, normalizeNetwork, getConnectedProfileById } from "./social-profiles.js?v=2091";
 
 // `newWith` marks a part the product just added, behind that flag — the demo
 // (voiceNewSection) of how a voice says a part is new: an orange arc, a "New"

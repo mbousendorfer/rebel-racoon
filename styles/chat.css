@@ -1744,6 +1744,13 @@ span.chat-bubble-choice-chip {
   background: var(--ref-color-electric-blue-05);
 }
 
+/* A long job still running (renderTwoSides' trailing card): at the end of
+   the thread, no avatar — so the card shows its own loader again (hidden in
+   a turn, where the avatar is the loader) and keeps all four corners. */
+.e-turn--trailing .drafts-card__icon--spinner {
+  display: inline-flex;
+}
+
 /* Audit 2026-10-21 — every card a turn holds speaks the thread's card:
    radius md (the widgets wore 12, the choice card 4), the 12 / 16 inset where
    it frames text (the post plan and the choice card wore 16 all round), the
