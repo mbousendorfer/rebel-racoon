@@ -3,9 +3,9 @@
 // `message`-shaped object (or opts) and returns an HTML string. No store reads, no DOM, no side effects: the
 // store-coupled turns (extraction / clip-extraction / source resolution) stay
 // in session.js and pass their resolved data in as arguments.
-import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=2080";
-import { isFlagOn } from "../../feature-flags.js?v=2080";
-import { SOURCE_USE_LABEL, SOURCE_USE_TONE } from "../../sources-stream.js?v=2080";
+import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=2082";
+import { isFlagOn } from "../../feature-flags.js?v=2082";
+import { SOURCE_USE_LABEL, SOURCE_USE_TONE } from "../../sources-stream.js?v=2082";
 
 // The thread's restyle since Monday 2026-10-05 (flag newConversationStyles).
 // OFF renders the Monday markup; styles/chat-legacy.css holds its values.
@@ -43,9 +43,9 @@ export function renderMessageBubble(message) {
   `;
 }
 
-// Right-aligned "Source intake" turn — the same anatomy as every source the
-// user picks (the selection echo): the kind glyph in a veil disc, the filename
-// over its kind, then a trailing status slot. The backing
+// Right-aligned "Source intake" turn. With the new conversation styles it is
+// prod's one-line source chip (kind glyph + filename, then a trailing status
+// slot); OFF, Monday's navy chip. The backing
 // source is resolved by the caller (session.js reads sources-stream) and passed
 // in as `source` so this stays a pure renderer; pass `null` for the unresolved
 // case. Trailing states are driven by (status loading, ideaCount, clips).
@@ -95,15 +95,32 @@ export function renderSourceIntakeTurn(message, source = null, { focusable = fal
   // v2 single-line layout (see styles/chat.css and handoff §2). State lives in
   // a trailing slot with these variants driven by (isLoading, ideaCount > 0,
   // clips > 0):
-  //   loading        → muted grey pill with inline dot + "Uploading"
-  //   ready + ideas  → solid electric-blue pill "N ideas ›" → Ideas panel
+  //   loading        → "Uploading N%" + bar, then "Extracting…" (flag ON);
+  //                    "Adding…" with the loader (OFF)
+  //   ready + ideas  → blue DS link "N ideas ›" → Ideas panel
   //   ready + clips  → second pill "M clips ›" → Clips panel (Video only)
   //   ready, none    → bare green check icon
   const pillClass = convNew()
     ? "ap-link standalone small chat-bubble-source-intake__pill"
     : "chat-bubble-source-intake__pill";
   let trailing;
-  if (isLoading) {
+  if (isLoading && convNew()) {
+    // The prod chip's two waits (studio-mfe source-intake-chip): "Uploading N%"
+    // with its bar while the source is processed, then "Extracting…" until the
+    // turn flips ready. The sheen through the words (and the bar) is the one
+    // moving part — the same as a working status; no spinner.
+    // Only a file upload reports progress; a link or pasted text goes straight
+    // to "Extracting…".
+    const percent =
+      src?.status === "Processing" && typeof src.progress === "number" ? Math.floor(src.progress * 100) : null;
+    trailing =
+      percent !== null
+        ? `<span class="source-chip__status" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}" aria-label="Upload progress">
+            <span class="source-chip__progress" aria-hidden="true"><span class="source-chip__progress-fill" style="width: ${percent}%"></span></span>
+            <span class="source-chip__status-text">Uploading ${percent}%</span>
+          </span>`
+        : `<span class="source-chip__status" role="status"><span class="source-chip__status-text">Extracting…</span></span>`;
+  } else if (isLoading) {
     trailing = `
       <span class="chat-bubble-source-intake__loading" role="status" aria-label="Adding">
         <span class="chat-bubble-source-intake__spinner" aria-hidden="true"></span>
@@ -160,6 +177,25 @@ export function renderSourceIntakeTurn(message, source = null, { focusable = fal
   const intakeAttrs = `data-intake-status="${message.status || "ready"}"${
     message.sourceId ? ` data-intake-source="${escapeHtmlAttr(message.sourceId)}"` : ""
   }`;
+  // New conversation styles: prod's one-line source chip — file glyph + name,
+  // then where it stands (styles/chat.css .source-chip). The file is a button
+  // to the source in the side panel when `focusable`.
+  if (convNew()) {
+    const file = `${kindIcon}<span class="source-chip__name" title="${escapeHtmlAttr(filename)}">${escapeHtml(filename)}</span>`;
+    return `
+    <div class="chat-turn chat-turn--user">
+      <span class="chat-turn-role">${message.meta || "You"}</span>
+      <div class="source-chip${canFocus ? " is-focusable" : ""}${canFocus && active ? " is-active" : ""}" ${intakeAttrs}>
+        ${
+          canFocus
+            ? `<button type="button" class="source-echo__open source-chip__file" data-source-focus="${escapeHtmlAttr(message.sourceId)}" title="Show in Sources">${file}</button>`
+            : `<span class="source-chip__file">${file}</span>`
+        }
+        ${trailing}
+      </div>
+    </div>
+  `;
+  }
   if (canFocus) {
     const echoClass = "selection-echo selection-echo--intake";
     return `
@@ -178,27 +214,13 @@ export function renderSourceIntakeTurn(message, source = null, { focusable = fal
     </div>
   `;
   }
-  if (!convNew())
-    return `
+  return `
     <div class="chat-turn chat-turn--user">
       <span class="chat-turn-role">${message.meta || "You"}</span>
       <div class="chat-bubble chat-bubble--source-intake" data-intake-status="${message.status || "ready"}">
         ${kindIcon}
         <span class="chat-bubble-source-intake__name" title="${filename}">${filename}</span>
         ${trailing}
-      </div>
-    </div>
-  `;
-  return `
-    <div class="chat-turn chat-turn--user">
-      <span class="chat-turn-role">${message.meta || "You"}</span>
-      <div class="selection-echo selection-echo--intake" data-intake-status="${message.status || "ready"}">
-        <span class="selection-echo__icon">${kindIcon}</span>
-        <span class="selection-echo__body">
-          <span class="selection-echo__title" title="${filename}">${filename}</span>
-          <span class="selection-echo__meta">${kindLabel}</span>
-        </span>
-        <span class="selection-echo__trailing">${trailing}</span>
       </div>
     </div>
   `;

@@ -1590,3 +1590,140 @@ span.chat-bubble-choice-chip {
   border-color: var(--ref-color-electric-blue-40);
   background: var(--ref-color-electric-blue-05);
 }
+
+/* Your source as it lands (renderSourceIntakeTurn, flag newConversationStyles):
+   prod's source chip (studio-mfe source-intake-chip), adapted to the thread —
+   one line, the file glyph + its name, then where it stands. Your side's
+   corner, like your bubble: radius md, the top-right squared. Ink stays in
+   grey-100 (prod's grey-150 / grey-60 are a surface and the disabled ink). */
+.source-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  max-width: min(var(--app-chat-card), 100%);
+  min-height: 36px;
+  box-sizing: border-box;
+  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xxxs) var(--ref-spacing-xxxs) var(--ref-spacing-xs);
+  border: 1px solid var(--app-border);
+  border-radius: var(--ref-border-radius-md);
+  border-top-right-radius: 0;
+  background: var(--app-surface);
+  color: var(--ref-color-grey-100);
+  transition: border-color var(--ref-animation-short) var(--app-ease-standard);
+}
+
+.source-chip__file {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.source-chip__file > i {
+  flex-shrink: 0;
+  font-size: var(--sys-icon-css-sm);
+  color: var(--ref-color-grey-100);
+}
+
+.source-chip__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+  font-weight: var(--sys-text-style-body-bold-weight);
+}
+
+/* The wait — "Uploading N%" + its bar, then "Extracting…". Nested in the
+   chip's 4px inset, so its radius is the chip's minus the inset (sm). */
+.source-chip__status {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xxs);
+  border-radius: var(--ref-border-radius-sm);
+  background: var(--app-surface-subtle);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+}
+
+/* The bar: a grey-10 track (a shape fill), its fill in ink. */
+.source-chip__progress {
+  width: var(--ref-spacing-xl);
+  height: var(--ref-spacing-xxxs);
+  overflow: hidden;
+  border-radius: var(--app-radius-pill);
+  background: var(--ref-color-grey-10);
+}
+
+.source-chip__progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  transition: width var(--ref-animation-short) linear;
+}
+
+/* While it waits, the conversation's working sheen (.e-turn .ap-status
+   .is-working: ink → orange → ink, `e-sheen`) runs through the words and
+   the bar — the one moving part, no spinner. */
+.source-chip__status-text,
+.source-chip__progress-fill {
+  background-image: linear-gradient(
+    100deg,
+    var(--ref-color-grey-100) 42%,
+    var(--ref-color-orange-100) 50%,
+    var(--ref-color-grey-100) 58%
+  );
+  background-size: 300% 100%;
+  animation: e-sheen 2s linear infinite;
+}
+
+.source-chip__status-text {
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .source-chip__status-text,
+  .source-chip__progress-fill {
+    animation: none;
+    background-image: none;
+  }
+
+  .source-chip__status-text {
+    color: var(--ref-color-grey-100);
+  }
+
+  .source-chip__progress-fill {
+    background: var(--ref-color-grey-100);
+  }
+}
+
+/* What Archie made of it — the blue DS link, with the status's inset so it
+   sits in the same slot. */
+.source-chip .chat-bubble-source-intake__pill {
+  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xxs);
+  border-radius: var(--ref-border-radius-sm);
+}
+
+.source-chip .chat-bubble-source-intake__check {
+  margin-right: var(--ref-spacing-xxs);
+}
+
+.source-chip > .ap-status {
+  flex-shrink: 0;
+}
+
+/* Flag contentPanel: the file opens the source in the side panel. */
+.source-chip.is-focusable:has(.source-echo__open:hover) {
+  border-color: var(--ref-color-electric-blue-100);
+}
+
+.source-chip.is-active {
+  border-color: var(--ref-color-electric-blue-40);
+  background: var(--ref-color-electric-blue-05);
+}
