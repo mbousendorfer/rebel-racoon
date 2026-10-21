@@ -1673,14 +1673,15 @@ span.chat-bubble-choice-chip {
   display: block;
   height: 100%;
   border-radius: inherit;
+  background: var(--ref-color-grey-100);
   transition: width var(--ref-animation-short) linear;
 }
 
 /* While it waits, the conversation's working sheen (.e-turn .ap-status
-   .is-working: ink → orange → ink, `e-sheen`) runs through the words and
-   the bar — the one moving part, no spinner. */
-.source-chip__status-text,
-.source-chip__progress-fill {
+   .is-working: ink → orange → ink, `e-sheen`) runs through the words. The bar
+   stays plain ink — a sheen there too was one moving part too many. */
+.source-chip__status-text {
+  color: transparent;
   background-image: linear-gradient(
     100deg,
     var(--ref-color-grey-100) 42%,
@@ -1688,28 +1689,16 @@ span.chat-bubble-choice-chip {
     var(--ref-color-grey-100) 58%
   );
   background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
   animation: e-sheen 2s linear infinite;
 }
 
-.source-chip__status-text {
-  color: transparent;
-  -webkit-background-clip: text;
-  background-clip: text;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .source-chip__status-text,
-  .source-chip__progress-fill {
+  .source-chip__status-text {
     animation: none;
     background-image: none;
-  }
-
-  .source-chip__status-text {
     color: var(--ref-color-grey-100);
-  }
-
-  .source-chip__progress-fill {
-    background: var(--ref-color-grey-100);
   }
 }
 

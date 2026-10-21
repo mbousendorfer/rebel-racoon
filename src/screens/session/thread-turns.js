@@ -3,9 +3,9 @@
 // `message`-shaped object (or opts) and returns an HTML string. No store reads, no DOM, no side effects: the
 // store-coupled turns (extraction / clip-extraction / source resolution) stay
 // in session.js and pass their resolved data in as arguments.
-import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=2084";
-import { isFlagOn } from "../../feature-flags.js?v=2084";
-import { SOURCE_USE_LABEL, SOURCE_USE_TONE } from "../../sources-stream.js?v=2084";
+import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=2085";
+import { isFlagOn } from "../../feature-flags.js?v=2085";
+import { SOURCE_USE_LABEL, SOURCE_USE_TONE } from "../../sources-stream.js?v=2085";
 
 // The thread's restyle since Monday 2026-10-05 (flag newConversationStyles).
 // OFF renders the Monday markup; styles/chat-legacy.css holds its values.
@@ -109,8 +109,8 @@ export function renderSourceIntakeTurn(message, source = null, { focusable = fal
     // with its bar while the source is processed, then "Extracting…" until the
     // turn flips ready. Where prod spins its refresh icon, "Extracting…" is led
     // by the Archie loader (archie-loader.js fills the spinner slot — the
-    // prototype's one spinner); the working sheen runs through the words and
-    // the bar. On butter: Archie's work in progress.
+    // prototype's one spinner); the working sheen runs through the words. On
+    // butter: Archie's work in progress.
     const spinner = `<span class="chat-bubble-source-intake__spinner" aria-hidden="true"></span>`;
     // Only a file upload reports progress; a link or pasted text goes straight
     // to "Extracting…".
