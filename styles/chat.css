@@ -1744,6 +1744,31 @@ span.chat-bubble-choice-chip {
   background: var(--ref-color-electric-blue-05);
 }
 
+/* Audit 2026-10-21 — every card a turn holds speaks the thread's card:
+   radius md (the widgets wore 12, the choice card 4), the 12 / 16 inset where
+   it frames text (the post plan and the choice card wore 16 all round), the
+   chat card's width, and ink no darker than grey-100 (the widgets' titles were
+   grey-150, a surface colour). */
+.e-turn .top-posts-widget,
+.e-turn .topics-widget,
+.e-turn .chat-bubble-choices-card {
+  border-radius: var(--ref-border-radius-md);
+}
+
+.e-turn .post-plan,
+.e-turn .chat-bubble-choices-card {
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+}
+
+.e-turn .connect-card {
+  max-width: var(--app-chat-card);
+}
+
+.e-turn .top-posts-widget__title,
+.e-turn .topics-widget__title {
+  color: var(--ref-color-grey-100);
+}
+
 /* Each side squares the corner where its avatar stands: yours top-right
    (bubble, source chip, picks), Archie's top-left — every card or block his
    turn holds. Pills (statuses, links) keep their own shape. */
@@ -1759,7 +1784,8 @@ span.chat-bubble-choice-chip {
     .schedule-plan,
     .top-posts-widget,
     .topics-widget,
-    .chat-bubble-choices-card
+    .chat-bubble-choices-card,
+    .rpanel-ideas__card
   ) {
   border-top-left-radius: 0;
 }
