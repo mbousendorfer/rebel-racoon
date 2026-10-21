@@ -1771,12 +1771,12 @@ span.chat-bubble-choice-chip {
 
 /* Each side squares the corner where its avatar stands: yours top-right
    (bubble, source chip, picks), Archie's top-left — every card or block his
-   turn holds. Pills (statuses, links) keep their own shape. */
+   turn holds. Pills (statuses, links) keep their own shape, and so does a DS
+   component (the failure's .ap-infobox): we never reshape the DS. */
 .e-turn--ai
   :is(
     .drafts-card,
     .memory-card,
-    .failed-turn,
     .assistant-notice__tools,
     .connect-card,
     .connect-status,
