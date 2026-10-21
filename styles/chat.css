@@ -1639,7 +1639,7 @@ span.chat-bubble-choice-chip {
   font-weight: var(--sys-text-style-body-bold-weight);
 }
 
-/* The wait — "Uploading N%" + its bar, then "Extracting…" led by the Archie
+/* The wait — "Uploading…" + its bar, then "Extracting…" led by the Archie
    loader. On butter, Archie's colour for work in progress. Nested in the
    chip's 4px inset, so its radius is the chip's minus the inset (sm). */
 .source-chip__status {

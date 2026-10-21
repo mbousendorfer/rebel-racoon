@@ -3,9 +3,9 @@
 // `message`-shaped object (or opts) and returns an HTML string. No store reads, no DOM, no side effects: the
 // store-coupled turns (extraction / clip-extraction / source resolution) stay
 // in session.js and pass their resolved data in as arguments.
-import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=2088";
-import { isFlagOn } from "../../feature-flags.js?v=2088";
-import { SOURCE_USE_LABEL, SOURCE_USE_TONE } from "../../sources-stream.js?v=2088";
+import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=2089";
+import { isFlagOn } from "../../feature-flags.js?v=2089";
+import { SOURCE_USE_LABEL, SOURCE_USE_TONE } from "../../sources-stream.js?v=2089";
 
 // The thread's restyle since Monday 2026-10-05 (flag newConversationStyles).
 // OFF renders the Monday markup; styles/chat-legacy.css holds its values.
@@ -95,7 +95,7 @@ export function renderSourceIntakeTurn(message, source = null, { focusable = fal
   // v2 single-line layout (see styles/chat.css and handoff §2). State lives in
   // a trailing slot with these variants driven by (isLoading, ideaCount > 0,
   // clips > 0):
-  //   loading        → "Uploading N%" + bar, then "Extracting…" (flag ON);
+  //   loading        → "Uploading…" + bar, then "Extracting…" (flag ON);
   //                    "Adding…" with the loader (OFF)
   //   ready + ideas  → blue pill "N ideas ›" → Ideas panel
   //   ready + clips  → second pill "M clips ›" → Clips panel (Video only)
@@ -105,8 +105,8 @@ export function renderSourceIntakeTurn(message, source = null, { focusable = fal
     : "chat-bubble-source-intake__pill";
   let trailing;
   if (isLoading && convNew()) {
-    // The prod chip's two waits (studio-mfe source-intake-chip): "Uploading N%"
-    // with its bar while the source is processed, then "Extracting…" until the
+    // The prod chip's two waits (studio-mfe source-intake-chip): "Uploading…"
+    // with its bar (the bar says how far — no percentage) while the source is processed, then "Extracting…" until the
     // turn flips ready. Where prod spins its refresh icon, "Extracting…" is led
     // by the Archie loader (archie-loader.js fills the spinner slot — the
     // prototype's one spinner); the working sheen runs through the words. On
@@ -120,7 +120,7 @@ export function renderSourceIntakeTurn(message, source = null, { focusable = fal
       percent !== null
         ? `<span class="source-chip__status" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}" aria-label="Upload progress">
             <span class="source-chip__progress" aria-hidden="true"><span class="source-chip__progress-fill" style="width: ${percent}%"></span></span>
-            <span class="source-chip__status-text">Uploading ${percent}%</span>
+            <span class="source-chip__status-text">Uploading…</span>
           </span>`
         : `<span class="source-chip__status" role="status">${spinner}<span class="source-chip__status-text">Extracting…</span></span>`;
   } else if (isLoading) {
