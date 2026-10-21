@@ -1726,3 +1726,23 @@ span.chat-bubble-choice-chip {
   border-color: var(--ref-color-electric-blue-40);
   background: var(--ref-color-electric-blue-05);
 }
+
+/* Each side squares the corner where its avatar stands: yours top-right
+   (bubble, source chip, picks), Archie's top-left — every card or block his
+   turn holds. Pills (statuses, links) keep their own shape. */
+.e-turn--ai
+  :is(
+    .drafts-card,
+    .memory-card,
+    .failed-turn,
+    .assistant-notice__tools,
+    .connect-card,
+    .connect-status,
+    .post-plan,
+    .schedule-plan,
+    .top-posts-widget,
+    .topics-widget,
+    .chat-bubble-choices-card
+  ) {
+  border-top-left-radius: 0;
+}
