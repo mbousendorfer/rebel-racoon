@@ -4,42 +4,61 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { navigate } from "../router.js?v=2079";
-import { catalogueRoute } from "../active-playbook.js?v=2079";
-import { getDraft, isAnalysisReady, save, patchDraft, restoreDraft } from "../context-builder.js?v=2079";
-import { mount } from "../playbook-view.js?v=2079";
-import { isFlagOn } from "../feature-flags.js?v=2079";
-import { renderReview } from "./welcome-alt-review.js?v=2079";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2079";
-import { networkLabel } from "../network-voice.js?v=2079";
+import { navigate } from "../router.js?v=2080";
+import { catalogueRoute } from "../active-playbook.js?v=2080";
+import { getDraft, isAnalysisReady, save, patchDraft, restoreDraft } from "../context-builder.js?v=2080";
+import { mount } from "../playbook-view.js?v=2080";
+import { isFlagOn } from "../feature-flags.js?v=2080";
+import { renderReview } from "./welcome-alt-review.js?v=2080";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2080";
+import { networkLabel } from "../network-voice.js?v=2080";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";
 const WELCOME_ALT_INTEGRATED_KEY = "welcomeAltIntegrated";
 const WELCOME_ALT_RETURN_KEY = "welcomeAltReturnTo";
 
+// `lands`: the lines of the onboarding's Playbook card (flag connectFirst,
+// welcome-alt-shell.js) that land once the stage is done — a line no stage
+// names lands as soon as it's known (the site's colours, the competitors).
 export const LOADING_STAGES = [
-  { title: "Reading your website", sub: "Scanning your pages, copy, and brand cues." },
-  { title: "Learning your voice", sub: "Capturing your tone, vocabulary, and rhythm." },
-  { title: "Mapping your audience", sub: "Working out who you're for — and what moves them." },
+  { title: "Reading your website", sub: "Scanning your pages, copy, and brand cues.", lands: ["summary"] },
+  { title: "Learning your voice", sub: "Capturing your tone, vocabulary, and rhythm.", lands: ["voice"] },
+  {
+    title: "Mapping your audience",
+    sub: "Working out who you're for — and what moves them.",
+    lands: ["audience", "goal"],
+  },
   { title: "Putting it together", sub: "Turning it all into a Playbook every draft draws from." },
 ];
 
 // Brand kit (flag sexySquirrel): a Playbook started from files says so, instead
 // of claiming to read a website nobody gave.
 export const FILE_LOADING_STAGES = [
-  { title: "Reading your files", sub: "Looking at your logo, past visuals, and photos." },
-  { title: "Picking out your colors", sub: "Sampling the palette your visuals already use." },
-  { title: "Mapping your audience", sub: "Working out who you're for — and what moves them." },
-  { title: "Putting it together", sub: "Turning it all into a Playbook every draft draws from." },
+  { title: "Reading your files", sub: "Looking at your logo, past visuals, and photos.", lands: ["summary"] },
+  { title: "Picking out your colors", sub: "Sampling the palette your visuals already use.", lands: ["branding"] },
+  {
+    title: "Mapping your audience",
+    sub: "Working out who you're for — and what moves them.",
+    lands: ["audience", "goal"],
+  },
+  { title: "Putting it together", sub: "Turning it all into a Playbook every draft draws from.", lands: ["voice"] },
 ];
 
 // The no-website interview: the loader reads the
 // answers, and says the brand look comes later — there was nothing to sample.
 export const INTERVIEW_LOADING_STAGES = [
-  { title: "Reading your answers", sub: "Turning what you told me into your Brief." },
-  { title: "Setting up your Brand", sub: "You can add your logo and colors to the Playbook later." },
-  { title: "Drafting your Playbook", sub: "Audience, goals, and voice, from your own words." },
+  { title: "Reading your answers", sub: "Turning what you told me into your Brief.", lands: ["summary"] },
+  {
+    title: "Setting up your Brand",
+    sub: "You can add your logo and colors to the Playbook later.",
+    lands: ["branding"],
+  },
+  {
+    title: "Drafting your Playbook",
+    sub: "Audience, goals, and voice, from your own words.",
+    lands: ["audience", "goal", "voice"],
+  },
 ];
 
 // Voice per network: when Archie adapted the voice for other networks, the

@@ -8,26 +8,14 @@
 // A Playbook filled by hand has nothing to build: straight to the reveal, and
 // its way out is filling it in.
 
-import { html, raw } from "../utils.js?v=2079";
-import { navigate } from "../router.js?v=2079";
-import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2079";
-import {
-  LOADING_STAGES,
-  FILE_LOADING_STAGES,
-  INTERVIEW_LOADING_STAGES,
-  withNetworkStage,
-  enterArchie,
-} from "./welcome-alt-recap.js?v=2079";
-import { ensureFlowDraft, goBack, mountShell } from "./welcome-alt-shell.js?v=2079";
+import { html, raw } from "../utils.js?v=2080";
+import { navigate } from "../router.js?v=2080";
+import { getDraft, isAnalysisReady, patchDraft, readAltWebsite } from "../context-builder.js?v=2080";
+import { enterArchie } from "./welcome-alt-recap.js?v=2080";
+import { ensureFlowDraft, goBack, mountShell, stagesFor } from "./welcome-alt-shell.js?v=2080";
 
 const STAGE_MS = 1300; // each stage holds at least this long, so the work reads as work
 const started = new Map(); // sid → when this screen first showed it (a re-render doesn't restart it)
-
-function stagesFor(d) {
-  if (d?.sourceType === "documents") return FILE_LOADING_STAGES;
-  if (d?.sourceType === "interview") return INTERVIEW_LOADING_STAGES;
-  return withNetworkStage(LOADING_STAGES, d);
-}
 
 // The way out: two rows like every step's choices — a full-weight way into the
 // Playbook, not a stroked "Review the details" (2026-10-19) — and Start
@@ -130,7 +118,8 @@ export function renderWelcomeAltReady(_params, target) {
     `;
   };
 
-  const shell = mountShell(target, { step: "recap", sid, left });
+  // The card lands each analysed line as its stage ticks (welcome-alt-shell.js).
+  const shell = mountShell(target, { step: "recap", sid, left, build: progress });
   const card = target.querySelector("[data-flow-card]");
   // The reveal: the card says it's ready, and takes a breath.
   const reveal = (done) => {

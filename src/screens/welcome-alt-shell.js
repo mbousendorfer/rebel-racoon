@@ -9,10 +9,10 @@
 // the session id the recap already uses (`welcomeAltSessionId`), and persisted
 // on every change so a reload lands on the same step with the same answers.
 
-import "../archie-pixels.js?v=2079";
-import { html, raw, escapeHtml } from "../utils.js?v=2079";
-import { navigate } from "../router.js?v=2079";
-import { isFlagOn } from "../feature-flags.js?v=2079";
+import "../archie-pixels.js?v=2080";
+import { html, raw, escapeHtml } from "../utils.js?v=2080";
+import { navigate } from "../router.js?v=2080";
+import { isFlagOn } from "../feature-flags.js?v=2080";
 import {
   altSteps,
   createAltDraft,
@@ -20,17 +20,25 @@ import {
   isAnalysisReady,
   restoreDraft,
   subscribeDraft,
-} from "../context-builder.js?v=2079";
+} from "../context-builder.js?v=2080";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
   getConnectedProfiles,
   renderProfileTag,
   subscribe as subscribeProfiles,
-} from "../social-profiles.js?v=2079";
-import { networkVoicesOn } from "../network-voice.js?v=2079";
-import { readSessionId, persistDraft, readPersistedDraft } from "./welcome-alt-recap.js?v=2079";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2079";
+} from "../social-profiles.js?v=2080";
+import { networkVoicesOn } from "../network-voice.js?v=2080";
+import {
+  readSessionId,
+  persistDraft,
+  readPersistedDraft,
+  LOADING_STAGES,
+  FILE_LOADING_STAGES,
+  INTERVIEW_LOADING_STAGES,
+  withNetworkStage,
+} from "./welcome-alt-recap.js?v=2080";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2080";
 
 const PREFILLED_URL = "https://nicesoap.com";
 const SESSION_KEY = "welcomeAltSessionId";
@@ -101,6 +109,14 @@ export function ensureFlowDraft() {
     return sid;
   }
   return startFlow();
+}
+
+// The building stages on /welcome-alt/ready, by source — they tick on the left
+// and say when each analysed line of the card lands (a stage's `lands`).
+export function stagesFor(d) {
+  if (d?.sourceType === "documents") return FILE_LOADING_STAGES;
+  if (d?.sourceType === "interview") return INTERVIEW_LOADING_STAGES;
+  return withNetworkStage(LOADING_STAGES, d);
 }
 
 // ── The parts' colours ────────────────────────────────────────────────────
@@ -210,12 +226,26 @@ const text = (t) => (t ? `<span class="welcome-flow__line">${escapeHtml(t)}</spa
 
 // Each line of the card — the Playbook's own parts, as they're learned: empty
 // (a quiet placeholder), pending (being learned) or filled.
-function cardRows(d, sid) {
-  const pending = Boolean(d?.analysisStartedAt) && !isAnalysisReady(sid);
-  const state = (filled) => (filled ? "filled" : pending ? "pending" : "empty");
+// The analysis lands on the draft in one go, a few seconds after the source is
+// given — but only the brand's look and its competitors can honestly be known
+// by then. The voice, the audience, the goal and the About wait for their
+// stage of "Building your Playbook" (the stage's `lands`), and land one stage
+// at a time; before it they stay quiet. `build`: where that screen is
+// ({ at, done }) — none on the steps before it.
+function cardRows(d, sid, build) {
+  const analysing = Boolean(d?.analysisStartedAt) && !isAnalysisReady(sid);
+  const at = d?.revealed || build?.done ? Infinity : (build?.at ?? -1);
+  const stageOf = new Map();
+  stagesFor(d).forEach((st, i) => (st.lands || []).forEach((k) => stageOf.set(k, i)));
   const rows = [];
+  const push = (row, known) => {
+    const i = stageOf.get(row.key);
+    const due = i === undefined || i < at;
+    const working = i === undefined ? analysing : i <= at;
+    rows.push({ ...row, state: known && due ? "filled" : working && (analysing || known) ? "pending" : "empty" });
+  };
   const summary = d?.businessSummary || "";
-  rows.push({ key: "summary", label: "About", state: state(Boolean(summary)), value: text(summary), lines: 3 });
+  push({ key: "summary", label: "About", value: text(summary), lines: 3 }, Boolean(summary));
   const profiles = getConnectedProfiles();
   rows.push({
     key: "profiles",
@@ -228,23 +258,27 @@ function cardRows(d, sid) {
     .filter(Boolean)
     .slice(0, 3);
   const voice = traits.length ? traits : (d?.tones || []).slice(0, 2);
-  rows.push({
-    key: "voice",
-    label: "Voice",
-    state: state(voice.length),
-    value: stack(chips(voice, "welcome-intro__trait"), text(d?.voiceSummary)),
-    lines: 2,
-  });
+  push(
+    {
+      key: "voice",
+      label: "Voice",
+      value: stack(chips(voice, "welcome-intro__trait"), text(d?.voiceSummary)),
+      lines: 2,
+    },
+    voice.length > 0,
+  );
   const audience = d?.audience?.[0];
-  rows.push({
-    key: "audience",
-    label: "Who you write for",
-    state: state(Boolean(audience)),
-    value: stack(text(audience), chips((d?.audienceProblems || []).slice(0, 2))),
-    lines: 2,
-  });
+  push(
+    {
+      key: "audience",
+      label: "Who you write for",
+      value: stack(text(audience), chips((d?.audienceProblems || []).slice(0, 2))),
+      lines: 2,
+    },
+    Boolean(audience),
+  );
   const goal = [d?.objective?.[0], d?.contentAction?.[0]].filter(Boolean);
-  rows.push({ key: "goal", label: "Goal", state: state(goal.length), value: chips(goal) });
+  push({ key: "goal", label: "Goal", value: chips(goal) }, goal.length > 0);
   if (isFlagOn("multilingualPlaybook")) {
     const lang = d?.primaryLanguage || (d?.languages || [])[0];
     rows.push({
@@ -267,27 +301,29 @@ function cardRows(d, sid) {
   }
   const colors = [...new Set((d?.brandColors || []).map((c) => c.hex).filter(Boolean))].slice(0, 5);
   const font = d?.brandTypography?.headingFont;
-  rows.push({
-    key: "branding",
-    label: "Colors & type",
-    state: state(colors.length),
-    value:
-      colors
-        .map((hex) => `<span class="welcome-intro__swatch" style="background: ${escapeHtml(hex)}"></span>`)
-        .join("") +
-      (font ? `<span class="welcome-flow__font"><span aria-hidden="true">Aa</span>${escapeHtml(font)}</span>` : ""),
-  });
+  push(
+    {
+      key: "branding",
+      label: "Colors & type",
+      value:
+        colors
+          .map((hex) => `<span class="welcome-intro__swatch" style="background: ${escapeHtml(hex)}"></span>`)
+          .join("") +
+        (font ? `<span class="welcome-flow__font"><span aria-hidden="true">Aa</span>${escapeHtml(font)}</span>` : ""),
+    },
+    colors.length > 0,
+  );
   const competitors = (d?.competitors || [])
     .map((c) => c.name)
     .filter(Boolean)
     .slice(0, 3);
-  rows.push({ key: "competitors", label: "Up against", state: state(competitors.length), value: chips(competitors) });
+  push({ key: "competitors", label: "Up against", value: chips(competitors) }, competitors.length > 0);
   return { rows };
 }
 
-function renderCard(sid) {
+function renderCard(sid, build) {
   const d = getDraft(sid);
-  const { rows } = cardRows(d, sid);
+  const { rows } = cardRows(d, sid, build);
   // "Ready" belongs to the reveal (/welcome-alt/ready sets `revealed`); until
   // then a read source is still being learned, whatever has landed already.
   const ready = d?.revealed === true;
@@ -353,8 +389,9 @@ function renderProgress(step) {
 // card on every change to the draft or to the connected accounts.
 // `sheet`: the review (/welcome-alt/recap) — the same stage, no card around:
 // the part's blocks, dealt as a stack, floating on the pixels.
+// `build`: /welcome-alt/ready's stages ({ at, done }), which gate the card.
 // Returns { paint, sheet, cleanup }.
-export function mountShell(target, { step, sid, left, sheet = false }) {
+export function mountShell(target, { step, sid, left, sheet = false, build }) {
   target.innerHTML = html`
     <div class="welcome-intro welcome-flow ${sheet ? "is-review" : ""}">
       <section class="welcome-intro__lede" aria-labelledby="welcomeFlowTitle">
@@ -377,13 +414,13 @@ export function mountShell(target, { step, sid, left, sheet = false }) {
   const leftEl = target.querySelector("[data-flow-left]");
   const cardEl = target.querySelector("[data-flow-card]");
   const paintCard = () => {
-    if (cardEl) cardEl.innerHTML = renderCard(sid);
+    if (cardEl) cardEl.innerHTML = renderCard(sid, build?.());
   };
   const paint = () => {
     leftEl.innerHTML = left();
+    paintCard();
   };
   paint();
-  paintCard();
   const offDraft = subscribeDraft(sid, () => {
     persistDraft(sid);
     paintCard();
