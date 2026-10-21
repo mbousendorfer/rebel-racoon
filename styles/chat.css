@@ -1702,11 +1702,28 @@ span.chat-bubble-choice-chip {
   }
 }
 
-/* What Archie made of it — the blue DS link, with the status's inset so it
-   sits in the same slot. */
-.source-chip .chat-bubble-source-intake__pill {
+/* What Archie made of it — prod's filled pill, in blue (it opens something):
+   the DS primary blue's fill, hover and press (.ap-button.primary.blue), white
+   words; the status's inset and radius, so it sits in the same slot. */
+.source-chip .source-chip__action {
+  gap: var(--ref-spacing-xxxs);
   padding: var(--ref-spacing-xxxs) var(--ref-spacing-xxs);
   border-radius: var(--ref-border-radius-sm);
+  background: var(--ref-color-electric-blue-100);
+  color: var(--ref-color-white);
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  transition: background-color var(--ref-animation-short) var(--app-ease-standard);
+}
+
+.source-chip .source-chip__action:hover,
+.source-chip .source-chip__action:focus-visible {
+  background: var(--ref-color-electric-blue-80);
+}
+
+.source-chip .source-chip__action:active {
+  background: var(--ref-color-electric-blue-60);
 }
 
 .source-chip .chat-bubble-source-intake__check {

@@ -3,9 +3,9 @@
 // `message`-shaped object (or opts) and returns an HTML string. No store reads, no DOM, no side effects: the
 // store-coupled turns (extraction / clip-extraction / source resolution) stay
 // in session.js and pass their resolved data in as arguments.
-import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=2086";
-import { isFlagOn } from "../../feature-flags.js?v=2086";
-import { SOURCE_USE_LABEL, SOURCE_USE_TONE } from "../../sources-stream.js?v=2086";
+import { escapeHtml, escapeAttr as escapeHtmlAttr } from "../../utils.js?v=2087";
+import { isFlagOn } from "../../feature-flags.js?v=2087";
+import { SOURCE_USE_LABEL, SOURCE_USE_TONE } from "../../sources-stream.js?v=2087";
 
 // The thread's restyle since Monday 2026-10-05 (flag newConversationStyles).
 // OFF renders the Monday markup; styles/chat-legacy.css holds its values.
@@ -97,11 +97,11 @@ export function renderSourceIntakeTurn(message, source = null, { focusable = fal
   // clips > 0):
   //   loading        → "Uploading N%" + bar, then "Extracting…" (flag ON);
   //                    "Adding…" with the loader (OFF)
-  //   ready + ideas  → blue DS link "N ideas ›" → Ideas panel
+  //   ready + ideas  → blue pill "N ideas ›" → Ideas panel
   //   ready + clips  → second pill "M clips ›" → Clips panel (Video only)
   //   ready, none    → bare green check icon
   const pillClass = convNew()
-    ? "ap-link standalone small chat-bubble-source-intake__pill"
+    ? "chat-bubble-source-intake__pill source-chip__action"
     : "chat-bubble-source-intake__pill";
   let trailing;
   if (isLoading && convNew()) {

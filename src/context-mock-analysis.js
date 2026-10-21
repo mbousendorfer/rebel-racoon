@@ -8,8 +8,8 @@
 // Suggested values become menthol chips (AI-suggested). Other static
 // option lists come from the brief panel renderer.
 
-import { networkFields, isListPart, isNewPart, itemsFromLines } from "./network-voice.js?v=2086";
-import { objectivesInText } from "./objective-measures.js?v=2086";
+import { networkFields, isListPart, isNewPart, itemsFromLines } from "./network-voice.js?v=2087";
+import { objectivesInText } from "./objective-measures.js?v=2087";
 
 const AGORAPULSE = {
   name: "Agorapulse",
