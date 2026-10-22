@@ -1238,10 +1238,11 @@ span.chat-bubble-choice-chip {
   opacity: 1;
 }
 
-/* In the gutter, on the avatar's line: left of Archie's, right of yours. */
+/* In the gutter, centred on the avatar's line (it follows the avatar down
+   when a box opens the turn): left of Archie's, right of yours. */
 .e-turn > .e-turn__time {
   position: absolute;
-  top: var(--ref-spacing-xxxs);
+  top: calc(var(--e-lead, 0px) + (24px - var(--sys-text-style-caption-line-height)) / 2);
   right: calc(100% + var(--ref-spacing-xs));
 }
 
