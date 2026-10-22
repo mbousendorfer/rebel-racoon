@@ -1156,6 +1156,13 @@ span.chat-bubble-choice-chip {
   --e-lead: calc(1px + var(--ref-spacing-xs) + var(--e-half-gap));
 }
 
+/* A picked account opens on its 32px profile disc: two discs side by side
+   read as one row only on one axis, so yours centres on the profile's. */
+.e-turn:has(> .e-turn__content > :first-child > .chat-profiles:first-child > .selection-echo--profile:first-child),
+.e-turn:has(> .e-turn__content > :first-child > .selection-echo--profile:first-child) {
+  --e-lead: calc(1px + var(--ref-spacing-xs) + (32px - 24px) / 2);
+}
+
 .e-turn:has(> .e-turn__content > :first-child > .ap-infobox:first-child) {
   --e-lead: calc(var(--ref-spacing-xs) + var(--e-half-gap));
 }
