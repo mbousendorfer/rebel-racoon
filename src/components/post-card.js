@@ -19,13 +19,13 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2101";
-import { isPortraitFormat } from "../clip-formats.js?v=2101";
-import { presetById } from "../clip-captions.js?v=2101";
-import { renderFeedbackControl } from "./feedback-control.js?v=2101";
-import { networkMeta, normalizeNetwork, profileForNetwork, renderProfileTag } from "../social-profiles.js?v=2101";
-import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2101";
-import { REVEAL_MS } from "../archie-pixels.js?v=2101";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2105";
+import { isPortraitFormat } from "../clip-formats.js?v=2105";
+import { presetById } from "../clip-captions.js?v=2105";
+import { renderFeedbackControl } from "./feedback-control.js?v=2105";
+import { networkMeta, normalizeNetwork, profileForNetwork, renderProfileTag } from "../social-profiles.js?v=2105";
+import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2105";
+import { REVEAL_MS } from "../archie-pixels.js?v=2105";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -459,13 +459,19 @@ function renderVoiceContext(post) {
   if (!v?.network) return "";
   const label = networkMeta(v.network)?.label || v.network;
   const rules = v.rules || [];
-  const detail = rules.length
-    ? `<ul class="posts__gencontext-rules">${rules.map((r) => `<li>${escapeText(r)}</li>`).join("")}</ul>`
-    : `<p class="posts__gencontext-source-detail">I haven't learned your ${escapeText(label)} rules yet — edit a few drafts and I'll pick up your hooks and closings.</p>`;
+  // Borrowed: written in the base's voice, the network had none of its own —
+  // the head names the voice that actually wrote it.
+  const base = v.borrowed ? networkMeta(v.borrowed)?.label || v.borrowed : "";
+  const voiceNet = base ? v.borrowed : v.network;
+  const detail = base
+    ? `<p class="posts__gencontext-source-detail">${escapeText(label)} didn't have its own voice yet when I wrote this.</p>`
+    : rules.length
+      ? `<ul class="posts__gencontext-rules">${rules.map((r) => `<li>${escapeText(r)}</li>`).join("")}</ul>`
+      : `<p class="posts__gencontext-source-detail">I haven't learned your ${escapeText(label)} rules yet — edit a few drafts and I'll pick up your hooks and closings.</p>`;
   return `<div class="posts__gencontext-source">
       <span class="posts__gencontext-source-head">
-        <i class="${networkMeta(v.network)?.icon || "ap-icon-sparkles"}" aria-hidden="true"></i>
-        <span>Your ${escapeText(label)} voice${rules.length ? ` · follows ${rules.length} ${rules.length === 1 ? "rule" : "rules"}` : ""}</span>
+        <i class="${networkMeta(voiceNet)?.icon || "ap-icon-sparkles"}" aria-hidden="true"></i>
+        <span>Your ${escapeText(base || label)} voice${rules.length ? ` · follows ${rules.length} ${rules.length === 1 ? "rule" : "rules"}` : ""}</span>
       </span>
       ${detail}
     </div>`;

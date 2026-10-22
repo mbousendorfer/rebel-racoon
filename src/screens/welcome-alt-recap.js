@@ -4,14 +4,14 @@
 // staged loader, reload-rehydration, and the "Enter Archie" finish. The
 // actual rendering + per-card edit machine lives in ../playbook-view.js.
 
-import { navigate } from "../router.js?v=2101";
-import { catalogueRoute } from "../active-playbook.js?v=2101";
-import { getDraft, isAnalysisReady, save, patchDraft, restoreDraft } from "../context-builder.js?v=2101";
-import { mount } from "../playbook-view.js?v=2101";
-import { isFlagOn } from "../feature-flags.js?v=2101";
-import { renderReview } from "./welcome-alt-review.js?v=2101";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2101";
-import { networkLabel } from "../network-voice.js?v=2101";
+import { navigate } from "../router.js?v=2105";
+import { catalogueRoute } from "../active-playbook.js?v=2105";
+import { getDraft, isAnalysisReady, save, patchDraft, restoreDraft } from "../context-builder.js?v=2105";
+import { mount } from "../playbook-view.js?v=2105";
+import { isFlagOn } from "../feature-flags.js?v=2105";
+import { renderReview } from "./welcome-alt-review.js?v=2105";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2105";
+import { networkLabel } from "../network-voice.js?v=2105";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
 const WELCOME_ALT_DRAFT_KEY = "welcomeAltDraft";
@@ -60,20 +60,6 @@ export const INTERVIEW_LOADING_STAGES = [
     lands: ["audience", "goal", "voice"],
   },
 ];
-
-// Voice per network: when Archie adapted the voice for other networks, the
-// loader says so right after learning it — the work the reveal then shows.
-export function withNetworkStage(stages, draft) {
-  const nets = Object.keys(draft?.voiceByNetwork || {}).map(networkLabel);
-  if (!nets.length) return stages;
-  const list =
-    nets.length === 1
-      ? nets[0]
-      : `${nets.slice(0, -1).join(", ")}${nets.length > 2 ? "," : ""} and ${nets[nets.length - 1]}`;
-  const at = stages.findIndex((st) => st.title === "Learning your voice");
-  const stage = { title: "Adapting your voice", sub: `Tuning it for ${list} — each network gets its own version.` };
-  return at < 0 ? stages : [...stages.slice(0, at + 1), stage, ...stages.slice(at + 1)];
-}
 
 let introDoneSid = null; // sid whose intro loader has already played
 
@@ -124,11 +110,7 @@ export function renderWelcomeAltRecap(_params, target) {
       if (isAnalysisReady(sid)) persistDraft(sid);
     },
     loader:
-      source === "documents"
-        ? FILE_LOADING_STAGES
-        : source === "interview"
-          ? INTERVIEW_LOADING_STAGES
-          : withNetworkStage(LOADING_STAGES, getDraft(sid)),
+      source === "documents" ? FILE_LOADING_STAGES : source === "interview" ? INTERVIEW_LOADING_STAGES : LOADING_STAGES,
     skipLoader,
     onIntroDone: () => {
       introDoneSid = sid;

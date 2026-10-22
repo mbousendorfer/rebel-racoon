@@ -13,24 +13,23 @@
 // tones, contentStyle, objective, contentAction, ctaLinks, language, color,
 // suggestions, editingId, onComplete }.
 
-import * as inlineQuestion from "./inline-question.js?v=2101";
-import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=2101";
-import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=2101";
-import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=2101";
-import { showToast } from "./components/toast.js?v=2101";
-import { recordReasons } from "./feedback-store.js?v=2101";
-import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=2101";
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2101";
-import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=2101";
+import * as inlineQuestion from "./inline-question.js?v=2105";
+import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=2105";
+import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=2105";
+import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=2105";
+import { showToast } from "./components/toast.js?v=2105";
+import { recordReasons } from "./feedback-store.js?v=2105";
+import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=2105";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2105";
+import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=2105";
 import {
   analyzeWebsite,
   analyzeBrandFiles,
-  analyzeNetworkVoices,
   analyzeInterview,
   nextInterviewQuestion,
   INTERVIEW_OPENING,
-} from "./context-mock-analysis.js?v=2101";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2101";
+} from "./context-mock-analysis.js?v=2105";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2105";
 import {
   networkVoicesOn,
   cloneVoiceByNetwork,
@@ -38,18 +37,18 @@ import {
   networkLabel,
   networkIcon,
   voiceNetworks,
-} from "./network-voice.js?v=2101";
-import { connectors as connectorMocks } from "./mocks.js?v=2101";
+} from "./network-voice.js?v=2105";
+import { connectors as connectorMocks } from "./mocks.js?v=2105";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "./social-profiles.js?v=2101";
-import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=2101";
-import { isFlagOn } from "./feature-flags.js?v=2101";
-import { startDemo } from "./demo-flow.js?v=2101";
-import { navigate } from "./router.js?v=2101";
-import { setHandoff } from "./handoff.js?v=2101";
+} from "./social-profiles.js?v=2105";
+import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=2105";
+import { isFlagOn } from "./feature-flags.js?v=2105";
+import { startDemo } from "./demo-flow.js?v=2105";
+import { navigate } from "./router.js?v=2105";
+import { setHandoff } from "./handoff.js?v=2105";
 
 const drafts = new Map(); // sessionId → draft
 const subscribers = new Map(); // sessionId → Set<fn>
@@ -716,10 +715,11 @@ function commitAltProfiles(sessionId, profiles, { add = false, echo = true } = {
   if (!keep) d.selectedProfileId = profiles[0].id;
   const nets = profiles.map((p) => p.platform);
   d.connectedSocials = keep ? [...new Set([...(d.connectedSocials || []), ...nets])] : nets;
-  // The base voice is learned from the first network; every other one gets
-  // Archie's first adaptation, reviewed on the recap.
+  // The base voice is learned from the first network. The others borrow it
+  // until Archie first writes for them — then he offers to optimize each one
+  // (voice-coach.js), never an adaptation drafted in silence here.
   d.voiceBaseNetwork = d.connectedSocials[0];
-  d.voiceByNetwork = networkVoicesOn() ? analyzeNetworkVoices(d.connectedSocials, d.voiceBaseNetwork) : {};
+  d.voiceByNetwork = {};
   if (echo) postUserProfilesTurn(sessionId, profiles);
 }
 
@@ -818,7 +818,7 @@ function askAltProfile(sessionId, { announce = true } = {}) {
     if (announce) {
       postAssistantMessage(
         sessionId,
-        "Pick the profiles this Playbook will publish from. I'll adapt your voice for each network.",
+        "Pick the profiles this Playbook will publish from. I'll write in your main voice everywhere, and help you optimize it for each network as you go.",
       );
     }
     inlineQuestion.ask(sessionId, {
@@ -890,14 +890,12 @@ function askAltMoreNetworks(sessionId, { announce = true } = {}) {
     return;
   }
   if (announce) {
-    postAssistantMessage(
-      sessionId,
-      "Publishing somewhere else too? Connect it — each network gets its own version of your voice.",
-    );
+    postAssistantMessage(sessionId, "Publishing somewhere else too? Connect it here.");
   }
   inlineQuestion.ask(sessionId, {
     title: "Connect another network? (optional)",
-    subtitle: "Each network you add gets its own version of your voice.",
+    subtitle:
+      "Each network can have its own version of your voice. I'll help you with it the first time I write for it.",
     stepLabel: altStepLabel("profile"),
     variant: "cards",
     cardCols: 4,
@@ -954,11 +952,11 @@ function askAltBaseNetwork(sessionId) {
   }));
   postAssistantMessage(
     sessionId,
-    "Which network matters most to you? I'll build your main voice for it. Your other networks start from it — you'll tune each one in your Playbook.",
+    "Which network matters most to you? I'll build your main voice for it.\n\nYour other networks start from it. But a good LinkedIn post isn't a good X post: the first time I write for another network, I'll show you what to change there — it takes a couple of minutes, and it never holds up your drafts.",
   );
   inlineQuestion.ask(sessionId, {
     title: "Your main network",
-    subtitle: "The others start from this voice. You can tune each one in your Playbook.",
+    subtitle: "Your other networks start from this voice until you optimize them.",
     stepLabel: altStepLabel("network"),
     variant: "cards",
     cardCols: 4,
@@ -968,8 +966,6 @@ function askAltBaseNetwork(sessionId) {
       const dd = drafts.get(sessionId);
       if (!dd) return;
       dd.voiceBaseNetwork = platform;
-      // The other networks' first adaptations, around the new base.
-      dd.voiceByNetwork = analyzeNetworkVoices(dd.connectedSocials || [], platform);
       postUserTurn(sessionId, networkLabel(platform));
       inlineQuestion.exit(sessionId);
       notify(sessionId);

@@ -13,28 +13,37 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=2101";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2101";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2101";
-import { getTopPost } from "../../top-posts-store.js?v=2101";
-import { getTopicById } from "../../topics-store.js?v=2101";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=2101";
-import { renderProfileEchoCard } from "../../social-profiles.js?v=2101";
-import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2101";
-import { getIdeas } from "../../library.js?v=2101";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=2101";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2101";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=2101";
-import { getSuggestion } from "../../voice-coach-store.js?v=2101";
-import { getPlans } from "../../post-plan-store.js?v=2101";
-import { draftsToRewrite } from "../../voice-coach.js?v=2101";
-import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=2101";
-import { isFlagOn } from "../../feature-flags.js?v=2101";
-import { CURRENT_USER } from "../../org.js?v=2101";
-import { getSessionById } from "../../sessions-store.js?v=2101";
-import { getContextById } from "../../contexts-store.js?v=2101";
-import { needsImageLook } from "../../modules/image-studio/index.js?v=2101";
-import { getFocusKey } from "../../components/right-panel.js?v=2101";
+} from "./thread-turns.js?v=2105";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2105";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2105";
+import { getTopPost } from "../../top-posts-store.js?v=2105";
+import { getTopicById } from "../../topics-store.js?v=2105";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=2105";
+import { renderProfileEchoCard } from "../../social-profiles.js?v=2105";
+import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2105";
+import { getIdeas } from "../../library.js?v=2105";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=2105";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2105";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=2105";
+import { getSuggestion } from "../../voice-coach-store.js?v=2105";
+import { getPlans } from "../../post-plan-store.js?v=2105";
+import { draftsToRewrite, borrowedDrafts, chatPlaybook } from "../../voice-coach.js?v=2105";
+import {
+  networkLabel,
+  networkIcon,
+  memoryCardHtml,
+  networkVoicesOn,
+  isBorrowed,
+  baseNetwork,
+} from "../../network-voice.js?v=2105";
+import { networkVoiceOptions } from "../../context-mock-analysis.js?v=2105";
+import { getPosts } from "../../posts-store.js?v=2105";
+import { isFlagOn } from "../../feature-flags.js?v=2105";
+import { CURRENT_USER } from "../../org.js?v=2105";
+import { getSessionById } from "../../sessions-store.js?v=2105";
+import { getContextById } from "../../contexts-store.js?v=2105";
+import { needsImageLook } from "../../modules/image-studio/index.js?v=2105";
+import { getFocusKey } from "../../components/right-panel.js?v=2105";
 
 // Flag contentPanel — every result in the thread is a card that opens the side
 // panel on its own objects (data-content-card="kind:key:ids"), and stays
@@ -207,7 +216,11 @@ function renderTurn(message, sessionId) {
   // look yet carries a line offering to pick one — derived, so it is gone the
   // moment a look exists, from here or from the Playbook.
   if (message.role === "assistant" && message.variant === "draft") {
-    return (contentCards() ? renderDraftsCardTurn(message) : "") + renderImageLookNudge(message, sessionId);
+    return (
+      (contentCards() ? renderDraftsCardTurn(message) : "") +
+      renderVoiceNudge(message, sessionId) +
+      renderImageLookNudge(message, sessionId)
+    );
   }
 
   if (message.role === "assistant" && message.variant === "image-look-set") {
@@ -407,6 +420,62 @@ function renderProfilesTurn(message) {
       <div class="chat-profiles">${chips}</div>
     </div>
   `;
+}
+
+// A voice borrowed from the base (flag networkVoices, voice-coach.js): under
+// the last batch holding a draft written in it, Archie says which network
+// wrote like the base and how it would sound there, and offers to optimize it —
+// after the drafts, never before them. Derived on every render: once the
+// network has its voice, the same line offers to rewrite what was written
+// before; once nothing is left to rewrite, it's gone.
+function renderVoiceNudge(message, sessionId) {
+  if (!networkVoicesOn()) return "";
+  const ctx = chatPlaybook(sessionId);
+  if (!ctx) return "";
+  const posts = new Map(getPosts(sessionId).map((p) => [p.id, p]));
+  const holdsBorrowed = (m) => (m.drafts || []).some((d) => posts.get(d.id)?.voice?.borrowed);
+  const last = getThread(sessionId).findLast((m) => m.variant === "draft" && holdsBorrowed(m));
+  if (last?.id !== message.id) return "";
+  const nets = [
+    ...new Set(
+      message.drafts
+        .map((d) => posts.get(d.id))
+        .filter((p) => p?.voice?.borrowed)
+        .map((p) => p.voice.network),
+    ),
+  ];
+  const base = escapeHtml(networkLabel(baseNetwork(ctx)));
+  const name = (n) => escapeHtml(networkLabel(n));
+  const list = (ns) =>
+    ns.length === 1 ? name(ns[0]) : `${ns.slice(0, -1).map(name).join(", ")} and ${name(ns.at(-1))}`;
+  const optimize = (n) =>
+    `<button type="button" class="ap-button stroked blue" data-nv-tune="${escapeHtml(n)}"><i class="${networkIcon(n)}" aria-hidden="true"></i>Optimize your ${name(n)} voice</button>`;
+  const borrowed = nets.filter((n) => isBorrowed(ctx, n));
+  const ready = nets.filter((n) => !isBorrowed(ctx, n) && borrowedDrafts(sessionId, n).length);
+  const parts = [];
+  if (borrowed.length) {
+    const one = borrowed.length === 1;
+    // How the network reads — Archie's own first take on its summary, so the
+    // difference is concrete before anyone opens the assistant.
+    const pitch = one ? networkVoiceOptions(borrowed[0])?.voiceSummary?.[0] : "";
+    parts.push(`<p class="voice-nudge__text">I wrote ${one ? "this draft" : "these drafts"} for ${list(borrowed)} in your ${base} voice — ${
+      one ? `${name(borrowed[0])} doesn't have its own yet` : "they don't have their own yet"
+    }. ${
+      pitch
+        ? `On ${name(borrowed[0])}, I'd sound different: ${escapeHtml(pitch.charAt(0).toLowerCase() + pitch.slice(1))}`
+        : "Each network reads differently, so each can get its own version."
+    }</p>
+    <p class="voice-nudge__text">Optimizing takes a couple of minutes: I suggest, you pick. Your drafts stay as they are until you rewrite them.</p>
+    <div class="voice-nudge__actions">${borrowed.map(optimize).join("")}</div>`);
+  }
+  for (const n of ready) {
+    const count = borrowedDrafts(sessionId, n).length;
+    parts.push(`<p class="voice-nudge__text">Your ${name(n)} voice is ready. ${count === 1 ? "This draft was" : `${count} drafts here were`} written before it, in your ${base} voice.</p>
+    <div class="voice-nudge__actions"><button type="button" class="ap-button stroked blue" data-nv-rewrite="${escapeHtml(n)}">Rewrite ${count === 1 ? "it" : "them"} in your ${name(n)} voice</button></div>`);
+  }
+  return parts.length
+    ? renderMessageBubble({ role: "assistant", text: `<div class="voice-nudge">${parts.join("")}</div>` })
+    : "";
 }
 
 // "Want an image on these?" — under the chat's last batch of drafts, while its

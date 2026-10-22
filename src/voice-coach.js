@@ -13,17 +13,20 @@
 // ponytail: the edit heuristics are a mock reading of one before/after pair.
 // The real thing compares many drafts per network before proposing.
 
-import { getSessionById } from "./sessions-store.js?v=2101";
-import { getContextById } from "./contexts-store.js?v=2101";
-import { playbookForNewWork } from "./active-playbook.js?v=2101";
-import { getPosts } from "./posts-store.js?v=2101";
-import { postVoiceSuggestion, postSelectionEcho, postAssistantMessage } from "./assistant.js?v=2101";
-import { startRewrite } from "./draft-rewrite.js?v=2101";
-import { escapeHtml } from "./utils.js?v=2101";
-import { ask, isActive } from "./inline-question.js?v=2101";
-import { propose, accept } from "./voice-coach-store.js?v=2101";
-import { normalizeNetwork } from "./social-profiles.js?v=2101";
-import { networkClosings } from "./context-mock-analysis.js?v=2101";
+import { getSessionById } from "./sessions-store.js?v=2105";
+import { getContextById } from "./contexts-store.js?v=2105";
+import { playbookForNewWork } from "./active-playbook.js?v=2105";
+import { getPosts } from "./posts-store.js?v=2105";
+import { postVoiceSuggestion, postSelectionEcho, postAssistantMessage, refreshThread } from "./assistant.js?v=2105";
+import { updateContext } from "./contexts-store.js?v=2105";
+import { open as openVoiceWizard } from "./components/voice-wizard-modal.js?v=2105";
+import { showToast } from "./components/toast.js?v=2105";
+import { startRewrite } from "./draft-rewrite.js?v=2105";
+import { escapeHtml } from "./utils.js?v=2105";
+import { ask, isActive } from "./inline-question.js?v=2105";
+import { propose, accept } from "./voice-coach-store.js?v=2105";
+import { normalizeNetwork } from "./social-profiles.js?v=2105";
+import { networkClosings } from "./context-mock-analysis.js?v=2105";
 import {
   networkVoicesOn,
   baseNetwork,
@@ -32,7 +35,10 @@ import {
   networkIcon,
   followRules,
   suggestionField,
-} from "./network-voice.js?v=2101";
+  isBorrowed,
+  writeInVoice,
+  withWizardResult,
+} from "./network-voice.js?v=2105";
 
 function sessionPlaybook(sessionId) {
   const session = getSessionById(sessionId);
@@ -160,7 +166,11 @@ export function coachingTarget(sessionId, drafts = []) {
     (n) => n !== base && closingsFor(n),
   );
   if (!others.length) return { reason: `Needs a draft on a network other than ${networkLabel(base)}` };
-  const open = others.filter((n) => !isOverridden(ctx, n, "voiceSometimes"));
+  // A network still on the base voice gets the offer to tune it (the nudge
+  // under the drafts), not a question about one part of it.
+  const tuned = others.filter((n) => !isBorrowed(ctx, n));
+  if (!tuned.length) return { reason: "No network here has its own voice yet — I offer to optimize it instead" };
+  const open = tuned.filter((n) => !isOverridden(ctx, n, "voiceSometimes"));
   if (!open.length) return { reason: "Every network here already has its own Now and then" };
   const net = open.find((n) => !asked.has(`${ctx.id}:${n}`));
   return net ? { ctx, net } : { reason: "Already asked during this visit" };
@@ -234,5 +244,70 @@ export function rewriteDraftsWithRule(sessionId, s) {
     `Rewriting your ${n} ${escapeHtml(networkLabel(s.network))} ${n === 1 ? "draft" : "drafts"} so ${
       n === 1 ? "it follows" : "they follow"
     } “${escapeHtml(s.text)}”:${posts.map((p) => `\n- [[post:${p.id}]]`).join("")}`,
+  );
+}
+
+// ── A voice borrowed from the base ───────────────────────────────────────────
+// A draft for a network with no voice of its own is written in the base's
+// (writeInVoice marks it `borrowed`). Archie says so under the chat's last
+// batch and above the network's drafts in the panel — never as a gate: the
+// drafts are there either way. Optimize opens the same assistant as the Voice
+// tab; once the network has its voice, the drafts written before it can be
+// rewritten in it.
+
+export function chatPlaybook(sessionId) {
+  return sessionPlaybook(sessionId);
+}
+
+// The drafts of this chat on `network` written in the borrowed voice, that a
+// rewrite can still change.
+export function borrowedDrafts(sessionId, network) {
+  const net = normalizeNetwork(network);
+  return getPosts(sessionId).filter(
+    (p) => normalizeNetwork(p.network) === net && p.voice?.borrowed && p.status !== "scheduled" && !p.isRegenerating,
+  );
+}
+
+// Optimize, from a chat or its drafts: the Voice tab's assistant on the chat's
+// Playbook. Its Save writes the network's parts and says what's next;
+// `onSaved` repaints what the thread doesn't (the drafts panel).
+export function optimizeNetworkVoice(sessionId, network, { onSaved } = {}) {
+  const ctx = sessionPlaybook(sessionId);
+  const net = normalizeNetwork(network);
+  if (!ctx || !net) return;
+  openVoiceWizard({
+    data: ctx,
+    network: net,
+    onSave: (result) => {
+      updateContext(ctx.id, withWizardResult(ctx, net, result));
+      const n = borrowedDrafts(sessionId, net).length;
+      showToast(
+        n
+          ? `${networkLabel(net)} voice saved. Rewrite your ${networkLabel(net)} ${n === 1 ? "draft" : "drafts"} to use it.`
+          : `${networkLabel(net)} voice saved. Your next ${networkLabel(net)} drafts use it.`,
+      );
+      refreshThread(sessionId);
+      onSaved?.();
+    },
+  });
+}
+
+// The drafts written before the network had its voice, rewritten in it — with
+// the regenerate animation, said in the thread with a link to each.
+export function rewriteBorrowedDrafts(sessionId, network) {
+  const ctx = sessionPlaybook(sessionId);
+  const posts = borrowedDrafts(sessionId, network);
+  if (!ctx || !posts.length || isBorrowed(ctx, network)) return;
+  posts.forEach((p) =>
+    startRewrite(sessionId, p.id, "voice", (post) => ({
+      ...writeInVoice(ctx, network, post),
+      cta: post.cta || "",
+    })),
+  );
+  const n = posts.length;
+  const label = escapeHtml(networkLabel(network));
+  postAssistantMessage(
+    sessionId,
+    `Rewriting your ${n === 1 ? `${label} draft` : `${n} ${label} drafts`} in your ${label} voice:${posts.map((p) => `\n- [[post:${p.id}]]`).join("")}`,
   );
 }

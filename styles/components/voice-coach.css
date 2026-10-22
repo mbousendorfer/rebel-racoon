@@ -284,3 +284,28 @@ i.memory-mark {
     animation: none;
   }
 }
+
+/* A voice borrowed from the base — Archie's line under the drafts
+   (thread-render.js renderVoiceNudge): paragraphs, then its actions, hugging. */
+.voice-nudge {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+}
+
+.voice-nudge__text {
+  margin: 0;
+}
+
+.voice-nudge__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xs);
+}
+
+/* The same, above a network's drafts in the panel (drafts-view.js). The feed
+   is a scrolling flex column: the infobox (overflow hidden) must not shrink. */
+.rpanel-drafts__voice {
+  flex-shrink: 0;
+  margin-bottom: var(--ref-spacing-sm);
+}

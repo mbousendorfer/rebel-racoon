@@ -21,6 +21,12 @@
 // "finished" on step 1; a Skip; "Leave as default / Make it X's" cards at the
 // top of each step — the default set level with the job.)
 //
+// The first time on a network (nothing of its own yet, no part asked for), an
+// intro comes before the steps — why a network gets its own voice, what it
+// uses today next to how Archie would sound there, and how the steps go. It's
+// the moment most people meet the idea (the chat offers it under a draft
+// written in the borrowed voice), so it explains before it asks.
+//
 // A STAGED draft (the objective modal's pattern): nothing reaches the Playbook
 // until Save; the host gets the four final values and writes them. Leaving with
 // changes asks — in here, never through confirm-modal (requestOpen would close
@@ -30,10 +36,10 @@
 //   result = { values: { [field]: value | undefined }, drafted: boolean }
 //   undefined = the part follows the base voice.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2101";
-import { bindReorder } from "../drag-reorder.js?v=2101";
-import { escapeHtml as esc } from "../utils.js?v=2101";
-import { networkVoiceOptions, networkGuidance, networkGuidanceUrl } from "../context-mock-analysis.js?v=2101";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2105";
+import { bindReorder } from "../drag-reorder.js?v=2105";
+import { escapeHtml as esc } from "../utils.js?v=2105";
+import { networkVoiceOptions, networkGuidance, networkGuidanceUrl } from "../context-mock-analysis.js?v=2105";
 import {
   networkFields,
   isNewPart,
@@ -47,7 +53,8 @@ import {
   itemsFromLines,
   voiceItemsHtml,
   progressRingHtml,
-} from "../network-voice.js?v=2101";
+  isOptimized,
+} from "../network-voice.js?v=2105";
 
 const MODAL_ID = "voiceWizard";
 
@@ -193,6 +200,7 @@ export function open({ data, network, part = null, onSave }) {
     parts,
     prev,
     step: asked >= 0 ? asked : firstLeft >= 0 ? firstLeft : 0,
+    intro: !isBase && !part && !isOptimized(data, network),
     leaving: false,
     onSave,
   };
@@ -285,7 +293,13 @@ function paint() {
   const onPart = w.step < review();
   headEl.innerHTML = `
     <span class="ap-dialog-title vw__title" id="vwTitle"><i class="${networkIcon(w.net)}" aria-hidden="true"></i>Optimize your ${esc(label)} voice</span>
-    ${renderSteps()}`;
+    ${w.intro ? "" : renderSteps()}`;
+  if (w.intro) {
+    bodyEl.classList.add("vw__content--single");
+    bodyEl.innerHTML = `<div class="vw__main">${renderIntro()}</div>`;
+    paintFooter();
+    return;
+  }
   // Right column: what the network itself recommends for this step's part.
   // The review has none — it spans the dialog.
   const guide = onPart ? renderGuidance(w.fields[w.step]) : "";
@@ -322,6 +336,11 @@ function paintFooter() {
     return;
   }
   const onPart = w.step < review();
+  if (w.intro) {
+    footLeftEl.innerHTML = `<button type="button" class="ap-button stroked blue" data-vw-archie><i class="ap-icon-sparkles" aria-hidden="true"></i><span>Use all my suggestions</span></button>`;
+    footRightEl.innerHTML = `<button type="button" class="ap-button primary blue" data-vw-start>Start</button>`;
+    return;
+  }
   // Left: the one-click way — every part at Archie's pick, then review.
   // Outlined blue: visible, set apart on the left, without a second primary
   // beside Next. (Ghost grey read as nothing; primary orange, two primaries.)
@@ -342,6 +361,46 @@ function paintFooter() {
         ? `<button type="button" class="ap-button primary blue" data-vw-next>Next</button>`
         : `<button type="button" class="ap-button primary orange" data-vw-save><span>Save ${esc(label)} voice</span></button>`
     }`;
+}
+
+// The intro: the idea, shown on this brand's own words. Left, what the network
+// writes like today — the base's summary, on the grey of a part that follows
+// the base (the Voice tab's vocabulary); right, Archie's first take for the
+// network. Then the steps, in order.
+function renderIntro() {
+  const label = esc(networkLabel(w.net));
+  const base = esc(networkLabel(w.base));
+  const today = baseValue(w.data, "voiceSummary");
+  const pitch = w.opts.voiceSummary?.[0] || "";
+  const block = (
+    title,
+    caption,
+    text,
+    borrowed,
+  ) => `<section class="pb2-block vw-review__block${borrowed ? " pb2-nv-placeholder" : ""}">
+      <header class="pb2-block__head">
+        <h3 class="pb2-block__title">${title}</h3>
+        <span class="pb2-block__caption">${caption}</span>
+      </header>
+      <div class="pb2-block__body">${text ? `<p class="pb2-prose">${esc(text)}</p>` : `<p class="pb2-empty">Not set yet.</p>`}</div>
+    </section>`;
+  const parts = w.fields.map((f) => esc(PARTS[f].title));
+  return `<div class="vw-section">
+      <h2 class="vw__ask" tabindex="-1">Why ${label} gets its own voice</h2>
+      <p class="vw__hint">Your ${base} voice is how the brand sounds. On ${label}, the same brand is read differently — so how it writes there changes, not who it is. Until you optimize it, ${label} uses your ${base} voice.</p>
+    </div>
+    <div class="vw-review">
+      ${block(`${label} today`, `Your ${base} voice`, today, true)}
+      ${block(`${label}, optimized`, "My suggestion", pitch, false)}
+    </div>
+    <div class="vw-section">
+      <h3 class="vw-intro__title">How it goes</h3>
+      <ol class="vw-intro__steps">
+        <li>${parts.length} short steps, one per part of the voice: ${parts.join(", ")}.</li>
+        <li>I suggest, you pick — or write your own. Beside each step, what ${label} itself recommends.</li>
+        <li>Skip a step and that part keeps your ${base} voice. Nothing changes until you save.</li>
+      </ol>
+    </div>`;
 }
 
 // What the network itself recommends for this part — the reason behind
@@ -559,9 +618,14 @@ function onClick(event) {
     w.leaving = false;
     return paint();
   }
+  if (t.closest("[data-vw-start]")) {
+    w.intro = false;
+    return go(w.step);
+  }
   if (t.closest("[data-vw-next]")) return go(w.step + 1);
   if (t.closest("[data-vw-back]")) return go(w.step - 1);
   if (t.closest("[data-vw-archie]")) {
+    w.intro = false;
     archieAll();
     return go(review());
   }

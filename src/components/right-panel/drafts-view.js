@@ -4,7 +4,7 @@
 // shell's delegated clicks write it through setDraftsFilter / setDraftsNetwork.
 // Moved out of right-panel.js, unchanged.
 
-import { networkMeta } from "../../social-profiles.js?v=2101";
+import { networkMeta } from "../../social-profiles.js?v=2105";
 import {
   getPosts,
   removePost,
@@ -12,24 +12,25 @@ import {
   updatePostContent,
   attachImageToDraft,
   attachCarouselToDraft,
-} from "../../posts-store.js?v=2101";
-import { noticeDraftEdit } from "../../voice-coach.js?v=2101";
-import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=2101";
-import { getSessionById } from "../../sessions-store.js?v=2101";
-import { renderPostCard } from "../post-card.js?v=2101";
-import { isPostValid } from "../../post-validation.js?v=2101";
-import { html, raw } from "../../utils.js?v=2101";
-import { isFlagOn } from "../../feature-flags.js?v=2101";
-import { open as openNewScheduleModal } from "../schedule-modal.js?v=2101";
-import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=2101";
-import { open as openConfirmModal } from "../confirm-modal.js?v=2101";
-import { open as openAssignModal } from "../assign-modal.js?v=2101";
-import { showToast } from "../toast.js?v=2101";
-import { addMention as addComposerMention } from "../../composer-mentions.js?v=2101";
-import { startDraftImageFlow } from "../../draft-image-flow.js?v=2101";
-import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=2101";
-import { closeInline, activeSessionId, renderPanel } from "../right-panel.js?v=2101";
-import { blockInDemo } from "../../demo-flow.js?v=2101";
+} from "../../posts-store.js?v=2105";
+import { noticeDraftEdit, borrowedDrafts } from "../../voice-coach.js?v=2105";
+import { networkVoicesOn, isBorrowed, baseNetwork, networkLabel } from "../../network-voice.js?v=2105";
+import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=2105";
+import { getSessionById } from "../../sessions-store.js?v=2105";
+import { renderPostCard } from "../post-card.js?v=2105";
+import { isPostValid } from "../../post-validation.js?v=2105";
+import { html, raw } from "../../utils.js?v=2105";
+import { isFlagOn } from "../../feature-flags.js?v=2105";
+import { open as openNewScheduleModal } from "../schedule-modal.js?v=2105";
+import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=2105";
+import { open as openConfirmModal } from "../confirm-modal.js?v=2105";
+import { open as openAssignModal } from "../assign-modal.js?v=2105";
+import { showToast } from "../toast.js?v=2105";
+import { addMention as addComposerMention } from "../../composer-mentions.js?v=2105";
+import { startDraftImageFlow } from "../../draft-image-flow.js?v=2105";
+import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=2105";
+import { closeInline, activeSessionId, renderPanel } from "../right-panel.js?v=2105";
+import { blockInDemo } from "../../demo-flow.js?v=2105";
 
 // Drafts-mode local UI state — Lot 21 rich-card view. Filter strip at the
 // top of the panel head drives both axes : status (all / needs_fixes) and
@@ -309,6 +310,7 @@ export function renderDraftsView() {
           ${actions}
         </div>
       </div>
+      ${renderVoiceNotice(ctx, sid, network)}
       ${cards}
     `;
   };
@@ -333,6 +335,34 @@ export function renderDraftsView() {
       <div class="posts__feed rpanel-drafts__feed">${raw(feed)}</div>
     </div>
   `;
+}
+
+// Voice per network (flag networkVoices): above a network's drafts, while it
+// writes in a voice borrowed from the base — and once it has its own, while
+// drafts written before it are left. Never a gate: the drafts stay usable.
+// A DS info infobox, vertical in the panel's width.
+function renderVoiceNotice(ctx, sid, network) {
+  if (!networkVoicesOn() || !ctx) return "";
+  const net = networkLabel(network);
+  const base = networkLabel(baseNetwork(ctx));
+  let message;
+  let action;
+  if (isBorrowed(ctx, network)) {
+    message = `${net} doesn't have its own voice yet, so these drafts are written in your ${base} voice.`;
+    action = `<button type="button" class="ap-button stroked blue" data-nv-tune="${network}">Optimize your ${net} voice</button>`;
+  } else {
+    const n = borrowedDrafts(sid, network).length;
+    if (!n) return "";
+    message = `Your ${net} voice is ready. ${n === 1 ? "One of these drafts was" : `${n} of these drafts were`} written before it, in your ${base} voice.`;
+    action = `<button type="button" class="ap-button stroked blue" data-nv-rewrite="${network}">Rewrite ${n === 1 ? "it" : "them"}</button>`;
+  }
+  return `<div class="ap-infobox info rpanel-drafts__voice" role="status">
+    <i class="ap-icon-info_fill" aria-hidden="true"></i>
+    <div class="ap-infobox-content">
+      <div class="ap-infobox-texts"><span class="ap-infobox-message">${message}</span></div>
+      ${action}
+    </div>
+  </div>`;
 }
 
 function renderDraftsEmpty() {
@@ -547,7 +577,7 @@ export function onSectionSave(network) {
   if (snapshot.length === 0) return;
   const count = snapshot.length;
   const draftWord = count === 1 ? "draft" : "drafts";
-  Promise.all([import("../save-folder-modal.js?v=2101"), import("../../folders-store.js?v=2101")]).then(
+  Promise.all([import("../save-folder-modal.js?v=2105"), import("../../folders-store.js?v=2105")]).then(
     ([{ open: openSaveModal }, { addDraftsToFolder }]) => {
       openSaveModal({
         count,

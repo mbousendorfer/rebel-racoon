@@ -311,6 +311,24 @@
   }
 }
 
+/* The intro's "How it goes" — a real sequence, so a numbered list. */
+.vw-intro__title {
+  margin: 0;
+  color: var(--ref-color-grey-100);
+  font-size: var(--ref-font-size-md);
+  font-weight: var(--sys-text-style-body-bold-weight);
+}
+
+.vw-intro__steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  margin: 0;
+  padding-left: var(--ref-spacing-md);
+  color: var(--ref-color-grey-100);
+  list-style: decimal;
+}
+
 .vw__leave {
   color: var(--ref-color-grey-100);
 }

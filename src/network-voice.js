@@ -28,9 +28,9 @@
 // examples are in one language. Per-language examples when a brand actually
 // publishes in two languages on one network.
 
-import { isFlagOn } from "./feature-flags.js?v=2101";
-import { escapeHtml } from "./utils.js?v=2101";
-import { NETWORKS, normalizeNetwork, getConnectedProfileById } from "./social-profiles.js?v=2101";
+import { isFlagOn } from "./feature-flags.js?v=2105";
+import { escapeHtml } from "./utils.js?v=2105";
+import { NETWORKS, normalizeNetwork, getConnectedProfileById } from "./social-profiles.js?v=2105";
 
 // `newWith` marks a part the product just added, behind that flag — the demo
 // (voiceNewSection) of how a voice says a part is new: an orange arc, a "New"
@@ -334,14 +334,45 @@ export function cloneVoiceByNetwork(v) {
 
 // ── Writing in a network voice ───────────────────────────────────────────────
 // What a draft for `network` follows: the rules Archie learned and someone kept
-// (Always and Never) — the ones a mock can carry out (RULE_ACTIONS). The other
-// rules are followed by the writer in the real thing.
-function learnedRules(ctx, network) {
+// (Always and Never), and — once the network has its own voice — every Always
+// and Never it made its own. Only the ones a mock can carry out change the text
+// (RULE_ACTIONS); the others are followed by the writer in the real thing.
+function draftRules(ctx, network) {
   const net = known(network) || baseNetwork(ctx);
-  return ["voiceAlways", "voiceNever"]
-    .flatMap((f) => cloneItems(partValue(ctx, net, f)))
-    .filter((i) => i.learned)
-    .map((i) => i.text);
+  const own = net !== baseNetwork(ctx) ? networkEntry(ctx, net) : null;
+  return [
+    ...new Set(
+      ["voiceAlways", "voiceNever"].flatMap((f) =>
+        cloneItems(partValue(ctx, net, f))
+          .filter((i) => i.learned || own?.[f] !== undefined)
+          .map((i) => i.text),
+      ),
+    ),
+  ];
+}
+
+// A network that writes in a voice borrowed from the base: not the base, and
+// no part of its own yet. What the chat nudge and the drafts panel flag.
+export function isBorrowed(ctx, network) {
+  const net = known(network);
+  return !!ctx && !!net && net !== baseNetwork(ctx) && !isOptimized(ctx, net);
+}
+
+// The Playbook patch an Optimize assistant's Save produces on a network other
+// than the base — the chat's and the drafts panel's host (the Voice tab writes
+// its own working copy). `undefined` = the part follows the base.
+export function withWizardResult(ctx, network, { values, drafted }) {
+  const all = cloneVoiceByNetwork(ctx.voiceByNetwork);
+  const entry = all[normalizeNetwork(network)] || {};
+  delete entry.drafted;
+  for (const field of networkFields()) {
+    if (!(field in values)) continue;
+    if (values[field] === undefined) delete entry[field];
+    else entry[field] = structuredClone(values[field]);
+  }
+  if (drafted) entry.drafted = true;
+  all[normalizeNetwork(network)] = entry;
+  return { voiceByNetwork: all };
 }
 
 const EMOJI_ALL = /\p{Extended_Pictographic}️?/gu;
@@ -372,6 +403,13 @@ const RULE_ACTIONS = [
   ],
   [/no hashtags/i, (d) => ({ ...d, hashtags: [], text: d.text.map((l) => l.replace(/\s*#\w+/g, "").trim()) })],
   [/(\d+) hashtags? at most/i, (d, m) => ({ ...d, hashtags: d.hashtags.slice(0, Number(m[1])) })],
+  [
+    /no more than (one|two|three|\d+) hashtags?/i,
+    (d, m) => ({
+      ...d,
+      hashtags: d.hashtags.slice(0, { one: 1, two: 2, three: 3 }[m[1].toLowerCase()] ?? Number(m[1])),
+    }),
+  ],
   [
     /opening line under (\d+) words/i,
     (d, m) => {
@@ -438,13 +476,15 @@ export function followRules(draft, rules = []) {
   return d;
 }
 
-// A fresh draft, written in the network voice: it follows the network's learned
-// rules, and says which (the draft's Generation context lists them).
+// A fresh draft, written in the network voice: it follows the network's rules,
+// and says which (the draft's Generation context lists them). `borrowed`: the
+// network had no voice of its own, so the draft reads like the base's — kept
+// on the draft, so it still says so once the network is tuned (Rewrite).
 export function writeInVoice(ctx, network, draft) {
   const net = known(network) || baseNetwork(ctx);
-  const rules = learnedRules(ctx, net);
+  const rules = draftRules(ctx, net);
   return {
     ...followRules({ text: draft.text, hashtags: draft.hashtags }, rules),
-    voice: { network: net, rules },
+    voice: { network: net, rules, ...(isBorrowed(ctx, net) ? { borrowed: baseNetwork(ctx) } : {}) },
   };
 }
