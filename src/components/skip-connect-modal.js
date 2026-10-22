@@ -41,10 +41,10 @@
 // "Something else" field: it belongs to its tick. Taking it leaves the run for
 // the demo chat; the Skip stays the Skip.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2091";
-import { isFlagOn } from "../feature-flags.js?v=2091";
-import { isNewUser } from "../user-mode.js?v=2091";
-import { startDemo } from "../demo-flow.js?v=2091";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=2093";
+import { isFlagOn } from "../feature-flags.js?v=2093";
+import { isNewUser } from "../user-mode.js?v=2093";
+import { startDemo } from "../demo-flow.js?v=2093";
 
 const MODAL_ID = "skip-connect";
 

@@ -13,28 +13,28 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=2091";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2091";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2091";
-import { getTopPost } from "../../top-posts-store.js?v=2091";
-import { getTopicById } from "../../topics-store.js?v=2091";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=2091";
-import { renderProfileEchoCard } from "../../social-profiles.js?v=2091";
-import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2091";
-import { getIdeas } from "../../library.js?v=2091";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=2091";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2091";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=2091";
-import { getSuggestion } from "../../voice-coach-store.js?v=2091";
-import { getPlans } from "../../post-plan-store.js?v=2091";
-import { draftsToRewrite } from "../../voice-coach.js?v=2091";
-import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=2091";
-import { isFlagOn } from "../../feature-flags.js?v=2091";
-import { CURRENT_USER } from "../../org.js?v=2091";
-import { getSessionById } from "../../sessions-store.js?v=2091";
-import { getContextById } from "../../contexts-store.js?v=2091";
-import { needsImageLook } from "../../modules/image-studio/index.js?v=2091";
-import { getFocusKey } from "../../components/right-panel.js?v=2091";
+} from "./thread-turns.js?v=2093";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2093";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2093";
+import { getTopPost } from "../../top-posts-store.js?v=2093";
+import { getTopicById } from "../../topics-store.js?v=2093";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=2093";
+import { renderProfileEchoCard } from "../../social-profiles.js?v=2093";
+import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2093";
+import { getIdeas } from "../../library.js?v=2093";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=2093";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2093";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=2093";
+import { getSuggestion } from "../../voice-coach-store.js?v=2093";
+import { getPlans } from "../../post-plan-store.js?v=2093";
+import { draftsToRewrite } from "../../voice-coach.js?v=2093";
+import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=2093";
+import { isFlagOn } from "../../feature-flags.js?v=2093";
+import { CURRENT_USER } from "../../org.js?v=2093";
+import { getSessionById } from "../../sessions-store.js?v=2093";
+import { getContextById } from "../../contexts-store.js?v=2093";
+import { needsImageLook } from "../../modules/image-studio/index.js?v=2093";
+import { getFocusKey } from "../../components/right-panel.js?v=2093";
 
 // Flag contentPanel — every result in the thread is a card that opens the side
 // panel on its own objects (data-content-card="kind:key:ids"), and stays
@@ -60,11 +60,12 @@ export function renderThread(messages, sessionId) {
 }
 
 // ─── New conversation styles (flag newConversationStyles) ───────────────────
-// Figma "Conversation styles" § E. Each turn is a head line, then the body on
-// the same edge — no avatar column. Archie = his avatar (+ his status pill),
-// no name. You = time · You · your avatar, on the right, your bubble or pick
-// under it. The time shows on hover — in your head line, in the gutter left
-// of Archie's avatar. Archie's consecutive turns share one head.
+// Figma "Conversation styles" § E. An avatar column, mirrored: Archie's disc
+// on the left, yours on the right, each on the first line of its turn, the
+// content beside it — one content edge per side, whatever the turn (text,
+// card, status). No name: the side and the avatar say who. The time shows
+// on hover, in the outer gutter. Consecutive turns of one side share one
+// avatar; the others keep its column empty.
 const clock = (ts) => (ts ? formatTimeOfDay(ts) : "");
 
 function renderTwoSides(turns) {
@@ -75,6 +76,7 @@ function renderTwoSides(turns) {
         ? `<span class="archie-loader" role="status" aria-label="Working"></span>`
         : `<i class="ap-icon-archie-official"></i>`
     }</span>`;
+  const you = `<span class="ap-avatar size-24" aria-hidden="true"><span class="ap-avatar-initials">${escapeHtml(CURRENT_USER.initials)}</span></span>`;
   const items = [];
   // A long job still running on a video (clips, ideas) is not a turn: as in
   // prod (ap-clip-processing-card, projected after the messages), its card
@@ -97,35 +99,26 @@ function renderTwoSides(turns) {
     // While Archie works (a pending result card, a working status) his avatar
     // is the loader — the run's ONE avatar, wherever the work sits in the run.
     const working = side === "ai" && !!el.querySelector(".drafts-card--pending, .ap-status.is-working");
-    // Archie goes on: one avatar per run. Status lines in a row stack under
-    // the first one (aligned on its pill); text after anything continues it;
-    // a status after his text starts a new step with its own avatar.
+    // A side goes on: one avatar per run. Archie's status lines in a row
+    // stack 8px apart; text after anything continues the run; a status after
+    // his text starts a new step with its own avatar. Your turns in a row
+    // (a file, then your words) share yours the same way.
     const stack = side === "ai" && prev?.side === "ai" && status && prev.status;
-    const cont = side === "ai" && prev?.side === "ai" && !status;
+    const cont = prev?.side === side && (side === "user" || !status);
     const item = { side, el, status, stack, cont, working, time: clock(m.createdAt) };
     if (side === "ai" && !stack && !cont) head = item;
     if (side === "ai" && working && head) head.working = true;
     items.push(item);
   }
+  const turn = (cls, avatar, body, time = "") =>
+    `<div class="e-turn ${cls}">${time ? `<span class="e-turn__time">${time}</span>` : ""}<span class="e-turn__avatar">${avatar}</span><div class="e-turn__content">${body}</div></div>`;
   return items
     .map((it) => {
-      const timeHtml = it.time ? `<span class="e-turn__time">${it.time}</span>` : "";
-      let headHtml = "";
-      if (it.side === "user")
-        headHtml = `<div class="e-turn__head">${timeHtml}<span class="e-turn__name">You</span><span class="ap-avatar size-24" aria-hidden="true"><span class="ap-avatar-initials">${escapeHtml(CURRENT_USER.initials)}</span></span></div>`;
-      else if (it.stack || it.cont) headHtml = "";
-      else if (it.status) it.status.insertAdjacentHTML("afterbegin", mark(it.working));
-      else headHtml = `<div class="e-turn__head">${mark(it.working)}</div>`;
-      const cls = it.stack ? " e-turn--stack" : it.cont ? " e-turn--cont" : "";
-      return `
-      <div class="e-turn e-turn--${it.side}${cls}">
-        ${it.side === "ai" ? timeHtml : ""}
-        <div class="e-turn__content">${headHtml}${it.el.outerHTML}</div>
-      </div>`;
+      const avatar = it.stack || it.cont ? "" : it.side === "user" ? you : mark(it.working);
+      const cls = `e-turn--${it.side}${it.stack ? " e-turn--stack" : it.cont ? " e-turn--cont" : ""}`;
+      return turn(cls, avatar, it.el.outerHTML, it.time);
     })
-    .concat(
-      trailing.map((html) => `<div class="e-turn e-turn--trailing"><div class="e-turn__content">${html}</div></div>`),
-    )
+    .concat(trailing.map((html) => turn("e-turn--trailing", "", html)))
     .join("");
 }
 

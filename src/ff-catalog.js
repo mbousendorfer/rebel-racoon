@@ -150,7 +150,7 @@ export const FLAGS = Object.freeze([
   {
     id: "newConversationStyles",
     group: "Chat & drafts",
-    tip: "The thread mirrored: Archie on the left, you on the right, avatars, head lines and white object chips. Off: the thread as of Oct 5.",
+    tip: "The thread mirrored: Archie on the left, you on the right, one avatar column per side and white object chips. Off: the thread as of Oct 5.",
     label: "New conversation styles",
     // OFF: the thread as of Monday 2026-10-05 — every conversation restyle
     // since then (Tuesday's card system included) is ON only; the Monday
@@ -159,11 +159,10 @@ export const FLAGS = Object.freeze([
     default: false,
     hides:
       "When ON, every turn of the chat takes one shape, mirrored: Archie on the " +
-      "left, you on the right, each with a 24px avatar disc and a head line " +
-      "(name, time, what happened). Archie's status pill moves into his head " +
-      "line; your picks get a neutral pill ('Added a source', 'Picked 1 " +
-      "account'). Your words lose the navy bubble and read like Archie's; " +
-      "consecutive Archie messages fold into one turn; every object (source, " +
+      "left, you on the right, each with a 24px avatar disc on the turn's " +
+      "first line and the content beside it (no names; the time on hover, " +
+      "in the gutter). Archie's status pill sits on his avatar's line; " +
+      "consecutive turns of one side share one avatar; every object (source, " +
       "pick, result) is the same white chip. Butter stays Archie's alone. " +
       "OFF shows the thread as it was on Monday 5 October, for a before / after.",
   },
