@@ -33,13 +33,15 @@
 // this dialog to open it).
 //
 // Public API: init() · open({ data, network, part?, onSave(result) }) · close()
+//   · voiceIntroCopy(data, network) — the intro's words, shared with the Voice
+//     tab of a network still on the base (playbook-view nvTeachBlock)
 //   result = { values: { [field]: value | undefined }, drafted: boolean }
 //   undefined = the part follows the base voice.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2105";
-import { bindReorder } from "../drag-reorder.js?v=2105";
-import { escapeHtml as esc } from "../utils.js?v=2105";
-import { networkVoiceOptions, networkGuidance, networkGuidanceUrl } from "../context-mock-analysis.js?v=2105";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2109";
+import { bindReorder } from "../drag-reorder.js?v=2109";
+import { escapeHtml as esc } from "../utils.js?v=2109";
+import { networkVoiceOptions, networkGuidance, networkGuidanceUrl } from "../context-mock-analysis.js?v=2109";
 import {
   networkFields,
   isNewPart,
@@ -54,7 +56,7 @@ import {
   voiceItemsHtml,
   progressRingHtml,
   isOptimized,
-} from "../network-voice.js?v=2105";
+} from "../network-voice.js?v=2109";
 
 const MODAL_ID = "voiceWizard";
 
@@ -169,7 +171,8 @@ export function init() {
   initialized = true;
 }
 
-export function open({ data, network, part = null, onSave }) {
+// `intro: false` — the host already explained (the Voice tab's teaching block).
+export function open({ data, network, part = null, intro = true, onSave }) {
   init();
   const opts = networkVoiceOptions(network);
   if (!data || !opts) return;
@@ -200,7 +203,7 @@ export function open({ data, network, part = null, onSave }) {
     parts,
     prev,
     step: asked >= 0 ? asked : firstLeft >= 0 ? firstLeft : 0,
-    intro: !isBase && !part && !isOptimized(data, network),
+    intro: intro && !isBase && !part && !isOptimized(data, network),
     leaving: false,
     onSave,
   };
@@ -367,39 +370,57 @@ function paintFooter() {
 // writes like today — the base's summary, on the grey of a part that follows
 // the base (the Voice tab's vocabulary); right, Archie's first take for the
 // network. Then the steps, in order.
+// The intro's words, ONE source for the assistant and the Voice tab: why the
+// network gets its own voice, what it writes like today (the base's summary),
+// Archie's first take for it, and how the steps go. Plain text — each host
+// escapes and lays it out.
+export function voiceIntroCopy(data, network) {
+  const label = networkLabel(network);
+  const base = networkLabel(baseNetwork(data));
+  const parts = networkFields()
+    .filter((f) => PARTS[f])
+    .map((f) => PARTS[f].title);
+  return {
+    title: `Why ${label} gets its own voice`,
+    why: `Your ${base} voice is how the brand sounds. On ${label}, the same brand is read differently — so how it writes there changes, not who it is. Until you optimize it, ${label} uses your ${base} voice.`,
+    today: { title: `${label} today`, caption: `Your ${base} voice`, text: baseValue(data, "voiceSummary") },
+    pitch: {
+      title: `${label}, optimized`,
+      caption: "My suggestion",
+      text: networkVoiceOptions(network)?.voiceSummary?.[0] || "",
+    },
+    stepsTitle: "How it goes",
+    steps: [
+      `${parts.length} short steps, one per part of the voice: ${parts.join(", ")}.`,
+      `I suggest, you pick — or write your own. Beside each step, what ${label} itself recommends.`,
+      `Skip a step and that part keeps your ${base} voice. Nothing changes until you save.`,
+    ],
+  };
+}
+
 function renderIntro() {
-  const label = esc(networkLabel(w.net));
-  const base = esc(networkLabel(w.base));
-  const today = baseValue(w.data, "voiceSummary");
-  const pitch = w.opts.voiceSummary?.[0] || "";
+  const c = voiceIntroCopy(w.data, w.net);
   const block = (
-    title,
-    caption,
-    text,
+    { title, caption, text },
     borrowed,
   ) => `<section class="pb2-block vw-review__block${borrowed ? " pb2-nv-placeholder" : ""}">
       <header class="pb2-block__head">
-        <h3 class="pb2-block__title">${title}</h3>
-        <span class="pb2-block__caption">${caption}</span>
+        <h3 class="pb2-block__title">${esc(title)}</h3>
+        <span class="pb2-block__caption">${esc(caption)}</span>
       </header>
       <div class="pb2-block__body">${text ? `<p class="pb2-prose">${esc(text)}</p>` : `<p class="pb2-empty">Not set yet.</p>`}</div>
     </section>`;
-  const parts = w.fields.map((f) => esc(PARTS[f].title));
   return `<div class="vw-section">
-      <h2 class="vw__ask" tabindex="-1">Why ${label} gets its own voice</h2>
-      <p class="vw__hint">Your ${base} voice is how the brand sounds. On ${label}, the same brand is read differently — so how it writes there changes, not who it is. Until you optimize it, ${label} uses your ${base} voice.</p>
+      <h2 class="vw__ask" tabindex="-1">${esc(c.title)}</h2>
+      <p class="vw__hint">${esc(c.why)}</p>
     </div>
     <div class="vw-review">
-      ${block(`${label} today`, `Your ${base} voice`, today, true)}
-      ${block(`${label}, optimized`, "My suggestion", pitch, false)}
+      ${block(c.today, true)}
+      ${block(c.pitch, false)}
     </div>
     <div class="vw-section">
-      <h3 class="vw-intro__title">How it goes</h3>
-      <ol class="vw-intro__steps">
-        <li>${parts.length} short steps, one per part of the voice: ${parts.join(", ")}.</li>
-        <li>I suggest, you pick — or write your own. Beside each step, what ${label} itself recommends.</li>
-        <li>Skip a step and that part keeps your ${base} voice. Nothing changes until you save.</li>
-      </ol>
+      <h3 class="vw-intro__title">${esc(c.stepsTitle)}</h3>
+      <ol class="vw-intro__steps">${c.steps.map((s) => `<li>${esc(s)}</li>`).join("")}</ol>
     </div>`;
 }
 

@@ -13,20 +13,20 @@
 // ponytail: the edit heuristics are a mock reading of one before/after pair.
 // The real thing compares many drafts per network before proposing.
 
-import { getSessionById } from "./sessions-store.js?v=2105";
-import { getContextById } from "./contexts-store.js?v=2105";
-import { playbookForNewWork } from "./active-playbook.js?v=2105";
-import { getPosts } from "./posts-store.js?v=2105";
-import { postVoiceSuggestion, postSelectionEcho, postAssistantMessage, refreshThread } from "./assistant.js?v=2105";
-import { updateContext } from "./contexts-store.js?v=2105";
-import { open as openVoiceWizard } from "./components/voice-wizard-modal.js?v=2105";
-import { showToast } from "./components/toast.js?v=2105";
-import { startRewrite } from "./draft-rewrite.js?v=2105";
-import { escapeHtml } from "./utils.js?v=2105";
-import { ask, isActive } from "./inline-question.js?v=2105";
-import { propose, accept } from "./voice-coach-store.js?v=2105";
-import { normalizeNetwork } from "./social-profiles.js?v=2105";
-import { networkClosings } from "./context-mock-analysis.js?v=2105";
+import { getSessionById } from "./sessions-store.js?v=2109";
+import { getContextById } from "./contexts-store.js?v=2109";
+import { playbookForNewWork } from "./active-playbook.js?v=2109";
+import { getPosts } from "./posts-store.js?v=2109";
+import { postVoiceSuggestion, postSelectionEcho, postAssistantMessage, refreshThread } from "./assistant.js?v=2109";
+import { updateContext } from "./contexts-store.js?v=2109";
+import { open as openVoiceWizard } from "./components/voice-wizard-modal.js?v=2109";
+import { showToast } from "./components/toast.js?v=2109";
+import { startRewrite } from "./draft-rewrite.js?v=2109";
+import { escapeHtml } from "./utils.js?v=2109";
+import { ask, isActive } from "./inline-question.js?v=2109";
+import { propose, accept } from "./voice-coach-store.js?v=2109";
+import { normalizeNetwork } from "./social-profiles.js?v=2109";
+import { networkClosings } from "./context-mock-analysis.js?v=2109";
 import {
   networkVoicesOn,
   baseNetwork,
@@ -38,7 +38,7 @@ import {
   isBorrowed,
   writeInVoice,
   withWizardResult,
-} from "./network-voice.js?v=2105";
+} from "./network-voice.js?v=2109";
 
 function sessionPlaybook(sessionId) {
   const session = getSessionById(sessionId);

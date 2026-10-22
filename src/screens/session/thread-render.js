@@ -13,21 +13,21 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=2105";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2105";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2105";
-import { getTopPost } from "../../top-posts-store.js?v=2105";
-import { getTopicById } from "../../topics-store.js?v=2105";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=2105";
-import { renderProfileEchoCard } from "../../social-profiles.js?v=2105";
-import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2105";
-import { getIdeas } from "../../library.js?v=2105";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=2105";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2105";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=2105";
-import { getSuggestion } from "../../voice-coach-store.js?v=2105";
-import { getPlans } from "../../post-plan-store.js?v=2105";
-import { draftsToRewrite, borrowedDrafts, chatPlaybook } from "../../voice-coach.js?v=2105";
+} from "./thread-turns.js?v=2109";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2109";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2109";
+import { getTopPost } from "../../top-posts-store.js?v=2109";
+import { getTopicById } from "../../topics-store.js?v=2109";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=2109";
+import { renderProfileEchoCard } from "../../social-profiles.js?v=2109";
+import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2109";
+import { getIdeas } from "../../library.js?v=2109";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=2109";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2109";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=2109";
+import { getSuggestion } from "../../voice-coach-store.js?v=2109";
+import { getPlans } from "../../post-plan-store.js?v=2109";
+import { draftsToRewrite, borrowedDrafts, chatPlaybook } from "../../voice-coach.js?v=2109";
 import {
   networkLabel,
   networkIcon,
@@ -35,15 +35,15 @@ import {
   networkVoicesOn,
   isBorrowed,
   baseNetwork,
-} from "../../network-voice.js?v=2105";
-import { networkVoiceOptions } from "../../context-mock-analysis.js?v=2105";
-import { getPosts } from "../../posts-store.js?v=2105";
-import { isFlagOn } from "../../feature-flags.js?v=2105";
-import { CURRENT_USER } from "../../org.js?v=2105";
-import { getSessionById } from "../../sessions-store.js?v=2105";
-import { getContextById } from "../../contexts-store.js?v=2105";
-import { needsImageLook } from "../../modules/image-studio/index.js?v=2105";
-import { getFocusKey } from "../../components/right-panel.js?v=2105";
+} from "../../network-voice.js?v=2109";
+import { networkVoiceOptions } from "../../context-mock-analysis.js?v=2109";
+import { getPosts } from "../../posts-store.js?v=2109";
+import { isFlagOn } from "../../feature-flags.js?v=2109";
+import { CURRENT_USER } from "../../org.js?v=2109";
+import { getSessionById } from "../../sessions-store.js?v=2109";
+import { getContextById } from "../../contexts-store.js?v=2109";
+import { needsImageLook } from "../../modules/image-studio/index.js?v=2109";
+import { getFocusKey } from "../../components/right-panel.js?v=2109";
 
 // Flag contentPanel — every result in the thread is a card that opens the side
 // panel on its own objects (data-content-card="kind:key:ids"), and stays

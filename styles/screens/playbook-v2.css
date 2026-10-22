@@ -1249,3 +1249,70 @@
   font-weight: var(--sys-text-style-caption-bold-weight);
   color: var(--ref-color-grey-80);
 }
+
+/* A network still on the base voice: the assistant's intro, on the tab
+   (playbook-view nvTeachBlock). Two sides of one comparison — what it writes
+   like today, on the grey and in the grey-60 of a borrowed part, and Archie's
+   take, white — then the steps, then the tab's one Optimize, hugging. */
+.pb2-nv-teach__compare {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ref-spacing-sm);
+}
+
+.pb2-nv-teach__side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-sm);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-lg);
+}
+
+.pb2-nv-teach__side.is-borrowed {
+  background: var(--app-surface-subtle);
+}
+
+.pb2-nv-teach__side.is-borrowed .pb2-prose {
+  color: var(--ref-color-grey-60);
+}
+
+.pb2-nv-teach__side-title {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  margin: 0;
+  color: var(--ref-color-grey-100);
+  font-weight: var(--sys-text-style-body-bold-weight);
+}
+
+.pb2-nv-teach__side-title .pb2-block__caption {
+  margin-left: auto;
+}
+
+.pb2-nv-teach__steps-title {
+  margin: var(--ref-spacing-xs) 0 0;
+  color: var(--ref-color-grey-100);
+  font-weight: var(--sys-text-style-body-bold-weight);
+}
+
+.pb2-nv-teach__steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  margin: 0;
+  padding-left: var(--ref-spacing-md);
+  color: var(--ref-color-grey-100);
+  list-style: decimal;
+}
+
+.pb2-nv-teach__go {
+  display: flex;
+  margin-top: var(--ref-spacing-xs);
+}
+
+@media (max-width: 900px) {
+  .pb2-nv-teach__compare {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
