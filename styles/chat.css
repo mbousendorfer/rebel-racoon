@@ -1117,17 +1117,22 @@ span.chat-bubble-choice-chip {
 }
 
 .e-turn__avatar {
+  position: relative;
   display: flex;
   flex: 0 0 24px;
   min-height: 24px;
   margin-top: var(--e-lead, 0px);
 }
 
-/* The avatar centres on the first line of text of whatever the turn opens
-   with. A bare line (his words, a status pill) already sits on the disc's
-   24px row; a box lowers its first line by its own top inset, so the avatar
-   comes down by as much: your bubble its 8px, your source's 36px pill to its
-   middle, a card its 1px edge + 12, a DS infobox its 12. */
+/* ONE rule: the avatar centres on the first row of what the turn opens with
+   (and the time, which sits in the avatar's column, follows it).
+   - Words — his text, your bubble — : the row is their first line.
+   - A pill (a status, your source) is one row: the avatar centres on it.
+   - An object card (glyph or disc + its text, side by side: what you
+     pick, an account, a top post, a result, the DS infobox — which centres
+     its own icon) is one row too: the avatar centres on the card.
+   - A card that reads top-down (a title, then what it holds: the post
+     plan, a choice, a connection, a memory) opens on its title line. */
 .e-turn {
   --e-half-gap: calc((var(--sys-text-style-body-line-height) - 24px) / 2);
 }
@@ -1136,35 +1141,25 @@ span.chat-bubble-choice-chip {
   --e-lead: calc(var(--ref-spacing-xxs) + var(--e-half-gap));
 }
 
-.e-turn:has(> .e-turn__content > :first-child > .source-chip:first-child) {
-  --e-lead: calc((36px - 24px) / 2);
+.e-turn:has(
+  > .e-turn__content
+    > :only-child
+    > :is(.source-chip, .selection-echo, .chat-profiles, .top-post-echo, .drafts-card, .ap-infobox):only-child
+) {
+  align-items: center;
 }
 
 .e-turn:has(
   > .e-turn__content
     > :first-child
-    > :is(
-      .selection-echo,
-      .top-post-echo,
-      .drafts-card,
-      .memory-card,
-      .post-plan,
-      .chat-bubble-choices-card,
-      .connect-card
-    ):first-child
+    > :is(.memory-card, .post-plan, .chat-bubble-choices-card, .connect-card):first-child
 ) {
   --e-lead: calc(1px + var(--ref-spacing-xs) + var(--e-half-gap));
 }
 
-/* A picked account opens on its 32px profile disc: two discs side by side
-   read as one row only on one axis, so yours centres on the profile's. */
-.e-turn:has(> .e-turn__content > :first-child > .chat-profiles:first-child > .selection-echo--profile:first-child),
-.e-turn:has(> .e-turn__content > :first-child > .selection-echo--profile:first-child) {
-  --e-lead: calc(1px + var(--ref-spacing-xs) + (32px - 24px) / 2);
-}
-
-.e-turn:has(> .e-turn__content > :first-child > .ap-infobox:first-child) {
-  --e-lead: calc(var(--ref-spacing-xs) + var(--e-half-gap));
+/* An account's disc centres in its card, so it shares the row's axis. */
+.e-turn .selection-echo.selection-echo--profile {
+  align-items: center;
 }
 
 /* A side goes on: one avatar for the run, but each message keeps its own
@@ -1245,15 +1240,15 @@ span.chat-bubble-choice-chip {
   opacity: 1;
 }
 
-/* In the gutter, centred on the avatar's line (it follows the avatar down
-   when a box opens the turn): left of Archie's, right of yours. */
-.e-turn > .e-turn__time {
+/* In the gutter, in the avatar's column — so it is on the avatar's line
+   wherever the avatar goes: left of Archie's, right of yours. */
+.e-turn__avatar > .e-turn__time {
   position: absolute;
-  top: calc(var(--e-lead, 0px) + (24px - var(--sys-text-style-caption-line-height)) / 2);
+  top: calc((24px - var(--sys-text-style-caption-line-height)) / 2);
   right: calc(100% + var(--ref-spacing-xs));
 }
 
-.e-turn--user > .e-turn__time {
+.e-turn--user .e-turn__avatar > .e-turn__time {
   right: auto;
   left: calc(100% + var(--ref-spacing-xs));
 }

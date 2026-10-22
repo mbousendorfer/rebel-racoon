@@ -15,14 +15,14 @@
 // whole screen. clipContext is exported alongside because the clip-studio
 // finalize path in session.js builds the same generationContext object.
 
-import { FORMATS, clipFormatItems } from "../../clip-formats.js?v=2096";
-import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../../clip-subtitles.js?v=2096";
+import { FORMATS, clipFormatItems } from "../../clip-formats.js?v=2099";
+import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../../clip-subtitles.js?v=2099";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "../../social-profiles.js?v=2096";
-import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2096";
+} from "../../social-profiles.js?v=2099";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2099";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -32,9 +32,9 @@ import {
   startPending,
   finishPending,
   GENERATION_TOOLS,
-} from "../../assistant.js?v=2096";
-import * as inlineQuestion from "../../inline-question.js?v=2096";
-import { addPostDraft } from "../../posts-store.js?v=2096";
+} from "../../assistant.js?v=2099";
+import * as inlineQuestion from "../../inline-question.js?v=2099";
+import { addPostDraft } from "../../posts-store.js?v=2099";
 
 // The generationContext a clip-derived draft carries — the "why this draft
 // exists" header shown on the post card. Shared with session.js's clip-studio
