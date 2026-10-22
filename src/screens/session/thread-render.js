@@ -13,28 +13,28 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=2099";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2099";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2099";
-import { getTopPost } from "../../top-posts-store.js?v=2099";
-import { getTopicById } from "../../topics-store.js?v=2099";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=2099";
-import { renderProfileEchoCard } from "../../social-profiles.js?v=2099";
-import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2099";
-import { getIdeas } from "../../library.js?v=2099";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=2099";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2099";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=2099";
-import { getSuggestion } from "../../voice-coach-store.js?v=2099";
-import { getPlans } from "../../post-plan-store.js?v=2099";
-import { draftsToRewrite } from "../../voice-coach.js?v=2099";
-import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=2099";
-import { isFlagOn } from "../../feature-flags.js?v=2099";
-import { CURRENT_USER } from "../../org.js?v=2099";
-import { getSessionById } from "../../sessions-store.js?v=2099";
-import { getContextById } from "../../contexts-store.js?v=2099";
-import { needsImageLook } from "../../modules/image-studio/index.js?v=2099";
-import { getFocusKey } from "../../components/right-panel.js?v=2099";
+} from "./thread-turns.js?v=2101";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2101";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2101";
+import { getTopPost } from "../../top-posts-store.js?v=2101";
+import { getTopicById } from "../../topics-store.js?v=2101";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=2101";
+import { renderProfileEchoCard } from "../../social-profiles.js?v=2101";
+import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2101";
+import { getIdeas } from "../../library.js?v=2101";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=2101";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2101";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=2101";
+import { getSuggestion } from "../../voice-coach-store.js?v=2101";
+import { getPlans } from "../../post-plan-store.js?v=2101";
+import { draftsToRewrite } from "../../voice-coach.js?v=2101";
+import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=2101";
+import { isFlagOn } from "../../feature-flags.js?v=2101";
+import { CURRENT_USER } from "../../org.js?v=2101";
+import { getSessionById } from "../../sessions-store.js?v=2101";
+import { getContextById } from "../../contexts-store.js?v=2101";
+import { needsImageLook } from "../../modules/image-studio/index.js?v=2101";
+import { getFocusKey } from "../../components/right-panel.js?v=2101";
 
 // Flag contentPanel — every result in the thread is a card that opens the side
 // panel on its own objects (data-content-card="kind:key:ids"), and stays
@@ -120,6 +120,57 @@ function renderTwoSides(turns) {
     })
     .concat(trailing.map((html) => turn("e-turn--trailing", "", html)))
     .join("");
+}
+
+// Where each avatar stands, against what its turn opens with: a one-line
+// element (a status, your source, a line of text, a one-line bubble) gets
+// the avatar centred on it; anything taller (a card, a bubble or text that
+// wraps, an infobox) gets it on its top edge. Whether a bubble wraps is
+// only known once laid out, so it is measured — on every change in the
+// screen and every resize — and handed to the CSS as --e-lead. The time
+// lives in the avatar's column and follows it.
+function alignTurnAvatars(scope) {
+  for (const turn of scope.querySelectorAll(".e-turn")) {
+    const content = turn.querySelector(":scope > .e-turn__content");
+    let box = content?.firstElementChild;
+    if (box?.matches(".chat-turn, .memory-turn")) box = box.firstElementChild ?? box;
+    if (box?.matches("details")) box = box.querySelector(":scope > summary") ?? box;
+    if (!box) continue;
+    const cs = getComputedStyle(box);
+    const r = box.getBoundingClientRect();
+    const frame = ["paddingTop", "paddingBottom", "borderTopWidth", "borderBottomWidth"].reduce(
+      (n, k) => n + parseFloat(cs[k]),
+      0,
+    );
+    const oneLine = r.height - frame < 1.5 * (parseFloat(cs.lineHeight) || 18);
+    const top = r.top - content.getBoundingClientRect().top;
+    turn.style.setProperty("--e-lead", `${Math.round(oneLine ? top + r.height / 2 - 12 : top)}px`);
+  }
+}
+
+export function watchTurnAvatars(root) {
+  if (!isFlagOn("newConversationStyles")) return () => {};
+  let pending = false;
+  let live = true;
+  const schedule = () => {
+    if (pending) return;
+    pending = true;
+    queueMicrotask(() => {
+      pending = false;
+      if (live) alignTurnAvatars(root);
+    });
+  };
+  const mutations = new MutationObserver(schedule);
+  mutations.observe(root, { childList: true, subtree: true, characterData: true });
+  const resizes = new ResizeObserver(schedule);
+  resizes.observe(root);
+  document.fonts?.ready.then(schedule);
+  schedule();
+  return () => {
+    live = false;
+    mutations.disconnect();
+    resizes.disconnect();
+  };
 }
 
 function renderTurn(message, sessionId) {

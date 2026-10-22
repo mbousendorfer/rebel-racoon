@@ -1124,43 +1124,9 @@ span.chat-bubble-choice-chip {
   margin-top: var(--e-lead, 0px);
 }
 
-/* ONE rule: the avatar centres on the first row of what the turn opens with
-   (and the time, which sits in the avatar's column, follows it).
-   - Words — his text, your bubble — : the row is their first line.
-   - A pill (a status, your source) is one row: the avatar centres on it.
-   - An object card (glyph or disc + its text, side by side: what you
-     pick, an account, a top post, a result, the DS infobox — which centres
-     its own icon) is one row too: the avatar centres on the card.
-   - A card that reads top-down (a title, then what it holds: the post
-     plan, a choice, a connection, a memory) opens on its title line. */
-.e-turn {
-  --e-half-gap: calc((var(--sys-text-style-body-line-height) - 24px) / 2);
-}
-
-.e-turn:has(> .e-turn__content > :first-child > .chat-bubble--user:first-child) {
-  --e-lead: calc(var(--ref-spacing-xxs) + var(--e-half-gap));
-}
-
-.e-turn:has(
-  > .e-turn__content
-    > :only-child
-    > :is(.source-chip, .selection-echo, .chat-profiles, .top-post-echo, .drafts-card, .ap-infobox):only-child
-) {
-  align-items: center;
-}
-
-.e-turn:has(
-  > .e-turn__content
-    > :first-child
-    > :is(.memory-card, .post-plan, .chat-bubble-choices-card, .connect-card):first-child
-) {
-  --e-lead: calc(1px + var(--ref-spacing-xs) + var(--e-half-gap));
-}
-
-/* An account's disc centres in its card, so it shares the row's axis. */
-.e-turn .selection-echo.selection-echo--profile {
-  align-items: center;
-}
+/* Where the avatar stands is measured (alignTurnAvatars, thread-render.js):
+   centred on what the turn opens with when it is one line, on its top edge
+   when it is taller. */
 
 /* A side goes on: one avatar for the run, but each message keeps its own
    room (16px) and its own time on hover — they stay separate messages. */
@@ -1211,12 +1177,6 @@ span.chat-bubble-choice-chip {
   flex-grow: 0;
   align-items: flex-end;
   max-width: var(--app-chat-card);
-}
-
-/* His words have no box: their first line centres on the 24px disc. A box
-   (your bubble, a card) tops out level with the avatar instead. */
-.e-turn .chat-bubble--ai {
-  margin-top: calc((24px - 1lh) / 2);
 }
 
 /* A status line sits on the avatar's 24px row. */

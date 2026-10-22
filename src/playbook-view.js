@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2099";
-import { conceptHint } from "./concepts.js?v=2099";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2101";
+import { conceptHint } from "./concepts.js?v=2101";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,11 +30,11 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2099";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2099";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2099";
-import { isFlagOn } from "./feature-flags.js?v=2099";
-import { parseHashParams } from "./url-state.js?v=2099";
+} from "./playbook-brand-kit.js?v=2101";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2101";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2101";
+import { isFlagOn } from "./feature-flags.js?v=2101";
+import { parseHashParams } from "./url-state.js?v=2101";
 import {
   networkVoicesOn,
   baseNetwork,
@@ -57,16 +57,16 @@ import {
   networkLabel,
   networkIcon,
   memoryCardHtml,
-} from "./network-voice.js?v=2099";
+} from "./network-voice.js?v=2101";
 import {
   getSuggestions,
   accept as acceptVoiceSuggestion,
   dismiss as dismissVoiceSuggestion,
-} from "./voice-coach-store.js?v=2099";
-import { showToast } from "./components/toast.js?v=2099";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2099";
-import { open as openVoiceWizard } from "./components/voice-wizard-modal.js?v=2099";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=2099";
+} from "./voice-coach-store.js?v=2101";
+import { showToast } from "./components/toast.js?v=2101";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2101";
+import { open as openVoiceWizard } from "./components/voice-wizard-modal.js?v=2101";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=2101";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
