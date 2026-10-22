@@ -13,15 +13,15 @@
 // tones, contentStyle, objective, contentAction, ctaLinks, language, color,
 // suggestions, editingId, onComplete }.
 
-import * as inlineQuestion from "./inline-question.js?v=2093";
-import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=2093";
-import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=2093";
-import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=2093";
-import { showToast } from "./components/toast.js?v=2093";
-import { recordReasons } from "./feedback-store.js?v=2093";
-import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=2093";
-import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2093";
-import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=2093";
+import * as inlineQuestion from "./inline-question.js?v=2094";
+import { connectableNetworkCards, accountIdsForNetwork } from "./connect-profiles-flow.js?v=2094";
+import { open as openConnectAccountModal } from "./components/connect-account-modal.js?v=2094";
+import { open as openSkipConnectModal } from "./components/skip-connect-modal.js?v=2094";
+import { showToast } from "./components/toast.js?v=2094";
+import { recordReasons } from "./feedback-store.js?v=2094";
+import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assistant.js?v=2094";
+import { addContext, updateContext, getContextById } from "./contexts-store.js?v=2094";
+import { isWorkspaceMode, setActivePlaybook } from "./active-playbook.js?v=2094";
 import {
   analyzeWebsite,
   analyzeBrandFiles,
@@ -29,8 +29,8 @@ import {
   analyzeInterview,
   nextInterviewQuestion,
   INTERVIEW_OPENING,
-} from "./context-mock-analysis.js?v=2093";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2093";
+} from "./context-mock-analysis.js?v=2094";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2094";
 import {
   networkVoicesOn,
   cloneVoiceByNetwork,
@@ -38,18 +38,18 @@ import {
   networkLabel,
   networkIcon,
   voiceNetworks,
-} from "./network-voice.js?v=2093";
-import { connectors as connectorMocks } from "./mocks.js?v=2093";
+} from "./network-voice.js?v=2094";
+import { connectors as connectorMocks } from "./mocks.js?v=2094";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "./social-profiles.js?v=2093";
-import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=2093";
-import { isFlagOn } from "./feature-flags.js?v=2093";
-import { startDemo } from "./demo-flow.js?v=2093";
-import { navigate } from "./router.js?v=2093";
-import { setHandoff } from "./handoff.js?v=2093";
+} from "./social-profiles.js?v=2094";
+import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=2094";
+import { isFlagOn } from "./feature-flags.js?v=2094";
+import { startDemo } from "./demo-flow.js?v=2094";
+import { navigate } from "./router.js?v=2094";
+import { setHandoff } from "./handoff.js?v=2094";
 
 const drafts = new Map(); // sessionId → draft
 const subscribers = new Map(); // sessionId → Set<fn>
