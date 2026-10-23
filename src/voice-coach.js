@@ -13,19 +13,19 @@
 // ponytail: the edit heuristics are a mock reading of one before/after pair.
 // The real thing compares many drafts per network before proposing.
 
-import { getSessionById } from "./sessions-store.js?v=2110";
-import { getContextById } from "./contexts-store.js?v=2110";
-import { playbookForNewWork } from "./active-playbook.js?v=2110";
-import { getPosts, updatePostContent } from "./posts-store.js?v=2110";
-import { postVoiceSuggestion, postSelectionEcho, postAssistantMessage, refreshThread } from "./assistant.js?v=2110";
-import { updateContext } from "./contexts-store.js?v=2110";
-import { showToast } from "./components/toast.js?v=2110";
-import { startRewrite } from "./draft-rewrite.js?v=2110";
-import { escapeHtml } from "./utils.js?v=2110";
-import { ask, isActive } from "./inline-question.js?v=2110";
-import { propose, accept } from "./voice-coach-store.js?v=2110";
-import { normalizeNetwork } from "./social-profiles.js?v=2110";
-import { networkClosings } from "./context-mock-analysis.js?v=2110";
+import { getSessionById } from "./sessions-store.js?v=2111";
+import { getContextById } from "./contexts-store.js?v=2111";
+import { playbookForNewWork } from "./active-playbook.js?v=2111";
+import { getPosts, updatePostContent } from "./posts-store.js?v=2111";
+import { postVoiceSuggestion, postSelectionEcho, postAssistantMessage, refreshThread } from "./assistant.js?v=2111";
+import { updateContext } from "./contexts-store.js?v=2111";
+import { showToast } from "./components/toast.js?v=2111";
+import { startRewrite } from "./draft-rewrite.js?v=2111";
+import { escapeHtml } from "./utils.js?v=2111";
+import { ask, isActive } from "./inline-question.js?v=2111";
+import { propose, accept } from "./voice-coach-store.js?v=2111";
+import { normalizeNetwork } from "./social-profiles.js?v=2111";
+import { networkClosings } from "./context-mock-analysis.js?v=2111";
 import {
   networkVoicesOn,
   baseNetwork,
@@ -37,7 +37,7 @@ import {
   isBorrowed,
   writeInVoice,
   withDiffs,
-} from "./network-voice.js?v=2110";
+} from "./network-voice.js?v=2111";
 
 function sessionPlaybook(sessionId) {
   const session = getSessionById(sessionId);

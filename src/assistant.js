@@ -6,12 +6,13 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2110";
-import { findConnector } from "./connectors-store.js?v=2110";
-import { createSessionNotifier } from "./store-utils.js?v=2110";
-import { addPostDraft } from "./posts-store.js?v=2110";
-import { showToast } from "./components/toast.js?v=2110";
-import { isFlagOn } from "./feature-flags.js?v=2110";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2111";
+import { findConnector } from "./connectors-store.js?v=2111";
+import { createSessionNotifier } from "./store-utils.js?v=2111";
+import { addPostDraft } from "./posts-store.js?v=2111";
+import { showToast } from "./components/toast.js?v=2111";
+import { isFlagOn } from "./feature-flags.js?v=2111";
+import { getSources, subscribeSources } from "./sources-stream.js?v=2111";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -105,7 +106,9 @@ export function sendMessage(sessionId, text, options = {}) {
     // Flag newConversationStyles: the prod copy, past tense once done. OFF = Monday.
     meta: isFlagOn("newConversationStyles") ? "Thinking…" : "Thinking",
     variant: "mermaid",
-    text: "Analyzing your request and sources…",
+    // Flag ON: the duration only, nothing to unfold — prod doesn't ask the
+    // model for its thoughts (cost, raw English, internal tool names).
+    text: isFlagOn("newConversationStyles") ? "" : "Analyzing your request and sources…",
     open: false,
     status: "loading",
     createdAt: Date.now(),
@@ -126,7 +129,7 @@ export function sendMessage(sessionId, text, options = {}) {
     const reply = mockAiReply({ prompt: text, sessionId });
     const reasoning = thread.find((m) => m.id === reasoningId);
     if (reasoning) {
-      reasoning.text = reply.reasoning;
+      if (!isFlagOn("newConversationStyles")) reasoning.text = reply.reasoning;
       reasoning.status = "ready";
       // Present tense while working, past tense once done — the same pair as
       // "Extracting" → "Extracted 2 ideas".
@@ -244,11 +247,19 @@ export function postAssistantMessage(sessionId, text, { meta = "Archie" } = {}) 
 // closure, so it lives beside the thread, keyed by the turn id.
 const failedRetries = new Map();
 
-export function reportDraftFailure(sessionId, err, retry, source = "draft-flow") {
+// What failed, when it's known. When it isn't (the backend's bare "unexpected
+// error", no action named), GENERIC_FAILURE: the title alone, then Retry.
+const DRAFT_FAILURE = {
+  title: "Couldn't create those drafts",
+  text: "Something unexpected happened on my side. Nothing was lost.",
+};
+export const GENERIC_FAILURE = { title: "Something went wrong on my side", text: "" };
+
+export function reportDraftFailure(sessionId, err, retry, source = "draft-flow", copy = DRAFT_FAILURE) {
   // eslint-disable-next-line no-console
   console.error(`${source}: draft generation failed`, err);
   if (!isFlagOn("newConversationStyles")) {
-    showToast("Couldn't create those drafts.", {
+    showToast(`${copy.title}.`, {
       variant: "error",
       duration: 6000,
       action: { label: "Retry", onClick: retry },
@@ -261,8 +272,8 @@ export function reportDraftFailure(sessionId, err, retry, source = "draft-flow")
     id,
     role: "assistant",
     variant: "failed",
-    title: "Couldn't create those drafts",
-    text: "Something unexpected happened on my side. Nothing was lost.",
+    title: copy.title,
+    text: copy.text,
     status: "failed",
     createdAt: Date.now(),
   });
@@ -397,10 +408,13 @@ export function startPending(sessionId, meta = null, tools = null) {
   const thread = getThread(sessionId);
   const id = newId();
   // New conversation styles: the work shows the tools it runs, the way the prod
-  // thread does (chat-thread.component toActivityGroup) — "Extract Ideas…"
-  // while it runs, "Extract Ideas · 1.6s" / "Ran 3 tools · 3.0s" once done, and
+  // thread does (chat-thread.component toActivityGroup) — "Extracting ideas…"
+  // while it runs, "Extracted ideas · 2s" / "Ran 2 tools · 3s" once done, and
   // the activity stays in the thread. Otherwise the transient pending marker.
   if (tools && isFlagOn("newConversationStyles")) {
+    tools = tools.filter((tool) => TOOL_LABELS[tool]);
+    // Only hidden steps: nothing to show, the caller's finishPending no-ops.
+    if (!tools.length) return id;
     thread.push({
       id,
       role: "assistant",
@@ -443,26 +457,23 @@ export function postActivity(sessionId, tools) {
 // Simulated durations (ms) — the prod reads them off the wire.
 const TOOL_MS = { extract_ideas: 1600, start_generation: 200, generate_drafts: 2400, check_post_quality: 400 };
 
-// The prod's tool vocabulary (studio i18n): hooks.toolNames.* for the chip,
-// chat.tool.progress.* for what a finished single tool unfolds; any other id
-// is de-snake-cased (tool-name.ts) / "Running {{tool}}…".
-const TOOL_NAMES = {
-  modify_post: "Modify Post",
-  check_post_quality: "Check Quality",
-  start_generation: "Generate Posts",
-  schedule_post: "Schedule Post",
-  answer_pdf_question: "Analyze Document",
-  extract_ideas: "Extract Ideas",
-  analyze_tone: "Analyze Tone",
-  generate_drafts: "Generate Drafts",
-  regenerate_posts: "Regenerate Posts",
-  request_config: "Configure",
-  score_quality: "Score Quality",
-  get_best_times: "Best Publishing Times",
-  fix_practices: "Fix Practices",
-  manage_first_comment: "First Comment",
-  update_post_brief: "Post Plan",
-  assign_posts: "Assign Posts",
+// The steps the user sees, in written words — what it's doing while it runs,
+// what it did once done ("Extracting ideas…" → "Extracted ideas · 2s"). Only
+// these show: every other id (config echoes, start_generation's plumbing, the
+// quality passes — analyze_tone, check_post_quality, score_quality, fix_tone,
+// fix_practices, which read as "the first draft failed") stays hidden, as prod
+// hides them. chat.tool.progress.* below is what a finished step unfolds.
+const TOOL_LABELS = {
+  extract_ideas: ["Extracting ideas", "Extracted ideas"],
+  generate_drafts: ["Writing drafts", "Wrote drafts"],
+  regenerate_posts: ["Rewriting drafts", "Rewrote drafts"],
+  modify_post: ["Editing the post", "Edited the post"],
+  answer_pdf_question: ["Reading the document", "Read the document"],
+  get_best_times: ["Finding the best times", "Found the best times"],
+  schedule_post: ["Scheduling", "Scheduled"],
+  manage_first_comment: ["Writing the first comment", "Wrote the first comment"],
+  update_post_brief: ["Updating the post plan", "Updated the post plan"],
+  assign_posts: ["Assigning posts", "Assigned posts"],
 };
 const TOOL_PROGRESS = {
   analyze_context: "Analyzing context…",
@@ -479,7 +490,7 @@ const TOOL_PROGRESS = {
   schedule_post: "Scheduling post…",
   start_generation: "Starting post generation…",
 };
-export const toolName = (t) => TOOL_NAMES[t] || t.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+export const toolName = (t, done = false) => TOOL_LABELS[t]?.[done ? 1 : 0] || t.replace(/_/g, " ");
 export const toolDescription = (t) => TOOL_PROGRESS[t] || `Running ${t}…`;
 export const GENERATION_TOOLS = ["start_generation", "generate_drafts", "check_post_quality"];
 
@@ -709,6 +720,24 @@ export function postClipExtractionTurn(sessionId, { sourceId, filename }) {
     status: "ready",
     createdAt: Date.now(),
   });
+  // New conversation styles: ready, the card arrives at the bottom of the
+  // thread — where it was running — as a new turn, not back up where the work
+  // was launched (the user kept chatting; that spot is out of view).
+  if (isFlagOn("newConversationStyles")) {
+    const isReady = () => getSources(sessionId).find((s) => s.id === sourceId)?.clipExtractionStatus === "ready";
+    if (!isReady()) {
+      const stop = subscribeSources(sessionId, () => {
+        if (!isReady()) return;
+        stop();
+        const i = thread.findIndex((m) => m.id === id);
+        if (i < 0) return;
+        const [turn] = thread.splice(i, 1);
+        turn.createdAt = Date.now();
+        thread.push(turn);
+        notify(sessionId);
+      });
+    }
+  }
   notify(sessionId);
   return id;
 }

@@ -13,28 +13,28 @@ import {
   renderNotice,
   renderResultCard,
   renderFailedTurn,
-} from "./thread-turns.js?v=2110";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2110";
-import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2110";
-import { getTopPost } from "../../top-posts-store.js?v=2110";
-import { getTopicById } from "../../topics-store.js?v=2110";
-import { renderTopicsWidget } from "../../components/topic-card.js?v=2110";
-import { renderProfileEchoCard } from "../../social-profiles.js?v=2110";
-import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2110";
-import { getIdeas } from "../../library.js?v=2110";
-import { renderRefs, resolveRef } from "../../chat-refs.js?v=2110";
-import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2110";
-import { getThread, toolName, toolDescription } from "../../assistant.js?v=2110";
-import { getSuggestion } from "../../voice-coach-store.js?v=2110";
-import { getPlans } from "../../post-plan-store.js?v=2110";
-import { draftsToRewrite } from "../../voice-coach.js?v=2110";
-import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=2110";
-import { isFlagOn } from "../../feature-flags.js?v=2110";
-import { CURRENT_USER } from "../../org.js?v=2110";
-import { getSessionById } from "../../sessions-store.js?v=2110";
-import { getContextById } from "../../contexts-store.js?v=2110";
-import { needsImageLook } from "../../modules/image-studio/index.js?v=2110";
-import { getFocusKey } from "../../components/right-panel.js?v=2110";
+} from "./thread-turns.js?v=2111";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2111";
+import { renderTopPostEcho, renderTopPostsWidget } from "../../components/top-post-card.js?v=2111";
+import { getTopPost } from "../../top-posts-store.js?v=2111";
+import { getTopicById } from "../../topics-store.js?v=2111";
+import { renderTopicsWidget } from "../../components/topic-card.js?v=2111";
+import { renderProfileEchoCard } from "../../social-profiles.js?v=2111";
+import { escapeHtml, formatTimeOfDay } from "../../utils.js?v=2111";
+import { getIdeas } from "../../library.js?v=2111";
+import { renderRefs, resolveRef } from "../../chat-refs.js?v=2111";
+import { renderCompactIdeaCard } from "../../components/idea-card-compact.js?v=2111";
+import { getThread, toolName, toolDescription } from "../../assistant.js?v=2111";
+import { getSuggestion } from "../../voice-coach-store.js?v=2111";
+import { getPlans } from "../../post-plan-store.js?v=2111";
+import { draftsToRewrite } from "../../voice-coach.js?v=2111";
+import { networkLabel, networkIcon, memoryCardHtml } from "../../network-voice.js?v=2111";
+import { isFlagOn } from "../../feature-flags.js?v=2111";
+import { CURRENT_USER } from "../../org.js?v=2111";
+import { getSessionById } from "../../sessions-store.js?v=2111";
+import { getContextById } from "../../contexts-store.js?v=2111";
+import { needsImageLook } from "../../modules/image-studio/index.js?v=2111";
+import { getFocusKey } from "../../components/right-panel.js?v=2111";
 
 // Flag contentPanel — every result in the thread is a card that opens the side
 // panel on its own objects (data-content-card="kind:key:ids"), and stays
@@ -81,7 +81,8 @@ function renderTwoSides(turns) {
   // A long job still running on a video (clips, ideas) is not a turn: as in
   // prod (ap-clip-processing-card, projected after the messages), its card
   // stays at the very end of the thread, below the latest message, with no
-  // avatar — its own loader says it works. Once ready it is a turn again.
+  // avatar — its own loader says it works. Once ready it is a turn again,
+  // moved to the end of the thread (postClipExtractionTurn, assistant.js).
   const trailing = [];
   let head = null; // the item that carries the avatar of Archie's current run
   for (const [m, html] of turns) {
@@ -325,7 +326,7 @@ function renderActivityTurn(message) {
   if (tools.length === 1) {
     return renderNotice({
       variant: "mermaid",
-      label: `${escapeHtml(toolName(tools[0].tool))}${dur(totalMs)}`,
+      label: `${escapeHtml(toolName(tools[0].tool, true))}${dur(totalMs)}`,
       open: false,
       bodyHtml: `<div class="assistant-notice__detail">${escapeHtml(toolDescription(tools[0].tool))}</div>`,
     });
@@ -340,7 +341,7 @@ function renderActivityTurn(message) {
       const instant = ms < 500;
       return `<li class="assistant-notice__tool${instant ? " is-instant" : ""}">
         <i class="ap-icon-toolbox" aria-hidden="true"></i>
-        <span class="assistant-notice__tool-name">${escapeHtml(toolName(t.tool))}</span>
+        <span class="assistant-notice__tool-name">${escapeHtml(toolName(t.tool, true))}</span>
         <span class="assistant-notice__tool-bar" aria-hidden="true"><span style="width: ${instant ? 0 : Math.round((ms / longest) * 100)}%"></span></span>
         <span class="assistant-notice__tool-duration">${instant ? "" : `${sec(ms)}s`}</span>
       </li>`;

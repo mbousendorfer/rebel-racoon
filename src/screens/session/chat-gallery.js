@@ -14,8 +14,8 @@
 // ponytail: the catalogue is a hand-kept list — a new turn variant or route has
 // to be added here too, or it won't show in the menu.
 
-import { escapeHtml } from "../../utils.js?v=2110";
-import { isFlagOn } from "../../feature-flags.js?v=2110";
+import { escapeHtml } from "../../utils.js?v=2111";
+import { isFlagOn } from "../../feature-flags.js?v=2111";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -32,24 +32,25 @@ import {
   postConnectPrompt,
   postVoiceSuggestion,
   reportDraftFailure,
+  GENERIC_FAILURE,
   getThread,
   refreshThread,
-} from "../../assistant.js?v=2110";
-import { getSources, getIdeas } from "../../library.js?v=2110";
-import { getPosts } from "../../posts-store.js?v=2110";
-import { getTopPosts } from "../../top-posts-store.js?v=2110";
-import { getConnectedProfiles } from "../../social-profiles.js?v=2110";
-import { extractClipsForSource, updateSourceClips } from "../../sources-stream.js?v=2110";
-import { getConnectedConnectors } from "../../connectors-store.js?v=2110";
-import { detectUrlService } from "../../url-services.js?v=2110";
-import { propose, getSuggestions } from "../../voice-coach-store.js?v=2110";
-import * as inlineQuestion from "../../inline-question.js?v=2110";
-import { startTopPostsInline } from "../../top-posts-flow.js?v=2110";
-import { startTopicPickerInline } from "../../topic-flow.js?v=2110";
-import { askConnector } from "../../connector-ask.js?v=2110";
-import { coachAfterDraft, coachingTarget } from "../../voice-coach.js?v=2110";
-import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2110";
-import { startIdeaDraft, askSourceUse } from "./draft-questions.js?v=2110";
+} from "../../assistant.js?v=2111";
+import { getSources, getIdeas } from "../../library.js?v=2111";
+import { getPosts } from "../../posts-store.js?v=2111";
+import { getTopPosts } from "../../top-posts-store.js?v=2111";
+import { getConnectedProfiles } from "../../social-profiles.js?v=2111";
+import { extractClipsForSource, updateSourceClips } from "../../sources-stream.js?v=2111";
+import { getConnectedConnectors } from "../../connectors-store.js?v=2111";
+import { detectUrlService } from "../../url-services.js?v=2111";
+import { propose, getSuggestions } from "../../voice-coach-store.js?v=2111";
+import * as inlineQuestion from "../../inline-question.js?v=2111";
+import { startTopPostsInline } from "../../top-posts-flow.js?v=2111";
+import { startTopicPickerInline } from "../../topic-flow.js?v=2111";
+import { askConnector } from "../../connector-ask.js?v=2111";
+import { coachAfterDraft, coachingTarget } from "../../voice-coach.js?v=2111";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2111";
+import { startIdeaDraft, askSourceUse } from "./draft-questions.js?v=2111";
 
 // The intake sample plays the real lifecycle — loading, then ready — under a
 // sample id no source owns, so intake-lifecycle leaves it alone.
@@ -89,7 +90,7 @@ const COMPONENTS = [
     id: "thinking",
     label: "Thinking notice",
     icon: "ap-icon-sparkles",
-    hint: "The reasoning pill: Thinking (its dot pulsing) for 3 seconds, then Thought for 3s",
+    hint: "The reasoning pill: Thinking (its dot pulsing) for 3 seconds, then Thought for 3s — the duration only, nothing to unfold",
     run: (sid) => {
       sendMessage(sid, "Ranked the ideas by confidence and picked the most specific one.", {
         role: "system",
@@ -99,6 +100,7 @@ const COMPONENTS = [
         status: "loading",
       });
       const msg = getThread(sid).at(-1);
+      if (isFlagOn("newConversationStyles")) msg.text = "";
       setTimeout(() => {
         msg.status = "ready";
         if (isFlagOn("newConversationStyles")) msg.meta = "Thought for 3s";
@@ -162,6 +164,20 @@ const COMPONENTS = [
     run: (sid) =>
       reportDraftFailure(sid, new Error("Sample failure"), () =>
         postAssistantMessage(sid, "That worked this time — your drafts are in the Drafts tab."),
+      ),
+  },
+  {
+    id: "failed-generic",
+    label: "Failed card, unknown action",
+    icon: "ap-icon-warning",
+    hint: "The backend's bare unexpected error: the title alone, then Retry",
+    run: (sid) =>
+      reportDraftFailure(
+        sid,
+        new Error("Sample failure"),
+        () => postAssistantMessage(sid, "That worked this time."),
+        "chat-gallery",
+        GENERIC_FAILURE,
       ),
   },
   {

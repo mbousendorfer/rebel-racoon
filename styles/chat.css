@@ -264,10 +264,9 @@
   flex-shrink: 0;
 }
 
-/* (2) Ideas / clips — the DS link (.ap-link standalone small, set in the
-   renderer), the same as the result cards' "Open clips ›": on your white
-   object card, blue is what you can click. This rule only resets the
-   <button> and keeps the chevron cue. */
+/* (2) Ideas / clips — "N ideas ›" / "M clips ›". This rule only resets the
+   <button> and keeps the chevron cue; its look is the prod's filled blue pill,
+   .source-chip .source-chip__action below. */
 .chat-bubble-source-intake__pill {
   display: inline-flex;
   align-items: center;
