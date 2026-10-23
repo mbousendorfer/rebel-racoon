@@ -3,15 +3,15 @@
 // the panel shell (open / close / resize / URL state / delegated listeners)
 // stays there.
 
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2116";
-import { isFlagOn } from "../../feature-flags.js?v=2116";
-import { getConnectedConnectors } from "../../connectors-store.js?v=2116";
-import { escapeAttr, escapeText } from "../../utils.js?v=2116";
-import { IDEA_KIND_TAG } from "../idea-card-compact.js?v=2116";
-import { conceptText } from "../../concepts.js?v=2116";
-import { renderConnectorLogo } from "../../connectors-view.js?v=2116";
-import { renderTopPostEcho } from "../top-post-card.js?v=2116";
-import { closeInline, activeSessionId, sessionIdeas } from "../right-panel.js?v=2116";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2117";
+import { isFlagOn } from "../../feature-flags.js?v=2117";
+import { getConnectedConnectors } from "../../connectors-store.js?v=2117";
+import { escapeAttr, escapeText } from "../../utils.js?v=2117";
+import { IDEA_KIND_TAG } from "../idea-card-compact.js?v=2117";
+import { conceptText } from "../../concepts.js?v=2117";
+import { renderConnectorLogo } from "../../connectors-view.js?v=2117";
+import { renderTopPostEcho } from "../top-post-card.js?v=2117";
+import { closeInline, activeSessionId, sessionIdeas } from "../right-panel.js?v=2117";
 
 // Sources mode view — list of source rows for the active session + a
 // trailing "+ Attach" button. Each row carries kind icon, filename,
@@ -24,7 +24,7 @@ export function renderSourcesView() {
     return `
       <div class="rpanel-sources">
         <div class="app-right-panel__empty">
-          <div class="app-right-panel__empty-icon"><i class="ap-icon-file"></i></div>
+          <div class="app-right-panel__empty-icon"><i class="ap-icon-file ap-icon-xl"></i></div>
           <div class="app-right-panel__empty-title">Open a chat</div>
           <div class="app-right-panel__empty-sub">Sources attach to a chat. Start or open one to manage its sources.</div>
         </div>
@@ -51,7 +51,7 @@ export function renderSourcesView() {
         ${head}
         ${liveBlock}
         <div class="app-right-panel__empty rpanel-sources__empty">
-          <div class="app-right-panel__empty-icon"><i class="ap-icon-file"></i></div>
+          <div class="app-right-panel__empty-icon"><i class="ap-icon-file ap-icon-xl"></i></div>
           <div class="app-right-panel__empty-title">No sources yet</div>
           <div class="app-right-panel__empty-sub">Attach a file or pick from a connector to start.</div>
           <div class="app-right-panel__empty-action">

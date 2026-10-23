@@ -2,12 +2,12 @@
 // the per-card feedback and "why this idea" state. Moved out of right-panel.js,
 // unchanged; the filter state it reads is owned (and written) by the shell.
 
-import { html, raw } from "../../utils.js?v=2116";
-import { conceptText } from "../../concepts.js?v=2116";
-import { isFlagOn } from "../../feature-flags.js?v=2116";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2116";
-import { renderClipCard } from "../clip-card.js?v=2116";
-import { renderCompactIdeaCard } from "../idea-card-compact.js?v=2116";
+import { html, raw } from "../../utils.js?v=2117";
+import { conceptText } from "../../concepts.js?v=2117";
+import { isFlagOn } from "../../feature-flags.js?v=2117";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2117";
+import { renderClipCard } from "../clip-card.js?v=2117";
+import { renderCompactIdeaCard } from "../idea-card-compact.js?v=2117";
 import {
   closeInline,
   activeSessionId,
@@ -15,7 +15,7 @@ import {
   ideasFilter,
   outputsView,
   sessionIdeas,
-} from "../right-panel.js?v=2116";
+} from "../right-panel.js?v=2117";
 
 // Idea kind taxonomy — handoff Ideas filter rail (§ 2.6). Order is the order
 // shown in the chip row. Each kind's tag colour is IDEA_KIND_TAG
@@ -154,7 +154,7 @@ function renderClipsList(entries) {
   if (!Array.isArray(entries) || entries.length === 0) {
     return html`
       <div class="app-right-panel__empty rpanel-ideas__no-match">
-        <div class="app-right-panel__empty-icon"><i class="ap-icon-file--video"></i></div>
+        <div class="app-right-panel__empty-icon"><i class="ap-icon-file--video ap-icon-xl"></i></div>
         <div class="app-right-panel__empty-title">No clips yet</div>
         <div class="app-right-panel__empty-sub">
           Drop a video into the chat and pick <strong>Cut into clips</strong> — I'll cut short moments you can post.
@@ -242,7 +242,7 @@ function renderIdeasList() {
   if (sessionIdeas().length === 0) {
     return html`
       <div class="app-right-panel__empty rpanel-ideas__no-match">
-        <div class="app-right-panel__empty-icon"><i class="ap-icon-archie-official"></i></div>
+        <div class="app-right-panel__empty-icon"><i class="ap-icon-archie-official ap-icon-xl"></i></div>
         <div class="app-right-panel__empty-title">No ideas yet</div>
         <div class="app-right-panel__empty-sub">
           Attach a source — I'll pull hooks, stats, quotes, stories, and insights you can draft from.
@@ -253,7 +253,7 @@ function renderIdeasList() {
   if (sorted.length === 0) {
     return html`
       <div class="app-right-panel__empty rpanel-ideas__no-match">
-        <div class="app-right-panel__empty-icon"><i class="ap-icon-archie-official"></i></div>
+        <div class="app-right-panel__empty-icon"><i class="ap-icon-archie-official ap-icon-xl"></i></div>
         <div class="app-right-panel__empty-title">No ideas of this kind</div>
         <div class="app-right-panel__empty-sub">Pick another kind, or All to see every idea.</div>
         <div class="app-right-panel__empty-action">

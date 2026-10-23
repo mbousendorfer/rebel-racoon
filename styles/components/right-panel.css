@@ -60,7 +60,8 @@
 }
 
 /* A bare icon, no medallion behind it — the house empty state, as in the
-   Image Generator's renderEmpty. */
+   Image Generator's renderEmpty. The glyph carries the DS's ap-icon-xl (40px)
+   in the markup; no font-size here, or it would beat the DS class. */
 .app-right-panel__empty-icon {
   display: inline-flex;
   align-items: center;
@@ -69,7 +70,6 @@
 }
 
 .app-right-panel__empty-icon i {
-  font-size: var(--sys-icon-css-md);
   color: var(--ref-color-grey-80);
 }
 
