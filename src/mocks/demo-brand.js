@@ -247,6 +247,8 @@ export const DEMO_PLAYBOOK = {
   dontRules: ["No corporate words", "No more than two emoji"],
   cta: "Come by for a cup — or order the beans online.",
   connectedSocials: DEMO_ACCOUNTS.map((a) => a.id),
+  // flag voicePerNetwork — every account's network, optimized at creation.
+  voiceByNetwork: Object.fromEntries(DEMO_ACCOUNTS.map((a) => [a.platform, true])),
 };
 
 // ── What the new chat's ways in find, in the demo ─────────────────────────

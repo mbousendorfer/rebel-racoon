@@ -19,13 +19,19 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2117";
-import { isPortraitFormat } from "../clip-formats.js?v=2117";
-import { presetById } from "../clip-captions.js?v=2117";
-import { renderFeedbackControl } from "./feedback-control.js?v=2117";
-import { networkMeta, normalizeNetwork, profileForNetwork, renderProfileTag } from "../social-profiles.js?v=2117";
-import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2117";
-import { REVEAL_MS } from "../archie-pixels.js?v=2117";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2119";
+import { isPortraitFormat } from "../clip-formats.js?v=2119";
+import { presetById } from "../clip-captions.js?v=2119";
+import { renderFeedbackControl } from "./feedback-control.js?v=2119";
+import {
+  networkMeta,
+  networkLabel,
+  normalizeNetwork,
+  profileForNetwork,
+  renderProfileTag,
+} from "../social-profiles.js?v=2119";
+import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2119";
+import { REVEAL_MS } from "../archie-pixels.js?v=2119";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -126,6 +132,19 @@ function renderEmptyMedia(post, opts) {
     </div>
     ${hint}
   </div>`;
+}
+
+// Which voice wrote this draft (flag voicePerNetwork): `opts.voice` is
+// voice-parts' networkVoice() for the draft's network, resolved by the host
+// (the card never reads a Playbook). The voice's name opens it in the Playbook.
+function renderVoiceLine(net, opts) {
+  const state = opts.voice?.state;
+  if (!state || state === "brand" || !opts.playbookId) return "";
+  const own = state !== "borrowed";
+  const name = own ? `${networkLabel(net)} voice` : "Brand voice";
+  return `<p class="posts__card-voice">Written in the
+    <button type="button" class="ap-link small" data-post-voice="${escapeAttr(opts.playbookId)}" data-post-voice-net="${own ? escapeAttr(net) : ""}">${escapeText(name)}</button>
+  </p>`;
 }
 
 export function renderPostCard(post, opts = {}) {
@@ -354,7 +373,7 @@ export function renderPostCard(post, opts = {}) {
           )}
           ${raw(renderFirstComment(post, { hidden: editing || regenerating }))}
         </article>
-        ${raw(belowCard)}
+        ${raw(belowCard)} ${raw(renderVoiceLine(net, opts))}
       </div>
 
       <!-- The rail is prod's (studio-mfe post-card-actions), in its order:

@@ -22,19 +22,19 @@
 // chooses "Save as global". updateContext is used by the section-edit flow
 // when scope is "Update everywhere".
 
-import { contexts as seed, sharedContexts, DEMO_PLAYBOOK } from "./mocks.js?v=2117";
-import { isDemo } from "./demo-mode.js?v=2117";
-import { isNewUser } from "./user-mode.js?v=2117";
-import { CURRENT_USER } from "./org.js?v=2117";
-import { isFlagOn } from "./feature-flags.js?v=2117";
-import { createNotifier } from "./store-utils.js?v=2117";
+import { contexts as seed, sharedContexts, DEMO_PLAYBOOK } from "./mocks.js?v=2119";
+import { isDemo } from "./demo-mode.js?v=2119";
+import { isNewUser } from "./user-mode.js?v=2119";
+import { CURRENT_USER } from "./org.js?v=2119";
+import { isFlagOn } from "./feature-flags.js?v=2119";
+import { createNotifier } from "./store-utils.js?v=2119";
 import {
   normalizeLanguages,
   mirrorPrimaryToTopLevel,
   syncTopLevelToPrimary,
   cloneVoiceByLanguage,
-} from "./languages.js?v=2117";
-import { cloneItems } from "./voice-parts.js?v=2117";
+} from "./languages.js?v=2119";
+import { cloneItems, optimizeForNetwork, cloneNetworkVoice } from "./voice-parts.js?v=2119";
 
 // Lives up here, away from normalizeBrandLogos where it belongs, because the
 // seed below calls that normalizer at module-init time — a `let` declared beside
@@ -71,6 +71,7 @@ const contexts = (isNewUser() ? firstRunSeeds : allSeeds).map((c) =>
     ...normalizeImageDefaults(c),
     ...normalizeImageryDefaults(c),
     ...normalizeBrandKit(c),
+    voiceByNetwork: normalizeVoiceByNetwork(c),
   }),
 );
 const notifier = createNotifier("contexts-store");
@@ -294,6 +295,20 @@ function normalizeImageryDefaults(ctx) {
 // never what changed. Like `usedIn` it is stored ON the Context but is never a
 // section OF it — it's read in the Share modal (see CONCEPTS.md §1, "exceptions
 // de stockage").
+// The voice of each network (flag voicePerNetwork, voice-parts.js). A seed names
+// a network with `true` — optimized by Archie at creation — or `"stale"` —
+// optimized, then the Brand voice changed: the voice itself is derived here, so
+// the mocks don't repeat the Brand voice once per network.
+function normalizeVoiceByNetwork(ctx) {
+  const out = {};
+  Object.entries(ctx?.voiceByNetwork || {}).forEach(([net, v]) => {
+    if (v === true || v === "stale")
+      out[net] = { ...optimizeForNetwork(ctx, net), ...(v === "stale" && { baseStamp: "" }) };
+    else if (v && typeof v === "object") out[net] = cloneNetworkVoice(v);
+  });
+  return out;
+}
+
 function normalizeHistory(h) {
   if (!Array.isArray(h)) return [];
   return h
@@ -446,6 +461,7 @@ export function addContext(ctx = {}) {
     voiceNever: cloneItems(ctx.voiceNever),
     voiceByPost: cloneItems(ctx.voiceByPost),
     voiceSometimes: cloneItems(ctx.voiceSometimes),
+    voiceByNetwork: normalizeVoiceByNetwork(ctx),
     voiceMode: ctx.voiceMode === "manual" ? "manual" : "guided",
     voiceManual: ctx.voiceManual || "",
     brandPersonality: ctx.brandPersonality || "",
@@ -539,6 +555,8 @@ export function updateContext(id, patch) {
   if (patch.voiceSummary !== undefined) c.voiceSummary = patch.voiceSummary;
   for (const f of ["voiceAlways", "voiceNever", "voiceByPost", "voiceSometimes"])
     if (patch[f] !== undefined) c[f] = cloneItems(patch[f]);
+  if (patch.voiceByNetwork !== undefined)
+    c.voiceByNetwork = normalizeVoiceByNetwork({ voiceByNetwork: patch.voiceByNetwork });
   if (patch.voiceMode !== undefined) c.voiceMode = patch.voiceMode;
   if (patch.voiceManual !== undefined) c.voiceManual = patch.voiceManual;
   if (patch.brandPersonality !== undefined) c.brandPersonality = patch.brandPersonality;
@@ -654,6 +672,7 @@ export function duplicateContext(id) {
     voiceNever: cloneItems(src.voiceNever),
     voiceByPost: cloneItems(src.voiceByPost),
     voiceSometimes: cloneItems(src.voiceSometimes),
+    voiceByNetwork: normalizeVoiceByNetwork({ voiceByNetwork: src.voiceByNetwork }),
     brandPersonality: src.brandPersonality || "",
     brandTypography: src.brandTypography ? { ...src.brandTypography } : null,
     imageDefaults: { ...(src.imageDefaults || {}) },

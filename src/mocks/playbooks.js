@@ -262,6 +262,9 @@ export const contexts = [
       },
     ],
     connectedSocials: ["linkedin", "instagram", "x"],
+    // flag voicePerNetwork — LinkedIn optimized; Instagram optimized before the
+    // Brand voice last changed; X still borrows the Brand voice.
+    voiceByNetwork: { linkedin: true, instagram: "stale" },
     brandPersonality:
       "Confident without bragging, helpful without performing. Speaks the way operators talk to each other — direct, specific, occasionally dry. Never hypey.",
     brandTypography: { headingFont: "Inter", bodyFont: "Inter" },

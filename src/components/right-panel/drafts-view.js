@@ -4,7 +4,7 @@
 // shell's delegated clicks write it through setDraftsFilter / setDraftsNetwork.
 // Moved out of right-panel.js, unchanged.
 
-import { networkMeta } from "../../social-profiles.js?v=2117";
+import { networkMeta } from "../../social-profiles.js?v=2119";
 import {
   getPosts,
   removePost,
@@ -12,23 +12,24 @@ import {
   updatePostContent,
   attachImageToDraft,
   attachCarouselToDraft,
-} from "../../posts-store.js?v=2117";
-import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=2117";
-import { getSessionById } from "../../sessions-store.js?v=2117";
-import { renderPostCard } from "../post-card.js?v=2117";
-import { isPostValid } from "../../post-validation.js?v=2117";
-import { html, raw } from "../../utils.js?v=2117";
-import { isFlagOn } from "../../feature-flags.js?v=2117";
-import { open as openNewScheduleModal } from "../schedule-modal.js?v=2117";
-import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=2117";
-import { open as openConfirmModal } from "../confirm-modal.js?v=2117";
-import { open as openAssignModal } from "../assign-modal.js?v=2117";
-import { showToast } from "../toast.js?v=2117";
-import { addMention as addComposerMention } from "../../composer-mentions.js?v=2117";
-import { startDraftImageFlow } from "../../draft-image-flow.js?v=2117";
-import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=2117";
-import { closeInline, activeSessionId, renderPanel } from "../right-panel.js?v=2117";
-import { blockInDemo } from "../../demo-flow.js?v=2117";
+} from "../../posts-store.js?v=2119";
+import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=2119";
+import { getSessionById } from "../../sessions-store.js?v=2119";
+import { renderPostCard } from "../post-card.js?v=2119";
+import { isPostValid } from "../../post-validation.js?v=2119";
+import { networkVoice } from "../../voice-parts.js?v=2119";
+import { html, raw } from "../../utils.js?v=2119";
+import { isFlagOn } from "../../feature-flags.js?v=2119";
+import { open as openNewScheduleModal } from "../schedule-modal.js?v=2119";
+import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=2119";
+import { open as openConfirmModal } from "../confirm-modal.js?v=2119";
+import { open as openAssignModal } from "../assign-modal.js?v=2119";
+import { showToast } from "../toast.js?v=2119";
+import { addMention as addComposerMention } from "../../composer-mentions.js?v=2119";
+import { startDraftImageFlow } from "../../draft-image-flow.js?v=2119";
+import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=2119";
+import { closeInline, activeSessionId, renderPanel } from "../right-panel.js?v=2119";
+import { blockInDemo } from "../../demo-flow.js?v=2119";
 
 // Drafts-mode local UI state — Lot 21 rich-card view. Filter strip at the
 // top of the panel head drives both axes : status (all / needs_fixes) and
@@ -254,6 +255,9 @@ export function renderDraftsView() {
           justFixed: justFixed.has(p.id),
           brandGaps: p.id === firstGapPostId ? brandGaps : [],
           playbookId,
+          // Which voice wrote it (flag voicePerNetwork) — resolved here, once
+          // per card, from the Playbook already in hand.
+          voice: ctx ? networkVoice(ctx, p.network) : null,
           // What Generate an image will use: the Playbook's look and this
           // network's shape, shown before the click.
           imagePreset: playbookId && !p.imageUrl ? quickImagePreset({ brandId: playbookId, network: p.network }) : null,
@@ -546,7 +550,7 @@ export function onSectionSave(network) {
   if (snapshot.length === 0) return;
   const count = snapshot.length;
   const draftWord = count === 1 ? "draft" : "drafts";
-  Promise.all([import("../save-folder-modal.js?v=2117"), import("../../folders-store.js?v=2117")]).then(
+  Promise.all([import("../save-folder-modal.js?v=2119"), import("../../folders-store.js?v=2119")]).then(
     ([{ open: openSaveModal }, { addDraftsToFolder }]) => {
       openSaveModal({
         count,

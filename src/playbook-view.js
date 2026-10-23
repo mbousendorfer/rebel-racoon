@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2117";
-import { conceptHint } from "./concepts.js?v=2117";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2119";
+import { conceptHint } from "./concepts.js?v=2119";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,15 +30,27 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2117";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2117";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2117";
-import { isFlagOn } from "./feature-flags.js?v=2117";
-import { parseHashParams } from "./url-state.js?v=2117";
-import { isListPart, voiceParts, baseValue, cloneItems, voiceItemsHtml } from "./voice-parts.js?v=2117";
-import { showToast } from "./components/toast.js?v=2117";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2117";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=2117";
+} from "./playbook-brand-kit.js?v=2119";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2119";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2119";
+import { isFlagOn } from "./feature-flags.js?v=2119";
+import { parseHashParams } from "./url-state.js?v=2119";
+import {
+  isListPart,
+  voiceParts,
+  baseValue,
+  cloneItems,
+  voiceItemsHtml,
+  networkVoiceOn,
+  networkVoice,
+  playbookNetworks,
+  optimizeForNetwork,
+  copyBrandVoice,
+  markAdapted,
+} from "./voice-parts.js?v=2119";
+import { showToast } from "./components/toast.js?v=2119";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2119";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, networkLabel, networkIcon } from "./social-profiles.js?v=2119";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -163,6 +175,7 @@ let loadingTimer = null;
 let loadingStage = 0;
 let phase = "ready"; // "loading" | "ready"
 let activeTab = "goals"; // Playbook 2.0: the tab on screen
+let voiceNet = null; // Voice profile, flag voicePerNetwork: the network whose voice is on screen (null = Brand voice)
 
 // ── Public API ───────────────────────────────────────────────────────────
 
@@ -197,6 +210,7 @@ export function mount(target, config) {
   mountTarget = target;
   setInlineChoices(cfg.chipCloud);
   activeTab = tabFromUrl();
+  voiceNet = parseHashParams().get("voice") || null;
   editScope = null;
   snapshot = null;
   audienceCustom = false;
@@ -428,6 +442,7 @@ export function snapshotEditable(d) {
       voiceNever: d.voiceNever || [],
       voiceByPost: d.voiceByPost || [],
       voiceSometimes: d.voiceSometimes || [],
+      voiceByNetwork: d.voiceByNetwork || {},
       voiceMode: d.voiceMode || "guided",
       voiceManual: d.voiceManual || "",
       brandPersonality: d.brandPersonality || "",
@@ -1968,6 +1983,51 @@ function setTab(id) {
   history.replaceState(null, "", `#${path}${query ? `?${query}` : ""}`);
 }
 
+// ── Voice per network (flag voicePerNetwork) ───────────────────────────────
+// The Voice profile tab has its own row of tabs: the Brand voice, then one per
+// network the Playbook publishes on. Which one is on screen is `?voice=` — kept
+// like `?tab=`, without a route change.
+function voiceNets(data) {
+  return networkVoiceOn() && data?.voiceMode !== "manual" ? playbookNetworks(data) : [];
+}
+
+function setVoiceNet(net) {
+  voiceNet = net || null;
+  const [path] = window.location.hash.slice(1).split("?");
+  const q = parseHashParams();
+  if (voiceNet) q.set("voice", voiceNet);
+  else q.delete("voice");
+  const query = q.toString();
+  history.replaceState(null, "", `#${path}${query ? `?${query}` : ""}`);
+}
+
+// The voice being read or edited: the network's own, or the Brand voice.
+function voiceTarget(data) {
+  return (voiceNet && data?.voiceByNetwork?.[voiceNet]) || data;
+}
+
+// What marks a rule (or the summary) as this network's own.
+function voiceNetTag(net) {
+  return `<span class="ap-tag grey mini pb2-voice-tag"><i class="${networkIcon(net)}" aria-hidden="true"></i><span>For ${esc(networkLabel(net))}</span></span>`;
+}
+
+function renderVoiceTabs(data) {
+  const nets = voiceNets(data);
+  if (!nets.length) return "";
+  const tab = (net, label, icon) => {
+    const on = (net || null) === voiceNet;
+    return `<button type="button" class="ap-tabs-tab${on ? " active" : ""}" role="tab" aria-selected="${on}" data-pb2-voice-net="${net}">
+      ${icon ? `<i class="${icon}" aria-hidden="true"></i>` : ""}<span>${esc(label)}</span>
+    </button>`;
+  };
+  return `
+    <div class="ap-tabs flush pb2-voice-tabs">
+      <div class="ap-tabs-nav" role="tablist" aria-label="Voices">
+        ${tab("", "Brand voice", "")}${nets.map((n) => tab(n, networkLabel(n), networkIcon(n))).join("")}
+      </div>
+    </div>`;
+}
+
 function renderHeader2(data) {
   const colors = visualColors(data);
   const accent = colors.find((c) => /accent/i.test(c.name))?.hex || colors[0]?.hex || "var(--ref-color-orange-100)";
@@ -2127,14 +2187,14 @@ function pb2Block(
 }
 
 // `editing`: Cancel / Save take Edit's place — same bar, same spot, sticky.
-function pb2TabHead(scope, extra = "", { editing = false, noEdit = false } = {}) {
+function pb2TabHead(scope, extra = "", { editing = false, noEdit = false, lead = SECTION_LEADS[scope] } = {}) {
   const edit =
     canEditView() && !noEdit
       ? `<button type="button" class="ap-button stroked blue" data-recap-edit-card="${scope}"><i class="ap-icon-pen" aria-hidden="true"></i><span>Edit</span></button>`
       : "";
   return `
     <header class="pb2-tabhead">
-      <p class="pb2-tabhead__lead">${esc(SECTION_LEADS[scope] || "")}</p>
+      <p class="pb2-tabhead__lead">${esc(lead || "")}</p>
       <div class="pb2-tabhead__actions">${editing ? editActionButtons() : `${extra}${edit}`}</div>
     </header>
   `;
@@ -2150,8 +2210,8 @@ function pb2TabHead(scope, extra = "", { editing = false, noEdit = false } = {})
 // A field's guidance, minus its question: the block title already asks it.
 const pb2Hint = (hint) => (hint?.a ? `<p class="pb2-hint">${esc(hint.a)}</p>` : "");
 
-function pb2EditGrid(scope, blocks, before = "") {
-  return `${pb2TabHead(scope, "", { editing: true })}${before}<div class="pb2-grid" data-recap-editing-card>${blocks
+function pb2EditGrid(scope, blocks, before = "", head = {}) {
+  return `${pb2TabHead(scope, "", { editing: true, ...head })}${before}<div class="pb2-grid" data-recap-editing-card>${blocks
     .filter(Boolean)
     .join("")}</div>`;
 }
@@ -2198,7 +2258,19 @@ function renderVoiceEdit2(data) {
         { wide: true, index: 1, icon: "ap-icon-quote" },
       ),
     ]);
-  return pb2EditGrid("voice", pb2VoiceParts(data, { edit: true, lead: mode }));
+  // The voice tabs stay on screen in edit: switching asks, like the page tabs.
+  if (voiceNet && data.voiceByNetwork?.[voiceNet]) {
+    const grid = pb2EditGrid(
+      "voice",
+      pb2VoiceParts(data.voiceByNetwork[voiceNet], { edit: true, brand: data, net: voiceNet }),
+      "",
+      {
+        lead: networkVoiceLead(voiceNet, data.voiceByNetwork[voiceNet]),
+      },
+    );
+    return `${renderVoiceTabs(data)}${grid}`;
+  }
+  return `${renderVoiceTabs(data)}${pb2EditGrid("voice", pb2VoiceParts(data, { edit: true, lead: mode }))}`;
 }
 
 function renderBrandEdit2(data) {
@@ -2346,9 +2418,9 @@ const PART_COPY = {
 };
 
 // A part, read: the summary as a lead paragraph, the others as rules.
-function pb2PartBody(field, value) {
+function pb2PartBody(field, value, tag = "") {
   if (!isListPart(field)) return value ? `<p class="pb2-lead">${esc(value)}</p>` : pb2Empty(PART_COPY[field].empty);
-  return cloneItems(value).length ? voiceItemsHtml(value) : pb2Empty(PART_COPY[field].empty);
+  return cloneItems(value).length ? voiceItemsHtml(value, { tag }) : pb2Empty(PART_COPY[field].empty);
 }
 
 // A part's editor: a paragraph, or its rules — one row each, a case with its
@@ -2405,15 +2477,21 @@ function pb2AvoidRow(data, { edit = false } = {}) {
 }
 
 // The five parts of a voice (VOICE_PARTS), in one order everywhere — read and
-// edit. `lead`: trusted html on top of the first block.
-function pb2VoiceParts(data, { edit = false, lead = "", index = 2 } = {}) {
+// edit. `lead`: trusted html on top of the first block. `net` (flag
+// voicePerNetwork): `data` is that network's voice and `brand` the Playbook —
+// its own rules are tagged, the Brand voice's traits and banned words stay the
+// Brand's (shown, not edited here).
+function pb2VoiceParts(data, { edit = false, lead = "", index = 2, brand = data, net = null } = {}) {
+  const tag = net ? voiceNetTag(net) : "";
   return voiceParts().map(({ field, title }, i) => {
     let body = edit
       ? renderPartEditor(field, field === "voiceSummary" ? baseValue(data, field) : data[field])
-      : pb2PartBody(field, baseValue(data, field));
-    if (field === "voiceSummary") body = pb2Traits(data) + body + (i === 0 ? lead : "");
-    if (field === "voiceNever") body += pb2AvoidRow(data, { edit });
+      : pb2PartBody(field, baseValue(data, field), tag);
+    if (field === "voiceSummary" && !net) body = pb2Traits(data) + body + (i === 0 ? lead : "");
+    if (field === "voiceNever" && !(net && edit)) body += pb2AvoidRow(brand, { edit: edit && !net });
+    const ownSummary = net && field === "voiceSummary" && baseValue(data, field) !== baseValue(brand, field);
     return pb2Block(title, body, {
+      aside: ownSummary && !edit ? tag : "",
       wide: true,
       hint: PART_COPY[field]?.hint,
       index: index + i,
@@ -2427,7 +2505,53 @@ function renderVoiceRead2(data, learnMenu) {
     const own = pb2Block("In your own words", pb2Text(data.voiceManual), { wide: true, icon: "ap-icon-quote" });
     return `${pb2TabHead("voice", learnMenu)}<div class="pb2-grid">${own}</div>`;
   }
-  return `${pb2TabHead("voice", learnMenu)}<div class="pb2-grid">${pb2VoiceParts(data).join("")}</div>`;
+  if (voiceNet) return renderNetworkVoiceRead(data);
+  return `${renderVoiceTabs(data)}${pb2TabHead("voice", learnMenu)}<div class="pb2-grid">${pb2VoiceParts(data).join("")}</div>`;
+}
+
+function networkVoiceLead(net, voice) {
+  const label = networkLabel(net);
+  return voice?.optimizedBy === "you"
+    ? `How I write on ${label}, as you set it. What's only ${label}'s is tagged.`
+    : `How I write on ${label}: the Brand voice, optimized for it. What's only ${label}'s is tagged.`;
+}
+
+// A network's voice, read. Its own: the five parts, its rules tagged — and, when
+// the Brand voice changed after it was made, a warning that offers Re-optimize
+// (never a silent rewrite). Not made yet: the Brand voice it borrows, greyed,
+// under the two ways to give the network its own.
+function renderNetworkVoiceRead(data) {
+  const net = voiceNet;
+  const label = networkLabel(net);
+  const { state, voice } = networkVoice(data, net);
+  const tabs = renderVoiceTabs(data);
+  if (state === "borrowed") {
+    const actions = canEditView()
+      ? `<button type="button" class="ap-button stroked grey" data-pb2-voice-own>Edit it myself</button>
+         <button type="button" class="ap-button primary orange" data-pb2-voice-optimize>Optimize for ${esc(label)}</button>`
+      : "";
+    return `${tabs}${pb2TabHead("voice", actions, {
+      noEdit: true,
+      lead: `${label} uses the Brand voice for now. I can optimize it for ${label}, or you can make it its own.`,
+    })}<div class="pb2-grid pb2-grid--borrowed">${pb2VoiceParts(data).join("")}</div>`;
+  }
+  const stale =
+    state === "stale"
+      ? `<div class="ap-infobox warning has-title pb2-voice-notice" role="status">
+          <i class="ap-icon-warning_fill" aria-hidden="true"></i>
+          <div class="ap-infobox-content">
+            <div class="ap-infobox-texts">
+              <span class="ap-infobox-title">Your Brand voice changed since this ${esc(label)} voice was made</span>
+              <span class="ap-infobox-message">It still follows the old one. I can optimize it again from the Brand voice as it is now.</span>
+              ${canEditView() ? `<button type="button" class="ap-link" data-pb2-voice-optimize data-pb2-voice-confirm>Re-optimize</button>` : ""}
+            </div>
+          </div>
+        </div>`
+      : "";
+  return `${tabs}${pb2TabHead("voice", "", { lead: networkVoiceLead(net, voice) })}${stale}<div class="pb2-grid">${pb2VoiceParts(
+    voice,
+    { brand: data, net },
+  ).join("")}</div>`;
 }
 
 const PB2_LOGO_VERSIONS = { color: "Color", white: "White", black: "Black", icon: "Icon only" };
@@ -2524,7 +2648,10 @@ function renderImagesPanel(data) {
 function renderActivePanel(data) {
   const scope = editScope;
   // Editing opens the section's own form; reading gets the tab's spread.
-  if (activeTab === "voice") return scope === "voice" ? renderVoiceEdit2(data) : renderVoiceRead2(data, learnMenu());
+  if (activeTab === "voice") {
+    if (voiceNet && !voiceNets(data).includes(voiceNet)) setVoiceNet(null);
+    return scope === "voice" ? renderVoiceEdit2(data) : renderVoiceRead2(data, learnMenu());
+  }
   if (activeTab === "brand") return scope === "brand" ? renderBrandEdit2(data) : renderBrandRead2(data);
   if (activeTab === "images") return renderImagesPanel(data);
   if (activeTab === "competitors") return renderRosterPanel(data, ROSTERS.competitors, scope === "competitors");
@@ -2812,10 +2939,13 @@ function commitEdit(data) {
   if (Array.isArray(data.ctaLinks)) {
     data.ctaLinks = data.ctaLinks.filter((c) => (c.label || "").trim() || (c.url || "").trim() || c.suggested);
   }
-  // Drop the rules left blank.
+  // Drop the rules left blank — in the voice being edited (a network's own, or
+  // the Brand voice). A network's rule that isn't the Brand voice's is its own.
+  const voice = editScope === "voice" ? voiceTarget(data) : data;
   voiceParts().forEach(({ field }) => {
-    if (isListPart(field) && Array.isArray(data[field])) data[field] = cloneItems(data[field]);
+    if (isListPart(field) && Array.isArray(voice[field])) voice[field] = cloneItems(voice[field]);
   });
+  if (voice !== data) markAdapted(data, voice);
   // Drop roster entries left completely blank (an "Add competitor" row the
   // user opened and abandoned) and social rows with no URL. `suggested` is
   // kept: an unaccepted proposal stays pending across a Save rather than
@@ -2863,11 +2993,15 @@ function saveOnLeave() {
 // user's call over the silent save): Save changes, Discard changes, or — the X
 // or Esc — stay on the edit. Nothing changed → the editor closes, no question.
 function switchTab(id) {
-  const go = () => {
+  leaveEdit(() => {
     setTab(id);
     repaint();
     mountTarget?.querySelector(".welcome-screen")?.scrollTo({ top: 0 });
-  };
+  });
+}
+
+// Leave whatever is in edit, then `go` — asking first when it has changes.
+function leaveEdit(go) {
   const data = cfg?.getData();
   if (!editScope || !isDirty(data)) {
     if (editScope) resetEdit();
@@ -2897,6 +3031,51 @@ function onClick(event) {
   const tab = event.target.closest("[data-pb2-tab]");
   if (tab) {
     if (tab.dataset.pb2Tab !== activeTab) switchTab(tab.dataset.pb2Tab);
+    return;
+  }
+  // Voice per network — the Voice profile's own tabs, then the two ways to give
+  // a network its own voice (Archie optimizes, or the user copies the Brand
+  // voice to edit it) and Re-optimize, which asks: it replaces the network's.
+  const voiceTab = event.target.closest("[data-pb2-voice-net]");
+  if (voiceTab) {
+    const net = voiceTab.dataset.pb2VoiceNet || null;
+    if (net !== voiceNet)
+      leaveEdit(() => {
+        setVoiceNet(net);
+        repaint();
+      });
+    return;
+  }
+  const optimize = event.target.closest("[data-pb2-voice-optimize]");
+  if (optimize && voiceNet) {
+    const net = voiceNet;
+    const label = networkLabel(net);
+    const run = () => {
+      const d = cfg.getData();
+      d.voiceByNetwork = { ...(d.voiceByNetwork || {}), [net]: optimizeForNetwork(d, net) };
+      cfg.commit?.();
+      repaint();
+      showToast(`I optimized the ${label} voice from your Brand voice.`);
+    };
+    if (optimize.hasAttribute("data-pb2-voice-confirm"))
+      openConfirmModal({
+        title: `Re-optimize the ${label} voice?`,
+        body: `I'll rebuild it from your Brand voice as it is now. Any change you made to the ${label} voice will be replaced.`,
+        confirmLabel: "Re-optimize",
+        cancelLabel: "Keep it",
+        onConfirm: run,
+      });
+    else run();
+    return;
+  }
+  if (event.target.closest("[data-pb2-voice-own]") && voiceNet) {
+    const d = cfg.getData();
+    const before = snapshotEditable(d);
+    d.voiceByNetwork = { ...(d.voiceByNetwork || {}), [voiceNet]: copyBrandVoice(d) };
+    openEdit(d, "voice");
+    // Cancel goes back to borrowing, and leaving untouched still asks.
+    snapshot = before;
+    editBaseline = JSON.stringify(before);
     return;
   }
   if (!canEditView() && event.target.closest(WRITE_HOOKS)) return;
@@ -3202,7 +3381,7 @@ function onClick(event) {
   if (ruleRemove) {
     const field = ruleRemove.dataset.vrRemove;
     const idx = Number(ruleRemove.dataset.vrIndex);
-    const target = data;
+    const target = voiceTarget(data);
     if (Array.isArray(target[field])) target[field] = target[field].filter((_, i) => i !== idx);
     repaint();
     return;
@@ -3210,7 +3389,7 @@ function onClick(event) {
   const ruleAdd = event.target.closest("[data-vr-add]");
   if (ruleAdd) {
     const field = ruleAdd.dataset.vrAdd;
-    const target = data;
+    const target = voiceTarget(data);
     const list = Array.isArray(target[field]) ? target[field] : [];
     target[field] = [...list, field === "voiceByPost" ? { when: "", text: "" } : { text: "" }];
     repaint();
@@ -3424,12 +3603,12 @@ function onInput(event) {
       img.colors[Number(t.dataset.recapColorIndex)] = t.value;
     }
   } else if (t.matches("[data-recap-text]")) {
-    data[t.dataset.recapText] = t.value;
+    (t.dataset.recapText === "voiceSummary" ? voiceTarget(data) : data)[t.dataset.recapText] = t.value;
   } else if (t.matches("[data-recap-typo]")) {
     if (!data.brandTypography || typeof data.brandTypography !== "object") data.brandTypography = brandFonts(data);
     data.brandTypography[t.dataset.recapTypo] = t.value;
   } else if (t.matches("[data-vr-list]")) {
-    const item = data[t.dataset.vrList]?.[Number(t.dataset.vrIndex)];
+    const item = voiceTarget(data)[t.dataset.vrList]?.[Number(t.dataset.vrIndex)];
     if (item) item[t.dataset.vrKey] = t.value;
   } else if (t.matches("[data-recap-cta-field]")) {
     const idx = Number(t.dataset.recapCtaIndex);

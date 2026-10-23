@@ -128,6 +128,22 @@ export const FLAGS = Object.freeze([
       "owner row on a Playbook, and the Your-role control in Admin.",
   },
   {
+    id: "voicePerNetwork",
+    group: "Playbook",
+    tip: "Each network of the Playbook gets its own voice, optimized by Archie from the Brand voice and editable.",
+    label: "Voice per network",
+    default: false,
+    hides:
+      "When OFF (default), a Playbook has one voice for every network. When " +
+      "ON, the Voice profile tab has a row of tabs — Brand voice, then one per " +
+      "network the Playbook publishes on. Each network's voice is the Brand " +
+      "voice optimized for it at creation (its own rules tagged « For " +
+      "LinkedIn »), editable like the Brand voice; a network added later " +
+      "borrows the Brand voice until it's optimized or edited. Changing the " +
+      "Brand voice never rewrites a network's voice: the network says so and " +
+      "offers Re-optimize. A draft says which voice it was written in.",
+  },
+  {
     id: "newScheduleModal",
     group: "Chat & drafts",
     tip: "The redesigned schedule modal: dates proposed on open, one list with what's already planned and clashes. Off: the previous modal.",

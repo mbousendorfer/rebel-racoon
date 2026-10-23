@@ -1028,3 +1028,28 @@
   font-weight: var(--sys-text-style-caption-bold-weight);
   color: var(--ref-color-grey-80);
 }
+
+/* ── Voice per network (flag voicePerNetwork) ──
+ * The Voice profile's own tabs (Brand voice · one per network), between the
+ * page tabs and the tab head. A network's own rules carry a grey tag; a
+ * network that still borrows the Brand voice shows it on grey (the rules turn
+ * white so they still read as rules); a stale voice gets a DS warning. */
+.pb2-voice-tabs {
+  margin-bottom: var(--ref-spacing-md);
+}
+
+.pb2-voice-tag {
+  align-self: flex-start;
+}
+
+.pb2-voice-notice {
+  margin-bottom: var(--ref-spacing-md);
+}
+
+.pb2-grid--borrowed .pb2-block {
+  background: var(--ref-color-grey-05);
+}
+
+.pb2-grid--borrowed .voice-rule {
+  background: var(--ref-color-white);
+}
