@@ -120,7 +120,7 @@ export const chatStarters = [
     icon: "ap-icon-video",
     tone: "purple",
     title: "Extract video clips",
-    subtitle: "Find the best moments in a video and cut them into posts.",
+    subtitle: "Find the best moments in a video and cut them into drafts.",
     cta: "Clip a video",
     prompt:
       "Surface the best ideas from {{video-source}} and turn them into posts across LinkedIn, X, Instagram, and TikTok.",

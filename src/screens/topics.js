@@ -32,17 +32,17 @@
 // view. There is an explicit Load more too, and both do exactly the same thing —
 // an infinite list with no button is unusable by keyboard.
 
-import { html, raw, escapeAttr } from "../utils.js?v=2114";
-import { conceptText } from "../concepts.js?v=2114";
-import { navigate, getPath } from "../router.js?v=2114";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=2114";
-import { renderTopbar } from "../components/topbar.js?v=2114";
-import { showToast } from "../components/toast.js?v=2114";
-import { renderEmptyState } from "../components/empty-state.js?v=2114";
-import { openNewPlaybookFlow } from "../context-builder.js?v=2114";
-import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=2114";
-import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=2114";
-import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2114";
+import { html, raw, escapeAttr } from "../utils.js?v=2115";
+import { conceptText } from "../concepts.js?v=2115";
+import { navigate, getPath } from "../router.js?v=2115";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=2115";
+import { renderTopbar } from "../components/topbar.js?v=2115";
+import { showToast } from "../components/toast.js?v=2115";
+import { renderEmptyState } from "../components/empty-state.js?v=2115";
+import { openNewPlaybookFlow } from "../context-builder.js?v=2115";
+import { getContexts, getContextById, getDefaultContext } from "../contexts-store.js?v=2115";
+import { getActivePlaybook, isWorkspaceMode, subscribe as subscribeScope } from "../active-playbook.js?v=2115";
+import { getFeedForPlaybook, subscribe as subscribeFeeds } from "../topic-feeds-store.js?v=2115";
 import {
   getTopicsForFeed,
   groupTopicsByAge,
@@ -53,7 +53,7 @@ import {
   ignoreTopic,
   unignoreTopic,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=2114";
+} from "../topics-store.js?v=2115";
 import {
   TOPIC_SOURCES,
   TOPIC_KINDS,
@@ -62,13 +62,13 @@ import {
   findTopicSource,
   findCadence,
   isLiveSource,
-} from "../topics-catalog.js?v=2114";
-import { renderTopicCard } from "../components/topic-card.js?v=2114";
-import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=2114";
-import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=2114";
-import { openTopicHistory } from "../components/topic-history-modal.js?v=2114";
-import { useTopicInChat } from "../topic-flow.js?v=2114";
-import { canEdit } from "../playbook-access.js?v=2114";
+} from "../topics-catalog.js?v=2115";
+import { renderTopicCard } from "../components/topic-card.js?v=2115";
+import { renderTopicArticle, renderTopicHeader, renderTopicActions } from "../topic-article.js?v=2115";
+import { openIgnoreReason } from "../components/topic-ignore-modal.js?v=2115";
+import { openTopicHistory } from "../components/topic-history-modal.js?v=2115";
+import { useTopicInChat } from "../topic-flow.js?v=2115";
+import { canEdit } from "../playbook-access.js?v=2115";
 
 const PAGE = 10;
 // Long enough to read the scanning line, short enough that nobody waits for it
