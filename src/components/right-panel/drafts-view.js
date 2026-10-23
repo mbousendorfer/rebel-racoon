@@ -4,7 +4,7 @@
 // shell's delegated clicks write it through setDraftsFilter / setDraftsNetwork.
 // Moved out of right-panel.js, unchanged.
 
-import { networkMeta, normalizeNetwork } from "../../social-profiles.js?v=2112";
+import { networkMeta } from "../../social-profiles.js?v=2113";
 import {
   getPosts,
   removePost,
@@ -12,26 +12,23 @@ import {
   updatePostContent,
   attachImageToDraft,
   attachCarouselToDraft,
-} from "../../posts-store.js?v=2112";
-import { noticeDraftEdit, keepNetworkVoice } from "../../voice-coach.js?v=2112";
-import { networkVoicesOn, isBorrowed, baseNetwork, withDiffs, writeInVoice } from "../../network-voice.js?v=2112";
-import { networkDiffs } from "../../context-mock-analysis.js?v=2112";
-import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=2112";
-import { getSessionById } from "../../sessions-store.js?v=2112";
-import { renderPostCard } from "../post-card.js?v=2112";
-import { isPostValid } from "../../post-validation.js?v=2112";
-import { html, raw } from "../../utils.js?v=2112";
-import { isFlagOn } from "../../feature-flags.js?v=2112";
-import { open as openNewScheduleModal } from "../schedule-modal.js?v=2112";
-import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=2112";
-import { open as openConfirmModal } from "../confirm-modal.js?v=2112";
-import { open as openAssignModal } from "../assign-modal.js?v=2112";
-import { showToast } from "../toast.js?v=2112";
-import { addMention as addComposerMention } from "../../composer-mentions.js?v=2112";
-import { startDraftImageFlow } from "../../draft-image-flow.js?v=2112";
-import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=2112";
-import { closeInline, activeSessionId, renderPanel } from "../right-panel.js?v=2112";
-import { blockInDemo } from "../../demo-flow.js?v=2112";
+} from "../../posts-store.js?v=2113";
+import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=2113";
+import { getSessionById } from "../../sessions-store.js?v=2113";
+import { renderPostCard } from "../post-card.js?v=2113";
+import { isPostValid } from "../../post-validation.js?v=2113";
+import { html, raw } from "../../utils.js?v=2113";
+import { isFlagOn } from "../../feature-flags.js?v=2113";
+import { open as openNewScheduleModal } from "../schedule-modal.js?v=2113";
+import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=2113";
+import { open as openConfirmModal } from "../confirm-modal.js?v=2113";
+import { open as openAssignModal } from "../assign-modal.js?v=2113";
+import { showToast } from "../toast.js?v=2113";
+import { addMention as addComposerMention } from "../../composer-mentions.js?v=2113";
+import { startDraftImageFlow } from "../../draft-image-flow.js?v=2113";
+import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=2113";
+import { closeInline, activeSessionId, renderPanel } from "../right-panel.js?v=2113";
+import { blockInDemo } from "../../demo-flow.js?v=2113";
 
 // Drafts-mode local UI state — Lot 21 rich-card view. Filter strip at the
 // top of the panel head drives both axes : status (all / needs_fixes) and
@@ -248,9 +245,8 @@ export function renderDraftsView() {
     const indeterminate = groupSelected > 0 && !allGroupSelected;
     const selecting = groupSelected > 0;
     const cards = groupPosts
-      .map((p) => {
-        const voiceCompare = voiceCompareFor(ctx, p);
-        return renderPostCard(voiceCompare?.on ? { ...p, ...voiceCompare.preview } : p, {
+      .map((p) =>
+        renderPostCard(p, {
           editing: p.id === editingPostId,
           inlineEdit: true,
           selectable: true,
@@ -261,9 +257,8 @@ export function renderDraftsView() {
           // What Generate an image will use: the Playbook's look and this
           // network's shape, shown before the click.
           imagePreset: playbookId && !p.imageUrl ? quickImagePreset({ brandId: playbookId, network: p.network }) : null,
-          voiceCompare,
-        });
-      })
+        }),
+      )
       .join("");
     const draftWord = groupPosts.length === 1 ? "draft" : "drafts";
 
@@ -337,62 +332,6 @@ export function renderDraftsView() {
       <div class="posts__feed rpanel-drafts__feed">${raw(feed)}</div>
     </div>
   `;
-}
-
-// Voice per network (flag networkVoices): a draft written in the base voice
-// compares, on its card, with the same post in its network's voice (post-card.js
-// renderVoiceSwitch). What each card shows lives here, per draft: postId →
-// { on, off: Set of the differences unticked }. Forgotten with the panel's state.
-const voiceViews = new Map();
-
-function voiceCompareFor(ctx, p) {
-  if (!networkVoicesOn() || !ctx || !p.voice?.borrowed || p.status === "scheduled" || p.isRegenerating) return null;
-  const network = normalizeNetwork(p.network);
-  const view = voiceViews.get(p.id) || { on: false, off: new Set() };
-  const borrowed = isBorrowed(ctx, network);
-  const diffs = borrowed ? networkDiffs(network).map((d, i) => ({ ...d, i, on: !view.off.has(i) })) : [];
-  // The version shown is the one Keep would write: the voice with the ticked
-  // differences, written the way every draft is (writeInVoice).
-  const voiced = borrowed
-    ? {
-        ...ctx,
-        ...withDiffs(
-          ctx,
-          network,
-          diffs.filter((d) => d.on),
-        ),
-      }
-    : ctx;
-  const { text, hashtags } = writeInVoice(voiced, network, p);
-  return { base: baseNetwork(ctx), network, on: view.on, borrowed, diffs, preview: { text, hashtags } };
-}
-
-export function onVoiceView(postId, voice) {
-  const view = voiceViews.get(postId) || { on: false, off: new Set() };
-  voiceViews.set(postId, { ...view, on: voice === "network" });
-  renderPanel();
-}
-
-export function onVoiceDiff(postId, index, on) {
-  const view = voiceViews.get(postId) || { on: true, off: new Set() };
-  if (on) view.off.delete(index);
-  else view.off.add(index);
-  voiceViews.set(postId, view);
-  renderPanel();
-}
-
-export function onVoiceKeep(postId) {
-  const sid = activeSessionId();
-  const ctx = sid ? getContextById(getSessionById(sid)?.contextId) : null;
-  const post = sid ? getPosts(sid).find((p) => p.id === postId) : null;
-  const vc = post && voiceCompareFor(ctx, post);
-  if (!vc) return;
-  voiceViews.delete(postId);
-  keepNetworkVoice(
-    sid,
-    postId,
-    vc.diffs.filter((d) => d.on),
-  );
 }
 
 function renderDraftsEmpty() {
@@ -607,7 +546,7 @@ export function onSectionSave(network) {
   if (snapshot.length === 0) return;
   const count = snapshot.length;
   const draftWord = count === 1 ? "draft" : "drafts";
-  Promise.all([import("../save-folder-modal.js?v=2112"), import("../../folders-store.js?v=2112")]).then(
+  Promise.all([import("../save-folder-modal.js?v=2113"), import("../../folders-store.js?v=2113")]).then(
     ([{ open: openSaveModal }, { addDraftsToFolder }]) => {
       openSaveModal({
         count,
@@ -845,7 +784,6 @@ export function commitEdit(postId) {
   editingOriginal = null;
   if (changed) {
     updatePostContent(sid, postId, parsed); // notify → posts-store subscriber re-renders
-    noticeDraftEdit(sid, postId, original, parsed); // flag networkVoices: may propose a rule
   } else {
     renderPanel(); // no notify path → render manually
   }

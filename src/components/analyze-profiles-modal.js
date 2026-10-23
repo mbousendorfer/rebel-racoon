@@ -4,9 +4,7 @@
 //
 // Public API:
 //   init()                       — inject markup + bind once on app boot
-//   open({ onConfirm, network }) — onConfirm(selectedProfileIds: string[]);
-//                                  `network` (voice per network) lists only that
-//                                  network's profiles and rebuilds its adaptation
+//   open({ onConfirm })          — onConfirm(selectedProfileIds: string[])
 //
 // Behaviour:
 //   - Lists getConnectedProfiles() as a checkable list; profiles with no
@@ -15,23 +13,20 @@
 //     it fires onConfirm(ids) then closes. A warning notes the overwrite.
 //   - Cancel / Esc / backdrop / close-X dismiss without firing.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2112";
-import { escapeHtml as esc } from "../utils.js?v=2112";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2113";
+import { escapeHtml as esc } from "../utils.js?v=2113";
 import {
   getConnectedProfiles,
-  normalizeNetwork,
-  networkMeta,
   NETWORK_ICON_BY_PLATFORM,
   BRAND_INITIALS,
   PROFILE_SEARCH_THRESHOLD,
-} from "../social-profiles.js?v=2112";
+} from "../social-profiles.js?v=2113";
 
 const MODAL_ID = "analyze-profiles";
 
 let backdrop, modal, listEl, confirmBtn, cancelBtn, closeBtn, searchGroup, searchInput, noMatchEl;
 let initialized = false;
 let pendingOnConfirm = null;
-let onlyNetwork = null; // voice per network: the network whose voice is rebuilt
 let leadEl, warnEl;
 
 const HTML = `
@@ -86,15 +81,13 @@ const HTML = `
 </aside>`;
 
 function profilesShown() {
-  const all = getConnectedProfiles();
-  return onlyNetwork ? all.filter((p) => normalizeNetwork(p.platform) === onlyNetwork) : all;
+  return getConnectedProfiles();
 }
 
 function renderList() {
   const profiles = profilesShown();
   if (!profiles.length) {
-    const label = onlyNetwork ? `${networkMeta(onlyNetwork)?.label || onlyNetwork} ` : "";
-    listEl.innerHTML = `<p class="analyze-profiles-modal__empty">No connected ${esc(label)}accounts yet. Connect one from a chat when you draft a post, and I can learn from it here.</p>`;
+    listEl.innerHTML = `<p class="analyze-profiles-modal__empty">No connected accounts yet. Connect one from a chat when you draft a post, and I can learn from it here.</p>`;
     return;
   }
   // Row HTML is built from esc()'d values; assign directly (no escaping wrapper).
@@ -194,19 +187,13 @@ export function init() {
   injectOnce();
 }
 
-export function open({ onConfirm = null, network = null } = {}) {
+export function open({ onConfirm = null } = {}) {
   injectOnce();
   requestOpen(MODAL_ID, close);
 
   pendingOnConfirm = onConfirm;
-  onlyNetwork = network ? normalizeNetwork(network) : null;
-  const label = onlyNetwork ? networkMeta(onlyNetwork)?.label || onlyNetwork : "";
-  leadEl.textContent = onlyNetwork
-    ? `Pick the accounts to learn from — I read their recent posts and rebuild how your voice adapts on ${label}.`
-    : "Pick the accounts to learn from — I read their recent posts and rewrite your Voice profile.";
-  warnEl.textContent = onlyNetwork
-    ? `This replaces what's adapted for ${label}. What I've learned stays.`
-    : "This replaces your Voice profile.";
+  leadEl.textContent = "Pick the accounts to learn from — I read their recent posts and rewrite your Voice profile.";
+  warnEl.textContent = "This replaces your Voice profile.";
   renderList();
   syncConfirm();
   // Reset + reveal the search box only when the list is long enough to warrant it.

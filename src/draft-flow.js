@@ -21,12 +21,11 @@ import {
   postDraftResult,
   reportDraftFailure,
   GENERATION_TOOLS,
-} from "./assistant.js?v=2112";
-import { getIdeas } from "./library.js?v=2112";
-import { anglesByIdea } from "./mocks.js?v=2112";
-import { addPostDraft } from "./posts-store.js?v=2112";
-import { networkMeta } from "./social-profiles.js?v=2112";
-import { coachAfterDraft } from "./voice-coach.js?v=2112";
+} from "./assistant.js?v=2113";
+import { getIdeas } from "./library.js?v=2113";
+import { anglesByIdea } from "./mocks.js?v=2113";
+import { addPostDraft } from "./posts-store.js?v=2113";
+import { networkMeta } from "./social-profiles.js?v=2113";
 
 // The set-up pass before a draft (reading the brief and the voice) — logged as
 // its own tools, so the generation that follows isn't counted twice.
@@ -203,7 +202,6 @@ export function executeDraft(sessionId, ideaId, selectedChannels, count = 1, ang
         ideaTitle: idea.title,
         drafts,
       });
-      coachAfterDraft(sessionId, drafts);
     },
     (err) =>
       reportDraftFailure(sessionId, err, () =>
@@ -242,7 +240,6 @@ export function executeDraftBatch(sessionId, ideaId, selectedChannels, anglePick
         }
       }
       postDraftResult(sessionId, { ideaTitle: idea.title, drafts });
-      coachAfterDraft(sessionId, drafts);
     },
     (err) =>
       reportDraftFailure(sessionId, err, () =>

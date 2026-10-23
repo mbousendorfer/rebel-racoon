@@ -159,25 +159,6 @@ body:not(.conv-new) .chat-turn--clip-extraction > .drafts-card {
   max-width: none;
 }
 
-/* Memory card — 520px, olive check, the old title line. */
-body:not(.conv-new) .memory-card {
-  width: min(520px, 100%);
-}
-
-body:not(.conv-new) .memory-card__ask > i.memory-card__done {
-  color: var(--app-butter-accent);
-}
-
-body:not(.conv-new) .memory-card__body > i.memory-mark {
-  margin-top: 2px;
-}
-
-body:not(.conv-new) .memory-card__rule {
-  font-size: var(--ref-font-size-sm);
-  font-weight: var(--ref-font-weight-bold);
-  line-height: 20px;
-}
-
 /* Status pills — the whole pill fades while Archie thinks. (The "Extracting"
    notice's spinner beside the pill is the Archie loader: archie-loader.css.) */
 @keyframes assistant-notice-pulse {

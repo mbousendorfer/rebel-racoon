@@ -18,8 +18,8 @@
 // the stream is handled by re-looking up the target selector each tick
 // — when it disappears the stream stops and the content commits at once.
 
-import { getPosts, updatePostContent } from "./posts-store.js?v=2112";
-import { escapeText } from "./utils.js?v=2112";
+import { getPosts, updatePostContent } from "./posts-store.js?v=2113";
+import { escapeText } from "./utils.js?v=2113";
 
 const inFlight = new Map(); // postId → AbortController
 
@@ -32,10 +32,7 @@ const THINKING_MS = 400;
 const TOKEN_MS_MIN = 8;
 const TOKEN_MS_MAX = 18;
 
-// `transform(post) → { text, hashtags, cta, voice? }` replaces the intent's
-// mock rewrite — a caller that knows what the new draft is (voice-coach.js
-// applying a kept rule) keeps the same three-phase animation.
-export function startRewrite(sessionId, postId, intent = "fresh", transform = null) {
+export function startRewrite(sessionId, postId, intent = "fresh") {
   if (!sessionId || !postId) return;
   if (inFlight.has(postId)) return;
 
@@ -49,7 +46,7 @@ export function startRewrite(sessionId, postId, intent = "fresh", transform = nu
   const controller = new AbortController();
   inFlight.set(postId, controller);
 
-  const final = transform ? transform(post) : fakeRewrite(post, intent);
+  const final = fakeRewrite(post, intent);
 
   // Phase 1 — thinking. Single notify ; the card subscriber paints the
   // skeleton + Rewriting pill on its own.
@@ -79,7 +76,6 @@ export function startRewrite(sessionId, postId, intent = "fresh", transform = nu
         text: final.text,
         hashtags: final.hashtags,
         cta: final.cta,
-        ...(final.voice ? { voice: final.voice } : {}),
         isRegenerating: false,
         regenerateStage: null,
       });

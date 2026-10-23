@@ -17,7 +17,7 @@
 //   }
 // The brand/strategy fields (audience, objective, tones, the five voice parts,
 // brandColors, imageVoice, do/dont rules…) stay language-agnostic at the top
-// level. Since the five-part voice (network-voice.js), nothing shows the
+// level. Since the five-part voice (voice-parts.js), nothing shows the
 // per-language hooks / closings any more: only the CTA is read per language.
 //
 // The flat legacy fields (signatureHooks / closingPatterns / cta /

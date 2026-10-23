@@ -17,10 +17,10 @@
 // `loader` cfg, run the (mock) analysis on a timer, then `updateContext` with
 // the section patch — the loader flips to ready and paints the fresh data.
 
-import { navigate, getPath } from "../router.js?v=2112";
-import { parseHashParams } from "../url-state.js?v=2112";
-import { escapeHtml as esc } from "../utils.js?v=2112";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../components/topbar.js?v=2112";
+import { navigate, getPath } from "../router.js?v=2113";
+import { parseHashParams } from "../url-state.js?v=2113";
+import { escapeHtml as esc } from "../utils.js?v=2113";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../components/topbar.js?v=2113";
 import {
   getContextById,
   getContexts,
@@ -28,28 +28,15 @@ import {
   deleteContext,
   duplicateContext,
   appendHistory,
-} from "../contexts-store.js?v=2112";
-import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=2112";
-import { mount, snapshotEditable } from "../playbook-view.js?v=2112";
-import { open as openRenameModal } from "../components/rename-modal.js?v=2112";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=2112";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2112";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2112";
-import {
-  analyzeWebsite,
-  analyzeDocument,
-  analyzeSocialProfiles,
-  analyzeNetworkVoices,
-} from "../context-mock-analysis.js?v=2112";
-import {
-  networkVoicesOn,
-  baseNetwork,
-  voiceNetworks,
-  networkLabel,
-  cloneVoiceByNetwork,
-  cloneItems,
-} from "../network-voice.js?v=2112";
-import { sectionPatchFromAnalysis } from "../context-builder.js?v=2112";
+} from "../contexts-store.js?v=2113";
+import { isWorkspaceMode, setActivePlaybook, catalogueRoute } from "../active-playbook.js?v=2113";
+import { mount, snapshotEditable } from "../playbook-view.js?v=2113";
+import { open as openRenameModal } from "../components/rename-modal.js?v=2113";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=2113";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=2113";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=2113";
+import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=2113";
+import { sectionPatchFromAnalysis } from "../context-builder.js?v=2113";
 import {
   canView,
   canEdit,
@@ -61,9 +48,9 @@ import {
   isMine,
   ownerOf,
   ownerName,
-} from "../playbook-access.js?v=2112";
-import { open as openShareModal } from "../components/share-playbook-modal.js?v=2112";
-import { showToast } from "../components/toast.js?v=2112";
+} from "../playbook-access.js?v=2113";
+import { open as openShareModal } from "../components/share-playbook-modal.js?v=2113";
+import { showToast } from "../components/toast.js?v=2113";
 
 const AUTOFILL_MS = 1500;
 
@@ -276,34 +263,6 @@ export function renderPlaybook(params, target) {
     };
   }
   function onAnalyzeVoice() {
-    // Voice per network: on another network's tab, its posts rebuild THAT
-    // network's adaptation. The rules it learned stay — they came from you,
-    // not from the posts.
-    const net = parseHashParams().get("net");
-    const ctx = getContextById(id);
-    if (networkVoicesOn() && net && net !== baseNetwork(ctx) && voiceNetworks(ctx).includes(net)) {
-      openAnalyzeProfilesModal({
-        network: net,
-        onConfirm: () =>
-          runAutofill(
-            STAGES.social,
-            () => {
-              const cur = getContextById(id);
-              const all = cloneVoiceByNetwork(cur.voiceByNetwork);
-              const fresh = analyzeNetworkVoices([net], baseNetwork(cur))[net];
-              // The rules it learned (kept with Remember) ride along into the new parts.
-              for (const f of ["voiceAlways", "voiceNever", "voiceSometimes"]) {
-                const kept = cloneItems(all[net]?.[f]).filter((i) => i.learned);
-                if (kept.length) fresh[f] = [...(fresh[f] || []), ...kept];
-              }
-              all[net] = fresh;
-              return { voiceByNetwork: all };
-            },
-            `${networkLabel(net)} voice updated from your posts.`,
-          ),
-      });
-      return;
-    }
     openAnalyzeProfilesModal({
       onConfirm: (ids) =>
         runAutofill(STAGES.social, () => voicePatchFromAnalysis(analyzeSocialProfiles(ids)), "Voice profile updated."),

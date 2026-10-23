@@ -13,19 +13,19 @@
 // The card is an illustration, not data: the Playbook's real parts (Voice
 // profile, Branding…) filled with example values.
 
-import "../archie-pixels.js?v=2112";
-import { startDemo } from "../demo-flow.js?v=2112";
-import { isFlagOn } from "../feature-flags.js?v=2112";
-import { html, raw, escapeHtml } from "../utils.js?v=2112";
+import "../archie-pixels.js?v=2113";
+import { startDemo } from "../demo-flow.js?v=2113";
+import { isFlagOn } from "../feature-flags.js?v=2113";
+import { html, raw, escapeHtml } from "../utils.js?v=2113";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORKS,
   getConnectedProfiles,
   getConnectableNetworks,
-} from "../social-profiles.js?v=2112";
-import { navigate } from "../router.js?v=2112";
-import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2112";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2112";
+} from "../social-profiles.js?v=2113";
+import { navigate } from "../router.js?v=2113";
+import { flowSteps, startFlow, STEP_TEXT, playbookCard, tint } from "./welcome-alt-shell.js?v=2113";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2113";
 
 // What a Playbook holds, shown rather than told: the parts the card on the
 // right fills, under their Playbook names, glyphs and tints.
@@ -45,7 +45,6 @@ const STEP_HINT = {
         .join("")}</span></span>`,
     ),
   url: "Your website is all I need. No website? I'll ask a few questions.",
-  network: "I build your main voice for it.",
 };
 const OPTIONAL = new Set(["documents"]);
 
@@ -95,11 +94,6 @@ const ROWS = [
   },
   { step: "url", label: "Goal", value: chips(["Brand awareness", "Visit the shop"]) },
   { step: "language", label: "Writes in", value: `<span class="welcome-intro__plain">English</span>` },
-  {
-    step: "network",
-    label: "Main voice",
-    value: `${glyph("linkedin")}<span class="welcome-intro__plain">LinkedIn</span>`,
-  },
   {
     step: "documents",
     label: "Colors & type",

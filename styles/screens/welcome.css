@@ -882,24 +882,6 @@
   flex-shrink: 0;
 }
 
-/* A list split in groups (the network step: connected / not connected yet),
-   each under its name. */
-.welcome-flow__group {
-  margin: var(--ref-spacing-md) 0 0;
-  font-size: var(--sys-text-style-body-bold-size);
-  line-height: var(--sys-text-style-body-bold-line-height);
-  font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--ref-color-grey-100);
-}
-
-.welcome-flow__options.is-grouped {
-  margin-top: var(--ref-spacing-xxs);
-}
-
-.welcome-flow__option .welcome-flow__connected + .ap-radio-container {
-  margin-left: var(--ref-spacing-xs);
-}
-
 .welcome-flow__or {
   margin: var(--ref-spacing-lg) 0 0;
   font-size: var(--sys-text-style-body-size);
@@ -2988,14 +2970,6 @@ button.recap__logotile:hover {
   font-weight: var(--sys-text-style-caption-weight);
   line-height: var(--sys-text-style-caption-line-height);
   color: var(--ref-color-grey-80);
-}
-
-/* Voice per network (flag networkVoices) on the recap: the network tabs and
-   the strip under them sit on the rows' inset; a row's source logo heads its
-   value. */
-.recap__panel-body > .pb2-netbar {
-  margin-bottom: 0;
-  padding: var(--ref-spacing-sm) var(--ref-spacing-lg) 0;
 }
 
 .recap__cta {

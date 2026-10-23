@@ -9,13 +9,9 @@
 //     (the Image Generator's "Use in draft" on a run of several slides)
 //   subscribe(sessionId, fn)    → unsubscribe fn
 
-import { postsBySession as seedPostsBySession, allSeedSessions as seedRecentSessions } from "./mocks.js?v=2112";
-import { isNewUser } from "./user-mode.js?v=2112";
-import { createSessionNotifier } from "./store-utils.js?v=2112";
-import { getSessionById } from "./sessions-store.js?v=2112";
-import { getContextById } from "./contexts-store.js?v=2112";
-import { playbookForNewWork } from "./active-playbook.js?v=2112";
-import { networkVoicesOn, writeInVoice, isBorrowed } from "./network-voice.js?v=2112";
+import { postsBySession as seedPostsBySession, allSeedSessions as seedRecentSessions } from "./mocks.js?v=2113";
+import { isNewUser } from "./user-mode.js?v=2113";
+import { createSessionNotifier } from "./store-utils.js?v=2113";
 
 // Demo session ids — only these get the seeded posts mock. Brand-new
 // conversations start empty (cf. library.js for the same rationale).
@@ -99,14 +95,6 @@ export function addPostDraft(
     // network's default orientation.
     format: format || null,
   };
-  // Voice per network: every generator lands here, so every draft is written
-  // in its network's voice — the rules it learned (network-voice.js
-  // writeInVoice). `voice` says which, for the card's generation context.
-  if (networkVoicesOn()) {
-    const session = getSessionById(sessionId);
-    const ctx = session?.contextId ? getContextById(session.contextId) : playbookForNewWork();
-    if (ctx) Object.assign(draft, writeInVoice(ctx, network, { text: draft.text, hashtags }));
-  }
   posts.unshift(draft);
   notify(sessionId);
   return draft;
@@ -189,7 +177,6 @@ export function updatePostContent(sessionId, postId, partial) {
   if (partial.hashtags !== undefined) post.hashtags = partial.hashtags;
   if (partial.cta !== undefined) post.cta = partial.cta;
   if (partial.firstComment !== undefined) post.firstComment = partial.firstComment;
-  if (partial.voice !== undefined) post.voice = partial.voice;
   if (partial.isRegenerating !== undefined) post.isRegenerating = partial.isRegenerating;
   if (partial.regenerateStage !== undefined) post.regenerateStage = partial.regenerateStage;
   if (partial.isGeneratingImage !== undefined) post.isGeneratingImage = partial.isGeneratingImage;
@@ -240,15 +227,9 @@ function seed(sessionId) {
   // so edits don't leak across sessions or mutate the shared mock array.
   const shouldSeed = !isNewUser() && DEMO_SESSION_IDS.has(sessionId);
   const seedForSession = shouldSeed ? seedPostsBySession[sessionId] || [] : [];
-  // Under networkVoices a seeded draft on a network still borrowing the base
-  // voice is marked so, as a fresh one is (writeInVoice's mark only — the seed's
-  // text stays as written): its card then compares the two voices.
-  const ctx = networkVoicesOn() ? getContextById(getSessionById(sessionId)?.contextId) : null;
   store.set(
     sessionId,
-    seedForSession.map((p) =>
-      ctx && !p.voice && isBorrowed(ctx, p.network) ? { ...p, voice: writeInVoice(ctx, p.network, p).voice } : { ...p },
-    ),
+    seedForSession.map((p) => ({ ...p })),
   );
 }
 

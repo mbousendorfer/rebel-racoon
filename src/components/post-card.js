@@ -19,13 +19,13 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2112";
-import { isPortraitFormat } from "../clip-formats.js?v=2112";
-import { presetById } from "../clip-captions.js?v=2112";
-import { renderFeedbackControl } from "./feedback-control.js?v=2112";
-import { networkMeta, normalizeNetwork, profileForNetwork, renderProfileTag } from "../social-profiles.js?v=2112";
-import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2112";
-import { REVEAL_MS } from "../archie-pixels.js?v=2112";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2113";
+import { isPortraitFormat } from "../clip-formats.js?v=2113";
+import { presetById } from "../clip-captions.js?v=2113";
+import { renderFeedbackControl } from "./feedback-control.js?v=2113";
+import { networkMeta, normalizeNetwork, profileForNetwork, renderProfileTag } from "../social-profiles.js?v=2113";
+import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2113";
+import { REVEAL_MS } from "../archie-pixels.js?v=2113";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -341,7 +341,6 @@ export function renderPostCard(post, opts = {}) {
       ${raw(checkbox)}
       <div class="posts__card-wrap">
         ${raw(renderPostIssues(post, opts))}
-        ${raw(editing || regenerating ? "" : renderVoiceSwitch(post, opts.voiceCompare))}
         <article class="ap-card posts__card posts__card--${net} ${editing ? "is-editing" : ""}">
           ${raw(
             renderNetworkLayout(net, {
@@ -355,7 +354,7 @@ export function renderPostCard(post, opts = {}) {
           )}
           ${raw(renderFirstComment(post, { hidden: editing || regenerating }))}
         </article>
-        ${raw(editing || regenerating ? "" : renderVoiceKeep(post, opts.voiceCompare))} ${raw(belowCard)}
+        ${raw(belowCard)}
       </div>
 
       <!-- The rail is prod's (studio-mfe post-card-actions), in its order:
@@ -425,69 +424,6 @@ export function renderPostCard(post, opts = {}) {
   `;
 }
 
-// Voice per network (flag networkVoices): a draft written in the base voice
-// compares, on the card, with the same post in its network's voice — the way a
-// network voice is discovered (2026-10-23, it replaced the chat's line, the
-// panel's infobox and the Voice tab's lesson). `opts.voiceCompare`, from the
-// drafts panel: { base, network, on, borrowed, diffs: [{ i, text, on }] } — `on`
-// = the card shows the network's version (the caller already swapped the text).
-// Above the card, which voice wrote it, as a two-value switch (the DS segmented
-// control, ds-patches port); under it, while it shows the network's version,
-// what changes there and the one gesture that keeps it.
-function renderVoiceSwitch(post, vc) {
-  if (!vc) return "";
-  const base = networkMeta(vc.base);
-  const net = networkMeta(vc.network);
-  const segment = (value, meta, selected) =>
-    `<button type="button" role="radio" aria-checked="${selected}" class="ap-segmented-control__segment${selected ? " ap-segmented-control__segment--selected" : ""}" data-post-voice-view="${escapeAttr(post.id)}" data-voice="${value}"><i class="${meta.icon}" aria-hidden="true"></i>${escapeText(meta.label)} voice</button>`;
-  const hint = vc.on
-    ? ""
-    : vc.borrowed
-      ? `${net.label} doesn't have its own voice yet. Switch to see how I'd write this there.`
-      : `Written before your ${net.label} voice. Switch to see it in that voice.`;
-  return `<div class="posts__voice">
-      <div class="ap-segmented-control" role="radiogroup" aria-label="Voice of this draft">
-        ${segment("base", base, !vc.on)}${segment("network", net, vc.on)}
-      </div>
-      ${hint ? `<p class="posts__voice-hint">${escapeText(hint)}</p>` : ""}
-    </div>`;
-}
-
-function renderVoiceKeep(post, vc) {
-  if (!vc?.on) return "";
-  const label = networkMeta(vc.network).label;
-  const id = escapeAttr(post.id);
-  if (!vc.borrowed) {
-    return `<div class="posts__voice-keep">
-        <div class="posts__voice-keep-foot">
-          <p class="posts__voice-hint">Your ${escapeText(label)} voice, from your Playbook.</p>
-          <button type="button" class="ap-button primary blue" data-post-voice-keep="${id}">Use this version</button>
-        </div>
-      </div>`;
-  }
-  const any = vc.diffs.some((d) => d.on);
-  return `<div class="posts__voice-keep">
-      <p class="posts__voice-keep-title">What changes on ${escapeText(label)}</p>
-      <div class="posts__voice-diffs">${vc.diffs
-        .map(
-          (d) => `<label class="ap-checkbox-container">
-            <input type="checkbox" data-post-voice-diff="${id}" value="${d.i}" ${d.on ? "checked" : ""} />
-            <i></i>
-            <span>${escapeText(d.text)}</span>
-          </label>`,
-        )
-        .join("")}</div>
-      <div class="posts__voice-keep-foot">
-        <p class="posts__voice-hint">${
-          any
-            ? `I'll keep it in your Playbook and write your next ${escapeText(label)} drafts this way.`
-            : "Tick what you'd like to keep."
-        }</p>
-        <button type="button" class="ap-button primary blue" data-post-voice-keep="${id}" ${any ? "" : "disabled"}>Keep for ${escapeText(label)}</button>
-      </div>
-    </div>`;
-}
-
 // Generation context panel body — the provenance a generated draft drew on:
 // a tinted headline (the angle picked, or the winner it was repurposed from) +
 // the source. Returns "" when the draft has no provenance. The toggle + the
@@ -495,8 +431,7 @@ function renderVoiceKeep(post, vc) {
 // so the panel can expand full-width while the toggle stays inline on the right.
 function renderGenerationContextBody(post) {
   const gc = post.generationContext || {};
-  const voice = renderVoiceContext(post);
-  if (!post.generationContext) return voice;
+  if (!post.generationContext) return "";
   const tone = gc.kind === "repurpose" ? "repurpose" : gc.kind === "clip" ? "clip" : "angle";
   const headline = gc.headline
     ? `<div class="posts__gencontext-headline posts__gencontext-headline--${tone}">
@@ -513,32 +448,7 @@ function renderGenerationContextBody(post) {
         ${gc.source.detail ? `<p class="posts__gencontext-source-detail">${gc.source.detail}</p>` : ""}
       </div>`
     : "";
-  return `${headline}${source}${voice}`;
-}
-
-// Voice per network (flag networkVoices): which network voice wrote this draft
-// and the rules it follows — the proof that what Archie learned is used.
-function renderVoiceContext(post) {
-  const v = post.voice;
-  if (!v?.network) return "";
-  const label = networkMeta(v.network)?.label || v.network;
-  const rules = v.rules || [];
-  // Borrowed: written in the base's voice, the network had none of its own —
-  // the head names the voice that actually wrote it.
-  const base = v.borrowed ? networkMeta(v.borrowed)?.label || v.borrowed : "";
-  const voiceNet = base ? v.borrowed : v.network;
-  const detail = base
-    ? `<p class="posts__gencontext-source-detail">${escapeText(label)} didn't have its own voice yet when I wrote this.</p>`
-    : rules.length
-      ? `<ul class="posts__gencontext-rules">${rules.map((r) => `<li>${escapeText(r)}</li>`).join("")}</ul>`
-      : `<p class="posts__gencontext-source-detail">I haven't learned your ${escapeText(label)} rules yet — edit a few drafts and I'll pick up your hooks and closings.</p>`;
-  return `<div class="posts__gencontext-source">
-      <span class="posts__gencontext-source-head">
-        <i class="${networkMeta(voiceNet)?.icon || "ap-icon-sparkles"}" aria-hidden="true"></i>
-        <span>Your ${escapeText(base || label)} voice${rules.length ? ` · follows ${rules.length} ${rules.length === 1 ? "rule" : "rules"}` : ""}</span>
-      </span>
-      ${detail}
-    </div>`;
+  return `${headline}${source}`;
 }
 
 // Per-network character budgets + the full-colour DS logo used by the count

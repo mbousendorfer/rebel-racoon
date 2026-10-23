@@ -1,7 +1,7 @@
 // The admin menu lists the flags under these headings, in this order. Every
 // flag names one in `group`; `tip` is its one-line tooltip there (`hides` is
 // the long form, for the docs).
-export const FLAG_GROUPS = Object.freeze(["New surfaces", "Playbook", "Voice", "Chat & drafts", "Onboarding"]);
+export const FLAG_GROUPS = Object.freeze(["New surfaces", "Playbook", "Chat & drafts", "Onboarding"]);
 
 export const FLAGS = Object.freeze([
   {
@@ -181,44 +181,6 @@ export const FLAGS = Object.freeze([
       "on the composer, instead of three big cards. A soft halo of Archie's " +
       "pixels frames the composer; a click sends a ripple through it. Below, one row of " +
       "three Topics to review instead of six.",
-  },
-  {
-    id: "networkVoices",
-    group: "Voice",
-    tip: "A base voice plus one adaptation per network. Rules are proposed in the chat as drafts get reworked, never written silently.",
-    label: "Voice per network, with coaching",
-    // OFF: lands dark. The data (voiceBaseNetwork / voiceByNetwork) rides
-    // along in the seeds either way, like multilingualPlaybook.
-    default: false,
-    hides:
-      "When OFF, a Playbook has one voice. ON gives it a BASE voice — learned " +
-      "from the network of the profile picked at creation — and an adaptation " +
-      "per network it publishes on: each network overrides only the parts that " +
-      "differ (How the Brand sounds, Always, Never, Depending on the post, Now " +
-      "and then); a rule it was taught joins its Always or Never.\n\n" +
-      "Archie coaches it over time, and never writes it silently: when you " +
-      "rework a draft, when you thumbs-down one with a " +
-      "reason, or by asking a question after drafting for a network whose " +
-      "voice is thin, it PROPOSES a rule — a card in the chat, and the " +
-      '"What I\'ve learned" block on the Voice tab. Nothing enters the ' +
-      "Playbook without a click. Each network voice says how far along it is. " +
-      "The per-network view lives on the Playbook 2.0 page (flag playbook2).",
-  },
-  {
-    id: "voiceNewSection",
-    group: "Voice",
-    tip: 'Demo: marks "Depending on the post" as a part the product just added (orange arc, New pills). Pairs with Voice per network.',
-    label: "Voice: simulate a new section (Depending on the post)",
-    // A demo, not a feature: how the Voice tab tells a user the product added a
-    // part to every voice. Needs networkVoices.
-    default: false,
-    hides:
-      "Marks Depending on the post as a part the product just added. Every " +
-      "network that hasn't written its own says what's new: an orange arc on " +
-      'its ring, "1 new part" in its band, a dot on its tab, a New pill on the ' +
-      "block, a New step in the Optimize wizard — and Optimize leaves it to do. " +
-      "On a Playbook whose base voice has no cases yet, the base asks for them " +
-      "too. Off, the part is an ordinary one. Needs networkVoices.",
   },
   {
     id: "connectFirst",

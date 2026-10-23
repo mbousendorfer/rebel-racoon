@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2112";
-import { conceptHint } from "./concepts.js?v=2112";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2113";
+import { conceptHint } from "./concepts.js?v=2113";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,44 +30,15 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2112";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2112";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2112";
-import { isFlagOn } from "./feature-flags.js?v=2112";
-import { parseHashParams } from "./url-state.js?v=2112";
-import {
-  networkVoicesOn,
-  baseNetwork,
-  voiceNetworks,
-  networkEntry,
-  isOverridden,
-  isOptimized,
-  partsDone,
-  partsNew,
-  isNewPart,
-  isListPart,
-  voiceParts,
-  networkFields,
-  baseValue,
-  partValue,
-  cloneItems,
-  learnedItems,
-  voiceItemsHtml,
-  progressRingHtml,
-  networkLabel,
-  networkIcon,
-  memoryCardHtml,
-  voiceDiff,
-} from "./network-voice.js?v=2112";
-import {
-  getSuggestions,
-  accept as acceptVoiceSuggestion,
-  dismiss as dismissVoiceSuggestion,
-} from "./voice-coach-store.js?v=2112";
-import { showToast } from "./components/toast.js?v=2112";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2112";
-import { open as openVoiceWizard } from "./components/voice-wizard-modal.js?v=2112";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=2112";
+} from "./playbook-brand-kit.js?v=2113";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2113";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2113";
+import { isFlagOn } from "./feature-flags.js?v=2113";
+import { parseHashParams } from "./url-state.js?v=2113";
+import { isListPart, voiceParts, baseValue, cloneItems, voiceItemsHtml } from "./voice-parts.js?v=2113";
+import { showToast } from "./components/toast.js?v=2113";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2113";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=2113";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -188,7 +159,6 @@ let refModalHost = null; // body-level portal node for the open detail modal
 let snapshot = null; // deep copy of editable fields, for Cancel
 let editBaseline = null; // the same fields as JSON once the editor has painted — "anything changed?"
 let audienceCustom = false; // "Other…" picked in the Primary audience dropdown
-let activeNetwork = null; // flag networkVoices: the network voice the Voice tab shows (null = the base)
 let loadingTimer = null;
 let loadingStage = 0;
 let phase = "ready"; // "loading" | "ready"
@@ -227,7 +197,6 @@ export function mount(target, config) {
   mountTarget = target;
   setInlineChoices(cfg.chipCloud);
   activeTab = tabFromUrl();
-  activeNetwork = parseHashParams().get("net") || null;
   editScope = null;
   snapshot = null;
   audienceCustom = false;
@@ -454,8 +423,6 @@ export function snapshotEditable(d) {
       languages: d.languages || [],
       primaryLanguage: d.primaryLanguage || "",
       voiceByLanguage: d.voiceByLanguage || {},
-      voiceBaseNetwork: d.voiceBaseNetwork || "",
-      voiceByNetwork: d.voiceByNetwork || {},
       voiceSummary: d.voiceSummary || "",
       voiceAlways: d.voiceAlways || [],
       voiceNever: d.voiceNever || [],
@@ -2160,18 +2127,15 @@ function pb2Block(
 }
 
 // `editing`: Cancel / Save take Edit's place — same bar, same spot, sticky.
-// `below` rides in the same sticky bar, under the lead — the Voice tab's
-// network tabs, so the network you're reading stays named as you scroll.
-function pb2TabHead(scope, extra = "", { editing = false, noEdit = false, below = "" } = {}) {
+function pb2TabHead(scope, extra = "", { editing = false, noEdit = false } = {}) {
   const edit =
     canEditView() && !noEdit
       ? `<button type="button" class="ap-button stroked blue" data-recap-edit-card="${scope}"><i class="ap-icon-pen" aria-hidden="true"></i><span>Edit</span></button>`
       : "";
   return `
-    <header class="pb2-tabhead${below ? " pb2-tabhead--stacked" : ""}">
+    <header class="pb2-tabhead">
       <p class="pb2-tabhead__lead">${esc(SECTION_LEADS[scope] || "")}</p>
       <div class="pb2-tabhead__actions">${editing ? editActionButtons() : `${extra}${edit}`}</div>
-      ${below}
     </header>
   `;
 }
@@ -2186,8 +2150,8 @@ function pb2TabHead(scope, extra = "", { editing = false, noEdit = false, below 
 // A field's guidance, minus its question: the block title already asks it.
 const pb2Hint = (hint) => (hint?.a ? `<p class="pb2-hint">${esc(hint.a)}</p>` : "");
 
-function pb2EditGrid(scope, blocks, before = "", below = "") {
-  return `${pb2TabHead(scope, "", { editing: true, below })}${before}<div class="pb2-grid" data-recap-editing-card>${blocks
+function pb2EditGrid(scope, blocks, before = "") {
+  return `${pb2TabHead(scope, "", { editing: true })}${before}<div class="pb2-grid" data-recap-editing-card>${blocks
     .filter(Boolean)
     .join("")}</div>`;
 }
@@ -2223,8 +2187,6 @@ function renderVoiceEdit2(data) {
   // The voice's traits and how it's written (guided parts, or your own words)
   // ride on the first block; the parts follow, the same blocks as in read.
   const mode = `<div><span class="pb2-sub">Describe it</span>${renderVoiceModeToggle(data.voiceMode)}</div>`;
-  if (nvOn() && data.voiceMode !== "manual" && activeNetworkFor(data) !== baseNetwork(data))
-    return pb2EditGrid("voice", nvNetworkEditBlocks(data, activeNetworkFor(data)), "", renderNetworkSwitcher(data));
   if (data.voiceMode === "manual")
     return pb2EditGrid("voice", [
       pb2Block("The voice", `${pb2Traits(data)}${mode}`, { wide: true, index: 0, icon: "ap-icon-quote" }),
@@ -2236,16 +2198,7 @@ function renderVoiceEdit2(data) {
         { wide: true, index: 1, icon: "ap-icon-quote" },
       ),
     ]);
-  return pb2EditGrid(
-    "voice",
-    [
-      nvOn() ? nvIdentityBlock(data, baseNetwork(data)) : "",
-      nvOn() ? nvLearnBlock(data, baseNetwork(data)) : "",
-      ...pb2VoiceParts(data, { edit: true, lead: mode }),
-    ],
-    "",
-    nvOn() ? renderNetworkSwitcher(data) : "",
-  );
+  return pb2EditGrid("voice", pb2VoiceParts(data, { edit: true, lead: mode }));
 }
 
 function renderBrandEdit2(data) {
@@ -2436,9 +2389,8 @@ function renderPartEditor(field, value) {
     : renderTextarea(field, value, PART_COPY[field].placeholder);
 }
 
-// The words this brand never says — one list, true on every network, read
-// and edited in the Never block. Edited on the base only.
-function pb2AvoidRow(data, { edit = false, note = "" } = {}) {
+// The words this brand never says — one list, read and edited in the Never block.
+function pb2AvoidRow(data, { edit = false } = {}) {
   const words = data.voiceAvoid || [];
   if (!edit && !words.length) return "";
   const body = edit
@@ -2449,52 +2401,23 @@ function pb2AvoidRow(data, { edit = false, note = "" } = {}) {
             `<span class="ap-tag grey pb2-avoid"><i class="ap-icon-ban" aria-hidden="true"></i><span>${esc(w)}</span></span>`,
         )
         .join("")}</span>`;
-  return `<div class="pb2-avoid-row"><span class="pb2-sub">Words to avoid${note ? ` · ${esc(note)}` : ""}</span>${body}</div>`;
+  return `<div class="pb2-avoid-row"><span class="pb2-sub">Words to avoid</span>${body}</div>`;
 }
 
 // The five parts of a voice (VOICE_PARTS), in one order everywhere — read and
-// edit, the base and every network. `net`: a network that isn't the base —
-// its own parts read in full, a part it borrows reads as the base's on a grey
-// ground (pb2-nv-placeholder) with its own Optimize; in edit, a borrowed part
-// shows "Adapt for X". `lead`: trusted html on top of the first block.
-function pb2VoiceParts(data, { net = null, edit = false, lead = "", index = 2 } = {}) {
-  const base = baseNetwork(data);
-  const onBase = !net || net === base;
-  const fresh = partsNew(data, net || base);
-  return nvFields().map(([field, title], i) => {
-    const own = !onBase && isOverridden(data, net, field);
-    let body;
-    if (edit) {
-      body = onBase
-        ? renderPartEditor(field, field === "voiceSummary" ? baseValue(data, field) : data[field])
-        : nvFieldEdit(data, net, field);
-    } else {
-      body = pb2PartBody(field, partValue(data, net || base, field));
-      // A borrowed part carries its own way out: Optimize, the wizard on this part.
-      if (!onBase && !own && canEditView() && !editScope)
-        body += `<div class="pb2-nv-block-go"><button type="button" class="ap-button ghost blue" data-nv-optimize-part="${field}" aria-label="${esc(`Optimize ${title} for ${networkLabel(net)}`)}"><i class="ap-icon-sparkles" aria-hidden="true"></i><span>Optimize</span></button></div>`;
-    }
-    if (field === "voiceSummary") body = (onBase ? pb2Traits(data) : "") + body + (i === 0 ? lead : "");
-    if (field === "voiceNever")
-      body += pb2AvoidRow(data, {
-        edit: edit && onBase,
-        note: !nvOn() ? "" : onBase || !edit ? "every network" : `edit them on the ${networkLabel(base)} tab`,
-      });
-    // State: a network's part in edit says where it stands; a part the product
-    // just added says New until someone writes it.
-    const aside =
-      edit && !onBase
-        ? nvSourceBadge(data, net, field)
-        : fresh[i]
-          ? `<span class="ap-status orange pb2-nv-status">New</span>`
-          : "";
+// edit. `lead`: trusted html on top of the first block.
+function pb2VoiceParts(data, { edit = false, lead = "", index = 2 } = {}) {
+  return voiceParts().map(({ field, title }, i) => {
+    let body = edit
+      ? renderPartEditor(field, field === "voiceSummary" ? baseValue(data, field) : data[field])
+      : pb2PartBody(field, baseValue(data, field));
+    if (field === "voiceSummary") body = pb2Traits(data) + body + (i === 0 ? lead : "");
+    if (field === "voiceNever") body += pb2AvoidRow(data, { edit });
     return pb2Block(title, body, {
       wide: true,
       hint: PART_COPY[field]?.hint,
       index: index + i,
       icon: field === "voiceSummary" ? "ap-icon-quote" : "",
-      aside,
-      className: !edit && !onBase && !own ? "pb2-nv-placeholder" : "",
     });
   });
 }
@@ -2504,443 +2427,7 @@ function renderVoiceRead2(data, learnMenu) {
     const own = pb2Block("In your own words", pb2Text(data.voiceManual), { wide: true, icon: "ap-icon-quote" });
     return `${pb2TabHead("voice", learnMenu)}<div class="pb2-grid">${own}</div>`;
   }
-  if (nvAllView())
-    return `${pb2TabHead("voice", "", { noEdit: true, below: renderNetworkSwitcher(data) })}${nvAllMatrix(data)}`;
-  if (nvOn()) {
-    const net = activeNetworkFor(data);
-    // The base reads as the voice itself: its band (Learn from…, Re-optimize),
-    // what Archie learned, the five parts. Another network reads as what
-    // changes there (nvDiffBlock) — the head keeps Edit alone, as on every tab.
-    const grid = (
-      net === baseNetwork(data)
-        ? [nvIdentityBlock(data, net, learnMenu), nvLearnBlock(data, net), ...pb2VoiceParts(data)]
-        : [nvDiffBlock(data, net, learnMenu), nvLearnBlock(data, net, { cardsOnly: true })]
-    ).filter(Boolean);
-    return `${pb2TabHead("voice", "", { below: renderNetworkSwitcher(data) })}<div class="pb2-grid">${grid.join("")}</div>`;
-  }
   return `${pb2TabHead("voice", learnMenu)}<div class="pb2-grid">${pb2VoiceParts(data).join("")}</div>`;
-}
-
-// ── Voice per network (flag networkVoices, Playbook 2.0 only) ────────────────
-// The tab shows ONE network voice at a time: the base (learned at creation)
-// reads exactly as before; any other network reads as the base with its own
-// differences, the rules it learned, and what Archie proposes for it. The
-// proposals are not the Playbook — they come from voice-coach-store and only an
-// Add brings one in (CONCEPTS §1, "propose beside, never write inside").
-
-function nvOn() {
-  return networkVoicesOn();
-}
-
-function activeNetworkFor(data) {
-  const nets = voiceNetworks(data);
-  return nets.includes(activeNetwork) ? activeNetwork : baseNetwork(data);
-}
-
-// The "All networks" tab: the voice on every network at once — the overview
-// and the offers to optimize. A view, not a voice: nothing to edit there.
-const ALL_NETWORKS = "all";
-function nvAllView() {
-  return nvOn() && activeNetwork === ALL_NETWORKS && !editScope;
-}
-
-// The network entry an editor writes into, created on demand.
-function nvWritableEntry(data, net) {
-  if (!data.voiceByNetwork || typeof data.voiceByNetwork !== "object") data.voiceByNetwork = {};
-  if (!data.voiceByNetwork[net]) data.voiceByNetwork[net] = {};
-  // Every write goes through here from a click or a keystroke: the voice is
-  // now yours, no longer only what Archie drafted.
-  delete data.voiceByNetwork[net].drafted;
-  return data.voiceByNetwork[net];
-}
-
-// Where a part's editor writes: the base's parts are the Playbook's own
-// fields; another network's go to its entry in voiceByNetwork.
-function voiceTarget(data) {
-  if (nvOn() && activeNetworkFor(data) !== baseNetwork(data)) return nvWritableEntry(data, activeNetworkFor(data));
-  return data;
-}
-
-function renderNetworkSwitcher(data) {
-  const active = activeNetworkFor(data);
-  const activeBase = baseNetwork(data);
-  // DS tabs, a second row under the section tabs: one per network — all of
-  // them, from the start (a network not optimized yet writes in the base
-  // voice). The base is not flagged here — "The voice" block says where it was learned.
-  return `
-    <div class="pb2-netbar">
-      <div class="ap-tabs pb2-nettabs">
-        <div class="ap-tabs-nav" role="tablist" aria-label="Voice per network">
-          <button type="button" class="ap-tabs-tab${nvAllView() ? " active" : ""}" role="tab" aria-selected="${nvAllView()}" data-nv-net="${ALL_NETWORKS}"${
-            // Disabled, not hidden, while a voice is edited: a vanishing tab
-            // would slide every other one under the cursor.
-            editScope ? ' disabled title="Save or cancel your changes to see every network"' : ""
-          }>
-            <i class="ap-icon-view-grid" aria-hidden="true"></i><span>All networks</span>
-          </button>
-          ${voiceNetworks(data)
-            .map((n) => {
-              const on = !nvAllView() && n === active;
-              const pending = getSuggestions(data.id, { network: n }).length;
-              const borrowed = n !== activeBase && !isOptimized(data, n);
-              return `<button type="button" class="ap-tabs-tab${on ? " active" : ""}" role="tab" aria-selected="${on}" data-nv-net="${n}"${borrowed ? ` title="Not optimized — writes like your ${esc(networkLabel(activeBase))} voice"` : ""}>
-                <i class="${networkIcon(n)}" aria-hidden="true"></i>
-                <span>${esc(networkLabel(n))}</span>
-                ${
-                  // One mark at most beside the name: a part the product just
-                  // added. "Done" is the band's and All networks' to say.
-                  partsNew(data, n).some(Boolean)
-                    ? `<span class="pb2-nv-tab-new" title="New part to optimize" aria-label="New part to optimize"></span>`
-                    : ""
-                }
-                ${pending ? `<span class="ap-counter normal grey" title="${pending} suggestion${pending === 1 ? "" : "s"} to review">${pending}</span>` : ""}
-              </button>`;
-            })
-            .join("")}
-        </div>
-      </div>
-    </div>`;
-}
-
-// Archie offers to optimize a network still writing in the base voice: one
-// click, it adapts the parts to how posts work there (rules kept). Read mode
-// only — in edit, "Adapt for X" does it part by part.
-// `short`: "Optimize" alone, for a list whose row already names the network —
-// same width on every row, one clean column.
-function nvOptimizeButton(data, net, { tone = "primary blue", short = false } = {}) {
-  if (!canEditView() || editScope || net === baseNetwork(data)) return "";
-  const done = nvOptimizedCount(data, net);
-  if (done === nvFields().length) return "";
-  const label = short ? "Optimize" : done ? "Optimize what's left" : `Optimize for ${networkLabel(net)}`;
-  const aria = short ? ` aria-label="Optimize your ${esc(networkLabel(net))} voice"` : "";
-  return `<button type="button" class="ap-button ${tone}" data-nv-optimize="${net}"${aria}><i class="ap-icon-sparkles" aria-hidden="true"></i><span>${esc(label)}</span></button>`;
-}
-
-// Once a voice is done — every part of a network written for it, or the base
-// itself — the way back into the assistant stays: Re-optimize, secondary.
-function nvReoptimizeButton(data, net) {
-  if (!canEditView() || editScope) return "";
-  if (net !== baseNetwork(data) && nvOptimizedCount(data, net) < nvFields().length) return "";
-  return `<button type="button" class="ap-button stroked blue" data-nv-optimize="${net}" aria-label="Re-optimize your ${esc(networkLabel(net))} voice"><i class="ap-icon-sparkles" aria-hidden="true"></i><span>Re-optimize</span></button>`;
-}
-
-// What Archie knows about one network, in ONE block, always there: on top,
-// what he wants to remember — one memory card each, Remember / Not now; under
-// them, the rules already kept, each naming the part it went into (Always,
-// Never, Now and then — where it also reads, with the same olive mark). A
-// Remember moves the rule from the cards to the list, in view. In edit, the
-// list only: a kept rule is edited in its part. (2026-10-15: shown only while
-// a proposal waited — "j'ai toujours besoin du What I've learned".)
-// `cardsOnly`: on another network's tab, where the kept rules already read in
-// its differences — the block only while a proposal waits.
-function nvLearnBlock(data, net, { cardsOnly = false } = {}) {
-  const pending = canEditView() && !editScope ? getSuggestions(data.id, { network: net }) : [];
-  if (cardsOnly && !pending.length) return "";
-  const cards = pending.length
-    ? `<div class="memory-cards">${pending.map((sg) => memoryCardHtml(sg, { attr: "nv", value: sg.id })).join("")}</div>`
-    : "";
-  const kept = cardsOnly ? [] : learnedItems(data, net);
-  const list = kept.length
-    ? `<ul class="memory-notes">${kept
-        .map(
-          ({ title, item }) => `<li class="memory-note memory-note--kept">
-            <i class="ap-icon-sparkles memory-mark" aria-hidden="true"></i>
-            <p class="memory-note__text">${esc(item.text)}</p>
-            <span class="ap-tag grey mini memory-note__part">${esc(title)}</span>
-          </li>`,
-        )
-        .join("")}</ul>`
-    : "";
-  return pb2Block(
-    "What I've learned",
-    cards + list ||
-      pb2Empty(
-        `Nothing yet. Rework one of your ${networkLabel(net)} drafts or tell me what was off, and I'll suggest what to remember here.`,
-      ),
-    {
-      wide: true,
-      index: 1,
-      caption: `${networkLabel(net)} only`,
-      hint: `Rules you kept from my suggestions for ${networkLabel(net)}.`,
-      className: "pb2-block--memory",
-    },
-  );
-}
-
-// State, everywhere, as the DS status pill (.ap-status: a dot and a word) —
-// never a logo or a check mark: a greyed logo read as "disabled".
-//   a part:     green Optimized · grey Same as LinkedIn (a network's state is
-//               its progress ring, progressRingHtml in network-voice.js)
-function nvSourceBadge(data, net, field) {
-  if (isOverridden(data, net, field)) return `<span class="ap-status green pb2-nv-status">Optimized</span>`;
-  if (isNewPart(field)) return `<span class="ap-status orange pb2-nv-status">New</span>`;
-  return `<span class="ap-status grey pb2-nv-status">Same as ${esc(networkLabel(baseNetwork(data)))}</span>`;
-}
-
-// The new parts a network still has to do, as titles.
-function nvNewTitles(data, net) {
-  const fresh = partsNew(data, net);
-  return nvFields()
-    .filter((_, i) => fresh[i])
-    .map(([, title]) => title);
-}
-
-// How many of a network's four parts are optimized — its own, not the base's.
-function nvOptimizedCount(data, net) {
-  return nvFields().filter(([field]) => isOverridden(data, net, field)).length;
-}
-
-// The arcs a wizard save just completed — set for one repaint, so they fill once.
-let nvFresh = null;
-const nvFreshFor = (n) => (nvFresh?.net === n ? nvFresh.arcs : []);
-
-// Where a network stands, in words, under its ring.
-// `short`: for a tile, where the sentence sits beside a button.
-function nvProgressText(data, net, { short = false } = {}) {
-  if (net === baseNetwork(data)) return "Base voice";
-  const done = nvOptimizedCount(data, net);
-  const all = nvFields().length;
-  const fresh = nvNewTitles(data, net).length;
-  if (done === all) return "Optimized";
-  if (short) {
-    if (!done) return fresh ? `Not optimized · ${fresh} new` : "Not optimized";
-    return fresh ? `${done} of ${all} · ${fresh} new` : `${done} of ${all} optimized`;
-  }
-  return done ? `${done} of ${all} parts optimized` : "Not optimized yet";
-}
-
-// Where a network's voice stands — a progress band ON the page, above the
-// parts, not a card: it reports on the voice, it isn't one of its settings
-// (dressed as a block, it read as a fifth part). The parts below carry their
-// own state and Optimize; the band carries the count and Optimize what's left.
-function nvIdentityBlock(data, net, learn = "") {
-  const label = networkLabel(net);
-  const isBase = net === baseNetwork(data);
-  const done = nvOptimizedCount(data, net);
-  const fresh = isBase ? [] : nvNewTitles(data, net);
-  // Every action on this voice, in one group: where Archie learns from, then
-  // the assistant (Optimize while parts are missing, Re-optimize after). While
-  // the network borrows the base, Optimize is the teaching block's, under it.
-  const offer = nvOptimizeButton(data, net) || nvReoptimizeButton(data, net);
-  const sub = isBase
-    ? `Learned from your ${label} posts. Every network starts from it.`
-    : fresh.length
-      ? `New in your voice: ${fresh.join(", ")}.`
-      : done === nvFields().length
-        ? `Every part is written for ${label}.`
-        : done
-          ? `Parts you haven't optimized follow your ${networkLabel(baseNetwork(data))} voice.`
-          : `${label} uses your ${networkLabel(baseNetwork(data))} voice for now.`;
-  return `<div class="pb2-nv-progress" role="status">
-      ${progressRingHtml(net, { done: partsDone(data, net), base: isBase, attention: isBase ? [] : partsNew(data, net), size: 48, fresh: nvFreshFor(net) })}
-      <div class="pb2-nv-progress__text">
-        <p class="pb2-nv-progress__count">${esc(isBase ? "Base voice" : nvProgressText(data, net))}${
-          fresh.length
-            ? ` <span class="ap-status orange">${fresh.length} new ${fresh.length === 1 ? "part" : "parts"}</span>`
-            : ""
-        }</p>
-        <p class="pb2-nv-progress__sub">${esc(sub)}</p>
-      </div>
-      ${learn || offer ? `<div class="pb2-nv-progress__action">${learn}${offer}</div>` : ""}
-    </div>`;
-}
-
-// Another network's voice, read: what changes there, and nothing else
-// (2026-10-23, « un œil neuf » — five greyed copies of the base's parts under a
-// band of rings read as a form to fill, whatever text was added around it).
-// One row per rule or case the network made its own, tagged with its part; its
-// own summary says which one it replaces. Its actions in the head: Learn from…
-// and Fine-tune (the assistant, every part by hand). Empty, it speaks like the
-// base and says where its differences come from: its first draft, compared on
-// the card (post-card.js renderVoiceSwitch).
-function nvDiffBlock(data, net, learn = "") {
-  const label = networkLabel(net);
-  const base = networkLabel(baseNetwork(data));
-  const rows = voiceDiff(data, net);
-  const tune =
-    canEditView() && !editScope
-      ? `<button type="button" class="ap-button stroked blue" data-nv-optimize="${net}" aria-label="Fine-tune your ${esc(label)} voice"><i class="ap-icon-sparkles" aria-hidden="true"></i><span>Fine-tune</span></button>`
-      : "";
-  const body = rows.length
-    ? `<ul class="pb2-nv-diff">${rows
-        .map(
-          ({ title, item, instead }) => `<li class="pb2-nv-diff__row">
-            <div class="pb2-nv-diff__text">
-              <p class="pb2-nv-diff__rule">${item.learned ? `<i class="ap-icon-sparkles memory-mark" aria-hidden="true" title="Learned from your drafts"></i>` : ""}${esc(item.when ? `${item.when}: ${item.text}` : item.text)}</p>
-              ${instead ? `<p class="pb2-nv-diff__instead">Instead of: ${esc(instead)}</p>` : ""}
-            </div>
-            <span class="ap-tag grey mini">${esc(title)}</span>
-          </li>`,
-        )
-        .join("")}</ul>
-      <p class="pb2-nv-diff__rest">Everything else follows your ${esc(base)} voice.</p>`
-    : pb2Empty(
-        `${label} speaks like ${base} for now. The first time I write a ${label} draft, I'll show it beside the ${base} version, and you keep what you like.`,
-      );
-  return pb2Block(`On ${label}, what changes`, body, {
-    wide: true,
-    index: 1,
-    aside: learn || tune ? `<div class="pb2-nv-diff__actions">${learn}${tune}</div>` : "",
-  });
-}
-
-// The "All networks" tab: one line per network — its name, where its voice
-// stands overall (the progress ring + the state in words), Optimize. No detail
-// per part: that's what a network's own tab is for. The base first, then the
-// networks you publish on, then the rest; a line opens its network.
-// (2026-10-15: tiles, then a table per part — "TMI", "pas le détail des sections".)
-function nvAllMatrix(data) {
-  const base = baseNetwork(data);
-  const fields = nvFields();
-  const nets = voiceNetworks(data);
-  const optimizedNets = nets.filter((n) => n !== base && nvOptimizedCount(data, n) === fields.length).length;
-  const rows = nets
-    .map((n) => {
-      const isBase = n === base;
-      const label = networkLabel(n);
-      const complete = !isBase && nvOptimizedCount(data, n) === fields.length;
-      const fresh = partsNew(data, n);
-      const state = isBase ? "Base voice — every network starts from it" : nvProgressText(data, n);
-      // Ghost: six stroked buttons stacked down the list read as a wall.
-      const action = isBase || complete ? "" : nvOptimizeButton(data, n, { tone: "ghost blue", short: true });
-      return `<li class="pb2-nv-line${isBase ? " is-base" : ""}">
-        <button type="button" class="pb2-nv-line__open" data-nv-net="${n}" aria-label="Open your ${esc(label)} voice">
-          <i class="${networkIcon(n)}" aria-hidden="true"></i><span class="pb2-nv-line__name">${esc(label)}</span>
-        </button>
-        <span class="pb2-nv-line__state">
-          ${progressRingHtml(n, { done: partsDone(data, n), base: isBase, attention: fresh, size: 28, fresh: nvFreshFor(n) })}
-          <span>${esc(state)}</span>
-          ${fresh.some(Boolean) && !isBase ? `<span class="ap-status orange">New part</span>` : ""}
-        </span>
-        <span class="pb2-nv-line__action">${action}</span>
-      </li>`;
-    })
-    .join("");
-  return `<p class="pb2-nv-intro">${optimizedNets} of ${nets.length - 1} network${nets.length - 1 === 1 ? "" : "s"} fully optimized. Every network starts from your ${networkLabel(baseNetwork(data))} voice — optimize one to adapt any part for it.</p>
-    <ul class="pb2-nv-lines">${rows}</ul>`;
-}
-
-// Edit, on a network that isn't the base: a borrowed part reads as the base's
-// with "Adapt for X"; an adapted one is its own editor with "Use the base
-// voice" to drop the difference.
-function nvFieldEdit(data, net, field) {
-  const e = networkEntry(data, net) || {};
-  const own = e[field] !== undefined;
-  const btn = own
-    ? `<button type="button" class="ap-button ghost grey pb2-nv-toggle" data-nv-reset="${field}"><i class="ap-icon-close" aria-hidden="true"></i><span>Use the ${esc(networkLabel(baseNetwork(data)))} voice</span></button>`
-    : `<button type="button" class="ap-button stroked grey pb2-nv-toggle" data-nv-adapt="${field}"><i class="ap-icon-pen" aria-hidden="true"></i><span>Adapt for ${esc(networkLabel(net))}</span></button>`;
-  if (!own) return pb2PartBody(field, baseValue(data, field)) + btn;
-  if (isListPart(field)) return renderRuleEditor(field, e[field]) + btn;
-  return `<div class="ap-textarea-field resizable"><textarea data-nv-text="${field}" rows="3" placeholder="${esc(PART_COPY[field].placeholder)}">${esc(e[field] || "")}</textarea></div>${btn}`;
-}
-
-// Edit keeps the parts in a fixed order (a part must not jump when you adapt
-// it); the words to avoid read in Never and are edited on the base.
-function nvNetworkEditBlocks(data, net) {
-  return [nvIdentityBlock(data, net), nvLearnBlock(data, net), ...pb2VoiceParts(data, { net, edit: true })];
-}
-
-// The parts of a voice as [field, title] — from the one registry
-// (network-voice.js VOICE_PARTS), so a part the product adds appears everywhere.
-function nvFields() {
-  return voiceParts().map((p) => [p.field, p.title]);
-}
-
-function setNetworkInUrl(net) {
-  const [path] = window.location.hash.slice(1).split("?");
-  const q = parseHashParams();
-  q.set("net", net);
-  history.replaceState(null, "", `#${path}?${q.toString()}`);
-}
-
-// Adapt one part for the active network: it starts as a copy of the base's.
-function nvAdaptField(data, field) {
-  const v = baseValue(data, field);
-  nvWritableEntry(data, activeNetworkFor(data))[field] = isListPart(field) ? cloneItems(v) : v;
-}
-
-function onNetworkVoiceClick(event) {
-  if (!nvOn()) return false;
-  const data = cfg.getData();
-  if (!data) return false;
-  // Optimize opens the wizard on the network — on the part asked, or the first
-  // still on the base. Nothing is written until its Save, which lands here.
-  const optimize = event.target.closest("[data-nv-optimize], [data-nv-optimize-part]");
-  if (optimize) {
-    const net = optimize.dataset.nvOptimize || activeNetworkFor(data);
-    openVoiceWizard({
-      data,
-      network: net,
-      part: optimize.dataset.nvOptimizePart || null,
-      onSave: ({ values, drafted }) => {
-        // The base: the assistant rewrote the base voice itself.
-        if (net === baseNetwork(data)) {
-          for (const [field] of nvFields()) {
-            if (!(field in values)) continue;
-            const v = values[field];
-            data[field] = v === undefined ? (isListPart(field) ? [] : "") : structuredClone(v);
-          }
-          cfg.commit?.();
-          showToast(`${networkLabel(net)} voice saved. Every network that follows it changes too.`);
-          repaint();
-          return;
-        }
-        const before = partsDone(data, net);
-        const entry = nvWritableEntry(data, net);
-        for (const [field] of nvFields()) {
-          if (!(field in values)) continue; // a part the wizard didn't show
-          if (values[field] === undefined) delete entry[field];
-          else entry[field] = structuredClone(values[field]);
-        }
-        if (drafted) entry.drafted = true;
-        // The arcs this save completed fill once on the rings that show them.
-        const after = partsDone(data, net);
-        nvFresh = { net, arcs: after.map((on, i) => (on && !before[i] ? i : -1)).filter((i) => i >= 0) };
-        activeNetwork = net;
-        setNetworkInUrl(net);
-        cfg.commit?.();
-        const done = after.filter(Boolean).length;
-        showToast(`${networkLabel(net)} voice saved — ${done} of ${nvFields().length} parts optimized.`);
-        repaint();
-        nvFresh = null;
-      },
-    });
-    return true;
-  }
-  // A tab, a tile, a network's name — after Optimize, which sits inside a tile.
-  const pick = event.target.closest("[data-nv-net]");
-  if (pick) {
-    activeNetwork = pick.dataset.nvNet;
-    setNetworkInUrl(activeNetwork);
-    repaint();
-    return true;
-  }
-  const yes = event.target.closest("[data-nv-accept]");
-  if (yes) {
-    acceptVoiceSuggestion(data.id, yes.dataset.nvAccept);
-    showToast(`Remembered for your ${networkLabel(activeNetworkFor(data))} voice.`);
-    repaint();
-    return true;
-  }
-  const no = event.target.closest("[data-nv-dismiss]");
-  if (no) {
-    dismissVoiceSuggestion(data.id, no.dataset.nvDismiss);
-    repaint();
-    return true;
-  }
-  const adapt = event.target.closest("[data-nv-adapt]");
-  if (adapt) {
-    nvAdaptField(data, adapt.dataset.nvAdapt);
-    repaint();
-    return true;
-  }
-  const reset = event.target.closest("[data-nv-reset]");
-  if (reset) {
-    delete nvWritableEntry(data, activeNetworkFor(data))[reset.dataset.nvReset];
-    repaint();
-    return true;
-  }
-  return false;
 }
 
 const PB2_LOGO_VERSIONS = { color: "Color", white: "White", black: "Black", icon: "Icon only" };
@@ -3286,12 +2773,6 @@ const WRITE_HOOKS = [
   "[data-recap-kit-pick]",
   "[data-recap-kit-pair-add]",
   "[data-recap-kit-pair-remove]",
-  "[data-nv-optimize]",
-  "[data-nv-accept]",
-  "[data-nv-dismiss]",
-  "[data-nv-adapt]",
-  "[data-nv-optimize-part]",
-  "[data-nv-reset]",
 ].join(",");
 
 // ── Edit lifecycle ───────────────────────────────────────────────────────
@@ -3331,11 +2812,9 @@ function commitEdit(data) {
   if (Array.isArray(data.ctaLinks)) {
     data.ctaLinks = data.ctaLinks.filter((c) => (c.label || "").trim() || (c.url || "").trim() || c.suggested);
   }
-  // Drop the rules left blank — in the base voice and in every network's.
-  [data, ...Object.values(data.voiceByNetwork || {})].forEach((voice) => {
-    networkFields().forEach((f) => {
-      if (isListPart(f) && Array.isArray(voice[f])) voice[f] = cloneItems(voice[f]);
-    });
+  // Drop the rules left blank.
+  voiceParts().forEach(({ field }) => {
+    if (isListPart(field) && Array.isArray(data[field])) data[field] = cloneItems(data[field]);
   });
   // Drop roster entries left completely blank (an "Add competitor" row the
   // user opened and abandoned) and social rows with no URL. `suggested` is
@@ -3421,7 +2900,6 @@ function onClick(event) {
     return;
   }
   if (!canEditView() && event.target.closest(WRITE_HOOKS)) return;
-  if (onNetworkVoiceClick(event)) return;
 
   // Section-nav — scroll the panel into view (buttons, not anchors, so the
   // hash router is never triggered).
@@ -3724,7 +3202,7 @@ function onClick(event) {
   if (ruleRemove) {
     const field = ruleRemove.dataset.vrRemove;
     const idx = Number(ruleRemove.dataset.vrIndex);
-    const target = voiceTarget(data);
+    const target = data;
     if (Array.isArray(target[field])) target[field] = target[field].filter((_, i) => i !== idx);
     repaint();
     return;
@@ -3732,7 +3210,7 @@ function onClick(event) {
   const ruleAdd = event.target.closest("[data-vr-add]");
   if (ruleAdd) {
     const field = ruleAdd.dataset.vrAdd;
-    const target = voiceTarget(data);
+    const target = data;
     const list = Array.isArray(target[field]) ? target[field] : [];
     target[field] = [...list, field === "voiceByPost" ? { when: "", text: "" } : { text: "" }];
     repaint();
@@ -3945,16 +3423,13 @@ function onInput(event) {
       ensureRefTagsColors(img);
       img.colors[Number(t.dataset.recapColorIndex)] = t.value;
     }
-  } else if (t.matches("[data-nv-text]")) {
-    const e = nvWritableEntry(data, activeNetworkFor(data));
-    e[t.dataset.nvText] = t.value;
   } else if (t.matches("[data-recap-text]")) {
     data[t.dataset.recapText] = t.value;
   } else if (t.matches("[data-recap-typo]")) {
     if (!data.brandTypography || typeof data.brandTypography !== "object") data.brandTypography = brandFonts(data);
     data.brandTypography[t.dataset.recapTypo] = t.value;
   } else if (t.matches("[data-vr-list]")) {
-    const item = voiceTarget(data)[t.dataset.vrList]?.[Number(t.dataset.vrIndex)];
+    const item = data[t.dataset.vrList]?.[Number(t.dataset.vrIndex)];
     if (item) item[t.dataset.vrKey] = t.value;
   } else if (t.matches("[data-recap-cta-field]")) {
     const idx = Number(t.dataset.recapCtaIndex);

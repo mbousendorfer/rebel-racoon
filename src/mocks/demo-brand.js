@@ -132,20 +132,6 @@ export const DEMO_PLAYBOOK = {
     { text: "Ask regulars for their order.", examples: ["What's your usual? Tell us below."] },
   ],
   voiceAvoid: ["solutions", "leverage", "artisanal journey", "limited time only"],
-  voiceBaseNetwork: "instagram",
-  voiceByNetwork: {
-    linkedin: {
-      voiceAlways: [
-        { text: "Talk about the business behind the café: sourcing, the team, small-batch choices." },
-        { text: "One number when there is one.", examples: ["Thirty kilos at a time."] },
-      ],
-      voiceNever: [{ text: "Never more than one emoji." }],
-    },
-    facebook: {
-      voiceAlways: [{ text: "Lead with the date and the hours for anything happening in the shop." }],
-      voiceSometimes: [{ text: "Thank the neighbourhood by name of the street." }],
-    },
-  },
   brandPersonality:
     "The café on the corner that knows your name. Proud of its coffee, generous with its time, never stuffy.",
   brandTypography: { headingFont: "Averta", bodyFont: "Averta" },

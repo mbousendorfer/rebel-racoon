@@ -7,9 +7,9 @@
 // as the muted caption, and a DS avatar carrying the brand photo plus a
 // corner network badge.
 
-import { socialAccounts, demoManyProfiles, DEMO_ACCOUNTS } from "./mocks.js?v=2112";
-import { escapeHtml } from "./utils.js?v=2112";
-import { createNotifier } from "./store-utils.js?v=2112";
+import { socialAccounts, demoManyProfiles, DEMO_ACCOUNTS } from "./mocks.js?v=2113";
+import { escapeHtml } from "./utils.js?v=2113";
+import { createNotifier } from "./store-utils.js?v=2113";
 
 // THE network table — every surface that names, badges, counts or colours a
 // network reads it, so a network is spelled one way everywhere. It replaced
@@ -80,6 +80,14 @@ export function normalizeNetwork(network) {
 /** The NETWORKS entry for a slug (either spelling of X), or null. */
 export function networkMeta(network) {
   return NETWORKS[normalizeNetwork(network)] || null;
+}
+
+export function networkLabel(network) {
+  return networkMeta(network)?.label || network;
+}
+
+export function networkIcon(network) {
+  return networkMeta(network)?.icon || "ap-icon-web";
 }
 
 // Flat lookups derived from NETWORKS, `twitter` alias included, for the many

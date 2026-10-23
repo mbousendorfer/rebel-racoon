@@ -6,13 +6,13 @@
 //
 // Subscribers re-render the thread DOM on any change — no global store.
 
-import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2112";
-import { findConnector } from "./connectors-store.js?v=2112";
-import { createSessionNotifier } from "./store-utils.js?v=2112";
-import { addPostDraft } from "./posts-store.js?v=2112";
-import { showToast } from "./components/toast.js?v=2112";
-import { isFlagOn } from "./feature-flags.js?v=2112";
-import { getSources, subscribeSources } from "./sources-stream.js?v=2112";
+import { threadsBySession as seedThreadsBySession, connectorDocs } from "./mocks.js?v=2113";
+import { findConnector } from "./connectors-store.js?v=2113";
+import { createSessionNotifier } from "./store-utils.js?v=2113";
+import { addPostDraft } from "./posts-store.js?v=2113";
+import { showToast } from "./components/toast.js?v=2113";
+import { isFlagOn } from "./feature-flags.js?v=2113";
+import { getSources, subscribeSources } from "./sources-stream.js?v=2113";
 
 // How this module reads a session's ideas, injected rather than imported.
 //
@@ -828,24 +828,7 @@ export function postImageLookSet(sessionId, { contextId, styleId, label }) {
   notify(sessionId);
 }
 
-// A voice proposal card (flag networkVoices, voice-coach.js). The turn holds
-// only the ids: the suggestion lives in voice-coach-store, so accepting it
-// from the Playbook's tray reads the same here.
-export function postVoiceSuggestion(sessionId, { contextId, suggestionId }) {
-  getThread(sessionId).push({
-    id: newId(),
-    role: "assistant",
-    variant: "voice-suggestion",
-    meta: "Archie",
-    contextId,
-    suggestionId,
-    status: "ready",
-    createdAt: Date.now(),
-  });
-  notify(sessionId);
-}
-
-// Re-render the thread after the card's suggestion was answered.
+// Re-render the thread — a turn derived from a store changed (e.g. the image look).
 export function refreshThread(sessionId) {
   notify(sessionId);
 }

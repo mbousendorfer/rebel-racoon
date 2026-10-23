@@ -91,8 +91,7 @@ export const postsBySession = {
     {
       id: "post-acme-1",
       author: AUTHOR_MC,
-      // The chat asked for LinkedIn AND X: this is the X one (voice per
-      // network — the coaching question needs a draft off the base network).
+      // The chat asked for LinkedIn AND X: this is the X one.
       network: "twitter",
       status: "ready",
       timeLabel: "3h",
@@ -165,26 +164,6 @@ export const postsBySession = {
       hasImage: true,
       imageUrl: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=640&h=360&q=70",
       generationContext: seedIdeaGen("The behind-the-scenes recap", "What a founder keynote looks like at 50 people"),
-    },
-    {
-      id: "post-acme-5",
-      author: AUTHOR_MC,
-      // Facebook has no voice of its own in this Playbook: under networkVoices
-      // the draft is marked as written in the LinkedIn voice (posts-store seed)
-      // and its card compares the two.
-      network: "facebook",
-      status: "ready",
-      timeLabel: "1h",
-      text: [
-        "Three constraints killed our first launch: scope, distribution, and onboarding. All three were visible at the offsite, and none of them made the retro doc.",
-        "This time we named them on day one, and the launch landed 40% above plan.",
-      ],
-      hashtags: ["Launches", "Retros", "Startups"],
-      cta: "",
-      stats: { likes: 0, comments: 0, reposts: 0 },
-      hasImage: true,
-      imageUrl: "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=640&h=360&q=70",
-      generationContext: seedIdeaGen("The honest founder retro", "The three constraints that killed our first launch"),
     },
   ],
   "s-riverside": [

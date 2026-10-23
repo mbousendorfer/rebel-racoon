@@ -1223,25 +1223,6 @@ span.chat-bubble-choice-chip {
   padding-inline: calc(var(--ref-spacing-xxxl) + var(--ref-spacing-xxxs));
 }
 
-/* Archie's memory proposal (voice-coach.css .memory-card) takes the result
-   card's anatomy: the butter block on its 12 / 16 inset, a 16px glyph that
-   says WHAT it is (the memory sparkles, in ink like the clips card's video —
-   the avatar already says who), 12px, then the rule. The answer row keeps
-   the card's 16px inset: indented to the text edge, the question no longer
-   fits beside its two buttons at 520px. */
-.e-turn .memory-card__body {
-  gap: 2px var(--ref-spacing-xs);
-  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
-}
-
-.e-turn .memory-card__body > i.memory-mark {
-  color: var(--ref-color-grey-100);
-}
-
-.e-turn .memory-card__answer {
-  padding-left: var(--ref-spacing-sm);
-}
-
 /* A status that unfolds points right when closed, down when open — the
    disclosure convention. The notice ships chevron-down (180° when open);
    turned a quarter it IS chevron-right, with no markup fork for the flag. */
@@ -1363,13 +1344,6 @@ span.chat-bubble-choice-chip {
     color: var(--ref-color-grey-100);
     background-image: linear-gradient(var(--e-sheen-fill, transparent), var(--e-sheen-fill, transparent));
   }
-}
-
-/* The memory turn is a size container (its card wraps under 440px): a
-   container takes no width from its content, so it must stretch to the
-   column or it collapses to nothing. */
-.e-turn__content > .memory-turn {
-  align-self: stretch;
 }
 
 /* The wrapped turn gives its identity to the avatar column: no label, no
@@ -1789,7 +1763,6 @@ span.chat-bubble-choice-chip {
 .e-turn--ai
   :is(
     .drafts-card,
-    .memory-card,
     .assistant-notice__tools,
     .connect-card,
     .connect-status,

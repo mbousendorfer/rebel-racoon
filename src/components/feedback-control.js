@@ -20,10 +20,9 @@
 // list scroll position survives — same rationale as the clip/idea thumbs it
 // replaces.
 
-import { escapeAttr, escapeText } from "../utils.js?v=2112";
-import { showToast } from "./toast.js?v=2112";
-import { getFeedback, setVerdict, recordDetail } from "../feedback-store.js?v=2112";
-import { noticeDraftFeedback } from "../voice-coach.js?v=2112";
+import { escapeAttr, escapeText } from "../utils.js?v=2113";
+import { showToast } from "./toast.js?v=2113";
+import { getFeedback, setVerdict, recordDetail } from "../feedback-store.js?v=2113";
 
 // "What was off?" reasons per element kind. value = stable key, label = UI.
 const REASONS = {
@@ -173,7 +172,6 @@ export function onFeedbackClick(event) {
       const comment = panel.querySelector("[data-fb-comment]")?.value || "";
       recordDetail(targetId, { reasons, comment });
       panel.hidden = true;
-      noticeDraftFeedback(targetId, reasons); // flag networkVoices: may propose a rule
     }
     showToast("Thanks — this helps me improve.", { duration: 2600 });
     return true;

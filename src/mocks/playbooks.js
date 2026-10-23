@@ -261,55 +261,7 @@ export const contexts = [
         text: "Three hashtags at the very end, never in the text.",
       },
     ],
-    // Voice per network (flag networkVoices) — the base was learned on LinkedIn;
-    // Instagram and X only say what differs; Facebook borrows the base — its
-    // draft in the launch chat compares the two voices. See network-voice.js.
-    voiceBaseNetwork: "linkedin",
-    connectedSocials: ["linkedin", "instagram", "x", "facebook"],
-    voiceByNetwork: {
-      instagram: {
-        voiceAlways: [
-          {
-            text: "Lead with the outcome in the first 125 characters — that's all the feed shows.",
-            learned: true,
-          },
-          {
-            text: "One or two emoji, at the end of a line, never mid-sentence.",
-          },
-          {
-            text: "Short paragraphs, one idea each.",
-          },
-        ],
-        voiceNever: [
-          {
-            text: "Never put a link in the caption — point to the link in bio.",
-          },
-          {
-            text: "Never end on a 'stay tuned' cliffhanger: every post resolves.",
-          },
-        ],
-        voiceSometimes: [
-          {
-            text: "Close by asking to save it.",
-            examples: ["Save this for your next planning session."],
-          },
-          {
-            text: "Three to five hashtags in the caption's last line.",
-          },
-        ],
-      },
-      x: {
-        voiceAlways: [
-          {
-            text: "One idea, one post, under 240 characters. A thread only when there are three or more steps.",
-          },
-          {
-            text: "Numbers as digits, rounded honestly.",
-            examples: ["3x", "40%"],
-          },
-        ],
-      },
-    },
+    connectedSocials: ["linkedin", "instagram", "x"],
     brandPersonality:
       "Confident without bragging, helpful without performing. Speaks the way operators talk to each other — direct, specific, occasionally dry. Never hypey.",
     brandTypography: { headingFont: "Inter", bodyFont: "Inter" },
@@ -456,8 +408,8 @@ export const contexts = [
       { label: "Book a demo", url: "acme.example.com/demo", checked: true, suggested: false },
     ],
     // Multilingual Playbook — the per-language entries (languages.js). Only the
-    // CTA reads from them now: the five-part voice above is language-agnostic
-    // (ponytail in network-voice.js), so the hooks / closings here are the old
+    // CTA reads from them now: the five-part voice above is language-agnostic,
+    // so the hooks / closings here are the old
     // model's, kept for the multilingual plumbing.
     languages: ["English", "Français"],
     primaryLanguage: "English",

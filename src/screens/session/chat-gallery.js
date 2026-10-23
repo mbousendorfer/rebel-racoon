@@ -14,8 +14,8 @@
 // ponytail: the catalogue is a hand-kept list — a new turn variant or route has
 // to be added here too, or it won't show in the menu.
 
-import { escapeHtml } from "../../utils.js?v=2112";
-import { isFlagOn } from "../../feature-flags.js?v=2112";
+import { escapeHtml } from "../../utils.js?v=2113";
+import { isFlagOn } from "../../feature-flags.js?v=2113";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -30,27 +30,24 @@ import {
   postUserProfilesTurn,
   postTopPostPickTurn,
   postConnectPrompt,
-  postVoiceSuggestion,
   reportDraftFailure,
   GENERIC_FAILURE,
   getThread,
   refreshThread,
-} from "../../assistant.js?v=2112";
-import { getSources, getIdeas } from "../../library.js?v=2112";
-import { getPosts } from "../../posts-store.js?v=2112";
-import { getTopPosts } from "../../top-posts-store.js?v=2112";
-import { getConnectedProfiles } from "../../social-profiles.js?v=2112";
-import { extractClipsForSource, updateSourceClips } from "../../sources-stream.js?v=2112";
-import { getConnectedConnectors } from "../../connectors-store.js?v=2112";
-import { detectUrlService } from "../../url-services.js?v=2112";
-import { propose, getSuggestions } from "../../voice-coach-store.js?v=2112";
-import * as inlineQuestion from "../../inline-question.js?v=2112";
-import { startTopPostsInline } from "../../top-posts-flow.js?v=2112";
-import { startTopicPickerInline } from "../../topic-flow.js?v=2112";
-import { askConnector } from "../../connector-ask.js?v=2112";
-import { coachAfterDraft, coachingTarget } from "../../voice-coach.js?v=2112";
-import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2112";
-import { startIdeaDraft, askSourceUse } from "./draft-questions.js?v=2112";
+} from "../../assistant.js?v=2113";
+import { getSources, getIdeas } from "../../library.js?v=2113";
+import { getPosts } from "../../posts-store.js?v=2113";
+import { getTopPosts } from "../../top-posts-store.js?v=2113";
+import { getConnectedProfiles } from "../../social-profiles.js?v=2113";
+import { extractClipsForSource, updateSourceClips } from "../../sources-stream.js?v=2113";
+import { getConnectedConnectors } from "../../connectors-store.js?v=2113";
+import { detectUrlService } from "../../url-services.js?v=2113";
+import * as inlineQuestion from "../../inline-question.js?v=2113";
+import { startTopPostsInline } from "../../top-posts-flow.js?v=2113";
+import { startTopicPickerInline } from "../../topic-flow.js?v=2113";
+import { askConnector } from "../../connector-ask.js?v=2113";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2113";
+import { startIdeaDraft, askSourceUse } from "./draft-questions.js?v=2113";
 
 // The intake sample plays the real lifecycle — loading, then ready — under a
 // sample id no source owns, so intake-lifecycle leaves it alone.
@@ -61,7 +58,6 @@ function playIntake(sid, file, ms) {
 }
 
 const videoOf = (sid) => getSources(sid).find((s) => s.kind === "Video");
-const flagOff = (id) => (isFlagOn(id) ? null : `Turn on ${id} in Admin`);
 
 // Each entry: id, label, icon, hint (what it is), when(sid, session) → reason it
 // can't run (or null), run(sid, session, send).
@@ -224,31 +220,7 @@ const COMPONENTS = [
       });
     },
   },
-  {
-    id: "voice",
-    label: "Voice suggestion",
-    icon: "ap-icon-sparkles",
-    hint: "A rule Archie wants to remember",
-    when: (sid, session) => flagOff("networkVoices") || (session.contextId ? null : "Needs a Playbook on this chat"),
-    run: (sid, session) => {
-      const ctx = session.contextId;
-      // The evidence is this chat's LinkedIn drafts, so the card links them and,
-      // once kept, offers to rewrite them.
-      const from = getPosts(sid)
-        .filter((p) => p.network === "linkedin")
-        .slice(0, 2)
-        .map((p) => p.id);
-      const s =
-        propose(ctx, {
-          network: "linkedin",
-          text: "Keep the opening line under 10 words.",
-          why: `You shortened the hook on your last ${from.length > 1 ? `${from.length} ` : ""}LinkedIn drafts.`,
-          source: "edits",
-          postIds: from,
-        }) || getSuggestions(ctx)[0];
-      if (s) postVoiceSuggestion(sid, { contextId: ctx, suggestionId: s.id });
-    },
-  },
+
   {
     id: "quickpicker",
     label: "Quickpicker",
@@ -426,14 +398,6 @@ const FLOWS = [
     when: () => (getConnectedProfiles().length ? "Only with no account connected" : null),
     run: (sid) =>
       requireConnectedProfiles(sid, { onReady: () => postAssistantMessage(sid, "Connected — back to the draft.") }),
-  },
-  {
-    id: "f-voice-question",
-    label: "Voice coaching question",
-    icon: "ap-icon-sparkles",
-    hint: "How do you end a post on X? (once per visit)",
-    when: (sid) => flagOff("networkVoices") || needsDrafts(sid) || coachingTarget(sid, getPosts(sid)).reason || null,
-    run: (sid) => coachAfterDraft(sid, getPosts(sid)),
   },
 ];
 

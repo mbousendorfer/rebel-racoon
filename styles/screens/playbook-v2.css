@@ -297,10 +297,10 @@
   background: var(--ref-color-grey-40);
 }
 
-/* A voice part's rules (network-voice.js voiceItemsHtml) — one grey box each:
+/* A voice part's rules (voice-parts.js voiceItemsHtml) — one grey box each:
    a case's kind of post in bold, the rule in ink, the examples from the
-   brand's posts under it, smaller. A learned rule leads with Archie's mark. */
-.nv-rules {
+   brand's posts under it, smaller. */
+.voice-rules {
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xs);
@@ -309,7 +309,7 @@
   list-style: none;
 }
 
-.nv-rule {
+.voice-rule {
   display: flex;
   align-items: flex-start;
   gap: var(--ref-spacing-xs);
@@ -318,31 +318,26 @@
   background: var(--ref-color-grey-05);
 }
 
-.nv-rule > .memory-mark {
-  flex-shrink: 0;
-  margin-top: var(--ref-spacing-xxxs);
-}
-
-.nv-rule__body {
+.voice-rule__body {
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xxs);
   min-width: 0;
 }
 
-.nv-rule__when,
-.nv-rule__text {
+.voice-rule__when,
+.voice-rule__text {
   margin: 0;
   font-size: var(--sys-text-style-body-size);
   line-height: 1.45;
   color: var(--ref-color-grey-100);
 }
 
-.nv-rule__when {
+.voice-rule__when {
   font-weight: var(--ref-font-weight-bold);
 }
 
-.nv-rule__examples {
+.voice-rule__examples {
   display: flex;
   flex-wrap: wrap;
   gap: var(--ref-spacing-xxs) var(--ref-spacing-md);
@@ -351,7 +346,7 @@
   list-style: none;
 }
 
-.nv-rule__examples li {
+.voice-rule__examples li {
   display: inline-flex;
   align-items: flex-start;
   gap: var(--ref-spacing-xxs);
@@ -360,7 +355,7 @@
   color: var(--ref-color-grey-80);
 }
 
-.nv-rule__examples i {
+.voice-rule__examples i {
   flex-shrink: 0;
   margin-top: var(--ref-spacing-xxxs);
 }
@@ -447,18 +442,6 @@
 
 /* Stuck: the hairline the page's borders use. Only the line toggles — a
    padding change here would shift the page under the reader's scroll. */
-/* With the Voice tab's network tabs riding in the bar: the lead and its actions
-   on the first row, the network tabs on their own full row under them. */
-.pb2-tabhead--stacked {
-  flex-wrap: wrap;
-  row-gap: var(--ref-spacing-xs);
-}
-
-.pb2-tabhead--stacked > .pb2-netbar {
-  flex: 1 0 100%;
-  margin-bottom: 0;
-}
-
 .pb2-tabhead.is-stuck {
   box-shadow: inset 0 -1px 0 var(--ref-color-grey-20);
 }
@@ -845,210 +828,6 @@
   padding: var(--ref-spacing-xs) 0;
 }
 
-/* ── Voice per network (flag networkVoices) ─────────────────────────────── */
-/* The network switcher: one chip per network voice, "Add a network" at the end. */
-.pb2-netbar {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--ref-spacing-sm);
-  margin-bottom: var(--ref-spacing-md);
-}
-
-.pb2-nettabs {
-  flex: 1;
-  min-width: 0;
-}
-
-/* Every network has a tab: on a narrow page the row scrolls sideways rather
-   than overflow its panel. */
-.pb2-nettabs > .ap-tabs-nav {
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-/* ── Optimized or not (voice per network) ──────────────────────────────
-   State is the DS status pill (.ap-status), in the network's mini check, in
-   "All networks" and in each part's block head. Logos stay in colour. */
-
-/* A network's progress band: on the page's grey, no border, no card — the
-   ring, the count, one line, Optimize what's left. It spans the grid and sits
-   above the voice's blocks as a report on them, not as one of them. */
-.pb2-nv-progress {
-  display: flex;
-  grid-column: 1 / -1;
-  align-items: center;
-  gap: var(--ref-spacing-sm);
-  padding: var(--ref-spacing-xxs) 0 var(--ref-spacing-xs);
-}
-
-.pb2-nv-progress__text {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxxs);
-  min-width: 0;
-}
-
-.pb2-nv-progress__count {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  margin: 0;
-  color: var(--ref-color-grey-100);
-  font-size: var(--ref-font-size-md);
-  font-weight: var(--sys-text-style-body-bold-weight);
-}
-
-.pb2-nv-progress__sub {
-  margin: 0;
-  color: var(--ref-color-grey-80);
-  font-size: var(--ref-font-size-sm);
-}
-
-/* The voice's actions, grouped: Learn from… then Optimize / Re-optimize. */
-.pb2-nv-progress__action {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-}
-
-@media (max-width: 640px) {
-  .pb2-nv-progress {
-    flex-wrap: wrap;
-  }
-}
-
-.pb2-nv-intro {
-  margin: 0 0 var(--ref-spacing-md);
-  color: var(--ref-color-grey-80);
-}
-
-/* In the network tabs: an orange dot while a part the product just added
-   waits for it — the only mark beside a name (done is the band's to say). */
-.pb2-nv-tab-new {
-  flex-shrink: 0;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--ref-color-orange-100);
-}
-
-/* "All networks": one line per network in a white card — name, overall state
-   (small ring + words), Optimize. Every line the same height. */
-.pb2-nv-lines {
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  border: 1px solid var(--ref-color-grey-20);
-  border-radius: var(--app-radius-card);
-  background: var(--ref-color-white);
-  list-style: none;
-}
-
-.pb2-nv-line {
-  display: grid;
-  grid-template-columns: 200px minmax(0, 1fr) auto;
-  gap: var(--ref-spacing-md);
-  align-items: center;
-  min-height: 60px;
-  padding: 0 var(--ref-spacing-md);
-}
-
-.pb2-nv-line + .pb2-nv-line {
-  border-top: 1px solid var(--ref-color-grey-20);
-}
-
-.pb2-nv-line__open {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  justify-self: start;
-  padding: 0;
-  border: 0;
-  background: none;
-  font: inherit;
-  cursor: pointer;
-}
-
-.pb2-nv-line__name {
-  color: var(--ref-color-grey-100);
-  font-weight: var(--sys-text-style-body-bold-weight);
-}
-
-.pb2-nv-line__open:hover .pb2-nv-line__name,
-.pb2-nv-line__open:focus-visible .pb2-nv-line__name {
-  color: var(--ref-color-electric-blue-100);
-}
-
-.pb2-nv-line__state {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  min-width: 0;
-  color: var(--ref-color-grey-80);
-  font-size: var(--ref-font-size-sm);
-}
-
-.pb2-nv-line__action {
-  display: flex;
-  justify-content: flex-end;
-}
-
-/* A part not optimized yet reads DISABLED: the block on the page's grey, the
-   base's version inside in grey-60 (the ink the house keeps for disabled),
-   rules unfilled. Its title stays grey-100 so the five still scan as one set;
-   an optimized part stays white, filled, grey-100. */
-.pb2-block.pb2-nv-placeholder {
-  background: var(--app-surface-subtle);
-}
-
-.pb2-nv-placeholder .nv-rule {
-  border: 1px solid var(--ref-color-grey-20);
-  background: transparent;
-}
-
-.pb2-nv-placeholder .nv-rule__when,
-.pb2-nv-placeholder .nv-rule__text,
-.pb2-nv-placeholder .nv-rule__examples li,
-.pb2-nv-placeholder .pb2-lead,
-.pb2-nv-placeholder .pb2-prose {
-  color: var(--ref-color-grey-60);
-}
-
-/* Its Optimize sits at the block's foot, hug-width — pinned to the bottom so
-   the two blocks of a row line their buttons up. */
-.pb2-nv-placeholder > .pb2-block__body {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-}
-
-.pb2-nv-block-go {
-  display: flex;
-  margin-top: auto;
-  padding-top: var(--ref-spacing-sm);
-}
-
-/* The ghost button sits on the content edge, NOT pulled back: its hover
-   background then lines up with the line boxes above, and its glyph (16px in)
-   with their quote marks (16px in too). Pulled back, the hover surface stuck
-   out of the column. */
-
-/* A part's state in its block head, on the right where the caption sat. */
-.pb2-nv-status {
-  flex-shrink: 0;
-  margin-left: auto;
-}
-
-/* "Adapt for X" / "Use the base voice" sit under the field they switch. */
-.pb2-nv-toggle {
-  align-self: flex-start;
-  margin-top: var(--ref-spacing-xs);
-}
-
 /* The audience as a list (cfg.audienceList — the onboarding review): one row
    per option, a DS radio as its mark; the row is the control. */
 .recap__audience-list {
@@ -1248,62 +1027,4 @@
   line-height: var(--sys-text-style-caption-bold-line-height);
   font-weight: var(--sys-text-style-caption-bold-weight);
   color: var(--ref-color-grey-80);
-}
-
-/* Another network's voice: what changes there (playbook-view nvDiffBlock).
-   One row per difference on grey-20 hairlines — the rule in ink, what it
-   replaces under it, its part as a tag at the end — then one line for the
-   rest. The voice's actions sit at the end of the block's head. */
-.pb2-nv-diff__actions {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  margin-left: auto;
-}
-
-.pb2-nv-diff {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.pb2-nv-diff__row {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--ref-spacing-sm);
-  padding: var(--ref-spacing-sm) 0;
-  border-top: 1px solid var(--ref-color-grey-20);
-}
-
-.pb2-nv-diff__row:first-child {
-  border-top: 0;
-  padding-top: 0;
-}
-
-.pb2-nv-diff__text {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxxs);
-  min-width: 0;
-}
-
-.pb2-nv-diff__rule {
-  display: flex;
-  align-items: baseline;
-  gap: var(--ref-spacing-xxs);
-  margin: 0;
-  color: var(--ref-color-grey-100);
-}
-
-.pb2-nv-diff__instead,
-.pb2-nv-diff__rest {
-  margin: 0;
-  color: var(--ref-color-grey-80);
-  font-size: var(--ref-font-size-xs);
-}
-
-.pb2-nv-diff__rest {
-  padding-top: var(--ref-spacing-sm);
-  border-top: 1px solid var(--ref-color-grey-20);
 }

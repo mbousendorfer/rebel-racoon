@@ -7,7 +7,6 @@
 //                           interview, or by hand
 //   /welcome-alt/interview  no website: one question at a time
 //   /welcome-alt/language   flag multilingualPlaybook
-//   /welcome-alt/network    flag networkVoices
 //   /welcome-alt/documents  optional
 //
 // Friction, removed on purpose: the website is the field, not the 4th option;
@@ -15,8 +14,8 @@
 // Enter submits; nothing on these screens leaves the run by accident (no Esc
 // exit); Back always keeps what was answered.
 
-import { html, raw, escapeHtml } from "../utils.js?v=2112";
-import { navigate } from "../router.js?v=2112";
+import { html, raw, escapeHtml } from "../utils.js?v=2113";
+import { navigate } from "../router.js?v=2113";
 import {
   getDraft,
   patchDraft,
@@ -24,13 +23,11 @@ import {
   readAltFiles,
   writeAltManually,
   analyzeAltInterview,
-} from "../context-builder.js?v=2112";
-import { nextInterviewQuestion } from "../context-mock-analysis.js?v=2112";
-import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2112";
-import { voiceNetworks } from "../network-voice.js?v=2112";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, getConnectedProfiles } from "../social-profiles.js?v=2112";
-import { connectors as connectorMocks } from "../mocks.js?v=2112";
-import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT } from "./welcome-alt-shell.js?v=2112";
+} from "../context-builder.js?v=2113";
+import { nextInterviewQuestion } from "../context-mock-analysis.js?v=2113";
+import { LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "../languages.js?v=2113";
+import { connectors as connectorMocks } from "../mocks.js?v=2113";
+import { ensureFlowDraft, goBack, goNext, mountShell, STEP_TEXT } from "./welcome-alt-shell.js?v=2113";
 
 // Wire one screen: the shell, a click handler, an optional submit / change.
 function screen(target, { step, left, onClick, onSubmit, onChange, onInput, onKeydown }) {
@@ -320,70 +317,6 @@ export function renderWelcomeAltLanguage(_params, target) {
       const lang = new FormData(e.target).get("language") || DEFAULT_LANGUAGE;
       patchDraft(sid, { languages: [lang], primaryLanguage: lang, language: lang });
       goNext("language");
-    },
-  });
-}
-
-// ── /welcome-alt/network ─────────────────────────────────────────────────
-
-export function renderWelcomeAltNetwork(_params, target) {
-  return screen(target, {
-    step: "network",
-    left: (sid) => {
-      const d = getDraft(sid);
-      const connected = [...new Set(d?.connectedSocials || [])];
-      const current = d?.voiceBaseNetwork || connected[0] || "linkedin";
-      const others = voiceNetworks({}).filter((n) => !connected.includes(n) && NETWORK_ICON_BY_PLATFORM[n]);
-      // Connected and not connected are two groups, each under its name — the
-      // connected rows carry the account and the Connected mark of the account
-      // step; the others are plain, still pickable (2026-10-19).
-      const row = (n, isConnected) => {
-        const account = isConnected ? getConnectedProfiles().find((p) => p.platform === n) : null;
-        return optionRow({
-          name: "network",
-          value: n,
-          checked: n === current,
-          lead: `<span class="welcome-flow__glyph"><i class="${NETWORK_ICON_BY_PLATFORM[n]}" aria-hidden="true"></i></span>`,
-          title: NETWORK_LABEL[n] || n,
-          desc: account?.name || account?.handle || "",
-          badge: isConnected
-            ? `<span class="welcome-flow__connected"><i class="ap-icon-check" aria-hidden="true"></i>Connected</span>`
-            : "",
-        });
-      };
-      return html`
-        <h1 class="welcome-flow__title" id="welcomeFlowTitle">Which network matters most?</h1>
-        <p class="welcome-intro__sub">
-          I'll build your main voice for it. Your other networks start from it — the first time I write for one, I'll
-          show you what to change there.
-        </p>
-        <form data-choice-form novalidate>
-          ${connected.length
-            ? raw(
-                html`<p class="welcome-flow__group">Your connected accounts</p>
-                  <ul class="welcome-flow__options is-grouped">
-                    ${connected.filter((n) => NETWORK_ICON_BY_PLATFORM[n]).map((n) => row(n, true))}
-                  </ul>`,
-              )
-            : ""}
-          ${others.length
-            ? raw(
-                html`<p class="welcome-flow__group">${connected.length ? "Not connected yet" : "Networks"}</p>
-                  <ul class="welcome-flow__options is-grouped">
-                    ${others.map((n) => row(n, false))}
-                  </ul>`,
-              )
-            : ""}
-          ${actions(continueButton())}
-        </form>
-      `;
-    },
-    onSubmit: (e, sid) => {
-      const base = new FormData(e.target).get("network");
-      // Only the base: each other network gets its voice the first time Archie
-      // writes for it (the chat offers to optimize it), never in silence here.
-      if (base) patchDraft(sid, { voiceBaseNetwork: base, voiceByNetwork: {} });
-      goNext("network");
     },
   });
 }

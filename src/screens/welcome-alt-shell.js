@@ -1,5 +1,5 @@
 // The onboarding shell — flag connectFirst. Every screen of the first-time
-// flow (connect → brand → language → network → documents → ready) is the same
+// flow (connect → brand → language → documents → ready) is the same
 // split: the step on the left, Archie's stage on the right, where the Playbook
 // card fills in with the user's REAL answers as they go — the connected
 // profiles, the site's name and voice once it's read, the colours. The intro
@@ -9,10 +9,10 @@
 // the session id the recap already uses (`welcomeAltSessionId`), and persisted
 // on every change so a reload lands on the same step with the same answers.
 
-import "../archie-pixels.js?v=2112";
-import { html, raw, escapeHtml } from "../utils.js?v=2112";
-import { navigate } from "../router.js?v=2112";
-import { isFlagOn } from "../feature-flags.js?v=2112";
+import "../archie-pixels.js?v=2113";
+import { html, raw, escapeHtml } from "../utils.js?v=2113";
+import { navigate } from "../router.js?v=2113";
+import { isFlagOn } from "../feature-flags.js?v=2113";
 import {
   altSteps,
   createAltDraft,
@@ -20,15 +20,8 @@ import {
   isAnalysisReady,
   restoreDraft,
   subscribeDraft,
-} from "../context-builder.js?v=2112";
-import {
-  NETWORK_ICON_BY_PLATFORM,
-  NETWORK_LABEL,
-  getConnectedProfiles,
-  renderProfileTag,
-  subscribe as subscribeProfiles,
-} from "../social-profiles.js?v=2112";
-import { networkVoicesOn } from "../network-voice.js?v=2112";
+} from "../context-builder.js?v=2113";
+import { getConnectedProfiles, renderProfileTag, subscribe as subscribeProfiles } from "../social-profiles.js?v=2113";
 import {
   readSessionId,
   persistDraft,
@@ -36,8 +29,8 @@ import {
   LOADING_STAGES,
   FILE_LOADING_STAGES,
   INTERVIEW_LOADING_STAGES,
-} from "./welcome-alt-recap.js?v=2112";
-import { RECAP_SECTIONS } from "../playbook-view.js?v=2112";
+} from "./welcome-alt-recap.js?v=2113";
+import { RECAP_SECTIONS } from "../playbook-view.js?v=2113";
 
 const PREFILLED_URL = "https://nicesoap.com";
 const SESSION_KEY = "welcomeAltSessionId";
@@ -48,7 +41,6 @@ export const STEP_TEXT = {
   connect: { title: "Connect your accounts", desc: "So I write for the networks you publish on." },
   url: { title: "Show me your Brand", desc: "Your website, a few files, or a handful of questions." },
   language: { title: "Pick your language", desc: "The one I'll write your posts in." },
-  network: { title: "Choose your main network", desc: "Your main voice is built for it." },
   documents: { title: "Add brand documents", desc: "Optional — a brand book or guidelines." },
   recap: { title: "Review your Playbook", desc: "Everything I learned, before I write a word." },
 };
@@ -57,7 +49,6 @@ const ROUTE = {
   connect: "/welcome-alt/connect",
   url: "/welcome-alt/brand",
   language: "/welcome-alt/language",
-  network: "/welcome-alt/network",
   documents: "/welcome-alt/documents",
   recap: "/welcome-alt/ready",
 };
@@ -214,9 +205,6 @@ const domainOf = (url) =>
     .replace(/^www\./, "")
     .replace(/\/.*$/, "");
 
-const glyph = (net) =>
-  `<span class="welcome-intro__net" title="${escapeHtml(NETWORK_LABEL[net] || net)}"><i class="${NETWORK_ICON_BY_PLATFORM[net]}" aria-hidden="true"></i></span>`;
-
 const chip = (t, cls = "welcome-flow__chip") => `<span class="${cls}">${escapeHtml(t)}</span>`;
 const stack = (...parts) => `<span class="welcome-flow__stack">${parts.filter(Boolean).join("")}</span>`;
 const chips = (list, cls) =>
@@ -285,17 +273,6 @@ function cardRows(d, sid, build) {
       label: "Writes in",
       state: lang ? "filled" : "empty",
       value: lang ? `<span class="welcome-intro__plain">${escapeHtml(lang)}</span>` : "",
-    });
-  }
-  if (networkVoicesOn()) {
-    const base = d?.voiceBaseNetwork;
-    rows.push({
-      key: "network",
-      label: "Main voice",
-      state: base ? "filled" : "empty",
-      value: base
-        ? `${glyph(base)}<span class="welcome-intro__plain">${escapeHtml(NETWORK_LABEL[base] || base)}</span>`
-        : "",
     });
   }
   const colors = [...new Set((d?.brandColors || []).map((c) => c.hex).filter(Boolean))].slice(0, 5);
