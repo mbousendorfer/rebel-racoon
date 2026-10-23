@@ -59,20 +59,18 @@
   padding: var(--ref-spacing-xxl) var(--ref-spacing-md);
 }
 
+/* A bare icon, no medallion behind it — the house empty state, as in the
+   Image Generator's renderEmpty. */
 .app-right-panel__empty-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 56px;
-  border-radius: var(--app-radius-circle);
-  background: var(--ref-color-grey-10);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 .app-right-panel__empty-icon i {
   font-size: var(--sys-icon-css-md);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 .app-right-panel__empty-title {

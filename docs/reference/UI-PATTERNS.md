@@ -211,7 +211,7 @@ Flag `contentPanel` : les onglets dans la topbar — `.app-topbar__content` > `.
 
 ### Empty states
 
-`renderEmptyState()` ([`empty-state.js`](../../src/components/empty-state.js)) : `.session__empty` > icône `.lg` > `h3.text-subtitle` > `p.muted` > `.session__empty-action`. Variante panneau : `.app-right-panel__empty`.
+`renderEmptyState()` ([`empty-state.js`](../../src/components/empty-state.js)) : `.session__empty` > icône `.lg` > `h3.text-subtitle` > `p.muted` > `.session__empty-action`. Variante panneau : `.app-right-panel__empty` — l'icône y est **nue**, sans médaillon derrière, glyphe grey-80 (2026-10-23, comme le `renderEmpty` de l'Image Generator ; le disque grey-10 au glyphe grey-60 est retiré).
 
 ### Fente média vide (draft sans image) — une vraie dropzone
 
