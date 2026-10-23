@@ -27,8 +27,9 @@ function potentialFor(confidence) {
   return { label: "Low potential", color: "grey" };
 }
 
-import { iconFor } from "../file-kinds.js?v=2113";
-import { installMoreMenu } from "./more-menu.js?v=2113";
+import { iconFor } from "../file-kinds.js?v=2114";
+import { installMoreMenu } from "./more-menu.js?v=2114";
+import { IDEA_KIND_TAG } from "./idea-card-compact.js?v=2114";
 
 // ── Overflow menu — one open at a time (shared behaviour) ──────────────
 // idea-card keeps a module-local listener (below) for the Sources toggle and
@@ -43,7 +44,7 @@ async function togglePinMenuItem(pinBtn) {
   setPinned(pinBtn, !wasPressed);
   closeAllIdeaMoreMenus();
 
-  const { showToast } = await import("./toast.js?v=2113");
+  const { showToast } = await import("./toast.js?v=2114");
   showToast(wasPressed ? "Idea unpinned" : "Idea pinned", {
     action: {
       label: "Undo",
@@ -160,12 +161,11 @@ export function renderIdeaCard(
 
   // Lot 19 — kind badge, hashtags, extracted timestamp.
   // The kind taxonomy (stat / quote / hook / story / insight) maps to a
-  // colored .ap-tag — same per-kind palette the right-panel Ideas mode
-  // uses (Lot 5). The hashtag row sits above the actions ; the extracted
+  // DS .ap-tag colour variant — IDEA_KIND_TAG, the table every kind tag reads. The hashtag row sits above the actions ; the extracted
   // date sits in the actions row footer (after the Sources toggle, before
   // the secondary actions cluster).
   const kindBadge = idea.kind
-    ? `<span class="ap-tag idea-card__kind idea-card__kind--${idea.kind}">${idea.kind}</span>`
+    ? `<span class="ap-tag ${IDEA_KIND_TAG[idea.kind] || "green"} idea-card__kind">${idea.kind}</span>`
     : "";
   const tagsRow =
     idea.tags && idea.tags.length

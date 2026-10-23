@@ -223,8 +223,8 @@
 }
 
 /* Source attribution — "Source:" label + pill, left-aligned right after
-   the kind tag. min-width:0 lets a long filename pill truncate (via
-   .rpanel-ideas__source-tag-text) rather than overflow. */
+   the kind tag. min-width:0 lets a long filename pill truncate (the DS
+   tag's own .ap-tag > span ellipsis) rather than overflow. */
 .rpanel-ideas__head-source {
   display: flex;
   align-items: center;
@@ -238,37 +238,6 @@
   font-weight: var(--sys-text-style-caption-bold-weight);
   line-height: var(--sys-text-style-caption-bold-line-height);
   color: var(--ref-color-grey-100);
-}
-
-/* Per-kind palette — uses the existing tag color tokens. */
-.rpanel-ideas__kind--stat {
-  background: var(--comp-tag-blue-background-color);
-  color: var(--comp-tag-blue-text-color);
-  border: 1px solid var(--comp-tag-blue-border-color);
-}
-
-.rpanel-ideas__kind--quote {
-  background: var(--comp-tag-menthol-background-color);
-  color: var(--comp-tag-menthol-text-color);
-  border: 1px solid var(--comp-tag-menthol-border-color);
-}
-
-.rpanel-ideas__kind--hook {
-  background: var(--comp-tag-tag-orange-background-color);
-  color: var(--comp-tag-tag-orange-text-color);
-  border: 1px solid var(--comp-tag-tag-orange-border-color);
-}
-
-.rpanel-ideas__kind--story {
-  background: var(--comp-tag-grey-background-color);
-  color: var(--comp-tag-grey-text-color);
-  border: 1px solid var(--comp-tag-grey-border-color);
-}
-
-.rpanel-ideas__kind--insight {
-  background: var(--comp-tag-green-background-color);
-  color: var(--comp-tag-green-text-color);
-  border: 1px solid var(--comp-tag-green-border-color);
 }
 
 /* Zone 1 — content block (Figma "content" frame). Kind tag, H3 title,
@@ -360,36 +329,6 @@
   font-weight: var(--sys-text-style-caption-weight);
   color: var(--ref-color-grey-100);
   word-break: break-word;
-}
-
-/* Source pill — mimics the DS grey tag visual but supports a leading
-   file icon (ap-tag forbids arbitrary icons). Uses the same comp
-   tokens as .ap-tag.grey so it stays palette-correct. */
-.rpanel-ideas__source-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
-  max-width: 100%;
-  padding: 2px var(--ref-spacing-xxs);
-  background: var(--comp-tag-grey-background-color);
-  color: var(--comp-tag-grey-text-color);
-  border: 1px solid var(--comp-tag-grey-border-color);
-  border-radius: var(--ref-border-radius-sm);
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  font-weight: var(--sys-text-style-caption-weight);
-}
-
-.rpanel-ideas__source-tag > i {
-  flex: 0 0 auto;
-  font-size: var(--sys-icon-css-sm);
-  color: var(--ref-color-grey-80);
-}
-
-.rpanel-ideas__source-tag-text {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 /* Zone 3 — action bar. Feedback (secondary, left) opposite the

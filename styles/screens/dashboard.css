@@ -286,44 +286,13 @@
   flex-wrap: wrap;
 }
 
-/* Lot 19 — kind badge in the signals row. Reuses the per-kind palette
-   from the right-panel Ideas mode (Lot 5) so kind reads at a glance
-   wherever it appears. .ap-tag carries border-radius + padding ; we
-   override font-size + letter-spacing for the UPPERCASE 10px treatment. */
+/* Lot 19 — kind badge in the signals row. Its colour is the DS .ap-tag
+   variant (IDEA_KIND_TAG in idea-card-compact.js); this only sets the
+   caption-bold text. */
 .idea-card__kind {
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);
   font-weight: var(--sys-text-style-caption-bold-weight);
-}
-
-.idea-card__kind--stat {
-  background: var(--comp-tag-blue-background-color);
-  color: var(--comp-tag-blue-text-color);
-  border: 1px solid var(--comp-tag-blue-border-color);
-}
-
-.idea-card__kind--quote {
-  background: var(--comp-tag-menthol-background-color);
-  color: var(--comp-tag-menthol-text-color);
-  border: 1px solid var(--comp-tag-menthol-border-color);
-}
-
-.idea-card__kind--hook {
-  background: var(--comp-tag-tag-orange-background-color);
-  color: var(--comp-tag-tag-orange-text-color);
-  border: 1px solid var(--comp-tag-tag-orange-border-color);
-}
-
-.idea-card__kind--story {
-  background: var(--comp-tag-grey-background-color);
-  color: var(--comp-tag-grey-text-color);
-  border: 1px solid var(--comp-tag-grey-border-color);
-}
-
-.idea-card__kind--insight {
-  background: var(--comp-tag-green-background-color);
-  color: var(--comp-tag-green-text-color);
-  border: 1px solid var(--comp-tag-green-border-color);
 }
 
 /* Hashtag row — sits between body and actions row. Hashtags wrap on

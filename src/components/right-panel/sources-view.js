@@ -3,14 +3,15 @@
 // the panel shell (open / close / resize / URL state / delegated listeners)
 // stays there.
 
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2113";
-import { isFlagOn } from "../../feature-flags.js?v=2113";
-import { getConnectedConnectors } from "../../connectors-store.js?v=2113";
-import { escapeAttr, escapeText } from "../../utils.js?v=2113";
-import { conceptText } from "../../concepts.js?v=2113";
-import { renderConnectorLogo } from "../../connectors-view.js?v=2113";
-import { renderTopPostEcho } from "../top-post-card.js?v=2113";
-import { closeInline, activeSessionId, sessionIdeas } from "../right-panel.js?v=2113";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2114";
+import { isFlagOn } from "../../feature-flags.js?v=2114";
+import { getConnectedConnectors } from "../../connectors-store.js?v=2114";
+import { escapeAttr, escapeText } from "../../utils.js?v=2114";
+import { IDEA_KIND_TAG } from "../idea-card-compact.js?v=2114";
+import { conceptText } from "../../concepts.js?v=2114";
+import { renderConnectorLogo } from "../../connectors-view.js?v=2114";
+import { renderTopPostEcho } from "../top-post-card.js?v=2114";
+import { closeInline, activeSessionId, sessionIdeas } from "../right-panel.js?v=2114";
 
 // Sources mode view — list of source rows for the active session + a
 // trailing "+ Attach" button. Each row carries kind icon, filename,
@@ -185,7 +186,7 @@ function renderSourceRow(src) {
                     !i.kind
                       ? ""
                       : isFlagOn("contentPanel")
-                        ? `<span class="ap-tag rpanel-ideas__kind rpanel-ideas__kind--${escapeAttr(i.kind)} rpanel-sources__idea-tag">${escapeText(i.kind.charAt(0).toUpperCase() + i.kind.slice(1))}</span>`
+                        ? `<span class="ap-tag ${IDEA_KIND_TAG[i.kind] || "green"} rpanel-ideas__kind rpanel-sources__idea-tag">${escapeText(i.kind.charAt(0).toUpperCase() + i.kind.slice(1))}</span>`
                         : `<span class="rpanel-sources__idea-kind muted">${escapeText(i.kind.charAt(0).toUpperCase() + i.kind.slice(1))}</span>`
                   }
                   <i class="ap-icon-chevron-right rpanel-sources__idea-chevron" aria-hidden="true"></i>

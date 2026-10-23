@@ -17,8 +17,13 @@
 //     showMention — render the Mention button (default true; false where there
 //                   is no composer, e.g. the standalone Ideas page)
 
-import { iconFor } from "../file-kinds.js?v=2113";
-import { escapeText, escapeAttr } from "../utils.js?v=2113";
+import { iconFor } from "../file-kinds.js?v=2114";
+import { escapeText, escapeAttr } from "../utils.js?v=2114";
+
+// Each idea kind → its DS `.ap-tag` colour variant. The one table: every kind
+// tag (this card, the panel's Overview and Sources, the full idea card, the
+// composer's mention pills) reads it.
+export const IDEA_KIND_TAG = { stat: "blue", quote: "menthol", hook: "tagOrange", story: "grey", insight: "green" };
 
 // The whole card is the Draft target. Its hover border says "clickable", and
 // FullStory showed people clicking the idea's text and getting nothing (dead
@@ -73,17 +78,17 @@ export function renderCompactIdeaCard(
     ? linkedSources
         .map(
           (s) => `
-            <span class="rpanel-ideas__source-tag" title="${escapeAttr(s.filename)}">
+            <span class="ap-tag grey" title="${escapeAttr(s.filename)}">
               <i class="${iconFor(s.kind)}" aria-hidden="true"></i>
-              <span class="rpanel-ideas__source-tag-text">${escapeText(s.filename)}</span>
+              <span>${escapeText(s.filename)}</span>
             </span>
           `,
         )
         .join("")
     : idea.ref
-      ? `<span class="rpanel-ideas__source-tag" title="${escapeAttr(idea.ref)}">
+      ? `<span class="ap-tag grey" title="${escapeAttr(idea.ref)}">
            <i class="ap-icon-file" aria-hidden="true"></i>
-           <span class="rpanel-ideas__source-tag-text">${escapeText(idea.ref)}</span>
+           <span>${escapeText(idea.ref)}</span>
          </span>`
       : "";
 
@@ -110,7 +115,7 @@ export function renderCompactIdeaCard(
 
   const cardHead = `
     <div class="rpanel-ideas__card-head">
-      <span class="ap-tag rpanel-ideas__kind rpanel-ideas__kind--${kind}">${kind.charAt(0).toUpperCase() + kind.slice(1)}</span>
+      <span class="ap-tag ${IDEA_KIND_TAG[kind] || "green"} rpanel-ideas__kind">${kind.charAt(0).toUpperCase() + kind.slice(1)}</span>
       ${
         sourceTags
           ? `<div class="rpanel-ideas__head-source">

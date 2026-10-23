@@ -2,12 +2,12 @@
 // the per-card feedback and "why this idea" state. Moved out of right-panel.js,
 // unchanged; the filter state it reads is owned (and written) by the shell.
 
-import { html, raw } from "../../utils.js?v=2113";
-import { conceptText } from "../../concepts.js?v=2113";
-import { isFlagOn } from "../../feature-flags.js?v=2113";
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2113";
-import { renderClipCard } from "../clip-card.js?v=2113";
-import { renderCompactIdeaCard } from "../idea-card-compact.js?v=2113";
+import { html, raw } from "../../utils.js?v=2114";
+import { conceptText } from "../../concepts.js?v=2114";
+import { isFlagOn } from "../../feature-flags.js?v=2114";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2114";
+import { renderClipCard } from "../clip-card.js?v=2114";
+import { renderCompactIdeaCard } from "../idea-card-compact.js?v=2114";
 import {
   closeInline,
   activeSessionId,
@@ -15,11 +15,11 @@ import {
   ideasFilter,
   outputsView,
   sessionIdeas,
-} from "../right-panel.js?v=2113";
+} from "../right-panel.js?v=2114";
 
 // Idea kind taxonomy — handoff Ideas filter rail (§ 2.6). Order is the order
-// shown in the chip row. The .kind selector also drives the per-kind tag
-// color so each kind reads at a glance.
+// shown in the chip row. Each kind's tag colour is IDEA_KIND_TAG
+// (idea-card-compact.js).
 const IDEA_KINDS = [
   { id: "all", label: "All", hint: "Every idea I pulled from this chat's sources" },
   { id: "hook", label: "Hooks", hint: "Opening lines that stop the scroll" },
