@@ -1101,8 +1101,9 @@ span.chat-bubble-choice-chip {
    every turn in an avatar column, mirrored: Archie's 24px disc on the left,
    yours on the right, on the first line of the turn, 8px from its content —
    one content edge per side (24 + 8 = 32px in), whatever the turn holds:
-   text, card or status. 24px between turns, 16px when a side goes on (no
-   avatar, its column kept empty). The time shows on hover, in the gutter. */
+   text, card or status. 40px between turns, 24px when a side goes on (no
+   avatar, its column kept empty) — the thread breathes (2026-10-23, it read
+   too dense at 24 / 16). The time shows on hover, in the gutter. */
 
 .e-turn {
   position: relative;
@@ -1128,15 +1129,15 @@ span.chat-bubble-choice-chip {
    when it is taller. */
 
 /* A side goes on: one avatar for the run, but each message keeps its own
-   room (16px) and its own time on hover — they stay separate messages. */
+   room (24px) and its own time on hover — they stay separate messages. */
 .e-turn--cont {
-  margin-top: calc(var(--ref-spacing-sm) - var(--ref-spacing-md));
+  margin-top: calc(var(--ref-spacing-md) - var(--e-turn-gap));
 }
 
 /* Status lines in a row ("Set Publishing Accounts", "Ran 3 tools · 3s")
    stack 8px apart, pill on pill. */
 .e-turn--stack {
-  margin-top: calc(var(--ref-spacing-xxs) - var(--ref-spacing-md));
+  margin-top: calc(var(--ref-spacing-xxs) - var(--e-turn-gap));
 }
 
 /* Archie's avatar: his mark in white on his own orange, a solid disc like an
@@ -1217,6 +1218,8 @@ span.chat-bubble-choice-chip {
    runs edge to edge (a side panel open). Symmetric, so the column stays
    centred. */
 .session__assistant-thread:has(> .e-turn) {
+  --e-turn-gap: var(--ref-spacing-xl);
+  gap: var(--e-turn-gap);
   padding-inline: calc(var(--ref-spacing-xxxl) + var(--ref-spacing-xxxs));
 }
 
