@@ -569,6 +569,9 @@ button.ap-link {
    Image Generator's "Variations" (1 · 2 · 3 · 4), at the user's request: a
    short set of values, all visible, one picked — the component's own job, and
    not a view switch. Don't use it to switch pages or lanes: that is still tabs.
+   Since 2026-10-23 also the voice of a draft written in a borrowed voice
+   (post-card.js renderVoiceSwitch, flag networkVoices): two values of the
+   draft, one shown, Keep makes it stick.
 
    ── Token substitutions, and why they are not laziness ───────────────────
    The component's SCSS uses --sys-color-border-interactive-*,

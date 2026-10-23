@@ -112,15 +112,16 @@ export const threadsBySession = {
     {
       role: "user",
       meta: "You",
-      text: "Pull the strongest ideas from these and draft 4 posts across LinkedIn, X and Instagram.",
+      text: "Pull the strongest ideas from these and draft 5 posts across LinkedIn, X, Instagram and Facebook.",
     },
     {
       role: "assistant",
       meta: "Archie",
       text: [
-        "I drafted 4 posts grounded in [[idea:idea-acme-1]], each sized for its network and following the Acme · Q2 marketing playbook:",
+        "I drafted 5 posts grounded in [[idea:idea-acme-1]], each sized for its network and following the Acme · Q2 marketing playbook:",
         "- [[post:post-acme-1]], ready",
         "- [[post:post-acme-3]], ready",
+        "- [[post:post-acme-5]], ready",
         "- [[post:post-acme-2]], needs an image before Instagram will publish it",
         "- [[post:post-acme-4]], over X's 280 characters",
       ].join("\n"),
@@ -155,8 +156,14 @@ export const threadsBySession = {
           preview:
             "Behind-the-scenes on the founder keynote — including the parts that got cut. The cuts are more instructive than the keynote itself.",
         },
+        {
+          id: "post-acme-5",
+          network: "facebook",
+          preview:
+            "Three constraints killed our first launch: scope, distribution, and onboarding. All three were visible at the offsite, and none of them made the retro doc.",
+        },
       ],
-      count: 4,
+      count: 5,
       open: false,
     },
   ],

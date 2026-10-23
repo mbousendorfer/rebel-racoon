@@ -262,9 +262,10 @@ export const contexts = [
       },
     ],
     // Voice per network (flag networkVoices) — the base was learned on LinkedIn;
-    // Instagram and X only say what differs. See network-voice.js.
+    // Instagram and X only say what differs; Facebook borrows the base — its
+    // draft in the launch chat compares the two voices. See network-voice.js.
     voiceBaseNetwork: "linkedin",
-    connectedSocials: ["linkedin", "instagram", "x"],
+    connectedSocials: ["linkedin", "instagram", "x", "facebook"],
     voiceByNetwork: {
       instagram: {
         voiceAlways: [

@@ -13,20 +13,19 @@
 // ponytail: the edit heuristics are a mock reading of one before/after pair.
 // The real thing compares many drafts per network before proposing.
 
-import { getSessionById } from "./sessions-store.js?v=2109";
-import { getContextById } from "./contexts-store.js?v=2109";
-import { playbookForNewWork } from "./active-playbook.js?v=2109";
-import { getPosts } from "./posts-store.js?v=2109";
-import { postVoiceSuggestion, postSelectionEcho, postAssistantMessage, refreshThread } from "./assistant.js?v=2109";
-import { updateContext } from "./contexts-store.js?v=2109";
-import { open as openVoiceWizard } from "./components/voice-wizard-modal.js?v=2109";
-import { showToast } from "./components/toast.js?v=2109";
-import { startRewrite } from "./draft-rewrite.js?v=2109";
-import { escapeHtml } from "./utils.js?v=2109";
-import { ask, isActive } from "./inline-question.js?v=2109";
-import { propose, accept } from "./voice-coach-store.js?v=2109";
-import { normalizeNetwork } from "./social-profiles.js?v=2109";
-import { networkClosings } from "./context-mock-analysis.js?v=2109";
+import { getSessionById } from "./sessions-store.js?v=2110";
+import { getContextById } from "./contexts-store.js?v=2110";
+import { playbookForNewWork } from "./active-playbook.js?v=2110";
+import { getPosts, updatePostContent } from "./posts-store.js?v=2110";
+import { postVoiceSuggestion, postSelectionEcho, postAssistantMessage, refreshThread } from "./assistant.js?v=2110";
+import { updateContext } from "./contexts-store.js?v=2110";
+import { showToast } from "./components/toast.js?v=2110";
+import { startRewrite } from "./draft-rewrite.js?v=2110";
+import { escapeHtml } from "./utils.js?v=2110";
+import { ask, isActive } from "./inline-question.js?v=2110";
+import { propose, accept } from "./voice-coach-store.js?v=2110";
+import { normalizeNetwork } from "./social-profiles.js?v=2110";
+import { networkClosings } from "./context-mock-analysis.js?v=2110";
 import {
   networkVoicesOn,
   baseNetwork,
@@ -37,8 +36,8 @@ import {
   suggestionField,
   isBorrowed,
   writeInVoice,
-  withWizardResult,
-} from "./network-voice.js?v=2109";
+  withDiffs,
+} from "./network-voice.js?v=2110";
 
 function sessionPlaybook(sessionId) {
   const session = getSessionById(sessionId);
@@ -249,52 +248,47 @@ export function rewriteDraftsWithRule(sessionId, s) {
 
 // ── A voice borrowed from the base ───────────────────────────────────────────
 // A draft for a network with no voice of its own is written in the base's
-// (writeInVoice marks it `borrowed`). Archie says so under the chat's last
-// batch and above the network's drafts in the panel — never as a gate: the
-// drafts are there either way. Optimize opens the same assistant as the Voice
-// tab; once the network has its voice, the drafts written before it can be
-// rewritten in it.
-
-export function chatPlaybook(sessionId) {
-  return sessionPlaybook(sessionId);
-}
+// (writeInVoice marks it `borrowed`). Its card in the drafts panel compares it
+// with the same post in the network's voice (drafts-view.js voiceCompareFor) —
+// never a gate: the draft is usable either way. Keep writes the differences
+// into the Playbook; drafts written before a network had its voice can take it.
 
 // The drafts of this chat on `network` written in the borrowed voice, that a
 // rewrite can still change.
-export function borrowedDrafts(sessionId, network) {
+function borrowedDrafts(sessionId, network) {
   const net = normalizeNetwork(network);
   return getPosts(sessionId).filter(
     (p) => normalizeNetwork(p.network) === net && p.voice?.borrowed && p.status !== "scheduled" && !p.isRegenerating,
   );
 }
 
-// Optimize, from a chat or its drafts: the Voice tab's assistant on the chat's
-// Playbook. Its Save writes the network's parts and says what's next;
-// `onSaved` repaints what the thread doesn't (the drafts panel).
-export function optimizeNetworkVoice(sessionId, network, { onSaved } = {}) {
+// « Keep for Facebook », from a borrowed draft compared on its card: the
+// differences kept join the network's voice in the Playbook (withDiffs — the
+// explicit gesture, like a Remember), this draft takes the version just shown,
+// and the chat's other drafts written in the borrowed voice are rewritten in
+// the new one. With no `diffs` (the network already has its voice): the draft
+// alone takes it — « Use this version ».
+export function keepNetworkVoice(sessionId, postId, diffs = []) {
   const ctx = sessionPlaybook(sessionId);
-  const net = normalizeNetwork(network);
-  if (!ctx || !net) return;
-  openVoiceWizard({
-    data: ctx,
-    network: net,
-    onSave: (result) => {
-      updateContext(ctx.id, withWizardResult(ctx, net, result));
-      const n = borrowedDrafts(sessionId, net).length;
-      showToast(
-        n
-          ? `${networkLabel(net)} voice saved. Rewrite your ${networkLabel(net)} ${n === 1 ? "draft" : "drafts"} to use it.`
-          : `${networkLabel(net)} voice saved. Your next ${networkLabel(net)} drafts use it.`,
-      );
-      refreshThread(sessionId);
-      onSaved?.();
-    },
-  });
+  const post = getPosts(sessionId).find((p) => p.id === postId);
+  const net = normalizeNetwork(post?.network);
+  if (!ctx || !post || !net) return;
+  const kept = isBorrowed(ctx, net) && diffs.length;
+  if (kept) updateContext(ctx.id, withDiffs(ctx, net, diffs));
+  const voiced = getContextById(ctx.id) || ctx;
+  updatePostContent(sessionId, postId, { ...writeInVoice(voiced, net, post), cta: post.cta || "" });
+  showToast(
+    kept
+      ? `Kept for ${networkLabel(net)}. Your next ${networkLabel(net)} drafts follow it.`
+      : `Rewritten in your ${networkLabel(net)} voice.`,
+  );
+  if (kept) rewriteBorrowedDrafts(sessionId, net);
+  refreshThread(sessionId);
 }
 
 // The drafts written before the network had its voice, rewritten in it — with
 // the regenerate animation, said in the thread with a link to each.
-export function rewriteBorrowedDrafts(sessionId, network) {
+function rewriteBorrowedDrafts(sessionId, network) {
   const ctx = sessionPlaybook(sessionId);
   const posts = borrowedDrafts(sessionId, network);
   if (!ctx || !posts.length || isBorrowed(ctx, network)) return;

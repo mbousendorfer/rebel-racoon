@@ -285,27 +285,52 @@ i.memory-mark {
   }
 }
 
-/* A voice borrowed from the base — Archie's line under the drafts
-   (thread-render.js renderVoiceNudge): paragraphs, then its actions, hugging. */
-.voice-nudge {
+/* A draft written in a borrowed voice (post-card.js renderVoiceSwitch /
+   renderVoiceKeep): above the card, which voice wrote it — the DS segmented
+   control — and a line; under it, while the network's version shows, what
+   changes there and Keep, in a grey-20 frame without a shadow (the card above
+   already has one: no nested elevation). Footer actions grouped right. */
+.posts__voice {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xxs);
+  margin-bottom: var(--ref-spacing-xs);
+}
+
+.posts__voice-hint {
+  margin: 0;
+  color: var(--ref-color-grey-80);
+  font-size: var(--ref-font-size-xs);
+}
+
+.posts__voice-keep {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  margin-top: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-sm);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--ref-border-radius-md);
+  background: var(--ref-color-white);
+}
+
+.posts__voice-keep-title {
+  margin: 0;
+  color: var(--ref-color-grey-100);
+  font-size: var(--sys-text-style-body-bold-size);
+  font-weight: var(--sys-text-style-body-bold-weight);
+}
+
+.posts__voice-diffs {
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xs);
 }
 
-.voice-nudge__text {
-  margin: 0;
-}
-
-.voice-nudge__actions {
+.posts__voice-keep-foot {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--ref-spacing-xs);
-}
-
-/* The same, above a network's drafts in the panel (drafts-view.js). The feed
-   is a scrolling flex column: the infobox (overflow hidden) must not shrink. */
-.rpanel-drafts__voice {
-  flex-shrink: 0;
-  margin-bottom: var(--ref-spacing-sm);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-sm);
 }

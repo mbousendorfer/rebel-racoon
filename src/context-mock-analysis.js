@@ -8,8 +8,8 @@
 // Suggested values become menthol chips (AI-suggested). Other static
 // option lists come from the brief panel renderer.
 
-import { networkFields, isListPart, isNewPart, itemsFromLines } from "./network-voice.js?v=2109";
-import { objectivesInText } from "./objective-measures.js?v=2109";
+import { networkFields, isListPart, isNewPart, itemsFromLines } from "./network-voice.js?v=2110";
+import { objectivesInText } from "./objective-measures.js?v=2110";
 
 const AGORAPULSE = {
   name: "Agorapulse",
@@ -625,6 +625,50 @@ const NETWORK_VOICE = {
     closings: ["Subscribe for the next one.", "Tell us in the comments.", "Full video linked below."],
   },
 };
+
+// What Archie would change first on a network still writing in the base voice —
+// the differences a borrowed draft compares (« LinkedIn voice | Facebook voice »)
+// and « Keep for Facebook » writes into the network's parts. Three per network,
+// each a rule a mock can carry out on the text (network-voice.js RULE_ACTIONS),
+// so switching the draft shows them. Picked from NETWORK_VOICE's own lines.
+// ponytail: fixed per network; the real writer would read them off the draft.
+const NETWORK_DIFFS = {
+  linkedin: [
+    { field: "voiceAlways", text: "Short paragraphs with air between them." },
+    { field: "voiceNever", text: "No more than three hashtags." },
+    { field: "voiceAlways", text: "Close with « What's your take? »" },
+  ],
+  instagram: [
+    { field: "voiceAlways", text: "Opening line under 10 words, before the caption is cut." },
+    { field: "voiceAlways", text: "Short paragraphs that read on a phone." },
+    { field: "voiceAlways", text: "Close with « Save this for later. »" },
+  ],
+  x: [
+    { field: "voiceAlways", text: "About 40 words — one idea per post." },
+    { field: "voiceNever", text: "No more than one hashtag." },
+    { field: "voiceAlways", text: "Close with « Thoughts? »" },
+  ],
+  facebook: [
+    { field: "voiceAlways", text: "Short paragraphs that read like a conversation." },
+    { field: "voiceNever", text: "No hashtags — they read as spam here." },
+    { field: "voiceAlways", text: "Close with « What would you add? »" },
+  ],
+  tiktok: [
+    { field: "voiceAlways", text: "Opening line under 8 words — it says the hook again." },
+    { field: "voiceNever", text: "No more than three hashtags." },
+    { field: "voiceAlways", text: "Close with « Follow for part 2. »" },
+  ],
+  youtube: [
+    { field: "voiceNever", text: "No emoji." },
+    { field: "voiceNever", text: "No more than three hashtags." },
+    { field: "voiceAlways", text: "Close with « Subscribe for the next one. »" },
+  ],
+};
+
+/** The differences Archie proposes for a network that borrows the base voice. */
+export function networkDiffs(network) {
+  return clone(NETWORK_DIFFS[network] || []);
+}
 
 /**
  * What Archie offers for each part of a network voice — the Optimize wizard's

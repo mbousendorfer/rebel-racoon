@@ -9,13 +9,13 @@
 //     (the Image Generator's "Use in draft" on a run of several slides)
 //   subscribe(sessionId, fn)    → unsubscribe fn
 
-import { postsBySession as seedPostsBySession, allSeedSessions as seedRecentSessions } from "./mocks.js?v=2109";
-import { isNewUser } from "./user-mode.js?v=2109";
-import { createSessionNotifier } from "./store-utils.js?v=2109";
-import { getSessionById } from "./sessions-store.js?v=2109";
-import { getContextById } from "./contexts-store.js?v=2109";
-import { playbookForNewWork } from "./active-playbook.js?v=2109";
-import { networkVoicesOn, writeInVoice } from "./network-voice.js?v=2109";
+import { postsBySession as seedPostsBySession, allSeedSessions as seedRecentSessions } from "./mocks.js?v=2110";
+import { isNewUser } from "./user-mode.js?v=2110";
+import { createSessionNotifier } from "./store-utils.js?v=2110";
+import { getSessionById } from "./sessions-store.js?v=2110";
+import { getContextById } from "./contexts-store.js?v=2110";
+import { playbookForNewWork } from "./active-playbook.js?v=2110";
+import { networkVoicesOn, writeInVoice, isBorrowed } from "./network-voice.js?v=2110";
 
 // Demo session ids — only these get the seeded posts mock. Brand-new
 // conversations start empty (cf. library.js for the same rationale).
@@ -240,9 +240,15 @@ function seed(sessionId) {
   // so edits don't leak across sessions or mutate the shared mock array.
   const shouldSeed = !isNewUser() && DEMO_SESSION_IDS.has(sessionId);
   const seedForSession = shouldSeed ? seedPostsBySession[sessionId] || [] : [];
+  // Under networkVoices a seeded draft on a network still borrowing the base
+  // voice is marked so, as a fresh one is (writeInVoice's mark only — the seed's
+  // text stays as written): its card then compares the two voices.
+  const ctx = networkVoicesOn() ? getContextById(getSessionById(sessionId)?.contextId) : null;
   store.set(
     sessionId,
-    seedForSession.map((p) => ({ ...p })),
+    seedForSession.map((p) =>
+      ctx && !p.voice && isBorrowed(ctx, p.network) ? { ...p, voice: writeInVoice(ctx, p.network, p).voice } : { ...p },
+    ),
   );
 }
 

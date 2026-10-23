@@ -1250,69 +1250,60 @@
   color: var(--ref-color-grey-80);
 }
 
-/* A network still on the base voice: the assistant's intro, on the tab
-   (playbook-view nvTeachBlock). Two sides of one comparison — what it writes
-   like today, on the grey and in the grey-60 of a borrowed part, and Archie's
-   take, white — then the steps, then the tab's one Optimize, hugging. */
-.pb2-nv-teach__compare {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--ref-spacing-sm);
-}
-
-.pb2-nv-teach__side {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxs);
-  padding: var(--ref-spacing-sm);
-  border: 1px solid var(--ref-color-grey-20);
-  border-radius: var(--app-radius-lg);
-}
-
-.pb2-nv-teach__side.is-borrowed {
-  background: var(--app-surface-subtle);
-}
-
-.pb2-nv-teach__side.is-borrowed .pb2-prose {
-  color: var(--ref-color-grey-60);
-}
-
-.pb2-nv-teach__side-title {
+/* Another network's voice: what changes there (playbook-view nvDiffBlock).
+   One row per difference on grey-20 hairlines — the rule in ink, what it
+   replaces under it, its part as a tag at the end — then one line for the
+   rest. The voice's actions sit at the end of the block's head. */
+.pb2-nv-diff__actions {
   display: flex;
   align-items: center;
-  gap: var(--ref-spacing-xxs);
-  margin: 0;
-  color: var(--ref-color-grey-100);
-  font-weight: var(--sys-text-style-body-bold-weight);
-}
-
-.pb2-nv-teach__side-title .pb2-block__caption {
+  gap: var(--ref-spacing-xs);
   margin-left: auto;
 }
 
-.pb2-nv-teach__steps-title {
-  margin: var(--ref-spacing-xs) 0 0;
-  color: var(--ref-color-grey-100);
-  font-weight: var(--sys-text-style-body-bold-weight);
+.pb2-nv-diff {
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.pb2-nv-teach__steps {
+.pb2-nv-diff__row {
   display: flex;
+  align-items: flex-start;
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-sm) 0;
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+
+.pb2-nv-diff__row:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.pb2-nv-diff__text {
+  display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  min-width: 0;
+}
+
+.pb2-nv-diff__rule {
+  display: flex;
+  align-items: baseline;
   gap: var(--ref-spacing-xxs);
   margin: 0;
-  padding-left: var(--ref-spacing-md);
   color: var(--ref-color-grey-100);
-  list-style: decimal;
 }
 
-.pb2-nv-teach__go {
-  display: flex;
-  margin-top: var(--ref-spacing-xs);
+.pb2-nv-diff__instead,
+.pb2-nv-diff__rest {
+  margin: 0;
+  color: var(--ref-color-grey-80);
+  font-size: var(--ref-font-size-xs);
 }
 
-@media (max-width: 900px) {
-  .pb2-nv-teach__compare {
-    grid-template-columns: minmax(0, 1fr);
-  }
+.pb2-nv-diff__rest {
+  padding-top: var(--ref-spacing-sm);
+  border-top: 1px solid var(--ref-color-grey-20);
 }

@@ -33,15 +33,13 @@
 // this dialog to open it).
 //
 // Public API: init() · open({ data, network, part?, onSave(result) }) · close()
-//   · voiceIntroCopy(data, network) — the intro's words, shared with the Voice
-//     tab of a network still on the base (playbook-view nvTeachBlock)
 //   result = { values: { [field]: value | undefined }, drafted: boolean }
 //   undefined = the part follows the base voice.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2109";
-import { bindReorder } from "../drag-reorder.js?v=2109";
-import { escapeHtml as esc } from "../utils.js?v=2109";
-import { networkVoiceOptions, networkGuidance, networkGuidanceUrl } from "../context-mock-analysis.js?v=2109";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=2110";
+import { bindReorder } from "../drag-reorder.js?v=2110";
+import { escapeHtml as esc } from "../utils.js?v=2110";
+import { networkVoiceOptions, networkGuidance, networkGuidanceUrl } from "../context-mock-analysis.js?v=2110";
 import {
   networkFields,
   isNewPart,
@@ -56,7 +54,7 @@ import {
   voiceItemsHtml,
   progressRingHtml,
   isOptimized,
-} from "../network-voice.js?v=2109";
+} from "../network-voice.js?v=2110";
 
 const MODAL_ID = "voiceWizard";
 
@@ -171,8 +169,7 @@ export function init() {
   initialized = true;
 }
 
-// `intro: false` — the host already explained (the Voice tab's teaching block).
-export function open({ data, network, part = null, intro = true, onSave }) {
+export function open({ data, network, part = null, onSave }) {
   init();
   const opts = networkVoiceOptions(network);
   if (!data || !opts) return;
@@ -203,7 +200,7 @@ export function open({ data, network, part = null, intro = true, onSave }) {
     parts,
     prev,
     step: asked >= 0 ? asked : firstLeft >= 0 ? firstLeft : 0,
-    intro: intro && !isBase && !part && !isOptimized(data, network),
+    intro: !isBase && !part && !isOptimized(data, network),
     leaving: false,
     onSave,
   };
@@ -370,11 +367,10 @@ function paintFooter() {
 // writes like today — the base's summary, on the grey of a part that follows
 // the base (the Voice tab's vocabulary); right, Archie's first take for the
 // network. Then the steps, in order.
-// The intro's words, ONE source for the assistant and the Voice tab: why the
-// network gets its own voice, what it writes like today (the base's summary),
-// Archie's first take for it, and how the steps go. Plain text — each host
-// escapes and lays it out.
-export function voiceIntroCopy(data, network) {
+// The intro's words: why the network gets its own voice, what it writes like
+// today (the base's summary), Archie's first take for it, and how the steps go.
+// Plain text — the intro escapes and lays it out.
+function voiceIntroCopy(data, network) {
   const label = networkLabel(network);
   const base = networkLabel(baseNetwork(data));
   const parts = networkFields()

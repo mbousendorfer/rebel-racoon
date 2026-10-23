@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2109";
-import { conceptHint } from "./concepts.js?v=2109";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2110";
+import { conceptHint } from "./concepts.js?v=2110";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,11 +30,11 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2109";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2109";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2109";
-import { isFlagOn } from "./feature-flags.js?v=2109";
-import { parseHashParams } from "./url-state.js?v=2109";
+} from "./playbook-brand-kit.js?v=2110";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2110";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2110";
+import { isFlagOn } from "./feature-flags.js?v=2110";
+import { parseHashParams } from "./url-state.js?v=2110";
 import {
   networkVoicesOn,
   baseNetwork,
@@ -57,16 +57,17 @@ import {
   networkLabel,
   networkIcon,
   memoryCardHtml,
-} from "./network-voice.js?v=2109";
+  voiceDiff,
+} from "./network-voice.js?v=2110";
 import {
   getSuggestions,
   accept as acceptVoiceSuggestion,
   dismiss as dismissVoiceSuggestion,
-} from "./voice-coach-store.js?v=2109";
-import { showToast } from "./components/toast.js?v=2109";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2109";
-import { open as openVoiceWizard, voiceIntroCopy } from "./components/voice-wizard-modal.js?v=2109";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=2109";
+} from "./voice-coach-store.js?v=2110";
+import { showToast } from "./components/toast.js?v=2110";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2110";
+import { open as openVoiceWizard } from "./components/voice-wizard-modal.js?v=2110";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=2110";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2507,15 +2508,14 @@ function renderVoiceRead2(data, learnMenu) {
     return `${pb2TabHead("voice", "", { noEdit: true, below: renderNetworkSwitcher(data) })}${nvAllMatrix(data)}`;
   if (nvOn()) {
     const net = activeNetworkFor(data);
-    // The network's actions — Learn from…, Optimize / Re-optimize — sit
-    // together on its band, under the tabs; the head keeps Edit alone, as on
-    // every other tab.
-    const grid = [
-      nvIdentityBlock(data, net, learnMenu),
-      nvTeachBlock(data, net),
-      nvLearnBlock(data, net),
-      ...pb2VoiceParts(data, { net: net === baseNetwork(data) ? null : net }),
-    ].filter(Boolean);
+    // The base reads as the voice itself: its band (Learn from…, Re-optimize),
+    // what Archie learned, the five parts. Another network reads as what
+    // changes there (nvDiffBlock) — the head keeps Edit alone, as on every tab.
+    const grid = (
+      net === baseNetwork(data)
+        ? [nvIdentityBlock(data, net, learnMenu), nvLearnBlock(data, net), ...pb2VoiceParts(data)]
+        : [nvDiffBlock(data, net, learnMenu), nvLearnBlock(data, net, { cardsOnly: true })]
+    ).filter(Boolean);
     return `${pb2TabHead("voice", "", { below: renderNetworkSwitcher(data) })}<div class="pb2-grid">${grid.join("")}</div>`;
   }
   return `${pb2TabHead("voice", learnMenu)}<div class="pb2-grid">${pb2VoiceParts(data).join("")}</div>`;
@@ -2631,12 +2631,15 @@ function nvReoptimizeButton(data, net) {
 // Remember moves the rule from the cards to the list, in view. In edit, the
 // list only: a kept rule is edited in its part. (2026-10-15: shown only while
 // a proposal waited — "j'ai toujours besoin du What I've learned".)
-function nvLearnBlock(data, net) {
+// `cardsOnly`: on another network's tab, where the kept rules already read in
+// its differences — the block only while a proposal waits.
+function nvLearnBlock(data, net, { cardsOnly = false } = {}) {
   const pending = canEditView() && !editScope ? getSuggestions(data.id, { network: net }) : [];
+  if (cardsOnly && !pending.length) return "";
   const cards = pending.length
     ? `<div class="memory-cards">${pending.map((sg) => memoryCardHtml(sg, { attr: "nv", value: sg.id })).join("")}</div>`
     : "";
-  const kept = learnedItems(data, net);
+  const kept = cardsOnly ? [] : learnedItems(data, net);
   const list = kept.length
     ? `<ul class="memory-notes">${kept
         .map(
@@ -2718,7 +2721,7 @@ function nvIdentityBlock(data, net, learn = "") {
   // Every action on this voice, in one group: where Archie learns from, then
   // the assistant (Optimize while parts are missing, Re-optimize after). While
   // the network borrows the base, Optimize is the teaching block's, under it.
-  const offer = nvTeaches(data, net) ? "" : nvOptimizeButton(data, net) || nvReoptimizeButton(data, net);
+  const offer = nvOptimizeButton(data, net) || nvReoptimizeButton(data, net);
   const sub = isBase
     ? `Learned from your ${label} posts. Every network starts from it.`
     : fresh.length
@@ -2742,35 +2745,43 @@ function nvIdentityBlock(data, net, learn = "") {
     </div>`;
 }
 
-// A network still on the base voice, read: the assistant's intro, on the page
-// (2026-10-22, « applique la même pédagogie à l'onglet Voice »). Why it gets its
-// own voice; what it writes like today (the base's summary, on the grey of a
-// borrowed part) beside Archie's first take; how the steps go — and the tab's
-// one Optimize at its foot, where the explanation ends. Same words as the
-// assistant's intro (voiceIntroCopy). Gone as soon as one part is optimized.
-function nvTeaches(data, net) {
-  return !editScope && net !== baseNetwork(data) && !isOptimized(data, net);
-}
-
-function nvTeachBlock(data, net) {
-  if (!nvTeaches(data, net)) return "";
-  const c = voiceIntroCopy(data, net);
-  const side = (
-    { title, caption, text },
-    borrowed,
-  ) => `<div class="pb2-nv-teach__side${borrowed ? " is-borrowed" : ""}">
-      <p class="pb2-nv-teach__side-title"><i class="${networkIcon(borrowed ? baseNetwork(data) : net)}" aria-hidden="true"></i>${esc(title)}<span class="pb2-block__caption">${esc(caption)}</span></p>
-      ${text ? `<p class="pb2-prose">${esc(text)}</p>` : `<p class="pb2-empty">Not set yet.</p>`}
-    </div>`;
-  const go = nvOptimizeButton(data, net);
-  return pb2Block(
-    c.title,
-    `<div class="pb2-nv-teach__compare">${side(c.today, true)}${side(c.pitch, false)}</div>
-    <p class="pb2-nv-teach__steps-title">${esc(c.stepsTitle)}</p>
-    <ol class="pb2-nv-teach__steps">${c.steps.map((s) => `<li>${esc(s)}</li>`).join("")}</ol>
-    ${go ? `<div class="pb2-nv-teach__go">${go}</div>` : ""}`,
-    { wide: true, index: 1, hint: c.why, className: "pb2-nv-teach" },
-  );
+// Another network's voice, read: what changes there, and nothing else
+// (2026-10-23, « un œil neuf » — five greyed copies of the base's parts under a
+// band of rings read as a form to fill, whatever text was added around it).
+// One row per rule or case the network made its own, tagged with its part; its
+// own summary says which one it replaces. Its actions in the head: Learn from…
+// and Fine-tune (the assistant, every part by hand). Empty, it speaks like the
+// base and says where its differences come from: its first draft, compared on
+// the card (post-card.js renderVoiceSwitch).
+function nvDiffBlock(data, net, learn = "") {
+  const label = networkLabel(net);
+  const base = networkLabel(baseNetwork(data));
+  const rows = voiceDiff(data, net);
+  const tune =
+    canEditView() && !editScope
+      ? `<button type="button" class="ap-button stroked blue" data-nv-optimize="${net}" aria-label="Fine-tune your ${esc(label)} voice"><i class="ap-icon-sparkles" aria-hidden="true"></i><span>Fine-tune</span></button>`
+      : "";
+  const body = rows.length
+    ? `<ul class="pb2-nv-diff">${rows
+        .map(
+          ({ title, item, instead }) => `<li class="pb2-nv-diff__row">
+            <div class="pb2-nv-diff__text">
+              <p class="pb2-nv-diff__rule">${item.learned ? `<i class="ap-icon-sparkles memory-mark" aria-hidden="true" title="Learned from your drafts"></i>` : ""}${esc(item.when ? `${item.when}: ${item.text}` : item.text)}</p>
+              ${instead ? `<p class="pb2-nv-diff__instead">Instead of: ${esc(instead)}</p>` : ""}
+            </div>
+            <span class="ap-tag grey mini">${esc(title)}</span>
+          </li>`,
+        )
+        .join("")}</ul>
+      <p class="pb2-nv-diff__rest">Everything else follows your ${esc(base)} voice.</p>`
+    : pb2Empty(
+        `${label} speaks like ${base} for now. The first time I write a ${label} draft, I'll show it beside the ${base} version, and you keep what you like.`,
+      );
+  return pb2Block(`On ${label}, what changes`, body, {
+    wide: true,
+    index: 1,
+    aside: learn || tune ? `<div class="pb2-nv-diff__actions">${learn}${tune}</div>` : "",
+  });
 }
 
 // The "All networks" tab: one line per network — its name, where its voice
@@ -2861,8 +2872,6 @@ function onNetworkVoiceClick(event) {
       data,
       network: net,
       part: optimize.dataset.nvOptimizePart || null,
-      // From the teaching block, the intro was just read on the page.
-      intro: !optimize.closest(".pb2-nv-teach"),
       onSave: ({ values, drafted }) => {
         // The base: the assistant rewrote the base voice itself.
         if (net === baseNetwork(data)) {

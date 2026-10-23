@@ -28,9 +28,9 @@
 // examples are in one language. Per-language examples when a brand actually
 // publishes in two languages on one network.
 
-import { isFlagOn } from "./feature-flags.js?v=2109";
-import { escapeHtml } from "./utils.js?v=2109";
-import { NETWORKS, normalizeNetwork, getConnectedProfileById } from "./social-profiles.js?v=2109";
+import { isFlagOn } from "./feature-flags.js?v=2110";
+import { escapeHtml } from "./utils.js?v=2110";
+import { NETWORKS, normalizeNetwork, getConnectedProfileById } from "./social-profiles.js?v=2110";
 
 // `newWith` marks a part the product just added, behind that flag — the demo
 // (voiceNewSection) of how a voice says a part is new: an orange arc, a "New"
@@ -221,6 +221,47 @@ export function withSuggestion(ctx, s) {
   );
 }
 
+// ── A network voice read as its differences ──────────────────────────────────
+// A network's voice is the base plus what changes there. These two read and
+// write it that way: the draft card's « Keep for Facebook » (withDiffs) and the
+// network's Voice tab (voiceDiff).
+
+// The patch keeping some of Archie's differences ({ field, text }, from
+// networkDiffs): each rule joins its part on the network, seeded from the base.
+export function withDiffs(ctx, network, diffs) {
+  let next = ctx;
+  for (const d of diffs) {
+    next = {
+      ...next,
+      ...patchPart(next, network, d.field, (list) =>
+        list.some((i) => i.text === d.text) ? list : [...list, { text: d.text }],
+      ),
+    };
+  }
+  return { voiceByNetwork: next.voiceByNetwork };
+}
+
+// What a network does differently from the base, in part order: its own summary
+// (with the base's it replaces), then each of its rules or cases the base
+// doesn't have. Empty = the network speaks exactly like the base.
+export function voiceDiff(ctx, network) {
+  const e = normalizeNetwork(network) === baseNetwork(ctx) ? null : networkEntry(ctx, network);
+  if (!e) return [];
+  return VOICE_PARTS.flatMap(({ field, title, kind }) => {
+    if (e[field] === undefined) return [];
+    if (kind === "text") {
+      const text = String(e[field]).trim();
+      return text && text !== baseValue(ctx, field)
+        ? [{ field, title, item: { text }, instead: baseValue(ctx, field) }]
+        : [];
+    }
+    const inBase = new Set(cloneItems(baseValue(ctx, field)).map((i) => itemLine(field, i)));
+    return cloneItems(e[field])
+      .filter((i) => !inBase.has(itemLine(field, i)))
+      .map((item) => ({ field, title, item }));
+  });
+}
+
 // The reverse of withSuggestion — what an Undo writes back.
 export function withoutSuggestion(ctx, s) {
   return patchPart(ctx, s.network, suggestionField(s), (list) => list.filter((i) => i.text !== s.text));
@@ -352,27 +393,10 @@ function draftRules(ctx, network) {
 }
 
 // A network that writes in a voice borrowed from the base: not the base, and
-// no part of its own yet. What the chat nudge and the drafts panel flag.
+// no part of its own yet. What a draft card compares (drafts-view.js).
 export function isBorrowed(ctx, network) {
   const net = known(network);
   return !!ctx && !!net && net !== baseNetwork(ctx) && !isOptimized(ctx, net);
-}
-
-// The Playbook patch an Optimize assistant's Save produces on a network other
-// than the base — the chat's and the drafts panel's host (the Voice tab writes
-// its own working copy). `undefined` = the part follows the base.
-export function withWizardResult(ctx, network, { values, drafted }) {
-  const all = cloneVoiceByNetwork(ctx.voiceByNetwork);
-  const entry = all[normalizeNetwork(network)] || {};
-  delete entry.drafted;
-  for (const field of networkFields()) {
-    if (!(field in values)) continue;
-    if (values[field] === undefined) delete entry[field];
-    else entry[field] = structuredClone(values[field]);
-  }
-  if (drafted) entry.drafted = true;
-  all[normalizeNetwork(network)] = entry;
-  return { voiceByNetwork: all };
 }
 
 const EMOJI_ALL = /\p{Extended_Pictographic}️?/gu;
@@ -462,6 +486,8 @@ const RULE_ACTIONS = [
       text: d.text.flatMap(sentencesOf),
     }),
   ],
+  // « Close with "…" »: that line last, unless the post already ends on it.
+  [/close with [«“"]\s*(.+?)\s*[»”"]/i, (d, m) => (d.text.at(-1) === m[1] ? d : { ...d, text: [...d.text, m[1]] })],
 ];
 
 // One draft, made to follow `rules`. Returns a new { text, hashtags }.
