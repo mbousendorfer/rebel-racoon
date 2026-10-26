@@ -10,10 +10,10 @@
 // A rule is { text, examples?: string[] }; a case adds `when` (the kind of
 // post). `examples` are lines from the brand's own posts.
 
-import { escapeHtml } from "./utils.js?v=2149";
-import { isFlagOn } from "./feature-flags.js?v=2149";
-import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2149";
-import { networkMeta, normalizeNetwork, getConnectedProfileById } from "./social-profiles.js?v=2149";
+import { escapeHtml } from "./utils.js?v=2155";
+import { isFlagOn } from "./feature-flags.js?v=2155";
+import { NETWORK_VOICE_ADAPTATIONS } from "./mocks.js?v=2155";
+import { networkMeta, normalizeNetwork, getConnectedProfileById } from "./social-profiles.js?v=2155";
 
 const VOICE_PARTS = [
   { field: "voiceSummary", title: "How the Brand sounds", kind: "text" },

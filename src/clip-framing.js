@@ -107,7 +107,7 @@ function groupFor(ctx, auto) {
 }
 
 export function cameraName(id) {
-  if (id === "TWO") return "Two-up";
+  if (id === "TWO") return "Wide shot";
   if (id === "FIT") return "Fit";
   return id ? `Camera ${id}` : "—";
 }

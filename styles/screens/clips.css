@@ -1412,6 +1412,24 @@ body.clips-space .app-content {
   font-variant-numeric: tabular-nums;
 }
 
+/* The Output's settings — safe area, format — on one line. Next to the Source
+   the monitor is narrow: the selects drop their inline labels, their values
+   still say what they are ("TikTok zones", "Vertical 9:16"). */
+.clips-ed__monitor--output {
+  container-type: inline-size;
+}
+
+.clips-ed__monitor-bar [data-clips-output-label] {
+  display: flex;
+  gap: var(--ref-spacing-xxs);
+}
+
+@container (max-width: 440px) {
+  .clips-ed__monitor-bar .ap-select-inline-label {
+    display: none;
+  }
+}
+
 .clips-ed__monitor-body {
   flex: 1;
   min-height: 0;
@@ -1561,6 +1579,14 @@ body.clips-space .app-content {
   margin-left: auto;
 }
 
+.clips-ed__seg-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  width: 100%;
+}
+
 .clips-ed__apply {
   padding: var(--ref-spacing-sm);
   border: 1px solid var(--app-vc-border);
@@ -1659,21 +1685,23 @@ body.clips-space .app-content {
   pointer-events: none;
 }
 
+/* The corners sit inside the safe area: --dz-* are the network's covered
+   zones (paintLogo), 0 when the guide is off. */
 .clips-ed__logo[data-corner="tl"] {
-  top: 0;
+  top: var(--dz-top, 0);
   left: 0;
 }
 .clips-ed__logo[data-corner="tr"] {
-  top: 0;
-  right: 0;
+  top: var(--dz-top, 0);
+  right: var(--dz-right, 0);
 }
 .clips-ed__logo[data-corner="bl"] {
-  bottom: 0;
+  bottom: var(--dz-bottom, 0);
   left: 0;
 }
 .clips-ed__logo[data-corner="br"] {
-  bottom: 0;
-  right: 0;
+  bottom: var(--dz-bottom, 0);
+  right: var(--dz-right, 0);
 }
 
 .clips-ed__transport {
@@ -1686,6 +1714,26 @@ body.clips-space .app-content {
 .clips-ed__time {
   font-variant-numeric: tabular-nums;
   color: var(--ref-color-grey-100);
+}
+
+/* Trim works in the video's time: the transport says where the playhead is in it. */
+.clips-ed__time-src {
+  color: var(--ref-color-grey-80);
+}
+
+.clips-ed:not([data-tool="trim"]) .clips-ed__time-src {
+  display: none;
+}
+
+/* Split / Merge / Snap act on framing parts: Reframe's tools only. Elsewhere
+   the framing track stays as a quiet reference and its legend goes. */
+.clips-ed:not([data-tool="reframe"]) .clips-ed__tl-tools,
+.clips-ed:not([data-tool="reframe"]) .clips-tl__legend {
+  display: none;
+}
+
+.clips-ed:not([data-tool="reframe"]) .clips-tl__frames {
+  opacity: 0.45;
 }
 
 /* ── Timeline ── */
@@ -1991,7 +2039,7 @@ body.clips-space .app-content {
 
 .clips-ed__fields {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: var(--ref-spacing-xs);
 }
 
@@ -2005,6 +2053,7 @@ body.clips-space .app-content {
 
 .clips-ed__seg-head {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--ref-spacing-xs);
 }
@@ -2176,7 +2225,8 @@ body.clips-space .app-content {
   width: 100%;
   resize: vertical;
   padding: var(--ref-spacing-xs);
-  border: 1px solid var(--ref-color-grey-20);
+  background: var(--comp-input-fill-color);
+  border: 1px solid var(--comp-input-border-default-color);
   border-radius: var(--app-radius-sm);
   font: inherit;
   color: var(--ref-color-grey-100);
@@ -2299,4 +2349,57 @@ body.clips-space .app-content {
   margin: 0;
   font-size: var(--sys-text-style-caption-size);
   color: var(--ref-color-grey-80);
+}
+
+/* Trim's error, under the field it's about. */
+.clips-ed__error {
+  margin: 0;
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-red-100);
+}
+
+/* What Clean up hid from the subtitles, marked on the Clip track. */
+.clips-tl__cleans {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.clips-tl__clean {
+  position: absolute;
+  bottom: 0;
+  height: 4px;
+  min-width: 2px;
+  border-radius: var(--app-radius-sm);
+  background: var(--ref-color-orange-100);
+}
+
+/* Subtitles: where the clip's style comes from, and the way back. */
+.clips-ed__cap-source {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-xxs);
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+
+.clips-ed__cap-source strong {
+  color: var(--ref-color-grey-100);
+}
+
+.clips-ed__text-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cap-ed-clean-all {
+  display: flex;
+}
+
+/* An intro / outro card is shown alone, without the subtitles. */
+.clips-ed:not([data-phase="clip"]) .cap-ed-box {
+  visibility: hidden;
 }

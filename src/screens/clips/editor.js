@@ -18,16 +18,17 @@
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2149";
-import { isFlagOn } from "../../feature-flags.js?v=2149";
-import { parseHashParams } from "../../url-state.js?v=2149";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2149";
-import { showToast } from "../../components/toast.js?v=2149";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2149";
-import { getContextById } from "../../contexts-store.js?v=2149";
-import { escapeHtml } from "../../utils.js?v=2149";
-import * as ce from "../../caption-editor.js?v=2149";
-import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2149";
+import { navigate } from "../../router.js?v=2155";
+import { isFlagOn } from "../../feature-flags.js?v=2155";
+import { parseHashParams } from "../../url-state.js?v=2155";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2155";
+import { showToast } from "../../components/toast.js?v=2155";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2155";
+import { getContextById } from "../../contexts-store.js?v=2155";
+import { escapeHtml } from "../../utils.js?v=2155";
+import * as ce from "../../caption-editor.js?v=2155";
+import { DEAD_ZONES } from "../../clip-captions.js?v=2155";
+import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2155";
 import {
   framingContext,
   initialSegments,
@@ -50,7 +51,7 @@ import {
   cameraName,
   LAYOUTS,
   MIN_SEG_MS,
-} from "../../clip-framing.js?v=2149";
+} from "../../clip-framing.js?v=2155";
 import {
   fmtMs,
   fmtPrecise,
@@ -61,10 +62,11 @@ import {
   clipRatioId,
   clipCaptionState,
   SUBTITLE_IDS,
+  presetLabel,
   dsSelect,
   bindSelectDismiss,
-} from "./shared.js?v=2149";
-import { primeDraftSetup } from "./project.js?v=2149";
+} from "./shared.js?v=2155";
+import { primeDraftSetup } from "./project.js?v=2155";
 
 const MIN_CLIP_MS = 5000;
 const MAX_CLIP_MS = 300000;
@@ -73,13 +75,13 @@ const CARD_MS = 2000; // intro / outro card length
 
 // The tools that work on words show the transcript; the ones that work on the
 // image give its width back to the stage. The toggle overrides it either way.
-const WORD_TOOLS = new Set(["trim", "subtitles", "cleanup", "text"]);
+const WORD_TOOLS = new Set(["trim", "subtitles", "cleanup"]);
 
 const TOOLS = [
   { id: "trim", label: "Trim", icon: "ap-icon-clock", hint: "Start and end of the clip" },
   { id: "reframe", label: "Reframe", icon: "ap-icon-cropper", hint: "Who's in the frame, part by part" },
   { id: "subtitles", label: "Subtitles", icon: "ap-icon-closed-captions", hint: "Subtitle style" },
-  { id: "cleanup", label: "Clean up", icon: "ap-icon-sparkles", hint: "Filler words and pauses" },
+  { id: "cleanup", label: "Clean up", icon: "ap-icon-sparkles", hint: "Filler words and pauses in the subtitles" },
   { id: "text", label: "Text", icon: "ap-icon-alt-text", hint: "Titles and text on the video" },
   { id: "brand", label: "Brand", icon: "ap-icon-target", hint: "Logo, intro and outro" },
 ];
@@ -92,6 +94,9 @@ const CAMERA_COLORS = [
   "var(--app-chart-data-3)",
   "var(--app-chart-data-4)",
 ];
+
+// The safe-area guide's choices: where each network's buttons cover the video.
+const DEAD_ZONE_LABELS = { none: "No guide", tiktok: "TikTok zones", reels: "Reels zones", shorts: "Shorts zones" };
 
 let ed = null;
 
@@ -128,6 +133,10 @@ export function renderClipEditor(params, el) {
       brand: { ...look.brand, ...(clip.brand || {}) },
     },
     caption: null, // latest caption-editor patch
+    capOwn: !!clip.captionCustom, // the clip has its own subtitle style (else the video's)
+    capDirty: false,
+    deadZones: clipCaptionState(video, clip).deadZones || "tiktok", // the Output's safe-area guide
+    trimError: "",
     undo: [],
     redo: [],
     dirty: false,
@@ -142,6 +151,7 @@ export function renderClipEditor(params, el) {
     drag: null,
     disposers: [],
   };
+  ed.saved = snapshot();
   renderTopbar();
   paintTopbar();
   el.innerHTML = shellHTML();
@@ -245,7 +255,7 @@ function shellHTML() {
         <button type="button" class="ap-icon-button transparent" data-clips-ed="play" aria-label="Play" data-tooltip="Play / pause (Space)">
           <i class="ap-icon-play" aria-hidden="true" data-clips-play-icon></i>
         </button>
-        <span class="clips-ed__time"><span data-clips-cur>0:00.0</span> / <span data-clips-len>0:00.0</span></span>
+        <span class="clips-ed__time"><span data-clips-cur>0:00.0</span> / <span data-clips-len>0:00.0</span><span class="clips-ed__time-src"> · <span data-clips-at>0:00.0</span> in the video</span></span>
         <div class="clips-ed__tl-tools" role="toolbar" aria-label="Framing parts">
           <button type="button" class="clips-ed__tl-tool" data-clips-ed="split" data-tooltip="Split the part at the playhead (S)">
             <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="4" width="5" height="8" rx="1.2"/><rect x="10" y="4" width="5" height="8" rx="1.2"/><path d="M8 1.5v13"/></svg>
@@ -298,6 +308,13 @@ function mountCaptions() {
     presetIds: SUBTITLE_IDS,
     onChange: (patch) => {
       ed.caption = patch;
+      ed.capDirty = true;
+      // A style change detaches the clip from the video's style; hiding a word
+      // doesn't (it's the clip's words, not its look).
+      if (ed.tool === "subtitles") ed.capOwn = true;
+      const src = ed.el.querySelector("[data-clips-cap-source]");
+      if (src) src.innerHTML = capSourceHTML();
+      paintCleanMarks();
       setDirty();
     },
   });
@@ -393,6 +410,8 @@ function syncTlTools() {
 }
 
 function syncTime() {
+  // The brand cards are drawn alone: no subtitle over them.
+  ed.el.querySelector("[data-clips-ed-root]").dataset.phase = ed.phase;
   const cur = ed.el.querySelector("[data-clips-cur]");
   if (cur)
     cur.textContent = ed.phase === "clip" ? fmtPrecise(ed.t - ed.w.startMs) : ed.phase === "intro" ? "Intro" : "Outro";
@@ -400,6 +419,9 @@ function syncTime() {
   if (len) len.textContent = fmtPrecise(clipLen());
   const stc = ed.el.querySelector("[data-clips-src-tc]");
   if (stc) stc.textContent = fmtPrecise(ed.t);
+  // The buttons that act at the playhead name the time they'll use.
+  ed.el.querySelectorAll("[data-clips-at]").forEach((n) => (n.textContent = fmtPrecise(ed.t)));
+  ed.el.querySelectorAll("[data-clips-at-rel]").forEach((n) => (n.textContent = fmtPrecise(ed.t - ed.w.startMs)));
   ce.setTime(relSec(), ed.playing);
   const ph = ed.el.querySelector("[data-clips-playhead]");
   if (ph) ph.style.left = pctIn(ed.t);
@@ -460,18 +482,28 @@ function paintFormatPicker() {
   if (!host) return;
   const videoRatio = ed.video.settings.ratio;
   const own = ed.w.ratioId !== videoRatio;
-  host.innerHTML = dsSelect({
-    label: own ? "This clip" : "Video",
-    valueHtml: escapeHtml(formatLabel(ed.w.ratioId)),
-    current: own ? ed.w.ratioId : "video",
-    attr: "data-clips-format",
-    ariaLabel: "Format of this clip",
-    extraClass: "clips-ed__format",
-    options: [
-      { id: "video", label: `Same as the video · ${formatLabel(videoRatio)}` },
-      ...RATIO_IDS.map((id) => ({ id, label: formatLabel(id), meta: bestFor(id) })),
-    ],
-  });
+  host.innerHTML =
+    dsSelect({
+      label: "Safe area",
+      valueHtml: escapeHtml(DEAD_ZONE_LABELS[ed.deadZones] || "No guide"),
+      current: ed.deadZones,
+      attr: "data-clips-deadzones",
+      ariaLabel: "Show where the app's buttons cover the video",
+      extraClass: "clips-ed__format",
+      options: Object.entries(DEAD_ZONE_LABELS).map(([id, label]) => ({ id, label })),
+    }) +
+    dsSelect({
+      label: own ? "This clip" : "Video",
+      valueHtml: escapeHtml(formatLabel(ed.w.ratioId)),
+      current: own ? ed.w.ratioId : "video",
+      attr: "data-clips-format",
+      ariaLabel: "Format of this clip",
+      extraClass: "clips-ed__format",
+      options: [
+        { id: "video", label: `Same as the video · ${formatLabel(videoRatio)}` },
+        ...RATIO_IDS.map((id) => ({ id, label: formatLabel(id), meta: bestFor(id) })),
+      ],
+    });
 }
 
 function currentRes() {
@@ -559,6 +591,11 @@ function paintLogo() {
   if (img.getAttribute("src") !== src) img.src = src;
   img.style.width = `${b.logoSize * 100}%`;
   img.dataset.corner = b.corner;
+  // Out of the zones the network's buttons cover, whichever corner it's in.
+  const z = DEAD_ZONES[ed.deadZones] || { top: 0, bottom: 0, right: 0 };
+  img.style.setProperty("--dz-top", `${z.top * 100}%`);
+  img.style.setProperty("--dz-bottom", `${z.bottom * 100}%`);
+  img.style.setProperty("--dz-right", `${z.right * 100}%`);
 }
 
 // ── Text overlays ────────────────────────────────────────────────────
@@ -609,8 +646,11 @@ function paintTimeline() {
   const v = ed.viewport;
   const step = niceStep(v.span);
   let ticks = "";
-  for (let t = Math.ceil(v.from / step) * step; t <= v.to; t += step)
-    ticks += `<span class="clips-tl__tick" style="left:${pctIn(t)}"><span>${fmtMs(t - ed.w.startMs >= 0 ? t - ed.w.startMs : 0)}</span></span>`;
+  // Trim picks the clip's place in the video, so its ruler reads the video's
+  // time, like its fields; every other tool reads the clip's time.
+  const t0 = ed.tool === "trim" ? 0 : ed.w.startMs;
+  for (let t = Math.ceil((v.from - t0) / step) * step + t0; t <= v.to; t += step)
+    if (t >= t0) ticks += `<span class="clips-tl__tick" style="left:${pctIn(t)}"><span>${fmtMs(t - t0)}</span></span>`;
   // A faux waveform — no audio analysis in the prototype — keyed on source
   // time so the shape doesn't slide when the window moves.
   let wave = "";
@@ -635,7 +675,8 @@ function paintTimeline() {
               ed.ctx.cameras.findIndex((c) => c.id === id),
             ) % CAMERA_COLORS.length
           ];
-  const layoutLabel = (s) => LAYOUTS.find((l) => l.id === s.layout)?.label || s.layout;
+  const layoutLabel = (s) =>
+    s.layout === "AUTO" ? `Auto · ${autoKind(s)}` : LAYOUTS.find((l) => l.id === s.layout)?.label || s.layout;
   const segHTML = segs
     .map(
       (
@@ -643,7 +684,7 @@ function paintTimeline() {
       ) => `<button type="button" class="clips-tl__seg${s.id === cur.id ? " is-current" : ""}${s.origin === "USER" ? " is-edited" : ""}" data-clips-seg="${s.id}"
         style="left:${pctIn(s.startMs)};width:calc(${((s.endMs - s.startMs) / v.span) * 100}% - 2px);--cam:${camColor(s.camera)}"
         aria-label="${escapeHtml(cameraName(s.camera))}, ${escapeHtml(layoutLabel(s))}, ${fmtPrecise(s.startMs - ed.w.startMs)}">
-        <span class="clips-tl__seg-cam">${escapeHtml(s.camera === "TWO" ? "2" : s.camera === "FIT" ? "F" : s.camera || "—")}</span>
+        <span class="clips-tl__seg-cam">${escapeHtml(cameraShort(s.camera))}</span>
         <span class="clips-tl__seg-lay">${escapeHtml(layoutLabel(s))}${s.follow ? " · follow" : ""}</span>
       </button>`,
     )
@@ -676,6 +717,7 @@ function paintTimeline() {
           <div class="clips-tl__wave">${wave}</div>
           <div class="clips-tl__dim" style="left:0;width:${pctIn(ed.w.startMs)}"></div>
           <div class="clips-tl__dim" style="left:${pctIn(ed.w.endMs)};right:0"></div>
+          <div class="clips-tl__cleans" data-clips-cleans>${cleanMarks()}</div>
           <div class="clips-tl__window" style="left:${pctIn(ed.w.startMs)};width:${(clipLen() / v.span) * 100}%">
             ${b.intro ? `<span class="clips-tl__card clips-tl__card--intro">Intro</span>` : ""}
             ${b.outro ? `<span class="clips-tl__card clips-tl__card--outro">Outro</span>` : ""}
@@ -693,7 +735,37 @@ function paintTimeline() {
         (id) =>
           `<span class="clips-tl__legend-item"><span class="clips-tl__swatch" style="background:${camColor(id)}"></span>${escapeHtml(cameraName(id))}</span>`,
       )
-      .join("")}<span class="clips-tl__legend-item">Dotted outline: framed by me · Solid: framed by you</span></p>`;
+      .join("")}<span class="clips-tl__legend-item">Dotted: Auto · Solid: yours</span></p>`;
+}
+
+// What Clean up hid from the subtitles, on the Clip track — the audio isn't cut.
+function cleanMarks() {
+  return ce
+    .getHiddenSpans()
+    .map(
+      (m) =>
+        `<span class="clips-tl__clean" style="left:${pctIn(ed.w.startMs + m.start * 1000)};width:${(((m.end - m.start) * 1000) / ed.viewport.span) * 100}%" title="${escapeHtml(m.label)}"></span>`,
+    )
+    .join("");
+}
+
+function paintCleanMarks() {
+  const host = ed.el.querySelector("[data-clips-cleans]");
+  if (host) host.innerHTML = cleanMarks();
+}
+
+// A camera's short name on the framing track: the wide shot of both speakers
+// is "Wide", a single camera its letter.
+function cameraShort(id) {
+  if (id === "TWO") return "Wide";
+  if (id === "FIT") return "Fit";
+  return id ? `Cam ${id}` : "—";
+}
+
+// What Auto does with a part — named the way the Layout cards name it.
+function autoKind(seg) {
+  const kind = resolve(ed.ctx, seg, (seg.startMs + seg.endMs) / 2, ratio()).kind;
+  return { one: "One speaker", two: "Two speakers", fit: "Fit" }[kind];
 }
 
 function niceStep(span) {
@@ -730,9 +802,12 @@ function applyTool() {
     b.setAttribute("aria-selected", String(on));
   });
   ce.setCleanupMode(ed.tool === "cleanup");
+  // The tool is in the URL, so a reload or Back lands on it again.
+  history.replaceState(null, "", `#/clips/${ed.video.id}/edit/${ed.clip.id}?tool=${ed.tool}`);
   syncTlTools();
   sizeCanvases();
   paintPanel();
+  paintTimeline();
   paintTexts();
   paintFrame();
   ce.repaintStage();
@@ -758,14 +833,15 @@ function trimPanel() {
   return `
     <p class="clips-ed__panel-lead">Drag the handles on the timeline, or type the times. From 5 seconds to 5 minutes.</p>
     <div class="clips-ed__fields">
-      <label class="clips-ed__field"><span>Start</span>
+      <label class="clips-ed__field"><span>Start in the video</span>
         <div class="ap-input-group"><input type="text" data-clips-time="start" value="${fmtPrecise(ed.w.startMs)}" /></div></label>
-      <label class="clips-ed__field"><span>End</span>
+      <label class="clips-ed__field"><span>End in the video</span>
         <div class="ap-input-group"><input type="text" data-clips-time="end" value="${fmtPrecise(ed.w.endMs)}" /></div></label>
     </div>
+    ${ed.trimError ? `<p class="clips-ed__error" role="alert">${escapeHtml(ed.trimError)}</p>` : ""}
     <div class="clips-ed__row">
-      <button type="button" class="ap-button stroked grey" data-clips-ed="set-start">Start here</button>
-      <button type="button" class="ap-button stroked grey" data-clips-ed="set-end">End here</button>
+      <button type="button" class="ap-button stroked grey" data-clips-ed="set-start">Start at <span data-clips-at>${fmtPrecise(ed.t)}</span></button>
+      <button type="button" class="ap-button stroked grey" data-clips-ed="set-end">End at <span data-clips-at>${fmtPrecise(ed.t)}</span></button>
     </div>
     <p class="clips-ed__fact">Length <strong>${fmtPrecise(clipLen())}</strong> · in the video ${fmtMs(ed.w.startMs)} → ${fmtMs(ed.w.endMs)}</p>`;
 }
@@ -779,7 +855,7 @@ function reframePanel() {
   const blocked = twoBlockedReason(ed.ctx, seg, r);
   const sameCam = segs.filter((s) => s.camera === seg.camera).length;
   const hints = {
-    AUTO: "As I framed it",
+    AUTO: `I chose ${autoKind(seg)}`,
     ONE: "One window",
     TWO: "Two, stacked",
     FIT: "Whole frame, blurred fill",
@@ -807,9 +883,11 @@ function reframePanel() {
     <p class="clips-ed__panel-lead">The clip is cut in parts, one per camera shot. I framed each one — drag the window on the source to take over.</p>
     <div class="clips-ed__seg-head">
       <span class="clips-ed__seg-name">Part ${i + 1} of ${segs.length}</span>
-      <span class="ap-tag grey">${escapeHtml(cameraName(seg.camera))}</span>
-      <span class="ap-tag ${seg.origin === "USER" ? "blue" : "grey"}">${seg.origin === "USER" ? "Framed by you" : "Auto"}</span>
-      ${seg.origin === "USER" ? `<button type="button" class="ap-link clips-ed__seg-reset" data-clips-ed="reset-seg">Reset</button>` : ""}
+      <span class="clips-ed__seg-tags">
+        <span class="ap-tag grey">${escapeHtml(cameraName(seg.camera))}</span>
+        <span class="ap-tag grey">${seg.origin === "USER" ? "Yours" : "Auto"}</span>
+        ${seg.origin === "USER" ? `<button type="button" class="ap-button ghost grey clips-ed__seg-reset" data-clips-ed="reset-seg"><i class="ap-icon-reset" aria-hidden="true"></i><span>Back to Auto</span></button>` : ""}
+      </span>
     </div>
     <p class="clips-ed__fact">${fmtPrecise(seg.startMs - ed.w.startMs)} → ${fmtPrecise(seg.endMs - ed.w.startMs)} · ${((seg.endMs - seg.startMs) / 1000).toFixed(1)}s</p>
     <div class="clips-ed__group">
@@ -836,7 +914,7 @@ function reframePanel() {
         : ""
     }
     ${
-      seg.camera && sameCam > 1
+      seg.camera && sameCam > 1 && seg.origin === "USER"
         ? `<div class="clips-ed__group clips-ed__apply">
             <p class="clips-ed__hint">${escapeHtml(cameraName(seg.camera))} comes back ${sameCam - 1} more time${sameCam === 2 ? "" : "s"} in this clip.</p>
             <button type="button" class="ap-button stroked grey" data-clips-ed="apply-cam">
@@ -853,6 +931,7 @@ function reframePanel() {
 function subtitlesPanel() {
   return `
     <p class="clips-ed__panel-lead">Pick a style, then drag the subtitles on the video to place them.</p>
+    <div class="clips-ed__cap-source" data-clips-cap-source>${capSourceHTML()}</div>
     <div class="cap-ed__tabs" role="tablist">
       <button type="button" class="cap-ed__tab" data-ce-tab="presets">Presets</button>
       <button type="button" class="cap-ed__tab" data-ce-tab="font">Font</button>
@@ -861,10 +940,19 @@ function subtitlesPanel() {
     <div class="cap-ed__tabpanel" data-ce-tabpanel></div>`;
 }
 
+// Where the clip's subtitle style comes from: the video's, or its own — with
+// the way back.
+function capSourceHTML() {
+  const preset = ce.getState()?.presetId;
+  return ed.capOwn
+    ? `<span>This clip's own style · <strong>${escapeHtml(presetLabel(preset))}</strong></span>
+       <button type="button" class="ap-button ghost grey" data-clips-ed="cap-video"><i class="ap-icon-reset" aria-hidden="true"></i><span>Back to the video's style</span></button>`
+    : `<span>The video's style · <strong>${escapeHtml(presetLabel(preset))}</strong></span>`;
+}
+
 function cleanupPanel() {
   return `
-    <p class="clips-ed__panel-lead">I marked the filler words and the long pauses in the transcript. Remove them one by one, or all at once.</p>
-    <div class="cap-ed__cleanup-bar" data-ce-cleanup-bar hidden></div>
+    <p class="clips-ed__panel-lead">I marked the filler words and the long pauses. Hiding one takes it out of the subtitles — the audio stays as it is.</p>
     <div data-ce-cleanup-list></div>`;
 }
 
@@ -873,7 +961,12 @@ function textPanel() {
     .map(
       (
         tx,
+        k,
       ) => `<li class="clips-ed__text${tx.id === ed.selectedText ? " is-selected" : ""}" data-clips-text-row="${tx.id}">
+        <div class="clips-ed__text-head">
+          <span class="clips-ed__seg-name">Text ${k + 1}</span>
+          <button type="button" class="ap-icon-button transparent" data-clips-text-remove="${tx.id}" aria-label="Remove text ${k + 1}" data-tooltip="Remove"><i class="ap-icon-trash" aria-hidden="true"></i></button>
+        </div>
         <textarea class="clips-ed__text-input" rows="2" data-clips-text-field="text" data-id="${tx.id}" aria-label="Text">${escapeHtml(tx.text)}</textarea>
         <div class="ap-segmented-control" role="radiogroup" aria-label="Style">
           ${["box", "plain"]
@@ -890,18 +983,17 @@ function textPanel() {
             style="--fill:${((tx.size - 36) / 84) * 100}%" aria-label="Size" /></label>
         <p class="clips-ed__fact">On screen ${fmtPrecise(tx.startMs)} → ${fmtPrecise(tx.endMs)}</p>
         <div class="clips-ed__row">
-          <button type="button" class="ap-button ghost grey" data-clips-text-at="start" data-id="${tx.id}">Show from here</button>
-          <button type="button" class="ap-button ghost grey" data-clips-text-at="end" data-id="${tx.id}">Hide from here</button>
-          <button type="button" class="ap-icon-button transparent" data-clips-text-remove="${tx.id}" aria-label="Remove text" data-tooltip="Remove text"><i class="ap-icon-trash" aria-hidden="true"></i></button>
+          <button type="button" class="ap-button stroked grey" data-clips-text-at="start" data-id="${tx.id}">Start at <span data-clips-at-rel>${fmtPrecise(ed.t - ed.w.startMs)}</span></button>
+          <button type="button" class="ap-button stroked grey" data-clips-text-at="end" data-id="${tx.id}">End at <span data-clips-at-rel>${fmtPrecise(ed.t - ed.w.startMs)}</span></button>
         </div>
       </li>`,
     )
     .join("");
   const hasHook = ed.w.texts.some((t) => t.text === ed.w.title);
   return `
-    <p class="clips-ed__panel-lead">Text sits on top of the video — a title for the first seconds, a name, a key number. Drag it on the video to place it.</p>
+    <p class="clips-ed__panel-lead">A title for the first seconds, a name, a key number. Drag it on the video to place it.</p>
     <div class="clips-ed__row">
-      ${hasHook ? "" : `<button type="button" class="ap-button stroked grey" data-clips-ed="add-hook"><i class="ap-icon-archie-official" aria-hidden="true"></i><span>Add the hook as a title</span></button>`}
+      ${hasHook ? "" : `<button type="button" class="ap-button stroked grey" data-clips-ed="add-hook"><i class="ap-icon-archie-official" aria-hidden="true"></i><span>Add the clip title</span></button>`}
       <button type="button" class="ap-button stroked grey" data-clips-ed="add-text"><i class="ap-icon-plus" aria-hidden="true"></i><span>Add text</span></button>
     </div>
     ${rows ? `<ul class="clips-ed__text-list">${rows}</ul>` : ""}`;
@@ -920,7 +1012,7 @@ function brandPanel() {
   return `
     <p class="clips-ed__panel-lead">${
       pb
-        ? `${escapeHtml(pb.name)}'s clip look, from its Playbook. Change it for this clip here; change it for every clip on the Playbook.`
+        ? `From the ${escapeHtml(pb.name)} Playbook. What you change here applies to this clip only.`
         : "No Playbook: no logo or brand cards to add."
     }</p>
     ${
@@ -936,7 +1028,7 @@ function brandPanel() {
                     attr: "data-clips-corner",
                     options: corners.map(([id, label]) => ({ id, label })),
                   })}
-                  <span class="clips-ed__label">Size</span>
+                  <span class="clips-ed__label">Size <span data-clips-logo-size-val>${Math.round(b.logoSize * 100)}%</span></span>
                   <input type="range" class="ap-slider" min="0.08" max="0.3" step="0.01" value="${b.logoSize}" data-clips-logo-size
                     style="--fill:${((b.logoSize - 0.08) / 0.22) * 100}%" aria-label="Logo size" />
                 </div>`
@@ -976,8 +1068,9 @@ function restore(json) {
   refreshAll();
 }
 
+// Changed = differs from what's saved, so undoing back to it reads "Saved".
 function setDirty() {
-  ed.dirty = true;
+  ed.dirty = ed.capDirty || snapshot() !== ed.saved;
   syncTopbar();
 }
 
@@ -1013,12 +1106,19 @@ function edit(fn, { timeline = true } = {}) {
   paintFrame();
 }
 
+// Trim's errors sit under its fields, where the time was typed.
+function trimError(msg) {
+  ed.trimError = msg;
+  paintPanel();
+}
+
 function setRange(startMs, endMs) {
   const dur = ed.video.durationMs;
   let s = Math.max(0, Math.round(startMs));
   let e = Math.min(dur, Math.round(endMs));
-  if (e - s < MIN_CLIP_MS) return showToast("A clip runs 5 seconds at least.", { variant: "error" });
-  if (e - s > MAX_CLIP_MS) return showToast("A clip runs 5 minutes at most.", { variant: "error" });
+  if (e - s < MIN_CLIP_MS) return trimError("A clip runs 5 seconds at least.");
+  if (e - s > MAX_CLIP_MS) return trimError("A clip runs 5 minutes at most.");
+  ed.trimError = "";
   edit(() => {
     ed.w.startMs = s;
     ed.w.endMs = e;
@@ -1048,12 +1148,19 @@ function save() {
     ratio: ed.w.ratioId === ed.video.settings.ratio && !c.ratio ? null : ed.w.ratioId,
     brand: JSON.stringify(ed.w.brand) === JSON.stringify(ed.look.brand) ? null : ed.w.brand,
   };
+  // The words are the clip's either way; the look is its own, or the video's.
   if (ed.caption) {
-    patch.captionState = ed.caption.captionState;
     patch.transcript = ed.caption.transcript;
-    patch.captionCustom = true;
+    Object.assign(
+      patch,
+      ed.capOwn
+        ? { captionState: ed.caption.captionState, captionCustom: true }
+        : { captionState: null, captionCustom: false },
+    );
   }
   updateClip(ed.video.id, c.id, patch);
+  ed.saved = snapshot();
+  ed.capDirty = false;
   ed.dirty = false;
   syncTopbar();
   showToast("Clip saved");
@@ -1164,7 +1271,7 @@ function handleClick(e) {
       });
     case "add-hook":
     case "add-text":
-      return edit(() => {
+      edit(() => {
         const id = `tx${Date.now().toString(36)}`;
         const rel = act === "add-hook" ? 0 : Math.max(0, ed.t - ed.w.startMs);
         ed.w.texts.push({
@@ -1173,13 +1280,23 @@ function handleClick(e) {
           startMs: rel,
           endMs: Math.min(clipLen(), rel + 3000),
           x: 0.5,
-          y: act === "add-hook" ? 0.2 : 0.5,
+          y: act === "add-hook" ? 0.3 : 0.5,
           size: act === "add-hook" ? 64 : 56,
           style: "box",
         });
         ed.selectedText = id;
         paintTexts();
       });
+      // The playhead goes to the new text, so it shows at full strength.
+      return seek(ed.w.startMs + txById(ed.selectedText).startMs + 1);
+    case "cap-video": {
+      ce.resetStyle(clipCaptionState(ed.video, { captionState: null }));
+      // After the reset's own change event, which counts as a style change.
+      ed.capOwn = false;
+      const src = ed.el.querySelector("[data-clips-cap-source]");
+      if (src) src.innerHTML = capSourceHTML();
+      return undefined;
+    }
     case "brand-reset":
       return edit(() => (ed.w.brand = { ...ed.look.brand }));
     default:
@@ -1206,6 +1323,15 @@ function handleClick(e) {
       ce.repaintStage();
       paintTexts();
     });
+  }
+  const dz = t.closest("[data-clips-deadzones]");
+  if (dz) {
+    dz.closest("details")?.removeAttribute("open");
+    ed.deadZones = dz.dataset.clipsDeadzones;
+    ce.setDeadZones(ed.deadZones);
+    paintFormatPicker();
+    paintLogo();
+    return undefined;
   }
   const corner = t.closest("[data-clips-corner]");
   if (corner) {
@@ -1305,6 +1431,8 @@ function handleInput(e) {
   if (t.matches("[data-clips-logo-size]")) {
     ed.w.brand.logoSize = Number(t.value);
     t.style.setProperty("--fill", `${((t.value - t.min) / (t.max - t.min)) * 100}%`);
+    const val = ed.el.querySelector("[data-clips-logo-size-val]");
+    if (val) val.textContent = `${Math.round(t.value * 100)}%`;
     setDirtyQuiet();
     paintLogo();
     return;
@@ -1324,7 +1452,7 @@ function handleInput(e) {
 // Typing and sliding mark the clip as changed without repainting the panel
 // under the cursor.
 function setDirtyQuiet() {
-  if (!ed.dirty) setDirty();
+  setDirty();
 }
 
 function handleChange(e) {
@@ -1339,10 +1467,7 @@ function handleChange(e) {
   }
   if (t.matches("[data-clips-time]")) {
     const ms = parseTime(t.value);
-    if (ms == null) {
-      showToast("Type a time like 1:32.5", { variant: "error" });
-      return paintPanel();
-    }
+    if (ms == null) return trimError("Type a time like 1:32.5");
     return t.dataset.clipsTime === "start" ? setRange(ms, ed.w.endMs) : setRange(ed.w.startMs, ms);
   }
   if (t.matches("[data-clips-layout-pick]")) return edit(() => setLayout(ed.ctx, seg, t.value, ed.t, ratio()));
@@ -1351,7 +1476,18 @@ function handleChange(e) {
     ed.snap = t.checked;
     return undefined;
   }
-  if (t.matches("[data-clips-brand]")) return edit(() => (ed.w.brand[t.dataset.clipsBrand] = t.checked));
+  if (t.matches("[data-clips-brand]")) {
+    const key = t.dataset.clipsBrand;
+    edit(() => (ed.w.brand[key] = t.checked));
+    // A card switched on is shown right away, held on the Output.
+    if (t.checked && (key === "intro" || key === "outro")) {
+      if (ed.playing) stop();
+      ed.phase = key;
+      syncTime();
+      paintFrame();
+    }
+    return undefined;
+  }
   if (t.matches("[data-clips-text-field]") || t.matches("[data-clips-logo-size]")) {
     pushUndo();
     paintTimeline();

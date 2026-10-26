@@ -141,7 +141,7 @@
 .cap-ed__cleanup-count {
   margin-left: auto;
   background: var(--ref-color-orange-100);
-  color: var(--ref-color-white);
+  color: var(--app-light-ref-color-white);
   border-radius: var(--app-radius-circle);
   min-width: 16px;
   height: 16px;
@@ -195,16 +195,17 @@
   font-weight: var(--sys-text-style-body-bold-weight);
 }
 
+/* Emphasis in the colours the video shows it in (set by renderTranscript). */
 .cap-ed-tword.is-mark-h1 {
-  box-shadow: inset 0 -0.5em 0 rgba(184, 233, 134, 0.45);
+  box-shadow: inset 0 -0.5em 0 color-mix(in srgb, var(--ce-h1) 45%, transparent);
 }
 
 .cap-ed-tword.is-mark-h2 {
-  box-shadow: inset 0 -0.5em 0 rgba(245, 210, 58, 0.45);
+  box-shadow: inset 0 -0.5em 0 color-mix(in srgb, var(--ce-h2) 45%, transparent);
 }
 
 .cap-ed-tword.is-mark-font {
-  color: var(--app-vc-accent);
+  color: var(--ce-font, var(--app-vc-accent));
 }
 
 .cap-ed-tword.is-filler {
@@ -347,7 +348,7 @@
   position: absolute;
   width: 12px;
   height: 12px;
-  background: var(--ref-color-white);
+  background: var(--app-light-ref-color-white);
   border: 1px solid #444;
   border-radius: 50%;
   pointer-events: auto;
@@ -451,13 +452,13 @@
   height: 36px;
   border-radius: var(--app-radius-circle);
   background: var(--app-vc-accent);
-  color: var(--ref-color-white);
+  color: var(--app-light-ref-color-white);
   flex-shrink: 0;
 }
 
 .cap-ed__transport .cap-ed__icon-btn:hover {
   background: var(--app-vc-accent-hover);
-  color: var(--ref-color-white);
+  color: var(--app-light-ref-color-white);
 }
 
 /* Skip back / forward — quiet ghost buttons flanking the primary play. */
@@ -514,7 +515,7 @@
   width: 11px;
   height: 11px;
   border-radius: var(--app-radius-circle);
-  background: var(--ref-color-white);
+  background: var(--app-light-ref-color-white);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
 }
 
@@ -582,7 +583,7 @@
 }
 
 .cap-ed-preset.is-on {
-  border-color: var(--ref-color-white);
+  border-color: var(--app-light-ref-color-white);
 }
 
 .cap-ed-preset__frame {
@@ -778,6 +779,7 @@
 
 .cap-ed-field {
   display: flex;
+  flex-wrap: wrap; /* a wide control goes under its label rather than crushing it */
   align-items: center;
   justify-content: space-between;
   gap: var(--ref-spacing-sm);
@@ -786,7 +788,7 @@
 
 .cap-ed-flabel {
   flex: 1;
-  min-width: 0;
+  min-width: 6em;
   /* Quiet, regular-weight label — the value/control carries the emphasis. */
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
@@ -809,7 +811,6 @@
   border-left: 1px solid var(--app-vc-border);
 }
 
-.cap-ed-select,
 .cap-ed-num {
   font-family: inherit;
   font-size: var(--sys-text-style-caption-size);
@@ -822,13 +823,8 @@
   outline: none;
 }
 
-.cap-ed-select:focus,
 .cap-ed-num:focus {
   border-color: var(--app-vc-accent);
-}
-
-.cap-ed-select {
-  min-width: 128px;
 }
 
 .cap-ed-num {
@@ -883,7 +879,7 @@
 
 .cap-ed-seg__btn.is-on {
   background: var(--app-vc-accent);
-  color: var(--ref-color-white);
+  color: var(--app-light-ref-color-white);
   font-weight: var(--sys-text-style-caption-bold-weight);
 }
 
@@ -937,4 +933,10 @@
   height: 1px;
   background: var(--app-vc-border);
   margin: var(--ref-spacing-xxxs) 0;
+}
+
+/* The Font tab's DS selects keep the width the native ones had. */
+.cap-ed-pick {
+  flex: none;
+  width: 160px;
 }

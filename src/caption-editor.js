@@ -28,7 +28,7 @@
 // are pure DOM/CSS. Karaoke word-sweep is intentionally omitted; emphasis is
 // per-word marks + an optional static "phrase" highlight under the playhead.
 
-import { escapeHtml, formatClock } from "./utils.js?v=2149";
+import { escapeHtml, formatClock } from "./utils.js?v=2155";
 import {
   PRESETS,
   presetById,
@@ -43,7 +43,7 @@ import {
   detectFillers,
   detectPauses,
   videoForClip,
-} from "./clip-captions.js?v=2149";
+} from "./clip-captions.js?v=2155";
 
 const FONT_FAMILIES = [
   "Montserrat, Roboto, sans-serif",
@@ -328,6 +328,10 @@ function renderTranscript() {
     html += `<span class="${cls}" data-ce-word="${i}">${escapeHtml(w.text)}</span> `;
   });
   hostEl.innerHTML = html;
+  // Emphasis reads in the colours the video shows it in.
+  hostEl.style.setProperty("--ce-h1", state.highlight1Color);
+  hostEl.style.setProperty("--ce-h2", state.highlight2Color);
+  hostEl.style.setProperty("--ce-font", state.manualFontColor);
   updateActiveWord();
 }
 
@@ -373,6 +377,29 @@ function group(label, body) {
   return `<div class="cap-ed-group"><div class="cap-ed-group-label">${escapeHtml(label)}</div>${body}</div>`;
 }
 
+// The DS select (CSS-UI .ap-select on a <details>), never a bare <select>.
+function pick(key, current, opts) {
+  const cur = opts.find((o) => o.v === current) || opts[0];
+  const items = opts
+    .map(
+      (
+        o,
+      ) => `<div class="ap-select-option${o.v === current ? " selected" : ""}" role="option" aria-selected="${o.v === current}"
+        data-ce-pick="${key}" data-ce-pick-val="${escapeHtml(String(o.v))}">
+        <span class="ap-select-option-text">${escapeHtml(o.label)}</span>
+        ${o.v === current ? `<i class="ap-icon-check ap-select-option-check" aria-hidden="true"></i>` : ""}
+      </div>`,
+    )
+    .join("");
+  return `<details class="ap-select cap-ed-pick">
+    <summary class="ap-select-trigger" aria-label="${escapeHtml(key)}">
+      <span class="ap-select-value">${escapeHtml(cur.label)}</span>
+      <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
+    </summary>
+    <div class="ap-select-dropdown" role="listbox"><div class="ap-select-options">${items}</div></div>
+  </details>`;
+}
+
 function colorInput(key, value) {
   return `<input type="color" class="cap-ed-color" data-ce-color="${key}" value="${value}" />`;
 }
@@ -400,26 +427,21 @@ function renderPresetsTab() {
 
 function renderFontTab() {
   const s = state;
-  const fams = FONT_FAMILIES.map(
-    (f) =>
-      `<option value="${escapeHtml(f)}"${f === s.fontFamily ? " selected" : ""}>${FONT_FAMILY_LABELS[f] || f}</option>`,
-  ).join("");
+  const fams = FONT_FAMILIES.map((f) => ({ v: f, label: FONT_FAMILY_LABELS[f] || f }));
   const weights = [
     { v: 400, label: "Regular" },
     { v: 700, label: "Bold" },
     { v: 900, label: "Black" },
-  ]
-    .map((w) => `<option value="${w.v}"${s.fontWeight === w.v ? " selected" : ""}>${w.label}</option>`)
-    .join("");
+  ];
   const toggle = (key, label, on) =>
     `<label class="ap-toggle-container cap-ed-toggle"><input type="checkbox" data-ce-toggle="${key}" ${on ? "checked" : ""} /><i></i><span>${label}</span></label>`;
 
   return `
     ${group(
       "Text",
-      `${field("Font", `<select class="cap-ed-select" data-ce-set="fontFamily">${fams}</select>`)}
+      `${field("Font", pick("fontFamily", s.fontFamily, fams))}
        ${field("Size", `<input type="number" class="cap-ed-num" data-ce-set="fontSizePx" min="24" max="160" value="${s.fontSizePx}" />`)}
-       ${field("Weight", `<select class="cap-ed-select" data-ce-set="fontWeight">${weights}</select>`)}
+       ${field("Weight", pick("fontWeight", s.fontWeight, weights))}
        ${field("Text color", colorInput("textColor", s.textColor))}
        ${field("Uppercase", toggle("uppercase", "", s.uppercase))}`,
     )}
@@ -441,10 +463,10 @@ function renderFontTab() {
     )}
     ${group(
       "Emphasis",
-      `${field("Current word", colorInput("highlightColor", s.highlightColor))}
-       ${field("Highlight 1", colorInput("highlight1Color", s.highlight1Color))}
-       ${field("Highlight 2", colorInput("highlight2Color", s.highlight2Color))}
-       ${field("Word recolor", colorInput("manualFontColor", s.manualFontColor))}`,
+      `${field("Word being said", colorInput("highlightColor", s.highlightColor))}
+       ${field("Highlight", colorInput("highlight1Color", s.highlight1Color))}
+       ${field("Second highlight", colorInput("highlight2Color", s.highlight2Color))}
+       ${field("Colored word", colorInput("manualFontColor", s.manualFontColor))}`,
     )}
   `;
 }
@@ -474,14 +496,18 @@ function renderEffectsTab() {
        )}
        ${field("Max words", `<input type="number" class="cap-ed-num" data-ce-set="wordsPerCue" min="0" max="12" value="${s.wordsPerCue}" />`, "0 = no limit")}`,
     )}
-    ${group(
-      "Safe area",
-      field(
-        "Dead zones",
-        segBtns("deadZones", s.deadZones, DEAD_ZONE_OPTIONS),
-        "Shows where the app's buttons cover the video",
-      ),
-    )}
+    ${
+      clock
+        ? ""
+        : group(
+            "Safe area",
+            field(
+              "Dead zones",
+              segBtns("deadZones", s.deadZones, DEAD_ZONE_OPTIONS),
+              "Shows where the app's buttons cover the video",
+            ),
+          )
+    }
   `;
 }
 
@@ -528,7 +554,7 @@ function renderCleanupList() {
       <button type="button" class="cap-ed-clean-row__seek" ${attrs.seek}>
         <span class="cap-ed-clean-row__time">${fmt(time)}</span><span class="cap-ed-clean-row__label">${escapeHtml(label)}</span>
       </button>
-      <button type="button" class="ap-button ghost grey" ${attrs.toggle}>${removed ? "Restore" : "Remove"}</button>
+      <button type="button" class="ap-button ghost grey" ${attrs.toggle}>${removed ? "Show" : "Hide"}</button>
     </li>`;
   const fillerRows = fillers
     .map((f) =>
@@ -553,7 +579,17 @@ function renderCleanupList() {
       ),
     )
     .join("");
+  const anyShown = fillers.some((f) => !words[f.startIdx].removed) || pauses.some((p) => !pausesRemoved.has(p.idx));
   host.innerHTML = `
+    ${
+      fillers.length || pauses.length
+        ? `<div class="cap-ed-clean-all">
+            <button type="button" class="ap-button stroked grey" data-ce-cleanup-all="${anyShown ? "remove" : "restore"}">
+              <i class="${anyShown ? "ap-icon-eye-off" : "ap-icon-eye-on"}" aria-hidden="true"></i><span>${anyShown ? "Hide them all" : "Show them all"}</span>
+            </button>
+          </div>`
+        : ""
+    }
     <div class="cap-ed-clean-group">
       <p class="cap-ed-clean-group__title">Filler words · ${fillers.length}</p>
       ${fillers.length ? `<ul class="cap-ed-clean-list">${fillerRows}</ul>` : `<p class="cap-ed-clean-none">None found.</p>`}
@@ -566,7 +602,7 @@ function renderCleanupList() {
           style="--fill:${((pauseThreshold - 0.2) / 1.3) * 100}%" aria-label="Pause threshold" />
       </label>
       ${pauses.length ? `<ul class="cap-ed-clean-list">${pauseRows}</ul>` : `<p class="cap-ed-clean-none">None that long.</p>`}
-      <p class="cap-ed-clean-note">A removed pause keeps the subtitle on screen through the silence — the video itself isn't cut.</p>
+      <p class="cap-ed-clean-note">A hidden pause keeps the subtitle on screen through the silence. Nothing is cut from the video.</p>
     </div>`;
 }
 
@@ -741,9 +777,9 @@ function openWordMenu(wordIdx, anchorEl) {
   closeMenu();
   const w = words[wordIdx];
   const dots = [
-    { mark: "font", color: state.manualFontColor, label: "Font color" },
-    { mark: "h1", color: state.highlight1Color, label: "Highlight 1" },
-    { mark: "h2", color: state.highlight2Color, label: "Highlight 2" },
+    { mark: "font", color: state.manualFontColor, label: "Colored word" },
+    { mark: "h1", color: state.highlight1Color, label: "Highlight" },
+    { mark: "h2", color: state.highlight2Color, label: "Second highlight" },
   ]
     .map(
       (d) =>
@@ -823,6 +859,18 @@ function onRootClick(e) {
   if (t.closest('[data-ce="back"]')) return seek(currentTime - 5);
   if (t.closest('[data-ce="fwd"]')) return seek(currentTime + 5);
 
+  const picked = t.closest("[data-ce-pick]");
+  if (picked) {
+    picked.closest("details")?.removeAttribute("open");
+    const key = picked.dataset.cePick;
+    state[key] = key === "fontWeight" ? Number(picked.dataset.cePickVal) : picked.dataset.cePickVal;
+    renderTabPanel();
+    recomputeCues();
+    repaintAll();
+    emitChange();
+    return undefined;
+  }
+
   // Click the preview (anywhere but the caption box / frame) toggles playback.
   if (
     t.closest("[data-ce-stage]") &&
@@ -855,7 +903,7 @@ function onRootClick(e) {
     detectFillers(words).forEach((f) => {
       for (let k = 0; k < f.count; k++) if (words[f.startIdx + k]) words[f.startIdx + k].removed = removed;
     });
-    pausesRemoved = new Set(removed ? detectPauses(words).map((p) => p.idx) : []);
+    pausesRemoved = new Set(removed ? detectPauses(words, pauseThreshold).map((p) => p.idx) : []);
     renderTranscript();
     recomputeCues();
     renderCaptionFrame(true);
@@ -960,7 +1008,9 @@ function onRootDblClick(e) {
 function onRootInput(e) {
   if (e.target.matches?.("[data-ce-pause-threshold]")) {
     pauseThreshold = Number(e.target.value);
-    pausesRemoved = new Set();
+    // Pauses still long enough stay hidden; the rest are no longer pauses.
+    const still = new Set(detectPauses(words, pauseThreshold).map((p) => p.idx));
+    pausesRemoved = new Set([...pausesRemoved].filter((i) => still.has(i)));
     renderTranscript();
     renderCleanupList();
     updateReconcile();
@@ -1272,6 +1322,43 @@ export function setTime(sec, isPlaying = false) {
   currentTime = Math.max(0, Math.min(duration, sec));
   playing = isPlaying;
   syncTime();
+}
+
+// The Clips space reads the style to say where it comes from…
+export function getState() {
+  return mounted ? { ...state } : null;
+}
+
+// …and puts the video's style back on the clip (the words stay as they are).
+export function resetStyle(captionState) {
+  if (!mounted) return;
+  state = { ...defaultCaptionState(), ...captionState, deadZones: state.deadZones };
+  renderTabPanel();
+  renderTranscript();
+  recomputeCues();
+  repaintAll();
+  emitChange();
+}
+
+// The safe-area guide, set from the host's Output monitor: a guide to look
+// at, not a property of the clip, so it isn't a change.
+export function setDeadZones(v) {
+  if (!mounted) return;
+  state.deadZones = v;
+  renderDeadzones();
+}
+
+// What's hidden from the subtitles, in clip seconds — the host marks it on its
+// timeline.
+export function getHiddenSpans() {
+  if (!mounted) return [];
+  const hiddenWords = words
+    .filter((w) => w.removed)
+    .map((w) => ({ start: w.start, end: w.end, label: `“${w.text}” hidden` }));
+  const hiddenPauses = detectPauses(words, pauseThreshold)
+    .filter((p) => pausesRemoved.has(p.idx))
+    .map((p) => ({ start: p.start, end: p.end, label: `${p.dur}s pause hidden` }));
+  return [...hiddenWords, ...hiddenPauses];
 }
 
 // The Clean up tool is the transcript's cleanup mode, switched by the host.
