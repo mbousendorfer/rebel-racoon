@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2119";
-import { conceptHint } from "./concepts.js?v=2119";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2126";
+import { conceptHint } from "./concepts.js?v=2126";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,11 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2119";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2119";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2119";
-import { isFlagOn } from "./feature-flags.js?v=2119";
-import { parseHashParams } from "./url-state.js?v=2119";
+} from "./playbook-brand-kit.js?v=2126";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2126";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2126";
+import { isFlagOn } from "./feature-flags.js?v=2126";
+import { clipLookOf } from "./videos-store.js?v=2126";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2126";
+import { parseHashParams } from "./url-state.js?v=2126";
 import {
   isListPart,
   voiceParts,
@@ -47,10 +49,10 @@ import {
   optimizeForNetwork,
   copyBrandVoice,
   markAdapted,
-} from "./voice-parts.js?v=2119";
-import { showToast } from "./components/toast.js?v=2119";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2119";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, networkLabel, networkIcon } from "./social-profiles.js?v=2119";
+} from "./voice-parts.js?v=2126";
+import { showToast } from "./components/toast.js?v=2126";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2126";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, networkLabel, networkIcon } from "./social-profiles.js?v=2126";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2619,6 +2621,17 @@ function renderBrandRead2(data) {
       { wide: true, index: 4 },
     ),
   );
+  // flag clipsSpace — what this brand's clips look like: identity, like the
+  // image look; read when a video is added or a clip is opened (CONCEPTS §1).
+  if (isFlagOn("clipsSpace") && isLibrary())
+    blocks.push(
+      pb2Block("How your clips look", renderClipLook(data), {
+        wide: true,
+        index: 5,
+        icon: "ap-icon-video",
+        hint: "Where every clip starts in the Clips space. A clip can still change it for itself.",
+      }),
+    );
   // The creation recap only: the image look, before the Playbook has an Images tab.
   if (!isLibrary())
     blocks.push(
@@ -2630,6 +2643,64 @@ function renderBrandRead2(data) {
       }),
     );
   return `${pb2TabHead("brand")}<div class="pb2-grid">${blocks.join("")}</div>`;
+}
+
+// The clip look saves as it changes, like the image look — there's no form to
+// open for four settings.
+function renderClipLook(data) {
+  const look = clipLookOf(data);
+  const b = look.brand;
+  const corners = { tl: "Top left", tr: "Top right", bl: "Bottom left", br: "Bottom right" };
+  if (!canEditView())
+    return `<dl class="pb2-facts pb2-facts--alone">
+      <div><dt>Subtitles</dt><dd>${esc(presetLabel(look.subtitlePreset))}</dd></div>
+      <div><dt>Logo</dt><dd>${b.logo ? esc(corners[b.corner]) : "None"}</dd></div>
+      <div><dt>Intro card</dt><dd>${b.intro ? "Yes" : "No"}</dd></div>
+      <div><dt>Outro card</dt><dd>${b.outro ? "Yes" : "No"}</dd></div>
+    </dl>`;
+  const toggle = (key, label, on, off = false) =>
+    `<label class="ap-toggle-container"><input type="checkbox" data-pb2-cliplook-toggle="${key}" ${on ? "checked" : ""} ${off ? "disabled" : ""} /><i></i><span>${label}</span></label>`;
+  return `<div class="pb2-cliplook">
+    ${dsSelect({
+      label: "Subtitles",
+      valueHtml: esc(presetLabel(look.subtitlePreset)),
+      current: look.subtitlePreset,
+      attr: "data-pb2-cliplook-preset",
+      options: SUBTITLE_IDS.map((id) => ({ id, label: presetLabel(id) })),
+    })}
+    ${toggle("logo", data.brandLogo ? "The logo on every clip" : "The logo on every clip — add a logo first", b.logo && !!data.brandLogo, !data.brandLogo)}
+    ${
+      b.logo && data.brandLogo
+        ? dsSelect({
+            label: "Corner",
+            valueHtml: esc(corners[b.corner]),
+            current: b.corner,
+            attr: "data-pb2-cliplook-corner",
+            options: Object.entries(corners).map(([id, label]) => ({ id, label })),
+          })
+        : ""
+    }
+    ${toggle("intro", "An intro card with the clip's title", b.intro)}
+    ${toggle("outro", "An outro card with the call to action", b.outro)}
+  </div>`;
+}
+
+function setClipLook(patch) {
+  const d = cfg.getData();
+  if (!d) return;
+  const look = clipLookOf(d);
+  d.clipLook = {
+    subtitlePreset: look.subtitlePreset,
+    logo: look.brand.logo,
+    corner: look.brand.corner,
+    logoSize: look.brand.logoSize,
+    intro: look.brand.intro,
+    outro: look.brand.outro,
+    ...(d.clipLook || {}),
+    ...patch,
+  };
+  cfg.commit?.();
+  repaint();
 }
 
 // The Images tab saves as it changes (styles, reference images, Generate image
@@ -3068,6 +3139,13 @@ function onClick(event) {
     else run();
     return;
   }
+  const clipPreset = event.target.closest("[data-pb2-cliplook-preset]");
+  if (clipPreset) return setClipLook({ subtitlePreset: clipPreset.dataset.pb2CliplookPreset });
+  const clipCorner = event.target.closest("[data-pb2-cliplook-corner]");
+  if (clipCorner) return setClipLook({ corner: clipCorner.dataset.pb2CliplookCorner });
+  const clipToggle = event.target.closest("[data-pb2-cliplook-toggle]");
+  if (clipToggle && clipToggle.matches("input"))
+    return setClipLook({ [clipToggle.dataset.pb2CliplookToggle]: clipToggle.checked });
   if (event.target.closest("[data-pb2-voice-own]") && voiceNet) {
     const d = cfg.getData();
     const before = snapshotEditable(d);

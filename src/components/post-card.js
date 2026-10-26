@@ -19,19 +19,19 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2119";
-import { isPortraitFormat } from "../clip-formats.js?v=2119";
-import { presetById } from "../clip-captions.js?v=2119";
-import { renderFeedbackControl } from "./feedback-control.js?v=2119";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2126";
+import { isPortraitFormat } from "../clip-formats.js?v=2126";
+import { presetById } from "../clip-captions.js?v=2126";
+import { renderFeedbackControl } from "./feedback-control.js?v=2126";
 import {
   networkMeta,
   networkLabel,
   normalizeNetwork,
   profileForNetwork,
   renderProfileTag,
-} from "../social-profiles.js?v=2119";
-import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2119";
-import { REVEAL_MS } from "../archie-pixels.js?v=2119";
+} from "../social-profiles.js?v=2126";
+import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2126";
+import { REVEAL_MS } from "../archie-pixels.js?v=2126";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -152,6 +152,9 @@ export function renderPostCard(post, opts = {}) {
   const editing = inlineEdit && opts.editing === true;
   const selectable = opts.selectable === true;
   const selected = selectable && opts.selected === true;
+  // A host outside a chat (the Clips space) narrows the rail: "Reference in
+  // chat" has no chat to reference into there. Default: every action.
+  const rail = (name, markup) => (!opts.railActions || opts.railActions.includes(name) ? markup : "");
 
   // Multi-select affordance — a checkbox sits in the .posts__row-check
   // gutter, which CSS reserves at a fixed width on every row so a
@@ -380,22 +383,30 @@ export function renderPostCard(post, opts = {}) {
            Reference · Schedule · Edit · Save as draft · Assign · Delete.
            Rewriting is asked in the chat; images live in the media block. -->
       <div class="posts__row-actions" aria-label="Draft actions">
-        <button
-          type="button"
-          class="ap-icon-button stroked blue"
-          aria-label="Reference in chat"
-          title="Reference"
-          data-post-mention="${post.id}"
-          ${regenerating ? "disabled" : ""}
-        >
-          <i class="ap-icon-at"></i>
-        </button>
         ${raw(
-          renderBlockedAction(post, regenerating, {
-            label: "Schedule draft",
-            icon: "ap-icon-calendar",
-            attr: "data-post-schedule",
-          }),
+          rail(
+            "mention",
+            `<button
+              type="button"
+              class="ap-icon-button stroked blue"
+              aria-label="Reference in chat"
+              title="Reference"
+              data-post-mention="${post.id}"
+              ${regenerating ? "disabled" : ""}
+            >
+              <i class="ap-icon-at"></i>
+            </button>`,
+          ),
+        )}
+        ${raw(
+          rail(
+            "schedule",
+            renderBlockedAction(post, regenerating, {
+              label: "Schedule draft",
+              icon: "ap-icon-calendar",
+              attr: "data-post-schedule",
+            }),
+          ),
         )}
         ${raw(
           inlineEdit
@@ -411,22 +422,30 @@ export function renderPostCard(post, opts = {}) {
               </button>`
             : "",
         )}
-        <button
-          type="button"
-          class="ap-icon-button stroked"
-          aria-label="Save as draft"
-          title="Save as draft in Agorapulse — moves it out of this chat"
-          data-post-save-draft="${post.id}"
-          ${regenerating ? "disabled" : ""}
-        >
-          <i class="ap-icon-file--text"></i>
-        </button>
         ${raw(
-          renderBlockedAction(post, regenerating, {
-            label: "Assign for review",
-            icon: "ap-icon-user--plus",
-            attr: "data-post-assign",
-          }),
+          rail(
+            "save",
+            `<button
+              type="button"
+              class="ap-icon-button stroked"
+              aria-label="Save as draft"
+              title="Save as draft in Agorapulse — moves it out of this chat"
+              data-post-save-draft="${post.id}"
+              ${regenerating ? "disabled" : ""}
+            >
+              <i class="ap-icon-file--text"></i>
+            </button>`,
+          ),
+        )}
+        ${raw(
+          rail(
+            "assign",
+            renderBlockedAction(post, regenerating, {
+              label: "Assign for review",
+              icon: "ap-icon-user--plus",
+              attr: "data-post-assign",
+            }),
+          ),
         )}
         <button
           type="button"

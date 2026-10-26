@@ -9,9 +9,9 @@
 //     (the Image Generator's "Use in draft" on a run of several slides)
 //   subscribe(sessionId, fn)    → unsubscribe fn
 
-import { postsBySession as seedPostsBySession, allSeedSessions as seedRecentSessions } from "./mocks.js?v=2119";
-import { isNewUser } from "./user-mode.js?v=2119";
-import { createSessionNotifier } from "./store-utils.js?v=2119";
+import { postsBySession as seedPostsBySession, allSeedSessions as seedRecentSessions } from "./mocks.js?v=2126";
+import { isNewUser } from "./user-mode.js?v=2126";
+import { createSessionNotifier } from "./store-utils.js?v=2126";
 
 // Demo session ids — only these get the seeded posts mock. Brand-new
 // conversations start empty (cf. library.js for the same rationale).
@@ -177,6 +177,9 @@ export function updatePostContent(sessionId, postId, partial) {
   if (partial.hashtags !== undefined) post.hashtags = partial.hashtags;
   if (partial.cta !== undefined) post.cta = partial.cta;
   if (partial.firstComment !== undefined) post.firstComment = partial.firstComment;
+  // Scheduled from a host that keeps its drafts listed (the Clips space).
+  if (partial.status !== undefined) post.status = partial.status;
+  if (partial.scheduledFor !== undefined) post.scheduledFor = partial.scheduledFor;
   if (partial.isRegenerating !== undefined) post.isRegenerating = partial.isRegenerating;
   if (partial.regenerateStage !== undefined) post.regenerateStage = partial.regenerateStage;
   if (partial.isGeneratingImage !== undefined) post.isGeneratingImage = partial.isGeneratingImage;

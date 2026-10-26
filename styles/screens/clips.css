@@ -1,0 +1,1447 @@
+/* The Clips space (flag clipsSpace) — library, project, editor.
+   mode: html-prototype · design-guidelines · DS: @agorapulse/ui-theme (jsDelivr @latest)
+   Ink grey-80…100, every hairline grey-20, blue only on what you can act on,
+   card hover = blue border. The video surfaces are black: footage reads on
+   black, the way every player shows it. */
+
+.clips-view {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  height: 100%;
+}
+
+.clips-view__page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-lg);
+  padding: var(--ref-spacing-md) var(--ref-spacing-xl) var(--ref-spacing-xxl);
+  max-width: calc(var(--app-content) + 2 * var(--ref-spacing-xl));
+  width: 100%;
+  margin: 0 auto;
+}
+
+.clips-topbar-title {
+  margin-left: var(--ref-spacing-xs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Add a video ─────────────────────────────────────────────────── */
+
+.clips-add {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--ref-spacing-xs) var(--ref-spacing-md);
+  padding: var(--ref-spacing-lg);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-card);
+  background: var(--ref-color-white);
+}
+
+.clips-add.is-dragover {
+  border-color: var(--ref-color-electric-blue-100);
+  background: var(--ref-color-electric-blue-05);
+}
+
+.clips-add__icon {
+  grid-row: span 2;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  color: var(--ref-color-grey-100);
+  font-size: 32px;
+}
+
+.clips-add__title {
+  margin: 0;
+  font-size: var(--sys-text-style-h2-size);
+  line-height: var(--sys-text-style-h2-line-height);
+  font-weight: var(--sys-text-style-h2-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.clips-add__sub,
+.clips-add__rules {
+  margin: 0;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--ref-color-grey-80);
+}
+
+.clips-add__form,
+.clips-add__rules {
+  grid-column: 2;
+}
+
+.clips-add__form {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  flex-wrap: wrap;
+  margin-top: var(--ref-spacing-xs);
+}
+
+.clips-add__url {
+  flex: 1 1 320px;
+  max-width: 480px;
+}
+
+.clips-add__or {
+  color: var(--ref-color-grey-80);
+  font-size: var(--sys-text-style-body-size);
+}
+
+.clips-add__rules {
+  font-size: var(--sys-text-style-caption-size);
+}
+
+/* ── The library ─────────────────────────────────────────────────── */
+
+.clips-library {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+}
+
+.clips-library__title {
+  margin: 0;
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.clips-library__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--ref-spacing-md);
+}
+
+.clips-video {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-card);
+  background: var(--ref-color-white);
+  overflow: hidden;
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.15s var(--app-ease-standard);
+}
+
+.clips-video:hover,
+.clips-video:focus-visible {
+  border-color: var(--ref-color-electric-blue-100);
+}
+
+.clips-video__thumb {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: #000;
+}
+
+.clips-video__thumb video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+}
+
+.clips-video__duration {
+  position: absolute;
+  right: var(--ref-spacing-xs);
+  bottom: var(--ref-spacing-xs);
+  padding: 0 var(--ref-spacing-xxs);
+  border-radius: var(--app-radius-sm);
+  background: var(--app-thumb-scrim);
+  color: var(--ref-color-white);
+  font-size: var(--sys-text-style-caption-bold-size);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  font-variant-numeric: tabular-nums;
+}
+
+.clips-video__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  padding: var(--ref-spacing-sm);
+}
+
+.clips-video__name {
+  font-size: var(--sys-text-style-body-bold-size);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clips-video__meta {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+
+.clips-view__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xxl) 0;
+  text-align: center;
+}
+
+/* A progress bar — the DS ships none in CSS-UI. */
+.clips-progress {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  margin-top: var(--ref-spacing-xxs);
+}
+
+.clips-progress__track {
+  flex: 1;
+  height: 4px;
+  border-radius: var(--app-radius-pill);
+  background: var(--ref-color-grey-10);
+  overflow: hidden;
+}
+
+.clips-progress__fill {
+  display: block;
+  height: 100%;
+  background: var(--ref-color-orange-100);
+  transition: width 0.3s linear;
+}
+
+.clips-progress__label {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ── Analysis ────────────────────────────────────────────────────── */
+
+.clips-analyzing {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(280px, 1fr);
+  gap: var(--ref-spacing-xl);
+  align-items: center;
+  padding: var(--ref-spacing-xl) 0;
+}
+
+.clips-analyzing__player {
+  aspect-ratio: 16 / 9;
+  border-radius: var(--app-radius-card);
+  background: #000;
+  overflow: hidden;
+}
+
+.clips-analyzing__player video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.clips-analyzing__title {
+  margin: 0 0 var(--ref-spacing-xxs);
+  font-size: var(--sys-text-style-h2-size);
+  line-height: var(--sys-text-style-h2-line-height);
+  font-weight: var(--sys-text-style-h2-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.clips-analyzing__sub {
+  margin: 0 0 var(--ref-spacing-sm);
+  color: var(--ref-color-grey-80);
+}
+
+.clips-analyzing__steps {
+  list-style: none;
+  margin: var(--ref-spacing-md) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+}
+
+.clips-analyzing__step {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  color: var(--ref-color-grey-80);
+}
+
+.clips-analyzing__step.is-current {
+  color: var(--ref-color-grey-100);
+  font-weight: var(--sys-text-style-body-bold-weight);
+}
+
+.clips-analyzing__dot {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--app-radius-circle);
+  border: 1px solid var(--ref-color-grey-20);
+  font-size: 12px;
+}
+
+.clips-analyzing__dot i {
+  visibility: hidden;
+}
+
+.clips-analyzing__step.is-done .clips-analyzing__dot {
+  border-color: var(--ref-color-green-100);
+  background: var(--ref-color-green-100);
+  color: var(--ref-color-white);
+}
+
+.clips-analyzing__step.is-done .clips-analyzing__dot i {
+  visibility: visible;
+}
+
+.clips-analyzing__step.is-current .clips-analyzing__dot {
+  border: 2px solid var(--ref-color-orange-100);
+  border-right-color: transparent;
+  animation: clips-spin 0.9s linear infinite;
+}
+
+@keyframes clips-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── Project ─────────────────────────────────────────────────────── */
+
+.clips-overview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+}
+
+.clips-overview__track {
+  position: relative;
+  height: 28px;
+  border-radius: var(--app-radius-sm);
+  background: var(--ref-color-grey-05);
+  border: 1px solid var(--ref-color-grey-20);
+}
+
+.clips-overview__clip {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  padding: 0;
+  border: 1px solid var(--ref-color-grey-60);
+  border-radius: 3px;
+  background: var(--ref-color-grey-40);
+  cursor: pointer;
+}
+
+.clips-overview__clip.is-selected {
+  border-color: var(--ref-color-electric-blue-100);
+  background: var(--ref-color-electric-blue-40);
+}
+
+.clips-overview__clip:hover {
+  border-color: var(--ref-color-electric-blue-150);
+}
+
+.clips-overview__scale {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+  font-variant-numeric: tabular-nums;
+}
+
+.clips-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+  flex-wrap: wrap;
+}
+
+.clips-toolbar__all {
+  white-space: nowrap;
+}
+
+.clips-toolbar__count {
+  margin: 0;
+  color: var(--ref-color-grey-80);
+}
+
+.clips-toolbar__options {
+  display: flex;
+  gap: var(--ref-spacing-xs);
+  flex-wrap: wrap;
+}
+
+.clips-toolbar__actions {
+  display: flex;
+  gap: var(--ref-spacing-xs);
+  margin-left: auto;
+}
+
+.clips-preset-swatch {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 22px;
+  margin-right: var(--ref-spacing-xs);
+  border-radius: var(--app-radius-sm);
+  background: var(--ref-color-grey-100);
+  color: var(--ref-color-white);
+  font-size: 12px;
+  flex: none;
+}
+
+.clips-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(440px, 1fr));
+  gap: var(--ref-spacing-md);
+}
+
+.clips-list__none {
+  color: var(--ref-color-grey-80);
+}
+
+.clips-clip {
+  position: relative;
+  display: grid;
+  grid-template-columns: 168px minmax(0, 1fr);
+  gap: var(--ref-spacing-md);
+  padding: var(--ref-spacing-sm);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-card);
+  background: var(--ref-color-white);
+  transition: border-color 0.15s var(--app-ease-standard);
+}
+
+.clips-clip:hover {
+  border-color: var(--ref-color-electric-blue-100);
+}
+
+.clips-clip.is-flash {
+  border-color: var(--ref-color-electric-blue-100);
+  box-shadow: 0 0 0 3px var(--ref-color-electric-blue-10);
+}
+
+.clips-clip__check {
+  position: absolute;
+  top: calc(var(--ref-spacing-sm) + var(--ref-spacing-xs));
+  left: calc(var(--ref-spacing-sm) + var(--ref-spacing-xs));
+  z-index: 2;
+  padding: 2px;
+  border-radius: var(--app-radius-sm);
+  background: var(--ref-color-white);
+}
+
+.clips-clip__preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: start;
+  height: 240px;
+  border-radius: var(--app-radius-md);
+  background: #000;
+  overflow: hidden;
+}
+
+.clips-clip__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  min-width: 0;
+}
+
+.clips-clip__meta {
+  display: flex;
+  gap: var(--ref-spacing-xs);
+  margin: 0;
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+  font-variant-numeric: tabular-nums;
+}
+
+.clips-clip__meta span + span::before {
+  content: "·";
+  margin-right: var(--ref-spacing-xs);
+}
+
+.clips-clip__title {
+  margin: 0;
+  font-size: var(--sys-text-style-h4-size);
+  line-height: var(--sys-text-style-h4-line-height);
+  font-weight: var(--sys-text-style-h4-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.clips-clip__summary,
+.clips-clip__why {
+  margin: 0;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--ref-color-grey-80);
+}
+
+.clips-clip__why-label {
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.clips-clip__own {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxs);
+  margin: 0;
+}
+
+.clips-clip__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  margin-top: auto;
+  padding-top: var(--ref-spacing-xs);
+}
+
+/* A reframed preview: the canvas at the clip's own format, a caption sample. */
+.clips-preview {
+  position: relative;
+  height: 100%;
+  max-width: 100%;
+  background: #000;
+  overflow: hidden;
+}
+
+.clips-preview__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.clips-preview__video {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.clips-preview__caption {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  bottom: 22%;
+  text-align: center;
+  font-family: Montserrat, Roboto, sans-serif;
+  font-size: 12px;
+  line-height: 1.15;
+  color: var(--ref-color-white);
+  pointer-events: none;
+}
+
+/* ── Drafts ──────────────────────────────────────────────────────── */
+
+.clips-setup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-lg);
+  max-width: 720px;
+  padding: var(--ref-spacing-lg);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-card);
+  background: var(--ref-color-white);
+}
+
+.clips-setup__title {
+  margin: 0 0 var(--ref-spacing-xxs);
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.clips-setup__sub,
+.clips-setup__hint,
+.clips-setup__cta-hint {
+  margin: 0;
+  color: var(--ref-color-grey-80);
+}
+
+.clips-setup__cta-hint {
+  font-size: var(--sys-text-style-caption-size);
+}
+
+.clips-setup__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+}
+
+.clips-setup__label {
+  margin: 0;
+  font-size: var(--sys-text-style-body-bold-size);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.clips-setup__accounts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xs) var(--ref-spacing-md);
+}
+
+.clips-setup__connect {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xs);
+}
+
+.clips-setup__ctas {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--ref-spacing-xs);
+}
+
+.clips-setup__foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--ref-spacing-xs);
+}
+
+.clips-drafts__writing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-xxl) 0;
+  color: var(--ref-color-grey-80);
+}
+
+.clips-drafts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  gap: var(--ref-spacing-md);
+  align-items: start;
+}
+
+.clips-drafts__status {
+  margin: 0 0 var(--ref-spacing-xs);
+}
+
+.clips-drafts__player {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  height: 360px;
+  background: #000;
+}
+
+.clips-drafts__edit {
+  position: absolute;
+  top: var(--ref-spacing-xs);
+  right: var(--ref-spacing-xs);
+}
+
+/* ── The clip editor ─────────────────────────────────────────────────
+   Full-bleed like body.account-scope: the rail steps aside, the topbar stays
+   (it carries the way back, the title and Save). Transcript · stage · panel ·
+   tool rail, one timeline under the stage. */
+
+body.clips-editing .app-sidebar {
+  display: none;
+}
+
+body.clips-editing .app-shell {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+body.clips-editing .app-topbar,
+body.clips-editing .app-content {
+  grid-column: 1;
+}
+
+.clips-ed__title-input {
+  min-width: 0;
+  width: min(480px, 40vw);
+  margin-left: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
+  border: 1px solid transparent;
+  border-radius: var(--app-radius-sm);
+  background: transparent;
+  font: inherit;
+  font-size: var(--sys-text-style-h4-size);
+  font-weight: var(--sys-text-style-h4-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.clips-ed__title-input:hover,
+.clips-ed__title-input:focus {
+  border-color: var(--ref-color-grey-20);
+  outline: none;
+}
+
+.clips-ed__topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+}
+
+.clips-ed {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr) 340px 76px;
+  height: 100%;
+  min-height: 0;
+  background: var(--ref-color-white);
+}
+
+/* The caption editor's controls are drawn for the dark modal through the
+   --app-vc-* ramp; in this light editor the ramp maps onto the DS greys. */
+.clips-ed__light {
+  --app-vc-surface: var(--ref-color-white);
+  --app-vc-surface-raised: var(--ref-color-grey-05);
+  --app-vc-surface-sunken: var(--ref-color-grey-05);
+  --app-vc-surface-overlay: var(--ref-color-white);
+  --app-vc-field: var(--ref-color-white);
+  --app-vc-border: var(--ref-color-grey-20);
+  --app-vc-border-strong: var(--ref-color-grey-20);
+  --app-vc-text: var(--ref-color-grey-100);
+  --app-vc-text-muted: var(--ref-color-grey-80);
+  --app-vc-text-subtle: var(--ref-color-grey-80);
+  --app-vc-hover: var(--ref-color-grey-05);
+  --app-vc-accent-soft: var(--ref-color-electric-blue-05);
+  color: var(--ref-color-grey-100);
+}
+
+.clips-ed__transcript {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  min-height: 0;
+  padding: var(--ref-spacing-md);
+  border-right: 1px solid var(--ref-color-grey-20);
+}
+
+.clips-ed__side-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--ref-spacing-xs);
+}
+
+.clips-ed__side-title,
+.clips-ed__panel-title {
+  margin: 0;
+  font-size: var(--sys-text-style-h4-size);
+  line-height: var(--sys-text-style-h4-line-height);
+  font-weight: var(--sys-text-style-h4-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.clips-ed__side-hint,
+.clips-ed__panel-lead,
+.clips-ed__hint,
+.clips-ed__fact {
+  margin: 0;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
+}
+
+.clips-ed__words {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  margin-top: var(--ref-spacing-xs);
+  font-size: var(--sys-text-style-body-size);
+  line-height: 1.7;
+}
+
+/* ── Stage ── */
+
+.clips-ed__main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: var(--ref-color-grey-05);
+}
+
+.clips-ed__stage {
+  user-select: none;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ref-spacing-lg);
+  padding: var(--ref-spacing-md) var(--ref-spacing-md) 0;
+}
+
+.clips-ed__source {
+  position: relative;
+  display: none;
+  flex: 1 1 auto;
+  max-width: 62%;
+  max-height: 100%;
+  background: #000;
+}
+
+.clips-ed[data-tool="reframe"] .clips-ed__source {
+  display: block;
+}
+
+.clips-ed__video,
+.clips-ed__overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.clips-ed__overlay {
+  cursor: grab;
+  touch-action: none;
+}
+
+.clips-ed__output-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+}
+
+.clips-ed__stage-label {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+
+.clips-ed__source .clips-ed__stage-label {
+  position: absolute;
+  left: 0;
+  top: calc(100% + var(--ref-spacing-xxs));
+}
+
+.clips-ed__output {
+  position: relative;
+  overflow: hidden;
+  background: #000;
+  border-radius: var(--app-radius-sm);
+}
+
+.clips-ed__out-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* The subtitle box is placed in Subtitles; elsewhere it is only shown. */
+.clips-ed:not([data-tool="subtitles"]) .cap-ed-frame {
+  display: none;
+}
+
+.clips-ed:not([data-tool="subtitles"]) .cap-ed-box {
+  pointer-events: none;
+}
+
+.clips-ed__texts {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.clips-ed-text {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  max-width: 88%;
+  padding: 0.2em 0.45em;
+  font-family: Montserrat, Roboto, sans-serif;
+  font-weight: 800;
+  line-height: 1.15;
+  text-align: center;
+  white-space: pre-wrap;
+  pointer-events: auto;
+  cursor: move;
+}
+
+.clips-ed-text--box {
+  background: #fff;
+  color: #111;
+  border-radius: 0.25em;
+}
+
+.clips-ed-text--plain {
+  color: #fff;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+}
+
+.clips-ed-text.is-off {
+  display: none;
+}
+
+.clips-ed[data-tool="text"] .clips-ed-text.is-off {
+  display: block;
+  opacity: 0.35;
+}
+
+.clips-ed[data-tool="text"] .clips-ed-text.is-selected {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: 2px;
+}
+
+.clips-ed__logo {
+  position: absolute;
+  margin: 5%;
+  pointer-events: none;
+}
+
+.clips-ed__logo[data-corner="tl"] {
+  top: 0;
+  left: 0;
+}
+.clips-ed__logo[data-corner="tr"] {
+  top: 0;
+  right: 0;
+}
+.clips-ed__logo[data-corner="bl"] {
+  bottom: 0;
+  left: 0;
+}
+.clips-ed__logo[data-corner="br"] {
+  bottom: 0;
+  right: 0;
+}
+
+.clips-ed__transport {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-md);
+}
+
+.clips-ed__time {
+  font-variant-numeric: tabular-nums;
+  color: var(--ref-color-grey-100);
+}
+
+.clips-ed__transport-hint {
+  margin-left: auto;
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+
+/* ── Timeline ── */
+
+.clips-ed__timeline {
+  padding: 0 var(--ref-spacing-md) var(--ref-spacing-sm);
+  border-top: 1px solid var(--ref-color-grey-20);
+  background: var(--ref-color-white);
+}
+
+.clips-tl {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: var(--ref-spacing-xs);
+  padding-top: var(--ref-spacing-xs);
+  user-select: none;
+}
+
+.clips-tl__labels {
+  display: grid;
+  grid-template-rows: 20px 48px 40px 24px;
+  gap: 6px;
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+  align-items: center;
+}
+
+.clips-tl__tracks {
+  position: relative;
+  display: grid;
+  grid-template-rows: 20px 48px 40px 24px;
+  gap: 6px;
+}
+
+.clips-tl__ruler,
+.clips-tl__trim,
+.clips-tl__frames,
+.clips-tl__texts {
+  position: relative;
+  cursor: ew-resize;
+  touch-action: none;
+}
+
+.clips-tl__tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-left: 1px solid var(--ref-color-grey-20);
+  padding-left: 4px;
+  font-size: 11px;
+  color: var(--ref-color-grey-80);
+  font-variant-numeric: tabular-nums;
+}
+
+.clips-tl__trim {
+  border-radius: var(--app-radius-sm);
+  background: var(--ref-color-grey-05);
+  overflow: visible;
+}
+
+.clips-tl__wave {
+  position: absolute;
+  inset: 6px 0;
+  display: flex;
+  align-items: center;
+  gap: 1px;
+}
+
+.clips-tl__wave span {
+  flex: 1;
+  border-radius: 1px;
+  background: var(--ref-color-grey-40);
+}
+
+.clips-tl__dim {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.clips-tl__window {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border: 2px solid var(--ref-color-electric-blue-100);
+  border-radius: var(--app-radius-sm);
+  pointer-events: none;
+}
+
+.clips-tl__handle {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 12px;
+  background: var(--ref-color-electric-blue-100);
+  cursor: ew-resize;
+  pointer-events: auto;
+}
+
+.clips-tl__handle--l {
+  left: -8px;
+  border-radius: var(--app-radius-sm) 0 0 var(--app-radius-sm);
+}
+
+.clips-tl__handle--r {
+  right: -8px;
+  border-radius: 0 var(--app-radius-sm) var(--app-radius-sm) 0;
+}
+
+.clips-tl__card {
+  position: absolute;
+  top: 2px;
+  padding: 0 4px;
+  border-radius: 3px;
+  background: var(--ref-color-grey-100);
+  color: var(--ref-color-white);
+  font-size: 10px;
+  line-height: 16px;
+}
+
+.clips-tl__card--intro {
+  left: 6px;
+}
+
+.clips-tl__card--outro {
+  right: 6px;
+}
+
+.clips-tl__seg {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 6px;
+  overflow: hidden;
+  border: 2px dashed var(--cam);
+  border-radius: var(--app-radius-sm);
+  background: color-mix(in srgb, var(--cam) 18%, white);
+  color: var(--ref-color-grey-100);
+  font: inherit;
+  font-size: 11px;
+  line-height: 1.2;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.clips-tl__seg.is-edited {
+  border-style: solid;
+}
+
+.clips-tl__seg.is-current {
+  box-shadow: 0 0 0 2px var(--ref-color-grey-100);
+}
+
+.clips-tl__seg-cam {
+  font-weight: var(--sys-text-style-caption-bold-weight);
+}
+
+.clips-tl__bound {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 10px;
+  margin-left: -5px;
+  cursor: ew-resize;
+  z-index: 2;
+}
+
+.clips-tl__bound::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--ref-color-grey-100);
+  opacity: 0;
+}
+
+.clips-tl__bound:hover::before,
+.clips-tl__bound.is-snapped::before {
+  opacity: 1;
+}
+
+.clips-tl__bound.is-snapped::before {
+  background: var(--ref-color-green-100);
+}
+
+.clips-tl__cut {
+  position: absolute;
+  top: -4px;
+  height: 4px;
+  width: 1px;
+  background: var(--ref-color-grey-80);
+}
+
+.clips-tl__text {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  min-width: 6px;
+  padding: 0 6px;
+  overflow: hidden;
+  border: 1px solid var(--ref-color-grey-60);
+  border-radius: var(--app-radius-sm);
+  background: var(--ref-color-grey-10);
+  color: var(--ref-color-grey-100);
+  font: inherit;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.clips-tl__text.is-current {
+  border-color: var(--ref-color-electric-blue-100);
+}
+
+.clips-tl__playhead {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--ref-color-orange-100);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.clips-tl__playhead::before {
+  content: "";
+  position: absolute;
+  top: -4px;
+  left: -5px;
+  width: 12px;
+  height: 12px;
+  border-radius: var(--app-radius-circle);
+  background: var(--ref-color-orange-100);
+}
+
+.clips-tl__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-md);
+  margin: var(--ref-spacing-xs) 0 0 72px;
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+
+.clips-tl__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+}
+
+.clips-tl__swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+/* ── Panel + rail ── */
+
+.clips-ed__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--ref-spacing-md);
+  border-left: 1px solid var(--ref-color-grey-20);
+}
+
+.clips-ed__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+}
+
+.clips-ed__label {
+  font-size: var(--sys-text-style-body-bold-size);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.clips-ed__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+}
+
+.clips-ed__fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ref-spacing-xs);
+}
+
+.clips-ed__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+
+.clips-ed__seg-head {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+}
+
+.clips-ed__seg-name {
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.clips-ed__layouts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+}
+
+.clips-ed__layout {
+  align-items: flex-start;
+}
+
+.clips-ed__layout::before {
+  margin-top: 2px;
+}
+
+.clips-ed__layout > span {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  color: var(--ref-color-grey-100);
+}
+
+.clips-ed__layout-hint {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+
+.clips-ed__toggle {
+  align-self: flex-start;
+}
+
+.clips-ed__text-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+}
+
+.clips-ed__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-sm);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-md);
+}
+
+.clips-ed__text.is-selected {
+  border-color: var(--ref-color-electric-blue-100);
+}
+
+.clips-ed__text-input {
+  width: 100%;
+  resize: vertical;
+  padding: var(--ref-spacing-xs);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-sm);
+  font: inherit;
+  color: var(--ref-color-grey-100);
+}
+
+.clips-ed__formats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+}
+
+.clips-ed__ratio-glyph {
+  display: inline-block;
+  height: 16px;
+  margin-right: var(--ref-spacing-xs);
+  border: 1.5px solid var(--ref-color-grey-100);
+  border-radius: 2px;
+  vertical-align: middle;
+}
+
+.clips-ed__rail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-xxs);
+  border-left: 1px solid var(--ref-color-grey-20);
+}
+
+.clips-ed__tool {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--ref-spacing-xs) 0;
+  border: 0;
+  border-radius: var(--app-radius-md);
+  background: transparent;
+  color: var(--ref-color-grey-80);
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.clips-ed__tool i {
+  font-size: 20px;
+}
+
+.clips-ed__tool:hover {
+  background: var(--ref-color-grey-05);
+  color: var(--ref-color-grey-100);
+}
+
+.clips-ed__tool.is-on {
+  background: var(--ref-color-electric-blue-05);
+  color: var(--ref-color-electric-blue-100);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+}
+
+/* The Clean up list (caption-editor.js renderCleanupList). */
+.cap-ed-clean-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+}
+
+.cap-ed-clean-group + .cap-ed-clean-group {
+  margin-top: var(--ref-spacing-sm);
+}
+
+.cap-ed-clean-group__title {
+  margin: 0;
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.cap-ed-clean-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.cap-ed-clean-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xxxs) 0;
+  border-bottom: 1px solid var(--ref-color-grey-20);
+}
+
+.cap-ed-clean-row__seek {
+  display: flex;
+  gap: var(--ref-spacing-xs);
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--ref-color-grey-100);
+  text-align: left;
+  cursor: pointer;
+}
+
+.cap-ed-clean-row.is-removed .cap-ed-clean-row__label {
+  text-decoration: line-through;
+  color: var(--ref-color-grey-80);
+}
+
+.cap-ed-clean-row__time {
+  font-variant-numeric: tabular-nums;
+  color: var(--ref-color-grey-80);
+}
+
+.cap-ed-clean-threshold {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+
+.cap-ed-clean-none,
+.cap-ed-clean-note {
+  margin: 0;
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}

@@ -22,10 +22,10 @@
 // surface asks here, and `revokedContextFor()` is the one place allowed to look
 // past the gate.
 
-import { getContexts, getContextById } from "./contexts-store.js?v=2119";
-import { isFlagOn } from "./feature-flags.js?v=2119";
-import { CURRENT_USER, isManager, memberName, getMember, hasProfileAccess } from "./org.js?v=2119";
-import { getConnectedProfileById } from "./social-profiles.js?v=2119";
+import { getContexts, getContextById } from "./contexts-store.js?v=2126";
+import { isFlagOn } from "./feature-flags.js?v=2126";
+import { CURRENT_USER, isManager, memberName, getMember, hasProfileAccess } from "./org.js?v=2126";
+import { getConnectedProfileById } from "./social-profiles.js?v=2126";
 
 // Single choke point. Flag OFF ⇒ the app behaves exactly as it did before
 // sharing existed: one implicit user, everything visible, everything editable.

@@ -61,6 +61,28 @@ export const FLAGS = Object.freeze([
       "connectors' group, and the Add-source modal's Connectors tab.",
   },
   {
+    id: "clipsSpace",
+    group: "New surfaces",
+    tip: "Adds Clips to the rail: a video library per Playbook, one editor for every clip tool (trim, reframe, subtitles…), drafts made right there.",
+    label: "Clips space (/clips)",
+    // OFF: the Clip Studio session, the Video Clips modal and the chat's clip
+    // flow, byte for byte. The flag gates the routes as well as the rail row.
+    default: false,
+    hides:
+      "When OFF (default), clips are made in a chat: the Clip Studio session, " +
+      "the Clips tab of the side panel, the Video Clips modal and the draft " +
+      "questions in the thread.\n\nWhen ON, a Clips row in the rail opens the " +
+      "brand's VIDEO library (/clips). The flow is the video first, the posts " +
+      "last, in the order prod runs it: adding a video starts the analysis at " +
+      "once, you review and pick the moments, set the format and subtitles for " +
+      "the whole video, refine any clip in ONE editor that holds every tool — " +
+      "Trim, Reframe (the crop editor: per-segment One / Two / Fit framing), " +
+      "Subtitles, Transcript, Clean up, Text, Brand, Format — then create one " +
+      "draft per clip × account and schedule them, without a chat. The " +
+      '"Extract video clips" starter leads here; a chat keeps its clips and ' +
+      'gains "Open in Clips".',
+  },
+  {
     id: "conversationStatusCard",
     group: "New surfaces",
     tip: 'A floating card that sums up the chat (sources, ideas, clips, drafts), with its "i" toggle in the topbar.',

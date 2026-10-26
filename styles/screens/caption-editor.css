@@ -713,6 +713,27 @@
   color: #27e36a;
 }
 
+.cap-ed-preview-thinkmedia {
+  font-family: Oswald, Roboto, sans-serif;
+  font-weight: 700;
+  font-style: italic;
+  text-transform: uppercase;
+  -webkit-text-stroke: 0.5px #000;
+  paint-order: stroke fill;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+}
+.cap-ed-preview-thinkmedia mark {
+  color: #27e36a;
+}
+
+.cap-ed-preview-simple {
+  font-family: Oswald, Roboto, sans-serif;
+  font-weight: 400;
+  text-transform: uppercase;
+  -webkit-text-stroke: 0.6px #000;
+  paint-order: stroke fill;
+}
+
 .cap-ed-preview-glitch-infinite {
   font-weight: 800;
   color: #ff7a1a;

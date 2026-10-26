@@ -1053,3 +1053,16 @@
 .pb2-grid--borrowed .voice-rule {
   background: var(--ref-color-white);
 }
+
+/* How your clips look (flag clipsSpace) — four settings, saved as they change. */
+.pb2-cliplook {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ref-spacing-sm);
+}
+
+.pb2-cliplook .ap-select {
+  width: 320px;
+  max-width: 100%;
+}

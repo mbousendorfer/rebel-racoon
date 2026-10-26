@@ -208,6 +208,38 @@ export const PRESETS = [
       highlightColor: "#27e36a",
     },
   },
+  // ThinkMedia + Simple: the two of prod's eight (subtitle-presets.ts) the
+  // modal's catalog never had. Values from the Opus settings table in prod's
+  // docs/plans/clip-editor.md (Oswald semibold italic caps · Bebas-style caps).
+  {
+    id: "thinkmedia",
+    label: "ThinkMedia",
+    apply: {
+      ...BASE_PRESET,
+      fontFamily: "Oswald, Roboto, sans-serif",
+      fontWeight: 700,
+      textColor: "#FFFFFF",
+      uppercase: true,
+      italic: true,
+      strokeWidthPx: 6,
+      highlight: "phrase",
+      highlightColor: "#27e36a",
+    },
+  },
+  {
+    id: "simple",
+    label: "Simple",
+    apply: {
+      ...BASE_PRESET,
+      fontFamily: "Oswald, Roboto, sans-serif",
+      fontWeight: 400,
+      textColor: "#FFFFFF",
+      uppercase: true,
+      shadow: false,
+      strokeWidthPx: 10,
+      highlightColor: "#FFFFFF",
+    },
+  },
   {
     id: "glitch-infinite",
     label: "Glitch Infinite",
@@ -232,6 +264,28 @@ export const PRESETS = [
     },
   },
 ];
+
+// The eight rich presets prod burns (content/studio … tools/subtitle-presets.ts),
+// in prod's order, plus "none". The Clips space (flag clipsSpace) offers these
+// only; the Video Clips modal keeps the whole catalog above.
+export const PROD_PRESET_IDS = Object.freeze([
+  "none",
+  "karaoke",
+  "deep-diver",
+  "youshaei",
+  "popline",
+  "mozi",
+  "thinkmedia",
+  "beasty",
+  "simple",
+]);
+
+// A clip's full CaptionState for a preset id ("none" keeps the default look,
+// switched off) — what the Clips space bakes when the video's preset changes.
+export function captionStateFor(presetId) {
+  const p = presetById(presetId);
+  return { ...defaultCaptionState(), ...(p ? p.apply : {}), presetId: presetId || "none" };
+}
 
 export function defaultCaptionState() {
   return {

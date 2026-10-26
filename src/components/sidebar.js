@@ -1,28 +1,29 @@
-import { html, raw } from "../utils.js?v=2119";
-import { navigate, getPath } from "../router.js?v=2119";
-import { open as openBugReportModal } from "./bug-report-modal.js?v=2119";
-import { open as openFeedbackModal } from "./feedback-modal.js?v=2119";
-import { open as openSearchModal } from "./search-modal.js?v=2119";
-import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=2119";
-import { renderAdminMenu, applyUserMode, applyOrgRole, toggleFlag } from "../admin-menu.js?v=2119";
-import { subscribe as subscribeSessions } from "../sessions-store.js?v=2119";
-import { isFlagOn } from "../feature-flags.js?v=2119";
-import { subscribe as subscribeContexts } from "../contexts-store.js?v=2119";
+import { html, raw } from "../utils.js?v=2126";
+import { navigate, getPath } from "../router.js?v=2126";
+import { open as openBugReportModal } from "./bug-report-modal.js?v=2126";
+import { open as openFeedbackModal } from "./feedback-modal.js?v=2126";
+import { open as openSearchModal } from "./search-modal.js?v=2126";
+import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=2126";
+import { renderAdminMenu, applyUserMode, applyOrgRole, toggleFlag } from "../admin-menu.js?v=2126";
+import { subscribe as subscribeSessions } from "../sessions-store.js?v=2126";
+import { isFlagOn } from "../feature-flags.js?v=2126";
+import { subscribe as subscribeContexts } from "../contexts-store.js?v=2126";
 import {
   getActivePlaybook,
   isWorkspaceMode,
   playbookForNewWork,
   catalogueRoute,
   subscribe as subscribeScope,
-} from "../active-playbook.js?v=2119";
-import { setHandoff } from "../handoff.js?v=2119";
+} from "../active-playbook.js?v=2126";
+import { setHandoff } from "../handoff.js?v=2126";
 // A Playbook nobody shared with me must not surface here either — the store
 // still holds it (see playbook-access.js), the sidebar just doesn't name it.
-import { visibleContexts } from "../playbook-access.js?v=2119";
-import { getFeedForPlaybook } from "../topic-feeds-store.js?v=2119";
-import { countToReview, subscribe as subscribeTopics } from "../topics-store.js?v=2119";
-import { getConnectedConnectors, subscribe as subscribeConnectors } from "../connectors-store.js?v=2119";
-import { closePanel as closeRightPanel } from "./right-panel.js?v=2119";
+import { visibleContexts } from "../playbook-access.js?v=2126";
+import { getFeedForPlaybook } from "../topic-feeds-store.js?v=2126";
+import { countToReview, subscribe as subscribeTopics } from "../topics-store.js?v=2126";
+import { getConnectedConnectors, subscribe as subscribeConnectors } from "../connectors-store.js?v=2126";
+import { getVideos } from "../videos-store.js?v=2126";
+import { closePanel as closeRightPanel } from "./right-panel.js?v=2126";
 import {
   deleteSidebarSession,
   matchSessionId,
@@ -30,9 +31,9 @@ import {
   renderRecentLists,
   startRenameSidebar,
   togglePinSidebar,
-} from "./sidebar/recent-chats.js?v=2119";
-import { renderPlaybookSwitcher, switchPlaybook } from "./sidebar/playbook-switcher.js?v=2119";
-import { renderDemoCard, confirmExitDemo } from "../demo-flow.js?v=2119";
+} from "./sidebar/recent-chats.js?v=2126";
+import { renderPlaybookSwitcher, switchPlaybook } from "./sidebar/playbook-switcher.js?v=2126";
+import { renderDemoCard, confirmExitDemo } from "../demo-flow.js?v=2126";
 
 // Global app sidebar — Brand / + New conversation / Recent chats / User footer.
 // Rendered once at boot into #sidebar; re-rendered on every route change so the
@@ -685,6 +686,18 @@ const NAV = [
     hint: "Your objectives, and whether your posts are moving them",
     flag: "insightsHub",
     match: (p) => p.startsWith("/insights"),
+  },
+  // Clips (flag clipsSpace) — the brand's video library. A count of THINGS,
+  // like Playbooks: the videos of the Playbook the space is scoped to.
+  {
+    path: "/clips",
+    icon: "ap-icon-video",
+    label: "Clips",
+    hint: "Turn a long video into clips, framed and subtitled, then into drafts",
+    countLabel: (n) => `${n} video${n === 1 ? "" : "s"}`,
+    flag: "clipsSpace",
+    match: (p) => p === "/clips" || p.startsWith("/clips/"),
+    count: () => getVideos(playbookForNewWork()?.id).length,
   },
   {
     path: "/topics",

@@ -17,11 +17,18 @@
 //       captionStyle, captions } so the hosting modal's draft stays in sync.
 //   unmount() — stop playback, drop listeners, clear the host.
 //
+// Hosted by the Clips space's unified clip editor (flag clipsSpace), it runs
+// on the HOST's clock: `opts.clock` = { seek(sec), toggle() } drives the
+// footage, and the host pushes the playhead back with setTime(sec, playing) —
+// the clip is a window of a long source, so the editor can't own the video.
+// `opts.presetIds` narrows the preset grid (prod's eight + none); the Clean up
+// tool switches the transcript's cleanup decorations with setCleanupMode().
+//
 // No real video / ffmpeg — playback is a simulated playhead (rAF), captions
 // are pure DOM/CSS. Karaoke word-sweep is intentionally omitted; emphasis is
 // per-word marks + an optional static "phrase" highlight under the playhead.
 
-import { escapeHtml, formatClock } from "./utils.js?v=2119";
+import { escapeHtml, formatClock } from "./utils.js?v=2126";
 import {
   PRESETS,
   presetById,
@@ -36,7 +43,7 @@ import {
   detectFillers,
   detectPauses,
   videoForClip,
-} from "./clip-captions.js?v=2119";
+} from "./clip-captions.js?v=2126";
 
 const FONT_FAMILIES = [
   "Montserrat, Roboto, sans-serif",
@@ -76,6 +83,9 @@ let lastTs = 0;
 let activeTab = "presets";
 let cleanupActive = false; // show filler/pause decorations in the transcript
 let pausesRemoved = new Set(); // pause idx removed
+let clock = null; // host clock (Clips space) — null when the editor owns playback
+let presetIds = null; // narrowed preset grid, or null for the whole catalog
+let pauseThreshold = 0.4; // seconds of silence that count as a pause
 
 let renderedCueIdx = -1;
 let wordSpans = []; // [{ span, start, mark }]
@@ -289,7 +299,7 @@ function renderTranscript() {
   fillers.forEach((f) => {
     for (let k = 0; k < f.count; k++) fillerIdx.set(f.startIdx + k, true);
   });
-  const pauses = detectPauses(words);
+  const pauses = detectPauses(words, pauseThreshold);
   const pauseByIdx = new Map(pauses.map((p) => [p.idx, p]));
 
   let html = "";
@@ -359,18 +369,23 @@ function colorInput(key, value) {
 }
 
 function renderPresetsTab() {
-  const cards = PRESETS.map((p) => {
-    const isOn = p.id === state.presetId;
-    const sample =
-      p.id === "none"
-        ? `<span class="cap-ed-preset__none"><i class="ap-icon-eye-off"></i></span>`
-        : `<span class="cap-ed-preset__sample cap-ed-preview-${p.id}">TO GET <mark>STARTED</mark></span>`;
-    return `
+  const list = presetIds
+    ? presetIds.map((id) => (id === "none" ? { id: "none", label: "None" } : presetById(id))).filter(Boolean)
+    : PRESETS;
+  const cards = list
+    .map((p) => {
+      const isOn = p.id === state.presetId;
+      const sample =
+        p.id === "none"
+          ? `<span class="cap-ed-preset__none"><i class="ap-icon-eye-off"></i></span>`
+          : `<span class="cap-ed-preset__sample cap-ed-preview-${p.id}">TO GET <mark>STARTED</mark></span>`;
+      return `
       <button type="button" class="cap-ed-preset${isOn ? " is-on" : ""}" data-ce-preset="${p.id}">
         <span class="cap-ed-preset__frame">${sample}</span>
         <span class="cap-ed-preset__label">${escapeHtml(p.label)}</span>
       </button>`;
-  }).join("");
+    })
+    .join("");
   return `<div class="cap-ed-presets">${cards}</div>`;
 }
 
@@ -471,6 +486,7 @@ function renderEffectsTab() {
 // found and offers bulk Remove all / Restore all. Individual removal happens
 // right in the transcript — click a highlighted filler word or a pause chip.
 function renderCleanupBar() {
+  renderCleanupList();
   const bar = $("[data-ce-cleanup-bar]");
   if (!bar) return;
   bar.hidden = !cleanupActive;
@@ -494,6 +510,60 @@ function renderCleanupBar() {
       <button type="button" class="cap-ed-cleanup-bar__btn" data-ce-cleanup-all="${anyPending ? "remove" : "restore"}">${anyPending ? "Remove all" : "Restore all"}</button>
       <button type="button" class="cap-ed-cleanup-bar__btn cap-ed-cleanup-bar__btn--done" data-ce-cleanup-done>Done</button>
     </span>`;
+}
+
+// The Clean up tool's full list (Clips space): every filler and pause with
+// its time, each one removable on its own, and the pause threshold.
+function renderCleanupList() {
+  const host = $("[data-ce-cleanup-list]");
+  if (!host) return;
+  const fillers = detectFillers(words);
+  const pauses = detectPauses(words, pauseThreshold);
+  const row = (attrs, label, time, removed) => `
+    <li class="cap-ed-clean-row${removed ? " is-removed" : ""}">
+      <button type="button" class="cap-ed-clean-row__seek" ${attrs.seek}>
+        <span class="cap-ed-clean-row__time">${fmt(time)}</span><span class="cap-ed-clean-row__label">${escapeHtml(label)}</span>
+      </button>
+      <button type="button" class="ap-button ghost grey" ${attrs.toggle}>${removed ? "Restore" : "Remove"}</button>
+    </li>`;
+  const fillerRows = fillers
+    .map((f) =>
+      row(
+        { seek: `data-ce-word="${f.startIdx}"`, toggle: `data-ce-filler-toggle="${f.startIdx}"` },
+        `“${words
+          .slice(f.startIdx, f.startIdx + f.count)
+          .map((w) => w.text)
+          .join(" ")}”`,
+        words[f.startIdx].start,
+        !!words[f.startIdx].removed,
+      ),
+    )
+    .join("");
+  const pauseRows = pauses
+    .map((p) =>
+      row(
+        { seek: `data-ce-word="${p.idx}"`, toggle: `data-ce-pause="${p.idx}"` },
+        `${p.dur}s of silence`,
+        words[p.idx]?.start || 0,
+        pausesRemoved.has(p.idx),
+      ),
+    )
+    .join("");
+  host.innerHTML = `
+    <div class="cap-ed-clean-group">
+      <p class="cap-ed-clean-group__title">Filler words · ${fillers.length}</p>
+      ${fillers.length ? `<ul class="cap-ed-clean-list">${fillerRows}</ul>` : `<p class="cap-ed-clean-none">None found.</p>`}
+    </div>
+    <div class="cap-ed-clean-group">
+      <p class="cap-ed-clean-group__title">Pauses · ${pauses.length}</p>
+      <label class="cap-ed-clean-threshold">
+        <span>Longer than ${pauseThreshold.toFixed(1)}s</span>
+        <input type="range" class="ap-slider" min="0.2" max="1.5" step="0.1" value="${pauseThreshold}" data-ce-pause-threshold
+          style="--fill:${((pauseThreshold - 0.2) / 1.3) * 100}%" aria-label="Pause threshold" />
+      </label>
+      ${pauses.length ? `<ul class="cap-ed-clean-list">${pauseRows}</ul>` : `<p class="cap-ed-clean-none">None that long.</p>`}
+      <p class="cap-ed-clean-note">A removed pause keeps the subtitle on screen through the silence — the video itself isn't cut.</p>
+    </div>`;
 }
 
 function renderTabPanel() {
@@ -546,6 +616,7 @@ function setPlaying(on) {
   if (big) big.classList.toggle("is-hidden", on);
   // Drive the real footage too (muted) — it loops independently behind the
   // captions; the synthetic playhead stays the source of truth for caption sync.
+  if (clock) return; // the host owns the footage and the clock
   const video = $("[data-ce-video]");
   if (video) {
     if (on) video.play().catch(() => {});
@@ -572,6 +643,11 @@ function tick() {
 
 function seek(t) {
   currentTime = Math.max(0, Math.min(duration, t));
+  if (clock) {
+    clock.seek(currentTime);
+    syncTime();
+    return;
+  }
   // Drive the real video (duration is now the video's, so 1:1).
   const video = $("[data-ce-video]");
   if (video && isFinite(video.duration)) {
@@ -739,13 +815,18 @@ function startWordEdit(wordIdx, span) {
 function onRootClick(e) {
   const t = e.target;
 
-  if (t.closest('[data-ce="playpause"]')) return setPlaying(!playing);
+  if (t.closest('[data-ce="playpause"]')) return clock ? clock.toggle() : setPlaying(!playing);
   if (t.closest('[data-ce="back"]')) return seek(currentTime - 5);
   if (t.closest('[data-ce="fwd"]')) return seek(currentTime + 5);
 
   // Click the preview (anywhere but the caption box / frame) toggles playback.
-  if (t.closest("[data-ce-stage]") && !t.closest("[data-ce-box]") && !t.closest("[data-ce-frame]")) {
-    return setPlaying(!playing);
+  if (
+    t.closest("[data-ce-stage]") &&
+    !t.closest("[data-ce-box]") &&
+    !t.closest("[data-ce-frame]") &&
+    !t.closest("[data-ce-no-toggle]")
+  ) {
+    return clock ? clock.toggle() : setPlaying(!playing);
   }
 
   const tabBtn = t.closest("[data-ce-tab]");
@@ -782,6 +863,23 @@ function onRootClick(e) {
     cleanupActive = false;
     renderTranscript();
     renderCleanupBar();
+    return;
+  }
+
+  const fillerToggle = t.closest("[data-ce-filler-toggle]");
+  if (fillerToggle) {
+    const i = Number(fillerToggle.dataset.ceFillerToggle);
+    const f = detectFillers(words).find((x) => x.startIdx === i);
+    if (f) {
+      const target = !words[f.startIdx].removed;
+      for (let k = 0; k < f.count; k++) if (words[f.startIdx + k]) words[f.startIdx + k].removed = target;
+      renderTranscript();
+      recomputeCues();
+      renderCaptionFrame(true);
+      renderCleanupBar();
+      renderCleanupList();
+      emitChange();
+    }
     return;
   }
 
@@ -856,6 +954,14 @@ function onRootDblClick(e) {
 }
 
 function onRootInput(e) {
+  if (e.target.matches?.("[data-ce-pause-threshold]")) {
+    pauseThreshold = Number(e.target.value);
+    pausesRemoved = new Set();
+    renderTranscript();
+    renderCleanupList();
+    updateReconcile();
+    return;
+  }
   const numSel = e.target.closest("[data-ce-set]");
   if (numSel) {
     const key = numSel.dataset.ceSet;
@@ -1014,7 +1120,7 @@ function onKeydown(e) {
     return;
   }
   const inField = e.target.closest("[contenteditable=true], input, select, textarea");
-  if (inField) return;
+  if (inField || clock) return;
   if (e.key === " ") {
     e.preventDefault();
     setPlaying(!playing);
@@ -1029,8 +1135,8 @@ function onKeydown(e) {
 
 function applyPreset(id) {
   const p = presetById(id);
-  if (!p) return;
-  Object.assign(state, p.apply);
+  if (!p && id !== "none") return;
+  if (p) Object.assign(state, p.apply);
   state.presetId = id;
   renderTabPanel();
   recomputeCues();
@@ -1077,6 +1183,8 @@ export function mount(hostEl, c, src, opts = {}) {
   clip = c;
   source = src;
   onChangeCb = typeof opts.onChange === "function" ? opts.onChange : null;
+  clock = opts.clock || null;
+  presetIds = Array.isArray(opts.presetIds) ? opts.presetIds : null;
 
   duration = Math.max(6, (c.end || 0) - (c.start || 0));
   currentTime = 0;
@@ -1103,7 +1211,7 @@ export function mount(hostEl, c, src, opts = {}) {
 
   const stage = $("[data-ce-stage]");
   if (stage) stage.style.backgroundImage = previewBg(c.hue);
-  const video = $("[data-ce-video]");
+  const video = clock ? null : $("[data-ce-video]");
   if (video) {
     video.src = videoForClip(c);
     // The real video is the time source: once its duration is known, re-time
@@ -1149,4 +1257,41 @@ export function unmount() {
   clip = null;
   source = null;
   onChangeCb = null;
+  clock = null;
+  presetIds = null;
+}
+
+// Host clock (Clips space): the playhead the host's footage is at, in clip
+// seconds. Moves the caption, the active transcript word and the scrub.
+export function setTime(sec, isPlaying = false) {
+  if (!mounted) return;
+  currentTime = Math.max(0, Math.min(duration, sec));
+  playing = isPlaying;
+  syncTime();
+}
+
+// The Clean up tool is the transcript's cleanup mode, switched by the host.
+export function setCleanupMode(on) {
+  if (!mounted) return;
+  cleanupActive = !!on;
+  renderTranscript();
+  renderCleanupBar();
+}
+
+// The clip was trimmed: re-time the transcript onto the new length.
+export function setDuration(sec) {
+  if (!mounted || !clock) return;
+  const old = duration;
+  duration = Math.max(1, sec);
+  if (Math.abs(old - duration) < 0.01) return;
+  const k = duration / old;
+  words.forEach((w) => {
+    w.start = +(w.start * k).toFixed(2);
+    w.end = +(w.end * k).toFixed(2);
+  });
+  recomputeCues();
+  renderTranscript();
+  renderCleanupBar();
+  syncTime();
+  emitChange();
 }

@@ -3,15 +3,15 @@
 // the panel shell (open / close / resize / URL state / delegated listeners)
 // stays there.
 
-import { getSources as getStreamSources } from "../../sources-stream.js?v=2119";
-import { isFlagOn } from "../../feature-flags.js?v=2119";
-import { getConnectedConnectors } from "../../connectors-store.js?v=2119";
-import { escapeAttr, escapeText } from "../../utils.js?v=2119";
-import { IDEA_KIND_TAG } from "../idea-card-compact.js?v=2119";
-import { conceptText } from "../../concepts.js?v=2119";
-import { renderConnectorLogo } from "../../connectors-view.js?v=2119";
-import { renderTopPostEcho } from "../top-post-card.js?v=2119";
-import { closeInline, activeSessionId, sessionIdeas } from "../right-panel.js?v=2119";
+import { getSources as getStreamSources } from "../../sources-stream.js?v=2126";
+import { isFlagOn } from "../../feature-flags.js?v=2126";
+import { getConnectedConnectors } from "../../connectors-store.js?v=2126";
+import { escapeAttr, escapeText } from "../../utils.js?v=2126";
+import { IDEA_KIND_TAG } from "../idea-card-compact.js?v=2126";
+import { conceptText } from "../../concepts.js?v=2126";
+import { renderConnectorLogo } from "../../connectors-view.js?v=2126";
+import { renderTopPostEcho } from "../top-post-card.js?v=2126";
+import { closeInline, activeSessionId, sessionIdeas } from "../right-panel.js?v=2126";
 
 // Sources mode view — list of source rows for the active session + a
 // trailing "+ Attach" button. Each row carries kind icon, filename,
@@ -224,7 +224,7 @@ function renderSourceRow(src) {
           <i class="ap-icon-video"></i>
           <div class="ap-action-dropdown-item-text">
             <div class="ap-action-dropdown-item-label-container">
-              <span class="ap-action-dropdown-item-label">View clips${clipCount ? ` (${clipCount})` : ""}</span>
+              <span class="ap-action-dropdown-item-label">${isFlagOn("clipsSpace") ? "Open in Clips" : "View clips"}${clipCount ? ` (${clipCount})` : ""}</span>
             </div>
           </div>
         </button>`
