@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2219";
-import { conceptHint } from "./concepts.js?v=2219";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2220";
+import { conceptHint } from "./concepts.js?v=2220";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2219";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2219";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2219";
-import { isFlagOn } from "./feature-flags.js?v=2219";
-import { clipLookOf } from "./videos-store.js?v=2219";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2219";
-import { parseHashParams } from "./url-state.js?v=2219";
+} from "./playbook-brand-kit.js?v=2220";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2220";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2220";
+import { isFlagOn } from "./feature-flags.js?v=2220";
+import { clipLookOf } from "./videos-store.js?v=2220";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2220";
+import { parseHashParams } from "./url-state.js?v=2220";
 import {
   isListPart,
   voiceParts,
@@ -52,16 +52,16 @@ import {
   canLearnFrom,
   learnNetworkVoice,
   withNetworkVoices,
-} from "./voice-parts.js?v=2219";
-import { showToast } from "./components/toast.js?v=2219";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2219";
+} from "./voice-parts.js?v=2220";
+import { showToast } from "./components/toast.js?v=2220";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2220";
 import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
   networkLabel,
   networkIcon,
   profileForNetwork,
-} from "./social-profiles.js?v=2219";
+} from "./social-profiles.js?v=2220";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
