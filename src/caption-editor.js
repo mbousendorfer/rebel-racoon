@@ -28,7 +28,7 @@
 // are pure DOM/CSS. Karaoke word-sweep is intentionally omitted; emphasis is
 // per-word marks + an optional static "phrase" highlight under the playhead.
 
-import { escapeHtml, formatClock } from "./utils.js?v=2126";
+import { escapeHtml, formatClock } from "./utils.js?v=2129";
 import {
   PRESETS,
   presetById,
@@ -43,7 +43,7 @@ import {
   detectFillers,
   detectPauses,
   videoForClip,
-} from "./clip-captions.js?v=2126";
+} from "./clip-captions.js?v=2129";
 
 const FONT_FAMILIES = [
   "Montserrat, Roboto, sans-serif",
@@ -273,6 +273,14 @@ function renderCaptionFrame(force = false) {
 
 // ── Dead-zone guides ─────────────────────────────────────────────────
 
+// One list for the Effects tab's buttons and the guide on the video.
+const DEAD_ZONE_OPTIONS = [
+  { v: "none", label: "None" },
+  { v: "tiktok", label: "TikTok" },
+  { v: "reels", label: "Reels" },
+  { v: "shorts", label: "Shorts" },
+];
+
 function renderDeadzones() {
   const el = $("[data-ce-deadzones]");
   if (!el) return;
@@ -281,7 +289,8 @@ function renderDeadzones() {
     return;
   }
   const z = DEAD_ZONES[state.deadZones];
-  const net = state.deadZones;
+  // The same name the Effects tab gives the choice — never the raw id.
+  const net = escapeHtml(DEAD_ZONE_OPTIONS.find((o) => o.v === state.deadZones)?.label || "");
   el.innerHTML = `
     <div class="cap-ed-dz cap-ed-dz--top" style="height:${z.top * 100}%"><span>${net}</span></div>
     <div class="cap-ed-dz cap-ed-dz--bottom" style="height:${z.bottom * 100}%"><span>${net}</span></div>
@@ -469,12 +478,7 @@ function renderEffectsTab() {
       "Safe area",
       field(
         "Dead zones",
-        segBtns("deadZones", s.deadZones, [
-          { v: "none", label: "None" },
-          { v: "tiktok", label: "TikTok" },
-          { v: "reels", label: "Reels" },
-          { v: "shorts", label: "Shorts" },
-        ]),
+        segBtns("deadZones", s.deadZones, DEAD_ZONE_OPTIONS),
         "Shows where the app's buttons cover the video",
       ),
     )}

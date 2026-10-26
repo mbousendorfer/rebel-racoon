@@ -983,3 +983,14 @@ button.ap-link {
 :not(.ap-button) > .ap-icon-sparkles-mermaid {
   background: var(--ref-color-mermaid-gradient-background);
 }
+
+/* ── Disabled grey buttons on the dark media surface (Clips editor) ───────
+   Missing variant: CSS-UI draws a disabled grey button in grey-20 — the
+   hairline tone, faint but legible on white. Inside .clips-ed grey-20 is the
+   dark hairline (tokens.css § the dark ramp, as a scope), so the label would
+   vanish into its own border. Here the label stays at the subtle text level,
+   half strength. Delete when the DS ships a dark theme. */
+.clips-ed .ap-button.stroked.grey:disabled,
+.clips-ed .ap-button.ghost.grey:disabled {
+  color: color-mix(in srgb, var(--app-vc-text-subtle) 55%, transparent);
+}

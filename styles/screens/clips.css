@@ -339,7 +339,7 @@
   top: 3px;
   bottom: 3px;
   padding: 0;
-  border: 1px solid var(--ref-color-grey-60);
+  border: 1px solid var(--ref-color-grey-20);
   border-radius: 3px;
   background: var(--ref-color-grey-40);
   cursor: pointer;
@@ -703,25 +703,8 @@ body.clips-editing .app-content {
   grid-template-columns: 260px minmax(0, 1fr) 340px 76px;
   height: 100%;
   min-height: 0;
-  background: var(--ref-color-white);
-}
-
-/* The caption editor's controls are drawn for the dark modal through the
-   --app-vc-* ramp; in this light editor the ramp maps onto the DS greys. */
-.clips-ed__light {
-  --app-vc-surface: var(--ref-color-white);
-  --app-vc-surface-raised: var(--ref-color-grey-05);
-  --app-vc-surface-sunken: var(--ref-color-grey-05);
-  --app-vc-surface-overlay: var(--ref-color-white);
-  --app-vc-field: var(--ref-color-white);
-  --app-vc-border: var(--ref-color-grey-20);
-  --app-vc-border-strong: var(--ref-color-grey-20);
-  --app-vc-text: var(--ref-color-grey-100);
-  --app-vc-text-muted: var(--ref-color-grey-80);
-  --app-vc-text-subtle: var(--ref-color-grey-80);
-  --app-vc-hover: var(--ref-color-grey-05);
-  --app-vc-accent-soft: var(--ref-color-electric-blue-05);
-  color: var(--ref-color-grey-100);
+  background: var(--app-vc-surface);
+  color: var(--app-vc-text);
 }
 
 .clips-ed__transcript {
@@ -775,7 +758,7 @@ body.clips-editing .app-content {
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  background: var(--ref-color-grey-05);
+  background: var(--app-vc-surface-sunken);
 }
 
 .clips-ed__stage {
@@ -945,8 +928,8 @@ body.clips-editing .app-content {
 
 .clips-ed__timeline {
   padding: 0 var(--ref-spacing-md) var(--ref-spacing-sm);
-  border-top: 1px solid var(--ref-color-grey-20);
-  background: var(--ref-color-white);
+  border-top: 1px solid var(--app-vc-border);
+  background: var(--app-vc-surface);
 }
 
 .clips-tl {
@@ -1017,14 +1000,15 @@ body.clips-editing .app-content {
   position: absolute;
   top: 0;
   bottom: 0;
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--app-vc-scrim);
 }
 
 .clips-tl__window {
   position: absolute;
   top: 0;
   bottom: 0;
-  border: 2px solid var(--ref-color-electric-blue-100);
+  background: var(--app-vc-accent-soft);
+  border: 2px solid var(--app-vc-accent);
   border-radius: var(--app-radius-sm);
   pointer-events: none;
 }
@@ -1079,7 +1063,7 @@ body.clips-editing .app-content {
   overflow: hidden;
   border: 2px dashed var(--cam);
   border-radius: var(--app-radius-sm);
-  background: color-mix(in srgb, var(--cam) 18%, white);
+  background: color-mix(in srgb, var(--cam) 24%, var(--app-vc-surface));
   color: var(--ref-color-grey-100);
   font: inherit;
   font-size: 11px;
@@ -1214,6 +1198,12 @@ body.clips-editing .app-content {
   overflow-y: auto;
   padding: var(--ref-spacing-md);
   border-left: 1px solid var(--ref-color-grey-20);
+}
+
+/* A button keeps its own width (CTAs never full width) — the panel's other
+   children (fields, lists, format cards, selects) still fill it. */
+.clips-ed__panel .ap-button {
+  align-self: flex-start;
 }
 
 .clips-ed__group {
@@ -1371,8 +1361,8 @@ body.clips-editing .app-content {
 }
 
 .clips-ed__tool.is-on {
-  background: var(--ref-color-electric-blue-05);
-  color: var(--ref-color-electric-blue-100);
+  background: var(--app-vc-accent-pill);
+  color: var(--ref-color-electric-blue-60);
   font-weight: var(--sys-text-style-caption-bold-weight);
 }
 

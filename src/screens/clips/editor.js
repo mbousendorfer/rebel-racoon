@@ -18,16 +18,16 @@
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2126";
-import { isFlagOn } from "../../feature-flags.js?v=2126";
-import { parseHashParams } from "../../url-state.js?v=2126";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2126";
-import { showToast } from "../../components/toast.js?v=2126";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2126";
-import { getContextById } from "../../contexts-store.js?v=2126";
-import { escapeHtml } from "../../utils.js?v=2126";
-import * as ce from "../../caption-editor.js?v=2126";
-import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2126";
+import { navigate } from "../../router.js?v=2129";
+import { isFlagOn } from "../../feature-flags.js?v=2129";
+import { parseHashParams } from "../../url-state.js?v=2129";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2129";
+import { showToast } from "../../components/toast.js?v=2129";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2129";
+import { getContextById } from "../../contexts-store.js?v=2129";
+import { escapeHtml } from "../../utils.js?v=2129";
+import * as ce from "../../caption-editor.js?v=2129";
+import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2129";
 import {
   framingContext,
   initialSegments,
@@ -50,7 +50,7 @@ import {
   cameraName,
   LAYOUTS,
   MIN_SEG_MS,
-} from "../../clip-framing.js?v=2126";
+} from "../../clip-framing.js?v=2129";
 import {
   fmtMs,
   fmtPrecise,
@@ -63,8 +63,8 @@ import {
   SUBTITLE_IDS,
   dsSelect,
   bindSelectDismiss,
-} from "./shared.js?v=2126";
-import { primeDraftSetup } from "./project.js?v=2126";
+} from "./shared.js?v=2129";
+import { primeDraftSetup } from "./project.js?v=2129";
 
 const MIN_CLIP_MS = 5000;
 const MAX_CLIP_MS = 300000;
@@ -194,7 +194,7 @@ function shellHTML() {
   ).join("");
   return `
   <div class="clips-ed" data-clips-ed-root>
-    <aside class="clips-ed__transcript clips-ed__light" aria-label="Transcript">
+    <aside class="clips-ed__transcript" aria-label="Transcript">
       <div class="clips-ed__side-head">
         <h2 class="clips-ed__side-title">Transcript</h2>
         <span class="cap-ed__meta" data-ce-reconcile></span>
@@ -234,7 +234,7 @@ function shellHTML() {
       <div class="clips-ed__timeline" data-clips-timeline></div>
     </main>
 
-    <aside class="clips-ed__panel clips-ed__light" data-clips-panel aria-live="polite"></aside>
+    <aside class="clips-ed__panel" data-clips-panel aria-live="polite"></aside>
     <nav class="clips-ed__rail" role="tablist" aria-label="Editing tools">${rail}</nav>
   </div>`;
 }

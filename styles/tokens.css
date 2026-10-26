@@ -236,3 +236,48 @@
   --app-z-modal-stacked: 71;
   --app-z-admin: 100;
 }
+
+/* ── The dark ramp, as a scope: the Clips editor (flag clipsSpace) ──────────
+   Inside .clips-ed the DS greys, white and the CSS-UI component colours are
+   redefined onto the --app-vc-* ramp above, so every DS control and every
+   grey rule written for the editor turns dark through its variables — no
+   .ap-* class is redeclared. Roles, not values: white = raised surface,
+   grey-05 = sunken well, grey-10 = overlay fill, grey-20 = hairline,
+   grey-40 = control border, grey-60/80/100 = the three text levels. The
+   light blues become the dark accent tints; blue-100 and orange keep their
+   DS values. Footage and the subtitle box keep their literal colours. */
+.clips-ed {
+  --ref-color-white: var(--app-vc-surface-raised);
+  --ref-color-grey-05: var(--app-vc-surface-sunken);
+  --ref-color-grey-10: var(--app-vc-surface-overlay);
+  --ref-color-grey-20: var(--app-vc-border);
+  --ref-color-grey-40: var(--app-vc-border-strong);
+  --ref-color-grey-60: var(--app-vc-text-subtle);
+  --ref-color-grey-80: var(--app-vc-text-muted);
+  --ref-color-grey-100: var(--app-vc-text);
+  --ref-color-electric-blue-05: var(--app-vc-accent-soft);
+  --ref-color-electric-blue-10: var(--app-vc-accent-soft);
+  --ref-color-electric-blue-150: var(--ref-color-electric-blue-60);
+  --comp-input-fill-color: var(--app-vc-field);
+  --comp-input-border-default-color: var(--app-vc-border-strong);
+  --comp-input-border-hover-color: var(--app-vc-text-subtle);
+  --comp-input-text-default-color: var(--app-vc-text);
+  --comp-input-text-placeholder-color: var(--app-vc-text-subtle);
+  --comp-input-icon-color: var(--app-vc-text-subtle);
+  --comp-select-background-color: var(--app-vc-surface-overlay);
+  --comp-select-one-line-background-color: var(--app-vc-surface-overlay);
+  --comp-select-one-line-text-color: var(--app-vc-text);
+  --comp-select-inline-label-text-color: var(--app-vc-text-muted);
+  --comp-select-inline-separator-color: var(--app-vc-border-strong);
+  --comp-select-shadow: var(--app-vc-shadow);
+  --comp-tag-grey-background-color: var(--app-vc-surface-overlay);
+  --comp-tag-grey-border-color: var(--app-vc-border-strong);
+  --comp-tag-grey-icon-color: var(--app-vc-text);
+  --comp-tag-grey-text-color: var(--app-vc-text);
+  --comp-tag-blue-background-color: var(--app-vc-accent-soft);
+  --comp-tag-blue-border-color: var(--app-vc-accent-pill);
+  --comp-tag-blue-icon-color: var(--ref-color-electric-blue-60);
+  --comp-tag-blue-text-color: var(--ref-color-electric-blue-60);
+  --comp-forms-label-text-color: var(--app-vc-text);
+  --comp-forms-label-description-text-color: var(--app-vc-text-muted);
+}

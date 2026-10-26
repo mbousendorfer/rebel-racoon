@@ -7,17 +7,17 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2126";
-import { isFlagOn } from "../../feature-flags.js?v=2126";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2126";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2126";
-import { showToast } from "../../components/toast.js?v=2126";
-import { renderPostCard } from "../../components/post-card.js?v=2126";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2126";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2126";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2126";
-import { getConnectedProfiles, renderProfileTag } from "../../social-profiles.js?v=2126";
-import { getContextById } from "../../contexts-store.js?v=2126";
+import { navigate } from "../../router.js?v=2129";
+import { isFlagOn } from "../../feature-flags.js?v=2129";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2129";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2129";
+import { showToast } from "../../components/toast.js?v=2129";
+import { renderPostCard } from "../../components/post-card.js?v=2129";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2129";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2129";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2129";
+import { getConnectedProfiles, renderProfileTag } from "../../social-profiles.js?v=2129";
+import { getContextById } from "../../contexts-store.js?v=2129";
 import {
   getPosts,
   addPostDraft,
@@ -25,8 +25,8 @@ import {
   insertPost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2126";
-import { escapeHtml } from "../../utils.js?v=2126";
+} from "../../posts-store.js?v=2129";
+import { escapeHtml } from "../../utils.js?v=2129";
 import {
   getVideo,
   draftKey,
@@ -37,7 +37,7 @@ import {
   restoreClip,
   ANALYSIS_STAGES,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2126";
+} from "../../videos-store.js?v=2129";
 import {
   fmtMs,
   formatSelect,
@@ -50,7 +50,7 @@ import {
   formatLabel,
   presetLabel,
   CTA_OPTIONS,
-} from "./shared.js?v=2126";
+} from "./shared.js?v=2129";
 
 let target = null;
 let videoId = null;
