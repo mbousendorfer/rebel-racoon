@@ -7,34 +7,33 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2206";
-import { isFlagOn } from "../../feature-flags.js?v=2206";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2206";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2206";
-import { showToast } from "../../components/toast.js?v=2206";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2206";
-import { renderPostCard } from "../../components/post-card.js?v=2206";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2206";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2206";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2206";
+import { navigate } from "../../router.js?v=2210";
+import { isFlagOn } from "../../feature-flags.js?v=2210";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2210";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2210";
+import { showToast } from "../../components/toast.js?v=2210";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2210";
+import { renderPostCard } from "../../components/post-card.js?v=2210";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2210";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2210";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2210";
 import {
   getConnectedProfiles,
   renderProfileTag,
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
-} from "../../social-profiles.js?v=2206";
-import { defaultFormatFor } from "../../clip-formats.js?v=2206";
-import { getContextById } from "../../contexts-store.js?v=2206";
-import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2206";
-import { captionStateFor } from "../../clip-captions.js?v=2206";
+} from "../../social-profiles.js?v=2210";
+import { getContextById } from "../../contexts-store.js?v=2210";
+import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2210";
+import { captionStateFor } from "../../clip-captions.js?v=2210";
 import {
   getPosts,
   addPostDraft,
   removePost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2206";
-import { escapeHtml } from "../../utils.js?v=2206";
+} from "../../posts-store.js?v=2210";
+import { escapeHtml } from "../../utils.js?v=2210";
 import {
   getVideo,
   draftKey,
@@ -45,7 +44,7 @@ import {
   removeClip,
   ANALYSIS_STAGES,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2206";
+} from "../../videos-store.js?v=2210";
 import {
   fmtMs,
   formatSelect,
@@ -64,7 +63,7 @@ import {
   SUBTITLE_IDS,
   bestFor,
   CTA_OPTIONS,
-} from "./shared.js?v=2206";
+} from "./shared.js?v=2210";
 
 let target = null;
 let videoId = null;
@@ -73,13 +72,13 @@ let disposePreviews = null;
 const disposers = [];
 // The Drafts tab's own state: the account / CTA picks, and whether the setup
 // is showing over drafts that already exist ("Write more drafts").
-// The « Write the posts » step: the accounts, the format mode (« best » = each
-// network's own, « same » = the video's format for every post), the CTA, and
-// which clip × account the preview shows.
+// The « Write the posts » step, in prod's order (platform: set_clip_options
+// then the account picker): one aspect ratio and one subtitle style for the
+// whole run (the video's settings), the CTA, then the accounts — none ticked
+// at first. Plus which clip × account the preview shows, and the run's stage.
 const draftSetup = {
   accounts: null,
   cta: "none",
-  formatMode: "best",
   previewClip: 0,
   previewAccount: null,
   open: false,
@@ -95,7 +94,6 @@ export function primeDraftSetup(id) {
   Object.assign(draftSetup, {
     accounts: null,
     cta: "none",
-    formatMode: "best",
     previewClip: 0,
     previewAccount: null,
     open: true,
@@ -589,7 +587,25 @@ function focusClip(v, id, { seek = true } = {}) {
 
 function renderDrafts(v, posts) {
   if (draftSetup.writing) {
-    return `<div class="clips-drafts__writing"><span class="ap-loader" aria-hidden="true"></span><p>Writing your drafts…</p></div>`;
+    // Prod's two jobs: the clips are rendered (crop + subtitles burned), then
+    // the posts are written — one per clip × account.
+    const w = draftSetup.writing;
+    const stage = (id, label) => {
+      const state = w.stage === id ? "is-current" : w.stage === "write" && id === "render" ? "is-done" : "";
+      return `<li class="clips-drafts__stage ${state}">${
+        state === "is-done"
+          ? `<i class="ap-icon-check" aria-hidden="true"></i>`
+          : state
+            ? `<span class="ap-loader" aria-hidden="true"></span>`
+            : `<span class="clips-drafts__stage-dot"></span>`
+      }<span>${label}</span></li>`;
+    };
+    return `<div class="clips-drafts__writing" role="status">
+      <ol class="clips-drafts__stages">
+        ${stage("render", `Rendering ${w.clips} clip${w.clips === 1 ? "" : "s"} — ${escapeHtml(w.look)}`)}
+        ${stage("write", `Writing ${w.posts} post${w.posts === 1 ? "" : "s"} from the clips`)}
+      </ol>
+    </div>`;
   }
   draftSetup.preview = null; // set again by the setup, when it shows
   if (!posts.length || draftSetup.open) return renderDraftSetup(v, posts.length > 0);
@@ -632,11 +648,11 @@ function renderDraft(p) {
   </div>`;
 }
 
-// The format a clip takes on an account's network: the clip's own if it has
-// one, else the network's best (« best ») or the video's (« same »).
-function postFormat(v, clip, account) {
-  if (clip.ratio) return clip.ratio;
-  return draftSetup.formatMode === "best" && account ? defaultFormatFor(account.platform) : v.settings.ratio;
+// The format of a clip's posts: the clip's own if it has one (set in the
+// editor), else the run's one aspect ratio — every account gets the same, as
+// in prod.
+function postFormat(v, clip) {
+  return clip.ratio || v.settings.ratio;
 }
 
 // « Write the posts »: the transformation, shown as it happens. Left, what to
@@ -646,42 +662,38 @@ function postFormat(v, clip, account) {
 function renderDraftSetup(v, hasDrafts) {
   const clips = v.clips.filter((c) => c.selected);
   const profiles = getConnectedProfiles();
-  if (draftSetup.accounts === null) draftSetup.accounts = new Set(profiles.slice(0, 1).map((p) => p.id));
+  // Nothing ticked at first (prod): an account picked before must be picked again.
+  if (draftSetup.accounts === null) draftSetup.accounts = new Set();
   const accounts = profiles.filter((p) => draftSetup.accounts.has(p.id));
   const pb = getContextById(v.contextId);
   const count = clips.length * accounts.length;
   const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
 
-  // 1 · The clips — what gets turned into posts, untickable right here.
-  const clipTiles = v.clips
+  // The clips: picked at step 1, summed up here — a strip and their length.
+  const totalMs = clips.reduce((n, c) => n + (c.endMs - c.startMs), 0);
+  const STRIP = 6;
+  const strip = clips
+    .slice(0, STRIP)
     .map(
-      (c, i) => `<li class="clips-write__clip${c.selected ? "" : " is-off"}">
-        <span class="clips-write__clip-media">${previewMarkup(v, { ...c, ratio: "9:16" }, { captions: false })}</span>
-        <div class="clips-write__clip-row">
-          <label class="ap-checkbox-container" aria-label="Post clip ${i + 1}">
-            <input type="checkbox" data-clips-select="${c.id}" ${c.selected ? "checked" : ""} /><i></i>
-          </label>
-          <div class="clips-write__clip-text">
-            <span class="clips-write__clip-meta">Clip ${i + 1} · ${fmtMs(c.endMs - c.startMs)}</span>
-            <span>${escapeHtml(c.title)}</span>
-          </div>
-        </div>
-      </li>`,
+      (c) =>
+        `<li class="clips-write__thumb" title="${escapeHtml(c.title)}">${previewMarkup(v, { ...c, ratio: "9:16" }, { captions: false })}</li>`,
     )
     .join("");
+  const more = clips.length > STRIP ? `<li class="clips-write__more">+${clips.length - STRIP}</li>` : "";
 
-  // 2 · Where — the connected accounts, each with the format its network gets.
+  // Where: the connected accounts, each with the format its network gets —
+  // or, with none, the networks to connect (asked in the flow, never before).
   const accountBlock = profiles.length
     ? `<ul class="clips-write__accounts">${profiles
         .map(
           (p) => `<li><label class="ap-checkbox-container clips-write__account">
             <input type="checkbox" data-clips-account="${escapeHtml(p.id)}" ${draftSetup.accounts.has(p.id) ? "checked" : ""} /><i></i>
             ${renderProfileTag(p)}
-            <span class="clips-write__account-meta">${escapeHtml(formatLabel(postFormat(v, {}, p)))}</span>
+            <span class="clips-write__account-meta">${escapeHtml(NETWORK_LABEL[p.platform] || p.platform)}</span>
           </label></li>`,
         )
         .join("")}</ul>`
-    : `<p class="clips-write__hint">Connect the accounts to post on — each network gets its own format and caption. Nothing publishes yet.</p>
+    : `<p class="clips-write__empty">No account connected yet. Connect one and I write its drafts — nothing is published.</p>
        <div class="clips-write__connect">${connectableNetworkCards()
          .map(
            (n) => `<button type="button" class="ap-button stroked grey" data-clips-connect="${escapeHtml(n.value)}">
@@ -689,25 +701,18 @@ function renderDraftSetup(v, hasDrafts) {
          )
          .join("")}</div>`;
 
-  // 3 · How they look — the format (each network's best, or one for all) and the subtitles.
-  const nets = [...new Set(accounts.map((a) => a.platform))];
-  const bestHint = nets.length
-    ? nets.map((n) => `${NETWORK_LABEL[n] || n} ${formatLabel(defaultFormatFor(n))}`).join(" · ")
-    : "Vertical for Instagram and TikTok, square for LinkedIn, wide for X";
-  const formatCards = `
-    <label class="ap-radio-card card clips-write__mode">
-      <input type="radio" name="clips-format-mode" value="best" data-clips-format-mode ${draftSetup.formatMode === "best" ? "checked" : ""} />
-      <div><span>The best for each network</span><p class="clips-write__card-hint">${escapeHtml(bestHint)}</p></div>
-    </label>
-    <label class="ap-radio-card card clips-write__mode">
-      <input type="radio" name="clips-format-mode" value="same" data-clips-format-mode ${draftSetup.formatMode === "same" ? "checked" : ""} />
-      <div><span>The same everywhere</span><p class="clips-write__card-hint">${escapeHtml(formatLabel(v.settings.ratio))} on every post</p></div>
+  // A choice, read top to bottom: the DS radio, its name, what it does.
+  const choice = (name, attr, value, checked, label, hint, off = false) => `
+    <label class="clips-write__choice${off ? " is-off" : ""}">
+      <span class="ap-radio-container"><input type="radio" name="${name}" value="${value}" ${attr} ${checked ? "checked" : ""} ${off ? "disabled" : ""} /></span>
+      <span class="clips-write__choice-text"><span class="clips-write__choice-name">${escapeHtml(label)}</span><span class="clips-write__choice-hint">${escapeHtml(hint)}</span></span>
     </label>`;
+
   const ownLook = clips.filter((c) => c.ratio || c.captionCustom).length;
 
-  // 4 · How the post ends — the real call to action, said in each option.
+  // How the post ends: the real call to action, said in each option.
   const ctaText = pb?.cta || "";
-  const ctas = CTA_OPTIONS.map((o) => {
+  const ctaChoices = CTA_OPTIONS.map((o) => {
     const off = o.id !== "none" && !ctaText;
     const hint =
       o.id === "none"
@@ -715,18 +720,16 @@ function renderDraftSetup(v, hasDrafts) {
         : off
           ? "This Playbook has no call to action yet."
           : o.id === "in_post"
-            ? `The caption ends with “${ctaText}”.`
+            ? `The caption ends with “${ctaText}”`
             : `“${ctaText}” goes in the first comment, where a link doesn't cost reach.`;
-    return `<label class="ap-radio-card card clips-write__mode${off ? " is-off" : ""}">
-      <input type="radio" name="clips-cta" value="${o.id}" data-clips-cta ${draftSetup.cta === o.id ? "checked" : ""} ${off ? "disabled" : ""} />
-      <div><span>${escapeHtml(o.label)}</span><p class="clips-write__card-hint">${escapeHtml(hint)}</p></div>
-    </label>`;
+    return choice("clips-cta", "data-clips-cta", o.id, draftSetup.cta === o.id, o.label, hint, off);
   }).join("");
 
   // The preview: one of the drafts, as it will land.
   const ci = Math.min(draftSetup.previewClip, Math.max(0, clips.length - 1));
   const clip = clips[ci];
-  const account = accounts.find((a) => a.id === draftSetup.previewAccount) || accounts[0] || null;
+  // Previewed as a ticked account — or, with none ticked yet, the first connected one.
+  const account = accounts.find((a) => a.id === draftSetup.previewAccount) || accounts[0] || profiles[0] || null;
   const network = account?.platform || "linkedin";
   draftSetup.preview = clip
     ? {
@@ -746,7 +749,7 @@ function renderDraftSetup(v, hasDrafts) {
           sourceId: v.id,
           clipId: clip.id,
         },
-        format: postFormat(v, clip, account),
+        format: postFormat(v, clip),
         subtitleStyle: clipCaptionState(v, clip).presetId,
       }
     : null;
@@ -761,35 +764,51 @@ function renderDraftSetup(v, hasDrafts) {
           )
           .join("")}</div></div>`
       : "";
-  const why = !clips.length ? "Tick a clip to post." : !accounts.length ? "Pick an account to post on." : "";
+  const why = !clips.length
+    ? "Pick at least one clip at step 1."
+    : !profiles.length
+      ? "Connect an account to write the posts."
+      : !accounts.length
+        ? "Pick one or more accounts."
+        : "";
 
   return `
     <section class="clips-write" aria-labelledby="clips-write-title">
       <header class="clips-write__head">
-        <h2 class="clips-write__title" id="clips-write-title">Turn ${plural(clips.length, "clip")} into posts</h2>
-        <p class="clips-write__sub">I write one draft per clip and account${pb ? `, in ${escapeHtml(pb.name)}'s voice` : ""}. Nothing is published: the drafts land here, ready to schedule.</p>
+        <h2 class="clips-write__title" id="clips-write-title">Write posts from ${plural(clips.length, "clip")}</h2>
+        <p class="clips-write__sub">I render the clips with these settings, then write one post per clip and account${pb ? `, in ${escapeHtml(pb.name)}'s voice` : ""}. Nothing is published: the drafts land on this page, ready to schedule.</p>
       </header>
       <div class="clips-write__grid">
         <div class="clips-write__form">
           <section class="clips-write__group">
-            <h3 class="clips-write__label">The clips</h3>
-            <ul class="clips-write__clips">${clipTiles}</ul>
+            <div class="clips-write__group-head">
+              <h3 class="clips-write__label">Clips</h3>
+              <button type="button" class="ap-button ghost blue" data-clips-tab="clips">Change clips</button>
+            </div>
+            ${
+              clips.length
+                ? `<ul class="clips-write__strip" aria-label="The clips">${strip}${more}</ul>
+                   <p class="clips-write__meta">${plural(clips.length, "clip")} · ${fmtMs(totalMs)} of video</p>`
+                : `<p class="clips-write__empty">No clip picked.</p>`
+            }
           </section>
           <section class="clips-write__group">
-            <h3 class="clips-write__label">Where to post</h3>
-            ${accountBlock}
+            <div class="clips-write__group-head"><h3 class="clips-write__label">Format</h3></div>
+            <div class="clips-write__row">${formatSelect(v.settings.ratio)}</div>
           </section>
           <section class="clips-write__group">
-            <h3 class="clips-write__label">Format</h3>
-            <div class="clips-write__cards">${formatCards}</div>
-            ${draftSetup.formatMode === "same" ? `<div class="clips-write__row">${formatSelect(v.settings.ratio)}</div>` : ""}
-            <h3 class="clips-write__label">Subtitles</h3>
+            <div class="clips-write__group-head"><h3 class="clips-write__label">Subtitles</h3></div>
             <div class="clips-write__row">${subtitleSelect(v.settings.subtitlePreset)}</div>
-            ${ownLook ? `<p class="clips-write__hint">${plural(ownLook, "clip")} ${ownLook === 1 ? "keeps its" : "keep their"} own format or subtitles, set in the editor.</p>` : ""}
+            ${ownLook ? `<p class="clips-write__meta">${plural(ownLook, "clip")} ${ownLook === 1 ? "keeps its" : "keep their"} own ratio or subtitles, set in the editor.</p>` : ""}
           </section>
           <section class="clips-write__group">
-            <h3 class="clips-write__label">How the post ends</h3>
-            <div class="clips-write__cards clips-write__cards--3">${ctas}</div>
+            <div class="clips-write__group-head"><h3 class="clips-write__label">Call to action</h3></div>
+            <div class="clips-write__choices" role="radiogroup" aria-label="Call to action">${ctaChoices}</div>
+          </section>
+          <section class="clips-write__group">
+            <div class="clips-write__group-head"><h3 class="clips-write__label">Accounts</h3></div>
+            ${profiles.length ? `<p class="clips-write__meta">Pick one or more, across networks — I write one post per clip for each.</p>` : ""}
+            ${accountBlock}
           </section>
         </div>
         <aside class="clips-write__side" aria-label="Preview">
@@ -807,22 +826,32 @@ function renderDraftSetup(v, hasDrafts) {
           </div>
           ${accountTabs}
           <div class="clips-write__post" inert>
-            ${draftSetup.preview ? renderPostCard(draftSetup.preview, { railActions: [] }) : `<p class="clips-write__hint">Tick a clip to see its post.</p>`}
+            ${draftSetup.preview ? renderPostCard(draftSetup.preview, { railActions: [] }) : `<p class="clips-write__empty">Pick a clip to see its post.</p>`}
           </div>
-          <p class="clips-write__note">A preview: I write the caption when you click — you can edit every draft after.</p>
-          <div class="clips-write__total">
-            <span>${plural(clips.length, "clip")} × ${plural(accounts.length, "account")}</span>
-            <strong>${plural(count, "draft")}</strong>
-          </div>
-          <div class="clips-write__actions">
-            <button type="button" class="ap-button ghost grey" data-clips-setup-cancel>Cancel</button>
-            <button type="button" class="ap-button primary orange" data-clips-write ${count ? "" : "disabled"}>
-              <i class="ap-icon-archie-official" aria-hidden="true"></i><span>Write ${plural(count, "draft")}</span>
-            </button>
-          </div>
-          ${why ? `<p class="clips-write__why">${why}</p>` : ""}
+          <p class="clips-write__note">${
+            !account
+              ? "Shown as LinkedIn until you connect an account. "
+              : !accounts.length
+                ? `Shown as ${escapeHtml(account.name || "your account")} until you pick the accounts. `
+                : ""
+          }I write the caption when you click — every draft stays editable.</p>
         </aside>
       </div>
+      <footer class="clips-write__bar">
+        <p class="clips-write__count">
+          ${
+            why
+              ? `<span class="clips-write__why"><i class="ap-icon-info" aria-hidden="true"></i>${why}</span>`
+              : `<strong>${plural(count, "draft")}</strong><span>${plural(clips.length, "clip")} × ${plural(accounts.length, "account")}</span>`
+          }
+        </p>
+        <div class="clips-write__actions">
+          <button type="button" class="ap-button ghost grey" data-clips-setup-cancel>Cancel</button>
+          <button type="button" class="ap-button primary orange" data-clips-write ${count ? "" : "disabled"}>
+            <i class="ap-icon-archie-official" aria-hidden="true"></i><span>${count ? `Write ${plural(count, "draft")}` : "Write the drafts"}</span>
+          </button>
+        </div>
+      </footer>
     </section>`;
 }
 
@@ -844,8 +873,17 @@ function writeDrafts() {
   if (!clips.length || !accounts.length) return;
   const pb = getContextById(v.contextId);
   const key = draftKey(v.id);
-  draftSetup.writing = true;
+  draftSetup.writing = {
+    stage: "render",
+    clips: clips.length,
+    posts: clips.length * accounts.length,
+    look: `${formatLabel(v.settings.ratio)} · ${v.settings.subtitlePreset === "none" ? "no subtitles" : `${presetLabel(v.settings.subtitlePreset)} subtitles`}`,
+  };
   paint();
+  setTimeout(() => {
+    draftSetup.writing.stage = "write";
+    paint();
+  }, 1400);
   setTimeout(() => {
     for (const clip of clips) {
       for (const a of accounts) {
@@ -860,7 +898,7 @@ function writeDrafts() {
             sourceId: v.id,
             clipId: clip.id,
           },
-          format: postFormat(v, clip, a),
+          format: postFormat(v, clip),
           subtitleStyle: clipCaptionState(v, clip).presetId,
         });
         d.author = accountAuthor(a, pb);
@@ -872,7 +910,7 @@ function writeDrafts() {
     paint();
     const n = clips.length * accounts.length;
     showToast(`${n} draft${n === 1 ? "" : "s"} written`);
-  }, 1600);
+  }, 2800);
 }
 
 // ── Events ───────────────────────────────────────────────────────────
@@ -950,7 +988,8 @@ function onClick(e) {
     return setHashQuery(path(), { tab: "drafts" });
   }
   if (t.closest("[data-clips-more-drafts]")) {
-    draftSetup.open = true;
+    // A new run: its accounts are picked again (prod), nothing carried over.
+    Object.assign(draftSetup, { open: true, accounts: null, previewAccount: null, previewClip: 0 });
     return paint();
   }
   if (t.closest("[data-clips-setup-cancel]")) {
@@ -1060,10 +1099,6 @@ function onChange(e) {
   }
   if (t.matches("[data-clips-cta]")) {
     draftSetup.cta = t.value;
-    return paint();
-  }
-  if (t.matches("[data-clips-format-mode]")) {
-    draftSetup.formatMode = t.value;
     return paint();
   }
   return undefined;

@@ -7,18 +7,18 @@
 // numbers in words and links to its tab. Render-only; the shell
 // (right-panel.js) owns the delegated clicks (data-rpanel-goto / -focus).
 
-import { escapeAttr, escapeText, formatClock } from "../../utils.js?v=2206";
-import { IDEA_KIND_TAG } from "../idea-card-compact.js?v=2206";
-import { getThread } from "../../assistant.js?v=2206";
-import { getSources } from "../../sources-stream.js?v=2206";
-import { getIdeas } from "../../library.js?v=2206";
-import { getPosts } from "../../posts-store.js?v=2206";
-import { isPostValid } from "../../post-validation.js?v=2206";
-import { networkIcon, networkLabel } from "../../social-profiles.js?v=2206";
-import { iconFor } from "../../file-kinds.js?v=2206";
-import { thumbBackground } from "../clip-card.js?v=2206";
-import { pendingProcesses } from "../conversation-status-card.js?v=2206";
-import { activeSessionId } from "../right-panel.js?v=2206";
+import { escapeAttr, escapeText, formatClock } from "../../utils.js?v=2210";
+import { IDEA_KIND_TAG } from "../idea-card-compact.js?v=2210";
+import { getThread } from "../../assistant.js?v=2210";
+import { getSources } from "../../sources-stream.js?v=2210";
+import { getIdeas } from "../../library.js?v=2210";
+import { getPosts } from "../../posts-store.js?v=2210";
+import { isPostValid } from "../../post-validation.js?v=2210";
+import { networkIcon, networkLabel } from "../../social-profiles.js?v=2210";
+import { iconFor } from "../../file-kinds.js?v=2210";
+import { thumbBackground } from "../clip-card.js?v=2210";
+import { pendingProcesses } from "../conversation-status-card.js?v=2210";
+import { activeSessionId } from "../right-panel.js?v=2210";
 
 // Live drafts only — the Drafts tab hides scheduled ones, so does its count.
 const liveDrafts = (sid) => getPosts(sid).filter((p) => p.status !== "scheduled");

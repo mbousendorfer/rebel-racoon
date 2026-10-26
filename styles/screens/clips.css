@@ -935,14 +935,18 @@
 
 /* ── Drafts ──────────────────────────────────────────────────────── */
 
-/* « Write the posts »: the transformation, shown. The form (what to turn into
-   what) on the left; on the right, sticky, one draft previewed as it will
-   land, the count, and the action — a white surface on the page ground. */
+/* « Write the posts »: the transformation. The settings on the left, read
+   top to bottom (Clips · Post on · Format · Subtitles · Call to action); on
+   the right, sticky, one draft as it will land; at the bottom, sticky too,
+   the count and the action — always in view, whatever the scroll. */
 .clips-write {
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-md);
   max-width: 1160px;
+  width: 100%;
+  margin: 0 auto;
 }
 
 .clips-write__title {
@@ -954,30 +958,36 @@
 }
 
 .clips-write__sub,
-.clips-write__hint,
-.clips-write__note {
+.clips-write__meta,
+.clips-write__note,
+.clips-write__empty {
   margin: 0;
   color: var(--ref-color-grey-80);
 }
 
-.clips-write__hint,
-.clips-write__note,
-.clips-write__card-hint {
+.clips-write__meta,
+.clips-write__note {
   font-size: var(--sys-text-style-caption-size);
 }
 
 .clips-write__grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 560px; /* the draft card's own width */
+  grid-template-columns: minmax(0, 1fr) 548px; /* the draft card (500) + the side's inset */
   gap: var(--ref-spacing-md);
   align-items: start;
+}
+
+/* Too narrow for two columns: the preview goes under the settings. */
+@container (max-width: 980px) {
+  .clips-write__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .clips-write__form,
 .clips-write__side {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-md);
   padding: var(--ref-spacing-md);
   border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-card);
@@ -993,76 +1003,77 @@
 .clips-write__group {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xs);
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-md) 0;
+}
+
+.clips-write__group:first-child {
+  padding-top: 0;
+}
+
+.clips-write__group:last-child {
+  padding-bottom: 0;
 }
 
 .clips-write__group + .clips-write__group {
-  padding-top: var(--ref-spacing-md);
   border-top: 1px solid var(--ref-color-grey-20);
+}
+
+.clips-write__group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-xs);
+  min-height: 36px; /* a head with its button reads like one without */
 }
 
 .clips-write__label {
   margin: 0;
-  font-size: var(--sys-text-style-body-bold-size);
-  font-weight: var(--sys-text-style-body-bold-weight);
+  font-size: var(--sys-text-style-subtitle-size);
+  line-height: var(--sys-text-style-subtitle-line-height);
+  font-weight: var(--sys-text-style-subtitle-weight);
   color: var(--ref-color-grey-100);
 }
 
-/* The clips, as tiles: the reframed picture, the box to keep it, its title. */
-.clips-write__clips {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, 120px); /* portrait thumbnails, no black bands */
-  gap: var(--ref-spacing-md);
+/* The clips, summed up: small portrait thumbnails, then « +4 ». */
+.clips-write__strip {
+  display: flex;
+  gap: var(--ref-spacing-xxs);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.clips-write__clip {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxs);
+.clips-write__thumb,
+.clips-write__more {
+  flex: none;
+  width: 48px;
+  aspect-ratio: 9 / 16;
+  border-radius: var(--app-radius-sm);
+  overflow: hidden;
 }
 
-.clips-write__clip-media {
-  display: block;
-  aspect-ratio: 9 / 16;
-  border-radius: var(--app-radius-md);
-  overflow: hidden;
+.clips-write__thumb {
   background: #000; /* the footage */
 }
 
-.clips-write__clip-media .clips-preview {
+.clips-write__thumb .clips-preview {
   height: 100%;
 }
 
-.clips-write__clip.is-off .clips-write__clip-media {
-  opacity: 0.45;
-}
-
-.clips-write__clip-row {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--ref-spacing-xxs);
-}
-
-.clips-write__clip-text {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  font-size: var(--sys-text-style-caption-size);
+.clips-write__more {
+  display: grid;
+  place-items: center;
+  background: var(--ref-color-grey-05);
+  border: 1px solid var(--ref-color-grey-20);
+  font-weight: var(--sys-text-style-body-bold-weight);
   color: var(--ref-color-grey-100);
-}
-
-.clips-write__clip-meta {
-  display: block;
-  color: var(--ref-color-grey-80);
 }
 
 .clips-write__accounts {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xxs);
+  gap: var(--ref-spacing-xs);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1073,6 +1084,7 @@
 }
 
 .clips-write__account-meta {
+  margin-left: auto;
   font-size: var(--sys-text-style-caption-size);
   color: var(--ref-color-grey-80);
 }
@@ -1089,23 +1101,42 @@
   min-width: 240px;
 }
 
-.clips-write__cards {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+/* A choice per line: the DS radio, its name, what it does. */
+.clips-write__choices {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+}
+
+.clips-write__choice {
+  display: flex;
+  align-items: flex-start;
   gap: var(--ref-spacing-xs);
+  cursor: pointer;
 }
 
-.clips-write__cards--3 {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+.clips-write__choice .ap-radio-container {
+  flex: none;
+  margin-top: 2px;
 }
 
-.clips-write__card-hint {
-  margin: var(--ref-spacing-xxxs) 0 0;
+.clips-write__choice-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.clips-write__choice-name {
+  color: var(--ref-color-grey-100);
+}
+
+.clips-write__choice-hint {
+  font-size: var(--sys-text-style-caption-size);
   color: var(--ref-color-grey-80);
 }
 
 /* A choice that can't be made says why, in its hint. */
-.clips-write__mode.is-off {
+.clips-write__choice.is-off {
   cursor: default;
   opacity: 0.6;
 }
@@ -1128,44 +1159,61 @@
   margin-right: var(--ref-spacing-xxs);
 }
 
-/* The real draft card, read-only: what lands is what you see. */
-.clips-write__post {
-  max-height: 560px;
-  overflow-y: auto;
-}
-
-/* A preview has no selection gutter nor row actions. */
+/* A preview has no selection gutter nor row actions; the real draft card,
+   read-only, at its own height — no scroll inside the column. */
 .clips-write__post .posts__row-check,
 .clips-write__post .posts__row-actions,
-.clips-write__post .clips-drafts__edit {
+.clips-write__post .clips-drafts__edit,
+.clips-write__post .fb {
   display: none;
 }
 
-.clips-write__total {
+/* A shorter player than a written draft's, so the whole card fits beside
+   the settings. */
+.clips-write__post .clips-drafts__player {
+  height: 260px;
+}
+
+/* The count and the action, held at the bottom of the page. */
+.clips-write__bar {
+  position: sticky;
+  /* Down to the scroller's edge, over its bottom padding: nothing shows
+     under the bar. */
+  bottom: calc(-1 * var(--ref-spacing-xxl));
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-md);
+  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-card);
+  background: var(--ref-color-white);
+}
+
+.clips-write__count {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
-  padding-top: var(--ref-spacing-sm);
-  border-top: 1px solid var(--ref-color-grey-20);
+  gap: var(--ref-spacing-xs);
+  margin: 0;
   color: var(--ref-color-grey-80);
 }
 
-.clips-write__total strong {
+.clips-write__count strong {
   font-size: var(--sys-text-style-h3-size);
+  color: var(--ref-color-grey-100);
+}
+
+.clips-write__why {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
   color: var(--ref-color-grey-100);
 }
 
 .clips-write__actions {
   display: flex;
-  justify-content: flex-end;
   gap: var(--ref-spacing-xs);
-}
-
-.clips-write__why {
-  margin: 0;
-  text-align: right;
-  font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-80);
 }
 
 .clips-drafts__writing {
@@ -1175,6 +1223,40 @@
   gap: var(--ref-spacing-sm);
   padding: var(--ref-spacing-xxl) 0;
   color: var(--ref-color-grey-80);
+}
+
+.clips-drafts__stages {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.clips-drafts__stage {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  color: var(--ref-color-grey-80);
+}
+
+.clips-drafts__stage.is-current {
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.clips-drafts__stage .ap-loader,
+.clips-drafts__stage i,
+.clips-drafts__stage-dot {
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+
+.clips-drafts__stage-dot {
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-circle);
 }
 
 .clips-drafts {
