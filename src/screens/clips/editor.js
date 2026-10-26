@@ -8,7 +8,9 @@
 //   transcript (left, always) · stage (center) · panel + tool rail (right) ·
 //   one timeline for every tool (bottom).
 //
-// Tools: Trim · Reframe · Subtitles · Clean up · Text · Brand · Format.
+// Tools: Reframe · Subtitles · Text · Brand. The format and the safe area sit
+// on the Output monitor, the cleanup (fillers, pauses) on the transcript, and
+// the trim — In / Out — on the transport, right above the timeline it edits.
 // The editor owns the clock and the source <video>; caption-editor.js renders
 // the subtitles, the transcript and the cleanup on that clock (mount opts.clock),
 // and clip-framing.js is the crop editor's engine.
@@ -18,17 +20,18 @@
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2159";
-import { isFlagOn } from "../../feature-flags.js?v=2159";
-import { parseHashParams } from "../../url-state.js?v=2159";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2159";
-import { showToast } from "../../components/toast.js?v=2159";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2159";
-import { getContextById } from "../../contexts-store.js?v=2159";
-import { escapeHtml } from "../../utils.js?v=2159";
-import * as ce from "../../caption-editor.js?v=2159";
-import { DEAD_ZONES } from "../../clip-captions.js?v=2159";
-import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2159";
+import { navigate } from "../../router.js?v=2162";
+import { isFlagOn } from "../../feature-flags.js?v=2162";
+import { parseHashParams } from "../../url-state.js?v=2162";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2162";
+import { showToast } from "../../components/toast.js?v=2162";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2162";
+import { getContextById } from "../../contexts-store.js?v=2162";
+import { escapeHtml } from "../../utils.js?v=2162";
+import * as ce from "../../caption-editor.js?v=2162";
+import { DEAD_ZONES } from "../../clip-captions.js?v=2162";
+import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2162";
+import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2162";
 import {
   framingContext,
   initialSegments,
@@ -51,7 +54,7 @@ import {
   cameraName,
   LAYOUTS,
   MIN_SEG_MS,
-} from "../../clip-framing.js?v=2159";
+} from "../../clip-framing.js?v=2162";
 import {
   fmtMs,
   fmtPrecise,
@@ -65,8 +68,8 @@ import {
   presetLabel,
   dsSelect,
   bindSelectDismiss,
-} from "./shared.js?v=2159";
-import { primeDraftSetup } from "./project.js?v=2159";
+} from "./shared.js?v=2162";
+import { primeDraftSetup } from "./project.js?v=2162";
 
 const MIN_CLIP_MS = 5000;
 const MAX_CLIP_MS = 300000;
@@ -75,13 +78,11 @@ const CARD_MS = 2000; // intro / outro card length
 
 // The tools that work on words show the transcript; the ones that work on the
 // image give its width back to the stage. The toggle overrides it either way.
-const WORD_TOOLS = new Set(["trim", "subtitles", "cleanup"]);
+const WORD_TOOLS = new Set(["subtitles"]);
 
 const TOOLS = [
-  { id: "trim", label: "Trim", icon: "ap-icon-clock", hint: "Start and end of the clip" },
   { id: "reframe", label: "Reframe", icon: "ap-icon-cropper", hint: "Who's in the frame, part by part" },
   { id: "subtitles", label: "Subtitles", icon: "ap-icon-closed-captions", hint: "Subtitle style" },
-  { id: "cleanup", label: "Clean up", icon: "ap-icon-sparkles", hint: "Filler words and pauses in the subtitles" },
   { id: "text", label: "Text", icon: "ap-icon-alt-text", hint: "Titles and text on the video" },
   { id: "brand", label: "Brand", icon: "ap-icon-target", hint: "Logo, intro and outro" },
 ];
@@ -97,8 +98,23 @@ const CAMERA_COLORS = [
 
 // The safe-area guide's choices: where each network's buttons cover the video.
 const DEAD_ZONE_LABELS = { none: "No guide", tiktok: "TikTok zones", reels: "Reels zones", shorts: "Shorts zones" };
+// …and the network each one is, by its logo.
+const DEAD_ZONE_NETWORK = { tiktok: "tiktok", reels: "instagram", shorts: "youtube" };
+const dzIcon = (id) =>
+  DEAD_ZONE_NETWORK[id]
+    ? `<i class="${NETWORK_ICON_BY_PLATFORM[DEAD_ZONE_NETWORK[id]]} clips-ed__dz-icon" aria-hidden="true"></i>`
+    : `<i class="ap-icon-eye-off clips-ed__dz-icon" aria-hidden="true"></i>`;
 
 let ed = null;
+
+// The tool in the URL. Two former tools left the rail: Clean up (now the
+// transcript's, so Subtitles) and Trim (now the transport's In / Out).
+function toolFromUrl() {
+  const t = parseHashParams().get("tool");
+  if (t === "cleanup") return "subtitles";
+  if (t === "trim") return "reframe";
+  return TOOLS.some((x) => x.id === t) ? t : "reframe";
+}
 
 export function renderClipEditor(params, el) {
   if (!isFlagOn("clipsSpace")) {
@@ -121,7 +137,7 @@ export function renderClipEditor(params, el) {
     ctx,
     pb,
     look,
-    tool: TOOLS.some((t) => t.id === parseHashParams().get("tool")) ? parseHashParams().get("tool") : "reframe",
+    tool: toolFromUrl(),
     // The working copy — committed on Save.
     w: {
       title: clip.title,
@@ -213,7 +229,8 @@ function shellHTML() {
         <h2 class="clips-ed__side-title">Transcript</h2>
         <span class="cap-ed__meta" data-ce-reconcile></span>
       </div>
-      <p class="clips-ed__side-hint">Click a word to jump to it. Double-click to fix it.</p>
+      <p class="clips-ed__side-hint">Click a word to jump to it, double-click to fix it. Click a marked filler or pause to hide it from the subtitles.</p>
+      <div class="clips-ed__clean" data-ce-cleanup-list></div>
       <div class="cap-ed__transcript clips-ed__words" data-ce-transcript></div>
     </aside>
 
@@ -274,6 +291,19 @@ function shellHTML() {
           </button>
         </div>
         <span class="clips-ed__transport-spacer"></span>
+        <div class="clips-ed__inout" role="group" aria-label="The clip's start and end in the video">
+          <label class="clips-ed__inout-field"><span>In</span>
+            <span class="ap-input-group"><input type="text" data-clips-time="start" aria-label="Start in the video" /></span></label>
+          <button type="button" class="clips-ed__tl-tool" data-clips-ed="set-start" aria-label="Start at the playhead" data-tooltip="Start at the playhead (I)">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 2v12"/><path d="M13 8H6"/><path d="M9 5 6 8l3 3"/></svg>
+          </button>
+          <label class="clips-ed__inout-field"><span>Out</span>
+            <span class="ap-input-group"><input type="text" data-clips-time="end" aria-label="End in the video" /></span></label>
+          <button type="button" class="clips-ed__tl-tool" data-clips-ed="set-end" aria-label="End at the playhead" data-tooltip="End at the playhead (O)">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13 2v12"/><path d="M3 8h7"/><path d="M7 5l3 3-3 3"/></svg>
+          </button>
+          <span class="clips-ed__error" data-clips-trim-error role="alert"></span>
+        </div>
         <button type="button" class="ap-button ghost grey clips-ed__transcript-toggle" data-clips-ed="transcript" aria-pressed="false">
           <i class="ap-icon-alt-text" aria-hidden="true"></i><span>Transcript</span>
         </button>
@@ -286,6 +316,9 @@ function shellHTML() {
     <nav class="clips-ed__rail" role="tablist" aria-label="Editing tools">${rail}</nav>
   </div>`;
 }
+
+// The subtitle look, without the safe-area guide (a view setting, not a look).
+const styleKey = (cs) => JSON.stringify({ ...cs, deadZones: null });
 
 // The subtitles + transcript + cleanup engine, on this editor's clock.
 function mountCaptions() {
@@ -306,18 +339,24 @@ function mountCaptions() {
       toggle: () => togglePlay(),
     },
     presetIds: SUBTITLE_IDS,
+    cleanup: true, // fillers and pauses are always marked in the transcript
     onChange: (patch) => {
       ed.caption = patch;
       ed.capDirty = true;
       // A style change detaches the clip from the video's style; hiding a word
-      // doesn't (it's the clip's words, not its look).
-      if (ed.tool === "subtitles") ed.capOwn = true;
+      // doesn't (it's the clip's words, not its look) — so compare the look.
+      const look = styleKey(patch.captionState);
+      if (look !== ed.capLook) {
+        ed.capOwn = true;
+        ed.capLook = look;
+      }
       const src = ed.el.querySelector("[data-clips-cap-source]");
       if (src) src.innerHTML = capSourceHTML();
       paintCleanMarks();
       setDirty();
     },
   });
+  ed.capLook = styleKey(ce.getState());
 }
 
 // ── The footage and the clock ────────────────────────────────────────
@@ -485,12 +524,12 @@ function paintFormatPicker() {
   host.innerHTML =
     dsSelect({
       label: "Safe area",
-      valueHtml: escapeHtml(DEAD_ZONE_LABELS[ed.deadZones] || "No guide"),
+      valueHtml: `${dzIcon(ed.deadZones)}${escapeHtml(DEAD_ZONE_LABELS[ed.deadZones] || "No guide")}`,
       current: ed.deadZones,
       attr: "data-clips-deadzones",
       ariaLabel: "Show where the app's buttons cover the video",
       extraClass: "clips-ed__format",
-      options: Object.entries(DEAD_ZONE_LABELS).map(([id, label]) => ({ id, label })),
+      options: Object.entries(DEAD_ZONE_LABELS).map(([id, label]) => ({ id, label, lead: dzIcon(id) })),
     }) +
     dsSelect({
       label: own ? "This clip" : "Video",
@@ -639,18 +678,28 @@ function pctIn(ms) {
   return `${((ms - v.from) / v.span) * 100}%`;
 }
 
+// The transport's In / Out: the clip's range in the video, kept in step with
+// the handles (a field being typed in is left alone).
+function paintInOut() {
+  ed.el.querySelectorAll("[data-clips-time]").forEach((i) => {
+    if (i !== document.activeElement) i.value = fmtPrecise(i.dataset.clipsTime === "start" ? ed.w.startMs : ed.w.endMs);
+  });
+  const err = ed.el.querySelector("[data-clips-trim-error]");
+  if (err) err.textContent = ed.trimError;
+}
+
 function paintTimeline() {
+  paintInOut();
   const host = ed.el.querySelector("[data-clips-timeline]");
   if (!host) return;
   if (!ed.drag) ed.viewport = view();
   const v = ed.viewport;
   const step = niceStep(v.span);
   let ticks = "";
-  // Trim picks the clip's place in the video, so its ruler reads the video's
-  // time, like its fields; every other tool reads the clip's time.
-  const t0 = ed.tool === "trim" ? 0 : ed.w.startMs;
-  for (let t = Math.ceil((v.from - t0) / step) * step + t0; t <= v.to; t += step)
-    if (t >= t0) ticks += `<span class="clips-tl__tick" style="left:${pctIn(t)}"><span>${fmtMs(t - t0)}</span></span>`;
+  // The timeline is a window on the video, so its ruler reads the video's time
+  // — the time the In / Out fields above it are typed in.
+  for (let t = Math.ceil(v.from / step) * step; t <= v.to; t += step)
+    ticks += `<span class="clips-tl__tick" style="left:${pctIn(t)}"><span>${fmtMs(t)}</span></span>`;
   // A faux waveform — no audio analysis in the prototype — keyed on source
   // time so the shape doesn't slide when the window moves.
   let wave = "";
@@ -738,7 +787,7 @@ function paintTimeline() {
       .join("")}<span class="clips-tl__legend-item">Dotted: Auto · Solid: yours</span></p>`;
 }
 
-// What Clean up hid from the subtitles, on the Clip track — the audio isn't cut.
+// What the cleanup hid from the subtitles, on the Clip track — the audio isn't cut.
 function cleanMarks() {
   return ce
     .getHiddenSpans()
@@ -801,7 +850,6 @@ function applyTool() {
     b.classList.toggle("is-on", on);
     b.setAttribute("aria-selected", String(on));
   });
-  ce.setCleanupMode(ed.tool === "cleanup");
   // The tool is in the URL, so a reload or Back lands on it again.
   history.replaceState(null, "", `#/clips/${ed.video.id}/edit/${ed.clip.id}?tool=${ed.tool}`);
   syncTlTools();
@@ -818,32 +866,13 @@ function paintPanel() {
   if (!host) return;
   const tool = TOOLS.find((t) => t.id === ed.tool);
   const body = {
-    trim: trimPanel,
     reframe: reframePanel,
     subtitles: subtitlesPanel,
-    cleanup: cleanupPanel,
     text: textPanel,
     brand: brandPanel,
   }[ed.tool]();
   host.innerHTML = `<h2 class="clips-ed__panel-title">${tool.label}</h2>${body}`;
-  if (ed.tool === "subtitles" || ed.tool === "cleanup") ce.refreshControls();
-}
-
-function trimPanel() {
-  return `
-    <p class="clips-ed__panel-lead">Drag the handles on the timeline, or type the times. From 5 seconds to 5 minutes.</p>
-    <div class="clips-ed__fields">
-      <label class="clips-ed__field"><span>Start in the video</span>
-        <div class="ap-input-group"><input type="text" data-clips-time="start" value="${fmtPrecise(ed.w.startMs)}" /></div></label>
-      <label class="clips-ed__field"><span>End in the video</span>
-        <div class="ap-input-group"><input type="text" data-clips-time="end" value="${fmtPrecise(ed.w.endMs)}" /></div></label>
-    </div>
-    ${ed.trimError ? `<p class="clips-ed__error" role="alert">${escapeHtml(ed.trimError)}</p>` : ""}
-    <div class="clips-ed__row">
-      <button type="button" class="ap-button stroked grey" data-clips-ed="set-start">Start at <span data-clips-at>${fmtPrecise(ed.t)}</span></button>
-      <button type="button" class="ap-button stroked grey" data-clips-ed="set-end">End at <span data-clips-at>${fmtPrecise(ed.t)}</span></button>
-    </div>
-    <p class="clips-ed__fact">Length <strong>${fmtPrecise(clipLen())}</strong> · in the video ${fmtMs(ed.w.startMs)} → ${fmtMs(ed.w.endMs)}</p>`;
+  if (ed.tool === "subtitles") ce.refreshControls();
 }
 
 function reframePanel() {
@@ -948,12 +977,6 @@ function capSourceHTML() {
     ? `<span>This clip's own style · <strong>${escapeHtml(presetLabel(preset))}</strong></span>
        <button type="button" class="ap-button ghost grey" data-clips-ed="cap-video"><i class="ap-icon-reset" aria-hidden="true"></i><span>Back to the video's style</span></button>`
     : `<span>The video's style · <strong>${escapeHtml(presetLabel(preset))}</strong></span>`;
-}
-
-function cleanupPanel() {
-  return `
-    <p class="clips-ed__panel-lead">I marked the filler words and the long pauses. Hiding one takes it out of the subtitles — the audio stays as it is.</p>
-    <div data-ce-cleanup-list></div>`;
 }
 
 function textPanel() {
@@ -1106,10 +1129,10 @@ function edit(fn, { timeline = true } = {}) {
   paintFrame();
 }
 
-// Trim's errors sit under its fields, where the time was typed.
+// Trim's errors sit next to the In / Out fields, where the time was typed.
 function trimError(msg) {
   ed.trimError = msg;
-  paintPanel();
+  paintInOut();
 }
 
 function setRange(startMs, endMs) {
@@ -1293,6 +1316,7 @@ function handleClick(e) {
       ce.resetStyle(clipCaptionState(ed.video, { captionState: null }));
       // After the reset's own change event, which counts as a style change.
       ed.capOwn = false;
+      ed.capLook = styleKey(ce.getState());
       const src = ed.el.querySelector("[data-clips-cap-source]");
       if (src) src.innerHTML = capSourceHTML();
       return undefined;
@@ -1468,7 +1492,10 @@ function handleChange(e) {
   if (t.matches("[data-clips-time]")) {
     const ms = parseTime(t.value);
     if (ms == null) return trimError("Type a time like 1:32.5");
-    return t.dataset.clipsTime === "start" ? setRange(ms, ed.w.endMs) : setRange(ed.w.startMs, ms);
+    if (t.dataset.clipsTime === "start") setRange(ms, ed.w.endMs);
+    else setRange(ed.w.startMs, ms);
+    t.value = fmtPrecise(t.dataset.clipsTime === "start" ? ed.w.startMs : ed.w.endMs); // 0:33 → 0:33.0
+    return undefined;
   }
   if (t.matches("[data-clips-layout-pick]")) return edit(() => setLayout(ed.ctx, seg, t.value, ed.t, ratio()));
   if (t.matches("[data-clips-follow]")) return edit(() => ((seg.follow = t.checked), (seg.origin = "USER")));
@@ -1509,6 +1536,10 @@ function handleKey(e) {
     togglePlay();
   } else if (e.key === "s" || e.key === "S") {
     if (!e.metaKey && !e.ctrlKey) doSplit();
+  } else if ((e.key === "i" || e.key === "o") && !e.metaKey && !e.ctrlKey) {
+    // In / Out at the playhead — the editing apps' keys.
+    if (e.key === "i") setRange(ed.t, ed.w.endMs);
+    else setRange(ed.w.startMs, ed.t);
   } else if (e.key === "ArrowLeft") {
     e.preventDefault();
     seek(ed.t - FRAME_MS);

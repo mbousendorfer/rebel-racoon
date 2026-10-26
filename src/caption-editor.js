@@ -28,7 +28,7 @@
 // are pure DOM/CSS. Karaoke word-sweep is intentionally omitted; emphasis is
 // per-word marks + an optional static "phrase" highlight under the playhead.
 
-import { escapeHtml, formatClock } from "./utils.js?v=2159";
+import { escapeHtml, formatClock } from "./utils.js?v=2162";
 import {
   PRESETS,
   presetById,
@@ -43,7 +43,7 @@ import {
   detectFillers,
   detectPauses,
   videoForClip,
-} from "./clip-captions.js?v=2159";
+} from "./clip-captions.js?v=2162";
 
 const FONT_FAMILIES = [
   "Montserrat, Roboto, sans-serif",
@@ -542,68 +542,41 @@ function renderCleanupBar() {
     </span>`;
 }
 
-// The Clean up tool's full list (Clips space): every filler and pause with
-// its time, each one removable on its own, and the pause threshold.
+// The cleanup, at the head of the transcript (Clips space): what's marked,
+// one action for all of it, the pause threshold. Each filler or pause is
+// hidden or shown by clicking it in the transcript. The slider is built once,
+// so repainting the summary never cuts a drag.
 function renderCleanupList() {
   const host = $("[data-ce-cleanup-list]");
   if (!host) return;
   const fillers = detectFillers(words);
   const pauses = detectPauses(words, pauseThreshold);
-  const row = (attrs, label, time, removed) => `
-    <li class="cap-ed-clean-row${removed ? " is-removed" : ""}">
-      <button type="button" class="cap-ed-clean-row__seek" ${attrs.seek}>
-        <span class="cap-ed-clean-row__time">${fmt(time)}</span><span class="cap-ed-clean-row__label">${escapeHtml(label)}</span>
-      </button>
-      <button type="button" class="ap-button ghost grey" ${attrs.toggle}>${removed ? "Show" : "Hide"}</button>
-    </li>`;
-  const fillerRows = fillers
-    .map((f) =>
-      row(
-        { seek: `data-ce-word="${f.startIdx}"`, toggle: `data-ce-filler-toggle="${f.startIdx}"` },
-        `“${words
-          .slice(f.startIdx, f.startIdx + f.count)
-          .map((w) => w.text)
-          .join(" ")}”`,
-        words[f.startIdx].start,
-        !!words[f.startIdx].removed,
-      ),
-    )
-    .join("");
-  const pauseRows = pauses
-    .map((p) =>
-      row(
-        { seek: `data-ce-word="${p.idx}"`, toggle: `data-ce-pause="${p.idx}"` },
-        `${p.dur}s of silence`,
-        words[p.idx]?.start || 0,
-        pausesRemoved.has(p.idx),
-      ),
-    )
-    .join("");
-  const anyShown = fillers.some((f) => !words[f.startIdx].removed) || pauses.some((p) => !pausesRemoved.has(p.idx));
-  host.innerHTML = `
-    ${
-      fillers.length || pauses.length
-        ? `<div class="cap-ed-clean-all">
-            <button type="button" class="ap-button stroked grey" data-ce-cleanup-all="${anyShown ? "remove" : "restore"}">
-              <i class="${anyShown ? "ap-icon-eye-off" : "ap-icon-eye-on"}" aria-hidden="true"></i><span>${anyShown ? "Hide them all" : "Show them all"}</span>
-            </button>
-          </div>`
-        : ""
-    }
-    <div class="cap-ed-clean-group">
-      <p class="cap-ed-clean-group__title">Filler words · ${fillers.length}</p>
-      ${fillers.length ? `<ul class="cap-ed-clean-list">${fillerRows}</ul>` : `<p class="cap-ed-clean-none">None found.</p>`}
-    </div>
-    <div class="cap-ed-clean-group">
-      <p class="cap-ed-clean-group__title">Pauses · ${pauses.length}</p>
+  if (!host.querySelector("[data-ce-pause-threshold]")) {
+    host.innerHTML = `
+      <div class="cap-ed-clean-head">
+        <span class="cap-ed-clean-sum" data-ce-clean-sum></span>
+        <button type="button" class="ap-button ghost grey" data-ce-cleanup-all="remove" data-ce-clean-all></button>
+      </div>
       <label class="cap-ed-clean-threshold">
-        <span>Longer than ${pauseThreshold.toFixed(1)}s</span>
-        <input type="range" class="ap-slider" min="0.2" max="1.5" step="0.1" value="${pauseThreshold}" data-ce-pause-threshold
-          style="--fill:${((pauseThreshold - 0.2) / 1.3) * 100}%" aria-label="Pause threshold" />
+        <span data-ce-clean-th></span>
+        <input type="range" class="ap-slider" min="0.2" max="1.5" step="0.1" value="${pauseThreshold}" data-ce-pause-threshold aria-label="Pause threshold" />
       </label>
-      ${pauses.length ? `<ul class="cap-ed-clean-list">${pauseRows}</ul>` : `<p class="cap-ed-clean-none">None that long.</p>`}
-      <p class="cap-ed-clean-note">A hidden pause keeps the subtitle on screen through the silence. Nothing is cut from the video.</p>
-    </div>`;
+      <p class="cap-ed-clean-note">Hidden words and pauses leave the subtitles only — the audio isn't cut.</p>`;
+  }
+  const hidden =
+    fillers.filter((f) => words[f.startIdx].removed).length + pauses.filter((p) => pausesRemoved.has(p.idx)).length;
+  const total = fillers.length + pauses.length;
+  const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
+  host.querySelector("[data-ce-clean-sum]").textContent = total
+    ? `${plural(fillers.length, "filler word")} · ${plural(pauses.length, "pause")}${hidden ? ` · ${hidden} hidden` : ""}`
+    : "No filler words or long pauses";
+  const all = host.querySelector("[data-ce-clean-all]");
+  all.hidden = !total;
+  all.dataset.ceCleanupAll = hidden < total ? "remove" : "restore";
+  all.innerHTML = `<i class="${hidden < total ? "ap-icon-eye-off" : "ap-icon-eye-on"}" aria-hidden="true"></i><span>${hidden < total ? "Hide all" : "Show all"}</span>`;
+  host.querySelector("[data-ce-clean-th]").textContent = `Pauses over ${pauseThreshold.toFixed(1)}s`;
+  const range = host.querySelector("[data-ce-pause-threshold]");
+  range.style.setProperty("--fill", `${((pauseThreshold - 0.2) / 1.3) * 100}%`);
 }
 
 function renderTabPanel() {
@@ -1239,11 +1212,12 @@ export function mount(hostEl, c, src, opts = {}) {
   onChangeCb = typeof opts.onChange === "function" ? opts.onChange : null;
   clock = opts.clock || null;
   presetIds = Array.isArray(opts.presetIds) ? opts.presetIds : null;
+  const cleanupAlways = !!opts.cleanup; // the host marks fillers and pauses at all times
 
   duration = Math.max(6, (c.end || 0) - (c.start || 0));
   currentTime = 0;
   playing = false;
-  cleanupActive = false;
+  cleanupActive = cleanupAlways;
   pausesRemoved = new Set();
   activeTab = "presets";
   renderedCueIdx = -1;
@@ -1280,6 +1254,7 @@ export function mount(hostEl, c, src, opts = {}) {
   recomputeCues();
   renderTranscript();
   renderTabPanel();
+  renderCleanupList();
   requestAnimationFrame(() => {
     if (!mounted) return;
     repaintAll();
@@ -1359,14 +1334,6 @@ export function getHiddenSpans() {
     .filter((p) => pausesRemoved.has(p.idx))
     .map((p) => ({ start: p.start, end: p.end, label: `${p.dur}s pause hidden` }));
   return [...hiddenWords, ...hiddenPauses];
-}
-
-// The Clean up tool is the transcript's cleanup mode, switched by the host.
-export function setCleanupMode(on) {
-  if (!mounted) return;
-  cleanupActive = !!on;
-  renderTranscript();
-  renderCleanupBar();
 }
 
 // The clip was trimmed: re-time the transcript onto the new length.

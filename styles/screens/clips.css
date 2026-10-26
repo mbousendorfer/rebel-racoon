@@ -1712,17 +1712,48 @@ body.clips-space .app-content {
 }
 
 .clips-ed__time {
+  white-space: nowrap;
   font-variant-numeric: tabular-nums;
   color: var(--ref-color-grey-100);
 }
 
-/* Trim works in the video's time: the transport says where the playhead is in it. */
+/* The transport says where the playhead is in the video too — the time the
+   ruler and the In / Out fields read. */
 .clips-ed__time-src {
   color: var(--ref-color-grey-80);
 }
 
-.clips-ed:not([data-tool="trim"]) .clips-ed__time-src {
-  display: none;
+/* In / Out: the trim, on the transport right above the handles it moves. */
+.clips-ed__inout {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.clips-ed__inout-field {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  margin-left: var(--ref-spacing-xs);
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+
+.clips-ed__inout-field .ap-input-group {
+  width: 84px;
+}
+
+.clips-ed__inout-field input {
+  font-variant-numeric: tabular-nums;
+}
+
+/* The error hangs under the fields, without pushing the transport. */
+.clips-ed__inout .clips-ed__error {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  white-space: nowrap;
 }
 
 /* Split / Merge / Snap act on framing parts: Reframe's tools only. Elsewhere
@@ -2037,12 +2068,6 @@ body.clips-space .app-content {
   gap: var(--ref-spacing-xs);
 }
 
-.clips-ed__fields {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: var(--ref-spacing-xs);
-}
-
 .clips-ed__field {
   display: flex;
   flex-direction: column;
@@ -2281,70 +2306,40 @@ body.clips-space .app-content {
   font-weight: var(--sys-text-style-caption-bold-weight);
 }
 
-/* The Clean up list (caption-editor.js renderCleanupList). */
-.cap-ed-clean-group {
+/* The cleanup at the head of the transcript (caption-editor.js
+   renderCleanupList): a summary and its action, the pause threshold, the note
+   — set off from the words by a hairline. */
+.clips-ed__clean {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xs);
-}
-
-.cap-ed-clean-group + .cap-ed-clean-group {
-  margin-top: var(--ref-spacing-sm);
-}
-
-.cap-ed-clean-group__title {
-  margin: 0;
-  font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--ref-color-grey-100);
-}
-
-.cap-ed-clean-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.cap-ed-clean-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-xxxs) 0;
+  gap: var(--ref-spacing-xxs);
+  margin-top: var(--ref-spacing-xs);
+  padding-bottom: var(--ref-spacing-sm);
   border-bottom: 1px solid var(--ref-color-grey-20);
 }
 
-.cap-ed-clean-row__seek {
+.cap-ed-clean-head {
   display: flex;
-  gap: var(--ref-spacing-xs);
-  min-width: 0;
-  padding: 0;
-  border: 0;
-  background: none;
-  font: inherit;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-xxs);
+}
+
+.cap-ed-clean-sum {
+  font-size: var(--sys-text-style-caption-bold-size);
+  font-weight: var(--sys-text-style-caption-bold-weight);
   color: var(--ref-color-grey-100);
-  text-align: left;
-  cursor: pointer;
-}
-
-.cap-ed-clean-row.is-removed .cap-ed-clean-row__label {
-  text-decoration: line-through;
-  color: var(--ref-color-grey-80);
-}
-
-.cap-ed-clean-row__time {
-  font-variant-numeric: tabular-nums;
-  color: var(--ref-color-grey-80);
 }
 
 .cap-ed-clean-threshold {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxxs);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--ref-spacing-xs);
   font-size: var(--sys-text-style-caption-size);
   color: var(--ref-color-grey-80);
 }
 
-.cap-ed-clean-none,
 .cap-ed-clean-note {
   margin: 0;
   font-size: var(--sys-text-style-caption-size);
@@ -2395,10 +2390,6 @@ body.clips-space .app-content {
   justify-content: space-between;
 }
 
-.cap-ed-clean-all {
-  display: flex;
-}
-
 /* An intro / outro card is shown alone, without the subtitles. */
 .clips-ed:not([data-phase="clip"]) .cap-ed-box {
   visibility: hidden;
@@ -2409,4 +2400,13 @@ body.clips-space .app-content {
 .clips-ed__panel .cap-ed__tabpanel {
   padding: var(--ref-spacing-sm) 0 0;
   overflow: visible;
+}
+
+/* The Safe area choices carry their network's logo (No guide: an eye off). */
+.clips-ed__dz-icon {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-right: var(--ref-spacing-xxs);
+  vertical-align: -3px;
 }
