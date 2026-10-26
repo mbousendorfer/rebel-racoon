@@ -23,12 +23,9 @@
   z-index: var(--app-z-modal);
   width: min(calc(100% - 48px), 1364px);
   height: 94vh;
-  /* Dark media-editor surface — overrides the DS light .ap-dialog. The whole
-     modal lives on the --app-vc-* ramp. */
-  background: var(--app-vc-surface);
-  color: var(--app-vc-text);
-  box-shadow: var(--app-vc-shadow);
-  border: 1px solid var(--app-vc-border);
+  background: var(--ref-color-white);
+  color: var(--ref-color-grey-100);
+  border: 1px solid var(--ref-color-grey-20);
   overflow: hidden;
   /* Tabular numerics throughout — timestamps, clip counts, durations. */
   font-variant-numeric: tabular-nums;
@@ -43,11 +40,6 @@
   .video-clips-modal.ap-dialog {
     transition: none;
   }
-}
-
-/* Darken the backdrop scrim so the dark modal reads as elevated. */
-#videoClipsBackdrop.app-modal-backdrop {
-  background: var(--app-vc-scrim);
 }
 
 /* Single-clip mode keeps the SAME fixed height as browse mode so the modal
@@ -114,8 +106,8 @@
   gap: var(--ref-spacing-sm);
   padding-top: var(--ref-spacing-sm);
   padding-bottom: var(--ref-spacing-sm);
-  background: var(--app-vc-surface-raised);
-  border-bottom: 1px solid var(--app-vc-border);
+  background: var(--ref-color-white);
+  border-bottom: 1px solid var(--ref-color-grey-20);
   /* Reserve room on the right for the two absolute actions (expand + close). */
   padding-right: 96px;
 }
@@ -127,19 +119,19 @@
   line-height: var(--sys-text-style-h4-line-height);
   font-weight: var(--sys-text-style-h4-weight);
   letter-spacing: -0.005em;
-  color: var(--app-vc-text);
+  color: var(--ref-color-grey-100);
 }
 
 /* Close button — light glyph, vertically centered in the compact header
    (the DS default top sits it too low for this short header). */
 .video-clips-modal .ap-dialog-close {
-  color: var(--app-vc-text-subtle);
+  color: var(--ref-color-grey-80);
   top: 11px;
 }
 
 .video-clips-modal .ap-dialog-close:hover {
-  background: var(--app-vc-hover);
-  color: var(--app-vc-text);
+  background: var(--ref-color-grey-05);
+  color: var(--ref-color-grey-100);
 }
 
 /* Expand / collapse — reuses .ap-dialog-close for identical size, glyph size,
@@ -195,7 +187,7 @@
 }
 
 .video-clips-modal__sub-meta {
-  color: var(--app-vc-text-subtle);
+  color: var(--ref-color-grey-80);
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   margin-left: var(--ref-spacing-xxs);
@@ -206,16 +198,16 @@
 
 .video-clips-modal__timeline {
   padding: var(--ref-spacing-sm) 22px 14px;
-  background: var(--app-vc-surface-raised);
-  border-bottom: 1px solid var(--app-vc-border);
+  background: var(--ref-color-white);
+  border-bottom: 1px solid var(--ref-color-grey-20);
 }
 
 .vc-timeline__bar {
   position: relative;
   height: 24px;
   border-radius: var(--ref-border-radius-sm);
-  background: var(--app-vc-surface-sunken);
-  border: 1px solid var(--app-vc-border);
+  background: var(--ref-color-grey-05);
+  border: 1px solid var(--ref-color-grey-20);
   overflow: hidden;
 }
 
@@ -223,20 +215,20 @@
   position: absolute;
   top: 3px;
   bottom: 3px;
-  background: var(--app-vc-border-strong);
+  background: var(--ref-color-grey-20);
   border-radius: 2px;
   transition: background var(--ref-animation-short);
 }
 
 .vc-timeline__seg.is-on {
-  background: var(--app-vc-accent);
+  background: var(--ref-color-electric-blue-100);
 }
 
 .vc-timeline__seg.is-editing {
-  background: var(--app-vc-accent);
+  background: var(--ref-color-electric-blue-100);
   box-shadow:
-    0 0 0 2px var(--app-vc-surface),
-    0 0 0 4px var(--app-vc-accent);
+    0 0 0 2px var(--ref-color-white),
+    0 0 0 4px var(--ref-color-electric-blue-100);
   z-index: 2;
 }
 
@@ -246,7 +238,7 @@
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   font-weight: var(--sys-text-style-caption-weight);
-  color: var(--app-vc-text-subtle);
+  color: var(--ref-color-grey-80);
   margin-top: 6px;
   padding: 0 2px;
 }
@@ -260,7 +252,7 @@
   overflow-y: auto;
   padding: 14px 22px 18px;
   gap: 10px;
-  background: var(--app-vc-surface);
+  background: var(--ref-color-white);
 }
 
 .vc-rows {
@@ -292,26 +284,25 @@
   gap: 14px;
   align-items: stretch;
   padding: 14px;
-  background: var(--app-vc-surface-raised);
-  border: 1px solid var(--app-vc-border);
+  background: var(--ref-color-white);
+  border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-starter);
   transition: all var(--ref-animation-short);
   cursor: pointer;
 }
 
 .vc-row:hover {
-  border-color: var(--app-vc-border-strong);
+  border-color: var(--ref-color-grey-20);
 }
 
 .vc-row.is-on {
-  border-color: var(--app-vc-accent);
-  background: var(--app-vc-accent-soft);
+  border-color: var(--ref-color-electric-blue-100);
+  background: var(--ref-color-electric-blue-05);
 }
 
 .vc-row.is-editing {
-  border-color: var(--app-vc-accent);
-  background: var(--app-vc-surface-raised);
-  box-shadow: var(--app-vc-shadow);
+  border-color: var(--ref-color-electric-blue-100);
+  background: var(--ref-color-white);
 }
 
 .vc-row__check-wrap {
@@ -337,8 +328,8 @@
   width: 18px;
   height: 18px;
   border-radius: var(--ref-border-radius-sm);
-  border: 1.5px solid var(--app-vc-border-strong);
-  background: var(--app-vc-surface-sunken);
+  border: 1.5px solid var(--ref-color-grey-20);
+  background: var(--ref-color-grey-05);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -348,8 +339,8 @@
 }
 
 .vc-row.is-on .vc-row__check-box {
-  background: var(--app-vc-accent);
-  border-color: var(--app-vc-accent);
+  background: var(--ref-color-electric-blue-100);
+  border-color: var(--ref-color-electric-blue-100);
 }
 
 .vc-row__check-box i {
@@ -372,7 +363,7 @@
   width: 200px;
   height: 134px;
   border-radius: var(--app-radius-button-sm);
-  background-color: var(--app-vc-surface-sunken);
+  background-color: #000; /* footage */
   background-size: cover;
   display: flex;
   align-items: center;
@@ -473,7 +464,7 @@
 .vc-row__title {
   font-size: var(--sys-text-style-h4-size);
   font-weight: var(--sys-text-style-h4-weight);
-  color: var(--app-vc-text);
+  color: var(--ref-color-grey-100);
   letter-spacing: -0.005em;
   line-height: var(--sys-text-style-h4-line-height);
 }
@@ -481,7 +472,7 @@
 .vc-row__summary {
   font-size: var(--sys-text-style-caption-size);
   font-weight: var(--sys-text-style-caption-weight);
-  color: var(--app-vc-text-muted);
+  color: var(--ref-color-grey-80);
   line-height: var(--sys-text-style-caption-line-height);
   text-wrap: pretty;
 }
@@ -492,7 +483,7 @@
   gap: 6px;
   font-size: var(--sys-text-style-caption-size);
   font-weight: var(--sys-text-style-caption-weight);
-  color: var(--app-vc-text-subtle);
+  color: var(--ref-color-grey-80);
   line-height: var(--sys-text-style-caption-line-height);
   font-style: italic;
   padding-top: 2px;
@@ -516,8 +507,8 @@
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);
   font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--app-vc-text-subtle);
-  background: var(--app-vc-surface-sunken);
+  color: var(--ref-color-grey-80);
+  background: var(--ref-color-grey-05);
   padding: 2px 6px;
   border-radius: var(--ref-border-radius-sm);
 }
@@ -533,12 +524,12 @@
 
 .vc-edit:empty::before {
   content: attr(data-placeholder);
-  color: var(--app-vc-text-subtle);
+  color: var(--ref-color-grey-80);
   font-style: italic;
 }
 
 .vc-edit:focus {
-  box-shadow: inset 0 -2px 0 var(--app-vc-accent);
+  box-shadow: inset 0 -2px 0 var(--ref-color-electric-blue-100);
 }
 
 /* ── Footer ────────────────────────────────────────────────────── */
@@ -546,24 +537,24 @@
    raised dark surface + top hairline to seat it on the modal. */
 
 .video-clips-modal__foot.ap-dialog-footer {
-  background: var(--app-vc-surface-raised);
-  border-top: 1px solid var(--app-vc-border);
+  background: var(--ref-color-white);
+  border-top: 1px solid var(--ref-color-grey-20);
 }
 
 .video-clips-modal__foot-stats {
   font-size: var(--sys-text-style-body-size);
   line-height: var(--sys-text-style-body-line-height);
   font-weight: var(--sys-text-style-body-weight);
-  color: var(--app-vc-text);
+  color: var(--ref-color-grey-100);
 }
 
 .video-clips-modal__foot-stats strong {
-  color: var(--app-vc-text);
+  color: var(--ref-color-grey-100);
   font-weight: var(--sys-text-style-body-bold-weight);
 }
 
 .video-clips-modal__foot-meta {
-  color: var(--app-vc-text-subtle);
+  color: var(--ref-color-grey-80);
   font-weight: var(--sys-text-style-body-weight);
 }
 
@@ -573,39 +564,38 @@
    (primary) and red (ghost danger) keep their DS hue; they read on dark. */
 .video-clips-modal .ap-button.transparent.grey,
 .video-clips-modal .ap-button.ghost.grey {
-  color: var(--app-vc-text-muted);
+  color: var(--ref-color-grey-80);
 }
 
 .video-clips-modal .ap-button.transparent.grey:hover,
 .video-clips-modal .ap-button.ghost.grey:hover {
-  background: var(--app-vc-hover);
-  color: var(--app-vc-text);
+  background: var(--ref-color-grey-05);
+  color: var(--ref-color-grey-100);
 }
 
 .video-clips-modal .ap-button.stroked.grey {
-  color: var(--app-vc-text);
-  border-color: var(--app-vc-border-strong);
+  color: var(--ref-color-grey-100);
+  border-color: var(--ref-color-grey-20);
   background: transparent;
 }
 
 .video-clips-modal .ap-button.stroked.grey:hover {
-  background: var(--app-vc-hover);
-  border-color: var(--app-vc-text-subtle);
+  background: var(--ref-color-grey-05);
+  border-color: var(--ref-color-grey-80);
 }
 
 /* ════════════════════════════════════════════════════════════════
- *  EDITOR PANE — dark video-editor surface.
- *  Flat surfaces from the systematic --app-vc-* ramp (tokens.css).
+ *  EDITOR PANE — the light DS surfaces; the footage on black.
  *  Quiet by design: no glow rings, grain, pulses, or fake waveforms —
  *  hierarchy comes from the surface ramp, spacing, and type.
  * ════════════════════════════════════════════════════════════════ */
 
 .vc-editor {
-  background: var(--app-vc-surface);
-  color: var(--app-vc-text);
+  background: var(--ref-color-white);
+  color: var(--ref-color-grey-100);
   border-radius: var(--app-radius-card);
   box-shadow: var(--app-shadow-popover-lg);
-  border: 1px solid var(--app-vc-border);
+  border: 1px solid var(--ref-color-grey-20);
   margin: var(--ref-spacing-xxs) 0;
   overflow: hidden;
 }
@@ -633,8 +623,8 @@
   flex-direction: column;
   gap: var(--ref-spacing-xs);
   padding: var(--ref-spacing-xxs);
-  background: var(--app-vc-surface-raised);
-  border-right: 1px solid var(--app-vc-border);
+  background: var(--ref-color-white);
+  border-right: 1px solid var(--ref-color-grey-20);
 }
 
 .vc-rail__item {
@@ -668,12 +658,12 @@
 }
 
 .vc-rail__item:hover {
-  background: var(--app-vc-hover);
+  background: var(--ref-color-grey-05);
 }
 
 /* Active = tonal accent fill behind the whole item; icon + label go accent. */
 .vc-rail__item.is-on {
-  background: var(--app-vc-accent-pill);
+  background: var(--ref-color-electric-blue-10);
   color: var(--ref-color-electric-blue-60);
 }
 
@@ -686,7 +676,7 @@
   flex-direction: column;
   gap: var(--ref-spacing-sm);
   padding: var(--ref-spacing-sm);
-  border-right: 1px solid var(--app-vc-border);
+  border-right: 1px solid var(--ref-color-grey-20);
 }
 
 /* Stage (preview) */
@@ -726,9 +716,9 @@
   grid-area: timeline;
   min-width: 0;
   border: 0;
-  border-top: 1px solid var(--app-vc-border);
+  border-top: 1px solid var(--ref-color-grey-20);
   border-radius: 0;
-  background: var(--app-vc-surface-raised);
+  background: var(--ref-color-white);
   padding: var(--ref-spacing-xxs) var(--ref-spacing-md) var(--ref-spacing-xs);
 }
 
@@ -770,42 +760,10 @@
   overflow: hidden;
 }
 
-/* Segmented control (same primitive as .cap-ed-seg in the Effects tab):
-   quiet sunken container, inset accent pill for the active half. */
+/* Style / Transcript: the DS tabs. */
 .vc-subtabs {
-  display: flex;
   flex-shrink: 0;
-  gap: 2px;
-  margin: var(--ref-spacing-sm) var(--ref-spacing-sm) var(--ref-spacing-xs);
-  padding: 2px;
-  background: var(--app-vc-surface-sunken);
-  border: 1px solid var(--app-vc-border);
-  border-radius: var(--app-radius-button-sm);
-}
-
-.vc-subtab {
-  flex: 1;
-  font-family: inherit;
-  font-size: var(--sys-text-style-caption-size);
-  line-height: 1;
-  font-weight: var(--sys-text-style-caption-weight);
-  padding: 6px 0;
-  background: transparent;
-  border: 0;
-  border-radius: var(--ref-border-radius-sm);
-  color: var(--app-vc-text-muted);
-  cursor: pointer;
-  transition: all var(--ref-animation-short);
-}
-
-.vc-subtab:hover {
-  color: var(--app-vc-text);
-}
-
-.vc-subtab.is-on {
-  background: var(--app-vc-accent);
-  color: var(--ref-color-white);
-  font-weight: var(--sys-text-style-caption-bold-weight);
+  margin: 0 var(--ref-spacing-sm);
 }
 
 .vc-subpanel {
@@ -857,9 +815,9 @@
   aspect-ratio: 16 / 9;
   border-radius: var(--ref-border-radius-md);
   background-size: cover;
-  background-color: var(--app-vc-surface-sunken);
+  background-color: #000; /* the footage's well, as in the Clips editor */
   overflow: hidden;
-  border: 1px solid var(--app-vc-border);
+  border: 1px solid var(--ref-color-grey-20);
 }
 
 /* Real footage fills the preview, behind the crop frame / HUD / caption. */
@@ -890,8 +848,7 @@
 }
 
 /* ── Ratio panel — export-ratio tiles ────────────────────────────────
-   Same selectable-surface grammar as .vc-rail__item / .vc-subtab (this modal's
-   dark --app-vc-* ramp), since the DS radio-button-card is Angular-only. */
+   Same selectable-surface grammar as .vc-rail__item / .vc-subtab. */
 /* Compact enough that all five ratios fit the panel without a scroll at the
    modal's default height. */
 .vc-ratio {
@@ -906,10 +863,10 @@
   align-items: center;
   gap: var(--ref-spacing-xs);
   padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
-  border: 1px solid var(--app-vc-border);
+  border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--ref-border-radius-md);
-  background: var(--app-vc-surface-raised);
-  color: var(--app-vc-text);
+  background: var(--ref-color-white);
+  color: var(--ref-color-grey-100);
   font-family: inherit;
   text-align: left;
   cursor: pointer;
@@ -919,17 +876,17 @@
 }
 
 .vc-ratio__tile:hover {
-  border-color: var(--app-vc-border-strong);
-  background: var(--app-vc-hover);
+  border-color: var(--ref-color-grey-20);
+  background: var(--ref-color-grey-05);
 }
 
 .vc-ratio__tile.is-on {
-  border-color: var(--app-vc-accent);
-  background: var(--app-vc-accent-soft);
+  border-color: var(--ref-color-electric-blue-100);
+  background: var(--ref-color-electric-blue-05);
 }
 
 .vc-ratio__tile:focus-visible {
-  outline: 2px solid var(--app-vc-accent);
+  outline: 2px solid var(--ref-color-electric-blue-100);
   outline-offset: 1px;
 }
 
@@ -946,12 +903,12 @@
   height: 22px;
   max-width: 100%;
   border-radius: 2px;
-  border: 1.5px solid var(--app-vc-text-muted);
+  border: 1.5px solid var(--ref-color-grey-80);
 }
 
 .vc-ratio__tile.is-on .vc-ratio__glyph-frame {
-  border-color: var(--app-vc-accent);
-  background: var(--app-vc-accent-soft);
+  border-color: var(--ref-color-electric-blue-100);
+  background: var(--ref-color-electric-blue-05);
 }
 
 .vc-ratio__text {
@@ -971,13 +928,13 @@
 .vc-ratio__label {
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
-  color: var(--app-vc-text-muted);
+  color: var(--ref-color-grey-80);
 }
 
 /* ratio-nets is shared with the light-surface in-chat picker — re-tone its
    label for this dark panel. */
 .vc-ratio .ratio-nets__label {
-  color: var(--app-vc-text-subtle);
+  color: var(--ref-color-grey-80);
 }
 
 /* ── Set IN/OUT buttons (timeline head) ────────────────────────── */
@@ -989,16 +946,16 @@
   font-weight: var(--sys-text-style-caption-bold-weight);
   padding: var(--ref-spacing-xxxs) var(--ref-spacing-xxs);
   border-radius: var(--ref-border-radius-sm);
-  border: 1px solid var(--app-vc-border-strong);
+  border: 1px solid var(--ref-color-grey-20);
   background: transparent;
-  color: var(--app-vc-text-muted);
+  color: var(--ref-color-grey-80);
   cursor: pointer;
   transition: all var(--ref-animation-short);
 }
 
 .vc-editor__set-btn:hover {
-  background: var(--app-vc-accent);
-  border-color: var(--app-vc-accent);
+  background: var(--ref-color-electric-blue-100);
+  border-color: var(--ref-color-electric-blue-100);
   color: var(--ref-color-white);
 }
 
@@ -1018,7 +975,7 @@
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   font-weight: var(--sys-text-style-caption-weight);
-  color: var(--app-vc-text-muted);
+  color: var(--ref-color-grey-80);
 }
 
 .vc-editor__label i {
@@ -1029,7 +986,7 @@
 /* AI rationale label — orange per the app convention (orange = AI/spotlight).
    The sparkles glyph keeps full opacity here so the accent reads. */
 .vc-editor__label--ai {
-  color: var(--app-vc-primary);
+  color: var(--ref-color-orange-100);
 }
 
 .vc-editor__label--ai i {
@@ -1043,7 +1000,7 @@
   line-height: var(--sys-text-style-caption-line-height);
   font-weight: var(--sys-text-style-caption-weight);
   font-style: italic;
-  color: var(--app-vc-text-subtle);
+  color: var(--ref-color-grey-80);
   text-wrap: pretty;
 }
 
@@ -1056,12 +1013,12 @@
 .vc-editor__title-input {
   font-size: var(--sys-text-style-h2-size);
   font-weight: var(--sys-text-style-h2-weight);
-  color: var(--app-vc-text);
+  color: var(--ref-color-grey-100);
   letter-spacing: -0.01em;
   line-height: var(--sys-text-style-h2-line-height);
   padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
-  background: var(--app-vc-field);
-  border: 1px solid var(--app-vc-border);
+  background: var(--comp-input-fill-color);
+  border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-button-sm);
   outline: none;
   transition: border-color var(--ref-animation-short);
@@ -1069,17 +1026,17 @@
 }
 
 .vc-editor__title-input:focus {
-  border-color: var(--app-vc-accent);
+  border-color: var(--ref-color-electric-blue-100);
 }
 
 .vc-editor__textarea {
   font-size: var(--sys-text-style-body-size);
   font-weight: var(--sys-text-style-body-weight);
-  color: var(--app-vc-text-muted);
+  color: var(--ref-color-grey-80);
   line-height: var(--sys-text-style-body-line-height);
   padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
-  background: var(--app-vc-field);
-  border: 1px solid var(--app-vc-border);
+  background: var(--comp-input-fill-color);
+  border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-button-sm);
   outline: none;
   transition: border-color var(--ref-animation-short);
@@ -1088,18 +1045,18 @@
 }
 
 .vc-editor__textarea:focus {
-  border-color: var(--app-vc-accent);
+  border-color: var(--ref-color-electric-blue-100);
 }
 
 .vc-editor .vc-edit:empty::before {
-  color: var(--app-vc-text-subtle);
+  color: var(--ref-color-grey-80);
 }
 
 /* ── Pro timeline (full-width, below preview/form) ────────────── */
 
 .vc-editor__timeline {
-  background: var(--app-vc-surface-raised);
-  border: 1px solid var(--app-vc-border);
+  background: var(--ref-color-white);
+  border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--ref-border-radius-md);
   padding: var(--ref-spacing-xs) var(--ref-spacing-xs) var(--ref-spacing-sm);
   display: flex;
@@ -1131,7 +1088,7 @@
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   font-weight: var(--sys-text-style-caption-weight);
-  color: var(--app-vc-text-subtle);
+  color: var(--ref-color-grey-80);
   margin-left: var(--ref-spacing-xxs);
 }
 
@@ -1145,27 +1102,27 @@
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   font-weight: var(--sys-text-style-caption-weight);
-  color: var(--app-vc-text-muted);
+  color: var(--ref-color-grey-80);
 }
 
 .vc-stepper__input {
   width: 52px;
   padding: var(--ref-spacing-xxxs) var(--ref-spacing-xxs);
-  border: 1px solid var(--app-vc-border-strong);
+  border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--ref-border-radius-sm);
-  background: var(--app-vc-surface-sunken);
+  background: var(--ref-color-grey-05);
   font-family: inherit;
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);
   font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--app-vc-text);
+  color: var(--ref-color-grey-100);
   text-align: center;
   outline: none;
 }
 
 .vc-stepper__input:focus {
-  border-color: var(--app-vc-accent);
-  box-shadow: 0 0 0 2px var(--app-vc-accent-soft);
+  border-color: var(--ref-color-electric-blue-100);
+  box-shadow: 0 0 0 2px var(--ref-color-electric-blue-05);
 }
 
 /* Pro trim track */
@@ -1188,14 +1145,14 @@
 .vc-protrim__ruler-mark {
   width: 1px;
   height: 4px;
-  background: var(--app-vc-border-strong);
+  background: var(--ref-color-grey-20);
 }
 
 .vc-protrim__ruler-label {
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: 1;
   font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--app-vc-text-subtle);
+  color: var(--ref-color-grey-80);
   margin-bottom: 1px;
 }
 
@@ -1203,8 +1160,8 @@
   position: relative;
   height: 64px;
   border-radius: var(--app-radius-button-sm);
-  background: var(--app-vc-surface-sunken);
-  border: 1px solid var(--app-vc-border);
+  background: var(--ref-color-grey-05);
+  border: 1px solid var(--ref-color-grey-20);
   cursor: crosshair;
   user-select: none;
 }
@@ -1221,13 +1178,13 @@
 .vc-protrim__thumb {
   flex: 1;
   min-width: 0;
-  background: var(--app-vc-surface-raised);
-  border-right: 1px solid var(--app-vc-surface-sunken);
+  background: var(--ref-color-white);
+  border-right: 1px solid var(--ref-color-grey-05);
 }
 
 /* Alternating flat tones read as a filmstrip without any gradient. */
 .vc-protrim__thumb:nth-child(even) {
-  background: var(--app-vc-field);
+  background: var(--comp-input-fill-color);
 }
 
 .vc-protrim__thumb:last-child {
@@ -1282,7 +1239,7 @@
 .vc-wave__bar {
   flex: 1;
   min-width: 0;
-  background: var(--app-vc-text-subtle);
+  background: var(--ref-color-grey-80);
   border-radius: 1px;
   opacity: 0.32;
 }
@@ -1295,9 +1252,9 @@
      when the clip is a sliver of a long video. The handles flank it and are
      positioned against its edges, so they ride this floor and never overlap. */
   min-width: 10px;
-  border: 2px solid var(--app-vc-accent);
+  border: 2px solid var(--ref-color-electric-blue-100);
   border-radius: var(--app-radius-button-sm);
-  background: var(--app-vc-accent-soft);
+  background: var(--ref-color-electric-blue-05);
   cursor: grab;
   z-index: 2;
 }
@@ -1313,7 +1270,7 @@
   line-height: var(--sys-text-style-caption-bold-line-height);
   font-weight: var(--sys-text-style-caption-bold-weight);
   color: var(--ref-color-white);
-  background: var(--app-vc-accent);
+  background: var(--ref-color-electric-blue-100);
   padding: 2px var(--ref-spacing-xxs);
   border-radius: var(--ref-border-radius-sm);
   white-space: nowrap;
@@ -1350,7 +1307,7 @@
   bottom: -22px;
   transform: translateX(-50%);
   background: var(--ref-color-white);
-  color: var(--app-vc-accent-hover);
+  color: var(--ref-color-electric-blue-150);
 }
 
 .vc-protrim__handle {
@@ -1362,7 +1319,7 @@
   align-items: center;
   justify-content: center;
   cursor: ew-resize;
-  background: var(--app-vc-accent);
+  background: var(--ref-color-electric-blue-100);
   z-index: 3;
   transition:
     background var(--ref-animation-short),
@@ -1385,12 +1342,12 @@
 }
 
 .vc-protrim__handle:hover {
-  background: var(--app-vc-accent-hover);
+  background: var(--ref-color-electric-blue-150);
 }
 
 .vc-protrim.is-dragging--start .vc-protrim__handle--l,
 .vc-protrim.is-dragging--end .vc-protrim__handle--r {
-  background: var(--app-vc-accent-hover);
+  background: var(--ref-color-electric-blue-150);
 }
 
 .vc-protrim__grip {
@@ -1419,7 +1376,7 @@
   width: 12px;
   height: 12px;
   background: var(--ref-color-white);
-  border: 2px solid var(--app-vc-surface);
+  border: 2px solid var(--ref-color-white);
   border-radius: var(--app-radius-circle);
   transform: translateX(-50%);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
@@ -1435,7 +1392,7 @@
 }
 
 .vc-protrim.is-dragging--playhead .vc-protrim__playhead-knob {
-  background: var(--app-vc-accent);
+  background: var(--ref-color-electric-blue-100);
   border-color: var(--ref-color-white);
 }
 
@@ -1504,9 +1461,9 @@
   font-weight: var(--sys-text-style-caption-bold-weight);
   padding: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
   border-radius: var(--ref-border-radius-sm);
-  border: 1px solid var(--app-vc-border-strong);
+  border: 1px solid var(--ref-color-grey-20);
   background: transparent;
-  color: var(--app-vc-text-muted);
+  color: var(--ref-color-grey-80);
   cursor: pointer;
   transition: all var(--ref-animation-short);
 }
@@ -1516,14 +1473,14 @@
 }
 
 .vc-trim-toggle:hover {
-  background: var(--app-vc-hover);
-  color: var(--app-vc-text);
+  background: var(--ref-color-grey-05);
+  color: var(--ref-color-grey-100);
 }
 
 .vc-trim-toggle[aria-pressed="true"] {
-  background: var(--app-vc-accent-pill);
-  border-color: var(--app-vc-accent);
-  color: var(--app-vc-accent);
+  background: var(--ref-color-electric-blue-10);
+  border-color: var(--ref-color-electric-blue-100);
+  color: var(--ref-color-electric-blue-100);
 }
 
 /* ── Keyboard focus rings ───────────────────────────────────────────
@@ -1532,21 +1489,17 @@
    tabs/segments) had none. One consistent accent ring for keyboard users,
    :focus-visible so it never shows on pointer interaction. */
 .video-clips-modal .vc-rail__item:focus-visible,
-.video-clips-modal .vc-subtab:focus-visible,
 .video-clips-modal .vc-editor__set-btn:focus-visible,
 .video-clips-modal .vc-trim-toggle:focus-visible,
-.video-clips-modal .cap-ed__tab:focus-visible,
 .video-clips-modal .cap-ed__icon-btn:focus-visible,
-.video-clips-modal .cap-ed__cleanup-btn:focus-visible,
-.video-clips-modal .cap-ed-preset:focus-visible,
-.video-clips-modal .cap-ed-seg__btn:focus-visible {
-  outline: 2px solid var(--app-vc-accent);
+.video-clips-modal .cap-ed-pause:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
   outline-offset: 2px;
 }
 
 /* Browse-card selection — the real checkbox is visually hidden, so mirror its
    keyboard focus onto the faux check box. */
 .vc-row__check:focus-visible + .vc-row__check-box {
-  outline: 2px solid var(--app-vc-accent);
+  outline: 2px solid var(--ref-color-electric-blue-100);
   outline-offset: 2px;
 }

@@ -2,8 +2,9 @@
 // trim, captions tab). Pure render — it reads the modal's state, owned and
 // written by video-clips-modal.js. Moved out of it, unchanged.
 
-import { CLIP_RATIO_ORDER, FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=2178";
-import { escapeHtml } from "../../utils.js?v=2178";
+import { CLIP_RATIO_ORDER, FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=2188";
+import { escapeHtml } from "../../utils.js?v=2188";
+import { tabsHTML } from "../../caption-editor.js?v=2188";
 import {
   currentSource,
   draft,
@@ -12,7 +13,7 @@ import {
   fmtTime,
   optionsSubtab,
   trimMode,
-} from "../video-clips-modal.js?v=2178";
+} from "../video-clips-modal.js?v=2188";
 
 // Left options panel content — the ONLY part of the editor that swaps between
 // tabs. Clip → title/summary; Crop → export ratio + framing; Subtitles →
@@ -51,16 +52,12 @@ export function optionsHTML() {
 
   if (editorTab === "subtitles") {
     return `
-      <div class="vc-subtabs" role="tablist">
-        <button type="button" class="vc-subtab${optionsSubtab === "style" ? " is-on" : ""}" data-vc-subtab="style" role="tab" aria-selected="${optionsSubtab === "style"}">Style</button>
-        <button type="button" class="vc-subtab${optionsSubtab === "transcript" ? " is-on" : ""}" data-vc-subtab="transcript" role="tab" aria-selected="${optionsSubtab === "transcript"}">Transcript</button>
-      </div>
+      <div class="ap-tabs vc-subtabs"><div class="ap-tabs-nav" role="tablist" aria-label="Subtitles">
+        <button type="button" class="ap-tabs-tab vc-subtab${optionsSubtab === "style" ? " active" : ""}" data-vc-subtab="style" role="tab" aria-selected="${optionsSubtab === "style"}">Style</button>
+        <button type="button" class="ap-tabs-tab vc-subtab${optionsSubtab === "transcript" ? " active" : ""}" data-vc-subtab="transcript" role="tab" aria-selected="${optionsSubtab === "transcript"}">Transcript</button>
+      </div></div>
       <div class="vc-subpanel vc-subpanel--style"${optionsSubtab === "style" ? "" : " hidden"}>
-        <div class="cap-ed__tabs" role="tablist">
-          <button type="button" class="cap-ed__tab" data-ce-tab="presets">Presets</button>
-          <button type="button" class="cap-ed__tab" data-ce-tab="font">Font</button>
-          <button type="button" class="cap-ed__tab" data-ce-tab="effects">Effects</button>
-        </div>
+        ${tabsHTML()}
         <div class="cap-ed__tabpanel" data-ce-tabpanel></div>
       </div>
       <div class="vc-subpanel vc-subpanel--transcript"${optionsSubtab === "transcript" ? "" : " hidden"}>
@@ -68,7 +65,7 @@ export function optionsHTML() {
           <span class="cap-ed-group-label">Transcript</span>
           <span class="cap-ed__meta" data-ce-reconcile></span>
         </div>
-        <button type="button" class="cap-ed__cleanup-btn" data-ce="open-cleanup" aria-pressed="false" title="Find filler words and long pauses to cut from the subtitles">
+        <button type="button" class="ap-button stroked grey cap-ed__cleanup-btn" data-ce="open-cleanup" aria-pressed="false" title="Find filler words and long pauses to hide from the subtitles">
           <i class="ap-icon-archie-official"></i><span>Speech cleanup</span>
           <span class="cap-ed__cleanup-count" data-ce-cleanup-count></span>
         </button>

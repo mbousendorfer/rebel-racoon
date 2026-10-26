@@ -1,5 +1,7 @@
 # The clip editor runs on the app's dark media surface
 
+> **Superseded 2026-10-26** — the Clips space went back to the light DS (no dark scope, no `--app-vc-*` ramp). Kept for history only.
+
 Written against: 8802f0c09
 
 ## Evidence chain

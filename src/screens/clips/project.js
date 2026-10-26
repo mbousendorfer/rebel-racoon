@@ -7,28 +7,28 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2178";
-import { isFlagOn } from "../../feature-flags.js?v=2178";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2178";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2178";
-import { showToast } from "../../components/toast.js?v=2178";
-import { renderPostCard } from "../../components/post-card.js?v=2178";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2178";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2178";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2178";
-import { getConnectedProfiles, renderProfileTag } from "../../social-profiles.js?v=2178";
-import { getContextById } from "../../contexts-store.js?v=2178";
-import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2178";
-import { captionStateFor } from "../../clip-captions.js?v=2178";
+import { navigate } from "../../router.js?v=2188";
+import { isFlagOn } from "../../feature-flags.js?v=2188";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2188";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2188";
+import { showToast } from "../../components/toast.js?v=2188";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2188";
+import { renderPostCard } from "../../components/post-card.js?v=2188";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2188";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2188";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2188";
+import { getConnectedProfiles, renderProfileTag } from "../../social-profiles.js?v=2188";
+import { getContextById } from "../../contexts-store.js?v=2188";
+import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2188";
+import { captionStateFor } from "../../clip-captions.js?v=2188";
 import {
   getPosts,
   addPostDraft,
   removePost,
-  insertPost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2178";
-import { escapeHtml } from "../../utils.js?v=2178";
+} from "../../posts-store.js?v=2188";
+import { escapeHtml } from "../../utils.js?v=2188";
 import {
   getVideo,
   draftKey,
@@ -37,10 +37,9 @@ import {
   setSelection,
   addClip,
   removeClip,
-  restoreClip,
   ANALYSIS_STAGES,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2178";
+} from "../../videos-store.js?v=2188";
 import {
   fmtMs,
   formatSelect,
@@ -59,7 +58,7 @@ import {
   SUBTITLE_IDS,
   bestFor,
   CTA_OPTIONS,
-} from "./shared.js?v=2178";
+} from "./shared.js?v=2188";
 
 let target = null;
 let videoId = null;
@@ -198,13 +197,11 @@ function paint() {
   target.innerHTML = `
     <div class="clips-view clips-project">
       <div class="clips-bar">
-        <div class="ap-tabs clips-bar__tabs">
-          <div class="ap-tabs-nav" role="tablist" aria-label="Steps">
-            ${stepButton("clips", 1, "Pick the clips", `<span data-clips-step-count>${v.clips.filter((c) => c.selected).length} of ${v.clips.length}</span>`, t)}
-            <span class="clips-bar__arrow" aria-hidden="true"><i class="ap-icon-chevron-right"></i></span>
-            ${stepButton("drafts", 2, "Write the posts", posts.length ? `${posts.length} draft${posts.length === 1 ? "" : "s"}` : "", t)}
-          </div>
-        </div>
+        <nav class="ap-stepper clips-bar__steps" aria-label="Steps">
+          ${stepButton("clips", 1, "Pick the clips", `<span data-clips-step-count>${v.clips.filter((c) => c.selected).length} of ${v.clips.length}</span>`, t)}
+          <span class="ap-stepper-separator" aria-hidden="true"><i class="ap-icon-chevron-right"></i></span>
+          ${stepButton("drafts", 2, "Write the posts", posts.length ? `${posts.length} draft${posts.length === 1 ? "" : "s"}` : "", t)}
+        </nav>
       </div>
       ${t === "drafts" ? `<div class="clips-view__page">${renderDrafts(v, posts)}</div>` : renderWorkspace(v)}
     </div>`;
@@ -232,13 +229,14 @@ function swapPlayers(v, posts) {
   }
 }
 
-// The page is two steps in a row, not two parallel views: the DS tabs, read as
-// a numbered path.
+// The page is two steps in a row, not two parallel views: the DS stepper —
+// the current step active, the one before it completed, the one after pending.
 function stepButton(id, n, label, meta, current) {
   const on = id === current;
-  return `<button type="button" class="ap-tabs-tab clips-step${on ? " active" : ""}" role="tab" aria-selected="${on}" data-clips-tab="${id}">
-    <span class="clips-step__num">${n}</span><span>${label}</span>
-    ${meta ? `<span class="clips-step__meta">${meta}</span>` : ""}
+  const state = on ? "active" : id === "clips" ? "completed" : "pending";
+  return `<button type="button" class="ap-stepper-item clickable ${state} clips-step" ${on ? 'aria-current="step"' : ""} data-clips-tab="${id}">
+    <span>${state === "completed" ? `<i class="ap-icon-check" aria-hidden="true"></i>` : n}</span>
+    <span>${label}${meta ? ` <span class="clips-step__meta">· ${meta}</span>` : ""}</span>
   </button>`;
 }
 
@@ -303,11 +301,13 @@ function renderWorkspace(v) {
         <label class="ap-checkbox-container clips-bin__check" aria-label="Post clip ${i + 1}" data-tooltip="Post this clip">
           <input type="checkbox" data-clips-select="${c.id}" ${c.selected ? "checked" : ""} /><i></i>
         </label>
-        <span class="clips-bin__thumb">${previewMarkup(v, { ...c, ratio: "9:16" }, { captions: false })}</span>
-        <span class="clips-bin__text">
-          <span class="clips-bin__meta"><span class="clips-bin__num">${i + 1}</span>${fmtMs(c.endMs - c.startMs)}</span>
-          <span class="clips-bin__title">${escapeHtml(c.title)}</span>
-        </span>
+        <button type="button" class="clips-bin__open" data-clips-watch="${c.id}" aria-label="Watch clip ${i + 1}: ${escapeHtml(c.title)}">
+          <span class="clips-bin__thumb">${previewMarkup(v, { ...c, ratio: "9:16" }, { captions: false })}</span>
+          <span class="clips-bin__text">
+            <span class="clips-bin__meta"><span class="clips-bin__num">${i + 1}</span>${fmtMs(c.endMs - c.startMs)}</span>
+            <span class="clips-bin__title">${escapeHtml(c.title)}</span>
+          </span>
+        </button>
       </li>`,
     )
     .join("");
@@ -326,8 +326,8 @@ function renderWorkspace(v) {
         <ol class="clips-bin__list">${rows}</ol>
         <footer class="clips-bin__foot">
           <span class="clips-bin__count" data-clips-post-count>${postCount(n)}</span>
-          <button type="button" class="ap-button primary orange" data-clips-to-drafts ${n ? "" : "disabled"}>
-            <i class="ap-icon-archie-official" aria-hidden="true"></i><span>Write the posts</span>
+          <button type="button" class="ap-button primary blue" data-clips-to-drafts ${n ? "" : "disabled"}>
+            <span>Write the posts</span><i class="ap-icon-arrow-right" aria-hidden="true"></i>
           </button>
         </footer>
       </aside>
@@ -340,7 +340,7 @@ function renderWorkspace(v) {
         </div>
         <div class="clips-transport">
           <button type="button" class="ap-icon-button transparent" data-clips-ws="prev" aria-label="Previous clip" data-tooltip="Previous clip"><i class="ap-icon-chevron-left" aria-hidden="true"></i></button>
-          <button type="button" class="clips-transport__play" data-clips-ws="play" aria-label="Play the clip"><i class="ap-icon-play" aria-hidden="true" data-clips-play-icon></i></button>
+          <button type="button" class="ap-icon-button stroked" data-clips-ws="play" aria-label="Play the clip" data-tooltip="Play / pause (Space)"><i class="ap-icon-play" aria-hidden="true" data-clips-play-icon></i></button>
           <button type="button" class="ap-icon-button transparent" data-clips-ws="next" aria-label="Next clip" data-tooltip="Next clip"><i class="ap-icon-chevron-right" aria-hidden="true"></i></button>
           <span class="clips-transport__tc"><span data-clips-clip-tc>0:00</span> / <span data-clips-clip-len>0:00</span></span>
         </div>
@@ -435,7 +435,7 @@ function paintFocus(v) {
         })}
       </div>
       <footer class="clips-inspector__foot">
-        <button type="button" class="ap-button ghost grey" data-clips-ws="remove"><i class="ap-icon-trash" aria-hidden="true"></i><span>Remove this clip</span></button>
+        <button type="button" class="ap-button ghost red" data-clips-ws="remove"><i class="ap-icon-trash" aria-hidden="true"></i><span>Remove this clip</span></button>
       </footer>`;
   const len = target.querySelector("[data-clips-clip-len]");
   if (len) len.textContent = fmtMs(c.endMs - c.startMs);
@@ -695,12 +695,12 @@ function renderDrafts(v, posts) {
         <button type="button" class="ap-button stroked grey" data-clips-more-drafts>
           <i class="ap-icon-plus" aria-hidden="true"></i><span>Write more drafts</span>
         </button>
-        <button type="button" class="ap-button primary blue" data-clips-schedule-all ${toSchedule.length ? "" : "disabled"}>
+        <button type="button" class="ap-button primary orange" data-clips-schedule-all ${toSchedule.length ? "" : "disabled"}>
           <i class="ap-icon-calendar" aria-hidden="true"></i><span>Schedule ${toSchedule.length || ""}</span>
         </button>
       </div>
     </div>
-    <div class="clips-drafts posts clips-paper">
+    <div class="clips-drafts posts">
       ${posts.map(renderDraft).join("")}
     </div>`;
 }
@@ -785,11 +785,7 @@ function renderDraftSetup(v, hasDrafts) {
         }
       </div>
       <footer class="clips-setup__foot">
-        ${
-          hasDrafts
-            ? `<button type="button" class="ap-button ghost grey" data-clips-setup-cancel>Cancel</button>`
-            : `<button type="button" class="ap-button ghost grey" data-clips-tab="clips">Back to clips</button>`
-        }
+        <button type="button" class="ap-button ghost grey" data-clips-setup-cancel>Cancel</button>
         <button type="button" class="ap-button primary orange" data-clips-write ${count ? "" : "disabled"}>
           <i class="ap-icon-archie-official" aria-hidden="true"></i><span>Write ${count || ""} draft${count === 1 ? "" : "s"}</span>
         </button>
@@ -881,14 +877,23 @@ function onClick(e) {
     return focusClip(v, v.clips[j].id);
   }
   if (wsAct === "remove") {
-    const gone = removeClip(v.id, ws.focusId);
-    if (gone) showToast("Clip removed", { action: { label: "Undo", onClick: () => restoreClip(v.id, gone) } });
+    // Destructive, and the product has no undo: the DS confirm modal is the
+    // safeguard, labelled with the verb.
+    const id = ws.focusId;
+    openConfirm({
+      title: "Remove this clip?",
+      body: "It leaves this video's clips. Drafts already written from it stay.",
+      confirmLabel: "Remove",
+      cancelLabel: "Cancel",
+      danger: true,
+      onConfirm: () => removeClip(v.id, id),
+    });
     return undefined;
   }
   const block = t.closest("[data-clips-block]");
   if (block) return focusClip(v, block.dataset.clipsBlock);
-  const row = t.closest("[data-clips-focus]");
-  if (row && !t.closest("label")) return focusClip(v, row.dataset.clipsFocus);
+  const watch = t.closest("[data-clips-watch]");
+  if (watch) return focusClip(v, watch.dataset.clipsWatch);
 
   if (t.closest("[data-clips-add-clip]")) {
     // A 30 s range from the playhead, opened in the editor (In / Out on its transport).
@@ -909,6 +914,8 @@ function onClick(e) {
   }
   if (t.closest("[data-clips-setup-cancel]")) {
     draftSetup.open = false;
+    // No drafts yet: back to the clips; otherwise the drafts stay in view.
+    if (!getPosts(draftKey(v.id)).length) return setHashQuery(path(), { tab: "clips" });
     return paint();
   }
   if (t.closest("[data-clips-write]")) return writeDrafts();
@@ -943,11 +950,15 @@ function onClick(e) {
   }
   const del = t.closest("[data-post-delete]");
   if (del) {
-    const posts = getPosts(key);
-    const index = posts.findIndex((p) => p.id === del.dataset.postDelete);
-    const removed = removePost(key, del.dataset.postDelete);
-    if (removed)
-      showToast("Draft deleted", { action: { label: "Undo", onClick: () => insertPost(key, removed, index) } });
+    const id = del.dataset.postDelete;
+    openConfirm({
+      title: "Delete this draft?",
+      body: "The post and its text are gone for good; the clip stays.",
+      confirmLabel: "Delete",
+      cancelLabel: "Cancel",
+      danger: true,
+      onConfirm: () => removePost(key, id),
+    });
     return undefined;
   }
   const clipEdit = t.closest("[data-post-clip-edit]");

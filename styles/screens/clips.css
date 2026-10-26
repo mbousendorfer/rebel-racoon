@@ -1,8 +1,8 @@
 /* The Clips space (flag clipsSpace) — library, project, editor.
    mode: html-prototype · design-guidelines · DS: @agorapulse/ui-theme (jsDelivr @latest)
    Ink grey-80…100, every hairline grey-20, blue only on what you can act on,
-   card hover = blue border. The video surfaces are black: footage reads on
-   black, the way every player shows it. */
+   card hover = blue border. The space is the light DS; only the footage sits
+   on a black well, the way every player shows it. */
 
 .clips-view {
   display: flex;
@@ -125,7 +125,7 @@
   gap: var(--ref-spacing-md);
   padding: var(--ref-spacing-lg) var(--ref-spacing-md);
   border-radius: var(--app-radius-lg);
-  background: var(--app-vc-surface-sunken);
+  background: var(--ref-color-grey-05);
   min-width: 0;
 }
 
@@ -138,7 +138,7 @@
   border-radius: var(--app-radius-md);
   overflow: hidden;
   background: #000;
-  box-shadow: 0 0 0 1px var(--app-vc-border);
+  box-shadow: 0 0 0 1px var(--ref-color-grey-20);
 }
 
 .clips-showcase__source video {
@@ -163,7 +163,7 @@
 }
 
 .clips-showcase__arrow {
-  color: var(--app-vc-text-subtle);
+  color: var(--ref-color-grey-80);
   font-size: 20px;
 }
 
@@ -179,7 +179,7 @@
   height: 156px;
   border-radius: var(--app-radius-md);
   overflow: hidden;
-  box-shadow: 0 0 0 1px var(--app-vc-border);
+  box-shadow: 0 0 0 1px var(--ref-color-grey-20);
   transform: translateY(calc(var(--i) * -10px + 10px));
   animation: clips-rise var(--ref-animation-long) var(--app-ease-out) both;
   animation-delay: calc(var(--i) * 90ms + 120ms);
@@ -539,33 +539,25 @@
   justify-content: space-between;
   gap: var(--ref-spacing-md);
   padding: var(--ref-spacing-xs) var(--ref-spacing-md) 0;
-  border-bottom: 1px solid var(--app-vc-border);
+  border-bottom: 1px solid var(--ref-color-grey-20);
 }
 
-.clips-bar .ap-tabs-nav {
-  border-bottom: 0;
-  align-items: center;
+/* The two steps: the DS stepper; each step is a button that opens it. */
+.clips-bar__steps {
+  padding-bottom: var(--ref-spacing-xs);
 }
 
-.clips-step__num {
-  display: inline-grid;
-  place-items: center;
-  width: 20px;
-  height: 20px;
-  border-radius: var(--app-radius-circle);
-  border: 1px solid currentColor;
-  font-size: 11px;
-  font-weight: var(--sys-text-style-caption-bold-weight);
+.clips-step {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
 }
 
 .clips-step__meta {
   font-size: var(--sys-text-style-caption-size);
-  color: var(--app-vc-text-muted);
-}
-
-.clips-bar__arrow {
-  color: var(--app-vc-text-subtle);
-  padding: 0 var(--ref-spacing-xxs);
+  color: var(--ref-color-grey-80);
 }
 
 .clips-bar > .ap-button {
@@ -583,8 +575,8 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-  border-right: 1px solid var(--app-vc-border);
-  background: var(--app-vc-surface);
+  border-right: 1px solid var(--ref-color-grey-20);
+  background: var(--ref-color-white);
 }
 
 .clips-bin__head {
@@ -601,9 +593,9 @@
 .clips-bin__hint {
   margin: 0;
   padding: 0 var(--ref-spacing-md) var(--ref-spacing-xs);
-  border-bottom: 1px solid var(--app-vc-border);
+  border-bottom: 1px solid var(--ref-color-grey-20);
   font-size: var(--sys-text-style-caption-size);
-  color: var(--app-vc-text-muted);
+  color: var(--ref-color-grey-80);
 }
 
 /* The page's one action, at the foot of the clips it acts on. */
@@ -614,12 +606,12 @@
   gap: var(--ref-spacing-xs);
   margin-top: auto;
   padding: var(--ref-spacing-sm) var(--ref-spacing-md);
-  border-top: 1px solid var(--app-vc-border);
+  border-top: 1px solid var(--ref-color-grey-20);
 }
 
 .clips-bin__count {
   font-size: var(--sys-text-style-caption-size);
-  color: var(--app-vc-text-muted);
+  color: var(--ref-color-grey-80);
 }
 
 .clips-bin__list {
@@ -634,13 +626,12 @@
 
 .clips-bin__item {
   display: grid;
-  grid-template-columns: auto 54px minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   gap: var(--ref-spacing-sm);
   padding: var(--ref-spacing-xs);
   border: 1px solid transparent;
   border-radius: var(--app-radius-md);
-  cursor: pointer;
   transition:
     background-color 150ms ease,
     border-color 150ms ease,
@@ -651,19 +642,30 @@
 
 @media (hover: hover) and (pointer: fine) {
   .clips-bin__item:hover {
-    background: var(--app-vc-hover);
+    background: var(--ref-color-grey-05);
   }
 }
 
-.clips-bin__item:active {
-  transform: scale(0.98);
+/* The thumbnail and the title are one button: it puts the clip in the
+   monitor (the checkbox beside it says whether to post it). */
+.clips-bin__open {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 
-/* Focus = the clip in the monitor: a light outline, like the active clip of
-   an editing app. Selection is the checkbox alone; unticked clips fade. */
+/* The clip in the monitor: a blue border (what you act on), never a grey
+   one. Selection is the checkbox alone; unticked clips fade. */
 .clips-bin__item.is-focused {
-  border-color: var(--app-vc-text-muted);
-  background: var(--app-vc-surface-raised);
+  border-color: var(--ref-color-electric-blue-100);
+  background: var(--ref-color-white);
 }
 
 .clips-bin__item:not(.is-selected) .clips-bin__thumb,
@@ -697,7 +699,7 @@
   align-items: center;
   gap: var(--ref-spacing-xs);
   font-size: var(--sys-text-style-caption-size);
-  color: var(--app-vc-text-muted);
+  color: var(--ref-color-grey-80);
   font-variant-numeric: tabular-nums;
 }
 
@@ -708,8 +710,8 @@
   height: 18px;
   padding: 0 4px;
   border-radius: var(--app-radius-sm);
-  background: var(--app-vc-surface-overlay);
-  color: var(--app-vc-text);
+  background: var(--ref-color-white);
+  color: var(--ref-color-grey-100);
   font-weight: var(--sys-text-style-caption-bold-weight);
 }
 
@@ -720,7 +722,7 @@
   overflow: hidden;
   font-size: var(--sys-text-style-body-size);
   line-height: var(--sys-text-style-body-line-height);
-  color: var(--app-vc-text);
+  color: var(--ref-color-grey-100);
 }
 
 /* Monitors: framed like the editor's (title bar, picture on black), side by
@@ -730,7 +732,7 @@
   flex-direction: column;
   min-height: 0;
   min-width: 0;
-  background: var(--app-vc-surface);
+  background: var(--ref-color-white);
 }
 
 .clips-monitors {
@@ -766,8 +768,8 @@
   inset: 0;
   display: grid;
   place-items: center;
-  background: var(--app-vc-scrim);
-  color: var(--app-vc-text);
+  background: rgba(8, 10, 14, 0.55); /* over the footage */
+  color: var(--ref-color-grey-100);
   font-size: var(--sys-text-style-caption-size);
 }
 
@@ -783,32 +785,13 @@
   gap: var(--ref-spacing-xs);
   height: 56px;
   padding: 0 var(--ref-spacing-md);
-  border-top: 1px solid var(--app-vc-border);
-}
-
-.clips-transport__play {
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  border: 0;
-  border-radius: var(--app-radius-circle);
-  background: var(--app-vc-text);
-  color: var(--app-vc-surface);
-  font-size: 18px;
-  cursor: pointer;
-  transition: transform 160ms var(--app-ease-out);
-}
-
-.clips-transport__play:active {
-  transform: scale(0.94);
+  border-top: 1px solid var(--ref-color-grey-20);
 }
 
 .clips-transport__tc {
   min-width: 96px;
   font-variant-numeric: tabular-nums;
-  color: var(--app-vc-text);
+  color: var(--ref-color-grey-100);
 }
 
 /* The inspector: the clip in the monitors, named and described. */
@@ -819,8 +802,8 @@
   min-height: 0;
   overflow-y: auto;
   padding: var(--ref-spacing-md);
-  border-left: 1px solid var(--app-vc-border);
-  background: var(--app-vc-surface);
+  border-left: 1px solid var(--ref-color-grey-20);
+  background: var(--ref-color-white);
 }
 
 .clips-inspector__head {
@@ -835,15 +818,15 @@
   width: 28px;
   height: 28px;
   border-radius: var(--app-radius-sm);
-  background: var(--app-vc-accent);
-  color: var(--app-vc-text);
+  background: var(--ref-color-grey-05); /* a number, not an action: never blue */
+  color: var(--ref-color-grey-100);
   font-weight: var(--sys-text-style-body-bold-weight);
   font-variant-numeric: tabular-nums;
 }
 
 .clips-inspector__of {
   font-size: var(--sys-text-style-caption-size);
-  color: var(--app-vc-text-muted);
+  color: var(--ref-color-grey-80);
 }
 
 .clips-inspector__title {
@@ -851,7 +834,7 @@
   font-size: var(--sys-text-style-h3-size);
   line-height: var(--sys-text-style-h3-line-height);
   font-weight: var(--sys-text-style-h3-weight);
-  color: var(--app-vc-text);
+  color: var(--ref-color-grey-100);
 }
 
 .clips-inspector__edit {
@@ -863,7 +846,7 @@
   flex-direction: column;
   gap: var(--ref-spacing-xs);
   padding-top: var(--ref-spacing-sm);
-  border-top: 1px solid var(--app-vc-border);
+  border-top: 1px solid var(--ref-color-grey-20);
 }
 
 .clips-setup__looks {
@@ -879,12 +862,12 @@
 
 .clips-inspector__label {
   font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--app-vc-text);
+  color: var(--ref-color-grey-100);
 }
 
 .clips-inspector__why p {
   margin: var(--ref-spacing-xxxs) 0 0;
-  color: var(--app-vc-text-muted);
+  color: var(--ref-color-grey-80);
 }
 
 .clips-inspector__foot {
@@ -901,8 +884,8 @@
   grid-template-columns: 64px minmax(0, 1fr);
   gap: var(--ref-spacing-xs);
   padding: var(--ref-spacing-xs) var(--ref-spacing-md) var(--ref-spacing-sm);
-  border-top: 1px solid var(--app-vc-border);
-  background: var(--app-vc-surface);
+  border-top: 1px solid var(--ref-color-grey-20);
+  background: var(--ref-color-white);
   user-select: none;
 }
 
@@ -916,7 +899,7 @@
 .clips-tl2__labels {
   align-items: center;
   font-size: var(--sys-text-style-caption-size);
-  color: var(--app-vc-text-muted);
+  color: var(--ref-color-grey-80);
 }
 
 .clips-tl2__tracks {
@@ -938,9 +921,9 @@
   top: 0;
   bottom: 0;
   padding-left: 4px;
-  border-left: 1px solid var(--app-vc-border-strong);
+  border-left: 1px solid var(--ref-color-grey-20);
   font-size: 11px;
-  color: var(--app-vc-text-subtle);
+  color: var(--ref-color-grey-80);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -949,8 +932,8 @@
   display: flex;
   overflow: hidden;
   border-radius: var(--app-radius-sm);
-  background: var(--app-vc-surface-sunken);
-  box-shadow: 0 0 0 1px var(--app-vc-border);
+  background: var(--ref-color-grey-05);
+  box-shadow: 0 0 0 1px var(--ref-color-grey-20);
 }
 
 .clips-tl2__frame {
@@ -963,12 +946,7 @@
 }
 
 .clips-tl2__frame.is-empty {
-  background: linear-gradient(
-    90deg,
-    var(--app-vc-surface-sunken),
-    var(--app-vc-surface-raised),
-    var(--app-vc-surface-sunken)
-  );
+  background: linear-gradient(90deg, var(--ref-color-grey-05), var(--ref-color-white), var(--ref-color-grey-05));
   background-size: 200% 100%;
   animation: clips-shimmer 1.4s linear infinite;
 }
@@ -987,8 +965,8 @@
 
 .clips-tl2__clips {
   border-radius: var(--app-radius-sm);
-  background: var(--app-vc-surface-sunken);
-  box-shadow: 0 0 0 1px var(--app-vc-border);
+  background: var(--ref-color-grey-05);
+  box-shadow: 0 0 0 1px var(--ref-color-grey-20);
 }
 
 .clips-tl2__clip {
@@ -998,10 +976,10 @@
   display: grid;
   place-items: center;
   padding: 0;
-  border: 1px solid var(--app-vc-border-strong);
+  border: 1px solid var(--ref-color-grey-20);
   border-radius: 4px;
-  background: var(--app-vc-surface-overlay);
-  color: var(--app-vc-text-muted);
+  background: var(--ref-color-white);
+  color: var(--ref-color-grey-80);
   font: inherit;
   font-size: 11px;
   font-weight: var(--sys-text-style-caption-bold-weight);
@@ -1017,8 +995,8 @@
 }
 
 .clips-tl2__clip.is-focused {
-  border: 2px solid var(--app-vc-text);
-  color: var(--app-vc-text);
+  border: 2px solid var(--ref-color-electric-blue-100);
+  color: var(--ref-color-grey-100);
 }
 
 .clips-tl2__clip:active {
@@ -1048,7 +1026,7 @@
 }
 
 .clips-list__none {
-  color: var(--app-vc-text-muted);
+  color: var(--ref-color-grey-80);
 }
 
 /* ── Project: the toolbar ────────────────────────────────────────── */
@@ -1243,35 +1221,16 @@ body.clips-editing .app-content {
   grid-column: 1;
 }
 
-/* The space sits on the ramp's base surface (the dark scope, tokens.css). */
-body.clips-space .app-topbar {
-  background: var(--app-vc-surface);
-  border-bottom-color: var(--app-vc-border);
-}
-
-body.clips-space .app-content {
-  background: var(--app-vc-surface);
-  color: var(--app-vc-text);
-}
-
-.clips-ed__title-input {
+/* The top bar's title (O3): the clip's name in h2, renamed through the pen
+   (the DS rename modal). */
+.clips-ed__title {
   min-width: 0;
-  width: min(480px, 40vw);
-  margin-left: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
-  border: 1px solid transparent;
-  border-radius: var(--app-radius-sm);
-  background: transparent;
-  font: inherit;
-  font-size: var(--sys-text-style-h4-size);
-  font-weight: var(--sys-text-style-h4-weight);
+  max-width: min(480px, 40vw);
+  margin: 0 0 0 var(--ref-spacing-xxs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   color: var(--ref-color-grey-100);
-}
-
-.clips-ed__title-input:hover,
-.clips-ed__title-input:focus {
-  border-color: var(--ref-color-grey-20);
-  outline: none;
 }
 
 .clips-ed__topbar-actions {
@@ -1287,8 +1246,8 @@ body.clips-space .app-content {
   grid-template-columns: 76px 340px minmax(0, 1fr);
   height: 100%;
   min-height: 0;
-  background: var(--app-vc-surface);
-  color: var(--app-vc-text);
+  background: var(--ref-color-white);
+  color: var(--ref-color-grey-100);
 }
 
 .clips-ed__panel-title {
@@ -1321,7 +1280,7 @@ body.clips-space .app-content {
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  background: var(--app-vc-surface-sunken);
+  background: var(--ref-color-grey-05);
 }
 
 .clips-ed__stage {
@@ -1329,7 +1288,7 @@ body.clips-space .app-content {
   flex: 1;
   min-height: 0;
   display: flex;
-  border-bottom: 1px solid var(--app-vc-border);
+  border-bottom: 1px solid var(--ref-color-grey-20);
 }
 
 /* Two monitors, each in its own frame — the Source and Output monitors of an
@@ -1341,7 +1300,7 @@ body.clips-space .app-content {
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  background: var(--app-vc-surface);
+  background: var(--ref-color-white);
 }
 
 /* The split is the user's (the handle below); 64 % by default. */
@@ -1368,7 +1327,7 @@ body.clips-space .app-content {
   box-sizing: border-box;
   height: 53px;
   padding: 0 var(--ref-spacing-xxs) 0 var(--ref-spacing-sm);
-  border-bottom: 1px solid var(--app-vc-border);
+  border-bottom: 1px solid var(--ref-color-grey-20);
   font-size: var(--sys-text-style-caption-size);
 }
 
@@ -1388,11 +1347,11 @@ body.clips-space .app-content {
 
 .clips-ed__monitor-name {
   font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--app-vc-text);
+  color: var(--ref-color-grey-100);
 }
 
 .clips-ed__monitor-meta {
-  color: var(--app-vc-text-muted);
+  color: var(--ref-color-grey-80);
   font-variant-numeric: tabular-nums;
 }
 
@@ -1429,7 +1388,7 @@ body.clips-space .app-content {
   display: none;
   position: relative;
   flex: 0 0 1px;
-  background: var(--app-vc-border);
+  background: var(--ref-color-grey-20);
   cursor: col-resize;
   touch-action: none;
 }
@@ -1453,14 +1412,14 @@ body.clips-space .app-content {
   height: 40px;
   margin-top: -20px;
   border-radius: var(--app-radius-pill);
-  background: var(--app-vc-border-strong);
+  background: var(--ref-color-grey-20);
   transition: background-color 150ms ease;
 }
 
 .clips-ed__splitter:hover::after,
 .clips-ed__splitter.is-dragging::after,
 .clips-ed__splitter:focus-visible::after {
-  background: var(--app-vc-accent);
+  background: var(--ref-color-electric-blue-100);
 }
 
 .clips-ed__splitter:focus-visible {
@@ -1485,57 +1444,7 @@ body.clips-space .app-content {
   touch-action: none;
 }
 
-/* The timeline's own tools, between the timecode and the transcript toggle:
-   cutting and joining framing parts belongs to the timeline, like a razor. */
-.clips-ed__tl-tool {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  height: 28px;
-  padding: 0 var(--ref-spacing-xs);
-  border: 0;
-  border-radius: var(--app-radius-sm);
-  background: transparent;
-  color: var(--app-vc-text-muted);
-  font: inherit;
-  font-size: var(--sys-text-style-caption-bold-size);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  cursor: pointer;
-  transition:
-    background-color 150ms ease,
-    color 150ms ease,
-    transform 160ms var(--app-ease-out);
-}
-
-.clips-ed__tl-tool svg {
-  width: 16px;
-  height: 16px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
 @media (hover: hover) and (pointer: fine) {
-  .clips-ed__tl-tool:hover:not(:disabled) {
-    background: var(--app-vc-hover);
-    color: var(--app-vc-text);
-  }
-}
-
-.clips-ed__tl-tool:active:not(:disabled) {
-  transform: scale(0.95);
-}
-
-.clips-ed__tl-tool:disabled {
-  opacity: 0.35;
-  cursor: default;
-}
-
-.clips-ed__tl-tool[aria-pressed="true"] {
-  background: var(--app-vc-accent-soft);
-  color: var(--ref-color-electric-blue-60);
 }
 
 .clips-ed__seg-reset {
@@ -1552,14 +1461,14 @@ body.clips-space .app-content {
 
 .clips-ed__apply {
   padding: var(--ref-spacing-sm);
-  border: 1px solid var(--app-vc-border);
+  border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-md);
 }
 
 .clips-ed__panel-foot {
   margin-top: auto;
   padding-top: var(--ref-spacing-sm);
-  border-top: 1px solid var(--app-vc-border);
+  border-top: 1px solid var(--ref-color-grey-20);
 }
 
 .clips-ed__output {
@@ -1688,8 +1597,8 @@ body.clips-space .app-content {
 
 .clips-ed__timeline {
   padding: 0 var(--ref-spacing-md) var(--ref-spacing-sm);
-  border-top: 1px solid var(--app-vc-border);
-  background: var(--app-vc-surface);
+  border-top: 1px solid var(--ref-color-grey-20);
+  background: var(--ref-color-white);
 }
 
 .clips-tl {
@@ -1731,9 +1640,16 @@ body.clips-space .app-content {
   gap: 2px;
 }
 
-.clips-tl__head .clips-ed__tl-tool {
-  height: 24px;
-  padding: 0 var(--ref-spacing-xxxs);
+/* The track actions are DS icon buttons; a drawn glyph (no DS icon for In,
+   Out, Split, Snap, Join) takes the icon's size and ink. */
+.clips-glyph {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 /* Framing's actions belong to Reframe, where the parts can be picked. */
@@ -1756,9 +1672,9 @@ body.clips-space .app-content {
 .clips-tl__edge-input {
   height: 18px;
   padding: 0 var(--ref-spacing-xxs);
-  border: 1px solid var(--app-vc-accent);
+  border: 1px solid var(--ref-color-electric-blue-100);
   border-radius: var(--app-radius-sm);
-  background: var(--app-vc-surface);
+  background: var(--ref-color-white);
   color: var(--ref-color-electric-blue-60);
   font: inherit;
   font-size: 11px;
@@ -1770,7 +1686,7 @@ body.clips-space .app-content {
 }
 
 .clips-tl__edge-time:hover {
-  background: var(--app-vc-accent-soft);
+  background: var(--ref-color-electric-blue-05);
 }
 
 .clips-tl__edge-time.is-error {
@@ -1856,26 +1772,26 @@ body.clips-space .app-content {
   position: absolute;
   top: 0;
   bottom: 0;
-  background: var(--app-vc-scrim);
+  background: color-mix(in srgb, var(--ref-color-white) 70%, transparent);
 }
 
 .clips-tl__window {
   position: absolute;
   top: 0;
   bottom: 0;
-  background: var(--app-vc-accent-soft);
-  border: 2px solid var(--app-vc-accent);
+  background: var(--ref-color-electric-blue-05);
+  border: 2px solid var(--ref-color-electric-blue-100);
   border-radius: var(--app-radius-sm);
   cursor: grab;
   transition: background-color 120ms ease;
 }
 
 .clips-tl__window:hover {
-  background: color-mix(in srgb, var(--app-vc-accent) 24%, transparent);
+  background: color-mix(in srgb, var(--ref-color-electric-blue-100) 24%, transparent);
 }
 
 .clips-ed__timeline[data-drag="slide"] .clips-tl__window {
-  background: color-mix(in srgb, var(--app-vc-accent) 30%, transparent);
+  background: color-mix(in srgb, var(--ref-color-electric-blue-100) 30%, transparent);
 }
 
 /* The edges: a solid tab with a grip, wider under the pointer. */
@@ -1897,7 +1813,7 @@ body.clips-space .app-content {
   left: 50%;
   width: 4px;
   height: 14px;
-  border-inline: 1px solid var(--app-light-ref-color-white);
+  border-inline: 1px solid var(--ref-color-white);
   transform: translate(-50%, -50%);
   opacity: 0.85;
 }
@@ -1951,7 +1867,7 @@ body.clips-space .app-content {
   overflow: hidden;
   border: 2px dashed var(--cam);
   border-radius: var(--app-radius-sm);
-  background: color-mix(in srgb, var(--cam) 24%, var(--app-vc-surface));
+  background: color-mix(in srgb, var(--cam) 24%, var(--ref-color-white));
   color: var(--ref-color-grey-100);
   font: inherit;
   font-size: 11px;
@@ -1999,32 +1915,20 @@ body.clips-space .app-content {
   opacity: 0;
 }
 
-.clips-tl__join {
+/* Join, on a cut: the DS stroked icon button, shown on hover (the panel's
+   « Join with the previous part » is the always-visible way). */
+.clips-tl__bound .clips-tl__join {
   position: absolute;
-  top: -10px;
+  top: 50%;
   left: 50%;
+  z-index: 3;
   display: none;
-  width: 16px;
-  height: 16px;
-  padding: 0;
-  border: 1px solid var(--app-vc-border-strong);
-  border-radius: var(--app-radius-circle);
-  background: var(--app-vc-surface-overlay);
-  color: var(--ref-color-grey-100);
-  font: inherit;
-  font-size: 11px;
-  line-height: 14px;
-  transform: translateX(-50%);
-  cursor: pointer;
+  background: var(--ref-color-white);
+  transform: translate(-50%, -50%);
 }
 
 .clips-tl__bound:hover .clips-tl__join {
-  display: block;
-}
-
-.clips-tl__join:hover {
-  border-color: var(--ref-color-electric-blue-60);
-  color: var(--ref-color-electric-blue-60);
+  display: inline-flex;
 }
 
 .clips-tl__bound:hover::before,
@@ -2106,8 +2010,8 @@ body.clips-space .app-content {
   z-index: 4;
   padding: 2px var(--ref-spacing-xxs);
   border-radius: var(--app-radius-sm);
-  background: var(--app-vc-surface-overlay);
-  border: 1px solid var(--app-vc-border-strong);
+  background: var(--ref-color-white);
+  border: 1px solid var(--ref-color-grey-20);
   color: var(--ref-color-grey-100);
   font-size: 11px;
   font-variant-numeric: tabular-nums;
@@ -2234,9 +2138,9 @@ body.clips-space .app-content {
   width: 34px;
   height: 60px;
   margin-bottom: var(--ref-spacing-xs);
-  border: 1.5px solid var(--app-vc-border-strong);
+  border: 1.5px solid var(--ref-color-grey-20);
   border-radius: 5px;
-  background: var(--app-vc-surface-sunken);
+  background: var(--ref-color-grey-05);
   overflow: hidden;
   transition: border-color 150ms ease;
 }
@@ -2257,7 +2161,7 @@ body.clips-space .app-content {
   content: "";
   position: absolute;
   left: 50%;
-  background: var(--app-vc-text-subtle);
+  background: var(--ref-color-grey-80);
   transform: translateX(-50%);
 }
 
@@ -2276,7 +2180,7 @@ body.clips-space .app-content {
 }
 
 .clips-layout__glyph--two .clips-layout__person + .clips-layout__person {
-  border-top: 1.5px solid var(--app-vc-border-strong);
+  border-top: 1.5px solid var(--ref-color-grey-20);
 }
 
 .clips-layout:has(input:checked) .clips-layout__person::before,
@@ -2287,7 +2191,7 @@ body.clips-space .app-content {
 .clips-layout__glyph--auto {
   justify-content: center;
   font-size: 18px;
-  color: var(--app-vc-text-subtle);
+  color: var(--ref-color-grey-80);
 }
 
 .clips-layout:has(input:checked) .clips-layout__glyph--auto {
@@ -2297,19 +2201,14 @@ body.clips-space .app-content {
 /* Fit: the whole 16:9 frame, small, on a blurred fill. */
 .clips-layout__glyph--fit {
   justify-content: center;
-  background: linear-gradient(
-    180deg,
-    var(--app-vc-surface-overlay),
-    var(--app-vc-surface-sunken),
-    var(--app-vc-surface-overlay)
-  );
+  background: linear-gradient(180deg, var(--ref-color-white), var(--ref-color-grey-05), var(--ref-color-white));
 }
 
 .clips-layout__inset {
   width: 100%;
   aspect-ratio: 16 / 9;
-  border-block: 1.5px solid var(--app-vc-text-subtle);
-  background: var(--app-vc-surface-raised);
+  border-block: 1.5px solid var(--ref-color-grey-80);
+  background: var(--ref-color-white);
 }
 
 .clips-layout:has(input:checked) .clips-layout__inset {
@@ -2323,7 +2222,7 @@ body.clips-space .app-content {
 .clips-layout__hint {
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
-  color: var(--app-vc-text-muted);
+  color: var(--ref-color-grey-80);
 }
 
 .clips-ed__toggle {
@@ -2350,17 +2249,6 @@ body.clips-space .app-content {
 
 .clips-ed__text.is-selected {
   border-color: var(--ref-color-electric-blue-100);
-}
-
-.clips-ed__text-input {
-  width: 100%;
-  resize: vertical;
-  padding: var(--ref-spacing-xs);
-  background: var(--comp-input-fill-color);
-  border: 1px solid var(--comp-input-border-default-color);
-  border-radius: var(--app-radius-sm);
-  font: inherit;
-  color: var(--ref-color-grey-100);
 }
 
 .clips-ed__rail {
@@ -2401,14 +2289,17 @@ body.clips-space .app-content {
   transform: scale(0.95);
 }
 
+/* The rail reads like the app's left nav (O5): hover blue-10, the current
+   tool blue-20 with its icon and label in blue-150, label bold — never an
+   edge bar. */
 .clips-ed__tool:hover {
-  background: var(--ref-color-grey-05);
+  background: var(--ref-color-electric-blue-10);
   color: var(--ref-color-grey-100);
 }
 
 .clips-ed__tool.is-on {
-  background: var(--app-vc-accent-pill);
-  color: var(--ref-color-electric-blue-60);
+  background: var(--ref-color-electric-blue-20);
+  color: var(--ref-color-electric-blue-150);
   font-weight: var(--sys-text-style-caption-bold-weight);
 }
 

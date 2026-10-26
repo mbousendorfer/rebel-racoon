@@ -28,7 +28,7 @@
 // are pure DOM/CSS. Karaoke word-sweep is intentionally omitted; emphasis is
 // per-word marks + an optional static "phrase" highlight under the playhead.
 
-import { escapeHtml, formatClock } from "./utils.js?v=2178";
+import { escapeHtml, formatClock } from "./utils.js?v=2188";
 import {
   PRESETS,
   presetById,
@@ -43,7 +43,7 @@ import {
   detectFillers,
   detectPauses,
   videoForClip,
-} from "./clip-captions.js?v=2178";
+} from "./clip-captions.js?v=2188";
 
 const FONT_FAMILIES = [
   "Montserrat, Roboto, sans-serif",
@@ -317,7 +317,7 @@ function renderTranscript() {
     if (pause) {
       const removed = pausesRemoved.has(i);
       const cls = "cap-ed-pause" + (cleanupActive ? " is-proposed" : "") + (removed ? " is-removed" : "");
-      html += `<span class="${cls}" data-ce-pause="${i}" title="${pause.dur}s pause">${pause.dur}s</span>`;
+      html += `<button type="button" class="${cls}" data-ce-pause="${i}" aria-label="${pause.dur}s pause${removed ? ", hidden" : ""}">${pause.dur}s</button>`;
     }
     const isFiller = fillerIdx.has(i);
     const cls =
@@ -358,13 +358,28 @@ function updateActiveWord() {
 
 // ── Right panel tabs ─────────────────────────────────────────────────
 
-function segBtns(name, current, opts) {
-  return `<div class="cap-ed-seg" data-ce-seg="${name}">${opts
+// A short choice (two or three options): the DS radio, label beside it.
+function radios(name, current, opts) {
+  return `<div class="cap-ed-radios" role="radiogroup" aria-label="${escapeHtml(name)}">${opts
     .map(
-      (o) =>
-        `<button type="button" class="cap-ed-seg__btn${o.v === current ? " is-on" : ""}" data-ce-seg-val="${o.v}">${escapeHtml(o.label)}</button>`,
+      (o) => `<label class="cap-ed-radio">
+        <span class="ap-radio-container"><input type="radio" name="ce-${name}" value="${escapeHtml(String(o.v))}" data-ce-seg="${name}" ${o.v === current ? "checked" : ""} /></span>
+        <span>${escapeHtml(o.label)}</span>
+      </label>`,
     )
     .join("")}</div>`;
+}
+
+// A number: the DS input group.
+function num(key, value, min, max) {
+  return `<span class="ap-input-group cap-ed-num"><input type="number" data-ce-set="${key}" min="${min}" max="${max}" value="${value}" /></span>`;
+}
+
+// The subtitle settings' tabs — the DS tabs, the same in both hosts.
+export function tabsHTML() {
+  const tab = (id, label) =>
+    `<button type="button" class="ap-tabs-tab" role="tab" aria-selected="false" data-ce-tab="${id}">${label}</button>`;
+  return `<div class="ap-tabs cap-ed__tabs"><div class="ap-tabs-nav" role="tablist" aria-label="Subtitle settings">${tab("presets", "Presets")}${tab("font", "Font")}${tab("effects", "Effects")}</div></div>`;
 }
 
 function field(label, control, hint) {
@@ -400,8 +415,9 @@ function pick(key, current, opts) {
   </details>`;
 }
 
+// No colour picker in the DS: the native swatch, with its hex beside it.
 function colorInput(key, value) {
-  return `<input type="color" class="cap-ed-color" data-ce-color="${key}" value="${value}" />`;
+  return `<span class="cap-ed-color"><input type="color" data-ce-color="${key}" value="${value}" aria-label="${key}" /><span class="cap-ed-color__hex">${escapeHtml(String(value).toUpperCase())}</span></span>`;
 }
 
 function renderPresetsTab() {
@@ -416,13 +432,16 @@ function renderPresetsTab() {
           ? `<span class="cap-ed-preset__none"><i class="ap-icon-eye-off"></i></span>`
           : `<span class="cap-ed-preset__sample cap-ed-preview-${p.id}">TO GET <mark>STARTED</mark></span>`;
       return `
-      <button type="button" class="cap-ed-preset${isOn ? " is-on" : ""}" data-ce-preset="${p.id}">
-        <span class="cap-ed-preset__frame">${sample}</span>
-        <span class="cap-ed-preset__label">${escapeHtml(p.label)}</span>
-      </button>`;
+      <label class="ap-radio-card card cap-ed-preset">
+        <input type="radio" name="ce-preset" value="${p.id}" data-ce-preset-pick ${isOn ? "checked" : ""} />
+        <div>
+          <span class="cap-ed-preset__frame">${sample}</span>
+          <span class="cap-ed-preset__label">${escapeHtml(p.label)}</span>
+        </div>
+      </label>`;
     })
     .join("");
-  return `<div class="cap-ed-presets">${cards}</div>`;
+  return `<div class="cap-ed-presets" role="radiogroup" aria-label="Subtitle style">${cards}</div>`;
 }
 
 function renderFontTab() {
@@ -440,7 +459,7 @@ function renderFontTab() {
     ${group(
       "Text",
       `${field("Font", pick("fontFamily", s.fontFamily, fams))}
-       ${field("Size", `<input type="number" class="cap-ed-num" data-ce-set="fontSizePx" min="24" max="160" value="${s.fontSizePx}" />`)}
+       ${field("Size", num("fontSizePx", s.fontSizePx, 24, 160))}
        ${field("Weight", pick("fontWeight", s.fontWeight, weights))}
        ${field("Text color", colorInput("textColor", s.textColor))}
        ${field("Uppercase", toggle("uppercase", "", s.uppercase))}`,
@@ -448,15 +467,15 @@ function renderFontTab() {
     ${group(
       "Outline and shadow",
       `${field("Outline color", colorInput("strokeColor", s.strokeColor))}
-       ${field("Outline width", `<input type="number" class="cap-ed-num" data-ce-set="strokeWidthPx" min="0" max="24" value="${s.strokeWidthPx}" />`)}
+       ${field("Outline width", num("strokeWidthPx", s.strokeWidthPx, 0, 24))}
        ${field("Shadow", toggle("shadow", "", s.shadow))}
        ${
          s.shadow
            ? `<div class="cap-ed-subfields">
                ${field("Color", colorInput("shadowColor", s.shadowColor))}
-               ${field("Offset X", `<input type="number" class="cap-ed-num" data-ce-set="shadowX" min="-20" max="20" value="${s.shadowX}" />`)}
-               ${field("Offset Y", `<input type="number" class="cap-ed-num" data-ce-set="shadowY" min="-20" max="20" value="${s.shadowY}" />`)}
-               ${field("Blur", `<input type="number" class="cap-ed-num" data-ce-set="shadowBlur" min="0" max="40" value="${s.shadowBlur}" />`)}
+               ${field("Offset X", num("shadowX", s.shadowX, -20, 20))}
+               ${field("Offset Y", num("shadowY", s.shadowY, -20, 20))}
+               ${field("Blur", num("shadowBlur", s.shadowBlur, 0, 40))}
              </div>`
            : ""
        }`,
@@ -478,23 +497,23 @@ function renderEffectsTab() {
       "Layout",
       `${field(
         "Position",
-        segBtns("position", s.position, [
+        pick("position", s.position, [
           { v: "auto", label: "Auto" },
           { v: "top", label: "Top" },
           { v: "middle", label: "Middle" },
           { v: "bottom", label: "Bottom" },
-          ...(s.position === "custom" ? [{ v: "custom", label: "Custom" }] : []),
+          ...(s.position === "custom" ? [{ v: "custom", label: "Where I placed it" }] : []),
         ]),
       )}
        ${field(
          "Max lines",
-         segBtns("maxLines", s.maxLines, [
+         radios("maxLines", s.maxLines, [
            { v: 1, label: "1" },
            { v: 2, label: "2" },
            { v: 3, label: "3" },
          ]),
        )}
-       ${field("Max words", `<input type="number" class="cap-ed-num" data-ce-set="wordsPerCue" min="0" max="12" value="${s.wordsPerCue}" />`, "0 = no limit")}`,
+       ${field("Max words", num("wordsPerCue", s.wordsPerCue, 0, 12), "0 = no limit")}`,
     )}
     ${
       clock
@@ -503,7 +522,7 @@ function renderEffectsTab() {
             "Safe area",
             field(
               "Dead zones",
-              segBtns("deadZones", s.deadZones, DEAD_ZONE_OPTIONS),
+              pick("deadZones", s.deadZones, DEAD_ZONE_OPTIONS),
               "Shows where the app's buttons cover the video",
             ),
           )
@@ -521,7 +540,12 @@ function renderCleanupBar() {
   if (!bar) return;
   bar.hidden = !cleanupActive;
   const btn = $('[data-ce="open-cleanup"]');
-  if (btn) btn.setAttribute("aria-pressed", String(cleanupActive));
+  if (btn) {
+    // The DS stroked button: blue while the cleanup is on, grey otherwise.
+    btn.setAttribute("aria-pressed", String(cleanupActive));
+    btn.classList.toggle("blue", cleanupActive);
+    btn.classList.toggle("grey", !cleanupActive);
+  }
   if (!cleanupActive) {
     bar.innerHTML = "";
     return;
@@ -530,15 +554,15 @@ function renderCleanupBar() {
   const pauses = detectPauses(words);
   if (!fillers.length && !pauses.length) {
     bar.innerHTML = `<span class="cap-ed-cleanup-bar__count">Nothing to clean up</span>
-      <button type="button" class="cap-ed-cleanup-bar__btn cap-ed-cleanup-bar__btn--done" data-ce-cleanup-done>Done</button>`;
+      <button type="button" class="ap-button ghost grey" data-ce-cleanup-done>Done</button>`;
     return;
   }
   const anyPending = fillers.some((f) => !words[f.startIdx].removed) || pauses.some((p) => !pausesRemoved.has(p.idx));
   bar.innerHTML = `
     <span class="cap-ed-cleanup-bar__count">${fillers.length} filler${fillers.length === 1 ? "" : "s"} · ${pauses.length} pause${pauses.length === 1 ? "" : "s"} — click to remove</span>
     <span class="cap-ed-cleanup-bar__actions">
-      <button type="button" class="cap-ed-cleanup-bar__btn" data-ce-cleanup-all="${anyPending ? "remove" : "restore"}">${anyPending ? "Remove all" : "Restore all"}</button>
-      <button type="button" class="cap-ed-cleanup-bar__btn cap-ed-cleanup-bar__btn--done" data-ce-cleanup-done>Done</button>
+      <button type="button" class="ap-button ghost grey" data-ce-cleanup-all="${anyPending ? "remove" : "restore"}">${anyPending ? "Hide all" : "Show all"}</button>
+      <button type="button" class="ap-button ghost grey" data-ce-cleanup-done>Done</button>
     </span>`;
 }
 
@@ -582,7 +606,11 @@ function renderCleanupList() {
 function renderTabPanel() {
   const panel = $("[data-ce-tabpanel]");
   if (!panel) return;
-  root.querySelectorAll("[data-ce-tab]").forEach((b) => b.classList.toggle("is-on", b.dataset.ceTab === activeTab));
+  root.querySelectorAll("[data-ce-tab]").forEach((b) => {
+    const on = b.dataset.ceTab === activeTab;
+    b.classList.toggle("active", on);
+    b.setAttribute("aria-selected", String(on));
+  });
   if (activeTab === "presets") panel.innerHTML = renderPresetsTab();
   else if (activeTab === "font") panel.innerHTML = renderFontTab();
   else panel.innerHTML = renderEffectsTab();
@@ -733,6 +761,14 @@ function onMenuClick(e) {
     emitChange();
     return;
   }
+  const fix = e.target.closest("[data-ce-word-fix]");
+  if (fix) {
+    const i = Number(fix.dataset.ceWordFix);
+    closeMenu();
+    const span = $(`[data-ce-word="${i}"]`);
+    if (span) startWordEdit(i, span);
+    return;
+  }
   const wordRemove = e.target.closest("[data-ce-word-remove]");
   if (wordRemove) {
     const i = Number(wordRemove.dataset.ceWordRemove);
@@ -746,6 +782,17 @@ function onMenuClick(e) {
   }
 }
 
+// One item of the word menu, the DS action-dropdown item.
+function item(attrs, lead, label, checked = false) {
+  return `<button type="button" role="menuitem" class="ap-action-dropdown-item" ${attrs}>
+    ${lead}
+    <div class="ap-action-dropdown-item-text"><div class="ap-action-dropdown-item-label-container">
+      <span class="ap-action-dropdown-item-label">${escapeHtml(label)}</span>
+    </div></div>
+    ${checked ? '<i class="ap-icon-check cap-ed-menu__check"></i>' : ""}
+  </button>`;
+}
+
 function openWordMenu(wordIdx, anchorEl) {
   closeMenu();
   const w = words[wordIdx];
@@ -754,23 +801,24 @@ function openWordMenu(wordIdx, anchorEl) {
     { mark: "h1", color: state.highlight1Color, label: "Highlight" },
     { mark: "h2", color: state.highlight2Color, label: "Second highlight" },
   ]
-    .map(
-      (d) =>
-        `<button type="button" class="cap-ed-menu__item" data-ce-mark="${d.mark}">
-          <span class="cap-ed-menu__dot" style="background:${d.color}"></span>${d.label}
-          ${w.mark === d.mark ? '<i class="ap-icon-check cap-ed-menu__check"></i>' : ""}
-        </button>`,
+    .map((d) =>
+      item(
+        `data-ce-mark="${d.mark}"`,
+        `<span class="cap-ed-menu__dot" style="background:${d.color}"></span>`,
+        d.label,
+        w.mark === d.mark,
+      ),
     )
     .join("");
   menuEl = document.createElement("div");
-  menuEl.className = "cap-ed-menu";
+  menuEl.className = "ap-action-dropdown cap-ed-menu";
+  menuEl.setAttribute("role", "menu");
   menuEl.innerHTML = `
     ${dots}
-    <button type="button" class="cap-ed-menu__item" data-ce-mark="">Clear emphasis</button>
-    <div class="cap-ed-menu__sep"></div>
-    <button type="button" class="cap-ed-menu__item" data-ce-word-remove="${wordIdx}">
-      <i class="ap-icon-eye-off"></i>${w.removed ? "Show in subtitles" : "Hide from subtitles"}
-    </button>`;
+    ${item('data-ce-mark=""', "", "Clear emphasis")}
+    <div class="ap-action-dropdown-divider"></div>
+    ${item(`data-ce-word-remove="${wordIdx}"`, `<i class="${w.removed ? "ap-icon-eye-on" : "ap-icon-eye-off"}"></i>`, w.removed ? "Show in subtitles" : "Hide from subtitles")}
+    ${item(`data-ce-word-fix="${wordIdx}"`, `<i class="ap-icon-pen"></i>`, "Fix the word")}`;
   // Append to document.body — position:fixed must resolve against the viewport,
   // and the modal's transform would otherwise capture it as the containing block.
   menuEl.dataset.ceWordIdx = String(wordIdx);
@@ -786,43 +834,42 @@ function openWordMenu(wordIdx, anchorEl) {
   document.addEventListener("pointerdown", onDocPointer, true);
 }
 
+// Fixing a word: a small field in place of the word. Enter saves it; Escape
+// or leaving the field puts the word back — an inline edit never saves on
+// blur (house rule).
 function startWordEdit(wordIdx, span) {
-  span.contentEditable = "true";
-  span.classList.add("is-editing");
-  span.focus();
-  const sel = window.getSelection();
-  const range = document.createRange();
-  range.selectNodeContents(span);
-  sel.removeAllRanges();
-  sel.addRange(range);
-
-  const commit = () => {
-    span.contentEditable = "false";
-    span.classList.remove("is-editing");
-    const text = span.textContent.trim();
-    if (text && text !== words[wordIdx].text) {
+  const input = document.createElement("input");
+  input.className = "cap-ed-word-input";
+  input.value = words[wordIdx].text;
+  input.size = Math.max(3, words[wordIdx].text.length + 1);
+  input.setAttribute("aria-label", "Fix the word");
+  span.replaceWith(input);
+  input.focus();
+  input.select();
+  let done = false;
+  const finish = (save) => {
+    if (done) return;
+    done = true;
+    const text = input.value.trim();
+    if (save && text && text !== words[wordIdx].text) {
       words[wordIdx].text = text;
       recomputeCues();
       renderCaptionFrame(true);
       emitChange();
-    } else {
-      span.textContent = words[wordIdx].text;
     }
-    span.removeEventListener("blur", commit);
-    span.removeEventListener("keydown", onKey);
+    renderTranscript();
   };
-  const onKey = (e) => {
+  input.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      span.blur();
+      finish(true);
     } else if (e.key === "Escape") {
       e.preventDefault();
-      span.textContent = words[wordIdx].text;
-      span.blur();
+      e.stopPropagation();
+      finish(false);
     }
-  };
-  span.addEventListener("blur", commit);
-  span.addEventListener("keydown", onKey);
+  });
+  input.addEventListener("blur", () => finish(false));
 }
 
 function onRootClick(e) {
@@ -908,27 +955,8 @@ function onRootClick(e) {
     return;
   }
 
-  const presetBtn = t.closest("[data-ce-preset]");
-  if (presetBtn) {
-    applyPreset(presetBtn.dataset.cePreset);
-    return;
-  }
-
-  const segVal = t.closest("[data-ce-seg-val]");
-  if (segVal) {
-    const seg = segVal.closest("[data-ce-seg]").dataset.ceSeg;
-    let v = segVal.dataset.ceSegVal;
-    if (seg === "maxLines") v = Number(v);
-    state[seg] = v;
-    renderTabPanel();
-    recomputeCues();
-    repaintAll();
-    emitChange();
-    return;
-  }
-
   const wordEl = t.closest("[data-ce-word]");
-  if (wordEl && !wordEl.isContentEditable) {
+  if (wordEl) {
     const i = Number(wordEl.dataset.ceWord);
     seek(words[i].start + 0.01);
     // In cleanup mode, clicking a highlighted filler removes/restores it
@@ -943,9 +971,10 @@ function onRootClick(e) {
         renderCaptionFrame(true);
         renderCleanupBar();
         emitChange();
+        return;
       }
-      return;
     }
+    // Any other word (or any word outside the cleanup): its menu.
     openWordMenu(i, wordEl);
     return;
   }
@@ -979,6 +1008,8 @@ function onRootDblClick(e) {
 }
 
 function onRootInput(e) {
+  const hex = e.target.closest?.(".cap-ed-color")?.querySelector(".cap-ed-color__hex");
+  if (hex) hex.textContent = e.target.value.toUpperCase();
   if (e.target.matches?.("[data-ce-pause-threshold]")) {
     pauseThreshold = Number(e.target.value);
     // Pauses still long enough stay hidden; the rest are no longer pauses.
@@ -1021,6 +1052,17 @@ function onRootInput(e) {
 }
 
 function onRootChange(e) {
+  // The DS radios: a preset card, or a short choice (max lines).
+  if (e.target.matches?.("[data-ce-preset-pick]")) return applyPreset(e.target.value);
+  if (e.target.matches?.("[data-ce-seg]")) {
+    const key = e.target.dataset.ceSeg;
+    state[key] = key === "maxLines" ? Number(e.target.value) : e.target.value;
+    renderTabPanel();
+    recomputeCues();
+    repaintAll();
+    emitChange();
+    return undefined;
+  }
   const toggle = e.target.closest("[data-ce-toggle]");
   if (toggle) {
     state[toggle.dataset.ceToggle] = toggle.checked;
