@@ -836,17 +836,6 @@
   border-top: 1px solid var(--ref-color-grey-20);
 }
 
-.clips-setup__looks {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ref-spacing-xs);
-}
-
-.clips-setup__looks .ap-select {
-  width: auto;
-  min-width: 220px;
-}
-
 .clips-inspector__label {
   font-weight: var(--sys-text-style-body-bold-weight);
   color: var(--ref-color-grey-100);
@@ -946,71 +935,237 @@
 
 /* ── Drafts ──────────────────────────────────────────────────────── */
 
-.clips-setup {
+/* « Write the posts »: the transformation, shown. The form (what to turn into
+   what) on the left; on the right, sticky, one draft previewed as it will
+   land, the count, and the action — a white surface on the page ground. */
+.clips-write {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-lg);
-  max-width: 720px;
-  padding: var(--ref-spacing-lg);
+  gap: var(--ref-spacing-md);
+  max-width: 1160px;
+}
+
+.clips-write__title {
+  margin: 0 0 var(--ref-spacing-xxxs);
+  font-size: var(--sys-text-style-h2-size);
+  line-height: var(--sys-text-style-h2-line-height);
+  font-weight: var(--sys-text-style-h2-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.clips-write__sub,
+.clips-write__hint,
+.clips-write__note {
+  margin: 0;
+  color: var(--ref-color-grey-80);
+}
+
+.clips-write__hint,
+.clips-write__note,
+.clips-write__card-hint {
+  font-size: var(--sys-text-style-caption-size);
+}
+
+.clips-write__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 560px; /* the draft card's own width */
+  gap: var(--ref-spacing-md);
+  align-items: start;
+}
+
+.clips-write__form,
+.clips-write__side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-md);
+  padding: var(--ref-spacing-md);
   border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-card);
   background: var(--ref-color-white);
 }
 
-.clips-setup__title {
-  margin: 0 0 var(--ref-spacing-xxs);
-  font-size: var(--sys-text-style-h3-size);
-  line-height: var(--sys-text-style-h3-line-height);
-  font-weight: var(--sys-text-style-h3-weight);
-  color: var(--ref-color-grey-100);
+.clips-write__side {
+  position: sticky;
+  top: 0;
+  gap: var(--ref-spacing-sm);
 }
 
-.clips-setup__sub,
-.clips-setup__hint,
-.clips-setup__cta-hint {
-  margin: 0;
-  color: var(--ref-color-grey-80);
-}
-
-.clips-setup__cta-hint {
-  font-size: var(--sys-text-style-caption-size);
-}
-
-.clips-setup__group {
+.clips-write__group {
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xs);
 }
 
-.clips-setup__label {
+.clips-write__group + .clips-write__group {
+  padding-top: var(--ref-spacing-md);
+  border-top: 1px solid var(--ref-color-grey-20);
+}
+
+.clips-write__label {
   margin: 0;
   font-size: var(--sys-text-style-body-bold-size);
   font-weight: var(--sys-text-style-body-bold-weight);
   color: var(--ref-color-grey-100);
 }
 
-.clips-setup__accounts {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ref-spacing-xs) var(--ref-spacing-md);
-}
-
-.clips-setup__connect {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ref-spacing-xs);
-}
-
-.clips-setup__ctas {
+/* The clips, as tiles: the reframed picture, the box to keep it, its title. */
+.clips-write__clips {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fill, 120px); /* portrait thumbnails, no black bands */
+  gap: var(--ref-spacing-md);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.clips-write__clip {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+}
+
+.clips-write__clip-media {
+  display: block;
+  aspect-ratio: 9 / 16;
+  border-radius: var(--app-radius-md);
+  overflow: hidden;
+  background: #000; /* the footage */
+}
+
+.clips-write__clip-media .clips-preview {
+  height: 100%;
+}
+
+.clips-write__clip.is-off .clips-write__clip-media {
+  opacity: 0.45;
+}
+
+.clips-write__clip-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xxs);
+}
+
+.clips-write__clip-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-100);
+}
+
+.clips-write__clip-meta {
+  display: block;
+  color: var(--ref-color-grey-80);
+}
+
+.clips-write__accounts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.clips-write__account {
   gap: var(--ref-spacing-xs);
 }
 
-.clips-setup__foot {
+.clips-write__account-meta {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+
+.clips-write__connect,
+.clips-write__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xs);
+}
+
+.clips-write__row .ap-select {
+  width: auto;
+  min-width: 240px;
+}
+
+.clips-write__cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ref-spacing-xs);
+}
+
+.clips-write__cards--3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.clips-write__card-hint {
+  margin: var(--ref-spacing-xxxs) 0 0;
+  color: var(--ref-color-grey-80);
+}
+
+/* A choice that can't be made says why, in its hint. */
+.clips-write__mode.is-off {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.clips-write__preview-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.clips-write__nav {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+
+.clips-write__tabs .ap-tabs-tab i {
+  margin-right: var(--ref-spacing-xxs);
+}
+
+/* The real draft card, read-only: what lands is what you see. */
+.clips-write__post {
+  max-height: 560px;
+  overflow-y: auto;
+}
+
+/* A preview has no selection gutter nor row actions. */
+.clips-write__post .posts__row-check,
+.clips-write__post .posts__row-actions,
+.clips-write__post .clips-drafts__edit {
+  display: none;
+}
+
+.clips-write__total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-top: var(--ref-spacing-sm);
+  border-top: 1px solid var(--ref-color-grey-20);
+  color: var(--ref-color-grey-80);
+}
+
+.clips-write__total strong {
+  font-size: var(--sys-text-style-h3-size);
+  color: var(--ref-color-grey-100);
+}
+
+.clips-write__actions {
   display: flex;
   justify-content: flex-end;
   gap: var(--ref-spacing-xs);
+}
+
+.clips-write__why {
+  margin: 0;
+  text-align: right;
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
 }
 
 .clips-drafts__writing {
@@ -1418,12 +1573,6 @@ body.clips-editing .app-content {
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
   color: var(--ref-color-grey-100);
-}
-
-/* The transport says where the playhead is in the video too — the time the
-   ruler and the In / Out fields read. */
-.clips-ed__time-src {
-  color: var(--ref-color-grey-80);
 }
 
 /* Outside Reframe the framing track stays as a quiet reference and its legend
@@ -2297,10 +2446,6 @@ body.clips-editing .app-content {
   height: 24px;
   margin: 0 var(--ref-spacing-xs);
   background: var(--ref-color-grey-20);
-}
-
-.clips-ed__transport-spacer {
-  flex: 1;
 }
 
 .clips-ed__at .clips-glyph {
