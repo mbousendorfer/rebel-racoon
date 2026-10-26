@@ -1382,8 +1382,11 @@ body.clips-space .app-content {
   align-items: center;
   justify-content: space-between;
   gap: var(--ref-spacing-sm);
-  min-height: 44px;
-  padding: var(--ref-spacing-xxs) var(--ref-spacing-xxs) var(--ref-spacing-xxs) var(--ref-spacing-sm);
+  /* One height for every monitor bar, set by the tallest content (the Output's
+     36 px selects + 8 px above and below), so Source and Output line up. */
+  box-sizing: border-box;
+  height: 53px;
+  padding: 0 var(--ref-spacing-xxs) 0 var(--ref-spacing-sm);
   border-bottom: 1px solid var(--app-vc-border);
   font-size: var(--sys-text-style-caption-size);
 }
