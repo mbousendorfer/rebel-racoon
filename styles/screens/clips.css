@@ -777,8 +777,8 @@
   flex-direction: column;
   gap: var(--ref-spacing-sm);
   width: 340px;
-  max-height: 100%;
-  overflow-y: auto;
+  /* No overflow clipping: its dropdowns (⋯, Format, Subtitles) open past its
+     edge instead of being cut. */
   padding: var(--ref-spacing-md);
   border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-md);
@@ -2255,13 +2255,14 @@ body.clips-editing .app-content {
 /* The clip's actions, together under its title: Edit, and the ⋯ menu that
    holds Remove (a destructive action sits in a menu, confirmed). */
 .clips-inspector__actions {
+  position: relative; /* the ⋯ menu hangs from the row, inside the details */
   display: flex;
   align-items: center;
   gap: var(--ref-spacing-xxs);
 }
 
 .clips-more {
-  position: relative;
+  position: static;
 }
 
 .clips-more > summary {
@@ -2275,7 +2276,7 @@ body.clips-editing .app-content {
 .clips-more__menu {
   position: absolute;
   top: calc(100% + var(--ref-spacing-xxxs));
-  right: 0; /* opens toward the panel, never past the window's edge */
+  left: 0; /* under the row's start, so it stays inside the details */
   z-index: 20;
   min-width: 200px;
 }

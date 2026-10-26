@@ -1,13 +1,13 @@
 // Image Generator — a style's thumbnail: the style drawn in the active brand's
 // palette (a ready-made one in Acme's), so the gallery previews what it gets.
 
-import { html } from "../lib/html.js?v=2191";
-import { hashString } from "../lib/prng.js?v=2191";
-import { renderVisual, resolveStyleDrawing, svgToDataUrl } from "../render/visual.js?v=2191";
-import { resolvePalette } from "../render/palette.js?v=2191";
-import { hasStyleArt, styleArtSvg } from "../render/style-art.js?v=2191";
-import { getAsset } from "../state/store.js?v=2191";
-import { getBrand } from "../state/playbook-brand.js?v=2191";
+import { html } from "../lib/html.js?v=2193";
+import { hashString } from "../lib/prng.js?v=2193";
+import { renderVisual, resolveStyleDrawing, svgToDataUrl } from "../render/visual.js?v=2193";
+import { resolvePalette } from "../render/palette.js?v=2193";
+import { hasStyleArt, styleArtSvg } from "../render/style-art.js?v=2193";
+import { getAsset } from "../state/store.js?v=2193";
+import { getBrand } from "../state/playbook-brand.js?v=2193";
 
 // A ready-made style is drawn in ONE palette, Acme's, whatever the brand.
 const PRESET_PALETTE_BRAND = "ctx-acme";
