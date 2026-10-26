@@ -46,6 +46,7 @@ body.has-modal {
 .assign-modal,
 .analyze-profiles-modal,
 .connect-account-modal,
+.network-voice-modal,
 .skip-connect,
 .fill-document-modal,
 .search-modal,
@@ -540,6 +541,7 @@ body.has-modal {
 .assign-modal.open,
 .analyze-profiles-modal.open,
 .connect-account-modal.open,
+.network-voice-modal.open,
 .skip-connect.open,
 .fill-document-modal.open,
 .search-modal.open,
@@ -1774,4 +1776,59 @@ body.has-modal {
   height: 1px;
   opacity: 0;
   pointer-events: none;
+}
+
+/* The voice step before a draft, where there is no chat (network-voice-modal):
+   one group of DS radios per network, the name over what it does. */
+.network-voice-modal {
+  width: min(calc(100% - 32px), 520px);
+}
+.network-voice-modal .ap-dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-md);
+  overflow-y: auto;
+}
+.network-voice-modal__lead {
+  margin: 0;
+  color: var(--ref-color-grey-80);
+}
+.network-voice-modal__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.network-voice-modal__legend {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  margin-bottom: var(--ref-spacing-sm);
+  padding: 0;
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--ref-color-grey-100);
+}
+.network-voice-modal__choice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xs);
+  cursor: pointer;
+}
+.network-voice-modal__choice .ap-radio-container {
+  flex: none;
+  margin-top: 2px;
+}
+.network-voice-modal__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+}
+.network-voice-modal__name {
+  color: var(--ref-color-grey-100);
+}
+.network-voice-modal__hint {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
 }

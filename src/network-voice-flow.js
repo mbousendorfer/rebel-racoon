@@ -8,15 +8,18 @@
 // Public API:
 //   requireNetworkVoices(sessionId, networks, onReady, contextId?)
 //   contextId: the Playbook the drafts are written for, when it isn't the chat's
+// Shared with the dialog that asks the same thing where there is no chat (the
+// Clips space, components/network-voice-modal.js):
+//   missingNetworkVoices(ctx, networks) · voiceChoices(net) · applyNetworkVoice(ctxId, net, choice)
 //
 // onReady() runs IMMEDIATELY when every network already has a voice — always
 // the case with the flag off — so callers wrap unconditionally.
 
-import * as inlineQuestion from "./inline-question.js?v=2214";
-import { postAssistantMessage, postUserTurn, startPending, finishPending } from "./assistant.js?v=2214";
-import { getContextById, updateContext } from "./contexts-store.js?v=2214";
-import { getSessionById } from "./sessions-store.js?v=2214";
-import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2214";
+import * as inlineQuestion from "./inline-question.js?v=2216";
+import { postAssistantMessage, postUserTurn, startPending, finishPending } from "./assistant.js?v=2216";
+import { getContextById, updateContext } from "./contexts-store.js?v=2216";
+import { getSessionById } from "./sessions-store.js?v=2216";
+import { networkLabel, networkMeta, normalizeNetwork, profileForNetwork } from "./social-profiles.js?v=2216";
 import {
   networkVoiceOn,
   networkVoice,
@@ -25,22 +28,28 @@ import {
   optimizeForNetwork,
   copyBrandVoice,
   playbookNetworks,
-} from "./voice-parts.js?v=2214";
+} from "./voice-parts.js?v=2216";
 
 const LEARN_MS = 1800;
 
+// The networks of a batch that have no voice yet — none with the flag off.
+export function missingNetworkVoices(ctx, networks) {
+  if (!networkVoiceOn() || !ctx) return [];
+  return [...new Set((networks || []).map(normalizeNetwork))].filter(
+    (n) => networkMeta(n) && networkVoice(ctx, n).state === "borrowed",
+  );
+}
+
 export function requireNetworkVoices(sessionId, networks, onReady, contextId = null) {
-  const ctx = networkVoiceOn() ? getContextById(contextId || getSessionById(sessionId)?.contextId) : null;
-  const missing = ctx
-    ? [...new Set((networks || []).map(normalizeNetwork))].filter(
-        (n) => networkMeta(n) && networkVoice(ctx, n).state === "borrowed",
-      )
-    : [];
+  const ctx = getContextById(contextId || getSessionById(sessionId)?.contextId);
+  const missing = missingNetworkVoices(ctx, networks);
   if (!missing.length) return onReady();
   askVoice(sessionId, ctx.id, missing, onReady);
 }
 
-function askVoice(sessionId, ctxId, [net, ...rest], onReady) {
+// The three ways to give a network its voice, the first one the best — learned
+// from the account's posts when it has enough.
+export function voiceChoices(net) {
   const label = networkLabel(net);
   const account = profileForNetwork(net);
   const learn = canLearnFrom(account);
@@ -64,7 +73,12 @@ function askVoice(sessionId, ctxId, [net, ...rest], onReady) {
       caption: `Not optimized for ${label}: no length, format or hashtag habits of its own.`,
     },
   ].filter(Boolean);
+  return { account, items };
+}
 
+function askVoice(sessionId, ctxId, [net, ...rest], onReady) {
+  const label = networkLabel(net);
+  const { account, items } = voiceChoices(net);
   postAssistantMessage(sessionId, `${label} doesn't have a voice yet, and I write every draft in its network's voice.`);
   inlineQuestion.ask(sessionId, {
     title: `How should I write on ${label}?`,
@@ -94,10 +108,11 @@ function askVoice(sessionId, ctxId, [net, ...rest], onReady) {
   });
 }
 
-function setVoice(sessionId, ctxId, net, choice, account) {
+// Writes the chosen voice on the Playbook.
+export function applyNetworkVoice(ctxId, net, choice) {
   const ctx = getContextById(ctxId);
   if (!ctx) return;
-  const label = networkLabel(net);
+  const account = profileForNetwork(net);
   const voice =
     choice === "learn"
       ? learnNetworkVoice(ctx, net, account)
@@ -109,6 +124,11 @@ function setVoice(sessionId, ctxId, net, choice, account) {
     // A network written for is one the Playbook publishes on.
     ...(!playbookNetworks(ctx).includes(net) && { connectedSocials: [...(ctx.connectedSocials || []), net] }),
   });
+}
+
+function setVoice(sessionId, ctxId, net, choice, account) {
+  const label = networkLabel(net);
+  applyNetworkVoice(ctxId, net, choice);
   postAssistantMessage(
     sessionId,
     choice === "learn"
