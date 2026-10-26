@@ -5,12 +5,14 @@
 // template) and the crop-editor playground (per-segment reframing). They are
 // one surface here, Opus / Descript-style:
 //
-//   transcript (left, always) · stage (center) · panel + tool rail (right) ·
-//   one timeline for every tool (bottom).
+//   tool rail + the tool's panel (left) · stage (right) · one timeline for
+//   every tool (bottom).
 //
-// Tools: Reframe · Subtitles · Text · Brand. The format and the safe area sit
-// on the Output monitor, the cleanup (fillers, pauses) on the transcript, and
-// the trim — In / Out — on the transport, right above the timeline it edits.
+// Every control sits where it acts: what you pick (the tool and its settings)
+// is on the left; what shapes the image (format, safe area) is on the Output
+// monitor; what acts on time (play, In / Out, split / merge / snap) is on the
+// timeline's toolbar. Tools: Reframe · Transcript (words + cleanup) ·
+// Subtitles · Text · Brand.
 // The editor owns the clock and the source <video>; caption-editor.js renders
 // the subtitles, the transcript and the cleanup on that clock (mount opts.clock),
 // and clip-framing.js is the crop editor's engine.
@@ -20,18 +22,18 @@
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2173";
-import { isFlagOn } from "../../feature-flags.js?v=2173";
-import { parseHashParams } from "../../url-state.js?v=2173";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2173";
-import { showToast } from "../../components/toast.js?v=2173";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2173";
-import { getContextById } from "../../contexts-store.js?v=2173";
-import { escapeHtml } from "../../utils.js?v=2173";
-import * as ce from "../../caption-editor.js?v=2173";
-import { DEAD_ZONES } from "../../clip-captions.js?v=2173";
-import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2173";
-import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2173";
+import { navigate } from "../../router.js?v=2175";
+import { isFlagOn } from "../../feature-flags.js?v=2175";
+import { parseHashParams } from "../../url-state.js?v=2175";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2175";
+import { showToast } from "../../components/toast.js?v=2175";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2175";
+import { getContextById } from "../../contexts-store.js?v=2175";
+import { escapeHtml } from "../../utils.js?v=2175";
+import * as ce from "../../caption-editor.js?v=2175";
+import { DEAD_ZONES } from "../../clip-captions.js?v=2175";
+import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2175";
+import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2175";
 import {
   framingContext,
   initialSegments,
@@ -54,7 +56,7 @@ import {
   cameraName,
   LAYOUTS,
   MIN_SEG_MS,
-} from "../../clip-framing.js?v=2173";
+} from "../../clip-framing.js?v=2175";
 import {
   fmtMs,
   fmtPrecise,
@@ -68,20 +70,17 @@ import {
   presetLabel,
   dsSelect,
   bindSelectDismiss,
-} from "./shared.js?v=2173";
-import { primeDraftSetup } from "./project.js?v=2173";
+} from "./shared.js?v=2175";
+import { primeDraftSetup } from "./project.js?v=2175";
 
 const MIN_CLIP_MS = 5000;
 const MAX_CLIP_MS = 300000;
 const FRAME_MS = 40;
 const CARD_MS = 2000; // intro / outro card length
 
-// The tools that work on words show the transcript; the ones that work on the
-// image give its width back to the stage. The toggle overrides it either way.
-const WORD_TOOLS = new Set(["subtitles"]);
-
 const TOOLS = [
   { id: "reframe", label: "Reframe", icon: "ap-icon-cropper", hint: "Who's in the frame, part by part" },
+  { id: "transcript", label: "Transcript", icon: "ap-icon-file--text", hint: "The words, fillers and pauses" },
   { id: "subtitles", label: "Subtitles", icon: "ap-icon-closed-captions", hint: "Subtitle style" },
   { id: "text", label: "Text", icon: "ap-icon-alt-text", hint: "Titles and text on the video" },
   { id: "brand", label: "Brand", icon: "ap-icon-target", hint: "Logo, intro and outro" },
@@ -108,10 +107,10 @@ const dzIcon = (id) =>
 let ed = null;
 
 // The tool in the URL. Two former tools left the rail: Clean up (now the
-// transcript's, so Subtitles) and Trim (now the transport's In / Out).
+// Transcript's head) and Trim (now the timeline toolbar's In / Out).
 function toolFromUrl() {
   const t = parseHashParams().get("tool");
-  if (t === "cleanup") return "subtitles";
+  if (t === "cleanup") return "transcript";
   if (t === "trim") return "reframe";
   return TOOLS.some((x) => x.id === t) ? t : "reframe";
 }
@@ -162,7 +161,6 @@ export function renderClipEditor(params, el) {
     playing: false,
     raf: 0,
     snap: true,
-    transcript: null, // null = by tool (WORD_TOOLS), else the user's choice
     selectedText: null,
     drag: null,
     disposers: [],
@@ -218,21 +216,14 @@ function shellHTML() {
   const rail = TOOLS.map(
     (
       t,
-    ) => `<button type="button" class="clips-ed__tool" data-clips-tool="${t.id}" role="tab" aria-selected="false" data-tooltip="${t.hint}" data-tooltip-placement="left">
+    ) => `<button type="button" class="clips-ed__tool" data-clips-tool="${t.id}" role="tab" aria-selected="false" data-tooltip="${t.hint}" data-tooltip-placement="right">
       <i class="${t.icon}" aria-hidden="true"></i><span>${t.label}</span>
     </button>`,
   ).join("");
   return `
   <div class="clips-ed" data-clips-ed-root>
-    <aside class="clips-ed__transcript" aria-label="Transcript">
-      <div class="clips-ed__side-head">
-        <h2 class="clips-ed__side-title">Transcript</h2>
-        <span class="cap-ed__meta" data-ce-reconcile></span>
-      </div>
-      <p class="clips-ed__side-hint">Click a word to jump to it, double-click to fix it. Click a marked filler or pause to hide it from the subtitles.</p>
-      <div class="clips-ed__clean" data-ce-cleanup-list></div>
-      <div class="cap-ed__transcript clips-ed__words" data-ce-transcript></div>
-    </aside>
+    <nav class="clips-ed__rail" role="tablist" aria-label="Editing tools">${rail}</nav>
+    <aside class="clips-ed__panel" data-clips-panel aria-live="polite"></aside>
 
     <main class="clips-ed__main">
       <div class="clips-ed__stage" data-clips-stage>
@@ -268,29 +259,12 @@ function shellHTML() {
         </section>
       </div>
 
-      <div class="clips-ed__transport">
+      <div class="clips-ed__transport" role="toolbar" aria-label="Timeline">
         <button type="button" class="ap-icon-button transparent" data-clips-ed="play" aria-label="Play" data-tooltip="Play / pause (Space)">
           <i class="ap-icon-play" aria-hidden="true" data-clips-play-icon></i>
         </button>
         <span class="clips-ed__time"><span data-clips-cur>0:00.0</span> / <span data-clips-len>0:00.0</span><span class="clips-ed__time-src"> · <span data-clips-at>0:00.0</span> in the video</span></span>
-        <div class="clips-ed__tl-tools" role="toolbar" aria-label="Framing parts">
-          <button type="button" class="clips-ed__tl-tool" data-clips-ed="split" data-tooltip="Split the part at the playhead (S)">
-            <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="4" width="5" height="8" rx="1.2"/><rect x="10" y="4" width="5" height="8" rx="1.2"/><path d="M8 1.5v13"/></svg>
-            <span>Split</span>
-          </button>
-          <button type="button" class="clips-ed__tl-tool" data-clips-ed="merge-prev" aria-label="Merge with the previous part" data-tooltip="Merge with the previous part">
-            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 3v10"/><path d="M14 8H5"/><path d="M8 5 5 8l3 3"/></svg>
-          </button>
-          <button type="button" class="clips-ed__tl-tool" data-clips-ed="merge-next" aria-label="Merge with the next part" data-tooltip="Merge with the next part">
-            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M14 3v10"/><path d="M2 8h9"/><path d="M8 5l3 3-3 3"/></svg>
-          </button>
-          <span class="clips-ed__tl-sep" aria-hidden="true"></span>
-          <button type="button" class="clips-ed__tl-tool" data-clips-ed="snap" aria-pressed="true" data-tooltip="Boundaries and the playhead stick to camera cuts">
-            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2v6a4 4 0 0 0 8 0V2"/><path d="M4 5h3M9 5h3"/></svg>
-            <span>Snap</span>
-          </button>
-        </div>
-        <span class="clips-ed__transport-spacer"></span>
+        <span class="clips-ed__tl-sep" aria-hidden="true"></span>
         <div class="clips-ed__inout" role="group" aria-label="The clip's start and end in the video">
           <label class="clips-ed__inout-field"><span>In</span>
             <span class="ap-input-group"><input type="text" data-clips-time="start" aria-label="Start in the video" /></span></label>
@@ -304,16 +278,28 @@ function shellHTML() {
           </button>
           <span class="clips-ed__error" data-clips-trim-error role="alert"></span>
         </div>
-        <button type="button" class="ap-button ghost grey clips-ed__transcript-toggle" data-clips-ed="transcript" aria-pressed="false">
-          <i class="ap-icon-alt-text" aria-hidden="true"></i><span>Transcript</span>
-        </button>
+        <div class="clips-ed__tl-tools" role="group" aria-label="Framing parts">
+          <span class="clips-ed__tl-sep" aria-hidden="true"></span>
+          <button type="button" class="clips-ed__tl-tool" data-clips-ed="split" data-tooltip="Split the part at the playhead (S)">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="4" width="5" height="8" rx="1.2"/><rect x="10" y="4" width="5" height="8" rx="1.2"/><path d="M8 1.5v13"/></svg>
+            <span>Split</span>
+          </button>
+          <button type="button" class="clips-ed__tl-tool" data-clips-ed="merge-prev" aria-label="Merge with the previous part" data-tooltip="Merge with the previous part">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 3v10"/><path d="M14 8H5"/><path d="M8 5 5 8l3 3"/></svg>
+          </button>
+          <button type="button" class="clips-ed__tl-tool" data-clips-ed="merge-next" aria-label="Merge with the next part" data-tooltip="Merge with the next part">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M14 3v10"/><path d="M2 8h9"/><path d="M8 5l3 3-3 3"/></svg>
+          </button>
+          <button type="button" class="clips-ed__tl-tool" data-clips-ed="snap" aria-pressed="true" data-tooltip="Boundaries and the playhead stick to camera cuts">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2v6a4 4 0 0 0 8 0V2"/><path d="M4 5h3M9 5h3"/></svg>
+            <span>Snap</span>
+          </button>
+        </div>
       </div>
 
       <div class="clips-ed__timeline" data-clips-timeline></div>
     </main>
 
-    <aside class="clips-ed__panel" data-clips-panel aria-live="polite"></aside>
-    <nav class="clips-ed__rail" role="tablist" aria-label="Editing tools">${rail}</nav>
   </div>`;
 }
 
@@ -835,20 +821,10 @@ function msAt(clientX) {
 
 // ── Panels ───────────────────────────────────────────────────────────
 
-function transcriptShown() {
-  return ed.transcript ?? WORD_TOOLS.has(ed.tool);
-}
-
 function applyTool() {
-  // A new tool starts from its own default; the toggle only lasts within one.
-  if (ed.lastTool !== ed.tool) ed.transcript = null;
-  ed.lastTool = ed.tool;
   const root = ed.el.querySelector("[data-clips-ed-root]");
   root.dataset.tool = ed.tool;
   root.querySelector("[data-clips-stage]")?.style.setProperty("--clips-split", `${splitPct}%`);
-  root.dataset.transcript = transcriptShown() ? "on" : "off";
-  const tgl = ed.el.querySelector('[data-clips-ed="transcript"]');
-  if (tgl) tgl.setAttribute("aria-pressed", String(transcriptShown()));
   ed.el.querySelectorAll("[data-clips-tool]").forEach((b) => {
     const on = b.dataset.clipsTool === ed.tool;
     b.classList.toggle("is-on", on);
@@ -871,12 +847,25 @@ function paintPanel() {
   const tool = TOOLS.find((t) => t.id === ed.tool);
   const body = {
     reframe: reframePanel,
+    transcript: transcriptPanel,
     subtitles: subtitlesPanel,
     text: textPanel,
     brand: brandPanel,
   }[ed.tool]();
   host.innerHTML = `<h2 class="clips-ed__panel-title">${tool.label}</h2>${body}`;
-  if (ed.tool === "subtitles") ce.refreshControls();
+  // The caption engine renders into the panel's hooks (presets, transcript,
+  // cleanup) — they're new each time the panel is painted.
+  if (ed.tool === "subtitles" || ed.tool === "transcript") ce.refreshControls();
+}
+
+// The words of the clip: click to jump, double-click to fix, the menu to stress
+// one; at its head the cleanup (fillers and pauses, hidden from the subtitles).
+function transcriptPanel() {
+  return `
+    <p class="clips-ed__panel-lead">Click a word to jump to it, double-click to fix it. Click a marked filler or pause to hide it from the subtitles.</p>
+    <span class="clips-ed__fact" data-ce-reconcile></span>
+    <div class="clips-ed__clean" data-ce-cleanup-list></div>
+    <div class="cap-ed__transcript clips-ed__words" data-ce-transcript></div>`;
 }
 
 function reframePanel() {
@@ -1267,9 +1256,6 @@ function handleClick(e) {
       return navigate(`/clips/${ed.video.id}?tab=drafts`);
     case "play":
       return togglePlay();
-    case "transcript":
-      ed.transcript = !transcriptShown();
-      return applyTool();
     case "set-start":
       return setRange(ed.t, ed.w.endMs);
     case "set-end":
