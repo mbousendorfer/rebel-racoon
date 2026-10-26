@@ -18,16 +18,16 @@
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2133";
-import { isFlagOn } from "../../feature-flags.js?v=2133";
-import { parseHashParams } from "../../url-state.js?v=2133";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2133";
-import { showToast } from "../../components/toast.js?v=2133";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2133";
-import { getContextById } from "../../contexts-store.js?v=2133";
-import { escapeHtml } from "../../utils.js?v=2133";
-import * as ce from "../../caption-editor.js?v=2133";
-import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2133";
+import { navigate } from "../../router.js?v=2136";
+import { isFlagOn } from "../../feature-flags.js?v=2136";
+import { parseHashParams } from "../../url-state.js?v=2136";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2136";
+import { showToast } from "../../components/toast.js?v=2136";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2136";
+import { getContextById } from "../../contexts-store.js?v=2136";
+import { escapeHtml } from "../../utils.js?v=2136";
+import * as ce from "../../caption-editor.js?v=2136";
+import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2136";
 import {
   framingContext,
   initialSegments,
@@ -50,7 +50,7 @@ import {
   cameraName,
   LAYOUTS,
   MIN_SEG_MS,
-} from "../../clip-framing.js?v=2133";
+} from "../../clip-framing.js?v=2136";
 import {
   fmtMs,
   fmtPrecise,
@@ -63,8 +63,8 @@ import {
   SUBTITLE_IDS,
   dsSelect,
   bindSelectDismiss,
-} from "./shared.js?v=2133";
-import { primeDraftSetup } from "./project.js?v=2133";
+} from "./shared.js?v=2136";
+import { primeDraftSetup } from "./project.js?v=2136";
 
 const MIN_CLIP_MS = 5000;
 const MAX_CLIP_MS = 300000;

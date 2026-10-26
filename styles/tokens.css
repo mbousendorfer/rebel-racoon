@@ -237,19 +237,18 @@
   --app-z-admin: 100;
 }
 
-/* ── The dark ramp, as a scope: the Clips editor (flag clipsSpace) ──────────
-   Inside .clips-ed the DS greys, white and the CSS-UI component colours are
-   redefined onto the --app-vc-* ramp above, so every DS control and every
-   grey rule written for the editor turns dark through its variables — no
-   .ap-* class is redeclared. Roles, not values: white = raised surface,
-   grey-05 = sunken well, grey-10 = overlay fill, grey-20 = hairline,
-   grey-40 = control border, grey-60/80/100 = the three text levels. The
-   light blues become the dark accent tints; blue-100 and orange keep their
-   DS values. Footage and the subtitle box keep their literal colours. The
-   topbar joins the scope on the editor's route, so the editor is dark from
-   edge to edge. */
-.clips-ed,
-body.clips-editing .app-topbar {
+/* ── The dark ramp, as a scope: the Clips space (flag clipsSpace) ──────────
+   Video tools are dark, so the whole Clips space is: on every /clips route
+   (body.clips-space, set in app.js) the content and the topbar redefine the DS
+   greys, white, the light blues and the CSS-UI component colours onto the
+   --app-vc-* ramp above, so every DS control and every grey rule turns dark
+   through its variables — no .ap-* class is redeclared. Roles, not values:
+   white = raised surface, grey-05 = sunken well, grey-10 = overlay fill,
+   grey-20 = hairline, grey-40 = control border, grey-60/80/100 = the three
+   text levels. Blue-100 and orange keep their DS values; footage and subtitle
+   boxes keep their literal colours. The rail and the modals stay light. */
+body.clips-space .app-content,
+body.clips-space .app-topbar {
   --ref-color-white: var(--app-vc-surface-raised);
   --ref-color-grey-05: var(--app-vc-surface-sunken);
   --ref-color-grey-10: var(--app-vc-surface-overlay);
@@ -283,4 +282,137 @@ body.clips-editing .app-topbar {
   --comp-tag-blue-text-color: var(--ref-color-electric-blue-60);
   --comp-forms-label-text-color: var(--app-vc-text);
   --comp-forms-label-description-text-color: var(--app-vc-text-muted);
+  --sys-text-color-default: var(--app-vc-text);
+  --sys-text-color-light: var(--app-vc-text-muted);
+  --sys-border-color-default: var(--app-vc-border);
+  --comp-tabs-border-color: var(--app-vc-border);
+  --comp-tabs-tab-text-color-default: var(--app-vc-text-muted);
+  --comp-tabs-tab-text-color-active: var(--ref-color-electric-blue-60);
+  --comp-tabs-tab-text-color-disabled: var(--app-vc-text-subtle);
+  --comp-tabs-tab-hover-background-color: var(--app-vc-hover);
+  --comp-tabs-tab-focus-background-color: var(--app-vc-accent-soft);
+  --comp-tabs-tab-focus-color: var(--ref-color-electric-blue-60);
+  --comp-tabs-tab-active-background-color: var(--app-vc-accent-soft);
+  --comp-tabs-tab-active-indicator-color: var(--ref-color-electric-blue-60);
+  --comp-counter-grey-color: var(--app-vc-text);
+  --comp-counter-grey-with-background-background-color: var(--app-vc-surface-overlay);
+  --comp-counter-blue-color: var(--ref-color-electric-blue-60);
+  --comp-counter-blue-with-background-background-color: var(--app-vc-accent-soft);
+}
+
+/* The DS's own light values, captured at the root before the dark scope
+   overrides them: a custom property inherits its computed value, so these
+   keep the light hexes all the way down. */
+:root {
+  --app-light-ref-color-white: var(--ref-color-white);
+  --app-light-ref-color-grey-05: var(--ref-color-grey-05);
+  --app-light-ref-color-grey-10: var(--ref-color-grey-10);
+  --app-light-ref-color-grey-20: var(--ref-color-grey-20);
+  --app-light-ref-color-grey-40: var(--ref-color-grey-40);
+  --app-light-ref-color-grey-60: var(--ref-color-grey-60);
+  --app-light-ref-color-grey-80: var(--ref-color-grey-80);
+  --app-light-ref-color-grey-100: var(--ref-color-grey-100);
+  --app-light-ref-color-electric-blue-05: var(--ref-color-electric-blue-05);
+  --app-light-ref-color-electric-blue-10: var(--ref-color-electric-blue-10);
+  --app-light-ref-color-electric-blue-150: var(--ref-color-electric-blue-150);
+  --app-light-comp-input-fill-color: var(--comp-input-fill-color);
+  --app-light-comp-input-border-default-color: var(--comp-input-border-default-color);
+  --app-light-comp-input-border-hover-color: var(--comp-input-border-hover-color);
+  --app-light-comp-input-text-default-color: var(--comp-input-text-default-color);
+  --app-light-comp-input-text-placeholder-color: var(--comp-input-text-placeholder-color);
+  --app-light-comp-input-icon-color: var(--comp-input-icon-color);
+  --app-light-comp-select-background-color: var(--comp-select-background-color);
+  --app-light-comp-select-one-line-background-color: var(--comp-select-one-line-background-color);
+  --app-light-comp-select-one-line-text-color: var(--comp-select-one-line-text-color);
+  --app-light-comp-select-inline-label-text-color: var(--comp-select-inline-label-text-color);
+  --app-light-comp-select-inline-separator-color: var(--comp-select-inline-separator-color);
+  --app-light-comp-select-shadow: var(--comp-select-shadow);
+  --app-light-comp-tag-grey-background-color: var(--comp-tag-grey-background-color);
+  --app-light-comp-tag-grey-border-color: var(--comp-tag-grey-border-color);
+  --app-light-comp-tag-grey-icon-color: var(--comp-tag-grey-icon-color);
+  --app-light-comp-tag-grey-text-color: var(--comp-tag-grey-text-color);
+  --app-light-comp-tag-blue-background-color: var(--comp-tag-blue-background-color);
+  --app-light-comp-tag-blue-border-color: var(--comp-tag-blue-border-color);
+  --app-light-comp-tag-blue-icon-color: var(--comp-tag-blue-icon-color);
+  --app-light-comp-tag-blue-text-color: var(--comp-tag-blue-text-color);
+  --app-light-comp-forms-label-text-color: var(--comp-forms-label-text-color);
+  --app-light-comp-forms-label-description-text-color: var(--comp-forms-label-description-text-color);
+  --app-light-sys-text-color-default: var(--sys-text-color-default);
+  --app-light-sys-text-color-light: var(--sys-text-color-light);
+  --app-light-sys-border-color-default: var(--sys-border-color-default);
+  --app-light-comp-tabs-border-color: var(--comp-tabs-border-color);
+  --app-light-comp-tabs-tab-text-color-default: var(--comp-tabs-tab-text-color-default);
+  --app-light-comp-tabs-tab-text-color-active: var(--comp-tabs-tab-text-color-active);
+  --app-light-comp-tabs-tab-text-color-disabled: var(--comp-tabs-tab-text-color-disabled);
+  --app-light-comp-tabs-tab-hover-background-color: var(--comp-tabs-tab-hover-background-color);
+  --app-light-comp-tabs-tab-focus-background-color: var(--comp-tabs-tab-focus-background-color);
+  --app-light-comp-tabs-tab-focus-color: var(--comp-tabs-tab-focus-color);
+  --app-light-comp-tabs-tab-active-background-color: var(--comp-tabs-tab-active-background-color);
+  --app-light-comp-tabs-tab-active-indicator-color: var(--comp-tabs-tab-active-indicator-color);
+  --app-light-comp-counter-grey-color: var(--comp-counter-grey-color);
+  --app-light-comp-counter-grey-with-background-background-color: var(
+    --comp-counter-grey-with-background-background-color
+  );
+  --app-light-comp-counter-blue-color: var(--comp-counter-blue-color);
+  --app-light-comp-counter-blue-with-background-background-color: var(
+    --comp-counter-blue-with-background-background-color
+  );
+}
+
+/* Paper: a light island inside the dark space, for what must look like where
+   it lands — a social post previewed in its network's own white card. */
+.clips-paper {
+  --ref-color-white: var(--app-light-ref-color-white);
+  --ref-color-grey-05: var(--app-light-ref-color-grey-05);
+  --ref-color-grey-10: var(--app-light-ref-color-grey-10);
+  --ref-color-grey-20: var(--app-light-ref-color-grey-20);
+  --ref-color-grey-40: var(--app-light-ref-color-grey-40);
+  --ref-color-grey-60: var(--app-light-ref-color-grey-60);
+  --ref-color-grey-80: var(--app-light-ref-color-grey-80);
+  --ref-color-grey-100: var(--app-light-ref-color-grey-100);
+  --ref-color-electric-blue-05: var(--app-light-ref-color-electric-blue-05);
+  --ref-color-electric-blue-10: var(--app-light-ref-color-electric-blue-10);
+  --ref-color-electric-blue-150: var(--app-light-ref-color-electric-blue-150);
+  --comp-input-fill-color: var(--app-light-comp-input-fill-color);
+  --comp-input-border-default-color: var(--app-light-comp-input-border-default-color);
+  --comp-input-border-hover-color: var(--app-light-comp-input-border-hover-color);
+  --comp-input-text-default-color: var(--app-light-comp-input-text-default-color);
+  --comp-input-text-placeholder-color: var(--app-light-comp-input-text-placeholder-color);
+  --comp-input-icon-color: var(--app-light-comp-input-icon-color);
+  --comp-select-background-color: var(--app-light-comp-select-background-color);
+  --comp-select-one-line-background-color: var(--app-light-comp-select-one-line-background-color);
+  --comp-select-one-line-text-color: var(--app-light-comp-select-one-line-text-color);
+  --comp-select-inline-label-text-color: var(--app-light-comp-select-inline-label-text-color);
+  --comp-select-inline-separator-color: var(--app-light-comp-select-inline-separator-color);
+  --comp-select-shadow: var(--app-light-comp-select-shadow);
+  --comp-tag-grey-background-color: var(--app-light-comp-tag-grey-background-color);
+  --comp-tag-grey-border-color: var(--app-light-comp-tag-grey-border-color);
+  --comp-tag-grey-icon-color: var(--app-light-comp-tag-grey-icon-color);
+  --comp-tag-grey-text-color: var(--app-light-comp-tag-grey-text-color);
+  --comp-tag-blue-background-color: var(--app-light-comp-tag-blue-background-color);
+  --comp-tag-blue-border-color: var(--app-light-comp-tag-blue-border-color);
+  --comp-tag-blue-icon-color: var(--app-light-comp-tag-blue-icon-color);
+  --comp-tag-blue-text-color: var(--app-light-comp-tag-blue-text-color);
+  --comp-forms-label-text-color: var(--app-light-comp-forms-label-text-color);
+  --comp-forms-label-description-text-color: var(--app-light-comp-forms-label-description-text-color);
+  --sys-text-color-default: var(--app-light-sys-text-color-default);
+  --sys-text-color-light: var(--app-light-sys-text-color-light);
+  --sys-border-color-default: var(--app-light-sys-border-color-default);
+  --comp-tabs-border-color: var(--app-light-comp-tabs-border-color);
+  --comp-tabs-tab-text-color-default: var(--app-light-comp-tabs-tab-text-color-default);
+  --comp-tabs-tab-text-color-active: var(--app-light-comp-tabs-tab-text-color-active);
+  --comp-tabs-tab-text-color-disabled: var(--app-light-comp-tabs-tab-text-color-disabled);
+  --comp-tabs-tab-hover-background-color: var(--app-light-comp-tabs-tab-hover-background-color);
+  --comp-tabs-tab-focus-background-color: var(--app-light-comp-tabs-tab-focus-background-color);
+  --comp-tabs-tab-focus-color: var(--app-light-comp-tabs-tab-focus-color);
+  --comp-tabs-tab-active-background-color: var(--app-light-comp-tabs-tab-active-background-color);
+  --comp-tabs-tab-active-indicator-color: var(--app-light-comp-tabs-tab-active-indicator-color);
+  --comp-counter-grey-color: var(--app-light-comp-counter-grey-color);
+  --comp-counter-grey-with-background-background-color: var(
+    --app-light-comp-counter-grey-with-background-background-color
+  );
+  --comp-counter-blue-color: var(--app-light-comp-counter-blue-color);
+  --comp-counter-blue-with-background-background-color: var(
+    --app-light-comp-counter-blue-with-background-background-color
+  );
 }

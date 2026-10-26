@@ -7,17 +7,18 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2133";
-import { isFlagOn } from "../../feature-flags.js?v=2133";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2133";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2133";
-import { showToast } from "../../components/toast.js?v=2133";
-import { renderPostCard } from "../../components/post-card.js?v=2133";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2133";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2133";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2133";
-import { getConnectedProfiles, renderProfileTag } from "../../social-profiles.js?v=2133";
-import { getContextById } from "../../contexts-store.js?v=2133";
+import { navigate } from "../../router.js?v=2136";
+import { isFlagOn } from "../../feature-flags.js?v=2136";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2136";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2136";
+import { showToast } from "../../components/toast.js?v=2136";
+import { renderPostCard } from "../../components/post-card.js?v=2136";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2136";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2136";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2136";
+import { getConnectedProfiles, renderProfileTag } from "../../social-profiles.js?v=2136";
+import { getContextById } from "../../contexts-store.js?v=2136";
+import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2136";
 import {
   getPosts,
   addPostDraft,
@@ -25,8 +26,8 @@ import {
   insertPost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2133";
-import { escapeHtml } from "../../utils.js?v=2133";
+} from "../../posts-store.js?v=2136";
+import { escapeHtml } from "../../utils.js?v=2136";
 import {
   getVideo,
   draftKey,
@@ -37,7 +38,7 @@ import {
   restoreClip,
   ANALYSIS_STAGES,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2133";
+} from "../../videos-store.js?v=2136";
 import {
   fmtMs,
   formatSelect,
@@ -49,8 +50,10 @@ import {
   clipCaptionState,
   formatLabel,
   presetLabel,
+  ratioOf,
+  clipSegments,
   CTA_OPTIONS,
-} from "./shared.js?v=2133";
+} from "./shared.js?v=2136";
 
 let target = null;
 let videoId = null;
@@ -60,6 +63,8 @@ const disposers = [];
 // The Drafts tab's own state: the account / CTA picks, and whether the setup
 // is showing over drafts that already exist ("Write more drafts").
 const draftSetup = { accounts: null, cta: "none", open: false, writing: false };
+// The workspace: the clip in the monitors, and the source monitor's clock.
+const ws = { focusId: null, playing: false, raf: 0, scrub: false };
 
 // The editor's "Create draft": land on the Drafts tab with the setup open for
 // the clip just edited (the editor has already selected it alone).
@@ -79,23 +84,30 @@ export function renderClipsProject(params, el) {
     return undefined;
   }
   target = el;
-  if (videoId !== video.id) Object.assign(draftSetup, { accounts: null, cta: "none", open: false, writing: false });
+  if (videoId !== video.id) {
+    Object.assign(draftSetup, { accounts: null, cta: "none", open: false, writing: false });
+    ws.focusId = null;
+  }
   videoId = video.id;
   renderTopbar();
-  setTopbarActions(window.location.hash.replace(/^#/, "").split("?")[0], `<span></span>`, {
-    left: `${renderIconBack("/clips", "Back to Clips")}<h1 class="app-topbar__title clips-topbar-title">${escapeHtml(video.name)}</h1>`,
-  });
   paint();
+  const topbar = document.getElementById("topbar");
   el.addEventListener("click", onClick);
   el.addEventListener("change", onChange);
+  el.addEventListener("pointerdown", onPointerDown);
+  topbar?.addEventListener("click", onClick);
   disposers.push(
     subscribeVideos(onStore),
     subscribePosts(draftKey(video.id), () => tab() === "drafts" && paint()),
     bindSelectDismiss(el),
+    bindSelectDismiss(topbar),
   );
   return () => {
     el.removeEventListener("click", onClick);
     el.removeEventListener("change", onChange);
+    el.removeEventListener("pointerdown", onPointerDown);
+    topbar?.removeEventListener("click", onClick);
+    stopPlayback();
     disposers.splice(0).forEach((d) => d());
     disposePreviews?.();
     disposePreviews = null;
@@ -126,58 +138,91 @@ function onStore() {
 }
 
 // Ticking a clip patches the page in place — a repaint would reload every
-// preview's stream.
+// preview's stream and the filmstrip.
 function patchSelection(v) {
   const n = v.clips.filter((c) => c.selected).length;
   const all = n === v.clips.length && n > 0;
   for (const c of v.clips) {
-    target.querySelector(`#clip-${CSS.escape(c.id)}`)?.classList.toggle("is-selected", c.selected);
+    target.querySelector(`[data-clips-focus="${CSS.escape(c.id)}"]`)?.classList.toggle("is-selected", c.selected);
     const box = target.querySelector(`[data-clips-select="${CSS.escape(c.id)}"]`);
     if (box) box.checked = c.selected;
-    target.querySelector(`[data-clips-jump="${CSS.escape(c.id)}"]`)?.classList.toggle("is-selected", c.selected);
+    target.querySelector(`[data-clips-block="${CSS.escape(c.id)}"]`)?.classList.toggle("is-selected", c.selected);
   }
   const allBox = target.querySelector("[data-clips-select-all]");
   if (allBox) {
     allBox.checked = all;
     allBox.indeterminate = n > 0 && !all;
-    allBox.nextElementSibling.nextElementSibling.textContent = `${n} of ${v.clips.length} selected`;
+    const label = allBox.closest("label")?.querySelector("span");
+    if (label) label.textContent = `${n} of ${v.clips.length} selected`;
   }
-  const cta = target.querySelector("[data-clips-to-drafts]");
+  const cta = document.querySelector("[data-clips-to-drafts]");
   if (cta) {
     cta.disabled = !n;
     cta.querySelector("span").textContent = `Create drafts${n ? ` (${n})` : ""}`;
   }
-  const stat = target.querySelector("[data-clips-stat-selected]");
-  if (stat) stat.textContent = String(n);
+}
+
+// The page's actions live in the topbar, like an editor's export bar: the
+// whole video's Format and Subtitles, then Create drafts.
+function paintTopbarActions(v) {
+  const n = v.clips.filter((c) => c.selected).length;
+  const ready = v.status === "ready";
+  setTopbarActions(
+    `/clips/${v.id}`,
+    ready
+      ? `<div class="clips-topbar-actions">
+          ${formatSelect(v.settings.ratio)}
+          ${subtitleSelect(v.settings.subtitlePreset)}
+          <button type="button" class="ap-button primary orange" data-clips-to-drafts ${n ? "" : "disabled"}>
+            <i class="ap-icon-archie-official" aria-hidden="true"></i><span>Create drafts${n ? ` (${n})` : ""}</span>
+          </button>
+        </div>`
+      : "<span></span>",
+    {
+      left: `${renderIconBack("/clips", "Back to Clips")}<h1 class="app-topbar__title clips-topbar-title">${escapeHtml(v.name)}</h1>`,
+    },
+  );
 }
 
 function paint() {
   const v = getVideo(videoId);
   if (!target || !v) return;
   signature = sig(v);
+  stopPlayback();
   disposePreviews?.();
   disposePreviews = null;
+  paintTopbarActions(v);
   if (v.status === "analyzing") {
     target.innerHTML = renderAnalyzing(v);
     return;
   }
+  if (!v.clips.some((c) => c.id === ws.focusId)) ws.focusId = v.clips[0]?.id || null;
   const posts = getPosts(draftKey(v.id));
   const t = tab();
   target.innerHTML = `
-    <div class="clips-view">
-      <div class="clips-view__page clips-project">
-        ${renderOverview(v)}
-        <div class="ap-tabs clips-project__tabs">
+    <div class="clips-view clips-project">
+      <div class="clips-bar">
+        <div class="ap-tabs clips-bar__tabs">
           <div class="ap-tabs-nav" role="tablist" aria-label="Clips and drafts">
             ${tabButton("clips", "ap-icon-video", "Clips", v.clips.length, t)}
             ${tabButton("drafts", "ap-icon-file--text", "Drafts", posts.length, t)}
           </div>
         </div>
-        ${t === "drafts" ? renderDrafts(v, posts) : renderClips(v)}
+        ${
+          t === "clips"
+            ? `<button type="button" class="ap-button stroked grey" data-clips-add-clip>
+                <i class="ap-icon-plus" aria-hidden="true"></i><span>Add a clip</span>
+              </button>`
+            : ""
+        }
       </div>
+      ${t === "drafts" ? `<div class="clips-view__page">${renderDrafts(v, posts)}</div>` : renderWorkspace(v)}
     </div>`;
   if (t === "drafts") swapPlayers(v, posts);
-  else patchSelection(v);
+  else {
+    patchSelection(v);
+    mountWorkspace(v);
+  }
   disposePreviews = mountPreviews(target, v);
 }
 
@@ -242,110 +287,336 @@ function renderAnalyzing(v) {
     </div>`;
 }
 
-// ── The whole video, at a glance ─────────────────────────────────────
+// ── The workspace: bin · monitors · timeline ─────────────────────────
+// An editing app's layout: the clips in a bin on the left, two monitors — the
+// SOURCE (the long video, where the clip comes from) and the CLIP (its output,
+// reframed at its format) — a transport, and the whole video's timeline at
+// the foot: ruler, filmstrip, the clips track, a playhead. One <video> drives
+// both monitors; the clip monitor is drawn from it.
 
-function renderOverview(v) {
-  const pct = (ms) => `${(ms / v.durationMs) * 100}%`;
-  const pb = getContextById(v.contextId);
-  const posts = getPosts(draftKey(v.id));
-  const selected = v.clips.filter((c) => c.selected).length;
-  const added = new Date(v.addedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  const marks = v.clips
+const focused = (v) => v.clips.find((c) => c.id === ws.focusId) || v.clips[0] || null;
+
+function renderWorkspace(v) {
+  if (!v.clips.length) {
+    return `<div class="clips-view__page"><p class="clips-list__none">No clips left. Add one from the video's timeline.</p></div>`;
+  }
+  const n = v.clips.filter((c) => c.selected).length;
+  const all = n === v.clips.length;
+  const rows = v.clips
     .map(
       (
         c,
         i,
-      ) => `<button type="button" class="clips-overview__clip${c.selected ? " is-selected" : ""}" style="left:${pct(c.startMs)};width:max(18px, ${pct(c.endMs - c.startMs)})"
-        data-clips-jump="${c.id}" data-tooltip="${i + 1}. ${escapeHtml(c.title)} · ${fmtMs(c.startMs)}" aria-label="Clip ${i + 1}: ${escapeHtml(c.title)}"><span>${i + 1}</span></button>`,
+      ) => `<li class="clips-bin__item${c.selected ? " is-selected" : ""}${c.id === ws.focusId ? " is-focused" : ""}" data-clips-focus="${c.id}" style="--i:${i}">
+        <label class="ap-checkbox-container clips-bin__check" aria-label="Select clip ${i + 1}">
+          <input type="checkbox" data-clips-select="${c.id}" ${c.selected ? "checked" : ""} /><i></i>
+        </label>
+        <span class="clips-bin__thumb">${previewMarkup(v, { ...c, ratio: "9:16" }, { captions: false })}</span>
+        <span class="clips-bin__text">
+          <span class="clips-bin__meta"><span class="clips-bin__num">${i + 1}</span>${fmtMs(c.endMs - c.startMs)}</span>
+          <span class="clips-bin__title">${escapeHtml(c.title)}</span>
+        </span>
+      </li>`,
     )
     .join("");
-  // Five even ticks: a long video reads as a scale, not two lone numbers.
-  const ticks = [0, 0.25, 0.5, 0.75, 1]
-    .map((k) => `<span style="left:${k * 100}%">${fmtMs(v.durationMs * k)}</span>`)
+  return `
+    <div class="clips-ws">
+      <aside class="clips-bin" aria-label="Clips">
+        <header class="clips-bin__head">
+          <label class="ap-checkbox-container">
+            <input type="checkbox" data-clips-select-all ${all ? "checked" : ""} /><i></i><span>${n} of ${v.clips.length} selected</span>
+          </label>
+        </header>
+        <ol class="clips-bin__list">${rows}</ol>
+      </aside>
+      <section class="clips-stage" aria-label="Monitors">
+        <div class="clips-monitors">
+          <figure class="clips-monitor clips-monitor--source">
+            <div class="clips-monitor__screen" style="aspect-ratio:${v.width}/${v.height}">
+              <video data-clips-src playsinline preload="auto" src="${escapeHtml(v.url)}"></video>
+            </div>
+            <figcaption><span>Source</span><span class="clips-monitor__tc" data-clips-src-tc>0:00</span></figcaption>
+          </figure>
+          <figure class="clips-monitor clips-monitor--program" data-clips-program></figure>
+        </div>
+        <div class="clips-transport">
+          <button type="button" class="ap-icon-button transparent" data-clips-ws="prev" aria-label="Previous clip" data-tooltip="Previous clip"><i class="ap-icon-chevron-left" aria-hidden="true"></i></button>
+          <button type="button" class="clips-transport__play" data-clips-ws="play" aria-label="Play the clip"><i class="ap-icon-play" aria-hidden="true" data-clips-play-icon></i></button>
+          <button type="button" class="ap-icon-button transparent" data-clips-ws="next" aria-label="Next clip" data-tooltip="Next clip"><i class="ap-icon-chevron-right" aria-hidden="true"></i></button>
+          <span class="clips-transport__tc"><span data-clips-clip-tc>0:00</span> / <span data-clips-clip-len>0:00</span></span>
+          <span class="clips-transport__spacer"></span>
+          <a class="ap-button stroked grey" data-clips-edit-link href="#"><i class="ap-icon-pen" aria-hidden="true"></i><span>Edit clip</span></a>
+          <button type="button" class="ap-icon-button transparent" data-clips-ws="remove" aria-label="Remove clip" data-tooltip="Remove clip"><i class="ap-icon-trash" aria-hidden="true"></i></button>
+        </div>
+        <div class="clips-focus" data-clips-focus-info></div>
+      </section>
+    </div>
+    ${renderTimeline(v)}`;
+}
+
+function renderTimeline(v) {
+  const pct = (ms) => `${(ms / v.durationMs) * 100}%`;
+  const step = [5000, 10000, 30000, 60000, 120000, 300000, 600000].find((s) => v.durationMs / s <= 12) || 900000;
+  let ticks = "";
+  for (let t = 0; t <= v.durationMs; t += step) ticks += `<span style="left:${pct(t)}">${fmtMs(t)}</span>`;
+  const blocks = v.clips
+    .map(
+      (
+        c,
+        i,
+      ) => `<button type="button" class="clips-tl2__clip${c.selected ? " is-selected" : ""}${c.id === ws.focusId ? " is-focused" : ""}"
+        style="left:${pct(c.startMs)};width:max(14px, ${pct(c.endMs - c.startMs)})" data-clips-block="${c.id}"
+        data-tooltip="${i + 1}. ${escapeHtml(c.title)}" aria-label="Clip ${i + 1}: ${escapeHtml(c.title)}"><span>${i + 1}</span></button>`,
+    )
     .join("");
   return `
-    <section class="clips-head" aria-label="The video">
-      <div class="clips-head__player">
-        <video src="${escapeHtml(v.url)}#t=${(v.posterMs || 0) / 1000}" preload="metadata" controls playsinline></video>
-      </div>
-      <div class="clips-head__body">
-        <dl class="clips-head__stats">
-          <div><dt>Length</dt><dd>${fmtMs(v.durationMs)}</dd></div>
-          <div><dt>Clips</dt><dd>${v.clips.length}</dd></div>
-          <div><dt>Selected</dt><dd data-clips-stat-selected>${selected}</dd></div>
-          <div><dt>Drafts</dt><dd>${posts.length}</dd></div>
-        </dl>
-        <p class="clips-head__meta">Added ${added}${pb ? ` · ${escapeHtml(pb.name)}` : ""}</p>
-        <div class="clips-overview" aria-label="Where the clips sit in the video">
-          <div class="clips-overview__track">${marks}</div>
-          <div class="clips-overview__scale">${ticks}</div>
-        </div>
+    <section class="clips-tl2" aria-label="Timeline">
+      <div class="clips-tl2__labels" aria-hidden="true"><span></span><span>Video</span><span>Clips</span></div>
+      <div class="clips-tl2__tracks" data-clips-tracks>
+        <div class="clips-tl2__ruler" data-clips-scrub>${ticks}</div>
+        <div class="clips-tl2__film" data-clips-film data-clips-scrub></div>
+        <div class="clips-tl2__clips" data-clips-scrub>${blocks}</div>
+        <div class="clips-tl2__playhead" data-clips-ph></div>
       </div>
     </section>`;
 }
 
-// ── Clips ────────────────────────────────────────────────────────────
-
-function renderClips(v) {
-  const selected = v.clips.filter((c) => c.selected).length;
-  const all = selected === v.clips.length && selected > 0;
-  return `
-    <div class="clips-toolbar">
-      <label class="ap-checkbox-container clips-toolbar__all">
-        <input type="checkbox" data-clips-select-all ${all ? "checked" : ""} ${selected && !all ? 'data-indeterminate="true"' : ""} />
-        <i></i><span>${selected} of ${v.clips.length} selected</span>
-      </label>
-      <div class="clips-toolbar__options">
-        ${formatSelect(v.settings.ratio)}
-        ${subtitleSelect(v.settings.subtitlePreset)}
+// The focused clip, in the monitors and the info panel.
+function paintFocus(v) {
+  const c = focused(v);
+  if (!c) return;
+  const i = v.clips.indexOf(c);
+  const ratio = clipRatioId(v, c);
+  const cap = clipCaptionState(v, c);
+  const line = (c.summary || c.title || "").split(/\s+/).slice(0, 4).join(" ");
+  const prog = target.querySelector("[data-clips-program]");
+  if (prog)
+    prog.innerHTML = `
+      <div class="clips-monitor__screen" style="aspect-ratio:${ratio.replace(":", "/")}">
+        <canvas data-clips-prog></canvas>
+        ${cap.presetId !== "none" ? `<span class="clips-preview__caption"><span class="cap-ed-preview-${escapeHtml(cap.presetId)}">${escapeHtml(line)}</span></span>` : ""}
+        <span class="clips-monitor__off" data-clips-off hidden>Outside this clip</span>
       </div>
-      <div class="clips-toolbar__actions">
-        <button type="button" class="ap-button stroked grey" data-clips-add-clip>
-          <i class="ap-icon-plus" aria-hidden="true"></i><span>Add a clip</span>
-        </button>
-        <button type="button" class="ap-button primary orange" data-clips-to-drafts ${selected ? "" : "disabled"}>
-          <i class="ap-icon-archie-official" aria-hidden="true"></i><span>Create drafts${selected ? ` (${selected})` : ""}</span>
-        </button>
-      </div>
-    </div>
-    ${
-      v.clips.length
-        ? `<ol class="clips-grid">${v.clips.map((c, i) => renderClip(v, c, i)).join("")}</ol>`
-        : `<p class="clips-list__none">No clips left. Add one from the video's timeline.</p>`
-    }`;
-}
-
-function renderClip(v, c, i) {
+      <figcaption><span>Clip ${i + 1} · ${escapeHtml(formatLabel(ratio))}</span><span class="clips-monitor__tc">${fmtMs(c.endMs - c.startMs)}</span></figcaption>`;
   const own = [
     c.ratio ? formatLabel(c.ratio) : "",
-    c.captionCustom ? presetLabel(clipCaptionState(v, c).presetId) : "",
+    c.captionCustom ? presetLabel(cap.presetId) : "",
     c.segments?.some((s) => s.origin === "USER") ? "Reframed" : "",
     c.texts?.length ? `${c.texts.length} text${c.texts.length === 1 ? "" : "s"}` : "",
   ].filter(Boolean);
-  return `
-    <li class="clips-card${c.selected ? " is-selected" : ""}" id="clip-${c.id}" style="--i:${i}">
-      <div class="clips-card__media">
-        <a class="clips-card__preview" href="#/clips/${v.id}/edit/${c.id}" aria-label="Edit clip ${i + 1}">${previewMarkup(v, c)}</a>
-        <label class="ap-checkbox-container clips-card__check" aria-label="Select clip ${i + 1}">
-          <input type="checkbox" data-clips-select="${c.id}" ${c.selected ? "checked" : ""} /><i></i>
-        </label>
-        <span class="clips-card__num">${i + 1}</span>
-        <span class="clips-card__dur">${fmtMs(c.endMs - c.startMs)}</span>
-        <span class="clips-card__play" aria-hidden="true"><i class="ap-icon-play"></i></span>
-      </div>
-      <div class="clips-card__body">
-        <p class="clips-card__range">${fmtMs(c.startMs)} → ${fmtMs(c.endMs)}</p>
-        <h3 class="clips-card__title">${escapeHtml(c.title)}</h3>
-        ${c.why ? `<p class="clips-card__why">${escapeHtml(c.why)}</p>` : ""}
-        ${own.length ? `<p class="clips-card__own">${own.map((o) => `<span class="ap-tag grey">${escapeHtml(o)}</span>`).join("")}</p>` : ""}
-        <div class="clips-card__actions">
-          <a class="ap-button stroked grey" href="#/clips/${v.id}/edit/${c.id}"><i class="ap-icon-pen" aria-hidden="true"></i><span>Edit</span></a>
-          <button type="button" class="ap-icon-button transparent" data-clips-remove="${c.id}" aria-label="Remove clip ${i + 1}" data-tooltip="Remove clip">
-            <i class="ap-icon-trash" aria-hidden="true"></i>
-          </button>
-        </div>
-      </div>
-    </li>`;
+  const info = target.querySelector("[data-clips-focus-info]");
+  if (info)
+    info.innerHTML = `
+      <p class="clips-focus__range">Clip ${i + 1} · ${fmtMs(c.startMs)} → ${fmtMs(c.endMs)}</p>
+      <h2 class="clips-focus__title">${escapeHtml(c.title)}</h2>
+      ${c.why ? `<p class="clips-focus__why">${escapeHtml(c.why)}</p>` : ""}
+      ${own.length ? `<p class="clips-focus__own">${own.map((o) => `<span class="ap-tag grey">${escapeHtml(o)}</span>`).join("")}</p>` : ""}`;
+  const edit = target.querySelector("[data-clips-edit-link]");
+  if (edit) edit.setAttribute("href", `#/clips/${v.id}/edit/${c.id}`);
+  const len = target.querySelector("[data-clips-clip-len]");
+  if (len) len.textContent = fmtMs(c.endMs - c.startMs);
+  target
+    .querySelectorAll("[data-clips-focus]")
+    .forEach((n) => n.classList.toggle("is-focused", n.dataset.clipsFocus === c.id));
+  target
+    .querySelectorAll("[data-clips-block]")
+    .forEach((n) => n.classList.toggle("is-focused", n.dataset.clipsBlock === c.id));
+  sizeProgram();
+  paintProgram(v);
+}
+
+function sizeProgram() {
+  const canvas = target.querySelector("[data-clips-prog]");
+  if (!canvas) return;
+  const r = canvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.max(1, Math.round(r.width * dpr));
+  canvas.height = Math.max(1, Math.round(r.height * dpr));
+}
+
+function mountWorkspace(v) {
+  const video = target.querySelector("[data-clips-src]");
+  if (!video) return;
+  const c = focused(v);
+  video.addEventListener("loadedmetadata", () => {
+    if (c) video.currentTime = c.startMs / 1000 + 0.05;
+  });
+  video.addEventListener("seeked", () => !ws.playing && syncClock(v));
+  video.addEventListener("loadeddata", () => syncClock(v));
+  paintFocus(v);
+  mountFilmstrip(v, target.querySelector("[data-clips-film]"));
+  syncClock(v);
+}
+
+function paintProgram(v) {
+  const canvas = target?.querySelector("[data-clips-prog]");
+  const video = target?.querySelector("[data-clips-src]");
+  const c = focused(v);
+  if (!canvas || !video || !c) return;
+  const t = video.currentTime * 1000;
+  const inside = t >= c.startMs - 40 && t <= c.endMs + 40;
+  target.querySelector("[data-clips-off]")?.toggleAttribute("hidden", inside);
+  const ctx = framingContext(v);
+  const segs = clipSegments(v, c);
+  const at = Math.max(c.startMs, Math.min(c.endMs - 1, t));
+  drawOutput(
+    canvas.getContext("2d"),
+    video,
+    ctx,
+    resolve(ctx, segmentAt(segs, at), at, ratioOf(clipRatioId(v, c))),
+    canvas.width,
+    canvas.height,
+  );
+}
+
+// One clock for the monitors, the timecodes and the playhead.
+function syncClock(v) {
+  const video = target?.querySelector("[data-clips-src]");
+  if (!video) return;
+  const t = video.currentTime * 1000;
+  const c = focused(v);
+  const tc = target.querySelector("[data-clips-src-tc]");
+  if (tc) tc.textContent = fmtMs(t);
+  const ctc = target.querySelector("[data-clips-clip-tc]");
+  if (ctc && c) ctc.textContent = fmtMs(Math.max(0, Math.min(c.endMs, t) - c.startMs));
+  const ph = target.querySelector("[data-clips-ph]");
+  if (ph) ph.style.left = `${(t / v.durationMs) * 100}%`;
+  paintProgram(v);
+}
+
+function playClip(v) {
+  const video = target.querySelector("[data-clips-src]");
+  const c = focused(v);
+  if (!video || !c) return;
+  if (ws.playing) return stopPlayback();
+  const t = video.currentTime * 1000;
+  if (t < c.startMs || t >= c.endMs - 100) video.currentTime = c.startMs / 1000;
+  ws.playing = true;
+  video.play().catch(() => {});
+  setPlayIcon(true);
+  const tick = () => {
+    if (!ws.playing || !target) return;
+    if (video.currentTime * 1000 >= c.endMs) {
+      stopPlayback();
+      return;
+    }
+    syncClock(v);
+    ws.raf = requestAnimationFrame(tick);
+  };
+  ws.raf = requestAnimationFrame(tick);
+}
+
+function stopPlayback() {
+  ws.playing = false;
+  cancelAnimationFrame(ws.raf);
+  target?.querySelector("[data-clips-src]")?.pause();
+  setPlayIcon(false);
+}
+
+function setPlayIcon(on) {
+  const i = target?.querySelector("[data-clips-play-icon]");
+  if (i) i.className = on ? "ap-icon-pause" : "ap-icon-play";
+}
+
+function focusClip(v, id, { seek = true } = {}) {
+  stopPlayback();
+  ws.focusId = id;
+  paintFocus(v);
+  const c = focused(v);
+  const video = target.querySelector("[data-clips-src]");
+  if (seek && video && c && video.readyState >= 1) video.currentTime = c.startMs / 1000 + 0.05;
+  target
+    .querySelector(`[data-clips-focus="${CSS.escape(id)}"]`)
+    ?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+}
+
+// Scrubbing the timeline moves the source; landing inside a clip focuses it.
+function onPointerDown(e) {
+  const v = getVideo(videoId);
+  if (!v || e.button !== 0) return;
+  if (!e.target.closest("[data-clips-scrub]") || e.target.closest("[data-clips-block]")) return;
+  const tracks = target.querySelector("[data-clips-tracks]");
+  const video = target.querySelector("[data-clips-src]");
+  if (!tracks || !video) return;
+  e.preventDefault();
+  stopPlayback();
+  const r = tracks.getBoundingClientRect();
+  const at = (ev) => Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)) * v.durationMs;
+  const move = (ev) => {
+    const t = at(ev);
+    if (video.readyState >= 1) video.currentTime = t / 1000;
+    const hit = v.clips.find((c) => t >= c.startMs && t <= c.endMs);
+    if (hit && hit.id !== ws.focusId) {
+      ws.focusId = hit.id;
+      paintFocus(v);
+    }
+    const ph = target.querySelector("[data-clips-ph]");
+    if (ph) ph.style.left = `${(t / v.durationMs) * 100}%`;
+  };
+  const up = () => {
+    window.removeEventListener("pointermove", move);
+    window.removeEventListener("pointerup", up);
+  };
+  window.addEventListener("pointermove", move);
+  window.addEventListener("pointerup", up);
+  move(e);
+}
+
+// ── The filmstrip ────────────────────────────────────────────────────
+// Frames of the source along the timeline, drawn once per video from a
+// hidden <video> and kept: a later visit re-attaches the same canvases. The
+// CDN sends no CORS headers, so frames are drawn, never read back.
+
+const FRAMES = 24;
+const filmstrips = new Map(); // videoId → { frames: canvas[], done }
+
+function mountFilmstrip(v, host) {
+  if (!host) return;
+  let film = filmstrips.get(v.id);
+  if (!film) {
+    film = { frames: [], done: false };
+    filmstrips.set(v.id, film);
+    buildFilmstrip(v, film);
+  }
+  film.host = host;
+  host.innerHTML = "";
+  for (let i = 0; i < FRAMES; i++) host.appendChild(film.frames[i] || placeholder());
+}
+
+function placeholder() {
+  const s = document.createElement("span");
+  s.className = "clips-tl2__frame is-empty";
+  return s;
+}
+
+function buildFilmstrip(v, film) {
+  const probe = document.createElement("video");
+  probe.muted = true;
+  probe.preload = "auto";
+  probe.src = v.url;
+  let i = 0;
+  const next = () => {
+    if (i >= FRAMES) {
+      film.done = true;
+      probe.removeAttribute("src");
+      probe.load();
+      return;
+    }
+    probe.currentTime = (((i + 0.5) / FRAMES) * v.durationMs) / 1000;
+  };
+  probe.addEventListener("loadedmetadata", next);
+  probe.addEventListener("seeked", () => {
+    const c = document.createElement("canvas");
+    c.className = "clips-tl2__frame";
+    c.width = 160;
+    c.height = 90;
+    c.getContext("2d").drawImage(probe, 0, 0, 160, 90);
+    film.frames[i] = c;
+    const slot = film.host?.children[i];
+    if (slot && film.host.isConnected) film.host.replaceChild(c, slot);
+    i += 1;
+    next();
+  });
 }
 
 // ── Drafts ───────────────────────────────────────────────────────────
@@ -370,7 +641,7 @@ function renderDrafts(v, posts) {
         </button>
       </div>
     </div>
-    <div class="clips-drafts posts">
+    <div class="clips-drafts posts clips-paper">
       ${posts.map(renderDraft).join("")}
     </div>`;
 }
@@ -518,15 +789,22 @@ function onClick(e) {
     return updateSettings(v.id, { subtitlePreset: preset.dataset.clipsPreset });
   }
 
-  const jump = t.closest("[data-clips-jump]");
-  if (jump) {
-    if (tab() !== "clips") return setHashQuery(path(), {});
-    const row = target.querySelector(`#clip-${CSS.escape(jump.dataset.clipsJump)}`);
-    row?.scrollIntoView({ behavior: "smooth", block: "center" });
-    row?.classList.add("is-flash");
-    setTimeout(() => row?.classList.remove("is-flash"), 1200);
+  const wsAct = t.closest("[data-clips-ws]")?.dataset.clipsWs;
+  if (wsAct === "play") return playClip(v);
+  if (wsAct === "prev" || wsAct === "next") {
+    const i = v.clips.findIndex((c) => c.id === ws.focusId);
+    const j = Math.max(0, Math.min(v.clips.length - 1, i + (wsAct === "next" ? 1 : -1)));
+    return focusClip(v, v.clips[j].id);
+  }
+  if (wsAct === "remove") {
+    const gone = removeClip(v.id, ws.focusId);
+    if (gone) showToast("Clip removed", { action: { label: "Undo", onClick: () => restoreClip(v.id, gone) } });
     return undefined;
   }
+  const block = t.closest("[data-clips-block]");
+  if (block) return focusClip(v, block.dataset.clipsBlock);
+  const row = t.closest("[data-clips-focus]");
+  if (row && !t.closest("label")) return focusClip(v, row.dataset.clipsFocus);
 
   if (t.closest("[data-clips-add-clip]")) {
     // A 30 s range in the first gap after the last clip, opened on Trim.
@@ -534,13 +812,6 @@ function onClick(e) {
     const startMs = Math.min(v.durationMs - 30000, last ? last.endMs + 5000 : 0);
     const clip = addClip(v.id, { startMs: Math.max(0, startMs), endMs: Math.max(0, startMs) + 30000 });
     return navigate(`/clips/${v.id}/edit/${clip.id}?tool=trim`);
-  }
-
-  const rm = t.closest("[data-clips-remove]");
-  if (rm) {
-    const gone = removeClip(v.id, rm.dataset.clipsRemove);
-    if (gone) showToast(`Clip removed`, { action: { label: "Undo", onClick: () => restoreClip(v.id, gone) } });
-    return undefined;
   }
 
   if (t.closest("[data-clips-to-drafts]")) {

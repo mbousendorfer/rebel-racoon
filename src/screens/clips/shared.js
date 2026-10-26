@@ -2,10 +2,10 @@
 // editor share: time formatting, the video-wide options (format, subtitles),
 // and the live reframed previews.
 
-import { FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=2133";
-import { PROD_PRESET_IDS, presetById, captionStateFor } from "../../clip-captions.js?v=2133";
-import { framingContext, initialSegments, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2133";
-import { escapeHtml } from "../../utils.js?v=2133";
+import { FORMATS, ratioNetworksMeta } from "../../clip-formats.js?v=2136";
+import { PROD_PRESET_IDS, presetById, captionStateFor } from "../../clip-captions.js?v=2136";
+import { framingContext, initialSegments, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2136";
+import { escapeHtml } from "../../utils.js?v=2136";
 
 // m:ss for a duration or a playhead, from ms.
 export function fmtMs(ms) {
@@ -39,7 +39,7 @@ export function clipCaptionState(video, clip) {
   return clip.captionState || captionStateFor(video.settings.subtitlePreset);
 }
 
-function clipSegments(video, clip) {
+export function clipSegments(video, clip) {
   return clip.segments || initialSegments(framingContext(video), clip.startMs, clip.endMs);
 }
 

@@ -4,10 +4,10 @@
 // "Open in Clips" lands on that same video. With a clip id, straight into
 // that clip's editor — the one editor, so the modal isn't a second one.
 
-import { navigate } from "../../router.js?v=2133";
-import { getSessionById } from "../../sessions-store.js?v=2133";
-import { playbookForNewWork } from "../../active-playbook.js?v=2133";
-import { importFromSource } from "../../videos-store.js?v=2133";
+import { navigate } from "../../router.js?v=2136";
+import { getSessionById } from "../../sessions-store.js?v=2136";
+import { playbookForNewWork } from "../../active-playbook.js?v=2136";
+import { importFromSource } from "../../videos-store.js?v=2136";
 
 export function openInClips(sessionId, source, clipId = null) {
   const contextId = getSessionById(sessionId)?.contextId || playbookForNewWork()?.id || null;
