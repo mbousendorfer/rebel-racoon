@@ -21,11 +21,12 @@ import {
   postDraftResult,
   reportDraftFailure,
   GENERATION_TOOLS,
-} from "./assistant.js?v=2213";
-import { getIdeas } from "./library.js?v=2213";
-import { anglesByIdea } from "./mocks.js?v=2213";
-import { addPostDraft } from "./posts-store.js?v=2213";
-import { networkMeta } from "./social-profiles.js?v=2213";
+} from "./assistant.js?v=2214";
+import { getIdeas } from "./library.js?v=2214";
+import { anglesByIdea } from "./mocks.js?v=2214";
+import { addPostDraft } from "./posts-store.js?v=2214";
+import { networkMeta } from "./social-profiles.js?v=2214";
+import { requireNetworkVoices } from "./network-voice-flow.js?v=2214";
 
 // The set-up pass before a draft (reading the brief and the voice) — logged as
 // its own tools, so the generation that follows isn't counted twice.
@@ -172,7 +173,13 @@ export function startDraftFlow(sessionId, ideaId, count = 1, channelOverride = n
 export function executeDraft(sessionId, ideaId, selectedChannels, count = 1, angle = null, language = null) {
   const idea = resolveIdea(sessionId, ideaId);
   if (!idea || !selectedChannels || selectedChannels.length === 0) return;
+  // Every network gets its voice before a word is written (flag voicePerNetwork).
+  requireNetworkVoices(sessionId, selectedChannels, () =>
+    writeDraft(sessionId, idea, selectedChannels, count, angle, language),
+  );
+}
 
+function writeDraft(sessionId, idea, selectedChannels, count, angle, language) {
   // The profile pick is already echoed as a user turn by the profile
   // picker, and the rare multi-channel fallback keeps its choice chips
   // visible in place — so no channel echo is posted here. Straight to
@@ -204,9 +211,7 @@ export function executeDraft(sessionId, ideaId, selectedChannels, count = 1, ang
       });
     },
     (err) =>
-      reportDraftFailure(sessionId, err, () =>
-        executeDraft(sessionId, ideaId, selectedChannels, count, angle, language),
-      ),
+      reportDraftFailure(sessionId, err, () => writeDraft(sessionId, idea, selectedChannels, count, angle, language)),
   );
 }
 
@@ -219,7 +224,10 @@ export function executeDraftBatch(sessionId, ideaId, selectedChannels, anglePick
   const idea = resolveIdea(sessionId, ideaId);
   const channels = Array.isArray(selectedChannels) && selectedChannels.length ? selectedChannels : ["linkedin"];
   if (!idea || !Array.isArray(anglePicks) || anglePicks.length === 0) return;
+  requireNetworkVoices(sessionId, channels, () => writeDraftBatch(sessionId, idea, channels, anglePicks, language));
+}
 
+function writeDraftBatch(sessionId, idea, channels, anglePicks, language) {
   withPendingChip(
     sessionId,
     () => {
@@ -241,9 +249,6 @@ export function executeDraftBatch(sessionId, ideaId, selectedChannels, anglePick
       }
       postDraftResult(sessionId, { ideaTitle: idea.title, drafts });
     },
-    (err) =>
-      reportDraftFailure(sessionId, err, () =>
-        executeDraftBatch(sessionId, ideaId, selectedChannels, anglePicks, language),
-      ),
+    (err) => reportDraftFailure(sessionId, err, () => writeDraftBatch(sessionId, idea, channels, anglePicks, language)),
   );
 }

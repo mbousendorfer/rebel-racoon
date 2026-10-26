@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2213";
-import { conceptHint } from "./concepts.js?v=2213";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2214";
+import { conceptHint } from "./concepts.js?v=2214";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2213";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2213";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2213";
-import { isFlagOn } from "./feature-flags.js?v=2213";
-import { clipLookOf } from "./videos-store.js?v=2213";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2213";
-import { parseHashParams } from "./url-state.js?v=2213";
+} from "./playbook-brand-kit.js?v=2214";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2214";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2214";
+import { isFlagOn } from "./feature-flags.js?v=2214";
+import { clipLookOf } from "./videos-store.js?v=2214";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2214";
+import { parseHashParams } from "./url-state.js?v=2214";
 import {
   isListPart,
   voiceParts,
@@ -49,10 +49,19 @@ import {
   optimizeForNetwork,
   copyBrandVoice,
   markAdapted,
-} from "./voice-parts.js?v=2213";
-import { showToast } from "./components/toast.js?v=2213";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2213";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, networkLabel, networkIcon } from "./social-profiles.js?v=2213";
+  canLearnFrom,
+  learnNetworkVoice,
+  withNetworkVoices,
+} from "./voice-parts.js?v=2214";
+import { showToast } from "./components/toast.js?v=2214";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2214";
+import {
+  NETWORK_ICON_BY_PLATFORM,
+  NETWORK_LABEL,
+  networkLabel,
+  networkIcon,
+  profileForNetwork,
+} from "./social-profiles.js?v=2214";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2513,10 +2522,26 @@ function renderVoiceRead2(data, learnMenu) {
 
 function networkVoiceLead(net, voice) {
   const label = networkLabel(net);
+  if (voice?.optimizedBy === "learned")
+    return `How I write on ${label}, learned from ${voice.postCount} posts of ${voice.learnedFrom}. What's only ${label}'s is tagged.`;
   return voice?.optimizedBy === "you"
     ? `How I write on ${label}, as you set it. What's only ${label}'s is tagged.`
     : `How I write on ${label}: the Brand voice, optimized for it. What's only ${label}'s is tagged.`;
 }
+
+// A warning infobox on a network's voice tab: its title, its message, an
+// optional trusted action.
+const voiceNotice = (title, message, action = "") =>
+  `<div class="ap-infobox warning has-title pb2-voice-notice" role="status">
+    <i class="ap-icon-warning_fill" aria-hidden="true"></i>
+    <div class="ap-infobox-content">
+      <div class="ap-infobox-texts">
+        <span class="ap-infobox-title">${esc(title)}</span>
+        <span class="ap-infobox-message">${esc(message)}</span>
+        ${action}
+      </div>
+    </div>
+  </div>`;
 
 // A network's voice, read. Its own: the five parts, its rules tagged — and, when
 // the Brand voice changed after it was made, a warning that offers Re-optimize
@@ -2527,28 +2552,44 @@ function renderNetworkVoiceRead(data) {
   const label = networkLabel(net);
   const { state, voice } = networkVoice(data, net);
   const tabs = renderVoiceTabs(data);
-  if (state === "borrowed") {
+  // No voice yet, or the Brand voice as it is: shown on grey, warned, with the
+  // ways to give it its own — learned from the account's posts first.
+  if (state === "borrowed" || state === "plain") {
+    const account = profileForNetwork(net);
+    const learn = canLearnFrom(account);
     const actions = canEditView()
       ? `<button type="button" class="ap-button stroked grey" data-pb2-voice-own>Edit it myself</button>
-         <button type="button" class="ap-button primary orange" data-pb2-voice-optimize>Optimize for ${esc(label)}</button>`
+         ${learn ? `<button type="button" class="ap-button stroked grey" data-pb2-voice-optimize>Optimize the Brand voice</button>` : ""}
+         <button type="button" class="ap-button primary orange" ${learn ? "data-pb2-voice-learn" : "data-pb2-voice-optimize"}>${
+           learn ? `Learn from ${esc(account.handle)}'s posts` : `Optimize for ${esc(label)}`
+         }</button>`
       : "";
+    const notice =
+      state === "plain"
+        ? voiceNotice(
+            `${label} uses the Brand voice as it is`,
+            `It isn't optimized for ${label}: no length, format or hashtag habits of its own, so drafts may miss what works there.`,
+          )
+        : voiceNotice(
+            `${label} doesn't have a voice yet`,
+            `I'll ask for one before I write anything for ${label}. You can give it one now.`,
+          );
     return `${tabs}${pb2TabHead("voice", actions, {
       noEdit: true,
-      lead: `${label} uses the Brand voice for now. I can optimize it for ${label}, or you can make it its own.`,
-    })}<div class="pb2-grid pb2-grid--borrowed">${pb2VoiceParts(data).join("")}</div>`;
+      lead: learn
+        ? `I can learn ${label}'s voice from the ${account.postCount} posts of ${account.handle}, optimize the Brand voice for it, or you can make it its own.`
+        : `I can optimize the Brand voice for ${label}, or you can make it its own.`,
+    })}${notice}<div class="pb2-grid pb2-grid--borrowed">${pb2VoiceParts(data).join("")}</div>`;
   }
   const stale =
     state === "stale"
-      ? `<div class="ap-infobox warning has-title pb2-voice-notice" role="status">
-          <i class="ap-icon-warning_fill" aria-hidden="true"></i>
-          <div class="ap-infobox-content">
-            <div class="ap-infobox-texts">
-              <span class="ap-infobox-title">Your Brand voice changed since this ${esc(label)} voice was made</span>
-              <span class="ap-infobox-message">It still follows the old one. I can optimize it again from the Brand voice as it is now.</span>
-              ${canEditView() ? `<button type="button" class="ap-link" data-pb2-voice-optimize data-pb2-voice-confirm>Re-optimize</button>` : ""}
-            </div>
-          </div>
-        </div>`
+      ? voiceNotice(
+          `Your Brand voice changed since this ${label} voice was made`,
+          "It still follows the old one. I can optimize it again from the Brand voice as it is now.",
+          canEditView()
+            ? `<button type="button" class="ap-link" data-pb2-voice-optimize data-pb2-voice-confirm>Re-optimize</button>`
+            : "",
+        )
       : "";
   return `${tabs}${pb2TabHead("voice", "", { lead: networkVoiceLead(net, voice) })}${stale}<div class="pb2-grid">${pb2VoiceParts(
     voice,
@@ -2720,6 +2761,9 @@ function renderActivePanel(data) {
   const scope = editScope;
   // Editing opens the section's own form; reading gets the tab's spread.
   if (activeTab === "voice") {
+    // Creation's review: each network connected so far gets its voice — learned
+    // from its posts, else optimized — shown here before it's saved.
+    if (!isLibrary() && networkVoiceOn()) data.voiceByNetwork = withNetworkVoices(data);
     if (voiceNet && !voiceNets(data).includes(voiceNet)) setVoiceNet(null);
     return scope === "voice" ? renderVoiceEdit2(data) : renderVoiceRead2(data, learnMenu());
   }
@@ -3137,6 +3181,15 @@ function onClick(event) {
         onConfirm: run,
       });
     else run();
+    return;
+  }
+  if (event.target.closest("[data-pb2-voice-learn]") && voiceNet) {
+    const account = profileForNetwork(voiceNet);
+    const d = cfg.getData();
+    d.voiceByNetwork = { ...(d.voiceByNetwork || {}), [voiceNet]: learnNetworkVoice(d, voiceNet, account) };
+    cfg.commit?.();
+    repaint();
+    showToast(`I learned the ${networkLabel(voiceNet)} voice from ${account.postCount} posts of ${account.handle}.`);
     return;
   }
   const clipPreset = event.target.closest("[data-pb2-cliplook-preset]");

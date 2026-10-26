@@ -804,6 +804,15 @@
   font-size: var(--ref-font-size-xs);
   color: var(--ref-color-grey-80);
 }
+.posts__card-voice--warn {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xxxs);
+}
+.posts__card-voice--warn > i {
+  flex: none;
+  background-color: var(--sys-color-warning-default-bg-default);
+}
 /* Strip is the sole in-flow child → spans the card. Its asymmetric top padding
    would offset its row from the pinned toggle, so drop it here (the card-wrap
    gap already spaces the row from the card above). */

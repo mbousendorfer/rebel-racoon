@@ -110,6 +110,7 @@ src/
   library-actions.js    — shared bulk-bar (Extract/Delete) + click dispatch for content lists
   social-profiles.js    — connected social accounts (STATE: which are connected, + a notifier),
                           the NETWORKS table (icon / label / limit / accent) and the profile renderers
+  network-voice-flow.js — requireNetworkVoices(): the voice step before a draft, per network without one (flag voicePerNetwork)
   connect-profiles-flow.js — requireConnectedProfiles(): the connect step every draft path asks
                           (flag `skipConnectProfiles`)
   draft-image-flow.js   — "Generate an image": one image straight into the draft, nothing asked

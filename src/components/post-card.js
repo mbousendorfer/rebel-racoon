@@ -19,19 +19,19 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2213";
-import { isPortraitFormat } from "../clip-formats.js?v=2213";
-import { presetById } from "../clip-captions.js?v=2213";
-import { renderFeedbackControl } from "./feedback-control.js?v=2213";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2214";
+import { isPortraitFormat } from "../clip-formats.js?v=2214";
+import { presetById } from "../clip-captions.js?v=2214";
+import { renderFeedbackControl } from "./feedback-control.js?v=2214";
 import {
   networkMeta,
   networkLabel,
   normalizeNetwork,
   profileForNetwork,
   renderProfileTag,
-} from "../social-profiles.js?v=2213";
-import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2213";
-import { REVEAL_MS } from "../archie-pixels.js?v=2213";
+} from "../social-profiles.js?v=2214";
+import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2214";
+import { REVEAL_MS } from "../archie-pixels.js?v=2214";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -137,13 +137,20 @@ function renderEmptyMedia(post, opts) {
 // Which voice wrote this draft (flag voicePerNetwork): `opts.voice` is
 // voice-parts' networkVoice() for the draft's network, resolved by the host
 // (the card never reads a Playbook). The voice's name opens it in the Playbook.
+// Written in the Brand voice (as it is, or before the network had one): said,
+// with the way to optimize it — allowed, never silent.
 function renderVoiceLine(net, opts) {
   const state = opts.voice?.state;
   if (!state || state === "brand" || !opts.playbookId) return "";
-  const own = state !== "borrowed";
-  const name = own ? `${networkLabel(net)} voice` : "Brand voice";
+  const pb = escapeAttr(opts.playbookId);
+  if (state === "plain" || state === "borrowed")
+    return `<p class="posts__card-voice posts__card-voice--warn">
+      <i class="ap-icon-warning_fill ap-icon-sm" aria-hidden="true"></i>
+      <span>Written in the Brand voice, not optimized for ${escapeText(networkLabel(net))}.
+        <button type="button" class="ap-link small" data-post-voice="${pb}" data-post-voice-net="${escapeAttr(net)}">Optimize it</button></span>
+    </p>`;
   return `<p class="posts__card-voice">Written in the
-    <button type="button" class="ap-link small" data-post-voice="${escapeAttr(opts.playbookId)}" data-post-voice-net="${own ? escapeAttr(net) : ""}">${escapeText(name)}</button>
+    <button type="button" class="ap-link small" data-post-voice="${pb}" data-post-voice-net="${escapeAttr(net)}">${escapeText(`${networkLabel(net)} voice`)}</button>
   </p>`;
 }
 

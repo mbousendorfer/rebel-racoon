@@ -15,14 +15,15 @@
 // whole screen. clipContext is exported alongside because the clip-studio
 // finalize path in session.js builds the same generationContext object.
 
-import { FORMATS, clipFormatItems } from "../../clip-formats.js?v=2213";
-import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../../clip-subtitles.js?v=2213";
+import { FORMATS, clipFormatItems } from "../../clip-formats.js?v=2214";
+import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../../clip-subtitles.js?v=2214";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
   PROFILE_SEARCH_THRESHOLD,
-} from "../../social-profiles.js?v=2213";
-import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2213";
+} from "../../social-profiles.js?v=2214";
+import { requireConnectedProfiles } from "../../connect-profiles-flow.js?v=2214";
+import { requireNetworkVoices } from "../../network-voice-flow.js?v=2214";
 import {
   postAssistantMessage,
   postUserTurn,
@@ -32,9 +33,9 @@ import {
   startPending,
   finishPending,
   GENERATION_TOOLS,
-} from "../../assistant.js?v=2213";
-import * as inlineQuestion from "../../inline-question.js?v=2213";
-import { addPostDraft } from "../../posts-store.js?v=2213";
+} from "../../assistant.js?v=2214";
+import * as inlineQuestion from "../../inline-question.js?v=2214";
+import { addPostDraft } from "../../posts-store.js?v=2214";
 
 // The generationContext a clip-derived draft carries — the "why this draft
 // exists" header shown on the post card. Shared with session.js's clip-studio
@@ -146,7 +147,11 @@ function askClipAccounts(sessionId, entries, format, style) {
       // Echo the picked profiles via the canonical renderProfileTag — pass
       // the raw socialAccounts entries straight through.
       postUserProfilesTurn(sessionId, accounts);
-      generateClipDrafts(sessionId, entries, accounts, format, style);
+      requireNetworkVoices(
+        sessionId,
+        accounts.map((a) => a.platform),
+        () => generateClipDrafts(sessionId, entries, accounts, format, style),
+      );
     },
     onBack: () => askClipSubtitle(sessionId, entries, format),
     onSkip: () => {},
