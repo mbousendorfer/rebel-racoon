@@ -4,7 +4,7 @@
 // shell's delegated clicks write it through setDraftsFilter / setDraftsNetwork.
 // Moved out of right-panel.js, unchanged.
 
-import { networkMeta } from "../../social-profiles.js?v=2216";
+import { networkMeta } from "../../social-profiles.js?v=2219";
 import {
   getPosts,
   removePost,
@@ -12,24 +12,24 @@ import {
   updatePostContent,
   attachImageToDraft,
   attachCarouselToDraft,
-} from "../../posts-store.js?v=2216";
-import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=2216";
-import { getSessionById } from "../../sessions-store.js?v=2216";
-import { renderPostCard } from "../post-card.js?v=2216";
-import { isPostValid } from "../../post-validation.js?v=2216";
-import { networkVoice } from "../../voice-parts.js?v=2216";
-import { html, raw } from "../../utils.js?v=2216";
-import { isFlagOn } from "../../feature-flags.js?v=2216";
-import { open as openNewScheduleModal } from "../schedule-modal.js?v=2216";
-import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=2216";
-import { open as openConfirmModal } from "../confirm-modal.js?v=2216";
-import { open as openAssignModal } from "../assign-modal.js?v=2216";
-import { showToast } from "../toast.js?v=2216";
-import { addMention as addComposerMention } from "../../composer-mentions.js?v=2216";
-import { startDraftImageFlow } from "../../draft-image-flow.js?v=2216";
-import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=2216";
-import { closeInline, activeSessionId, renderPanel } from "../right-panel.js?v=2216";
-import { blockInDemo } from "../../demo-flow.js?v=2216";
+} from "../../posts-store.js?v=2219";
+import { getContextById, getBrandKitGaps } from "../../contexts-store.js?v=2219";
+import { getSessionById } from "../../sessions-store.js?v=2219";
+import { renderPostCard } from "../post-card.js?v=2219";
+import { isPostValid } from "../../post-validation.js?v=2219";
+import { networkVoice } from "../../voice-parts.js?v=2219";
+import { html, raw } from "../../utils.js?v=2219";
+import { isFlagOn } from "../../feature-flags.js?v=2219";
+import { open as openNewScheduleModal } from "../schedule-modal.js?v=2219";
+import { open as openLegacyScheduleModal } from "../schedule-modal-legacy.js?v=2219";
+import { open as openConfirmModal } from "../confirm-modal.js?v=2219";
+import { open as openAssignModal } from "../assign-modal.js?v=2219";
+import { showToast } from "../toast.js?v=2219";
+import { addMention as addComposerMention } from "../../composer-mentions.js?v=2219";
+import { startDraftImageFlow } from "../../draft-image-flow.js?v=2219";
+import { openDraftStudio, quickImagePreset } from "../../modules/image-studio/index.js?v=2219";
+import { closeInline, activeSessionId, renderPanel } from "../right-panel.js?v=2219";
+import { blockInDemo } from "../../demo-flow.js?v=2219";
 
 // Drafts-mode local UI state — Lot 21 rich-card view. Filter strip at the
 // top of the panel head drives both axes : status (all / needs_fixes) and
@@ -550,7 +550,7 @@ export function onSectionSave(network) {
   if (snapshot.length === 0) return;
   const count = snapshot.length;
   const draftWord = count === 1 ? "draft" : "drafts";
-  Promise.all([import("../save-folder-modal.js?v=2216"), import("../../folders-store.js?v=2216")]).then(
+  Promise.all([import("../save-folder-modal.js?v=2219"), import("../../folders-store.js?v=2219")]).then(
     ([{ open: openSaveModal }, { addDraftsToFolder }]) => {
       openSaveModal({
         count,
@@ -741,7 +741,7 @@ export function onPostImageRemove(postId) {
   showToast("Image removed");
 }
 
-export function startEdit(postId) {
+export function startEdit(postId, at) {
   if (editingPostId === postId) return;
   if (editingPostId) commitEdit(editingPostId); // auto-save the previous card
   const sid = activeSessionId();
@@ -754,14 +754,20 @@ export function startEdit(postId) {
     cta: post.cta || "",
   };
   renderPanel();
-  // Focus the editor and place caret at the end of the body.
+  // Focus the editor; the caret goes where the text was clicked (`at`), else
+  // at the end of the body.
   requestAnimationFrame(() => {
     const editor = document.querySelector(`[data-post-editor="${postId}"]`);
     if (!editor) return;
     editor.focus();
+    const pos = at && document.caretPositionFromPoint?.(at.x, at.y);
     const range = document.createRange();
-    range.selectNodeContents(editor);
-    range.collapse(false);
+    if (pos && editor.contains(pos.offsetNode)) {
+      range.setStart(pos.offsetNode, pos.offset);
+    } else {
+      range.selectNodeContents(editor);
+      range.collapse(false);
+    }
     const sel = window.getSelection();
     sel.removeAllRanges();
     sel.addRange(range);

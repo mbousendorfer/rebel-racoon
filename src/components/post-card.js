@@ -19,19 +19,19 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2216";
-import { isPortraitFormat } from "../clip-formats.js?v=2216";
-import { presetById } from "../clip-captions.js?v=2216";
-import { renderFeedbackControl } from "./feedback-control.js?v=2216";
+import { html, raw, formatClock, escapeText, escapeAttr } from "../utils.js?v=2219";
+import { isPortraitFormat } from "../clip-formats.js?v=2219";
+import { presetById } from "../clip-captions.js?v=2219";
+import { renderFeedbackControl } from "./feedback-control.js?v=2219";
 import {
   networkMeta,
   networkLabel,
   normalizeNetwork,
   profileForNetwork,
   renderProfileTag,
-} from "../social-profiles.js?v=2216";
-import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2216";
-import { REVEAL_MS } from "../archie-pixels.js?v=2216";
+} from "../social-profiles.js?v=2219";
+import { validatePost, usedCharacters, youtubeTitle } from "../post-validation.js?v=2219";
+import { REVEAL_MS } from "../archie-pixels.js?v=2219";
 
 // The media slot of a draft that has no image yet. ONE dashed slot, two tiers
 // (2026-10-07):
@@ -231,7 +231,12 @@ export function renderPostCard(post, opts = {}) {
     // ponytail: shown on a length heuristic, not a measured overflow — a short
     // post never clamps, a borderline one may show a toggle that reveals little.
     const clamps = usedCharacters(post) > 180 || post.text.length > 2;
-    editorBody = `<div class="posts__card-body${clamps ? " posts__card-body--clamp" : ""}">${bodyParagraphs} ${hashtags} ${cta}</div>${
+    // The text itself is the way into the editor (right-panel.js,
+    // data-post-edit-body): it reads as a field on hover, says so in a tooltip.
+    const editable = inlineEdit
+      ? ` posts__card-body--editable" data-post-edit-body="${post.id}" data-tooltip="Click to edit the text"`
+      : '"';
+    editorBody = `<div class="posts__card-body${clamps ? " posts__card-body--clamp" : ""}${editable}>${bodyParagraphs} ${hashtags} ${cta}</div>${
       clamps
         ? `<button type="button" class="ap-link small posts__card-readmore" data-post-readmore="${post.id}" aria-expanded="false" data-more="${READ_MORE[net] || "See more"}">${READ_MORE[net] || "See more"}</button>`
         : ""
@@ -247,8 +252,9 @@ export function renderPostCard(post, opts = {}) {
 
   const editActions = editing
     ? `<div class="posts__card-edit-actions">
+        <span class="posts__card-edit-keys"><kbd>Esc</kbd> to cancel · <kbd>⌘</kbd>+<kbd>Enter</kbd> to save</span>
         <button type="button" class="ap-button ghost grey" data-post-edit-cancel="${post.id}">Cancel</button>
-        <button type="button" class="ap-button primary orange" data-post-edit-save="${post.id}">Save changes</button>
+        <button type="button" class="ap-button primary blue" data-post-edit-save="${post.id}">Save changes</button>
       </div>`
     : "";
 

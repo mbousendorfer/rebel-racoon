@@ -735,6 +735,22 @@
   min-height: calc(var(--sys-text-style-body-line-height) * 3);
 }
 
+/* Read mode: the text is the way into the editor. On hover it reads as a
+   field — grey fill and edge in the editor's footprint, text cursor — so the
+   click that follows is expected. Drawn with shadows, not padding: the body
+   keeps its box, so the 3-line clamp and "…see more" don't move. */
+.posts__card-body--editable {
+  border-radius: var(--app-radius-sm);
+  cursor: text;
+}
+
+.posts__card-body--editable:hover {
+  background: var(--ref-color-grey-05);
+  box-shadow:
+    0 0 0 var(--ref-spacing-xs) var(--ref-color-grey-05),
+    0 0 0 calc(var(--ref-spacing-xs) + 1px) var(--ref-color-grey-20);
+}
+
 .posts__card-editor:focus-visible {
   /* Border + tinted background already convey focus state. */
   outline: none;
@@ -743,7 +759,32 @@
 .posts__card-edit-actions {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
   gap: var(--ref-spacing-xxs);
+}
+
+/* The editor's keys, the composer hint's look (session.css). */
+.posts__card-edit-keys {
+  margin-right: auto;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-80);
+}
+
+.posts__card-edit-keys kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 var(--ref-spacing-xxxs);
+  border-radius: var(--app-radius-sm);
+  background: var(--ref-color-grey-05);
+  border: 1px solid var(--app-border);
+  font-family: inherit;
+  font-size: var(--sys-text-style-caption-bold-size);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-grey-80);
 }
 
 .posts__card-footer {
@@ -995,6 +1036,11 @@
 .posts__card-readmore {
   align-self: flex-start;
   margin-top: calc(-1 * var(--ref-spacing-xs));
+}
+
+/* Clear of the editable body's hover field. */
+.posts__card-body--editable + .posts__card-readmore {
+  margin-top: var(--ref-spacing-xxxs);
 }
 
 /* Instagram / TikTok / YouTube: a 24px avatar and the handle on one line. */
