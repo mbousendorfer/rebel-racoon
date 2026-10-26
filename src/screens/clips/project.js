@@ -7,28 +7,28 @@
 // CTA, and one draft per clip × account, written here and scheduled from here.
 // Tabs: Clips · Drafts (?tab=drafts).
 
-import { navigate } from "../../router.js?v=2193";
-import { isFlagOn } from "../../feature-flags.js?v=2193";
-import { parseHashParams, setHashQuery } from "../../url-state.js?v=2193";
-import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2193";
-import { showToast } from "../../components/toast.js?v=2193";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2193";
-import { renderPostCard } from "../../components/post-card.js?v=2193";
-import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2193";
-import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2193";
-import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2193";
-import { getConnectedProfiles, renderProfileTag } from "../../social-profiles.js?v=2193";
-import { getContextById } from "../../contexts-store.js?v=2193";
-import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2193";
-import { captionStateFor } from "../../clip-captions.js?v=2193";
+import { navigate } from "../../router.js?v=2195";
+import { isFlagOn } from "../../feature-flags.js?v=2195";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=2195";
+import { renderTopbar, setTopbarActions, renderIconBack } from "../../components/topbar.js?v=2195";
+import { showToast } from "../../components/toast.js?v=2195";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2195";
+import { renderPostCard } from "../../components/post-card.js?v=2195";
+import { open as openScheduleModal } from "../../components/schedule-modal.js?v=2195";
+import { open as openConnectAccountModal } from "../../components/connect-account-modal.js?v=2195";
+import { connectableNetworkCards, accountIdsForNetwork } from "../../connect-profiles-flow.js?v=2195";
+import { getConnectedProfiles, renderProfileTag } from "../../social-profiles.js?v=2195";
+import { getContextById } from "../../contexts-store.js?v=2195";
+import { framingContext, resolve, segmentAt, drawOutput } from "../../clip-framing.js?v=2195";
+import { captionStateFor } from "../../clip-captions.js?v=2195";
 import {
   getPosts,
   addPostDraft,
   removePost,
   updatePostContent,
   subscribe as subscribePosts,
-} from "../../posts-store.js?v=2193";
-import { escapeHtml } from "../../utils.js?v=2193";
+} from "../../posts-store.js?v=2195";
+import { escapeHtml } from "../../utils.js?v=2195";
 import {
   getVideo,
   draftKey,
@@ -39,7 +39,7 @@ import {
   removeClip,
   ANALYSIS_STAGES,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2193";
+} from "../../videos-store.js?v=2195";
 import {
   fmtMs,
   formatSelect,
@@ -58,7 +58,7 @@ import {
   SUBTITLE_IDS,
   bestFor,
   CTA_OPTIONS,
-} from "./shared.js?v=2193";
+} from "./shared.js?v=2195";
 
 let target = null;
 let videoId = null;

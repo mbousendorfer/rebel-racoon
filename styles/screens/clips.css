@@ -1447,7 +1447,7 @@ body.clips-editing .app-content {
 
 .clips-tl {
   display: grid;
-  grid-template-columns: 132px minmax(0, 1fr);
+  grid-template-columns: 72px minmax(0, 1fr);
   gap: var(--ref-spacing-xs);
   padding-top: var(--ref-spacing-xs);
   user-select: none;
@@ -1477,11 +1477,6 @@ body.clips-editing .app-content {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.clips-tl__head-actions {
-  display: flex;
-  gap: 2px;
 }
 
 /* The track actions are DS icon buttons; a drawn glyph (no DS icon for In,
@@ -1623,7 +1618,9 @@ body.clips-editing .app-content {
   position: absolute;
   top: 0;
   bottom: 0;
-  background: var(--ref-color-electric-blue-05);
+  /* See-through: the clip's own waveform reads inside it (what's outside is
+     veiled). */
+  background: transparent;
   border: 2px solid var(--ref-color-electric-blue-100);
   border-radius: var(--app-radius-sm);
   cursor: grab;
@@ -1631,11 +1628,11 @@ body.clips-editing .app-content {
 }
 
 .clips-tl__window:hover {
-  background: color-mix(in srgb, var(--ref-color-electric-blue-100) 24%, transparent);
+  background: color-mix(in srgb, var(--ref-color-electric-blue-100) 8%, transparent);
 }
 
 .clips-ed__timeline[data-drag="slide"] .clips-tl__window {
-  background: color-mix(in srgb, var(--ref-color-electric-blue-100) 30%, transparent);
+  background: color-mix(in srgb, var(--ref-color-electric-blue-100) 12%, transparent);
 }
 
 /* The edges: a solid tab with a grip, wider under the pointer. */
@@ -2279,4 +2276,50 @@ body.clips-editing .app-content {
   left: 0; /* under the row's start, so it stays inside the details */
   z-index: 20;
   min-width: 200px;
+}
+
+/* What acts at the playhead, named — object in each verb (« Split part
+   here » can't read as cutting the clip). Snap, a setting, sits at the end. */
+.clips-ed__at {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.clips-ed__at-label {
+  margin-right: var(--ref-spacing-xxs);
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+
+.clips-ed__at-sep {
+  width: 1px;
+  height: 24px;
+  margin: 0 var(--ref-spacing-xs);
+  background: var(--ref-color-grey-20);
+}
+
+.clips-ed__transport-spacer {
+  flex: 1;
+}
+
+.clips-ed__at .clips-glyph {
+  margin-right: var(--ref-spacing-xxs);
+}
+
+.clips-ed__at-label {
+  white-space: nowrap;
+}
+
+.clips-ed__at .clips-glyph {
+  flex: none;
+}
+
+/* Snap belongs to the framing track: at the end of its legend. */
+.clips-tl__legend {
+  align-items: center;
+}
+
+.clips-tl__snap {
+  margin-left: auto;
 }

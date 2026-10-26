@@ -22,19 +22,19 @@
 // ponytail: subtitle style edits are outside the undo stack — caption-editor
 // keeps its own state; fold them in if undoing a font change is asked for.
 
-import { navigate } from "../../router.js?v=2193";
-import { isFlagOn } from "../../feature-flags.js?v=2193";
-import { parseHashParams } from "../../url-state.js?v=2193";
-import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2193";
-import { showToast } from "../../components/toast.js?v=2193";
-import { open as openConfirm } from "../../components/confirm-modal.js?v=2193";
-import { open as openRename } from "../../components/rename-modal.js?v=2193";
-import { getContextById } from "../../contexts-store.js?v=2193";
-import { escapeHtml } from "../../utils.js?v=2193";
-import * as ce from "../../caption-editor.js?v=2193";
-import { DEAD_ZONES } from "../../clip-captions.js?v=2193";
-import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2193";
-import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2193";
+import { navigate } from "../../router.js?v=2195";
+import { isFlagOn } from "../../feature-flags.js?v=2195";
+import { parseHashParams } from "../../url-state.js?v=2195";
+import { renderTopbar, setTopbarActions } from "../../components/topbar.js?v=2195";
+import { showToast } from "../../components/toast.js?v=2195";
+import { open as openConfirm } from "../../components/confirm-modal.js?v=2195";
+import { open as openRename } from "../../components/rename-modal.js?v=2195";
+import { getContextById } from "../../contexts-store.js?v=2195";
+import { escapeHtml } from "../../utils.js?v=2195";
+import * as ce from "../../caption-editor.js?v=2195";
+import { DEAD_ZONES } from "../../clip-captions.js?v=2195";
+import { NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=2195";
+import { getVideo, getClip, updateClip, setSelection, clipLookOf } from "../../videos-store.js?v=2195";
 import {
   framingContext,
   initialSegments,
@@ -57,7 +57,7 @@ import {
   cameraName,
   LAYOUTS,
   MIN_SEG_MS,
-} from "../../clip-framing.js?v=2193";
+} from "../../clip-framing.js?v=2195";
 import {
   fmtMs,
   fmtPrecise,
@@ -71,8 +71,8 @@ import {
   presetLabel,
   dsSelect,
   bindSelectDismiss,
-} from "./shared.js?v=2193";
-import { primeDraftSetup } from "./project.js?v=2193";
+} from "./shared.js?v=2195";
+import { primeDraftSetup } from "./project.js?v=2195";
 
 const MIN_CLIP_MS = 5000;
 const MAX_CLIP_MS = 300000;
@@ -267,7 +267,15 @@ function shellHTML() {
         <button type="button" class="ap-icon-button transparent" data-clips-ed="play" aria-label="Play" data-tooltip="Play / pause (Space)">
           <i class="ap-icon-play" aria-hidden="true" data-clips-play-icon></i>
         </button>
-        <span class="clips-ed__time"><span data-clips-cur>0:00.0</span> / <span data-clips-len>0:00.0</span><span class="clips-ed__time-src"> · <span data-clips-at>0:00.0</span> in the video</span></span>
+        <span class="clips-ed__time"><span data-clips-cur>0:00.0</span> / <span data-clips-len>0:00.0</span></span>
+        <span class="clips-ed__at-sep" aria-hidden="true"></span>
+        <div class="clips-ed__at" role="group" aria-label="At the playhead">
+          <span class="clips-ed__at-label">At the playhead</span>
+          <button type="button" class="ap-button ghost grey" data-clips-ed="set-start" data-tooltip="Key I">${ICON.in}<span>Start clip here</span></button>
+          <button type="button" class="ap-button ghost grey" data-clips-ed="set-end" data-tooltip="Key O">${ICON.out}<span>End clip here</span></button>
+          <button type="button" class="ap-button ghost grey clips-tl__reframe-only" data-clips-ed="split" data-tooltip="A new framing part — the clip stays whole (S)">${ICON.cut}<span>Split part here</span></button>
+          <button type="button" class="ap-button ghost grey" data-clips-ed="add-text"><i class="ap-icon-plus" aria-hidden="true"></i><span>Add text here</span></button>
+        </div>
       </div>
 
       <div class="clips-ed__timeline" data-clips-timeline></div>
@@ -399,14 +407,8 @@ function setPlayIcon() {
 
 // The Snap toggle in the Framing header shows its state.
 function syncTlTools() {
-  const b = ed.el.querySelector('[data-clips-ed="snap"]');
-  if (!b) return;
-  // On = the DS stroked blue icon button, off = transparent.
-  b.setAttribute("aria-pressed", String(ed.snap));
-  b.classList.toggle("stroked", ed.snap);
-  b.classList.toggle("blue", ed.snap);
-  b.classList.toggle("transparent", !ed.snap);
-  b.dataset.tooltip = `Snap to camera cuts: ${ed.snap ? "on" : "off"}`;
+  const b = ed.el.querySelector("[data-clips-snap]");
+  if (b) b.checked = ed.snap;
 }
 
 function syncTime() {
@@ -653,10 +655,10 @@ function edgeTime(edge) {
         aria-label="${label}: ${fmtPrecise(ms)} — type a time" data-tooltip="${escapeHtml(err ? ed.trimError : `${label} — click to type a time`)}">${fmtPrecise(ms)}</button></span>`;
 }
 
-// A track's header: its name and the actions that act on it — the place an
-// action sits says what it applies to.
-function trackHead(name, actions = "") {
-  return `<div class="clips-tl__head"><span class="clips-tl__head-name">${name}</span><span class="clips-tl__head-actions">${actions}</span></div>`;
+// A track's header: its name. What acts at the playhead is named above the
+// timeline (« Start clip here », « Split part here »…), so no bare icons here.
+function trackHead(name) {
+  return `<div class="clips-tl__head"><span class="clips-tl__head-name">${name}</span></div>`;
 }
 
 const ICON = {
@@ -664,7 +666,6 @@ const ICON = {
   in: `<svg class="clips-glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 2v12"/><path d="M13 8H6"/><path d="M9 5 6 8l3 3"/></svg>`,
   out: `<svg class="clips-glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 2v12"/><path d="M3 8h7"/><path d="M7 5l3 3-3 3"/></svg>`,
   cut: `<svg class="clips-glyph" viewBox="0 0 16 16" aria-hidden="true"><circle cx="4" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><path d="M5.5 10.5 12 2M10.5 10.5 4 2"/></svg>`,
-  snap: `<svg class="clips-glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2v6a4 4 0 0 0 8 0V2"/><path d="M4 5h3M9 5h3"/></svg>`,
 };
 
 function paintTimeline() {
@@ -676,8 +677,11 @@ function paintTimeline() {
   let ticks = "";
   // The timeline is a window on the video, so its ruler reads the video's time
   // — the time the In / Out fields above it are typed in.
+  // A tick the clip's edge times would cover is left out.
+  const clear = v.span * 0.045;
   for (let t = Math.ceil(v.from / step) * step; t <= v.to; t += step)
-    ticks += `<span class="clips-tl__tick" style="left:${pctIn(t)}"><span>${fmtMs(t)}</span></span>`;
+    if (Math.abs(t - ed.w.startMs) > clear && Math.abs(t - ed.w.endMs) > clear)
+      ticks += `<span class="clips-tl__tick" style="left:${pctIn(t)}"><span>${fmtMs(t)}</span></span>`;
   // A faux waveform — no audio analysis in the prototype — keyed on source
   // time so the shape doesn't slide when the window moves.
   let wave = "";
@@ -741,20 +745,9 @@ function paintTimeline() {
     <div class="clips-tl" data-clips-tl>
       <div class="clips-tl__labels">
         <span></span>
-        ${trackHead(
-          "Clip",
-          `<button type="button" class="ap-icon-button transparent" data-clips-ed="set-start" aria-label="Start the clip at the playhead" data-tooltip="Start the clip at the playhead (I)">${ICON.in}</button>
-           <button type="button" class="ap-icon-button transparent" data-clips-ed="set-end" aria-label="End the clip at the playhead" data-tooltip="End the clip at the playhead (O)">${ICON.out}</button>`,
-        )}
-        ${trackHead(
-          "Framing",
-          `<button type="button" class="ap-icon-button transparent clips-tl__reframe-only" data-clips-ed="split" aria-label="Split the part at the playhead" data-tooltip="Split the part at the playhead — the clip stays whole (S)">${ICON.cut}</button>
-           <button type="button" class="ap-icon-button ${ed.snap ? "stroked blue" : "transparent"} clips-tl__reframe-only" data-clips-ed="snap" aria-pressed="${ed.snap}" aria-label="Snap to camera cuts" data-tooltip="Snap to camera cuts: ${ed.snap ? "on" : "off"}">${ICON.snap}</button>`,
-        )}
-        ${trackHead(
-          "Text",
-          `<button type="button" class="ap-icon-button transparent" data-clips-ed="add-text" aria-label="Add a text at the playhead" data-tooltip="Add a text at the playhead"><i class="ap-icon-plus" aria-hidden="true"></i></button>`,
-        )}
+        ${trackHead("Clip")}
+        ${trackHead("Framing")}
+        ${trackHead("Text")}
       </div>
       <div class="clips-tl__tracks" data-clips-tracks>
         <div class="clips-tl__ruler" data-clips-scrub>${ticks}${edgeTime("start")}${edgeTime("end")}</div>
@@ -784,12 +777,13 @@ function paintTimeline() {
         }
       </div>
     </div>
-    <p class="clips-tl__legend">${cams
+    <div class="clips-tl__legend">${cams
       .map(
         (id) =>
           `<span class="clips-tl__legend-item"><span class="clips-tl__swatch" style="background:${camColor(id)}"></span>${escapeHtml(cameraName(id))}</span>`,
       )
-      .join("")}<span class="clips-tl__legend-item">Dotted: Auto · Solid: yours</span></p>`;
+      .join("")}<span class="clips-tl__legend-item">Dotted: Auto · Solid: yours</span>
+      <label class="ap-toggle-container clips-tl__snap"><input type="checkbox" data-clips-snap ${ed.snap ? "checked" : ""} /><i></i><span>Snap to camera cuts</span></label></div>`;
 }
 
 // What the cleanup hid from the subtitles, on the Clip track — the audio isn't cut.
@@ -1299,9 +1293,6 @@ function handleClick(e) {
       return setRange(ed.t, ed.w.endMs);
     case "set-end":
       return setRange(ed.w.startMs, ed.t);
-    case "snap":
-      ed.snap = !ed.snap;
-      return syncTlTools();
     case "split":
       return doSplit();
     case "apply-cam":
