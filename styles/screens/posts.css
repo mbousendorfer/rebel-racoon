@@ -722,10 +722,11 @@
 /* ---------- Inline edit state ---------- */
 
 .posts__card-editor {
-  /* Room to type: 16px inside, the edge 8px off the card's own. The text
-     moves in by 8px on enter — the field reads as one, not as the post. */
-  margin: calc(var(--ref-spacing-xxs) * -1);
-  padding: var(--ref-spacing-sm);
+  /* Exactly the hover field's footprint (.posts__card-body--editable:hover):
+     8px around the text, then the 1px edge — the text doesn't move and the
+     field doesn't grow on enter. */
+  margin: calc(var(--ref-spacing-xxs) * -1 - 1px);
+  padding: var(--ref-spacing-xxs);
   white-space: pre-wrap;
   border: 1px solid var(--ref-color-electric-blue-100);
   border-radius: var(--app-radius-md);
