@@ -14,8 +14,8 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=2159";
-import { conceptHint } from "./concepts.js?v=2159";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=2160";
+import { conceptHint } from "./concepts.js?v=2160";
 import {
   renderColorRole,
   colorRoleCaption,
@@ -30,13 +30,13 @@ import {
   kitSnapshot,
   renderImagesTab,
   setInlineChoices,
-} from "./playbook-brand-kit.js?v=2159";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2159";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2159";
-import { isFlagOn } from "./feature-flags.js?v=2159";
-import { clipLookOf } from "./videos-store.js?v=2159";
-import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2159";
-import { parseHashParams } from "./url-state.js?v=2159";
+} from "./playbook-brand-kit.js?v=2160";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=2160";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=2160";
+import { isFlagOn } from "./feature-flags.js?v=2160";
+import { clipLookOf } from "./videos-store.js?v=2160";
+import { dsSelect, SUBTITLE_IDS, presetLabel } from "./screens/clips/shared.js?v=2160";
+import { parseHashParams } from "./url-state.js?v=2160";
 import {
   isListPart,
   voiceParts,
@@ -49,10 +49,10 @@ import {
   optimizeForNetwork,
   copyBrandVoice,
   markAdapted,
-} from "./voice-parts.js?v=2159";
-import { showToast } from "./components/toast.js?v=2159";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=2159";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, networkLabel, networkIcon } from "./social-profiles.js?v=2159";
+} from "./voice-parts.js?v=2160";
+import { showToast } from "./components/toast.js?v=2160";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=2160";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL, networkLabel, networkIcon } from "./social-profiles.js?v=2160";
 
 // Brief — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [

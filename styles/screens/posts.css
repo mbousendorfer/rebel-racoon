@@ -71,7 +71,7 @@
    A little extra space *below* the strip (on top of the feed's row gap)
    widens the gap to the next draft, so the feedback clearly belongs to the
    card above it rather than reading as a divider between two drafts. */
-.posts__card-wrap > .fb--strip {
+.posts__card-wrap > .fb--bar {
   padding-top: 0;
   margin-bottom: var(--ref-spacing-sm);
 }
@@ -807,7 +807,7 @@
 /* Strip is the sole in-flow child → spans the card. Its asymmetric top padding
    would offset its row from the pinned toggle, so drop it here (the card-wrap
    gap already spaces the row from the card above). */
-.posts__card-footrow > .fb--strip {
+.posts__card-footrow > .fb--bar {
   padding-top: 0;
 }
 .posts__card-footrow > .posts__gencontext-toggle {
