@@ -512,14 +512,14 @@
   }
 }
 
-/* ── Project: an editing workspace ───────────────────────────────
-   Bin · monitors · transport, then the whole video's timeline — the layout of
-   an editing app, on the dark media surface. The page fits the viewport; the
-   bin scrolls on its own. */
+/* ── Project: master–detail ───────────────────────────────────────
+   The list of clips on the left; the open clip on the right — its picture and,
+   right against it, its details and actions. The page fits the viewport; the
+   list and the details scroll on their own. */
 
 .clips-project {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(0, 1fr);
   height: 100%;
   overflow: hidden;
 }
@@ -566,7 +566,7 @@
 
 .clips-ws {
   display: grid;
-  grid-template-columns: 280px minmax(0, 1fr) 300px;
+  grid-template-columns: 320px minmax(0, 1fr);
   min-height: 0;
 }
 
@@ -709,33 +709,37 @@
   color: var(--ref-color-grey-100);
 }
 
-/* Monitors: framed like the editor's (title bar, picture on black), side by
-   side, edge to edge; the transport docked under them. */
-.clips-stage {
+/* The open clip: its player and its details side by side, centred as a pair
+   on the page ground — the picture sized to its format, nothing between. */
+.clips-clip {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  column-gap: var(--ref-spacing-lg);
   min-height: 0;
   min-width: 0;
-  background: var(--ref-color-white);
+  padding: var(--ref-spacing-md);
+  background: var(--ref-color-grey-bg);
 }
 
-.clips-monitors {
+.clips-clip__player {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  min-height: 0;
+}
+
+.clips-clip__body {
   flex: 1;
   min-height: 0;
   display: flex;
-}
-
-.clips-monitors {
-  position: relative;
-}
-
-.clips-monitor--program {
-  flex: 1 1 0;
+  align-items: center;
 }
 
 .clips-monitor__screen {
   position: relative;
   background: #000;
+  border-radius: var(--app-radius-md);
   overflow: hidden;
 }
 
@@ -747,68 +751,71 @@
   object-fit: contain;
 }
 
-.clips-monitor__off {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  background: rgba(8, 10, 14, 0.55); /* over the footage */
-  color: var(--ref-color-grey-100);
-  font-size: var(--sys-text-style-caption-size);
-}
-
-.clips-monitor__off[hidden] {
-  display: none;
-}
-
-/* Transport, docked. */
+/* The clip's transport, under its picture: play, its scrubber, its time. */
 .clips-transport {
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: var(--ref-spacing-xs);
-  height: 56px;
-  padding: 0 var(--ref-spacing-md);
-  border-top: 1px solid var(--ref-color-grey-20);
+}
+
+.clips-transport__scrub {
+  flex: 1;
+  min-width: 0;
 }
 
 .clips-transport__tc {
-  min-width: 96px;
+  flex: none;
   font-variant-numeric: tabular-nums;
   color: var(--ref-color-grey-100);
 }
 
-/* The inspector: the clip in the monitors, named and described. */
+/* The clip's details: a white surface right against its picture. */
 .clips-inspector {
+  flex: none;
+  align-self: flex-start;
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-sm);
-  min-height: 0;
+  width: 340px;
+  max-height: 100%;
   overflow-y: auto;
   padding: var(--ref-spacing-md);
-  border-left: 1px solid var(--ref-color-grey-20);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--app-radius-md);
   background: var(--ref-color-white);
 }
 
-.clips-inspector__head {
+/* Where the clip sits in the video: a thin bar, the clip marked on it (data,
+   so grey — never blue), and its times in words. */
+.clips-place {
   display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
 }
 
-.clips-inspector__num {
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
+.clips-place__track {
+  position: relative;
+  height: 6px;
   border-radius: var(--app-radius-sm);
-  background: var(--ref-color-grey-05); /* a number, not an action: never blue */
-  color: var(--ref-color-grey-100);
-  font-weight: var(--sys-text-style-body-bold-weight);
+  background: var(--ref-color-grey-10);
+}
+
+.clips-place__clip {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: var(--app-radius-sm);
+  background: var(--ref-color-grey-80);
+}
+
+.clips-place__label {
+  font-size: var(--sys-text-style-caption-size);
   font-variant-numeric: tabular-nums;
+  color: var(--ref-color-grey-80);
 }
 
 .clips-inspector__of {
+  margin: calc(var(--ref-spacing-xxs) - var(--ref-spacing-sm)) 0 0;
   font-size: var(--sys-text-style-caption-size);
   color: var(--ref-color-grey-80);
 }
@@ -850,79 +857,6 @@
   color: var(--ref-color-grey-80);
 }
 
-/* The timeline. */
-.clips-tl2 {
-  display: grid;
-  grid-template-columns: 88px minmax(0, 1fr);
-  gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-xs) var(--ref-spacing-md) var(--ref-spacing-sm);
-  border-top: 1px solid var(--ref-color-grey-20);
-  background: var(--ref-color-white);
-  user-select: none;
-}
-
-.clips-tl2__labels,
-.clips-tl2__tracks {
-  display: grid;
-  grid-template-rows: 18px 48px 30px;
-  gap: 6px;
-}
-
-.clips-tl2__labels {
-  align-items: center;
-  font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-80);
-}
-
-.clips-tl2__tracks {
-  position: relative;
-}
-
-/* The timeline reads; it doesn't edit (that's the editor's). A click places
-   the playhead, a clip block focuses its clip. */
-.clips-tl2__ruler,
-.clips-tl2__film,
-.clips-tl2__clips {
-  position: relative;
-  cursor: pointer;
-  touch-action: none;
-}
-
-.clips-tl2__ruler span {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  padding-left: 4px;
-  border-left: 1px solid var(--ref-color-grey-20);
-  font-size: 11px;
-  color: var(--ref-color-grey-80);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-.clips-tl2__film {
-  display: flex;
-  overflow: hidden;
-  border-radius: var(--app-radius-sm);
-  background: var(--ref-color-grey-05);
-  box-shadow: 0 0 0 1px var(--ref-color-grey-20);
-}
-
-.clips-tl2__frame {
-  flex: 1 1 0;
-  min-width: 0;
-  height: 100%;
-  object-fit: cover;
-  border-right: 1px solid #000;
-  animation: clips-fade 300ms ease both;
-}
-
-.clips-tl2__frame.is-empty {
-  background: linear-gradient(90deg, var(--ref-color-grey-05), var(--ref-color-white), var(--ref-color-grey-05));
-  background-size: 200% 100%;
-  animation: clips-shimmer 1.4s linear infinite;
-}
-
 @keyframes clips-fade {
   from {
     opacity: 0;
@@ -933,68 +867,6 @@
   to {
     background-position: -200% 0;
   }
-}
-
-.clips-tl2__clips {
-  border-radius: var(--app-radius-sm);
-  background: var(--ref-color-grey-05);
-  box-shadow: 0 0 0 1px var(--ref-color-grey-20);
-}
-
-.clips-tl2__clip {
-  position: absolute;
-  top: 3px;
-  bottom: 3px;
-  display: grid;
-  place-items: center;
-  padding: 0;
-  border: 1px solid var(--ref-color-grey-20);
-  border-radius: 4px;
-  background: var(--ref-color-white);
-  color: var(--ref-color-grey-80);
-  font: inherit;
-  font-size: 11px;
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  cursor: pointer;
-  transition:
-    background-color 150ms ease,
-    border-color 150ms ease,
-    transform 160ms var(--app-ease-out);
-}
-
-.clips-tl2__clip:not(.is-selected) {
-  opacity: 0.4;
-}
-
-.clips-tl2__clip.is-focused {
-  border: 2px solid var(--ref-color-electric-blue-100);
-  color: var(--ref-color-grey-100);
-}
-
-.clips-tl2__clip:active {
-  transform: scale(0.96);
-}
-
-.clips-tl2__playhead {
-  position: absolute;
-  top: -2px;
-  bottom: -2px;
-  width: 2px;
-  margin-left: -1px;
-  background: var(--ref-color-orange-100);
-  pointer-events: none;
-  z-index: 2;
-}
-
-.clips-tl2__playhead::before {
-  content: "";
-  position: absolute;
-  top: -4px;
-  left: -5px;
-  width: 12px;
-  height: 12px;
-  border-radius: 2px 2px 6px 6px;
-  background: var(--ref-color-orange-100);
 }
 
 .clips-list__none {
@@ -2406,11 +2278,4 @@ body.clips-editing .app-content {
   right: 0; /* opens toward the panel, never past the window's edge */
   z-index: 20;
   min-width: 200px;
-}
-
-/* The Clips track's header: its name and its one action, Add a clip. */
-.clips-tl2__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
 }
