@@ -2,15 +2,15 @@
 // videos, and the one way in, adding a video. The flow starts with the video;
 // the posts come last (screens/clips/project.js).
 
-import { navigate } from "../../router.js?v=2129";
-import { isFlagOn } from "../../feature-flags.js?v=2129";
-import { renderTopbar } from "../../components/topbar.js?v=2129";
-import { showToast } from "../../components/toast.js?v=2129";
-import { renderEmptyState } from "../../components/empty-state.js?v=2129";
-import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2129";
-import { isDemo } from "../../demo-mode.js?v=2129";
-import { getPosts } from "../../posts-store.js?v=2129";
-import { escapeHtml } from "../../utils.js?v=2129";
+import { navigate } from "../../router.js?v=2133";
+import { isFlagOn } from "../../feature-flags.js?v=2133";
+import { renderTopbar } from "../../components/topbar.js?v=2133";
+import { showToast } from "../../components/toast.js?v=2133";
+import { renderEmptyState } from "../../components/empty-state.js?v=2133";
+import { playbookForNewWork, subscribe as subscribeScope } from "../../active-playbook.js?v=2133";
+import { isDemo } from "../../demo-mode.js?v=2133";
+import { getPosts } from "../../posts-store.js?v=2133";
+import { escapeHtml } from "../../utils.js?v=2133";
 import {
   getVideos,
   addVideo,
@@ -18,10 +18,12 @@ import {
   lengthProblem,
   standInForUrl,
   subscribe as subscribeVideos,
-} from "../../videos-store.js?v=2129";
-import { fmtMs } from "./shared.js?v=2129";
+} from "../../videos-store.js?v=2133";
+import { fmtMs, previewMarkup, mountPreviews } from "./shared.js?v=2133";
+import { buildWorkflowFlow } from "../session/workflow-flow.js?v=2133";
 
 let target = null;
+let disposeShowcase = null;
 let signature = "";
 const disposers = [];
 
@@ -39,6 +41,8 @@ export function renderClipsLibrary(_params, el) {
   el.addEventListener("dragover", onDragOver);
   el.addEventListener("dragleave", onDragLeave);
   el.addEventListener("drop", onDrop);
+  el.addEventListener("pointerover", onHover);
+  el.addEventListener("pointerout", onHover);
   disposers.push(subscribeVideos(onStore), subscribeScope(paint));
   return () => {
     el.removeEventListener("click", onClick);
@@ -47,6 +51,10 @@ export function renderClipsLibrary(_params, el) {
     el.removeEventListener("dragover", onDragOver);
     el.removeEventListener("dragleave", onDragLeave);
     el.removeEventListener("drop", onDrop);
+    el.removeEventListener("pointerover", onHover);
+    el.removeEventListener("pointerout", onHover);
+    disposeShowcase?.();
+    disposeShowcase = null;
     disposers.splice(0).forEach((d) => d());
     target = null;
   };
@@ -75,42 +83,95 @@ function onStore() {
 
 function paint() {
   if (!target) return;
+  disposeShowcase?.();
+  disposeShowcase = null;
   const pb = scope();
   const videos = getVideos(pb?.id);
   signature = sig(videos);
   const off = isDemo() ? "disabled" : "";
+  const showcase = videos.find((v) => v.status === "ready" && v.clips.length >= 3) || null;
   target.innerHTML = `
     <div class="clips-view">
-      <div class="clips-view__page">
-        <section class="clips-add" data-clips-drop>
-          <span class="clips-add__icon"><i class="ap-icon-video" aria-hidden="true"></i></span>
-          <div class="clips-add__text">
-            <h1 class="clips-add__title">Turn a long video into clips</h1>
-            <p class="clips-add__sub">
-              Add a video and I'll find its best moments, frame the speakers and add subtitles. You refine, then I write
-              the posts${pb ? ` in ${escapeHtml(pb.name)}'s voice` : ""}.
+      <div class="clips-view__page clips-library-page">
+        <section class="clips-hero" data-clips-drop aria-labelledby="clips-hero-title">
+          <div class="clips-hero__copy">
+            <h1 class="clips-hero__title" id="clips-hero-title">Turn a long video into clips</h1>
+            <p class="clips-hero__sub">
+              I find the best moments, frame the speakers and add subtitles. You refine, then I write the posts${
+                pb ? ` in ${escapeHtml(pb.name)}'s voice` : ""
+              }.
             </p>
-          </div>
-          <form class="clips-add__form" data-clips-url-form>
-            <div class="ap-input-group clips-add__url">
-              <i class="ap-icon-link" aria-hidden="true"></i>
-              <input type="text" data-clips-url placeholder="Paste a YouTube or Google Drive link" aria-label="Video link" ${off} />
+            <form class="clips-hero__form" data-clips-url-form>
+              <div class="ap-input-group clips-hero__url">
+                <i class="ap-icon-link" aria-hidden="true"></i>
+                <input type="text" data-clips-url placeholder="Paste a YouTube or Google Drive link" aria-label="Video link" ${off} />
+              </div>
+              <button type="submit" class="ap-button primary orange" ${off}>
+                <i class="ap-icon-archie-official" aria-hidden="true"></i><span>Get clips</span>
+              </button>
+            </form>
+            <div class="clips-hero__upload">
+              <button type="button" class="ap-button stroked grey" data-clips-browse ${off}>
+                <i class="ap-icon-upload" aria-hidden="true"></i><span>Upload a video</span>
+              </button>
+              <span class="clips-hero__rules">or drop a file here · from 30 seconds to 2 hours</span>
+              <input type="file" accept="video/*" data-clips-file hidden />
             </div>
-            <button type="submit" class="ap-button primary orange" ${off}>
-              <i class="ap-icon-archie-official" aria-hidden="true"></i><span>Get clips</span>
-            </button>
-            <span class="clips-add__or">or</span>
-            <button type="button" class="ap-button stroked grey" data-clips-browse ${off}>
-              <i class="ap-icon-upload" aria-hidden="true"></i><span>Upload a video</span>
-            </button>
-            <input type="file" accept="video/*" data-clips-file hidden />
-          </form>
-          <p class="clips-add__rules">From 30 seconds to 2 hours. Drop a file anywhere on this card.</p>
+          </div>
+          ${showcase ? renderShowcase(showcase) : ""}
+          <div class="clips-hero__drop" aria-hidden="true"><i class="ap-icon-upload"></i><span>Drop your video to start</span></div>
         </section>
+        ${buildWorkflowFlow(STEPS)}
         ${videos.length ? renderGrid(videos) : renderEmpty()}
       </div>
     </div>`;
+  if (showcase) disposeShowcase = mountPreviews(target.querySelector(".clips-showcase"), showcase);
 }
+
+// The hero shows what the space makes, with the space's own work: a long
+// video on the left, three of its clips — reframed for real — on the right.
+function renderShowcase(v) {
+  const clips = v.clips.slice(0, 3);
+  return `
+    <div class="clips-showcase" aria-hidden="true">
+      <div class="clips-showcase__source">
+        <video src="${escapeHtml(v.url)}#t=${(v.posterMs || 0) / 1000}" preload="metadata" muted playsinline tabindex="-1"></video>
+        <span class="clips-showcase__badge">${fmtMs(v.durationMs)}</span>
+      </div>
+      <span class="clips-showcase__arrow"><i class="ap-icon-arrow-right"></i></span>
+      <div class="clips-showcase__clips">
+        ${clips
+          .map(
+            (c, i) => `<div class="clips-showcase__clip" style="--i:${i}">
+              ${previewMarkup(v, { ...c, ratio: "9:16" })}
+              <span class="clips-showcase__dur">${fmtMs(c.endMs - c.startMs)}</span>
+            </div>`,
+          )
+          .join("")}
+      </div>
+    </div>`;
+}
+
+const STEPS = [
+  {
+    tone: "in",
+    icon: "ap-icon-file--video",
+    title: "Add a video",
+    text: "A podcast, a webinar, a keynote — up to two hours.",
+  },
+  {
+    tone: "ai",
+    icon: "ap-icon-archie-official",
+    title: "I cut the best moments",
+    text: "Framed on the speakers, subtitled in your brand's style.",
+  },
+  {
+    tone: "out",
+    icon: "ap-icon-calendar",
+    title: "You refine, then post",
+    text: "Trim, reframe, restyle — then one draft per clip and account.",
+  },
+];
 
 function renderEmpty() {
   return renderEmptyState({
@@ -124,7 +185,10 @@ function renderEmpty() {
 function renderGrid(videos) {
   return `
     <section class="clips-library" aria-labelledby="clips-library-title">
-      <h2 class="clips-library__title" id="clips-library-title">Videos</h2>
+      <header class="clips-library__head">
+        <h2 class="clips-library__title" id="clips-library-title">Your videos</h2>
+        <span class="ap-counter normal grey">${videos.length}</span>
+      </header>
       <div class="clips-library__grid">${videos.map(renderCard).join("")}</div>
     </section>`;
 }
@@ -133,33 +197,62 @@ function renderCard(v) {
   const posts = getPosts(draftKey(v.id));
   const scheduled = posts.filter((p) => p.status === "scheduled").length;
   const added = new Date(v.addedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const fact = (icon, text) =>
+    `<span class="clips-video__fact"><i class="${icon}" aria-hidden="true"></i>${text}</span>`;
   const facts =
     v.status === "ready"
       ? [
-          `${v.clips.length} clip${v.clips.length === 1 ? "" : "s"}`,
-          posts.length ? `${posts.length} draft${posts.length === 1 ? "" : "s"}` : "",
-          scheduled ? `${scheduled} scheduled` : "",
-        ].filter(Boolean)
-      : [];
+          fact("ap-icon-video", `${v.clips.length} clip${v.clips.length === 1 ? "" : "s"}`),
+          posts.length ? fact("ap-icon-file--text", `${posts.length} draft${posts.length === 1 ? "" : "s"}`) : "",
+          scheduled ? fact("ap-icon-calendar", `${scheduled} scheduled`) : "",
+        ].join("")
+      : "";
+  // Where the clips sit in the video, at the foot of the thumbnail.
+  const map =
+    v.status === "ready" && v.clips.length
+      ? `<span class="clips-video__map">${v.clips
+          .map(
+            (c) =>
+              `<span style="left:${(c.startMs / v.durationMs) * 100}%;width:max(3px, ${((c.endMs - c.startMs) / v.durationMs) * 100}%)"></span>`,
+          )
+          .join("")}</span>`
+      : "";
+  const pct = Math.round(v.progress * 100);
   return `
-    <a class="clips-video" href="#/clips/${encodeURIComponent(v.id)}">
+    <a class="clips-video${v.status === "analyzing" ? " is-analyzing" : ""}" href="#/clips/${encodeURIComponent(v.id)}" data-clips-card>
       <span class="clips-video__thumb">
-        <video src="${escapeHtml(v.url)}#t=${(v.posterMs || 0) / 1000}" preload="metadata" muted playsinline tabindex="-1" aria-hidden="true"></video>
+        <video src="${escapeHtml(v.url)}#t=${(v.posterMs || 0) / 1000}" preload="metadata" muted playsinline tabindex="-1" aria-hidden="true" data-poster-s="${(v.posterMs || 0) / 1000}"></video>
         <span class="clips-video__duration">${fmtMs(v.durationMs)}</span>
-      </span>
-      <span class="clips-video__body">
-        <span class="clips-video__name">${escapeHtml(v.name)}</span>
-        <span class="clips-video__meta">Added ${added}${facts.length ? ` · ${facts.join(" · ")}` : ""}</span>
+        ${map}
         ${
           v.status === "analyzing"
-            ? `<span class="clips-progress" data-clips-progress="${v.id}">
-                 <span class="clips-progress__track"><span class="clips-progress__fill" style="width:${Math.round(v.progress * 100)}%"></span></span>
-                 <span class="clips-progress__label">${escapeHtml(v.stage || "Analyzing")}… ${Math.round(v.progress * 100)}%</span>
+            ? `<span class="clips-video__veil" data-clips-progress="${v.id}">
+                 <span class="clips-video__veil-stage">${escapeHtml(v.stage || "Analyzing")}…</span>
+                 <span class="clips-progress"><span class="clips-progress__track"><span class="clips-progress__fill" style="width:${pct}%"></span></span>
+                 <span class="clips-progress__label">${pct}%</span></span>
                </span>`
             : ""
         }
       </span>
+      <span class="clips-video__body">
+        <span class="clips-video__name" title="${escapeHtml(v.name)}">${escapeHtml(v.name)}</span>
+        <span class="clips-video__meta">Added ${added}</span>
+        ${facts ? `<span class="clips-video__facts">${facts}</span>` : ""}
+      </span>
     </a>`;
+}
+
+// A thumbnail plays its video, muted, while the pointer is on it.
+function onHover(e) {
+  const card = e.target.closest?.("[data-clips-card]");
+  if (!card || card.contains(e.relatedTarget)) return;
+  const v = card.querySelector("video");
+  if (!v) return;
+  if (e.type === "pointerover") v.play().catch(() => {});
+  else {
+    v.pause();
+    v.currentTime = Number(v.dataset.posterS) || 0;
+  }
 }
 
 // ── Adding a video ───────────────────────────────────────────────────

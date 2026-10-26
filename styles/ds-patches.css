@@ -994,3 +994,10 @@ button.ap-link {
 .clips-ed .ap-button.ghost.grey:disabled {
   color: color-mix(in srgb, var(--app-vc-text-subtle) 55%, transparent);
 }
+
+/* Primary buttons in the dark-scoped editor topbar: CSS-UI writes their label
+   in --ref-color-white, which the dark scope turns into the raised surface.
+   The label keeps the ramp's primary text instead. Same lifetime as above. */
+body.clips-editing .app-topbar .ap-button.primary {
+  color: var(--app-vc-text);
+}

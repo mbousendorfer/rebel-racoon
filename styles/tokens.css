@@ -245,8 +245,11 @@
    grey-05 = sunken well, grey-10 = overlay fill, grey-20 = hairline,
    grey-40 = control border, grey-60/80/100 = the three text levels. The
    light blues become the dark accent tints; blue-100 and orange keep their
-   DS values. Footage and the subtitle box keep their literal colours. */
-.clips-ed {
+   DS values. Footage and the subtitle box keep their literal colours. The
+   topbar joins the scope on the editor's route, so the editor is dark from
+   edge to edge. */
+.clips-ed,
+body.clips-editing .app-topbar {
   --ref-color-white: var(--app-vc-surface-raised);
   --ref-color-grey-05: var(--app-vc-surface-sunken);
   --ref-color-grey-10: var(--app-vc-surface-overlay);
