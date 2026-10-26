@@ -1588,14 +1588,13 @@ body.clips-space .app-content {
 }
 
 .clips-ed__apply {
-  padding: var(--ref-spacing-sm);
-  border: 1px solid var(--app-vc-border);
-  border-radius: var(--app-radius-md);
+  padding-top: var(--ref-spacing-xs);
+  border-top: 1px solid var(--app-vc-border);
 }
 
 .clips-ed__panel-foot {
   margin-top: auto;
-  padding-top: var(--ref-spacing-sm);
+  padding-top: var(--ref-spacing-xs);
   border-top: 1px solid var(--app-vc-border);
 }
 
@@ -2002,13 +2001,15 @@ body.clips-space .app-content {
 
 /* ── Panel + rail ── */
 
+/* An inspector's density, like an editing app's: 12 px between blocks, a
+   16 px gutter, the lead tucked under its title. */
 .clips-ed__panel {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-sm);
+  gap: var(--ref-spacing-xs);
   min-height: 0;
   overflow-y: auto;
-  padding: var(--ref-spacing-md);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm) var(--ref-spacing-sm);
   border-left: 1px solid var(--ref-color-grey-20);
 }
 
@@ -2021,7 +2022,16 @@ body.clips-space .app-content {
 .clips-ed__group {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xs);
+  gap: var(--ref-spacing-xxs);
+}
+
+.clips-ed__panel-title {
+  font-size: var(--sys-text-style-body-bold-size);
+  line-height: var(--sys-text-style-body-bold-line-height);
+}
+
+.clips-ed__panel-title + .clips-ed__panel-lead {
+  margin-top: calc(var(--ref-spacing-xxxs) - var(--ref-spacing-xs));
 }
 
 .clips-ed__label {
@@ -2034,13 +2044,13 @@ body.clips-space .app-content {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--ref-spacing-xs);
+  gap: var(--ref-spacing-xxs);
 }
 
 .clips-ed__fields {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: var(--ref-spacing-xs);
+  gap: var(--ref-spacing-xxs);
 }
 
 .clips-ed__field {
@@ -2055,7 +2065,7 @@ body.clips-space .app-content {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--ref-spacing-xs);
+  gap: var(--ref-spacing-xxxs) var(--ref-spacing-xxs);
 }
 
 .clips-ed__seg-name {
@@ -2068,11 +2078,11 @@ body.clips-space .app-content {
 .clips-ed__layouts {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--ref-spacing-xs);
+  gap: var(--ref-spacing-xxs);
 }
 
 .clips-layout.ap-radio-card {
-  padding: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs) var(--ref-spacing-xxs) var(--ref-spacing-xxs);
   transition:
     border-color 150ms ease,
     transform 160ms var(--app-ease-out);
@@ -2084,14 +2094,17 @@ body.clips-space .app-content {
 
 .clips-layout.ap-radio-card::before {
   position: absolute;
-  top: var(--ref-spacing-xs);
-  left: var(--ref-spacing-xs);
+  top: var(--ref-spacing-xxs);
+  right: var(--ref-spacing-xxs);
+  left: auto;
 }
 
 .clips-layout > div {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  text-align: center;
-  gap: 2px;
+  column-gap: var(--ref-spacing-xxxs);
+  text-align: left;
 }
 
 .clips-layout__glyph {
@@ -2100,9 +2113,9 @@ body.clips-space .app-content {
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
-  width: 34px;
-  height: 60px;
-  margin-bottom: var(--ref-spacing-xs);
+  grid-row: span 2;
+  width: 20px;
+  height: 36px;
   border: 1.5px solid var(--app-vc-border-strong);
   border-radius: 5px;
   background: var(--app-vc-surface-sunken);
@@ -2155,7 +2168,7 @@ body.clips-space .app-content {
 
 .clips-layout__glyph--auto {
   justify-content: center;
-  font-size: 18px;
+  font-size: 14px;
   color: var(--app-vc-text-subtle);
 }
 
@@ -2186,10 +2199,15 @@ body.clips-space .app-content {
 }
 
 .clips-layout__name {
-  font-weight: var(--sys-text-style-body-bold-weight);
+  align-self: end;
+  padding-right: var(--ref-spacing-xs); /* clear of the radio dot */
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: var(--sys-text-style-caption-bold-weight);
 }
 
 .clips-layout__hint {
+  align-self: start;
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   color: var(--app-vc-text-muted);
@@ -2205,14 +2223,14 @@ body.clips-space .app-content {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-sm);
+  gap: var(--ref-spacing-xxs);
 }
 
 .clips-ed__text {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-sm);
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs) var(--ref-spacing-xs);
   border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-md);
 }
@@ -2224,7 +2242,7 @@ body.clips-space .app-content {
 .clips-ed__text-input {
   width: 100%;
   resize: vertical;
-  padding: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xxxs) var(--ref-spacing-xxs);
   background: var(--comp-input-fill-color);
   border: 1px solid var(--comp-input-border-default-color);
   border-radius: var(--app-radius-sm);
@@ -2285,11 +2303,11 @@ body.clips-space .app-content {
 .cap-ed-clean-group {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xs);
+  gap: var(--ref-spacing-xxs);
 }
 
 .cap-ed-clean-group + .cap-ed-clean-group {
-  margin-top: var(--ref-spacing-sm);
+  margin-top: var(--ref-spacing-xs);
 }
 
 .cap-ed-clean-group__title {
@@ -2309,7 +2327,7 @@ body.clips-space .app-content {
   align-items: center;
   justify-content: space-between;
   gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-xxxs) 0;
+  padding: 0;
   border-bottom: 1px solid var(--ref-color-grey-20);
 }
 
@@ -2402,4 +2420,42 @@ body.clips-space .app-content {
 /* An intro / outro card is shown alone, without the subtitles. */
 .clips-ed:not([data-phase="clip"]) .cap-ed-box {
   visibility: hidden;
+}
+
+/* The Subtitles tool inside the panel: the panel already has its gutter, so
+   the tab panel adds none; the presets and the form keep the inspector's pace. */
+.clips-ed__panel .cap-ed__tab {
+  padding: var(--ref-spacing-xxs) 0;
+}
+
+.clips-ed__panel .cap-ed__tabpanel {
+  padding: var(--ref-spacing-xs) 0 0;
+  overflow: visible;
+}
+
+.clips-ed__panel .cap-ed-presets {
+  gap: var(--ref-spacing-xxs);
+}
+
+.clips-ed__panel .cap-ed-preset {
+  gap: var(--ref-spacing-xxxs);
+  padding: var(--ref-spacing-xxxs);
+}
+
+.clips-ed__panel .cap-ed-preset__frame {
+  height: 40px;
+}
+
+.clips-ed__panel .cap-ed-group {
+  gap: var(--ref-spacing-xxxs);
+}
+
+.clips-ed__panel .cap-ed-group + .cap-ed-group {
+  margin-top: var(--ref-spacing-xs);
+  padding-top: var(--ref-spacing-xs);
+}
+
+.clips-ed__panel .cap-ed-field {
+  gap: var(--ref-spacing-xxxs) var(--ref-spacing-xs);
+  min-height: 28px;
 }
