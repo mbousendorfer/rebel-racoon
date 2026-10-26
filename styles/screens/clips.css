@@ -1659,7 +1659,7 @@ body.clips-editing .app-content {
   background: var(--ref-color-white);
   color: var(--ref-color-electric-blue-60);
   font: inherit;
-  font-size: 11px;
+  font-size: var(--sys-text-style-caption-size);
   font-variant-numeric: tabular-nums;
 }
 
@@ -1725,7 +1725,7 @@ body.clips-editing .app-content {
   bottom: 0;
   border-left: 1px solid var(--ref-color-grey-20);
   padding-left: 4px;
-  font-size: 11px;
+  font-size: var(--sys-text-style-caption-size);
   color: var(--ref-color-grey-80);
   font-variant-numeric: tabular-nums;
 }
@@ -1828,7 +1828,7 @@ body.clips-editing .app-content {
   border-radius: 3px;
   background: var(--ref-color-grey-100);
   color: var(--ref-color-white);
-  font-size: 10px;
+  font-size: var(--sys-text-style-caption-size);
   line-height: 16px;
 }
 
@@ -1856,16 +1856,16 @@ body.clips-editing .app-content {
   background: var(--ref-color-grey-10);
   color: var(--ref-color-grey-100);
   font: inherit;
-  font-size: 11px;
+  font-size: var(--sys-text-style-caption-size);
   line-height: 1.2;
   text-align: left;
   white-space: nowrap;
   cursor: pointer;
 }
 
+/* Same states as a text part (.clips-tl__text): one border, blue. */
 .clips-tl__seg:hover {
-  outline: 1px solid var(--ref-color-electric-blue-60);
-  outline-offset: 1px;
+  border-color: var(--ref-color-electric-blue-60);
 }
 
 .clips-tl__seg.is-edited {
@@ -1874,7 +1874,6 @@ body.clips-editing .app-content {
 
 .clips-tl__seg.is-current {
   border-color: var(--ref-color-electric-blue-100);
-  box-shadow: 0 0 0 1px var(--ref-color-electric-blue-100);
 }
 
 .clips-tl__seg-cam {
@@ -1942,12 +1941,12 @@ body.clips-editing .app-content {
   min-width: 6px;
   padding: 0 6px;
   overflow: hidden;
-  border: 1px solid var(--ref-color-grey-60);
+  border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--app-radius-sm);
   background: var(--ref-color-grey-10);
   color: var(--ref-color-grey-100);
   font: inherit;
-  font-size: 11px;
+  font-size: var(--sys-text-style-caption-size);
   text-overflow: ellipsis;
   white-space: nowrap;
   cursor: pointer;
@@ -2000,7 +1999,7 @@ body.clips-editing .app-content {
   background: var(--ref-color-white);
   border: 1px solid var(--ref-color-grey-20);
   color: var(--ref-color-grey-100);
-  font-size: 11px;
+  font-size: var(--sys-text-style-caption-size);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   transform: translateX(-50%);
@@ -2251,7 +2250,7 @@ body.clips-editing .app-content {
   background: transparent;
   color: var(--ref-color-grey-80);
   font: inherit;
-  font-size: 11px;
+  font-size: var(--sys-text-style-caption-size);
   cursor: pointer;
 }
 
